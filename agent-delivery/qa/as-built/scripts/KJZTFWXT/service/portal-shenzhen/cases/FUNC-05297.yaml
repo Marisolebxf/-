@@ -14,22 +14,33 @@ expect:
     assert: |-
       const main = page.locator('main');
       await main.getByText('产业机构区域分布', { exact: true }).scrollIntoViewIfNeeded();
-      const section = main.locator('.svc-portal-map--sz');
-      const pane = section.locator('.leaflet-map-pane').first();
-      const readScale = async () =>
-        pane.evaluate((el) => {
-          const tr = getComputedStyle(el).transform;
-          if (!tr || tr === 'none') return 0;
-          const m = tr.match(/matrix\(([^,]+)/);
-          return m ? parseFloat(m[1]) : 0;
+      const section = main.locator('.svc-portal-map--sz').first();
+      const mapRoot = section.locator('.leaflet-container').first();
+      await expect(mapRoot).toBeVisible();
+      const readZoom = () =>
+        mapRoot.evaluate((container) => {
+          for (const key of Object.keys(container)) {
+            const val = container[key];
+            if (val && typeof val === 'object' && typeof val.getZoom === 'function') {
+              return val.getZoom();
+            }
+          }
+          const img = container.querySelector('.leaflet-tile-pane img.leaflet-tile-loaded');
+          if (img && img.src) {
+            const m = img.src.match(/TILEMATRIX=(\d+)/i);
+            if (m) return Number(m[1]);
+          }
+          return null;
         });
-      const zoomIn = section.locator('a.leaflet-control-zoom-in');
+      const before = await readZoom();
+      if (before == null) throw new Error('无法读取地图缩放级别');
+      const zoomIn = section.locator('a.leaflet-control-zoom-in').first();
       await expect(zoomIn).toBeVisible();
-      const before = await readScale();
       await zoomIn.click();
-      await page.waitForTimeout(200);
-      const after = await readScale();
-      if (!(after > before)) {
-        throw new Error(`地图未放大：scale ${before} -> ${after}`);
+      let after = await readZoom();
+      for (let i = 0; i < 20 && (after == null || after <= before); i += 1) {
+        await page.waitForTimeout(250);
+        after = await readZoom();
       }
+      expect(after).toBeGreaterThan(before);
 on_fail: 截图 + 抄 X-Trace-Id

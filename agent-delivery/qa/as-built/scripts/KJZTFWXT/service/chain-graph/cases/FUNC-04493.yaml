@@ -1,6 +1,6 @@
 id: FUNC-04493
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04493
-priority: P0
+priority: P1
 tier: B
 title: 主流程-结果条件回显
 entry_id: svc-chain-graph
@@ -8,26 +8,49 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service/chain-analysis?workspace=graph&tab=graph
+    target: /service/chain-analysis?workspace=graph&tab=graph&industry=CL-SEI-01
+  - action: wait
+    ms: 1200
   - action: click
     target: 产业领域
     locator: |-
-      page.getByText('图谱滤镜').locator('xpath=preceding::div[contains(@class,"arco-cascader-view")][1]')
+      page.locator('main [data-testid="svc-eco-analysis-context"] .arco-cascader-view').first()
+  - action: wait
+    ms: 800
   - action: click
     target: 新一代信息技术
     locator: |-
-      page.locator('.arco-cascader-popup').getByText('新一代信息技术', { exact: true }).first()
+      page.locator('.arco-cascader-panel .arco-cascader-list-column').first().getByText('新一代信息技术', { exact: true })
   - action: click
     target: ① 仅机构
+    locator: |-
+      page.locator('main [data-testid="svc-eco-analysis-context"]').getByRole('radio', { name: '① 仅机构' })
   - action: click
     target: 开始分析
+    locator: |-
+      page.locator('main [data-testid="svc-eco-start-analysis"]')
+  - action: wait
+    ms: 800
+  - action: wait
+    ms: 800
+  - action: wait
+    ms: 800
   - action: click
     target: 查看结果
+    locator: |-
+      page.getByRole('button', { name: '查看结果' })
+  - action: wait
+    ms: 800
+  - action: wait
+    ms: 800
+  - action: wait
+    ms: 800
 expect:
-  - note: 结果页产业领域为「新一代信息技术」
+  - note: 1、结果页产业领域为「新一代信息技术」
     assert: |-
-      await expect(page.getByText('新一代信息技术').first()).toBeVisible()
-  - note: 图谱滤镜为「① 仅机构」
+      await expect(page.locator('main [data-testid="svc-eco-result-filters"]')).toBeVisible({ timeout: 30000 });
+      await expect(page.locator('main [data-testid="svc-eco-result-filters"] .svc-eco-context__industry')).toContainText('新一代信息技术');
+  - note: 2、图谱滤镜为「① 仅机构」
     assert: |-
-      await expect(page.getByText('① 仅机构').first()).toBeVisible()
+      await expect(page.locator('main [data-testid="svc-eco-result-filters"]').locator('.arco-radio-checked')).toContainText('① 仅机构');
 on_fail: 截图 + 抄 X-Trace-Id

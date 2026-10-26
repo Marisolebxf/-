@@ -9,21 +9,26 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen
-  - action: click
+  - action: evaluate
+    note: 1.点击任一重点机构卡片
     assert: |-
-      const card = page.getByRole('button', { name: /重点机构详情$/ }).first();
-      await card.scrollIntoViewIfNeeded();
-      await card.click();
-      await page.getByText('主要领导人').waitFor({ state: 'visible', timeout: 10000 });
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 20000 });
+      const main = page.locator('main');
+      await main.getByText('重点产业服务机构').scrollIntoViewIfNeeded();
+      await main.getByText('广州合一健康科技有限公司').first().click({ timeout: 15000 });
+      await expect(page.getByText('进入分析侧画像')).toBeVisible({ timeout: 15000 });
 expect:
   - note: 「主要领导人」为资料完善中
     assert: |-
-      await expect(page.getByText('主要领导人').locator('..').getByText('资料完善中')).toBeVisible();
+      await expect(page.filter({ hasText: '主要领导人' }).getByText('资料完善中')).toBeVisible({ timeout: 15000 })
   - note: 「当前规模」为资料完善中
     assert: |-
-      await expect(page.getByText('当前规模').locator('..').getByText('资料完善中')).toBeVisible();
+      await expect(page.filter({ hasText: '当前规模' }).getByText('资料完善中')).toBeVisible({ timeout: 15000 })
   - note: 「业务服务领域」与「业务分布区域」为资料完善中
     assert: |-
-      await expect(page.getByText('业务服务领域').locator('..').getByText('资料完善中')).toBeVisible();
-      await expect(page.getByText('业务分布区域').locator('..').getByText('资料完善中')).toBeVisible();
+      await expect(page.filter({ hasText: '业务服务领域' }).getByText('资料完善中')).toBeVisible({ timeout: 15000 });
+      await expect(page.filter({ hasText: '业务分布区域' }).getByText('资料完善中')).toBeVisible({ timeout: 15000 })
 on_fail: 截图 + 抄 X-Trace-Id

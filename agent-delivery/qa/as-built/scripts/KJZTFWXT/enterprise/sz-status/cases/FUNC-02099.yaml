@@ -1,25 +1,18 @@
 id: FUNC-02099
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02099
 priority: P1
-title: 翻到第2页后清单换成另一批企业
-story: US-SZSTATUS-02
-entry_id: ent-sz-status
 tier: B
-preconditions:
-  - 已点选「人工智能」
-  - 搜索框为空
-locators:
-  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
-  search_input: main input[placeholder*="搜索企业"]
-  enterprise_table: '[data-testid="szstatus-enterprise-table"]'
-  page2: 清单表后 .arco-pagination-item「2」
+title: 备选-清单翻页
+entry_id: ent-sz-status
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/shenzhen-enterprise-status-analysis
+    target: /enterprise/shenzhen-enterprise-status-analysis
   - action: evaluate
-    note: 选链至清单有数据后点分页「2」（判定在 expect）
+    note: 同册02088选「人工智能」；搜索框保持空；点分页「2」
 expect:
-  - note: 清单首行与第 1 页不同；总条数文案仍在
+  - note: 1、清单首行与第 1 页不同
     assert: |-
       const PAGE_SIZE = 20;
       const dismissBasket = async () => {
@@ -42,26 +35,14 @@ expect:
           return [...new Set(out)];
         });
       const selectChainForList = async () => {
-        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
-        if (await posTab.count()) {
-          const sel = (await posTab.getAttribute('aria-selected')) || '';
-          const cls = (await posTab.getAttribute('class')) || '';
-          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
         const chain = page.locator('main .arco-select-view').filter({
-          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+          has: page.locator('input[placeholder="请选择产业链"]'),
         }).first();
         await expect(chain).toBeVisible({ timeout: 12000 });
-        const prefer = ['人工智能', '新一代信息技术'];
-        let needPick = true;
-        for (const name of prefer) {
-          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
-            needPick = false;
-            break;
-          }
-        }
-        if (!needPick) return;
+        const listResp = page.waitForResponse(
+          (r) => r.request().method() === 'POST' && /sz-status\/enterprise-list/.test(r.url()) && r.status() === 200,
+          { timeout: 25000 },
+        );
         await chain.click({ timeout: 8000 });
         await page.waitForTimeout(500);
         let options = await collectOptions();
@@ -70,8 +51,8 @@ expect:
           await page.waitForTimeout(700);
           options = await collectOptions();
         }
-        if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
-        const pick = prefer.find((n) => options.includes(n)) || options[0];
+        if (options.length === 0) throw new Error('产业链下拉展开后未读到任何选项');
+        const pick = options.includes('人工智能') ? '人工智能' : options[0];
         const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
         const opt = popup.getByText(pick, { exact: true }).first();
         if (await opt.count()) await opt.click({ timeout: 8000 });
@@ -83,29 +64,29 @@ expect:
             }
           }, pick);
         }
+        await listResp.catch(() => null);
         await page.waitForTimeout(800);
       };
       const waitList = async () => {
-        let listOk = false;
-        for (let i = 0; i < 50; i++) {
-          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { listOk = true; break; }
-          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { listOk = true; break; }
-          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
-            await page.waitForTimeout(150);
+        await expect(page.getByText('深圳相关企业清单', { exact: true }).first()).toBeVisible({ timeout: 20000 });
+        for (let i = 0; i < 40; i++) {
+          if (await page.getByText('当前条件下暂无企业').isVisible().catch(() => false)) {
+            await page.waitForTimeout(250);
             continue;
           }
-          await page.waitForTimeout(120);
+          const hasRow = await page.evaluate(() => {
+            const table = document.querySelector('[data-testid="szstatus-enterprise-table"] tbody');
+            if (!table) return false;
+            for (const tr of table.querySelectorAll('tr')) {
+              if (tr.classList.contains('arco-table-tr-empty')) continue;
+              const tds = tr.querySelectorAll('td');
+              if (tds.length >= 2 && (tds[1].innerText || '').trim()) return true;
+            }
+            return false;
+          });
+          if (hasRow) return;
+          await page.waitForTimeout(250);
         }
-        if (!listOk) throw new Error('选链后定位结果未出现（未见清单或「覆盖产业链环节」）');
-        await expect(page.getByText('深圳相关企业清单', { exact: true }).first()).toBeVisible({ timeout: 12000 });
-      };
-      const readCurrentResultTotal = async () => {
-        const line = page.locator('main').getByText(/当前结果\s*\d+\s*家/).first();
-        await expect(line).toBeVisible({ timeout: 8000 });
-        const txt = ((await line.innerText()) || '').replace(/\s+/g, ' ');
-        const m = txt.match(/当前结果\s*(\d+)\s*家/);
-        if (!m) throw new Error('未解析当前结果家数: ' + txt.slice(0, 120));
-        return parseInt(m[1], 10);
       };
       const readFirstEnterpriseName = () =>
         page.evaluate(() => {
@@ -126,43 +107,44 @@ expect:
         page.locator('[data-testid="szstatus-enterprise-table"]').locator(
           'xpath=following::div[contains(@class,"arco-pagination")][1]',
         );
-      const clearSearchIfNeeded = async (inp) => {
-        const v = ((await inp.inputValue()) || '').trim();
-        if (!v) return;
-        const listResp = page.waitForResponse(
-          (r) => r.request().method() === 'POST' && /sz-status\/enterprise-list/.test(r.url()) && r.status() === 200,
-          { timeout: 15000 },
-        );
-        await inp.click();
-        await inp.fill('');
-        await inp.press('Enter');
-        await listResp.catch(() => null);
-        await page.waitForTimeout(500);
+      const readCurrentResultTotal = async () => {
+        const line = page.locator('main').getByText(/当前结果\s*\d+\s*家/).first();
+        await expect(line).toBeVisible({ timeout: 8000 });
+        const txt = ((await line.innerText()) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/当前结果\s*(\d+)\s*家/);
+        if (!m) throw new Error('未解析当前结果家数');
+        return parseInt(m[1], 10);
       };
       await dismissBasket();
       await page.waitForLoadState('domcontentloaded');
       await selectChainForList();
       await waitList();
-      if (await page.getByText('当前条件下暂无企业').isVisible().catch(() => false)) {
-        throw new Error('环境阻塞 ENV-SZSTATUS-ENTERPRISE-PAGE2-001：清单空态，无法翻第 2 页');
-      }
       const searchInp = page.locator('main input[placeholder*="搜索企业"]').first();
       await expect(searchInp).toBeVisible({ timeout: 8000 });
-      await clearSearchIfNeeded(searchInp);
+      const searchVal = ((await searchInp.inputValue()) || '').trim();
+      if (searchVal) {
+        const listResp = page.waitForResponse(
+          (r) => r.request().method() === 'POST' && /sz-status\/enterprise-list/.test(r.url()) && r.status() === 200,
+          { timeout: 15000 },
+        );
+        await searchInp.fill('');
+        await searchInp.press('Enter');
+        await listResp.catch(() => null);
+        await page.waitForTimeout(500);
+      }
+      if (await page.getByText('当前条件下暂无企业').isVisible().catch(() => false)) {
+        throw new Error('修订 blocked 清单空态 ENV-SZSTATUS-ENTERPRISE-PAGE2-001');
+      }
       const total = await readCurrentResultTotal();
       if (total <= PAGE_SIZE) {
-        throw new Error(
-          '环境阻塞 ENV-SZSTATUS-ENTERPRISE-PAGE2-001：当前结果 ' + total + ' 家不大于单页 ' + PAGE_SIZE + '，无第 2 页',
-        );
+        throw new Error('修订 blocked 当前结果' + total + '家≤单页' + PAGE_SIZE + ' ENV-SZSTATUS-ENTERPRISE-PAGE2-001');
       }
       const pag = listPagination();
       await expect(pag).toBeVisible({ timeout: 8000 });
       const page2Btn = pag.locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
       await expect(page2Btn).toBeVisible({ timeout: 8000 });
       const firstNameP1 = await readFirstEnterpriseName();
-      if (!firstNameP1) {
-        throw new Error('第 1 页未读到清单首行企业名称');
-      }
+      if (!firstNameP1) throw new Error('第1页未读到清单首行企业名称');
       const listResp = page.waitForResponse(
         (r) => r.request().method() === 'POST' && /sz-status\/enterprise-list/.test(r.url()) && r.status() === 200,
         { timeout: 20000 },
@@ -175,17 +157,15 @@ expect:
         await page.waitForTimeout(120);
       }
       await expect(page2Btn).toHaveClass(/arco-pagination-item-active/, { timeout: 8000 });
-      await expect(page.locator('main').getByText(/当前结果\s*\d+\s*家/).first()).toBeVisible({ timeout: 8000 });
-      await expect(pag.getByText(/共\s*\d+\s*条/).first()).toBeVisible({ timeout: 8000 });
+      await page.evaluate((n) => { window.__szstatusPage1FirstName = n; }, firstNameP1);
       const firstNameP2 = await readFirstEnterpriseName();
-      if (!firstNameP2) {
-        throw new Error('翻到第 2 页后未读到清单首行企业名称');
-      }
-      if (firstNameP2 === firstNameP1) {
-        throw new Error('第 2 页首行与第 1 页相同（「' + firstNameP1 + '」），清单未换批');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  用例不写总条数具体数字与企业全名；机检「当前结果 N 家」+ 分页 show-total「共 N 条」仍在，首行名称前后页不等。
-  listPageSize=20（EnterpriseTable.vue / useSzStatusAnalysis）。30888 深链 enterprise-center 前缀；产业集群优先人工智能。
-  总家数≤20 或空清单→ENV-SZSTATUS-ENTERPRISE-PAGE2-001 环境阻塞（B 档零 allow_skip）。须先关对比篮。登录与关内部评审由 runner 会话前置。禁止 50892。
+      expect(firstNameP2).toBeTruthy();
+      expect(firstNameP2).not.toBe(firstNameP1);
+  - note: 2、总条数文案仍在
+    assert: |-
+      await expect(page.locator('main').getByText(/当前结果\s*\d+\s*家/).first()).toBeVisible({ timeout: 8000 });
+      const pag = page.locator('[data-testid="szstatus-enterprise-table"]').locator(
+        'xpath=following::div[contains(@class,"arco-pagination")][1]',
+      );
+      await expect(pag.getByText(/共\s*\d+\s*条/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

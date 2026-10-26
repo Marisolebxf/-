@@ -1,82 +1,112 @@
 id: FUNC-03511
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03511
 priority: P1
-title: 重置参数恢复默认权重且保留已选产业与区域
-entry_id: chain-regional-compete
 tier: B
-preconditions:
-  - 已选定产业和至少一个区域
+title: 重置参数恢复默认权重并保留已选产业与区域
+entry_id: chain-regional-compete
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: wait
+    for: 评价模式文案可见
+    timeout_ms: 4500
   - action: evaluate
     note: 企业能力权重改为 50 后点击「重置参数」（用例步骤 1–2）
 expect:
   - note: 前置：选产业与至少一区域，改企业能力权重为 50 并点击重置参数
     assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]');
+      if (await closeB.count() && (await closeB.first().isVisible().catch(() => false))) {
+        await closeB.first().click().catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const main = page.locator('main');
       await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
-      const industryView = () => page.locator('main .arco-select-view[aria-label="产业"]').first();
-      const pickIndustryIfNeeded = async () => {
-        const view = industryView();
-        await expect(view).toBeVisible({ timeout: 12000 });
-        let shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      const weightRow = (label) =>
+        main.locator('.diagnosis-config-panel tr').filter({ hasText: label }).first();
+      await expect(weightRow('企业能力')).toBeVisible({ timeout: 15000 });
+      const pickClusterIndustry = async () => {
+        const clusterView = main.locator('.arco-select-view[aria-label="集群"]').first();
+        if (await clusterView.count()) {
+          const clusterTxt = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          if (!clusterTxt || /请选择/.test(clusterTxt)) {
+            await clusterView.click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+            await page.locator('.arco-trigger-popup:visible').last().getByText('生物产业', { exact: true }).click({ timeout: 8000 });
+            await page.waitForTimeout(600);
+          } else if (!/生物产业/.test(clusterTxt)) {
+            await clusterView.click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+            await page.locator('.arco-trigger-popup:visible').last().getByText('生物产业', { exact: true }).click({ timeout: 8000 });
+            await page.waitForTimeout(600);
+          }
+        }
+        const industryView = main.locator('.arco-select-view[aria-label="产业"]').first();
+        await expect(industryView).toBeVisible({ timeout: 12000 });
+        let shown = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
         if (shown && !/请选择产业/.test(shown)) return shown;
-        await view.click({ timeout: 8000 });
+        await industryView.click({ timeout: 8000 });
         await page.waitForTimeout(500);
         const pop = page.locator('.arco-trigger-popup:visible').last();
-        const opt = pop.locator('.arco-select-option').filter({ hasText: /半导体与集成电路/ }).first();
-        await expect(opt).toBeVisible({ timeout: 8000 });
-        shown = ((await opt.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        await opt.click({ force: true, timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: /^生物$/ }).first();
+        if (await opt.count()) {
+          await opt.click({ force: true, timeout: 8000 });
+        } else {
+          await pop.locator('.arco-select-option').filter({ hasText: /半导体与集成电路/ }).first().click({ force: true, timeout: 8000 });
+          shown = '半导体与集成电路';
+        }
         await page.waitForTimeout(700);
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(400);
-        return shown || '半导体与集成电路';
+        shown = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        return shown || '生物';
       };
-      const regionView = () =>
-        page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();
       const ensureRegion = async () => {
-        const view = regionView();
-        await expect(view).toBeVisible({ timeout: 10000 });
-        let txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        const regionField = main.locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域' }).locator('.arco-select-view').first();
+        await expect(regionField).toBeVisible({ timeout: 10000 });
+        let txt = ((await regionField.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
         if (/深圳|上海|杭州|北京|广东/.test(txt)) return txt;
-        await view.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const pop = page.locator('.arco-trigger-popup:visible').last();
-        const opt = pop.locator('.arco-select-option').filter({ hasText: /^深圳市$/ }).first();
-        if (await opt.count()) {
-          await opt.click({ force: true, timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
+        await regionField.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.locator('.arco-trigger-popup:visible').last().getByText('深圳市', { exact: true }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
         await page.keyboard.press('Escape').catch(() => {});
-        txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        txt = ((await regionField.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
         if (!/深圳|上海|杭州|北京|广东/.test(txt)) {
           throw new Error('前置：评价区域至少选一城，现场=' + txt);
         }
         return txt;
       };
-      const indBefore = await pickIndustryIfNeeded();
+      const indBefore = await pickClusterIndustry();
       const regionBefore = await ensureRegion();
       await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 12000 });
       const entSpin = page.getByRole('spinbutton', { name: '企业能力权重' });
-      await expect(entSpin).toBeVisible({ timeout: 8000 });
-      await entSpin.fill('50');
-      await page.waitForTimeout(500);
+      await expect(entSpin).toBeAttached({ timeout: 15000 });
+      await entSpin.fill('50', { force: true });
+      await page.waitForTimeout(800);
       if (String(await entSpin.inputValue()).trim() !== '50') {
-        throw new Error('企业能力权重未改为 50');
+        throw new Error('企业能力权重未改为 50，现场=' + (await entSpin.inputValue()));
       }
-      globalThis.__func03511 = { indBefore, regionBefore };
+      await page.evaluate(
+        ({ ind, reg }) => {
+          sessionStorage.setItem('func03511_ind', ind);
+          sessionStorage.setItem('func03511_reg', reg);
+        },
+        { ind: indBefore, reg: regionBefore },
+      );
       await page.getByRole('button', { name: '重置参数' }).click({ timeout: 10000 });
       await page.waitForTimeout(1000);
   - note: 1、三个权重回到 40、35、25
     assert: |-
-      const labels = ['企业能力权重', '学术生态权重', '配套生态力权重'];
+      const main = page.locator('main');
+      const spinNames = ['企业能力权重', '学术生态权重', '配套生态力权重'];
       const expectW = [40, 35, 25];
       const vals = [];
-      for (let i = 0; i < labels.length; i++) {
-        const spin = page.getByRole('spinbutton', { name: labels[i] });
-        await expect(spin).toBeVisible({ timeout: 8000 });
+      for (let i = 0; i < spinNames.length; i++) {
+        const spin = page.getByRole('spinbutton', { name: spinNames[i] });
+        await expect(spin).toBeAttached({ timeout: 12000 });
         vals.push(Number(String(await spin.inputValue()).trim()));
       }
       if (vals.join('/') !== expectW.join('/')) {
@@ -85,28 +115,30 @@ expect:
       await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
   - note: 2、已选产业仍在
     assert: |-
-      if (!globalThis.__func03511?.indBefore) throw new Error('前置：产业快照缺失');
+      const indBefore = await page.evaluate(() => sessionStorage.getItem('func03511_ind') || '');
+      if (!indBefore) throw new Error('前置：产业快照缺失');
       const view = page.locator('main .arco-select-view[aria-label="产业"]').first();
       await expect(view).toBeVisible({ timeout: 8000 });
       const now = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
       if (/请选择产业/.test(now)) throw new Error('重置后产业被清空');
-      const token = globalThis.__func03511.indBefore.replace(/\s+/g, ' ').trim();
-      if (token && !now.includes(token.slice(0, Math.min(4, token.length)))) {
+      const token = indBefore.replace(/\s+/g, ' ').trim();
+      const key = token.includes('生物') ? '生物' : token.slice(0, Math.min(6, token.length));
+      if (key && !now.includes(key)) {
         throw new Error('重置后产业应保留，before=' + token + ' now=' + now);
       }
   - note: 3、已选区域仍在
     assert: |-
-      if (!globalThis.__func03511?.regionBefore) throw new Error('前置：区域快照缺失');
-      const view = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();
-      await expect(view).toBeVisible({ timeout: 8000 });
-      const now = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      const before = globalThis.__func03511.regionBefore;
+      const regionBefore = await page.evaluate(() => sessionStorage.getItem('func03511_reg') || '');
+      if (!regionBefore) throw new Error('前置：区域快照缺失');
+      const regionField = page.locator('main .policy-analysis-filter-row__field').filter({ hasText: '评价区域' }).locator('.arco-select-view').first();
+      await expect(regionField).toBeVisible({ timeout: 8000 });
+      const now = ((await regionField.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
       for (const token of ['深圳市', '上海市', '杭州市', '北京市', '广东省']) {
-        if (before.includes(token) && !now.includes(token)) {
-          throw new Error('重置后区域丢失「' + token + '」，before=' + before + ' now=' + now);
+        if (regionBefore.includes(token) && !now.includes(token)) {
+          throw new Error('重置后区域丢失「' + token + '」，before=' + regionBefore + ' now=' + now);
         }
       }
       if (!/深圳|上海|杭州|北京|广东/.test(now)) {
         throw new Error('重置后评价区域为空: ' + now);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
+on_fail: 截图 + 抄 X-Trace-Id

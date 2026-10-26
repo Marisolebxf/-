@@ -1,43 +1,52 @@
 id: FUNC-04597
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04597
-priority: P0
+priority: P1
 tier: B
-title: 主流程-推荐名单行
+title: 主流程-推荐名单行（名次到末行）
 entry_id: svc-rec-attract
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: wait
+    timeout_ms: 800
   - action: click
     target: 生成招引名单
   - action: wait
-    target: table tbody tr
+    timeout_ms: 4000
+  - action: click
+    target: 按钮 查看结果
+  - action: wait
+    timeout_ms: 3000
 expect:
-  - note: 每行含名次、机构名称、城市、推荐理由和分数
+  - note: 1、每行含名次、机构名称、城市、推荐理由和分数
     assert: |-
-      const lastRow = page.locator('table tbody tr').last();
-      await lastRow.scrollIntoViewIfNeeded();
-      await expect(lastRow).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: '名次' })).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: '机构名称' })).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: '城市' })).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: '推荐理由' })).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: '分数' })).toBeVisible();
-      const cells = lastRow.locator('td');
-      await expect(cells.nth(0)).toBeVisible();
-      await expect(cells.nth(1)).toBeVisible();
-      await expect(cells.nth(2)).toBeVisible();
-      await expect(cells.nth(3)).toBeVisible();
-      await expect(cells.nth(4)).toBeVisible();
-  - note: 最后一行名次与候选家数一致
+      const main = page.locator('main');
+      const viewResult = main.getByRole('button', { name: '查看结果' });
+      if (await viewResult.isVisible().catch(() => false)) {
+        await viewResult.click();
+        await page.waitForTimeout(2500);
+      }
+      await expect(main.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
+      const rows = main.locator('[data-testid="svc-rec-list"] article');
+      await expect(rows.first()).toBeVisible({ timeout: 30000 });
+      const last = rows.last();
+      await last.scrollIntoViewIfNeeded();
+      await expect(last.locator('.svc-rec-rank-badge')).toHaveText(/^\d+$/);
+      await expect(last.locator('.svc-rec-rank-name button, .svc-rec-rank-name strong').first()).toBeVisible();
+      await expect(last.locator('.svc-rec-rank-name .arco-tag').first()).toBeVisible();
+      await expect(last.locator('.svc-rec-reason')).toContainText('推荐理由：');
+      await expect(last.locator('.svc-rec-rank-score')).toBeVisible();
+  - note: 2、最后一行名次与候选家数一致
     assert: |-
-      const lastRow = page.locator('table tbody tr').last();
-      await lastRow.scrollIntoViewIfNeeded();
-      const rankText = (await lastRow.locator('td').first().innerText()).trim();
-      const candidateLabel = page.getByText(/候选.*家/).first();
-      await expect(candidateLabel).toBeVisible();
-      const labelText = await candidateLabel.innerText();
-      const candidateCount = labelText.replace(/[^\d]/g, '');
-      await expect(lastRow.locator('td').first()).toContainText(candidateCount);
+      const main = page.locator('main');
+      const countLine = main.locator('.svc-rec-toolbar').getByText(/共 \d+ 家候选/);
+      await expect(countLine).toBeVisible();
+      const countText = await countLine.innerText();
+      const n = Number((/共 (\d+) 家候选/.exec(countText) || [])[1]);
+      if (!n) throw new Error('候选家数未解析: ' + countText);
+      const lastRankText = await main.locator('[data-testid="svc-rec-list"] article').last().locator('.svc-rec-rank-badge').innerText();
+      const lastRank = Number(String(lastRankText).trim());
+      if (lastRank !== n) throw new Error('末行名次 ' + lastRank + ' 与候选家数 ' + n + ' 不一致');
 on_fail: 截图 + 抄 X-Trace-Id

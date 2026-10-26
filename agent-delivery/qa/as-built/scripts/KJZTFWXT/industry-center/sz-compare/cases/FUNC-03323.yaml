@@ -1,26 +1,23 @@
 id: FUNC-03323
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03323
 priority: P1
-title: 对比报告页导出按钮不可用且点击不离开报告
-story: US-CHAIN-SZ-05
-entry_id: chain-sz-compare
 tier: B
-preconditions:
-  - 已打开对比报告
-locators:
-  export_btn: button「导出」
-  report_reader: .system-report-reader[data-report-readonly="true"]
+title: 异常-报告页导出不可用
+entry_id: chain-sz-compare
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=comparison&tab=comparison
   - action: evaluate
-    note: 分析记录打开已完成任务报告后点「导出」；禁用态与停留报告页在 expect
+    note: 03288 发起对比→03307 打开报告→点击「导出」；禁用与停留报告页在 expect
 expect:
-  - note: 前置：已打开「深圳产业情况分析对比报告」（用例步骤 1）
+  - note: 前置：已打开对比报告（03288 发起 + 分析记录「查看报告」）
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
       const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
       const main = () => page.locator('main').first();
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
@@ -29,32 +26,91 @@ expect:
           await page.waitForTimeout(300);
         }
       };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      const pickSelect = async (ariaLabel, textRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const view = main().locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 15000 });
+        const cur = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (textRe.test(cur)) return;
+        await view.click({ timeout: 10000 });
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: textRe }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
       };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=comparison/.test(page.url()) &&
-        /tab=comparison/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
+      const pickBenchmarkCity = async (cityRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const view = main()
+          .locator('[data-testid="shenzhen-benchmark-ready-check"] .arco-cascader-view')
+          .first();
+        await expect(view).toBeVisible({ timeout: 15000 });
+        await view.click({ timeout: 10000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const options = pop.locator('.arco-cascader-option, .arco-cascader-list-item, li[role="menuitem"]');
+        const optionCount = await options.count();
+        if (/Q016|标杆清单为空/.test(popText) && optionCount === 0) {
+          throw new Error('修订 blocked 标杆级联无数据 Q016');
+        }
+        let opt = options.filter({ hasText: cityRe }).first();
+        if (!(await opt.count())) {
+          for (let col = 0; col < 4; col++) {
+            const colOpt = pop.locator('.arco-cascader-column').nth(col).locator('li, .arco-cascader-option').filter({ hasText: cityRe }).first();
+            if (await colOpt.count()) {
+              await colOpt.click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+              opt = pop.locator('.arco-cascader-option, .arco-cascader-list-item, li').filter({ hasText: cityRe }).first();
+              break;
+            }
+            const any = pop.locator('.arco-cascader-column').nth(col).locator('li, .arco-cascader-option').first();
+            if (await any.count()) await any.click({ timeout: 5000 }).catch(() => {});
+            await page.waitForTimeout(300);
+            opt = pop.locator('.arco-cascader-option, .arco-cascader-list-item, li').filter({ hasText: cityRe }).first();
+            if (await opt.count()) break;
           }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+        }
+        if (!(await opt.count())) {
+          throw new Error('修订 blocked 标杆级联无「' + String(cityRe) + '」');
+        }
+        await opt.click({ timeout: 10000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const openViewResultIfShown = async () => {
+        const btn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if (await btn.isVisible().catch(() => false)) {
+          await btn.click({ timeout: 10000 });
+          await page.waitForTimeout(1500);
+        }
+      };
+      const waitResultTitle = async () => {
+        for (let i = 0; i < 90; i++) {
+          if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return;
+          const t = await main().innerText().catch(() => '');
+          if (/分析结果已生成|不会自动跳转/.test(t)) await openViewResultIfShown();
+          if (await page.getByRole('button', { name: '查看分析结果' }).isVisible().catch(() => false)) {
+            await openViewResultIfShown();
+          }
+          await page.waitForTimeout(i < 5 ? 600 : 1200);
+        }
+        throw new Error('修订 fail 超时未见「' + RESULT_TITLE + '」');
+      };
+      const ensureCompletedVia03288 = async () => {
+        await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 15000 });
+        await pickSelect('集群', /^新一代信息技术$/);
+        await pickSelect('产业', /^人工智能与应用$/);
+        await pickBenchmarkCity(/^上海市$/);
+        await pickBenchmarkCity(/^北京市$/);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 10000 });
+        await start.click({ timeout: 15000 });
+        await openViewResultIfShown();
+        await waitResultTitle();
       };
       const waitReportReader = async () => {
         const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
@@ -64,87 +120,79 @@ expect:
         }
         throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
       };
+      const openReportFromRecords = async () => {
+        const recordsTab = page.getByRole('tab', { name: '分析记录' }).first();
+        await expect(recordsTab).toBeVisible({ timeout: 10000 });
+        await recordsTab.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        await expect(recordsTab).toHaveAttribute('aria-selected', 'true');
+        let rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '深圳产业情况分析对比' }).filter({ hasText: /已完成|成功/ });
+        let n = await rows.count();
+        if (n < 1) {
+          await recordsTab.click({ timeout: 5000 }).catch(() => {});
+          const configTab = page.getByRole('tab', { name: '深圳产业情况分析对比' }).first();
+          if (await configTab.isVisible().catch(() => false)) {
+            await configTab.click({ timeout: 10000 });
+            await page.waitForTimeout(800);
+          }
+          await ensureCompletedVia03288();
+          await recordsTab.click({ timeout: 10000 });
+          await page.waitForTimeout(1500);
+          rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '深圳产业情况分析对比' }).filter({ hasText: /已完成|成功/ });
+          n = await rows.count();
+        }
+        if (n < 1) {
+          throw new Error('修订 blocked 03288 后分析记录仍无已完成深圳对比任务');
+        }
+        let clicked = false;
+        for (let i = 0; i < Math.min(n, 12); i++) {
+          const row = rows.nth(i);
+          const reportBtn = row.getByRole('button', { name: '查看报告' }).first();
+          if (!(await reportBtn.count()) || (await reportBtn.isDisabled().catch(() => true))) continue;
+          await reportBtn.click({ timeout: 15000, force: true });
+          clicked = true;
+          for (let j = 0; j < 28; j++) {
+            await page.waitForTimeout(500);
+            if (/view=report/.test(page.url()) && (await page.locator('.system-report-reader[data-report-readonly="true"]').isVisible().catch(() => false))) break;
+          }
+          if (/view=report/.test(page.url())) break;
+          clicked = false;
+        }
+        if (!clicked) {
+          throw new Error('修订 blocked 无已完成任务可点「查看报告」');
+        }
+        await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+        const reader = await waitReportReader();
+        await expect(reader.getByText('深圳产业情况分析对比报告').first()).toBeVisible({ timeout: 8000 });
+        return reader;
+      };
       await dismissBasket();
       await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.waitForTimeout(1000);
-      if (await bodyIs404() || !onTarget()) {
-        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        if (!(await bodyIs404())) await enterViaSidebar();
-      }
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏(/industry-center/search)均 SPA404，无法执行 03323 ' + page.url());
-      }
-      await expect(page).toHaveURL(/workspace=comparison/);
-      const recordsTab = page.getByRole('tab', { name: '分析记录' }).first();
-      await expect(recordsTab).toBeVisible({ timeout: 10000 });
-      await recordsTab.click({ timeout: 10000 });
-      await page.waitForTimeout(1200);
-      await expect(recordsTab).toHaveAttribute('aria-selected', 'true');
-      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '深圳产业情况分析对比' }).filter({ hasText: /已完成|成功/ });
-      const n = await rows.count();
-      if (n < 1) {
-        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-COMPLETED-03323：分析记录无已完成深圳对比任务');
-      }
-      let clicked = false;
-      for (let i = 0; i < Math.min(n, 12); i++) {
-        const row = rows.nth(i);
-        const reportBtn = row.getByRole('button', { name: '查看报告' }).first();
-        if (!(await reportBtn.count()) || (await reportBtn.isDisabled().catch(() => true))) continue;
-        await reportBtn.click({ timeout: 15000, force: true });
-        clicked = true;
-        for (let j = 0; j < 28; j++) {
-          await page.waitForTimeout(500);
-          if (/view=report/.test(page.url()) && (await page.locator('.system-report-reader[data-report-readonly="true"]').isVisible().catch(() => false))) break;
-        }
-        if (/view=report/.test(page.url())) break;
-        clicked = false;
-      }
-      if (!clicked) {
-        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-REPORT-03323：无已完成任务可点「查看报告」');
-      }
-      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
-      const reader = await waitReportReader();
-      await expect(reader).toBeVisible({ timeout: 8000 });
-      await expect(reader.getByText('深圳产业情况分析对比报告').first()).toBeVisible({ timeout: 8000 });
+      await expect(page).toHaveURL(/workspace=comparison/, { timeout: 20000 });
+      const reader = await openReportFromRecords();
       globalThis.__func03323 = { readerReady: true, urlBeforeExport: page.url() };
+      await expect(reader).toBeVisible({ timeout: 8000 });
   - note: 1、「导出」为禁用
     assert: |-
       if (!globalThis.__func03323?.readerReady) throw new Error('前置：报告页未打开');
       const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-      const toolbar = reader.locator('.report-toolbar').first();
-      const exportBtn = toolbar.getByRole('button', { name: '导出' }).first();
+      const exportBtn = reader.locator('.report-toolbar').first().getByRole('button', { name: '导出' }).first();
       await expect(exportBtn).toBeVisible({ timeout: 8000 });
-      const disabled =
-        (await exportBtn.isDisabled().catch(() => false)) ||
-        (await exportBtn.getAttribute('aria-disabled')) === 'true' ||
-        (await exportBtn.getAttribute('disabled')) !== null;
-      if (!disabled) {
-        const locked = reader.locator('[data-report-export-locked]');
-        if (!(await locked.count()) || !(await locked.first().isVisible().catch(() => false))) {
-          throw new Error('「导出」应为禁用（付费闸门），当前可点击');
-        }
-        await expect(exportBtn).toBeDisabled({ timeout: 3000 });
-      } else {
-        await expect(exportBtn).toBeDisabled({ timeout: 3000 });
-      }
+      await expect(exportBtn).toBeDisabled({ timeout: 5000 });
       globalThis.__func03323.exportChecked = true;
   - note: 2、点击后仍停留在报告页
     assert: |-
       if (!globalThis.__func03323?.exportChecked) throw new Error('前置：导出禁用态未校验');
       const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-      const toolbar = reader.locator('.report-toolbar').first();
-      const exportBtn = toolbar.getByRole('button', { name: '导出' }).first();
+      const exportBtn = reader.locator('.report-toolbar').first().getByRole('button', { name: '导出' }).first();
       const urlBefore = globalThis.__func03323.urlBeforeExport || page.url();
       await exportBtn.click({ timeout: 5000, force: true }).catch(() => {});
       await page.waitForTimeout(800);
-      await expect(page).toHaveURL(/view=report/);
+      await expect(page).toHaveURL(/view=report/, { timeout: 8000 });
       await expect(reader).toBeVisible({ timeout: 8000 });
       await expect(reader.getByText('深圳产业情况分析对比报告').first()).toBeVisible({ timeout: 8000 });
-      if (!/\/view=report/.test(page.url())) {
+      if (!/view=report/.test(page.url())) {
         throw new Error('点击「导出」后离开了报告页，url=' + page.url() + '，前=' + urlBefore);
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  03323 专验已完成任务报告顶栏「导出」禁用（ReportExportButton 付费闸门 data-report-export-locked）且 force 点击不离开 view=report。
-  前置同 03307：分析记录已完成行「查看报告」。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001；无已完成/报告钮→ENV-CHAIN-SZ-COMPARE-NO-COMPLETED-03323 / NO-REPORT-03323。
+on_fail: 截图 + 抄 X-Trace-Id

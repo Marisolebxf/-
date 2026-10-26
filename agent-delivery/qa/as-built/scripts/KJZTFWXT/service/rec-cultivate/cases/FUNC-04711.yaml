@@ -4,22 +4,34 @@ priority: P1
 tier: B
 title: 备选-已完成行查看过程
 entry_id: svc-rec-cultivate
-preconditions:
-  - 分析记录中有已完成任务
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: wait
+    ms: 1500
   - action: click
-    assert: |-
-      await page.getByText('分析记录', { exact: true }).click();
-      const doneRow = page.locator('tr').filter({ hasText: '已完成' });
-      await doneRow.getByRole('button', { name: '查看过程' }).or(doneRow.getByRole('link', { name: '查看过程' })).first().click();
+    target: 生成培育名单
+  - action: wait
+    target: 已完成
+  - action: click
+    target: 分析记录
+    locator: |-
+      page.getByRole('tab', { name: '分析记录' })
+  - action: click
+    target: 查看过程
+    locator: |-
+      page.locator('main [data-testid="svc-rec-cultivate-records"]').getByRole('button', { name: '查看过程' }).first()
 expect:
-  - note: 过程页状态为已完成
+  - note: 1、过程页状态为已完成
     assert: |-
-      await expect(page.getByText('已完成', { exact: true }).first()).toBeVisible()
-  - note: 页面提供「查看结果」
+      const main = page.locator('main');
+      const process = main.locator('[data-testid="svc-org-analysis-process"]');
+      await expect(process).toBeVisible({ timeout: 15000 });
+      await expect(process.getByText('已完成').first()).toBeVisible();
+  - note: 2、页面提供「查看结果」
     assert: |-
-      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible()
+      const main = page.locator('main');
+      await expect(main.getByRole('button', { name: '查看结果' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

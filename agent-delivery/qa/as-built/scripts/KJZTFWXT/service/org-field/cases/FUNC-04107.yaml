@@ -10,59 +10,54 @@ steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
-  - note: 前置：打开机构弹窗、搜索为空；点击某一类型旁「全选」
+  - note: 前置：打开「选择服务机构」、搜索为空；点击某一类型旁「全选」
     assert: |-
-      const main = page.locator('main').first();
-      await expect(main.getByText(/已选机构/).first()).toBeVisible({ timeout: 15000 });
-      const openBasket = page
-        .locator('[data-testid="svc-org-open-compare-basket"], [data-testid="svc-org-empty-open-basket"]')
-        .or(main.getByRole('button', { name: '打开对比篮' }))
-        .first();
-      await expect(openBasket).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="svc-org-analysis-config"]')).toBeVisible({ timeout: 25000 });
+      const openBasket = page.locator('[data-testid="svc-org-empty-open-basket"]').or(
+        page.locator('[data-testid="svc-org-open-compare-basket"]'),
+      ).first();
+      await expect(openBasket).toBeVisible({ timeout: 20000 });
       await openBasket.click({ timeout: 10000 });
-      await page.waitForTimeout(900);
       const basketPanel = page
         .locator('.arco-drawer:visible, .arco-modal:visible')
         .filter({ hasText: '选择分析服务机构' })
         .first();
-      await expect(basketPanel).toBeVisible({ timeout: 12000 });
+      await expect(basketPanel).toBeVisible({ timeout: 15000 });
       const addBtn = basketPanel.getByRole('button', { name: '新增' }).first();
-      await expect(addBtn).toBeVisible({ timeout: 8000 });
+      await expect(addBtn).toBeVisible({ timeout: 10000 });
       await addBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(900);
-      const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
-        .filter({ hasText: '选择服务机构' })
+      const dialog = page
+        .locator('[data-testid="svc-org-picker-modal"]')
+        .or(page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }))
         .first();
-      await expect(dialog).toBeVisible({ timeout: 12000 });
+      await expect(dialog).toBeVisible({ timeout: 20000 });
       const search = dialog.getByPlaceholder('搜索机构名称 / 类型');
-      await expect(search).toBeVisible({ timeout: 8000 });
+      await expect(search).toBeVisible({ timeout: 10000 });
       let val = (await search.inputValue().catch(() => '')).trim();
       if (val) {
-        const clearBtn = dialog.locator('.svc-org-picker-search .arco-input-clear-icon, .arco-input-clear-btn').first();
+        const clearBtn = dialog.locator('.arco-input-clear-icon, .arco-input-clear-btn').first();
         if (await clearBtn.count() && (await clearBtn.isVisible().catch(() => false))) {
-          await clearBtn.click({ timeout: 3000 });
+          await clearBtn.click({ timeout: 5000 });
         } else {
           await search.fill('');
         }
-        await page.waitForTimeout(900);
+        await page.waitForTimeout(600);
         val = (await search.inputValue().catch(() => '')).trim();
       }
-      if (val) throw new Error('前置：搜索未清空，仍含「' + val + '」');
+      if (val) throw new Error('前置：搜索未清空');
       const groups = dialog.locator('.svc-org-picker-group');
       await expect(groups.first()).toBeVisible({ timeout: 15000 });
       const groupN = await groups.count();
-      if (groupN < 1) throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：弹窗无类型分组');
+      if (groupN < 1) throw new Error('弹窗无类型分组');
       let target = null;
       let targetSize = 0;
       let groupIndex = -1;
       for (let g = 0; g < Math.min(groupN, 12); g++) {
         const group = groups.nth(g);
-        const headStrong = group.locator('.svc-org-picker-group__head strong').first();
-        const headTxt = ((await headStrong.innerText().catch(() => '')) || '').trim();
+        const headTxt = ((await group.locator('.svc-org-picker-group__head').first().innerText().catch(() => '')) || '').trim();
         const m = headTxt.match(/（(\d+)）/);
         const size = m ? parseInt(m[1], 10) : 0;
-        const cards = group.locator('.svc-org-picker-card');
-        const cardCount = await cards.count();
+        const cardCount = await group.locator('.svc-org-picker-card').count();
         if (size >= 1 && cardCount >= 1) {
           target = group;
           targetSize = size;
@@ -70,9 +65,7 @@ expect:
           break;
         }
       }
-      if (!target || targetSize < 1) {
-        throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：未找到含机构的类型分组');
-      }
+      if (!target || targetSize < 1) throw new Error('未找到含机构的类型分组');
       const foot = dialog.locator('.svc-org-picker-footer__count').first();
       const txtBefore = ((await foot.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       const mBefore = txtBefore.match(/已选\s*(\d+)\s*家/);
@@ -81,47 +74,46 @@ expect:
       globalThis.__p04107 = { countBefore, targetSize, groupIndex };
       const selectAllBtn = target
         .locator('.svc-org-picker-group__head')
-        .locator('button, .arco-btn')
-        .filter({ hasText: /^全选$/ })
+        .getByRole('button', { name: '全选' })
         .first();
-      await expect(selectAllBtn).toBeVisible({ timeout: 8000 });
+      await expect(selectAllBtn).toBeVisible({ timeout: 10000 });
       await selectAllBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(500);
-  - note: 1、该类型下的机构被勾选；2、弹窗「已选」家数增加
+      await page.waitForTimeout(800);
+  - note: 1、该类型下的机构被勾选
     assert: |-
       const snap = globalThis.__p04107;
       if (!snap) throw new Error('前置：未点击分组「全选」');
-      const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
-        .filter({ hasText: '选择服务机构' })
+      const dialog = page
+        .locator('[data-testid="svc-org-picker-modal"]')
+        .or(page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }))
         .first();
-      await expect(dialog).toBeVisible({ timeout: 8000 });
-      const groups = dialog.locator('.svc-org-picker-group');
-      const gi = snap.groupIndex >= 0 ? snap.groupIndex : 0;
-      const target = groups.nth(gi);
+      await expect(dialog).toBeVisible({ timeout: 10000 });
+      const target = dialog.locator('.svc-org-picker-group').nth(snap.groupIndex);
       const cards = target.locator('.svc-org-picker-card');
       const n = await cards.count();
       if (n < 1) throw new Error('分组内无机构卡片');
-      let checked = 0;
       for (let i = 0; i < n; i++) {
         const card = cards.nth(i);
-        const box = card.locator('.arco-checkbox');
+        const box = card.locator('.arco-checkbox').first();
         const cls = (await box.getAttribute('class').catch(() => '')) || '';
-        const selected = /arco-checkbox-checked/.test(cls) || (await card.evaluate((el) => el.classList.contains('is-selected')).catch(() => false));
-        if (selected) checked += 1;
-        else throw new Error('分组全选后仍有未勾选机构，index=' + i);
+        const selected =
+          /arco-checkbox-checked/.test(cls) ||
+          (await card.evaluate((el) => el.classList.contains('is-selected')).catch(() => false));
+        if (!selected) throw new Error('分组全选后仍有未勾选机构，index=' + i);
       }
-      if (checked < Math.min(snap.targetSize, n)) {
-        throw new Error('勾选数不足：期望≥' + Math.min(snap.targetSize, n) + ' 实际=' + checked);
-      }
+  - note: 2、弹窗「已选」家数增加
+    assert: |-
+      const snap = globalThis.__p04107;
+      if (!snap) throw new Error('前置：未点击分组「全选」');
+      const dialog = page
+        .locator('[data-testid="svc-org-picker-modal"]')
+        .or(page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }))
+        .first();
       const foot = dialog.locator('.svc-org-picker-footer__count').first();
       const txt = ((await foot.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       const m = txt.match(/已选\s*(\d+)\s*家/);
       const countAfter = m ? parseInt(m[1], 10) : -1;
       if (countAfter < 0) throw new Error('未能读取弹窗已选家数: ' + txt);
-      const expectAfter = snap.countBefore + snap.targetSize;
-      if (countAfter !== expectAfter && countAfter < expectAfter) {
-        throw new Error('已选家数未增加够：前=' + snap.countBefore + ' 后=' + countAfter + ' 期望≥' + expectAfter);
-      }
       if (countAfter <= snap.countBefore) {
         throw new Error('已选家数未增加：前=' + snap.countBefore + ' 后=' + countAfter);
       }

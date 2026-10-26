@@ -1,6 +1,6 @@
 id: FUNC-04700
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04700
-priority: P1
+priority: P0
 tier: B
 title: 主流程-名单行字段
 entry_id: svc-rec-cultivate
@@ -10,24 +10,23 @@ steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
   - action: click
-    target: 生成培育名单
-  - action: wait
-    target: 800ms
+    target: 分析记录
   - action: click
     target: 查看结果
 expect:
-  - note: 行上有名次、机构名、地区与机构类型
+  - note: 1、行上有名次、机构名、地区与机构类型
     assert: |-
-      await expect(page.getByText('本土机构培育名单')).toBeVisible({ timeout: 120000 });
-      const row = page.locator('.arco-table-body tr').first();
-      await expect(row).toBeVisible({ timeout: 120000 });
-      await expect(row.locator('td').first()).toHaveText(/^\s*\d+\s*$/);
-      await expect(row.locator('td').nth(1)).toHaveText(/[\u4e00-\u9fa5]{2,}/);
-      await expect(row).toContainText(/(?:省|市|自治区|区)/);
-      await expect(row).toContainText(/(?:高校|科研院所|企业|研究机构|实验室|研究院|服务机构)/);
-  - note: 行上有环节标签与分数
+      await expect(page.locator('main').getByText('本土机构培育名单')).toBeVisible({ timeout: 60000 });
+      const row = page.locator('main [data-testid="svc-rec-cultivate-list"] .svc-rec-rank-row').first();
+      await expect(row).toBeVisible();
+      await expect(row.locator('.svc-rec-rank-badge')).toContainText('1');
+      const nameArea = row.locator('.svc-rec-rank-name');
+      await expect(nameArea.getByRole('button').or(nameArea.locator('strong'))).toContainText('有限公司');
+      await expect(nameArea.getByText('深圳市', { exact: true })).toBeVisible();
+      await expect(nameArea.getByText('企业', { exact: true })).toBeVisible();
+  - note: 2、行上有环节标签与分数
     assert: |-
-      const row = page.locator('.arco-table-body tr').first();
-      await expect(row.locator('.arco-tag').first()).toBeVisible({ timeout: 120000 });
-      await expect(row).toContainText(/\d+(\.\d+)?/);
+      const row = page.locator('main [data-testid="svc-rec-cultivate-list"] .svc-rec-rank-row').first();
+      await expect(row.locator('.svc-rec-rank-name .arco-tag').filter({ hasText: /stage-|·|上游|中游|下游/ }).first()).toBeVisible();
+      await expect(row.locator('.svc-rec-rank-actions')).toContainText(/\d+\.\d+/);
 on_fail: 截图 + 抄 X-Trace-Id

@@ -1,13 +1,10 @@
 id: FUNC-04090
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04090
-priority: P0
-tier: A
-title: 主流程-过程页对象
-story: US-SVC-ORG-01
+priority: P1
+tier: B
+title: 主流程-过程页分析对象与已选机构一致
 entry_id: svc-org-field
-preconditions:
-  - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
-  - 已进入分析配置
+preconditions: []
 locators: {}
 steps:
   - action: goto
@@ -16,32 +13,30 @@ expect:
   - note: 1、过程页「分析对象」为这 1 家机构
     assert: |-
       const main = page.locator('main').first();
-      await expect(main.getByText(/已选机构（\d+\s*家）/).first()).toBeVisible({ timeout: 15000 });
+      await expect(main.getByRole('button', { name: '开始分析', exact: true })).toBeVisible({ timeout: 15000 });
       await main.getByRole('button', { name: /^打开对比篮/ }).first().click({ timeout: 8000 });
       await page.waitForTimeout(800);
-      const picker = page
-        .locator('.arco-modal:visible, .arco-drawer:visible')
-        .filter({ hasText: '选择分析服务机构' })
-        .first();
-      await expect(picker).toBeVisible({ timeout: 12000 });
-      const rowCheck = picker.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first();
-      await expect(rowCheck).toBeVisible({ timeout: 8000 });
-      await rowCheck.click({ timeout: 5000 });
-      await page.waitForTimeout(300);
-      await picker.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
-      await page.waitForTimeout(1000);
+      await expect(page.getByText('选择分析服务机构').first()).toBeVisible({ timeout: 12000 });
+      const pickToggle = page.locator('[aria-label^="选择 "]').first();
+      if (await pickToggle.count()) {
+        await pickToggle.click({ timeout: 8000 });
+      } else {
+        await page.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first().click({ timeout: 8000 });
+      }
+      await expect(page.getByText(/已选\s*1\s*家机构/).first()).toBeVisible({ timeout: 8000 });
+      await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
       await expect(main.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 10000 });
-      const orgTag = main.locator('.svc-org-pick-tag').first();
-      await expect(orgTag).toBeVisible({ timeout: 8000 });
-      const orgLabel = ((await orgTag.innerText()) || '').trim();
-      if (!orgLabel) throw new Error('未能读取已选机构芯片文案');
-      const startBtn = main.getByRole('button', { name: '开始分析', exact: true }).first();
-      await expect(startBtn).toBeEnabled({ timeout: 8000 });
-      await startBtn.click({ timeout: 8000 });
+      const orgLabel = ((await main.locator('.svc-org-pick-tag').first().innerText()) || '').trim();
+      if (!orgLabel) throw new Error('未能读取已选机构名');
+      const start = page.getByTestId('svc-org-start-analysis');
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      await start.click({ timeout: 8000 });
       let sawObject = false;
+      let text = '';
       for (let i = 0; i < 35; i++) {
-        await page.waitForTimeout(i === 0 ? 1000 : 2000);
-        const text = ((await main.innerText().catch(() => '')) || '').trim();
+        await page.waitForTimeout(i === 0 ? 800 : 2000);
+        text = ((await main.innerText().catch(() => '')) || '').trim();
         if (/分析对象/.test(text) && text.includes(orgLabel)) {
           sawObject = true;
           break;
@@ -51,9 +46,8 @@ expect:
         }
       }
       if (!sawObject) {
-        const snap = ((await main.innerText().catch(() => '')) || '').slice(0, 400);
-        throw new Error('超时未见过程页「分析对象」含所选机构: ' + snap);
+        throw new Error('超时未见过程页「分析对象」含所选机构: ' + text.slice(0, 400));
       }
       await expect(main.getByText('分析对象').first()).toBeVisible({ timeout: 5000 });
       await expect(main.getByText(orgLabel).first()).toBeVisible({ timeout: 5000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+on_fail: 截图 + 抄 X-Trace-Id

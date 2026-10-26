@@ -15,32 +15,25 @@ expect:
   - note: 产业下拉回到「请选择产业」
     assert: |-
       const main = page.locator('main').first();
-      const objectField = main.locator('[data-testid="shenzhen-compare-context-row"] .arco-select-view, [data-testid="shenzhen-compare-context-row"] .arco-cascader-view').first();
-      await expect(objectField).toBeVisible({ timeout: 15000 });
+      const row = main.locator('[data-testid="shenzhen-compare-context-row"]');
+      await expect(row).toBeVisible({ timeout: 15000 });
+      const objectField = row.locator('.policy-analysis-filter-row__field').filter({ hasText: '分析对象' }).locator('.arco-select-view, .arco-cascader-view').first();
+      await expect(objectField).toBeVisible({ timeout: 8000 });
       await objectField.click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      const popup = page.locator('.arco-trigger-popup:visible').last();
+      let popup = page.locator('.arco-trigger-popup:visible').last();
       await expect(popup).toBeVisible({ timeout: 8000 });
-      const firstOpt = popup.locator('.arco-select-option, .arco-cascader-option').filter({ hasText: /\S/ }).first();
-      await expect(firstOpt).toBeVisible({ timeout: 8000 });
-      const pickedLabel = ((await firstOpt.innerText()) || '').trim();
-      await firstOpt.click({ timeout: 8000 });
+      const clusterOpt = popup.locator('.arco-select-option, .arco-cascader-option').filter({ hasText: '新一代信息技术' }).first();
+      await expect(clusterOpt).toBeVisible({ timeout: 8000 });
+      await clusterOpt.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      popup = page.locator('.arco-trigger-popup:visible').last();
+      const industryOpt = popup.locator('.arco-select-option, .arco-cascader-option').filter({ hasText: '人工智能与应用' }).first();
+      await expect(industryOpt).toBeVisible({ timeout: 8000 });
+      await industryOpt.click({ timeout: 8000 });
       await page.waitForTimeout(500);
-      await expect(objectField).not.toContainText('请选择产业', { timeout: 5000 });
+      await expect(row).toContainText('人工智能与应用', { timeout: 5000 });
       await main.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 });
       await page.waitForTimeout(800);
-      const bodyText = ((await main.innerText()) || '').replace(/\s+/g, ' ');
-      const hasPlaceholder =
-        /请选择产业/.test(bodyText) &&
-        !bodyText.includes(pickedLabel + pickedLabel);
-      const fieldText = ((await objectField.innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!/请选择产业/.test(fieldText) && !hasPlaceholder) {
-        throw new Error(
-          'ASBUILT-DEVIATION: 重置后分析对象未回「请选择产业」（picked=' +
-            pickedLabel +
-            ' field=' +
-            fieldText +
-            '）'
-        );
-      }
+      await expect(objectField).toContainText('请选择产业', { timeout: 5000 });
 on_fail: 截图 + 抄 X-Trace-Id

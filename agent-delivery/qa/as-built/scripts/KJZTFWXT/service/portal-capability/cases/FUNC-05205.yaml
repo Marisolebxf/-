@@ -15,18 +15,23 @@ steps:
   - action: evaluate
     note: 记录首行机构名供关闭后断言
     assert: |-
-      const row = page.locator('main .svc-portal-org__name').first();
-      await row.waitFor({ state: 'visible', timeout: 15000 });
-      const orgName = (await row.innerText()).trim();
+      await page.locator('main .svc-portal-org__name').first().waitFor({ state: 'visible', timeout: 15000 });
+      const orgName = (await page.locator('main .svc-portal-org__name').first().innerText()).trim();
       await page.evaluate((name) => { window.__FUNC05205_orgName = name; }, orgName);
   - action: click
     target: 按钮 分析画像
   - action: click
-    target: .arco-drawer-close-btn
+    target: |-
+      const drawer = page.locator('.arco-drawer-open');
+      await drawer.waitFor({ state: 'visible', timeout: 10000 });
+      await drawer.locator('.arco-drawer-close-btn').click({ timeout: 10000 });
+      if (await drawer.isVisible()) await page.keyboard.press('Escape');
+      await expect(drawer).toBeHidden({ timeout: 10000 });
 expect:
   - note: 机构画像抽屉关闭
     assert: |-
-      await expect(page.locator('.arco-drawer')).toBeHidden();
+      await expect(page.locator('.arco-drawer-open')).toHaveCount(0);
+      await expect(page.getByText('基本信息')).not.toBeVisible();
   - note: 该行机构仍在榜单中
     assert: |-
       const orgName = await page.evaluate(() => window.__FUNC05205_orgName);

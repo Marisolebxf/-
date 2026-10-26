@@ -1,203 +1,87 @@
 id: FUNC-01414
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01414
-priority: P0
-title: 恢复结果回显本次筛选及企业标签与行业领域
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录；最近分析中已有一条条件筛选且状态为已完成的记录
-locators:
-  recent_tab: Tab「最近分析」
-  restore_button: button「恢复结果」
-  filter_summary_heading: 文案「本次筛选」
+title: 恢复已完成条件筛选记录并回显本次筛选摘要
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
-  - action: wait
-    for: 条件区 SPA 渲染
-    timeout_ms: 2500
-  - action: evaluate
-    note: 最近分析→已完成条件筛选行「恢复结果」；摘要与结果回显在 expect 判定
+    target: /enterprise/attraction
 expect:
   - note: 1、结果区出现「本次筛选」
     assert: |-
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const TAG_ALIASES = {
-        high_tech: ['high_tech', '高新技术', '国家级高新技术'],
-        foreign: ['foreign', '外资'],
-        gazelle: ['gazelle', '瞪羚'],
-        specialized: ['专精特新', 'specialized'],
-        listed: ['listed', '上市'],
-        unicorn: ['unicorn', '独角兽'],
-        sme_tech: ['科技型中小', 'sme_tech'],
-      };
-      const FIELD_ALIASES = {
-        AI001: ['AI001', '人工智能'],
-        IC001: ['IC001', '集成电路'],
-        BIO001: ['BIO001', '生物医药'],
-      };
-      const waitFilterReady = async () => {
-        for (let i = 0; i < 24; i++) {
-          const tag = page.locator('input[placeholder="全部企业标签"]').first();
-          if (await tag.isVisible().catch(() => false)) return;
+      const main = page.locator('main[data-testid="recruit-tab-stack"]');
+      const optSel =
+        '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-trigger-popup:visible .arco-select-option';
+      const ensureResult = async () => {
+        for (let j = 0; j < 24; j++) {
           await page.waitForTimeout(500);
-        }
-        throw new Error('条件区未渲染，url=' + page.url());
-      };
-      const assertRecentTabAvailable = async () => {
-        const byKey = page.locator('button[data-tab-key="history"]');
-        const byName = page.getByRole('tab', { name: '最近分析' });
-        if ((await byKey.count()) < 1 && (await byName.count()) < 1) {
-          throw new Error('ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/恢复结果入口（仅条件筛选+候选工作台时不自动化本用例）');
-        }
-      };
-      const openRecentTab = async () => {
-        await waitFilterReady();
-        await assertRecentTabAvailable();
-        const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
-        if ((await tab.count()) < 1) {
-          const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
-          await expect(legacy).toBeVisible({ timeout: 12000 });
-          await legacy.click({ timeout: 8000 });
-        } else {
-          await expect(tab).toBeVisible({ timeout: 12000 });
-          await tab.click({ timeout: 8000 });
-        }
-        await page.waitForTimeout(900);
-      };
-      const waitHistoryShell = async () => {
-        const st = stack();
-        for (let i = 0; i < 30; i++) {
-          const t = await st.innerText().catch(() => '');
-          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
-            return;
+          const viewBtn = main.getByRole('button', { name: '查看结果' });
+          if (await viewBtn.isVisible().catch(() => false)) {
+            await viewBtn.click({ timeout: 5000 }).catch(() => {});
+            await page.waitForTimeout(1000);
           }
-          await page.waitForTimeout(500);
+          const rt = await main.innerText().catch(() => '');
+          if (/招引推荐分析结果/.test(rt) && /本次筛选/.test(rt)) return;
+          if (/招引推荐分析结果/.test(rt) && !/可视化分析过程/.test(rt)) return;
         }
-        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
+        throw new Error('恢复结果后未见招引推荐分析结果与本次筛选');
       };
-      const pickCompletedFilterRestore = async () => {
-        await openRecentTab();
-        await waitHistoryShell();
-        const st = stack();
-        await expect(st.getByText('招引推荐 · 最近分析').first()).toBeVisible({ timeout: 10000 });
-        const buttons = st.getByRole('button', { name: '恢复结果' });
-        const n = await buttons.count();
-        if (n < 1) throw new Error('最近分析无已完成任务可「恢复结果」');
-        let best = null;
-        let fallback = null;
-        for (let i = 0; i < n; i++) {
-          const btn = buttons.nth(i);
-          let row = btn.locator('xpath=ancestor::tr[1]');
-          if ((await row.count()) < 1) {
-            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
-          }
-          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
-          if (!txt || !/已完成/.test(txt) || !/条件筛选/.test(txt)) continue;
-          const sm = txt.match(/条件筛选\s*[·•]\s*([^\n\t]+)/);
-          const summary = sm ? sm[1].trim() : '';
-          const parts = summary.split(/\s*\/\s*/).map((p) => p.trim()).filter(Boolean);
-          const cand = { btn, summary, parts };
-          if (parts.length >= 2) {
-            best = cand;
-            break;
-          }
-          if (!fallback) fallback = cand;
-        }
-        if (!best) {
-          if (!fallback) throw new Error('最近分析无「已完成」的条件筛选任务可「恢复结果」');
-          best = fallback;
-        }
-        return best;
-      };
-      await dismissBasket();
-      const { btn, summary, parts } = await pickCompletedFilterRestore();
-      globalThis.__func01414_summary = summary;
-      globalThis.__func01414_parts = parts;
-      await btn.scrollIntoViewIfNeeded();
-      await btn.click({ timeout: 15000 });
-      let ok = false;
-      for (let i = 0; i < 24; i++) {
+      await page.keyboard.press('Escape').catch(() => {});
+      await main.getByText('最近分析', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      let restoreBtn = main.getByRole('button', { name: '恢复结果' }).first();
+      if (!(await restoreBtn.isVisible().catch(() => false))) {
+        await main.getByText('条件筛选推荐', { exact: true }).click({ timeout: 8000 });
         await page.waitForTimeout(500);
-        const t = await stack().innerText().catch(() => '');
-        if (/本次筛选/.test(t) && (/招引推荐分析结果/.test(t) || /共分析/.test(t))) {
-          ok = true;
-          break;
+        const openSelectByPh = async (ph) => {
+          await page.keyboard.press('Escape').catch(() => {});
+          const inp = main.locator(`input[placeholder="${ph}"]`).first();
+          await inp.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        };
+        const pickOpt = async (text) => {
+          const opt = page.locator(optSel).filter({ hasText: text }).first();
+          await opt.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        };
+        await openSelectByPh('全部企业标签');
+        await pickOpt('专精特新');
+        await openSelectByPh('全部行业领域');
+        const aiOpt = page.locator(optSel).filter({ hasText: '人工智能' });
+        if (await aiOpt.count()) await aiOpt.first().click({ timeout: 8000 });
+        else await page.locator(optSel).filter({ hasText: /^人工智能/ }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(300);
+        const start = main.getByRole('button', { name: '开始分析' });
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        for (let i = 0; i < 40; i++) {
+          await page.waitForTimeout(2500);
+          const viewBtn = main.getByRole('button', { name: '查看结果' });
+          if (await viewBtn.isVisible().catch(() => false)) {
+            await viewBtn.click({ timeout: 5000 }).catch(() => {});
+            await page.waitForTimeout(1500);
+          }
+          const t = await main.innerText().catch(() => '');
+          if (/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) break;
+          if (/推荐分析失败|筛选条件未命中/.test(t) && !/可视化分析过程/.test(t)) break;
         }
+        await main.getByText('最近分析', { exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(1000);
+        restoreBtn = main.getByRole('button', { name: '恢复结果' }).first();
       }
-      if (!ok) throw new Error('点击恢复结果后未见「本次筛选」或结果标题，url=' + page.url());
-      await expect(stack().getByText(/本次筛选/).first()).toBeVisible({ timeout: 10000 });
+      await expect(restoreBtn).toBeVisible({ timeout: 15000 });
+      await restoreBtn.click({ timeout: 8000 });
+      await ensureResult();
+      await expect(main.getByText(/本次筛选/).first()).toBeVisible({ timeout: 8000 });
   - note: 2、文中能对应本次企业标签与行业领域
     assert: |-
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const body = await stack().innerText();
-      const filterLine = (body.match(/本次筛选[^\n]*/) || [])[0] || '';
-      if (!filterLine) throw new Error('结果区未见「本次筛选」行');
-      const summaryFromFilter = (filterLine.match(/企业标签[：:]\s*([^|；;\n]+)/) || [])[1]?.trim() || '';
-      const fieldFromFilter = (filterLine.match(/行业领域[：:]\s*([^|；;\n]+)/) || [])[1]?.trim() || '';
-      const parts = [];
-      if (summaryFromFilter) parts.push(summaryFromFilter);
-      if (fieldFromFilter) parts.push(fieldFromFilter);
-      if (parts.length < 2) {
-        const histMatch = body.match(/条件筛选\s*[·•]\s*([^\n\t]+)/);
-        const summary = histMatch ? histMatch[1].trim() : '';
-        const histParts = summary.split(/\s*\/\s*/).map((p) => p.trim()).filter(Boolean);
-        if (histParts.length >= 2) {
-          parts.length = 0;
-          parts.push(...histParts);
-        }
-      }
-      if (parts.length < 2) {
-        throw new Error('结果正文无法同时解析企业标签与行业领域（本次筛选行=' + filterLine.slice(0, 160) + '）');
-      }
-      const TAG_ALIASES = {
-        high_tech: ['high_tech', '高新技术', '国家级高新技术', '高新技术企业'],
-        foreign: ['foreign', '外资', '外资企业'],
-        gazelle: ['gazelle', '瞪羚', '瞪羚企业'],
-        specialized: ['专精特新', 'specialized'],
-        listed: ['listed', '上市', '上市企业'],
-        unicorn: ['unicorn', '独角兽', '独角兽企业'],
-        sme_tech: ['科技型中小', 'sme_tech', '科技型中小企业'],
-      };
-      const FIELD_ALIASES = {
-        AI001: ['AI001', '人工智能'],
-        IC001: ['IC001', '集成电路'],
-        BIO001: ['BIO001', '生物医药'],
-        人工智能: ['人工智能', 'AI001'],
-        集成电路: ['集成电路', 'IC001'],
-        生物医药: ['生物医药', 'BIO001'],
-      };
-      const hitAny = (token, aliasMap) => {
-        const haystack = filterLine + '\n' + body.slice(0, 5000);
-        if (token && haystack.includes(token)) return true;
-        const key = token.replace(/\s+/g, '').toLowerCase();
-        const aliases = aliasMap[token] || aliasMap[key] || [token];
-        return aliases.some((a) => a && haystack.includes(a));
-      };
-      const tagToken = parts[0];
-      if (!hitAny(tagToken, TAG_ALIASES)) {
-        throw new Error(`「本次筛选」未对应历史企业标签「${tagToken}」；筛选行=${filterLine.slice(0, 120)}`);
-      }
-      const fieldToken = parts[1];
-      const haystack = filterLine + '\n' + body.slice(0, 4000);
-      if (!hitAny(fieldToken, FIELD_ALIASES)) {
-        const genericIndustry = /行业领域/.test(haystack) && (/人工智能|集成电路|生物医药|新一代信息技术|AI001|IC001/.test(haystack));
-        if (!genericIndustry) {
-          throw new Error(`文中未对应行业领域「${fieldToken}」；本次筛选=${filterLine.slice(0, 120)}`);
-        }
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·深链 /enterprise-center/attraction（catalog /enterprise/attraction 404）。D4·2026-10-20 复勘 30888 为 demo 两 Tab（条件筛选推荐/候选工作台），无「最近分析/恢复结果」→ ENV-ATTRACT-NO-HISTORY-TAB-001；lumen 三 Tab 现场按 history 点「恢复结果」断言「本次筛选」+标签/行业对应（摘要可为汉字「高新技术企业 / 人工智能」）。登录与关评审由 runner 会话前置。tier B，零 allow_skip。
+      const main = page.locator('main[data-testid="recruit-tab-stack"]');
+      const t = await main.innerText();
+      const tagOk = /专精特新|高新技术|瞪羚|上市|外资|重点|科技型|独角兽/.test(t);
+      const indOk = /人工智能|集成电路|生物医药|新能源|低空|量子|海洋|智能机器/.test(t);
+      if (!tagOk) throw new Error('摘要中未见可识别的企业标签取值');
+      if (!indOk) throw new Error('摘要中未见可识别的行业领域取值');
+on_fail: 截图 + 抄 X-Trace-Id

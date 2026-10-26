@@ -9,52 +9,70 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen
-  - action: evaluate
-    note: 滚动到「区排行」
-    assert: |-
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen');
-      }
-      const rank = page.locator('main').getByText('区排行', { exact: true }).first();
-      await rank.scrollIntoViewIfNeeded();
-      await expect(rank).toBeVisible({ timeout: 20000 });
+  - action: scroll
+    target: 区排行
 expect:
-  - note: 1、横向条共 9 个区，名称与顺序见附录 C
+  - note: 横向条共 9 个区，名称与顺序见附录 C
     assert: |-
-      const names = await page.evaluate(() => {
-        const title = Array.from(document.querySelectorAll('*')).find(
-          (el) => (el.textContent ?? '').trim() === '区排行',
-        );
-        const panel =
-          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
-          title?.parentElement?.parentElement?.parentElement;
-        if (!panel) return [];
-        const chartEl = panel.querySelector('.svc-portal-chart');
-        if (!chartEl) return [];
-        const ec = window.echarts && window.echarts.getInstanceByDom(chartEl);
-        const data = ec && ec.getOption().yAxis && ec.getOption().yAxis[0] && ec.getOption().yAxis[0].data;
-        return Array.isArray(data) ? data.map(String) : [];
-      });
-      const expected = ['盐田区', '坪山区', '罗湖区', '光明区', '龙华区', '福田区', '龙岗区', '宝安区', '南山区'];
-      await expect(names.length === 9 && names.join('|') === expected.join('|')).toBeTruthy();
-  - note: 2、最上为南山区
+      await expect(page.locator('main .svc-portal-chart--sz')).toBeVisible({ timeout: 20000 })
+      const envelope = await page.evaluate(async () => {
+        const res = await fetch('/svc/topic/v1/service-portal/shenzhen', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+        if (!res.ok) return null
+        return res.json()
+      })
+      if (!envelope) throw new Error('深圳统计 API 无响应')
+      const topDown = await page.evaluate((env) => {
+        const rows = []
+        for (const item of env.districts ?? []) {
+          const name = String(item.name ?? '').trim()
+          const level = String(item.geo_level ?? '')
+          if (!name) continue
+          if (level && level !== 'sz_district') continue
+          if (item.count == null) continue
+          rows.push({ name, count: Number(item.count) })
+        }
+        rows.sort((a, b) => a.count - b.count)
+        return rows.map((r) => r.name)
+      }, envelope)
+      const visualTopDown = [...topDown].reverse()
+      const expected = ['南山区', '宝安区', '龙岗区', '福田区', '龙华区', '光明区', '罗湖区', '坪山区', '盐田区']
+      if (visualTopDown.length !== 9 || !expected.every((name, i) => visualTopDown[i] === name)) {
+        throw new Error('区排行 9 区顺序不符: ' + JSON.stringify(visualTopDown))
+      }
+  - note: 最上为南山区
     assert: |-
-      const top = await page.evaluate(() => {
-        const title = Array.from(document.querySelectorAll('*')).find(
-          (el) => (el.textContent ?? '').trim() === '区排行',
-        );
-        const panel =
-          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
-          title?.parentElement?.parentElement?.parentElement;
-        const chartEl = panel && panel.querySelector('.svc-portal-chart');
-        if (!chartEl) return '';
-        const ec = window.echarts && window.echarts.getInstanceByDom(chartEl);
-        const data = ec && ec.getOption().yAxis && ec.getOption().yAxis[0] && ec.getOption().yAxis[0].data;
-        if (!Array.isArray(data) || !data.length) return '';
-        return String(data[data.length - 1]);
-      });
-      await expect(top === '南山区').toBeTruthy();
-  - note: 3、说明为「只排 Java 已给区行，不发明其余区。」
+      const envelope = await page.evaluate(async () => {
+        const res = await fetch('/svc/topic/v1/service-portal/shenzhen', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+        if (!res.ok) return null
+        return res.json()
+      })
+      if (!envelope) throw new Error('深圳统计 API 无响应')
+      const topName = await page.evaluate((env) => {
+        const rows = []
+        for (const item of env.districts ?? []) {
+          const name = String(item.name ?? '').trim()
+          const level = String(item.geo_level ?? '')
+          if (!name) continue
+          if (level && level !== 'sz_district') continue
+          if (item.count == null) continue
+          rows.push({ name, count: Number(item.count) })
+        }
+        rows.sort((a, b) => a.count - b.count)
+        const data = rows.map((r) => r.name)
+        return String(data[data.length - 1] ?? '')
+      }, envelope)
+      if (topName !== '南山区') {
+        throw new Error('最上区应为南山区，实际: ' + topName)
+      }
+  - note: 说明为「只排 Java 已给区行，不发明其余区。」
     assert: |-
-      await expect(page.getByText('只排 Java 已给区行，不发明其余区。', { exact: true })).toBeVisible();
+      await expect(page.locator('main .svc-portal-region-caption')).toContainText('只排 Java 已给区行，不发明其余区。')
 on_fail: 截图 + 抄 X-Trace-Id

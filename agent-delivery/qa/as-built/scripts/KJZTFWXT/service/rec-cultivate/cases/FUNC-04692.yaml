@@ -4,19 +4,24 @@ priority: P0
 tier: B
 title: 主流程-服务环节下拉
 entry_id: svc-rec-cultivate
-preconditions:
-  - 已打开分析配置
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: assert_visible
+    target: 分析配置
+  - action: click
+    target: 服务环节
 expect:
   - note: 选项共 11 个，名称见附录 A.2
     assert: |-
-      await expect(page.getByText('分析配置').first()).toBeVisible();
-      const select = page.locator('.arco-select').filter({ hasText: '上游·研发' }).first();
-      await select.locator('.arco-select-view').click();
+      const segSelect = page.getByTestId('svc-rec-cultivate-segments');
       const dropdown = page.locator('.arco-select-dropdown:visible');
+      if ((await dropdown.count()) === 0) {
+        await segSelect.click();
+      }
+      await expect(dropdown).toBeVisible({ timeout: 15000 });
       const options = dropdown.locator('.arco-select-option');
       await expect(options).toHaveCount(11);
       const names = [

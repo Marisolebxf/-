@@ -1,147 +1,55 @@
 id: FUNC-03312
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03312
 priority: P1
-title: 结果页「按此配置新建分析」回到配置并露出禁用的重新分析
-story: US-CHAIN-SZ-01
-entry_id: chain-sz-compare
 tier: B
-preconditions:
-  - 已打开成功结果页
-locators:
-  new_from_config: button「按此配置新建分析」
-  rerun: button「重新分析」
-  config_heading: text「分析配置」
+title: 结果页「按此配置新建分析」回到配置并露出禁用的重新分析
+entry_id: chain-sz-compare
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=comparison&tab=comparison
   - action: evaluate
-    note: 分析记录进入成功结果页→点「按此配置新建分析」；三层 expect 对齐用例预期
+    note: 分析记录进入成功结果页后点「按此配置新建分析」
 expect:
   - note: 1、回到分析配置
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
-      const RESULT_TITLE = '深圳产业情况分析对比结果';
       const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=comparison/.test(page.url()) &&
-        /tab=comparison/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
-      };
-      const enterSzCompare = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (await bodyIs404() || !onTarget()) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏(/industry-center/search)均 SPA404，无法执行 03312 ' + page.url());
-        }
-        await expect(page).toHaveURL(/workspace=comparison/);
-        await expect(page).toHaveURL(/tab=comparison/);
-      };
-      const isResultPage = async () => {
-        if (await page.getByRole('heading', { name: RESULT_TITLE, level: 1 }).isVisible().catch(() => false)) return true;
-        if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return true;
-        const t = await main().innerText().catch(() => '');
-        return new RegExp(RESULT_TITLE).test(t);
-      };
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
       const openResultFromRecords = async () => {
         const tab = page.getByRole('tab', { name: '分析记录' }).first();
         await expect(tab).toBeVisible({ timeout: 10000 });
         await tab.click({ timeout: 10000 });
-        await page.waitForTimeout(1200);
+        await page.waitForTimeout(1000);
         const rows = main()
           .locator('tbody tr, .arco-table-tr')
           .filter({ hasText: '深圳产业情况分析对比' })
           .filter({ hasText: /已完成|成功/ });
-        const n = await rows.count();
-        if (n < 1) {
-          throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03312：分析记录无已完成深圳对比任务');
-        }
-        for (let i = 0; i < Math.min(n, 12); i++) {
-          const row = rows.nth(i);
-          const view = row.getByRole('button', { name: '查看结果' }).first();
-          if (!(await view.count()) || (await view.isDisabled().catch(() => true))) continue;
-          await view.click({ timeout: 12000, force: true });
-          for (let j = 0; j < 28; j++) {
-            await page.waitForTimeout(500);
-            if (await isResultPage()) return;
-          }
-        }
-        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-RESULT-03312：无法从分析记录进入成功结果页');
+        await expect(rows.first()).toBeVisible({ timeout: 15000 });
+        const view = rows.first().getByRole('button', { name: '查看结果' }).first();
+        await expect(view).toBeEnabled({ timeout: 8000 });
+        await view.click({ timeout: 12000 });
+        await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 25000 });
       };
-      await enterSzCompare();
+      await expect(page).toHaveURL(/workspace=comparison/);
       await openResultFromRecords();
-      await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 20000 });
       const newBtn = page.getByRole('button', { name: '按此配置新建分析' }).first();
       await expect(newBtn).toBeVisible({ timeout: 10000 });
       await newBtn.click({ timeout: 12000 });
-      for (let i = 0; i < 60; i++) {
-        if (await page.getByRole('button', { name: '重新分析' }).first().isVisible().catch(() => false)) break;
-        await page.waitForTimeout(500);
-      }
-      globalThis.__func03312Clicked = true;
-      const cmpTab = page.getByRole('tab', { name: '深圳产业情况分析对比' }).first();
-      await expect(cmpTab).toBeVisible({ timeout: 10000 });
-      await expect(cmpTab).toHaveAttribute('aria-selected', 'true');
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('[data-testid="shenzhen-config-toolbar"], .diagnosis-config-toolbar').first()).toBeVisible({ timeout: 10000 });
-      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('button', { name: '重置参数' }).first()).toBeVisible({ timeout: 8000 });
-      if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) {
-        throw new Error('点击「按此配置新建分析」后仍停留在结果页标题');
-      }
-      const url = page.url();
-      if (!/view=result/.test(url) && !new RegExp(RESULT_TITLE).test(await main().innerText().catch(() => ''))) {
-        /* ok: 已离结果 view */
-      } else if (/view=result|demo_state=result/.test(url)) {
-        throw new Error('URL 仍为结果 view：' + url);
-      }
+      await page.waitForTimeout(1200);
+      await expect(main().getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 15000 });
+      await expect(main().locator('.diagnosis-config-toolbar, [data-testid="shenzhen-config-toolbar"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(RESULT_TITLE).first()).not.toBeVisible({ timeout: 8000 });
+      globalThis.__func03312Done = true;
   - note: 2、页面出现「重新分析」
     assert: |-
-      if (!globalThis.__func03312Clicked) throw new Error('前置：未执行按此配置新建分析');
-      const rerun = page.getByRole('button', { name: '重新分析' }).first();
-      await expect(rerun).toBeVisible({ timeout: 5000 });
+      if (!globalThis.__func03312Done) throw new Error('前置未完成');
+      const rerun = page.locator('main').getByRole('button', { name: '重新分析' }).first();
+      await expect(rerun).toBeVisible({ timeout: 10000 });
       globalThis.__func03312Rerun = rerun;
   - note: 3、「重新分析」为禁用
     assert: |-
-      const rerun = globalThis.__func03312Rerun || page.getByRole('button', { name: '重新分析' }).first();
-      await expect(rerun).toBeDisabled({ timeout: 5000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path=entry-seed；用例=成功结果页 IndustryResultReportEntry「按此配置新建分析」→ job.backToConfig（draft=1、清 view/task_id）+ refreshGate 露出 gateTodayTask「重新分析」；
-  标杆未回显时 canGenerate=false 故重新分析 disabled（与 03313 复制配置区分）。无已完成→ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03312。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。
+      const rerun = globalThis.__func03312Rerun || page.locator('main').getByRole('button', { name: '重新分析' }).first();
+      await expect(rerun).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

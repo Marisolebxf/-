@@ -1,8 +1,8 @@
 id: FUNC-05289
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05289
-priority: P0
+priority: P1
 tier: B
-title: 主流程-产业下拉
+title: 主流程-产业下拉 15 项
 entry_id: svc-portal-shenzhen
 preconditions: []
 locators: {}
@@ -10,22 +10,18 @@ steps:
   - action: goto
     target: /service-portal/shenzhen
   - action: evaluate
-    note: 1.展开产业下拉
-    assert: |-
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
-      }
-      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
-      const trigger = page.locator('main .svc-portal-filter .arco-cascader-view');
-      await trigger.click({ timeout: 8000 });
-      const popupCol = page.locator('.arco-cascader-column').first();
-      await expect(popupCol.locator('.arco-cascader-option').first()).toBeVisible({ timeout: 10000 });
+    note: 展开产业下拉
 expect:
   - note: 1、选项共 15 个
     assert: |-
-      const firstCol = page.locator('.arco-cascader-column').first();
-      const options = firstCol.locator('.arco-cascader-option').filter({ hasNotText: '全部产业' });
-      await expect(options).toHaveCount(15, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 20000 });
+      const cascader = page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first();
+      await expect(cascader).toBeVisible({ timeout: 15000 });
+      await cascader.click({ timeout: 15000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu:visible, .arco-cascader-popup:visible').last();
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const col = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column').first();
+      await expect(col.locator('.arco-cascader-option, .arco-cascader-list-item')).toHaveCount(15);
   - note: 2、名称与顺序见附录 A
     assert: |-
       const expected = [
@@ -45,12 +41,20 @@ expect:
         '未来空间',
         '未来健康',
       ];
-      const options = page
-        .locator('.arco-cascader-column')
-        .first()
-        .locator('.arco-cascader-option')
-        .filter({ hasNotText: '全部产业' });
+      const menu = page.locator('.svc-portal-industry-cascader-menu:visible, .arco-cascader-popup:visible').last();
+      await expect(menu).toBeVisible({ timeout: 8000 });
+      const col = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column').first();
+      const opts = col.locator('.arco-cascader-option, .arco-cascader-list-item');
+      const norm = (t) => (t || '').replace(/\s+/g, ' ').trim().replace(/（[^）]*）$/, '');
+      const texts = [];
+      for (let i = 0; i < 15; i++) {
+        texts.push(norm(await opts.nth(i).innerText()));
+      }
       for (let i = 0; i < expected.length; i++) {
-        await expect(options.nth(i)).toContainText(expected[i], { timeout: 10000 });
+        if (texts[i] !== expected[i]) {
+          throw new Error(
+            '产业下拉顺序不符：第' + (i + 1) + '项期望「' + expected[i] + '」实际「' + texts[i] + '」；全集=' + JSON.stringify(texts),
+          );
+        }
       }
 on_fail: 截图 + 抄 X-Trace-Id

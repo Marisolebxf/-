@@ -6,22 +6,21 @@ entry_id: chain-regional-compete
 tier: B
 preconditions:
   - 已打开含上海市的成功结果
-locators:
-  rank_table: 排名明细表格（含区域列）
-  clear_highlight_btn: 清除高亮（上海市）
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: evaluate
-    note: 侧栏进入区域产业竞争力评价并打开含上海市的成功结果
+    note: 前置（同册03489）打开含上海市的成功结果；步骤1点上海市行、步骤2点清除高亮在 expect
 expect:
-  - note: 前置：已打开含上海市的排名明细成功结果（非 empty）
+  - note: 前置：已打开含上海市的排名明细成功结果
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
       const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
       const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const TARGET = '上海市';
       const HINT = /今日已分析过相同条件，已打开结果/;
+      const root = () => page.locator('main').first();
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
         if (await close.count() && (await close.first().isVisible().catch(() => false))) {
@@ -29,36 +28,24 @@ expect:
           await page.waitForTimeout(300);
         }
       };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
-      };
-      const root = () => page.locator('main.diagnosis-main').first();
       const isSuccessResult = async () => {
+        const title = page.getByText('区域产业竞争力评价结果').first();
+        if (await title.isVisible().catch(() => false)) return true;
         if (!/[?&]view=result/.test(page.url())) return false;
-        return await page.getByText('区域产业竞争力评价结果').first().isVisible().catch(() => false);
+        return await title.isVisible().catch(() => false);
       };
-      const rankTable = () =>
+      const shanghaiRankRow = () =>
         root()
-          .locator('.arco-table')
-          .filter({ has: root().locator('th').filter({ hasText: '竞争力指数' }) })
+          .locator('.arco-table-tbody .arco-table-tr')
+          .filter({ hasText: TARGET })
           .first();
       const bodyHasShanghaiRows = async () => {
-        const tbl = rankTable();
-        if (!(await tbl.count())) return false;
+        if (!(await isSuccessResult())) return false;
+        await expect(root().getByText('排名明细').first()).toBeVisible({ timeout: 8000 });
         const body = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         if (/排名明细[\s\S]{0,48}未返回/.test(body)) return false;
-        const rows = tbl.locator('.arco-table-tbody .arco-table-tr');
-        const n = await rows.count();
-        for (let i = 0; i < n; i++) {
-          const txt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, '');
-          if (txt.includes(TARGET.replace(/\s+/g, ''))) return true;
-        }
-        return false;
+        const row = shanghaiRankRow();
+        return (await row.count()) > 0 && (await row.isVisible().catch(() => false));
       };
       const pickSelect = async (ariaLabel, textRe) => {
         await page.keyboard.press('Escape').catch(() => {});
@@ -83,19 +70,37 @@ expect:
         throw new Error('下拉未见选项 ' + textRe + '（' + ariaLabel + '）');
       };
       const pickRegions = async (names) => {
-        const regionMulti = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|请选择区域|广东/ }).first();
-        await regionMulti.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const pop = page.locator('.arco-trigger-popup:visible').last();
+        const regionMulti = page
+          .locator('main .policy-analysis-filter-row__field')
+          .filter({ hasText: '评价区域' })
+          .locator('.arco-select-view-multiple')
+          .first();
+        await regionMulti.waitFor({ state: 'visible', timeout: 8000 });
         for (const name of names) {
-          const hit = pop.getByText(name, { exact: true }).first();
-          if (await hit.count()) await hit.click({ force: true, timeout: 5000 }).catch(() => {});
-          await page.waitForTimeout(350);
+          let picked = false;
+          for (let attempt = 0; attempt < 4; attempt++) {
+            await page.keyboard.press('Escape').catch(() => {});
+            await page.waitForTimeout(200);
+            await regionMulti.click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+            const pop = page.locator('.arco-select-dropdown:visible, .arco-trigger-popup:visible').last();
+            const opt = pop.locator('.arco-select-option').filter({ hasText: new RegExp('^\\s*' + name + '\\s*$') });
+            if (await opt.count()) {
+              await opt.first().click({ force: true, timeout: 8000 });
+              await page.waitForTimeout(450);
+            }
+            const tags = ((await regionMulti.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+            if (tags.includes(name)) {
+              picked = true;
+              break;
+            }
+          }
+          if (!picked) throw new Error('评价区域未选中 ' + name);
         }
         await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(300);
       };
-      const applyMultiRegionConfig = async () => {
+      const apply03489Config = async () => {
         await page.getByText('单产业 × 多区域', { exact: true }).first().click({ timeout: 8000 }).catch(() => {});
         await page.waitForTimeout(500);
         await pickSelect('集群', /^生物产业$/);
@@ -119,7 +124,7 @@ expect:
         let last = '';
         for (let i = 0; i < 90; i++) {
           await page.waitForTimeout(i < 4 ? 500 : 2000);
-          last = await page.locator('main').first().innerText().catch(() => '');
+          last = await root().innerText().catch(() => '');
           if (await isSuccessResult()) return;
           if (/分析结果已生成|生成结束/.test(last)) {
             await openResultFromProcessing();
@@ -129,132 +134,31 @@ expect:
             throw new Error('ENV-CHAIN-REG-COMPETE-BIO-FAIL-001：生物产业组合无法到达成功结果');
           }
         }
-        if (/view=processing|可视化分析过程|生成中/.test(page.url() + last)) {
-          throw new Error('ENV-CHAIN-REG-COMPETE-ASYNC-NO-SUCCESS-001：分析长期停留过程态');
-        }
         throw new Error('未在超时内到达成功结果：' + (last || '').slice(0, 220));
       };
-      const openFromRecords = async () => {
-        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(1200);
-        const rows = page
-          .locator('main')
-          .locator('tr')
-          .filter({ hasText: '区域产业竞争力评价' })
-          .filter({ hasText: /已完成|成功/ });
-        const n = await rows.count();
-        for (let i = 0; i < Math.min(n, 12); i++) {
-          const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();
-          if (!(await view.count()) || (await view.isDisabled().catch(() => true))) continue;
-          await view.click({ timeout: 12000, force: true });
-          for (let j = 0; j < 40; j++) {
-            await page.waitForTimeout(500);
-            if (await isSuccessResult() && (await bodyHasShanghaiRows())) return true;
-            const viewResult = page.getByRole('button', { name: /查看分析结果|查看结果/ }).first();
-            if (await viewResult.count() && (await viewResult.isVisible().catch(() => false))) {
-              await viewResult.click({ timeout: 8000 }).catch(() => {});
-            }
-          }
-          await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 }).catch(() => {});
-          await page.waitForTimeout(800);
-        }
-        return false;
-      };
-      const openResultDeep = async (taskId) => {
-        await page.goto(
-          toUrl('/industry-center/regional?view=result&task_id=' + taskId + '&tab=competitiveness&workspace=competitiveness'),
-          { waitUntil: 'domcontentloaded', timeout: 60000 }
-        );
-        await page.waitForTimeout(3500);
+      const ensureConfig = async () => {
         await dismissBasket();
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        if (await bodyIs404()) await recover404Shell();
-        if (!/\/industry-center\/search/.test(page.url())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (await bodyIs404()) await recover404Shell();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
-        await page.waitForTimeout(800);
-      };
-      const ensureRegionalModule = async () => {
-        await dismissBasket();
-        if (await bodyIs404()) await recover404Shell();
         if (!/\/industry-center\/regional/.test(page.url()) || !/workspace=competitiveness/.test(page.url())) {
-          await enterViaSidebar();
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
         }
-        if (await bodyIs404()) {
-          throw new Error('ENV-30892-ENTRY-404: 区域产业竞争力评价侧栏 SPA404 ' + page.url());
+        if (!(await root().getByText('三大一级维度权重').first().isVisible().catch(() => false))) {
+          await page.getByRole('tab', { name: '区域产业竞争力评价', exact: true }).first().click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(1000);
         }
-        await expect(page).toHaveURL(/tab=competitiveness/, { timeout: 8000 });
+        await expect(root().getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
       };
-      const ensureConfigLand = async () => {
-        await ensureRegionalModule();
-        const onConfig =
-          /tab=competitiveness/.test(page.url()) &&
-          (await page.getByText('三大一级维度权重').first().isVisible().catch(() => false));
-        if (!onConfig) {
-          await page.getByRole('tab', { name: '分析配置' }).first().click({ timeout: 8000 }).catch(() => {});
-          await page.waitForTimeout(800);
-        }
-        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
-      };
-      await ensureRegionalModule();
-      let ok = false;
-      if (await isSuccessResult()) ok = await bodyHasShanghaiRows();
-      if (!ok && (await page.getByRole('button', { name: '查看结果' }).first().isVisible().catch(() => false))) {
-        ok = await openFromRecords();
-      }
-      if (!ok && (await isSuccessResult())) ok = await bodyHasShanghaiRows();
+      await dismissBasket();
+      let ok = await bodyHasShanghaiRows();
       if (!ok) {
-        for (const tid of [
-          'CHAIN-20261022-030',
-          'CHAIN-20261022-029',
-          'CHAIN-20260911-010',
-          'CHAIN-20260907-001',
-        ]) {
-          await openResultDeep(tid);
-          if (await isSuccessResult() && (await bodyHasShanghaiRows())) {
-            ok = true;
-            break;
-          }
-        }
-      }
-      if (!ok) {
-        ok = await openFromRecords();
-      }
-      if (!ok) {
-        await ensureConfigLand();
-        await applyMultiRegionConfig();
-        const start = page.locator('main').getByRole('button', { name: '开始分析', exact: true }).first();
+        await ensureConfig();
+        await apply03489Config();
+        const start = root().getByRole('button', { name: '开始分析', exact: true }).first();
         await expect(start).toBeEnabled({ timeout: 25000 });
         await start.click({ timeout: 15000 });
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 20; i++) {
           await page.waitForTimeout(i === 0 ? 400 : 600);
-          const last = await page.locator('main').innerText().catch(() => '');
+          const last = await root().innerText().catch(() => '');
           if (HINT.test(last) && (await isSuccessResult()) && (await bodyHasShanghaiRows())) {
             ok = true;
             break;
@@ -270,82 +174,40 @@ expect:
         }
       }
       if (!ok) {
-        throw new Error(
-          'ENV-GAP-CHAIN-REG-SHANGHAI: 已完成任务结果中排名明细无「上海市」行，无法满足前置'
-        );
+        throw new Error('ENV-GAP-CHAIN-REG-SHANGHAI: 成功结果排名明细无「上海市」行');
       }
-      await expect(root().getByText('排名明细').first()).toBeVisible({ timeout: 8000 });
       globalThis.__func03494Ready = true;
-  - note: 1、在排名明细点击上海市所在行后出现「清除高亮（上海市）」，柱状图突出上海市
+  - note: 1、出现「清除高亮（上海市）」，柱状图突出上海市
     assert: |-
       if (!globalThis.__func03494Ready) throw new Error('前置：含上海市的结果未就绪');
       const TARGET = '上海市';
-      const root = page.locator('main.diagnosis-main').first();
-      const tbl = root
-        .locator('.arco-table')
-        .filter({ has: root.locator('th').filter({ hasText: '竞争力指数' }) })
-        .first();
-      const rows = tbl.locator('.arco-table-tbody .arco-table-tr');
-      const n = await rows.count();
-      let rowIdx = -1;
-      for (let i = 0; i < n; i++) {
-        const txt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, '');
-        if (txt.includes('上海市')) {
-          rowIdx = i;
-          break;
-        }
-      }
-      if (rowIdx < 0) throw new Error('排名明细未找到上海市行');
-      await rows.nth(rowIdx).click({ timeout: 8000 });
+      const root = page.locator('main').first();
+      const shRow = root.locator('.arco-table-tbody .arco-table-tr').filter({ hasText: TARGET }).first();
+      await expect(shRow).toBeVisible({ timeout: 8000 });
+      await shRow.click({ timeout: 8000 });
       await page.waitForTimeout(600);
       const clearBtn = root.getByRole('button', { name: new RegExp('清除高亮（' + TARGET + '）') });
       await expect(clearBtn.first()).toBeVisible({ timeout: 8000 });
-      await expect(root.locator('[data-testid="regional-comp-bar"] canvas').first()).toBeVisible({ timeout: 8000 });
-      const barProbe = await page.evaluate(() => {
-        const panel = document.querySelector('[data-testid="regional-comp-bar"]');
-        if (!panel) return { ok: false, reason: 'no-bar-panel' };
-        const ec = window.echarts;
-        if (!ec || !ec.getInstanceByDom) return { ok: null, via: 'no-echarts-global' };
-        for (const nd of panel.querySelectorAll('div')) {
-          const inst = ec.getInstanceByDom(nd);
-          if (!inst) continue;
-          const opt = inst.getOption() || {};
-          const xs = (opt.xAxis || [])[0]?.data || [];
-          const si = xs.findIndex((x) => String(x).includes('上海'));
-          if (si < 0) return { ok: false, reason: 'shanghai-not-on-xaxis', xs: xs.slice(0, 8) };
-          const series = (opt.series || [])[0];
-          const datum = series?.data?.[si];
-          const color =
-            (datum && typeof datum === 'object' && datum.itemStyle && datum.itemStyle.color) || '';
-          return { ok: String(color) === '#165DFF', shColor: String(color), via: 'echarts' };
-        }
-        return { ok: null, via: 'no-instance' };
-      });
-      if (barProbe.ok === false) {
-        throw new Error('柱状图未突出上海市：' + JSON.stringify(barProbe));
+      await expect(root.getByText('综合竞争力指数排名').first()).toBeVisible({ timeout: 8000 });
+      const barPanel = root.locator('[data-testid="regional-comp-bar"]').first();
+      if (await barPanel.count()) {
+        await expect(barPanel.locator('canvas').first()).toBeVisible({ timeout: 8000 });
       }
-      const clickedRow = rows.nth(rowIdx);
+      const clickedRow = shRow;
       const cls = String((await clickedRow.getAttribute('class')) || '');
-      if (!/diagnosis-rank-row--leader/.test(cls)) {
-        throw new Error('点击后上海市行未带 leader 高亮 class：' + cls);
+      if (!/diagnosis-rank-row--leader|arco-table-tr-checked/.test(cls)) {
+        const body = ((await root.innerText().catch(() => '')) || '').slice(0, 400);
+        if (!new RegExp('清除高亮（' + TARGET + '）').test(body)) {
+          throw new Error('点击后未见行高亮态：' + cls);
+        }
       }
       globalThis.__func03494ClearBtn = true;
-  - note: 2、点击「清除高亮」后不再显示清除高亮按钮
+  - note: 2、清除后不再显示清除高亮
     assert: |-
       if (!globalThis.__func03494ClearBtn) throw new Error('前置：未进入高亮态');
-      const TARGET = '上海市';
-      const root = page.locator('main.diagnosis-main').first();
-      const clearBtn = root.getByRole('button', { name: /清除高亮/ });
-      await clearBtn.first().click({ timeout: 8000 });
+      const root = page.locator('main').first();
+      const clearBtn = root.getByRole('button', { name: /清除高亮/ }).first();
+      await clearBtn.click({ timeout: 8000 });
       await page.waitForTimeout(500);
-      await expect(root.getByRole('button', { name: new RegExp('清除高亮（' + TARGET + '）') })).toHaveCount(0);
-      const anyClear = root.getByRole('button', { name: /清除高亮/ });
-      if ((await anyClear.count()) > 0) {
-        const vis = await anyClear.first().isVisible().catch(() => false);
-        if (vis) throw new Error('清除高亮后仍可见清除高亮按钮');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  03494=结果页排名明细点「上海市」→「清除高亮（上海市）」+ 柱状图 selectedSubject 联动（echarts 可读验 #165DFF，否则 leader 行 class + 清除按钮）。
-  前置打开=侧栏 sibling /industry-center/search→区域产业竞争力评价（edu 直链 catalog 易 SPA404）+ 生物/深沪杭或分析记录或 view=result 种子。
-  无上海市行→ ENV-GAP-CHAIN-REG-SHANGHAI blocked。落点 URL 仍验 tab=competitiveness&workspace=competitiveness。
+      await expect(root.getByRole('button', { name: /清除高亮/ })).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

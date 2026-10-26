@@ -16,13 +16,16 @@ steps:
 expect:
   - note: 进入分析记录列表
     assert: |-
-      await expect(page.getByRole('heading', { name: '分析记录' }).or(page.getByText('分析记录').first())).toBeVisible({ timeout: 15000 })
+      await expect(page).toHaveURL(/[?&]tab=records/, { timeout: 15000 });
+      await expect(page.locator('main [data-testid="svc-rec-analysis-records"]')).toBeVisible({ timeout: 15000 });
   - note: 能看到任务、类型、状态、创建时间、操作列
     assert: |-
-      const header = page.locator('.arco-table-header');
-      await expect(header.getByText('任务号', { exact: true })).toBeVisible();
-      await expect(header.getByText('分析类型', { exact: true })).toBeVisible();
-      await expect(header.getByText('任务状态', { exact: true })).toBeVisible();
-      await expect(header.getByText('提交时间', { exact: true })).toBeVisible();
-      await expect(header.getByText('操作', { exact: true })).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.getByRole('columnheader', { name: '任务号' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '分析类型' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '任务状态' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '提交时间' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '操作' })).toBeVisible();
+      await expect(main.getByText(/^SVC-\d{8}-\d+$/).first()).toBeVisible();
+      await expect(main.getByRole('button', { name: '查看结果' }).first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

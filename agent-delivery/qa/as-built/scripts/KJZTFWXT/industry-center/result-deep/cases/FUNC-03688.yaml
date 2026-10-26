@@ -1,6 +1,6 @@
 id: FUNC-03688
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03688
-priority: P0
+priority: P1
 tier: B
 title: 主流程-打开结果
 entry_id: chain-result-deep
@@ -8,15 +8,17 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/results/CHAIN-20260911-019
+    target: /industry-center/results/CHAIN-20261021-002
 expect:
-  - note: 页面位于该任务所属分析功能的结果页
+  - note: 1、页面位于该任务所属分析功能的结果页
     assert: |-
-      await expect(page).toHaveURL(/task_id=CHAIN-20260911-019.*view=result/)
-  - note: 页面出现以「结果」结尾的结果区标题
+      await expect(page).toHaveURL(/view=result/)
+      await expect(page).toHaveURL(/task_id=CHAIN-20261021-002/)
+      await expect(page).not.toHaveURL(/industry-center\/results\//)
+  - note: 2、页面出现以「结果」结尾的结果区标题
     assert: |-
-      await expect(page.getByRole('heading', { name: /结果$/ })).toBeVisible()
-  - note: 页面正文中的任务编号与深链编号一致
+      await expect(page.locator('main').getByRole('heading').filter({ hasText: /结果$/ })).toBeVisible()
+  - note: 3、页面正文中的任务编号与深链编号一致
     assert: |-
-      await expect(page.getByText('任务 ID：CHAIN-20260911-019')).toBeVisible()
+      await expect(page.locator('main').getByText(/^任务 ID：CHAIN-20261021-002$/)).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

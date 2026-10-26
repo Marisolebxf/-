@@ -1,6 +1,6 @@
 id: FUNC-05103
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05103
-priority: P0
+priority: P1
 tier: B
 title: 主流程-悬停广东省排行条
 entry_id: svc-portal-region
@@ -12,15 +12,20 @@ steps:
 expect:
   - note: 提示含「广东省」
     assert: |-
-      const section = page.locator('div').filter({ hasText: '省级行政区排行' }).last();
-      await section.getByText('广东省', { exact: true }).hover();
-      const tip = page.locator('div').filter({ hasText: '广东省' }).filter({ hasText: '家' }).last();
-      await expect(tip).toBeVisible({ timeout: 15000 });
+      const main = page.getByRole('main');
+      await expect(main.getByText('省级行政区排行')).toBeVisible({ timeout: 30000 });
+      const chart = main.locator('.svc-portal-chart--region canvas').first();
+      await chart.waitFor({ state: 'visible', timeout: 30000 });
+      const box = await chart.boundingBox();
+      if (!box) throw new Error('rank chart canvas has no box');
+      await chart.hover({ position: { x: Math.round(box.width * 0.55), y: Math.round(box.height * 0.12) } });
+      await expect(page.locator('body')).toContainText('广东省', { timeout: 8000 });
   - note: 提示含家数与占比
     assert: |-
-      const tip = page.locator('div').filter({ hasText: '广东省' }).filter({ hasText: '家' }).last();
-      await expect(tip).toContainText(/\d/);
-      await expect(tip).toContainText(/家/);
-      await expect(tip).toContainText(/占比|%|％/);
-
+      const main = page.getByRole('main');
+      const chart = main.locator('.svc-portal-chart--region canvas').first();
+      const box = await chart.boundingBox();
+      if (!box) throw new Error('rank chart canvas has no box');
+      await chart.hover({ position: { x: Math.round(box.width * 0.55), y: Math.round(box.height * 0.12) } });
+      await expect(main.getByText(/广东省：[\d,]+ 家（占 [\d.]+%）/)).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

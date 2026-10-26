@@ -1,8 +1,8 @@
 id: FUNC-02995
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02995
-priority: P0
+priority: P1
 tier: B
-title: 当前未保存配置下一键均分使权重相等且合计校验通过
+title: 主流程-一键均分使已计入权重相等且合计校验通过
 entry_id: chain-regional-index
 preconditions: []
 locators: {}
@@ -10,37 +10,65 @@ steps:
   - action: goto
     target: /industry-center/regional?workspace=index&tab=index
   - action: wait
-    for: 配置即时汇总
-    timeout_ms: 2000
-  - action: click
-    target: button:一键均分
+    timeout_ms: 15000
+    for: 已计入 6 项
+  - action: evaluate
+    note: 当前未保存配置、选产业、移除一行、点一键均分（机检在 expect）
 expect:
   - note: 1、已计入各项权重变为相等
     assert: |-
-      const main = page.getByRole('main');
-      if (!(await main.getByText('当前未保存配置').first().isVisible().catch(() => false))) {
-        await main.locator('.arco-select-view').first().click({ timeout: 8000 });
-        await main.getByText('当前未保存配置', { exact: true }).click({ timeout: 8000 });
+      const main = () => page.locator('main').first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const pickByAria = async (aria, labelRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: labelRe }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ force: true, timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      await expect(main().getByText(/已计入\s*\d+\s*项/).first()).toBeVisible({ timeout: 12000 });
+      await page.keyboard.press('Escape').catch(() => {});
+      await main()
+        .locator('.arco-form-item')
+        .filter({ hasText: '选择模板' })
+        .locator('.arco-select-view')
+        .click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator(optSel).filter({ hasText: /^当前未保存配置$/ }).first().click({ force: true });
+      await expect(main().getByText('当前为未保存的自定义配置')).toBeVisible({ timeout: 8000 });
+      await pickByAria('集群', /^生物产业$/);
+      await page.locator('.arco-select-view[aria-label="产业"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opts = page.locator(optSel);
+      const bioExact = opts.filter({ hasText: /^生物$/ });
+      if (await bioExact.count()) {
+        await bioExact.first().click({ force: true });
+      } else {
+        await opts.filter({ hasText: /^生物医药$/ }).first().click({ force: true });
       }
-      await main.getByRole('button', { name: '一键均分' }).click({ timeout: 8000 });
       await page.waitForTimeout(600);
-      const wysiwyg = main.locator('[data-testid="regional-inline-wysiwyg"]');
-      await expect(wysiwyg).toBeVisible({ timeout: 8000 });
-      const weightCells = await wysiwyg.locator('table tbody tr td').allTextContents();
-      const nums = weightCells
-        .map((t) => t.trim())
-        .filter((t) => /^\d+%$/.test(t))
-        .map((t) => parseInt(t, 10));
-      if (nums.length < 1) throw new Error('汇总区无权重百分比');
-      const n = nums.length;
-      const base = Math.floor(100 / n);
-      const last = 100 - base * (n - 1);
-      const baseCount = nums.filter((v) => v === base).length;
-      const lastCount = nums.filter((v) => v === last).length;
-      if (baseCount !== n - 1 || lastCount !== 1) {
-        throw new Error(`均分后权重不符合整除均分: ${nums.join('/')}`);
+      await main()
+        .locator('[data-testid="regional-index-weight-table"] tbody tr')
+        .filter({ hasText: '政策覆盖率' })
+        .getByRole('button', { name: '移除' })
+        .click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await main().getByRole('button', { name: '一键均分' }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const rows = main().locator('[data-testid="regional-inline-wysiwyg"] tbody tr');
+      const n = await rows.count();
+      if (n < 1) throw new Error('配置即时汇总无计入指标行');
+      const weights = [];
+      for (let i = 0; i < n; i += 1) {
+        weights.push((await rows.nth(i).locator('td').nth(2).innerText()).trim());
+      }
+      if (new Set(weights).size !== 1) {
+        throw new Error('计入权重不相等: ' + weights.join(', '));
       }
   - note: 2、出现「权重合计：100% · 校验通过」
     assert: |-
-      await expect(page.getByRole('main').getByText('权重合计：100% · 校验通过')).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main').getByText('权重合计：100% · 校验通过')).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

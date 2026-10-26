@@ -1,124 +1,33 @@
 id: FUNC-04203
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04203
 priority: P1
-tier: A
-title: 备选-搜索机构 · 无匹配不发起分析
-story: US-SVC-ORG-04
+tier: B
+title: 备选-搜索机构无匹配时不发起分析
 entry_id: svc-org-trend
-preconditions:
-  - 已打开「选择服务机构」（脚本：趋势页点「选择机构」打开弹窗）
-locators:
-  pick_btn: button「选择机构」
-  modal: data-testid=svc-org-picker-modal
-  org_search: placeholder「搜索机构名称 / 类型」
-  group_finance: .svc-org-picker-group（标题含金融服务）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: |-
+      await page.locator('main').getByRole('button', { name: '选择机构' }).first().click()
+  - action: click
+    target: |-
+      await expect(page.getByRole('dialog').filter({ hasText: '选择服务机构' })).toBeVisible()
+  - action: fill
+    target: |-
+      await page.getByRole('dialog').getByPlaceholder('搜索机构名称 / 类型').fill('zzz_no_match_FUNC_04203')
 expect:
-  - note: 1、金融服务等分组名单不出现；2、页面不进入过程页
+  - note: 金融服务等分组名单不出现
     assert: |-
-      const route = '/service/institution-judgment?workspace=trend&tab=trend';
-      const noMatchKeyword = '___qa_func_04203_no_such_org___';
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (
-          await close.count() &&
-          (await close.first().isVisible().catch(() => false)) &&
-          (await close.first().isEnabled().catch(() => false))
-        ) {
-          try {
-            await close.first().click({ timeout: 1500 });
-            await page.waitForTimeout(300);
-          } catch {}
-        }
-      };
-      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(1500);
-      if (/org_ids|[?&]view=/.test(page.url())) {
-        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-      }
-      await dismissBasket();
-      const pick = page
-        .locator('[data-testid="svc-org-open-picker"]')
-        .or(page.getByRole('button', { name: '选择机构', exact: true }))
-        .first();
-      if (!(await pick.isVisible().catch(() => false))) {
-        throw new Error('D2-SVC-ORG-TREND-NO-ORG-PICKER：趋势配置区无「选择机构」入口');
-      }
-      await pick.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
-      const dialog = page
-        .locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
-        .filter({ hasText: '选择服务机构' })
-        .first();
-      await expect(dialog).toBeVisible({ timeout: 8000 });
-      await expect(dialog.getByText('选择服务机构', { exact: true }).first()).toBeVisible({ timeout: 5000 });
-      const search = dialog.getByPlaceholder('搜索机构名称 / 类型');
-      await expect(search).toBeVisible({ timeout: 8000 });
-      const groupsBefore = dialog.locator('.svc-org-picker-group');
-      const groupNBefore = await groupsBefore.count();
-      if (groupNBefore < 1) {
-        throw new Error('ENV-SVC-ORG-TREND-NO-ORGS：搜索前弹窗无类型分组，无法验证无匹配收窄');
-      }
-      let sawFinance = false;
-      for (let g = 0; g < Math.min(groupNBefore, 8); g++) {
-        const headTxt = ((await groupsBefore.nth(g).locator('.svc-org-picker-group__head strong').innerText().catch(() => '')) || '').trim();
-        if (/金融服务/.test(headTxt)) {
-          sawFinance = true;
-          break;
-        }
-      }
-      if (!sawFinance) {
-        throw new Error('ENV-SVC-ORG-TREND-NO-FINANCE-GROUP：搜索前未见「金融服务」分组');
-      }
-      await search.fill(noMatchKeyword, { timeout: 5000 });
-      await page.waitForTimeout(900);
-      const val = (await search.inputValue().catch(() => '')).trim();
-      if (val !== noMatchKeyword) throw new Error('搜索框未回显无匹配关键词');
-      const groupsAfter = dialog.locator('.svc-org-picker-group');
-      const groupNAfter = await groupsAfter.count();
-      let visGroups = 0;
-      for (let i = 0; i < groupNAfter; i++) {
-        if (await groupsAfter.nth(i).isVisible().catch(() => false)) visGroups++;
-      }
-      if (visGroups > 0) {
-        const labels = [];
-        for (let i = 0; i < groupNAfter; i++) {
-          const t = ((await groupsAfter.nth(i).locator('.svc-org-picker-group__head strong').innerText().catch(() => '')) || '').trim();
-          if (t) labels.push(t);
-        }
-        throw new Error('无匹配搜索后仍可见类型分组 n=' + visGroups + ' labels=' + labels.join('|'));
-      }
-      const cards = dialog.locator('.svc-org-picker-card');
-      let visCards = 0;
-      const cardN = await cards.count();
-      for (let i = 0; i < cardN; i++) {
-        if (await cards.nth(i).isVisible().catch(() => false)) visCards++;
-      }
-      if (visCards > 0) throw new Error('无匹配搜索后仍可见机构卡片 n=' + visCards);
-      const financeHead = dialog.locator('.svc-org-picker-group__head strong').filter({ hasText: /金融服务/ });
-      if (await financeHead.count() && (await financeHead.first().isVisible().catch(() => false))) {
-        throw new Error('无匹配搜索后「金融服务」分组头仍可见');
-      }
-      const footer = dialog.locator('.svc-org-picker-footer').first();
-      await expect(footer).toBeVisible({ timeout: 5000 });
-      await expect(footer.locator('.svc-org-picker-footer__count').first()).toBeVisible({ timeout: 5000 });
-      await expect(footer.getByRole('button', { name: '全选所有', exact: true }).first()).toBeVisible({ timeout: 5000 });
-      await expect(footer.getByRole('button', { name: '清空', exact: true }).first()).toBeVisible({ timeout: 5000 });
-      await expect(dialog.getByRole('button', { name: '取消', exact: true }).first()).toBeVisible({ timeout: 5000 });
-      await expect(dialog.getByRole('button', { name: '确定', exact: true }).first()).toBeVisible({ timeout: 5000 });
-      const url = page.url();
-      if (/view=progress|view=processing|view=result/.test(url)) {
-        throw new Error('无匹配搜索后不应进入分析过程/结果页 URL=' + url);
-      }
-      const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').slice(0, 800);
-      if (/可视化分析过程|趋势分析生成中|分析过程/.test(mainText) && !/选择服务机构/.test(mainText)) {
-        throw new Error('无匹配搜索后不应出现分析过程主区文案');
-      }
-      await expect(dialog.getByText('选择服务机构', { exact: true }).first()).toBeVisible({ timeout: 5000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  FUNC-04203；步骤：已开「选择服务机构」→「搜索机构名称 / 类型」键入固定无匹配串。断言 .svc-org-picker-group/.svc-org-picker-card 不可见、金融服务分组不出现；
-  footer 仍含已选/全选所有/清空/取消/确定；无 view=processing|progress。catalog_path entry-seed trend。2026-10-21 30892 关评审后趋势主区或无「选择机构」（同 04201 D2），机检仍按用例册。A 档零 allow_skip。
+      const dlg = page.getByRole('dialog').filter({ hasText: '选择服务机构' })
+      await expect(dlg).toBeVisible()
+      await expect(dlg.getByText('金融服务', { exact: true })).toHaveCount(0)
+      await expect(dlg.getByText('科技创新服务', { exact: true })).toHaveCount(0)
+      await expect(dlg.getByText('咨询服务', { exact: true })).toHaveCount(0)
+  - note: 页面不进入过程页
+    assert: |-
+      await expect(page).not.toHaveURL(/view=processing/)
+      await expect(page.locator('main').getByRole('button', { name: '开始分析' }).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

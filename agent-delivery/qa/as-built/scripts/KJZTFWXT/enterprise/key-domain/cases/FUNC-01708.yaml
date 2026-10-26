@@ -1,150 +1,55 @@
 id: FUNC-01708
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01708
-priority: P0
-title: 选择分析企业篮内「查看画像」打开企业画像快览
-story: US-KEYENT-01
-entry_id: ent-key-domain
+priority: P1
 tier: B
-preconditions:
-  - env-gate overall=pass
-  - 「选择分析企业」已打开（assert 自含入篮与打开对比篮/选择分析企业）
-locators:
-  picker_title: text「选择分析企业」
-  basket_section: text「篮内企业」
-  view_profile: button「查看画像」
-  profile_drawer: .arco-drawer:visible 标题含「企业画像快览」
+title: 主流程-查看画像
+entry_id: ent-key-domain
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
-  - action: wait
-    timeout_ms: 800
+    target: /enterprise/key-enterprise-analysis?workspace=domain&view=domain
   - action: evaluate
-    note: 打开选择分析企业后点篮内「查看画像」；快览抽屉在 expect 判定
+    note: 同册 01690/01688/01711 打开「选择分析企业」并点击篮内「查看画像」
 expect:
-  - note: 1、抽屉标题为「企业画像快览」；2、名称是所点企业；3、含基础摘要、竞争力摘要、风险摘要
+  - note: 1、抽屉标题为「企业画像快览」
     assert: |-
-      const routes = [
-        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
-        '/enterprise/key-enterprise-analysis?view=domain',
-        '/enterprise/key-enterprise-analysis?workspace=domain&view=domain',
-      ];
-      const closeBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
-        }
-      };
-      const origin = () => new URL(page.url()).origin;
-      const gotoRoute = async () => {
-        for (const r of routes) {
-          await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(800);
-          await closeBasket();
-          const body = (await page.locator('body').innerText().catch(() => '')) || '';
-          if (!/404 Not Found|Unexpected Application Error/.test(body)) return r;
-        }
-        throw new Error('深链均不可达');
-      };
-      const basketEntCount = async () => {
-        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
-        if (!(await dockBtn.count())) return 0;
-        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
-        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/) || dockLabel.match(/共\s*(\d+)\s*项/);
-        return entM ? parseInt(entM[1], 10) : 0;
-      };
-      const ensureBasketEnterprise = async () => {
-        if (await basketEntCount() >= 1) return;
-        await page.goto(origin() + '/development/search', { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1000);
-        await closeBasket();
-        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
-        await expect(addBtn).toBeVisible({ timeout: 12000 });
-        await addBtn.click({ timeout: 8000 });
-        await page.waitForTimeout(900);
-        if (await basketEntCount() < 1) throw new Error('入篮后对比篮仍为空');
-      };
-      const openEnterprisePicker = async () => {
-        const main = page.locator('main');
-        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
-        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
-        const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
-        const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
-        if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
-          await adjustBtn.first().click({ timeout: 8000 });
-        } else if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
-          await pickBtn.first().click({ timeout: 8000 });
-        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
-          await openBtn.first().click({ timeout: 8000 });
-        } else if (await ctaBtn.count()) {
-          await ctaBtn.first().click({ timeout: 8000 });
-        } else {
-          throw new Error('未找到选择分析企业/打开对比篮入口');
-        }
-        await page.waitForTimeout(900);
-        const pickerHint = page.getByText('从对比篮勾选本页分析对象', { exact: false }).first();
-        const pickerTitle = page.getByText('选择分析企业', { exact: true }).first();
-        if (!(await pickerHint.isVisible().catch(() => false)) && !(await pickerTitle.isVisible().catch(() => false))) {
-          throw new Error('选择分析企业弹层未打开');
-        }
-        const sels = page.locator('[aria-label^="选择 "]');
-        if (!(await sels.count())) throw new Error('选择分析企业弹层无篮内企业');
-        return sels.first();
-      };
-      await gotoRoute();
-      await closeBasket();
-      await ensureBasketEnterprise();
-      await gotoRoute();
-      await closeBasket();
-      const firstEntSel = await openEnterprisePicker();
-      const entLabel = ((await firstEntSel.getAttribute('aria-label')) || '').replace(/^选择\s*/, '').trim();
-      if (!entLabel || entLabel.length < 4) throw new Error('无法读取篮内企业名称');
-      const panel = page.locator('.system-compare-panel, [aria-label="对比篮"]').filter({ hasText: '篮内企业' }).first();
-      await expect(panel).toBeVisible({ timeout: 10000 });
-      const profileBtn = panel.getByRole('button', { name: '查看画像', exact: true }).first();
+      const main = page.locator('main');
+      const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象' });
+      const openBtn = main.getByRole('button', { name: '打开对比篮' });
+      const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业' });
+      if (await adjustBtn.isVisible().catch(() => false)) {
+        await adjustBtn.click();
+      } else if (await openBtn.isVisible().catch(() => false)) {
+        await openBtn.click();
+      } else {
+        await ctaBtn.click();
+      }
+      await expect(page.getByText('选择分析企业', { exact: true })).toBeVisible({ timeout: 15000 });
+      const entSel = page.locator('[aria-label^="选择 "]').first();
+      await expect(entSel).toBeVisible({ timeout: 12000 });
+      const entLabel = ((await entSel.getAttribute('aria-label')) || '').replace(/^选择\s*/, '').trim();
+      if (!entLabel) throw new Error('无法读取篮内企业名称');
+      await page.evaluate((name) => {
+        window.__func01708_ent = name;
+      }, entLabel);
+      const profileBtn = page.getByRole('button', { name: '查看画像', exact: true }).first();
       await expect(profileBtn).toBeVisible({ timeout: 12000 });
-      const urlBefore = page.url();
-      await profileBtn.scrollIntoViewIfNeeded().catch(() => {});
-      await profileBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(1200);
-      const shortEnt = entLabel.slice(0, Math.min(6, entLabel.length));
-      if (page.url() !== urlBefore && /\/development\/enterprise\//.test(page.url())) {
-        await expect(page).toHaveURL(/\/development\/enterprise\//);
-        const main = page.locator('main');
-        const bodyTxt = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!bodyTxt.includes(shortEnt)) {
-          throw new Error('D1 详情深链页未含所点企业「' + shortEnt + '」；url=' + page.url());
-        }
-        const bizTab = page.getByRole('tab', { name: '工商概况' });
-        if (await bizTab.count()) {
-          await expect(bizTab.first()).toBeVisible({ timeout: 12000 });
-        } else {
-          await expect(main.getByText('工商概况').first()).toBeVisible({ timeout: 12000 });
-        }
-        throw new Error(
-          'D3·用例意图=篮内「查看画像」打开「企业画像快览」抽屉（基础/竞争力/风险摘要）；现场 navigate 至详情深链 '
-            + page.url()
-            + '（已 D1 验 URL+企业名+工商概况）。同环境 search 01472 快览可绿；目标态 lumen-ui-topic ElementProfile 抽屉。',
-        );
-      }
-      const wrongDetail = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
-      if (await wrongDetail.isVisible().catch(() => false)) {
-        const hay = ((await wrongDetail.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (hay.includes(shortEnt)) {
-          throw new Error(
-            'D3·未跳深链但打开「企业详情」抽屉而非「企业画像快览」；用例快览三块摘要无法覆盖。',
-          );
-        }
-      }
+      await profileBtn.click();
       const drawer = page.locator('.arco-drawer').filter({ hasText: '企业画像快览' }).last();
       await expect(drawer).toBeVisible({ timeout: 15000 });
-      await expect(drawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业画像快览');
-      const drawerHay = ((await drawer.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!drawerHay.includes(shortEnt)) {
-        throw new Error('快览未含所点企业「' + shortEnt + '」；样本=' + drawerHay.slice(0, 280));
-      }
+      await expect(drawer.locator('.arco-drawer-title, .arco-drawer-header').first()).toContainText('企业画像快览');
+  - note: 2、名称是所点企业
+    assert: |-
+      const entLabel = await page.evaluate(() => window.__func01708_ent || '');
+      const drawer = page.locator('.arco-drawer').filter({ hasText: '企业画像快览' }).last();
+      await expect(drawer).toBeVisible();
+      const shortEnt = entLabel.slice(0, Math.min(8, entLabel.length));
+      await expect(drawer).toContainText(shortEnt);
+  - note: 3、含基础摘要、竞争力摘要、风险摘要
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ hasText: '企业画像快览' }).last();
       await expect(drawer.getByText('基础摘要', { exact: true })).toBeVisible({ timeout: 8000 });
       await expect(drawer.getByText('竞争力摘要', { exact: true })).toBeVisible({ timeout: 8000 });
       await expect(drawer.getByText('风险摘要', { exact: true })).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D3·30888（demo-ui-topic 对比篮）「查看画像」navigate 至 /development/enterprise/… 十页签详情深链，无「企业画像快览」抽屉；机检深链分支先 D1 断言 URL+企业名+工商概况再 fail（不伪造快览）。同环境 search 01472 快览可绿。目标态=lumen-ui-topic CompareItemCard+ElementProfile 抽屉。有篮空态入口「选择分析企业」。登录与关内部评审由 runner 会话前置。B 档。
+on_fail: 截图 + 抄 X-Trace-Id

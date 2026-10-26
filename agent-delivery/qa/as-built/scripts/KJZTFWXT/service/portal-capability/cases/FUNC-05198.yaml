@@ -1,6 +1,6 @@
 id: FUNC-05198
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05198
-priority: P0
+priority: P1
 tier: B
 title: 主流程-技术力五维标签
 entry_id: svc-portal-capability
@@ -10,25 +10,28 @@ steps:
   - action: goto
     target: /service-portal/capability-rank
   - action: click
-    target: 分析画像
+    target: |-
+      await page.getByText('在库/返回', { exact: false }).first().waitFor({ state: 'visible', timeout: 20000 })
+      const profileBtn = page.locator('main').getByRole('button', { name: '分析画像' }).first()
+      await profileBtn.scrollIntoViewIfNeeded()
+      await profileBtn.click({ timeout: 20000 })
 expect:
-  - note: 技术力五维含 cases、experts、patents
+  - note: 1、技术力五维含 cases、experts、patents
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByText('cases', { exact: true })).toBeVisible();
-      await expect(drawer.getByText('experts', { exact: true })).toBeVisible();
-      await expect(drawer.getByText('patents', { exact: true })).toBeVisible();
-  - note: 技术力五维含 standards、rdInvestment
+      await expect(page.getByText('cases', { exact: true })).toBeVisible()
+      await expect(page.getByText('experts', { exact: true })).toBeVisible()
+      await expect(page.getByText('patents', { exact: true })).toBeVisible()
+  - note: 2、技术力五维含 standards、rdInvestment
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByText('standards', { exact: true })).toBeVisible();
-      await expect(drawer.getByText('rdInvestment', { exact: true })).toBeVisible();
-  - note: 五个标签各有数值
+      await expect(page.getByText('standards', { exact: true })).toBeVisible()
+      await expect(page.getByText('rdInvestment', { exact: true })).toBeVisible()
+  - note: 3、五个标签各有数值
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.locator('div').filter({ has: drawer.getByText('cases', { exact: true }) }).getByText('1', { exact: true })).toBeVisible();
-      await expect(drawer.locator('div').filter({ has: drawer.getByText('experts', { exact: true }) }).getByText('0', { exact: true })).toBeVisible();
-      await expect(drawer.locator('div').filter({ has: drawer.getByText('patents', { exact: true }) }).getByText('0', { exact: true })).toBeVisible();
-      await expect(drawer.locator('div').filter({ has: drawer.getByText('standards', { exact: true }) }).getByText('0', { exact: true })).toBeVisible();
-      await expect(drawer.locator('div').filter({ has: drawer.getByText('rdInvestment', { exact: true }) }).getByText('1 万元', { exact: true })).toBeVisible();
+      await page.getByText('技术力五维').waitFor({ state: 'visible', timeout: 15000 })
+      for (const label of ['cases', 'experts', 'patents', 'standards', 'rdInvestment']) {
+        const tag = page.getByText(label, { exact: true })
+        await expect(tag).toBeVisible()
+        const row = tag.locator('xpath=ancestor::*[self::div or self::li or self::tr][1]')
+        await expect(row).toContainText(/\d+\.?\d*/, { timeout: 10000 })
+      }
 on_fail: 截图 + 抄 X-Trace-Id

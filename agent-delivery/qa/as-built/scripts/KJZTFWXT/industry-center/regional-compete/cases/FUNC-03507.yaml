@@ -1,28 +1,19 @@
 id: FUNC-03507
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03507
 priority: P0
+tier: B
 title: 开始分析后过程页五段进度与离开恢复提示
 entry_id: chain-regional-compete
-tier: B
-preconditions:
-  - 条件已配齐（生物产业/生物/深圳市+上海市+杭州市，权重 100%）
-  - 当天该条件尚未成功过
-locators:
-  start: button「开始分析」
-  cancel: button「取消任务」
-  records: button「查看分析记录」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: evaluate
-    note: 配齐条件→开始分析→过程页五段/离开提示/取消与记录按钮
+    note: 配齐条件→开始分析/重新分析→过程页断言
 expect:
-  - note: 1、过程清单共 5 段，名称见附录 A
+  - note: 1、过程清单共 5 段，名称见附录A
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
-      const PROCESS_TITLE = '区域产业竞争力评价生成中';
       const STAGES = [
         '任务提交与对象组合冻结',
         '校验三维一级权重合计',
@@ -31,87 +22,22 @@ expect:
         '结果可信性校验与版本边界标注',
       ];
       const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      const onConfig = () =>
-        /\/industry-center\/regional/.test(page.url()) &&
-        /workspace=competitiveness/.test(page.url()) &&
-        /tab=competitiveness/.test(page.url()) &&
-        !/[?&]view=processing/.test(page.url()) &&
-        !/[?&]view=result/.test(page.url());
-      const leafItem = () =>
-        page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
-      const expandChainGroup = async () => {
-        if (await leafItem().first().isVisible().catch(() => false)) return;
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-        if (await sub.count()) {
-          await sub.first().click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
-      };
-      const ensureMenuShell = async () => {
-        await dismissBasket();
-        if (await bodyIs404()) await recover404Shell();
-        if (await bodyIs404()) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (await bodyIs404()) await recover404Shell();
-        }
-      };
-      const enterViaSidebar = async () => {
-        await ensureMenuShell();
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳 ' + page.url());
-        }
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
-      };
       const pickSelectOption = async (ariaLabel, re) => {
         await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
-        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
-        await expect(view).toBeVisible({ timeout: 10000 });
+        const view = page.locator('main .arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 15000 });
         await view.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
         const pop = page.locator('.arco-trigger-popup:visible').last();
         await expect(pop).toBeVisible({ timeout: 8000 });
         const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
-        if (!(await opt.count())) {
-          throw new Error('ENV-CHAIN-REG-COMPETE-03507：选项不可用 ' + ariaLabel + ' ' + String(re));
-        }
+        await expect(opt).toBeVisible({ timeout: 8000 });
         await opt.click({ timeout: 8000 });
-        await page.waitForTimeout(700);
+        await page.waitForTimeout(400);
       };
-      const regionMulti = () =>
-        page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();
       const ensureRegions = async (names) => {
-        const view = regionMulti();
-        await expect(view).toBeVisible({ timeout: 10000 });
+        const view = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();
+        await expect(view).toBeVisible({ timeout: 15000 });
         await view.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
         const pop = page.locator('.arco-trigger-popup:visible').last();
         await expect(pop).toBeVisible({ timeout: 8000 });
         for (const name of names) {
@@ -119,114 +45,72 @@ expect:
           if (await opt.count()) {
             const selected = await opt.first().evaluate((el) => (el.className || '').includes('selected'));
             if (!selected) await opt.first().click({ force: true });
-            await page.waitForTimeout(300);
           }
         }
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(400);
       };
-      await dismissBasket();
-      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForTimeout(1200);
-      if (!onConfig() || (await bodyIs404())) await enterViaSidebar();
-      if (await bodyIs404()) {
-        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(1000);
-      }
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域竞争力侧栏与 catalog 深链均 SPA404 ' + page.url());
-      }
-      await page.getByText('三大一级维度权重').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+      const leaveHintRe = (body) =>
+        /可离开.*分析记录/.test(body) ||
+        /离开当前页面.*分析记录/.test(body) ||
+        /稍后可从分析记录恢复/.test(body) ||
+        /分析过程中可离开当前页面/.test(body);
+      await page.getByText('三大一级维度权重').first().waitFor({ state: 'visible', timeout: 20000 });
       await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(() => {});
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(500);
       await pickSelectOption('集群', /^生物产业$/);
       await pickSelectOption('产业', /^生物$/);
-      await ensureRegions(['深圳市', '上海市', '杭州市']);
+      await ensureRegions(['广东省', '深圳市', '北京市', '上海市', '杭州市']);
       await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
       const start = page.getByRole('button', { name: '开始分析' }).first();
       const rerun = page.getByRole('button', { name: '重新分析' }).first();
-      if (await start.isDisabled()) {
-        throw new Error('ENV-CHAIN-REG-COMPETE-03507：配齐后「开始分析」仍 disabled');
-      }
-      if (await rerun.isVisible().catch(() => false)) {
-        await rerun.click({ timeout: 15000 });
-      } else {
-        await start.click({ timeout: 15000 });
-      }
-      let onProcess = false;
-      for (let i = 0; i < 24; i++) {
-        await page.waitForTimeout(i < 4 ? 400 : 600);
-        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      const launch = async () => {
+        if (await rerun.isVisible().catch(() => false)) {
+          await rerun.click({ timeout: 15000 });
+        } else {
+          await start.click({ timeout: 15000 });
+        }
+      };
+      globalThis.__func03507 = { stagesOk: false, leaveHint: false, sawCancel: false };
+      await launch();
+      let body = '';
+      for (let i = 0; i < 100; i++) {
+        body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         if (/今日已分析过相同条件/.test(body)) {
-          throw new Error('ENV-CHAIN-REG-COMPETE-TODAY-DONE-03507：前置要求当天尚未成功，现场直开已有结果');
+          await launch();
+          continue;
         }
-        if (new RegExp(PROCESS_TITLE).test(body) || (/可视化分析过程/.test(body) && /生成中/.test(body))) {
-          onProcess = true;
-          break;
-        }
-        if (/view=processing/.test(page.url()) && /可视化分析过程/.test(body)) {
-          onProcess = true;
-          break;
-        }
-        if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(body) && i >= 4) {
-          throw new Error('ENV-CHAIN-REG-COMPETE-BIO-FAIL-03507：开始分析失败');
-        }
+        const cancelVis = await page.getByRole('button', { name: '取消任务' }).first().isVisible().catch(() => false);
+        if (cancelVis) globalThis.__func03507.sawCancel = true;
+        if (leaveHintRe(body)) globalThis.__func03507.leaveHint = true;
+        const stagesOk = STAGES.every((s) => body.includes(s));
+        if (stagesOk) globalThis.__func03507.stagesOk = true;
+        if (globalThis.__func03507.stagesOk && globalThis.__func03507.leaveHint && globalThis.__func03507.sawCancel) break;
+        if (globalThis.__func03507.stagesOk && i >= 12 && !globalThis.__func03507.sawCancel && /分析结果已生成/.test(body)) break;
+        await page.waitForTimeout(50);
       }
-      if (!onProcess) {
-        const snap = ((await main().innerText().catch(() => '')) || '').slice(0, 280);
-        throw new Error('未见过程页，片段: ' + snap);
+      if (!globalThis.__func03507.stagesOk) {
+        throw new Error('过程清单缺少阶段，片段: ' + body.slice(0, 240));
       }
-      globalThis.__func03507 = { onProcess: true };
-      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      for (const s of STAGES) {
-        if (!body.includes(s)) throw new Error('过程清单缺少阶段：「' + s + '」');
-      }
-      const stepTitles = page.locator('.diagnosis-process-steps .arco-steps-item-title, .arco-steps-item-title');
-      const n = await stepTitles.count();
-      if (n > 0 && n !== 5) throw new Error('过程步骤节点数=' + n + '，期望 5');
   - note: 2、提示可离开页面，稍后从分析记录恢复
     assert: |-
-      if (!globalThis.__func03507?.onProcess) throw new Error('前置：未进入过程页');
-      const main = () => page.locator('main').first();
-      let sawRunning = false;
-      for (let i = 0; i < 20; i++) {
-        const cancel = page.getByRole('button', { name: '取消任务' }).first();
-        if (await cancel.isVisible().catch(() => false)) {
-          sawRunning = true;
-          break;
-        }
-        await page.waitForTimeout(400);
+      if (!globalThis.__func03507?.stagesOk) throw new Error('前置：五段未就绪');
+      if (!globalThis.__func03507.leaveHint) {
+        throw new Error('未见离开页面并从分析记录恢复的提示（跑态窗口过短或未展示）');
       }
-      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      const leaveHint =
-        /可离开.*分析记录恢复/.test(body) ||
-        /离开当前页面.*分析记录恢复/.test(body) ||
-        /稍后可从分析记录恢复/.test(body);
-      if (!leaveHint) {
-        if (!sawRunning && /分析结果已生成/.test(body)) {
-          throw new Error('ENV-CHAIN-REG-COMPETE-PROC-FAST-03507：任务过快完成，未在跑态读到离开/恢复提示');
-        }
-        throw new Error('未见离开页面并从分析记录恢复的提示，片段: ' + body.slice(0, 200));
-      }
-      globalThis.__func03507.leaveHint = true;
   - note: 3、可见「取消任务」和「查看分析记录」
     assert: |-
       if (!globalThis.__func03507?.leaveHint) throw new Error('前置：离开提示未通过');
-      const cancel = page.getByRole('button', { name: '取消任务' }).first();
-      const records = page.getByRole('button', { name: '查看分析记录' }).first();
-      let cancelVis = false;
-      for (let i = 0; i < 16; i++) {
-        cancelVis = await cancel.isVisible().catch(() => false);
-        if (cancelVis) break;
-        await page.waitForTimeout(350);
+      const main = () => page.locator('main').first();
+      const recordsBtn = main().getByRole('button', { name: '查看分析记录' });
+      const recordsText = main().getByText('查看分析记录', { exact: true });
+      if (await recordsBtn.count()) {
+        await expect(recordsBtn.first()).toBeVisible({ timeout: 8000 });
+      } else {
+        await expect(recordsText.first()).toBeVisible({ timeout: 8000 });
       }
-      if (!cancelVis) {
-        throw new Error('ENV-CHAIN-REG-COMPETE-PROC-FAST-03507：未见「取消任务」（可能任务已结束，无法在跑态验收）');
+      if (!globalThis.__func03507.sawCancel) {
+        throw new Error('未见「取消任务」（任务可能已结束，无法在跑态验收）');
       }
-      await expect(records).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  用例=生物产业+生物+深沪杭→开始分析→过程五段（industryWorkspace REGIONAL regional_competitiveness）。
-  离开提示对齐 IndustryAnalysisProcessShell 跑态文案。当天复用→ENV-CHAIN-REG-COMPETE-TODAY-DONE-03507；
-  生物失败→ENV-CHAIN-REG-COMPETE-BIO-FAIL-03507；过快完成无法验取消→ENV-CHAIN-REG-COMPETE-PROC-FAST-03507。
-  catalog_path=entry-seed。
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,126 +1,111 @@
 id: FUNC-03506
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03506
-priority: P0
-title: 分析记录已完成任务复制配置回到分析配置
-entry_id: chain-regional-compete
+priority: P1
 tier: B
-preconditions:
-  - 分析记录中有已完成任务
+title: 从已完成记录复制配置后回到分析配置并带出原条件
+entry_id: chain-regional-compete
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: evaluate
-    note: 侧栏进入分析记录，已完成行点「复制配置」
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: wait
+    for: 评价模式文案可见
+    timeout_ms: 4500
+  - action: click
+    target: 分析记录
 expect:
   - note: 1、提示「已复制分析配置，可调整后重新分析」
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        return false;
-      };
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-        if (await sub.count()) {
-          await sub.first().click({ timeout: 8000 }).catch(() => {});
-          await page.waitForTimeout(400);
-        }
-        await expect(leafItem().first()).toBeVisible({ timeout: 12000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      const closeB = page.locator('[aria-label="关闭对比篮"]');
+      if (await closeB.count() && (await closeB.first().isVisible().catch(() => false))) {
+        await closeB.first().click().catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const ensureCompleted = async () => {
+        await page.locator('[role=tab][data-tab-key=records]').click();
+        await page.waitForTimeout(1200);
+        let copyBtn = page
+          .locator('main tr')
+          .filter({ hasText: '已完成' })
+          .getByRole('button', { name: '复制配置' })
+          .filter({ hasNot: page.locator('.arco-btn-disabled') })
+          .first();
+        if ((await copyBtn.count()) && !(await copyBtn.isDisabled().catch(() => true))) return copyBtn;
+        await page.locator('[role=tab][data-tab-key=competitiveness]').click();
         await page.waitForTimeout(800);
+        const clusterView = page.locator('main .arco-cascader-view').first();
+        await clusterView.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.locator('.arco-trigger-popup:visible').getByText('生物产业', { exact: true }).click();
+        await page.waitForTimeout(400);
+        await page.locator('.arco-trigger-popup:visible').getByText('生物', { exact: true }).click();
+        await page.waitForTimeout(600);
+        const regionField = page.locator('main .arco-form-item').filter({ hasText: '评价区域' }).locator('.arco-select-view').first();
+        await regionField.click();
+        await page.waitForTimeout(400);
+        for (const city of ['深圳市', '上海市', '杭州市']) {
+          await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: city }).first().click();
+          await page.waitForTimeout(200);
+        }
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+        await page.getByRole('button', { name: '开始分析' }).click();
+        await page.waitForTimeout(1500);
+        const viewResult = page.getByRole('button', { name: '查看分析结果' });
+        if (await viewResult.isVisible().catch(() => false)) {
+          await viewResult.click();
+          await page.waitForTimeout(1500);
+        }
+        await page.locator('[role=tab][data-tab-key=records]').click();
+        await page.waitForTimeout(1500);
+        copyBtn = page
+          .locator('main tr')
+          .filter({ hasText: '已完成' })
+          .getByRole('button', { name: '复制配置' })
+          .filter({ hasNot: page.locator('.arco-btn-disabled') })
+          .first();
+        if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) {
+          throw new Error('SKIP: 无已完成任务可复制（同册 03488 前置未造出）');
+        }
+        return copyBtn;
       };
-      await dismissBasket();
-      if (!/\/industry-center\/search/.test(page.url())) {
-        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-      }
-      if (await bodyIs404()) {
-        throw new Error('ENV-30892-ENTRY-404: 侧栏入口 SPA404 ' + page.url());
-      }
-      await enterViaSidebar();
-      if (await bodyIs404()) {
-        throw new Error('ENV-30892-ENTRY-404: 区域产业竞争力评价不可达 ' + page.url());
-      }
-      await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
-      await page.waitForTimeout(1200);
-      await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
-      const rows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr').filter({ hasText: '区域产业竞争力评价' });
-      const n = await rows.count();
-      let copied = false;
-      for (let i = 0; i < Math.min(n, 15); i++) {
-        const row = rows.nth(i);
-        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!/已完成/.test(txt)) continue;
-        const copyBtn = row.getByRole('button', { name: '复制配置' }).first();
-        if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
-        await copyBtn.click({ timeout: 15000, force: true });
-        copied = true;
-        break;
-      }
-      if (!copied) {
-        throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-COPY-03506：分析记录无可用已完成行「复制配置」');
-      }
-      await page.waitForTimeout(1000);
-      let toastOk = false;
-      const toastLoc = page.locator('.arco-message:visible, .arco-message-wrapper:visible').filter({ hasText: /已复制分析配置/ });
-      if (await toastLoc.first().isVisible({ timeout: 8000 }).catch(() => false)) {
-        toastOk = true;
-      } else if (await page.getByText(/已复制分析配置，可调整后重新分析/).first().isVisible({ timeout: 4000 }).catch(() => false)) {
-        toastOk = true;
-      }
-      if (!toastOk) {
-        throw new Error('复制配置后未见 toast「已复制分析配置，可调整后重新分析」，url=' + page.url());
-      }
-      const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
-      await expect(industryView).toBeVisible({ timeout: 10000 });
-      const industryTxt = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      const regionMulti = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|北京|杭州|广东|请选择区域/ }).first();
-      await expect(regionMulti).toBeVisible({ timeout: 8000 });
-      const regionTxt = ((await regionMulti.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      globalThis.__func03506 = { toastOk: true, industryTxt, regionTxt };
+      const copyBtn = await ensureCompleted();
+      const srcRow = copyBtn.locator('xpath=ancestor::tr[1]');
+      const rowText = ((await srcRow.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const regionOpts = ['广东省', '深圳市', '北京市', '上海市', '杭州市'];
+      const rowRegions = regionOpts.filter((c) => rowText.includes(c));
+      if (!rowRegions.length) throw new Error('已完成行未识别评价区域');
+      await page.evaluate(
+        ({ row, regions }) => {
+          sessionStorage.setItem('func03506_row', row);
+          sessionStorage.setItem('func03506_regions', JSON.stringify(regions));
+        },
+        { row: rowText, regions: rowRegions },
+      );
+      await copyBtn.click();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('已复制分析配置，可调整后重新分析').first()).toBeVisible({ timeout: 12000 });
   - note: 2、回到分析配置
     assert: |-
-      if (!globalThis.__func03506?.toastOk) throw new Error('前置：复制配置 toast 未通过');
-      const url = page.url();
-      if (/[?&]view=processing/.test(url)) {
-        throw new Error('复制后不应进入生成中 URL：' + url);
+      const cfgHeading = page.locator('main h2').filter({ hasText: '分析配置' });
+      if (!(await cfgHeading.isVisible().catch(() => false))) {
+        await page.locator('[role=tab][data-tab-key=competitiveness]').click();
+        await page.waitForTimeout(800);
       }
-      await expect(page.getByRole('tab', { name: '区域产业竞争力评价' }).first()).toHaveAttribute('aria-selected', 'true');
-      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
-      await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 10000 });
-      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main h2').filter({ hasText: '分析配置' })).toBeVisible({ timeout: 12000 });
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 });
   - note: 3、产业和评价区域与该任务一致
     assert: |-
-      const ctx = globalThis.__func03506;
-      if (!ctx?.industryTxt) throw new Error('前置：复制后未快照产业/区域');
-      const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
-      const industryTxt = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      if (!industryTxt || /请选择产业|未选产业/.test(industryTxt)) {
-        throw new Error('产业未按任务回显：「' + industryTxt + '」');
+      const rowText = await page.evaluate(() => sessionStorage.getItem('func03506_row') || '');
+      const regions = JSON.parse((await page.evaluate(() => sessionStorage.getItem('func03506_regions'))) || '[]');
+      if (!regions.length) throw new Error('未缓存复制行区域');
+      const mainText = ((await page.locator('main.diagnosis-main').innerText()).trim() || '').replace(/\s+/g, ' ');
+      const objectBlock = page.locator('main.diagnosis-main .policy-analysis-filter-row').first();
+      const objectText = ((await objectBlock.innerText().catch(() => mainText)) || mainText).replace(/\s+/g, ' ');
+      if (/生物/.test(rowText) && !/生物/.test(objectText)) throw new Error('产业未与任务行一致（生物）');
+      if (/人工智能/.test(rowText) && !/人工智能/.test(objectText)) throw new Error('产业未与任务行一致');
+      for (const city of regions) {
+        if (!objectText.includes(city)) throw new Error('评价区域未回显「' + city + '」（与复制行不一致）');
       }
-      if (industryTxt !== ctx.industryTxt && !industryTxt.includes(ctx.industryTxt) && !ctx.industryTxt.includes(industryTxt)) {
-        throw new Error('产业与复制后快照不一致：当前「' + industryTxt + '」快照「' + ctx.industryTxt + '」');
-      }
-      const regionMulti = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|北京|杭州|广东|请选择区域/ }).first();
-      const regionTxt = ((await regionMulti.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      const snapTokens = (ctx.regionTxt || '').split(/\s+/).filter((t) => t.length >= 2);
-      for (const token of snapTokens.slice(0, 6)) {
-        if (!regionTxt.includes(token) && !regionTxt.includes(token.replace('市', ''))) {
-          throw new Error('评价区域与复制后快照不一致，缺少「' + token + '」：当前「' + regionTxt + '」');
-        }
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
+on_fail: 截图 + 抄 X-Trace-Id

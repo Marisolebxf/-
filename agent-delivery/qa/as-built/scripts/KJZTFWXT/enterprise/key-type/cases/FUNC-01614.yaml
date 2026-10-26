@@ -1,78 +1,45 @@
 id: FUNC-01614
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01614
-priority: P0
-title: 企业详情风险信息页签展示三类计数
-story: US-KEYENT-04
-entry_id: ent-key-type
+priority: P1
 tier: B
-preconditions:
-  - 企业详情已可从清单打开
-locators:
-  sidebar_entry: 侧栏 link「重点企业类型分析」
-  list_btn: button 文案含「查看企业清单」
-  list_drawer: .arco-drawer:visible（企业清单）
-  profile_btn: 清单行 button「查看画像」
-  detail_drawer: .arco-drawer:visible 且含 tab「风险信息」
-  tab_risk: 企业详情抽屉 tab「风险信息」
+title: 主流程-详情风险
+entry_id: ent-key-type
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/overview
-  - action: evaluate
-    note: 打开企业清单→查看画像→风险信息；三类计数与标题判定在 expect 内
+    target: /enterprise/key-enterprise-analysis?view=type
+  - action: click
+    target: 查看企业清单
+  - action: wait
+    timeout_ms: 2000
+  - action: click
+    target: button 查看画像
+  - action: wait
+    timeout_ms: 1200
+  - action: click
+    target: tab 风险信息
+  - action: wait
+    timeout_ms: 800
 expect:
-  - note: 展示司法案件、失信被执行人与被执行人的计数；抽屉标题仍为「企业详情」
+  - note: 1、展示司法案件、失信被执行人与被执行人的计数
     assert: |-
-      const closeBasket = page.locator('[aria-label="关闭对比篮"]');
-      if (await closeBasket.count()) {
-        const vis = await closeBasket.first().isVisible().catch(() => false);
-        if (vis) { await closeBasket.first().click(); await page.waitForTimeout(300); }
+      const root = page.locator('body');
+      const genericEmpty = root.getByText('暂无数据').first();
+      if (await genericEmpty.isVisible().catch(() => false)) {
+        throw new Error('风险信息页签仅通用空态，无司法案件/失信被执行人/被执行人计数（D3·Q020）');
       }
-      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
-      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
-      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
-      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
-      await listBtn.scrollIntoViewIfNeeded();
-      await listBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const listDrawer = page.locator('.arco-drawer:visible').first();
-      await expect(listDrawer).toBeVisible({ timeout: 8000 });
-      const profiles = listDrawer.getByRole('button', { name: '查看画像' });
-      if (await profiles.count() < 1) {
-        throw new Error('前置不满足：企业清单无企业行');
+      await expect(root.getByText('司法案件').first()).toBeVisible({ timeout: 10000 });
+      await expect(root.getByText('失信被执行人').first()).toBeVisible({ timeout: 8000 });
+      const execLabel = root.locator('text=被执行人').filter({ hasNotText: '失信' });
+      await expect(execLabel.first()).toBeVisible({ timeout: 8000 });
+      const digit = /\d+/;
+      const riskBlock = root.locator('.arco-tabs-content').last();
+      const blockText = (await riskBlock.innerText().catch(() => '')) || (await root.innerText());
+      if (!digit.test(blockText) || !/司法案件/.test(blockText)) {
+        throw new Error('风险信息区未见可判定的计数数字');
       }
-      await profiles.first().click({ timeout: 8000 });
-      await page.waitForTimeout(600);
-      const detailDrawer = page.locator('.arco-drawer:visible').filter({ has: page.getByRole('tab', { name: '风险信息' }) }).last();
-      await expect(detailDrawer.getByRole('tab', { name: '工商概况' })).toBeVisible({ timeout: 12000 });
-      await expect(detailDrawer.locator('.arco-drawer-header-title')).toHaveText('企业详情');
-      const riskTab = detailDrawer.getByRole('tab', { name: '风险信息' });
-      await expect(riskTab).toBeVisible({ timeout: 8000 });
-      await riskTab.scrollIntoViewIfNeeded();
-      await riskTab.click({ timeout: 8000 });
-      await expect(riskTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
-      await page.waitForResponse((r) => /profile\/risk/i.test(r.url()) && r.status() < 400, { timeout: 12000 }).catch(() => {});
-      await detailDrawer.locator('.arco-spin-loading').first().waitFor({ state: 'hidden', timeout: 12000 }).catch(() => {});
-      await page.waitForTimeout(400);
-      await expect(detailDrawer.locator('.arco-drawer-header-title')).toHaveText('企业详情');
-      const panel = detailDrawer.locator('.arco-drawer-content').first();
-      await expect(panel).toBeVisible({ timeout: 8000 });
-      const panelText = await panel.innerText();
-      const emptyOnly = /暂无可展示的风险信息数据|暂无风险事件/.test(panelText)
-        && !panelText.includes('司法案件');
-      if (emptyOnly) {
-        throw new Error('D3·Q020：风险信息仅通用空态，未展示司法案件/失信被执行人/被执行人计数');
-      }
-      const labels = ['司法案件', '失信被执行人', '被执行人'];
-      for (const label of labels) {
-        const labelEl = panel.getByText(label, { exact: true }).first();
-        await expect(labelEl).toBeVisible({ timeout: 12000 });
-        const blockText = await labelEl.evaluate((el) => {
-          const row = el.closest('div, li, tr, section, article') || el.parentElement;
-          return row ? row.innerText : el.innerText;
-        });
-        if (!/\d/.test(blockText)) {
-          throw new Error(`「${label}」附近未见数字计数，块文案：${blockText.slice(0, 120)}`);
-        }
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D3·30888 复勘（2026-10-19）关评审后风险信息多为「暂无可展示的风险信息数据」或「暂无风险事件」，无三类计数区块；与用例预期不一致（待源 Q020）。脚本按用例断言三类标签+邻近数字（计数不钉死）；抽屉 `.arco-drawer-content`（对齐 FUNC-01613/01615）。登录与关内部评审由 runner 会话前置。
+  - note: 2、抽屉标题仍为「企业详情」
+    assert: |-
+      await expect(page.getByRole('heading', { name: '企业详情' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id

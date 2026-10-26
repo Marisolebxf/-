@@ -11,18 +11,37 @@ steps:
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
   - action: click
     target: 分析记录
+  - action: evaluate
+    target: |-
+      const row = page.locator('main .arco-table tbody tr').filter({ hasText: '已完成' }).first();
+      await expect(row).toBeVisible({ timeout: 15000 });
+      const taskCell = row.locator('td').first();
+      globalThis.__func04803Task = ((await taskCell.innerText()) || '').trim();
+      if (!globalThis.__func04803Task) throw new Error('未找到已完成任务行');
   - action: click
     target: 查看结果
+  - action: evaluate
+    target: |-
+      await expect(page.locator('[data-testid="svc-eco-sz-result-bar"]')).toBeVisible({ timeout: 15000 });
   - action: click
     target: 返回配置
+  - action: click
+    target: 分析记录
 expect:
-  - note: 回到分析记录列表
+  - note: 1、回到分析记录列表
     assert: |-
-      await expect(page.getByText('重置筛选')).toBeVisible();
-  - note: 该任务行仍在
+      await expect(page.locator('main .arco-table thead').getByText('任务号')).toBeVisible();
+      await expect(page.locator('main .arco-table thead').getByText('操作')).toBeVisible();
+      await expect(page.locator('main .arco-table tbody').getByText('已完成').first()).toBeVisible();
+  - note: 2、该任务行仍在
     assert: |-
-      await expect(page.locator('.arco-table-body tr').first()).toBeVisible();
-  - note: 该行仍有「查看结果」
+      const name = globalThis.__func04803Task || '';
+      const row = page.locator('main .arco-table tbody tr').filter({ hasText: name }).first();
+      await expect(row).toBeVisible();
+      await expect(row.getByText('已完成')).toBeVisible();
+  - note: 3、该行仍有「查看结果」
     assert: |-
-      await expect(page.getByRole('button', { name: '查看结果' }).first()).toBeVisible();
+      const name = globalThis.__func04803Task || '';
+      const row = page.locator('main .arco-table tbody tr').filter({ hasText: name }).first();
+      await expect(row.getByRole('button', { name: '查看结果' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

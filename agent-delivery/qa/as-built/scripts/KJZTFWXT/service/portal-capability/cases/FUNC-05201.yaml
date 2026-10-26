@@ -9,27 +9,40 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
-  - action: click
+  - action: evaluate
+    note: 选择产业「生物」
     assert: |-
-      const main = page.locator('main');
-      await main.locator('.arco-cascader-view').click();
-      await page.locator('.arco-cascader-option').filter({ hasText: /^生物$/ }).first().click();
-  - action: click
+      await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const cascader = page.getByLabel('产业集群与产业筛选');
+      await cascader.click({ timeout: 15000 });
+      await page.waitForTimeout(400);
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await menu.locator('.arco-cascader-column').first().getByText('生物', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+  - action: evaluate
+    note: 选择产业链「生物医药与生命健康」
     assert: |-
-      const main = page.locator('main');
-      await main.locator('.arco-select-view').click();
-      await page.locator('.arco-select-option').getByText('生物医药与生命健康').click();
-  - action: click
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await menu.locator('.arco-cascader-column').nth(1).getByText('生物医药与生命健康', { exact: true }).click({ timeout: 8000 });
+      await expect(page.locator('.svc-portal-section-title').filter({ hasText: '生物医药与生命健康' }).first()).toBeVisible({ timeout: 15000 });
+  - action: evaluate
+    note: 改选产业「海洋」
     assert: |-
-      const main = page.locator('main');
-      await main.locator('.arco-cascader-view').click();
-      await page.locator('.arco-cascader-option').filter({ hasText: /^海洋$/ }).first().click();
+      await page.getByLabel('产业集群与产业筛选').click({ timeout: 15000 });
+      await page.waitForTimeout(400);
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await menu.locator('.arco-cascader-column').first().getByText('海洋', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
 expect:
-  - note: 已选产业链名称被清空
+  - note: 1、已选产业链名称被清空
     assert: |-
-      const main = page.locator('main');
-      await expect(main.getByText('生物医药与生命健康')).toHaveCount(0);
-  - note: 榜单标题为「海洋 · 技术力 Top30」
+      const cascader = page.getByLabel('产业集群与产业筛选');
+      await expect(cascader).toBeVisible({ timeout: 8000 });
+      const raw = ((await cascader.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (raw.includes('生物医药与生命健康')) {
+        throw new Error('产业链未清空，级联仍含：' + raw);
+      }
+  - note: 2、榜单标题为「海洋 · 技术力 Top30」
     assert: |-
-      await expect(page.locator('main').getByText('海洋 · 技术力 Top30')).toBeVisible();
+      await expect(page.locator('.svc-portal-section-title').filter({ hasText: '海洋 · 技术力 Top30' }).first()).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

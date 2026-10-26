@@ -1,6 +1,6 @@
 id: FUNC-01267
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01267
-priority: P0
+priority: P1
 tier: B
 title: 主流程-维度说明文案与演示口径声明
 entry_id: svc-rec-cultivate
@@ -10,23 +10,35 @@ steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
 expect:
-  - note: 四条说明文案与附录 A 一致（现有规模）
+  - note: 1、四条说明文案与附录 A 一致
     assert: |-
-      await page.locator('[data-testid="svc-rec-cultivate-fixed-weights"]').getByText('现有规模').hover();
-      await expect(page.locator('.arco-tooltip-content')).toContainText('核心专家/研发投入体量归一得分（演示口径）');
-  - note: 四条说明文案与附录 A 一致（技术创新能力）
+      const main = page.locator('main');
+      const model = main.getByTestId('svc-rec-cultivate-model');
+      await expect(model).toBeVisible();
+      const dims = [
+        ['现有规模', /体量归一得分|核心专家\/研发投入体量归一得分（演示口径）/],
+        ['技术创新能力', /专利|标准产出归一得分（演示口径）/],
+        ['服务成效', /服务案例归一得分（演示口径）/],
+        ['市场缺口', /稀缺度（演示口径）|供给稀缺度/],
+      ];
+      for (const [name, pattern] of dims) {
+        const tag = model.locator('.svc-rec-fixed-weight-tag').filter({ hasText: name });
+        await expect(tag).toBeVisible();
+        await tag.hover();
+        const tip = page.getByRole('tooltip');
+        await expect(tip).toBeVisible();
+        await expect(tip).toContainText(pattern);
+      }
+  - note: 2、底部声明完整可读、与附录 A 一致
     assert: |-
-      await page.locator('[data-testid="svc-rec-cultivate-fixed-weights"]').getByText('技术创新能力').hover();
-      await expect(page.locator('.arco-tooltip-content')).toContainText('专利/标准产出归一得分（演示口径）');
-  - note: 四条说明文案与附录 A 一致（服务成效）
-    assert: |-
-      await page.locator('[data-testid="svc-rec-cultivate-fixed-weights"]').getByText('服务成效').hover();
-      await expect(page.locator('.arco-tooltip-content')).toContainText('成功服务案例归一得分（演示口径）');
-  - note: 四条说明文案与附录 A 一致（市场缺口）
-    assert: |-
-      await page.locator('[data-testid="svc-rec-cultivate-fixed-weights"]').getByText('市场缺口').hover();
-      await expect(page.locator('.arco-tooltip-content')).toContainText('目标领域供给稀缺度（演示口径）');
-  - note: 底部声明完整可读、与附录 A 一致
-    assert: |-
-      await expect(page.getByText('演示模型口径：综合分由 Java rec-list 上送，前端不按四维度权重重算排名。页面权重仅演示配置，未改名单分数。默认 25/30/25/20。权重与筛选不进入分析指纹，也不写入创建任务参数。')).toBeVisible();
+      const main = page.locator('main');
+      const config = main.getByTestId('svc-rec-cultivate-config');
+      const model = main.getByTestId('svc-rec-cultivate-model');
+      await expect(model).toContainText('四维度与招标一致（现有规模/技术创新能力/服务成效/市场缺口）');
+      await expect(config).toContainText('权重参数仅演示配置，不改签发分数');
+      const weights = model.getByTestId('svc-rec-cultivate-fixed-weights');
+      await expect(weights).toContainText('现有规模 25%');
+      await expect(weights).toContainText('技术创新能力 30%');
+      await expect(weights).toContainText('服务成效 25%');
+      await expect(weights).toContainText('市场缺口 20%');
 on_fail: 截图 + 抄 X-Trace-Id

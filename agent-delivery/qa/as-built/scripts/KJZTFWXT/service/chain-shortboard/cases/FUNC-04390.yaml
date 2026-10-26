@@ -1,16 +1,11 @@
 id: FUNC-04390
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04390
-priority: P0
-tier: A
-title: 结果态-全周期区块诚实空态（无环节行）
-story: US-SVC-ECO-02
+priority: P1
+tier: B
+title: 主流程-全周期链路无环节行提示
 entry_id: svc-chain-shortboard
-preconditions:
-  - 已按 FUNC-04388 进入「新一代信息技术」结果页并停留
-locators:
-  board: '[data-testid="svc-eco-shortboard-board"]'
-  chain_no_stages: '[data-testid="svc-eco-shortboard-no-stages"]'
-  chain_section: section.ent-section-panel（标题「全周期服务链路」）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=chain&tab=chain
@@ -35,13 +30,25 @@ expect:
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(200);
       };
+      const pickFlatIt = async () => {
+        const sel = page.locator('main .industry-catalog-select').first();
+        await expect(sel).toBeVisible({ timeout: 8000 });
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page
+          .locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option')
+          .filter({ hasText: /^新一代信息技术$/ })
+          .first()
+          .click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
       const openIndustry = async () => {
         const flat = page
           .locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select')
           .first();
         if (await flat.isVisible().catch(() => false)) {
           await flat.click({ timeout: 8000 });
-          return;
+          return 'flat';
         }
         const cascader = page
           .locator(
@@ -50,7 +57,7 @@ expect:
           .first();
         if (await cascader.isVisible().catch(() => false)) {
           await cascader.click({ timeout: 8000 });
-          return;
+          return 'cascader';
         }
         const cfg = page.locator('main').filter({ hasText: '分析配置' }).first();
         const near = cfg.getByText(/产业领域/).first();
@@ -59,17 +66,21 @@ expect:
           const trigger = row.locator('.arco-select-view, .arco-cascader-view, .sci-arco-cascader').first();
           if (await trigger.isVisible().catch(() => false)) {
             await trigger.click({ timeout: 8000 });
-            return;
+            return 'cascader';
           }
         }
         const ph = page.getByText('选择产业集群', { exact: true }).first();
         if (await ph.isVisible().catch(() => false)) {
           await ph.click({ timeout: 8000 });
-          return;
+          return 'cascader';
         }
         throw new Error('未见产业领域下拉（flat/cascader/选择产业集群）');
       };
-      const pickIt = async () => {
+      const pickIt = async (mode) => {
+        if (mode === 'flat' || (await page.locator('main .industry-catalog-select').first().isVisible().catch(() => false))) {
+          await pickFlatIt();
+          return;
+        }
         await page.waitForTimeout(500);
         const popup = page
           .locator('.arco-trigger-popup:visible .svc-portal-industry-cascader-menu, .arco-trigger-popup:visible')
@@ -85,16 +96,14 @@ expect:
           if (await cb.count()) await cb.first().click({ timeout: 8000 });
           else await row.click({ timeout: 8000 });
         } else {
-          const flat = popup.locator('.arco-select-option').filter({ hasText: /^新一代信息技术$/ }).first();
-          if (await flat.count()) await flat.click({ timeout: 8000 });
+          const flatOpt = popup.locator('.arco-select-option').filter({ hasText: /^新一代信息技术$/ }).first();
+          if (await flatOpt.count()) await flatOpt.click({ timeout: 8000 });
           else await popup.getByText(/^新一代信息技术/).first().click({ timeout: 8000 });
         }
         await page.waitForTimeout(1000);
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(400);
-        const cfgSlice = ((await page.locator('main').first().innerText().catch(() => '')) || '').split(
-          '开始分析'
-        )[0];
+        const cfgSlice = ((await page.locator('main').first().innerText().catch(() => '')) || '').split('开始分析')[0];
         if (!/新一代信息技术/.test(cfgSlice || '')) {
           throw new Error('选「新一代信息技术」后配置区未回显 url=' + page.url());
         }
@@ -109,6 +118,7 @@ expect:
           await page.waitForTimeout(i < 8 ? 1000 : 1500);
           const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
           const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
+          if (/任务失败|分析失败/.test(body)) throw new Error('分析任务失败: ' + body.slice(0, 200));
           if (/分析结果已生成/.test(body) && (await vr.isVisible().catch(() => false))) {
             const disabled = await vr.isDisabled().catch(() => true);
             if (!disabled) return;
@@ -126,20 +136,42 @@ expect:
         await vr.click({ timeout: 15000 });
         await page.waitForTimeout(1500);
       };
+      const ensureItResult = async () => {
+        const board = page.locator('[data-testid="svc-eco-shortboard-board"]');
+        if (!(await board.isVisible().catch(() => false))) return false;
+        const titleOk = await page.getByText('新一代信息技术 · 全周期服务链路').first().isVisible().catch(() => false);
+        const noStages = await board.locator('[data-testid="svc-eco-shortboard-no-stages"]').first().isVisible().catch(() => false);
+        return titleOk && noStages;
+      };
       if (!page.url().includes('/service/chain-analysis')) {
         await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(1500);
       }
       await closeBasket();
-      if (!/view=result/.test(page.url())) {
+      if (!(await ensureItResult())) {
+        if (/view=result/.test(page.url()) || (await page.locator('[data-testid="svc-eco-shortboard-board"]').isVisible().catch(() => false))) {
+          const back = page.getByRole('button', { name: '返回配置', exact: true }).first();
+          if (await back.isVisible().catch(() => false)) {
+            await back.click({ timeout: 8000 });
+            await page.waitForTimeout(1000);
+          } else {
+            await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+            await page.waitForTimeout(1500);
+          }
+        }
         const cfgBody = ((await page.locator('main').first().innerText().catch(() => '')) || '');
         if (!/分析配置|产业领域|开始分析|分析记录/.test(cfgBody) && !/view=processing/.test(page.url())) {
           throw new Error('未处于可起分析壳：' + cfgBody.slice(0, 200));
         }
+        const sel = page.locator('main .industry-catalog-select').first();
+        const viewVal = ((await sel.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
+          (await sel.innerText().catch(() => '')) ||
+          '')
+          .trim();
         const cfgTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-        if (!/新一代信息技术/.test(cfgTxt.split('开始分析')[0] || cfgTxt)) {
-          await openIndustry();
-          await pickIt();
+        if (!/^新一代信息技术/.test(viewVal) && !/新一代信息技术/.test(cfgTxt.split('开始分析')[0] || cfgTxt)) {
+          const mode = await openIndustry();
+          await pickIt(mode);
         }
         if (!/view=processing|view=result/.test(page.url())) {
           await clickStart();
@@ -148,6 +180,9 @@ expect:
           await waitProcessingDone();
           await openResult();
         }
+      }
+      if (!(await ensureItResult())) {
+        throw new Error('未到达「新一代信息技术」无环节行结果态 url=' + page.url());
       }
       await expect(page.locator('[data-testid="svc-eco-shortboard-board"]')).toBeVisible({ timeout: 15000 });
       const chainSection = page
@@ -168,7 +203,4 @@ expect:
       if (!/当前快照没有环节行/.test(txt)) {
         throw new Error('全周期区块说明未见「当前快照没有环节行」: ' + txt.slice(0, 320));
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  承接 04388 结果态；全周期 section 内 data-testid=svc-eco-shortboard-no-stages 诚实空，不拿瓶颈区同名 alert 冒充链路区。
-  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04390。零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

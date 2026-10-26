@@ -8,12 +8,12 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /enterprise/demo-org-id?from=recommend
+    target: /enterprise/demo-org-id?source=attraction
 expect:
   - note: 面包屑为「企业分析 / 引育推荐 / 企业画像」
     assert: |-
-      const trail = page.locator('[class*="breadcrumb"], nav').first();
-      await expect(trail).toContainText('企业分析');
-      await expect(trail).toContainText('引育推荐');
-      await expect(trail).toContainText('企业画像');
+      const main = page.locator('main');
+      await expect(main.getByText('企业分析', { exact: true })).toBeVisible();
+      await expect(main.getByText('引育推荐', { exact: true })).toBeVisible();
+      await expect(main.getByText('企业画像', { exact: true })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

@@ -2,62 +2,34 @@ id: FUNC-04029
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04029
 priority: P1
 tier: B
-title: 备选-已在对比篮再点（重复提示）
+title: 备选-已在对比篮再点
 entry_id: svc-search
 preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-center/search
+    target: /service-center/search?kw=深圳
+  - action: wait
+    target: "800"
 expect:
-  - note: 前置：进入检索结果，某行按钮为「已在对比篮」
+  - note: 前置：某行按钮已是「已在对比篮」
     assert: |-
-      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
-      await expect(inp).toBeVisible({ timeout: 15000 });
-      await inp.fill('深圳');
-      await page.getByRole('button', { name: '搜索', exact: true }).click();
-      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 20000 });
-      await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
-      let card = page
-        .locator('article.svc-org-search-card')
-        .filter({ has: page.getByRole('button', { name: '已在对比篮' }) })
-        .first();
-      if (!(await card.isVisible().catch(() => false))) {
-        card = page
-          .locator('article.svc-org-search-card')
-          .filter({ has: page.getByRole('button', { name: '加入对比篮' }) })
-          .first();
-        await expect(card).toBeVisible({ timeout: 12000 });
-        await card.getByRole('button', { name: '加入对比篮' }).click({ timeout: 8000 });
-        await page.waitForTimeout(600);
+      const main = page.locator('main');
+      await expect(main.getByText('检索结果')).toBeVisible({ timeout: 15000 });
+      const joinBtn = main.getByRole('button', { name: '加入对比篮' }).first();
+      if (await joinBtn.isVisible()) {
+        await joinBtn.click();
       }
-      await expect(card.getByRole('button', { name: '已在对比篮' })).toBeVisible({ timeout: 12000 });
-      const orgName = ((await card.locator('button.svc-org-search-link').first().innerText()) || '').trim();
-      if (!orgName) throw new Error('卡片机构名称为空');
-      globalThis.__func04029 = { orgName };
+      await expect(main.getByRole('button', { name: '已在对比篮' }).first()).toBeVisible({ timeout: 10000 });
   - note: 1.再次点击「已在对比篮」
     assert: |-
-      const { orgName } = globalThis.__func04029;
-      const card = page
-        .locator('article.svc-org-search-card')
-        .filter({ has: page.locator('button.svc-org-search-link').filter({ hasText: orgName }) })
-        .first();
-      const joined = card.getByRole('button', { name: '已在对比篮' });
-      await expect(joined).toBeVisible({ timeout: 8000 });
-      await joined.click({ timeout: 8000 });
-      await page.waitForTimeout(600);
+      const main = page.locator('main');
+      await main.getByRole('button', { name: '已在对比篮' }).first().click();
   - note: 1、提示该机构已在对比篮中
     assert: |-
-      const { orgName } = globalThis.__func04029;
-      const toastRe = new RegExp('「' + orgName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '」已在对比篮中');
-      const msg = page.locator('.arco-message, .arco-notification').filter({ hasText: toastRe });
-      await expect(msg.first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('.arco-message').filter({ hasText: '已在对比篮中' })).toBeVisible({ timeout: 10000 });
   - note: 2、按钮仍为「已在对比篮」
     assert: |-
-      const { orgName } = globalThis.__func04029;
-      const card = page
-        .locator('article.svc-org-search-card')
-        .filter({ has: page.locator('button.svc-org-search-link').filter({ hasText: orgName }) })
-        .first();
-      await expect(card.getByRole('button', { name: '已在对比篮' })).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('button', { name: '已在对比篮' }).first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

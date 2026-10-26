@@ -1,28 +1,33 @@
 id: FUNC-01989
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01989
 priority: P1
-title: 结果页重新分析后出现新的成功结果
-story: US-ENT-EVAL-COMP
-entry_id: ent-eval-compete
 tier: B
-preconditions:
-  - 已打开一条成功的综合竞争力评估结果
-locators:
-  reanalyze: button「重新分析」
-  result_heading: heading「综合竞争力评估结果」
-  top_score_card: text「综合竞争力最高得分」
+title: 备选-重新分析到新结果
+entry_id: ent-eval-compete
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
   - action: evaluate
-    note: 结果态点重新分析→等待新结果；任务 ID 与指标卡在 expect
+    note: 同册01988前置至成功结果→点击重新分析→等待新结果就绪
 expect:
-  - note: 1、新结果的任务 ID 与点击重新分析前不同
+  - note: 1、新结果的任务 ID 与点击前不同
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
       const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
-      const evalRoute = '/enterprise/evaluation?workspace=competitiveness&mode=competitiveness';
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
       const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const taskIdFromUrl = () => {
+        try { return new URL(page.url()).searchParams.get('task_id'); } catch { return null; }
+      };
+      const taskIdFromMain = async () => {
+        let tid = taskIdFromUrl();
+        if (tid) return tid;
+        const t = await main().innerText().catch(() => '');
+        const tm = t.match(/(?:DEMO-)?EVAL-\d{8}-\d{3,}/);
+        return tm ? tm[0] : null;
+      };
       const dismissBasket = async () => {
         const close = page.locator('button[aria-label="关闭对比篮"]');
         if (await close.count() && await close.first().isVisible().catch(() => false)) {
@@ -35,70 +40,24 @@ expect:
         if (!(await dockBtn.count())) return 0;
         const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
         const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
-        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
-        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
-      };
-      const extractTaskId = async () => {
-        let tid = null;
-        try { tid = new URL(page.url()).searchParams.get('task_id'); } catch {}
-        if (!tid) {
-          const t = await main().innerText().catch(() => '');
-          const tm = t.match(/(?:DEMO-)?EVAL-\d{8}-\d{3,}/);
-          if (tm) tid = tm[0];
-        }
-        return tid;
-      };
-      const waitBasketAtLeast = async (min, ms) => {
-        const t0 = Date.now();
-        while (Date.now() - t0 < ms) {
-          if ((await basketEntCount()) >= min) return true;
-          await page.waitForTimeout(400);
-        }
-        return (await basketEntCount()) >= min;
-      };
-      const addFromVisibleCards = async (need) => {
-        let added = 0;
-        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
-        const btnN = await addBtns.count();
-        for (let i = 0; i < btnN && added < need; i++) {
-          const btn = addBtns.nth(i);
-          if (!(await btn.isVisible().catch(() => false))) continue;
-          await btn.click({ timeout: 8000 });
-          await page.waitForTimeout(700);
-          added++;
-        }
-        return added;
+        return entM ? parseInt(entM[1], 10) : 0;
       };
       const ensureBasketEnterprises = async (min) => {
-        if ((await basketEntCount()) >= min) return;
-        await page.goto(toUrl('/enterprise/enterprise-search'), { waitUntil: 'domcontentloaded' });
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(1000);
         await dismissBasket();
-        const searchInput = page
-          .getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })
-          .or(page.getByPlaceholder(/企业名|产业|资质/))
-          .first();
-        if (await searchInput.isVisible().catch(() => false)) {
-          await searchInput.fill('人工智能');
-          const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
-          if (await searchBtn.isVisible().catch(() => false)) {
-            await searchBtn.click({ timeout: 8000 });
-            await page.waitForTimeout(1200);
-            await page.getByText('智能搜索结果', { exact: true }).first().waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
-          }
-        }
-        let n = await basketEntCount();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
         while (n < min) {
-          const need = min - n;
-          const clicked = await addFromVisibleCards(need);
-          if (!clicked) break;
-          await waitBasketAtLeast(min, 8000);
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
           n = await basketEntCount();
-          if (n >= min) return;
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
         }
-        if ((await basketEntCount()) < min) {
-          throw new Error('ENV-GATE:对比篮企业不足 ' + min + '，当前 ' + (await basketEntCount()));
-        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足');
       };
       const openEnterprisePicker = async () => {
         const pickUrl = evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
@@ -113,99 +72,35 @@ expect:
       };
       const bodyResultReady = async () => {
         if (!/view=result/.test(page.url())) return false;
-        return await page.getByRole('heading', { name: '综合竞争力评估结果' }).first().isVisible().catch(() => false)
-          || await page.getByText(/综合竞争力评估结果/).first().isVisible().catch(() => false);
+        const heading = page.getByRole('heading', { name: '综合竞争力评估结果' }).first();
+        if (await heading.isVisible().catch(() => false)) return true;
+        return await page.getByText(/综合竞争力评估结果/).first().isVisible().catch(() => false);
       };
-      const reanalyzeBtn = async () => {
-        const scopes = [page, main()];
-        for (const scope of scopes) {
-          const b = scope.getByRole('button', { name: '重新分析', exact: true });
-          if (await b.count() && await b.first().isVisible().catch(() => false)) return b.first();
-          const alt = scope.locator('button').filter({ hasText: '重新分析' });
-          if (await alt.count() && await alt.first().isVisible().catch(() => false)) return alt.first();
-        }
-        return null;
-      };
-      const bodyResultReadyStrict = async () => {
-        if (!/view=result/.test(page.url())) return false;
-        const heading = await page.getByRole('heading', { name: '综合竞争力评估结果' }).first().isVisible().catch(() => false);
-        const toolbar = !!(await reanalyzeBtn());
-        return heading && toolbar;
-      };
-      const pollReanalyzeToolbar = async (ms) => {
-        const t1 = Date.now();
-        while (Date.now() - t1 < ms) {
-          if (await bodyResultReadyStrict()) return true;
-          await page.waitForTimeout(800);
-        }
-        return false;
-      };
-      const waitForCompeteResult = async () => {
+      const scoreCardReady = async () =>
+        await main().getByText('综合竞争力最高得分').first().isVisible().catch(() => false);
+      const waitForCompeteResult = async (opts = {}) => {
+        const needNewTask = opts.needNewTask;
+        const prevTask = opts.prevTask;
+        const needScore = !!opts.needScore;
         const t0 = Date.now();
         while (Date.now() - t0 < 180000) {
-          if (await bodyResultReady()) return;
-          const showBtn = main().getByRole('button', { name: /查看评估结果/ });
-          if (await showBtn.first().isVisible().catch(() => false)) {
-            await showBtn.first().click({ timeout: 8000 });
-            await page.waitForTimeout(2500);
-            if (await bodyResultReady()) return;
-          }
-          const u = page.url();
-          const tid = (() => { try { return new URL(u).searchParams.get('task_id'); } catch { return null; } })();
-          if (tid && /view=processing/.test(u)) {
-            await page.goto(toUrl(evalRoute + '&view=result&analysis_type=competitiveness&task_id=' + encodeURIComponent(tid)), { waitUntil: 'domcontentloaded' });
-            await page.waitForTimeout(2500);
-            if (await bodyResultReady()) return;
-          }
-          const t = await main().innerText().catch(() => '');
-          if (/评估失败|生成失败|本次评估生成失败/.test(t)) throw new Error('分析终态失败：' + u);
-          await page.waitForTimeout(2000);
-        }
-        throw new Error('180s 内未到综合竞争力评估结果：' + page.url());
-      };
-      const resultContentReady = async () => {
-        if (await bodyResultReady()) return true;
-        const t = await main().innerText().catch(() => '');
-        return /综合竞争力评估结果/.test(t) && /综合竞争力最高得分/.test(t);
-      };
-      const waitForNewCompeteResult = async (oldTid) => {
-        const norm = (id) => (id || '').replace(/^DEMO-/, '');
-        const t0 = Date.now();
-        while (Date.now() - t0 < 180000) {
-          const cur = await extractTaskId();
-          if (cur && oldTid && norm(cur) !== norm(oldTid) && (await resultContentReady())) return cur;
-          const u = page.url();
-          const tid = (() => { try { return new URL(u).searchParams.get('task_id'); } catch { return null; } })();
-          const t = await main().innerText().catch(() => '');
-          if (/评估失败|生成失败|本次评估生成失败/.test(t)) throw new Error('重新分析终态失败：' + u);
+          const body = await main().innerText().catch(() => '');
+          if (/404|抱歉，页面不存在/.test(body)) throw new Error('误入 404：' + page.url());
+          const curTask = await taskIdFromMain();
+          const ready =
+            (needNewTask && prevTask && curTask && curTask !== prevTask) ||
+            (!needNewTask && (await bodyResultReady()));
+          if (ready && (!needScore || (await scoreCardReady()))) return curTask;
           const showBtn = main().getByRole('button', { name: /查看评估结果/ });
           if (await showBtn.first().isVisible().catch(() => false)) {
             await showBtn.first().click({ timeout: 8000 });
             await page.waitForTimeout(2500);
             continue;
           }
-          if (tid && norm(tid) !== norm(oldTid)) {
-            if (/view=result/.test(u) && !(await resultContentReady())) {
-              if (/生成中|可视化分析过程|综合竞争力评估生成中/.test(t)) {
-                await page.goto(toUrl(evalRoute + '&view=processing&analysis_type=competitiveness&task_id=' + encodeURIComponent(tid)), { waitUntil: 'domcontentloaded' });
-                await page.waitForTimeout(2000);
-                continue;
-              }
-              await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
-              await page.waitForTimeout(2500);
-              continue;
-            }
-            if (/view=processing/.test(u)) {
-              await page.goto(toUrl(evalRoute + '&view=result&analysis_type=competitiveness&task_id=' + encodeURIComponent(tid)), { waitUntil: 'domcontentloaded' });
-              await page.waitForTimeout(2500);
-              continue;
-            }
-          }
+          if (/评估失败|生成失败|本次评估生成失败/.test(body)) throw new Error('分析终态失败：' + page.url());
           await page.waitForTimeout(2000);
         }
-        const finalTid = await extractTaskId();
-        if (finalTid && oldTid && norm(finalTid) !== norm(oldTid) && (await resultContentReady())) return finalTid;
-        throw new Error('180s 内未到新任务结果，旧任务=' + oldTid + ' 当前=' + page.url());
+        throw new Error('180s 内未到稳定结果：' + page.url());
       };
       const runConfigToResult = async () => {
         await ensureBasketEnterprises(1);
@@ -213,100 +108,46 @@ expect:
         await page.waitForTimeout(1000);
         await dismissBasket();
         await openEnterprisePicker();
-        let panel = page.locator('.system-compare-panel');
-        let sels = panel.locator('[aria-label^="选择 "]');
-        if (await sels.count() < 1) {
-          await ensureBasketEnterprises(1);
-          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(1000);
-          await dismissBasket();
-          await openEnterprisePicker();
-          panel = page.locator('.system-compare-panel');
-          sels = panel.locator('[aria-label^="选择 "]');
-        }
+        const panel = page.locator('.system-compare-panel');
         await expect(panel).toBeVisible({ timeout: 10000 });
+        const sels = panel.locator('[aria-label^="选择 "]');
         if (await sels.count() < 1) throw new Error('对比篮无可选企业');
         await sels.nth(0).click({ force: true });
         await page.waitForTimeout(300);
         await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
         await page.waitForTimeout(2000);
         await dismissBasket();
-        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
         const startClassic = main().getByRole('button', { name: '开始分析' });
         const startAlt = main().getByRole('button', { name: '个性化竞争力评价与输出' }).last();
         const start = (await startClassic.count()) ? startClassic : startAlt;
-        if (await start.isDisabled()) {
-          const mainText = await main().innerText();
-          if (/预检未返回企业明细/.test(mainText)) throw new Error('开始分析禁用：预检未返回企业明细（ticket=ENV-EVAL-COMPETE-PRECHECK-001）');
-          throw new Error('对象已回填但开始分析仍禁用');
-        }
+        await expect(start).toBeEnabled({ timeout: 15000 });
         await start.click({ timeout: 8000 });
         await page.waitForTimeout(800);
-        await waitForCompeteResult();
+        await waitForCompeteResult({ needScore: true });
       };
-      const reenterResultFrom01988 = async () => {
-        const tid = globalThis.__func01988_taskId;
-        if (!tid || !globalThis.__func01988_ready) return false;
-        await page.goto(toUrl(evalRoute + '&view=result&analysis_type=competitiveness&task_id=' + encodeURIComponent(tid)), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(2500);
-        const t0 = Date.now();
-        while (Date.now() - t0 < 30000) {
-          if (await bodyResultReadyStrict()) return true;
-          await page.waitForTimeout(500);
-        }
-        return await bodyResultReadyStrict();
-      };
-      const ensureResultWithReanalyze = async () => {
-        if (globalThis.__func01989_onResult) return;
-        if (await reenterResultFrom01988()) {
-          globalThis.__func01989_onResult = true;
-          return;
-        }
-        if (await bodyResultReadyStrict()) {
-          globalThis.__func01989_onResult = true;
-          return;
-        }
-        await runConfigToResult();
-        await expect(page.getByRole('heading', { name: '综合竞争力评估结果' }).first()).toBeVisible({ timeout: 15000 });
-        if (!(await pollReanalyzeToolbar(45000))) {
-          throw new Error('D3 结果区无「重新分析」（历史恢复空壳无工具条；ticket=ENV-EVAL-COMPETE-REANALYZE-001）');
-        }
+      if (!globalThis.__func01989_onResult) {
+        if (!(await bodyResultReady())) await runConfigToResult();
+        else await waitForCompeteResult({ needScore: true });
         globalThis.__func01989_onResult = true;
-      };
-      await ensureResultWithReanalyze();
-      const beforeTid = await extractTaskId();
-      if (!beforeTid || !/^(?:DEMO-)?EVAL-\d{8}-\d{3,}$/.test(beforeTid)) {
-        throw new Error('结果页未见可比对任务 ID：' + page.url());
       }
-      await dismissBasket();
-      await page.keyboard.press('Escape').catch(() => {});
-      let reBtn = await reanalyzeBtn();
-      if (!reBtn) throw new Error('结果区无「重新分析」按钮');
-      await expect(reBtn).toBeEnabled({ timeout: 8000 });
-      await reBtn.scrollIntoViewIfNeeded().catch(() => {});
-      await reBtn.click({ force: true, timeout: 15000 });
-      await page.waitForTimeout(1500);
-      const procDeadline = Date.now() + 45000;
-      let sawProcessing = /view=processing/.test(page.url());
-      while (!sawProcessing && Date.now() < procDeadline) {
-        sawProcessing = /view=processing/.test(page.url());
-        if (!sawProcessing) await page.waitForTimeout(500);
-      }
-      if (!sawProcessing && !/view=result/.test(page.url())) {
-        throw new Error('点重新分析后未进入过程态：' + page.url());
-      }
-      const afterTid = await waitForNewCompeteResult(beforeTid);
-      globalThis.__func01989_beforeTid = beforeTid;
-      globalThis.__func01989_afterTid = afterTid;
-      const normTid = (id) => (id || '').replace(/^DEMO-/, '');
-      if (normTid(beforeTid) === normTid(afterTid)) throw new Error('重新分析后任务 ID 未变化：' + beforeTid);
-      globalThis.__func01989_done = true;
-      await expect(main().getByText(afterTid).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '综合竞争力评估结果' }).first()).toBeVisible({ timeout: 15000 });
+      const taskBefore = await taskIdFromMain();
+      if (!taskBefore) throw new Error('结果页未见任务 ID');
+      globalThis.__func01989_taskIdBefore = taskBefore;
+      const rerunBtn = main().getByRole('button', { name: '重新分析' });
+      await expect(rerunBtn).toBeVisible({ timeout: 10000 });
+      await rerunBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const taskAfter = await waitForCompeteResult({ needNewTask: true, prevTask: taskBefore, needScore: true });
+      if (!taskAfter) throw new Error('重分析后未解析到新任务 ID');
+      globalThis.__func01989_taskIdAfter = taskAfter;
+      if (taskBefore === taskAfter) throw new Error('任务 ID 未变化：' + taskBefore);
+      await expect(main().getByText(taskAfter).first()).toBeVisible({ timeout: 15000 });
   - note: 2、页面出现综合竞争力最高得分
     assert: |-
-      if (!globalThis.__func01989_done) throw new Error('前置：重新分析新结果未完成');
       const main = () => page.locator('main.diagnosis-main, main.app-main').first();
-      await expect(page.getByText(/综合竞争力最高得分/).first()).toBeVisible({ timeout: 15000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: |-
-  作废 00433（只验过程态）。01989 须等到新成功结果：结果态点「重新分析」无二次确认（用例册）；路由 catalog /enterprise/evaluation?workspace=competitiveness&mode=competitiveness。对比篮补足走 /enterprise/enterprise-search（禁止 forbidden_paths）。最近评估「恢复结果」空壳无工具条时走配置发起；可复用同批 01988 task 深链。任务 ID 格式 DEMO-EVAL-YYYYMMDD-NNNN。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。
+      const card = main().getByText('综合竞争力最高得分').first();
+      await expect(card).toBeVisible({ timeout: 30000 });
+      await page.waitForTimeout(800);
+      await expect(main().getByText('综合竞争力最高得分').first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id

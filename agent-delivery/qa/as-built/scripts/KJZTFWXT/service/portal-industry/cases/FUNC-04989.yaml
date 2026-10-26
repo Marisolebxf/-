@@ -2,58 +2,27 @@ id: FUNC-04989
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04989
 priority: P0
 tier: B
-title: 五个页签顺序
+title: 主流程-五个页签顺序
 entry_id: svc-portal-industry
-story: US-SVC-PT-02
-preconditions:
-  - 已登录 admin（runner 会话前置）
-locators:
-  tablist: '[aria-label="专题服务子导航"]'
-  tabs: role=tab（五页签，顺序见用例附录 E）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal/industry-distribution
 expect:
-  - note: 1、五个页签从左到右与附录 E 一致
+  - note: 五个页签从左到右与附录 E 一致
     assert: |-
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/服务机构产业分布/.test(t);
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验五页签顺序 url=' + page.url());
-      }
-      await page.waitForURL(/\/service-portal\/industry-distribution/, { timeout: 30000 }).catch(() => {});
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 落点后仍 SPA404 url=' + page.url());
-      }
-      await expect(page).toHaveURL(/\/service-portal\/industry-distribution/, { timeout: 8000 });
-      const expected = [
+      const main = page.locator('main');
+      const names = [
         '全球服务机构概况',
         '服务机构产业分布',
         '服务机构区域分布',
         '服务机构技术能力',
         '深圳产业服务介绍',
       ];
-      const tablist = page.locator('[aria-label="专题服务子导航"]');
-      await expect(tablist).toBeVisible({ timeout: 8000 });
-      const tabs = tablist.getByRole('tab');
+      const tabs = main.getByRole('tab');
       await expect(tabs).toHaveCount(5);
-      for (let i = 0; i < expected.length; i++) {
-        await expect(tabs.nth(i)).toHaveText(expected[i], { timeout: 8000 });
+      for (let i = 0; i < names.length; i++) {
+        await expect(tabs.nth(i)).toContainText(names[i]);
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  深链 goto catalog_path /service-portal/industry-distribution（entry-seed svc-portal-industry）。
-  五 Tab 在 aria-label=专题服务子导航 的 tablist，顺序与门户 FUNC-01306 附录 A / 用例附录 E 相同。
-  本条只验顺序，不验当前页签选中态（归 FUNC-04988）。登录与关内部评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

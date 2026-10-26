@@ -1,27 +1,19 @@
 id: FUNC-03099
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03099
 priority: P0
-title: 结果页展示关键环节数
-story: US-CHAIN-DIAG-04
-entry_id: chain-key-link
 tier: B
-preconditions:
-  - 已打开 03098 同一条成功结果（新能源三级；assert 自含）
-locators:
-  metric_label: 结果摘要「关键环节数」
+title: 结果页展示关键环节数
+entry_id: chain-key-link
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
   - action: evaluate
-    note: 打开产业关键环节识别结果后定位「关键环节数」（判定在 expect）
+    note: 深链进入后打开 03088 同条新能源结果（判定在 expect）
 expect:
-  - note: 前置：已打开「产业关键环节识别结果」页（与 FUNC-03098 同条新能源结果）
+  - note: 前置：已打开 03098 同一条成功结果
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
       const main = () => page.locator('main').first();
       const dismissBasket = async () => {
@@ -31,61 +23,27 @@ expect:
           await page.waitForTimeout(300);
         }
       };
-      const assertNotSpa404 = async (where) => {
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t)) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
-        }
-      };
-      await dismissBasket();
-      await assertNotSpa404('after-goto-sibling');
-      const enterKeyLink = async () => {
-        await dismissBasket();
-        const onTarget = () =>
-          /\/industry-center\/diagnosis/.test(page.url()) &&
-          /workspace=key_link/.test(page.url()) &&
-          /tab=key-link/.test(page.url());
-        if (!onTarget()) {
-          if (!/\/industry-center\/search/.test(page.url())) {
-            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-            await page.waitForTimeout(800);
-          }
-          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
-          const expandChain = async () => {
-            if (await leaf().first().isVisible().catch(() => false)) return;
-            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-            if (await sub.count()) {
-              await sub.first().click({ timeout: 8000 });
-              await page.waitForTimeout(400);
-            }
-          };
-          await expandChain();
-          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-          await leaf().first().click({ timeout: 10000 });
-          await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
-          await assertNotSpa404('sidebar');
-        }
-        await expect(page).toHaveURL(/workspace=key_link/);
-        await expect(page).toHaveURL(/tab=key-link/);
-      };
       const pickSelect = async (trigger, label) => {
         await page.keyboard.press('Escape').catch(() => {});
         await trigger.click({ timeout: 8000 });
         await page.waitForTimeout(450);
         const opt = page.locator(optSel).filter({ hasText: new RegExp('^\\s*' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$') }).first();
         if (!(await opt.count())) {
-          const fallback = page.locator(optSel).filter({ hasText: label }).first();
-          await expect(fallback).toBeVisible({ timeout: 8000 });
-          await fallback.click({ timeout: 8000 });
+          await page.locator(optSel).filter({ hasText: label }).first().click({ timeout: 8000 });
         } else {
-          await expect(opt).toBeVisible({ timeout: 8000 });
           await opt.click({ timeout: 8000 });
         }
         await page.waitForTimeout(700);
       };
+      const summaryHasKeyCountZero = async () => {
+        const region = page.locator('section[aria-label="诊断指标摘要"]');
+        if (!(await region.count()) || !(await region.first().isVisible().catch(() => false))) return false;
+        const t = ((await region.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /关键环节数/.test(t) && /\b0\b/.test(t);
+      };
       const isKeyLinkResult = async () => {
         const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /产业关键环节识别结果/.test(t) && /关键环节数\s*0/.test(t);
+        return /产业关键环节识别结果/.test(t) && (await summaryHasKeyCountZero());
       };
       const openFromViewBtn = async () => {
         const btn = page.getByRole('button', { name: '查看分析结果' }).first();
@@ -114,7 +72,9 @@ expect:
         return false;
       };
       const runNewEnergyAndOpenResult = async () => {
-        await enterKeyLink();
+        await dismissBasket();
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
         await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
         await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
         await page.waitForTimeout(500);
@@ -143,8 +103,8 @@ expect:
         }
         throw new Error('ENV-KEYLINK-ASYNC-TIMEOUT-001：未见产业关键环节识别结果');
       };
-      await enterKeyLink();
-      await assertNotSpa404('key-link-landing');
+      await dismissBasket();
+      await expect(page).toHaveURL(/workspace=key_link/);
       if (!(await isKeyLinkResult())) {
         if (!(await restoreNewEnergyFromRecords())) {
           await runNewEnergyAndOpenResult();
@@ -156,27 +116,15 @@ expect:
         await page.waitForTimeout(500);
       }
       if (!(await isKeyLinkResult())) {
-        throw new Error('ENV-KEYLINK-RESULT-METRIC-001：结果页未见「关键环节数 0」摘要');
+        throw new Error('结果页诊断指标摘要未见关键环节数 0');
       }
   - note: 1、「关键环节数」显示为 0
     assert: |-
-      const mainEl = page.locator('main').first();
-      const body = () => ((await mainEl.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      let ok = false;
-      for (let i = 0; i < 36; i++) {
-        const t = await body();
-        if (/产业关键环节识别结果/.test(t) && /关键环节数\s*0/.test(t)) {
-          ok = true;
-          break;
-        }
-        await page.waitForTimeout(500);
+      const summary = page.locator('section[aria-label="诊断指标摘要"]');
+      await expect(summary).toBeVisible({ timeout: 10000 });
+      await expect(summary.getByText('关键环节数', { exact: true })).toBeVisible();
+      const t = ((await summary.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/\b0\b/.test(t)) {
+        throw new Error('关键环节数取值不为 0，摘要区: ' + t.slice(0, 120));
       }
-      if (!ok) {
-        throw new Error('关键环节数不为 0 或不在结果摘要区，现场片段: ' + (await body()).slice(0, 200));
-      }
-      const label = mainEl.getByText('关键环节数', { exact: true }).first();
-      await expect(label).toBeVisible({ timeout: 5000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link；前置与 FUNC-03098 同条新能源成功结果。
-  步骤=定位结果摘要「关键环节数」；预期=展示 0（诚实空态，与 scout 结果页「关键环节数 0」一致）。登录关评审 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

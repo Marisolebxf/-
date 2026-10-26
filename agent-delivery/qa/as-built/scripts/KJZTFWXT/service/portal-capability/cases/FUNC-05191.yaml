@@ -1,6 +1,6 @@
 id: FUNC-05191
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05191
-priority: P0
+priority: P1
 tier: B
 title: 主流程-产业集群选项个数
 entry_id: svc-portal-capability
@@ -9,10 +9,23 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
+  - action: evaluate
+    note: 展开「产业集群 / 产业」下拉
 expect:
   - note: 选项共 15 个（名称见附录A）
     assert: |-
-      await page.locator('main .arco-select-view').first().click();
-      const dropdown = page.locator('.arco-select-dropdown:visible');
-      await expect(dropdown.locator('.arco-select-option')).toHaveCount(15);
+      const main = page.locator('main').first();
+      const filter = main.locator('.svc-portal-filter, [aria-label="筛选条"]').first();
+      await expect(filter).toBeVisible({ timeout: 12000 });
+      const industryCtrl = filter.locator('.arco-cascader-view').first();
+      await industryCtrl.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      let opts = popup.locator('.arco-select-option');
+      if ((await opts.count()) === 0) {
+        const col = popup.locator('.arco-cascader-list-column').first();
+        opts = col.locator('.arco-cascader-option, .arco-cascader-list-item');
+      }
+      await expect(opts).toHaveCount(15);
 on_fail: 截图 + 抄 X-Trace-Id

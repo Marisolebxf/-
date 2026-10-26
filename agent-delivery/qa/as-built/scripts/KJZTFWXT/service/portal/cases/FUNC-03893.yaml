@@ -2,36 +2,36 @@ id: FUNC-03893
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03893
 priority: P0
 tier: B
-title: 选定产业链后结论条回显
-story: US-SVC-PT-01
+title: 主流程-选定产业链后的结论条
 entry_id: svc-portal
-preconditions: []
-locators: {}
+preconditions:
+  - 已进入门户概况；env-gate G3 pass
+locators:
+  industryChain: main cascader 产业集群/产业
 steps:
   - action: goto
-    target: /service-portal/overview
+    target: /service-portal
   - action: evaluate
-    note: 选择产业「新一代信息技术」；选择产业链「半导体与集成电路」
+    note: 1.选择产业「新一代信息技术」；2.选择产业链「半导体与集成电路」
 expect:
   - note: 1、结论条以「半导体与集成电路」起头
     assert: |-
-      const main = page.locator('main');
-      await main.locator('.arco-cascader-view').first().click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible').getByText('新一代信息技术', { exact: true }).click();
-      await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible').getByText('半导体与集成电路', { exact: true }).click();
-      await page.waitForTimeout(1200);
-      const strip = page.locator('.ent-judgment-strip').first();
-      await expect(strip).toBeVisible({ timeout: 8000 });
-      const txt = (await strip.innerText()).trim();
-      if (!/^「半导体与集成电路」/.test(txt)) {
-        throw new Error('结论条未以「半导体与集成电路」起头: ' + txt.slice(0, 120));
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
       }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      const cascader = page.locator('main .arco-cascader-view').first();
+      await cascader.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const popup = page.locator('.arco-trigger-popup:visible');
+      await popup.locator('.arco-cascader-panel-column').first().getByText('新一代信息技术', { exact: true }).click();
+      await page.waitForTimeout(400);
+      await popup.locator('.arco-cascader-panel-column').nth(1).getByText('半导体与集成电路', { exact: true }).click();
+      await page.waitForTimeout(1200);
+      const main = page.locator('main');
+      await expect(main).toContainText('「半导体与集成电路」', { timeout: 10000 });
   - note: 2、结论条写明 KPI 未按产业切片
     assert: |-
-      const txt = (await page.locator('.ent-judgment-strip').first().innerText()).trim();
-      if (!/KPI 未按产业切片/.test(txt)) {
-        throw new Error('结论条未写明 KPI 未按产业切片: ' + txt.slice(0, 160));
-      }
+      await expect(page.locator('main')).toContainText('KPI 未按产业切片', { timeout: 8000 });
 on_fail: 截图 + X-Trace-Id + C1~C6

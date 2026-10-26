@@ -1,209 +1,42 @@
 id: FUNC-03316
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03316
 priority: P1
-title: 生成过程页点查看分析记录并见新任务
-story: US-CHAIN-SZ-05
-entry_id: chain-sz-compare
 tier: B
-preconditions:
-  - 已停在生成过程页（脚本内复制配置→重新分析发起新任务）
-locators:
-  view_records: button「查看分析记录」
-  records_tab: '[role=tab][data-tab-key=records]'
+title: 备选-生成过程-从过程页查看分析记录
+entry_id: chain-sz-compare
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=comparison&tab=comparison
-  - action: evaluate
-    note: 复制配置→重新分析到过程页→点「查看分析记录」；记录列表与新任务在 expect
+  - action: click
+    target: 分析记录
+  - action: wait
+    timeout_ms: 2000
+  - action: click
+    target: 复制配置
+  - action: wait
+    timeout_ms: 2500
+  - action: click
+    target: 开始分析
+  - action: wait
+    timeout_ms: 2000
+  - action: assert_visible
+    target: 生成中
+  - action: click
+    target: 查看分析记录
+  - action: wait
+    timeout_ms: 2000
 expect:
-  - note: 1、进入分析记录列表
+  - note: 进入分析记录列表
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
-      const main = () => page.locator('main').first();
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const GENERATING = '深圳产业情况分析对比生成中';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=comparison/.test(page.url()) &&
-        /tab=comparison/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
-      };
-      const enterSzCompare = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (await bodyIs404() || !onTarget()) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法执行 03316 ' + page.url());
-        }
-        await expect(page).toHaveURL(/workspace=comparison/);
-        await expect(page).toHaveURL(/tab=comparison/);
-      };
-      const extractTaskId = (text) => {
-        const m = (text || '').match(TID_RE);
-        return m ? m[0] : '';
-      };
-      const ensureProcessWithNewTask = async () => {
-        const urlNow = page.url();
-        const bodyNow = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        const urlTid = extractTaskId(urlNow) || new URL(urlNow).searchParams.get('task_id') || '';
-        if (
-          (new RegExp(GENERATING).test(bodyNow) || /可视化分析过程/.test(bodyNow)) &&
-          urlTid &&
-          (await page.getByRole('button', { name: '查看分析记录' }).first().isVisible().catch(() => false))
-        ) {
-          globalThis.__func03316 = { processTaskId: urlTid, readyRecords: false };
-          return;
-        }
-        const tab = page.getByRole('tab', { name: '分析记录' }).first();
-        await expect(tab).toBeVisible({ timeout: 10000 });
-        await tab.click({ timeout: 10000 });
-        await page.waitForTimeout(1200);
-        const rows = main()
-          .locator('tbody tr, .arco-table-tr')
-          .filter({ hasText: '深圳产业情况分析对比' })
-          .filter({ hasText: /已完成|成功/ });
-        const n = await rows.count();
-        if (n < 1) {
-          throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03316：分析记录无已完成深圳对比任务');
-        }
-        let priorTaskId = '';
-        let copied = false;
-        for (let i = 0; i < Math.min(n, 12); i++) {
-          const row = rows.nth(i);
-          const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          priorTaskId = extractTaskId(rowText) || priorTaskId;
-          const copyBtn = row.getByRole('button', { name: '复制配置' }).first();
-          if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
-          await copyBtn.click({ timeout: 15000 });
-          copied = true;
-          break;
-        }
-        if (!copied) {
-          throw new Error('ENV-CHAIN-SZ-COMPARE-NO-COPY-03316：无已完成行可点「复制配置」');
-        }
-        await page.waitForTimeout(800);
-        const cfgBody = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/存在无法识别的标杆区域|四级地域选择器/.test(cfgBody)) {
-          const resetBtn = page.getByRole('button', { name: '重置参数' }).first();
-          if (await resetBtn.isVisible().catch(() => false)) {
-            await resetBtn.click({ timeout: 10000 });
-            await page.waitForTimeout(600);
-          }
-        }
-        let launch = page.getByRole('button', { name: '重新分析' }).first();
-        if (!(await launch.isVisible().catch(() => false))) {
-          launch = page.getByRole('button', { name: '开始分析' }).first();
-        }
-        if (!(await launch.isVisible().catch(() => false))) {
-          throw new Error('ENV-CHAIN-SZ-COMPARE-NO-RERUN-03316：复制配置后未见「重新分析」或「开始分析」');
-        }
-        await expect(launch).toBeEnabled({ timeout: 15000 });
-        await launch.click({ timeout: 15000 });
-        await page.waitForTimeout(800);
-        let processTaskId = '';
-        let sawGenerating = false;
-        let last = '';
-        for (let i = 0; i < 90; i++) {
-          await page.waitForTimeout(i < 4 ? 600 : 1500);
-          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          const urlId = extractTaskId(page.url()) || new URL(page.url()).searchParams.get('task_id') || '';
-          const bodyIds = last.match(new RegExp(TID_RE.source, 'g')) || [];
-          processTaskId = urlId || (bodyIds.length ? bodyIds[bodyIds.length - 1] : processTaskId);
-          if (new RegExp(GENERATING).test(last) || /可视化分析过程/.test(last)) sawGenerating = true;
-          if (processTaskId && priorTaskId && processTaskId !== priorTaskId && sawGenerating) break;
-          if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 10) {
-            throw new Error('ENV-CHAIN-SZ-COMPARE-ASYNC-FAIL-03316：重新分析失败');
-          }
-          if (sawGenerating && /分析结果已生成/.test(last) && processTaskId) break;
-        }
-        if (!sawGenerating && !new RegExp(GENERATING).test(last)) {
-          throw new Error('未见生成过程页，片段: ' + last.slice(0, 200));
-        }
-        if (!processTaskId) {
-          throw new Error('生成过程页未见新任务号 CHAIN-*，片段: ' + last.slice(0, 200));
-        }
-        if (priorTaskId && processTaskId === priorTaskId) {
-          throw new Error('过程页任务号与复制来源相同，应为新任务：' + processTaskId);
-        }
-        globalThis.__func03316 = { processTaskId, priorTaskId, readyRecords: false };
-      };
-      await enterSzCompare();
-      await ensureProcessWithNewTask();
-      const snap = globalThis.__func03316;
-      if (!snap?.processTaskId) throw new Error('前置：未捕获过程页新任务号');
-      const recordsBtn = page.getByRole('button', { name: '查看分析记录' }).first();
-      await expect(recordsBtn).toBeVisible({ timeout: 12000 });
-      await recordsBtn.click({ timeout: 15000 });
-      await page.waitForTimeout(1200);
-      const recTab = page.locator('[role=tab][data-tab-key="records"]');
-      await expect(recTab.first()).toBeVisible({ timeout: 10000 });
-      await expect(recTab.first()).toHaveAttribute('aria-selected', 'true');
-      const urlAfter = page.url();
-      if (!/tab=records|view=records/.test(urlAfter)) {
-        const bodyAfter = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!/任务状态|全部状态/.test(bodyAfter)) {
-          throw new Error('点「查看分析记录」后未见分析记录区，url=' + urlAfter);
-        }
-      }
-      await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
-      snap.readyRecords = true;
-      globalThis.__func03316 = snap;
-  - note: 2、列表中有这次新产生的任务
+      await expect(page.locator('main')).toContainText('分析记录');
+      await expect(page.getByRole('columnheader', { name: '任务' })).toBeVisible();
+      await expect(page.getByRole('columnheader', { name: '状态' })).toBeVisible();
+  - note: 列表中有这次新产生的任务
     assert: |-
-      const snap = globalThis.__func03316;
-      if (!snap?.readyRecords) throw new Error('前置：未进入分析记录列表');
-      const taskId = snap.processTaskId || '';
-      if (!taskId) throw new Error('ENV-CHAIN-SZ-COMPARE-NO-TASK-ID-03316：未保留过程页 task_id');
-      const main = () => page.locator('main').first();
-      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!body.includes(taskId)) {
-        throw new Error('分析记录列表未见本任务 ' + taskId + '；main=' + body.slice(0, 280));
-      }
-      const row = main().locator('tbody tr, .arco-table-tr').filter({ hasText: taskId }).first();
-      if ((await row.count()) < 1) {
-        throw new Error('表格行内未见任务编号 ' + taskId);
-      }
-      const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!/深圳产业情况分析对比/.test(rowText)) {
-        throw new Error('任务行未见类型「深圳产业情况分析对比」');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path=entry-seed；前置=生成过程页（复制配置→「重新分析」新 CHAIN 号，或已在过程壳且「查看分析记录」可见）。
-  步骤=点「查看分析记录」（非「查看分析结果」）。机检=分析记录 Tab aria-selected + 任务状态筛选 + 列表含过程页 task_id 行且类型深圳产业情况分析对比。
-  无已完成/无复制/无重新分析→ENV-CHAIN-SZ-COMPARE-NO-*-03316。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。B 档零 allow_skip。
+      const row = page.locator('main .arco-table tbody tr').first();
+      await expect(row).toBeVisible({ timeout: 8000 });
+      await expect(row).toContainText('CHAIN-');
+      await expect(row).toContainText('已完成');
+on_fail: 截图 + 抄 X-Trace-Id

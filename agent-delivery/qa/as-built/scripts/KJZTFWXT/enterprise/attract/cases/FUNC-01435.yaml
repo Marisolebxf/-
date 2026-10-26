@@ -1,115 +1,29 @@
 id: FUNC-01435
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01435
 priority: P0
-title: 主流程-最近分析列
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
 tier: B
-preconditions:
-  - 已登录，可从企业分析进入招引企业推荐分析
-locators:
-  recent_tab: Tab「最近分析」
-  history_heading: 招引推荐 · 最近分析
+title: 主流程-最近分析列
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history
-  - action: wait
-    for: 招引页 SPA 渲染
-    timeout_ms: 2500
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=history
   - action: evaluate
-    note: 打开「最近分析」（深链 entry=history 或点 Tab）；表头六列在 expect 判定
+    note: 打开「最近分析」
+    assert: |-
+      const tab = page.getByRole('tab', { name: '最近分析' });
+      if ((await tab.getAttribute('aria-selected')) !== 'true') {
+        await tab.click();
+        await expect(tab).toHaveAttribute('aria-selected', 'true', { timeout: 15000 });
+      }
+      await expect(page.getByTestId('recruit-tab-stack')).toBeVisible({ timeout: 15000 });
 expect:
   - note: 列名为任务名称、条件摘要、企业摘要、创建时间、状态、操作
     assert: |-
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const waitFilterReady = async () => {
-        for (let i = 0; i < 24; i++) {
-          const tag = page.locator('input[placeholder="全部企业标签"]').first();
-          if (await tag.isVisible().catch(() => false)) return;
-          await page.waitForTimeout(500);
-        }
-        throw new Error('条件区未渲染，url=' + page.url());
-      };
-      const historyDeepLink = async () => {
-        const origin = new URL(page.url()).origin;
-        await page.goto(
-          origin +
-            '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history',
-          { waitUntil: 'domcontentloaded' },
-        );
-        await page.waitForTimeout(1200);
-      };
-      const hasHistoryTab = async () => {
-        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
-        const byName = page.getByRole('tab', { name: '最近分析' });
-        return (await byKey.count()) > 0 || (await byName.count()) > 0;
-      };
-      const openRecentTab = async () => {
-        await waitFilterReady().catch(() => {});
-        if (await hasHistoryTab()) {
-          const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
-          if ((await tab.count()) < 1) {
-            const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
-            await expect(legacy).toBeVisible({ timeout: 12000 });
-            await legacy.click({ timeout: 8000 });
-          } else {
-            await expect(tab).toBeVisible({ timeout: 12000 });
-            await tab.click({ timeout: 8000 });
-          }
-          await page.waitForTimeout(900);
-          return;
-        }
-        await historyDeepLink();
-        if (!(await hasHistoryTab()) && !/招引推荐 · 最近分析/.test(await stack().innerText().catch(() => ''))) {
-          throw new Error(
-            '环境闸门 ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/深链（仅条件筛选+候选工作台时不自动化本用例）',
-          );
-        }
-      };
-      const waitHistoryShell = async () => {
-        const st = stack();
-        for (let i = 0; i < 30; i++) {
-          const t = await st.innerText().catch(() => '');
-          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
-            return;
-          }
-          await page.waitForTimeout(500);
-        }
-        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
-      };
-      const readTableHeaders = async () => {
-        const st = stack();
-        const tbl = st.locator('.arco-table').first();
-        if (await tbl.count()) {
-          const ths = await tbl.locator('.arco-table-th').allInnerTexts();
-          return ths.map((h) => h.replace(/\s+/g, ' ').trim()).filter(Boolean);
-        }
-        const t = await st.innerText({ timeout: 8000 });
-        const want = ['任务名称', '条件摘要', '企业摘要', '创建时间', '状态', '操作'];
-        return want.filter((c) => t.includes(c));
-      };
-      await dismissBasket();
-      await openRecentTab();
-      await waitHistoryShell();
-      await expect(stack().getByText('招引推荐 · 最近分析').first()).toBeVisible({ timeout: 10000 });
-      const required = ['任务名称', '条件摘要', '企业摘要', '创建时间', '状态', '操作'];
-      const headers = await readTableHeaders();
-      const missing = required.filter((c) => !headers.includes(c));
-      if (missing.length) {
-        const body = await stack().innerText().catch(() => '');
-        throw new Error('最近分析表头缺列：' + missing.join('、') + '；现场=' + headers.join('|') + '；片段=' + body.slice(0, 220));
+      const stack = page.getByTestId('recruit-tab-stack');
+      const headers = ['任务名称', '条件摘要', '企业摘要', '创建时间', '状态', '操作'];
+      for (const name of headers) {
+        await expect(stack.locator('th').filter({ hasText: name }).first()).toBeVisible({ timeout: 15000 });
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 /enterprise-center/attraction&entry=history；步骤=点「最近分析」Tab（data-tab-key=history）或深链兜底。机检六列：任务名称/条件摘要/企业摘要/创建时间/状态/操作（scout history 表头同源）。D4·2026-10-20 机跑 30888 仍为 demo 两 Tab 无最近分析→交卷 blocked·ENV-ATTRACT-NO-HISTORY-TAB-001（与 FUNC-01414~016 同闸门）。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,37 +1,37 @@
 id: FUNC-04501
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04501
-priority: P0
+priority: P1
 tier: B
 title: 主流程-分析记录列
 entry_id: svc-chain-graph
-preconditions:
-  - 产业领域已选「新一代信息技术」
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
   - action: evaluate
-    assert: |-
-      const cascader = page.locator('.arco-cascader-view').first();
-      await cascader.click();
-      await page.getByText('新一代信息技术', { exact: true }).click();
-      await expect(page.getByText('新一代信息技术')).toBeVisible();
+    target: |-
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]');
+      await cfg.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-panel').getByText('新一代信息技术', { exact: true }).click();
   - action: click
     target: 分析记录
 expect:
   - note: 表头为「任务」「类型」「状态」「创建时间」「操作」
     assert: |-
-      const table = page.locator('.arco-table').last();
+      const records = page.locator('[data-testid="svc-eco-analysis-records"]');
+      const table = records.locator('.arco-table');
       for (const h of ['任务', '类型', '状态', '创建时间', '操作']) {
-        await expect(table.locator('th').filter({ hasText: new RegExp(`^${h}$`) })).toBeVisible();
+        await expect(table.getByText(h, { exact: true }).first()).toBeVisible();
       }
   - note: 行上有「查看过程」与「查看结果」
     assert: |-
-      const table = page.locator('.arco-table').last();
+      const records = page.locator('[data-testid="svc-eco-analysis-records"]');
+      const table = records.locator('.arco-table');
       await expect(table.getByRole('button', { name: '查看过程' }).first()).toBeVisible();
       await expect(table.getByRole('button', { name: '查看结果' }).first()).toBeVisible();
   - note: 已有行状态为「已完成」
     assert: |-
-      const table = page.locator('.arco-table').last();
-      await expect(table.getByText('已完成', { exact: true }).first()).toBeVisible();
+      const records = page.locator('[data-testid="svc-eco-analysis-records"]');
+      await expect(records.getByText('已完成').first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

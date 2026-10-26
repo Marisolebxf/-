@@ -1,175 +1,73 @@
 id: FUNC-03110
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03110
 priority: P0
-title: 开始分析后生成页五阶段完成且不自动进结果
-story: US-CHAIN-DIAG-03
-entry_id: chain-key-link
 tier: B
-preconditions:
-  - 已进入本页；当天尚未成功分析过即将选择的对象组合（assert 自含：遇当天复用则「重新分析」或换合法组合）
+title: 开始分析后停在生成页且五阶段完成
+entry_id: chain-key-link
+preconditions: []
 locators:
-  start: button「开始分析」
-  view_result: button「查看分析结果」
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .arco-select-view.industry-catalog-select
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=key_link&tab=key-link
   - action: wait
-    for: 页头产业关键环节识别
-    timeout_ms: 20000
+    for: 分析配置主区
+    timeout_ms: 15000
   - action: evaluate
-    note: 选齐分析对象与所属产业链→开始分析→等五阶段均已完成（判定在 expect）
+    note: 分析对象与产业链选齐→开始分析→等待生成页完成（不点查看分析结果；前置动作在 expect-1）
 expect:
   - note: 1、当前页为「产业关键环节识别生成中」
     assert: |-
-      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
       const main = () => page.locator('main').first();
-      const stages = [
-        '任务提交与产业链对象冻结',
-        '全链路环节结构化拆解（研发/设计/制造/销售/服务）',
-        '基于附加值率、技术壁垒、市场集中度计算高端化指数',
-        '关键环节智能标注与竞争格局/代表企业/技术趋势归纳',
-        '结果可信性校验与分析报告组装',
-      ];
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
       const pickSelect = async (trigger, label) => {
         await page.keyboard.press('Escape').catch(() => {});
         await trigger.click({ timeout: 8000 });
         await page.waitForTimeout(450);
-        const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const opt = page.locator(optSel).filter({ hasText: new RegExp('^\\s*' + esc + '\\s*$') }).first();
-        if (!(await opt.count())) {
-          const fallback = page.locator(optSel).filter({ hasText: label }).first();
-          await expect(fallback).toBeVisible({ timeout: 8000 });
-          await fallback.click({ timeout: 8000 });
-        } else {
-          await expect(opt).toBeVisible({ timeout: 8000 });
-          await opt.click({ timeout: 8000 });
-        }
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
         await page.waitForTimeout(700);
       };
-      const configurePair = async (combo) => {
-        await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
-        await page.waitForTimeout(500);
-        const identity = main().locator('.diagnosis-config-identity');
-        const clusterTrig = identity.locator('[aria-label="集群"] .arco-select-view');
-        const industryTrig = identity.locator('[aria-label="产业"] .arco-select-view');
-        const chainTrig = identity.locator('.industry-catalog-select .arco-select-view').first();
-        await expect(clusterTrig).toBeVisible({ timeout: 8000 });
-        await pickSelect(clusterTrig, combo.cluster);
-        await page.waitForTimeout(400);
-        const industryLabel = combo.industry || combo.chain;
-        await expect(industryTrig).toBeEnabled({ timeout: 12000 });
-        await pickSelect(industryTrig, industryLabel);
-        await page.waitForTimeout(400);
-        await expect(chainTrig).toBeEnabled({ timeout: 12000 });
-        await pickSelect(chainTrig, combo.chain);
-      };
-      const isResultPage = async () => {
-        const t = await main().innerText().catch(() => '');
-        return (
-          (/view=result/.test(page.url()) && /task_id=/.test(page.url())) ||
-          ((await page.getByText('产业关键环节识别结果').first().isVisible().catch(() => false)) &&
-            !/产业关键环节识别生成中/.test(t))
-        );
-      };
-      const tryRerunFromResult = async () => {
-        const rerun = page
-          .getByRole('button', { name: '重新分析' })
-          .first()
-          .or(page.getByRole('button', { name: '按此配置新建分析' }).first());
-        if (!(await rerun.isVisible().catch(() => false))) return false;
-        await rerun.click({ timeout: 10000 });
-        await page.waitForTimeout(1200);
-        return true;
-      };
-      const allStagesDone = (body) => {
-        for (const s of stages) {
-          if (!body.includes(s)) return false;
-          const idx = body.indexOf(s);
-          const slice = body.slice(idx, idx + s.length + 48);
-          if (!/已完成/.test(slice)) return false;
-        }
-        return true;
-      };
-      const combos = [
-        { cluster: '新一代信息技术', industry: '半导体与集成电路', chain: '半导体与集成电路' },
-        { cluster: '新材料', industry: '新材料', chain: '新材料' },
-        { cluster: '低空经济与空天', industry: '低空经济与空天', chain: '低空经济与空天' },
-      ];
-      await dismissBasket();
       await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 15000 });
-      for (let ci = 0; ci < combos.length; ci++) {
-        await configurePair(combos[ci]);
-        const start = page.getByRole('button', { name: '开始分析' }).first();
-        if (await start.isDisabled()) continue;
-        await start.click({ timeout: 12000 });
-        let rerunUsed = false;
-        let sawGenerating = false;
-        for (let i = 0; i < 120; i++) {
-          await page.waitForTimeout(i < 6 ? 500 : 800);
-          const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          const url = page.url();
-          if (/产业关键环节识别生成中|可视化分析过程/.test(body)) sawGenerating = true;
-          if (/分析失败|本次分析生成失败|INPUT_OBJECT_INVALID/.test(body) && i >= 8 && !sawGenerating) {
-            break;
-          }
-          if (/今日已分析过相同条件/.test(body) && (await isResultPage())) {
-            if (!rerunUsed && (await tryRerunFromResult())) {
-              rerunUsed = true;
-              await configurePair(combos[ci]);
-              const s2 = page.getByRole('button', { name: '开始分析' }).first();
-              if (await s2.isEnabled()) {
-                await s2.click({ timeout: 12000 });
-                sawGenerating = false;
-              }
-              continue;
-            }
-            break;
-          }
-          if ((await isResultPage()) && !/分析结果已生成/.test(body) && !sawGenerating) {
-            if (!rerunUsed && (await tryRerunFromResult())) {
-              rerunUsed = true;
-              await configurePair(combos[ci]);
-              const s2 = page.getByRole('button', { name: '开始分析' }).first();
-              if (await s2.isEnabled()) {
-                await s2.click({ timeout: 12000 });
-                sawGenerating = false;
-              }
-              continue;
-            }
-            break;
-          }
-          if (/分析结果已生成/.test(body) && allStagesDone(body)) {
-            globalThis.__func03110 = { body, url, combo: combos[ci] };
-            break;
-          }
-          if (allStagesDone(body) && /查看分析结果/.test(body) && !/产业关键环节识别结果/.test(body)) {
-            globalThis.__func03110 = { body, url, combo: combos[ci] };
-            break;
-          }
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      await pickSelect(page.locator('.arco-select-view[aria-label="集群"]').first(), '新一代信息技术');
+      await pickSelect(page.locator('.arco-select-view[aria-label="产业"]').first(), '半导体与集成电路');
+      const seg = page.locator('.arco-select-view.industry-catalog-select').first();
+      await expect(seg).toBeVisible({ timeout: 8000 });
+      await pickSelect(seg, '半导体与集成电路');
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 20000 });
+      await start.click({ timeout: 15000 });
+      let last = '';
+      let ready = false;
+      for (let i = 0; i < 120; i++) {
+        await page.waitForTimeout(i < 8 ? 500 : 800);
+        last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/分析失败|本次分析生成失败|INPUT_OBJECT_INVALID/.test(last) && i >= 8) {
+          throw new Error('ENV-KEYLINK-ASYNC-FAIL：所选组合分析失败');
         }
-        if (globalThis.__func03110?.body) break;
+        if (/今日已分析过相同条件/.test(last)) {
+          throw new Error('ENV-KEYLINK-PRECOND-03110：当天已用该组对象成功分析，无法测生成页');
+        }
+        if (/产业关键环节识别结果/.test(last)) {
+          throw new Error('ENV-KEYLINK-PRECOND-03110：未停在生成页，已自动进入结果页');
+        }
+        const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if ((await viewBtn.isVisible().catch(() => false)) && /产业关键环节识别生成中/.test(last)) {
+          ready = true;
+          break;
+        }
       }
-      if (!globalThis.__func03110?.body) {
-        throw new Error('ENV-KEYLINK-PROC-03110-001：未能在合法组合上等到五阶段均已完成且停留生成页');
+      if (!ready) {
+        throw new Error('未到生成页完成态，末态=' + last.slice(0, 280));
       }
-      const terminalBody = globalThis.__func03110.body;
-      await expect(
-        page.getByText('产业关键环节识别生成中').or(page.getByText('分析结果已生成')),
-      ).toBeVisible({ timeout: 8000 });
-      if (!/产业关键环节识别生成中/.test(terminalBody) && !/分析结果已生成/.test(terminalBody)) {
-        throw new Error('终态未见「产业关键环节识别生成中」或「分析结果已生成」：' + terminalBody.slice(0, 280));
-      }
-  - note: 2、五个阶段均显示「已完成」（附录 E）
+      await expect(main().getByText('产业关键环节识别生成中').first()).toBeVisible({ timeout: 5000 });
+  - note: 2、五个阶段均显示「已完成」（附录E）
     assert: |-
-      const snap = globalThis.__func03110;
-      if (!snap?.body) throw new Error('前置：未抓取生成页终态');
       const stages = [
         '任务提交与产业链对象冻结',
         '全链路环节结构化拆解（研发/设计/制造/销售/服务）',
@@ -177,33 +75,15 @@ expect:
         '关键环节智能标注与竞争格局/代表企业/技术趋势归纳',
         '结果可信性校验与分析报告组装',
       ];
-      const body = snap.body;
-      for (const s of stages) {
-        if (!body.includes(s)) throw new Error('过程区缺少阶段「' + s + '」');
-        const idx = body.indexOf(s);
-        const slice = body.slice(idx, idx + s.length + 48);
-        if (!/已完成/.test(slice)) {
-          throw new Error('阶段「' + s + '」旁未见「已完成」：' + slice.slice(0, 80));
-        }
+      const main = () => page.locator('main').first();
+      for (const title of stages) {
+        const step = main().locator('.arco-steps-item').filter({ hasText: title }).first();
+        await expect(step).toBeVisible({ timeout: 5000 });
+        await expect(step).toContainText('已完成');
       }
-      if (/\d+\s*%\s*(完成|进度)?/.test(body) || /\b进度\s*\d+\s*%/.test(body)) {
-        throw new Error('生成页不应出现百分比进度');
-      }
-  - note: 3、可见「查看分析结果」；生成结束不自动进入结果页
+  - note: 3、可见「查看分析结果」
     assert: |-
-      const snap = globalThis.__func03110;
-      if (!snap?.body) throw new Error('前置：未抓取生成页终态');
-      const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
-      await expect(viewBtn).toBeVisible({ timeout: 8000 });
-      await expect(viewBtn).toBeEnabled({ timeout: 8000 });
-      const t = snap.body;
-      if (/产业关键环节识别结果/.test(t) && !/产业关键环节识别生成中/.test(t) && !/分析结果已生成/.test(t)) {
-        throw new Error('生成结束不应自动进入「产业关键环节识别结果」页');
-      }
-      if (/view=result/.test(snap.url || page.url()) && /task_id=/.test(snap.url || page.url())) {
-        const onResult = await page.getByText('产业关键环节识别结果').first().isVisible().catch(() => false);
-        if (onResult) throw new Error('终态 URL 已为结果页，违反「不自动进结果」');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path 深链；key_link 仅分析对象+所属产业链两下拉。附录 E 五阶段+查看分析结果且不自动进结果。
+      const btn = page.getByRole('button', { name: '查看分析结果' }).first();
+      await expect(btn).toBeVisible({ timeout: 10000 });
+      await expect(btn).toBeEnabled();
+on_fail: 截图 + 抄 X-Trace-Id

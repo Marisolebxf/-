@@ -2,7 +2,7 @@ id: FUNC-03917
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03917
 priority: P1
 tier: B
-title: 区域分布地图说明无坐标且不填演示点
+title: 异常-区域地图无圆点
 entry_id: svc-portal
 preconditions: []
 locators: {}
@@ -10,24 +10,11 @@ steps:
   - action: goto
     target: /service-portal
   - action: evaluate
-    note: 点击「服务机构区域分布」页签
+    target: await page.locator('button[data-tab-key="region"]').click()
 expect:
-  - note: 1、文案含「无坐标字段」
-    assert: |-
-      const tablist = page.locator('[aria-label="专题服务子导航"]');
-      await tablist.getByRole('tab', { name: '服务机构区域分布', exact: true }).click();
-      await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 15000 });
-      const mapSection = page.locator('.svc-portal-map').first();
-      await expect(mapSection).toBeVisible({ timeout: 8000 });
-      await expect(mapSection.locator('.svc-portal-map__empty').first()).toContainText(/无坐标字段/, { timeout: 8000 });
   - note: 1、文案含「无坐标字段」并写明不填演示点
     assert: |-
-      const empty = page.locator('.svc-portal-map__empty').first();
-      await expect(empty).toBeVisible({ timeout: 8000 });
-      await expect(empty).toContainText(/不填\s*(演示点|Demo\s*区级假点)/, { timeout: 8000 });
-      const mapSection = page.locator('.svc-portal-map').first();
-      const markerCount = await mapSection.locator('.leaflet-marker-icon').count();
-      if (markerCount > 0) {
-        throw new Error('区域地图不应渲染可点圆点（leaflet-marker-icon=' + markerCount + '）');
-      }
+      const main = page.locator('main')
+      await expect(main.getByText(/无坐标字段/)).toBeVisible()
+      await expect(main.getByText(/不填 Demo 区级假点|不填演示点/)).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

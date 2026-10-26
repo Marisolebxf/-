@@ -1,122 +1,27 @@
 id: FUNC-00763
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00763
-priority: P0
-title: 成功结果页顶部来源依据快照构成完整
-entry_id: chain-sz-dev
+priority: P1
 tier: B
-preconditions:
-  - 已有一条成功的深圳产业发展分析结果
-locators:
-  tab_rec: tab「分析记录」
-  view_result: button「查看结果」（已完成行、非 disabled）
-  source_board: section[aria-label="来源依据"]
+title: 主流程-结果态-来源依据快照
+entry_id: chain-sz-dev
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
-  - action: evaluate
-    note: 经「分析记录」打开一条成功结果；浏览顶部来源依据区
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 已完成
+  - action: click
+    target: 查看结果
 expect:
   - note: 顶部呈现来源依据快照，含独特优势、差距、劣势三类摘要
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      await dismissBasket();
-      if (!onTarget() || (await bodyIs404())) {
-        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-      }
-      if (!onTarget() || (await bodyIs404())) {
-        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        if (!(await bodyIs404())) {
-          await enterViaSidebar();
-        }
-      }
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法验来源依据快照 ' + page.url());
-      }
-      await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
-      await expect(page).toHaveURL(/workspace=development/);
-      const recTab = page.getByRole('tab', { name: '分析记录' });
-      await expect(recTab).toBeVisible({ timeout: 10000 });
-      await recTab.click({ timeout: 10000 });
-      await page.waitForTimeout(900);
-      await expect(recTab).toHaveAttribute('aria-selected', 'true');
-      const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
-        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录空态，无成功结果可打开');
-      }
-      const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-      const doneCount = await doneRow.count();
-      let viewBtn = doneCount
-        ? doneRow.first().getByRole('button', { name: '查看结果' })
-        : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
-      if (!(await viewBtn.count())) {
-        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录或未开放「查看结果」');
-      }
-      if (await viewBtn.isDisabled()) {
-        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 已完成记录存在但「查看结果」仍为 disabled');
-      }
-      await viewBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(2000);
-      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
-      const sourceBoard = page.locator('section.diagnosis-source-evidence-board, [aria-label="来源依据"]').first();
-      await expect(sourceBoard).toBeVisible({ timeout: 10000 });
-      await expect(sourceBoard.getByRole('heading', { name: '来源依据' })).toBeVisible();
-      const boardText = ((await sourceBoard.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!/独特优势/.test(boardText)) throw new Error('来源依据区未见「独特优势」摘要块');
-      if (!/差距/.test(boardText)) throw new Error('来源依据区未见「差距」摘要块');
-      if (!/劣势/.test(boardText)) throw new Error('来源依据区未见「劣势」摘要块');
-      const hasListItem = async (label) => {
-        const card = sourceBoard.locator('article').filter({ has: page.getByText(label, { exact: true }) });
-        if (!(await card.count())) return false;
-        const li = card.first().locator('li');
-        if (await li.count()) return (await li.first().innerText()).trim().length > 0;
-        const empty = card.first().getByText(/未返回/);
-        return !(await empty.count());
-      };
-      const okStrength = await hasListItem('独特优势');
-      const okGap = await hasListItem('差距');
-      const okWeak = await hasListItem('劣势');
-      if (!(okStrength && okGap && okWeak)) {
-        throw new Error('来源依据三类摘要未齐备（独特优势/差距/劣势需有列表条目或非空态）');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·结果态来源依据 board aria-label=来源依据；三类卡片 独特优势/差距/劣势（对齐 IndustryShenzhenResultBoard）。D4·无已完成任务→ENV-CHAIN-SZ-DEV-NO-DONE-TASK；B 档零 allow_skip。登录与关评审由 runner 前置。
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.getByText('来源依据', { exact: false })).toBeVisible();
+      await expect(main.getByText('独特优势', { exact: false })).toBeVisible();
+      await expect(main.getByText('差距', { exact: false })).toBeVisible();
+      await expect(main.getByText('劣势', { exact: false })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

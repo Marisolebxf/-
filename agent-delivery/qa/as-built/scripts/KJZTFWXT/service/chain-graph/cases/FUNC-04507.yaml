@@ -1,6 +1,6 @@
 id: FUNC-04507
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04507
-priority: P0
+priority: P1
 tier: B
 title: 备选-当天再次开始分析
 entry_id: svc-chain-graph
@@ -9,16 +9,61 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: wait
+    ms: 1500
+  - action: click
+    target: 服务链图谱分析
+    locator: |-
+      page.getByText('服务链图谱分析', { exact: true }).last()
+  - action: wait
+    ms: 800
+  - action: evaluate
+    target: |-
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]');
+      await cfg.locator('.arco-cascader-view').first().click();
+      await page.locator('.arco-cascader-list-column').first().getByText('新一代信息技术', { exact: true }).click({ timeout: 15000 });
+      await cfg.getByRole('radio', { name: '① 仅机构' }).click();
+      await cfg.locator('[data-testid="svc-eco-start-analysis"]').click();
+      await expect(page.getByText('分析结果已生成')).toBeVisible({ timeout: 90000 });
+      await page.locator('main').getByRole('button', { name: '查看结果' }).click({ timeout: 30000 });
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 30000 });
+      const bodyText = await page.locator('main').first().innerText();
+      const m = bodyText.match(/任务 ID\\s*(SVC-[A-Za-z0-9-]+)/);
+      const taskNo = m ? m[1] : '';
+      const u = new URL(page.url());
+      const tid = u.searchParams.get('task_id') || taskNo;
+      await page.evaluate((id) => { window.__qaFunc04507FirstTaskId = id; }, tid);
+  - action: click
+    target: 返回配置
+    locator: |-
+      page.locator('main').getByRole('button', { name: '返回配置' })
+  - action: wait
+    ms: 800
+  - action: evaluate
+    target: |-
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]');
+      await cfg.locator('.arco-cascader-view').first().click();
+      await page.locator('.arco-cascader-list-column').first().getByText('新一代信息技术', { exact: true }).click({ timeout: 15000 });
+      await cfg.getByRole('radio', { name: '① 仅机构' }).click();
+  - action: click
+    target: 开始分析
+    locator: |-
+      page.locator('main [data-testid="svc-eco-start-analysis"]')
 expect:
-  - note: 打开该条件当天已有结果
+  - note: 1、打开该条件当天已有结果
     assert: |-
-      await page.getByText('新一代信息技术', { exact: true }).click();
-      await page.getByText('① 仅机构', { exact: true }).click();
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await expect(page.getByRole('button', { name: '重新分析' })).toBeVisible({ timeout: 60000 });
-  - note: 不新增分析任务
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 90000 });
+      await expect(page.locator('main').getByRole('button', { name: '重新分析' })).toBeVisible({ timeout: 15000 });
+  - note: 2、不新增分析任务
     assert: |-
-      await expect(page.getByText('分析任务已创建')).toHaveCount(0);
-      await expect(page.getByText('正在分析')).toHaveCount(0);
-      await expect(page.getByText('分析进行中')).toHaveCount(0);
+      const firstId = await page.evaluate(() => window.__qaFunc04507FirstTaskId || '');
+      const bodyText = await page.locator('main').first().innerText();
+      const m = bodyText.match(/任务 ID\\s*(SVC-[A-Za-z0-9-]+)/);
+      const currentFromBody = m ? m[1] : '';
+      const u = new URL(page.url());
+      const currentId = u.searchParams.get('task_id') || currentFromBody;
+      if (firstId) {
+        expect(currentId).toBe(firstId);
+      }
+      await expect(page.getByText('分析结果已生成')).not.toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

@@ -1,46 +1,41 @@
 id: FUNC-03901
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03901
-priority: P0
+priority: P1
 tier: B
-title: 分析画像抽屉四区块标题与行机构名
-story: US-SVC-PT-04
+title: 主流程-分析画像抽屉区块
 entry_id: svc-portal
-preconditions:
-  - 已打开服务机构技术能力（runner 会话前置 + 门户 Tab 切换）
-locators:
-  tab_cap: tab「服务机构技术能力」
-  btn_profile: 行内「分析画像」
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /service-portal
+    target: /service-portal/capability-rank
   - action: evaluate
-    note: 进入「服务机构技术能力」并点击首行「分析画像」
+    note: 点击一行「分析画像」
 expect:
   - note: 1、抽屉标题为「机构画像」加该行机构名
     assert: |-
       if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-30892-ENTRY-404: /service-portal SPA404 url=' + page.url());
+        throw new Error('ENV-30892-ENTRY-404: capability-rank url=' + page.url());
       }
-      const tablist = page.locator('[aria-label="专题服务子导航"]');
-      await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
       await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
       await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 15000 });
       const firstOrg = page.locator('main .svc-portal-org__name').first();
       await expect(firstOrg).toBeVisible({ timeout: 20000 });
       const emptyVisible = await page.getByText(/暂无覆盖机构入榜|该产业上下文暂无覆盖机构入榜/).first().isVisible().catch(() => false);
       if (emptyVisible) {
-        throw new Error('ENV-SVC-PORTAL-TECH-RANK-EMPTY：榜诚实空，无行可点「分析画像」（Q060）');
+        throw new Error('ENV-SVC-PORTAL-TECH-RANK-EMPTY：榜无行可点「分析画像」');
       }
-      const firstRow = page.locator('main .arco-table tbody tr').first();
       const orgName = ((await firstOrg.innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!orgName) throw new Error('未能读取首行机构名');
+      const firstRow = page.locator('main .arco-table tbody tr').first();
       const profileBtn = firstRow.getByRole('button', { name: '分析画像' });
       await expect(profileBtn).toBeEnabled({ timeout: 8000 });
       await profileBtn.click();
-      const drawerWrap = page.locator('.arco-drawer-wrapper:visible').last();
-      await expect(drawerWrap).toBeVisible({ timeout: 20000 });
-      await expect(page.locator('[data-testid="svc-org-profile-drawer"]')).toBeVisible({ timeout: 15000 });
-      const titleText = ((await drawerWrap.locator('.arco-drawer-header').innerText()) || '').replace(/\s+/g, ' ').trim();
+      const drawerBody = page.locator('[data-testid="svc-org-profile-drawer"]');
+      await expect(drawerBody).toBeVisible({ timeout: 20000 });
+      const titleEl = page.locator('.svc-org-drawer-title').filter({ hasText: '机构画像' });
+      await expect(titleEl).toBeVisible({ timeout: 10000 });
+      const titleText = ((await titleEl.innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!/机构画像/.test(titleText)) {
         throw new Error('抽屉标题未含「机构画像」：' + titleText);
       }
@@ -70,7 +65,4 @@ expect:
           throw new Error('区块顺序不符：期望=' + expected.join('>') + '；现场=' + normalized.join('>'));
         }
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  抽屉标题「机构画像：{机构名}」。Tab /service-portal/capability-rank；goto /service-portal。
-  机检与 03902 同构：导航与开抽屉在 expect-1，expect-2 验四区块 h4。
+on_fail: 截图 + 抄 X-Trace-Id

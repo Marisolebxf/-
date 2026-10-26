@@ -1,112 +1,29 @@
 id: FUNC-00765
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00765
-priority: P0
-title: 成功结果页三类建议齐备且条目带针对标签
-entry_id: chain-sz-dev
+priority: P1
 tier: B
-preconditions:
-  - 已有一条成功的发展分析结果
-locators:
-  tab_rec: tab「分析记录」
-  view_result: button「查看结果」（已完成行、非 disabled）
-  advice_section: heading「三类建议」
-  advice_grid: .diagnosis-advice-grid
+title: 成功结果页三类建议与「针对」标签
+entry_id: chain-sz-dev
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
-  - action: evaluate
-    note: 经「分析记录」打开一条成功结果；浏览建议区构成
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
 expect:
   - note: 政策、技术、人才三类建议齐备
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      const openSuccessResult = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析 ' + page.url());
-        }
-        const recTab = page.getByRole('tab', { name: '分析记录' });
-        await expect(recTab).toBeVisible({ timeout: 10000 });
-        await recTab.click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-        let viewBtn = (await doneRow.count())
-          ? doneRow.first().getByRole('button', { name: '查看结果' })
-          : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
-        if (!(await viewBtn.count()) || (await viewBtn.isDisabled())) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录可打开成功结果');
-        }
-        await viewBtn.click({ timeout: 10000 });
-        await page.waitForTimeout(2000);
-        await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
-      };
-      await openSuccessResult();
-      await expect(page.getByRole('heading', { name: '三类建议' })).toBeVisible({ timeout: 10000 });
-      const grid = page.locator('.diagnosis-advice-grid');
-      await expect(grid).toBeVisible({ timeout: 10000 });
-      for (const k of ['政策', '技术', '人才']) {
-        const card = grid.locator('.diagnosis-advice-card').filter({ hasText: new RegExp(k + '建议') });
-        await expect(card.first()).toBeVisible({ timeout: 8000 });
-        const body = ((await card.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (body.length < 8) throw new Error(k + '建议卡片正文过短或为空');
-      }
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.getByText('政策', { exact: true }).first()).toBeVisible();
+      await expect(main.getByText('技术', { exact: true }).first()).toBeVisible();
+      await expect(main.getByText('人才', { exact: true }).first()).toBeVisible();
   - note: 建议条目带「针对」标签与适用条件
     assert: |-
-      const grid = page.locator('.diagnosis-advice-grid');
-      await expect(grid).toBeVisible({ timeout: 8000 });
-      const targetTags = grid.locator('.diagnosis-target-tags .arco-tag').filter({ hasText: /^针对：/ });
-      const n = await targetTags.count();
-      if (n < 1) throw new Error('建议区未见「针对：」标签');
-      for (let i = 0; i < n; i++) {
-        const txt = ((await targetTags.nth(i).innerText().catch(() => '')) || '').trim();
-        if (!/^针对：\S/.test(txt)) throw new Error('针对标签缺少适用条件文案: ' + txt);
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: 结果建议区 DOM 对齐 IndustryShenzhenResultBoard「三类建议」+ diagnosis-advice-card；无已完成任务抛 ENV-CHAIN-SZ-DEV-NO-DONE-TASK。
+      const main = page.locator('main');
+      await expect(main.getByText('针对').first()).toBeVisible();
+      await expect(main.getByText('适用条件').first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

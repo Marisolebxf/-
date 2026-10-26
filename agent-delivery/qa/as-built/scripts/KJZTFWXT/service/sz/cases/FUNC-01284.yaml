@@ -1,30 +1,61 @@
 id: FUNC-01284
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01284
-priority: P0
+priority: P1
 tier: B
-title: 主流程-产业领域下拉
+title: 主流程-产业领域下拉 15 项
 entry_id: svc-sz
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: wait
+    target: 2000ms
+  - action: evaluate
+    target: |-
+      const main = page.locator('main');
+      const ctx = main.getByTestId('svc-eco-analysis-context');
+      await expect(ctx).toBeVisible({ timeout: 20000 });
+      await ctx.locator('.svc-portal-industry-cascader .arco-cascader-view').click();
+      const panel = page.locator('.arco-cascader-popup:visible .arco-cascader-panel').last();
+      await expect(panel).toBeVisible({ timeout: 15000 });
 expect:
-  - note: 配置区有产业领域选择和「开始分析」
+  - note: 1、配置区有产业领域选择和「开始分析」
     assert: |-
-      await expect(page.getByText('产业领域', { exact: true }).first()).toBeVisible();
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
-  - note: 未选时占位为「选择产业集群」
+      const ctx = page.locator('main').getByTestId('svc-eco-analysis-context');
+      await expect(ctx.getByText('产业领域', { exact: true })).toBeVisible();
+      await expect(page.getByTestId('svc-eco-start-analysis')).toBeVisible();
+  - note: 2、选项共 15 个，名称见附录 A
     assert: |-
-      const industrySelect = page.locator('.arco-select').filter({ has: page.getByText('产业领域', { exact: true }) }).first();
-      const clearIcon = industrySelect.locator('.arco-select-clear-icon');
-      if (await clearIcon.isVisible()) {
-        await clearIcon.click();
+      const expected = [
+        '新一代信息技术',
+        '生物',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意',
+        '海洋',
+        '未来制造',
+        '未来信息',
+        '未来能源',
+        '未来空间',
+        '未来健康',
+      ];
+      const ctx = page.locator('main').getByTestId('svc-eco-analysis-context');
+      await ctx.locator('.arco-cascader-view').click();
+      const panel = page.locator('.arco-cascader-popup:visible .arco-cascader-panel').last();
+      await expect(panel).toBeVisible({ timeout: 15000 });
+      const col = panel.locator('.arco-cascader-panel-column').first();
+      await expect(col.locator('.arco-cascader-option')).toHaveCount(15, { timeout: 10000 });
+      for (const name of expected) {
+        await expect(col.locator('.arco-cascader-option-label').filter({ hasText: name })).toHaveCount(1);
       }
-      await expect(industrySelect.locator('.arco-select-view')).toContainText('选择产业集群');
-  - note: 选项共 15 个，名称见附录 A
+  - note: 3、未选时占位为「选择产业集群」
     assert: |-
-      const industrySelect = page.locator('.arco-select').filter({ has: page.getByText('产业领域', { exact: true }) }).first();
-      await industrySelect.locator('.arco-select-view').click();
-      await expect(page.locator('.arco-select-option')).toHaveCount(15);
+      const ctx = page.locator('main').getByTestId('svc-eco-analysis-context');
+      const input = ctx.locator('.arco-cascader input[placeholder]').first();
+      await expect(input).toHaveAttribute('placeholder', '选择产业集群', { timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

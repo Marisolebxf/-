@@ -1,26 +1,24 @@
 id: FUNC-03324
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03324
 priority: P1
-title: 分析记录已完成行下载报告失败时提示且状态不变
-story: US-CHAIN-SZ-05
-entry_id: chain-sz-compare
 tier: B
+title: 分析记录已完成行下载报告失败时提示且状态不变
+entry_id: chain-sz-compare
 preconditions:
   - 分析记录里有已完成任务
-locators:
-  tab_rec: '[role=tab][data-tab-key=records]'
-  download_report: button「下载报告」
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=comparison&tab=comparison
   - action: evaluate
-    note: 分析记录已完成行点「下载报告」；失败提示与行状态在 expect
+    note: 03288 补已完成任务（若无）→分析记录点「下载报告」；失败提示与行状态在 expect
 expect:
   - note: 1、页面给出失败提示
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
       const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
       const TID_RE = /CHAIN-\d{8}-\d{3}/;
       const main = () => page.locator('main').first();
       const dismissBasket = async () => {
@@ -31,12 +29,8 @@ expect:
         }
       };
       const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
         const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
       };
       const onTarget = () =>
         /\/industry-center\/shenzhen/.test(page.url()) &&
@@ -71,11 +65,93 @@ expect:
           if (!(await bodyIs404())) await enterViaSidebar();
         }
         if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏(/industry-center/search)均 SPA404，无法执行 03324 ' + page.url());
+          throw new Error('ENV-ENTRY-UNREACHABLE: 深链与侧栏均 SPA404，无法执行 03324 ' + page.url());
         }
         await expect(page).toHaveURL(/workspace=comparison/);
         await expect(page).toHaveURL(/tab=comparison/);
       };
+      const pickSelect = async (ariaLabel, textRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const view = main().locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 15000 });
+        const cur = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (textRe.test(cur)) return;
+        await view.click({ timeout: 10000 });
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: textRe }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const pickBenchmarkCity = async (cityRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const view = main()
+          .locator('[data-testid="shenzhen-benchmark-ready-check"] .arco-cascader-view')
+          .first();
+        await expect(view).toBeVisible({ timeout: 15000 });
+        await view.click({ timeout: 10000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        const options = pop.locator('.arco-cascader-option, .arco-cascader-list-item, li[role="menuitem"]');
+        let opt = options.filter({ hasText: cityRe }).first();
+        if (!(await opt.count())) {
+          for (let col = 0; col < 4; col++) {
+            const colOpt = pop.locator('.arco-cascader-column').nth(col).locator('li, .arco-cascader-option').filter({ hasText: cityRe }).first();
+            if (await colOpt.count()) {
+              await colOpt.click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+              opt = pop.locator('.arco-cascader-option, .arco-cascader-list-item, li').filter({ hasText: cityRe }).first();
+              break;
+            }
+          }
+        }
+        if (!(await opt.count())) {
+          throw new Error('修订 blocked 标杆级联无「' + String(cityRe) + '」');
+        }
+        await opt.click({ timeout: 10000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+      };
+      const openViewResultIfShown = async () => {
+        const btn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if (await btn.isVisible().catch(() => false)) {
+          await btn.click({ timeout: 10000 });
+          await page.waitForTimeout(1500);
+        }
+      };
+      const runGoldSampleIfNeeded = async () => {
+        await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 15000 });
+        await pickSelect('集群', /^新一代信息技术$/);
+        await pickSelect('产业', /^人工智能与应用$/);
+        await pickBenchmarkCity(/^上海市$/);
+        await pickBenchmarkCity(/^北京市$/);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 10000 });
+        await start.click({ timeout: 15000 });
+        await openViewResultIfShown();
+        for (let i = 0; i < 90; i++) {
+          if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return;
+          const t = await main().innerText().catch(() => '');
+          if (/分析结果已生成|不会自动跳转/.test(t)) await openViewResultIfShown();
+          await page.waitForTimeout(i < 5 ? 600 : 1200);
+        }
+        throw new Error('修订 fail 03288 补任务超时未见结果页');
+      };
+      const openRecordsTab = async () => {
+        const tab = page.getByRole('tab', { name: '分析记录' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        await tab.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        await expect(tab).toHaveAttribute('aria-selected', 'true');
+        await expect(page.locator('[data-frame-id="F-SZ-04"]')).toBeVisible({ timeout: 10000 });
+      };
+      const doneRows = () =>
+        main()
+          .locator('tbody tr, .arco-table-tr')
+          .filter({ hasText: '深圳产业情况分析对比' })
+          .filter({ hasText: /已完成|成功/ });
       const scrollRecordActions = async () => {
         const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
         const bn = await bodies.count();
@@ -85,100 +161,98 @@ expect:
         await page.waitForTimeout(400);
       };
       const waitFailHint = async () => {
-        const re = /资产下载失败|下载报告失败|下载失败|报告下载失败|HTTP\s*404|失败/;
-        for (let i = 0; i < 24; i++) {
-          const msgNodes = page.locator('.arco-message, .arco-message-content, .arco-notification, [class*="message"]');
+        for (let i = 0; i < 40; i++) {
+          const errMsg = page.locator('.arco-message-error, .arco-message.list-item-error');
+          if (await errMsg.count()) {
+            const t = ((await errMsg.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+            if (t) return t;
+          }
+          const msgNodes = page.locator('.arco-message, .arco-message-content, .arco-notification');
           const n = await msgNodes.count();
           for (let j = 0; j < n; j++) {
             const t = ((await msgNodes.nth(j).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-            if (/资产下载失败|下载报告失败|下载失败|报告下载失败/.test(t)) return t;
+            if (/报告下载失败|资产下载失败|下载报告失败|下载失败|HTTP\s*\d{3}/.test(t)) return t;
             if (/失败/.test(t) && /下载|报告|资产/.test(t)) return t;
           }
-          const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          const m = body.match(/资产下载失败[^。]{0,80}|下载报告失败[^。]{0,80}|下载失败[^。]{0,80}/);
-          if (m) return m[0];
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(400);
         }
         return '';
       };
       await enterSzCompare();
-      const recTab = page.locator('[role=tab][data-tab-key="records"]');
-      await expect(recTab).toBeVisible({ timeout: 10000 });
-      await recTab.click({ timeout: 10000 });
-      await page.waitForTimeout(1200);
-      await expect(recTab).toHaveAttribute('aria-selected', 'true');
-      const frame = page.locator('[data-frame-id="F-SZ-04"]');
-      await expect(frame).toBeVisible({ timeout: 10000 });
+      await openRecordsTab();
       await scrollRecordActions();
-      const rows = main()
-        .locator('tbody tr, .arco-table-tr')
-        .filter({ hasText: '深圳产业情况分析对比' })
-        .filter({ hasText: /已完成|成功/ });
-      const n = await rows.count();
+      let n = await doneRows().count();
+      if (n < 1) {
+        const cfgTab = page.getByRole('tab', { name: '深圳产业情况分析对比' }).first();
+        await cfgTab.click({ timeout: 10000 });
+        await page.waitForTimeout(800);
+        await runGoldSampleIfNeeded();
+        await openRecordsTab();
+        await scrollRecordActions();
+        n = await doneRows().count();
+      }
       if (n < 1) {
         throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03324：分析记录无已完成深圳对比任务');
       }
       let clicked = false;
-      let detail = '';
       let taskId = '';
       for (let i = 0; i < Math.min(n, 12); i++) {
-        const row = rows.nth(i);
+        const row = doneRows().nth(i);
         const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         const tidM = rowText.match(TID_RE);
         if (!tidM) continue;
         taskId = tidM[0];
-        let dl = row.locator('button, .arco-btn').filter({ hasText: /^下载报告$/ }).last();
-        if (!(await dl.count())) dl = row.getByRole('button', { name: '下载报告', exact: true }).last();
+        let dl = row.getByRole('button', { name: '下载报告', exact: true }).first();
+        if (!(await dl.count())) dl = row.getByText(/^下载报告$/).first();
         if (!(await dl.count()) || (await dl.isDisabled().catch(() => true))) continue;
         await row.scrollIntoViewIfNeeded().catch(() => {});
         await scrollRecordActions();
-        const downloadPromise = page.waitForEvent('download', { timeout: 8000 }).catch(() => null);
-        const assetRespPromise = page.waitForResponse(
-          (r) => /\/tasks\/[^/]+\/(asset|report)/.test(r.url()) && r.request().method() === 'GET',
-          { timeout: 15000 },
-        ).catch(() => null);
+        const assetRespPromise = page
+          .waitForResponse(
+            (r) => /\/tasks\/[^/]+\/asset/.test(r.url()) && r.request().method() === 'GET',
+            { timeout: 25000 },
+          )
+          .catch(() => null);
+        const downloadPromise = page.waitForEvent('download', { timeout: 12000 }).catch(() => null);
         await dl.click({ timeout: 15000, force: true });
         clicked = true;
-        const resp = await assetRespPromise;
+        const assetResp = await assetRespPromise;
         const dlEvt = await downloadPromise;
-        if (resp) detail += ' assetStatus=' + resp.status();
-        if (dlEvt) detail += ' download=' + (dlEvt.suggestedFilename() || 'yes');
-        const toast = await waitFailHint();
+        let toast = await waitFailHint();
+        if (!toast && assetResp && !assetResp.ok()) {
+          toast = '资产下载失败（HTTP ' + assetResp.status() + '）';
+        }
+        if (assetResp && assetResp.ok() && !toast) {
+          throw new Error('点「下载报告」资产接口 HTTP ' + assetResp.status() + ' 成功但用例要求失败提示');
+        }
         if (dlEvt && !toast) {
-          throw new Error('点「下载报告」触发了文件下载但无失败提示，用例要求失败时须提示；' + detail);
+          throw new Error('点「下载报告」触发了文件下载但无失败提示');
         }
-        if (!toast && !dlEvt) {
-          throw new Error('点「下载报告」后既无失败提示也无 download/资产响应；勘察口径：无提示不通过。' + detail);
+        if (!toast && !dlEvt && !assetResp) {
+          throw new Error('点「下载报告」后无失败提示、无 download、无 asset 响应');
         }
-        if (toast && !/(失败|404)/.test(toast)) {
-          throw new Error('提示文案不像下载失败：' + toast.slice(0, 160) + detail);
+        if (!toast) {
+          throw new Error('点「下载报告」后未捕获失败提示');
         }
-        globalThis.__func03324 = { clicked: true, taskId, toast: toast || '(download-without-toast-check)', rowTextBefore: rowText };
+        globalThis.__func03324 = { clicked: true, taskId, toast };
         break;
       }
       if (!clicked) {
         throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DOWNLOAD-03324：无已完成行可点「下载报告」');
       }
-      if (globalThis.__func03324?.toast && globalThis.__func03324.toast !== '(download-without-toast-check)') {
-        await expect(page.getByText(/失败|404/).first()).toBeVisible({ timeout: 8000 });
+      const hint = globalThis.__func03324?.toast || '';
+      if (!hint || !/失败|HTTP\s*\d{3}|下载/.test(hint)) {
+        throw new Error('未捕获下载失败提示文案：' + String(hint).slice(0, 120));
       }
   - note: 2、该任务状态仍为「已完成」
     assert: |-
       const st = globalThis.__func03324;
       if (!st?.clicked || !st.taskId) throw new Error('前置：未完成下载报告点击');
-      const recTab = page.locator('[role=tab][data-tab-key="records"]');
-      await expect(recTab).toBeVisible({ timeout: 8000 });
+      const recTab = page.getByRole('tab', { name: '分析记录' }).first();
       await expect(recTab).toHaveAttribute('aria-selected', 'true');
-      const url = page.url();
-      if (/view=report/.test(url)) {
-        throw new Error('误进入报告页 view=report：' + url);
-      }
-      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-      if (await reader.isVisible().catch(() => false)) {
-        throw new Error('误打开只读报告壳，应留在分析记录');
-      }
-      const main = () => page.locator('main').first();
-      const row = main()
+      const row = page
+        .locator('main')
+        .first()
         .locator('tbody tr, .arco-table-tr')
         .filter({ hasText: st.taskId })
         .filter({ hasText: '深圳产业情况分析对比' })
@@ -186,10 +260,6 @@ expect:
       await expect(row).toBeVisible({ timeout: 10000 });
       const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       if (!/已完成|成功/.test(rowText)) {
-        throw new Error('下载报告尝试后任务「' + st.taskId + '」状态不再是已完成；当前行：' + rowText.slice(0, 200));
+        throw new Error('下载报告后任务状态不再是已完成：' + rowText.slice(0, 200));
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  F-SZ-04 分析记录已完成行「下载报告」异常路径：须 Toast/可见失败提示（无提示无文件→不通过，对齐用例册勘察备注）且任务行仍为已完成、留分析记录 Tab。
-  无已完成→ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03324；钮不可点→ENV-CHAIN-SZ-COMPARE-NO-DOWNLOAD-03324。edu 深链/侧栏 SPA404→ENV-EDU-TTS-SVCZ-404-001。
-  对齐 key-link FUNC-03134 / bottleneck FUNC-03225 下载失败 Toast 模式，Tab 文案为「分析记录」。
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,6 +1,6 @@
 id: FUNC-04491
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04491
-priority: P0
+priority: P1
 tier: B
 title: 主流程-过程页对象与耗时
 entry_id: svc-chain-graph
@@ -9,18 +9,22 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: wait
+    timeout_ms: 800
 expect:
   - note: 1、状态为「已完成」
     assert: |-
-      await page.locator('.arco-select-view').first().click();
-      await page.getByText('新一代信息技术', { exact: true }).click();
-      await page.getByText('① 仅机构', { exact: true }).click();
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await expect(page.getByText('已完成')).toBeVisible({ timeout: 120000 });
+      const main = page.locator('main');
+      const ctx = main.locator('[data-testid="svc-eco-analysis-context"]');
+      await ctx.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-popup:visible').locator('.arco-cascader-option-label').filter({ hasText: /^新一代信息技术/ }).first().click({ timeout: 15000 });
+      await main.getByRole('radio', { name: '① 仅机构' }).click();
+      await main.getByRole('button', { name: '开始分析' }).click();
+      await expect(main.filter({ hasText: '分析结果已生成' }).getByText('已完成').first()).toBeVisible({ timeout: 90000 });
   - note: 2、分析对象为「产业领域：新一代信息技术」
     assert: |-
-      await expect(page.getByText('产业领域：新一代信息技术')).toBeVisible();
+      await expect(page.locator('main').getByText('产业领域：新一代信息技术')).toBeVisible({ timeout: 15000 });
   - note: 3、已用时间有读数
     assert: |-
-      await expect(page.getByText(/已用.*\d/)).toBeVisible();
+      await expect(page.locator('main').getByText(/\d+\s*秒/)).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

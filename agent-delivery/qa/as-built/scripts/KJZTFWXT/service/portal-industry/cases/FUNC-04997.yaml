@@ -2,13 +2,10 @@ id: FUNC-04997
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04997
 priority: P0
 tier: B
-title: 产业下拉 15 个产业集群
-story: US-SVC-PT-02
+title: 主流程-产业下拉选项
 entry_id: svc-portal-industry
-preconditions:
-  - 已打开服务机构产业分布
-locators:
-  industry: main .arco-cascader-view（产业集群 / 产业级联）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal/industry-distribution
@@ -36,15 +33,17 @@ expect:
         '未来空间',
         '未来健康',
       ];
-      const main = page.locator('main');
-      const cascader = main.locator('.arco-cascader-view').first();
-      await expect(cascader).toBeVisible({ timeout: 8000 });
-      await cascader.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const col = page.locator('.arco-trigger-popup:visible .arco-cascader-list-column').first();
-      await expect(col).toBeVisible({ timeout: 8000 });
+      const filter = page.locator('.svc-portal-filter');
+      await expect(filter.getByText('产业集群 / 产业')).toBeVisible({ timeout: 15000 });
+      const cascader = page.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
+      await expect(cascader).toBeVisible({ timeout: 15000 });
+      await cascader.click({ timeout: 15000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const col = menu.locator('.arco-cascader-list-column').first();
+      await expect(col).toBeVisible({ timeout: 15000 });
       const opts = col.locator('.arco-cascader-option');
-      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      await expect(opts.first()).toBeVisible({ timeout: 15000 });
       const n = await opts.count();
       const norm = (t) => (t || '').replace(/\s+/g, ' ').trim().replace(/（[^）]*）$/, '');
       if (n !== 15) {
@@ -65,4 +64,4 @@ expect:
           );
         }
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
+on_fail: 截图 + 抄 X-Trace-Id

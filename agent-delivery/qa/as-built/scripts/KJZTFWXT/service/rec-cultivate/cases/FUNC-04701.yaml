@@ -4,74 +4,49 @@ priority: P0
 tier: B
 title: 主流程-推荐理由与培育建议
 entry_id: svc-rec-cultivate
-preconditions:
-  - 已打开本土机构培育名单
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
   - action: click
-    target: 生成培育名单
+    target: 分析记录
   - action: click
     target: 查看结果
-  - action: wait
-    target: 推荐理由
 expect:
-  - note: 每行都有推荐理由
+  - note: 1、每行都有推荐理由
     assert: |-
-      const rows = page.locator('.arco-table-body .arco-table-tr');
-      await expect(rows.first()).toBeVisible({ timeout: 60000 });
-      await expect(rows).not.toHaveCount(0);
-      const n = await rows.count();
-      const headers = page.locator('.arco-table-header .arco-table-th');
-      let reasonIdx = -1;
-      const hc = await headers.count();
-      for (let j = 0; j < hc; j++) {
-        const t = (await headers.nth(j).innerText()).trim();
-        if (t.includes('推荐理由')) reasonIdx = j;
+      await expect(page.locator('main').getByText('本土机构培育名单')).toBeVisible({ timeout: 120000 });
+      const rows = page.locator('[data-testid="svc-rec-cultivate-list"] article.svc-rec-rank-row');
+      await expect(rows.first()).toBeVisible({ timeout: 120000 });
+      const count = await rows.count();
+      expect(count).toBeGreaterThan(0);
+      for (let i = 0; i < count; i++) {
+        await expect(rows.nth(i).getByText(/推荐理由：/)).toBeVisible();
       }
-      for (let i = 0; i < n; i++) {
-        const row = rows.nth(i);
-        const cell = reasonIdx >= 0 ? row.locator('.arco-table-td').nth(reasonIdx) : row.filter({ hasText: '推荐理由' }).locator('.arco-table-td').last();
-        await expect(cell).toBeVisible();
-        await expect(cell).not.toHaveText(/^[\s\-—]*$/);
-      }
-  - note: 每行都有培育建议
+  - note: 2、每行都有培育建议
     assert: |-
-      const rows = page.locator('.arco-table-body .arco-table-tr');
-      await expect(rows.first()).toBeVisible();
-      const n = await rows.count();
-      await expect(rows).not.toHaveCount(0);
-      const headers = page.locator('.arco-table-header .arco-table-th');
-      let suggestIdx = -1;
-      const hc = await headers.count();
-      for (let j = 0; j < hc; j++) {
-        const t = (await headers.nth(j).innerText()).trim();
-        if (t.includes('培育建议')) suggestIdx = j;
-      }
-      for (let i = 0; i < n; i++) {
+      const rows = page.locator('[data-testid="svc-rec-cultivate-list"] article.svc-rec-rank-row');
+      const count = await rows.count();
+      for (let i = 0; i < count; i++) {
         const row = rows.nth(i);
-        const cell = suggestIdx >= 0 ? row.locator('.arco-table-td').nth(suggestIdx) : row.filter({ hasText: '培育建议' }).locator('.arco-table-td').last();
-        await expect(cell).toBeVisible();
-        await expect(cell).not.toHaveText(/^[\s\-—]*$/);
+        const hasInline = await row.getByText(/培育建议：/).count();
+        const hasExpand = await row.getByText(/展开培育建议/).count();
+        expect(hasInline + hasExpand).toBeGreaterThan(0);
       }
-  - note: 建议文字落在该机构行内
+  - note: 3、建议文字落在该机构行内
     assert: |-
-      const rows = page.locator('.arco-table-body .arco-table-tr');
-      const n = await rows.count();
-      await expect(rows).not.toHaveCount(0);
-      const headers = page.locator('.arco-table-header .arco-table-th');
-      let suggestIdx = -1;
-      const hc = await headers.count();
-      for (let j = 0; j < hc; j++) {
-        const t = (await headers.nth(j).innerText()).trim();
-        if (t.includes('培育建议')) suggestIdx = j;
-      }
-      for (let i = 0; i < n; i++) {
+      const rows = page.locator('[data-testid="svc-rec-cultivate-list"] article.svc-rec-rank-row');
+      const count = await rows.count();
+      for (let i = 0; i < count; i++) {
         const row = rows.nth(i);
-        const cell = suggestIdx >= 0 ? row.locator('.arco-table-td').nth(suggestIdx) : row.locator('.arco-table-td').last();
-        const text = (await cell.innerText()).trim();
-        await expect(cell).not.toHaveText(/^[\s\-—]*$/);
-        await expect(row).toContainText(text);
+        await expect(row.locator('.svc-rec-rank-name').first()).toBeVisible();
+        const adviceInRow = row.locator('.svc-rec-reason, .svc-rec-advice-groups, .svc-rec-advice-toggle');
+        await expect(adviceInRow.first()).toBeVisible();
+        const orgBox = await row.locator('.svc-rec-rank-name').boundingBox();
+        const adviceBox = await adviceInRow.first().boundingBox();
+        expect(orgBox && adviceBox).toBeTruthy();
+        expect(adviceBox.y).toBeGreaterThanOrEqual(orgBox.y);
+        expect(adviceBox.y).toBeLessThan(orgBox.y + 600);
       }
 on_fail: 截图 + 抄 X-Trace-Id

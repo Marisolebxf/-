@@ -8,10 +8,12 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /enterprise/demo-org-id?from=compare
+    target: /enterprise/demo-org-id?source=compare
   - action: evaluate
     target: |-
-      await page.locator('.arco-breadcrumb').getByText('对比篮').click();
+      const bc = page.locator('nav.ent-profile-breadcrumb');
+      await bc.getByRole('button', { name: '对比篮' }).click();
+      await page.waitForURL(/\/enterprise\/enterprise-compare$/, { timeout: 15000 });
 expect:
   - note: 地址以 /enterprise/enterprise-compare 结束
     assert: |-
@@ -24,6 +26,8 @@ expect:
       await expect(page.getByText('Request failed with status code 424')).toBeVisible()
   - note: 面包屑变为「企业分析 / 企业画像」
     assert: |-
-      await expect(page.locator('.arco-breadcrumb')).toContainText('企业分析')
-      await expect(page.locator('.arco-breadcrumb')).toContainText('企业画像')
+      const crumb = page.locator('nav.ent-profile-breadcrumb');
+      await expect(crumb.getByRole('button', { name: '企业分析' })).toBeVisible();
+      await expect(crumb.getByText('企业画像', { exact: true })).toBeVisible();
+      await expect(crumb.getByRole('button', { name: '对比篮' })).toHaveCount(0);
 on_fail: 截图 + 抄 X-Trace-Id

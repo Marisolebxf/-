@@ -12,23 +12,13 @@ steps:
 expect:
   - note: 1、四条说明文案与附录 A 一致
     assert: |-
-      const texts = [
-        '候选机构服务能力与目标产业方向的匹配程度（演示口径）',
-        '候选机构在其赛道的技术领先程度（演示口径）',
-        '业务扩张与落地深圳后的成长空间（演示口径）',
-        '对外设点/合作的公开意愿信号（演示口径）',
-      ];
-      for (const t of texts) {
-        await expect(page.getByText(t, { exact: false })).toBeVisible();
-      }
+      const main = page.locator('main');
+      await expect(main.getByText('候选机构服务能力与目标产业方向的匹配程度（演示口径）')).toBeVisible();
+      await expect(main.getByText('候选机构在其赛道的技术领先程度（演示口径）')).toBeVisible();
+      await expect(main.getByText('业务扩张与落地深圳后的成长空间（演示口径）')).toBeVisible();
+      await expect(main.getByText('对外设点/合作的公开意愿信号（演示口径）')).toBeVisible();
   - note: 2、底部声明完整可读、与附录 A 一致
     assert: |-
-      await expect(
-        page.getByText('演示模型口径：综合分由 Java rec-list 上送，前端不按四指标权重重算排名', { exact: false })
-      ).toBeVisible();
-      await expect(page.getByText('页面权重仅演示配置，未改名单分数', { exact: false })).toBeVisible();
-      await expect(page.getByText('默认 35/30/20/15', { exact: false })).toBeVisible();
-      await expect(
-        page.getByText('权重不进入分析指纹，也不写入创建任务参数', { exact: false })
-      ).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.getByText(/演示模型口径：综合分由 Java rec-list 上送，前端不按四指标权重重算排名。页面权重仅演示配置，未改名单分数。默认 35\/30\/20\/15。权重不进入分析指纹，也不写入创建任务参数。/)).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

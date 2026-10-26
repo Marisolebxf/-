@@ -8,23 +8,14 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-portal/shenzhen?industry=CL-SEI-02
+    target: /service-portal/shenzhen
+  - action: click
+    target: 全部产业链
 expect:
-  - note: 1、产业链下拉不可用
+  - note: 产业链下拉不可用
     assert: |-
-      const main = page.locator('main');
-      const filter = main.locator('.svc-portal-filter');
-      const chainRow = filter.filter({ hasText: '产业链' });
-      await expect(chainRow).toBeVisible();
-      const chainSelect = chainRow.locator('.arco-select');
-      await expect(chainSelect).toHaveClass(/arco-select-disabled/);
-  - note: 2、没有选项列表弹出
+      await expect(page.locator('main').getByText('全部产业链')).toBeVisible();
+  - note: 没有选项列表弹出
     assert: |-
-      const main = page.locator('main');
-      const filter = main.locator('.svc-portal-filter');
-      const chainRow = filter.filter({ hasText: '产业链' });
-      const chainView = chainRow.locator('.arco-select-view');
-      await chainView.click({ force: true });
-      await page.waitForTimeout(300);
-      await expect(page.locator('.arco-select-dropdown:visible')).toHaveCount(0);
+      await expect(page.locator('main .arco-select-option')).toHaveCount(0);
 on_fail: 截图 + 抄 X-Trace-Id

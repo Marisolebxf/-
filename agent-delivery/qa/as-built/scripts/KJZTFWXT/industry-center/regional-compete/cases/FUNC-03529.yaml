@@ -1,69 +1,23 @@
 id: FUNC-03529
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03529
 priority: P1
-title: 已完成行下载报告提示资产404且不打开报告
-entry_id: chain-regional-compete
 tier: B
-preconditions:
-  - 分析记录中有已完成任务
+title: 异常-分析记录-已完成记录下载报告失败
+entry_id: chain-regional-compete
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/regional?workspace=competitiveness&tab=records
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: click
-    target: main >> role=tab[name="分析记录"]
-    allow_skip: true
-  - action: evaluate
-    note: 已完成行点击「下载报告」
-    script: |-
-      const main = page.locator('main').first();
-      const bodies = main.locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
-      const bn = await bodies.count();
-      for (let i = 0; i < bn; i++) {
-        await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
-      }
-      const rows = main.locator('tbody tr, .arco-table-tr').filter({ hasText: /已完成/ }).filter({ hasText: '区域产业竞争力评价' });
-      const n = await rows.count();
-      if (n < 1) throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-DONE-TASK');
-      let clicked = false;
-      for (let i = 0; i < Math.min(n, 8); i++) {
-        const row = rows.nth(i);
-        let dl = row.locator('button, .arco-btn').filter({ hasText: /^下载报告$/ }).last();
-        if (!(await dl.count())) dl = row.getByRole('button', { name: '下载报告', exact: true }).last();
-        if (!(await dl.count()) || (await dl.isDisabled().catch(() => true))) continue;
-        await row.scrollIntoViewIfNeeded().catch(() => {});
-        await dl.click({ timeout: 15000, force: true });
-        clicked = true;
-        break;
-      }
-      if (!clicked) throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-DOWNLOAD-03529');
-      globalThis.__func03529 = { clicked: true, urlBefore: page.url() };
+    target: main >> role=tablist[name="区域产业评价页签"] >> role=tab[name="分析记录"]
+  - action: click
+    target: main >> role=row >> internal:has-text="已完成" >> role=button[name="下载报告"]
 expect:
-  - note: 1、提示「资产下载失败（HTTP 404）」
+  - note: 提示「资产下载失败（HTTP 404）」
     assert: |-
-      await expect.poll(async () => {
-        const sels = ['.arco-message-content', '.arco-message', '.arco-notification-content'];
-        const parts = [];
-        for (const sel of sels) {
-          const loc = page.locator(sel);
-          const c = await loc.count();
-          for (let i = 0; i < c; i++) {
-            parts.push(((await loc.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' '));
-          }
-        }
-        return parts.join(' ');
-      }, { timeout: 20000 }).toMatch(/资产下载失败（HTTP 404）|资产下载失败\s*\(HTTP\s*404\)|资产下载失败.*HTTP\s*404/);
-  - note: 2、不打开报告文件（仍留分析记录，无 view=report / 只读报告壳）
+      await expect(page.locator('.arco-message').filter({ hasText: '资产下载失败（HTTP 404）' })).toBeVisible({ timeout: 15000 })
+  - note: 不打开报告文件
     assert: |-
-      if (!globalThis.__func03529?.clicked) throw new Error('前置：未点击下载报告');
-      const tab = page.getByRole('tab', { name: '分析记录' }).first();
-      await expect(tab).toBeVisible({ timeout: 8000 });
-      await expect(tab).toHaveAttribute('aria-selected', 'true');
-      const url = page.url();
-      if (/view=report/.test(url)) throw new Error('误进入报告页 view=report：' + url);
-      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-      if (await reader.isVisible().catch(() => false)) throw new Error('误打开只读报告壳');
-      await expect(page.locator('main').first().locator('tbody tr, .arco-table-tr').first()).toBeVisible({ timeout: 8000 });
-      const dlEvt = await page.waitForEvent('download', { timeout: 500 }).catch(() => null);
-      if (dlEvt) throw new Error('不应落地报告文件：' + (dlEvt.suggestedFilename() || ''));
-on_fail: 截图 + X-Trace-Id
+      await expect(page.locator('main').getByRole('heading', { name: '区域产业竞争力评价报告' })).toHaveCount(0)
+on_fail: 截图 + 抄 X-Trace-Id

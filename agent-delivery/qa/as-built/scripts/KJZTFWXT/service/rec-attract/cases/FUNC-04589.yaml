@@ -12,16 +12,19 @@ steps:
 expect:
   - note: 1、过程页状态为已完成
     assert: |-
-      const selectView = page.locator('text=重点产业方向').locator('..').locator('.arco-select-view').first();
-      await selectView.click();
-      await page.locator('.arco-select-option').filter({ hasText: '生物' }).first().click();
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await expect(page.getByText('已完成', { exact: false }).first()).toBeVisible({ timeout: 120000 });
+      const main = page.locator('main');
+      const config = main.locator('[data-testid="svc-rec-analysis-config"]');
+      await config.locator('.arco-select-view').first().click();
+      await page.locator('.arco-select-dropdown:visible .arco-select-option').filter({ hasText: '生物' }).first().click();
+      await config.getByRole('button', { name: '生成招引名单' }).click();
+      await expect(main.getByText('已完成', { exact: false }).first()).toBeVisible({ timeout: 120000 });
   - note: 2、分析对象写明产业方向为「生物」
     assert: |-
-      await expect(page.locator('body')).toContainText('生物');
+      const main = page.locator('main');
+      await expect(main.getByText(/产业方向：.*生物/)).toBeVisible();
   - note: 3、提示不会自动跳转，并出现「查看结果」
     assert: |-
-      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible();
-      await expect(page.getByText('不会自动跳转')).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.getByRole('button', { name: '查看结果' })).toBeVisible();
+      await expect(main.getByText(/不会自动|须点「查看结果」|停在过程页/)).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

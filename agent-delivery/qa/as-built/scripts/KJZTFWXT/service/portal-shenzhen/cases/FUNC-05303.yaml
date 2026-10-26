@@ -9,15 +9,22 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen?industry=CL-SEI-10
+  - action: wait
+    timeout_ms: 1200
   - action: click
     target: 全球服务机构概况
+  - action: wait
+    timeout_ms: 800
   - action: click
     target: 深圳产业服务介绍
+  - action: wait
+    timeout_ms: 1200
 expect:
-  - note: 主标题为「深圳产业服务介绍」
+  - note: 1、主标题为「深圳产业服务介绍」
     assert: |-
-      await expect(page.locator('main').getByRole('heading', { level: 1, name: '深圳产业服务介绍' })).toBeVisible()
-  - note: 产业回显为「海洋」
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 })).toBeVisible({ timeout: 15000 });
+  - note: 2、产业回显为「海洋」
     assert: |-
-      await expect(page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first()).toContainText('海洋')
+      const main = page.locator('main');
+      await expect(main.locator('.svc-portal-filter')).toContainText('海洋', { timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

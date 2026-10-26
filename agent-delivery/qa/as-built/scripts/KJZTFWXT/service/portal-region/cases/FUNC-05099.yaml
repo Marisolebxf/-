@@ -10,28 +10,26 @@ steps:
   - action: goto
     target: /service-portal/region-map
   - action: evaluate
+    note: 选择产业「生物」；选择产业链「生物医药与生命健康」
     assert: |-
-      const selects = page.locator('.arco-form-item').filter({ has: page.locator('.arco-select-view') });
-      const industryView = selects.nth(0).locator('.arco-select-view');
-      const cur = (await industryView.innerText()).replace(/\s/g, '');
-      if (!cur.includes('生物')) {
-        await industryView.click();
-        await page.getByRole('option', { name: '生物', exact: true }).click();
-      }
-  - action: evaluate
-    assert: |-
-      const selects = page.locator('.arco-form-item').filter({ has: page.locator('.arco-select-view') });
-      const chainView = selects.nth(1).locator('.arco-select-view');
-      await chainView.click();
-      await page.getByRole('option', { name: '生物医药与生命健康' }).click();
+      await page.getByLabel('产业集群与产业筛选').click({ timeout: 15000 });
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.waitFor({ timeout: 8000 });
+      const clusterCol = popup.locator('.arco-cascader-column').first();
+      await clusterCol.locator('.arco-cascader-option').filter({ hasText: /^生物/ }).first().click({ timeout: 8000 });
+      const l0Col = popup.locator('.arco-cascader-column').nth(1);
+      await l0Col.waitFor({ state: 'visible', timeout: 8000 });
+      await l0Col.getByText('生物医药与生命健康', { exact: true }).click({ timeout: 8000 });
+      await expect(page.getByLabel('产业集群与产业筛选')).toContainText('生物医药与生命健康', { timeout: 8000 });
+      await page.waitForTimeout(800);
 expect:
-  - note: 结论条以「生物医药与生命健康」起头
+  - note: 1、结论条以「生物医药与生命健康」起头
     assert: |-
-      const bar = page.getByText(/生物医药与生命健康/).filter({ hasText: /不按产业/ }).first();
-      await expect(bar).toBeVisible();
-      await expect(bar).toHaveText(/^「?生物医药与生命健康/);
-  - note: 结论条仍写明不按产业切片
+      const conclusion = page.locator('.svc-portal-page').getByText(/为上下文（本包络不按产业切片）/);
+      await expect(conclusion).toBeVisible({ timeout: 15000 });
+      await expect(conclusion).toHaveText(/^「生物医药与生命健康」/);
+  - note: 2、结论条仍写明不按产业切片
     assert: |-
-      const bar = page.getByText(/生物医药与生命健康/).filter({ hasText: /不按产业/ }).first();
-      await expect(bar).toContainText('不按产业切片');
+      const conclusion = page.locator('.svc-portal-page').getByText(/为上下文（本包络不按产业切片）/);
+      await expect(conclusion).toContainText('不按产业切片', { timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

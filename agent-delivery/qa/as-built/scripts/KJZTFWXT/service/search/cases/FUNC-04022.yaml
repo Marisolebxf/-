@@ -3,40 +3,17 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04022
 priority: P1
 tier: B
 title: 备选-管理方案后取消
-story: US-SVC-ORG-07
 entry_id: svc-search
-preconditions:
-  - 已进入「高级筛选」
-  - 我的方案中有「深圳」
-locators:
-  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
-  plan_row: .enterprise-search-history-row（含「我的方案」）
-  plan_tag: tag「深圳」
-  manage_btn: button「管理」（方案行）
-  cancel_btn: button「取消」（方案行）
+preconditions: []
+locators: {}
 steps:
+  - action: goto
+    target: /service-center/search
   - action: evaluate
-    note: 深链进页 → 高级筛选 → 管理 → 取消；预期在 expect 分步判定
+    note: 高级筛选 Tab、点管理、点取消；两条预期在 expect 分步判定
 expect:
-  - note: 前置：高级筛选已打开且「我的方案」含「深圳」
+  - note: 1、方案名「深圳」仍在
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2500);
-        }
-      };
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
         if (await close.count()) {
@@ -47,64 +24,32 @@ expect:
           }
         }
       };
-      const planRow = () =>
-        page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
       await dismissBasket();
-      await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForTimeout(800);
-      await recover404Shell();
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 服务机构查询深链 SPA404 url=' + page.url());
-      }
       await expect(page).toHaveURL(/\/service-center\/search/, { timeout: 15000 });
       const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
       await expect(advTab).toBeVisible({ timeout: 10000 });
       await advTab.click({ timeout: 8000 });
       await page.waitForTimeout(500);
       await expect(page).toHaveURL(/[?&]mode=advanced/);
-      const fieldLibHeading = page.getByRole('heading', { name: /高级筛选 · 字段库/ });
-      if ((await fieldLibHeading.count()) === 0) {
-        await expect(page.getByText('高级筛选 · 字段库').first()).toBeVisible({ timeout: 10000 });
-      } else {
-        await expect(fieldLibHeading.first()).toBeVisible({ timeout: 10000 });
+      const plansRow = page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
+      await expect(plansRow).toBeVisible({ timeout: 10000 });
+      const chip = plansRow.locator('.enterprise-search-history-tag').filter({ hasText: '深圳' }).first();
+      if ((await chip.count()) === 0) {
+        throw new Error('前置：我的方案中应有「深圳」，当前未见该方案 chip');
       }
-      const row = planRow();
-      await expect(row).toBeVisible({ timeout: 8000 });
-      const szTag = row.locator('.enterprise-search-history-tag').filter({ hasText: /^深圳$/ }).first();
-      if ((await szTag.count()) === 0) {
-        throw new Error('ENV-SVC-SEARCH-NO-PLAN-SHENZHEN: 我的方案中无「深圳」方案 chip');
-      }
-      await expect(szTag).toBeVisible({ timeout: 8000 });
-      const manageBtn = row.getByRole('button', { name: '管理' });
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      const manageBtn = plansRow.getByRole('button', { name: '管理', exact: true });
       await expect(manageBtn).toBeVisible({ timeout: 8000 });
       await manageBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const cancelBtn = row.getByRole('button', { name: '取消' });
+      await page.waitForTimeout(300);
+      const cancelBtn = plansRow.getByRole('button', { name: '取消', exact: true });
       await expect(cancelBtn).toBeVisible({ timeout: 8000 });
-      globalThis.__func04022_manageOpened = true;
-  - note: 1、方案名「深圳」仍在
-    assert: |-
-      if (!globalThis.__func04022_manageOpened) throw new Error('前置：管理态未打开');
-      const row = page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
-      const cancelBtn = row.getByRole('button', { name: '取消' });
       await cancelBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const szTag = row.locator('.enterprise-search-history-tag').filter({ hasText: /^深圳$/ }).first();
-      await expect(szTag).toBeVisible({ timeout: 8000 });
-      const tagText = ((await szTag.innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!/^深圳$/.test(tagText)) {
-        throw new Error('取消后方案 chip 文案异常: ' + tagText);
-      }
+      await page.waitForTimeout(300);
+      await expect(chip).toBeVisible({ timeout: 8000 });
   - note: 2、按钮文案恢复为「管理」
     assert: |-
-      const row = page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
-      await expect(row.getByRole('button', { name: '管理' })).toBeVisible({ timeout: 8000 });
-      if ((await row.getByRole('button', { name: '取消' }).count()) > 0) {
-        const vis = await row.getByRole('button', { name: '取消' }).first().isVisible().catch(() => false);
-        if (vis) throw new Error('取消后仍显示「取消」按钮');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  B 档 04022；catalog_path=/service-center/search，深链 goto（对齐 03991）。
-  Hub advanced「我的方案」行：管理 → planManageMode 显示 tag 删除钮 +「取消」；取消后 chip「深圳」仍在、按钮回「管理」（SearchHub.vue）。
-  前置依赖 admin 账号已存方案「深圳」（与 03991 同源 useFilterTemplates service_org）。不点确定避免改名。
+      const plansRow = page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
+      await expect(plansRow.getByRole('button', { name: '管理', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(plansRow.getByRole('button', { name: '取消', exact: true })).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

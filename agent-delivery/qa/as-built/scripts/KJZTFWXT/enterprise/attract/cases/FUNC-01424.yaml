@@ -1,28 +1,22 @@
 id: FUNC-01424
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01424
-priority: P0
-title: 创建 PDF 报告到达可下载
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录；已打开一条条件筛选的成功结果（assert 自含条件筛选发起）
-locators:
-  pdf_cta: button「创建 / 查看 PDF 报告」或 data-recruit-open-pdf-report
-  output_modal: 弹窗标题「推荐结果输出任务」
+title: 主流程-PDF报告弹窗与就绪下载
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+    target: /enterprise/attraction
   - action: evaluate
-    note: 成功结果→点 PDF 报告 CTA；输出任务弹层四阶段与就绪按钮在 expect
+    note: 同册01437恢复结果或01408发起；点击「创建 / 查看 PDF 报告」
 expect:
-  - note: 1、弹窗标题「推荐结果输出任务」 2、四阶段步骤条 3、就绪后「下载产物」「查看 PDF」
+  - note: 1、弹窗标题为「推荐结果输出任务」
     assert: |-
-      const REPORT_STAGES = ['提交输出任务', '组装结果快照', '生成报告产物', '可下载归档'];
       const stack = () => page.getByTestId('recruit-tab-stack');
-      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const optSel =
+        '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
         if (await close.count()) {
@@ -34,140 +28,140 @@ expect:
         }
       };
       const parseCounts = (text) => {
-        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
-        if (!analyzedM) return null;
-        return { analyzed: parseInt(analyzedM[1], 10) };
+        const m = text.match(/共分析\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : 0;
       };
       const isSuccessResult = async () => {
-        const st = stack();
-        const t = await st.innerText().catch(() => '');
+        const t = await stack().innerText().catch(() => '');
         const url = page.url();
-        const counts = parseCounts(t);
+        const n = parseCounts(t);
         return (
-          counts &&
-          counts.analyzed >= 1 &&
+          n >= 1 &&
           ((/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result'))
         );
       };
       const tryRestoreCompletedFilter = async () => {
-        const byKey = page.locator('button[data-tab-key="history"]');
-        const byName = page.getByRole('tab', { name: '最近分析' });
-        if ((await byKey.count()) < 1 && (await byName.count()) < 1) return false;
-        const tab = (await byKey.count()) ? byKey.first() : byName.first();
+        const tab =
+          (await page.locator('button[data-tab-key="history"]').count())
+            ? page.locator('button[data-tab-key="history"]').first()
+            : page.getByRole('tab', { name: '最近分析' }).first();
         await tab.click({ timeout: 8000 });
         await page.waitForTimeout(900);
-        const st = stack();
-        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const buttons = stack().getByRole('button', { name: '恢复结果' });
         const n = await buttons.count();
+        let fallback = null;
         for (let i = 0; i < n; i++) {
           const btn = buttons.nth(i);
           let row = btn.locator('xpath=ancestor::tr[1]');
           if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
           const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
-          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
+          if (!/已完成/.test(txt)) continue;
+          if (/条件筛选/.test(txt)) {
             await btn.click({ timeout: 15000 });
-            for (let j = 0; j < 20; j++) {
+            for (let j = 0; j < 24; j++) {
               await page.waitForTimeout(500);
               if (await isSuccessResult()) return true;
             }
             return false;
           }
+          if (!fallback) fallback = btn;
+        }
+        if (fallback) {
+          await fallback.click({ timeout: 15000 });
+          for (let j = 0; j < 24; j++) {
+            await page.waitForTimeout(500);
+            if (await isSuccessResult()) return true;
+          }
         }
         return false;
       };
-      const waitSuccessResult = async (rounds = 48) => {
-        const st = stack();
-        let last = '';
-        for (let i = 0; i < rounds; i++) {
-          await page.waitForTimeout(2500);
-          last = await st.innerText().catch(() => '');
-          const url = page.url();
-          if ((/招引推荐分析结果/.test(last) && !/可视化分析过程/.test(last)) || url.includes('analysis_view=result')) {
-            if (parseCounts(last)?.analyzed >= 1) return;
-          }
-          if (/任务失败|分析失败|推荐分析失败/.test(last) && !/可视化分析过程/.test(last)) {
-            throw new Error('推荐分析进入失败态: ' + last.slice(0, 240));
-          }
-        }
-        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
-        if (stuck) {
-          throw new Error('环境闸门 ENV-ATTRACT-ASYNC-NO-SUCCESS-001：无法在超时内到达条件筛选「招引推荐分析结果」以测 PDF 报告（30888 与 FUNC-01408/01418 同源 D4）');
-        }
-        throw new Error('未在超时内到达条件筛选成功结果: ' + last.slice(0, 200));
-      };
-      const reachFilterSuccess = async () => {
-        if (await isSuccessResult()) return;
-        if (await tryRestoreCompletedFilter()) return;
+      const run01408 = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
         const openPh = async (ph) => {
-          await page.keyboard.press('Escape').catch(() => {});
           const i = page.locator(`input[placeholder="${ph}"]`).first();
           await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
           await page.waitForTimeout(500);
         };
-        const pickOption = async (text) => {
-          const opt = page.locator(optSel).filter({ hasText: text }).first();
-          await opt.click({ timeout: 8000 });
-          await page.waitForTimeout(500);
+        const pick = async (text) => {
+          await page.locator(optSel).filter({ hasText: text }).first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
         };
         await openPh('全部企业标签');
-        await pickOption('高新技术企业');
+        await pick('专精特新');
         await openPh('全部行业领域');
-        const ai = page.locator(optSel).filter({ hasText: '人工智能' });
-        if (await ai.count()) await ai.first().click({ timeout: 8000 });
-        else await page.locator(optSel).filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(400);
+        await pick('人工智能');
         const start = page.getByRole('button', { name: '开始分析' }).first();
         await expect(start).toBeEnabled({ timeout: 8000 });
         await start.click();
-        await waitSuccessResult();
-        await expect(stack().getByText('招引推荐分析结果').first()).toBeVisible({ timeout: 8000 });
+        for (let i = 0; i < 48; i++) {
+          await page.waitForTimeout(2500);
+          const t = await stack().innerText().catch(() => '');
+          if (await isSuccessResult()) return;
+          if (/推荐分析失败|任务失败|筛选条件未命中/.test(t) && !/可视化分析过程/.test(t)) {
+            throw new Error('推荐分析进入失败态: ' + t.slice(0, 220));
+          }
+        }
+        const t = await stack().innerText().catch(() => '');
+        if (/可视化分析过程/.test(t)) {
+          throw new Error('环境闸门 ENV-ATTRACT-ASYNC-NO-SUCCESS-001：无法在超时内到达条件筛选成功结果');
+        }
+        throw new Error('未在超时内到达条件筛选成功结果: ' + t.slice(0, 200));
+      };
+      const reachSuccess = async () => {
+        if (await isSuccessResult()) return;
+        if (await tryRestoreCompletedFilter()) return;
+        await run01408();
       };
       const pickPdfCta = async () => {
         const st = stack();
         const dataBtn = st.locator('[data-recruit-open-pdf-report]').first();
-        if (await dataBtn.count() && await dataBtn.isVisible().catch(() => false)) return dataBtn;
+        if ((await dataBtn.count()) && (await dataBtn.isVisible().catch(() => false))) return dataBtn;
         const named = st.getByRole('button', { name: /创建\s*\/\s*查看\s*PDF\s*报告/ }).first();
-        if (await named.count() && await named.isVisible().catch(() => false)) return named;
-        const pageBtn = page.locator('[data-recruit-open-pdf-report], button').filter({ hasText: /PDF\s*报告/ }).first();
-        if (await pageBtn.count() && await pageBtn.isVisible().catch(() => false)) return pageBtn;
+        if ((await named.count()) && (await named.isVisible().catch(() => false))) return named;
         return null;
       };
-      const outputModal = () =>
-        page.locator('.arco-modal:visible, .arco-modal-wrapper:visible .arco-modal').filter({ hasText: '推荐结果输出任务' }).last();
-      const waitPdfTaskReady = async (rounds = 36) => {
-        const modal = outputModal();
-        for (let i = 0; i < rounds; i++) {
-          const body = await modal.innerText().catch(() => '');
-          if (/报告生成失败|创建报告任务失败/.test(body) && !/报告产物已就绪/.test(body)) {
-            throw new Error('PDF 输出任务进入失败态: ' + body.slice(0, 220));
-          }
-          const dl = modal.getByRole('button', { name: '下载产物' });
-          const pdf = modal.getByRole('button', { name: '查看 PDF' });
-          if ((await dl.count()) && (await pdf.count())) {
-            const okDl = await dl.first().isVisible().catch(() => false);
-            const okPdf = await pdf.first().isVisible().catch(() => false);
-            if (okDl && okPdf) return modal;
-          }
-          await page.waitForTimeout(2500);
-        }
-        throw new Error('环境闸门 ENV-ATTRACT-PDF-TASK-NO-SUCCESS-001：推荐结果输出任务超时未就绪（未见「下载产物」「查看 PDF」）');
-      };
       await dismissBasket();
-      await reachFilterSuccess();
+      await reachSuccess();
       const pdfBtn = await pickPdfCta();
-      if (!pdfBtn) {
-        throw new Error('结果区无「创建 / 查看 PDF 报告」入口（D3·30888 DEMO 空壳；ticket=ENV-ATTRACT-NO-PDF-CTA-001）');
-      }
+      if (!pdfBtn) throw new Error('结果区无「创建 / 查看 PDF 报告」入口');
       await expect(pdfBtn).toBeEnabled({ timeout: 8000 });
       await pdfBtn.click({ timeout: 10000 });
-      const modal = outputModal();
+      const modal = page
+        .locator('.arco-modal:visible, .arco-modal-wrapper:visible .arco-modal')
+        .filter({ hasText: '推荐结果输出任务' })
+        .last();
       await expect(modal).toBeVisible({ timeout: 15000 });
-      await expect(modal).toContainText('推荐结果输出任务', { timeout: 8000 });
-      for (const stage of REPORT_STAGES) {
+      await expect(modal.getByText('推荐结果输出任务', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、可见提交输出任务、组装结果快照、生成报告产物、可下载归档
+    assert: |-
+      const modal = page
+        .locator('.arco-modal:visible, .arco-modal-wrapper:visible .arco-modal')
+        .filter({ hasText: '推荐结果输出任务' })
+        .last();
+      for (const stage of ['提交输出任务', '组装结果快照', '生成报告产物', '可下载归档']) {
         await expect(modal.getByText(stage, { exact: true }).first()).toBeVisible({ timeout: 8000 });
       }
-      const readyModal = await waitPdfTaskReady();
-      await expect(readyModal.getByRole('button', { name: '下载产物' }).first()).toBeVisible({ timeout: 8000 });
-      await expect(readyModal.getByRole('button', { name: '查看 PDF' }).first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 /enterprise-center/attraction；CTA=data-recruit-open-pdf-report /「创建 / 查看 PDF 报告」→ RecruitOutputTaskModal 四阶段与 lumen RecruitResultPanel REPORT_STAGES 一致；完成态按钮「下载产物」「查看 PDF」（open-report-label）。前置同 01419~023。D4·主分析无异步成功→ ENV-ATTRACT-ASYNC-NO-SUCCESS-001；输出任务超时→ ENV-ATTRACT-PDF-TASK-NO-SUCCESS-001；无 CTA→ ENV-ATTRACT-NO-PDF-CTA-001。登录与关评审由 runner 前置。B 档零 allow_skip。
+  - note: 3、就绪后出现「下载产物」与「查看 PDF」
+    assert: |-
+      const modal = page
+        .locator('.arco-modal:visible, .arco-modal-wrapper:visible .arco-modal')
+        .filter({ hasText: '推荐结果输出任务' })
+        .last();
+      for (let i = 0; i < 36; i++) {
+        const body = await modal.innerText().catch(() => '');
+        if (/报告生成失败|创建报告任务失败/.test(body) && !/报告产物已就绪/.test(body)) {
+          throw new Error('PDF 输出任务进入失败态: ' + body.slice(0, 220));
+        }
+        const dl = modal.getByRole('button', { name: '下载产物' });
+        const pdf = modal.getByRole('button', { name: '查看 PDF' });
+        if ((await dl.count()) && (await pdf.count())) {
+          if ((await dl.first().isVisible()) && (await pdf.first().isVisible())) break;
+        }
+        if (i === 35) {
+          throw new Error('环境闸门 ENV-ATTRACT-PDF-TASK-NO-SUCCESS-001：输出任务超时未就绪');
+        }
+        await page.waitForTimeout(2500);
+      }
+      await expect(modal.getByRole('button', { name: '下载产物' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(modal.getByRole('button', { name: '查看 PDF' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

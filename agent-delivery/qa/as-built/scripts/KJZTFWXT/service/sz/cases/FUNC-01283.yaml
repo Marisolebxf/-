@@ -9,15 +9,22 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 深圳服务链现状分析
 expect:
-  - note: 页名为「深圳服务链现状分析」
+  - note: 1、页名为「深圳服务链现状分析」
     assert: |-
-      await expect(page.getByText('深圳服务链现状分析', { exact: true }).first()).toBeVisible()
-  - note: 页签为「深圳服务链现状分析」和「分析记录」
+      await expect(page).toHaveTitle(/深圳服务链现状分析/)
+  - note: 2、页签为「深圳服务链现状分析」和「分析记录」
     assert: |-
-      await expect(page.getByRole('tab', { name: '深圳服务链现状分析' })).toBeVisible();
-      await expect(page.getByRole('tab', { name: '分析记录' })).toBeVisible()
-  - note: 「深圳服务链现状分析」为当前页签
+      const main = page.locator('main');
+      await expect(main.getByRole('tab', { name: /深圳服务链现状分析/ }).first()).toBeVisible({ timeout: 12000 });
+      await expect(main.getByRole('tab', { name: '分析记录', exact: true }).first()).toBeVisible({ timeout: 12000 })
+  - note: 3、「深圳服务链现状分析」为当前页签
     assert: |-
-      await expect(page.getByRole('tab', { name: '深圳服务链现状分析', selected: true })).toBeVisible()
+      const tab = page.locator('main [role=tab][data-tab-key="shenzhen"]').or(page.locator('main').getByRole('tab', { name: /深圳服务链现状分析/ }));
+      await expect(tab.first()).toBeVisible({ timeout: 12000 });
+      const aria = await tab.first().getAttribute('aria-selected');
+      const cls = await tab.first().getAttribute('class') ?? '';
+      if (aria !== 'true' && !cls.includes('active')) throw new Error('深圳服务链现状分析 Tab 未选中')
 on_fail: 截图 + 抄 X-Trace-Id

@@ -2,21 +2,22 @@ id: FUNC-03690
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03690
 priority: P1
 tier: B
-title: 备选-返回
+title: 从无法打开页返回专题全景
 entry_id: chain-result-deep
 preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/results/CHAIN-NOT-EXIST-03690
+    target: /industry-center/results/FUNC03690-NOT-EXIST
+  - action: assert_visible
+    target: 无法打开产业链分析深链
   - action: click
-    role: link
-    name: 返回产业链分析
+    target: 返回产业链分析
 expect:
-  - note: 页面位于专题全景
+  - note: 1、页面位于专题全景
     assert: |-
-      await expect(page).toHaveURL(/\/industry-center\/panorama/)
-  - note: 浏览器标题以专题全景开头
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 })
+  - note: 2、浏览器标题以专题全景开头
     assert: |-
-      await expect(page).toHaveTitle(/^专题全景/)
+      await expect(page).toHaveTitle(/^专题全景/, { timeout: 15000 })
 on_fail: 截图 + 抄 X-Trace-Id

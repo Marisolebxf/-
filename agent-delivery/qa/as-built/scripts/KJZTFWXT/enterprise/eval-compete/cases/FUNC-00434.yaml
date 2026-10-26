@@ -1,110 +1,50 @@
 id: FUNC-00434
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00434
 priority: P1
-title: 过程态取消任务后终止本次分析且配置保留
-story: US-ENT-EVAL-COMP
-entry_id: ent-eval-compete
 tier: B
-preconditions:
-  - env-gate select_objects=pass（对比篮≥1 家企业；不足时经企业查询补篮）
-  - 处于过程态（任务进行中；脚本内补篮回填后点开始分析进入）
-locators:
-  start: button「开始分析」/「个性化竞争力评价与输出」
-  cancel: 取消任务
+title: 过程态取消任务后终止分析且配置保留
+entry_id: ent-eval-compete
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+    target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
   - action: evaluate
-    note: 补篮回填→开始分析→取消任务；终态断言在 expect
+    note: 同册回填对象→开始分析→尽快取消任务
 expect:
   - note: 1、任务终止且页面离开过程态
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
-      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
-      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
-      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count() && await close.first().isVisible().catch(() => false)) {
-          await close.first().click({ timeout: 2000 }).catch(() => {});
-          await page.waitForTimeout(400);
-        }
-      };
-      const basketEntCount = async () => {
-        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
-        if (!(await dockBtn.count())) return 0;
-        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
-        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
-        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
-        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
-      };
-      const pickerSelectableCount = async () => {
-        const pickUrl = evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
-        await page.goto(toUrl(pickUrl), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1200);
-        const panel = page.locator('.system-compare-panel, .arco-modal').filter({ hasText: '选择分析企业' }).last();
-        if (!(await panel.isVisible().catch(() => false))) return 0;
-        return await panel.locator('[aria-label^="选择 "]').count();
-      };
-      const ensureBasketEnterprises = async (min) => {
-        let n = await basketEntCount();
-        if (n >= min) return;
-        n = await pickerSelectableCount();
-        if (n >= min) {
-          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(800);
-          return;
-        }
-        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1200);
-        await dismissBasket();
-        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
-        await expect(addBtns.first()).toBeVisible({ timeout: 20000 });
-        const tryAdd = async () => {
-          const cnt = await addBtns.count();
-          for (let i = 0; i < Math.min(cnt, 5); i++) {
-            await addBtns.nth(i).click({ timeout: 8000 });
-            await page.waitForTimeout(900);
-            n = await basketEntCount();
-            if (n >= min) return true;
-          }
-          return false;
-        };
-        if (!(await tryAdd())) {
-          n = await pickerSelectableCount();
-          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(800);
-        }
-        if (n < min) {
-          n = await pickerSelectableCount();
-          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(800);
-        }
-        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 dock=' + (await basketEntCount()) + ' picker=' + n);
-      };
-      const openEnterprisePicker = async () => {
-        const pickUrl = evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
+      const main = () => page.locator('main').first();
+      const evalRoute = '/enterprise/evaluation?workspace=competitiveness&mode=competitiveness';
+      const pickUrl =
+        evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
+      const openPicker = async () => {
         const cta = main().getByRole('button', { name: '前往对比篮选择企业' });
         if (await cta.isVisible().catch(() => false)) {
           await cta.click({ timeout: 8000 });
-          await page.waitForTimeout(1200);
+          await page.waitForTimeout(800);
           return;
         }
-        await page.goto(toUrl(pickUrl), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
+        await page.goto(pickUrl, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      };
+      const ensureObjectFilled = async () => {
+        await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 5000 }).catch(() => {});
+        if (await main().getByText(/来自对比篮/).first().isVisible().catch(() => false)) return;
+        await openPicker();
+        const panel = page.locator('.arco-modal, .system-compare-panel').filter({ hasText: '选择分析企业' }).last();
+        await expect(panel).toBeVisible({ timeout: 12000 });
+        const pick = panel.locator('[aria-label^="选择 "]').first();
+        if (!(await pick.count())) throw new Error('对比篮无可选企业');
+        await pick.click({ force: true });
+        await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(1000);
+        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 12000 });
       };
       const clickCancelAsap = async () => {
-        const cancelClicked = await page.evaluate(() => {
+        const clicked = await page.evaluate(() => {
           return new Promise((resolve) => {
-            const failedUi = () => {
-              const t = document.body.innerText || '';
-              return /评估失败|本次评估生成失败/.test(t) && /按此配置新建评估/.test(t);
-            };
             const tryClick = () => {
-              if (failedUi()) {
-                resolve(false);
-                return true;
-              }
               const btn = Array.from(document.querySelectorAll('button')).find((b) =>
                 /取消任务/.test((b.textContent || '').trim()),
               );
@@ -116,8 +56,8 @@ expect:
               return false;
             };
             if (tryClick()) return;
-            const deadline = Date.now() + 20000;
-            const obs = new MutationObserver(() => { tryClick(); });
+            const deadline = Date.now() + 18000;
+            const obs = new MutationObserver(() => tryClick());
             obs.observe(document.body, { childList: true, subtree: true });
             const tick = setInterval(() => {
               if (tryClick()) {
@@ -128,83 +68,54 @@ expect:
                 obs.disconnect();
                 resolve(false);
               }
-            }, 40);
+            }, 30);
           });
         });
-        if (!cancelClicked) {
-          const bodyText = await page.locator('body').innerText().catch(() => '');
-          if (/评估失败|本次评估生成失败|按此配置新建评估/.test(bodyText) && !/取消任务/.test(bodyText)) {
-            throw new Error('D3:Demo 任务无 running 窗口未见取消任务（ticket=ENV-EVAL-COMPETE-PROC-001）');
+        if (!clicked) {
+          const txt = await page.locator('body').innerText().catch(() => '');
+          if (/评估失败|按此配置新建/.test(txt) && !/取消任务/.test(txt)) {
+            throw new Error('D3:Demo 任务无 running 窗口未见取消任务（ENV-EVAL-COMPETE-PROC-001）');
           }
-          throw new Error('20s 内未点到取消任务：' + page.url() + ' | ' + bodyText.slice(0, 200));
+          throw new Error('未点到取消任务：' + txt.slice(0, 240));
         }
-        await page.waitForTimeout(1500);
+        await page.waitForTimeout(1200);
       };
-      const fillAndStart = async () => {
-        await ensureBasketEnterprises(1);
-        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1000);
-        await dismissBasket();
-        if (!(/enterprise_codes/.test(page.url()) && await main().getByText(/来自对比篮/).first().isVisible().catch(() => false))) {
-          await openEnterprisePicker();
-          const panel = page.locator('.system-compare-panel, .arco-modal').filter({ hasText: '选择分析企业' }).last();
-          await expect(panel).toBeVisible({ timeout: 10000 });
-          const sels = panel.locator('[aria-label^="选择 "]');
-          if (await sels.count() < 1) throw new Error('对比篮无可选企业');
-          await sels.nth(0).click({ force: true });
-          await page.waitForTimeout(300);
-          await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
-          await page.waitForTimeout(1500);
-          await dismissBasket();
-          await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
-        }
-        await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 5000 }).catch(() => {});
-        await page.waitForTimeout(400);
-        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      if (!globalThis.__func00434_done) {
+        await ensureObjectFilled();
         globalThis.__func00434_urlBeforeStart = page.url();
-        const startClassic = main().getByRole('button', { name: '开始分析' });
-        const startAlt = main().getByRole('button', { name: '个性化竞争力评价与输出' }).last();
-        const start = (await startClassic.count()) ? startClassic : startAlt;
-        if (await start.isDisabled()) throw new Error('对象已回填但开始分析仍禁用');
+        const start = main().getByRole('button', { name: '开始分析' });
+        await expect(start).toBeEnabled({ timeout: 12000 });
         const cancelWait = clickCancelAsap();
         await start.click({ timeout: 8000 });
         await cancelWait;
-      };
-      if (!globalThis.__func00434_cancelled) {
-        await fillAndStart();
-        globalThis.__func00434_cancelled = true;
+        globalThis.__func00434_done = true;
       }
-      const u = page.url();
-      if (/view=processing/.test(u)) {
-        const stillGen = await page.getByText(/综合竞争力评估生成中/).first().isVisible().catch(() => false);
-        if (stillGen) throw new Error('取消后仍在过程态 view=processing：' + u);
+      const url = page.url();
+      if (/view=processing/.test(url)) {
+        const gen = await main().getByText('综合竞争力评估生成中').first().isVisible().catch(() => false);
+        if (gen) throw new Error('取消后仍在过程态：' + url);
       }
-      const bodyAfter = await main().innerText().catch(() => '');
-      if (/综合竞争力评估生成中/.test(bodyAfter) && /取消任务/.test(bodyAfter)) {
-        throw new Error('取消后仍见生成中与取消任务同屏');
+      const body = await main().innerText().catch(() => '');
+      if (/综合竞争力评估生成中/.test(body) && /取消任务/.test(body)) {
+        throw new Error('取消后仍见生成中与取消任务');
       }
       globalThis.__func00434_leftProcessing = true;
   - note: 2、已回填对象与配置不被清空
     assert: |-
       if (!globalThis.__func00434_leftProcessing) throw new Error('前置：未离开过程态');
-      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
-      const dimNames = ['创新能力', '经营能力', '成长能力'];
+      const main = () => page.locator('main').first();
       await expect(main().getByText(/来自对比篮|评估对象/).first()).toBeVisible({ timeout: 12000 });
       const url = page.url();
-      if (!/enterprise_codes/i.test(url)) {
-        const before = globalThis.__func00434_urlBeforeStart || '';
-        if (/enterprise_codes/i.test(before)) {
-          throw new Error('取消后 URL 丢失 enterprise_codes：' + url);
-        }
+      const before = globalThis.__func00434_urlBeforeStart || '';
+      if (/enterprise_codes/i.test(before) && !/enterprise_codes/i.test(url)) {
+        throw new Error('取消后 URL 丢失 enterprise_codes');
       }
-      for (const name of dimNames) {
+      for (const name of ['创新能力', '经营能力', '成长能力']) {
         const row = page.getByRole('row').filter({ hasText: name }).first();
         await expect(row).toBeVisible({ timeout: 8000 });
         const spin = row.locator('[role=spinbutton], .arco-input-number input').first();
         await expect(spin).toBeVisible({ timeout: 5000 });
         const v = await spin.inputValue();
-        if (!v || !/^\d+$/.test(v)) throw new Error('权重行 ' + name + ' 不可读: ' + v);
+        if (!v || !/^\d+$/.test(v)) throw new Error('权重不可读：' + name);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: |-
-  由 P1-13 重写。30888 /enterprise-center/evaluation（禁 50892）。补篮 picker 同 FUNC-00424/00428；开始后并行 MutationObserver 点「取消任务」。取消钮仅在 EvalProcessingSteps 且 task.status=running 时渲染（task 秒 failed/success 则无钮，见 ENV-EVAL-COMPETE-PROC-001）。取消后回配置态且对象/权重保留；权重按三指标行断言。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

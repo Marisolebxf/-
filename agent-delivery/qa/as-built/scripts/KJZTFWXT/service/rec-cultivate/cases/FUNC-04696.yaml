@@ -9,17 +9,24 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
-  - action: click
-    target: 现有规模 25%
-  - action: fill
-    target: 现有规模
-    value: 40
+  - action: evaluate
+    target: |-
+      const main = page.locator('main').first();
+      const model = main.locator('[data-testid="svc-rec-cultivate-model"]');
+      await expect(model).toBeVisible({ timeout: 20000 });
+      const spin = model.getByRole('spinbutton').first();
+      await expect(spin).toBeVisible({ timeout: 10000 });
+      const wrap = spin.locator('xpath=ancestor::*[contains(@class,"arco-input-number")][1]');
+      const inc = wrap.locator('button.arco-input-number-step-button').last();
+      await inc.click({ timeout: 8000 });
+      await expect(main.getByRole('button', { name: '按比例归一', exact: true })).toBeVisible({ timeout: 8000 });
   - action: click
     target: 按比例归一
+  - action: wait
+    timeout_ms: 500
 expect:
-  - note: 权重合计显示 100% 已对齐
+  - note: 1、权重合计显示 100% 已对齐
     assert: |-
-      const total = page.getByText('权重合计');
-      await expect(total).toBeVisible();
-      await expect(total.locator('..')).toContainText('100%');
+      const main = page.locator('main').first();
+      await expect(main.getByText(/100%\s*已对齐/)).toBeVisible({ timeout: 10000 });
 on_fail: 截图 + 抄 X-Trace-Id

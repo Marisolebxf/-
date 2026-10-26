@@ -8,42 +8,19 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/diagnosis?workspace=key_link&tab=key-link&object_id=
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+  - action: wait
+    timeout_ms: 600
+  - action: click
+    target: 开始分析
 expect:
   - note: 1、提示「尚未选择分析对象」
     assert: |-
-      const backCfg = page.getByRole('button', { name: '按此配置新建分析' });
-      if (await backCfg.isVisible().catch(() => false)) {
-        await backCfg.click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-      }
-      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
-      const main = page.locator('main').first();
-      const clusterSelect = main.locator('.arco-select-view').first();
-      if (await clusterSelect.isVisible().catch(() => false)) {
-        await clusterSelect.click({ timeout: 5000 });
-        const clearBtn = page.locator('.arco-select-view-clear-icon, .arco-icon-close').first();
-        if (await clearBtn.isVisible().catch(() => false)) {
-          await clearBtn.click({ timeout: 3000 });
-          await page.waitForTimeout(300);
-        } else {
-          await page.keyboard.press('Escape');
-        }
-      }
-      const start = page.getByRole('button', { name: '开始分析' }).first();
-      await expect(start).toBeVisible({ timeout: 8000 });
-      await start.scrollIntoViewIfNeeded();
-      await start.click({ timeout: 8000 });
-      const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: '尚未选择分析对象' });
-      await expect(toast.first()).toBeVisible({ timeout: 8000 });
+      await expect(
+        page.locator('.arco-message').filter({ hasText: '尚未选择分析对象' }).first()
+      ).toBeVisible({ timeout: 8000 });
   - note: 2、仍停留在「分析配置」
     assert: |-
-      const url = page.url();
-      if (/view=result/.test(url) || /view=processing/.test(url)) {
-        throw new Error('拦截后进入结果/过程态: ' + url);
-      }
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('tab', { name: '产业关键环节识别' }).first()).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

@@ -4,110 +4,59 @@ priority: P0
 title: 成功结果页完整对比以只读抽屉展开且关闭后不离开
 entry_id: chain-sz-dev
 tier: B
-preconditions:
-  - 已有一条成功的发展分析结果
-locators:
-  tab_rec: tab「分析记录」
-  view_result: button「查看结果」（已完成行、非 disabled）
-  expand_compare: button「展开完整对比结果」
-  drawer: .arco-drawer
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 经「分析记录」打开成功结果→点击「展开完整对比结果」→关闭抽屉→回读页面
+    note: 经「分析记录」打开一条成功结果；点击「展开完整对比结果」
 expect:
   - note: 完整对比以只读抽屉呈现，不可编辑
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      const openSuccessResult = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404() || !onTarget()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: /industry-center/search 与深圳发展分析深链均 SPA404，无法验完整对比只读抽屉 ' + page.url());
-        }
-        const recTab = page.getByRole('tab', { name: '分析记录' });
-        await expect(recTab).toBeVisible({ timeout: 10000 });
-        await recTab.click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        const viewBtn = page
-          .locator('main')
-          .getByRole('button', { name: '查看结果' })
-          .filter({ hasNot: page.locator('.arco-btn-disabled') })
-          .first();
-        if (!(await viewBtn.count()) || (await viewBtn.isDisabled().catch(() => true))) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录无可用「查看结果」');
-        }
-        await viewBtn.click({ timeout: 10000 });
-        await page.waitForTimeout(2000);
-        await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
-      };
-      await openSuccessResult();
+      const recTab = page.getByRole('tab', { name: '分析记录' });
+      await expect(recTab).toBeVisible({ timeout: 15000 });
+      await recTab.click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+      const statusSelect = page.locator('main .arco-select-view').first();
+      await statusSelect.click({ timeout: 8000 });
+      await page.locator('.arco-select-dropdown').getByText('已完成', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const empty = page.getByText('暂无数据');
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('修订 blocked: 分析记录筛选已完成为空');
+      }
+      const viewBtn = page
+        .locator('main')
+        .getByRole('button', { name: '查看结果' })
+        .filter({ hasNot: page.locator('.arco-btn-disabled') })
+        .first();
+      if (!(await viewBtn.count()) || (await viewBtn.isDisabled().catch(() => true))) {
+        throw new Error('修订 blocked: 无可用「查看结果」打开成功结果');
+      }
+      await viewBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1500);
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 20000 });
       const expandBtn = page.getByRole('button', { name: '展开完整对比结果' });
       await expect(expandBtn.first()).toBeVisible({ timeout: 10000 });
       await expandBtn.first().click({ timeout: 10000 });
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(600);
+      await expect(page.getByText('来源对比结果（只读）')).toBeVisible({ timeout: 10000 });
       const drawer = page.locator('.arco-drawer:visible');
       await expect(drawer.first()).toBeVisible({ timeout: 10000 });
-      const editable = drawer.locator('input:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled])');
-      if (await editable.count()) throw new Error('完整对比抽屉含可编辑控件');
+      const editable = drawer.locator(
+        'input:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled])',
+      );
+      await expect(editable).toHaveCount(0);
   - note: 关闭抽屉后仍停留在发展结果页
     assert: |-
       const drawer = page.locator('.arco-drawer:visible');
-      const close = drawer.locator('.arco-drawer-close-btn').first();
-      if (await close.count()) {
-        await close.click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-      }
+      const closeBtn = drawer.locator('.arco-drawer-close-btn').first();
+      await expect(closeBtn).toBeVisible({ timeout: 8000 });
+      await closeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
       await expect(page.locator('.arco-drawer:visible')).toHaveCount(0, { timeout: 8000 });
       await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
       await expect(page).toHaveURL(/workspace=development/);
-      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: 按钮原文「展开完整对比结果」；抽屉 title「来源对比结果（只读）」；断言限定 .arco-drawer（规约）。无成功结果抛 ENV-CHAIN-SZ-DEV-NO-DONE-TASK。route=entry-seed catalog_path。
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + 抄 X-Trace-Id

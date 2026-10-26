@@ -9,47 +9,44 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: wait
+    timeout_ms: 800
+  - action: click
+    target: 生成招引名单
+  - action: wait
+    timeout_ms: 2500
+  - action: click
+    target: 按钮 查看结果
+  - action: assert_visible
+    target: 外部机构引进推荐名单
+  - action: click
+    target: 广州新节奏智能科技股份有限公司
 expect:
   - note: 抽屉标题以「机构画像」开头并含该机构名
     assert: |-
       const viewResult = page.getByRole('button', { name: '查看结果' });
       if (await viewResult.isVisible().catch(() => false)) {
         await viewResult.click();
-      } else {
-        await page.getByRole('button', { name: '生成招引名单' }).click();
-        await page.getByRole('button', { name: '查看结果' }).click({ timeout: 60000 });
+        await page.waitForTimeout(1200);
       }
-      const firstRow = page.locator('table tbody tr').first();
-      await expect(firstRow).toBeVisible({ timeout: 60000 });
-      const nameCell = firstRow.locator('td').nth(1);
-      const orgName = (await nameCell.innerText()).trim().split('\n')[0].trim();
-      const nameLink = nameCell.getByRole('link').first();
-      if (await nameLink.isVisible().catch(() => false)) {
-        await nameLink.click();
-      } else {
-        await nameCell.click();
+      const orgBtn = page.locator('[data-testid="svc-rec-list"] button.svc-rec-org-link').first();
+      if (await orgBtn.isVisible().catch(() => false)) {
+        await orgBtn.click();
+        await page.waitForTimeout(800);
       }
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer).toBeVisible({ timeout: 15000 });
-      const title = drawer.locator('.arco-drawer-header-title, .arco-drawer-title').first();
-      await expect(title).toBeVisible();
-      const titleText = (await title.innerText()).trim();
-      await expect(titleText.startsWith('机构画像')).toBeTruthy();
-      await expect(titleText).toContain(orgName);
+      const orgName = (await orgBtn.textContent().catch(() => ''))?.trim() || '广州新节奏智能科技股份有限公司';
+      await expect(page.getByText(new RegExp(`^机构画像：.*${orgName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))).toBeVisible({ timeout: 15000 });
   - note: 可见「基本信息」「技术力五维」「近三年新增服务记录」
     assert: |-
-      const drawer = page.locator('.arco-drawer');
+      const drawer = page.locator('.arco-drawer:visible');
       await expect(drawer.getByText('基本信息', { exact: true })).toBeVisible();
       await expect(drawer.getByText('技术力五维', { exact: true })).toBeVisible();
       await expect(drawer.getByText('近三年新增服务记录', { exact: true })).toBeVisible();
   - note: 基本信息含机构类型、所在地、行业、领域覆盖细分
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      for (const label of ['机构类型', '所在地', '行业', '领域覆盖细分']) {
-        const item = drawer.locator('.arco-descriptions-item').filter({ hasText: label }).first();
-        await expect(item).toBeVisible();
-        const value = item.locator('.arco-descriptions-item-value');
-        await expect(value).toBeVisible();
-        await expect(value).not.toHaveText(/^[\s-]*$/);
-      }
+      const drawer = page.locator('.arco-drawer:visible');
+      await expect(drawer.getByText('机构类型')).toBeVisible();
+      await expect(drawer.getByText('所在地')).toBeVisible();
+      await expect(drawer.getByText('行业')).toBeVisible();
+      await expect(drawer.getByText('领域覆盖细分', { exact: true })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

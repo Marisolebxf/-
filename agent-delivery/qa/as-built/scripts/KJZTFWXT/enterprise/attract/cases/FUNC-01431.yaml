@@ -1,149 +1,78 @@
 id: FUNC-01431
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01431
 priority: P0
-title: 主流程-候选勾选
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
 tier: B
-preconditions:
-  - 已登录；候选工作台已有企业（assert 自含企业查询加入招引候选兜底）
-locators:
-  cand_tab: tab「候选工作台」
-  action_bar: data-testid=candidate-action-bar
-  row_checkbox: 候选表首行 checkbox
+title: 主流程-候选勾选
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
   - action: evaluate
-    note: 候选工作台→勾选一行→已选+1→取消勾选→已选回到 0
+    note: 同册01433入池后打开候选工作台，再勾选与取消勾选
 expect:
-  - note: 1、勾选后已选家数增加 2、取消后已选家数回到 0
+  - note: 1、勾选后已选家数增加
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const origin = new URL(page.url()).origin;
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const stack = () => page.getByTestId('recruit-tab-stack');
-      const candRoute = '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates';
+      const candRoute = '/enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates';
+      const searchRoute = '/enterprise/enterprise-search';
       const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
-      const isCandidateWorkspace = async () => {
-        if (!(await candTab().count())) return false;
-        return (await candTab().getAttribute('aria-selected').catch(() => '')) === 'true';
-      };
-      const openCandidateTab = async () => {
-        if (await isCandidateWorkspace()) return;
-        await expect(candTab()).toBeVisible({ timeout: 10000 });
-        await candTab().click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        if (!(await isCandidateWorkspace())) {
-          const byKey = page.locator('button[data-tab-key="candidates"]').first();
-          if (await byKey.count()) {
-            await byKey.click({ timeout: 8000, force: true });
-            await page.waitForTimeout(900);
-          }
-        }
-        if (!(await isCandidateWorkspace())) {
-          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
-        }
-      };
+      const selectedCountText = (n) => stack().getByText(new RegExp('已选\\s*' + n + '\\s*家'));
       const rowCount = async () => stack().locator('.arco-table-body .arco-table-tr').count();
-      const ensureOneCandidate = async () => {
-        await openCandidateTab();
-        let rows = await rowCount();
-        if (rows > 0) return;
-        const tryBasket = async () => {
-          const dock = page.getByRole('button', { name: /打开对比篮/ });
-          if (!(await dock.count())) return false;
-          await dock.first().click({ timeout: 8000 });
-          await page.waitForTimeout(800);
-          const addA = page.getByRole('button', { name: '加入招引候选' });
-          if (!(await addA.count())) return false;
-          const sels = page.locator('[aria-label^="选择 "]');
-          if (await sels.count()) await sels.first().click();
-          await page.waitForTimeout(400);
-          if (!(await addA.first().isEnabled())) return false;
-          await addA.first().click({ timeout: 8000 });
-          await page.waitForTimeout(1000);
-          await page.keyboard.press('Escape').catch(() => {});
-          return true;
-        };
-        if (await tryBasket()) {
-          await openCandidateTab();
-          rows = await rowCount();
-          if (rows > 0) return;
+      const openCandidateTab = async () => {
+        const tab = candTab();
+        if ((await tab.getAttribute('aria-selected').catch(() => '')) !== 'true') {
+          await expect(tab).toBeVisible({ timeout: 10000 });
+          await tab.click({ timeout: 10000 });
+          await page.waitForTimeout(900);
         }
-        await page.goto(origin + '/development/search', { waitUntil: 'domcontentloaded' });
+        if ((await tab.getAttribute('aria-selected').catch(() => '')) !== 'true') {
+          const byKey = page.locator('button[data-tab-key="candidates"]').first();
+          if (await byKey.count()) await byKey.click({ timeout: 8000, force: true });
+          await page.waitForTimeout(900);
+        }
+      };
+      const ensureCandidateFromSearch = async () => {
+        await openCandidateTab();
+        if ((await rowCount()) > 0) return;
+        await page.goto(toUrl(searchRoute), { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(1500);
-        await dismissBasket();
-        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
+        await page.getByRole('textbox', { name: /输入企业名/ }).fill('科技');
         await page.getByRole('button', { name: '搜索' }).click();
         await page.waitForTimeout(5000);
-        await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const addOpt = page.getByText('加入招引候选', { exact: true }).first();
-        if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
+        const recruitDrop = page.locator('main').getByRole('button', { name: '引育候选' }).first();
+        await recruitDrop.scrollIntoViewIfNeeded({ timeout: 15000 });
+        await recruitDrop.click({ timeout: 15000 });
+        await page.waitForTimeout(600);
+        await page.getByRole('menuitem', { name: /加入招引候选/ }).first().click({ timeout: 8000 });
         await page.waitForTimeout(1500);
-        await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
+        await page.goto(toUrl(candRoute), { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(2000);
         await openCandidateTab();
-        rows = await rowCount();
-        if (rows < 1) {
+        if ((await rowCount()) < 1) {
           const txt = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
-          throw new Error('环境闸门 ENV-ATTRACT-CANDIDATE-EMPTY：候选工作台无企业（对比篮/企业查询加入后仍为空）: ' + txt.slice(0, 160));
+          throw new Error('ENV-ATTRACT-CANDIDATE-EMPTY：候选工作台无企业: ' + txt.slice(0, 160));
         }
       };
-      const actionBar = () => stack().getByTestId('candidate-action-bar');
-      const selectedCountText = async () => {
-        const bar = actionBar();
-        await expect(bar).toBeVisible({ timeout: 10000 });
-        return ((await bar.innerText()) || '').replace(/\s+/g, ' ');
-      };
-      const parseSelectedCount = (t) => {
-        const m = t.match(/已选\s*(\d+)\s*家/);
-        return m ? Number(m[1]) : -1;
-      };
-      const toggleFirstRowCheckbox = async (wantChecked) => {
-        const row = stack().locator('.arco-table-body .arco-table-tr').first();
-        await expect(row).toBeVisible({ timeout: 10000 });
-        const cb = row.locator('.arco-checkbox').first();
-        if (await cb.count()) {
-          const checked = (await cb.getAttribute('class'))?.includes('arco-checkbox-checked');
-          if (Boolean(wantChecked) !== Boolean(checked)) await cb.click({ timeout: 8000 });
-        } else {
-          await row.evaluate((el, on) => {
-            const input = el.querySelector('input[type=checkbox]');
-            if (input instanceof HTMLInputElement && input.checked !== on) input.click();
-          }, wantChecked);
-        }
-        await page.waitForTimeout(500);
-      };
-      await dismissBasket();
-      await ensureOneCandidate();
+      await ensureCandidateFromSearch();
       await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({ timeout: 10000 });
-      let before = parseSelectedCount(await selectedCountText());
-      if (before !== 0) {
-        await toggleFirstRowCheckbox(false);
-        before = parseSelectedCount(await selectedCountText());
-      }
-      if (before !== 0) throw new Error('初始已选家数应为 0，现场=' + before);
-      await toggleFirstRowCheckbox(true);
-      const afterCheck = parseSelectedCount(await selectedCountText());
-      if (afterCheck !== 1) {
-        throw new Error('勾选一行后已选应为 1 家，现场=' + afterCheck + '；bar=' + (await selectedCountText()).slice(0, 80));
-      }
-      await toggleFirstRowCheckbox(false);
-      const afterUncheck = parseSelectedCount(await selectedCountText());
-      if (afterUncheck !== 0) {
-        throw new Error('取消勾选后已选应回到 0 家，现场=' + afterUncheck);
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 /enterprise-center/attraction&entry=candidates；CandidatePanel data-testid=candidate-action-bar「已选 N 家」。机检首行 row-selection 勾选/取消与 N 变化（0→1→0）。前置同 FUNC-01428（对比篮/企业查询加入）。D4·候选空→ ENV-ATTRACT-CANDIDATE-EMPTY。登录与关评审由 runner 前置。B 档零 allow_skip。
+      await expect(selectedCountText(0)).toBeVisible({ timeout: 8000 });
+      const firstRow = stack().locator('.arco-table-body .arco-table-tr').first();
+      const rowCheckbox = firstRow.locator('.arco-checkbox').first();
+      await expect(rowCheckbox).toBeVisible({ timeout: 8000 });
+      await rowCheckbox.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(selectedCountText(1)).toBeVisible({ timeout: 8000 });
+  - note: 2、取消后已选家数回到 0
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const selectedCountText = (n) => stack().getByText(new RegExp('已选\\s*' + n + '\\s*家'));
+      const firstRow = stack().locator('.arco-table-body .arco-table-tr').first();
+      const rowCheckbox = firstRow.locator('.arco-checkbox').first();
+      await rowCheckbox.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(selectedCountText(0)).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

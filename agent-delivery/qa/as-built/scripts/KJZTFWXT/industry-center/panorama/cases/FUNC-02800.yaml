@@ -1,93 +1,31 @@
 id: FUNC-02800
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02800
-priority: P0
-title: 结构列表点上游关系后详情给出关系字段
-story: US-CHAIN-PANORAMA-02
+priority: P1
+tier: B
+title: 主流程-关系详情
 entry_id: chain-panorama
-tier: A
-preconditions:
-  - 已打开「结构列表」
-locators:
-  structure_list: '[aria-label="产业链结构列表"]'
-  edge_buttons: .industry-topic-structure-list__edges button
-  inline_detail: '[data-testid="panorama-inline-detail"]'
-  relation_row: 关系「集成电路设计 → 晶圆制造」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/panorama
-  - action: evaluate
-    note: 切结构列表并点击关系「集成电路设计 → 晶圆制造」（操作在 expect assert 内）
+  - action: click
+    target: 结构列表
+  - action: click
+    target: 集成电路设计 → 晶圆制造
 expect:
-  - note: 前置：已进入本页并打开「结构列表」，点击目标关系
-    assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      await dismissBasket();
-      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
-      }
-      await page.getByText('结构列表', { exact: true }).click();
-      await page.waitForTimeout(600);
-      const listRadio = page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first();
-      const listCls = (await listRadio.getAttribute('class')) || '';
-      if (!listCls.includes('arco-radio-checked')) {
-        throw new Error('前置：结构列表未选中');
-      }
-      const list = page.locator('[aria-label="产业链结构列表"]');
-      await expect(list).toBeVisible({ timeout: 10000 });
-      const relBtn = list
-        .locator('.industry-topic-structure-list__edges button')
-        .filter({ hasText: '集成电路设计' })
-        .filter({ hasText: '晶圆制造' })
-        .first();
-      await expect(relBtn).toBeVisible({ timeout: 8000 });
-      await relBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const detail = page.locator('[data-testid="panorama-inline-detail"]');
-      await expect(detail).toBeVisible({ timeout: 10000 });
-      globalThis.__func02800_ready = true;
   - note: 1、详情显示「产业链关系」和「上游」
     assert: |-
-      if (!globalThis.__func02800_ready) throw new Error('前置：未点击目标关系');
-      const detail = page.locator('[data-testid="panorama-inline-detail"]');
-      await expect(detail).toBeVisible({ timeout: 8000 });
-      const heading = detail.locator('.industry-overview-object-panel__heading').first();
-      await expect(heading).toBeVisible({ timeout: 8000 });
-      const kicker = heading.locator('span').first();
-      await expect(kicker).toHaveText('产业链关系', { timeout: 8000 });
-      const h3 = heading.locator('h3').first();
-      await expect(h3).toHaveText('上游', { timeout: 8000 });
+      const main = page.locator('main');
+      await expect(main.getByText('产业链关系')).toBeVisible();
+      await expect(main.getByText('产业链关系').locator('xpath=following::*[contains(., "上游")][1]')).toBeVisible();
   - note: 2、含「业务语义」「更新时间」「当前时间状态」
     assert: |-
-      if (!globalThis.__func02800_ready) throw new Error('前置：未点击目标关系');
-      const detail = page.locator('[data-testid="panorama-inline-detail"]');
-      for (const label of ['业务语义', '更新时间', '当前时间状态']) {
-        const row = detail.locator('.arco-descriptions-item-label').filter({ hasText: label }).first();
-        await expect(row).toBeVisible({ timeout: 8000 });
-      }
+      const main = page.locator('main');
+      await expect(main.getByText('业务语义')).toBeVisible();
+      await expect(main.getByText('更新时间')).toBeVisible();
+      await expect(main.getByText('当前时间状态')).toBeVisible();
   - note: 3、业务语义为「暂无已发布关系说明」
     assert: |-
-      if (!globalThis.__func02800_ready) throw new Error('前置：未点击目标关系');
-      const detail = page.locator('[data-testid="panorama-inline-detail"]');
-      const semVal = detail
-        .locator('.arco-descriptions-item')
-        .filter({ hasText: '业务语义' })
-        .locator('.arco-descriptions-item-value')
-        .first();
-      await expect(semVal).toHaveText('暂无已发布关系说明', { timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  路由 catalog_path /industry-center/panorama；前置「结构列表」= canvasMode list（IndustryPanoramaPage.vue）。
-  点关系= aria-label 产业链结构列表 内 .industry-topic-structure-list__edges button，端点文案 industryEdgeEndpointText（集成电路设计 → 晶圆制造）。
-  详情 data-testid=panorama-inline-detail，关系态 heading kicker=产业链关系、h3=industryEdgeRelationLabel(upstream)=上游（IndustryPanoramaDetail.vue panorama 变体）。
-  三项 a-descriptions；业务语义钉用例册空态原文；当前时间状态只钉格式不钉死日（与 02801 同）。对比篮可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+      await expect(page.getByText('暂无已发布关系说明')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

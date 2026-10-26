@@ -9,13 +9,8 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
-  - action: click
-    target: 开始分析
-  - action: click
-    target: 查看结果
-expect:
-  - note: 标题为「产业服务链统一评价框架」
-    assert: |-
+  - action: evaluate
+    target: |-
       const close = page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && (await close.first().isVisible().catch(() => false))) {
         try {
@@ -23,19 +18,46 @@ expect:
           await page.waitForTimeout(300);
         } catch {}
       }
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByText('产业服务链统一评价框架', { exact: false }).first()).toBeVisible({ timeout: 15000 });
-  - note: 口径写明同一产业、同一统计周期、同一指标口径
-    assert: |-
-      const drawer = page.locator('.arco-drawer');
-      const text = ((await drawer.innerText().catch(() => '')) || '').replace(/\s+/g, '');
-      if (!/同一.*产业/.test(text) || !/同一.*统计周期/.test(text) || !/同一.*指标口径/.test(text)) {
-        throw new Error('抽屉未见完整框架口径说明: ' + text.slice(0, 300));
+      if (/view=processing|view=result/.test(page.url())) {
+        await page.goto(page.url().split('?')[0] + '?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
       }
-  - note: 出现「框架口径待甲方确认」
+      await page.locator('main [data-testid="svc-eco-analysis-config"]').waitFor({ state: 'visible', timeout: 15000 });
+      const cfg = page.locator('main [data-testid="svc-eco-analysis-config"]');
+      await cfg.locator('.arco-cascader-view').first().click();
+      await page.locator('.arco-cascader-list-column').first().getByText('新一代信息技术', { exact: true }).click({ timeout: 15000 });
+      const col2 = page.locator('.arco-cascader-list-column').nth(1);
+      if (await col2.isVisible().catch(() => false)) {
+        await col2.getByText('人工智能与应用', { exact: true }).click({ timeout: 8000 }).catch(() => {});
+      }
+      const start = page.locator('main [data-testid="svc-eco-start-analysis"]');
+      await start.click({ timeout: 8000 });
+      const pollUrl = async (ms) => {
+        for (let i = 0; i < Math.ceil(ms / 1000); i++) {
+          await page.waitForTimeout(1000);
+          if (/[?&]view=processing/.test(page.url())) return true;
+        }
+        return false;
+      };
+      let landed = await pollUrl(15000);
+      if (!landed) throw new Error('点击开始分析后未进入过程态: ' + page.url());
+      await page.getByText('分析结果已生成').waitFor({ state: 'visible', timeout: 90000 });
+      await page.locator('main').getByRole('button', { name: '查看结果', exact: true }).click({ timeout: 30000 });
+      if (!/[?&]view=result/.test(page.url())) throw new Error('点击「查看结果」后未进入结果态: ' + page.url());
+expect:
+  - note: 1、标题为「产业服务链统一评价框架」
     assert: |-
-      await expect(page.locator('.arco-drawer').getByText('框架口径待甲方确认', { exact: false })).toBeVisible();
-  - note: 说明当前结果快照未带框架字段
+      await expect(page.locator('main').getByText('产业服务链统一评价框架', { exact: false }).first()).toBeVisible({ timeout: 30000 });
+  - note: 2、口径写明同一产业、同一统计周期、同一指标口径
     assert: |-
-      await expect(page.locator('.arco-drawer').getByText(/结果快照.*未带.*框架字段/, { exact: false })).toBeVisible();
+      const text = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      if (!/同一.*产业/.test(text) || !/同一.*统计周期/.test(text) || !/同一.*指标口径/.test(text)) {
+        throw new Error('结果页未见完整框架口径说明: ' + text.slice(0, 400));
+      }
+  - note: 3、出现「框架口径待甲方确认」
+    assert: |-
+      await expect(page.locator('main').getByText('框架口径待甲方确认', { exact: false }).first()).toBeVisible({ timeout: 15000 });
+  - note: 4、说明当前结果快照未带框架字段
+    assert: |-
+      await expect(page.locator('main').getByText(/结果快照.*未带.*框架字段/, { exact: false }).first()).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

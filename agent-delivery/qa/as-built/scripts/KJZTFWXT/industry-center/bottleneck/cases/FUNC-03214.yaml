@@ -2,73 +2,81 @@ id: FUNC-03214
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03214
 priority: P1
 tier: B
-title: 备选-诊断记录
+title: 诊断记录筛已完成仅保留已完成瓶颈任务
 entry_id: chain-bottleneck
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  - action: click
+    target: 诊断记录
   - action: evaluate
-    note: 诊断记录 Tab→任务状态选「已完成」
-expect:
-  - note: 1、列表中状态列均为「已完成」
+    note: 在任务状态中选「已完成」
     assert: |-
-      const main = () => page.locator('main').first();
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const tab = page.getByRole('tab', { name: '诊断记录' }).first();
-      await expect(tab).toBeVisible({ timeout: 10000 });
-      if ((await tab.getAttribute('aria-selected')) !== 'true') {
-        await tab.click({ timeout: 10000 });
-        await page.waitForTimeout(1200);
-      }
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const filters = main().locator('.diagnosis-records__filters');
+      await expect(filters).toBeVisible({ timeout: 10000 });
       const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
       await page.keyboard.press('Escape').catch(() => {});
-      const statusLabel = main().getByText('任务状态', { exact: false }).first();
-      await expect(statusLabel).toBeVisible({ timeout: 8000 });
-      let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
-      if ((await trigger.count()) < 1) {
-        trigger = main().locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
-      }
+      const trigger = filters.locator('.arco-select-view').first();
       await expect(trigger).toBeVisible({ timeout: 8000 });
       await trigger.click({ timeout: 8000 });
       await page.waitForTimeout(450);
       const opt = page.locator(optSel).filter({ hasText: /^已完成$/ }).first();
       await expect(opt).toBeVisible({ timeout: 8000 });
       await opt.click({ timeout: 8000 });
-      await page.waitForTimeout(900);
-      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
-      const n = await rows.count();
-      if (n < 1) {
-        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-03214：筛「已完成」后无任务行');
+      await page.waitForTimeout(1200);
+      const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/已完成/.test(shown)) {
+        throw new Error('任务状态筛选未回显「已完成」：' + shown);
       }
+expect:
+  - note: 1、列表中状态列均为「已完成」
+    assert: |-
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dataRows = () => main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+      await page.waitForTimeout(600);
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/暂无数据/.test(body)) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-03214：筛已完成后无行，环境无已完成瓶颈任务');
+      }
+      const rows = dataRows();
+      const n = await rows.count();
+      let visible = 0;
       const bad = [];
       for (let i = 0; i < n; i++) {
         const row = rows.nth(i);
         if (!(await row.isVisible().catch(() => false))) continue;
         const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/失败|分析中/.test(rt) || !/已完成|成功/.test(rt)) {
-          bad.push((rt.match(TID_RE) || ['row' + i])[0] + ':' + rt.slice(0, 80));
-        }
+        visible++;
+        if (/失败|分析中/.test(rt)) bad.push((rt.match(TID_RE) || ['row' + i])[0] + ' 非已完成');
+        else if (!/已完成/.test(rt)) bad.push((rt.match(TID_RE) || ['row' + i])[0] + ' 未见「已完成」');
       }
-      if (bad.length) throw new Error('状态列非全部已完成：' + bad.join('; '));
+      if (visible < 1) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-03214：筛已完成后无可见任务行');
+      }
+      if (bad.length) throw new Error('状态列不符：' + bad.join('; '));
   - note: 2、类型列均为「产业瓶颈堵点识别」
     assert: |-
-      const main = () => page.locator('main').first();
+      const main = () => page.locator('main.content-shell-layout, main').first();
       const TID_RE = /CHAIN-\d{8}-\d{3}/;
       const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
       const n = await rows.count();
-      if (n < 1) {
-        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-03214：筛「已完成」后无任务行');
-      }
+      let visible = 0;
       const bad = [];
       for (let i = 0; i < n; i++) {
         const row = rows.nth(i);
         if (!(await row.isVisible().catch(() => false))) continue;
         const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        visible++;
         if (!/产业瓶颈堵点识别/.test(rt)) {
-          bad.push((rt.match(TID_RE) || ['row' + i])[0] + ':' + rt.slice(0, 100));
+          bad.push((rt.match(TID_RE) || ['row' + i])[0] + ' 类型不符');
         }
       }
-      if (bad.length) throw new Error('类型列非全部产业瓶颈堵点识别：' + bad.join('; '));
+      if (visible < 1) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-03214：无可见行可校验类型列');
+      }
+      if (bad.length) throw new Error('类型列不符：' + bad.join('; '));
 on_fail: 截图 + 抄 X-Trace-Id

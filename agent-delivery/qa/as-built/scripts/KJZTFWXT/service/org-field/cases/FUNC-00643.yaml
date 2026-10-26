@@ -1,7 +1,7 @@
 id: FUNC-00643
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00643
-priority: P0
-tier: A
+priority: P1
+tier: B
 title: 主流程-选择机构回显
 entry_id: svc-org-field
 preconditions: []
@@ -13,44 +13,27 @@ expect:
   - note: 1、「选择服务机构」弹窗可勾选机构
     assert: |-
       const main = page.locator('main').first();
-      await expect(main.getByText('已选机构（0 家）').first()).toBeVisible({ timeout: 12000 });
-      await main.locator('[data-testid=svc-org-open-compare-basket]').click({ timeout: 8000 });
-      await page.waitForTimeout(1000);
-      const dialog = page
-        .locator('.arco-modal:visible, .arco-drawer:visible')
-        .filter({ hasText: /选择服务机构|对比篮/ })
-        .first();
-      await expect(dialog).toBeVisible({ timeout: 12000 });
-      const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
-      const n = await checks.count();
-      if (n < 1) throw new Error('弹窗无可勾选机构');
-      await expect(checks.first()).toBeVisible({ timeout: 5000 });
+      await main.getByRole('button', { name: '打开对比篮' }).first().click({ timeout: 12000 });
+      const picker = main.filter({ hasText: '选择分析服务机构' });
+      await expect(picker.getByText('选择分析服务机构').first()).toBeVisible({ timeout: 12000 });
+      await expect(picker.getByRole('button', { name: '全选当前筛选结果' })).toBeVisible({ timeout: 8000 });
+      const toggle = picker.locator('.arco-checkbox').first();
+      await expect(toggle).toBeVisible({ timeout: 8000 });
   - note: 2、确定后已选机构为 1 家
     assert: |-
-      const dialog = page
-        .locator('.arco-modal:visible, .arco-drawer:visible')
-        .filter({ hasText: /选择服务机构|对比篮/ })
-        .first();
-      await expect(dialog).toBeVisible({ timeout: 8000 });
-      const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
-      await checks.first().click({ timeout: 5000 });
-      await page.waitForTimeout(300);
-      const ok = dialog.getByRole('button', { name: '确定' });
-      if (await ok.count()) {
-        await ok.first().click({ timeout: 8000 });
-      } else {
-        await dialog.getByRole('button', { name: /确定|确认/ }).first().click({ timeout: 8000 });
-      }
-      await page.waitForTimeout(1000);
       const main = page.locator('main').first();
-      await expect(main.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 12000 });
+      const picker = main.filter({ hasText: '选择分析服务机构' });
+      await picker.locator('.arco-checkbox').first().click({ timeout: 8000 });
+      await expect(picker.getByText(/已选\s*1\s*家机构/)).toBeVisible({ timeout: 8000 });
+      await main.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+      await expect(main.getByText('已选机构（1 家）').first()).toBeVisible({ timeout: 12000 });
   - note: 3、配置区出现该机构
     assert: |-
       const main = page.locator('main').first();
-      const ctx = main.locator('[data-testid=svc-org-analysis-context-field]');
-      await expect(ctx).toBeVisible({ timeout: 8000 });
-      const tag = ctx.locator('.svc-org-pick-tag').first();
-      await expect(tag).toBeVisible({ timeout: 8000 });
-      const label = (await tag.innerText()).trim();
-      if (!label || /未选择/.test(label)) throw new Error('配置区机构芯片无效: ' + label);
+      const ctx = main.locator('[data-testid="svc-org-analysis-context-field"]');
+      await expect(ctx.locator('.svc-org-pick-tag').first()).toBeVisible({ timeout: 8000 });
+      const tagText = (await ctx.locator('.svc-org-pick-tag').first().innerText()).trim();
+      if (!tagText || tagText === '未选择机构') {
+        throw new Error(`配置区未回显机构名，实际：${tagText || '(空)'}`);
+      }
 on_fail: 截图 + 抄 X-Trace-Id

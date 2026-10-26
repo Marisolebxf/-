@@ -1,36 +1,26 @@
 id: FUNC-04093
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04093
 priority: P0
-tier: A
+tier: B
 title: 主流程-分析记录列
-story: US-SVC-ORG-02
 entry_id: svc-org-field
-preconditions:
-  - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
-  - 已进入本页
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
-  - action: evaluate
+  - action: click
     note: 点击「分析记录」
+    target: 分析记录
 expect:
   - note: 1、表头依次为任务、类型、状态、创建时间、操作
     assert: |-
-      const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
-      await recTab.first().click({ timeout: 10000 });
-      await page.waitForTimeout(800);
-      const thLoc = page.locator('main .arco-table thead .arco-table-th, main .arco-table-th');
+      await page.locator('main [data-testid="svc-org-analysis-records"]').waitFor({ state: 'visible', timeout: 15000 });
+      const thLoc = page.locator('main [data-testid="svc-org-analysis-records"] .arco-table thead .arco-table-th');
       await expect(thLoc.first()).toBeVisible({ timeout: 12000 });
-      const raw = await thLoc.allTextContents();
-      const headers = raw.map((s) => (s || '').replace(/\s+/g, ' ').trim()).filter(Boolean);
       const expectedHeaders = ['任务', '类型', '状态', '创建时间', '操作'];
-      if (headers.length < expectedHeaders.length) {
-        throw new Error('表头列数不足: ' + JSON.stringify(headers));
-      }
+      await expect(thLoc).toHaveCount(expectedHeaders.length);
       for (let i = 0; i < expectedHeaders.length; i++) {
-        if (headers[i] !== expectedHeaders[i]) {
-          throw new Error('第' + (i + 1) + '列应为「' + expectedHeaders[i] + '」，实际「' + headers[i] + '」；全部=' + JSON.stringify(headers));
-        }
+        await expect(thLoc.nth(i)).toHaveText(expectedHeaders[i], { timeout: 5000 });
       }
 on_fail: 截图 + 抄 X-Trace-Id

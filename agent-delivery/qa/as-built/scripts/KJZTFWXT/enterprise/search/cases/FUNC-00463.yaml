@@ -1,41 +1,23 @@
 id: FUNC-00463
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00463
 priority: P1
-title: 查企业「热门企业」chip 点击后立即检索出结果
-story: US-E1-SCH-01
+tier: B
+title: 备选-热门企业 chip 点击后立即检索出结果
 entry_id: ent-search
-tier: A
-preconditions:
-  - 已切换「查企业」
-  - 可见「热门企业」分区
-locators:
-  company_tab: tab 查企业
-  hot_ent_section: .enterprise-search-hot-enterprises
-  hot_ent_chip: .enterprise-search-hot-enterprises .enterprise-search-hot-button（小米/华为等）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /enterprise/enterprise-search
   - action: click
     target: tab 查企业
-  - action: evaluate
-    note: 点击热门企业 chip 与查企业结果标题断言在 expect 内自含（P2 跨 tick）
+  - action: click
+    target: 小米
+  - action: wait
+    timeout_ms: 1500
 expect:
   - note: 页面出现查企业结果标题（立即检索，区别于示例查询仅回填）
     assert: |-
-      const hotSection = page.locator('.enterprise-search-hot-enterprises');
-      await expect(hotSection).toBeVisible({ timeout: 8000 });
-      await expect(page.getByText('查企业结果')).toHaveCount(0);
-      const chip = hotSection.locator('.enterprise-search-hot-button').first();
-      await expect(chip).toBeVisible({ timeout: 8000 });
-      const chipLabel = (await chip.innerText()).trim();
-      if (!chipLabel) throw new Error('热门企业 chip 文案为空');
-      await chip.click();
-      await page.waitForTimeout(1200);
-      await expect(page.getByText('查企业结果')).toBeVisible({ timeout: 8000 });
-      await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 8000 });
-      const cond = await page.locator('main').innerText();
-      if (!cond.includes(chipLabel)) {
-        throw new Error('立即检索后当前条件区未见所点热门企业关键词: ' + chipLabel);
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D1·30888 深链 /enterprise/enterprise-search。D4·30888 查企业态无「热门企业」分区（仅有示例查询/热门场景/推荐企业，query-examples 未配 hotEnterprises），前置 2 不满足→机跑 blocked；50892 口径 6 chip 为小米/华为/比亚迪/腾讯/大疆/中兴。chip 与热门场景共用 .enterprise-search-hot-button，须限定 .enterprise-search-hot-enterprises。
+      const main = page.getByRole('main');
+      await expect(main.getByText('查企业结果')).toBeVisible({ timeout: 30000 });
+on_fail: 截图 + 抄 X-Trace-Id

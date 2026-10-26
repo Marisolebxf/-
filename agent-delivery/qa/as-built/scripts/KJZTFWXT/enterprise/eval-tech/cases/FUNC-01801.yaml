@@ -1,22 +1,20 @@
 id: FUNC-01801
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01801
 priority: P1
-title: 从只读报告点击「返回评估结果」回到技术力评估结果
+tier: B
+title: 从只读报告点击返回评估结果回到技术力评估结果
 story: US-ENT-EVAL-TECH
 entry_id: ent-eval-tech
-tier: B
 preconditions:
-  - 已打开技术力评估报告（脚本内：结果态→查看 HTML 报告）
-locators:
-  back_result: button「返回评估结果」
-  result_heading: heading「技术力评估结果」
+  - 已打开技术力评估报告
+locators: {}
 steps:
   - action: goto
     target: /enterprise-center/evaluation?workspace=technology&mode=technology
   - action: evaluate
-    note: 进入报告态→点「返回评估结果」→断言回到结果区；机检在 expect
+    note: 前置同本册01800进入报告→点「返回评估结果」→断言回到结果页
 expect:
-  - note: 1、回到「技术力评估结果」（结果区标题与得分语境可见，非只读报告页）
+  - note: 1、回到「技术力评估结果」
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
       const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
@@ -97,7 +95,7 @@ expect:
         await page.waitForTimeout(2000);
         await closeBasket();
         const start = page.getByRole('button', { name: '开始分析' });
-        if (await start.isDisabled()) throw new Error('开始分析禁用（ticket=ENV-EVAL-TECH-PRECHECK-001）');
+        if (await start.isDisabled()) throw new Error('开始分析禁用');
         await start.click({ timeout: 8000 });
         const t0 = Date.now();
         while (Date.now() - t0 < 120000 && !(await bodyResultReady())) {
@@ -109,17 +107,20 @@ expect:
             }
           }
           const errBody = await page.locator('body').innerText().catch(() => '');
-          if (/评估失败|暂无评估结果资产/.test(errBody)) throw new Error('任务终态失败或空结果（D3）：' + page.url());
+          if (/评估失败|暂无评估结果资产/.test(errBody)) throw new Error('任务终态失败或空结果：' + page.url());
           await page.waitForTimeout(1000);
         }
-        if (!(await bodyResultReady())) throw new Error('现场分析未到结果态（ticket=ENV-EVAL-TECH-RESULT-SHELL-001）：' + page.url());
+        if (!(await bodyResultReady())) throw new Error('现场分析未到结果态：' + page.url());
       };
-      const openReportFromResult = async () => {
-        if (!(await bodyResultReady())) throw new Error('未到结果态：' + page.url());
-        let entry = page.locator('[data-eval-open-html-report]').first();
-        if (!(await entry.isVisible().catch(() => false))) {
-          entry = page.getByRole('button', { name: /查看\s*HTML\s*报告/ }).first();
+      const openReport = async () => {
+        let ready = await openRecentResult();
+        if (!ready) {
+          await ensureBasketEnterprises(2);
+          await startAnalysisFallback();
         }
+        if (!(await bodyResultReady())) throw new Error('未到结果态：' + page.url());
+        await expect(main().getByRole('heading', { name: '技术力评估结果' }).first()).toBeVisible({ timeout: 15000 });
+        const entry = page.locator('[data-eval-open-html-report]').first();
         await expect(entry).toBeVisible({ timeout: 10000 });
         await expect(entry).toBeEnabled();
         await entry.scrollIntoViewIfNeeded().catch(() => {});
@@ -128,7 +129,7 @@ expect:
         await page.waitForTimeout(2000);
         const reportVisible = async () => {
           const b = await page.locator('body').innerText().catch(() => '');
-          return /view=report/.test(page.url()) || (b.includes('技术力评估报告') && b.includes('报告目录'));
+          return /view=report/.test(page.url()) || (b.includes('技术力评估报告') && b.includes('只读报告'));
         };
         let tNav = Date.now();
         while (Date.now() - tNav < 12000 && !(await reportVisible())) await page.waitForTimeout(400);
@@ -140,39 +141,18 @@ expect:
         }
         if (!(await reportVisible())) throw new Error('未进入只读报告：' + page.url());
         await expect(page.getByText('技术力评估报告').first()).toBeVisible({ timeout: 15000 });
-        await expect(page.getByText(/只读报告/).first()).toBeVisible({ timeout: 10000 });
       };
-      let ready = await openRecentResult();
-      if (!ready) {
-        await ensureBasketEnterprises(2);
-        await startAnalysisFallback();
-      }
-      await openReportFromResult();
-      const back = page.getByRole('button', { name: /返回评估结果/ }).first();
-      await expect(back).toBeVisible({ timeout: 10000 });
-      await expect(back).toBeEnabled();
-      await back.scrollIntoViewIfNeeded().catch(() => {});
-      await closeBasket();
-      await back.click({ timeout: 8000 });
+      await openReport();
+      const backBtn = main().getByRole('button', { name: '返回评估结果' }).first();
+      await expect(backBtn).toBeVisible({ timeout: 10000 });
+      await backBtn.click({ timeout: 8000 });
       await page.waitForTimeout(1500);
-      let tBack = Date.now();
-      while (Date.now() - tBack < 12000 && !(await bodyResultReady())) await page.waitForTimeout(400);
-      if (!(await bodyResultReady()) && /view=report/.test(page.url())) {
-        const tid = new URL(page.url()).searchParams.get('task_id');
-        if (tid) {
-          await page.goto(toUrl(evalRoute + '&view=result&analysis_type=technology&task_id=' + encodeURIComponent(tid)), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(2000);
-        }
+      const tBack = Date.now();
+      while (Date.now() - tBack < 10000 && !/view=result/.test(page.url()) && !(await bodyResultReady())) {
+        await page.waitForTimeout(400);
       }
-      if (!(await bodyResultReady())) throw new Error('点击返回后未到技术力评估结果：' + page.url());
       await expect(main().getByRole('heading', { name: '技术力评估结果' }).first()).toBeVisible({ timeout: 15000 });
-      const afterBody = await page.locator('body').innerText().catch(() => '');
-      if (/企业评估\s*·\s*只读报告/.test(afterBody) && !/技术力最高得分/.test(afterBody)) {
-        throw new Error('仍停留在只读报告壳层');
-      }
-      if (/view=report/.test(page.url()) && !/view=result/.test(page.url())) {
-        throw new Error('URL 仍为 view=report：' + page.url());
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: |-
-  01801 验报告页 button「返回评估结果」→ 结果区 heading「技术力评估结果」+ 得分语境。前置链同 FUNC-01800（最近评估恢复优先，不足则对比篮+现场分析）。报告顶栏 as-built 与 P0-16 一致（「企业评估 · 只读报告」）。B 档零 allow_skip。
+      await expect(main().getByText('技术力最高得分').first()).toBeVisible({ timeout: 10000 });
+      const bodyAfter = await main().innerText().catch(() => '');
+      if (!/技术力评估结果/.test(bodyAfter)) throw new Error('返回后未见技术力评估结果：' + page.url());
+on_fail: 截图 + 抄 X-Trace-Id

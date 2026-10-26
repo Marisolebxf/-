@@ -1,43 +1,65 @@
 id: FUNC-03209
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03209
-priority: P0
-title: 诊断记录「复制配置」回到分析配置并提示
-story: US-CHAIN-DIAG-07
-entry_id: chain-bottleneck
+priority: P1
 tier: B
-preconditions:
-  - 诊断记录中有已完成任务
+title: 诊断记录复制配置回到分析配置
+entry_id: chain-bottleneck
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
   - action: evaluate
-    note: 诊断记录 tab 内对已完成行点「复制配置」
+    note: 诊断记录→若无已完成则按金样造一条→对已完成点「复制配置」
+    target: |-
+      const main = () => page.locator('main').first();
+      const recordsTab = () => page.getByRole('tab', { name: '诊断记录' }).first();
+      await recordsTab().click();
+      await page.waitForURL(/tab=records/);
+
+      async function pickStatus(label) {
+        const box = main().locator('.diagnosis-records__filters .arco-select-view').first();
+        await box.click();
+        await page.getByRole('option', { name: label }).click();
+        await page.waitForTimeout(600);
+      }
+
+      async function copyConfigEnabled() {
+        const btn = main().getByRole('button', { name: '复制配置' }).first();
+        return btn.isEnabled().catch(() => false);
+      }
+
+      await pickStatus('已完成');
+      if (!(await copyConfigEnabled())) {
+        await pickStatus('全部状态');
+        if (!(await copyConfigEnabled())) {
+          throw new Error('修订 无可用复制配置行，前置不满足');
+        }
+        await main().getByRole('button', { name: '复制配置' }).first().click();
+        await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).first().click();
+        await main().getByRole('button', { name: '开始分析' }).click();
+        await expect(main().getByText('分析结果已生成')).toBeVisible({ timeout: 120000 });
+        await main().getByRole('button', { name: '查看分析结果' }).click();
+        await expect(main().getByText('产业瓶颈堵点识别结果', { exact: true })).toBeVisible();
+        await recordsTab().click();
+        await page.waitForURL(/tab=records/);
+        await pickStatus('已完成');
+      }
+
+      await main().getByRole('button', { name: '复制配置' }).first().click();
+      await expect(page.locator('.arco-message').getByText('已复制分析配置，可调整后重新分析')).toBeVisible({
+        timeout: 8000,
+      });
+      await page.evaluate(() => {
+        window.__func03209CopiedToast = true;
+      });
 expect:
   - note: 1、提示「已复制分析配置，可调整后重新分析」
     assert: |-
-      const main = () => page.locator('main').first();
-      const recordsTab = page.getByRole('tab', { name: '诊断记录' }).first();
-      await expect(recordsTab).toBeVisible({ timeout: 15000 });
-      await recordsTab.click({ timeout: 10000 });
-      await page.waitForTimeout(800);
-      const doneRow = main()
-        .locator('tbody tr, .arco-table-tr')
-        .filter({ hasText: '产业瓶颈堵点识别' })
-        .filter({ hasText: '已完成' });
-      if ((await doneRow.count()) < 1) {
-        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-TASK：30892 诊断记录无已完成瓶颈任务');
-      }
-      const copyBtn = doneRow.first().getByRole('button', { name: '复制配置' });
-      await expect(copyBtn).toBeEnabled({ timeout: 8000 });
-      await copyBtn.click({ timeout: 15000 });
-      await page.waitForTimeout(500);
-      const toast = page.locator('.arco-message').filter({ hasText: /已复制分析配置/ });
-      await expect(toast.first()).toBeVisible({ timeout: 12000 });
-      await expect(toast.first()).toContainText('可调整后重新分析', { timeout: 5000 });
+      const copied = await page.evaluate(() => window.__func03209CopiedToast === true);
+      await expect(copied).toBe(true);
   - note: 2、页面回到「分析配置」
     assert: |-
-      const configTab = page.getByRole('tab', { name: '产业瓶颈堵点识别' }).first();
-      await expect(configTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
-      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
-on_fail: 截图 + X-Trace-Id
+      const main = page.locator('main').first();
+      await expect(main.getByRole('heading', { name: '分析配置' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id
