@@ -40091,7 +40091,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-10-26 二轮补充修复（久新截图反馈『个别字段新增填写了但加不进去』）：根因=政策 overlay 存储键与 v_cms_pol 视图读取键错位（写 $.pub_date/doc_no/source_url，视图读 $.pubDate/docNo/sourceUrl）——POL-CRUD 交付以来即存在，此前冒烟只验 title/publisher 未覆盖。修复：a) 486ac36 写入键对齐视图；b) 554dfa8 输出层加 snake→契约 camel 映射（pub_date→pubDate 等六键），list/detail 统一；c) 存量 6 行旧键数据 JSON_SET 迁移。部署 554dfa8（pipeline 3003 image+deploy 绿），真库冒烟：新增全字段→list 契约键回显全对；存量行 detail 正常。注：actuator/info 401 系 CMS_API_KEY filter 覆盖面（正常）
+      2026-10-26 晚 三轮修复（久新『列表不显示业务字段』）：裁定按 human:徐滕强『list 返回按编辑细节对齐』——expert 5 域 list 行带上 content+conclusion/evidence/sourceType/source/advice 通用字段，与 detail 同构（9d02ac5，pipeline 3041 image+deploy 绿，真库验证 list 行含全字段）。至此 JXFE-FIX-L01 累计：①名称兼容解析 ②status 报错细化 ③政策 overlay 键位对齐+存量迁移 ④输出 snake→camel ⑤企业 list sort 参数 ⑥expert list 同构 detail。前端侧问题（自造键 tab-1__f0）已出对照表+sections 元数据接口引导解决。待久新重验后 QA 走查收口
     depends_on: []
     definition_of_done:
       - "① product/create：orgId 校验报错文案带「请先调 enterprise/list 获取 id」指引"
@@ -40104,7 +40104,7 @@ tasks:
       - "全部改动 mvn 编译绿 + 真库冒烟验证（每类至少一个成功案例）"
       - "OpenAPI/久新 MD 同步（⑦契约删字段；①-⑤ 补字段说明）"
       - "handoff 写入平台基建-PLATFORM/CMS-JX-JXFE-FIX-L01.md"
-    update_time: "2026-10-26T16:52:44+08:00"
+    update_time: "2026-10-26T21:16:14+08:00"
   - id: SYSINT-03-02A-JAVA-L01
     sprint_id: "2026-W43"
     model_used: "glm-5.3-flash"
@@ -41269,14 +41269,18 @@ tasks:
       - "不改 policy_base_info，不 DROP。handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-GAP-L10.md，含改前改后快照、架构合规与 cost 四字段"
     update_time: "2026-10-26T20:52:06+08:00"
   - id: DOC-CHAIN-CYCLE-ANALYSIS-CHAIN-L01
-    evidence: "[object Object]"
+    actual_cost: 0.5
+    actual_tokens: 60000
+    cost_warn: "green"
+    model_used: "composer"
+    evidence: "agent-delivery/agent-handoffs/DOC-CHAIN-CYCLE-ANALYSIS-CHAIN-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T12:33:55.578Z"
     last_seen_at: "2026-10-26T12:33:55.578Z"
     lock_until: "2026-10-26T16:33:55.578Z"
     claimed_by: "agent:architect-agent"
     title: "产业周期分析 — 完整分析链路设计 + LLM 落点（05.2.1，对标 05.3.1/05.6.1 金样）"
-    status: "integration"
+    status: "ready_to_sign"
     agent: "architect-agent"
     epic: "DOC-CHAIN-CYCLE"
     priority: "P1"
@@ -41286,7 +41290,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "会签材料齐备：05.2.1 设计文档 v0.1 + 05.2 总册指针 + handoff 已落盘并推送 origin/dev（1263bbeb/47f9e9b2）。联调确认（definition=会签）：监管人 human:徐滕强 本会话已逐步走查并五决策拍板，请复核签收。"
+    note: "AV-1 通过；会签通过。"
     design_refs:
       - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
       - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md"
@@ -41299,7 +41303,7 @@ tasks:
       - "监管人五决策（双落点结构/prompt 治理范围/as-built 契约化/命名冻结/QC03 正交先改造）写入文档与 note"
       - "开放项不替甲方拍板：QC03/QC06/QC10 只引用客户决策清单 🟡，两套相位口径并存事实登记不调和"
       - "架构合规自检：调用链 前端→Java→Python /internal、LLM 只在算法侧且 Key 不出集群 Secret、无 RustFS 新写路径、Design.md §7.4/D9 角标对齐"
-    update_time: "2026-10-26T20:35:34+08:00"
+    update_time: "2026-10-26T21:15:43+08:00"
   - id: LUMEN-SVC-JAVA-SVC-REPORT-ARTIFACT-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T12:44:42.785Z"
@@ -41345,3 +41349,99 @@ tasks:
       - "回归验证：K8s dev 发布后，服务链短板分析页真实发起 shortboard_report 产物任务成功并下载 PDF（截图/日志入 evidence）；其余 7 叶至少抽 2 叶验证 create 成功"
       - "handoff 按 7 项合规自检（含 D8/D9/D10/D12/D14）+ cost 四字段回填；ponytail: full"
     update_time: "2026-10-26T20:44:48+08:00"
+  - id: DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01
+    cost_warn: "green"
+    model_used: "composer"
+    actual_cost: 1.2
+    actual_tokens: 80000
+    evidence: "agent-delivery/agent-handoffs/DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-26T13:15:14.528Z"
+    last_seen_at: "2026-10-26T13:15:14.528Z"
+    lock_until: "2026-10-26T17:15:14.528Z"
+    claimed_by: "agent:architect-agent"
+    title: "服务机构产业领域分析 — 完整分析链路设计 + LLM 落点（05.7.1）"
+    status: "ready_to_sign"
+    agent: "architect-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "AV-1 通过；会签通过。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.1-服务机构产业领域分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01.md"
+      - "agent-delivery/.cursor/skills/gkx-topic-analysis-chain-design/SKILL.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
+    definition_of_done:
+      - "05.7.1 链路文落盘（A 对照/B 完整链路/C 本叶落点/D Prompt/E OpenAPI·RustFS·metric/F 复用边界/G 开放项）并 push origin/dev"
+      - "配套 handoff DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01.md（含架构合规自检）"
+      - "监管人会签：四阶段词表、G1–G5 目标态、L3/L4 落点与 🟡 开放项不替甲方拍板"
+      - "架构合规：前端→Java→topic-py→algo /internal；LLM 仅算法侧；D14 RustFS 目录；D9 诚实角标"
+    update_time: "2026-10-26T21:16:06+08:00"
+  - id: DOC-SVC-ANALYSIS-LLM-TOUCHPOINTS-L01
+    cost_warn: "green"
+    model_used: "composer"
+    actual_cost: 0.6
+    actual_tokens: 40000
+    evidence: "agent-delivery/agent-handoffs/DOC-SVC-ANALYSIS-LLM-TOUCHPOINTS-L01.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-26T13:16:06.712Z"
+    last_seen_at: "2026-10-26T13:16:06.712Z"
+    lock_until: "2026-10-26T17:16:06.712Z"
+    claimed_by: "agent:architect-agent"
+    title: "服务链分析 — 八叶全域 LLM 落点表（05.7.2）"
+    status: "ready_to_sign"
+    agent: "architect-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "AV-1 通过；会签通过。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.2-服务链分析LLM落点表.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/DOC-SVC-ANALYSIS-LLM-TOUCHPOINTS-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md"
+    definition_of_done:
+      - "05.7.2 八叶落点表落盘（T1–T3 可上 / T4–T7 暂缓 / R1–R3 锁死）并 push origin/dev"
+      - "配套 handoff；判定沿用「归纳增益>漂移风险」"
+      - "开放项归集客户决策清单 Q-SVCCHAIN-03/04/05，不替甲方拍板"
+      - "架构合规自检（LLM 边界 / 共享 narrate / D12）"
+    update_time: "2026-10-26T21:16:31+08:00"
+  - id: CHAIN-CYCLE-NARRATE-L01
+    title: "产业周期 — Prompt v2 + 双落点治理（diagnose/forecast 文件化与白名单）"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "DOC-CHAIN-CYCLE"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: "设计门已关（DOC-CHAIN-CYCLE-ANALYSIS-CHAIN-L01=ready_to_sign）。OPEN-CY-1/2。监管人建议 human:徐滕强。强度：ponytail full。"
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "lumen_common/prompts/chain/"
+      - "lumen_common/algorithms/chain/cycle.py"
+      - "tests/test_chain_cycle.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.1-产业周期分析链路.md §7–§8"
+      - "agent-delivery/agent-handoffs/DOC-CHAIN-CYCLE-ANALYSIS-CHAIN-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md §5.6"
+    definition_of_done:
+      - "cycle.diagnose.v2 / cycle.forecast.v2 落入 lumen_common/prompts/chain/ 并经 loader 加载；去掉内联散落 system 字符串作为唯一真源"
+      - "L1 确认不得改判 primary_phase；L2 数字白名单；失败 degraded 不改任务终态；对齐 05.2.1 §7"
+      - "单测可注入 _narrate_client（或等价）；无 Key → degraded/skipped 且任务仍 success"
+      - "handoff + cost 四字段；ponytail: full；不改 Java 契约（LLM 对上层屏蔽）"
+    update_time: "2026-10-26T21:16:24+08:00"

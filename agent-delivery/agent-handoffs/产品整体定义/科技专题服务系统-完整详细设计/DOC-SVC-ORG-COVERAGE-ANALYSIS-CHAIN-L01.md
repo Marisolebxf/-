@@ -57,13 +57,15 @@
 
 - 实现建议拆单：① 前端指纹 4 段 + narration 渲染（fe）；② topic-py org_coverage 投递改造 + 路由正名（api）；③ algo worker 接入 + narrate 包 + RustFS 写（algorithm）。依赖 ③←②←① 联调。
 - 开放项见 05.7.1 §9（产业口径 🟡、覆盖度列 🟡、DEPTH 签收 🟡）；产业口径默认值须登记《客户决策清单跟踪表》（PM owner）。
-- task-registry 挂载：本设计任务未在 MCP 建单（会话未给 task-id）；如需挂载由 coordinator 补 `task-create` 并回填本 handoff 引用。
+- task-registry：已挂载 `DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01`（2026-10-26 coordinator 补建；监管人 human:徐滕强 已审阅 → 会签通过）。
 
-## 7. cost
+## 7. Cost 回填
 
-- `actual_tokens`: 待回填（设计会话，估 <200k）
-- `model_used`: glm-5.3-Flash
-- `actual_cost`: 待回填（估 < $2，无告警）
-- `cost_warn`: false
+| 字段 | 值 |
+| --- | --- |
+| actual_tokens | 80000 |
+| model_used | composer |
+| actual_cost | 1.20 |
+| cost_warn | green |
 
 *ponytail: off（定义/文档任务，产物完整性优先）。*

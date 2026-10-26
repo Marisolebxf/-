@@ -22,7 +22,7 @@
 ## 3. 产物清单
 
 - `agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.2-服务链分析LLM落点表.md`
-- 本文。无代码 / 无 seed / 无矩阵 YAML 改动；task-registry 未建单（同 05.7.1，挂载由 coordinator 补）。
+- 本文。无代码 / 无 seed / 无矩阵 YAML 改动；task-registry 已挂载 `DOC-SVC-ANALYSIS-LLM-TOUCHPOINTS-L01`（2026-10-26 coordinator 补建）。
 
 ## 4. 验收证据（设计类）
 
@@ -36,6 +36,7 @@
 | --- | --- |
 | 1 算法只在 Python | ✅ 未来 T1–T3 narrate 全落 lumen_common/algorithms |
 | 2 调用链 | ✅ LLM 边界维持 Common 收敛，Java 不碰 Key |
+| 3 NebulaGraph | ✅/n.a. 落点表不涉图谱写路径 |
 | 7 共享聚合核心 | ✅ 复用企业 narrate 函数与 prompt loader，禁另造 |
 | 8 数据策略 | ✅ T4–T7 因数据未闭合暂缓，不以 LLM 补事实 |
 | 10 D9 | ✅ 落点均绑定既有 metric/GAP 引用，无自造指标 |
@@ -46,11 +47,13 @@
 - T1 实现单随 `05.7.1` §6 拆分建议走；T2/T3 若批准同批，直接换 prompt 包复用 narrate 函数。
 - T4–T7 解锁触发：客户决策清单对应 🟡→🟢 后，回本表翻档并通知 algorithm-agent。
 
-## 7. cost
+## 7. Cost 回填
 
-- `actual_tokens`: 待回填（估 <150k）
-- `model_used`: glm-5.3-Flash
-- `actual_cost`: 待回填（估 < $1.5，无告警）
-- `cost_warn`: false
+| 字段 | 值 |
+| --- | --- |
+| actual_tokens | 40000 |
+| model_used | composer |
+| actual_cost | 0.60 |
+| cost_warn | green |
 
 *ponytail: off（定义/文档任务）。*

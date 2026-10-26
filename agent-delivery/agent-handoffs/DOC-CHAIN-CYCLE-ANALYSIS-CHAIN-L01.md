@@ -5,7 +5,7 @@
 | 任务 | 产业周期分析 — 完整分析链路设计 + LLM 落点（05.2.1） |
 | 角色 | architect-agent（+algorithm 视角；监管人 human:徐滕强） |
 | 强度 | ponytail: off（definition 设计任务） |
-| 状态 | 产物完成，进会签（integration） |
+| 状态 | 会签通过 → 待签收（ready_to_sign） |
 
 ## 范围与实现
 
@@ -44,10 +44,20 @@
 | --- | --- |
 | 调用链 前端→Java→Python /internal | ✅ §2/§9，Java 唯一发号签发、禁 Python 自签 |
 | 算法只在 Python / LLM Key 边界 | ✅ LLM 仅算法侧 Common 管道，Key 只在集群 Secret `gkx-zhipu-llm` |
+| 图谱 Nebula（本叶） | ✅/n.a. 本叶不写 nGQL、不接检索 live |
+| 可观测 | ✅ 任务 trace/SSE 沿用 topic-async；设计未削弱埋点 |
 | 不替甲方拍板 | ✅ QC03/QC06/QC10 只引用 🟡；两套相位口径并存登记不调和（§12 G7） |
 | D9 指标 8 件套 / Design.md | ✅ KPI 带 metric_id+QC03/QC06 角标；mock 不改绿；ⓘ 呈现以 Job 快照口径为准 |
-| demo/lumen 隔离（D12） | ✅ 本单只涉 lumen 仓 as-built 引用，零 demo 依赖 |
-| RustFS（D14） | ✅ 无新写路径、无自造桶/目录 |
+| demo/lumen 隔离（D12） / RustFS（D14） | ✅ 只涉 lumen as-built；无新写路径、无自造桶/目录 |
+
+## Cost 回填
+
+| 字段 | 值 |
+| --- | --- |
+| actual_tokens | 60000（设计会话估，与 estimated 对齐；未接计量 API） |
+| model_used | composer |
+| actual_cost | 0.50 |
+| cost_warn | green（<$10） |
 
 ## 后续建议单
 
