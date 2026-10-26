@@ -4,7 +4,7 @@
 > **脚本**：第一批放在本包 `scripts/mdc/`，即本文件所在目录下的 `GDF-POLICY-WORKPACK-v2/scripts/mdc/`，与 `scripts/policy_c1_industry.py` 同在 `scripts/`。**本版还没有这个目录**。落表名已在下面写死。`GDF-POLICY-MDC-STAT-L01` 写入该目录后，GDF 再复制到自己的 Python 节点。目录未出现之前，不要在 GDF 上建 MDC 作业。  
 > **不复制** `metrics/repro/M_*.py`。那些文件读冻结快照或供应方库，写出 JSON，不是本节点的作业。  
 > **口径真源**：`agent-delivery/metrics/calc-logic/POLICY/`。本章不新发明公式。  
-> **讨论收口**：`工程过程/04-系统集成/06-GDF数据治理集成/对接文档/我方/2026-10-26-要素指标加工与图谱拆解思路.md`。
+> **讨论收口**：`工程过程/04-系统集成/06-GDF数据治理集成/对接文档/工程侧/2026-10-26-要素指标加工与图谱拆解思路.md`。
 
 Wave A / B 只洗主表。Wave C（`12`）只做产业抽取和条款结构化。本章是它们之后的指标结果写入，叫 Wave D。
 
