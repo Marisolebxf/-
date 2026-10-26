@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_industry_rel` (
   COMMENT='政策–产业关联。抽取写入，不回写主表';
 ```
 
-`policy_id` 列排序规则收到 `utf8mb4_0900_ai_ci`。现网 `demo_gkxlumenx_dwd.policy_industry_rel.policy_id` 是 `utf8mb4_general_ci`，表级已经是 `utf8mb4_0900_ai_ci`。上面的 CREATE 在该列写明这一套，不另起列集。本叶不改库。
+`policy_id` 列排序规则是 `utf8mb4_0900_ai_ci`。2026-10-26 核对后，demo 与产线的 DWD、ADS 四张 `policy_industry_rel` 都与上面的 CREATE 一致，含 `id`、`create_time`、`update_time` 的列注释。
 
 | 列 | 含义 |
 |---|---|
@@ -122,7 +122,7 @@ ADS 镜像见 [`ads.md`](./ads.md) 的 `policy_industry_rel`。同步发生在�
 
 ## 政策文本解析：`policy_text_parse`
 
-总控要求本表在 DWD 有说明和建表语句。现网 `demo_gkxlumenx_dwd` 没有 `policy_text_parse`，同名表只在 `demo_gkxlumenx_ads`。下面的 CREATE 库名写 `demo_gkxlumenx_dwd`；列、类型、空值、默认值、索引与 2026-10-26 现网 `demo_gkxlumenx_ads.policy_text_parse` 一致。字符集 `utf8mb4`，排序规则 `utf8mb4_0900_ai_ci`（现网 ADS 该表是 `utf8mb4_unicode_ci`）。不写 `AUTO_INCREMENT` 当前值。本叶不建表。
+总控要求本表在 DWD 有说明和建表语句。下面的 CREATE 库名写 `demo_gkxlumenx_dwd`。列、类型、空值、默认值、索引与 ADS 同名表一致。字符集 `utf8mb4`，排序规则 `utf8mb4_0900_ai_ci`。不写 `AUTO_INCREMENT` 当前值。2026-10-26 `POLICY-DDL-GAP-L10` 已在 `demo_gkxlumenx_dwd` 与 `gkxlumenx_dwd` 按这份 CREATE 建空表，0 行，没有从 ADS 拷行。算法仍写 ADS 的同名表。
 
 用途与 [`ads.md`](./ads.md) 相同：D1 政策文本解析，摘要 + 结构化要素 + 自动标签。列注释口径同 ADS 那份 CREATE。
 

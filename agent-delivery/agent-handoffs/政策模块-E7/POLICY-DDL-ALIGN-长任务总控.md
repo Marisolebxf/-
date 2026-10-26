@@ -20,8 +20,9 @@
 | 主表读列代码    | `demo-algo-ent-analysis` 为主；同步 `lumen-algo-py` vendor 与 CMS    | `origin/dev` | `POLICY-DDL-BASE-CODE-L07`  | SPEC 与 CODE-L05 都到联调闸门。同仓串在 L05 之后。只改代码                            |
 | 两库对齐      | 同上（改的是 MySQL，不改算法仓）                                            | 同上           | `POLICY-DDL-ALIGN-L03`      | DOC、IMPACT、CODE 都到联调闸门，且 IMPACT 写明拟 ALTER 清单。不碰 `policy_base_info` |
 | 主表一次改库    | 同上（改的是 MySQL）                                                  | 同上           | `POLICY-DDL-BASE-ALIGN-L08` | SPEC、CODE-L07、ALIGN 都到联调闸门。改列集 / 改类型 / 改主键（不需要升级到李伟，淮政玮直接修改）       |
-| 核对        | 同上                                                             | 同上           | `POLICY-DDL-CHECK-L04`      | ALIGN 与 BASE-ALIGN 都到联调闸门                                          |
-| 派单包复制建表   | 同上                                                             | 同上           | `POLICY-DDL-GDF-SYNC-L09`   | CHECK 联调闸门。把 `dwd.md` / `ads.md` 的 CREATE 复制进现行派单包，再跑签收自检           |
+| 核对        | 同上                                                             | 同上           | `POLICY-DDL-CHECK-L04`      | ALIGN 与 BASE-ALIGN 都到联调闸门。只读。不一致写入 handoff，本叶不改库                      |
+| 补注释与缺表    | 同上（改的是 MySQL）                                                  | 同上           | `POLICY-DDL-GAP-L10`        | CHECK 待签收后。只补 CHECK 列出的表注释、三列注释，并按 `dwd.md` 建空的 DWD `policy_text_parse`。不改 `policy_base_info`，不拷 ADS 行 |
+| 派单包复制建表   | 同上                                                             | 同上           | `POLICY-DDL-GDF-SYNC-L09`   | GAP 联调闸门。把 `dwd.md` / `ads.md` 的 CREATE 复制进现行派单包，再跑签收自检。不 ALTER   |
 
 
 废作、不建单、不派：把产线 `policy_base_info` 改回 demo 旧 37 列；在 BASE-SPEC 交叉表未到联调闸门时 ALTER demo 这张表；把 `ext1` 改名为 `policy_type`、把 `level` 改名为 `rank`、把 `region` 拼串拆成省市区；用 PostgreSQL `schema_policy_ads.sql` 或旧稿 v1 §3 的类型当结构；用 `schema_mysql.sql` 再执行一遍；DROP 有数据的表；写 `gkxlumenx_ods` / 供应库 `gkx`。
@@ -65,11 +66,15 @@ DOC + IMPACT + CODE 都到联调闸门          SPEC + CODE 都到联调闸门
                                            demo policy_base_info 一次对齐目标列 + 0900_ai_ci
                                            改列集由淮政玮直接改
                                            │
-                                           └─► CHECK-L04  含这张主表
+                                           └─► CHECK-L04  含这张主表，只读
                                                  │
-                                                 └─► GDF-SYNC-L09
-                                                       从 dwd.md/ads.md 复制 CREATE 进派单包
-                                                       再跑 gkx-gdf-ddl-signoff
+                                                 └─► GAP-L10
+                                                       补表注释、三列注释
+                                                       按 dwd.md 建空的 DWD policy_text_parse
+                                                       │
+                                                       └─► GDF-SYNC-L09
+                                                             从 dwd.md/ads.md 复制 CREATE 进派单包
+                                                             再跑 gkx-gdf-ddl-signoff
 ```
 
 改库前 IMPACT 必须交出清单。清单以外的语句 ALIGN 不得执行。两库都先留 `information_schema` 快照在 handoff，再改。
@@ -110,8 +115,9 @@ DOC + IMPACT + CODE 都到联调闸门          SPEC + CODE 都到联调闸门
 5. SPEC 与 CODE 都到联调闸门后，升 BASE-CODE。同仓串在 CODE 之后。只改代码，不 ALTER。
 6. DOC、IMPACT、CODE 都到联调闸门，且 IMPACT 的拟 ALTER 没有超出 §2 的表，才升 ALIGN。ALIGN 不碰 `policy_base_info`。
 7. SPEC、BASE-CODE、ALIGN 都到联调闸门后升 BASE-ALIGN。`policy_base_info` 改列集由 `human:淮政玮` 直接改。
-8. ALIGN 与 BASE-ALIGN 的 handoff 都有改前改后 `information_schema` 后，升 CHECK。registry 里 CHECK 的 `depends_on` 仍只有 ALIGN，以本条为准。
-9. CHECK 到联调闸门后升 GDF-SYNC。本叶把 `dwd.md` / `ads.md` 的 CREATE 原样复制进现行政策派单包，再跑 `gkx-gdf-ddl-signoff`，退出码 0 才算完成。不另写一套建表语句。
-10. 签收可积压。`ready_to_sign` 不标 `done`。GDF 派单包签收前必须通过该 skill。
+8. ALIGN 与 BASE-ALIGN 的 handoff 都有改前改后 `information_schema` 后，升 CHECK。registry 里 CHECK 的 `depends_on` 仍只有 ALIGN，以本条为准。CHECK 只读。不一致写入 handoff，不在该叶改库。
+9. CHECK 到待签收后升 GAP。只补 CHECK 列出的 ADS 表注释、`policy_industry_rel` 的 `id` / `create_time` / `update_time` 列注释，并按 `dwd.md` 的 CREATE 在两个 DWD 库建空的 `policy_text_parse`。不拷 ADS 行，不改 `policy_base_info`，不 DROP。
+10. GAP 到联调闸门后升 GDF-SYNC。本叶把 `dwd.md` / `ads.md` 的 CREATE 原样复制进现行政策派单包，再跑 `gkx-gdf-ddl-signoff`，退出码 0 才算完成。不另写一套建表语句，不 ALTER。registry 里 GDF-SYNC 的 `depends_on` 仍只有 CHECK，以本条为准。
+11. 签收可积压。`ready_to_sign` 不标 `done`。GDF 派单包签收前必须通过该 skill。
 
 卡住只允许：连不上 `10.50.11.76`、拟 ALTER 超出 §2、发现按位置 INSERT、交叉表把 `ext1` 直接改名为 `policy_type` 或把 `level` 直接改名为 `rank`、李伟未确认就改 `policy_base_info` 列集或主键、有人要求把产线改回 37 列、单叶 cost > $10。
