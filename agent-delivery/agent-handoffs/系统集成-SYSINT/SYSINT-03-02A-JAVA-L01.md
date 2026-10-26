@@ -54,6 +54,7 @@
 **测试**：`mvn -pl gkxlumen-cms -am clean test` → **51/51 全绿**（Meta 17 + Service 34；pano 相关 19 例，含 code review 修复轮 +2 例）。JDK 21。
 **CI**：`.gitlab-ci.yml` backend:build 的 `-pl` 已含 `gkxlumen-cms`（未动 pom/CI）。
 **Code review**（2026-10-24 双审查员，修复全落地）：Java 审查 Critical×1（content_id 跨表撞号→共享序列）/ Important×1（pano 路由族守卫）/ Minor×4（events 白名单拷贝、list 双参标注、死代码删除、news 联调说明）全部修复；交付合规审查 Important×1（note 偏离数笔误）+ Minor×3（evidence 跨仓悬空已知、cost_warn 格式、note 背景）本 handoff 与 registry 已对齐。
+**Bugbot**（2026-10-24 整体排查，1 finding low，已修 2026-10-26）：`GET /blocks` 缺 `industry_id` 参数整体省略时走 Spring 绑定异常落兜底 500，违反契约 400/40001 映射 → 修为 `@RequestParam(name="industry_id", required=false)`（`@Parameter(required=true)` 文档标注保留），缺失=null 落服务层 `notBlank` 守卫 → 40001；顺带补齐 blocks 四参显式 `name=`（绑定不依赖 `-parameters` 编译开关）；测试补 null 形态断言。
 
 **联调注意**：published 端点 `page_key=news` 返回 40001（pano 族枚举仅 panorama|overview）——契约 §1.2 news 页本就无 CMS 块，门户聚合侧 news 空数组是门户侧行为（§3.2），不要对 §3.1 传 news。
 
