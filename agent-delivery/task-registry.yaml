@@ -41087,3 +41087,78 @@ tasks:
       - "再跑 gkx-gdf-ddl-signoff --dimension chain，退出码 0"
       - "handoff 在 agent-handoffs/产业链分析-CHAIN/CHAIN-DDL-GDF-FIX-L01.md，含 ponytail 行、架构合规与 cost 四字段。强度 ponytail full"
     update_time: "2026-10-26T17:22:54+08:00"
+  - id: LUMEN-ENT-EVAL-NARRATE-L01
+    title: "企业评估 — narrate_eval 润色收尾（三模式事实包）"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: "T0 文档已验收（徐滕强 2026-10-26）。与 LUMEN-ENT-EVAL-REPORT-WIRE-L01 同批交付。P3 招引/培育不开本单。"
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "lumen_common/tasks/executor.py"
+      - "lumen_common/algorithms/evaluation/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md §5"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md"
+      - "polan/insight_narrate.py"
+    definition_of_done:
+      - "在 _compute_eval_result 之后、finish_success 之前接入 narrate_eval；technology 改 gap_text、business 改 diagnosis_text、competitiveness 改 dimension_rows[].gap_text"
+      - "对齐 05.3.1 §5：只改 text、事实包汇总、数字白名单、8s/0 重试、narration 三态 skipped|fallback|ok；失败退规则稿且任务仍 success"
+      - "suggestions/ADVICE 不润色；无 Key 诚实 skipped；测试可注入 _narrate_client；Java/gkx_ai_service 不感知 Key"
+      - "handoff + 观测补记指引（实现后回写 05.3.1 §5.0/§7 与 05.3.2 ENT-NARRATE-01）"
+    update_time: "2026-10-26T18:38:26+08:00"
+  - id: LUMEN-ENT-EVAL-REPORT-WIRE-L01
+    title: "企业评估报告 — 关键发现接 gapText/diagnosisText（ENT-NARRATE-05 路径 A）"
+    status: "ready"
+    agent: "frontend-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 60000
+    note: "监管人已拍板路径 A（2026-10-26）；路径 B summary.findings[] 不采纳。可与 narrate 并行开发（先接线规则稿亦可验）。"
+    depends_on: []
+    touched_files:
+      - "src/components/enterprise/evaluation/evalReportDocument.ts"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md ENT-NARRATE-05"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md §5.0/§5.5"
+    definition_of_done:
+      - "evalReportDocument 将 diagnosisByCode 的 gapText（技术力）/ diagnosisText（商业力）接入报告 v2「关键发现」；对齐竞争力 dimensionRows 消费模式"
+      - "无后端稿或 narration skipped 时退 FE 规则两句（领先者/分差）；USE_MOCK=false 禁 fixture 填文案"
+      - "与 LUMEN-ENT-EVAL-NARRATE-L01 同批可验：结果页润色稿与报告关键发现同源（竞争力弱行本已接，回归不破坏）"
+      - "handoff + 观测补记：05.3.1 §5.0 报告行 ❌→✅；05.3.2 ENT-NARRATE-05 关项"
+    update_time: "2026-10-26T18:38:31+08:00"
+  - id: LUMEN-ENT-PAIN-NARRATE-L01
+    title: "企业痛难点 — narrate_pain 共性问题四格润色"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: "P2 推荐项；等 P0 narrate_eval 走查观感后升 ready。不与招引 P3 同批。"
+    depends_on:
+      - "LUMEN-ENT-EVAL-NARRATE-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md P7"
+    definition_of_done:
+      - "narrate_pain：只改共性问题四格 text（命中依据/成因/最佳实践/解决方向）；标题/优先级/影响数不动"
+      - "硬约束：标题禁润色、诚实句必留、成因禁因果外推、solution 禁具体政策工具；narration 三态；失败退规则稿任务仍 success"
+      - "单测可注入 client；handoff + 05.3.2 观测补记"
+    update_time: "2026-10-26T18:38:39+08:00"
