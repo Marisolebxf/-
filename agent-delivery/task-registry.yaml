@@ -42975,7 +42975,7 @@ tasks:
     update_time: "2026-10-27T23:36:34+08:00"
   - id: DOC-CHAIN-SZ-FAMILY-L01
     title: "深圳产业对比与发展（对比+发展合并族）— 完整链路设计 + LLM 落点"
-    status: "backlog"
+    status: "integration"
     agent: "architect-agent"
     epic: "DOC-CHAIN-SZ"
     priority: "P1"
@@ -42985,7 +42985,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 90000
-    note: "产业链队列3。同组 CHAIN-SZ-NARRATE-L01 待本单 ready_to_sign 后开。"
+    note: "05.2.4+总册指针+handoff 完稿，会签中。要点：development 硬失败（路径<2）与文案退稿边界已在 SZ-02 标注；prompt 迁移进 SZ-01 实现建议。"
     collaborators:
       - "algorithm-agent"
     definition_of_done:
@@ -42993,10 +42993,21 @@ tasks:
       - "开放项只登记不拍板"
       - "handoff 落盘 + registry 回填"
       - "体例对齐 05.2.1 含 Mermaid"
-    update_time: "2026-10-27T21:06:28+08:00"
+    update_time: "2026-10-28T02:40:24+08:00"
   - id: DOC-CHAIN-PANORAMA-LLM-PROBE-L01
+    cost_warn: "green"
+    actual_cost: "0.04"
+    model_used: "glm-5.3-Flash"
+    actual_tokens: "70000"
+    evidence: |
+      结论(A)：panorama 已有 LLM 触点，建议建 CHAIN-PANORAMA-NARRATE-L01。证据锚点：lumen-algo-py panorama.py:247-286 maybe_narrate() httpx 生产调用（无 Key→llm_skipped 短路:249-250；拒答门 llm_rejected:283）；:376 规则兜底稿；:385 润色写回 structureSummary 随快照发布；honesty.llm 记账:599-613。FE 消费 6 处：IndustryOverviewPage.vue:439/459 真实快照路径 + IndustryPanoramaPage.vue 5 处 + types.ts:226，润色落快照零 FE 改动自动覆盖。代差：prompt 内联未外置 v1（同域 8 叶均 v2 外置）、三态词汇遗留 llm_skipped（域契约 skipped/no_key）、无 temperature、事实包未结构化、单测仅 1 处 mock。落点表 1 处 LLM（structureSummary 唯一）+3 类规则保持+1 新能力候选（graph_diff 叙事走范围变更）。详证：agent-delivery/agent-handoffs/DOC-CHAIN-PANORAMA-LLM-PROBE-L01.md（含 §5 建议 DoD 六条；建单拍板权在监管人）
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T19:14:13.124Z"
+    last_seen_at: "2026-10-27T19:14:13.124Z"
+    lock_until: "2026-10-28T19:14:13.124Z"
+    claimed_by: "agent:coordinator-agent"
     title: "产业全景（panorama）LLM 触点摸排探针"
-    status: "backlog"
+    status: "done"
     agent: "architect-agent"
     epic: "DOC-CHAIN-PANORAMA"
     priority: "P2"
@@ -43006,12 +43017,12 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 40000
-    note: "产业链队列4（收尾探针）。结论必须二选一，不许双可。"
+    note: "spike 探针完工：结论(A) 有 LLM 触点，建议建 CHAIN-PANORAMA-NARRATE-L01；spike 类型豁免签收推 done"
     definition_of_done:
       - "摸排 chain 全景（panorama）现网产出与 LLM 触点：结论二选一——(A) 有触点：列出落点表并建议建 CHAIN-PANORAMA-NARRATE 单；(B) 无 LLM 叶：建 chore 单关闭「无 LLM 叶」"
       - "摸排结论+证据（代码锚点）写入 handoff 并落盘 push"
       - "registry evidence 回填"
-    update_time: "2026-10-27T21:06:42+08:00"
+    update_time: "2026-10-28T03:22:19+08:00"
   - id: CMS-JX-RELTYPE-CRUD-L01
     title: "关系类型字典增删改查（四类实体独立，对齐 stages 模式）"
     status: "pending_test"
@@ -43387,3 +43398,30 @@ tasks:
       - "Playwright 28/28 断言 100% 通过（含三新区块非空/展开收起/组序/0 error）"
       - "生成物 0 处 local-workspace 路径"
     update_time: "2026-10-28T04:05:00+08:00"
+  - id: LUMEN-CHAIN-SZ-NARRATE-L01
+    evidence: "agent-delivery/agent-handoffs/LUMEN-CHAIN-SZ-NARRATE-L01.md"
+    title: "深圳产业对比与发展 — narrative/path prompt 文件化 + 三态语义边界"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "DOC-CHAIN-SZ"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: |
+      实现由子会话完成（停本地待人工验收）：SZ-01 两 prompt 文件化（分文件理由成立）+ SZ-02 语义边界双锁（路径<2 硬失败保持；无 Key skipped/失败 degraded 不新增 failed）+ call_json_llm temperature 0.1 一处覆盖两叶；新增 8 例+既有 4 例补 Key 前置，全仓 630 passed/6 skipped；handoff 含 cost 四字段+FE 五缺口清单。coordinator 补立单收口。
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.4-深圳产业对比与发展链路.md"
+      - "lumen-algo-py chain/shenzhen_comparison.py、shenzhen_development.py"
+    definition_of_done:
+      - "SZ-01 prompt 文件化：shenzhen_comparison.narrative.v1.txt / shenzhen_development.path.v1.txt 落 prompts/chain/（分文件理由成立），NARRATIVE_SYSTEM/PATH_SYSTEM 去内联经 loader，pack 升 v2 + job_runtime 深圳两行同步"
+      - "SZ-02 语义边界分别锁死：路径数<2 硬失败保持 failed；无 Key skipped(no_key)/失败 degraded(llm_unavailable)/成功 ok 写回 honesty.llm；不新增 failed 路径"
+      - "temperature 0.1 写死（call_json_llm 共享层一处覆盖两叶）；SILENT_KEYS/数字防护/FORBIDDEN_KPI_BLOCKS 不动"
+      - "测试注入桩零外呼；全仓回归绿；handoff+cost 四字段+ponytail: full+FE 五缺口清单"
+      - "registry evidence 回填+状态 integration；完工停本地待人工验收"
+    update_time: "2026-10-28T03:13:59+08:00"
