@@ -41716,3 +41716,61 @@ tasks:
       - "19 写明实时指标计算不在 GDF 展开时，血缘导入工位后由接口对外提供"
       - "本叶不实现接口，不把血缘写成已可查询，不改 09，不建作业，不代替 WBS-06-03"
     update_time: "2026-10-26T22:49:17+08:00"
+  - id: SVC-ORG-COVERAGE-NARRATE-L01
+    title: "服务机构产业领域 — T1 覆盖结论 narrate（prompt 包 + 装配接线 + FE 渲染）"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: "对标 CHAIN-CYCLE-NARRATE-L01 的首叶薄切片。设计门 DOC-SVC-ORG-COVERAGE=ready_to_sign。监管人 human:徐滕强。强度：ponytail full。L4 建议句可同包同调，失败仍规则稿。"
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "lumen_common/prompts/"
+      - "lumen_common/algorithms/svcan/"
+      - "lumen-topic-py gkx_svc (若需透传 narration)"
+      - "lumen-ui-topic svcCoverageModel"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.1-服务机构产业领域分析.md §5–§6"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.2-服务链分析LLM落点表.md T1"
+      - "agent-delivery/agent-handoffs/DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md §5.6"
+    definition_of_done:
+      - "落盘 svc.coverage.narrate v1（lumen_common/prompts/）+ loader；对齐 05.7.1 §6 全文与三态 narration 契约"
+      - "org_coverage 装配路径接入 narrate：只改 text/suggestions；矩阵数字规则锁死；无 Key/失败 → fallback/skipped，任务仍 success；可注入 client 单测"
+      - "FE svcCoverageModel：ok 用 narration.text，fallback/skipped 用规则稿 suggestions；禁止 LLM/前端补覆盖数字；D9 ⓘ 挂 BREADTH/DEPTH（mock 带 🧪）"
+      - "handoff 根路径 agent-handoffs/SVC-ORG-COVERAGE-NARRATE-L01.md + cost 四字段；ponytail: full；本单不含 G1 真分步/G2 产业过滤/G4 RustFS（另立 STAGE）"
+    update_time: "2026-10-27T09:31:38+08:00"
+  - id: SVC-ORG-COVERAGE-STAGE-L01
+    title: "服务机构产业领域 — G1 四节点真分步 + G2 产业过滤 + 路由正名（worker）"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 180000
+    note: "厚单；等 NARRATE 落地后再 ready。勿与 NARRATE 同会话并行大改。"
+    depends_on:
+      - "SVC-ORG-COVERAGE-NARRATE-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.1-服务机构产业领域分析.md §4.2–§4.5"
+      - "agent-delivery/agent-handoffs/DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01.md"
+    definition_of_done:
+      - "topic-py org_coverage 改投递 algo worker；四节点真回调对齐过程页词表（闭合 G1）"
+      - "指纹/params 产业过滤下推（闭合 G2）；_LEAF_SVCAN_PATH 正名领域矩阵口径（闭合 G3）"
+      - "RustFS object_key 兼容窗按 §4.5（闭合 G4，可灰度）"
+      - "handoff + cost；依赖 NARRATE 已合入"
+    update_time: "2026-10-27T09:31:41+08:00"
