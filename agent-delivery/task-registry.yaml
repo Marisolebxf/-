@@ -12760,6 +12760,103 @@ tasks:
     verified_at: "2026-10-26"
     update_time: "2026-10-26T18:00:00+08:00"
 
+  - id: ARCH-TS-L3-DESIGN-01
+    title: "科技发展态势 TS — L3 领域服务技术架构设计说明书（新建 gkxlumen-element、维度/通道分包、数据架构与 DDL、久新供方通道抽象、降级与演进路线）"
+    status: "review"
+    agent: "architect-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P0"
+    repo: "agent-delivery"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 150000
+    cicd: "skip_design_only"
+    claimed_by: "agent:architect-agent"
+    supervised_by: "human:徐滕强"
+    claim_type: "coordinator_dispatch"
+    claimed_at: "2026-10-25T19:00:00+08:00"
+    started_at: "2026-10-25T19:00:00+08:00"
+    last_seen_at: "2026-10-27T14:10:02+08:00"
+    lock_until: "2026-10-27T18:10:02+08:00"
+    depends_on: []
+    note: |
+      事后补登（2026-10-27）：本文 v0.1 已于 2026-10-25 落盘，此前仅作为 ARCH-DISPLAY-REDESIGN-L01 的 touched_files 存在，registry 无独立条目，WBS 索引不到。本次为补全登记，不倒填新的开工认领锁。
+      WBS 归属：WBS-05-17（技术架构与契约设计组）。
+      当前状态：draft（待架构裁决），不是生效基线。裁决人 human:徐滕强；知会 human:李伟（契约监管）、孔东（前端路径）、堂绍祖（Python 门面）。**裁决前 BE-TS-IMPL-01 不动工**。
+      核心结论（见 ARCH-TS-L3-01 §1）：新建 1 个 gkxlumen-element（不按维度拆 8 个服务）；展示侧跨维度聚合是常态，同进程聚合避免 Feign 往返放大；智树自建 4 维度 Java 直读 gkxlumenx_ads，久新 3 维度走通道抽象做片段级混合编排；必复用 gkxlumen-metrics、过渡复用 gkxlumen-innov、**不复用 gkxlumen-topic-*（此项偏离基线 §4，需裁决，见 A1）**。
+      depends_on 留空是有意的：上游 BE-TS-CONTRACT-01 / API-TS-M1~M9 / TS-聚合方案 均为 draft 且未冻结，因此不声明依赖（不触发 auto_ready），上游关系记在 design_refs。
+      下游解锁：BE-TS-IMPL-01（Java 实现）、FE-TS-S01（前端路径对齐）、DEVOPS-LUMEN-TOPIC-PY-SHOW-L01（L4 门面）。
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/ARCH-TS-L3-DESIGN-01.md"
+      - "agent-delivery/task-registry.yaml"
+    design_refs:
+      - "agent-delivery/architecture-baseline.md（D1 · D3 · D5 · D7 · D9 · D12 · D15 · §2.2 要素归属 · §4 依赖规则）"
+      - "agent-delivery/ARCH-DISPLAY-01.md（v0.9；A1 展示侧自建 element:7082 / datacatalog:7084；A10 聚合 BFF）"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/BE-TS-CONTRACT-01.md（U1–U8 未决项）"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/API-TS-M1.md（§3.1–§3.8 八类接口；M2–M9 同族）"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-聚合方案-产业铺底.md（§1.3 现成表清单 · §2 久新要素与责任人「久新-？」未落）"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-模块开发规划与任务拆分.md §5"
+      - "agent-delivery/data/data-design/storage/README.md（:40 Java 只读 ADS · :87 ODS 读者为 ETL · :89 ADS 契约面 Java 只读）"
+      - "repos/lumen-svc-platform/gkxlumen-innov/src/main/resources/application.yml（:19-27 JDBC gkxlumenx_ads + read-only）"
+      - "repos/lumen-svc-platform/gkxlumen-cms/src/main/java/.../overlay/SourceDataSourceConfig.java（双数据源先例）"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/.../service/DomainHealthAggregator.java（Feign 并行 + 分区降级范式）"
+      - "repos/lumen-topic-py/gkx_show_service/main.py（当前仅 /healthz，data_source: none）"
+    definition_of_done:
+      - "§7 六项议题 A1–A6 由 human:徐滕强 逐项签署并留痕；未裁决前 status 保持 review，不动工"
+      - "A1 裁定三个选项之一：新建 gkxlumen-element，或改判复用 gkxlumen-topic-*、或落 gkxlumen-innov；偏离基线 §4 的部分需在 ARCH-DISPLAY-01.md 登记"
+      - "A2 若准予过渡期直连久新只读库，须同时登记「切换条件 = 数据工厂 ts_* 表就绪」与「隔离措施 = 只读 + 收敛于 channel/jiuxin-jdbc + 配置可切」"
+      - "A3 路径前缀裁定为 /display/v1/trend/** 或 /situation/v1/**，并同步 repos/lumen-ui-science-pc/src/api/situation/index.ts 的 real 路径"
+      - "A5（久新 API 机构 ID 与库主键是否同一套）答复前，channel/jiuxin-* 只出桩实现（返回空 + empty_reason）"
+      - "§8 最小验证闭环 Step 1–4 走通：element 骨架 + ts_* 五表 DDL、domain/enterprise 纯 ADS 直读全链路、display 侧 ElementLayerController 并行与分区降级、前端 USE_MOCK=false 打通 FE→gateway→display→element→ADS→回显"
+      - "新域不复制 gkxlumen-innov/support/InnovSql.java 指向 demo_gkxlumenx_ads 的旧债（违反 D12）"
+      - "版本由 draft 转 issued（v1.0），并在 ARCH-DISPLAY-01.md 登记反向引用"
+    evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/ARCH-TS-L3-DESIGN-01.md"
+    handoff: "agent-delivery/agent-handoffs/科技发展态势-TS/ARCH-TS-L3-01.md"
+    update_time: "2026-10-27T14:10:02+08:00"
+
+  - id: ARCH-TS-L3-01
+    title: "科技发展态势 TS — L3 领域服务划分与数据接入架构（决策摘要单 / 报批签字载体，含 §7 六项待裁决清单）"
+    status: "review"
+    agent: "architect-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P0"
+    repo: "agent-delivery"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 60000
+    cicd: "skip_design_only"
+    claimed_by: "agent:architect-agent"
+    supervised_by: "human:徐滕强"
+    claim_type: "coordinator_dispatch"
+    claimed_at: "2026-10-25T19:00:00+08:00"
+    started_at: "2026-10-25T19:00:00+08:00"
+    last_seen_at: "2026-10-27T14:10:02+08:00"
+    lock_until: "2026-10-27T18:10:02+08:00"
+    depends_on: ["ARCH-TS-L3-DESIGN-01"]
+    note: |
+      事后补登（2026-10-27）：与 ARCH-TS-L3-DESIGN-01 是**同一份设计的两个载体**——DESIGN-01 是说明书全文（45.7 KB），本条是一页签字用的决策摘要单（20.2 KB，含 §7 待裁决清单与 §8 落地路线）。登记两条是为了两份产物都能被 WBS 与任务系统索引；**贡献分按一次设计计、不叠加**，performance 结算时请以 DESIGN-01 为主。
+      WBS 归属：WBS-05-17。
+      状态：draft（报批稿，非生效基线）。裁决人 human:徐滕强。
+      六项待裁决：A1 归属服务 / A2 久新直连豁免 / A3 路径前缀 / A4 自建 4 维度读法 / A5 久新主体键谁确认何时答复 / A6「综合服务」维度定义。**A5 是最大技术风险**。
+      另需知会（影响排期，非裁决项）：gkxlumen-innov/support/InnovSql.java 指向 demo 库与 D12 冲突，建议单开整改单；lumen-algo-py 零 TS 算法（影响力/聚类/事件分级），M1 部分接口依赖，建议并行排期；metric_id 清单（U6）未登记，D9 ⓘ 角标暂无法对接。
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/ARCH-TS-L3-01.md"
+      - "agent-delivery/task-registry.yaml"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/ARCH-TS-L3-DESIGN-01.md"
+      - "agent-delivery/architecture-baseline.md（D3 · D7 · D12 · D15 · §4 依赖规则）"
+      - "agent-delivery/ARCH-DISPLAY-01.md（v0.9）"
+    definition_of_done:
+      - "§7 A1–A6 在「裁决」栏逐项填妥（同意或替代方案），作为 ARCH-TS-L3-DESIGN-01 转 issued 的签字凭据"
+      - "裁决结果回写 ARCH-DISPLAY-01.md 与 TS-聚合方案-产业铺底.md §2 的「久新-？」责任人"
+      - "BE-TS-IMPL-01 依据裁决结果开工，不得早于本单签署"
+    evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/ARCH-TS-L3-01.md"
+    update_time: "2026-10-27T14:10:02+08:00"
+
   - id: FE-DISPLAY-SVC-ECO-ALIGN-L01
     feishu_bitable_record_id: recvrLrEZV8Joy
     title: "展示系统合规对齐-科技服务全景-科技创新生态服务"
