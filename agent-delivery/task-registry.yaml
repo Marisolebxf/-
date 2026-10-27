@@ -42939,8 +42939,18 @@ tasks:
       - "体例对齐 05.2.1 含 Mermaid"
     update_time: "2026-10-27T23:36:34+08:00"
   - id: DOC-CHAIN-SZ-FAMILY-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/DOC-CHAIN-SZ-FAMILY-L01.md"
+    cost_warn: "green"
+    actual_tokens: 80000
+    actual_cost: 0.08
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T16:03:56.415Z"
+    last_seen_at: "2026-10-27T16:03:56.415Z"
+    lock_until: "2026-10-28T16:03:56.415Z"
+    claimed_by: "agent:coordinator-agent"
     title: "深圳产业对比与发展（对比+发展合并族）— 完整链路设计 + LLM 落点"
-    status: "backlog"
+    status: "integration"
     agent: "architect-agent"
     epic: "DOC-CHAIN-SZ"
     priority: "P1"
@@ -42950,7 +42960,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 90000
-    note: "产业链队列3。同组 CHAIN-SZ-NARRATE-L01 待本单 ready_to_sign 后开。"
+    note: "05.2.4+总册指针+handoff 完稿，会签中。要点：development 硬失败（路径<2）与文案退稿边界已在 SZ-02 标注；prompt 迁移进 SZ-01 实现建议。"
     collaborators:
       - "algorithm-agent"
     definition_of_done:
@@ -42958,7 +42968,7 @@ tasks:
       - "开放项只登记不拍板"
       - "handoff 落盘 + registry 回填"
       - "体例对齐 05.2.1 含 Mermaid"
-    update_time: "2026-10-27T21:06:28+08:00"
+    update_time: "2026-10-28T02:38:53+08:00"
   - id: DOC-CHAIN-PANORAMA-LLM-PROBE-L01
     title: "产业全景（panorama）LLM 触点摸排探针"
     status: "backlog"
@@ -43023,3 +43033,39 @@ tasks:
       - "编译绿 + 真库冒烟（list/create/update/delete+引用拒删一轮）"
       - "OpenAPI 登记 + handoff（平台基建-PLATFORM/CMS-JX-RELDEF-CRUD-L01.md）"
     update_time: "2026-10-27T22:48:33+08:00"
+  - id: CHAIN-REGIONAL-NARRATE-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/CHAIN-REGIONAL-NARRATE-L01.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 0.5
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T15:38:38.184Z"
+    last_seen_at: "2026-10-27T15:38:38.184Z"
+    lock_until: "2026-10-28T15:38:38.184Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "区域产业评价（指数+竞争力）— gap 叙述三态收敛 + prompt 落盘迁移"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "DOC-CHAIN-REGIONAL"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: "联调面自检：未改 Java 对外契约（prompt_pack_version 仅元数据 v1→v2，Java 无 schema 校验、FE 不读）；payload 面新增 honesty.llm 字段向后兼容。单测 8 例 + 全仓 621 passed/6 skipped 绿。完工停本地未 push，等人工验收。"
+    depends_on:
+      - "DOC-CHAIN-REGIONAL-FAMILY-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.3-区域产业评价链路.md"
+      - "lumen-algo-py chain/regional_index.py、regional_competitiveness.py、regional_common"
+    definition_of_done:
+      - "按 05.2.3 §5 实施两叶 gap 叙述对齐金样三态契约（R1/R2 已 as-built 收敛：数字白名单/temperature 写死/无 Key 空态），并完成 REGIONAL-01 迁移：prompts/chain/regional.gap.v1.txt 落盘（两图共用），GAP_SYSTEM 内联去唯一真源"
+      - "三态/失败 degraded 不改任务终态；单测可注入 client 且无 Key → skipped；全仓回归绿"
+      - "FE 五缺口（热力图 x 轴 demo 别名/version_boundary 错位/heatmap_gis/leaf_contributions/config_honesty 零消费）写 handoff 清单交 FE 小单，其中叶贡献/配置诚实块标注需先过产品定义"
+      - "handoff + cost 四字段 + ponytail: full；registry 状态流转+evidence 回填；完工停本地待人工验收"
+    update_time: "2026-10-28T00:02:11+08:00"
