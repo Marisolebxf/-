@@ -15,7 +15,7 @@ steps:
 expect:
 - note: 恢复进入对应 Tab 或不可变结果，不重建配置
   assert: |-
-    await page.goto('http://10.50.69.111:30892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await view.click(); await page.waitForTimeout(2500); await expect(page).toHaveURL(/view=result|task_id=/); await expect(page.getByText('产业关键环节识别结果')).toBeVisible({ timeout: 12000 })
+    await page.goto('https://edu.itic-sci.com/tts/svcz/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await view.click(); await page.waitForTimeout(2500); await expect(page).toHaveURL(/view=result|task_id=/); await expect(page.getByText('产业关键环节识别结果')).toBeVisible({ timeout: 12000 })
 - note: 复用同一任务、不新建不覆盖快照
   assert: |-
     if (!/task_id=CHAIN-/.test(page.url())) throw new Error('URL 未见 task_id 复用'); const t = await page.locator('main').innerText(); if (!/任务/.test(t)) throw new Error('结果未见任务标识')

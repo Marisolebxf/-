@@ -55,7 +55,7 @@ const ORCH = path.resolve(HERE, '../../../..'); // tools → as-built → qa →
 const runsRoot = path.join(ORCH, 'agent-delivery/qa/as-built/runs');
 const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 const scope = path.basename(featDir);
-const runDir = path.resolve(opt('run-dir', path.join(runsRoot, `${today}-30892-${scope === 'key-type' ? 'keytype' : scope}-r3-runner`)));
+const runDir = path.resolve(opt('run-dir', path.join(runsRoot, `${today}-svcz-${scope === 'key-type' ? 'keytype' : scope}-r3-runner`)));
 const baselineDir = path.resolve(opt('baseline', path.join(runsRoot, '20261014-50892-keytype-r2')));
 
 // ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ const selected = only
   ? only.map((id) => loaded.byId.get(id)).filter(Boolean)
   : allScripts;
 const fixtures = fs.existsSync(path.join(featDir, 'fixtures/testdata.yaml')) ? yamlLoad(path.join(featDir, 'fixtures/testdata.yaml')) : {};
-const baseUrl = String(fixtures.base_url || 'http://10.50.69.111:30892/').replace(/\/$/, '');
+const baseUrl = String(fixtures.base_url || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/$/, '');
 const loginCfg = fixtures.login || { username: 'admin', password: '123456' };
 
 // ---------------------------------------------------------------------------
@@ -434,7 +434,7 @@ const t1 = new Date();
 fs.writeFileSync(path.join(runDir, 'meta.yaml'), yamlDump({
   run_id: path.basename(runDir),
   feature: `${path.basename(path.dirname(featDir))}/${scope}`,
-  environment: { base_url: baseUrl, env_label: '30892 dev' },
+  environment: { base_url: baseUrl, env_label: 'svcz' },
   account: { username: loginCfg.username },
   git: { repo: 'gkx-orchestration', head: gitHead },
   time: { started_at: t0.toISOString(), ended_at: t1.toISOString() },

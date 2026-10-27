@@ -25,12 +25,13 @@
 | `delivery/` | **总集交付成品**（按系统码；含交付前 sheet 级清检单，见其 README） |
 | `tools/` | 测试工具产物（jmeter/postman，服务报告交付） |
 | `bug-registry.yaml` | BUG 编号台账（按日取号，防并行撞号） |
+| `bugs/` | BUG 正文：`{系统码}/R{n}-{轮次短名}.md`，条目格式见 `bugs/_template.md` |
 | `code-registry.yaml` | 系统码与用例序号台账 |
 | `perf-baseline.md` | **三系统性能测试规约**（SLA 定标 + 判定口径 + 场景基线 + 接口盘点 + 工具脚本 + 执行证据 + 交付映射，单文件统一承载；QA-PERF-SPEC-L01） |
 
 ## 用例库
 
-执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://192.168.88.50:30892`；B 线环境：`http://10.50.69.111:30892/`）。
+执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://192.168.88.50:30892`；B 线环境：`https://edu.itic-sci.com/tts/svcz/`）。
 
 | 模块 | 文件 | 编号 | 状态 | 入口 |
 |------|------|------|------|------|

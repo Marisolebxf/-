@@ -11,7 +11,7 @@ const RUN = path.resolve(__dirname, '../runs/20260826-50892-search-full');
 const CASES = path.join(RUN, 'scripts');
 const SHOT = path.join(RUN, 'screenshots');
 
-const URL = 'http://10.50.69.111:30892/enterprise/enterprise-search';
+const URL = 'https://edu.itic-sci.com/tts/svcz/enterprise/enterprise-search';
 const EXEC = '2026-08-26T21:14:02+08:00';
 const BACKFILL = '2026-08-27T21:45:00+08:00';
 
