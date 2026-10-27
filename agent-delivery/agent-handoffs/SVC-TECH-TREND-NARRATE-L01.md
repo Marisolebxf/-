@@ -55,6 +55,15 @@ STAGE（org_coverage G1/G2 指纹/G4 RustFS）、T4–T7、口径修改、企业
 
 ## 5. 偏离说明
 
+### 5.0 线上实证记录（验收推送后补，DoD ⑤ 达成）
+
+- 推送：algo `2bf424f` / topic-py `64c8a41` / FE `8289f77`（监管人验收放行 2026-10-27 21:00）；deploy：algo api+worker 自动绿、topic-py search-py 21:08 绿、FE 管线绿。
+- **首轮 023/024**：双双 `fallback/ReadTimeout`（智谱端响应超 20s）——降级护栏实战验证，任务均 success（可解释 fallback）。
+- **force 重试实证（DoD ⑤ 达成）**：
+  - **SVC-20261027-026**（org_trend）：narration ok，`prompt_pack=svc.trend.narrate`；text=主领域「低迷」档位原样引用 + 近三年新增数字 + 对比领域相对冷热 + 代理口径提示；任务 7s success。
+  - **SVC-20261027-025**（tech_power）：narration ok，`prompt_pack=svc.techpower.narrate`；text=集合水平 + 最高分机构点名 + weight_note 原样引用（Q060/三维合成）；缺维禁提生效（只提已下发维度）。
+- 快照真源：`gkxlumenx_topic_enterprise.analysis_task.target_params`（SVC-025/026 可复核）。
+
 1. **narrate_common 抽取**属 ponytail full"复用不复制"要求：三份 narrate 若各写一遍三态/白名单即三处漂移源；抽取后 T1 自检全绿证明行为零变化。
 2. **trend narration 触发条件**：`heat` 非空且每序列 ≥2 年点——护栏句四场景（无序列/长度不足/无活动/无评级）在装配侧即 skipped，与 05.7.4 §5 前置短路一致。
 3. **prompt_pack 契约形态**（评审 M-1 裁决）：svc 族采用 `prompt_pack`（无版本后缀）+ 独立 `prompt_version` 双字段，区别于企业版把版本并入 pack 名——属 svc 族 v2 契约，非 T1 行为回归；FE 无消费方，无功能影响。
