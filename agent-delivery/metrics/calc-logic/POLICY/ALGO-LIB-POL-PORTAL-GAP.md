@@ -204,7 +204,7 @@ region/属地归组规则：gkx 侧 `province/city/district` 三列独立（逐�
 | 深圳节点覆盖 | **负证据**：同上 | `calc.sz_node_coverage` |
 | `district` 缺失行 | 18,835（94.175%） | `absence_probe.district_null_rows` |
 
-**demo 实现读数对照（demo DWD，非证据源、工程披露）**：全国 20,000 条连续性 40.0%（demo 库 publish_date 分布与 gkx 不同源）；31 省；节点覆盖 55.15%（107/194 active 节点，关联边 321 行）；深圳 879 条（region 切片）；深圳节点覆盖 8.76%（保守求交）。demo 全部数字由 `portal_gap_rows()` 现算，E2E 产物 `local-workspace/docs/tasks/investiage/20261023_淮哥指标任务/20261023_门户政策扶持十条指标/实测快照/portal_gaps_ten_rows_e2e_20261024.json`。
+**demo 实现读数对照（demo DWD，非证据源、工程披露）**：全国 20,000 条连续性 40.0%（demo 库 publish_date 分布与 gkx 不同源）；31 省；节点覆盖 55.15%（107/194 active 节点，关联边 321 行）；深圳 879 条（region 切片）；深圳节点覆盖 8.76%（保守求交）。demo 全部数字由 `portal_gap_rows()` 现算，E2E 产物为门户十条任务工作区的 `实测快照/portal_gaps_ten_rows_e2e_20261024.json`（编排主仓之外，GitLab 不可见；数值以本件记录为准）。
 
 **对照需求文档功能要求的评审**：七条完全满足展示句语义（数量/对比/密度/趋势/区县分布均有真数）；节点覆盖两条在 gkx 上暂只能交付「方法+结构+demo 替代实现」，源头边表补齐前门户侧如需 gkx 直算会得到诚实空行（符合派单包 DoD「算不出的行返回空并带原因」）；有条件通过，未通过点=两条节点覆盖的 gkx 边源。
 

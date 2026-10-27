@@ -59,7 +59,7 @@
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_VIT_INDEX.py`、产物 `metrics/repro/out/M_SYNTH_VIT_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 区域创新活力指数（M_SYNTH_VIT_INDEX）
 
 > **类型**：MODEL（L2 合成指数／参数化）｜ **域**：综合智能分析／区域创新活力分析／综合评价模型
 > **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（四维分与分项覆盖取同族产物，零 SQL）+ 结构缺口（12 分项缺 3、人才维 2/4、政策维 2/3、产业维 4/5）+ 权重无官方表（自定义 + 熵权对照）**
@@ -420,18 +420,9 @@ gkx 里没有任何权重配置表，王惠正本也只写「可采用等权，�
 1. OECD. *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
 2. Shannon, C. E. A Mathematical Theory of Communication. *Bell System Technical Journal*, 1948. https://doi.org/10.1002/j.1538-7305.1948.tb01338.x
 3. 国家统计局.《国民经济行业分类（GB/T 4754-2017）》. https://www.stats.gov.cn/sj/tjbz/
-4. 科学技术部火炬高技术产业开发中心. 高新技术企业认定管理工作网. https://www.innocom.gov.cn/
-5. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
-6. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
-7. 本地产物与快照（逐项对应 §1.5、§3.6）：
-   - `code/_snapshots21/vit_family_20261023.json`：族级面板
-   - `code/M_SYNTH_VIT_DIM_SCORE_out.json`：四维分
-   - `code/M_SYNTH_VIT_INDICATOR_out.json`：分项覆盖
-   - `code/M_SYNTH_186_1_out.json`：等权规范值
-8. `_work_gkx21/DATA_FACTS_gkx21.md` §3.16（基期三字段）、§3.68（慢查询与并发纪律）、§3.74（论文年份是批次曲线）
-9. `_work_gkx21/DISPATCH_BRIEF_v8.md` §一（派生数字落产物）、§四（负证据三件套）
-10. `第三方库指标计算过程/M_SYNTH_VIT_WEIGHT.md`（同族权重件的规矩：`main_is_official=false`、熵权对照、翻转阈值 + 单纯形）
-
+4. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
+5. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
+6. `第三方库指标计算过程/M_SYNTH_VIT_WEIGHT.md`（同族权重件的规矩：`main_is_official=false`、熵权对照、翻转阈值 + 单纯形）
 ---
 
 # 附件
@@ -542,11 +533,4 @@ gkx 里没有任何权重配置表，王惠正本也只写「可采用等权，�
 | 对照 | 等权、熵权、弹性、阈值、单纯形 |
 | 缺维策略 | 分母收缩 + `gap_dims`；`no_silent_renormalization` |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 

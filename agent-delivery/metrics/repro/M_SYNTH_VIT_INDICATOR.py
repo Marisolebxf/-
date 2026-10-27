@@ -164,7 +164,8 @@ def main():
         reconcile[d] = {
             "recompute_12leaf": rec,
             "sub_model_index": {c: published[c] for c in CITIES},
-            "diff": {c: (None if rec[c] is None else round(rec[c] - published[c], 4))
+            "diff": {c: (None if (rec[c] is None or published[c] is None)
+                         else round(rec[c] - published[c], 4))
                      for c in CITIES},
             "entered_leaves": [x["name"] for x in rows],
             "not_entered": [x["name"] for x in leaves if x["dim"] == d and not x["enters_dim"]],
