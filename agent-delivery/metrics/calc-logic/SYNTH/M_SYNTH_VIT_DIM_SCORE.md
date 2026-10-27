@@ -72,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py`、产物 `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 四维单维评分（M_SYNTH_VIT_DIM_SCORE）
 
 > **类型**：MODEL（L2 分维出口）｜ **域**：综合智能分析／区域创新活力分析／综合评价模型
 > **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（四维分全部取同族子模型产物，零 SQL）+ 结构缺口（人才维 4 个子维只有 2 个在场、政策维 3 个只有 2 个、产业维 5 个三级指标缺 1 个）**
@@ -428,18 +428,9 @@ python3 M_SYNTH_VIT_DIM_SCORE.py
 
 1. OECD. *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
 2. 国家统计局.《国民经济行业分类（GB/T 4754-2017）》. https://www.stats.gov.cn/sj/tjbz/
-3. 科学技术部火炬高技术产业开发中心. 高新技术企业认定管理工作网. https://www.innocom.gov.cn/
-4. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
-5. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
-6. 国务院.《关于进一步加强基础科学研究的若干意见》（国发〔2018〕4 号）. https://www.gov.cn/zhengce/content/2018-01/31/content_5262566.htm
-7. 本地产物与快照（逐项对应 §1.5、§3.6）：
-   - `code/_snapshots21/vit_family_20261023.json`：族级面板
-   - `code/_snapshots21/vit_absence_20261023.json`：否定性证据
-   - `code/M_SYNTH_182_1_out.json` ~ `code/M_SYNTH_185_1_out.json`：四维源
-   - `code/M_SYNTH_VIT_RANK_out.json`：单叶子对照
-8. `_work_gkx21/DATA_FACTS_gkx21.md` §3.60（图类边源）、§3.68（慢查询与并发纪律）、§3.74（论文年份是批次曲线）
-9. `_work_gkx21/DISPATCH_BRIEF_v8.md` §一（派生数字落产物）、§四（负证据三件套）
-
+3. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
+4. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
+5. 国务院.《关于进一步加强基础科学研究的若干意见》（国发〔2018〕4 号）. https://www.gov.cn/
 ---
 
 # 附件
@@ -555,11 +546,4 @@ python3 M_SYNTH_VIT_DIM_SCORE.py
 | 权重声明 | `main=null`、`main_is_official=false` |
 | 缺维策略 | 维级 null 不输出、下游分母收缩；维内缺子项由上游等权 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 

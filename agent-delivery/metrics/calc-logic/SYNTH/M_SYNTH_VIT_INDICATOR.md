@@ -72,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_VIT_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 活力分项指标值与得分（M_SYNTH_VIT_INDICATOR）
 
 > **类型**：MODEL（L2 分项明细）｜ **域**：综合智能分析／区域创新活力分析／指标体系构建
 > **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（12 分项全部取同族子模型产物，零 SQL）+ 结构缺口（3 个分项四城全缺：新产品销售收入占比、研发人员数量、政策实施效果指数）**
@@ -446,16 +446,8 @@ python3 M_SYNTH_VIT_INDICATOR.py
 1. OECD. *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
 2. 国家统计局.《国民经济行业分类（GB/T 4754-2017）》. https://www.stats.gov.cn/sj/tjbz/
 3. 国家统计局.《中国统计年鉴》指标解释（R&D 经费与新产品销售收入）. https://www.stats.gov.cn/sj/ndsj/
-4. 科学技术部火炬高技术产业开发中心. 高新技术企业认定管理工作网. https://www.innocom.gov.cn/
-5. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
-6. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
-7. 本地产物与快照（逐项对应 §1.5、§3.6）：
-   - `code/_snapshots21/vit_family_20261023.json`：族级面板
-   - `code/_snapshots21/vit_absence_20261023.json`：三缺项探针
-   - `code/M_SYNTH_182_1_out.json` ~ `code/M_SYNTH_185_1_out.json`：四维源
-8. `_work_gkx21/DATA_FACTS_gkx21.md` §3.10（整列空）、§3.16（基期三字段）、§3.68（慢查询与并发纪律）
-9. `_work_gkx21/DISPATCH_BRIEF_v8.md` §一（派生数字落产物）、§四（负证据三件套）
-
+4. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
+5. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
 ---
 
 # 附件
@@ -575,11 +567,4 @@ python3 M_SYNTH_VIT_INDICATOR.py
 | 权重声明 | `main_is_official=false` |
 | 缺项策略 | 留行、null、探针；不补 0、不换码 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
