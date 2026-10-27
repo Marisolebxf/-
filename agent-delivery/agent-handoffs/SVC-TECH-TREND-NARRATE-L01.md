@@ -43,11 +43,31 @@ STAGE（org_coverage G1/G2 指纹/G4 RustFS）、T4–T7、口径修改、企业
 - **FE**：coverage/profile 自检 ok + trend 自检 ok；type-check 干净；build 24.78s。
 - **实证流程（验收后）**：push → deploy search-py/algo → 各建 1 单（tech_power 2–5 家；org_trend 主+对比领域）→ 查 `analysis_task.target_params` 含 `narration.status=ok`（SVC-021 同法）。fallback 可解释域：ReadTimeout（20s 窗口）/智谱端 5xx，护栏照旧。
 
+## 5.1 代码评审记录（requesting-code-review，2026-10-27 20:03）
+
+- subagent 评审（三仓工作区 diff）：**2 Important + 4 Minor，需修复后过**；全部核实成立并修复。
+- **I-1 trend 星级交叉改档漏洞**：包内高热(5星)领域可使 4星领域被写成 5星——数字白名单（5 合法）与档位词（高热在包内）互不设防，复现脚本实证。修法：stars 剔出数字白名单 + 领域粒度「<领域名>…N星」配对校验 + 包外星值兜底 + 配对星值放行数字校验；新增 `test_trend_star_cross_violation` 回归。
+- **I-2（并入 M-4）CSS 裸类**：`svc-org-heat__narration` 无定义 → 补 serviceOrgAnalysis.css；capability 板 `svc-org-coverage-narration` 经核实非裸类（workspace 容器已 import 该 css，评审误判但顺势补了 trend 板）。
+- M-1 prompt_pack 契约形态：裁决为 svc 族 v2 双字段（pack + prompt_version），handoff §5.3 记录，非 T1 回归。
+- M-2 patch 目标失效（from-import 绑定）：两测试 patch 目标改使用方模块，恢复「单测无网络」保证（评审实测指出的静默失效成立）。
+- M-3 rank 防御：`narrate_techpower._fact_pack` 按 score 降序稳定排序锁死语义。
+- 修后复验：两叶自检 10 场景 ALL PASS、T1 8 场景 ALL PASS、装配 34 passed、FE 三绿。**Ready to proceed。**
+
 ## 5. 偏离说明
+
+### 5.0 线上实证记录（验收推送后补，DoD ⑤ 达成）
+
+- 推送：algo `2bf424f` / topic-py `64c8a41` / FE `8289f77`（监管人验收放行 2026-10-27 21:00）；deploy：algo api+worker 自动绿、topic-py search-py 21:08 绿、FE 管线绿。
+- **首轮 023/024**：双双 `fallback/ReadTimeout`（智谱端响应超 20s）——降级护栏实战验证，任务均 success（可解释 fallback）。
+- **force 重试实证（DoD ⑤ 达成）**：
+  - **SVC-20261027-026**（org_trend）：narration ok，`prompt_pack=svc.trend.narrate`；text=主领域「低迷」档位原样引用 + 近三年新增数字 + 对比领域相对冷热 + 代理口径提示；任务 7s success。
+  - **SVC-20261027-025**（tech_power）：narration ok，`prompt_pack=svc.techpower.narrate`；text=集合水平 + 最高分机构点名 + weight_note 原样引用（Q060/三维合成）；缺维禁提生效（只提已下发维度）。
+- 快照真源：`gkxlumenx_topic_enterprise.analysis_task.target_params`（SVC-025/026 可复核）。
 
 1. **narrate_common 抽取**属 ponytail full"复用不复制"要求：三份 narrate 若各写一遍三态/白名单即三处漂移源；抽取后 T1 自检全绿证明行为零变化。
 2. **trend narration 触发条件**：`heat` 非空且每序列 ≥2 年点——护栏句四场景（无序列/长度不足/无活动/无评级）在装配侧即 skipped，与 05.7.4 §5 前置短路一致。
-3. DoD ⑤"线上实证"在验收 push 后执行（本仓闸门：完工停本地）；自检+单测+build 三绿先行交付。
+3. **prompt_pack 契约形态**（评审 M-1 裁决）：svc 族采用 `prompt_pack`（无版本后缀）+ 独立 `prompt_version` 双字段，区别于企业版把版本并入 pack 名——属 svc 族 v2 契约，非 T1 行为回归；FE 无消费方，无功能影响。
+4. DoD ⑤"线上实证"在验收 push 后执行（本仓闸门：完工停本地）；自检+单测+build 三绿先行交付。
 
 ## 6. 架构合规自检
 

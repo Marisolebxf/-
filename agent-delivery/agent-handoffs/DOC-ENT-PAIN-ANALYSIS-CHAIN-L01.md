@@ -36,11 +36,12 @@
 ## 测试结果
 
 - 文档任务无代码测试；一致性自检：
-  - 条款号、七类问题 title/dimension、三条诚实句原文均与 `pain_points.py` 实码逐一对照；
-  - 四格标签与 FE `PainPointsPanel.vue` 渲染字段（evidence/cause/best_practice/solution）核对一致；
+  - 条款号与 bid-reference 实文核对一致（E-29=`1.1.1.2.4.2.3.9` L4583）；
+  - 四格标签与 FE `PainPointsPanel.vue` 渲染字段核对一致；
   - 硬约束四条与 05.3.2 v0.8 拍板原文逐条对齐，未新增未删减；
   - Mermaid 图件 2 张（对齐金样图件密度）；
   - 共享章节（执行框架/报告双路径）引用 05.3.1 不重写。
+- **v1.1 审查勘误后新增机械自检**：`scripts/check-pain-asbuilt.py`（assert 式，无框架）——grep `pain_points.py` 七个 title + 三句诚实句与 05.3.5 §3.1 表比对，防文档再漂移；随勘误 commit 入库并实跑通过。
 
 ## 遗留风险
 
