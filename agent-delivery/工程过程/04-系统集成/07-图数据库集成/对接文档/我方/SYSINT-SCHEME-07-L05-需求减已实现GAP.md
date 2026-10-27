@@ -143,43 +143,47 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | `value` | 实体度量值 | ❌ 燕大无通用 value 属性 | 🔴 | 对端缺口 |
 | `updated_at` | 数据更新时间 | ✅ | ✅ | — |
 
-**公共属性小结**：4✅ / 4🔶 / 1🔴
+**公共属性小结**：5✅ / 4🔶 / 1🔴（精确映射见附录 A.1）
 
 ### 4.2 实体专有属性（68 条）
 
-> 按实体 GAP 状态分组统计。**🔴 GAP 实体**的属性天然继承 GAP（实体不存在则属性无从挂载）。
+> 按实体 GAP 状态分组统计。**🔴 GAP 实体**的属性天然继承 GAP（实体不存在则属性无从挂载）。覆盖实体属性需逐条映射，括号内数字为 ✅/🔶/🔴。
 
-| 实体 | 属性数 | 实体状态 | 属性 GAP 判定 | 归堆 |
-|---|---:|---|---|---|
-| `technology` | 9 | 🔴 GAP | 🔴 **9/9 全 GAP** | 对端缺口 |
-| `field` | 7 | 🔴 GAP | 🔴 **7/7 全 GAP** | 对端缺口 |
-| `topic` | 7 | 🔴 GAP | 🔴 **7/7 全 GAP** | 对端缺口 |
-| `policy` | 6 | 🔴 GAP | 🔴 **6/6 全 GAP** | 对端缺口 |
-| `enterprise` | 3 | ⚠️ 部分覆盖 | 🔶 2/3 覆盖（overlap_score/overlap_peer_id 需图谱计算） | 对端缺口 |
-| `institution` | 2 | ⚠️ 部分覆盖 | 🔶 1/2 覆盖（centrality_score 需图谱计算） | 对端缺口 |
-| `person` | 6 | ⚠️ 燕大侧覆盖 | 🔶 3/6 覆盖（cooperation_degree/centrality_score 需图谱计算） | 对端缺口 |
-| `paper` | 3 | ✅ 已覆盖 | 🔶 2/3 覆盖（citation_count/reference_count 需图谱计算） | 对端缺口 |
-| `patent` | 2 | ✅ 已覆盖 | 🔶 1/2 覆盖（citation_count 需图谱计算） | 对端缺口 |
-| `project` | 3 | ✅ 已覆盖 | 🔶 1/3 覆盖（fusion_score/rank 需图谱计算） | 对端缺口 |
-| `dataset` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 |
-| `event` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 |
-| `activity` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 |
-| `innovation_carrier` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 |
+| 实体 | 属性数 | 实体状态 | 属性 GAP 判定 | 归堆 | 详细映射 |
+|---|---:|---|---|---|---|
+| `technology` | 9 | 🔴 GAP | 🔴 **9/9 全 GAP** | 对端缺口 | — |
+| `field` | 7 | 🔴 GAP | 🔴 **7/7 全 GAP** | 对端缺口 | — |
+| `topic` | 7 | 🔴 GAP | 🔴 **7/7 全 GAP** | 对端缺口 | — |
+| `policy` | 6 | 🔴 GAP | 🔴 **6/6 全 GAP** | 对端缺口 | — |
+| `enterprise` | 3 | ⚠️ 部分覆盖 | ✅1 / 🔶2（research_fields ✅；overlap_score/overlap_peer_id 需图谱计算） | 第06项Graph | 附录 A.2.1 |
+| `institution` | 2 | ⚠️ 部分覆盖 | ✅1 / 🔶1（institution_type ✅；centrality_score 需图谱计算） | 第06项Graph | 附录 A.2.2 |
+| `person` | 6 | ⚠️ 燕大侧覆盖 | ✅1 / 🔶4 / 🔴1（research_fields ✅；team 完全不存在；其余需图谱计算或反向聚合） | 对端缺口+第06项Graph | 附录 A.2.3 |
+| `paper` | 3 | ✅ 已覆盖 | ✅1 / 🔶2（topic_keywords ✅；citation_count/reference_count 需遍历 CITES 计算） | 对端缺口 | 附录 A.2.4 |
+| `patent` | 2 | ✅ 已覆盖 | ✅2（citation_count ✅ 有 citation_nums+cited_by_nums；topic_keywords ✅ 有 keywords 列） | — | 附录 A.2.5 |
+| `project` | 3 | ✅ 已覆盖 | ✅1 / 🔶2（project_type ✅ 可由 project_source+level 映射；fusion_score/rank 需图谱计算） | 第06项Graph | 附录 A.2.6 |
+| `dataset` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 | — |
+| `event` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 | — |
+| `activity` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 | — |
+| `innovation_carrier` | 5 | 🔴 GAP | 🔴 **5/5 全 GAP** | 对端缺口 | — |
 
 ### 4.3 关系属性（21 条）
 
-| 分类 | 属性数 | 判定 | 归堆 |
-|---|---:|---|---|
-| 全部关系通用（11 条） | 11 | 🔶 部分覆盖（燕大 EDGE 有 type/weight/start_time/end_time，但 relation_id/source/target/confidence/evidence_refs 是否全有未确认） | 在途 |
-| 关系专属（10 条） | 10 | 🔶 部分覆盖（依赖关系 EDGE 先存在；如 cooperate 本身就是 GAP 则 cooperation_type 自然 GAP） | 对端缺口 |
+> 映射结果见附录 A.4。
 
-### 4.4 属性 GAP 汇总
+| 分类 | 属性数 | ✅ | 🔶 | 🔴 | 归堆 | 说明 |
+|---|---:|---:|---:|---:|---|---|
+| 全部关系通用 | 11 | 6 | 5 | 0 | 对端缺口 | relation_id/source/target/type/updated_at/confidence ✅；weight/year/start_time/end_time/evidence_refs 🔶 |
+| 关系专属 | 10 | 0 | 0 | 10 | 对端缺口 | 9 条因关系本身 GAP 天然 GAP；1 条 cite.citation_context 关系存在但属性不存在 |
+
+### 4.4 属性 GAP 汇总（精确值 · 附录 A 映射结果）
 
 | 状态 | 数量 | 详情 |
 |---|---:|---|
-| ✅ 完全覆盖 | 4 | entity_id、name、type、year、updated_at（公共）+ 部分实体基础属性 |
-| 🔶 部分覆盖 | ≈25 | 需图谱计算的指标属性（centrality_score/citation_count/overlap_score 等）+ 需映射的公共属性 |
-| 🔴 **GAP** | **≈60** | 🔴 GAP 实体的全部属性（technology 9/field 7/topic 7/policy 6/dataset 5/event 5/activity 5/innovation_carrier 5 + value 公共属性） |
+| ✅ 完全覆盖 | **18** | 公共 5（entity_id/name/type/year/updated_at）+ 覆盖实体专有 7（enterprise.research_fields / institution.institution_type / person.research_fields / paper.topic_keywords / patent.citation_count+topic_keywords / project.project_type）+ 关系通用 6（relation_id/source/target/type/updated_at/confidence） |
+| 🔶 部分覆盖 | **20** | 公共 4（field/region/institution/author）+ 覆盖实体专有 11（enterprise 2 + institution 1 + person 4 + paper 2 + project 2）+ 关系通用 5（weight/year/start_time/end_time/evidence_refs） |
+| 🔴 **GAP** | **61** | 公共 1（value）+ 覆盖实体专有 1（person.team）+ GAP 实体全部 49（technology 9/field 7/topic 7/policy 6/dataset 5/event 5/activity 5/innovation_carrier 5）+ 关系专属 10（9 条因关系 GAP、cite.citation_context 关系存在但属性不存在） |
+
+> **映射方法**：逐条对照燕大快照第二章实体属性清单 + 第三章关系属性，与需求清单第四章属性定义做字段级匹配。「需图谱侧计算」属性若燕大未预置则判 🔶（可通过第06项 Graph 能力补齐）。详见附录 A。
 
 ---
 
@@ -260,16 +264,18 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 
 ## 七、全局 GAP 总览
 
-### 7.1 五类 GAP 数字
+### 7.1 五类 GAP 数字（属性已精确化）
 
 | 类 | 需求侧 | ✅ 两侧覆盖 | 🔶 部分覆盖 | 🔴 GAP |
 |---|---:|---:|---:|---:|
 | 实体类型 | 14 | 7 | 0 | **7** |
 | 关系类型 | 17 | 2 | 2 | **13** |
-| 属性 | 99 | ≈4 | ≈25 | **≈60** |
+| 属性 | 99 | **18** | **20** | **61** |
 | 计算能力 | 31 | 9 | 6 | **16** |
 | 写入接口 | 10 | 8 | 2 | 0 |
-| **合计** | **171** | **≈30** | **≈35** | **≈96** |
+| **合计** | **171** | **44** | **30** | **97** |
+
+> **注**：属性层从粗估 ≈4/≈25/≈60 精确化为 18/20/61，详见第四章 4.4 和附录 A。
 
 ### 7.2 P0 / P1 GAP 分级
 
@@ -331,3 +337,226 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | 七要素现状快照 | `对接文档/对端/2026-10-26-科创要素知识图谱-七要素数据维度与上图逻辑现状快照.md` | 2026-10-26 |
 | KG-YANDA-GAP-L01 v1.1（不沿用） | `外部接口依赖/KG-YANDA-SCHEMA-REQ/GAP-展示系统图谱需求GAP差集分析.md` | v1.1（草稿） |
 | WBS-07 | `WBS.md` | 2026-10-26 |
+
+---
+
+## 附录 A · 属性层精细映射（99 条逐条对照）
+
+> **映射方法**：以「需求清单 v1.0 第四章属性定义」为被减数，逐条对照「燕大快照第二章实体属性清单 + 第三章关系属性」。判定规则：
+> - ✅ 燕大有直接对应字段或可由 EDGE 聚合得到
+> - 🔶 近似但有差距（需图谱计算、需反向聚合、非直取）
+> - 🔴 完全找不到
+> - 归堆列按 1.5 定义填写
+> - **「需图谱侧计算」标记**：需求清单标注了约 17 条需图谱计算的属性，燕大未预置但可通过第06项 Graph 能力补齐 → 判 🔶
+
+### A.1 公共属性（10 条，适用全部实体）
+
+| # | 属性名 | 中文名 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|
+| 1 | `entity_id` | 实体唯一标识 | 各 TAG 原生 vid | ✅ | — | 快照第二章每个实体显式 vid=xxx_{主键} |
+| 2 | `name` | 实体名称 | name_cn/name_en（Organization）、name_zh/name_en（Person）、title_zh（Paper）、title（Project/Patent）、chain_name（IndustryChain）、node_name（IndustryNode） | ✅ | — | 每个实体 TAG 都有名称列 |
+| 3 | `type` | 实体类型编码 | org_kind（Organization）、person_kind（Person）、edge_type（关系） | ✅ | — | org_kind 7 值枚举覆盖机构类型；person_kind 区分人员类型 |
+| 4 | `field` | 所属领域 | organization.industry_class；person.research_fields；paper/patent/project.keywords | 🔶 | 对端缺口 | 部分实体有但非统一属性；Organization 有 industry_class，Person 有 research_fields，成果类可从关键词反向聚合 |
+| 5 | `region` | 所属地域 | organization.province/city/country；person 国籍列 | 🔶 | 对端缺口 | 机构地域全，人员部分，成果类无 |
+| 6 | `institution` | 所属机构 | person.scholar_org_id；organization 内联；论文域机构桩 | 🔶 | 对端缺口 | Person 有 scholar_org_id，其他实体需反向匹配 |
+| 7 | `author` | 作者/负责人 | paper 作者表；patent.inventors/applicants；project.project_host | 🔶 | 对端缺口 | 仅成果类有，非通用 |
+| 8 | `year` | 实体年份 | paper.publication_year；patent.publication_date→年份；project.approval_year | ✅ | — | 主要实体都有年份字段 |
+| 9 | `value` | 实体度量值 | ❌ 无通用 value 属性 | 🔴 | 对端缺口 | 燕大属性都是具体业务字段，没有通用度量占位 |
+| 10 | `updated_at` | 数据更新时间 | 平台公共治理列 updatetime | ✅ | — | 快照 1.3-② 说全部实体附 15 条公共治理列含 updatetime |
+
+**公共属性小计**：✅5 / 🔶4 / 🔴1
+
+---
+
+### A.2 覆盖实体专有属性（7 个实体，19 条）
+
+> 以下实体在第二章实体 GAP 判定为 ✅ 已覆盖或 ⚠️ 部分覆盖，逐条映射其需求属性。
+
+#### A.2.1 enterprise · 企业（3 条）
+
+> 燕大承载：Organization（默认桶混装，org_kind=domestic_organization 无专属枚举）
+
+| # | 需求属性 | 中文名 | 需图谱计算 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|
+| 1 | `research_fields` | 研究领域列表 | 否 | Organization.industry_class | ✅ | — | 工商域 industry_class 列直接映射 |
+| 2 | `overlap_score` | 研究领域重叠度 | **是** | ❌ 无预置 | 🔶 | 第06项Graph | 需基于两家企业的 industry_class/关键词集合计算 Jaccard/Dice 相似度；燕大无此预置但智树算法中台可扩展 |
+| 3 | `overlap_peer_id` | 对比企业 | **是** | ❌ 无预置 | 🔶 | 第06项Graph | 依赖 overlap_score 排序选出对比对象；燕大无此属性 |
+
+**enterprise 小计**：✅1 / 🔶2 / 🔴0
+
+#### A.2.2 institution · 机构/科研机构（2 条）
+
+> 燕大承载：Organization + org_kind（domestic_university / domestic_research_institute）
+
+| # | 需求属性 | 中文名 | 需图谱计算 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|
+| 1 | `institution_type` | 机构类型 | 否 | Organization.org_kind | ✅ | — | org_kind 枚举可直接映射 institution_type |
+| 2 | `centrality_score` | 中心性综合分 | **是** | ❌ 无预置 | 🔶 | 第06项Graph | 需 PageRank + 度 + 中介等合成；燕大 PageRank/Degree 已跑通可对接 |
+
+**institution 小计**：✅1 / 🔶1 / 🔴0
+
+#### A.2.3 person · 人员/专家（6 条）
+
+> 燕大承载：Person + ScholarOrganization
+
+| # | 需求属性 | 中文名 | 需图谱计算 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|
+| 1 | `research_fields` | 研究领域列表 | 否 | Person.research_fields | ✅ | — | 快照行 64 明确有 research_fields 列 |
+| 2 | `research_topics` | 研究主题列表 | 否 | ❌ 无直取 | 🔶 | 对端缺口 | Person 有 research_fields 但无 research_topics；可从论文/专利/项目关键词反向聚合但非直取字段 |
+| 3 | `team` | 所属团队 | 否 | ❌ 完全不存在 | 🔴 | 对端缺口 | Person TAG 无 team/研究团队相关字段 |
+| 4 | `cooperation_degree` | 合作度 | **是** | ❌ 无预置 | 🔶 | 第06项Graph | 需基于 COAUTHOR_WITH + AFFILIATED_WITH 边数/合著篇数计算；燕大 COAUTHOR_WITH 有 co_paper_count 可复用 |
+| 5 | `centrality_score` | 中心性综合分 | **是** | ❌ 无预置 | 🔶 | 第06项Graph | 需 PageRank + 度等合成；燕大 PageRank/Degree 已跑通 |
+| 6 | `active_years` | 活跃年份区间 | 否 | ⚠️ 可从成果年份聚合 | 🔶 | 对端缺口 | 无直取属性；可从 Person 关联的 Paper.publication_year / Project.approval_year 取 min–max 推断 |
+
+**person 小计**：✅1 / 🔶4 / 🔴1
+
+#### A.2.4 paper · 论文（3 条）
+
+> 燕大承载：Paper + Journal + Report
+
+| # | 需求属性 | 中文名 | 需图谱计算 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|
+| 1 | `citation_count` | 被引次数 | **是** | ❌ 无预置 | 🔶 | 对端缺口 | CITES EDGE 存在（快照行 98）但 Paper TAG 无 citation_count 属性；需实时或离线遍历 CITES 边反向统计 |
+| 2 | `reference_count` | 参考文献数 | **是** | ❌ 无预置 | 🔶 | 对端缺口 | 同上，需遍历 CITES 正向统计 |
+| 3 | `topic_keywords` | 主题关键词 | 否 | HAS_KEYWORD EDGE 聚合 | ✅ | — | 快照行 99，论文-关键词边 HAS_KEYWORD 存在，可聚合为 topic_keywords 数组 |
+
+**paper 小计**：✅1 / 🔶2 / 🔴0
+
+#### A.2.5 patent · 专利（2 条）
+
+> 燕大承载：Patent + PatentFamily
+
+| # | 需求属性 | 中文名 | 需图谱计算 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|
+| 1 | `citation_count` | 被引次数 | **是** | Patent.citation_nums + cited_by_nums | ✅ | — | 快照行 72 富集绑定有 citation_nums（被引数）和 cited_by_nums（他引数）两字段 |
+| 2 | `topic_keywords` | 主题关键词 | 否 | Patent.keywords | ✅ | — | 快照行 71 Patent A 基础绑定有 keywords 列 |
+
+**patent 小计**：✅2 / 🔶0 / 🔴0
+
+#### A.2.6 project · 项目（3 条）
+
+> 燕大承载：Project
+
+| # | 需求属性 | 中文名 | 需图谱计算 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|
+| 1 | `project_type` | 项目类型 | 否 | Project.project_source + project_level | ✅ | — | 快照行 75 有 project_source（项目来源）和 project_level（项目级别），可组合映射 project_type |
+| 2 | `fusion_score` | 综合评分 | **是** | ❌ 无预置 | 🔶 | 第06项Graph | 需基于 funded_amount + 产出计数（10 类）+ evaluation 等多因子合成；燕大 Project 有 total_outputs 及 10 类产出计数可复用 |
+| 3 | `rank` | 综合排名 | **是** | ❌ 无预置 | 🔶 | 第06项Graph | 依赖 fusion_score 排序；燕大无预置排名 |
+
+**project 小计**：✅1 / 🔶2 / 🔴0
+
+#### A.2.7 隐式产业（IndustryChain + IndustryNode）
+
+> 需求清单无独立 industry 实体定义，L05 实体汇总中作为「隐式产业」入 ✅ 覆盖计数。燕大 IndustryChain 仅 2 属性（chain_code/chain_name）、IndustryNode 8 属性（node_id/node_name/node_type/level/node_seq/node_imp_level/node_stage/node_path），无需求侧属性映射需求。
+
+**覆盖实体专有属性总计**：✅7 / 🔶11 / 🔴1
+
+---
+
+### A.3 GAP 实体专有属性（49 条，全部 🔴）
+
+> 以下 8 个实体在第二章实体 GAP 判定为 🔴 GAP（两侧都不写或语义错位），实体不存在 → 属性无从挂载，全部 🔴。
+
+| 实体 | 属性数 | 燕大承载 | 判定 | 归堆 | 说明 |
+|---|---:|---|---|---|---|
+| `technology` 技术 | 9 | ❌ 无 Technology TAG（最接近 Keyword 语义不同） | 🔴 9/9 | 对端缺口 | 技术点 vs 关键词是不同语义层级 |
+| `field` 领域 | 7 | ❌ 无 Field TAG（最接近 Keyword） | 🔴 7/7 | 对端缺口 | 学科领域分类体系未建模 |
+| `topic` 主题 | 7 | ❌ 无 Topic TAG（最接近 Keyword） | 🔴 7/7 | 对端缺口 | 主题库 vs 关键词本体边界不同 |
+| `policy` 政策 | 6 | ❌ Policy TAG 未建（蓝图+源表已备） | 🔴 6/6 | 对端缺口 | **P0 GAP**，两侧都不写 |
+| `dataset` 数据集 | 5 | ❌ DataSource 是治理占位 | 🔴 5/5 | 对端缺口 | 无业务实体 TAG |
+| `event` 科技事件 | 5 | ❌ Event TAG 存在但语义为工商风险事件 | 🔴 5/5 | 对端缺口 | 科创事件 vs 工商风险事件同名异义 |
+| `activity` 科技活动 | 5 | ❌ 完全不存在 | 🔴 5/5 | 对端缺口 | 无活动类 TAG |
+| `innovation_carrier` 创新载体 | 5 | ❌ 完全不存在 | 🔴 5/5 | 对端缺口 | 无载体类 TAG |
+
+**GAP 实体专有属性总计**：🔴49
+
+---
+
+### A.4 关系属性（21 条）
+
+#### A.4.1 通用关系属性（11 条，全部关系适用）
+
+| # | 需求属性 | 中文名 | 需图谱计算 | 燕大对应字段 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|
+| 1 | `relation_id` | 关系唯一标识 | 否 | Nebula EDGE src_vid + dst_vid + edge_type 组合 | ✅ | — | Nebula EDGE 三字段组唯一标识 |
+| 2 | `source_entity_id` | 源实体 | 否 | Nebula 原生 src_vid | ✅ | — | EDGE 原生字段 |
+| 3 | `target_entity_id` | 目标实体 | 否 | Nebula 原生 dst_vid | ✅ | — | EDGE 原生字段 |
+| 4 | `type` | 关系类型编码 | 否 | edge_type | ✅ | — | Nebula EDGE 原生字段 |
+| 5 | `weight` | 关系权重/强度 | **是** | 部分 EDGE 有（co_paper_count/ownership_percentage/inv_amount 等） | 🔶 | 对端缺口 | 不是所有 EDGE 都有 weight；需各 EDGE 单独适配或统一从置信度派生 |
+| 6 | `year` | 关系年份 | 否 | 部分可从起止端点年份推断 | 🔶 | 对端缺口 | 无通用 year 属性；如 CITES 可从被引论文 publication_year 取 |
+| 7 | `start_time` | 关系开始时间 | 否 | AFFILIATED_WITH 有 start_time；其他部分 EDGE 有 | 🔶 | 对端缺口 | 仅任职/教育类有显式时间；工商治理域部分有 |
+| 8 | `end_time` | 关系结束时间 | 否 | AFFILIATED_WITH 有 end_time；其他部分有 | 🔶 | 对端缺口 | 同上 |
+| 9 | `updated_at` | 关系更新时间 | 否 | 平台公共治理列 updatetime | ✅ | — | 快照 1.3-② 全部边附公共治理列 |
+| 10 | `confidence` | 置信度 | **是** | ✅ 动态置信度规约 | ✅ | — | L05 7.3 确认 0.40+0.20+0.10+0.20+0.10 五维置信度模型 |
+| 11 | `evidence_refs` | 证据引用 | 否 | ⚠️ 有 source/source_chain 但非标准 evidence_refs 数组 | 🔶 | 对端缺口 | 溯源属性存在但名称和结构不同；需适配转换 |
+
+**通用关系属性小计**：✅6 / 🔶5 / 🔴0
+
+#### A.4.2 关系专属属性（10 条，绑定到特定关系类型）
+
+> 专属属性的存在前提是**对应关系先存在**。关系不存在 → 属性天然 GAP。
+
+| # | 需求属性 | 绑定关系 | 中文名 | 关系状态 | 需图谱计算 | 判定 | 归堆 | 证据 |
+|---|---|---|---|---|---|---|---|---|
+| 1 | `cooperation_type` | `cooperate` | 合作类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | cooperate 关系两侧都不写（第二章关系 GAP #1），属性无从挂载 |
+| 2 | `role` | `participate` | 参与角色 | 🔴 GAP | 否 | 🔴 | 对端缺口 | participate 关系 GAP（关系 GAP #5） |
+| 3 | `citation_context` | `cite` | 引用语境 | ✅ CITES | 否 | 🔴 | 对端缺口 | CITES EDGE 存在但无 citation_context 属性；燕大引文只取 DOI/题名等标识，不存引用上下文 |
+| 4 | `influence_type` | `technology_influence` | 影响类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | technology_influence 关系 GAP（关系 GAP #9） |
+| 5 | `relation_type` | `policy_relate` | 政策关联类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | policy_relate 关系 GAP（关系 GAP #11） |
+| 6 | `target_role` | `policy_apply_to` | 作用角色 | 🔴 GAP | 否 | 🔴 | 对端缺口 | policy_apply_to 关系 GAP（关系 GAP #12） |
+| 7 | `link_type` | `dataset_link` | 数据集关联类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | dataset_link 关系 GAP（关系 GAP #13） |
+| 8 | `read_count` | `activity_link` | 阅读量 | 🔴 GAP | 否 | 🔴 | 对端缺口 | activity_link 关系 GAP（关系 GAP #16） |
+| 9 | `importance` | `activity_link` | 重要程度 | 🔴 GAP | **是** | 🔴 | 对端缺口 | activity_link 关系 GAP + 属性需图谱计算 |
+| 10 | `relevance` | `activity_link` | 关联性 | 🔴 GAP | **是** | 🔴 | 对端缺口 | activity_link 关系 GAP + 属性需图谱计算 |
+
+**专属关系属性小计**：🔴10（其中 9 条因关系不存在天然 GAP，1 条 cite.citation_context 关系存在但属性缺失）
+
+**关系属性总计**：✅6 / 🔶5 / 🔴10
+
+---
+
+### A.5 属性层全局精确 GAP 总表
+
+| 分类 | 条数 | ✅ | 🔶 | 🔴 |
+|---|---:|---:|---:|---:|
+| 公共属性 | 10 | 5 | 4 | 1 |
+| 实体专有 · 覆盖实体 | 19 | 7 | 11 | 1 |
+| 实体专有 · GAP 实体 | 49 | 0 | 0 | 49 |
+| 关系属性 · 通用 | 11 | 6 | 5 | 0 |
+| 关系属性 · 专属 | 10 | 0 | 0 | 10 |
+| **合计** | **99** | **18** | **20** | **61** |
+
+### A.6 需图谱侧计算属性汇总（≈17 条 · 全部 🔶 可补齐）
+
+> 需求清单标注「需图谱侧计算」的属性，燕大未预置但可通过第06项 Graph 计算能力（PageRank / Louvain / Degree / 图匹配 / 相似度等）补齐。
+
+| # | 需求属性 | 所属实体/关系 | 需计算的能力 | 燕大是否有底层能力 | 归堆 |
+|---|---|---|---|---|---|
+| 1 | `innovation_score` | technology | 多因子合成（被引、专利、合作） | 有 CITES + AUTHORED_BY 边 | 第06项Graph |
+| 2 | `innovation_rank` | technology | innovation_score 排名 | 需 innovation_score 先有 | 第06项Graph |
+| 3 | `hotspot_flag` | technology / field | 热度阈值判断 | 需热度计算 | 第06项Graph |
+| 4 | `trend` | field / topic | 时序变化率 | ⚠️ 无时序快照（P0 GAP） | 对端缺口 |
+| 5 | `cooperation_degree` | person | 合著/合作边数 + 合作强度 | 有 COAUTHOR_WITH 边含 co_paper_count | 第06项Graph |
+| 6 | `centrality_score` | person / institution | PageRank + Degree + 中介合成 | PageRank/Degree 已跑通 | 第06项Graph |
+| 7 | `citation_count` | paper / patent | 遍历 CITES 边反向计数 | CITES EDGE 存在；Patent 有预置 citation_nums | 第06项Graph |
+| 8 | `reference_count` | paper | 遍历 CITES 正向计数 | CITES EDGE 存在 | 第06项Graph |
+| 9 | `fusion_score` | project | funded_amount + 10类产出计数 + evaluation 合成 | Project 有 total_outputs + 10类产出计数 | 第06项Graph |
+| 10 | `rank` | project | fusion_score 排名 | 需 fusion_score 先有 | 第06项Graph |
+| 11 | `overlap_score` | enterprise | 两家企业行业标签 Jaccard/Dice 相似度 | 智树算法中台企业域可扩展 | 第06项Graph |
+| 12 | `overlap_peer_id` | enterprise | overlap_score 排序选出 top-1 | 需 overlap_score 先有 | 第06项Graph |
+| 13 | `heat` | topic | 提及频次 + 时间衰减 | 需 topic 实体先存在（🔴 GAP） | 对端缺口 |
+| 14 | `related_policy_count` | policy | policy_relate 边数 | policy 实体 🔴 GAP | 对端缺口 |
+| 15 | `joint_project_count` / `cooperation_density` / `synergy_score` / `talent_count` | innovation_carrier | 多因子合成 | carrier 实体 🔴 GAP | 对端缺口 |
+| 16 | `weight`（通用关系） | 全部关系 | 各 EDGE 独立计算（合著篇数/持股比例等） | 部分 EDGE 已有 weight-like 属性 | 对端缺口 |
+| 17 | `confidence`（通用关系） | 全部关系 | 动态置信度五维计算 | ✅ 燕大已有置信度模型 | — |
+| 18 | `importance` / `relevance` | activity_link | 活动-专家关联度 | activity 实体 🔴 GAP | 对端缺口 |
+
+### A.7 映射证据索引
+
+| 证据 | 路径 | 用途 |
+|---|---|---|
+| 燕大实体属性清单 | `对接文档/对端/2026-10-26-科创要素知识图谱-七要素数据维度与上图逻辑现状快照.md` 第二章行 54-81 | A.2 各实体燕大对应字段判定 |
+| 燕大关系属性清单 | 同上 第三章行 84-154 | A.4 关系属性判定 |
+| 燕大公共治理列 | 同上 1.3-② 行 27 | entity_id/updated_at/confidence 等公共属性 |
+| 燕大置信度模型 | L05 7.3 | confidence 属性来源 |
+| 需求属性定义 | `外部接口依赖/KG-YANDA-SCHEMA-REQ/科技信息展示系统-知识图谱实体、实体关系属性需求清单.md` 第四章行 104-285 | 被减数基准 |
