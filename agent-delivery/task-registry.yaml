@@ -42192,13 +42192,12 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 50000
-    note: |
-      审查 Ready（无 Critical，铁律 12 项全过）+ I-1 推前顺手修（桥接失败短路不落全量查询，测试加固锁死）后三仓已推送：lumen-topic-py 7a482f1、lumen-svc-platform 3b78415、lumen-ui-topic dd3705f。等 CI→K8s dev 后线上三级树第三级出真字典节点且按产业过滤
+    note: "用户确认：按 v5 模型修正桥接与前端树构造（纯代码，不动表/不重灌数据）。方案：后端端点改查 industry_chain.industry_id 返回带 chain_tier/parent_chain_id 的链行集，前端改逐层懒加载任意深度（L1 链→L2+ 子链→叶挂节点）"
     definition_of_done:
       - "任一前置：DATA-INDUSTRY-NODE-DICT-L01 完成后，企业/产业链高筛的节点级下拉切换为 INB 编码 + prefix 出站（替换过渡态名称 term），UI 摘除 ⚠️ 过渡角标"
       - "或 Q068 甲方书面确认维持名称匹配口径（升 🟢），登记到客户决策清单跟踪表"
       - "handoff 记录最终口径与切换证据，cost 四字段回填"
-    update_time: "2026-10-27T19:45:25+08:00"
+    update_time: "2026-10-27T20:16:51+08:00"
   - id: LUMEN-INTEL-FE-REPLICA-L0
     evidence: "[object Object]"
     title: "综合智能分析三叶 — demo→lumen 复刻总纲（接口需求+任务拆解）"
@@ -42763,3 +42762,65 @@ tasks:
       - "两叶各至少 1 条线上/dev 实证 narration=ok（或可解释 fallback）；handoff 根路径 SVC-TECH-TREND-NARRATE-L01.md + cost；ponytail: full"
       - "不含：STAGE（G1/G2/G4）、T4–T7、改口径、企业/产业链工单"
     update_time: "2026-10-27T19:54:10+08:00"
+  - id: DOC-CHAIN-DIAG-FAMILY-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T12:27:28.246Z"
+    last_seen_at: "2026-10-27T12:27:28.246Z"
+    lock_until: "2026-10-28T12:27:28.246Z"
+    claimed_by: "agent:coordinator-agent"
+    title: "产业诊断分析（关键环节+瓶颈堵点合并族）— 完整链路设计 + LLM 落点（05.2.2）"
+    status: "in_progress"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-DIAG"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      产业链双轨管线队列 1（coordinator_dispatch，监管人 human:徐滕强 2026-10-27 总授权）。菜单=产业关键环节识别 + 产业瓶颈堵点识别（合并族）。范围：现网 as-built + LLM 落点，禁对标报告。同组实现单 CHAIN-DIAG-NARRATE-L01 待本单 ready_to_sign 或 note 含会签关键词后由主会话开启。不复活 OPEN-CY。
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.1-产业周期分析链路.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
+      - ".cursor/skills/gkx-topic-analysis-chain-design/SKILL.md"
+    definition_of_done:
+      - "05.2.2-产业诊断分析链路.md 落盘并 push origin/dev：关键环节（key_link）+ 瓶颈堵点（bottleneck）合并族 as-built 对照 + 完整链路 + LLM 落点表（逐点位判定三档）"
+      - "开放项只登记不拍板（QC02/QC04 等 🟡 引用客户决策清单，OPEN-CY 不回潮）"
+      - "handoff 落盘 agent-handoffs/ + registry evidence/design_refs 回填"
+      - "体例对齐 05.2.1（金样 05.3.1 §5.6）；禁止对标报告长文；不扩队列外菜单"
+    update_time: "2026-10-27T20:27:35+08:00"
+  - id: CHAIN-DIAG-NARRATE-L01
+    title: "产业诊断分析（关键环节+瓶颈堵点）— LLM 叙述落点改造（prompt 文件化+护栏）"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "DOC-CHAIN-DIAG"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      产业链双轨管线队列 1 实现单（coordinator_dispatch）。前置：DOC-CHAIN-DIAG-FAMILY-L01 ≥ ready_to_sign 或 note 含会签关键词。范围=本族叙述落点（key_link/bottleneck）；参照 CHAIN-CYCLE-NARRATE-L01 handoff 模式；具体 DoD 细节以设计稿 LLM 章为准，子会话不得自扩。
+    depends_on:
+      - "DOC-CHAIN-DIAG-FAMILY-L01"
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "lumen_common/prompts/chain/"
+      - "lumen_common/algorithms/chain/key_link.py"
+      - "lumen_common/algorithms/chain/bottleneck.py"
+      - "tests/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.2-产业诊断分析链路.md"
+      - "agent-delivery/agent-handoffs/CHAIN-CYCLE-NARRATE-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
+    definition_of_done:
+      - "本族 LLM 落点按设计稿 LLM 章实施：prompt 文件化入 lumen_common/prompts/chain/ 经统一 loader，去掉内联唯一真源"
+      - "数字白名单/因果禁句/失败 degraded 不改任务终态；单测可注入（或等价）且无 Key → skipped/degraded 仍 success"
+      - "默认不改 Java 对外契约；不碰 RustFS 新路径"
+      - "handoff + cost 四字段 + ponytail: full；参照 CHAIN-CYCLE-NARRATE-L01 模式"
+    update_time: "2026-10-27T20:27:20+08:00"
