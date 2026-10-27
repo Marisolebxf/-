@@ -54,6 +54,29 @@
   `surefire:test` 3.2.5；注：本机默认 surefire 2.12.4 不支持 JUnit5，与本次改动无关）。
 - `spring-javaformat:apply` 后重跑仍全绿。
 
+## 代码评审修复（2026-10-27 上午，评审子代理 + 人工复核）
+
+评审结论「需修后合」，发现并修复 4 项（关键项已在 `lumen-algo-py` 算法源码核实）：
+
+1. **[Critical] org_coverage / shenzhen 报告被 legacy 槽劫持**：`leaves.py` 的
+   `leaf_org_coverage` 无条件 `payload.update(_legacy_slots(gap=...))`（`leaves.py:84`），`leaf_shenzhen`
+   亦注入 gap/tech 等 legacy 键。原「按键瀑布猜叶」会让这两类报告命中 shortboard 章节，渲染错叶内容。
+   → 修复：`buildSvcSections()` 与 `resolveSvcConclusion()` 改为按父叶子
+   `SvcAnalysisTypes.leafOf()` 精确派发（未知叶子只留任务信息章，诚实不猜）。
+   → 新增测试 `orgCoverageReportNotHijackedByLegacyGapSlots`（断言有覆盖章、无短板章）。
+2. **[Important] 默认形态深圳载荷键不匹配**：不带 industry 的 `leaf_shenzhen` 走 `szcompare.py`：
+   `sz_compare.cities`（行键 `city`）+ 顶层 `tier`；原代码只读 `compare.cities`（`city_name`）。
+   → 修复：`appendSvcShenzhenSection()` 兼容 `compare`/`sz_compare` 双形态 + `city_name`/`city`
+   双行键 + compare 内/顶层 tier 兜底。
+   → 新增测试 `shenzhenReportReadsDefaultSzCompareShape`（sz_compare 形态 + 顶层 tier）。
+3. **[Minor] org_coverage 导出表优先级与注释相反**：原来优先长表 `matrix`（org×field 逐格可达数千行）。
+   → 修复：优先 `coverage_matrix.orgs`（org 级摘要），注释同步。
+4. **[Minor] `java.util.Set/Iterator` 全限定名风格**：并入文件头 import。
+
+评审修复后验证（内网 nexus 断连、surefire 缓存随 macOS 重启清空，改用手工
+javac + JUnit Platform Launcher 直跑）：主源码 87 class 编译零错；artifact 包 4 个测试类
+12/12 全绿（含新增 2 例）。
+
 ## 验收证据
 
 - 本地改动：lumen-svc-platform `dev` 工作区，3 主文件 modified + 1 测试 new（未 commit，按
@@ -70,9 +93,9 @@
 
 ## CI/CD（必填）
 
-- 分支：`dev`（本地待验收）
-- commit：验收通过后按 `[agent:api-agent]` 提交推送
-- pipeline URL / ID：待推送后触发
+- 分支：`dev`
+- commit：`a590b69`（2026-10-27 经监管人徐滕强要求推送在线验证：含评审修复版，artifact 包 12/12 测试绿）
+- pipeline URL / ID：已触发，待 CI 绿
 - K8s rollout：待 CI
 
 ## 架构合规自检
