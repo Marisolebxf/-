@@ -41883,7 +41883,7 @@ tasks:
     lock_until: "2026-10-27T05:38:50.720Z"
     claimed_by: "agent:algorithm-agent"
     title: "服务机构产业领域 — T1 覆盖结论 narrate（prompt 包 + 装配接线 + FE 渲染）"
-    status: "pending_test"
+    status: "testing"
     agent: "algorithm-agent"
     epic: "E7-产业服务链分析"
     priority: "P1"
@@ -41893,7 +41893,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 120000
-    note: "用户界面验收通过（SVC-20261027-021 ok 态实证：narration status=ok、AI 叙述+建议句进快照、任务 success 7s）。联调确认：新路由+润色+FE 渲染全链通。遗留：avg_depth 越界疑点（chain_score 未归一）记入 STAGE 单数据口径核查，非本单缺陷。"
+    note: "human:徐滕强 2026-10-27：首叶界面验收已过，推进 QA（pending_test→testing）。产业链周期不推进。"
     collaborators:
       - "frontend-agent"
     touched_files:
@@ -41911,10 +41911,10 @@ tasks:
       - "org_coverage 装配路径接入 narrate：只改 text/suggestions；矩阵数字规则锁死；无 Key/失败 → fallback/skipped，任务仍 success；可注入 client 单测"
       - "FE svcCoverageModel：ok 用 narration.text，fallback/skipped 用规则稿 suggestions；禁止 LLM/前端补覆盖数字；D9 ⓘ 挂 BREADTH/DEPTH（mock 带 🧪）"
       - "handoff 根路径 agent-handoffs/SVC-ORG-COVERAGE-NARRATE-L01.md + cost 四字段；ponytail: full；本单不含 G1 真分步/G2 产业过滤/G4 RustFS（另立 STAGE）"
-    update_time: "2026-10-27T15:30:02+08:00"
+    update_time: "2026-10-27T15:41:46+08:00"
   - id: SVC-ORG-COVERAGE-STAGE-L01
     title: "服务机构产业领域 — G1 四节点真分步 + G2 产业过滤 + 路由正名（worker）"
-    status: "backlog"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "E7-产业服务链分析"
     priority: "P1"
@@ -41924,7 +41924,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 180000
-    note: "厚单；等 NARRATE 落地后再 ready。勿与 NARRATE 同会话并行大改。"
+    note: "依赖 NARRATE 界面验收已过（SVC-021）；可认领。与 DOC-SVC-TECH-TREND-FAMILY 可并行，勿同会话大改。avg_depth 越界核查并入本单数据口径。"
     depends_on:
       - "SVC-ORG-COVERAGE-NARRATE-L01"
     collaborators:
@@ -41938,7 +41938,7 @@ tasks:
       - "指纹/params 产业过滤下推（闭合 G2）；_LEAF_SVCAN_PATH 正名领域矩阵口径（闭合 G3）"
       - "RustFS object_key 兼容窗按 §4.5（闭合 G4，可灰度）"
       - "handoff + cost；依赖 NARRATE 已合入"
-    update_time: "2026-10-27T09:31:41+08:00"
+    update_time: "2026-10-27T15:41:59+08:00"
   - id: POLICY-METRIC-FACT-GAP-L01
     model_used: "grok-4.7"
     evidence: "agent-handoffs/政策模块-E7/POLICY-METRIC-FACT-GAP-L01.md"
@@ -42240,3 +42240,30 @@ tasks:
       - "handoff 根路径 DOC-ENT-EVAL-FAMILY-CHAIN-L01.md（架构合规≥7 + Cost）；ponytail: off；不写 repos 实现（实现另开 feature 或本包二阶段明示）"
       - "原 DOC-ENT-BUSINESS-ANALYSIS-CHAIN-L01 并入本单，不再单独执行"
     update_time: "2026-10-27T15:32:30+08:00"
+  - id: DOC-SVC-TECH-TREND-FAMILY-CHAIN-L01
+    title: "服务链 P2 族 — 技术力评估+新增趋势完整链路设计与 LLM 落点（合并包，对标 05.7.1）"
+    status: "ready"
+    agent: "architect-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "human:徐滕强 2026-10-27：对齐企业评估族合并。T1 界面已验、NARRATE→testing；设计门 05.7.1/05.7.2 已 ready_to_sign（软依赖，不挡建单）。产业链周期未过验收本轮不排。监管人建议 human:徐滕强。"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/.cursor/skills/gkx-topic-analysis-chain-design/SKILL.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.1-服务机构产业领域分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.2-服务链分析LLM落点表.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7-产业服务链.md"
+    definition_of_done:
+      - "覆盖菜单：服务机构技术力评估对比分析 + 服务机构新增趋势分析；共享 svc narrate 骨架/过程页词表只写一遍，两叶分章写差异（五维分 vs 序列趋势）"
+      - "产出链路文（建议 05.7.3 技术力 + 05.7.4 新增趋势，或一文两章）+ 05.7 总册指针；体例对标 05.7.1；含 A 对照/B 链路/C 本叶落点/D Prompt§5.6/E 契约/F 与 org_coverage 差异/G 开放项"
+      - "LLM：对齐 05.7.2 T2/T3（P2）；复用 T1 narrate 边界写清 as-built 复用与缺口；禁止因代码已有 tech_power/trend 分支跳过设计；T1 已验不重复造轮"
+      - "handoff 根路径 DOC-SVC-TECH-TREND-FAMILY-CHAIN-L01.md（架构合规≥7 + Cost）；ponytail: off；不写 repos 实现（实现另开 feature）"
+      - "T4–T7（短板/深圳/引入/培育）本单不覆盖，仍绑 Q-SVCCHAIN-03/04/05；STAGE（G1/G2/G4）另单不并入"
+    update_time: "2026-10-27T15:42:11+08:00"
