@@ -62,6 +62,12 @@ G1 四节点真分步 worker、G2 产业过滤指纹、G3 路由正名（org_cov
 - `actual_cost`: 约 $1.5
 - `cost_warn`: false（< $10 阈值）
 
-## 8. 待人工验收
+## 8. 验收与推送记录
 
-改动停在两仓本地工作区。验收通过后 push `origin/dev` 并由 coordinator 按 feature 类型推进（integration → pending_test → …）。验收前可用「无 Key 环境」直接复验：FE 渲染与线上现行为完全一致（skipped 路径）。
+- **代码评审**（2026-10-27 09:54，subagent）：1 Important + 6 Minor → 已全修（测试环境隔离/死代码/事实包入 try/industry ID 防漂移/禁句用例/Key 纪律用例/角标文案）；修后自检 8 场景 ALL PASS、回归 34 passed、FE 三绿。
+- **用户验收放行**：2026-10-27 14:26「直接推线上部署我界面测试功能验收」。
+- **推送**：lumen-algo-py `c065981`（4 文件 +348）、lumen-ui-topic `3637183`（3 文件 +62 −8），均 `origin/dev`。
+- **线上 Key 确认**：`k8s/api.yaml`/`worker.yaml` 由 Secret `gkx-zhipu-llm` 注入 `GKX_LLM_API_KEY/BASE_URL/MODEL` → narrate 线上为 ok 态真调用，非 skipped。
+- 后续：CI 绿 → K8s dev rollout → 用户界面验收（ok 态渲染 + 规则稿回退双路径）→ coordinator 按 feature 推进 pending_test。
+
+*ponytail: full（最短可用 diff + 一个自检；未引框架、未造第二套 LLM 边界）。*
