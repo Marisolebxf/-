@@ -42784,7 +42784,7 @@ tasks:
     lock_until: "2026-10-27T17:01:45.814Z"
     claimed_by: "agent:algorithm-agent"
     title: "服务链 P2 — 技术力+新增趋势 LLM 落点改造（prompt 包 + 装配接线 + FE，对标 05.7.3/05.7.4）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -42794,7 +42794,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 120000
-    note: "开工：G2a/G2b 路由正名 + 双 prompt 包 + 装配接入 + FE 渲染。"
+    note: |
+      S1 收口：监管人验收放行（2026-10-27 21:00），三仓已推（algo 2bf424f/topic-py 64c8a41/FE 8289f77），deploy 全绿（algo api/worker 自动、search-py 21:08、FE 管线绿）。两叶线上实证达 DoD⑤：SVC-20261027-026（trend ok，prompt_pack=svc.trend.narrate）+ SVC-20261027-025（techpower ok，prompt_pack=svc.techpower.narrate）；首轮 023/024 ReadTimeout 属可解释 fallback，护栏实战验证。联调确认推 pending_test。
     collaborators:
       - "frontend-agent"
     touched_files:
@@ -42812,7 +42813,7 @@ tasks:
       - "FE：ok 渲染 narration，fallback/skipped 退规则稿；禁止前端补数；D9 ⓘ 按设计挂点"
       - "两叶各至少 1 条线上/dev 实证 narration=ok（或可解释 fallback）；handoff 根路径 SVC-TECH-TREND-NARRATE-L01.md + cost；ponytail: full"
       - "不含：STAGE（G1/G2/G4）、T4–T7、改口径、企业/产业链工单"
-    update_time: "2026-10-27T21:01:45+08:00"
+    update_time: "2026-10-27T21:14:45+08:00"
   - id: DOC-CHAIN-DIAG-FAMILY-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T12:27:28.246Z"
@@ -42935,3 +42936,27 @@ tasks:
       - "摸排结论+证据（代码锚点）写入 handoff 并落盘 push"
       - "registry evidence 回填"
     update_time: "2026-10-27T21:06:42+08:00"
+  - id: CMS-JX-RELTYPE-CRUD-L01
+    title: "关系类型字典增删改查（四类实体独立，对齐 stages 模式）"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      2026-10-27 久新二轮反馈衍生真缺：关系类型字典 CRUD 完全缺失（type 现为自由文本，原型语义应从字典选）。方案：新表 cms_kg_relation_type（entity_type+name 唯一，软删）+4 端点（list/create/update/delete），delete 带引用检查 40901；relations/create 的 type 保持自由文本向后兼容但前端改从字典取。对齐 stages 模式。四 tab 各自独立字典
+    depends_on: []
+    definition_of_done:
+      - "新表 cms_kg_relation_type（entity_type+name 唯一约束，软删列）DDL 入仓并真库执行"
+      - "4 端点：/kg/{entityType}/relation-types/list|create|update|delete（对齐 stages 模式与风格）"
+      - "delete 引用检查：类型已被 cms_kg_relation.rel_type 引用时 40901 拒删"
+      - " relations/create 的 type 保持自由文本向后兼容"
+      - "存量关系 type 值自动导入为对应实体类型字典初始行"
+      - "编译绿 + 真库冒烟（四 tab 各建/查/改/删一轮）"
+      - "OpenAPI 契约登记 + handoff"
+    update_time: "2026-10-27T21:14:11+08:00"
