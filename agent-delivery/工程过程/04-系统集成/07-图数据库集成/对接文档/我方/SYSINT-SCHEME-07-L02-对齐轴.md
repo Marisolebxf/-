@@ -51,7 +51,7 @@
 
 ## 三、实体对齐表（需求侧 14 实体 ↔ 燕大侧 17 TAG）
 
-> 逐行对齐，共 14 行。最后 6 行标记「不并进七要素」。
+> 逐行对齐，共 16 行：前 7 行 = 需求清单 14 实体中的 7 个并入七要素；中间 2 行 = 七要素隐式实体（产业、服务机构，**非需求清单实体**，仅作框架补充）；后 7 行 = 14 实体中不并进七要素的 7 个。汇总数字只按需求清单 14 实体计。
 
 | # | 需求实体ID | 中文名 | 七要素归属 | 对应燕大 TAG | 对齐判定 | 燕大现状 | 对齐说明 |
 |---|---|---|---|---|---|---|---|
@@ -62,8 +62,8 @@
 | 5 | `project` | 项目 | 技术 | `Project` | ✅ | ✅ 已实现 | 需求侧涵盖科研项目、软科学课题、联合研发项目；燕大 Project 一表覆盖 |
 | 6 | `person` | 人员/专家 | 人才 | `Person` + `ScholarOrganization` | ✅ | ✅ 已实现 | 需求侧 person 涵盖专家、学者、科研人员、团队负责人；燕大 Person 覆盖 scholar + author + 机构角色人员三类，ScholarOrganization 作为任职机构端点补齐边 |
 | 7 | **`policy`** | **政策** | **政策** | **—** | **🔴** | **⚠ 未实现（蓝图+源表已备）** | 燕大快照明确标注政策要素无 TAG，源表和蓝图已准备好但尚未上图。这是 **P0 GAP** |
-| 8 | — | 产业 | 产业 | `IndustryChain` + `IndustryNode` | ✅ | ✅ 已实现 | 需求清单未单列产业实体（产业是展示系统的模块而非实体），但燕大侧产业要素是完整的——7 位链行 + 9-21 位节点行，IndustryNode 1261 节点有父子层级和上下游字段 |
-| 9 | — | 服务机构 | 服务机构 | `Organization`（默认桶混装，无专属 org_kind） | 🔶 | ⚠ 无独立口径 | 与 enterprise 同困境：燕大 Organization 默认桶同时装企业和服务机构，无 org_kind 枚举值可区分。需求清单未单列服务机构实体（七要素之一），但展示系统科技服务全景模块隐含需要 |
+| 8 | —（**隐式**·非需求清单） | 产业 | 产业 | `IndustryChain` + `IndustryNode` | ✅ | ✅ 已实现 | 七要素框架补充行：需求清单未单列产业实体（产业是展示系统的模块而非实体），但燕大侧产业要素完整——7 位链行 + 9-21 位节点行，IndustryNode 1261 节点有父子层级和上下游字段。**此行不计入汇总数字** |
+| 9 | —（**隐式**·非需求清单） | 服务机构 | 服务机构 | `Organization`（默认桶混装，无专属 org_kind） | 🔶 | ⚠ 无独立口径 | 七要素框架补充行：与 enterprise 同困境——燕大 Organization 默认桶同时装企业和服务机构，无 org_kind 枚举值可区分。需求清单未单列服务机构实体，但展示系统科技服务全景模块隐含需要。**此行不计入汇总数字** |
 | --- | **以下 6 行不并进七要素** | | | | | | |
 | 10 | `technology` | 技术 | — | 最接近 `Keyword` | 🔶 | ✅ Keyword 已实现 | **边界不同**：需求侧 technology = 技术点/技术方向/技术领域下的具体技术，还要有层级关系（technology_hierarchy）和技术影响（technology_influence）。燕大 Keyword = 论文/专利/项目关键词本体（中英归一化，237,552 词），覆盖面远广但语义粒度不同 |
 | 11 | `field` | 领域 | — | 无显式 TAG | 🔶 | — | 燕大无独立「学科领域/技术领域」TAG。Keyword 部分覆盖，但领域是更高层级的分类体系（人工智能、量子计算、生物医药…），与关键词不等价 |
@@ -105,21 +105,23 @@
 
 ### 5.1 实体对齐汇总
 
+> **只统计需求清单 14 个实体**，七要素隐式补充的产业、服务机构两行不计入。
+
 | 判定 | 数量 | 占比 | 详情 |
 |---|---:|---:|---|
-| ✅ 已对齐 | 7 | 50% | institution、paper、patent、project、person + 产业（隐式）+ 科研机构（隐式） |
+| ✅ 已对齐 | 5 | 36% | institution、paper、patent、project、person |
 | 🔶 部分对齐 | 5 | 36% | enterprise（混装无枚举）、technology、field、topic、event（语义不同） |
 | 🔴 无对应 | 4 | 29% | **policy、activity、innovation_carrier、dataset** |
 
-> 注：需求清单 14 实体中，7 个并入七要素，6 个不并入。上表按需求实体计 14 行。
-
 ### 5.2 关系对齐汇总
+
+> **只统计需求清单 17 条关系**，七要素隐式补充的关系不计入。
 
 | 判定 | 数量 | 占比 | 详情 |
 |---|---:|---:|---|
 | ✅ 已对齐 | 1 | 6% | author_of |
-| 🔶 部分对齐 | 6 | 35% | cooperate、belong、cite、participate、about_topic + service机构隶属（隐式） |
-| 🔴 无对应 | 10 | 59% | **research、belong_to、technology_hierarchy、technology_influence、publish、policy_relate、policy_apply_to、dataset_link、event_link、activity_link、carrier_cooperate** |
+| 🔶 部分对齐 | 5 | 29% | cooperate（三端点缩为合著）、belong（缺机构上级段）、cite（仅 Paper→Paper）、participate（Institution→Project 仅资助方）、about_topic（仅 Paper） |
+| 🔴 无对应 | 11 | 65% | **research、belong_to、technology_hierarchy、technology_influence、publish、policy_relate、policy_apply_to、dataset_link、event_link、activity_link、carrier_cooperate** |
 
 ### 5.3 燕大侧 33 EDGE 反向覆盖情况
 
