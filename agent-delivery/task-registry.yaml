@@ -42086,8 +42086,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 300000
-    note: |
-      用户走查反馈：dev 环境仍是旧代码（改动未 push 属预期），但暴露真缺口——「所属产业」多选选项源走 meta filters industry_chains，实测线上该键为 null，推上去会空下拉。已修：useSearchBootstrap 加 Q068 兜底（industry_chains 为空时用 Q068 目录 l0 去重产业名灌入，失败保持空不硬编码）。三绿复验：type-check 0 错、build 25.95s、node --test 16/16
+    note: "用户走查通过，已提交推送：lumen-ui-topic 17ee73a（rebase 到 4c87b38 后推送）。等 CI→K8s dev 后线上验证"
     collaborators:
       - "api-agent"
     touched_files:
@@ -42105,7 +42104,7 @@ tasks:
       - "节点级下拉选项来自后端码表接口或 ES 聚合镜像，禁止前端硬编码；过渡态名称匹配 UI 带 ⚠️ 待甲方确认角标"
       - "pnpm type-check 与 build 绿（node_modules 与 lockfile 同步为前提），node --test 自检全绿"
       - "handoff 含 Design.md §14 检查清单对照，cost 四字段回填"
-    update_time: "2026-10-27T17:58:25+08:00"
+    update_time: "2026-10-27T18:21:21+08:00"
   - id: CHAIN-FILTER-INDUSTRY-LINK-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:33:23.126Z"
@@ -42160,8 +42159,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 250000
-    note: |
-      审查 5 项 Important 全部修复（agent 60b787f1）：I1 链一致性守卫（跨链父拒绝挂空计孤儿）、I2 对账门含 0 孤儿、I3/I4 单测夹具改生产真实形态+兕底分支真覆盖（11→17 用例全绿）、I5 源头防脏值（industry_chain 模块写码前经 clean_node_id 清洗，与 es_fix 同真源 build_name_index，执行顺序约束写入 docstring）；顺带 M1 main 入口/M2 畸形码统计/M4 dry-run 语义。验证：test_industry_dict 17 绿、全仓 65 通过（仅存量 finance 口径失败维持现状）、py_compile+冒烟过。待复核
+    note: "用户走查通过，已提交推送：lumen-etl-es-py fa1d208（含 PLAYBOOK 深分页备注与 test_date_only 顺带入库）。数据变更已生效（dim 正式化/下沉/ES 清洗）"
     touched_files:
       - "etl/"
     definition_of_done:
@@ -42170,7 +42168,7 @@ tasks:
       - "industry_node_codes_flat 脏数据（node-bio-general 5267 条）清洗或重挂真实节点码，企业 ES 节点名称与码可对上"
       - "节点 INB 编码体系与 Q068 产业体系覆盖错位（INB17xx 子码 0 行）形成差异清单登记到 DS-XX §6.1 / 客户决策清单跟踪表，供 Q068 拍板"
       - "handoff 附迁移前后行数对照与端点实测证据，cost 四字段回填"
-    update_time: "2026-10-27T17:20:34+08:00"
+    update_time: "2026-10-27T18:21:35+08:00"
   - id: DATA-INDUSTRY-NODE-DICT-L02
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:34:07.758Z"
@@ -42506,13 +42504,18 @@ tasks:
       - "T4–T7（短板/深圳/引入/培育）本单不覆盖，仍绑 Q-SVCCHAIN-03/04/05；STAGE（G1/G2/G4）另单不并入"
     update_time: "2026-10-27T18:20:27+08:00"
   - id: LUMEN-ENT-EVAL-NARRATE-BIZCOMP-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/LUMEN-ENT-EVAL-NARRATE-BIZCOMP-L01.md"
+    cost_warn: "green"
+    actual_tokens: 110000
+    actual_cost: 0.12
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T08:12:15.684Z"
     last_seen_at: "2026-10-27T08:12:15.684Z"
     lock_until: "2026-10-27T12:12:15.684Z"
     claimed_by: "agent:algorithm-agent"
     title: "企业评估 — 商业力/竞争力 LLM 落点改造（ENT-EVAL-13 事实包 + 两叶线上验）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P0"
@@ -42522,7 +42525,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 100000
-    note: "开工：闭合 ENT-EVAL-13（business 事实包纳入经营六维）+ competitiveness 复核 + 两叶线上抽样。"
+    note: "两叶线上实证齐（business 014 ok / competitiveness 015 ok），ENT-EVAL-13 闭合，审查闭环，待 QA。"
     collaborators:
       - "frontend-agent"
     touched_files:
@@ -42539,7 +42542,7 @@ tasks:
       - "对齐 05.3.3/05.3.4：只改 diagnosis_text / dimension_rows[].gap_text；三态 skipped|fallback|ok；失败退规则稿任务仍 success；复用 ent.eval.narrate.v3，禁止另起 prompt 文件除非升版"
       - "自检可注入 client；business + competitiveness 各至少 1 条线上/dev 任务实证 narration=ok（或诚实 fallback 可解释）；technology 回归不破"
       - "handoff 根路径 LUMEN-ENT-EVAL-NARRATE-BIZCOMP-L01.md + cost 四字段；ponytail: full；本单不含痛点/招引/培育；不含改口径；不并行改 SVC/CHAIN"
-    update_time: "2026-10-27T16:12:35+08:00"
+    update_time: "2026-10-27T18:22:40+08:00"
   - id: QA-KJZTFWSFK-SCRIPT-REPAIR-L01
     evidence: "agent-delivery/agent-handoffs/QA/QA-KJZTFWSFK-SCRIPT-REPAIR-L01.md"
     supervised_by: "human:黄敬洲"
