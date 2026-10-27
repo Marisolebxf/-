@@ -42087,7 +42087,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 300000
     note: |
-      frontend-agent 交付完成（代码留本地待验收）：新增 industry_link 三级联动字段（IndustryThreeLevelCascader.vue，Q068 目录+节点懒加载+⚠️Q068角标）+ 出站 filterDslToQueryTreeAsync（集群→resolve-scope展开→industry_chain_code prefix-in 带缓存；产业→单码；节点→industry_node名称term过渡态）+ 旧八大码IC001/AI001等→Q068集群过渡映射 + 旧INDUSTRY_CASCADE硬编码树删除。三绿：type-check 0错、build 32.6s成功、node --test 15/15（新增9用例）。遗留：节点聚合镜像暂不按产业过滤（后端聚合白名单缺字段无过滤参数，待后端扩展）；节点值用名称非码（同 DATA-L01 码表错位）；旧码映射表需与 algo-py A02 清单人工对齐。待人工验收
+      代码审查完成（agent 86089be7，实跑验证 15/15 绿）：1 Critical + 7 Important + 3 Minor。C1 多值产业叶子拆成多条 in AND 叶子→多选不同层级出站恒空集（功能性错误，测试把错误形状固化，需改 expandIndustryLinkLeaf 单条聚合+同步修测试）；I1 节点聚合失败永久缓存空数组、I2 smart 模式白白触发 resolve-scope、I3 QueryConditionSummary 三页共用无条件拉目录、I4 节点名清洗未排分隔符与 CL-/INB 形态、I5 条件行双 ⚠️ 角标、I6 .pnpm-store 未 gitignore、I7 useSvcAnalysisJob 搭车改动需拆出。修复中
     collaborators:
       - "api-agent"
     touched_files:
@@ -42105,7 +42105,7 @@ tasks:
       - "节点级下拉选项来自后端码表接口或 ES 聚合镜像，禁止前端硬编码；过渡态名称匹配 UI 带 ⚠️ 待甲方确认角标"
       - "pnpm type-check 与 build 绿（node_modules 与 lockfile 同步为前提），node --test 自检全绿"
       - "handoff 含 Design.md §14 检查清单对照，cost 四字段回填"
-    update_time: "2026-10-27T16:18:53+08:00"
+    update_time: "2026-10-27T17:03:56+08:00"
   - id: CHAIN-FILTER-INDUSTRY-LINK-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:33:23.126Z"
@@ -42161,7 +42161,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 250000
     note: |
-      data-agent 交付完成（代码留本地待验收）：①dim 正式化 15+50 行对账一致；②ODS 1273 行下沉 industry_chain/_node（12 链根、0 孤儿、最深 8 层，修复自环根/同名双码 2 个数据缺陷，INB1309 查询 108 行验证通过）；③ES node-bio-general 5267→0，1337 条回填真实码，3930 置空待打标词映射；④差异清单落 agent-delivery/data/GDF/编码体系差异清单-产业节点INB树与Q068产业目录-2026-10-27.md（Q068 15 L0 与节点树零交集、43∩1273=0，需甲方码级映射挂 Q068）；⑤单测 59 绿（finance 口径失败为存量问题）。待人工验收
+      审查 5 项 Important 全部修复（agent 60b787f1）：I1 链一致性守卫（跨链父拒绝挂空计孤儿）、I2 对账门含 0 孤儿、I3/I4 单测夹具改生产真实形态+兕底分支真覆盖（11→17 用例全绿）、I5 源头防脏值（industry_chain 模块写码前经 clean_node_id 清洗，与 es_fix 同真源 build_name_index，执行顺序约束写入 docstring）；顺带 M1 main 入口/M2 畸形码统计/M4 dry-run 语义。验证：test_industry_dict 17 绿、全仓 65 通过（仅存量 finance 口径失败维持现状）、py_compile+冒烟过。待复核
     touched_files:
       - "etl/"
     definition_of_done:
@@ -42170,7 +42170,7 @@ tasks:
       - "industry_node_codes_flat 脏数据（node-bio-general 5267 条）清洗或重挂真实节点码，企业 ES 节点名称与码可对上"
       - "节点 INB 编码体系与 Q068 产业体系覆盖错位（INB17xx 子码 0 行）形成差异清单登记到 DS-XX §6.1 / 客户决策清单跟踪表，供 Q068 拍板"
       - "handoff 附迁移前后行数对照与端点实测证据，cost 四字段回填"
-    update_time: "2026-10-27T15:50:12+08:00"
+    update_time: "2026-10-27T17:20:34+08:00"
   - id: DATA-INDUSTRY-NODE-DICT-L02
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:34:07.758Z"
