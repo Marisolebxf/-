@@ -7,7 +7,7 @@
 | claimed_by | `agent:frontend-agent` |
 | supervised_by | `human:孔东` |
 | claim_type | `pull` |
-| repo / branch | `repos/lumen-ui-topic` · `dev`（改动停本地，走查通过后再推） |
+| repo / branch | `repos/lumen-ui-topic` · `dev`（commit `950e43d`，走查通过后已推 origin/dev） |
 | ponytail | `full` |
 
 ## 范围与实现（DoD 对照）
@@ -22,7 +22,7 @@
 
 诚实态（任务 note 要求）：Q-SYNTH-01/02/03/V-01/E-01/E-02/C-01/C-02/C-03 治理引用逐字保留（selfcheck 断言锁定）；TEMP_WEIGHTS ⚠️待甲方确认；gradeNote 带「演示态」；协同禁「密度×强度」权威化、关联散点非因果、样本<3 不出系数（sh 序列 2 点 → insufficient 演示路径保留）；集群 score=null 不伪造权威分。**无任何就绪度改绿**（missing 条目 D2~D4 全 n/a）。
 
-## 产物清单（lumen-ui-topic，本地未提交）
+## 产物清单（lumen-ui-topic，commit `950e43d` · origin/dev）
 
 新增：
 - `src/composables/useSynthCtx.ts`（~190 行）
@@ -49,7 +49,7 @@
 | D9 | 指标血缘 | ✅ 8 件套 + 四维就绪度只读镜像；missing 不出伪 8 件套；矩阵真源头注释注明（SYNTH 矩阵待 data-agent 登记，登记后同步） |
 | D12 | demo 隔离 | ✅ 纯数据移植，无 demo import；确定性推导无随机数 |
 | Mock 纪律 | USE_MOCK=false | ✅ registerAllMocks 机制保证不注册、无填数 |
-| §4.2 | push 纪律 | ✅ 停本地待走查 |
+| §4.2 | push 纪律 | ✅ 走查通过后人工授权推 origin/dev（950e43d），CI 触发 K8s dev rollout |
 
 ## 开放项
 
