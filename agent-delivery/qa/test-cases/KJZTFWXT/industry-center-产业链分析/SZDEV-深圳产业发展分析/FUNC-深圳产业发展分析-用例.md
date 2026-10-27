@@ -7,7 +7,7 @@
 > **版本**：v3.1 · 2026-10-18（补丁 03424；金样改为从已完成记录进入）
 > **模块**：深圳产业发展分析（catalog `chain-sz-dev`）
 > **金样**：**03388**（只此一条：在已完成记录上点「查看结果」，打开「深圳产业发展分析结果」）
-> **环境**：http://10.50.69.111:30892/ · 账号 `admin` / `123456`
+> **环境**：https://edu.itic-sci.com/tts/svcz/ · 账号 `admin` / `123456`
 > **入口**：产业链分析 →「深圳产业发展分析」
 > **路由**：`/industry-center/shenzhen?workspace=development&tab=development`
 > **交付口径**：INTEG（前端 → Java → Python `/internal/*`）

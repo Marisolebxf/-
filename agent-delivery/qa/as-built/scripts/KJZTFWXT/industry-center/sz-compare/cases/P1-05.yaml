@@ -15,7 +15,7 @@ steps:
 expect:
 - note: 「重新分析」发起新一轮分析任务
   assert: |-
-    await page.goto('http://10.50.69.111:30892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('SKIP: 无已完成结果'); await view.click(); await page.waitForTimeout(2000); const btn = page.getByRole('button', { name: /按此配置新建分析|重新分析/ }).first(); if (!(await btn.count())) throw new Error('SKIP: 无重新分析入口'); await btn.click(); await page.waitForTimeout(1500); const t = await page.locator('main').innerText(); const url = page.url(); if (!/任务|分析|comparison/.test(t + url)) throw new Error('新建分析后未见任务/配置回流呈现')
+    await page.goto('https://edu.itic-sci.com/tts/svcz/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('SKIP: 无已完成结果'); await view.click(); await page.waitForTimeout(2000); const btn = page.getByRole('button', { name: /按此配置新建分析|重新分析/ }).first(); if (!(await btn.count())) throw new Error('SKIP: 无重新分析入口'); await btn.click(); await page.waitForTimeout(1500); const t = await page.locator('main').innerText(); const url = page.url(); if (!/任务|分析|comparison/.test(t + url)) throw new Error('新建分析后未见任务/配置回流呈现')
 allow_skip: 无结果或无新建分析入口时 Pass-N/A
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: 现场入口文案为「按此配置新建分析」（非「重新分析」）。

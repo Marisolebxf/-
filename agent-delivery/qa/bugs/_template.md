@@ -4,7 +4,7 @@
 |----|----|
 | 系统 | KJZTFWXT |
 | 轮次 | R1-20261023-脚本修订 |
-| 环境 | http://10.50.69.111:30892/ |
+| 环境 | https://edu.itic-sci.com/tts/svcz/ |
 | 本轮文件 | 只追加本文件 |
 
 ## 索引
@@ -31,7 +31,7 @@
 | 状态 | open |
 | 模块 | 企业分析 / 招引企业推荐分析 |
 | 入口 | `/enterprise/attraction?workspace=attract` |
-| 环境 | http://10.50.69.111:30892/ |
+| 环境 | https://edu.itic-sci.com/tts/svcz/ |
 | 发现日期 | 2026-10-26 |
 | 关联用例 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-01408、01417 |
 | 关联脚本 | `as-built/runs/revise-FUNC-01408` |

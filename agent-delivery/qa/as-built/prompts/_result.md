@@ -18,7 +18,7 @@
 
 ## 环境
 
-- 专题线：http://10.50.69.111:30892/
+- 专题线：https://edu.itic-sci.com/tts/svcz/
 - 账号：fixtures；已在业务页且 URL 不含 `/login` → 不要反复登出
 - 定位：yaml `locators`（角色 + name）；不要猜 CSS
 - 抽屉正文必须在 `.arco-drawer` 内取
@@ -61,7 +61,7 @@ run 宣称完成前，核对三文件存在性，**缺一不得宣称 run 完成
 
 ## 过程
 
-1. 建 **`as-built/runs/{YYYYMMDD}-30892-{scope}/`**（禁止写到 `qa/runs/`），写 `meta.yaml`、`prompts-used.md`（摘录实际喂入的提示词）。
+1. 建 **`as-built/runs/{YYYYMMDD}-svcz-{scope}/`**（禁止写到 `qa/runs/`），写 `meta.yaml`、`prompts-used.md`（摘录实际喂入的提示词）。
 2. 按 `full.md` 顺序跑；`includes` 金样则先 `P0-01`～`P0-05`，禁止重编号。
 3. 每条：按 steps 操作 → `steps.md` 一步一记 → 判定 → `result.yaml`（pass|fail|blocked|n/a）。`result.yaml` 建议带 `case_id`（脚本 id）与 `func_id`（用例编号，从脚本字段抄）。
 4. 列表/KPI/抽屉/导出：补 observed 与 artifacts。

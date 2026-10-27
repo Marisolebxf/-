@@ -3,7 +3,7 @@
 - 蓝本：`qa/test-cases/KJZTFWXT/enterprise-企业分析/SEARCH-企业查询/FUNC-企业查询-用例.md` v2.0（00438~00480）
 - 金样 `gold.yaml`（P0-01~05，id 锁定）；全量 `scripts.yaml`（includes 金样 + 36 条 = 41 条）
 - 覆盖：`coverage.md`（脚本→用例主表 + 2 条未脚本化声明）
-- 环境/词单：`fixtures/testdata.yaml`（http://10.50.69.111:30892/ · admin）
+- 环境/词单：`fixtures/testdata.yaml`（https://edu.itic-sci.com/tts/svcz/ · admin）
 - 执行顺序：`agent-delivery/qa/as-built/prompts/KJZTFWXT/enterprise/search/full.md`
 - 判定与落盘规约：`agent-delivery/qa/as-built/schema.md` §4、`prompts/_result.md`
 

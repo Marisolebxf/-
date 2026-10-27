@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.join(__dirname, 'scout');
-const base = 'http://10.50.69.111:30892/';
+const base = 'https://edu.itic-sci.com/tts/svcz/';
 fs.mkdirSync(outDir, { recursive: true });
 
 async function login(page) {

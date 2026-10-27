@@ -14,7 +14,7 @@ steps:
 expect:
 - note: 推荐区与结果工具栏均无对比篮聚合按钮与数量角标
   assert: |-
-    await page.goto('http://10.50.69.111:30892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(1000); const agg = page.getByRole('button', { name: /对比篮\s*\(?\d+|打开对比篮聚合|页内对比篮/ }); /* 系统 dock 允许存在 */ const toolbarAgg = page.locator('main').getByRole('button', { name: /^对比篮$/ }); /* 页头「对比篮」为系统入口，允许；禁止结果工具栏数量角标聚合 */ const bad = page.locator('main .search-toolbar, main .result-toolbar, main [class*=recommend]').getByText(/对比篮\s*\d+/); if (await bad.count()) throw new Error('结果区出现对比篮聚合角标')
+    await page.goto('https://edu.itic-sci.com/tts/svcz/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(1000); const agg = page.getByRole('button', { name: /对比篮\s*\(?\d+|打开对比篮聚合|页内对比篮/ }); /* 系统 dock 允许存在 */ const toolbarAgg = page.locator('main').getByRole('button', { name: /^对比篮$/ }); /* 页头「对比篮」为系统入口，允许；禁止结果工具栏数量角标聚合 */ const bad = page.locator('main .search-toolbar, main .result-toolbar, main [class*=recommend]').getByText(/对比篮\s*\d+/); if (await bad.count()) throw new Error('结果区出现对比篮聚合角标')
 - note: 行内「加入对比篮」或「已加入」仍可用
   assert: 'const row = page.getByRole(''button'', { name: /加入对比篮|已加入/ }); if (!(await row.count())) { /* 无结果时可能没有；observed
     */ }'

@@ -18,7 +18,7 @@ steps:
 expect:
 - note: 重置后主体区域「深圳」锁定保持
   assert: |-
-    await page.goto('http://10.50.69.111:30892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(600); const candidates = page.locator('main input.arco-input'); let ok = false; for (let i = 0; i < await candidates.count(); i++) { if ((await candidates.nth(i).inputValue()) === '深圳') { ok = true; break } } if (!ok) throw new Error('重置后主体深圳丢失')
+    await page.goto('https://edu.itic-sci.com/tts/svcz/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(600); const candidates = page.locator('main input.arco-input'); let ok = false; for (let i = 0; i < await candidates.count(); i++) { if ((await candidates.nth(i).inputValue()) === '深圳') { ok = true; break } } if (!ok) throw new Error('重置后主体深圳丢失')
 - note: 重置后标杆区域保持诚实空态、对比维度保持只读
   assert: |-
     await expect(page.locator('input[placeholder="Q016 未定，标杆清单为空；勿冒充沪/京/苏州"]')).toBeVisible({ timeout: 8000 }); const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4); for (let i = 0; i < 4; i++) await expect(spins.nth(i)).toBeDisabled()
