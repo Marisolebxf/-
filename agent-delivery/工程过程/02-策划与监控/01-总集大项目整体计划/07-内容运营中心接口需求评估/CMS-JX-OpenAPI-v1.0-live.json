@@ -6230,6 +6230,84 @@
     }
    }
   },
+  "/api/open/cms/v1/kg/{entityType}/relations/insight": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·LLM 策略/分析意见（结果落库缓存；关系内容变更自动失效；force=true 强制重生成）",
+    "operationId": "关系·LLM 策略/分析意见（结果落库缓存；关系内容变更自动失效；force=true 强制重生成）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "id": {
+          "type": "string",
+          "description": "关系行 id（必填）"
+         },
+         "force": {
+          "type": "boolean",
+          "description": "true=忽略缓存强制重新生成"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/open/cms/v1/kg/{entityType}/attrs/list": {
    "post": {
     "tags": [
