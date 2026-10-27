@@ -42043,7 +42043,7 @@ tasks:
     update_time: "2026-10-27T14:02:18+08:00"
   - id: CMS-JX-REL-INSIGHT-L01
     title: "关系链 LLM 策略/分析意见生成接口（企业/政策/服务机构）"
-    status: "pending_test"
+    status: "in_progress"
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P1"
@@ -42054,7 +42054,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      2026-10-27 增量（human:徐滕强『结果要保存』）：①DDL db/9x_gkxlumenx_cms_rel_insight.sql——cms_kg_relation 加五列（insight/insight_model/insight_generated_at/insight_generated_by/relation_fingerprint），真库已 ALTER；②服务端改缓存优先：指纹（md5(from+rel_type+to)）一致且 insight 非空直接返回（cached=true），关系编辑自动失效；force=true 强制重生成；LLM 降级空文本不落缓存（可重试）。部署 52919a7（pipeline 3122 image+deploy 绿），真机验证：首次生成落库 ✅ 二次命中缓存 ✅ 库四列有值 ✅。待：李向阳 prompt 替换后建议 force 重生成一轮
+      2026-10-27 20:52 口径裁定（human:徐滕强）：久新前端清单仅作参考线索，业务口径以我方规格书分析为准（前提=满足需求）。执行判定：真缺=1.2 remark、1.3 definition/unit、1.4 extra四键、2.2 文档债、2.3 文档类型修正；假缺=1.1（已支持id）、下拉（接口有数据）；待产品=2.1阶段映射、3.三项已砍需求（另立单不走本单）
     depends_on: []
     definition_of_done:
       - "algo-py 新增 POST /internal/v1/llm/generate（taskType 路由 prompt，kg-rel-insight 占位模板待李向阳替换，LLM 未配 Key/失败降级空文本 200）"
@@ -42064,7 +42064,7 @@ tasks:
       - "编译绿 + 两端真库/真服务冒烟（mock prompt 出示意文本）"
       - "OpenAPI 契约登记 + handoff（平台基建-PLATFORM/CMS-JX-REL-INSIGHT-L01.md）"
       - "技术债备注：LLM 网关独立专项后续建单统一收敛"
-    update_time: "2026-10-27T18:07:20+08:00"
+    update_time: "2026-10-27T20:53:27+08:00"
   - id: ENT-FILTER-INDUSTRY-LINK-L01
     model_used: "glm-5.3-Flash"
     cost_warn: "green"
@@ -42174,7 +42174,7 @@ tasks:
     model_used: "glm-5.3-Flash"
     evidence: "agent-delivery/agent-handoffs/DATA-INDUSTRY-NODE-DICT-L02.md"
     cost_warn: "green"
-    actual_tokens: 130000
+    actual_tokens: 210000
     actual_cost: 0.5
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T10:37:28.838Z"
@@ -42192,12 +42192,13 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 50000
-    note: "用户确认：按 v5 模型修正桥接与前端树构造（纯代码，不动表/不重灌数据）。方案：后端端点改查 industry_chain.industry_id 返回带 chain_tier/parent_chain_id 的链行集，前端改逐层懒加载任意深度（L1 链→L2+ 子链→叶挂节点）"
+    note: |
+      走查修正轮完工（纯代码，未动表未重灌）：①py 新增 POST /internal/gkx-search/meta/industry-chains（industry_id 过滤返回链行集 chain_tier/parent_chain_id，子链码经 industry_id 归属定位），/industry-nodes 旧契约保留，单测 9 绿，全仓 288 passed/7 存量 failed；②Java IndustryChainsDTOs+透传五处+单测，编译 BUILD SUCCESS+单测 4/4 绿（JDK21+JUnit Console）；③UI 第三级改链树：load-more 先查子链（任意深度逐层展开，reparentByPrefix 修 live 77 行 parent 塌陷）无子链再拉节点，值模型支持任意深度（末段码=prefix 出站/末段名=industry_node in），QueryConditionSummary 完整路径显示，type-check 0 错/build 过/node --test 42 绿。三仓改动停本地待人工验收。
     definition_of_done:
       - "任一前置：DATA-INDUSTRY-NODE-DICT-L01 完成后，企业/产业链高筛的节点级下拉切换为 INB 编码 + prefix 出站（替换过渡态名称 term），UI 摘除 ⚠️ 过渡角标"
       - "或 Q068 甲方书面确认维持名称匹配口径（升 🟢），登记到客户决策清单跟踪表"
       - "handoff 记录最终口径与切换证据，cost 四字段回填"
-    update_time: "2026-10-27T20:16:51+08:00"
+    update_time: "2026-10-27T20:54:09+08:00"
   - id: LUMEN-INTEL-FE-REPLICA-L0
     evidence: "[object Object]"
     title: "综合智能分析三叶 — demo→lumen 复刻总纲（接口需求+任务拆解）"
