@@ -42171,12 +42171,12 @@ tasks:
     update_time: "2026-10-27T18:21:35+08:00"
   - id: DATA-INDUSTRY-NODE-DICT-L02
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-27T06:34:07.758Z"
-    last_seen_at: "2026-10-27T06:34:07.758Z"
-    lock_until: "2026-10-27T10:34:07.758Z"
-    claimed_by: "human:徐滕强"
+    claimed_at: "2026-10-27T10:37:28.838Z"
+    last_seen_at: "2026-10-27T10:37:28.838Z"
+    lock_until: "2026-10-27T14:37:28.838Z"
+    claimed_by: "agent:api-agent"
     title: "产业节点查询编码化收口（名称 term → INB 码 prefix，摘 ⚠️ 过渡角标）"
-    status: "claimed"
+    status: "in_progress"
     agent: "data-agent"
     epic: "DATA-INDUSTRY"
     priority: "P2"
@@ -42186,12 +42186,13 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 50000
-    note: "收口单：DATA-INDUSTRY-NODE-DICT-L01 落地后，把企业/产业链高筛节点级的过渡态（名称 term 匹配 + ⚠️ 待甲方确认角标）切换为正式 INB 编码 prefix 查询；或 Q068 口径经甲方确认维持名称匹配则摘单。依赖 L01。"
+    note: |
+      用户裁定：不新增 industry_node_code 字段，节点查询继续复用既有 industry_node（industry_node_names_flat）单字段语义，避免查询语句语义扩张。方案收敛：后端只做节点字典端点（按链过滤）+聚合白名单补 industry_node_names_flat；前端候选切字典端点、值序列化与出站维持 industry_node 名称 in 不变（不含 OR 组/码通道）。已向执行会话发更正指令
     definition_of_done:
       - "任一前置：DATA-INDUSTRY-NODE-DICT-L01 完成后，企业/产业链高筛的节点级下拉切换为 INB 编码 + prefix 出站（替换过渡态名称 term），UI 摘除 ⚠️ 过渡角标"
       - "或 Q068 甲方书面确认维持名称匹配口径（升 🟢），登记到客户决策清单跟踪表"
       - "handoff 记录最终口径与切换证据，cost 四字段回填"
-    update_time: "2026-10-27T14:34:07+08:00"
+    update_time: "2026-10-27T18:39:46+08:00"
   - id: LUMEN-INTEL-FE-REPLICA-L0
     evidence: "[object Object]"
     title: "综合智能分析三叶 — demo→lumen 复刻总纲（接口需求+任务拆解）"
@@ -42605,13 +42606,18 @@ tasks:
       - "自检 intelL1c.selfcheck.mjs（评审零泄漏断言 + 三件挂载断言）"
     update_time: "2026-10-27T17:37:17+08:00"
   - id: DOC-ENT-PAIN-ANALYSIS-CHAIN-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/DOC-ENT-PAIN-ANALYSIS-CHAIN-L01.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 0.1
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T10:27:17.129Z"
     last_seen_at: "2026-10-27T10:27:17.129Z"
     lock_until: "2026-10-27T14:27:17.129Z"
     claimed_by: "agent:architect-agent"
     title: "企业痛难点 — 完整分析链路设计 + LLM 落点（05.3.5，对标 05.3.1 / 05.3.2 P7）"
-    status: "claimed"
+    status: "integration"
     agent: "architect-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P1"
@@ -42621,7 +42627,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 100000
-    note: "human:徐滕强 2026-10-27：评估族设计+BIZCOMP落点已 pending_test。按 05.3.2 下一可上 LLM=痛难点 P7。监管人建议 human:徐滕强。仅企业轨详细设计，不串 SVC/CHAIN。"
+    note: "05.3.5+总册指针+handoff 完稿，会签中。要点：诚实句整句必留（子串校验）/逐格退校验/禁政策工具 verdict/pain.narrate.v1 分文件；实现另开 ENT-PAIN-01。"
     collaborators:
       - "algorithm-agent"
     design_refs:
@@ -42635,4 +42641,4 @@ tasks:
       - "LLM：目标态 narrate_pain（或等价）；硬约束写清——标题禁润色、诚实句必留、成因禁因果外推、solution 禁具体政策工具；三态；失败退规则稿任务仍 success"
       - "handoff 根路径 DOC-ENT-PAIN-ANALYSIS-CHAIN-L01.md（架构合规≥7 + Cost）；ponytail: off；不写 repos 实现（实现另开 NARRATE feature）"
       - "不含：招引/培育（P3）、供应链（规则锁死）、评估三模式（已交付）、改口径"
-    update_time: "2026-10-27T18:27:17+08:00"
+    update_time: "2026-10-27T18:40:10+08:00"
