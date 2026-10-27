@@ -42642,3 +42642,69 @@ tasks:
       - "handoff 根路径 DOC-ENT-PAIN-ANALYSIS-CHAIN-L01.md（架构合规≥7 + Cost）；ponytail: off；不写 repos 实现（实现另开 NARRATE feature）"
       - "不含：招引/培育（P3）、供应链（规则锁死）、评估三模式（已交付）、改口径"
     update_time: "2026-10-27T18:40:10+08:00"
+  - id: POLICY-SSB-HARVEST-L01
+    title: "固态电池政策清单：国内外合计不少于 1000 条"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "data-algo-subcoord"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 200000
+    note: "WBS-06-03K。监管人 human:淮政玮。固态电池国内外政策先出清单，合计≥1000。灌库归 POLICY-SSB-DEMO-INGEST-L01。只写清单，不落库。"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/data/POLICY/ssb-web-harvest/"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
+      - "agent-delivery/data/data-design/storage/POLICY/sources/ods-ddl.md"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/ods-to-dwd-mapping.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/20-灌数闸门.md"
+    definition_of_done:
+      - "清单落在 agent-delivery/data/POLICY/ssb-web-harvest/，国内与国外分平面，合计不少于 1000 条，并分别计数"
+      - "每条有标题、发文机关、发布日期、可打开的原文链接；文号对不上则留空；标题、关键词或摘要至少一处含「固态电池」"
+      - "计入 1000 的是政策文本（法规、规划、意见、措施、通知、行动方案或同等国外政策）；新闻稿和研报不计入"
+      - "id 稳定且长度不超过 100，国内与国外不使用同一个 id"
+      - "本叶不写 demo 库、不写供应方库 gkx、不写正式 gkxlumenx_*；不打开 WBS-06-03G；不代替 WBS-06-03 / 06-17 / 06-18"
+    update_time: "2026-10-27T19:10:06+08:00"
+  - id: POLICY-SSB-DEMO-INGEST-L01
+    title: "固态电池政策追加灌入政策 Demo 库，不少于 1000 条"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "data-algo-subcoord"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "WBS-06-03L。监管人 human:淮政玮。依赖 POLICY-SSB-HARVEST-L01 的清单。追加灌入政策 Demo 库，合计≥1000。不打开灌数闸门，不写产线库。"
+    depends_on:
+      - "POLICY-SSB-HARVEST-L01"
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "repos/demo-algo-ent-analysis/polan/mockgen/incr.py"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
+      - "agent-delivery/data/POLICY/ssb-web-harvest/"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/ods-to-dwd-mapping.md"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/pipeline-demo-mock.md"
+    definition_of_done:
+      - "只追加写入 demo_gkxlumenx_ods.dwd_policy_base 与 dwd_global_policy_base，再洗入 demo_gkxlumenx_dwd.policy_base_info；source_plane 分别为 domestic 与 global"
+      - "policy_id 用清单 id 原文，不加 gbl: 前缀；source 标 web-solid-battery"
+      - "主表中 source=web-solid-battery 且未删除的行不少于 1000，国内与国外都有"
+      - "不清空既有政策；不跑 mockgen replace，不跑 run_all_policy 全量重建"
+      - "补两张 ODS 的差集映射。现有 ingest_pending 只读国内表，不能当成国外入口"
+      - "is_live(policy) 为真则拒绝。不写供应方库 gkx，不写正式 gkxlumenx_*。不打开 WBS-06-03G，不代替 WBS-06-03 / 06-17 / 06-18"
+    update_time: "2026-10-27T19:10:14+08:00"
