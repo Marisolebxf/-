@@ -42043,7 +42043,7 @@ tasks:
     update_time: "2026-10-27T14:02:18+08:00"
   - id: CMS-JX-REL-INSIGHT-L01
     title: "关系链 LLM 策略/分析意见生成接口（企业/政策/服务机构）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P1"
@@ -42054,7 +42054,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      2026-10-27 需求变更会议第3条：企业/政策/服务机构关系链，大模型生成策略/分析意见（human:田梦博 前端按实体类型调接口，@李向阳 提供 prompt）。架构（human:徐滕强 确认）：复用 lumen-algo-py 现成 OpenAICompatibleClient（智谱，GKX_LLM_* env 链路已通），cms 侧 RestTemplate 薄转发（照抄 innov TechNews 模式）；prompt 占位待李向阳替换；LLM 网关独立专项后续建单统一收敛（本次不做）
+      2026-10-27 增量（human:徐滕强『结果要保存』）：①DDL db/9x_gkxlumenx_cms_rel_insight.sql——cms_kg_relation 加五列（insight/insight_model/insight_generated_at/insight_generated_by/relation_fingerprint），真库已 ALTER；②服务端改缓存优先：指纹（md5(from+rel_type+to)）一致且 insight 非空直接返回（cached=true），关系编辑自动失效；force=true 强制重生成；LLM 降级空文本不落缓存（可重试）。部署 52919a7（pipeline 3122 image+deploy 绿），真机验证：首次生成落库 ✅ 二次命中缓存 ✅ 库四列有值 ✅。待：李向阳 prompt 替换后建议 force 重生成一轮
     depends_on: []
     definition_of_done:
       - "algo-py 新增 POST /internal/v1/llm/generate（taskType 路由 prompt，kg-rel-insight 占位模板待李向阳替换，LLM 未配 Key/失败降级空文本 200）"
@@ -42064,7 +42064,7 @@ tasks:
       - "编译绿 + 两端真库/真服务冒烟（mock prompt 出示意文本）"
       - "OpenAPI 契约登记 + handoff（平台基建-PLATFORM/CMS-JX-REL-INSIGHT-L01.md）"
       - "技术债备注：LLM 网关独立专项后续建单统一收敛"
-    update_time: "2026-10-27T14:14:27+08:00"
+    update_time: "2026-10-27T18:07:20+08:00"
   - id: ENT-FILTER-INDUSTRY-LINK-L01
     model_used: "glm-5.3-Flash"
     cost_warn: "green"
@@ -42087,7 +42087,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 300000
     note: |
-      代码审查完成（agent 86089be7，实跑验证 15/15 绿）：1 Critical + 7 Important + 3 Minor。C1 多值产业叶子拆成多条 in AND 叶子→多选不同层级出站恒空集（功能性错误，测试把错误形状固化，需改 expandIndustryLinkLeaf 单条聚合+同步修测试）；I1 节点聚合失败永久缓存空数组、I2 smart 模式白白触发 resolve-scope、I3 QueryConditionSummary 三页共用无条件拉目录、I4 节点名清洗未排分隔符与 CL-/INB 形态、I5 条件行双 ⚠️ 角标、I6 .pnpm-store 未 gitignore、I7 useSvcAnalysisJob 搭车改动需拆出。修复中
+      用户走查反馈：dev 环境仍是旧代码（改动未 push 属预期），但暴露真缺口——「所属产业」多选选项源走 meta filters industry_chains，实测线上该键为 null，推上去会空下拉。已修：useSearchBootstrap 加 Q068 兜底（industry_chains 为空时用 Q068 目录 l0 去重产业名灌入，失败保持空不硬编码）。三绿复验：type-check 0 错、build 25.95s、node --test 16/16
     collaborators:
       - "api-agent"
     touched_files:
@@ -42105,7 +42105,7 @@ tasks:
       - "节点级下拉选项来自后端码表接口或 ES 聚合镜像，禁止前端硬编码；过渡态名称匹配 UI 带 ⚠️ 待甲方确认角标"
       - "pnpm type-check 与 build 绿（node_modules 与 lockfile 同步为前提），node --test 自检全绿"
       - "handoff 含 Design.md §14 检查清单对照，cost 四字段回填"
-    update_time: "2026-10-27T17:03:56+08:00"
+    update_time: "2026-10-27T17:58:25+08:00"
   - id: CHAIN-FILTER-INDUSTRY-LINK-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:33:23.126Z"
@@ -42480,7 +42480,7 @@ tasks:
     lock_until: "2026-10-27T11:55:48.192Z"
     claimed_by: "agent:architect-agent"
     title: "服务链 P2 族 — 技术力评估+新增趋势完整链路设计与 LLM 落点（合并包，对标 05.7.1）"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "architect-agent"
     epic: "E7-产业服务链分析"
     priority: "P1"
@@ -42490,7 +42490,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "明确开工转 in_progress：05.7.3/05.7.4 设计稿 + 05.7 总册指针 + handoff 已落盘（未提交 git）。"
+    note: "监管人人工验收通过（2026-10-27 18:19「现在可以了」，含行为规格体例改版 05.7.1/05.7.3/05.7.4 + handoff + 评审修正）。definition 类型：过会签，进 ready_to_sign 待签收。"
     collaborators:
       - "algorithm-agent"
     design_refs:
@@ -42504,7 +42504,7 @@ tasks:
       - "LLM：对齐 05.7.2 T2/T3（P2）；复用 T1 narrate 边界写清 as-built 复用与缺口；禁止因代码已有 tech_power/trend 分支跳过设计；T1 已验不重复造轮"
       - "handoff 根路径 DOC-SVC-TECH-TREND-FAMILY-CHAIN-L01.md（架构合规≥7 + Cost）；ponytail: off；不写 repos 实现（实现另开 feature）"
       - "T4–T7（短板/深圳/引入/培育）本单不覆盖，仍绑 Q-SVCCHAIN-03/04/05；STAGE（G1/G2/G4）另单不并入"
-    update_time: "2026-10-27T16:09:15+08:00"
+    update_time: "2026-10-27T18:20:27+08:00"
   - id: LUMEN-ENT-EVAL-NARRATE-BIZCOMP-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T08:12:15.684Z"
