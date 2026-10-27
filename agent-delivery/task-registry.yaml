@@ -42170,6 +42170,11 @@ tasks:
       - "handoff 附迁移前后行数对照与端点实测证据，cost 四字段回填"
     update_time: "2026-10-27T18:21:35+08:00"
   - id: DATA-INDUSTRY-NODE-DICT-L02
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/DATA-INDUSTRY-NODE-DICT-L02.md"
+    cost_warn: "green"
+    actual_tokens: 130000
+    actual_cost: 0.5
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T10:37:28.838Z"
     last_seen_at: "2026-10-27T10:37:28.838Z"
@@ -42187,12 +42192,12 @@ tasks:
     difficulty: "S"
     estimated_tokens: 50000
     note: |
-      用户裁定：不新增 industry_node_code 字段，节点查询继续复用既有 industry_node（industry_node_names_flat）单字段语义，避免查询语句语义扩张。方案收敛：后端只做节点字典端点（按链过滤）+聚合白名单补 industry_node_names_flat；前端候选切字典端点、值序列化与出站维持 industry_node 名称 in 不变（不含 OR 组/码通道）。已向执行会话发更正指令
+      收窄版完工：py 新增 /internal/gkx-search/meta/industry-nodes（chain_code 过滤+前缀桥接+hint）与聚合白名单补 industry_node_names_flat，单测 5 绿，真库（demo/live 双库）端到端实测通过；Java EnterpriseMetaDict 五处透传+DTO+单测 3 绿（JDK21 编译 BUILD SUCCESS）；UI 候选切字典端点（按链 Map 缓存+失败回退聚合镜像），type-check 0 错 / build 成功 / node --test 36 绿。7 个 py 失败与 2 个 Java 测试编译断链均为存量（干净区复跑同样失败）。三仓改动停本地待人工验收，未 commit/push。
     definition_of_done:
       - "任一前置：DATA-INDUSTRY-NODE-DICT-L01 完成后，企业/产业链高筛的节点级下拉切换为 INB 编码 + prefix 出站（替换过渡态名称 term），UI 摘除 ⚠️ 过渡角标"
       - "或 Q068 甲方书面确认维持名称匹配口径（升 🟢），登记到客户决策清单跟踪表"
       - "handoff 记录最终口径与切换证据，cost 四字段回填"
-    update_time: "2026-10-27T18:39:46+08:00"
+    update_time: "2026-10-27T19:18:03+08:00"
   - id: LUMEN-INTEL-FE-REPLICA-L0
     evidence: "[object Object]"
     title: "综合智能分析三叶 — demo→lumen 复刻总纲（接口需求+任务拆解）"
