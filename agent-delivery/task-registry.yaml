@@ -40860,7 +40860,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 200000
     note: |
-      2026-10-26 20:19 续推：用户确认读 demo 库现成数据。方案修正——不灌静态表，改在线聚合（实测 enterprise_base 省级分布 419ms/趋势 289ms，性能达标）。开工顺序：①Python 在线聚合+chain_code 入参 ②Java 门面透传 ③star_profile 聚合接口
+      2026-10-27 14:20 DoD-3 完成补录：① 灌数方案落地（用户裁定替代在线聚合）7 张汇总表+shenzhen_enterprise_summary；② #69 计数字段映射修复 cd0880e；③ E-32 多链趋势（Python 746ca12+5436eed、Java 9272fa6）含响应结构联调修正；④ DoD-3 卡片技术指标 patent_count/rd_ratio 由 #72/#76 返回（topic-py a72c618、svc ee4028e），不再依赖 #1；全部已部署 dev 并线上回归通过。待办：handoff 落盘后推 integration，前端联调 SYSINT-04-04-L01 配合
     depends_on:
       - "ENT-ARCH-API-CONTRACT"
     collaborators:
@@ -40876,7 +40876,7 @@ tasks:
       - "明星 patent_count/rd_ratio 由门户相关接口返回，不依赖 #1 检索"
       - "与 SYSINT-04-04-L01 联调：USE_MOCK=false 核心区块非空或明确空态契约"
       - "handoff + 架构合规自检 + cost 四字段"
-    update_time: "2026-10-26T20:21:10+08:00"
+    update_time: "2026-10-27T14:47:44+08:00"
 
   - id: POLICY-DDL-ALIGN-L03
     model_used: "grok-4.7"
@@ -42046,11 +42046,12 @@ tasks:
       - "技术债备注：LLM 网关独立专项后续建单统一收敛"
     update_time: "2026-10-27T14:14:27+08:00"
   - id: ENT-FILTER-INDUSTRY-LINK-L01
+    evidence: "agent-delivery/agent-handoffs/ENT-FILTER-INDUSTRY-LINK-L01.md"
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-27T06:32:21.953Z"
-    last_seen_at: "2026-10-27T06:32:21.953Z"
-    lock_until: "2026-10-27T10:32:21.953Z"
-    claimed_by: "human:徐滕强"
+    claimed_at: "2026-10-27T06:46:16.908Z"
+    last_seen_at: "2026-10-27T06:46:16.908Z"
+    lock_until: "2026-10-27T10:46:16.908Z"
+    claimed_by: "agent:frontend-agent"
     title: "企业高筛接入产业集群→产业→产业节点三级联动（Q068 码表收口）"
     status: "in_progress"
     agent: "frontend-agent"
@@ -42062,7 +42063,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 300000
-    note: "并行推进：两级（集群→产业）码表现成可先开发上线，节点级以名称过渡态兜底，不等数据单"
+    note: "frontend-agent subagent 启动中（后台）"
     collaborators:
       - "api-agent"
     touched_files:
@@ -42080,7 +42081,7 @@ tasks:
       - "节点级下拉选项来自后端码表接口或 ES 聚合镜像，禁止前端硬编码；过渡态名称匹配 UI 带 ⚠️ 待甲方确认角标"
       - "pnpm type-check 与 build 绿（node_modules 与 lockfile 同步为前提），node --test 自检全绿"
       - "handoff 含 Design.md §14 检查清单对照，cost 四字段回填"
-    update_time: "2026-10-27T14:35:21+08:00"
+    update_time: "2026-10-27T14:48:28+08:00"
   - id: CHAIN-FILTER-INDUSTRY-LINK-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:33:23.126Z"
@@ -42115,11 +42116,12 @@ tasks:
       - "type-check/build 与 algo-py pytest 相关套绿；handoff 含口径会签引用与 cost 四字段"
     update_time: "2026-10-27T14:33:23+08:00"
   - id: DATA-INDUSTRY-NODE-DICT-L01
+    evidence: "agent-delivery/agent-handoffs/DATA-INDUSTRY-NODE-DICT-L01.md"
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-27T06:33:42.851Z"
-    last_seen_at: "2026-10-27T06:33:42.851Z"
-    lock_until: "2026-10-27T10:33:42.851Z"
-    claimed_by: "human:徐滕强"
+    claimed_at: "2026-10-27T06:46:17.018Z"
+    last_seen_at: "2026-10-27T06:46:17.018Z"
+    lock_until: "2026-10-27T10:46:17.018Z"
+    claimed_by: "agent:data-agent"
     title: "产业节点字典下沉与集群目录迁移（ODS→DWD + dim 正式化 + ES 节点码清洗）"
     status: "in_progress"
     agent: "data-agent"
@@ -42131,7 +42133,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 250000
-    note: "先行推进：节点字典是三级联动的数据闸门（ENT-L01 节点级下拉、政策 options 空返回都等它）；dim 正式化解 D12 隐患可并行先行"
+    note: "data-agent subagent 已启动（后台运行）"
     touched_files:
       - "etl/"
     definition_of_done:
@@ -42140,7 +42142,7 @@ tasks:
       - "industry_node_codes_flat 脏数据（node-bio-general 5267 条）清洗或重挂真实节点码，企业 ES 节点名称与码可对上"
       - "节点 INB 编码体系与 Q068 产业体系覆盖错位（INB17xx 子码 0 行）形成差异清单登记到 DS-XX §6.1 / 客户决策清单跟踪表，供 Q068 拍板"
       - "handoff 附迁移前后行数对照与端点实测证据，cost 四字段回填"
-    update_time: "2026-10-27T14:34:53+08:00"
+    update_time: "2026-10-27T14:48:01+08:00"
   - id: DATA-INDUSTRY-NODE-DICT-L02
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:34:07.758Z"
