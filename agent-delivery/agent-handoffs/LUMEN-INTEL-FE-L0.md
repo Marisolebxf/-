@@ -7,7 +7,7 @@
 | claimed_by | `agent:frontend-agent` |
 | supervised_by | `human:孔东` |
 | claim_type | `pull` |
-| repo / branch | `repos/lumen-ui-topic` · `dev`（改动停本地，走查通过后再推） |
+| repo / branch | `repos/lumen-ui-topic` · `dev`（commit `a53cf83`，走查通过后已推 origin/dev） |
 | ponytail | `full` |
 
 ## 范围与实现（DoD 对照）
@@ -34,7 +34,7 @@
 - `/禁止空跑/` → `/不可空跑提交/`
 - `/require-graph-vid/` → `/禁止把 CL-\* 当产业/`
 
-## 产物清单（lumen-ui-topic，本地未提交）
+## 产物清单（lumen-ui-topic，commit `a53cf83` · origin/dev）
 
 - `src/perms/matrix.ts`（+4 行）
 - `src/router/menu.ts`（+82 行：类型 1 行 + 分组 81 行）
@@ -55,7 +55,7 @@
 | D8 | Arco 栈 | ✅ IconBulb 走 `@arco-design/web-vue/es/icon`，未加依赖 |
 | D12 | demo 隔离 | ✅ 纯路由/权限声明，无 demo 引用（selfcheck `doesNotMatch demo-svc-/demo-ui-` 沿用） |
 | D9 | 指标血缘 | N/A 本单无统计数字（L1 起接 readinessSeed） |
-| §4.2 | push 纪律 | ✅ 停本地待走查，未自动 commit/push |
+| §4.2 | push 纪律 | ✅ 走查通过后人工授权推 origin/dev（a53cf83），CI 触发 K8s dev rollout |
 
 ## 开放项
 
