@@ -43,13 +43,25 @@
 | --- | --- |
 | 1 算法只在 Python | ✅ 两叶 narrate/heat_judgment 全在 lumen-algo-py |
 | 2 调用链 | ✅ 前端→Java→topic-py `/internal/*`→algo `/internal/*`，无越层；路由正名沿 T1 模式 |
+| 3 NebulaGraph | n.a.（两叶均无图谱消费） |
 | 4 可观测 | ✅ 复用 logger/trace/envelope gap 下发 |
+| 6 demo2 只读 merge | n.a.（未涉 demo2 仓） |
 | 7 共享聚合核心 | ✅ 族共享 narrate_common（抽公共不复制）；Java 不碰 Key |
 | 8 数据策略 | ✅ ADS 只读；GAP-SVC-TREND-FIELD 代理口径诚实声明；空态/护栏句不造数 |
-| 10 D9 | ✅ TECH_SCORE draft / MARKET_HEAT missing 不翻转；ⓘ 现状保留；Ⓘ+🧪 契约随 narration 设计 |
+| 9 D8 前端规范 | n.a.（本单纯设计，未涉 UI 视觉 token；实现单 FE 分支沿用 T1 已验模式） |
+| 10 D9 | ✅ 指标态按 MCP 2026-10-27 实查书写（TECH_SCORE/MARKET_HEAT 均 D1 aligned + D2 待核验/D3 partial/D4 mock 🧪，无红问号分支）；评审 I1 修正后合规 |
+| 11 D10 交互规范 | n.a.（设计文引用族共享 FE 模式，未新定义交互；实现单 handoff 须带 §19 走查） |
 | 12 demo/lumen 隔离 | ✅ 全部引用 lumen 仓 as-built |
 | 13 D14 RustFS | n.a.（内联通道，RustFS 归 STAGE/G4） |
 | 润色契约 | ✅ 三态/失败任务仍 success/prompt 版本化/Common 收敛 |
+
+## 5.1 代码评审记录（requesting-code-review，2026-10-27 16:11）
+
+- subagent 评审（commit 784f49f6）：**2 Important + 5 Minor，需修复后过**。
+- I1 指标 D1 状态过时（文档 draft/missing vs registry 现值 aligned）→ **核实成立，已修**：两稿 + handoff 共 9 处改为「D1 aligned / D2 partial·待核验 / D3 partial / D4 mock 🧪」，删除红问号分支（防 D9 反向违规）；连带 05.7.1 §7.3 DEPTH 状态同批刷新另行处理。
+- I2 五维维度名错误（「技术合作/技术转化」→ 真值「成功案例/标准制定」）→ **核实成立（前端 SVC_CAPABILITY_DIMS 三方一致），已修**；并按 registry「三维合成」事实加「缺维禁提」prompt 约束。
+- M1–M5（缺口编号括注/实证任务号补齐/合规表补 n.a./三叶对照交叉引用/window_hint 归属）→ 全部已修。
+- 修后评估：Ready to sign（可进会签）。
 
 ## 6. 后续
 
