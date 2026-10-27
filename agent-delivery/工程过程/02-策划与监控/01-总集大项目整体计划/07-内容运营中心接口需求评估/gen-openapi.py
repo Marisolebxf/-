@@ -263,6 +263,8 @@ kg_op("relations/delete", "图谱·关系链", "关系·删除（软删+审计�
 kg_op("relations/break", "图谱·关系链", "关系·标记断裂（不物理删，badge 灰化）",
       {"type": "object", "required": ["id", "reason"], "properties": {"id": {}, "reason": {}}})
 kg_op("relations/history", "图谱·关系链", "关系·演变历史", schemas["DetailBody"])
+kg_op("relations/insight", "图谱·关系链", "关系·LLM 策略/分析意见（结果落库缓存；关系内容变更自动失效；force=true 强制重生成）",
+      {"type": "object", "properties": {"id": {"type": "string", "description": "关系行 id（必填）"}, "force": {"type": "boolean", "description": "true=忽略缓存强制重新生成"}}, "required": ["id"]})
 # 属性
 kg_op("attrs/list", "图谱·实体属性", "属性·列表（扁平+base/dyn 双分组）",
       {"type": "object", "properties": {"group": {"enum": ["base", "dyn"]}, "page": {"type": "integer"}, "size": {"type": "integer"}}})

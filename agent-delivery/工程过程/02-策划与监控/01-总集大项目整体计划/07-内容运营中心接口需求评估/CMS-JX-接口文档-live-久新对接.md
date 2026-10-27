@@ -2424,6 +2424,47 @@ _（本接口无额外字段说明，见通用约定）_
 
 ---
 
+### 3.18.1 关系·LLM 策略/分析意见（2026-10-27 新增）
+
+```
+POST /api/open/cms/v1/kg/{entityType}/relations/insight
+{entityType} ∈ enterprise | policy | service
+```
+
+对一条已存在的关系链，调用大模型生成「策略/分析意见」文本。
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| id | string | 是 | 关系行 id（从 `/relations/list` 返回的 `id` 取） |
+| force | boolean | 否 | `true`=忽略缓存强制重新生成；缺省 false |
+
+**响应 data**
+
+| 字段 | 说明 |
+|---|---|
+| id | 关系行 id |
+| insight | 生成的策略/分析意见文本（中文） |
+| model | 生成模型（如 glm-5.3-flash） |
+| cached | `true`=命中缓存直接返回；`false`=本次新生成 |
+| generatedAt | 生成时间（缓存命中时为上次生成时间） |
+
+**缓存规则**：结果落库保存，同一关系再次调用直接秒回缓存；关系内容被编辑后缓存自动失效、下次调用重新生成；`force: true` 跳过缓存强制重生成。LLM 失败/超时（约 60s）→ 返回 `insight: ""` 且 `degraded: true`（HTTP 仍 200），稍后重试即可。
+
+**前端注意**：不要进页面就自动调（会重复消耗配额）；用户点「生成/重新生成」按钮才调用，期间提示"AI 生成中（约 10-30 秒）"。
+
+curl 示例：
+
+```bash
+curl -X POST 'http://10.50.69.111:30895/cms/api/open/cms/v1/kg/policy/relations/insight' \
+  -H 'Content-Type: application/json; charset=utf-8' \
+  -H 'X-CMS-Api-Key: <Key>' \
+  -d '{"id":"1"}'
+```
+
+---
+
 ## 4. 数据模型（摘录）
 
 以下为 OpenAPI `components.schemas` 中与对接相关的主要模型；字段以接口实际返回为准。
