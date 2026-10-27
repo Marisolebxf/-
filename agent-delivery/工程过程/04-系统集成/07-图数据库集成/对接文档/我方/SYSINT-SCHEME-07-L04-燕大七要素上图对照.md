@@ -90,7 +90,7 @@
 | `Organization` | 机构（企业主体，默认桶） | `domestic_organization` | `dwd_org_base_info`（企业主表）、`dwd_org_org_product_info`、`dwd_stock_base`、`dwd_forg_base_info`、`dwd_forg_product_info` | — |
 | `Organization`（港澳台） | 机构 | `hongkong_company` / `taiwan_company` / `macao_company` | `dwd_special_hongkong/taiwan/aomen_company` | — |
 | `Organization`（海外） | 机构 | `foreign_organization` | `dwd_forg_base_info`、`dwd_forg_product_info` | — |
-| `Product` | 产品 | — | `org_base_info.main_products`、`org_org_product_info.main_prod`、`forg_product_info.main_products` | gkx 样例 **47,956** |
+| `Product` | 产品 | — | 机构域 10 表：`org_base_info.main_products`、`org_org_product_info.main_prod`、`dwd_org_heis_info`（高校）、`dwd_org_stock_base`（上市）、港澳台三表、`dwd_research_institute_base_info`（科研院所）、`dwd_forg_base_info` / `dwd_forg_product_info`（海外） | gkx 样例 **47,956** |
 | `Event`（工商事件子集） | 事件 | — | 15 张工商表（annual_financial、changerecord、financing、recruit、stock_finance、company_abnormal、company_punish、company_illegal、risk_tax_punish、opt_judicial_case、risk_shixin、risk_zhixing、bankruptcy_public_cases、bid_base_out、bid_target_item_out） | 源 ≈16M 行，图内**封顶 124,999** |
 | `News`（企业资讯子集） | 新闻资讯 | — | `dwd_org_important_news_info` | 与产业资讯共享 TAG |
 
@@ -331,6 +331,7 @@ Organization 多表同构列补空（工商同构列覆盖所有子集表），P
 | Project | Person | LEADS / HAS_PARTICIPANT | 项目↔人才 |
 | Project | Organization | FUNDED_BY | 项目↔机构 |
 | Project | Paper/Patent/Report | HAS_OUTPUT | 项目↔技术成果 |
+| Project | 成果实体 | OUTPUT_OF（**未绑脚本**） | 项目↔技术成果（跨域 dwd_rel_project_* 只写报告分类，不建边） |
 | IndustryChain | IndustryNode | HAS_NODE | 产业链↔产业节点 |
 | IndustryNode | IndustryNode | CHILD_OF | 产业节点↔产业节点 |
 | News | IndustryChain | COVERS_CHAIN | 产业资讯↔产业链 |
@@ -356,6 +357,8 @@ Organization 多表同构列补空（工商同构列覆盖所有子集表），P
 
 ### 各要素链路复杂度对比
 
+> **口径说明**：下表「实体链数」按要素归属统计（一个 TAG 被多要素引用时各计一次），因此分要素合计 > 快照口径的「实体链 17」（按 TAG 去重）。
+
 | 要素 | 实体链数 | 关系链数 | 复杂度 | 特殊处理 |
 |---|---:|---:|---|---|
 | 产业 | 2（IndustryChain + IndustryNode） | 5 | 低 | DOWNSTREAM_OF 恒空 0 边 |
@@ -365,6 +368,7 @@ Organization 多表同构列补空（工商同构列覆盖所有子集表），P
 | 科研机构 | 3（Organization 两子集 + ScholarOrganization） | 5（共享人才/技术域边） | 中 | 靠 org_kind 枚举过滤，非独立 TAG |
 | 政策 | — | — | — | **蓝图已备，无任何代码** |
 | 服务机构 | —（Organization 默认桶） | — | — | **无独立口径** |
+| **合计（按 TAG 去重）** | **17** | **33** | — | — |
 
 ---
 
