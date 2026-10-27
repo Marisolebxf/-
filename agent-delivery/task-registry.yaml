@@ -42995,8 +42995,13 @@ tasks:
       - "体例对齐 05.2.1 含 Mermaid"
     update_time: "2026-10-28T02:40:24+08:00"
   - id: DOC-CHAIN-PANORAMA-LLM-PROBE-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T19:14:13.124Z"
+    last_seen_at: "2026-10-27T19:14:13.124Z"
+    lock_until: "2026-10-28T19:14:13.124Z"
+    claimed_by: "agent:coordinator-agent"
     title: "产业全景（panorama）LLM 触点摸排探针"
-    status: "backlog"
+    status: "claimed"
     agent: "architect-agent"
     epic: "DOC-CHAIN-PANORAMA"
     priority: "P2"
@@ -43011,7 +43016,7 @@ tasks:
       - "摸排 chain 全景（panorama）现网产出与 LLM 触点：结论二选一——(A) 有触点：列出落点表并建议建 CHAIN-PANORAMA-NARRATE 单；(B) 无 LLM 叶：建 chore 单关闭「无 LLM 叶」"
       - "摸排结论+证据（代码锚点）写入 handoff 并落盘 push"
       - "registry evidence 回填"
-    update_time: "2026-10-27T21:06:42+08:00"
+    update_time: "2026-10-28T03:14:13+08:00"
   - id: CMS-JX-RELTYPE-CRUD-L01
     title: "关系类型字典增删改查（四类实体独立，对齐 stages 模式）"
     status: "pending_test"
@@ -43351,3 +43356,30 @@ tasks:
       - "地域/关键词/年份三类筛选真实生效且可对账（不止 happy path）"
       - "只有 enterprise 有年度序列时必须给 notes 说明，严禁伪造第二条曲线"
     update_time: "2026-10-28T00:56:32+08:00"
+  - id: LUMEN-CHAIN-SZ-NARRATE-L01
+    evidence: "agent-delivery/agent-handoffs/LUMEN-CHAIN-SZ-NARRATE-L01.md"
+    title: "深圳产业对比与发展 — narrative/path prompt 文件化 + 三态语义边界"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "DOC-CHAIN-SZ"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: |
+      实现由子会话完成（停本地待人工验收）：SZ-01 两 prompt 文件化（分文件理由成立）+ SZ-02 语义边界双锁（路径<2 硬失败保持；无 Key skipped/失败 degraded 不新增 failed）+ call_json_llm temperature 0.1 一处覆盖两叶；新增 8 例+既有 4 例补 Key 前置，全仓 630 passed/6 skipped；handoff 含 cost 四字段+FE 五缺口清单。coordinator 补立单收口。
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.4-深圳产业对比与发展链路.md"
+      - "lumen-algo-py chain/shenzhen_comparison.py、shenzhen_development.py"
+    definition_of_done:
+      - "SZ-01 prompt 文件化：shenzhen_comparison.narrative.v1.txt / shenzhen_development.path.v1.txt 落 prompts/chain/（分文件理由成立），NARRATIVE_SYSTEM/PATH_SYSTEM 去内联经 loader，pack 升 v2 + job_runtime 深圳两行同步"
+      - "SZ-02 语义边界分别锁死：路径数<2 硬失败保持 failed；无 Key skipped(no_key)/失败 degraded(llm_unavailable)/成功 ok 写回 honesty.llm；不新增 failed 路径"
+      - "temperature 0.1 写死（call_json_llm 共享层一处覆盖两叶）；SILENT_KEYS/数字防护/FORBIDDEN_KPI_BLOCKS 不动"
+      - "测试注入桩零外呼；全仓回归绿；handoff+cost 四字段+ponytail: full+FE 五缺口清单"
+      - "registry evidence 回填+状态 integration；完工停本地待人工验收"
+    update_time: "2026-10-28T03:13:59+08:00"
