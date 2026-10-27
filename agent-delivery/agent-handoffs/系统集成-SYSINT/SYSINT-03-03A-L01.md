@@ -2,8 +2,9 @@
 
 > **任务**：`SYSINT-03-03A-L01`（feature / P1 / M / 5分）· 执行 `agent:frontend-agent` · 监管/签收 `human:孔东`
 > **需规真源**：bid-reference L7955–7995（产业服务内容管理）；**契约**：`agent-delivery/agent-handoffs/平台基建-PLATFORM/产物/PORTAL-CMS-专题服务.md`（草案，字段禁改）
-> **Java 侧**：`SYSINT-03-03A-JAVA-L01` 已交付写侧 7 端点 + shenzhen 页 cms 合并；前端版接口文档 `产物/SYSINT-03-03A-接口文档-前端版.md`（2026-10-26）
-> **状态**：初版（2be3717，只编 `svc_business_domain.body_html` 本地 mock）已推 origin/dev；**本 handoff 覆盖的三轮增量按人工验收闸门停本地工作区未提交**（AGENTS.md ⚠️ 2026-10-20 裁定）
+> **Java 侧 API 叶**：`SYSINT-03-03A-JAVA-L01`（agent:api-agent，监管 human:徐滕强；2026-10-24 交付，CI pipeline 2847 绿）——写侧 7 端点 `/cms-ops/v1/topic-service/content/svc-business-domain`（POST 新建/PUT 编辑/publish/unpublish/GET 列表/GET 详情/DELETE 软删）+ shenzhen 页 `data.cms` 合并块；**前端版接口文档**：`产物/SYSINT-03-03A-接口文档-前端版.md`（2026-10-26）
+> **状态**：2026-10-27 14:40 转入 **integration（联调）**。初版 `2be3717` + 本单增量 `5436e8b` 均已推 origin/dev；认证策略 `587a039`（iframe 强制真实鉴权）为联调前置。
+> **人工验收闸门**：`5436e8b` 经监管人 human:孔东 2026-10-27 14:39 指令「代码commit、push dev」放行推送（AGENTS.md ⚠️ 闸门的派单授权例外）。
 
 ---
 
@@ -59,7 +60,7 @@
 
 ## 遗留风险
 
-1. **写接口未接**（用户 10:57 批示「暂时等待接口提供」）：`persistRecord` 仍写本地 mock store。⚠️ **Java 侧接口文档已出**（2026-10-26，`产物/SYSINT-03-03A-接口文档-前端版.md`）：Part A 写侧 7 端点待 `deploy:cms` 后可调，Part B shenzhen 合并 dev 已可调。接线时只换 `persistRecord` 单点，走主干 `@/utils/request`。
+1. **写接口接线联调中**：`persistRecord` 仍写本地 mock store（接线点单点收口）。Java 侧 7 端点已交付（见页首 API 叶关联），联调条件核查见「联调状态与条件」节——**当前阻塞：deploy:cms 未确认 + 网关前缀待定 + 本机网关不可达**。
 2. **机构清单仍为 mock**：`CMS_MOCK_ORGS` 仅 2 个占位；等 Java 侧机构主数据 API（用户批示：数据读取统一走 Java 接口）。
 3. 门户展示侧尚未消费 `svc_business_domain`（`body_html` 目前只在 CMS 管理）；shenzhen 页 Java 合并已上线，前端消费是展示联调叶范围。
 4. 两个文字性缺口未登记（见问题清单 2），待契约确认会。
@@ -67,10 +68,33 @@
 ## CI/CD（必填）
 
 - 分支：`dev`（lumen-ui-topic）
-- commit：**无（本会话增量停本地未提交，人工验收闸门）**；初版已推 `2be3717`
-- pipeline URL / ID：N/A（未产生新 commit）
-- K8s rollout：N/A
-- dev 测试 URL：https://localhost:3000/service/portal-cms（本地 dev server 实测）
+- commit：初版 `2be3717` → **本单增量 `5436e8b`**（2026-10-27 推送，含抽屉化/状态筛选/DoD 提示/企业箭头；全景箭头随并行会话 `284e01c` 入库）；联调前置 `587a039`（iframe 强制真实鉴权）
+- pipeline URL / ID：随 dev push 自动触发（GitLab CI 前端轨）
+- 部署 namespace / 镜像 tag：K8s dev（CI 触发）
+- K8s rollout：随 CI
+- dev 测试 URL：https://localhost:3000/service/portal-cms（本地实测）；K8s dev 前端待 CI 发布后走查
+
+## 联调状态与条件（integration 入口快照，2026-10-27 14:30 核查）
+
+**接口契约对齐度 ✅**（对照 `产物/SYSINT-03-03A-接口文档-前端版.md`）：
+
+| 文档条目 | 页面现状 | 对齐 |
+|---|---|---|
+| A1–A5 七端点（新建/编辑/发布/下架/列表/详情/删除） | 抽屉三动作 + 列表筛选，`persistRecord` 单点待换 | ✅ 映射一一对应 |
+| 字段 `org_id`+`industry_id`+`body_html` 三必填 | schema formFields + showBody | ✅ 一致 |
+| A4 过滤 `industry_id`/`org_id`/`publish_status` | 产业切换 + 机构关键字 + 状态筛选 | ✅ 已预备 |
+| 白名单 sanitize | 前端 htmlWhitelist 预过滤 + 服务端黑名单兜底 | ✅ 分层一致 |
+| 管道/鉴权/埋点 | 主干 `@/utils/request`（systemCode=topic、Bearer、X-Trace-Id/traceparent 自动注入） | ✅ 无 CMS 特例 |
+
+**联调阻塞项（3 项待外部）**：
+
+1. 写侧部署：接口文档自述「Part A 待 `deploy:cms` 后可调」（Java 叶只到 pipeline 2847 build 绿，deploy:cms 未确认）——**需徐滕强侧确认**
+2. 网关路由前缀：文档写 `/cms-ops/v1/**` 直连；企业叶经验是临时路由 `/cms/cms-ops/v1/**`（2026-10-23 批准）——两前缀待确认走哪个
+3. 本机到 dev 网关 `10.50.69.111:30895` 当前不通（2026-10-27 14:30 探测全超时，含已部署 shenzhen 对照组）——网络/VPN 恢复后复测
+
+**非阻塞依赖**：`CMS_MOCK_ORGS` 2 个假码占位（真实机构码清单等 03-03b 主数据 API；联调可先手工种真码冒烟）；登录态（`cms-ops` 401 fail-closed，需真实用户中心 token，认证策略 `587a039` 已强制 iframe 真实鉴权）。
+
+**接线工作量预估**：新增 api 模块（7 端点薄封装）+ `persistRecord` 换实现 + 列表加载从 A4 拉——小时级。
 
 ## 可观测性（建议）
 

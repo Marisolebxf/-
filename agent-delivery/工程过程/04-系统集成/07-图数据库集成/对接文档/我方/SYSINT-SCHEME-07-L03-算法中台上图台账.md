@@ -88,11 +88,12 @@
 | `enterprise`（企业） | DWD 企业表 | 对应 enterprise |
 | `institution`（机构） | DWD 机构表 | 对应 institution |
 
-| 关系 EDGE | 起→终 | 对应 L02 对齐轴 |
-|---|---|---|
-| `belongs_to` | segment → chain | 对应 HAS_NODE |
-| `participates` | enterprise/institution → segment | 对应 BELONGS_TO_NODE |
-| `depends_on` | segment → segment | 对应 CHILD_OF / DOWNSTREAM_OF |
+| 关系 EDGE | 起→终 | 对应 L02 对齐轴 | 备注 |
+|---|---|---|---|
+| `belongs_to` | segment → chain | 对应 HAS_NODE | — |
+| `participates` | enterprise/institution/service_institution → segment | 对应 BELONGS_TO_NODE | — |
+| `supplies` | enterprise → enterprise | — | 常量已定义，但 graph_project.py OPEN_ITEMS 注明「Demo DWD 无该结构，本单不造边」 |
+| `depends_on` | segment → segment | 对应 CHILD_OF / DOWNSTREAM_OF | — |
 
 ### 2.4 证据路径
 
@@ -124,14 +125,31 @@
 
 ### 3.3 写出的点边
 
-| 实体 TAG | 来源 | 说明 |
-|---|---|---|
-| `enterprise` | PG graph_node 表 | 企业实体 |
-| 其他企业子实体 | PG graph_node 表 | 依附 enterprise |
+> **关键架构**：nebula_loader.py 是一条**通用灌图流水线**，从 PG `ads.graph_node` / `ads.graph_edge` 表读取数据，按 `node_type` / `relation_type` 分流写入 Nebula 不同 TAG/EDGE。这条流水线**跨要素写 5 个领域**的 TAG——不只是企业一个。
 
-| 关系 EDGE | 起→终 | 说明 |
-|---|---|---|
-| 企业关系边 | PG graph_edge 表 | 批量灌入 Nebula |
+| 实体 TAG | PG node_type 值 | 硬编码位置 | 对应 L02 对齐轴 | 覆盖要素 |
+|---|---|---|---|---|
+| `enterprise` | `enterprise` | nebula_loader.py:26 | enterprise | **企业** |
+| `industry` | `industry` | nebula_loader.py:26 | 对应 IndustryNode（近似） | **产业** |
+| `research` | `research` | nebula_loader.py:26 | 对应 institution（科研机构） | **科研机构** |
+| `talent` | `talent` | nebula_loader.py:26 | 对应 person | **人才** |
+| `service` | 兜底（else） | nebula_loader.py:80 | 对应 institution（服务机构） | **服务机构** |
+
+| 关系 EDGE | PG relation_type 值 | 起→终 | 硬编码位置 | 覆盖要素 |
+|---|---|---|---|---|
+| `industry_belong` | — | industry → enterprise | nebula_loader.py:27 | 产业-企业 |
+| `research_coop` | — | research ↔ research | nebula_loader.py:27 | 科研机构-科研机构 |
+| `talent_coop` | — | talent ↔ talent | nebula_loader.py:27 | 人才-人才 |
+| `service_provide` | — | service → enterprise | nebula_loader.py:27 | 服务-企业 |
+| `cooperate` | — | enterprise ↔ enterprise | nebula_loader.py:27 | 企业-企业 |
+| `supply` | — | enterprise → enterprise | nebula_loader.py:27 | 企业-企业 |
+| `parent_sub` | — | enterprise → enterprise | nebula_loader.py:27 | 企业-企业 |
+
+**分流逻辑**（nebula_loader.py:80）：
+```python
+tag = n["node_type"] if n["node_type"] in by_tag else "service"
+```
+PG `ads.graph_node.node_type` 列**无枚举约束**（varchar(30)），任何值都可以写入。不在 5 个硬编码 TAG 中的值会被兜底写入 `service`。
 
 ### 3.4 证据路径
 
@@ -181,24 +199,35 @@
 
 ### 5.1 三态判定
 
-**🔶 定义存在但未上线**——cfg_metric-TALENT-seed.yaml 有 32 条指标定义，但算法中台无真实人才领域 Nebula 写图代码入口。人才领域的上图由燕大侧负责。
+**✅ 真实已跑通**——有真实 Nebula 写图代码入口（nebula_loader.py 通用灌图流水线）。
 
-### 5.2 代码入口扫描结果
+### 5.2 代码入口与写出的点边
 
-| 扫描目标 | 结果 |
-|---|---|
-| lumen-algo-py/lumen_common/algorithms/ | 无人才/Person 实体写图逻辑 |
-| lumen-algo-py/vendor/ | 所有 vendor 子仓均无人才写图 |
+**共享写图路径**：`vendor/entan-py/entan/graph/nebula_loader.py` + `incremental.py`（复用 nebula_loader）
 
-### 5.3 cfg_metric 种子文件
+nebula_loader.py TAGS 常量**硬编码包含 `talent`**（第 26 行），分流逻辑按 PG `graph_node.node_type` 值为 `talent` 的行写入 Nebula `talent` TAG。
+
+| 实体 TAG | PG node_type | 来源 | 对应 L02 对齐轴 |
+|---|---|---|---|
+| `talent` | `talent` | PG ads.graph_node | 对应 person |
+
+| 关系 EDGE | 起→终 | 硬编码位置 |
+|---|---|---|
+| `talent_coop` | talent ↔ talent | nebula_loader.py:27 |
+
+### 5.3 边界说明
+
+人才要素有**两条写图路径**：
+- **算法中台**：nebula_loader.py 通用灌图（写 `talent` TAG + `talent_coop` EDGE）
+- **燕大侧**：Person + ScholarOrganization 双 TAG + 6 条 EDGE（AFFILIATED_WITH / STUDIED_AT / COAUTHOR_WITH / …）
+
+两侧 TAG/EDGE 命名不同（talent vs Person；talent_coop vs COAUTHOR_WITH），但都覆盖人才领域。
+
+### 5.4 cfg_metric 种子文件
 
 | 文件 | metric_id 数 | is_mock | 说明 |
 |---|---:|---:|---|
 | cfg_metric-TALENT-seed.yaml | 32 | 全部 is_mock=true | 人才指标定义存在但算法服务全 mock |
-
-### 5.4 边界说明
-
-人才要素的上图 **完全由燕大侧负责**：燕大快照 Person + ScholarOrganization 双 TAG，AFFILIATED_WITH / STUDIED_AT / COAUTHOR_WITH 等 6 条 EDGE。
 
 ---
 
@@ -206,13 +235,32 @@
 
 ### 6.1 三态判定
 
-**🔶 定义存在但未上线**——cfg_metric-ORG-seed.yaml 有 22 条指标定义，但算法中台无真实科研机构 Nebula 写图代码入口。科研机构的上图由燕大侧负责（Organization TAG + org_kind 枚举区分）。
+**✅ 真实已跑通**——有真实 Nebula 写图代码入口（nebula_loader.py 通用灌图流水线）。
 
-### 6.2 代码入口扫描结果
+### 6.2 代码入口与写出的点边
 
-算法中台所有写图代码（产业链图构建 + 企业灌图 + 服务机构图）中的 institution/organization 实体都是**作为端点参与企业关系边**，不是独立的科研机构要素写图。
+**共享写图路径**：`vendor/entan-py/entan/graph/nebula_loader.py` + `incremental.py`（复用 nebula_loader）
 
-### 6.3 cfg_metric 种子文件
+nebula_loader.py TAGS 常量**硬编码包含 `research`**（第 26 行），分流逻辑按 PG `graph_node.node_type` 值为 `research` 的行写入 Nebula `research` TAG。
+
+| 实体 TAG | PG node_type | 来源 | 对应 L02 对齐轴 |
+|---|---|---|---|
+| `research` | `research` | PG ads.graph_node | 对应 institution（科研机构） |
+
+| 关系 EDGE | 起→终 | 硬编码位置 |
+|---|---|---|
+| `research_coop` | research ↔ research | nebula_loader.py:27 |
+
+### 6.3 边界说明
+
+科研机构有**三条隐含写图路径**：
+1. **算法中台 nebula_loader.py**：写 `research` TAG + `research_coop` EDGE
+2. **算法中台 graph_project.py**：产业链灌链中的 `institution` 端点（写 `institution` TAG）——注意：graph_project.py 的 institution 覆盖科研机构和服务机构，混装
+3. **燕大侧**：Organization TAG + org_kind 枚举区分（`domestic_university` / `domestic_research_institute`）
+
+两侧 naming 不同（研究机构的 research / institution vs 燕大的 Organization + org_kind），但都覆盖科研机构领域。
+
+### 6.4 cfg_metric 种子文件
 
 | 文件 | metric_id 数 | is_mock | 说明 |
 |---|---:|---:|---|
@@ -268,10 +316,14 @@
 |---|---|---|
 | `institution`（服务机构） | 机构数据源 | 注意：算法中台写的 `institution` TAG 同时覆盖**企业**和**服务机构**（混装，与燕大侧 Organization 默认桶同困境） |
 
-| 关系 EDGE | 起→终 | 说明 |
+| 关系 EDGE | 起→终 | 硬编码位置 |
 |---|---|---|
-| `participates` | institution → 产业环节 | 服务机构参与产业 |
-| `belongs_to` | institution → 产业 | 服务机构归属产业 |
+| `participates` | institution → 产业环节 | svcgraph.py:27 |
+| `belongs_to` | institution → 产业 | svcgraph.py:27 |
+| `supplies` | institution → enterprise | svcgraph.py:27（ALLOWED_EDGES 包含但 upsert 函数未见显式构造） |
+| `depends_on` | institution → institution | svcgraph.py:27（ALLOWED_EDGES 包含但 upsert 函数未见显式构造） |
+
+> **注意**：svcgraph.py 的 `ALLOWED_EDGES` 硬编码 4 条（第 27 行），但目前显式实现的 upsert 函数只有 `upsert_participates()` / `upsert_belongs_to()` 两条。`supplies` / `depends_on` 只在常量里声明，未见实际构造 `INSERT EDGE` 的函数。
 
 ### 8.4 证据路径
 
@@ -291,28 +343,36 @@
 
 | # | 七要素 | ✅ 真实已跑通 | 🔶 定义存在但未上线 | 🔴 仅描述 | cfg_metric mock 数 |
 |---|---|---|---|---|---:|
-| 1 | 产业 | ✅ graph_project.py + NebulaSink | — | — | 100（CHAIN） |
-| 2 | 企业 | ✅ nebula_loader.py + incremental.py | — | — | 96（ENT）+ 143（INNOV） |
+| 1 | 产业 | ✅ graph_project.py+NebulaSink + nebula_loader.py `industry` TAG | — | — | 100（CHAIN） |
+| 2 | 企业 | ✅ nebula_loader.py 5 TAG 批量灌图 + incremental.py 增量双写 | — | — | 96（ENT）+ 143（INNOV） |
 | 3 | 技术 | — | — | 🔴 燕大侧负责，算法中台无写图 | 39（TECH） |
-| 4 | 人才 | — | 🔶 TALENT seed 32 条全 mock | — | 32（TALENT） |
-| 5 | 科研机构 | — | 🔶 ORG seed 22 条全 mock | — | 22（ORG） |
+| 4 | 人才 | ✅ nebula_loader.py `talent` TAG + `talent_coop` EDGE | — | — | 32（TALENT） |
+| 5 | 科研机构 | ✅ nebula_loader.py `research` TAG + `research_coop` EDGE + graph_project.py `institution` 端点 | — | — | 22（ORG） |
 | 6 | 政策 | — | 🔶 POLICY seed 35 条全 mock + polan/ 有分析代码无写图 | — | 35（POLICY） |
-| 7 | 服务机构 | ✅ svcgraph.py | — | — | 51（SVC） |
-| **合计** | — | **3 要素 ✅** | **3 要素 🔶** | **1 要素 🔴** | **≈580 条全 mock** |
+| 7 | 服务机构 | ✅ svcgraph.py `institution` TAG + `participates`/`belongs_to` + nebula_loader.py `service` TAG 兜底 | — | — | 51（SVC） |
+| **合计** | — | **5 要素 ✅** | **1 要素 🔶** | **1 要素 🔴** | **≈580 条全 mock** |
+
+### 两条核心写图路径
+
+| 路径 | 仓 | 硬编码 TAG | 覆盖要素 |
+|---|---|---|---|
+| **产业链专用** | lumen-algo-py/lumen_common/algorithms/chain/graph_project.py | chain / segment / enterprise / institution（4 TAG） | 产业 |
+| **通用灌图** | lumen-algo-py/vendor/entan-py/entan/graph/nebula_loader.py | enterprise / industry / research / talent / service（5 TAG） | 企业 / 产业 / 科研机构 / 人才 / 服务机构 |
+| **服务机构专用增量** | lumen-algo-py/vendor/entan-py/entan/svcgraph.py | institution（1 TAG） | 服务机构（与 graph_project.py 共享 TAG 名） |
 
 ---
 
 ## 十、与 L04 燕大侧的分工对照
 
-| 要素 | 算法中台侧（L03） | 燕大侧（L04） | 备注 |
-|---|---|---|---|
-| 产业 | ✅ 真实已跑通（chain/segment/enterprise/institution） | ✅ 已实现（IndustryChain + IndustryNode） | **两侧都写**，TAG/EDGE 命名不同 |
-| 企业 | ✅ 真实已跑通（enterprise + 增量双写） | ✅ 已实现（Organization 默认桶） | **两侧都写**，算法中台写 PG→Nebula，燕大写 Platform Schema |
-| 技术 | 🔴 仅描述（算法中台无写图） | ✅ 已实现（Paper/Journal/Patent/…） | **仅燕大侧写** |
-| 人才 | 🔶 seed 全 mock（算法中台无写图） | ✅ 已实现（Person + ScholarOrganization） | **仅燕大侧写** |
-| 科研机构 | 🔶 seed 全 mock（算法中台无写图） | ✅ 已实现（Organization 两 org_kind 枚举） | **仅燕大侧写** |
-| 政策 | 🔶 POLICY seed 全 mock + 有分析代码无写图 | ⚠ 未实现（蓝图+源表已备） | **两侧都不写**——这是最终 GAP |
-| 服务机构 | ✅ 真实已跑通（institution + participates/belongs_to） | ⚠ 无独立口径（Organization 默认桶混装） | 算法中台有独立 institution TAG；燕大侧混装 |
+| 要素 | 算法中台侧（L03） | 燕大侧（L04） | 重叠度 | 备注 |
+|---|---|---|---|---|
+| 产业 | ✅ graph_project.py（chain/segment/enterprise/institution）+ nebula_loader.py `industry` TAG | ✅ 已实现（IndustryChain + IndustryNode） | 🔶 部分重叠 | 算法中台写 segment/chain 产业链环节；燕大写 IndustryChain/IndustryNode |
+| 企业 | ✅ nebula_loader.py 5 TAG 批量灌图 + incremental.py 增量双写 | ✅ 已实现（Organization 默认桶） | 🔶 部分重叠 | 算法中台写 `enterprise` TAG；燕大写 Organization（混装企业/机构/海外） |
+| 技术 | 🔴 仅描述（算法中台无写图） | ✅ 已实现（Paper/Journal/Patent/…） | 无 | **仅燕大侧写** |
+| 人才 | ✅ nebula_loader.py `talent` TAG + `talent_coop` EDGE | ✅ 已实现（Person + ScholarOrganization） | 🔶 部分重叠 | 算法中台写 `talent` TAG + `talent_coop`；燕大写 Person + ScholarOrganization + 6 EDGE |
+| 科研机构 | ✅ nebula_loader.py `research` TAG + graph_project.py `institution` 端点 | ✅ 已实现（Organization 两 org_kind 枚举） | 🔶 部分重叠 | 算法中台写 `research`/`institution`；燕大写 Organization + org_kind |
+| 政策 | 🔶 POLICY seed 全 mock + polan 有分析代码无写图 | ⚠ 未实现（蓝图+源表已备） | 无 | **两侧都不写**——这是最终 GAP |
+| 服务机构 | ✅ svcgraph.py `institution` TAG + nebula_loader.py `service` TAG 兜底 | ⚠ 无独立口径（Organization 默认桶混装） | 🔶 部分重叠 | 算法中台有两条路径；燕大侧混装 |
 
 ---
 

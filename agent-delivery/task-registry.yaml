@@ -35125,7 +35125,7 @@ tasks:
     lock_until: "2026-10-24T13:51:54.019Z"
     claimed_by: "human:孔东"
     title: "专题服务运营正文"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35136,7 +35136,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      2026-10-27 增补（handoff 已更新）：①整屏编辑改通用 CmsEditDrawer 抽屉（删 ServiceDomainForm，净-1文件，即 DoD 通用表单框架）②列表状态筛选+DoD 提示文案 ③企业/全景 CMS 返回按钮加左箭头。改动停本地待人工验收（闸门 2026-10-20）。测试：vue-tsc 绿、eslint 干净（CmsEditDrawer 5 报错为存量 stash 已验）、浏览器实测通过。待办：写接口接线（Java 文档已出 产物/SYSINT-03-03A-接口文档-前端版.md，写侧待 deploy:cms，届时只换 persistRecord 单点走 utils/request）；机构主数据清单等 Java API。两缺口（L7983 榜单评述、L7995 竞争力分析）待契约确认会登记。
+      2026-10-27 14:40 转 integration。API 叶：SYSINT-03-03A-JAVA-L01（写侧 7 端点 /cms-ops/v1/topic-service/content/svc-business-domain + shenzhen cms 合并；接口文档 产物/SYSINT-03-03A-接口文档-前端版.md）。前端 commit：5436e8b（抽屉化+状态筛选+DoD提示+企业箭头）+ 587a039（iframe 强制真实鉴权，联调前置）均已推 origin/dev。契约对照全对齐（七端点/字段/过滤/白名单/管道）。联调阻塞 3 项待外部：deploy:cms 未确认、网关前缀（/cms-ops vs /cms/cms-ops）待徐滕强定、本机到 10.50.69.111:30895 不通。接线点：persistRecord 单点 + 新 api 模块，小时级。
     depends_on:
       - "SYSINT-SCHEME-03-L01"
     collaborators:
@@ -35147,7 +35147,7 @@ tasks:
       - "只编 svc_business_domain.body_html，绑定 org_id 与 industry_id"
       - "法定名称、领导人、名次、分数不进正文。编辑页套通用表单框架"
       - "契约草案确认前不改字段。菜单以相对路径进统一用户中心"
-    update_time: "2026-10-27T11:06:44+08:00"
+    update_time: "2026-10-27T14:43:26+08:00"
   - id: SYSINT-03-03B-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T06:28:43.582Z"
@@ -41749,7 +41749,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "监管人 human:郭万迎。无开始时间。完成日期要求 2026-11-09，沿用 WBS-07-00 出门日，不是燕大承诺。WBS-07-00B。对齐轴 SYSINT-SCHEME-07-L02 完成后才能开工。已实现只认代码入口。2026-10-27 郭万迎认领并完成，ready_to_sign。repos/ 已 clone 含 lumen-algo-py（完整 monorepo，60+ 源码文件）。三态判定：3 要素真实已跑通（产业 graph_project.py / 企业 nebula_loader+incremental.py / 服务机构 svcgraph.py），3 要素定义存在但未上线（人才 TALENT seed 32 全 mock / 科研机构 ORG seed 22 全 mock / 政策 POLICY seed 35 全 mock+polan 有分析无写图），1 要素仅描述（技术由燕大侧负责）。cfg_metric 11 个种子文件 579 条 metric_id 全 is_mock=true。"
+    note: "监管人 human:郭万迎。无开始时间。完成日期要求 2026-11-09，沿用 WBS-07-00 出门日，不是燕大承诺。WBS-07-00B。对齐轴 SYSINT-SCHEME-07-L02 完成后才能开工。已实现只认代码入口。2026-10-27 郭万迎认领并完成，ready_to_sign。repos/ 已 clone 含 lumen-algo-py（完整 monorepo，60+ 源码文件）。复核后三态判定：5 要素真实已跑通（产业 graph_project.py+NebulaSink+nebula_loader `industry` / 企业 nebula_loader 5 TAG+incremental 增量 / 人才 nebula_loader `talent`+`talent_coop` / 科研机构 nebula_loader `research`+graph_project `institution` 端点 / 服务机构 svcgraph `institution`+nebula_loader `service` 兜底），1 要素定义存在但未上线（政策 POLICY seed 35 全 mock+polan 有分析无写图+nebula_loader TAGS 不含 policy），1 要素仅描述（技术由燕大侧负责，算法中台无论文/专利/项目写图）。核心架构：两条写图路径——graph_project.py 产业链专用（4 TAG）+ nebula_loader.py 通用灌图（5 TAG 跨 5 要素）+ svcgraph.py 服务机构专用增量。nebula_loader.py TAGS=[enterprise,industry,research,talent,service]，EDGES=[industry_belong,research_coop,talent_coop,service_provide,cooperate,supply,parent_sub]。cfg_metric 11 个种子文件 579 条 metric_id 全 is_mock=true。2026-10-27 复核修正 3 处遗漏：产业补 supplies EDGE、企业补全 5 TAG+7 EDGE 硬编码清单、服务机构补 supplies+depends_on。人才和科研机构从 🔶 修正为 ✅（nebula_loader TAGS 硬编码包含 talent/research）。"
     depends_on:
       - "SYSINT-SCHEME-07-L02"
     design_refs:
@@ -41762,7 +41762,7 @@ tasks:
       - "台账落盘 agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L03-算法中台上图台账.md"
       - "七要素每个要素写明过程名、仓与入口、已实现或设计中或没有、写出的点边、证据路径"
       - "已实现必须指出代码入口。指标 seed 与 D4 mock 不算已实现。设计中单独标注，不写成已实现"
-    update_time: "2026-10-27T18:00:00+08:00"
+    update_time: "2026-10-27T19:00:00+08:00"
   - id: SYSINT-SCHEME-07-L04
     supervised_by: "human:郭万迎"
     claimed_by: "human:郭万迎"
