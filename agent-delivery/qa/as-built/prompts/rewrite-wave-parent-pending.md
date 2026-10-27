@@ -3,7 +3,7 @@
 【身份】qa-agent 父控。任务 QA-KJZTFWXT-BLINE-SCRIPT-REWRITE-L01。只编排和改编排表。不写脚本，不跑 run-scripts，不判断步骤对错。
 【工作根】当前会话的 gkx-orchestration 仓库根。不要写成 /Users/roy/... 。
 【必读】本文件，以及同目录 rewrite-wave-child.md。与 rewrite-wave-parent.md、rewrite-wave-parent-404.md、rewrite-wave-parent-split.md 冲突时以本文件为准：本波只写下面 32 个号。已有 yaml 的照样派，按用例覆盖。
-【环境】http://10.50.69.111:30892/  无 path 前缀。禁止 edu.itic-sci.com、10.50.69.111:30888、111.198.38.90:50892。
+【环境】https://edu.itic-sci.com/tts/svcz/  路径前缀 /tts/svcz/。禁止内网 10.50.69.111:30892、10.50.69.111:30888、111.198.38.90:50892。
 【派单表】agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv
 【只派这 32 个号】且当前 status=pending 才派。不在这 32 个里的 pending、blocked、fail、pass 一律不派、不改。
 - 04296 服务机构技术力评估分析，entry svc-org-capability，脚本目录 service/org-capability。已有 cases/FUNC-04296.yaml，按本次抄来的步骤覆盖这一个文件，不要读旧 yaml
@@ -22,7 +22,7 @@
    node -e "const {chromium}=require('playwright'); chromium.launch({headless:true}).then(async b=>{const v=await b.version(); await b.close(); console.log('playwright-ok', v);}).catch(e=>{console.error('playwright-bad', e); process.exit(1);})"
 3. 未打印 playwright-ok：只由父控在 tools 目录处理。缺模块则 npm install；缺浏览器则 npx playwright install chromium。修完再跑第 2 步。仍失败就停止派发。
 4. 仍在 tools 目录做无头探活。看到登录字样即 login-ok：
-   node -e "const {chromium}=require('playwright'); (async()=>{const b=await chromium.launch({headless:true}); const p=await b.newPage(); const r=await p.goto('http://10.50.69.111:30892/login',{timeout:45000,waitUntil:'domcontentloaded'}); await p.waitForFunction(()=>/用户名|密码|登录/.test(document.body?.innerText||''),{timeout:20000}); const t=await p.locator('body').innerText(); console.log('probe', r&&r.status(), t.replace(/\s+/g,' ').slice(0,120)); await b.close(); if(!r||r.status()>=500||!/用户名|密码|登录/.test(t)) process.exit(1); console.log('login-ok');})().catch(e=>{console.error('probe-bad',e); process.exit(1);})"
+   node -e "const {chromium}=require('playwright'); (async()=>{const b=await chromium.launch({headless:true}); const p=await b.newPage(); const r=await p.goto('https://edu.itic-sci.com/tts/svcz/login',{timeout:45000,waitUntil:'domcontentloaded'}); await p.waitForFunction(()=>/用户名|密码|登录/.test(document.body?.innerText||''),{timeout:20000}); const t=await p.locator('body').innerText(); console.log('probe', r&&r.status(), t.replace(/\s+/g,' ').slice(0,120)); await b.close(); if(!r||r.status()>=500||!/用户名|密码|登录/.test(t)) process.exit(1); console.log('login-ok');})().catch(e=>{console.error('probe-bad',e); process.exit(1);})"
    连不上、5xx、没有登录字样：写 agent-delivery/qa/as-built/.env-down（一行原因），停止派发。单条入口 404 不算整站停机。login-ok 后若 .env-down 已存在，删掉它再派。子 agent 看到 .env-down 会整批 blocked，所以未 login-ok 不得派。
 5. 子 agent 交卷写了 .env-down、原因是登录超时或网络中断：父控按第 4 步再探一次。login-ok 就删掉 .env-down，把该条改回 pending，然后继续派。不要把一次抖动当成整站停机。
 

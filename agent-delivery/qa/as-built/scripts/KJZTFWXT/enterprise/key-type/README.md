@@ -3,7 +3,7 @@
 - 蓝本：`qa/test-cases/KJZTFWXT/enterprise-企业分析/KEYENT-重点企业类型分析/FUNC-重点企业类型分析-用例.md` v2.0（00379~00402，24 条）
 - 金样 `gold.yaml`（P0-01~05 = 00379/00380/00381/00384/00386，id 锁定）；全量 `scripts.yaml`（includes 金样 + 19 条 = 24 条，与用例 1:1）
 - 覆盖：`coverage.md`（24 行主表 + 覆盖说明，无未脚本化声明）
-- 环境/控件档案：`fixtures/testdata.yaml`（http://10.50.69.111:30892/ · admin）
+- 环境/控件档案：`fixtures/testdata.yaml`（https://edu.itic-sci.com/tts/svcz/ · admin）
 - 执行顺序：`agent-delivery/qa/as-built/prompts/KJZTFWXT/enterprise/key-type/full.md`
 - 判定与落盘规约：`agent-delivery/qa/as-built/schema.md` §4、`prompts/_result.md`
 

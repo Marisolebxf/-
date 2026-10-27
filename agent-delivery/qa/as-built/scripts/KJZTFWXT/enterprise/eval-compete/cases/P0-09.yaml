@@ -20,7 +20,7 @@ steps:
 expect:
   - note: 维度为创新能力 / 经营能力 / 成长能力 3 项
     assert: |-
-      await page.goto('http://10.50.69.111:30892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; for (const n of ['创新能力','经营能力','成长能力']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+      await page.goto('https://edu.itic-sci.com/tts/svcz/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; for (const n of ['创新能力','经营能力','成长能力']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
   - note: 默认权重为 40 / 40 / 20 且和为 100
     assert: |-
       const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(3, { timeout: 8000 }); const vals = []; for (let i = 0; i < 3; i++) vals.push(String(await spins.nth(i).inputValue())); if (vals.join(',') !== '40,40,20') throw new Error('默认权重 ' + vals.join('/') + ' ≠ 40/40/20'); const sum = vals.reduce((a,b)=>a+Number(b),0); if (sum !== 100) throw new Error('权重和 ' + sum); await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 })

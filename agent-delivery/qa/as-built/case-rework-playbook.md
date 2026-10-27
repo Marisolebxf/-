@@ -4,7 +4,7 @@
 > **写法真源**：`prompts/_case.md`。专题新写和重写遵守其中红线 3.1：步骤从落地页 `goto` 写全，登录和关评审不写进用例。本文件不重复红线，只定谁做什么、提示词怎么填、怎样算写完。  
 > **索引**：`qa/func-test-playbook-index.md` S1 指向这里。
 
-环境（专题）：`http://10.50.69.111:30892/`。一入口一子 agent。父控不写用例、不改脚本、不改业务仓。
+环境（专题）：`https://edu.itic-sci.com/tts/svcz/`。一入口一子 agent。父控不写用例、不改脚本、不改业务仓。
 
 ---
 
@@ -118,7 +118,7 @@
 
 【ENTRY_ID】=`ent-attract`  
 【SYSTEM】=`KJZTFWXT`  
-【BASE_URL】=`http://10.50.69.111:30892/`  
+【BASE_URL】=`https://edu.itic-sci.com/tts/svcz/`  
 【PATCH】=
 
 | 要补的格 | 做法 |
@@ -146,7 +146,7 @@
 【身份】qa-agent 父控。只编排、派单、验收。自己不写用例。
 【阶段】S1 对照重写。编排真源：qa/as-built/case-rework-playbook.md（父控 §1、§5；子提示词只用 §2；验收 §3）。
 【系统】KJZTFWXT
-【环境】http://10.50.69.111:30892/
+【环境】https://edu.itic-sci.com/tts/svcz/
 【工作根】gkx-orchestration
 【范围】catalog/KJZTFWXT.yaml 除 ent-attract 外的每个 entry_id。招引已达标，禁止再改。
 【派单】每批 4 个子 agent，各一个 entry_id，同时开写。子 agent 提示词 = playbook §2 原文，模式填「对照重写」，【PATCH】留空。不要把 retro、招引册、或你自己写的控件清单塞给子 agent。

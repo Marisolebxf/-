@@ -31,7 +31,7 @@
 【必读】agent-delivery/qa/as-built/script-batch-run-playbook.md（全文）
          → prompts/_result.md → schema.md §4.2
 【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【系统】【SYSTEM=KJZTFWXT】 环境：http://10.50.69.111:30892/（禁止 localhost）
+【系统】【SYSTEM=KJZTFWXT】 环境：https://edu.itic-sci.com/tts/svcz/（禁止 localhost）
 【模式】【smoke | full | regress】
   - smoke：每个 live 入口只跑 index.yaml 的 gold:
   - full：每个 live 入口跑 index.all（或全部 cases）

@@ -427,7 +427,7 @@ MKT-03 与 MKT-04 不要并成一条。省略可选参数属于正向备选，�
 | `run-apiview.mjs`，以及 §S2「点击从源码定」 | `gap-func-vs-scripts.py` 的算法库映射（铺开时再加） |
 | 2026-10-22 人已看金样截图 | 全库执行波次（S3 仍不开） |
 
-专题入口是 `tools/run-scripts.mjs`（基址 `http://10.50.69.111:30892/`，每条脚本调用 `ensureReviewOff`）。算法库入口是 `tools/run-apiview.mjs`，不往专题文件里加分支。两边共用 `runner-core.mjs` 的读册、断言、截图和 `result.yaml`。
+专题入口是 `tools/run-scripts.mjs`（基址 `https://edu.itic-sci.com/tts/svcz/`，每条脚本调用 `ensureReviewOff`）。算法库入口是 `tools/run-apiview.mjs`，不往专题文件里加分支。两边共用 `runner-core.mjs` 的读册、断言、截图和 `result.yaml`。
 
 HTTP / Postman 不覆盖「接口信息-清单」「算法测试-清单」。S2 不走那条。
 

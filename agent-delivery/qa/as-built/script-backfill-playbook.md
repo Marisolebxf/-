@@ -1,7 +1,7 @@
 # As-built 脚本编排手册（FUNC ↔ scripts 1:1）
 
 > **当前波（2026-10-19）**：专题用例册已对照重写。脚本按**现行用例号**重写，不沿用旧 `P0-*.yaml`。  
-> **环境**：`http://10.50.69.111:30892/`（无 path 前缀）。禁止再写 `https://edu.itic-sci.com/tts/svcz/`、`http://10.50.69.111:30888/` 或 `http://111.198.38.90:50892/`。  
+> **环境**：`https://edu.itic-sci.com/tts/svcz/`（路径前缀 /tts/svcz/）。禁止再写内网 `http://10.50.69.111:30892/`、`http://10.50.69.111:30888/` 或 `http://111.198.38.90:50892/`。  
 > **路径**：`fixtures.base_url` = 上址；步骤 `goto` 写应用内相对路径，由 runner 拼成 `base_url + target`。  
 > **路由真源**：`catalog/KJZTFWXT.yaml` 该 `entry_id` 的 `path`（有 `fixtures/entry-seed.yaml` 时以其 `catalog_path` 为准）。**禁止**用探针猜到的 URL 覆盖 catalog（教训：企业查询曾误写成 `/development/search`）。  
 > **单条写法**：[`prompts/_script.md`](prompts/_script.md)。双档 / expect 双层仍读 [`retro/20261014-batch32-method-patch.md`](retro/20261014-batch32-method-patch.md) + [`schema.md`](schema.md)。  
@@ -354,4 +354,4 @@ python3 agent-delivery/qa/as-built/tools/health-cases.py --system KJZTFWXT --wri
 - 现行用例主表约 1579 行。编排表与之对齐，状态全是 `pending` 表示还没写新脚本。
 - 旧 `cases/P0-*.yaml` 留在目录里，重写波不读、不改、不回炉。
 - 中断后续跑：打开 `script-rewrite-ledger-KJZTFWXT.csv`。`running` 且没有 `result.yaml` 的改回 `pending`；已有 verdict 的按 verdict 补记。再按文首 Kickoff 派。不要在子 agent 提示词里写 `no ledger`。
-- 环境只认 `http://10.50.69.111:30892/`（无 path 前缀；`edu.itic-sci.com/tts/svcz` 与内网 `10.50.69.111:30888`、`111.198.38.90:50892` 作废）。
+- 环境只认 `https://edu.itic-sci.com/tts/svcz/`（路径前缀 /tts/svcz/；内网 `10.50.69.111:30892`、`10.50.69.111:30888`、`111.198.38.90:50892` 不作现行基址）。

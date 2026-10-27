@@ -13,13 +13,11 @@ steps:
     target: 培育企业推荐指数（企业集合）
   - action: algo_fill
     set:
-      chainId: INB1701
       enterprise_codes: 0218337e44ca794fee9850cf1627b03b,05dc8024336db695425572625773381b,0551ccfde6aa2b3c52e647e283204040,05ff69620c962ce3bbb852351f077299
   - action: algo_run
 expect:
   - note: 返回面板含 metric_id、metric_name_zh、value.result、rankings、calc_process 等契约字段名
     assert: |-
-      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701');
       const v = page.locator('.test-workbench .json-viewer');
       for (const f of ['metric_id', 'metric_name_zh', 'value', 'result', 'sub_type', 'candidate_count', 'rankings', 'enterprise_code', 'enterprise_name', 'rank', 'industry_category', 'enterprise_scale', 'development_bottleneck', 'recommendation_score', 'data_source', 'confidence', 'calc_process', 'definition', 'formula', 'source_tables', 'model_version']) {
         await expect(v).toContainText(f);

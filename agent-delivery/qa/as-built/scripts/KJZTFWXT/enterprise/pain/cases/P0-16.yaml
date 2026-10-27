@@ -14,7 +14,7 @@ steps:
 expect:
 - note: 集合态输出四维影响分布与影响企业数最高的 5 个共性问题
   assert: |-
-    await page.goto('http://10.50.69.111:30892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); const t = await page.locator('main.content-shell-layout').innerText(); if (!/企业集合共性诊断|共性问题 Top 5|四维诊断/.test(t)) throw new Error('ALLOW_SKIP: 非集合共性结果或结构不同'); await expect(page.getByText('共性问题 Top 5').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('四维诊断').first()).toBeVisible({ timeout: 8000 })
+    await page.goto('https://edu.itic-sci.com/tts/svcz/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); const t = await page.locator('main.content-shell-layout').innerText(); if (!/企业集合共性诊断|共性问题 Top 5|四维诊断/.test(t)) throw new Error('ALLOW_SKIP: 非集合共性结果或结构不同'); await expect(page.getByText('共性问题 Top 5').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('四维诊断').first()).toBeVisible({ timeout: 8000 })
 - note: 集合态不逐家生成完整诊断
   assert: |-
     const t = await page.locator('main.content-shell-layout').innerText(); if (/逐家完整诊断/.test(t)) throw new Error('出现逐家完整诊断字样'); await expect(page.getByText(/诊断方式：企业集合共性诊断|企业集合共性诊断/).first()).toBeVisible({ timeout: 8000 })

@@ -17,7 +17,7 @@ steps:
 expect:
 - note: 记录区可按类型与状态过滤
   assert: |-
-    await page.goto('http://10.50.69.111:30892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const t = await page.locator('main').innerText(); if (!/全部状态|任务状态/.test(t)) throw new Error('未见状态过滤'); if (!/类型/.test(t)) throw new Error('未见类型列/过滤')
+    await page.goto('https://edu.itic-sci.com/tts/svcz/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const t = await page.locator('main').innerText(); if (!/全部状态|任务状态/.test(t)) throw new Error('未见状态过滤'); if (!/类型/.test(t)) throw new Error('未见类型列/过滤')
 - note: 条目含提交与完成时间、关联报告份数
   assert: |-
     const t = await page.locator('main').innerText(); if (t.includes('暂无数据')) throw new Error('SKIP: 记录空态，无法核条目字段'); if (!/创建时间|完成时间|提交/.test(t)) throw new Error('未见时间字段'); if (!/查看报告|关联报告|报告/.test(t)) throw new Error('未见报告相关字段/操作')
