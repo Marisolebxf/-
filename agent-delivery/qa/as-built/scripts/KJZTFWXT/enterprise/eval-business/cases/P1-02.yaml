@@ -19,7 +19,7 @@ steps:
 expect:
 - note: 抽屉展示指标目的、维度、业务口径、单位、方向、范围、状态与缺失影响
   assert: |-
-    await page.goto('http://10.50.69.111:30892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); await page.getByRole('button', { name: '查看' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const d = page.locator('.arco-drawer:visible').first(); await expect(d).toBeVisible({ timeout: 8000 }); const t = await d.innerText(); for (const k of ['目的','维度','口径','单位','方向','范围','状态','缺失']) { if (!t.includes(k)) throw new Error('抽屉缺字段语义: ' + k) }
+    await page.goto('https://edu.itic-sci.com/tts/svcz/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); await page.getByRole('button', { name: '查看' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const d = page.locator('.arco-drawer:visible').first(); await expect(d).toBeVisible({ timeout: 8000 }); const t = await d.innerText(); for (const k of ['目的','维度','口径','单位','方向','范围','状态','缺失']) { if (!t.includes(k)) throw new Error('抽屉缺字段语义: ' + k) }
 - note: 年营收与利润率在指标口径或关联指标中可追溯
   assert: |-
     const t = await page.locator('.arco-drawer:visible').first().innerText(); if (!/(年营收|营收)/.test(t) || !/(利润率|利润)/.test(t)) throw new Error('抽屉未见年营收/利润率追溯（可为缺口占位）')

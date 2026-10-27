@@ -1,5 +1,5 @@
 async (page) => {
-  const BASE = 'http://10.50.69.111:30892/';
+  const BASE = 'https://edu.itic-sci.com/tts/svcz/';
   const SEARCH = `${BASE}/enterprise/enterprise-search`;
   const results = [];
   const t0 = Date.now();

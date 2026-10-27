@@ -10,7 +10,7 @@
 ## 0. 一句话怎么用
 
 1. 解析命令 → 对照 **§1 命令路由表** 得到阶段码（S1～S5）。  
-2. 查 **§2 系统就绪门**（展示环境未锁则停，先补 catalog/env）。  
+2. 查 **§2 系统就绪门**（展示入口未实爬则停，先补 catalog entries）。  
 3. 打开该阶段「必读」；把 **§3 Kickoff** 整段贴进新对话（改系统码/入口）。  
 4. 进度与产物路径见路由表「产物」列。
 
@@ -22,11 +22,11 @@
 |------|------------------|--------|--------------|------|----------|
 | **S1 用例编写** | 执行{系统}的用例编写，按 B 线；返工或补必修 | ✅ 专题已跑通；展示未开 | ① `as-built/prompts/_case.md` ② **`as-built/case-rework-playbook.md`**（父控 §1、子提示词 §2）③ `qa-test-case-spec.md` ④ `code-registry.yaml`（取号） | `test-cases/{系统}/**/FUNC-*-用例.md` + `coverage-fp.md` | 一入口一子 agent；父不写册。首写 / 补必修的提示词只维护 playbook §2，不要在对话里另写一套 |
 | **S2 脚本编写** | 执行{系统}的用例脚本编写（含补齐缺口） | ✅ 专题按现行用例号重写；展示未开 | ① `_script.md` ② `schema.md` ③ `retro/20261014-batch32-method-patch.md` ④ `script-backfill-playbook.md` 文首「重写波」 | `as-built/scripts/{系统}/…/cases/FUNC-xxxxx.yaml` + 编排表 `script-rewrite-ledger-KJZTFWXT.csv` | 父只改编排表；一条用例一个子 agent（同时最多 6 个）；子 agent 自己实现、复勘、试跑、核查 |
-| **S3 脚本执行** | 执行{系统}的用例脚本执行（冒烟/全量/回归） | ✅ 批量编排已建 | ① **`as-built/script-batch-run-playbook.md`** ② `_result.md` ③ `schema.md` §4.2 ④ `tools/run-scripts.mjs` + `aggregate-wave-results.py` | 波次目录 `as-built/runs/{日}-30892-{wave}/`（**不入库**）+ **强制** `results.xlsx` + `EXEC-SUMMARY.md`；正式轮次再拷 `test-records/` + `evidence/` | 三种模式 smoke/full/regress；串行机跑；结束后必须派 Excel+总结两个子任务；禁止改脚本充绿 |
+| **S3 脚本执行** | 执行{系统}的用例脚本执行（冒烟/全量/回归） | ✅ 批量编排已建 | ① **`as-built/script-batch-run-playbook.md`** ② `_result.md` ③ `schema.md` §4.2 ④ `tools/run-scripts.mjs` + `aggregate-wave-results.py` | 波次目录 `as-built/runs/{日}-svcz-{wave}/`（**不入库**）+ **强制** `results.xlsx` + `EXEC-SUMMARY.md`；正式轮次再拷 `test-records/` + `evidence/` | 三种模式 smoke/full/regress；串行机跑；结束后必须派 Excel+总结两个子任务；禁止改脚本充绿 |
 | **S4 用例交付合并** | 执行{系统}的用例交付文档合并，按 B 线合并 A 线，用例可拆分，需覆盖所有功能点 | 🟡 骨架已建；专题已出 **B∪A** 约 886 行；未覆盖/政策等仍缺口 | ① **`case-delivery-playbook.md`** ② `_submit.md` ③ `scripts/_gen_zt_delivery_func_ab_merge.py` ④ `delivery/…/ab-merge-manifest.md` ⑤ `delivery/README.md` | `delivery/{系统}/6.…_测试用例.xlsx` + manifest | 未覆盖不投影；全覆盖须先消缺口或豁免；专题默认一键重跑 |
 | **S5 可交付测试记录** | 根据脚本执行结果+用例交付文档，生成可交付测试记录 | 🟡 骨架已建（Kickoff/列映射/DoD）；导出脚本与 Bug 渠道待补 | ① **`record-delivery-playbook.md`** ② `templates/test-record-template.md` ③ `delivery/README.md` 清检单 ④ S3 正式 `test-records/R{n}` + 6.x 用例簿 | `delivery/{系统}/7.…_测试记录.xlsx` + `test-records/` 工作稿 | 输入=正式轮次非调通 runs；是否通过仅通过/不通过；阻塞跳过须先消化 |
 
-**专题 vs 展示**：上表方法论**跨系统共用**；换系统 = 换系统码、catalog、env、取号段。展示当前 **catalog=`placeholder`、env 未锁**（`as-built/catalog/index.yaml`）——S1～S3 开干前必须先锁环境并填 catalog。
+**专题 vs 展示**：上表方法论**跨系统共用**；换系统 = 换系统码、catalog、env、取号段。展示 URL 已锁为 `https://edu.itic-sci.com/tid/`（原型 `https://edu.itic-sci.com/tid/ptid`），catalog 仍是 placeholder、entries 为空——S1～S3 开干前必须先实爬补入口。
 
 **算法库 `SDWJSF/KJZTFWSFK`**：接口向验收，**不**走本文件 §3 的页面场景 S1 Kickoff；见 [`algo-lib-playbook-index.md`](algo-lib-playbook-index.md) 与 [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md)。
 
@@ -36,8 +36,8 @@
 
 | 系统 | catalog | 环境 | S1～S3 | S4～S5 |
 |------|---------|------|--------|--------|
-| `KJZTFWXT` 专题 | active · 30892 | ✅ `http://10.50.69.111:30892/` | 可执行 | S4 骨架+已有 B∪A（886）见 `case-delivery-playbook.md`；S5 见 `record-delivery-playbook.md` |
-| `KJXXZSXT` 展示 | placeholder · env=null | ❌ 未锁 | **先**：定已发布 URL + 填 `catalog/KJXXZSXT.yaml` live 入口 + `catalog/index.yaml` locked_env | 用例/脚本齐后方可 |
+| `KJZTFWXT` 专题 | active · svcz | ✅ `https://edu.itic-sci.com/tts/svcz/`（原型 `https://edu.itic-sci.com/tts/ptts`） | 可执行 | S4 骨架+已有 B∪A（886）见 `case-delivery-playbook.md`；S5 见 `record-delivery-playbook.md` |
+| `KJXXZSXT` 展示 | placeholder · 入口未实爬 | ✅ `https://edu.itic-sci.com/tid/`（原型 `https://edu.itic-sci.com/tid/ptid`） | 地址已锁；S1 前先实爬补 `catalog/KJXXZSXT.yaml` entries | 用例/脚本齐后方可 |
 | `SDWJSF-KJZTFWSFK` 算法库 | **active** · algovwz · 89 catalog 页 | ✅ `https://edu.itic-sci.com/dma/algovwz/`（apiview 联调台，hash 路由；50897 已停用） | **勿用本表 S1～S3 Kickoff** → 算法库统一 [`algo-lib-playbook-index.md`](algo-lib-playbook-index.md)（A 线 F0～F4 + B 线 S1～S5）；B 线细则 [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md) | S4/S5 待编写（见 `delivery/README.md` + 算法库 api-case playbook §S4/S5） |
 
 ---
@@ -59,8 +59,8 @@
 ```text
 【身份】qa-agent 父控。阶段 S3。总索引：qa/func-test-playbook-index.md
 【必读】as-built/script-batch-run-playbook.md（全文）→ _result.md → schema.md §4.2
-【系统】【SYSTEM=KJZTFWXT】 环境：http://10.50.69.111:30892/
-【模式】【smoke | full | regress】  波次：as-built/runs/【YYYYMMDD】-30892-【WAVE_ID】/
+【系统】【SYSTEM=KJZTFWXT】 环境：https://edu.itic-sci.com/tts/svcz/
+【模式】【smoke | full | regress】  波次：as-built/runs/【YYYYMMDD】-svcz-【WAVE_ID】/
 【执行】父串行 run-scripts.mjs，一律 --run-dir $WAVE/<功能短名>（多功能禁止共用 run-dir）
 【收口必须派两个子 Task】A Excel（aggregate-wave-results.py → results.xlsx）B EXEC-SUMMARY.md
 【禁止】改脚本充绿；并行多个 run-scripts；localhost；缺 A/B 宣称完成

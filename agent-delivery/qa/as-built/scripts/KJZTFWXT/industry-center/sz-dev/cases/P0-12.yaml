@@ -15,7 +15,7 @@ steps:
 expect:
 - note: 政策、技术、人才三类建议齐备
   assert: |-
-    await page.goto('http://10.50.69.111:30892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await view.count()) || await view.isDisabled()) throw new Error('SKIP: 无成功结果（开放项 1）'); await view.click(); await page.waitForTimeout(2500); const t = await page.locator('main').innerText(); for (const k of ['政策', '技术', '人才']) { if (!t.includes(k)) throw new Error('建议区缺: ' + k) }
+    await page.goto('https://edu.itic-sci.com/tts/svcz/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await view.count()) || await view.isDisabled()) throw new Error('SKIP: 无成功结果（开放项 1）'); await view.click(); await page.waitForTimeout(2500); const t = await page.locator('main').innerText(); for (const k of ['政策', '技术', '人才']) { if (!t.includes(k)) throw new Error('建议区缺: ' + k) }
 - note: 建议条目带「针对」标签与适用条件
   assert: const t = await page.locator('main').innerText(); if (!t.includes('针对')) throw new Error('未见「针对」标签')
 allow_skip: 无成功结果时 Pass-N/A

@@ -3,7 +3,7 @@
 > **过程**（`prompts/_case.md` · `_script.md` · `_result.md` · `_submit.md`）：**测试用例**（人读场景）→ **测试脚本** → **测试结果** → **总集提交表**（已覆盖功能点从场景用例切点投影；未覆盖不在第 4 步）。  
 > **A 线**（v8 功能点拆分）不在本目录维护；第 1 步写完用例后做 **功能点→用例** 覆盖矩阵，未覆盖允许登记，禁止按功能点一对一灌用例。  
 > **规范**：人读编号遵守 `qa-test-case-spec.md`；脚本 id 为功能内 `P0-xx`。  
-> **执行环境（本线锁定）**：专题 <http://10.50.69.111:30892/> · 算法库联调台 <https://edu.itic-sci.com/dma/algovwz/>（`lumen-ui-algo-apiview`，hash 路由；`111.198.38.90:50897` 已停用）。禁止 localhost。  
+> **执行环境（本线锁定，外网）**：专题 <https://edu.itic-sci.com/tts/svcz/> · 专题原型 <https://edu.itic-sci.com/tts/ptts> · 展示 <https://edu.itic-sci.com/tid/> · 展示原型 <https://edu.itic-sci.com/tid/ptid> · 算法库联调台 <https://edu.itic-sci.com/dma/algovwz/>（`lumen-ui-algo-apiview`，hash 路由；内网 `10.50.69.111:30897` 与 `111.198.38.90:50897` 已停用）。禁止 localhost。内网对照见 `catalog/index.yaml` 的 `intranet`。  
 > **脚本补齐（FUNC↔scripts 缺口）**：编排真源 [`script-backfill-playbook.md`](script-backfill-playbook.md)；缺口机检 `tools/gap-func-vs-scripts.py` → `script-backfill-gap-{系统}.md`。  
 > **脚本批量执行（S3）**：[`script-batch-run-playbook.md`](script-batch-run-playbook.md)（冒烟/全量/回归、波次目录、强制 Excel+总结）；总路由 [`../func-test-playbook-index.md`](../func-test-playbook-index.md)。
 
