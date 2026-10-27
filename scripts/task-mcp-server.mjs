@@ -559,6 +559,7 @@ TOOLS['task-update-fields'] = {
     type: 'object',
     properties: {
       id:             { type: 'string', description: '任务 ID' },
+      supervised_by:  { type: 'string', description: '监管人（如 human:淮政玮）' },
       evidence:       { type: 'string', description: 'handoff 证据路径（如 agent-handoffs/XXX.md）' },
       effort_points:  { type: 'string', description: '贡献分（1/2/3/5/8/13）' },
       difficulty:     { type: 'string', description: '难度（S/M/L/XL）' },
@@ -576,7 +577,7 @@ TOOLS['task-update-fields'] = {
     const { id, ...rest } = args || {};
     const patch = {};
     const ALLOWED = new Set([
-      'evidence', 'effort_points', 'difficulty', 'actual_tokens', 'model_used',
+      'supervised_by', 'evidence', 'effort_points', 'difficulty', 'actual_tokens', 'model_used',
       'actual_cost', 'cost_warn', 'note', 'user_story', 'sprint_id',
     ]);
     for (const [k, v] of Object.entries(rest)) {
