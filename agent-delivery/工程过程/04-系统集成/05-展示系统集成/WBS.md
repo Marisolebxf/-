@@ -36,17 +36,18 @@
 
 ---
 
-### 公共底座（跨页 · 李伟自建 · 挂接登记）
+### 公共底座（跨页 · 展示系统公共物）
 
-> 2026-10-26 `human:李伟` 登记。这四件是**展示系统的跨页公共物**（不是某一页），现有叶子没有对应位置 —— 按 2026-10-26 `human:淮政玮`「展示系统本身就是集成，整体放到展示系统集成」的口径记在第 5 项。
-> **只登记，不新开 WBS 行，不计入本表行平均，本项百分比不受影响。** 待 `human:淮政玮` 确认口径、并由 PM 建号后，再转为正式叶。
-> 页面实现类任务（`FE-TS-01A`～`10A` 监管人孔东、`DS-0X-METRIC-OPEN-L01` 监管人淮政玮）不属本组，未登记在此。
+> 2026-10-27 `human:李伟` 建叶登记。这五叶是**展示系统的跨页公共物**（不是某一页），按 2026-10-26 `human:淮政玮`「展示系统本身就是集成，整体放到展示系统集成」的口径归第 5 项。
+> 2026-10-26 曾以「挂接登记」记入，本日转为正式叶，**任务号不变（沿用已有 ID，未新建）**。页面实现类任务（`FE-TS-01A`～`10A` 监管人孔东、`DS-0X-METRIC-OPEN-L01` 监管人淮政玮）不属本组。
+> `BE-TS-IMPL-01`、`BE-TS-DATA-01` 原无监管人，2026-10-27 由 `human:李伟` 认领。派单说明见 `agent-handoffs/科技发展态势-TS/派单说明/`。
 
-| 任务号 | 名称 | 状态 | 产物 / 证据 | 对应详细设计 | 建议归属 | 完成日期 |
-|---|---|---|---|---|---|---|
-| `BE-TS-CONTRACT-01` | 科技发展态势 Java 接口契约定义与数据需求评审（M0：八类接口 + 八节枚举字典） | claimed | `agent-handoffs/科技发展态势-TS/API-TS-M1.md`（草案，**M0 评审未开、未冻结**） | `04-功能-科技发展态势.md` | 公共底座 · 接口契约 | 原定 2026-10-15，**已过期，待重定** |
-| `BE-TS-CONTRACT-02` | 科技发展态势 M2–M9 接口契约定义 | integration | `agent-handoffs/科技发展态势-TS/API-TS-M2.md`～`API-TS-M9.md`（草案，按批冻结） | `04-功能-科技发展态势.md` | 公共底座 · 接口契约 | 原定 2026-10-15，**已过期，待重定** |
-| `BE-TS-AGG-01` | 科技全域态势 · 产业铺底聚合方案（要素 × 区域 × 时间 + ADS 标准表落库建议） | claimed | `agent-handoffs/科技发展态势-TS/TS-聚合方案-产业铺底.md`。只定口径与落库骨架，写数在 Python | `04-功能-科技发展态势.md`；ADS 命名参照专题详设 `11-存储设计与接口设计.md` | 公共底座 · 数据口径 | 原定 2026-10-15，**已过期，待重定** |
-| `DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01` | 展示聚合 BFF（`gkxlumen-display`）部署层四件套 + 首次部署上线（D15 唯一对外面） | ready_to_sign | pipeline #2760（sha `2bc11e8`）、helm job #15022 success、release `gkxlumen-platform` deployed、display Pod 1/1 Running、网关路由 24→25 条、`/display/actuator/health` UP | `03-总体设计-共享底座.md`（D15 三层调用链：前端 → 网关 `/display/**` → `gkxlumen-display` → Feign 域服务） | 公共底座 · 部署上线 | 无截至时间 |
+| 草案号 | 子项 | 监管人 | 仓 | 依赖 | 可对端 | 开始时间 | 完成日期要求 |
+|---|---|---|---|---|---|---|---|
+| WBS-05-10 · `BE-TS-CONTRACT-01`（同叶后续 `BE-TS-CONTRACT-02`） | 展示侧 Java 接口契约：M0 八类接口 + 八节枚举（`API-TS-M1.md`）；M2–M9 逐页契约（`API-TS-M2.md`～`API-TS-M9.md`，按批冻结） | 李伟 | `gkx-orchestration` | `SYSINT-SCHEME-05-L01`；前端 `FE-TS-01A` 按本契约接路径 | M0 三方评审通过后冻结；未冻结前端不猜路径。冻结批次：批2 前 M2/M3、批3 前 M4/M5/M6、批4 前 M7/M8/M9 | 2026-10-14 | 原定 2026-10-15，**已过期，待重定** |
+| WBS-05-11 · `BE-TS-AGG-01` | 科技全域态势 · 产业铺底聚合口径（要素 × 区域 × 时间）+ ADS 标准表落库建议 | 李伟 | `gkx-orchestration` | `BE-TS-CONTRACT-01`；写数在 Python（D7） | 只定口径与落库骨架，不实现 ETL。正式值禁前端自算；排除政策要素 | 2026-10-14 | 原定 2026-10-15，**已过期，待重定** |
+| WBS-05-12 · `DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01` | 展示聚合 BFF（`gkxlumen-display`）部署层四件套 + 首次部署上线（D15 唯一对外面） | 李伟 | `lumen-svc-platform` | `SYSINT-SCHEME-05-L01` | 网关 `/display/**` 唯一对外、`/display/actuator/health` UP；不据此写成页面已上线 | 2026-10-22 | 无截至时间 |
+| WBS-05-13 · `BE-TS-IMPL-01` | M1–M9 展示聚合接口实现（Java） | 李伟 | 展示 Java（`gkxlumen-display`） | `BE-TS-CONTRACT-01`（契约冻结）、`BE-TS-DATA-01` | Java 不写算法；只读 ADS（D3）；`X-Trace-Id` 贯通；指标带 `metric_id` | 无开始时间 | 待定（随契约分批评审） |
+| WBS-05-14 · `BE-TS-DATA-01` | M2–M9 ADS 数据对接 | 李伟 | 数据侧 / `lumen-etl-es-py` | `BE-TS-AGG-01`、`API-TS-M1.md` §9.1 五域 | Python 写数（D7）；Java 只读已发布批次；Mock 先行按标准表写 | 无开始时间 | 待定（随三方源到位） |
 
-四件互相关联：`BE-TS-CONTRACT-01` §1 写明契约的落库服务是 `gkxlumen-display`，即 `DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01` 部署上线的那个 BFF —— 契约与本叶是上下游，不分开挂。
+五叶互相关联：`BE-TS-CONTRACT-01` 定「接口怎么取」→ `BE-TS-AGG-01` 定「数据怎么生」→ `BE-TS-DATA-01` 落数 → `BE-TS-IMPL-01` 实现；契约的落库服务是 `gkxlumen-display`，即 `DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01` 部署上线的那个 BFF。
