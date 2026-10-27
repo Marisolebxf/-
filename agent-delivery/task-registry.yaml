@@ -41338,8 +41338,13 @@ tasks:
       - "handoff + 观测补记：05.3.1 §5.0 报告行 ❌→✅；05.3.2 ENT-NARRATE-05 关项"
     update_time: "2026-10-27T15:24:42+08:00"
   - id: LUMEN-ENT-PAIN-NARRATE-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T13:00:56.161Z"
+    last_seen_at: "2026-10-27T13:00:56.161Z"
+    lock_until: "2026-10-28T13:00:56.161Z"
+    claimed_by: "agent:algorithm-agent"
     title: "企业痛难点 — narrate_pain 共性问题四格润色"
-    status: "backlog"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P1"
@@ -41349,7 +41354,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 100000
-    note: "P2 推荐项；等 P0 narrate_eval 走查观感后升 ready。不与招引 P3 同批。"
+    note: "开工：先读 05.3.5 §5 契约 + DOC handoff + narrate_eval 金样，再实现四格润色"
     depends_on:
       - "LUMEN-ENT-EVAL-NARRATE-L01"
     design_refs:
@@ -41358,7 +41363,7 @@ tasks:
       - "narrate_pain：只改共性问题四格 text（命中依据/成因/最佳实践/解决方向）；标题/优先级/影响数不动"
       - "硬约束：标题禁润色、诚实句必留、成因禁因果外推、solution 禁具体政策工具；narration 三态；失败退规则稿任务仍 success"
       - "单测可注入 client；handoff + 05.3.2 观测补记"
-    update_time: "2026-10-26T18:38:39+08:00"
+    update_time: "2026-10-27T21:02:28+08:00"
   - id: POLICY-DDL-GAP-L10
     model_used: "grok-4.7"
     evidence: "agent-handoffs/政策模块-E7/POLICY-DDL-GAP-L10.md"
@@ -41415,7 +41420,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "AV-1 通过；会签通过。"
+    note: "会签通过：监管人 human:徐滕强 2026-10-27 20:02 口头确认「文件接受了」（05.2.1 设计稿 v0.1 + handoff + 总册指针均已 push origin/dev，首单 CHAIN-20261027-040 现网验证 LLM 双落点 ok）。待签收。"
     design_refs:
       - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
       - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md"
@@ -41428,7 +41433,7 @@ tasks:
       - "监管人五决策（双落点结构/prompt 治理范围/as-built 契约化/命名冻结/QC03 正交先改造）写入文档与 note"
       - "开放项不替甲方拍板：QC03/QC06/QC10 只引用客户决策清单 🟡，两套相位口径并存事实登记不调和"
       - "架构合规自检：调用链 前端→Java→Python /internal、LLM 只在算法侧且 Key 不出集群 Secret、无 RustFS 新写路径、Design.md §7.4/D9 角标对齐"
-    update_time: "2026-10-26T21:15:43+08:00"
+    update_time: "2026-10-27T20:02:54+08:00"
   - id: LUMEN-SVC-JAVA-SVC-REPORT-ARTIFACT-L01
     evidence: |
       handoff=agent-delivery/agent-handoffs/LUMEN-SVC-JAVA-SVC-REPORT-ARTIFACT-L01.md; 改动=lumen-svc-platform dev 本地工作区（ArtifactAnalysisTypes/AnalysisTaskIdGenerator/ArtifactSnapshotReaderImpl + 新测试 ArtifactSnapshotReaderImplSvcTest），未 commit 待人工验收；测试=biz 模块 132 tests 全绿（JDK21 surefire 3.2.5）
@@ -42054,7 +42059,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      2026-10-27 需求变更会议第3条：企业/政策/服务机构关系链，大模型生成策略/分析意见（human:田梦博 前端按实体类型调接口，@李向阳 提供 prompt）。架构（human:徐滕强 确认）：复用 lumen-algo-py 现成 OpenAICompatibleClient（智谱，GKX_LLM_* env 链路已通），cms 侧 RestTemplate 薄转发（照抄 innov TechNews 模式）；prompt 占位待李向阳替换；LLM 网关独立专项后续建单统一收敛（本次不做）
+      2026-10-27 二轮字段补齐（commit 390d85d 已推 origin/dev，编译绿）：①cms_kg_relation+remark 列（DDL 增量真库已执行）+create/update/list/detail 四处接入；②cms_kg_attr+definition/unit 两列（真库已执行）+list/create/update 接入；③EXTRA_KEYS 白名单 policy+executor/audience、service+capability/review（flattenExtra 自动平铺）。待 CI 部署后前端重验。口径：键名以后端定义为准，久新自造键（tab-1__f0）不兼容
     depends_on: []
     definition_of_done:
       - "algo-py 新增 POST /internal/v1/llm/generate（taskType 路由 prompt，kg-rel-insight 占位模板待李向阳替换，LLM 未配 Key/失败降级空文本 200）"
@@ -42064,7 +42069,7 @@ tasks:
       - "编译绿 + 两端真库/真服务冒烟（mock prompt 出示意文本）"
       - "OpenAPI 契约登记 + handoff（平台基建-PLATFORM/CMS-JX-REL-INSIGHT-L01.md）"
       - "技术债备注：LLM 网关独立专项后续建单统一收敛"
-    update_time: "2026-10-27T14:14:27+08:00"
+    update_time: "2026-10-27T21:05:54+08:00"
   - id: ENT-FILTER-INDUSTRY-LINK-L01
     model_used: "glm-5.3-Flash"
     cost_warn: "green"
@@ -42087,7 +42092,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 300000
     note: |
-      代码审查完成（agent 86089be7，实跑验证 15/15 绿）：1 Critical + 7 Important + 3 Minor。C1 多值产业叶子拆成多条 in AND 叶子→多选不同层级出站恒空集（功能性错误，测试把错误形状固化，需改 expandIndustryLinkLeaf 单条聚合+同步修测试）；I1 节点聚合失败永久缓存空数组、I2 smart 模式白白触发 resolve-scope、I3 QueryConditionSummary 三页共用无条件拉目录、I4 节点名清洗未排分隔符与 CL-/INB 形态、I5 条件行双 ⚠️ 角标、I6 .pnpm-store 未 gitignore、I7 useSvcAnalysisJob 搭车改动需拆出。修复中
+      用户裁定产业条件只留一个：已删 industry_chain_names_flat 筛选字段（预设集成电路企业改走 industry_link，recommendedFieldKeys 同步，移除 Q068 l0 兜底逻辑），提交 aa20971 已推（他会话 svc Board 改动 stash 恢复保留）。19/19 绿+type-check 0+build 过。等 CI 后线上应只有一个产业条件=三级树
     collaborators:
       - "api-agent"
     touched_files:
@@ -42105,7 +42110,7 @@ tasks:
       - "节点级下拉选项来自后端码表接口或 ES 聚合镜像，禁止前端硬编码；过渡态名称匹配 UI 带 ⚠️ 待甲方确认角标"
       - "pnpm type-check 与 build 绿（node_modules 与 lockfile 同步为前提），node --test 自检全绿"
       - "handoff 含 Design.md §14 检查清单对照，cost 四字段回填"
-    update_time: "2026-10-27T17:03:56+08:00"
+    update_time: "2026-10-27T19:56:20+08:00"
   - id: CHAIN-FILTER-INDUSTRY-LINK-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T06:33:23.126Z"
@@ -42160,8 +42165,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 250000
-    note: |
-      审查 5 项 Important 全部修复（agent 60b787f1）：I1 链一致性守卫（跨链父拒绝挂空计孤儿）、I2 对账门含 0 孤儿、I3/I4 单测夹具改生产真实形态+兕底分支真覆盖（11→17 用例全绿）、I5 源头防脏值（industry_chain 模块写码前经 clean_node_id 清洗，与 es_fix 同真源 build_name_index，执行顺序约束写入 docstring）；顺带 M1 main 入口/M2 畸形码统计/M4 dry-run 语义。验证：test_industry_dict 17 绿、全仓 65 通过（仅存量 finance 口径失败维持现状）、py_compile+冒烟过。待复核
+    note: "用户走查通过，已提交推送：lumen-etl-es-py fa1d208（含 PLAYBOOK 深分页备注与 test_date_only 顺带入库）。数据变更已生效（dim 正式化/下沉/ES 清洗）"
     touched_files:
       - "etl/"
     definition_of_done:
@@ -42170,15 +42174,20 @@ tasks:
       - "industry_node_codes_flat 脏数据（node-bio-general 5267 条）清洗或重挂真实节点码，企业 ES 节点名称与码可对上"
       - "节点 INB 编码体系与 Q068 产业体系覆盖错位（INB17xx 子码 0 行）形成差异清单登记到 DS-XX §6.1 / 客户决策清单跟踪表，供 Q068 拍板"
       - "handoff 附迁移前后行数对照与端点实测证据，cost 四字段回填"
-    update_time: "2026-10-27T17:20:34+08:00"
+    update_time: "2026-10-27T18:21:35+08:00"
   - id: DATA-INDUSTRY-NODE-DICT-L02
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/DATA-INDUSTRY-NODE-DICT-L02.md"
+    cost_warn: "green"
+    actual_tokens: 210000
+    actual_cost: 0.5
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-27T06:34:07.758Z"
-    last_seen_at: "2026-10-27T06:34:07.758Z"
-    lock_until: "2026-10-27T10:34:07.758Z"
-    claimed_by: "human:徐滕强"
+    claimed_at: "2026-10-27T10:37:28.838Z"
+    last_seen_at: "2026-10-27T10:37:28.838Z"
+    lock_until: "2026-10-27T14:37:28.838Z"
+    claimed_by: "agent:api-agent"
     title: "产业节点查询编码化收口（名称 term → INB 码 prefix，摘 ⚠️ 过渡角标）"
-    status: "claimed"
+    status: "in_progress"
     agent: "data-agent"
     epic: "DATA-INDUSTRY"
     priority: "P2"
@@ -42188,12 +42197,13 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 50000
-    note: "收口单：DATA-INDUSTRY-NODE-DICT-L01 落地后，把企业/产业链高筛节点级的过渡态（名称 term 匹配 + ⚠️ 待甲方确认角标）切换为正式 INB 编码 prefix 查询；或 Q068 口径经甲方确认维持名称匹配则摘单。依赖 L01。"
+    note: |
+      v5 树构造修正完工（纯代码未动表，agent 7a6a3180）：py 新增 /meta/industry-chains 链行集端点（industry_id 语义+chain_tier/parent_chain_id，桥接主路径改查 industry_chain 表）；Java DTO+透传同步；前端第三级改任意深度链树（先子链后节点懒加载，live 库 77 行 parent 塌陷按码前缀归位兜底），出站末段收口（勾链=prefix、勾节点=名称 in）。三绿：py 9 单测/全仓 288 过、Java 4/4、UI 42/42+type-check 0+build 过。报备：live 库 77 行 parent_chain_id 塌陷（码前缀完好）需数据单修正。待审查+人工验收
     definition_of_done:
       - "任一前置：DATA-INDUSTRY-NODE-DICT-L01 完成后，企业/产业链高筛的节点级下拉切换为 INB 编码 + prefix 出站（替换过渡态名称 term），UI 摘除 ⚠️ 过渡角标"
       - "或 Q068 甲方书面确认维持名称匹配口径（升 🟢），登记到客户决策清单跟踪表"
       - "handoff 记录最终口径与切换证据，cost 四字段回填"
-    update_time: "2026-10-27T14:34:07+08:00"
+    update_time: "2026-10-27T20:56:17+08:00"
   - id: LUMEN-INTEL-FE-REPLICA-L0
     evidence: "[object Object]"
     title: "综合智能分析三叶 — demo→lumen 复刻总纲（接口需求+任务拆解）"
@@ -42495,7 +42505,7 @@ tasks:
     lock_until: "2026-10-27T11:55:48.192Z"
     claimed_by: "agent:architect-agent"
     title: "服务链 P2 族 — 技术力评估+新增趋势完整链路设计与 LLM 落点（合并包，对标 05.7.1）"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "architect-agent"
     epic: "E7-产业服务链分析"
     priority: "P1"
@@ -42505,7 +42515,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "明确开工转 in_progress：05.7.3/05.7.4 设计稿 + 05.7 总册指针 + handoff 已落盘（未提交 git）。"
+    note: "监管人人工验收通过（2026-10-27 18:19「现在可以了」，含行为规格体例改版 05.7.1/05.7.3/05.7.4 + handoff + 评审修正）。definition 类型：过会签，进 ready_to_sign 待签收。"
     collaborators:
       - "algorithm-agent"
     design_refs:
@@ -42519,15 +42529,20 @@ tasks:
       - "LLM：对齐 05.7.2 T2/T3（P2）；复用 T1 narrate 边界写清 as-built 复用与缺口；禁止因代码已有 tech_power/trend 分支跳过设计；T1 已验不重复造轮"
       - "handoff 根路径 DOC-SVC-TECH-TREND-FAMILY-CHAIN-L01.md（架构合规≥7 + Cost）；ponytail: off；不写 repos 实现（实现另开 feature）"
       - "T4–T7（短板/深圳/引入/培育）本单不覆盖，仍绑 Q-SVCCHAIN-03/04/05；STAGE（G1/G2/G4）另单不并入"
-    update_time: "2026-10-27T16:09:15+08:00"
+    update_time: "2026-10-27T18:20:27+08:00"
   - id: LUMEN-ENT-EVAL-NARRATE-BIZCOMP-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/LUMEN-ENT-EVAL-NARRATE-BIZCOMP-L01.md"
+    cost_warn: "green"
+    actual_tokens: 110000
+    actual_cost: 0.12
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T08:12:15.684Z"
     last_seen_at: "2026-10-27T08:12:15.684Z"
     lock_until: "2026-10-27T12:12:15.684Z"
     claimed_by: "agent:algorithm-agent"
     title: "企业评估 — 商业力/竞争力 LLM 落点改造（ENT-EVAL-13 事实包 + 两叶线上验）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P0"
@@ -42537,7 +42552,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 100000
-    note: "开工：闭合 ENT-EVAL-13（business 事实包纳入经营六维）+ competitiveness 复核 + 两叶线上抽样。"
+    note: "两叶线上实证齐（business 014 ok / competitiveness 015 ok），ENT-EVAL-13 闭合，审查闭环，待 QA。"
     collaborators:
       - "frontend-agent"
     touched_files:
@@ -42554,7 +42569,7 @@ tasks:
       - "对齐 05.3.3/05.3.4：只改 diagnosis_text / dimension_rows[].gap_text；三态 skipped|fallback|ok；失败退规则稿任务仍 success；复用 ent.eval.narrate.v3，禁止另起 prompt 文件除非升版"
       - "自检可注入 client；business + competitiveness 各至少 1 条线上/dev 任务实证 narration=ok（或诚实 fallback 可解释）；technology 回归不破"
       - "handoff 根路径 LUMEN-ENT-EVAL-NARRATE-BIZCOMP-L01.md + cost 四字段；ponytail: full；本单不含痛点/招引/培育；不含改口径；不并行改 SVC/CHAIN"
-    update_time: "2026-10-27T16:12:35+08:00"
+    update_time: "2026-10-27T18:22:40+08:00"
   - id: QA-KJZTFWSFK-SCRIPT-REPAIR-L01
     evidence: "agent-delivery/agent-handoffs/QA/QA-KJZTFWSFK-SCRIPT-REPAIR-L01.md"
     supervised_by: "human:黄敬洲"
@@ -42585,6 +42600,45 @@ tasks:
       - "expect contains 超时队列每条都有结论（一致 / 已改 / 不改）"
       - "中途提交不算收工，两类修订都做完才进 ready_to_sign"
     update_time: "2026-10-27T16:10:07+08:00"
+
+  - id: METRIC-SRS-GAP-L01
+    evidence: "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/METRIC-SRS-GAP-L01.md"
+    supervised_by: "human:唐绍祖"
+    claimed_by: "human:唐绍祖"
+    claimed_at: "2026-10-27T20:30:00+08:00"
+    claim_type: "pull"
+    title: "算法库 vs 展示/专题两大系统 565 指标口径 gap 调研（三文档出现分类 + 差异五级分级 D1–D5 + 156 份逐指标差异报告 + 20261021 实现倾向性判定）"
+    status: "ready_to_sign"
+    agent: "algorithm-agent"
+    epic: "E-ALGO-LIB-DEMO"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: |
+      调研交付已完成。核心结论：跨系统指标 156（D2 口径级分歧 19 需三方会签 / D3 详略级 69 以算法侧为准 / D4 互补级 59 合并口径卡 / D5 表述级 9 登记同义词 / D1 为 0）；20261021 实现倾向算法库 79（50.6%）、展示+专题 63（40.4%）、项目内部口径 12（最高风险，需甲方会签）。兼容接口结论：D2 拆配置型（可参数化兼容）与方法型（工程无法调和，卡点甲方会签）两半。成果已从 local-workspace 迁入主仓（local-workspace 不同步 GitLab，产物内 0 处 local-workspace 路径引用，迁移校验通过）。下游「三大系统兼容性指标 MD/py 升级」以本单分级结果为输入，落地时另行建单。
+    touched_files:
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/METRIC-SRS-GAP-L01.md"
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/README.md"
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/差异分级标准通俗解释.md"
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/倾向性深度调研报告.md"
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/结论汇总对照表.xlsx"
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/**"
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-01-指标与数据闸.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/指标算法库上线/E-METRIC-ALGOLIB-LAUNCH-L01.md"
+      - "agent-delivery/metrics/calc-logic/"
+      - "agent-delivery/metrics/registry/"
+    definition_of_done:
+      - "565 指标三文档出现分类完成：跨系统 156 / 单系统 278 / 内部 131，落盘 结论汇总对照表.xlsx（4 sheet）"
+      - "跨系统 156 指标差异五级分级完成（D1–D5），156 份逐指标差异报告落盘 产物/file/"
+      - "差异分级标准通俗解释（含每级真实案例与兼容接口工程结论）落盘 产物/差异分级标准通俗解释.md"
+      - "20261021 实现倾向性判定报告落盘 产物/倾向性深度调研报告.md（算法库 50.6% / 展示+专题 40.4% / 内部 7.7%）"
+      - "产物迁入主仓 agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/ 并 git push origin/dev；WBS 登记 系统-01-指标与数据闸.md"
+    update_time: "2026-10-27T20:30:00+08:00"
   - id: LUMEN-INTEL-FE-L1C
     model_used: "glm-5.3"
     evidence: "handoff=agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-FE-L1C.md; commit=lumen-ui-topic@4c87b38(已推dev 6a60ef6..4c87b38); checks=type-check✅/eslint✅/intelL1c.selfcheck✅"
@@ -42616,3 +42670,308 @@ tasks:
       - "menu.ts intel 三叶 component 从 DevelopingView 指向占位页（三单各自替换终页，L1C 先收口避免 menu.ts 冲突）"
       - "自检 intelL1c.selfcheck.mjs（评审零泄漏断言 + 三件挂载断言）"
     update_time: "2026-10-27T17:37:17+08:00"
+  - id: DOC-ENT-PAIN-ANALYSIS-CHAIN-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/DOC-ENT-PAIN-ANALYSIS-CHAIN-L01.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 0.1
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T10:27:17.129Z"
+    last_seen_at: "2026-10-27T10:27:17.129Z"
+    lock_until: "2026-10-27T14:27:17.129Z"
+    claimed_by: "agent:architect-agent"
+    title: "企业痛难点 — 完整分析链路设计 + LLM 落点（05.3.5，对标 05.3.1 / 05.3.2 P7）"
+    status: "ready_to_sign"
+    agent: "architect-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 100000
+    note: "监管人 human:徐滕强 会签通过（2026-10-27 20:39『可以』，针对 v1.1 勘误版含 3C+5I 审查闭环与机械自检脚本）。definition 阶段会签完成，per 状态机 definition/integration→ready_to_sign。"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/.cursor/skills/gkx-topic-analysis-chain-design/SKILL.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3-企业.md"
+    definition_of_done:
+      - "覆盖菜单：企业痛难点分析（E-29）；产出 05.3.5 链路文 + 05.3 总册指针；体例对标 05.3.1（含 Mermaid 图件）"
+      - "含 A 对照/B 链路/C 本叶落点（共性问题四格 evidence/cause/best_practice/solution）/D Prompt§5.6 草案/E 契约/F 与评估族差异/G 开放项；对齐 05.3.2 P7"
+      - "LLM：目标态 narrate_pain（或等价）；硬约束写清——标题禁润色、诚实句必留、成因禁因果外推、solution 禁具体政策工具；三态；失败退规则稿任务仍 success"
+      - "handoff 根路径 DOC-ENT-PAIN-ANALYSIS-CHAIN-L01.md（架构合规≥7 + Cost）；ponytail: off；不写 repos 实现（实现另开 NARRATE feature）"
+      - "不含：招引/培育（P3）、供应链（规则锁死）、评估三模式（已交付）、改口径"
+    update_time: "2026-10-27T20:39:21+08:00"
+  - id: POLICY-SSB-HARVEST-L01
+    blocked_by: |
+      公开政策原文不足 1000 条。国务院政策库翻页 784 行，标题或摘要连续出现「固态电池」的 13 条，其中政策文本加上已核对的地方与国外原文合计 8 条（国内 7、国外 1）。解读、发布会、新闻和拆词误命中不计入。欧盟电池法规 2023/1542 全文无 solid-state。清单在 agent-delivery/data/POLICY/ssb-web-harvest/。需负责人决定是下调条数，还是放宽到正文出现即可并继续收地方站点。
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-27T11:26:58.137Z"
+    last_seen_at: "2026-10-27T11:26:58.137Z"
+    lock_until: "2026-10-28T11:26:58.137Z"
+    claimed_by: "agent:data-agent"
+    title: "固态电池政策清单：国内外合计不少于 1000 条"
+    status: "blocked"
+    agent: "data-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "data-algo-subcoord"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 200000
+    note: "开工：只出清单，不写库。目标合计不少于 1000 条，国内外分平面。"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/data/POLICY/ssb-web-harvest/"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
+      - "agent-delivery/data/data-design/storage/POLICY/sources/ods-ddl.md"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/ods-to-dwd-mapping.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/20-灌数闸门.md"
+    definition_of_done:
+      - "清单落在 agent-delivery/data/POLICY/ssb-web-harvest/，国内与国外分平面，合计不少于 1000 条，并分别计数"
+      - "每条有标题、发文机关、发布日期、可打开的原文链接；文号对不上则留空；标题、关键词或摘要至少一处含「固态电池」"
+      - "计入 1000 的是政策文本（法规、规划、意见、措施、通知、行动方案或同等国外政策）；新闻稿和研报不计入"
+      - "id 稳定且长度不超过 100，国内与国外不使用同一个 id"
+      - "本叶不写 demo 库、不写供应方库 gkx、不写正式 gkxlumenx_*；不打开 WBS-06-03G；不代替 WBS-06-03 / 06-17 / 06-18"
+    update_time: "2026-10-27T19:34:19+08:00"
+  - id: POLICY-SSB-DEMO-INGEST-L01
+    evidence: "agent-handoffs/POLICY-SSB-DEMO-INGEST-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-27T11:55:51.395Z"
+    last_seen_at: "2026-10-27T11:55:51.395Z"
+    lock_until: "2026-10-27T15:55:51.395Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "固态电池政策追加灌入政策 Demo 库，不少于 1000 条"
+    status: "in_progress"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "data-algo-subcoord"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "按钮已接上，只追加清单里的 8 条（国内 7 有正文，日本 1 条题录）。sqlite 自检通过。不满 1000 条，仍停 in_progress。"
+    depends_on:
+      - "POLICY-SSB-HARVEST-L01"
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "repos/demo-algo-ent-analysis/polan/mockgen/incr.py"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
+      - "agent-delivery/data/POLICY/ssb-web-harvest/"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/ods-to-dwd-mapping.md"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/pipeline-demo-mock.md"
+    definition_of_done:
+      - "只追加写入 demo_gkxlumenx_ods.dwd_policy_base 与 dwd_global_policy_base，再洗入 demo_gkxlumenx_dwd.policy_base_info；source_plane 分别为 domestic 与 global"
+      - "policy_id 用清单 id 原文，不加 gbl: 前缀；source 标 web-solid-battery"
+      - "主表中 source=web-solid-battery 且未删除的行不少于 1000，国内与国外都有"
+      - "不清空既有政策；不跑 mockgen replace，不跑 run_all_policy 全量重建"
+      - "补两张 ODS 的差集映射。现有 ingest_pending 只读国内表，不能当成国外入口"
+      - "is_live(policy) 为真则拒绝。不写供应方库 gkx，不写正式 gkxlumenx_*。不打开 WBS-06-03G，不代替 WBS-06-03 / 06-17 / 06-18"
+    update_time: "2026-10-27T20:02:07+08:00"
+  - id: SVC-TECH-TREND-NARRATE-L01
+    model_used: "glm-5.3-Flash"
+    evidence: |
+      双 prompt 包（techpower/trend v1）+ narrate_common 族共享件抽取（T1 切换复用，自检不回归）+ G2a/G2b 路由正名（topic-py 2 行，单测同步）+ 两叶装配接线（leaf_tech_power/leaf_org_trend 各 1 行）+ FE 两板渲染分支。自检：两叶 9 场景 ALL PASS（含档位词越权拒绝/护栏短路）、T1 8 场景 ALL PASS、装配回归 34 passed、topic-py 21 passed、FE 三绿。改动停三仓本地待人工验收。handoff: agent-handoffs/SVC-TECH-TREND-NARRATE-L01.md
+    cost_warn: "false"
+    actual_tokens: 160000
+    actual_cost: 1.6
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T13:01:45.814Z"
+    last_seen_at: "2026-10-27T13:01:45.814Z"
+    lock_until: "2026-10-27T17:01:45.814Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "服务链 P2 — 技术力+新增趋势 LLM 落点改造（prompt 包 + 装配接线 + FE，对标 05.7.3/05.7.4）"
+    status: "pending_test"
+    agent: "algorithm-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: |
+      S1 收口：监管人验收放行（2026-10-27 21:00），三仓已推（algo 2bf424f/topic-py 64c8a41/FE 8289f77），deploy 全绿（algo api/worker 自动、search-py 21:08、FE 管线绿）。两叶线上实证达 DoD⑤：SVC-20261027-026（trend ok，prompt_pack=svc.trend.narrate）+ SVC-20261027-025（techpower ok，prompt_pack=svc.techpower.narrate）；首轮 023/024 ReadTimeout 属可解释 fallback，护栏实战验证。联调确认推 pending_test。
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "lumen_common/prompts/svc/"
+      - "lumen_common/algorithms/svcan/"
+      - "lumen-ui-topic src/views/service/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.3-服务机构技术力评估对比分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.4-服务机构新增趋势分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/DOC-SVC-TECH-TREND-FAMILY-CHAIN-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.7.2-服务链分析LLM落点表.md"
+    definition_of_done:
+      - "落盘 svc.techpower.narrate + svc.trend.narrate（或设计钉死的包名）经既有 loader；对齐 05.7.3/05.7.4 §Prompt；复用 T1 narrate 三态/白名单边界，禁止另造第二套 LLM 框架"
+      - "tech_power / org_trend（或设计钉死叶子名）装配路径接入 narrate：只改叙述 text；矩阵/分值/序列数字规则锁死；无 Key/失败 → fallback/skipped，任务仍 success；可注入 client 自检"
+      - "FE：ok 渲染 narration，fallback/skipped 退规则稿；禁止前端补数；D9 ⓘ 按设计挂点"
+      - "两叶各至少 1 条线上/dev 实证 narration=ok（或可解释 fallback）；handoff 根路径 SVC-TECH-TREND-NARRATE-L01.md + cost；ponytail: full"
+      - "不含：STAGE（G1/G2/G4）、T4–T7、改口径、企业/产业链工单"
+    update_time: "2026-10-27T21:14:45+08:00"
+  - id: DOC-CHAIN-DIAG-FAMILY-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-27T12:27:28.246Z"
+    last_seen_at: "2026-10-27T12:27:28.246Z"
+    lock_until: "2026-10-28T12:27:28.246Z"
+    claimed_by: "agent:coordinator-agent"
+    title: "产业诊断分析（关键环节+瓶颈堵点合并族）— 完整链路设计 + LLM 落点（05.2.2）"
+    status: "in_progress"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-DIAG"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      产业链双轨管线队列 1（coordinator_dispatch，监管人 human:徐滕强 2026-10-27 总授权）。菜单=产业关键环节识别 + 产业瓶颈堵点识别（合并族）。范围：现网 as-built + LLM 落点，禁对标报告。同组实现单 CHAIN-DIAG-NARRATE-L01 待本单 ready_to_sign 或 note 含会签关键词后由主会话开启。不复活 OPEN-CY。
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.1-产业周期分析链路.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
+      - ".cursor/skills/gkx-topic-analysis-chain-design/SKILL.md"
+    definition_of_done:
+      - "05.2.2-产业诊断分析链路.md 落盘并 push origin/dev：关键环节（key_link）+ 瓶颈堵点（bottleneck）合并族 as-built 对照 + 完整链路 + LLM 落点表（逐点位判定三档）"
+      - "开放项只登记不拍板（QC02/QC04 等 🟡 引用客户决策清单，OPEN-CY 不回潮）"
+      - "handoff 落盘 agent-handoffs/ + registry evidence/design_refs 回填"
+      - "体例对齐 05.2.1（金样 05.3.1 §5.6）；禁止对标报告长文；不扩队列外菜单"
+    update_time: "2026-10-27T20:27:35+08:00"
+  - id: CHAIN-DIAG-NARRATE-L01
+    title: "产业诊断分析（关键环节+瓶颈堵点）— LLM 叙述落点改造（prompt 文件化+护栏）"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "DOC-CHAIN-DIAG"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      产业链双轨管线队列 1 实现单（coordinator_dispatch）。前置：DOC-CHAIN-DIAG-FAMILY-L01 ≥ ready_to_sign 或 note 含会签关键词。范围=本族叙述落点（key_link/bottleneck）；参照 CHAIN-CYCLE-NARRATE-L01 handoff 模式；具体 DoD 细节以设计稿 LLM 章为准，子会话不得自扩。
+    depends_on:
+      - "DOC-CHAIN-DIAG-FAMILY-L01"
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "lumen_common/prompts/chain/"
+      - "lumen_common/algorithms/chain/key_link.py"
+      - "lumen_common/algorithms/chain/bottleneck.py"
+      - "tests/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2.2-产业诊断分析链路.md"
+      - "agent-delivery/agent-handoffs/CHAIN-CYCLE-NARRATE-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
+    definition_of_done:
+      - "本族 LLM 落点按设计稿 LLM 章实施：prompt 文件化入 lumen_common/prompts/chain/ 经统一 loader，去掉内联唯一真源"
+      - "数字白名单/因果禁句/失败 degraded 不改任务终态；单测可注入（或等价）且无 Key → skipped/degraded 仍 success"
+      - "默认不改 Java 对外契约；不碰 RustFS 新路径"
+      - "handoff + cost 四字段 + ponytail: full；参照 CHAIN-CYCLE-NARRATE-L01 模式"
+    update_time: "2026-10-27T20:27:20+08:00"
+  - id: DOC-CHAIN-REGIONAL-FAMILY-L01
+    title: "区域产业评价（指数+竞争力合并族）— 完整链路设计 + LLM 落点"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-REGIONAL"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "产业链队列2。同组 CHAIN-REGIONAL-NARRATE-L01 待本单 ready_to_sign 后开。"
+    collaborators:
+      - "algorithm-agent"
+    definition_of_done:
+      - "05.2.x 区域指数+区域竞争力合并族链路文落盘并 push origin/dev"
+      - "开放项只登记不拍板"
+      - "handoff 落盘 + registry 回填"
+      - "体例对齐 05.2.1 含 Mermaid"
+    update_time: "2026-10-27T21:06:16+08:00"
+  - id: DOC-CHAIN-SZ-FAMILY-L01
+    title: "深圳产业对比与发展（对比+发展合并族）— 完整链路设计 + LLM 落点"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-SZ"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "产业链队列3。同组 CHAIN-SZ-NARRATE-L01 待本单 ready_to_sign 后开。"
+    collaborators:
+      - "algorithm-agent"
+    definition_of_done:
+      - "05.2.x 深圳对比+深圳发展合并族链路文落盘并 push origin/dev"
+      - "开放项只登记不拍板"
+      - "handoff 落盘 + registry 回填"
+      - "体例对齐 05.2.1 含 Mermaid"
+    update_time: "2026-10-27T21:06:28+08:00"
+  - id: DOC-CHAIN-PANORAMA-LLM-PROBE-L01
+    title: "产业全景（panorama）LLM 触点摸排探针"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-PANORAMA"
+    priority: "P2"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "产业链队列4（收尾探针）。结论必须二选一，不许双可。"
+    definition_of_done:
+      - "摸排 chain 全景（panorama）现网产出与 LLM 触点：结论二选一——(A) 有触点：列出落点表并建议建 CHAIN-PANORAMA-NARRATE 单；(B) 无 LLM 叶：建 chore 单关闭「无 LLM 叶」"
+      - "摸排结论+证据（代码锚点）写入 handoff 并落盘 push"
+      - "registry evidence 回填"
+    update_time: "2026-10-27T21:06:42+08:00"
+  - id: CMS-JX-RELTYPE-CRUD-L01
+    title: "关系类型字典增删改查（四类实体独立，对齐 stages 模式）"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      2026-10-27 久新二轮反馈衍生真缺：关系类型字典 CRUD 完全缺失（type 现为自由文本，原型语义应从字典选）。方案：新表 cms_kg_relation_type（entity_type+name 唯一，软删）+4 端点（list/create/update/delete），delete 带引用检查 40901；relations/create 的 type 保持自由文本向后兼容但前端改从字典取。对齐 stages 模式。四 tab 各自独立字典
+    depends_on: []
+    definition_of_done:
+      - "新表 cms_kg_relation_type（entity_type+name 唯一约束，软删列）DDL 入仓并真库执行"
+      - "4 端点：/kg/{entityType}/relation-types/list|create|update|delete（对齐 stages 模式与风格）"
+      - "delete 引用检查：类型已被 cms_kg_relation.rel_type 引用时 40901 拒删"
+      - " relations/create 的 type 保持自由文本向后兼容"
+      - "存量关系 type 值自动导入为对应实体类型字典初始行"
+      - "编译绿 + 真库冒烟（四 tab 各建/查/改/删一轮）"
+      - "OpenAPI 契约登记 + handoff"
+    update_time: "2026-10-27T21:14:11+08:00"
