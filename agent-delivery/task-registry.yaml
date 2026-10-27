@@ -41344,7 +41344,7 @@ tasks:
     lock_until: "2026-10-28T13:00:56.161Z"
     claimed_by: "agent:algorithm-agent"
     title: "企业痛难点 — narrate_pain 共性问题四格润色"
-    status: "claimed"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P1"
@@ -41354,7 +41354,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 100000
-    note: "coordinator_dispatch 升 ready：设计门 DOC-ENT-PAIN-ANALYSIS-CHAIN-L01 已 ready_to_sign（05.3.5 v1.1 会签版），按排单授权开工。"
+    note: "开工：先读 05.3.5 §5 契约 + DOC handoff + narrate_eval 金样，再实现四格润色"
     depends_on:
       - "LUMEN-ENT-EVAL-NARRATE-L01"
     design_refs:
@@ -41363,7 +41363,7 @@ tasks:
       - "narrate_pain：只改共性问题四格 text（命中依据/成因/最佳实践/解决方向）；标题/优先级/影响数不动"
       - "硬约束：标题禁润色、诚实句必留、成因禁因果外推、solution 禁具体政策工具；narration 三态；失败退规则稿任务仍 success"
       - "单测可注入 client；handoff + 05.3.2 观测补记"
-    update_time: "2026-10-27T21:00:56+08:00"
+    update_time: "2026-10-27T21:02:28+08:00"
   - id: POLICY-DDL-GAP-L10
     model_used: "grok-4.7"
     evidence: "agent-handoffs/政策模块-E7/POLICY-DDL-GAP-L10.md"
@@ -42059,7 +42059,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      2026-10-27 20:52 口径裁定（human:徐滕强）：久新前端清单仅作参考线索，业务口径以我方规格书分析为准（前提=满足需求）。执行判定：真缺=1.2 remark、1.3 definition/unit、1.4 extra四键、2.2 文档债、2.3 文档类型修正；假缺=1.1（已支持id）、下拉（接口有数据）；待产品=2.1阶段映射、3.三项已砍需求（另立单不走本单）
+      2026-10-27 二轮字段补齐（commit 390d85d 已推 origin/dev，编译绿）：①cms_kg_relation+remark 列（DDL 增量真库已执行）+create/update/list/detail 四处接入；②cms_kg_attr+definition/unit 两列（真库已执行）+list/create/update 接入；③EXTRA_KEYS 白名单 policy+executor/audience、service+capability/review（flattenExtra 自动平铺）。待 CI 部署后前端重验。口径：键名以后端定义为准，久新自造键（tab-1__f0）不兼容
     depends_on: []
     definition_of_done:
       - "algo-py 新增 POST /internal/v1/llm/generate（taskType 路由 prompt，kg-rel-insight 占位模板待李向阳替换，LLM 未配 Key/失败降级空文本 200）"
@@ -42069,7 +42069,7 @@ tasks:
       - "编译绿 + 两端真库/真服务冒烟（mock prompt 出示意文本）"
       - "OpenAPI 契约登记 + handoff（平台基建-PLATFORM/CMS-JX-REL-INSIGHT-L01.md）"
       - "技术债备注：LLM 网关独立专项后续建单统一收敛"
-    update_time: "2026-10-27T20:53:27+08:00"
+    update_time: "2026-10-27T21:05:54+08:00"
   - id: ENT-FILTER-INDUSTRY-LINK-L01
     model_used: "glm-5.3-Flash"
     cost_warn: "green"
@@ -42779,9 +42779,9 @@ tasks:
     actual_tokens: 160000
     actual_cost: 1.6
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-27T11:39:47.388Z"
-    last_seen_at: "2026-10-27T11:39:47.388Z"
-    lock_until: "2026-10-27T15:39:47.388Z"
+    claimed_at: "2026-10-27T13:01:45.814Z"
+    last_seen_at: "2026-10-27T13:01:45.814Z"
+    lock_until: "2026-10-27T17:01:45.814Z"
     claimed_by: "agent:algorithm-agent"
     title: "服务链 P2 — 技术力+新增趋势 LLM 落点改造（prompt 包 + 装配接线 + FE，对标 05.7.3/05.7.4）"
     status: "in_progress"
@@ -42812,7 +42812,7 @@ tasks:
       - "FE：ok 渲染 narration，fallback/skipped 退规则稿；禁止前端补数；D9 ⓘ 按设计挂点"
       - "两叶各至少 1 条线上/dev 实证 narration=ok（或可解释 fallback）；handoff 根路径 SVC-TECH-TREND-NARRATE-L01.md + cost；ponytail: full"
       - "不含：STAGE（G1/G2/G4）、T4–T7、改口径、企业/产业链工单"
-    update_time: "2026-10-27T19:54:10+08:00"
+    update_time: "2026-10-27T21:01:45+08:00"
   - id: DOC-CHAIN-DIAG-FAMILY-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-27T12:27:28.246Z"
@@ -42875,3 +42875,63 @@ tasks:
       - "默认不改 Java 对外契约；不碰 RustFS 新路径"
       - "handoff + cost 四字段 + ponytail: full；参照 CHAIN-CYCLE-NARRATE-L01 模式"
     update_time: "2026-10-27T20:27:20+08:00"
+  - id: DOC-CHAIN-REGIONAL-FAMILY-L01
+    title: "区域产业评价（指数+竞争力合并族）— 完整链路设计 + LLM 落点"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-REGIONAL"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "产业链队列2。同组 CHAIN-REGIONAL-NARRATE-L01 待本单 ready_to_sign 后开。"
+    collaborators:
+      - "algorithm-agent"
+    definition_of_done:
+      - "05.2.x 区域指数+区域竞争力合并族链路文落盘并 push origin/dev"
+      - "开放项只登记不拍板"
+      - "handoff 落盘 + registry 回填"
+      - "体例对齐 05.2.1 含 Mermaid"
+    update_time: "2026-10-27T21:06:16+08:00"
+  - id: DOC-CHAIN-SZ-FAMILY-L01
+    title: "深圳产业对比与发展（对比+发展合并族）— 完整链路设计 + LLM 落点"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-SZ"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "产业链队列3。同组 CHAIN-SZ-NARRATE-L01 待本单 ready_to_sign 后开。"
+    collaborators:
+      - "algorithm-agent"
+    definition_of_done:
+      - "05.2.x 深圳对比+深圳发展合并族链路文落盘并 push origin/dev"
+      - "开放项只登记不拍板"
+      - "handoff 落盘 + registry 回填"
+      - "体例对齐 05.2.1 含 Mermaid"
+    update_time: "2026-10-27T21:06:28+08:00"
+  - id: DOC-CHAIN-PANORAMA-LLM-PROBE-L01
+    title: "产业全景（panorama）LLM 触点摸排探针"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-PANORAMA"
+    priority: "P2"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "产业链队列4（收尾探针）。结论必须二选一，不许双可。"
+    definition_of_done:
+      - "摸排 chain 全景（panorama）现网产出与 LLM 触点：结论二选一——(A) 有触点：列出落点表并建议建 CHAIN-PANORAMA-NARRATE 单；(B) 无 LLM 叶：建 chore 单关闭「无 LLM 叶」"
+      - "摸排结论+证据（代码锚点）写入 handoff 并落盘 push"
+      - "registry evidence 回填"
+    update_time: "2026-10-27T21:06:42+08:00"
