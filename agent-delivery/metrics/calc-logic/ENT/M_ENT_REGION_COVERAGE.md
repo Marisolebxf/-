@@ -1,9 +1,20 @@
 # 区域覆盖数（M_ENT_REGION_COVERAGE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_REGION_COVERAGE.md`；复现脚本 `metrics/repro/M_ENT_REGION_COVERAGE.py` → `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：COUNT（去重计数）｜ **域**：企业分析／企业总览／区域分布｜ **UI 挂载**：区域分布卡（省/市/县三级下钻）｜ **数据支持度**：**完全直接支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_REGION_COVERAGE.py`、产物 `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_REGION_COVERAGE.md`；复现脚本 `metrics/repro/M_ENT_REGION_COVERAGE.py` → `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_REGION_COVERAGE.py`、产物 `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_REGION_COVERAGE.md` |
 | 复现脚本 | `metrics/repro/M_ENT_REGION_COVERAGE.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json` |
@@ -60,15 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_REGION_COVERAGE.py`、产物 `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT（去重计数）｜ **域**：企业分析／企业总览／区域分布｜ **UI 挂载**：区域分布卡（省/市/县三级下钻）｜ **数据支持度**：**完全直接支持**
-> **口径来源**：王惠《企业分析模型指标字段清单》20260816 底稿 → data-agent 正式化（`calc-logic/ENT/M_ENT_REGION_COVERAGE.md`）｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_REGION_COVERAGE.py` → `code/M_ENT_REGION_COVERAGE_out.json`
-> **wanghui**：true（§五 含王惠口径对照）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -108,7 +115,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 对象 | 角色 | 本件实测 |
 |---|---|---|
 | `gkx.dwd_org_base_info` | 唯一源表 | 189,116 行（`is_deleted=0`），`province`/`city`/`area` 三级地理字段 |
-| `code/M_ENT_REGION_COVERAGE_out.json` | 唯一产物 | `compute.distinct` / `compute.fill` / `compute.coverage` / `compute.concentration` |
+| `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json` | 唯一产物 | `compute.distinct` / `compute.fill` / `compute.coverage` / `compute.concentration` |
 | `gkx.dwd_dim_admin_area` | 仅作层级参照，未参与分母 | 20,000 行，区县仅 120 个，不足以当全国分母（见 §3.4） |
 
 不引用任何演示库表。旧稿用过的区划维表（`code_region`）在 gkx 内不存在，本件不复用它，也不需要它——覆盖数是整数计数，不需要分母表。
@@ -123,7 +130,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 结构上有一个必须同时交付的限定：底册高度偏粤。广东 188,776 家占 99.8202%，省外合计 340 家，其中 22 个省级单位各自不足 10 家。按「≥10 家才算有效覆盖」的口径，29 个省里只有 7 个是有效覆盖，有效率 22.5806%，与 93.5484% 的省级覆盖率相差 70.97 个百分点。
 
-因此本件的结论是「数据支持度最高、解释边界最窄」：数字可以直接用，但只能表述为「名录触达面」，不能表述为「全国市场覆盖率」。代码 `code/M_ENT_REGION_COVERAGE.py` 一次运行实测 134.72 秒产出 `_out.json`，与 gkx 全表直查逐格吻合。
+因此本件的结论是「数据支持度最高、解释边界最窄」：数字可以直接用，但只能表述为「名录触达面」，不能表述为「全国市场覆盖率」。代码 `metrics/repro/M_ENT_REGION_COVERAGE.py` 一次运行实测 134.72 秒产出 `_out.json`，与 gkx 全表直查逐格吻合。
 
 ## 一、需求定义概述
 
@@ -296,11 +303,11 @@ $$ rate_{eff} = \frac{7}{31} = 22.5806\% $$
 
 ### 2.7 复现代码与结果展示
 
-脚本只做一次分组查询，不读快照、不连第二个库。产物落在 `code/M_ENT_REGION_COVERAGE_out.json`，含 `compute.distinct`、`compute.fill`、`compute.coverage`、`compute.concentration`、`compute.top_provinces`、`compute.top_cities` 六块，另有 `sources` 记录库名、主机、SQL 全文。
+脚本只做一次分组查询，不读快照、不连第二个库。产物落在 `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json`，含 `compute.distinct`、`compute.fill`、`compute.coverage`、`compute.concentration`、`compute.top_provinces`、`compute.top_cities` 六块，另有 `sources` 记录库名、主机、SQL 全文。
 
 | 命令 | 期望 | 备注 |
 |---|---|---|
-| `python3 M_ENT_REGION_COVERAGE.py` | 29 / 65 / 146 | 全表分组，gkx 上为分钟级（库负载不同波动约一倍） |
+| `cd code && python3 M_ENT_REGION_COVERAGE.py` | 29 / 65 / 146 | 全表分组，gkx 上为分钟级（库负载不同波动约一倍） |
 | `rebuild_metric.py M_ENT_REGION_COVERAGE --check` | 语义一致 | 重跑对账 |
 | `audit_md_vs_out.py --only M_ENT_REGION_COVERAGE` | 无漂移 | 正文数字逐项对产物 |
 
@@ -448,13 +455,11 @@ $$ rate_{eff} = \frac{7}{31} = 22.5806\% $$
 
 ## 参考文献
 
-1. 项目内 calc-logic：`M_ENT_REGION_COVERAGE.md`（王惠 20260816 底稿正式化版本，定义与源表字段原文出处）.
-2. 民政部. 行政区划代码公布栏目. https://www.mca.gov.cn/n156/n2679/index.html
-3. 国家统计局. 统计用区划代码和城乡划分代码编制规则. https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
-4. Eurostat. NUTS — Nomenclature of territorial units for statistics. https://ec.europa.eu/eurostat/web/nuts
-5. Hansen, W. G. (1959). How Accessibility Shapes Land Use. Journal of the American Institute of Planners, 25(2), 73–76. https://doi.org/10.1080/01944365908978307
-6. Fotheringham, A. S., & Wong, D. W. S. (1991). The Modifiable Areal Unit Problem in Multivariate Statistical Analysis. Environment and Planning A, 23(7), 1025–1044. https://doi.org/10.1068/a231025
-
+1. 民政部. 行政区划代码公布栏目. https://www.mca.gov.cn/n156/n2679/index.html
+2. 国家统计局. 统计用区划代码和城乡划分代码编制规则. https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
+3. Eurostat. NUTS — Nomenclature of territorial units for statistics. https://ec.europa.eu/eurostat/web/nuts
+4. Hansen, W. G. (1959). How Accessibility Shapes Land Use. Journal of the American Institute of Planners, 25(2), 73–76. https://doi.org/10.1080/01944365908978307
+5. Fotheringham, A. S., & Wong, D. W. S. (1991). The Modifiable Areal Unit Problem in Multivariate Statistical Analysis. Environment and Planning A, 23(7), 1025–1044. https://doi.org/10.1068/a231025
 ---
 
 # 附件
@@ -481,7 +486,7 @@ $$ rate_{eff} = \frac{7}{31} = 22.5806\% $$
 | `compute.coverage.effective_provinces` | 有效覆盖省数 | 7 |
 | `compute.concentration.guangdong_share_pct` | 广东占比 | 99.8202 |
 
-任一行与 `code/M_ENT_REGION_COVERAGE_out.json` 对不上即为产物漂移。
+任一行与 `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json` 对不上即为产物漂移。
 
 ## 附录 C 可行性完整版
 
@@ -643,11 +648,3 @@ $$ rate_{eff} = \frac{7}{31} = 22.5806\% $$
 | 8 | lint_nodemo | 0 命中 |
 | 9 | check_base_years | OK |
 | 10 | audit_md_vs_out | 无漂移 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

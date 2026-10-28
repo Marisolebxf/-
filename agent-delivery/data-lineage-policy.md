@@ -231,7 +231,24 @@ D4 接入状态   →  当前线上跑的是什么数据（运行时事实）
 
 **卡内层**（ⓘ 弹卡「就绪度」四行状态点）：满足 `IconCheckCircleFill` 绿 / 部分 `IconExclamationCircleFill` 橙 / 缺失 `IconCloseCircleFill` 红 / 待定 `IconClockCircle` 蓝 / 不适用 `IconMinusCircle` 灰。
 
-**不改变的既有规则**：评审模式 §5 位置字典与显隐边界；⚠️ 文案唯一真源 = gap catalog；D3=none 不伪造数值（业务态置灰不计分）；模块复核状态另轨表达；业务口径决策只能甲方拍板。
+**不改变的既有规则**：评审模式 §5 位置字典与显隐边界；⚠️ 文案唯一真源 = gap catalog；D3=none 的正式计分仍置灰或排除；模块复核状态另轨表达；业务口径决策只能甲方拍板。功能验收阶段的缺项补齐见 §2.4，不把 D4 改成 live。
+
+### 2.4 功能验收缺项补齐（v1.6，D16）
+
+计算逻辑已经写明、源里仍然缺字段或缺行时，功能验收允许用专门的缺项表把这一格补上，让公式能跑通。这是验收用的输入，不是正式源，也不是口径拍板。
+
+| 项 | 规定 |
+|---|---|
+| 库 | 只建在 `gkxlumenx_gapfill`。禁止建在 `gkxlumenx_ods` / `gkxlumenx_dwd` / `gkxlumenx_ads`，禁止写入供应方库 `gkx` |
+| 表名 | 必须以 `gapfill_` 开头，例如 `gapfill_synth_rd_employee` |
+| 谁写 | Python（算法或数据脚本）。允许用 LLM 生成，也允许规则或手工灌入。Java 与前端不建表、不灌数 |
+| 行上必有 | `metric_id`、`gap_item`（缺的那一项）、`fill_method`（`llm` / `rule` / `manual` / `other`）、`fill_model`（方法为 `llm` 时必填模型名）、`gapfill_batch_id`、`generated_at` |
+| 谁读 | 仅功能验收。生产配置不读 `gkxlumenx_gapfill`。读到的结果写入 ADS 时，`calc_batch_id` 以 `gapfill_` 开头，与 `mock_`、`gdf_` 分开 |
+| 就绪度 | 缺项还没接入公式时，D4 仍是 mock。缺项补齐并按该指标已写明的默认口径实算完成之后，D4 不得再是 mock。data-agent 将 `ingestion_status` 改为 `live`，`source_systems` 写明 `gapfill_` 批次。界面去掉 🧪。不得在公式未接通时提前改绿 |
+| 口径 | `Q-*` 不必等甲方书面升绿才开工。实施锁定客户决策清单里已经写下的团队临时默认。默认不是甲方官方口径，ⓘ 可保留待确认；算出来的数按这个默认走 |
+| 换真源 | 该缺项在 ODS/DWD 有了可用值之后，计算停读对应 `gapfill_` 表。缺项行不并入 ODS、DWD 或供应方库 |
+
+缺项清单以该指标的 `metrics/calc-logic/{域}/{metric_id}.md` 为准。文档里没有登记为缺项的字段，不用缺项表去补。
 
 ---
 
@@ -447,7 +464,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - ✅ 维护 `data-source-mapping-registry.yaml`
 - ✅ 按 §2.1 **分阶段**登记 seed：OPEN 允许 `D1=draft` + `algorithm_type=UNKNOWN`；**仅** `D1=aligned` 时 9 项必须齐
 - ✅ ODS→DWD→DWS→ADS 各层都有字段血缘 README
-- ❌ Mock 与真实数据混用（必须用 `calc_batch_id` 前缀 `mock_` 区分）
+- ❌ Mock 与真实数据混用（必须用 `calc_batch_id` 前缀 `mock_` 区分；功能验收缺项表另用 `gapfill_`，见 §2.4）
 - ❌ 同名指标允许两套口径（必须用 VARIANT 区分）
 - ❌ 用终态 8 件套拒收 METRIC-OPEN / PACK handoff
 
@@ -460,6 +477,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - ❌ 在 Java 仓写算法（铁律 1）
 - ❌ 引入 metric 但不注册到 cfg_metric
 - ❌ `UNKNOWN` 仍派 Python/Java 实现单
+- ✅ 功能验收缺项只写入 `gkxlumenx_gapfill.gapfill_*`（§2.4）。生产配置不读这些表
 
 ### 7.4 api-agent
 
@@ -477,12 +495,14 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - ✅ 从 `/metrics/v1/catalog` 动态读元数据（不硬编码）
 - ❌ 硬编码"数据说明"到组件代码中
 - ❌ 删除 / 隐藏 ⓘ 让界面"更干净"
+- ❌ 因缺项表有数而去掉 🧪，或把 D4 显示成 live
 
 ### 7.6 qa-agent
 
 - ✅ 每个 epic 末尾对**至少 5 个 metric_id 抽样**做 4 段链路核验：UI 显示值 → API 返回值 → ADS 表查询值 → DWD 加工值 → ODS 源系统值
 - ✅ 抽样结果写入 `验收文档/数据血缘-链路核验-{epic}.md`
 - ❌ 跳过链路核验（即使时间紧）
+- ✅ 功能验收若读了 `gapfill_` 表，核验记录写明 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`。这段链路的终点是缺项表，不是 ODS
 
 ### 7.7 doc-agent
 
@@ -613,6 +633,10 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 
 ✅ **要**。写 `Mock @ batch=mock_20260617_seed42`，便于甲方理解"这是设计期的占位"，而非"我们没想清楚"。
 
+### Q6: 功能验收能不能给缺项灌数？
+
+✅ **能**，只限 §2.4：库 `gkxlumenx_gapfill`、表名 `gapfill_` 开头，由 Python 用 LLM 或其他方式灌入。口径按清单里的临时默认实算。缺项补齐并实算完成后 D4 改为 live，不再标 mock。
+
 ---
 
 **本规约直接影响项目专业可信度，必须从 DS-25 试点开始 100% 执行。**
@@ -632,3 +656,4 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 | **v1.4.1** | 2026-08-22 | **§2.1.1 `lifecycle_stage`**：矩阵可选字段，标明填齐流水线位置；与 D1–D4 正交；存量 `unspecified` 不倒推。决策：同日淮政玮 | human:淮政玮 |
 | **v1.5** | 2026-08-22 | **`algorithm_type` 纳入 8 件套**（第 5 项，共 9 项；`UNKNOWN` 禁 aligned / 禁派实现单）；机器真源迁到 `metrics/registry/`。决策：项目负责人淮政玮 | human:淮政玮 |
 | **v1.5.2** | 2026-08-25 | **`domain` 注册表字段**（中文枚举）；不进 8 件套。文件名代码保留。决策：项目负责人淮政玮 | human:淮政玮 |
+| **v1.6** | 2026-10-28 | **§2.4 功能验收缺项补齐**：库 `gkxlumenx_gapfill`、表前缀 `gapfill_`；Python 可用 LLM 或其他方式灌入已登记缺项。同日补充：`Q-*` 按清单中的临时默认实施；缺项补齐并实算完成后 D4 不得再为 mock，改为 live。决策：项目负责人当日下达（D16），免双签 | human:项目负责人 |

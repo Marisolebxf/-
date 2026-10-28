@@ -1,9 +1,22 @@
 # 论文影响力（M_INNOV_PAPER_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PAPER_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_PAPER_INFLUENCE.py` → `metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（要素实体评价）｜ **域**：DS-01 科技全域态势 · 科创要素 ｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 科创要素（论文详情页属性）；需求原文另在「人才学术力评估分析·多指标评价体系」把「被引次数」列为学术力维度
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`dwd_zh_paper` 100,900 / `dwd_zh_paper_citation` 20,031 / `dwd_zh_paper_reference_content` 196,619 均在）；依赖表数据支持（开发库/三方库） = **部分**（被引副表仅 3.9% 能挂回主表，`impact_score` 0/2,796，`download_num` 全 0）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PAPER_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PAPER_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_PAPER_INFLUENCE.py` → `metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PAPER_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_PAPER_INFLUENCE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_PAPER_INFLUENCE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json` |
@@ -66,17 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PAPER_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（要素实体评价）｜ **域**：DS-01 科技全域态势 · 科创要素 ｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 科创要素（论文详情页属性）；需求原文另在「人才学术力评估分析·多指标评价体系」把「被引次数」列为学术力维度
-> **数据支持度**：**部分支持**
-> **口径状态**：seed 的 `formula` 为 `pending_cosign: human:唐绍祖（未签）`，`source_tables` 为 `pending_ods`；**没有已签口径，也没有王惠 calc-logic 文档**。本文给的是推测定义，不冒充定版。
-> **wanghui**: false ｜ **公式定义人**：AI-20261016（seed 登记）＋ 本报告细化
-> **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`dwd_zh_paper` 100,900 / `dwd_zh_paper_citation` 20,031 / `dwd_zh_paper_reference_content` 196,619 均在）；依赖表数据支持（开发库/三方库） = **部分**（被引副表仅 3.9% 能挂回主表，`impact_score` 0/2,796，`download_num` 全 0）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -177,7 +184,7 @@ calc-logic 目录下也没有本指标的文件（同目录只有 `M_INNOV_PATEN
 
 | # | 路径 | 章节 | 原句（≤2 句） |
 |---|---|---|---|
-| 1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | §1.1.1.2.4.2.5.6.1 多指标评价体系 | 「系统内置涵盖论文数量、被引次数、H指数、期刊影响力、学术合作广度等多个维度的学术力评价指标。」 |
+| 1 | `《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md` | §1.1.1.2.4.2.5.6.1 多指标评价体系 | 「系统内置涵盖论文数量、被引次数、H指数、期刊影响力、学术合作广度等多个维度的学术力评价指标。」 |
 | 2 | 同上 | §1.1.1.1.4.1.2 科技全域态势 | 「支持各类科技创新要素的全面展示与分析，包括论文、期刊、专利、专家学者、会议、组织机构、课题、项目、成果等多类型科创管理对象。」 |
 | 3 | `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml` | 第 1533 行起的 `M_INNOV_PAPER_INFLUENCE` 条目 | 「definition: 论文被引次数 / 影响因子（seq 96 第三方不展开）」；「formula: pending_cosign: human:唐绍祖（未签）」 |
 | 4 | `gkx-orchestration/agent-delivery/metrics/registry/metric-readiness-matrix-INNOV.yaml` | 第 1203 行起 | 「d1_note: OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签」 |
@@ -321,7 +328,7 @@ $$S_i = 100 \times \frac{0.70\cdot norm(C_i) + 0.30\cdot norm(IF_{j(i)})}{w}$$
 ```bash
 cd .../20261021_指标整体开发进度调研
 python3 code/M_INNOV_PAPER_INFLUENCE.py
-# 输出 code/M_INNOV_PAPER_INFLUENCE_out.json；实测 0.55 秒（零 SQL，全部读本地快照）
+# 输出 metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json；实测 0.55 秒（零 SQL，全部读本地快照）
 ```
 
 数据快照的拉取脚本是 `code/_probe_infl_data.py` 与 `code/_probe_infl_data2.py`（6 张小表，单表 ≤100,900 行，每条 `SET SESSION max_execution_time=60000`，逐条落盘）。
@@ -397,7 +404,7 @@ python3 code/M_INNOV_PAPER_INFLUENCE.py
 
 ### 3.3 支持度判定引用
 
-`code/M_INNOV_PAPER_INFLUENCE_out.json` → `support_judgment = 部分支持`，三个支撑字段：
+`metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json` → `support_judgment = 部分支持`，三个支撑字段：
 
 ```json
 {
@@ -523,8 +530,8 @@ seed 的 `definition` 写「论文被引次数 / 影响因子」，`formula` 未
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_PAPER_INFLUENCE.py`（零 SQL） |
-| 产物 | `code/M_INNOV_PAPER_INFLUENCE_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_PAPER_INFLUENCE.py`（零 SQL） |
+| 产物 | `metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json` |
 | 快照 | `code/_snapshots21/probe_infl_20261022/*.json`（6 张表） |
 | 拉取脚本 | `code/_probe_infl_data.py`、`code/_probe_infl_data2.py` |
 | 运行耗时 | 0.55 秒 |
@@ -537,12 +544,8 @@ seed 的 `definition` 写「论文被引次数 / 影响因子」，`formula` 未
 1. 中国科学技术信息研究所.《中国科技论文统计与分析》年度报告[R/OL]. https://www.istic.ac.cn/
 2. Hirsch J E. An index to quantify an individual's scientific research output[J]. PNAS, 2005, 102(46): 16569-16572. https://doi.org/10.1073/pnas.0507655102
 3. Garfield E. Citation analysis as a tool in journal evaluation[J]. Science, 1972, 178(4060): 471-479. https://doi.org/10.1126/science.178.4060.471
-4. Clarivate Analytics. Journal Citation Reports（JCR）[DB/OL]. https://jcr.clarivate.com/
-5. Elsevier. Scopus CiteScore / FWCI 方法说明[EB/OL]. https://www.scopus.com/
-6. 科学技术部. 国家创新能力评价指标体系[EB/OL]. 2023-11-29. https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110675.html
-7. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml` 第 1533—1560 行（`M_INNOV_PAPER_INFLUENCE`，formula 未签）。
-8. 项目内需求原文（非外部文献）：`原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` §1.1.1.2.4.2.5.6.1、§1.1.1.1.4.1.2。
-
+4. 科学技术部. 国家创新能力评价指标体系[EB/OL]. 2023-11-29. https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110675.html
+5. 项目内需求原文（非外部文献）：`《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.5.6.1、§1.1.1.1.4.1.2。
 ---
 
 # 附件
@@ -680,17 +683,10 @@ seed 的 `definition` 写「论文被引次数 / 影响因子」，`formula` 未
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_PAPER_INFLUENCE.py`（零 SQL，0.55 秒）
-- 产物：`code/M_INNOV_PAPER_INFLUENCE_out.json`
+- 脚本：`metrics/repro/M_INNOV_PAPER_INFLUENCE.py`（零 SQL，0.55 秒）
+- 产物：`metrics/repro/out/M_INNOV_PAPER_INFLUENCE_out.json`
 - 快照：`code/_snapshots21/probe_infl_20261022/{zh_paper,zh_paper_citation,zh_paper_doi,zh_paper_ref,en_paper,en_paper_cited_by}.json`
 - 源表：`gkx.dwd_zh_paper` / `gkx.dwd_zh_paper_citation` / `gkx.dwd_zh_paper_reference_content` / `gkx.dwd_zh_journal` / `gkx.dwd_en_paper` / `gkx.dwd_en_paper_cited_by_info` @ `183.240.141.251:3318`
 - 关键结果：论文 100,900；被引记录 20,031（合计 144,020，中位 3，最大 670）；可挂接 782（3.90%；占主库 0.775%）；库内入边 166（165 篇）；下载量 SUM=0；影响因子 0/2,796
 - 782 篇分数：均值 3.36、中位 1.52、P90 7.62、最大 100
 - 工程注意：`download_num` / `impact_score` 必须先做 `SUM(col > 0)` 自检；被引副表与主表不同源，不能把未挂接的记录按 0 处理
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

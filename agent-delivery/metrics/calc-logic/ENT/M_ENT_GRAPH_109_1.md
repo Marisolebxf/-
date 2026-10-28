@@ -1,9 +1,25 @@
 # 企业实体关系抽取（M_ENT_GRAPH_109_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_GRAPH_109_1.md`；复现脚本 `metrics/repro/M_ENT_GRAPH_109_1.py` → `metrics/repro/out/M_ENT_GRAPH_109_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GRAPH（异构图抽取：9 类关系 → 边表 + 企业—企业图）｜ **域**：企业分析（ENT）·关系图谱（E-35）｜ **UI 挂载**：企业关系图谱 → 以企业为中心的邻居展开；关系类型筛选器（9 类，4 类可用、1 类样本不足、4 类置灰）
+> - **数据支持度**：**部分支持** ｜ **依赖性质**：**C 类**（4 类关系有边，其中 1 类是代理；5 类缺结构）
+> - **同域边界**：本件只做「关系抽取 + 图结构指标」，不做企业评分、不做社区发现、不做链路预测；`M_ENT_GRAPH_109_2` 及以后的图算法件以本件的边表为输入。
+> - **一句话结论**：9 类必填关系里 4 类有边（44.4444%，其中技术应用是代理），科研合作仅 14 对（样本不足），人才/政策/服务/合作 4 类完全缺结构；企业—企业图 19,835 个节点、19,684 条无向边、最大连通分量 10,475 节点（52.8107%），但 89.5117% 的底册企业没有任何企业—企业边——判**部分支持**，证型 `partial_relation_coverage`。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_ENT_GRAPH_109_1.py` ｜ **产物**：`metrics/repro/out/M_ENT_GRAPH_109_1_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_GRAPH_109_1.py`、产物 `metrics/repro/out/M_ENT_GRAPH_109_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_GRAPH_109_1.md`；复现脚本 `metrics/repro/M_ENT_GRAPH_109_1.py` → `metrics/repro/out/M_ENT_GRAPH_109_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_GRAPH_109_1.py`、产物 `metrics/repro/out/M_ENT_GRAPH_109_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +73,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_GRAPH_109_1.md` |
 | 复现脚本 | `metrics/repro/M_ENT_GRAPH_109_1.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_GRAPH_109_1_out.json` |
@@ -65,22 +81,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_GRAPH_109_1.py`、产物 `metrics/repro/out/M_ENT_GRAPH_109_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：GRAPH（异构图抽取：9 类关系 → 边表 + 企业—企业图）｜ **域**：企业分析（ENT）·关系图谱（E-35）｜ **UI 挂载**：企业关系图谱 → 以企业为中心的邻居展开；关系类型筛选器（9 类，4 类可用、1 类样本不足、4 类置灰）
-> **数据支持度**：**部分支持** ｜ **依赖性质**：**C 类**（4 类关系有边，其中 1 类是代理；5 类缺结构）
-> **公式定义人**：SRS 序号 109「企业实体关系抽取」；注册表 `formula=pending_cosign`（human: 唐绍祖，未签），`calc_logic_ref=无`（无独立 calc-logic 文件，口径按本报告 §1.6 执行）
-> **复现脚本**：`code/M_ENT_GRAPH_109_1.py` ｜ **产物**：`code/M_ENT_GRAPH_109_1_out.json`
-> **共用底数**：`code/_snapshots21/base_20261021.json`（底册 189,116 家）、`code/_snapshots21/chain_firm_index_20261023.json`
-> **族级探针**：`code/_snapshots21/ent_graph109_20261023.json`（由 `code/_build_ent_graph109_20261023.py` 生成）
-> **数据源**：`gkx` @ 183.240.141.251:3318（只读 `gkx_reader_zp`）：`dwd_org_invest_info`（46,967 行）、`dwd_org_shareholder_info`（400,286 行）、`dwd_org_industry_tags`（2,283,762 行）、`dwd_patent`（2,939,895 行）、`dwd_patent_assignees`（22,198 行）、`dwd_patent_inventors`（69,647 行）、`dwd_patent_transfer`（22,809 行）、`dwd_policy_base`（20,000 行）
-> **基期声明**：截面件。关系边是库内当前快照，无统一年度键；投资/转让有日期字段但不构成年度序列，不设基期，不做跨年增长率。
-> **同域边界**：本件只做「关系抽取 + 图结构指标」，不做企业评分、不做社区发现、不做链路预测；`M_ENT_GRAPH_109_2` 及以后的图算法件以本件的边表为输入。
-> **一句话结论**：9 类必填关系里 4 类有边（44.4444%，其中技术应用是代理），科研合作仅 14 对（样本不足），人才/政策/服务/合作 4 类完全缺结构；企业—企业图 19,835 个节点、19,684 条无向边、最大连通分量 10,475 节点（52.8107%），但 89.5117% 的底册企业没有任何企业—企业边——判**部分支持**，证型 `partial_relation_coverage`。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -332,7 +337,7 @@ $$\mathrm{LCC}=\frac{|C_{\max}|}{|\{v:\ \deg(v)>0\}|}=\frac{10{,}475}{19{,}835}=
 ### 2.10 复现代码结果展示
 
 ```
-python3 _work_gkx21/rebuild_metric.py M_ENT_GRAPH_109_1
+cd code && python3 _work_gkx21/rebuild_metric.py M_ENT_GRAPH_109_1
 ```
 
 零 DB，读 `ent_graph109_20261023.json` 重算。`_out.json` 关键字段：
@@ -485,12 +490,9 @@ calc-logic 把本件登记为 9 类关系抽取，注册表目标表 `enterprise
 
 ## 参考文献
 
-1. 国家企业信用信息公示系统. https://www.gsxt.gov.cn/
-2. 国家知识产权局. 专利统计年报. https://www.cnipa.gov.cn/
-3. OECD. Patent Statistics Manual. https://www.oecd.org/sti/inno/patent-statistics.htm
-4. 国家统计局. 国民经济行业分类（GB/T 4754—2017）. https://www.stats.gov.cn/
-5. MySQL 8.0 Reference Manual — Optimizing Subqueries. https://dev.mysql.com/doc/refman/8.0/en/subquery-optimization.html
-
+1. 国家知识产权局. 专利统计年报. https://www.cnipa.gov.cn/
+2. 国家统计局. 国民经济行业分类（GB/T 4754—2017）. https://www.stats.gov.cn/
+3. MySQL 8.0 Reference Manual — Optimizing Subqueries. https://dev.mysql.com/doc/refman/8.0/en/subquery-optimization.html
 ---
 
 # 附件
@@ -585,10 +587,3 @@ calc-logic 把本件登记为 9 类关系抽取，注册表目标表 `enterprise
 ### C.7 可行性总判（完整版结论）
 
 **4/9 关系可建边、企业—企业图可建但极稀疏、5 类关系缺结构。** 判**部分支持**，证型 `partial_relation_coverage`；若补齐人才/政策/服务/合作四类外键并提升转移解析率，可升为完全转换支持。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

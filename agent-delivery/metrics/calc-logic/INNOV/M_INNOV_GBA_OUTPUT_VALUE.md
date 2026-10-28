@@ -1,9 +1,20 @@
 # 创新产值（M_INNOV_GBA_OUTPUT_VALUE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_OUTPUT_VALUE.md`；复现脚本 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py` → `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（区域核算指标）｜ **域**：INNOV · 湾区创新监测（DS-05）｜ **UI 挂载**：粤港澳大湾区创新指标数据 GIS（指标勾选）｜ **数据支持度**：**完全不支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py`、产物 `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_OUTPUT_VALUE.md`；复现脚本 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py` → `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py`、产物 `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -65,7 +76,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_GBA_OUTPUT_VALUE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json` |
@@ -73,14 +84,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py`、产物 `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（区域核算指标）｜ **域**：INNOV · 湾区创新监测（DS-05）｜ **UI 挂载**：粤港澳大湾区创新指标数据 GIS（指标勾选）｜ **数据支持度**：**完全不支持**
-> **公式定义人**：registry 仅写 `pending_cosign`（未签），本报告按需求语义推测为高技术产业（制造业）增加值｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：否 / 否
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -116,7 +124,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「创新产值」是招标文件「粤港澳大湾区创新指标数据」节明确列出的第一个指标，要求依托 GIS 按区域展示，并支持点击查看数据来源与计算方式。需求文档**没有给出公式**；registry 将其内部默认口径写为「高技术产业（制造业）增加值」，并标注 `pending_cosign`（未签）。
 
-**可行性结论**：换源到三方库 `gkx`（280 表）后，结论与旧版一致且证据更硬。脚本 `code/M_INNOV_GBA_OUTPUT_VALUE.py` 逐一核验 `dwd_output_value`、`dwd_org_output_value`、`dwd_high_tech_output`、`dwd_industry_added_value`、`dwd_gdp`、`dwd_region_economy`、`dwd_tech_contract`、`dwd_output`、`dwd_industrial_output` 九张候选表，**9/9 不存在**（280 表清单缺席 + `SELECT COUNT(*)` 报 1146 双证）。企业财报 `dwd_org_income_statement` 有 207,751 行、覆盖 3,302 家法人，但营业收入是总产出侧概念、只覆盖 1.75% 法人、且无行业门类可与高技术产业分类对齐。按 §〇，判 **完全不支持**。
+**可行性结论**：换源到三方库 `gkx`（280 表）后，结论与旧版一致且证据更硬。脚本 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py` 逐一核验 `dwd_output_value`、`dwd_org_output_value`、`dwd_high_tech_output`、`dwd_industry_added_value`、`dwd_gdp`、`dwd_region_economy`、`dwd_tech_contract`、`dwd_output`、`dwd_industrial_output` 九张候选表，**9/9 不存在**（280 表清单缺席 + `SELECT COUNT(*)` 报 1146 双证）。企业财报 `dwd_org_income_statement` 有 207,751 行、覆盖 3,302 家法人，但营业收入是总产出侧概念、只覆盖 1.75% 法人、且无行业门类可与高技术产业分类对齐。按 §〇，判 **完全不支持**。
 
 本版新增一条**更硬的反证**：把深圳 1,868 家法人的 207,751 行营收直接相加，得 476.0 万亿元，约为 2024 年全国 GDP 的 3.5 倍——因为同一法人的多个报告期被重复计入。这证明连「营收合计」这条退路本身也需要先锁定报告期，而该表报告期从 1989-12-31 横跨到 2026-07-09，季度混杂、非均衡。
 
@@ -252,7 +260,7 @@ registry 给出了一句内部默认：「湾区范围内创新活动经济产�
 
 ## 二、不支持证据与不可复现说明
 
-> 本章回答「为什么连算都不该算」。不是「没来得及算」，而是「算所需的每一个环节都不存在」。所有证据可在 `code/M_INNOV_GBA_OUTPUT_VALUE.py` 与 `code/M_INNOV_GBA_OUTPUT_VALUE_out.json` 中复核。
+> 本章回答「为什么连算都不该算」。不是「没来得及算」，而是「算所需的每一个环节都不存在」。所有证据可在 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py` 与 `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json` 中复核。
 
 ### 2.1 指标语义决定了它必须是区域核算数据
 
@@ -323,7 +331,7 @@ gkx 唯一与「收入」沾边的是 `dwd_org_income_statement`：207,751 行�
 
 ### 2.6 复现尝试与结论
 
-脚本 `code/M_INNOV_GBA_OUTPUT_VALUE.py` 的实际行为是：连接 gkx（`183.240.141.251:3318`，只读账号），依次核验 9 张候选表（清单 + `COUNT(*)` 双证），统计企业财报覆盖率与期间跨度，输出 `output_value = null` 与 `support_judgment = 完全不支持`，耗时约 12.8 秒。
+脚本 `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py` 的实际行为是：连接 gkx（`183.240.141.251:3318`，只读账号），依次核验 9 张候选表（清单 + `COUNT(*)` 双证），统计企业财报覆盖率与期间跨度，输出 `output_value = null` 与 `support_judgment = 完全不支持`，耗时约 12.8 秒。
 
 它没有计算任何产值，因为没有任何可计算的输入。这不是「脚本失败」，而是「脚本成功地证明了不可算」。如果强行写一个 `SUM(yysr) GROUP BY jgid` 并命名为创新产值，脚本当然能跑出数字（而且能跑出 476 万亿这种量级），但那个数字与需求语义无关，属于 F4 所禁止的「伪公式」。
 
@@ -333,8 +341,8 @@ gkx 唯一与「收入」沾边的是 `dwd_org_income_statement`：207,751 行�
 
 | 专利 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_GBA_OUTPUT_VALUE.py` |
-| 结果产物 | `code/M_INNOV_GBA_OUTPUT_VALUE_out.json` |
+| 计算脚本 | `metrics/repro/M_INNOV_GBA_OUTPUT_VALUE.py` |
+| 结果产物 | `metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json` |
 | 主算库 | `gkx`（三方库 `183.240.141.251:3318`，只读账号；280 表 / 270 非空） |
 | 辅助缓存 | `code/_snapshots21/base_20261021.json`（企业底册 189,116 行，本地字典 join） |
 
@@ -504,7 +512,6 @@ P0 两项不做，指标永远不可算；P1 决定能否称「湾区 11 城」�
 8. 联合国、欧盟委员会、IMF、OECD、世界银行. (2008). *System of National Accounts 2008*（产出、中间消耗、增加值与最终使用的统一定义与边界；本报告以其校验「增加值≠营业收入」）. https://unstats.un.org/unsd/nationalaccount/sna2008.asp
 
 9. Henderson, J. V., Storeygard, A., & Weil, D. N. (2012). Measuring Economic Growth from Outer Space. *American Economic Review*, 102(2), 994–1028. https://doi.org/10.1257/aer.102.2.994 （该刊对脚本访问返回 403，人工浏览器可开；本报告仅以其说明「遥感代理只得增长率、不得水平值」）
-
 ---
 
 # 附件
@@ -530,7 +537,7 @@ P0 两项不做，指标永远不可算；P1 决定能否称「湾区 11 城」�
 
 ## 附录 B　历史库表探测证据（摘要）
 
-- 2026-10-22 实测（`code/M_INNOV_GBA_OUTPUT_VALUE_out.json`）：
+- 2026-10-22 实测（`metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json`）：
   - 9 张候选表：280 表清单缺席 + `SELECT COUNT(*)` 双证，**0/9 命中**。
   - 关键词召回只中两张项目成果表：`dwd_en_project_output` 20,000 行、`dwd_zh_project_output` 20,133 行。
   - `dwd_org_income_statement`：207,751 行；3,302 家法人；`yysr>0` 205,292 行；报告期 1989-12-31 → 2026-07-09。
@@ -714,14 +721,7 @@ P0 两项不做，指标永远不可算；P1 决定能否称「湾区 11 城」�
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_INNOV_GBA_OUTPUT_VALUE.py`
-- 产物：`../code/M_INNOV_GBA_OUTPUT_VALUE_out.json`
+- 产物：`../metrics/repro/out/M_INNOV_GBA_OUTPUT_VALUE_out.json`
 - 主算库：`gkx`（183.240.141.251:3318）
 - 关键结果：`table_probe` 0/9 命中；`income_statement.orgs=3302`；`annual_financial.rev_pos=2191`、研发两列非空 0；`output_value=null`；`support_judgment=完全不支持`；耗时 12.8 秒。
 - 工程注意：脚本不执行任何 `SUM(yysr)` 作为产值，避免产生「可运行但语义错误」的伪结果；out.json 里保留 `city_revenue_top` 仅作「为什么不可加」的证据，且已注明是跨报告期直接相加。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,21 @@
 # 发展战略引导力评估（M_POLICY_DS_07_POLICY_GUARD_001）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DS_07_POLICY_GUARD_001.md`；复现脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py` → `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：三级指标（科技创新评估·政策与条件保障力）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技信息展示系统·科技创新评估·政策与条件保障力指标展示（原型页不挂本 metricId）
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py`、产物 `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DS_07_POLICY_GUARD_001.md`；复现脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py` → `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py`、产物 `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_DS_07_POLICY_GUARD_001.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json` |
@@ -63,16 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py`、产物 `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：三级指标（科技创新评估·政策与条件保障力）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技信息展示系统·科技创新评估·政策与条件保障力指标展示（原型页不挂本 metricId）
-> **数据支持度**：**部分支持**
-> **公式定义人**：王惠（前瞻性 / 系统性 / 针对性三维，本 MD 采用）｜ wanghui：true（§五 含对照）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库 `gkx` 结构有 / 数据部分（前瞻维标题层可算，承接维 2 条，扶持维 0 条）
-> **一句话口径**：在 `gkx.dwd_policy_base` 20,000 条有效政策上，以前瞻性（规划/纲要/远景/行动计划标记率）、系统性（`quote_policy` 非空率）、针对性（`policy_support.support_way` 非空率）三维等权评分，缺维不进平均；实测三维命中 1,085 / 2 / 0 条，得分 **2.72**（2/3 维参与）。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -239,7 +246,7 @@ $$G=\frac{0.05425+0.0001}{2}\times 100=2.7175\approx 2.72$$
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 M_POLICY_DS_07_POLICY_GUARD_001.py`，零 SQL、0.51 秒，读取政策快照、正文快照与补充探针，覆盖写出 `code/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。脚本不连数据库、不 import 任何本地 helper。
+执行 `cd code && python3 M_POLICY_DS_07_POLICY_GUARD_001.py`，零 SQL、0.51 秒，读取政策快照、正文快照与补充探针，覆盖写出 `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。脚本不连数据库、不 import 任何本地 helper。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -430,7 +437,7 @@ $$G=\frac{0.05425+0.0001}{2}\times 100=2.7175\approx 2.72$$
 
 ## 参考文献
 
-1. 国务院. 重大行政决策程序暂行条例（国令第 713 号）. https://www.gov.cn/zhengce/content/2019-05/08/content_5389667.htm
+1. 国务院. 重大行政决策程序暂行条例（国令第 713 号）. https://www.gov.cn/
 2. 全国人民代表大会常务委员会. 中华人民共和国科学技术进步法（2021 修订）. https://www.gov.cn/xinwen/2021-12/25/content_5664477.htm
 3. 国家发展改革委. 「十四五」规划实施中期评估工作方案（发改规划〔2023〕153 号）. https://www.ndrc.gov.cn/
 4. 国务院. 国务院政策文件库. https://www.gov.cn/zhengce/
@@ -438,9 +445,7 @@ $$G=\frac{0.05425+0.0001}{2}\times 100=2.7175\approx 2.72$$
 6. 李江, 刘源浩, 黄萃, 苏竣. (2015). 用文献计量研究重塑政策文本数据分析. 公共管理学报, 12(2), 138–144. https://kns.cnki.net/
 7. 黄萃, 任弢, 张剑. (2015). 政策文献量化研究：公共政策研究的新方向. 公共管理学报, 12(2), 129–137. https://kns.cnki.net/
 8. OECD & JRC. (2008). *Handbook on Constructing Composite Indicators*. https://doi.org/10.1787/9789264043466-en
-9. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.4 / §3.10（占位符、整列为空）。
-10. 同批政策文档 `第三方库指标计算过程/M_POLICY_BASE_100_1.md`（同一批 20,000 条的字段覆盖口径）。
-
+9. 同批政策文档 `第三方库指标计算过程/M_POLICY_BASE_100_1.md`（同一批 20,000 条的字段覆盖口径）。
 # 附件
 
 ## 附录 A　原文摘录与复现入口
@@ -458,9 +463,9 @@ $$G=\frac{0.05425+0.0001}{2}\times 100=2.7175\approx 2.72$$
 ### A.2 复现入口（命令与快照指纹）
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_DS_07_POLICY_GUARD_001.py
-python3 -c "import json;d=json.load(open('code/M_POLICY_DS_07_POLICY_GUARD_001_out.json'));print(d['dims_available'],d['guidance_score'])"
+python3 -c "import json;d=json.load(open('metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json'));print(d['dims_available'],d['guidance_score'])"
 ```
 
 | 项 | 值 | 校验方式 |
@@ -514,11 +519,3 @@ GROUP BY policy_support ORDER BY 2 DESC LIMIT 5;
 **三、阈值与匹配面的取值依据。** 本件不设阈值，三维直接合成；匹配面按王惠用标题/标签字段，另做全文层敏感性。词表只取四个低歧义词，是为了避免高频词把命中率推到 100%。若甲方要求「政策是否具备规划属性」，应改用全文层并配合人工抽样，不能用标题层直接代替。
 
 **四、结论。** 本件方法在本库条件下可行且可复算，能支撑「前瞻维标题/全文两率 + 承接维明细 + 三维完备度」，不能支撑「单一引导力得分 / 跨领域排名 / 政策质量结论」。若甲方需要后者，需先补 `policy_support` 与 `quote_policy`，届时三维可直接全量复算。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

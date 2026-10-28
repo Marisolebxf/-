@@ -1,9 +1,25 @@
 # 政策实体识别构建（M_POLICY_GRAPH_106_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_GRAPH_106_1.md`；复现脚本 `metrics/repro/M_POLICY_GRAPH_106_1.py` → `metrics/repro/out/M_POLICY_GRAPH_106_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：BUILD（政策文本 → 六类实体表）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策图谱页「实体标签」层（设计位）、政策详情页「发文机关 / 适用对象 / 涉及产业」三块标签（设计位）
+> - **数据支持度**：**完全转换支持**｜ **公式定义人**：**无同 ID 正本**——注册表 `cfg_metric-POLICY-seed.yaml` 的 `calc_logic_ref` 为空、`formula` 为 `pending_cosign: human:唐绍祖（未签）`；本件口径取自注册表 `source_tables`（`policy_entity` / `policy_graph_edge` / `policy_graph_node`）与本报告自拟的六类实体定义。
+> - **同域边界**：与 `M_POLICY_TEXT_PARSE`（通用文本解析标签）不同——那件出的是「支持工具/支持方式」的业务标签，本件出的是**图谱节点**（机关、行政区划、日期、文种、支持对象、产业环节），带 `source_span` 与置信度，可直接进图数据库。
+> - **一句话结论**：gkx 280 表里没有任何政策实体/边表，live 侧同名表为造数面；但 `dwd_policy_base` 的标题与正文 **20,000 条（正文 18,763 条、45,737,165 字）** 结构完整，规则 + 词典现在即可产出六类实体，文档覆盖 **100%（20,000 / 20,000 至少命中一类，平均 3.6484 类）** → 判**完全转换支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_GRAPH_106_1.py`｜ **产物**：`metrics/repro/out/M_POLICY_GRAPH_106_1_out.json`｜ **共用底数**：`code/_snapshots21/policy_base_20261021.json`、`policy_content_20261021.json`、`policy_type_20261022.json`、`chain_tree_20261021.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_GRAPH_106_1.py`、产物 `metrics/repro/out/M_POLICY_GRAPH_106_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_GRAPH_106_1.md`；复现脚本 `metrics/repro/M_POLICY_GRAPH_106_1.py` → `metrics/repro/out/M_POLICY_GRAPH_106_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_GRAPH_106_1.py`、产物 `metrics/repro/out/M_POLICY_GRAPH_106_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_GRAPH_106_1.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_GRAPH_106_1.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_GRAPH_106_1_out.json` |
@@ -58,19 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_GRAPH_106_1.py`、产物 `metrics/repro/out/M_POLICY_GRAPH_106_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：BUILD（政策文本 → 六类实体表）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策图谱页「实体标签」层（设计位）、政策详情页「发文机关 / 适用对象 / 涉及产业」三块标签（设计位）
-> **数据支持度**：**完全转换支持**｜ **公式定义人**：**无同 ID 正本**——注册表 `cfg_metric-POLICY-seed.yaml` 的 `calc_logic_ref` 为空、`formula` 为 `pending_cosign: human:唐绍祖（未签）`；本件口径取自注册表 `source_tables`（`policy_entity` / `policy_graph_edge` / `policy_graph_node`）与本报告自拟的六类实体定义。
-> **复现脚本**：`code/M_POLICY_GRAPH_106_1.py`｜ **产物**：`code/M_POLICY_GRAPH_106_1_out.json`｜ **共用底数**：`code/_snapshots21/policy_base_20261021.json`、`policy_content_20261021.json`、`policy_type_20261022.json`、`chain_tree_20261021.json`
-> **判定类型**：`verdict_kind = conversion_support`。源侧结构与数据量都够，六类实体现在即可产出；缺的只是**结果表**，不是数据。
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。截面构建：把 20,000 条政策一次性建成实体表，不按年出值；发布年（1981—2024）只作属性，不进入分母。
-> **同域边界**：与 `M_POLICY_TEXT_PARSE`（通用文本解析标签）不同——那件出的是「支持工具/支持方式」的业务标签，本件出的是**图谱节点**（机关、行政区划、日期、文种、支持对象、产业环节），带 `source_span` 与置信度，可直接进图数据库。
-> **一句话结论**：gkx 280 表里没有任何政策实体/边表，live 侧同名表为造数面；但 `dwd_policy_base` 的标题与正文 **20,000 条（正文 18,763 条、45,737,165 字）** 结构完整，规则 + 词典现在即可产出六类实体，文档覆盖 **100%（20,000 / 20,000 至少命中一类，平均 3.6484 类）** → 判**完全转换支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -274,9 +282,9 @@ $$r_t=\frac{|\{i: \exists v,(t,v,\cdot,\cdot)\in E_i\}|}{N},\qquad N=20{,}000$$
 ### 2.7 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_GRAPH_106_1.py
-# → code/M_POLICY_GRAPH_106_1_out.json
+# → metrics/repro/out/M_POLICY_GRAPH_106_1_out.json
 ```
 
 脚本零 SQL，只读四份快照，全程纯 Python 字符串处理。产物结构是：`entity_types`（六类逐项的 `docs_with_entity` / `denominator` / `coverage_pct` / `distinct_values` / `source`）、`totals`（实体数分布与均值）、`quality_probe`（省市一致率）、`object_docs`、`kind_docs`、`industry_lexicon`、`manual_sample`（40 条明细 + 20 条随机 + 抽检结论）、`write_path`。
@@ -393,8 +401,8 @@ python3 code/M_POLICY_GRAPH_106_1.py
 ### 5.1 复现步骤
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_GRAPH_106_1.py     # 产出 code/M_POLICY_GRAPH_106_1_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_GRAPH_106_1.py     # 产出 metrics/repro/out/M_POLICY_GRAPH_106_1_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_GRAPH_106_1 --check
 ```
 
@@ -430,14 +438,11 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_GRAPH_106_1 --check
 
 ## 参考文献
 
-1. 刘挺, 车万翔, 李正华. 语言技术平台[J]. 中文信息学报, 2011, 25(6): 53-62. https://kns.cnki.net/kcms2/article/abstract?v=ltp_platform
-2. Mintz M., Bills S., Snow R., Jurafsky D. Distant supervision for relation extraction without labeled data[C]. ACL-IJCNLP 2009. https://aclanthology.org/P09-1113/
-3. 国务院. 国家行政机关公文处理办法（国发〔2000〕23号）. https://www.gov.cn/gongbao/content/2000/content_60592.htm
-4. 国务院办公厅. 党政机关公文格式（GB/T 9704-2012）. https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=9A31A0F0B0E1B1A1B0A0
-5. 工业和信息化部. 关于加快培育发展制造业优质企业的指导意见. https://www.gov.cn/zhengce/zhengceku/2021-07/02/content_5622154.htm
-6. Neo4j Documentation — Graph Data Modeling. https://neo4j.com/docs/getting-started/appendix/graph-modeling/
-7. MySQL 8.0 Reference Manual — JSON Data Type. https://dev.mysql.com/doc/refman/8.0/en/json.html
-
+1. Mintz M., Bills S., Snow R., Jurafsky D. Distant supervision for relation extraction without labeled data[C]. ACL-IJCNLP 2009. https://aclanthology.org/P09-1113/
+2. 国务院. 国家行政机关公文处理办法（国发〔2000〕23号）. https://www.gov.cn/gongbao/content/2000/content_60592.htm
+3. 国务院办公厅. 党政机关公文格式（GB/T 9704-2012）. https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=9A31A0F0B0E1B1A1B0A0
+4. 工业和信息化部. 关于加快培育发展制造业优质企业的指导意见. https://www.gov.cn/
+5. MySQL 8.0 Reference Manual — JSON Data Type. https://dev.mysql.com/doc/refman/8.0/en/json.html
 ---
 
 # 附件
@@ -563,14 +568,7 @@ BiLSTM-CRF 或 BERT-NER 需要标注语料。政策实体标注的边界歧义�
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 抽取 | `python3 code/M_POLICY_GRAPH_106_1.py` | `code/M_POLICY_GRAPH_106_1_out.json` |
+| 抽取 | `python3 code/M_POLICY_GRAPH_106_1.py` | `metrics/repro/out/M_POLICY_GRAPH_106_1_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_GRAPH_106_1 --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21/M_POLICY_GRAPH_106_1.md` | PASS |
 | 基期闸 | `python3 _work_gkx21/check_base_years.py _staging21/M_POLICY_GRAPH_106_1.md` | OK |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

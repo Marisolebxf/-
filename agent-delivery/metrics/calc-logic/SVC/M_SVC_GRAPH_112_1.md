@@ -1,9 +1,21 @@
 # 服务机构实体识别构建（M_SVC_GRAPH_112_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_GRAPH_112_1.md`；复现脚本 `metrics/repro/M_SVC_GRAPH_112_1.py` → `metrics/repro/out/M_SVC_GRAPH_112_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GRAPH（实体域构建 + 类型轴 + 属性挂载）｜ **域**：SVC 服务机构图谱｜ **UI 挂载**：科技专题服务系统·产业服务链分析·服务机构图谱（SRS seq 131/132 页面族）
+> - **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：需规 §1.1.1.1.1.1.1.10「服务图谱构建」实体识别环节
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_GRAPH_112_1.py`、产物 `metrics/repro/out/M_SVC_GRAPH_112_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_GRAPH_112_1.md`；复现脚本 `metrics/repro/M_SVC_GRAPH_112_1.py` → `metrics/repro/out/M_SVC_GRAPH_112_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_GRAPH_112_1.py`、产物 `metrics/repro/out/M_SVC_GRAPH_112_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_GRAPH_112_1.md` |
 | 复现脚本 | `metrics/repro/M_SVC_GRAPH_112_1.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_GRAPH_112_1_out.json` |
@@ -61,16 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_GRAPH_112_1.py`、产物 `metrics/repro/out/M_SVC_GRAPH_112_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：GRAPH（实体域构建 + 类型轴 + 属性挂载）｜ **域**：SVC 服务机构图谱｜ **UI 挂载**：科技专题服务系统·产业服务链分析·服务机构图谱（SRS seq 131/132 页面族）
-> **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：需规 §1.1.1.1.1.1.1.10「服务图谱构建」实体识别环节
-> **数据源**：gkx（183.240.141.251:3318，只读 gkx_reader_zp）+ `code/_snapshots21/` 落盘快照
-> **wanghui：false**（王惠稿只定义图指标口径，未单独定义实体构建规则；本件按需规原文重建）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -219,11 +226,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_SVC_GRAPH_112_1.py`（自包含，无共享 helper，仅读快照） |
-| 结果产物 | `code/M_SVC_GRAPH_112_1_out.json` |
+| 计算脚本 | `metrics/repro/M_SVC_GRAPH_112_1.py`（自包含，无共享 helper，仅读快照） |
+| 结果产物 | `metrics/repro/out/M_SVC_GRAPH_112_1_out.json` |
 | 主算库 | `gkx`（183.240.141.251:3318，只读 gkx_reader_zp） |
 | 快照 | `code/_snapshots21/svc21_facts_20261022.json`（2026-10-22 14:33 冻结） |
-| 运行 | `python3 M_SVC_GRAPH_112_1.py`（实测 0.9 秒，SQL 0 条） |
+| 运行 | `cd code && python3 M_SVC_GRAPH_112_1.py`（实测 0.9 秒，SQL 0 条） |
 
 产物关键字段：`population`（底册/经营范围/服务命中/池/对齐率）、`type_axis`（七类分布 + 多命中分布）、`stage_axis`（六环节）、`attribute_coverage`（八项属性的非空数与覆盖率）、`nodes`（节点数与生成规则）。以下为 2026-10-22 一次完整运行的结果，与 `_out.json` 逐字一致。
 
@@ -398,12 +405,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 1. 全国信息技术标准化技术委员会. GB/T 36344—2018 信息技术 数据质量评价指标[S]. 北京: 中国标准出版社, 2018. https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=4B9C4B0B9C0F7E1A
 2. W3C. RDF 1.1 Concepts and Abstract Syntax[EB/OL]. 2014. https://www.w3.org/TR/rdf11-concepts/
-3. 国家统计局. 科技服务业统计分类（2018）[S]. 2018. http://www.stats.gov.cn/tjsj/tjbz/201812/t20181229_1642354.html
-4. 深圳市人民政府. 关于发展壮大战略性新兴产业集群和培育发展未来产业的意见（20+8 产业政策）[Z]. 2022. https://www.sz.gov.cn/zfgb/2022/gb1234/content/post_9876543.html
+3. 国家统计局. 科技服务业统计分类（2018）[S]. 2018. https://www.stats.gov.cn/
+4. 深圳市人民政府. 关于发展壮大战略性新兴产业集群和培育发展未来产业的意见（20+8 产业政策）[Z]. 2022. https://www.sz.gov.cn/
 5. OECD, JRC. Handbook on Constructing Composite Indicators: Methodology and User Guide[M]. Paris: OECD Publishing, 2008. https://doi.org/10.1787/9789264043466-en
 6. Neo4j Inc. Graph Database Concepts[EB/OL]. 2024. https://neo4j.com/docs/getting-started/appendix/graphdb-concepts/
 7. 工业和信息化部等九部门. 关于加快推进科技服务业高质量发展的实施意见[Z]. 2025. https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2025/art_9f3e2a1b.html
-
 ---
 
 # 附件
@@ -477,8 +483,8 @@ for org_id, rec in pool:
 
 | 交付物 | 路径 | 说明 |
 |---|---|---|
-| 计算脚本 | `code/M_SVC_GRAPH_112_1.py` | 自包含，python3 直跑 |
-| 结果产物 | `code/M_SVC_GRAPH_112_1_out.json` | 含判档/基期/来源 |
+| 计算脚本 | `metrics/repro/M_SVC_GRAPH_112_1.py` | 自包含，python3 直跑 |
+| 结果产物 | `metrics/repro/out/M_SVC_GRAPH_112_1_out.json` | 含判档/基期/来源 |
 | 本报告 | `_staging21/M_SVC_GRAPH_112_1.md` | 450+ 行 |
 | 上游快照 | `code/_snapshots21/svc21_facts_20261022.json` | 冻结时点 2026-10-22 14:33 |
 
@@ -541,10 +547,3 @@ for org_id, rec in pool:
 - [x] 快照冻结时点与覆盖率写进 `sources`
 - [ ] 图谱挂载表（P1）未建，节点仍需实时派生
 - [ ] 人数补采（P0）未落地，人数维不可用
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

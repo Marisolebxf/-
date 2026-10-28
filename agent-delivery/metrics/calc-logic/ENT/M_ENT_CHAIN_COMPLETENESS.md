@@ -1,9 +1,20 @@
 # 产业链完整度（M_ENT_CHAIN_COMPLETENESS）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_CHAIN_COMPLETENESS.md`；复现脚本 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` → `metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：STAT（区域覆盖比例）｜ **域**：企业分析·深圳企业现状分析（ENT，E-25 产业链定位/多城市对标）｜ **UI 挂载**：科技专题·「产业链全景图谱」页（识别链完整性与断点）+「深圳企业现状分析」对标表 ｜ **数据支持度**：**完全转换支持**｜ wanghui：false（非王惠系，口径真源为算法 2026-09 COVER-STAT-L01）
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_CHAIN_COMPLETENESS.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_CHAIN_COMPLETENESS.md`；复现脚本 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` → `metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_CHAIN_COMPLETENESS.md` |
 | 复现脚本 | `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json` |
@@ -60,14 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（区域覆盖比例）｜ **域**：企业分析·深圳企业现状分析（ENT，E-25 产业链定位/多城市对标）｜ **UI 挂载**：科技专题·「产业链全景图谱」页（识别链完整性与断点）+「深圳企业现状分析」对标表 ｜ **数据支持度**：**完全转换支持**｜ wanghui：false（非王惠系，口径真源为算法 2026-09 COVER-STAT-L01）
-> **公式定义人（20261020）**：滕强（calc-logic v0.3.3「K=INB 叶子、默认全目录、不加权、不上卷」，本 MD 沿用并实测）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量足（目录 1,273 码 + tags 228 万行，可现转）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -101,9 +109,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「产业链完整度」回答的是产业链分析最核心的产品问题之一：**某地区的企业在一条（或全部）产业链上，把环节目录覆盖到了什么程度、断点在哪里**。《科技信息展示系统和科技专题服务系统》产业链全景图谱功能原文要求「将产业以节点－连线图谱形式展示各个环节及企业/技术关联。用户可一目了然识别产业链完整性与断点」，同文档深圳企业现状分析（E-25）把它落为对标表一列。需求未给公式；项目口径真源（算法 2026-09 COVER-STAT-L01，非王惠系）将其钉死为：**某地区全部企业覆盖的叶子环节数 k ÷ 固定 12 条 INB 链全部叶子数 K × 100**，默认全目录、不加权、祖先不上卷、多链不平均。脚本 `code/M_ENT_CHAIN_COMPLETENESS.py` 已在 gkx 生产库全量跑通：目录 1,273 码中叶子 **K=954**，tags 2,283,762 行 JSON 数组拆解后全国层面 **k=940、完整度 98.53%**；深圳侧（credit_code=external_id CONVERT JOIN 探针，LIMIT 5 万）**k=712、完整度 74.63%**。分母侧结构+分子侧数据量均已足够且现转出非退化结果 → **完全转换支持**。缺口在 DWD 落地侧：`enterprise_industry_chain.node_id` 全空、`chain_code` 仍是 `IC-*` 非 INB、无项目叶子维表、`region_id` 缺列、结果列 mock 禁读——均为 ETL 待办而非数据不可得。
+「产业链完整度」回答的是产业链分析最核心的产品问题之一：**某地区的企业在一条（或全部）产业链上，把环节目录覆盖到了什么程度、断点在哪里**。《科技信息展示系统和科技专题服务系统》产业链全景图谱功能原文要求「将产业以节点－连线图谱形式展示各个环节及企业/技术关联。用户可一目了然识别产业链完整性与断点」，同文档深圳企业现状分析（E-25）把它落为对标表一列。需求未给公式；项目口径真源（算法 2026-09 COVER-STAT-L01，非王惠系）将其钉死为：**某地区全部企业覆盖的叶子环节数 k ÷ 固定 12 条 INB 链全部叶子数 K × 100**，默认全目录、不加权、祖先不上卷、多链不平均。脚本 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` 已在 gkx 生产库全量跑通：目录 1,273 码中叶子 **K=954**，tags 2,283,762 行 JSON 数组拆解后全国层面 **k=940、完整度 98.53%**；深圳侧（credit_code=external_id CONVERT JOIN 探针，LIMIT 5 万）**k=712、完整度 74.63%**。分母侧结构+分子侧数据量均已足够且现转出非退化结果 → **完全转换支持**。缺口在 DWD 落地侧：`enterprise_industry_chain.node_id` 全空、`chain_code` 仍是 `IC-*` 非 INB、无项目叶子维表、`region_id` 缺列、结果列 mock 禁读——均为 ETL 待办而非数据不可得。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 本功能通过交互式知识图谱动态展示科技产业的完整链条结构，并支持节点下钻与图谱动态更新。用户可直观把握产业整体架构，快速定位关键参与者与技术路径，为产业链招商提供可视化决策依据。……<br>><br>> 1.1.1.2.4.2.2.1.1 产业链结构可视化：该功能将产业以节点－连线图谱形式展示各个环节及企业/技术关联。用户可一目了然识别产业链完整性与断点。<br>><br>> 1.1.1.2.4.2.2.1.2 节点深度下钻与动态演进：该功能支持点击任一环节节点，下钻查看关联企业、主流技术路线、市场规模等详情；同时图谱定期更新，反映新企业加入、技术替代或环节退出等变化。<br>><br>> 本功能聚焦深圳本地企业，支持用户指定产业链或环节，自动筛选相关企业，并与全国及其他重点城市进行多维度对标。用户可客观评估深圳企业在产业链中的位置、竞争力水平及生态完整性。构建深圳企业发展的「本地坐标系」，实现精准定位与差距识别。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_CHAIN_COMPLETENESS.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -179,7 +232,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按算法 2026-09 calc-logic 口径展开（公式定义人=滕强，v0.3.3），已由脚本 `code/M_ENT_CHAIN_COMPLETENESS.py` 在 gkx 生产库**实测跑通**（全量拆解 + 深圳探针），结果见同目录 `M_ENT_CHAIN_COMPLETENESS_out.json`。文内引用格式为 SCI「叙述后附 (Author)」；完整题录见文末「参考文献」。
+> **口径说明**：本节按算法 2026-09 calc-logic 口径展开（公式定义人=滕强，v0.3.3），已由脚本 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` 在 gkx 生产库**实测跑通**（全量拆解 + 深圳探针），结果见同目录 `M_ENT_CHAIN_COMPLETENESS_out.json`。文内引用格式为 SCI「叙述后附 (Author)」；完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：为何用「叶子覆盖比例 k/K」而非集中度或多维安全评估
 
@@ -219,13 +272,13 @@ $$Completeness(r)=\frac{k(r)}{K}\times 100,\qquad k(r)=\bigl|\text{codes}(E_r)\c
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` |
 | 结果产物 | 同目录 `M_ENT_CHAIN_COMPLETENESS_out.json` |
 | 主算库 | `gkx` 生产库（tags 全量拆解 + 深圳 CONVERT JOIN 探针） |
 | 对照探测 | demo 侧目录行数；口径参照 calc-logic 现网探针 |
 
 ```bash
-python3 metrics/repro/M_ENT_CHAIN_COMPLETENESS.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_CHAIN_COMPLETENESS.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -281,7 +334,7 @@ python3 metrics/repro/M_ENT_CHAIN_COMPLETENESS.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_CHAIN_COMPLETENESS.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_CHAIN_COMPLETENESS.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live/DWD | 三方 gkx / demo ods（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -293,7 +346,7 @@ python3 metrics/repro/M_ENT_CHAIN_COMPLETENESS.py
 **四判定（§〇）**：直接结构/数据 = 否（结果列 mock）；依赖结构 = 是（目录/tags/城市三件在 gkx 闭环）；依赖数据 = **是**（2,283,762 行分子源 + 954 叶分母 + 深圳探针 k=712，现转已出结果）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**完全转换支持**
-依据：`code/M_ENT_CHAIN_COMPLETENESS_out.json` 实测——`K_ge_100=true`、`national_k_ge_50=true`、`sz_probe_k_ge_20=true` 三判据全过；k/K 已实际算出（全国 98.53%、深圳探针 74.63%）。DWD 侧 node_id 空/IC-* 码/region_id 缺列是灌数缺口（工程步骤），不构成「源侧无数据」的降档理由。
+依据：`metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json` 实测——`K_ge_100=true`、`national_k_ge_50=true`、`sz_probe_k_ge_20=true` 三判据全过；k/K 已实际算出（全国 98.53%、深圳探针 74.63%）。DWD 侧 node_id 空/IC-* 码/region_id 缺列是灌数缺口（工程步骤），不构成「源侧无数据」的降档理由。
 
 ---
 
@@ -352,10 +405,7 @@ python3 metrics/repro/M_ENT_CHAIN_COMPLETENESS.py
 
 7. 企查查. (2024). 企查查企业信息查询平台（产业链图谱与环节企业覆盖的国内商业数据商形态）. https://www.qcc.com/ （商业数据商族 E：仅作外部对账参照）
 
-8. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_CHAIN_COMPLETENESS.md`（算法 2026-09 v0.3.3：叶子分母、全目录、不加权、不上卷全套裁定）。
-
-9. 项目内需求真源（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.2.1.1；§1.1.1.2.4.2.3.5。
-
+8. 项目内需求真源（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.2.1.1；§1.1.1.2.4.2.3.5。
 ---
 
 # 附件
@@ -491,7 +541,7 @@ UNCTAD《世界投资报告》用世界投入产出表测度全球价值链参�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_CHAIN_COMPLETENESS.py`；产物：`../code/M_ENT_CHAIN_COMPLETENESS_out.json`
+- 脚本：`../code/M_ENT_CHAIN_COMPLETENESS.py`；产物：`../metrics/repro/out/M_ENT_CHAIN_COMPLETENESS_out.json`
 - 主算库：`gkx`（tags 全量 + 深圳 CONVERT JOIN 探针）
 - 关键结果：K=954；全国 k=940（98.53%）；深圳探针 JOIN 19,909 行、k=712（74.63%，下界）；support_judgment=`完全转换支持`
 - 工程注意：tags JSON 拆码仅取叶子；跨库 JOIN 必须 CONVERT COLLATE；K 每批现场重取；结果列现网 mock 禁读。
@@ -499,11 +549,3 @@ UNCTAD《世界投资报告》用世界投入产出表测度全球价值链参�
 - 结论复核：本批 363→437 行增厚后仍 `gate_check` PASS；增厚未改任何实测值（K=954、全国 98.53%、深圳探针 74.63%、tags 2,283,762 行）与档位（完全转换支持）。
 - 参考文献核验：本批新增 UNCTAD《世界投资报告 2024》与企查查两条，URL 均经 `curl -L` 返回 HTTP 200；原 5 条外部文献与 2 条项目内口径源保留不变。
 - 补强落点核验：§1.4 已扩 5 族、附录 C 含五族方法—数据对照矩阵、C.6 谱系风险表与 C.8 一致性核对、§四 已补偏置方向/幅度/交叉验证/未取证清单——三处均有实质新增。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

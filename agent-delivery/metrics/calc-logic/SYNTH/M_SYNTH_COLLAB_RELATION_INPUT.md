@@ -1,9 +1,18 @@
 # 协同关系输入统计（M_SYNTH_COLLAB_RELATION_INPUT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_COLLAB_RELATION_INPUT.md`；复现脚本 `metrics/repro/M_SYNTH_COLLAB_RELATION_INPUT.py` → `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_COLLAB_RELATION_INPUT.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_COLLAB_RELATION_INPUT.md`；复现脚本 `metrics/repro/M_SYNTH_COLLAB_RELATION_INPUT.py` → `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_COLLAB_RELATION_INPUT.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_COLLAB_RELATION_INPUT.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_COLLAB_RELATION_INPUT.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json` |
@@ -63,15 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_COLLAB_RELATION_INPUT.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 20261022 gkx 换源版 · 类型：**THIRD_PARTY** · 域：综合 · UI 挂载：图谱协同分析前置输入 ｜ 王惠调研：否（calc-logic 0.3.2 口径） ｜ **数据支持度**：部分支持
-> 产物：`code/M_SYNTH_COLLAB_RELATION_INPUT.py` → `code/M_SYNTH_COLLAB_RELATION_INPUT_out.json`（实测 0.5 秒）
-> 主算库：`gkx`（三方库 183.240.141.251:3318，`gkx_reader_zp` 只读）
-> 输入：`dwd_patent_applicants` 28,964 行 / `dwd_scholar_work_experience` 57,117 行 / `dwd_zh_project` 58,453 行（仅体检字段）
-> 重建原因：旧稿依赖已隔离的 `code/_org_graph_common.py`（该模块在模块级接入演示库），本批不 import 它，取数改为 gkx 直取落盘。
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -256,7 +261,7 @@ $$E_{\text{jp}}(c)=\sum_{p\in E_{\text{jp}}}\mathbb{1}\left[\sum_{a\in p}w(c\mid
 
 ### 2.8 复现代码结果展示
 
-`python3 -u code/M_SYNTH_COLLAB_RELATION_INPUT.py` 实测输出（节选自 `code/M_SYNTH_COLLAB_RELATION_INPUT_out.json`）：
+`python3 -u code/M_SYNTH_COLLAB_RELATION_INPUT.py` 实测输出（节选自 `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json`）：
 
 | 关系类型 | 输入行数 | 事件数 | 参与主体/学者 | 四城可归城 |
 |---|---:|---:|---:|---:|
@@ -482,15 +487,12 @@ $$E_{\text{jp}}(c)=\sum_{p\in E_{\text{jp}}}\mathbb{1}\left[\sum_{a\in p}w(c\mid
 选用建议：**把本指标定位为「输入盘点」，不要当「协同强度」用**。若下游要建图，建议直接用 008 的论文合著边，不要用本指标的联合专利边——后者的抽样偏差太大。若甲方坚持要专利协同，必须先补全量共同申请人。
 
 ## 参考文献
-
-不适用。本指标不引用外部文献；事件粒度、产学研判定、迁移计数均为项目内 calc-logic 口径，公式在 §1.3 已完整给出。
-
 # 附件
 
 ## 附录 A 复现
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 -u code/_build_collab_inputs21.py    # 一次性落盘快照（gkx 直取，1 次运行）
 python3 -u code/M_SYNTH_COLLAB_RELATION_INPUT.py
 # 实测输出：wrote M_SYNTH_COLLAB_RELATION_INPUT_out.json（0.5 秒）
@@ -498,11 +500,11 @@ python3 -u code/M_SYNTH_COLLAB_RELATION_INPUT.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_COLLAB_RELATION_INPUT.py` |
+| 脚本 | `metrics/repro/M_SYNTH_COLLAB_RELATION_INPUT.py` |
 | 快照构建 | `code/_build_collab_inputs21.py` → `code/_snapshots21/collab_inputs21.json` |
 | 共享库 | `code/_synth21_common.py`（纯读快照） |
 | 依赖 | 仅标准库（`collections`/`json`/`re`） |
-| 产物 | `code/M_SYNTH_COLLAB_RELATION_INPUT_out.json` |
+| 产物 | `metrics/repro/out/M_SYNTH_COLLAB_RELATION_INPUT_out.json` |
 | 运行耗时 | 0.5 秒 |
 | 库 | `gkx` 183.240.141.251:3318，只读 |
 | 本次 SQL | 0 条（快照构建 4 条，已落盘） |
@@ -532,11 +534,3 @@ python3 -u code/M_SYNTH_COLLAB_RELATION_INPUT.py
 | 时间趋势 | 年份字段 | 否 | 申请人表无年份 | 不做 | 不可得 |
 
 综合：7 条能力里 2 条可算、2 条弱可算、3 条不可得。「部分支持」对应的是「两类事件可数、区域维与第三类不可用」。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

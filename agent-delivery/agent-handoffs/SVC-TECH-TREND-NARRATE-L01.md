@@ -53,6 +53,26 @@ STAGE（org_coverage G1/G2 指纹/G4 RustFS）、T4–T7、口径修改、企业
 - M-3 rank 防御：`narrate_techpower._fact_pack` 按 score 降序稳定排序锁死语义。
 - 修后复验：两叶自检 10 场景 ALL PASS、T1 8 场景 ALL PASS、装配 34 passed、FE 三绿。**Ready to proceed。**
 
+### 5.1.1 终审记录（requesting-code-review，2026-10-27 21:24，推送后）
+
+- subagent 终审：**无 Critical，合入质量合格可保持线上**；发现 I-1'（倒装句绕过名前星后配对，同星值交叉仍存活）+ I-2（档位词子串误杀可用性）+ M1–M5。
+- **随扩单同文件收口（2026-10-28）**：I-1' 倒装「N星…领域名」反向配对 + I-2 档位词独立词形边界（后接标点才拒，语素假阳性放行）+ M1 growth 优先读 `heat.growth_pct`（3 年窗口与星级同源）+ M2 死代码 `star_pairs` 删除。
+- 遗留跟进：M5 topic-py 30s vs narrate 20s 余量提示（观察项暂不改）；`test_tech_wrong_dim_rejected` 弱断言保留作框架回归。
+
+### 5.1.2 扩单实现（2026-10-28，T4–T7 四叶；05.7.2 v1.1 就地扩单裁定）
+
+| 叶 | prompt 包 | narrate 模块 | 事实包/校验特有件 |
+| --- | --- | --- | --- |
+| T4 shortboard | `svc.shortboard.narrate.v1` | `narrate_shortboard.py` | 六环节 flag 档位 + **档位-环节配对校验**（子句窗口防滑窗误配）；RUNTIME_NOTE（Q-SVCCHAIN-03）强制 |
+| T5 shenzhen | `svc.shenzhen.narrate.v1` | `narrate_shenzhen.py` | compare.cities + tier 措辞锁死（「梯队」语境须原样）+ BENCHMARK_NOTE 强制 |
+| T6 attract | `svc.attract.narrate.v1` | `narrate_recommend.py`（attract/cultivate 共用） | priority_level 分布 + WEIGHT_NOTE（Q-SVCCHAIN-05 + 不作对外招商承诺）强制 + 承诺禁词（剥离声明后校验） |
+| T7 cultivate | `svc.cultivate.narrate.v1` | 同上 leaf=cultivate | growth_stage 分布 + 同款声明/禁词 |
+
+- 装配：`leaf_shortboard`/`leaf_shenzhen`/`leaf_attract`/`leaf_cultivate` 收尾各挂一行（`leaf_shortboard` 返回值改造同 T2 模式）。
+- FE：四板渲染分支（`SvcChainShortboardBoard` 瓶颈面板 alert、`SvcSzCompareBoard` 结论块、attract/cultivate workspace 名单尾 alert），复用 `parseSvcCoverageNarration`。
+- 自检：`test_svcan_narrate_eco_rec` 12 场景 ALL PASS（sb ok/交叉错挂拒/空/boom；sz ok/改档拒/空；rec ok/禁词拒/cultivate ok/空/no_key）；全量回归 tech_trend 10 + coverage 8 + 装配 34 passed；FE 自检×4 + type-check + build 全绿。
+- **改动停三仓本地**，push 挂钩 QA 对 T1–T3 测试结论（QA 测已部署 dev，不受本地影响）。
+
 ## 5. 偏离说明
 
 ### 5.0 线上实证记录（验收推送后补，DoD ⑤ 达成）

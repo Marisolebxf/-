@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_INNOV_GBA_RES_INDEX · 创新资源指数（湾区 4 城实测）
 
 王惠口径（calc-logic/INNOV/M_INNOV_GBA_RES_INDEX.md）：湾区 11 城

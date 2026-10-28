@@ -1,9 +1,20 @@
 # 产业匹配度（M_ENT_INDUSTRY_MATCH_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_INDUSTRY_MATCH_SCORE.md`；复现脚本 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py` → `metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（产业链融入度模型·企业级连续分）｜ **域**：企业分析·引育推荐·招引推荐（ENT）｜ **UI 挂载**：算法库「招引企业综合推荐模型」§1.1.1.1.1.1.1.5.7 产业相关度维度（SRS 需规清单序号 147）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py`、产物 `metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_INDUSTRY_MATCH_SCORE.md`；复现脚本 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py` → `metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py`、产物 `metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_INDUSTRY_MATCH_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json` |
@@ -62,14 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py`、产物 `metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（产业链融入度模型·企业级连续分）｜ **域**：企业分析·引育推荐·招引推荐（ENT）｜ **UI 挂载**：算法库「招引企业综合推荐模型」§1.1.1.1.1.1.1.5.7 产业相关度维度（SRS 需规清单序号 147）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020）**：王惠（calc-logic 真源：产业链融入度三件套 ind_link × d_f → ind_chain_f，方法源自陈林等 2024）｜ 直接（结构/数据）：否（无结果面）/ 否 ｜ 依赖（结构/数据）：投入产出表两库皆无（公式 1—2、6 无源）/ 收入权重薄（2,046/90,926）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -103,7 +111,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「产业匹配度」是招引企业综合推荐模型的产业相关度维核心指标：衡量企业与目标产业链整体关联的紧密程度，以产业链融入度 ind_chain_f 落地——内部联系（产业链关联度 ind_link，投入产出表收入加权出度）与外部联系（企业产业链质心度 d_f，上游度距离×产值占比）相乘。需求文档给出招引推荐模型的维度框架（产业相关度、政策匹配度、深圳连接度三类指标体系）但**未写本指标的计算公式与数据来源**；口径真源为 calc-logic（王惠调研结果规范化迁移）：方法学完整移植陈林等《产业链融入与企业创新——基于微观企业数据的产业链测度新方法》（《经济研究》2024 年第 10 期）的三件套——公式 1 直接消耗系数矩阵 A、公式 2—5 产业链关联度 ind_link（收入加权产业出度 C₂×A₂）、公式 6—8 质心度 d_f（Antràs 上游度定位质心）、公式 9 融入度 ind_chain_f = d_f × ind_link (陈林等, 2024; Antràs et al., 2012)。实测（2026-10-20，脚本 `code/M_ENT_INDUSTRY_MATCH_SCORE.py`）：gkx 库内投入产出表空集（input_output/invest_output/io_table/direct_consum 四模式全空）——a_ij/Y_i/X_i 无源，九个公式中公式 1—2、6 不可算，全链阻断；收入权重 c_i 侧 main_business_revenue 填充 2,046/90,926（2.2%）；图谱边 shareholder 400,286/subsidiary 178,900 行在、供应商客户边 dwd_org_sc_info 仅 1,716 行（弱）→ **部分支持**；IO 表为国家统计局公开出版物（2020 年 153 部门表可下）(国家统计局国民经济核算司, 2022)，外采可解但当前不可算。
+「产业匹配度」是招引企业综合推荐模型的产业相关度维核心指标：衡量企业与目标产业链整体关联的紧密程度，以产业链融入度 ind_chain_f 落地——内部联系（产业链关联度 ind_link，投入产出表收入加权出度）与外部联系（企业产业链质心度 d_f，上游度距离×产值占比）相乘。需求文档给出招引推荐模型的维度框架（产业相关度、政策匹配度、深圳连接度三类指标体系）但**未写本指标的计算公式与数据来源**；口径真源为 calc-logic（王惠调研结果规范化迁移）：方法学完整移植陈林等《产业链融入与企业创新——基于微观企业数据的产业链测度新方法》（《经济研究》2024 年第 10 期）的三件套——公式 1 直接消耗系数矩阵 A、公式 2—5 产业链关联度 ind_link（收入加权产业出度 C₂×A₂）、公式 6—8 质心度 d_f（Antràs 上游度定位质心）、公式 9 融入度 ind_chain_f = d_f × ind_link (陈林等, 2024; Antràs et al., 2012)。实测（2026-10-20，脚本 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py`）：gkx 库内投入产出表空集（input_output/invest_output/io_table/direct_consum 四模式全空）——a_ij/Y_i/X_i 无源，九个公式中公式 1—2、6 不可算，全链阻断；收入权重 c_i 侧 main_business_revenue 填充 2,046/90,926（2.2%）；图谱边 shareholder 400,286/subsidiary 178,900 行在、供应商客户边 dwd_org_sc_info 仅 1,716 行（弱）→ **部分支持**；IO 表为国家统计局公开出版物（2020 年 153 部门表可下）(国家统计局国民经济核算司, 2022)，外采可解但当前不可算。
 
 ---
 
@@ -174,7 +182,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 calc-logic 口径展开（公式定义人=王惠，方法源自陈林等 2024），已由脚本 `code/M_ENT_INDUSTRY_MATCH_SCORE.py` 于 2026-10-20 在三方 gkx 完成 IO 表存在性、收入权重填充与图谱边量的依赖实测；因 IO 表两库皆无，本批为「依赖审计」而非出数——公式 1—2、6 无源，ind_link/u_i/质心 c/d_f/ind_chain_f 全链不可算。结果见同目录 `M_ENT_INDUSTRY_MATCH_SCORE_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」。
+> **口径说明**：本节按王惠 calc-logic 口径展开（公式定义人=王惠，方法源自陈林等 2024），已由脚本 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py` 于 2026-10-20 在三方 gkx 完成 IO 表存在性、收入权重填充与图谱边量的依赖实测；因 IO 表两库皆无，本批为「依赖审计」而非出数——公式 1—2、6 无源，ind_link/u_i/质心 c/d_f/ind_chain_f 全链不可算。结果见同目录 `M_ENT_INDUSTRY_MATCH_SCORE_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」。
 
 ### 2.1 方法选择：为何用「IO 三件套」而非关键词共现或纯图谱关联
 
@@ -220,12 +228,12 @@ ind_link 为链内企业共有变量（内部联系），d_f 为企业个体变�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py` |
 | 结果产物 | 同目录 `M_ENT_INDUSTRY_MATCH_SCORE_out.json` |
 | 探测库 | 三方 `gkx`（IO 表存在性 + 财务填充 + 图谱边量） |
 
 ```bash
-python3 metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py
 ```
 
 脚本输出 `probe`（io_tables 列表、main_business_revenue 填充、三类边行数）与 `support_judgment`（机判）。以下展示为 **2026-10-20** 完整跑数结果（与 out.json 一致）。
@@ -289,7 +297,7 @@ python3 metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_INDUSTRY_MATCH_SCORE.py` 并确认依赖实测，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py` 并确认依赖实测，再写本档支持度。
 
 | 依赖维度 | 候选表/字段 | 开发库（实测） | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -304,7 +312,7 @@ python3 metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py
 **四判定（§〇）**：直接结构/数据 = 否（无结果面）；依赖结构 = **部分**（IO 表两库皆无——公式 1—2、6 结构性无源；其余结构在）；依赖数据 = **部分**（收入/产值 2.2%—2.4% 薄；图谱边 shareholder/subsidiary 量足）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_INDUSTRY_MATCH_SCORE_out.json` 实测——方法核心输入《中国投入产出表》两库皆无（io 类表空集）：a_ij/Y_i/X_i 无源，ind_link（公式 1—2/5）、上游度 u_i（公式 6）、质心 c、d_f、ind_chain_f 全链不可算；收入权重侧 main_business_revenue 填充 2,046/90,926（薄）；图谱边 shareholder 400,286/subsidiary 178,900 在（投资边缺既往已证）。IO 表为统计局公开可下（2020 年 153 部门表）——外采可解，但当前两库均无 → **部分支持**。**先验标签「完全转换支持」与实测矛盾（IO 表整缺、权重薄，非「现在就能转」），以实测为准。**
+依据：`metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json` 实测——方法核心输入《中国投入产出表》两库皆无（io 类表空集）：a_ij/Y_i/X_i 无源，ind_link（公式 1—2/5）、上游度 u_i（公式 6）、质心 c、d_f、ind_chain_f 全链不可算；收入权重侧 main_business_revenue 填充 2,046/90,926（薄）；图谱边 shareholder 400,286/subsidiary 178,900 在（投资边缺既往已证）。IO 表为统计局公开可下（2020 年 153 部门表）——外采可解，但当前两库均无 → **部分支持**。**先验标签「完全转换支持」与实测矛盾（IO 表整缺、权重薄，非「现在就能转」），以实测为准。**
 
 ---
 
@@ -372,11 +380,6 @@ python3 metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py
 5. 国家统计局国民经济核算司. (2022). 《中国投入产出表 2020》（赵同录主编；153 产品部门×153 部门竞争型表 + 42 部门非竞争型表；逢 0 延长表编制说明——IO 外采的官方出版物源）. 中国经济社会大数据研究平台条目：https://data.oversea.cnki.net/yearBook/single?id=N2023010094 （该站对本机脚本返回 404，浏览器可正常打开；书目信息已核：国家统计局国民经济核算司编，2022.08，345 页）
 
 6. 国家统计局. (2020). 《2020 年全国投入产出表》（国家数据平台投入产出表栏目，Excel 直载；按当年生产者价格计算，153 产品部门）. https://www.stats.gov.cn/sj/ndsj/2023/indexch.htm （原发布页已下线，链至同口径官方上位页）
-
-7. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_INDUSTRY_MATCH_SCORE.md` — 九公式、源表字段、缺口汇总与 Q015 登记。
-
-8. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_KEYPANO_MATCH_COUNT.md` — 链位换算联动的族内叶；`M_ENT_COMPETITIVENESS_SCORE.md` — 收入权重披露偏倚的同源证据。
-
 ---
 
 # 附件
@@ -406,7 +409,7 @@ python3 metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py
 
 - calc-logic 登记（王惠规范化迁移）：缺口汇总表（a_ij/Y_i/X_i ❌ 投入产出表缺失 / c_i ✅ / u_f ❌ 依赖 IO / production_f ✅ / 企业关联边 ✅投资并购缺 / 链节点结构 ✅ / 供应链客户 ❌）；「核心瓶颈是投入产出表。doc 目录的 4 个 xlsx 中没有收录这张表」；match 登记行数 chain_info 1,273 / financial 517,597 / base 50,000 / industry_tags 19,029 / shareholder 400,286 / subsidiary 178,822（与本批实测差异为批间数据版本变化）。
 - B2 批次锚点（PROGRESS.md，2026-10-20）：`M_ENT_INDUSTRY_MATCH_SCORE` 部分支持；IO 表两库皆无；main_business_revenue 2,046/90,926；边 shareholder 400,286/subsidiary 178,900 在、投资边缺。
-- 本批实测（`code/M_ENT_INDUSTRY_MATCH_SCORE.py`，2026-10-20）：io_tables=[]（四模式空集）；mbr 2,046/90,926；sc_info 1,716；`support_judgment = 部分支持`。
+- 本批实测（`metrics/repro/M_ENT_INDUSTRY_MATCH_SCORE.py`，2026-10-20）：io_tables=[]（四模式空集）；mbr 2,046/90,926；sc_info 1,716；`support_judgment = 部分支持`。
 
 ## 附录 C　产业匹配度类似指标权威构建方法可行性报告（完整版）
 
@@ -482,15 +485,7 @@ Fan & Lang 以 IO 表输入转移比率度量行业间纵向关联与互补性�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_INDUSTRY_MATCH_SCORE.py`；产物：`../code/M_ENT_INDUSTRY_MATCH_SCORE_out.json`
+- 脚本：`../code/M_ENT_INDUSTRY_MATCH_SCORE.py`；产物：`../metrics/repro/out/M_ENT_INDUSTRY_MATCH_SCORE_out.json`
 - 探测库：三方 `gkx`
 - 关键结果：io_tables=[]（%input_output%/%invest_output%/%io_table%/%direct_consum% 全空）；main_business_revenue 2,046/90,926（2.2%）；边 shareholder 400,286/subsidiary 178,900/sc 1,716；`support_judgment = 部分支持`（io_table_available=false、revenue_weight_ready=false、graph_edges_ready=true）
 - 工程注意：IO 外采是先决项（与 KEYPANO 链位换算合并决策）；权重扩源与 COMPETITIVENESS 族共享；图谱代理版须口径注明；期刊出处勘误（经济研究≠中国工业经济）随 Q015 会签同步。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

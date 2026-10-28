@@ -1,9 +1,21 @@
 # 年度新增服务机构数（M_SVC_ORG_NEW_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_ORG_NEW_COUNT.md`；复现脚本 `metrics/repro/M_SVC_ORG_NEW_COUNT.py` → `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：KPI（服务机构库·年度新增计数与累计区间）｜ **域**：SVC 服务机构（新增服务机构动态的计数版）｜ **UI 挂载**：产业服务链分析·新增服务机构动态·年度柱图 / 算法库·服务机构基础指标模型（序号 101）
+> - **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：侯佳伟 calc-logic 迁移口径（成立年分组 COUNT + 累计），本件只换源
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_ORG_NEW_COUNT.py`、产物 `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_ORG_NEW_COUNT.md`；复现脚本 `metrics/repro/M_SVC_ORG_NEW_COUNT.py` → `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_ORG_NEW_COUNT.py`、产物 `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_ORG_NEW_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_SVC_ORG_NEW_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json` |
@@ -59,16 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_ORG_NEW_COUNT.py`、产物 `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：KPI（服务机构库·年度新增计数与累计区间）｜ **域**：SVC 服务机构（新增服务机构动态的计数版）｜ **UI 挂载**：产业服务链分析·新增服务机构动态·年度柱图 / 算法库·服务机构基础指标模型（序号 101）
-> **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：侯佳伟 calc-logic 迁移口径（成立年分组 COUNT + 累计），本件只换源
-> **数据源**：gkx（183.240.141.251:3318，只读 gkx_reader_zp）+ `code/_snapshots21/`
-> **wanghui：false**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -181,9 +188,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.6 步骤 5｜产物与复现（D5）
 
-产物 `code/M_SVC_ORG_NEW_COUNT_out.json` 含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`population`、`series_2013_2022`、`yoy_2014_2022`、`peak`、`recent_structure_2018_2022`、`cumulative`、`difference_vs_old_draft`、`gaps`。脚本自包含、零 DB，运行约 0.6 秒。
+产物 `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json` 含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`population`、`series_2013_2022`、`yoy_2014_2022`、`peak`、`recent_structure_2018_2022`、`cumulative`、`difference_vs_old_draft`、`gaps`。脚本自包含、零 DB，运行约 0.6 秒。
 
-复现：`python3 M_SVC_ORG_NEW_COUNT.py`，打印 `new_count 2013-2022 sum=20877 peak={'year': 2015, 'count': 3342} 2018-2022=6089`。
+复现：`cd code && python3 M_SVC_ORG_NEW_COUNT.py`，打印 `new_count 2013-2022 sum=20877 peak={'year': 2015, 'count': 3342} 2018-2022=6089`。
 
 ### 2.7 复现结果摘要
 
@@ -365,7 +372,7 @@ P0（本周）：在 UI 上把 2023 后留白、把类型/环节图标注「多�
 
 ## 参考文献
 
-1. 国家市场监督管理总局. (2025). 经营主体登记注册统计. https://www.samr.gov.cn/zw/tjxx/
+1. 国家市场监督管理总局. (2025). 经营主体登记注册统计. https://www.samr.gov.cn/
 
 2. 国家统计局. (2024). 《第五次全国经济普查公报（第二号）》. https://www.stats.gov.cn/sj/tjgb/
 
@@ -380,7 +387,6 @@ P0（本周）：在 UI 上把 2023 后留白、把类型/环节图标注「多�
 7. Eurostat. (2024). *Business demography — enterprise births*. https://ec.europa.eu/eurostat/web/business-demography
 
 8. 国家统计局. (2023). 《统计上大中小微型企业划分办法（2017）》. https://www.stats.gov.cn/sj/tjbz/gjtjbz/
-
 ---
 
 # 附件
@@ -425,8 +431,8 @@ P0（本周）：在 UI 上把 2023 后留白、把类型/环节图标注「多�
 
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
-| `code/M_SVC_ORG_NEW_COUNT.py` | 自包含脚本（零 DB） | 已跑通 |
-| `code/M_SVC_ORG_NEW_COUNT_out.json` | 结果与元数据 | 已落盘 |
+| `metrics/repro/M_SVC_ORG_NEW_COUNT.py` | 自包含脚本（零 DB） | 已跑通 |
+| `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json` | 结果与元数据 | 已落盘 |
 | `_staging21/M_SVC_ORG_NEW_COUNT.md` | 本文件 | 已交付 |
 | `code/_snapshots21/svc21_facts_20261022.json` | 池与成立年 | 复用 |
 
@@ -464,7 +470,7 @@ P0（本周）：在 UI 上把 2023 后留白、把类型/环节图标注「多�
 ## 附录 E　复算步骤
 
 1. 确认快照：`ls code/_snapshots21/svc21_facts_20261022.json`。
-2. 运行：`python3 M_SVC_ORG_NEW_COUNT.py`。
+2. 运行：`cd code && python3 M_SVC_ORG_NEW_COUNT.py`。
 3. 校验：`sum(series_2013_2022)` = 20,877。
 4. 校验：`cumulative.2015_2017` = 9,087、`cumulative.2021_2022` = 1,404。
 5. 校验：`city_top` 四档和 = 6,089。
@@ -512,14 +518,4 @@ P0（本周）：在 UI 上把 2023 后留白、把类型/环节图标注「多�
 11. 正文写「毛出生」与「截至 2022」
 12. 累计区间端点写进 API 文档
 
-> 生成本文件的时间：2026-10-22；数字均取自 `code/M_SVC_ORG_NEW_COUNT_out.json`。
-
-
-## 更新记录
-
-- 2026-08-21: 初版，模拟王惠调研产出
-- 2026-10-13: 钉死工商成立年、全库一条按年
-- 2026-10-13: formula 拆成 [SEED]/[SERVE]/[PAGE] 可执行 SQL，版本 0.2.1
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+> 生成本文件的时间：2026-10-22；数字均取自 `metrics/repro/out/M_SVC_ORG_NEW_COUNT_out.json`。

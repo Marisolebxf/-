@@ -1,0 +1,65 @@
+{
+ "metric_id": "M_POLICY_DS_07_POLICY_GUARD_008",
+ "title": "政策与条件保障力综合评估（王惠五维口径 v2 复现）",
+ "probe_date": "2026-10-21",
+ "probes": {
+  "gkx_dwd_policy_base": 20000,
+  "gkx_real_status": 20000,
+  "gkx_real_rank": 20000,
+  "gkx_real_type": 18138,
+  "gkx_real_link": 20000,
+  "gkx_real_publish_year": 19997,
+  "gkx_real_implementation_date": 0,
+  "gkx_real_expire_date": 0
+ },
+ "compute": {
+  "rows_source": "gkx",
+  "rows_pulled": 20000,
+  "n_valid_dedup": 20000,
+  "d1_guidance": {
+   "value": 2.71,
+   "source": "M_POLICY_DS_07_POLICY_GUARD_001_out.json（2/3 维可算）",
+   "dim_available": true
+  },
+  "d2_policy_density": {
+   "value": 20000,
+   "note": "组级基数，非比率",
+   "dim_available": true
+  },
+  "d2b_rank_coverage": {
+   "hits": [
+    "国家级",
+    "市级",
+    "省级"
+   ],
+   "value": 0.75,
+   "dim_available": true
+  },
+  "d3_funding": {
+   "dim_available": false,
+   "note": "rd_fund_amount 无 ODS（王惠登记待建）"
+  },
+  "d4_project": {
+   "dim_available": false,
+   "note": "project_grant_amount 无 ODS（王惠登记待建）"
+  },
+  "d5a_timeliness": {
+   "hit": 0,
+   "rate": 0.0,
+   "dim_available": false
+  },
+  "d5b_visibility": {
+   "hit": 20000,
+   "rate": 1.0,
+   "dim_available": true,
+   "note": "gkx 侧 link 20,000 行全为真实 URL（复验 GROUP BY 无 'NULL' 占位组）"
+  },
+  "dims_available": "3/6（引导力/密度/级别覆盖/经费/项目/时效性+可见度按王惠五维表折算）",
+  "guarantee_score": 148.67,
+  "formula": "可用比率维等权 ×100；经费/项目缺维不进平均（王惠合成规则）",
+  "support_judgment": "部分支持"
+ },
+ "notes": [],
+ "support_judgment": "部分支持",
+ "data_caveat": "gkx 侧 implementation_date/expire_date 列非空≠有值（0000-00-00 占位），真实值见 probes（clean 后统计）；link 与 rank 复验为真实值；demo 当日连接超时，历史锚点 20261020 同构。"
+}

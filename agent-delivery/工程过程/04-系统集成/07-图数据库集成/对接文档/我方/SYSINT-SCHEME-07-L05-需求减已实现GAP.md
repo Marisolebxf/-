@@ -1,10 +1,5 @@
 # SYSINT-SCHEME-07-L05 · 需求减去已实现的图谱 GAP
 
-> **任务**：`SYSINT-SCHEME-07-L05`（WBS-07-00D）
-> **监管人 / 认领人**：human:郭万迎
-> **完成日期要求**：2026-11-09（WBS-07-00 出门日）
-> **创建时间**：2026-10-27
-
 ## 一、差集公式与口径
 
 ### 1.1 差集公式
@@ -28,6 +23,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | 边界 | 处理 |
 |---|---|
 | 人才/科研机构 L03 侧 | 🔶 代码路径存在但**久新数据是否灌入 PG 未验证**，**暂不入减数** |
+| `technology`（技术点）与七要素「技术」区分 | 需求实体 `technology` 是**技术点/技术方向/技术领域下的具体技术**（含层级关系与发展状态），与七要素「技术」=论文/专利/项目**不是同一事物**；数据由**久新供数**；L03/L04 均无该 TAG，**不入减数** |
 | 两侧 TAG/EDGE 命名不同 | 通过 L02 对齐轴统一到需求清单口径再做差 |
 | 不沿用 KG-YANDA-GAP-L01 v1.1 | v1.1 只作草稿，本文件独立判定 |
 | 每行归堆 | 必填列：对端缺口 / 第06项 Graph / 第07项读图 / 在途 |
@@ -42,7 +38,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | `paper` | 技术 | ❌ 无（燕大侧负责） | `Paper` + `Journal` | ✅ |
 | `patent` | 技术 | ❌ 无 | `Patent` + `PatentFamily` | ✅ |
 | `project` | 技术 | ❌ 无 | `Project` | ✅ |
-| `technology` | 不并进七要素 | ❌ 无 | 最接近 `Keyword`（语义不同） | 🔶 |
+| `technology` | 技术点/技术方向（≠七要素「技术」=论文；久新供数） | ❌ 无 | ❌ 无 `Technology` TAG（最接近 `Keyword`，语义不同） | 🔶 |
 | `field` | 不并进七要素 | ❌ 无 | 最接近 `Keyword`（语义不同） | 🔶 |
 | `topic` | 不并进七要素 | ❌ 无 | 最接近 `Keyword`（语义不同） | 🔶 |
 | `policy` | 政策 | ❌ 两侧都不写 | ❌ 无（蓝图已备） | 🔴 |
@@ -57,7 +53,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 |---|---|---|
 | **对端缺口** | 燕大侧明确不覆盖、未实现或接口形态不匹配 | Policy TAG 未建、11 条关系无对应、31 计算能力中部分未提供 |
 | **第06项 Graph** | 智树算法中台侧的图能力可补齐 | 产业/企业/服务机构已有写图路径可复用扩写；cfg_metric 指标可对接图计算 |
-| **第07项读图** | 数据供给层缺失（不在图谱侧） | 久新人才/科研机构数据未灌入 PG；主题库/数据集/事件数据需数据接入 |
+| **第07项读图** | 数据供给层缺失（不在图谱侧） | 久新人才/科研机构/**技术点**数据未灌入 PG；主题库/数据集/事件数据需数据接入 |
 | **在途** | 已知在排期、有明确依赖未满足、或状态不明确 | 久新数据供给排期未给、燕大清单回复未收到、时序快照可行性未评估 |
 
 ---
@@ -72,7 +68,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | 4 | `paper` | 技术 | ❌ | ✅ Paper + Journal | ✅ 已覆盖 | — | 燕大侧完全覆盖 |
 | 5 | `patent` | 技术 | ❌ | ✅ Patent + PatentFamily | ✅ 已覆盖 | — | 燕大侧完全覆盖 |
 | 6 | `project` | 技术 | ❌ | ✅ Project | ✅ 已覆盖 | — | 燕大侧完全覆盖 |
-| 7 | `technology` | 不并进七要素 | ❌ | ❌（Keyword 语义不同） | 🔴 **GAP** | 对端缺口 | 技术点 vs 关键词是不同语义；燕大无 Technology TAG |
+| 7 | `technology` | 技术点/技术方向 | ❌ | ❌（Keyword 语义不同） | 🔴 **GAP** | 第07项读图 | 技术点、技术方向、技术领域下的具体技术，含层级关系与发展状态；数据由**久新供数**，供给层未到位；燕大无 Technology TAG，智树亦无该 TAG |
 | 8 | `field` | 不并进七要素 | ❌ | ❌（Keyword 语义不同） | 🔴 **GAP** | 对端缺口 | 学科领域 vs 关键词；燕大无 Field TAG |
 | 9 | `topic` | 不并进七要素 | ❌ | ❌（Keyword 语义不同） | 🔴 **GAP** | 对端缺口 | 主题库/主题分类 vs 论文关键词；边界不同 |
 | 10 | `policy` | 政策 | ❌ | ❌（蓝图已备无 TAG） | 🔴 **GAP** | 对端缺口 | **P0 GAP**：两侧都不写，燕大蓝图+源表已备但 Policy TAG 未建 |
@@ -86,7 +82,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | 状态 | 数量 | 详情 |
 |---|---:|---|
 | ✅ 两侧覆盖（含一侧明确覆盖） | 7 | enterprise、institution、person、paper、patent、project + 隐式产业（chain/segment） |
-| 🔴 **GAP（两侧都不写）** | **7** | policy（P0）、technology、field、topic、dataset、event（语义错位）、activity、innovation_carrier |
+| 🔴 **GAP（L03/L04 两侧都不写）** | **7** | policy（P0）、technology（久新供数）、field、topic、dataset、event（语义错位）、activity、innovation_carrier |
 
 > **注**：enterprise/institution/person 虽两侧都写，但 TAG 命名/属性覆盖/枚举区分各有差距，未完全等价覆盖。
 
@@ -103,8 +99,8 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | 5 | `participate` | person→project；institution→project | ❌ | ❌ | 🔴 **GAP** | 对端缺口 | 两侧都无参与 EDGE；依赖 project + person/institution 实体先存在 |
 | 6 | `belong_to` | paper/patent/project/technology→field | ❌ | ❌ | 🔴 **GAP** | 对端缺口 | 两侧都无归属到领域的 EDGE；依赖 field 实体先存在 |
 | 7 | `author_of` | person→paper/patent | ❌ | ✅ AUTHORED_BY | ✅ 已覆盖 | — | 燕大 AUTHORED_BY 完全覆盖 |
-| 8 | `technology_hierarchy` | technology→technology | ❌ | ❌ | 🔴 **GAP** | 对端缺口 | 依赖 technology 实体先存在（GAP #7） |
-| 9 | `technology_influence` | technology→technology | ❌ | ❌ | 🔴 **GAP** | 对端缺口 | 依赖 technology 实体先存在 |
+| 8 | `technology_hierarchy` | technology→technology | ❌ | ❌ | 🔴 **GAP** | 第07项读图 | 依赖 technology 实体先存在（GAP #7）；层级关系由**久新供数**随技术点本体下发，不由图谱侧计算 |
+| 9 | `technology_influence` | technology→technology | ❌ | ❌ | 🔴 **GAP** | 第06项Graph | 依赖 technology 实体先存在；影响关系需由引文/专利共现计算，智树图能力可承接 |
 | 10 | `publish` | institution→policy | ❌ | ❌ | 🔴 **GAP** | 对端缺口 | 依赖 policy 实体先存在（P0 GAP） |
 | 11 | `policy_relate` | policy↔policy | ❌ | ❌ | 🔴 **GAP** | 对端缺口 | 依赖 policy 实体先存在 |
 | 12 | `policy_apply_to` | policy→field/enterprise/person/institution | ❌ | ❌ | 🔴 **GAP** | 对端缺口 | 依赖 policy 实体先存在 |
@@ -151,7 +147,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 
 | 实体 | 属性数 | 实体状态 | 属性 GAP 判定 | 归堆 | 详细映射 |
 |---|---:|---|---|---|---|
-| `technology` | 9 | 🔴 GAP | 🔴 **9/9 全 GAP** | 对端缺口 | — |
+| `technology` | 9 | 🔴 GAP | 🔴 **9/9 全 GAP** | 第07项读图 6（展示类）/ 第06项Graph 3（计算类） | 附录 A.3 |
 | `field` | 7 | 🔴 GAP | 🔴 **7/7 全 GAP** | 对端缺口 | — |
 | `topic` | 7 | 🔴 GAP | 🔴 **7/7 全 GAP** | 对端缺口 | — |
 | `policy` | 6 | 🔴 GAP | 🔴 **6/6 全 GAP** | 对端缺口 | — |
@@ -229,9 +225,9 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 
 | 状态 | 数量 | 详情 |
 |---|---:|---|
-| ✅ 已覆盖 | **9** | C-01/02/03/04/06/08/11/14/30/31 |
+| ✅ 已覆盖 | **10** | C-01/02/03/04/06/08/11/14/30/31 |
 | 🔶 部分覆盖 | **6** | C-05/07/15/18/21/27 |
-| 🔴 **GAP** | **16** | C-09/10/12/13/16/17/19/20/22/23/24/25/26/28/29 |
+| 🔴 **GAP** | **15** | C-09/10/12/13/16/17/19/20/22/23/24/25/26/28/29 |
 
 ---
 
@@ -271,9 +267,9 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | 实体类型 | 14 | 7 | 0 | **7** |
 | 关系类型 | 17 | 2 | 2 | **13** |
 | 属性 | 99 | **18** | **20** | **61** |
-| 计算能力 | 31 | 9 | 6 | **16** |
+| 计算能力 | 31 | **10** | **6** | **15** |
 | 写入接口 | 10 | 8 | 2 | 0 |
-| **合计** | **171** | **44** | **30** | **97** |
+| **合计** | **171** | **45** | **30** | **96** |
 
 > **注**：属性层从粗估 ≈4/≈25/≈60 精确化为 18/20/61，详见第四章 4.4 和附录 A。
 
@@ -286,8 +282,8 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | **P0** | 图谱时序快照 | C-13/C-16/C-26 三项计算能力依赖时序快照 | 燕大无快照能力 | 对端缺口 |
 | **P1** | Activity TAG + activity_link | 燕大无 Activity TAG + 无关联关系 | 完全不存在 | 对端缺口 |
 | **P1** | 图推荐 C-19 | 链路预测能力未提供 | — | 对端缺口 |
-| **P1** | 13 条关系中除 2 已覆盖外的剩余 | cooperate / research / participate / belong_to / technology_hierarchy / technology_influence / dataset_link / event_link / carrier_cooperate | 依赖对应实体先存在 | 对端缺口 + 第06项Graph |
-| **P1** | 6 个非七要素实体 | technology / field / topic / dataset / event / innovation_carrier | 部分语义错位、部分完全不存在 | 对端缺口 |
+| **P1** | 13 条关系中除 2 已覆盖外的剩余 | cooperate / research / participate / belong_to / technology_hierarchy / technology_influence / dataset_link / event_link / carrier_cooperate | 依赖对应实体先存在 | 对端缺口 + 第06项Graph + 第07项读图 |
+| **P1** | 6 个非七要素实体 | field / topic / dataset / event / innovation_carrier（**technology 另计**：久新供数 → 第07项读图 + 第06项Graph） | 部分语义错位、部分完全不存在 | 对端缺口 + 第07项读图 |
 
 ### 7.3 燕大独有能力（L03/L05 可直接复用）
 
@@ -313,20 +309,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 
 ---
 
-## 八、与 KG-YANDA-GAP-L01 v1.1 的关系
-
-| 维度 | v1.1（前序草稿） | 本文件（L05） |
-|---|---|---|
-| 被减数 | 14 实体 + 17 关系 | 14 实体 + 17 关系 + 99 属性 + 31 计算 + 10 写入（五类全做） |
-| 减数 | 仅燕大侧 + cfg_metric seed | L03（智树 ✅）∪ L04（燕大 ✅），两层都算 |
-| 算法中台就绪度 | D4 全部 mock，定义存在但无真实代码 | 3 要素真实已跑通（产业/企业/服务机构），5 TAG 硬编码证据 |
-| 人才/科研机构判定 | ❌ 未分析算法中台覆盖 | 🔶 代码路径存在但久新数据未验证，暂不入减数 |
-| 政策判定 | 两侧都不写 | ✅ 一致确认（P0 GAP） |
-| 不沿用 v1.1 覆盖结论 | — | ✅ 本文件独立判定 |
-
----
-
-## 九、输入材料索引
+## 八、输入材料索引
 
 | 材料 | 路径 | 版本 |
 |---|---|---|
@@ -335,7 +318,6 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | L03 算法中台上图台账 | `对接文档/我方/SYSINT-SCHEME-07-L03-算法中台上图台账.md` | v1.0（复核修正后） |
 | L04 燕大七要素上图对照 | `对接文档/我方/SYSINT-SCHEME-07-L04-燕大七要素上图对照.md` | v1.0 |
 | 七要素现状快照 | `对接文档/对端/2026-10-26-科创要素知识图谱-七要素数据维度与上图逻辑现状快照.md` | 2026-10-26 |
-| KG-YANDA-GAP-L01 v1.1（不沿用） | `外部接口依赖/KG-YANDA-SCHEMA-REQ/GAP-展示系统图谱需求GAP差集分析.md` | v1.1（草稿） |
 | WBS-07 | `WBS.md` | 2026-10-26 |
 
 ---
@@ -459,7 +441,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 
 | 实体 | 属性数 | 燕大承载 | 判定 | 归堆 | 说明 |
 |---|---:|---|---|---|---|
-| `technology` 技术 | 9 | ❌ 无 Technology TAG（最接近 Keyword 语义不同） | 🔴 9/9 | 对端缺口 | 技术点 vs 关键词是不同语义层级 |
+| `technology` 技术点 | 9 | ❌ 无 Technology TAG（最接近 Keyword 语义不同） | 🔴 9/9 | 第07项读图 6 / 第06项Graph 3 | 数据由**久新供给**（同人才/科研机构）；`hierarchy_level`、`development_status`、`category`、`importance_level` 随本体下发；`innovation_score`/`innovation_rank`/`hotspot_flag` 需图谱计算 |
 | `field` 领域 | 7 | ❌ 无 Field TAG（最接近 Keyword） | 🔴 7/7 | 对端缺口 | 学科领域分类体系未建模 |
 | `topic` 主题 | 7 | ❌ 无 Topic TAG（最接近 Keyword） | 🔴 7/7 | 对端缺口 | 主题库 vs 关键词本体边界不同 |
 | `policy` 政策 | 6 | ❌ Policy TAG 未建（蓝图+源表已备） | 🔴 6/6 | 对端缺口 | **P0 GAP**，两侧都不写 |
@@ -501,7 +483,7 @@ GAP = 需求清单 v1.0 − (L03 算法中台 ✅已实现 ∪ L04 燕大侧 ✅
 | 1 | `cooperation_type` | `cooperate` | 合作类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | cooperate 关系两侧都不写（第二章关系 GAP #1），属性无从挂载 |
 | 2 | `role` | `participate` | 参与角色 | 🔴 GAP | 否 | 🔴 | 对端缺口 | participate 关系 GAP（关系 GAP #5） |
 | 3 | `citation_context` | `cite` | 引用语境 | ✅ CITES | 否 | 🔴 | 对端缺口 | CITES EDGE 存在但无 citation_context 属性；燕大引文只取 DOI/题名等标识，不存引用上下文 |
-| 4 | `influence_type` | `technology_influence` | 影响类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | technology_influence 关系 GAP（关系 GAP #9） |
+| 4 | `influence_type` | `technology_influence` | 影响类型 | 🔴 GAP | 否 | 🔴 | 第06项Graph | technology_influence 关系 GAP（关系 GAP #9）；影响类型随图谱计算侧一并产出 |
 | 5 | `relation_type` | `policy_relate` | 政策关联类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | policy_relate 关系 GAP（关系 GAP #11） |
 | 6 | `target_role` | `policy_apply_to` | 作用角色 | 🔴 GAP | 否 | 🔴 | 对端缺口 | policy_apply_to 关系 GAP（关系 GAP #12） |
 | 7 | `link_type` | `dataset_link` | 数据集关联类型 | 🔴 GAP | 否 | 🔴 | 对端缺口 | dataset_link 关系 GAP（关系 GAP #13） |

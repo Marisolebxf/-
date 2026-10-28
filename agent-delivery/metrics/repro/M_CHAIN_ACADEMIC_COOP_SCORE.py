@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题服务算法库
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
+#!/usr/bin/env python3
 """M_CHAIN_ACADEMIC_COOP_SCORE 产学研合作强度 — 实测计算脚本（20261021 修订版）
 
 口径（calc-logic AI 补漏稿，三维等权，待算法 Lead 会签）与实测落地差异：

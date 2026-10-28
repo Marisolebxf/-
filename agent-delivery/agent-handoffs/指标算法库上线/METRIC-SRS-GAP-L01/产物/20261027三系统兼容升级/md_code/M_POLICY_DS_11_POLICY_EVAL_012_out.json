@@ -1,0 +1,82 @@
+{
+ "metric_id": "M_POLICY_DS_11_POLICY_EVAL_012",
+ "title": "智能摘要与结论推送",
+ "probe_date": "2026-10-22",
+ "data_support_level": "部分支持",
+ "support_judgment": "部分支持",
+ "support_reason": "主料与上下文字段可算（正文 19,203 行、摘要 12,159 行、标题 20,000 行），结论句可抽取；推送就绪所需的 dwd_policy_summary(push_status) 与编辑日志表在 gkx 中均不存在 → 三维缺一维，判部分支持。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本指标为截面就绪度，不设跨年基期。结论句抽样按 id 随机（seed=42），不用年份分层；政策表 2023 年起无数据，不做年度外推。",
+ "sources": {
+  "pg_policy_rows": "code/_snapshots21/pg_policy_rows_20261021.json（ct_len/abs_len/ministry）",
+  "policy_content": "code/_snapshots21/policy_content_20261021.json（18,763 行正文/摘要）",
+  "policy_aux": "code/_snapshots21/policy_aux_20261022.json（表存在性探针：tables_found=[]）",
+  "db": "gkx @ 183.240.141.251:3318（只读；本脚本零 SQL）"
+ },
+ "population": {
+  "rows": 20000,
+  "rows_with_content_snapshot": 18763
+ },
+ "dims": {
+  "D1_info_coverage": {
+   "main_material_ok": 18955,
+   "main_rate_pct": 94.77,
+   "ctx_fields": {
+    "title": 20000,
+    "ministry": 19989,
+    "publish_year": 19997
+   },
+   "ctx_rate_pct": 99.9767,
+   "combined_pct": 97.38,
+   "available": true,
+   "note": "主料=正文>100 字或摘要非空；上下文=title/ministry/publish_year 三项齐备率"
+  },
+  "D2_conclusions": {
+   "sampled": 2000,
+   "policies_with_conclusion": 1999,
+   "conclusion_sents_total": 5554,
+   "avg_sents_per_policy": 2.78,
+   "normalized_pct": 92.61,
+   "available": true,
+   "examples": [
+    {
+     "title": "2017年度金融职工、窗口服务立功竞赛活动建功奖团队（个人）、五星级优质服务网点（明星）候选对象公示",
+     "top1_sent": "根据上海市金融工会工作委员会、共青团上海市金融工作委员会联合印发的《关于开展2017年度金融职工立功竞赛活动的通知》和《关于开展2017年度上海金融职工窗口优质",
+     "overlap": 0.184
+    },
+    {
+     "title": "关于召开全省中小企业创业园建设研讨会的通知",
+     "top1_sent": "省工信委决定召开中小企业创业园建设研讨会，现将有关事宜通知如下。",
+     "overlap": 0.361
+    },
+    {
+     "title": "关于公布2010年第十一届河南省科技情报成果奖获奖项目的通知",
+     "top1_sent": "&nbsp&nbsp&nbsp&nbsp附件：2010年第十一届河南省科技情报成果奖获奖项目名单&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&n",
+     "overlap": 0.44
+    },
+    {
+     "title": "市商务委关于确定本市“十二五”现代服务业集聚区的通知",
+     "top1_sent": "附件下载：AB6201000-2011-837.pdf上海市商务委员会",
+     "overlap": 0.064
+    },
+    {
+     "title": "省发展改革委浙江能源监管办省能源局关于印发《浙江省中长期电力交易暂行规则（2020年修订版）》的通知",
+     "top1_sent": "附件：浙江省中长期电力交易暂行规则（2020年修订版）浙江省发展和改革委员会国家能源局浙江监管办公室浙江省能源局2020年11月2日",
+     "overlap": 0.46
+    }
+   ],
+   "note": "标题—句子 bigram 重合排序是 TextRank 的轻量代理，只证明「能抽句」，不证明「抽得准」；库内无人工参考摘要，ROUGE 类质量指标不可算。"
+  },
+  "D3_push_ready": {
+   "available": false,
+   "tables_found": [],
+   "note": "SHOW TABLES 探针在 gkx 中未发现 dwd_policy_summary 与 dwd_policy_summary_edit_log；推送状态、编辑版本、按角色分发均无载体。"
+  }
+ },
+ "dims_available": "2/3",
+ "summary_readiness_score": 94.99,
+ "formula": "D1=(主料率+上下文率)/2；D2=min(1, 平均句数/3)；D3 缺维不进平均；可算维等权 ×100",
+ "quality_caveat": "该分数衡量「能不能生成并推送摘要」，不衡量「生成得好不好」。三项质量证据全部缺失：无参考摘要（不能算 ROUGE）、无人工评分、无推送后的阅读/采纳回流。页面若把它显示为「摘要质量分」，属于误读。",
+ "verdict": "摘要就绪度 = 94.99（2/3 维参与）。可上线「自动摘要草稿」与「结论句候选」，不可上线「推送」与「摘要质量评分」；推送维需先建 dwd_policy_summary 表。"
+}

@@ -1,0 +1,86 @@
+{
+ "metric_id": "M_POLICY_DS_07_POLICY_GUARD_001",
+ "title": "发展战略引导力评估",
+ "probe_date": "2026-10-22",
+ "data_support_level": "部分支持",
+ "support_judgment": "部分支持",
+ "support_reason": "三维中前瞻性可算（1,085/20,000=5.42%，标题层）；系统性只有 2 条政策有引用（0.01%）；针对性 policy_support 全表 0 行有效，整维不可算。缺一个必需维 → 部分支持。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本指标为截面文本标记率，不设跨年基期。政策表年份只用于背景描述，不进入任何分母；2022 年后为采集残片（2023 年 0 行），不外推。",
+ "sources": {
+  "pg_policy_rows": "code/_snapshots21/pg_policy_rows_20261021.json（title/publish_year）",
+  "policy_content": "code/_snapshots21/policy_content_20261021.json（18,763 行正文/摘要，全文敏感性）",
+  "policy_aux": "code/_snapshots21/policy_aux_20261022.json（theme/quote_policy 2 行）",
+  "field_probe": "code/_snapshots21/policy_fields_a23_20261021.json（policy_support=0 的字段证据）",
+  "db": "gkx @ 183.240.141.251:3318（只读；本脚本零 SQL）"
+ },
+ "population": {
+  "rows": 20000,
+  "status_values": {
+   "有效": 20000
+  },
+  "rows_with_content_snapshot": 18763
+ },
+ "dims": [
+  {
+   "key": "D1_forward",
+   "name": "前瞻性（战略顶层规划覆盖率）",
+   "hit": 1085,
+   "n": 20000,
+   "rate_pct": 5.425,
+   "available": true,
+   "basis": "title 命中规划/纲要/远景/行动计划；keywords/keypoints 0 行、theme 2 行（均未命中）",
+   "examples": [
+    "六部门关于印发《蚕桑丝绸产业高质量发展行动计划(2021-2025年)》的通知",
+    "四部委关于印发《京津冀工业节水行动计划》的通知",
+    "关于印发《促进健康产业高质量发展行动纲要（2019-2022年）》的通知（发改社会〔2019〕1427号）",
+    "关于印发《北京市信息化发展规划管理办法（试行）》的通知",
+    "关于印发加快推动制造业优势龙头企业和小巨人企业高质量发展行动计划（2020-2022年）的通知",
+    "国务院办公厅关于批准盘锦市土地利用总体规划的通知",
+    "关于印发中关村国家自主创新示范区发展规划纲要（2011-2020年）的通知（发改高技2011367号）",
+    "关于印发绍兴市城市轨道交通第一期建设规划(2016-2021年)的通知(发改基础〔2016〕1145号)"
+   ]
+  },
+  {
+   "key": "D2_quote",
+   "name": "系统性（政策承接完整度）",
+   "hit": 2,
+   "n": 20000,
+   "rate_pct": 0.01,
+   "available": true,
+   "basis": "quote_policy 非占位符；仅 2 行，其中 1 行数组在库内已截断",
+   "examples": [
+    "[\"创业扶持\",\"财政支持\",\"融资服务\",\"科技创新\"]",
+    "[\"财政支持\",\"科技创新\",\"乡村振兴\"]"
+   ]
+  },
+  {
+   "key": "D3_support",
+   "name": "针对性（精准扶持措施覆盖率）",
+   "hit": 0,
+   "n": 20000,
+   "rate_pct": 0.0,
+   "available": false,
+   "basis": "policy_support 全表 0 行有效（字面 null 占位），support_way 不可解析",
+   "examples": []
+  }
+ ],
+ "dims_available": "2/3",
+ "guidance_score": 2.72,
+ "formula": "三维比率等权 ×100；缺维不进平均（D3 不参与分母）",
+ "fulltext_sensitivity": {
+  "title_hit": 1085,
+  "title_or_content_hit": 5783,
+  "content_only_hit": 4698,
+  "title_rate_pct": 5.425,
+  "fulltext_rate_pct": 28.915,
+  "note": "主口径按王惠用标题/标签字段，命中 1,085 条；把正文纳入后升至 5783 条（28.91%），其中 4698 条只在正文命中。两层的差值说明：5.42% 是「标题写了规划语汇」的比例，不是「政策实际具备规划属性」；发布时必须标明匹配面，不能把标题命中率说成政策前瞻性水平。"
+ },
+ "data_quality_notes": [
+  "quote_policy 全表仅 2 行非占位符，其中 id=18352858 的 JSON 数组在库内已截断（缺右括号与后续元素），只能按「有引用」计数，不能按条数统计。",
+  "policy_support 全表 20,000 行为字面 'null'（小写），是非空但无值的占位串；按非空计数会误判为 100% 覆盖。",
+  "status 全表单一值「有效」，有效占比 100% 是样本框构造；本指标不使用该字段做分母。"
+ ],
+ "verdict": "引导力得分 = 2.72（2/3 维参与）。该分数不可读成「政策前瞻性只有 2.72 分」，因为三维里两维的真实值都接近 0，等权平均被单维拖平；正确读法是「D1 标题层 5.42% / D2 0.01% / D3 不可判」，分数只作排序占位，不作质量结论。"
+}

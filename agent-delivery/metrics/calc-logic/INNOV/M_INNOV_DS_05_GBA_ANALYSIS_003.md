@@ -1,9 +1,20 @@
 # 优势因素分析（M_INNOV_DS_05_GBA_ANALYSIS_003）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ANALYSIS_003.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV 指标（DS-05 湾区创新能力分析 · SWOT 之 S）｜ **域**：科技创新 / 湾区创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ANALYSIS_003.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +35,7 @@
 
 ## 口径定义
 
-无现成「优势因素清单」结果表 → 非完全直接支持；四子指数分项在 `dwd_org_base_info`／`dwd_patent`／`dwd_policy_base` 上**结构齐全**，但 11 城中仅 4 城有机构底册、12 分项中 5 项无源可算 → **部分支持**。本档位与 `code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` 的 `support_judgment` 字段一致。
+无现成「优势因素清单」结果表 → 非完全直接支持；四子指数分项在 `dwd_org_base_info`／`dwd_patent`／`dwd_policy_base` 上**结构齐全**，但 11 城中仅 4 城有机构底册、12 分项中 5 项无源可算 → **部分支持**。本档位与 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` 的 `support_judgment` 字段一致。
 
 ## 计算逻辑说明
 
@@ -60,14 +71,14 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：无现成「优势因素清单」结果表 → 非完全直接支持；四子指数分项在 `dwd_org_base_info`／`dwd_patent`／`dwd_policy_base` 上**结构齐全**，但 11 城中仅 4 城有机构底册、12 分项中 5 项无源可算 → **部分支持**。本档位与 `code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` 的 `support_judgment` 字段一致。
+- **判档理由**：无现成「优势因素清单」结果表 → 非完全直接支持；四子指数分项在 `dwd_org_base_info`／`dwd_patent`／`dwd_policy_base` 上**结构齐全**，但 11 城中仅 4 城有机构底册、12 分项中 5 项无源可算 → **部分支持**。本档位与 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` 的 `support_judgment` 字段一致。
 - **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 
 ## 溯源与复现
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_05_GBA_ANALYSIS_003.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` |
@@ -75,14 +86,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 指标（DS-05 湾区创新能力分析 · SWOT 之 S）｜ **域**：科技创新 / 湾区创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT）｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true ｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -110,7 +118,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-无现成「优势因素清单」结果表 → 非完全直接支持；四子指数分项在 `dwd_org_base_info`／`dwd_patent`／`dwd_policy_base` 上**结构齐全**，但 11 城中仅 4 城有机构底册、12 分项中 5 项无源可算 → **部分支持**。本档位与 `code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` 的 `support_judgment` 字段一致。
+无现成「优势因素清单」结果表 → 非完全直接支持；四子指数分项在 `dwd_org_base_info`／`dwd_patent`／`dwd_policy_base` 上**结构齐全**，但 11 城中仅 4 城有机构底册、12 分项中 5 项无源可算 → **部分支持**。本档位与 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` 的 `support_judgment` 字段一致。
 
 ---
 
@@ -120,7 +128,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 需求文档只给出定性描述（「如丰富的创新资源、完善的创新机构、高效的创新机制、良好的创新环境」），**没有给出公式、阈值或排名规则**；可复现口径来自王惠 V1.5-20260830 的 `M_INNOV_GBA_SWOT_STRENGTH`（12 分项、11 城降序排名、`rank ≤ 3` 入选、极值归一作影响程度）。
 
-脚本 `code/M_INNOV_DS_05_GBA_ANALYSIS_003.py` 已在 gkx 结构探针与父指标同日实测产物上跑通：4 个可算城市、12 分项中 7 项可算、深圳 7/7 项均列第一、广州 7/7 项均列第二，惠州与东莞在 `rank ≤ 3` 原阈值下也各得 2 项与 5 项，但按城数比例缩放后归零。按 §〇，机制维四项全部缺测、7 城无机构底册 → **部分支持**。
+脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py` 已在 gkx 结构探针与父指标同日实测产物上跑通：4 个可算城市、12 分项中 7 项可算、深圳 7/7 项均列第一、广州 7/7 项均列第二，惠州与东莞在 `rank ≤ 3` 原阈值下也各得 2 项与 5 项，但按城数比例缩放后归零。按 §〇，机制维四项全部缺测、7 城无机构底册 → **部分支持**。
 
 ---
 
@@ -193,11 +201,11 @@ SWOT 图表的左上象限不能是一句套话。招标需求要求用户「可
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.5.3（第 663–667 行） | 「通过统计大湾区的创新资源、创新机构、创新机制、创新环境等创新能力促成因素进行分析，以SWOT图表方式呈现粤港澳大湾区创新能力方面的优势、短板、机会与威胁挑战。」 |
+| 1 | 原始产品需求文档 | `《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.5.3（第 663–667 行） | 「通过统计大湾区的创新资源、创新机构、创新机制、创新环境等创新能力促成因素进行分析，以SWOT图表方式呈现粤港澳大湾区创新能力方面的优势、短板、机会与威胁挑战。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.3.3（第 677–679 行） | 「识别并分析粤港澳大湾区创新能力的优势因素，如丰富的创新资源、完善的创新机构、高效的创新机制、良好的创新环境等，用户可以查看各优势因素的具体表现和影响程度。」 |
-| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）`，§口径定义 / §计算逻辑说明 | 「从四子指数的 12 个分项中识别相对领先的优势因素，给出清单、表现与影响程度。本指标不是 0—100 评分。」 |
+| 3 | 王惠口径原文 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_GBA_SWOT_STRENGTH.md（王惠正本已演化并入）`，§口径定义 / §计算逻辑说明 | 「从四子指数的 12 个分项中识别相对领先的优势因素，给出清单、表现与影响程度。本指标不是 0—100 评分。」 |
 | 4 | 上游指标族 | 同上文件 §第一步 | 「按同一年窗跑四个子指标，得到每城 12 个分项原始值。每个分项在 11 城内降序排名 `rank`（1 最好；缺测不参评）。」 |
-| 5 | 需求映射 | `(GitLab 外本地历史批次工作稿)`（键 `M_INNOV_DS_05_GBA_ANALYSIS_003`） | 映射到「产业全要素图谱API服务开发」页（DS-05-GBA-ANALYSIS，seq 116）——该映射为页级兜底，语义弱于上表第 1、2 行的原句，故本报告以原句为准 |
+| 5 | 需求映射 | `（20261019 批调研区，历史批次成果已并入现版）/_work_20261019/mid2req.json`（键 `M_INNOV_DS_05_GBA_ANALYSIS_003`） | 映射到「产业全要素图谱API服务开发」页（DS-05-GBA-ANALYSIS，seq 116）——该映射为页级兜底，语义弱于上表第 1、2 行的原句，故本报告以原句为准 |
 | 6 | 王惠聚合登记 | 同目录 `wanghui_agg.json`（键 `M_INNOV_DS_05_GBA_ANALYSIS_003`） | 「def: 同M_INNOV_GBA_SWOT_STRENGTH-湾区创新能力优势因素；src: gkx.dwd_org_base_info…dwd_patent_applicants(pn, name) — 联合申请人」 |
 
 ### 1.6 推测原意与推测定义（若需要）
@@ -277,9 +285,9 @@ $$
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`
-**运行命令**：`python3 M_INNOV_DS_05_GBA_ANALYSIS_003.py`
-**输出**：`code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`（复用父指标同日实测产物，未重跑重查询；含一次 gkx 轻量连通性核验，本次返回 `dwd_patent = 2,939,895`）
+**代码入库路径**：`gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`
+**运行命令**：`cd code && python3 M_INNOV_DS_05_GBA_ANALYSIS_003.py`
+**输出**：`metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`（复用父指标同日实测产物，未重跑重查询；含一次 gkx 轻量连通性核验，本次返回 `dwd_patent = 2,939,895`）
 
 | 城市 | 机构数 | 专利数 | 研发经费（元） | 高企数 | 政策数 | 高企密度 | 原阈值命中 | 比例阈值命中 | 严格阈值命中 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -395,9 +403,6 @@ $$
 ---
 
 ## 参考文献
-
-> 下列条目均经联网核验存在；仅收录可打开的官方/出版社/DOI 页面。本批文献系与已入库 `M_INNOV_CARRIER_*`、`M_INNOV_CITY_*` 十件所用文献（国家统计局 CII、WIPO GII、火炬评价体系、高企认定办法、深圳统计公报等）**不重复**。
-
 1. 中共中央、国务院. (2019). 《粤港澳大湾区发展规划纲要》. 中国政府网. https://www.gov.cn/zhengce/2019-02/18/content_5366593.htm （湾区十一城创新定位与「国际科技创新中心」目标的官方原文，用于 §一 的语义锚定）
 2. Barney, J. (1991). Firm Resources and Sustained Competitive Advantage. *Journal of Management*, 17(1), 99–120. https://doi.org/10.1177/014920639101700108 （资源基础观：优势=有价值、稀缺、难模仿、不可替代的资源，支撑「相对同侪稀缺」的判定语义）
 3. Weihrich, H. (1982). The TOWS Matrix — A Tool for Situational Analysis. *Long Range Planning*, 15(2), 54–66. https://doi.org/10.1016/0024-6301(82)90120-0 （SWOT 的结构化配对方法，支撑「优势须可列举、可与外部条件配对」的清单式输出）
@@ -407,7 +412,6 @@ $$
 7. 中国科学技术发展战略研究院. (2025). 《国家创新指数报告 2024》. 科学技术文献出版社. https://www.ncsti.gov.cn/kjdt/xwjj/202504/t20250402_200374.html （五维指标矩阵与基准打分法，支撑族 B「分维度位次」的口径对齐）
 8. Furman, J. L., Porter, M. E., & Stern, S. (2002). The determinants of national innovative capacity. *Research Policy*, 31(6), 899–933. https://doi.org/10.1016/S0048-7333(01)00152-4 （创新基础设施×集群环境×联系强度的容量框架，支撑族 C 的存量选材纪律）
 9. Cooke, P., Uranga, M. G., & Etxebarria, G. (1997). Regional innovation systems: Institutional and organisational dimensions. *Research Policy*, 26(4–5), 475–491. https://doi.org/10.1016/S0048-7333(97)00025-5 （区域创新系统的子系统与制度互动，支撑族 D「机制维必须入清单」的判断）
-
 ---
 
 # 附件
@@ -557,15 +561,7 @@ $$
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_DS_05_GBA_ANALYSIS_003.py`（复用 `M_INNOV_GBA_INDEX_BUNDLE_out.json`、`M_INNOV_GBA_SWOT_BUNDLE_out.json`、`_probe_innov_h_gkx_out.json`）
-- 输出：`code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`
+- 脚本：`metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`（复用 `M_INNOV_GBA_INDEX_BUNDLE_out.json`、`M_INNOV_GBA_SWOT_BUNDLE_out.json`、`_probe_innov_h_gkx_out.json`）
+- 输出：`metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`
 - 关键字段：`probes.gba_coverage_pct=36.36`、`probes.subitems_coverage_pct=58.33`、`summary.n_strength_scaled_total=14`、`summary.bay_area_advantage_items_direct=[]`
 - 判定：`support_judgment=部分支持`
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

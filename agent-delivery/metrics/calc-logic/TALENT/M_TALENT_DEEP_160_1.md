@@ -1,9 +1,22 @@
-# M_TALENT_DEEP_160_1（M_TALENT_DEEP_160_1）
+# 人才关系链模型（M_TALENT_DEEP_160_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_DEEP_160_1.md`；复现脚本 `metrics/repro/M_TALENT_DEEP_160_1.py` → `metrics/repro/out/M_TALENT_DEEP_160_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：需求派生（TALENT 家族 · 深度分析 160）｜ **域**：科技信息展示系统 · 科技人才态势 · 关联画像（人才关系网络）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否（无关系链结果表）；直接数据 = 否；依赖结构 = 是（`dwd_scholar_coauthor` 1,187,606 行、`dwd_scholar_work_experience` 57,117 段）；依赖数据 = **部分**（边可全量现读，但每 ego 只存前 100 个合作者、合作者姓名非空仅 16.19%、表内无年份、ego 与主档仅 1,839 个 id 交集）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_DEEP_160_1.py`、产物 `metrics/repro/out/M_TALENT_DEEP_160_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_DEEP_160_1.md`；复现脚本 `metrics/repro/M_TALENT_DEEP_160_1.py` → `metrics/repro/out/M_TALENT_DEEP_160_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_DEEP_160_1.py`、产物 `metrics/repro/out/M_TALENT_DEEP_160_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TALENT_DEEP_160_1.md` |
 | 复现脚本 | `metrics/repro/M_TALENT_DEEP_160_1.py` |
 | 复现产物 | `metrics/repro/out/M_TALENT_DEEP_160_1_out.json` |
@@ -62,16 +75,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_DEEP_160_1.py`、产物 `metrics/repro/out/M_TALENT_DEEP_160_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：需求派生（TALENT 家族 · 深度分析 160）｜ **域**：科技信息展示系统 · 科技人才态势 · 关联画像（人才关系网络）
-> **UI 挂载**：人才画像页「合作者链路 + 跨城连接 + 枢纽识别」
-> **数据支持度**：**部分支持**
-> **口径来源**：需求原文「人才关系链/关联画像」段＋本文 §1.6 的「ego—合作者—机构」口径；calc-logic 无本指标实现
-> **四判定摘要**：直接结构 = 否（无关系链结果表）；直接数据 = 否；依赖结构 = 是（`dwd_scholar_coauthor` 1,187,606 行、`dwd_scholar_work_experience` 57,117 段）；依赖数据 = **部分**（边可全量现读，但每 ego 只存前 100 个合作者、合作者姓名非空仅 16.19%、表内无年份、ego 与主档仅 1,839 个 id 交集）
-> **铁律**：ego 侧无姓名，链路一律落在机构节点；per-ego degree 上限 100 必须披露；表内无年份，任何「近 N 年」说法不成立
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: false
 
 ---
@@ -191,7 +200,7 @@ calc-logic 未找到 `M_TALENT_DEEP_160_1` 的实现；注册表 seed 只有「�
 3. 教育部. *全国高等学校名单*. <http://www.moe.gov.cn/>
 4. 深圳市科技创新局. *深圳市科技计划项目指南*. <http://stic.sz.gov.cn/>
 5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（关联画像段）
-6. 同批产物：`code/M_TALENT_DEEP_160_1_out.json`
+6. 同批产物：`metrics/repro/out/M_TALENT_DEEP_160_1_out.json`
 7. 关系边快照：`code/_snapshots21/coauthor160_20261022.json`
 8. 履历快照：`code/_snapshots21/probe_talent21_20261022.json`
 
@@ -308,10 +317,10 @@ WHERE is_deleted=0 AND co_scholar_org_name_zh LIKE '%深圳%';
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_TALENT_DEEP_160_1.py` |
+| 脚本 | `metrics/repro/M_TALENT_DEEP_160_1.py` |
 | 公共库 | `code/_talent21_common.py`（含 `loc()`、`research()`、`clusters_of`） |
 | 数据快照 | `coauthor160_20261022.json`（本脚本首跑生成）、`probe_talent21_20261022.json` |
-| 输出 | `code/M_TALENT_DEEP_160_1_out.json` |
+| 输出 | `metrics/repro/out/M_TALENT_DEEP_160_1_out.json` |
 | 库名 / 端口 | `gkx` @ 183.240.141.251:3318（`gkx_reader_zp`，只读）；本指标 SQL 3 条 |
 | 运行 | `python3 code/M_TALENT_DEEP_160_1.py` |
 | 耗时 | 32.7 秒（首跑）/ 1.2 秒（命中缓存） |
@@ -455,11 +464,6 @@ WHERE is_deleted=0 AND co_scholar_org_name_zh LIKE '%深圳%';
 3. 教育部. *全国高等学校名单*. <http://www.moe.gov.cn/>
 4. 深圳市科技创新局. *深圳市科技计划项目指南*. <http://stic.sz.gov.cn/>
 5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（关联画像段）
-6. 同批产物：`code/M_TALENT_DEEP_160_1_out.json`
-7. 关系边快照：`code/_snapshots21/coauthor160_20261022.json`
-8. 履历快照：`code/_snapshots21/probe_talent21_20261022.json`
-9. 注册表口径：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-TALENT-seed.yaml`（v0.1.0，`is_mock: true`）
-
 ---
 
 # 附件
@@ -587,17 +591,10 @@ WHERE is_deleted=0 AND co_scholar_org_name_zh LIKE '%深圳%';             -- 2,
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_TALENT_DEEP_160_1.py` |
-| 输出 | `code/M_TALENT_DEEP_160_1_out.json` |
+| 脚本 | `metrics/repro/M_TALENT_DEEP_160_1.py` |
+| 输出 | `metrics/repro/out/M_TALENT_DEEP_160_1_out.json` |
 | 耗时 | 32.7 秒（首跑） |
 | SQL | 3 条 |
 | 关键数字 | 119 万边 / 20,011 ego / 度中位 58、顶满 34.03% / 深圳 116 ego、9,066 边 / 域内 9.46% / 枢纽 30 人 |
 | 交付 | 深圳子图 + 伙伴城市/机构 + 枢纽 + 反方向 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：未挂载 UI，算法库内部件
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """监测异常点识别（M_INNOV_DS_FACTORS_019）——要素类镜像条目。
 
 本 ID 在 `metrics/calc-logic/INNOV/M_INNOV_DS_FACTORS_019.md` 里只有一句话：

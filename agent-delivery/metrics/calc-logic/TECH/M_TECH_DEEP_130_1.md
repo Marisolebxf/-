@@ -1,9 +1,20 @@
 # 全景技术链模型（M_TECH_DEEP_130_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_DEEP_130_1.md`；复现脚本 `metrics/repro/M_TECH_DEEP_130_1.py` → `metrics/repro/out/M_TECH_DEEP_130_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术链深度分析模型（130 号首件·图底座件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术链全景视图（DS-02-TECHGRAPH / TOPIC-TECH-05）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_DEEP_130_1.py`、产物 `metrics/repro/out/M_TECH_DEEP_130_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_DEEP_130_1.md`；复现脚本 `metrics/repro/M_TECH_DEEP_130_1.py` → `metrics/repro/out/M_TECH_DEEP_130_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_DEEP_130_1.py`、产物 `metrics/repro/out/M_TECH_DEEP_130_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_DEEP_130_1.md` |
 | 复现脚本 | `metrics/repro/M_TECH_DEEP_130_1.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_DEEP_130_1_out.json` |
@@ -64,17 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_DEEP_130_1.py`、产物 `metrics/repro/out/M_TECH_DEEP_130_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术链深度分析模型（130 号首件·图底座件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术链全景视图（DS-02-TECHGRAPH / TOPIC-TECH-05）｜ **数据支持度**：**部分支持**
-> **口径批次**：20261021 gkx 口径重建（原 20261020 开发库口径旧稿作废，差异见 §四 末节）
-> **直接（结构/数据）**：否 / 部分（节点面与边面可重建，结果面 `tech_chain_node` / `tech_chain_edge` / `tech_domain` 在 gkx 零命中）
-> **依赖（结构/数据）**：部分（专利与申请人两维满格；论文、标准、产品三维无可挂接键）
-> wanghui：false（非王惠系，§五 仅作方法对照，无逐条对照义务）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -224,7 +229,7 @@ gkx 口径下的实测结论有三层。**第一层是能做**：以 `dwd_patent
 
 ## 二、计算过程
 
-> 口径说明：需求未给公式，以下为推定计算过程，由 `code/M_TECH_DEEP_130_1.py` 在 gkx 实测跑通，结果落 `code/M_TECH_DEEP_130_1_out.json`。文内每个数字都能在该产物、`code/_snapshots21/tech5_constants_20261022.json` 或正文点名的快照文件中找到；比例均同时给出分子与分母。
+> 口径说明：需求未给公式，以下为推定计算过程，由 `metrics/repro/M_TECH_DEEP_130_1.py` 在 gkx 实测跑通，结果落 `metrics/repro/out/M_TECH_DEEP_130_1_out.json`。文内每个数字都能在该产物、`code/_snapshots21/tech5_constants_20261022.json` 或正文点名的快照文件中找到；比例均同时给出分子与分母。
 
 ### 2.1 方法选择：为什么用共类而不用引用
 
@@ -280,8 +285,8 @@ gkx 口径下的实测结论有三层。**第一层是能做**：以 `dwd_patent
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_TECH_DEEP_130_1.py` |
-| 结果产物 | `code/M_TECH_DEEP_130_1_out.json` |
+| 计算脚本 | `metrics/repro/M_TECH_DEEP_130_1.py` |
+| 结果产物 | `metrics/repro/out/M_TECH_DEEP_130_1_out.json` |
 | 共享常量 | `code/_snapshots21/tech5_constants_20261022.json` |
 | 专利聚合缓存 | `code/_snapshots21/patent_ipc4_year_20261021.json`、`code/_snapshots21/patent_ipc4_by_name_20261021.json` |
 | 主算库 | `gkx`（183.240.141.251:3318，只读账号） |
@@ -436,17 +441,15 @@ python3 _work_gkx21/rebuild_metric.py M_TECH_DEEP_130_1 --check
 
 ## 参考文献
 
-1. OECD. *Patent Statistics Manual*. Paris: OECD Publishing, 2009. https://doi.org/10.1787/9789264022432-en
-2. WIPO. *World Intellectual Property Indicators*. Geneva: WIPO, 2023. https://www.wipo.int/publications/en/details.jsp?id=4677
-3. Hall B H, Jaffe A B, Trajtenberg M. Market value and patent citations. *RAND Journal of Economics*, 2005, 36(1): 16-38. https://www.jstor.org/stable/1593752
-4. Griliches Z. Patent statistics as economic indicators: a survey. *Journal of Economic Literature*, 1990, 28(4): 1661-1707. https://www.jstor.org/stable/2726973
-5. Harhoff D, Scherer F M, Vopel K. Citations, family size, opposition and the value of patent rights. *Research Policy*, 2003, 32(8): 1343-1363. https://doi.org/10.1016/S0048-7333(02)00124-5
-6. Rotolo D, Hicks D, Martin B R. What is an emerging technology? *Research Policy*, 2015, 44(10): 1827-1843. https://doi.org/10.1016/j.respol.2015.06.006
-7. 国家知识产权局. 2023 年中国专利调查报告. 北京: 国家知识产权局, 2024. https://www.cnipa.gov.cn/
-8. 深圳市标准化协会. 科技项目技术成熟度评价规范（T/GDC 251-2023）. 深圳, 2023. https://www.ttbz.org.cn/
-9. Mankins J C. Technology readiness levels: a white paper. NASA, 1995. https://aiaa.org/
-10. Kline S J, Rosenberg N. An overview of innovation. In: Landau R, Rosenberg N (eds). *The Positive Sum Strategy*. Washington: National Academy Press, 1986: 275-305. https://www.nap.edu/
-
+1. WIPO. *World Intellectual Property Indicators*. Geneva: WIPO, 2023. https://www.wipo.int/publications/en/details.jsp?id=4677
+2. Hall B H, Jaffe A B, Trajtenberg M. Market value and patent citations. *RAND Journal of Economics*, 2005, 36(1): 16-38. https://www.jstor.org/stable/1593752
+3. Griliches Z. Patent statistics as economic indicators: a survey. *Journal of Economic Literature*, 1990, 28(4): 1661-1707. https://www.jstor.org/stable/2726973
+4. Harhoff D, Scherer F M, Vopel K. Citations, family size, opposition and the value of patent rights. *Research Policy*, 2003, 32(8): 1343-1363. https://doi.org/10.1016/S0048-7333(02)00124-5
+5. Rotolo D, Hicks D, Martin B R. What is an emerging technology? *Research Policy*, 2015, 44(10): 1827-1843. https://doi.org/10.1016/j.respol.2015.06.006
+6. 国家知识产权局. 2023 年中国专利调查报告. 北京: 国家知识产权局, 2024. https://www.cnipa.gov.cn/
+7. 深圳市标准化协会. 科技项目技术成熟度评价规范（T/GDC 251-2023）. 深圳, 2023. https://www.ttbz.org.cn/
+8. Mankins J C. Technology readiness levels: a white paper. NASA, 1995. https://aiaa.org/
+9. Kline S J, Rosenberg N. An overview of innovation. In: Landau R, Rosenberg N (eds). *The Positive Sum Strategy*. Washington: National Academy Press, 1986: 275-305. https://www.nap.edu/
 ---
 
 # 附件
@@ -488,7 +491,7 @@ python3 _work_gkx21/rebuild_metric.py M_TECH_DEEP_130_1 --check
 | `tech_domain` | 0 |
 | 表名含 event | 2（`dwd_event`、`dwd_merger_acquisition_events_party_info`） |
 
-扫描结论落 `code/M_TECH_DEEP_130_1_out.json` 的 `dictionary_probe` 与 `readface`，证据块的组织方式见 `_work_gkx21/TABLE_ABSENCE_EVIDENCE.md`（本件不重抄其证据表）。
+扫描结论落 `metrics/repro/out/M_TECH_DEEP_130_1_out.json` 的 `dictionary_probe` 与 `readface`，证据块的组织方式见 `_work_gkx21/TABLE_ABSENCE_EVIDENCE.md`（本件不重抄其证据表）。
 
 **B.2 属性面逐维填充**
 
@@ -527,10 +530,3 @@ python3 _work_gkx21/rebuild_metric.py M_TECH_DEEP_130_1 --check
 ### C.4 与 131/132/135 的口径绑定
 
 四件共用：基期 2021—2024、去重键 pn、领域映射 IPC4-native-20261022、全国基期专利 2,009,365、有 IPC 专利 2,420,915。任何一件改基期，其余三件必须同步改，否则跨件数字无法互证。本件的节点量 634 与 132 的域数 634 相同，与 131 的深圳 609 域是子集关系（深圳未覆盖的 25 个域在全国有专利但深圳为零）。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

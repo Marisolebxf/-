@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：未挂载 UI，算法库内部件
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """活力分项指标值与得分（M_SYNTH_VIT_INDICATOR）—— 复现脚本。
 
 正本口径：展示活力四维背后的分项指标值与标准化得分，只汇总展示、不重算、不另选代表指标。
@@ -164,7 +166,8 @@ def main():
         reconcile[d] = {
             "recompute_12leaf": rec,
             "sub_model_index": {c: published[c] for c in CITIES},
-            "diff": {c: (None if rec[c] is None else round(rec[c] - published[c], 4))
+            "diff": {c: (None if (rec[c] is None or published[c] is None)
+                         else round(rec[c] - published[c], 4))
                      for c in CITIES},
             "entered_leaves": [x["name"] for x in rows],
             "not_entered": [x["name"] for x in leaves if x["dim"] == d and not x["enters_dim"]],

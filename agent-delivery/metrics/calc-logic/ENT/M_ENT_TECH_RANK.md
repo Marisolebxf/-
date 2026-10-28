@@ -1,9 +1,25 @@
 # 技术力排名（M_ENT_TECH_RANK）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TECH_RANK.md`；复现脚本 `metrics/repro/M_ENT_TECH_RANK.py` → `metrics/repro/out/M_ENT_TECH_RANK_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（RANK，排序对象是上游 SCORE 产物）｜ **域**：企业分析／企业评估／技术力评估｜ **UI 挂载**：企业详情页「技术力排名」徽标、企业榜单页
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（专利量、专利授权率两维全量）+ B 类（技术人才、技术转化、技术投入三维结构性无源）**
+> - **同域边界**：与 `M_CHAIN_SZ_ADVANTAGE_RANK`（深圳在 12 条链里对深穗莞惠四城的优势名次）母体不同——那是「链×城市」盘，本件是「企业」盘；与 `M_CHAIN_DEEP_126_1`（链内四城区域产业指数）同样不可互换。三件都排「强不强」，但被排的对象分别是城市、企业与链。
+> - **一句话结论**：母体 4,561 家明星企业，代理键下华为（97.4697）、比亚迪（94.4085）、维沃（89.9489）居前三；四个盘（全国／城市／行业／链）都可出榜，但键的 11 个子指标里 **10 个无源、1 个只能代理、0 个直接可算** → **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_ENT_TECH_RANK.py`｜ **产物**：`metrics/repro/out/M_ENT_TECH_RANK_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TECH_RANK.py`、产物 `metrics/repro/out/M_ENT_TECH_RANK_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TECH_RANK.md`；复现脚本 `metrics/repro/M_ENT_TECH_RANK.py` → `metrics/repro/out/M_ENT_TECH_RANK_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TECH_RANK.py`、产物 `metrics/repro/out/M_ENT_TECH_RANK_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +74,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_TECH_RANK.md` |
 | 复现脚本 | `metrics/repro/M_ENT_TECH_RANK.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_TECH_RANK_out.json` |
@@ -66,18 +82,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_TECH_RANK.py`、产物 `metrics/repro/out/M_ENT_TECH_RANK_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（RANK，排序对象是上游 SCORE 产物）｜ **域**：企业分析／企业评估／技术力评估｜ **UI 挂载**：企业详情页「技术力排名」徽标、企业榜单页
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（专利量、专利授权率两维全量）+ B 类（技术人才、技术转化、技术投入三维结构性无源）**
-> **复现脚本**：`code/M_ENT_TECH_RANK.py`｜ **产物**：`code/M_ENT_TECH_RANK_out.json`
-> **排序键现状**：注册口径要求升序排 `tech_power_index`（ADS `tech_power`）；该表在 `gkx` 不存在，其 11 个子指标中 10 个结构性无源，故本件交付的是**可观测代理键**的名次，**不是** `tech_power_index` 的名次。
-> **同域边界**：与 `M_CHAIN_SZ_ADVANTAGE_RANK`（深圳在 12 条链里对深穗莞惠四城的优势名次）母体不同——那是「链×城市」盘，本件是「企业」盘；与 `M_CHAIN_DEEP_126_1`（链内四城区域产业指数）同样不可互换。三件都排「强不强」，但被排的对象分别是城市、企业与链。
-> **一句话结论**：母体 4,561 家明星企业，代理键下华为（97.4697）、比亚迪（94.4085）、维沃（89.9489）居前三；四个盘（全国／城市／行业／链）都可出榜，但键的 11 个子指标里 **10 个无源、1 个只能代理、0 个直接可算** → **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -254,9 +263,9 @@ log 之后**不再做 P99 截尾**。这一点与常见做法相反，理由是�
 ### 2.9 复现代码结果展示
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_ENT_TECH_RANK.py
-# → code/M_ENT_TECH_RANK_out.json
+# → metrics/repro/out/M_ENT_TECH_RANK_out.json
 ```
 
 产物关键字段：`sub_indicator_audit`（11 条，逐条带证据）、`probe`（表存在性、空值率、项目覆盖）、`boards`（四个盘）、`sensitivity`（四组权重）、`reconciliation`（与两件 CHAIN 榜）。实测输出摘要：全国盘前三 华为 97.4697／比亚迪 94.4085／维沃 89.9489；行业盘 23 个、链盘 10 个；S1 组 Top100 重合 82、最大位移 3,317、Spearman 0.8375；与 SZ 优势榜 10 链 Spearman 0.103。
@@ -375,8 +384,6 @@ python3 code/M_ENT_TECH_RANK.py
 3. Lanjouw, J. O., Schankerman, M. (2004). Patent Quality and Research Productivity. *The Economic Journal*, 114(495). https://doi.org/10.1111/j.1468-0297.2004.00216.x
 4. 国家知识产权局.《专利统计年报》. https://www.cnipa.gov.cn/col/col61/index.html
 5. 国家统计局.《高技术产业（制造业）分类（2017）》. https://www.stats.gov.cn/sj/tjbz/
-6. 王惠.《企业分析模型指标字段清单》20260816 底稿（仓库内 `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TECH_POWER_SCORE.md`）
-
 ---
 
 # 附件
@@ -475,11 +482,3 @@ python3 code/M_ENT_TECH_RANK.py
 | 专利窗口 | 2021—2026 | `dwd_patent` 实测（§3.13） |
 | 与 SZ 优势榜秩相关 | 0.103 | `reconciliation.sz_advantage_rank.spearman` |
 | 判档 | 部分支持 | 本文件 §〇 与 `support_judgment` |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

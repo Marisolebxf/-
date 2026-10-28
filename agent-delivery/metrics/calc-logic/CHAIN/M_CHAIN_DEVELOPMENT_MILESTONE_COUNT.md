@@ -1,9 +1,21 @@
 # 产业链发展里程碑数（M_CHAIN_DEVELOPMENT_MILESTONE_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py` → `metrics/repro/out/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（事件去重计数·三类里程碑）｜ **域**：产业链分析／产业发展路线历程｜ **UI 挂载**：产业链页「发展里程碑」时间线与计数卡
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py` → `metrics/repro/out/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json` |
@@ -62,19 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（事件去重计数·三类里程碑）｜ **域**：产业链分析／产业发展路线历程｜ **UI 挂载**：产业链页「发展里程碑」时间线与计数卡
-> **数据支持度**：**部分支持**
-> **口径来源**：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md`（v0.2.0，2026-10-14，公式 AI 创作、待算法 Lead 会签）
-> **王惠正本**：`王惠口径正本（GitLab 外本地归档）`（V1.0-20260904，与 calc-logic 同文）
-> **复现**：`python3 M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py` → `code/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）；本脚本零 DB，只读 `code/_snapshots21/` 落盘快照
-> **基期声明**：`base_years_used=[2021,2022,2023,2024,2025]`、`base_years_missing=[]`；融资窗口 2021—2026（2026 为残年、不年化），政策只覆盖 2001—2022（2023 后零条，不摊 0）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -195,7 +199,7 @@ B 族的局限是缺技术类，且「龙头入驻」只能用融资代理。这
 | 编号 | 来源 | 用途 |
 |---|---|---|
 | R1 | `gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md` | 三类定义、真源、去重公式 |
-| R2 | `王惠口径正本（GitLab 外本地归档）` | 王惠正本（同文） |
+| R2 | `gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md（王惠正本已演化并入）` | 王惠正本（同文） |
 | R3 | `_work_gkx21/REM_QUEUE_20261023.json` | 该件 case=B-sample、阻塞表 `chain_investment` / `chain_roadmap` |
 | R4 | `code/_snapshots21/chain21_fin_degree_20261022.json` | 融资事件 25,654 行 |
 | R5 | `code/_snapshots21/policy_industry_20261023.json` | 政策×链 T0 命中 |
@@ -396,7 +400,7 @@ python3 M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.py
 # 期望末行：[ok] M_CHAIN_DEVELOPMENT_MILESTONE_COUNT total=235 (policy 9 invest 226) top=人工智能
 ```
 
-脚本零 DB，读五份快照，秒级完成。产物 `code/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json` 字段：`by_chain`（12 行）、`milestone_events.investment`（前 40 条）、`milestone_events.policy`（9 条）、`tech_breakthrough_evidence`（否定证据）、`params`（门槛与敏感性）、`checks`（合计一致性）、`live_probe`。
+脚本零 DB，读五份快照，秒级完成。产物 `metrics/repro/out/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT_out.json` 字段：`by_chain`（12 行）、`milestone_events.investment`（前 40 条）、`milestone_events.policy`（9 条）、`tech_breakthrough_evidence`（否定证据）、`params`（门槛与敏感性）、`checks`（合计一致性）、`live_probe`。
 
 复现时先看 `checks.sum_total` 是否等于 `headline.milestone_total`；再看 `checks.parse_total_equals_rows` 是否为 true。前者不等说明汇总有 bug，后者为 false 说明融资快照行数变了。
 
@@ -532,14 +536,9 @@ live 侧没有 `industry_chain_milestone_event`、没有 `chain_roadmap`、没�
 
 ## 参考文献
 
-1. calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md`（v0.2.0，2026-10-14）。
-2. 王惠正本：`王惠口径正本（GitLab 外本地归档）`（V1.0-20260904）。
-3. 派单书 v5/v6/v7：`_work_gkx21/DISPATCH_BRIEF_v5.md`、`DISPATCH_BRIEF_v6.md`、`DISPATCH_BRIEF_v7.md`。
-4. 实测事实：`_work_gkx21/DATA_FACTS_gkx21.md` §3.50—§3.68（融资、政策、事件表）。
-5. 工业和信息化部. 产业高质量发展监测指标体系（重大事件识别）[EB/OL]. https://www.miit.gov.cn/.
-6. 深圳市工业和信息化局. 深圳市培育发展未来产业行动计划（2024—2025）[EB/OL]. https://gxj.sz.gov.cn/.
-7. 国家统计局. 战略性新兴产业分类（2018）[EB/OL]. https://www.stats.gov.cn/.
-
+1. 工业和信息化部. 产业高质量发展监测指标体系（重大事件识别）[EB/OL]. https://www.miit.gov.cn/.
+2. 深圳市工业和信息化局. 深圳市培育发展未来产业行动计划（2024—2025）[EB/OL]. https://gxj.sz.gov.cn/.
+3. 国家统计局. 战略性新兴产业分类（2018）[EB/OL]. https://www.stats.gov.cn/.
 ---
 
 # 附件
@@ -631,11 +630,3 @@ live 侧没有 `industry_chain_milestone_event`、没有 `chain_roadmap`、没�
 **问：去重为什么不用 DISTINCT event_id？**
 
 答：源表 event_id 是企业级：25,654 行只有 6,503 个 id，按单键去重会把多轮融资压成 1 条（226→174）。本件用 `(event_id, date, amount_wan)` 复合键，保留轮次、剔除重复行；这是偏离，已在 gaps 披露。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

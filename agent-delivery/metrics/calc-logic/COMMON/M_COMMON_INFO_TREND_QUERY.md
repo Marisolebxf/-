@@ -1,9 +1,20 @@
 # 共性信息趋势查询（M_COMMON_INFO_TREND_QUERY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-COMMON-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_COMMON_INFO_TREND_QUERY.md`；复现脚本 `metrics/repro/M_COMMON_INFO_TREND_QUERY.py` → `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：SERIES（时序）+ QUERY（查询）｜ **域**：产业服务／产业情报／信息热度｜ **UI 挂载**：产业链情报页「信息热度趋势」折线图 + 月份钻取｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）_分级清单.json`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_COMMON_INFO_TREND_QUERY.py`、产物 `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-COMMON-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_COMMON_INFO_TREND_QUERY.md`；复现脚本 `metrics/repro/M_COMMON_INFO_TREND_QUERY.py` → `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_COMMON_INFO_TREND_QUERY.py`、产物 `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_COMMON_INFO_TREND_QUERY.md` |
 | 复现脚本 | `metrics/repro/M_COMMON_INFO_TREND_QUERY.py` |
 | 复现产物 | `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json` |
@@ -65,15 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_COMMON_INFO_TREND_QUERY.py`、产物 `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：SERIES（时序）+ QUERY（查询）｜ **域**：产业服务／产业情报／信息热度｜ **UI 挂载**：产业链情报页「信息热度趋势」折线图 + 月份钻取｜ **数据支持度**：**部分支持**
-> **口径来源**：本件重建（注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`；calc-logic 与王惠阶段性成果均无本件，原稿所引 `指标计算逻辑-V2/M_COMMON_INFO_TREND_QUERY.md` 全仓不存在）｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_COMMON_INFO_TREND_QUERY.py` → `code/M_COMMON_INFO_TREND_QUERY_out.json`
-> **wanghui**：false（§五 记「无王惠口径可比」及原因）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -127,7 +134,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 逐链看，具身智能 40,840 条、人工智能 40,275 条，两条链占了全部新闻的七成半；生物医药 4,878、机器人 3,671、合成生物 2,760 属于第二梯队；传感器 227、集成电路 54 样本太薄；智能网联汽车、软件与信息服务、智能终端三条链一条新闻都没有。这个分布本身就是结论：链标签的覆盖是偏的，趋势只能对有量的链解读。
 
-结论是「部分支持」：结构齐、数据真、查询可复现，但只有 18 个月、不能出同比，也不覆盖 2018—2024。脚本 `code/M_COMMON_INFO_TREND_QUERY.py` 只读快照，重跑约 0.1 秒。
+结论是「部分支持」：结构齐、数据真、查询可复现，但只有 18 个月、不能出同比，也不覆盖 2018—2024。脚本 `metrics/repro/M_COMMON_INFO_TREND_QUERY.py` 只读快照，重跑约 0.1 秒。
 
 ## 一、需求定义概述
 
@@ -305,11 +312,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 脚本只读快照，不连库。产物含 `coverage`、`monthly_total`、`monthly_mom`、`top_sources`、`chains`、`query_spec` 六块，其中 `chains` 里每条链带完整 18 个月序列。
 
-产物落在 `code/M_COMMON_INFO_TREND_QUERY_out.json`，是脚本唯一写出的文件；重跑会整体覆盖，不做增量追加。校验时以该文件的 `support_judgment`、`sources` 与正文逐项对账，任一项对不上即视为漂移。
+产物落在 `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json`，是脚本唯一写出的文件；重跑会整体覆盖，不做增量追加。校验时以该文件的 `support_judgment`、`sources` 与正文逐项对账，任一项对不上即视为漂移。
 
 | 命令 | 期望 | 备注 |
 |---|---|---|
-| `python3 M_COMMON_INFO_TREND_QUERY.py` | 18 个月序列 | 0.1 秒 |
+| `cd code && python3 M_COMMON_INFO_TREND_QUERY.py` | 18 个月序列 | 0.1 秒 |
 | `rebuild_metric.py M_COMMON_INFO_TREND_QUERY --check` | 语义一致 | 重跑对账 |
 
 ### 2.8 与旧稿的差异
@@ -451,11 +458,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 参考文献
 
-1. 项目内 calc-logic V2：`M_COMMON_INFO_TREND_QUERY.md`.
-2. 中国互联网络信息中心. 中国互联网络发展状况统计报告. https://www.cnnic.net.cn/
-3. 国家统计局. 新闻出版统计. https://www.stats.gov.cn/
-4. Meltwater. Media Monitoring Methodology. https://www.meltwater.com/
-
+1. 中国互联网络信息中心. 中国互联网络发展状况统计报告. https://www.cnnic.net.cn/
+2. 国家统计局. 新闻出版统计. https://www.stats.gov.cn/
+3. Meltwater. Media Monitoring Methodology. https://www.meltwater.com/
 ---
 
 # 附件
@@ -468,7 +473,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 附录 B 探测证据与产物字段
 
-下表是本件产物的关键字段与本次运行落盘值，任一行与 `code/M_COMMON_INFO_TREND_QUERY_out.json` 对不上即为产物漂移。
+下表是本件产物的关键字段与本次运行落盘值，任一行与 `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json` 对不上即为产物漂移。
 
 | 字段 | 内容/用途 |
 |---|---|
@@ -574,8 +579,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
 | `_staging21/M_COMMON_INFO_TREND_QUERY.md` | 指标文档（本文件） | 已交付 |
-| `code/M_COMMON_INFO_TREND_QUERY.py` | 自包含计算脚本 | 已跑通 |
-| `code/M_COMMON_INFO_TREND_QUERY_out.json` | 结果面 | 已落盘 |
+| `metrics/repro/M_COMMON_INFO_TREND_QUERY.py` | 自包含计算脚本 | 已跑通 |
+| `metrics/repro/out/M_COMMON_INFO_TREND_QUERY_out.json` | 结果面 | 已落盘 |
 | `code/_snapshots21/` | 只读快照 | 随件保留 |
 | `_work_gkx21/*.py` | 六条自查 | 通过 |
 
@@ -631,10 +636,3 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 **问：能对外发布吗？**
 
 答：可以，但必须带时间窗说明，否则会被当成长期趋势。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,7 +1,18 @@
 # 关键指标集合（GAP-RECRUIT-METRIC-05）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-05.md`；复现脚本 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-05.py` → `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-05_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：UNKNOWN（未注册 GAP）｜ **域**：企业招引/培育（ENT-RECRUIT 展示层）｜ **UI 挂载**：招引/培育企业推荐分析卡片（E-26/E-27，wireframe 第 6 列）｜ **数据支持度**：**完全转换支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/GAP-RECRUIT-METRIC-05.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
+
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-05.md`；复现脚本 `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-05.py` → `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-05_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；本地备份指针已随 20261027 批清零，验收以本仓为准）
 
 ## 基础信息
 
@@ -24,7 +35,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-05.md` §二（GAP-RECRUIT-METRIC-05.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-05.md` §二（GAP-RECRUIT-METRIC-05.py 零改语义复算）。
 
 ## 源表字段
 
@@ -52,22 +63,19 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-05.md` |
-| 复现脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-05.py` |
-| 复现产物 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-05_out.json` |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
+| 正本 MD | `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-05.md` |
+| 复现脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-05.py` |
+| 复现产物 | `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-05_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
-
-> **类型**：UNKNOWN（未注册 GAP）｜ **域**：企业招引/培育（ENT-RECRUIT 展示层）｜ **UI 挂载**：招引/培育企业推荐分析卡片（E-26/E-27，wireframe 第 6 列）｜ **数据支持度**：**完全转换支持**
-> **公式定义人（20261020-M0）**：仿王惠（推测定义·展示层集合规则）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量足（可现转拼装）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -104,6 +112,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 「关键指标集合」是招引/培育推荐结果展示时的**企业画像卡片指标值清单**：展示系统原文要求推荐名单「附核心优势、**关键指标**及合作价值」（E-26 §1.1.1.2.4.2.3.6.2），算法库则在招引人才推荐等多个模型输出中列「关键指标数据」。它**不是一个待计算的单一指标，而是若干已定义指标在展示层的集合装配规则**——handoff 已锁定此判定（ER-B12：每个实际指标带自身 metric_id，不建笼统总分，禁止发明总分 ID）。本文的贡献是：盘点 11 项候选组成指标在库内的结构与数据量（全部可用），并对样例企业完成「关键指标集合」卡片装配实验（3/3 成功）。按 §〇，依赖侧结构+当前数据量均足且现转拼装成功 → **完全转换支持**；最终展示哪几项属 UX 定义（ER-B12 已锁，不是数据问题）。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > ……通过对接企业信用信息公示系统、行业协会数据库、专利数据库及政府开放数据平台，采集并标准化处理企业基本信息、经营状况、财务数据、知识产权及业务领域等多维信息。（§5.7 算法阐述；说明卡片信息源预期为信用公示+专利+财务等既有字段）<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 该功能输出推荐企业列表，并附核心优势、关键指标及合作价值。用户可用于招商对接。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/GAP-RECRUIT-METRIC-05.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -259,7 +313,7 @@ handoff 真源（`ENT-RECRUIT.yaml` ER-B12 缺口行）已明确判定：「GAP-
 ## 二、计算过程
 
 > **口径说明**：本 GAP 无独立计算公式（handoff 判定为展示规则）；「计算过程」= 依赖盘点 + 装配实验。
-> 已由脚本 `code/GAP-RECRUIT-METRIC-05.py` 在 `gkx`（183.240.141.251:3318，schema `gkx`）实测跑通，结果见同目录 `GAP-RECRUIT-METRIC-05_out.json`。
+> 已由脚本 `metrics/repro/GAP-RECRUIT-METRIC-05.py` 在 `gkx`（183.240.141.251:3318，schema `gkx`）实测跑通，结果见同目录 `GAP-RECRUIT-METRIC-05_out.json`。
 
 ### 2.1 方法选择：集合装配而非独立评分
 
@@ -295,12 +349,12 @@ $$K(e) = \{\text{行业}_{L1/L2}(e),\ \text{注册资本}(e),\ \text{上市状�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-05.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-05.py` |
 | 结果产物 | 同目录 `GAP-RECRUIT-METRIC-05_out.json` |
 | 主算库 | `gkx`（183.240.141.251:3318，schema `gkx`）；大表行数取 `_work_gkx21/GKX_INVENTORY.json` 库存 |
 
 ```bash
-python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-05.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-05.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -365,7 +419,7 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/GAP-RECRUIT-METRIC-05.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/GAP-RECRUIT-METRIC-05.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -421,14 +475,11 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 3. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754—2017）. 国家标准全文公开系统：https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=A703F0E23DD165A5A1318679F312D158
 
-4. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/request/展示系统/pages/ENT-RECRUIT.yaml`（ER-B12）；`开发库指标计算过程/GAP-RECRUIT-METRIC-01.md`（深圳连接度，同批 M0 样板）。
+4. OECD, & European Commission Joint Research Centre. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. OECD Publishing. https://doi.org/10.1787/9789264043466-en （Crossref 题录核验一致；curl 403，doi.org 反爬，人工浏览器可开）（复合指标的加权可辩护原则与缺失值处理纪律，支撑 §1.4 出处族 丙「为何不合成总分」的反向论证）
 
-5. OECD, & European Commission Joint Research Centre. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. OECD Publishing. https://doi.org/10.1787/9789264043466-en （Crossref 题录核验一致；curl 403，doi.org 反爬，人工浏览器可开）（复合指标的加权可辩护原则与缺失值处理纪律，支撑 §1.4 出处族 丙「为何不合成总分」的反向论证）
+5. UNECE. (2015). *Guidelines on Statistical Business Registers*. United Nations Economic Commission for Europe. https://unece.org/statistics/publications/guidelines-statistical-business-registers （curl 403，该站对脚本访问返回 403，人工浏览器可开）（统计企业登记册的核心变量集与唯一标识要求，支撑 §1.4 出处族 甲的字段底座）
 
-6. UNECE. (2015). *Guidelines on Statistical Business Registers*. United Nations Economic Commission for Europe. https://unece.org/statistics/publications/guidelines-statistical-business-registers （curl 403，该站对脚本访问返回 403，人工浏览器可开）（统计企业登记册的核心变量集与唯一标识要求，支撑 §1.4 出处族 甲的字段底座）
-
-7. World Bank. (2026). *Enterprise Surveys — Methodology*（统一问卷模块采集企业级指标、支撑跨国可比企业画像的方法说明）. https://www.enterprisesurveys.org/en/methodology （curl 200）（支撑出处族 甲「标准化指标模块」的口径）
-
+6. World Bank. (2026). *Enterprise Surveys — Methodology*（统一问卷模块采集企业级指标、支撑跨国可比企业画像的方法说明）. https://www.enterprisesurveys.org/en/methodology （curl 200）（支撑出处族 甲「标准化指标模块」的口径）
 ---
 
 # 附件
@@ -614,13 +665,6 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/GAP-RECRUIT-METRIC-05.py`；产物：`../code/GAP-RECRUIT-METRIC-05_out.json`
+- 脚本：`../code/GAP-RECRUIT-METRIC-05.py`；产物：`../metrics/repro/out/GAP-RECRUIT-METRIC-05_out.json`
 - 关键结果：inventory=11 项全可用；sample_cards=3/3 成功；support_judgment=`完全转换支持`
 - 工程注意：政策匹配度项缺（算法未闭合）；营收名称关联 94.4%。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

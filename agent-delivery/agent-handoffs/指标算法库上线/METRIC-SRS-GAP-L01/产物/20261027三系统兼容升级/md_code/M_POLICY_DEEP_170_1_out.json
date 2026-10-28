@@ -1,0 +1,137 @@
+{
+ "metric_id": "M_POLICY_DEEP_170_1",
+ "title": "政策机遇识别模型",
+ "probe_date": "2026-10-22",
+ "data_support_level": "部分支持",
+ "support_judgment": "部分支持",
+ "support_reason": "王惠五子指标中关键词聚合强度整列无值（keywords 0/20,000）；主题密度、部门覆盖、政策引用、发文持续性四个子指标只对 2 条政策有值，20,000 条里 19,998 条因 theme 缺失无法分组 → 有必需子指标始终无法取值，判部分支持。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本指标为截面评分，不设跨年基期，故 used/missing 均为空。publish_year 仅用于「发文持续性」的连续年计数（两条 theme 政策分别为 2015、2010 年），不进入任何增长率分母。政策表 2022 年后为采集残片（2023 年 0 行），任何年度趋势都不做外推。",
+ "sources": {
+  "policy_base": "code/_snapshots21/policy_base_20261021.json（20,000 行 theme 标志）",
+  "pg_policy_rows": "code/_snapshots21/pg_policy_rows_20261021.json（title/ministry/publish_year）",
+  "policy_aux": "code/_snapshots21/policy_aux_20261022.json（source=gkx@183.240.141.251:3318，theme/quote_policy 真实值 2 行）",
+  "db": "gkx @ 183.240.141.251:3318（只读；本脚本零 SQL）"
+ },
+ "population": {
+  "rows": 20000,
+  "rows_with_theme": 2,
+  "theme_fill_pct": 0.01,
+  "rows_with_quote": 2,
+  "keywords_fill": 0,
+  "n_directions": 5
+ },
+ "subindicator_availability": {
+  "theme_density": {
+   "available": true,
+   "n_scored": 2
+  },
+  "keyword_density": {
+   "available": false,
+   "n_scored": 0,
+   "note": "keywords 全表 0 条非占位符，关键词聚合强度整维不可算"
+  },
+  "ministry_cover": {
+   "available": true,
+   "n_scored": 2
+  },
+  "policy_quote": {
+   "available": true,
+   "n_scored": 2
+  },
+  "continuity": {
+   "available": true,
+   "n_scored": 2
+  }
+ },
+ "theme_groups": [
+  {
+   "theme": "[\"创业扶持\",\"财政支持\",\"融资服务\",\"科技创新\"]",
+   "n_policies": 1,
+   "n_ministries": 1,
+   "years": [
+    2015
+   ],
+   "max_run_years": 1,
+   "n_quotes": 1
+  },
+  {
+   "theme": "[\"财政支持\",\"科技创新\",\"乡村振兴\"]",
+   "n_policies": 1,
+   "n_ministries": 1,
+   "years": [
+    2010
+   ],
+   "max_run_years": 1,
+   "n_quotes": 1
+  }
+ ],
+ "direction_rows": [
+  {
+   "theme": "科技创新",
+   "n_policies": 2,
+   "n_ministries": 1,
+   "years": [
+    2010,
+    2015
+   ],
+   "n_quotes": 2
+  },
+  {
+   "theme": "财政支持",
+   "n_policies": 2,
+   "n_ministries": 1,
+   "years": [
+    2010,
+    2015
+   ],
+   "n_quotes": 2
+  },
+  {
+   "theme": "乡村振兴",
+   "n_policies": 1,
+   "n_ministries": 1,
+   "years": [
+    2010
+   ],
+   "n_quotes": 1
+  },
+  {
+   "theme": "创业扶持",
+   "n_policies": 1,
+   "n_ministries": 1,
+   "years": [
+    2015
+   ],
+   "n_quotes": 1
+  },
+  {
+   "theme": "融资服务",
+   "n_policies": 1,
+   "n_ministries": 1,
+   "years": [
+    2015
+   ],
+   "n_quotes": 1
+  }
+ ],
+ "scores": {
+  "n_policies_scored": 2,
+  "n_opportunity_ge60": 0,
+  "score_min": 50.0,
+  "score_max": 50.0,
+  "score_p50": 50.0,
+  "threshold": 60
+ },
+ "sensitivity_direction_expansion": {
+  "n_policies_scored": 2,
+  "scores": [
+   33.33,
+   66.67
+  ],
+  "n_opportunity_ge60": 1,
+  "note": "把 theme 数组按方向展开后，2 条政策的主题密度均值分别为 [1.5, 1.67]；n=2 的 min-max 必然把两者压成 0 与 100，于是较密的一条会被推到 66.67 分「过线」。这是归一化假象，不能读成「发现 1 条政策机遇」；主口径不采用该展开，只作为脆弱性披露。"
+ },
+ "verdict": "机遇计数 = 0（王惠口径）。0 不是「政策体系没有机遇」的证据，而是 theme/keywords/quote 三列近全空导致 19,998 条政策无法进入评分；该结论只能作「不可判」使用，不得对外发布为机遇为零。"
+}

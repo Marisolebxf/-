@@ -1,9 +1,20 @@
 # 城市对标分析（M_INNOV_CITY_BENCHMARK_GLOBAL）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_BENCHMARK_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py` → `metrics/repro/out/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分析→城市对标分析｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_BENCHMARK_GLOBAL.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_BENCHMARK_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py` → `metrics/repro/out/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CITY_BENCHMARK_GLOBAL.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json` |
@@ -66,14 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分析→城市对标分析｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（本 MD 采用王惠 V1.5 口径：投入/产出/环境三维对标）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量部分足（产出环境维足、投入维研发经费覆盖 2/4 城、地域覆盖高度偏粤）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -109,9 +117,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「城市对标分析」是全球创新监测→城市创新能力分析功能组的**对比视图层**：需求原文要求「用户可选择多个城市进行创新对标分析，系统提供对比视图，展示各城市在创新投入、创新产出、创新环境等方面的差异」，但需求**没有给出三维的定义、归一方法或选城规则**。本文按王惠 V1.5 口径还原：用户选至少 2 城，对比创新投入（上市研发经费，缺则研发人员）、创新产出（专利+论文）、创新环境（有效政策+高企覆盖）三维，所选城内极值归一展示原始值与 0—100 维得分——它隶属于 WIPO 全球创新指数（GII）与 2thinknow 创新城市指数一脉的**全球城市对标文献系**，与国内官方口径的深圳对比（姊妹指标 `M_INNOV_CITY_COMPARE_SZ`）构成「全球对标 vs 深圳对比」的成对视角。
 
-复现代码 `code/M_INNOV_CITY_BENCHMARK_GLOBAL.py` 已实测四城演示对比（深圳/北京/上海/广州，2024 统计年）：深圳综合 88.09（投入 1.0/产出 1.0/环境 0.64）全面领先，北京 25.02、上海 19.51、广州 24.98；产出维深圳 275,908 件专利 vs 广州 140,395 件，环境维北京以 2,268 件政策居首。但两处结构性约束必须直书：投入维研发经费仅深圳/广州有值（北京 33 家机构、上海 3 家机构的上市研发为空），且机构底册 99.8% 偏广东——北京/上海的产出与环境低值主要是**库覆盖问题而非真实创新差距** → **部分支持**，§五 对照后维持王惠口径并把「库地域平衡」列为第一优先补数项。
+复现代码 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py` 已实测四城演示对比（深圳/北京/上海/广州，2024 统计年）：深圳综合 88.09（投入 1.0/产出 1.0/环境 0.64）全面领先，北京 25.02、上海 19.51、广州 24.98；产出维深圳 275,908 件专利 vs 广州 140,395 件，环境维北京以 2,268 件政策居首。但两处结构性约束必须直书：投入维研发经费仅深圳/广州有值（北京 33 家机构、上海 3 家机构的上市研发为空），且机构底册 99.8% 偏广东——北京/上海的产出与环境低值主要是**库覆盖问题而非真实创新差距** → **部分支持**，§五 对照后维持王惠口径并把「库地域平衡」列为第一优先补数项。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.1.4.1.4.6 城市创新能力分析（L578）<br>```<br>1.1.1.1.4.1.4.6. **城市创新能力分析**<br>通过对全球主要城市的创新成果数据进行分析，监控创新基金、投资规模，创新机构、企业在创新上的投入、产生的创新成果等要素，通过数据模型分析计算各大城市的创新能力排名。用户可自主选择排名中的城市进行创新对标分析，了解各个城市创新能力的差异，并可以订阅关注的城市，持续跟踪其创新动态。<br>城市创新能力分析的具体功能包括城市创新数据监控、创新能力排名计算、城市对标分析、创新能力要素分析、城市订阅功能、创新政策建议。<br>```<br>#### §1.1.1.1.4.1.4.6.3 城市对标分析（L592）<br>```<br>1.1.1.1.4.1.4.6.3. 城市对标分析<br>用户可选择多个城市进行创新对标分析，系统提供对比视图，展示各城市在创新投入、创新产出、创新环境等方面的差异。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_BENCHMARK_GLOBAL.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -185,7 +238,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；已由脚本 `code/M_INNOV_CITY_BENCHMARK_GLOBAL.py` 在三方库 `gkx` **实测跑通**（对标选城：深圳/北京/上海/广州，统计年 2024），结果见同目录 `M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
+> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；已由脚本 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py` 在三方库 `gkx` **实测跑通**（对标选城：深圳/北京/上海/广州，统计年 2024），结果见同目录 `M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：全球城市对标为什么锚定 GII 文献系
 
@@ -243,7 +296,7 @@ $$Comp(c)=\frac{1}{|\{k:D_k\neq\emptyset\}|}\sum_{k\in\{in,out,env\}}D_k(c)\time
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_CITY_BENCHMARK_GLOBAL.py`（本批目录 code/ 下已有，本报告复用） |
+| 计算脚本 | `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py`（本批目录 code/ 下已有，本报告复用） |
 | 结果产物 | 同目录 `M_INNOV_CITY_BENCHMARK_GLOBAL_out.json` |
 | 主算库 | `gkx`（三方库 183.240.141.251:3318，只读账号；逐表行数与旧演示面（已禁用）逐位一致） |
 | 对标选城 | 深圳/北京/上海/广州（统计年 2024） |
@@ -311,7 +364,7 @@ python3 code/M_INNOV_CITY_BENCHMARK_GLOBAL.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CITY_BENCHMARK_GLOBAL.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数，20261021 复核） | 实测结论 |
 |---|---|---|---|---|
@@ -389,9 +442,6 @@ python3 code/M_INNOV_CITY_BENCHMARK_GLOBAL.py
 6. 科技部、财政部、国家税务总局. (2016). 《高新技术企业认定管理办法》（国科发火〔2016〕32 号）. https://www.most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2016/201602/t20160205_123998.html
 
 7. European Commission. (2024). *European Innovation Scoreboard 2024 – Methodology Report*. https://research-and-innovation.ec.europa.eu/document/download/074d5495-433a-440f-bcf9-dc620fce7af1_en?filename=ec_rtd_eis-2024-methodology-report.pdf （对照：均值锚参照系，不采用）
-
-8. 项目内真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_BENCHMARK_GLOBAL.md` —— 王惠 V1.5 口径原文。
-
 ---
 
 # 附件
@@ -502,14 +552,6 @@ EIS 相对欧盟均值雷达 (European Commission, 2024)。固定集团锚与动
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_CITY_BENCHMARK_GLOBAL.py`；产物：`code/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`
+- 脚本：`metrics/repro/M_INNOV_CITY_BENCHMARK_GLOBAL.py`；产物：`metrics/repro/out/M_INNOV_CITY_BENCHMARK_GLOBAL_out.json`
 - 关键数字：四城综合 88.09/25.02/19.51/24.98；深圳产出 275,908/投入 3,555.5 亿/政策 879/高企 15,683；投入覆盖 2/4；support_judgment=`部分支持`
 - 成对视角：本指标（全球对标，GII/2thinknow 文献系）与 `M_INNOV_CITY_COMPARE_SZ`（深圳对比，国家统计局/深圳官方口径）构成 CITY 双件；跨文档引用相对链接，勿加 `./` 前缀。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

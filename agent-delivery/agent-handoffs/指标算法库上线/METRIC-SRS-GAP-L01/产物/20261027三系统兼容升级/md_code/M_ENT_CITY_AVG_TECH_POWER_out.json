@@ -1,0 +1,169 @@
+{
+ "metric_id": "M_ENT_CITY_AVG_TECH_POWER",
+ "metric_name": "城市平均技术力",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）+ code/_snapshots21/ 落盘快照",
+ "formula": "city_avg = AVG(0.5*专利规模 + 0.3*IPC4广度 + 0.2*新鲜度) OVER 该市有专利企业",
+ "blocking_tables": {
+  "tech_power": {
+   "triage": "source_absent",
+   "evidence": "_work_gkx21/TABLE_ABSENCE_EVIDENCE.md §tech_power"
+  }
+ },
+ "proxy_path": "企业级专利三维分 → 按 city 求均值",
+ "proxy_deviation": "均值分母是「有专利企业」而非全部企业：深圳 95,600 家企业里有专利的只是一部分，把无专利企业当 0 会把均值变成覆盖率；人才/转化/投入三维缺失，分值是专利技术力",
+ "denominator_note": "分母 = 该市有专利企业数；orgs_total 与 patent_coverage 一并给出，便于读者判断均值代表多少企业",
+ "min_orgs_for_rank": 100,
+ "cities": [
+  {
+   "city": "惠州市",
+   "orgs_with_patent": 7553,
+   "orgs_total": 9979,
+   "patent_coverage": 0.7569,
+   "patents_total": 93989,
+   "mean_tech_power": 0.1079,
+   "median_tech_power": 0.0952,
+   "p90_tech_power": 0.2178,
+   "rank": 1
+  },
+  {
+   "city": "东莞市",
+   "orgs_with_patent": 25193,
+   "orgs_total": 33590,
+   "patent_coverage": 0.75,
+   "patents_total": 342575,
+   "mean_tech_power": 0.1064,
+   "median_tech_power": 0.1,
+   "p90_tech_power": 0.2168,
+   "rank": 2
+  },
+  {
+   "city": "广州市",
+   "orgs_with_patent": 29841,
+   "orgs_total": 49605,
+   "patent_coverage": 0.6016,
+   "patents_total": 554311,
+   "mean_tech_power": 0.1,
+   "median_tech_power": 0.0894,
+   "p90_tech_power": 0.2174,
+   "rank": 3
+  },
+  {
+   "city": "深圳市",
+   "orgs_with_patent": 59919,
+   "orgs_total": 95600,
+   "patent_coverage": 0.6268,
+   "patents_total": 1050184,
+   "mean_tech_power": 0.0987,
+   "median_tech_power": 0.0897,
+   "p90_tech_power": 0.2093,
+   "rank": 4
+  }
+ ],
+ "small_cities_excluded": [
+  {
+   "city": "西安市",
+   "orgs_with_patent": 2,
+   "mean_tech_power": 0.2575
+  },
+  {
+   "city": "抚顺市",
+   "orgs_with_patent": 1,
+   "mean_tech_power": 0.2435
+  },
+  {
+   "city": "杭州市",
+   "orgs_with_patent": 4,
+   "mean_tech_power": 0.2031
+  },
+  {
+   "city": "南昌市",
+   "orgs_with_patent": 1,
+   "mean_tech_power": 0.2
+  },
+  {
+   "city": "大连市",
+   "orgs_with_patent": 1,
+   "mean_tech_power": 0.1667
+  },
+  {
+   "city": "包头市",
+   "orgs_with_patent": 2,
+   "mean_tech_power": 0.1461
+  },
+  {
+   "city": "北京市",
+   "orgs_with_patent": 26,
+   "mean_tech_power": 0.1009
+  },
+  {
+   "city": "成都市",
+   "orgs_with_patent": 1,
+   "mean_tech_power": 0.1009
+  },
+  {
+   "city": "济南市",
+   "orgs_with_patent": 1,
+   "mean_tech_power": 0.1008
+  },
+  {
+   "city": "上海市",
+   "orgs_with_patent": 1,
+   "mean_tech_power": 0.0932
+  },
+  {
+   "city": "天津市",
+   "orgs_with_patent": 4,
+   "mean_tech_power": 0.0812
+  },
+  {
+   "city": "贵阳市",
+   "orgs_with_patent": 1,
+   "mean_tech_power": 0.0794
+  }
+ ],
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "tech_power 结果面不存在，但城市平均量可由企业级专利三维分聚合得到：专利计数、IPC4 广度、2024 申请量都在 dwd_patent 里，企业城市在 dwd_org_base_info 里，聚合链完整。缺的是技术力的另外三维（人才/转化/投入）与「全部企业」分母口径，故判部分支持。",
+  "criteria": {
+   "result_table_exists": false,
+   "cities_computed": 4,
+   "min_orgs_for_rank": 100,
+   "dims_used": 3,
+   "dims_missing": 3,
+   "proxy_used": true
+  }
+ },
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "专利表只有 2021—2026（2017—2020 零行），D1 分母为全期申请，D3 用 2024 年占比；2025/2026 残年不入分子。本件是截面均值，不做年度序列，故不列逐年基期。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/patent_ipc4_by_name_20261021.json",
+   "table": "gkx.dwd_patent",
+   "rows": 581585,
+   "role": "企业专利三维输入"
+  },
+  {
+   "path": "code/_snapshots21/patent_2024_by_name_20261021.json",
+   "table": "gkx.dwd_patent",
+   "rows": 60009,
+   "role": "2024 申请量"
+  },
+  {
+   "path": "code/_snapshots21/base_20261021.json",
+   "table": "gkx.dwd_org_base_info",
+   "rows": 189116,
+   "role": "企业→城市"
+  }
+ ]
+}

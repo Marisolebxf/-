@@ -1,0 +1,478 @@
+{
+ "metric_id": "M_ENT_STAR_PATENT_COUNT",
+ "metric_name": "明星企业专利数",
+ "generated_at": "2026-10-23 02:25:02",
+ "definition": "明星企业（CMS 名单，本件以代理名单替代）名下累计专利件数（授权口径）",
+ "data_source": "gkx @ 183.240.141.251:3318（只读）：dwd_patent 全量聚合 × dwd_org_base_info；本脚本零 DB，只读快照",
+ "support_judgment": "部分支持",
+ "verdict_kind": "proxy_roster",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面累计件，无报告期。专利侧 dwd_patent 的 apdt_year 只覆盖 2021—2026（2017—2020 零行，DATA_FACTS §3.13），故「累计」实为 2021—2026 六年累计；2026 为残年（74,810 行）。名单无年度字段，不构成年度序列，故 used/missing 均为空。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/star_roster_gkx_20261021.json",
+   "kind": "snapshot",
+   "role": "代理名单 4,561 家（grant_cnt>=50，剔除非企业主体）"
+  },
+  {
+   "path": "code/_snapshots21/star_applicant_agg_gkx.json",
+   "kind": "snapshot",
+   "role": "169,226 申请人 [件数, 授权数]，全量 2,939,895 行聚合"
+  },
+  {
+   "path": "code/_snapshots21/star_base_rows_gkx.json",
+   "kind": "snapshot",
+   "role": "底册 189,116 行（名称/省/市/行业）"
+  },
+  {
+   "path": "code/_snapshots21/patent_panel_innov_20261021.json",
+   "kind": "snapshot",
+   "role": "专利面板：年/国别/件型，用于年份窗口与件型结构"
+  },
+  {
+   "path": "code/_snapshots21/gkx_columns_20261023.json",
+   "kind": "snapshot",
+   "role": "全库列字典 280 表 / 6,312 列，用于「未来产业/法律状态列是否存在」探针"
+  }
+ ],
+ "probes": {
+  "future_industry_columns": [],
+  "cluster_columns": [],
+  "legal_status_columns": [],
+  "first_current_assignee_columns": [
+   "dwd_patent",
+   "dwd_patent_bak_20260912"
+  ],
+  "granted_number_columns": [
+   "dwd_patent",
+   "dwd_patent_bak_20260912"
+  ],
+  "assignee_name_columns": [],
+  "fuzzy_column_names": {
+   "future_industry_code": [],
+   "future_industry_name": [],
+   "cluster_id": [],
+   "legal_status": [],
+   "first_current_assignee_name": [],
+   "granted_number": [],
+   "assignee_name": [
+    "first_current_assignee_name"
+   ]
+  },
+  "panel_country": {
+   "China": 2848905,
+   "WO": 89935,
+   "Hong Kong": 952,
+   "Japan": 79,
+   "Taiwan Province": 20,
+   "Macao": 4
+  },
+  "panel_year_all": {
+   "2022": 601893,
+   "2026": 74810,
+   "2021": 604512,
+   "2023": 611811,
+   "2025": 440401,
+   "2024": 606468
+  },
+  "panel_rows": 2939895
+ },
+ "compute": {
+  "roster_threshold_grant": 50,
+  "n_star": 4561,
+  "pub_stats": {
+   "n": 4561,
+   "sum": 1069438,
+   "mean": 234.4745,
+   "median": 97,
+   "p25": 71,
+   "p75": 164,
+   "p90": 325,
+   "p95": 545,
+   "p99": 1998,
+   "min": 50,
+   "max": 81376
+  },
+  "grant_stats": {
+   "n": 4561,
+   "sum": 699284,
+   "mean": 153.3181,
+   "median": 80,
+   "p25": 60,
+   "p75": 127,
+   "p90": 242,
+   "p95": 387,
+   "p99": 1287,
+   "min": 50,
+   "max": 17072
+  },
+  "coverage": {
+   "n_star": 4561,
+   "star_pub_sum": 1069438,
+   "star_grant_sum": 699284,
+   "library_pub_sum": 2939895,
+   "library_grant_sum": 2140420,
+   "star_share_of_library_pub_pct": 36.3767,
+   "star_share_of_library_grant_pct": 32.6704,
+   "star_grant_rate_pct": 65.388,
+   "library_grant_rate_pct": 72.806,
+   "star_share_of_firms_pct": 2.4117,
+   "base_rows": 189116,
+   "patents_per_star_mean_pub": 234.4745,
+   "patents_per_star_mean_grant": 153.3181
+  },
+  "concentration": {
+   "top10_share_pct": 21.6885,
+   "top10_patents": 231945,
+   "top50_share_pct": 32.7871,
+   "top50_patents": 350638,
+   "top100_share_pct": 39.1752,
+   "top100_patents": 418955,
+   "top500_share_pct": 58.5385,
+   "top500_patents": 626033
+  },
+  "city_dist_pub": {
+   "深圳市": {
+    "patents": 643938,
+    "pct": 60.2127
+   },
+   "广州市": {
+    "patents": 236657,
+    "pct": 22.1291
+   },
+   "东莞市": {
+    "patents": 154033,
+    "pct": 14.4032
+   },
+   "惠州市": {
+    "patents": 34810,
+    "pct": 3.255
+   }
+  },
+  "city_firm_dist": {
+   "深圳市": {
+    "firms": 2590,
+    "pct": 56.7858
+   },
+   "广州市": {
+    "firms": 1020,
+    "pct": 22.3635
+   },
+   "东莞市": {
+    "firms": 775,
+    "pct": 16.9919
+   },
+   "惠州市": {
+    "firms": 176,
+    "pct": 3.8588
+   }
+  },
+  "value_field": {
+   "nonnull": 1994812,
+   "mean": 17760.56,
+   "fill_pct": 67.8532,
+   "note": "dwd_patent.value：无单位，仅作旁证，不进公式"
+  },
+  "province_dist_pub": {
+   "广东省": {
+    "patents": 1069438,
+    "pct": 100.0
+   }
+  },
+  "industry_l1_dist_pub": {
+   "制造业": {
+    "patents": 507581,
+    "pct": 47.4624
+   },
+   "批发和零售业": {
+    "patents": 177240,
+    "pct": 16.5732
+   },
+   "科学研究和技术服务业": {
+    "patents": 142118,
+    "pct": 13.289
+   },
+   "信息传输、软件和信息技术服务业": {
+    "patents": 94878,
+    "pct": 8.8718
+   },
+   "电力、热力、燃气及水生产和供应业": {
+    "patents": 35809,
+    "pct": 3.3484
+   },
+   "建筑业": {
+    "patents": 33905,
+    "pct": 3.1704
+   },
+   "租赁和商务服务业": {
+    "patents": 28588,
+    "pct": 2.6732
+   },
+   "金融业": {
+    "patents": 19758,
+    "pct": 1.8475
+   },
+   "房地产业": {
+    "patents": 12292,
+    "pct": 1.1494
+   },
+   "交通运输、仓储和邮政业": {
+    "patents": 8572,
+    "pct": 0.8015
+   },
+   "文化、体育和娱乐业": {
+    "patents": 2748,
+    "pct": 0.257
+   },
+   "居民服务、修理和其他服务业": {
+    "patents": 2599,
+    "pct": 0.243
+   },
+   "水利、环境和公共设施管理业": {
+    "patents": 1768,
+    "pct": 0.1653
+   },
+   "教育": {
+    "patents": 497,
+    "pct": 0.0465
+   },
+   "卫生和社会工作": {
+    "patents": 417,
+    "pct": 0.039
+   },
+   "采矿业": {
+    "patents": 401,
+    "pct": 0.0375
+   },
+   "住宿和餐饮业": {
+    "patents": 267,
+    "pct": 0.025
+   }
+  },
+  "industry_l2_top10_pub": [
+   {
+    "name": "计算机、通信和其他电子设备制造业",
+    "patents": 262540,
+    "pct": 24.5493
+   },
+   {
+    "name": "批发业",
+    "patents": 127971,
+    "pct": 11.9662
+   },
+   {
+    "name": "软件和信息技术服务业",
+    "patents": 81012,
+    "pct": 7.5752
+   },
+   {
+    "name": "电气机械和器材制造业",
+    "patents": 78843,
+    "pct": 7.3724
+   },
+   {
+    "name": "研究和试验发展",
+    "patents": 52946,
+    "pct": 4.9508
+   },
+   {
+    "name": "科技推广和应用服务业",
+    "patents": 51945,
+    "pct": 4.8572
+   },
+   {
+    "name": "零售业",
+    "patents": 49269,
+    "pct": 4.607
+   },
+   {
+    "name": "专业技术服务业",
+    "patents": 36604,
+    "pct": 3.4227
+   },
+   {
+    "name": "电力、热力生产和供应业",
+    "patents": 34804,
+    "pct": 3.2544
+   },
+   {
+    "name": "专用设备制造业",
+    "patents": 31053,
+    "pct": 2.9037
+   }
+  ],
+  "threshold_curve": [
+   {
+    "threshold_grant": 20,
+    "n_firms": 17904,
+    "pub_sum": 1529282,
+    "grant_sum": 1087784,
+    "pub_share_of_library_pct": 52.0183,
+    "grant_share_of_library_pct": 50.8211,
+    "method": "base_rows_x_agg_minus_non_enterprise"
+   },
+   {
+    "threshold_grant": 30,
+    "n_firms": 9813,
+    "pub_sum": 1304795,
+    "grant_sum": 896087,
+    "pub_share_of_library_pct": 44.3824,
+    "grant_share_of_library_pct": 41.865,
+    "method": "base_rows_x_agg_minus_non_enterprise"
+   },
+   {
+    "threshold_grant": 50,
+    "n_firms": 4561,
+    "pub_sum": 1069438,
+    "grant_sum": 699284,
+    "pub_share_of_library_pct": 36.3767,
+    "grant_share_of_library_pct": 32.6704,
+    "method": "base_rows_x_agg_minus_non_enterprise"
+   },
+   {
+    "threshold_grant": 80,
+    "n_firms": 2290,
+    "pub_sum": 898953,
+    "grant_sum": 559218,
+    "pub_share_of_library_pct": 30.5777,
+    "grant_share_of_library_pct": 26.1266,
+    "method": "base_rows_x_agg_minus_non_enterprise"
+   },
+   {
+    "threshold_grant": 100,
+    "n_firms": 1630,
+    "pub_sum": 826284,
+    "grant_sum": 500535,
+    "pub_share_of_library_pct": 28.1059,
+    "grant_share_of_library_pct": 23.3849,
+    "method": "base_rows_x_agg_minus_non_enterprise"
+   },
+   {
+    "threshold_grant": 200,
+    "n_firms": 591,
+    "pub_sum": 642867,
+    "grant_sum": 358730,
+    "pub_share_of_library_pct": 21.867,
+    "grant_share_of_library_pct": 16.7598,
+    "method": "base_rows_x_agg_minus_non_enterprise"
+   },
+   {
+    "threshold_grant": 500,
+    "n_firms": 166,
+    "pub_sum": 472003,
+    "grant_sum": 233821,
+    "pub_share_of_library_pct": 16.0551,
+    "grant_share_of_library_pct": 10.9241,
+    "method": "base_rows_x_agg_minus_non_enterprise"
+   }
+  ],
+  "definition_conflict": {
+   "pub_minus_grant": 370154,
+   "pub_minus_grant_pct_of_pub": 34.612,
+   "wanghui_definition": "累计专利件数（授权口径）→ 用 grant_sum",
+   "calc_logic_definition": "COUNT 专利件数（未写法律状态）→ 用 pub_sum",
+   "chosen": "grant_sum",
+   "reason": "王惠正本逐字写「授权口径」，calc-logic 的 SQL 未写 WHERE；两者冲突时以正本为准，另一口径并列交付"
+  },
+  "multi_assignee": {
+   "note": "受让人多值会重复计件；本件按 first_applicant_name 聚合，一件只归第一申请人，故不重复但会漏计非第一受让人",
+   "first_assignee_vs_first_applicant_diff_rows": 1867,
+   "source": "calc-logic/ENT/M_ENT_PATENT_GRANT_COUNT.md 现网探针（gkx, 2026-08-27）"
+  },
+  "top10_by_pub": [
+   {
+    "name": "华为技术有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "pub_cnt": 81376,
+    "grant_cnt": 13360,
+    "share_of_star_pub_pct": 7.6092
+   },
+   {
+    "name": "比亚迪股份有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "pub_cnt": 29024,
+    "grant_cnt": 17072,
+    "share_of_star_pub_pct": 2.7139
+   },
+   {
+    "name": "维沃移动通信有限公司",
+    "city": "东莞市",
+    "industry_l1": "批发和零售业",
+    "pub_cnt": 28712,
+    "grant_cnt": 11145,
+    "share_of_star_pub_pct": 2.6848
+   },
+   {
+    "name": "OPPO广东移动通信有限公司",
+    "city": "东莞市",
+    "industry_l1": "制造业",
+    "pub_cnt": 25765,
+    "grant_cnt": 8547,
+    "share_of_star_pub_pct": 2.4092
+   },
+   {
+    "name": "广东电网有限责任公司",
+    "city": "广州市",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "pub_cnt": 18922,
+    "grant_cnt": 8566,
+    "share_of_star_pub_pct": 1.7693
+   },
+   {
+    "name": "中兴通讯股份有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "pub_cnt": 15634,
+    "grant_cnt": 1634,
+    "share_of_star_pub_pct": 1.4619
+   },
+   {
+    "name": "广州汽车集团股份有限公司",
+    "city": "广州市",
+    "industry_l1": "租赁和商务服务业",
+    "pub_cnt": 9836,
+    "grant_cnt": 5955,
+    "share_of_star_pub_pct": 0.9197
+   },
+   {
+    "name": "荣耀终端股份有限公司",
+    "city": "深圳市",
+    "industry_l1": "批发和零售业",
+    "pub_cnt": 9093,
+    "grant_cnt": 2335,
+    "share_of_star_pub_pct": 0.8503
+   },
+   {
+    "name": "惠科股份有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "pub_cnt": 6797,
+    "grant_cnt": 5202,
+    "share_of_star_pub_pct": 0.6356
+   },
+   {
+    "name": "广东电网有限责任公司广州供电局",
+    "city": "广州市",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "pub_cnt": 6786,
+    "grant_cnt": 2505,
+    "share_of_star_pub_pct": 0.6345
+   }
+  ],
+  "library": {
+   "table_rows": 2939895,
+   "names": 169226,
+   "pub_sum": 2939895,
+   "grant_sum": 2140420
+  }
+ },
+ "reasons": [
+  "CMS 明星名单两库均无（gkx 280 表 star/roster/cms 命中 0），名单维度只能用代理（授权>=50），故本件数的是「代理名单的专利量」，不是「CMS 明星的专利量」。",
+  "「选定未来产业范围内」不可得：gkx 无 future_industry_code / cluster_id 列（列字典命中 0），无法把专利量切到未来产业子集。",
+  "口径冲突：王惠正本写「授权口径」，calc-logic 的 SQL 无法律状态过滤；本件以正本为主口径（699,284），并列交付累计公开口径（1,069,438），差额 370,154（34.61%）。",
+  "专利只按第一申请人归属：first_applicant_name 聚合无法覆盖「非第一受让人」的共有专利，且第一申请人≠第一专利权人（现网差 1,867 条）。"
+ ]
+}

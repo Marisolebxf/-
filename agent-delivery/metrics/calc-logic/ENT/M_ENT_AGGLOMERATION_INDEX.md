@@ -1,9 +1,20 @@
 # 集聚指数（M_ENT_AGGLOMERATION_INDEX）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_AGGLOMERATION_INDEX.md`；复现脚本 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` → `metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：STAT（区域聚合型）｜ **域**：企业分析·企业发展（ENT）｜ **UI 挂载**：科技专题·企业分析「三级地理透视与可视化呈现」页面（直观反映集聚效应）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_AGGLOMERATION_INDEX.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_AGGLOMERATION_INDEX.md`；复现脚本 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` → `metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_AGGLOMERATION_INDEX.md` |
 | 复现脚本 | `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json` |
@@ -61,14 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（区域聚合型）｜ **域**：企业分析·企业发展（ENT）｜ **UI 挂载**：科技专题·企业分析「三级地理透视与可视化呈现」页面（直观反映集聚效应）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020）**：王惠（calc-logic 注册表 AI 补漏规范化版，本 MD 沿用并复现）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 部分依赖维数据量受限（区域覆盖仅粤 4 城）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -102,11 +110,57 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「集聚指数」是企业基础指标模型（ALGO-ENT-BASE-97）中「重点企业提取」与「新增企业数量」类功能的地区分布延伸指标，服务科技专题系统「从全国到城市逐级下钻、直观反映集聚效应」的可视化需求。需求文档仅提出「直观反映集聚效应」的功能性要求，**未给出计算公式**；王惠团队在 calc-logic 注册表中以区位熵（LQ）、空间基尼系数（G）、赫芬达尔—赫希曼指数（HHI）三维等权口径补齐了该指标的定义。本报告沿用王惠口径并完成库表实测：脚本 `code/M_ENT_AGGLOMERATION_INDEX.py` **直接连三方库 gkx**（`gkx.dwd_org_base_info`，18.9 万行）对 168,754 家存续企业跑通三维计算，20 个 L1 产业的 LQ/G/HHI 全部产出非退化结果（如 F 门类 LQ_深圳=1.4047、HHI_city=0.6469）。
+「集聚指数」是企业基础指标模型（ALGO-ENT-BASE-97）中「重点企业提取」与「新增企业数量」类功能的地区分布延伸指标，服务科技专题系统「从全国到城市逐级下钻、直观反映集聚效应」的可视化需求。需求文档仅提出「直观反映集聚效应」的功能性要求，**未给出计算公式**；王惠团队在 calc-logic 注册表中以区位熵（LQ）、空间基尼系数（G）、赫芬达尔—赫希曼指数（HHI）三维等权口径补齐了该指标的定义。本报告沿用王惠口径并完成库表实测：脚本 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` **直接连三方库 gkx**（`gkx.dwd_org_base_info`，18.9 万行）对 168,754 家存续企业跑通三维计算，20 个 L1 产业的 LQ/G/HHI 全部产出非退化结果（如 F 门类 LQ_深圳=1.4047、HHI_city=0.6469）。
 
 **核心发现是区域参照系残缺**：存续企业的 province 字段实测 99.97% 落在广东省、city 字段仅出现深圳/广州/东莞/惠州 4 个取值，这与需求「全国各区域分布」的语义（王惠口径明确写「企业在全国各区域分布的市场集中度」）存在系统性偏差——用 4 城样本算「全国集聚」会天然高估集中度（HHI_city=0.4130、HHI_prov=0.9995 均被区域覆盖面压高）。按 §〇「数据量不够不得入完全转换支持」的口径，本指标定为**部分支持**：公式与代码已就绪，待三方库扩充全国企业覆盖或引入外部区域分布参照后即可升级。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 企业基础指标模型基于企业专题数据，通过与企业数据库和资讯数据库的对接，采集并清洗包括企业名称、行业、地区、注册信息、专利数量、技术交易额、业务领域、融资并购记录及动态变化等多维数据，以构建反映企业发展状况和产业特征的核心指标体系。……模型支持API接口及消息队列服务，将计算结果与指标数据按地域、时间、领域等多维条件提供给用户查询、分析与应用。<br>><br>> （1）重点企业提取 …… 需要进行指标业务的分析，例如对重点企业的行业分布、地区分布、企业规模等进行分析，以更好地理解和应用数据结果。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 本功能支持用户按产业与企业类型进行筛选，并在国家、省、市三级地理维度下钻分析分布特征。通过可视化方式，用户可清晰掌握不同类型企业在区域的集聚态势与结构差异，为差异化政策制定与资源投放提供依据。构建「产业—类型—区域」三维分析框架，揭示企业生态的空间与结构特征。<br>><br>> 该功能支持从全国到城市逐级下钻，展示各区域企业数量、规模及占比。结果以可视化的方式，直观反映集聚效应。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_AGGLOMERATION_INDEX.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -181,7 +235,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 calc-logic 注册表口径展开（公式定义人=王惠，AI 补漏规范化），已由脚本 `code/M_ENT_AGGLOMERATION_INDEX.py` **直连三方库 `gkx`**（`gkx.dwd_org_base_info`、`gkx.dwd_dim_admin_area`，20261021 改源版）**实测跑通**，结果见同目录 `M_ENT_AGGLOMERATION_INDEX_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
+> **口径说明**：本节按王惠 calc-logic 注册表口径展开（公式定义人=王惠，AI 补漏规范化），已由脚本 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` **直连三方库 `gkx`**（`gkx.dwd_org_base_info`、`gkx.dwd_dim_admin_area`，20261021 改源版）**实测跑通**，结果见同目录 `M_ENT_AGGLOMERATION_INDEX_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：为何用「LQ + 空间基尼 + HHI」三维而非单一指标
 
@@ -231,13 +285,13 @@ $$HHI_j = \sum_i \left( \frac{E_{ij}}{E_j} \right)^2,\qquad HHI_{all} = \sum_i \
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` |
 | 结果产物 | 同目录 `M_ENT_AGGLOMERATION_INDEX_out.json` |
 | 主算库 | 三方库 `gkx`（`gkx.dwd_org_base_info` 189,116 行，直连；全表名限定 `gkx.`） |
 | 对照/校验 | `_work_gkx21/GKX_INVENTORY.json` 库存行数 vs 脚本实测行数（同源自校验） |
 
 ```bash
-python3 metrics/repro/M_ENT_AGGLOMERATION_INDEX.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_AGGLOMERATION_INDEX.py
 ```
 
 脚本输出 `probe`（结构+填充率）、`compute`（三维结果）、`gkx_spotcheck`（库存自校验）、`support_judgment`（四档机判）。以下展示为 **2026-10-21** 完整跑数结果（与 out.json 一致）。
@@ -306,7 +360,7 @@ python3 metrics/repro/M_ENT_AGGLOMERATION_INDEX.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_AGGLOMERATION_INDEX.py` 并确认结果，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_AGGLOMERATION_INDEX.py` 并确认结果，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -319,7 +373,7 @@ python3 metrics/repro/M_ENT_AGGLOMERATION_INDEX.py
 **四判定（§〇）**：直接结构/数据 = 否；依赖结构 = 是；依赖数据 = **部分**（企业行量足但**区域覆盖维受限**：仅粤 4 城，与「全国各区域」语义不符）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_AGGLOMERATION_INDEX_out.json` 实测——`cities_ge_50=False`（4<50）、`usable_ge_1000=True`（168,754）、`industries_ge_10=True`（20 门类）、`sz_alive_ge_500=True`（94,955）、`gkx_inventory_aligned=True`。按 §〇「始终有部分依赖维度无法得到足够数据」的区域覆盖维判据，归**部分支持**；产业与行量维均已足。
+依据：`metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json` 实测——`cities_ge_50=False`（4<50）、`usable_ge_1000=True`（168,754）、`industries_ge_10=True`（20 门类）、`sz_alive_ge_500=True`（94,955）、`gkx_inventory_aligned=True`。按 §〇「始终有部分依赖维度无法得到足够数据」的区域覆盖维判据，归**部分支持**；产业与行量维均已足。
 
 ---
 
@@ -386,19 +440,14 @@ python3 metrics/repro/M_ENT_AGGLOMERATION_INDEX.py
 5. U.S. Bureau of Economic Analysis (BEA). *What are location quotients (LQs)?* 官方 FAQ. https://www.bea.gov/help/faq/478
 
 6. 周锐波, 李晓雯. (2017). 广东省制造业空间格局演化及其影响因素研究. 《人文地理》, 32(2), 95–102. DOI: 10.13959/j.issn.1003-2398.2017.02.014. https://html.rhhz.net/RWDL/html/20170214.htm
-
 6a. 宋敏, 刘彬. (2022). 粤港澳大湾区外商直接投资对制造业集聚的空间溢出效应（以区位熵测算 2010—2019 年湾区各市制造业集聚度）. 《资源与产业》, 24(5), 90–97. DOI: 10.13776/j.cnki.resourcesindustries.20221013.001. https://www.resourcesindustries.net.cn/CN/10.13776/j.cnki.resourcesindustries.20221013.001
 
 7. 吴波亮, 王韬. (2022). 产业空间集聚影响因素实证分析——基于广东省制造业的面板数据回归模型. 《中国设备工程》(工信部电子第五研究所团队). https://www.fx361.com/page/2022/0113/19918488.shtml
 
 8. 国家统计局. (2024). 《工业统计报表制度》研发创新统计部分（规上工业企业 R&D 经费按经营地在地原则统计）. 北京市统计局公开 PDF：https://tjj.beijing.gov.cn/zwgkai/tjzd_31386/cgdczd/2024nb2025db/jctjbbzd_2024/gmysdw_2024/202503/P020250324524088914798.pdf
 
-9. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_AGGLOMERATION_INDEX.md` — 集聚指数三维口径（LQ/G/HHI 等权）。
-
-10. 项目内需求真源（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/科技专题服务算法库.md` §1.1.1.1.1.1.1.1；`科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.3.1.2。
-
+9. 项目内需求真源（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/科技专题服务算法库.md` §1.1.1.1.1.1.1.1；`科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.3.1.2。
 文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
 ---
 
 # 附件
@@ -515,15 +564,7 @@ live DWD 侧 `enterprise_base` 189,115 行主档在但 `region_id` 非空 0（B2
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_ENT_AGGLOMERATION_INDEX.py`
-- 产物：`../code/M_ENT_AGGLOMERATION_INDEX_out.json`
+- 产物：`../metrics/repro/out/M_ENT_AGGLOMERATION_INDEX_out.json`
 - 主算库：三方库 `gkx`（`gkx.dwd_org_base_info` 189,116 行，20261021 改源版直连；行数只读 `_work_gkx21/GKX_INVENTORY.json`）
 - 关键结果：入集 168,754 企 / 20 门类 / 4 城；F 门类 LQ_深圳=1.4047（资本 1.4434）；HHI_city_all=0.413051；HHI_prov=0.999455；support_judgment=`部分支持`（cities_ge_50=False）
 - 工程注意：G 采用 Krugman 简化离差平方和式；双口径（计数/资本）背离显著的门类（如 G 门类 1.0967 vs 0.4582）建议在结果面同时输出两值。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

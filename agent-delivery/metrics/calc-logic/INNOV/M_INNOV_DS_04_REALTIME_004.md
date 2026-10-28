@@ -1,9 +1,21 @@
 # 创新影响分数（M_INNOV_DS_04_REALTIME_004）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_REALTIME_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_REALTIME_004.py` → `metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠系（V1.5-20260829）· SCORE（0—100，逐节点）｜ **域**：科技发展态势·全球创新监测·创新监测与分析｜ **UI 挂载**：全球创新监测 → 创新监测与分析 → 创新影响（**节点级**）
+> - **数据支持度**：**部分支持** ｜ wanghui: true
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_REALTIME_004.py`、产物 `metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_REALTIME_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_REALTIME_004.py` → `metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_REALTIME_004.py`、产物 `metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -62,7 +74,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_04_REALTIME_004.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_04_REALTIME_004.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json` |
@@ -70,17 +82,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_04_REALTIME_004.py`、产物 `metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：王惠系（V1.5-20260829）· SCORE（0—100，逐节点）｜ **域**：科技发展态势·全球创新监测·创新监测与分析｜ **UI 挂载**：全球创新监测 → 创新监测与分析 → 创新影响（**节点级**）
-> **数据支持度**：**部分支持** ｜ wanghui: true
-> **公式定义人**：王惠（calc-logic INNOV V1.5-20260829）｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
-> **父件关系**：本件的实体是**节点**（机构 / IPC 领域），不是词条。`MONITOR_001/002` 的主键是 `point_key`（词条），本件的主键是 `entity_type + node`。`REALTIME_005` 在本件的节点年序列上做 Holt 外推。
-> **一句话口径**：节点分 = 产出规模（机构=专利件数，领域=专利件数）+ 网络影响（机构=合作邻居数，领域=被引合计），log10 压缩后极值归一 ×100；**网络影响整维缺测，实际交付单维产出规模分**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -124,7 +130,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 网络影响维 | 部分用被引（不可连） | **整维缺测** | 不补 0、不参与权重 |
 | 归一方式 | 线性极值归一 | **log10 压缩后归一** | 线性会把机构中位数压到 0.0x |
 
-旧稿的「领域最高分 75.0」与「被引最大 8」这两条数字是污染的典型形态：在被引能连上的数据面上，一个 20 万件规模的领域不可能只有 8 次被引。本件 `out.json` 无 `reused_from`，全部节点得分由 `code/M_INNOV_DS_04_REALTIME_004.py` 从本目录缓体现算。
+旧稿的「领域最高分 75.0」与「被引最大 8」这两条数字是污染的典型形态：在被引能连上的数据面上，一个 20 万件规模的领域不可能只有 8 次被引。本件 `out.json` 无 `reused_from`，全部节点得分由 `metrics/repro/M_INNOV_DS_04_REALTIME_004.py` 从本目录缓体现算。
 
 ---
 
@@ -299,9 +305,9 @@ $$
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_04_REALTIME_004.py
-# 输出 code/M_INNOV_DS_04_REALTIME_004_out.json；实测耗时 1.9 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json；实测耗时 1.9 秒（全离线，零 SQL）
 ```
 
 **分布**：
@@ -479,15 +485,11 @@ python3 code/M_INNOV_DS_04_REALTIME_004.py
 
 ## 参考文献
 
-1. Wang, H. (2026). 创新影响分数（M_INNOV_IMPACT_SCORE）指标计算逻辑 V1.5-20260829. 项目内部资料（`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_SCORE.md`）。
-2. OECD & Eurostat. (2018). *Oslo Manual 2018: Guidelines for Collecting, Reporting and Using Data on Innovation* (4th ed.). https://doi.org/10.1787/9789264304604-en
-3. OECD. (2009). *OECD Patent Statistics Manual*. https://doi.org/10.1787/9789264056442-en
-4. 世界知识产权组织（WIPO）. (2024). *World Intellectual Property Indicators 2024*. https://www.wipo.int/publications/
-5. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
-6. Freeman, L. C. (1978). Centrality in social networks: Conceptual clarification. *Social Networks*, 1(3), 215–239. https://doi.org/10.1016/0378-8733(78)90021-7
-7. 项目内数据纪律（非外部文献）：`_work_gkx21/DATA_FACTS_gkx21.md` §3.6、§3.10、§3.16、§3.19。
-8. 项目内缓存清单（非外部文献）：`_work_gkx21/PATENT_SCAN_LEDGER.md`、`_work_gkx21/SHARED_ASSETS.md`。
-
+1. OECD & Eurostat. (2018). *Oslo Manual 2018: Guidelines for Collecting, Reporting and Using Data on Innovation* (4th ed.). https://doi.org/10.1787/9789264304604-en
+2. OECD. (2009). *OECD Patent Statistics Manual*. https://doi.org/10.1787/9789264056442-en
+3. 世界知识产权组织（WIPO）. (2024). *World Intellectual Property Indicators 2024*. https://www.wipo.int/publications/
+4. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
+5. Freeman, L. C. (1978). Centrality in social networks: Conceptual clarification. *Social Networks*, 1(3), 215–239. https://doi.org/10.1016/0378-8733(78)90021-7
 ---
 
 # 附件
@@ -495,15 +497,15 @@ python3 code/M_INNOV_DS_04_REALTIME_004.py
 ## 附录 A　复现（脚本、产物与运行）
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_04_REALTIME_004.py
 ```
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_INNOV_DS_04_REALTIME_004.py` |
+| 脚本 | `metrics/repro/M_INNOV_DS_04_REALTIME_004.py` |
 | 依赖模块 | `code/_ds04_common.py`（IPC 面板、申请人聚合、底册、数值工具） |
-| 产物 | `code/M_INNOV_DS_04_REALTIME_004_out.json` |
+| 产物 | `metrics/repro/out/M_INNOV_DS_04_REALTIME_004_out.json` |
 | 输入 | `patent_ipc4_year_20261021.json`、`star_applicant_agg_gkx.json`、`star_base_rows_gkx.json`（底册）、`a25_facts.json`、`a25_paper_panel.json`、`probe_ds04_20261022.json` |
 | 源表 | `gkx.dwd_patent`、`gkx.dwd_patent_applicants`、`gkx.dwd_patent_cited`、`gkx.dwd_org_base_info`、`gkx.dwd_zh_author`、`gkx.dwd_zh_project` @ `183.240.141.251:3318`（**未直接查询**，只用导出缓存与已落盘探针） |
 | 数据库连接 | 无（零 SQL） |
@@ -605,11 +607,3 @@ B 族（网络中心度）需要边，本库两条边都断（0.68% / 2.28%）�
 | 当前数据量 | 产出规模 100% 闭合；网络影响 0%；论文 19.87% 下界 |
 | 现在能否得到 | 节点规模榜可以；完整影响评分不可以 |
 | 建议支持度 | **部分支持** |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

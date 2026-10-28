@@ -1,9 +1,24 @@
 # 区域创新要素层次指数（M_SYNTH_ELEM_LEVEL_INDEX）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_LEVEL_INDEX.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py` → `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（L2 维指数）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（层次维由 gkx 现算）+ 结构缺口（7 结构只出 6 个、2 个结构 n=1 使均衡度恒 60、人才结构整结构空缺）**
+> - **一句话结论**：层次指数四城为深圳 80.5246、广州 60.9253、东莞 28.3693、惠州 10.8025，逐城复算与面板一致；但七结构只出六个，人才结构整结构空缺，服务机构与空间两结构的均衡度是常数 60，惠州四个结构全 0——**算术闭合、结构覆盖 6/7 → 部分支持。**
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py`｜ **产物**：`metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_LEVEL_INDEX.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py` → `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -48,7 +63,7 @@
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_ELEM_LEVEL_INDEX.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json` |
@@ -56,19 +71,11 @@
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（L2 维指数）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
-> **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（层次维由 gkx 现算）+ 结构缺口（7 结构只出 6 个、2 个结构 n=1 使均衡度恒 60、人才结构整结构空缺）**
-> **复现脚本**：`code/M_SYNTH_ELEM_LEVEL_INDEX.py`｜ **产物**：`code/M_SYNTH_ELEM_LEVEL_INDEX_out.json`
-> **族级面板**：`code/_snapshots21/synth_elem_panel_20261023.json`（本族十件共用，由 `code/_build_synth_elem_panel.py` 生成）
-> **公式定义人**：王惠（`M_SYNTH_ELEM_LEVEL_INDEX.md`：成熟度取维内等权均值、均衡度取 Shannon 熵比、层次分 = 二者均值）
-> **基期声明**：统计年 2024；`base_years_used=[2024]`，`base_years_missing=[]`；单年截面，min/max 与熵都在四城盘内计算。
-> **一句话结论**：层次指数四城为深圳 80.5246、广州 60.9253、东莞 28.3693、惠州 10.8025，逐城复算与面板一致；但七结构只出六个，人才结构整结构空缺，服务机构与空间两结构的均衡度是常数 60，惠州四个结构全 0——**算术闭合、结构覆盖 6/7 → 部分支持。**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -163,10 +170,10 @@
 | 文件 | 内容 |
 |---|---|
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_INDEX.md` | 本件正本，三步公式与七结构明细 |
-| `王惠口径正本（GitLab 外本地归档）` | 王惠原稿，与 calc-logic 同源 |
+| `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_INDEX.md（王惠正本已演化并入）` | 王惠原稿，与 calc-logic 同源 |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_INDEX.md` | 成熟度的上游（同一批叶子、同一组权重） |
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 六结构成熟度、均衡度、层次指数的唯一来源 |
-| `code/M_SYNTH_ELEM_RANK_out.json` | 兄弟件，提供序数归一与 11 城可执行性对照 |
+| `metrics/repro/out/M_SYNTH_ELEM_RANK_out.json` | 兄弟件，提供序数归一与 11 城可执行性对照 |
 
 ### 1.6 与旧稿的差异
 
@@ -339,8 +346,8 @@ $n=1$ 规则的翻转阈值：把两个 $n=1$ 结构的均衡度从 60 改成 0�
 ### 2.10 复现结果展示
 
 ```bash
-$ python3 M_SYNTH_ELEM_LEVEL_INDEX.py
-[LEVEL_INDEX] -> code/M_SYNTH_ELEM_LEVEL_INDEX_out.json
+$ cd code && python3 M_SYNTH_ELEM_LEVEL_INDEX.py
+[LEVEL_INDEX] -> metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json
   index {'深圳市': 80.5246, '广州市': 60.9253, '东莞市': 28.3693, '惠州市': 10.8025}
   order ['深圳市', '广州市', '东莞市', '惠州市']
   gaps {'深圳市->广州市': 19.5993, '广州市->东莞市': 32.556, '东莞市->惠州市': 17.5668}
@@ -353,7 +360,7 @@ $ python3 M_SYNTH_ELEM_LEVEL_INDEX.py
           'alpha_sweep_no_flip': True}
 ```
 
-产物 `code/M_SYNTH_ELEM_LEVEL_INDEX_out.json` 里，`level_index` 是输出，`struct_table` 是六结构台账（成熟度、均衡度、结构分、规则、n），`entropy_detail` 是逐城逐结构的叶子 z、分摊、熵、$\ln n$ 与复算值，`mean_maturity`、`mean_balance`、`identity_with_type_index`、`balance_pull`、`n1_structures`、`alpha_sweep`、`zero_fill_counterexample`、`drop_one_structure`、`pair_gaps` 是九组对照。五项 `checks` 全 true。
+产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json` 里，`level_index` 是输出，`struct_table` 是六结构台账（成熟度、均衡度、结构分、规则、n），`entropy_detail` 是逐城逐结构的叶子 z、分摊、熵、$\ln n$ 与复算值，`mean_maturity`、`mean_balance`、`identity_with_type_index`、`balance_pull`、`n1_structures`、`alpha_sweep`、`zero_fill_counterexample`、`drop_one_structure`、`pair_gaps` 是九组对照。五项 `checks` 全 true。
 
 ---
 
@@ -407,8 +414,8 @@ $ python3 M_SYNTH_ELEM_LEVEL_INDEX.py
 |---|---|---|
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 六结构成熟度、均衡度、层次指数 | 派生产物（零 DB） |
 | `code/_snapshots21/synth_elem_probe_20261023.json` | 族级探针 | gkx |
-| `code/M_SYNTH_ELEM_LEVEL_INDEX_out.json` | 本件产物 | 派生产物 |
-| `code/M_SYNTH_ELEM_TYPE_INDEX_out.json` | 兄弟件产物（成熟度上游） | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json` | 本件产物 | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json` | 兄弟件产物（成熟度上游） | 派生产物 |
 
 ### 3.5 与兄弟件的数字对账
 
@@ -424,7 +431,7 @@ $ python3 M_SYNTH_ELEM_LEVEL_INDEX.py
 
 ### 3.6 11 城范围与本件的关系
 
-熵均衡度对进盘城市集合更敏感：极值归一变的是 z，熵变的是 z 之间的相对分摊，两者叠加后同一城的层次分在 4 城盘与 11 城盘上不可比。兄弟件 `code/M_SYNTH_ELEM_RANK_out.json` 的 `default_scope_feasibility` 给出：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件用四城盘，不是正本的默认范围。
+熵均衡度对进盘城市集合更敏感：极值归一变的是 z，熵变的是 z 之间的相对分摊，两者叠加后同一城的层次分在 4 城盘与 11 城盘上不可比。兄弟件 `metrics/repro/out/M_SYNTH_ELEM_RANK_out.json` 的 `default_scope_feasibility` 给出：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件用四城盘，不是正本的默认范围。
 
 ---
 
@@ -480,7 +487,7 @@ $n=2$ 的两个结构还受「两档只有两种形态」的限制：要么接�
 本路五件与前五件共用同一份面板，四处缺口必须逐字一致，不得各自解释：
 
 1. **11 城样本不可比**：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做极值归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件的四城盘是「四个有量的城市」的取舍，不是 11 城盘，分数不可扩到 11 城。
-2. **D2_1 分母存续口径**：四城存续率 99.3389%、97.3027%、58.1691%、60.2265%（见 `code/M_SYNTH_ELEM_DOMAIN_INDEX_out.json`），东莞的分母被压掉四成。序数归一会把东莞与广州的次序翻过来（差 0.0001），所以任何「东莞高于广州」的结论都必须带分母口径。本件不直接用 D2_1，但发布时须与领域件同一句话。
+2. **D2_1 分母存续口径**：四城存续率 99.3389%、97.3027%、58.1691%、60.2265%（见 `metrics/repro/out/M_SYNTH_ELEM_DOMAIN_INDEX_out.json`），东莞的分母被压掉四成。序数归一会把东莞与广州的次序翻过来（差 0.0001），所以任何「东莞高于广州」的结论都必须带分母口径。本件不直接用 D2_1，但发布时须与领域件同一句话。
 3. **人才侧缺「发明人—申请人」桥**：学者只能按机构名落城，覆盖 16,257/21,316、四城占 5.18%，四城硕博学者 111 人、东莞为 0。本件的空缺维／结构就是这条桥缺失的直接后果。
 4. **机构归属 A/B 双列待裁**：科研机构口径是「科研机构 2,074 家 ∪ 高校校名 2,933 个」（A 列），若只算科研机构（B 列），广州的科研机构得分会下降。本件沿用 A 列并在 §4.5 说明翻转风险。
 
@@ -537,7 +544,6 @@ $n=2$ 的两个结构还受「两档只有两种形态」的限制：要么接�
 8. OECD．Oslo Manual 2018［M］．2018．https://doi.org/10.1787/9789264304604-en
 9. Saisana M, Saltelli A, Tarantola S．Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators［J］．Journal of the Royal Statistical Society A，2005，168(2)：307-323．https://doi.org/10.1111/j.1467-985X.2005.00350.x
 10. 国家统计局．中国统计年鉴 2024［M］．北京：中国统计出版社，2024．https://www.stats.gov.cn/sj/ndsj/2024/indexch.htm
-
 ---
 
 # 附件
@@ -649,20 +655,12 @@ $n=2$ 的两个结构还受「两档只有两种形态」的限制：要么接�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_ELEM_LEVEL_INDEX.py` |
-| 产物 | `code/M_SYNTH_ELEM_LEVEL_INDEX_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_ELEM_LEVEL_INDEX.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json` |
 | 面板 | `code/_snapshots21/synth_elem_panel_20261023.json` |
 | 结构数 | 6/7 |
 | 常数均衡度结构 | 服务机构、空间（2 个） |
-| 运行方式 | `python3 M_SYNTH_ELEM_LEVEL_INDEX.py` |
+| 运行方式 | `cd code && python3 M_SYNTH_ELEM_LEVEL_INDEX.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 统计年 | 2024 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

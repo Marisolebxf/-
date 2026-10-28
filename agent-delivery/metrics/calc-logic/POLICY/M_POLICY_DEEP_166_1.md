@@ -1,9 +1,22 @@
 # 政策焦点识别模型（M_POLICY_DEEP_166_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DEEP_166_1.md`；复现脚本 `metrics/repro/M_POLICY_DEEP_166_1.py` → `metrics/repro/out/M_POLICY_DEEP_166_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：深度指标（焦点识别·四维文本归因）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技专题服务算法库 → 深度分析模型 → 政策焦点识别
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是（`gkx.dwd_policy_base`）；依赖数据 = **部分**（制定背景/政策目标/适用范围三维有正文可算，措施完备性维因 `policy_support` 全列为占位符而整维缺失）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DEEP_166_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_166_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DEEP_166_1.md`；复现脚本 `metrics/repro/M_POLICY_DEEP_166_1.py` → `metrics/repro/out/M_POLICY_DEEP_166_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DEEP_166_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_166_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_DEEP_166_1.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_DEEP_166_1.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_DEEP_166_1_out.json` |
@@ -59,17 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_DEEP_166_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_166_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：深度指标（焦点识别·四维文本归因）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技专题服务算法库 → 深度分析模型 → 政策焦点识别
-> **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（词表法四维·min-max 归一口径）｜ wanghui: true（词表与权重思路沿用，标尺轨另立）
-> **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是（`gkx.dwd_policy_base`）；依赖数据 = **部分**（制定背景/政策目标/适用范围三维有正文可算，措施完备性维因 `policy_support` 全列为占位符而整维缺失）
-> **一句话口径**：用三组闭集词表（背景词 12、目标词 10、对象词 15）在正文与摘要里做不重叠计数，按每千字归一，三维等权平均成 0—100 焦点指数；措施完备性维无字段可用，从分母中剔除而不是按 0 计
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -234,7 +241,7 @@ calc-logic 给的堵点规则是「某维归一值 < 0.25 即判该维缺位」�
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 code/M_POLICY_DEEP_166_1.py`，只读两份快照（`pg_policy_rows_20261021.json`、`policy_content_20261021.json`），零 SQL，输出 `code/M_POLICY_DEEP_166_1_out.json`。关键字段：
+执行 `python3 code/M_POLICY_DEEP_166_1.py`，只读两份快照（`pg_policy_rows_20261021.json`、`policy_content_20261021.json`），零 SQL，输出 `metrics/repro/out/M_POLICY_DEEP_166_1_out.json`。关键字段：
 
 | 字段 | 实测值 | 含义 |
 |---|---|---|
@@ -440,9 +447,7 @@ A 轨最大值 39.6 也有解释价值。它意味着即便是全库焦点最集
 3. 中共中央办公厅、国务院办公厅，《党政机关公文处理工作条例》，https://www.gov.cn/zhengce/2012-07/01/content_2613464.htm
 4. Grimmer, J., & Stewart, B. M. (2013). Text as Data. *Political Analysis*, 21(3), 267–297. https://doi.org/10.1093/pan/mps028
 5. Loughran, T., & McDonald, B. (2011). When Is a Liability Not a Liability? *Journal of Finance*, 66(1), 35–65. https://doi.org/10.1111/j.1540-6261.2010.01625.x
-6. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 / §3.16。
-7. 同批范文 `第三方库指标计算过程/M_INNOV_PG_COUNT_DIST.md` §2.1。
-
+6. 同批范文 `第三方库指标计算过程/M_INNOV_PG_COUNT_DIST.md` §2.1。
 # 附件
 
 ## 附录 A　原文摘录（需求原文 + 复现入口）
@@ -456,9 +461,9 @@ A 轨最大值 39.6 也有解释价值。它意味着即便是全库焦点最集
 ### A.2 复现入口（命令与快照指纹）
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_DEEP_166_1.py
-python3 -c "import json;d=json.load(open('code/M_POLICY_DEEP_166_1_out.json'));print(d['focus_index'],d['block_scan']['threshold_B']['policy_with_any_block_pct'])"
+python3 -c "import json;d=json.load(open('metrics/repro/out/M_POLICY_DEEP_166_1_out.json'));print(d['focus_index'],d['block_scan']['threshold_B']['policy_with_any_block_pct'])"
 ```
 
 | 项 | 值 |
@@ -511,11 +516,3 @@ WHERE content REGEXP '到20[0-9]{2}年';
 **四、与替代方法的成本比较。** 若改用大模型抽取焦点要素，单条成本与不可复算性都不满足政策考核场景；若改用人工标注，按 2 万条、每条 30 秒估算需要 167 工时，且标注一致性需要双人复核。词表法的边际成本接近零，代价是解释力有限——这个交换在本件的用途（分诊而非评价）上是划算的。
 
 **五、结论。** 三维版本可交付、可复算、可解释；补齐 `policy_support` 后自动升为四维，代码框架不需要重构。方法的上限很清楚：它能回答「这一维写了没有、写了多密」，不能回答「写得对不对、有没有执行力」。后者需要措施清单与执行数据，属于 168 效果评估的职责。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

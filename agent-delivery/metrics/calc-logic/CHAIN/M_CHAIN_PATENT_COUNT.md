@@ -1,9 +1,23 @@
 # 产业链关联专利数（M_CHAIN_PATENT_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_PATENT_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_PATENT_COUNT.py` → `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（三系统全部适用；差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：COUNT（计数型）｜ **域**：产业链分析（CHAIN）· 产业总览 · 创新产出｜ **UI 挂载**：链详情页「创新」卡片主数字 + 12 链对比柱
+> - **数据支持度**：**完全转换支持**｜ **公式定义人**：calc-logic 未收录独立口径；本件按「链内企业第一申请人专利、申请年 ≤2024」实现
+> - **四判定摘要**：开发库直接结构 ✗（无链-专利结果表）｜直接数据 ✗｜依赖结构 ✓（专利池、企业底册、链标签三段齐备）｜依赖数据 ✓（2,939,895 件专利、12/12 链非零）
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_CHAIN_PATENT_COUNT.py`｜ **产物**：`metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`｜ **实测日**：2026-10-22（20261027 批次兼容化复跑：2026-10-27）
+> **版本与分级**
+> - **差异分级**：D3 详略级差异（算法库五步法施工图 vs 展示系统一句话展示要求）｜ 依据：`gkx-orchestration/.../METRIC-SRS-GAP-L01/产物/file/M_CHAIN_PATENT_COUNT.md`
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_PATENT_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_PATENT_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_PATENT_COUNT.py` → `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_PATENT_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_PATENT_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_PATENT_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json` |
@@ -62,16 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_PATENT_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT（计数型）｜ **域**：产业链分析（CHAIN）· 产业总览 · 创新产出｜ **UI 挂载**：链详情页「创新」卡片主数字 + 12 链对比柱
-> **数据支持度**：**完全转换支持**｜ **公式定义人**：calc-logic 未收录独立口径；本件按「链内企业第一申请人专利、申请年 ≤2024」实现
-> **四判定摘要**：开发库直接结构 ✗（无链-专利结果表）｜直接数据 ✗｜依赖结构 ✓（专利池、企业底册、链标签三段齐备）｜依赖数据 ✓（2,939,895 件专利、12/12 链非零）
-> **复现脚本**：`code/M_CHAIN_PATENT_COUNT.py`｜ **产物**：`code/M_CHAIN_PATENT_COUNT_out.json`｜ **实测日**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -142,6 +151,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 要支撑的功能模块是：**产业链分析 → 产业总览 → 创新产出 → 关联专利数**。展示形态是一个主数字（本链关联专利 N 件）加一条 12 链对比柱，并在链详情页按城市拆四市/省外。
 
 它与「专利有效量」「发明专利占比」构成创新卡片三件套。三件必须同池同窗口：如果专利数用 ≤2024、有效量用当日，两个数会打架（有效量里含 2025 年申请、专利数里不含），用户会问「为什么有效量比总数还大」。本报告把窗口写进产物，就是为了让三件套能对齐。
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 来源：METRIC-SRS-GAP-L01 逐指标调研（`gkx-orchestration/.../METRIC-SRS-GAP-L01/产物/file/M_CHAIN_PATENT_COUNT.md` §二），原文锚点完整。三份文档对本指标的表述详略差一个量级（D3 详略级差异），无定义冲突。
+
+| 系统 | 需求文档 | 章节锚点 | 原文 |
+|---|---|---|---|
+| **科技专题服务算法库** | 《科技专题服务算法库》 | 1.2.1.1.1.1.4.1.2 技术基础指标模型构建（L103）；4）数据服务开发（L140） | 「通过对接技术数据库，计算每月/年，全球/全国的所有机构发表的研究该技术领域的……专利数量，通过环比计算出增长率。」「数据服务开发：开发API接口，提供根据技术领域标签、时间等条件查询对应的专利数量和增长率指标。」（附五步法：数据源对接→数据清洗→数据处理→API 服务→数据同步） |
+| **科技信息展示系统** | 《科技信息展示系统和科技专题服务系统》 | §1.1.1.1.4.1.7.2.1 专利数量统计分析（L896） | 「收集并统计特定领域内专利申请和授权的数量，用户可按时间范围、技术类别、地域、申请人等维度查看专利数量分布情况，系统提供柱状图、折线图等可视化形式展示专利数量的变化趋势。」 |
+| **科技专题系统** | 同上（专题侧） | §1.1.1.1.4.1.4.3.1 数据指标分类展示（L502） | 数据指标分类展示框架下按技术类别展示专利数量类指标（详见 METRIC-SRS-GAP-L01 单指标报告 §二摘录）。 |
+
+**三文对照要点**：算法库要求「月/年 × 全球/全国 × 增长率」的完整计算服务；展示系统只要「按时间/类别/地域/申请人维度看分布 + 柱状/折线图」；专题系统挂在数据指标分类展示框架下。三方对「怎么算」都没有给出与本件冲突的定义——本件算法口径直接满足算法库五步法与展示侧统计要求。
+
+### 1・三、三系统需求兼容性设计
+
+> 共性约定（参数契约/出参结构/assumptions 机制）见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`，本节只写本指标个性。
+
+#### 兼容判定
+
+**单接口兼容（D3 天然兼容）**。算法库五步法与本件实现一一对应（对接=快照源、清洗=名称桥、处理=截断聚合、API=compute()、同步=_out.json）；展示侧「申请和授权」双口径以 `patent_type` 参数吸收；展示侧「按时间范围」以 `start_year/end_year` 参数吸收。无任何一侧要求与本件口径冲突。
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_year/end_year` | 常传（如 2021–2024） | 可能不传 | 常传（近 N 年趋势） | 缺省 2021–2024（公开滞后 18 个月截断逻辑，见 §摘要） |
+| `patent_type` | `granted`（申请成功/授权口径） | 不传 | 可能传 `applied`（申请和授权） | 缺省 `granted_and_applied` 不分——当前库无授权标记列，两种口径同值，`assumptions` 声明 |
+| `region_scope` | `national`（全球/全国） | 不传 | `sz`/`four_city` 下钻 | 缺省全量+四市/省外拆分（与 12 链对比柱一致） |
+| `industry_tag` | 传技术领域标签 | 传链码 | 传链码 | 缺省 12 链全量 |
+
+#### 出参兼容策略
+
+- 算法库消费：`headline`（总量）+ `rule`（口径说明，供 API 文档回显）。
+- 专题系统消费：`chains[]`（逐链主值 + `patents_per_member` 密度）。
+- 展示系统消费：`display.trend_hint`（年度序列扩展点）+ `chains[].top_cities`（城市分布柱）+ `headline`。
+- `assumptions`：本件当前恒含「patent_type 不分申请/授权（库无标记列）」一条。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **不要把 12 链之和当去重专利总数**：多链企业重复计位（3,026,291 > 去重数），跨链汇总只用于排序对比。
+2. **不要传 2025/2026 入正式值**：公开滞后 18 个月，传了会在 `assumptions.base_year_truncated` 提示但不拦阻。
+3. **本件与 `M_CHAIN_REG_PATENT` 不是同一个数**（单角色桥 vs 双角色并集），前端不要混用替换。
+4. 展示侧要「增长率」：用 `display.yoy_hint` 结构位，按年重跑即可得环比，不要在调用方自行差分（分母为 0 的链会算出 None）。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_PATENT_COUNT.md`（分级 D3、倾向算法库）
+- 原文锚点：算法库 L103/L140；展示系统 L896/L502（见 1.1.0 对照表）
 
 ### 1.2 为什么需要这个指标
 
@@ -316,15 +373,15 @@ $$N_{total}=\sum_c N_c,\qquad N_{total}\ge |\{p:y(p)\le 2024\}|$$
 
 ### 2.7 复现代码与结果展示
 
-脚本 `code/M_CHAIN_PATENT_COUNT.py` 只读两份快照，零 SQL、零外部依赖，可直接重跑：
+脚本 `metrics/repro/M_CHAIN_PATENT_COUNT.py` 只读两份快照，零 SQL、零外部依赖，可直接重跑：
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_CHAIN_PATENT_COUNT.py
 # [ok] M_CHAIN_PATENT_COUNT {"total_le2024": 3026291, ...} chains 12 sec 0.01
 ```
 
-运行后覆盖写 `code/M_CHAIN_PATENT_COUNT_out.json`，产物顶层键（节选）：
+运行后覆盖写 `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`，产物顶层键（节选）：
 
 ```json
 {
@@ -504,11 +561,6 @@ calc-logic 未收录本指标独立文件，旧稿留下的口径是：
 5. 深圳市统计局. 深圳统计年鉴（2025）. https://tjj.sz.gov.cn/zwgk/zfxxgkml/tjsj/tjnj/
 
 6. 广东省市场监督管理局（知识产权局）. 广东省专利统计. https://amr.gd.gov.cn/
-
-7. OECD. OECD Patent Statistics Manual. https://www.oecd.org/sti/inno/oecdpatentstatisticsmanual.htm
-
-8. 项目内旁证：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/`（创新类指标口径目录）。
-
 ---
 
 # 附件
@@ -640,19 +692,10 @@ calc-logic 未收录本指标独立文件，旧稿留下的口径是：
 
 ## 附录 D　实测脚本与结果摘要
 
-脚本：`code/M_CHAIN_PATENT_COUNT.py`（输出 `code/M_CHAIN_PATENT_COUNT_out.json`，运行 0.01 秒）。
+脚本：`metrics/repro/M_CHAIN_PATENT_COUNT.py`（输出 `metrics/repro/out/M_CHAIN_PATENT_COUNT_out.json`，运行 0.01 秒）。
 
 `judgment_reason` 原文：
 
 > 专利池 2,939,895 件、机构底册 189,116 家、链标签 2,283,762 行三段真实数据齐备，12/12 链全部算出非零值（16,300—537,046 件），截断与去重规则可执行、脚本可复跑；名称桥的已知漏计（非第一申请人、更名、同名）写入 gaps，属口径下界而非数据缺口。
 
 > 注：旧稿的 3,006,899 / 3,004,055 与本稿的 3,026,291 / 3,023,396 差 0.64%，来源是快照时点与少量新增桥接命中，逐链排序不变；对照表落盘在 `code/_snapshots21/old_draft_deltas_20261022.json`。
-
-
-## 更新记录
-
-- 2026-08-24: 初版 v0.1.0（表名漂移稿）
-- 2026-10-14: v0.2.0 口径重写（human:徐滕强 拍板：全量/去重/时间轴/窗口参数化/量级不进口径）
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

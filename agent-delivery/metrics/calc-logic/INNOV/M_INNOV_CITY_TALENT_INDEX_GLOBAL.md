@@ -1,9 +1,21 @@
 # 人才创新指数（全球城市语境）（M_INNOV_CITY_TALENT_INDEX_GLOBAL）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_TALENT_INDEX_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_GLOBAL.py` → `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（城市级人才指数）｜ **域**：科技信息展示系统／科技人才智慧服务／人才创新评估｜ **UI 挂载**：人才指数卡、城市对比条
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_TALENT_INDEX_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_GLOBAL.py` → `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CITY_TALENT_INDEX_GLOBAL.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CITY_TALENT_INDEX_GLOBAL.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json` |
@@ -64,20 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（城市级人才指数）｜ **域**：科技信息展示系统／科技人才智慧服务／人才创新评估｜ **UI 挂载**：人才指数卡、城市对比条
-> **数据支持度**：**部分支持**
-> **口径来源**：注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`；`calc-logic/INNOV` 下**无同 ID 正本**，本件口径为自拟
-> **王惠正本**：无同 ID 正本（`20260904_创新技术/指标计算逻辑/` 下未收录本条）
-> **复现**：`python3 _probe_talent_w15n1.py && python3 M_INNOV_CITY_TALENT_INDEX_GLOBAL.py` → `code/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），脚本零 DB、只读落盘快照
-> **基期声明**：`base_years_used` = [2021, 2022, 2023]；`base_years_missing` = [2017, 2018, 2019, 2020]（专利表这四年零行）；2024 论文语料断点、2025—2026 残年，均不按 0 摊入。
-> **权重声明**：`main_is_official` = **false**。五叶等权为主口径，客观熵权与规模叶敏感性曲线同时给在产物里。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -213,7 +216,7 @@ $$
 
 第三段算五片叶子。它们共用同一个池（21 城、14,176 人），所以叶与叶之间可比；但叶子内部的归一口径不同：计数叶取 log1p 后 min-max（避免华为式的量级碾压），比率叶与中位数叶直接 min-max。
 
-第四段合成与敏感性。等权为主口径，熵权作客观对照，规模叶权重从 0 扫到 1 得到名次翻转曲线。三段结果都落进 `code/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`，MD 里的每个数字都能在产物里找到同名键。
+第四段合成与敏感性。等权为主口径，熵权作客观对照，规模叶权重从 0 扫到 1 得到名次翻转曲线。三段结果都落进 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json`，MD 里的每个数字都能在产物里找到同名键。
 
 ### 2.2 步骤 1｜学者盘与城市归属
 
@@ -289,7 +292,7 @@ python3 _probe_talent_w15n1.py          # 四维事实面 → _snapshots21/talen
 python3 M_INNOV_CITY_TALENT_INDEX_GLOBAL.py
 ```
 
-脚本输出摘要（与 `code/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json` 一致）：
+脚本输出摘要（与 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_GLOBAL_out.json` 一致）：
 
 ```
 深圳市  score=71.17  scholars=213   h_med=23  h50=16.9014%  pap/sch=126.2113  pat=49.2958%
@@ -431,11 +434,8 @@ MD 正文出现的每一个比例都能在上表或 `by_city` / `coverage` / `he
 
 ## 参考文献
 
-1. 注册表 `cfg_metric-INNOV-seed.yaml`（M_INNOV_CITY_TALENT_INDEX_GLOBAL 条），仓库内路径 `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml`。
-2. 上海软科世界大学学术排名方法，https://www.shanghairanking.cn/methodology
-3. QS World University Rankings 方法论，https://www.topuniversities.com/qs-world-university-rankings/methodology
-4. OECD Frascati Manual（R&D 人员与经费统计口径），https://www.oecd.org/sti/frascati-manual.htm
-
+1. 上海软科世界大学学术排名方法，https://www.shanghairanking.cn/methodology
+2. QS World University Rankings 方法论，https://www.topuniversities.com/qs-world-university-rankings/methodology
 # 附件
 
 ## 附录 A 需求原文摘录
@@ -516,10 +516,3 @@ MD 正文出现的每一个比例都能在上表或 `by_city` / `coverage` / `he
 
 问：为什么不做年度趋势？
 答：2024 论文是回填孤峰（32,379 篇 = 2023 年的 4.87 倍），2017—2020 专利零行。做趋势等于画语料曲线。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

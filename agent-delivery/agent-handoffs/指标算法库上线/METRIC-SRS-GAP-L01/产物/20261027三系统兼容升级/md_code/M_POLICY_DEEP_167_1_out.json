@@ -1,0 +1,325 @@
+{
+ "metric_id": "M_POLICY_DEEP_167_1",
+ "title": "政策力度评估模型",
+ "probe_date": "2026-10-22",
+ "data_support_level": "部分支持",
+ "support_judgment": "部分支持",
+ "support_reason": "五子项里 4 项（V1 实施日、V2 支持方式、V3 支持对象、V5 扶持行为）无真值，只剩 V4 区县落地标记（5.83%）有变异；指数退化为 0/100 二值，不能做力度分档。按 §〇 定义落部分支持。",
+ "base_years_used": [
+  "2016",
+  "2017",
+  "2018",
+  "2019",
+  "2020",
+  "2021"
+ ],
+ "base_years_missing": [
+  "2023"
+ ],
+ "base_years_note": "政策级指数为截面口径，不涉时序分母；分年工具词密度只用 2016—2021 六个连续年份。2023 年库内 0 行、2022 年 289 条残片、2024 年 1 条均不入分母，不按 0 摊入（§3.16）。",
+ "sources": {
+  "policy_base": "code/_snapshots21/policy_base_20261021.json（city/district）",
+  "pg_policy_rows": "code/_snapshots21/pg_policy_rows_20261021.json（publish_year）",
+  "policy_content": "code/_snapshots21/policy_content_20261021.json（18,763 行正文）",
+  "field_probe": "code/_snapshots21/policy_fields_a23_20261021.json（含零日期探针）",
+  "db": "gkx @ 183.240.141.251:3318（只读）"
+ },
+ "date_probe": {
+  "implementation_date_isnotnull": 20000,
+  "implementation_date_true": 0,
+  "expire_date_isnotnull": 20000,
+  "expire_date_true": 0,
+  "distinct_values": 1,
+  "literal": "0000-00-00",
+  "sql": "SELECT COUNT(*), SUM(implementation_date<'1990-01-01'), COUNT(DISTINCT implementation_date) FROM gkx.dwd_policy_base",
+  "lesson": "IS NOT NULL 读到 20,000（100%），真值 0；零日期是比 NULL 更隐蔽的空壳"
+ },
+ "subitems": [
+  {
+   "code": "V1",
+   "name": "实施日完备率",
+   "raw_n": 0,
+   "rate_pct": 0.0,
+   "available": false,
+   "note": "列有 20,000 个非 NULL，但取值 100% 为 0000-00-00（COUNT(DISTINCT)=1），真值 0 条"
+  },
+  {
+   "code": "V2",
+   "name": "支持方式完备率",
+   "raw_n": 0,
+   "rate_pct": 0.0,
+   "available": false,
+   "note": "policy_support 20,000 行全为占位符，support_way 不存在"
+  },
+  {
+   "code": "V3",
+   "name": "支持对象种类数",
+   "raw_n": 0,
+   "rate_pct": 0.0,
+   "available": false,
+   "note": "support_object 同上，COUNT(DISTINCT) 恒 0"
+  },
+  {
+   "code": "V4",
+   "name": "区县落地标记",
+   "raw_n": 1165,
+   "rate_pct": 5.83,
+   "available": true,
+   "note": "district 非占位符 1,165 条（5.83%），唯一有变异的子项"
+  },
+  {
+   "code": "V5",
+   "name": "扶持行为完备率",
+   "raw_n": 0,
+   "rate_pct": 0.0,
+   "available": false,
+   "note": "support_behavior 同上；成本维金额字段 support_amount 未建"
+  }
+ ],
+ "index": {
+  "available_subitems": "1/5（仅 V4 区县落地标记）",
+  "p50": 0.0,
+  "p90": 0.0,
+  "min": 0.0,
+  "max": 100.0,
+  "mean": 5.83,
+  "zero_rows": 18835,
+  "full_rows": 1165,
+  "degeneracy": "唯一可用子项是 0/1 型，min-max 后仍 0/1，政策级力度指数退化为二值：94.17% 得 0 分、5.83% 得 100 分，无法区分「给一点」与「给很多」"
+ },
+ "city_level": {
+  "n_min": 50,
+  "rows": [
+   {
+    "city": "嘉兴市",
+    "n": 105,
+    "district_flagged": 48,
+    "district_rate_pct": 45.71,
+    "district_distinct": 1
+   },
+   {
+    "city": "北京市",
+    "n": 2268,
+    "district_flagged": 887,
+    "district_rate_pct": 39.11,
+    "district_distinct": 15
+   },
+   {
+    "city": "上海市",
+    "n": 1841,
+    "district_flagged": 205,
+    "district_rate_pct": 11.14,
+    "district_distinct": 8
+   },
+   {
+    "city": "深圳市",
+    "n": 879,
+    "district_flagged": 7,
+    "district_rate_pct": 0.8,
+    "district_distinct": 4
+   },
+   {
+    "city": "（未填）",
+    "n": 9706,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   },
+   {
+    "city": "天津市",
+    "n": 666,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   },
+   {
+    "city": "杭州市",
+    "n": 446,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   },
+   {
+    "city": "南京市",
+    "n": 334,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   },
+   {
+    "city": "广州市",
+    "n": 325,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   },
+   {
+    "city": "合肥市",
+    "n": 248,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   },
+   {
+    "city": "青岛市",
+    "n": 245,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   },
+   {
+    "city": "重庆市",
+    "n": 240,
+    "district_flagged": 0,
+    "district_rate_pct": 0.0,
+    "district_distinct": 0
+   }
+  ]
+ },
+ "text_proxy": {
+  "tool_words_n": 17,
+  "tool_words": [
+   "资金",
+   "补助",
+   "补贴",
+   "奖励",
+   "资助",
+   "贴息",
+   "税收减免",
+   "减税",
+   "免税",
+   "股权投资",
+   "基金",
+   "贷款",
+   "担保",
+   "经费",
+   "拨款",
+   "专项资金",
+   "支持资金"
+  ],
+  "constraint_words": [
+   "应当",
+   "必须",
+   "不得",
+   "禁止"
+  ],
+  "rows_scanned": 18763,
+  "tool_hit_rows": 8839,
+  "tool_hit_pct": 44.2,
+  "tool_freq_total": 139653,
+  "constraint_hit_pct": 32.55,
+  "note": "只反映文本里工具词的书写密度，不是财政投入；不能替代 support_amount"
+ },
+ "city_density": [
+  {
+   "city": "广州市",
+   "rows": 325,
+   "tool_freq": 5720,
+   "density_per_1k": 6.9
+  },
+  {
+   "city": "佛山市",
+   "rows": 51,
+   "tool_freq": 401,
+   "density_per_1k": 6.87
+  },
+  {
+   "city": "石家庄市",
+   "rows": 76,
+   "tool_freq": 2842,
+   "density_per_1k": 5.66
+  },
+  {
+   "city": "济南市",
+   "rows": 75,
+   "tool_freq": 1437,
+   "density_per_1k": 5.09
+  },
+  {
+   "city": "深圳市",
+   "rows": 879,
+   "tool_freq": 7786,
+   "density_per_1k": 5.07
+  },
+  {
+   "city": "长沙市",
+   "rows": 50,
+   "tool_freq": 859,
+   "density_per_1k": 4.92
+  },
+  {
+   "city": "聊城市",
+   "rows": 71,
+   "tool_freq": 323,
+   "density_per_1k": 4.59
+  },
+  {
+   "city": "天津市",
+   "rows": 666,
+   "tool_freq": 859,
+   "density_per_1k": 4.46
+  },
+  {
+   "city": "珠海市",
+   "rows": 118,
+   "tool_freq": 944,
+   "density_per_1k": 4.41
+  },
+  {
+   "city": "长春市",
+   "rows": 63,
+   "tool_freq": 443,
+   "density_per_1k": 4.35
+  },
+  {
+   "city": "南昌市",
+   "rows": 121,
+   "tool_freq": 966,
+   "density_per_1k": 4.2
+  },
+  {
+   "city": "苏州市",
+   "rows": 81,
+   "tool_freq": 213,
+   "density_per_1k": 3.98
+  }
+ ],
+ "shenzhen": {
+  "rows": 879,
+  "tool_freq": 7786,
+  "density_per_1k": 5.07
+ },
+ "year_trend": [
+  {
+   "year": 2016,
+   "n": 1316,
+   "density_per_1k": 2.69
+  },
+  {
+   "year": 2017,
+   "n": 1677,
+   "density_per_1k": 2.81
+  },
+  {
+   "year": 2018,
+   "n": 2016,
+   "density_per_1k": 3.24
+  },
+  {
+   "year": 2019,
+   "n": 2035,
+   "density_per_1k": 3.6
+  },
+  {
+   "year": 2020,
+   "n": 2402,
+   "density_per_1k": 3.34
+  },
+  {
+   "year": 2021,
+   "n": 2120,
+   "density_per_1k": 2.7
+  }
+ ],
+ "verdict": "结构化五子项只剩 V4，指数不可发布；文本工具词密度可作空壳期诊断，等 support_amount/policy_support 灌数后回归五子项满配"
+}

@@ -1,9 +1,25 @@
 # 政策关联度（M_POLICY_RELATION_DEGREE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_RELATION_DEGREE.md`；复现脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py` → `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GRAPH（政策节点 × 度中心性）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策图谱页「关联度」节点大小映射（设计位）、政策详情页「相关政策」排序（设计位）
+> - **数据支持度**：**完全不支持**｜ **公式定义人**：**无同 ID 正本**——注册表 `cfg_metric-POLICY-seed.yaml` 的 `calc_logic_ref` 为空、`formula` 为 `pending_cosign: human:唐绍祖（未签）`；本件口径取自注册表 `source_tables`（`policy_entity` / `policy_focus` / `policy_graph_edge` / `policy_graph_node`）与图论度中心性标准定义。
+> - **同域边界**：与 `M_POLICY_GRAPH_106_1`（实体识别构建）是上下游——那件建节点，本件要边。那件判「完全转换支持」（节点可从文本抽出），本件判「完全不支持」（边不能从文本抽出：四类边里三类两库无表，第四类的字段真值只有 2 行）。
+> - **一句话结论**：关联度的载体是边，gkx 280 表里**边表 0 张、实体表 0 张**；live 侧 `policy_graph_edge`（3,726 行）/ `policy_graph_node`（806 行）/ `policy_entity`（7,517 行）属造数面。唯一能凑的代理边（标题命中链树节点）只覆盖 **1,269 / 20,000 = 6.345%** 的政策，其余 **93.655%** 恒为 0，Gini **0.943592** → 度中心性对绝大多数节点无定义，判**完全不支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_RELATION_DEGREE.py`（否定性证据探针）｜ **产物**：`metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`｜ **共用底数**：`code/_snapshots21/policy_base_20261021.json`、`policy_struct_20261023.json`、`chain_tree_20261021.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py`、产物 `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_RELATION_DEGREE.md`；复现脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py` → `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py`、产物 `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_RELATION_DEGREE.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_RELATION_DEGREE.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json` |
@@ -58,19 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py`、产物 `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：GRAPH（政策节点 × 度中心性）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策图谱页「关联度」节点大小映射（设计位）、政策详情页「相关政策」排序（设计位）
-> **数据支持度**：**完全不支持**｜ **公式定义人**：**无同 ID 正本**——注册表 `cfg_metric-POLICY-seed.yaml` 的 `calc_logic_ref` 为空、`formula` 为 `pending_cosign: human:唐绍祖（未签）`；本件口径取自注册表 `source_tables`（`policy_entity` / `policy_focus` / `policy_graph_edge` / `policy_graph_node`）与图论度中心性标准定义。
-> **复现脚本**：`code/M_POLICY_RELATION_DEGREE.py`（否定性证据探针）｜ **产物**：`code/M_POLICY_RELATION_DEGREE_out.json`｜ **共用底数**：`code/_snapshots21/policy_base_20261021.json`、`policy_struct_20261023.json`、`chain_tree_20261021.json`
-> **判定类型**：`verdict_kind = negative_evidence`。本件不出关联度（`registered_metric_value = null`），产物逐项证明「度的载体（边）不存在」。
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。截面指标：关联度按当前政策集合的图结构一次性计算，不按年出值；发布年只作节点属性，不进入度数的分母。
-> **同域边界**：与 `M_POLICY_GRAPH_106_1`（实体识别构建）是上下游——那件建节点，本件要边。那件判「完全转换支持」（节点可从文本抽出），本件判「完全不支持」（边不能从文本抽出：四类边里三类两库无表，第四类的字段真值只有 2 行）。
-> **一句话结论**：关联度的载体是边，gkx 280 表里**边表 0 张、实体表 0 张**；live 侧 `policy_graph_edge`（3,726 行）/ `policy_graph_node`（806 行）/ `policy_entity`（7,517 行）属造数面。唯一能凑的代理边（标题命中链树节点）只覆盖 **1,269 / 20,000 = 6.345%** 的政策，其余 **93.655%** 恒为 0，Gini **0.943592** → 度中心性对绝大多数节点无定义，判**完全不支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -338,8 +346,8 @@ live 侧有 806 个节点，而政策有 20,000 条——即使这些节点是�
 ### 5.1 复现步骤（本件是探针，不是出度脚本）
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_RELATION_DEGREE.py    # 产出 code/M_POLICY_RELATION_DEGREE_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_RELATION_DEGREE.py    # 产出 metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_RELATION_DEGREE --check
 ```
 
@@ -375,11 +383,9 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_RELATION_DEGREE --check
 1. Freeman L. C. Centrality in social networks: Conceptual clarification[J]. Social Networks, 1978, 1(3): 215-239. https://doi.org/10.1016/0378-8733(78)90021-7
 2. Brin S., Page L. The anatomy of a large-scale hypertextual web search engine[J]. Computer Networks, 1998, 30(1-7): 107-117. https://doi.org/10.1016/S0169-7552(98)00110-X
 3. 国务院. 优化营商环境条例（国令第722号）. https://www.gov.cn/zhengce/content/2019-10/23/content_5443963.htm
-4. 工业和信息化部. 关于加快培育发展制造业优质企业的指导意见. https://www.gov.cn/zhengce/zhengceku/2021-07/02/content_5622154.htm
-5. Neo4j Documentation — Graph Data Modeling. https://neo4j.com/docs/getting-started/appendix/graph-modeling/
-6. MySQL 8.0 Reference Manual — Problems with NULL Values. https://dev.mysql.com/doc/refman/8.0/en/problems-with-null.html
-7. 国务院办公厅. 党政机关公文格式（GB/T 9704-2012）. https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=9A31A0F0B0E1B1A1B0A0
-
+4. 工业和信息化部. 关于加快培育发展制造业优质企业的指导意见. https://www.gov.cn/
+5. MySQL 8.0 Reference Manual — Problems with NULL Values. https://dev.mysql.com/doc/refman/8.0/en/problems-with-null.html
+6. 国务院办公厅. 党政机关公文格式（GB/T 9704-2012）. https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=9A31A0F0B0E1B1A1B0A0
 ---
 
 # 附件
@@ -507,14 +513,7 @@ Freeman 的经典定义，度数是「直接相连的邻居数」。它简单、
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 探针 | `python3 code/M_POLICY_RELATION_DEGREE.py` | `code/M_POLICY_RELATION_DEGREE_out.json` |
+| 探针 | `python3 code/M_POLICY_RELATION_DEGREE.py` | `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_RELATION_DEGREE --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21/M_POLICY_RELATION_DEGREE.md` | PASS |
 | 基期闸 | `python3 _work_gkx21/check_base_years.py _staging21/M_POLICY_RELATION_DEGREE.md` | OK |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

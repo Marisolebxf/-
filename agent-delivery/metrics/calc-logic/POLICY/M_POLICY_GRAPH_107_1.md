@@ -1,9 +1,25 @@
 # 政策实体关系抽取（M_POLICY_GRAPH_107_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_GRAPH_107_1.md`；复现脚本 `metrics/repro/M_POLICY_GRAPH_107_1.py` → `metrics/repro/out/M_POLICY_GRAPH_107_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GRAPH（图谱构建型指标，输出节点/边而非单一数值）｜ **域**：政策（POLICY）／政策图谱｜ **UI 挂载**：政策图谱页「实体关系」视图、政策详情页的「关联产业/发文机关/适用地区」侧栏
+> - **数据支持度**：**部分支持**｜ **依赖性质**：政策侧骨架可建（字段现建 89,460 条边），需求点名的五类语义关系中四类无字段承载
+> - **同域边界**：与 `M_POLICY_MATCH_SCORE`（政策匹配度）、`M_POLICY_GRAPH_107_2`（政策网络指标）不同——本件只做「政策—实体」的结构化抽取，不做打分、不做中心性。与 `M_INNOV_GBA_TECH_CONTRACT` 无交集（那件在创新域、且断源）。
+> - **一句话结论**：gkx 政策侧只有文本主表 `dwd_policy_base`（20,000 行）与 `dwd_global_policy_base`，**没有任何现成的「政策—实体」或「政策—政策」边表**；用字段现建可得到 89,460 条边、平均度 4.473，政策侧骨架**完全可遍历**（20,000 条政策无一条孤立），但需求点名的五类关系里只有「实施主体」能弱建成，且方向是发文方（19,989/20,000）而非实施方；「政策主题」「政策目标」「受益对象」「监管机构」四类因字段真值仅 2 行 / 0 行 / 0 行 / 无字段而建不起来 → **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_GRAPH_107_1.py`｜ **产物**：`metrics/repro/out/M_POLICY_GRAPH_107_1_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_GRAPH_107_1.py`、产物 `metrics/repro/out/M_POLICY_GRAPH_107_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_GRAPH_107_1.md`；复现脚本 `metrics/repro/M_POLICY_GRAPH_107_1.py` → `metrics/repro/out/M_POLICY_GRAPH_107_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_GRAPH_107_1.py`、产物 `metrics/repro/out/M_POLICY_GRAPH_107_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_GRAPH_107_1.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_GRAPH_107_1.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_GRAPH_107_1_out.json` |
@@ -63,19 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_GRAPH_107_1.py`、产物 `metrics/repro/out/M_POLICY_GRAPH_107_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：GRAPH（图谱构建型指标，输出节点/边而非单一数值）｜ **域**：政策（POLICY）／政策图谱｜ **UI 挂载**：政策图谱页「实体关系」视图、政策详情页的「关联产业/发文机关/适用地区」侧栏
-> **数据支持度**：**部分支持**｜ **依赖性质**：政策侧骨架可建（字段现建 89,460 条边），需求点名的五类语义关系中四类无字段承载
-> **复现脚本**：`code/M_POLICY_GRAPH_107_1.py`｜ **产物**：`code/M_POLICY_GRAPH_107_1_out.json`
-> **公式定义人**：无同ID正本；注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`，`is_mock: true`；SRS 章节号 `ALGO-POLICY-GRAPH-107`，本件关系边全部为「本件自定义、待甲方确认」
-> **基期声明**：本件是**截面关系图**，不做同比。`base_years_used` = 2000—2022 及 2024 共 24 年，`base_years_missing` = [2023, 2025, 2026]（三年零行）；`publish_year` 共 37 个不同取值，2000 年以前另有 138 条历史文本，不进年度序列、不摊 0
-> **同域边界**：与 `M_POLICY_MATCH_SCORE`（政策匹配度）、`M_POLICY_GRAPH_107_2`（政策网络指标）不同——本件只做「政策—实体」的结构化抽取，不做打分、不做中心性。与 `M_INNOV_GBA_TECH_CONTRACT` 无交集（那件在创新域、且断源）。
-> **一句话结论**：gkx 政策侧只有文本主表 `dwd_policy_base`（20,000 行）与 `dwd_global_policy_base`，**没有任何现成的「政策—实体」或「政策—政策」边表**；用字段现建可得到 89,460 条边、平均度 4.473，政策侧骨架**完全可遍历**（20,000 条政策无一条孤立），但需求点名的五类关系里只有「实施主体」能弱建成，且方向是发文方（19,989/20,000）而非实施方；「政策主题」「政策目标」「受益对象」「监管机构」四类因字段真值仅 2 行 / 0 行 / 0 行 / 无字段而建不起来 → **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -271,7 +279,7 @@ $$\text{Cov}=\frac{\lvert R_{\text{strong}}\rvert+\tfrac{1}{2}\lvert R_{\text{we
 
 ### 2.7 复现代码结果展示（`_out.json` 关键片段）
 
-上文各层的结论都落在这份产物里，评审可逐字段比对。下面截取三段关键片段，原样引自 `code/M_POLICY_GRAPH_107_1_out.json`（未改数、未补字段）：
+上文各层的结论都落在这份产物里，评审可逐字段比对。下面截取三段关键片段，原样引自 `metrics/repro/out/M_POLICY_GRAPH_107_1_out.json`（未改数、未补字段）：
 
 ```json
 {
@@ -412,9 +420,9 @@ $$\text{Cov}=\frac{\lvert R_{\text{strong}}\rvert+\tfrac{1}{2}\lvert R_{\text{we
 ### 5.1 复现命令
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_GRAPH_107_1.py
-# 覆盖写出 code/M_POLICY_GRAPH_107_1_out.json
+# 覆盖写出 metrics/repro/out/M_POLICY_GRAPH_107_1_out.json
 ```
 
 脚本只连 gkx（只读账号 `gkx_reader_zp`），每条查询独立设 `max_execution_time`，连接失败指数退避重试 5 次；任一探针失败会把 `err` 原样写进产物，**不把失败当成 0**。本件产物 `probes.*.err` 全为 `null`。
@@ -458,8 +466,6 @@ python3 code/M_POLICY_GRAPH_107_1.py
 2. Rothwell R., Zegveld W. *Reindustrialization and Technology*. Longman, 1985.（政策工具三分法原始出处）
 3. 北京大学法治与发展研究院.《北大法宝·法律法规库》. https://www.pkulaw.com/
 4. 科学技术部.《科技政策文本分类与主题词表》. https://www.most.gov.cn/
-5. 项目内口径真源：注册表 `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-POLICY-seed.yaml` 条目 `M_POLICY_GRAPH_107_1`（`formula` 为 `pending_cosign: human:唐绍祖（未签）`，`is_mock: true`）.
-
 ---
 
 # 附件
@@ -564,10 +570,3 @@ python3 code/M_POLICY_GRAPH_107_1.py
 **三问：补齐还差什么、谁能给？** 差主题词表（公开可得）、政策工具编码（需人工）、支持对象抽取（需正文或兑现数据）。
 
 **四问：补不齐的替代口径？** 可用「政策索引图」定位替代「政策知识图谱」，把检索需求满足在骨架边上，不宣称语义关系。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

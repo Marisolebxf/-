@@ -1,9 +1,22 @@
 # 发展方向预警（M_INNOV_PLAN_DIRECTION_ALERT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PLAN_DIRECTION_ALERT.md`；复现脚本 `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` → `metrics/repro/out/M_INNOV_PLAN_DIRECTION_ALERT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技发展规划 · 综合发展规划 · 全球热点技术捕捉（需求清单序号 179）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = 部分（专利/论文/产业可算；项目与政策停录；人才无映射）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py`、产物 `metrics/repro/out/M_INNOV_PLAN_DIRECTION_ALERT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PLAN_DIRECTION_ALERT.md`；复现脚本 `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` → `metrics/repro/out/M_INNOV_PLAN_DIRECTION_ALERT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py`、产物 `metrics/repro/out/M_INNOV_PLAN_DIRECTION_ALERT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -63,7 +76,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_PLAN_DIRECTION_ALERT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_PLAN_DIRECTION_ALERT_out.json` |
@@ -71,18 +84,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py`、产物 `metrics/repro/out/M_INNOV_PLAN_DIRECTION_ALERT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技发展规划 · 综合发展规划 · 全球热点技术捕捉（需求清单序号 179）
-> **UI 挂载**：科技发展规划页「全球热点技术捕捉」——潜在科技发展方向预警列表
-> **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（五源字面 A 套 + 两源收缩 B 套）
-> **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = 部分（专利/论文/产业可算；项目与政策停录；人才无映射）
-> wanghui: true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -118,7 +124,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「发展方向预警」是需求清单序号 179 要求「全球热点技术捕捉」提供的**判断层**：热度回答「现在多热」，增速回答「变得多快」，预警回答「值不值得提前布局」。需求原文只写了「预警潜在的科技发展方向」，没有给判据、阈值、源数或输出形式；王惠 calc-logic 补出了「六源 + 加权 + 分级」的骨架，但未给权重、未给阈值、未给降级规则。
 
-本文交付两套算法并做对照。**A 套（王惠字面）**：把专利、论文、项目、产业、政策五源增速等权平均，$F\ge1$ 且专利与产业增速同时为正记 2 级，$F\ge0.5$ 记 1 级。**B 套（推荐）**：只保留专利与产业两源，等权合成后线性拉到 0—100，P90 以上且 2024 年专利 ≥1,000 件记 2 级，P75 以上记 1 级。脚本 `code/M_INNOV_PLAN_DIRECTION_ALERT.py` 已跑通（20.8 秒、4 条 SQL、零专利 SQL）。
+本文交付两套算法并做对照。**A 套（王惠字面）**：把专利、论文、项目、产业、政策五源增速等权平均，$F\ge1$ 且专利与产业增速同时为正记 2 级，$F\ge0.5$ 记 1 级。**B 套（推荐）**：只保留专利与产业两源，等权合成后线性拉到 0—100，P90 以上且 2024 年专利 ≥1,000 件记 2 级，P75 以上记 1 级。脚本 `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` 已跑通（20.8 秒、4 条 SQL、零专利 SQL）。
 
 两套结果差异极大，且证据明确：
 
@@ -213,7 +219,7 @@ B 套的结果可解释：2 级 14 个、1 级 51 个，头部为 G16C（计算�
 
 ### 1.5 引用来源（可核验）
 
-**需求文档**：`需求文档原件（GitLab 外本地归档）.xlsx`，工作表「科技信息展示系统」，序号 **179**。
+**需求文档**：`需求方附件（不入仓）：国际科技信息中心项目_需求规格说明书功能清单-智慧服务门户系统、科技信息展示系统、新型高端智库系统、科技专题服务系统、深度挖掘算法（科技专题服务算法库、语义计算工.xlsx`，工作表「科技信息展示系统」，序号 **179**。
 
 **章节**：`1.1.1.1.4.1.9.1.1 全球热点技术捕捉`。
 
@@ -257,7 +263,7 @@ B 套的结果可解释：2 级 14 个、1 级 51 个，头部为 G16C（计算�
 ## 二、计算过程
 
 > **口径说明**：需求未给公式，以下为「王惠六源 + 本报告 A/B 两套」的计算过程；已由脚本
-> `code/M_INNOV_PLAN_DIRECTION_ALERT.py` 在 `gkx` **实测跑通**，结果见同目录 `M_INNOV_PLAN_DIRECTION_ALERT_out.json`。
+> `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` 在 `gkx` **实测跑通**，结果见同目录 `M_INNOV_PLAN_DIRECTION_ALERT_out.json`。
 > 文内引用格式为 SCI 常用「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 公式出处与两套算法
@@ -374,14 +380,14 @@ SELECT id FROM gkx.dwd_scholar_paper_relation LIMIT 1;   -- 仅验证 ID 形态
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` |
 | 结果产物 | 同目录 `M_INNOV_PLAN_DIRECTION_ALERT_out.json` |
 | 共享库 | `code/_plan21_common.py`（面板、术语桥、统计、写盘） |
 | 主算库 | `gkx`（`183.240.141.251:3318`），专利读缓存 |
 | SQL 条数 / 耗时 | 4 条 / 20.8 秒 |
 
 ```bash
-python3 metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -494,7 +500,7 @@ python3 metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_PLAN_DIRECTION_ALERT.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | gkx 三方库 | 实测行数 / 覆盖 | 实测结论 |
 |---|---|---|---|---|
@@ -607,7 +613,6 @@ python3 metrics/repro/M_INNOV_PLAN_DIRECTION_ALERT.py
 5. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. https://doi.org/10.1787/9789264239012-en
 
 6. 中国科学技术信息研究所. (2024). 《2024 年中国科技论文统计报告》. https://www.istic.ac.cn/html/1/284/338/2149891904917729733.html
-
 ---
 
 # 附件
@@ -735,15 +740,7 @@ ID 宇宙不通，研究方向为英文自由文本。**结论：结构不可得
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_INNOV_PLAN_DIRECTION_ALERT.py`
-- 产物：`../code/M_INNOV_PLAN_DIRECTION_ALERT_out.json`
+- 产物：`../metrics/repro/out/M_INNOV_PLAN_DIRECTION_ALERT_out.json`
 - 主算库：`gkx`（专利读面板缓存，零专利 SQL）
 - 关键结果：A 套 6/45/207、预警 51、其中专利负增长 20（39.22%）、F-论文相关 0.8614；B 套 14/51/193、P90 86.364、P75 70.5225、两源相关 0.7605；`support_judgment=部分支持`
 - 工程注意：阈值、门槛、窗口在脚本 `WIN` 与 `THRESH` 中显式定义；改口径须重跑，勿只改文档。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

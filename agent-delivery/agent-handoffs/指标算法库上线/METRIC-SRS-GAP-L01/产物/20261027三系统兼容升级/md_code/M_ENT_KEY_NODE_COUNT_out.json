@@ -1,0 +1,436 @@
+{
+ "metric_id": "M_ENT_KEY_NODE_COUNT",
+ "metric_name": "关键节点数",
+ "generated_at": "2026-10-23 02:30:19",
+ "definition": "目标产业链树中经 SDPS 算法判定为高重要性层级的节点数量（SDP 全局位置 × K-Shell 层级）",
+ "data_source": "gkx @ 183.240.141.251:3318（只读）：dwd_industry_chain_info 1,273 行；本脚本零 DB",
+ "support_judgment": "部分支持",
+ "verdict_kind": "proxy_network",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "链树是产业标签的结构快照，无年份字段，也不按报告期；本件是图算法截面件。dwd_industry_chain_info 无 apdt_year 类时间维，故 used/missing 均为空。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/chain_tree_links_20261022.json",
+   "kind": "snapshot",
+   "source": "gkx @ 183.240.141.251:3318 / gkx_reader_zp: gkx.dwd_industry_chain_info",
+   "role": "链树 1,273 行（industry_code / industry_link_code / 名称 / node_company_count）"
+  }
+ ],
+ "probes": {
+  "data_quality": {
+   "rows": 1273,
+   "levels_all_zero": true,
+   "node_company_count_all_zero": true,
+   "node_company_count_sum": 0,
+   "distinct_industry_link_code": 320,
+   "distinct_industry_code": 1273,
+   "max_link_code_repeat": 33,
+   "parent_code_is_chain_name": true,
+   "parent_name_is_digit": true
+  }
+ },
+ "compute": {
+  "graph": {
+   "nodes": 1273,
+   "unreachable_nodes": 0,
+   "roots": 12,
+   "leaves": 954,
+   "edges": 1261,
+   "max_depth": 7,
+   "depth_dist": {
+    "0": 12,
+    "1": 41,
+    "2": 165,
+    "3": 420,
+    "4": 388,
+    "5": 142,
+    "6": 80,
+    "7": 25
+   },
+   "root_names": [
+    {
+     "code": "INB1204",
+     "name": "机器人",
+     "nodes": 91
+    },
+    {
+     "code": "INB1209",
+     "name": "智能网联汽车",
+     "nodes": 62
+    },
+    {
+     "code": "INB1236",
+     "name": "低空经济",
+     "nodes": 96
+    },
+    {
+     "code": "INB1303",
+     "name": "集成电路",
+     "nodes": 257
+    },
+    {
+     "code": "INB1306",
+     "name": "软件与信息服务",
+     "nodes": 92
+    },
+    {
+     "code": "INB1309",
+     "name": "人工智能",
+     "nodes": 108
+    },
+    {
+     "code": "INB1323",
+     "name": "传感器",
+     "nodes": 128
+    },
+    {
+     "code": "INB1333",
+     "name": "智能终端",
+     "nodes": 98
+    },
+    {
+     "code": "INB1354",
+     "name": "具身智能",
+     "nodes": 79
+    },
+    {
+     "code": "INB1502",
+     "name": "数字创意",
+     "nodes": 37
+    },
+    {
+     "code": "INB2503",
+     "name": "生物医药",
+     "nodes": 185
+    },
+    {
+     "code": "INB2505",
+     "name": "合成生物",
+     "nodes": 40
+    }
+   ]
+  },
+  "sdps_dist": {
+   "1": 966,
+   "2": 235,
+   "3": 66,
+   "4": 6
+  },
+  "sdps_threshold_curve": [
+   {
+    "sdps_threshold": 2,
+    "n_nodes_asc": 307,
+    "pct_asc": 24.1163,
+    "n_nodes_desc": 307,
+    "pct_desc": 24.1163
+   },
+   {
+    "sdps_threshold": 3,
+    "n_nodes_asc": 72,
+    "pct_asc": 5.6559,
+    "n_nodes_desc": 72,
+    "pct_desc": 5.6559
+   },
+   {
+    "sdps_threshold": 4,
+    "n_nodes_asc": 6,
+    "pct_asc": 0.4713,
+    "n_nodes_desc": 6,
+    "pct_desc": 0.4713
+   },
+   {
+    "sdps_threshold": 5,
+    "n_nodes_asc": 0,
+    "pct_asc": 0.0,
+    "n_nodes_desc": 0,
+    "pct_desc": 0.0
+   },
+   {
+    "sdps_threshold": 6,
+    "n_nodes_asc": 0,
+    "pct_asc": 0.0,
+    "n_nodes_desc": 0,
+    "pct_desc": 0.0
+   }
+  ],
+  "kshell_dist": {
+   "1": 1273
+  },
+  "consistency": {
+   "sdps_ge4": 6,
+   "kshell_ge3": 0,
+   "overlap": 0,
+   "overlap_pct_of_sdps_ge4": 0.0,
+   "note": "两种算法的高位集合重叠度；重叠低说明「层级位置」与「全局位置」给出了不同答案"
+  },
+  "degeneracy": {
+   "zero_sdp_nodes": 966,
+   "zero_sdp_pct": 75.8837,
+   "equals_roots_plus_leaves": true,
+   "max_shell": 4,
+   "kshell_all_one": true,
+   "tie_asc_eq_desc": true,
+   "note": "SDP 在树上等于「严格祖先数×严格后代数」：根无祖先、叶无后代，两者恒为 0，故首轮（SDPS=1）恰为 12 根 + 954 叶；K-Shell 在树上退化为全 1（树是 1-退化图）"
+  },
+  "per_chain": [
+   {
+    "root_code": "INB1303",
+    "root_name": "集成电路",
+    "nodes": 257,
+    "sdps_ge3": 25,
+    "sdps_ge4": 2,
+    "max_sdps": 4
+   },
+   {
+    "root_code": "INB2503",
+    "root_name": "生物医药",
+    "nodes": 185,
+    "sdps_ge3": 12,
+    "sdps_ge4": 3,
+    "max_sdps": 4
+   },
+   {
+    "root_code": "INB1323",
+    "root_name": "传感器",
+    "nodes": 128,
+    "sdps_ge3": 4,
+    "sdps_ge4": 1,
+    "max_sdps": 4
+   },
+   {
+    "root_code": "INB1309",
+    "root_name": "人工智能",
+    "nodes": 108,
+    "sdps_ge3": 7,
+    "sdps_ge4": 0,
+    "max_sdps": 3
+   },
+   {
+    "root_code": "INB1333",
+    "root_name": "智能终端",
+    "nodes": 98,
+    "sdps_ge3": 3,
+    "sdps_ge4": 0,
+    "max_sdps": 3
+   },
+   {
+    "root_code": "INB1236",
+    "root_name": "低空经济",
+    "nodes": 96,
+    "sdps_ge3": 1,
+    "sdps_ge4": 0,
+    "max_sdps": 3
+   },
+   {
+    "root_code": "INB1306",
+    "root_name": "软件与信息服务",
+    "nodes": 92,
+    "sdps_ge3": 4,
+    "sdps_ge4": 0,
+    "max_sdps": 3
+   },
+   {
+    "root_code": "INB1204",
+    "root_name": "机器人",
+    "nodes": 91,
+    "sdps_ge3": 6,
+    "sdps_ge4": 0,
+    "max_sdps": 3
+   },
+   {
+    "root_code": "INB1354",
+    "root_name": "具身智能",
+    "nodes": 79,
+    "sdps_ge3": 7,
+    "sdps_ge4": 0,
+    "max_sdps": 3
+   },
+   {
+    "root_code": "INB1209",
+    "root_name": "智能网联汽车",
+    "nodes": 62,
+    "sdps_ge3": 3,
+    "sdps_ge4": 0,
+    "max_sdps": 3
+   },
+   {
+    "root_code": "INB2505",
+    "root_name": "合成生物",
+    "nodes": 40,
+    "sdps_ge3": 0,
+    "sdps_ge4": 0,
+    "max_sdps": 2
+   },
+   {
+    "root_code": "INB1502",
+    "root_name": "数字创意",
+    "nodes": 37,
+    "sdps_ge3": 0,
+    "sdps_ge4": 0,
+    "max_sdps": 2
+   }
+  ],
+  "top_nodes": [
+   {
+    "code": "INB1303010102",
+    "name": "化合物半导体材料",
+    "chain": "INB1303",
+    "depth": 3,
+    "sdps": 4,
+    "sdps_desc_tie": 4,
+    "kshell": 1,
+    "children": 2
+   },
+   {
+    "code": "INB1303030302",
+    "name": "检测设备",
+    "chain": "INB1303",
+    "depth": 3,
+    "sdps": 4,
+    "sdps_desc_tie": 4,
+    "kshell": 1,
+    "children": 2
+   },
+   {
+    "code": "INB1323020302",
+    "name": "MEMS传感器",
+    "chain": "INB1323",
+    "depth": 3,
+    "sdps": 4,
+    "sdps_desc_tie": 4,
+    "kshell": 1,
+    "children": 11
+   },
+   {
+    "code": "INB2503010201",
+    "name": "化学原料药",
+    "chain": "INB2503",
+    "depth": 3,
+    "sdps": 4,
+    "sdps_desc_tie": 4,
+    "kshell": 1,
+    "children": 3
+   },
+   {
+    "code": "INB250301020101",
+    "name": "化学合成原料药",
+    "chain": "INB2503",
+    "depth": 4,
+    "sdps": 4,
+    "sdps_desc_tie": 4,
+    "kshell": 1,
+    "children": 2
+   },
+   {
+    "code": "INB250301020102",
+    "name": "生化原料药",
+    "chain": "INB2503",
+    "depth": 4,
+    "sdps": 4,
+    "sdps_desc_tie": 4,
+    "kshell": 1,
+    "children": 3
+   },
+   {
+    "code": "INB12040101",
+    "name": "核心零部件",
+    "chain": "INB1204",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 3
+   },
+   {
+    "code": "INB12040102",
+    "name": "其他零部件",
+    "chain": "INB1204",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 3
+   },
+   {
+    "code": "INB12040301",
+    "name": "工业机器人制造",
+    "chain": "INB1204",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 3
+   },
+   {
+    "code": "INB12040304",
+    "name": "服务机器人制造",
+    "chain": "INB1204",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 3
+   },
+   {
+    "code": "INB12090101",
+    "name": "感知系统",
+    "chain": "INB1209",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 4
+   },
+   {
+    "code": "INB12090102",
+    "name": "汽车执行与控制系统",
+    "chain": "INB1209",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 3
+   },
+   {
+    "code": "INB12090105",
+    "name": "智能座舱系统",
+    "chain": "INB1209",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 2
+   },
+   {
+    "code": "INB12360202",
+    "name": "低空航空器器材及零部件",
+    "chain": "INB1236",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 8
+   },
+   {
+    "code": "INB13030101",
+    "name": "晶圆基础材料",
+    "chain": "INB1303",
+    "depth": 2,
+    "sdps": 3,
+    "sdps_desc_tie": 3,
+    "kshell": 1,
+    "children": 2
+   }
+  ],
+  "alpha_note": "阈值未由甲方给定：论文只给排序，未给「关键」的分界线；本件交 2—6 的完整曲线"
+ },
+ "reasons": [
+  "链树 1,273 节点（12 根 / 954 叶 / 1,261 条边 / 最大深度 7）在 gkx 完整可得，SDPS 可执行：同分同轮得到 4 层 shell，SDPS≥3 的节点 72 个（5.6559%）、≥4 的 6 个（0.4713%）。",
+  "但论文的「双维」在纯树上只剩一维：K-Shell 对 1,273 个节点全部给 1（树是 1-退化图），「层级位置」维度不携带任何区分信息，两法高位集合重叠 0。",
+  "SDP 在树上退化为「严格祖先数 × 严格后代数」：12 个根无祖先、954 个叶无后代，两者 SDP 恒为 0，首轮 SDPS=1 恰好等于根+叶（966 个，75.8837%）。",
+  "node_company_count 列 1,273 行全为 0、level 列全为 0：环节企业数无法参与加权或解释，「关键」只能由拓扑位置定义，不能由产业规模定义。",
+  "网络只有父子边、无横向边（论文算例是多层有向网络），因此「最短有向路径」只剩祖先→后代一条，SDP 的含义从「中介性」退化为「子树规模 × 深度」。",
+  "阈值未由甲方给定：≥2 是 307 个（24.1163%）、≥3 是 72 个、≥4 只有 6 个，4 层 shell 无自然断点，「关键节点数」完全取决于选点。"
+ ]
+}

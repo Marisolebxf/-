@@ -1,0 +1,430 @@
+{
+ "metric_id": "M_SVC_TYPE_DIST_QUERY",
+ "metric_name": "查询结果·服务类型分布",
+ "support_judgment": "部分支持",
+ "verdict_kind": "query_state",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "查询态指标，无年度基期：度量是当前查询会话命中的 org_id 集合在六类上的即时分桶，随查询条件实时变，不落 ADS、不预聚合。used / missing 均为空表；正文给的是若干可复算查询集合的示例分布，不是某年的全库统计。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "mode": "read-only",
+   "tables": [
+    "dwd_org_org_product_info",
+    "dwd_org_base_info",
+    "dwd_org_industry_tags"
+   ],
+   "snapshot": "code/_snapshots21/svc21_rec_20261023.json",
+   "upstream": [
+    "code/_snapshots21/svc21_facts_20261022.json",
+    "code/_snapshots21/svc21_pt_axis_20261022.json",
+    "code/_snapshots21/svcsz21_facts_20261023.json",
+    "code/_snapshots21/star_applicant_agg_gkx.json",
+    "code/_snapshots21/chain_firm_index_20261023.json",
+    "code/_snapshots21/gkx_columns_20261023.json"
+   ]
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "mode": "read-only",
+   "tables": [
+    "information_schema.columns"
+   ],
+   "snapshot": "code/_snapshots21/gkx_columns_20261023.json"
+  }
+ ],
+ "params": {
+  "object": "当前查询命中的服务机构 org_id，去重",
+  "measure": "每桶 COUNT(DISTINCT org_id)",
+  "timing": "查询链路实时分桶，内存/会话级；不落 ADS",
+  "empty_state": "0 命中 → 各类型全 0 / 空图；禁止回退全库分布",
+  "bucket_rule_a": "INNOV > IP > FINANCE > HR > MKT > CONSULT（多命中取首个；全不中 UNCLASSIFIED）",
+  "bucket_rule_b": "IP > FINANCE > HR > MKT > CONSULT > INNOV（多命中取首个；全不中 UNCLASSIFIED）",
+  "unclassified_policy": "六类全不中 → UNCLASSIFIED 单列，不并入任一类",
+  "forbidden": [
+   "不复用门户全库类型环图",
+   "不复用深圳类型分布",
+   "不复用 M_SVC_INDUSTRY_LAYOUT"
+  ]
+ },
+ "structure_probe": {
+  "gkx_tables": 280,
+  "gkx_columns": 6312,
+  "svc_type_columns": [],
+  "svc_type_columns_n": 0,
+  "column_index_names": 1285,
+  "svc_like_tables": [],
+  "reading": "全库 1,285 个列名无 svc_type / service_type；目标态主数据列不存在，六类只能由经营范围词表重建"
+ },
+ "value": {
+  "sz_total": 25597,
+  "rule_a_rows": [
+   {
+    "type": "IP",
+    "n": 49,
+    "pct": 0.1914
+   },
+   {
+    "type": "FINANCE",
+    "n": 2131,
+    "pct": 8.3252
+   },
+   {
+    "type": "HR",
+    "n": 248,
+    "pct": 0.9689
+   },
+   {
+    "type": "MKT",
+    "n": 486,
+    "pct": 1.8987
+   },
+   {
+    "type": "CONSULT",
+    "n": 1774,
+    "pct": 6.9305
+   },
+   {
+    "type": "INNOV",
+    "n": 19879,
+    "pct": 77.6614
+   },
+   {
+    "type": "UNCLASSIFIED",
+    "n": 1030,
+    "pct": 4.0239
+   }
+  ],
+  "rule_b_rows": [
+   {
+    "type": "IP",
+    "n": 422,
+    "pct": 1.6486
+   },
+   {
+    "type": "FINANCE",
+    "n": 6932,
+    "pct": 27.0813
+   },
+   {
+    "type": "HR",
+    "n": 1256,
+    "pct": 4.9068
+   },
+   {
+    "type": "MKT",
+    "n": 5290,
+    "pct": 20.6665
+   },
+   {
+    "type": "CONSULT",
+    "n": 9123,
+    "pct": 35.6409
+   },
+   {
+    "type": "INNOV",
+    "n": 1544,
+    "pct": 6.032
+   },
+   {
+    "type": "UNCLASSIFIED",
+    "n": 1030,
+    "pct": 4.0239
+   }
+  ],
+  "rule_a_sum": 25597,
+  "rule_b_sum": 25597,
+  "unclassified_a": 1030,
+  "multi_label_rows": 61864,
+  "multi_label_per_org": 2.416846,
+  "multi_label_note": "同一机构可命中多类，命中行合计 61,864 > 25,597；分桶取首个命中，故两套优先级给出的七行合计都回到 25,597"
+ },
+ "pool_reference": {
+  "rule_a_rows": [
+   {
+    "type": "IP",
+    "n": 108,
+    "pct": 0.2446
+   },
+   {
+    "type": "FINANCE",
+    "n": 3211,
+    "pct": 7.2724
+   },
+   {
+    "type": "HR",
+    "n": 582,
+    "pct": 1.3181
+   },
+   {
+    "type": "MKT",
+    "n": 1146,
+    "pct": 2.5955
+   },
+   {
+    "type": "CONSULT",
+    "n": 3132,
+    "pct": 7.0935
+   },
+   {
+    "type": "INNOV",
+    "n": 32294,
+    "pct": 73.1411
+   },
+   {
+    "type": "UNCLASSIFIED",
+    "n": 3680,
+    "pct": 8.3347
+   }
+  ],
+  "rule_b_rows": [
+   {
+    "type": "IP",
+    "n": 776,
+    "pct": 1.7575
+   },
+   {
+    "type": "FINANCE",
+    "n": 9812,
+    "pct": 22.2227
+   },
+   {
+    "type": "HR",
+    "n": 2734,
+    "pct": 6.1921
+   },
+   {
+    "type": "MKT",
+    "n": 11125,
+    "pct": 25.1965
+   },
+   {
+    "type": "CONSULT",
+    "n": 12579,
+    "pct": 28.4896
+   },
+   {
+    "type": "INNOV",
+    "n": 3447,
+    "pct": 7.8069
+   },
+   {
+    "type": "UNCLASSIFIED",
+    "n": 3680,
+    "pct": 8.3347
+   }
+  ],
+  "total": 44153
+ },
+ "demo_query_sets": {
+  "all_sz": {
+   "n": 25597,
+   "rows": [
+    {
+     "type": "INNOV",
+     "n": 19879,
+     "pct": 77.6614
+    },
+    {
+     "type": "FINANCE",
+     "n": 2131,
+     "pct": 8.3252
+    },
+    {
+     "type": "CONSULT",
+     "n": 1774,
+     "pct": 6.9305
+    },
+    {
+     "type": "UNCLASSIFIED",
+     "n": 1030,
+     "pct": 4.0239
+    },
+    {
+     "type": "MKT",
+     "n": 486,
+     "pct": 1.8987
+    },
+    {
+     "type": "HR",
+     "n": 248,
+     "pct": 0.9689
+    },
+    {
+     "type": "IP",
+     "n": 49,
+     "pct": 0.1914
+    }
+   ]
+  },
+  "industry_ai": {
+   "n": 2071,
+   "rows": [
+    {
+     "type": "INNOV",
+     "n": 1944,
+     "pct": 93.8677
+    },
+    {
+     "type": "CONSULT",
+     "n": 78,
+     "pct": 3.7663
+    },
+    {
+     "type": "FINANCE",
+     "n": 21,
+     "pct": 1.014
+    },
+    {
+     "type": "UNCLASSIFIED",
+     "n": 14,
+     "pct": 0.676
+    },
+    {
+     "type": "MKT",
+     "n": 11,
+     "pct": 0.5311
+    },
+    {
+     "type": "HR",
+     "n": 3,
+     "pct": 0.1449
+    }
+   ]
+  },
+  "district_nanshan": {
+   "n": 7067,
+   "rows": [
+    {
+     "type": "INNOV",
+     "n": 5645,
+     "pct": 79.8783
+    },
+    {
+     "type": "FINANCE",
+     "n": 721,
+     "pct": 10.2023
+    },
+    {
+     "type": "CONSULT",
+     "n": 320,
+     "pct": 4.5281
+    },
+    {
+     "type": "MKT",
+     "n": 163,
+     "pct": 2.3065
+    },
+    {
+     "type": "UNCLASSIFIED",
+     "n": 147,
+     "pct": 2.0801
+    },
+    {
+     "type": "HR",
+     "n": 54,
+     "pct": 0.7641
+    },
+    {
+     "type": "IP",
+     "n": 17,
+     "pct": 0.2406
+    }
+   ]
+  },
+  "patent_holders": {
+   "n": 13378,
+   "rows": [
+    {
+     "type": "INNOV",
+     "n": 11755,
+     "pct": 87.8681
+    },
+    {
+     "type": "CONSULT",
+     "n": 790,
+     "pct": 5.9052
+    },
+    {
+     "type": "UNCLASSIFIED",
+     "n": 341,
+     "pct": 2.549
+    },
+    {
+     "type": "FINANCE",
+     "n": 285,
+     "pct": 2.1304
+    },
+    {
+     "type": "MKT",
+     "n": 104,
+     "pct": 0.7774
+    },
+    {
+     "type": "HR",
+     "n": 96,
+     "pct": 0.7176
+    },
+    {
+     "type": "IP",
+     "n": 7,
+     "pct": 0.0523
+    }
+   ]
+  }
+ },
+ "rule_diff": {
+  "INNOV": -18335,
+  "FINANCE": 4801,
+  "CONSULT": 7349,
+  "MKT": 4804,
+  "HR": 1008,
+  "IP": 373,
+  "UNCLASSIFIED": 0,
+  "note": "规则 B 减规则 A；正值为 B 更多，负值为 B 更少"
+ },
+ "shift_reading": "全深圳集合 INNOV 占 77.66%；人工智能标签集合升到 93.87%；南山区降到 79.88%；有专利集合升到 87.87%。同一套分桶规则下，查询条件一变分布就变，这正是「查询结果分布」与「全库统计」的分界。",
+ "gaps": [
+  {
+   "gap": "svc_type 主数据",
+   "detail": "全库 1,285 列名 0 个 svc_type / service_type",
+   "impact": "目标态分桶列不存在，只能用经营范围词表过渡"
+  },
+  {
+   "gap": "分桶优先级",
+   "detail": "Q106 未签：INNOV 优先与 IP 优先两套规则",
+   "impact": "INNOV 桶 19,879 vs 1,544，CONSULT 桶 1,774 vs 9,123，分布整体换形"
+  },
+  {
+   "gap": "ADS 承载",
+   "detail": "gkx 280 表 0 张 svc_metric_fact / svc_org_card",
+   "impact": "本编号在 fact / dist 中 0 行是正确态，不能拿预聚合值替代"
+  },
+  {
+   "gap": "语义识别",
+   "detail": "经营范围词表是关键词匹配，不是主营业务分类",
+   "impact": "未分类 1,030 家（4.02%）；多标签 2.4168 类/家"
+  }
+ ],
+ "calc_logic_baseline": {
+  "path": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_TYPE_DIST_QUERY.md",
+  "q_id": "Q106",
+  "legacy_full_dist_n": 3525,
+  "bucket_count": 6,
+  "status": "查询态口径卡（2026-10-13 徐滕强选 A；D1 draft，挂 Q106）",
+  "note": "正本明文禁止在 0 命中时回退全库 3,525 的六类分布；本件示例集只用于演示分桶规则，不是全库统计。"
+ },
+ "cross_refs": {
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_TYPE_DIST_QUERY.md",
+  "wanghui": null,
+  "sibling": [
+   "M_SVC_REC_CANDIDATE_CNT",
+   "M_SVC_PT_SZ_TYPE_DIST"
+  ]
+ }
+}

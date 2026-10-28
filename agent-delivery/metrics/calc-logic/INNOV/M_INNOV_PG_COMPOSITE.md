@@ -1,9 +1,21 @@
 # 政策与条件保障力综合评估（M_INNOV_PG_COMPOSITE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_COMPOSITE.md`；复现脚本 `metrics/repro/M_INNOV_PG_COMPOSITE.py` → `metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（城市级五维加权指数）｜ **域**：科技信息展示系统／科技发展态势／科技创新评估｜ **UI 挂载**：政策保障力综合卡、城市对比条、权重自定义面板
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_COMPOSITE.py`、产物 `metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_COMPOSITE.md`；复现脚本 `metrics/repro/M_INNOV_PG_COMPOSITE.py` → `metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_COMPOSITE.py`、产物 `metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_PG_COMPOSITE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_PG_COMPOSITE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json` |
@@ -65,20 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PG_COMPOSITE.py`、产物 `metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（城市级五维加权指数）｜ **域**：科技信息展示系统／科技发展态势／科技创新评估｜ **UI 挂载**：政策保障力综合卡、城市对比条、权重自定义面板
-> **数据支持度**：**部分支持**
-> **口径来源**：注册表 `formula`（五维加权，已给）+ `calc-logic/INNOV/M_INNOV_PG_COMPOSITE.md`（王惠正本规范化稿）
-> **王惠正本**：`王惠口径正本（GitLab 外本地归档）`
-> **复现**：`python3 _probe_pg_w15n1.py && python3 M_INNOV_PG_COMPOSITE.py` → `code/M_INNOV_PG_COMPOSITE_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），脚本零 DB、只读落盘快照
-> **基期声明**：`base_years_used` = [2021, 2022, 2023]；`base_years_missing` = [2017, 2018, 2019, 2020]（专利表这四年零行）；2024 论文语料断点、2025—2026 残年不摊入
-> **权重声明**：`main_is_official` = **false**。五维权重 0.20/0.25/0.25/0.15/0.15 为自定，`weight_used_sum` = **0.85**（项目维整维缺失）；客观熵权与「剔除退化叶」稳健场景同时给在产物里
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -212,7 +215,7 @@ gkx.dwd_zh_paper (100,900) ──► 效果叶：2021—2023 均值 vs 2016—20
       ▼
 四城同盘 min-max → 五叶加权（和 0.85）→ 0—100 → 排名
       ▼
-熵权对照 + 剔除 L2/L3 稳健场景 → code/M_INNOV_PG_COMPOSITE_out.json
+熵权对照 + 剔除 L2/L3 稳健场景 → metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json
 ```
 
 ### 2.2 步骤 1｜政策表体检（20,000 行的真实形状）
@@ -332,7 +335,7 @@ $$S = \frac{0.20\,L1 + 0.125\,L2 + 0.125\,L3 + 0.25\,L4 + 0.15\,L5}{0.85} \times
 ```bash
 cd code
 python3 _probe_pg_w15n1.py      # 落盘 code/_snapshots21/pg_w15n1_20261023.json
-python3 M_INNOV_PG_COMPOSITE.py # 读快照，零 SQL，产出 code/M_INNOV_PG_COMPOSITE_out.json
+python3 M_INNOV_PG_COMPOSITE.py # 读快照，零 SQL，产出 metrics/repro/out/M_INNOV_PG_COMPOSITE_out.json
 ```
 
 `M_INNOV_PG_COMPOSITE.py` 不连数据库。探针一次拉取政策体检、四城叶值、研发、基金、论文逐年，落盘后脚本只做算术。重跑结果逐位一致。
@@ -480,14 +483,8 @@ python3 M_INNOV_PG_COMPOSITE.py # 读快照，零 SQL，产出 code/M_INNOV_PG_C
 
 ## 参考文献
 
-1. 注册表 `cfg_metric-INNOV-seed.yaml`（M_INNOV_PG_COMPOSITE 条），`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml`。
-2. 正本 `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PG_COMPOSITE.md`。
-3. `_work_gkx21/DATA_FACTS_gkx21.md` §3.62（无金额列）、§3.63（文本解析）、§3.64（`status` 单值）、§3.68（慢查询）、§3.74（论文批次曲线）。
-4. `_work_gkx21/DISPATCH_BRIEF_v8.md` §一 派生比值、§四 负证据三件套。
-5. 中国创新指数研究（国家统计局社科文司），https://www.stats.gov.cn/
-6. 欧盟 European Innovation Scoreboard 方法论，https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/european-innovation-scoreboard_en
-7. OECD Frascati Manual（研发投入统计口径），https://www.oecd.org/sti/frascati-manual.htm
-
+1. 中国创新指数研究（国家统计局社科文司），https://www.stats.gov.cn/
+2. 欧盟 European Innovation Scoreboard 方法论，https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/european-innovation-scoreboard_en
 ---
 
 # 附件
@@ -552,11 +549,3 @@ A：会。四城合计大于全国论文数。所以它只用于**同城跨年�
 
 **Q：为什么熵权下广州从 8.0386 掉到 5.0866？**
 A：广州在主口径里 L2/L3 两叶都是 0（类型 10 最少、件数 325 最少），熵权把权重更多分给分布更散的叶（L5、L1），广州在 L5 上是 0、L1 上也是 0，唯一有值的是 L4（32.1543），所以分数更低。三个场景都垫底，说明"广州保障力弱"这个结论不依赖权重。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

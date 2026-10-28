@@ -1,0 +1,155 @@
+{
+ "metric_id": "M_SYNTH_COLLAB_DENSITY",
+ "公式": "ρ=2E/[N(N−1)]",
+ "注意": "分母口径敏感",
+ "support_judgment": "部分支持",
+ "probe_date": "2026-10-20",
+ "metric_name_zh": "协同网络密度",
+ "grain": "区域（城市）× 统计窗口",
+ "formula": "rho = 2m / [n(n-1)]；n>=2；m=联合专利边+合作项目边+人才流动边（无向简单图去重）",
+ "compute": {
+  "cities": {
+   "深圳": {
+    "nodes_n": 96754,
+    "edges_m": 13,
+    "possible_edges": 4680619881.0,
+    "density_raw": 2.7774099009344442e-09,
+    "density_sci": "2.7774e-09",
+    "density_log10": -8.55636,
+    "dim_score_0_100": 0.0,
+    "edge_mix": {
+     "joint_patent": 7,
+     "coop_project": 0,
+     "talent_flow": 6
+    }
+   },
+   "北京": {
+    "nodes_n": 642,
+    "edges_m": 75,
+    "possible_edges": 205761.0,
+    "density_raw": 0.00036450056133086446,
+    "density_sci": "3.6450e-04",
+    "density_log10": -3.438302,
+    "dim_score_0_100": 26.6466,
+    "edge_mix": {
+     "joint_patent": 33,
+     "coop_project": 0,
+     "talent_flow": 42
+    }
+   },
+   "上海": {
+    "nodes_n": 304,
+    "edges_m": 63,
+    "possible_edges": 46056.0,
+    "density_raw": 0.0013678999478895259,
+    "density_sci": "1.3679e-03",
+    "density_log10": -2.863946,
+    "dim_score_0_100": 100.0,
+    "edge_mix": {
+     "joint_patent": 41,
+     "coop_project": 0,
+     "talent_flow": 22
+    }
+   },
+   "广州": {
+    "nodes_n": 50449,
+    "edges_m": 28,
+    "possible_edges": 1272525576.0,
+    "density_raw": 2.2003487024609713e-08,
+    "density_sci": "2.2003e-08",
+    "density_log10": -7.657508,
+    "dim_score_0_100": 0.0014,
+    "edge_mix": {
+     "joint_patent": 26,
+     "coop_project": 0,
+     "talent_flow": 2
+    }
+   }
+  },
+  "distribution": {
+   "n": 4,
+   "min": 2.7774099009344442e-09,
+   "max": 0.0013678999478895259,
+   "mean": 0.000433106322529329,
+   "median": 0.00018226128240894453,
+   "cv": 1.2926173155310077
+  },
+  "rank_by_density": [
+   "上海",
+   "北京",
+   "广州",
+   "深圳"
+  ],
+  "top": "上海",
+  "bottom": "深圳",
+  "span_orders_of_magnitude": 5.6924
+ },
+ "sensitivity": {
+  "denominator_variants": {
+   "full_node_set": {
+    "深圳": 2.7774099009344442e-09,
+    "北京": 0.00036450056133086446,
+    "上海": 0.0013678999478895259,
+    "广州": 2.2003487024609713e-08
+   },
+   "covered_subgraph": {
+    "深圳": 0.0015994094488188976,
+    "北京": 0.002704652001442481,
+    "上海": 0.0027642490456759247,
+    "广州": 0.02705314009661836
+   }
+  },
+  "statement": "密度对分母（入网主体口径）高度敏感；本表主口径为全量主体集，覆盖子网仅作敏感性对照"
+ },
+ "reuse_evidence": {
+  "m191_raw_measures_density": {
+   "深圳市": 2.7774099009344442e-09,
+   "北京市": 0.00036450056133086446,
+   "上海市": 0.0013678999478895259,
+   "广州市": 2.2003487024609713e-08
+  },
+  "m191_dim_scores_density": {
+   "深圳市": 0.0,
+   "北京市": 26.65,
+   "上海市": 100.0,
+   "广州市": 0.0
+  }
+ },
+ "baseline": {
+  "metric": "M_ORG_COLLAB_CHAIN（ORG 域，论文合著+专利共申双源）",
+  "merged_edges": null,
+  "total_edge_weight": null,
+  "inst_inst_edges": null,
+  "inst_nodes_V": null,
+  "inst_edges_E": null,
+  "inst_density": null,
+  "weighted_degree_sum": null,
+  "note": "边域与 SYNTH 协同网不同（论文合著边在本族不入网），仅作量级与密度基线对比"
+ },
+ "support_reason": "密度公式可执行、四城原始密度可算（10^-9—10^-3 量级，跨 5.7 个数量级）；但①合作项目边 0 条，分子只含联合专利与人才流动两类边；②分母为全量主体集，京沪企业主档 163/16 家与深广 95,600/49,605 家不可比，密度差异主要由分母采集口径驱动；③覆盖节点缓存值与 2E 上界冲突，无法用覆盖子网复核。按四档口径判部分支持。",
+ "provenance": {
+  "probe_date": "2026-10-21",
+  "db_probe": "skipped（按任务纪律：已有 out.json 先读复用，禁重跑探针）",
+  "inputs": [
+   "code/M_SYNTH_191_1_out.json（2026-10-21 王惠口径实测）",
+   "code/_synthb_cache.json（demo ods 行数与城市主档）",
+   "code/M_SYNTH_COLLAB_RELATION_INPUT_out.json（三类边分城统计）",
+   "code/M_ORG_COLLAB_CHAIN_out.json（ORG 域基线）"
+  ],
+  "source_tables": {
+   "dwd_patent_applicants": 28964,
+   "dwd_patent": 2939895,
+   "dwd_scholar_work_experience": 57117,
+   "dwd_zh_project": 58453,
+   "dwd_org_base_info": 189116,
+   "dwd_research_institute_base_info": 2074,
+   "dwd_scholar": 21316
+  },
+  "known_gap": "dwd_zh_project.funded_institution 非空 0 行 → 合作项目边 0",
+  "m191_support": "部分支持"
+ },
+ "note": "全图密度与归一化平均点度中心性为同一数学量（2m/[n(n-1)]），两者在本族不可互作独立证据。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。"
+}

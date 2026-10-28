@@ -1,9 +1,21 @@
-# 协同网络中心度（平均点度中心性）（M_SYNTH_COLLAB_CENTRALITY）
+# 协同网络中心度（M_SYNTH_COLLAB_CENTRALITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_COLLAB_CENTRALITY.md`；复现脚本 `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py` → `metrics/repro/out/M_SYNTH_COLLAB_CENTRALITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：网络结构指标（SYNTH·区域创新协同族之「中心度」件）｜ **域**：综合（SYNTH）｜ **UI 挂载**：科技专题·综合智能分析 / 区域创新协同分析 / 协同度计算模型｜ **数据支持度**：**部分支持**
+> - **四判定摘要**：直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 联合专利边与人才流动边可现转、合作项目边结构性缺失（`funded_institution` 58,453 行全 NULL）、节点分母受企业主档采集缺口双向挤压
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SYNTH_COLLAB_CENTRALITY.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_CENTRALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_COLLAB_CENTRALITY.md`；复现脚本 `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py` → `metrics/repro/out/M_SYNTH_COLLAB_CENTRALITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_CENTRALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_COLLAB_CENTRALITY.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_COLLAB_CENTRALITY_out.json` |
@@ -67,15 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_CENTRALITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：网络结构指标（SYNTH·区域创新协同族之「中心度」件）｜ **域**：综合（SYNTH）｜ **UI 挂载**：科技专题·综合智能分析 / 区域创新协同分析 / 协同度计算模型｜ **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（沿用王惠 `M_SYNTH_COLLAB_INDEX` 子项「节点度中心性均值」）｜ wanghui: false
-> **四判定摘要**：直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 联合专利边与人才流动边可现转、合作项目边结构性缺失（`funded_institution` 58,453 行全 NULL）、节点分母受企业主档采集缺口双向挤压
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -112,6 +120,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 「协同网络中心度」是区域创新协同分析模型（算法库序号 191）三元网络指标中的「核心辐射力」维，用于回答区域内哪些创新主体是合作网络枢纽、整体网络对枢纽的依赖有多强，并与完整度、密度一并合成区域创新协同指数。需求原文只给出「中心度（评估关键节点的辐射影响力）」的语义，**没有给出中心度的具体计算定义**；王惠 calc-logic 在 `M_SYNTH_COLLAB_INDEX` 中把它闭合为「节点度中心性均值 = 全部节点度数求和 ÷ 节点数，再极值归一」，本报告沿用该口径并标注公式定义人为「仿王惠 ai-1020」。复算基于 2026-10-21 已落盘网络事实（联合专利边 + 人才流动边共 179 条城内边、合作项目边 0 条），四城平均度为中心度原始值：上海 0.4145、北京 0.2336、广州 0.00111、深圳 0.000269，极值归一后为上海 100.0、北京 56.34、广州 0.20、深圳 0.00。复算同时暴露一个方法学事实：在无向简单图上，归一化平均点度中心性恒等于图密度（本批四城最大绝对差 3.3×10⁻²⁴，仅为浮点误差），因此王惠的「均值中心度」与「密度」在排序上完全同构，**不能独立承担需求所要求的「识别关键节点」语义**。数据支持度判**部分支持**：三边缺合作项目边、节点分母被采集缺口双向扭曲、节点级度清单未落盘，枢纽识别暂时不可复核。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 区域创新协同分析模型基于深圳市产业全要素图谱，整合企业、科研机构与人才等创新主体的合作关系数据，综合对接各领域专题库，以完整度、中心度、密度三项区域创新协同网络指标为核心，构建量化分析体系。<br>><br>> （1）算法阐述 …… 随后，基于网络分析方法构建区域创新协同网络模型，定义并计算完整度（衡量网络连接的全面性）、中心度（评估关键节点的辐射影响力）、密度（反映整体合作紧密度）三类指标。……<br>><br>> （2）算法输入与输出 输入：创新主体基础数据、合作关系数据。输出：区域创新协同指数、完整度、中心度、密度三类指标值及结构化分析报告、区域协同优势与不足诊断结果、趋势变化分析。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 本功能构建「企业—机构—人才」合作关系图谱，基于联合专利、合作项目等数据计算协同指数，评估协同网络密度与创新产出关联性，并生成协同效率报告。<br>><br>> 1.1.1.2.4.2.8.3.2 协同度计算模型：定义联合专利、合作项目、人才流动等协同指标，计算创新协同指数，识别高效协同集群与孤立主体。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SYNTH_COLLAB_CENTRALITY.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -267,14 +321,14 @@ $$\mathrm{Index}(c)=\frac{1}{3}\Big[\mathrm{mm}(\mathrm{Completeness}_c)+\mathrm
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py` |
 | 共用模块 | 同目录 `_collab_c_common.py`（读取已落盘探针 + 公式 + 序列化） |
 | 结果产物 | 同目录 `M_SYNTH_COLLAB_CENTRALITY_out.json` |
 | 输入产物 | `M_SYNTH_191_1_out.json`、`_synthb_cache.json`、`M_SYNTH_COLLAB_RELATION_INPUT_out.json`、`M_ORG_COLLAB_CHAIN_out.json` |
 | 数据库访问 | **无**（按纪律复用已有 out.json，不重跑探针） |
 
 ```bash
-python3 metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py
 ```
 
 脚本输出字段含：`compute.cities`（四城 $n,m$、原始中心度、归一中心度、密度、维度分）、`compute.distribution`（四城 min/max/mean/median/cv）、`identity_check`（恒等式核验）、`reuse_evidence`（与 191 逐位比对）、`baseline`（ORG 合作链基线）、`support_judgment`。以下为 2026-10-21 复算结果，与 out.json 一致。
@@ -353,7 +407,7 @@ python3 metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py
 
 ## 三、数据支撑情况
 
-> 判定顺序：先跑通 `code/M_SYNTH_COLLAB_CENTRALITY.py` 并确认结果合理（恒等式、图论一致性、与 191 一致性三项通过），再落档。
+> 判定顺序：先跑通 `metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py` 并确认结果合理（恒等式、图论一致性、与 191 一致性三项通过），再落档。
 
 | 依赖维度 | 候选表 | 开发库 live | demo ods / 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -434,9 +488,6 @@ python3 metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py
 5. Breschi, S., & Lissoni, F. (2009). Mobility of skilled workers and co-invention networks: An anatomy of localized knowledge flows. *Journal of Economic Geography*, 9(4), 439–468. https://doi.org/10.1093/jeg/lbp008
 
 6. 广东省人民政府. (2021). 《广东省科技创新「十四五」规划》（产学研协同创新网络、创新要素流动）. http://www.gd.gov.cn/attachment/0/545/545440/3574221.pdf
-
-7. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_INDEX.md`（中心度子项「节点度中心性均值」）。
-
 ---
 
 # 附件
@@ -504,15 +555,8 @@ python3 metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_SYNTH_COLLAB_CENTRALITY.py`；共用模块：`code/_collab_c_common.py`
-- 产物：`code/M_SYNTH_COLLAB_CENTRALITY_out.json`
+- 脚本：`metrics/repro/M_SYNTH_COLLAB_CENTRALITY.py`；共用模块：`code/_collab_c_common.py`
+- 产物：`metrics/repro/out/M_SYNTH_COLLAB_CENTRALITY_out.json`
 - 数据来源：复用 `M_SYNTH_191_1_out.json`（2026-10-21）、`_synthb_cache.json`、`M_SYNTH_COLLAB_RELATION_INPUT_out.json`、`M_ORG_COLLAB_CHAIN_out.json`；**未重跑 DB 探针**
 - 关键结果：平均度 沪 0.41447 / 京 0.23364 / 广 0.00111 / 深 0.000269；维度分 100.0 / 56.34 / 0.20 / 0.00；恒等式差 ≤3.3×10⁻²⁴；support_judgment=`部分支持`
 - 工程注意：归一化平均点度中心性 ≡ 密度；`covered_nodes_approx` 三城超 2E 上界，仅作参考
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,7 +1,18 @@
 # 城市平均商业力（GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md`；复现脚本 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` → `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：UNKNOWN（未注册 GAP，**故意不注册**——口径未闭合，待何老师/王惠确认后由 data-agent 注册）｜ **域**：深圳企业现状分析（ENT-SZSTATUS，E-25）｜ **UI 挂载**：多城市横向对标 Tab（城市×指标对比表）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
+
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md`；复现脚本 `gkx-orchestration/agent-delivery/metrics/repro/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` → `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；本地备份指针已随 20261027 批清零，验收以本仓为准）
 
 ## 基础信息
 
@@ -24,7 +35,7 @@ live `sz_city_benchmark` 0 行（结果面存在但全空，mock 期）→ 非�
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md` §二（GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md` §二（GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py 零改语义复算）。
 
 ## 源表字段
 
@@ -50,22 +61,19 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md` |
-| 复现脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` |
-| 复现产物 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json` |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
+| 正本 MD | `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md` |
+| 复现脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` |
+| 复现产物 | `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
-
-> **类型**：UNKNOWN（未注册 GAP，**故意不注册**——口径未闭合，待何老师/王惠确认后由 data-agent 注册）｜ **域**：深圳企业现状分析（ENT-SZSTATUS，E-25）｜ **UI 挂载**：多城市横向对标 Tab（城市×指标对比表）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020-M0）**：仿王惠（推测定义）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分（4/6 维有结构）/ 部分（营收信号 3,076 家、品牌与技术合作两维无源）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -102,6 +110,52 @@ live `sz_city_benchmark` 0 行（结果面存在但全空，mock 期）→ 非�
 「城市平均商业力」是《科技信息展示系统和科技专题服务系统》**深圳企业现状分析（E-25 §1.1.1.2.4.2.3.5.2 多城市横向对标分析）**的三个对标指标之一：原文要求「将深圳企业群与北京、上海、苏州等城市对比，计算平均技术力、**商业力**、企业密度等指标」。它与已注册的姊妹指标 `M_ENT_CITY_AVG_TECH_POWER`（城市平均技术力）同表同列（`sz_city_benchmark.avg_business_power`），但被项目**故意未注册**：Q014（技术力与商业力指标库构成及默认权重）未闭合 + 待何老师确认后由 data-agent 注册正式 ID；handoff 明令「正式 metric_id 登记前不得以综合竞争力或单一营收指标替代」。本文按「先出企业商业力分、再按市求均值」的二次 STAT 结构（与姊妹指标同构）给出推测口径并实测：可支撑三维（市场/产品/产业链参与代理）对深圳 20,645 家、广州 11,320 家企业出分（深圳均值 70.01、广州 69.95）；但 bid §5.6 商业力六维中**品牌、技术合作两维无库表结构**，苏州因财报覆盖不足无出分企业。按 §〇「始终有部分依赖维度无法得到足够数据」→ **部分支持**。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 企业商业力评估模型算法旨在多维度量化分析企业的市场竞争能力与产业协作水平。该算法基于市场指标、产品指标、品牌指标、技术合作指标、产业链覆盖率及产业关键环节参与度六大维度构建指标体系，并设定对应阈值，通过计算企业各项指标值，生成反映综合竞争力的企业商业力指数。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 该功能将深圳企业群与北京、上海、苏州等城市对比，计算平均技术力、商业力、企业密度等指标。用户可识别优势与短板。<br>><br>> 本功能基于市场份额、营收增长、盈利能力等指标构建商业力模型，支持用户自定义评价维度并进行企业间横向对比。用户可评估企业市场表现与商业化能力，辅助投资尽调或产业政策制定。<br>><br>> 企业商业力评估对比分析的功能包括：商业力模型配置与指标选择、商业竞争力对标分析。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -215,7 +269,7 @@ $$
 ## 二、计算过程
 
 > **口径说明**：需求未给公式，以下为推测计算过程（二次 STAT，同构 `M_ENT_CITY_AVG_TECH_POWER`）；已由脚本
-> `code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` 在 `gkx`（183.240.141.251:3318）实测跑通，结果见同目录 `GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json`。
+> `metrics/repro/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` 在 `gkx`（183.240.141.251:3318）实测跑通，结果见同目录 `GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json`。
 
 ### 2.1 方法选择：二次统计结构（企业分→城市均值）
 
@@ -274,13 +328,13 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` |
 | 结果产物 | 同目录 `GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json` |
 | 主算库 | `gkx`（三方库，183.240.141.251:3318） |
 | 对照探测 | live `gkxlumenx_dwd.sz_city_benchmark` 行数 |
 
 ```bash
-python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -340,7 +394,7 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -385,13 +439,6 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 2. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754—2017）. 国家标准全文公开系统：https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=A703F0E23DD165A5A1318679F312D158 （行业与产业归属的国标口径）
 
 3. 深圳市人民政府. (2022). 《关于发展壮大战略性新兴产业集群和培育发展未来产业的意见》（深府〔2022〕1 号）. https://www.sz.gov.cn/zfgb/2022/gb1248/content/post_9918806.html （产业链参与维的政策语境）
-
-4. 项目内旁证（非外部文献）：
-   - `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml`（`M_ENT_CITY_AVG_TECH_POWER` 二次 STAT 公式）
-   - `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_CITY_AVG_TECH_POWER.md`（无分不进均口径）
-   - `agent-handoffs/产品整体定义/E-25-深圳企业现状分析/TRACE-ENT-SZSTATUS.yaml`（Q014/Q016/gap_metrics）
-   - `agent-handoffs/企业战略分析-ENT/ENT-MOD-SHENZHEN-METRIC-OPEN-L01.md`（故意未注册判定）
-
 ---
 
 # 附件
@@ -505,13 +552,6 @@ bid 原文把「平均商业力」与「平均技术力、企业密度」并列�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py`；产物：`../code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json`
+- 脚本：`../code/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER.py`；产物：`../metrics/repro/out/GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER_out.json`
 - 关键结果：营收信号 3,076 家、链环节标签 34,969 家；深圳出分 20,645、AvgBP=70.01；广州 11,320、69.95；苏州 0；support_judgment=`部分支持`
 - 工程注意：4/6 维代理分（品牌、技术合作无库表结构）；正式权重待 Q014、城市集待 Q016、ID 注册待何老师。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,0 +1,151 @@
+{
+ "metric_id": "M_POLICY_SHORTBOARD_COUNT",
+ "title": "政策短板清单条数",
+ "probe_date": "2026-10-22",
+ "data_support_level": "部分支持",
+ "support_judgment": "部分支持",
+ "support_reason": "三维里合规性可算并实际触发（文号 34.16% < 90%）；覆盖性的主题子项因 theme 仅 2 行不可算、退化为八类词表后 100%；有效性的时效子项因零日期不可算。有必需子项始终无法取值 → 部分支持。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本指标为截面阈值计数，不设跨年基期。政策表年份不进入任何分母；2023 年库内 0 行、2022 年后为采集残片，故不做「短板数逐年变化」的时序结论。",
+ "sources": {
+  "pg_policy_rows": "code/_snapshots21/pg_policy_rows_20261021.json（ct_len/publish_year）",
+  "policy_content": "code/_snapshots21/policy_content_20261021.json（18,763 行正文/摘要）",
+  "field_probe": "code/_snapshots21/policy_fields_a23_20261021.json（文号格式分布/theme 填充）",
+  "policy_aux": "code/_snapshots21/policy_aux_20261022.json（status 分布/行业链 301 环节）",
+  "db": "gkx @ 183.240.141.251:3318（只读；本脚本零 SQL）"
+ },
+ "kpi_definition": "清单条数 = 触发阈值的维度数（0—3），与 M_POLICY_DEEP_169_1.shortboard_count 同口径",
+ "population": {
+  "rows": 20000,
+  "status_dist": {
+   "有效": 20000
+  },
+  "theme_fill_n": 2,
+  "rows_with_content_snapshot": 18763
+ },
+ "dimensions": [
+  {
+   "dim": "覆盖性",
+   "value_pct": 100.0,
+   "threshold": 60.0,
+   "short": false,
+   "basis": "类型覆盖 8/8；主题覆盖 theme 仅 2 行不可算（不纳入）"
+  },
+  {
+   "dim": "有效性",
+   "value_pct": 100.0,
+   "threshold": 70.0,
+   "short": false,
+   "basis": "status 单值「有效」=100%（样本框构造）；时效子项零日期不可算"
+  },
+  {
+   "dim": "合规性",
+   "value_pct": 34.16,
+   "threshold": 90.0,
+   "short": true,
+   "basis": "文号规范 34.16% / 正文完整 91.86%"
+  }
+ ],
+ "shortboard_count": 1,
+ "coverage": {
+  "theme_fill_n": 2,
+  "theme_coverage": null,
+  "type_coverage_pct": 100.0,
+  "type_classes_hit": 8,
+  "type_note": "八类词表全中只能证明词表覆盖，不能证明政策体系无盲区"
+ },
+ "validity": {
+  "valid_ratio_pct": 100.0,
+  "timeliness": null,
+  "note": "status 单值「有效」；implementation_date / expire_date 全为 0000-00-00，时效不可判（不按 0 计入）"
+ },
+ "compliance": {
+  "code_rows": {
+   "empty": 12540,
+   "bracket": 6344,
+   "square": 489,
+   "year_only": 350,
+   "other": 277
+  },
+  "code_ok_n": 6833,
+  "code_ok_pct": 34.16,
+  "empty_n": 12540,
+  "content_ok_n": 18372,
+  "content_ok_pct": 91.86
+ },
+ "direction_view": {
+  "n_directions": 5,
+  "n_short_dirs": 5,
+  "rows": [
+   {
+    "direction": "乡村振兴",
+    "n_policies": 1,
+    "valid_pct": 100.0,
+    "code_std_pct": 100.0,
+    "content_ok_pct": 100.0,
+    "triggers": [
+     "对象覆盖缺口(方向键 5 / 锚点 301)"
+    ],
+    "short": true
+   },
+   {
+    "direction": "创业扶持",
+    "n_policies": 1,
+    "valid_pct": 100.0,
+    "code_std_pct": 0.0,
+    "content_ok_pct": 100.0,
+    "triggers": [
+     "对象覆盖缺口(方向键 5 / 锚点 301)",
+     "文号 0% <90%"
+    ],
+    "short": true
+   },
+   {
+    "direction": "科技创新",
+    "n_policies": 2,
+    "valid_pct": 100.0,
+    "code_std_pct": 50.0,
+    "content_ok_pct": 100.0,
+    "triggers": [
+     "对象覆盖缺口(方向键 5 / 锚点 301)",
+     "文号 50% <90%"
+    ],
+    "short": true
+   },
+   {
+    "direction": "融资服务",
+    "n_policies": 1,
+    "valid_pct": 100.0,
+    "code_std_pct": 0.0,
+    "content_ok_pct": 100.0,
+    "triggers": [
+     "对象覆盖缺口(方向键 5 / 锚点 301)",
+     "文号 0% <90%"
+    ],
+    "short": true
+   },
+   {
+    "direction": "财政支持",
+    "n_policies": 2,
+    "valid_pct": 100.0,
+    "code_std_pct": 50.0,
+    "content_ok_pct": 100.0,
+    "triggers": [
+     "对象覆盖缺口(方向键 5 / 锚点 301)",
+     "文号 50% <90%"
+    ],
+    "short": true
+   }
+  ],
+  "note": "方向级按同一阈值判定，用于 171 的短板侧；它不是 KPI 条数，避免与 169 的维度计数混用"
+ },
+ "object_coverage_view": {
+  "n_directions": 5,
+  "industry_anchor_links": 301,
+  "cover_pct": 1.6611,
+  "gap": true,
+  "note": "对象覆盖缺口为结构性信号，不计入三维阈值条数；171 引用它作为方向级短板触发条件"
+ },
+ "verdict": "短板清单条数 = 1（合规性：文号规范率 34.16% < 90%）。方向级辅助视图 5/5 触发（对象覆盖 + 文号），但其中对象覆盖是全局缺口，不能重复加总；覆盖与有效的「不触发」是代理造成的，必须与条数同时披露。"
+}

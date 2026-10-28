@@ -1,0 +1,535 @@
+{
+ "metric_id": "M_POLICY_GRAPH_107_1",
+ "metric_name_zh": "政策实体关系抽取",
+ "source": "gkx@183.240.141.251:3318（只读 gkx_reader_zp）",
+ "notes": [
+  "本件全部关系边为「本件自定义、待甲方确认」：共现阈值 MIN_NODE_NAME_LEN=4、标题口径、长名优先去重，均无甲方闭合口径。",
+  "政策—政策共现边不落库：唯一可用的共现键是机关×年，团簇会生成 220326 条同权边，不具区分度。"
+ ],
+ "probes": {
+  "policy_graph_like_tables": {
+   "rows": [
+    [
+     "dwd_global_policy_base"
+    ],
+    [
+     "dwd_global_policy_base_bak_20260923"
+    ],
+    [
+     "dwd_policy_base"
+    ],
+    [
+     "dwd_policy_base_bak_20260923"
+    ]
+   ],
+   "err": null
+  },
+  "dwd_policy_base": {
+   "rows": 20000,
+   "err": null
+  },
+  "dwd_industry_chain_info": {
+   "rows": 1273,
+   "err": null
+  },
+  "content_sample": {
+   "rows": 800,
+   "err": null
+  }
+ },
+ "absence": {
+  "scanned_patterns": [
+   "%policy%",
+   "%graph%",
+   "%entity%"
+  ],
+  "tables_found": [
+   "dwd_global_policy_base",
+   "dwd_global_policy_base_bak_20260923",
+   "dwd_policy_base",
+   "dwd_policy_base_bak_20260923"
+  ],
+  "wanted_but_absent": [
+   "policy_graph_edge",
+   "policy_entity",
+   "policy_entity_relation"
+  ],
+  "wanted_present": [],
+  "note": "gkx 政策侧只有文本主表 dwd_policy_base 与 dwd_global_policy_base（及两份 bak），没有任何「政策—实体」或「政策—政策」的现成边表；本件的全部边均为字段现建。"
+ },
+ "policy": {
+  "rows": 20000
+ },
+ "field_fill": {
+  "ministry": {
+   "nonempty": 19989,
+   "ratio": 0.99945
+  },
+  "rank": {
+   "nonempty": 19643,
+   "ratio": 0.98215
+  },
+  "type": {
+   "nonempty": 18138,
+   "ratio": 0.9069
+  },
+  "province": {
+   "nonempty": 17476,
+   "ratio": 0.8738
+  },
+  "city": {
+   "nonempty": 10294,
+   "ratio": 0.5147
+  },
+  "district": {
+   "nonempty": 1165,
+   "ratio": 0.05825
+  },
+  "publish_year": {
+   "nonempty": 19997,
+   "ratio": 0.99985
+  },
+  "theme": {
+   "nonempty": 2,
+   "ratio": 0.0001
+  },
+  "keywords": {
+   "nonempty": 0,
+   "ratio": 0.0
+  },
+  "keypoints": {
+   "nonempty": 0,
+   "ratio": 0.0
+  },
+  "policy_support": {
+   "nonempty": 0,
+   "ratio": 0.0
+  },
+  "_denominator": 20000
+ },
+ "policy_support_trap": {
+  "rows": 20000,
+  "literal_null_rows": 20000,
+  "real_value_rows": 0,
+  "json_length_positive_rows": 20000,
+  "note": "JSON_LENGTH(CAST('null' AS JSON)) 返回 1，若只用 JSON_LENGTH>0 判非空，会把 20,000 行全部误判成有值；实际真值 0 行。"
+ },
+ "industry_nodes": {
+  "rows": 1273,
+  "distinct_names": 1150,
+  "roots": 12,
+  "root_names": [
+   "机器人",
+   "智能网联汽车",
+   "低空经济",
+   "集成电路",
+   "软件与信息服务",
+   "人工智能",
+   "传感器",
+   "智能终端",
+   "具身智能",
+   "数字创意",
+   "生物医药",
+   "合成生物"
+  ],
+  "names_len_lt4": 113,
+  "names_usable": 1037,
+  "len_dist": {
+   "2": 22,
+   "3": 91,
+   "4": 235,
+   "5": 199,
+   "6": 247,
+   "7": 97,
+   "8": 117,
+   "9": 64,
+   "10": 30,
+   "11": 28,
+   "12": 7,
+   "13": 4,
+   "14": 4,
+   "15": 2,
+   "16": 1,
+   "17": 1,
+   "22": 1
+  },
+  "min_len_rule": 4,
+  "node_company_count_all_zero": true
+ },
+ "edges": {
+  "by_relation": {
+   "policy_has_issuer": 19989,
+   "policy_has_level": 22116,
+   "policy_has_type": 18138,
+   "policy_mentions_industry": 282,
+   "policy_applies_to_region": 28935
+  },
+  "policies_touched": {
+   "policy_has_issuer": 19989,
+   "policy_has_level": 19643,
+   "policy_has_type": 18138,
+   "policy_mentions_industry": 271,
+   "policy_applies_to_region": 17813
+  },
+  "total_edges": 89460,
+  "policies_with_any_edge": 20000,
+  "policies_isolated": 0,
+  "avg_degree": 4.473,
+  "max_degree": 8,
+  "median_degree": 4,
+  "degree_hist": {
+   "3-4": 10614,
+   "1-2": 274,
+   "5-6": 9067,
+   "7+": 45
+  },
+  "policy_mentions_industry": 282
+ },
+ "nodes_by_type": {
+  "policy": 20000,
+  "issuer": 468,
+  "level": 5,
+  "type": 13,
+  "province": 31,
+  "city": 54,
+  "district": 32,
+  "industry_node_hit": 46
+ },
+ "level_dist": {
+  "省级": 9922,
+  "市级": 8622,
+  "国家级": 2174,
+  "区级": 1254,
+  "园区级": 144
+ },
+ "top_issuers": [
+  {
+   "issuer": "工信部",
+   "policies": 637
+  },
+  {
+   "issuer": "上海市企业服务云",
+   "policies": 548
+  },
+  {
+   "issuer": "上海市科学技术委员会",
+   "policies": 528
+  },
+  {
+   "issuer": "浙江省人民政府",
+   "policies": 415
+  },
+  {
+   "issuer": "河南省科学技术厅",
+   "policies": 409
+  },
+  {
+   "issuer": "深圳市人民政府",
+   "policies": 346
+  },
+  {
+   "issuer": "北京市科学技术委员会、中关村科技园区管理委员会",
+   "policies": 336
+  },
+  {
+   "issuer": "发改委",
+   "policies": 316
+  },
+  {
+   "issuer": "广州市人民政府",
+   "policies": 272
+  },
+  {
+   "issuer": "陕西省科学技术厅",
+   "policies": 271
+  },
+  {
+   "issuer": "山西省商务厅",
+   "policies": 247
+  },
+  {
+   "issuer": "人社部",
+   "policies": 243
+  }
+ ],
+ "top_types": [
+  {
+   "type": "其他通知",
+   "policies": 5782
+  },
+  {
+   "type": "政策文件-管理办法/实施方案",
+   "policies": 3708
+  },
+  {
+   "type": "公示公告",
+   "policies": 2995
+  },
+  {
+   "type": "申报通知",
+   "policies": 1819
+  },
+  {
+   "type": "政策文件-指导意见",
+   "policies": 1697
+  },
+  {
+   "type": "政策文件-规划纲要",
+   "policies": 699
+  },
+  {
+   "type": "政策文件-其他文件",
+   "policies": 683
+  },
+  {
+   "type": "规范性文件-规范条例",
+   "policies": 606
+  },
+  {
+   "type": "政策文件-政策指南",
+   "policies": 93
+  },
+  {
+   "type": "规范性文件-部门规章",
+   "policies": 34
+  },
+  {
+   "type": "政策解读",
+   "policies": 17
+  },
+  {
+   "type": "规范性文件-法律法规",
+   "policies": 4
+  }
+ ],
+ "top_industry_nodes": [
+  {
+   "node": "集成电路",
+   "mentions": 44
+  },
+  {
+   "node": "智能制造",
+   "mentions": 35
+  },
+  {
+   "node": "软件产品",
+   "mentions": 34
+  },
+  {
+   "node": "生物医药",
+   "mentions": 30
+  },
+  {
+   "node": "人工智能",
+   "mentions": 27
+  },
+  {
+   "node": "智慧城市",
+   "mentions": 17
+  },
+  {
+   "node": "智能网联汽车",
+   "mentions": 16
+  },
+  {
+   "node": "信息技术服务",
+   "mentions": 6
+  },
+  {
+   "node": "电子认证服务",
+   "mentions": 5
+  },
+  {
+   "node": "工业机器人",
+   "mentions": 5
+  },
+  {
+   "node": "生产设备",
+   "mentions": 5
+  },
+  {
+   "node": "工业控制系统",
+   "mentions": 4
+  },
+  {
+   "node": "信息安全服务",
+   "mentions": 3
+  },
+  {
+   "node": "汽车整车",
+   "mentions": 3
+  },
+  {
+   "node": "设计服务",
+   "mentions": 3
+  }
+ ],
+ "cooccur_negative": {
+  "definition_if_built": "同发文机关 + 同发布年 → 两两连边（权重 1）",
+  "groups": 3242,
+  "edges_if_clique": 220326,
+  "largest_groups": [
+   {
+    "issuer": "深圳市人民政府",
+    "year": "2021",
+    "policies": 178
+   },
+   {
+    "issuer": "上海市企业服务云",
+    "year": "2020",
+    "policies": 159
+   },
+   {
+    "issuer": "上海市企业服务云",
+    "year": "2021",
+    "policies": 142
+   }
+  ],
+  "largest_clique_edges": 15753,
+  "why_rejected": "团结构：同组内每条边同权、无区分度，边数随组规模平方增长，图谱会退化成一个巨型 clique，不能回答「哪条政策与哪条政策相关」。theme / keywords 两列本可用于共现，但 theme 仅 2 行真值、keywords 全空，唯一可用的共现键就是机关×年，因此该边不落库。"
+ },
+ "title_vs_body": {
+  "sample_n": 800,
+  "sample_frame": "ORDER BY CRC32(id) LIMIT 800，对 20,000 条政策确定性抽样（无随机种子）",
+  "title_hit_policies": 12,
+  "body_hit_policies": 92,
+  "title_hit_edges": 12,
+  "body_hit_edges": 211,
+  "title_hit_ratio": 0.015,
+  "body_hit_ratio": 0.115,
+  "edge_uplift_ratio": 17.5833,
+  "note": "正文口径（标题 ∪ 前 4,000 字正文）命中率更高，但 20,000 条全量正文约 1.1 亿字，全量跑一次会撞 120 秒上限且不可复用；抽样只用于量化「标题口径低估多少」，交付边仍用标题口径，抽样值不当全量。"
+ },
+ "required_relations": [
+  {
+   "type": "政策主题",
+   "carrier": "theme",
+   "filled": 2,
+   "built": false,
+   "reason": "theme 仅 2/20000 行真值（另 19,998 行为字面 'NULL'），做不成主题节点"
+  },
+  {
+   "type": "政策目标",
+   "carrier": "keypoints",
+   "filled": 0,
+   "built": false,
+   "reason": "keypoints 整列为空（0/20000）"
+  },
+  {
+   "type": "实施主体",
+   "carrier": "ministry",
+   "filled": 19989,
+   "built": "weak",
+   "reason": "只发文机关可当载体（19989/20000），它是发文方不是实施方；对企业侧的实施主体（谁承接、谁落地）没有任何字段"
+  },
+  {
+   "type": "受益对象",
+   "carrier": "policy_support",
+   "filled": 0,
+   "built": false,
+   "reason": "policy_support 真值 0 行（全部是字面 'null'）；企业侧无受益对象字段"
+  },
+  {
+   "type": "监管机构",
+   "carrier": "无",
+   "filled": 0,
+   "built": false,
+   "reason": "无监管机构字段；ministry 是发文机关，不能替代监管机构（同一条政策可由发改委发文、由行业主管部门监管）"
+  }
+ ],
+ "coverage": {
+  "required": 5,
+  "built_strong": 0,
+  "built_weak": 1,
+  "not_built": 4,
+  "ratio_strong": 0.0,
+  "ratio_strong_plus_weak": 0.2,
+  "required_list": [
+   "政策主题",
+   "政策目标",
+   "实施主体",
+   "受益对象",
+   "监管机构"
+  ],
+  "auxiliary_relations": [
+   "policy_has_level",
+   "policy_has_type",
+   "policy_applies_to_region",
+   "policy_mentions_industry"
+  ],
+  "auxiliary_note": "四类辅助边都不在需求点名的五类关系里，不能顶替任何一类；它们的作用是把政策侧骨架撑起来，使图谱至少可遍历。"
+ },
+ "year_dist": {
+  "1981": 1,
+  "1985": 1,
+  "1988": 2,
+  "1989": 2,
+  "1990": 3,
+  "1992": 6,
+  "1993": 3,
+  "1994": 8,
+  "1995": 12,
+  "1996": 15,
+  "1997": 13,
+  "1998": 23,
+  "1999": 49,
+  "2000": 47,
+  "2001": 83,
+  "2002": 126,
+  "2003": 145,
+  "2004": 192,
+  "2005": 302,
+  "2006": 341,
+  "2007": 382,
+  "2008": 480,
+  "2009": 619,
+  "2010": 604,
+  "2011": 716,
+  "2012": 749,
+  "2013": 871,
+  "2014": 1085,
+  "2015": 1261,
+  "2016": 1316,
+  "2017": 1677,
+  "2018": 2016,
+  "2019": 2035,
+  "2020": 2402,
+  "2021": 2120,
+  "2022": 289,
+  "2024": 1
+ },
+ "base_years_used": [
+  2000,
+  2001,
+  2002,
+  2003,
+  2004,
+  2005,
+  2006,
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2024
+ ],
+ "base_years_missing": [
+  2023,
+  2025,
+  2026
+ ],
+ "base_years_note": "本件是截面关系图，不做同比；基期字段只用于声明政策语料的年份覆盖。publish_year 有 37 个不同取值，2000—2026 窗口内 24 年有量、3 年为零行（[2023, 2025, 2026]），2000 年以前另有 138 条历史文本，不进年度序列也不摊 0。",
+ "support_judgment": "部分支持",
+ "judgment_reason": "需求点名的五类关系里只有「实施主体」能弱建成（发文机关 19989/20000 行，方向是发文方而非实施方），「政策主题」「政策目标」「受益对象」「监管机构」四类无字段承载（theme 仅 2 行、keypoints 与 policy_support 真值 0 行、无监管机构字段）；gkx 也没有 policy_graph_edge / policy_entity 现成边表，全部边为字段现建、属本件自定义口径。政策侧骨架（机关/层级/文种/地区/产业节点，共 89460 条边）可遍历，但五类点名关系只落实 1 类且为方向性替代，故落部分支持。"
+}

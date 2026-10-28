@@ -1,0 +1,401 @@
+{
+ "metric_id": "M_ENT_SUPPLY_CHAIN_RISK",
+ "metric_name": "断链风险等级",
+ "support_judgment": "部分支持",
+ "verdict_kind": "partial_dimension_missing",
+ "judgment_reason": "四维韧性指数中 D1 应收账款、D2 前五大客户、D3 存货周转三个维度在 gkx 与开发库均无字段/无表；仅 D4 经济绩效敏感性（营收/利润波动）可由 gkx.dwd_org_stock_finance_info 真算，覆盖 972 家上市公司。等级需要四维加权 + 归一化总体，缺三维不可出，故判部分支持、只交付 D4 单维得分。",
+ "formula_calc_logic": "score_j = (x_j - min)/(max - min)*100（逆向指标取反）；resilience_i = Σ w_j*score_j（j=1..4）；level_i = 低风险[70,100] / 中风险[40,69] / 高风险[0,39]",
+ "dimension_availability": [
+  {
+   "code": "D1",
+   "dim": "供应链抵抗力 / 资金关系",
+   "metric": "应收账款与收入比的自然对数",
+   "direction": "逆向",
+   "required": "应收账款余额",
+   "found": 0,
+   "evidence": "gkx 全库搜 receivable / 应收：receiv 仅命中 dwd_safety.receive_date（领用日期）2 列，应收 0 列；dwd_org_stock_finance_info 27 列无应收科目",
+   "status": "不可得"
+  },
+  {
+   "code": "D2",
+   "dim": "供应链抵抗力 / 供需稳固",
+   "metric": "前五大客户中非新出现客户数 ÷ 5",
+   "direction": "正向",
+   "required": "客户关系表 + 客户新增标记",
+   "found": 0,
+   "evidence": "gkx 全库搜 customer / 客户 / 前五大 → 0 列；无客户关系边表",
+   "status": "不可得"
+  },
+  {
+   "code": "D3",
+   "dim": "供应链恢复力 / 产品流动",
+   "metric": "库存周转率",
+   "direction": "正向",
+   "required": "存货余额 / 营业成本",
+   "found": 0,
+   "evidence": "gkx 全库搜 inventory / 存货 / 库存 → 0 列；营业成本仅在dwd_main_business_composition_area.core_biz_cost（主营构成）有，缺存货余额，周转率仍不可算",
+   "status": "不可得"
+  },
+  {
+   "code": "D4",
+   "dim": "供应链恢复力 / 绩效波动",
+   "metric": "经济绩效敏感性指数",
+   "direction": "逆向",
+   "required": "营业收入 + 利润总额 + 期次",
+   "found": 3,
+   "evidence": "dwd_org_stock_finance_info：40,239 行 / 972 家 / occur_period 198912—202603；operating_revenue 非空 39,826、total_profit 非空 40,144",
+   "status": "可算（本件已算）"
+  }
+ ],
+ "vocab_evidence": {
+  "customer": {
+   "n_columns": 0,
+   "n_tables": 0
+  },
+  "inventory": {
+   "n_columns": 0,
+   "n_tables": 0
+  },
+  "存货": {
+   "n_columns": 0,
+   "n_tables": 0
+  },
+  "库存": {
+   "n_columns": 0,
+   "n_tables": 0
+  },
+  "upstream": {
+   "n_columns": 0,
+   "n_tables": 0
+  },
+  "downstream": {
+   "n_columns": 0,
+   "n_tables": 0
+  },
+  "supply": {
+   "n_columns": 0,
+   "n_tables": 0
+  },
+  "supplier": {
+   "n_columns": 3,
+   "n_tables": 3
+  }
+ },
+ "vocab_evidence_extra": {
+  "receiv": {
+   "n_columns": 2,
+   "n_tables": 2,
+   "columns": [
+    "dwd_safety.receive_date",
+    "dwd_safety_bak_20260912.receive_date"
+   ]
+  },
+  "应收": {
+   "n_columns": 0,
+   "n_tables": 0,
+   "columns": []
+  },
+  "cost": {
+   "n_columns": 19,
+   "n_tables": 7,
+   "columns": [
+    "dwd_en_journal.layout_cost",
+    "dwd_main_business_composition_area.core_biz_cost",
+    "dwd_main_business_composition_area.core_biz_cost_prop",
+    "dwd_main_business_composition_area.core_biz_cost_gr",
+    "dwd_main_business_composition_area_bak_20260911.core_biz_cost",
+    "dwd_main_business_composition_area_bak_20260911.core_biz_cost_prop"
+   ]
+  },
+  "营业成本": {
+   "n_columns": 0,
+   "n_tables": 0,
+   "columns": []
+  }
+ },
+ "d4": {
+  "definition": "volatility = mean(CV_revenue, CV_profit)，CV = 总体标准差 / 平均绝对值，取最近 8 期、要求至少 4 期；score_d4 = (max - volatility)/(max - min) × 100（逆向）",
+  "population": {
+   "rows": 40239,
+   "orgs_all": 972,
+   "orgs_scored": 918
+  },
+  "volatility_range": {
+   "min": 0.121026,
+   "max": 2.040663
+  },
+  "score_stats": {
+   "mean": 70.13,
+   "n_low_risk_band_70_100": 517,
+   "n_mid_risk_band_40_69": 340,
+   "n_high_risk_band_0_39": 28
+  },
+  "top10_most_volatile": [
+   {
+    "name": "广州大通资源开发股份有限公司",
+    "stock_code": "000660",
+    "org_id": "1033d5d313709ba300fc31c8e8491c02",
+    "n_periods_used": 8,
+    "cv_revenue": 2.192942,
+    "cv_profit": 1.888385,
+    "volatility_raw": 2.0407,
+    "score_d4": 0.0
+   },
+   {
+    "name": "深圳市宝鹰建设控股集团股份有限公司",
+    "stock_code": "002047",
+    "org_id": "bd2b63fbaee393326e0b49b873cd3361",
+    "n_periods_used": 8,
+    "cv_revenue": 1.617122,
+    "cv_profit": 2.321844,
+    "volatility_raw": 1.9695,
+    "score_d4": 3.71
+   },
+   {
+    "name": "深圳掌众智能科技股份有限公司",
+    "stock_code": "A03849",
+    "org_id": "f352e58221326931219f46fafb06251a",
+    "n_periods_used": 8,
+    "cv_revenue": 1.162975,
+    "cv_profit": 2.268408,
+    "volatility_raw": 1.7157,
+    "score_d4": 16.93
+   },
+   {
+    "name": "长园科技集团股份有限公司",
+    "stock_code": "600525",
+    "org_id": "c9c70dd5e9d5b3dec2deab8ef7271623",
+    "n_periods_used": 8,
+    "cv_revenue": 2.024927,
+    "cv_profit": 1.384056,
+    "volatility_raw": 1.7045,
+    "score_d4": 17.51
+   },
+   {
+    "name": "猴之王(深圳)科技股份有限公司",
+    "stock_code": "000535",
+    "org_id": "8bb7eb8f9416d996b57bad1113773bc3",
+    "n_periods_used": 8,
+    "cv_revenue": 1.783537,
+    "cv_profit": 1.601688,
+    "volatility_raw": 1.6926,
+    "score_d4": 18.13
+   },
+   {
+    "name": "深圳市振业(集团)股份有限公司",
+    "stock_code": "000006",
+    "org_id": "a99af91e28be56e2d46ce2c00d8aa989",
+    "n_periods_used": 8,
+    "cv_revenue": 1.915606,
+    "cv_profit": 1.360891,
+    "volatility_raw": 1.6382,
+    "score_d4": 20.96
+   },
+   {
+    "name": "深圳市中侨发展股份有限公司",
+    "stock_code": "000047",
+    "org_id": "3d394afbf3f1ad843b5470625c80e77a",
+    "n_periods_used": 8,
+    "cv_revenue": 2.645751,
+    "cv_profit": 0.579277,
+    "volatility_raw": 1.6125,
+    "score_d4": 22.3
+   },
+   {
+    "name": "TCL科技集团股份有限公司",
+    "stock_code": "000100",
+    "org_id": "be0ea409b1cdedecfb4204297deaeec9",
+    "n_periods_used": 8,
+    "cv_revenue": 1.721109,
+    "cv_profit": 1.475945,
+    "volatility_raw": 1.5985,
+    "score_d4": 23.03
+   },
+   {
+    "name": "广东佳云科技股份有限公司",
+    "stock_code": "300242",
+    "org_id": "587bb21e4b78fdd35a5859f132a0a4a2",
+    "n_periods_used": 8,
+    "cv_revenue": 1.337438,
+    "cv_profit": 1.827354,
+    "volatility_raw": 1.5824,
+    "score_d4": 23.87
+   },
+   {
+    "name": "深圳本鲁克斯实业股份有限公司",
+    "stock_code": "200041",
+    "org_id": "aa1eebc00d5fa1b264f845e437ec70fe",
+    "n_periods_used": 8,
+    "cv_revenue": 0.86438,
+    "cv_profit": 2.281183,
+    "volatility_raw": 1.5728,
+    "score_d4": 24.37
+   }
+  ],
+  "bottom10_least_volatile": [
+   {
+    "name": "深圳市金威源科技股份有限公司",
+    "stock_code": "A02261",
+    "org_id": "6651b5b1ac6beef962bf39dd696aa11d",
+    "n_periods_used": 4,
+    "cv_revenue": 0.172591,
+    "cv_profit": 0.25935,
+    "volatility_raw": 0.216,
+    "score_d4": 95.05
+   },
+   {
+    "name": "深圳美凯电子股份有限公司",
+    "stock_code": "A00553",
+    "org_id": "017c316e2db278ef0df3f466b75e0864",
+    "n_periods_used": 4,
+    "cv_revenue": 0.224529,
+    "cv_profit": 0.203699,
+    "volatility_raw": 0.2141,
+    "score_d4": 95.15
+   },
+   {
+    "name": "深圳雷杜生命科学股份有限公司",
+    "stock_code": "A02034",
+    "org_id": "a3304e09cebc75605484540ea8f707ba",
+    "n_periods_used": 8,
+    "cv_revenue": 0.186995,
+    "cv_profit": 0.212102,
+    "volatility_raw": 0.1995,
+    "score_d4": 95.91
+   },
+   {
+    "name": "千禧之星珠宝股份有限公司",
+    "stock_code": "A00968",
+    "org_id": "12dab8fc889c54ae5f19f1aea5b1b1f2",
+    "n_periods_used": 4,
+    "cv_revenue": 0.144543,
+    "cv_profit": 0.252462,
+    "volatility_raw": 0.1985,
+    "score_d4": 95.96
+   },
+   {
+    "name": "深圳市宏电技术股份有限公司",
+    "stock_code": "A01851",
+    "org_id": "7619391ffdd703d65280c10cb510a684",
+    "n_periods_used": 4,
+    "cv_revenue": 0.16534,
+    "cv_profit": 0.216194,
+    "volatility_raw": 0.1908,
+    "score_d4": 96.37
+   },
+   {
+    "name": "深圳市鼎泰智能装备股份有限公司",
+    "stock_code": "A03102",
+    "org_id": "3ae15e361211df4d8719eb0822bc9362",
+    "n_periods_used": 4,
+    "cv_revenue": 0.18458,
+    "cv_profit": 0.182784,
+    "volatility_raw": 0.1837,
+    "score_d4": 96.74
+   },
+   {
+    "name": "深圳市神舟电脑股份有限公司",
+    "stock_code": "A00741",
+    "org_id": "465fa9fd63f9a99ea1314e823807ec1a",
+    "n_periods_used": 4,
+    "cv_revenue": 0.176634,
+    "cv_profit": 0.173901,
+    "volatility_raw": 0.1753,
+    "score_d4": 97.17
+   },
+   {
+    "name": "东莞市雄林新材料科技股份有限公司",
+    "stock_code": "A02263",
+    "org_id": "bf4478dffd201ad418f2f3326c7b64ff",
+    "n_periods_used": 4,
+    "cv_revenue": 0.167679,
+    "cv_profit": 0.182032,
+    "volatility_raw": 0.1749,
+    "score_d4": 97.2
+   },
+   {
+    "name": "明珠电气股份有限公司",
+    "stock_code": "A02856",
+    "org_id": "d722bd9418d4512399d032a4cf443dbf",
+    "n_periods_used": 4,
+    "cv_revenue": 0.101121,
+    "cv_profit": 0.158276,
+    "volatility_raw": 0.1297,
+    "score_d4": 99.55
+   },
+   {
+    "name": "惠州元晖光电股份有限公司",
+    "stock_code": "A01480",
+    "org_id": "cb4496ed1e2be3ab406ec13c4ee704de",
+    "n_periods_used": 4,
+    "cv_revenue": 0.12838,
+    "cv_profit": 0.113672,
+    "volatility_raw": 0.121,
+    "score_d4": 100.0
+   }
+  ],
+  "not_comparable_note": "D4 的归一化总体是 972 家上市公司，而产业链上还有约 170 万家非上市链上企业；把 D4 得分当作『断链风险』与全量企业横比会系统性偏高或偏低。"
+ },
+ "level_output": {
+  "produced": false,
+  "why": "等级 = 四维加权后的韧性指数分档。D1—D3 无字段，权重（等权 25% 或熵值法）无法在四维上成立；若只用 D4×1.0 代替，等价于把『财务波动』改名为『断链风险』，属改名换义，故不产出。",
+  "what_would_unblock": [
+   "财务报表补应收账款、存货、营业成本三个科目（可从年报附注或三方财务库接入）",
+   "客户关系边表（企业→前五大客户，含客户首次出现期次）",
+   "供应链边表（source_org_id, target_org_id, relation_type），用于把关联企业风险信号挂到链上"
+  ]
+ },
+ "risk_signal_side": {
+  "tables": {
+   "经营异常": {
+    "table": "dwd_org_company_abnormal",
+    "rows": 5862,
+    "orgs": 4435
+   },
+   "严重违法": {
+    "table": "dwd_org_company_illegal",
+    "rows": 247,
+    "orgs": 217
+   },
+   "行政处罚": {
+    "table": "dwd_org_company_punish",
+    "rows": 65997,
+    "orgs": 19174
+   },
+   "失信被执行": {
+    "table": "dwd_org_risk_shixin",
+    "rows": 76035,
+    "orgs": 13823
+   },
+   "被执行人": {
+    "table": "dwd_org_risk_zhixing",
+    "rows": 550334,
+    "orgs": 35041
+   },
+   "税务处罚": {
+    "table": "dwd_org_risk_tax_punish",
+    "rows": 528,
+    "orgs": 336
+   }
+  },
+  "note": "calc-logic 还要求统计『供应链关联企业中经营异常/违法/处罚的占比』，这一步依赖供应链边表；边表缺失，风险信号只能按企业自身统计，不能按链上关联企业统计。"
+ },
+ "base_years_used": [
+  "1989—2026（occur_period 实际覆盖，D4 取各企业最近 8 期）"
+ ],
+ "base_years_missing": [
+  "2026 年后续季度（库内止于 202603）"
+ ],
+ "base_years_note": "D4 不用固定自然年窗口，而是每家取最近 8 个有值期次（季度），避免早年稀疏年份被当成 0；occur_period 为 YYYYMM 文本，198912 起有值，202603 为库内最新期。没有把缺失年份按 0 摊入分母：期次不足 4 期的企业直接不进样本。",
+ "sources": {
+  "db": "gkx @ 183.240.141.251:3318",
+  "tables": [
+   "gkx.dwd_org_stock_finance_info"
+  ],
+  "snapshots": [
+   "code/_snapshots21/supply_family_20261023.json",
+   "code/_snapshots21/gkx_columns_20261023.json"
+  ]
+ },
+ "generated_at": "2026-10-25T03:21:23+08:00"
+}

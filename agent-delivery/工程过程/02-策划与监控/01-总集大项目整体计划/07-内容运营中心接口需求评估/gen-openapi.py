@@ -252,8 +252,9 @@ kg_op("status/mark", "图谱·实体生命周期", "状态标记（新增或更�
 kg_op("status/history", "图谱·实体生命周期", "状态历史（时间倒序）",
       {"type": "object", "required": ["entityId"], "properties": {"entityId": {}, "page": {"type": "integer"}, "size": {"type": "integer"}}})
 # 关系链
-crud_rel_fields = [F("fromEntityId", req=True), F("type", req=True, desc="自由文本：上游供给/合作/竞争"), F("toEntityId", req=True),
-                   F("status", enum=["新建", "稳定", "强化中", "演进中"], desc="已断裂仅 break 动作置入"), F("since", fmt="date")]
+crud_rel_fields = [F("fromEntityId", req=True), F("type", req=True, desc="自由文本：上游供给/合作/竞争（建议从 relation-types 字典取）"), F("toEntityId", req=True),
+                   F("status", enum=["新建", "稳定", "强化中", "演进中"], desc="已断裂仅 break 动作置入"), F("since", fmt="date"),
+                   F("remark", desc="关系说明（久新前端弹窗必填展示项）")]
 kg_op("relations/list", "图谱·关系链", "关系·列表", {"type": "object", "properties": {"keyword": {"description": "命中源/目标实体名"}, "status": {}, "page": {"type": "integer"}, "size": {"type": "integer"}}})
 kg_op("relations/detail", "图谱·关系链", "关系·详情", schemas["DetailBody"])
 kg_op("relations/create", "图谱·关系链", "关系·新建", schema_of(crud_rel_fields))
@@ -269,8 +270,8 @@ kg_op("relations/insight", "图谱·关系链", "关系·LLM 策略/分析意见
 kg_op("attrs/list", "图谱·实体属性", "属性·列表（扁平+base/dyn 双分组）",
       {"type": "object", "properties": {"group": {"enum": ["base", "dyn"]}, "page": {"type": "integer"}, "size": {"type": "integer"}}})
 kg_op("attrs/create", "图谱·实体属性", "属性·新增",
-      schema_of([F("name", req=True), F("group", enum=["base", "dyn"]), F("dtype", enum=["文本", "数值", "整数", "枚举", "日期", "百分比", "多值"]), F("constraint"), F("value")]))
-_attr_upd = schema_of([F("name"), F("group", enum=["base", "dyn"]), F("dtype"), F("constraint"), F("value")]); _attr_upd["required"] = ["id"]
+      schema_of([F("name", req=True), F("group", enum=["base", "dyn"]), F("dtype", enum=["文本", "数值", "整数", "枚举", "日期", "百分比", "多值"]), F("definition", desc="属性业务含义与使用说明"), F("unit", desc="单位；无单位可空"), F("constraint"), F("value")]))
+_attr_upd = schema_of([F("name"), F("group", enum=["base", "dyn"]), F("dtype"), F("definition"), F("unit"), F("constraint"), F("value")]); _attr_upd["required"] = ["id"]
 kg_op("attrs/update", "图谱·实体属性", "属性·编辑", _attr_upd)
 kg_op("attrs/delete", "图谱·实体属性", "属性·删除", schemas["DeleteBody"])
 

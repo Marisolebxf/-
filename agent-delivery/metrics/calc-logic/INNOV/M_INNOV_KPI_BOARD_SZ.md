@@ -1,9 +1,20 @@
 # 深圳科技发展指标看板（M_INNOV_KPI_BOARD_SZ）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_KPI_BOARD_SZ.md`；复现脚本 `metrics/repro/M_INNOV_KPI_BOARD_SZ.py` → `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：STAT（城市看板聚合型，无单一公式，按格判定）｜ **域**：创新评价（INNOV）· 区域科技看板｜ **UI 挂载**：科技发展态势 · 深圳科技看板｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_KPI_BOARD_SZ.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_KPI_BOARD_SZ.py`、产物 `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_KPI_BOARD_SZ.md`；复现脚本 `metrics/repro/M_INNOV_KPI_BOARD_SZ.py` → `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_KPI_BOARD_SZ.py`、产物 `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_KPI_BOARD_SZ.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_KPI_BOARD_SZ.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json` |
@@ -67,14 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_KPI_BOARD_SZ.py`、产物 `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（城市看板聚合型，无单一公式，按格判定）｜ **域**：创新评价（INNOV）· 区域科技看板｜ **UI 挂载**：科技发展态势 · 深圳科技看板｜ **数据支持度**：**部分支持**
-> **公式定义人**：本批 agent 重建（需求未给公式；看板类指标按格判定）｜ wanghui：false（看板本身无王惠条目）｜ 直接（结构/数据）：是 / 部分 ｜ 依赖（结构/数据）：是 / 部分
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -93,7 +101,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 本指标落**第三档**。11 个维度里，5 个可算（专利、论文、机构、基金、政策）、2 个部分（期刊、学者）、4 个不可算（会议、项目、主题、基础设施载体）。可算占比 45.45%。这个结果比全国版看板（20 格中 6 格可算、30%）好，原因是深圳有 `city` 字段的几张表（企业底册、政策、基金）可以稳定切出属地子集；但「好一些」不等于「可以整体交付」，因为不可算的三格恰好是需求里的核心展示项。
 
-判定依据来自 `code/M_INNOV_KPI_BOARD_SZ_out.json`：`summary.status_count` 为 `{"可算":5,"部分":3,"不可算":3}`，`summary.computable_share=0.4545`。
+判定依据来自 `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`：`summary.status_count` 为 `{"可算":5,"部分":3,"不可算":3}`，`summary.computable_share=0.4545`。
 
 ### 0.2 四判定（拆分证据，供落到档位）
 
@@ -121,6 +129,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 §2.7 给出 11 格的完整数值、占比与耗时（217.5 秒），§2.8 给出与全国版的逐项口径对照。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.1.4.1.6.2 科技发展指标展示（L766）<br>```<br>1.1.1.1.4.1.6.2. **科技发展指标展示**<br>构建深圳市创新监测指标体系，全面覆盖科技发展全要素，包括论文、期刊、专利、专家学者、会议、组织机构、课题、项目、资金、政策、基础设施等多个维度。该功能通过数据可视化和指标分析，直观展示深圳市科技发展的各项指标表现和变化趋势，帮助用户全面把握深圳市科技发展的整体状况和内在结构，为科技政策制定和资源配置提供科学依据。<br>科技发展指标展示的具体功能包括指标体系展示、多维度指标展示、指标数据可视化、指标时间趋势分析、指标对比分析、指标详情查看。<br>```<br>#### §1.1.1.1.4.1.6 深圳创新监测（L730）<br>```<br>1.1.1.1.4.1.6. **深圳创新监测**<br>深圳创新监测是一个综合性的科技创新监测与态势分析工具，利用GIS技术和数据分析工具，对创新成果进行排名展示。用户可通过该功能了解深圳市科技创新的全貌，识别重点创新载体，掌握科技发展动态，并获取科技发展的决策支持。<br>深圳创新监测的具体功能包括深圳市创新载体综合展示、科技发展指标展示、深圳市各科技领域分布展示、科技发展城市分析展示。<br>```<br>#### §1.1.1.1.4.1.6.2.2 多维度指标展示（L776）<br>```<br>1.1.1.1.4.1.6.2.2. 多维度指标展示<br>从论文、期刊、专利、专家学者、会议、组织机构、课题、项目、资金、政策、基础设施等多个维度展示科技发展指标，用户可选择查看不同维度的指标数据。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_KPI_BOARD_SZ.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -192,7 +245,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 - `_work_full/DISPATCH_BRIEF.md` 本批指标清单：原句「M_INNOV_KPI_BOARD_SZ：深圳科技发展指标看板」。
 - `_work_full/DATA_FACTS_gkx.md` 企业域：原句「`dwd_org_base_info` 189,116 家，广东 99.82%，深圳 95,600 家」。
-- `code/M_INNOV_KPI_BOARD_SZ_out.json`：`vs_national_board.do_not_mix`，原句「全国版专利 2,939,895 件不能直接当深圳分母」。
+- `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`：`vs_national_board.do_not_mix`，原句「全国版专利 2,939,895 件不能直接当深圳分母」。
 - `gkx.dwd_zh_project` 结构：`funded_institution`、`funded_province` 两列存在但全空。
 
 ### 1.6 推测原意与推测定义
@@ -325,7 +378,7 @@ SELECT COUNT(*) n, SUM(city LIKE '%深圳%') sz FROM gkx.dwd_policy_base;
 
 ### 2.7 复现代码结果展示
 
-脚本：`code/M_INNOV_KPI_BOARD_SZ.py`；输出：`code/M_INNOV_KPI_BOARD_SZ_out.json`；命令 `python3 code/M_INNOV_KPI_BOARD_SZ.py`；实测耗时 **217.5 秒**。
+脚本：`metrics/repro/M_INNOV_KPI_BOARD_SZ.py`；输出：`metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json`；命令 `python3 code/M_INNOV_KPI_BOARD_SZ.py`；实测耗时 **217.5 秒**。
 
 | 格 | 维度 | 深圳值 | 全国/全库 | 占比 | 状态 |
 |---|---|---:|---:|---:|---|
@@ -470,7 +523,6 @@ elapsed 217.5s written M_INNOV_KPI_BOARD_SZ_out.json
 5. 科学技术部.《生物技术产业创新能力评价指标体系（征求意见稿）》. https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110671.html
 
 6. Bettencourt, L. M. A., Lobo, J., & Strumsky, D. (2007). Invention in the city: Increasing returns to patenting as a scaling function of metropolitan size. *Research Policy*, 36(1), 107–120. https://doi.org/10.1016/j.respol.2006.09.026 （城市标度律：专利产出随人口超线性增长、指数约 1.27；本报告用其说明「城市计数须先谈规模分母」）
-
 ---
 
 # 附件
@@ -662,15 +714,8 @@ elapsed 217.5s written M_INNOV_KPI_BOARD_SZ_out.json
 
 ## 附录 D 实测脚本与结果摘要
 
-脚本 `code/M_INNOV_KPI_BOARD_SZ.py` 分四段：11 格取数、占比计算、趋势序列、状态汇总。输出 `code/M_INNOV_KPI_BOARD_SZ_out.json` 含 `board`（11 格）、`summary`、`time_series`、`probes`、`vs_national_board`、`support_judgment` 六个证据块。实测 217.5 秒，无外部依赖。
+脚本 `metrics/repro/M_INNOV_KPI_BOARD_SZ.py` 分四段：11 格取数、占比计算、趋势序列、状态汇总。输出 `metrics/repro/out/M_INNOV_KPI_BOARD_SZ_out.json` 含 `board`（11 格）、`summary`、`time_series`、`probes`、`vs_national_board`、`support_judgment` 六个证据块。实测 217.5 秒，无外部依赖。
 
 脚本不落中间表，每次全量重算；专利与论文的 `LIKE` 扫描是主要耗时。若产品需要接口级响应，应把 11 格结果物化成日更表。复现命令：`python3 code/M_INNOV_KPI_BOARD_SZ.py`。
 
 一句话总结：深圳看板的数字不少，但「会议、项目、主题」三格是空的；这三格不补，它只能叫「深圳成果与主体看板」，不能叫「科技发展全维度看板」。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

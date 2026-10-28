@@ -1,0 +1,87 @@
+{
+ "metric_id": "M_POLICY_EFFECT_SCORE",
+ "title": "政策效果评分（王惠三维口径 v2 复现）",
+ "probe_date": "2026-10-21",
+ "probes": {
+  "gkx_dwd_policy_base": 20000,
+  "gkx_real_status": 20000,
+  "gkx_real_implementation_date": 0,
+  "gkx_real_expire_date": 0
+ },
+ "compute": {
+  "rows_source": "gkx",
+  "rows_pulled": 20000,
+  "n_valid_dedup": 20000,
+  "d1a_valid_ratio": {
+   "value": 1.0,
+   "note": "入集=status='有效'（全库单值），组级比率恒 1.0",
+   "dim_available": true
+  },
+  "d1b_timeliness": {
+   "n_scored": 0,
+   "dim_available": false,
+   "note": "gkx 侧 implementation_date/expire_date 全为 0000-00-00 占位（真实 0）"
+  },
+  "d2_socioeconomic": {
+   "dim_available": false,
+   "note": "operating_revenue_growth/employment_contribution 无 ODS（王惠登记待建）"
+  },
+  "d3_green_ratio": {
+   "hit": 4118,
+   "rate": 0.2059,
+   "word_dist_top": {
+    "环保": 2537,
+    "环境保护": 1421,
+    "生态环境": 1344,
+    "节能减排": 630,
+    "污染防治": 522,
+    "低碳": 498,
+    "生态文明": 449,
+    "循环经济": 430,
+    "绿色发展": 416,
+    "清洁生产": 408
+   },
+   "dim_available": true,
+   "example": [
+    {
+     "title": "六部门关于印发《蚕桑丝绸产业高质量发展行动计划(2021-2025年)》的通知",
+     "words": [
+      "绿色发展"
+     ]
+    },
+    {
+     "title": "工业和信息化部办公厅关于公布全国工业领域电力需求侧管理第二批参考产品（技术）目录的通知",
+     "words": [
+      "环保"
+     ]
+    },
+    {
+     "title": "两部门关于印发《国家车联网产业标准体系建设指南（智能网联汽车）》的通知",
+     "words": [
+      "生态环境"
+     ]
+    },
+    {
+     "title": "三部门关于组织开展2017年度高耗能行业能效“领跑者”遴选工作的通知",
+     "words": [
+      "绿色发展"
+     ]
+    },
+    {
+     "title": "《废塑料综合利用行业规范条件》及《废塑料综合利用行业规范条件公告管理暂行办法》发布",
+     "words": [
+      "循环经济",
+      "环境保护"
+     ]
+    }
+   ]
+  },
+  "dims_available": "2/3（执行效果残维、社会经济缺、环境可算）",
+  "effect_score": 60.3,
+  "formula": "执行效果(有效占比，及时性缺) 与 环境影响(绿色导向占比) 等权 ×100；社会经济维缺不进平均",
+  "support_judgment": "部分支持"
+ },
+ "notes": [],
+ "support_judgment": "部分支持",
+ "data_caveat": "gkx 侧 keywords/theme 为 'NULL' 占位（真实 0/2），环保闭集扫描实际落点为 title/abstract/content；implementation_date/expire_date 全为 0000-00-00 占位（及时性子项无输入）；社会经济两子项无 ODS。"
+}

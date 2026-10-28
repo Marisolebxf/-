@@ -1,9 +1,21 @@
 # 重点布局产业推荐模型（M_CHAIN_DEEP_129_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_DEEP_129_1.md`；复现脚本 `metrics/repro/M_CHAIN_DEEP_129_1.py` → `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **数据支持度**：**部分支持**
+> - **一句话结论**：以深圳产业优势分、产业机遇分、政策匹配分三等权合成推荐指数，12 条链中 **集成电路 88.99 分排第 1**，是唯一进入“优先布局”的链；智能网联汽车 68.07、智能终端 59.83、生物医药 59.62 等 7 条链为“重点培育”，数字创意、合成生物、具身智能、低空经济 4 条为“观察”。但三个维度几乎不相关（Spearman −0.133—0.046），权重稍变排名就大幅换位，故判 **部分支持**。
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_DEEP_129_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_DEEP_129_1.md`；复现脚本 `metrics/repro/M_CHAIN_DEEP_129_1.py` → `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_DEEP_129_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +63,7 @@
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_DEEP_129_1.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_DEEP_129_1.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json` |
@@ -59,19 +71,11 @@
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_DEEP_129_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **一句话结论**：以深圳产业优势分、产业机遇分、政策匹配分三等权合成推荐指数，12 条链中 **集成电路 88.99 分排第 1**，是唯一进入“优先布局”的链；智能网联汽车 68.07、智能终端 59.83、生物医药 59.62 等 7 条链为“重点培育”，数字创意、合成生物、具身智能、低空经济 4 条为“观察”。但三个维度几乎不相关（Spearman −0.133—0.046），权重稍变排名就大幅换位，故判 **部分支持**。
->
-> **数据支持度**：**部分支持**
->
-> **公式定义人**：AI 补漏调研（2026-08-21，转写算法库“重点布局产业推荐模型”）；本件复算与判档：指标文档写手（2026-10-22）
->
-> **复现脚本 / 产物**：`code/M_CHAIN_DEEP_129_1.py` → `code/M_CHAIN_DEEP_129_1_out.json`
->
-> **基期声明**：截面合成指标，无年度基期；三个输入件各自的口径与基期见其产物文件，本件 `base_years_used=[]`、`base_years_missing=[]`。
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -170,9 +174,9 @@
 
 | 维度 | 文件 | 字段 | 12 链取值特征 |
 | --- | --- | --- | --- |
-| 优势 | `code/M_CHAIN_SZ_ADVANTAGE_SCORE_out.json` | `per_chain[].sz_score_available_dims` | 59.93—100.00 |
-| 机遇 | `code/M_CHAIN_DEEP_128_1_out.json` | `compute.chains[].opportunity_index` | 30.84—80.66 |
-| 政策 | `code/M_CHAIN_POLICY_MATCH_SCORE_out.json` | `chain_rows[].match_score` | 0.00—95.45 |
+| 优势 | `metrics/repro/out/M_CHAIN_SZ_ADVANTAGE_SCORE_out.json` | `per_chain[].sz_score_available_dims` | 59.93—100.00 |
+| 机遇 | `metrics/repro/out/M_CHAIN_DEEP_128_1_out.json` | `compute.chains[].opportunity_index` | 30.84—80.66 |
+| 政策 | `metrics/repro/out/M_CHAIN_POLICY_MATCH_SCORE_out.json` | `chain_rows[].match_score` | 0.00—95.45 |
 
 三件都是既有交付产物，本件不重扫库、不重算上游。这样做的好处是口径可追溯：任何一维被质疑，可以回到上游件的正文与脚本；坏处是上游件的口径问题会原样传进来（见 §3.2）。
 
@@ -229,10 +233,10 @@ $$
 
 ### 2.7 复现代码与产物
 
-脚本 `code/M_CHAIN_DEEP_129_1.py` 读三个上游产物，按 1/3 等权合成，输出 `code/M_CHAIN_DEEP_129_1_out.json`，含 `per_chain`、`headline`、`dimension_correlation`、`sensitivity`、`advantage_column_variant`、`input_provenance`、`caveats`。所有分数保留 2 位，排名按分数降序、同分按链码升序，保证可复现。
+脚本 `metrics/repro/M_CHAIN_DEEP_129_1.py` 读三个上游产物，按 1/3 等权合成，输出 `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json`，含 `per_chain`、`headline`、`dimension_correlation`、`sensitivity`、`advantage_column_variant`、`input_provenance`、`caveats`。所有分数保留 2 位，排名按分数降序、同分按链码升序，保证可复现。
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_DEEP_129_1.py
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_DEEP_129_1
 python3 _work_gkx21/audit_md_vs_out.py --dir _staging21
@@ -383,9 +387,6 @@ python3 _work_gkx21/audit_md_vs_out.py --dir _staging21
 2. Porter M E. The Competitive Advantage of Nations[M]. New York: Free Press, 1990.
 3. 国家发展和改革委员会. 产业结构调整指导目录（2024 年本）[EB/OL]. https://www.ndrc.gov.cn/
 4. 工业和信息化部. 制造业高质量发展与产业集群相关文件[EB/OL]. https://www.miit.gov.cn/
-5. 项目内部. 重点布局产业推荐模型计算逻辑：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_DEEP_129_1.md`
-6. 项目内部. 优势分产物：`code/M_CHAIN_SZ_ADVANTAGE_SCORE_out.json`
-
 # 附件
 
 ## 附录 A 原文摘录与口径出处
@@ -494,11 +495,3 @@ python3 _work_gkx21/audit_md_vs_out.py --dir _staging21
 5. 优势分用 `available_dims` 还是 `wanghui4_filled`？
 
 这五问确认前，本件的名次只能作为“等权默认解”，不能作为甲方决策依据。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

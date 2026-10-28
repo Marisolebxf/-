@@ -1,9 +1,21 @@
-# 根节点 Top5 关键实体与关联强度（M_TECH_ENTITY_TOP5）
+# M_TECH_ENTITY_TOP5 · 技术点头部实体 Top5（gkx 口径重建件）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_ENTITY_TOP5.md`；复现脚本 `metrics/repro/M_TECH_ENTITY_TOP5.py` → `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：明细型（DETAIL，四类实体卡片）｜ **域**：TOPIC-TECH（技术点实体）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/技术领域深度分析模型构建/技术点头部实体
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：需求明确「不另造排序模型」，故强度 = 边权本身；本件只做同类线性缩放
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_ENTITY_TOP5.py`、产物 `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_ENTITY_TOP5.md`；复现脚本 `metrics/repro/M_TECH_ENTITY_TOP5.py` → `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_ENTITY_TOP5.py`、产物 `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_ENTITY_TOP5.md` |
 | 复现脚本 | `metrics/repro/M_TECH_ENTITY_TOP5.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json` |
@@ -61,16 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_ENTITY_TOP5.py`、产物 `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：明细型（DETAIL，四类实体卡片）｜ **域**：TOPIC-TECH（技术点实体）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/技术领域深度分析模型构建/技术点头部实体
-> **数据支持度**：**部分支持** ｜ **公式定义人**：需求明确「不另造排序模型」，故强度 = 边权本身；本件只做同类线性缩放
-> **主算库**：`gkx`（183.240.141.251:3318，只读账号 `gkx_reader_zp`）｜ **SQL 条数**：0（全部读落盘快照）
-> **产物**：`code/M_TECH_ENTITY_TOP5.py` → `code/M_TECH_ENTITY_TOP5_out.json` ｜ **成文日期**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -112,7 +119,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 人才卡整类为空：`patent_inventor_counts_gkx` 只有「人名→件数」，没有分类号，无法把发明人挂到技术点；`dwd_patent` 的发明人字段聚合又被 DATA_FACTS §3.13 禁止。因此 5 张卡里缺 1 张。
 
-**结论**：机构/企业卡可用（需标四城口径），论文卡弱可用（需标噪声），专利卡只能给公开号（无标题），人才卡不可用。按 §〇 判**部分支持**。复现代码见 `code/M_TECH_ENTITY_TOP5.py`，结果见 `code/M_TECH_ENTITY_TOP5_out.json`。
+**结论**：机构/企业卡可用（需标四城口径），论文卡弱可用（需标噪声），专利卡只能给公开号（无标题），人才卡不可用。按 §〇 判**部分支持**。复现代码见 `metrics/repro/M_TECH_ENTITY_TOP5.py`，结果见 `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`。
 
 ---
 
@@ -250,10 +257,10 @@ H04W 也有类似问题：Top5 里混进「心电信号」「局部放电」论�
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_TECH_ENTITY_TOP5.py
+cd code && python3 M_TECH_ENTITY_TOP5.py
 ```
 
-脚本零 SQL，只读 IPC4×申请人、专利样本、论文库三份快照，输出 `code/M_TECH_ENTITY_TOP5_out.json`。产物含五个契约字段与 `coverage`、`roots`（每个根技术点的邻居 + 四类卡片）、`gaps`。
+脚本零 SQL，只读 IPC4×申请人、专利样本、论文库三份快照，输出 `metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`。产物含五个契约字段与 `coverage`、`roots`（每个根技术点的邻居 + 四类卡片）、`gaps`。
 
 实测输出（2026-10-22 运行）：
 
@@ -537,7 +544,7 @@ python3 M_TECH_ENTITY_TOP5.py
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_TECH_ENTITY_TOP5.py
 ```
 
@@ -552,7 +559,7 @@ python3 M_TECH_ENTITY_TOP5.py
 | `_snapshots21/plan_ipc_lexicon_gkx21.json` | IPC4→关键词权重 |
 | `_snapshots21/patent2024_scan_20261021.json` | 2024 年申请人→IPC4→pn |
 
-输出：`code/M_TECH_ENTITY_TOP5_out.json`（覆盖写）。复现校验：两次运行，`roots` 逐字段一致。
+输出：`metrics/repro/out/M_TECH_ENTITY_TOP5_out.json`（覆盖写）。复现校验：两次运行，`roots` 逐字段一致。
 
 自检清单：
 
@@ -571,11 +578,8 @@ python3 M_TECH_ENTITY_TOP5.py
 1. 国家知识产权局.《专利统计年报》. https://www.cnipa.gov.cn/
 2. WIPO.《IPC 国际专利分类》. https://www.wipo.int/classifications/ipc/
 3. WIPO.《Inventor Database》. https://www.wipo.int/patentscope/en/data/
-4. OECD.《Patent Analytics for Policy》. https://www.oecd.org/sti/
-5. OECD.《Patent-Paper Pairs》. https://www.oecd.org/sti/inno/
-6. 中国科学技术信息研究所.《中国科技论文统计报告》. https://www.istic.ac.cn/
-7. 深圳市科技创新局.《深圳市技术转移体系建设方案》. http://stic.sz.gov.cn/
-
+4. 中国科学技术信息研究所.《中国科技论文统计报告》. https://www.istic.ac.cn/
+5. 深圳市科技创新局.《深圳市技术转移体系建设方案》. http://stic.sz.gov.cn/
 ---
 
 # 附件
@@ -624,10 +628,3 @@ python3 M_TECH_ENTITY_TOP5.py
 **D.5 与旧稿的差异**：旧稿（`demo` 口径）有发明人×IPC、有专利标题、有城市字段，五张卡齐全；本件换 gkx 后三样都缺，卡片从五张降到四张。旧稿的排序结果不可与本件比较。
 
 **D.6 复现边界**：脚本只读四份快照，不连库；根技术点依赖上游 `M_TECH_SZ_ASSESS_out.json`，上游重跑会改变根技术点集合，本件需同步重跑。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

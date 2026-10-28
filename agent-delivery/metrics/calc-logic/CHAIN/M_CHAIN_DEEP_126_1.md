@@ -1,9 +1,25 @@
 # 区域产业指数模型（M_CHAIN_DEEP_126_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_DEEP_126_1.md`；复现脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py` → `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（四城 × 12 链三维指数 + 名次与分差）｜ **域**：产业链分析／区域产业比较／产业生态评估｜ **UI 挂载**：区域产业报告「四城对比」、链详情页「深圳位置」卡片
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（企业数、高企数、专利、融资、服务机构五源全量可算）+ B 类（营收、论文入链、科研机构入链、政策入链四项无链标签）**
+> - **同域边界**：与 `M_CHAIN_DEEP_128_1`（深圳机遇）的边界是「本件横向比四城、128 纵向看深圳自身缺口」；与 `M_CHAIN_DEEP_123_1`（产业阶段）的边界是「本件比城市、123 比链」。三者共用同一链内企业集合，但城市口径只取链内企业，不重算母体。
+> - **一句话结论**：在深圳、广州、东莞、惠州四城 × 12 条链上，按「企业 0.40 + 学术 0.30 + 生态 0.30」合成区域产业指数，**深圳 12 条链全部第 1**；但名次没有信息量，可读的是与第二名的分差 **1.77—71.89 分**——集成电路领先 71.89 分，合成生物只领先 1.77 分；第二名在广州 8 条、在东莞 4 条。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_CHAIN_DEEP_126_1.py`｜ **产物**：`metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`｜ **模式**：只读快照，零数据库连接
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_DEEP_126_1.md`；复现脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py` → `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_DEEP_126_1.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_DEEP_126_1.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json` |
@@ -62,17 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（四城 × 12 链三维指数 + 名次与分差）｜ **域**：产业链分析／区域产业比较／产业生态评估｜ **UI 挂载**：区域产业报告「四城对比」、链详情页「深圳位置」卡片
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（企业数、高企数、专利、融资、服务机构五源全量可算）+ B 类（营收、论文入链、科研机构入链、政策入链四项无链标签）**
-> **复现脚本**：`code/M_CHAIN_DEEP_126_1.py`｜ **产物**：`code/M_CHAIN_DEEP_126_1_out.json`｜ **模式**：只读快照，零数据库连接
-> **同域边界**：与 `M_CHAIN_DEEP_128_1`（深圳机遇）的边界是「本件横向比四城、128 纵向看深圳自身缺口」；与 `M_CHAIN_DEEP_123_1`（产业阶段）的边界是「本件比城市、123 比链」。三者共用同一链内企业集合，但城市口径只取链内企业，不重算母体。
-> **一句话结论**：在深圳、广州、东莞、惠州四城 × 12 条链上，按「企业 0.40 + 学术 0.30 + 生态 0.30」合成区域产业指数，**深圳 12 条链全部第 1**；但名次没有信息量，可读的是与第二名的分差 **1.77—71.89 分**——集成电路领先 71.89 分，合成生物只领先 1.77 分；第二名在广州 8 条、在东莞 4 条。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -185,7 +195,7 @@ $$G_{c,k}=0.50\cdot\frac{N_{c,k}}{\max_k N_{c,k}}+0.50\cdot\frac{S_{c,k}}{\max_k
 | 3 | `gkx.dwd_patent` | 同上 | 链 × 城市专利并集 |
 | 4 | `gkx.dwd_org_financing_info` | 同上 | 融资事件（按企业名挂链 + 底册取城市） |
 | 5 | `gkx.dwd_org_service_info` | 同上 | 服务机构格计数 |
-| 6 | 旧稿 `王惠口径正本（GitLab 外本地归档）` | 仓内 | 旧口径对照 |
+| 6 | 旧稿 `gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_DEEP_126_1.md（王惠正本已演化并入）` | 仓内 | 旧口径对照 |
 | 7 | EU Cluster Scoreboard | https://clustercollaboration.eu/ | 集群评价 |
 | 8 | Cornell/INSEAD/WIPO GII | https://www.wipo.int/global_innovation_index/ | 创新生态 |
 
@@ -342,9 +352,9 @@ $$I_{深圳}=0.40\times100+0.30\times100+0.30\times100=100.00$$
 ### 2.8 复现代码与结果
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_DEEP_126_1.py
-# 只读快照，输出 code/M_CHAIN_DEEP_126_1_out.json
+# 只读快照，输出 metrics/repro/out/M_CHAIN_DEEP_126_1_out.json
 ```
 
 **探针结果（真实产物）**：
@@ -491,8 +501,6 @@ python3 code/M_CHAIN_DEEP_126_1.py
 2. Cornell University, INSEAD, & WIPO. *Global Innovation Index*. https://www.wipo.int/global_innovation_index/
 3. IMD World Competitiveness Center. *IMD World Competitiveness Yearbook*. https://www.imd.org/centers/wcc/
 4. Porter, M. E. (1998). Clusters and the new economics of competition. *Harvard Business Review*, 76(6), 77–90.
-5. 项目内旧稿：`王惠口径正本（GitLab 外本地归档）`
-
 ---
 
 # 附件
@@ -596,15 +604,7 @@ python3 code/M_CHAIN_DEEP_126_1.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_CHAIN_DEEP_126_1.py`（只读快照）
-- 产物：`code/M_CHAIN_DEEP_126_1_out.json`
+- 脚本：`metrics/repro/M_CHAIN_DEEP_126_1.py`（只读快照）
+- 产物：`metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`
 - 关键结果：四城 × 12 链，深圳 12/12 第 1，分差 1.77—71.89，第二名广州 8 / 东莞 4
 - 复现要求：`chain_panel21.json`、`chain_org_agg_20261022.json`、`region_index_patent_union.json`、`chain21_fin_degree_20261022.json`、`svc_chain_city_20261022.json`
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

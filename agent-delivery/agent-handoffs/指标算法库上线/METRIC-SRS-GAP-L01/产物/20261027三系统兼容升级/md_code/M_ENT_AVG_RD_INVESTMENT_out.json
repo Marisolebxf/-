@@ -1,0 +1,997 @@
+{
+ "metric_id": "M_ENT_AVG_RD_INVESTMENT",
+ "metric_name": "平均研发投入",
+ "support_judgment": "部分支持",
+ "judgment_basis": {
+  "formula": "AVG(rd_investment) over DISTINCT org_id in selected cluster, latest full year",
+  "source_table": "gkx.dwd_org_annual_financial_info.arch_development_am（calc-logic 的 ODS 源）",
+  "why_partial": "国内年报研发列整列为空（非空 0 行 / 90,926 行），产业键 cluster_id 在该列上无值可聚合；唯一有数的是上市财报表（FY2025 645 家、任一报告期 876 家，占底册 0.4632%），而 calc-logic 明禁以它替代——缺口是「非上市法人的研发金额」这一整块",
+  "why_not_unsupported": "依赖表、列、机构号、年份键全在，645 家 FY2025 上市样本的均值/中位数与 12 条链的切面均已算出（可作为放开口径后的下界）",
+  "why_not_transformed": "缺口不是「加工没做」，而是分子对 99.54% 的法人根本不存在，任何转换都无法把空列变成金额"
+ },
+ "sources": [
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp（只读）",
+   "table": "gkx.dwd_org_annual_financial_info",
+   "rows": 90926,
+   "note": "列级填充率探针：arch_development_am / development_employee / fixed_assets 三列全空"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_stock_finance_info",
+   "rows": 40239,
+   "note": "上市研发费，calc-logic 禁用为主口径；本件只作可行性证据"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_foreign_org_annual_financial_info",
+   "rows": 51,
+   "note": "境外研发列 51 行全为 0.0，不可用"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_industry_tags",
+   "rows": 2283762,
+   "note": "645 个统一社会信用代码的链归属（industry_code 首个 INB 码前 7 位）"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_base_info",
+   "rows": 189116,
+   "note": "industry_l1_name 行业大类 + 底册规模"
+  },
+  {
+   "snapshot": "code/_snapshots21/ent_fin_family_20261023.json",
+   "builder": "code/_build_ent_fin_family.py"
+  },
+  {
+   "snapshot": "code/_snapshots21/chain_firm_year_20261023.json",
+   "note": "12 条链的链名与链上企业总数（分母参照）"
+  }
+ ],
+ "base_years_used": [
+  2025
+ ],
+ "base_years_missing": [
+  2020,
+  2021,
+  2022,
+  2023,
+  2024
+ ],
+ "base_years_note": "「最近一个完整自然年」= 2025（上市财报表 occur_period=202512 的 743 行年报口径）。2026 只有一季报、残年，不进均值；2020—2024 未单年出均值——vintage 差异会让同一家企业在不同年份进不同的样本，跨年不具可比性，故只取 2025 一个锚年，其余年份显式列为未用",
+ "headline": {
+  "annual_fin_rows": 90926,
+  "arch_development_am_nonnull": 0,
+  "arch_development_am_nonzero": 0,
+  "development_employee_nonnull": 0,
+  "fixed_assets_nonnull": 0,
+  "annual_fin_orgs": 8127,
+  "base_orgs": 189116,
+  "forg_rows": 51,
+  "forg_rd_positive_rows": 0,
+  "forg_rd_nonnull_rows": 51,
+  "stock_rows": 40239,
+  "stock_orgs": 972,
+  "stock_rd_positive_rows": 19585,
+  "stock_rd_positive_orgs": 876,
+  "stock_rd_zero_rows": 108,
+  "stock_rd_all_zero_orgs": 0,
+  "stock_coverage_pct_of_base": 0.4632,
+  "rd_any_period_mean_yuan": 82156550.3538,
+  "rd_any_period_median_yuan": 22041788.645,
+  "rd_any_period_p90_yuan": 120546642.64,
+  "rd_any_period_p99_yuan": 647912418.52,
+  "rd_any_period_max_yuan": 11343566000.0,
+  "rd_any_period_org_count": 876,
+  "rd_any_period_org_period_year": {
+   "2017": 2,
+   "2018": 6,
+   "2019": 16,
+   "2020": 21,
+   "2021": 32,
+   "2022": 46,
+   "2023": 37,
+   "2024": 10,
+   "2025": 90,
+   "2026": 616
+  },
+  "y2025_dec_rows": 743,
+  "y2025_dec_rd_pos_rows": 645,
+  "y2025_dec_rd_sum_yuan": 153500926172.53,
+  "y2025_dec_rd_mean_yuan": 237985932.05,
+  "y2025_dec_rd_median_yuan": 67217167.37,
+  "y2025_dec_note": "主口径：occur_period=202512 的 FY2025 年报行，645 家研发费>0；与 rd_any_period_* 那组（876 家、各取自己最后一个报告期，其中 616 家落在 2026 一季报）不可混用",
+  "both_rev_rd_orgs": 875,
+  "chain_mapped_orgs": 495,
+  "chain_unmapped_orgs": 150,
+  "l1_mapped_orgs": 645,
+  "by_chain": [
+   {
+    "n": 193,
+    "sum_yuan": 80424356843.54,
+    "mean_yuan": 416706512.14,
+    "median_yuan": 110088937.26,
+    "share_of_rd_orgs_pct": 29.9225,
+    "share_of_rd_sum_pct": 52.3934,
+    "chain_code": "INB1309",
+    "chain_name": "人工智能",
+    "chain_all_firms": 131843,
+    "listed_sample_cov_pct": 0.146386
+   },
+   {
+    "n": 75,
+    "sum_yuan": 10242766509.63,
+    "mean_yuan": 136570220.13,
+    "median_yuan": 58232569.5,
+    "share_of_rd_orgs_pct": 11.6279,
+    "share_of_rd_sum_pct": 6.6728,
+    "chain_code": "INB1333",
+    "chain_name": "智能终端",
+    "chain_all_firms": 143389,
+    "listed_sample_cov_pct": 0.052305
+   },
+   {
+    "n": 63,
+    "sum_yuan": 14108734492.14,
+    "mean_yuan": 223948166.54,
+    "median_yuan": 65531660.9,
+    "share_of_rd_orgs_pct": 9.7674,
+    "share_of_rd_sum_pct": 9.1913,
+    "chain_code": "INB1306",
+    "chain_name": "软件与信息服务",
+    "chain_all_firms": 917842,
+    "listed_sample_cov_pct": 0.006864
+   },
+   {
+    "n": 43,
+    "sum_yuan": 6575423324.24,
+    "mean_yuan": 152916821.49,
+    "median_yuan": 92295041.06,
+    "share_of_rd_orgs_pct": 6.6667,
+    "share_of_rd_sum_pct": 4.2836,
+    "chain_code": "INB1303",
+    "chain_name": "集成电路",
+    "chain_all_firms": 12028,
+    "listed_sample_cov_pct": 0.357499
+   },
+   {
+    "n": 26,
+    "sum_yuan": 5089793105.66,
+    "mean_yuan": 195761273.29,
+    "median_yuan": 77685629.77,
+    "share_of_rd_orgs_pct": 4.031,
+    "share_of_rd_sum_pct": 3.3158,
+    "chain_code": "INB1323",
+    "chain_name": "传感器",
+    "chain_all_firms": 29708,
+    "listed_sample_cov_pct": 0.087519
+   },
+   {
+    "n": 19,
+    "sum_yuan": 4853762074.76,
+    "mean_yuan": 255461161.83,
+    "median_yuan": 75533180.57,
+    "share_of_rd_orgs_pct": 2.9457,
+    "share_of_rd_sum_pct": 3.162,
+    "chain_code": "INB2505",
+    "chain_name": "合成生物",
+    "chain_all_firms": 52329,
+    "listed_sample_cov_pct": 0.036309
+   },
+   {
+    "n": 17,
+    "sum_yuan": 6939152846.88,
+    "mean_yuan": 408185461.58,
+    "median_yuan": 70105888.99,
+    "share_of_rd_orgs_pct": 2.6357,
+    "share_of_rd_sum_pct": 4.5206,
+    "chain_code": "INB1204",
+    "chain_name": "机器人",
+    "chain_all_firms": 8549,
+    "listed_sample_cov_pct": 0.198854
+   },
+   {
+    "n": 17,
+    "sum_yuan": 4049260045.37,
+    "mean_yuan": 238191767.37,
+    "median_yuan": 71427152.1,
+    "share_of_rd_orgs_pct": 2.6357,
+    "share_of_rd_sum_pct": 2.6379,
+    "chain_code": "INB1354",
+    "chain_name": "具身智能",
+    "chain_all_firms": 8140,
+    "listed_sample_cov_pct": 0.208845
+   },
+   {
+    "n": 12,
+    "sum_yuan": 1040004313.16,
+    "mean_yuan": 86667026.1,
+    "median_yuan": 36832928.64,
+    "share_of_rd_orgs_pct": 1.8605,
+    "share_of_rd_sum_pct": 0.6775,
+    "chain_code": "INB1502",
+    "chain_name": "数字创意",
+    "chain_all_firms": 261837,
+    "listed_sample_cov_pct": 0.004583
+   },
+   {
+    "n": 11,
+    "sum_yuan": 3574523960.55,
+    "mean_yuan": 324956723.69,
+    "median_yuan": 102449393.93,
+    "share_of_rd_orgs_pct": 1.7054,
+    "share_of_rd_sum_pct": 2.3287,
+    "chain_code": "INB1236",
+    "chain_name": "低空经济",
+    "chain_all_firms": 4034,
+    "listed_sample_cov_pct": 0.272682
+   },
+   {
+    "n": 10,
+    "sum_yuan": 907465202.2,
+    "mean_yuan": 90746520.22,
+    "median_yuan": 67830885.33,
+    "share_of_rd_orgs_pct": 1.5504,
+    "share_of_rd_sum_pct": 0.5912,
+    "chain_code": "INB1209",
+    "chain_name": "智能网联汽车",
+    "chain_all_firms": 6016,
+    "listed_sample_cov_pct": 0.166223
+   },
+   {
+    "n": 9,
+    "sum_yuan": 1778689995.05,
+    "mean_yuan": 197632221.67,
+    "median_yuan": 114630535.16,
+    "share_of_rd_orgs_pct": 1.3953,
+    "share_of_rd_sum_pct": 1.1587,
+    "chain_code": "INB2503",
+    "chain_name": "生物医药",
+    "chain_all_firms": 138742,
+    "listed_sample_cov_pct": 0.006487
+   }
+  ],
+  "by_l1": [
+   {
+    "n": 353,
+    "sum_yuan": 103742673238.33,
+    "mean_yuan": 293888592.74,
+    "median_yuan": 69942922.9,
+    "share_of_rd_orgs_pct": 54.7287,
+    "share_of_rd_sum_pct": 67.5844,
+    "l1_name": "制造业"
+   },
+   {
+    "n": 93,
+    "sum_yuan": 12476158253.91,
+    "mean_yuan": 134152239.29,
+    "median_yuan": 74177447.6,
+    "share_of_rd_orgs_pct": 14.4186,
+    "share_of_rd_sum_pct": 8.1277,
+    "l1_name": "科学研究和技术服务业"
+   },
+   {
+    "n": 57,
+    "sum_yuan": 7661199947.62,
+    "mean_yuan": 134407016.62,
+    "median_yuan": 59901248.22,
+    "share_of_rd_orgs_pct": 8.8372,
+    "share_of_rd_sum_pct": 4.991,
+    "l1_name": "批发和零售业"
+   },
+   {
+    "n": 56,
+    "sum_yuan": 11809077552.99,
+    "mean_yuan": 210876384.87,
+    "median_yuan": 72541536.59,
+    "share_of_rd_orgs_pct": 8.6822,
+    "share_of_rd_sum_pct": 7.6932,
+    "l1_name": "信息传输、软件和信息技术服务业"
+   },
+   {
+    "n": 24,
+    "sum_yuan": 5287660064.82,
+    "mean_yuan": 220319169.37,
+    "median_yuan": 26223227.1,
+    "share_of_rd_orgs_pct": 3.7209,
+    "share_of_rd_sum_pct": 3.4447,
+    "l1_name": "租赁和商务服务业"
+   },
+   {
+    "n": 15,
+    "sum_yuan": 3902630862.44,
+    "mean_yuan": 260175390.83,
+    "median_yuan": 32000000.0,
+    "share_of_rd_orgs_pct": 2.3256,
+    "share_of_rd_sum_pct": 2.5424,
+    "l1_name": "交通运输、仓储和邮政业"
+   },
+   {
+    "n": 13,
+    "sum_yuan": 3207809583.95,
+    "mean_yuan": 246754583.38,
+    "median_yuan": 23677426.03,
+    "share_of_rd_orgs_pct": 2.0155,
+    "share_of_rd_sum_pct": 2.0898,
+    "l1_name": "房地产业"
+   },
+   {
+    "n": 13,
+    "sum_yuan": 2671969054.23,
+    "mean_yuan": 205536081.09,
+    "median_yuan": 24743887.63,
+    "share_of_rd_orgs_pct": 2.0155,
+    "share_of_rd_sum_pct": 1.7407,
+    "l1_name": "建筑业"
+   },
+   {
+    "n": 9,
+    "sum_yuan": 1732997273.48,
+    "mean_yuan": 192555252.61,
+    "median_yuan": 78363719.34,
+    "share_of_rd_orgs_pct": 1.3953,
+    "share_of_rd_sum_pct": 1.129,
+    "l1_name": "电力、热力、燃气及水生产和供应业"
+   },
+   {
+    "n": 5,
+    "sum_yuan": 167651520.91,
+    "mean_yuan": 33530304.18,
+    "median_yuan": 13856361.93,
+    "share_of_rd_orgs_pct": 0.7752,
+    "share_of_rd_sum_pct": 0.1092,
+    "l1_name": "水利、环境和公共设施管理业"
+   },
+   {
+    "n": 2,
+    "sum_yuan": 53894450.13,
+    "mean_yuan": 26947225.07,
+    "median_yuan": 26947225.07,
+    "share_of_rd_orgs_pct": 0.3101,
+    "share_of_rd_sum_pct": 0.0351,
+    "l1_name": "教育"
+   },
+   {
+    "n": 2,
+    "sum_yuan": 144727612.97,
+    "mean_yuan": 72363806.48,
+    "median_yuan": 72363806.48,
+    "share_of_rd_orgs_pct": 0.3101,
+    "share_of_rd_sum_pct": 0.0943,
+    "l1_name": "文化、体育和娱乐业"
+   }
+  ],
+  "top10_rd": [
+   {
+    "org_id": "464c4994ec889e51f8541478cf167ff3",
+    "name": "比亚迪股份有限公司",
+    "stock_code": "002594",
+    "period": "202603",
+    "rd_yuan": 11343566000.0
+   },
+   {
+    "org_id": "8a7c2697c7770ed44f61a7781d28a574",
+    "name": "国信证券股份有限公司",
+    "stock_code": "002736",
+    "period": "202012",
+    "rd_yuan": 6828036518.73
+   },
+   {
+    "org_id": "5c7cbb81838eef1276acf463b83e75f8",
+    "name": "中兴通讯股份有限公司",
+    "stock_code": "000063",
+    "period": "202603",
+    "rd_yuan": 4906482000.0
+   },
+   {
+    "org_id": "e45c632407f4e64b2fb65a3e95e463b9",
+    "name": "富士康工业互联网股份有限公司",
+    "stock_code": "601138",
+    "period": "202603",
+    "rd_yuan": 2336460000.0
+   },
+   {
+    "org_id": "c1b7cfa6007946a0f422b40efdc86d81",
+    "name": "欣旺达电子股份有限公司",
+    "stock_code": "300207",
+    "period": "202603",
+    "rd_yuan": 1196665577.19
+   },
+   {
+    "org_id": "01cf15b0368f80865ad3bf8576f82be4",
+    "name": "深圳市汇川技术股份有限公司",
+    "stock_code": "300124",
+    "period": "202603",
+    "rd_yuan": 1007346162.97
+   },
+   {
+    "org_id": "c70c28384fe9799b84e0d3564e8fb9c2",
+    "name": "深圳迈瑞生物医疗电子股份有限公司",
+    "stock_code": "300760",
+    "period": "202603",
+    "rd_yuan": 801738588.0
+   },
+   {
+    "org_id": "95f495512d51f61b3fc4d1c8a3efcae0",
+    "name": "深圳传音控股股份有限公司",
+    "stock_code": "688036",
+    "period": "202603",
+    "rd_yuan": 761366524.48
+   },
+   {
+    "org_id": "46ed04c3d54f0ddc1cc03d5c884ee4e3",
+    "name": "鹏鼎控股(深圳)股份有限公司",
+    "stock_code": "002938",
+    "period": "202603",
+    "rd_yuan": 704582450.54
+   },
+   {
+    "org_id": "d063d078c5e7d8e76a4971e94f931699",
+    "name": "广州发展集团股份有限公司",
+    "stock_code": "600098",
+    "period": "202512",
+    "rd_yuan": 647912418.52
+   }
+  ],
+  "chain_sample_note": "FY2025 有研发费的上市样本 645 家里 495 家能挂到 12 条未来产业链，150 家只能挂行业大类 L1；链上企业总数取 chain_firms（软件与信息服务 917,842 家），样本占比见 listed_sample_cov_pct"
+ },
+ "derived": {
+  "orgs_without_any_rd": {
+   "value": 188240,
+   "numerator": 188240,
+   "denominator": null,
+   "denominator_note": "计数，无分母：底册 189,116 家 − 任一报告期研发费>0 的上市样本 876 家（rd_pos_orgs）＝ 没有任何研发费记录的机构规模，是差集不是比例"
+  },
+  "fy2025_orgs_without_rd": {
+   "value": 327,
+   "numerator": 327,
+   "denominator": null,
+   "denominator_note": "计数，无分母：上市财务样本 972 家（stock_fin.orgs）− FY2025 研发费>0 的 645 家（y2025_dec.rd_pos_rows），即无 FY2025 年报或该年研发费为空的 327 家"
+  },
+  "fy2025_sum_vs_chain_sum_ratio": {
+   "value": 0.909336,
+   "numerator": 139583932713.18,
+   "denominator": 153500926172.53,
+   "denominator_note": "分子=12 条未来产业链切片研发费合计（by_chain[].sum_yuan 求和，覆盖 495 家）；分母=FY2025 年报研发费合计 rd_sum_yuan（645 家）。倍率<1 说明 150 家未能挂链，差额见 chain_unmapped_sum_pct"
+  },
+  "fy2025_mean_vs_any_period": {
+   "value": 2.8967,
+   "numerator": 237985932.05,
+   "denominator": 82156550.3538,
+   "denominator_note": "分子=FY2025 年报研发费均值 rd_mean_yuan（645 家）；分母=任一报告期研发费均值 rd_latest_stats_yuan.mean（876 家，各取自己最后一个报告期）。倍率>1 因 FY2025 单年样本更偏上市大盘股"
+  },
+  "fy2025_median_vs_any_period": {
+   "value": 3.0495,
+   "numerator": 67217167.37,
+   "denominator": 22041788.645,
+   "denominator_note": "分子=FY2025 年报研发费中位数 rd_median_yuan（645 家）；分母=任一报告期研发费中位数 rd_latest_stats_yuan.median（876 家）"
+  },
+  "chain_mapped_share_pct": {
+   "value": 76.7442,
+   "numerator": 495,
+   "denominator": 645,
+   "denominator_note": "分子=研发费能挂到 12 条未来产业链的上市机构数 chain_mapped_orgs（495 家）；分母=FY2025 有研发费的上市机构数 listed_orgs_with_rd（645 家）"
+  },
+  "fy2025_coverage_pct_of_base": {
+   "value": 0.3411,
+   "numerator": 645,
+   "denominator": 189116,
+   "denominator_note": "分子=FY2025 研发费>0 的上市机构数 y2025_dec.rd_pos_rows（645 家）；分母=四市底册法人总数 base.orgs（189,116 家）"
+  },
+  "any_period_coverage_pct_of_base": {
+   "value": 0.4632,
+   "numerator": 876,
+   "denominator": 189116,
+   "denominator_note": "分子=任一报告期研发费>0 的上市机构数 stock_fin.rd_pos_orgs（876 家）；分母=四市底册法人总数 base.orgs（189,116 家）"
+  },
+  "any_period_over_fy2025_mean": {
+   "value": 0.3452,
+   "numerator": 82156550.3538,
+   "denominator": 237985932.05,
+   "denominator_note": "分子=任一报告期研发费均值（876 家）；分母=FY2025 年报研发费均值（645 家）。与 fy2025_mean_vs_any_period 互为倒数"
+  },
+  "chain_unmapped_sum_pct": {
+   "value": 9.0664,
+   "numerator": 13916993459.350006,
+   "denominator": 153500926172.53,
+   "denominator_note": "分子=未挂链的 150 家 FY2025 研发费合计（rd_sum_yuan − 12 条链 sum_yuan 之和）；分母=FY2025 年报研发费合计 rd_sum_yuan。value 由分子/分母直接相除、保留 4 位小数 = 9.0664。若改为「100 − 12 条链各自 4 位小数份额之和」，会得 9.0665（见同段 chain_unmapped_sum_rounded_pct）；差 0.0001 是 12 个分项各自舍入后累加，**两数都保留、不得混用**，主口径用直除"
+  },
+  "chain_unmapped_sum_rounded_pct": {
+   "value": 9.0665,
+   "numerator": 90.9335,
+   "denominator": 100,
+   "denominator_note": "12 条链各自 4 位小数份额之和 X，本值 = 100 − X。分项舍入累加使它比直除的 9.0664 高 0.0001；只用于说明「分项相加不等于整体相除」，不作主口径"
+  },
+  "rd_pos_row_share_pct": {
+   "value": 48.6717,
+   "numerator": 19585,
+   "denominator": 40239,
+   "denominator_note": "分子=上市财务表研发费>0 的行 rd_pos_rows（19,585 行）；分母=上市财务表总行 stock_fin.rows（40,239 行）。并列参考：rd_nonnull_rows（研发费非空）19,695 行，占比 48.95%——两个口径差 110 行，本键采用「>0」口径，键名已相应改为 rd_pos_*"
+  }
+ },
+ "annual_fin_fill": {
+  "total_assets": {
+   "nonnull": 2629,
+   "nonzero": 2629
+  },
+  "total_liabilities": {
+   "nonnull": 2423,
+   "nonzero": 2423
+  },
+  "operating_revenue": {
+   "nonnull": 2193,
+   "nonzero": 2193
+  },
+  "main_business_revenue": {
+   "nonnull": 2040,
+   "nonzero": 2040
+  },
+  "total_profit": {
+   "nonnull": 2354,
+   "nonzero": 2354
+  },
+  "pure_profit": {
+   "nonnull": 2349,
+   "nonzero": 2349
+  },
+  "total_tax_paid": {
+   "nonnull": 2187,
+   "nonzero": 2187
+  },
+  "owners_equity": {
+   "nonnull": 2454,
+   "nonzero": 2454
+  },
+  "employees_number": {
+   "nonnull": 3184,
+   "nonzero": 3170
+  },
+  "fixed_assets": {
+   "nonnull": 0,
+   "nonzero": 0
+  },
+  "arch_development_am": {
+   "nonnull": 0,
+   "nonzero": 0
+  },
+  "development_employee": {
+   "nonnull": 0,
+   "nonzero": 0
+  }
+ },
+ "stock_detail": {
+  "rd_latest_stats_yuan": {
+   "n": 876,
+   "sum": 71969138109.92,
+   "mean": 82156550.3538,
+   "median": 22041788.645,
+   "p10": 3147257.08,
+   "p25": 9235529.49,
+   "p75": 51387489.44,
+   "p90": 120546642.64,
+   "p99": 647912418.52,
+   "min": 1416.28,
+   "max": 11343566000.0,
+   "neg": 0,
+   "zero": 0
+  },
+  "rd_latest_period_year": {
+   "2017": 2,
+   "2018": 6,
+   "2019": 16,
+   "2020": 21,
+   "2021": 32,
+   "2022": 46,
+   "2023": 37,
+   "2024": 10,
+   "2025": 90,
+   "2026": 616
+  },
+  "y2025_dec": {
+   "rows": 743,
+   "rd_pos_rows": 645,
+   "rd_sum_yuan": 153500926172.53,
+   "rd_mean_yuan": 237985932.05,
+   "rd_median_yuan": 67217167.37,
+   "rev_pos_rows": 735
+  },
+  "top10_rd": [
+   {
+    "org_id": "464c4994ec889e51f8541478cf167ff3",
+    "name": "比亚迪股份有限公司",
+    "stock_code": "002594",
+    "period": "202603",
+    "rd_yuan": 11343566000.0
+   },
+   {
+    "org_id": "8a7c2697c7770ed44f61a7781d28a574",
+    "name": "国信证券股份有限公司",
+    "stock_code": "002736",
+    "period": "202012",
+    "rd_yuan": 6828036518.73
+   },
+   {
+    "org_id": "5c7cbb81838eef1276acf463b83e75f8",
+    "name": "中兴通讯股份有限公司",
+    "stock_code": "000063",
+    "period": "202603",
+    "rd_yuan": 4906482000.0
+   },
+   {
+    "org_id": "e45c632407f4e64b2fb65a3e95e463b9",
+    "name": "富士康工业互联网股份有限公司",
+    "stock_code": "601138",
+    "period": "202603",
+    "rd_yuan": 2336460000.0
+   },
+   {
+    "org_id": "c1b7cfa6007946a0f422b40efdc86d81",
+    "name": "欣旺达电子股份有限公司",
+    "stock_code": "300207",
+    "period": "202603",
+    "rd_yuan": 1196665577.19
+   },
+   {
+    "org_id": "01cf15b0368f80865ad3bf8576f82be4",
+    "name": "深圳市汇川技术股份有限公司",
+    "stock_code": "300124",
+    "period": "202603",
+    "rd_yuan": 1007346162.97
+   },
+   {
+    "org_id": "c70c28384fe9799b84e0d3564e8fb9c2",
+    "name": "深圳迈瑞生物医疗电子股份有限公司",
+    "stock_code": "300760",
+    "period": "202603",
+    "rd_yuan": 801738588.0
+   },
+   {
+    "org_id": "95f495512d51f61b3fc4d1c8a3efcae0",
+    "name": "深圳传音控股股份有限公司",
+    "stock_code": "688036",
+    "period": "202603",
+    "rd_yuan": 761366524.48
+   },
+   {
+    "org_id": "46ed04c3d54f0ddc1cc03d5c884ee4e3",
+    "name": "鹏鼎控股(深圳)股份有限公司",
+    "stock_code": "002938",
+    "period": "202603",
+    "rd_yuan": 704582450.54
+   },
+   {
+    "org_id": "d063d078c5e7d8e76a4971e94f931699",
+    "name": "广州发展集团股份有限公司",
+    "stock_code": "600098",
+    "period": "202512",
+    "rd_yuan": 647912418.52
+   }
+  ],
+  "rd_zero_rows": 108,
+  "rd_all_zero_orgs": 0,
+  "period_min": "198912",
+  "period_max": "202603"
+ },
+ "forg_detail": {
+  "rows": 51,
+  "orgs": 12,
+  "rd_nonnull_rows": 51,
+  "rd_pos_rows": 0,
+  "rd_staff_pos_rows": 0,
+  "overlap_orgs_with_stock": 3,
+  "sample": [
+   {
+    "qymc": "比亚迪股份有限公司",
+    "occur_period": "2025-12-31",
+    "rev_yuan": 803964958000.0,
+    "np_yuan": 33760758000.0,
+    "rd_yuan": 0.0
+   },
+   {
+    "qymc": "比亚迪股份有限公司",
+    "occur_period": "2025-09-30",
+    "rev_yuan": 566265546000.0,
+    "np_yuan": 24231664000.0,
+    "rd_yuan": 0.0
+   },
+   {
+    "qymc": "比亚迪股份有限公司",
+    "occur_period": "2025-06-30",
+    "rev_yuan": 371280948000.0,
+    "np_yuan": 16038939000.0,
+    "rd_yuan": 0.0
+   },
+   {
+    "qymc": "联华电子股份有限公司",
+    "occur_period": "2025-12-31",
+    "rev_yuan": 237553199000.0,
+    "np_yuan": 40178813000.0,
+    "rd_yuan": 0.0
+   },
+   {
+    "qymc": "联华电子股份有限公司",
+    "occur_period": "2025-09-30",
+    "rev_yuan": 175743654000.0,
+    "np_yuan": 31535438000.0,
+    "rd_yuan": 0.0
+   }
+  ]
+ },
+ "chain_section": {
+  "listed_orgs_with_rd": 645,
+  "credit_codes": 645,
+  "chain_mapped_orgs": 495,
+  "chain_unmapped_orgs": 150,
+  "l1_mapped_orgs": 645,
+  "by_chain": [
+   {
+    "n": 193,
+    "sum_yuan": 80424356843.54,
+    "mean_yuan": 416706512.14,
+    "median_yuan": 110088937.26,
+    "share_of_rd_orgs_pct": 29.9225,
+    "share_of_rd_sum_pct": 52.3934,
+    "chain_code": "INB1309",
+    "chain_name": "人工智能",
+    "chain_all_firms": 131843,
+    "listed_sample_cov_pct": 0.146386
+   },
+   {
+    "n": 75,
+    "sum_yuan": 10242766509.63,
+    "mean_yuan": 136570220.13,
+    "median_yuan": 58232569.5,
+    "share_of_rd_orgs_pct": 11.6279,
+    "share_of_rd_sum_pct": 6.6728,
+    "chain_code": "INB1333",
+    "chain_name": "智能终端",
+    "chain_all_firms": 143389,
+    "listed_sample_cov_pct": 0.052305
+   },
+   {
+    "n": 63,
+    "sum_yuan": 14108734492.14,
+    "mean_yuan": 223948166.54,
+    "median_yuan": 65531660.9,
+    "share_of_rd_orgs_pct": 9.7674,
+    "share_of_rd_sum_pct": 9.1913,
+    "chain_code": "INB1306",
+    "chain_name": "软件与信息服务",
+    "chain_all_firms": 917842,
+    "listed_sample_cov_pct": 0.006864
+   },
+   {
+    "n": 43,
+    "sum_yuan": 6575423324.24,
+    "mean_yuan": 152916821.49,
+    "median_yuan": 92295041.06,
+    "share_of_rd_orgs_pct": 6.6667,
+    "share_of_rd_sum_pct": 4.2836,
+    "chain_code": "INB1303",
+    "chain_name": "集成电路",
+    "chain_all_firms": 12028,
+    "listed_sample_cov_pct": 0.357499
+   },
+   {
+    "n": 26,
+    "sum_yuan": 5089793105.66,
+    "mean_yuan": 195761273.29,
+    "median_yuan": 77685629.77,
+    "share_of_rd_orgs_pct": 4.031,
+    "share_of_rd_sum_pct": 3.3158,
+    "chain_code": "INB1323",
+    "chain_name": "传感器",
+    "chain_all_firms": 29708,
+    "listed_sample_cov_pct": 0.087519
+   },
+   {
+    "n": 19,
+    "sum_yuan": 4853762074.76,
+    "mean_yuan": 255461161.83,
+    "median_yuan": 75533180.57,
+    "share_of_rd_orgs_pct": 2.9457,
+    "share_of_rd_sum_pct": 3.162,
+    "chain_code": "INB2505",
+    "chain_name": "合成生物",
+    "chain_all_firms": 52329,
+    "listed_sample_cov_pct": 0.036309
+   },
+   {
+    "n": 17,
+    "sum_yuan": 6939152846.88,
+    "mean_yuan": 408185461.58,
+    "median_yuan": 70105888.99,
+    "share_of_rd_orgs_pct": 2.6357,
+    "share_of_rd_sum_pct": 4.5206,
+    "chain_code": "INB1204",
+    "chain_name": "机器人",
+    "chain_all_firms": 8549,
+    "listed_sample_cov_pct": 0.198854
+   },
+   {
+    "n": 17,
+    "sum_yuan": 4049260045.37,
+    "mean_yuan": 238191767.37,
+    "median_yuan": 71427152.1,
+    "share_of_rd_orgs_pct": 2.6357,
+    "share_of_rd_sum_pct": 2.6379,
+    "chain_code": "INB1354",
+    "chain_name": "具身智能",
+    "chain_all_firms": 8140,
+    "listed_sample_cov_pct": 0.208845
+   },
+   {
+    "n": 12,
+    "sum_yuan": 1040004313.16,
+    "mean_yuan": 86667026.1,
+    "median_yuan": 36832928.64,
+    "share_of_rd_orgs_pct": 1.8605,
+    "share_of_rd_sum_pct": 0.6775,
+    "chain_code": "INB1502",
+    "chain_name": "数字创意",
+    "chain_all_firms": 261837,
+    "listed_sample_cov_pct": 0.004583
+   },
+   {
+    "n": 11,
+    "sum_yuan": 3574523960.55,
+    "mean_yuan": 324956723.69,
+    "median_yuan": 102449393.93,
+    "share_of_rd_orgs_pct": 1.7054,
+    "share_of_rd_sum_pct": 2.3287,
+    "chain_code": "INB1236",
+    "chain_name": "低空经济",
+    "chain_all_firms": 4034,
+    "listed_sample_cov_pct": 0.272682
+   },
+   {
+    "n": 10,
+    "sum_yuan": 907465202.2,
+    "mean_yuan": 90746520.22,
+    "median_yuan": 67830885.33,
+    "share_of_rd_orgs_pct": 1.5504,
+    "share_of_rd_sum_pct": 0.5912,
+    "chain_code": "INB1209",
+    "chain_name": "智能网联汽车",
+    "chain_all_firms": 6016,
+    "listed_sample_cov_pct": 0.166223
+   },
+   {
+    "n": 9,
+    "sum_yuan": 1778689995.05,
+    "mean_yuan": 197632221.67,
+    "median_yuan": 114630535.16,
+    "share_of_rd_orgs_pct": 1.3953,
+    "share_of_rd_sum_pct": 1.1587,
+    "chain_code": "INB2503",
+    "chain_name": "生物医药",
+    "chain_all_firms": 138742,
+    "listed_sample_cov_pct": 0.006487
+   }
+  ],
+  "by_l1": [
+   {
+    "n": 353,
+    "sum_yuan": 103742673238.33,
+    "mean_yuan": 293888592.74,
+    "median_yuan": 69942922.9,
+    "share_of_rd_orgs_pct": 54.7287,
+    "share_of_rd_sum_pct": 67.5844,
+    "l1_name": "制造业"
+   },
+   {
+    "n": 93,
+    "sum_yuan": 12476158253.91,
+    "mean_yuan": 134152239.29,
+    "median_yuan": 74177447.6,
+    "share_of_rd_orgs_pct": 14.4186,
+    "share_of_rd_sum_pct": 8.1277,
+    "l1_name": "科学研究和技术服务业"
+   },
+   {
+    "n": 57,
+    "sum_yuan": 7661199947.62,
+    "mean_yuan": 134407016.62,
+    "median_yuan": 59901248.22,
+    "share_of_rd_orgs_pct": 8.8372,
+    "share_of_rd_sum_pct": 4.991,
+    "l1_name": "批发和零售业"
+   },
+   {
+    "n": 56,
+    "sum_yuan": 11809077552.99,
+    "mean_yuan": 210876384.87,
+    "median_yuan": 72541536.59,
+    "share_of_rd_orgs_pct": 8.6822,
+    "share_of_rd_sum_pct": 7.6932,
+    "l1_name": "信息传输、软件和信息技术服务业"
+   },
+   {
+    "n": 24,
+    "sum_yuan": 5287660064.82,
+    "mean_yuan": 220319169.37,
+    "median_yuan": 26223227.1,
+    "share_of_rd_orgs_pct": 3.7209,
+    "share_of_rd_sum_pct": 3.4447,
+    "l1_name": "租赁和商务服务业"
+   },
+   {
+    "n": 15,
+    "sum_yuan": 3902630862.44,
+    "mean_yuan": 260175390.83,
+    "median_yuan": 32000000.0,
+    "share_of_rd_orgs_pct": 2.3256,
+    "share_of_rd_sum_pct": 2.5424,
+    "l1_name": "交通运输、仓储和邮政业"
+   },
+   {
+    "n": 13,
+    "sum_yuan": 3207809583.95,
+    "mean_yuan": 246754583.38,
+    "median_yuan": 23677426.03,
+    "share_of_rd_orgs_pct": 2.0155,
+    "share_of_rd_sum_pct": 2.0898,
+    "l1_name": "房地产业"
+   },
+   {
+    "n": 13,
+    "sum_yuan": 2671969054.23,
+    "mean_yuan": 205536081.09,
+    "median_yuan": 24743887.63,
+    "share_of_rd_orgs_pct": 2.0155,
+    "share_of_rd_sum_pct": 1.7407,
+    "l1_name": "建筑业"
+   },
+   {
+    "n": 9,
+    "sum_yuan": 1732997273.48,
+    "mean_yuan": 192555252.61,
+    "median_yuan": 78363719.34,
+    "share_of_rd_orgs_pct": 1.3953,
+    "share_of_rd_sum_pct": 1.129,
+    "l1_name": "电力、热力、燃气及水生产和供应业"
+   },
+   {
+    "n": 5,
+    "sum_yuan": 167651520.91,
+    "mean_yuan": 33530304.18,
+    "median_yuan": 13856361.93,
+    "share_of_rd_orgs_pct": 0.7752,
+    "share_of_rd_sum_pct": 0.1092,
+    "l1_name": "水利、环境和公共设施管理业"
+   },
+   {
+    "n": 2,
+    "sum_yuan": 53894450.13,
+    "mean_yuan": 26947225.07,
+    "median_yuan": 26947225.07,
+    "share_of_rd_orgs_pct": 0.3101,
+    "share_of_rd_sum_pct": 0.0351,
+    "l1_name": "教育"
+   },
+   {
+    "n": 2,
+    "sum_yuan": 144727612.97,
+    "mean_yuan": 72363806.48,
+    "median_yuan": 72363806.48,
+    "share_of_rd_orgs_pct": 0.3101,
+    "share_of_rd_sum_pct": 0.0943,
+    "l1_name": "文化、体育和娱乐业"
+   }
+  ],
+  "unit_note": "研发费取每家机构最后一个「研发费>0」报告期（occur_period 最大者），单位元；均值只覆盖上市样本，非全量企业口径"
+ },
+ "caveats": [
+  "年报研发列整列为空是「库里没有数」，不是「这些企业没研发」——不得按 0 解释",
+  "645 家 FY2025 上市样本的均值只能当量级参照：上市企业规模系统性高于全量法人，直接当「产业平均研发投入」会高估",
+  "212 家上市机构全部报告期研发费为 0（rd_all_zero_orgs），按口径不进均，不是缺失",
+  "「选定产业」的 cluster_id 与链码不是同一套键，本件用链码做替代切面时已注明不构成口径等价"
+ ]
+}

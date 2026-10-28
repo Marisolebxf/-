@@ -1,0 +1,585 @@
+{
+ "metric": "M_TALENT_DEEP_160_1",
+ "support_judgment": "部分支持",
+ "support_reason": "关系边（1,187,606 行 / 20,011 ego / 899,662 合作者）与机构名可全量现读，深圳子图、跨城连接、枢纽识别都能算；但（a）每个 ego 只保留前 100 个合作者，（b）ego 侧无姓名、只能靠履历表补机构，（c）表内无年份，趋势链不可算，（d）ego id 与主档 dwd_scholar 只有 1,839 个交集 → 部分支持。",
+ "base_years": {
+  "base_years_used": [],
+  "base_years_missing": [
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024,
+   2025,
+   2026
+  ],
+  "note": "关系链表无任何年份字段：dwd_scholar_coauthor 只有 create_time（数据物化时点，实测区间见 probes.create_time_span），无合作年份、无合著首发年。故本文只交截面链路，不交时间序列；2017—2026 全部年份在 missing 中声明，不按 0 摊入任何比率。"
+ },
+ "method": {
+  "edge": "dwd_scholar_coauthor 一行 = ego 学者 → 合作者（含合作者机构、合著篇数）",
+  "ego_org": "dwd_scholar_work_experience 现职机构（is_current=1 优先，否则取最晚一段）",
+  "city": "机构名 → loc() 五级归属（HEIS 名录 → 企业底册 → 前缀 → 城市关键词 → 海外）",
+  "sz_ego": "ego 现职机构城市 = 深圳市",
+  "within_sz": "合作者机构城市 = 深圳市 的边占全部边的比例",
+  "bridging": "单个 ego 的合作者覆盖 ≥15 个不同城市（约等于全池 P75）",
+  "inbound": "合作者机构城市 = 深圳市 的全部边，按 ego 城市汇总",
+  "deg_cap": 100,
+  "id_gap_note": "coauthor/workexp 同域（20,011 vs 20,028）；与 dwd_scholar 主档交集 1,839",
+  "window": "截面（无年份）"
+ },
+ "coverage": {
+  "degree_rows": 20011,
+  "ego_total": 20011,
+  "edge_total": 1187606,
+  "ego_with_org": 16718,
+  "ego_city_mapped": 4334,
+  "sz_egos": 116,
+  "sz_ego_edges": 9066,
+  "sz_alter_edges": 2779,
+  "sz_alter_named": 816,
+  "sz_ego_named": 1468,
+  "sz_ego_org_filled": 7333,
+  "sz_research_tagged": 114,
+  "sz_clusters": 21
+ },
+ "degree": {
+  "egos": 20011,
+  "edges": 1187606,
+  "mean": 59.35,
+  "median": 58,
+  "p90": 100.0,
+  "max": 100,
+  "at_cap_100": 6810,
+  "at_cap_100_pct": 34.03,
+  "hist": {
+   "51-100": 10805,
+   "11-20": 2477,
+   "21-50": 4993,
+   "6-10": 1186,
+   "1-5": 550
+  },
+  "weight_median": 123,
+  "max_single_co_papers": 1062
+ },
+ "region_degree": [
+  {
+   "city": "未归属",
+   "n": 12382,
+   "mean_deg": 57.45,
+   "median_deg": 54.0,
+   "p90_deg": 100.0
+  },
+  {
+   "city": "海外",
+   "n": 1961,
+   "mean_deg": 61.0,
+   "median_deg": 63,
+   "p90_deg": 100.0
+  },
+  {
+   "city": "北京市",
+   "n": 396,
+   "mean_deg": 63.87,
+   "median_deg": 65.0,
+   "p90_deg": 100.0
+  },
+  {
+   "city": "上海市",
+   "n": 249,
+   "mean_deg": 62.8,
+   "median_deg": 62,
+   "p90_deg": 100.0
+  },
+  {
+   "city": "南京市",
+   "n": 160,
+   "mean_deg": 55.74,
+   "median_deg": 50.0,
+   "p90_deg": 100.0
+  },
+  {
+   "city": "西安市",
+   "n": 140,
+   "mean_deg": 53.94,
+   "median_deg": 48.5,
+   "p90_deg": 100.0
+  },
+  {
+   "city": "武汉市",
+   "n": 121,
+   "mean_deg": 60.53,
+   "median_deg": 53,
+   "p90_deg": 100.0
+  },
+  {
+   "city": "深圳市",
+   "n": 116,
+   "mean_deg": 78.16,
+   "median_deg": 100.0,
+   "p90_deg": 100.0
+  }
+ ],
+ "sz_subgraph": {
+  "egos": 116,
+  "edges": 9066,
+  "distinct_alters": 8542,
+  "edges_per_ego": 78.16,
+  "within_sz_edges": 858,
+  "within_sz_pct": 9.46,
+  "cross_city_edges": 8208,
+  "org_unknown_edges": 4742,
+  "org_unknown_pct": 52.31,
+  "partner_cities": 87,
+  "top_partner_cities": [
+   {
+    "city": "未归属",
+    "edges": 3009,
+    "pct": 33.19
+   },
+   {
+    "city": "未填",
+    "edges": 1733,
+    "pct": 19.12
+   },
+   {
+    "city": "海外",
+    "edges": 1061,
+    "pct": 11.7
+   },
+   {
+    "city": "深圳市",
+    "edges": 858,
+    "pct": 9.46
+   },
+   {
+    "city": "北京市",
+    "edges": 448,
+    "pct": 4.94
+   },
+   {
+    "city": "广州市",
+    "edges": 204,
+    "pct": 2.25
+   },
+   {
+    "city": "上海市",
+    "edges": 200,
+    "pct": 2.21
+   },
+   {
+    "city": "武汉市",
+    "edges": 159,
+    "pct": 1.75
+   },
+   {
+    "city": "南京市",
+    "edges": 134,
+    "pct": 1.48
+   },
+   {
+    "city": "西安市",
+    "edges": 116,
+    "pct": 1.28
+   },
+   {
+    "city": "杭州市",
+    "edges": 101,
+    "pct": 1.11
+   },
+   {
+    "city": "合肥市",
+    "edges": 98,
+    "pct": 1.08
+   }
+  ],
+  "top_partner_orgs": [
+   {
+    "org": "深圳大学",
+    "edges": 292
+   },
+   {
+    "org": "南方科技大学",
+    "edges": 287
+   },
+   {
+    "org": "清华大学",
+    "edges": 128
+   },
+   {
+    "org": "北京大学",
+    "edges": 111
+   },
+   {
+    "org": "香港大学",
+    "edges": 102
+   },
+   {
+    "org": "香港理工大学",
+    "edges": 92
+   },
+   {
+    "org": "南洋理工大学",
+    "edges": 84
+   },
+   {
+    "org": "香港城市大学",
+    "edges": 81
+   },
+   {
+    "org": "香港中文大学",
+    "edges": 71
+   },
+   {
+    "org": "新加坡国立大学",
+    "edges": 71
+   },
+   {
+    "org": "浙江大学",
+    "edges": 69
+   },
+   {
+    "org": "华中科技大学",
+    "edges": 62
+   },
+   {
+    "org": "中山大学",
+    "edges": 61
+   },
+   {
+    "org": "中国科学院深圳先进技术研究院",
+    "edges": 59
+   },
+   {
+    "org": "中国科学技术大学",
+    "edges": 59
+   }
+  ],
+  "bridging_egos_ge15_cities": 30,
+  "bridging_pct": 25.86,
+  "bridging_top10": [
+   {
+    "sid": "128b3d98",
+    "org": "南方科技大学",
+    "deg": 100,
+    "cities": 24
+   },
+   {
+    "sid": "49e72468",
+    "org": "深圳北理莫斯科大学",
+    "deg": 100,
+    "cities": 24
+   },
+   {
+    "sid": "302bL0s0",
+    "org": "深圳大学",
+    "deg": 100,
+    "cities": 23
+   },
+   {
+    "sid": "46MA431Z",
+    "org": "深圳大学",
+    "deg": 100,
+    "cities": 21
+   },
+   {
+    "sid": "5u22114k",
+    "org": "深圳大学",
+    "deg": 100,
+    "cities": 21
+   },
+   {
+    "sid": "249n8585",
+    "org": "深圳大学",
+    "deg": 100,
+    "cities": 19
+   },
+   {
+    "sid": "2X1X66h8",
+    "org": "深圳大学",
+    "deg": 100,
+    "cities": 19
+   },
+   {
+    "sid": "323w1241",
+    "org": "中国农业科学院深圳农业基因组研究所",
+    "deg": 100,
+    "cities": 18
+   },
+   {
+    "sid": "5438u091",
+    "org": "南方科技大学",
+    "deg": 100,
+    "cities": 18
+   },
+   {
+    "sid": "129oe8j0",
+    "org": "南方科技大学",
+    "deg": 100,
+    "cities": 17
+   }
+  ],
+  "cities_per_ego_median": 11.0,
+  "top_partner_orgs_by_weight": [
+   {
+    "org": "机构缺",
+    "co_papers": 7331
+   },
+   {
+    "org": "南方科技大学",
+    "co_papers": 2074
+   },
+   {
+    "org": "深圳大学",
+    "co_papers": 1822
+   },
+   {
+    "org": "香港大学",
+    "co_papers": 671
+   },
+   {
+    "org": "香港城市大学",
+    "co_papers": 659
+   },
+   {
+    "org": "新加坡国立大学",
+    "co_papers": 570
+   },
+   {
+    "org": "清华大学",
+    "co_papers": 527
+   },
+   {
+    "org": "香港理工大学",
+    "co_papers": 392
+   },
+   {
+    "org": "深圳技术大学",
+    "co_papers": 372
+   },
+   {
+    "org": "重庆大学",
+    "co_papers": 370
+   }
+  ],
+  "named_alter_edges": 1468,
+  "named_alter_pct": 16.19,
+  "org_alter_pct": 80.88
+ },
+ "inbound": {
+  "edges": 2779,
+  "distinct_egos": 1284,
+  "distinct_sz_alters": 1732,
+  "ego_city_top": [
+   {
+    "city": "未归属",
+    "edges": 700,
+    "co_papers": 2405
+   },
+   {
+    "city": "深圳市",
+    "edges": 598,
+    "co_papers": 3350
+   },
+   {
+    "city": "北京市",
+    "edges": 263,
+    "co_papers": 1185
+   },
+   {
+    "city": "海外",
+    "edges": 247,
+    "co_papers": 966
+   },
+   {
+    "city": "未知",
+    "edges": 126,
+    "co_papers": 0
+   },
+   {
+    "city": "上海市",
+    "edges": 112,
+    "co_papers": 281
+   },
+   {
+    "city": "广州市",
+    "edges": 103,
+    "co_papers": 356
+   },
+   {
+    "city": "哈尔滨市",
+    "edges": 98,
+    "co_papers": 840
+   },
+   {
+    "city": "武汉市",
+    "edges": 61,
+    "co_papers": 154
+   },
+   {
+    "city": "南京市",
+    "edges": 53,
+    "co_papers": 121
+   },
+   {
+    "city": "西安市",
+    "edges": 48,
+    "co_papers": 170
+   },
+   {
+    "city": "长沙市",
+    "edges": 35,
+    "co_papers": 208
+   }
+  ],
+  "top_sz_alters_org": [
+   {
+    "org": "深圳大学",
+    "edges": 1011
+   },
+   {
+    "org": "中国科学院深圳先进技术研究院",
+    "edges": 302
+   },
+   {
+    "org": "清华大学深圳国际研究生院",
+    "edges": 130
+   },
+   {
+    "org": "哈尔滨工业大学(深圳)",
+    "edges": 128
+   },
+   {
+    "org": "深圳技术大学",
+    "edges": 105
+   },
+   {
+    "org": "香港中文大学（深圳）",
+    "edges": 88
+   },
+   {
+    "org": "深圳华大基因研究院",
+    "edges": 75
+   },
+   {
+    "org": "香港中文大学(深圳)",
+    "edges": 72
+   },
+   {
+    "org": "北京大学深圳研究生院",
+    "edges": 66
+   },
+   {
+    "org": "哈尔滨工业大学（深圳）",
+    "edges": 52
+   },
+   {
+    "org": "清华大学深圳研究生院",
+    "edges": 47
+   },
+   {
+    "org": "深圳湾实验室",
+    "edges": 37
+   }
+  ],
+  "sz_ego_overlap": 116
+ },
+ "clusters": [
+  {
+   "cluster": "智能传感器",
+   "sz_egos": 15
+  },
+  {
+   "cluster": "新能源",
+   "sz_egos": 12
+  },
+  {
+   "cluster": "新材料",
+   "sz_egos": 11
+  },
+  {
+   "cluster": "量子信息",
+   "sz_egos": 10
+  },
+  {
+   "cluster": "细胞与基因",
+   "sz_egos": 9
+  },
+  {
+   "cluster": "生物医药",
+   "sz_egos": 9
+  },
+  {
+   "cluster": "大健康",
+   "sz_egos": 7
+  },
+  {
+   "cluster": "网络与通信",
+   "sz_egos": 6
+  },
+  {
+   "cluster": "安全节能环保",
+   "sz_egos": 6
+  },
+  {
+   "cluster": "激光与增材制造",
+   "sz_egos": 5
+  },
+  {
+   "cluster": "半导体与集成电路",
+   "sz_egos": 4
+  },
+  {
+   "cluster": "智能机器人",
+   "sz_egos": 4
+  },
+  {
+   "cluster": "空天技术",
+   "sz_egos": 3
+  },
+  {
+   "cluster": "脑科学与类脑智能",
+   "sz_egos": 3
+  },
+  {
+   "cluster": "合成生物",
+   "sz_egos": 2
+  }
+ ],
+ "integrity": {
+  "note": "合作者姓名非空率仅 16.19%（1,468/9,066 条边），不足以支撑「人名人」链路，本文的链路一律落在**机构节点**上；姓名列只作举例，不作唯一标识。ego 侧（coauthor 表）根本没有姓名列，故不出现「某专家」的点名榜。",
+  "cap_note": "degree 上限 100 是表结构约束（每 ego 前 100 合作者），不是真实上限；34.03% 的 ego 已顶到 100，枢纽度被系统性截断。",
+  "no_year": "表内无年份，任何「近 N 年新增关系」说法都不成立。"
+ },
+ "probes": {
+  "coauthor_rows": 1187606,
+  "coauthor_distinct_ego": 20011,
+  "coauthor_distinct_alter": 899662,
+  "coauthor_org_empty": 166427,
+  "coauthor_org_fill_pct": 85.99,
+  "id_overlap_with_scholar": 1839,
+  "workexp_rows": 57117,
+  "workexp_egos": 20028,
+  "create_time_span": [
+   "2026-07-24 15:59:30",
+   "2026-07-24 15:59:30"
+  ],
+  "sql_count": 3
+ },
+ "base_years_used": [],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_note": "关系链表无任何年份字段：dwd_scholar_coauthor 只有 create_time（数据物化时点，实测区间见 probes.create_time_span），无合作年份、无合著首发年。故本文只交截面链路，不交时间序列；2017—2026 全部年份在 missing 中声明，不按 0 摊入任何比率。"
+}

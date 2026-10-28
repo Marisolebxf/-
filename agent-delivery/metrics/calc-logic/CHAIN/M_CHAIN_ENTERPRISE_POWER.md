@@ -1,9 +1,20 @@
 # 企业能力（M_CHAIN_ENTERPRISE_POWER）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_ENTERPRISE_POWER.md`；复现脚本 `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py` → `metrics/repro/out/M_CHAIN_ENTERPRISE_POWER_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：COMPOSITE-INDEX（区域×链 企业能力竞争力，0—100）｜ **域**：产业链（CHAIN·区域产业指数）｜ **UI 挂载**：智慧服务门户·产业链深度分析（区域产业指数模型·企业能力竞争力维）｜ **数据支持度**：**部分支持**｜ **wanghui**: true（王惠表原条目）
+> **版本与分级**
+> - **差异分级**：口径级分歧（本件复核为可兼容·配置型）（D2）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_ENTERPRISE_POWER.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py`、产物 `metrics/repro/out/M_CHAIN_ENTERPRISE_POWER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_ENTERPRISE_POWER.md`；复现脚本 `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py` → `metrics/repro/out/M_CHAIN_ENTERPRISE_POWER_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py`、产物 `metrics/repro/out/M_CHAIN_ENTERPRISE_POWER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_ENTERPRISE_POWER.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_ENTERPRISE_POWER_out.json` |
@@ -62,14 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py`、产物 `metrics/repro/out/M_CHAIN_ENTERPRISE_POWER_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COMPOSITE-INDEX（区域×链 企业能力竞争力，0—100）｜ **域**：产业链（CHAIN·区域产业指数）｜ **UI 挂载**：智慧服务门户·产业链深度分析（区域产业指数模型·企业能力竞争力维）｜ **数据支持度**：**部分支持**｜ **wanghui**: true（王惠表原条目）
-> **公式定义人**：王惠（calc-logic v0.2.0：三维等权 + 同链同年跨区域 min-max）｜ 直接（结构/数据）：否 / 否（fact 面 0 行）｜ 依赖（结构/数据）：部分在 / **仅 1/3 维可算**（企业数足；营收 47 家；专利无信用代码；区域截面只有 1 桶）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -110,6 +118,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 更结构性的一击是区域截面：王惠公式的归一化分母是「同链同年的全部对比区域」，而国内主档 189,116 行中广东省占 **99.82%**、深圳占 **50.55%**，其余 25 省合计不足 300 家。也就是说，可比的区域实际只有 1 个，min-max 无从谈起；按王惠自己的兜底规则（某维全相同取 0.5），三维都会落到 0.5，综合分恒 **50**，对 12 条链零区分度。此外本指标在 demo 与 live 的 `industry_chain_metric_fact` 中**均为 0 行**，没有任何旧结果面可复用。按 §〇：一维可算、两维不足、区域维退化 → **部分支持**；§五 保留王惠口径对照与「框架采纳、交付降级」的处置建议。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D2 口径级分歧：定义方向一致，但维度构成/计算方法/权重有实质差异**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | #### 1.1.1.1.1.1.1.3.10.区域产业指数模型（L539）<br>```<br>1.1.1.1.1.1.1.3.10.区域产业指数模型<br>区域产业指数模型算法用于量化评估特定区域产业的发展水平与竞争力，综合考虑企业能力竞争力、学术生态竞争力、配套生态竞争力三大核心维度，通过科学设计指标体系与阈值标准，计算区域产业指数，并为政策制定、行业研究和投资决策提供参考。该算法不仅反映当前产业生态的成熟度与潜力，还支持长期趋势分析与区域间对比。<br>（1）算法阐述<br>该算法基于企业能力竞争力、学术生态竞争力和配套生态竞争力三大维度构建指标体系，并结合历史数据与专家经验设定权重与阈值。<br>在数据采集阶段，算法对接企业信息库、知识产权数据库、高校与科研机构统计库、人才数据及配套服务数据等多源信息，并进行标准化清洗与结构化处理，确保数据精准与可比性。<br>在分析与计算阶段，算法根据各维度的加权得分，生成综合性区域产业指数，直观反映产业发展水平、生态成熟度及潜在提升空间。模型支持指数结果的趋势分析与优势短板评估，可结合时间序列数据识别产业发展轨迹与变化趋势。<br>该算法提供服务化接口，支持按区域标签进行实时查询，可用于行业研究、投资决策和区域政策制定等多场景应用，帮助相关部门和机构科学评估区域产业竞争力。<br>（2）算法输入与输出<br>输入：企业信息库数据、知识产权数据、高校与科研机构统计数据、人才数据、配套服务数据、指标体系与权重参数、历史产业数据。<br>输出：区域产业指数、趋势分析报告、优势与短板评估结果、区域对比分析图表。<br>（3）调用方式<br>支持通过Restful API、SDK方式调用，可按区域标签进行产业指数查询，并支持生成趋势分析报告、优势短板评估及数据导出服务。<br>``` |
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.2.4.2.2.8 区域产业竞争力评价（L4448）<br>```<br>1.1.1.2.4.2.2.8. **区域产业竞争力评价**<br>本功能从企业能力、学术生态、配套环境三大维度构建区域产业竞争力评价体系，计算综合指数并提供横向排名。用户可全面评估区域产业支撑能力，识别生态短板，优化资源配置。超越单一经济指标，构建“企业—学术—生态”三位一体的产业竞争力评估模型。<br>区域产业竞争力评价的具体功能包括多维竞争力指标体系构建、综合竞争力计算与横向排名。<br>```<br>#### §1.1.1.2.4.2.2.8.1 多维竞争力指标体系构建（L4454）<br>```<br>1.1.1.2.4.2.2.8.1. 多维竞争力指标体系构建<br>该功能提供三大核心维度：企业能力、学术生态、配套生态力。用户可调整各维度权重，适配不同产业特性。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧维度/参数集不同但模型同构。**单接口兼容·配置型**：维度加权引擎 + dims/weights 参数吸收两侧口径；无需拆分 _ZT/_ZS（依据分级处置建议「组织三方案会签，统一维度与权重」，本件以参数化预实现会签结果，甲方落定权重后无需改签名）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_ENTERPRISE_POWER.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -232,7 +286,7 @@ $$
 ## 二、计算过程
 
 > **口径说明**：以下按王惠三维等权 + 截面 min-max 口径复算，已由脚本
-> `code/M_CHAIN_ENTERPRISE_POWER.py` 在缓存快照上跑通，结果见同目录 `M_CHAIN_ENTERPRISE_POWER_out.json`。
+> `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py` 在缓存快照上跑通，结果见同目录 `M_CHAIN_ENTERPRISE_POWER_out.json`。
 > 当日 gkx 真源被并发全表扫描占满（`dwd_patent` 单条全扫 >4,000 秒），脚本采用「缓存优先」模式，
 > 复用 2026-10-21 落盘的链上计数、年报覆盖统计与主档区域聚合，不重复发起百万行扫描。
 
@@ -294,13 +348,13 @@ min-max 的选择也有讲究。它把每个区域映射到 [0,1]，最好的是
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_CHAIN_ENTERPRISE_POWER.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_ENTERPRISE_POWER.py` |
 | 结果产物 | 同目录 `M_CHAIN_ENTERPRISE_POWER_out.json` |
 | 数据模式 | cache-first（复用 2026-10-21 快照） |
 | 主算库 | gkx 真源（`183.240.141.251:3318`，`gkx_reader_zp`） |
 
 ```bash
-python3 metrics/repro/M_CHAIN_ENTERPRISE_POWER.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_ENTERPRISE_POWER.py
 ```
 
 脚本输出字段：`dim1_enterprise`（12 链企业数与描述性归一）、`dim2_revenue`（2024 年营收正值 47 家 / 该年 7,799 行；全表跨年正值 2,191 / 90,926 行）、`dim3_patent`（294 万行、无信用代码、抽样申请人 61,229）、`region_cross_section`（1 个有量区域、广东 99.82%）、`compute`（逐链 null 与维度可用性）、`demo_face_audit`（demo/live 均 0 行）、`support_judgment`（四档机判）。
@@ -456,11 +510,6 @@ python3 metrics/repro/M_CHAIN_ENTERPRISE_POWER.py
 4. 国家统计局. (2024). 《中国统计年鉴 2024》（规模以上工业企业主要经济指标：营业收入等）. https://www.stats.gov.cn/sj/ndsj/2024/indexch.htm
 
 5. World Bank. (n.d.). *Competitiveness*（企业/国家层面竞争力指标框架）. https://www.worldbank.org/en/topic/competitiveness
-
-6. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_ENTERPRISE_POWER.md`（王惠口径 v0.2.0，三维等权 + 截面 min-max）；王惠原条目见 `../20261019_指标整体开发进度调研/_work_20261019/wanghui_agg.json`。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
 ---
 
 # 附件
@@ -588,13 +637,5 @@ min-max + 等权是最常见的合成方式，优点是直观、可解释，缺�
 - 区域分布：`../code/_snapshots/entl_region_year_agg_20261021.json`（189,116 行、1,466 格）
 - 专利抽样申请人：`../code/_snapshots/chain_h_agg_20261021.json` 的 `pat_names`（20 万行 / 61,229 个名称）
 - 表清单：`../code/_snapshots/gkx_inventory_20261021.json`、`chain_shared_20261020.json`
-- 本指标脚本与产物：`../code/M_CHAIN_ENTERPRISE_POWER.py`、`../code/M_CHAIN_ENTERPRISE_POWER_out.json`
+- 本指标脚本与产物：`../code/M_CHAIN_ENTERPRISE_POWER.py`、`../metrics/repro/out/M_CHAIN_ENTERPRISE_POWER_out.json`
 - 关键结论：D1 12/12；D2 47 家；D3 无信用代码、名称轨 3.58%；D4 1 个有量区域；demo/live fact 均 0 行。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,21 @@
 # 区域服务机构数（M_SVC_PT_REGION_ORG）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_PT_REGION_ORG.md`；复现脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py` → `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：态值（区域维分布）｜ **域**：SVC 服务机构（全球供给面·区域分面）｜ **UI 挂载**：科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（区域筛选位）
+> - **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic v0.2.0 钉版（省/市两级区域轴，国家轴单列）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py`、产物 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_PT_REGION_ORG.md`；复现脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py` → `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py`、产物 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_PT_REGION_ORG.md` |
 | 复现脚本 | `metrics/repro/M_SVC_PT_REGION_ORG.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json` |
@@ -60,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py`、产物 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：态值（区域维分布）｜ **域**：SVC 服务机构（全球供给面·区域分面）｜ **UI 挂载**：科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（区域筛选位）
-> **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic v0.2.0 钉版（省/市两级区域轴，国家轴单列）
-> **数据源**：gkx（183.240.141.251:3318，只读 `gkx_reader_zp`）+ `code/_snapshots21/` 落盘快照；**零 SQL 运行**
-> **本件池**：44,153 家，**与 M_SVC_PT_GLOBAL_TOTAL / GLOBAL_TYPE_DIST / GLOBAL_SCALE_DIST / SZ_TOTAL / SZ_REGION_ORG / SZ_FIELD_DIST / CHAIN_NODE_ORG / KEYORG_SCALE 同池**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -207,7 +214,7 @@ SVCCHAIN-PORTAL 服务机构页的「区域筛选 + 区域分布」位；同时�
 
 四城合计 44,132，与省级同值。深圳占近六成，广州近三成，东莞一成，惠州 3.61%——单中心 + 一个副中心 + 两个外围，是典型的都市圈结构。
 
-> **跨件引用**：广州 12,641 / 东莞 4,300 / 惠州 1,594 见 `code/M_SVC_PT_REGION_ORG_out.json`；企业 44,095 / 高校 37 / 科研院所 21 见 `code/M_SVC_PT_GLOBAL_TYPE_DIST_out.json`；深圳 25,597 见 `code/M_SVC_PT_SZ_TOTAL_out.json`；区级 25,587＋10 见 `code/M_SVC_PT_SZ_REGION_ORG_out.json`；大型 1,906 见 `code/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`。
+> **跨件引用**：广州 12,641 / 东莞 4,300 / 惠州 1,594 见 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`；企业 44,095 / 高校 37 / 科研院所 21 见 `metrics/repro/out/M_SVC_PT_GLOBAL_TYPE_DIST_out.json`；深圳 25,597 见 `metrics/repro/out/M_SVC_PT_SZ_TOTAL_out.json`；区级 25,587＋10 见 `metrics/repro/out/M_SVC_PT_SZ_REGION_ORG_out.json`；大型 1,906 见 `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`。
 
 ### 2.4 步骤 3｜集中度
 
@@ -248,10 +255,10 @@ SVCCHAIN-PORTAL 服务机构页的「区域筛选 + 区域分布」位；同时�
 ### 2.8 复现代码与结果
 
 ```bash
-python3 M_SVC_PT_REGION_ORG.py
+cd code && python3 M_SVC_PT_REGION_ORG.py
 ```
 
-结果覆盖写 `code/M_SVC_PT_REGION_ORG_out.json`，下表逐键摘录（数字与产物一一对应，可直接复核）。
+结果覆盖写 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`，下表逐键摘录（数字与产物一一对应，可直接复核）。
 
 | 产物键 | 取值 |
 |---|---|
@@ -403,24 +410,21 @@ python3 M_SVC_PT_REGION_ORG.py
 
 1. 国家质量监督检验检疫总局、国家标准化管理委员会. (2016). 《中华人民共和国行政区划代码》（GB/T 2260—2016）. https://std.samr.gov.cn/
 
-2. 民政部. (2024). 全国行政区划信息查询平台. https://xzqh.mca.gov.cn/
+2. 国家发展改革委. (2019). 《关于培育发展现代化都市圈的指导意见》（发改规划〔2019〕328 号）. https://www.gov.cn/
 
-3. 国家发展改革委. (2019). 《关于培育发展现代化都市圈的指导意见》（发改规划〔2019〕328 号）. https://www.gov.cn/xinwen/2019-02/21/content_5367465.htm
+3. 商务部、国家统计局. (2012). 《国际服务贸易统计制度》. http://images.mofcom.gov.cn/fms/accessory/201208/1345790488502.pdf
 
-4. 商务部、国家统计局. (2012). 《国际服务贸易统计制度》. http://images.mofcom.gov.cn/fms/accessory/201208/1345790488502.pdf
+4. 联合国等. (2008). 《国民账户体系（SNA 2008）》. https://unstats.un.org/unsd/nationalaccount/sna2008.asp
 
-5. 联合国等. (2008). 《国民账户体系（SNA 2008）》. https://unstats.un.org/unsd/nationalaccount/sna2008.asp
+5. 国家统计局. (2018). 《国家科技服务业统计分类（2018）》. https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893989.html
 
-6. 国家统计局. (2018). 《国家科技服务业统计分类（2018）》. https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893989.html
+6. 工业和信息化部等九部门. (2025). 《关于加快推进科技服务业高质量发展的实施意见》. https://www.gov.cn/lianbo/bumen/202505/content_7024307.htm
 
-7. 工业和信息化部等九部门. (2025). 《关于加快推进科技服务业高质量发展的实施意见》. https://www.gov.cn/lianbo/bumen/202505/content_7024307.htm
+7. OECD/Eurostat. (2007). *Eurostat-OECD Manual on Business Demography Statistics*. https://doi.org/10.1787/9789264041882-en
 
-8. OECD/Eurostat. (2007). *Eurostat-OECD Manual on Business Demography Statistics*. https://doi.org/10.1787/9789264041882-en
+8. 广东省人民政府. (2023). 《深圳都市圈发展规划》. https://www.gd.gov.cn/
 
-9. 广东省人民政府. (2023). 《深圳都市圈发展规划》. https://www.gd.gov.cn/
-
-10. 国家统计局. (2024). 《第五次全国经济普查公报（第二号）》. https://www.stats.gov.cn/sj/tjgb/jjpcgb/qgjpgb/202605/t20260508_1963639.html
-
+9. 国家统计局. (2024). 《第五次全国经济普查公报（第二号）》. https://www.stats.gov.cn/sj/tjgb/jjpcgb/qgjpgb/202605/t20260508_1963639.html
 ---
 
 # 附件
@@ -495,7 +499,7 @@ A 行政区划：给三级骨架；B 集聚度：给解读工具；C 两套名�
 
 ## 附录 E 复算步骤
 
-1. `python3 M_SVC_PT_REGION_ORG.py`；
+1. `cd code && python3 M_SVC_PT_REGION_ORG.py`；
 2. 核对 `province_total` 与 `city_total` 均为 44,153；
 3. 核对深圳 25,597 与 `M_SVC_PT_SZ_TOTAL_out.json` 的 `value_shenzhen` 一致；
 4. `rebuild_metric.py M_SVC_PT_REGION_ORG --check`；
@@ -516,12 +520,4 @@ A 行政区划：给三级骨架；B 集聚度：给解读工具；C 两套名�
 
 13. 区域结论仅限深圳都市圈，不写全国排名
 
-> 生成本文件的时间：2026-10-22；数字均取自 `code/M_SVC_PT_REGION_ORG_out.json`。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+> 生成本文件的时间：2026-10-22；数字均取自 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`。

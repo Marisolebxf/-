@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题服务算法库
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """动态资讯数（M_CHAIN_NEWS_COUNT）—— gkx 链资讯表重建，自包含。
 
 口径：源表 gkx.dwd_industry_chain_news_info（108,052 行），industry_code 存的是

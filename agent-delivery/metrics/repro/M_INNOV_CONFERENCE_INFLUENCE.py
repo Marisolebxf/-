@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：未挂载 UI，算法库内部件
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_INNOV_CONFERENCE_INFLUENCE 会议影响力 · 源侧可行性探针（非计算脚本）
 
 王惠 V1.2 口径要求三维：会议热度（impact_score，缺则论文 download_num 合计）、

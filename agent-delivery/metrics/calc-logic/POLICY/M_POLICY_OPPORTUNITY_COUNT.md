@@ -1,9 +1,20 @@
-# 政策机遇清单条数（王惠机遇计数 v2 全维复现）（M_POLICY_OPPORTUNITY_COUNT）
+# 政策机遇清单条数（M_POLICY_OPPORTUNITY_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_OPPORTUNITY_COUNT.md`；复现脚本 `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py` → `metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：衍生指标（政策机遇识别模型·机遇清单条数；DS-11-POLICY-EVAL 页件）｜ **域**：政策（POLICY）｜ **UI 挂载**：DS-11-POLICY-EVAL（政策分析评价报告页·机遇清单区块）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py`、产物 `metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_OPPORTUNITY_COUNT.md`；复现脚本 `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py` → `metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py`、产物 `metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +61,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_OPPORTUNITY_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json` |
@@ -58,14 +69,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py`、产物 `metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：衍生指标（政策机遇识别模型·机遇清单条数；DS-11-POLICY-EVAL 页件）｜ **域**：政策（POLICY）｜ **UI 挂载**：DS-11-POLICY-EVAL（政策分析评价报告页·机遇清单区块）｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（170 第四步机遇计数口径，本 MD 采用）｜ wanghui：false（衍生计数件，wanghui_agg 未单列——上游 170 已含 §五，本件不重复开 §五，口径沿用上游对照结论）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库 theme/keywords/quote 真实值 2/0/2 行（与 170 同源断供）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -211,7 +219,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本件采用王惠 170 第四步口径（v2 升级：既有 20261020 版脚本为标题关键词近似判据，本批已重写为全维王惠口径），复现脚本 `code/M_POLICY_OPPORTUNITY_COUNT.py`，结果见 `M_POLICY_OPPORTUNITY_COUNT_out.json`。文内 (Author) 与文末参考文献一一对应。
+> **口径说明**：本件采用王惠 170 第四步口径（v2 升级：既有 20261020 版脚本为标题关键词近似判据，本批已重写为全维王惠口径），复现脚本 `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py`，结果见 `M_POLICY_OPPORTUNITY_COUNT_out.json`。文内 (Author) 与文末参考文献一一对应。
 
 ### 2.1 方法选择：全维王惠口径替代标题关键词近似
 
@@ -245,13 +253,13 @@ $$N_{\text{list}}=\sum_{p\in P} I\bigl(Opp(p)\ge 60\bigr)$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py`（v2 重写，2026-10-21 跑通） |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py`（v2 重写，2026-10-21 跑通） |
 | 结果产物 | 同目录 `M_POLICY_OPPORTUNITY_COUNT_out.json` |
 | 主算库 | `gkx.dwd_policy_base`（与 170 同源同逻辑） |
 | 既有版本 | 20261020 版（标题关键词近似）已被 v2 替换，近似数保留在 out.json 对照区 |
 
 ```bash
-python3 metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -361,13 +369,9 @@ python3 metrics/repro/M_POLICY_OPPORTUNITY_COUNT.py
 
 1. OECD & European Commission Joint Research Centre (Nardo, M., Saisana, M., Saltelli, A., Tarantola, S., Hoffmann, A., & Giovannini, E.). (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. OECD Publishing. https://doi.org/10.1787/9789264043466-en
 2. 国家统计局. (2021). 统计用区划代码和城乡划分代码编制规则及统计分组实践. https://www.stats.gov.cn/sj/tjbz/gjtjbz/202302/t20230213_1902741.html （原发布页已下线，链至同口径官方上位页）
-3. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_DEEP_170_1.md` —— 王惠四步口径原稿（本件继承其第四步）。
-4. 项目内旁证（非外部文献）：`metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json`；`code/M_POLICY_DEEP_170_1_out.json` —— v2 复现与上游实测。
-5. Saisana, M., Saltelli, A., & Tarantola, S. (2005). Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. *Journal of the Royal Statistical Society: Series A*, 168(2), 307–323. https://doi.org/10.1111/j.1467-985X.2005.00350.x
-6. 国务院. 重大行政决策程序暂行条例（国令第713号）[Z]. 2019-04-20. https://www.gov.cn/zhengce/zhengceku/2019-05/08/content_5389670.htm
-
+3. Saisana, M., Saltelli, A., & Tarantola, S. (2005). Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. *Journal of the Royal Statistical Society: Series A*, 168(2), 307–323. https://doi.org/10.1111/j.1467-985X.2005.00350.x
+4. 国务院. 重大行政决策程序暂行条例（国令第713号）[Z]. 2019-04-20. https://www.gov.cn/zhengce/zhengceku/2019-05/08/content_5389670.htm
 > 说明：第 5 条支撑「阈值/权重扰动必须做敏感性分析」，第 6 条第三十六条（决策后评估）支撑「机遇清单须有后评估闭环」的语义论证；两条均已联网核验。
-
 ---
 
 # 附件
@@ -509,14 +513,7 @@ A 族给算法、B 族给呈现、C 族给语义、D 族被排除。四族里最
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_POLICY_OPPORTUNITY_COUNT.py`（v2）；产物：`../code/M_POLICY_OPPORTUNITY_COUNT_out.json`
+- 脚本：`../code/M_POLICY_OPPORTUNITY_COUNT.py`（v2）；产物：`../metrics/repro/out/M_POLICY_OPPORTUNITY_COUNT_out.json`
 - 主算库：gkx 真源（与 170 同源同逻辑段）
 - 关键数字：N=20,000；可评分 2 条均 50.00；**机遇清单条数 0**；support_judgment=`部分支持`
 - 工程注意：'NULL' 占位清洗沿用 170 `clean()`；近似轨（标题关键词）保留对照但页面取数须指向 v2 主口径分区。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

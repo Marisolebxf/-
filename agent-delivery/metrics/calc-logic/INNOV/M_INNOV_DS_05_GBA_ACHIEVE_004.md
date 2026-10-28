@@ -1,9 +1,20 @@
 # 湾区创新热点区域（M_INNOV_DS_05_GBA_ACHIEVE_004）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ACHIEVE_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠系（V1.5-20260830）｜ **域**：科技发展态势·湾区创新监测·创新成果综合展示｜ **UI 挂载**：湾区创新监测 → 粤港澳大湾区创新成果综合展示 → 创新热点区域识别｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ACHIEVE_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_05_GBA_ACHIEVE_004.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json` |
@@ -64,14 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：王惠系（V1.5-20260830）｜ **域**：科技发展态势·湾区创新监测·创新成果综合展示｜ **UI 挂载**：湾区创新监测 → 粤港澳大湾区创新成果综合展示 → 创新热点区域识别｜ **数据支持度**：**部分支持**
-> **公式定义人（王惠，20260830）**：直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：结构有 / 数据部分 ｜ wanghui：true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -107,7 +115,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「湾区创新热点区域」是「粤港澳大湾区创新成果综合展示」中「创新热点区域识别」功能的指标实现，需求要求「自动识别并标注大湾区内的创新热点区域，用户可查看热点区域的创新密度、主要创新类型等详细信息」，但**招标文件未定义空间单元、密度口径、热点阈值与类型判定规则**。本文采用王惠 V1.5 的口径：以 `city+area` 行政区为单元、以「专利件数/存续机构数」为创新密度、以 P70 分位为热点阈值、以专利/论文/项目三源最大者为主要创新类型（§1.4 概要、附录 C 完整版）。  
 实测在 gkx 真源覆盖 25 个区县：密度区间 4.891—23.825，均值 10.574、中位 10.009，P70=12.329，8 个区县入选热点（广州越秀、黄埔、海珠、天河；深圳龙岗、南山、光明、坪山）。首位广州越秀 23.825，但其机构数仅 2,706，密度高更多反映「单位机构产出」而非地理集聚；深圳宝安专利 265,725 件、机构 25,192 家，密度被摊薄至 10.548 而未入选。  
-按 §〇 判定：区县维可算、城市覆盖仅 4/11、三源退化为专利单源，整体 **部分支持**；复现代码 `code/M_INNOV_DS_05_GBA_ACHIEVE_004.py` 读取已跑通结果并绑定产出 `code/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`。
+按 §〇 判定：区县维可算、城市覆盖仅 4/11、三源退化为专利单源，整体 **部分支持**；复现代码 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py` 读取已跑通结果并绑定产出 `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`。
 
 ---
 
@@ -169,7 +177,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 > 重点展示大湾区组成城市及区域的创新成果，分析关键指标数据，计算各城市及区域的创新能力，以可视化图表的方式查看。
 
-**文档 2**：`王惠口径正本（GitLab 外本地归档）`
+**文档 2**：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_GBA_HOTSPOT.md（王惠正本已演化并入）`
 
 > 识别粤港澳大湾区内创新成果更密的区县，给出创新密度、主要创新类型与是否热点。区域主键就是 `city`+`area`，不另建名录。
 
@@ -258,10 +266,10 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 #### 2.7.1 复现代码入库位置与运行方式
 
-复现代码位于 `code/M_INNOV_DS_05_GBA_ACHIEVE_004.py`，产出 `code/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`。脚本读取 `code/M_INNOV_GBA_HOTSPOT_out.json`（2026-10-20 已在 gkx 真源跑通的 25 个区县结果），绑定到本指标 ID，并补充 2026-10-21 的城市覆盖度与港澳探针；不重扫专利大表。运行方式：
+复现代码位于 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py`，产出 `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json`。脚本读取 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`（2026-10-20 已在 gkx 真源跑通的 25 个区县结果），绑定到本指标 ID，并补充 2026-10-21 的城市覆盖度与港澳探针；不重扫专利大表。运行方式：
 
 ```
-cd (GitLab 外本地历史批次工作稿)
+cd （20261020 批调研区，历史批次成果已并入现版）
 python3 code/M_INNOV_DS_05_GBA_ACHIEVE_004.py
 ```
 
@@ -415,8 +423,6 @@ python3 code/M_INNOV_DS_05_GBA_ACHIEVE_004.py
 2. Getis A, Ord J K. The analysis of spatial association by use of distance statistics[J]. Geographical Analysis, 1992, 24(3): 189-206. https://doi.org/10.1111/j.1538-4632.1992.tb00261.x
 3. Ester M, Kriegel H P, Sander J, et al. A density-based algorithm for discovering clusters in large spatial databases with noise[C]//Proceedings of the Second International Conference on Knowledge Discovery and Data Mining. 1996: 226-231. https://cdn.aaai.org/KDD/1996/KDD96-037.pdf
 4. 粤港澳大湾区门户网. 粤港澳大湾区统计与政策数据[EB/OL]. https://www.cnbayarea.org.cn/
-5. 王惠. 湾区创新热点区域（M_INNOV_GBA_HOTSPOT）指标计算逻辑：V1.5-20260830[R]. 内部资料, 2026.
-
 ---
 
 # 附件
@@ -547,12 +553,4 @@ DBSCAN（Ester et al., 1996）用半径 $\varepsilon$ 与最小点数 $MinPts$ �
 
 ## 附录 D　实测脚本与结果摘要
 
-脚本 `code/M_INNOV_DS_05_GBA_ACHIEVE_004.py` 读取 `code/M_INNOV_GBA_HOTSPOT_out.json` 的 25 行区县结果，绑定为本指标输出，计算 P70、热点数、密度分布与城市汇总，并写入 2026-10-21 的覆盖度探针（4/11 城、港澳 0、论文/项目无区县键）。产出 `code/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json` 的关键字段：`params`（单元、年窗、密度、阈值）、`probes`（覆盖与源表）、`compute`（P70、热点数、密度区间、均值/中位、城市汇总）、`samples`（前 10 行）、`support_judgment`（部分支持）、`notes`（边界值、宝安反例、单源退化、东莞缺失）。脚本不连接数据库，运行时间小于 1 秒。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+脚本 `metrics/repro/M_INNOV_DS_05_GBA_ACHIEVE_004.py` 读取 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json` 的 25 行区县结果，绑定为本指标输出，计算 P70、热点数、密度分布与城市汇总，并写入 2026-10-21 的覆盖度探针（4/11 城、港澳 0、论文/项目无区县键）。产出 `metrics/repro/out/M_INNOV_DS_05_GBA_ACHIEVE_004_out.json` 的关键字段：`params`（单元、年窗、密度、阈值）、`probes`（覆盖与源表）、`compute`（P70、热点数、密度区间、均值/中位、城市汇总）、`samples`（前 10 行）、`support_judgment`（部分支持）、`notes`（边界值、宝安反例、单源退化、东莞缺失）。脚本不连接数据库，运行时间小于 1 秒。

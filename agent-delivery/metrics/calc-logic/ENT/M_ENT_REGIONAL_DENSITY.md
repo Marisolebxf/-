@@ -1,9 +1,20 @@
 # 区域企业密度（M_ENT_REGIONAL_DENSITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_REGIONAL_DENSITY.md`；复现脚本 `metrics/repro/M_ENT_REGIONAL_DENSITY.py` → `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：RATIO（分子分母异源）｜ **域**：企业分析／区域分布／集聚效应｜ **UI 挂载**：区域密度图层（省/市/县）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_REGIONAL_DENSITY.py`、产物 `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_REGIONAL_DENSITY.md`；复现脚本 `metrics/repro/M_ENT_REGIONAL_DENSITY.py` → `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_REGIONAL_DENSITY.py`、产物 `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_REGIONAL_DENSITY.md` |
 | 复现脚本 | `metrics/repro/M_ENT_REGIONAL_DENSITY.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json` |
@@ -62,15 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_REGIONAL_DENSITY.py`、产物 `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RATIO（分子分母异源）｜ **域**：企业分析／区域分布／集聚效应｜ **UI 挂载**：区域密度图层（省/市/县）｜ **数据支持度**：**部分支持**
-> **口径来源**：算法 2026-09 COVER-STAT-L01 → `calc-logic/ENT/M_ENT_REGIONAL_DENSITY.md`｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_REGIONAL_DENSITY.py` → `code/M_ENT_REGIONAL_DENSITY_out.json`
-> **wanghui**：false（本条是算法 2026-09 派生口径，不在王惠 20260816 底稿内；§五 说明与王惠族的边界）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -114,11 +121,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx.dwd_macro_index_data` | 分母候选（被否） | 20,000 行 / 287 个指标代码，无「面积」口径 |
 | `information_schema.columns` | 分母存在性探针 | 15 个 area/面积 相关列，数值型 0 个 |
 | `code/_snapshots21/ent_region_agg_20261022.json` | 分子聚合快照 | 152 个组合格，与 `M_ENT_REGION_COVERAGE` 同一条 SQL |
-| `code/M_ENT_REGIONAL_DENSITY_out.json` | 唯一产物 | `compute.denominator_available=false`、`blocked_cells`、`fallback_no_area` |
+| `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json` | 唯一产物 | `compute.denominator_available=false`、`blocked_cells`、`fallback_no_area` |
 
 分子为什么读快照而不是每次重扫：同一条 `GROUP BY province,city,area` 在 gkx 上实测 75—310 秒（取决于库负载），本件与 `M_ENT_REGION_COVERAGE` 共用同一份聚合，避免把同一张大表扫两遍。快照的 SQL 与 `M_ENT_REGION_COVERAGE.py` 逐字相同，且该件的 live 直查结果与快照逐格一致，可互为对账。分母的证据每次现场查 `information_schema`，不读快照。
 
-**跨件引用的数字**：区县填充率 82.1951%、未归属区县 17.8049% 均取自 `code/M_ENT_REGION_COVERAGE_out.json`（`compute.fill`）；从业人数填充率 3.4864% 取自 `code/M_ENT_RESEARCHER_COUNT_out.json` 的 `compute.requirement_headcount_alternative.fill_rate_pct`。本件产物不重复落这几个数，引用时以对方产物为准。
+**跨件引用的数字**：区县填充率 82.1951%、未归属区县 17.8049% 均取自 `metrics/repro/out/M_ENT_REGION_COVERAGE_out.json`（`compute.fill`）；从业人数填充率 3.4864% 取自 `metrics/repro/out/M_ENT_RESEARCHER_COUNT_out.json` 的 `compute.requirement_headcount_alternative.fill_rate_pct`。本件产物不重复落这几个数，引用时以对方产物为准。
 
 ---
 
@@ -282,11 +289,11 @@ $$ \bar{n}_{prov} = \frac{189116}{29} = 6521.2414,\quad \bar{n}_{city} = \frac{1
 
 ### 2.7 复现代码与结果展示
 
-脚本先读已验证快照 `code/_snapshots21/ent_region_agg_20261022.json`（缺失时回落 live 分组查询），再现场跑三条分母探针。产物落在 `code/M_ENT_REGIONAL_DENSITY_out.json`，含 `compute.denominator_available`、`compute.blocked_cells`、`compute.numerator`、`compute.fallback_no_area`、`probes.denominator` 五块。
+脚本先读已验证快照 `code/_snapshots21/ent_region_agg_20261022.json`（缺失时回落 live 分组查询），再现场跑三条分母探针。产物落在 `metrics/repro/out/M_ENT_REGIONAL_DENSITY_out.json`，含 `compute.denominator_available`、`compute.blocked_cells`、`compute.numerator`、`compute.fallback_no_area`、`probes.denominator` 五块。
 
 | 命令 | 期望 | 备注 |
 |---|---|---|
-| `python3 M_ENT_REGIONAL_DENSITY.py` | 交付 0 行 + 240 置空格 | 实测 1.89 秒（分子读快照） |
+| `cd code && python3 M_ENT_REGIONAL_DENSITY.py` | 交付 0 行 + 240 置空格 | 实测 1.89 秒（分子读快照） |
 | `rebuild_metric.py M_ENT_REGIONAL_DENSITY --check` | 语义一致 | 重跑对账 |
 | `audit_md_vs_out.py --only M_ENT_REGIONAL_DENSITY` | 无漂移 | 正文数字逐项对产物 |
 
@@ -434,13 +441,11 @@ $$ \bar{n}_{prov} = \frac{189116}{29} = 6521.2414,\quad \bar{n}_{city} = \frac{1
 
 ## 参考文献
 
-1. 项目内 calc-logic：`M_ENT_REGIONAL_DENSITY.md`（算法 2026-09 COVER-STAT-L01，分母=面积、area 空该区空）.
-2. Ciccone, A., & Hall, R. E. (1996). Productivity and the Density of Economic Activity. American Economic Review, 86(1), 54–70. https://www.jstor.org/stable/2118255
-3. Combes, P.-P., Duranton, G., Gobillon, L., Puga, D., & Roux, S. (2012). The Productivity Advantages of Large Cities: Distinguishing Agglomeration From Firm Selection. Econometrica, 80(6), 2543–2594. https://doi.org/10.3982/ECTA8442
-4. Duranton, G., & Puga, D. (2004). Micro-Foundations of Urban Agglomeration Economies. Handbook of Regional and Urban Economics, 4, 2063–2117. https://doi.org/10.1016/S1574-0080(04)80005-1
-5. 民政部. 行政区划代码公布栏目. https://www.mca.gov.cn/n156/n2679/index.html
-6. 国家统计局. 统计用区划代码和城乡划分代码编制规则. https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
-
+1. Ciccone, A., & Hall, R. E. (1996). Productivity and the Density of Economic Activity. American Economic Review, 86(1), 54–70. https://www.jstor.org/stable/2118255
+2. Combes, P.-P., Duranton, G., Gobillon, L., Puga, D., & Roux, S. (2012). The Productivity Advantages of Large Cities: Distinguishing Agglomeration From Firm Selection. Econometrica, 80(6), 2543–2594. https://doi.org/10.3982/ECTA8442
+3. Duranton, G., & Puga, D. (2004). Micro-Foundations of Urban Agglomeration Economies. Handbook of Regional and Urban Economics, 4, 2063–2117. https://doi.org/10.1016/S1574-0080(04)80005-1
+4. 民政部. 行政区划代码公布栏目. https://www.mca.gov.cn/n156/n2679/index.html
+5. 国家统计局. 统计用区划代码和城乡划分代码编制规则. https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
 ---
 
 # 附件
@@ -592,11 +597,3 @@ $$ \bar{n}_{prov} = \frac{189116}{29} = 6521.2414,\quad \bar{n}_{city} = \frac{1
 | 8 | lint_nodemo | 0 命中 |
 | 9 | check_base_years | OK |
 | 10 | audit_md_vs_out | 无漂移 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,24 @@
 # 四维单维评分（M_SYNTH_VIT_DIM_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_VIT_DIM_SCORE.md`；复现脚本 `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py` → `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（L2 分维出口）｜ **域**：综合智能分析／区域创新活力分析／综合评价模型
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（四维分全部取同族子模型产物，零 SQL）+ 结构缺口（人才维 4 个子维只有 2 个在场、政策维 3 个只有 2 个、产业维 5 个三级指标缺 1 个）**
+> - **一句话结论**：四城 × 四维 16 格全部有值，深圳 73.7 / 77.7925 / 56.2 / 92.3、广州 68.96 / 39.7686 / 77.0 / 57.0、东莞 7.79 / 18.777 / 7.1 / 15.8、惠州 0.0 / 7.6049 / 0.0 / 0.0，逐格可由四个子模型产物复算；但「有值」不等于「齐」——四维平均完整度只有 **0.7917**，人才维只剩 2/4 个子维，政策维 3 个里只有 2 个，且深圳科技维在单叶子口径下只有 59.19、在本件口径下是 73.7，**换分母就换第一名 → 部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_VIT_DIM_SCORE.py`｜ **产物**：`metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py`、产物 `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_VIT_DIM_SCORE.md`；复现脚本 `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py` → `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py`、产物 `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -62,7 +77,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_VIT_DIM_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json` |
@@ -70,20 +85,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py`、产物 `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（L2 分维出口）｜ **域**：综合智能分析／区域创新活力分析／综合评价模型
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（四维分全部取同族子模型产物，零 SQL）+ 结构缺口（人才维 4 个子维只有 2 个在场、政策维 3 个只有 2 个、产业维 5 个三级指标缺 1 个）**
-> **复现脚本**：`code/M_SYNTH_VIT_DIM_SCORE.py`｜ **产物**：`code/M_SYNTH_VIT_DIM_SCORE_out.json`
-> **族级面板**：`code/_snapshots21/vit_family_20261023.json`（本族五件共用，由 `code/_build_vit_family_panel.py` 生成）
-> **否定性证据**：`code/_snapshots21/vit_absence_20261023.json`
-> **公式定义人**：王惠（`M_SYNTH_VIT_DIM_SCORE.md`：四维得分分别取子模型综合分，不另算叶子，输出区域一行四列，不加权成总指数）
-> **基期声明**：统计年 2024；`base_years_used=[2024]`、`base_years_missing=[]`。四维的时间窗并不齐（专利 2024 年、高被引论文为全历史累计池、政策为当前有效集、产品标签为当前截面），详见 §四。
-> **一句话结论**：四城 × 四维 16 格全部有值，深圳 73.7 / 77.7925 / 56.2 / 92.3、广州 68.96 / 39.7686 / 77.0 / 57.0、东莞 7.79 / 18.777 / 7.1 / 15.8、惠州 0.0 / 7.6049 / 0.0 / 0.0，逐格可由四个子模型产物复算；但「有值」不等于「齐」——四维平均完整度只有 **0.7917**，人才维只剩 2/4 个子维，政策维 3 个里只有 2 个，且深圳科技维在单叶子口径下只有 59.19、在本件口径下是 73.7，**换分母就换第一名 → 部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -167,14 +173,14 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 |---|---|
 | `code/_snapshots21/vit_family_20261023.json` | 族级面板：四维子模型读数、宏观配对、产品归城 |
 | `code/_snapshots21/vit_absence_20261023.json` | 否定性证据：`svc_*` 表 0 张、`a77234` 0 行、财务列非空计数 |
-| `code/M_SYNTH_182_1_out.json` | 科技维综合分与三个子维（基础科学/应用科技/科研机构） |
-| `code/M_SYNTH_183_1_out.json` | 产业维综合分与三个子维 |
-| `code/M_SYNTH_184_1_out.json` | 人才维综合分与两个在场子维 |
-| `code/M_SYNTH_185_1_out.json` | 政策维综合分与两个在场子维 |
-| `code/M_SYNTH_VIT_RANK_out.json` | 单叶子口径（专利授权/高企/高学历/政策存量）的主盘分 |
-| `code/M_SYNTH_VIT_INDICATOR_out.json` | 12 个正本分项的重算值与「重算 vs 子模型」的差（本件 §2.3 的对照） |
-| `code/M_SYNTH_VIT_INDEX_out.json` | 熵权与自定义权重（本件的客观对照） |
-| `code/M_SYNTH_186_1_out.json` | 等权总指数与「0 误记为 null」的 Δ（5.7037） |
+| `metrics/repro/out/M_SYNTH_182_1_out.json` | 科技维综合分与三个子维（基础科学/应用科技/科研机构） |
+| `metrics/repro/out/M_SYNTH_183_1_out.json` | 产业维综合分与三个子维 |
+| `metrics/repro/out/M_SYNTH_184_1_out.json` | 人才维综合分与两个在场子维 |
+| `metrics/repro/out/M_SYNTH_185_1_out.json` | 政策维综合分与两个在场子维 |
+| `metrics/repro/out/M_SYNTH_VIT_RANK_out.json` | 单叶子口径（专利授权/高企/高学历/政策存量）的主盘分 |
+| `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json` | 12 个正本分项的重算值与「重算 vs 子模型」的差（本件 §2.3 的对照） |
+| `metrics/repro/out/M_SYNTH_VIT_INDEX_out.json` | 熵权与自定义权重（本件的客观对照） |
+| `metrics/repro/out/M_SYNTH_186_1_out.json` | 等权总指数与「0 误记为 null」的 Δ（5.7037） |
 | `code/_snapshots21/base_20261021.json` | 企业底册 189,116 行（信用代码→城市） |
 
 ### 1.6 与旧稿的差异
@@ -259,13 +265,13 @@ $$S_{i,k}=C_{i,k},\qquad C_{i,k}\ \text{为子模型 }k\text{ 在城市 }i\text{
 ### 2.7 复现结果展示
 
 ```bash
-python3 M_SYNTH_VIT_DIM_SCORE.py
+cd code && python3 M_SYNTH_VIT_DIM_SCORE.py
 # === M_SYNTH_VIT_DIM_SCORE ===
 # 深圳市: 科技=73.7 产业=77.7925 人才=56.2 政策=92.3
 # 广州市: 科技=68.96 产业=39.7686 人才=77.0 政策=57.0
 # 东莞市: 科技=7.79 产业=18.777 人才=7.1 政策=15.8
 # 惠州市: 科技=0.0 产业=7.6049 人才=0.0 政策=0.0
-# → code/M_SYNTH_VIT_DIM_SCORE_out.json
+# → metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json
 ```
 
 脚本零 SQL、零网络：四维分全部读自四个子模型的 `_out.json`，族级面板只用于取底册与产品归城的校验值。产物里 `source.touched=false` 是这一点的机器可读标记。复现的前提是四份上游产物都在原位——若某份缺失，脚本会直接抛 `FileNotFoundError`，不会退回任何默认值，这是刻意的：宁可跑不出来，也不要跑出一个悄悄换了源的分数。
@@ -312,10 +318,10 @@ python3 M_SYNTH_VIT_DIM_SCORE.py
 
 | 维 | 原始读数（深圳 / 广州 / 东莞 / 惠州） | 来源 |
 |---|---|---|
-| 科技 | 73.7 / 68.96 / 7.79 / 0.0 | `code/M_SYNTH_182_1_out.json` |
-| 产业 | 77.7925 / 39.7686 / 18.777 / 7.6049 | `code/M_SYNTH_183_1_out.json` |
-| 人才 | 56.2 / 77.0 / 7.1 / 0.0 | `code/M_SYNTH_184_1_out.json` |
-| 政策 | 92.3 / 57.0 / 15.8 / 0.0 | `code/M_SYNTH_185_1_out.json` |
+| 科技 | 73.7 / 68.96 / 7.79 / 0.0 | `metrics/repro/out/M_SYNTH_182_1_out.json` |
+| 产业 | 77.7925 / 39.7686 / 18.777 / 7.6049 | `metrics/repro/out/M_SYNTH_183_1_out.json` |
+| 人才 | 56.2 / 77.0 / 7.1 / 0.0 | `metrics/repro/out/M_SYNTH_184_1_out.json` |
+| 政策 | 92.3 / 57.0 / 15.8 / 0.0 | `metrics/repro/out/M_SYNTH_185_1_out.json` |
 
 四份上游产物各自的底表在 gkx 侧：科技用 `dwd_patent`、`dwd_zh_paper`/`dwd_en_paper`、`dwd_research_institute_base_info`；产业用 `dwd_org_industry_product_tags`、`dwd_org_tech_tag`、`dwd_patent`、`dwd_macro_index_data`；人才用 `dwd_scholar`、`dwd_scholar_education_background`、`dwd_zh_paper_citation`；政策用 `dwd_policy_base`。本件不直接触这些表，只继承上游读数。
 
@@ -361,8 +367,8 @@ python3 M_SYNTH_VIT_DIM_SCORE.py
 |---|---|---|
 | `code/_snapshots21/vit_family_20261023.json` | 面板：四维读数、宏观配对、产品归城 | 本族五件共用 |
 | `code/_snapshots21/vit_absence_20261023.json` | `svc_*` 表 0 张、`a77234` 0 行、财务列非空计数 | 否定性证据 |
-| `code/M_SYNTH_VIT_DIM_SCORE_out.json` | 四维分、名次、完整度、三套对照、派生比值 | 本件产物 |
-| `code/M_SYNTH_182_1_out.json` ~ `code/M_SYNTH_185_1_out.json` | 四个子模型产物 | 同族上游 |
+| `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json` | 四维分、名次、完整度、三套对照、派生比值 | 本件产物 |
+| `metrics/repro/out/M_SYNTH_182_1_out.json` ~ `metrics/repro/out/M_SYNTH_185_1_out.json` | 四个子模型产物 | 同族上游 |
 
 ---
 
@@ -428,18 +434,9 @@ python3 M_SYNTH_VIT_DIM_SCORE.py
 
 1. OECD. *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
 2. 国家统计局.《国民经济行业分类（GB/T 4754-2017）》. https://www.stats.gov.cn/sj/tjbz/
-3. 科学技术部火炬高技术产业开发中心. 高新技术企业认定管理工作网. https://www.innocom.gov.cn/
-4. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
-5. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
-6. 国务院.《关于进一步加强基础科学研究的若干意见》（国发〔2018〕4 号）. https://www.gov.cn/zhengce/content/2018-01/31/content_5262566.htm
-7. 本地产物与快照（逐项对应 §1.5、§3.6）：
-   - `code/_snapshots21/vit_family_20261023.json`：族级面板
-   - `code/_snapshots21/vit_absence_20261023.json`：否定性证据
-   - `code/M_SYNTH_182_1_out.json` ~ `code/M_SYNTH_185_1_out.json`：四维源
-   - `code/M_SYNTH_VIT_RANK_out.json`：单叶子对照
-8. `_work_gkx21/DATA_FACTS_gkx21.md` §3.60（图类边源）、§3.68（慢查询与并发纪律）、§3.74（论文年份是批次曲线）
-9. `_work_gkx21/DISPATCH_BRIEF_v8.md` §一（派生数字落产物）、§四（负证据三件套）
-
+3. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
+4. 中国科学技术信息研究所. 中国科技论文与引文数据库（CSTPCD）. https://www.istic.ac.cn/
+5. 国务院.《关于进一步加强基础科学研究的若干意见》（国发〔2018〕4 号）. https://www.gov.cn/
 ---
 
 # 附件
@@ -547,19 +544,11 @@ python3 M_SYNTH_VIT_DIM_SCORE.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_VIT_DIM_SCORE.py` |
+| 脚本 | `metrics/repro/M_SYNTH_VIT_DIM_SCORE.py` |
 | 面板 | `code/_snapshots21/vit_family_20261023.json` |
-| 产物 | `code/M_SYNTH_VIT_DIM_SCORE_out.json` |
+| 产物 | `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json` |
 | 取数 | 零 SQL，读四份子模型 `_out.json` |
 | 变换 | 恒等映射，无归一、无加权 |
 | 权重声明 | `main=null`、`main_is_official=false` |
 | 缺维策略 | 维级 null 不输出、下游分母收缩；维内缺子项由上游等权 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,22 @@
 # 本地特色与优势分析（M_INNOV_DS_09_COMPREHENSIVE_005）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_09_COMPREHENSIVE_005.md`；复现脚本 `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py` → `metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV 域·科技发展规划·综合发展规划（王惠口径＝区位商 LQ）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技发展规划·综合发展规划（SRS 序号 181）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无 LQ 结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`gkx.dwd_patent` 含 IPC4 与申请人、`gkx.dwd_org_base_info` 含 city、`gkx.dwd_zh_paper` 含机构署名）；依赖表数据支持（开发库/三方库） = **部分**（三维区位商可现算：242.10 万件带 IPC 专利、10.09 万篇论文；但需求明列的「与全球水平对比」维在开发库/三方库均无语料，按两跳停规则记缺口）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py`、产物 `metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_09_COMPREHENSIVE_005.md`；复现脚本 `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py` → `metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py`、产物 `metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_09_COMPREHENSIVE_005.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json` |
@@ -64,16 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py`、产物 `metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域·科技发展规划·综合发展规划（王惠口径＝区位商 LQ）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技发展规划·综合发展规划（SRS 序号 181）
-> **数据支持度**：**部分支持**
-> **公式定义人**：王惠｜ **wanghui**: true
-> **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无 LQ 结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`gkx.dwd_patent` 含 IPC4 与申请人、`gkx.dwd_org_base_info` 含 city、`gkx.dwd_zh_paper` 含机构署名）；依赖表数据支持（开发库/三方库） = **部分**（三维区位商可现算：242.10 万件带 IPC 专利、10.09 万篇论文；但需求明列的「与全球水平对比」维在开发库/三方库均无语料，按两跳停规则记缺口）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -213,7 +221,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> 需求未给公式，以下按王惠口径重建，由 `code/M_INNOV_DS_09_COMPREHENSIVE_005.py` 在**三方库 `gkx`** 实测跑通，结果见 `M_INNOV_DS_09_COMPREHENSIVE_005_out.json`。
+> 需求未给公式，以下按王惠口径重建，由 `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py` 在**三方库 `gkx`** 实测跑通，结果见 `M_INNOV_DS_09_COMPREHENSIVE_005_out.json`。
 > 20261021 改源版只换数据源（旧版连本项目自建 `ods` 造数面，本版连 `gkx` 三方要素库，同名表逐表镜像），公式未改；唯一的行为差异是**去掉了属地打标那一步的 SQL JOIN**，改为按名称去重后在 Python 侧映射（原因见 §2.2，效果是把旧版被重名复制出来的 79 件专利还原）。
 
 ### 2.1 区位商的统计含义与适用条件
@@ -330,14 +338,14 @@ $$LQ^{comp}_{r,d}=\tfrac{1}{2}\big(LQ^{pat}_{r,d}+LQ^{res}_{r,d}\big)$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_DS_09_COMPREHENSIVE_005.py` |
-| 结果产物 | `code/M_INNOV_DS_09_COMPREHENSIVE_005_out.json` |
+| 计算脚本 | `metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py` |
+| 结果产物 | `metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json` |
 | 共用工具 | `code/_innov_gkx21_common.py`（三方库连接、论文解析、名称→城市去重映射、统计量） |
 | 主算库 | 三方 `gkx`（`183.240.141.251:3318`；`dwd_patent` / `dwd_org_base_info` / `dwd_zh_paper`） |
 | 单次运行耗时 | 约 70 秒（`(IPC4, 申请人)` 分组结果落 `_snapshots21/patent_ipc4_by_name_20261021.json`，命中缓存后约 12 秒） |
 
 ```bash
-python3 metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -596,11 +604,6 @@ python3 metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py
 3. 深圳市统计局. 《深圳统计年鉴》（含科技活动、专利授权等年度数据）. 官网：http://tjj.sz.gov.cn/
 
 4. 国家统计局. 《中国统计年鉴》（科技篇，用于「全域」基准的官方参照）. https://www.stats.gov.cn/sj/ndsj/
-
-5. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PLAN_LOCAL_ADV.md` — 王惠三维 LQ 口径原文。
-
-方法与数据完整论证见 **附录 C**；实测摘要见 **附录 D**。
-
 ---
 
 # 附件
@@ -746,15 +749,7 @@ python3 metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_DS_09_COMPREHENSIVE_005.py`（三方库 `gkx`）
-- 产物：`code/M_INNOV_DS_09_COMPREHENSIVE_005_out.json`
+- 脚本：`metrics/repro/M_INNOV_DS_09_COMPREHENSIVE_005.py`（三方库 `gkx`）
+- 产物：`metrics/repro/out/M_INNOV_DS_09_COMPREHENSIVE_005_out.json`
 - 关键结果：456 个 IPC4；LQ 中位数 0.8323；>1 共 147 个、>1.2 共 88 个；最高 A24F=1.9953（本地 20,658 件）；资源 LQ 最高 G09G=1.6778；双强 116、单强 31；论文 LQ 最高管理经济 2.0251；深圳论文 8,573 篇（8.50%）
 - support_judgment = `部分支持`（三维 LQ 已现算；D4 全球对比无源）
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

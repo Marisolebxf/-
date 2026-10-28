@@ -1,9 +1,21 @@
 # 创新点发现（M_INNOV_POINT_DISCOVERY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POINT_DISCOVERY.md`；复现脚本 `metrics/repro/M_INNOV_POINT_DISCOVERY.py` → `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：LIST（候选词条清单，不是 0—100 分）｜ **域**：INNOV（创新机会）｜ **UI 挂载**：创新机会 → 机会点发现
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（calc-logic INNOV V1.5-20260829）｜ wanghui: true
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POINT_DISCOVERY.py`、产物 `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POINT_DISCOVERY.md`；复现脚本 `metrics/repro/M_INNOV_POINT_DISCOVERY.py` → `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POINT_DISCOVERY.py`、产物 `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -26,7 +38,7 @@
 
 词条级突现检测：burst=(近窗年均−基窗年均)/max(基窗年均,1)，is_new=首次出现年≥T−2，候选=(burst≥1 或 is_new)且近窗件数≥3
 
-> 一句话口径（源件 §0.3）：三类词条里只有一类（IPC4）是**全量**：`patent_ipc4_year_20261021.json` 覆盖 2,420,915 件有 IPC 的专利、634 个小类、2021—2026 六个申请年。专利关键词只有 200,000 行主键切片（6.80%），论文关键词的分类表 20,048 篇里只有 **799 篇**能对上论文主表拿到年份。更重要的是基窗：`dwd_patent.apdt_year` 只有 2021—2026，公式要求的前 5 年均值在本库只能取到 **2021 一年**。结构与量都够跑出候选清单，但三类词条的可信度差一个数量级，判**部分支持**。本档位与 `code/M_INNOV_POINT_DISCOVERY_out.json` 的 `support_judgment` 一致。
+> 一句话口径（源件 §0.3）：三类词条里只有一类（IPC4）是**全量**：`patent_ipc4_year_20261021.json` 覆盖 2,420,915 件有 IPC 的专利、634 个小类、2021—2026 六个申请年。专利关键词只有 200,000 行主键切片（6.80%），论文关键词的分类表 20,048 篇里只有 **799 篇**能对上论文主表拿到年份。更重要的是基窗：`dwd_patent.apdt_year` 只有 2021—2026，公式要求的前 5 年均值在本库只能取到 **2021 一年**。结构与量都够跑出候选清单，但三类词条的可信度差一个数量级，判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -48,7 +60,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：三类词条里只有一类（IPC4）是**全量**：`patent_ipc4_year_20261021.json` 覆盖 2,420,915 件有 IPC 的专利、634 个小类、2021—2026 六个申请年。专利关键词只有 200,000 行主键切片（6.80%），论文关键词的分类表 20,048 篇里只有 **799 篇**能对上论文主表拿到年份。更重要的是基窗：`dwd_patent.apdt_year` 只有 2021—2026，公式要求的前 5 年均值在本库只能取到 **2021 一年**。结构与量都够跑出候选清单，但三类词条的可信度差一个数量级，判**部分支持**。本档位与 `code/M_INNOV_POINT_DISCOVERY_out.json` 的 `support_judgment` 一致。
+- **判档理由**：三类词条里只有一类（IPC4）是**全量**：`patent_ipc4_year_20261021.json` 覆盖 2,420,915 件有 IPC 的专利、634 个小类、2021—2026 六个申请年。专利关键词只有 200,000 行主键切片（6.80%），论文关键词的分类表 20,048 篇里只有 **799 篇**能对上论文主表拿到年份。更重要的是基窗：`dwd_patent.apdt_year` 只有 2021—2026，公式要求的前 5 年均值在本库只能取到 **2021 一年**。结构与量都够跑出候选清单，但三类词条的可信度差一个数量级，判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json` 的 `support_judgment` 一致。
 - **基期声明**：由产物中实际出现的年度键反推：used=[2012, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]；未见其他年度，缺失年未按 0 摊入。此项为机械反推，需人工确认取数窗口。
 - **复现实测耗时**：约 2.7 秒（源件落盘记录）
 
@@ -56,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_POINT_DISCOVERY.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_POINT_DISCOVERY.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json` |
@@ -64,16 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_POINT_DISCOVERY.py`、产物 `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：LIST（候选词条清单，不是 0—100 分）｜ **域**：INNOV（创新机会）｜ **UI 挂载**：创新机会 → 机会点发现
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（calc-logic INNOV V1.5-20260829）｜ wanghui: true
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（专利关键词仅 6.80% 主键切片，基窗只有 2021 一年）
-> **一句话口径**：对 IPC 前 4 位、专利关键词、论文关键词三类词条做突现检测，按 `burst≥1` 或「首次出现年 ≥ T−2」筛出候选；输出是**一行一个词条的清单**，不是打分。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -101,7 +108,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-三类词条里只有一类（IPC4）是**全量**：`patent_ipc4_year_20261021.json` 覆盖 2,420,915 件有 IPC 的专利、634 个小类、2021—2026 六个申请年。专利关键词只有 200,000 行主键切片（6.80%），论文关键词的分类表 20,048 篇里只有 **799 篇**能对上论文主表拿到年份。更重要的是基窗：`dwd_patent.apdt_year` 只有 2021—2026，公式要求的前 5 年均值在本库只能取到 **2021 一年**。结构与量都够跑出候选清单，但三类词条的可信度差一个数量级，判**部分支持**。本档位与 `code/M_INNOV_POINT_DISCOVERY_out.json` 的 `support_judgment` 一致。
+三类词条里只有一类（IPC4）是**全量**：`patent_ipc4_year_20261021.json` 覆盖 2,420,915 件有 IPC 的专利、634 个小类、2021—2026 六个申请年。专利关键词只有 200,000 行主键切片（6.80%），论文关键词的分类表 20,048 篇里只有 **799 篇**能对上论文主表拿到年份。更重要的是基窗：`dwd_patent.apdt_year` 只有 2021—2026，公式要求的前 5 年均值在本库只能取到 **2021 一年**。结构与量都够跑出候选清单，但三类词条的可信度差一个数量级，判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -131,7 +138,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 这两个困难决定了这个指标的价值不在「算出多少个候选」，而在**能不能把候选分成可信与不可信两堆**。本报告的做法是把三条证据摆在清单旁边：基窗实际用了哪几年、词条件数是不是来自抽样、该码在改版中是不是新拆出来的。使用者拿到清单时可以自己判断某一行该不该跟进。
 
-对使用方有三层价值。第一层是**扫描**：一次看到 33 个 IPC 级候选与 6,498 个关键词级候选，比人工翻分类表快几个数量级。第二层是**解释**：每个候选都带逐年件数，能看出是「持续上升」还是「某一年突然出现」。第三层是**可复核**：所有数字都能用 `code/M_INNOV_POINT_DISCOVERY.py` 在离线缓存上重跑，不依赖远程库。
+对使用方有三层价值。第一层是**扫描**：一次看到 33 个 IPC 级候选与 6,498 个关键词级候选，比人工翻分类表快几个数量级。第二层是**解释**：每个候选都带逐年件数，能看出是「持续上升」还是「某一年突然出现」。第三层是**可复核**：所有数字都能用 `metrics/repro/M_INNOV_POINT_DISCOVERY.py` 在离线缓存上重跑，不依赖远程库。
 
 ### 1.3 需求文档是否给出定义方法
 
@@ -246,9 +253,9 @@ IPC 在 2023 年改版中新增了 H10 族（半导体器件），把 H01L 下�
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_POINT_DISCOVERY.py
-# 输出 code/M_INNOV_POINT_DISCOVERY_out.json；实测耗时 2.7 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json；实测耗时 2.7 秒（全离线，零 SQL）
 ```
 
 **三类词条总览**：
@@ -400,20 +407,11 @@ python3 code/M_INNOV_POINT_DISCOVERY.py
 ---
 
 ## 参考文献
-
-> 下列条目为口径与方法来源；项目内文件按相对路径给出，外部文件给出可访问 URL。
-
 1. Kleinberg, J. (2002). Bursty and Hierarchical Structure in Streams. *KDD 2002*. https://doi.org/10.1145/775047.775067
 2. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
 3. 世界知识产权组织（WIPO）. (2024). *IPC Revision Policy and 2023.01 Scheme*. https://www.wipo.int/classifications/ipc/
 4. 世界知识产权组织（WIPO）. (2024). *World Intellectual Property Indicators 2024*. https://www.wipo.int/publications/
 5. 中国科学技术信息研究所. (2024). 《中国科技论文统计报告》. https://www.istic.ac.cn/
-6. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POINT_DISCOVERY.md`（王惠 V1.5-20260829）。
-7. 项目内数据纪律（非外部文献）：`_work_gkx21/DATA_FACTS_gkx21.md` §3.6、§3.12、§3.13、§3.16。
-8. 项目内缓存清单（非外部文献）：`_work_gkx21/PATENT_SCAN_LEDGER.md`、`_work_gkx21/SHARED_ASSETS.md`。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
 ---
 
 # 附件
@@ -545,8 +543,8 @@ H01L 与 H10 族、B64C 与 B64U 的此消彼长不是巧合：2023.01 版 IPC �
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_POINT_DISCOVERY.py`（20261021 版，全离线，零 SQL）
-- 产物：`code/M_INNOV_POINT_DISCOVERY_out.json`
+- 脚本：`metrics/repro/M_INNOV_POINT_DISCOVERY.py`（20261021 版，全离线，零 SQL）
+- 产物：`metrics/repro/out/M_INNOV_POINT_DISCOVERY_out.json`
 - 输入：`code/_snapshots21/patent_ipc4_year_20261021.json`、`a25_patent_sample.json`、`a25_paper_panel.json`
 - 源表：`gkx.dwd_patent` @ `183.240.141.251:3318`（**未直接查询**，只用其导出缓存）
 - 耗时：2.7 秒
@@ -554,11 +552,3 @@ H01L 与 H10 族、B64C 与 B64U 的此消彼长不是巧合：2023.01 版 IPC �
 - 敏感性：T=2025 重算，608 个共同词条，Spearman 0.9178
 - 码迁移：9 个（H10F/B64U/H10H/H10D/H10W/H10B/H10P/H10N/H10K），剔除后 24 个
 - 工程注意：基窗只有 2021；关键词件数为 6.80% 切片计数；论文分类表仅 799 篇有年份；2026 为残年
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

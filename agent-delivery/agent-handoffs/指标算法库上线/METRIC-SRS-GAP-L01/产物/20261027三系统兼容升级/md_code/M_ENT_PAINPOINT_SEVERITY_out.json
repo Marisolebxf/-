@@ -1,0 +1,164 @@
+{
+ "metric_id": "M_ENT_PAINPOINT_SEVERITY",
+ "metric_name": "痛难点严重度",
+ "date": "2026-10-21",
+ "data_source": "gkx + live",
+ "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_PAINPOINT_SEVERITY.md（王惠调研结果规范化迁移；需求文档提供构建方法；关联 Q014）",
+ "clean_rule": "clean(col) = col IS NOT NULL AND col != 'NULL' AND TRIM(col) != ''；数值列加 >0",
+ "live_probe": {
+  "gkxlumenx_dwd": {
+   "table_count": 137,
+   "threshold_like": []
+  },
+  "gkxlumenx_ads": {
+   "table_count": 95,
+   "threshold_like": []
+  }
+ },
+ "gkx_audit": {
+  "fin_cols": [
+   "arch_development_am",
+   "created_time",
+   "creater",
+   "data_source",
+   "development_employee",
+   "dwd_id",
+   "employees_number",
+   "external_id",
+   "fixed_assets",
+   "insert_remark",
+   "is_deleted",
+   "main_business_revenue",
+   "name_cn",
+   "operating_revenue",
+   "operator_remarks",
+   "org_id",
+   "owners_equity",
+   "pure_profit",
+   "table_data_source",
+   "total_assets",
+   "total_liabilities",
+   "total_profit",
+   "total_tax_paid",
+   "updated_time",
+   "updater",
+   "year"
+  ],
+  "arch_development_am_exists": true,
+  "total_rows": 90926,
+  "fill_audit": {
+   "operating_revenue": {
+    "nonnull": 2193,
+    "positive": 2191,
+    "positive_pct": 2.41
+   },
+   "total_profit": {
+    "nonnull": 2354,
+    "positive": 1810,
+    "positive_pct": 1.99
+   },
+   "pure_profit": {
+    "nonnull": 2349,
+    "positive": 1803,
+    "positive_pct": 1.98
+   },
+   "total_assets": {
+    "nonnull": 2629,
+    "positive": 2628,
+    "positive_pct": 2.89
+   },
+   "total_liabilities": {
+    "nonnull": 2423,
+    "positive": 2408,
+    "positive_pct": 2.65
+   },
+   "employees_number": {
+    "nonnull": 3170,
+    "positive": 3170,
+    "positive_pct": 3.49
+   },
+   "development_employee": {
+    "nonnull": 0,
+    "positive": 0,
+    "positive_pct": 0.0
+   }
+  },
+  "base_industry_key": {
+   "rows": 186809,
+   "distinct_l1": 20
+  }
+ },
+ "compute": {
+  "approach": "行业 P25 代理阈值 + 等权汇总 + 口径原式分档（阈值配置表缺，降级轨）",
+  "excluded": "人才状况维整维缺省（development_employee 全空，缺维不计 0）",
+  "source": "gkx.dwd_org_annual_financial_info × gkx.dwd_org_base_info",
+  "n_computable_enterprises": 34,
+  "n_industries_with_baseline": 3,
+  "severity_band_dist": {
+   "无偏离(轻0)": 28,
+   "轻度(0-20%)": 0,
+   "中度(20-50%)": 1,
+   "重度(>50%)": 5
+  },
+  "n_scored_with_deviation": 6,
+  "sample8": [
+   {
+    "org_id": "0506d35a77cfce150e055fe0525ee783",
+    "year": 2024.0,
+    "industry_l1_code": "C",
+    "severity_dev": 88.7,
+    "band": "重度(>50%)"
+   },
+   {
+    "org_id": "eaa0c510e2e4d3d000f7703c06d9a3ee",
+    "year": 2023.0,
+    "industry_l1_code": "M",
+    "severity_dev": 85.8,
+    "band": "重度(>50%)"
+   },
+   {
+    "org_id": "e940c99bd58fa7e7fe9507f156e079f0",
+    "year": 2022.0,
+    "industry_l1_code": "F",
+    "severity_dev": 72.7,
+    "band": "重度(>50%)"
+   },
+   {
+    "org_id": "de9582eb4ccc89d1d21faf06c95bf990",
+    "year": 2022.0,
+    "industry_l1_code": "F",
+    "severity_dev": 56.9,
+    "band": "重度(>50%)"
+   },
+   {
+    "org_id": "e202842eedb2f3cefdd481003d83ddb7",
+    "year": 2023.0,
+    "industry_l1_code": "M",
+    "severity_dev": 54.6,
+    "band": "重度(>50%)"
+   },
+   {
+    "org_id": "5fcfcf6d4144aebc7ffbb8f4b20d9769",
+    "year": 2024.0,
+    "industry_l1_code": "C",
+    "severity_dev": 44.3,
+    "band": "中度(20-50%)"
+   }
+  ]
+ },
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "阈值配置表（Q014）在 live 开发库 gkxlumenx_dwd/ads 均无——王惠口径的分档依赖阈值，缺配置即无法正式出档；人才维研发人员全空（0 行）+ 财务原料填充 2-3%（营收 2.41%）不足以支撑全国企业分档；降级轨：行业 P25 代理 + 等权下可对 34 家出偏离度，其中 6 家存在偏离（分档分布 {'无偏离(轻0)': 28, '轻度(0-20%)': 0, '中度(20-50%)': 1, '重度(>50%)': 5}）",
+  "criteria": {
+   "threshold_cfg_table_exists": false,
+   "threshold_cfg_scanned": [
+    "gkxlumenx_dwd",
+    "gkxlumenx_ads"
+   ],
+   "rd_employee_positive_rows": 0,
+   "revenue_positive_pct": 2.41,
+   "n_computable_enterprises": 34,
+   "n_scored_with_deviation": 6
+  }
+ }
+}

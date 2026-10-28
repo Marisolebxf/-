@@ -1,9 +1,22 @@
 # 投融资事件数（M_CHAIN_INVEST_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_INVEST_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_INVEST_COUNT.py` → `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（事件计数）｜**域**：CHAIN（产业链分析）｜**UI 挂载**：产业链详情页「资本」区 / 产业总览·产业投融资规模
+> - **数据支持度**：**完全转换支持**｜**公式定义人**：徐滕强（CHAIN 域 calc-logic，v0.2.0 方案 A）｜**复现脚本**：`metrics/repro/M_CHAIN_INVEST_COUNT.py`｜**产物**：`metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json`
+> - **四判定摘要**：直接读表面 = 否（`chain_investment` / `industry_chain_metric_fact` 在 gkx 与 live 两套允许数据面均无表）；依赖结构 = 是（gkx `dwd_org_financing_info` 25,654 行）；依赖数据 = **是**（去重后 17,583 起事件，10,530 起可挂 12 条链，12 链全部非零）｜ 取证时间：2026-10-21
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_INVEST_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_INVEST_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_INVEST_COUNT.py` → `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_INVEST_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_INVEST_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_INVEST_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json` |
@@ -63,15 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_INVEST_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（事件计数）｜**域**：CHAIN（产业链分析）｜**UI 挂载**：产业链详情页「资本」区 / 产业总览·产业投融资规模
-> **数据支持度**：**完全转换支持**｜**公式定义人**：徐滕强（CHAIN 域 calc-logic，v0.2.0 方案 A）｜**复现脚本**：`code/M_CHAIN_INVEST_COUNT.py`｜**产物**：`code/M_CHAIN_INVEST_COUNT_out.json`
-> **四判定摘要**：直接读表面 = 否（`chain_investment` / `industry_chain_metric_fact` 在 gkx 与 live 两套允许数据面均无表）；依赖结构 = 是（gkx `dwd_org_financing_info` 25,654 行）；依赖数据 = **是**（去重后 17,583 起事件，10,530 起可挂 12 条链，12 链全部非零）｜ 取证时间：2026-10-21
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -211,7 +220,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求给了维度与方法骨架，项目 calc-logic 给了计数口径；以下实现由 `code/M_CHAIN_INVEST_COUNT.py` 在 gkx 快照上实测跑通，结果见 `code/M_CHAIN_INVEST_COUNT_out.json`。文内引用采用「叙述后附 (机构/作者, 年)」体例，完整题录见文末「参考文献」。
+> **口径说明**：需求给了维度与方法骨架，项目 calc-logic 给了计数口径；以下实现由 `metrics/repro/M_CHAIN_INVEST_COUNT.py` 在 gkx 快照上实测跑通，结果见 `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json`。文内引用采用「叙述后附 (机构/作者, 年)」体例，完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：为什么用事件库计数，而不用专项调查或金融统计
 
@@ -273,16 +282,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_CHAIN_INVEST_COUNT.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_INVEST_COUNT.py` |
 | 公共模块 | 同目录 `code/_gkx21_common.py`（连库、链桥、主档索引、统计与落盘） |
-| 结果产物 | 同目录 `code/M_CHAIN_INVEST_COUNT_out.json` |
+| 结果产物 | 同目录 `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json` |
 | 输入快照 | `code/_snapshots21/base_20261021.json`（主档 189,115 行）<br>`code/_snapshots21/bridge_20261021.json`（企业—链映射 35,046 家 / 52,906 条可联标签）<br>融资事件每次直查 `gkx.dwd_org_financing_info`（25,654 行），不落快照 |
-| 主算库 | `gkx.dwd_org_financing_info` / `gkx.dwd_org_base_info` / `gkx.dwd_org_industry_tags`（唯一连库入口 `code/_gkxdb.py`） |
+| 主算库 | `gkx.dwd_org_financing_info` / `gkx.dwd_org_base_info` / `gkx.dwd_org_industry_tags`（唯一连库入口 `metrics/repro/_gkxdb.py`） |
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_INVEST_COUNT.py
-# 输出 code/M_CHAIN_INVEST_COUNT_out.json；实测耗时 8.5 秒（其中 7 秒为首次拉取融资表）
+# 输出 metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json；实测耗时 8.5 秒（其中 7 秒为首次拉取融资表）
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -490,9 +499,7 @@ python3 code/M_CHAIN_INVEST_COUNT.py
 4. 商务部. 中国外商投资报告2024[R/OL]. 2025. https://wzs.mofcom.gov.cn/ztxx/art/2025/art_a5f52f7bf1e7467cb87bfb0b2f10c3c0.html
 
 5. 中国记协. 中国新闻事业发展报告（2024年发布）[R/OL]. 2024-12-28. http://www.zgjx.cn/jzfw/tshd/xwsyfzbg.htm
-
 > 说明：第 1 条为本指标方法族的主要外部参照（连续 22 年、含区域运行专章）；第 2—5 条分别支撑机构规模、专利国际化、外资与国际比较、资讯热度的口径背景，用于同批指标交叉引用。
-
 ---
 
 # 附件
@@ -593,21 +600,12 @@ python3 code/M_CHAIN_INVEST_COUNT.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_CHAIN_INVEST_COUNT.py`（约 120 行） |
+| 脚本 | `metrics/repro/M_CHAIN_INVEST_COUNT.py`（约 120 行） |
 | 公共模块 | `code/_gkx21_common.py` |
 | 输入 | `_snapshots21/base_20261021.json`、`bridge_20261021.json`；融资表直查 gkx |
-| 输出 | `code/M_CHAIN_INVEST_COUNT_out.json` |
+| 输出 | `metrics/repro/out/M_CHAIN_INVEST_COUNT_out.json` |
 | 运行耗时 | 8.5 秒 |
 | 事件数 | 17,583（去重后） |
 | 可挂链 | 10,530（59.89%） |
 | 链级取值 | 12 种，全互异，266—5,783 |
 | 机判支持度 | 完全转换支持 |
-
-
-## 更新记录
-
-- 2026-08-24: 初版 v0.1.0（news_type 不可执行稿）
-- 2026-10-14: v0.2.0 方案A 重写（human:徐滕强 拍板：融资事件同构 + 复合键去重 + QC07 降级）
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

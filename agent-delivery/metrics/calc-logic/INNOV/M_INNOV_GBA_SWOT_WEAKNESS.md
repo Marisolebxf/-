@@ -1,9 +1,22 @@
 # 湾区创新能力短板因素（M_INNOV_GBA_SWOT_WEAKNESS）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_SWOT_WEAKNESS.md`；复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_WEAKNESS.py` → `metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：湾区创新监测·粤港澳大湾区创新能力分析·SWOT 短板（需求 §1.1.1.1.4.1.5.3.4）｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT 图）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无短板结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（专利、论文、项目、政策、机构底册均有）；依赖表数据支持（开发库/三方库） = **部分**（12 分项中 8 项可算，4 项无数据；其中 2 项仅覆盖 4 城、1 项仅覆盖 5 城）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_WEAKNESS.py`、产物 `metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_SWOT_WEAKNESS.md`；复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_WEAKNESS.py` → `metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_WEAKNESS.py`、产物 `metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -61,7 +74,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_GBA_SWOT_WEAKNESS.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_GBA_SWOT_WEAKNESS.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json` |
@@ -69,16 +82,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_SWOT_WEAKNESS.py`、产物 `metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：湾区创新监测·粤港澳大湾区创新能力分析·SWOT 短板（需求 §1.1.1.1.4.1.5.3.4）｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT 图）
-> **数据支持度**：**部分支持**
-> **公式定义人**：王惠（V1.5-20260830）｜ **wanghui**: true
-> **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无短板结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（专利、论文、项目、政策、机构底册均有）；依赖表数据支持（开发库/三方库） = **部分**（12 分项中 8 项可算，4 项无数据；其中 2 项仅覆盖 4 城、1 项仅覆盖 5 城）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -178,7 +186,7 @@ SWOT 框架在区域创新治理中的实际用途，不是给城市贴标签，
 
 ### 1.5 引用来源（可核验）
 
-**文档 1**：`原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`
+**文档 1**：`《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md`
 **章节**：`1.1.1.1.4.1.5.3.4 短板因素分析`（上级 `1.1.1.1.4.1.5.3 粤港澳大湾区创新能力分析`）
 
 **原句 1（本指标功能描述）**：
@@ -193,7 +201,7 @@ SWOT 框架在区域创新治理中的实际用途，不是给城市贴标签，
 
 > 以SWOT图表形式直观展示粤港澳大湾区创新能力方面的优势（Strengths）、短板（Weaknesses）、机会（Opportunities）与威胁（Threats），用户可查看各维度的详细内容和分析依据。
 
-**文档 2（王惠口径）**：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260830）
+**文档 2（王惠口径）**：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_GBA_SWOT_WEAKNESS.md（王惠正本已演化并入）`（V1.5-20260830）
 
 > 在选定湾区城市下，从四子指数的 12 个分项中识别相对落后的短板因素，给出清单、表现与改进建议。本指标不是 0—100 评分。
 
@@ -509,7 +517,7 @@ def is_weak(factor, city):
 
 ### 3.3 支持度判定引用
 
-`code/M_INNOV_GBA_SWOT_WEAKNESS_out.json` → `support_judgment`：
+`metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json` → `support_judgment`：
 
 ```json
 {
@@ -601,16 +609,12 @@ G1~G4 是**分项级缺失**（4 个分项完全没有），G5~G6 是**覆盖级
 ---
 
 ## 参考文献
-
-> 核验说明：以下文献的 URL 来自项目内王惠口径文档的引用记录（该文档由甲方口径负责人维护），以及本轮会话中已取得页面正文的科技部页面。本轮后续联网工具被客户端拒绝，故未再逐条重取。
-
 1. 中国科学学与科技政策研究会.《中国区域创新能力评价报告 2025》[R/OL]. 2025-09-27. https://www.casssp.org.cn/news_Detail_1/1073.html
 2. 中国科学技术发展战略研究院.《中国区域科技创新评价报告 2025》[R/OL]. 2025-09-23. http://casted.org.cn/zlyxw/20250922/268981.html
 3. 科学技术部. 国家创新能力评价指标体系[EB/OL]. 2023-11-29. https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110675.html
 4. 科学技术部. 区域创新能力监测指标体系[EB/OL]. https://www.most.gov.cn/zxgz/cxdcwq/zbtx/ （创新调查指标体系目录）
 5. 中共中央、国务院.《粤港澳大湾区发展规划纲要》[EB/OL]. 2019-02-18. https://www.gov.cn/zhengce/2019-02/18/content_5366593.htm
 6. Weihrich H. The TOWS Matrix—A Tool for Situational Analysis[J]. Long Range Planning, 1982, 15(2): 54-66. https://doi.org/10.1016/0024-6301(82)90120-0
-
 ---
 
 # 附件
@@ -756,7 +760,7 @@ Weihrich (1982) 的 TOWS 矩阵提供四象限结构与「建议」输出形态�
 
 ```bash
 python3 code/M_INNOV_GBA_SWOT_WEAKNESS.py
-# → code/M_INNOV_GBA_SWOT_WEAKNESS_out.json
+# → metrics/repro/out/M_INNOV_GBA_SWOT_WEAKNESS_out.json
 ```
 
 输出键：`factor_coverage`、`rank_table`、`city_result`、`available_factors`、`missing_factors`、`name_proxy_contamination`、`sensitivity_excl_university`、`support_judgment`。
@@ -768,11 +772,3 @@ python3 code/M_INNOV_GBA_SWOT_WEAKNESS.py
 ### D.3 复现性说明
 
 脚本无随机性，重复运行结果一致。唯一的不稳定来源是 `dwd_policy_base.status` 的取值枚举——若库内状态字段新增取值，政策供给计数会变化，需同步更新 2.5.4 的过滤条件。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

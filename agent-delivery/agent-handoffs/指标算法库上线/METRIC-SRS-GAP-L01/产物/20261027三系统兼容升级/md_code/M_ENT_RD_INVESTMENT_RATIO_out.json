@@ -1,0 +1,212 @@
+{
+ "metric_id": "M_ENT_RD_INVESTMENT_RATIO",
+ "metric_name": "研发投入占比",
+ "probe_date": "2026-10-21",
+ "db": "gkx @ 183.240.141.251:3318（dwd_org_annual_financial_info / dwd_org_annual_report_asset / dwd_org_stock_finance_info / dwd_org_base_info）",
+ "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_RD_INVESTMENT_RATIO.md（2026-08-31 定稿）",
+ "formula": "rd_ratio = rd_investment / revenue × 100；每企最近完整自然年；分母 0/空或分子空 → 该企不可算",
+ "input_columns": {
+  "numerator": "dwd_org_annual_financial_info.arch_development_am / dwd_org_annual_report_asset.yftrje",
+  "denominator": "operating_revenue / zyywsr",
+  "year": "year / nbnf"
+ },
+ "probe_financial": {
+  "rows": 90926,
+  "distinct_orgs": 8127,
+  "rd_numerator_nonnull": 0,
+  "rd_numerator_nonzero": 0,
+  "rd_employee_nonnull": 0,
+  "revenue_positive": 2191,
+  "rd_revenue_pairs": 0,
+  "rd_revenue_orgs": 0,
+  "yearly": [
+   {
+    "year": 2025.0,
+    "rows": 6908,
+    "rd_nonzero": 0,
+    "revenue_positive": 34
+   },
+   {
+    "year": 2024.0,
+    "rows": 7799,
+    "rd_nonzero": 0,
+    "revenue_positive": 47
+   },
+   {
+    "year": 2023.0,
+    "rows": 7423,
+    "rd_nonzero": 0,
+    "revenue_positive": 45
+   },
+   {
+    "year": 2022.0,
+    "rows": 7892,
+    "rd_nonzero": 0,
+    "revenue_positive": 39
+   },
+   {
+    "year": 2021.0,
+    "rows": 7892,
+    "rd_nonzero": 0,
+    "revenue_positive": 49
+   },
+   {
+    "year": 2020.0,
+    "rows": 7618,
+    "rd_nonzero": 0,
+    "revenue_positive": 59
+   },
+   {
+    "year": 2019.0,
+    "rows": 7698,
+    "rd_nonzero": 0,
+    "revenue_positive": 65
+   },
+   {
+    "year": 2018.0,
+    "rows": 7547,
+    "rd_nonzero": 0,
+    "revenue_positive": 92
+   },
+   {
+    "year": 2017.0,
+    "rows": 7313,
+    "rd_nonzero": 0,
+    "revenue_positive": 162
+   },
+   {
+    "year": 2016.0,
+    "rows": 6926,
+    "rd_nonzero": 0,
+    "revenue_positive": 284
+   },
+   {
+    "year": 2015.0,
+    "rows": 6500,
+    "rd_nonzero": 0,
+    "revenue_positive": 471
+   },
+   {
+    "year": 2014.0,
+    "rows": 5876,
+    "rd_nonzero": 0,
+    "revenue_positive": 752
+   },
+   {
+    "year": 2013.0,
+    "rows": 3524,
+    "rd_nonzero": 0,
+    "revenue_positive": 92
+   },
+   {
+    "year": 2012.0,
+    "rows": 2,
+    "rd_nonzero": 0,
+    "revenue_positive": 0
+   },
+   {
+    "year": 2011.0,
+    "rows": 2,
+    "rd_nonzero": 0,
+    "revenue_positive": 0
+   },
+   {
+    "year": 2010.0,
+    "rows": 2,
+    "rd_nonzero": 0,
+    "revenue_positive": 0
+   },
+   {
+    "year": 2009.0,
+    "rows": 2,
+    "rd_nonzero": 0,
+    "revenue_positive": 0
+   },
+   {
+    "year": 2008.0,
+    "rows": 1,
+    "rd_nonzero": 0,
+    "revenue_positive": 0
+   },
+   {
+    "year": 2007.0,
+    "rows": 1,
+    "rd_nonzero": 0,
+    "revenue_positive": 0
+   }
+  ]
+ },
+ "probe_annual_report_asset": {
+  "rows": 527034,
+  "rd_expense_filled": 0,
+  "rd_people_filled": 0,
+  "revenue_filled": 12198,
+  "rd_revenue_pairs": 0
+ },
+ "banned_counterfactual": {
+  "table": "dwd_org_stock_finance_info",
+  "rows": 40239,
+  "distinct_orgs": 972,
+  "rd_positive_rows": 19585,
+  "rd_positive_orgs": 876,
+  "rd_nonzero_rows": 19587,
+  "rd_revenue_pair_rows": 19544,
+  "share_of_base_pct": 0.46,
+  "share_basis": "stock_rd_orgs / base_orgs = 研发费用>0 的企业数 / 底册行数；不含全表 972 家这一口径",
+  "verdict": "王惠 calc-logic 明令「禁止用上市财务替代年报」；覆盖仅约 0.5% 底册且存在幸存者偏差，不接入"
+ },
+ "dwd_rd_probe": {
+  "table": "dwd_rd",
+  "rows": 0,
+  "columns": [
+   "dwd_id",
+   "id",
+   "trial_nct_id",
+   "study_type",
+   "phase",
+   "sponsor_name",
+   "start_date",
+   "completion_date",
+   "intervention",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "is_deleted",
+   "operator_remarks",
+   "insert_remark"
+  ],
+  "verdict": "表名含 rd（research/development 直觉），实为临床试验表：列结构 trial_nct_id / study_type / phase / sponsor_name / intervention，且 0 行。按表名取数会得到空结果并误判「库里没有研发数据」——命名陷阱。"
+ },
+ "foreign_finance_probe": {
+  "table": "dwd_foreign_org_annual_financial_info",
+  "rows": 51,
+  "rd_amount_nonzero_rows": 0,
+  "verdict": "研发额列非空但 51 行全为 0.0（非零行 0），且口径声明「国外暂不并、不造表」，不构成分子源。"
+ },
+ "compute": {
+  "n_scored": 0,
+  "n_orgs_scored": 0,
+  "coverage_pct": 0.0,
+  "distribution": null,
+  "why_zero": "分子 arch_development_am / yftrje / research_development_amount 三侧在年报口径均无值；分母虽有 2,191 行，无法单独成比",
+  "validation_plan": [
+   "甲方补齐年报研发投入金额（或研发费用加计扣除申报数）后，按 org_id+year 现算",
+   "研发人员列 development_employee / yfrysl 同样为 0，可同步补以支撑技术人才维",
+   "灌数后先做「研发投入 ≤ 营业收入」「比值 ∈ [0,100]」两条质检，再出分布"
+  ]
+ },
+ "base_orgs": 189116,
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "criteria": {
+   "structure_closed": true,
+   "numerator_present": false,
+   "denominator_present": true,
+   "n_scored": 0,
+   "banned_source_not_used": true
+  },
+  "reason": "公式与源字段均已闭合（arch_development_am / operating_revenue / year 三列齐备），但研发投入列在年报口径全空：年报财务 90,926 行填充 0、工商年报资产 527,034 行填充 0。唯一有研发费用的上市财务表 40,239 行 / 其中研发费用>0 876 企（占底册 0.46%）被口径明令禁止替代年报，存在幸存者偏差。属「结构与公式齐、值侧为空」的值缺失，按 §〇 判部分支持；灌入真实研发投入后即可现算，方法无需改造。"
+ }
+}

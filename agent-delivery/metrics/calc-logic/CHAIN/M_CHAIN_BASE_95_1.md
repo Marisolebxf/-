@@ -1,9 +1,24 @@
 # 产业链基础指标模型构建（M_CHAIN_BASE_95_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_BASE_95_1.md`；复现脚本 `metrics/repro/M_CHAIN_BASE_95_1.py` → `metrics/repro/out/M_CHAIN_BASE_95_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：CONTAINER（九维子指标容器，不合成单一分数）｜ **域**：产业链分析／产业链总览／基础画像｜ **UI 挂载**：产业链画像总览九维卡片族（雷达/条形 + 下钻）
+> - **数据支持度**：**部分支持**｜ **公式定义人**：AI-20261016 父口径（项目内工程口径，非王惠 calc-logic）
+> - **一句话结论**：九维中八维可由 `gkx` 现算（营收 716.93 亿元、企业 1,714,458 家、融资 14,626 起、资讯 183,758 条、深圳 92,930 家 / 9 个区），全球区域分布维在库内无源，缺一维即按 §〇 降档 → **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_CHAIN_BASE_95_1.py`｜ **产物**：`metrics/repro/out/M_CHAIN_BASE_95_1_out.json`｜ **实测耗时**：0.9 秒（只读已落盘快照）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_BASE_95_1.py`、产物 `metrics/repro/out/M_CHAIN_BASE_95_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_BASE_95_1.md`；复现脚本 `metrics/repro/M_CHAIN_BASE_95_1.py` → `metrics/repro/out/M_CHAIN_BASE_95_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_BASE_95_1.py`、产物 `metrics/repro/out/M_CHAIN_BASE_95_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_BASE_95_1.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_BASE_95_1.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_BASE_95_1_out.json` |
@@ -63,16 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_BASE_95_1.py`、产物 `metrics/repro/out/M_CHAIN_BASE_95_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：CONTAINER（九维子指标容器，不合成单一分数）｜ **域**：产业链分析／产业链总览／基础画像｜ **UI 挂载**：产业链画像总览九维卡片族（雷达/条形 + 下钻）
-> **数据支持度**：**部分支持**｜ **公式定义人**：AI-20261016 父口径（项目内工程口径，非王惠 calc-logic）
-> **复现脚本**：`code/M_CHAIN_BASE_95_1.py`｜ **产物**：`code/M_CHAIN_BASE_95_1_out.json`｜ **实测耗时**：0.9 秒（只读已落盘快照）
-> **一句话结论**：九维中八维可由 `gkx` 现算（营收 716.93 亿元、企业 1,714,458 家、融资 14,626 起、资讯 183,758 条、深圳 92,930 家 / 9 个区），全球区域分布维在库内无源，缺一维即按 §〇 降档 → **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -318,9 +328,9 @@ $$W=\sum_c \mathrm{news\_total}_c=183,758\ \text{条}$$
 脚本只读已落盘快照，不连库即可复跑，因此重跑耗时不到 1 秒，且结果稳定：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_BASE_95_1.py
-# 输出 code/M_CHAIN_BASE_95_1_out.json，实测 0.9 秒
+# 输出 metrics/repro/out/M_CHAIN_BASE_95_1_out.json，实测 0.9 秒
 ```
 
 **探针结果（真实产物）**：
@@ -382,7 +392,7 @@ python3 code/M_CHAIN_BASE_95_1.py
 
 **四判定（§〇）**：直接结构/数据 = 否（容器无自身结果面）；依赖结构 = 部分（八维有源，⑤无源）；依赖数据 = 部分（①③④⑥有覆盖限制）；综合 → **部分支持**。
 
-支持度引用 `code/M_CHAIN_BASE_95_1_out.json` 的 `support_judgment = 部分支持` 与 `judgment_reason`：九维中八维可由 gkx 现算，全球区域分布维在库内无源，容器只能登记八维，缺一维即按 §〇 降档。
+支持度引用 `metrics/repro/out/M_CHAIN_BASE_95_1_out.json` 的 `support_judgment = 部分支持` 与 `judgment_reason`：九维中八维可由 gkx 现算，全球区域分布维在库内无源，容器只能登记八维，缺一维即按 §〇 降档。
 
 **两跳止步说明**：⑧⑨的上一跳是「企业—链挂接」，本报告只做到 `industry_code` 前缀归链，不再往下追「链—企权威挂接表」（库内不存在，见 `TABLE_ABSENCE_EVIDENCE.md` 的 `industry_chain_entity_rel` 一节，来源分型 `source_absent`）。⑤维的上一跳是「境外机构—链挂接」，gkx 既无境外机构表、也无 ISIC↔INB 映射，按两跳原则直接记缺口，不拿其他表凑数。
 
@@ -481,7 +491,6 @@ python3 code/M_CHAIN_BASE_95_1.py
 7. Hidalgo, C. A., & Hausmann, R. (2009). The Building Blocks of Economic Complexity. *PNAS*, 106(26), 10570–10575. https://doi.org/10.1073/pnas.0900943106
 
 8. 项目内旁证（非外部文献）：AI-20261016 父口径九维容器登记条目；`gkx-orchestration/agent-delivery/bid-reference/科技专题服务算法库.md`。
-
 ---
 
 # 附件
@@ -581,7 +590,7 @@ python3 code/M_CHAIN_BASE_95_1.py
 
 ### C.8 对甲方四问的逐条回答
 
-**一问：现在能不能出数？** 能出八维，不能出全球维。八维由 `code/M_CHAIN_BASE_95_1.py` 当日跑通，产物 `code/M_CHAIN_BASE_95_1_out.json`。
+**一问：现在能不能出数？** 能出八维，不能出全球维。八维由 `metrics/repro/M_CHAIN_BASE_95_1.py` 当日跑通，产物 `metrics/repro/out/M_CHAIN_BASE_95_1_out.json`。
 
 **二问：出的是不是甲方要的东西？** 结构上是九维容器，语义上只有境内画像；①③④三维是带条件的值，不是完整口径。
 
@@ -591,14 +600,7 @@ python3 code/M_CHAIN_BASE_95_1.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_CHAIN_BASE_95_1.py`（只读快照，实测 0.9 秒）
-- 产物：`code/M_CHAIN_BASE_95_1_out.json`
+- 脚本：`metrics/repro/M_CHAIN_BASE_95_1.py`（只读快照，实测 0.9 秒）
+- 产物：`metrics/repro/out/M_CHAIN_BASE_95_1_out.json`
 - 关键结果：九维可得 8/9；营收 716.93 亿元、企业 1,714,458 家、机构 226 家、融资 14,626 起、资讯 183,758 条、深圳 92,930 家 / 9 区；`support_judgment = 部分支持`
 - 复现要求：`code/_snapshots21/` 下 6 份快照齐备即可复跑；不连库、不依赖任何演示库
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
