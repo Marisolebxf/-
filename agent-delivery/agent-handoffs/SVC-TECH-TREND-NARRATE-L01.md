@@ -59,7 +59,16 @@ STAGE（org_coverage G1/G2 指纹/G4 RustFS）、T4–T7、口径修改、企业
 - **随扩单同文件收口（2026-10-28）**：I-1' 倒装「N星…领域名」反向配对 + I-2 档位词独立词形边界（后接标点才拒，语素假阳性放行）+ M1 growth 优先读 `heat.growth_pct`（3 年窗口与星级同源）+ M2 死代码 `star_pairs` 删除。
 - 遗留跟进：M5 topic-py 30s vs narrate 20s 余量提示（观察项暂不改）；`test_tech_wrong_dim_rejected` 弱断言保留作框架回归。
 
-### 5.1.3 二轮评审修复（2026-10-28 14:40，requesting-code-review 扩单终审）
+### 5.1.4 扩单线上实证 + 部署实录（2026-10-28 16:48 推送，17:0x 实证）
+
+- 推送：topic-py `7755eb7`（C-1 路由正名）/ algo `0238684`（四叶 narrate + prompt 包 + 终审收口）/ FE `b293b5e`（四板渲染）。
+- **deploy 实录**：topic-py 整线 success（search-py 16:56 自动发布）；algo `deploy:worker` 绿，`deploy:api` failed 于 wait 脚本选中 Terminating 旧副本超时——rollout 本身 "successfully rolled out"，属脚本抖动非部署失败（api pod 实际已运行新版本，实证为证）。
+- **四叶线上实证**（网关发起 SVC-20261028-005~008，快照真源 target_params）：
+  - shortboard（005）：**ok**——档位原样引用（空白）+ Q-SVCCHAIN-03 声明句尾；12s success；
+  - attract（007）：**ok**——priority 分布 + WEIGHT_NOTE 原样引用（含不作对外招商承诺）；5s success；
+  - cultivate（008）：**ok**——growth_stage 分布 + 同款声明；6s success；
+  - shenzhen（006）：**skipped(empty)**——`_compare_rows` 兼容键未覆盖 `sz_compare.cities[].metrics` 嵌套结构（数据形状适配小缺口），护栏正确短路为诚实空态，FE 走原规则结论。
+- **遗留（下批收口）**：shenzhen `_compare_rows` 适配 metrics 嵌套形状（→ narration 可 ok）；algo deploy wait 脚本 Terminating 副本抖动（运维项，与代码无关）。
 
 - subagent 二轮评审：**1 Critical + 2 Important + 5 Minor**。
 - **C-1 任务链路断点（Critical）**：扩单四叶 narrate 挂 algo 装配叶，但 topic-py `_LEAF_SVCAN_PATH` 仍路由 `/models/*` 读面——narration 永不到达快照，且 `/models/gap?industry=` 内部调 leaf 会白烧 LLM 调用。修：四叶路由正名至 `/analysis/{leaf}`（与 T1–T3 同法），单测断言同步 6 处。
