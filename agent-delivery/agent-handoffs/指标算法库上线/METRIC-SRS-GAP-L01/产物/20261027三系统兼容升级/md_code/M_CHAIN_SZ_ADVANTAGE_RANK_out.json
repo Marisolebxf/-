@@ -1,0 +1,834 @@
+{
+ "metric_id": "M_CHAIN_SZ_ADVANTAGE_RANK",
+ "metric_name": "深圳优势排名",
+ "unit": "名次（1 = 四城中第一）",
+ "definition": "深圳在指定产业链上相对对标城市集合（深/穗/莞/惠）的优势名次。名次由父指标 M_CHAIN_SZ_ADVANTAGE_SCORE 的得分决定，本指标只读名次、不另算分数。",
+ "formula": "rank_c = rank of 深圳市 in {V_c(city) : city ∈ C}，V_c 取父指标「可得维口径」得分（企业维 + 专利维等权），C = 深/穗/莞/惠",
+ "read_table_formula": "SELECT rank_no FROM industry_chain_model_result_detail WHERE metric_id='M_CHAIN_SZ_ADVANTAGE_SCORE' AND region_code='440300' AND chain_id=:chain_code ORDER BY run 最新 LIMIT 1",
+ "support_judgment": "部分支持",
+ "rank_source": {
+  "path": "code/M_CHAIN_SZ_ADVANTAGE_SCORE_out.json",
+  "mode": "直读父产物名次（sz_rank_available），不重算分数",
+  "parent_support": {
+   "data_support_level": "部分支持",
+   "reason": "四维中只有企业维与专利维可算（企业维仍受营收 0.65%、研发 876 家稀疏所限；专利维为 6.80% 抽样），政策维 10/12 链无任何命中、人才维链级完全无数据；按 §〇「始终有部分依赖维得不到足够数据」判『部分支持』。另：需求原文要求『深圳与全国产业数据对比』，本库省外样本 0.18%，全国对标不可实现。",
+   "criteria": {
+    "dims_available": 2,
+    "dims_required": 4,
+    "policy_chains_with_signal": 3,
+    "talent_chain_rows": 0,
+    "benchmark_cities": 4
+   }
+  },
+  "official_table_rows": 0,
+  "official_table": "live industry_chain_model_result_detail（LIVE_INVENTORY.json 实测 0 行）",
+  "why_rebuild": "读表口径指向的模型结果表 0 行；按 calc-logic「0 行 → NULL，不伪造排名」本应出空值。本件改读父指标已交付的分数与名次，属等价重建，不是另立第三套评分。"
+ },
+ "mother_body": {
+  "chain_firms_total": 1714457,
+  "note": "全库链内去脏企业数，仅作母体声明；本件名次的分母是「链内企业 × 四城」，不做跨母体除法。",
+  "benchmark_cities": 4
+ },
+ "headline": {
+  "chains": 12,
+  "rank_dist": {
+   "1": 9,
+   "2": 3
+  },
+  "score_min": 59.93,
+  "score_max": 100.0,
+  "top3_by_sz_score": [
+   {
+    "chain": "数字创意",
+    "score": 100.0,
+    "chain_order": 1
+   },
+   {
+    "chain": "集成电路",
+    "score": 90.85,
+    "chain_order": 2
+   },
+   {
+    "chain": "智能终端",
+    "score": 81.89,
+    "chain_order": 3
+   }
+  ],
+  "bottom3_by_sz_score": [
+   {
+    "chain": "机器人",
+    "score": 67.89,
+    "chain_order": 10
+   },
+   {
+    "chain": "人工智能",
+    "score": 67.44,
+    "chain_order": 11
+   },
+   {
+    "chain": "低空经济",
+    "score": 59.93,
+    "chain_order": 12
+   }
+  ]
+ },
+ "per_chain": [
+  {
+   "industry_code": "INB1502",
+   "industry_name": "数字创意",
+   "sz_score": 100.0,
+   "sz_score_wanghui4": 75.0,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 100.0,
+    "广州市": 28.15,
+    "东莞市": 12.57,
+    "惠州市": 0.38
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 28.15,
+   "lead_over_runner_up": 71.85,
+   "chain_firms": 1859,
+   "chain_order_by_sz_score": 1
+  },
+  {
+   "industry_code": "INB1303",
+   "industry_name": "集成电路",
+   "sz_score": 90.85,
+   "sz_score_wanghui4": 82.92,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 90.85,
+    "广州市": 40.57,
+    "东莞市": 10.51,
+    "惠州市": 0.55
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 40.57,
+   "lead_over_runner_up": 50.28,
+   "chain_firms": 2344,
+   "chain_order_by_sz_score": 2
+  },
+  {
+   "industry_code": "INB1333",
+   "industry_name": "智能终端",
+   "sz_score": 81.89,
+   "sz_score_wanghui4": 65.94,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 81.89,
+    "广州市": 49.44,
+    "东莞市": 22.05,
+    "惠州市": 9.92
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 49.44,
+   "lead_over_runner_up": 32.45,
+   "chain_firms": 6851,
+   "chain_order_by_sz_score": 3
+  },
+  {
+   "industry_code": "INB2503",
+   "industry_name": "生物医药",
+   "sz_score": 78.42,
+   "sz_score_wanghui4": 64.21,
+   "sz_rank_in_chain": 2,
+   "sz_rank_wanghui4": 2,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 78.42,
+    "广州市": 84.79,
+    "东莞市": 5.27,
+    "惠州市": 0.06
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 84.79,
+   "lead_over_runner_up": -6.37,
+   "chain_firms": 331,
+   "chain_order_by_sz_score": 4
+  },
+  {
+   "industry_code": "INB1306",
+   "industry_name": "软件与信息服务",
+   "sz_score": 74.53,
+   "sz_score_wanghui4": 62.27,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 74.53,
+    "广州市": 45.87,
+    "东莞市": 28.27,
+    "惠州市": 2.67
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 45.87,
+   "lead_over_runner_up": 28.66,
+   "chain_firms": 8402,
+   "chain_order_by_sz_score": 5
+  },
+  {
+   "industry_code": "INB1323",
+   "industry_name": "传感器",
+   "sz_score": 74.41,
+   "sz_score_wanghui4": 62.2,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 74.41,
+    "广州市": 47.32,
+    "东莞市": 25.09,
+    "惠州市": 15.48
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 47.32,
+   "lead_over_runner_up": 27.09,
+   "chain_firms": 1804,
+   "chain_order_by_sz_score": 6
+  },
+  {
+   "industry_code": "INB1354",
+   "industry_name": "具身智能",
+   "sz_score": 70.09,
+   "sz_score_wanghui4": 60.04,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 70.09,
+    "广州市": 50.44,
+    "东莞市": 19.04,
+    "惠州市": 10.9
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 50.44,
+   "lead_over_runner_up": 19.65,
+   "chain_firms": 2649,
+   "chain_order_by_sz_score": 7
+  },
+  {
+   "industry_code": "INB2505",
+   "industry_name": "合成生物",
+   "sz_score": 68.66,
+   "sz_score_wanghui4": 59.33,
+   "sz_rank_in_chain": 2,
+   "sz_rank_wanghui4": 2,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 68.66,
+    "广州市": 93.31,
+    "东莞市": 25.84,
+    "惠州市": 0.0
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 93.31,
+   "lead_over_runner_up": -24.65,
+   "chain_firms": 1180,
+   "chain_order_by_sz_score": 8
+  },
+  {
+   "industry_code": "INB1209",
+   "industry_name": "智能网联汽车",
+   "sz_score": 68.31,
+   "sz_score_wanghui4": 59.16,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 68.31,
+    "广州市": 46.77,
+    "东莞市": 9.92,
+    "惠州市": 8.21
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 46.77,
+   "lead_over_runner_up": 21.54,
+   "chain_firms": 1074,
+   "chain_order_by_sz_score": 9
+  },
+  {
+   "industry_code": "INB1204",
+   "industry_name": "机器人",
+   "sz_score": 67.89,
+   "sz_score_wanghui4": 71.44,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 67.89,
+    "广州市": 61.36,
+    "东莞市": 33.05,
+    "惠州市": 9.75
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 61.36,
+   "lead_over_runner_up": 6.53,
+   "chain_firms": 2284,
+   "chain_order_by_sz_score": 10
+  },
+  {
+   "industry_code": "INB1309",
+   "industry_name": "人工智能",
+   "sz_score": 67.44,
+   "sz_score_wanghui4": 71.22,
+   "sz_rank_in_chain": 1,
+   "sz_rank_wanghui4": 1,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 67.44,
+    "广州市": 56.3,
+    "东莞市": 33.58,
+    "惠州市": 17.23
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 56.3,
+   "lead_over_runner_up": 11.14,
+   "chain_firms": 3012,
+   "chain_order_by_sz_score": 11
+  },
+  {
+   "industry_code": "INB1236",
+   "industry_name": "低空经济",
+   "sz_score": 59.93,
+   "sz_score_wanghui4": 54.96,
+   "sz_rank_in_chain": 2,
+   "sz_rank_wanghui4": 2,
+   "benchmark_cities": [
+    "深圳市",
+    "广州市",
+    "东莞市",
+    "惠州市"
+   ],
+   "city_scores": {
+    "深圳市": 59.93,
+    "广州市": 86.29,
+    "东莞市": 0.72,
+    "惠州市": 24.26
+   },
+   "runner_up_city": "广州市",
+   "runner_up_score": 86.29,
+   "lead_over_runner_up": -26.36,
+   "chain_firms": 100,
+   "chain_order_by_sz_score": 12
+  }
+ ],
+ "chain_order": [
+  {
+   "order": 1,
+   "chain": "数字创意",
+   "sz_score": 100.0,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 71.85
+  },
+  {
+   "order": 2,
+   "chain": "集成电路",
+   "sz_score": 90.85,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 50.28
+  },
+  {
+   "order": 3,
+   "chain": "智能终端",
+   "sz_score": 81.89,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 32.45
+  },
+  {
+   "order": 4,
+   "chain": "生物医药",
+   "sz_score": 78.42,
+   "rank_in_chain": 2,
+   "runner_up": "广州市",
+   "lead": -6.37
+  },
+  {
+   "order": 5,
+   "chain": "软件与信息服务",
+   "sz_score": 74.53,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 28.66
+  },
+  {
+   "order": 6,
+   "chain": "传感器",
+   "sz_score": 74.41,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 27.09
+  },
+  {
+   "order": 7,
+   "chain": "具身智能",
+   "sz_score": 70.09,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 19.65
+  },
+  {
+   "order": 8,
+   "chain": "合成生物",
+   "sz_score": 68.66,
+   "rank_in_chain": 2,
+   "runner_up": "广州市",
+   "lead": -24.65
+  },
+  {
+   "order": 9,
+   "chain": "智能网联汽车",
+   "sz_score": 68.31,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 21.54
+  },
+  {
+   "order": 10,
+   "chain": "机器人",
+   "sz_score": 67.89,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 6.53
+  },
+  {
+   "order": 11,
+   "chain": "人工智能",
+   "sz_score": 67.44,
+   "rank_in_chain": 1,
+   "runner_up": "广州市",
+   "lead": 11.14
+  },
+  {
+   "order": 12,
+   "chain": "低空经济",
+   "sz_score": 59.93,
+   "rank_in_chain": 2,
+   "runner_up": "广州市",
+   "lead": -26.36
+  }
+ ],
+ "reconciliation": {
+  "deep_126_1": {
+   "available": true,
+   "source": "code/M_CHAIN_DEEP_126_1_out.json",
+   "sz_rank_dist_declared": {
+    "1": 12
+   },
+   "per_chain_rank": {
+    "软件与信息服务": {
+     "rank": 1,
+     "index": 92.4,
+     "margin": 42.18,
+     "runner_up": "广州市"
+    },
+    "数字创意": {
+     "rank": 1,
+     "index": 94.94,
+     "margin": 41.75,
+     "runner_up": "广州市"
+    },
+    "智能终端": {
+     "rank": 1,
+     "index": 97.38,
+     "margin": 65.14,
+     "runner_up": "广州市"
+    },
+    "生物医药": {
+     "rank": 1,
+     "index": 88.68,
+     "margin": 2.62,
+     "runner_up": "广州市"
+    },
+    "人工智能": {
+     "rank": 1,
+     "index": 94.7,
+     "margin": 44.34,
+     "runner_up": "广州市"
+    },
+    "合成生物": {
+     "rank": 1,
+     "index": 92.03,
+     "margin": 1.77,
+     "runner_up": "广州市"
+    },
+    "传感器": {
+     "rank": 1,
+     "index": 98.4,
+     "margin": 63.66,
+     "runner_up": "东莞市"
+    },
+    "集成电路": {
+     "rank": 1,
+     "index": 100.0,
+     "margin": 71.89,
+     "runner_up": "东莞市"
+    },
+    "机器人": {
+     "rank": 1,
+     "index": 94.85,
+     "margin": 55.33,
+     "runner_up": "东莞市"
+    },
+    "具身智能": {
+     "rank": 1,
+     "index": 94.6,
+     "margin": 70.75,
+     "runner_up": "东莞市"
+    },
+    "智能网联汽车": {
+     "rank": 1,
+     "index": 95.48,
+     "margin": 69.56,
+     "runner_up": "广州市"
+    },
+    "低空经济": {
+     "rank": 1,
+     "index": 83.95,
+     "margin": 35.55,
+     "runner_up": "广州市"
+    }
+   },
+   "note": "该件用「企业 0.40 + 学术 0.30 + 生态 0.30」三维九项合成，母体是链内企业 + 高企 + 专利 + 融资 + 服务机构；与父指标的四维（企业/专利/政策/人才，实际仅两维有数）不同。"
+  },
+  "deep_121_1": {
+   "available": true,
+   "source": "code/M_CHAIN_DEEP_121_1_out.json + code/_snapshots21/chain_panel21.json",
+   "note": "该件主判据是区位商 LQ=(深圳占该链比)/(深圳占全库比)，输出三档判定；四城企业数名次由同一快照 chain_panel21 的 cities 六桶复算（与 121 正文 §2.5 同源，8 条第 1、4 条第 2）。",
+   "lq_by_chain": {
+    "具身智能": {
+     "lq": 3.571928,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 1576,
+      "广州市": 246,
+      "东莞市": 178,
+      "惠州市": 50
+     }
+    },
+    "智能网联汽车": {
+     "lq": 3.382506,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 1103,
+      "东莞市": 119,
+      "广州市": 114,
+      "惠州市": 38
+     }
+    },
+    "机器人": {
+     "lq": 2.704,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 1253,
+      "东莞市": 324,
+      "广州市": 268,
+      "惠州市": 37
+     }
+    },
+    "集成电路": {
+     "lq": 1.785379,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 1164,
+      "东莞市": 486,
+      "广州市": 311,
+      "惠州市": 126
+     }
+    },
+    "智能终端": {
+     "lq": 1.370899,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 10655,
+      "广州市": 2947,
+      "东莞市": 1780,
+      "惠州市": 706
+     }
+    },
+    "传感器": {
+     "lq": 1.301013,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 2095,
+      "东莞市": 661,
+      "广州市": 413,
+      "惠州市": 115
+     }
+    },
+    "人工智能": {
+     "lq": 1.295761,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 9260,
+      "广州市": 5192,
+      "东莞市": 1686,
+      "惠州市": 587
+     }
+    },
+    "软件与信息服务": {
+     "lq": 1.053096,
+     "verdict": "确认优势",
+     "sz_firm_rank_4cities": 2,
+     "firms_4cities": {
+      "广州市": 61105,
+      "深圳市": 52392,
+      "东莞市": 5873,
+      "惠州市": 3064
+     }
+    },
+    "数字创意": {
+     "lq": 0.787104,
+     "verdict": "创新密度占优（规模不集聚）",
+     "sz_firm_rank_4cities": 2,
+     "firms_4cities": {
+      "广州市": 14154,
+      "深圳市": 11171,
+      "东莞市": 3464,
+      "惠州市": 1237
+     }
+    },
+    "低空经济": {
+     "lq": 0.759177,
+     "verdict": "创新密度占优（规模不集聚）",
+     "sz_firm_rank_4cities": 1,
+     "firms_4cities": {
+      "深圳市": 166,
+      "广州市": 57,
+      "东莞市": 30,
+      "惠州市": 23
+     }
+    },
+    "合成生物": {
+     "lq": 0.400151,
+     "verdict": "创新密度占优（规模不集聚）",
+     "sz_firm_rank_4cities": 2,
+     "firms_4cities": {
+      "广州市": 1240,
+      "深圳市": 1135,
+      "东莞市": 392,
+      "惠州市": 178
+     }
+    },
+    "生物医药": {
+     "lq": 0.127654,
+     "verdict": "创新密度占优（规模不集聚）",
+     "sz_firm_rank_4cities": 2,
+     "firms_4cities": {
+      "广州市": 1060,
+      "深圳市": 960,
+      "惠州市": 257,
+      "东莞市": 156
+     }
+    }
+   }
+  },
+  "per_chain_conflict": [
+   {
+    "industry_name": "数字创意",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 2,
+    "lq_deep121": 0.787104,
+    "verdict_deep121": "创新密度占优（规模不集聚）",
+    "agree_with_126": true,
+    "agree_with_121": false
+   },
+   {
+    "industry_name": "集成电路",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 1.785379,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "智能终端",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 1.370899,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "生物医药",
+    "rank_this_metric": 2,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 2,
+    "lq_deep121": 0.127654,
+    "verdict_deep121": "创新密度占优（规模不集聚）",
+    "agree_with_126": false,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "软件与信息服务",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 2,
+    "lq_deep121": 1.053096,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": false
+   },
+   {
+    "industry_name": "传感器",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 1.301013,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "具身智能",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 3.571928,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "合成生物",
+    "rank_this_metric": 2,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 2,
+    "lq_deep121": 0.400151,
+    "verdict_deep121": "创新密度占优（规模不集聚）",
+    "agree_with_126": false,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "智能网联汽车",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 3.382506,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "机器人",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 2.704,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "人工智能",
+    "rank_this_metric": 1,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 1.295761,
+    "verdict_deep121": "确认优势",
+    "agree_with_126": true,
+    "agree_with_121": true
+   },
+   {
+    "industry_name": "低空经济",
+    "rank_this_metric": 2,
+    "rank_deep126": 1,
+    "rank_deep121_firms": 1,
+    "lq_deep121": 0.759177,
+    "verdict_deep121": "创新密度占优（规模不集聚）",
+    "agree_with_126": false,
+    "agree_with_121": false
+   }
+  ],
+  "n_agree_with_126": 9,
+  "n_agree_with_121": 9,
+  "note": "三件都叫「深圳优势」但母体不同：本件/父指标 = 企业+专利两维 min-max；126 = 企业+学术+生态三维九项；121 = 企业数区位商 + 两条结构份额。母体不同，名次必然有差异，不得互相覆盖；UI 只允许选一套口径展示。"
+ },
+ "degenerate_flag": {
+  "distinct_ranks": [
+   1,
+   2
+  ],
+  "why": "四城对标下深圳只在第 1/第 2 两档出现（9 条第 1、3 条第 2），名次本身的区分度有限；真正可读的是链间得分序与领先分差。"
+ },
+ "support_judgment_reason": "排名可算且与父指标完全同母体，但：① 官方结果表 0 行，只能等价重建；② 父指标四维中政策/人才两维缺失，名次由「企业 + 专利」两维决定；③ 四城口径下名次只有 1/2 两档，且需求原文的「全国对标」不可实现（底册 99.82% 在广东）。故判部分支持。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面排名：父指标为当日截面评分（营收/研发按企业最新年取数，不做年度队列），本件不含年度分母；故 used/missing 为空，不是「缺年按 0 摊入」。"
+}

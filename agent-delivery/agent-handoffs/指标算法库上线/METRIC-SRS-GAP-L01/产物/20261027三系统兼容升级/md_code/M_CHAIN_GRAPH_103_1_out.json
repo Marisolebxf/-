@@ -1,0 +1,373 @@
+{
+ "metric_id": "M_CHAIN_GRAPH_103_1",
+ "metric_name": "产业实体关系抽取",
+ "generated_at": "2026-10-28T00:57:15+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "需求点名的六族关系中，只有「产业—企业」（1,714,458 条）与「产业—技术」（29,631 个企业—链对，经专利申请人名称桥）可由 gkx 现算；产业—人才、产业—科研机构、产业—服务机构、产业—政策四族在 gkx 均无链码（源表有行数但没有 chain_id / industry_code），六族只能覆盖 2/6，故判部分支持。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_industry_tags",
+   "rows": 2283762,
+   "snapshot": "code/_snapshots21/chain_panel21.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_patent",
+   "rows": 2939895,
+   "snapshot": "code/_snapshots21/patent_panel_innov_20261021.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_financing_info",
+   "rows": 25654,
+   "snapshot": "code/_snapshots21/chain21_fin_degree_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_scholar",
+   "rows": 21316,
+   "snapshot": null
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_research_institute_base_info",
+   "rows": 2074,
+   "snapshot": null
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_policy_base",
+   "rows": 20000,
+   "snapshot": "code/_snapshots21/policy_base_20261021.json"
+  }
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：统计当前存量，不设年度分母。",
+ "headline": {
+  "value": 1744089,
+  "unit": "条可抽取关系边（六族中 2 族）",
+  "families_available": 2,
+  "families_required": 6,
+  "firm_edges": 1714458,
+  "tech_edges": 29631
+ },
+ "facts": [
+  {
+   "label": "六族中可实现",
+   "value": "2/6"
+  },
+  {
+   "label": "可抽取边合计",
+   "value": 1744089
+  },
+  {
+   "label": "产业—企业边",
+   "value": 1714458
+  },
+  {
+   "label": "产业—技术边（企业—链对）",
+   "value": 29631
+  },
+  {
+   "label": "补充：企业—资本边",
+   "value": 14626
+  }
+ ],
+ "families": [
+  {
+   "family": "产业—企业",
+   "edges": 1714458,
+   "available": true,
+   "source": "gkx.dwd_org_industry_tags（industry_code 首码）",
+   "note": "2,283,762 行中 1,714,458 行首码落在 12 条顶层链内（75.07%）"
+  },
+  {
+   "family": "产业—技术",
+   "edges": 29631,
+   "available": true,
+   "source": "gkx.dwd_patent 申请人名称 → tags.names 桥",
+   "note": "29,631 个企业—链对；对应专利 1,127,340 件，名称未命中标签表的申请人无法归链"
+  },
+  {
+   "family": "产业—人才",
+   "edges": 0,
+   "available": false,
+   "source": "gkx.dwd_scholar（21,316 行）",
+   "note": "无 chain_id / industry_code，不能定边"
+  },
+  {
+   "family": "产业—科研机构",
+   "edges": 0,
+   "available": false,
+   "source": "gkx.dwd_research_institute_base_info（2,074 行）",
+   "note": "无链码，不能定边"
+  },
+  {
+   "family": "产业—服务机构",
+   "edges": 0,
+   "available": false,
+   "source": "gkx 无服务机构主档",
+   "note": "源表缺失"
+  },
+  {
+   "family": "产业—政策",
+   "edges": 0,
+   "available": false,
+   "source": "gkx.dwd_policy_base（20,000 行）",
+   "note": "无 industry_code，不能定边"
+  }
+ ],
+ "supplementary": [
+  {
+   "family": "企业—资本",
+   "edges": 14626,
+   "available": true,
+   "source": "gkx.dwd_org_financing_info（25,654 行）被投企业名称→链",
+   "note": "不在需求六族内，不计入 2/6 覆盖率；25,654 条融资事件中 14626 条被投企业可桥回链"
+  },
+  {
+   "family": "企业—地域",
+   "edges": null,
+   "available": false,
+   "source": "gkx.dwd_org_base_info.city + credit_code 属地桶",
+   "note": "只能给 6 个城市桶，不是城市个数；桶数对每条链恒为 6，不能当边数"
+  }
+ ],
+ "chains": [
+  {
+   "chain": "INB1306",
+   "name": "软件与信息服务",
+   "value": 925240,
+   "industry_firm": 917842,
+   "industry_tech": 7398,
+   "patents": 169564,
+   "firm_capital_supp": 3272,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1502",
+   "name": "数字创意",
+   "value": 263551,
+   "industry_firm": 261837,
+   "industry_tech": 1714,
+   "patents": 34743,
+   "firm_capital_supp": 395,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1333",
+   "name": "智能终端",
+   "value": 148832,
+   "industry_firm": 143390,
+   "industry_tech": 5442,
+   "patents": 250192,
+   "firm_capital_supp": 1757,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB2503",
+   "name": "生物医药",
+   "value": 139242,
+   "industry_firm": 138742,
+   "industry_tech": 500,
+   "patents": 7530,
+   "firm_capital_supp": 316,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1309",
+   "name": "人工智能",
+   "value": 136305,
+   "industry_firm": 131843,
+   "industry_tech": 4462,
+   "patents": 368298,
+   "firm_capital_supp": 5024,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB2505",
+   "name": "合成生物",
+   "value": 55785,
+   "industry_firm": 52329,
+   "industry_tech": 3456,
+   "patents": 36802,
+   "firm_capital_supp": 763,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1323",
+   "name": "传感器",
+   "value": 30845,
+   "industry_firm": 29708,
+   "industry_tech": 1137,
+   "patents": 40813,
+   "firm_capital_supp": 512,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1303",
+   "name": "集成电路",
+   "value": 14133,
+   "industry_firm": 12028,
+   "industry_tech": 2105,
+   "patents": 59285,
+   "firm_capital_supp": 1032,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1204",
+   "name": "机器人",
+   "value": 10104,
+   "industry_firm": 8549,
+   "industry_tech": 1555,
+   "patents": 53797,
+   "firm_capital_supp": 506,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1354",
+   "name": "具身智能",
+   "value": 9403,
+   "industry_firm": 8140,
+   "industry_tech": 1263,
+   "patents": 74416,
+   "firm_capital_supp": 634,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1209",
+   "name": "智能网联汽车",
+   "value": 6520,
+   "industry_firm": 6016,
+   "industry_tech": 504,
+   "patents": 18400,
+   "firm_capital_supp": 240,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1236",
+   "name": "低空经济",
+   "value": 4129,
+   "industry_firm": 4034,
+   "industry_tech": 95,
+   "patents": 13500,
+   "firm_capital_supp": 175,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  }
+ ],
+ "methods": {
+  "family_check": "逐族检查源表是否有链码列；无链码即计 0，不以名称相似度硬凑",
+  "edge_unit": "企业—链对（不是事件行）；专利件数只作属性",
+  "exclusive_rule": "产业—企业按 industry_code 首个 INB 码归链，12 链求和 1,714,458，小于关联口径 2,464,659，差额为多链企业的次级链位"
+ },
+ "population": {
+  "defined_as": "六族关系中 gkx 有链码可定边的实体对",
+  "families": [
+   {
+    "family": "产业—企业",
+    "edges": 1714458,
+    "available": true,
+    "source": "gkx.dwd_org_industry_tags（industry_code 首码）",
+    "note": "2,283,762 行中 1,714,458 行首码落在 12 条顶层链内（75.07%）"
+   },
+   {
+    "family": "产业—技术",
+    "edges": 29631,
+    "available": true,
+    "source": "gkx.dwd_patent 申请人名称 → tags.names 桥",
+    "note": "29,631 个企业—链对；对应专利 1,127,340 件，名称未命中标签表的申请人无法归链"
+   },
+   {
+    "family": "产业—人才",
+    "edges": 0,
+    "available": false,
+    "source": "gkx.dwd_scholar（21,316 行）",
+    "note": "无 chain_id / industry_code，不能定边"
+   },
+   {
+    "family": "产业—科研机构",
+    "edges": 0,
+    "available": false,
+    "source": "gkx.dwd_research_institute_base_info（2,074 行）",
+    "note": "无链码，不能定边"
+   },
+   {
+    "family": "产业—服务机构",
+    "edges": 0,
+    "available": false,
+    "source": "gkx 无服务机构主档",
+    "note": "源表缺失"
+   },
+   {
+    "family": "产业—政策",
+    "edges": 0,
+    "available": false,
+    "source": "gkx.dwd_policy_base（20,000 行）",
+    "note": "无 industry_code，不能定边"
+   }
+  ],
+  "financing_events": 25654
+ },
+ "compute": {
+  "formula": "Σ edges per family；families_available = COUNT(available)",
+  "families": 6,
+  "missing": [
+   "产业—人才",
+   "产业—科研机构",
+   "产业—服务机构",
+   "产业—政策"
+  ]
+ },
+ "gaps": [
+  "产业—人才无链码：dwd_scholar 21,316 行只有机构名，不能定「人才—链」边",
+  "产业—科研机构无链码：2,074 行院所主档没有 industry_code",
+  "产业—政策无链码：政策全表 20,000 行只有标题/发文机关/地区，无产业标签",
+  "产业—服务机构源表缺失：gkx 无服务机构主档",
+  "产业—技术为名称桥：2,939,895 件专利中只有 1,127,340 件（38.35%）可归链",
+  "旧稿所称 217,206 条企业—链边、85,369 条供应边来自演示库关系表，gkx 无同源表，不可复用"
+ ],
+ "difference_vs_old_draft": {
+  "old_source": "演示库关系表（表名前缀 demo_，主机 111.198.38.90）：industry_chain_entity_rel 512 行、enterprise_industry_chain 217,206 行、enterprise_supply_chain 85,369 行",
+  "old_note": "旧稿六族里只有「产业—企业」算有源，人才/科研机构/服务机构/政策四族无链级面；本件用 gkx 专利名称桥把「产业—技术」补成可算，故覆盖率从 1/6 升到 2/6",
+  "now_source": "gkx.dwd_org_industry_tags + gkx.dwd_patent + gkx.dwd_org_financing_info",
+  "direction": "本件边数全部来自 gkx 现算；旧稿 217,206 条关系边无法在 gkx 复现，故不可相减"
+ }
+}

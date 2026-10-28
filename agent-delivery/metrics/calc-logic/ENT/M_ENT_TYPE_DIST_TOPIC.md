@@ -1,9 +1,20 @@
 # 重点企业类型分布（M_ENT_TYPE_DIST_TOPIC）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TYPE_DIST_TOPIC.md`；复现脚本 `metrics/repro/M_ENT_TYPE_DIST_TOPIC.py` → `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（名单 × 四类去重家数 + 占比 + 环比）｜ **域**：企业分析（ENT）／重点企业类型分析｜ **UI 挂载**：重点企业类型分析·类型 × 行业主题分布图｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TYPE_DIST_TOPIC.py`、产物 `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TYPE_DIST_TOPIC.md`；复现脚本 `metrics/repro/M_ENT_TYPE_DIST_TOPIC.py` → `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TYPE_DIST_TOPIC.py`、产物 `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_TYPE_DIST_TOPIC.md` |
 | 复现脚本 | `metrics/repro/M_ENT_TYPE_DIST_TOPIC.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json` |
@@ -64,17 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_TYPE_DIST_TOPIC.py`、产物 `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（名单 × 四类去重家数 + 占比 + 环比）｜ **域**：企业分析（ENT）／重点企业类型分析｜ **UI 挂载**：重点企业类型分析·类型 × 行业主题分布图｜ **数据支持度**：**部分支持**
-> **口径来源**：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_DIST_TOPIC.md`（2026-08-31 `COVER-STAT-L01`；二次 STAT，先 `M_ENT_KEY_TOTAL` 再按四类 `tag_code` 分组；`wanghui=null`）
-> **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_TYPE_DIST_TOPIC.py` → `code/M_ENT_TYPE_DIST_TOPIC_out.json`
-> **判定类型**：`verdict_kind = proxy_constructed`（名单代理 + 三类标签直取 + 外资维缺）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -114,7 +119,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `code/_snapshots21/star_roster_gkx_20261021.json` | 名单代理 | 4,561 家 |
 | `code/_snapshots21/tech_tags_20261021.json` | 标签快照 | 32,322 家 |
 | `code/_snapshots21/w13e3_roster_orgsize_20261023.json` | 名单 org_size 探针 | 4,561 家 |
-| `code/M_ENT_TYPE_DIST_TOPIC_out.json` | 本件产物 | 四类、重叠、缺口 |
+| `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json` | 本件产物 | 四类、重叠、缺口 |
 
 ---
 
@@ -464,8 +469,6 @@ G6 让「上市」包含申报稿与终止状态。1,080 行里正常上市只�
 3. 工业和信息化部：《优质中小企业梯度培育管理暂行办法》。https://www.gov.cn/zhengce/zhengceku/2022-06/02/content_5693658.htm
 4. 上海证券交易所。https://www.sse.com.cn/
 5. 深圳证券交易所。https://www.szse.cn/
-6. 项目内 calc-logic 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_DIST_TOPIC.md`
-
 # 附件
 
 ## 附录 A 原文摘录
@@ -649,8 +652,8 @@ G6 让「上市」包含申报稿与终止状态。1,080 行里正常上市只�
 | 文件 | 说明 |
 |---|---|
 | `_staging21/M_ENT_TYPE_DIST_TOPIC.md` | 本报告 |
-| `code/M_ENT_TYPE_DIST_TOPIC.py` | 计算脚本 |
-| `code/M_ENT_TYPE_DIST_TOPIC_out.json` | 产物 |
+| `metrics/repro/M_ENT_TYPE_DIST_TOPIC.py` | 计算脚本 |
+| `metrics/repro/out/M_ENT_TYPE_DIST_TOPIC_out.json` | 产物 |
 | `code/_w13e3_common.py` | 族内共享函数 |
 | `code/_snapshots21/w13e3_roster_orgsize_20261023.json` | `org_size` 探针快照 |
 
@@ -658,7 +661,7 @@ G6 让「上市」包含申报稿与终止状态。1,080 行里正常上市只�
 
 | 步骤 | 命令 | 结果 |
 |---|---|---|
-| 1 | `python3 M_ENT_TYPE_DIST_TOPIC.py` | 退出码 0 |
+| 1 | `cd code && python3 M_ENT_TYPE_DIST_TOPIC.py` | 退出码 0 |
 | 2 | 读 `types` | 2,804 / 1,663 / 425 / 0 |
 | 3 | 读 `union`/`none` | 2,848 / 1,713 |
 | 4 | 读 `micro_size_probe` | 2,030 / 44.51% |
@@ -689,11 +692,3 @@ G6 让「上市」包含申报稿与终止状态。1,080 行里正常上市只�
 接手先确认名单用 4,561 还是等生产名单表。未定之前，接口名建议带 `roster`，避免被误读为全底册口径。
 
 外资维在补 `is_foreign` 之前不要上线为第四类，前端最多展示「外资（旁证）226 家」并标注。四类图例要写「非互斥，合计可 >100%」，否则业务方会拿 112.21% 来质疑数据。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

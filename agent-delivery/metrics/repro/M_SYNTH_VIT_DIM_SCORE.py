@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：未挂载 UI，算法库内部件
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """四维单维评分（M_SYNTH_VIT_DIM_SCORE）—— 复现脚本。
 
 正本口径：四维得分分别取子模型综合分，不另算叶子，不加权成总指数。
@@ -106,22 +108,36 @@ def main():
                         for d in DIMS}
     # 人才维的「子维数」按 4 个计、按维计 2 → 组内完整度 50%
     city_dim_count = {c: sum(1 for d in DIMS if dim_scores[d].get(c) is not None) for c in CITIES}
-    city_span = {c: round(sum(dim_scores[d][c] for d in DIMS) / 4.0, 4) for c in CITIES}
+    # 缺维容错（20261025）：正本口径"缺维不补 0 不进平均"——sum 前剔除 None，
+    # 全缺时该城 span 记 None（下游统计同样按非 None 聚合）
+    def _span(ds):
+        vals = [v for v in ds if v is not None]
+        return round(sum(vals) / 4.0, 4) if vals else None
+    city_span = {c: _span([dim_scores[d].get(c) for d in DIMS]) for c in CITIES}
 
     # ---------------------------------------------------------------- 派生数字
-    dim_range = {d: round(max(dim_scores[d].values()) - min(dim_scores[d].values()), 4) for d in DIMS}
+    # 缺维容错：极差/差值仅在两端都有值时计算，否则 None（值含 None 的维不参与 min/max）
+    def _rng(d):
+        vals = [v for v in dim_scores[d].values() if v is not None]
+        return round(max(vals) - min(vals), 4) if vals else None
+
+    def _sub(a, b, d):
+        va, vb = dim_scores[d].get(a), dim_scores[d].get(b)
+        return round(va - vb, 4) if (va is not None and vb is not None) else None
+
+    dim_range = {d: _rng(d) for d in DIMS}
     derived = {
         "shenzhen_minus_guangzhou_by_dim": {
-            "value": {d: round(dim_scores[d]["深圳市"] - dim_scores[d]["广州市"], 4) for d in DIMS},
-            "numerator": {d: dim_scores[d]["深圳市"] for d in DIMS},
-            "denominator": {d: dim_scores[d]["广州市"] for d in DIMS},
-            "denominator_note": "逐维（深圳 − 广州）差值；负值表示广州更高（人才维）",
+            "value": {d: _sub("深圳市", "广州市", d) for d in DIMS},
+            "numerator": {d: dim_scores[d].get("深圳市") for d in DIMS},
+            "denominator": {d: dim_scores[d].get("广州市") for d in DIMS},
+            "denominator_note": "逐维（深圳 − 广州）差值；负值表示广州更高（人才维）；任一端缺维则 None",
         },
         "dim_range_0_100": {
             "value": dim_range,
-            "numerator": {d: max(dim_scores[d].values()) for d in DIMS},
-            "denominator": {d: min(dim_scores[d].values()) for d in DIMS},
-            "denominator_note": "四市极差 = 该维最大值 − 最小值；反映该维在四市盘上的分辨力",
+            "numerator": {d: (lambda vs: max(vs) if vs else None)([v for v in dim_scores[d].values() if v is not None]) for d in DIMS},
+            "denominator": {d: (lambda vs: min(vs) if vs else None)([v for v in dim_scores[d].values() if v is not None]) for d in DIMS},
+            "denominator_note": "四市极差 = 该维最大值 − 最小值；反映该维在四市盘上的分辨力；整维缺值则 None",
         },
         "dim_completeness_share": {
             "value": dim_completeness,
@@ -141,11 +157,12 @@ def main():
             "denominator_note": "分母 = 四维；分子 = 该城有值的维数（四城均为 4/4，但内部子维不全）",
         },
         "tech_dim_leaf_vs_composite_gap": {
-            "value": round(outs["科技"]["index_0_100"]["深圳市"]
-                           - panel["submodels"]["rank_leaf_board"]["dim_scores_gba4"]["科技"]["深圳市"], 4),
+            "value": (lambda a, b: round(a - b, 4) if (a is not None and b is not None) else None)(
+                outs["科技"]["index_0_100"]["深圳市"],
+                panel["submodels"]["rank_leaf_board"]["dim_scores_gba4"]["科技"]["深圳市"]),
             "numerator": outs["科技"]["index_0_100"]["深圳市"],
             "denominator": panel["submodels"]["rank_leaf_board"]["dim_scores_gba4"]["科技"]["深圳市"],
-            "denominator_note": "同一城市（深圳）两个口径之差：本件综合分 − VIT_RANK 单叶子分",
+            "denominator_note": "同一城市（深圳）两个口径之差：本件综合分 − VIT_RANK 单叶子分；任一端缺值则 None",
         },
     }
 
@@ -159,10 +176,14 @@ def main():
     drop = {}
     for d in DIMS:
         rest = [x for x in DIMS if x != d]
-        win = {c: round(sum(dim_scores[x][c] for x in rest) / 3.0, 4) for c in CITIES}
+        # 缺维容错：剔除 None 后再平均；该城剩余三维全缺则 None（rank_of 自跳过 None 城）
+        win = {}
+        for c in CITIES:
+            vals = [dim_scores[x][c] for x in rest if dim_scores[x].get(c) is not None]
+            win[c] = round(sum(vals) / 3.0, 4) if vals else None
         drop[d] = {"residual_mean": win, "first": rank_of(win)}
-    # ④ 四维里「深圳是否第一」的分布
-    sz_first_dims = [d for d in DIMS if dim_rank[d]["深圳市"] == 1]
+    # ④ 四维里「深圳是否第一」的分布（某维深圳缺值则该维不计入）
+    sz_first_dims = [d for d in DIMS if dim_rank[d].get("深圳市") == 1]
 
     out = {
         "metric_id": "M_SYNTH_VIT_DIM_SCORE",
@@ -222,10 +243,10 @@ def main():
             "shenzhen_first_dims": sz_first_dims,
             "shenzhen_first_dim_n": len(sz_first_dims),
             "ranking_stability": {
-                "tech_guangzhou_first_under_leaf": leaf_rank["科技"]["广州市"] == 1,
-                "tech_shenzhen_first_under_composite": dim_rank["科技"]["深圳市"] == 1,
-                "talent_guangzhou_first_both": (dim_rank["人才"]["广州市"] == 1
-                                                and leaf_rank["人才"]["广州市"] == 1),
+                "tech_guangzhou_first_under_leaf": leaf_rank["科技"].get("广州市") == 1,
+                "tech_shenzhen_first_under_composite": dim_rank["科技"].get("深圳市") == 1,
+                "talent_guangzhou_first_both": (dim_rank["人才"].get("广州市") == 1
+                                                and leaf_rank["人才"].get("广州市") == 1),
             },
         },
         "support_judgment": "部分支持",

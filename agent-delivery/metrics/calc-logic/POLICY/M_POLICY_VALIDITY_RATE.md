@@ -1,9 +1,24 @@
 # 政策有效率（M_POLICY_VALIDITY_RATE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_VALIDITY_RATE.md`；复现脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py` → `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：RATIO（截面比率）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策分析页「现行有效政策占比」指标卡、政策库筛选器的「有效/失效」分档
+> - **数据支持度**：**完全不支持**｜ **公式定义人**：注册表 `formula` = 「`COUNT(status=1 AND (expire_date IS NULL OR expire_date>=today)) / COUNT(*) × 100`」
+> - **一句话结论**：`status` 全表 **20,000/20,000** 行都是「有效」，`expire_date` 与 `implementation_date` **各 0 行有值**；注册表公式的两个条件在库内同时恒真，算出来必然是 **100.00%**——这个数不随政策变化，不能作为「政策有效率」发布，故判**完全不支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_VALIDITY_RATE.py`｜ **产物**：`metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py`、产物 `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_VALIDITY_RATE.md`；复现脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py` → `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py`、产物 `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_VALIDITY_RATE.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_VALIDITY_RATE.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json` |
@@ -58,18 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py`、产物 `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RATIO（截面比率）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策分析页「现行有效政策占比」指标卡、政策库筛选器的「有效/失效」分档
-> **数据支持度**：**完全不支持**｜ **公式定义人**：注册表 `formula` = 「`COUNT(status=1 AND (expire_date IS NULL OR expire_date>=today)) / COUNT(*) × 100`」
-> **复现脚本**：`code/M_POLICY_VALIDITY_RATE.py`｜ **产物**：`code/M_POLICY_VALIDITY_RATE_out.json`
-> **共用底数**：`code/_snapshots21/policy_struct_20261023.json`、`code/_snapshots21/policy_dims_20261023.json`
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。本件是截面指标，不设年度分母；不设基期不是「不需要时间」，而是失效判定所需的 `expire_date` 整列为空，任何按年切分都不会改变结论。
-> **一句话结论**：`status` 全表 **20,000/20,000** 行都是「有效」，`expire_date` 与 `implementation_date` **各 0 行有值**；注册表公式的两个条件在库内同时恒真，算出来必然是 **100.00%**——这个数不随政策变化，不能作为「政策有效率」发布，故判**完全不支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -172,7 +180,7 @@ $$\text{validity\_rate}=\frac{\mathrm{COUNT}\left(\text{status}=1\ \wedge\ \left
 | 1 | `gkx.dwd_policy_base` | gkx @ 183.240.141.251:3318，只读 | 政策底表，20,000 行 |
 | 2 | `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-POLICY-seed.yaml` | `metric_id: M_POLICY_VALIDITY_RATE` | 注册表公式与字段口径 |
 | 3 | `gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` | 政策基础指标模型 | 需求原文（政策级别/类型/时序/分布五类） |
-| 4 | `批次《20261021 改源工程》数据事实登记件 DATA_FACTS_gkx21.md（GitLab 外本地工作稿）` | §3.49、§3.54、§3.56 | 断档记未测、分母同母体、行数用 `COUNT(*)` |
+| 4 | `（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/_work_gkx21/DATA_FACTS_gkx21.md` | §3.49、§3.54、§3.56 | 断档记未测、分母同母体、行数用 `COUNT(*)` |
 | 5 | `第三方库指标计算过程/M_POLICY_TOTAL_COUNT.md` | §2 全表口径 | 20,000 与主键去重的对账基准 |
 
 `calc-logic/POLICY/` 目录下没有本 ID 的正本（该目录现有 19 份，与本批相关的只有 `gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INDUSTRY_FIT.md` 与 `gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INTENSITY_INDEX.md`），注册表也未给 `calc_logic_ref`。本件口径以注册表 `formula` 为准，不虚构正本路径。
@@ -211,7 +219,7 @@ $$R_{\text{validity}}=\frac{V}{N}\times 100\%,\qquad N=\mathrm{COUNT}(*)=20{,}00
 
 ### 2.3 探针脚本与产物
 
-`code/M_POLICY_VALIDITY_RATE.py` 只读两份共用快照，不连数据库。它做四件事：读 `status` 的取值分布与 `expire_date` / `implementation_date` 的填充数；按注册表公式复算构造性比率；扫描三项一致性异常（失效日早于发布日、实施日早于发布日、发布日非法）；把五条否定性证据写入 `negative_evidence`。产物是 `code/M_POLICY_VALIDITY_RATE_out.json`，正文引用的每个数都能在 `headline`、`registered_formula`、`negative_evidence`、`anomaly_scan` 里找到同名键。
+`metrics/repro/M_POLICY_VALIDITY_RATE.py` 只读两份共用快照，不连数据库。它做四件事：读 `status` 的取值分布与 `expire_date` / `implementation_date` 的填充数；按注册表公式复算构造性比率；扫描三项一致性异常（失效日早于发布日、实施日早于发布日、发布日非法）；把五条否定性证据写入 `negative_evidence`。产物是 `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`，正文引用的每个数都能在 `headline`、`registered_formula`、`negative_evidence`、`anomaly_scan` 里找到同名键。
 
 ### 2.4 为什么不去「造」一个失效率
 
@@ -336,7 +344,7 @@ live 侧的 `dwd.policy_base_info` 在 20261019 的实测里是 0 行，`ads.pol
 ### 5.1 复现命令
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 _build_policy_struct_20261023.py     # 三列填充底数（连 gkx）
 python3 M_POLICY_VALIDITY_RATE.py            # 只读快照
 python3 -c "import json;d=json.load(open('M_POLICY_VALIDITY_RATE_out.json'));print(d['support_judgment'], d['headline']['constructive_validity_rate_pct'])"
@@ -378,7 +386,6 @@ python3 -c "import json;d=json.load(open('M_POLICY_VALIDITY_RATE_out.json'));pri
 3. 国家标准化管理委员会. (2020). 专利导航指南 第 1 部分：总则（GB/T 39551.1-2020）. https://openstd.samr.gov.cn/
 4. OECD & European Commission JRC. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
 5. 国务院政策文件库（政策文本检索入口）. https://www.gov.cn/zhengce/
-
 ---
 
 # 附件
@@ -461,10 +468,3 @@ python3 -c "import json;d=json.load(open('M_POLICY_VALIDITY_RATE_out.json'));pri
 | 文档-产物 | `python3 _work_gkx21/audit_md_vs_out.py --only M_POLICY_VALIDITY_RATE` | 无实质漂移 |
 | 判档一致性 | `python3 _work_gkx21/audit_verdict_enum.py _staging21` | 与 out.json 同为「完全不支持」 |
 | 死引用 | `python3 _work_gkx21/audit_source_paths.py _staging21` | 无死引用 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,0 +1,837 @@
+{
+ "metric": "M_CHAIN_CHOKE_LINK_COUNT",
+ "title": "卡脖子环节数",
+ "verdict_kind": "negative_evidence",
+ "support_judgment": "完全不支持",
+ "judgment_reason": "环节级「对外技术受制」判定需要两类前提，gkx 两类都不成立。（N1 度量）全库 280 张表 / 6312 列：受制类 14 组列名模式（choke/self_suff/import_dep/selfsuffic/customs/tariff/hs_code/input_output/localization 等）命中 0 列；国别类 4 组（country/nation/overseas/abroad）命中 42 列、落在 28 张表，逐表核过只有 3 张真能落到国别——dwd_patent.country_code（2939895 件中境外 90990 件，3.09%）、dwd_industry_analysis_countries（1000 行，仅 document_id→country，无金额列、无行业列）、dwd_forg_base_info（20000 家、3 个国别，其中 GB 一家独大 19832 家，是单一来源样本）。三者都是「主体属性」，不是「环节的对外依存度」；唯一的贸易序列是 dwd_macro_index_data 的 dwjj_dwmy*（5129 行、3 个指数码、180 个 area_code），维度只有区域与年份，落不到行业或链节点。（N2 标注位）旧稿依赖的三张表精确同名命中 0 张；1,273 个链节点的 17 列里没有标注位列（level 全 0、node_company_count 全 0），节点名匹配「卡/瓶颈/断供/受制」仅 2 条且均为药品名误匹配。既无度量、也无环节级标注位，故判完全不支持。",
+ "generated_at": "2026-10-22T16:42:15+08:00",
+ "elapsed_sec": 32.0,
+ "sources": {
+  "db": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）",
+  "tables": [
+   "information_schema.tables",
+   "information_schema.columns",
+   "dwd_industry_chain_info",
+   "dwd_macro_index_data",
+   "dwd_policy_base",
+   "dwd_industry_chain_news_info"
+  ],
+  "snapshots": [
+   "code/_snapshots21/chain_panel21.json"
+  ]
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面否定性证据：本件不产出年度序列，故无基期口径。dwd_macro_index_data 的 dwjj_dwmy* 覆盖 1979—2026，但它是区域级贸易总额/增速，不含环节维度，不能作为本指标的基期序列。",
+ "compute": {
+  "gkx_tables": 280,
+  "gkx_columns": 6312,
+  "blocking_tables_exact_hits": {
+   "chain_bottleneck": 0,
+   "chain_panorama_nodes": 0,
+   "industry_chain_metric_fact": 0
+  },
+  "blocking_tables_found": 0,
+  "table_pattern_hits": {
+   "choke": 0,
+   "chokepoint": 0,
+   "bottleneck": 0,
+   "self_suff": 0,
+   "selfsuffic": 0,
+   "import_dep": 0,
+   "import": 1,
+   "export": 0,
+   "customs": 0,
+   "tariff": 0,
+   "hs_code": 0,
+   "trade": 0,
+   "input_output": 0,
+   "io_table": 0,
+   "dependency": 0,
+   "localization": 0
+  },
+  "table_pattern_names": {
+   "import": [
+    "dwd_org_important_news_info"
+   ]
+  },
+  "column_pattern_hits": {
+   "choke": 0,
+   "self_suff": 0,
+   "selfsuffic": 0,
+   "import_ratio": 0,
+   "import_dep": 0,
+   "external_dep": 0,
+   "foreign_dep": 0,
+   "customs": 0,
+   "tariff": 0,
+   "hs_code": 0,
+   "trade_flow": 0,
+   "input_output": 0,
+   "localization_rate": 0,
+   "domestic_rate": 0,
+   "country": 42,
+   "nation": 0,
+   "overseas": 0,
+   "abroad": 0
+  },
+  "column_pattern_names": {
+   "country": [
+    [
+     "dwd_agg_subsidiary_info",
+     "sub_country"
+    ],
+    [
+     "dwd_agg_subsidiary_info",
+     "sub_country_code"
+    ],
+    [
+     "dwd_agg_subsidiary_info_bak_20260923",
+     "sub_country"
+    ],
+    [
+     "dwd_agg_subsidiary_info_bak_20260923",
+     "sub_country_code"
+    ],
+    [
+     "dwd_dim_admin_area",
+     "country_code"
+    ],
+    [
+     "dwd_dim_admin_area",
+     "country_name"
+    ],
+    [
+     "dwd_en_journal",
+     "country"
+    ],
+    [
+     "dwd_en_project",
+     "funded_country"
+    ],
+    [
+     "dwd_en_report",
+     "country"
+    ],
+    [
+     "dwd_en_report_bak_20260923",
+     "country"
+    ],
+    [
+     "dwd_en_report_org",
+     "org_country"
+    ],
+    [
+     "dwd_en_report_v3bad",
+     "country"
+    ],
+    [
+     "dwd_forg_base_info",
+     "country_code"
+    ],
+    [
+     "dwd_forg_base_info",
+     "country"
+    ],
+    [
+     "dwd_forg_base_info_bak_20260923",
+     "country_code"
+    ],
+    [
+     "dwd_forg_base_info_bak_20260923",
+     "country"
+    ],
+    [
+     "dwd_forg_research_org_info",
+     "country"
+    ],
+    [
+     "dwd_forg_shareholder_info",
+     "owners_country_code"
+    ],
+    [
+     "dwd_forg_shareholder_info",
+     "owners_country"
+    ],
+    [
+     "dwd_forg_shareholder_info_bak_20260923",
+     "owners_country_code"
+    ],
+    [
+     "dwd_forg_shareholder_info_bak_20260923",
+     "owners_country"
+    ],
+    [
+     "dwd_forg_university_org_info",
+     "country"
+    ],
+    [
+     "dwd_global_policy_base",
+     "country"
+    ],
+    [
+     "dwd_global_policy_base_bak_20260923",
+     "country"
+    ],
+    [
+     "dwd_industry_analysis_countries",
+     "country_code"
+    ],
+    [
+     "dwd_industry_analysis_countries",
+     "country_name"
+    ],
+    [
+     "dwd_patent",
+     "country_code"
+    ],
+    [
+     "dwd_patent",
+     "country"
+    ],
+    [
+     "dwd_patent",
+     "application_country"
+    ],
+    [
+     "dwd_patent_bak_20260912",
+     "country_code"
+    ],
+    [
+     "dwd_patent_bak_20260912",
+     "country"
+    ],
+    [
+     "dwd_patent_bak_20260912",
+     "application_country"
+    ],
+    [
+     "dwd_patent_cited",
+     "patent_citations_country"
+    ],
+    [
+     "dwd_patent_priority_filings",
+     "country"
+    ],
+    [
+     "dwd_patent_transfer",
+     "country"
+    ],
+    [
+     "dwd_safety",
+     "primary_source_country"
+    ],
+    [
+     "dwd_safety",
+     "occur_country"
+    ],
+    [
+     "dwd_safety_bak_20260912",
+     "primary_source_country"
+    ],
+    [
+     "dwd_safety_bak_20260912",
+     "occur_country"
+    ],
+    [
+     "dwd_special_aomen_company",
+     "country_code"
+    ],
+    [
+     "dwd_special_aomen_company_bak_20260911",
+     "country_code"
+    ],
+    [
+     "dwd_zh_journal",
+     "country"
+    ]
+   ]
+  },
+  "chain_nodes": 1273,
+  "chain_level_nonzero": 0,
+  "chain_node_company_count_positive": 0,
+  "chain_roots": 12,
+  "chain_info_columns": 17,
+  "node_name_choke_hits": 2,
+  "node_name_choke_examples": [
+   [
+    "INB2503010201010217",
+    "卡拉美芬类"
+   ],
+   [
+    "INB25030102010314",
+    "可卡因及其盐"
+   ]
+  ],
+  "leaf_nodes": 954,
+  "leaf_nodes_with_firms": 916,
+  "leaf_nodes_empty": 38,
+  "macro_rows": 20000,
+  "macro_index_codes": 287,
+  "macro_area_codes": 180,
+  "macro_trade_rows": 5129,
+  "macro_trade_codes": 3,
+  "macro_trade_units": [
+   "%",
+   "元"
+  ],
+  "macro_trade_year_span": [
+   1979,
+   2026
+  ],
+  "macro_columns": [
+   "dwd_id",
+   "index_code",
+   "occur_period",
+   "area_code",
+   "dim_cal",
+   "dim_dur",
+   "rid",
+   "occur_period_t",
+   "occur_period_year",
+   "occur_period_month",
+   "index_value",
+   "unit_use",
+   "label",
+   "update_time",
+   "source_code",
+   "area_code_type",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "operator_remarks",
+   "is_deleted",
+   "insert_remark"
+  ],
+  "macro_has_industry_dim": false,
+  "policy_text_mentions": {
+   "卡脖子": 54,
+   "断供": 16,
+   "受制于人": 16,
+   "进口依赖": 0
+  },
+  "news_title_mentions": {
+   "卡脖子": 32,
+   "断供": 19
+  },
+  "geo_tables": {
+   "dwd_agg_subsidiary_info": [
+    "sub_country",
+    "sub_country_code"
+   ],
+   "dwd_agg_subsidiary_info_bak_20260923": [
+    "sub_country",
+    "sub_country_code"
+   ],
+   "dwd_dim_admin_area": [
+    "country_code",
+    "country_name"
+   ],
+   "dwd_en_journal": [
+    "country"
+   ],
+   "dwd_en_project": [
+    "funded_country"
+   ],
+   "dwd_en_report": [
+    "country"
+   ],
+   "dwd_en_report_bak_20260923": [
+    "country"
+   ],
+   "dwd_en_report_org": [
+    "org_country"
+   ],
+   "dwd_en_report_v3bad": [
+    "country"
+   ],
+   "dwd_forg_base_info": [
+    "country",
+    "country_code"
+   ],
+   "dwd_forg_base_info_bak_20260923": [
+    "country",
+    "country_code"
+   ],
+   "dwd_forg_research_org_info": [
+    "country"
+   ],
+   "dwd_forg_shareholder_info": [
+    "owners_country",
+    "owners_country_code"
+   ],
+   "dwd_forg_shareholder_info_bak_20260923": [
+    "owners_country",
+    "owners_country_code"
+   ],
+   "dwd_forg_university_org_info": [
+    "country"
+   ],
+   "dwd_global_policy_base": [
+    "country"
+   ],
+   "dwd_global_policy_base_bak_20260923": [
+    "country"
+   ],
+   "dwd_industry_analysis_countries": [
+    "country_code",
+    "country_name"
+   ],
+   "dwd_patent": [
+    "application_country",
+    "country",
+    "country_code"
+   ],
+   "dwd_patent_bak_20260912": [
+    "application_country",
+    "country",
+    "country_code"
+   ],
+   "dwd_patent_cited": [
+    "patent_citations_country"
+   ],
+   "dwd_patent_priority_filings": [
+    "country"
+   ],
+   "dwd_patent_transfer": [
+    "country"
+   ],
+   "dwd_safety": [
+    "occur_country",
+    "primary_source_country"
+   ],
+   "dwd_safety_bak_20260912": [
+    "occur_country",
+    "primary_source_country"
+   ],
+   "dwd_special_aomen_company": [
+    "country_code"
+   ],
+   "dwd_special_aomen_company_bak_20260911": [
+    "country_code"
+   ],
+   "dwd_zh_journal": [
+    "country"
+   ]
+  },
+  "geo_tables_count": 28,
+  "patent_country": {
+   "CN": 2848905,
+   "WO": 89935,
+   "HK": 952,
+   "JP": 79,
+   "TW": 20,
+   "MO": 4
+  },
+  "patent_country_total": 2939895,
+  "patent_overseas": 90990,
+  "patent_overseas_ratio": 0.03095,
+  "industry_analysis_countries_rows": 1000,
+  "industry_analysis_countries_cols": [
+   "pk_id",
+   "document_id",
+   "country_code",
+   "country_name",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "operator_remarks",
+   "is_deleted",
+   "insert_remark"
+  ],
+  "industry_analysis_countries_has_value": false,
+  "industry_analysis_countries_has_industry": false,
+  "forg_rows": 20000,
+  "forg_countries": 3,
+  "forg_country_dist": {
+   "GB": 19832,
+   "US": 159,
+   "CA": 9
+  }
+ },
+ "probes": [
+  {
+   "id": "P0_table_inventory",
+   "sql": "information_schema.tables count",
+   "rows": 280,
+   "sec": 0.03
+  },
+  {
+   "id": "P0_column_inventory",
+   "sql": "information_schema.columns count",
+   "rows": 6312,
+   "sec": 0.07
+  },
+  {
+   "id": "P1_exact_chain_bottleneck",
+   "table": "chain_bottleneck",
+   "hits": 0,
+   "sec": 0.05
+  },
+  {
+   "id": "P1_exact_chain_panorama_nodes",
+   "table": "chain_panorama_nodes",
+   "hits": 0,
+   "sec": 0.05
+  },
+  {
+   "id": "P1_exact_industry_chain_metric_fact",
+   "table": "industry_chain_metric_fact",
+   "hits": 0,
+   "sec": 0.02
+  },
+  {
+   "id": "P2_table_like_choke",
+   "pattern": "choke",
+   "hits": 0,
+   "names": [],
+   "sec": 0.02
+  },
+  {
+   "id": "P2_table_like_chokepoint",
+   "pattern": "chokepoint",
+   "hits": 0,
+   "names": [],
+   "sec": 0.02
+  },
+  {
+   "id": "P2_table_like_bottleneck",
+   "pattern": "bottleneck",
+   "hits": 0,
+   "names": [],
+   "sec": 0.02
+  },
+  {
+   "id": "P2_table_like_self_suff",
+   "pattern": "self_suff",
+   "hits": 0,
+   "names": [],
+   "sec": 0.02
+  },
+  {
+   "id": "P2_table_like_selfsuffic",
+   "pattern": "selfsuffic",
+   "hits": 0,
+   "names": [],
+   "sec": 0.03
+  },
+  {
+   "id": "P2_table_like_import_dep",
+   "pattern": "import_dep",
+   "hits": 0,
+   "names": [],
+   "sec": 0.02
+  },
+  {
+   "id": "P2_table_like_import",
+   "pattern": "import",
+   "hits": 1,
+   "names": [
+    "dwd_org_important_news_info"
+   ],
+   "sec": 0.02
+  },
+  {
+   "id": "P2_table_like_export",
+   "pattern": "export",
+   "hits": 0,
+   "names": [],
+   "sec": 0.05
+  },
+  {
+   "id": "P2_table_like_customs",
+   "pattern": "customs",
+   "hits": 0,
+   "names": [],
+   "sec": 0.04
+  },
+  {
+   "id": "P2_table_like_tariff",
+   "pattern": "tariff",
+   "hits": 0,
+   "names": [],
+   "sec": 0.07
+  },
+  {
+   "id": "P2_table_like_hs_code",
+   "pattern": "hs_code",
+   "hits": 0,
+   "names": [],
+   "sec": 0.07
+  },
+  {
+   "id": "P2_table_like_trade",
+   "pattern": "trade",
+   "hits": 0,
+   "names": [],
+   "sec": 0.04
+  },
+  {
+   "id": "P2_table_like_input_output",
+   "pattern": "input_output",
+   "hits": 0,
+   "names": [],
+   "sec": 0.08
+  },
+  {
+   "id": "P2_table_like_io_table",
+   "pattern": "io_table",
+   "hits": 0,
+   "names": [],
+   "sec": 0.04
+  },
+  {
+   "id": "P2_table_like_dependency",
+   "pattern": "dependency",
+   "hits": 0,
+   "names": [],
+   "sec": 0.05
+  },
+  {
+   "id": "P2_table_like_localization",
+   "pattern": "localization",
+   "hits": 0,
+   "names": [],
+   "sec": 0.04
+  },
+  {
+   "id": "P3_col_like_choke",
+   "pattern": "choke",
+   "hits": 0,
+   "sec": 0.06
+  },
+  {
+   "id": "P3_col_like_self_suff",
+   "pattern": "self_suff",
+   "hits": 0,
+   "sec": 0.07
+  },
+  {
+   "id": "P3_col_like_selfsuffic",
+   "pattern": "selfsuffic",
+   "hits": 0,
+   "sec": 0.06
+  },
+  {
+   "id": "P3_col_like_import_ratio",
+   "pattern": "import_ratio",
+   "hits": 0,
+   "sec": 0.05
+  },
+  {
+   "id": "P3_col_like_import_dep",
+   "pattern": "import_dep",
+   "hits": 0,
+   "sec": 0.06
+  },
+  {
+   "id": "P3_col_like_external_dep",
+   "pattern": "external_dep",
+   "hits": 0,
+   "sec": 0.09
+  },
+  {
+   "id": "P3_col_like_foreign_dep",
+   "pattern": "foreign_dep",
+   "hits": 0,
+   "sec": 0.09
+  },
+  {
+   "id": "P3_col_like_customs",
+   "pattern": "customs",
+   "hits": 0,
+   "sec": 0.1
+  },
+  {
+   "id": "P3_col_like_tariff",
+   "pattern": "tariff",
+   "hits": 0,
+   "sec": 0.05
+  },
+  {
+   "id": "P3_col_like_hs_code",
+   "pattern": "hs_code",
+   "hits": 0,
+   "sec": 0.04
+  },
+  {
+   "id": "P3_col_like_trade_flow",
+   "pattern": "trade_flow",
+   "hits": 0,
+   "sec": 0.04
+  },
+  {
+   "id": "P3_col_like_input_output",
+   "pattern": "input_output",
+   "hits": 0,
+   "sec": 0.05
+  },
+  {
+   "id": "P3_col_like_localization_rate",
+   "pattern": "localization_rate",
+   "hits": 0,
+   "sec": 0.06
+  },
+  {
+   "id": "P3_col_like_domestic_rate",
+   "pattern": "domestic_rate",
+   "hits": 0,
+   "sec": 0.06
+  },
+  {
+   "id": "P3_col_like_country",
+   "pattern": "country",
+   "hits": 42,
+   "sec": 0.06
+  },
+  {
+   "id": "P3_col_like_nation",
+   "pattern": "nation",
+   "hits": 0,
+   "sec": 0.12
+  },
+  {
+   "id": "P3_col_like_overseas",
+   "pattern": "overseas",
+   "hits": 0,
+   "sec": 0.04
+  },
+  {
+   "id": "P3_col_like_abroad",
+   "pattern": "abroad",
+   "hits": 0,
+   "sec": 0.05
+  },
+  {
+   "id": "P4_chain_info_shape",
+   "nodes": 1273,
+   "columns": 17,
+   "level_nonzero": 0,
+   "node_company_count_positive": 0,
+   "sec": 0.69
+  },
+  {
+   "id": "P4b_node_name_scan",
+   "hits": 2,
+   "sec": 0.3
+  },
+  {
+   "id": "P5_macro_inventory",
+   "rows": 20000,
+   "codes": 287,
+   "areas": 180,
+   "sec": 1.89
+  },
+  {
+   "id": "P5b_macro_trade",
+   "rows": 5129,
+   "codes": 3,
+   "sec": 0.04
+  },
+  {
+   "id": "P6_policy_text_mentions",
+   "counts": {
+    "卡脖子": 54,
+    "断供": 16,
+    "受制于人": 16,
+    "进口依赖": 0
+   },
+   "sec": 12.05
+  },
+  {
+   "id": "P6b_news_title_mentions",
+   "counts": {
+    "卡脖子": 32,
+    "断供": 19
+   },
+   "sec": 3.83
+  },
+  {
+   "id": "P7_country_columns",
+   "tables": 28,
+   "sec": 0.2
+  },
+  {
+   "id": "P8_patent_country",
+   "total": 2939895,
+   "overseas": 90990,
+   "sec": 6.78
+  },
+  {
+   "id": "P9_industry_analysis_countries",
+   "rows": 1000,
+   "cols": 12,
+   "sec": 0.51
+  },
+  {
+   "id": "P10_forg_base_info",
+   "rows": 20000,
+   "countries": 3,
+   "dist": {
+    "GB": 19832,
+    "US": 159,
+    "CA": 9
+   },
+   "sec": 1.42
+  }
+ ],
+ "counter_checks": [
+  {
+   "id": "C1",
+   "question": "宏观库里有没有进口依存度序列，可以直接借用？",
+   "action": "扫 dwd_macro_index_data 全部 20000 行 / 287 个指数码，按 index_code LIKE 'dwjj_dwmy%' 取对外贸易族，并逐列检查维度",
+   "result": "有 5129 行贸易序列，但维度是 area_code×occur_period_year，没有行业/环节列（macro_has_industry_dim=False），粒度是「某地区进出口总额/增速」，落不到链节点。"
+  },
+  {
+   "id": "C2",
+   "question": "节点名里有没有已经标好的「卡脖子」字样？",
+   "action": "对 1,273 个节点名做 4 个关键词 LIKE",
+   "result": "命中 2 条：卡拉美芬类、可卡因及其盐——均为药品名（卡拉美芬类、可卡因及其盐），属关键词误匹配，不是标注。"
+  },
+  {
+   "id": "C3",
+   "question": "「卡脖子」是不是根本没人提，所以库里才没有？",
+   "action": "统计政策正文与资讯标题里该词的出现次数",
+   "result": "政策正文出现 卡脖子 54 次、断供 16 次、受制于人 16 次、进口依赖 0 次；资讯标题 卡脖子 32 条。概念在语料里存在，缺的是可度量的字段，不是缺话题。"
+  },
+  {
+   "id": "C4",
+   "question": "能不能用「没有企业的空位环节」当卡脖子？",
+   "action": "用链树 954 个叶节点与 916 个有企业叶节点对比",
+   "result": "空位叶 38 个。空位是「本地没人干」，卡脖子是「有人干但被外部卡住」，两者语义相反；把它当卡脖子会把招商空白误报为技术受制。"
+  },
+  {
+   "id": "C6",
+   "question": "库里有国别列，能不能用「境外专利占比」当受制代理？",
+   "action": "按 country_code 聚合 dwd_patent 全表 2939895 件",
+   "result": "境外仅 90990 件（3.09%），其中 PCT（WO）89935 件、HK 952 件、JP 79 件；这是「在哪个专利局公开」的属性，PCT 多说明企业愿意做国际保护，恰恰与「被卡住」相反。同族专利也不等于进口依赖。"
+  },
+  {
+   "id": "C7",
+   "question": "dwd_industry_analysis_countries 名字像「行业×国别分析」，是不是贸易表？",
+   "action": "读它的 12 列并数行数",
+   "result": "只有 1000 行，列是 pk_id/document_id/country_code/country_name/时间戳/操作人；没有行业列（has_industry=False）、没有金额列（has_value=False）。它是一张「分析文档—国别」的关联表，不是贸易流量表。"
+  },
+  {
+   "id": "C8",
+   "question": "dwd_forg_base_info 的 2 万家外资企业能不能算「外资依赖」？",
+   "action": "按 country_code 分组",
+   "result": "GB 19832 家、US 159 家、CA 9 家，国别字段 country 全为 NULL。这是一个以英国注册主体为主的样本，不是中国境内外资企业分布；用它算外资依赖会得出「外资几乎全来自英国」的荒谬结论。"
+  },
+  {
+   "id": "C5",
+   "question": "旧稿的表会不会只是换了名字？",
+   "action": "16 组表名词根 LIKE 扫 280 张表",
+   "result": "命中明细见 compute.table_pattern_names；choke/chokepoint/self_suff/import_dep/customs/tariff/hs_code/input_output/localization 九组均 0 命中。"
+  }
+ ],
+ "notes": [
+  "本件不产出指标值，只产出「为什么不可算」的计数证据。",
+  "与已交付 M_CHAIN_BOTTLENECK_COUNT 的边界：瓶颈是「有人干但干不够」，本件是「被外部卡住」；后者在前者之上还多要求一条对外依赖判据。两件同判「完全不支持」，但否定证据不同：瓶颈缺的是五维评分输入，本件缺的是贸易/依赖类字段与环节级标注位。",
+  "与 M_CHAIN_BREAK_RISK_COUNT 的边界：断链风险数的是无企业环节（38 个），本件数的是受制环节；空位不能替代受制。"
+ ]
+}

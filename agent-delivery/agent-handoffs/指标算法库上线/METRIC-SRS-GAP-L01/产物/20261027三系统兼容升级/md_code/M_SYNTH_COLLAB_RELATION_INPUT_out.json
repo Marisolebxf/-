@@ -1,0 +1,202 @@
+{
+ "metric_id": "M_SYNTH_COLLAB_RELATION_INPUT",
+ "metric_name": "协同关系输入统计",
+ "generated_at": "2026-10-22",
+ "db": "gkx（三方库 183.240.141.251:3318，只读）；本脚本零 SQL，只读落盘快照",
+ "source": "gkx @ 183.240.141.251:3318（只读账号 gkx_reader_zp）：dwd_patent_applicants / dwd_scholar_work_experience / dwd_zh_project",
+ "source_snapshot": {
+  "file": "code/_snapshots21/collab_inputs21.json",
+  "generated_at": "2026-10-22T13:23:18",
+  "queries": {
+   "patent_applicants": {
+    "rows": 28964,
+    "sec": 1.87
+   },
+   "work_experience": {
+    "rows": 57117,
+    "sec": 0.78
+   },
+   "project_fill": {
+    "rows": 1,
+    "sec": 3.68
+   },
+   "project_samples": {
+    "rows": 8,
+    "sec": 0.04
+   }
+  }
+ },
+ "event_grain": {
+  "joint_patent": {
+   "distinct_patents": 20000,
+   "events_national": 6477,
+   "share_multi_applicant": 0.3239,
+   "iur_events": 502,
+   "iur_share_of_events": 0.0775,
+   "top_participants": [
+    [
+     "株式会社东芝",
+     73
+    ],
+    [
+     "NOKIA TECHNOLOGIES OY",
+     63
+    ],
+    [
+     "BAXTER HEALTHCARE SA",
+     61
+    ],
+    [
+     "VANTIVE HEALTH GMBH",
+     61
+    ],
+    [
+     "VANTIVE US HEALTHCARE LLC",
+     61
+    ],
+    [
+     "东芝基础设施系统株式会社",
+     54
+    ],
+    [
+     "BAXTER INTERNATIONAL INC.",
+     51
+    ],
+    [
+     "中国石油化工股份有限公司",
+     50
+    ],
+    [
+     "STRYKER CORPORATION",
+     45
+    ],
+    [
+     "LG ELECTRONICS INC.",
+     43
+    ]
+   ],
+   "universe_note": "申请人表只有 20,000 个 pn / 28,964 行，是抽样表而非全量；全量 2,939,895 件专利的共同申请人未落表"
+  },
+  "talent_flow": {
+   "scholars_total": 16718,
+   "movers": 8801,
+   "events_national": 18553,
+   "mean_moves_per_mover": 2.108,
+   "top_pairs": [
+    {
+     "from": "香港中文大学",
+     "to": "香港理工大学",
+     "n": 6
+    },
+    {
+     "from": "卡罗林斯卡学院",
+     "to": "卡罗林斯卡大学医院",
+     "n": 5
+    },
+    {
+     "from": "剑桥大学",
+     "to": "伦敦大学学院",
+     "n": 5
+    },
+    {
+     "from": "伦敦大学学院",
+     "to": "剑桥大学",
+     "n": 4
+    },
+    {
+     "from": "伦敦大学学院",
+     "to": "牛津大学",
+     "n": 4
+    },
+    {
+     "from": "香港城市大学",
+     "to": "武汉理工大学",
+     "n": 4
+    },
+    {
+     "from": "墨尔本大学",
+     "to": "皇家墨尔本理工大学",
+     "n": 4
+    },
+    {
+     "from": "鹿特丹伊拉斯姆斯大学",
+     "to": "蒂尔堡大学",
+     "n": 3
+    }
+   ]
+  },
+  "coop_project": {
+   "rows": 58453,
+   "funded_institution_nonnull": 0,
+   "participating_institution_nonnull": 58452,
+   "participating_institution_distinct": 1592,
+   "project_host_nonnull": 58453,
+   "events_national": 0,
+   "status": "结构性缺失：funded_institution（资助机构）非空 0 行；participating_institution（承担机构）虽有 58452 行，但每行只写 1 家机构（58453 个项目 → 1,592 个不同机构名），project_host 存的是人名而非机构，无法按『跨 ≥2 机构』成事件"
+  }
+ },
+ "city_scoped": {
+  "regions": [
+   "深圳市",
+   "广州市",
+   "东莞市",
+   "惠州市"
+  ],
+  "joint_patent": {
+   "events_with_city": 122,
+   "events_with_city_share": 0.0188,
+   "within_city": 120,
+   "cross_city": 2,
+   "by_city_attribution": {
+    "深圳市": 56.0,
+    "广州市": 100.0,
+    "东莞市": 8.0,
+    "惠州市": 4.0
+   }
+  },
+  "talent_flow": {
+   "transitions_with_city": 32,
+   "transitions_with_city_share": 0.0017,
+   "within_city": 25,
+   "cross_city": 7,
+   "no_city": 18521,
+   "inflow_by_city": {
+    "深圳市": 17.0,
+    "广州市": 15.0,
+    "东莞市": 0,
+    "惠州市": 0
+   }
+  },
+  "coop_project": {
+   "events": 0,
+   "note": "输入表不可构事件"
+  }
+ },
+ "type_coverage": {
+  "declared_types": 3,
+  "computable_types": 2,
+  "coverage_pct": 66.7,
+  "missing": [
+   "coop_project"
+  ]
+ },
+ "support_judgment": "部分支持",
+ "support_reason": "三类关系中联合专利与人才流动两路可现转（全国事件级 6477 / 18553；四城中可归城事件 122（1.88%）/ 32（0.17%）），但合作项目一路结构性缺失——dwd_zh_project 58453 行中funded_institution 非空 0 行，participating_institution 每项目仅 1 家机构、无参与单位列表字段，无法按『跨 ≥2 机构』成事件；三类口径只能出两类（66.7%），且联合专利一侧用的是 20,000 件抽样表、不是 293.99 万件全量，区域维可归城率不足 2%。按四档定义判部分支持。",
+ "note": "事件门槛按 calc-logic：多申请人专利去重后 ≥2 主体记 1 事件；学者跨机构任职变迁记 1 事件（同机构连续记录先合并）。城市归属用底册 name→city（重名 1/k 摊）+ 城市名/高校白名单，可归城率随机构串质量变化，见 §三。",
+ "sources": [
+  {
+   "file": "code/_snapshots21/collab_inputs21.json",
+   "content": "dwd_patent_applicants 28,964 行 / dwd_scholar_work_experience 57,117 行 / dwd_zh_project 字段填充率",
+   "source": "gkx @ 183.240.141.251:3318（只读账号 gkx_reader_zp）：dwd_patent_applicants / dwd_scholar_work_experience / dwd_zh_project"
+  },
+  {
+   "file": "code/_snapshots21/base_20261021.json",
+   "content": "底册 189,116 行（机构名→城市，重名 1/k 摊）",
+   "source": "gkx @ 183.240.141.251:3318 / dwd_org_base_info"
+  }
+ ],
+ "elapsed_sec": 0.5,
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "三类事件都是**全历史累计**口径（专利申请人表无年份字段、任职经历按 start_time 排序但不按年截断、项目表为存量），本指标不做跨年除法，因此没有分母年、也没有缺失年可摊 0。"
+}

@@ -1,0 +1,8466 @@
+{
+ "metric_id": "M_ORG_TECH_SCORE",
+ "metric_name": "科研机构技术力对比分析",
+ "domain": "ORG / 科研机构技术力对比分析（展示系统 §1.1.1.2.4.2.4.6）",
+ "formula_owner": "AI-20261022（推测定义，wanghui=false）",
+ "support_judgment": "部分支持",
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "指标全部是存量/累计口径：专利 2021—2026（2017—2020 库内零行，不按 0 摊入；2026 残年）、论文 1980—2026、项目 1986—2022。本件不做增速与同比，故无同比基期；缺失指标不进分母，不按 0 计。",
+ "inputs": {
+  "panel": "_snapshots21/org_family_panel_20261021.json（专利/授权/论文/项目/经费/学者/政策）",
+  "ipc4": "_snapshots21/patent_ipc4_by_name_20261021.json（仅用于数技术领域广度）"
+ },
+ "formula": {
+  "score": "Σ_k w_k·pct_{i,k} / Σ_k w_k（只取该机构有值的 k）",
+  "pct": "池内百分位 0—100，并列取平均位次",
+  "min_indicators": 2,
+  "tie_break": "专利存量降序",
+  "why_percentile": "专利存量是重尾分布（中位 8、最大 943），min-max 会把除头部以外的所有机构压到 0—3 分；百分位保留区分度且对量纲不敏感，代价是丢失绝对差距（第 1 与第 2 的分数差不再反映 2.4 倍的专利差）。"
+ },
+ "indicator_library": {
+  "patents": {
+   "coverage_n": 215,
+   "coverage_pct": 0.1037,
+   "reliability": "高",
+   "definition": "专利存量（面板 apdt 口径）"
+  },
+  "grant_rate": {
+   "coverage_n": 140,
+   "coverage_pct": 0.0675,
+   "reliability": "中",
+   "definition": "授权数/存量，仅 patents≥5 可算"
+  },
+  "papers": {
+   "coverage_n": 150,
+   "coverage_pct": 0.0723,
+   "reliability": "高",
+   "definition": "论文篇数（作者单位串精确匹配）"
+  },
+  "projects": {
+   "coverage_n": 53,
+   "coverage_pct": 0.0256,
+   "reliability": "中",
+   "definition": "承担项目数"
+  },
+  "fund_wan": {
+   "coverage_n": 53,
+   "coverage_pct": 0.0256,
+   "reliability": "中",
+   "definition": "项目资助额合计（万元，全周期）"
+  },
+  "scholars": {
+   "coverage_n": 28,
+   "coverage_pct": 0.0135,
+   "reliability": "低（样本不足以区分机构）",
+   "definition": "学者库命中人数"
+  },
+  "breadth": {
+   "coverage_n": 194,
+   "coverage_pct": 0.0935,
+   "reliability": "高",
+   "definition": "技术领域广度（7 领域中专利件数 ≥1 的领域数）"
+  }
+ },
+ "unavailable_indicators": [
+  {
+   "name": "高价值专利占比",
+   "why": "无权利要求数/同族数/被引证数，无法区分高低价值"
+  },
+  {
+   "name": "论文影响力（被引/期刊分区）",
+   "why": "`cites` 仅 9 家有值，与 papers 同源，不能作影响力度量"
+  },
+  {
+   "name": "平台能级（国家级实验室/工程中心）",
+   "why": "库内无认定表，只能用机构类型代理但语义不同"
+  },
+  {
+   "name": "国际合作",
+   "why": "无「申请人×国别」「作者×国别」字段"
+  },
+  {
+   "name": "研发投入/研发人员",
+   "why": "年报财务表对底册 2,074 家命中 0 行，`development_employee` 整列为空"
+  }
+ ],
+ "pool": {
+  "institutes": 2074,
+  "pool_n": 234,
+  "pool_rule": "7 项核心指标中 ≥2 项有值",
+  "by_city": {
+   "深圳市": 91,
+   "广州市": 123,
+   "东莞市": 14,
+   "惠州市": 6
+  },
+  "by_type": {
+   "事业单位": 189,
+   "民办非企业单位": 45
+  },
+  "by_n_indicators": {
+   "2": 56,
+   "3": 71,
+   "4": 67,
+   "5": 11,
+   "6": 18,
+   "7": 11
+  }
+ },
+ "score_dist": {
+  "n": 234,
+  "min": 30.77,
+  "p25": 41.18,
+  "median": 49.52,
+  "mean": 50.0,
+  "p75": 56.13,
+  "p90": 62.13,
+  "max": 88.61
+ },
+ "bias_check": {
+  "by_n_indicators": {
+   "2": {
+    "n": 56,
+    "score_mean": 42.83
+   },
+   "3": {
+    "n": 71,
+    "score_mean": 48.24
+   },
+   "4": {
+    "n": 67,
+    "score_mean": 52.77
+   },
+   "5": {
+    "n": 11,
+    "score_mean": 47.59
+   },
+   "6": {
+    "n": 18,
+    "score_mean": 58.7
+   },
+   "7": {
+    "n": 11,
+    "score_mean": 69.16
+   }
+  },
+  "by_city": {
+   "深圳市": {
+    "n": 91,
+    "score_mean": 49.02,
+    "in_top20": 7
+   },
+   "广州市": {
+    "n": 123,
+    "score_mean": 50.78,
+    "in_top20": 12
+   },
+   "东莞市": {
+    "n": 14,
+    "score_mean": 50.93,
+    "in_top20": 1
+   },
+   "惠州市": {
+    "n": 6,
+    "score_mean": 46.71,
+    "in_top20": 0
+   }
+  },
+  "note": "按「有值指标数」分组看均分：指标越全的机构均分越高，说明排名里混进了「数据可得性」效应。中科院/省科学院系统的 7 项全有值，民非新型研发机构多为 2—4 项。页面必须同时显示 n_indicators，否则会把「数据少」读成「技术弱」。"
+ },
+ "ranking": [
+  {
+   "rank": 1,
+   "name": "中国科学院深圳先进技术研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 88.61,
+   "score_observed_only": 88.61,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 100.0,
+    "grant_rate": 22.3,
+    "papers": 97.99,
+    "projects": 100.0,
+    "fund_wan": 100.0,
+    "scholars": 100.0,
+    "breadth": 100.0
+   },
+   "raw": {
+    "patents": 943,
+    "papers": 83,
+    "projects": 102,
+    "fund_wan": 5472.0,
+    "scholars": 35,
+    "grant_rate": 0.4475,
+    "breadth": 7
+   }
+  },
+  {
+   "rank": 2,
+   "name": "中国科学院南海海洋研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 86.63,
+   "score_observed_only": 86.63,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 98.6,
+    "grant_rate": 41.73,
+    "papers": 92.62,
+    "projects": 98.08,
+    "fund_wan": 98.08,
+    "scholars": 81.48,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 234,
+    "papers": 45,
+    "projects": 71,
+    "fund_wan": 3978.5,
+    "scholars": 8,
+    "grant_rate": 0.5769,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 3,
+   "name": "中国科学院华南植物园",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 84.81,
+   "score_observed_only": 84.81,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 94.86,
+    "grant_rate": 75.54,
+    "papers": 94.63,
+    "projects": 92.31,
+    "fund_wan": 92.31,
+    "scholars": 48.15,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 147,
+    "papers": 52,
+    "projects": 37,
+    "fund_wan": 1691.5,
+    "scholars": 2,
+    "grant_rate": 0.7823,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 4,
+   "name": "中国科学院广州地球化学研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 82.04,
+   "score_observed_only": 82.04,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 87.85,
+    "grant_rate": 49.64,
+    "papers": 97.32,
+    "projects": 95.19,
+    "fund_wan": 96.15,
+    "scholars": 74.07,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 57,
+    "papers": 70,
+    "projects": 67,
+    "fund_wan": 3407.5,
+    "scholars": 5,
+    "grant_rate": 0.614,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 5,
+   "name": "中国科学院广州能源研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 79.35,
+   "score_observed_only": 79.35,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 93.46,
+    "grant_rate": 29.5,
+    "papers": 96.64,
+    "projects": 90.38,
+    "fund_wan": 90.38,
+    "scholars": 59.26,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 123,
+    "papers": 63,
+    "projects": 25,
+    "fund_wan": 1216.3,
+    "scholars": 3,
+    "grant_rate": 0.5122,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 6,
+   "name": "广州中医药大学（广州中医药研究院）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 76.53,
+   "score_observed_only": 96.43,
+   "n_indicators": 4,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 100.0,
+    "projects": 95.19,
+    "fund_wan": 94.23,
+    "scholars": 96.3,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 1265,
+    "projects": 67,
+    "fund_wan": 2879.0,
+    "scholars": 20,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 7,
+   "name": "广东省科学院生态环境与土壤研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 76.09,
+   "score_observed_only": 80.43,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 79.91,
+    "grant_rate": 91.37,
+    "papers": 79.53,
+    "projects": 78.85,
+    "fund_wan": 78.85,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 31,
+    "papers": 14,
+    "projects": 11,
+    "fund_wan": 447.0,
+    "scholars": 0,
+    "grant_rate": 0.9032,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 8,
+   "name": "中国水产科学研究院珠江水产研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 74.25,
+   "score_observed_only": 78.3,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 90.89,
+    "grant_rate": 57.55,
+    "papers": 82.21,
+    "projects": 75.96,
+    "fund_wan": 67.31,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 76,
+    "papers": 16,
+    "projects": 9,
+    "fund_wan": 248.0,
+    "scholars": 0,
+    "grant_rate": 0.6447,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 9,
+   "name": "哈尔滨工业大学（深圳）（哈尔滨工业大学深圳科技创新研究院）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 72.75,
+   "score_observed_only": 89.82,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 99.53,
+    "grant_rate": 73.38,
+    "papers": 99.33,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 87.04,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 394,
+    "papers": 95,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 11,
+    "grant_rate": 0.7614,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 10,
+   "name": "西北工业大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 71.95,
+   "score_observed_only": 88.41,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 96.73,
+    "grant_rate": 74.82,
+    "papers": 86.24,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 174,
+    "papers": 19,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.7759,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 11,
+   "name": "广东省科学院广州地理研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 69.27,
+   "score_observed_only": 72.48,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 86.92,
+    "grant_rate": 84.17,
+    "papers": 70.81,
+    "projects": 50.96,
+    "fund_wan": 55.77,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 53,
+    "papers": 9,
+    "projects": 3,
+    "fund_wan": 136.5,
+    "scholars": 0,
+    "grant_rate": 0.8491,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 12,
+   "name": "中国水产科学研究院南海水产研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 69.1,
+   "score_observed_only": 69.1,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 95.79,
+    "grant_rate": 51.8,
+    "papers": 93.96,
+    "projects": 50.96,
+    "fund_wan": 75.0,
+    "scholars": 20.37,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 150,
+    "papers": 51,
+    "projects": 3,
+    "fund_wan": 380.0,
+    "scholars": 1,
+    "grant_rate": 0.62,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 13,
+   "name": "生态环境部华南环境科学研究所（生态环境部生态环境应急研究所）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 68.37,
+   "score_observed_only": 75.71,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 73.36,
+    "grant_rate": 94.96,
+    "papers": 78.52,
+    "projects": 68.27,
+    "fund_wan": 63.46,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 20,
+    "papers": 13,
+    "projects": 6,
+    "fund_wan": 214.0,
+    "scholars": 0,
+    "grant_rate": 0.95,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 14,
+   "name": "鹏城实验室",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 67.14,
+   "score_observed_only": 74.0,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 99.07,
+    "grant_rate": 64.03,
+    "papers": 70.81,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 77.78,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 281,
+    "papers": 9,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 7,
+    "grant_rate": 0.6833,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 15,
+   "name": "东莞市三航军民融合创新研究院",
+   "city": "东莞市",
+   "org_type": "民办非企业单位",
+   "score": 66.85,
+   "score_observed_only": 89.31,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 85.98,
+    "grant_rate": 95.68,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 49,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.9592,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 16,
+   "name": "香港理工大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 65.98,
+   "score_observed_only": 68.65,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 87.38,
+    "grant_rate": 55.76,
+    "papers": 9.4,
+    "projects": 84.62,
+    "fund_wan": 88.46,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 55,
+    "papers": 1,
+    "projects": 17,
+    "fund_wan": 985.1,
+    "scholars": 0,
+    "grant_rate": 0.6364,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 17,
+   "name": "广东省科学院新材料研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 65.34,
+   "score_observed_only": 67.9,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 97.2,
+    "grant_rate": 59.71,
+    "papers": 88.26,
+    "projects": 39.42,
+    "fund_wan": 36.54,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 175,
+    "papers": 21,
+    "projects": 2,
+    "fund_wan": 50.0,
+    "scholars": 0,
+    "grant_rate": 0.6629,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 18,
+   "name": "深圳清华大学研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 63.95,
+   "score_observed_only": 66.28,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 96.26,
+    "grant_rate": 64.75,
+    "papers": 66.78,
+    "projects": 39.42,
+    "fund_wan": 34.62,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 156,
+    "papers": 8,
+    "projects": 2,
+    "fund_wan": 49.0,
+    "scholars": 0,
+    "grant_rate": 0.6859,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 19,
+   "name": "西北农林科技大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 63.34,
+   "score_observed_only": 81.12,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 92.99,
+    "grant_rate": 92.09,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 115,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.9043,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 20,
+   "name": "中山大学肿瘤防治中心（中山大学附属肿瘤医院、中山大学肿瘤研究所）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 62.56,
+   "score_observed_only": 93.94,
+   "n_indicators": 2,
+   "used": [
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 95.3,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 92.59,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 57,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 14,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 21,
+   "name": "香港城市大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 62.53,
+   "score_observed_only": 64.62,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 69.63,
+    "grant_rate": 1.44,
+    "papers": 55.37,
+    "projects": 88.46,
+    "fund_wan": 86.54,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 16,
+    "papers": 5,
+    "projects": 20,
+    "fund_wan": 932.5,
+    "scholars": 0,
+    "grant_rate": 0.125,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 22,
+   "name": "广东省农业科学院作物研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 62.53,
+   "score_observed_only": 71.93,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 68.22,
+    "grant_rate": 61.51,
+    "papers": 83.89,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 15,
+    "papers": 17,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6667,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 23,
+   "name": "广东华中科技大学工业技术研究院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 62.25,
+   "score_observed_only": 78.58,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 89.72,
+    "grant_rate": 71.94,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 69,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.7536,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 24,
+   "name": "珠江水利委员会珠江水利科学研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 62.13,
+   "score_observed_only": 64.15,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 88.79,
+    "grant_rate": 84.89,
+    "papers": 91.28,
+    "projects": 15.38,
+    "fund_wan": 18.27,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 61,
+    "papers": 25,
+    "projects": 1,
+    "fund_wan": 25.0,
+    "scholars": 0,
+    "grant_rate": 0.8525,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 25,
+   "name": "中国气象局广州热带海洋气象研究所（广东省气象科学研究所）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 61.7,
+   "score_observed_only": 77.3,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 89.6,
+    "projects": 73.08,
+    "fund_wan": 69.23,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 23,
+    "projects": 7,
+    "fund_wan": 329.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 26,
+   "name": "广东省农业科学院动物卫生研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 61.42,
+   "score_observed_only": 69.99,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 98.2,
+    "papers": 80.87,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 15,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 1.0,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 27,
+   "name": "西安电子科技大学广州研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 61.15,
+   "score_observed_only": 69.51,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 97.66,
+    "grant_rate": 27.34,
+    "papers": 66.78,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 187,
+    "papers": 8,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5027,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 28,
+   "name": "广东省农业科学院动物科学研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 60.64,
+   "score_observed_only": 62.41,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 95.33,
+    "grant_rate": 69.06,
+    "papers": 95.97,
+    "projects": 15.38,
+    "fund_wan": 2.88,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 148,
+    "papers": 59,
+    "projects": 1,
+    "fund_wan": 23.0,
+    "scholars": 0,
+    "grant_rate": 0.723,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 29,
+   "name": "深圳先进技术研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 60.35,
+   "score_observed_only": 74.15,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 91.59,
+    "grant_rate": 44.6,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 80,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5875,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 30,
+   "name": "中国林业科学研究院热带林业研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 60.27,
+   "score_observed_only": 73.97,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 88.26,
+    "projects": 68.27,
+    "fund_wan": 65.38,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 21,
+    "projects": 6,
+    "fund_wan": 233.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 31,
+   "name": "广东省环境科学研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 60.01,
+   "score_observed_only": 67.53,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 57.48,
+    "grant_rate": 79.5,
+    "papers": 74.83,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 10,
+    "papers": 10,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 32,
+   "name": "松山湖材料实验室",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 59.5,
+   "score_observed_only": 59.5,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 92.52,
+    "grant_rate": 33.81,
+    "papers": 66.78,
+    "projects": 39.42,
+    "fund_wan": 38.46,
+    "scholars": 59.26,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 98,
+    "papers": 8,
+    "projects": 2,
+    "fund_wan": 54.0,
+    "scholars": 3,
+    "grant_rate": 0.5408,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 33,
+   "name": "岭南现代农业科学与技术广东省实验室",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 59.36,
+   "score_observed_only": 66.39,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 77.1,
+    "grant_rate": 58.99,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 26,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6538,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 34,
+   "name": "中山大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 59.17,
+   "score_observed_only": 66.05,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 82.24,
+    "grant_rate": 82.73,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 34,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8235,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 35,
+   "name": "广东省科学院智能制造研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 58.93,
+   "score_observed_only": 65.62,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 92.06,
+    "grant_rate": 28.78,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 84,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5119,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 36,
+   "name": "深圳市龙岗中心医院（深圳市龙岗中心医院集团、深圳市第九人民医院、深圳市龙岗中心医院针灸研究所、深圳市龙岗中心医院肌骨超声研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 58.75,
+   "score_observed_only": 70.42,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 83.18,
+    "grant_rate": 53.24,
+    "papers": 74.83,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 40,
+    "papers": 10,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.625,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 37,
+   "name": "广东省科学院动物研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 58.71,
+   "score_observed_only": 60.16,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 78.97,
+    "grant_rate": 17.27,
+    "papers": 70.81,
+    "projects": 55.77,
+    "fund_wan": 42.31,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 29,
+    "papers": 9,
+    "projects": 4,
+    "fund_wan": 77.5,
+    "scholars": 0,
+    "grant_rate": 0.4138,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 38,
+   "name": "广东省农业科学院农业质量标准与监测技术研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 58.56,
+   "score_observed_only": 64.98,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 57.48,
+    "grant_rate": 67.63,
+    "papers": 60.74,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 10,
+    "papers": 6,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.7,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 39,
+   "name": "广东粤港澳大湾区黄埔材料研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 58.18,
+   "score_observed_only": 69.08,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 80.61,
+    "grant_rate": 68.35,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 32,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.7188,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 40,
+   "name": "广州工业智能研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 58.03,
+   "score_observed_only": 64.05,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 88.13,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8889,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 41,
+   "name": "惠州市绿色能源与新材料研究院",
+   "city": "惠州市",
+   "org_type": "民办非企业单位",
+   "score": 57.99,
+   "score_observed_only": 68.65,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 88.32,
+    "grant_rate": 43.53,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 58,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5862,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 42,
+   "name": "广东省农业科学院茶叶研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 57.79,
+   "score_observed_only": 63.63,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 64.95,
+    "grant_rate": 66.19,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 13,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6923,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 43,
+   "name": "广东省科学院微生物研究所（广东省微生物分析检测中心）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 57.72,
+   "score_observed_only": 68.01,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 89.6,
+    "projects": 60.58,
+    "fund_wan": 53.85,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 23,
+    "projects": 5,
+    "fund_wan": 110.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 44,
+   "name": "广东省疾病预防控制中心（广东省预防医学科学院）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 57.33,
+   "score_observed_only": 67.1,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 74.77,
+    "grant_rate": 40.29,
+    "papers": 86.24,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 21,
+    "papers": 19,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5714,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 45,
+   "name": "广州海关技术中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 57.14,
+   "score_observed_only": 62.49,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 66.82,
+    "grant_rate": 25.18,
+    "papers": 83.89,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 14,
+    "papers": 17,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 46,
+   "name": "广州市香港科大霍英东研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 57.13,
+   "score_observed_only": 62.48,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 98.2,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 1.0,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 47,
+   "name": "深圳市人民医院（深圳市呼吸疾病研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 57.11,
+   "score_observed_only": 62.44,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 73.36,
+    "grant_rate": 25.18,
+    "papers": 91.95,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 59.26,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 20,
+    "papers": 38,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 3,
+    "grant_rate": 0.5,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 48,
+   "name": "中南大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 57.07,
+   "score_observed_only": 62.37,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 73.36,
+    "grant_rate": 90.29,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 20,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.9,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 49,
+   "name": "山东大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 56.94,
+   "score_observed_only": 62.14,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 85.98,
+    "grant_rate": 66.91,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 49,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6939,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 50,
+   "name": "广州医科大学附属第五医院（广州再生医学与健康广东省实验室附属医院）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 56.82,
+   "score_observed_only": 65.91,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 45.33,
+    "grant_rate": 85.61,
+    "papers": 66.78,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 7,
+    "papers": 8,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8571,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 51,
+   "name": "先进能源科学与技术广东省实验室",
+   "city": "惠州市",
+   "org_type": "事业单位",
+   "score": 56.77,
+   "score_observed_only": 61.85,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 89.25,
+    "grant_rate": 30.94,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 65,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5231,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 52,
+   "name": "深圳航天科技创新研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 56.74,
+   "score_observed_only": 61.8,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 98.2,
+    "papers": 60.74,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 6,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 1.0,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 53,
+   "name": "广东省农业科学院果树研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 56.73,
+   "score_observed_only": 57.85,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 82.24,
+    "grant_rate": 76.26,
+    "papers": 66.78,
+    "projects": 15.38,
+    "fund_wan": 10.58,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 34,
+    "papers": 8,
+    "projects": 1,
+    "fund_wan": 24.0,
+    "scholars": 0,
+    "grant_rate": 0.7941,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 54,
+   "name": "广东省水利水电科学研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 56.62,
+   "score_observed_only": 61.58,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 77.1,
+    "grant_rate": 33.09,
+    "papers": 77.85,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 26,
+    "papers": 12,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5385,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 55,
+   "name": "武汉理工大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 56.5,
+   "score_observed_only": 61.37,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 75.7,
+    "grant_rate": 34.53,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 22,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5455,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 56,
+   "name": "广东省农业科学院蚕业与农产品加工研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 56.48,
+   "score_observed_only": 61.34,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 78.04,
+    "grant_rate": 9.35,
+    "papers": 83.89,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 27,
+    "papers": 17,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.3333,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 57,
+   "name": "广东省现代农业装备研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 56.24,
+   "score_observed_only": 60.92,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 85.05,
+    "grant_rate": 35.25,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 47,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5532,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 58,
+   "name": "深圳市人工智能与机器人研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 56.22,
+   "score_observed_only": 60.88,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 90.89,
+    "grant_rate": 38.85,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 76,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5658,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 59,
+   "name": "北京大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 56.13,
+   "score_observed_only": 60.72,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 64.95,
+    "grant_rate": 50.72,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 13,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6154,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 60,
+   "name": "广东省农业科学院蔬菜研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 56.13,
+   "score_observed_only": 57.15,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 69.78,
+    "papers": 40.94,
+    "projects": 50.96,
+    "fund_wan": 46.15,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 3,
+    "projects": 3,
+    "fund_wan": 80.0,
+    "scholars": 0,
+    "grant_rate": 0.7273,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 61,
+   "name": "中国农业科学院深圳农业基因组研究所（岭南现代农业科学与技术广东省实验室深圳分中心）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 55.91,
+   "score_observed_only": 63.8,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 69.63,
+    "grant_rate": 94.24,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 16,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.9375,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 62,
+   "name": "广东空天科技研究院（南沙）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 55.82,
+   "score_observed_only": 70.36,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "grant_rate"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 42.52,
+    "grant_rate": 98.2,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 6,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 1.0,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 63,
+   "name": "广东聚华新型显示研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 55.75,
+   "score_observed_only": 63.41,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 94.39,
+    "grant_rate": 0.0,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 145,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.0828,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 64,
+   "name": "武汉大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 55.63,
+   "score_observed_only": 59.86,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 74.77,
+    "grant_rate": 23.02,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 21,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4762,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 65,
+   "name": "广东省中医院（广州中医药大学第二附属医院、广州中医药大学第二临床医学院、广东省中医药科学院）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 55.59,
+   "score_observed_only": 63.05,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 98.66,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 68.52,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 86,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 4,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 66,
+   "name": "深圳湾实验室",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 55.49,
+   "score_observed_only": 55.49,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 78.97,
+    "grant_rate": 43.53,
+    "papers": 9.4,
+    "projects": 60.58,
+    "fund_wan": 61.54,
+    "scholars": 48.15,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 29,
+    "papers": 1,
+    "projects": 5,
+    "fund_wan": 207.0,
+    "scholars": 2,
+    "grant_rate": 0.5862,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 67,
+   "name": "深圳市眼科医院（深圳市眼病防治研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 55.47,
+   "score_observed_only": 62.77,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 82.24,
+    "grant_rate": 45.32,
+    "papers": 60.74,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 34,
+    "papers": 6,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5882,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 68,
+   "name": "深圳湾实验室坪山生物医药研发转化中心",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 55.33,
+   "score_observed_only": 62.44,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 84.11,
+    "grant_rate": 63.31,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 44,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6818,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 69,
+   "name": "清华珠三角研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 55.32,
+   "score_observed_only": 59.32,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 85.98,
+    "grant_rate": 46.04,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 49,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5918,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 70,
+   "name": "广州市林业和园林科学研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 55.32,
+   "score_observed_only": 59.3,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 86.33,
+    "papers": 87.25,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 20,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.875,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 71,
+   "name": "广东省电子技术研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 55.23,
+   "score_observed_only": 59.15,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 68.22,
+    "grant_rate": 79.5,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 15,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 72,
+   "name": "水利部珠江水利委员会珠江水利综合技术中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 55.14,
+   "score_observed_only": 59.0,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 42.52,
+    "grant_rate": 98.2,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 6,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 1.0,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 73,
+   "name": "广东省农业科学院植物保护研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 54.94,
+   "score_observed_only": 55.76,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 81.31,
+    "grant_rate": 61.51,
+    "papers": 79.53,
+    "projects": 15.38,
+    "fund_wan": 10.58,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 33,
+    "papers": 14,
+    "projects": 1,
+    "fund_wan": 24.0,
+    "scholars": 0,
+    "grant_rate": 0.6667,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 74,
+   "name": "广州海创产业技术研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 54.89,
+   "score_observed_only": 61.42,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 42.52,
+    "grant_rate": 83.45,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 6,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8333,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 75,
+   "name": "电子科技大学（深圳）高等研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 54.68,
+   "score_observed_only": 60.91,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 93.93,
+    "grant_rate": 28.06,
+    "papers": 60.74,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 143,
+    "papers": 6,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5035,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 76,
+   "name": "广东省心血管病研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 54.47,
+   "score_observed_only": 56.25,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": 70.81,
+    "projects": 68.27,
+    "fund_wan": 73.08,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 9,
+    "projects": 6,
+    "fund_wan": 358.8,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 77,
+   "name": "西南交通大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 54.37,
+   "score_observed_only": 60.21,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 42.52,
+    "grant_rate": 98.2,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 6,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 1.0,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 78,
+   "name": "广东省海洋发展规划研究中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 54.34,
+   "score_observed_only": 57.6,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 55.76,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6364,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 79,
+   "name": "深圳市神经科学研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 54.22,
+   "score_observed_only": 57.39,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 69.63,
+    "grant_rate": 65.47,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 20.37,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 16,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 1,
+    "grant_rate": 0.6875,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 80,
+   "name": "深圳华大生命科学研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 54.15,
+   "score_observed_only": 54.15,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 98.13,
+    "grant_rate": 0.72,
+    "papers": 27.52,
+    "projects": 60.58,
+    "fund_wan": 57.69,
+    "scholars": 48.15,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 199,
+    "papers": 2,
+    "projects": 5,
+    "fund_wan": 158.0,
+    "scholars": 2,
+    "grant_rate": 0.1206,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 81,
+   "name": "电子科技大学广东电子信息工程研究院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 54.05,
+   "score_observed_only": 57.09,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 70.79,
+    "grant_rate": 74.1,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 17,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.7647,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 82,
+   "name": "广州现代产业技术研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 53.93,
+   "score_observed_only": 59.17,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 70.86,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.75,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 83,
+   "name": "广州智慧城市发展研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 53.86,
+   "score_observed_only": 59.01,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 68.22,
+    "grant_rate": 93.53,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 15,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.9333,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 84,
+   "name": "广州市农业科学研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 53.63,
+   "score_observed_only": 55.08,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 57.48,
+    "grant_rate": 90.29,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 20.37,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 10,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 1,
+    "grant_rate": 0.9,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 85,
+   "name": "广东省林业科学研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 53.61,
+   "score_observed_only": 53.61,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 84.58,
+    "grant_rate": 58.27,
+    "papers": 74.83,
+    "projects": 15.38,
+    "fund_wan": 25.96,
+    "scholars": 20.37,
+    "breadth": 95.85
+   },
+   "raw": {
+    "patents": 46,
+    "papers": 10,
+    "projects": 1,
+    "fund_wan": 30.0,
+    "scholars": 1,
+    "grant_rate": 0.6522,
+    "breadth": 6
+   }
+  },
+  {
+   "rank": 86,
+   "name": "广东省新兴激光等离子体技术研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 53.58,
+   "score_observed_only": 58.34,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 55.76,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6364,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 87,
+   "name": "东莞中山大学研究院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 53.5,
+   "score_observed_only": 58.16,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 79.5,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 88,
+   "name": "广州计量检测技术研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 52.52,
+   "score_observed_only": 54.41,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 47.84,
+    "papers": 74.83,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 10,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 89,
+   "name": "深圳龙岗智能视听研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 52.42,
+   "score_observed_only": 55.64,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 78.97,
+    "grant_rate": 72.66,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 29,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.7586,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 90,
+   "name": "珠江水资源保护科学研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 52.2,
+   "score_observed_only": 53.85,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 79.5,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 91,
+   "name": "深圳市第二人民医院（深圳市转化医学研究院）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 52.18,
+   "score_observed_only": 57.62,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "papers"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 93.29,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 46,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 92,
+   "name": "上海交通大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 51.76,
+   "score_observed_only": 54.11,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 42.52,
+    "grant_rate": 61.51,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 6,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6667,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 93,
+   "name": "广东省科学院生物与医学工程研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 51.69,
+   "score_observed_only": 53.94,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 74.77,
+    "grant_rate": 12.95,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 21,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.381,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 94,
+   "name": "深圳市计量质量检测研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 51.63,
+   "score_observed_only": 52.86,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 57.48,
+    "grant_rate": 5.04,
+    "papers": 74.83,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 10,
+    "papers": 10,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.2,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 95,
+   "name": "南方医科大学口腔医院（广东省口腔医院、广东省牙病防治指导中心、广东省口腔医学研究院）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 51.53,
+   "score_observed_only": 53.56,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 57.48,
+    "grant_rate": 47.84,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 10,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 96,
+   "name": "深圳先进电子材料国际创新研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 51.27,
+   "score_observed_only": 52.97,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 66.82,
+    "grant_rate": 17.99,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 14,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4286,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 97,
+   "name": "中国地质大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 51.25,
+   "score_observed_only": 52.19,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 36.69,
+    "papers": 60.74,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 6,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5556,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 98,
+   "name": "深圳市众循精准医学研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 50.92,
+   "score_observed_only": 52.15,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 88.13,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8889,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 99,
+   "name": "华南农业大学黄埔创新研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 50.87,
+   "score_observed_only": 52.03,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 79.5,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 100,
+   "name": "深圳华中科技大学研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 50.81,
+   "score_observed_only": 51.42,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 72.43,
+    "grant_rate": 31.65,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 19,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5263,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 101,
+   "name": "广州医科大学附属中医医院（广州市中医中药研究所、广州市中医医院、广州中医药大学附属广州中医医院、广州市针灸医院）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 50.8,
+   "score_observed_only": 52.8,
+   "n_indicators": 2,
+   "used": [
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 85.23,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 20.37,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 18,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 1,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 102,
+   "name": "华南协同创新研究院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 50.72,
+   "score_observed_only": 51.26,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 70.86,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.75,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 103,
+   "name": "香港科技大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 50.47,
+   "score_observed_only": 50.54,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 61.51,
+    "papers": 9.4,
+    "projects": 68.27,
+    "fund_wan": 71.15,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 1,
+    "projects": 6,
+    "fund_wan": 349.0,
+    "scholars": 0,
+    "grant_rate": 0.6667,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 104,
+   "name": "北京大学东莞光电研究院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 50.46,
+   "score_observed_only": 50.8,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 53.24,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.625,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 105,
+   "name": "南方海洋科学与工程广东省实验室（广州）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 50.37,
+   "score_observed_only": 51.29,
+   "n_indicators": 2,
+   "used": [
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 82.21,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 20.37,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 16,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 1,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 106,
+   "name": "深圳市慢性病防治中心（深圳市皮肤病医院、深圳市皮肤病防治研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 50.34,
+   "score_observed_only": 50.78,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 66.78,
+    "projects": 39.42,
+    "fund_wan": 46.15,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 8,
+    "projects": 2,
+    "fund_wan": 80.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 107,
+   "name": "东莞材料基因高等理工研究院",
+   "city": "东莞市",
+   "org_type": "民办非企业单位",
+   "score": 50.31,
+   "score_observed_only": 50.55,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 77.1,
+    "grant_rate": 10.07,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 26,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.3462,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 108,
+   "name": "中国矿业大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 50.21,
+   "score_observed_only": 50.36,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 63.32,
+    "grant_rate": 42.45,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 12,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5833,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 109,
+   "name": "深圳市第三人民医院（深圳市肝病研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 50.18,
+   "score_observed_only": 50.62,
+   "n_indicators": 2,
+   "used": [
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 80.87,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 20.37,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 15,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 1,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 110,
+   "name": "南京大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 50.03,
+   "score_observed_only": 50.06,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 55.76,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6364,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 111,
+   "name": "南开大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 50.02,
+   "score_observed_only": 50.03,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 76.17,
+    "grant_rate": 38.13,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 25,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.56,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 112,
+   "name": "广东粤港澳大湾区硬科技创新研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 50.02,
+   "score_observed_only": 50.05,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 71.73,
+    "grant_rate": 20.14,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 18,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4444,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 113,
+   "name": "广东省农业科学院环境园艺研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 49.94,
+   "score_observed_only": 49.94,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 71.73,
+    "grant_rate": 88.13,
+    "papers": 27.52,
+    "projects": 15.38,
+    "fund_wan": 10.58,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 18,
+    "papers": 2,
+    "projects": 1,
+    "fund_wan": 24.0,
+    "scholars": 0,
+    "grant_rate": 0.8889,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 114,
+   "name": "生物岛实验室",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 49.83,
+   "score_observed_only": 49.7,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 80.61,
+    "grant_rate": 32.37,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 32,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5312,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 115,
+   "name": "广东海洋大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 49.57,
+   "score_observed_only": 49.25,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 36.69,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5556,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 116,
+   "name": "广东省科学院资源利用与稀土开发研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 49.54,
+   "score_observed_only": 48.93,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 63.32,
+    "grant_rate": 25.18,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 12,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 117,
+   "name": "厦门大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 49.52,
+   "score_observed_only": 49.15,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 70.79,
+    "grant_rate": 10.79,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 17,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.3529,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 118,
+   "name": "香港中文大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 49.52,
+   "score_observed_only": 49.15,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": 82.69,
+    "fund_wan": 84.62,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 14,
+    "fund_wan": 913.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 119,
+   "name": "广州血液中心（中国医学科学院输血研究所广州分所、广州器官移植配型中心）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 49.31,
+   "score_observed_only": 47.6,
+   "n_indicators": 2,
+   "used": [
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 74.83,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 20.37,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 10,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 1,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 120,
+   "name": "广东智能无人系统研究院（南沙）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 49.1,
+   "score_observed_only": 47.9,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 79.5,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 121,
+   "name": "东莞市东莞理工科技创新研究院",
+   "city": "东莞市",
+   "org_type": "民办非企业单位",
+   "score": 48.83,
+   "score_observed_only": 47.26,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 42.52,
+    "grant_rate": 25.18,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 6,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 122,
+   "name": "香港浸会大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 48.59,
+   "score_observed_only": 47.53,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": 75.96,
+    "fund_wan": 76.92,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 9,
+    "fund_wan": 426.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 123,
+   "name": "广东省农业科学院农业资源与环境研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 48.54,
+   "score_observed_only": 48.3,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 88.13,
+    "papers": 48.99,
+    "projects": 15.38,
+    "fund_wan": 25.96,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 4,
+    "projects": 1,
+    "fund_wan": 30.0,
+    "scholars": 0,
+    "grant_rate": 0.8889,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 124,
+   "name": "广东省农业科学院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 48.39,
+   "score_observed_only": 46.24,
+   "n_indicators": 3,
+   "used": [
+    "projects",
+    "fund_wan",
+    "scholars"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": null,
+    "projects": 39.42,
+    "fund_wan": 30.77,
+    "scholars": 68.52,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 0,
+    "projects": 2,
+    "fund_wan": 41.0,
+    "scholars": 4,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 125,
+   "name": "深圳市环境科学研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 48.22,
+   "score_observed_only": 46.89,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 7.55,
+    "papers": 60.74,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 6,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.2727,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 126,
+   "name": "广东省安全生产和应急管理科学技术研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 48.21,
+   "score_observed_only": 43.75,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 127,
+   "name": "深圳市检验检疫科学研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 47.59,
+   "score_observed_only": 45.78,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 83.64,
+    "grant_rate": 13.67,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 41,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.3902,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 128,
+   "name": "中国科学院广州生物医药与健康研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 47.5,
+   "score_observed_only": 47.5,
+   "n_indicators": 7,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars",
+    "breadth"
+   ],
+   "imputed_n": 0,
+   "pct": {
+    "patents": 66.82,
+    "grant_rate": 8.63,
+    "papers": 27.52,
+    "projects": 86.54,
+    "fund_wan": 82.69,
+    "scholars": 20.37,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 14,
+    "papers": 2,
+    "projects": 19,
+    "fund_wan": 825.0,
+    "scholars": 1,
+    "grant_rate": 0.2857,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 129,
+   "name": "广东省大湾区华南理工大学聚集诱导发光高等研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 47.49,
+   "score_observed_only": 45.61,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 64.95,
+    "grant_rate": 92.81,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 13,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.9231,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 130,
+   "name": "东莞市农业科学研究中心",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 47.49,
+   "score_observed_only": 45.61,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 53.24,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.625,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 131,
+   "name": "中国水产科学研究院南海水产研究所深圳试验基地",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 47.46,
+   "score_observed_only": 45.55,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 7.55,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.2727,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 132,
+   "name": "深圳市卓励车载智能物流技术研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 47.35,
+   "score_observed_only": 43.82,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 20.14,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4444,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 133,
+   "name": "华南生物医药研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 47.35,
+   "score_observed_only": 43.82,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 79.5,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 134,
+   "name": "广东省特种设备检测研究院（广东省特种设备事故调查中心）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 47.26,
+   "score_observed_only": 40.4,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "papers"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": 66.78,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 8,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 135,
+   "name": "广东省科学院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 46.75,
+   "score_observed_only": 44.31,
+   "n_indicators": 4,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 74.83,
+    "projects": 15.38,
+    "fund_wan": 0.0,
+    "scholars": 87.04,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 10,
+    "projects": 1,
+    "fund_wan": 22.0,
+    "scholars": 11,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 136,
+   "name": "深圳市数聚湾区大数据研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 46.65,
+   "score_observed_only": 38.29,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.0,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 137,
+   "name": "广州南沙华农渔业研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 46.59,
+   "score_observed_only": 42.04,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 64.95,
+    "grant_rate": 2.88,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 13,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.1538,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 138,
+   "name": "中国医学科学院阜外医院深圳医院（深圳市孙逸仙心血管医院）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 46.53,
+   "score_observed_only": 37.87,
+   "n_indicators": 2,
+   "used": [
+    "papers",
+    "scholars"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 20.37,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 1,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 139,
+   "name": "广东粤港澳大湾区协同创新研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 46.5,
+   "score_observed_only": 41.84,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 45.33,
+    "grant_rate": 40.29,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 7,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5714,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 140,
+   "name": "广州湾区生物医药研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 46.5,
+   "score_observed_only": 41.84,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 45.33,
+    "grant_rate": 40.29,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 7,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5714,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 141,
+   "name": "广州市港航工程研究所",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 46.35,
+   "score_observed_only": 41.47,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 47.84,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 142,
+   "name": "深圳市疾病预防控制中心（深圳市卫生监督局、深圳市卫生检验中心、深圳市预防医学研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 46.32,
+   "score_observed_only": 44.85,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 90.6,
+    "projects": 50.96,
+    "fund_wan": 40.38,
+    "scholars": 20.37,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 24,
+    "projects": 3,
+    "fund_wan": 65.0,
+    "scholars": 1,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 143,
+   "name": "南方科技大学坪山生物医药研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 45.59,
+   "score_observed_only": 34.55,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 144,
+   "name": "广州南沙地大滨海研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 45.59,
+   "score_observed_only": 34.55,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 145,
+   "name": "惠州市新一代工业互联网创新研究院",
+   "city": "惠州市",
+   "org_type": "民办非企业单位",
+   "score": 45.59,
+   "score_observed_only": 34.55,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 146,
+   "name": "深圳海关动植物检验检疫技术中心",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 45.44,
+   "score_observed_only": 39.37,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 147,
+   "name": "广东腐蚀科学与技术创新研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 45.44,
+   "score_observed_only": 39.37,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 148,
+   "name": "中国医学科学院肿瘤医院深圳医院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 45.36,
+   "score_observed_only": 39.17,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": null,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.0,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 149,
+   "name": "广东省公共卫生研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 45.32,
+   "score_observed_only": 39.08,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 55.37,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 5,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 150,
+   "name": "深圳市光韵达增材制造研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 44.73,
+   "score_observed_only": 37.69,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 20.14,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4444,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 151,
+   "name": "广州医科大学附属市八医院（广州市第八人民医院、广州市肝病医院、广州市传染病研究所）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 44.72,
+   "score_observed_only": 31.51,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "papers"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 152,
+   "name": "深圳市太赫兹科技创新研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 44.55,
+   "score_observed_only": 30.93,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 153,
+   "name": "广州市黄埔区何氏眼健康产业技术研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 44.55,
+   "score_observed_only": 30.93,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 154,
+   "name": "东莞新能源研究院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 44.55,
+   "score_observed_only": 30.93,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 155,
+   "name": "香港大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 44.18,
+   "score_observed_only": 41.85,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 27.52,
+    "projects": 80.77,
+    "fund_wan": 80.77,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 2,
+    "projects": 13,
+    "fund_wan": 612.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 156,
+   "name": "深圳市特种设备安全检验研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 44.14,
+   "score_observed_only": 39.75,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 20.14,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4444,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 157,
+   "name": "黄埔海关技术中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 43.82,
+   "score_observed_only": 39.19,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 5.04,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.2,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 158,
+   "name": "东南大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 43.75,
+   "score_observed_only": 39.06,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 12.23,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 86.27
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.375,
+    "breadth": 5
+   }
+  },
+  {
+   "rank": 159,
+   "name": "广东粤港澳大湾区国家纳米科技创新研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 43.68,
+   "score_observed_only": 35.26,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 45.33,
+    "grant_rate": 2.16,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 7,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.1429,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 160,
+   "name": "广东省科学院半导体研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 43.67,
+   "score_observed_only": 42.61,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 90.19,
+    "grant_rate": 30.22,
+    "papers": 27.52,
+    "projects": 15.38,
+    "fund_wan": 18.27,
+    "scholars": null,
+    "breadth": 74.09
+   },
+   "raw": {
+    "patents": 73,
+    "papers": 2,
+    "projects": 1,
+    "fund_wan": 25.0,
+    "scholars": 0,
+    "grant_rate": 0.5205,
+    "breadth": 4
+   }
+  },
+  {
+   "rank": 161,
+   "name": "广州市白云区白云美湾华研国际化妆品研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 43.42,
+   "score_observed_only": 26.96,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 162,
+   "name": "深圳北航新兴产业技术研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 43.42,
+   "score_observed_only": 26.96,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 163,
+   "name": "广东省特种设备检测研究院东莞检测院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 43.17,
+   "score_observed_only": 38.05,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 47.84,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.6,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 164,
+   "name": "深圳光启高等理工研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 43.14,
+   "score_observed_only": 25.98,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.0,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 165,
+   "name": "深圳霁因生物医药转化研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 43.14,
+   "score_observed_only": 25.98,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.0,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 166,
+   "name": "中新国际联合研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 43.05,
+   "score_observed_only": 37.84,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 15.47,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 167,
+   "name": "深圳市仙湖植物园（深圳市园林研究中心）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 42.96,
+   "score_observed_only": 33.58,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": 39.42,
+    "fund_wan": 51.92,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 1,
+    "projects": 2,
+    "fund_wan": 102.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 168,
+   "name": "深圳市龙岗区耳鼻咽喉医院（深圳市耳鼻咽喉研究所、深圳市龙岗区口腔医学研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 42.69,
+   "score_observed_only": 32.94,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": 39.42,
+    "fund_wan": 50.0,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 1,
+    "projects": 2,
+    "fund_wan": 82.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 169,
+   "name": "中国农业科学院农业基因组研究所",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 42.67,
+   "score_observed_only": 39.74,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": 60.58,
+    "fund_wan": 59.62,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 1,
+    "projects": 5,
+    "fund_wan": 188.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 170,
+   "name": "广东省文物考古研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 42.07,
+   "score_observed_only": 22.25,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 171,
+   "name": "广州国家现代农业产业科技创新中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 42.07,
+   "score_observed_only": 22.25,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 172,
+   "name": "黄埔绿色先进材料技术研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 42.07,
+   "score_observed_only": 22.25,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 173,
+   "name": "湖南大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 41.82,
+   "score_observed_only": 30.91,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": 63.42,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 7,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 174,
+   "name": "广东省农业科学院设施农业研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 41.55,
+   "score_observed_only": 35.22,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 20.14,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4444,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 175,
+   "name": "深圳市华大海洋研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 41.26,
+   "score_observed_only": 29.61,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 48.36,
+    "grant_rate": 25.18,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 8,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.5,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 176,
+   "name": "深圳市因诺转化医学研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 41.18,
+   "score_observed_only": 29.41,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 57.48,
+    "grant_rate": 15.47,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 10,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 177,
+   "name": "广州市康源图像智能研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 41.03,
+   "score_observed_only": 18.62,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 178,
+   "name": "惠州市环境科学研究所",
+   "city": "惠州市",
+   "org_type": "事业单位",
+   "score": 41.03,
+   "score_observed_only": 18.62,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 179,
+   "name": "广东省地质调查研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 41.03,
+   "score_observed_only": 18.62,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 180,
+   "name": "深圳市长卿医学研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 41.03,
+   "score_observed_only": 18.62,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 181,
+   "name": "广东省智能机器人研究院",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 41.03,
+   "score_observed_only": 18.62,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 182,
+   "name": "广东省科学院测试分析研究所（中国广州分析测试中心）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 40.72,
+   "score_observed_only": 28.35,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 66.78,
+    "projects": 15.38,
+    "fund_wan": 2.88,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 8,
+    "projects": 1,
+    "fund_wan": 23.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 183,
+   "name": "广东省农业科学院农业经济与信息研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 40.52,
+   "score_observed_only": 27.87,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 63.42,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 7,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 184,
+   "name": "东莞市妇幼保健院（东莞市生殖与遗传研究所、东莞市妇幼保健计划生育服务中心）",
+   "city": "东莞市",
+   "org_type": "事业单位",
+   "score": 40.35,
+   "score_observed_only": 16.21,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "papers"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 185,
+   "name": "深圳市国华光电研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 40.29,
+   "score_observed_only": 36.41,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "grant_rate",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 79.5,
+    "papers": null,
+    "projects": 15.38,
+    "fund_wan": 10.58,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 0,
+    "projects": 1,
+    "fund_wan": 24.0,
+    "scholars": 0,
+    "grant_rate": 0.8,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 186,
+   "name": "中山大学惠州研究院",
+   "city": "惠州市",
+   "org_type": "事业单位",
+   "score": 40.28,
+   "score_observed_only": 32.98,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 42.52,
+    "grant_rate": 3.6,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 58.29
+   },
+   "raw": {
+    "patents": 6,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.1667,
+    "breadth": 3
+   }
+  },
+  {
+   "rank": 187,
+   "name": "深圳市免疫医学转化（龙华）研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 40.19,
+   "score_observed_only": 15.68,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "papers"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 188,
+   "name": "广东省家禽科学研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 189,
+   "name": "广州市南沙区北科光子感知技术研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 190,
+   "name": "深圳市坤健创新药物研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 191,
+   "name": "广东省科学院产业技术育成中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 192,
+   "name": "广州半导体材料研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 193,
+   "name": "深圳国际量子研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 194,
+   "name": "深圳市未来媒体技术研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 195,
+   "name": "深圳市智造激光技术研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 196,
+   "name": "深圳市华浩淼水生态环境技术研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 197,
+   "name": "深圳市广田科学技术发展研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 39.9,
+   "score_observed_only": 14.65,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 198,
+   "name": "浙江大学华南工业技术研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 39.79,
+   "score_observed_only": 26.17,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 199,
+   "name": "北京邮电大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 39.69,
+   "score_observed_only": 25.93,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "grant_rate",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 57.48,
+    "grant_rate": 5.04,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 10,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.2,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 200,
+   "name": "深圳市规划国土发展研究中心",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 39.56,
+   "score_observed_only": 31.73,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 6.47,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.2222,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 201,
+   "name": "深圳市大数据研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 38.9,
+   "score_observed_only": 34.46,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "grant_rate",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 64.95,
+    "grant_rate": 50.72,
+    "papers": null,
+    "projects": 15.38,
+    "fund_wan": 25.96,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 13,
+    "papers": 0,
+    "projects": 1,
+    "fund_wan": 30.0,
+    "scholars": 0,
+    "grant_rate": 0.6154,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 202,
+   "name": "广州市华南自然资源科学技术研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 38.75,
+   "score_observed_only": 23.75,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 203,
+   "name": "广东省大湾区集成电路与系统应用研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 204,
+   "name": "深圳市作物分子设计育种研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 205,
+   "name": "广东省未来肢体重建研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 206,
+   "name": "广州市道路工程研究中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 207,
+   "name": "广东省老年医学研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 208,
+   "name": "广州市未来增材制造研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 209,
+   "name": "南京航空航天大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 210,
+   "name": "南方工程检测修复技术研究院",
+   "city": "惠州市",
+   "org_type": "民办非企业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 211,
+   "name": "广州机械设计研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 212,
+   "name": "广东省南华节能和低碳发展研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 213,
+   "name": "华中师范大学深圳研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 214,
+   "name": "广州市南沙区贝科耐蚀新材料研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 215,
+   "name": "深圳市湖工大包装技术研究院",
+   "city": "深圳市",
+   "org_type": "民办非企业单位",
+   "score": 38.6,
+   "score_observed_only": 10.09,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "breadth"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": null,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 0,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 216,
+   "name": "广东省新一代通信与网络创新研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 38.57,
+   "score_observed_only": 23.34,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 45.33,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 7,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.0,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 217,
+   "name": "广东省科学院南繁种业研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 38.41,
+   "score_observed_only": 22.95,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 27.52,
+    "projects": 15.38,
+    "fund_wan": 25.96,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 2,
+    "projects": 1,
+    "fund_wan": 30.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 218,
+   "name": "广东省科技创新监测研究中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 38.06,
+   "score_observed_only": 29.11,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 15.47,
+    "papers": 48.99,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 4,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 219,
+   "name": "广州呼吸健康研究院（广州呼吸疾病研究所）",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 37.76,
+   "score_observed_only": 7.16,
+   "n_indicators": 2,
+   "used": [
+    "patents",
+    "papers"
+   ],
+   "imputed_n": 5,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 220,
+   "name": "深圳海关食品检验检疫技术中心",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 37.72,
+   "score_observed_only": 21.35,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 27.52,
+    "projects": 15.38,
+    "fund_wan": 21.15,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 2,
+    "projects": 1,
+    "fund_wan": 26.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 221,
+   "name": "深圳海关工业品检测技术中心",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 37.62,
+   "score_observed_only": 21.11,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 14.02,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 2,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 222,
+   "name": "广东省交通运输规划研究中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 37.3,
+   "score_observed_only": 20.38,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 40.94,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 3,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 223,
+   "name": "深圳市妇幼保健院（深圳市婴幼儿照护服务指导中心、深圳市妇幼医学研究所）",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 37.27,
+   "score_observed_only": 35.15,
+   "n_indicators": 6,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "projects",
+    "fund_wan",
+    "scholars"
+   ],
+   "imputed_n": 1,
+   "pct": {
+    "patents": 53.04,
+    "grant_rate": 36.69,
+    "papers": 74.83,
+    "projects": 15.38,
+    "fund_wan": 10.58,
+    "scholars": 20.37,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 9,
+    "papers": 10,
+    "projects": 1,
+    "fund_wan": 24.0,
+    "scholars": 1,
+    "grant_rate": 0.5556,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 224,
+   "name": "广东省农业科学院水稻研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 36.79,
+   "score_observed_only": 31.51,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": 40.94,
+    "projects": 39.42,
+    "fund_wan": 32.69,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 3,
+    "projects": 2,
+    "fund_wan": 43.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 225,
+   "name": "深圳市兰科植物保护研究中心",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 36.21,
+   "score_observed_only": 17.83,
+   "n_indicators": 3,
+   "used": [
+    "papers",
+    "projects",
+    "fund_wan"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 27.52,
+    "projects": 15.38,
+    "fund_wan": 10.58,
+    "scholars": null,
+    "breadth": null
+   },
+   "raw": {
+    "patents": 0,
+    "papers": 2,
+    "projects": 1,
+    "fund_wan": 24.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": null
+   }
+  },
+  {
+   "rank": 226,
+   "name": "广东省科学院电子电器研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 35.92,
+   "score_observed_only": 25.36,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 36.68,
+    "grant_rate": 15.47,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 39.9
+   },
+   "raw": {
+    "patents": 5,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.4,
+    "breadth": 2
+   }
+  },
+  {
+   "rank": 227,
+   "name": "广东省钢铁研究所",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 35.39,
+   "score_observed_only": 15.9,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 27.52,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 2,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 228,
+   "name": "广东省教育研究院",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 35.31,
+   "score_observed_only": 24.29,
+   "n_indicators": 4,
+   "used": [
+    "patents",
+    "grant_rate",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 3,
+   "pct": {
+    "patents": 60.98,
+    "grant_rate": 11.51,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 11,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": 0.3636,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 229,
+   "name": "广东省科学院工业分析检测中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 35.23,
+   "score_observed_only": 15.55,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 230,
+   "name": "广东省郭氏医学保健研究所",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 35.23,
+   "score_observed_only": 15.55,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 21.96,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 3,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 231,
+   "name": "广东省新黄埔中医药联合创新研究院",
+   "city": "广州市",
+   "org_type": "民办非企业单位",
+   "score": 32.8,
+   "score_observed_only": 9.86,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 232,
+   "name": "深圳市现代农业装备研究院",
+   "city": "深圳市",
+   "org_type": "事业单位",
+   "score": 32.8,
+   "score_observed_only": 9.86,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 233,
+   "name": "中国热带农业科学院广州实验站",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 32.8,
+   "score_observed_only": 9.86,
+   "n_indicators": 3,
+   "used": [
+    "patents",
+    "papers",
+    "breadth"
+   ],
+   "imputed_n": 4,
+   "pct": {
+    "patents": 4.91,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 1,
+    "papers": 1,
+    "projects": 0,
+    "fund_wan": 0.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  },
+  {
+   "rank": 234,
+   "name": "广东省农业科学院农业生物基因研究中心",
+   "city": "广州市",
+   "org_type": "事业单位",
+   "score": 30.77,
+   "score_observed_only": 23.08,
+   "n_indicators": 5,
+   "used": [
+    "patents",
+    "papers",
+    "projects",
+    "fund_wan",
+    "breadth"
+   ],
+   "imputed_n": 2,
+   "pct": {
+    "patents": 29.21,
+    "grant_rate": null,
+    "papers": 9.4,
+    "projects": 15.38,
+    "fund_wan": 46.15,
+    "scholars": null,
+    "breadth": 15.28
+   },
+   "raw": {
+    "patents": 4,
+    "papers": 1,
+    "projects": 1,
+    "fund_wan": 80.0,
+    "scholars": 0,
+    "grant_rate": null,
+    "breadth": 1
+   }
+  }
+ ],
+ "top20": [
+  {
+   "rank": 1,
+   "name": "中国科学院深圳先进技术研究院",
+   "score": 88.61,
+   "n_indicators": 7
+  },
+  {
+   "rank": 2,
+   "name": "中国科学院南海海洋研究所",
+   "score": 86.63,
+   "n_indicators": 7
+  },
+  {
+   "rank": 3,
+   "name": "中国科学院华南植物园",
+   "score": 84.81,
+   "n_indicators": 7
+  },
+  {
+   "rank": 4,
+   "name": "中国科学院广州地球化学研究所",
+   "score": 82.04,
+   "n_indicators": 7
+  },
+  {
+   "rank": 5,
+   "name": "中国科学院广州能源研究所",
+   "score": 79.35,
+   "n_indicators": 7
+  },
+  {
+   "rank": 6,
+   "name": "广州中医药大学（广州中医药研究院）",
+   "score": 76.53,
+   "n_indicators": 4
+  },
+  {
+   "rank": 7,
+   "name": "广东省科学院生态环境与土壤研究所",
+   "score": 76.09,
+   "n_indicators": 6
+  },
+  {
+   "rank": 8,
+   "name": "中国水产科学研究院珠江水产研究所",
+   "score": 74.25,
+   "n_indicators": 6
+  },
+  {
+   "rank": 9,
+   "name": "哈尔滨工业大学（深圳）（哈尔滨工业大学深圳科技创新研究院）",
+   "score": 72.75,
+   "n_indicators": 4
+  },
+  {
+   "rank": 10,
+   "name": "西北工业大学深圳研究院",
+   "score": 71.95,
+   "n_indicators": 4
+  },
+  {
+   "rank": 11,
+   "name": "广东省科学院广州地理研究所",
+   "score": 69.27,
+   "n_indicators": 6
+  },
+  {
+   "rank": 12,
+   "name": "中国水产科学研究院南海水产研究所",
+   "score": 69.1,
+   "n_indicators": 7
+  },
+  {
+   "rank": 13,
+   "name": "生态环境部华南环境科学研究所（生态环境部生态环境应急研究所）",
+   "score": 68.37,
+   "n_indicators": 5
+  },
+  {
+   "rank": 14,
+   "name": "鹏城实验室",
+   "score": 67.14,
+   "n_indicators": 5
+  },
+  {
+   "rank": 15,
+   "name": "东莞市三航军民融合创新研究院",
+   "score": 66.85,
+   "n_indicators": 3
+  },
+  {
+   "rank": 16,
+   "name": "香港理工大学深圳研究院",
+   "score": 65.98,
+   "n_indicators": 6
+  },
+  {
+   "rank": 17,
+   "name": "广东省科学院新材料研究所",
+   "score": 65.34,
+   "n_indicators": 6
+  },
+  {
+   "rank": 18,
+   "name": "深圳清华大学研究院",
+   "score": 63.95,
+   "n_indicators": 6
+  },
+  {
+   "rank": 19,
+   "name": "西北农林科技大学深圳研究院",
+   "score": 63.34,
+   "n_indicators": 3
+  },
+  {
+   "rank": 20,
+   "name": "中山大学肿瘤防治中心（中山大学附属肿瘤医院、中山大学肿瘤研究所）",
+   "score": 62.56,
+   "n_indicators": 2
+  }
+ ],
+ "radar_top12": [
+  {
+   "name": "中国科学院深圳先进技术研究院",
+   "score": 88.61,
+   "axes": {
+    "patents": 100.0,
+    "grant_rate": 22.3,
+    "papers": 97.99,
+    "projects": 100.0,
+    "fund_wan": 100.0,
+    "scholars": 100.0,
+    "breadth": 100.0
+   }
+  },
+  {
+   "name": "中国科学院南海海洋研究所",
+   "score": 86.63,
+   "axes": {
+    "patents": 98.6,
+    "grant_rate": 41.73,
+    "papers": 92.62,
+    "projects": 98.08,
+    "fund_wan": 98.08,
+    "scholars": 81.48,
+    "breadth": 95.85
+   }
+  },
+  {
+   "name": "中国科学院华南植物园",
+   "score": 84.81,
+   "axes": {
+    "patents": 94.86,
+    "grant_rate": 75.54,
+    "papers": 94.63,
+    "projects": 92.31,
+    "fund_wan": 92.31,
+    "scholars": 48.15,
+    "breadth": 95.85
+   }
+  },
+  {
+   "name": "中国科学院广州地球化学研究所",
+   "score": 82.04,
+   "axes": {
+    "patents": 87.85,
+    "grant_rate": 49.64,
+    "papers": 97.32,
+    "projects": 95.19,
+    "fund_wan": 96.15,
+    "scholars": 74.07,
+    "breadth": 74.09
+   }
+  },
+  {
+   "name": "中国科学院广州能源研究所",
+   "score": 79.35,
+   "axes": {
+    "patents": 93.46,
+    "grant_rate": 29.5,
+    "papers": 96.64,
+    "projects": 90.38,
+    "fund_wan": 90.38,
+    "scholars": 59.26,
+    "breadth": 95.85
+   }
+  },
+  {
+   "name": "广州中医药大学（广州中医药研究院）",
+   "score": 76.53,
+   "axes": {
+    "patents": null,
+    "grant_rate": null,
+    "papers": 100.0,
+    "projects": 95.19,
+    "fund_wan": 94.23,
+    "scholars": 96.3,
+    "breadth": null
+   }
+  },
+  {
+   "name": "广东省科学院生态环境与土壤研究所",
+   "score": 76.09,
+   "axes": {
+    "patents": 79.91,
+    "grant_rate": 91.37,
+    "papers": 79.53,
+    "projects": 78.85,
+    "fund_wan": 78.85,
+    "scholars": null,
+    "breadth": 74.09
+   }
+  },
+  {
+   "name": "中国水产科学研究院珠江水产研究所",
+   "score": 74.25,
+   "axes": {
+    "patents": 90.89,
+    "grant_rate": 57.55,
+    "papers": 82.21,
+    "projects": 75.96,
+    "fund_wan": 67.31,
+    "scholars": null,
+    "breadth": 95.85
+   }
+  },
+  {
+   "name": "哈尔滨工业大学（深圳）（哈尔滨工业大学深圳科技创新研究院）",
+   "score": 72.75,
+   "axes": {
+    "patents": 99.53,
+    "grant_rate": 73.38,
+    "papers": 99.33,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": 87.04,
+    "breadth": null
+   }
+  },
+  {
+   "name": "西北工业大学深圳研究院",
+   "score": 71.95,
+   "axes": {
+    "patents": 96.73,
+    "grant_rate": 74.82,
+    "papers": 86.24,
+    "projects": null,
+    "fund_wan": null,
+    "scholars": null,
+    "breadth": 95.85
+   }
+  },
+  {
+   "name": "广东省科学院广州地理研究所",
+   "score": 69.27,
+   "axes": {
+    "patents": 86.92,
+    "grant_rate": 84.17,
+    "papers": 70.81,
+    "projects": 50.96,
+    "fund_wan": 55.77,
+    "scholars": null,
+    "breadth": 86.27
+   }
+  },
+  {
+   "name": "中国水产科学研究院南海水产研究所",
+   "score": 69.1,
+   "axes": {
+    "patents": 95.79,
+    "grant_rate": 51.8,
+    "papers": 93.96,
+    "projects": 50.96,
+    "fund_wan": 75.0,
+    "scholars": 20.37,
+    "breadth": 95.85
+   }
+  }
+ ],
+ "sensitivity": [
+  {
+   "weights": "均衡 7 项等权",
+   "w": {
+    "patents": 1,
+    "grant_rate": 1,
+    "papers": 1,
+    "projects": 1,
+    "fund_wan": 1,
+    "scholars": 1,
+    "breadth": 1
+   },
+   "spearman_vs_base": 1.0,
+   "top1": "中国科学院深圳先进技术研究院",
+   "top10_overlap": 10,
+   "top5": [
+    "中国科学院深圳先进技术研究院",
+    "中国科学院南海海洋研究所",
+    "中国科学院华南植物园",
+    "中国科学院广州地球化学研究所",
+    "中国科学院广州能源研究所"
+   ]
+  },
+  {
+   "weights": "产出规模优先",
+   "w": {
+    "patents": 25,
+    "papers": 25,
+    "projects": 15,
+    "fund_wan": 15,
+    "scholars": 10,
+    "breadth": 5,
+    "grant_rate": 5
+   },
+   "spearman_vs_base": 0.942,
+   "top1": "中国科学院深圳先进技术研究院",
+   "top10_overlap": 9,
+   "top5": [
+    "中国科学院深圳先进技术研究院",
+    "中国科学院南海海洋研究所",
+    "中国科学院广州地球化学研究所",
+    "中国科学院华南植物园",
+    "中国科学院广州能源研究所"
+   ]
+  },
+  {
+   "weights": "质量优先（授权率加权）",
+   "w": {
+    "grant_rate": 30,
+    "papers": 25,
+    "breadth": 20,
+    "patents": 15,
+    "projects": 10
+   },
+   "spearman_vs_base": 0.9247,
+   "top1": "中国科学院华南植物园",
+   "top10_overlap": 6,
+   "top5": [
+    "中国科学院华南植物园",
+    "西北工业大学深圳研究院",
+    "广东省科学院生态环境与土壤研究所",
+    "珠江水利委员会珠江水利科学研究院",
+    "广东省农业科学院动物科学研究所"
+   ]
+  },
+  {
+   "weights": "人才优先",
+   "w": {
+    "scholars": 45,
+    "papers": 25,
+    "projects": 15,
+    "patents": 15
+   },
+   "spearman_vs_base": 0.7983,
+   "top1": "中国科学院深圳先进技术研究院",
+   "top10_overlap": 7,
+   "top5": [
+    "中国科学院深圳先进技术研究院",
+    "广州中医药大学（广州中医药研究院）",
+    "中国科学院南海海洋研究所",
+    "哈尔滨工业大学（深圳）（哈尔滨工业大学深圳科技创新研究院）",
+    "中国科学院广州地球化学研究所"
+   ]
+  }
+ ],
+ "rank_stability": {
+  "span_median": 36.0,
+  "n_span_ge10": 213,
+  "worst": [
+   {
+    "name": "广州市农业科学研究院",
+    "min": 30.0,
+    "max": 223.0,
+    "span": 193.0
+   },
+   {
+    "name": "广东省林业科学研究院",
+    "min": 21.0,
+    "max": 194.5,
+    "span": 173.5
+   },
+   {
+    "name": "深圳市神经科学研究院",
+    "min": 40.0,
+    "max": 207.0,
+    "span": 167.0
+   },
+   {
+    "name": "广东省农业科学院环境园艺研究所",
+    "min": 38.0,
+    "max": 198.0,
+    "span": 160.0
+   },
+   {
+    "name": "北京邮电大学深圳研究院",
+    "min": 82.5,
+    "max": 223.0,
+    "span": 140.5
+   },
+   {
+    "name": "深圳市因诺转化医学研究院",
+    "min": 82.5,
+    "max": 215.0,
+    "span": 132.5
+   },
+   {
+    "name": "中国科学院广州生物医药与健康研究院",
+    "min": 81.0,
+    "max": 213.0,
+    "span": 132.0
+   },
+   {
+    "name": "广东省科学院",
+    "min": 12.0,
+    "max": 135.0,
+    "span": 123.0
+   }
+  ]
+ },
+ "weights_note": "权重由页面传入，本件给 4 套预设用于演示「权重可配」与「结论对权重的敏感度」。四套权重下 Spearman 0.80—1.00，说明前 10 名大体稳定；但名次跨度 ≥10 位的机构有 213 家，页面必须在用户改权重时实时重排，不能缓存一份固定榜单。",
+ "limits": [
+  "缺 5 类指标（高价值专利、论文影响力、平台能级、国际合作、研发投入），所谓「技术力」实际只覆盖「产出规模 + 授权率 + 领域广度」。",
+  "授权率用「授权数/存量」而非「授权数/申请数」，存量含未审结与失效，授权率被系统性低估。",
+  "学者 29 家、项目 53 家、经费 53 家：人才维与经费维只对少数机构生效，对这些机构有利（多一项可加分），对多数机构是缺项重归一。",
+  "百分位是池内相对值，池子换了（例如只看深圳）名次会变；不能跨池比较分数。",
+  "技术领域广度是「有 ≥1 件专利的领域数」（与 TECH_LAYOUT 的「份额 ≥1%」口径不同，3 家机构不一致），与「技术能力强」不是一回事：广而浅的机构会比窄而深的机构得分高。",
+  "机构名未消歧（「深圳先进技术研究院」与「中国科学院深圳先进技术研究院」是两条记录）。"
+ ]
+}

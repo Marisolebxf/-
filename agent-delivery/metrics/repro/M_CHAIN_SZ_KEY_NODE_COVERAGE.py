@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统（按 UI 挂载推断）
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_CHAIN_SZ_KEY_NODE_COVERAGE 深圳关键环节覆盖率（W13-C1）。
 
 只读 code/_snapshots21/ 下的落盘快照，零 SQL、零本地 helper：

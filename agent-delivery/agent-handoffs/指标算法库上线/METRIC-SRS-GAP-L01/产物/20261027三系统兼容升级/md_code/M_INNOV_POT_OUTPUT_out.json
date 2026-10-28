@@ -1,0 +1,129 @@
+{
+ "metric_id": "M_INNOV_POT_OUTPUT",
+ "metric_name_zh": "产业产值（重建为创新产出读数：专利/论文）",
+ "generated_at": "2026-10-23 05:21:55",
+ "support_judgment": "部分支持",
+ "verdict_kind": "partial_missing_dimension",
+ "judgment_reason": "专利与论文两个产出维都能从 gkx 现算（2,939,895 件 / 100,900 篇），但服务机构产出维的源表 `svc_org_card` 在 gkx 逐字命中 0 张表，整维拒拟；注册表原定义「产业总产值/增加值/利润」也没有经济产出表可算。有整维缺失，故判部分支持，不判完全转换支持。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/patent_panel_innov_20261021.json",
+   "what": "dwd_patent 全量 2,939,895 行的 apdt_year 与 IPC4 聚合"
+  },
+  {
+   "path": "code/_snapshots21/f3_facts_20261023.json",
+   "what": "dwd_zh_paper 年份分布、svc_org_card 负证据、论文分类覆盖"
+  }
+ ],
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "专利侧 2017—2020 在 dwd_patent.apdt_year 零行，不按 0 摊入；2025（440,401）与 2026（74,810）是采集残年，不进 CAGR。论文侧基期取 2021—2023，2024 是入库批次峰（32,379 篇，占全库 32.09%），不摊入趋势；2025/2026 为残年。",
+ "total": {
+  "patent_rows": 2939895,
+  "patent_with_ipc": 2420915,
+  "paper_rows": 100900,
+  "patent_2021_2024": 2424684,
+  "paper_2021_2023": 19740
+ },
+ "patent_year_counts": {
+  "2022": 601893,
+  "2026": 74810,
+  "2021": 604512,
+  "2023": 611811,
+  "2025": 440401,
+  "2024": 606468
+ },
+ "paper_year_counts": {
+  "2019": 6174,
+  "2020": 6336,
+  "2021": 6758,
+  "2022": 6331,
+  "2023": 6651,
+  "2024": 32379,
+  "2025": 6548,
+  "2026": 2989
+ },
+ "paper_type_dist": [
+  {
+   "paper_type": "期刊论文",
+   "rows": 100900
+  }
+ ],
+ "service_org_output": {
+  "status": "rejected",
+  "source_table": "svc_org_card",
+  "absence_hits": 0,
+  "absence_condition": "information_schema.tables WHERE table_schema='gkx' AND table_name='svc_org_card'",
+  "pool_rows_seen": 45011,
+  "pool_orgs_seen": 44153,
+  "not_used_as_output": true,
+  "reason": "`dwd_org_org_product_info` 只有服务机构名录与业务描述（45,011 行 / 44,153 家），没有营收、服务量、项目数等产出字段；机构数不是产出量，禁止冒充。"
+ },
+ "registry_gap": {
+  "registry_definition": "特定产业总产值、增加值、利润；按时间/地域/企业类型看趋势。ADS 经济统计读面。",
+  "gkx_economic_output_table": null,
+  "status": "不可算",
+  "note": "gkx 280 张表里没有产业总产值/增加值/利润结果面；本件按派单书把「产出」落到专利/论文两个创新产出维，产业产值本体仍缺，待甲方裁定是否改口径。"
+ },
+ "derived": {
+  "patent_2021_2024_share_pct": {
+   "value": 82.4752,
+   "numerator": 2424684,
+   "denominator": 2939895,
+   "denominator_note": "分母 = 专利公开总量 2,939,895 件（patent_panel_innov.rows）"
+  },
+  "patent_ipc_coverage_pct": {
+   "value": 82.347,
+   "numerator": 2420915,
+   "denominator": 2939895,
+   "denominator_note": "分母 = 专利公开总量；分子 = 主分类 IPC 非空件数 2,420,915（ipc_all 求和）"
+  },
+  "patent_cagr_2021_2024_pct": {
+   "value": 0.1077,
+   "numerator": 606468,
+   "denominator": 604512,
+   "denominator_note": "CAGR = (分子 / 分母)^(1/3) − 1；分子 = 2024 年 606,468 件，分母 = 2021 年 604,512 件，不是全库总量"
+  },
+  "paper_2021_2023_share_pct": {
+   "value": 19.5639,
+   "numerator": 19740,
+   "denominator": 100900,
+   "denominator_note": "分母 = 中文论文全库 100,900 篇（f3_facts.dwd_zh_paper_year 求和）"
+  },
+  "paper_2024_share_pct": {
+   "value": 32.0902,
+   "numerator": 32379,
+   "denominator": 100900,
+   "denominator_note": "分母 = 中文论文全库；分子 = 2024 年 32,379 篇（入库批次峰）"
+  },
+  "paper_2024_vs_2023_multiple": {
+   "value": 4.8683,
+   "numerator": 32379,
+   "denominator": 6651,
+   "denominator_note": "分母 = 2023 年 6,651 篇；倍率不是增幅，未减 1"
+  },
+  "paper_cagr_2021_2023_pct": {
+   "value": -0.7948,
+   "numerator": 6651,
+   "denominator": 6758,
+   "denominator_note": "CAGR = (分子 / 分母)^(1/2) − 1；分子 = 2023 年 6,651 篇，分母 = 2021 年 6,758 篇，窗口刻意不含 2024 批次峰"
+  }
+ },
+ "absence_probe": {
+  "svc_org_card": {
+   "condition": "information_schema.tables WHERE table_schema='gkx' AND table_name='svc_org_card'",
+   "hits": 0
+  }
+ },
+ "reproduce": "cd code && python3 M_INNOV_POT_OUTPUT.py"
+}

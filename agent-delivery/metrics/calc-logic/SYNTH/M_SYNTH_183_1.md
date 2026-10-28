@@ -1,9 +1,24 @@
 # 区域产业创新成果综合评价模型（M_SYNTH_183_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_183_1.md`；复现脚本 `metrics/repro/M_SYNTH_183_1.py` → `metrics/repro/out/M_SYNTH_183_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（L2 三维评价）｜ **域**：综合智能分析／区域创新活力分析／产业创新成果
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（高企名录、2024 授权专利、产品标签三路现算）+ 结构缺口（第三产业占比重四城只有 1 城有同期间事实；服务机构维只有能力覆盖而非经营绩效）**
+> - **一句话结论**：三维等权下深圳 77.7925、广州 39.7686、东莞 18.777、惠州 7.6049，逐格可复算；但产品服务创新维的三级指标「第三产业增加值占比重」四城只有 1 城有同期间事实（东莞 2017 上半年 52.9279%），整列记 null、该维退化为「产品名称覆盖数」单撑，且产品标签只能覆盖底册 **5.5046%** 的企业——**分数可复算、覆盖面不可外推 → 部分支持。**
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_183_1.py`｜ **产物**：`metrics/repro/out/M_SYNTH_183_1_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_183_1.py`、产物 `metrics/repro/out/M_SYNTH_183_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_183_1.md`；复现脚本 `metrics/repro/M_SYNTH_183_1.py` → `metrics/repro/out/M_SYNTH_183_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_183_1.py`、产物 `metrics/repro/out/M_SYNTH_183_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_183_1.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_183_1.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_183_1_out.json` |
@@ -63,20 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_183_1.py`、产物 `metrics/repro/out/M_SYNTH_183_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（L2 三维评价）｜ **域**：综合智能分析／区域创新活力分析／产业创新成果
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（高企名录、2024 授权专利、产品标签三路现算）+ 结构缺口（第三产业占比重四城只有 1 城有同期间事实；服务机构维只有能力覆盖而非经营绩效）**
-> **复现脚本**：`code/M_SYNTH_183_1.py`｜ **产物**：`code/M_SYNTH_183_1_out.json`
-> **族级面板**：`code/_snapshots21/vit_family_20261023.json`（本族五件共用，由 `code/_build_vit_family_panel.py` 生成）
-> **否定性证据**：`code/_snapshots21/vit_absence_20261023.json`
-> **公式定义人**：王惠（`M_SYNTH_183_1.md`：产品服务创新＝产品名覆盖数＋第三产业占比重；企业创新＝高企数＋授权专利；服务机构创新＝沿用 `M_SVC_ORG_COVERAGE_DEPTH`；三维极值归一后等权）
-> **基期声明**：统计年 2024（授权专利完整年）；`base_years_used=[2024]`、`base_years_missing=[]`。产品标签表无年份维度，取当前截面；第三产业占比重唯一同期间对是东莞 2017 上半年，因只有 1 城，未进任何归一，不作为基期。
-> **一句话结论**：三维等权下深圳 77.7925、广州 39.7686、东莞 18.777、惠州 7.6049，逐格可复算；但产品服务创新维的三级指标「第三产业增加值占比重」四城只有 1 城有同期间事实（东莞 2017 上半年 52.9279%），整列记 null、该维退化为「产品名称覆盖数」单撑，且产品标签只能覆盖底册 **5.5046%** 的企业——**分数可复算、覆盖面不可外推 → 部分支持。**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -161,8 +167,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 |---|---|
 | `code/_snapshots21/vit_family_20261023.json` | 族级面板：产品标签归城、宏观配对、服务机构均值、四维子模型读数 |
 | `code/_snapshots21/vit_absence_20261023.json` | 否定性证据：gkx 无 `svc_*` 表、`a77234` 0 行、财务列非空计数 |
-| `code/M_SYNTH_182_1_out.json` | 2024 年授权专利（`dims.D2_applied_tech.grants_2024`） |
-| `code/M_SYNTH_VIT_RANK_out.json` | 高新技术企业数（`raw.hightech_enterprises`） |
+| `metrics/repro/out/M_SYNTH_182_1_out.json` | 2024 年授权专利（`dims.D2_applied_tech.grants_2024`） |
+| `metrics/repro/out/M_SYNTH_VIT_RANK_out.json` | 高新技术企业数（`raw.hightech_enterprises`） |
 | `code/_snapshots21/svc21_facts_20261022.json` | 服务机构池 44,153 家（服务广度/深度） |
 | `code/_snapshots21/base_20261021.json` | 企业底册 189,116 行（信用代码→城市） |
 
@@ -257,13 +263,13 @@ S1 下深圳升 19.6691、广州升 21.9173、惠州从 7.6049 掉到 0。名次
 ### 2.7 复现结果展示
 
 ```bash
-python3 M_SYNTH_183_1.py
+cd code && python3 M_SYNTH_183_1.py
 # === M_SYNTH_183_1 ===
 # 深圳市: D1=100.0 D2=100.0 D3=33.3776 idx=77.7925 rank=1
 # 广州市: D1=36.9547 D2=48.1029 D3=34.2483 idx=39.7686 rank=2
 # 东莞市: D1=6.9013 D2=24.9723 D3=24.4574 idx=18.777 rank=3
 # 惠州市: D1=0.0 D2=0.0 D3=22.8147 idx=7.6049 rank=4
-# → code/M_SYNTH_183_1_out.json
+# → metrics/repro/out/M_SYNTH_183_1_out.json
 ```
 
 脚本零 SQL：产品标签与宏观事实已由 `code/_build_vit_family_panel.py` 落成族级面板，本件只读面板与两份上游产物（182 的授权专利、RANK 的高企数）。这样做是为了让五件族内文档共用同一组原始读数——如果本件自己重查产品表，`产品名称覆盖数` 就可能与 INDICATOR 件差几十个（去重口径、空串处理稍有不同就会变），两份文档的同一个城市就对不上了。
@@ -349,9 +355,9 @@ python3 M_SYNTH_183_1.py
 |---|---|---|
 | `code/_snapshots21/vit_family_20261023.json` | 面板：产品归城、宏观配对、服务机构均值、子模型读数 | 本族五件共用 |
 | `code/_snapshots21/vit_absence_20261023.json` | `svc_*` 表 0 张、`a77234` 0 行、财务列非空计数 | 否定性证据 |
-| `code/M_SYNTH_183_1_out.json` | 三维分、指数、名次、四套对照、派生比值 | 本件产物 |
-| `code/M_SYNTH_182_1_out.json` | 2024 授权专利 | 同族上游 |
-| `code/M_SYNTH_VIT_RANK_out.json` | 高企数 | 同族上游 |
+| `metrics/repro/out/M_SYNTH_183_1_out.json` | 三维分、指数、名次、四套对照、派生比值 | 本件产物 |
+| `metrics/repro/out/M_SYNTH_182_1_out.json` | 2024 授权专利 | 同族上游 |
+| `metrics/repro/out/M_SYNTH_VIT_RANK_out.json` | 高企数 | 同族上游 |
 
 ---
 
@@ -423,16 +429,7 @@ D1 名义两个子项，实际只有产品名在跑，于是 D1 与「产品名�
 1. OECD. *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
 2. 国家统计局.《国民经济行业分类（GB/T 4754-2017）》. https://www.stats.gov.cn/sj/tjbz/
 3. 国家统计局.《三次产业划分规定》. https://www.stats.gov.cn/sj/tjbz/
-4. 科学技术部火炬高技术产业开发中心. 高新技术企业认定管理工作网. https://www.innocom.gov.cn/
-5. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
-6. 本地产物与快照（逐项对应 §3.6）：
-   - `code/_snapshots21/vit_family_20261023.json`：族级面板
-   - `code/_snapshots21/vit_absence_20261023.json`：否定性证据
-   - `code/M_SYNTH_182_1_out.json`：2024 授权专利
-   - `code/M_SYNTH_VIT_RANK_out.json`：高企数
-7. `_work_gkx21/DATA_FACTS_gkx21.md` §3.10（整列空）、§3.68（慢查询与并发纪律）
-8. `_work_gkx21/DISPATCH_BRIEF_v8.md` §一（派生数字落产物）、§四（负证据三件套）
-
+4. 国家知识产权局. 专利数据检索与公开系统. https://pss-system.cponline.cnipa.gov.cn/
 ---
 
 # 附件
@@ -530,20 +527,12 @@ D1 名义两个子项，实际只有产品名在跑，于是 D1 与「产品名�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_183_1.py` |
+| 脚本 | `metrics/repro/M_SYNTH_183_1.py` |
 | 面板 | `code/_snapshots21/vit_family_20261023.json` |
-| 产物 | `code/M_SYNTH_183_1_out.json` |
+| 产物 | `metrics/repro/out/M_SYNTH_183_1_out.json` |
 | 归一 | 四市盘 min-max（D1/D2 计数型子项） |
 | 服务机构维 | 固定词表 0—100 原标度 |
 | 维内合成 | 在场子项等权 |
 | 三维合成 | 等权（1/3 各） |
 | 权重声明 | `main_is_official=false` |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

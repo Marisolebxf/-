@@ -1,9 +1,22 @@
-# M_TALENT_CULTIVATE_SCORE（M_TALENT_CULTIVATE_SCORE）
+# 人才本地培育力指数（M_TALENT_CULTIVATE_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_CULTIVATE_SCORE.md`；复现脚本 `metrics/repro/M_TALENT_CULTIVATE_SCORE.py` → `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：需求派生（TALENT 家族 · 本地留存）｜ **域**：科技信息展示系统 · 科技人才态势 · 深圳科技人才态势 / 人才迁徙情况（需求 1.1.1.1.4.3.2.2、1.1.1.1.4.3.1.2，原文第 1537—1545、1787—1811 行）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否（无 `cultivate_score` 结果表）；直接数据 = 否；依赖结构 = 是（主档 + 履历 + 学历 + 论文面齐全）；依赖数据 = **部分**（A/R 两维 182 人全覆盖、P 维 87 人、Po 维仅 139 人，其中「深圳求学」子信号 0 人）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_CULTIVATE_SCORE.md`；复现脚本 `metrics/repro/M_TALENT_CULTIVATE_SCORE.py` → `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TALENT_CULTIVATE_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_TALENT_CULTIVATE_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json` |
@@ -65,16 +78,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：需求派生（TALENT 家族 · 本地留存）｜ **域**：科技信息展示系统 · 科技人才态势 · 深圳科技人才态势 / 人才迁徙情况（需求 1.1.1.1.4.3.2.2、1.1.1.1.4.3.1.2，原文第 1537—1545、1787—1811 行）
-> **UI 挂载**：深圳人才态势页「本地留存与培育」卡（分档 + 四维雷达 + 深圳署名占比）
-> **数据支持度**：**部分支持**
-> **口径来源**：需求原文「深圳科技人才集聚态势、发展潜力及关键人才流动动态」＋「人才迁徙情况」；calc-logic **未覆盖**本指标，四维权重为派单给定、口径为本文 §1.6 自建
-> **四判定摘要**：直接结构 = 否（无 `cultivate_score` 结果表）；直接数据 = 否；依赖结构 = 是（主档 + 履历 + 学历 + 论文面齐全）；依赖数据 = **部分**（A/R 两维 182 人全覆盖、P 维 87 人、Po 维仅 139 人，其中「深圳求学」子信号 0 人）
-> **铁律**：缺测维不补 0，按剩余权重重归一；专利两字姓名与池内同名判缺测；深圳署名占比只作序数信号，不做留存概率
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: false
 
 ---
@@ -201,7 +210,7 @@ seed 的落点是「高成长潜力」，而派单给本文的权重是 `Po 0.35
 4. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
 5. 教育部. *全国高等学校名单*. <https://www.moe.gov.cn/>
 6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 1537—1545、1787—1811 行
-7. 同批产物：`code/M_TALENT_CULTIVATE_SCORE_out.json`、`code/M_TALENT_ACADEMIC_SCORE_out.json`
+7. 同批产物：`metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json`、`metrics/repro/out/M_TALENT_ACADEMIC_SCORE_out.json`
 8. 专利快照：`code/_snapshots21/patent_inventor_counts_gkx.json`
 
 ### 1.6 推测原意与推测定义
@@ -318,10 +327,10 @@ WHERE org_name_zh LIKE '%深圳%';        -- 194 条，有姓名 182 条
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_TALENT_CULTIVATE_SCORE.py` |
+| 脚本 | `metrics/repro/M_TALENT_CULTIVATE_SCORE.py` |
 | 公共库 | `code/_talent21_common.py` |
 | 数据快照 | `probe_a26_20261022.json`、`probe_talent21_20261022.json`、`a25_paper_panel.json`、`patent_inventor_counts_gkx.json` |
-| 输出 | `code/M_TALENT_CULTIVATE_SCORE_out.json` |
+| 输出 | `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json` |
 | 库名 / 端口 | `gkx` @ 183.240.141.251:3318（`gkx_reader_zp`，只读）；本指标 SQL 0 条 |
 | 运行 | `python3 code/M_TALENT_CULTIVATE_SCORE.py` |
 | 耗时 | 2.6 秒 |
@@ -465,15 +474,10 @@ A 维与 `M_TALENT_ACADEMIC_SCORE` 的分位严格单调；深圳池 182 与 `M_
 ## 参考文献
 
 1. Mitchell T R, Holtom B C, Lee T W, et al. *Why people stay: Using job embeddedness to predict voluntary turnover*. Academy of Management Journal, 2001. <https://journals.aom.org/doi/10.5465/3069391>
-2. OECD/JRC. *Handbook on Constructing Composite Indicators*. <https://www.oecd.org/sdd/42495745.pdf>
-3. 深圳市人民政府. *深圳市「20+8」产业集群政策*. <https://www.sz.gov.cn/>
-4. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
-5. 教育部. *全国高等学校名单*. <https://www.moe.gov.cn/>
-6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 1537—1545、1787—1811 行
-7. 同批产物：`code/M_TALENT_CULTIVATE_SCORE_out.json`
-8. 专利快照：`code/_snapshots21/patent_inventor_counts_gkx.json`
-9. 注册表口径：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-TALENT-seed.yaml`（v0.1.0，`is_mock: true`，formula `pending_cosign`）、`metric-readiness-matrix-TALENT.yaml`、`metric-srs-map.yaml`
-
+2. 深圳市人民政府. *深圳市「20+8」产业集群政策*. <https://www.sz.gov.cn/>
+3. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
+4. 教育部. *全国高等学校名单*. <https://www.moe.gov.cn/>
+5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 1537—1545、1787—1811 行
 ---
 
 # 附件
@@ -597,17 +601,10 @@ Cox 模型需要「离职事件 + 观察时长」。本库没有离职记录，�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_TALENT_CULTIVATE_SCORE.py` |
-| 输出 | `code/M_TALENT_CULTIVATE_SCORE_out.json` |
+| 脚本 | `metrics/repro/M_TALENT_CULTIVATE_SCORE.py` |
+| 输出 | `metrics/repro/out/M_TALENT_CULTIVATE_SCORE_out.json` |
 | 耗时 | 2.6 秒 |
 | SQL | 0 条 |
 | 关键数字 | 182 人 / 中位 42.48 / 高黏性 38 / Po 覆盖 139（求学 0）/ 剔除署名 Spearman 0.4066 / 成长性 vs 主分 0.1145 |
 | 交付 | 四维本地嵌入度（Po/A/P/R），无流动分析 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

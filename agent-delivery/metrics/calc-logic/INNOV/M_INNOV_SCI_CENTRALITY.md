@@ -1,9 +1,18 @@
 # 科学网络中心性（M_INNOV_SCI_CENTRALITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCI_CENTRALITY.md`；复现脚本 `metrics/repro/M_INNOV_SCI_CENTRALITY.py` → `metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCI_CENTRALITY.py`、产物 `metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCI_CENTRALITY.md`；复现脚本 `metrics/repro/M_INNOV_SCI_CENTRALITY.py` → `metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCI_CENTRALITY.py`、产物 `metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +61,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_SCI_CENTRALITY.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_SCI_CENTRALITY.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json` |
@@ -60,14 +69,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_SCI_CENTRALITY.py`、产物 `metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 20261023 gkx 换源版 · 类型：**THIRD_PARTY** · 域：创新（INNOV） · UI 挂载：科技信息展示系统 / 科技发展态势 / 科技创新评估 ｜ **数据支持度**：部分支持
-> 产物：`code/M_INNOV_SCI_CENTRALITY.py` → `code/M_INNOV_SCI_CENTRALITY_out.json`（实测 2.1 秒，只读快照，零 SQL）
-> 主算库：`gkx`（三方库 183.240.141.251:3318，`gkx_reader_zp` 只读）
-> 图：中文论文机构共著图；主口径点集 P2（15,223 节点 / 36,965 边）
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -235,7 +241,7 @@ Louvain 用 `weight`、`resolution=1.0`、`seed=20261021`，在 P2 上给出 60 
 
 ### 2.7 复现代码结果展示
 
-`python3 -u code/M_INNOV_SCI_CENTRALITY.py` 实测输出（节选自 `code/M_INNOV_SCI_CENTRALITY_out.json`）：
+`python3 -u code/M_INNOV_SCI_CENTRALITY.py` 实测输出（节选自 `metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json`）：
 
 | 点集 | 节点 | 边 | 连通片 | 孤立点 | 密度 |
 |---|---:|---:|---:|---:|---:|
@@ -508,20 +514,19 @@ P2 全图企业 2,408 个，占 15.82%（2,408 / 15,223 = 15.8182%），但前 2
 2. NetworkX. Centrality — NetworkX 3.2 documentation. https://networkx.org/documentation/stable/reference/algorithms/centrality.html
 3. Wasserman, S., Faust, K. *Social Network Analysis: Methods and Applications*. Cambridge University Press, 1994. https://doi.org/10.1017/CBO9780511815478
 4. Blondel, V. D., Guillaume, J.-L., Lambiotte, R., Lefebvre, E. Fast unfolding of communities in large networks. *Journal of Statistical Mechanics*, 2008. https://doi.org/10.1088/1742-5468/2008/10/P10008
-
 # 附件
 
 ## 附录 A 复现
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 -u code/M_INNOV_SCI_CENTRALITY.py
 ```
 
 实测输出：
 
 ```text
-wrote code/M_INNOV_SCI_CENTRALITY_out.json
+wrote metrics/repro/out/M_INNOV_SCI_CENTRALITY_out.json
 {"p2": [15223, 36965], "top1": "广州中医药大学第一附属医院", "communities": 60}
 ```
 
@@ -569,11 +574,3 @@ live 侧只用于判「是不是 demo 样例」：ADS 的 114—3,726 行与全�
 | 领域切片 | 不可算 | 无领域词表 |
 
 结论：本件在「论文共著图」子口径上完全可复现，在「科学合作全域」口径上部分支持。发布时必须带子口径前缀，不能把论文图读数写成产业合作读数。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

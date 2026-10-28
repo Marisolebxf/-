@@ -1,9 +1,25 @@
 # 政策匹配推送（M_POLICY_MATCH）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_MATCH.md`；复现脚本 `metrics/repro/M_POLICY_MATCH.py` → `metrics/repro/out/M_POLICY_MATCH_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（四维加权匹配 + Top-N 推送）｜ **域**：政策（POLICY）｜ **UI 挂载**：企业详情页「政策推荐」列表、政策详情页「适合我的政策」侧栏、政策库首页「为你匹配」卡片
+> - **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_MATCH.md`（产业 / 地区 / 诉求 / 有效性四维加权，Top-N 推送）
+> - **同域边界**：与已交付 `M_CHAIN_POLICY_MATCH_SCORE` 不同——那件在**链**粒度上算政策匹配度并排名，本件在**企业**粒度上给「企业—政策」逐对打分并推送 Top-N；与 `M_POLICY_INDUSTRY_FIT` 不同——那件算「城市 × 链」的政策适配性，本件算「企业 × 政策」的可用性。三件都会用到政策产业词，但分母主体不同，**数值不可互换**。
+> - **一句话结论**：13,313 家深圳链上企业 × 3,284 条候选政策，四维里诉求维整块不可算（`policy_support` 全表 JSON null、企业侧无诉求标签），剩三维等权后分数只有 **4 个取值**（43.33 / 50.0 / 76.67 / 83.33），每家企业最高分只有 2 种（50.0 或 83.33）、**84.3236%** 的企业顶格；强制取满 Top-10 后 133,130 个推送槽位里只有 **34,454（25.88%）** 落在产业命中的政策上——**能出匹配分，但区分度不够，只能当候选池**，故判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_MATCH.py`｜ **产物**：`metrics/repro/out/M_POLICY_MATCH_out.json`｜ **共用底数**：`code/_snapshots21/policy_text_20261023.json`、`code/_snapshots21/policy_dims_20261023.json`、`code/_snapshots21/chain_firm_index_20261023.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_MATCH.py`、产物 `metrics/repro/out/M_POLICY_MATCH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_MATCH.md`；复现脚本 `metrics/repro/M_POLICY_MATCH.py` → `metrics/repro/out/M_POLICY_MATCH_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_MATCH.py`、产物 `metrics/repro/out/M_POLICY_MATCH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_MATCH.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_MATCH.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_MATCH_out.json` |
@@ -62,18 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_MATCH.py`、产物 `metrics/repro/out/M_POLICY_MATCH_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（四维加权匹配 + Top-N 推送）｜ **域**：政策（POLICY）｜ **UI 挂载**：企业详情页「政策推荐」列表、政策详情页「适合我的政策」侧栏、政策库首页「为你匹配」卡片
-> **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_MATCH.md`（产业 / 地区 / 诉求 / 有效性四维加权，Top-N 推送）
-> **复现脚本**：`code/M_POLICY_MATCH.py`｜ **产物**：`code/M_POLICY_MATCH_out.json`｜ **共用底数**：`code/_snapshots21/policy_text_20261023.json`、`code/_snapshots21/policy_dims_20261023.json`、`code/_snapshots21/chain_firm_index_20261023.json`
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。本件是「当期政策 × 当期企业」的横截面匹配，不按年度切窗；政策池取 20,000 条存量全表（`publish_year` 跨 1981—2024），企业池取当期底册。2023/2024 的零行是采集断档（DATA_FACTS §3.49 邻域），不得读成「匹配度为 0」。
-> **同域边界**：与已交付 `M_CHAIN_POLICY_MATCH_SCORE` 不同——那件在**链**粒度上算政策匹配度并排名，本件在**企业**粒度上给「企业—政策」逐对打分并推送 Top-N；与 `M_POLICY_INDUSTRY_FIT` 不同——那件算「城市 × 链」的政策适配性，本件算「企业 × 政策」的可用性。三件都会用到政策产业词，但分母主体不同，**数值不可互换**。
-> **一句话结论**：13,313 家深圳链上企业 × 3,284 条候选政策，四维里诉求维整块不可算（`policy_support` 全表 JSON null、企业侧无诉求标签），剩三维等权后分数只有 **4 个取值**（43.33 / 50.0 / 76.67 / 83.33），每家企业最高分只有 2 种（50.0 或 83.33）、**84.3236%** 的企业顶格；强制取满 Top-10 后 133,130 个推送槽位里只有 **34,454（25.88%）** 落在产业命中的政策上——**能出匹配分，但区分度不够，只能当候选池**，故判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -276,8 +285,8 @@ $$\text{HitRate}=\frac{\#\{(\,s,p\,):\ p\in\text{Top-}10_s,\ S^{\text{ind}}_{s,p
 ### 2.8 复现代码与结果
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_MATCH.py                                # 产出 code/M_POLICY_MATCH_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_MATCH.py                                # 产出 metrics/repro/out/M_POLICY_MATCH_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_MATCH --check
 ```
 
@@ -385,13 +394,10 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_MATCH --check
 ## 参考文献
 
 1. Ricci F., Rokach L., Shapira B. Recommender Systems Handbook[M]. 2nd ed. Springer, 2015. https://doi.org/10.1007/978-0-387-85820-3
-2. Manning C. D., Raghavan P., Schütze H. Introduction to Information Retrieval[M]. Cambridge University Press, 2008. https://nlp.stanford.edu/IR-book/
-3. Robertson S., Zaragoza H. The Probabilistic Relevance Framework: BM25 and Beyond[J]. Foundations and Trends in IR, 2009, 3(4): 333-389. https://doi.org/10.1561/1500000019
-4. 国务院办公厅. 关于进一步优化政务服务提升行政效能推动「高效办成一件事」的指导意见. https://www.gov.cn/zhengce/content/202401/content_6924378.htm
-5. 广东省人民政府. 广东省优化营商环境条例. https://www.gd.gov.cn/zwgk/wjk/qbwj/
-6. 深圳市工业和信息化局. 深圳市关于推动制造业高质量发展坚定不移打造制造强市的若干措施. https://gxj.sz.gov.cn/xxgk/xxgkml/zcfg/
-7. MySQL 8.0 Reference Manual — Cursor Classes（SSCursor）. https://dev.mysql.com/doc/refman/8.0/en/mysql-connector-python-api.html
-
+2. Robertson S., Zaragoza H. The Probabilistic Relevance Framework: BM25 and Beyond[J]. Foundations and Trends in IR, 2009, 3(4): 333-389. https://doi.org/10.1561/1500000019
+3. 国务院办公厅. 关于进一步优化政务服务提升行政效能推动「高效办成一件事」的指导意见. https://www.gov.cn/
+4. 广东省人民政府. 广东省优化营商环境条例. https://www.gd.gov.cn/zwgk/wjk/qbwj/
+5. MySQL 8.0 Reference Manual — Cursor Classes（SSCursor）. https://dev.mysql.com/doc/refman/8.0/en/mysql-connector-python-api.html
 ---
 
 # 附件
@@ -510,15 +516,7 @@ BM25/TF-IDF 在「企业描述文本 vs 政策正文」上做召回。本库企�
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 指标 | `python3 code/M_POLICY_MATCH.py` | `code/M_POLICY_MATCH_out.json` |
+| 指标 | `python3 code/M_POLICY_MATCH.py` | `metrics/repro/out/M_POLICY_MATCH_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_MATCH --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21` | PASS |
 | 判档闸 | `python3 _work_gkx21/audit_verdict_enum.py _staging21` | 一致 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

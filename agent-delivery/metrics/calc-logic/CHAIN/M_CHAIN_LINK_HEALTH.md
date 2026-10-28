@@ -1,9 +1,25 @@
 # 环节健康度（M_CHAIN_LINK_HEALTH）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_LINK_HEALTH.md`；复现脚本 `metrics/repro/M_CHAIN_LINK_HEALTH.py` → `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：SCORE（五维 0—100，本件只交子维与两维部分指数）｜ **域**：产业链分析 / 产业关键环节识别｜ **UI 挂载**：链全景页「环节健康度」热力格、环节详情页五维雷达
+> - **数据支持度**：**部分支持**｜ **公式定义人**：AI 补漏（`calc-logic` 标注「待算法 Lead 会签」，无人类签署）
+> - **同域边界**：与 `M_CHAIN_BOTTLENECK_SEVERITY`（五维堵点评分，负向）**不是同一套数**。那件的堵点分来自算法库结果面，本件是正向健康度、在 gkx 上重建；两件不可互相取反，也不可拼成一张雷达图。
+> - **一句话结论**：41 个 L1 环节里只有**技术成熟度**与**融资资本**两维能在节点层闭合（权重 2/5=0.40），人才列整列为空、营收节点覆盖最高仅 **3.57%**、政策表无环节码；因此 **`health_score` 一律为 null**，只发布两维百分位与排序，最高晶圆制造 **95.00**、最低整车制造 **0.62**，判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_CHAIN_LINK_HEALTH.py`｜ **产物**：`metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_LINK_HEALTH.py`、产物 `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_LINK_HEALTH.md`；复现脚本 `metrics/repro/M_CHAIN_LINK_HEALTH.py` → `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_LINK_HEALTH.py`、产物 `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_LINK_HEALTH.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_LINK_HEALTH.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json` |
@@ -62,17 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_LINK_HEALTH.py`、产物 `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：SCORE（五维 0—100，本件只交子维与两维部分指数）｜ **域**：产业链分析 / 产业关键环节识别｜ **UI 挂载**：链全景页「环节健康度」热力格、环节详情页五维雷达
-> **数据支持度**：**部分支持**｜ **公式定义人**：AI 补漏（`calc-logic` 标注「待算法 Lead 会签」，无人类签署）
-> **复现脚本**：`code/M_CHAIN_LINK_HEALTH.py`｜ **产物**：`code/M_CHAIN_LINK_HEALTH_out.json`
-> **同域边界**：与 `M_CHAIN_BOTTLENECK_SEVERITY`（五维堵点评分，负向）**不是同一套数**。那件的堵点分来自算法库结果面，本件是正向健康度、在 gkx 上重建；两件不可互相取反，也不可拼成一张雷达图。
-> **一句话结论**：41 个 L1 环节里只有**技术成熟度**与**融资资本**两维能在节点层闭合（权重 2/5=0.40），人才列整列为空、营收节点覆盖最高仅 **3.57%**、政策表无环节码；因此 **`health_score` 一律为 null**，只发布两维百分位与排序，最高晶圆制造 **95.00**、最低整车制造 **0.62**，判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -301,7 +311,7 @@ $$score_i=100 \times \frac{\mathrm{rank}_i}{n-1}$$
 | INB130603 | 信息安全软件与服务 | 软件与信息服务 | 237,404 | 0.0117 | 0.514 | 2.50 | 7.50 | 5.00 |
 | INB120902 | 整车制造 | 智能网联汽车 | 68 | 0.0000 | 0.000 | 0.00 | 1.25 | 0.62 |
 
-完整 41 行在 `code/M_CHAIN_LINK_HEALTH_out.json` 的 `l1_rows`。
+完整 41 行在 `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json` 的 `l1_rows`。
 
 两维秩相关 0.7003，属于「同向但不重合」。三个典型分歧：
 
@@ -441,12 +451,12 @@ $$score_i=100 \times \frac{\mathrm{rank}_i}{n-1}$$
 ### 5.1 复现命令
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 cd code
 python3 M_CHAIN_LINK_HEALTH.py
 ```
 
-脚本只读四份快照，不连数据库；重跑覆盖写 `code/M_CHAIN_LINK_HEALTH_out.json`。
+脚本只读四份快照，不连数据库；重跑覆盖写 `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json`。
 
 ### 5.2 产物字段说明
 
@@ -474,8 +484,8 @@ python3 M_CHAIN_LINK_HEALTH.py
 | `code/_snapshots21/star_applicant_agg_gkx.json` | 申请人专利件数 |
 | `code/_snapshots21/chain21_fin_degree_20261022.json` | 融资事件 |
 | `code/_snapshots21/chain21_revenue_20261022.json` | 营收（仅作覆盖证据） |
-| `code/M_CHAIN_LINK_HEALTH.py` | 计算脚本 |
-| `code/M_CHAIN_LINK_HEALTH_out.json` | 本件产物 |
+| `metrics/repro/M_CHAIN_LINK_HEALTH.py` | 计算脚本 |
+| `metrics/repro/out/M_CHAIN_LINK_HEALTH_out.json` | 本件产物 |
 
 ### 5.4 与旧稿的差异
 
@@ -485,10 +495,8 @@ python3 M_CHAIN_LINK_HEALTH.py
 
 ## 参考文献
 
-1. 中国电子信息产业发展研究院（赛迪）. 产业链现代化水平评估指标体系[EB/OL]. https://www.ccidgroup.com/
-2. NASA. Technology Readiness Level (TRL) Definitions[EB/OL]. https://www.nasa.gov/directorates/somd/space-communications-navigation-program/technology-readiness-levels/
-3. 工业和信息化部. 产业关键环节识别与产业链图谱编制指南（试行）[EB/OL]. https://www.miit.gov.cn/
-
+1. NASA. Technology Readiness Level (TRL) Definitions[EB/OL]. https://www.nasa.gov/directorates/somd/space-communications-navigation-program/technology-readiness-levels/
+2. 工业和信息化部. 产业关键环节识别与产业链图谱编制指南（试行）[EB/OL]. https://www.miit.gov.cn/
 ---
 
 # 附件
@@ -548,11 +556,3 @@ python3 M_CHAIN_LINK_HEALTH.py
 ### C.4 结论
 
 按四档定义判**部分支持**。技术、资本两维已可交付；人才、市场、政策三维需要补源，不是「算法没写」。在现有数据下输出 0—100 总分，只能靠 0/50 填充，属于伪造观测，本件不做。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

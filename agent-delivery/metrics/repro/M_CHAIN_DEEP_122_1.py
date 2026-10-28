@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题服务算法库
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """产业链周期分析模型（M_CHAIN_DEEP_122_1）—— gkx 快照口径。
 
 只读 `code/_snapshots21/`，不连数据库。运行：python3 code/M_CHAIN_DEEP_122_1.py

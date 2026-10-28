@@ -1,9 +1,23 @@
 # 明星企业区域分布（M_ENT_STAR_BY_REGION）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_STAR_BY_REGION.md`；复现脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py` → `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：STAT｜**域**：ENT（企业主体）｜**UI 挂载**：智慧服务门户·企业发展·企业分布情况（地图/图表）／明星企业介绍
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接（结构/数据）：否 / 否（无区域分布结果表）｜依赖（结构/数据）：是 / 部分（属地 100% 覆盖，但底册 99.82% 集中广东）
+> - **一句话结论**：4,561 家代理明星企业 100% 在广东，深圳 56.79%、广州 22.36%、东莞 16.99%、惠州 3.86%，Top3 城市 96.14%、HHI 0.4028；但底册 99.82% 在广东、省外样本不足 0.2%，「全国/全球分布」不可解释，只能判部分支持。
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_STAR_BY_REGION.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py`、产物 `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_STAR_BY_REGION.md`；复现脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py` → `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py`、产物 `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_STAR_BY_REGION.md` |
 | 复现脚本 | `metrics/repro/M_ENT_STAR_BY_REGION.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json` |
@@ -63,17 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py`、产物 `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT｜**域**：ENT（企业主体）｜**UI 挂载**：智慧服务门户·企业发展·企业分布情况（地图/图表）／明星企业介绍
-> **数据支持度**：**部分支持**
-> **公式定义来源**：AI-20261016（B2 定义表），无 calc-logic 专文
-> **四判定摘要**：直接（结构/数据）：否 / 否（无区域分布结果表）｜依赖（结构/数据）：是 / 部分（属地 100% 覆盖，但底册 99.82% 集中广东）
-> **一句话结论**：4,561 家代理明星企业 100% 在广东，深圳 56.79%、广州 22.36%、东莞 16.99%、惠州 3.86%，Top3 城市 96.14%、HHI 0.4028；但底册 99.82% 在广东、省外样本不足 0.2%，「全国/全球分布」不可解释，只能判部分支持。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -130,6 +138,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 故判 **部分支持**：市级分布可算、可解释、与深圳都市圈规划的空间结构吻合；全国/全球维度不可算。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 通过地图/图表等方式，展示各未来产业中，企业在全球/全国的分布情况。<br>><br>> 对行业内的龙头明星企业进行重点介绍。体现出企业对产业的带头作用，对产业的影响，展示企业的主要产品，以及产品的影响力，背后的技术优势、团队优势。同时，在企业展示页面中，通过功能模块分层呈现的方式。<br>><br>> 企业发展具体功能包括企业整体概况、重点企业全景图、明星企业介绍、深圳企业介绍。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_STAR_BY_REGION.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -235,7 +288,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 二、计算过程
 
 > **口径说明**：需求未给公式，以下按「代理名单 × 注册地区划」做份额、集中度与区位商三重刻画，并以《深圳都市圈发展规划》的空间结构作解释框架。  
-> 脚本：`code/M_ENT_STAR_BY_REGION.py`；产物：`code/M_ENT_STAR_BY_REGION_out.json`；名单来源：`code/_star_proxy_20261021.json`。  
+> 脚本：`metrics/repro/M_ENT_STAR_BY_REGION.py`；产物：`metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`；名单来源：`code/_star_proxy_20261021.json`。  
 > 文内引用采用 SCI 叙述式「句子后附 (机构/作者)」，完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：为什么只做市/区两级，不做「全国/全球」
@@ -320,14 +373,14 @@ $$\text{lift}_c = \frac{s_c^{\text{star}}}{s_c^{\text{base}}}$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_STAR_BY_REGION.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_STAR_BY_REGION.py` |
 | 结果产物 | 同目录 `M_ENT_STAR_BY_REGION_out.json` |
 | 名单缓存 | 同目录 `_snapshots21/star_roster_gkx_20261021.json`（4,561 家入册；计量口径见 `_star_roster_gkx.py`） |
 | 主档快照 | 同目录 `_snapshots21/star_base_rows_gkx.json`（`gkx.dwd_org_base_info` 189,116 行的区划/行业字段） |
 | 主算库 | `gkx`（10.50.11.76:3306） |
 
 ```bash
-python3 metrics/repro/M_ENT_STAR_BY_REGION.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_STAR_BY_REGION.py
 ```
 
 脚本输出 `probes`（名单与区划覆盖、集中度披露）、`compute`（省/市/区分布、集中度、lift）、`samples`（深圳 Top10 与其他城市 Top5）、`support_judgment`。
@@ -450,7 +503,7 @@ python3 metrics/repro/M_ENT_STAR_BY_REGION.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_STAR_BY_REGION.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_STAR_BY_REGION.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（本次主算） | 实测结论 |
 |---|---|---|---|---|
@@ -503,11 +556,6 @@ python3 metrics/repro/M_ENT_STAR_BY_REGION.py
 5. 国家统计局. (2017b). 统计上大中小微型企业划分办法（2017）. https://www.stats.gov.cn/sj/tjbz/gjtjbz/202302/t20230213_1902763.html
 
 6. 国家统计局. (2023). 《中国统计年鉴》主要统计指标解释（各地区企业法人单位数）. https://www.stats.gov.cn/sj/ndsj/2023/html/zb13.pdf
-
-7. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_STAR_ENTERPRISE_COUNT.md` —— 明星企业 = CMS 已发布名单。
-
-方法—数据完整论证见 **附录 C**；实测产物摘要见 **附录 D**。
-
 ---
 
 # 附件
@@ -607,14 +655,7 @@ python3 metrics/repro/M_ENT_STAR_BY_REGION.py
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_ENT_STAR_BY_REGION.py`  
-- 产物：`../code/M_ENT_STAR_BY_REGION_out.json`  
+- 产物：`../metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`  
 - 主算库：`gkx`（10.50.11.76:3306）  
 - 关键结果：N=4,561；省 100% 广东；深圳 2,590（56.79%）、广州 1,020（22.36%）、东莞 775（16.99%）、惠州 176（3.86%）；HHI 0.40284、CR3 96.14%；区级覆盖 83.0%，Top1 宝安 714（15.65%）、南山 532（11.66%）、龙岗 405（8.88%）；lift 深圳 1.12 / 东莞 0.96 / 广州 0.85 / 惠州 0.73；`support_judgment=部分支持`  
 - 工程注意：区级份额分母必须用 4,561 而非 3,786，否则「未填区」被隐形；省外行保留但需标注「样本不足」。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

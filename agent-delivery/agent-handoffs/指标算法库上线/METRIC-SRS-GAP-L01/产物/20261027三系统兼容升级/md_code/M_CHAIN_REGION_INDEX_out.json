@@ -1,0 +1,2754 @@
+{
+ "metric_id": "M_CHAIN_REGION_INDEX",
+ "metric_name": "区域产业指数（区域产业指数评价页壳指标）",
+ "date": "2026-10-21",
+ "formula_owner": "王惠（calc-logic/CHAIN/M_CHAIN_REGION_INDEX.md，三条子项口径原样保留）",
+ "stat_year": 2024,
+ "region_axis": [
+  "深圳市",
+  "广州市",
+  "东莞市",
+  "惠州市"
+ ],
+ "chain_axis": 12,
+ "formula": "I(c,r)=100×mean(available_dim_scores)；维内子项等权；子项在链内 4 市截面 min-max",
+ "version_note": "两维四子项版：学术生态维（④⑤⑥）在链×城粒度无数据支持，指数由企业能力维+配套生态维合成，不等同需求原文的三维指数。",
+ "subitem_acceptance": [
+  {
+   "id": "E1_firm_count",
+   "dim": "企业能力",
+   "label": "链上企业数（credit_code 去重）",
+   "usable": true,
+   "reason": "可算：48/48 单元非退化"
+  },
+  {
+   "id": "E2_revenue",
+   "dim": "企业能力",
+   "label": "营业收入合计（亿元）",
+   "usable": false,
+   "reason": "可算但 29/48 单元无披露，缺失不可记 0，主值不纳入"
+  },
+  {
+   "id": "E3_patent",
+   "dim": "企业能力",
+   "label": "专利去重件数（申请年≤2024）",
+   "usable": true,
+   "reason": "可算：48/48 单元非退化"
+  },
+  {
+   "id": "A1_acad_org",
+   "dim": "学术生态",
+   "label": "链上科研机构数",
+   "usable": false,
+   "reason": "不可算（直连）：机构与工业标签链码交集 0、学者 org_id 全为空串；仅有共著反推代理（473/5,575 家机构，选择性覆盖），见 academic_proxy_sensitivity"
+  },
+  {
+   "id": "A2_scholar",
+   "dim": "学术生态",
+   "label": "机构下学者数",
+   "usable": false,
+   "reason": "不可算（直连）：机构与工业标签链码交集 0、学者 org_id 全为空串；仅有共著反推代理（473/5,575 家机构，选择性覆盖），见 academic_proxy_sensitivity"
+  },
+  {
+   "id": "A3_paper",
+   "dim": "学术生态",
+   "label": "学者论文数",
+   "usable": false,
+   "reason": "不可算（直连）：机构与工业标签链码交集 0、学者 org_id 全为空串；仅有共著反推代理（473/5,575 家机构，选择性覆盖），见 academic_proxy_sensitivity"
+  },
+  {
+   "id": "S1_policy",
+   "dim": "配套生态",
+   "label": "政策覆盖率（%）",
+   "usable": true,
+   "reason": "可算：48/48 单元非退化"
+  },
+  {
+   "id": "S2_financing",
+   "dim": "配套生态",
+   "label": "融资事件数",
+   "usable": true,
+   "reason": "可算：48/48 单元非退化"
+  }
+ ],
+ "probes": {
+  "n_cells": 48,
+  "chain_city_rows": 12,
+  "academic": {
+   "inst_rows": 2074,
+   "heis_rows": 3501,
+   "inst_with_chain_tag": 0,
+   "heis_with_chain_tag": 0,
+   "scholar_rows": 21316,
+   "scholar_orgid_empty": 21316,
+   "scholar_orgname_filled": 20829,
+   "paper_rel_rows": 1065385,
+   "paper_rel_valid_year": 1036165,
+   "papers_le2024": 1019703,
+   "scholar_city_matched": 1063,
+   "scholar_city_matched_pct": 4.99,
+   "city_level_diagnostic": {
+    "深圳市": {
+     "scholars": 196,
+     "papers": 5006
+    },
+    "广州市": {
+     "scholars": 857,
+     "papers": 9176
+    },
+    "东莞市": {
+     "scholars": 10,
+     "papers": 0
+    },
+    "惠州市": {
+     "scholars": 0,
+     "papers": 0
+    }
+   }
+  },
+  "revenue_disclosed_cells": 19,
+  "policy_cells_zero": 16,
+  "sources_direct": {
+   "firm_count": "gkx.dwd_org_industry_tags ⋈ gkx.dwd_org_base_info",
+   "patent_count_le2024": "gkx.dwd_patent ⋈ gkx.dwd_org_base_info(name_cn)",
+   "policy_coverage": "gkx.dwd_policy_base 全表（词表口径同 CHAIN_REG_POLICY_COVERAGE v0.2.0）",
+   "financing_events": "gkx.dwd_org_financing_info（一行=一次事件）",
+   "revenue_yi": "gkx.dwd_org_annual_financial_info 2024",
+   "academic_proxy": "gkx 共著反推（同族 M_CHAIN_REG_COMP_ACADEMIC 结果）"
+  }
+ },
+ "matrix": [
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 1.0,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 1.0,
+     "index_2dim": 100.0,
+     "index_3dim_acad_const": 83.33,
+     "index_with_revenue": 100.0,
+     "dim_academic_proxy": 0.2992,
+     "index_3dim_proxy": 76.64,
+     "index_log": 100.0,
+     "raw": {
+      "firm_count": 8402,
+      "patent_count": 326125,
+      "policy_coverage": 43.45,
+      "financing_events": 5336,
+      "revenue_yi": 0.018
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.5545,
+     "E3_norm": 0.3224,
+     "S1_norm": 0.2799,
+     "S2_norm": 0.4525,
+     "dim_enterprise": 0.4385,
+     "dim_academic": null,
+     "dim_support": 0.3662,
+     "index_2dim": 40.23,
+     "index_3dim_acad_const": 43.49,
+     "index_with_revenue": 40.23,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 60.16,
+     "index_log": 68.22,
+     "raw": {
+      "firm_count": 4731,
+      "patent_count": 107931,
+      "policy_coverage": 38.69,
+      "financing_events": 2443,
+      "revenue_yi": 0.5058
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.0516,
+     "E3_norm": 0.1992,
+     "S1_norm": 0.0,
+     "S2_norm": 0.042,
+     "dim_enterprise": 0.1254,
+     "dim_academic": null,
+     "dim_support": 0.021,
+     "index_2dim": 7.32,
+     "index_3dim_acad_const": 21.55,
+     "index_with_revenue": 7.32,
+     "dim_academic_proxy": 0.0441,
+     "index_3dim_proxy": 6.35,
+     "index_log": 33.13,
+     "raw": {
+      "firm_count": 587,
+      "patent_count": 68247,
+      "policy_coverage": 36.84,
+      "financing_events": 274,
+      "revenue_yi": 0.0
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.0,
+     "index_2dim": 0.0,
+     "index_3dim_acad_const": 16.67,
+     "index_with_revenue": 0.0,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 0.0,
+     "index_log": 0.0,
+     "raw": {
+      "firm_count": 162,
+      "patent_count": 4093,
+      "policy_coverage": 36.84,
+      "financing_events": 52,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 1.0,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 1.0,
+     "index_2dim": 100.0,
+     "index_3dim_acad_const": 83.33,
+     "index_with_revenue": 100.0,
+     "dim_academic_proxy": 0.3029,
+     "index_3dim_proxy": 76.76,
+     "index_log": 100.0,
+     "raw": {
+      "firm_count": 3012,
+      "patent_count": 149363,
+      "policy_coverage": 50.0,
+      "financing_events": 2875,
+      "revenue_yi": 5.7947
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.4863,
+     "E3_norm": 0.5477,
+     "S1_norm": 0.4167,
+     "S2_norm": 0.6004,
+     "dim_enterprise": 0.517,
+     "dim_academic": null,
+     "dim_support": 0.5086,
+     "index_2dim": 51.28,
+     "index_3dim_acad_const": 50.85,
+     "index_with_revenue": 51.28,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 67.52,
+     "index_log": 73.32,
+     "raw": {
+      "firm_count": 1535,
+      "patent_count": 85143,
+      "policy_coverage": 37.5,
+      "financing_events": 1767,
+      "revenue_yi": 32.4372
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.0783,
+     "E3_norm": 0.4133,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0743,
+     "dim_enterprise": 0.2458,
+     "dim_academic": null,
+     "dim_support": 0.0371,
+     "index_2dim": 14.15,
+     "index_3dim_acad_const": 26.1,
+     "index_with_revenue": 14.15,
+     "dim_academic_proxy": 0.0273,
+     "index_3dim_proxy": 10.34,
+     "index_log": 34.31,
+     "raw": {
+      "firm_count": 362,
+      "patent_count": 66066,
+      "policy_coverage": 28.57,
+      "financing_events": 308,
+      "revenue_yi": 0.0
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.0,
+     "index_2dim": 0.0,
+     "index_3dim_acad_const": 16.67,
+     "index_with_revenue": 0.0,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 0.0,
+     "index_log": 0.0,
+     "raw": {
+      "firm_count": 137,
+      "patent_count": 7376,
+      "policy_coverage": 28.57,
+      "financing_events": 102,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 0.5,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 0.75,
+     "index_2dim": 87.5,
+     "index_3dim_acad_const": 75.0,
+     "index_with_revenue": 87.5,
+     "dim_academic_proxy": 0.3633,
+     "index_3dim_proxy": 70.44,
+     "index_log": 87.5,
+     "raw": {
+      "firm_count": 6851,
+      "patent_count": 346797,
+      "policy_coverage": 16.67,
+      "financing_events": 4121,
+      "revenue_yi": 0.006
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.271,
+     "E3_norm": 0.2371,
+     "S1_norm": 0.5,
+     "S2_norm": 0.3277,
+     "dim_enterprise": 0.254,
+     "dim_academic": null,
+     "dim_support": 0.4139,
+     "index_2dim": 33.4,
+     "index_3dim_acad_const": 38.93,
+     "index_with_revenue": 33.4,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 55.6,
+     "index_log": 59.51,
+     "raw": {
+      "firm_count": 2089,
+      "patent_count": 93445,
+      "policy_coverage": 16.67,
+      "financing_events": 1454,
+      "revenue_yi": 8.153
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.0914,
+     "E3_norm": 0.2019,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0444,
+     "dim_enterprise": 0.1466,
+     "dim_academic": null,
+     "dim_support": 0.2722,
+     "index_2dim": 20.94,
+     "index_3dim_acad_const": 30.63,
+     "index_with_revenue": 20.94,
+     "dim_academic_proxy": 0.0572,
+     "index_3dim_proxy": 15.87,
+     "index_log": 40.44,
+     "raw": {
+      "firm_count": 916,
+      "patent_count": 81743,
+      "policy_coverage": 16.67,
+      "financing_events": 330,
+      "revenue_yi": 0.0016
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.25,
+     "index_2dim": 12.5,
+     "index_3dim_acad_const": 25.0,
+     "index_with_revenue": 12.5,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 8.33,
+     "index_log": 12.5,
+     "raw": {
+      "firm_count": 319,
+      "patent_count": 14696,
+      "policy_coverage": 16.67,
+      "financing_events": 154,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 1.0,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 1.0,
+     "index_2dim": 100.0,
+     "index_3dim_acad_const": 83.33,
+     "index_with_revenue": 100.0,
+     "dim_academic_proxy": 0.5134,
+     "index_3dim_proxy": 83.78,
+     "index_log": 100.0,
+     "raw": {
+      "firm_count": 1859,
+      "patent_count": 163837,
+      "policy_coverage": 25.0,
+      "financing_events": 881,
+      "revenue_yi": 0.0
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.3804,
+     "E3_norm": 0.1081,
+     "S1_norm": 0.0,
+     "S2_norm": 0.4758,
+     "dim_enterprise": 0.2443,
+     "dim_academic": null,
+     "dim_support": 0.2379,
+     "index_2dim": 24.11,
+     "index_3dim_acad_const": 32.74,
+     "index_with_revenue": 24.11,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 49.41,
+     "index_log": 46.01,
+     "raw": {
+      "firm_count": 807,
+      "patent_count": 23468,
+      "policy_coverage": 9.52,
+      "financing_events": 437,
+      "revenue_yi": 0.0
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.2055,
+     "E3_norm": 0.2005,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0272,
+     "dim_enterprise": 0.203,
+     "dim_academic": null,
+     "dim_support": 0.0136,
+     "index_2dim": 10.83,
+     "index_3dim_acad_const": 23.89,
+     "index_with_revenue": 10.83,
+     "dim_academic_proxy": 0.0417,
+     "index_3dim_proxy": 8.61,
+     "index_log": 29.38,
+     "raw": {
+      "firm_count": 510,
+      "patent_count": 38014,
+      "policy_coverage": 9.52,
+      "financing_events": 57,
+      "revenue_yi": 0.0
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.0,
+     "index_2dim": 0.0,
+     "index_3dim_acad_const": 16.67,
+     "index_with_revenue": 0.0,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 0.0,
+     "index_log": 0.0,
+     "raw": {
+      "firm_count": 161,
+      "patent_count": 6458,
+      "policy_coverage": 9.52,
+      "financing_events": 34,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 0.4249,
+     "E3_norm": 0.9563,
+     "S1_norm": 0.5,
+     "S2_norm": 0.818,
+     "dim_enterprise": 0.6906,
+     "dim_academic": null,
+     "dim_support": 0.659,
+     "index_2dim": 67.48,
+     "index_3dim_acad_const": 61.65,
+     "index_with_revenue": 67.48,
+     "dim_academic_proxy": 0.2845,
+     "index_3dim_proxy": 54.47,
+     "index_log": 79.94,
+     "raw": {
+      "firm_count": 1180,
+      "patent_count": 18466,
+      "policy_coverage": 0.0,
+      "financing_events": 487,
+      "revenue_yi": 0.0
+     }
+    },
+    "广州市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 0.5,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 0.75,
+     "index_2dim": 87.5,
+     "index_3dim_acad_const": 75.0,
+     "index_with_revenue": 87.5,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 91.67,
+     "index_log": 87.5,
+     "raw": {
+      "firm_count": 2646,
+      "patent_count": 19279,
+      "policy_coverage": 0.0,
+      "financing_events": 594,
+      "revenue_yi": 0.666
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.0832,
+     "E3_norm": 0.1452,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0969,
+     "dim_enterprise": 0.1142,
+     "dim_academic": null,
+     "dim_support": 0.2985,
+     "index_2dim": 20.63,
+     "index_3dim_acad_const": 30.42,
+     "index_with_revenue": 20.63,
+     "dim_academic_proxy": 0.0207,
+     "index_3dim_proxy": 14.44,
+     "index_log": 45.75,
+     "raw": {
+      "firm_count": 309,
+      "patent_count": 3363,
+      "policy_coverage": 0.0,
+      "financing_events": 63,
+      "revenue_yi": 0.0
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.25,
+     "index_2dim": 12.5,
+     "index_3dim_acad_const": 25.0,
+     "index_with_revenue": 12.5,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 8.33,
+     "index_log": 12.5,
+     "raw": {
+      "firm_count": 97,
+      "patent_count": 659,
+      "policy_coverage": 0.0,
+      "financing_events": 6,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 1.0,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 1.0,
+     "index_2dim": 100.0,
+     "index_3dim_acad_const": 83.33,
+     "index_with_revenue": 100.0,
+     "dim_academic_proxy": 0.328,
+     "index_3dim_proxy": 77.6,
+     "index_log": 100.0,
+     "raw": {
+      "firm_count": 2284,
+      "patent_count": 124362,
+      "policy_coverage": 58.33,
+      "financing_events": 1601,
+      "revenue_yi": 0.0
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.3159,
+     "E3_norm": 0.4759,
+     "S1_norm": 0.0,
+     "S2_norm": 0.3241,
+     "dim_enterprise": 0.3959,
+     "dim_academic": null,
+     "dim_support": 0.1621,
+     "index_2dim": 27.9,
+     "index_3dim_acad_const": 35.27,
+     "index_with_revenue": 27.9,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 51.93,
+     "index_log": 54.07,
+     "raw": {
+      "firm_count": 770,
+      "patent_count": 62184,
+      "policy_coverage": 16.67,
+      "financing_events": 548,
+      "revenue_yi": 3.5399
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.193,
+     "E3_norm": 0.5209,
+     "S1_norm": 0.0,
+     "S2_norm": 0.1059,
+     "dim_enterprise": 0.3569,
+     "dim_academic": null,
+     "dim_support": 0.053,
+     "index_2dim": 20.49,
+     "index_3dim_acad_const": 30.33,
+     "index_with_revenue": 20.49,
+     "dim_academic_proxy": 0.0139,
+     "index_3dim_proxy": 14.13,
+     "index_log": 44.88,
+     "raw": {
+      "firm_count": 498,
+      "patent_count": 67518,
+      "policy_coverage": 16.67,
+      "financing_events": 208,
+      "revenue_yi": 0.0002
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.0,
+     "index_2dim": 0.0,
+     "index_3dim_acad_const": 16.67,
+     "index_with_revenue": 0.0,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 0.0,
+     "index_log": 0.0,
+     "raw": {
+      "firm_count": 71,
+      "patent_count": 5717,
+      "policy_coverage": 16.67,
+      "financing_events": 43,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 0.5,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 0.75,
+     "index_2dim": 87.5,
+     "index_3dim_acad_const": 75.0,
+     "index_with_revenue": 87.5,
+     "dim_academic_proxy": 0.3286,
+     "index_3dim_proxy": 69.29,
+     "index_log": 87.5,
+     "raw": {
+      "firm_count": 2344,
+      "patent_count": 162502,
+      "policy_coverage": 2.78,
+      "financing_events": 1971,
+      "revenue_yi": 5.8006
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.198,
+     "E3_norm": 0.0929,
+     "S1_norm": 0.5,
+     "S2_norm": 0.2669,
+     "dim_enterprise": 0.1454,
+     "dim_academic": null,
+     "dim_support": 0.3835,
+     "index_2dim": 26.45,
+     "index_3dim_acad_const": 34.3,
+     "index_with_revenue": 26.45,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 50.96,
+     "index_log": 49.42,
+     "raw": {
+      "firm_count": 578,
+      "patent_count": 21451,
+      "policy_coverage": 2.78,
+      "financing_events": 584,
+      "revenue_yi": 0.8171
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.1585,
+     "E3_norm": 0.0473,
+     "S1_norm": 0.5,
+     "S2_norm": 0.1168,
+     "dim_enterprise": 0.1029,
+     "dim_academic": null,
+     "dim_support": 0.3084,
+     "index_2dim": 20.56,
+     "index_3dim_acad_const": 30.38,
+     "index_with_revenue": 20.56,
+     "dim_academic_proxy": 0.0944,
+     "index_3dim_proxy": 16.86,
+     "index_log": 39.58,
+     "raw": {
+      "firm_count": 491,
+      "patent_count": 14357,
+      "policy_coverage": 2.78,
+      "financing_events": 300,
+      "revenue_yi": 0.002
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.25,
+     "index_2dim": 12.5,
+     "index_3dim_acad_const": 25.0,
+     "index_with_revenue": 12.5,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 8.33,
+     "index_log": 12.5,
+     "raw": {
+      "firm_count": 142,
+      "patent_count": 7007,
+      "policy_coverage": 2.78,
+      "financing_events": 79,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 0.5,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 0.75,
+     "index_2dim": 87.5,
+     "index_3dim_acad_const": 75.0,
+     "index_with_revenue": 87.5,
+     "dim_academic_proxy": 0.3658,
+     "index_3dim_proxy": 70.53,
+     "index_log": 87.5,
+     "raw": {
+      "firm_count": 1804,
+      "patent_count": 168909,
+      "policy_coverage": 0.0,
+      "financing_events": 1670,
+      "revenue_yi": 0.0027
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.2245,
+     "E3_norm": 0.2041,
+     "S1_norm": 0.5,
+     "S2_norm": 0.2927,
+     "dim_enterprise": 0.2143,
+     "dim_academic": null,
+     "dim_support": 0.3963,
+     "index_2dim": 30.53,
+     "index_3dim_acad_const": 37.02,
+     "index_with_revenue": 30.53,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 53.69,
+     "index_log": 57.24,
+     "raw": {
+      "firm_count": 460,
+      "patent_count": 40485,
+      "policy_coverage": 0.0,
+      "financing_events": 522,
+      "revenue_yi": 0.1635
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.1477,
+     "E3_norm": 0.3417,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0844,
+     "dim_enterprise": 0.2447,
+     "dim_academic": null,
+     "dim_support": 0.2922,
+     "index_2dim": 26.84,
+     "index_3dim_acad_const": 34.56,
+     "index_with_revenue": 26.84,
+     "dim_academic_proxy": 0.0476,
+     "index_3dim_proxy": 19.48,
+     "index_log": 50.79,
+     "raw": {
+      "firm_count": 327,
+      "patent_count": 62679,
+      "policy_coverage": 0.0,
+      "financing_events": 184,
+      "revenue_yi": 0.0006
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.25,
+     "index_2dim": 12.5,
+     "index_3dim_acad_const": 25.0,
+     "index_with_revenue": 12.5,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 8.33,
+     "index_log": 12.5,
+     "raw": {
+      "firm_count": 71,
+      "patent_count": 7551,
+      "policy_coverage": 0.0,
+      "financing_events": 47,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 0.5,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 0.75,
+     "index_2dim": 87.5,
+     "index_3dim_acad_const": 75.0,
+     "index_with_revenue": 87.5,
+     "dim_academic_proxy": 0.3418,
+     "index_3dim_proxy": 69.73,
+     "index_log": 87.5,
+     "raw": {
+      "firm_count": 2649,
+      "patent_count": 238622,
+      "policy_coverage": 0.0,
+      "financing_events": 2313,
+      "revenue_yi": 0.0026
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.2719,
+     "E3_norm": 0.2625,
+     "S1_norm": 0.5,
+     "S2_norm": 0.3757,
+     "dim_enterprise": 0.2672,
+     "dim_academic": null,
+     "dim_support": 0.4379,
+     "index_2dim": 35.25,
+     "index_3dim_acad_const": 40.17,
+     "index_with_revenue": 35.25,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 56.84,
+     "index_log": 63.1,
+     "raw": {
+      "firm_count": 777,
+      "patent_count": 67947,
+      "policy_coverage": 0.0,
+      "financing_events": 914,
+      "revenue_yi": 8.034
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.1015,
+     "E3_norm": 0.26,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0772,
+     "dim_enterprise": 0.1808,
+     "dim_academic": null,
+     "dim_support": 0.2886,
+     "index_2dim": 23.47,
+     "index_3dim_acad_const": 32.31,
+     "index_with_revenue": 23.47,
+     "dim_academic_proxy": 0.0139,
+     "index_3dim_proxy": 16.11,
+     "index_log": 47.64,
+     "raw": {
+      "firm_count": 339,
+      "patent_count": 67369,
+      "policy_coverage": 0.0,
+      "financing_events": 245,
+      "revenue_yi": 0.0002
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.25,
+     "index_2dim": 12.5,
+     "index_3dim_acad_const": 25.0,
+     "index_with_revenue": 12.5,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 8.33,
+     "index_log": 12.5,
+     "raw": {
+      "firm_count": 78,
+      "patent_count": 7198,
+      "policy_coverage": 0.0,
+      "financing_events": 72,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 1.0,
+     "S1_norm": 1.0,
+     "S2_norm": 1.0,
+     "dim_enterprise": 1.0,
+     "dim_academic": null,
+     "dim_support": 1.0,
+     "index_2dim": 100.0,
+     "index_3dim_acad_const": 83.33,
+     "index_with_revenue": 100.0,
+     "dim_academic_proxy": 0.529,
+     "index_3dim_proxy": 84.3,
+     "index_log": 100.0,
+     "raw": {
+      "firm_count": 1074,
+      "patent_count": 160345,
+      "policy_coverage": 53.28,
+      "financing_events": 1022,
+      "revenue_yi": 0.0
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.2123,
+     "E3_norm": 0.2004,
+     "S1_norm": 0.0,
+     "S2_norm": 0.272,
+     "dim_enterprise": 0.2064,
+     "dim_academic": null,
+     "dim_support": 0.136,
+     "index_2dim": 17.12,
+     "index_3dim_acad_const": 28.08,
+     "index_with_revenue": 17.12,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 44.75,
+     "index_log": 48.09,
+     "raw": {
+      "firm_count": 254,
+      "patent_count": 33265,
+      "policy_coverage": 47.0,
+      "financing_events": 294,
+      "revenue_yi": 0.0
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.0711,
+     "E3_norm": 0.18,
+     "S1_norm": 0.0,
+     "S2_norm": 0.036,
+     "dim_enterprise": 0.1256,
+     "dim_academic": null,
+     "dim_support": 0.018,
+     "index_2dim": 7.18,
+     "index_3dim_acad_const": 21.45,
+     "index_with_revenue": 7.18,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 4.79,
+     "index_log": 30.72,
+     "raw": {
+      "firm_count": 107,
+      "patent_count": 30023,
+      "policy_coverage": 47.0,
+      "financing_events": 58,
+      "revenue_yi": 0.0
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.0,
+     "index_2dim": 0.0,
+     "index_3dim_acad_const": 16.67,
+     "index_with_revenue": 0.0,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 0.0,
+     "index_log": 0.0,
+     "raw": {
+      "firm_count": 33,
+      "patent_count": 1409,
+      "policy_coverage": 47.0,
+      "financing_events": 22,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 1.0,
+     "E3_norm": 0.5405,
+     "S1_norm": 0.5,
+     "S2_norm": 1.0,
+     "dim_enterprise": 0.7703,
+     "dim_academic": null,
+     "dim_support": 0.75,
+     "index_2dim": 76.01,
+     "index_3dim_acad_const": 67.34,
+     "index_with_revenue": 76.01,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 50.68,
+     "index_log": 81.99,
+     "raw": {
+      "firm_count": 100,
+      "patent_count": 9341,
+      "policy_coverage": 0.0,
+      "financing_events": 239,
+      "revenue_yi": 0.0
+     }
+    },
+    "广州市": {
+     "E1_norm": 0.337,
+     "E3_norm": 1.0,
+     "S1_norm": 0.5,
+     "S2_norm": 0.3629,
+     "dim_enterprise": 0.6685,
+     "dim_academic": null,
+     "dim_support": 0.4314,
+     "index_2dim": 55.0,
+     "index_3dim_acad_const": 53.33,
+     "index_with_revenue": 55.0,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 70.0,
+     "index_log": 72.26,
+     "raw": {
+      "firm_count": 39,
+      "patent_count": 16129,
+      "policy_coverage": 0.0,
+      "financing_events": 88,
+      "revenue_yi": 0.0
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.0435,
+     "E3_norm": 0.0,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0217,
+     "dim_academic": null,
+     "dim_support": 0.25,
+     "index_2dim": 13.59,
+     "index_3dim_acad_const": 25.72,
+     "index_with_revenue": 13.59,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 9.06,
+     "index_log": 16.3,
+     "raw": {
+      "firm_count": 12,
+      "patent_count": 1355,
+      "policy_coverage": 0.0,
+      "financing_events": 2,
+      "revenue_yi": 0.0
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.2333,
+     "S1_norm": 0.5,
+     "S2_norm": 0.0338,
+     "dim_enterprise": 0.1167,
+     "dim_academic": null,
+     "dim_support": 0.2669,
+     "index_2dim": 19.18,
+     "index_3dim_acad_const": 29.45,
+     "index_with_revenue": 19.18,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 12.78,
+     "index_log": 32.68,
+     "raw": {
+      "firm_count": 8,
+      "patent_count": 4802,
+      "policy_coverage": 0.0,
+      "financing_events": 10,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "cells": {
+    "深圳市": {
+     "E1_norm": 0.7053,
+     "E3_norm": 1.0,
+     "S1_norm": 0.4335,
+     "S2_norm": 0.9104,
+     "dim_enterprise": 0.8527,
+     "dim_academic": null,
+     "dim_support": 0.6719,
+     "index_2dim": 76.23,
+     "index_3dim_acad_const": 67.49,
+     "index_with_revenue": 76.23,
+     "dim_academic_proxy": 0.292,
+     "index_3dim_proxy": 60.55,
+     "index_log": 82.63,
+     "raw": {
+      "firm_count": 331,
+      "patent_count": 8286,
+      "policy_coverage": 22.92,
+      "financing_events": 328,
+      "revenue_yi": 0.0
+     }
+    },
+    "广州市": {
+     "E1_norm": 1.0,
+     "E3_norm": 0.7933,
+     "S1_norm": 1.0,
+     "S2_norm": 1.0,
+     "dim_enterprise": 0.8966,
+     "dim_academic": null,
+     "dim_support": 1.0,
+     "index_2dim": 94.83,
+     "index_3dim_acad_const": 79.89,
+     "index_with_revenue": 94.83,
+     "dim_academic_proxy": 1.0,
+     "index_3dim_proxy": 96.55,
+     "index_log": 97.97,
+     "raw": {
+      "firm_count": 453,
+      "patent_count": 6697,
+      "policy_coverage": 26.07,
+      "financing_events": 359,
+      "revenue_yi": 0.0
+     }
+    },
+    "东莞市": {
+     "E1_norm": 0.0314,
+     "E3_norm": 0.0155,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0318,
+     "dim_enterprise": 0.0234,
+     "dim_academic": null,
+     "dim_support": 0.0159,
+     "index_2dim": 1.97,
+     "index_3dim_acad_const": 17.98,
+     "index_with_revenue": 1.97,
+     "dim_academic_proxy": 0.0128,
+     "index_3dim_proxy": 1.74,
+     "index_log": 9.08,
+     "raw": {
+      "firm_count": 52,
+      "patent_count": 718,
+      "policy_coverage": 20.51,
+      "financing_events": 24,
+      "revenue_yi": 0.0
+     }
+    },
+    "惠州市": {
+     "E1_norm": 0.0,
+     "E3_norm": 0.0,
+     "S1_norm": 0.0,
+     "S2_norm": 0.0,
+     "dim_enterprise": 0.0,
+     "dim_academic": null,
+     "dim_support": 0.0,
+     "index_2dim": 0.0,
+     "index_3dim_acad_const": 16.67,
+     "index_with_revenue": 0.0,
+     "dim_academic_proxy": 0.0,
+     "index_3dim_proxy": 0.0,
+     "index_log": 0.0,
+     "raw": {
+      "firm_count": 39,
+      "patent_count": 599,
+      "policy_coverage": 20.51,
+      "financing_events": 13,
+      "revenue_yi": 0.0
+     }
+    }
+   }
+  }
+ ],
+ "rows": [
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 1.0,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 1.0,
+   "index_2dim": 100.0,
+   "index_3dim_acad_const": 83.33,
+   "index_with_revenue": 100.0,
+   "dim_academic_proxy": 0.2992,
+   "index_3dim_proxy": 76.64,
+   "index_log": 100.0,
+   "raw": {
+    "firm_count": 8402,
+    "patent_count": 326125,
+    "policy_coverage": 43.45,
+    "financing_events": 5336,
+    "revenue_yi": 0.018
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "city": "广州市",
+   "E1_norm": 0.5545,
+   "E3_norm": 0.3224,
+   "S1_norm": 0.2799,
+   "S2_norm": 0.4525,
+   "dim_enterprise": 0.4385,
+   "dim_academic": null,
+   "dim_support": 0.3662,
+   "index_2dim": 40.23,
+   "index_3dim_acad_const": 43.49,
+   "index_with_revenue": 40.23,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 60.16,
+   "index_log": 68.22,
+   "raw": {
+    "firm_count": 4731,
+    "patent_count": 107931,
+    "policy_coverage": 38.69,
+    "financing_events": 2443,
+    "revenue_yi": 0.5058
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "city": "东莞市",
+   "E1_norm": 0.0516,
+   "E3_norm": 0.1992,
+   "S1_norm": 0.0,
+   "S2_norm": 0.042,
+   "dim_enterprise": 0.1254,
+   "dim_academic": null,
+   "dim_support": 0.021,
+   "index_2dim": 7.32,
+   "index_3dim_acad_const": 21.55,
+   "index_with_revenue": 7.32,
+   "dim_academic_proxy": 0.0441,
+   "index_3dim_proxy": 6.35,
+   "index_log": 33.13,
+   "raw": {
+    "firm_count": 587,
+    "patent_count": 68247,
+    "policy_coverage": 36.84,
+    "financing_events": 274,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.0,
+   "index_2dim": 0.0,
+   "index_3dim_acad_const": 16.67,
+   "index_with_revenue": 0.0,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 0.0,
+   "index_log": 0.0,
+   "raw": {
+    "firm_count": 162,
+    "patent_count": 4093,
+    "policy_coverage": 36.84,
+    "financing_events": 52,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 1.0,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 1.0,
+   "index_2dim": 100.0,
+   "index_3dim_acad_const": 83.33,
+   "index_with_revenue": 100.0,
+   "dim_academic_proxy": 0.3029,
+   "index_3dim_proxy": 76.76,
+   "index_log": 100.0,
+   "raw": {
+    "firm_count": 3012,
+    "patent_count": 149363,
+    "policy_coverage": 50.0,
+    "financing_events": 2875,
+    "revenue_yi": 5.7947
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "city": "广州市",
+   "E1_norm": 0.4863,
+   "E3_norm": 0.5477,
+   "S1_norm": 0.4167,
+   "S2_norm": 0.6004,
+   "dim_enterprise": 0.517,
+   "dim_academic": null,
+   "dim_support": 0.5086,
+   "index_2dim": 51.28,
+   "index_3dim_acad_const": 50.85,
+   "index_with_revenue": 51.28,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 67.52,
+   "index_log": 73.32,
+   "raw": {
+    "firm_count": 1535,
+    "patent_count": 85143,
+    "policy_coverage": 37.5,
+    "financing_events": 1767,
+    "revenue_yi": 32.4372
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "city": "东莞市",
+   "E1_norm": 0.0783,
+   "E3_norm": 0.4133,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0743,
+   "dim_enterprise": 0.2458,
+   "dim_academic": null,
+   "dim_support": 0.0371,
+   "index_2dim": 14.15,
+   "index_3dim_acad_const": 26.1,
+   "index_with_revenue": 14.15,
+   "dim_academic_proxy": 0.0273,
+   "index_3dim_proxy": 10.34,
+   "index_log": 34.31,
+   "raw": {
+    "firm_count": 362,
+    "patent_count": 66066,
+    "policy_coverage": 28.57,
+    "financing_events": 308,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.0,
+   "index_2dim": 0.0,
+   "index_3dim_acad_const": 16.67,
+   "index_with_revenue": 0.0,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 0.0,
+   "index_log": 0.0,
+   "raw": {
+    "firm_count": 137,
+    "patent_count": 7376,
+    "policy_coverage": 28.57,
+    "financing_events": 102,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 0.5,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 0.75,
+   "index_2dim": 87.5,
+   "index_3dim_acad_const": 75.0,
+   "index_with_revenue": 87.5,
+   "dim_academic_proxy": 0.3633,
+   "index_3dim_proxy": 70.44,
+   "index_log": 87.5,
+   "raw": {
+    "firm_count": 6851,
+    "patent_count": 346797,
+    "policy_coverage": 16.67,
+    "financing_events": 4121,
+    "revenue_yi": 0.006
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "city": "广州市",
+   "E1_norm": 0.271,
+   "E3_norm": 0.2371,
+   "S1_norm": 0.5,
+   "S2_norm": 0.3277,
+   "dim_enterprise": 0.254,
+   "dim_academic": null,
+   "dim_support": 0.4139,
+   "index_2dim": 33.4,
+   "index_3dim_acad_const": 38.93,
+   "index_with_revenue": 33.4,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 55.6,
+   "index_log": 59.51,
+   "raw": {
+    "firm_count": 2089,
+    "patent_count": 93445,
+    "policy_coverage": 16.67,
+    "financing_events": 1454,
+    "revenue_yi": 8.153
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "city": "东莞市",
+   "E1_norm": 0.0914,
+   "E3_norm": 0.2019,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0444,
+   "dim_enterprise": 0.1466,
+   "dim_academic": null,
+   "dim_support": 0.2722,
+   "index_2dim": 20.94,
+   "index_3dim_acad_const": 30.63,
+   "index_with_revenue": 20.94,
+   "dim_academic_proxy": 0.0572,
+   "index_3dim_proxy": 15.87,
+   "index_log": 40.44,
+   "raw": {
+    "firm_count": 916,
+    "patent_count": 81743,
+    "policy_coverage": 16.67,
+    "financing_events": 330,
+    "revenue_yi": 0.0016
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.25,
+   "index_2dim": 12.5,
+   "index_3dim_acad_const": 25.0,
+   "index_with_revenue": 12.5,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 8.33,
+   "index_log": 12.5,
+   "raw": {
+    "firm_count": 319,
+    "patent_count": 14696,
+    "policy_coverage": 16.67,
+    "financing_events": 154,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 1.0,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 1.0,
+   "index_2dim": 100.0,
+   "index_3dim_acad_const": 83.33,
+   "index_with_revenue": 100.0,
+   "dim_academic_proxy": 0.5134,
+   "index_3dim_proxy": 83.78,
+   "index_log": 100.0,
+   "raw": {
+    "firm_count": 1859,
+    "patent_count": 163837,
+    "policy_coverage": 25.0,
+    "financing_events": 881,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "city": "广州市",
+   "E1_norm": 0.3804,
+   "E3_norm": 0.1081,
+   "S1_norm": 0.0,
+   "S2_norm": 0.4758,
+   "dim_enterprise": 0.2443,
+   "dim_academic": null,
+   "dim_support": 0.2379,
+   "index_2dim": 24.11,
+   "index_3dim_acad_const": 32.74,
+   "index_with_revenue": 24.11,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 49.41,
+   "index_log": 46.01,
+   "raw": {
+    "firm_count": 807,
+    "patent_count": 23468,
+    "policy_coverage": 9.52,
+    "financing_events": 437,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "city": "东莞市",
+   "E1_norm": 0.2055,
+   "E3_norm": 0.2005,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0272,
+   "dim_enterprise": 0.203,
+   "dim_academic": null,
+   "dim_support": 0.0136,
+   "index_2dim": 10.83,
+   "index_3dim_acad_const": 23.89,
+   "index_with_revenue": 10.83,
+   "dim_academic_proxy": 0.0417,
+   "index_3dim_proxy": 8.61,
+   "index_log": 29.38,
+   "raw": {
+    "firm_count": 510,
+    "patent_count": 38014,
+    "policy_coverage": 9.52,
+    "financing_events": 57,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.0,
+   "index_2dim": 0.0,
+   "index_3dim_acad_const": 16.67,
+   "index_with_revenue": 0.0,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 0.0,
+   "index_log": 0.0,
+   "raw": {
+    "firm_count": 161,
+    "patent_count": 6458,
+    "policy_coverage": 9.52,
+    "financing_events": 34,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "city": "深圳市",
+   "E1_norm": 0.4249,
+   "E3_norm": 0.9563,
+   "S1_norm": 0.5,
+   "S2_norm": 0.818,
+   "dim_enterprise": 0.6906,
+   "dim_academic": null,
+   "dim_support": 0.659,
+   "index_2dim": 67.48,
+   "index_3dim_acad_const": 61.65,
+   "index_with_revenue": 67.48,
+   "dim_academic_proxy": 0.2845,
+   "index_3dim_proxy": 54.47,
+   "index_log": 79.94,
+   "raw": {
+    "firm_count": 1180,
+    "patent_count": 18466,
+    "policy_coverage": 0.0,
+    "financing_events": 487,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "city": "广州市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 0.5,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 0.75,
+   "index_2dim": 87.5,
+   "index_3dim_acad_const": 75.0,
+   "index_with_revenue": 87.5,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 91.67,
+   "index_log": 87.5,
+   "raw": {
+    "firm_count": 2646,
+    "patent_count": 19279,
+    "policy_coverage": 0.0,
+    "financing_events": 594,
+    "revenue_yi": 0.666
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "city": "东莞市",
+   "E1_norm": 0.0832,
+   "E3_norm": 0.1452,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0969,
+   "dim_enterprise": 0.1142,
+   "dim_academic": null,
+   "dim_support": 0.2985,
+   "index_2dim": 20.63,
+   "index_3dim_acad_const": 30.42,
+   "index_with_revenue": 20.63,
+   "dim_academic_proxy": 0.0207,
+   "index_3dim_proxy": 14.44,
+   "index_log": 45.75,
+   "raw": {
+    "firm_count": 309,
+    "patent_count": 3363,
+    "policy_coverage": 0.0,
+    "financing_events": 63,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.25,
+   "index_2dim": 12.5,
+   "index_3dim_acad_const": 25.0,
+   "index_with_revenue": 12.5,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 8.33,
+   "index_log": 12.5,
+   "raw": {
+    "firm_count": 97,
+    "patent_count": 659,
+    "policy_coverage": 0.0,
+    "financing_events": 6,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 1.0,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 1.0,
+   "index_2dim": 100.0,
+   "index_3dim_acad_const": 83.33,
+   "index_with_revenue": 100.0,
+   "dim_academic_proxy": 0.328,
+   "index_3dim_proxy": 77.6,
+   "index_log": 100.0,
+   "raw": {
+    "firm_count": 2284,
+    "patent_count": 124362,
+    "policy_coverage": 58.33,
+    "financing_events": 1601,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "city": "广州市",
+   "E1_norm": 0.3159,
+   "E3_norm": 0.4759,
+   "S1_norm": 0.0,
+   "S2_norm": 0.3241,
+   "dim_enterprise": 0.3959,
+   "dim_academic": null,
+   "dim_support": 0.1621,
+   "index_2dim": 27.9,
+   "index_3dim_acad_const": 35.27,
+   "index_with_revenue": 27.9,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 51.93,
+   "index_log": 54.07,
+   "raw": {
+    "firm_count": 770,
+    "patent_count": 62184,
+    "policy_coverage": 16.67,
+    "financing_events": 548,
+    "revenue_yi": 3.5399
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "city": "东莞市",
+   "E1_norm": 0.193,
+   "E3_norm": 0.5209,
+   "S1_norm": 0.0,
+   "S2_norm": 0.1059,
+   "dim_enterprise": 0.3569,
+   "dim_academic": null,
+   "dim_support": 0.053,
+   "index_2dim": 20.49,
+   "index_3dim_acad_const": 30.33,
+   "index_with_revenue": 20.49,
+   "dim_academic_proxy": 0.0139,
+   "index_3dim_proxy": 14.13,
+   "index_log": 44.88,
+   "raw": {
+    "firm_count": 498,
+    "patent_count": 67518,
+    "policy_coverage": 16.67,
+    "financing_events": 208,
+    "revenue_yi": 0.0002
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.0,
+   "index_2dim": 0.0,
+   "index_3dim_acad_const": 16.67,
+   "index_with_revenue": 0.0,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 0.0,
+   "index_log": 0.0,
+   "raw": {
+    "firm_count": 71,
+    "patent_count": 5717,
+    "policy_coverage": 16.67,
+    "financing_events": 43,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 0.5,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 0.75,
+   "index_2dim": 87.5,
+   "index_3dim_acad_const": 75.0,
+   "index_with_revenue": 87.5,
+   "dim_academic_proxy": 0.3286,
+   "index_3dim_proxy": 69.29,
+   "index_log": 87.5,
+   "raw": {
+    "firm_count": 2344,
+    "patent_count": 162502,
+    "policy_coverage": 2.78,
+    "financing_events": 1971,
+    "revenue_yi": 5.8006
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "city": "广州市",
+   "E1_norm": 0.198,
+   "E3_norm": 0.0929,
+   "S1_norm": 0.5,
+   "S2_norm": 0.2669,
+   "dim_enterprise": 0.1454,
+   "dim_academic": null,
+   "dim_support": 0.3835,
+   "index_2dim": 26.45,
+   "index_3dim_acad_const": 34.3,
+   "index_with_revenue": 26.45,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 50.96,
+   "index_log": 49.42,
+   "raw": {
+    "firm_count": 578,
+    "patent_count": 21451,
+    "policy_coverage": 2.78,
+    "financing_events": 584,
+    "revenue_yi": 0.8171
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "city": "东莞市",
+   "E1_norm": 0.1585,
+   "E3_norm": 0.0473,
+   "S1_norm": 0.5,
+   "S2_norm": 0.1168,
+   "dim_enterprise": 0.1029,
+   "dim_academic": null,
+   "dim_support": 0.3084,
+   "index_2dim": 20.56,
+   "index_3dim_acad_const": 30.38,
+   "index_with_revenue": 20.56,
+   "dim_academic_proxy": 0.0944,
+   "index_3dim_proxy": 16.86,
+   "index_log": 39.58,
+   "raw": {
+    "firm_count": 491,
+    "patent_count": 14357,
+    "policy_coverage": 2.78,
+    "financing_events": 300,
+    "revenue_yi": 0.002
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.25,
+   "index_2dim": 12.5,
+   "index_3dim_acad_const": 25.0,
+   "index_with_revenue": 12.5,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 8.33,
+   "index_log": 12.5,
+   "raw": {
+    "firm_count": 142,
+    "patent_count": 7007,
+    "policy_coverage": 2.78,
+    "financing_events": 79,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 0.5,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 0.75,
+   "index_2dim": 87.5,
+   "index_3dim_acad_const": 75.0,
+   "index_with_revenue": 87.5,
+   "dim_academic_proxy": 0.3658,
+   "index_3dim_proxy": 70.53,
+   "index_log": 87.5,
+   "raw": {
+    "firm_count": 1804,
+    "patent_count": 168909,
+    "policy_coverage": 0.0,
+    "financing_events": 1670,
+    "revenue_yi": 0.0027
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "city": "广州市",
+   "E1_norm": 0.2245,
+   "E3_norm": 0.2041,
+   "S1_norm": 0.5,
+   "S2_norm": 0.2927,
+   "dim_enterprise": 0.2143,
+   "dim_academic": null,
+   "dim_support": 0.3963,
+   "index_2dim": 30.53,
+   "index_3dim_acad_const": 37.02,
+   "index_with_revenue": 30.53,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 53.69,
+   "index_log": 57.24,
+   "raw": {
+    "firm_count": 460,
+    "patent_count": 40485,
+    "policy_coverage": 0.0,
+    "financing_events": 522,
+    "revenue_yi": 0.1635
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "city": "东莞市",
+   "E1_norm": 0.1477,
+   "E3_norm": 0.3417,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0844,
+   "dim_enterprise": 0.2447,
+   "dim_academic": null,
+   "dim_support": 0.2922,
+   "index_2dim": 26.84,
+   "index_3dim_acad_const": 34.56,
+   "index_with_revenue": 26.84,
+   "dim_academic_proxy": 0.0476,
+   "index_3dim_proxy": 19.48,
+   "index_log": 50.79,
+   "raw": {
+    "firm_count": 327,
+    "patent_count": 62679,
+    "policy_coverage": 0.0,
+    "financing_events": 184,
+    "revenue_yi": 0.0006
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.25,
+   "index_2dim": 12.5,
+   "index_3dim_acad_const": 25.0,
+   "index_with_revenue": 12.5,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 8.33,
+   "index_log": 12.5,
+   "raw": {
+    "firm_count": 71,
+    "patent_count": 7551,
+    "policy_coverage": 0.0,
+    "financing_events": 47,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 0.5,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 0.75,
+   "index_2dim": 87.5,
+   "index_3dim_acad_const": 75.0,
+   "index_with_revenue": 87.5,
+   "dim_academic_proxy": 0.3418,
+   "index_3dim_proxy": 69.73,
+   "index_log": 87.5,
+   "raw": {
+    "firm_count": 2649,
+    "patent_count": 238622,
+    "policy_coverage": 0.0,
+    "financing_events": 2313,
+    "revenue_yi": 0.0026
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "city": "广州市",
+   "E1_norm": 0.2719,
+   "E3_norm": 0.2625,
+   "S1_norm": 0.5,
+   "S2_norm": 0.3757,
+   "dim_enterprise": 0.2672,
+   "dim_academic": null,
+   "dim_support": 0.4379,
+   "index_2dim": 35.25,
+   "index_3dim_acad_const": 40.17,
+   "index_with_revenue": 35.25,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 56.84,
+   "index_log": 63.1,
+   "raw": {
+    "firm_count": 777,
+    "patent_count": 67947,
+    "policy_coverage": 0.0,
+    "financing_events": 914,
+    "revenue_yi": 8.034
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "city": "东莞市",
+   "E1_norm": 0.1015,
+   "E3_norm": 0.26,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0772,
+   "dim_enterprise": 0.1808,
+   "dim_academic": null,
+   "dim_support": 0.2886,
+   "index_2dim": 23.47,
+   "index_3dim_acad_const": 32.31,
+   "index_with_revenue": 23.47,
+   "dim_academic_proxy": 0.0139,
+   "index_3dim_proxy": 16.11,
+   "index_log": 47.64,
+   "raw": {
+    "firm_count": 339,
+    "patent_count": 67369,
+    "policy_coverage": 0.0,
+    "financing_events": 245,
+    "revenue_yi": 0.0002
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.25,
+   "index_2dim": 12.5,
+   "index_3dim_acad_const": 25.0,
+   "index_with_revenue": 12.5,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 8.33,
+   "index_log": 12.5,
+   "raw": {
+    "firm_count": 78,
+    "patent_count": 7198,
+    "policy_coverage": 0.0,
+    "financing_events": 72,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 1.0,
+   "S1_norm": 1.0,
+   "S2_norm": 1.0,
+   "dim_enterprise": 1.0,
+   "dim_academic": null,
+   "dim_support": 1.0,
+   "index_2dim": 100.0,
+   "index_3dim_acad_const": 83.33,
+   "index_with_revenue": 100.0,
+   "dim_academic_proxy": 0.529,
+   "index_3dim_proxy": 84.3,
+   "index_log": 100.0,
+   "raw": {
+    "firm_count": 1074,
+    "patent_count": 160345,
+    "policy_coverage": 53.28,
+    "financing_events": 1022,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "city": "广州市",
+   "E1_norm": 0.2123,
+   "E3_norm": 0.2004,
+   "S1_norm": 0.0,
+   "S2_norm": 0.272,
+   "dim_enterprise": 0.2064,
+   "dim_academic": null,
+   "dim_support": 0.136,
+   "index_2dim": 17.12,
+   "index_3dim_acad_const": 28.08,
+   "index_with_revenue": 17.12,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 44.75,
+   "index_log": 48.09,
+   "raw": {
+    "firm_count": 254,
+    "patent_count": 33265,
+    "policy_coverage": 47.0,
+    "financing_events": 294,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "city": "东莞市",
+   "E1_norm": 0.0711,
+   "E3_norm": 0.18,
+   "S1_norm": 0.0,
+   "S2_norm": 0.036,
+   "dim_enterprise": 0.1256,
+   "dim_academic": null,
+   "dim_support": 0.018,
+   "index_2dim": 7.18,
+   "index_3dim_acad_const": 21.45,
+   "index_with_revenue": 7.18,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 4.79,
+   "index_log": 30.72,
+   "raw": {
+    "firm_count": 107,
+    "patent_count": 30023,
+    "policy_coverage": 47.0,
+    "financing_events": 58,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.0,
+   "index_2dim": 0.0,
+   "index_3dim_acad_const": 16.67,
+   "index_with_revenue": 0.0,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 0.0,
+   "index_log": 0.0,
+   "raw": {
+    "firm_count": 33,
+    "patent_count": 1409,
+    "policy_coverage": 47.0,
+    "financing_events": 22,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "city": "深圳市",
+   "E1_norm": 1.0,
+   "E3_norm": 0.5405,
+   "S1_norm": 0.5,
+   "S2_norm": 1.0,
+   "dim_enterprise": 0.7703,
+   "dim_academic": null,
+   "dim_support": 0.75,
+   "index_2dim": 76.01,
+   "index_3dim_acad_const": 67.34,
+   "index_with_revenue": 76.01,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 50.68,
+   "index_log": 81.99,
+   "raw": {
+    "firm_count": 100,
+    "patent_count": 9341,
+    "policy_coverage": 0.0,
+    "financing_events": 239,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "city": "广州市",
+   "E1_norm": 0.337,
+   "E3_norm": 1.0,
+   "S1_norm": 0.5,
+   "S2_norm": 0.3629,
+   "dim_enterprise": 0.6685,
+   "dim_academic": null,
+   "dim_support": 0.4314,
+   "index_2dim": 55.0,
+   "index_3dim_acad_const": 53.33,
+   "index_with_revenue": 55.0,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 70.0,
+   "index_log": 72.26,
+   "raw": {
+    "firm_count": 39,
+    "patent_count": 16129,
+    "policy_coverage": 0.0,
+    "financing_events": 88,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "city": "东莞市",
+   "E1_norm": 0.0435,
+   "E3_norm": 0.0,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0217,
+   "dim_academic": null,
+   "dim_support": 0.25,
+   "index_2dim": 13.59,
+   "index_3dim_acad_const": 25.72,
+   "index_with_revenue": 13.59,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 9.06,
+   "index_log": 16.3,
+   "raw": {
+    "firm_count": 12,
+    "patent_count": 1355,
+    "policy_coverage": 0.0,
+    "financing_events": 2,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.2333,
+   "S1_norm": 0.5,
+   "S2_norm": 0.0338,
+   "dim_enterprise": 0.1167,
+   "dim_academic": null,
+   "dim_support": 0.2669,
+   "index_2dim": 19.18,
+   "index_3dim_acad_const": 29.45,
+   "index_with_revenue": 19.18,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 12.78,
+   "index_log": 32.68,
+   "raw": {
+    "firm_count": 8,
+    "patent_count": 4802,
+    "policy_coverage": 0.0,
+    "financing_events": 10,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "city": "深圳市",
+   "E1_norm": 0.7053,
+   "E3_norm": 1.0,
+   "S1_norm": 0.4335,
+   "S2_norm": 0.9104,
+   "dim_enterprise": 0.8527,
+   "dim_academic": null,
+   "dim_support": 0.6719,
+   "index_2dim": 76.23,
+   "index_3dim_acad_const": 67.49,
+   "index_with_revenue": 76.23,
+   "dim_academic_proxy": 0.292,
+   "index_3dim_proxy": 60.55,
+   "index_log": 82.63,
+   "raw": {
+    "firm_count": 331,
+    "patent_count": 8286,
+    "policy_coverage": 22.92,
+    "financing_events": 328,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 2
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "city": "广州市",
+   "E1_norm": 1.0,
+   "E3_norm": 0.7933,
+   "S1_norm": 1.0,
+   "S2_norm": 1.0,
+   "dim_enterprise": 0.8966,
+   "dim_academic": null,
+   "dim_support": 1.0,
+   "index_2dim": 94.83,
+   "index_3dim_acad_const": 79.89,
+   "index_with_revenue": 94.83,
+   "dim_academic_proxy": 1.0,
+   "index_3dim_proxy": 96.55,
+   "index_log": 97.97,
+   "raw": {
+    "firm_count": 453,
+    "patent_count": 6697,
+    "policy_coverage": 26.07,
+    "financing_events": 359,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 1
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "city": "东莞市",
+   "E1_norm": 0.0314,
+   "E3_norm": 0.0155,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0318,
+   "dim_enterprise": 0.0234,
+   "dim_academic": null,
+   "dim_support": 0.0159,
+   "index_2dim": 1.97,
+   "index_3dim_acad_const": 17.98,
+   "index_with_revenue": 1.97,
+   "dim_academic_proxy": 0.0128,
+   "index_3dim_proxy": 1.74,
+   "index_log": 9.08,
+   "raw": {
+    "firm_count": 52,
+    "patent_count": 718,
+    "policy_coverage": 20.51,
+    "financing_events": 24,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 3
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "city": "惠州市",
+   "E1_norm": 0.0,
+   "E3_norm": 0.0,
+   "S1_norm": 0.0,
+   "S2_norm": 0.0,
+   "dim_enterprise": 0.0,
+   "dim_academic": null,
+   "dim_support": 0.0,
+   "index_2dim": 0.0,
+   "index_3dim_acad_const": 16.67,
+   "index_with_revenue": 0.0,
+   "dim_academic_proxy": 0.0,
+   "index_3dim_proxy": 0.0,
+   "index_log": 0.0,
+   "raw": {
+    "firm_count": 39,
+    "patent_count": 599,
+    "policy_coverage": 20.51,
+    "financing_events": 13,
+    "revenue_yi": 0.0
+   },
+   "rank_in_chain": 4
+  }
+ ],
+ "stats_index": {
+  "n": 48,
+  "min": 0.0,
+  "max": 100.0,
+  "mean": 38.8119,
+  "median": 23.79,
+  "p90": 94.83,
+  "n_zero": 6,
+  "n_distinct": 31
+ },
+ "stats_index_3dim_const": {
+  "n": 48,
+  "min": 16.67,
+  "max": 83.33,
+  "mean": 42.5415,
+  "median": 32.525,
+  "p90": 79.89,
+  "n_zero": 0,
+  "n_distinct": 31
+ },
+ "stats_index_with_revenue": {
+  "n": 48,
+  "min": 0.0,
+  "max": 100.0,
+  "mean": 38.8119,
+  "median": 23.79,
+  "p90": 94.83,
+  "n_zero": 6,
+  "n_distinct": 31
+ },
+ "dim_stats": {
+  "enterprise": {
+   "n": 48,
+   "min": 0.0,
+   "max": 1.0,
+   "mean": 0.3869,
+   "median": 0.2293,
+   "p90": 1.0,
+   "n_zero": 11,
+   "n_distinct": 29
+  },
+  "support": {
+   "n": 48,
+   "min": 0.0,
+   "max": 1.0,
+   "mean": 0.3894,
+   "median": 0.2904,
+   "p90": 1.0,
+   "n_zero": 6,
+   "n_distinct": 28
+  },
+  "academic": "不可算（见 subitem_acceptance）"
+ },
+ "city_mean": {
+  "深圳市": 89.14,
+  "广州市": 43.63,
+  "东莞市": 15.66,
+  "惠州市": 6.81
+ },
+ "chain_mean": {
+  "软件与信息服务": 36.89,
+  "人工智能": 41.36,
+  "智能终端": 38.59,
+  "数字创意": 33.73,
+  "合成生物": 47.03,
+  "机器人": 37.1,
+  "集成电路": 36.75,
+  "传感器": 39.34,
+  "具身智能": 39.68,
+  "智能网联汽车": 31.08,
+  "低空经济": 40.95,
+  "生物医药": 43.26
+ },
+ "rank_first_counts": {
+  "深圳市": 10,
+  "广州市": 2
+ },
+ "top8": [
+  {
+   "chain_name": "软件与信息服务",
+   "city": "深圳市",
+   "index_2dim": 100.0,
+   "rank_in_chain": 1
+  },
+  {
+   "chain_name": "人工智能",
+   "city": "深圳市",
+   "index_2dim": 100.0,
+   "rank_in_chain": 1
+  },
+  {
+   "chain_name": "数字创意",
+   "city": "深圳市",
+   "index_2dim": 100.0,
+   "rank_in_chain": 1
+  },
+  {
+   "chain_name": "机器人",
+   "city": "深圳市",
+   "index_2dim": 100.0,
+   "rank_in_chain": 1
+  },
+  {
+   "chain_name": "智能网联汽车",
+   "city": "深圳市",
+   "index_2dim": 100.0,
+   "rank_in_chain": 1
+  },
+  {
+   "chain_name": "生物医药",
+   "city": "广州市",
+   "index_2dim": 94.83,
+   "rank_in_chain": 1
+  },
+  {
+   "chain_name": "智能终端",
+   "city": "深圳市",
+   "index_2dim": 87.5,
+   "rank_in_chain": 1
+  },
+  {
+   "chain_name": "合成生物",
+   "city": "广州市",
+   "index_2dim": 87.5,
+   "rank_in_chain": 1
+  }
+ ],
+ "bottom8": [
+  {
+   "chain_name": "软件与信息服务",
+   "city": "惠州市",
+   "index_2dim": 0.0,
+   "rank_in_chain": 4
+  },
+  {
+   "chain_name": "人工智能",
+   "city": "惠州市",
+   "index_2dim": 0.0,
+   "rank_in_chain": 4
+  },
+  {
+   "chain_name": "数字创意",
+   "city": "惠州市",
+   "index_2dim": 0.0,
+   "rank_in_chain": 4
+  },
+  {
+   "chain_name": "机器人",
+   "city": "惠州市",
+   "index_2dim": 0.0,
+   "rank_in_chain": 4
+  },
+  {
+   "chain_name": "智能网联汽车",
+   "city": "惠州市",
+   "index_2dim": 0.0,
+   "rank_in_chain": 4
+  },
+  {
+   "chain_name": "生物医药",
+   "city": "惠州市",
+   "index_2dim": 0.0,
+   "rank_in_chain": 4
+  },
+  {
+   "chain_name": "生物医药",
+   "city": "东莞市",
+   "index_2dim": 1.97,
+   "rank_in_chain": 3
+  },
+  {
+   "chain_name": "智能网联汽车",
+   "city": "东莞市",
+   "index_2dim": 7.18,
+   "rank_in_chain": 3
+  }
+ ],
+ "rank_correlation_with_revenue_version": 1.0,
+ "academic_proxy_sensitivity": {
+  "why": "需求原文的学术生态维 3 个子项在链×城无直连；同族 M_CHAIN_REG_COMP_ACADEMIC 用「产学研共著反推」给出了代理值（473 家机构 / 8,891 篇论文 / 1,504 家链上企业），此处按同一 min-max 规则把它补成第三维，用于观察「补上学术维后排名是否改变」，不作为本指标主值。",
+  "stats": {
+   "n": 48,
+   "min": 0.0,
+   "max": 96.55,
+   "mean": 37.2096,
+   "median": 32.115,
+   "p90": 76.76,
+   "n_zero": 6,
+   "n_distinct": 39
+  },
+  "city_mean": {
+   "深圳市": 70.4,
+   "广州市": 62.42,
+   "东莞市": 11.48,
+   "惠州市": 4.54
+  },
+  "rank_first_counts": {
+   "深圳市": 9,
+   "广州市": 3
+  },
+  "spearman_vs_main": 0.9794,
+  "n_first_changed": 2
+ },
+ "log_sensitivity": {
+  "why": "同等权重下企业数与专利件数都是绝对规模，4 市截面 min-max 会把指数压成「谁大谁高」；对 E1/E3/S2 取 log1p 后再归一，用于量化「规模主导」的程度。",
+  "stats": {
+   "n": 48,
+   "min": 0.0,
+   "max": 100.0,
+   "mean": 49.7594,
+   "median": 47.865,
+   "p90": 97.97,
+   "n_zero": 6,
+   "n_distinct": 31
+  },
+  "city_mean": {
+   "深圳市": 91.21,
+   "广州市": 64.73,
+   "东莞市": 35.17,
+   "惠州市": 7.93
+  },
+  "rank_first_counts": {
+   "深圳市": 10,
+   "广州市": 2
+  },
+  "spearman_vs_main": 0.9857,
+  "first_diff_cells": 0
+ },
+ "structural_artifact": {
+  "per_subitem_per_chain": "4 个城市做 min-max，必然产生 1 个 0 与 1 个 1；48 单元中的 0 值主要来自这种结构强制，不是「该市该链为零」。",
+  "n_zero_main": 6,
+  "n_hundred_main": 5
+ },
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "8 个子项只有 4 个在链×城粒度可算（企业数、专利、政策覆盖率、融资事件），48 个单元全部闭合；学术生态维 3 个子项不可算——2,074 家科研机构与 3,501 家高校与工业标签的链码交集 0、0，`dwd_scholar_info.scholar_org_id` 21,316 行全为空串。营收子项可算但 29/48 单元无披露。可算部分合成的两维指数分布 0.0–100.0（中位 24.1，31 个不同取值），可区分但缺一整个维度，故判部分支持。",
+  "criteria": {
+   "n_cells": 48,
+   "subitems_total": 8,
+   "subitems_usable": 4,
+   "dims_total": 3,
+   "dims_usable": 2,
+   "n_distinct_index": 31
+  }
+ },
+ "notes": [
+  "20261021 改源：所有子项直连 gkx（与旧版开发库 ODS 逐表镜像、行数一致），公式与档位未动；旧版 policy/patent/fin/revenue 由同族 out.json 取数，本版改为现取现算，读数已逐项对齐。",
+  "本指标不是「直接有结果面」：ADS `industry_chain_region_scorecard` 135 行的 `calc_batch_id='mock_20261019_append'`、`dimension_json` 自写 `honesty=mock`，`score_academic` 等列全 NULL，属造数结果面，只能作反例，不能作本指标成立证据。",
+  "归一化按原稿在「同一链、同一统计年、4 个城市」的截面上做 min-max。4 个样本做 min-max 会强制每链每子项都出现 0 和 1，等于把「相对位置」当「绝对水平」；跨链不可比，只能同链内比。",
+  "学术侧市域诊断（`city_level_diagnostic`）只作旁证：学者按机构名精确匹配落城，21,316 人中命中 1063 人（4.99%）。它不能回填链×城，因为机构本身没有链码。",
+  "学者宇宙纪律：`dwd_scholar_info` 与 `dwd_scholar_talent_flag` 不跨表做分子分母，本指标学者数只用前者。",
+  "政策覆盖率沿用同族 `M_CHAIN_REG_POLICY_COVERAGE` 的饱和覆盖率（分母为链内 L1 环节数），该口径下 16/48 单元为 0、饱和值上限 58.33，指数对政策维不敏感的部分已在 §四 说明。"
+ ],
+ "elapsed_sec": 8.04
+}

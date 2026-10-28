@@ -1,9 +1,21 @@
-# 深圳科研机构现状解读（M_ORG_SZ_STATUS）
+# M_ORG_SZ_STATUS · 深圳科研机构现状解读（gkx 口径重建件）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_SZ_STATUS.md`；复现脚本 `metrics/repro/M_ORG_SZ_STATUS.py` → `metrics/repro/out/M_ORG_SZ_STATUS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：评价型（EVAL，七维记分卡）｜ **域**：TOPIC-ORG（深圳科研机构现状）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/科研机构深度分析模型构建/深圳科研机构现状分析
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：需求原文只列「规模/结构/成长/产出/经费/人才」六个观察面，无权重、无归一化方法；本件沿用旧稿的 min-max + 权重表
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_SZ_STATUS.py`、产物 `metrics/repro/out/M_ORG_SZ_STATUS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_SZ_STATUS.md`；复现脚本 `metrics/repro/M_ORG_SZ_STATUS.py` → `metrics/repro/out/M_ORG_SZ_STATUS_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_SZ_STATUS.py`、产物 `metrics/repro/out/M_ORG_SZ_STATUS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_SZ_STATUS.md` |
 | 复现脚本 | `metrics/repro/M_ORG_SZ_STATUS.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_SZ_STATUS_out.json` |
@@ -62,16 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_SZ_STATUS.py`、产物 `metrics/repro/out/M_ORG_SZ_STATUS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：评价型（EVAL，七维记分卡）｜ **域**：TOPIC-ORG（深圳科研机构现状）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/科研机构深度分析模型构建/深圳科研机构现状分析
-> **数据支持度**：**部分支持** ｜ **公式定义人**：需求原文只列「规模/结构/成长/产出/经费/人才」六个观察面，无权重、无归一化方法；本件沿用旧稿的 min-max + 权重表
-> **主算库**：`gkx`（183.240.141.251:3318，只读账号 `gkx_reader_zp`）｜ **SQL 条数**：0（全部读落盘快照）
-> **产物**：`code/M_ORG_SZ_STATUS.py` → `code/M_ORG_SZ_STATUS_out.json` ｜ **成文日期**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -109,7 +116,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 问题在第七维：深圳的证据覆盖率只有 **11.83%**（120/1,014 家至少有一类证据），低于广州的 21.05%、东莞的 16.54%，只高于惠州 9.91%。也就是说，深圳有 894 家机构（88.17%）在四张证据表里**一条记录都没有**——不是它们不存在，而是名称匹配不上或确实没有专利/项目/论文。这一维拿 56.2 分，是七维里唯一的「短板」。
 
-**结论**：规模、结构、成长三维可作城市级结论；产出、经费、人才三维只能作「有证据子集」的结论，不能外推到 1,014 家；产业切片完全不可得。按 §〇 判**部分支持**。复现代码见 `code/M_ORG_SZ_STATUS.py`，结果见 `code/M_ORG_SZ_STATUS_out.json`。
+**结论**：规模、结构、成长三维可作城市级结论；产出、经费、人才三维只能作「有证据子集」的结论，不能外推到 1,014 家；产业切片完全不可得。按 §〇 判**部分支持**。复现代码见 `metrics/repro/M_ORG_SZ_STATUS.py`，结果见 `metrics/repro/out/M_ORG_SZ_STATUS_out.json`。
 
 ---
 
@@ -256,10 +263,10 @@ D7 = 至少有一类证据（专利/项目/论文/学者）的机构数 / 城市
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_ORG_SZ_STATUS.py
+cd code && python3 M_ORG_SZ_STATUS.py
 ```
 
-脚本零 SQL，只读两份快照，输出 `code/M_ORG_SZ_STATUS_out.json`。产物含五个契约字段与 `probes`、`city_values`、`scorecard`、`composite`、`sz_profile`、`institute_profile`、`coverage_pct`、`gaps`。
+脚本零 SQL，只读两份快照，输出 `metrics/repro/out/M_ORG_SZ_STATUS_out.json`。产物含五个契约字段与 `probes`、`city_values`、`scorecard`、`composite`、`sz_profile`、`institute_profile`、`coverage_pct`、`gaps`。
 
 实测输出（2026-10-22 运行）：
 
@@ -464,7 +471,7 @@ D1/D2/D3 覆盖 100%，这三 warrant 城市级结论。D4/D5/D6 覆盖 8.58%/1.
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_ORG_SZ_STATUS.py
 ```
 
@@ -475,7 +482,7 @@ python3 M_ORG_SZ_STATUS.py
 | `_snapshots21/org_family_panel_20261021.json` | 2,074 家面板（专利/项目/学者/论文） |
 | `_snapshots21/org_reg_gkx21.json` | 登记日期/开办资金/状态/地址 |
 
-输出：`code/M_ORG_SZ_STATUS_out.json`（覆盖写）。复现校验：两次运行，`scorecard` 与 `composite` 逐字段一致。
+输出：`metrics/repro/out/M_ORG_SZ_STATUS_out.json`（覆盖写）。复现校验：两次运行，`scorecard` 与 `composite` 逐字段一致。
 
 自检清单：
 
@@ -491,15 +498,12 @@ python3 M_ORG_SZ_STATUS.py
 
 ## 参考文献
 
-1. 中国科学技术发展战略研究院.《中国区域科技创新评价报告》. https://www.casted.org.cn/
-2. WIPO.《Global Innovation Index》. https://www.wipo.int/global_innovation_index/
-3. 科学技术部.《国家创新型城市创新能力监测报告》. https://www.most.gov.cn/
-4. 国家统计局.《中国科技统计年鉴》. https://www.stats.gov.cn/sj/ndsj/
-5. 深圳市统计局.《深圳统计年鉴》. http://tjj.sz.gov.cn/
-6. 深圳市人民政府.《深圳市培育发展壮大“20+8”产业集群行动计划（2022—2025年）》. http://www.sz.gov.cn/zfgb/2022/gb1234/content/post_9778888.html
-7. OECD/JRC. *Handbook on Constructing Composite Indicators*. https://www.oecd.org/sdd/42495745.pdf
-8. 国家自然科学基金委员会.《国家自然科学基金年度报告》. https://www.nsfc.gov.cn/
-
+1. WIPO.《Global Innovation Index》. https://www.wipo.int/global_innovation_index/
+2. 科学技术部.《国家创新型城市创新能力监测报告》. https://www.most.gov.cn/
+3. 国家统计局.《中国科技统计年鉴》. https://www.stats.gov.cn/sj/ndsj/
+4. 深圳市统计局.《深圳统计年鉴》. http://tjj.sz.gov.cn/
+5. 深圳市人民政府.《深圳市培育发展壮大“20+8”产业集群行动计划（2022—2025年）》. https://www.sz.gov.cn/
+6. 国家自然科学基金委员会.《国家自然科学基金年度报告》. https://www.nsfc.gov.cn/
 ---
 
 # 附件
@@ -546,10 +550,3 @@ python3 M_ORG_SZ_STATUS.py
 **D.4 与权威方法的差距**：区域创新评价用全国分位与多年面板，本件用四城相对与单年截面；前者可做趋势与全国排名，后者只能做静态对比。这是「部分支持」的方法论根源。
 
 **D.5 与旧稿的差异**：旧稿用 `demo` 库的机构表与产业标签，能出产业切片；本件换 gkx 后产业标签失效，切片维度整体缺失。旧稿的七维权重被沿用，但产出/经费/人才三维的分母从「全部机构」改为「有证据机构」，因此旧稿的分数不可与本件直接比较。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,21 @@
 # 城市对比指标值（M_SVC_SZ_COMPARE_METRIC）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_SZ_COMPARE_METRIC.md`；复现脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py` → `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：面板（服务机构库·深圳现状对比·城市 × 小项多格）｜ **域**：SVC 服务机构（产业服务链分析·服务链分析·深圳对比）｜ **UI 挂载**：科技信息展示系统·产业服务链分析·深圳对比页对比柱（§1.1.1.2.4.2.7）
+> - **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 0.2.0（部分闭合；只允许「深圳 × orgCount」一格可 live）
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SVC_SZ_COMPARE_METRIC.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py`、产物 `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_SZ_COMPARE_METRIC.md`；复现脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py` → `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py`、产物 `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_SZ_COMPARE_METRIC.md` |
 | 复现脚本 | `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json` |
@@ -62,16 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py`、产物 `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：面板（服务机构库·深圳现状对比·城市 × 小项多格）｜ **域**：SVC 服务机构（产业服务链分析·服务链分析·深圳对比）｜ **UI 挂载**：科技信息展示系统·产业服务链分析·深圳对比页对比柱（§1.1.1.2.4.2.7）
-> **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 0.2.0（部分闭合；只允许「深圳 × orgCount」一格可 live）
-> **数据源**：gkx（183.240.141.251:3318，只读 gkx_reader_zp）+ `code/_snapshots21/` 落盘快照
-> **wanghui：false**（王惠未定义过本面板，无 §五 对照章节）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -108,6 +115,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 实测结果比 calc-logic 的判定更严格一点：24 格里只有 1 格可发布。深圳 orgCount 为 **25,597**（占池 57.97%）；广州 12,641、东莞 4,300、惠州 1,594 在同池内可数，但它们是「同一个广东样本框里的其它城市」，不是城市基准，只能作样本值、不能作发布格；北京、上海各 0 家（底册 44,132 行回联后 100% 是广东省）；全国平均无定义。技术力整列置空：三个子指标里研发投入与研发人员的分子列（90,926 行）整列为空，模型定义卡未签。密度整列置空：两库都没有「服务机构 A —服务关系— 服务机构 B」的边，投资边 41,888 条与股东边 372,205 条表达的是资本关系，不能冒充服务关系。
 
 判档为 **部分支持**：面板里有一格是硬数且可复算，其余 23 格各有各的阻断，且阻断层不同（样本、结构、算法）。本件因此把「哪一格能上、哪一格不能上、为什么」逐格写清，而不是给一个笼统的「部分支持」。
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 算法基于结构化的指标体系，将政策作用特征分为效果维度、覆盖维度和成本维度三大类，每类设定对应的量化指标与阈值标准。效果维度主要衡量政策在目标达成方面的输出成效；覆盖维度聚焦政策影响的对象范围与区域广度；成本维度评估资源消耗及经济投入。在计算过程中，模型对接多源政策数据，包括政策文本内容、发布渠道数据、执行监测数据及相关统计结果。数据经过标准化处理后，按指标体系进行权重赋值与综合加权计算，生成政策力<br>><br>> 模型以专业能力、业务范围、成功案例数和合作伙伴网络四个维度为基础，构建具有代表性与区分度的指标体系，并结合历史行业均值及专家建议设定评估阈值。在实现逻辑上，算法首先采集来自机构官方网站、行业权威报告及第三方分析平台的结构化数据，并进行清洗与标准化处理；随后依据设定的指标体系分别计算各维度指标的单项得分；再通过加权合成公式生成技术力指数，实现机构间横向对比及同一机构的纵向动态跟踪。<br>><br>> 模型首先对机构的招聘信息、服务记录及客户反馈等多源数据进行采集和标准化处理，确保数据一致性与可比性；随后，经特征提取与清洗，构建包含招聘效率、岗位匹配度、服务流程规范性、服务结果质量、客户满意度等核心指标体系；依据行业标准、历史统计数据及专家经验，为各指标设定合理阈值并确认权重分布。在技术力指数生成过程中，模型可结合机器学习及深度学习方法，对多维数据进行聚合计算，实现对不同机构之间的横向对比、行业<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 提供科创要素关联分析功能，展示不同要素之间的关联关系和影响程度；支持要素影响力分析，通过算法模型评估各要素的重要性和影响力；提供要素聚类分析，将相似要素进行自动分类和归纳；支持要素比较分析，用户可选择多个要素进行横向对比。<br>><br>> 基于深度语义分析和机器学习算法，自动推荐与当前人才研究方向及成就相近的学者，支持横向对比功能。<br>><br>> 本功能基于多维指标构建潜力评估模型，支持用户对技术的商业化前景进行量化评分与横向对比。用户可识别高潜力技术，制定优先发展策略。通过该功能，用户能将技术价值转化为产业机会，提升投资与布局的精准性。融合专利、论文等产业化数据，建立可配置的潜力评估体系，实现技术价值的客观度量。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SVC_SZ_COMPARE_METRIC.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -195,7 +248,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.7 复现结果摘要
 
-产物 `code/M_SVC_SZ_COMPARE_METRIC_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`value`、`grid`、`live_cell_detail`、`supplementary_sz`、`counter_evidence`、`gaps`、`cross_refs`。脚本 `code/M_SVC_SZ_COMPARE_METRIC.py` 自包含，只读族级快照，不连库，运行约 1 秒。复现命令：`python3 M_SVC_SZ_COMPARE_METRIC.py`。
+产物 `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`value`、`grid`、`live_cell_detail`、`supplementary_sz`、`counter_evidence`、`gaps`、`cross_refs`。脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py` 自包含，只读族级快照，不连库，运行约 1 秒。复现命令：`cd code && python3 M_SVC_SZ_COMPARE_METRIC.py`。
 
 | 产物键 | 取值 |
 |---|---|
@@ -375,22 +428,19 @@ calc-logic 给本件的更新频率是「日（仅可 live 格随圈定；其余
 
 ## 参考文献
 
-1. 侯佳伟. (2026). 《城市对比指标值（M_SVC_SZ_COMPARE_METRIC）计算逻辑》0.2.0. 项目内部文档.
+1. 国家统计局. (2018). 《国家科技服务业统计分类（2018）》（国统字〔2018〕215 号）. https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893989.html
 
-2. 国家统计局. (2018). 《国家科技服务业统计分类（2018）》（国统字〔2018〕215 号）. https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893989.html
+2. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754-2017）. https://www.stats.gov.cn/sj/tjbz/gjtjbz/
 
-3. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754-2017）. https://www.stats.gov.cn/sj/tjbz/gjtjbz/
+3. 深圳市统计局. (2024). 《深圳统计年鉴 2024》. https://tjj.sz.gov.cn/zwgk/zfxxgkml/tjsj/tjnj/
 
-4. 深圳市统计局. (2024). 《深圳统计年鉴 2024》. https://tjj.sz.gov.cn/zwgk/zfxxgkml/tjsj/tjnj/
+4. 工业和信息化部等九部门. (2025). 《关于加快推进科技服务业高质量发展的实施意见》（工信部联科〔2025〕110 号）. https://www.gov.cn/lianbo/bumen/202505/content_7024307.htm
 
-5. 工业和信息化部等九部门. (2025). 《关于加快推进科技服务业高质量发展的实施意见》（工信部联科〔2025〕110 号）. https://www.gov.cn/lianbo/bumen/202505/content_7024307.htm
+5. 国家市场监督管理总局. (2025). 经营主体登记注册统计. https://www.samr.gov.cn/
 
-6. 国家市场监督管理总局. (2025). 经营主体登记注册统计. https://www.samr.gov.cn/zw/tjxx/
+6. OECD. (2018). *OECD Science, Technology and Innovation Outlook 2018*. OECD Publishing. https://doi.org/10.1787/sti_in_outlook-2018-en
 
-7. OECD. (2018). *OECD Science, Technology and Innovation Outlook 2018*. OECD Publishing. https://doi.org/10.1787/sti_in_outlook-2018-en
-
-8. Eurostat. (2024). *Structural business statistics — national and regional aggregates*. https://ec.europa.eu/eurostat/web/structural-business-statistics
-
+7. Eurostat. (2024). *Structural business statistics — national and regional aggregates*. https://ec.europa.eu/eurostat/web/structural-business-statistics
 ---
 
 # 附件
@@ -443,8 +493,8 @@ calc-logic 给本件的更新频率是「日（仅可 live 格随圈定；其余
 
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
-| `code/M_SVC_SZ_COMPARE_METRIC.py` | 自包含计算脚本（零 DB） | 已跑通 |
-| `code/M_SVC_SZ_COMPARE_METRIC_out.json` | 结果与元数据 | 已落盘 |
+| `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py` | 自包含计算脚本（零 DB） | 已跑通 |
+| `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json` | 结果与元数据 | 已落盘 |
 | `_staging21/M_SVC_SZ_COMPARE_METRIC.md` | 本文件 | 已交付 |
 | `code/_snapshots21/svcsz21_facts_20261023.json` | 族级快照 | 复用 |
 
@@ -484,7 +534,7 @@ calc-logic 给本件的更新频率是「日（仅可 live 格随圈定；其余
 ## 附录 F　复算步骤
 
 1. 确认快照：`ls code/_snapshots21/svcsz21_facts_20261023.json`。
-2. 运行：`python3 M_SVC_SZ_COMPARE_METRIC.py`。
+2. 运行：`cd code && python3 M_SVC_SZ_COMPARE_METRIC.py`。
 3. 核对产物：`python3 -c "import json;d=json.load(open('M_SVC_SZ_COMPARE_METRIC_out.json'));print(d['value']['live_cells'],d['value']['sz_org_count'])"`。
 4. 抽查：四市 orgCount 相加应等于 44,132，加未回联 21 等于 44,153。
 5. 重跑一致性：`python3 _work_gkx21/rebuild_metric.py M_SVC_SZ_COMPARE_METRIC --check`。
@@ -512,21 +562,11 @@ calc-logic 给本件的更新频率是「日（仅可 live 格随圈定；其余
 4. `support_judgment` 与文档头部档位一致（部分支持）
 5. `base_years_used/_missing/_note` 三字段齐备
 6. `sources` 只写 gkx 库名 + 主机 + 快照路径，无演示库痕迹
-7. 脚本自包含：`python3 M_SVC_SZ_COMPARE_METRIC.py` 可直接跑通
+7. 脚本自包含：`cd code && python3 M_SVC_SZ_COMPARE_METRIC.py` 可直接跑通
 8. 外市不灌数、京沪不画 0，缺口声明进前端
 9. 重跑后 `rebuild_metric.py M_SVC_SZ_COMPARE_METRIC --check` 内容一致
 10. 文档 mtime 晚于产物，`audit_md_vs_out.py` A 段无漂移
 11. 正文口径与同批四件一致（深圳切片 25,597）
 12. 投资/股东边只作反证，不参与任何计算
 
-> 生成本文件的时间：2026-10-23；数字均取自 `code/M_SVC_SZ_COMPARE_METRIC_out.json`。
-
-
-## 更新记录
-
-- 2026-08-21: 初版，模拟王惠调研产出
-- 2026-08-28: 侯佳伟 1B2A3A（仅深圳机构数可跟第 11 条）
-- 2026-10-13: 0.2.0 写入真实情况：多格面板、服务机构口径、外市样本+Q-04、技术力/无边源密度；不写死 1355
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+> 生成本文件的时间：2026-10-23；数字均取自 `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`。

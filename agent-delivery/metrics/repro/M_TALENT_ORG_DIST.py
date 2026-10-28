@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_TALENT_ORG_DIST —— 重点人才机构分布（SRS 86/87）。
 
 口径：机构 = `dwd_scholar.scholar_org_name_zh` 原串（不合并分校/别名），

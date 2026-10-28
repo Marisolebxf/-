@@ -1,0 +1,172 @@
+{
+ "metric_id": "M_ENT_REVENUE_GROWTH_RATE",
+ "metric_name": "营收增长率",
+ "support_judgment": "部分支持",
+ "judgment_basis": {
+  "formula": "(rev_y - rev_{y-1}) / rev_{y-1} * 100，仅 y-1 相邻年",
+  "source_table": "gkx.dwd_org_annual_financial_info（calc-logic 声明的唯一输入）",
+  "why_partial": "规则可执行、782 个「企业-年」对已算出；但仅覆盖 398 家（占底册 0.2104%），2,193 行营收里 1,411 行因上年缺行/为空/为 0 而无法成对，覆盖率是数据缺口而非口径缺口",
+  "why_not_direct": "两库均无 enterprise_finance_history.revenue_growth_rate 结果列（该列在本库不存在，属待落表目标）",
+  "why_not_unsupported": "依赖列与年份键齐全，成对的 782 个观测已能逐条复算"
+ },
+ "sources": [
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp（只读）",
+   "table": "gkx.dwd_org_annual_financial_info",
+   "rows": 90926,
+   "note": "窄投影 org_id/year/operating_revenue/pure_profit + 底册 LEFT JOIN"
+  },
+  {
+   "snapshot": "code/_snapshots21/ent_fin_family_20261023.json",
+   "builder": "code/_build_ent_fin_family.py",
+   "note": "pairs / by_year / 中位数由快照本地计算，未在服务端做窗口函数"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_annual_financial_info（denominator 探针）",
+   "sql_kind": "2,193 行营收非空者逐行回查 y-1（uk_org_id_year 索引）",
+   "note": "拆出「上年缺行 / 上年为空 / 上年为 0」三种扣除量"
+  }
+ ],
+ "base_years_used": [
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "base_years_missing": [
+  2013
+ ],
+ "base_years_note": "增长率只用「相邻两年」：本年 2014—2025，对应上年 2013—2024。库内财务表更早年份没有成对营收，未按 0 摊入；各年成对数见 by_year，中位数逐年单列",
+ "headline": {
+  "pairs": 782,
+  "orgs_with_pairs": 398,
+  "coverage_pct_of_base": 0.2105,
+  "base_orgs": 189116,
+  "revenue_nonnull_rows": 2193,
+  "growth_median_pct": 9.0409,
+  "growth_mean_pct": 94002.9766,
+  "growth_p10_pct": -98.9442,
+  "growth_p90_pct": 4263.1139,
+  "growth_p99_pct": 1630896.4323,
+  "growth_max_pct": 13684051.8839,
+  "growth_min_pct": -100.0,
+  "over_1000pct": 96,
+  "under_minus_90pct": 110,
+  "by_year": {
+   "2014": 58,
+   "2015": 231,
+   "2016": 149,
+   "2017": 102,
+   "2018": 62,
+   "2019": 41,
+   "2020": 33,
+   "2021": 28,
+   "2022": 23,
+   "2023": 19,
+   "2024": 17,
+   "2025": 19
+  },
+  "median_by_year": {
+   "2014": 21.1887,
+   "2015": 18.981,
+   "2016": 2.3897,
+   "2017": 8.5772,
+   "2018": 10.905,
+   "2019": 5.9265,
+   "2020": 1.541,
+   "2021": 10.5761,
+   "2022": -2.6874,
+   "2023": 2.8843,
+   "2024": 9.3797,
+   "2025": 4.4981
+  },
+  "denominator_breakdown": {
+   "rows_revenue_nonnull": 2193,
+   "prev_year_row_absent": 373,
+   "prev_year_value_null": 1038,
+   "prev_year_value_zero": 0,
+   "computable_pairs": 782,
+   "check_note": "computable_pairs 应与快照 pairs.n 相等，作为对账"
+  },
+  "asset_text_pairs": 3822,
+  "asset_text_orgs_with_pairs": 1962,
+  "asset_text_median_pct": 9.1194,
+  "asset_text_max_pct": 102768615.7221,
+  "asset_text_note": "xsze「数值+万元」文本，占位串 514,140 行已剔除；calc-logic 未声明该表，仅作同族年报的旁证，不进主口径",
+  "stock_note": "calc-logic 明文禁止用 dwd_org_stock_finance_info 替代年报，本件未使用该表算增长率"
+ },
+ "derived": {
+  "rows_without_usable_prior": {
+   "value": 1411,
+   "numerator": 1411,
+   "denominator": null,
+   "denominator_note": "计数，无分母：营收非空行 2,193（探针 rows_revenue_nonnull）− 能成相邻年对的 782 对＝ 1,411 行无法算出增长率；三种扣除量（上年缺行/上年为空/上年为 0）见 headline.denominator_breakdown，未拿底册总数凑比例"
+  },
+  "pairs_per_org": {
+   "value": 1.9648,
+   "numerator": 782,
+   "denominator": 398,
+   "denominator_note": "分子=成对的「企业-年」观测数 pairs.n（782 对）；分母=至少有一对的企业数 pairs.orgs（398 家）。一家企业可贡献多个增长年"
+  },
+  "positive_pairs": {
+   "value": 477,
+   "numerator": 477,
+   "denominator": null,
+   "denominator_note": "计数，无分母：增长率为正的对数 = 总对数 782 − 负增长 304 − 零增长 1 ＝ 477"
+  },
+  "negative_pairs": {
+   "value": 304,
+   "numerator": 304,
+   "denominator": null,
+   "denominator_note": "计数，无分母：增长率为负的对数（pairs.stats.neg，304 对）"
+  },
+  "zero_pairs": {
+   "value": 1,
+   "numerator": 1,
+   "denominator": null,
+   "denominator_note": "计数，无分母：增长率恰为 0 的对数（pairs.stats.zero，1 对）"
+  },
+  "coverage_of_rev_orgs_pct": {
+   "value": 30.5684,
+   "numerator": 398,
+   "denominator": 1302,
+   "denominator_note": "分子=能算出至少一年增长率的企业数 pairs.orgs（398 家）；分母=年报里有任何一年营收非空的企业数 annual_fin.orgs_any_revenue（1,302 家）；两者之差是「只有单年营收、凑不出相邻年」的企业"
+  },
+  "asset_pairs_per_org": {
+   "value": 1.948,
+   "numerator": 3822,
+   "denominator": 1962,
+   "denominator_note": "分子=年报资产表（文本万元）可成对的观测数 asset_text.pairs.n（3,822 对）；分母=该表有对的企业数 asset_text.pairs.orgs（1,962 家）。仅旁证，不进主口径"
+  },
+  "asset_negative_pairs": {
+   "value": 1408,
+   "numerator": 1408,
+   "denominator": null,
+   "denominator_note": "计数，无分母：年报资产表旁证口径下负增长的对数（asset_text.pairs.stats.neg，1,408 对）"
+  },
+  "asset_positive_pairs": {
+   "value": 2387,
+   "numerator": 2387,
+   "denominator": null,
+   "denominator_note": "计数，无分母：年报资产表旁证口径下正增长的对数 = 3,822 − 1,408 − 27 ＝ 2,387"
+  }
+ },
+ "caveats": [
+  "上年为 0 → 除零，按口径不出增长率；扣除量见 denominator_breakdown",
+  ">1000% 的 96 对与 <-90% 的 110 对多为基数极小（营收千元级）所致，与「元/万元混填」同源，做榜单前须先做单位归一",
+  "KPI 取「最新能算出的一年」，不等于最新财务年——两者差一年时页面要标注年份",
+  "境外财务表 calc-logic 明示不并；上市财务表明示禁用，均未使用"
+ ]
+}

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_INNOV_GBA_PATENT_PAPER · 专利及论文数量（湾区 11 城）
 
 口径（registry seq 106 相邻项 / DS-05 指标组）：COUNT(专利) + COUNT(论文)，

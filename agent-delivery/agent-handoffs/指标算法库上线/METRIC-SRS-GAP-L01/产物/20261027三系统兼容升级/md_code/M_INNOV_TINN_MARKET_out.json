@@ -1,0 +1,235 @@
+{
+ "metric_id": "M_INNOV_TINN_MARKET",
+ "metric_name": "技术市场潜力",
+ "support_judgment": "完全不支持",
+ "object": "技术领域（IPC 主分类前 4 位）",
+ "verdict_reason": "五维里四维只能来自 20,000 行（0.68%）的 legal_events，且诉讼命中 0 条、开放许可 6 条、许可 56 条；转让维 22,809 行只有 pn、无 patent_id 与 IPC，主表 pn 无索引，归属不到 IPC4；dwd_market 15 行全空。五维均无法在 IPC4 粒度闭环，故不产出任何领域分",
+ "data_source": "gkx.dwd_patent_transfer / dwd_patent_legal / dwd_market（均不足以建域级结果）",
+ "sql_count": 0,
+ "sql_note": "本脚本零 SQL；探针阶段 legal/transfer/market 三表各查 1 次，回连主表 3 次超时",
+ "probe": {
+  "patent_main_rows": 2939895,
+  "transfer_rows": 22809,
+  "transfer_distinct_pn": 20000,
+  "transfer_date_parseable": 22522,
+  "transfer_coverage_pct": 0.7758,
+  "transfer_has_patent_id": false,
+  "transfer_has_ipc": false,
+  "legal_rows": 20000,
+  "legal_coverage_pct": 0.6803,
+  "legal_license_hits": 56,
+  "legal_open_license_hits": 6,
+  "legal_pledge_hits": 104,
+  "legal_litigation_hits": 0,
+  "market_rows": 15,
+  "market_nonnull_by_col": {
+   "market_name": 15,
+   "market_share": 0,
+   "pharmaceutical_category": 0,
+   "measure_code": 0,
+   "unit_measure": 0,
+   "time_period": 0,
+   "obs_status": 0
+  },
+  "return_join_timeouts": {
+   "family_join": false,
+   "cited_by_ipc4": false,
+   "legal_by_ipc4": false
+  },
+  "return_join_timeout_count": 3
+ },
+ "dimension_status": {
+  "D1_转让": {
+   "formula": "转移专利数 / 专利数",
+   "rows": 22809,
+   "coverage_pct": 0.7758,
+   "status": "不可用：只有 pn 与生效日；无 patent_id / IPC4，主表 pn 无索引，无法归属领域"
+  },
+  "D2_许可": {
+   "formula": "legal_events 含「许可」且不含「开放许可」/ 专利数",
+   "rows": 20000,
+   "hits": 56,
+   "status": "退化：20,000 行里仅 56 条命中（0.28%），且无法拆到 IPC4"
+  },
+  "D3_诉讼": {
+   "formula": "legal_events 含「诉讼」「无效宣告」/ 专利数",
+   "rows": 20000,
+   "hits": 0,
+   "status": "整列为 0：全表 0 条命中，该维在任何领域都恒等于 0，不构成区分度"
+  },
+  "D4_质押": {
+   "formula": "legal_events 含「质押」/ 专利数",
+   "rows": 20000,
+   "hits": 104,
+   "status": "退化：104 条命中（0.52%），无法拆到 IPC4"
+  },
+  "D5_开放许可": {
+   "formula": "legal_events 含「开放许可」/ 专利数",
+   "rows": 20000,
+   "hits": 6,
+   "status": "退化：6 条命中（0.03%），无法拆到 IPC4"
+  }
+ },
+ "transfer_year": {
+  "2021": 326,
+  "2022": 1670,
+  "2023": 3770,
+  "2024": 7711,
+  "2025": 5799,
+  "2026": 3246
+ },
+ "market_table_dump": [
+  {
+   "id": "00da09a3-d98f-4769-8ccd-989e102d4454",
+   "market_name": "LVA",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "10b199a9-81c9-472b-9683-20af65ac5f0d",
+   "market_name": "POL",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "270a00b6-ddcc-4906-bff0-89fd41763a79",
+   "market_name": "BEL",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "01898135-d23f-49d5-8406-ad57e65c3711",
+   "market_name": "ITA",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "0d07badf-d000-4017-96c5-7f683b417e34",
+   "market_name": "GBR",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "165fd1ea-7177-4dcf-b83c-a51bc90c90b8",
+   "market_name": "NLD",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "0c0dbd68-6526-417c-9122-4f2b137c179d",
+   "market_name": "AUT",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "047b56da-b022-4c75-bea1-093b209371f2",
+   "market_name": "ROU",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "053407f0-1b5f-4353-8c09-f213dd76f6b3",
+   "market_name": "PRT",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "05cdba89-ef22-46bb-9d30-1895a1be0a60",
+   "market_name": "BGR",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "1891c17e-0a6d-4cd9-add2-04bdf140162e",
+   "market_name": "JPN",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "11a6b6fb-7478-4076-b365-2ff6801707c6",
+   "market_name": "DEU",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "12da592c-4c0c-4240-8c4c-6f3ad9e38a2c",
+   "market_name": "HUN",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "09c4bfbd-b442-4861-8ea7-ec469c1e6cbc",
+   "market_name": "LUX",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  },
+  {
+   "id": "0b698a0c-44bf-4ac9-9e38-cc2678a9a4f0",
+   "market_name": "IRL",
+   "market_share": null,
+   "measure_code": null,
+   "time_period": null,
+   "obs_status": null
+  }
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_year_block": {
+  "base_years_used": [],
+  "base_years_missing": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025,
+   2026
+  ],
+  "note": "转让表有生效年（2021—2026 六档），但无法按 IPC4 归属；其他四维无年度字段，故不构造任何年度分母"
+ },
+ "gaps": [
+  "转让表无 patent_id / IPC，主表 pn 无索引，领域归属断路",
+  "legal_events 仅 20,000 行（0.68%），诉讼命中 0、开放许可 6、许可 56、质押 104",
+  "dwd_market 15 行、度量列全空，且无技术领域字段",
+  "三条 IPC4 回连查询各 60 秒超时（family/cited/legal），复现 3 次"
+ ],
+ "repair_requirements": [
+  "dwd_patent_transfer 增加 patent_id + ipc4 + apdt_year 三列，或给主表 pn 建索引并允许分块",
+  "dwd_patent_legal 扩到全量并冗余 ipc4 / apdt_year，并把四类事件预拆成布尔列",
+  "dwd_market 补技术领域键（IPC4 或产业链码）与度量值，当前 15 行全空不足以兜底"
+ ]
+}

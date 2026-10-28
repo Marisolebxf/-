@@ -1,9 +1,24 @@
 # 要素贡献度与影响路径（M_SYNTH_ELEM_CONTRIB）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_CONTRIB.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_CONTRIB.py` → `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（分解展示件，非因果）｜ **域**：综合智能分析／区域创新要素分析／要素影响关联分析
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（不新取数，只拆已有量）+ 口径退化（人才份额残余为 0、机构份额 29 倍口径差、产业侧四类不互斥）**
+> - **一句话结论**：四要素 × 两目标（创新成果／产业发展）的份额分解与 Top 6 路径全部算出、同行和为 1；但**创新成果侧只能拆企业与科研机构，人才份额实测为 0**（库内无作者级机构字段），**科研机构份额两种口径差 6.22—45.19 倍**，**产业侧四类主体互不互斥**（份额是结构代理不是归因）。三项退化决定本件判**部分支持**，且必须双列 A/B 两组机构份额。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_ELEM_CONTRIB.py`｜ **产物**：`metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_CONTRIB.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_CONTRIB.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_CONTRIB.py` → `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_CONTRIB.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_ELEM_CONTRIB.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_ELEM_CONTRIB.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json` |
@@ -61,19 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_CONTRIB.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（分解展示件，非因果）｜ **域**：综合智能分析／区域创新要素分析／要素影响关联分析
-> **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（不新取数，只拆已有量）+ 口径退化（人才份额残余为 0、机构份额 29 倍口径差、产业侧四类不互斥）**
-> **复现脚本**：`code/M_SYNTH_ELEM_CONTRIB.py`｜ **产物**：`code/M_SYNTH_ELEM_CONTRIB_out.json`
-> **族级面板**：`code/_snapshots21/synth_elem_panel_20261023.json`
-> **公式定义人**：算法 2026-08-31 回填（`ENT-SYNTH-METRIC-COVER-STAT-L01`），非王惠原稿；王惠稿无本件
-> **基期声明**：统计年 2024；`base_years_used=[2024]`，`base_years_missing=[]`；成果侧是 2024 授权专利、产业侧是 2024 时点存量（不是年度流量），两类时间语义不同，故只作结构代理。
-> **一句话结论**：四要素 × 两目标（创新成果／产业发展）的份额分解与 Top 6 路径全部算出、同行和为 1；但**创新成果侧只能拆企业与科研机构，人才份额实测为 0**（库内无作者级机构字段），**科研机构份额两种口径差 6.22—45.19 倍**，**产业侧四类主体互不互斥**（份额是结构代理不是归因）。三项退化决定本件判**部分支持**，且必须双列 A/B 两组机构份额。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -244,8 +251,8 @@ $$
 ### 2.8 复现结果展示
 
 ```bash
-$ python3 M_SYNTH_ELEM_CONTRIB.py
-[CONTRIB] -> code/M_SYNTH_ELEM_CONTRIB_out.json
+$ cd code && python3 M_SYNTH_ELEM_CONTRIB.py
+[CONTRIB] -> metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json
   成果侧A inst_share 深圳市 0.001277 / 广州市 0.003218 / 东莞市 0.000356 / 惠州市 0.000913
   成果侧B inst_share 深圳市 0.017045 / 广州市 0.145381 / 东莞市 0.007145 / 惠州市 0.005680
   ratio_B_over_A 深圳市 13.35 / 广州市 45.19 / 东莞市 20.08 / 惠州市 6.22
@@ -319,7 +326,7 @@ $ python3 M_SYNTH_ELEM_CONTRIB.py
 | `code/_snapshots21/cityfam_hightech_20261021.json` | 高企名录 | `dwd_ent_high_tech` |
 | `code/_snapshots21/probe_talent21_20261022.json` | 学者池 | `dwd_talent_scholar` |
 | `code/_snapshots21/papers_city_year_gkx21.json` | 论文 7,214 篇 | `dwd_paper` |
-| `code/M_SYNTH_ELEM_CONTRIB_out.json` | 本件产物 | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json` | 本件产物 | 派生产物 |
 
 ### 3.6 与兄弟件的一致性
 
@@ -412,7 +419,6 @@ $ python3 M_SYNTH_ELEM_CONTRIB.py
 8. 国家统计局、科学技术部、财政部．2024 年全国科技经费投入统计公报［R］．2025-09-29．https://www.stats.gov.cn/sj/zxfb/202509/t20250929_1961429.html
 9. 科学技术部．“创新积分制”工作指引（全国试行版）［Z］．2024-08-12．https://www.most.gov.cn/tztg/202408/t20240812_191380.html
 10. 中共中央、国务院．关于深化体制机制改革加快实施创新驱动发展战略的若干意见［Z］．2015-03-13．https://www.gov.cn/gongbao/content/2015/content_2843771.htm
-
 ---
 
 # 附件
@@ -513,20 +519,12 @@ $ python3 M_SYNTH_ELEM_CONTRIB.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_ELEM_CONTRIB.py` |
-| 产物 | `code/M_SYNTH_ELEM_CONTRIB_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_ELEM_CONTRIB.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_ELEM_CONTRIB_out.json` |
 | 面板 | `code/_snapshots21/synth_elem_panel_20261023.json` |
 | 专利快照 | `code/_snapshots21/patent2024_scan_20261021.json` |
 | 论文快照 | `code/_snapshots21/papers_city_year_gkx21.json` |
-| 运行方式 | `python3 M_SYNTH_ELEM_CONTRIB.py` |
+| 运行方式 | `cd code && python3 M_SYNTH_ELEM_CONTRIB.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 统计年 | 2024 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

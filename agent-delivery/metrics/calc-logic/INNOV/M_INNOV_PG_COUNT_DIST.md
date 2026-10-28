@@ -1,9 +1,22 @@
 # 政策数量与类型覆盖分布（M_INNOV_PG_COUNT_DIST）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_COUNT_DIST.md`；复现脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py` → `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（结构分布型计数）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 政策与条件保障力指标展示（需求清单序号 153）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = **部分**（数量、类型、层级三维足量；地域覆盖维结构性偏斜；2022 年后语料截断）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py`、产物 `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_COUNT_DIST.md`；复现脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py` → `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py`、产物 `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_PG_COUNT_DIST.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_PG_COUNT_DIST.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json` |
@@ -59,18 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py`、产物 `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（结构分布型计数）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 政策与条件保障力指标展示（需求清单序号 153）
-> **UI 挂载**：政策与条件保障力 → 政策扶持力度分析 → 政策数量 / 类型 / 覆盖面分布
-> **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（王惠 calc-logic 未登记本 ID，按 seq 153 的三个名词重建；口径责任在本报告）
-> **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = **部分**（数量、类型、层级三维足量；地域覆盖维结构性偏斜；2022 年后语料截断）
-> wanghui: false
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -106,7 +112,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「政策数量与类型覆盖分布」对应需求「政策扶持力度分析」（需求清单序号 153）：收集并统计特定领域的政策数量、政策类型、政策覆盖面，用户可按政策类型、时间范围、地域查看分布。需求只给了三个名词，没有公式；王惠 calc-logic 登记了「政策扶持力度」评分（`M_INNOV_PG_INTENSITY`），但**没有**登记本分布型指标，因此本报告按三个名词逐维重建口径。
 
-`code/M_INNOV_PG_COUNT_DIST.py` 从 `gkx` 快照复算，**零 SQL、0.24 秒**：政策 **20,000 条**、`id` 20,000 个（无重复）；类型 **13 类非空**（另有 1,862 条未标注，9.31%），类型结构熵 **1.9865 nat**、HHI **0.1678**、有效类数 **7.29**；层级以省级为主（9,922 条，49.61%），市级 6,149、国家级 2,174、区级 1,254、园区级 144；地域上省字段 87.38%、市字段 51.47%、区县字段仅 5.83%，四城中深圳 879 条、广州 325 条、东莞 8 条、惠州 0 条。
+`metrics/repro/M_INNOV_PG_COUNT_DIST.py` 从 `gkx` 快照复算，**零 SQL、0.24 秒**：政策 **20,000 条**、`id` 20,000 个（无重复）；类型 **13 类非空**（另有 1,862 条未标注，9.31%），类型结构熵 **1.9865 nat**、HHI **0.1678**、有效类数 **7.29**；层级以省级为主（9,922 条，49.61%），市级 6,149、国家级 2,174、区级 1,254、园区级 144；地域上省字段 87.38%、市字段 51.47%、区县字段仅 5.83%，四城中深圳 879 条、广州 325 条、东莞 8 条、惠州 0 条。
 
 结论是「数量维与类型维可用，覆盖维不可用于跨城评价」。类型结构显示政策工具以「其他通知」（28.91%）与「管理办法/实施方案」（18.54%）为主，「政策指南」仅 93 条（0.47%）；层级结构显示省级文件占近半，说明这份语料的主体是省级政府网站。地域维的偏斜不是真实格局：东莞 33,590 家企业只有 8 条政策、惠州 9,979 家企业一条也没有，与两地专利产出（36.5 万件、9.3 万件）明显不匹配，属采集覆盖问题，不能解读为「东莞、惠州政策扶持弱」。
 
@@ -159,7 +165,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 1 | `gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` | 政策扶持力度分析 · 序号 153 | 「收集并统计特定领域的政策数量、政策类型、政策覆盖面等数据，评估政策扶持的广度和深度。」 |
 | 2 | 同上 | 需规功能描述（续） | 「用户可按政策类型（如财税政策、人才政策、金融政策）、时间范围、地域等维度查看政策分布情况。」 |
 | 3 | `gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.4.1.7.4 政策与条件保障力指标展示 | 「通过收集和分析发展战略的引导力、政策扶持力度以及经费与项目支持力度等关键指标，构建政策与条件保障力评估体系。」 |
-| 4 | `王惠口径正本（GitLab 外本地归档）` | 口径定义（V1.5-20260901） | 「从政策数量、政策类型、政策覆盖面综合，取值 0—100。」 |
+| 4 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PG_INTENSITY.md（王惠正本已演化并入）` | 口径定义（V1.5-20260901） | 「从政策数量、政策类型、政策覆盖面综合，取值 0—100。」 |
 | 5 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_INNOV_PG_COUNT_DIST` | 「case=A；tables=[`dwd_policy_base`]；blocking=[]。」 |
 | 6 | 数据资产清单 | `_work_gkx21/SHARED_ASSETS.md` | 「政策全表 20,000 条（city/rank 已归一）→ `policy_base_20261021.json`。」 |
 
@@ -249,15 +255,15 @@ $$H=-\sum_{k}p_k\ln p_k,\qquad HHI=\sum_{k}p_k^{2},\qquad p_k=\frac{n_k}{N}$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_PG_COUNT_DIST.py` |
-| 结果产物 | 同目录 `code/M_INNOV_PG_COUNT_DIST_out.json` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_PG_COUNT_DIST.py` |
+| 结果产物 | 同目录 `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json` |
 | 主算数据 | `code/_snapshots21/pg_policy_rows_20261021.json`（20,000 行，由 `gkx.dwd_policy_base` 导出） |
 | 城市口径对照 | `code/_snapshots21/base_20261021.json`（189,116 行） |
 | 主算库 | `gkx`（`183.240.141.251:3318`，只读） |
 | SQL 条数 / 耗时 | 快照导出 1 条 SQL；本脚本 **0 条 SQL**，运行 0.24 秒 |
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_PG_COUNT_DIST.py
 ```
 
@@ -354,7 +360,7 @@ python3 code/M_INNOV_PG_COUNT_DIST.py
 
 ## 三、数据支撑情况（可得性与缺口，逐维 + 修复路径）
 
-> **判定顺序**：先跑通 `code/M_INNOV_PG_COUNT_DIST.py` 并确认结果合理，再写本档支持度。
+> **判定顺序**：先跑通 `metrics/repro/M_INNOV_PG_COUNT_DIST.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 / 字段 | gkx 三方库 | 实测行数 / 覆盖 | 结论 | 修复路径 |
 |---|---|---|---|---|---|
@@ -436,9 +442,7 @@ python3 code/M_INNOV_PG_COUNT_DIST.py
 4. Rothwell, R., & Zegveld, W. (1985). *Reindustrialization and Technology*. Longman.
 5. 彭纪生, 仲为国, 孙文祥. (2008). 政策协同演变与经济绩效：基于创新政策的实证研究. 管理世界, (9), 25–36.
 6. Shannon, C. E. (1948). A Mathematical Theory of Communication. *Bell System Technical Journal*, 27(3), 379–423. https://doi.org/10.1002/j.1538-7305.1948.tb01338.x
-7. 项目内口径文件（非外部文献）：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
-8. 项目内需求原文（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` 序号 153。
-
+7. 项目内需求原文（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` 序号 153。
 ---
 
 # 附件
@@ -561,17 +565,10 @@ python3 code/M_INNOV_PG_COUNT_DIST.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_PG_COUNT_DIST.py`（零 SQL，只读本地快照）
-- 产物：`code/M_INNOV_PG_COUNT_DIST_out.json`
+- 脚本：`metrics/repro/M_INNOV_PG_COUNT_DIST.py`（零 SQL，只读本地快照）
+- 产物：`metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`
 - 主算数据：`code/_snapshots21/pg_policy_rows_20261021.json`（20,000 行）
 - 源表：`gkx.dwd_policy_base` @ `183.240.141.251:3318`（三方库，只读）
 - 耗时：0.24 秒
 - 关键结果：20,000 条 / 13 类 / 熵 1.9865 / HHI 0.1678 / 有效类 7.29；省级 49.61%；省 87.38%、市 51.47%、区县 5.83%；四城 深 879 / 穗 325 / 莞 8 / 惠 0
 - 已知缺陷：2022 年后截断；区县覆盖 5.83%；城市偏斜；类型未标注 9.31%
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

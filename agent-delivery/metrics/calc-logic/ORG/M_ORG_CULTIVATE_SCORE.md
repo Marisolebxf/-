@@ -1,9 +1,20 @@
-# 科研机构扶持推荐指数（M_ORG_CULTIVATE_SCORE）
+# M_ORG_CULTIVATE_SCORE · 科研机构扶持推荐指数
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_CULTIVATE_SCORE.md`；复现脚本 `metrics/repro/M_ORG_CULTIVATE_SCORE.py` → `metrics/repro/out/M_ORG_CULTIVATE_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **数据支持度**：部分支持
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_ORG_CULTIVATE_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_CULTIVATE_SCORE.md`；复现脚本 `metrics/repro/M_ORG_CULTIVATE_SCORE.py` → `metrics/repro/out/M_ORG_CULTIVATE_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_ORG_CULTIVATE_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_CULTIVATE_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_ORG_CULTIVATE_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_CULTIVATE_SCORE_out.json` |
@@ -65,15 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_ORG_CULTIVATE_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 域：科研机构（ORG）｜类型：指数 + 分档｜形态：机构卡片（0–100）+ 优先扶持名单
-> **数据支持度**：部分支持
-> 判定：成果水平维**可直接转换**（论文 236 家、专利 219 家、项目 53 家）；经费使用效率维**仅 53 家可算**（`funded_institution` 大量为空）；人才结构维**仅 29 家可算**；扶持缺口维为**补充设计**（需求未列）
-> 一句话口径：按需求原文的「科研成果水平、科研经费使用效率、人才队伍结构」三维加一维「扶持缺口」，算出 0–100 扶持推荐指数并给分档，缺口维用于避免指数退化成「谁最强谁先拿钱」
-> 复现：`python3 code/M_ORG_CULTIVATE_SCORE.py` → `code/M_ORG_CULTIVATE_SCORE_out.json`
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -151,8 +158,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型 | 三维定义与阈值要求 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 882–890 行 |
-| 2 | 《科技专题算法库需求》序号 155 | 指标名与归属 | `需求文档原件（GitLab 外本地归档）.xlsx` |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型 | 三维定义与阈值要求 | `《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 882–890 行 |
+| 2 | 《科技专题算法库需求》序号 155 | 指标名与归属 | `需求方附件（不入仓）：科技专题算法库需求.xlsx` |
 | 3 | 同批 `M_ORG_ATTRACT_SCORE` | 同构性对照（ρ=0.892） | 本轮 `_staging21/` 交付 |
 | 4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 | `development_employee` 整列为空 | 本轮事实底稿 |
 | 5 | 英国 REF（Research Excellence Framework） | 绩效导向资助口径 | https://www.ref.ac.uk/ |
@@ -254,7 +261,7 @@ G 维需要经费总额与学者数两个分位，注意这里用的是「0 值�
 
 ### 2.7.2 复现代码与结果展示
 
-执行 `python3 M_ORG_CULTIVATE_SCORE.py`，零 SQL，约 0.05 秒，输出 `code/M_ORG_CULTIVATE_SCORE_out.json`。脚本会读取 `M_ORG_ATTRACT_SCORE_out.json` 的 `_scores` 字段计算秩相关，因此**必须先跑招引指数脚本**，否则 `redundancy_vs_attract` 为 null。
+执行 `cd code && python3 M_ORG_CULTIVATE_SCORE.py`，零 SQL，约 0.05 秒，输出 `metrics/repro/out/M_ORG_CULTIVATE_SCORE_out.json`。脚本会读取 `M_ORG_ATTRACT_SCORE_out.json` 的 `_scores` 字段计算秩相关，因此**必须先跑招引指数脚本**，否则 `redundancy_vs_attract` 为 null。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -450,7 +457,7 @@ F 维缺 300 家、T 维缺 324 家，这两个缺口把 353 家压成「16 家�
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_ORG_ATTRACT_SCORE.py        # 先跑招引，供秩相关读取
 python3 M_ORG_CULTIVATE_SCORE.py
 python3 -c "import json;d=json.load(open('M_ORG_CULTIVATE_SCORE_out.json'));print(d['tiers'],d['redundancy_vs_attract'])"
@@ -467,15 +474,11 @@ python3 -c "import json;d=json.load(open('M_ORG_CULTIVATE_SCORE_out.json'));prin
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 882–890 行。
-2. 《科技专题算法库需求》序号 155「科研机构扶持推荐模型」，`需求文档原件（GitLab 外本地归档）.xlsx`。
-3. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.10（`development_employee` 整列为空）。
-4. 同批交付 `_staging21/M_ORG_ATTRACT_SCORE.md`（同构性对照件）。
-5. UK Research and Innovation, *Research Excellence Framework*, https://www.ref.ac.uk/
-6. European Commission, *Cohesion Policy — Research and Innovation*, https://ec.europa.eu/regional_policy/
-7. 广东省科学技术厅，基础与应用基础研究基金，http://gdstc.gd.gov.cn/
-8. 深圳市科技创新局，科技计划与平台扶持政策，https://stic.sz.gov.cn/
-
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型，`《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 882–890 行。
+2. UK Research and Innovation, *Research Excellence Framework*, https://www.ref.ac.uk/
+3. European Commission, *Cohesion Policy — Research and Innovation*, https://ec.europa.eu/regional_policy/
+4. 广东省科学技术厅，基础与应用基础研究基金，http://gdstc.gd.gov.cn/
+5. 深圳市科技创新局，科技计划与平台扶持政策，https://stic.sz.gov.cn/
 # 附件
 
 ## 附录 B　原始需求原文摘录
@@ -529,10 +532,3 @@ SELECT COUNT(*) FROM gkx.dwd_scholar WHERE is_academician=1;  -- 112
 四、结论。本件可作为「扶持优先级初筛」使用，但必须明确政策取向、必须披露与招引指数的同构性、必须标注 F 维的代用性质。它不是「经费使用效率评估」，也不是「人才结构评估」，这两件事在本库没有字段支撑。
 
 五、与其他 ORG 指标的分工建议。基础指标负责「有哪些机构」、关注度负责「热度在往哪走」、招引负责「引谁」、合作链负责「谁连谁」、本件负责「钱给谁」。五件里本件与招引的重叠度最高，建议在同一个机构卡片里以「双视角」呈现（招引分 / 扶持分 / 两分差），把「两分差大」的机构作为重点讨论对象——差大意味着「值得引但不值得扶」或反之，这正是决策最需要的信息。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

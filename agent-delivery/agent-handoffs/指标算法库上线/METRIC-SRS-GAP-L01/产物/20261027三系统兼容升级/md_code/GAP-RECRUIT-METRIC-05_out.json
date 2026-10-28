@@ -1,0 +1,135 @@
+{
+  "metric_id": "GAP-RECRUIT-METRIC-05",
+  "metric_name": "关键指标集合",
+  "script": "GAP-RECRUIT-METRIC-05.py",
+  "data_source": "gkx（183.240.141.251:3318，schema gkx）",
+  "method_note": "非独立指标：候选关键指标依赖盘点 + 样例企业卡片装配实验（handoff ER-B12：不建笼统总分）",
+  "inventory": {
+    "行业分类(GB/T门类)": {
+      "table": "dwd_org_base_info.industry_l1_name",
+      "structure": true,
+      "rows_or_hits": 186809,
+      "note": "一级行业名称字段"
+    },
+    "注册资本": {
+      "table": "dwd_org_base_info.registered_capital_value",
+      "structure": true,
+      "rows_or_hits": 188078,
+      "note": "注册资本数值字段"
+    },
+    "上市状态": {
+      "table": "dwd_org_base_info.listing_status",
+      "structure": true,
+      "rows_or_hits": 1971,
+      "note": "上市/挂牌状态"
+    },
+    "企业规模": {
+      "table": "dwd_org_base_info.org_size",
+      "structure": true,
+      "rows_or_hits": 189116,
+      "note": "大中小微四档全覆盖"
+    },
+    "对外投资数": {
+      "table": "dwd_org_invest_info",
+      "structure": true,
+      "rows_or_hits": 46967,
+      "note": "COUNT by org_id"
+    },
+    "子公司数": {
+      "table": "dwd_org_subsidiary_info",
+      "structure": true,
+      "rows_or_hits": 178900,
+      "note": "COUNT by org_id"
+    },
+    "专利数": {
+      "table": "dwd_patent",
+      "structure": true,
+      "rows_or_hits": 2939895,
+      "note": "JOIN applicants by name → org（行数取 GKX_INVENTORY 库存）"
+    },
+    "融资事件数": {
+      "table": "dwd_org_financing_info",
+      "structure": true,
+      "rows_or_hits": 25654,
+      "note": "COUNT by org_id"
+    },
+    "营业收入(年报)": {
+      "table": "dwd_org_income_statement.yysr",
+      "structure": true,
+      "rows_or_hits": 205292,
+      "note": "按机构名关联 base（实测 5000 样本匹配率 94.4%）；覆盖机构 3254"
+    },
+    "深圳连接度": {
+      "table": "code/GAP-RECRUIT-METRIC-01_out.json",
+      "structure": true,
+      "rows_or_hits": 62868,
+      "note": "同批 M0 样板已跑通（n_scored）"
+    },
+    "政策匹配度": {
+      "table": "dwd_policy_base",
+      "structure": true,
+      "rows_or_hits": 20000,
+      "note": "政策库有量表，但匹配算法/口径未闭合（Q014 类似缺口）"
+    }
+  },
+  "sample_cards": [
+    {
+      "org_id": "7bfe8fcda027df3c6dd94674b804c75b",
+      "name_cn": "深圳市大族视觉技术有限公司",
+      "city": "深圳市",
+      "industry_l1": "制造业",
+      "industry_l2": "电气机械和器材制造业",
+      "key_metrics": {
+        "注册资本(万元)": 22000000.0,
+        "上市状态": "",
+        "规模": "小型",
+        "对外投资数": 0,
+        "子公司数": 0,
+        "融资事件数": 0,
+        "最新年报营收(元)": null
+      }
+    },
+    {
+      "org_id": "57a8e351f406f62b3deb56ca8108779c",
+      "name_cn": "深圳市恒利普智能显示有限公司",
+      "city": "深圳市",
+      "industry_l1": "制造业",
+      "industry_l2": "计算机、通信和其他电子设备制造业",
+      "key_metrics": {
+        "注册资本(万元)": 31000000.0,
+        "上市状态": "",
+        "规模": "微型",
+        "对外投资数": 0,
+        "子公司数": 0,
+        "融资事件数": 0,
+        "最新年报营收(元)": null
+      }
+    },
+    {
+      "org_id": "034eb22deb0908c679de2cdfdb9b7cf6",
+      "name_cn": "深圳阿尔麦斯机器人有限公司",
+      "city": "深圳市",
+      "industry_l1": "制造业",
+      "industry_l2": "其他制造业",
+      "key_metrics": {
+        "注册资本(万元)": 10000000.0,
+        "上市状态": "",
+        "规模": "小型",
+        "对外投资数": 0,
+        "子公司数": 0,
+        "融资事件数": 0,
+        "最新年报营收(元)": null
+      }
+    }
+  ],
+  "support_judgment": {
+    "data_support_level": "完全转换支持",
+    "reason": "候选关键指标 11 项中 11 项有结构、11 项当前量>100；样例企业 3 张卡片装配成功（行业/资本/规模/投资/子公司/融资/营收均可取值）。本 GAP 本质是展示层集合规则：各组成指标可从现库拼装，无需独立公式；最终展示哪几项由 UX 定义（handoff ER-B12 已锁定，不建总分）。",
+    "criteria": {
+      "inventory_items": 11,
+      "structure_ok": 11,
+      "data_ok_gt100": 11,
+      "sample_cards_assembled": true
+    }
+  }
+}

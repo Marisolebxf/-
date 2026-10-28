@@ -1,9 +1,22 @@
 # 产业链瓶颈堵点数（M_CHAIN_BOTTLENECK_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_BOTTLENECK_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_COUNT.py` → `metrics/repro/out/M_CHAIN_BOTTLENECK_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：COUNT（瓶颈环节计数）｜ **域**：产业链分析／产业链监测／堵点识别｜ **UI 挂载**：产业链监测页「瓶颈堵点」面板、补链强链专题
+> - **数据支持度**：**完全不支持**｜ **依赖性质**：**B 类（不可重建，须外部评分/监测数据）**｜ **公式定义人**：无 calc-logic 真源
+> - **一句话结论**：瓶颈要求「供需缺口/技术依赖/产能利用/交付周期/替代性」五维评分，gkx 五维全无，且不能与「空位环节」混同。
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_BOTTLENECK_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_BOTTLENECK_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_COUNT.py` → `metrics/repro/out/M_CHAIN_BOTTLENECK_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_BOTTLENECK_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_BOTTLENECK_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_BOTTLENECK_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_BOTTLENECK_COUNT_out.json` |
@@ -64,16 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_BOTTLENECK_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_BOTTLENECK_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT（瓶颈环节计数）｜ **域**：产业链分析／产业链监测／堵点识别｜ **UI 挂载**：产业链监测页「瓶颈堵点」面板、补链强链专题
-> **数据支持度**：**完全不支持**｜ **依赖性质**：**B 类（不可重建，须外部评分/监测数据）**｜ **公式定义人**：无 calc-logic 真源
-> **本件脚本**：`code/M_CHAIN_BOTTLENECK_COUNT.py` 只做**否定性证据探针**（五维词根扫描 + 误匹配剔除 + 宏观指数表核查），不做指标计算；产物 `code/M_CHAIN_BOTTLENECK_COUNT_out.json`。瓶颈判定是五维评分的产物，五维输入在 gkx 全部不存在；下方 §二 逐维证明。
-> **一句话结论**：瓶颈要求「供需缺口/技术依赖/产能利用/交付周期/替代性」五维评分，gkx 五维全无，且不能与「空位环节」混同。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用）
 
@@ -106,7 +114,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 gkx 里没有任何一组这样的对照。五维输入逐项核过：供需缺口（无产能/需求表）、技术依赖（无进口/引用表）、产能利用率（无工业统计）、交付周期（无订单表）、替代性（无供应商清单）。以 `%bottleneck%`、`%importance%`、`%supply%` 扫描 `information_schema.tables`，全部 0 命中。
 
-> 探针实测（`code/M_CHAIN_BOTTLENECK_COUNT.py`，2026-10-22 16:45）：五维各按 3 类词根扫描，剔除误匹配后**节点级载体 0/5**。两处词根命中已核为误匹配——`%import%` 命中 `dwd_org_important_news_info`（企业重要资讯）、`%citation%` 命中 `dwd_en_paper_citation` / `dwd_zh_paper_citation`（论文引用），都与「技术依赖」无关。最容易被当成 D3 的 `dwd_macro_index_data`（20,000 行、287 个指数码、1949—2026）也查了：`dim_cal` 只有 JDZ（绝对值）与 TB（同比）两值，按 `cap`/`util`/「产能」检索 0 条，是国民经济与外贸效益类宏观序列，不含产能利用率、也不落到环节。
+> 探针实测（`metrics/repro/M_CHAIN_BOTTLENECK_COUNT.py`，2026-10-22 16:45）：五维各按 3 类词根扫描，剔除误匹配后**节点级载体 0/5**。两处词根命中已核为误匹配——`%import%` 命中 `dwd_org_important_news_info`（企业重要资讯）、`%citation%` 命中 `dwd_en_paper_citation` / `dwd_zh_paper_citation`（论文引用），都与「技术依赖」无关。最容易被当成 D3 的 `dwd_macro_index_data`（20,000 行、287 个指数码、1949—2026）也查了：`dim_cal` 只有 JDZ（绝对值）与 TB（同比）两值，按 `cap`/`util`/「产能」检索 0 条，是国民经济与外贸效益类宏观序列，不含产能利用率、也不落到环节。
 
 最容易被误用的是「空位环节」：`M_CHAIN_BREAK_RISK_COUNT` 已算出 38 个无企业环节。但空位是「本地没人干」，瓶颈是「有人干但干不够」——两者语义相反。把空位当瓶颈，会把「本地不布局的环节」误报为「堵点」，招商方向直接错。
 
@@ -293,12 +301,9 @@ gkx 里没有任何一组这样的对照。五维输入逐项核过：供需缺�
 ## 参考文献
 
 1. 国家统计局：工业产能利用率统计　https://www.stats.gov.cn/
-2. OECD：供应链韧性与中断风险　https://www.oecd.org/sti/
-3. 世界银行物流绩效指数（LPI）　https://www.worldbank.org/
-4. 工信部：产业链供应链堵点卡点治理　https://www.miit.gov.cn/
-5. Rasmussen, P. N. (1956). Studies in Inter-Sectoral Relations（IO 关键部门）　https://www.oecd.org/sti/
-6. 中国物流与采购联合会：PMI 供应商配送时间　https://www.chinawuliu.com.cn/
-
+2. 世界银行物流绩效指数（LPI）　https://www.worldbank.org/
+3. 工信部：产业链供应链堵点卡点治理　https://www.miit.gov.cn/
+4. 中国物流与采购联合会：PMI 供应商配送时间　https://www.chinawuliu.com.cn/
 ---
 
 # 附件
@@ -376,11 +381,3 @@ SELECT COUNT(*) FROM (
 **验收口径建议**：堵点清单必须同时给出「阈值 + 权重 + 评分人」，否则不可复现；页面上应显示「本次评分基于 N 位专家、M 个环节」。
 
 **与相邻指标的边界**：堵点（有人但不够）与空位（没人）分列两个指标，禁止合并展示，否则招商会同时收到「招引」与「技改」两种互相冲突的建议。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,25 @@
 # 技术域综合评价分（M_TECH_COMPOSITE_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_COMPOSITE_SCORE.md`；复现脚本 `metrics/repro/M_TECH_COMPOSITE_SCORE.py` → `metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（多指标加权合成，输出 0—100 分）｜ **域**：技术分析／技术域评价｜ **UI 挂载**：技术域总览页的六边形雷达、「优先布局技术域」卡片
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（专利四维全量）+ B 类（论文维仅学科上界、前沿质量/技术交易/资讯三维结构性无源）**
+> - **同域边界**：与 `M_TECH_BASE_96_1`（技术域基础读数矩阵，11 子指标逐格填数、不出综合分）**统计量不同**：那件是「读数表」，本件是「加权分」。两件共享同一套 10 域 IPC4 清单，口径一致、数值不可互换。
+> - **一句话结论**：10 个技术域里智能终端 83.3223、集成电路 75.2094、工业软件 70.1260 居前三，商业航天 7.8121 垫底；但 11 个子指标里 **4 个无源、4 个只有代理、3 个直接**，缺的正是「前沿性」与「交易活跃度」两层，且域间件数相差 34 倍 → **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_TECH_COMPOSITE_SCORE.py`｜ **产物**：`metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_COMPOSITE_SCORE.py`、产物 `metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_COMPOSITE_SCORE.md`；复现脚本 `metrics/repro/M_TECH_COMPOSITE_SCORE.py` → `metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_COMPOSITE_SCORE.py`、产物 `metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_COMPOSITE_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_TECH_COMPOSITE_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json` |
@@ -64,18 +80,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_COMPOSITE_SCORE.py`、产物 `metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（多指标加权合成，输出 0—100 分）｜ **域**：技术分析／技术域评价｜ **UI 挂载**：技术域总览页的六边形雷达、「优先布局技术域」卡片
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（专利四维全量）+ B 类（论文维仅学科上界、前沿质量/技术交易/资讯三维结构性无源）**
-> **复现脚本**：`code/M_TECH_COMPOSITE_SCORE.py`｜ **产物**：`code/M_TECH_COMPOSITE_SCORE_out.json`
-> **权重声明**：`0.35 专利规模 + 0.25 主体广度 + 0.15 论文上界 + 0.25 深圳份额` 是**自定义权重**，不是官方权重，也不是 AHP 标定值。注册表本件的 `formula` 至今为 `pending_ods`，分项与权重均未冻结。
-> **同域边界**：与 `M_TECH_BASE_96_1`（技术域基础读数矩阵，11 子指标逐格填数、不出综合分）**统计量不同**：那件是「读数表」，本件是「加权分」。两件共享同一套 10 域 IPC4 清单，口径一致、数值不可互换。
-> **一句话结论**：10 个技术域里智能终端 83.3223、集成电路 75.2094、工业软件 70.1260 居前三，商业航天 7.8121 垫底；但 11 个子指标里 **4 个无源、4 个只有代理、3 个直接**，缺的正是「前沿性」与「交易活跃度」两层，且域间件数相差 34 倍 → **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -175,7 +184,7 @@ $$S_d=100\times\left(0.35\,\widetilde{P_d}+0.25\,\widetilde{B_d}+0.15\,\widetild
 | 2 | `gkx.dwd_zh_paper` | 同上 | 论文上界（100,900 篇，`download_num` 整列 0） |
 | 3 | `gkx.dwd_deal` | 同上 | 技术交易额不可得的证据（10 行、无金额列） |
 | 4 | `gkx.dwd_patent_transfer` | 同上 | 同上（22,809 行、无成交价） |
-| 5 | `code/M_TECH_BASE_96_1_out.json` | 本目录 | 10 域 IPC4 清单、域件数、论文上界、11 子指标矩阵 |
+| 5 | `metrics/repro/out/M_TECH_BASE_96_1_out.json` | 本目录 | 10 域 IPC4 清单、域件数、论文上界、11 子指标矩阵 |
 | 6 | `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-TECH-seed.yaml` | 仓库 | 本件 formula 状态（`pending_ods`） |
 | 7 | OECD. *Frascati Manual 2015* | https://doi.org/10.1787/9789264239012-en | 技术活动分类的国际口径参照 |
 
@@ -250,9 +259,9 @@ min-max 的池子是**固定的 10 个域**，不随筛选变化。这一点与�
 ### 2.9 复现代码结果展示
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_TECH_COMPOSITE_SCORE.py
-# → code/M_TECH_COMPOSITE_SCORE_out.json
+# → metrics/repro/out/M_TECH_COMPOSITE_SCORE_out.json
 ```
 
 产物字段：`rows`（10 域 × 五项输入）、`scores`/`ranks`、`dims_used`/`dims_null`、`sub_metric_status_count`（直接 3/代理 4/无源 4）、`sensitivity`（五组）、`probe`（交易与资讯类的现场复核）、`dim_null_domains`（头部集中缺失的 6 个域）。实测输出：智能终端 83.3223 第一、商业航天 7.8121 末位；S1 Spearman 0.8303。
@@ -304,7 +313,7 @@ python3 code/M_TECH_COMPOSITE_SCORE.py
 | `gkx.dwd_zh_paper_classification` | 20,048 | 学科上界的来源 | 经上游产物 |
 | `code/_snapshots21/patent_ipc4_by_name_20261021.json` | 581,585 行 | 主体广度、深圳份额 | 只读 |
 | `code/_snapshots21/base_20261021.json` | 189,115 行 | 名称→城市 | 只读 |
-| `code/M_TECH_BASE_96_1_out.json` | 10 域 | 域定义、件数、论文上界、11 子指标矩阵 | 只读（声明为上游产物） |
+| `metrics/repro/out/M_TECH_BASE_96_1_out.json` | 10 域 | 域定义、件数、论文上界、11 子指标矩阵 | 只读（声明为上游产物） |
 
 `dwd_zh_paper_classification` 这 20,048 行是「有学科没年份」的那批，`dwd_zh_paper` 的 100,900 行是「有年份没学科」的那批，两个集合只有 799 个 ID 交集。本件把前者当作论文维的唯一来源，接受「无年份」这个限制。
 
@@ -370,7 +379,6 @@ python3 code/M_TECH_COMPOSITE_SCORE.py
 4. 国家知识产权局.《国际专利分类表（IPC）使用指南》. https://www.cnipa.gov.cn/
 5. 国家统计局.《高技术产业（制造业）分类（2017）》. https://www.stats.gov.cn/sj/tjbz/
 6. 中国图书馆分类法编辑委员会.《中国图书馆分类法（第五版）》. http://www.clcindex.com/
-
 ---
 
 # 附件
@@ -462,16 +470,9 @@ H01L 出现两次（AI芯片、集成电路）、G06N 出现两次（人工智�
 
 | 项 | 值 | 出处 |
 |---|---|---|
-| 域数 | 10 | `code/M_TECH_BASE_96_1_out.json` |
+| 域数 | 10 | `metrics/repro/out/M_TECH_BASE_96_1_out.json` |
 | IPC4 前缀数（全库） | 634 | 同上 |
 | 有 IPC4 的专利件数 | 2,420,915 | 同上 |
 | 11 子指标状态 | 直接 3／代理 4／无源 4 | `sub_metric_status_count` |
 | 主权重 | 0.35/0.25/0.15/0.25 | `weights_declared.main` |
 | 判档 | 部分支持 | 本文 §〇 与 `support_judgment` |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

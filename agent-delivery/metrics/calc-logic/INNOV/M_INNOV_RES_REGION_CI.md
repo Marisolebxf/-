@@ -1,9 +1,22 @@
-# 区域竞争力指数（CI = competitiveness index）（M_INNOV_RES_REGION_CI）
+# 区域竞争力指数（M_INNOV_RES_REGION_CI）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_RES_REGION_CI.md`；复现脚本 `metrics/repro/M_INNOV_RES_REGION_CI.py` → `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：工程定义（区域口径单独立项）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 → 区域竞争力对比 ｜ **UI 挂载**：区域竞争力对比页——四维雷达、区域排名表、差距分解条
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（三方库有底册 / 专利 / 政策 / 机构标签）；依赖数据 = **部分**（专利维足；件型只有 6.80% 切片；研发费用只覆盖上市主体；政策市级覆盖偏；底册 99.82% 在深圳都市圈）
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_RES_REGION_CI.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_RES_REGION_CI.py`、产物 `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_RES_REGION_CI.md`；复现脚本 `metrics/repro/M_INNOV_RES_REGION_CI.py` → `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_RES_REGION_CI.py`、产物 `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_RES_REGION_CI.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_RES_REGION_CI.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json` |
@@ -67,18 +80,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_RES_REGION_CI.py`、产物 `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：工程定义（区域口径单独立项）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 → 区域竞争力对比 ｜ **UI 挂载**：区域竞争力对比页——四维雷达、区域排名表、差距分解条
-> **派单标签**：区域竞争力对比（CI = competitiveness index）｜ **对象**：区域（城市），**不是企业** ｜ **wanghui**: false
-> **设立缘由（2026-10-22 裁定）**：原 `M_INNOV_RES_CI_COMPARE` 的 CI 被误读为「区域竞争力」，calc-logic 真源实为「多企业竞争情报比对（competitive intelligence）」。企业口径件保持原样，区域口径单独立本 ID；两件的对象、分母、单位与解释框架互不复用。
-> **数据支持度**：**部分支持**
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（三方库有底册 / 专利 / 政策 / 机构标签）；依赖数据 = **部分**（专利维足；件型只有 6.80% 切片；研发费用只覆盖上市主体；政策市级覆盖偏；底册 99.82% 在深圳都市圈）
-> **铁律**：专利数字零 SQL，只读 `_snapshots21/` 与 `_snapshots_gkx21/` 缓存；区域集合只用底册能把专利落到城的 4 市；不把企业重叠矩阵包装成区域排名
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -121,6 +127,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 判**部分支持**的四条硬理由：区域集合只有 4 市且不能再扩（底册 99.82% 在都市圈，非粤城市无企业底册即无专利归属）；发明占比来自 6.80% 主键切片而非全量；研发费用只覆盖 658 家上市主体（底册的 0.35%），不是区域 R&D 经费；政策库 48.53% 的记录不落城，东莞 8 条、惠州 0 条。指数可用于都市圈内的区域对比与差距分解，不可外推成全国区域排名。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 科技专题服务算法库是深度挖掘算法的重要服务引擎，面向政府、高校、科研机构、智库与科研企业的专题化分析与决策场景，提供从指标体系构建、知识图谱计算、深度分析与评价、预测仿真到推荐匹配的一体化能力。算法库贯通产业、技术、企业、人才、政策与服务机构等关键要素，在统一的数据底座与算力平台上，将分散的多源数据加工为结构化的指标与可计算的知识网络，输出可挖掘、可分析、可预测的智能成果，支撑线上智能分析与线下大<br>><br>> 围绕专题业务的本质特征，算法库构建可配置的指标体系与跨要素知识图谱，结合图结构计算、时序分析与机理模型，形成面向产业链与技术链的全景洞察，支持态势监测、趋势研判、瓶颈识别、路径优化与政策仿真。通过对企业、科研机构与人才的综合画像与评估，算法库实现对创新主体的竞争力判断与协同潜力识别，并在招引、培育与重点布局等决策环节提供面向场景的推荐与匹配结果。同时，算法库强调结果的可解释与评估，以模型卡、特征贡<br>><br>> 面向应用价值，算法库以统一、可信、可演化的智能能力服务政策制定与评估、产业发展与布局、创新主体培育与引进、区域综合诊断等关键场景。它将复杂的科技数据与业务知识转化为可操作的洞察与行动方案，提升科技治理的科学性与时效性，促进产业链与技术链的协同升级，助力区域创新生态的持续优化，从而显著提升科技信息服务的质量与效果。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 从展示层来说，主要分为超大屏、中屏、小屏展示方式，针对各展示方式的内容定位、使用场景与用户需求进行建设，实现面向政府用户的决策场景、面向高校科研机构和企业的创新场景、面向智库用户的智库场景、面向访问人员的接待场景可视化应用。<br>><br>> 科技信息展示系统以政府、高校、科研机构、智库、科研企业为主要服务对象，以需求为导向、以数据为核心、以创新为驱动力。面向基础研究、应用基础研究和8大未来产业服务群落，提供基于智慧搜索、深度挖掘算法、科技指数计算、超大模型智算、亿级科技知识图谱的业务数据成果，构建面向政府用户的决策场景、面向高校科研机构和产业企业的创新场景、面向智库用户的智库场景、面向访问人员的接待场景的可视化专题。<br>><br>> 科技信息展示系统以政府、高校、科研机构、智库、科研企业为主要服务对象，以需求为导向、以数据为核心、以创新为驱动力。面向基础研究、应用基础研究和8大未来产业服务群落，提供基于智慧搜索、深度挖掘算法、科技指数计算、超大模型智算、亿级科技知识图谱的业务数据成果，构建面向政府用户的决策场景、面向高校科研机构和产业企业的创新场景、面向智库用户的智库场景、面向访问人员的接待场景的可视化专题。场景需求收集用户在<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_RES_REGION_CI.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -211,7 +263,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> 本节全部读数由 `code/M_INNOV_RES_REGION_CI.py` 实测产出，产物 `code/M_INNOV_RES_REGION_CI_out.json`，运行 2.1 秒，`sql_count=0`。
+> 本节全部读数由 `metrics/repro/M_INNOV_RES_REGION_CI.py` 实测产出，产物 `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json`，运行 2.1 秒，`sql_count=0`。
 
 ### 2.1 步骤 1｜对象锁定与区域入集
 
@@ -280,7 +332,7 @@ IPC4 熵用城市对标同族共享的 `(城市, 年, IPC4) → pn 集合` 缓�
 
 ### 2.7 步骤 7｜复现代码与结果展示
 
-脚本 `code/M_INNOV_RES_REGION_CI.py`，产物 `code/M_INNOV_RES_REGION_CI_out.json`（约 60 KB），运行 2.1 秒，`sql_count=0`，不连数据库。
+脚本 `metrics/repro/M_INNOV_RES_REGION_CI.py`，产物 `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json`（约 60 KB），运行 2.1 秒，`sql_count=0`，不连数据库。
 
 `_out.json` 顶层键：`base_years_used` / `base_years_missing` / `base_years_note`（基期披露，与派单书铁律 5 对齐）、`universe`（区域集合、重名披露、专利覆盖率）、`method`（权重常量、归一化、缺维规则）、`indicators`（16 个取值字段）、`dimension_scores`（4×4 维得分）、`scores` / `ranking` / `rank`、`sensitivity`（11 套方案）、`sensitivity_summary`（临界权重与排名变动）、`growth_reference`（2021→2024 CAGR 与 `base_years_used` / `base_years_missing`）、`structure_detail`（件型抽样、两套熵）、`environment_detail`、`coverage`、`gaps`、`conclusion`。
 
@@ -484,17 +536,21 @@ python3 code/M_INNOV_RES_REGION_CI.py
 ---
 
 ## 参考文献
-
 1. IMD World Competitiveness Center. (2024). *World Competitiveness Ranking — Methodology*. https://www.imd.org/centers/wcc/world-competitiveness-center/rankings/world-competitiveness-ranking/
-2. 中国社会科学院财经战略研究院. 《中国城市竞争力报告》（综合经济竞争力、可持续竞争力分项指数）. 社会科学文献出版社. https://www.ssap.com.cn/
-3. European Commission. (2024). *Regional Innovation Scoreboard — performance indicators*. https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/regional-innovation-scoreboard_en
-4. OECD/JRC (Nardo, M., Saisana, M., Saltelli, A., Tarantola, S. 等). (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://www.oecd.org/en/publications/handbook-on-constructing-composite-indicators-methodology-and-user-guide_9789264043466-en.html
-5. 国家市场监督管理总局、国家标准化管理委员会. (2023). 《新型城镇化 创新型城市评价指南》（GB/T 43560-2023）. https://std.samr.gov.cn/gb/search/gbDetailed?id=0DF2F72AE29F403DE06397BE0A0A87C4
-6. Porter, M. E. (2003). The Economic Performance of Regions. *Regional Studies*, 37(6-7), 549–578. https://doi.org/10.1080/0034340032000108688
-7. 国家知识产权局. (2020). 《专利导航指南》系列国家标准（GB/T 39551-2020）. https://www.cnipa.gov.cn/art/2020/11/21/art_53_155152.html
-8. 深圳市知识产权局. (2024). 《2023 年深圳市知识产权事业发展统计公报》. https://amr.sz.gov.cn/xxgk/qt/ztlm/zscqcjybh/zscqbps/content/post_12167564.html
-9. 项目内真源（非外部文献）：`第三方库指标计算过程/M_INNOV_RES_CI_COMPARE.md`（企业口径件，§2.1 区域缺口与 §5.4 单独立项裁定）、`第三方库指标计算过程/M_INNOV_CITY_COMPETE_SZ.md`（城市 LQ 三轴件）。
 
+2. 中国社会科学院财经战略研究院. 《中国城市竞争力报告》（综合经济竞争力、可持续竞争力分项指数）. 社会科学文献出版社. https://www.ssap.com.cn/
+
+3. European Commission. (2024). *Regional Innovation Scoreboard — performance indicators*. https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/regional-innovation-scoreboard_en
+
+4. OECD/JRC (Nardo, M., Saisana, M., Saltelli, A., Tarantola, S. 等). (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://www.oecd.org/en/publications/handbook-on-constructing-composite-indicators-methodology-and-user-guide_9789264043466-en.html
+
+5. 国家市场监督管理总局、国家标准化管理委员会. (2023). 《新型城镇化 创新型城市评价指南》（GB/T 43560-2023）. https://std.samr.gov.cn/gb/search/gbDetailed?id=0DF2F72AE29F403DE06397BE0A0A87C4
+
+6. Porter, M. E. (2003). The Economic Performance of Regions. *Regional Studies*, 37(6-7), 549–578. https://doi.org/10.1080/0034340032000108688
+
+7. 国家知识产权局. (2020). 《专利导航指南》系列国家标准（GB/T 39551-2020）. https://www.cnipa.gov.cn/art/2020/11/21/art_53_155152.html
+
+8. 深圳市知识产权局. (2024). 《2023 年深圳市知识产权事业发展统计公报》. https://amr.sz.gov.cn/xxgk/qt/ztlm/zscqcjybh/zscqbps/content/post_12167564.html
 ---
 
 # 附件
@@ -503,8 +559,8 @@ python3 code/M_INNOV_RES_REGION_CI.py
 
 | 项 | 值 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_RES_REGION_CI.py` |
-| 结果产物 | `code/M_INNOV_RES_REGION_CI_out.json` |
+| 计算脚本 | `metrics/repro/M_INNOV_RES_REGION_CI.py` |
+| 结果产物 | `metrics/repro/out/M_INNOV_RES_REGION_CI_out.json` |
 | 主算库 | `gkx`（三方库 `183.240.141.251:3318`，只读账号）——**本脚本不连库** |
 | SQL 条数 | 0（全部读 `_snapshots21/` 与 `_snapshots_gkx21/` 缓存） |
 | 运行时间 | 2.1 秒 |
@@ -621,10 +677,3 @@ RIS 对 NUTS-2 区域用 21 项投入产出指标算相对 EU 均值的百分比
 ### D.4 口径归位说明
 
 D.2 的对象是企业、D.3 的对象是「深圳 vs 对标城的技术赛道」、D.1 的对象是「区域综合竞争力」。三者分别由 `M_INNOV_RES_CI_COMPARE`、`M_INNOV_CITY_COMPETE_SZ` 与本件承载，任何一件的产物都不得贴上另一件的标签。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

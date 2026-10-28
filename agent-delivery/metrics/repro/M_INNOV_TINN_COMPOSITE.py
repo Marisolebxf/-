@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_INNOV_TINN_COMPOSITE · 技术创新力综合评估（判：部分支持）
 
 口径真源：`metrics/calc-logic/INNOV/M_INNOV_TINN_COMPOSITE.md`（V1.5-20260901）

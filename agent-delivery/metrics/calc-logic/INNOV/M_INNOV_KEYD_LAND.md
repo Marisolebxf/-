@@ -1,9 +1,21 @@
 # 土地创新产出效益与利用效率（M_INNOV_KEYD_LAND）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_KEYD_LAND.md`；复现脚本 `metrics/repro/M_INNOV_KEYD_LAND.py` → `metrics/repro/out/M_INNOV_KEYD_LAND_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（空间密度／集聚度读数）｜ **域**：科技信息展示系统／科技发展态势／土地用途与效益分析｜ **UI 挂载**：土地效益图层、创新地标热力卡
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_KEYD_LAND.py`、产物 `metrics/repro/out/M_INNOV_KEYD_LAND_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_KEYD_LAND.md`；复现脚本 `metrics/repro/M_INNOV_KEYD_LAND.py` → `metrics/repro/out/M_INNOV_KEYD_LAND_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_KEYD_LAND.py`、产物 `metrics/repro/out/M_INNOV_KEYD_LAND_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_KEYD_LAND.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_KEYD_LAND.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_KEYD_LAND_out.json` |
@@ -59,20 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_KEYD_LAND.py`、产物 `metrics/repro/out/M_INNOV_KEYD_LAND_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（空间密度／集聚度读数）｜ **域**：科技信息展示系统／科技发展态势／土地用途与效益分析｜ **UI 挂载**：土地效益图层、创新地标热力卡
-> **数据支持度**：**部分支持**
-> **口径来源**：注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`；`calc-logic/INNOV` 下无同 ID 正本，本件口径为自拟
-> **王惠正本**：`王惠口径正本（GitLab 外本地归档）` 下未收录本条（`calc_logic` 为空）
-> **复现**：`python3 _probe_keyd_w15n1.py && python3 M_INNOV_KEYD_LAND.py` → `code/M_INNOV_KEYD_LAND_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），脚本零 DB、只读落盘快照
-> **基期声明**：`base_years_used` = [2026]（取数时点，不是统计年度）；`base_years_missing` = []；本件是**截面空间快照**，不含年度序列
-> **权重声明**：`main_is_official` = **false**。规模 0.5／创新行业占比 0.3／行业集中度 0.2 为自定；客观熵权（0.0036／0.2709／0.7256）与榜首翻转同时给在产物里
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -207,7 +210,7 @@ gkx.dwd_org_base_info
         ▼
   排序 → 前 20 地标 + 城市级读数 + 熵权对照
         ▼
-  code/M_INNOV_KEYD_LAND_out.json
+  metrics/repro/out/M_INNOV_KEYD_LAND_out.json
 ```
 
 关键点有三：其一，`dwd_org_base_info` 是**工商注册**口径，不是"实际办公地"，挂靠地址会原样带进来；其二，格网是**等经纬度**切分，不是等面积，纬度 22.5° 处 0.005° 经度约 512.4 m、纬度约 552.9 m，单格 0.283306 km²；其三，只有"有点位的格"进统计，空格不补 0——补 0 会把山区算成"低密度"，把海域算成"零产出"。
@@ -330,7 +333,7 @@ $$K3 = \max_{i} \frac{n_i}{n_{\text{cell}}}$$
 ```bash
 cd code
 python3 _probe_keyd_w15n1.py      # 落盘 code/_snapshots21/keyd_land_w15n1_20261023.json
-python3 M_INNOV_KEYD_LAND.py      # 读快照，零 SQL，产出 code/M_INNOV_KEYD_LAND_out.json
+python3 M_INNOV_KEYD_LAND.py      # 读快照，零 SQL，产出 metrics/repro/out/M_INNOV_KEYD_LAND_out.json
 ```
 
 `M_INNOV_KEYD_LAND.py` 不连数据库：所有事实来自快照，快照由探针一次性从 gkx 拉取。这样重跑的结果逐位一致，且不依赖 gkx 的会话状态（该实例在批量扫描后会有 20—60 秒握手抖动）。
@@ -474,15 +477,8 @@ python3 M_INNOV_KEYD_LAND.py      # 读快照，零 SQL，产出 code/M_INNOV_KE
 
 ## 参考文献
 
-1. 注册表 `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml`（`M_INNOV_KEYD_LAND`）。
-2. `_work_gkx21/DATA_FACTS_gkx21.md` §3.68（慢查询）、§3.73（分母纪律）。
-3. `_work_gkx21/DISPATCH_BRIEF_v8.md` §一（派生比值）、§三（图类点集声明）、§四（负证据三件套）。
-4. `_work_gkx21/MOCK_TABLE_REGISTRY.md`（`carrier_index` / `city_index` / `innovation_point_map` / `carrier_org_rel` 造数登记）。
-5. `code/_snapshots21/keyd_land_w15n1_20261023.json`。
-6. 深圳市统计局《深圳市统计年鉴》（全市土地面积 1,997.47 km²），https://tjj.sz.gov.cn/
-7. 深圳市 2019 年统计公报（全市面积 1,997.47 km²，公开口径），http://www.sz.gov.cn/cn/xxgk/zfxxgj/tjsj/tjgb/
-8. 火炬中心孵化器评价指标体系（载体口径参照），https://www.chinatorch.gov.cn/
-
+1. 深圳市统计局《深圳市统计年鉴》（全市土地面积 1,997.47 km²），https://tjj.sz.gov.cn/
+2. 深圳市 2019 年统计公报（全市面积 1,997.47 km²，公开口径），http://www.sz.gov.cn/cn/xxgk/zfxxgj/tjsj/tjgb/
 ---
 
 # 附件
@@ -541,10 +537,3 @@ A：3,510 格里 362 格只有 1 家、中位 14 家，全量排名会把"1 家�
 
 **Q：为什么区县分布与行业分布要单列？**
 A：因为"家数最多"与"点最密"不是一回事：宝安 25,189 家最多，但前 20 地标一个都没有；南山 16,002 家第三，却占满前 11 名。不单列这两个分布，读者会误以为"家数多 = 密度高"。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

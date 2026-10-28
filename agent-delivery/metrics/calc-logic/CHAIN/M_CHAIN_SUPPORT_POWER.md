@@ -1,9 +1,21 @@
 # 配套服务（M_CHAIN_SUPPORT_POWER）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_SUPPORT_POWER.md`；复现脚本 `metrics/repro/M_CHAIN_SUPPORT_POWER.py` → `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：COMPOSITE（二维等权，0—100）｜ **域**：CHAIN｜ **UI 挂载**：科技信息展示系统 / 产业链分析 / 区域产业指数评价 / 区域产业指数
+> - **数据支持度**：**部分支持**｜ **公式定义人**：王惠（calc-logic v0.2.0，2026-08-21 注册）｜ wanghui: true
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_SUPPORT_POWER.py`、产物 `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_SUPPORT_POWER.md`；复现脚本 `metrics/repro/M_CHAIN_SUPPORT_POWER.py` → `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_SUPPORT_POWER.py`、产物 `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +36,7 @@
 
 ## 口径定义
 
-政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `code/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
+政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -47,7 +59,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `code/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
+- **判档理由**：政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
 - **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 - **复现实测耗时**：约 0.39 秒（源件落盘记录）
 
@@ -55,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_SUPPORT_POWER.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_SUPPORT_POWER.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json` |
@@ -63,16 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_SUPPORT_POWER.py`、产物 `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COMPOSITE（二维等权，0—100）｜ **域**：CHAIN｜ **UI 挂载**：科技信息展示系统 / 产业链分析 / 区域产业指数评价 / 区域产业指数
-> **数据支持度**：**部分支持**｜ **公式定义人**：王惠（calc-logic v0.2.0，2026-08-21 注册）｜ wanghui: true
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（政策文本仅 title 可用，融资事件无事件 ID）
-> **一句话口径**：政策覆盖率与融资环境两项，在**同一条链内对四市做 min-max** 后等权合成；12 链 × 4 城 = **48 个单元**，均值 **39.00**，但 16 个单元政策覆盖率为 0、6 个单元政策维退化为常数，分数只能做**链内相对位置**读，不能跨链比强弱。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -100,7 +107,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `code/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
+政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -162,7 +169,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 4 | 同上 | §3.4 占位符 | 「`theme`/`keypoints` 大写 `'NULL'`；`policy_support` 小写 `'null'` 全表 20,000 行。」 |
 | 5 | `_work_gkx21/DISPATCH_BRIEF_v5.md` | §三 其他大头资产 | 「政策全表 20,000 条（city/rank 已归一）→ `policy_base_20261021.json`。」 |
 | 6 | 同族已验收 | `第三方库指标计算过程/M_CHAIN_REGION_INDEX.md` §2.5 | 「政策覆盖率沿用饱和口径，不是二元口径；两种口径的差异见该文 §2.5。」 |
-| 7 | 本批产物 | `code/M_CHAIN_SUPPORT_POWER_out.json` | 「stats.mean=39.0，city_mean 深圳 84.08 / 广州 43.69 / 东莞 15.58 / 惠州 12.64。」 |
+| 7 | 本批产物 | `metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json` | 「stats.mean=39.0，city_mean 深圳 84.08 / 广州 43.69 / 东莞 15.58 / 惠州 12.64。」 |
 
 ### 1.6 推测原意与推测定义（仿王惠口径写法）
 
@@ -252,9 +259,9 @@ $$
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_SUPPORT_POWER.py
-# 输出 code/M_CHAIN_SUPPORT_POWER_out.json；实测耗时 0.39 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json；实测耗时 0.39 秒（全离线，零 SQL）
 # 末尾自检：cross-check vs M_CHAIN_REGION_INDEX: 48/48 一致
 ```
 
@@ -420,20 +427,12 @@ python3 code/M_CHAIN_SUPPORT_POWER.py
 ---
 
 ## 参考文献
-
-> 下列条目为口径与方法来源；项目内文件按相对路径给出，外部文件给出可访问 URL。
-
 1. 中国中小企业发展促进中心. (2025). 《2025 年度中小企业发展环境评估报告》. https://www.tanchang.gov.cn/zfxxgk/public/32129002/148149154.html
 2. 工业和信息化部. (2024). 《中小企业公共服务体系建设的指导意见》. https://www.miit.gov.cn/
 3. 世界银行. (2024). *Business Ready (B-READY) 2024*. https://www.worldbank.org/en/businessready
 4. 国家发展和改革委员会. (2023). 《优化营商环境条例》实施情况. https://www.ndrc.gov.cn/
 5. 深圳市工业和信息化局. 深圳市产业政策文件库. https://gxj.sz.gov.cn/
 6. 广州市工业和信息化局. 广州市产业政策文件库. https://gxj.gz.gov.cn/
-7. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_SUPPORT_POWER.md`（王惠 v0.2.0）。
-8. 项目内数据纪律（非外部文献）：`_work_gkx21/DATA_FACTS_gkx21.md` §3.4、§3.7；`_work_gkx21/DISPATCH_BRIEF_v5.md` §三。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
 ---
 
 # 附件
@@ -561,8 +560,8 @@ python3 code/M_CHAIN_SUPPORT_POWER.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_CHAIN_SUPPORT_POWER.py`（20261021 版，全离线，零 SQL）
-- 产物：`code/M_CHAIN_SUPPORT_POWER_out.json`
+- 脚本：`metrics/repro/M_CHAIN_SUPPORT_POWER.py`（20261021 版，全离线，零 SQL）
+- 产物：`metrics/repro/out/M_CHAIN_SUPPORT_POWER_out.json`
 - 输入：`code/_snapshots21/region_index_policy_rows.json`、`region_index_fin_events.json`、`bridge_20261021.json`、`base_20261021.json`、`chain_tree_20261021.json`
 - 词表：`code/_reg5_tokens.py`（饱和覆盖率 + 环节词表）
 - 源表：`gkx.dwd_policy_base`、`gkx.dwd_org_financing_info`（**均未直接查询**，只用快照）
@@ -573,11 +572,3 @@ python3 code/M_CHAIN_SUPPORT_POWER.py
 - 敏感性：二元政策口径 Spearman 0.8795；政策单维 0.847；统计年 2024 变体 0.9999、最大差 3.29
 - 交叉核对：与 `M_CHAIN_REGION_INDEX` 48/48 一致
 - 工程注意：政策文本仅 `title` 可用；融资无事件 ID；四城 min-max 端点不可读作绝对水平
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

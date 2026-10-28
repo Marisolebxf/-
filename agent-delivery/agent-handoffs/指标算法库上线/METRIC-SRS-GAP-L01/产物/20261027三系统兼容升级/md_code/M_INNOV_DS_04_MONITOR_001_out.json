@@ -1,0 +1,1113 @@
+{
+ "metric_id": "M_INNOV_DS_04_MONITOR_001",
+ "name": "创新点发现",
+ "vendor_metric": "M_INNOV_POINT_DISCOVERY",
+ "formula_owner": "王惠",
+ "view": "list",
+ "generated_at": "2026-10-23 22:10:12",
+ "runtime_sec": 2.9,
+ "data_source": "gkx.dwd_patent（IPC 小类全量缓存 2,420,915 件 + 关键词主键切片 200,000 行）、gkx.dwd_zh_paper_classification（20,048 篇）",
+ "db": "gkx @ 183.240.141.251:3318（只读，本脚本零 SQL，全部读 code/_snapshots21/ 缓存）",
+ "definition": "词条级突现检测：burst=(近窗年均−基窗年均)/max(基窗年均,1)，is_new=首次出现年≥T−2，候选=(burst≥1 或 is_new)且近窗合计≥3；输出是一行一个词条的清单，不是 0—100 分。",
+ "statistical_year": 2024,
+ "windows": {
+  "recent": [
+   2022,
+   2023,
+   2024
+  ],
+  "base_formula": [
+   2017,
+   2018,
+   2019,
+   2020,
+   2021
+  ],
+  "base_used": [
+   2021
+  ]
+ },
+ "params": {
+  "min_recent_count": 3,
+  "burst_threshold": 1.0,
+  "migration_prefix": [
+   "H10",
+   "B64U"
+  ]
+ },
+ "base_years_used": [
+  2021
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "基窗公式要求 2017—2021，但 gkx.dwd_patent.apdt_year 只有 2021—2026，2017—2020 零行；因此基窗实际只用 2021 一年，均值只除 1，缺失的 4 年不进分母。专利年份序列只遍历库内真实存在的 2021—2026，不做 .get(y, 0) 式补零。",
+ "family": {
+  "group": "M_INNOV_DS_04（科技发展态势·全球创新监测）",
+  "this": "MONITOR_001 = 词条级突现监测的**列表视角**（一行一个候选词条）",
+  "sibling": {
+   "M_INNOV_DS_04_MONITOR_002": "同一批词条的**详情视角**（新颖性/影响潜力/成熟度三维价值分）",
+   "M_INNOV_DS_04_REALTIME_004": "节点级（机构/IPC 领域）产出规模与影响分——实体是节点，不是词条",
+   "M_INNOV_DS_04_REALTIME_005": "在上者年序列上的 Holt 外推——本库样本期不足，未发射预测"
+  },
+  "shared_key": "point_type + point_key（MONITOR_002 逐条消费本件候选）"
+ },
+ "probes": {
+  "ipc_full": {
+   "patents_with_ipc": 2420915,
+   "n_ipc4": 634,
+   "years": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+   ]
+  },
+  "patent_sample": {
+   "rows": 200000,
+   "share": 0.068,
+   "kw_share": 1.0,
+   "ipc_share": 0.8231,
+   "grant_rate": 0.7289
+  },
+  "paper_keywords": {
+   "papers_classified": 20048,
+   "papers_total": 100900,
+   "share": 0.1987,
+   "year_counts": {
+    "2017": 6903,
+    "2018": 6067,
+    "2019": 6174,
+    "2020": 6336,
+    "2021": 6758,
+    "2022": 6331,
+    "2023": 6651,
+    "2024": 32379,
+    "2025": 6548,
+    "2026": 2989
+   }
+  },
+  "paper_id_join": {
+   "zh_paper_rows": 100900,
+   "classified_rows": 20048,
+   "ids_joinable": 799,
+   "join_rate": 0.0399,
+   "citation_rows": 20031,
+   "author_rows": 62002,
+   "note": "分类表只有 799/20,048 行能对上论文主表 id（3.99%），其余 19,249 行无年份；论文关键词的 burst 与 is_new 实际只在这 799 篇上有时间轴"
+  },
+  "patent_year_total": {
+   "2021": 604512,
+   "2022": 601893,
+   "2023": 611811,
+   "2024": 606468,
+   "2025": 440401,
+   "2026": 74810
+  }
+ },
+ "probes_migration": {
+  "n_candidates": 33,
+  "n_migration": 9,
+  "migration_terms": [
+   "H10F",
+   "B64U",
+   "H10H",
+   "H10D",
+   "H10W",
+   "H10B",
+   "H10P",
+   "H10N",
+   "H10K"
+  ],
+  "n_after_exclusion": 24,
+  "top_after_exclusion": [
+   [
+    "A63D",
+    7.444,
+    76
+   ],
+   [
+    "G21H",
+    5.667,
+    17
+   ],
+   [
+    "B60V",
+    4.0,
+    8
+   ],
+   [
+    "F03C",
+    3.667,
+    14
+   ],
+   [
+    "C13K",
+    3.333,
+    10
+   ],
+   [
+    "H03C",
+    2.5,
+    7
+   ],
+   [
+    "C05B",
+    2.0,
+    6
+   ],
+   [
+    "D06J",
+    2.0,
+    4
+   ],
+   [
+    "C01C",
+    1.967,
+    89
+   ],
+   [
+    "C14B",
+    1.667,
+    312
+   ]
+  ],
+  "note": "2023.01 版 IPC 把半导体器件从 H01L 拆到 H10 族、把无人机从 B64C 拆到 B64U；同期 H01L 6,789→4,097→1,004→0、B64C 569→180→146→30，属编码迁移不是技术突现"
+ },
+ "result": {
+  "ipc4": {
+   "n_terms_scored": 614,
+   "n_candidates": 33,
+   "n_new": 5,
+   "n_base_mean_zero": 5,
+   "n_genuine_burst": 28,
+   "candidate_rate": 0.0537,
+   "burst_dist": {
+    "n": 614,
+    "min": -0.783,
+    "max": 12.711,
+    "mean": 0.1288,
+    "median": -0.0335,
+    "p10": -0.3321,
+    "p30": -0.1341,
+    "p90": 0.4982,
+    "n_distinct": 440
+   },
+   "recent_total_dist": {
+    "n": 33,
+    "min": 4.0,
+    "max": 13075.0,
+    "mean": 772.4545,
+    "median": 37.0,
+    "p10": 4.2,
+    "p30": 9.2,
+    "p90": 1366.8,
+    "n_distinct": 28
+   }
+  },
+  "keyword_patent": {
+   "n_terms_scored": 17725,
+   "n_candidates": 6498,
+   "n_new": 3899,
+   "n_base_mean_zero": 3899,
+   "n_genuine_burst": 2599,
+   "candidate_rate": 0.3666,
+   "burst_dist": {
+    "n": 17725,
+    "min": -0.857,
+    "max": 28.5,
+    "mean": 0.7185,
+    "median": 0.333,
+    "p10": -0.389,
+    "p30": -0.035,
+    "p90": 2.0,
+    "n_distinct": 1018
+   },
+   "recent_total_dist": {
+    "n": 6498,
+    "min": 3.0,
+    "max": 3865.0,
+    "mean": 8.3195,
+    "median": 5.0,
+    "p10": 3.0,
+    "p30": 4.0,
+    "p90": 14.0,
+    "n_distinct": 88
+   }
+  },
+  "keyword_paper": {
+   "n_terms_scored": 2,
+   "n_candidates": 2,
+   "n_new": 0,
+   "n_base_mean_zero": 1,
+   "n_genuine_burst": 1,
+   "candidate_rate": 1.0,
+   "burst_dist": {
+    "n": 2,
+    "min": 1.0,
+    "max": 2.0,
+    "mean": 1.5,
+    "median": 1.5,
+    "p10": 1.1,
+    "p30": 1.3,
+    "p90": 1.9,
+    "n_distinct": 2
+   },
+   "recent_total_dist": {
+    "n": 2,
+    "min": 3.0,
+    "max": 3.0,
+    "mean": 3.0,
+    "median": 3.0,
+    "p10": 3.0,
+    "p30": 3.0,
+    "p90": 3.0,
+    "n_distinct": 1
+   }
+  }
+ },
+ "list_view": {
+  "page_size_suggest": 30,
+  "n_rows": 33,
+  "tier_counts": {
+   "D_migration": 9,
+   "A_solid": 8,
+   "C_new_term": 5,
+   "B_thin": 11
+  },
+  "tier_rule": "A_solid: 非迁移 & 基窗均值>0 & 近窗≥30；B_thin: 非迁移 & 基窗均值>0 & 近窗<30；C_new_term: 基窗均值=0（burst 退化为近窗年均）；D_migration: H10x/B64U 码迁移",
+  "rows": [
+   {
+    "rank": 1,
+    "point_type": "ipc4",
+    "point_key": "H10F",
+    "burst": 12.711,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 617,
+    "base_mean": 15.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 15,
+     "2022": 68,
+     "2023": 63,
+     "2024": 486,
+     "2025": 544,
+     "2026": 103
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 2,
+    "point_type": "ipc4",
+    "point_key": "B64U",
+    "burst": 9.609,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 1464,
+    "base_mean": 46.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 46,
+     "2022": 170,
+     "2023": 636,
+     "2024": 658,
+     "2025": 538,
+     "2026": 117
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 3,
+    "point_type": "ipc4",
+    "point_key": "A63D",
+    "burst": 7.444,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 76,
+    "base_mean": 3.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 3,
+     "2022": 20,
+     "2023": 14,
+     "2024": 42,
+     "2025": 17,
+     "2026": 4
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 4,
+    "point_type": "ipc4",
+    "point_key": "H10H",
+    "burst": 6.254,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 827,
+    "base_mean": 38.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 38,
+     "2022": 184,
+     "2023": 70,
+     "2024": 573,
+     "2025": 650,
+     "2026": 96
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 5,
+    "point_type": "ipc4",
+    "point_key": "G21H",
+    "burst": 5.667,
+    "is_new": 1,
+    "first_year": 2022,
+    "recent_total": 17,
+    "base_mean": 0.0,
+    "base_years_used": [],
+    "year_counts": {
+     "2022": 12,
+     "2023": 4,
+     "2024": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 1,
+    "tier": "C_new_term"
+   },
+   {
+    "rank": 6,
+    "point_type": "ipc4",
+    "point_key": "B60V",
+    "burst": 4.0,
+    "is_new": 1,
+    "first_year": 2023,
+    "recent_total": 8,
+    "base_mean": 0.0,
+    "base_years_used": [],
+    "year_counts": {
+     "2023": 6,
+     "2024": 2,
+     "2025": 6,
+     "2026": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 1,
+    "tier": "C_new_term"
+   },
+   {
+    "rank": 7,
+    "point_type": "ipc4",
+    "point_key": "H10D",
+    "burst": 3.866,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 978,
+    "base_mean": 67.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 67,
+     "2022": 287,
+     "2023": 153,
+     "2024": 538,
+     "2025": 835,
+     "2026": 214
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 8,
+    "point_type": "ipc4",
+    "point_key": "F03C",
+    "burst": 3.667,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 14,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2022": 3,
+     "2023": 10,
+     "2024": 1,
+     "2025": 7
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 9,
+    "point_type": "ipc4",
+    "point_key": "C13K",
+    "burst": 3.333,
+    "is_new": 1,
+    "first_year": 2022,
+    "recent_total": 10,
+    "base_mean": 0.0,
+    "base_years_used": [],
+    "year_counts": {
+     "2022": 5,
+     "2023": 2,
+     "2024": 3,
+     "2025": 2
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 1,
+    "tier": "C_new_term"
+   },
+   {
+    "rank": 10,
+    "point_type": "ipc4",
+    "point_key": "H10W",
+    "burst": 3.118,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 210,
+    "base_mean": 17.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 17,
+     "2022": 35,
+     "2023": 27,
+     "2024": 148,
+     "2025": 378,
+     "2026": 182
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 11,
+    "point_type": "ipc4",
+    "point_key": "H10B",
+    "burst": 3.054,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 377,
+    "base_mean": 31.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 31,
+     "2022": 81,
+     "2023": 127,
+     "2024": 169,
+     "2025": 70,
+     "2026": 12
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 12,
+    "point_type": "ipc4",
+    "point_key": "H03C",
+    "burst": 2.5,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 7,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2023": 3,
+     "2024": 4,
+     "2025": 2
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 13,
+    "point_type": "ipc4",
+    "point_key": "H10P",
+    "burst": 2.111,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 168,
+    "base_mean": 18.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 18,
+     "2022": 48,
+     "2023": 17,
+     "2024": 103,
+     "2025": 460,
+     "2026": 154
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 14,
+    "point_type": "ipc4",
+    "point_key": "C05B",
+    "burst": 2.0,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 6,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2022": 4,
+     "2023": 2
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 15,
+    "point_type": "ipc4",
+    "point_key": "D06J",
+    "burst": 2.0,
+    "is_new": 1,
+    "first_year": 2022,
+    "recent_total": 4,
+    "base_mean": 0.0,
+    "base_years_used": [],
+    "year_counts": {
+     "2022": 1,
+     "2024": 3,
+     "2025": 4
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 1,
+    "tier": "C_new_term"
+   },
+   {
+    "rank": 16,
+    "point_type": "ipc4",
+    "point_key": "C01C",
+    "burst": 1.967,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 89,
+    "base_mean": 10.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 10,
+     "2022": 29,
+     "2023": 30,
+     "2024": 30,
+     "2025": 18,
+     "2026": 8
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 17,
+    "point_type": "ipc4",
+    "point_key": "C14B",
+    "burst": 1.667,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 312,
+    "base_mean": 39.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 39,
+     "2022": 90,
+     "2023": 88,
+     "2024": 134,
+     "2025": 53,
+     "2026": 2
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 18,
+    "point_type": "ipc4",
+    "point_key": "A63K",
+    "burst": 1.667,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 8,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2022": 2,
+     "2023": 5,
+     "2024": 1,
+     "2025": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 19,
+    "point_type": "ipc4",
+    "point_key": "B31C",
+    "burst": 1.667,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 8,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2022": 2,
+     "2023": 3,
+     "2024": 3,
+     "2025": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 20,
+    "point_type": "ipc4",
+    "point_key": "A61P",
+    "burst": 1.667,
+    "is_new": 1,
+    "first_year": 2022,
+    "recent_total": 5,
+    "base_mean": 0.0,
+    "base_years_used": [],
+    "year_counts": {
+     "2022": 2,
+     "2023": 2,
+     "2024": 1,
+     "2025": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 1,
+    "tier": "C_new_term"
+   },
+   {
+    "rank": 21,
+    "point_type": "ipc4",
+    "point_key": "F01C",
+    "burst": 1.5,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 15,
+    "base_mean": 2.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 2,
+     "2022": 5,
+     "2023": 8,
+     "2024": 2,
+     "2025": 3
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 22,
+    "point_type": "ipc4",
+    "point_key": "A23P",
+    "burst": 1.473,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 408,
+    "base_mean": 55.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 55,
+     "2022": 97,
+     "2023": 144,
+     "2024": 167,
+     "2025": 76,
+     "2026": 5
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 23,
+    "point_type": "ipc4",
+    "point_key": "H05G",
+    "burst": 1.467,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 37,
+    "base_mean": 5.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 5,
+     "2022": 13,
+     "2023": 10,
+     "2024": 14,
+     "2025": 8,
+     "2026": 3
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 24,
+    "point_type": "ipc4",
+    "point_key": "H10N",
+    "burst": 1.443,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 601,
+    "base_mean": 82.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 82,
+     "2022": 133,
+     "2023": 210,
+     "2024": 258,
+     "2025": 174,
+     "2026": 52
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 25,
+    "point_type": "ipc4",
+    "point_key": "H10K",
+    "burst": 1.385,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 3728,
+    "base_mean": 521.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 521,
+     "2022": 934,
+     "2023": 1483,
+     "2024": 1311,
+     "2025": 709,
+     "2026": 203
+    },
+    "migration_flag": 1,
+    "degenerate_base_flag": 0,
+    "tier": "D_migration"
+   },
+   {
+    "rank": 26,
+    "point_type": "ipc4",
+    "point_key": "D03C",
+    "burst": 1.333,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 28,
+    "base_mean": 4.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 4,
+     "2022": 8,
+     "2023": 13,
+     "2024": 7,
+     "2025": 6,
+     "2026": 2
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 27,
+    "point_type": "ipc4",
+    "point_key": "F21V",
+    "burst": 1.313,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 13075,
+    "base_mean": 1884.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1884,
+     "2022": 2645,
+     "2023": 5187,
+     "2024": 5243,
+     "2025": 2700,
+     "2026": 174
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 28,
+    "point_type": "ipc4",
+    "point_key": "G16C",
+    "burst": 1.245,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 2243,
+    "base_mean": 333.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 333,
+     "2022": 513,
+     "2023": 703,
+     "2024": 1027,
+     "2025": 1032,
+     "2026": 355
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 29,
+    "point_type": "ipc4",
+    "point_key": "A43C",
+    "burst": 1.241,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 121,
+    "base_mean": 18.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 18,
+     "2022": 43,
+     "2023": 35,
+     "2024": 43,
+     "2025": 21,
+     "2026": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "A_solid"
+   },
+   {
+    "rank": 30,
+    "point_type": "ipc4",
+    "point_key": "F22G",
+    "burst": 1.0,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 18,
+    "base_mean": 3.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 3,
+     "2022": 8,
+     "2023": 5,
+     "2024": 5,
+     "2025": 4,
+     "2026": 2
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 31,
+    "point_type": "ipc4",
+    "point_key": "B61J",
+    "burst": 1.0,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 4,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2022": 2,
+     "2024": 2,
+     "2026": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 32,
+    "point_type": "ipc4",
+    "point_key": "C05C",
+    "burst": 1.0,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 4,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2023": 3,
+     "2024": 1,
+     "2025": 1,
+     "2026": 1
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   },
+   {
+    "rank": 33,
+    "point_type": "ipc4",
+    "point_key": "D01C",
+    "burst": 1.0,
+    "is_new": 0,
+    "first_year": 2021,
+    "recent_total": 4,
+    "base_mean": 1.0,
+    "base_years_used": [
+     2021
+    ],
+    "year_counts": {
+     "2021": 1,
+     "2023": 2,
+     "2024": 2
+    },
+    "migration_flag": 0,
+    "degenerate_base_flag": 0,
+    "tier": "B_thin"
+   }
+  ]
+ },
+ "sensitivity": {
+  "primary_window": {
+   "recent": [
+    2022,
+    2023,
+    2024
+   ],
+   "n": 614
+  },
+  "alt_window": {
+   "recent": [
+    2023,
+    2024,
+    2025
+   ],
+   "n": 608
+  },
+  "n_common": 608,
+  "spearman_burst": 0.9178,
+  "note": "2025 年入库 440,401 件（低于 2023/2024 的 60 万级，含公开滞后），该窗口只作敏感性对照，不作主口径"
+ },
+ "quarantine_delta": {
+  "why": "隔离前旧稿读 20261020 目录的共享 bundle，该 bundle 连演示库并用 .get(y,0) 把 2017—2020 补成 0，把 burst 抬了一个量级（DATA_FACTS §3.19）",
+  "old_vs_new": [
+   {
+    "item": "IPC4 词条数",
+    "old": 42963,
+    "new": 634,
+    "cause": "旧稿把 IPC 大组（如 B08B1/12）当词条；本件按 IPC 小类前 4 位（B08B1）"
+   },
+   {
+    "item": "突现候选数",
+    "old": 24423,
+    "new": 33,
+    "cause": "旧稿近窗/基窗都以补零序列计算，2021 年首现的码批量进「新主题」分支"
+   },
+   {
+    "item": "burst 最大值",
+    "old": 132.53,
+    "new": 12.711,
+    "cause": "旧稿分母是 2017—2021 五年均值、其中四年是 0，分母被摊薄到 1/5"
+   },
+   {
+    "item": "burst 最大者",
+    "old": "B08B1/12",
+    "new": "H10F",
+    "cause": "同上；本件最大值是 H10F（半导体新码），且已被码迁移审计标记"
+   },
+   {
+    "item": "Top 首现年分布",
+    "old": "Top30 中 29 个为 2021",
+    "new": "见 result.ipc4.n_new",
+    "cause": "本件把「2021 年有件数」与外推前的真实年份区分开，只有 2021 为 0 才是新"
+   }
+  ]
+ },
+ "support_judgment": "部分支持",
+ "support_basis": "IPC 小类词条为全量（2,420,915 件有 IPC、634 个小类），burst 与 is_new 可直接算；但（1）专利关键词只有主键切片 200,000 行（6.80%），件数是样本口径；（2）论文关键词只有分类子集 20,048 篇、其中 799 篇能拿到年份；（3）基窗公式要 2017—2021，库内只有 2021 一年，burst 分母退化为单年值；（4）33 个 IPC4 候选里 9 个是 2023 版 IPC 改版拆出的新码，属编码迁移。",
+ "reasons": [
+  "IPC4 全量：634 个小类 / 2,420,915 件，无抽样，可逐词条复核逐年件数；",
+  "专利关键词 6.80% 切片：全表 GROUP BY keywords 会跑满 600 秒断连（§3.6/§3.12），按铁律不扫，故关键词侧件数是样本计数，比值可用、绝对值不可外推；",
+  "基窗 2017—2020 在 dwd_patent 零行：base_years_used=[2021]，凡 2021 年为 0 的词条 burst 退化为近窗年均（本件 5 个候选属此）；",
+  "论文分类表与论文主表 id 连通率 3.99%（799/20,048），论文侧时间轴只剩 799 篇，最后只剩 2 个候选，不足以成维；",
+  "9 个候选命中 2023 版 IPC 码迁移（H10 族与 B64U），必须在列表页单列，不能计入技术突现。"
+ ],
+ "notes": [
+  "本脚本零 SQL：IPC 面板、关键词切片、论文分类表全部读 code/_snapshots21/ 缓存。",
+  "不引用任何共享结果文件（无 reused_from），四个 DS_04 件的 out.json 各由本目录 py 现算。",
+  "2026 年（74,810 件）为残年，不进近窗；2025 年只用于敏感性对照。",
+  "候选清单不是热度排行榜：burst 高值里混有码迁移与基窗退化两类伪信号，见 list_view.tier_rule。"
+ ]
+}

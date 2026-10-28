@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统（按 UI 挂载推断）
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_CHAIN_SZ_ADVANTAGE_RANK 深圳优势排名。
 
 口径真源：`metrics/calc-logic/CHAIN/M_CHAIN_SZ_ADVANTAGE_RANK.md`（v0.2.0，

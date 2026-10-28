@@ -1,9 +1,21 @@
 # 区域技术成熟度（M_CHAIN_REG_TECH_MATURITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_REG_TECH_MATURITY.md`；复现脚本 `metrics/repro/M_CHAIN_REG_TECH_MATURITY.py` → `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（生命周期指数，0—100）｜ **域**：CHAIN（产业链）｜ **UI 挂载**：产业链分析 → 区域技术竞争力 → 技术成熟度
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：徐滕强（calc-logic v0.2.0，非王惠）｜ wanghui: false
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_REG_TECH_MATURITY.py`、产物 `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_REG_TECH_MATURITY.md`；复现脚本 `metrics/repro/M_CHAIN_REG_TECH_MATURITY.py` → `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_REG_TECH_MATURITY.py`、产物 `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +36,7 @@
 
 ## 口径定义
 
-专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `code/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
+专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -43,7 +55,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `code/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
+- **判档理由**：专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
 - **基期声明**：由产物中实际出现的年度键反推：used=[2021, 2022, 2023, 2024]；未见其他年度，缺失年未按 0 摊入。此项为机械反推，需人工确认取数窗口。
 - **复现实测耗时**：约 0.45 秒（源件落盘记录）
 
@@ -51,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_REG_TECH_MATURITY.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_REG_TECH_MATURITY.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json` |
@@ -59,16 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_REG_TECH_MATURITY.py`、产物 `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（生命周期指数，0—100）｜ **域**：CHAIN（产业链）｜ **UI 挂载**：产业链分析 → 区域技术竞争力 → 技术成熟度
-> **数据支持度**：**部分支持** ｜ **公式定义人**：徐滕强（calc-logic v0.2.0，非王惠）｜ wanghui: false
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（专利面板只有申请年 2021—2024，匹配率 31.77%）
-> **一句话口径**：用链上企业专利的 3 年复合增速判断技术生命周期位置，12 链 × 4 城 = **48 个单元**，均值 **71.69**；这是**申请年口径**的增速，不是公开年口径，且 2024 年申请尚未完全公开/入库。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -96,7 +103,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `code/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
+专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -157,7 +164,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 3 | 同上 | §3.12 查库纪律 | 「查库脚本不许接 `\| tail`（退出码被吞）。」 |
 | 4 | `_work_gkx21/PATENT_SCAN_LEDGER.md` | 专利资产清单 | 「年 × 件数读 `_panel_facts.py year`；申请人 TOP 读 `star_applicant_agg_gkx.json`。」 |
 | 5 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_CHAIN_REG_TECH_MATURITY` | 「case=A；tables=[`dwd_patent`]；demo_literal_in_py=false。」 |
-| 6 | 前批实测 | `20261020_指标整体开发进度调研/code/M_CHAIN_REG_TECH_MATURITY_out.json` | 「raw_table_by_year：2021 604,512 / 2022 601,893 / 2023 611,811 / 2024 606,468 / 2025 440,401。」 |
+| 6 | 前批实测 | `20261020_指标整体开发进度调研/metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json` | 「raw_table_by_year：2021 604,512 / 2022 601,893 / 2023 611,811 / 2024 606,468 / 2025 440,401。」 |
 
 ### 1.6 推测原意与推测定义（仿王惠口径写法）
 
@@ -247,9 +254,9 @@ $$
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_REG_TECH_MATURITY.py
-# 输出 code/M_CHAIN_REG_TECH_MATURITY_out.json；实测耗时 0.54 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json；实测耗时 0.54 秒（全离线，零 SQL）
 ```
 
 **分城总分与单元统计**：
@@ -396,20 +403,11 @@ python3 code/M_CHAIN_REG_TECH_MATURITY.py
 ---
 
 ## 参考文献
-
-> 下列条目为口径与方法来源；项目内文件按相对路径给出，外部文件给出可访问 URL。
-
 1. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
 2. 世界知识产权组织（WIPO）. (2024). *World Intellectual Property Indicators 2024*. https://www.wipo.int/publications/
-3. OECD. (2023). *Science, Technology and Innovation Outlook*. https://www.oecd.org/sti/
-4. 中国科学技术发展战略研究院. (2025). 《国家创新指数报告 2024》. https://www.ncsti.gov.cn/
-5. 广东省市场监督管理局（知识产权局）. 广东省专利统计. https://amr.gd.gov.cn/
-6. 深圳市市场监督管理局（知识产权局）. 深圳市专利统计. https://amr.sz.gov.cn/
-7. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_REG_TECH_MATURITY.md`（徐滕强 v0.2.0）。
-8. 项目内数据纪律（非外部文献）：`_work_gkx21/DATA_FACTS_gkx21.md` §3.12、§3.13；`_work_gkx21/PATENT_SCAN_LEDGER.md`。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
+3. 中国科学技术发展战略研究院. (2025). 《国家创新指数报告 2024》. https://www.ncsti.gov.cn/
+4. 广东省市场监督管理局（知识产权局）. 广东省专利统计. https://amr.gd.gov.cn/
+5. 深圳市市场监督管理局（知识产权局）. 深圳市专利统计. https://amr.sz.gov.cn/
 ---
 
 # 附件
@@ -532,8 +530,8 @@ python3 code/M_CHAIN_REG_TECH_MATURITY.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_CHAIN_REG_TECH_MATURITY.py`（20261021 版，全离线，零 SQL）
-- 产物：`code/M_CHAIN_REG_TECH_MATURITY_out.json`
+- 脚本：`metrics/repro/M_CHAIN_REG_TECH_MATURITY.py`（20261021 版，全离线，零 SQL）
+- 产物：`metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json`
 - 输入：`code/_snapshots21/patent_panel_innov_20261021.json`、`bridge_20261021.json`、`chain_tree_20261021.json`
 - 源表：`gkx.dwd_patent` @ `183.240.141.251:3318`（**未直接查询**，只用其导出面板）
 - 耗时：0.54 秒
@@ -542,11 +540,3 @@ python3 code/M_CHAIN_REG_TECH_MATURITY.py
 - 极值：低空经济·惠州 +63.73%；智能网联汽车·东莞 -29.74%（得分 31.22）
 - 敏感性：稳定队列均值 66.98，14 个格子阶段变化
 - 工程注意：时间轴是 `apdt_year` 不是 `pbdt_year`；链间/城市间总量不可加（归属次 3,008,860 vs 唯一专利 933,873）；2024 年申请未完全公开
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

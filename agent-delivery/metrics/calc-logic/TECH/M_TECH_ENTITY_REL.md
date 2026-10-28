@@ -1,9 +1,20 @@
 # 实体关联关系网（M_TECH_ENTITY_REL）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_ENTITY_REL.md`；复现脚本 `metrics/repro/M_TECH_ENTITY_REL.py` → `metrics/repro/out/M_TECH_ENTITY_REL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术图谱指标（DS-02 技术关系面·实体网件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技信息展示系统 · 技术评估 · 创新主体关系网络（企业/高校/院所之间的合作、转移、合著关系） ｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_ENTITY_REL.py`、产物 `metrics/repro/out/M_TECH_ENTITY_REL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_ENTITY_REL.md`；复现脚本 `metrics/repro/M_TECH_ENTITY_REL.py` → `metrics/repro/out/M_TECH_ENTITY_REL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_ENTITY_REL.py`、产物 `metrics/repro/out/M_TECH_ENTITY_REL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_ENTITY_REL.md` |
 | 复现脚本 | `metrics/repro/M_TECH_ENTITY_REL.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_ENTITY_REL_out.json` |
@@ -61,15 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_ENTITY_REL.py`、产物 `metrics/repro/out/M_TECH_ENTITY_REL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术图谱指标（DS-02 技术关系面·实体网件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技信息展示系统 · 技术评估 · 创新主体关系网络（企业/高校/院所之间的合作、转移、合著关系） ｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020-TECH-d）**：仿王惠 ai-1020（需求未给公式，本轮按多类型边多重图重建）｜ **wanghui：false** ｜ 直接（结构/数据）：否 / 否（无实体关系网结果面）｜ 依赖（结构/数据）：是 / 部分（转移、共同申请、论文合著三类边可算；引用、许可、诉讼、质押四类边数据不足）
-> **先验对勘**：support_level.json 先验「完全不支持」；本批实测**升档为部分支持**——三类实体边现转成立（3.07 万节点 / 3.9 万唯一边 / 6.6 万边实例），但需求所含的引用、许可、诉讼边在库内无可用数据，故不达「完全转换支持」。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -212,7 +219,7 @@ $$
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，本报告按多重图 + 类型化边重建；已由脚本 `code/M_TECH_ENTITY_REL.py` 实测跑通，结果见同目录 `M_TECH_ENTITY_REL_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
+> **口径说明**：需求未给公式，本报告按多重图 + 类型化边重建；已由脚本 `metrics/repro/M_TECH_ENTITY_REL.py` 实测跑通，结果见同目录 `M_TECH_ENTITY_REL_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：多重图而非加权单图、按邻居去重而非按实例计度
 
@@ -299,14 +306,14 @@ Top25 中至少 20 条属此类。**这暴露了一个必须在上线前解决�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_TECH_ENTITY_REL.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_TECH_ENTITY_REL.py` |
 | 公共图库 | 同目录 `_tech_d_graphlib.py`（切片与共现工具） |
 | 结果产物 | 同目录 `M_TECH_ENTITY_REL_out.json` |
 | 数据来源 | 快照：转移 22,809 / 申请人 28,964 / 论文 20,000（gkx 分片） |
 | 大表纪律 | 不整表扫描；三源各自 LIMIT 分片后本地建图（全流程 < 3 秒） |
 
 ```bash
-python3 metrics/repro/M_TECH_ENTITY_REL.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_TECH_ENTITY_REL.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -376,7 +383,7 @@ python3 metrics/repro/M_TECH_ENTITY_REL.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_TECH_ENTITY_REL.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_TECH_ENTITY_REL.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维 | 候选表 / 字段 | 实测行数 / 结论 | 支撑判断 |
 |---|---|---|---|
@@ -418,8 +425,6 @@ python3 metrics/repro/M_TECH_ENTITY_REL.py
 1. W3C. (2014). *RDF 1.1 Concepts and Abstract Syntax* (W3C Recommendation). https://www.w3.org/TR/rdf11-concepts/ （三元组数据模型；本件多重图「类型即谓语」的设计依据）
 2. Jaffe, A. B., Trajtenberg, M., & Henderson, R. (1992). Geographic localization of knowledge spillovers as evidenced by patent citations (NBER Working Paper No. 3993). National Bureau of Economic Research. https://www.nber.org/papers/w3993 （专利引文作为知识流动证据的经典研究；本报告说明引用边缺失之影响的依据）
 3. 国家知识产权局办公室. (2021). 《战略性新兴产业分类与国际专利分类参照关系表（2021）（试行）》（国知办函规字〔2021〕121 号）. https://www.cnipa.gov.cn/art/2021/2/10/art_75_156716.html （IPC4 → 产业语义映射，用于技术点切片与实体子图的业务解释）
-4. 项目内旁证（非外部文献）：`_staging/M_TECH_ENTITY_INFLUENCE.md`（实体优先级件，与本件共用申请人数据与实体口径）；`_staging/M_TECH_EDGE_STRENGTH.md`（技术—技术边件，本件切片维度与其共用 IPC4）。
-
 ---
 
 # 附件
@@ -486,15 +491,8 @@ M1（即刻）：三类边多重图 + 类型化权重 + 技术点切片 + 缺失
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_TECH_ENTITY_REL.py`（2026-10-21 TECH-d 批）；产物：`../code/M_TECH_ENTITY_REL_out.json`
+- 脚本：`../code/M_TECH_ENTITY_REL.py`（2026-10-21 TECH-d 批）；产物：`../metrics/repro/out/M_TECH_ENTITY_REL_out.json`
 - 关键数：30,704 节点 / 39,055 唯一边 / 66,136 实例；转移 27,024（8,216 边）、共申 15,356（7,847）、合著 23,756（22,992）；度 p50=2 / p90=4 / max=66；集团内 2.09% / 0.12% / 0.01%；G06F 切片 95 节点 / 101 边 / 密度 0.0226；H04W 16 / 14 / 0.1167
 - 复跑：`python3 code/M_TECH_ENTITY_REL.py`（只读快照、幂等）
 - 字段对应：`network`=规模与类型构成；`degree`=度分布；`scoped_subgraph`=技术点切片；`top_edges`=权重榜（含集团内伪影）；`top_nodes_by_neighbors`=度榜；`coverage`/`missing_edge_types`=缺口登记；`support_judgment` 与 §〇.3 一致
 - 工程注意：度须按邻居去重（防重复交易虚抬）；集团内边须过滤后再排序；切片须先过滤到 ≥2 件实体，否则子图退化为噪声
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

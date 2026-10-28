@@ -1,9 +1,24 @@
 # 政策产业适配性（M_POLICY_INDUSTRY_FIT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_INDUSTRY_FIT.md`；复现脚本 `metrics/repro/M_POLICY_INDUSTRY_FIT.py` → `metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（城市 × 链，三维合成）｜ **域**：政策（POLICY）｜ **UI 挂载**：城市产业政策适配度榜单、产业链招商页的「政策匹配强度」列
+> - **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INDUSTRY_FIT.md`（匹配 / 覆盖 / 细分三维，截面 min-max 等权）
+> - **一句话结论**：12 条链里只有 **4 条**能出分（智能网联汽车、集成电路、人工智能、生物医药），另外 **8 条**因「本地命中城市 < 3」标样本不足；能出分的 4 条里，最高匹配强度 **0.6725%**（上海 × 集成电路），中位数 **0.0837%**。分子只来自标题、国家级 2,174 条被计入每个对比市、细分维半数格子母体不一致——结构可算、双侧口径都受限，故判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_INDUSTRY_FIT.py`｜ **产物**：`metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_INDUSTRY_FIT.py`、产物 `metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_INDUSTRY_FIT.md`；复现脚本 `metrics/repro/M_POLICY_INDUSTRY_FIT.py` → `metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_INDUSTRY_FIT.py`、产物 `metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_INDUSTRY_FIT.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_INDUSTRY_FIT.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json` |
@@ -58,18 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_INDUSTRY_FIT.py`、产物 `metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（城市 × 链，三维合成）｜ **域**：政策（POLICY）｜ **UI 挂载**：城市产业政策适配度榜单、产业链招商页的「政策匹配强度」列
-> **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INDUSTRY_FIT.md`（匹配 / 覆盖 / 细分三维，截面 min-max 等权）
-> **复现脚本**：`code/M_POLICY_INDUSTRY_FIT.py`｜ **产物**：`code/M_POLICY_INDUSTRY_FIT_out.json`
-> **共用底数**：`code/_snapshots21/policy_industry_20261023.json`、`code/_snapshots21/policy_struct_20261023.json`
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。本件是截面指标，按城市 × 链计，不设年度分母；入集是库内全部「有效」政策 20,000 条（`status` 恒真、`expire_date` 全空，故「有效」等价于全表），2023—2024 采集断档不改变截面分母，只在正文说明。
-> **一句话结论**：12 条链里只有 **4 条**能出分（智能网联汽车、集成电路、人工智能、生物医药），另外 **8 条**因「本地命中城市 < 3」标样本不足；能出分的 4 条里，最高匹配强度 **0.6725%**（上海 × 集成电路），中位数 **0.0837%**。分子只来自标题、国家级 2,174 条被计入每个对比市、细分维半数格子母体不一致——结构可算、双侧口径都受限，故判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -182,7 +190,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 1 | `gkx.dwd_policy_base` | gkx @ 183.240.141.251:3318，只读 | 政策底表，20,000 行 |
 | 2 | `gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INDUSTRY_FIT.md` | 三维公式与合成规则 | 正本口径 |
 | 3 | `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-POLICY-seed.yaml` | `metric_id: M_POLICY_INDUSTRY_FIT` | 注册表状态 |
-| 4 | `批次《20261021 改源工程》数据事实登记件 DATA_FACTS_gkx21.md（GitLab 外本地工作稿）` | §3.49、§3.54、§3.56 | 断档记未测、分母同母体、行数用 `COUNT(*)` |
+| 4 | `（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/_work_gkx21/DATA_FACTS_gkx21.md` | §3.49、§3.54、§3.56 | 断档记未测、分母同母体、行数用 `COUNT(*)` |
 | 5 | `第三方库指标计算过程/M_CHAIN_REG_POLICY_COVERAGE.md` | §2 城市 × 链政策计数 | 城市 × 链底数口径 |
 
 ### 1.6 本报告的口径与边界（须与甲方会签）
@@ -266,13 +274,13 @@ $$\text{score}=\left(\frac{0.1245-0.0763}{0.1595-0.0763}+1.0+1.0\right)\div 3\ti
 ### 2.8 复现步骤与产物
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 _build_policy_industry_20261023.py   # 城市 × 链 × 节点矩阵（连 gkx）
 python3 M_POLICY_INDUSTRY_FIT.py             # 只读快照
 python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));print(d['support_judgment'], len(d['chains']))"
 ```
 
-`M_POLICY_INDUSTRY_FIT.py` 不连数据库，只读快照，产出 `code/M_POLICY_INDUSTRY_FIT_out.json`。12 条链的每个格子都带 `M_c`、`N_c_city`、`N_c_national`、`N_c`、`match_pct`、`coverage_num/den/pct`、`fine_num/den/pct`、`fine_basis_ok`，可逐格复核。
+`M_POLICY_INDUSTRY_FIT.py` 不连数据库，只读快照，产出 `metrics/repro/out/M_POLICY_INDUSTRY_FIT_out.json`。12 条链的每个格子都带 `M_c`、`N_c_city`、`N_c_national`、`N_c`、`match_pct`、`coverage_num/den/pct`、`fine_num/den/pct`、`fine_basis_ok`，可逐格复核。
 
 ---
 
@@ -420,7 +428,7 @@ python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));prin
 ### 5.1 复现命令
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 _build_policy_industry_20261023.py
 python3 M_POLICY_INDUSTRY_FIT.py
 python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));print(d['headline']['chains_scored'], d['headline']['max_match_pct'])"
@@ -460,7 +468,6 @@ python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));prin
 3. 国家统计局. (2018). 战略性新兴产业分类（2018）. https://www.stats.gov.cn/
 4. OECD & European Commission JRC. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
 5. 国务院政策文件库（政策文本检索入口）. https://www.gov.cn/zhengce/
-
 ---
 
 # 附件
@@ -541,11 +548,3 @@ python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));prin
 | 文档-产物 | `python3 _work_gkx21/audit_md_vs_out.py --only M_POLICY_INDUSTRY_FIT` | 无实质漂移 |
 | 判档一致性 | `python3 _work_gkx21/audit_verdict_enum.py _staging21` | 与 out.json 同为「部分支持」 |
 | 死引用 | `python3 _work_gkx21/audit_source_paths.py _staging21` | 无死引用 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

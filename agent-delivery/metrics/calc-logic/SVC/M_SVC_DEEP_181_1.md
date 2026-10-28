@@ -1,9 +1,18 @@
-# 服务机构培育推荐模型（M_SVC_DEEP_181_1）
+# M_SVC_DEEP_181_1 服务机构培育推荐模型（gkx 口径改写稿）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_DEEP_181_1.md`；复现脚本 `metrics/repro/M_SVC_DEEP_181_1.py` → `metrics/repro/out/M_SVC_DEEP_181_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_DEEP_181_1.py`、产物 `metrics/repro/out/M_SVC_DEEP_181_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_DEEP_181_1.md`；复现脚本 `metrics/repro/M_SVC_DEEP_181_1.py` → `metrics/repro/out/M_SVC_DEEP_181_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_DEEP_181_1.py`、产物 `metrics/repro/out/M_SVC_DEEP_181_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -49,7 +58,7 @@
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_DEEP_181_1.md` |
 | 复现脚本 | `metrics/repro/M_SVC_DEEP_181_1.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_DEEP_181_1_out.json` |
@@ -57,16 +66,18 @@
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_DEEP_181_1.py`、产物 `metrics/repro/out/M_SVC_DEEP_181_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 - 指标 ID：`M_SVC_DEEP_181_1`
 - 交付批次：20261021 指标整体开发进度调研 / 服务业深度画像组
 - 数据源：gkx（183.240.141.251:3318，只读账号 `gkx_reader_zp`）
 - 冻结快照：`code/_snapshots21/svc21_facts_20261022.json`、`svc21_pt_axis_20261022.json`、`star_applicant_agg_gkx.json`、`policy_base_20261021.json`
-- 复现脚本：`code/M_SVC_DEEP_181_1.py`
-- 结果落盘：`code/M_SVC_DEEP_181_1_out.json`
+- 复现脚本：`metrics/repro/M_SVC_DEEP_181_1.py`
+- 结果落盘：`metrics/repro/out/M_SVC_DEEP_181_1_out.json`
 - 判档：**部分支持**
 - **数据支持度**：部分支持
 - 旧稿：`../20261020_指标整体开发进度调研/开发库指标计算过程/M_SVC_DEEP_181_1.md`（源 `demo_*`，公式沿用）
@@ -270,7 +281,7 @@ TOP15 的建议分布（`advice_mix`）：常规跟踪 7、稳存量 4、优上�
 ### 2.7 复现代码与结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_SVC_DEEP_181_1.py
 # 覆盖写 M_SVC_DEEP_181_1_out.json
 ```
@@ -448,11 +459,8 @@ TOP15（`out.json → top15`）：
 1. 深圳市 20+8 产业集群政策文件，深圳市人民政府，https://www.sz.gov.cn/
 2. 企业会计准则第 30 号——财务报表列报，财政部，https://www.mof.gov.cn/
 3. Hirschman, A. O. (1964). The Paternity of an Index. *American Economic Review*, 54(5), 761–762.
-4. 本批 `_work_gkx21/DISPATCH_BRIEF_v5.md`、`v6.md`
-5. 本批 `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 / §3.16 / §3.21 / §3.24
-6. 同批参考件 `第三方库指标计算过程/M_SVC_DEEP_172_1.md`
-7. 旧稿 `../20261020_指标整体开发进度调研/开发库指标计算过程/M_SVC_DEEP_181_1.md`（源 `demo_*`）
-
+4. 同批参考件 `第三方库指标计算过程/M_SVC_DEEP_172_1.md`
+5. 旧稿 `../20261020_指标整体开发进度调研/开发库指标计算过程/M_SVC_DEEP_181_1.md`（源 `demo_*`）
 ---
 
 # 附件
@@ -481,8 +489,8 @@ TOP15（`out.json → top15`）：
 | 交付物 | 路径 | 状态 |
 |---|---|---|
 | 本文档 | `_staging21/M_SVC_DEEP_181_1.md` | 完成 |
-| 脚本 | `code/M_SVC_DEEP_181_1.py` | 完成 |
-| 结果 | `code/M_SVC_DEEP_181_1_out.json` | 完成 |
+| 脚本 | `metrics/repro/M_SVC_DEEP_181_1.py` | 完成 |
+| 结果 | `metrics/repro/out/M_SVC_DEEP_181_1_out.json` | 完成 |
 | 快照 | `code/_snapshots21/svc21_facts_20261022.json` 等 | 冻结 |
 
 ### C.5 变更记录
@@ -503,7 +511,7 @@ TOP15（`out.json → top15`）：
 ## 附录 E 复算步骤
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_SVC_DEEP_181_1.py
 python3 -c "import json;d=json.load(open('M_SVC_DEEP_181_1_out.json'));print(d['population']['sz_n'],d['score_dist']['max'])"
 # 期望：25597 70.8
@@ -539,11 +547,3 @@ python3 -c "import json;d=json.load(open('M_SVC_DEEP_181_1_out.json'));print(d['
 - [x] 缺口逐维
 - [x] 未 import helper
 - [ ] 财务/研发数据（阻塞）
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

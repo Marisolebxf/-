@@ -1,0 +1,186 @@
+{
+ "metric_id": "M_ENT_PAINPOINT_TOPIC",
+ "metric_name": "痛点主题",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）+ code/_snapshots21/ 落盘快照",
+ "formula": "topic = f(风险表, 结构化原因字段)；records = Σ 命中条数；share = 该主题条数 / 全部痛点条数",
+ "blocking_tables": {
+  "enterprise_diagnosis": {
+   "triage": "source_absent",
+   "evidence": "_work_gkx21/TABLE_ABSENCE_EVIDENCE.md §enterprise_diagnosis"
+  }
+ },
+ "proxy_path": "六张风险表 + abn_reason 关键词四分类 → 规则主题",
+ "proxy_deviation": "主题是规则归类不是语义聚类：只有合规/司法/行政侧主题，没有「融资受阻、人才流失、供应链断供」这类经营痛点；abn_reason 的主题企业数按记录占比分摊（原因字段无 org 去重），标注为估算值；一条记录只归一个主题，不做多标签；「涉及企业数」是各源表 orgs 直接相加，跨表未去重（同一家企业既失信又被执行会被计两次），只作量级参考",
+ "taxonomy": {
+  "level": "规则主题（确定性）",
+  "topics": [
+   "债务违约",
+   "行政违规",
+   "住所失联",
+   "年报未公示",
+   "涉税违规",
+   "信息隐瞒",
+   "其他经营异常",
+   "严重违法",
+   "无照经营"
+  ],
+  "not_covered": [
+   "融资受阻",
+   "人才流失",
+   "供应链断供",
+   "产能利用率低",
+   "价格战"
+  ]
+ },
+ "totals": {
+  "records": 699003,
+  "topics": 9,
+  "by_source": {
+   "经营异常": {
+    "records": 5862,
+    "orgs": 4435
+   },
+   "严重违法": {
+    "records": 247,
+    "orgs": 217
+   },
+   "行政处罚": {
+    "records": 65997,
+    "orgs": 19174
+   },
+   "失信被执行": {
+    "records": 76035,
+    "orgs": 13823
+   },
+   "被执行人": {
+    "records": 550334,
+    "orgs": 35041
+   },
+   "税务处罚": {
+    "records": 528,
+    "orgs": 336
+   }
+  }
+ },
+ "topics": [
+  {
+   "topic": "债务违约",
+   "records": 626369,
+   "share": 0.8961,
+   "orgs": 48864,
+   "sources": [
+    "失信被执行(76035 条 / 13823 家)",
+    "被执行人(550334 条 / 35041 家)"
+   ],
+   "rank": 1
+  },
+  {
+   "topic": "行政违规",
+   "records": 65997,
+   "share": 0.0944,
+   "orgs": 19174,
+   "sources": [
+    "行政处罚(65997 条 / 19174 家)"
+   ],
+   "rank": 2
+  },
+  {
+   "topic": "住所失联",
+   "records": 4415,
+   "share": 0.0063,
+   "orgs": 3500,
+   "sources": [
+    "dwd_org_company_abnormal.abn_reason(4415 条，占异常记录 75.3%)"
+   ],
+   "rank": 3
+  },
+  {
+   "topic": "年报未公示",
+   "records": 677,
+   "share": 0.001,
+   "orgs": 537,
+   "sources": [
+    "dwd_org_company_abnormal.abn_reason(677 条，占异常记录 11.5%)"
+   ],
+   "rank": 4
+  },
+  {
+   "topic": "涉税违规",
+   "records": 528,
+   "share": 0.0008,
+   "orgs": 336,
+   "sources": [
+    "税务处罚(528 条 / 336 家)"
+   ],
+   "rank": 5
+  },
+  {
+   "topic": "信息隐瞒",
+   "records": 309,
+   "share": 0.0004,
+   "orgs": 245,
+   "sources": [
+    "dwd_org_company_abnormal.abn_reason(309 条，占异常记录 5.3%)"
+   ],
+   "rank": 6
+  },
+  {
+   "topic": "其他经营异常",
+   "records": 268,
+   "share": 0.0004,
+   "orgs": 0,
+   "sources": [
+    "abn_reason 未覆盖部分(268 条)"
+   ],
+   "rank": 7
+  },
+  {
+   "topic": "严重违法",
+   "records": 247,
+   "share": 0.0004,
+   "orgs": 217,
+   "sources": [
+    "严重违法(247 条 / 217 家)"
+   ],
+   "rank": 8
+  },
+  {
+   "topic": "无照经营",
+   "records": 193,
+   "share": 0.0003,
+   "orgs": 153,
+   "sources": [
+    "dwd_org_company_abnormal.abn_reason(193 条，占异常记录 3.3%)"
+   ],
+   "rank": 9
+  }
+ ],
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "痛点诊断结果面不存在，但主题构造所需的结构化原因字段在库内是真实的：经营异常 5,862 条带 abn_reason 原文（可拆四类），失信 76,035、被执行 550,334、处罚 65,997、严重违法 247、税务处罚 528 都能直接映射主题，合计 69.9 万条。规则主题可复现、可对回原始记录，故判部分支持；缺少经营侧痛点与语义主题，主题体系只覆盖合规侧。",
+  "criteria": {
+   "result_table_exists": false,
+   "records": 699003,
+   "topics": 9,
+   "semantic_model_used": false,
+   "proxy_used": true
+  }
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "风险表是事件流水，本件按「截至抓取时点的累计条数」归类，不做年度切分，故无基期年份；表内带发生日期，年度主题迁移需另做按年聚合。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/pain_risk_counts_20261022.json",
+   "table": "gkx 六张风险表",
+   "rows": 699003,
+   "role": "主题条数与涉及企业数"
+  },
+  {
+   "path": "code/_snapshots21/pain_topics_20261022.json",
+   "table": "gkx.dwd_org_company_abnormal",
+   "rows": 15,
+   "role": "abn_reason 前 15 类原文与条数"
+  }
+ ]
+}

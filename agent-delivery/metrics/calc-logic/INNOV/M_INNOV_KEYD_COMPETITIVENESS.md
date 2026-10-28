@@ -1,9 +1,21 @@
-# 区域科技创新竞争力水平（M_INNOV_KEYD_COMPETITIVENESS）
+# M_INNOV_KEYD_COMPETITIVENESS · 城市关键技术竞争力（gkx 口径重建件）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_KEYD_COMPETITIVENESS.md`；复现脚本 `metrics/repro/M_INNOV_KEYD_COMPETITIVENESS.py` → `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：评价型（EVAL，三维等权）｜ **域**：INNOV（创新技术 / 城市竞争力）｜ **UI 挂载**：科技信息展示系统 · 科技发展态势 · 区域创新比较 · 城市关键技术竞争力
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：仿王惠（旧稿口径；三维等权、D2 内部 0.4/0.4/0.2）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_KEYD_COMPETITIVENESS.py`、产物 `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_KEYD_COMPETITIVENESS.md`；复现脚本 `metrics/repro/M_INNOV_KEYD_COMPETITIVENESS.py` → `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_KEYD_COMPETITIVENESS.py`、产物 `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_KEYD_COMPETITIVENESS.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_KEYD_COMPETITIVENESS.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json` |
@@ -59,16 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_KEYD_COMPETITIVENESS.py`、产物 `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：评价型（EVAL，三维等权）｜ **域**：INNOV（创新技术 / 城市竞争力）｜ **UI 挂载**：科技信息展示系统 · 科技发展态势 · 区域创新比较 · 城市关键技术竞争力
-> **数据支持度**：**部分支持** ｜ **公式定义人**：仿王惠（旧稿口径；三维等权、D2 内部 0.4/0.4/0.2）
-> **主算库**：`gkx`（183.240.141.251:3318，只读账号 `gkx_reader_zp`）｜ **SQL 条数**：0（全部读落盘快照）
-> **产物**：`code/M_INNOV_KEYD_COMPETITIVENESS.py` → `code/M_INNOV_KEYD_COMPETITIVENESS_out.json` ｜ **成文日期**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -110,7 +117,7 @@ D1 产出与 D2 主体在四城上可算（专利 212.68 万件、论文 11,894 
 
 因此本件做了一组关键敏感性：**剔除政策维后，四城综合分为深圳 86.84、广州 62.20、东莞 16.42、惠州 0.00，排名不变**。排名稳，但分差从 91.23 vs 53.79（差 37.44）缩到 86.84 vs 62.20（差 24.64）——政策的 6% 覆盖把深圳的优势人为放大了。
 
-**结论**：三维可算、排名可复现、四组敏感性排名不变；但政策维覆盖 6.06%、论文语料偏广州、min-max 端点效应，按 §〇 判**部分支持**。复现代码见 `code/M_INNOV_KEYD_COMPETITIVENESS.py`，结果见 `code/M_INNOV_KEYD_COMPETITIVENESS_out.json`。
+**结论**：三维可算、排名可复现、四组敏感性排名不变；但政策维覆盖 6.06%、论文语料偏广州、min-max 端点效应，按 §〇 判**部分支持**。复现代码见 `metrics/repro/M_INNOV_KEYD_COMPETITIVENESS.py`，结果见 `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json`。
 
 ---
 
@@ -259,10 +266,10 @@ D1 产出与 D2 主体在四城上可算（专利 212.68 万件、论文 11,894 
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_INNOV_KEYD_COMPETITIVENESS.py
+cd code && python3 M_INNOV_KEYD_COMPETITIVENESS.py
 ```
 
-脚本零 SQL，只读四份快照，输出 `code/M_INNOV_KEYD_COMPETITIVENESS_out.json`。产物含五个契约字段与 `scope`、`inputs`、`normalized`、`dims`、`composite`、`rank`、`sensitivity`、`policy_coverage`、`probes`、`gaps`。
+脚本零 SQL，只读四份快照，输出 `metrics/repro/out/M_INNOV_KEYD_COMPETITIVENESS_out.json`。产物含五个契约字段与 `scope`、`inputs`、`normalized`、`dims`、`composite`、`rank`、`sensitivity`、`policy_coverage`、`probes`、`gaps`。
 
 实测输出（2026-10-22 运行）：
 
@@ -455,17 +462,13 @@ python3 -c "import json;d=json.load(open('M_INNOV_KEYD_COMPETITIVENESS_out.json'
 
 ## 参考文献
 
-1. 中国科学技术发展战略研究院. 中国区域科技创新评价报告 [R/OL]. https://www.casted.org.cn/
-2. WIPO. Global Innovation Index 2025 [R/OL]. https://www.wipo.int/global_innovation_index/en/2025/
-3. 倪鹏飞. 中国城市竞争力报告 No.22 [R/OL]. https://www.cssn.cn/
-4. OECD. Revealed Technological Advantage (RTA) [EB/OL]. https://www.oecd.org/sti/inno/
-5. 国家知识产权局. 专利统计年报 [EB/OL]. https://www.cnipa.gov.cn/
-6. 深圳市统计局. 深圳统计年鉴 2025 [EB/OL]. https://tjj.sz.gov.cn/
-7. 广州市统计局. 广州统计年鉴 2025 [EB/OL]. https://tjj.gz.gov.cn/
-8. 东莞市统计局. 东莞统计年鉴 2025 [EB/OL]. https://tjj.dg.gov.cn/
-9. 惠州市统计局. 惠州统计年鉴 2025 [EB/OL]. https://tjj.huizhou.gov.cn/
-10. 广东省科学技术厅. 高新技术企业认定名单 [EB/OL]. https://gdstc.gd.gov.cn/
-
+1. WIPO. Global Innovation Index 2025 [R/OL]. https://www.wipo.int/global_innovation_index/en/2025/
+2. 倪鹏飞. 中国城市竞争力报告 No.22 [R/OL]. https://www.cssn.cn/
+3. 国家知识产权局. 专利统计年报 [EB/OL]. https://www.cnipa.gov.cn/
+4. 深圳市统计局. 深圳统计年鉴 2025 [EB/OL]. https://tjj.sz.gov.cn/
+5. 广州市统计局. 广州统计年鉴 2025 [EB/OL]. https://tjj.gz.gov.cn/
+6. 东莞市统计局. 东莞统计年鉴 2025 [EB/OL]. https://tjj.dg.gov.cn/
+7. 广东省科学技术厅. 高新技术企业认定名单 [EB/OL]. https://gdstc.gd.gov.cn/
 ---
 
 # 附件
@@ -518,11 +521,3 @@ python3 M_INNOV_KEYD_COMPETITIVENESS.py
 产物顶层键：`metric_id`、`metric_name`、`domain`、`formula_owner`、`support_judgment`、`support_reason`、`generated_at`、`main_db`、`sql_count`、`sources`、`base_years_used`、`base_years_missing`、`base_years_note`、`definition_note`、`scope`、`inputs`、`normalized`、`dims`、`composite`、`rank`、`sensitivity`、`policy_coverage`、`probes`、`gaps`。
 
 自包含声明：脚本不 import `code/` 之外的模块，零 SQL，只读 `_snapshots21/` 四份冻结快照。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

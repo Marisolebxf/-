@@ -1,0 +1,140 @@
+{
+ "metric_id": "M_SVC_PT_SZ_FIELD_DIST",
+ "metric_name": "深圳机构产业领域分布",
+ "support_judgment": "部分支持",
+ "judgment_reason": "深圳切片的产业领域分布可出数（10778/25597 家对齐到产业词表，12 个产业名、多命中 19522 家次），但领域轴换了一套字典（旧稿 15 集群目录在 gkx 无表，改用 tags 的「20+8 产业集群」词表），且覆盖率只有 42.11%、未对齐的 14819 家只能单列 → 维度不完整 → 部分支持",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_industry_tags(company_name, industry_name)",
+   "rows": 2283762,
+   "snapshot": "code/_snapshots21/svc21_pt_axis_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_org_product_info（池人口）+ dwd_org_base_info(city)",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  }
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：产业领域分布是当前存量的横截面切分，不含年度分母；tags 表无年份列，本件刻意不做年度序列（补 0 会把未采集年当零供给）。",
+ "population": {
+  "pool_orgs": 44153,
+  "shenzhen_orgs": 25597,
+  "tag_matched": 10778,
+  "tag_unassigned": 14819,
+  "tag_coverage": 0.421065,
+  "pool_tagged": 17917,
+  "pool_tag_coverage": 0.405793,
+  "rows_scanned": 2283762
+ },
+ "field_rows": [
+  {
+   "field": "软件与信息服务",
+   "org_count": 5311,
+   "share_of_sz": 0.207485,
+   "share_of_matched": 0.492763
+  },
+  {
+   "field": "智能终端",
+   "org_count": 3929,
+   "share_of_sz": 0.153495,
+   "share_of_matched": 0.364539
+  },
+  {
+   "field": "人工智能",
+   "org_count": 2071,
+   "share_of_sz": 0.080908,
+   "share_of_matched": 0.192151
+  },
+  {
+   "field": "具身智能",
+   "org_count": 1682,
+   "share_of_sz": 0.065711,
+   "share_of_matched": 0.156059
+  },
+  {
+   "field": "机器人",
+   "org_count": 1402,
+   "share_of_sz": 0.054772,
+   "share_of_matched": 0.13008
+  },
+  {
+   "field": "集成电路",
+   "org_count": 1396,
+   "share_of_sz": 0.054538,
+   "share_of_matched": 0.129523
+  },
+  {
+   "field": "传感器",
+   "org_count": 1158,
+   "share_of_sz": 0.04524,
+   "share_of_matched": 0.107441
+  },
+  {
+   "field": "数字创意",
+   "org_count": 1043,
+   "share_of_sz": 0.040747,
+   "share_of_matched": 0.096771
+  },
+  {
+   "field": "智能网联汽车",
+   "org_count": 691,
+   "share_of_sz": 0.026995,
+   "share_of_matched": 0.064112
+  },
+  {
+   "field": "合成生物",
+   "org_count": 531,
+   "share_of_sz": 0.020745,
+   "share_of_matched": 0.049267
+  },
+  {
+   "field": "生物医药",
+   "org_count": 225,
+   "share_of_sz": 0.00879,
+   "share_of_matched": 0.020876
+  },
+  {
+   "field": "低空经济",
+   "org_count": 83,
+   "share_of_sz": 0.003243,
+   "share_of_matched": 0.007701
+  }
+ ],
+ "fields_total": 12,
+ "multi_hit_org_hits": 19522,
+ "multiplicity": {
+  "1": 5951,
+  "2": 2582,
+  "3": 1246,
+  "4": 564,
+  "5": 272,
+  "6": 111,
+  "7": 32,
+  "8": 17,
+  "9": 3
+ },
+ "axis_substitution": {
+  "old_axis": "项目内 15 集群目录（CL-SEI-01～10 + CL-FUT-01～05，POLICY_VERSION sz-10+5-2026）",
+  "new_axis": "gkx.dwd_org_industry_tags.industry_name 的「20+8 产业集群」词表（12 个有值产业）",
+  "mapping": null,
+  "why_no_mapping": "两套轴无权威对照表：旧轴是项目自建集群码，新轴是产业名文本；强行按名称相似映射会把「人工智能」并进「新一代信息技术」这类一对多关系做成一对一，产生不可复核的口径损失。故本件只换轴、不折算。",
+  "impact": "同一切片在两个轴下的分档不可直接比大小，只能比「集中度」这类结构量"
+ },
+ "difference_vs_old_draft": {
+  "population": "旧稿输出人口为全池 43,296（未切深圳）→ 本件严格切深圳 25597 家",
+  "axis": "旧稿 15 集群（10 个有命中，CL-SEI-01/CL-FUT-02 各 43,296 为字典性全量默认映射）→ 本件 12 个产业名、最大 8,242（软件与信息服务）",
+  "unassigned": "旧稿未分配桶为 −44,916（未归并导致）→ 本件未分配 14819（覆盖率 42.11%）"
+ },
+ "compute": {
+  "status": "ok",
+  "elapsed_sec": 0.472,
+  "sql_count": 0
+ }
+}

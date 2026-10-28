@@ -1,0 +1,1500 @@
+{
+ "metric_id": "M_INNOV_DS_04_REALTIME_005",
+ "name": "创新影响预测",
+ "vendor_metric": "M_INNOV_IMPACT_FORECAST",
+ "formula_owner": "王惠",
+ "view": "forecast",
+ "generated_at": "2026-10-23 22:10:18",
+ "runtime_sec": 0.9,
+ "data_source": "gkx.dwd_patent IPC 小类×年全量缓存（634 个领域、2,420,915 件）与 申请人×年面板（275,135 组）；对应表 dwd_patent.apdt_year 只有 2021—2026",
+ "db": "gkx @ 183.240.141.251:3318（只读，本脚本零 SQL）",
+ "definition": "对同一套机构/领域实体的逐年产出件数做 Holt 线性指数平滑外推（α=0.5、β=0.3、满 8 期、年预 2 期），输出点预测、约 80% 区间与贡献度。",
+ "statistical_year": 2024,
+ "windows": {
+  "recent": [
+   2022,
+   2023,
+   2024
+  ],
+  "base_formula": [
+   2017,
+   2018,
+   2019,
+   2020,
+   2021
+  ],
+  "base_used": [
+   2021
+  ]
+ },
+ "params": {
+  "model": "Holt linear",
+  "alpha": 0.5,
+  "beta": 0.3,
+  "horizon": 2,
+  "min_periods": 8,
+  "interval": 0.8
+ },
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "本件的「基期」是训练期：库内完整年只有 2021—2024 四期，公式要 8 期；2017—2020 在 dwd_patent.apdt_year 上零行，2025 含公开滞后、2026 为残年，均不进训练。",
+ "forecast_emitted": false,
+ "gate": {
+  "required_periods": 8,
+  "periods_complete": 4,
+  "periods_complete_list": [
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "periods_if_2025_counted": 5,
+  "residual_year_excluded": 2026,
+  "passed": false,
+  "decision": "不外推：4 期 < 8 期门槛；把 2025 硬算成完整年也只有 5 期，仍不足",
+  "forecast_emitted": false
+ },
+ "forecast": null,
+ "interval80": null,
+ "contrib": null,
+ "family": {
+  "group": "M_INNOV_DS_04（科技发展态势·全球创新监测）",
+  "this": "REALTIME_005 = 在 REALTIME_004 的节点年序列上做 Holt 外推（本件未发射）",
+  "upstream": "M_INNOV_DS_04_REALTIME_004（同一套实体，产出规模序列）",
+  "sibling": {
+   "M_INNOV_DS_04_MONITOR_001": "词条级突现（列表）",
+   "M_INNOV_DS_04_MONITOR_002": "词条级价值（详情）"
+  },
+  "key_diff": "004 给当期节点得分；005 要给未来 2 期——两者共用实体与年序列，不共用结果"
+ },
+ "probes": {
+  "year_totals": {
+   "2021": 604512,
+   "2022": 601893,
+   "2023": 611811,
+   "2024": 606468,
+   "2025": 440401,
+   "2026": 74810
+  },
+  "complete_years": [
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "residual_year": 2026,
+  "y2025_vs_mean_2021_2024": 0.7265,
+  "y2026_vs_mean_2021_2024": 0.1234,
+  "n_domains": 634,
+  "n_orgs_with_series": 6958,
+  "org_min_total": 50,
+  "domain_panel_window": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025,
+   2026
+  ],
+  "org_panel_window": [
+   2021,
+   2024
+  ],
+  "org_panel_note": "申请人×年面板（patent_panel_innov，275,135 组）的 year 只有 2021—2024，因此机构序列里 2025/2026 的 0 是**面板未覆盖**，不是「该年无申请」；领域序列的 2021—2026 全部为库内真实年份。",
+  "n_node_total_output": 2420915
+ },
+ "compute": {
+  "n_domains_series": 634,
+  "n_orgs_series": 6958,
+  "n_forecast_nodes": 0,
+  "n_interval_nodes": 0,
+  "rmse_train": null,
+  "mae_train": null,
+  "contrib_method": null,
+  "series_fields": "year_counts（领域 2021—2026 实测，2026 标残年；机构 2021—2024 实测，2025/2026 为面板未覆盖的 0）、observed（末年值/首末比/末年同比/当期占比，全部为观测值，无拟合）"
+ },
+ "series_domain_top": [
+  {
+   "node": "G06F",
+   "year_counts": {
+    "2021": 37926,
+    "2022": 35253,
+    "2023": 36575,
+    "2024": 38944,
+    "2025": 32756,
+    "2026": 8623
+   },
+   "sum_complete": 148698,
+   "last_complete_year": 2024,
+   "last_complete_value": 38944,
+   "first_complete_value": 37926,
+   "ratio_last_over_first": 1.0268,
+   "yoy_last": 0.0648,
+   "y2025_partial": 32756,
+   "y2026_residual": 8623
+  },
+  {
+   "node": "G01N",
+   "year_counts": {
+    "2021": 13603,
+    "2022": 14251,
+    "2023": 13580,
+    "2024": 13093,
+    "2025": 9495,
+    "2026": 2234
+   },
+   "sum_complete": 54527,
+   "last_complete_year": 2024,
+   "last_complete_value": 13093,
+   "first_complete_value": 13603,
+   "ratio_last_over_first": 0.9625,
+   "yoy_last": -0.0359,
+   "y2025_partial": 9495,
+   "y2026_residual": 2234
+  },
+  {
+   "node": "H04L",
+   "year_counts": {
+    "2021": 11995,
+    "2022": 13667,
+    "2023": 12552,
+    "2024": 11972,
+    "2025": 9402,
+    "2026": 2043
+   },
+   "sum_complete": 50186,
+   "last_complete_year": 2024,
+   "last_complete_value": 11972,
+   "first_complete_value": 11995,
+   "ratio_last_over_first": 0.9981,
+   "yoy_last": -0.0462,
+   "y2025_partial": 9402,
+   "y2026_residual": 2043
+  },
+  {
+   "node": "H04W",
+   "year_counts": {
+    "2021": 13806,
+    "2022": 12042,
+    "2023": 12581,
+    "2024": 13418,
+    "2025": 8589,
+    "2026": 977
+   },
+   "sum_complete": 51847,
+   "last_complete_year": 2024,
+   "last_complete_value": 13418,
+   "first_complete_value": 13806,
+   "ratio_last_over_first": 0.9719,
+   "yoy_last": 0.0665,
+   "y2025_partial": 8589,
+   "y2026_residual": 977
+  },
+  {
+   "node": "H01M",
+   "year_counts": {
+    "2021": 8574,
+    "2022": 10252,
+    "2023": 13369,
+    "2024": 14973,
+    "2025": 9400,
+    "2026": 1626
+   },
+   "sum_complete": 47168,
+   "last_complete_year": 2024,
+   "last_complete_value": 14973,
+   "first_complete_value": 8574,
+   "ratio_last_over_first": 1.7463,
+   "yoy_last": 0.12,
+   "y2025_partial": 9400,
+   "y2026_residual": 1626
+  },
+  {
+   "node": "G06Q",
+   "year_counts": {
+    "2021": 8773,
+    "2022": 9568,
+    "2023": 10366,
+    "2024": 11799,
+    "2025": 11069,
+    "2026": 2790
+   },
+   "sum_complete": 40506,
+   "last_complete_year": 2024,
+   "last_complete_value": 11799,
+   "first_complete_value": 8773,
+   "ratio_last_over_first": 1.3449,
+   "yoy_last": 0.1382,
+   "y2025_partial": 11069,
+   "y2026_residual": 2790
+  },
+  {
+   "node": "G06T",
+   "year_counts": {
+    "2021": 9292,
+    "2022": 8996,
+    "2023": 8558,
+    "2024": 8676,
+    "2025": 8138,
+    "2026": 2463
+   },
+   "sum_complete": 35522,
+   "last_complete_year": 2024,
+   "last_complete_value": 8676,
+   "first_complete_value": 9292,
+   "ratio_last_over_first": 0.9337,
+   "yoy_last": 0.0138,
+   "y2025_partial": 8138,
+   "y2026_residual": 2463
+  },
+  {
+   "node": "H05K",
+   "year_counts": {
+    "2021": 10078,
+    "2022": 9697,
+    "2023": 9911,
+    "2024": 8909,
+    "2025": 5056,
+    "2026": 614
+   },
+   "sum_complete": 38595,
+   "last_complete_year": 2024,
+   "last_complete_value": 8909,
+   "first_complete_value": 10078,
+   "ratio_last_over_first": 0.884,
+   "yoy_last": -0.1011,
+   "y2025_partial": 5056,
+   "y2026_residual": 614
+  },
+  {
+   "node": "G06V",
+   "year_counts": {
+    "2021": 4858,
+    "2022": 8827,
+    "2023": 9250,
+    "2024": 9107,
+    "2025": 8022,
+    "2026": 2216
+   },
+   "sum_complete": 32042,
+   "last_complete_year": 2024,
+   "last_complete_value": 9107,
+   "first_complete_value": 4858,
+   "ratio_last_over_first": 1.8746,
+   "yoy_last": -0.0155,
+   "y2025_partial": 8022,
+   "y2026_residual": 2216
+  },
+  {
+   "node": "H02J",
+   "year_counts": {
+    "2021": 7159,
+    "2022": 7121,
+    "2023": 8115,
+    "2024": 9318,
+    "2025": 7358,
+    "2026": 1615
+   },
+   "sum_complete": 31713,
+   "last_complete_year": 2024,
+   "last_complete_value": 9318,
+   "first_complete_value": 7159,
+   "ratio_last_over_first": 1.3016,
+   "yoy_last": 0.1482,
+   "y2025_partial": 7358,
+   "y2026_residual": 1615
+  },
+  {
+   "node": "G01R",
+   "year_counts": {
+    "2021": 7808,
+    "2022": 7194,
+    "2023": 7846,
+    "2024": 8666,
+    "2025": 6236,
+    "2026": 1348
+   },
+   "sum_complete": 31514,
+   "last_complete_year": 2024,
+   "last_complete_value": 8666,
+   "first_complete_value": 7808,
+   "ratio_last_over_first": 1.1099,
+   "yoy_last": 0.1045,
+   "y2025_partial": 6236,
+   "y2026_residual": 1348
+  },
+  {
+   "node": "H04N",
+   "year_counts": {
+    "2021": 10441,
+    "2022": 8319,
+    "2023": 7460,
+    "2024": 7229,
+    "2025": 4247,
+    "2026": 857
+   },
+   "sum_complete": 33449,
+   "last_complete_year": 2024,
+   "last_complete_value": 7229,
+   "first_complete_value": 10441,
+   "ratio_last_over_first": 0.6924,
+   "yoy_last": -0.031,
+   "y2025_partial": 4247,
+   "y2026_residual": 857
+  },
+  {
+   "node": "H01R",
+   "year_counts": {
+    "2021": 8030,
+    "2022": 7883,
+    "2023": 8488,
+    "2024": 8389,
+    "2025": 4493,
+    "2026": 411
+   },
+   "sum_complete": 32790,
+   "last_complete_year": 2024,
+   "last_complete_value": 8389,
+   "first_complete_value": 8030,
+   "ratio_last_over_first": 1.0447,
+   "yoy_last": -0.0117,
+   "y2025_partial": 4493,
+   "y2026_residual": 411
+  },
+  {
+   "node": "B29C",
+   "year_counts": {
+    "2021": 8301,
+    "2022": 8223,
+    "2023": 7893,
+    "2024": 7369,
+    "2025": 4537,
+    "2026": 690
+   },
+   "sum_complete": 31786,
+   "last_complete_year": 2024,
+   "last_complete_value": 7369,
+   "first_complete_value": 8301,
+   "ratio_last_over_first": 0.8877,
+   "yoy_last": -0.0664,
+   "y2025_partial": 4537,
+   "y2026_residual": 690
+  },
+  {
+   "node": "B65G",
+   "year_counts": {
+    "2021": 6907,
+    "2022": 7528,
+    "2023": 6844,
+    "2024": 6712,
+    "2025": 3889,
+    "2026": 483
+   },
+   "sum_complete": 27991,
+   "last_complete_year": 2024,
+   "last_complete_value": 6712,
+   "first_complete_value": 6907,
+   "ratio_last_over_first": 0.9718,
+   "yoy_last": -0.0193,
+   "y2025_partial": 3889,
+   "y2026_residual": 483
+  },
+  {
+   "node": "A61B",
+   "year_counts": {
+    "2021": 6196,
+    "2022": 6150,
+    "2023": 6267,
+    "2024": 5725,
+    "2025": 3684,
+    "2026": 899
+   },
+   "sum_complete": 24338,
+   "last_complete_year": 2024,
+   "last_complete_value": 5725,
+   "first_complete_value": 6196,
+   "ratio_last_over_first": 0.924,
+   "yoy_last": -0.0865,
+   "y2025_partial": 3684,
+   "y2026_residual": 899
+  },
+  {
+   "node": "B23K",
+   "year_counts": {
+    "2021": 5416,
+    "2022": 5633,
+    "2023": 6130,
+    "2024": 6013,
+    "2025": 4159,
+    "2026": 755
+   },
+   "sum_complete": 23192,
+   "last_complete_year": 2024,
+   "last_complete_value": 6013,
+   "first_complete_value": 5416,
+   "ratio_last_over_first": 1.1102,
+   "yoy_last": -0.0191,
+   "y2025_partial": 4159,
+   "y2026_residual": 755
+  },
+  {
+   "node": "H04R",
+   "year_counts": {
+    "2021": 6124,
+    "2022": 6209,
+    "2023": 6028,
+    "2024": 5338,
+    "2025": 2860,
+    "2026": 312
+   },
+   "sum_complete": 23699,
+   "last_complete_year": 2024,
+   "last_complete_value": 5338,
+   "first_complete_value": 6124,
+   "ratio_last_over_first": 0.8717,
+   "yoy_last": -0.1145,
+   "y2025_partial": 2860,
+   "y2026_residual": 312
+  },
+  {
+   "node": "A61K",
+   "year_counts": {
+    "2021": 4514,
+    "2022": 4938,
+    "2023": 5006,
+    "2024": 5289,
+    "2025": 5219,
+    "2026": 1619
+   },
+   "sum_complete": 19747,
+   "last_complete_year": 2024,
+   "last_complete_value": 5289,
+   "first_complete_value": 4514,
+   "ratio_last_over_first": 1.1717,
+   "yoy_last": 0.0565,
+   "y2025_partial": 5219,
+   "y2026_residual": 1619
+  },
+  {
+   "node": "H01L",
+   "year_counts": {
+    "2021": 6789,
+    "2022": 6382,
+    "2023": 5663,
+    "2024": 4097,
+    "2025": 1004,
+    "2026": 0
+   },
+   "sum_complete": 22931,
+   "last_complete_year": 2024,
+   "last_complete_value": 4097,
+   "first_complete_value": 6789,
+   "ratio_last_over_first": 0.6035,
+   "yoy_last": -0.2765,
+   "y2025_partial": 1004,
+   "y2026_residual": 0
+  }
+ ],
+ "series_org_top": [
+  {
+   "node": "华为技术有限公司",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 20110,
+    "2022": 16578,
+    "2023": 17043,
+    "2024": 17943,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 71674,
+   "last_complete_year": 2024,
+   "last_complete_value": 17943,
+   "first_complete_value": 20110,
+   "ratio_last_over_first": 0.8922,
+   "yoy_last": 0.0528,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "维沃移动通信有限公司",
+   "city": "东莞市",
+   "year_counts": {
+    "2021": 8850,
+    "2022": 7136,
+    "2023": 5110,
+    "2024": 4229,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 25325,
+   "last_complete_year": 2024,
+   "last_complete_value": 4229,
+   "first_complete_value": 8850,
+   "ratio_last_over_first": 0.4779,
+   "yoy_last": -0.1724,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "OPPO广东移动通信有限公司",
+   "city": "东莞市",
+   "year_counts": {
+    "2021": 9494,
+    "2022": 7561,
+    "2023": 5433,
+    "2024": 2263,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 24751,
+   "last_complete_year": 2024,
+   "last_complete_value": 2263,
+   "first_complete_value": 9494,
+   "ratio_last_over_first": 0.2384,
+   "yoy_last": -0.5835,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "比亚迪股份有限公司",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 2987,
+    "2022": 4128,
+    "2023": 6648,
+    "2024": 9656,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 23419,
+   "last_complete_year": 2024,
+   "last_complete_value": 9656,
+   "first_complete_value": 2987,
+   "ratio_last_over_first": 3.2327,
+   "yoy_last": 0.4525,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "华南理工大学",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 5934,
+    "2022": 5843,
+    "2023": 5209,
+    "2024": 5101,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 22087,
+   "last_complete_year": 2024,
+   "last_complete_value": 5101,
+   "first_complete_value": 5934,
+   "ratio_last_over_first": 0.8596,
+   "yoy_last": -0.0207,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "广东电网有限责任公司",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 4210,
+    "2022": 4273,
+    "2023": 3990,
+    "2024": 5478,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 17951,
+   "last_complete_year": 2024,
+   "last_complete_value": 5478,
+   "first_complete_value": 4210,
+   "ratio_last_over_first": 1.3012,
+   "yoy_last": 0.3729,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "广东工业大学",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 3776,
+    "2022": 3954,
+    "2023": 3971,
+    "2024": 4483,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 16184,
+   "last_complete_year": 2024,
+   "last_complete_value": 4483,
+   "first_complete_value": 3776,
+   "ratio_last_over_first": 1.1872,
+   "yoy_last": 0.1289,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "中兴通讯股份有限公司",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 3335,
+    "2022": 3594,
+    "2023": 3778,
+    "2024": 3292,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 13999,
+   "last_complete_year": 2024,
+   "last_complete_value": 3292,
+   "first_complete_value": 3335,
+   "ratio_last_over_first": 0.9871,
+   "yoy_last": -0.1286,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "中山大学",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 3596,
+    "2022": 3393,
+    "2023": 2910,
+    "2024": 3444,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 13343,
+   "last_complete_year": 2024,
+   "last_complete_value": 3444,
+   "first_complete_value": 3596,
+   "ratio_last_over_first": 0.9577,
+   "yoy_last": 0.1835,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "深圳大学",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 2316,
+    "2022": 2216,
+    "2023": 2308,
+    "2024": 2714,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 9554,
+   "last_complete_year": 2024,
+   "last_complete_value": 2714,
+   "first_complete_value": 2316,
+   "ratio_last_over_first": 1.1718,
+   "yoy_last": 0.1759,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "华南农业大学",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 1775,
+    "2022": 2019,
+    "2023": 1872,
+    "2024": 2353,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 8019,
+   "last_complete_year": 2024,
+   "last_complete_value": 2353,
+   "first_complete_value": 1775,
+   "ratio_last_over_first": 1.3256,
+   "yoy_last": 0.2569,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "广州汽车集团股份有限公司",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 1814,
+    "2022": 1646,
+    "2023": 2114,
+    "2024": 2153,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 7727,
+   "last_complete_year": 2024,
+   "last_complete_value": 2153,
+   "first_complete_value": 1814,
+   "ratio_last_over_first": 1.1869,
+   "yoy_last": 0.0184,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "荣耀终端股份有限公司",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 30,
+    "2022": 75,
+    "2023": 1612,
+    "2024": 5300,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 7017,
+   "last_complete_year": 2024,
+   "last_complete_value": 5300,
+   "first_complete_value": 30,
+   "ratio_last_over_first": 176.6667,
+   "yoy_last": 2.2878,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "上海交通大学",
+   "city": null,
+   "year_counts": {
+    "2021": 1835,
+    "2022": 1638,
+    "2023": 1597,
+    "2024": 1687,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 6757,
+   "last_complete_year": 2024,
+   "last_complete_value": 1687,
+   "first_complete_value": 1835,
+   "ratio_last_over_first": 0.9193,
+   "yoy_last": 0.0564,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "广州视源电子科技股份有限公司",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 2261,
+    "2022": 1629,
+    "2023": 1428,
+    "2024": 1042,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 6360,
+   "last_complete_year": 2024,
+   "last_complete_value": 1042,
+   "first_complete_value": 2261,
+   "ratio_last_over_first": 0.4609,
+   "yoy_last": -0.2703,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "广州大学",
+   "city": "广州市",
+   "year_counts": {
+    "2021": 1442,
+    "2022": 2111,
+    "2023": 1435,
+    "2024": 1295,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 6283,
+   "last_complete_year": 2024,
+   "last_complete_value": 1295,
+   "first_complete_value": 1442,
+   "ratio_last_over_first": 0.8981,
+   "yoy_last": -0.0976,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "惠科股份有限公司",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 726,
+    "2022": 1311,
+    "2023": 1844,
+    "2024": 1540,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 5421,
+   "last_complete_year": 2024,
+   "last_complete_value": 1540,
+   "first_complete_value": 726,
+   "ratio_last_over_first": 2.1212,
+   "yoy_last": -0.1649,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "清华大学",
+   "city": null,
+   "year_counts": {
+    "2021": 1652,
+    "2022": 1424,
+    "2023": 1058,
+    "2024": 1229,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 5363,
+   "last_complete_year": 2024,
+   "last_complete_value": 1229,
+   "first_complete_value": 1652,
+   "ratio_last_over_first": 0.7439,
+   "yoy_last": 0.1616,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "南方科技大学",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 1301,
+    "2022": 1349,
+    "2023": 1317,
+    "2024": 1313,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 5280,
+   "last_complete_year": 2024,
+   "last_complete_value": 1313,
+   "first_complete_value": 1301,
+   "ratio_last_over_first": 1.0092,
+   "yoy_last": -0.003,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  },
+  {
+   "node": "深圳供电局有限公司",
+   "city": "深圳市",
+   "year_counts": {
+    "2021": 1549,
+    "2022": 1212,
+    "2023": 1066,
+    "2024": 1437,
+    "2025": 0,
+    "2026": 0
+   },
+   "sum_complete": 5264,
+   "last_complete_year": 2024,
+   "last_complete_value": 1437,
+   "first_complete_value": 1549,
+   "ratio_last_over_first": 0.9277,
+   "yoy_last": 0.348,
+   "y2025_partial": 0,
+   "y2026_residual": 0
+  }
+ ],
+ "observed_domain": [
+  {
+   "sum_complete": 148698,
+   "last_complete_year": 2024,
+   "last_complete_value": 38944,
+   "first_complete_value": 37926,
+   "ratio_last_over_first": 1.0268,
+   "yoy_last": 0.0648,
+   "y2025_partial": 32756,
+   "y2026_residual": 8623,
+   "node": "G06F",
+   "current_share_2024": 0.064214
+  },
+  {
+   "sum_complete": 54527,
+   "last_complete_year": 2024,
+   "last_complete_value": 13093,
+   "first_complete_value": 13603,
+   "ratio_last_over_first": 0.9625,
+   "yoy_last": -0.0359,
+   "y2025_partial": 9495,
+   "y2026_residual": 2234,
+   "node": "G01N",
+   "current_share_2024": 0.021589
+  },
+  {
+   "sum_complete": 50186,
+   "last_complete_year": 2024,
+   "last_complete_value": 11972,
+   "first_complete_value": 11995,
+   "ratio_last_over_first": 0.9981,
+   "yoy_last": -0.0462,
+   "y2025_partial": 9402,
+   "y2026_residual": 2043,
+   "node": "H04L",
+   "current_share_2024": 0.019741
+  },
+  {
+   "sum_complete": 51847,
+   "last_complete_year": 2024,
+   "last_complete_value": 13418,
+   "first_complete_value": 13806,
+   "ratio_last_over_first": 0.9719,
+   "yoy_last": 0.0665,
+   "y2025_partial": 8589,
+   "y2026_residual": 977,
+   "node": "H04W",
+   "current_share_2024": 0.022125
+  },
+  {
+   "sum_complete": 47168,
+   "last_complete_year": 2024,
+   "last_complete_value": 14973,
+   "first_complete_value": 8574,
+   "ratio_last_over_first": 1.7463,
+   "yoy_last": 0.12,
+   "y2025_partial": 9400,
+   "y2026_residual": 1626,
+   "node": "H01M",
+   "current_share_2024": 0.024689
+  },
+  {
+   "sum_complete": 40506,
+   "last_complete_year": 2024,
+   "last_complete_value": 11799,
+   "first_complete_value": 8773,
+   "ratio_last_over_first": 1.3449,
+   "yoy_last": 0.1382,
+   "y2025_partial": 11069,
+   "y2026_residual": 2790,
+   "node": "G06Q",
+   "current_share_2024": 0.019455
+  },
+  {
+   "sum_complete": 35522,
+   "last_complete_year": 2024,
+   "last_complete_value": 8676,
+   "first_complete_value": 9292,
+   "ratio_last_over_first": 0.9337,
+   "yoy_last": 0.0138,
+   "y2025_partial": 8138,
+   "y2026_residual": 2463,
+   "node": "G06T",
+   "current_share_2024": 0.014306
+  },
+  {
+   "sum_complete": 38595,
+   "last_complete_year": 2024,
+   "last_complete_value": 8909,
+   "first_complete_value": 10078,
+   "ratio_last_over_first": 0.884,
+   "yoy_last": -0.1011,
+   "y2025_partial": 5056,
+   "y2026_residual": 614,
+   "node": "H05K",
+   "current_share_2024": 0.01469
+  },
+  {
+   "sum_complete": 32042,
+   "last_complete_year": 2024,
+   "last_complete_value": 9107,
+   "first_complete_value": 4858,
+   "ratio_last_over_first": 1.8746,
+   "yoy_last": -0.0155,
+   "y2025_partial": 8022,
+   "y2026_residual": 2216,
+   "node": "G06V",
+   "current_share_2024": 0.015016
+  },
+  {
+   "sum_complete": 31713,
+   "last_complete_year": 2024,
+   "last_complete_value": 9318,
+   "first_complete_value": 7159,
+   "ratio_last_over_first": 1.3016,
+   "yoy_last": 0.1482,
+   "y2025_partial": 7358,
+   "y2026_residual": 1615,
+   "node": "H02J",
+   "current_share_2024": 0.015364
+  },
+  {
+   "sum_complete": 31514,
+   "last_complete_year": 2024,
+   "last_complete_value": 8666,
+   "first_complete_value": 7808,
+   "ratio_last_over_first": 1.1099,
+   "yoy_last": 0.1045,
+   "y2025_partial": 6236,
+   "y2026_residual": 1348,
+   "node": "G01R",
+   "current_share_2024": 0.014289
+  },
+  {
+   "sum_complete": 33449,
+   "last_complete_year": 2024,
+   "last_complete_value": 7229,
+   "first_complete_value": 10441,
+   "ratio_last_over_first": 0.6924,
+   "yoy_last": -0.031,
+   "y2025_partial": 4247,
+   "y2026_residual": 857,
+   "node": "H04N",
+   "current_share_2024": 0.01192
+  },
+  {
+   "sum_complete": 32790,
+   "last_complete_year": 2024,
+   "last_complete_value": 8389,
+   "first_complete_value": 8030,
+   "ratio_last_over_first": 1.0447,
+   "yoy_last": -0.0117,
+   "y2025_partial": 4493,
+   "y2026_residual": 411,
+   "node": "H01R",
+   "current_share_2024": 0.013833
+  },
+  {
+   "sum_complete": 31786,
+   "last_complete_year": 2024,
+   "last_complete_value": 7369,
+   "first_complete_value": 8301,
+   "ratio_last_over_first": 0.8877,
+   "yoy_last": -0.0664,
+   "y2025_partial": 4537,
+   "y2026_residual": 690,
+   "node": "B29C",
+   "current_share_2024": 0.012151
+  },
+  {
+   "sum_complete": 27991,
+   "last_complete_year": 2024,
+   "last_complete_value": 6712,
+   "first_complete_value": 6907,
+   "ratio_last_over_first": 0.9718,
+   "yoy_last": -0.0193,
+   "y2025_partial": 3889,
+   "y2026_residual": 483,
+   "node": "B65G",
+   "current_share_2024": 0.011067
+  },
+  {
+   "sum_complete": 24338,
+   "last_complete_year": 2024,
+   "last_complete_value": 5725,
+   "first_complete_value": 6196,
+   "ratio_last_over_first": 0.924,
+   "yoy_last": -0.0865,
+   "y2025_partial": 3684,
+   "y2026_residual": 899,
+   "node": "A61B",
+   "current_share_2024": 0.00944
+  },
+  {
+   "sum_complete": 23192,
+   "last_complete_year": 2024,
+   "last_complete_value": 6013,
+   "first_complete_value": 5416,
+   "ratio_last_over_first": 1.1102,
+   "yoy_last": -0.0191,
+   "y2025_partial": 4159,
+   "y2026_residual": 755,
+   "node": "B23K",
+   "current_share_2024": 0.009915
+  },
+  {
+   "sum_complete": 23699,
+   "last_complete_year": 2024,
+   "last_complete_value": 5338,
+   "first_complete_value": 6124,
+   "ratio_last_over_first": 0.8717,
+   "yoy_last": -0.1145,
+   "y2025_partial": 2860,
+   "y2026_residual": 312,
+   "node": "H04R",
+   "current_share_2024": 0.008802
+  },
+  {
+   "sum_complete": 19747,
+   "last_complete_year": 2024,
+   "last_complete_value": 5289,
+   "first_complete_value": 4514,
+   "ratio_last_over_first": 1.1717,
+   "yoy_last": 0.0565,
+   "y2025_partial": 5219,
+   "y2026_residual": 1619,
+   "node": "A61K",
+   "current_share_2024": 0.008721
+  },
+  {
+   "sum_complete": 22931,
+   "last_complete_year": 2024,
+   "last_complete_value": 4097,
+   "first_complete_value": 6789,
+   "ratio_last_over_first": 0.6035,
+   "yoy_last": -0.2765,
+   "y2025_partial": 1004,
+   "y2026_residual": 0,
+   "node": "H01L",
+   "current_share_2024": 0.006756
+  }
+ ],
+ "observed_org": [
+  {
+   "sum_complete": 71674,
+   "last_complete_year": 2024,
+   "last_complete_value": 17943,
+   "first_complete_value": 20110,
+   "ratio_last_over_first": 0.8922,
+   "yoy_last": 0.0528,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "华为技术有限公司",
+   "city": "深圳市",
+   "current_share_2024": 0.029586
+  },
+  {
+   "sum_complete": 25325,
+   "last_complete_year": 2024,
+   "last_complete_value": 4229,
+   "first_complete_value": 8850,
+   "ratio_last_over_first": 0.4779,
+   "yoy_last": -0.1724,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "维沃移动通信有限公司",
+   "city": "东莞市",
+   "current_share_2024": 0.006973
+  },
+  {
+   "sum_complete": 24751,
+   "last_complete_year": 2024,
+   "last_complete_value": 2263,
+   "first_complete_value": 9494,
+   "ratio_last_over_first": 0.2384,
+   "yoy_last": -0.5835,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "OPPO广东移动通信有限公司",
+   "city": "东莞市",
+   "current_share_2024": 0.003731
+  },
+  {
+   "sum_complete": 23419,
+   "last_complete_year": 2024,
+   "last_complete_value": 9656,
+   "first_complete_value": 2987,
+   "ratio_last_over_first": 3.2327,
+   "yoy_last": 0.4525,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "比亚迪股份有限公司",
+   "city": "深圳市",
+   "current_share_2024": 0.015922
+  },
+  {
+   "sum_complete": 22087,
+   "last_complete_year": 2024,
+   "last_complete_value": 5101,
+   "first_complete_value": 5934,
+   "ratio_last_over_first": 0.8596,
+   "yoy_last": -0.0207,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "华南理工大学",
+   "city": "广州市",
+   "current_share_2024": 0.008411
+  },
+  {
+   "sum_complete": 17951,
+   "last_complete_year": 2024,
+   "last_complete_value": 5478,
+   "first_complete_value": 4210,
+   "ratio_last_over_first": 1.3012,
+   "yoy_last": 0.3729,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "广东电网有限责任公司",
+   "city": "广州市",
+   "current_share_2024": 0.009033
+  },
+  {
+   "sum_complete": 16184,
+   "last_complete_year": 2024,
+   "last_complete_value": 4483,
+   "first_complete_value": 3776,
+   "ratio_last_over_first": 1.1872,
+   "yoy_last": 0.1289,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "广东工业大学",
+   "city": "广州市",
+   "current_share_2024": 0.007392
+  },
+  {
+   "sum_complete": 13999,
+   "last_complete_year": 2024,
+   "last_complete_value": 3292,
+   "first_complete_value": 3335,
+   "ratio_last_over_first": 0.9871,
+   "yoy_last": -0.1286,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "中兴通讯股份有限公司",
+   "city": "深圳市",
+   "current_share_2024": 0.005428
+  },
+  {
+   "sum_complete": 13343,
+   "last_complete_year": 2024,
+   "last_complete_value": 3444,
+   "first_complete_value": 3596,
+   "ratio_last_over_first": 0.9577,
+   "yoy_last": 0.1835,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "中山大学",
+   "city": "广州市",
+   "current_share_2024": 0.005679
+  },
+  {
+   "sum_complete": 9554,
+   "last_complete_year": 2024,
+   "last_complete_value": 2714,
+   "first_complete_value": 2316,
+   "ratio_last_over_first": 1.1718,
+   "yoy_last": 0.1759,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "深圳大学",
+   "city": "深圳市",
+   "current_share_2024": 0.004475
+  },
+  {
+   "sum_complete": 8019,
+   "last_complete_year": 2024,
+   "last_complete_value": 2353,
+   "first_complete_value": 1775,
+   "ratio_last_over_first": 1.3256,
+   "yoy_last": 0.2569,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "华南农业大学",
+   "city": "广州市",
+   "current_share_2024": 0.00388
+  },
+  {
+   "sum_complete": 7727,
+   "last_complete_year": 2024,
+   "last_complete_value": 2153,
+   "first_complete_value": 1814,
+   "ratio_last_over_first": 1.1869,
+   "yoy_last": 0.0184,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "广州汽车集团股份有限公司",
+   "city": "广州市",
+   "current_share_2024": 0.00355
+  },
+  {
+   "sum_complete": 7017,
+   "last_complete_year": 2024,
+   "last_complete_value": 5300,
+   "first_complete_value": 30,
+   "ratio_last_over_first": 176.6667,
+   "yoy_last": 2.2878,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "荣耀终端股份有限公司",
+   "city": "深圳市",
+   "current_share_2024": 0.008739
+  },
+  {
+   "sum_complete": 6757,
+   "last_complete_year": 2024,
+   "last_complete_value": 1687,
+   "first_complete_value": 1835,
+   "ratio_last_over_first": 0.9193,
+   "yoy_last": 0.0564,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "上海交通大学",
+   "city": null,
+   "current_share_2024": 0.002782
+  },
+  {
+   "sum_complete": 6360,
+   "last_complete_year": 2024,
+   "last_complete_value": 1042,
+   "first_complete_value": 2261,
+   "ratio_last_over_first": 0.4609,
+   "yoy_last": -0.2703,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "广州视源电子科技股份有限公司",
+   "city": "广州市",
+   "current_share_2024": 0.001718
+  },
+  {
+   "sum_complete": 6283,
+   "last_complete_year": 2024,
+   "last_complete_value": 1295,
+   "first_complete_value": 1442,
+   "ratio_last_over_first": 0.8981,
+   "yoy_last": -0.0976,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "广州大学",
+   "city": "广州市",
+   "current_share_2024": 0.002135
+  },
+  {
+   "sum_complete": 5421,
+   "last_complete_year": 2024,
+   "last_complete_value": 1540,
+   "first_complete_value": 726,
+   "ratio_last_over_first": 2.1212,
+   "yoy_last": -0.1649,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "惠科股份有限公司",
+   "city": "深圳市",
+   "current_share_2024": 0.002539
+  },
+  {
+   "sum_complete": 5363,
+   "last_complete_year": 2024,
+   "last_complete_value": 1229,
+   "first_complete_value": 1652,
+   "ratio_last_over_first": 0.7439,
+   "yoy_last": 0.1616,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "清华大学",
+   "city": null,
+   "current_share_2024": 0.002026
+  },
+  {
+   "sum_complete": 5280,
+   "last_complete_year": 2024,
+   "last_complete_value": 1313,
+   "first_complete_value": 1301,
+   "ratio_last_over_first": 1.0092,
+   "yoy_last": -0.003,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "南方科技大学",
+   "city": "深圳市",
+   "current_share_2024": 0.002165
+  },
+  {
+   "sum_complete": 5264,
+   "last_complete_year": 2024,
+   "last_complete_value": 1437,
+   "first_complete_value": 1549,
+   "ratio_last_over_first": 0.9277,
+   "yoy_last": 0.348,
+   "y2025_partial": 0,
+   "y2026_residual": 0,
+   "node": "深圳供电局有限公司",
+   "city": "深圳市",
+   "current_share_2024": 0.002369
+  }
+ ],
+ "impl_selftest": {
+  "emitted": true,
+  "n_obs": 8,
+  "level": 174.183,
+  "trend": 11.738,
+  "forecast": [
+   185.921,
+   197.66
+  ],
+  "interval80": [
+   [
+    179.758,
+    192.084
+   ],
+   [
+    191.497,
+    203.823
+   ]
+  ],
+  "rmse_train": 4.452,
+  "mae_train": 3.56,
+  "label": "合成 8 期序列自检（非真实数据、非本库预测）"
+ },
+ "repair_path": [
+  "补 2017—2020 四年的专利数据（当前 apdt_year 零行）：补 3 年即可到 7 期、补 4 年才到 8 期，是唯一不降口径的路径；",
+  "或取得「公开滞后校正因子」后把 2025 纳入并重定义窗口（例如改用申请年+18 个月口径），可到 5 期，仍不足 8 期；",
+  "或经口径负责人确认把门槛从 8 期降到 5 期，并在指标说明里改公式——属降口径，需书面确认，本件不自行修改；",
+  "论文侧不能补位：中文论文只有 100,900 篇且分类子集 19.87%，英文论文 1,387 篇，且论文与 IPC 无映射，无法与专利序列拼成同一实体的更长序列。"
+ ],
+ "quarantine_delta": {
+  "why": "隔离前旧稿把 bundle 的 impact_forecast 段直接当结果，而该 bundle 的训练序列是 [0,0,0,0,y2021..y2024]——2017—2020 被 .get(y,0) 补成 0（DATA_FACTS §3.19），把趋势斜率顶高，跑出「两年预测≈八年总产出 67%」这种量级失真",
+  "old_vs_new": [
+   {
+    "item": "训练期",
+    "old": "2017—2024（n=8，其中 4 个是补的 0）",
+    "new": "2021—2024（n=4，全部为实测完整年）",
+    "cause": "apdt_year 只有 2021—2026，2017—2020 零行，不能补 0 当观测"
+   },
+   {
+    "item": "是否发射预测",
+    "old": "是（Top10 两年点预测 + 贡献度）",
+    "new": false,
+    "cause": "4 期 < 8 期门槛，外推不成立"
+   },
+   {
+    "item": "两年预测合计",
+    "old": 8385,
+    "new": null,
+    "cause": "旧值出自 H02J7/00 的补零序列；本件不发射，故无此数"
+   },
+   {
+    "item": "pred/output 比",
+    "old": 0.67,
+    "new": null,
+    "cause": "同上；该比值是「趋势项被 4 个前导 0 抬高」的直接表现"
+   },
+   {
+    "item": "贡献度",
+    "old": "按预测值重算 contrib_forecast",
+    "new": "未产出（只给当期占比 current_share_2024，且不是预测贡献度）",
+    "cause": "无预测即无预测贡献度；用当期占比顶替会把描述当预测"
+   },
+   {
+    "item": "区间与训练误差",
+    "old": "均未落库（interval/rmse/mae 为 None）",
+    "new": "未发射，故仍为 None；Holt 实现已在合成 8 期序列上自检通过",
+    "cause": "自检只证明函数可执行，不构成对本库数据的预测"
+   }
+  ]
+ },
+ "support_judgment": "部分支持",
+ "support_basis": "年序列这一维可用：634 个 IPC 领域与 6958 个机构（件数≥50）的 2021—2026 逐年件数都能逐条复核；但公式要求的「满 8 期」在本库只有 4 个完整期（2021—2024），2025 含公开滞后、2026 为残年，2017—2020 在 apdt_year 上零行。核心输出（Holt 点预测、区间、预测贡献度）因此全部未发射，按「部分依赖维度无法得到足够数据」判部分支持，不判完全转换支持。",
+ "reasons": [
+  "样本期不足是本件唯一的阻断点：4 个完整年 < 8 期门槛，且缺口不是「没采集」而是源表年份就没有；",
+  "2025 年 440,401 件只有 2021—2024 年均值的 72.65%，把 2025 当完整年会系统性压低末年水平，因此即便凑到 5 期也不等于「更长样本」；",
+  "2026 年 74,810 件为残年（采集时点 2026-10 且公开有滞后），任何年度趋势图的末年都不能用它；",
+  "论文侧补不了位：分类子集 20,048 篇占 19.87%、英文论文 1,387 篇、且论文与 IPC 无映射，不能与专利序列拼成同一实体的更长序列；",
+  "旧稿的 8 期序列里有 4 个是补出来的 0，这会把 Holt 的初始水平压到 0、把趋势项推到大正数，于是「预测值远超实际」——本件不重复该写法。"
+ ],
+ "notes": [
+  "本脚本零 SQL、无 reused_from；年序列全部读 code/_snapshots21/ 缓存。",
+  "`forecast_emitted=false` 是门槛判定，不是脚本能力缺失：impl_selftest 里 Holt 在 8 期合成序列上正常输出点预测、80% 区间与 rmse/mae。",
+  "领域序列的 2021—2026 全部为库内真实年份，年与年之间的 0 是实测 0（全量扫描派生，某年无申请即 0）；机构序列的 2025/2026 是申请人×年面板（window=2021—2024）未覆盖，不是实测 0，不能当下降读；",
+  "库外年份（2017—2020）两侧都不补；不要把 2017—2020 的 0 与 2025/2026 的 0 混为一谈——前者是数据不存在、后者是面板未覆盖。",
+  "不要把 current_share_2024 当「贡献度」展示：贡献度定义是预测值占比，本件没有预测值。"
+ ]
+}

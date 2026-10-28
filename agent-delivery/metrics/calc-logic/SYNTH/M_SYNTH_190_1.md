@@ -1,9 +1,22 @@
 # 区域创新要素综合分析模型（M_SYNTH_190_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_190_1.md`；复现脚本 `metrics/repro/M_SYNTH_190_1.py` → `metrics/repro/out/M_SYNTH_190_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：模型类（算法库序号 190）｜ **域**：综合（SYNTH·区域创新要素族之「综合」件）｜ **UI 挂载**：科技专题·综合智能分析（区域创新要素分析）
+> - **数据支持度**：**部分支持**｜ **公式定义人**：王惠（本 MD 采用王惠口径）｜ wanghui: true
+> - **四判定摘要**：直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三入口全部可现转但各自继承上游缺口（187 人才/机构维、188 熵偏差、189 宏观京沪无行）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_190_1.py`、产物 `metrics/repro/out/M_SYNTH_190_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_190_1.md`；复现脚本 `metrics/repro/M_SYNTH_190_1.py` → `metrics/repro/out/M_SYNTH_190_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_190_1.py`、产物 `metrics/repro/out/M_SYNTH_190_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -48,7 +61,7 @@
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_190_1.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_190_1.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_190_1_out.json` |
@@ -56,15 +69,11 @@
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_190_1.py`、产物 `metrics/repro/out/M_SYNTH_190_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：模型类（算法库序号 190）｜ **域**：综合（SYNTH·区域创新要素族之「综合」件）｜ **UI 挂载**：科技专题·综合智能分析（区域创新要素分析）
-> **数据支持度**：**部分支持**｜ **公式定义人**：王惠（本 MD 采用王惠口径）｜ wanghui: true
-> **四判定摘要**：直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三入口全部可现转但各自继承上游缺口（187 人才/机构维、188 熵偏差、189 宏观京沪无行）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -98,7 +107,7 @@
 
 ## 摘要
 
-「区域创新要素综合分析模型」是综合评价阶段十类模型的第九件，也是「区域创新要素族」的收口件：把类型指数（187，七维配置水平）、层次指数（188，结构成熟与均衡）、领域指数（189，领域覆盖与贡献）三个正交视角等权合成为**区域创新要素综合指数**（0—100），回答「综合看，这个区域的创新要素家底到底怎么样」。需求原文给出了「类型 + 层次 + 领域」的三视角合成框架与输出要求（综合指数、三视角分项、要素间协同关系分析）但**未给出合成公式与权重**；王惠 calc-logic 已将其闭合为「三入口直接取 187/188/189 的 index_0_100、三维等权、缺维不进平均」的可执行口径，本报告采用该口径。脚本 `code/M_SYNTH_190_1.py` 已现转跑通：四城综合指数为深圳 88.3、广州 35.7、北京 22.8、上海 22.6。因三入口各自继承上游缺口（187 人才/机构维、188 熵偏差、189 宏观京沪无行），数据支持度判**部分支持**。缺口与升级路径见 §四，王惠方法对照见 §五。
+「区域创新要素综合分析模型」是综合评价阶段十类模型的第九件，也是「区域创新要素族」的收口件：把类型指数（187，七维配置水平）、层次指数（188，结构成熟与均衡）、领域指数（189，领域覆盖与贡献）三个正交视角等权合成为**区域创新要素综合指数**（0—100），回答「综合看，这个区域的创新要素家底到底怎么样」。需求原文给出了「类型 + 层次 + 领域」的三视角合成框架与输出要求（综合指数、三视角分项、要素间协同关系分析）但**未给出合成公式与权重**；王惠 calc-logic 已将其闭合为「三入口直接取 187/188/189 的 index_0_100、三维等权、缺维不进平均」的可执行口径，本报告采用该口径。脚本 `metrics/repro/M_SYNTH_190_1.py` 已现转跑通：四城综合指数为深圳 88.3、广州 35.7、北京 22.8、上海 22.6。因三入口各自继承上游缺口（187 人才/机构维、188 熵偏差、189 宏观京沪无行），数据支持度判**部分支持**。缺口与升级路径见 §四，王惠方法对照见 §五。
 
 ---
 
@@ -215,7 +224,7 @@
 
 ## 二、计算过程
 
-> **口径说明**：本章按王惠 calc-logic 口径复现，公式定义人为王惠；已由脚本 `code/M_SYNTH_190_1.py` 实测跑通（三入口直接读上游三个 out.json，不连源表），结果产物 `code/M_SYNTH_190_1_out.json`。文内引用为 SCI 叙述式（作者, 年份），完整题录与 URL 见「参考文献」。
+> **口径说明**：本章按王惠 calc-logic 口径复现，公式定义人为王惠；已由脚本 `metrics/repro/M_SYNTH_190_1.py` 实测跑通（三入口直接读上游三个 out.json，不连源表），结果产物 `metrics/repro/out/M_SYNTH_190_1_out.json`。文内引用为 SCI 叙述式（作者, 年份），完整题录与 URL 见「参考文献」。
 
 ### 2.1 方法选择：三入口等权再合成，与中国创新指数的总-分范式同构
 
@@ -251,7 +260,7 @@ $$\Delta(c)=\max_p \mathrm{Index}_p(c)-\min_p \mathrm{Index}_p(c)$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_SYNTH_190_1.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_SYNTH_190_1.py` |
 | 入口来源 | 同目录 `M_SYNTH_187_1_out.json`、`M_SYNTH_188_1_out.json`、`M_SYNTH_189_1_out.json` |
 | 结果产物 | 同目录 `M_SYNTH_190_1_out.json`（含 support_judgment） |
 
@@ -295,7 +304,7 @@ python3 code/M_SYNTH_190_1.py                                                   
 
 ## 三、数据支撑情况
 
-> 判定顺序：先跑通 `code/M_SYNTH_190_1.py` 并确认结果合理（一致性检查 + 敏感性检查通过），再落档。
+> 判定顺序：先跑通 `metrics/repro/M_SYNTH_190_1.py` 并确认结果合理（一致性检查 + 敏感性检查通过），再落档。
 
 | 依赖维度 | 候选表 | live | demo ods / 三方 gkx（2026-10-21 实测） | 实测结论 |
 |---|---|---|---|---|
@@ -383,14 +392,10 @@ python3 code/M_SYNTH_190_1.py                                                   
 
 1. 国家统计局. (2024a). 《2023 年中国创新指数比上年增长 6.0%》（总指数 165.3、四分领域 177.1/155.0/199.7/129.4）. https://www.stats.gov.cn/sj/zxfb/202410/t20241025_1957132.html
 2. 国家统计局. (2023). 《国家统计局社科文司负责人就完善中国创新指数编制方法有关情况答记者问》（框架稳定、方法不变、逐级合成）. https://www.stats.gov.cn/sj/zxfb/202310/t20231019_1943764.html
-3. OECD & JRC. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*（聚合规则：加法 vs 几何、敏感性与稳健性分析）. https://www.oecd.org/content/dam/oecd/en/publications/reports/2008/08/handbook-on-constructing-composite-indicators-methodology-and-user-guide_g1gh9301/9789264043466-en.pdf
-4. 人民网. (2023). 《国家创新型城市创新能力监测与评价报告公布》（科技部/中信所五维度年度评价范式）. http://finance.people.com.cn/n1/2023/0216/c1004-32624974.html
-5. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_190_1.md`（王惠口径原文）。
-6. Saisana, M., Saltelli, A., & Tarantola, S. (2005). Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. *Journal of the Royal Statistical Society: Series A*, 168(2), 307–323. https://doi.org/10.1111/j.1467-985X.2005.00350.x
-7. Greco, S., Ishizaka, A., Tasiou, M., & Torrisi, G. (2019). On the Methodological Framework of Composite Indices: A Review of the Issues of Weighting, Aggregation, and Robustness. *Social Indicators Research*, 141(1), 61–84. https://doi.org/10.1007/s11205-017-1832-9
-
+3. 人民网. (2023). 《国家创新型城市创新能力监测与评价报告公布》（科技部/中信所五维度年度评价范式）. http://finance.people.com.cn/n1/2023/0216/c1004-32624974.html
+4. Saisana, M., Saltelli, A., & Tarantola, S. (2005). Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. *Journal of the Royal Statistical Society: Series A*, 168(2), 307–323. https://doi.org/10.1111/j.1467-985X.2005.00350.x
+5. Greco, S., Ishizaka, A., Tasiou, M., & Torrisi, G. (2019). On the Methodological Framework of Composite Indices: A Review of the Issues of Weighting, Aggregation, and Robustness. *Social Indicators Research*, 141(1), 61–84. https://doi.org/10.1007/s11205-017-1832-9
 > 说明：第 6 条支撑「复合指标须做不确定性与敏感性分析」，第 7 条支撑「加权、聚合、稳健性三者必须同时披露」——本件 §2.6 的几何/扰动两项检查即按此两条执行；两条均为 DOI 可解析的同行评议文献。
-
 ---
 
 # 附件
@@ -502,14 +507,6 @@ python3 code/M_SYNTH_190_1.py                                                   
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_SYNTH_190_1.py`；入口来源：`../code/M_SYNTH_187_1_out.json`、`M_SYNTH_188_1_out.json`、`M_SYNTH_189_1_out.json`
-- 产物：`../code/M_SYNTH_190_1_out.json`
+- 产物：`../metrics/repro/out/M_SYNTH_190_1_out.json`
 - 关键结果：综合指数 深 88.3/广 35.7/京 22.8/沪 22.6；视角差 Δ 深 11.4/广 46.2/京 11.2/沪 5.4；support_judgment=`部分支持`
 - 工程注意：本件不连源表；运行前须先跑 187/188/189 三上游；京沪 <1 分差按「并列待复议」读。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

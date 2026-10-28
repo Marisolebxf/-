@@ -1,0 +1,754 @@
+{
+  "metric_id": "M_TECH_GRAPH_105_1",
+  "metric_name": "技术实体关系抽取",
+  "caliber": {
+    "节点": "IPC4 技术域，全期（2021—2026）件数前 200",
+    "边": "同一申请人/机构同时出现在两个域 → 共现；骨干阈 co≥20 且 Jaccard≥0.05",
+    "主体": "关系抽取对象含全国申请人（技术-技术）与深圳主体（技术-企业/机构）",
+    "口径声明": "本件技术-技术边是「申请人共现」代理，不是专利同族/引文/NLP 句法关系"
+  },
+  "base_years_used": [],
+  "base_years_missing": [],
+  "base_years_note": "节点筛选为全期（2021—2026）聚合截面，不做跨年比较，故不设基期（used=[]、missing=[]）；2017—2020 在 dwd_patent 为零行，本件不取。",
+  "coverage": {
+    "top_n": 200,
+    "top_patents": 2214328,
+    "all_ipc_patents": 2420915,
+    "top_share": 0.9147,
+    "applicants_with_ipc": 127946,
+    "raw_pairs": 19898,
+    "backbone_edges": 2643
+  },
+  "relation_types": [
+    {
+      "relation": "技术-技术",
+      "source": "patent_ipc4_by_name（同申请人共现）",
+      "edges": 2643,
+      "status": "可抽",
+      "note": "原始共现 19898 对，骨干阈 co≥20、Jaccard≥0.05"
+    },
+    {
+      "relation": "技术-企业",
+      "source": "patent_ipc4_by_name × 深圳企业名单",
+      "edges": 225097,
+      "status": "可抽",
+      "note": "深圳企业 57333 家、二部图边 225097 条"
+    },
+    {
+      "relation": "技术-机构",
+      "source": "patent_ipc4_by_name × 深圳高校/科研/医疗名单",
+      "edges": 2661,
+      "status": "可抽",
+      "note": "深圳机构 169 家"
+    },
+    {
+      "relation": "技术-产业",
+      "source": "SZ208_MAP 规则映射",
+      "edges": 23,
+      "status": "规则映射",
+      "note": "不是从文本抽取，是 IPC4→产业的字典关系"
+    },
+    {
+      "relation": "技术-政策",
+      "source": "深圳市政策关键词 → 产业 → IPC4",
+      "edges": 28,
+      "status": "产业代理",
+      "note": "879 条深圳政策，只能落到产业层，落不到 IPC4"
+    },
+    {
+      "relation": "技术-人才",
+      "source": "无域级键",
+      "edges": 0,
+      "status": "缺",
+      "note": "发明人只有全库姓名计数（403,743 人），无 IPC/城市归属，不能建人才-技术边"
+    },
+    {
+      "relation": "技术-服务机构",
+      "source": "无表",
+      "edges": 0,
+      "status": "缺",
+      "note": "技术服务机构底册不在本库；无主体、无技术域标签"
+    }
+  ],
+  "tech_tech_top": [
+    {
+      "a": "G06F",
+      "b": "G06Q",
+      "co": 4794,
+      "jaccard": 0.2171
+    },
+    {
+      "a": "G06F",
+      "b": "H04L",
+      "co": 3887,
+      "jaccard": 0.1957
+    },
+    {
+      "a": "G06F",
+      "b": "H05K",
+      "co": 3615,
+      "jaccard": 0.1358
+    },
+    {
+      "a": "G06F",
+      "b": "G06V",
+      "co": 3143,
+      "jaccard": 0.1583
+    },
+    {
+      "a": "G06F",
+      "b": "G06T",
+      "co": 3138,
+      "jaccard": 0.1555
+    },
+    {
+      "a": "G01R",
+      "b": "H05K",
+      "co": 2949,
+      "jaccard": 0.1612
+    },
+    {
+      "a": "G01N",
+      "b": "G06F",
+      "co": 2919,
+      "jaccard": 0.1044
+    },
+    {
+      "a": "G01R",
+      "b": "G06F",
+      "co": 2798,
+      "jaccard": 0.1195
+    },
+    {
+      "a": "G06F",
+      "b": "H04N",
+      "co": 2788,
+      "jaccard": 0.1321
+    },
+    {
+      "a": "F16M",
+      "b": "G06F",
+      "co": 2632,
+      "jaccard": 0.1113
+    },
+    {
+      "a": "B65G",
+      "b": "G01N",
+      "co": 2598,
+      "jaccard": 0.1214
+    },
+    {
+      "a": "H01R",
+      "b": "H05K",
+      "co": 2515,
+      "jaccard": 0.1341
+    },
+    {
+      "a": "F16M",
+      "b": "H05K",
+      "co": 2513,
+      "jaccard": 0.1336
+    },
+    {
+      "a": "G05B",
+      "b": "G06F",
+      "co": 2434,
+      "jaccard": 0.1193
+    },
+    {
+      "a": "G01N",
+      "b": "G01R",
+      "co": 2372,
+      "jaccard": 0.1215
+    },
+    {
+      "a": "B23K",
+      "b": "B65G",
+      "co": 2307,
+      "jaccard": 0.1409
+    },
+    {
+      "a": "G06F",
+      "b": "H02J",
+      "co": 2306,
+      "jaccard": 0.1052
+    },
+    {
+      "a": "G06Q",
+      "b": "H04L",
+      "co": 2303,
+      "jaccard": 0.1753
+    },
+    {
+      "a": "B29C",
+      "b": "B65G",
+      "co": 2219,
+      "jaccard": 0.1199
+    },
+    {
+      "a": "B65B",
+      "b": "B65G",
+      "co": 2208,
+      "jaccard": 0.158
+    },
+    {
+      "a": "G06T",
+      "b": "G06V",
+      "co": 2190,
+      "jaccard": 0.2453
+    },
+    {
+      "a": "G06Q",
+      "b": "G06V",
+      "co": 2145,
+      "jaccard": 0.1711
+    },
+    {
+      "a": "B01D",
+      "b": "G01N",
+      "co": 2135,
+      "jaccard": 0.1155
+    },
+    {
+      "a": "G01B",
+      "b": "G01N",
+      "co": 2128,
+      "jaccard": 0.1326
+    },
+    {
+      "a": "B65D",
+      "b": "G01N",
+      "co": 2101,
+      "jaccard": 0.1042
+    }
+  ],
+  "tech_enterprise_hubs": [
+    {
+      "name": "比亚迪股份有限公司",
+      "n_domains": 176
+    },
+    {
+      "name": "华为技术有限公司",
+      "n_domains": 154
+    },
+    {
+      "name": "深圳供电局有限公司",
+      "n_domains": 120
+    },
+    {
+      "name": "中兴通讯股份有限公司",
+      "n_domains": 105
+    },
+    {
+      "name": "深圳市科曼医疗设备有限公司",
+      "n_domains": 104
+    },
+    {
+      "name": "深圳拓邦股份有限公司",
+      "n_domains": 94
+    },
+    {
+      "name": "中建科工集团有限公司",
+      "n_domains": 92
+    },
+    {
+      "name": "荣耀终端股份有限公司",
+      "n_domains": 91
+    },
+    {
+      "name": "中广核工程有限公司",
+      "n_domains": 88
+    },
+    {
+      "name": "深圳创维-RGB电子有限公司",
+      "n_domains": 84
+    },
+    {
+      "name": "盛视科技股份有限公司",
+      "n_domains": 82
+    },
+    {
+      "name": "中广核核电运营有限公司",
+      "n_domains": 80
+    },
+    {
+      "name": "深圳市倍思科技有限公司",
+      "n_domains": 80
+    },
+    {
+      "name": "大族激光科技产业集团股份有限公司",
+      "n_domains": 80
+    },
+    {
+      "name": "华为数字能源技术有限公司",
+      "n_domains": 79
+    }
+  ],
+  "tech_institution_hubs": [
+    {
+      "name": "深圳大学",
+      "n_domains": 174
+    },
+    {
+      "name": "南方科技大学",
+      "n_domains": 165
+    },
+    {
+      "name": "深圳技术大学",
+      "n_domains": 158
+    },
+    {
+      "name": "清华大学深圳国际研究生院",
+      "n_domains": 128
+    },
+    {
+      "name": "深圳职业技术大学",
+      "n_domains": 123
+    },
+    {
+      "name": "中广核研究院有限公司",
+      "n_domains": 96
+    },
+    {
+      "name": "中山大学·深圳",
+      "n_domains": 77
+    },
+    {
+      "name": "北京大学深圳研究生院",
+      "n_domains": 76
+    },
+    {
+      "name": "深圳市儿童医院",
+      "n_domains": 53
+    },
+    {
+      "name": "深圳市勘察研究院有限公司",
+      "n_domains": 52
+    }
+  ],
+  "tech_industry_edges": [
+    {
+      "industry": "网络与通信",
+      "n_ipc4": 6,
+      "ipc4": [
+        "H04L",
+        "H04W",
+        "H04B",
+        "H04N",
+        "H04R",
+        "H04Q"
+      ]
+    },
+    {
+      "industry": "半导体与集成电路",
+      "n_ipc4": 4,
+      "ipc4": [
+        "H01L",
+        "H05K",
+        "H03K",
+        "H01G"
+      ]
+    },
+    {
+      "industry": "超高清视频显示",
+      "n_ipc4": 4,
+      "ipc4": [
+        "G09F",
+        "H05B",
+        "G02B",
+        "G09G"
+      ]
+    },
+    {
+      "industry": "智能终端",
+      "n_ipc4": 4,
+      "ipc4": [
+        "G06F",
+        "H04M",
+        "H01R",
+        "G06V"
+      ]
+    },
+    {
+      "industry": "智能传感器",
+      "n_ipc4": 4,
+      "ipc4": [
+        "G01D",
+        "G01S",
+        "G01R",
+        "G01J"
+      ]
+    },
+    {
+      "industry": "软件与信息服务",
+      "n_ipc4": 5,
+      "ipc4": [
+        "G06Q",
+        "G06N",
+        "G06T",
+        "G06K",
+        "G11C"
+      ]
+    },
+    {
+      "industry": "智能机器人",
+      "n_ipc4": 3,
+      "ipc4": [
+        "B25J",
+        "G05B",
+        "B65G"
+      ]
+    },
+    {
+      "industry": "新能源",
+      "n_ipc4": 3,
+      "ipc4": [
+        "H01M",
+        "H02J",
+        "H02S"
+      ]
+    },
+    {
+      "industry": "智能网联汽车",
+      "n_ipc4": 3,
+      "ipc4": [
+        "B60W",
+        "B60R",
+        "B60L"
+      ]
+    },
+    {
+      "industry": "新材料",
+      "n_ipc4": 4,
+      "ipc4": [
+        "C01B",
+        "C08L",
+        "C22C",
+        "B32B"
+      ]
+    },
+    {
+      "industry": "高端医疗器械",
+      "n_ipc4": 4,
+      "ipc4": [
+        "A61B",
+        "A61M",
+        "G16H",
+        "A61N"
+      ]
+    },
+    {
+      "industry": "生物医药",
+      "n_ipc4": 4,
+      "ipc4": [
+        "A61K",
+        "C07K",
+        "C12N",
+        "C12Q"
+      ]
+    },
+    {
+      "industry": "大健康",
+      "n_ipc4": 2,
+      "ipc4": [
+        "A23L",
+        "A61H"
+      ]
+    },
+    {
+      "industry": "海洋产业",
+      "n_ipc4": 2,
+      "ipc4": [
+        "B63B",
+        "E02B"
+      ]
+    },
+    {
+      "industry": "精密仪器设备",
+      "n_ipc4": 2,
+      "ipc4": [
+        "G01N",
+        "G03B"
+      ]
+    },
+    {
+      "industry": "安全节能环保",
+      "n_ipc4": 3,
+      "ipc4": [
+        "F24F",
+        "B01D",
+        "F21S"
+      ]
+    },
+    {
+      "industry": "工业母机",
+      "n_ipc4": 5,
+      "ipc4": [
+        "B23Q",
+        "B23B",
+        "B24B",
+        "B26D",
+        "F16M"
+      ]
+    },
+    {
+      "industry": "激光与增材制造",
+      "n_ipc4": 4,
+      "ipc4": [
+        "B23K",
+        "B22F",
+        "B29C",
+        "B29B"
+      ]
+    },
+    {
+      "industry": "现代时尚",
+      "n_ipc4": 3,
+      "ipc4": [
+        "A41D",
+        "A47G",
+        "A47B"
+      ]
+    },
+    {
+      "industry": "空天技术",
+      "n_ipc4": 1,
+      "ipc4": [
+        "B64U"
+      ]
+    },
+    {
+      "industry": "脑科学与类脑智能",
+      "n_ipc4": 1,
+      "ipc4": [
+        "A61F"
+      ]
+    },
+    {
+      "industry": "深地深海",
+      "n_ipc4": 1,
+      "ipc4": [
+        "E21B"
+      ]
+    },
+    {
+      "industry": "可见光通信与光计算",
+      "n_ipc4": 1,
+      "ipc4": [
+        "G02F"
+      ]
+    }
+  ],
+  "tech_policy_edges": [
+    {
+      "industry": "新材料",
+      "policy_hits": 347
+    },
+    {
+      "industry": "安全节能环保",
+      "policy_hits": 253
+    },
+    {
+      "industry": "大健康",
+      "policy_hits": 154
+    },
+    {
+      "industry": "网络与通信",
+      "policy_hits": 144
+    },
+    {
+      "industry": "软件与信息服务",
+      "policy_hits": 117
+    },
+    {
+      "industry": "激光与增材制造",
+      "policy_hits": 114
+    },
+    {
+      "industry": "脑科学与类脑智能",
+      "policy_hits": 89
+    },
+    {
+      "industry": "智能网联汽车",
+      "policy_hits": 63
+    },
+    {
+      "industry": "新能源",
+      "policy_hits": 55
+    },
+    {
+      "industry": "精密仪器设备",
+      "policy_hits": 49
+    },
+    {
+      "industry": "超高清视频显示",
+      "policy_hits": 48
+    },
+    {
+      "industry": "海洋产业",
+      "policy_hits": 48
+    },
+    {
+      "industry": "生物医药",
+      "policy_hits": 47
+    },
+    {
+      "industry": "现代时尚",
+      "policy_hits": 43
+    },
+    {
+      "industry": "高端医疗器械",
+      "policy_hits": 36
+    },
+    {
+      "industry": "智能终端",
+      "policy_hits": 35
+    },
+    {
+      "industry": "半导体与集成电路",
+      "policy_hits": 33
+    },
+    {
+      "industry": "智能机器人",
+      "policy_hits": 30
+    },
+    {
+      "industry": "空天技术",
+      "policy_hits": 25
+    },
+    {
+      "industry": "数字创意",
+      "policy_hits": 23
+    },
+    {
+      "industry": "细胞与基因",
+      "policy_hits": 17
+    },
+    {
+      "industry": "工业母机",
+      "policy_hits": 17
+    },
+    {
+      "industry": "可见光通信与光计算",
+      "policy_hits": 14
+    },
+    {
+      "industry": "深地深海",
+      "policy_hits": 12
+    },
+    {
+      "industry": "智能传感器",
+      "policy_hits": 7
+    },
+    {
+      "industry": "量子信息",
+      "policy_hits": 7
+    },
+    {
+      "industry": "区块链",
+      "policy_hits": 6
+    },
+    {
+      "industry": "合成生物",
+      "policy_hits": 4
+    }
+  ],
+  "degree_top": [
+    {
+      "ipc4": "G06F",
+      "n_applicants": 17599
+    },
+    {
+      "ipc4": "G01N",
+      "n_applicants": 13293
+    },
+    {
+      "ipc4": "H05K",
+      "n_applicants": 12635
+    },
+    {
+      "ipc4": "B65G",
+      "n_applicants": 10712
+    },
+    {
+      "ipc4": "B29C",
+      "n_applicants": 10019
+    },
+    {
+      "ipc4": "G06Q",
+      "n_applicants": 9282
+    },
+    {
+      "ipc4": "B65D",
+      "n_applicants": 8969
+    },
+    {
+      "ipc4": "F16M",
+      "n_applicants": 8683
+    },
+    {
+      "ipc4": "H01R",
+      "n_applicants": 8633
+    },
+    {
+      "ipc4": "G01R",
+      "n_applicants": 8609
+    },
+    {
+      "ipc4": "B23K",
+      "n_applicants": 7971
+    },
+    {
+      "ipc4": "B01D",
+      "n_applicants": 7321
+    },
+    {
+      "ipc4": "B08B",
+      "n_applicants": 7038
+    },
+    {
+      "ipc4": "H02J",
+      "n_applicants": 6627
+    },
+    {
+      "ipc4": "H04N",
+      "n_applicants": 6293
+    },
+    {
+      "ipc4": "H04L",
+      "n_applicants": 6155
+    },
+    {
+      "ipc4": "B65H",
+      "n_applicants": 6116
+    },
+    {
+      "ipc4": "B24B",
+      "n_applicants": 6080
+    },
+    {
+      "ipc4": "G06T",
+      "n_applicants": 5714
+    },
+    {
+      "ipc4": "B65B",
+      "n_applicants": 5473
+    }
+  ],
+  "support_judgment": {
+    "data_support_level": "部分支持",
+    "criteria": {
+      "技术-技术": "可抽（申请人共现骨干）",
+      "技术-企业": "可抽（深圳企业二部图）",
+      "技术-机构": "可抽（深圳高校/科研/医疗）",
+      "技术-产业": "仅规则映射（无链码对齐，INB13xx 与 INB12xx 不同码域，§3.9）",
+      "技术-政策": "仅产业代理（政策无 IPC 标签）",
+      "技术-人才": "缺（发明人无域级键）",
+      "技术-服务机构": "缺（无服务机构底册）"
+    },
+    "note": "七类关系中三类可抽、两类只能做规则/产业代理、两类缺键，判部分支持"
+  },
+  "generated_at": "2026-10-22",
+  "main_db": "gkx @ 183.240.141.251:3318 (gkx_reader_zp, read-only)",
+  "sql_count": 0
+}

@@ -1,9 +1,25 @@
 # 区域融资（M_CHAIN_REG_FINANCING）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_REG_FINANCING.md`；复现脚本 `metrics/repro/M_CHAIN_REG_FINANCING.py` → `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：RATE（区域 × 链的融资事件强度）｜ **域**：产业链分析 / 区域产业分析 / 区域产业指数评价｜ **UI 挂载**：区域产业指数页「融资活跃度」格、链详情页「深圳融资强度」小卡
+> - **数据支持度**：**部分支持**｜ **公式定义人**：王惠 V2-20260821（注册表标注部分对齐，未会签）
+> - **同域边界**：与 `M_CHAIN_INVEST_TOTAL` 同源不同分母。本件是「每 100 家同城同链企业的融资事件数」，那件是「链级金额合计」；本件的事件数不能乘平均金额当区域金额，那件的金额也不能除以区域企业数当强度。
+> - **一句话结论**：9,937 起已挂链融资事件里 **7,887 起（79.37%）**能匹配到城市；深圳以 92,930 家链企业、6,106 起事件、**6.5705 起/百家**居首，但深圳占全部可定位事件的 **77.42%**，北京 98,517 家企业只有 76 起（0.0771）——**跨城市比较反映的是源表覆盖，不是真实融资活跃度**，只能做「同城链间」比较，判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_CHAIN_REG_FINANCING.py`｜ **产物**：`metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_REG_FINANCING.py`、产物 `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_REG_FINANCING.md`；复现脚本 `metrics/repro/M_CHAIN_REG_FINANCING.py` → `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_REG_FINANCING.py`、产物 `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_REG_FINANCING.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_REG_FINANCING.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json` |
@@ -62,17 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_REG_FINANCING.py`、产物 `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RATE（区域 × 链的融资事件强度）｜ **域**：产业链分析 / 区域产业分析 / 区域产业指数评价｜ **UI 挂载**：区域产业指数页「融资活跃度」格、链详情页「深圳融资强度」小卡
-> **数据支持度**：**部分支持**｜ **公式定义人**：王惠 V2-20260821（注册表标注部分对齐，未会签）
-> **复现脚本**：`code/M_CHAIN_REG_FINANCING.py`｜ **产物**：`code/M_CHAIN_REG_FINANCING_out.json`
-> **同域边界**：与 `M_CHAIN_INVEST_TOTAL` 同源不同分母。本件是「每 100 家同城同链企业的融资事件数」，那件是「链级金额合计」；本件的事件数不能乘平均金额当区域金额，那件的金额也不能除以区域企业数当强度。
-> **一句话结论**：9,937 起已挂链融资事件里 **7,887 起（79.37%）**能匹配到城市；深圳以 92,930 家链企业、6,106 起事件、**6.5705 起/百家**居首，但深圳占全部可定位事件的 **77.42%**，北京 98,517 家企业只有 76 起（0.0771）——**跨城市比较反映的是源表覆盖，不是真实融资活跃度**，只能做「同城链间」比较，判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -237,7 +247,7 @@ $$I_r=\frac{N_r}{F_r}\times 100$$
 
 ### 2.6 复现结果：深圳 12 条链
 
-运行 `python3 M_CHAIN_REG_FINANCING.py`，深圳结果：
+运行 `cd code && python3 M_CHAIN_REG_FINANCING.py`，深圳结果：
 
 | 链 | 企业数 | 事件数 | 强度（起/百家） | 人民币金额（亿元） |
 |---|---:|---:|---:|---:|
@@ -273,13 +283,13 @@ $$I_r=\frac{N_r}{F_r}\times 100$$
 
 ### 2.7 复现代码结果展示
 
-上两表就是 `code/M_CHAIN_REG_FINANCING_out.json` 的 `shenzhen_by_chain` 与 `city_rows_top20_by_firms` 子集。完整产物还包含：
+上两表就是 `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json` 的 `shenzhen_by_chain` 与 `city_rows_top20_by_firms` 子集。完整产物还包含：
 
 - `top_cells_by_events`：84 个有事件格中事件数前 20；
 - `top_cells_by_intensity`：1,393 个可算格中强度前 15；
 - `probes`：事件匹配率、企业归市率、格数、抑制格数、深圳占比。
 
-脚本只读四份快照，不连库；重跑覆盖写 `code/M_CHAIN_REG_FINANCING_out.json`。复现前确认 `chain21_fin_degree_20261022.json` 的 `fin` 数组为 25,654 行，否则去重后的 9,937 会变。
+脚本只读四份快照，不连库；重跑覆盖写 `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`。复现前确认 `chain21_fin_degree_20261022.json` 的 `fin` 数组为 25,654 行，否则去重后的 9,937 会变。
 
 ### 2.8 敏感性：换分母、换门槛会不会翻盘
 
@@ -411,12 +421,12 @@ $$I_r=\frac{N_r}{F_r}\times 100$$
 ### 5.1 复现命令
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 cd code
 python3 M_CHAIN_REG_FINANCING.py
 ```
 
-脚本只读四份快照，不连数据库；重跑覆盖写 `code/M_CHAIN_REG_FINANCING_out.json`。
+脚本只读四份快照，不连数据库；重跑覆盖写 `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json`。
 
 ### 5.2 产物字段说明
 
@@ -446,8 +456,8 @@ python3 M_CHAIN_REG_FINANCING.py
 | `code/_snapshots21/chain21_fin_degree_20261022.json` | 融资事件 25,654 行 |
 | `code/_snapshots21/chain_firm_index_20261023.json` | 链企业 × 城市 |
 | `code/_snapshots21/admin_area_20261022.json` | 行政区划码参照 |
-| `code/M_CHAIN_REG_FINANCING.py` | 计算脚本 |
-| `code/M_CHAIN_REG_FINANCING_out.json` | 本件产物 |
+| `metrics/repro/M_CHAIN_REG_FINANCING.py` | 计算脚本 |
+| `metrics/repro/out/M_CHAIN_REG_FINANCING_out.json` | 本件产物 |
 
 ### 5.4 与旧稿的差异
 
@@ -460,7 +470,6 @@ python3 M_CHAIN_REG_FINANCING.py
 1. 清科研究中心. 中国城市股权投资活跃度报告[EB/OL]. https://www.pedata.cn/
 2. 投中研究院. 中国城市VC/PE市场数据报告[EB/OL]. https://www.chinaventure.com.cn/
 3. 民政部. 中华人民共和国行政区划代码[EB/OL]. https://www.mca.gov.cn/
-
 ---
 
 # 附件
@@ -521,11 +530,3 @@ python3 M_CHAIN_REG_FINANCING.py
 ### C.4 结论
 
 按四档定义判**部分支持**。同城链间强度可交付，跨城市比较不可交付；若甲方补其他城市融资数据，可升到「完全转换支持」，但现有数据下把深圳经验外推到全国，属于把采集偏差当经济结论。
-
-
-## 更新记录
-
-- 2026-08-21: 初版，模拟王惠调研产出
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

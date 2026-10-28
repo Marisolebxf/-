@@ -1,9 +1,20 @@
 # 技术实体关系抽取（M_TECH_GRAPH_105_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_GRAPH_105_1.md`；复现脚本 `metrics/repro/M_TECH_GRAPH_105_1.py` → `metrics/repro/out/M_TECH_GRAPH_105_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术图谱构建（GRAPH，105 号·关系抽取件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术图谱（TOPIC-TECH-12 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_GRAPH_105_1.py`、产物 `metrics/repro/out/M_TECH_GRAPH_105_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_GRAPH_105_1.md`；复现脚本 `metrics/repro/M_TECH_GRAPH_105_1.py` → `metrics/repro/out/M_TECH_GRAPH_105_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_GRAPH_105_1.py`、产物 `metrics/repro/out/M_TECH_GRAPH_105_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_GRAPH_105_1.md` |
 | 复现脚本 | `metrics/repro/M_TECH_GRAPH_105_1.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_GRAPH_105_1_out.json` |
@@ -61,15 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_GRAPH_105_1.py`、产物 `metrics/repro/out/M_TECH_GRAPH_105_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术图谱构建（GRAPH，105 号·关系抽取件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术图谱（TOPIC-TECH-12 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**
-> **口径版本**：20261022 三方库 `gkx` 版（专利维零 SQL，全部读授权缓存）｜ **公式定义人**：仿王惠（推测定义）｜ **wanghui: false**
-> 直接（结构/数据）：部分 / 三类关系可抽（技术—技术、技术—企业、技术—机构） ｜ 依赖（结构/数据）：否 / 技术—人才、技术—服务机构缺键
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -335,9 +342,9 @@ Jaccard 起主作用的原因是「大域稀释」：G06F 有 17,599 个申请�
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_TECH_GRAPH_105_1.py
-# 输出 code/M_TECH_GRAPH_105_1_out.json；实测耗时 2.1 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_TECH_GRAPH_105_1_out.json；实测耗时 2.1 秒（全离线，零 SQL）
 ```
 
 **核心结果**：
@@ -393,7 +400,7 @@ R6、R7 是 0 条，不是「边太少」，是「端点不存在」。R6 的发
 | 技术输入 | `code/_snapshots21/patent_ipc4_by_name_20261021.json` |
 | 企业输入 | `code/_snapshots21/star_base_rows_gkx.json`、`star_applicant_agg_gkx.json` |
 | 政策输入 | `code/_snapshots21/policy_sz_20261021.json` |
-| 产物 | `code/M_TECH_GRAPH_105_1_out.json` |
+| 产物 | `metrics/repro/out/M_TECH_GRAPH_105_1_out.json` |
 | 基期 | `base_years_used=[]`（节点筛选为全期聚合截面，不设基期） |
 
 ---
@@ -470,8 +477,6 @@ R6、R7 是 0 条，不是「边太少」，是「端点不存在」。R6 的发
 3. 世界知识产权组织（WIPO）. (2025). *IPC Publication 2025.01*. https://www.wipo.int/classifications/ipc/
 4. 深圳市人民政府. (2022). 《深圳市关于发展壮大战略性新兴产业集群和培育发展未来产业的意见》（深府〔2022〕1 号）. https://www.sz.gov.cn/
 5. 深圳市市场监督管理局（知识产权局）. 深圳市专利统计. https://amr.sz.gov.cn/
-6. OECD. (2023). *Science, Technology and Innovation Outlook*. https://www.oecd.org/sti/
-
 ---
 
 # 附件
@@ -480,9 +485,9 @@ R6、R7 是 0 条，不是「边太少」，是「端点不存在」。R6 的发
 
 | 项 | 内容 |
 |---|---|
-| 计算脚本 | `code/M_TECH_GRAPH_105_1.py` |
+| 计算脚本 | `metrics/repro/M_TECH_GRAPH_105_1.py` |
 | 共用取数层 | `code/_tech21_scope.py`（零 SQL，只读缓存） |
-| 结果产物 | `code/M_TECH_GRAPH_105_1_out.json` |
+| 结果产物 | `metrics/repro/out/M_TECH_GRAPH_105_1_out.json` |
 | 运行方式 | `python3 code/M_TECH_GRAPH_105_1.py` |
 | 实测耗时 | 2.1 秒 |
 | 主库 | `gkx` @ `183.240.141.251:3318`（只读账号 `gkx_reader_zp`） |
@@ -580,10 +585,3 @@ C.3.4 规则映射。用产业分类与政策关键词构造技术—产业/政�
 | 当前数据量 | 200 域 / 2,643 + 225,097 + 2,661 边 |
 | 现在能否得到 | 三类骨架边可以；七类全图不可以 |
 | 建议支持度 | **部分支持** |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

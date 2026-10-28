@@ -1,0 +1,214 @@
+{
+ "metric_id": "M_POLICY_IMPLEMENTATION_EFFECT",
+ "metric_name_zh": "落地实效性",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "judgment_reason": "三维全部不可算：启动维的 implementation_date 全为 0000-00-00（归零后 0 行有效），覆盖维的 support_object 在 20,000 行 JSON null 里取不到，反馈维两库均无调查表。按正本「缺维不进平均」，可进平均的完整维 0 个，分数不存在；强行出 0 分等于把导入缺陷写成政策事实。",
+ "publishable": false,
+ "registered_metric_value": null,
+ "headline": {
+  "dimensions_total": 3,
+  "dimensions_computable": 0,
+  "composite_score": null,
+  "reason": "可进平均的完整维 0 个 → 无分母，分数不存在"
+ },
+ "dims": [
+  {
+   "dimension": "落地执行启动",
+   "formula": "COUNT(DISTINCT id WHERE implementation_date 非空) / N_c × 100%",
+   "numerator_valid_dates": 0,
+   "denominator_in_set": 20000,
+   "rate_if_forced_pct": 0.0,
+   "raw_zero_date_rows": 20000,
+   "computable": false,
+   "why_not": "20,000 行 implementation_date 全部是零值日期 0000-00-00。MySQL 的零值日期不是 NULL，COUNT(col) 会返回 20,000，看起来「100% 有值」；按 DATE_FORMAT 归一后有效日期 0 行。此时输出 0% 等于把「字段未维护」写成「政策未启动」，是事实性错误，故该维不可算。"
+  },
+  {
+   "dimension": "受益覆盖",
+   "formula": "COUNT(DISTINCT support_object)（空值不计入）",
+   "support_json_null_rows": 20000,
+   "support_object_rows": 0,
+   "distinct_support_object": 0,
+   "computable": false,
+   "why_not": "policy_support 20,000 行 JSON_TYPE='NULL'，support_object 子键 0 行；JSON_LENGTH(null) 返回 1，不能用它判空。没有支持对象可取，种类数无从统计；正本也明确禁止用企业数冒充覆盖。"
+  },
+  {
+   "dimension": "实施反馈",
+   "formula": "feedback_score（待建直读）",
+   "computable": false,
+   "gkx_candidate_tables_found": [],
+   "live_candidate_tables_found": {
+    "policy_metric_timeseries": 93,
+    "policy_effect": 93
+   },
+   "why_not": "正本已注「现库无调查表，本维不计算」；实测 gkx 侧无任何调查/反馈表，live 侧同名结果面属造数批次（见 mock_registry_note），不得作证据。"
+  }
+ ],
+ "population": {
+  "policy_rows": 20000,
+  "in_set_rows": 20000,
+  "status_dist": {
+   "有效": 20000
+  },
+  "expire_date_nonnull": 0,
+  "national_rows": 2174,
+  "compare_cities": [
+   "深圳市",
+   "北京市",
+   "上海市",
+   "广州市"
+  ],
+  "N_c": {
+   "深圳市": 3053,
+   "北京市": 4442,
+   "上海市": 4015,
+   "广州市": 2499
+  },
+  "note": "正本入集条件「status=有效且 expire_date 空或不早于统计日」：status 单值「有效」、expire_date 全空 → 20,000 条全部入集，条件恒真、不提供区分度。正本另注「国家级可计入每个对比市」，故 N_c = 该市行数 + 国家级 2,174。"
+ },
+ "population_context": {
+  "city_nonnull_rows": 10294,
+  "city_null_rows": 9706,
+  "policy_base_columns": 33,
+  "amount_columns_in_policy_tables": 0,
+  "innodb_table_rows_estimate": 18808,
+  "live_policy_tables_zero_rows": 37,
+  "note": "城市归属与列结构上下文：city 去脏后 10,294 行可用；政策表 33 列内无金额类列，故覆盖维也不能用金额或企业数替代（正本明令禁止）"
+ },
+ "city_table": [
+  {
+   "city": "深圳市",
+   "city_rows": 879,
+   "N_c": 3053,
+   "start_numerator": 0,
+   "start_rate_pct_if_forced": 0.0
+  },
+  {
+   "city": "北京市",
+   "city_rows": 2268,
+   "N_c": 4442,
+   "start_numerator": 0,
+   "start_rate_pct_if_forced": 0.0
+  },
+  {
+   "city": "上海市",
+   "city_rows": 1841,
+   "N_c": 4015,
+   "start_numerator": 0,
+   "start_rate_pct_if_forced": 0.0
+  },
+  {
+   "city": "广州市",
+   "city_rows": 325,
+   "N_c": 2499,
+   "start_numerator": 0,
+   "start_rate_pct_if_forced": 0.0
+  }
+ ],
+ "probes": {
+  "gkx_policy_tables": [
+   "dwd_global_policy_base",
+   "dwd_global_policy_base_bak_20260923",
+   "dwd_policy_base",
+   "dwd_policy_base_bak_20260923"
+  ],
+  "gkx_policy_table_count": 4,
+  "gkx_total_tables": 280,
+  "gkx_feedback_tables": [],
+  "live_total_tables": 267,
+  "live_policy_tables": {
+   "gkxlumenx_ads.policy_effect": 93,
+   "gkxlumenx_ads.policy_entity": 7517,
+   "gkxlumenx_ads.policy_focus": 631,
+   "gkxlumenx_ads.policy_graph_edge": 3726,
+   "gkxlumenx_ads.policy_graph_node": 806,
+   "gkxlumenx_ads.policy_intensity": 631,
+   "gkxlumenx_ads.policy_level_dist": 6,
+   "gkxlumenx_ads.policy_match": 144,
+   "gkxlumenx_ads.policy_metric_timeseries": 93,
+   "gkxlumenx_ads.policy_national_dist": 31,
+   "gkxlumenx_ads.policy_simulate": 36,
+   "gkxlumenx_ads.policy_sz_dist": 9,
+   "gkxlumenx_ads.policy_text_parse": 600,
+   "gkxlumenx_ads.policy_timeseries": 9,
+   "gkxlumenx_ads.policy_type_dist": 5,
+   "gkxlumenx_ads.realdata_policy_metrics": 0,
+   "gkxlumenx_dwd.national_policy_distribution": 0,
+   "gkxlumenx_dwd.policy_analysis_report": 0,
+   "gkxlumenx_dwd.policy_base_info": 0,
+   "gkxlumenx_dwd.policy_effect_eval": 0,
+   "gkxlumenx_dwd.policy_entity": 0,
+   "gkxlumenx_dwd.policy_entity_relation": 0,
+   "gkxlumenx_dwd.policy_entity_type": 0,
+   "gkxlumenx_dwd.policy_favorite": 0,
+   "gkxlumenx_dwd.policy_focus_result": 0,
+   "gkxlumenx_dwd.policy_intensity_eval": 0,
+   "gkxlumenx_dwd.policy_interpretation_report": 0,
+   "gkxlumenx_dwd.policy_latest_news": 0,
+   "gkxlumenx_dwd.policy_layout_recommend": 0,
+   "gkxlumenx_dwd.policy_level_indicator": 0,
+   "gkxlumenx_dwd.policy_opportunity_result": 0,
+   "gkxlumenx_dwd.policy_prediction_indicator": 0,
+   "gkxlumenx_dwd.policy_public_opinion": 0,
+   "gkxlumenx_dwd.policy_recommendation_report": 0,
+   "gkxlumenx_dwd.policy_search_condition": 0,
+   "gkxlumenx_dwd.policy_search_record": 0,
+   "gkxlumenx_dwd.policy_simulation_param": 0,
+   "gkxlumenx_dwd.policy_simulation_result": 0,
+   "gkxlumenx_dwd.policy_subscription": 0,
+   "gkxlumenx_dwd.policy_support_assessment": 0,
+   "gkxlumenx_dwd.policy_support_assessment_indicator": 0,
+   "gkxlumenx_dwd.policy_support_overview": 0,
+   "gkxlumenx_dwd.policy_support_rank": 0,
+   "gkxlumenx_dwd.policy_time_analysis": 0,
+   "gkxlumenx_dwd.policy_time_series_indicator": 0,
+   "gkxlumenx_dwd.policy_type_indicator": 0,
+   "gkxlumenx_dwd.policy_weakness_result": 0,
+   "gkxlumenx_dwd.regional_policy_compare": 0,
+   "gkxlumenx_dwd.shenzhen_policy_compare": 0,
+   "gkxlumenx_dwd.shenzhen_policy_distribution": 0,
+   "gkxlumenx_dwd.shenzhen_policy_status": 0,
+   "gkxlumenx_ods.policy": 0
+  },
+  "live_feedback_tables": {
+   "policy_metric_timeseries": 93,
+   "policy_effect": 93
+  },
+  "date_probe": {
+   "implementation_date_nonnull_raw": 20000,
+   "implementation_date_valid_after_normalize": 0,
+   "implementation_date_zero_rows": 20000,
+   "expire_date_nonnull": 0
+  },
+  "json_probe": {
+   "policy_support_json_null_rows": 20000,
+   "support_key_dist": {},
+   "support_object_rows": 0,
+   "support_way_rows": 0,
+   "support_behavior_rows": 0
+  },
+  "field_fill_cross_ref": {
+   "source": "code/_snapshots21/policy_field_fill_20261022.json",
+   "implementation_date_note": "该快照不含 implementation_date；本件改用 policy_struct 的归一计数",
+   "content_nonempty": 19203
+  }
+ },
+ "mock_registry_note": "live 侧确实存在与「实施反馈」同名的结果面（policy_effect 93 行、policy_metric_timeseries 93 行），但注册表 cfg_metric-POLICY-seed.yaml 对这组表的source_systems 登记为 `Mock @ batch=mock_20260623`、is_mock: true；`20261020_指标整体开发进度调研/_work_full/MOCK_TABLE_REGISTRY.md` 记录了同批表的造假指纹（列恒值、calc_batch_id='mock_20260623'）。该组表属造数面，不得作证据。",
+ "repair_path": [
+  "回填 implementation_date（现有 0000-00-00 是导入占位，不是缺失标记）→ 启动维恢复",
+  "补 policy_support JSON 的 support_object 子键 → 覆盖维恢复",
+  "建调查表（feedback_score，按政策 × 对象 × 批次）→ 反馈维恢复",
+  "三维齐备后才谈权重；正本权重待 QPOL-02，本件不预设 1/3 等权"
+ ],
+ "sources": [
+  "code/_snapshots21/policy_struct_20261023.json（implementation_date / expire_date / policy_support 归一计数）",
+  "code/_snapshots21/policy_dims_20261023.json（层级/城市分布）",
+  "code/_snapshots21/policy_field_fill_20261022.json（字段级填充率）",
+  "_work_gkx21/GKX_INVENTORY.json（gkx 280 表逐表 COUNT(*)）",
+  "_work_gkx21/LIVE_INVENTORY.json（live 267 表逐表 COUNT(*)）",
+  "gkx @ 183.240.141.251:3318（只读用户 gkx_reader_zp）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面评估：正本按「统计日」取当前有效政策，不设年度序列；本件不出分，故无基期年。若将来补数后按年出分，须先解决 2022-09 起 16 个月的发布断档，否则某年启动率为 0 会是断档而不是真实归零。"
+}

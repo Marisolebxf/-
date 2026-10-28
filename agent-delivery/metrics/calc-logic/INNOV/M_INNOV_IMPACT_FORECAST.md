@@ -1,9 +1,21 @@
 # 创新影响预测（M_INNOV_IMPACT_FORECAST）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_IMPACT_FORECAST.md`；复现脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py` → `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：FORECAST（机构产出件数 Holt 外推 + 80% 区间 + 贡献度）｜ **域**：科技信息展示系统／科技发展态势／全球创新监测｜ **UI 挂载**：实体影响预测卡、贡献度排行
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py`、产物 `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_IMPACT_FORECAST.md`；复现脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py` → `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py`、产物 `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_IMPACT_FORECAST.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_IMPACT_FORECAST.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json` |
@@ -65,19 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py`、产物 `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：FORECAST（机构产出件数 Holt 外推 + 80% 区间 + 贡献度）｜ **域**：科技信息展示系统／科技发展态势／全球创新监测｜ **UI 挂载**：实体影响预测卡、贡献度排行
-> **数据支持度**：**部分支持**
-> **口径来源**：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_FORECAST.md`（Holt 满 8 期、年预 2 期、点预测 + 约 80% 区间 + 贡献度）
-> **王惠正本**：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260829）
-> **复现**：`python3 M_INNOV_IMPACT_FORECAST.py` → `code/M_INNOV_IMPACT_FORECAST_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），本脚本零 DB、只读落盘快照
-> **基期声明**：`base_years_used` = 2015—2023（9 点拟合）；`base_years_missing` = [2024]（论文语料回填孤峰，不作基线、不作校验）；2025 只作外样本校验；专利侧 2021—2024 仅 4 点，不足以拟合。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -174,7 +178,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 编号 | 来源 | 用途 |
 |---|---|---|
 | R1 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_FORECAST.md` | 口径与字段定义（唯一真源） |
-| R2 | `王惠口径正本（GitLab 外本地归档）` | 四步法、区间公式、`skip_reason` 规则 |
+| R2 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_FORECAST.md（王惠正本已演化并入）` | 四步法、区间公式、`skip_reason` 规则 |
 | R3 | `_work_gkx21/DISPATCH_BRIEF_v5.md` / `v6.md` / `v7.md` | 骨架、红线、G8 数据源口径 |
 | R4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.67 / §3.68 / §3.70b | 专利按公开件计、慢查询纪律、判脏看量级 |
 | R5 | `_work_gkx21/SHARED_ASSETS.md` | 快照资产清单（本件复用两份） |
@@ -346,7 +350,7 @@ G06K 与 F21S 的断崖需要谨慎读。−87.65% 不是「这个技术没人�
 ### 2.8 步骤 7｜复现代码与结果产物
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_INNOV_IMPACT_FORECAST.py
 # [IMPACT_FORECAST] -> .../M_INNOV_IMPACT_FORECAST_out.json
 #   pool 311 fitted 311 valid 309 zero 2
@@ -534,15 +538,9 @@ python3 M_INNOV_IMPACT_FORECAST.py
 
 ## 参考文献
 
-1. `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_FORECAST.md`（口径真源）
-2. `王惠口径正本（GitLab 外本地归档）`（V1.5-20260829）
-3. `_work_gkx21/DISPATCH_BRIEF_v5.md`、`v6.md`、`v7.md`
-4. `_work_gkx21/DATA_FACTS_gkx21.md` §3.67、§3.68、§3.70b
-5. `_work_gkx21/SHARED_ASSETS.md`
-6. Hyndman R.J., Athanasopoulos G. Forecasting: Principles and Practice (3rd ed.). OTexts, 2021. https://otexts.com/fpp3/
-7. Hyndman R.J., Koehler A.B. Another look at measures of forecast accuracy. International Journal of Forecasting, 2006. https://doi.org/10.1016/j.ijforecast.2006.03.001
-8. 国家统计局. 中国科技统计年鉴（2023）. https://www.stats.gov.cn/sj/ndsj/
-
+1. Hyndman R.J., Athanasopoulos G. Forecasting: Principles and Practice (3rd ed.). OTexts, 2021. https://otexts.com/fpp3/
+2. Hyndman R.J., Koehler A.B. Another look at measures of forecast accuracy. International Journal of Forecasting, 2006. https://doi.org/10.1016/j.ijforecast.2006.03.001
+3. 国家统计局. 中国科技统计年鉴（2023）. https://www.stats.gov.cn/sj/ndsj/
 ---
 
 # 附件
@@ -727,11 +725,3 @@ IPC4 跌幅前五（基数 ≥ 1,000）：
 **问：为什么不做参数寻优让 MAPE 降下来？**
 
 答：因为那会用校验集调参，等于偷看答案。$\alpha,\beta$ 按样本内 SSE 选，2025 年只用来报告误差，不参与任何选择。如果拿 2025 年调参把 MAPE 从 74.91% 压到 40%，这个 40% 是不可复现的——换一年校验就会反弹。本件宁可报一个难看的 74.91%，也不报一个好看的假数。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

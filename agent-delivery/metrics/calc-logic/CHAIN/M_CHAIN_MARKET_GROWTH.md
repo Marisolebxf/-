@@ -1,9 +1,22 @@
 # 产业链市场增长（M_CHAIN_MARKET_GROWTH）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_MARKET_GROWTH.md`；复现脚本 `metrics/repro/M_CHAIN_MARKET_GROWTH.py` → `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：RATIO（增长率型）｜ **域**：产业链分析（CHAIN）· 产业总览 · 产业概况｜ **UI 挂载**：产业链全景 → 环节节点下钻 → 市场规模（增长率副值）/ 产业周期分析输入
+> - **数据支持度**：**完全不支持**
+> - **四判定摘要**：直接结构 ✗（gkx/live 均无增长结果面）｜直接数据 ✗｜依赖结构 ✗（母指标市场规模不成立）｜依赖数据 ✗（同企连续两年配对仅 17 对）｜代理路径 ✗（两期主体不可比）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_MARKET_GROWTH.py`、产物 `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_MARKET_GROWTH.md`；复现脚本 `metrics/repro/M_CHAIN_MARKET_GROWTH.py` → `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_MARKET_GROWTH.py`、产物 `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_MARKET_GROWTH.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_MARKET_GROWTH.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json` |
@@ -61,17 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_MARKET_GROWTH.py`、产物 `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RATIO（增长率型）｜ **域**：产业链分析（CHAIN）· 产业总览 · 产业概况｜ **UI 挂载**：产业链全景 → 环节节点下钻 → 市场规模（增长率副值）/ 产业周期分析输入
-> **数据支持度**：**完全不支持**
-> **公式定义人**：无 calc-logic 正式文件；按需求原文「环比计算增长率」推测，属**仿王惠（推测定义）**
-> **四判定摘要**：直接结构 ✗（gkx/live 均无增长结果面）｜直接数据 ✗｜依赖结构 ✗（母指标市场规模不成立）｜依赖数据 ✗（同企连续两年配对仅 17 对）｜代理路径 ✗（两期主体不可比）
-> **更新频率**：年度（需求原文写「年/月」，实际只有年度数据）｜ **实测日**：2026-10-21
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -108,7 +115,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 1. 不产出任何百分比：`metric_value` 为 `null`，`value_null_reason` 写明「两个前提均不成立」；
 2. 对「强行相减」的结果做反例展示，证明其与产业事实冲突，而非仅做主观否定；
 3. 母指标 `M_CHAIN_MARKET_SIZE` 的证据不重复展开，只引用其结论与关键行数；
-4. 所有数字来自 `code/M_CHAIN_MARKET_GROWTH_out.json`，可复跑。
+4. 所有数字来自 `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`，可复跑。
 
 ---
 
@@ -306,7 +313,7 @@ $$
 
 ### 2.8 复现方式与结果核验
 
-脚本：`code/M_CHAIN_MARKET_GROWTH.py`，输出 `code/M_CHAIN_MARKET_GROWTH_out.json`。核心字段：`metric_value: null`、`firm_panel`（企业面板与配对数）、`chain_year_matrix`（12 链 × 年份记录数）、`same_firm_pairs_by_chain`（逐链逐年配对数）、`naive_growth_counterexample`（反例）、`coverage_2024`（2024 覆盖）、`why_no_growth`（四条否定理由）、`support_judgment`。
+脚本：`metrics/repro/M_CHAIN_MARKET_GROWTH.py`，输出 `metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`。核心字段：`metric_value: null`、`firm_panel`（企业面板与配对数）、`chain_year_matrix`（12 链 × 年份记录数）、`same_firm_pairs_by_chain`（逐链逐年配对数）、`naive_growth_counterexample`（反例）、`coverage_2024`（2024 覆盖）、`why_no_growth`（四条否定理由）、`support_judgment`。
 
 复跑耗时 15.6 秒（gkx 现查，未落全量快照）。脚本不产出增长率，只产出「不可算」的证据；若下游需要数值，必须先把 `metric_value` 从 null 改为具体值并说明新增数据源，否则视为造假。
 
@@ -412,9 +419,7 @@ D3-2 的下层（企业为何缺报、是否可补采）按两跳规则**不再�
 3. 深圳市人民政府. (2022). 《关于发展壮大战略性新兴产业集群和培育发展未来产业的意见》（深府〔2022〕1号）. https://www.sz.gov.cn/zfgb/2022/gb1248/content/post_9918806.html
 4. 中国科学技术发展战略研究院. (2024). 《中国区域科技创新评价报告2024》. http://www.casted.org.cn/p91/ppbg/20240909/268576.html
 5. 国务院. (2014). 《关于加快科技服务业发展的若干意见》（国发〔2014〕49号）. https://www.gov.cn/zhengce/zhengceku/2014-10/28/content_9173.htm
-
 > 说明：第 1 条提供官方「同口径同比」的发布样式（营收 16.19 万亿元、同比 +7.3%、集成电路产量 +22.2%），用于 §2.4 与 §2.7 的对照；第 2 条提供产业分类标准；第 3 条提供政策目标值，说明增长率本应服务于目标进度分解；第 4、5 条为方法论背景，不支撑本指标数值。
-
 ---
 
 # 附件
@@ -500,11 +505,11 @@ D3-2 的下层（企业为何缺报、是否可补采）按两跳规则**不再�
 ## 附录 D 实测脚本与结果摘要
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_MARKET_GROWTH.py
 ```
 
-输出：`code/M_CHAIN_MARKET_GROWTH_out.json`
+输出：`metrics/repro/out/M_CHAIN_MARKET_GROWTH_out.json`
 
 | 字段 | 值/含义 |
 |---|---|
@@ -516,10 +521,3 @@ python3 code/M_CHAIN_MARKET_GROWTH.py
 | `support_judgment.data_support_level` | 完全不支持 |
 
 耗时 15.6 秒；本文数字均取自该文件，与 20261020 版逐字段一致。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

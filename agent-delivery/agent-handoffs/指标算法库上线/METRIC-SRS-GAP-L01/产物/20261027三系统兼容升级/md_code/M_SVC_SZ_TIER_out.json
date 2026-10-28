@@ -1,0 +1,788 @@
+{
+ "metric_id": "M_SVC_SZ_TIER",
+ "metric_name": "深圳梯队位置",
+ "support_judgment": "部分支持",
+ "judgment_reason": "三个维度里只有「服务机构数量」在池内可算（深圳 25,597），但梯队分档要求与全国城市同口径排序，而 gkx 服务机构池 100% 落在广东省、池外城市 0 家，无法构成全国对比集合；「技术力」三子指标有两个的分子列整列为空（研发投入/研发人员），只有专利代理可算；「服务链完整度」公式未签且无机构×环节成员表，六站代理在 12 个产业上恒为 5/6、无区分度。三维均无法在同一城市集合上闭合，故判部分支持，不产出梯队名次。",
+ "verdict_kind": "positive",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是截面排序（当期三维取值），不使用基期年份；技术力三子指标本应取同一会计年，但研发两列的分子整列为空、营收/员工最新有值年集中在 2014—2016（见 annual_report），年份无法对齐，这也是该维不可算的原因之一。",
+ "sources": {
+  "library": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "tables": [
+   "gkx.dwd_org_org_product_info（机构池）",
+   "gkx.dwd_org_base_info（city / area / org_size / industry）",
+   "gkx.dwd_org_industry_tags（产业标签，经 pool_tags 快照）",
+   "gkx.dwd_org_annual_financial_info（研发/营收/员工，两列整列为空）",
+   "gkx.dwd_patent（经 star_applicant_agg_gkx.json 聚合快照）"
+  ],
+  "snapshots": [
+   "code/_snapshots21/svcsz21_facts_20261023.json",
+   "code/_snapshots21/svc21_facts_20261022.json",
+   "code/_snapshots21/svc21_pt_axis_20261022.json",
+   "code/_snapshots21/star_applicant_agg_gkx.json"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_SZ_TIER.md",
+  "wanghui": "calc-logic 正本（已入仓 metrics/calc-logic，原为本地路径：王惠阶段性成果/20260904_综合智能/指标计算逻辑/M_SVC_SZ_TIER.md"
+ },
+ "params": {
+  "compare_cities_defined": [
+   "深圳",
+   "北京",
+   "上海",
+   "广州",
+   "其他省会城市"
+  ],
+  "compare_cities_available": [
+   "深圳市",
+   "广州市",
+   "东莞市",
+   "惠州市"
+  ],
+  "compare_city_status": "仅广东省 4 市有池内机构；北京/上海/其他省会城市 0 家，不可比",
+  "tier_cut": {
+   "first": 0.3,
+   "second": 0.4,
+   "third": 0.3
+  },
+  "tier_method": "每维独立排序后按 30/40/30 分档"
+ },
+ "value": {
+  "tier_overall": null,
+  "tier_org_count": null,
+  "tier_tech": null,
+  "tier_completeness": null,
+  "reason": "三维均缺同一城市集合上的可比取值，按规则不得产出名次（宁缺不猜）"
+ },
+ "dimensions": {
+  "org_count": {
+   "status": "池内可算 / 全国不可比",
+   "sz_orgs": 25597,
+   "sz_share_of_pool_pct": 57.97,
+   "sz_share_of_pool_cities_pct": 58.0,
+   "sz_ind_m_orgs": 2579,
+   "sz_ind_m_share_pct": 10.08,
+   "city_rows": [
+    {
+     "city": "深圳市",
+     "orgs": 25597,
+     "orgs_share_pct": 57.97,
+     "ind_m_orgs": 2579,
+     "ind_m_share_pct": 10.08,
+     "large_orgs": 1045,
+     "large_share_pct": 4.08,
+     "stage_hit_orgs": 21080,
+     "stage_hit_rate_pct": 82.35,
+     "patent_matched_orgs": 13378,
+     "patent_apps": 792923,
+     "patent_grants": 505417,
+     "patent_apps_per_matched": 59.27,
+     "patent_apps_per_all_org": 30.98,
+     "rank_in_pool_cities": 1
+    },
+    {
+     "city": "广州市",
+     "orgs": 12641,
+     "orgs_share_pct": 28.63,
+     "ind_m_orgs": 4043,
+     "ind_m_share_pct": 31.98,
+     "large_orgs": 542,
+     "large_share_pct": 4.29,
+     "stage_hit_orgs": 9431,
+     "stage_hit_rate_pct": 74.61,
+     "patent_matched_orgs": 5962,
+     "patent_apps": 389825,
+     "patent_grants": 258769,
+     "patent_apps_per_matched": 65.38,
+     "patent_apps_per_all_org": 30.84,
+     "rank_in_pool_cities": 2
+    },
+    {
+     "city": "东莞市",
+     "orgs": 4300,
+     "orgs_share_pct": 9.74,
+     "ind_m_orgs": 666,
+     "ind_m_share_pct": 15.49,
+     "large_orgs": 222,
+     "large_share_pct": 5.16,
+     "stage_hit_orgs": 3186,
+     "stage_hit_rate_pct": 74.09,
+     "patent_matched_orgs": 3126,
+     "patent_apps": 179343,
+     "patent_grants": 120521,
+     "patent_apps_per_matched": 57.37,
+     "patent_apps_per_all_org": 41.71,
+     "rank_in_pool_cities": 3
+    },
+    {
+     "city": "惠州市",
+     "orgs": 1594,
+     "orgs_share_pct": 3.61,
+     "ind_m_orgs": 108,
+     "ind_m_share_pct": 6.78,
+     "large_orgs": 97,
+     "large_share_pct": 6.09,
+     "stage_hit_orgs": 864,
+     "stage_hit_rate_pct": 54.2,
+     "patent_matched_orgs": 907,
+     "patent_apps": 40520,
+     "patent_grants": 29443,
+     "patent_apps_per_matched": 44.67,
+     "patent_apps_per_all_org": 25.42,
+     "rank_in_pool_cities": 4
+    }
+   ],
+   "note": "calc-logic 的维度 1 定义是「门类 M 法人单位数」，本件只能给池内门类 M（深圳 2,579 家）；全量底册 189,116 行的门类 M 分布需整表扫描，本轮按共享资产纪律未重扫（dwd_org_base_info 的 industry 无索引）。"
+  },
+  "tech_score": {
+   "status": "1/3 子指标代理可算，整维不可算",
+   "computable_sub": 1,
+   "sub_indicators": [
+    {
+     "sub": "研发投入强度",
+     "formula": "研发经费内部支出 ÷ 营业收入 × 100%",
+     "field": "dwd_org_annual_financial_info.arch_development_am / operating_revenue",
+     "status": "不可算",
+     "reason": "arch_development_am 在 dwd_org_annual_financial_info 全表 90,926 行**整列为空**（0 行非空），分子恒缺；operating_revenue 仅 2,193 行有值（2.41%）。研发口径只能去 dwd_org_stock_finance_info（上市主体 876 家），而上市主体不是服务机构池的子集，不能代入城市对比。",
+     "num": null,
+     "den": null,
+     "value": null
+    },
+    {
+     "sub": "研发人才结构",
+     "formula": "研发人员数 ÷ 从业人员总数 × 100%",
+     "field": "dwd_org_annual_financial_info.development_employee / employees_number",
+     "status": "不可算",
+     "reason": "development_employee 全表 90,926 行整列为空（0 行非空）；employees_number 仅 3,170 行有值（3.49%）。分子恒缺，分母也只剩 3.49%。",
+     "num": null,
+     "den": null,
+     "value": null
+    },
+    {
+     "sub": "创新产出",
+     "formula": "有效发明专利（或专利授权）总数",
+     "field": "dwd_patent（按申请人名对齐 star_applicant_agg_gkx.json）",
+     "status": "代理可算",
+     "reason": "专利授权件数可按申请人名对齐（深圳 13,378/25,597 家有专利记录），但只有「件数/授权数」两个聚合值，没有 kind 过滤与法律状态，不能区分「有效发明专利」与其它类型；且名对齐不是信用码对齐。",
+     "num": 505417,
+     "den": 13378,
+     "value": 59.27
+    }
+   ],
+   "value": null
+  },
+  "completeness": {
+   "formula": "已覆盖的服务链关键环节数 ÷ 全部关键环节数 × 100%",
+   "axis_6": {
+    "covered": 6,
+    "total": 6,
+    "ratio_pct": 100.0
+   },
+   "axis_4_calc_logic": {
+    "covered": null,
+    "total": 4,
+    "ratio_pct": null,
+    "reason": "calc-logic 的四环节（研发创新/成果转化/企业孵化/产业加速）与 gkx 六站不是一一映射，映射表见 §2.5，缺「企业孵化」独立轴"
+   },
+   "by_industry_covered_values": [
+    5
+   ],
+   "by_industry_distinct_count": 1,
+   "status": "仅代理",
+   "value": null
+  }
+ },
+ "stage_rows": [
+  [
+   "stage-research",
+   18987,
+   "研发与科研合作"
+  ],
+  [
+   "stage-ip",
+   422,
+   "知识产权与标准"
+  ],
+  [
+   "stage-transfer",
+   6834,
+   "技术转移与孵化"
+  ],
+  [
+   "stage-pilot",
+   2,
+   "中试熟化"
+  ],
+  [
+   "stage-testing",
+   2360,
+   "检验检测认证"
+  ],
+  [
+   "stage-market",
+   6599,
+   "市场与金融咨询"
+  ]
+ ],
+ "industry_stage": {
+  "软件与信息服务": {
+   "orgs": 5311,
+   "stage_rows": [
+    [
+     "stage-research",
+     4754
+    ],
+    [
+     "stage-ip",
+     114
+    ],
+    [
+     "stage-transfer",
+     2001
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     654
+    ],
+    [
+     "stage-market",
+     1688
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "智能终端": {
+   "orgs": 3929,
+   "stage_rows": [
+    [
+     "stage-research",
+     3579
+    ],
+    [
+     "stage-ip",
+     43
+    ],
+    [
+     "stage-transfer",
+     1173
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     419
+    ],
+    [
+     "stage-market",
+     659
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "人工智能": {
+   "orgs": 2071,
+   "stage_rows": [
+    [
+     "stage-research",
+     1879
+    ],
+    [
+     "stage-ip",
+     29
+    ],
+    [
+     "stage-transfer",
+     813
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     236
+    ],
+    [
+     "stage-market",
+     485
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "具身智能": {
+   "orgs": 1682,
+   "stage_rows": [
+    [
+     "stage-research",
+     1560
+    ],
+    [
+     "stage-ip",
+     20
+    ],
+    [
+     "stage-transfer",
+     626
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     198
+    ],
+    [
+     "stage-market",
+     334
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "机器人": {
+   "orgs": 1402,
+   "stage_rows": [
+    [
+     "stage-research",
+     1307
+    ],
+    [
+     "stage-ip",
+     12
+    ],
+    [
+     "stage-transfer",
+     506
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     205
+    ],
+    [
+     "stage-market",
+     204
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "集成电路": {
+   "orgs": 1396,
+   "stage_rows": [
+    [
+     "stage-research",
+     1224
+    ],
+    [
+     "stage-ip",
+     22
+    ],
+    [
+     "stage-transfer",
+     485
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     233
+    ],
+    [
+     "stage-market",
+     140
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "传感器": {
+   "orgs": 1158,
+   "stage_rows": [
+    [
+     "stage-research",
+     1015
+    ],
+    [
+     "stage-ip",
+     9
+    ],
+    [
+     "stage-transfer",
+     363
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     207
+    ],
+    [
+     "stage-market",
+     122
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "数字创意": {
+   "orgs": 1043,
+   "stage_rows": [
+    [
+     "stage-research",
+     926
+    ],
+    [
+     "stage-ip",
+     19
+    ],
+    [
+     "stage-transfer",
+     304
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     77
+    ],
+    [
+     "stage-market",
+     246
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "智能网联汽车": {
+   "orgs": 691,
+   "stage_rows": [
+    [
+     "stage-research",
+     646
+    ],
+    [
+     "stage-ip",
+     6
+    ],
+    [
+     "stage-transfer",
+     233
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     94
+    ],
+    [
+     "stage-market",
+     107
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "合成生物": {
+   "orgs": 531,
+   "stage_rows": [
+    [
+     "stage-research",
+     509
+    ],
+    [
+     "stage-ip",
+     9
+    ],
+    [
+     "stage-transfer",
+     295
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     102
+    ],
+    [
+     "stage-market",
+     108
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "生物医药": {
+   "orgs": 225,
+   "stage_rows": [
+    [
+     "stage-research",
+     188
+    ],
+    [
+     "stage-ip",
+     4
+    ],
+    [
+     "stage-transfer",
+     103
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     30
+    ],
+    [
+     "stage-market",
+     58
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  },
+  "低空经济": {
+   "orgs": 83,
+   "stage_rows": [
+    [
+     "stage-research",
+     71
+    ],
+    [
+     "stage-ip",
+     2
+    ],
+    [
+     "stage-transfer",
+     33
+    ],
+    [
+     "stage-pilot",
+     0
+    ],
+    [
+     "stage-testing",
+     18
+    ],
+    [
+     "stage-market",
+     13
+    ]
+   ],
+   "covered_stages": 5,
+   "covered_ids": [
+    "stage-research",
+    "stage-ip",
+    "stage-transfer",
+    "stage-testing",
+    "stage-market"
+   ],
+   "complete_ratio": 0.833333
+  }
+ },
+ "annual_report": {
+  "orgs_with_rev": 673,
+  "rev_rate_pct": 2.63,
+  "orgs_with_emp": 815,
+  "emp_rate_pct": 3.18,
+  "rev_latest_year_rows": [
+   [
+    "2014",
+    331
+   ],
+   [
+    "2015",
+    145
+   ],
+   [
+    "2016",
+    85
+   ],
+   [
+    "2017",
+    44
+   ],
+   [
+    "2023",
+    16
+   ],
+   [
+    "2024",
+    12
+   ],
+   [
+    "2025",
+    9
+   ],
+   [
+    "2021",
+    7
+   ],
+   [
+    "2022",
+    7
+   ],
+   [
+    "2018",
+    6
+   ],
+   [
+    "2020",
+    6
+   ],
+   [
+    "2019",
+    3
+   ]
+  ]
+ },
+ "gaps": [
+  {
+   "gap": "全国对比城市集合缺失",
+   "detail": "服务机构池 44,132 行回联底册后 100% 为广东省（深圳/广州/东莞/惠州），北京/上海/其他省会城市 0 家",
+   "impact": "「前 30% / 中 40% / 后 30%」的分母只有 4 个城市，比例分档在 4 个样本上没有统计意义",
+   "fix": "甲方指定城市基准源（Q-SVCCHAIN-04），或提供全国服务机构圈定池"
+  },
+  {
+   "gap": "研发投入分子整列为空",
+   "detail": "dwd_org_annual_financial_info.arch_development_am 90,926 行 0 行非空",
+   "impact": "技术力三分之一的子指标不可算，整维无法合成",
+   "fix": "接入研发费用加计扣除/统计年报口径，或用上市主体研发费用（仅 876 家，需注明非全量）"
+  },
+  {
+   "gap": "研发人员分子整列为空",
+   "detail": "dwd_org_annual_financial_info.development_employee 90,926 行 0 行非空",
+   "impact": "同上；分母 employees_number 也只有 3.49%",
+   "fix": "接入社保参保人数或规上企业年报"
+  },
+  {
+   "gap": "服务链完整度公式未签 + 环节成员表缺失",
+   "detail": "Q-SVCCHAIN-04 / 唐绍祖未签；SVC-P0-3 机构×六环节成员表在 gkx 与 live 均不存在",
+   "impact": "该维只能用经营范围词表代理，且代理在 12 个产业上恒为 5/6，无区分度",
+   "fix": "算法定义卡 + 供方交付成员表"
+  },
+  {
+   "gap": "创新产出只有件数/授权数聚合",
+   "detail": "无 kind 与法律状态，无法只取有效发明专利",
+   "impact": "只能作技术力的代理子指标，不能替代「有效发明专利数」",
+   "fix": "补 dwd_patent_legal 的授权有效口径（gkx 无该表）"
+  }
+ ],
+ "cross_refs": {
+  "M_SVC_PT_SZ_TOTAL": {
+   "sz_orgs": 25597
+  },
+  "M_SVC_SZ_COMPARE_METRIC": {
+   "shared_grid": true,
+   "note": "两件共用同一城市×小项面板，深圳格必须同数"
+  },
+  "M_SVC_SZ_CHAIN_COMPLETENESS": {
+   "proxy_same_axis": true
+  }
+ }
+}

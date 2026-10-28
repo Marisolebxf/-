@@ -1,9 +1,21 @@
 # 服务链完整度（M_SVC_SZ_CHAIN_COMPLETENESS）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_SZ_CHAIN_COMPLETENESS.md`；复现脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py` → `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：覆盖度/完整度（服务机构库·深圳服务链环节覆盖）｜ **域**：SVC 服务机构（产业服务链分析·服务链分析·深圳对比）｜ **UI 挂载**：科技信息展示系统·产业服务链分析·深圳对比页（当前诚实排除，不画完整度柱）
+> - **数据支持度**：**完全不支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 0.2.0 明写「公式未签（Q-SVCCHAIN-04 / 唐绍祖）」「本件不做真数」
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_SZ_CHAIN_COMPLETENESS.md`；复现脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py` → `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +62,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_SZ_CHAIN_COMPLETENESS.md` |
 | 复现脚本 | `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json` |
@@ -58,17 +70,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：覆盖度/完整度（服务机构库·深圳服务链环节覆盖）｜ **域**：SVC 服务机构（产业服务链分析·服务链分析·深圳对比）｜ **UI 挂载**：科技信息展示系统·产业服务链分析·深圳对比页（当前诚实排除，不画完整度柱）
-> **数据支持度**：**完全不支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 0.2.0 明写「公式未签（Q-SVCCHAIN-04 / 唐绍祖）」「本件不做真数」
-> **数据源**：gkx（183.240.141.251:3318，只读 gkx_reader_zp）+ `code/_snapshots21/` 落盘快照 + 两库资产清单
-> **wanghui：false**（王惠未定义过本指标，无 §五 对照章节）
-> **verdict_kind：negative_evidence**（否定性探针见 §三 与 附录 B）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -294,7 +300,7 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 
 ### 4.2 修复路径与优先级
 
-短期（一周内）只有一件事能做：把本件的否定性证据固化成可复跑的探针（已落 `code/M_SVC_SZ_CHAIN_COMPLETENESS.py`），让下一次有人问「为什么没有完整度」时能直接给出两库证据，而不是重复调研。
+短期（一周内）只有一件事能做：把本件的否定性证据固化成可复跑的探针（已落 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py`），让下一次有人问「为什么没有完整度」时能直接给出两库证据，而不是重复调研。
 
 中期（需要建表）等供方交付机构×六环节成员表。这张表至少要带三个字段：机构 id、环节 id、生效期；没有生效期就只能做截面，无法回答「今年比去年完整了吗」。长期（需要外部数据）补中试平台名录与外市基准，前者解决代理低估，后者解决城市对比。
 
@@ -340,22 +346,19 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 
 ## 参考文献
 
-1. 侯佳伟. (2026). 《服务链完整度（M_SVC_SZ_CHAIN_COMPLETENESS）计算逻辑》0.2.0. 项目内部文档.
+1. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754-2017）. https://www.stats.gov.cn/sj/tjbz/gjtjbz/
 
-2. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754-2017）. https://www.stats.gov.cn/sj/tjbz/gjtjbz/
+2. 国家统计局. (2018). 《国家科技服务业统计分类（2018）》（国统字〔2018〕215 号）. https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893989.html
 
-3. 国家统计局. (2018). 《国家科技服务业统计分类（2018）》（国统字〔2018〕215 号）. https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893989.html
+3. 科技部. (2023). 《“十四五”技术要素市场专项规划》——技术转移与中试熟化体系建设. https://www.most.gov.cn/
 
-4. 科技部. (2023). 《“十四五”技术要素市场专项规划》——技术转移与中试熟化体系建设. https://www.most.gov.cn/
+4. 工业和信息化部. (2024). 《制造业中试创新发展实施意见》. https://www.miit.gov.cn/
 
-5. 工业和信息化部. (2024). 《制造业中试创新发展实施意见》. https://www.miit.gov.cn/
+5. 深圳市人民政府. (2021). 《深圳市国民经济和社会发展第十四个五年规划和二〇三五年远景目标纲要》. https://www.sz.gov.cn/
 
-6. 深圳市人民政府. (2021). 《深圳市国民经济和社会发展第十四个五年规划和二〇三五年远景目标纲要》. https://www.sz.gov.cn/
+6. 工业和信息化部等九部门. (2025). 《关于加快推进科技服务业高质量发展的实施意见》（工信部联科〔2025〕110 号）. https://www.gov.cn/lianbo/bumen/202505/content_7024307.htm
 
-7. 工业和信息化部等九部门. (2025). 《关于加快推进科技服务业高质量发展的实施意见》（工信部联科〔2025〕110 号）. https://www.gov.cn/lianbo/bumen/202505/content_7024307.htm
-
-8. OECD. (2015). *Frascati Manual 2015 — technology transfer and knowledge flows*. OECD Publishing. https://doi.org/10.1787/9789264239012-en
-
+7. OECD. (2015). *Frascati Manual 2015 — technology transfer and knowledge flows*. OECD Publishing. https://doi.org/10.1787/9789264239012-en
 ---
 
 # 附件
@@ -407,8 +410,8 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
-| `code/M_SVC_SZ_CHAIN_COMPLETENESS.py` | 否定性探针（零 DB） | 已跑通 |
-| `code/M_SVC_SZ_CHAIN_COMPLETENESS_out.json` | 证据与代理明细 | 已落盘 |
+| `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py` | 否定性探针（零 DB） | 已跑通 |
+| `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json` | 证据与代理明细 | 已落盘 |
 | `_staging21/M_SVC_SZ_CHAIN_COMPLETENESS.md` | 本文件 | 已交付 |
 | `code/_snapshots21/svcsz21_facts_20261023.json` | 族级快照（六站行） | 复用 |
 | `_work_gkx21/GKX_INVENTORY.json` | gkx 资产清单（280 表） | 引用 |
@@ -444,7 +447,7 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 ## 附录 E　复算步骤
 
 1. 确认快照：`ls code/_snapshots21/svcsz21_facts_20261023.json`。
-2. 运行探针：`python3 M_SVC_SZ_CHAIN_COMPLETENESS.py`。
+2. 运行探针：`cd code && python3 M_SVC_SZ_CHAIN_COMPLETENESS.py`。
 3. 核对产物：`python3 -c "import json;d=json.load(open('M_SVC_SZ_CHAIN_COMPLETENESS_out.json'));print(d['support_judgment'],d['value']['completeness'])"`。
 4. 抽查：12 个产业的覆盖站数应全部为 5。
 5. 重跑一致性：`python3 _work_gkx21/rebuild_metric.py M_SVC_SZ_CHAIN_COMPLETENESS --check`。
@@ -473,7 +476,7 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 5. `support_judgment` 与文档头部档位一致（完全不支持）
 6. `base_years_used/_missing/_note` 三字段齐备
 7. `sources` 只写 gkx 库名 + 主机 + 快照路径，无演示库痕迹
-8. 脚本自包含：`python3 M_SVC_SZ_CHAIN_COMPLETENESS.py` 可直接跑通
+8. 脚本自包含：`cd code && python3 M_SVC_SZ_CHAIN_COMPLETENESS.py` 可直接跑通
 9. 解挂三条件写进 §4.6，便于交接
 10. 重跑后 `rebuild_metric.py M_SVC_SZ_CHAIN_COMPLETENESS --check` 内容一致
 11. 文档 mtime 晚于产物，`audit_md_vs_out.py` A 段无漂移
@@ -513,14 +516,4 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 
 本文出现的每个表名与数字都能在这五类资产里找到出处；没有第六类来源。
 
-> 生成本文件的时间：2026-10-23；数字均取自 `code/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`。
-
-
-## 更新记录
-
-- 2026-08-21: 初版（演示态）
-- 2026-08-28: 侯佳伟 1A 挂起
-- 2026-10-13: 0.2.0 挂起身份落 seed；明确轴若用覆盖则只认服务六环节、禁产业链；不写可执行公式
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+> 生成本文件的时间：2026-10-23；数字均取自 `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`。

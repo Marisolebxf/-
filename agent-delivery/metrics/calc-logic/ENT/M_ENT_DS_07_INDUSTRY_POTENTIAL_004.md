@@ -1,9 +1,20 @@
 # 科学影响力评估（M_ENT_DS_07_INDUSTRY_POTENTIAL_004）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md`；复现脚本 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` → `metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（产业级科学计量双维评估·DS-07 序号 149）｜ **域**：企业分析·企业评估（ENT，DS-07 科技创新评估族）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技创新评估「产业发展潜力指标展示」科学影响力评估屏（SRS 序号 149）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`、产物 `metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md`；复现脚本 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` → `metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`、产物 `metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -62,7 +73,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md` |
 | 复现脚本 | `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json` |
@@ -70,15 +81,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`、产物 `metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（产业级科学计量双维评估·DS-07 序号 149）｜ **域**：企业分析·企业评估（ENT，DS-07 科技创新评估族）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技创新评估「产业发展潜力指标展示」科学影响力评估屏（SRS 序号 149）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020）**：AI 补漏规范化（calc-logic 注册表口径：论文被引+国际合作双维极值归一等权；公式由 AI 创作待算法 Lead 会签；wanghui_agg 标 creator=ai，非王惠原创，§五 对照对象为 AI 侧已注册口径）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分（论文池与被引表在）/ 部分（国际合作维断链、产业映射断链、英文被引字段缺）
-> wanghui: true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -112,7 +119,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「科学影响力评估」是科技信息展示系统「科技创新评估·产业发展潜力指标展示」五连屏的第四屏（SRS 序号 149）：基于论文引用、国际合作等数据，评估**特定产业**的科学影响力，展示论文被引次数、国际合作论文比例等指标的分布与排名。需求原文给出了指标的两个输入概念（论文引用、国际合作）与展示形态（分布+排名），**未给出**产业入集口径、被引聚合方式与合成分式；口径由项目 AI 侧闭合（calc-logic 注册表，待算法 Lead 会签）：两维——论文被引影响力（SUM 被引+篇均）与国际合作论文比例，极值归一后等权合成，输出产业分布与排名。权威方法侧，本报告严格走**科学计量学（scientometrics）文献系**：Hirsch 的 h 指数以「h 篇论文各被引至少 h 次」单数刻画累积影响力 (Hirsch, 2005)，van Raan 把 h 指数推广到科研组团（meso）层级并系统对比其与标准化文献计量指标及同行评议的相关性 (van Raan, 2006)；中文官方统计实践有中信所年度《中国科技论文统计报告》的国际合著论文口径（2024 年中国国际合著论文 17.29 万篇、占比 20.4%）(中国科学技术信息研究所, 2025) 与自然科学基金委绩效报告对国际合作典型案例的监测 (国家自然科学基金委员会, 2022)。实测（2026-10-20，脚本 `code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`，gkx 直连）：论文池 zh 100,900 / en 1,387；中文被引表 20,031 行合计 144,020 次（100% 有值）；作者机构 zh_author 62,002 行（23,327 机构）；但 `dwd_author_org_base_info_rel` 与 `dwd_author_foreign_org_base_info_rel` **均缺表**——产业映射与境外合作两条链路断。被引维可算（全库级）、合作维断、产业入集断 → **部分支持**。
+「科学影响力评估」是科技信息展示系统「科技创新评估·产业发展潜力指标展示」五连屏的第四屏（SRS 序号 149）：基于论文引用、国际合作等数据，评估**特定产业**的科学影响力，展示论文被引次数、国际合作论文比例等指标的分布与排名。需求原文给出了指标的两个输入概念（论文引用、国际合作）与展示形态（分布+排名），**未给出**产业入集口径、被引聚合方式与合成分式；口径由项目 AI 侧闭合（calc-logic 注册表，待算法 Lead 会签）：两维——论文被引影响力（SUM 被引+篇均）与国际合作论文比例，极值归一后等权合成，输出产业分布与排名。权威方法侧，本报告严格走**科学计量学（scientometrics）文献系**：Hirsch 的 h 指数以「h 篇论文各被引至少 h 次」单数刻画累积影响力 (Hirsch, 2005)，van Raan 把 h 指数推广到科研组团（meso）层级并系统对比其与标准化文献计量指标及同行评议的相关性 (van Raan, 2006)；中文官方统计实践有中信所年度《中国科技论文统计报告》的国际合著论文口径（2024 年中国国际合著论文 17.29 万篇、占比 20.4%）(中国科学技术信息研究所, 2025) 与自然科学基金委绩效报告对国际合作典型案例的监测 (国家自然科学基金委员会, 2022)。实测（2026-10-20，脚本 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`，gkx 直连）：论文池 zh 100,900 / en 1,387；中文被引表 20,031 行合计 144,020 次（100% 有值）；作者机构 zh_author 62,002 行（23,327 机构）；但 `dwd_author_org_base_info_rel` 与 `dwd_author_foreign_org_base_info_rel` **均缺表**——产业映射与境外合作两条链路断。被引维可算（全库级）、合作维断、产业入集断 → **部分支持**。
 
 ---
 
@@ -229,7 +236,7 @@ calc-logic 口径已闭合（公式完整），需澄清的是「特定产业」
 
 ## 二、计算过程
 
-> **口径说明**：本节按 calc-logic 注册表口径展开，已由脚本 `code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` 于 2026-10-20 在三方 gkx 直连完成论文池/被引/作者/关联表的实测，结果见同目录 `M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`。因产业入集断链，本批为「依赖审计 + 全库级被引维验证」而非产业级出数。文内引用格式为 SCI 常用「叙述后附 (Author)」。
+> **口径说明**：本节按 calc-logic 注册表口径展开，已由脚本 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` 于 2026-10-20 在三方 gkx 直连完成论文池/被引/作者/关联表的实测，结果见同目录 `M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`。因产业入集断链，本批为「依赖审计 + 全库级被引维验证」而非产业级出数。文内引用格式为 SCI 常用「叙述后附 (Author)」。
 
 ### 2.1 方法选择：为何走科学计量学路线、被引与合作双维并立
 
@@ -271,12 +278,12 @@ DS-07 五连屏的「科学 vs 技术」双生分工：本指标（004）走科�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` |
 | 结果产物 | 同目录 `M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json` |
 | 探测库 | 三方 gkx 直连（论文池/被引/作者/关联表存在性与计数） |
 
 ```bash
-python3 metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py
 ```
 
 脚本输出 `probe`（表行数与被引合计）与 `support_judgment`（机判）。以下展示为 **2026-10-20** 完整跑数结果（与 out.json 一致）。
@@ -332,7 +339,7 @@ python3 metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` 并确认探针结论，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` 并确认探针结论，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库（实测） | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -347,7 +354,7 @@ python3 metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py
 **四判定（§〇）**：直接结构/数据 = 否（无结果面）；依赖结构 = **部分**（论文/被引/作者表在；两张桥表缺）；依赖数据 = **部分**（被引维量足可算、合作维无承载、产业入集不可达）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json` 实测——被引维可算（zh 论文 100,900 + 被引表 20,031 行合计 144,020 次，100% 有值；en 论文仅 1,387 且被引字段缺待建）；国际合作维断链（`dwd_author_foreign_org_base_info_rel` 缺表，境外关联无承载）；产业映射断链（`dwd_author_org_base_info_rel` 缺表，作者→机构→产业入集不可达）。对象=产业科研产出集合，产业入集断则指标无法按口径产出（仅全库级被引可算）→ **部分支持**。**先验标签「完全转换支持」与实测矛盾（双维缺一维半），以实测为准。**
+依据：`metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json` 实测——被引维可算（zh 论文 100,900 + 被引表 20,031 行合计 144,020 次，100% 有值；en 论文仅 1,387 且被引字段缺待建）；国际合作维断链（`dwd_author_foreign_org_base_info_rel` 缺表，境外关联无承载）；产业映射断链（`dwd_author_org_base_info_rel` 缺表，作者→机构→产业入集不可达）。对象=产业科研产出集合，产业入集断则指标无法按口径产出（仅全库级被引可算）→ **部分支持**。**先验标签「完全转换支持」与实测矛盾（双维缺一维半），以实测为准。**
 
 ---
 
@@ -421,12 +428,9 @@ wanghui_agg 登记：def=「国际合作论文数 ÷ 论文总数」；logic=「
 4. 国家自然科学基金委员会. (2022). 《国家自然科学基金 2021 年度绩效评价报告》（国际合作与交流列入效益指标；面上项目国际合作典型案例监测）. https://www.nsfc.gov.cn/u/cms/www/202506/23141630aa91.pdf （官方对「国际合作=影响力信号」的政策背书）
 
 5. 国家统计局, 国家知识产权局. (2024). 《关于 2023 年全国专利密集型产业增加值数据的公告》（第 613 号；188 个国民经济小类按 IPC 对照映射到产业——「成果→产业」入集映射的官方姊妹实践，本报告作对照非同源）. https://www.cnipa.gov.cn/art/2024/12/31/art_74_196992.html
-
-6. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md` — 两维公式、源表与待建项。
-7. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. OECD Publishing. https://doi.org/10.1787/9789264239012-en （研发投入侧统计的国际方法学母本，支撑 §1.4 族 A「投入≠产出」的构念对照；2026-10-21 curl 403，OECD 反爬，人工浏览器可开）
-8. Waltman, L. (2016). A review of the literature on citation impact indicators. *Journal of Informetrics*, 10(2), 365–391. https://doi.org/10.1016/j.joi.2016.02.007 （被引影响指标的类型与归一化方法综述，支撑族 C 的领域标准化要求；2026-10-21 curl 200）
-9. Mingers, J., & Leydesdorff, L. (2015). A review of theory and practice in scientometrics. *European Journal of Operational Research*, 246(1), 1–19. https://doi.org/10.1016/j.ejor.2015.04.002 （科学计量学「计数—归一—比较」链条综述，支撑族 C 的适用边界；2026-10-21 curl 200）
-
+6. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. OECD Publishing. https://doi.org/10.1787/9789264239012-en （研发投入侧统计的国际方法学母本，支撑 §1.4 族 A「投入≠产出」的构念对照；2026-10-21 curl 403，OECD 反爬，人工浏览器可开）
+7. Waltman, L. (2016). A review of the literature on citation impact indicators. *Journal of Informetrics*, 10(2), 365–391. https://doi.org/10.1016/j.joi.2016.02.007 （被引影响指标的类型与归一化方法综述，支撑族 C 的领域标准化要求；2026-10-21 curl 200）
+8. Mingers, J., & Leydesdorff, L. (2015). A review of theory and practice in scientometrics. *European Journal of Operational Research*, 246(1), 1–19. https://doi.org/10.1016/j.ejor.2015.04.002 （科学计量学「计数—归一—比较」链条综述，支撑族 C 的适用边界；2026-10-21 curl 200）
 ---
 
 # 附件
@@ -457,7 +461,7 @@ wanghui_agg 登记：def=「国际合作论文数 ÷ 论文总数」；logic=「
 ## 附录 B　历史库表探测证据（摘要）
 
 - B2 批次锚点（PROGRESS.md，2026-10-20）：「产业入集断链；zh 10 万篇被引 144,020 可算」；判「部分支持」。
-- 本批实测（`code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`，2026-10-20，gkx 直连）：`dwd_zh_paper` 100,900 / `dwd_en_paper` 1,387 / `dwd_zh_paper_citation` 20,031（SUM=144,020，100% 有值）/ `dwd_zh_author` 62,002（机构 23,327）/ `dwd_en_author` 1,387 / `dwd_forg_base_info` 20,000；`dwd_author_org_base_info_rel` 与 `dwd_author_foreign_org_base_info_rel` **均缺表**；`support_judgment = 部分支持`（intl_coop_dim_ready=false、industry_mapping_ready=false）。
+- 本批实测（`metrics/repro/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`，2026-10-20，gkx 直连）：`dwd_zh_paper` 100,900 / `dwd_en_paper` 1,387 / `dwd_zh_paper_citation` 20,031（SUM=144,020，100% 有值）/ `dwd_zh_author` 62,002（机构 23,327）/ `dwd_en_author` 1,387 / `dwd_forg_base_info` 20,000；`dwd_author_org_base_info_rel` 与 `dwd_author_foreign_org_base_info_rel` **均缺表**；`support_judgment = 部分支持`（intl_coop_dim_ready=false、industry_mapping_ready=false）。
 - 王惠侧探针（wanghui_agg match 字段）：dwd_zh_author 20,000 行、境外关联 0 行、en_author 0 行（时点较早，本批复测 zh_author 已 62,002、en_author 1,387）。
 
 ## 附录 C　科学影响力评估类似指标权威构建方法可行性报告（完整版）
@@ -519,7 +523,7 @@ van Raan 的 CPP/FCSm（篇均被引/领域世界均值）是跨集合比较的�
 
 #### C.4.1 维度 × 源表 × 行数 × 覆盖率 × 造数状态（完整矩阵）
 
-行数取自 `code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`（2026-10-20 实测，gkx 直连）；覆盖率的分母按维度分别标注，不做跨维混算。
+行数取自 `metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`（2026-10-20 实测，gkx 直连）；覆盖率的分母按维度分别标注，不做跨维混算。
 
 | 维度 | 源表.字段 | 行数 | 覆盖率 | 是否造数 | 结论 |
 |---|---|---:|---:|---|---|
@@ -593,15 +597,7 @@ van Raan 的 CPP/FCSm（篇均被引/领域世界均值）是跨集合比较的�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`；产物：`../code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`
+- 脚本：`../code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py`；产物：`../metrics/repro/out/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`
 - 探测库：三方 gkx 直连
 - 关键结果：zh_paper 100,900 / en_paper 1,387 / zh_paper_citation 20,031 行 SUM=144,020（100% 有值）/ zh_author 62,002（机构 23,327）/ forg_base_info 20,000；`dwd_author_org_base_info_rel`、`dwd_author_foreign_org_base_info_rel` 均缺表；`support_judgment = 部分支持`
 - 工程注意：断点全在桥表（ETL 可解）；被引维可先行固化；英文侧二期。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,0 +1,478 @@
+{
+ "metric_id": "M_SVC_DEEP_180_1",
+ "metric_name": "服务机构引入推荐模型",
+ "generated_at": "2026-10-25T03:23:41+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "四维在外部池 18535 家上均可实测：竞争力维用专利代理（9995 家有专利）、产业相关度用深圳 20+8 标签（7139 家有标签）、政策匹配用 20,000 条政策标题关键词、深圳连接度用双端在池的资本边；但两处是结构性缺口——(1) 年报无研发投入/研发人员两列，竞争力只能走产出侧代理；(2) 资本边对端城市只在池内可见（30,219 个对端只有 8820 个有城市），连接度是下界。缺政策命中表 svc_org_policy_hit，政策维只能用标题关键词近似。故判部分支持。",
+ "main_gap": "研发投入/研发人员字段空挂（竞争力维只能产出侧代理）；对端城市仅池内可见，深圳连接度是下界；无 svc_org_policy_hit 命中表，政策维用标题关键词近似",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_org_product_info + dwd_org_base_info(city)",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_industry_product_tags（20+8）",
+   "rows": 17917,
+   "snapshot": "code/_snapshots21/svc21_pt_axis_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_patent（首申请人聚合）",
+   "rows": 2939895,
+   "snapshot": "code/_snapshots21/star_applicant_agg_gkx.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_policy_base",
+   "rows": 20000,
+   "snapshot": "code/_snapshots21/policy_base_20261021.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_invest_info + dwd_org_shareholder_info",
+   "rows": {
+    "invest": 41888,
+    "shareholder": 372205
+   },
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  }
+ ],
+ "base_years_used": [
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "招引排序是截面决策（快照时点存量），不做年度序列；专利与政策均按存量计，政策库跨 2000—2025 年发布，不按年拆窗。",
+ "population": {
+  "external_n": 18535,
+  "pool_total": 44153,
+  "sz_n": 25597,
+  "rule": "city != 深圳市 且 city 非空（空城市 21 家剔除，不并入外部池）"
+ },
+ "dimension_cover": {
+  "D1_competitiveness": {
+   "available": true,
+   "proxy": "patents + invention_share",
+   "orgs": 9995,
+   "note": "年报研发两列全表 0 行非空，按旧稿同法改产出侧代理"
+  },
+  "D2_industry_fit": {
+   "available": true,
+   "orgs": 7139,
+   "chain_orgs": 18512,
+   "target_lexicon": [
+    "软件与信息服务",
+    "智能终端",
+    "人工智能",
+    "具身智能",
+    "机器人",
+    "集成电路",
+    "数字创意",
+    "传感器",
+    "合成生物",
+    "智能网联汽车",
+    "生物医药",
+    "低空经济"
+   ]
+  },
+  "D3_policy_match": {
+   "available": true,
+   "orgs": 7139,
+   "note": "20,000 条政策标题关键词命中数，深圳政策单列，缺命中表"
+  },
+  "D4_sz_connection": {
+   "available": true,
+   "orgs": 18512,
+   "note": "对端城市仅池内可见：8820/30219 个投资对端有城市"
+  }
+ },
+ "policy_supply": {
+  "by_industry_all": {
+   "智能网联汽车": 94,
+   "生物医药": 190,
+   "软件与信息服务": 142,
+   "集成电路": 49,
+   "数字创意": 18,
+   "传感器": 3,
+   "人工智能": 27,
+   "机器人": 19,
+   "智能终端": 8,
+   "合成生物": 2
+  },
+  "by_industry_sz": {
+   "软件与信息服务": 10,
+   "人工智能": 3,
+   "智能网联汽车": 2,
+   "机器人": 6,
+   "集成电路": 3,
+   "生物医药": 4
+  },
+  "sz_title_hits": 651,
+  "sz_city_field": 879
+ },
+ "composite": {
+  "dims": [
+   "competitiveness",
+   "industry_fit",
+   "policy_match",
+   "sz_connection"
+  ],
+  "weights": "等权 1/4",
+  "scored_orgs": 12541,
+  "unscored_orgs": 5994,
+  "rule": "维数 <2 不入排序；缺维不补 0"
+ },
+ "score_dist": {
+  "n": 12541,
+  "mean": 18.31,
+  "median": 20.08,
+  "p90": 25.12,
+  "p99": 36.61,
+  "max": 55.88,
+  "min": 0.0,
+  "bands": {
+   "优先引入": 0,
+   "重点关注": 1,
+   "观察": 60,
+   "暂缓": 12480
+  }
+ },
+ "top15": [
+  {
+   "rank": 1,
+   "org_id": "695c48f4758f361ee0d9287dfe62ad95",
+   "name": "OPPO广东移动通信有限公司",
+   "city": "东莞市",
+   "type": "INNOV",
+   "score": 55.88,
+   "band": "重点关注",
+   "patents": 25765,
+   "inv_share": 0.3317,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "具身智能",
+    "数字创意",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务"
+   ],
+   "sz_neighbors": 5,
+   "known_neighbors": 17,
+   "dim_scores": {
+    "competitiveness": 0.793,
+    "industry_fit": 0.7778,
+    "policy_match": 0.2046,
+    "sz_connection": 0.4599
+   }
+  },
+  {
+   "rank": 2,
+   "org_id": "378029b17efd9836b649f1f9cd8db54d",
+   "name": "广东省豪鹏新能源科技有限公司",
+   "city": "惠州市",
+   "type": "INNOV",
+   "score": 54.3,
+   "band": "观察",
+   "patents": 466,
+   "inv_share": 0.6867,
+   "tags": null,
+   "sz_neighbors": 3,
+   "known_neighbors": 3,
+   "dim_scores": {
+    "competitiveness": 0.3361,
+    "sz_connection": 0.75
+   }
+  },
+  {
+   "rank": 3,
+   "org_id": "40017b68a2e9c4ff963a1ece58ac49b2",
+   "name": "惠州市赢合工业技术有限公司",
+   "city": "惠州市",
+   "type": "INNOV",
+   "score": 53.36,
+   "band": "观察",
+   "patents": 7,
+   "inv_share": 1.0,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4728,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 4,
+   "org_id": "7852b3ed5b616308ff915ee70e2603a3",
+   "name": "广东朗科智能电气有限公司",
+   "city": "东莞市",
+   "type": "INNOV",
+   "score": 53.35,
+   "band": "观察",
+   "patents": 1,
+   "inv_share": 1.0,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4727,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 5,
+   "org_id": "fca76479d54fa74ee18dd81bd09df11d",
+   "name": "广州市东鹏食品饮料有限公司",
+   "city": "广州市",
+   "type": "CONSULT",
+   "score": 52.98,
+   "band": "观察",
+   "patents": 94,
+   "inv_share": 0.7766,
+   "tags": [
+    "生物医药"
+   ],
+   "sz_neighbors": 3,
+   "known_neighbors": 3,
+   "dim_scores": {
+    "competitiveness": 0.3694,
+    "industry_fit": 0.0,
+    "policy_match": 1.0,
+    "sz_connection": 0.75
+   }
+  },
+  {
+   "rank": 6,
+   "org_id": "58be120f09590f101ed6006db3591d65",
+   "name": "东莞市兴海盛精密技术有限公司",
+   "city": "东莞市",
+   "type": "INNOV",
+   "score": 52.96,
+   "band": "观察",
+   "patents": 52,
+   "inv_share": 0.9808,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4649,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 7,
+   "org_id": "be6ee30e8780aea593cd8751487e4ade",
+   "name": "惠州市国信达传导科技有限公司",
+   "city": "惠州市",
+   "type": "INNOV",
+   "score": 52.65,
+   "band": "观察",
+   "patents": 32,
+   "inv_share": 0.9688,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4587,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 8,
+   "org_id": "a95aa17881d0e79b06735d5a0593e068",
+   "name": "惠州科达利精密工业有限公司",
+   "city": "惠州市",
+   "type": "INNOV",
+   "score": 52.56,
+   "band": "观察",
+   "patents": 55,
+   "inv_share": 0.9636,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4568,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 9,
+   "org_id": "2e8a452fd969eaeeae3b866a038d3d43",
+   "name": "广东广华建设有限公司",
+   "city": "惠州市",
+   "type": "HR",
+   "score": 52.47,
+   "band": "观察",
+   "patents": 26,
+   "inv_share": 0.9615,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4551,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 10,
+   "org_id": "933fa8339f725b124543833c3c30f546",
+   "name": "惠州深科达智能装备有限公司",
+   "city": "惠州市",
+   "type": "INNOV",
+   "score": 52.2,
+   "band": "观察",
+   "patents": 58,
+   "inv_share": 0.9483,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4496,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 11,
+   "org_id": "24bde4ed22d2dbfb7509f028c8738ed8",
+   "name": "惠州市联创丽声电子有限公司",
+   "city": "惠州市",
+   "type": "UNCLASSIFIED",
+   "score": 52.18,
+   "band": "观察",
+   "patents": 75,
+   "inv_share": 0.9467,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4493,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 12,
+   "org_id": "6be1329b555a22eac1ea9cebf097df41",
+   "name": "广东银宝山新科技有限公司",
+   "city": "东莞市",
+   "type": "INNOV",
+   "score": 51.1,
+   "band": "观察",
+   "patents": 31,
+   "inv_share": 0.9032,
+   "tags": null,
+   "sz_neighbors": 2,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 0.4277,
+    "sz_connection": 0.5944
+   }
+  },
+  {
+   "rank": 13,
+   "org_id": "13b705e15b8c3c1a2af231697b87a292",
+   "name": "中远海运（广州）有限公司",
+   "city": "广州市",
+   "type": "INNOV",
+   "score": 50.86,
+   "band": "观察",
+   "patents": null,
+   "inv_share": null,
+   "tags": [
+    "软件与信息服务"
+   ],
+   "sz_neighbors": 6,
+   "known_neighbors": 10,
+   "dim_scores": {
+    "industry_fit": 0.0,
+    "policy_match": 0.7474,
+    "sz_connection": 0.7784
+   }
+  },
+  {
+   "rank": 14,
+   "org_id": "7f15dae4827c74295b51c14e8ce9702b",
+   "name": "华南理工大学",
+   "city": "广州市",
+   "type": "INNOV",
+   "score": 50.0,
+   "band": "观察",
+   "patents": 28053,
+   "inv_share": 0.65,
+   "tags": null,
+   "sz_neighbors": 0,
+   "known_neighbors": 2,
+   "dim_scores": {
+    "competitiveness": 1.0,
+    "sz_connection": 0.0
+   }
+  },
+  {
+   "rank": 15,
+   "org_id": "f35f4052f0dc51b7b22875b5bd1776ed",
+   "name": "东莞市小白智能出行有限公司",
+   "city": "东莞市",
+   "type": "CONSULT",
+   "score": 49.96,
+   "band": "观察",
+   "patents": 3,
+   "inv_share": 1.0,
+   "tags": null,
+   "sz_neighbors": 3,
+   "known_neighbors": 6,
+   "dim_scores": {
+    "competitiveness": 0.4727,
+    "sz_connection": 0.5264
+   }
+  }
+ ],
+ "sensitivity_conn_raw": {
+  "note": "纯比值口径（旧稿原式）下的前 5 名，用于说明为何加样本量置信因子",
+  "top5": [
+   {
+    "name": "东莞领杰金属精密制造科技有限公司",
+    "conn_raw": 1.0,
+    "known_neighbors": 2,
+    "sz_neighbors": 2
+   },
+   {
+    "name": "广州市天健兴业房地产开发有限公司",
+    "conn_raw": 1.0,
+    "known_neighbors": 4,
+    "sz_neighbors": 4
+   },
+   {
+    "name": "广东普门生物医疗科技有限公司",
+    "conn_raw": 1.0,
+    "known_neighbors": 2,
+    "sz_neighbors": 2
+   },
+   {
+    "name": "广东粤安印刷科技有限公司",
+    "conn_raw": 1.0,
+    "known_neighbors": 1,
+    "sz_neighbors": 1
+   },
+   {
+    "name": "汇川技术（东莞）有限公司",
+    "conn_raw": 1.0,
+    "known_neighbors": 2,
+    "sz_neighbors": 2
+   }
+  ]
+ },
+ "caliber_note": "连接度分子是「深圳对端边数」，分母是「已知对端边数」而非机构真实客户总数——旧稿要求总客户/供应商数，gkx 无该字段，故本维是相对连接强度而非绝对占比",
+ "compute": {
+  "elapsed_sec": 0.798,
+  "sql_count": 0
+ }
+}

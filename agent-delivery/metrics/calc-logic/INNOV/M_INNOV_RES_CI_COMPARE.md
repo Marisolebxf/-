@@ -1,9 +1,22 @@
 # 多企业竞争情报比对（M_INNOV_RES_CI_COMPARE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_RES_CI_COMPARE.md`；复现脚本 `metrics/repro/M_INNOV_RES_CI_COMPARE.py` → `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：工程定义（需求语义派生，calc-logic 以「竞争情报比对」承载）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 → 多企业竞争情报比对
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是；依赖数据 = **部分**（重叠维只有 IPC 可用；规模维专利完整、论文覆盖 9/12）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_RES_CI_COMPARE.py`、产物 `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_RES_CI_COMPARE.md`；复现脚本 `metrics/repro/M_INNOV_RES_CI_COMPARE.py` → `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_RES_CI_COMPARE.py`、产物 `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_RES_CI_COMPARE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_RES_CI_COMPARE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json` |
@@ -61,20 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_RES_CI_COMPARE.py`、产物 `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：工程定义（需求语义派生，calc-logic 以「竞争情报比对」承载）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 → 多企业竞争情报比对
-> **UI 挂载**：竞争情报比对页——12×12 重叠矩阵、企业重叠等级、规模×重叠四象限战略图
-> **派单标签**：区域竞争力对比（CI = competitiveness index）｜ **命名澄清**：calc-logic 真源与需求原文均为「多企业竞争情报比对」（CI = competitive intelligence），对象是**企业对企业**。本文按真源的企业口径交付，并把「区域口径」列为独立缺口；不把企业矩阵伪装成区域排名｜ **已裁定（2026-10-22）**：本 ID 保持企业口径，区域竞争力指数另立 `M_INNOV_RES_REGION_CI`，两件分母互不复用
-> **数据支持度**：**部分支持**
-> **复用**：`M_INNOV_RES_OVERLAP` 的 66 对重叠分（同一份矩阵，不另立第二套口径）
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是；依赖数据 = **部分**（重叠维只有 IPC 可用；规模维专利完整、论文覆盖 9/12）
-> **铁律**：专利维零 SQL，只读 `_snapshots21/`；等级阈值只用 66 对的 P30/P70；不造竞争强度权值
-> wanghui: false
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -272,7 +276,7 @@ $$
 
 ### 2.7 复现代码与结果展示
 
-脚本 `code/M_INNOV_RES_CI_COMPARE.py`，输出 `code/M_INNOV_RES_CI_COMPARE_out.json`（约 45 KB），运行 2 秒，`sql_count=0`，重叠矩阵从 `M_INNOV_RES_OVERLAP_out.json` 读入，不重算。
+脚本 `metrics/repro/M_INNOV_RES_CI_COMPARE.py`，输出 `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json`（约 45 KB），运行 2 秒，`sql_count=0`，重叠矩阵从 `M_INNOV_RES_OVERLAP_out.json` 读入，不重算。
 
 `_out.json` 顶层键：`method`（阈值两套口径）、`universe`（12 家、专利/论文数）、`levels.enterprise`（12 家等级与 top3）、`matrix`（12×12 数值与等级）、`strategic_map`（四象限与计数）、`pairs`（66 对排序）、`coverage`、`base_year_block`、`gaps`。
 
@@ -374,13 +378,9 @@ calc-logic 真源有「多企业竞争情报比对」的任务条目，但没有
 ## 参考文献
 
 1. Jaffe, A. B. *Technological Opportunity and Spillovers of R&D: Evidence from Firms' Patents, Profits, and Market Value*. American Economic Review 76(5), 1986. <https://www.jstor.org/stable/1806070>
-2. Porter, M. E. *Competitive Strategy: Techniques for Analyzing Industries and Competitors*. Free Press, 1980. <https://www.simonandschuster.com/books/Competitive-Strategy/Michael-E-Porter/9780743260886>
-3. SCIP. *Competitive Intelligence Body of Knowledge*. <https://www.scip.org/>
-4. IMD World Competitiveness Center. *World Competitiveness Ranking — Methodology*. <https://www.imd.org/centers/wcc/world-competitiveness-center/rankings/world-competitiveness-ranking/>
-5. OECD. *OECD Patent Statistics Manual*. <https://www.oecd.org/sti/inno/oecdpatentstatisticsmanual.htm>
-6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（竞争情报比对段）
-7. 同批交付：`_staging21/M_INNOV_RES_OVERLAP.md`（重叠矩阵与敏感性）
-
+2. SCIP. *Competitive Intelligence Body of Knowledge*. <https://www.scip.org/>
+3. IMD World Competitiveness Center. *World Competitiveness Ranking — Methodology*. <https://www.imd.org/centers/wcc/world-competitiveness-center/rankings/world-competitiveness-ranking/>
+4. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（竞争情报比对段）
 ---
 
 # 附件
@@ -506,8 +506,8 @@ IPC4 66/66 对可算，分布 18.48—63.08。学者维 0/66，关键词维不�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_RES_CI_COMPARE.py` |
-| 输出 | `code/M_INNOV_RES_CI_COMPARE_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_RES_CI_COMPARE.py` |
+| 输出 | `metrics/repro/out/M_INNOV_RES_CI_COMPARE_out.json` |
 | 运行 | 2 秒，`sql_count=0` |
 | 企业/对 | 12 家 / 66 对 |
 | 阈值 | P30=39.66，P70=48.43（66 对） |
@@ -516,11 +516,3 @@ IPC4 66/66 对可算，分布 18.48—63.08。学者维 0/66，关键词维不�
 | 四象限 | 4 / 2 / 2 / 4 |
 | 象限切点 | 规模 12,925；重叠 43.985 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

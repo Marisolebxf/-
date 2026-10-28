@@ -1,9 +1,20 @@
 # 创新载体数（M_INNOV_CARRIER_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CARRIER_COUNT.md`；复现脚本 `metrics/repro/M_INNOV_CARRIER_COUNT.py` → `metrics/repro/out/M_INNOV_CARRIER_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：MODEL（INNOV 域·载体三型之存量计数型）｜ **域**：创新监测（INNOV）｜ **UI 挂载**：科技信息展示系统·科技成果展示·科技创新生态展示 / 创新载体地图与增量分析｜ **数据支持度**：**完全转换支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CARRIER_COUNT.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CARRIER_COUNT.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CARRIER_COUNT.md`；复现脚本 `metrics/repro/M_INNOV_CARRIER_COUNT.py` → `metrics/repro/out/M_INNOV_CARRIER_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CARRIER_COUNT.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CARRIER_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CARRIER_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CARRIER_COUNT_out.json` |
@@ -61,14 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CARRIER_COUNT.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（INNOV 域·载体三型之存量计数型）｜ **域**：创新监测（INNOV）｜ **UI 挂载**：科技信息展示系统·科技成果展示·科技创新生态展示 / 创新载体地图与增量分析｜ **数据支持度**：**完全转换支持**
-> **公式定义人（20261021-B5 补全批次）**：王惠（入集口径）+ 本批 agent（计数型补全）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量足（可现转）｜ wanghui：true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -102,9 +110,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「创新载体数」是科技创新生态展示模块「创新载体地图与增量分析」功能族的底层计数指标，用于回答「一片区域当前有多少创新载体、每年净增多少」。三份需求说明书中该指标以「科创载体数量、新增各级创新载体」的功能描述出现，未给出任何字段级定义或统计口径；本报告沿用王惠为载体指数族定义的**入集口径**（国内企业存续 + 科研机构正常 + 海外载体），将其补全为**存量计数 + 年度增量**两段式计数型指标，属于载体三型（COUNT/QUALITY/RANK）中最基础的「存量计数」型。脚本 `code/M_INNOV_CARRIER_COUNT.py` 已在 `gkx` 三方库跑通：存量合计 **211,175** 家（企业存活 189,101 + 科研机构 2,074 + 海外 20,000），深圳切片 95,600 家，`incorporation_year` 2019-2024 各年新设 5,349-13,423 家。按 §〇 口径，结构+当前数据量均足且现转结果合理 → **完全转换支持**；残余缺口在于「载体类型学」（孵化器/实验室/加速器/众创空间等官方分类）无专用字段，当前以 org_type+标签代理，详见 §四。
+「创新载体数」是科技创新生态展示模块「创新载体地图与增量分析」功能族的底层计数指标，用于回答「一片区域当前有多少创新载体、每年净增多少」。三份需求说明书中该指标以「科创载体数量、新增各级创新载体」的功能描述出现，未给出任何字段级定义或统计口径；本报告沿用王惠为载体指数族定义的**入集口径**（国内企业存续 + 科研机构正常 + 海外载体），将其补全为**存量计数 + 年度增量**两段式计数型指标，属于载体三型（COUNT/QUALITY/RANK）中最基础的「存量计数」型。脚本 `metrics/repro/M_INNOV_CARRIER_COUNT.py` 已在 `gkx` 三方库跑通：存量合计 **211,175** 家（企业存活 189,101 + 科研机构 2,074 + 海外 20,000），深圳切片 95,600 家，`incorporation_year` 2019-2024 各年新设 5,349-13,423 家。按 §〇 口径，结构+当前数据量均足且现转结果合理 → **完全转换支持**；残余缺口在于「载体类型学」（孵化器/实验室/加速器/众创空间等官方分类）无专用字段，当前以 org_type+标签代理，详见 §四。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 支持以可视化的方式展示科创载体数量、新增各级创新载体、新增全职院士、引进人才等。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CARRIER_COUNT.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -151,7 +204,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 1. **方法上可构建**：官方路径的共性是「名录圈界 + 计数 + 增量」，本项目三底册完全承载该构架（详见附录 C）。
 2. **数据上可现转**：三底册结构与行量当日实测均足，存量与增量均可一次 SQL 聚合产出。
-3. **支持度判定**（按 §〇 + 脚本实测）：**完全转换支持**——无现成结果面；源侧结构+数据量已够；`code/M_INNOV_CARRIER_COUNT.py` 已现转出存量 211,175 与年度增量序列。
+3. **支持度判定**（按 §〇 + 脚本实测）：**完全转换支持**——无现成结果面；源侧结构+数据量已够；`metrics/repro/M_INNOV_CARRIER_COUNT.py` 已现转出存量 211,175 与年度增量序列。
 
 ### 1.5 引用来源（可核验）
 
@@ -195,7 +248,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，以下为王惠入集口径 + 本批补计数型的推测计算过程；已由脚本 `code/M_INNOV_CARRIER_COUNT.py` 在 `gkx` 三方库 **实测跑通**，结果见同目录 `M_INNOV_CARRIER_COUNT_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author/机构)」；完整题录与可核验网址见文末「参考文献」。
+> **口径说明**：需求未给公式，以下为王惠入集口径 + 本批补计数型的推测计算过程；已由脚本 `metrics/repro/M_INNOV_CARRIER_COUNT.py` 在 `gkx` 三方库 **实测跑通**，结果见同目录 `M_INNOV_CARRIER_COUNT_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author/机构)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：为什么用「底册清单计数」而不是抽样估计
 
@@ -262,7 +315,7 @@ $$CarrierStock(type_{proxy}) = \lvert \{c \in CarrierSet : org\_type(c) \sim typ
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_CARRIER_COUNT.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_CARRIER_COUNT.py` |
 | 结果产物 | 同目录 `M_INNOV_CARRIER_COUNT_out.json` |
 | 主算库 | `gkx`（三方库；行数读 `GKX_INVENTORY.json`，不跑 COUNT(*)） |
 | 对照探测 | 无第二库；`probes` 记录库存行数与实测入集数 |
@@ -270,7 +323,7 @@ $$CarrierStock(type_{proxy}) = \lvert \{c \in CarrierSet : org\_type(c) \sim typ
 **换源说明**：原脚本以旧开发库为源；本次改为 `from _gkxdb import gkx` 直连三方库，删除 `_devdb` 入口，公式、入集口径与档位均未改动。2026-10-21 重跑产物 `M_INNOV_CARRIER_COUNT_out.json` 与 20261020 基线逐项比对见 §2.7.2。
 
 ```bash
-python3 metrics/repro/M_INNOV_CARRIER_COUNT.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_CARRIER_COUNT.py
 ```
 
 脚本输出字段含：`probes`（gkx 行数）、`compute`（存量、城市切片、年度增量、深圳增量、机构城市）、`support_judgment`（四档支持度机判）。以下展示为 **2026-10-21** 一次完整跑数结果（与 out.json 一致）。
@@ -334,7 +387,7 @@ python3 metrics/repro/M_INNOV_CARRIER_COUNT.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CARRIER_COUNT.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CARRIER_COUNT.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | gkx（库存行数） | 实测结论 |
 |---|---|---|---|---|
@@ -406,11 +459,6 @@ python3 metrics/repro/M_INNOV_CARRIER_COUNT.py
 3. 深圳市人民政府. (2022). 《深圳市科技创新「十四五」规划》（深圳出台科技创新「十四五」规划·政府在线报道页）. http://www.sz.gov.cn/cn/xxgk/zfxxgj/zwdt/content/post_9517708.html （深圳创新载体窄口径目标：国家级高新技术企业超 2.2 万家）
 
 4. 科技部、财政部、国家税务总局. (2016). 《高新技术企业认定管理办法》（国科发火〔2016〕32 号）. https://most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2016/201602/t20160205_123998.html （科技资质标签口径的政策渊源）
-
-5. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/**/M_INNOV_CARRIER_INDEX_GLOBAL.md` — 王惠载体族 V1.5 入集口径（三底册存续合并）。
-
-文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
 ---
 
 # 附件
@@ -508,13 +556,6 @@ python3 metrics/repro/M_INNOV_CARRIER_COUNT.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_INNOV_CARRIER_COUNT.py`；产物：`../code/M_INNOV_CARRIER_COUNT_out.json`
+- 脚本：`../code/M_INNOV_CARRIER_COUNT.py`；产物：`../metrics/repro/out/M_INNOV_CARRIER_COUNT_out.json`
 - 关键结果：存量 211,175（企业 189,101/机构 2,074/海外 20,000）；深圳 95,600；2021 增量峰值 13,423；support_judgment=`完全转换支持`
 - 工程注意：`incorporation_year` 为数值列可直接 BETWEEN；Decimal 返回值需 int() 转换入库。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

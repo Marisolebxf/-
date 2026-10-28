@@ -1,9 +1,21 @@
 # 科技影响力趋势（M_INNOV_SCIINDEX_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCIINDEX_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_SCIINDEX_INFLUENCE.py` → `metrics/repro/out/M_INNOV_SCIINDEX_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：TREND（时序折线/面积读数）｜ **域**：科技信息展示系统／科技发展态势／科技创新评估｜ **UI 挂载**：影响力趋势图、领域并排对比
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCIINDEX_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_SCIINDEX_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCIINDEX_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_SCIINDEX_INFLUENCE.py` → `metrics/repro/out/M_INNOV_SCIINDEX_INFLUENCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCIINDEX_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_SCIINDEX_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_SCIINDEX_INFLUENCE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_SCIINDEX_INFLUENCE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_SCIINDEX_INFLUENCE_out.json` |
@@ -66,19 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_SCIINDEX_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_SCIINDEX_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：TREND（时序折线/面积读数）｜ **域**：科技信息展示系统／科技发展态势／科技创新评估｜ **UI 挂载**：影响力趋势图、领域并排对比
-> **数据支持度**：**部分支持**
-> **口径来源**：注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`；`calc-logic/INNOV` 下**无同 ID 正本**；影响力统称口径 Q069/Q071 待登
-> **王惠正本**：无同 ID 正本（`20260904_创新技术/指标计算逻辑/` 下未收录本条）
-> **复现**：`python3 M_INNOV_SCIINDEX_INFLUENCE.py` → `code/M_INNOV_SCIINDEX_INFLUENCE_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），本脚本零 DB、只读落盘快照
-> **基期声明**：`base_years_used` = [2021, 2022, 2023]（结构指数以 2021 为基年）；`base_years_missing` = [2017, 2018, 2019, 2020]；2024 论文语料断点不参与。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -333,12 +337,12 @@ D4、D5、D6 三条是本件判「部分支持」的理由。D4 尤其关键：�
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_INNOV_SCIINDEX_INFLUENCE.py
+cd code && python3 M_INNOV_SCIINDEX_INFLUENCE.py
 ```
 
 脚本零 DB，只读 `code/_snapshots21/innov_bsample_panel_20261023.json`（`paper.citation`、`domains.series`、`city_year_first`、`patent.city_year`）。
 
-产物 `code/M_INNOV_SCIINDEX_INFLUENCE_out.json` 的关键字段：
+产物 `metrics/repro/out/M_INNOV_SCIINDEX_INFLUENCE_out.json` 的关键字段：
 
 | 字段 | 值 | 用途 |
 |---|---|---|
@@ -521,14 +525,11 @@ python3 M_INNOV_SCIINDEX_INFLUENCE.py
 
 ## 参考文献
 
-1. 注册表：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml`（`M_INNOV_SCIINDEX_INFLUENCE` 条）。
-2. 族级面板：`code/_snapshots21/innov_bsample_panel_20261023.json`。
-3. Garfield E. Citation Indexing: Its Theory and Application in Science, Technology, and Humanities. Wiley, 1979.
-4. Waltman L. A review of the literature on citation impact indicators. Journal of Informetrics, 2016. https://doi.org/10.1016/j.joi.2016.02.007
-5. OECD. Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development. https://doi.org/10.1787/9789264239012-en
-6. 国家科技评估中心. 国家创新指数报告（2023）. https://www.ncste.org/
-7. 科技部. 中国科技统计年鉴（2023）. https://www.stats.gov.cn/sj/ndsj/
-
+1. Garfield E. Citation Indexing: Its Theory and Application in Science, Technology, and Humanities. Wiley, 1979.
+2. Waltman L. A review of the literature on citation impact indicators. Journal of Informetrics, 2016. https://doi.org/10.1016/j.joi.2016.02.007
+3. OECD. Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development. https://doi.org/10.1787/9789264239012-en
+4. 国家科技评估中心. 国家创新指数报告（2023）. https://www.ncste.org/
+5. 科技部. 中国科技统计年鉴（2023）. https://www.stats.gov.cn/sj/ndsj/
 ---
 
 # 附件
@@ -638,10 +639,3 @@ python3 M_INNOV_SCIINDEX_INFLUENCE.py
 **问：为什么城市份额只算四城？**
 
 答：因为专利匹配依赖底册，底册以广东企业为主，四城吃掉可匹配专利的 99.95%。省外城市只分到 0.47%，那个数字反映的是「底册里有几家省外企业」，不是城市真实产出。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

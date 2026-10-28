@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题系统（按 UI 挂载推断）
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_SVC_REC_ATTRACT_SCORE 招引综合评分（W14-S2）。
 
 数据面：只读 code/_snapshots21/svc21_rec_20261023.json（族级快照，零 DB）。
@@ -208,7 +210,7 @@ def main():
         ],
         "cross_refs": {
             "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_REC_ATTRACT_SCORE.md",
-            "wanghui": "local-workspace/docs/metrics/王惠阶段性成果/20260904_综合智能/指标计算逻辑/M_SVC_REC_ATTRACT_SCORE.md",
+            "wanghui": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_REC_ATTRACT_SCORE.md（王惠正本已演化并入）",
             "sibling": ["M_SVC_REC_CULTIVATE_SCORE", "M_SVC_REC_CANDIDATE_CNT"],
         },
     }

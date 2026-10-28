@@ -1,9 +1,21 @@
 # 商业力得分（M_ENT_BUSINESS_POWER_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_BUSINESS_POWER_SCORE.md`；复现脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` → `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（本件 UI 挂载在专题侧；展示系统无独立卡片，见「一・三」兼容判定）
+> **指标画像**
+> - **类型**：MODEL（六维加权评价模型）｜ **域**：企业分析·企业深度分析（ENT，E-23 商业力评估）｜ **UI 挂载**：科技专题·企业分析「企业商业力评估对比分析」页面（评分/排名/雷达对比）｜ **数据支持度**：**部分支持**｜ wanghui：true（王惠定义过，§五必含对照）
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py`｜ **产物**：`metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`｜ **实测日**：2026-10-22（20261027 批次兼容化复跑：2026-10-27）
+> **版本与分级**
+> - **差异分级**：D2 口径级分歧（**可兼容·配置型**）——算法库六维 vs 专题系统四维，同一加权引擎以权重/维度开关参数吸收；无需拆分 `_ZT`/`_ZS`｜ 依据：`gkx-orchestration/.../METRIC-SRS-GAP-L01/产物/file/M_ENT_BUSINESS_POWER_SCORE.md`
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py`、产物 `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_BUSINESS_POWER_SCORE.md`；复现脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` → `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py`、产物 `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_BUSINESS_POWER_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json` |
@@ -67,14 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py`、产物 `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（六维加权评价模型）｜ **域**：企业分析·企业深度分析（ENT，E-23 商业力评估）｜ **UI 挂载**：科技专题·企业分析「企业商业力评估对比分析」页面（评分/排名/雷达对比）｜ **数据支持度**：**部分支持**｜ wanghui：true（王惠定义过，§五必含对照）
-> **公式定义人（20261020）**：王惠（calc-logic 六维口径沿用；六维中三维数据断链致不可全量出分，见 §五对照与 §三）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分（3/6 维有可用结构）/ 部分（市场维填充率 2.3%、产品/链维无表）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -108,7 +117,7 @@ live ADS `biz_power` 120 行为样例级（org 与主档 JOIN=0）→ 非完全�
 
 ## 摘要
 
-「商业力得分」是《科技专题服务算法库》企业商业力评估模型（§1.1.1.1.1.1.1.5.6）的核心输出：基于**市场、产品、品牌、技术合作、产业链覆盖率、产业关键环节参与度**六大维度加权合成 0—100 的企业商业力指数，为战略规划、投资决策与行业对比提供依据；展示系统侧「企业商业力评估对比分析」（E-23）页面消费该得分做雷达对比与排名。需求原文给出六维框架但**未给公式与权重**；王惠团队在 calc-logic 注册表中把六维拆成 12 个三级指标并登记了逐项源表字段（权重挂 Q014 待甲方确认）。本报告沿用王惠六维口径完成依赖侧逐维实测：脚本 `code/M_ENT_BUSINESS_POWER_SCORE.py` 探明——市场维财务填充率仅 **2,095/90,926（2.3%）**；产品/产业链覆盖率/关键环节参与度三维共同依赖的 `dwd_org_industry_chain_dtl` **在 gkx（及 live）两库均不存在**（gkx 仅有 1,273 行链目录定义）；品牌维资讯 1,668,414 行可算声量但 `tech_tag` 的荣誉语义待核；技术合作维专利 2,939,895 行可解析联合申请、外部专家人月无字段；另有新产品销售收入、产品质量、外部专家人月、行业荣誉 tag 语义 4 项王惠标注待建。三维半的结构性断链 + 低填充 → **部分支持**（§五对照结论：王惠六维口径语义完整应保留为框架，但全量出分前需补 `chain_dtl` 表与财务填充）。
+「商业力得分」是《科技专题服务算法库》企业商业力评估模型（§1.1.1.1.1.1.1.5.6）的核心输出：基于**市场、产品、品牌、技术合作、产业链覆盖率、产业关键环节参与度**六大维度加权合成 0—100 的企业商业力指数，为战略规划、投资决策与行业对比提供依据；展示系统侧「企业商业力评估对比分析」（E-23）页面消费该得分做雷达对比与排名。需求原文给出六维框架但**未给公式与权重**；王惠团队在 calc-logic 注册表中把六维拆成 12 个三级指标并登记了逐项源表字段（权重挂 Q014 待甲方确认）。本报告沿用王惠六维口径完成依赖侧逐维实测：脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` 探明——市场维财务填充率仅 **2,095/90,926（2.3%）**；产品/产业链覆盖率/关键环节参与度三维共同依赖的 `dwd_org_industry_chain_dtl` **在 gkx（及 live）两库均不存在**（gkx 仅有 1,273 行链目录定义）；品牌维资讯 1,668,414 行可算声量但 `tech_tag` 的荣誉语义待核；技术合作维专利 2,939,895 行可解析联合申请、外部专家人月无字段；另有新产品销售收入、产品质量、外部专家人月、行业荣誉 tag 语义 4 项王惠标注待建。三维半的结构性断链 + 低填充 → **部分支持**（§五对照结论：王惠六维口径语义完整应保留为框架，但全量出分前需补 `chain_dtl` 表与财务填充）。
 
 ---
 
@@ -117,6 +126,56 @@ live ADS `biz_power` 120 行为样例级（org 与主档 JOIN=0）→ 非完全�
 ### 1.1 所属功能模块（要开发什么）
 
 本指标支撑两个互相咬合的模块。其一是算法库侧**企业商业力评估模型**（《科技专题服务算法库.md》§1.1.1.1.1.1.1.5.6，企业深度分析第 6 个子模型）：「多维度量化分析企业的市场竞争能力与产业协作水平」，输入企业财务数据、行业研究数据、市场调研数据、产品指标数据、品牌影响力数据、技术合作及产业链布局信息与「评价指标体系与权重参数」，输出「企业商业力指数、分维度分析报告、趋势变化图表、行业对比分析结果」。其二是展示系统侧**企业商业力评估对比分析**（《科技信息展示系统和科技专题服务系统.md》§1.1.1.2.4.2.3.4，E-23）：「基于市场份额、营收增长、盈利能力等指标构建商业力模型，支持用户自定义评价维度并进行企业间横向对比」，功能含商业力模型配置与指标选择、商业竞争力对标分析（输出评分、排名及可视化对比图）。
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 来源：METRIC-SRS-GAP-L01 逐指标调研（`gkx-orchestration/.../METRIC-SRS-GAP-L01/产物/file/M_ENT_BUSINESS_POWER_SCORE.md` §二）。D2 口径级分歧：两侧都讲「商业力模型」，但维度集与自定义程度不同；差异属**配置型**（可用同一加权引擎 + 维度/权重参数吸收），非方法型冲突。
+
+| 系统 | 需求文档 | 章节锚点 | 原文 |
+|---|---|---|---|
+| **科技专题服务算法库** | 《科技专题服务算法库》 | §1.1.1.1.1.1.1.5.6 企业商业力评估模型（L66） | 「多维度量化分析企业的市场竞争能力与产业协作水平。基于企业财务数据、行业研究数据、市场调研数据、产品指标数据、品牌影响力数据、技术合作及产业链布局信息，构建商业力评价指标体系，通过加权综合计算方法生成企业商业力指数，输出企业商业力指数、分维度分析报告、趋势变化图表、行业对比分析结果。」 |
+| **科技专题系统** | 《科技信息展示系统和科技专题服务系统》 | §1.1.1.2.4.2.3.4 企业商业力评估对比分析（E-23，L1330） | 「基于市场份额、营收增长、盈利能力等指标构建商业力模型，支持用户自定义评价维度并进行企业间横向对比。」功能：商业力模型配置与指标选择；商业竞争力对标分析——输出评分、排名及可视化对比图（雷达/柱状）。 |
+| **科技信息展示系统** | 同上（展示侧） | 无独立卡片 | 无独立展示要求；E-23 页面挂专题侧。展示层消费评分/排名即可（与专题系统同一出参）。 |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`，本节只写本指标个性。
+
+#### 兼容判定
+
+**可兼容·配置型（单接口，无需拆分 `_ZT`/`_ZS`）**。判定依据：
+1. 两侧都是「多维加权 → 得分/排名」同构模型，差异只在维度集（算法库 6 维 vs 展示侧示例 3–4 维）与权重来源（内置 vs 用户自定义）；
+2. 展示侧原文「**支持用户自定义评价维度**」本身就是参数化要求，与引擎化实现天然一致；
+3. 数据断链（3/6 维无表）是**数据问题不是口径冲突**，不构成拆分理由（两侧共用同一套断链事实）。
+结论：以「维度加权引擎」一个接口覆盖两侧，算法库默认六维全开、专题/展示按 `dims` 子集传参。
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `dims` | 不传（全六维） | 可传 4 维子集（如 市场/品牌/技术合作/产业链覆盖） | 传自定义维度子集 | 缺省六维全开；未开维度不计入权重归一 |
+| `weights` | 传 Q014 确认后的权重 | 不传（用内置等权） | 用户页面配置传入 | 缺省等权（1/n）；Q014 未定，等权仅作占位并在 `assumptions` 声明 |
+| `org_scope` | 传企业清单/行业过滤 | 传对比企业集 | 传对比企业集 | 缺省全量探测（本件当前为支持度探针模式，见 §三） |
+| `normalize` | `minmax`（calc-logic 极值归一） | 不传 | 不传 | 缺省 minmax，与 calc-logic 一致 |
+
+#### 出参兼容策略
+
+- 算法库消费：`dimension_detail`（分维度分析报告）+ `support_judgment`（可出分性）+ 未来 `value`（商业力指数）。
+- 专题系统消费：`display.score_radar`（六/四维雷达对比）+ `display.ranking`（排名表）。
+- 展示系统消费：与专题系统同段（E-23 挂专题侧）。
+- `assumptions`：当前恒含「权重 Q014 未定按等权占位」「3 维数据断链不可出分」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **当前是探针模式**：3/6 维依赖的 `dwd_org_industry_chain_dtl` 不存在、4 个字段待建，**任何系统都拿不到合法总分**；调 `compute()` 得到的是支持度诊断而不是业务分数，切勿直接落库为评分。
+2. `weights` 在 Q014 甲方确认前传了也只作引擎试算，`assumptions` 会声明「等权占位」，不可当正式值发布。
+3. 用户自定义维度（展示侧原文要求）只能从已实现维度集中选子集；传未实现维度名会进 `assumptions` 警告并忽略，不会 500。
+4. 出分后（数据补齐 + Q014 落定）本接口签名不变，后端无需二次改造——这正是配置型 D2 不拆分的收益。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`.../METRIC-SRS-GAP-L01/产物/file/M_ENT_BUSINESS_POWER_SCORE.md`（分级 D2、可兼容·配置型倾向）
+- 原文锚点：算法库 §1.1.1.1.1.1.1.5.6（L66）；展示/专题 §1.1.1.2.4.2.3.4（E-23，L1330）
 
 ### 1.2 为什么需要「商业力得分」这个指标
 
@@ -199,7 +258,7 @@ live ADS `biz_power` 120 行为样例级（org 与主档 JOIN=0）→ 非完全�
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠六维口径展开（公式定义人=王惠；权重=Q014 待闭合，本节以逐级等权作缺省演示），依赖侧实测由脚本 `code/M_ENT_BUSINESS_POWER_SCORE.py` 完成（`gkx` 单库探测），结果见同目录 `M_ENT_BUSINESS_POWER_SCORE_out.json`。文内引用格式为 SCI「叙述后附 (Author)」；完整题录见文末「参考文献」。
+> **口径说明**：本节按王惠六维口径展开（公式定义人=王惠；权重=Q014 待闭合，本节以逐级等权作缺省演示），依赖侧实测由脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` 完成（`gkx` 单库探测），结果见同目录 `M_ENT_BUSINESS_POWER_SCORE_out.json`。文内引用格式为 SCI「叙述后附 (Author)」；完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：为何用「六维极值归一加权」而非主成分分析
 
@@ -260,13 +319,13 @@ $$BP(e)=\sum_{D}w_D\cdot S_D(e),\qquad \sum_D w_D=1;\ \ \text{缺省 } w_D=\tfra
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` |
 | 结果产物 | 同目录 `M_ENT_BUSINESS_POWER_SCORE_out.json` |
 | 主算库 | 三方库 `gkx`（`gkx.<表名>` 全限定；行数只读 `_work_gkx21/GKX_INVENTORY.json`） |
 | 对照探测 | live ADS `biz_power` 120 行（样例级，仅记录不作证据） |
 
 ```bash
-python3 metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -328,7 +387,7 @@ python3 metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_BUSINESS_POWER_SCORE.py` 逐维探测，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` 逐维探测，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -342,7 +401,7 @@ python3 metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
 **四判定（§〇）**：直接结构/数据 = 否（样例级不算）；依赖结构 = **部分**（3/6 维有可用结构）；依赖数据 = **部分**（声量/专利量足、市场低覆盖、链三维无源）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_BUSINESS_POWER_SCORE_out.json` 实测——`chain_dtl_exists_any_side=false`（一表断三维）+ 市场维填充 2,095/90,926 + 4 项待建字段 + 权重未闭合（Q014）。按 §〇「无论如何构建，始终有部分依赖维度无法得到足够数据」（链三维需**新增数据源**而非灌现库可解）→ 部分支持；若 `chain_dtl` 补建并灌数、财务扩源，可重评升档。
+依据：`metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json` 实测——`chain_dtl_exists_any_side=false`（一表断三维）+ 市场维填充 2,095/90,926 + 4 项待建字段 + 权重未闭合（Q014）。按 §〇「无论如何构建，始终有部分依赖维度无法得到足够数据」（链三维需**新增数据源**而非灌现库可解）→ 部分支持；若 `chain_dtl` 补建并灌数、财务扩源，可重评升档。
 
 ---
 
@@ -410,10 +469,7 @@ python3 metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
 
 4. 国家统计局. (2024). 《重点企业运行监测统计调查制度》（企业经营维指标周期采集的官方调查框架）. https://www.stats.gov.cn/fw/bmdcxmsp/bmzd/202410/t20241018_1957082.html
 
-5. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_BUSINESS_POWER_SCORE.md`（王惠六维 12 指标+源表+待建登记）；registry：`metrics/registry/cfg_metric-ENT-seed.yaml`（formula 登记 PCA，见 §5.4 裁决点④）。
-
-6. 项目内需求真源（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/科技专题服务算法库.md` §1.1.1.1.1.1.1.5.6；`科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.3.4。
-
+5. 项目内需求真源（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/科技专题服务算法库.md` §1.1.1.1.1.1.1.5.6；`科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.3.4。
 ---
 
 # 附件
@@ -439,7 +495,7 @@ python3 metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
 ## 附录 B　历史库表探测证据（摘要）
 
 - 20261020 B2 批次实测锚点（`_work_full/PROGRESS.md`）：本指标行「财务 2.3%；chain_dtl 两库缺表」；公共锚点「`dwd_org_annual_financial_info` 90,926 行填充率：营收 2.4%/资产 2.9%/员工 3.5%/三要素齐 2.3%」；「live ADS `tech_power`/`biz_power` 为既有评分面（org 与主档 JOIN=0）——SCORE 族未出数是 ENT 域最大断点」。
-- 20261021 改源复测（本目录 `code/M_ENT_BUSINESS_POWER_SCORE_out.json` probe 段，三方库 gkx）：chain_dtl gkx NO_TABLE（live 亦无）；chain_info 1,273；fin_rev_profit_filled=2,095；tech_tag=202,424；news=1,668,414；main_prod=45,011；patent=2,939,895；base_industry_l1=186,809。
+- 20261021 改源复测（本目录 `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json` probe 段，三方库 gkx）：chain_dtl gkx NO_TABLE（live 亦无）；chain_info 1,273；fin_rev_profit_filled=2,095；tech_tag=202,424；news=1,668,414；main_prod=45,011；patent=2,939,895；base_industry_l1=186,809。
 - 王惠底稿匹配注记（wanghui_agg.json）：「缺整表 dwd_org_industry_chain_dtl（需字段 credit_code、node_name、chain_score）；待建字段：dwd_industry_chain_info.node_stage、is_key_node 标识」——王惠自查缺口与本批实测一致。
 
 ## 附录 C　商业力得分类似指标权威构建方法可行性报告（完整版）
@@ -514,15 +570,7 @@ python3 metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_BUSINESS_POWER_SCORE.py`；产物：`../code/M_ENT_BUSINESS_POWER_SCORE_out.json`
-- 主算库：三方库 `gkx`（20261021 改源版直连；坐标与凭据见 `code/_gkxdb.py`，不入正文）
+- 脚本：`../code/M_ENT_BUSINESS_POWER_SCORE.py`；产物：`../metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`
+- 主算库：三方库 `gkx`（20261021 改源版直连；坐标与凭据见 `metrics/repro/_gkxdb.py`，不入正文）
 - 关键结果：chain_dtl gkx NO_TABLE（live 亦无）；fin 2,095/90,926；news 1,668,414；patent 2,939,895；dimension_detail 三缺两半一低；support_judgment=`部分支持`
 - 工程注意：`chain_dtl` 为 D2/D5/D6 公共上游，补表优先级最高；live ADS `biz_power` 120 行样例级禁当正式分。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

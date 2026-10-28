@@ -1,9 +1,20 @@
 # 痛难点改进差距（M_ENT_PAINPOINT_GAP）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_PAINPOINT_GAP.md`；复现脚本 `metrics/repro/M_ENT_PAINPOINT_GAP.py` → `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GAP（企业值 − 分组分位基线）｜ **域**：企业服务／企业诊断／经营痛难点｜ **UI 挂载**：企业画像「改进差距」雷达 + 差距明细表｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_PAINPOINT_GAP.py`、产物 `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_PAINPOINT_GAP.md`；复现脚本 `metrics/repro/M_ENT_PAINPOINT_GAP.py` → `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_PAINPOINT_GAP.py`、产物 `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_PAINPOINT_GAP.md` |
 | 复现脚本 | `metrics/repro/M_ENT_PAINPOINT_GAP.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json` |
@@ -61,15 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_PAINPOINT_GAP.py`、产物 `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：GAP（企业值 − 分组分位基线）｜ **域**：企业服务／企业诊断／经营痛难点｜ **UI 挂载**：企业画像「改进差距」雷达 + 差距明细表｜ **数据支持度**：**部分支持**
-> **口径来源**：算法 2026-09 calc-logic ENT/M_ENT_PAINPOINT_GAP（分组键 Q018 未闭合）｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_PAINPOINT_GAP.py` → `code/M_ENT_PAINPOINT_GAP_out.json`
-> **wanghui**：false（算法 2026-09 派生口径；同域的 COUNT/TOPIC/SEVERITY 为王惠或需求口径，边界见 §1.1 与 §五）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -110,7 +117,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx.dwd_org_base_info` | 分组键（行业门类） | `industry_l1_name`，`is_deleted=0` |
 | `gkx.dwd_org_income_statement` | 扩源轨（跨年营收） | 3,162 家可配对，本件未纳入 |
 | `information_schema.tables` | 基线表探针 | 6 组模式，命中 0 张 |
-| `code/M_ENT_PAINPOINT_GAP_out.json` | 唯一产物 | 8 组基线 / 28 配对 / 1,131 家 |
+| `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json` | 唯一产物 | 8 组基线 / 28 配对 / 1,131 家 |
 
 本件不引用 `TABLE_ABSENCE_EVIDENCE.md` 里的证据块，只引用其结论口径：基线/分位类配置表在 gkx 内不存在，属「缺表三态」中的「从未建过」，不是「建了没灌数」。本件用 6 组表名模式现场复核，命中 0 张，与那份文档的结论一致。
 
@@ -286,11 +293,11 @@ $$ Gap_{k,P25}(e) = x_k(e) - q_{0.25}(k, g(e)),\quad Gap_{k,P75}(e) = x_k(e) - q
 
 ### 2.7 复现代码与结果展示
 
-脚本一次查三张表，全部在线计算分位，不读快照。产物落在 `code/M_ENT_PAINPOINT_GAP_out.json`，含 `compute.group_key`、`compute.dims`、`compute.baseline_online`、`compute.gaps`、`compute.unit_check`、`compute.extension_track` 六块。
+脚本一次查三张表，全部在线计算分位，不读快照。产物落在 `metrics/repro/out/M_ENT_PAINPOINT_GAP_out.json`，含 `compute.group_key`、`compute.dims`、`compute.baseline_online`、`compute.gaps`、`compute.unit_check`、`compute.extension_track` 六块。
 
 | 命令 | 期望 | 备注 |
 |---|---|---|
-| `python3 M_ENT_PAINPOINT_GAP.py` | 8 组 / 28 配对 / 1,131 家 | 秒级（窗口函数 + 8 组分位） |
+| `cd code && python3 M_ENT_PAINPOINT_GAP.py` | 8 组 / 28 配对 / 1,131 家 | 秒级（窗口函数 + 8 组分位） |
 | `rebuild_metric.py M_ENT_PAINPOINT_GAP --check` | 语义一致 | 重跑对账 |
 | `audit_md_vs_out.py --only M_ENT_PAINPOINT_GAP` | 无漂移 | 正文数字逐项对产物 |
 
@@ -467,13 +474,9 @@ $$ Gap_{k,P25}(e) = x_k(e) - q_{0.25}(k, g(e)),\quad Gap_{k,P75}(e) = x_k(e) - q
 
 ## 参考文献
 
-1. 项目内 calc-logic：`M_ENT_PAINPOINT_GAP.md`（算法 2026-09，Q018 未闭合）.
-2. 国家统计局. 统计上大中小微型企业划分办法（2017）. https://www.stats.gov.cn/
-3. 国务院国资委. 企业绩效评价标准值. https://www.sasac.gov.cn/
-4. OECD (2017). Entrepreneurship at a Glance. OECD Publishing. https://doi.org/10.1787/entrepreneur_aag-2017-en
-5. 项目内 `TABLE_ABSENCE_EVIDENCE.md`（缺表三态口径）.
-6. 财政部. 企业会计准则第 30 号——财务报表列报. https://www.mof.gov.cn/
-
+1. 国家统计局. 统计上大中小微型企业划分办法（2017）. https://www.stats.gov.cn/
+2. OECD (2017). Entrepreneurship at a Glance. OECD Publishing. https://doi.org/10.1787/entrepreneur_aag-2017-en
+3. 财政部. 企业会计准则第 30 号——财务报表列报. https://www.mof.gov.cn/
 ---
 
 # 附件
@@ -632,11 +635,3 @@ $$ Gap_{k,P25}(e) = x_k(e) - q_{0.25}(k, g(e)),\quad Gap_{k,P75}(e) = x_k(e) - q
 | 查询表数 | 3（另加 information_schema） |
 | 产物大小 | 约 30 KB |
 | 档位 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

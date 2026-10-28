@@ -1,0 +1,230 @@
+{
+ "metric_id": "M_TECH_DS_07_TECH_INNOV_002",
+ "metric_name": "专利质量评估",
+ "caliber": {
+  "对象": "IPC4 技术领域，一行一个域，0—100 分",
+  "五维": "家族规模 / 权利要求数 / 被引次数 / 技术宽度 / 法律状态稳定性",
+  "本件产出": "不产出领域分；只产出覆盖率与样本级画像（证据）"
+ },
+ "base_years_used": [],
+ "base_years_missing": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_note": "价值附表无申请年字段且无法回连主表，任何年度分母都不成立；本件是截面覆盖率核验，不设基期。",
+ "sql_count": 0,
+ "probe": {
+  "patent_main_rows": 2939895,
+  "family": {
+   "rows": 20593,
+   "distinct_pn": 20000
+  },
+  "claim": {
+   "rows": 20026,
+   "distinct_patent_id": 20000,
+   "distinct_pn": 20000,
+   "lang": [
+    [
+     "CN",
+     14353
+    ],
+    [
+     "EN",
+     5221
+    ],
+    [
+     "PT",
+     448
+    ],
+    [
+     "DE",
+     4
+    ]
+   ]
+  },
+  "cited": {
+   "rows": 20515,
+   "positive_rows": 3657,
+   "positive_share": 0.1783,
+   "sum": 10787,
+   "max": 55,
+   "avg": 0.5258
+  },
+  "legal": {
+   "rows": 20000,
+   "distinct_pn": 20000,
+   "distinct_patent_id": 20000,
+   "legal_events_filled": 20000,
+   "status_filled": 19996,
+   "expiration_filled": 14513
+  },
+  "other_versions_prefix": {
+   "sampled_rows": 3000,
+   "nonempty": 0
+  },
+  "legal_status_dist": [
+   [
+    "授权",
+    12658
+   ],
+   [
+    "实质审查",
+    4960
+   ],
+   [
+    "撤回-视为撤回",
+    913
+   ],
+   [
+    "公开",
+    761
+   ],
+   [
+    "驳回",
+    344
+   ],
+   [
+    "权利终止",
+    104
+   ],
+   [
+    "撤回-主动撤回",
+    103
+   ],
+   [
+    "未缴年费",
+    82
+   ],
+   [
+    "撤回-未指定类型",
+    43
+   ],
+   [
+    "放弃-视为放弃",
+    20
+   ],
+   [
+    null,
+    4
+   ],
+   [
+    "期限届满",
+    4
+   ],
+   [
+    "全部撤销",
+    2
+   ],
+   [
+    "权利恢复",
+    1
+   ],
+   [
+    "放弃-未指定类型",
+    1
+   ]
+  ],
+  "coverage_pct_vs_main": {
+   "family": 0.7005,
+   "claim": 0.6812,
+   "cited": 0.6978,
+   "legal": 0.6803,
+   "cited_joinable": 0.0162
+  },
+  "return_join_timeouts": {
+   "family_join": {
+    "ok": false,
+    "sec": 60.34,
+    "error": "OperationalError: (3024, 'Query execution was interrupted, maximum statement execution tim",
+    "sql": "SELECT f.patent_id, p.apdt_year, SUBSTR(p.main_classification_ipcr,1,4) ipc4, p.further_classification_ipcr, f.simple_family_pn, f.pn FROM gkx.dwd_patent_family f JOIN gkx.dwd_pate"
+   },
+   "cited_by_ipc4": {
+    "ok": false,
+    "sec": 60.22,
+    "error": "OperationalError: (3024, 'Query execution was interrupted, maximum statement execution tim",
+    "sql": "SELECT SUBSTR(p.main_classification_ipcr,1,4) ipc4, p.apdt_year y, COUNT(*) n, SUM(c.cited_by_nums) cited, SUM(c.cited_by_nums>0) pos, MAX(c.cited_by_nums) mx FROM gkx.dwd_patent_c"
+   },
+   "legal_by_ipc4": {
+    "ok": false,
+    "sec": 60.4,
+    "error": "OperationalError: (3024, 'Query execution was interrupted, maximum statement execution tim",
+    "sql": "SELECT SUBSTR(p.main_classification_ipcr,1,4) ipc4, p.apdt_year y, COUNT(*) n, SUM(l.status='授权') granted, SUM(l.status LIKE '%授权%' OR l.status LIKE '%有效%') st_ok, SUM(l.expiration"
+   }
+  },
+  "return_join_timeout_count": 3,
+  "cited_joinable_to_main": 475
+ },
+ "sample_profile": {
+  "note": "以下是把 2 万行价值附表当「样本」看的描述统计，不是 IPC4 领域分，也不得用于排名或对外发布",
+  "family_members_per_pn": 1.0296,
+  "claim_rows_per_pn": 1.0013,
+  "cited_per_row": 0.5258,
+  "cited_positive_share": 0.1783,
+  "legal_granted_share": 0.6329,
+  "legal_stable_est_share": 0.5737,
+  "width": "不可算（附加分类未入缓存，主分类每件只有 1 个 IPC4）"
+ },
+ "dimension_status": {
+  "D1_家族规模": {
+   "rows": 20593,
+   "coverage_pct": 0.7005,
+   "status": "不可用（无域键 + 主表 other_Versions 全空）"
+  },
+  "D2_权利要求数": {
+   "rows": 20026,
+   "coverage_pct": 0.6812,
+   "status": "不可用（正文 mediumtext，无域键）"
+  },
+  "D3_被引次数": {
+   "rows": 20515,
+   "coverage_pct": 0.6978,
+   "status": "不可用（可回连主表仅 475 件）"
+  },
+  "D4_技术宽度": {
+   "rows": null,
+   "coverage_pct": null,
+   "status": "不可用（附加分类未入缓存）"
+  },
+  "D5_法律状态稳定性": {
+   "rows": 20000,
+   "coverage_pct": 0.6803,
+   "status": "不可用（无域键，回连超时）"
+  }
+ },
+ "gaps": [
+  "五张价值附表各约 2 万行，对 294 万行主表覆盖 0.68%—0.70%",
+  "附表无 IPC4 / 申请年字段，按 patent_id 回连主表三条查询各 60 秒超时（3 次复现）",
+  "主表 other_Versions 前缀 3,000 行 0 行非空",
+  "dwd_patent_claim.original_text 为 mediumtext，全量取文本 60 秒超时",
+  "dwd_patent_cited 只有 475 件可回连主表（0.0162%）",
+  "技术宽度依赖 further_classification_ipcr，主表面板未采该列；全表聚合 600 秒断连"
+ ],
+ "repair_requirements": [
+  "五张附表扩到全量，并在表内直接冗余 ipc4 / apdt_year，避免回连主表",
+  "或给 dwd_patent 的 patent_id / pn 建可用索引，允许按主键分块聚合",
+  "补 dwd_patent.other_Versions（同族）与 further_classification_ipcr（附加分类）",
+  "权利要求项数改为入库时预计算的整数列（claim_nums），不要每次解析 mediumtext"
+ ],
+ "source": {
+  "probe": "code/_snapshots21/probe_tinn21_20261022.json、probe_tail21_20261022.json、probe_a26_20261022.json、a25_facts.json",
+  "prior": "code/M_INNOV_TINN_PATENT_QUALITY_out.json（同一五维口径的前批结论，可交叉复核）"
+ },
+ "support_judgment": {
+  "data_support_level": "完全不支持",
+  "criteria": {
+   "D1_家族规模": false,
+   "D2_权利要求数": false,
+   "D3_被引次数": false,
+   "D4_技术宽度": false,
+   "D5_法律状态稳定性": false,
+   "domain_level_join": false
+  },
+  "note": "五维没有任何一维能在 IPC4 粒度闭环；样本 0.68% 且无域键，不是「分低」，是「算不出」，故不产出任何领域分"
+ },
+ "generated_at": "2026-10-22",
+ "main_db": "gkx @ 183.240.141.251:3318 (gkx_reader_zp, read-only)"
+}

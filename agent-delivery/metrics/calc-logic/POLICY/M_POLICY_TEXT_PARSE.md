@@ -1,9 +1,25 @@
 # 政策文本解析（M_POLICY_TEXT_PARSE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_TEXT_PARSE.md`；复现脚本 `metrics/repro/M_POLICY_TEXT_PARSE.py` → `metrics/repro/out/M_POLICY_TEXT_PARSE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（闭集规则抽取 + 四类标签）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「政策标签」区、政策库检索页左侧「支持工具／对象类型／产业方向／时间节点」四组复选筛选项
+> - **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_TEXT_PARSE.md`（结构化要素抽取 + 自动摘要 + 自动标签三支，NLP 模型执行，结果落结果面）
+> - **同域边界**：与已交付 `M_POLICY_FOCUS_INDEX` 不同——那件输出 0—36.6328 的四维分数，本件输出标签集合与覆盖率，**不打分**；与 `M_POLICY_TYPE_DIST`、`M_POLICY_LEVEL_DIST` 等分布件不同——那几件在「政策条数」上做分布，本件在「政策文本里出现了什么词」上做抽取。三者的分母同为 20,000，但统计对象不可互换。
+> - **一句话结论**：三支里只有「自动标签」一支可交付（另外两支依赖的 `policy_entity*` 表在 `gkx` 不存在、本机也无 NLP 模型权重）；闭集规则给 **15,577 / 20,000（77.885%）** 条政策打上至少一个标签，但支持工具一类里「项目／支持／资金」三个泛词就占了全部命中的 **57.5588%**，20 条人工抽检里只有 7 条完全正确、5 条错误——**覆盖率能上去，精度上不去**，故判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_TEXT_PARSE.py`｜ **产物**：`metrics/repro/out/M_POLICY_TEXT_PARSE_out.json`｜ **共用底数**：`code/_snapshots21/policy_text_20261023.json`（生成脚本 `code/_build_policy_text_20261023.py`）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_TEXT_PARSE.py`、产物 `metrics/repro/out/M_POLICY_TEXT_PARSE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_TEXT_PARSE.md`；复现脚本 `metrics/repro/M_POLICY_TEXT_PARSE.py` → `metrics/repro/out/M_POLICY_TEXT_PARSE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_TEXT_PARSE.py`、产物 `metrics/repro/out/M_POLICY_TEXT_PARSE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_TEXT_PARSE.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_TEXT_PARSE.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_TEXT_PARSE_out.json` |
@@ -63,18 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_TEXT_PARSE.py`、产物 `metrics/repro/out/M_POLICY_TEXT_PARSE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（闭集规则抽取 + 四类标签）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「政策标签」区、政策库检索页左侧「支持工具／对象类型／产业方向／时间节点」四组复选筛选项
-> **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_TEXT_PARSE.md`（结构化要素抽取 + 自动摘要 + 自动标签三支，NLP 模型执行，结果落结果面）
-> **复现脚本**：`code/M_POLICY_TEXT_PARSE.py`｜ **产物**：`code/M_POLICY_TEXT_PARSE_out.json`｜ **共用底数**：`code/_snapshots21/policy_text_20261023.json`（生成脚本 `code/_build_policy_text_20261023.py`）
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。本件是截面件，对存量 20,000 条政策逐条打标签，不按年份切窗、不设时间分母。`publish_year` 跨 1981—2024，2023/2024 的零行是采集断档（不进分母、不读成「政策归零」）。
-> **同域边界**：与已交付 `M_POLICY_FOCUS_INDEX` 不同——那件输出 0—36.6328 的四维分数，本件输出标签集合与覆盖率，**不打分**；与 `M_POLICY_TYPE_DIST`、`M_POLICY_LEVEL_DIST` 等分布件不同——那几件在「政策条数」上做分布，本件在「政策文本里出现了什么词」上做抽取。三者的分母同为 20,000，但统计对象不可互换。
-> **一句话结论**：三支里只有「自动标签」一支可交付（另外两支依赖的 `policy_entity*` 表在 `gkx` 不存在、本机也无 NLP 模型权重）；闭集规则给 **15,577 / 20,000（77.885%）** 条政策打上至少一个标签，但支持工具一类里「项目／支持／资金」三个泛词就占了全部命中的 **57.5588%**，20 条人工抽检里只有 7 条完全正确、5 条错误——**覆盖率能上去，精度上不去**，故判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -262,7 +271,7 @@ $$\text{Cov}_k=\frac{1}{N}\sum_{i=1}^{N}\operatorname{tag}_{i,k},\qquad N=20{,}0
 ### 2.7 复现代码与结果
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/_build_policy_text_20261023.py   # 生成快照（一次，落 code/_snapshots21/）
 python3 code/M_POLICY_TEXT_PARSE.py           # 只读快照，产出 out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_TEXT_PARSE --check
@@ -373,14 +382,12 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_TEXT_PARSE --check  # 只比对�
 
 ## 参考文献
 
-1. 黄萃, 任弢, 张剑. 政策文献量化研究：公共政策研究的新方向[J]. 公共管理学报, 2015, 12(2): 129-137. https://kns.cnki.net/kcms2/article/abstract?v=ggjTjMZ9K8Y
-2. Lample G., Ballesteros M., Subramanian S., et al. Neural Architectures for Named Entity Recognition[C]. NAACL-HLT, 2016. https://arxiv.org/abs/1603.01360
-3. Mihalcea R., Tarau P. TextRank: Bringing Order into Texts[C]. EMNLP, 2004. https://aclanthology.org/W04-3252/
-4. Blei D. M., Ng A. Y., Jordan M. I. Latent Dirichlet Allocation[J]. JMLR, 2003, 3: 993-1022. https://www.jmlr.org/papers/v3/blei03a.html
-5. 国务院. 关于加快推进政务服务标准化规范化便利化的指导意见（国发〔2022〕5号）. https://www.gov.cn/zhengce/content/2022-03/01/content_5677170.htm
-6. 国家市场监督管理总局. 政策文本结构化要素抽取技术要求（征求意见稿）. https://www.samr.gov.cn/
-7. MySQL 8.0 Reference Manual — JSON_TYPE / JSON_LENGTH. https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html
-
+1. Lample G., Ballesteros M., Subramanian S., et al. Neural Architectures for Named Entity Recognition[C]. NAACL-HLT, 2016. https://arxiv.org/abs/1603.01360
+2. Mihalcea R., Tarau P. TextRank: Bringing Order into Texts[C]. EMNLP, 2004. https://aclanthology.org/W04-3252/
+3. Blei D. M., Ng A. Y., Jordan M. I. Latent Dirichlet Allocation[J]. JMLR, 2003, 3: 993-1022. https://www.jmlr.org/papers/v3/blei03a.html
+4. 国务院. 关于加快推进政务服务标准化规范化便利化的指导意见（国发〔2022〕5号）. https://www.gov.cn/
+5. 国家市场监督管理总局. 政策文本结构化要素抽取技术要求（征求意见稿）. https://www.samr.gov.cn/
+6. MySQL 8.0 Reference Manual — JSON_TYPE / JSON_LENGTH. https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html
 ---
 
 # 附件
@@ -498,14 +505,6 @@ TextRank/LexRank 不需要训练，但对政策文本效果有限：政策文本
 | 步骤 | 命令 | 输出 |
 |---|---|---|
 | 快照 | `python3 code/_build_policy_text_20261023.py` | `code/_snapshots21/policy_text_20261023.json` |
-| 指标 | `python3 code/M_POLICY_TEXT_PARSE.py` | `code/M_POLICY_TEXT_PARSE_out.json` |
+| 指标 | `python3 code/M_POLICY_TEXT_PARSE.py` | `metrics/repro/out/M_POLICY_TEXT_PARSE_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_TEXT_PARSE --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21` | PASS |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

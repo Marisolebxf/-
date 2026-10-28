@@ -1,9 +1,25 @@
 # 政策力度评分（M_POLICY_INTENSITY_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_INTENSITY_SCORE.md`；复现脚本 `metrics/repro/M_POLICY_INTENSITY_SCORE.py` → `metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（单条政策 × 三维五项合成）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「政策力度」刻度条（设计位）、政策库列表「力度」排序列（设计位）
+> - **数据支持度**：**完全不支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INTENSITY_SCORE.md`（效果 / 覆盖 / 成本三维五项，截面 min-max 等权）
+> - **同域边界**：与已交付 `M_POLICY_INTENSITY_INDEX` **同名不同件**——那件是「城市 × 三维五项」的力度指数（按城市聚合），本件是「单条政策 × 三维五项」的力度评分（逐条打分）；两件的五项子指标相同、聚合粒度不同，且**都判完全不支持**，但否定性证据不同（那件缺的是城市级聚合基础，本件缺的是逐条政策的四个子项）。与 `M_POLICY_SUPPORT_STRENGTH` 也不同——那件在城市粒度做两维合成，本件连一维都拼不完整。
+> - **一句话结论**：五项子指标里 **4 项整列不可读**（`implementation_date` 全为零日期、`support_way`/`support_object`/`support_behavior` 全在 JSON null 里），唯一能算的「区县落地标记」只有 **1,165 / 20,000（5.825%）** 行有值且 887 行集中在北京；三维里效果、成本两维**整块为空**，可进平均的完整维 **0 个** → 分数不存在，故判**完全不支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_INTENSITY_SCORE.py`（否定性证据探针）｜ **产物**：`metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json`｜ **共用底数**：`code/_snapshots21/policy_struct_20261023.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_INTENSITY_SCORE.py`、产物 `metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_INTENSITY_SCORE.md`；复现脚本 `metrics/repro/M_POLICY_INTENSITY_SCORE.py` → `metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_INTENSITY_SCORE.py`、产物 `metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_INTENSITY_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_INTENSITY_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json` |
@@ -62,19 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_INTENSITY_SCORE.py`、产物 `metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（单条政策 × 三维五项合成）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「政策力度」刻度条（设计位）、政策库列表「力度」排序列（设计位）
-> **数据支持度**：**完全不支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INTENSITY_SCORE.md`（效果 / 覆盖 / 成本三维五项，截面 min-max 等权）
-> **复现脚本**：`code/M_POLICY_INTENSITY_SCORE.py`（否定性证据探针）｜ **产物**：`code/M_POLICY_INTENSITY_SCORE_out.json`｜ **共用底数**：`code/_snapshots21/policy_struct_20261023.json`
-> **判定类型**：`verdict_kind = negative_evidence`。本件不出分（`score = null`），产物的作用是**逐项证明为什么算不出**。
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。本件不设基期——它不出分，不存在时间窗口；若将来补数后要按年出分，须先解决 2023/2024 的采集断档，否则「某年力度为 0」会是断档而不是真实归零。
-> **同域边界**：与已交付 `M_POLICY_INTENSITY_INDEX` **同名不同件**——那件是「城市 × 三维五项」的力度指数（按城市聚合），本件是「单条政策 × 三维五项」的力度评分（逐条打分）；两件的五项子指标相同、聚合粒度不同，且**都判完全不支持**，但否定性证据不同（那件缺的是城市级聚合基础，本件缺的是逐条政策的四个子项）。与 `M_POLICY_SUPPORT_STRENGTH` 也不同——那件在城市粒度做两维合成，本件连一维都拼不完整。
-> **一句话结论**：五项子指标里 **4 项整列不可读**（`implementation_date` 全为零日期、`support_way`/`support_object`/`support_behavior` 全在 JSON null 里），唯一能算的「区县落地标记」只有 **1,165 / 20,000（5.825%）** 行有值且 887 行集中在北京；三维里效果、成本两维**整块为空**，可进平均的完整维 **0 个** → 分数不存在，故判**完全不支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -311,8 +319,8 @@ $$\tilde D^{(d)}_i=\operatorname{minmax}\!\left(\frac{1}{|I_d|}\sum_{k\in I_d}x^
 ### 5.1 复现步骤（本件是探针，不是出分脚本）
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_INTENSITY_SCORE.py    # 产出 code/M_POLICY_INTENSITY_SCORE_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_INTENSITY_SCORE.py    # 产出 metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_INTENSITY_SCORE --check
 ```
 
@@ -339,14 +347,9 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_INTENSITY_SCORE --check
 
 ## 参考文献
 
-1. 仲为国, 彭纪生, 孙文祥. 政策测量、政策协同与经济绩效——基于创新政策的实证研究(1978-2006)[J]. 南方经济, 2008, (7): 45-58. https://kns.cnki.net/kcms2/article/abstract?v=policy_measure
-2. Estrada M. A. R. Policy Modeling: Definition, Classification and Evaluation[J]. Journal of Policy Modeling, 2011, 33(4): 523-536. https://doi.org/10.1016/j.jpolmod.2011.01.002
-3. Rothwell R., Zegveld W. Reindustrialization and Technology[M]. Longman, 1985. https://www.worldcat.org/title/11547934
-4. 浙江省科技厅. 重点软科学研究项目（2016C25G2010003）结题报告. https://zjinfo.gov.cn/
-5. 国务院. 关于深化科技奖励制度改革方案的通知. https://www.gov.cn/zhengce/content/2017-06/19/content_5203677.htm
-6. 财政部, 科技部. 关于进一步完善中央财政科研项目资金管理等政策的若干意见. https://www.gov.cn/zhengce/2016-07/31/content_5096406.htm
-7. MySQL 8.0 Reference Manual — The DATE, DATETIME, and TIMESTAMP Types（零日期说明）. https://dev.mysql.com/doc/refman/8.0/en/datetime.html
-
+1. 国务院. 关于深化科技奖励制度改革方案的通知. https://www.gov.cn/
+2. 财政部, 科技部. 关于进一步完善中央财政科研项目资金管理等政策的若干意见. https://www.gov.cn/
+3. MySQL 8.0 Reference Manual — The DATE, DATETIME, and TIMESTAMP Types（零日期说明）. https://dev.mysql.com/doc/refman/8.0/en/datetime.html
 ---
 
 # 附件
@@ -468,15 +471,7 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_INTENSITY_SCORE --check
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 探针 | `python3 code/M_POLICY_INTENSITY_SCORE.py` | `code/M_POLICY_INTENSITY_SCORE_out.json` |
+| 探针 | `python3 code/M_POLICY_INTENSITY_SCORE.py` | `metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_INTENSITY_SCORE --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21` | PASS（负结论须有 py + out.json） |
 | 判档闸 | `python3 _work_gkx21/audit_verdict_enum.py _staging21` | 一致 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
