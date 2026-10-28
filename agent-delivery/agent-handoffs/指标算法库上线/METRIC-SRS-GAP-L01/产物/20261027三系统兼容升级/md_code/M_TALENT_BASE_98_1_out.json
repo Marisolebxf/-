@@ -1,0 +1,562 @@
+{
+ "metric": "M_TALENT_BASE_98_1",
+ "support_judgment": "部分支持",
+ "support_reason": "四族分组计数都能出数（学者 21,316、机构 2,108、方向标签 97,249、学历行 43,766），但三处硬缺口始终存在：①「人才」只有学者口径，企业研发人员/技能人才无表；② D4 是存量学者学历回溯，不是学科×年份的官方供给流量，且无学科码；③ D3/D4 的 scholar_id 与主档仅 9.3% 可连，四族不能交叉切片、D2/D3 无年份列故增长率不可算 → 部分支持。",
+ "method": {
+  "type": "分组计数（entity × attribute × time），无加权合成",
+  "D1": "学者现机构名 → 高校名录/企业底册/城市关键词 → 省·市",
+  "D2": "现机构名去重 → 机构数；高校名录取 univ_type；其余按底册/未识别归类",
+  "D3": "research_direction.fields 分号拆分展开后按标签计数",
+  "D4": "education_background 学位双语归一 × 毕业年计数",
+  "sql_count": 0
+ },
+ "D1": {
+  "n_scholars": 21316,
+  "with_org_name": 20829,
+  "assigned": 17761,
+  "assigned_pct_of_all": 83.32,
+  "assigned_pct_of_with_org": 85.27,
+  "unassigned": 2760,
+  "foreign": 308,
+  "method": {
+   "unmatched": 2760,
+   "heis_exact": 16033,
+   "foreign": 308,
+   "heis_prefix": 957,
+   "city_kw": 663,
+   "base_exact": 107,
+   "base_prefix": 1
+  },
+  "top_provinces": [
+   {
+    "province": "北京市",
+    "n": 2934
+   },
+   {
+    "province": "江苏省",
+    "n": 1991
+   },
+   {
+    "province": "上海市",
+    "n": 1604
+   },
+   {
+    "province": "广东省",
+    "n": 1221
+   },
+   {
+    "province": "湖北省",
+    "n": 1109
+   },
+   {
+    "province": "陕西省",
+    "n": 1081
+   },
+   {
+    "province": "四川省",
+    "n": 898
+   },
+   {
+    "province": "浙江省",
+    "n": 693
+   },
+   {
+    "province": "湖南省",
+    "n": 598
+   },
+   {
+    "province": "山东省",
+    "n": 598
+   },
+   {
+    "province": "天津市",
+    "n": 597
+   },
+   {
+    "province": "辽宁省",
+    "n": 582
+   },
+   {
+    "province": "安徽省",
+    "n": 522
+   },
+   {
+    "province": "黑龙江省",
+    "n": 520
+   }
+  ],
+  "top_cities": [
+   {
+    "city": "北京市",
+    "n": 2934
+   },
+   {
+    "city": "上海市",
+    "n": 1604
+   },
+   {
+    "city": "南京市",
+    "n": 1341
+   },
+   {
+    "city": "武汉市",
+    "n": 1059
+   },
+   {
+    "city": "广州市",
+    "n": 930
+   },
+   {
+    "city": "西安市",
+    "n": 927
+   },
+   {
+    "city": "成都市",
+    "n": 809
+   },
+   {
+    "city": "天津市",
+    "n": 597
+   },
+   {
+    "city": "长沙市",
+    "n": 526
+   },
+   {
+    "city": "杭州市",
+    "n": 524
+   },
+   {
+    "city": "哈尔滨市",
+    "n": 504
+   }
+  ],
+  "n_provinces": 32,
+  "growth": null,
+  "growth_note": "D1 为截面存量，库内无「人才首次建档年」，无法算省域环比；强行用毕业年推算会在 §3.16 意义上制造缺失年分母，故不出增长率。"
+ },
+ "D2": {
+  "n_distinct_orgs": 2108,
+  "n_heis_matched": 554,
+  "top_orgs": [
+   {
+    "org": "中国科学院",
+    "n": 728
+   },
+   {
+    "org": "上海交通大学",
+    "n": 703
+   },
+   {
+    "org": "北京大学",
+    "n": 364
+   },
+   {
+    "org": "清华大学",
+    "n": 323
+   },
+   {
+    "org": "浙江大学",
+    "n": 291
+   },
+   {
+    "org": "中山大学",
+    "n": 289
+   },
+   {
+    "org": "四川大学",
+    "n": 283
+   },
+   {
+    "org": "中南大学",
+    "n": 269
+   },
+   {
+    "org": "西安交通大学",
+    "n": 258
+   },
+   {
+    "org": "华中科技大学",
+    "n": 255
+   },
+   {
+    "org": "东南大学",
+    "n": 237
+   },
+   {
+    "org": "天津大学",
+    "n": 236
+   },
+   {
+    "org": "北京理工大学",
+    "n": 226
+   },
+   {
+    "org": "武汉大学",
+    "n": 221
+   },
+   {
+    "org": "西北工业大学",
+    "n": 221
+   }
+  ],
+  "province_org_counts": [
+   {
+    "province": "北京市",
+    "n_orgs": 147
+   },
+   {
+    "province": "广东省",
+    "n_orgs": 123
+   },
+   {
+    "province": "上海市",
+    "n_orgs": 102
+   },
+   {
+    "province": "江苏省",
+    "n_orgs": 96
+   },
+   {
+    "province": "海外",
+    "n_orgs": 89
+   },
+   {
+    "province": "浙江省",
+    "n_orgs": 68
+   },
+   {
+    "province": "湖北省",
+    "n_orgs": 51
+   },
+   {
+    "province": "辽宁省",
+    "n_orgs": 49
+   },
+   {
+    "province": "山东省",
+    "n_orgs": 48
+   },
+   {
+    "province": "陕西省",
+    "n_orgs": 41
+   },
+   {
+    "province": "四川省",
+    "n_orgs": 41
+   }
+  ],
+  "type_break": {
+   "未识别": 1146,
+   "全国普通高等学校名单": 554,
+   "未入名录（机构名可属地）": 364,
+   "企业/其他法人": 44
+  },
+  "growth": null,
+  "growth_note": "机构档无建档时间戳，机构数环比不可算（旧版用毕业年代理，本版不再沿用）。"
+ },
+ "D3": {
+  "n_rows": 20030,
+  "n_scholars_with_fields": 19514,
+  "n_tags": 97249,
+  "tag_hits": 163470,
+  "multi_value_scholars": 19331,
+  "multi_value_pct": 99.06,
+  "top_tags": [
+   {
+    "tag": "AI for Life Science",
+    "n": 860
+   },
+   {
+    "tag": "Electrocatalysis",
+    "n": 335
+   },
+   {
+    "tag": "Medical Image Analysis",
+    "n": 298
+   },
+   {
+    "tag": "Photocatalysis",
+    "n": 210
+   },
+   {
+    "tag": "Computer Vision",
+    "n": 196
+   },
+   {
+    "tag": "Microfluidics",
+    "n": 188
+   },
+   {
+    "tag": "Reinforcement Learning",
+    "n": 185
+   },
+   {
+    "tag": "Machine Learning",
+    "n": 179
+   },
+   {
+    "tag": "AI for Materials",
+    "n": 168
+   },
+   {
+    "tag": "Heterogeneous Catalysis",
+    "n": 162
+   },
+   {
+    "tag": "Density Functional Theory",
+    "n": 162
+   },
+   {
+    "tag": "Bioinformatics",
+    "n": 158
+   },
+   {
+    "tag": "Synthetic Biology",
+    "n": 152
+   },
+   {
+    "tag": "Remote Sensing",
+    "n": 149
+   },
+   {
+    "tag": "Federated Learning",
+    "n": 144
+   },
+   {
+    "tag": "Wastewater Treatment",
+    "n": 144
+   },
+   {
+    "tag": "Internet of Things",
+    "n": 140
+   },
+   {
+    "tag": "Cancer Immunotherapy",
+    "n": 134
+   },
+   {
+    "tag": "Natural Language Processing",
+    "n": 129
+   },
+   {
+    "tag": "Data Mining",
+    "n": 126
+   }
+  ],
+  "tags_ge_100": 24,
+  "tags_eq_1": 80027,
+  "growth": null,
+  "growth_note": "research_direction 无年份列，领域环比增长率不可算；且该表 scholar_id 与主档仅 9.3% 可连，无法按省/机构切片。"
+ },
+ "D4": {
+  "n_rows": 43766,
+  "n_scholars": 20025,
+  "degree_counts": {
+   "硕士": 8996,
+   "博士": 16424,
+   "学士": 8222,
+   "其他": 8088,
+   "未知": 2036
+  },
+  "degree_sum_check": 43766,
+  "rows_with_year": 37683,
+  "rows_without_year": 6083,
+  "year_series": [
+   {
+    "year": 2010,
+    "博士": 476,
+    "硕士": 331,
+    "学士": 343,
+    "其他": 248,
+    "未知": 42,
+    "total": 1440
+   },
+   {
+    "year": 2011,
+    "博士": 551,
+    "硕士": 355,
+    "学士": 376,
+    "其他": 254,
+    "未知": 30,
+    "total": 1566
+   },
+   {
+    "year": 2012,
+    "博士": 526,
+    "硕士": 364,
+    "学士": 313,
+    "其他": 256,
+    "未知": 46,
+    "total": 1505
+   },
+   {
+    "year": 2013,
+    "博士": 557,
+    "硕士": 368,
+    "学士": 345,
+    "其他": 280,
+    "未知": 49,
+    "total": 1599
+   },
+   {
+    "year": 2014,
+    "博士": 589,
+    "硕士": 377,
+    "学士": 347,
+    "其他": 266,
+    "未知": 28,
+    "total": 1607
+   },
+   {
+    "year": 2015,
+    "博士": 635,
+    "硕士": 372,
+    "学士": 316,
+    "其他": 261,
+    "未知": 31,
+    "total": 1615
+   },
+   {
+    "year": 2016,
+    "博士": 646,
+    "硕士": 382,
+    "学士": 277,
+    "其他": 226,
+    "未知": 46,
+    "total": 1577
+   },
+   {
+    "year": 2017,
+    "博士": 633,
+    "硕士": 376,
+    "学士": 263,
+    "其他": 216,
+    "未知": 43,
+    "total": 1531
+   },
+   {
+    "year": 2018,
+    "博士": 630,
+    "硕士": 301,
+    "学士": 201,
+    "其他": 195,
+    "未知": 38,
+    "total": 1365
+   },
+   {
+    "year": 2019,
+    "博士": 554,
+    "硕士": 343,
+    "学士": 149,
+    "其他": 147,
+    "未知": 49,
+    "total": 1242
+   },
+   {
+    "year": 2020,
+    "博士": 508,
+    "硕士": 261,
+    "学士": 109,
+    "其他": 126,
+    "未知": 43,
+    "total": 1047
+   },
+   {
+    "year": 2021,
+    "博士": 468,
+    "硕士": 201,
+    "学士": 90,
+    "其他": 120,
+    "未知": 30,
+    "total": 909
+   },
+   {
+    "year": 2022,
+    "博士": 471,
+    "硕士": 133,
+    "学士": 44,
+    "其他": 92,
+    "未知": 25,
+    "total": 765
+   },
+   {
+    "year": 2023,
+    "博士": 417,
+    "硕士": 99,
+    "学士": 19,
+    "其他": 82,
+    "未知": 28,
+    "total": 645
+   },
+   {
+    "year": 2024,
+    "博士": 339,
+    "硕士": 58,
+    "学士": 13,
+    "其他": 59,
+    "未知": 25,
+    "total": 494
+   },
+   {
+    "year": 2025,
+    "博士": 145,
+    "硕士": 25,
+    "学士": 1,
+    "其他": 27,
+    "未知": 10,
+    "total": 208
+   },
+   {
+    "year": 2026,
+    "博士": 14,
+    "硕士": 3,
+    "学士": 1,
+    "其他": 5,
+    "未知": 0,
+    "total": 23
+   }
+  ],
+  "last_complete_year": 2024,
+  "partial_years": {
+   "2025": 208,
+   "2026": 23
+  },
+  "base_years": {
+   "base_years_used": [
+    2015,
+    2024
+   ],
+   "base_years_missing": [],
+   "note": "仅取 2015 与 2024 两个完整年对比；2025/2026 为残年不计入任何分母。注意该序列是「存量学者的毕业年回溯」，不是当年全口径毕业生流量。"
+  },
+  "y2015": 635,
+  "y2024": 339,
+  "zh_missing_en_available": 7789
+ },
+ "id_gap": {
+  "work_exp_overlap": 1856,
+  "work_exp_rows": 20028,
+  "edu_overlap": 1853,
+  "edu_rows": 20025,
+  "research_overlap": 1853,
+  "research_rows": 19514,
+  "by_id_key": 1509,
+  "note": "三张子表无姓名列，无法二次桥接；改用 dwd_scholar.id 连只有 1,509 行，故不采用。"
+ },
+ "probes": {
+  "source": "_snapshots21/probe_talent21_20261022.json; base_20261021.json",
+  "sec": {
+   "work_exp": 2.69,
+   "edu": 0.88,
+   "research": 4.43,
+   "heis": 0.7
+  }
+ },
+ "base_years_used": [
+  2015,
+  2024
+ ],
+ "base_years_missing": [],
+ "base_years_note": "仅取 2015 与 2024 两个完整年对比；2025/2026 为残年不计入任何分母。注意该序列是「存量学者的毕业年回溯」，不是当年全口径毕业生流量。"
+}

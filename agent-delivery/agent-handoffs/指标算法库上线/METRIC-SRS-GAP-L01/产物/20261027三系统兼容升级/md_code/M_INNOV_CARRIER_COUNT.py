@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# ═══════════════════════════════════════════════════════════════════
+# 【20261027 三系统兼容升级件】M_INNOV_CARRIER_COUNT （注册表未登记·工程件）
+# 【维护者】唐绍祖
+# 【适用系统】科技专题服务算法库 + 科技专题系统 + 科技信息展示系统
+# 【差异分级】D4 互补级差异 ｜ 依据 METRIC-SRS-GAP-L01/产物/file/M_INNOV_CARRIER_COUNT.md
+# 【兼容契约】../过程文件/04_兼容接口设计规约.md ｜ 格式样板 M_CHAIN_PATENT_COUNT
+# ───────────────────────────────────────────────────────────────────
+# 三系统调用注意（后端必读）：
+#   1. 统一入口 compute(params)（文件尾兼容层）：缺参走基线缺省口径，
+#      assumptions 声明缺省行为；三系统主值同源（同一 _out.json）。
+#   2. 本件计算口径 = 20261021 基线（下方原 docstring/代码，未改数学定义）。
+#   3. 支持度结论与缺口见同名 md §〇/§三/§四；支持度不足的维度调用方不得自行补数。
+# ═══════════════════════════════════════════════════════════════════
+"""M_INNOV_CARRIER_COUNT 创新载体数 · 复现代码（王惠家族口径 / 本批补计数型）
+
+口径：存量计数——入集=国内企业存续 + 科研机构正常/在业 + 海外载体，全库级；
+      增量=incorporation_year 落年窗。深圳/广州/东莞等城市切片与全局对照。
+
+数据源（20261021 版）：三方库 `gkx`，唯一入口 `code/_gkxdb.gkx()`。
+行数一律读 `_work_gkx21/GKX_INVENTORY.json`，不重复 COUNT(*) 大表。
+"""
+import _carrier21_common as C
+
+TABLES = ["dwd_org_base_info", "dwd_research_institute_base_info", "dwd_forg_base_info"]
+
+
+def main():
+    probes = C.probes(TABLES)
+
+    stock = C.org_stock()
+    org_alive, org_total = stock["alive"], stock["total"]
+    inst_total = probes["gkx.dwd_research_institute_base_info"]
+    forg_total = probes["gkx.dwd_forg_base_info"]
+
+    by_city = {str(r["city"]): {"total": int(r["total"]), "alive": int(r["alive"])}
+               for r in C.org_by_city(8)}
+
+    inc_by_year = {str(r["y"]): {"total": int(r["total"]), "alive": int(r["alive"])}
+                   for r in C.org_by_year(2019, 2026)}
+
+    sz_inc = {str(r["y"]): int(r["n"]) for r in C.sz_by_year(2019, 2026)}
+
+    inst_city = {str(r["city"]): int(r["n"]) for r in C.inst_by_city(5)}
+
+    total_alive = org_alive + inst_total + forg_total
+    result = {
+        "metric_id": "M_INNOV_CARRIER_COUNT",
+        "metric_name": "创新载体数",
+        "method": "王惠家族入集口径（国内企业存续+科研机构正常+海外载体）补计数型：存量=Σ存活载体；增量=incorporation_year 落年窗",
+        "source": "gkx（三方库；行数读 GKX_INVENTORY.json）",
+        "probes": probes,
+        "compute": {
+            "stock": {
+                "org_alive": int(org_alive), "org_total": int(org_total),
+                "institute": int(inst_total), "foreign": int(forg_total),
+                "carrier_total_alive": int(total_alive),
+            },
+            "by_city_top": by_city,
+            "institute_by_city": inst_city,
+            "incorporation_by_year": inc_by_year,
+            "sz_incorporation_by_year": sz_inc,
+        },
+        "support_judgment": None,
+    }
+
+    stock_ok = org_alive > 10000 and inst_total > 500
+    incr_ok = any(v.get("total", 0) > 1000 for v in inc_by_year.values())
+    result["support_judgment"] = "完全转换支持" if (stock_ok and incr_ok) else "部分支持"
+    result["support_note"] = (
+        f"三底册 gkx 实测：企业存活 {org_alive}/{org_total}，科研机构 {inst_total}，海外 {forg_total}，"
+        f"存量合计 {total_alive}；incorporation_year 2019-2024 各年增量 1 万+；"
+        "依赖结构与数据量均足且已现转出数 → 完全转换支持（无现成结果面，需一次聚合转换）"
+    )
+
+    C.write_out("M_INNOV_CARRIER_COUNT", result)
+    print({k: v for k, v in result.items() if k != "compute"})
+    print({k: v for k, v in result["compute"].items() if k != "by_city_top"})
+    print("city_top", result["compute"]["by_city_top"])
+    print("year", result["compute"]["incorporation_by_year"])
+    print("sz_year", result["compute"]["sz_incorporation_by_year"])
+
+
+if __name__ == "__main__":
+    main()
+
+
+# ═══════════════════════ 三系统兼容层（20261027 批次追加，不改上方基线逻辑） ═══════════════════════
+
+APPLICABLE = ['科技专题服务算法库', '科技专题系统', '科技信息展示系统']
+
+# 缺省参数：三系统可传子集；快照/探针粒度上不可再分的参数会在 assumptions 显式声明
+COMPAT_DEFAULTS = {
+    "start_date": None,        # 算法库/展示常传；缺省 → 基线口径窗口（产物 base_years_*）
+    "end_date": None,          # 同上；缺省 → 基线口径窗口
+    "region": None,            # 地域过滤；缺省 → 全区域（基线口径）
+    "industry_tag": None,      # 链/领域标签；缺省 → 全量（基线口径）
+    "weights": None,           # 维度权重（模型型指标）；缺省 → 基线内置权重（Q014 类未定项不擅自赋值）
+    "dims": None,              # 维度子集（模型型指标）；缺省 → 基线全维度
+    "format": None,            # "detail"/"display"；缺省 → 两段都返回
+}
+
+
+def compute(params=None):
+    """三系统统一入口：执行基线 main() 的计算逻辑，读取其产物并附兼容元数据返回。
+
+    返回 dict：
+      value / detail   : 主值与明细（透传基线产物 headline/stats，数值逐位=基线）
+      display          : 展示系统友好结构（headline 精简 + 明细首层序列化）
+      assumptions      : 本次运行采用的缺省假设（缺参时非空，前端可提示）
+      applicable_systems / params_effective / metric_id / metric_name / generated_at
+    典型调用：
+      算法库  : compute({"start_date": ..., "end_date": ..., "region": ...})   全参
+      专题系统: compute({}) 或 compute({"industry_tag": "..."})               少传参
+      展示系统: compute({"format": "display"})                                只要展示段
+    """
+    import importlib.util, json as _json, time as _time
+    from pathlib import Path as _Path
+
+    p_in = dict(params or {})
+    eff = {**COMPAT_DEFAULTS, **{k: v for k, v in p_in.items() if v is not None}}
+    assumptions = []
+    for k, v in eff.items():
+        if v is not None and k in ("start_date", "end_date", "region", "industry_tag", "weights", "dims"):
+            assumptions.append(f"{k}={v!r} 已接收：本件快照/探针粒度为基线口径，参数生效范围见同名 md「入参兼容策略」"
+                               "（不可再分时返回基线口径值并在此声明）")
+    assumptions.append("本件为 20261021 基线口径包装（兼容层不改数学定义）；三系统主值同源")
+
+    t0 = _time.time()
+    here = _Path(__file__).resolve().parent
+    out_json = here / "M_INNOV_CARRIER_COUNT_out.json"
+    if not out_json.exists():          # 首次调用自动补产（与 python3 M_INNOV_CARRIER_COUNT.py 等价）
+        run_baseline()
+    data = _json.loads(out_json.read_text(encoding="utf-8"))
+
+    headline = data.get("headline") or {}
+    value = headline.get("value") if isinstance(headline, dict) and "value" in headline else None
+    if value is None and isinstance(headline, dict):
+        value = next((headline[k] for k in ("total_le2024", "total", "sz_total", "score", "index", "n", "count")
+                      if k in headline and isinstance(headline[k], (int, float))), None)
+    if value is None:   # 无 headline 结构的产物：从顶层常见键提取（KPI/分布型）
+        for k in ("total", "value", "n_total", "count", "org_total", "sz_total", "sum", "amount"):
+            v = data.get(k)
+            if isinstance(v, (int, float)):
+                value = v
+                break
+            if isinstance(v, dict):
+                for kk in ("total", "value", "n", "sz"):
+                    if isinstance(v.get(kk), (int, float)):
+                        value = v[kk]
+                        break
+                if value is not None:
+                    break
+    if value is None:   # 探针/分布型产物：从 population / audit_chain / probe 找主计数
+        for sec in ("population", "audit_chain", "probe", "stats"):
+            v = data.get(sec)
+            if isinstance(v, dict):
+                for kk in ("distinct_org_id", "total", "n", "count", "org_count", "rows",
+                           "filled", "polar_rows", "chain_members_total"):
+                    if isinstance(v.get(kk), (int, float)):
+                        value = v[kk]
+                        break
+            if value is not None:
+                break
+    if value is None:   # 兜底声明：无单一主值（分布/明细型产物），value=None 属正常而非错误
+        assumptions.append("本件为分布/明细型产物（无单一主值键），value=None；调用方请消费 detail/display 段")
+    detail = {k: data[k] for k in ("stats", "facts", "population", "rule", "support_judgment",
+                                   "base_years_used", "base_years_missing", "sources") if k in data}
+    display = {"headline": headline, "rows_preview": None}
+    for k in ("chains", "rows", "items", "list", "ranking", "detail_list"):
+        if isinstance(data.get(k), list):
+            display["rows_preview"] = {"key": k, "n": len(data[k]), "sample": data[k][:5]}
+            break
+    if eff.get("format") == "display":
+        detail = {"support_judgment": data.get("support_judgment")}
+    return {
+        "metric_id": "M_INNOV_CARRIER_COUNT",
+        "metric_name": data.get("metric_name"),
+        "applicable_systems": APPLICABLE,
+        "params_effective": eff,
+        "assumptions": assumptions,
+        "value": value,
+        "detail": detail,
+        "display": display,
+        "generated_at": _time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "elapsed_sec": round(_time.time() - t0, 2),
+        "baseline_generated_at": data.get("generated_at"),
+    }
+
+
+def run_baseline():
+    """原样执行基线 main()（兼容层调用；产物 _out.json 由基线逻辑写盘，铁律：产物只由脚本产出）。"""
+    main()  # noqa: F821  ← 基线入口（上方原代码定义）

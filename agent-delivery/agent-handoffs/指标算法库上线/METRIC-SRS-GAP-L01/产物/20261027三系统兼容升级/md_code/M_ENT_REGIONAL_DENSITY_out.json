@@ -1,0 +1,200 @@
+{
+ "metric_id": "M_ENT_REGIONAL_DENSITY",
+ "metric_name": "区域企业密度",
+ "support_judgment": "部分支持",
+ "verdict_kind": "positive",
+ "judgment_reason": "分子侧完全就绪（189,116 家企业可按省/市/县三级聚合），但分母「行政区土地面积」在 gkx 内不存在：information_schema 全库 15 个 area/面积 相关列全部是编码或名称，无数值型面积列；区划维表 dwd_dim_admin_area（20,000 行）也不含面积字段。按口径「area 空该区空」，交付 0 行；有分子、有层级、无分母，故判部分支持而非完全不支持。",
+ "generated_at": "2026-10-22 17:39:09",
+ "sources": {
+  "primary": "gkx @ 183.240.141.251:3318 (readonly gkx_reader_zp)",
+  "numerator_region_source": "snapshot:code/_snapshots21/ent_region_agg_20261022.json",
+  "tables": [
+   "gkx.dwd_org_base_info",
+   "gkx.dwd_dim_admin_area",
+   "gkx.dwd_macro_index_data"
+  ],
+  "sql": [
+   "SELECT province, city, area, COUNT(*) n FROM gkx.dwd_org_base_info WHERE is_deleted=0 GROUP BY province, city, area",
+   "SELECT table_name, column_name, data_type, column_comment FROM information_schema.columns WHERE table_schema='gkx' AND (column_comment LIKE '%面积%' OR column_name LIKE '%area%' OR column_name LIKE '%_km%' OR column_name LIKE '%square%')",
+   "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%code_region%' OR table_name LIKE '%region_scope%' OR table_name LIKE '%density%' OR table_name LIKE '%admin_area%')",
+   "SELECT COUNT(*) AS n FROM gkx.dwd_macro_index_data WHERE index_code LIKE '%面积%'"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_REGIONAL_DENSITY.md"
+ },
+ "compute": {
+  "denominator_available": false,
+  "delivered_rows": 0,
+  "blocked_cells": {
+   "province": 29,
+   "city": 65,
+   "county": 146,
+   "total": 240
+  },
+  "numerator_cells": {
+   "province": 29,
+   "city": 65,
+   "county": 146
+  },
+  "base_orgs": 189116,
+  "numerator": {
+   "top_provinces": [
+    {
+     "province": "广东省",
+     "orgs": 188776
+    },
+    {
+     "province": "北京市",
+     "orgs": 163
+    },
+    {
+     "province": "浙江省",
+     "orgs": 19
+    },
+    {
+     "province": "上海市",
+     "orgs": 16
+    },
+    {
+     "province": "四川省",
+     "orgs": 16
+    },
+    {
+     "province": "天津市",
+     "orgs": 13
+    },
+    {
+     "province": "陕西省",
+     "orgs": 12
+    },
+    {
+     "province": "云南省",
+     "orgs": 8
+    }
+   ],
+   "top_cities": [
+    {
+     "province": "广东省",
+     "city": "深圳市",
+     "orgs": 95600
+    },
+    {
+     "province": "广东省",
+     "city": "广州市",
+     "orgs": 49605
+    },
+    {
+     "province": "广东省",
+     "city": "东莞市",
+     "orgs": 33590
+    },
+    {
+     "province": "广东省",
+     "city": "惠州市",
+     "orgs": 9979
+    },
+    {
+     "province": "北京市",
+     "city": "北京市",
+     "orgs": 163
+    },
+    {
+     "province": "上海市",
+     "city": "上海市",
+     "orgs": 16
+    },
+    {
+     "province": "天津市",
+     "city": "天津市",
+     "orgs": 13
+    },
+    {
+     "province": "四川省",
+     "city": "成都市",
+     "orgs": 13
+    }
+   ],
+   "top_counties": [
+    {
+     "province": "广东省",
+     "city": "深圳市",
+     "county": "宝安区",
+     "orgs": 25192
+    },
+    {
+     "province": "广东省",
+     "city": "深圳市",
+     "county": "龙岗区",
+     "orgs": 17445
+    },
+    {
+     "province": "广东省",
+     "city": "深圳市",
+     "county": "南山区",
+     "orgs": 16039
+    },
+    {
+     "province": "广东省",
+     "city": "深圳市",
+     "county": "龙华区",
+     "orgs": 13879
+    },
+    {
+     "province": "广东省",
+     "city": "深圳市",
+     "county": "福田区",
+     "orgs": 8810
+    },
+    {
+     "province": "广东省",
+     "city": "广州市",
+     "county": "白云区",
+     "orgs": 8282
+    },
+    {
+     "province": "广东省",
+     "city": "广州市",
+     "county": "天河区",
+     "orgs": 8282
+    },
+    {
+     "province": "广东省",
+     "city": "广州市",
+     "county": "番禺区",
+     "orgs": 7473
+    }
+   ],
+   "guangdong_share_pct": 99.8202
+  },
+  "fallback_no_area": {
+   "label": "家/行政区（降级读数，非 家/km²，不交付）",
+   "orgs_per_province": 6521.2414,
+   "orgs_per_city": 2909.4769,
+   "orgs_per_county": 1295.3151,
+   "note": "分子为行政区内的企业数，分母是行政区个数，不是面积；只能用于「同一层级内谁家多」，不能用于跨层级或跨面积比较。"
+  }
+ },
+ "probes": {
+  "denominator": {
+   "area_related_columns": 15,
+   "numeric_area_columns": 0,
+   "numeric_area_column_list": [],
+   "admin_tables_found": [
+    "dwd_dim_admin_area"
+   ],
+   "macro_rows": 20000,
+   "macro_rows_matching_area": 0,
+   "verdict": "无可用面积分母（0 个数值型面积列 / 0 个区划面积表 / 0 行宏观面积口径）"
+  },
+  "max_execution_time_ms": 900000,
+  "retry_policy": "5 次指数退避"
+ },
+ "proxy_deviation": "登记地代理经营地：分子用 dwd_org_base_info 的注册省/市/区县，企业实际经营地可能不同（尤其总部与生产基地分离的制造企业），偏差方向不定、无法用库内字段校正。底册覆盖偏粤：广东 188,776 家占 99.82%，省外仅 340 家，跨省密度不可比；分母缺失时用「家/行政区」代替「家/km²」，单位语义已改变，不得混用。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面件：分子取当前底册快照，分母（面积）不存在，故无年度序列与基期年份。面积一旦灌入，本件可直接按区划键出数，不需要改口径。",
+ "notes": [
+  "密度值 0 行是「按口径置空」的正确结果，不是脚本失败；blocked_cells 记录被置空的格子数。",
+  "不拿上级面积顶下级、不拿人口/GDP 顶面积、不写 0 冒充密度。",
+  "分母若由甲方灌入，单位必须确认是 km²（列注释只写「面积」，误判会差 100—1,500 倍）。"
+ ]
+}

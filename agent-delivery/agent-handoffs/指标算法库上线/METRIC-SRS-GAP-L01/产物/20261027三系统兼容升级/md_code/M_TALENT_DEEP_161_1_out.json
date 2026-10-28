@@ -1,0 +1,713 @@
+{
+ "metric": "M_TALENT_DEEP_161_1",
+ "support_judgment": "部分支持",
+ "support_reason": "需求侧有 6,702,453 条真实招聘岗位流水、供给侧有 20,420 名学者与论文簇归属，两侧都能算；但（a）岗位表只有岗位名与工作地，无学历/技能/薪资要求，（b）岗位名到 20+8 簇只能靠关键词，命中率 5.99%，（c）两侧单位不同（岗位 vs 人）、（d）本地培养段仅 15 段、供给侧只能用存量学者代替「新增供给」→ 部分支持。",
+ "base_years": {
+  "base_years_used": [
+   2022,
+   2023,
+   2024,
+   2025,
+   2026
+  ],
+  "base_years_missing": [
+   2017,
+   2018,
+   2019,
+   2020,
+   2021
+  ],
+  "note": "需求侧实际覆盖 2022—2026（release_date），2017—2021 一行都没有，已在 missing 声明、不按 0 摊入；供给侧为截面存量（`dwd_scholar` 无年份），两侧不做同口径增速，只做截面倍数。"
+ },
+ "method": {
+  "demand": "dwd_org_recruit_info 岗位流水（按 dwd_id 分 6 段、段内 %97 等距抽样）",
+  "supply": "dwd_scholar 有姓名池 × 姓名+机构双锚定论文 → 20+8 簇",
+  "unit": "岗位数（样本×97 估计） vs 学者数，只算「岗位/学者」倍数",
+  "city": "work_place 前两字；区县用 11 个深圳区名关键词",
+  "cluster_demand": "job_title 命中 20+8 关键词字典",
+  "cluster_supply": "论文关键词 + 标题命中同一字典",
+  "sample": {
+   "mod": 97,
+   "chunks": [
+    [
+     203216,
+     8403216
+    ],
+    [
+     8403217,
+     16603216
+    ],
+    [
+     16603217,
+     24803216
+    ],
+    [
+     24803217,
+     33003216
+    ],
+    [
+     33003217,
+     41203216
+    ],
+    [
+     41203217,
+     49428567
+    ]
+   ],
+   "sql_count": 6
+  },
+  "missing_rule": "无学历/技能要求字段 → 不区分岗位层级；不补 0、不折算人数"
+ },
+ "coverage": {
+  "sample_rows": 82201,
+  "sample_pct": 1.031,
+  "table_rows_est_info_schema": 6702453,
+  "est_rows_from_sample": 7973497,
+  "sz_sample_rows": 16215,
+  "sz_share_pct": 19.73,
+  "sz_est_jobs": 1572855,
+  "national_est_jobs": 7973497,
+  "est_rows_note": "information_schema 的 6,702,453 是引擎估算且已滞后；样本 × 97 = 7,973,497 更接近真实行数，两者差额见 §四。",
+  "job_title_cluster_hit_pct": 5.99,
+  "scholar_pool": 20420,
+  "scholar_cluster_covered": 13955,
+  "sz_scholar_cluster_covered": 100,
+  "orgs_sample": 15488,
+  "orgs_sz_sample": 5980
+ },
+ "demand": {
+  "top_cities": [
+   {
+    "city": "深圳",
+    "rows": 16215,
+    "pct": 19.73
+   },
+   {
+    "city": "广州",
+    "rows": 9214,
+    "pct": 11.21
+   },
+   {
+    "city": "东莞",
+    "rows": 4108,
+    "pct": 5.0
+   },
+   {
+    "city": "广东",
+    "rows": 3218,
+    "pct": 3.91
+   },
+   {
+    "city": "惠州",
+    "rows": 1803,
+    "pct": 2.19
+   },
+   {
+    "city": "未填",
+    "rows": 1691,
+    "pct": 2.06
+   },
+   {
+    "city": "上海",
+    "rows": 1285,
+    "pct": 1.56
+   },
+   {
+    "city": "北京",
+    "rows": 1164,
+    "pct": 1.42
+   },
+   {
+    "city": "成都",
+    "rows": 800,
+    "pct": 0.97
+   },
+   {
+    "city": "武汉",
+    "rows": 728,
+    "pct": 0.89
+   },
+   {
+    "city": "西安",
+    "rows": 626,
+    "pct": 0.76
+   },
+   {
+    "city": "杭州",
+    "rows": 591,
+    "pct": 0.72
+   }
+  ],
+  "year_hist_all": {
+   "2022": 14742,
+   "2023": 15756,
+   "2024": 15452,
+   "2025": 22372,
+   "2026": 13879
+  },
+  "year_hist_sz": {
+   "2022": 3075,
+   "2023": 2270,
+   "2024": 3186,
+   "2025": 4540,
+   "2026": 3144
+  },
+  "occ_all": {
+   "其他": 24784,
+   "工程技术": 20152,
+   "职能管理": 13348,
+   "销售市场": 12918,
+   "研发": 5643,
+   "生产制造": 2948,
+   "设计创意": 1965,
+   "医疗教育": 443
+  },
+  "occ_sz": {
+   "工程技术": 4545,
+   "其他": 3669,
+   "职能管理": 2926,
+   "销售市场": 2549,
+   "研发": 1539,
+   "设计创意": 495,
+   "生产制造": 412,
+   "医疗教育": 80
+  },
+  "occ_rd_pct_sz": 9.49,
+  "occ_eng_pct_sz": 28.03,
+  "dist_sz": {
+   "南山区": 4182,
+   "未标区县": 2795,
+   "宝安区": 2739,
+   "龙岗区": 1972,
+   "龙华区": 1509,
+   "福田区": 1209,
+   "坪山区": 654,
+   "光明区": 650,
+   "罗湖区": 397,
+   "盐田区": 84,
+   "大鹏新区": 12,
+   "深汕": 12
+  }
+ },
+ "supply": {
+  "pool": 20420,
+  "covered": 13955,
+  "covered_pct": 68.34,
+  "sz_covered": 100,
+  "clusters": 28,
+  "top_clusters": [
+   {
+    "cluster": "细胞与基因",
+    "all": 1969,
+    "sz": 17
+   },
+   {
+    "cluster": "新材料",
+    "all": 1807,
+    "sz": 10
+   },
+   {
+    "cluster": "大健康",
+    "all": 1392,
+    "sz": 10
+   },
+   {
+    "cluster": "安全节能环保",
+    "all": 1094,
+    "sz": 6
+   },
+   {
+    "cluster": "智能传感器",
+    "all": 610,
+    "sz": 8
+   },
+   {
+    "cluster": "激光与增材制造",
+    "all": 589,
+    "sz": 6
+   },
+   {
+    "cluster": "新能源",
+    "all": 558,
+    "sz": 2
+   },
+   {
+    "cluster": "生物医药",
+    "all": 482,
+    "sz": 3
+   },
+   {
+    "cluster": "网络与通信",
+    "all": 345,
+    "sz": 4
+   },
+   {
+    "cluster": "智能机器人",
+    "all": 297,
+    "sz": 6
+   },
+   {
+    "cluster": "脑科学与类脑智能",
+    "all": 216,
+    "sz": 6
+   },
+   {
+    "cluster": "海洋产业",
+    "all": 210,
+    "sz": 0
+   },
+   {
+    "cluster": "空天技术",
+    "all": 197,
+    "sz": 3
+   },
+   {
+    "cluster": "量子信息",
+    "all": 132,
+    "sz": 0
+   },
+   {
+    "cluster": "软件与信息服务",
+    "all": 128,
+    "sz": 0
+   }
+  ]
+ },
+ "clusters": [
+  {
+   "cluster": "软件与信息服务",
+   "demand_sz_sample": 609,
+   "demand_sz_est": 59073,
+   "demand_all_sample": 2128,
+   "supply_sz": 0,
+   "supply_all": 128,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 3.76,
+   "sz_demand_share_of_hits_pct": 28.62
+  },
+  {
+   "cluster": "新能源",
+   "demand_sz_sample": 116,
+   "demand_sz_est": 11252,
+   "demand_all_sample": 466,
+   "supply_sz": 2,
+   "supply_all": 558,
+   "jobs_per_scholar": 5626.0,
+   "sz_demand_share_pct": 0.72,
+   "sz_demand_share_of_hits_pct": 24.89
+  },
+  {
+   "cluster": "数字创意",
+   "demand_sz_sample": 91,
+   "demand_sz_est": 8827,
+   "demand_all_sample": 350,
+   "supply_sz": 0,
+   "supply_all": 127,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.56,
+   "sz_demand_share_of_hits_pct": 26.0
+  },
+  {
+   "cluster": "智能机器人",
+   "demand_sz_sample": 57,
+   "demand_sz_est": 5529,
+   "demand_all_sample": 177,
+   "supply_sz": 6,
+   "supply_all": 297,
+   "jobs_per_scholar": 921.5,
+   "sz_demand_share_pct": 0.35,
+   "sz_demand_share_of_hits_pct": 32.2
+  },
+  {
+   "cluster": "工业母机",
+   "demand_sz_sample": 53,
+   "demand_sz_est": 5141,
+   "demand_all_sample": 339,
+   "supply_sz": 0,
+   "supply_all": 28,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.33,
+   "sz_demand_share_of_hits_pct": 15.63
+  },
+  {
+   "cluster": "新材料",
+   "demand_sz_sample": 51,
+   "demand_sz_est": 4947,
+   "demand_all_sample": 221,
+   "supply_sz": 10,
+   "supply_all": 1807,
+   "jobs_per_scholar": 494.7,
+   "sz_demand_share_pct": 0.31,
+   "sz_demand_share_of_hits_pct": 23.08
+  },
+  {
+   "cluster": "大健康",
+   "demand_sz_sample": 50,
+   "demand_sz_est": 4850,
+   "demand_all_sample": 244,
+   "supply_sz": 10,
+   "supply_all": 1392,
+   "jobs_per_scholar": 485.0,
+   "sz_demand_share_pct": 0.31,
+   "sz_demand_share_of_hits_pct": 20.49
+  },
+  {
+   "cluster": "高端医疗器械",
+   "demand_sz_sample": 42,
+   "demand_sz_est": 4074,
+   "demand_all_sample": 241,
+   "supply_sz": 3,
+   "supply_all": 28,
+   "jobs_per_scholar": 1358.0,
+   "sz_demand_share_pct": 0.26,
+   "sz_demand_share_of_hits_pct": 17.43
+  },
+  {
+   "cluster": "超高清视频显示",
+   "demand_sz_sample": 25,
+   "demand_sz_est": 2425,
+   "demand_all_sample": 67,
+   "supply_sz": 0,
+   "supply_all": 45,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.15,
+   "sz_demand_share_of_hits_pct": 37.31
+  },
+  {
+   "cluster": "半导体与集成电路",
+   "demand_sz_sample": 24,
+   "demand_sz_est": 2328,
+   "demand_all_sample": 130,
+   "supply_sz": 1,
+   "supply_all": 127,
+   "jobs_per_scholar": 2328.0,
+   "sz_demand_share_pct": 0.15,
+   "sz_demand_share_of_hits_pct": 18.46
+  },
+  {
+   "cluster": "激光与增材制造",
+   "demand_sz_sample": 22,
+   "demand_sz_est": 2134,
+   "demand_all_sample": 113,
+   "supply_sz": 6,
+   "supply_all": 589,
+   "jobs_per_scholar": 355.7,
+   "sz_demand_share_pct": 0.14,
+   "sz_demand_share_of_hits_pct": 19.47
+  },
+  {
+   "cluster": "网络与通信",
+   "demand_sz_sample": 21,
+   "demand_sz_est": 2037,
+   "demand_all_sample": 120,
+   "supply_sz": 4,
+   "supply_all": 345,
+   "jobs_per_scholar": 509.2,
+   "sz_demand_share_pct": 0.13,
+   "sz_demand_share_of_hits_pct": 17.5
+  },
+  {
+   "cluster": "智能传感器",
+   "demand_sz_sample": 18,
+   "demand_sz_est": 1746,
+   "demand_all_sample": 43,
+   "supply_sz": 8,
+   "supply_all": 610,
+   "jobs_per_scholar": 218.2,
+   "sz_demand_share_pct": 0.11,
+   "sz_demand_share_of_hits_pct": 41.86
+  },
+  {
+   "cluster": "安全节能环保",
+   "demand_sz_sample": 15,
+   "demand_sz_est": 1455,
+   "demand_all_sample": 127,
+   "supply_sz": 6,
+   "supply_all": 1094,
+   "jobs_per_scholar": 242.5,
+   "sz_demand_share_pct": 0.09,
+   "sz_demand_share_of_hits_pct": 11.81
+  },
+  {
+   "cluster": "细胞与基因",
+   "demand_sz_sample": 13,
+   "demand_sz_est": 1261,
+   "demand_all_sample": 62,
+   "supply_sz": 17,
+   "supply_all": 1969,
+   "jobs_per_scholar": 74.2,
+   "sz_demand_share_pct": 0.08,
+   "sz_demand_share_of_hits_pct": 20.97
+  },
+  {
+   "cluster": "智能网联汽车",
+   "demand_sz_sample": 8,
+   "demand_sz_est": 776,
+   "demand_all_sample": 45,
+   "supply_sz": 0,
+   "supply_all": 71,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.05,
+   "sz_demand_share_of_hits_pct": 17.78
+  },
+  {
+   "cluster": "生物医药",
+   "demand_sz_sample": 5,
+   "demand_sz_est": 485,
+   "demand_all_sample": 25,
+   "supply_sz": 3,
+   "supply_all": 482,
+   "jobs_per_scholar": 161.7,
+   "sz_demand_share_pct": 0.03,
+   "sz_demand_share_of_hits_pct": 20.0
+  },
+  {
+   "cluster": "精密仪器设备",
+   "demand_sz_sample": 5,
+   "demand_sz_est": 485,
+   "demand_all_sample": 48,
+   "supply_sz": 0,
+   "supply_all": 64,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.03,
+   "sz_demand_share_of_hits_pct": 10.42
+  },
+  {
+   "cluster": "量子信息",
+   "demand_sz_sample": 4,
+   "demand_sz_est": 388,
+   "demand_all_sample": 6,
+   "supply_sz": 0,
+   "supply_all": 132,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.02,
+   "sz_demand_share_of_hits_pct": 66.67
+  },
+  {
+   "cluster": "智能终端",
+   "demand_sz_sample": 3,
+   "demand_sz_est": 291,
+   "demand_all_sample": 6,
+   "supply_sz": 1,
+   "supply_all": 37,
+   "jobs_per_scholar": 291.0,
+   "sz_demand_share_pct": 0.02,
+   "sz_demand_share_of_hits_pct": 50.0
+  },
+  {
+   "cluster": "区块链",
+   "demand_sz_sample": 2,
+   "demand_sz_est": 194,
+   "demand_all_sample": 6,
+   "supply_sz": 0,
+   "supply_all": 61,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.01,
+   "sz_demand_share_of_hits_pct": 33.33
+  },
+  {
+   "cluster": "现代时尚",
+   "demand_sz_sample": 2,
+   "demand_sz_est": 194,
+   "demand_all_sample": 16,
+   "supply_sz": 0,
+   "supply_all": 24,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.01,
+   "sz_demand_share_of_hits_pct": 12.5
+  },
+  {
+   "cluster": "空天技术",
+   "demand_sz_sample": 1,
+   "demand_sz_est": 97,
+   "demand_all_sample": 3,
+   "supply_sz": 3,
+   "supply_all": 197,
+   "jobs_per_scholar": 32.3,
+   "sz_demand_share_pct": 0.01,
+   "sz_demand_share_of_hits_pct": 33.33
+  },
+  {
+   "cluster": "海洋产业",
+   "demand_sz_sample": 1,
+   "demand_sz_est": 97,
+   "demand_all_sample": 18,
+   "supply_sz": 0,
+   "supply_all": 210,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.01,
+   "sz_demand_share_of_hits_pct": 5.56
+  },
+  {
+   "cluster": "深地深海",
+   "demand_sz_sample": 1,
+   "demand_sz_est": 97,
+   "demand_all_sample": 2,
+   "supply_sz": 0,
+   "supply_all": 33,
+   "jobs_per_scholar": null,
+   "sz_demand_share_pct": 0.01,
+   "sz_demand_share_of_hits_pct": 50.0
+  },
+  {
+   "cluster": "脑科学与类脑智能",
+   "demand_sz_sample": 0,
+   "demand_sz_est": 0,
+   "demand_all_sample": 0,
+   "supply_sz": 6,
+   "supply_all": 216,
+   "jobs_per_scholar": 0.0,
+   "sz_demand_share_pct": 0.0,
+   "sz_demand_share_of_hits_pct": 0.0
+  },
+  {
+   "cluster": "合成生物",
+   "demand_sz_sample": 0,
+   "demand_sz_est": 0,
+   "demand_all_sample": 3,
+   "supply_sz": 3,
+   "supply_all": 30,
+   "jobs_per_scholar": 0.0,
+   "sz_demand_share_pct": 0.0,
+   "sz_demand_share_of_hits_pct": 0.0
+  }
+ ],
+ "tight": [
+  {
+   "cluster": "高端医疗器械",
+   "demand_sz_sample": 42,
+   "demand_sz_est": 4074,
+   "demand_all_sample": 241,
+   "supply_sz": 3,
+   "supply_all": 28,
+   "jobs_per_scholar": 1358.0,
+   "sz_demand_share_pct": 0.26,
+   "sz_demand_share_of_hits_pct": 17.43
+  },
+  {
+   "cluster": "智能机器人",
+   "demand_sz_sample": 57,
+   "demand_sz_est": 5529,
+   "demand_all_sample": 177,
+   "supply_sz": 6,
+   "supply_all": 297,
+   "jobs_per_scholar": 921.5,
+   "sz_demand_share_pct": 0.35,
+   "sz_demand_share_of_hits_pct": 32.2
+  },
+  {
+   "cluster": "网络与通信",
+   "demand_sz_sample": 21,
+   "demand_sz_est": 2037,
+   "demand_all_sample": 120,
+   "supply_sz": 4,
+   "supply_all": 345,
+   "jobs_per_scholar": 509.2,
+   "sz_demand_share_pct": 0.13,
+   "sz_demand_share_of_hits_pct": 17.5
+  },
+  {
+   "cluster": "新材料",
+   "demand_sz_sample": 51,
+   "demand_sz_est": 4947,
+   "demand_all_sample": 221,
+   "supply_sz": 10,
+   "supply_all": 1807,
+   "jobs_per_scholar": 494.7,
+   "sz_demand_share_pct": 0.31,
+   "sz_demand_share_of_hits_pct": 23.08
+  },
+  {
+   "cluster": "大健康",
+   "demand_sz_sample": 50,
+   "demand_sz_est": 4850,
+   "demand_all_sample": 244,
+   "supply_sz": 10,
+   "supply_all": 1392,
+   "jobs_per_scholar": 485.0,
+   "sz_demand_share_pct": 0.31,
+   "sz_demand_share_of_hits_pct": 20.49
+  },
+  {
+   "cluster": "激光与增材制造",
+   "demand_sz_sample": 22,
+   "demand_sz_est": 2134,
+   "demand_all_sample": 113,
+   "supply_sz": 6,
+   "supply_all": 589,
+   "jobs_per_scholar": 355.7,
+   "sz_demand_share_pct": 0.14,
+   "sz_demand_share_of_hits_pct": 19.47
+  },
+  {
+   "cluster": "安全节能环保",
+   "demand_sz_sample": 15,
+   "demand_sz_est": 1455,
+   "demand_all_sample": 127,
+   "supply_sz": 6,
+   "supply_all": 1094,
+   "jobs_per_scholar": 242.5,
+   "sz_demand_share_pct": 0.09,
+   "sz_demand_share_of_hits_pct": 11.81
+  },
+  {
+   "cluster": "智能传感器",
+   "demand_sz_sample": 18,
+   "demand_sz_est": 1746,
+   "demand_all_sample": 43,
+   "supply_sz": 8,
+   "supply_all": 610,
+   "jobs_per_scholar": 218.2,
+   "sz_demand_share_pct": 0.11,
+   "sz_demand_share_of_hits_pct": 41.86
+  },
+  {
+   "cluster": "生物医药",
+   "demand_sz_sample": 5,
+   "demand_sz_est": 485,
+   "demand_all_sample": 25,
+   "supply_sz": 3,
+   "supply_all": 482,
+   "jobs_per_scholar": 161.7,
+   "sz_demand_share_pct": 0.03,
+   "sz_demand_share_of_hits_pct": 20.0
+  },
+  {
+   "cluster": "细胞与基因",
+   "demand_sz_sample": 13,
+   "demand_sz_est": 1261,
+   "demand_all_sample": 62,
+   "supply_sz": 17,
+   "supply_all": 1969,
+   "jobs_per_scholar": 74.2,
+   "sz_demand_share_pct": 0.08,
+   "sz_demand_share_of_hits_pct": 20.97
+  }
+ ],
+ "probes": {
+  "recruit_table_rows_est": 6702453,
+  "full_scan_timeout_sec": 60,
+  "sql_count": 6
+ },
+ "integrity": {
+  "sample_note": "岗位侧为 dwd_id % 97 = 0 的等距样本（82,201 条），绝对值 = 样本 × 97 的估计；比率直接用样本比率，样本按 id 全域分层，不含时间偏倚（各年样本量见 demand.year_hist_all）。",
+  "unit_note": "岗位数与学者数不同量纲，「岗位/学者」只是稀缺度排序信号，不是「缺口人数」；不得写成「深圳缺 X 万人」。",
+  "title_note": "job_title 为自由文本（如「高级嵌入式软件开发工程师」「销售督导」），关键词归类会把「销售工程师」同时命中销售与工程，故一人可多类。",
+  "no_edu": "招聘表无学历、无技能等级、无薪资，无法做「高层次岗位」筛选。"
+ },
+ "base_years_used": [
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020,
+  2021
+ ],
+ "base_years_note": "需求侧实际覆盖 2022—2026（release_date），2017—2021 一行都没有，已在 missing 声明、不按 0 摊入；供给侧为截面存量（`dwd_scholar` 无年份），两侧不做同口径增速，只做截面倍数。"
+}

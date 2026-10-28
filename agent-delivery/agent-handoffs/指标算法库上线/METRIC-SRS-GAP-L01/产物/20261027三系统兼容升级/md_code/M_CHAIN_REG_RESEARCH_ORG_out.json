@@ -1,0 +1,218 @@
+{
+ "metric_id": "M_CHAIN_REG_RESEARCH_ORG",
+ "metric_name": "科研机构（链维/区域维）",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）+ code/_snapshots21/ 落盘快照",
+ "formula": "机构数 = COUNT(DISTINCT org) BY chain × city；机构桶 = 院所 ∪ 高校",
+ "blocking_tables": {
+  "industry_chain_entity_rel": {
+   "triage": "source_absent",
+   "evidence": "_work_gkx21/TABLE_ABSENCE_EVIDENCE.md §industry_chain_entity_rel"
+  }
+ },
+ "proxy_path": "两张载体底册 UNION + city 直分组（区域维完整）+ 机构名匹配环节名（链维弱）",
+ "proxy_deviation": "官方桥 institution 关系表不存在，链归属退化为名称匹配：命中 134/5,575=2.4%。列合计（四市机构总数）是真值，行内拆分是下限；未归属列不可按比例摊到链",
+ "buckets": {
+  "院所": 2074,
+  "高校": 3501
+ },
+ "cities": [
+  "深圳市",
+  "广州市",
+  "东莞市",
+  "惠州市"
+ ],
+ "four_city_total": 2214,
+ "outside_four_city_total": 3361,
+ "column_totals": {
+  "深圳市": 1030,
+  "广州市": 931,
+  "东莞市": 136,
+  "惠州市": 117
+ },
+ "unmatched_by_city": {
+  "深圳市": 959,
+  "广州市": 894,
+  "东莞市": 126,
+  "惠州市": 111
+ },
+ "assigned": 134,
+ "assigned_four_city": 124,
+ "matched_outside_four_cities": 10,
+ "matched_outside_cities_breakdown": {
+  "菏泽市": 1,
+  "厦门市": 1,
+  "保定市": 1,
+  "湘潭市": 1,
+  "大连市": 1,
+  "武汉市": 1,
+  "福州市": 1,
+  "南昌市": 1,
+  "省直辖县级行政区划": 1,
+  "北京市": 1
+ },
+ "hit_rate": 0.024,
+ "matrix": [
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "深圳市": 3,
+   "广州市": 2,
+   "东莞市": 0,
+   "惠州市": 1,
+   "total": 6
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "深圳市": 1,
+   "广州市": 0,
+   "东莞市": 0,
+   "惠州市": 0,
+   "total": 1
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "深圳市": 4,
+   "广州市": 0,
+   "东莞市": 1,
+   "惠州市": 1,
+   "total": 6
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "深圳市": 8,
+   "广州市": 7,
+   "东莞市": 2,
+   "惠州市": 0,
+   "total": 17
+  },
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "深圳市": 1,
+   "广州市": 4,
+   "东莞市": 1,
+   "惠州市": 0,
+   "total": 6
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "深圳市": 24,
+   "广州市": 16,
+   "东莞市": 4,
+   "惠州市": 3,
+   "total": 47
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "深圳市": 0,
+   "广州市": 0,
+   "东莞市": 0,
+   "惠州市": 0,
+   "total": 0
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "深圳市": 2,
+   "广州市": 0,
+   "东莞市": 0,
+   "惠州市": 1,
+   "total": 3
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "深圳市": 1,
+   "广州市": 0,
+   "东莞市": 0,
+   "惠州市": 0,
+   "total": 1
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "深圳市": 0,
+   "广州市": 0,
+   "东莞市": 0,
+   "惠州市": 0,
+   "total": 0
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "深圳市": 14,
+   "广州市": 6,
+   "东莞市": 1,
+   "惠州市": 0,
+   "total": 21
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "深圳市": 13,
+   "广州市": 2,
+   "东莞市": 1,
+   "惠州市": 0,
+   "total": 16
+  }
+ ],
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "官方唯一桥 industry_chain_entity_rel 的 institution 行在 gkx 不存在，链维没有现成归属；但区域维所需的两张载体底册齐全（院所 2,074 + 高校 3,501，city 字段 100% 有值），四市列合计可直接数出、可对账。链维用机构名匹配环节名得到 134 家、10 链非零，只能作下限。区域完整 + 链维弱，判部分支持。",
+  "criteria": {
+   "official_bridge_table": false,
+   "region_dimension_complete": true,
+   "chain_dimension_complete": false,
+   "hit_rate": 0.024,
+   "proxy_used": true
+  }
+ },
+ "judgment_reason": "官方唯一桥 industry_chain_entity_rel 的 institution 行在 gkx 不存在，链维没有现成归属；但区域维所需的两张载体底册齐全（院所 2,074 + 高校 3,501，city 字段 100% 有值），四市列合计可直接数出、可对账。链维用机构名匹配环节名得到 134 家、10 链非零，只能作下限。区域完整 + 链维弱，判部分支持。",
+ "judgment_criteria": {
+  "official_bridge_table": false,
+  "region_dimension_complete": true,
+  "chain_dimension_complete": false,
+  "hit_rate": 0.024,
+  "proxy_used": true
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是截面计数（当前底册时点），不做年度序列，故无基期年份；底册不带历史版本，无法回溯往年机构数。若要做年度序列，院所侧有 incorporation_date（1,996 行），高校侧有 est_year，见 M_CHAIN_INSTITUTION_COUNT。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/inst_base_gkx21.json",
+   "table": "gkx.dwd_research_institute_base_info",
+   "rows": 2074,
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "pulled_at": "2026-10-22T15:43:47+08:00",
+   "role": "院所桶（含 city）"
+  },
+  {
+   "path": "code/_snapshots21/heis21_20261022.json",
+   "table": "gkx.dwd_org_heis_info",
+   "rows": 3501,
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "pulled_at": "2026-10-22T13:40+08:00",
+   "role": "高校桶（含 city）"
+  },
+  {
+   "path": "code/_snapshots21/chain_tree_20261021.json",
+   "table": "gkx.dwd_industry_chain_info",
+   "rows": 1273,
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "pulled_at": "2026-10-21T23:48:04+08:00",
+   "role": "环节名词典与顶层链回溯"
+  }
+ ]
+}

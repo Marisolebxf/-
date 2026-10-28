@@ -1,0 +1,71 @@
+{
+ "metric_id": "M_SVC_GRAPH_DENSITY",
+ "metric_name": "服务网络密度",
+ "generated_at": "2026-10-28T00:40:39+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "代理密度可现转（全池 1.348e-05 / 活跃子网 1.578e-04），结构与计算链完整；但会签口径 Q-SVCCHAIN-03 明确「服务网络密度的边不算投资/股东」，正式服务关系边在 gkx 无承载表，始终有一维缺正式数据，故落部分支持。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_invest_info",
+   "rows": 46967,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_shareholder_info",
+   "rows": 400286,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  }
+ ],
+ "base_years_used": [
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "密度是截面量（快照时点存量边），不做年度序列；库内边表无「关系生效年」字段，按年拆边会把存量关系误摊成流量，故不拆。",
+ "formula": "D = 2|E| / (|N| * (|N| - 1))",
+ "main": {
+  "edge_set": "投资边 ∪ 机构股东边（双端在池、无向去重、去自环）",
+  "E": 13141,
+  "N_pool": 44153,
+  "N_active": 12905,
+  "possible_edges_pool": 974721628.0,
+  "realized_share_pct": 0.00134818,
+  "density_pool": 1.3482e-05,
+  "density_active": 0.00015783,
+  "density_pool_raw": 1.3481797902611021e-05,
+  "density_active_raw": 0.00015782509074252135
+ },
+ "sensitivity": {
+  "invest_pairs": 5667,
+  "shareholder_pairs": 13141,
+  "overlap_pairs": 5667,
+  "invest_edges_only": {
+   "E": 0,
+   "density_pool": 0.0,
+   "note": "投资边的节点对 5667 条中 5667 条同时出现在股东表，独立贡献为 0 条——同一笔资本关系两表各记一次所致，须按无向去重合并，不能相加"
+  },
+  "shareholder_edges_only": {
+   "E": 7474,
+   "density_pool": 7.6678e-06
+  },
+  "no_undirected_dedup": {
+   "E": 21879,
+   "density_pool": 2.2446e-05,
+   "note": "同一对机构在两表各出现一次即计两条，仅用于说明口径敏感度"
+  },
+  "empty_counterpart_rows": 298493
+ },
+ "caliber_ruling": {
+  "code": "Q-SVCCHAIN-03",
+  "ruling": "服务网络密度的边不算投资/股东",
+  "consequence": "本件数值只能以「资本纽带密度（代理）」身份披露，不得宣称正式服务网络密度"
+ },
+ "compute": {
+  "elapsed_sec": 0.471,
+  "sql_count": 0
+ }
+}

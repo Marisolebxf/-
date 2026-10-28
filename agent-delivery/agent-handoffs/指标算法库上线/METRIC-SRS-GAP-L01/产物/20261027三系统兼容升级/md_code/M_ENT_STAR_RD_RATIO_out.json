@@ -1,0 +1,346 @@
+{
+ "metric_id": "M_ENT_STAR_RD_RATIO",
+ "metric_name": "明星企业研发投入占比",
+ "support_judgment": "部分支持",
+ "verdict_kind": "positive",
+ "judgment_reason": "研发投入只剩「上市/发债主体财报」一条腿：calc-logic 首选年报口径 arch_development_am 在 90,926 行中非空 0 行，工商年报 yftrje 在 527,034 行中非空 0 行，均整列为空；可用的是 dwd_org_income_statement.yffy 与 dwd_org_stock_finance_info，覆盖 4,561 家明星企业中的 590 家（12.9358%）。有真数、可算比值，但八成以上明星企业（多为非上市）无研发投入披露，故判部分支持。",
+ "generated_at": "2026-10-22 17:40:48",
+ "sources": {
+  "primary": "gkx @ 183.240.141.251:3318 (readonly gkx_reader_zp)",
+  "star_roster": "code/_snapshots21/star_roster_gkx_20261021.json",
+  "tables": [
+   "gkx.dwd_org_income_statement",
+   "gkx.dwd_org_stock_finance_info",
+   "gkx.dwd_org_annual_financial_info",
+   "gkx.dwd_org_annual_report_asset",
+   "gkx.dwd_patent",
+   "gkx.dwd_org_base_info"
+  ],
+  "sql": [
+   "SELECT org_id, name_cn, occur_period, research_development_amount, operating_revenue FROM (SELECT org_id, name_cn, occur_period, research_development_amount, operating_revenue, ROW_NUMBER() OVER (PARTITION BY org_id ORDER BY occur_period DESC) rn FROM gkx.dwd_org_stock_finance_info WHERE research_development_amount>0 AND operating_revenue>0) t WHERE rn=1",
+   "SELECT jgid, jgmc, hjnd, jzrq, yffy, yysr FROM (SELECT jgid, jgmc, hjnd, jzrq, yffy, yysr, ROW_NUMBER() OVER (PARTITION BY jgid ORDER BY jzrq DESC, hjnd DESC) rn FROM gkx.dwd_org_income_statement WHERE yffy>0 AND yysr>0) t WHERE rn=1",
+   "SELECT COUNT(*) n, SUM(arch_development_am IS NOT NULL) nn, SUM(arch_development_am>0) pos FROM gkx.dwd_org_annual_financial_info",
+   "SELECT COUNT(*) n, SUM(yftrje IS NOT NULL AND TRIM(yftrje)<>'') ok FROM gkx.dwd_org_annual_report_asset",
+   "SELECT COUNT(*) n, SUM(rd_staff IS NOT NULL) staff_nn, SUM(research_development_amount IS NOT NULL) am_nn FROM gkx.dwd_foreign_org_annual_financial_info"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_STAR_RD_RATIO.md"
+ },
+ "compute": {
+  "formula": "SUM(研发投入) / SUM(营业收入) × 100%",
+  "star_roster": {
+   "n_star": 4561,
+   "threshold_grant": 50,
+   "n_candidates_ge50": 4724,
+   "n_excluded_non_enterprise": 163,
+   "grant_sum": 699284,
+   "source": "gkx.dwd_patent(first_applicant_name 聚合) × gkx.dwd_org_base_info(name_cn 匹配)",
+   "industry_top": [
+    [
+     "制造业",
+     1995
+    ],
+    [
+     "批发和零售业",
+     912
+    ],
+    [
+     "科学研究和技术服务业",
+     787
+    ],
+    [
+     "信息传输、软件和信息技术服务业",
+     446
+    ],
+    [
+     "建筑业",
+     154
+    ],
+    [
+     "租赁和商务服务业",
+     108
+    ]
+   ],
+   "city_top": [
+    [
+     "深圳市",
+     2590
+    ],
+    [
+     "广州市",
+     1020
+    ],
+    [
+     "东莞市",
+     775
+    ],
+    [
+     "惠州市",
+     176
+    ]
+   ]
+  },
+  "coverage": {
+   "with_income_statement": 590,
+   "with_stock_finance": 412,
+   "with_either": 590,
+   "coverage_rate_pct": 12.9358,
+   "no_rd_data": 3971
+  },
+  "primary": {
+   "orgs_with_data": 590,
+   "orgs_valid": 583,
+   "median_pct": 6.0487,
+   "p25_pct": 4.13,
+   "p75_pct": 9.75,
+   "aggregate_pct": 4.9589,
+   "rd_sum": 60870549414.19,
+   "rev_sum": 1227495552754.53
+  },
+  "annual_2025": {
+   "orgs_with_data": 122,
+   "orgs_valid": 120,
+   "median_pct": 5.6828,
+   "p25_pct": 4.0,
+   "p75_pct": 8.99,
+   "aggregate_pct": 3.4528,
+   "rd_sum": 11006678641.38,
+   "rev_sum": 318775741181.86
+  },
+  "benchmark_stock_only": {
+   "orgs_with_data": 412,
+   "orgs_valid": 406,
+   "median_pct": 6.0918,
+   "p25_pct": 4.31,
+   "p75_pct": 9.88,
+   "aggregate_pct": 6.2905,
+   "rd_sum": 46817104008.95,
+   "rev_sum": 744247172284.96
+  },
+  "benchmark_all_income": {
+   "orgs_with_data": 2301,
+   "orgs_valid": 2262,
+   "median_pct": 5.5849,
+   "p25_pct": 3.14,
+   "p75_pct": 9.98,
+   "aggregate_pct": 5.6909,
+   "rd_sum": 340755858883.28,
+   "rev_sum": 5987751169999.52
+  },
+  "benchmark_all_stock": {
+   "orgs_with_data": 875,
+   "orgs_valid": 862,
+   "median_pct": 5.3899,
+   "p25_pct": 3.1,
+   "p75_pct": 8.79,
+   "aggregate_pct": 3.6593,
+   "rd_sum": 70012451382.24,
+   "rev_sum": 1913286775093.65
+  },
+  "ratio_distribution": {
+   "3-5%": 139,
+   "5-10%": 236,
+   "10-20%": 87,
+   "1-3%": 52,
+   "0-1%": 20,
+   "20%+": 49
+  },
+  "excluded_ratio_gt_100pct": {
+   "n": 7,
+   "rows": [
+    {
+     "org_id": "90dff0fb4347b367fe5cfc9a11fffcef",
+     "name": "深圳市科思科技股份有限公司",
+     "rd": 60582880.88,
+     "rev": 28432134.78,
+     "ratio_pct": 213.0789,
+     "period": "2026"
+    },
+    {
+     "org_id": "e66b81d6bf5b912bc4ad222d3309073e",
+     "name": "深圳云豹智能股份有限公司",
+     "rd": 555264589.26,
+     "rev": 369891722.31,
+     "ratio_pct": 150.1154,
+     "period": "2025"
+    },
+    {
+     "org_id": "b8df7db6754c744434be7b7116414d4e",
+     "name": "邦彦技术股份有限公司",
+     "rd": 22408580.36,
+     "rev": 16689914.61,
+     "ratio_pct": 134.2642,
+     "period": "2026"
+    },
+    {
+     "org_id": "1d437cbf8f8f18f7d7e4250b9d30e9c7",
+     "name": "深圳市柔宇科技股份有限公司",
+     "rd": 98026515.17,
+     "rev": 73764040.36,
+     "ratio_pct": 132.892,
+     "period": "2020"
+    },
+    {
+     "org_id": "2e6fb4438900f6683fbf657ff59f4329",
+     "name": "深圳核心医疗科技股份有限公司",
+     "rd": 203423898.47,
+     "rev": 164264466.84,
+     "ratio_pct": 123.8393,
+     "period": "2025"
+    },
+    {
+     "org_id": "2d947fa4684f8f2b994e7e67ccdba3ae",
+     "name": "云从科技集团股份有限公司",
+     "rd": 27819184.7,
+     "rev": 23231237.02,
+     "ratio_pct": 119.749,
+     "period": "2026"
+    },
+    {
+     "org_id": "0b430d0522394c684bd2d7218ebd050e",
+     "name": "广州松兴电气股份有限公司",
+     "rd": 3529904.75,
+     "rev": 3443048.83,
+     "ratio_pct": 102.5226,
+     "period": "2024"
+    }
+   ]
+  },
+  "top_by_rd_amount": [
+   {
+    "name": "比亚迪股份有限公司",
+    "industry": "制造业",
+    "rd": 11343566000.0,
+    "revenue": 150225314000.0,
+    "ratio_pct": 7.551,
+    "year": "2026"
+   },
+   {
+    "name": "中兴通讯股份有限公司",
+    "industry": "制造业",
+    "rd": 4906482000.0,
+    "revenue": 34988057000.0,
+    "ratio_pct": 14.0233,
+    "year": "2026"
+   },
+   {
+    "name": "深圳前海微众银行股份有限公司",
+    "industry": "金融业",
+    "rd": 2522042000.0,
+    "revenue": 36283587000.0,
+    "ratio_pct": 6.9509,
+    "year": "2025"
+   },
+   {
+    "name": "TCL科技集团股份有限公司",
+    "industry": "制造业",
+    "rd": 2217816895.0,
+    "revenue": 43454292275.0,
+    "ratio_pct": 5.1038,
+    "year": "2026"
+   },
+   {
+    "name": "欣旺达电子股份有限公司",
+    "industry": "制造业",
+    "rd": 1196665577.19,
+    "revenue": 16115885089.82,
+    "ratio_pct": 7.4254,
+    "year": "2026"
+   },
+   {
+    "name": "中铁隧道局集团有限公司",
+    "industry": "建筑业",
+    "rd": 1050694940.77,
+    "revenue": 55740116396.51,
+    "ratio_pct": 1.885,
+    "year": "2025"
+   },
+   {
+    "name": "深圳市汇川技术股份有限公司",
+    "industry": "信息传输、软件和信息技术服务业",
+    "rd": 1007346162.97,
+    "revenue": 10143223378.12,
+    "ratio_pct": 9.9312,
+    "year": "2026"
+   },
+   {
+    "name": "中建科工集团有限公司",
+    "industry": "科学研究和技术服务业",
+    "rd": 926282241.33,
+    "revenue": 27276525814.58,
+    "ratio_pct": 3.3959,
+    "year": "2025"
+   },
+   {
+    "name": "深圳迈瑞生物医疗电子股份有限公司",
+    "industry": "制造业",
+    "rd": 801738588.0,
+    "revenue": 8352015912.0,
+    "ratio_pct": 9.5993,
+    "year": "2026"
+   },
+   {
+    "name": "深圳传音控股股份有限公司",
+    "industry": "租赁和商务服务业",
+    "rd": 761366524.48,
+    "revenue": 16200109629.19,
+    "ratio_pct": 4.6998,
+    "year": "2026"
+   },
+   {
+    "name": "广东省建筑工程集团有限公司",
+    "industry": "建筑业",
+    "rd": 638781904.92,
+    "revenue": 35243868019.88,
+    "ratio_pct": 1.8125,
+    "year": "2021"
+   },
+   {
+    "name": "中铁广州工程局集团有限公司",
+    "industry": "建筑业",
+    "rd": 629480665.53,
+    "revenue": 27270323773.6,
+    "ratio_pct": 2.3083,
+    "year": "2025"
+   }
+  ]
+ },
+ "probes": {
+  "empty_columns": {
+   "dwd_org_annual_financial_info.arch_development_am": {
+    "rows": 90926,
+    "non_null": 0,
+    "positive": 0
+   },
+   "dwd_org_annual_report_asset.yftrje": {
+    "rows": 527034,
+    "non_empty": 0
+   },
+   "dwd_foreign_org_annual_financial_info": {
+    "rows": 51,
+    "rd_staff_non_null": 0,
+    "rd_amount_non_null": 51
+   }
+  },
+  "period_mix": {
+   "2026": 734,
+   "2025": 643,
+   "2018": 240,
+   "2020": 164,
+   "2019": 156,
+   "2022": 107
+  },
+  "max_execution_time_ms": 900000,
+  "retry_policy": "5 次指数退避"
+ },
+ "proxy_deviation": "① 明星企业用「专利授权≥50 且剔除非企业主体」代理，名单来自 dwd_patent 申请人聚合，偏专利密集型（制造业 1,995 家），服务业明星会漏；② 每企取最新一期，最新期含季报（income_statement 2026 年 734 家、stock 202603 期 615 家），季报营收未年化，与年报口径不可直接比；年度敏感性见 annual_2025；③ 研发投入取利润表「研发费用」，不含资本化开发支出，较「研发投入合计」系统性偏低；④ 未上市公司无公开财报，占比读数只代表 590 家有财报的明星企业，不能外推到 4,561 家。",
+ "base_years_used": [
+  "2025"
+ ],
+ "base_years_missing": [],
+ "base_years_note": "主口径是「每企最新一期」截面（期别分布见 probes.period_mix，最新期多为 2026Q1/2025 年报），不构成统一基期；为可比性另给 annual_2025 子集（120 家有效）。income_statement 的 hjnd 覆盖 38 个年度，但 2017 年前研发费用行基本缺失，故不做跨年序列。",
+ "notes": [
+  "比值>100% 的 7 家已剔除：多为季报营收与累计研发费用错位，或研发型生物医药早期营收极低。",
+  "中位数与合计口径必须并列：前者回答「典型企业强度」，后者回答「整体投入比重」，两者被巨头拉开的差距很大。",
+  "研发人员占比不在本件范围（见 M_ENT_RESEARCHER_COUNT，判完全不支持）。"
+ ]
+}

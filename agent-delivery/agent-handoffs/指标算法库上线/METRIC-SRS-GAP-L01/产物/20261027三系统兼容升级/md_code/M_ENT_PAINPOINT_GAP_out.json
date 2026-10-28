@@ -1,0 +1,655 @@
+{
+ "metric_id": "M_ENT_PAINPOINT_GAP",
+ "metric_name": "痛难点改进差距",
+ "support_judgment": "部分支持",
+ "verdict_kind": "positive",
+ "judgment_reason": "差值的分组基线在库内无配置表（名称含 baseline/p25/p75/quantile/percentile/diagnosis 的表 0 张），只能在线算分位；六项原料里研发人员占比整列为空（development_employee 非空 0/90926），营收增长率配对仅 17 家；其余四项可算但覆盖 699—1,242 家，行业门类样本≥30 的组 8 个、可打分主体 1131 家。有算子、有真数、缺维度与样本，故判部分支持。",
+ "generated_at": "2026-10-25 03:19:40",
+ "sources": {
+  "primary": "gkx @ 183.240.141.251:3318 (readonly gkx_reader_zp)",
+  "tables": [
+   "gkx.dwd_org_annual_financial_info",
+   "gkx.dwd_org_base_info",
+   "gkx.dwd_org_income_statement"
+  ],
+  "sql": [
+   "SELECT f.org_id, f.name_cn, f.`year`, f.operating_revenue, f.main_business_revenue, f.pure_profit, f.owners_equity, f.employees_number, b.industry_l1_name FROM (SELECT org_id, name_cn, `year`, operating_revenue, main_business_revenue, pure_profit, owners_equity, employees_number, ROW_NUMBER() OVER (PARTITION BY org_id ORDER BY `year` DESC) rn FROM gkx.dwd_org_annual_financial_info WHERE operating_revenue>0) f LEFT JOIN gkx.dwd_org_base_info b ON b.org_id=f.org_id AND b.is_deleted=0 WHERE f.rn=1",
+   "SELECT COUNT(*) pairs FROM (SELECT org_id FROM gkx.dwd_org_annual_financial_info WHERE `year`=2023 AND operating_revenue>0) a JOIN (SELECT org_id FROM gkx.dwd_org_annual_financial_info WHERE `year`=2024 AND operating_revenue>0) b ON a.org_id=b.org_id",
+   "SELECT COUNT(*) orgs FROM (SELECT jgid, COUNT(DISTINCT hjnd) k FROM gkx.dwd_org_income_statement WHERE yysr>0 AND hjnd REGEXP '^[0-9]{4}$' GROUP BY jgid HAVING k>=2) t",
+   "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%baseline%' OR table_name LIKE '%p25%' OR table_name LIKE '%p75%' OR table_name LIKE '%quantile%' OR table_name LIKE '%percentile%' OR table_name LIKE '%diagnosis%')",
+   "SELECT COUNT(*) n, SUM(development_employee IS NOT NULL) nn FROM gkx.dwd_org_annual_financial_info"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_PAINPOINT_GAP.md"
+ },
+ "compute": {
+  "formula": "Gap_k(e) = x_k(e) - Baseline_k(P25/P75)",
+  "group_key": {
+   "declared": "产业链分组（Q018 未闭合）",
+   "used_proxy": "dwd_org_base_info.industry_l1_name（行业门类）",
+   "groups_with_n_ge_min": 8,
+   "pairs_with_n_ge_min": 28,
+   "min_group_n": 30
+  },
+  "dims": [
+   {
+    "code": "D1",
+    "name": "营业收入增长率",
+    "dim": "经营竞争力",
+    "source": "dwd_org_annual_financial_info(2023→2024 同企两年营收)",
+    "computable_orgs": 17,
+    "status": "不足",
+    "note": "配对 17 家，无法建组内分位；利润表跨年配对 3,162 家可作扩源轨（未纳入本件差值）"
+   },
+   {
+    "code": "D2",
+    "name": "主营业务收入",
+    "dim": "经营竞争力",
+    "source": "dwd_org_annual_financial_info.main_business_revenue",
+    "computable_orgs": 1031,
+    "status": "可用（水平值）"
+   },
+   {
+    "code": "D3",
+    "name": "净利润率",
+    "dim": "盈利能力",
+    "source": "pure_profit / operating_revenue",
+    "computable_orgs": 1100,
+    "status": "可用"
+   },
+   {
+    "code": "D4",
+    "name": "净资产收益率",
+    "dim": "盈利能力",
+    "source": "pure_profit / owners_equity",
+    "computable_orgs": 1031,
+    "status": "可用"
+   },
+   {
+    "code": "D5",
+    "name": "人均产值",
+    "dim": "生产效率",
+    "source": "operating_revenue / employees_number",
+    "computable_orgs": 550,
+    "status": "可用但薄"
+   },
+   {
+    "code": "D6",
+    "name": "研发人员占比",
+    "dim": "人才状况",
+    "source": "development_employee / employees_number",
+    "computable_orgs": 0,
+    "status": "无值",
+    "note": "development_employee 全表非空 0 行，整维缺省（不输出 0 差距）"
+   }
+  ],
+  "baseline_online": {
+   "config_table_found": false,
+   "tables_matching_pattern": [],
+   "groups": [
+    {
+     "industry": "制造业",
+     "metrics": {
+      "net_margin": {
+       "n": 387,
+       "p25": 0.0065,
+       "p75": 0.1019,
+       "median": 0.0387
+      },
+      "roe": {
+       "n": 372,
+       "p25": 0.0171,
+       "p75": 0.1889,
+       "median": 0.0798
+      },
+      "rev_per_cap": {
+       "n": 213,
+       "p25": 31.5745,
+       "p75": 21401.1797,
+       "median": 85.0184
+      },
+      "main_rev": {
+       "n": 368,
+       "p25": 5235.9875,
+       "p75": 639492.87,
+       "median": 21241.445
+      }
+     }
+    },
+    {
+     "industry": "科学研究和技术服务业",
+     "metrics": {
+      "net_margin": {
+       "n": 198,
+       "p25": -0.0327,
+       "p75": 0.1212,
+       "median": 0.0235
+      },
+      "roe": {
+       "n": 184,
+       "p25": 0.0002,
+       "p75": 0.1819,
+       "median": 0.0539
+      },
+      "rev_per_cap": {
+       "n": 117,
+       "p25": 43.9229,
+       "p75": 108431.965,
+       "median": 274.6057
+      },
+      "main_rev": {
+       "n": 195,
+       "p25": 2417.585,
+       "p75": 5093008.695,
+       "median": 20849.42
+      }
+     }
+    },
+    {
+     "industry": "批发和零售业",
+     "metrics": {
+      "net_margin": {
+       "n": 158,
+       "p25": -0.0005,
+       "p75": 0.0708,
+       "median": 0.022
+      },
+      "roe": {
+       "n": 144,
+       "p25": 0.0048,
+       "p75": 0.1359,
+       "median": 0.0562
+      },
+      "main_rev": {
+       "n": 150,
+       "p25": 1696.5775,
+       "p75": 54701.7475,
+       "median": 11148.45
+      },
+      "rev_per_cap": {
+       "n": 83,
+       "p25": 20.0525,
+       "p75": 263.908,
+       "median": 48.1298
+      }
+     }
+    },
+    {
+     "industry": "信息传输、软件和信息技术服务业",
+     "metrics": {
+      "net_margin": {
+       "n": 147,
+       "p25": -0.1033,
+       "p75": 0.1523,
+       "median": 0.04
+      },
+      "roe": {
+       "n": 132,
+       "p25": -0.0507,
+       "p75": 0.2209,
+       "median": 0.0775
+      },
+      "rev_per_cap": {
+       "n": 81,
+       "p25": 21.5311,
+       "p75": 131.0789,
+       "median": 50.147
+      },
+      "main_rev": {
+       "n": 148,
+       "p25": 1142.0625,
+       "p75": 166376.17,
+       "median": 7483.21
+      }
+     }
+    },
+    {
+     "industry": "租赁和商务服务业",
+     "metrics": {
+      "main_rev": {
+       "n": 94,
+       "p25": 760.2825,
+       "p75": 364469.115,
+       "median": 6808.0
+      },
+      "net_margin": {
+       "n": 99,
+       "p25": -0.0763,
+       "p75": 0.1568,
+       "median": 0.0233
+      },
+      "roe": {
+       "n": 92,
+       "p25": -0.0033,
+       "p75": 0.1316,
+       "median": 0.0432
+      },
+      "rev_per_cap": {
+       "n": 56,
+       "p25": 25.3304,
+       "p75": 2137.292,
+       "median": 52.5671
+      }
+     }
+    },
+    {
+     "industry": "房地产业",
+     "metrics": {
+      "net_margin": {
+       "n": 43,
+       "p25": -0.0722,
+       "p75": 0.3304,
+       "median": 0.0588
+      },
+      "roe": {
+       "n": 39,
+       "p25": -0.0066,
+       "p75": 0.1539,
+       "median": 0.0826
+      },
+      "main_rev": {
+       "n": 40,
+       "p25": 13419.0325,
+       "p75": 464230.29,
+       "median": 60582.83
+      }
+     }
+    },
+    {
+     "industry": "交通运输、仓储和邮政业",
+     "metrics": {
+      "net_margin": {
+       "n": 37,
+       "p25": 0.0098,
+       "p75": 0.1555,
+       "median": 0.0802
+      },
+      "roe": {
+       "n": 37,
+       "p25": 0.027,
+       "p75": 0.1247,
+       "median": 0.048
+      },
+      "main_rev": {
+       "n": 36,
+       "p25": 9001.445,
+       "p75": 9409642.6975,
+       "median": 52795.95
+      }
+     }
+    },
+    {
+     "industry": "金融业",
+     "metrics": {
+      "net_margin": {
+       "n": 31,
+       "p25": 0.0574,
+       "p75": 0.3485,
+       "median": 0.3001
+      },
+      "roe": {
+       "n": 31,
+       "p25": 0.0334,
+       "p75": 0.1443,
+       "median": 0.0824
+      }
+     }
+    }
+   ]
+  },
+  "gaps": {
+   "scorable_orgs": 1131,
+   "by_metric": {
+    "net_margin": 1100,
+    "roe": 1031,
+    "rev_per_cap": 550,
+    "main_rev": 1031
+   },
+   "sample": [
+    {
+     "org_id": "000e178d7e8adba41690401fa1680261",
+     "name": "惠州宏丰手袋实业有限公司",
+     "year": 2014.0,
+     "industry": "制造业",
+     "gaps": {
+      "net_margin": {
+       "value": 0.0126,
+       "p25": 0.0065,
+       "p75": 0.1019,
+       "gap_p25": 0.0061,
+       "gap_p75": -0.0893
+      },
+      "roe": {
+       "value": 0.5227,
+       "p25": 0.0171,
+       "p75": 0.1889,
+       "gap_p25": 0.5056,
+       "gap_p75": 0.3338
+      },
+      "rev_per_cap": {
+       "value": 123359.3434,
+       "p25": 31.5745,
+       "p75": 21401.1797,
+       "gap_p25": 123327.7689,
+       "gap_p75": 101958.1637
+      },
+      "main_rev": {
+       "value": 32073429.28,
+       "p25": 5235.9875,
+       "p75": 639492.87,
+       "gap_p25": 32068193.2925,
+       "gap_p75": 31433936.41
+      }
+     }
+    },
+    {
+     "org_id": "002f666128c9975c5baa4f4b5d79f40a",
+     "name": "深圳市鸿德电池有限公司",
+     "year": 2014.0,
+     "industry": "制造业",
+     "gaps": {
+      "net_margin": {
+       "value": 0.0056,
+       "p25": 0.0065,
+       "p75": 0.1019,
+       "gap_p25": -0.0009,
+       "gap_p75": -0.0963
+      },
+      "roe": {
+       "value": 0.0077,
+       "p25": 0.0171,
+       "p75": 0.1889,
+       "gap_p25": -0.0094,
+       "gap_p75": -0.1812
+      },
+      "rev_per_cap": {
+       "value": 331.5469,
+       "p25": 31.5745,
+       "p75": 21401.1797,
+       "gap_p25": 299.9724,
+       "gap_p75": -21069.6328
+      },
+      "main_rev": {
+       "value": 18233.54,
+       "p25": 5235.9875,
+       "p75": 639492.87,
+       "gap_p25": 12997.5525,
+       "gap_p75": -621259.33
+      }
+     }
+    },
+    {
+     "org_id": "007c2db529440758305f334cc8ea7ccd",
+     "name": "深圳市恒运昌真空技术有限公司",
+     "year": 2014.0,
+     "industry": "制造业",
+     "gaps": {
+      "net_margin": {
+       "value": 0.0034,
+       "p25": 0.0065,
+       "p75": 0.1019,
+       "gap_p25": -0.0031,
+       "gap_p75": -0.0985
+      },
+      "roe": {
+       "value": 0.0231,
+       "p25": 0.0171,
+       "p75": 0.1889,
+       "gap_p25": 0.006,
+       "gap_p75": -0.1658
+      },
+      "rev_per_cap": {
+       "value": 177.7273,
+       "p25": 31.5745,
+       "p75": 21401.1797,
+       "gap_p25": 146.1528,
+       "gap_p75": -21223.4524
+      },
+      "main_rev": {
+       "value": 1684.0,
+       "p25": 5235.9875,
+       "p75": 639492.87,
+       "gap_p25": -3551.9875,
+       "gap_p75": -637808.87
+      }
+     }
+    },
+    {
+     "org_id": "00e227a44ef35e1b07cf3f92c96542fb",
+     "name": "广东省重工建筑设计院有限公司",
+     "year": 2020.0,
+     "industry": "科学研究和技术服务业",
+     "gaps": {
+      "net_margin": {
+       "value": 0.1337,
+       "p25": -0.0327,
+       "p75": 0.1212,
+       "gap_p25": 0.1664,
+       "gap_p75": 0.0125
+      },
+      "roe": {
+       "value": 0.4228,
+       "p25": 0.0002,
+       "p75": 0.1819,
+       "gap_p25": 0.4226,
+       "gap_p75": 0.2409
+      },
+      "rev_per_cap": {
+       "value": 90.4973,
+       "p25": 43.9229,
+       "p75": 108431.965,
+       "gap_p25": 46.5744,
+       "gap_p75": -108341.4677
+      },
+      "main_rev": {
+       "value": 32941.02,
+       "p25": 2417.585,
+       "p75": 5093008.695,
+       "gap_p25": 30523.435,
+       "gap_p75": -5060067.675
+      }
+     }
+    },
+    {
+     "org_id": "00ecf6fb7bf8c8436bc696b1e85770a2",
+     "name": "广州甘来信息科技有限公司",
+     "year": 2015.0,
+     "industry": "信息传输、软件和信息技术服务业",
+     "gaps": {
+      "net_margin": {
+       "value": -2.6238,
+       "p25": -0.1033,
+       "p75": 0.1523,
+       "gap_p25": -2.5205,
+       "gap_p75": -2.7761
+      },
+      "roe": {
+       "value": -0.1328,
+       "p25": -0.0507,
+       "p75": 0.2209,
+       "gap_p25": -0.0821,
+       "gap_p75": -0.3537
+      },
+      "rev_per_cap": {
+       "value": 18496.1761,
+       "p25": 21.5311,
+       "p75": 131.0789,
+       "gap_p25": 18474.645,
+       "gap_p75": 18365.0972
+      },
+      "main_rev": {
+       "value": 1054282.04,
+       "p25": 1142.0625,
+       "p75": 166376.17,
+       "gap_p25": 1053139.9775,
+       "gap_p75": 887905.87
+      }
+     }
+    },
+    {
+     "org_id": "01089ebf47d904122764c6d2764bf449",
+     "name": "深圳市明致集成电路技术有限公司",
+     "year": 2014.0,
+     "industry": "信息传输、软件和信息技术服务业",
+     "gaps": {
+      "net_margin": {
+       "value": 0.0007,
+       "p25": -0.1033,
+       "p75": 0.1523,
+       "gap_p25": 0.104,
+       "gap_p75": -0.1516
+      },
+      "roe": {
+       "value": 0.0862,
+       "p25": -0.0507,
+       "p75": 0.2209,
+       "gap_p25": 0.1369,
+       "gap_p75": -0.1347
+      },
+      "rev_per_cap": {
+       "value": 55.0852,
+       "p25": 21.5311,
+       "p75": 131.0789,
+       "gap_p25": 33.5541,
+       "gap_p75": -75.9937
+      },
+      "main_rev": {
+       "value": 12779.77,
+       "p25": 1142.0625,
+       "p75": 166376.17,
+       "gap_p25": 11637.7075,
+       "gap_p75": -153596.4
+      }
+     }
+    },
+    {
+     "org_id": "0112847e4905e8f1b0c1d888ebd37f08",
+     "name": "金银卡（广州）生物科技有限公司",
+     "year": 2015.0,
+     "industry": "科学研究和技术服务业",
+     "gaps": {
+      "net_margin": {
+       "value": 0.0426,
+       "p25": -0.0327,
+       "p75": 0.1212,
+       "gap_p25": 0.0753,
+       "gap_p75": -0.0786
+      },
+      "roe": {
+       "value": 0.0005,
+       "p25": 0.0002,
+       "p75": 0.1819,
+       "gap_p25": 0.0003,
+       "gap_p75": -0.1814
+      },
+      "rev_per_cap": {
+       "value": 219.6029,
+       "p25": 43.9229,
+       "p75": 108431.965,
+       "gap_p25": 175.68,
+       "gap_p75": -108212.3621
+      },
+      "main_rev": {
+       "value": 14880.0,
+       "p25": 2417.585,
+       "p75": 5093008.695,
+       "gap_p25": 12462.415,
+       "gap_p75": -5078128.695
+      }
+     }
+    },
+    {
+     "org_id": "027aaf20599572f20a15ee9c52241827",
+     "name": "广州豪富科技股份有限公司",
+     "year": 2025.0,
+     "industry": "信息传输、软件和信息技术服务业",
+     "gaps": {
+      "net_margin": {
+       "value": 0.001,
+       "p25": -0.1033,
+       "p75": 0.1523,
+       "gap_p25": 0.1043,
+       "gap_p75": -0.1513
+      },
+      "roe": {
+       "value": 0.0006,
+       "p25": -0.0507,
+       "p75": 0.2209,
+       "gap_p25": 0.0513,
+       "gap_p75": -0.2203
+      },
+      "rev_per_cap": {
+       "value": 28.6291,
+       "p25": 21.5311,
+       "p75": 131.0789,
+       "gap_p25": 7.098,
+       "gap_p75": -102.4498
+      },
+      "main_rev": {
+       "value": 314.92,
+       "p25": 1142.0625,
+       "p75": 166376.17,
+       "gap_p25": -827.1425,
+       "gap_p75": -166061.25
+      }
+     }
+    }
+   ]
+  },
+  "unit_check": {
+   "revenue_n": 1301,
+   "revenue_max": 29800924733.43,
+   "revenue_median": 16554.99,
+   "revenue_p90": 80058401.21,
+   "per_capita_median": 85.33,
+   "per_capita_p90": 456553.13,
+   "flag": "金额单位疑不一致（元与万元混用）",
+   "note": "最大值 298 亿与中位数 1.66 万并存；人均产值中位数落在两位数（元/人），真实劳动生产率不可能这么低，说明分子或分母量纲不齐。本件因此只把「差值」用于组内排序提示，不把绝对金额当可对外发布的读数。"
+  },
+  "extension_track": {
+   "income_statement_multi_year_orgs": 3162,
+   "note": "利润表 yysr 可提供跨年营收，用于把 D1 从 17 家扩到 3,162 家；本件未纳入，因 calc-logic 的 D1 指定源是年报表，换源须先闭合口径。"
+  }
+ },
+ "probes": {
+  "baseline_table_scan": {
+   "patterns": [
+    "%baseline%",
+    "%p25%",
+    "%p75%",
+    "%quantile%",
+    "%percentile%",
+    "%diagnosis%"
+   ],
+   "hits": []
+  },
+  "rd_staff_column": {
+   "rows": 90926,
+   "non_null": 0
+  },
+  "max_execution_time_ms": 900000,
+  "retry_policy": "5 次指数退避"
+ },
+ "proxy_deviation": "分组键用行业门类代理产业链分组（Q018 未闭合）：产业链分组按产品/环节划分，同一门类内可能横跨上下游，代理会让基线变宽（组内异质性上升），P25/P75 区间被拉大，差距的绝对值偏小。差额无法在库内量化，须在 Q018 闭合后重算。另：年报财务表 90,926 行里营收>0 的仅 2,191 行，且集中在 2014—2017 年，本件每企取「最新有营收年」，故差值反映的是较早年度截面，不是当期经营状况。",
+ "base_years_used": [
+  2014,
+  2015,
+  2016,
+  2017,
+  2025
+ ],
+ "base_years_missing": [
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024
+ ],
+ "base_years_note": "每企取「最新一个有营收的年」，取到的年份集中在 2014—2017（最新年分布见 compute.dims 与主体样本的 year 字段），故 used 只列实际承载主体的年份；2018—2024 虽在表内存在，但承载主体极少（营收>0 行集中于早期），单列 missing 以免被读成可用基期。增长率维用 2023→2024 两年配对（17 家），与本截面基期不同源。",
+ "notes": [
+  "不设硬阈值：只输出原始差值，不判「劣势/优势」等级。",
+  "缺维不补 0：研发人员占比整维缺省，输出 null 而不是 0 差距。",
+  "与 M_ENT_PAINPOINT_COUNT（合规事件计数）、M_ENT_PAINPOINT_TOPIC（痛点主题归类）不同源、不同粒度，三者不互相顶替。"
+ ]
+}

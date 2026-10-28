@@ -1,0 +1,310 @@
+{
+ "metric": "M_SVC_RELATION_RISK",
+ "metric_name": "服务关系风险",
+ "support_judgment": "部分支持",
+ "verdict_kind": "partial_with_gaps",
+ "generated_at": "2026-10-23T04:42:00+08:00",
+ "sources": {
+  "db": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "tables": [
+   "gkx.dwd_org_company_punish",
+   "gkx.dwd_org_risk_shixin",
+   "gkx.dwd_org_invest_info",
+   "gkx.dwd_org_shareholder_info",
+   "gkx.dwd_org_org_product_info"
+  ],
+  "snapshots": [
+   "code/_snapshots21/svc21_facts_20261022.json",
+   "code/_probe_blocked_f2_20261023.json"
+  ],
+  "demo_used": false
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "行政处罚与失信被执行均为存量累计口径（表内无可靠事件年份），本件不按年切片；风险率是快照日截面。",
+ "population": {
+  "pool_n": 44153,
+  "risky_n": 22719,
+  "shixin_n": 9869,
+  "punish_n": 16197,
+  "both_n": 3347,
+  "only_shixin_n": 6522,
+  "only_punish_n": 12850,
+  "shixin_records_in_pool": 60364,
+  "punish_records_in_pool": 51672,
+  "max_records_single_org": 1239,
+  "clean_pool_n": 21434
+ },
+ "edges": {
+  "undirected_internal_edges": 13141,
+  "risk_risk_edges": 3183,
+  "mixed_edges": 5118,
+  "clean_clean_edges": 4840,
+  "risky_active_nodes": 5877,
+  "clean_active_nodes": 7028
+ },
+ "exposure": {
+  "exposed_clean_n": 3184,
+  "two_hop_clean_n": 1893,
+  "exposure_type": {
+   "仅处罚": 1924,
+   "仅失信": 554,
+   "两类均有": 706
+  }
+ },
+ "city_slices": [
+  {
+   "city": "深圳市",
+   "nodes": 25597,
+   "risky": 11187,
+   "shixin": 5327,
+   "punish": 7333,
+   "exposed_clean": 2088
+  },
+  {
+   "city": "广州市",
+   "nodes": 12641,
+   "risky": 7712,
+   "shixin": 3553,
+   "punish": 5550,
+   "exposed_clean": 852
+  },
+  {
+   "city": "东莞市",
+   "nodes": 4300,
+   "risky": 2687,
+   "shixin": 606,
+   "punish": 2369,
+   "exposed_clean": 172
+  },
+  {
+   "city": "惠州市",
+   "nodes": 1594,
+   "risky": 1133,
+   "shixin": 383,
+   "punish": 945,
+   "exposed_clean": 70
+  }
+ ],
+ "derived": {
+  "risk_rate_pct": {
+   "value": 51.4552,
+   "numerator": 22719,
+   "denominator": 44153,
+   "denominator_note": "分子=池内至少命中一条处罚或失信记录的机构数 population.risky_n，分母=服务机构池家数 population.pool_n"
+  },
+  "shixin_rate_pct": {
+   "value": 22.3518,
+   "numerator": 9869,
+   "denominator": 44153,
+   "denominator_note": "分子=池内失信被执行机构数 population.shixin_n，分母=服务机构池家数 population.pool_n"
+  },
+  "punish_rate_pct": {
+   "value": 36.6838,
+   "numerator": 16197,
+   "denominator": 44153,
+   "denominator_note": "分子=池内行政处罚机构数 population.punish_n，分母=服务机构池家数 population.pool_n"
+  },
+  "both_share_of_risky_pct": {
+   "value": 14.7322,
+   "numerator": 3347,
+   "denominator": 22719,
+   "denominator_note": "分子=同时有处罚与失信的机构数 population.both_n，分母=风险机构数 population.risky_n"
+  },
+  "risk_risk_edge_share_pct": {
+   "value": 24.2219,
+   "numerator": 3183,
+   "denominator": 13141,
+   "denominator_note": "分子=两端均风险的无向边数 edges.risk_risk_edges，分母=池内无向边总数 edges.undirected_internal_edges"
+  },
+  "mixed_edge_share_pct": {
+   "value": 38.9468,
+   "numerator": 5118,
+   "denominator": 13141,
+   "denominator_note": "分子=一端风险的边数 edges.mixed_edges，分母=池内无向边总数 edges.undirected_internal_edges"
+  },
+  "clean_edge_share_pct": {
+   "value": 36.8313,
+   "numerator": 4840,
+   "denominator": 13141,
+   "denominator_note": "分子=两端均无风险记录的边数 edges.clean_clean_edges，分母=池内无向边总数 edges.undirected_internal_edges"
+  },
+  "exposure_rate_active_clean_pct": {
+   "value": 45.3045,
+   "numerator": 3184,
+   "denominator": 7028,
+   "denominator_note": "分子=一跳暴露的非风险机构数 exposure.exposed_clean_n，分母=有边的非风险机构数 edges.clean_active_nodes"
+  },
+  "exposure_rate_all_clean_pct": {
+   "value": 14.8549,
+   "numerator": 3184,
+   "denominator": 21434,
+   "denominator_note": "分子=一跳暴露的非风险机构数 exposure.exposed_clean_n，分母=池内非风险机构数（pool_n − risky_n）"
+  },
+  "two_hop_over_one_hop_x": {
+   "value": 0.5945,
+   "numerator": 1893,
+   "denominator": 3184,
+   "denominator_note": "分子=二跳新增的非风险机构数 exposure.two_hop_clean_n，分母=一跳暴露机构数 exposure.exposed_clean_n（倍率）"
+  },
+  "sz_risk_share_of_all_risky_pct": {
+   "value": 49.2407,
+   "numerator": 11187,
+   "denominator": 22719,
+   "denominator_note": "分子=深圳风险机构数 city_slices[深圳市].risky，分母=池内风险机构总数 population.risky_n"
+  },
+  "risky_active_share_pct": {
+   "value": 25.8682,
+   "numerator": 5877,
+   "denominator": 22719,
+   "denominator_note": "分子=有边的风险机构数 edges.risky_active_nodes，分母=风险机构数 population.risky_n"
+  },
+  "clean_active_share_pct": {
+   "value": 32.789,
+   "numerator": 7028,
+   "denominator": 21434,
+   "denominator_note": "分子=有边的非风险机构数 edges.clean_active_nodes，分母=池内非风险机构数（pool_n − risky_n）"
+  },
+  "two_hop_over_all_clean_pct": {
+   "value": 8.8318,
+   "numerator": 1893,
+   "denominator": 21434,
+   "denominator_note": "分子=二跳新增的非风险机构数 exposure.two_hop_clean_n，分母=池内非风险机构数（pool_n − risky_n）"
+  },
+  "only_punish_share_of_exposed_pct": {
+   "value": 60.4271,
+   "numerator": 1924,
+   "denominator": 3184,
+   "denominator_note": "分子=只通过处罚主体暴露的机构数 exposure.exposure_type.仅处罚，分母=一跳暴露机构数 exposure.exposed_clean_n"
+  },
+  "only_shixin_share_of_exposed_pct": {
+   "value": 17.3995,
+   "numerator": 554,
+   "denominator": 3184,
+   "denominator_note": "分子=只通过失信主体暴露的机构数 exposure.exposure_type.仅失信，分母=一跳暴露机构数 exposure.exposed_clean_n"
+  },
+  "both_kinds_share_of_exposed_pct": {
+   "value": 22.1734,
+   "numerator": 706,
+   "denominator": 3184,
+   "denominator_note": "分子=同时通过处罚与失信主体暴露的机构数 exposure.exposure_type.两类均有，分母=一跳暴露机构数 exposure.exposed_clean_n"
+  },
+  "shixin_records_per_risky": {
+   "value": 6.1165,
+   "numerator": 60364,
+   "denominator": 9869,
+   "denominator_note": "分子=池内失信被执行记录行数 population.shixin_records_in_pool，分母=失信机构数 population.shixin_n（条/家）"
+  },
+  "punish_records_per_punish": {
+   "value": 3.1902,
+   "numerator": 51672,
+   "denominator": 16197,
+   "denominator_note": "分子=池内行政处罚记录行数 population.punish_records_in_pool，分母=受处罚机构数 population.punish_n（条/家）"
+  },
+  "city_risk_rate_sz_pct": {
+   "value": 43.7043,
+   "numerator": 11187,
+   "denominator": 25597,
+   "denominator_note": "分子=深圳风险机构数 city_slices[深圳市].risky，分母=深圳池家数 city_slices[深圳市].nodes"
+  },
+  "city_risk_rate_gz_pct": {
+   "value": 61.0078,
+   "numerator": 7712,
+   "denominator": 12641,
+   "denominator_note": "分子=广州风险机构数 city_slices[广州市].risky，分母=广州池家数 city_slices[广州市].nodes"
+  },
+  "city_risk_rate_dg_pct": {
+   "value": 62.4884,
+   "numerator": 2687,
+   "denominator": 4300,
+   "denominator_note": "分子=东莞风险机构数 city_slices[东莞市].risky，分母=东莞池家数 city_slices[东莞市].nodes"
+  },
+  "city_risk_rate_hz_pct": {
+   "value": 71.079,
+   "numerator": 1133,
+   "denominator": 1594,
+   "denominator_note": "分子=惠州风险机构数 city_slices[惠州市].risky，分母=惠州池家数 city_slices[惠州市].nodes"
+  },
+  "only_punish_share_of_risky_pct": {
+   "value": 56.5606,
+   "numerator": 12850,
+   "denominator": 22719,
+   "denominator_note": "分子=仅处罚机构数 population.only_punish_n，分母=风险机构数 population.risky_n"
+  },
+  "only_shixin_share_of_risky_pct": {
+   "value": 28.7072,
+   "numerator": 6522,
+   "denominator": 22719,
+   "denominator_note": "分子=仅失信机构数 population.only_shixin_n，分母=风险机构数 population.risky_n"
+  },
+  "unexposed_risky_share_pct": {
+   "value": 74.1318,
+   "numerator": 16842,
+   "denominator": 22719,
+   "denominator_note": "分子=无股权边的风险机构数（population.risky_n − edges.risky_active_nodes），分母=风险机构数 population.risky_n"
+  },
+  "sz_exposed_share_of_all_exposed_pct": {
+   "value": 65.5779,
+   "numerator": 2088,
+   "denominator": 3184,
+   "denominator_note": "分子=深圳一跳暴露机构数 city_slices[深圳市].exposed_clean，分母=池内一跳暴露机构总数 exposure.exposed_clean_n"
+  }
+ },
+ "absence_probe": {
+  "file": "code/_probe_blocked_f2_20261023.json",
+  "blocked": [
+   {
+    "table": "enterprise_cooperation",
+    "gkx_exists": false,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "enterprise_supply_chain",
+    "gkx_exists": false,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "svc_org_card",
+    "gkx_exists": false,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "svc_org_circle",
+    "gkx_exists": false,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   }
+  ]
+ },
+ "rejected_dimensions": [
+  {
+   "dimension": "合作关系风险传导",
+   "reason": "gkx 无 enterprise_cooperation（information_schema 命中 0 表），合作边不存在；演示库同名表为全量装载，铁律禁引，不构成支持",
+   "alternative": "投资/股东边一跳暴露",
+   "difference": "股权关系不等于业务合作，风险沿股权的传导只覆盖控制/参股链，漏掉合作方与客户；暴露率不可外推为「合作风险率」"
+  },
+  {
+   "dimension": "供应链风险传导",
+   "reason": "gkx 无 enterprise_supply_chain（0 表），供应商/客户关系无承载",
+   "alternative": "无（本维拒拟）",
+   "difference": "替代口径无法覆盖上下游停摆风险，只能作股权关联风险"
+  },
+  {
+   "dimension": "风险事件时间序列与处置进度",
+   "reason": "处罚/失信表无可靠事件日期与结案状态列，gkx 无 svc_metric_series",
+   "alternative": "存量计数",
+   "difference": "只能回答「有没有记录」，不能回答「何时发生、是否已修复」"
+  }
+ ],
+ "gaps": [
+  "风险口径只覆盖行政处罚与失信被执行，不纳入经营异常、司法执行、税务处罚等其他风险类表（不在本件 calc-logic 范围）",
+  "股权边 95.64% 只有一端可解析，传导覆盖不完整",
+  "风险记录无事件日期，无法区分历史已修复与当前仍在"
+ ]
+}

@@ -1,0 +1,41 @@
+# 产业发展阶段（专题侧拆分件）（M_CHAIN_STAGE_SCORE_ZT）
+
+> **维护者**：唐绍祖
+> **适用系统**：科技专题系统（本件只服务本系统）
+> **同名指标族·互见**：
+> - `M_CHAIN_STAGE_SCORE`（原 ID·科技专题服务算法库）｜ `../第三方库指标计算过程/M_CHAIN_STAGE_SCORE.md` ｜ `code/M_CHAIN_STAGE_SCORE.py`
+> - `M_CHAIN_STAGE_SCORE_ZT`（本件·科技专题系统）｜ 本文件 ｜ `code/M_CHAIN_STAGE_SCORE_ZT.py`
+> - `M_CHAIN_STAGE_SCORE_ZS`（科技信息展示系统）｜ `../第三方库指标计算过程/M_CHAIN_STAGE_SCORE_ZS.md`
+> **差异分级**：D2 口径级分歧·**不可兼容·方法型** → 拆分新 ID（后缀 `_ZT`=专题系统 / `_ZS`=展示系统）
+> **拆分理由**：算法库预测型阶段打分模型 vs 系统侧交互式阶段标注/周期可视化，方法型分歧 ｜ 判定全表：`../过程文件/02_D2兼容判定与拆分_总结.md`
+
+---
+
+## 〇、拆分判定（D2 · 方法型不可兼容）
+
+- **原 ID（M_CHAIN_STAGE_SCORE）**：归科技专题服务算法库，20261021 基线口径**原样继承、只加抬头**。
+- **本件（M_CHAIN_STAGE_SCORE_ZT）**：按科技专题系统需求原文独立立件，独立验收；两侧数值**不互校、不互换**。
+
+### 0.1 系统侧需求原文（拆分依据，逐字）
+
+以下摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位）：
+
+（L01 未收录系统侧摘录）
+
+### 0.2 本件口径（展示结构件）
+
+阶段判定快照引用：产业→阶段→判定依据（读原 ID compute_t* 结果）
+
+## 一、三系统需求兼容性设计（本件为拆分件）
+
+- **兼容判定**：不可兼容（方法型），拆分处置——原 ID 与本件各按其主系统需求文档独立实现。
+- **入参兼容策略**：`compute(params)` 仅服务科技专题系统；`q/period/limit` 见 py `DEFAULTS` 注释。
+- **出参兼容策略**：`value=None`（结构/契约件）；`detail`=字段契约；`display`=页面结构位；`split_family`=族互见。
+- **调用注意**：科技专题系统后端：消费 detail/display 段做页面渲染；数值引擎按契约回填后经本接口读取。不要把本件当计算接口串进算法链路。
+- **依据**：`gkx-orchestration/.../METRIC-SRS-GAP-L01/产物/file/M_CHAIN_STAGE_SCORE.md`（§二原文/§四判级）；`../过程文件/02_D2兼容判定与拆分_总结.md`
+
+## 二、产物与复现
+
+- 脚本：`code/M_CHAIN_STAGE_SCORE_ZT.py`（自包含，运行 `python3 code/M_CHAIN_STAGE_SCORE_ZT.py` 覆盖写 `code/M_CHAIN_STAGE_SCORE_ZT_out.json`）
+- 产物：`code/M_CHAIN_STAGE_SCORE_ZT_out.json`（`split_family` 字段内置全族路径；`origin_baseline` 引用原 ID 探针结论供对照）
+- 本件为结构/契约件，无数值实测章节；数值型实测见原 ID 报告。

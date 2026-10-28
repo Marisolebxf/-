@@ -1,0 +1,925 @@
+{
+ "metric_id": "M_ENT_DOMAIN_DIST_TOPIC",
+ "metric_name": "企业领域分布",
+ "script": "M_ENT_DOMAIN_DIST_TOPIC.py",
+ "as_of": "2026-10-23",
+ "source": {
+  "db": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）",
+  "snapshots": [
+   "code/_snapshots21/chain_firm_index_20261023.json",
+   "code/_snapshots21/chain_tree_20261021.json",
+   "code/_snapshots21/base_20261021.json",
+   "code/_snapshots21/star_roster_gkx_20261021.json",
+   "code/_snapshots21/tech_tags_20261021.json",
+   "code/_snapshots21/w13e3_probe_20261023.json"
+  ]
+ },
+ "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DOMAIN_DIST_TOPIC.md",
+ "support_judgment": "部分支持",
+ "verdict_kind": "proxy_constructed",
+ "four_judgment": {
+  "表结构直接支持（开发库+三方库）": "否：两库均无 enterprise_domain_year_dist 结果表",
+  "表数据直接支持（开发库+三方库）": "否：无结果表，且无 stat_year",
+  "依赖表结构支持（开发库/三方库）": "部分：gkx 有企业↔链结构，无 15 集群 map；无年度键",
+  "依赖表数据支持（开发库/三方库）": "是（单期）/否（年度）：链归属 1,714,457 家可出 12 链分布，年度与同比不可算"
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件无年度键：链归属表没有 stat_year，created_time 只有单一批次。因此既没有「进入分母的年份」，也没有「缺哪一年」，used/missing 为空；同比按「上年格不存在」记空，不按 0 摊入。",
+ "result": {
+  "stat_year_available": false,
+  "stat_year_evidence": {
+   "tag_table_columns": [
+    "dwd_id",
+    "industry_link_code",
+    "industry_link_name",
+    "industry_code",
+    "industry_name",
+    "company_name",
+    "credit_code",
+    "created_time",
+    "updated_time"
+   ],
+   "has_stat_year_column": false,
+   "created_time_distinct": 1,
+   "created_time_value": "2026-08-27",
+   "note": "链归属表只有入库时间，没有批次自然年；无法构造 stat_year × chain 面板。"
+  },
+  "yoy_available": false,
+  "yoy_note": "同比要求同一领域键的上年计数；本件只有单期快照，上年格不存在，按口径记空而不是按 0。",
+  "domain_key": "industry_code 链根（12 条）",
+  "domain_key_declared": "industry_cluster_map.cluster_id（15 个）",
+  "domain_key_substituted": true,
+  "chain_dist": [
+   {
+    "rank": 1,
+    "chain_code": "INB1306",
+    "chain_name": "软件与信息服务",
+    "org_cnt": 917842,
+    "share_pct": 53.5354,
+    "n_cities": 338,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 143448
+     },
+     {
+      "city": "北京市",
+      "n": 72088
+     },
+     {
+      "city": "深圳市",
+      "n": 52392
+     },
+     {
+      "city": "上海市",
+      "n": 42718
+     },
+     {
+      "city": "广州市",
+      "n": 34479
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 143238
+     },
+     {
+      "province": "北京市",
+      "n": 75259
+     },
+     {
+      "province": "江苏省",
+      "n": 63777
+     }
+    ]
+   },
+   {
+    "rank": 2,
+    "chain_code": "INB1502",
+    "chain_name": "数字创意",
+    "org_cnt": 261837,
+    "share_pct": 15.2723,
+    "n_cities": 338,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 35928
+     },
+     {
+      "city": "北京市",
+      "n": 15003
+     },
+     {
+      "city": "成都市",
+      "n": 12165
+     },
+     {
+      "city": "深圳市",
+      "n": 11171
+     },
+     {
+      "city": "广州市",
+      "n": 9566
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 39108
+     },
+     {
+      "province": "浙江省",
+      "n": 22424
+     },
+     {
+      "province": "四川省",
+      "n": 17840
+     }
+    ]
+   },
+   {
+    "rank": 3,
+    "chain_code": "INB1333",
+    "chain_name": "智能终端",
+    "org_cnt": 143389,
+    "share_pct": 8.3635,
+    "n_cities": 328,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 20137
+     },
+     {
+      "city": "深圳市",
+      "n": 10655
+     },
+     {
+      "city": "宁波市",
+      "n": 8296
+     },
+     {
+      "city": "邢台市",
+      "n": 6236
+     },
+     {
+      "city": "温州市",
+      "n": 5489
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "浙江省",
+      "n": 30239
+     },
+     {
+      "province": "广东省",
+      "n": 24421
+     },
+     {
+      "province": "江苏省",
+      "n": 15496
+     }
+    ]
+   },
+   {
+    "rank": 4,
+    "chain_code": "INB2503",
+    "chain_name": "生物医药",
+    "org_cnt": 138742,
+    "share_pct": 8.0925,
+    "n_cities": 338,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 12550
+     },
+     {
+      "city": "亳州市",
+      "n": 6543
+     },
+     {
+      "city": "重庆市",
+      "n": 5250
+     },
+     {
+      "city": "阜阳市",
+      "n": 3128
+     },
+     {
+      "city": "商丘市",
+      "n": 2531
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "安徽省",
+      "n": 15523
+     },
+     {
+      "province": "河南省",
+      "n": 12369
+     },
+     {
+      "province": "云南省",
+      "n": 10409
+     }
+    ]
+   },
+   {
+    "rank": 5,
+    "chain_code": "INB1309",
+    "chain_name": "人工智能",
+    "org_cnt": 131843,
+    "share_pct": 7.6901,
+    "n_cities": 337,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 19700
+     },
+     {
+      "city": "深圳市",
+      "n": 9260
+     },
+     {
+      "city": "杭州市",
+      "n": 5815
+     },
+     {
+      "city": "成都市",
+      "n": 5693
+     },
+     {
+      "city": "北京市",
+      "n": 5553
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 19965
+     },
+     {
+      "province": "山东省",
+      "n": 14436
+     },
+     {
+      "province": "浙江省",
+      "n": 12196
+     }
+    ]
+   },
+   {
+    "rank": 6,
+    "chain_code": "INB2505",
+    "chain_name": "合成生物",
+    "org_cnt": 52329,
+    "share_pct": 3.0522,
+    "n_cities": 337,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 7437
+     },
+     {
+      "city": "潍坊市",
+      "n": 2092
+     },
+     {
+      "city": "深圳市",
+      "n": 1135
+     },
+     {
+      "city": "临沂市",
+      "n": 987
+     },
+     {
+      "city": "济南市",
+      "n": 843
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "山东省",
+      "n": 9639
+     },
+     {
+      "province": "广东省",
+      "n": 4424
+     },
+     {
+      "province": "江苏省",
+      "n": 3348
+     }
+    ]
+   },
+   {
+    "rank": 7,
+    "chain_code": "INB1323",
+    "chain_name": "传感器",
+    "org_cnt": 29708,
+    "share_pct": 1.7328,
+    "n_cities": 301,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 3949
+     },
+     {
+      "city": "深圳市",
+      "n": 2095
+     },
+     {
+      "city": "苏州市",
+      "n": 1291
+     },
+     {
+      "city": "温州市",
+      "n": 1185
+     },
+     {
+      "city": "上海市",
+      "n": 1014
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "江苏省",
+      "n": 5287
+     },
+     {
+      "province": "浙江省",
+      "n": 4504
+     },
+     {
+      "province": "广东省",
+      "n": 4179
+     }
+    ]
+   },
+   {
+    "rank": 8,
+    "chain_code": "INB1303",
+    "chain_name": "集成电路",
+    "org_cnt": 12028,
+    "share_pct": 0.7016,
+    "n_cities": 281,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 1844
+     },
+     {
+      "city": "深圳市",
+      "n": 1164
+     },
+     {
+      "city": "上海市",
+      "n": 641
+     },
+     {
+      "city": "苏州市",
+      "n": 554
+     },
+     {
+      "city": "东莞市",
+      "n": 486
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 2722
+     },
+     {
+      "province": "江苏省",
+      "n": 2145
+     },
+     {
+      "province": "浙江省",
+      "n": 1235
+     }
+    ]
+   },
+   {
+    "rank": 9,
+    "chain_code": "INB1204",
+    "chain_name": "机器人",
+    "org_cnt": 8549,
+    "share_pct": 0.4986,
+    "n_cities": 249,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "深圳市",
+      "n": 1253
+     },
+     {
+      "city": "未匹配",
+      "n": 1220
+     },
+     {
+      "city": "北京市",
+      "n": 437
+     },
+     {
+      "city": "上海市",
+      "n": 403
+     },
+     {
+      "city": "苏州市",
+      "n": 392
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 2152
+     },
+     {
+      "province": "江苏省",
+      "n": 1443
+     },
+     {
+      "province": "浙江省",
+      "n": 952
+     }
+    ]
+   },
+   {
+    "rank": 10,
+    "chain_code": "INB1354",
+    "chain_name": "具身智能",
+    "org_cnt": 8140,
+    "share_pct": 0.4748,
+    "n_cities": 263,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "深圳市",
+      "n": 1576
+     },
+     {
+      "city": "未匹配",
+      "n": 1095
+     },
+     {
+      "city": "北京市",
+      "n": 771
+     },
+     {
+      "city": "上海市",
+      "n": 518
+     },
+     {
+      "city": "杭州市",
+      "n": 269
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 2281
+     },
+     {
+      "province": "江苏省",
+      "n": 1021
+     },
+     {
+      "province": "北京市",
+      "n": 864
+     }
+    ]
+   },
+   {
+    "rank": 11,
+    "chain_code": "INB1209",
+    "chain_name": "智能网联汽车",
+    "org_cnt": 6016,
+    "share_pct": 0.3509,
+    "n_cities": 294,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "深圳市",
+      "n": 1103
+     },
+     {
+      "city": "未匹配",
+      "n": 800
+     },
+     {
+      "city": "北京市",
+      "n": 250
+     },
+     {
+      "city": "上海市",
+      "n": 195
+     },
+     {
+      "city": "苏州市",
+      "n": 133
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 1565
+     },
+     {
+      "province": "江苏省",
+      "n": 565
+     },
+     {
+      "province": "浙江省",
+      "n": 386
+     }
+    ]
+   },
+   {
+    "rank": 12,
+    "chain_code": "INB1236",
+    "chain_name": "低空经济",
+    "org_cnt": 4034,
+    "share_pct": 0.2353,
+    "n_cities": 299,
+    "n_provinces": 31,
+    "top_cities": [
+     {
+      "city": "未匹配",
+      "n": 788
+     },
+     {
+      "city": "深圳市",
+      "n": 166
+     },
+     {
+      "city": "北京市",
+      "n": 137
+     },
+     {
+      "city": "沈阳市",
+      "n": 99
+     },
+     {
+      "city": "成都市",
+      "n": 95
+     }
+    ],
+    "top_provinces": [
+     {
+      "province": "广东省",
+      "n": 393
+     },
+     {
+      "province": "江苏省",
+      "n": 368
+     },
+     {
+      "province": "山东省",
+      "n": 218
+     }
+    ]
+   }
+  ],
+  "chain_total": 1714457,
+  "top1_share_pct": 53.5354,
+  "top3_share_pct": 77.1713,
+  "hhi": 0.330732,
+  "n_chains": 12,
+  "city_dist_top12": [
+   {
+    "city": "北京市",
+    "n": 98517,
+    "share_pct": 5.7463
+   },
+   {
+    "city": "深圳市",
+    "n": 92930,
+    "share_pct": 5.4204
+   },
+   {
+    "city": "上海市",
+    "n": 60266,
+    "share_pct": 3.5152
+   },
+   {
+    "city": "成都市",
+    "n": 55812,
+    "share_pct": 3.2554
+   },
+   {
+    "city": "广州市",
+    "n": 50117,
+    "share_pct": 2.9232
+   },
+   {
+    "city": "武汉市",
+    "n": 43346,
+    "share_pct": 2.5283
+   },
+   {
+    "city": "杭州市",
+    "n": 41999,
+    "share_pct": 2.4497
+   },
+   {
+    "city": "重庆市",
+    "n": 32364,
+    "share_pct": 1.8877
+   },
+   {
+    "city": "厦门市",
+    "n": 31624,
+    "share_pct": 1.8445
+   },
+   {
+    "city": "郑州市",
+    "n": 29808,
+    "share_pct": 1.7386
+   },
+   {
+    "city": "长沙市",
+    "n": 26688,
+    "share_pct": 1.5566
+   }
+  ],
+  "province_dist_top12": [
+   {
+    "province": "广东省",
+    "n": 249513,
+    "share_pct": 14.5535
+   },
+   {
+    "province": "浙江省",
+    "n": 125622,
+    "share_pct": 7.3272
+   },
+   {
+    "province": "山东省",
+    "n": 117717,
+    "share_pct": 6.8661
+   },
+   {
+    "province": "江苏省",
+    "n": 111306,
+    "share_pct": 6.4922
+   },
+   {
+    "province": "北京市",
+    "n": 104185,
+    "share_pct": 6.0769
+   },
+   {
+    "province": "四川省",
+    "n": 85285,
+    "share_pct": 4.9745
+   },
+   {
+    "province": "湖北省",
+    "n": 81071,
+    "share_pct": 4.7287
+   },
+   {
+    "province": "河南省",
+    "n": 79053,
+    "share_pct": 4.611
+   },
+   {
+    "province": "上海市",
+    "n": 72510,
+    "share_pct": 4.2293
+   },
+   {
+    "province": "福建省",
+    "n": 71144,
+    "share_pct": 4.1497
+   },
+   {
+    "province": "安徽省",
+    "n": 67228,
+    "share_pct": 3.9212
+   },
+   {
+    "province": "河北省",
+    "n": 67035,
+    "share_pct": 3.91
+   }
+  ],
+  "city_matched": 1465561,
+  "city_unmatched": 248896,
+  "city_matched_pct": 85.4825,
+  "base_name_matched": {
+   "n_firms": 21994,
+   "match_share_pct": 11.6329,
+   "dist": [
+    {
+     "chain_code": "INB1306",
+     "org_cnt": 6722,
+     "share_pct": 30.56
+    },
+    {
+     "chain_code": "INB1333",
+     "org_cnt": 4094,
+     "share_pct": 18.61
+    },
+    {
+     "chain_code": "INB1309",
+     "org_cnt": 3769,
+     "share_pct": 17.14
+    },
+    {
+     "chain_code": "INB1502",
+     "org_cnt": 1672,
+     "share_pct": 7.6
+    },
+    {
+     "chain_code": "INB1303",
+     "org_cnt": 1134,
+     "share_pct": 5.16
+    },
+    {
+     "chain_code": "INB1354",
+     "org_cnt": 1073,
+     "share_pct": 4.88
+    },
+    {
+     "chain_code": "INB1323",
+     "org_cnt": 1055,
+     "share_pct": 4.8
+    },
+    {
+     "chain_code": "INB1204",
+     "org_cnt": 841,
+     "share_pct": 3.82
+    },
+    {
+     "chain_code": "INB2505",
+     "org_cnt": 696,
+     "share_pct": 3.16
+    },
+    {
+     "chain_code": "INB1209",
+     "org_cnt": 476,
+     "share_pct": 2.16
+    },
+    {
+     "chain_code": "INB2503",
+     "org_cnt": 388,
+     "share_pct": 1.76
+    },
+    {
+     "chain_code": "INB1236",
+     "org_cnt": 74,
+     "share_pct": 0.34
+    }
+   ],
+   "note": "底册只有能按企业名对上专利申请人名的子集可落链，不是底册全量。"
+  },
+  "roster_name_matched": {
+   "n_firms": 2097,
+   "match_share_pct": 45.9768,
+   "dist": [
+    {
+     "chain_code": "INB1309",
+     "org_cnt": 576,
+     "share_pct": 27.47
+    },
+    {
+     "chain_code": "INB1333",
+     "org_cnt": 430,
+     "share_pct": 20.51
+    },
+    {
+     "chain_code": "INB1306",
+     "org_cnt": 371,
+     "share_pct": 17.69
+    },
+    {
+     "chain_code": "INB1303",
+     "org_cnt": 136,
+     "share_pct": 6.49
+    },
+    {
+     "chain_code": "INB1354",
+     "org_cnt": 127,
+     "share_pct": 6.06
+    },
+    {
+     "chain_code": "INB1204",
+     "org_cnt": 121,
+     "share_pct": 5.77
+    },
+    {
+     "chain_code": "INB1502",
+     "org_cnt": 109,
+     "share_pct": 5.2
+    },
+    {
+     "chain_code": "INB1323",
+     "org_cnt": 102,
+     "share_pct": 4.86
+    },
+    {
+     "chain_code": "INB1209",
+     "org_cnt": 47,
+     "share_pct": 2.24
+    },
+    {
+     "chain_code": "INB2505",
+     "org_cnt": 36,
+     "share_pct": 1.72
+    },
+    {
+     "chain_code": "INB1236",
+     "org_cnt": 26,
+     "share_pct": 1.24
+    },
+    {
+     "chain_code": "INB2503",
+     "org_cnt": 16,
+     "share_pct": 0.76
+    }
+   ]
+  },
+  "l1_path_top12": [
+   {
+    "code": "INB130602",
+    "n": 537129
+   },
+   {
+    "code": "INB150202",
+    "n": 247059
+   },
+   {
+    "code": "INB130603",
+    "n": 237404
+   },
+   {
+    "code": "INB130601",
+    "n": 198352
+   },
+   {
+    "code": "INB250301",
+    "n": 133443
+   },
+   {
+    "code": "INB133303",
+    "n": 131113
+   },
+   {
+    "code": "INB130903",
+    "n": 116292
+   },
+   {
+    "code": "INB250503",
+    "n": 37912
+   },
+   {
+    "code": "INB132302",
+    "n": 25645
+   },
+   {
+    "code": "INB150201",
+    "n": 14435
+   },
+   {
+    "code": "INB130901",
+    "n": 12726
+   },
+   {
+    "code": "INB250302",
+    "n": 8046
+   }
+  ],
+  "l1_note": "一级环节 l1_firms 是路径家次（一家企业可落多个环节），不能当企业去重数，也不能除以链企业数。",
+  "cluster_dimension": {
+   "declared_n": 15,
+   "available_n": 0,
+   "gkx_cluster_tables": [],
+   "gkx_cluster_columns": 0,
+   "live_cluster_tables": [],
+   "live_industry_cluster": "TABLE_ABSENT",
+   "live_industry_cluster_map": "TABLE_ABSENT"
+  },
+  "tech_tag_context": {
+   "orgs": 32322,
+   "note": "技术标签不是领域键，只用于说明企业侧还有另一套分类，不可替代 cluster_id。"
+  }
+ },
+ "notes": [
+  "12 链分布不是 15 集群分布：码级映射不存在，同名词只有 5 个且成员范围未核。",
+  "链归属表 24.93% 的行为空数组（569,303 行），这些企业不进任何链的分子。",
+  "一级环节是路径家次，不是企业去重数；本件不用它做分母或覆盖率。"
+ ]
+}

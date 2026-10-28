@@ -1,0 +1,444 @@
+{
+ "metric_id": "M_INNOV_PG_COMPOSITE",
+ "metric_name": "政策与条件保障力综合评估",
+ "generated_at": "2026-10-23T23:55:50+08:00",
+ "support_judgment": "部分支持",
+ "verdict_reason": "五维里只有引导力（前瞻性一叶）、扶持力度（数量/类型两叶）、经费（基金一叶）、效果（论文增幅一叶）能算；项目维因 funded_province/funded_institution 全为 'None' 整维置 null；系统性/针对性/覆盖面三叶因列值为字符串 'NULL' 不可算。阻塞表 policy_type_dist 在 gkx 查无，类型分布改为从 dwd_policy_base 现算。",
+ "source": {
+  "library": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "touched": false,
+  "note": "本件零 SQL：读 _probe_pg_w15n1.py 落盘的快照"
+ },
+ "sources": [
+  "code/_snapshots21/pg_w15n1_20261023.json",
+  "code/_snapshots21/a25_paper_panel.json",
+  "code/_snapshots21/w15n1_table_probe_20261023.json"
+ ],
+ "base_years_used": [
+  2021,
+  2022,
+  2023
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "近窗用 2021—2023（论文语料这三年的城市归属完整）；前窗用 2016—2020 作基线。missing 记 2017—2020 是**专利侧**的事实（apdt_year 这四年零行），故效果维不用专利、只用论文；2024 论文是回填孤峰（32,379 篇 = 32.09%），不摊入任何一年；2025—2026 论文笔数断崖（796/300 篇）亦不入窗。",
+ "scope": "城市（北京市/上海市/深圳市/广州市）",
+ "evaluation_set": [
+  "北京市",
+  "上海市",
+  "深圳市",
+  "广州市"
+ ],
+ "panel_note": "四城同日导出、同一截断规则、同一张表；东莞 8 件、惠州 0 件——不是被筛掉，是城市字段在这些城市上几乎全空（city='NULL' 占 48.53%）。",
+ "weights": {
+  "main": {
+   "引导力": 0.2,
+   "扶持力度": 0.25,
+   "经费": 0.25,
+   "项目": 0.15,
+   "效果": 0.15
+  },
+  "leaf_weights": {
+   "L1_plan_rate": 0.2,
+   "L2_type_cover": 0.125,
+   "L3_policy_count": 0.125,
+   "L4_fund_count": 0.25,
+   "L5_paper_growth": 0.15
+  },
+  "main_is_official": false,
+  "weights_are_authored": true,
+  "rationale": "正本权重待 Q-MO-DS07-01；本件按「扶持/经费更贴保障力」给 0.25、效果与引导力 0.15—0.20，项目 0.15 因整维缺失实际不进分母",
+  "entropy": {
+   "L1_plan_rate": 0.1802,
+   "L2_type_cover": 0.1195,
+   "L3_policy_count": 0.1636,
+   "L4_fund_count": 0.1582,
+   "L5_paper_growth": 0.3784
+  },
+  "entropy_detail": {
+   "L1_plan_rate": {
+    "entropy": 0.686925,
+    "divergence": 0.313075
+   },
+   "L2_type_cover": {
+    "entropy": 0.792481,
+    "divergence": 0.207519
+   },
+   "L3_policy_count": {
+    "entropy": 0.715781,
+    "divergence": 0.284219
+   },
+   "L4_fund_count": {
+    "entropy": 0.725232,
+    "divergence": 0.274768
+   },
+   "L5_paper_growth": {
+    "entropy": 0.342675,
+    "divergence": 0.657325
+   }
+  },
+  "equal": {
+   "L1_plan_rate": 0.25,
+   "L2_type_cover": 0.25,
+   "L3_policy_count": 0.25,
+   "L4_fund_count": 0.25,
+   "L5_paper_growth": 0.25
+  }
+ },
+ "leaves": {
+  "L1_plan_rate": {
+   "label": "引导力｜前瞻性（标题含规划/纲要/远景/行动计划词的政策占比）",
+   "field": "plan_rate_pct",
+   "weight": 0.2,
+   "raw": {
+    "北京市": 5.776,
+    "上海市": 13.1993,
+    "深圳市": 8.3049,
+    "广州市": 3.3846
+   },
+   "norm": {
+    "北京市": 24.3655,
+    "上海市": 100.0,
+    "深圳市": 50.1319,
+    "广州市": 0.0
+   },
+   "degenerate": false,
+   "norm_note": "四城同盘 min-max 到 0—100，分母=北京市/上海市/深圳市/广州市"
+  },
+  "L2_type_cover": {
+   "label": "扶持力度｜政策类型覆盖数",
+   "field": "types",
+   "weight": 0.125,
+   "raw": {
+    "北京市": 11,
+    "上海市": 11,
+    "深圳市": 11,
+    "广州市": 10
+   },
+   "norm": {
+    "北京市": 100.0,
+    "上海市": 100.0,
+    "深圳市": 100.0,
+    "广州市": 0.0
+   },
+   "degenerate": false,
+   "norm_note": "四城同盘 min-max 到 0—100，分母=北京市/上海市/深圳市/广州市"
+  },
+  "L3_policy_count": {
+   "label": "扶持力度｜政策件数（抽样计数，可比性受限）",
+   "field": "policies",
+   "weight": 0.125,
+   "raw": {
+    "北京市": 2268,
+    "上海市": 1841,
+    "深圳市": 879,
+    "广州市": 325
+   },
+   "norm": {
+    "北京市": 100.0,
+    "上海市": 78.0237,
+    "深圳市": 28.5126,
+    "广州市": 0.0
+   },
+   "degenerate": false,
+   "norm_note": "四城同盘 min-max 到 0—100，分母=北京市/上海市/深圳市/广州市"
+  },
+  "L4_fund_count": {
+   "label": "经费｜产业基金数（注册地落城）",
+   "field": "funds",
+   "weight": 0.25,
+   "raw": {
+    "北京市": 609,
+    "上海市": 298,
+    "深圳市": 576,
+    "广州市": 398
+   },
+   "norm": {
+    "北京市": 100.0,
+    "上海市": 0.0,
+    "深圳市": 89.3891,
+    "广州市": 32.1543
+   },
+   "degenerate": false,
+   "norm_note": "四城同盘 min-max 到 0—100，分母=北京市/上海市/深圳市/广州市"
+  },
+  "L5_paper_growth": {
+   "label": "效果｜论文近三年均值相对前五年均值增幅",
+   "field": "paper_growth_pct",
+   "weight": 0.15,
+   "raw": {
+    "北京市": 15.3646,
+    "上海市": 16.6379,
+    "深圳市": 40.1869,
+    "广州市": 14.0091
+   },
+   "norm": {
+    "北京市": 5.1781,
+    "上海市": 10.0421,
+    "深圳市": 100.0,
+    "广州市": 0.0
+   },
+   "degenerate": false,
+   "norm_note": "四城同盘 min-max 到 0—100，分母=北京市/上海市/深圳市/广州市"
+  }
+ },
+ "dim_scores": {
+  "引导力": {
+   "北京市": 24.3655,
+   "上海市": 100.0,
+   "深圳市": 50.1319,
+   "广州市": 0.0
+  },
+  "扶持力度": {
+   "北京市": 100.0,
+   "上海市": 89.0119,
+   "深圳市": 64.2563,
+   "广州市": 0.0
+  },
+  "经费": {
+   "北京市": 100.0,
+   "上海市": 0.0,
+   "深圳市": 89.3891,
+   "广州市": 32.1543
+  },
+  "项目": {
+   "北京市": null,
+   "上海市": null,
+   "深圳市": null,
+   "广州市": null
+  },
+  "效果": {
+   "北京市": 5.1781,
+   "上海市": 10.0421,
+   "深圳市": 100.0,
+   "广州市": 0.0
+  }
+ },
+ "dim_status": {
+  "引导力": {
+   "leaves_live": 1,
+   "leaves_expected": 3,
+   "missing": [
+    "系统性（quote_policy 全 'NULL'）",
+    "针对性（policy_support 全 'null'）"
+   ]
+  },
+  "扶持力度": {
+   "leaves_live": 2,
+   "leaves_expected": 3,
+   "missing": [
+    "覆盖面（district 18,835/20,000 为 'NULL'）"
+   ]
+  },
+  "经费": {
+   "leaves_live": 1,
+   "leaves_expected": 2,
+   "missing": [
+    "科研经费（只有深圳有上市主体研发投入；北京/上海无底部册数据）"
+   ]
+  },
+  "项目": {
+   "leaves_live": 0,
+   "leaves_expected": 3,
+   "missing": [
+    "项目数量（无城市字段）",
+    "资助金额（无城市字段）",
+    "结题率（无城市字段）"
+   ]
+  },
+  "效果": {
+   "leaves_live": 1,
+   "leaves_expected": 2,
+   "missing": [
+    "专利侧前后对比（apdt_year 2020 及以前零行）"
+   ]
+  }
+ },
+ "missing_policy": {
+  "rule": "维级缺（项目）→ 该维不进分子也不进分母；维内缺叶 → 该维由在场叶按叶权重收缩分母，并在 dim_status 写清缺哪一叶",
+  "no_silent_renormalization": "dims_used / gap_dims / leaf_live 全部落盘，禁止只报分数",
+  "dims_used": [
+   "引导力",
+   "扶持力度",
+   "经费",
+   "效果"
+  ],
+  "gap_dims": [
+   "项目"
+  ],
+  "weight_used_sum": 0.85,
+  "renormalized": true
+ },
+ "index_0_100": {
+  "北京市": 55.6498,
+  "上海市": 43.7593,
+  "深圳市": 63.4377,
+  "广州市": 8.0386
+ },
+ "rank": {
+  "北京市": 2,
+  "上海市": 3,
+  "深圳市": 1,
+  "广州市": 4
+ },
+ "index_robust_no_L2_L3": {
+  "北京市": 51.083,
+  "上海市": 35.8439,
+  "深圳市": 78.9561,
+  "广州市": 13.3976
+ },
+ "index_entropy": {
+  "北京市": 50.482,
+  "上海市": 46.5403,
+  "深圳市": 77.6349,
+  "广州市": 5.0866
+ },
+ "profiles": [
+  {
+   "city": "深圳市",
+   "policies": 879,
+   "types": 11,
+   "plan_hits": 73,
+   "plan_rate_pct": 8.3049,
+   "funds": 576,
+   "rd_yuan": 57041725005.73,
+   "rd_orgs": 559,
+   "paper_base_2016_2020": 406.6,
+   "paper_recent_2021_2023": 570.0,
+   "paper_growth_pct": 40.1869,
+   "score": 63.4377,
+   "score_robust": 78.9561,
+   "score_entropy": 77.6349,
+   "rank": 1
+  },
+  {
+   "city": "北京市",
+   "policies": 2268,
+   "types": 11,
+   "plan_hits": 131,
+   "plan_rate_pct": 5.776,
+   "funds": 609,
+   "rd_yuan": null,
+   "rd_orgs": null,
+   "paper_base_2016_2020": 898.6,
+   "paper_recent_2021_2023": 1036.67,
+   "paper_growth_pct": 15.3646,
+   "score": 55.6498,
+   "score_robust": 51.083,
+   "score_entropy": 50.482,
+   "rank": 2
+  },
+  {
+   "city": "上海市",
+   "policies": 1841,
+   "types": 11,
+   "plan_hits": 243,
+   "plan_rate_pct": 13.1993,
+   "funds": 298,
+   "rd_yuan": null,
+   "rd_orgs": null,
+   "paper_base_2016_2020": 347.8,
+   "paper_recent_2021_2023": 405.67,
+   "paper_growth_pct": 16.6379,
+   "score": 43.7593,
+   "score_robust": 35.8439,
+   "score_entropy": 46.5403,
+   "rank": 3
+  },
+  {
+   "city": "广州市",
+   "policies": 325,
+   "types": 10,
+   "plan_hits": 11,
+   "plan_rate_pct": 3.3846,
+   "funds": 398,
+   "rd_yuan": 9395027471.14,
+   "rd_orgs": 204,
+   "paper_base_2016_2020": 1012.2,
+   "paper_recent_2021_2023": 1154.0,
+   "paper_growth_pct": 14.0091,
+   "score": 8.0386,
+   "score_robust": 13.3976,
+   "score_entropy": 5.0866,
+   "rank": 4
+  }
+ ],
+ "derived": {
+  "sz_plan_rate_pct": {
+   "value": 8.3049,
+   "numerator": 73,
+   "denominator": 879,
+   "denominator_note": "深圳前瞻性政策 73 件 / 深圳政策 879 件（同为抽样盘内计数）"
+  },
+  "sz_over_bj_policies_pct": {
+   "value": 38.7566,
+   "numerator": 879,
+   "denominator": 2268,
+   "denominator_note": "深圳 879 件 / 北京 2,268 件；两城同一次导出、同一截断规则"
+  },
+  "sz_fund_share_of_panel_pct": {
+   "value": 30.622,
+   "numerator": 576,
+   "denominator": 1881,
+   "denominator_note": "深圳 576 只 / 四城合计 1,881 只（注册地口径）"
+  },
+  "sz_rd_share_of_panel_pct": {
+   "value": 85.8587,
+   "numerator": 57041725005.73,
+   "denominator": 66436752476.87,
+   "denominator_note": "深圳 570.42 亿元 / 有研发投入数据的城市合计（北京、上海无数据，不进分母）"
+  },
+  "sz_paper_growth_pct": {
+   "value": 40.1869,
+   "numerator": 570.0,
+   "denominator": 406.6,
+   "denominator_note": "深圳近三年年均 570.00 篇 / 前五年年均 406.60 篇"
+  },
+  "city_null_share_pct": {
+   "value": 48.53,
+   "numerator": 9706,
+   "denominator": 20000,
+   "denominator_note": "city='NULL' 9,706 件 / 政策表 20,000 件；城市归属缺一半"
+  },
+  "dead_leaf_quote_policy_pct": {
+   "value": 99.99,
+   "numerator": 19998,
+   "denominator": 20000,
+   "denominator_note": "quote_policy 为字符串 'NULL' 19,998 件 / 20,000 件；系统性叶因此不可算"
+  },
+  "dead_leaf_support_pct": {
+   "value": 100.0,
+   "numerator": 20000,
+   "denominator": 20000,
+   "denominator_note": "policy_support 为 JSON null 的件数（CAST 成 CHAR 后等于 null）/ 20,000；针对性叶因此全空"
+  },
+  "project_final_report_pct": {
+   "value": 81.0942,
+   "numerator": 47402,
+   "denominator": 58453,
+   "denominator_note": "有结题摘要 47,402 项 / 项目 58,453 项；该叶只能做全国读数，城市维不可归"
+  }
+ },
+ "absence_probe": {
+  "policy_type_dist": {
+   "query": "information_schema.tables WHERE table_schema='gkx' AND table_name='policy_type_dist'",
+   "param": "policy_type_dist",
+   "hit_tables": [],
+   "hit_rows": 0,
+   "count": null,
+   "live_hits": {
+    "gkxlumenx_ads": 5
+   },
+   "conclusion": "gkx 查无此表；live 的 ads 侧有 5 行同名表，是造数（policy_type_dist 属 MOCK_TABLE_REGISTRY），不参与本件"
+  },
+  "note": "负证据由 code/_probe_w15n1_tables.py 与 code/_probe_keyd_w15n1.py 双次实测；命中 0 即不存在"
+ },
+ "reproduce": "cd code && python3 _probe_pg_w15n1.py && python3 M_INNOV_PG_COMPOSITE.py"
+}

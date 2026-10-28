@@ -1,0 +1,215 @@
+{
+ "metric_id": "M_SVC_SZ_COMPARE_METRIC",
+ "metric_name": "城市对比指标值",
+ "support_judgment": "部分支持",
+ "judgment_reason": "三小项 × 多城市的面板里，只有「深圳 × orgCount」一格可发布（25,597，与 M_SVC_PT_SZ_TOTAL 同数）；外市 orgCount 虽在同池内可数，但池 100% 落广东省、北京/上海 0 家，不构成城市基准；avgTechScore 三子指标有两个分子整列为空且模型未签；networkDensity 无服务机构间边源。九格中一格可发布、其余不可，故判部分支持。",
+ "verdict_kind": "positive",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是当期面板（截面），不使用基期年份；技术力若将来解挂，需要三子指标同一年份，而营收/员工最新有值年集中在 2014—2016，年份对齐是解挂前置条件之一。",
+ "sources": {
+  "library": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "tables": [
+   "gkx.dwd_org_org_product_info（机构池）",
+   "gkx.dwd_org_base_info（city）",
+   "gkx.dwd_org_invest_info（投资边，反证用）",
+   "gkx.dwd_org_shareholder_info（股东边，反证用）"
+  ],
+  "snapshots": [
+   "code/_snapshots21/svcsz21_facts_20261023.json",
+   "code/_snapshots21/svc21_facts_20261022.json"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_SZ_COMPARE_METRIC.md"
+ },
+ "params": {
+  "items": [
+   "orgCount",
+   "avgTechScore",
+   "networkDensity"
+  ],
+  "grid_cities": [
+   "深圳市",
+   "广州市",
+   "东莞市",
+   "惠州市",
+   "北京市",
+   "上海市",
+   "全国平均"
+  ],
+  "pool_total": 44153,
+  "sz_total": 25597,
+  "publish_rule": "只有状态为「可发布」的格允许进 ADS / 前端 live；其余格保持 fixture + 排除声明"
+ },
+ "value": {
+  "live_cells": 1,
+  "total_cells": 24,
+  "sz_org_count": 25597,
+  "sz_org_count_share_of_pool_pct": 57.97,
+  "sz_org_count_share_of_pool_cities_pct": 58.0
+ },
+ "grid": [
+  {
+   "city": "深圳市",
+   "orgCount": 25597,
+   "orgCount_status": "可发布",
+   "orgCount_basis": "服务机构池 ∩ city='深圳市'；与 M_SVC_PT_SZ_TOTAL 同规则同数",
+   "avgTechScore": null,
+   "avgTechScore_status": "不可发布",
+   "avgTechScore_basis": "MODEL 未签（Q-SVCCHAIN-01）；三子指标中研发投入/研发人员分子列整列为空",
+   "networkDensity": null,
+   "networkDensity_status": "不可发布",
+   "networkDensity_basis": "无服务机构↔服务机构边（SVC-P1-1 未交付）；投资/股东边不是服务关系"
+  },
+  {
+   "city": "广州市",
+   "orgCount": 12641,
+   "orgCount_status": "样本值（不作发布格）",
+   "orgCount_basis": "同池同规则可数，但池 100% 落广东，外市基准须甲方指定（Q-SVCCHAIN-04）",
+   "avgTechScore": null,
+   "avgTechScore_status": "不可发布",
+   "avgTechScore_basis": "同深圳格：模型未签 + 两子指标分子为空",
+   "networkDensity": null,
+   "networkDensity_status": "不可发布",
+   "networkDensity_basis": "无边源"
+  },
+  {
+   "city": "东莞市",
+   "orgCount": 4300,
+   "orgCount_status": "样本值（不作发布格）",
+   "orgCount_basis": "同池同规则可数，但池 100% 落广东，外市基准须甲方指定（Q-SVCCHAIN-04）",
+   "avgTechScore": null,
+   "avgTechScore_status": "不可发布",
+   "avgTechScore_basis": "同深圳格：模型未签 + 两子指标分子为空",
+   "networkDensity": null,
+   "networkDensity_status": "不可发布",
+   "networkDensity_basis": "无边源"
+  },
+  {
+   "city": "惠州市",
+   "orgCount": 1594,
+   "orgCount_status": "样本值（不作发布格）",
+   "orgCount_basis": "同池同规则可数，但池 100% 落广东，外市基准须甲方指定（Q-SVCCHAIN-04）",
+   "avgTechScore": null,
+   "avgTechScore_status": "不可发布",
+   "avgTechScore_basis": "同深圳格：模型未签 + 两子指标分子为空",
+   "networkDensity": null,
+   "networkDensity_status": "不可发布",
+   "networkDensity_basis": "无边源"
+  },
+  {
+   "city": "北京市",
+   "orgCount": 0,
+   "orgCount_status": "不可发布（0 家）",
+   "orgCount_basis": "池内 0 家：底册回联 44,132 行 100% 为广东省，北京/上海无样本",
+   "avgTechScore": null,
+   "avgTechScore_status": "不可发布",
+   "avgTechScore_basis": "无样本 + 模型未签",
+   "networkDensity": null,
+   "networkDensity_status": "不可发布",
+   "networkDensity_basis": "无边源"
+  },
+  {
+   "city": "上海市",
+   "orgCount": 0,
+   "orgCount_status": "不可发布（0 家）",
+   "orgCount_basis": "池内 0 家：底册回联 44,132 行 100% 为广东省，北京/上海无样本",
+   "avgTechScore": null,
+   "avgTechScore_status": "不可发布",
+   "avgTechScore_basis": "无样本 + 模型未签",
+   "networkDensity": null,
+   "networkDensity_status": "不可发布",
+   "networkDensity_basis": "无边源"
+  },
+  {
+   "city": "全国平均",
+   "orgCount": null,
+   "orgCount_status": "不可发布",
+   "orgCount_basis": "无全国服务机构池；用底册 189,116 全量工商按城平均是错误口径（会把制造业算进服务业）",
+   "avgTechScore": null,
+   "avgTechScore_status": "不可发布",
+   "avgTechScore_basis": "无城市集合，均值无定义",
+   "networkDensity": null,
+   "networkDensity_status": "不可发布",
+   "networkDensity_basis": "无边源"
+  },
+  {
+   "city": "未回联底册",
+   "orgCount": 21,
+   "orgCount_status": "不入格",
+   "orgCount_basis": "org_id 在底册无对应行，城市未知；单列不并入任何城市",
+   "avgTechScore": null,
+   "avgTechScore_status": "不适用",
+   "avgTechScore_basis": "—",
+   "networkDensity": null,
+   "networkDensity_status": "不适用",
+   "networkDensity_basis": "—"
+  }
+ ],
+ "live_cell_detail": [
+  {
+   "city": "深圳市",
+   "item": "orgCount",
+   "value": 25597
+  }
+ ],
+ "supplementary_sz": {
+  "note": "以下量可披露，但不是面板三小项，不得填进 avgTechScore / networkDensity 格",
+  "large_orgs": 1045,
+  "patent_matched_orgs": 13378,
+  "patent_apps": 792923,
+  "patent_grants": 505417,
+  "risk_orgs": 11187,
+  "news_orgs": 13732,
+  "finance_event_orgs": 3524,
+  "stage_hit_orgs": 21080
+ },
+ "counter_evidence": {
+  "invest_edges_total": 41888,
+  "invest_edges_touching_sz": 24830,
+  "shareholder_edges_total": 372205,
+  "shareholder_edges_from_sz": 232198,
+  "why_not_density": "密度定义的分母是「服务机构 A —服务关系— 服务机构 B」的边集；投资边（dwd_org_invest_info）与股东边（dwd_org_shareholder_info）表达的是资本关系，同一对被投/持股主体里大量不是服务机构，且方向与语义都不同，拿来算密度会把「资本网络」冒充「服务网络」。"
+ },
+ "gaps": [
+  {
+   "gap": "外市/全国城市基准源缺失",
+   "detail": "Q-SVCCHAIN-04 待甲方指定；现池北京/上海 0 家、全国平均无定义",
+   "impact": "九个对比格里 6 格外市格全部不可发布，面板只能亮深圳一列",
+   "fix": "甲方交付城市基准源（同口径服务机构圈定），或明确「仅深圳单列」的展示口径"
+  },
+  {
+   "gap": "avgTechScore 模型未签 + 两子指标分子为空",
+   "detail": "M_SVC_ORG_TECH_SCORE 定义卡未签（Q-SVCCHAIN-01 / 唐绍祖）；arch_development_am 与 development_employee 整列为空",
+   "impact": "技术力整列不可发布，且不是「覆盖低」而是「列建好没灌数」",
+   "fix": "先签算法定义卡，再补研发费用/研发人员数据源"
+  },
+  {
+   "gap": "服务网络密度无边源",
+   "detail": "SVC-P1-1 服务机构↔服务机构边未交付；gkx 无任何 svc_* 边表",
+   "impact": "密度整列不可发布",
+   "fix": "供方交付服务关系边；在此之前不得用投资/股东边替代"
+  },
+  {
+   "gap": "未回联 21 家",
+   "detail": "org_id 在底册无对应行，城市未知",
+   "impact": "占池 0.05%，不并入任何城市格",
+   "fix": "核对 org_id 或补底册行"
+  }
+ ],
+ "cross_refs": {
+  "M_SVC_PT_SZ_TOTAL": {
+   "sz_org_count": 25597,
+   "same_number": true
+  },
+  "M_SVC_SZ_TIER": {
+   "shared_grid": true
+  },
+  "M_SVC_SZ_CHAIN_COMPLETENESS": {
+   "completeness_excluded": true,
+   "note": "完整度另件，不属本面板三小项"
+  }
+ }
+}

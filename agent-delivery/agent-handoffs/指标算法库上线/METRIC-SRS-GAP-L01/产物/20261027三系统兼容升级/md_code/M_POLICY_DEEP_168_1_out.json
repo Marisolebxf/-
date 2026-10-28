@@ -1,0 +1,225 @@
+{
+ "metric_id": "M_POLICY_DEEP_168_1",
+ "title": "政策效果评估模型",
+ "probe_date": "2026-10-22",
+ "data_support_level": "部分支持",
+ "support_judgment": "部分支持",
+ "support_reason": "三维里 D1 只剩有效占比（且是样本构造性 100%）、及时性子项因零日期不可算；D2 社会经济效应在库内无表无键；D3 环保导向可用。缺一个必需维 + 一个子项 → 部分支持。",
+ "base_years_used": [
+  "2016",
+  "2017",
+  "2018",
+  "2019",
+  "2020",
+  "2021"
+ ],
+ "base_years_missing": [
+  "2023"
+ ],
+ "base_years_note": "政策级指数为截面口径，不涉时序分母；分年环保导向率只用 2016—2021 六个连续年份。2023 年库内 0 行、2022 年 289 条残片、2024 年 1 条均不入分母（DATA_FACTS §3.16）。",
+ "sources": {
+  "policy_base": "code/_snapshots21/policy_base_20261021.json（title/city/province）",
+  "pg_policy_rows": "code/_snapshots21/pg_policy_rows_20261021.json（publish_year）",
+  "policy_content": "code/_snapshots21/policy_content_20261021.json（18,763 行正文/摘要）",
+  "field_probe": "code/_snapshots21/policy_fields_a23_20261021.json",
+  "db": "gkx @ 183.240.141.251:3318（只读）"
+ },
+ "dims": {
+  "D1_execution": {
+   "valid_policy_ratio_pct": 100.0,
+   "valid_note": "status 全表 20,000 行都是「有效」，没有失效样本 → 100% 是样本框构造，不是治理成效；min-max 后本子项恒 0.5",
+   "timeliness_available": false,
+   "timeliness_note": "implementation_date / expire_date 各 20,000 行取值为 0000-00-00（COUNT(DISTINCT)=1），(统计日−实施日)/(失效日−实施日) 分母为 0，不可算",
+   "impl_isnotnull": 20000,
+   "expire_isnotnull": 20000
+  },
+  "D2_socio_economic": {
+   "available": false,
+   "missing_fields": [
+    "operating_revenue_growth-政策关联企业营收增速",
+    "employment_contribution-政策关联就业贡献率"
+   ],
+   "reason": "库内没有「政策—企业」关联表，也没有政策受益企业名单；企业财务表 dwd_org_annual_financial_info 与政策表之间没有任何可连接的键（政策表无 credit_code/org_id，企业表无政策 id）",
+   "next_hop": "政策—企业关联键（申报/获批名单）+ 补助台账（金额）；两跳均止步"
+  },
+  "D3_environment": {
+   "env_hit_n": 4116,
+   "env_hit_pct": 20.58,
+   "closed_set_n": 25,
+   "top_words": [
+    {
+     "word": "环保",
+     "policy_n": 2537
+    },
+    {
+     "word": "环境保护",
+     "policy_n": 1419
+    },
+    {
+     "word": "生态环境",
+     "policy_n": 1344
+    },
+    {
+     "word": "节能减排",
+     "policy_n": 629
+    },
+    {
+     "word": "污染防治",
+     "policy_n": 522
+    },
+    {
+     "word": "低碳",
+     "policy_n": 498
+    },
+    {
+     "word": "生态文明",
+     "policy_n": 449
+    },
+    {
+     "word": "循环经济",
+     "policy_n": 430
+    },
+    {
+     "word": "绿色发展",
+     "policy_n": 416
+    },
+    {
+     "word": "清洁生产",
+     "policy_n": 408
+    }
+   ],
+   "caveat": "文本导向占比，不是排放实测、不是环评结论；keywords/theme 两列基本空，实际命中几乎全部来自 title+content",
+   "keywords_nonnull": 0,
+   "theme_nonnull": 2
+  }
+ },
+ "env_index": {
+  "available_dims": "2/3（D2 社会经济效应无源；D1 只剩有效占比，及时性子项不可算）",
+  "p50": 25.0,
+  "p90": 75.0,
+  "min": 25.0,
+  "max": 75.0,
+  "mean": 35.29,
+  "distinct_values": [
+   25.0,
+   75.0
+  ],
+  "degeneracy": "两个可用维中一个是常数（0.5）、一个是 0/1，指数只有 25.0 与 75.0 两个取值，不是连续评分，不能用于政策间排序"
+ },
+ "city_rows": [
+  {
+   "city": "沈阳市",
+   "n": 59,
+   "env_hit": 26,
+   "env_pct": 44.07
+  },
+  {
+   "city": "西安市",
+   "n": 187,
+   "env_hit": 73,
+   "env_pct": 39.04
+  },
+  {
+   "city": "淄博市",
+   "n": 93,
+   "env_hit": 35,
+   "env_pct": 37.63
+  },
+  {
+   "city": "济南市",
+   "n": 75,
+   "env_hit": 28,
+   "env_pct": 37.33
+  },
+  {
+   "city": "石家庄市",
+   "n": 76,
+   "env_hit": 28,
+   "env_pct": 36.84
+  },
+  {
+   "city": "银川市",
+   "n": 133,
+   "env_hit": 45,
+   "env_pct": 33.83
+  },
+  {
+   "city": "重庆市",
+   "n": 240,
+   "env_hit": 75,
+   "env_pct": 31.25
+  },
+  {
+   "city": "太原市",
+   "n": 111,
+   "env_hit": 34,
+   "env_pct": 30.63
+  }
+ ],
+ "shenzhen": {
+  "city": "深圳市",
+  "n": 879,
+  "env_hit": 137,
+  "env_pct": 15.59
+ },
+ "four_cities": [
+  {
+   "city": "广州市",
+   "n": 325,
+   "env_hit": 73,
+   "env_pct": 22.46
+  },
+  {
+   "city": "深圳市",
+   "n": 879,
+   "env_hit": 137,
+   "env_pct": 15.59
+  }
+ ],
+ "year_rows": [
+  {
+   "year": 2016,
+   "n": 1316,
+   "env_hit": 350,
+   "env_pct": 26.6
+  },
+  {
+   "year": 2017,
+   "n": 1677,
+   "env_hit": 387,
+   "env_pct": 23.08
+  },
+  {
+   "year": 2018,
+   "n": 2016,
+   "env_hit": 408,
+   "env_pct": 20.24
+  },
+  {
+   "year": 2019,
+   "n": 2035,
+   "env_hit": 356,
+   "env_pct": 17.49
+  },
+  {
+   "year": 2020,
+   "n": 2402,
+   "env_hit": 377,
+   "env_pct": 15.7
+  },
+  {
+   "year": 2021,
+   "n": 2120,
+   "env_hit": 342,
+   "env_pct": 16.13
+  }
+ ],
+ "causal_readiness": {
+  "treatment_group": "可划：city / province / publish_year 三列可构成准实验分组键（省 87.38%、市 51.47%）",
+  "event_date": "不可得：implementation_date 全为 0000-00-00，无法定位政策生效时点",
+  "outcome": "不可得：无政策受益企业名单，也无企业级营收/就业的政策前后序列",
+  "synthetic_control": "不可做：无对照组城市的政策外生冲击变量",
+  "conclusion": "因果识别链在前两步就断（事件日 + 结果变量），本件只能做文本导向的截面描述，不能宣称「政策带来了什么效果」"
+ },
+ "verdict": "只能发布「环保导向占比」这一维的截面事实；有效占比必须带样本框披露；任何「政策效果」结论都缺事件日与结果变量，不可宣布"
+}

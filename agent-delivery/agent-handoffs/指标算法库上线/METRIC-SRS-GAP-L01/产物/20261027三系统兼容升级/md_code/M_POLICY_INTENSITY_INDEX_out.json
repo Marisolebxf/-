@@ -1,0 +1,498 @@
+{
+ "metric_id": "M_POLICY_INTENSITY_INDEX",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标（按城市），不设年度分母。calc-logic 的入集是「status=有效且未过期」，但 status 恒真、expire_date 全空（见 M_POLICY_VALIDITY_RATE），所以本件的入集等价于全表 20,000 行；这不是年份问题。",
+ "headline": {
+  "policy_total": 20000,
+  "cities_total": 54,
+  "cities_in_basket": 10,
+  "sub_indicators_total": 5,
+  "sub_indicators_computable": 1,
+  "dims_total": 3,
+  "dims_full": 0,
+  "dims_empty": 2,
+  "registered_metric_value": null,
+  "publishable": false,
+  "why": "五个三级指标四个恒为 0（implementation_date / support_way / support_object / support_behavior 全部整列空），三维里两维整块不可算；按 calc-logic「缺维不补 0 不进平均」，合成后只剩覆盖维的区县去重数，已不构成「政策力度」。"
+ },
+ "sub_indicators": [
+  {
+   "dim": "效果",
+   "sub": "实施日完备占比",
+   "field": "implementation_date",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false
+  },
+  {
+   "dim": "效果",
+   "sub": "支持方式完备占比",
+   "field": "policy_support.support_way",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false
+  },
+  {
+   "dim": "覆盖",
+   "sub": "支持对象种类数",
+   "field": "policy_support.support_object",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false
+  },
+  {
+   "dim": "覆盖",
+   "sub": "区县去重数",
+   "field": "district",
+   "nonnull": 1165,
+   "denominator": 20000,
+   "computable": true
+  },
+  {
+   "dim": "成本",
+   "sub": "扶持行为完备占比",
+   "field": "policy_support.support_behavior",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false
+  }
+ ],
+ "dimension_status": {
+  "效果": {
+   "sub_total": 2,
+   "sub_computable": 0,
+   "dim_computable": false,
+   "dim_full": false
+  },
+  "覆盖": {
+   "sub_total": 2,
+   "sub_computable": 1,
+   "dim_computable": true,
+   "dim_full": false
+  },
+  "成本": {
+   "sub_total": 1,
+   "sub_computable": 0,
+   "dim_computable": false,
+   "dim_full": false
+  }
+ },
+ "city_rows": [
+  {
+   "city": "深圳市",
+   "policies": 879,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 4
+  },
+  {
+   "city": "北京市",
+   "policies": 2268,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 15
+  },
+  {
+   "city": "上海市",
+   "policies": 1841,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 8
+  },
+  {
+   "city": "广州市",
+   "policies": 325,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 0
+  },
+  {
+   "city": "杭州市",
+   "policies": 446,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 0
+  },
+  {
+   "city": "南京市",
+   "policies": 334,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 0
+  },
+  {
+   "city": "合肥市",
+   "policies": 248,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 0
+  },
+  {
+   "city": "成都市",
+   "policies": 64,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 0
+  },
+  {
+   "city": "武汉市",
+   "policies": 57,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 0
+  },
+  {
+   "city": "西安市",
+   "policies": 187,
+   "implementation_date_rows": 0,
+   "support_way_rows": 0,
+   "support_object_rows": 0,
+   "support_behavior_rows": 0,
+   "district_distinct": 0
+  }
+ ],
+ "negative_evidence": [
+  {
+   "id": "E1",
+   "dim": "policy_support JSON 类型",
+   "evidence": {
+    "JSON_NULL": 20000
+   },
+   "verdict": "20,000 行全部是 JSON null（小写 null），不是空对象 {}、也不是缺列；三个子键无法读取"
+  },
+  {
+   "id": "E2",
+   "dim": "support_way / support_object / support_behavior 填充",
+   "evidence": {
+    "support_way_rows": 0,
+    "support_object_rows": 0,
+    "support_behavior_rows": 0
+   },
+   "verdict": "三个子键命中行数均为 0；效果维与成本维、覆盖维的一半因此不可算"
+  },
+  {
+   "id": "E3",
+   "dim": "implementation_date 填充",
+   "evidence": {
+    "nonnull": 0,
+    "null": 20000
+   },
+   "verdict": "整列为空，效果维的另一半同样不可算"
+  },
+  {
+   "id": "E4",
+   "dim": "district 填充",
+   "evidence": {
+    "nonnull": 1165,
+    "null": 18835
+   },
+   "verdict": "仅 1,165 行有区县（5.825%），覆盖维只剩这一半；且这 1,165 行集中在深圳等少数城市的区级文件，截面不可比"
+  },
+  {
+   "id": "E5",
+   "dim": "金额列",
+   "evidence": {
+    "amount_columns_in_table": [],
+    "support_amount_rows": 0
+   },
+   "verdict": "表内没有任何扶持金额列（calc-logic 也把 support_amount 列为「待建字段」），成本维不能改用金额口径，也不得自造「资金强度」"
+  }
+ ],
+ "city_level_counts": {
+  "北京市": {
+   "policies": 2268,
+   "district_distinct": 15
+  },
+  "呼和浩特市": {
+   "policies": 86,
+   "district_distinct": 0
+  },
+  "上海市": {
+   "policies": 1841,
+   "district_distinct": 8
+  },
+  "天津市": {
+   "policies": 666,
+   "district_distinct": 0
+  },
+  "深圳市": {
+   "policies": 879,
+   "district_distinct": 4
+  },
+  "济南市": {
+   "policies": 75,
+   "district_distinct": 0
+  },
+  "广州市": {
+   "policies": 325,
+   "district_distinct": 0
+  },
+  "佛山市": {
+   "policies": 51,
+   "district_distinct": 0
+  },
+  "重庆市": {
+   "policies": 240,
+   "district_distinct": 0
+  },
+  "成都市": {
+   "policies": 64,
+   "district_distinct": 0
+  },
+  "宁波市": {
+   "policies": 29,
+   "district_distinct": 0
+  },
+  "苏州市": {
+   "policies": 81,
+   "district_distinct": 0
+  },
+  "沈阳市": {
+   "policies": 59,
+   "district_distinct": 0
+  },
+  "西安市": {
+   "policies": 187,
+   "district_distinct": 0
+  },
+  "武汉市": {
+   "policies": 57,
+   "district_distinct": 0
+  },
+  "青岛市": {
+   "policies": 245,
+   "district_distinct": 0
+  },
+  "聊城市": {
+   "policies": 71,
+   "district_distinct": 0
+  },
+  "临沂市": {
+   "policies": 112,
+   "district_distinct": 0
+  },
+  "长沙市": {
+   "policies": 50,
+   "district_distinct": 0
+  },
+  "杭州市": {
+   "policies": 446,
+   "district_distinct": 0
+  },
+  "南京市": {
+   "policies": 334,
+   "district_distinct": 0
+  },
+  "合肥市": {
+   "policies": 248,
+   "district_distinct": 0
+  },
+  "厦门市": {
+   "policies": 6,
+   "district_distinct": 0
+  },
+  "长春市": {
+   "policies": 63,
+   "district_distinct": 0
+  },
+  "石家庄市": {
+   "policies": 76,
+   "district_distinct": 0
+  },
+  "太原市": {
+   "policies": 111,
+   "district_distinct": 0
+  },
+  "福州市": {
+   "policies": 126,
+   "district_distinct": 0
+  },
+  "南昌市": {
+   "policies": 121,
+   "district_distinct": 0
+  },
+  "银川市": {
+   "policies": 133,
+   "district_distinct": 0
+  },
+  "贵阳市": {
+   "policies": 45,
+   "district_distinct": 0
+  },
+  "拉萨市": {
+   "policies": 9,
+   "district_distinct": 0
+  },
+  "洛阳市": {
+   "policies": 2,
+   "district_distinct": 0
+  },
+  "南宁市": {
+   "policies": 211,
+   "district_distinct": 0
+  },
+  "乌鲁木齐市": {
+   "policies": 13,
+   "district_distinct": 0
+  },
+  "唐山市": {
+   "policies": 132,
+   "district_distinct": 0
+  },
+  "大同市": {
+   "policies": 22,
+   "district_distinct": 0
+  },
+  "包头市": {
+   "policies": 49,
+   "district_distinct": 0
+  },
+  "无锡市": {
+   "policies": 73,
+   "district_distinct": 0
+  },
+  "珠海市": {
+   "policies": 118,
+   "district_distinct": 0
+  },
+  "东莞市": {
+   "policies": 8,
+   "district_distinct": 0
+  },
+  "景德镇市": {
+   "policies": 77,
+   "district_distinct": 0
+  },
+  "潍坊市": {
+   "policies": 40,
+   "district_distinct": 0
+  },
+  "烟台市": {
+   "policies": 4,
+   "district_distinct": 0
+  },
+  "淄博市": {
+   "policies": 93,
+   "district_distinct": 0
+  },
+  "东营市": {
+   "policies": 5,
+   "district_distinct": 0
+  },
+  "芜湖市": {
+   "policies": 70,
+   "district_distinct": 0
+  },
+  "郑州市": {
+   "policies": 1,
+   "district_distinct": 0
+  },
+  "开封市": {
+   "policies": 3,
+   "district_distinct": 0
+  },
+  "大连市": {
+   "policies": 1,
+   "district_distinct": 0
+  },
+  "嘉兴市": {
+   "policies": 105,
+   "district_distinct": 1
+  },
+  "湖州市": {
+   "policies": 4,
+   "district_distinct": 0
+  },
+  "株洲市": {
+   "policies": 3,
+   "district_distinct": 0
+  },
+  "鹤壁市": {
+   "policies": 30,
+   "district_distinct": 4
+  },
+  "常州市": {
+   "policies": 126,
+   "district_distinct": 0
+  }
+ },
+ "repair_requirements": [
+  {
+   "field": "policy_support.support_way",
+   "need": "按政策逐条抽「支持方式」（补助/贴息/奖励/税收优惠…），并约定多值编码"
+  },
+  {
+   "field": "policy_support.support_object",
+   "need": "抽「支持对象」（企业/平台/人才/园区…），至少能 DISTINCT 计数"
+  },
+  {
+   "field": "policy_support.support_behavior",
+   "need": "抽「扶持行为」（研发补贴/设备购置/场景开放…）"
+  },
+  {
+   "field": "implementation_date",
+   "need": "回填实施日；缺失时应区分「发布即实施」与「未标注」"
+  },
+  {
+   "field": "support_amount",
+   "need": "若甲方坚持成本维用金额，必须先建该字段并逐条抽取；本表连金额列都没有，不能用正文正则抽（正文与摘要存在三个数量级矛盾的样本）"
+  }
+ ],
+ "checks": [
+  {
+   "name": "policy_support 全为 JSON null",
+   "value": 20000,
+   "expected": 20000,
+   "ok": true
+  },
+  {
+   "name": "四个整列空字段合计",
+   "value": 0,
+   "expected": 0,
+   "ok": true
+  },
+  {
+   "name": "可算子指标数",
+   "value": 1,
+   "expected": 1,
+   "ok": true
+  }
+ ],
+ "provenance": {
+  "snapshots": [
+   "code/_snapshots21/policy_struct_20261023.json",
+   "code/_snapshots21/policy_dims_20261023.json"
+  ],
+  "builders": [
+   "code/_build_policy_struct_20261023.py",
+   "code/_build_policy_dims_20261023.py"
+  ],
+  "source": "gkx @ 183.240.141.251:3318（只读用户 gkx_reader_zp）.dwd_policy_base；窄投影 id/rank/type/province/city/district/publish_year/status/ministry/publish_date/title"
+ },
+ "notes": [
+  "本件不产出 0—100 的分数；任何这样的分数都只能来自「区县去重数」一项，会被误读成政策力度。",
+  "policy_support 是 JSON 列，JSON_LENGTH(null)=1，用 JSON_LENGTH 判空会得出「20,000 行全部有值」的错误结论。",
+  "20,000 条里有 9,706 条无城市（含 2,174 条国家级），城市级分母不能直接用 20,000。"
+ ]
+}

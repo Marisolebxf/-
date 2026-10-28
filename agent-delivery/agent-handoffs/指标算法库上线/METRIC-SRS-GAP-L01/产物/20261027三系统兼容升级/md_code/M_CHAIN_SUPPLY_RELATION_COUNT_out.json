@@ -1,0 +1,140 @@
+{
+ "metric_id": "M_CHAIN_SUPPLY_RELATION_COUNT",
+ "metric_name": "产业链供应链关系数",
+ "generated_at": "2026-10-22T15:55:43+08:00",
+ "support_judgment": "完全不支持",
+ "judgment_reason": "gkx 有采购方表 `dwd_bid_purchase_agency_out`（39975 行、带信用代码 39628 行），也有中标方表（39520 行、带 external_id 39403 行，99.70%），但两端按 project_number 连接时，公告侧 32029 个不同项目号只有 106 个命中（覆盖率 0.33%）。关系边只能在 0.33% 的子集上成立，不足以支撑「供应链关系数」；gkx 亦无任何企业—企业关系表（模式扫描 5 张，全为论文/学者关系）。按先例 M_INNOV_TINN_MARKET（覆盖 0.776% 判完全不支持）同档判完全不支持。",
+ "verdict_kind": "negative_evidence",
+ "probe_date": "2026-10-22",
+ "probes": {
+  "bid_base_rows": 39962,
+  "bid_win_rows": 39520,
+  "win_with_external_id": 39403,
+  "win_with_external_id_share": 0.997039,
+  "bid_base_columns": [
+   "dwd_id",
+   "u_id",
+   "publish_time",
+   "title",
+   "project_number",
+   "plan_number",
+   "project_name",
+   "announcement_type",
+   "announcement_type_code",
+   "industry_type",
+   "procurement_method",
+   "procurement_method_code",
+   "bidding_stage",
+   "target_item_type",
+   "bidding_stage_code",
+   "project_region_province",
+   "project_region_province_code",
+   "project_region_city",
+   "project_region_city_code",
+   "project_region_district",
+   "project_region_district_code",
+   "project_budget_amount",
+   "project_budget_amount_unit",
+   "total_amount",
+   "total_amount_unit",
+   "bid_document_start_time",
+   "bid_document_end_time",
+   "registration_start_time",
+   "registration_end_time",
+   "bidding_start_time",
+   "bidding_end_time",
+   "opening_bid_time",
+   "estimated_purchasing_time",
+   "contract_num",
+   "quotation_validity_start",
+   "quotation_validity_end",
+   "tender_document_price_amount",
+   "tender_document_price_unit",
+   "registration_fee_amount",
+   "registration_fee_unit",
+   "bidding_security_amount",
+   "bidding_security_unit",
+   "ca_payment_amount",
+   "ca_payment_unit",
+   "tender_agent_service_fee_amount",
+   "tender_agent_service_fee_unit",
+   "performance_security_amount",
+   "performance_security_unit",
+   "funding_source",
+   "construction_service_location",
+   "construction_service_period",
+   "allow_joint_bid",
+   "bidding_document_sub_style",
+   "supplier_qualification_criteria",
+   "data_source",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "is_deleted",
+   "operator_remarks",
+   "insert_remark"
+  ],
+  "purchaser_key_columns": [],
+  "purchase_agency_rows": 39975,
+  "purchase_agency_with_credit": 39628,
+  "purchase_agency_relate_type": [
+   {
+    "relate_type": 1.0,
+    "n": 24813
+   },
+   {
+    "relate_type": 2.0,
+    "n": 15162
+   }
+  ],
+  "base_distinct_project": 32029,
+  "join_hit_project": 106,
+  "join_coverage": 0.00331,
+  "relation_table_scan": {
+   "%supply%": [],
+   "%purchase%": [
+    "dwd_bid_purchase_agency_out",
+    "dwd_bid_purchase_agency_out_bak_20260911"
+   ],
+   "%relat%": [
+    "dwd_en_paper_related",
+    "dwd_scholar_paper_relation",
+    "dwd_zh_paper_related"
+   ],
+   "%counterpart%": [],
+   "%vendor%": [],
+   "%chain_node%": [],
+   "%edge%": [],
+   "%supplier%": []
+  },
+  "relation_table_hits_total": 5
+ },
+ "notes": [],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：关系数是「当前存量边数」，不构造年度序列；招投标表本身无生效年字段，故不声明任何基期年份。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_bid_base_out",
+   "role": "采购方载体（公告标题/地点）"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_bid_win_candidate_out",
+   "role": "中标方（供应方）载体"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.information_schema.tables",
+   "role": "表名模式扫描"
+  }
+ ],
+ "conclusion": "否定性证据齐备：企业—企业关系表 0 张可用（5 张命中全为论文/学者关系）；供应方 39,403/39,520 行可识别；采购方 39,975 行可识别，但与公告侧项目号仅 106/32,029 连得上（0.331%），99.67% 的关系边无法闭合 → 完全不支持。"
+}

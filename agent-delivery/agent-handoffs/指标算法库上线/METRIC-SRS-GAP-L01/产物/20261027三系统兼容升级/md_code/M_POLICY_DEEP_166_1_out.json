@@ -1,0 +1,197 @@
+{
+ "metric_id": "M_POLICY_DEEP_166_1",
+ "title": "政策焦点识别模型",
+ "probe_date": "2026-10-22",
+ "data_support_level": "部分支持",
+ "support_judgment": "部分支持",
+ "support_reason": "四维里三维（制定背景/政策目标/适用范围）可算；措施完备性维依赖 policy_support，该列 20,000 行全为占位符（非占位符计数 0）→ 整维缺失。按 §〇 定义落部分支持。",
+ "base_years_used": [
+  "2016",
+  "2017",
+  "2018",
+  "2019",
+  "2020",
+  "2021"
+ ],
+ "base_years_missing": [
+  "2023"
+ ],
+ "base_years_note": "焦点指数本身是截面归一，不涉时序分母；年度焦点强度只用 2016—2021 六个连续年份。2023 年库内 0 行（缺失）、2022 年 289 条为采集截断残片、2024 年 1 条，三者均不进年度口径，更不按 0 摊入任何年份分母（DATA_FACTS §3.16）。",
+ "sources": {
+  "pg_policy_rows": "code/_snapshots21/pg_policy_rows_20261021.json（20,000 行）",
+  "policy_content": "code/_snapshots21/policy_content_20261021.json（18,763 行，正文去空白存储）",
+  "field_probe": "code/_snapshots21/policy_fields_a23_20261021.json（4 条 SQL 实探）",
+  "db": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）"
+ },
+ "inputs": {
+  "rows": 20000,
+  "rows_in_content_snapshot": 18763,
+  "rows_without_text": 1237,
+  "content_snapshot_rule": "保留库内 content 长度 ≥51 字符的 18,763 条；另有 440 条正文 ≤50 字符、797 条正文为空，合计 1,237 条无可用正文",
+  "abstract_available_in_snapshot": 9319,
+  "theme_nonnull": 2,
+  "keypoints_nonnull": 0,
+  "policy_support_nonnull": 0
+ },
+ "dims": {
+  "measure_dim_available": false,
+  "available_dims": "3/4（措施完备性整维缺失）",
+  "mean_dims_used": 2.814,
+  "unit": "每千字符词频（去空白正文字符数）",
+  "raw": {
+   "basis_per_1k": {
+    "n": 18763,
+    "zero": 3763,
+    "mean": 2.5162,
+    "max": 24.6914
+   },
+   "goal_per_1k": {
+    "n": 18763,
+    "zero": 10777,
+    "mean": 0.7915,
+    "max": 48.2234
+   },
+   "scope_per_1k": {
+    "n": 18763,
+    "zero": 11216,
+    "mean": 1.2189,
+    "max": 52.6316
+   }
+  }
+ },
+ "focus_index": {
+  "A_wanghui_minmax": {
+   "track": "min-max（王惠原式）",
+   "scored_rows": 18763,
+   "p50": 4.04,
+   "p75": 6.36,
+   "p90": 9.51,
+   "min": 0.0,
+   "max": 39.6,
+   "mean": 4.72,
+   "ge60": 0,
+   "ge60_pct": 0.0
+  },
+  "B_percentile": {
+   "track": "分位秩（展示口径）",
+   "scored_rows": 18763,
+   "p50": 50.56,
+   "p75": 63.14,
+   "p90": 71.04,
+   "min": 22.88,
+   "max": 99.1,
+   "mean": 50.0,
+   "ge60": 5910,
+   "ge60_pct": 31.5
+  },
+  "degeneracy_note": "min-max 轨在右偏词频上坍缩：P50<5、max<40、无一条 ≥60，不能当 0—100 分发布；分位秩轨 P50 恒 50，可作页面展示但须标注「非王惠原式」"
+ },
+ "focus_label": {
+  "rows": [
+   {
+    "label": "制定背景",
+    "n": 13317,
+    "pct": 70.97
+   },
+   {
+    "label": "政策目标",
+    "n": 2731,
+    "pct": 14.56
+   },
+   {
+    "label": "适用范围",
+    "n": 2715,
+    "pct": 14.47
+   }
+  ],
+  "no_text_rows": 1237
+ },
+ "block_scan": {
+  "threshold_A": {
+   "rule": "min-max < 0.25（calc-logic 演示阈值）",
+   "by_dim": [
+    {
+     "dim": "政策目标",
+     "n": 18723
+    },
+    {
+     "dim": "适用范围",
+     "n": 18360
+    },
+    {
+     "dim": "制定背景",
+     "n": 17340
+    }
+   ],
+   "policy_with_any_block_pct": 100.0,
+   "verdict": "几乎全量命中 → 该阈值在本库无判别力，弃用"
+  },
+  "threshold_B": {
+   "rule": "该维闭集词零命中（文本中该维完全缺位）",
+   "by_dim": [
+    {
+     "dim": "适用范围",
+     "n": 11216,
+     "pct": 59.78
+    },
+    {
+     "dim": "政策目标",
+     "n": 10777,
+     "pct": 57.44
+    },
+    {
+     "dim": "制定背景",
+     "n": 3763,
+     "pct": 20.06
+    }
+   ],
+   "policy_with_any_block": 14112,
+   "policy_with_any_block_pct": 75.21,
+   "verdict": "零命中是「文本未写」的直接证据，不受归一标尺影响，本报告采用此口径"
+  }
+ },
+ "goal_year_anchor": {
+  "hit": 1525,
+  "hit_pct": 7.62,
+  "note": "正则 到20\\d{2}年 命中正文；作为「目标可量化」补充证据，不进指数"
+ },
+ "year_intensity": [
+  {
+   "year": 2016,
+   "n": 1235,
+   "mean_score_percentile": 52.44,
+   "mean_score_minmax": 4.88
+  },
+  {
+   "year": 2017,
+   "n": 1449,
+   "mean_score_percentile": 51.7,
+   "mean_score_minmax": 4.86
+  },
+  {
+   "year": 2018,
+   "n": 1790,
+   "mean_score_percentile": 50.02,
+   "mean_score_minmax": 4.56
+  },
+  {
+   "year": 2019,
+   "n": 1828,
+   "mean_score_percentile": 49.57,
+   "mean_score_minmax": 4.87
+  },
+  {
+   "year": 2020,
+   "n": 2230,
+   "mean_score_percentile": 49.5,
+   "mean_score_minmax": 5.0
+  },
+  {
+   "year": 2021,
+   "n": 2068,
+   "mean_score_percentile": 46.5,
+   "mean_score_minmax": 4.35
+  }
+ ],
+ "verdict": "三维可算、标签与堵点可用；焦点指数只能用分位秩轨展示，min-max 轨坍缩不发布。措施维待 policy_support 灌数后自动满配。"
+}

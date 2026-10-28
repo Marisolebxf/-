@@ -1,21 +1,21 @@
 # UI-METRIC-POPUP-3SYS-L01 · 三系统评审模式指标弹窗升级
 
 > 2026-10-28。status: ready_to_sign。
-> 依据：`local-workspace/docs/tasks/investiage/20261028_1021版指标入库查实/01-总报告` §四 补救清单第 5 项。
-> 数据基准：20261027 批 573 份指标 md（`20261027_指标整体开发进度调研/第三方库指标计算过程/`）。
+> 依据：入库查实任务「20261021 指标入库与四大系统落地查实」§四 补救清单第 5 项（查实正本见 `agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/` 附带报告，原调研区为本地工作区不入仓）。
+> 数据基准：20261027 批 573 份指标 md，**正本已实物化入仓**：`agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/第三方库指标计算过程/`（8 件 `_ZT`/`_ZS` 拆分件在内）。
 
 ## 交付物
 
 | 项 | 内容 | 位置 / commit |
 |---|---|---|
-| 编译器 | `gen_popup_info.py`（573 md → 四区块 JSON） | 调研目录 `_work/` |
+| 编译器 | `gen_popup_info.py`（573 md → 四区块 JSON） | 同上入仓目录（输入源已切至入仓正本，本地工作区不再依赖） |
 | 中台产物 | `metricPopupInfo.generated.ts`（565 keys，原 ID） | `demo-ui-system-test/src/views/shared/` |
 | 专题产物 | 同上（6 族 `_ZT` 优先映射原 key） | `demo-ui-topic/src/app/mock/enterprise/` |
 | 展示产物 | `metricPopupInfo.generated.js`（ESM，`_ZS` 优先） | `demo-ui-science/src/` |
 | 中台 UI | 三弹窗 + `MetricPopupBlocks` + 合并层 124 命中 | `1c34a1d`（dev） |
 | 专题 UI | MetricSpecCard 三区块 + verdict_20261027 36/70 | `dab369f`（dev） |
 | 展示 UI | 三套弹窗 + 共享组件 + 契约测试 | `7619afc`（dev） |
-| 验收 | Playwright 28/28 断言 100% PASS | `_work/e2e/trackd-run12-final.log` + 7 截图 |
+| 验收 | Playwright 28/28 断言 100% PASS | `e2e_trackd-run12-final.log` + `e2e_shots/`（7 截图，均已随编译器入上述目录） |
 
 ## 四区块口径
 

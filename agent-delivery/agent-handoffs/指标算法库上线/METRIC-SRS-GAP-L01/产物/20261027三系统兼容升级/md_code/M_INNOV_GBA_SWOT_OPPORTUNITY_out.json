@@ -1,0 +1,607 @@
+{
+ "metric_id": "M_INNOV_GBA_SWOT_OPPORTUNITY",
+ "metric_name": "湾区创新能力机会因素",
+ "domain": "INNOV / 湾区创新监测（DS-05）",
+ "formula_owner": "王惠（D1 弃算、D2 阈值相对化、D3 换度量单位，逐项披露）",
+ "generated_at": "2026-10-23T23:55:32+08:00",
+ "universe": {
+  "documented": 11,
+  "evaluable": 4,
+  "cities": [
+   "深圳市",
+   "广州市",
+   "东莞市",
+   "惠州市"
+  ],
+  "excluded": [
+   "珠海市",
+   "佛山市",
+   "中山市",
+   "江门市",
+   "肇庆市",
+   "香港特别行政区",
+   "澳门特别行政区"
+  ]
+ },
+ "windows": {
+  "patent_baseline": "2021–2022",
+  "patent_recent": "2023–2024",
+  "paper_baseline": "2021–2022",
+  "paper_recent": "2023 + 2025（剔除 2024 入库断点）",
+  "policy_baseline": "2019–2021 年均",
+  "policy_recent": "2023–2025"
+ },
+ "rule_rewrites": {
+  "D1_policy_window": {
+   "wanghui_rule": "近窗政策数 / max(基线年均,1) ≥ 1.5",
+   "status": "uncapable",
+   "evidence": {
+    "national_policy_by_year": {
+     "2018": 2016,
+     "2019": 2035,
+     "2020": 2402,
+     "2021": 2120,
+     "2022": 289,
+     "2023": 0,
+     "2024": 1,
+     "2025": 0
+    },
+    "per_city": {
+     "baseline_annual": {
+      "深圳市": 205.67,
+      "广州市": 37.67,
+      "东莞市": 2.33,
+      "惠州市": 0.0
+     },
+     "recent_total": {
+      "深圳市": 0,
+      "广州市": 0,
+      "东莞市": 0,
+      "惠州市": 0
+     },
+     "ratio": {
+      "深圳市": 0.0,
+      "广州市": 0.0,
+      "东莞市": 0.0,
+      "惠州市": 0.0
+     }
+    },
+    "corpus_rows": 20000
+   },
+   "why": "2022 年 289 条、2023 年 0 条、2024 年 1 条、2025 年 0 条；近窗塌陷是语料停采，不是政策停发。照公式算会让 4 城全部得到 ratio=0，被误读成「毫无政策机会」。"
+  },
+  "D2_emerging_tech": {
+   "wanghui_rule": "burst≥1 且近窗专利≥3 的 IPC4 个数",
+   "status": "operationalized",
+   "actual_rule": "近窗(2023–2024)件数 ≥3 且 近窗/基线 ≥2.0×；基线为 0 记「全新领域」；稳健口径另加 基线≥10 且 ≥2.5×",
+   "why": "Kleinberg burst 需要 ≥8 年逐年序列，本表仅 2021–2024 四个完整年（gkx 无 2017–2020），改用增长比替代并明示。",
+   "saturation_note": "四城 burst 数 [44, 35, 58, 65] 全部 ≥5，王惠「÷5 封顶」的绝对阈值在本库饱和（绝对分全部 50），故主分改为相对强度。"
+  },
+  "D3_spillover": {
+   "wanghui_rule": "跨城联合专利增速 ≥0.5",
+   "status": "unit_substituted",
+   "actual_rule": "跨城合著论文占「涉及该城论文」的份额相对增速 ≥0.5（份额归一，非件数）",
+   "why": "dwd_patent 只有 first_applicant_name，无共申请人列（55 列已探），跨城联合专利在本库不可识别；改用论文跨城合著（真实机构共现）并披露单位替换。"
+  }
+ },
+ "robustness": {
+  "n_burst_base10_growth25": {
+   "深圳市": 10,
+   "广州市": 6,
+   "东莞市": 7,
+   "惠州市": 9
+  },
+  "n_burst_main": {
+   "深圳市": 44,
+   "广州市": 35,
+   "东莞市": 58,
+   "惠州市": 65
+  },
+  "ipc4_observed": {
+   "深圳市": 609,
+   "广州市": 612,
+   "东莞市": 584,
+   "惠州市": 530
+  },
+  "score_wanghui_absolute": {
+   "深圳市": 50.0,
+   "广州市": 50.0,
+   "东莞市": 68.85,
+   "惠州市": 50.0
+  },
+  "score_robust": {
+   "深圳市": 50.0,
+   "广州市": 30.0,
+   "东莞市": 53.85,
+   "惠州市": 45.0
+  },
+  "note": "主口径沿用王惠「近窗≥3 件」；加基线≥10 且增速≥2.5× 的稳健口径后，放量领域数大幅收缩（尤其惠州 65→9），说明相当一部分「放量」来自小基数放大。"
+ },
+ "cities": {
+  "深圳市": {
+   "score_0_100": 33.85,
+   "rank": 3,
+   "score_wanghui_absolute": 50.0,
+   "score_robust": 50.0,
+   "policy_window": {
+    "baseline_annual": 205.67,
+    "recent_total_2023_2025": 0,
+    "ratio": 0.0,
+    "evaluable": false,
+    "reason": "近窗（2023–2025）全国政策记录 0–1 条（2023 年 0、2024 年 1、2025 年 0），比值为 0 是语料停采造成，不是政策停发"
+   },
+   "emerging_tech": {
+    "n_burst_ipc4": 44,
+    "n_burst_robust_base10_growth25": 10,
+    "ipc4_observed": 609,
+    "top10": [
+     {
+      "ipc4": "F21V",
+      "base_2y": 2405,
+      "recent_2y": 5502,
+      "growth": 2.29,
+      "recent_share_pct": 1.256
+     },
+     {
+      "ipc4": "H10K",
+      "base_2y": 571,
+      "recent_2y": 1501,
+      "growth": 2.63,
+      "recent_share_pct": 0.343
+     },
+     {
+      "ipc4": "B64U",
+      "base_2y": 108,
+      "recent_2y": 623,
+      "growth": 5.77,
+      "recent_share_pct": 0.142
+     },
+     {
+      "ipc4": "H10D",
+      "base_2y": 215,
+      "recent_2y": 468,
+      "growth": 2.18,
+      "recent_share_pct": 0.107
+     },
+     {
+      "ipc4": "B60G",
+      "base_2y": 180,
+      "recent_2y": 439,
+      "growth": 2.44,
+      "recent_share_pct": 0.1
+     },
+     {
+      "ipc4": "B60N",
+      "base_2y": 199,
+      "recent_2y": 414,
+      "growth": 2.08,
+      "recent_share_pct": 0.094
+     },
+     {
+      "ipc4": "H10H",
+      "base_2y": 131,
+      "recent_2y": 366,
+      "growth": 2.79,
+      "recent_share_pct": 0.084
+     },
+     {
+      "ipc4": "H10B",
+      "base_2y": 90,
+      "recent_2y": 231,
+      "growth": 2.57,
+      "recent_share_pct": 0.053
+     },
+     {
+      "ipc4": "H10F",
+      "base_2y": 22,
+      "recent_2y": 227,
+      "growth": 10.32,
+      "recent_share_pct": 0.052
+     },
+     {
+      "ipc4": "C01G",
+      "base_2y": 81,
+      "recent_2y": 213,
+      "growth": 2.63,
+      "recent_share_pct": 0.049
+     }
+    ]
+   },
+   "spillover": {
+    "baseline": {
+     "cross": 116,
+     "papers_involving_city": 1055,
+     "share": 0.11
+    },
+    "recent": {
+     "cross": 125,
+     "papers_involving_city": 1394,
+     "share": 0.0897
+    },
+    "share_growth": -0.1845,
+    "trigger": false,
+    "recent_incl_2024": {
+     "cross": 487,
+     "papers": 4581,
+     "share": 0.1063,
+     "note": "含 2024 入库断点年；份额比件数稳健，但仅作敏感性。"
+    }
+   },
+   "opportunity_list": [
+    "新兴技术窗口：44 个 IPC4 近窗放量（近窗 3+ 件且增速 ≥2.0×），最大放量领域 F21V（2405→5502 件）",
+    "外溢合作未加速：跨城合著份额 11.00% → 8.97%（-18.4%），未达 +50% 门槛",
+    "政策窗口：源侧近窗（2023–2025）政策记录为 0 条，无法判定，不作为机会来源"
+   ]
+  },
+  "广州市": {
+   "score_0_100": 26.92,
+   "rank": 4,
+   "score_wanghui_absolute": 50.0,
+   "score_robust": 30.0,
+   "policy_window": {
+    "baseline_annual": 37.67,
+    "recent_total_2023_2025": 0,
+    "ratio": 0.0,
+    "evaluable": false,
+    "reason": "近窗（2023–2025）全国政策记录 0–1 条（2023 年 0、2024 年 1、2025 年 0），比值为 0 是语料停采造成，不是政策停发"
+   },
+   "emerging_tech": {
+    "n_burst_ipc4": 35,
+    "n_burst_robust_base10_growth25": 6,
+    "ipc4_observed": 612,
+    "top10": [
+     {
+      "ipc4": "F21V",
+      "base_2y": 904,
+      "recent_2y": 1929,
+      "growth": 2.13,
+      "recent_share_pct": 0.845
+     },
+     {
+      "ipc4": "B64U",
+      "base_2y": 82,
+      "recent_2y": 424,
+      "growth": 5.17,
+      "recent_share_pct": 0.186
+     },
+     {
+      "ipc4": "H02S",
+      "base_2y": 199,
+      "recent_2y": 418,
+      "growth": 2.1,
+      "recent_share_pct": 0.183
+     },
+     {
+      "ipc4": "A23P",
+      "base_2y": 61,
+      "recent_2y": 143,
+      "growth": 2.34,
+      "recent_share_pct": 0.063
+     },
+     {
+      "ipc4": "H10H",
+      "base_2y": 31,
+      "recent_2y": 99,
+      "growth": 3.19,
+      "recent_share_pct": 0.043
+     },
+     {
+      "ipc4": "B21J",
+      "base_2y": 46,
+      "recent_2y": 94,
+      "growth": 2.04,
+      "recent_share_pct": 0.041
+     },
+     {
+      "ipc4": "H10F",
+      "base_2y": 17,
+      "recent_2y": 92,
+      "growth": 5.41,
+      "recent_share_pct": 0.04
+     },
+     {
+      "ipc4": "H10N",
+      "base_2y": 19,
+      "recent_2y": 88,
+      "growth": 4.63,
+      "recent_share_pct": 0.039
+     },
+     {
+      "ipc4": "C10G",
+      "base_2y": 25,
+      "recent_2y": 52,
+      "growth": 2.08,
+      "recent_share_pct": 0.023
+     },
+     {
+      "ipc4": "B64G",
+      "base_2y": 14,
+      "recent_2y": 42,
+      "growth": 3.0,
+      "recent_share_pct": 0.018
+     }
+    ]
+   },
+   "spillover": {
+    "baseline": {
+     "cross": 175,
+     "papers_involving_city": 2358,
+     "share": 0.0742
+    },
+    "recent": {
+     "cross": 176,
+     "papers_involving_city": 2504,
+     "share": 0.0703
+    },
+    "share_growth": -0.0529,
+    "trigger": false,
+    "recent_incl_2024": {
+     "cross": 689,
+     "papers": 7919,
+     "share": 0.087,
+     "note": "含 2024 入库断点年；份额比件数稳健，但仅作敏感性。"
+    }
+   },
+   "opportunity_list": [
+    "新兴技术窗口：35 个 IPC4 近窗放量（近窗 3+ 件且增速 ≥2.0×），最大放量领域 F21V（904→1929 件）",
+    "外溢合作未加速：跨城合著份额 7.42% → 7.03%（-5.3%），未达 +50% 门槛",
+    "政策窗口：源侧近窗（2023–2025）政策记录为 0 条，无法判定，不作为机会来源"
+   ]
+  },
+  "东莞市": {
+   "score_0_100": 63.47,
+   "rank": 1,
+   "score_wanghui_absolute": 68.85,
+   "score_robust": 53.85,
+   "policy_window": {
+    "baseline_annual": 2.33,
+    "recent_total_2023_2025": 0,
+    "ratio": 0.0,
+    "evaluable": false,
+    "reason": "近窗（2023–2025）全国政策记录 0–1 条（2023 年 0、2024 年 1、2025 年 0），比值为 0 是语料停采造成，不是政策停发"
+   },
+   "emerging_tech": {
+    "n_burst_ipc4": 58,
+    "n_burst_robust_base10_growth25": 7,
+    "ipc4_observed": 584,
+    "top10": [
+     {
+      "ipc4": "F21V",
+      "base_2y": 818,
+      "recent_2y": 1939,
+      "growth": 2.37,
+      "recent_share_pct": 1.354
+     },
+     {
+      "ipc4": "A21C",
+      "base_2y": 66,
+      "recent_2y": 143,
+      "growth": 2.17,
+      "recent_share_pct": 0.1
+     },
+     {
+      "ipc4": "C14B",
+      "base_2y": 42,
+      "recent_2y": 118,
+      "growth": 2.81,
+      "recent_share_pct": 0.082
+     },
+     {
+      "ipc4": "H10H",
+      "base_2y": 29,
+      "recent_2y": 109,
+      "growth": 3.76,
+      "recent_share_pct": 0.076
+     },
+     {
+      "ipc4": "B64U",
+      "base_2y": 7,
+      "recent_2y": 72,
+      "growth": 10.29,
+      "recent_share_pct": 0.05
+     },
+     {
+      "ipc4": "A24B",
+      "base_2y": 31,
+      "recent_2y": 72,
+      "growth": 2.32,
+      "recent_share_pct": 0.05
+     },
+     {
+      "ipc4": "A23P",
+      "base_2y": 22,
+      "recent_2y": 67,
+      "growth": 3.05,
+      "recent_share_pct": 0.047
+     },
+     {
+      "ipc4": "C23G",
+      "base_2y": 29,
+      "recent_2y": 62,
+      "growth": 2.14,
+      "recent_share_pct": 0.043
+     },
+     {
+      "ipc4": "D06N",
+      "base_2y": 24,
+      "recent_2y": 52,
+      "growth": 2.17,
+      "recent_share_pct": 0.036
+     },
+     {
+      "ipc4": "F01N",
+      "base_2y": 20,
+      "recent_2y": 51,
+      "growth": 2.55,
+      "recent_share_pct": 0.036
+     }
+    ]
+   },
+   "spillover": {
+    "baseline": {
+     "cross": 42,
+     "papers_involving_city": 289,
+     "share": 0.1453
+    },
+    "recent": {
+     "cross": 38,
+     "papers_involving_city": 220,
+     "share": 0.1727
+    },
+    "share_growth": 0.1885,
+    "trigger": false,
+    "recent_incl_2024": {
+     "cross": 111,
+     "papers": 611,
+     "share": 0.1817,
+     "note": "含 2024 入库断点年；份额比件数稳健，但仅作敏感性。"
+    }
+   },
+   "opportunity_list": [
+    "新兴技术窗口：58 个 IPC4 近窗放量（近窗 3+ 件且增速 ≥2.0×），最大放量领域 F21V（818→1939 件）",
+    "外溢合作未加速：跨城合著份额 14.53% → 17.27%（+18.9%），未达 +50% 门槛",
+    "政策窗口：源侧近窗（2023–2025）政策记录为 0 条，无法判定，不作为机会来源"
+   ]
+  },
+  "惠州市": {
+   "score_0_100": 50.0,
+   "rank": 2,
+   "score_wanghui_absolute": 50.0,
+   "score_robust": 45.0,
+   "policy_window": {
+    "baseline_annual": 0.0,
+    "recent_total_2023_2025": 0,
+    "ratio": 0.0,
+    "evaluable": false,
+    "reason": "近窗（2023–2025）全国政策记录 0–1 条（2023 年 0、2024 年 1、2025 年 0），比值为 0 是语料停采造成，不是政策停发"
+   },
+   "emerging_tech": {
+    "n_burst_ipc4": 65,
+    "n_burst_robust_base10_growth25": 9,
+    "ipc4_observed": 530,
+    "top10": [
+     {
+      "ipc4": "H01M",
+      "base_2y": 2492,
+      "recent_2y": 5020,
+      "growth": 2.01,
+      "recent_share_pct": 12.262
+     },
+     {
+      "ipc4": "F21V",
+      "base_2y": 363,
+      "recent_2y": 946,
+      "growth": 2.61,
+      "recent_share_pct": 2.311
+     },
+     {
+      "ipc4": "B60L",
+      "base_2y": 72,
+      "recent_2y": 176,
+      "growth": 2.44,
+      "recent_share_pct": 0.43
+     },
+     {
+      "ipc4": "A61H",
+      "base_2y": 29,
+      "recent_2y": 94,
+      "growth": 3.24,
+      "recent_share_pct": 0.23
+     },
+     {
+      "ipc4": "B60K",
+      "base_2y": 18,
+      "recent_2y": 49,
+      "growth": 2.72,
+      "recent_share_pct": 0.12
+     },
+     {
+      "ipc4": "B64U",
+      "base_2y": 1,
+      "recent_2y": 44,
+      "growth": 44.0,
+      "recent_share_pct": 0.107
+     },
+     {
+      "ipc4": "C07C",
+      "base_2y": 20,
+      "recent_2y": 40,
+      "growth": 2.0,
+      "recent_share_pct": 0.098
+     },
+     {
+      "ipc4": "A42B",
+      "base_2y": 13,
+      "recent_2y": 39,
+      "growth": 3.0,
+      "recent_share_pct": 0.095
+     },
+     {
+      "ipc4": "F24C",
+      "base_2y": 13,
+      "recent_2y": 35,
+      "growth": 2.69,
+      "recent_share_pct": 0.085
+     },
+     {
+      "ipc4": "C25B",
+      "base_2y": 10,
+      "recent_2y": 34,
+      "growth": 3.4,
+      "recent_share_pct": 0.083
+     }
+    ]
+   },
+   "spillover": {
+    "baseline": {
+     "cross": 13,
+     "papers_involving_city": 145,
+     "share": 0.0897
+    },
+    "recent": {
+     "cross": 13,
+     "papers_involving_city": 158,
+     "share": 0.0823
+    },
+    "share_growth": -0.0823,
+    "trigger": false,
+    "recent_incl_2024": {
+     "cross": 49,
+     "papers": 472,
+     "share": 0.1038,
+     "note": "含 2024 入库断点年；份额比件数稳健，但仅作敏感性。"
+    }
+   },
+   "opportunity_list": [
+    "新兴技术窗口：65 个 IPC4 近窗放量（近窗 3+ 件且增速 ≥2.0×），最大放量领域 H01M（2492→5020 件）",
+    "外溢合作未加速：跨城合著份额 8.97% → 8.23%（-8.2%），未达 +50% 门槛",
+    "政策窗口：源侧近窗（2023–2025）政策记录为 0 条，无法判定，不作为机会来源"
+   ]
+  }
+ },
+ "probes": {
+  "patent_rows": 2939895,
+  "ipc_city_year_keys": 8652,
+  "policy_rows": 20000,
+  "policy_city_null_rows": 9706,
+  "paper_corpus": 100900,
+  "paper_first_author_mapped": 24737
+ },
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "criteria": {
+   "structure": "政策/专利/论文三表结构齐全，但 D1 与 D3 各有一处结构性缺口",
+   "volume": "专利维足量（四城 2021–2024 合计 1,719,769 件）；论文维可归属但 2024 断点；政策维近窗为 0 条",
+   "reproducible": true,
+   "discriminative": true
+  },
+  "blocking_gaps": [
+   "D1 政策窗口不可算：近窗政策记录全国 0–1 条，任何比值都无信息量。",
+   "D3 王惠要求跨城联合专利，专利表无共申请人列，只能改用论文跨城合著替代。",
+   "11 城仅 4 城可评估，港澳与珠西五市无法进入机会研判。",
+   "D2 用增长比替代 Kleinberg burst：只有 2021–2024 四个完整年。"
+  ],
+  "note": "两个可评维度给出可区分结果；D1 缺失使「政策机会」这一最直接的机会来源无法呈现。"
+ },
+ "runtime_sec": 0.35
+}

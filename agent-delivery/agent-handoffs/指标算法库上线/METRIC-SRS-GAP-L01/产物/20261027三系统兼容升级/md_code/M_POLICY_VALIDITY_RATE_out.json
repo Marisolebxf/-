@@ -1,0 +1,142 @@
+{
+ "metric_id": "M_POLICY_VALIDITY_RATE",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标，不设年度分母。本件不设基期不是因为「不需要时间」，而是因为失效判定所需的 expire_date 整列为空，任何按年切分都不会改变结论。",
+ "headline": {
+  "policy_total": 20000,
+  "distinct_id": 20000,
+  "status_distinct_values": 1,
+  "status_valid_rows": 20000,
+  "status_other_rows": 0,
+  "expire_date_nonnull": 0,
+  "expire_date_null": 20000,
+  "expire_before_today": 0,
+  "expire_on_or_after_today": 0,
+  "implementation_date_nonnull": 0,
+  "registered_metric_value": null,
+  "constructive_validity_rate_pct": 100.0,
+  "constructive_reason": "status 全为「有效」且 expire_date 全空，注册表公式的两个条件同时恒真，算出来必然是 100.00%，该值不随数据变化，不可作为指标值发布。",
+  "publishable": false,
+  "max_measurable_validity_span_days": null
+ },
+ "registered_formula": {
+  "text": "COUNT(status=1 AND (expire_date IS NULL OR expire_date>=today)) / COUNT(*) * 100",
+  "condition_1": "status=1（有效）",
+  "condition_2": "expire_date IS NULL OR expire_date>=today",
+  "condition_1_measured": "20000/20000 行为「有效」，其余 0 行",
+  "condition_2_measured": "expire_date 有值 0 行、空 20000 行",
+  "why_not_computable": "两个条件在库内都恒真：条件一把全部行留下，条件二把全部行留下。公式在数学上可执行、在语义上无判别力——这就是「结构在、数据不在」。"
+ },
+ "negative_evidence": [
+  {
+   "id": "E1",
+   "dim": "status 取值域",
+   "evidence": {
+    "有效": 20000
+   },
+   "verdict": "唯一取值「有效」覆盖 20000/20000 行，无「已废止/已撤销/失效」，不能区分现行有效与失效"
+  },
+  {
+   "id": "E2",
+   "dim": "expire_date 填充",
+   "evidence": {
+    "nonnull": 0,
+    "null": 20000,
+    "expire_min": null,
+    "expire_max": null,
+    "expire_before_today": 0,
+    "expire_on_or_after_today": 0
+   },
+   "verdict": "整列 0 行有值；既没有「已过期」也没有「未过期」，时效判定无输入"
+  },
+  {
+   "id": "E3",
+   "dim": "implementation_date 填充",
+   "evidence": {
+    "nonnull": 0,
+    "null": 20000
+   },
+   "verdict": "实施日同样整列为空，无法用「实施日 + 有效期」侧算时效"
+  },
+  {
+   "id": "E4",
+   "dim": "发布日期可用性",
+   "evidence": {
+    "min": "1981-04-07",
+    "max": "2024-02-18",
+    "null_rows": 3
+   },
+   "verdict": "发布日有值（1981-04-07—2024-02-18），但发布日不是失效日；用它推算「已过 N 年即失效」属自造规则，本件不采用"
+  },
+  {
+   "id": "E5",
+   "dim": "口径自洽性",
+   "evidence": {
+    "expire_before_publish": 0
+   },
+   "verdict": "无任何「失效日早于发布日」的行，是因为失效日全空，不是因为数据质量好"
+  }
+ ],
+ "anomaly_scan": {
+  "expire_before_publish": 0,
+  "implementation_before_publish": 0,
+  "bad_publish_date_rows": 3,
+  "note": "三项均为 0 行/3 行，前两项为 0 是「列全空」的结果，不能当作一致性通过。"
+ },
+ "repair_requirements": [
+  {
+   "field": "expire_date",
+   "type": "date",
+   "need": "逐条回填失效/截止日期；长周期规划类政策可留空（语义应为「长期有效」而不是「未知」）"
+  },
+  {
+   "field": "invalid_date / abolish_date",
+   "type": "date",
+   "need": "政策被废止、被新文件替代的实际日期；这是「失效」的主口径，expire_date 只是预设截止日"
+  },
+  {
+   "field": "status 值域",
+   "type": "enum",
+   "need": "至少区分 有效 / 已废止 / 已修订 / 未知，并说明「有效」是否包含「未标注」"
+  }
+ ],
+ "checks": [
+  {
+   "name": "status 全表唯一值",
+   "value": 1,
+   "expected": 1,
+   "ok": true
+  },
+  {
+   "name": "expire_date 全空",
+   "value": 0,
+   "expected": 0,
+   "ok": true
+  },
+  {
+   "name": "构造性 100% 与全表行数一致",
+   "value": 20000,
+   "expected": 20000,
+   "ok": true
+  }
+ ],
+ "provenance": {
+  "snapshots": [
+   "code/_snapshots21/policy_struct_20261023.json",
+   "code/_snapshots21/policy_dims_20261023.json"
+  ],
+  "builders": [
+   "code/_build_policy_struct_20261023.py",
+   "code/_build_policy_dims_20261023.py"
+  ],
+  "source": "gkx @ 183.240.141.251:3318（只读用户 gkx_reader_zp）.dwd_policy_base；窄投影 id/rank/type/province/city/district/publish_year/status/ministry/publish_date/title"
+ },
+ "notes": [
+  "本件不发布任何「有效率」数值；100.00% 只是公式在同一批恒真条件上的算术结果。",
+  "expire_date 列在 information_schema 里存在（date 类型），所以问题不是「缺列」，是「缺数」。",
+  "2023—2026 采集断档与本指标无关：失效判定缺的是字段值，不是年份。"
+ ]
+}

@@ -1,0 +1,657 @@
+{
+ "metric_id": "M_ENT_PATENT_GRANT_COUNT",
+ "metric_name": "专利授权量",
+ "generated_at": "2026-10-23 02:29:12",
+ "definition": "每企业一条：该企业作为第一专利权人的授权专利去重件数（累计，含发明/实用新型/外观）",
+ "data_source": "gkx @ 183.240.141.251:3318（只读）：dwd_patent 聚合 × dwd_org_base_info；零 DB",
+ "support_judgment": "完全转换支持",
+ "verdict_kind": "converted",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面累计件，不按报告期（calc-logic 明文「不按报告期」，正式明细也无授权日列）。dwd_patent.apdt_year 仅 2021—2026，故累计窗口为六年；2026 为残年（74,810 行）。used/missing 留空，窗口在此说明。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/star_applicant_agg_gkx.json",
+   "kind": "snapshot",
+   "role": "169,226 申请人 [件数, 授权数]；授权数合计 2,140,420"
+  },
+  {
+   "path": "code/_snapshots21/star_base_rows_gkx.json",
+   "kind": "snapshot",
+   "role": "底册 189,116 行（org_id/名称/属地/行业/机构类型）"
+  },
+  {
+   "path": "code/_snapshots21/patent_panel_innov_20261021.json",
+   "kind": "snapshot",
+   "role": "年份与国别（授权窗口与 WO 辨析）"
+  },
+  {
+   "path": "code/_snapshots21/gkx_columns_20261023.json",
+   "kind": "snapshot",
+   "role": "列字典：legal_status / first_assignee_org_id 等列存在性"
+  }
+ ],
+ "probes": {
+  "legal_status_columns": [],
+  "first_current_assignee_columns": [
+   "dwd_patent",
+   "dwd_patent_bak_20260912"
+  ],
+  "first_assignee_org_id_columns": [],
+  "granted_number_columns": [
+   "dwd_patent",
+   "dwd_patent_bak_20260912"
+  ],
+  "patent_legal_tables": [
+   "dwd_patent_legal"
+  ],
+  "enterprise_patent_detail_present": [],
+  "first_assignee_vs_first_applicant_diff_rows": 1867,
+  "first_assignee_diff_pct": 0.0635,
+  "legal_table_rows": 20000,
+  "legal_table_coverage_pct": 0.6803,
+  "source": "calc-logic/ENT/M_ENT_PATENT_GRANT_COUNT.md 现网探针（gkx, 2026-08-27）"
+ },
+ "compute": {
+  "grant_stats": {
+   "n": 157363,
+   "sum": 1903793,
+   "mean": 12.0981,
+   "median": 4,
+   "p25": 1,
+   "p75": 10,
+   "p90": 22,
+   "p95": 35,
+   "p99": 107,
+   "min": 0,
+   "max": 18235
+  },
+  "grant_stats_positive": {
+   "n": 143754,
+   "sum": 1903793,
+   "mean": 13.2434,
+   "median": 5,
+   "p25": 2,
+   "p75": 11,
+   "p90": 23,
+   "p95": 37,
+   "p99": 114,
+   "min": 1,
+   "max": 18235
+  },
+  "coverage": {
+   "base_rows": 189116,
+   "firms_with_patents": 157363,
+   "firms_with_grant": 143754,
+   "firms_with_zero_grant": 13609,
+   "zero_grant_pct": 8.6482,
+   "firm_grant_coverage_pct": 76.0137,
+   "total_grant": 1903793,
+   "total_pub": 2557248,
+   "library_grant": 2140420,
+   "library_rows": 2939895,
+   "grant_coverage_pct": 88.9448,
+   "grant_rate_pct": 74.4469,
+   "library_grant_rate_pct": 72.806,
+   "grant_per_firm_mean": 12.0981,
+   "grant_per_positive_firm_mean": 13.2434
+  },
+  "band_dist": [
+   {
+    "band": "0",
+    "n_firms": 13609,
+    "firm_pct": 8.6482,
+    "grant_sum": 0,
+    "grant_pct": 0.0
+   },
+   {
+    "band": "1-4",
+    "n_firms": 69708,
+    "firm_pct": 44.2976,
+    "grant_sum": 141816,
+    "grant_pct": 7.4491
+   },
+   {
+    "band": "5-9",
+    "n_firms": 29964,
+    "firm_pct": 19.0413,
+    "grant_sum": 202200,
+    "grant_pct": 10.6209
+   },
+   {
+    "band": "10-49",
+    "n_firms": 39358,
+    "firm_pct": 25.011,
+    "grant_sum": 739317,
+    "grant_pct": 38.8339
+   },
+   {
+    "band": "50-99",
+    "n_firms": 2989,
+    "firm_pct": 1.8994,
+    "grant_sum": 202900,
+    "grant_pct": 10.6577
+   },
+   {
+    "band": "100-499",
+    "n_firms": 1540,
+    "firm_pct": 0.9786,
+    "grant_sum": 285856,
+    "grant_pct": 15.0151
+   },
+   {
+    "band": "500-+",
+    "n_firms": 195,
+    "firm_pct": 0.1239,
+    "grant_sum": 331704,
+    "grant_pct": 17.4233
+   }
+  ],
+  "concentration": {
+   "top10_grant": 117363,
+   "top10_share_pct": 6.1647,
+   "top50_grant": 214562,
+   "top50_share_pct": 11.2702,
+   "top100_grant": 269833,
+   "top100_share_pct": 14.1734,
+   "top1000_grant": 529217,
+   "top1000_share_pct": 27.798
+  },
+  "threshold_curve": [
+   {
+    "threshold": 1,
+    "n_firms": 143754,
+    "firm_pct": 91.3518,
+    "grant_sum": 1903793,
+    "grant_pct": 100.0
+   },
+   {
+    "threshold": 5,
+    "n_firms": 74046,
+    "firm_pct": 47.0543,
+    "grant_sum": 1761977,
+    "grant_pct": 92.5509
+   },
+   {
+    "threshold": 10,
+    "n_firms": 44082,
+    "firm_pct": 28.0129,
+    "grant_sum": 1559777,
+    "grant_pct": 81.93
+   },
+   {
+    "threshold": 20,
+    "n_firms": 18153,
+    "firm_pct": 11.5357,
+    "grant_sum": 1211534,
+    "grant_pct": 63.6379
+   },
+   {
+    "threshold": 50,
+    "n_firms": 4724,
+    "firm_pct": 3.002,
+    "grant_sum": 820460,
+    "grant_pct": 43.0961
+   },
+   {
+    "threshold": 100,
+    "n_firms": 1735,
+    "firm_pct": 1.1025,
+    "grant_sum": 617560,
+    "grant_pct": 32.4384
+   },
+   {
+    "threshold": 500,
+    "n_firms": 195,
+    "firm_pct": 0.1239,
+    "grant_sum": 331704,
+    "grant_pct": 17.4233
+   }
+  ],
+  "city_dist": {
+   "深圳市": {
+    "grant": 968510,
+    "pct": 50.8727
+   },
+   "广州市": {
+    "grant": 493791,
+    "pct": 25.9372
+   },
+   "东莞市": {
+    "grant": 349472,
+    "pct": 18.3566
+   },
+   "惠州市": {
+    "grant": 91247,
+    "pct": 4.7929
+   },
+   "北京市": {
+    "grant": 277,
+    "pct": 0.0145
+   },
+   "西安市": {
+    "grant": 233,
+    "pct": 0.0122
+   },
+   "杭州市": {
+    "grant": 79,
+    "pct": 0.0041
+   },
+   "抚顺市": {
+    "grant": 68,
+    "pct": 0.0036
+   },
+   "天津市": {
+    "grant": 65,
+    "pct": 0.0034
+   },
+   "包头市": {
+    "grant": 23,
+    "pct": 0.0012
+   },
+   "成都市": {
+    "grant": 10,
+    "pct": 0.0005
+   },
+   "西宁市": {
+    "grant": 6,
+    "pct": 0.0003
+   },
+   "中山市": {
+    "grant": 3,
+    "pct": 0.0002
+   },
+   "大连市": {
+    "grant": 2,
+    "pct": 0.0001
+   },
+   "武汉市": {
+    "grant": 2,
+    "pct": 0.0001
+   },
+   "上海市": {
+    "grant": 2,
+    "pct": 0.0001
+   },
+   "兰州市": {
+    "grant": 1,
+    "pct": 0.0001
+   },
+   "贵阳市": {
+    "grant": 1,
+    "pct": 0.0001
+   },
+   "济南市": {
+    "grant": 1,
+    "pct": 0.0001
+   },
+   "喀什地区": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "长沙市": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "石家庄市": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "榆林市": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "南昌市": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "海口市": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "佛山市": {
+    "grant": 0,
+    "pct": 0.0
+   }
+  },
+  "province_dist": {
+   "广东省": {
+    "grant": 1903023,
+    "pct": 99.9596
+   },
+   "北京市": {
+    "grant": 277,
+    "pct": 0.0145
+   },
+   "陕西省": {
+    "grant": 233,
+    "pct": 0.0122
+   },
+   "浙江省": {
+    "grant": 79,
+    "pct": 0.0041
+   },
+   "辽宁省": {
+    "grant": 70,
+    "pct": 0.0037
+   },
+   "天津市": {
+    "grant": 65,
+    "pct": 0.0034
+   },
+   "内蒙古": {
+    "grant": 23,
+    "pct": 0.0012
+   },
+   "四川省": {
+    "grant": 10,
+    "pct": 0.0005
+   },
+   "青海省": {
+    "grant": 6,
+    "pct": 0.0003
+   },
+   "湖北省": {
+    "grant": 2,
+    "pct": 0.0001
+   },
+   "上海市": {
+    "grant": 2,
+    "pct": 0.0001
+   },
+   "甘肃省": {
+    "grant": 1,
+    "pct": 0.0001
+   },
+   "贵州省": {
+    "grant": 1,
+    "pct": 0.0001
+   },
+   "山东省": {
+    "grant": 1,
+    "pct": 0.0001
+   },
+   "新疆": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "湖南省": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "河北省": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "江西省": {
+    "grant": 0,
+    "pct": 0.0
+   },
+   "海南省": {
+    "grant": 0,
+    "pct": 0.0
+   }
+  },
+  "industry_l1_dist": {
+   "制造业": {
+    "grant": 759039,
+    "pct": 39.8698
+   },
+   "批发和零售业": {
+    "grant": 390377,
+    "pct": 20.5052
+   },
+   "科学研究和技术服务业": {
+    "grant": 319424,
+    "pct": 16.7783
+   },
+   "信息传输、软件和信息技术服务业": {
+    "grant": 144388,
+    "pct": 7.5842
+   },
+   "未填": {
+    "grant": 109694,
+    "pct": 5.7619
+   },
+   "建筑业": {
+    "grant": 53108,
+    "pct": 2.7896
+   },
+   "租赁和商务服务业": {
+    "grant": 43060,
+    "pct": 2.2618
+   },
+   "电力、热力、燃气及水生产和供应业": {
+    "grant": 18315,
+    "pct": 0.962
+   },
+   "房地产业": {
+    "grant": 12605,
+    "pct": 0.6621
+   },
+   "居民服务、修理和其他服务业": {
+    "grant": 11590,
+    "pct": 0.6088
+   },
+   "金融业": {
+    "grant": 10160,
+    "pct": 0.5337
+   },
+   "交通运输、仓储和邮政业": {
+    "grant": 8491,
+    "pct": 0.446
+   },
+   "文化、体育和娱乐业": {
+    "grant": 6829,
+    "pct": 0.3587
+   },
+   "水利、环境和公共设施管理业": {
+    "grant": 6438,
+    "pct": 0.3382
+   },
+   "教育": {
+    "grant": 5392,
+    "pct": 0.2832
+   },
+   "农、林、牧、渔业": {
+    "grant": 1909,
+    "pct": 0.1003
+   },
+   "卫生和社会工作": {
+    "grant": 1602,
+    "pct": 0.0841
+   },
+   "住宿和餐饮业": {
+    "grant": 778,
+    "pct": 0.0409
+   },
+   "采矿业": {
+    "grant": 474,
+    "pct": 0.0249
+   },
+   "公共管理、社会保障和社会组织": {
+    "grant": 86,
+    "pct": 0.0045
+   },
+   "国际组织": {
+    "grant": 34,
+    "pct": 0.0018
+   }
+  },
+  "industry_l2_top10": [
+   {
+    "name": "批发业",
+    "grant": 281982,
+    "pct": 14.8116
+   },
+   {
+    "name": "计算机、通信和其他电子设备制造业",
+    "grant": 254073,
+    "pct": 13.3456
+   },
+   {
+    "name": "软件和信息技术服务业",
+    "grant": 128056,
+    "pct": 6.7264
+   },
+   {
+    "name": "科技推广和应用服务业",
+    "grant": 125925,
+    "pct": 6.6144
+   },
+   {
+    "name": "未填",
+    "grant": 116753,
+    "pct": 6.1327
+   },
+   {
+    "name": "零售业",
+    "grant": 108218,
+    "pct": 5.6843
+   },
+   {
+    "name": "研究和试验发展",
+    "grant": 106611,
+    "pct": 5.5999
+   },
+   {
+    "name": "电气机械和器材制造业",
+    "grant": 98164,
+    "pct": 5.1562
+   },
+   {
+    "name": "专业技术服务业",
+    "grant": 83567,
+    "pct": 4.3895
+   },
+   {
+    "name": "专用设备制造业",
+    "grant": 61952,
+    "pct": 3.2541
+   }
+  ],
+  "entity_split": {
+   "enterprise_orgs": 156240,
+   "enterprise_grant": 1777120,
+   "enterprise_grant_pct": 93.3463,
+   "non_enterprise_orgs": 1123,
+   "non_enterprise_grant": 126673,
+   "non_enterprise_grant_pct": 6.6537
+  },
+  "derived": {
+   "four_city_grant": 1903020,
+   "four_city_grant_pct": 99.9594,
+   "out_of_province_grant": 773,
+   "firms_le4_pct": 52.9458,
+   "non_enterprise_firm_pct": 0.7136,
+   "star_subset_grant": 699284,
+   "star_subset_share_of_grants_pct": 36.7311,
+   "enterprise_grant_rate_pct": 75.3716,
+   "non_enterprise_grant_rate_pct": 63.5156,
+   "grant_minus_star": 1204509
+  },
+  "top10_by_grant": [
+   {
+    "name": "华南理工大学",
+    "city": "广州市",
+    "industry_l1": null,
+    "grant_cnt": 18235,
+    "pub_cnt": 28053,
+    "share_pct": 0.9578,
+    "grant_rate_pct": 65.002
+   },
+   {
+    "name": "比亚迪股份有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "grant_cnt": 17072,
+    "pub_cnt": 29024,
+    "share_pct": 0.8967,
+    "grant_rate_pct": 58.8203
+   },
+   {
+    "name": "广东工业大学",
+    "city": "广州市",
+    "industry_l1": null,
+    "grant_cnt": 14061,
+    "pub_cnt": 21326,
+    "share_pct": 0.7386,
+    "grant_rate_pct": 65.9336
+   },
+   {
+    "name": "华为技术有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "grant_cnt": 13360,
+    "pub_cnt": 81376,
+    "share_pct": 0.7018,
+    "grant_rate_pct": 16.4176
+   },
+   {
+    "name": "维沃移动通信有限公司",
+    "city": "东莞市",
+    "industry_l1": "批发和零售业",
+    "grant_cnt": 11145,
+    "pub_cnt": 28712,
+    "share_pct": 0.5854,
+    "grant_rate_pct": 38.8165
+   },
+   {
+    "name": "中山大学",
+    "city": "广州市",
+    "industry_l1": null,
+    "grant_cnt": 11025,
+    "pub_cnt": 17475,
+    "share_pct": 0.5791,
+    "grant_rate_pct": 63.0901
+   },
+   {
+    "name": "深圳大学",
+    "city": "深圳市",
+    "industry_l1": null,
+    "grant_cnt": 8913,
+    "pub_cnt": 13068,
+    "share_pct": 0.4682,
+    "grant_rate_pct": 68.2048
+   },
+   {
+    "name": "广东电网有限责任公司",
+    "city": "广州市",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "grant_cnt": 8566,
+    "pub_cnt": 18922,
+    "share_pct": 0.4499,
+    "grant_rate_pct": 45.2701
+   },
+   {
+    "name": "OPPO广东移动通信有限公司",
+    "city": "东莞市",
+    "industry_l1": "制造业",
+    "grant_cnt": 8547,
+    "pub_cnt": 25765,
+    "share_pct": 0.4489,
+    "grant_rate_pct": 33.1729
+   },
+   {
+    "name": "华南农业大学",
+    "city": "广州市",
+    "industry_l1": null,
+    "grant_cnt": 6439,
+    "pub_cnt": 10428,
+    "share_pct": 0.3382,
+    "grant_rate_pct": 61.7472
+   }
+  ],
+  "library": {
+   "rows": 2939895,
+   "grant_sum": 2140420,
+   "names": 169226
+  }
+ },
+ "reasons": [
+  "结果面 enterprise_patent_detail 与查询键 first_assignee_org_id 两库均无，但原料列齐全（first_current_assignee_name / granted_number / patent_id 均在 dwd_patent），按名称匹配即可现造键 → 完全转换支持。",
+  "授权状态用 granted_number 非空替代 legal_status：全库无 legal_status 列，dwd_patent_legal 仅 20,000 行（覆盖 0.68%），不可当全量过滤条件。",
+  "归属用 first_applicant_name 聚合而非 first_current_assignee_name：后者无聚合缓存，严格口径需再扫全表（约 1,400 秒）；现网实测两者差 1,867 条（0.0635%），影响 <0.1%。",
+  "每企业一条、不按产业、不按报告期，三条与 calc-logic 逐字一致。"
+ ]
+}
