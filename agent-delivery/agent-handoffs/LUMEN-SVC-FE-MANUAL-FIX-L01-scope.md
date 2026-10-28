@@ -122,7 +122,7 @@
 | P2-1 | ✅ | `analysisTaskStore.ts` L47 `org_coverage` 覆盖矩阵（fields×stages），热力/矩阵可画 |
 | P2-2 | ✅ | 同文件 L432 `dimension_scores` 五维 + `portalRankingMock.ts` DIMS；`svcCapabilityModel.ts` 渲染路径「有则画雷达、无则省略」 |
 | P2-3 | ✅（落点偏离） | 热度星级建在**新文件** `mock/service/orgTrendResultMock.ts`（`SERIES_BY_KEY` 带 `heat{stars,label}`，`DEFAULT_SERIES` 非空兜底）而非 scope 指定的 `analysisTaskStore` 内——独立文件更贴 trend 专用包结构，as-built 接受 |
-| P2-4 | 🟡 部分待确认 | `portalShenzhenMock.ts` 十区坐标 ✅（南山区…带 lat/lng）；**五城×3 指标场景行未见字段**，五城对比图可画性待走查确认或补 |
+| P2-4 | ✅ 已确认（2026-10-28） | `portalShenzhenMock.ts` 十区坐标 ✅（南山区…带 lat/lng）；五城×3 指标场景行 ✅ 落位于 `analysisTaskStore.ts` L552-558 `city_metrics`（sz/nat/bj/sh/gz × scale/tech/relation），由 `svcSzCompareModel.ts` 消费渲染，缺城不补列 |
 | P2-5 | ✅ | `recListMock.ts` 培育行 `suggestionTags`+`suggestion_items`（L55-78）；招引行 indicators 四指标分项 |
 | P2-6 | ✅ | `portalOverviewMock.ts` `total_org_series`+`scale_bands`（L21/L26）；`portalRegionMock.ts` lat/lng（L7+）；`portalShenzhenMock.ts` 十区坐标；`portalIndustryMock.ts` 矩阵+`filtered`（types 已扩）；页面侧「有字段就画、无则诚实空」路径同步（OverviewPage scaleBands 柱图等） |
 
