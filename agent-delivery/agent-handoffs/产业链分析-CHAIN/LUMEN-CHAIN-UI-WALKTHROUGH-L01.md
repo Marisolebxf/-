@@ -64,8 +64,8 @@
 
 ## 产物清单
 
-- 代码：`repos/lumen-ui-topic` `origin/dev` — `2b8630c` + **本批 commit（见 CI/CD）**
-- handoff：本文件
+- 代码：`repos/lumen-ui-topic` `origin/dev` — `2b8630c` + **`e87b4df`**
+- handoff：`gkx-orchestration` **`cd6877e0`** + 本文件
 
 ## 测试结果
 
