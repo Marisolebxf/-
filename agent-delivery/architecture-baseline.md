@@ -121,7 +121,7 @@ flowchart LR
 
 ---
 
-## 2. 锁定决策（15 项）
+## 2. 锁定决策（16 项）
 
 | # | 决策 | 内容 |
 |---|------|------|
@@ -140,6 +140,7 @@ flowchart LR
 | **D13** | **消息总线 = Kafka，运行时不用 RabbitMQ** | bootstrap **`10.50.11.76:9092`**。只承载 `task_completed` 大 JSON。正式 topic `gkx.analysis.result`、死信 `gkx.analysis.result.dlq`、组 `gkxlumen-ai-worker`；原型 topic `gkx.demo.analysis.result`、死信 `gkx.demo.analysis.result.dlq`、组 `demo-ai-worker`。两边禁止共用 topic 或组。发布者 `gkxlumen-platform-ai-py` / `demo-platform-ai-py`；消费者 `gkxlumen-platform-ai-worker` / `demo-platform-worker-py`。算法与 Java 不连总线。正文契约不变，单条上限 64MiB。口令不进 git，不改 MySQL root。图 `ARCH-MSG-KAFKA`（§1.1）。关联 task：`E-PLATFORM-P0-KAFKA-RMQ-L01`。 |
 | **D14** | **对象存储按 §2.1：业务一个桶、用途是目录** | 正式业务只写 RustFS `http://10.50.69.111:19000` 上的桶 `gkx-lumen`（路径风格，控制台 `:19001`）。六个用途是这个桶里的目录，不是各自独立的桶。可观测仍用旧实例 `:30900` 上的 `tempo-blocks`、`loki-chunks`。存储设计说明见 [minio.md](data/data-design/storage/platform/minio.md)，与本节冲突时以本节为准。禁止自造桶或顶层目录，禁止前端直连对象存储，禁止业务读写 `milvus` 桶。凭证放 K8s Secret `gkxlumen-platform-rustfs` 或主机 `/data/middleware/.env`，不进 git。决策 2026-10-20，同日收敛为目录。 |
 | **D15** | **展示系统 Python 门面独立于专题系统** | 在 `lumen-topic-py` 仓内新增 `gkx_show_service` 子项目作为**科技信息展示系统专属 Python 门面**，与专题侧 `gkx_search_service` / `gkx_svc_service` **进程级 + 镜像级 + 路由级三重隔离**：镜像 `gkxlumen-show-service`（端口 8082），路由前缀 `/internal/gkx-show/**`，K8s Deployment `gkxlumen-platform-show-py`。展示门面只读正式 ADS、不写 ADS、不承接算法职责（D2 算法库统一出口不变，数据加工/写 ADS 仍归 `lumen-algo-py/vendor/entan-py` / `innov-py`）。共享仅限 `gkx_common` 工具链（observability/response/config）。协作边界用 `CODEOWNERS` 划定。**调用链层级（三层）**：终端 → `gkxlumen-gateway` → `gkxlumen-display`（展示聚合 BFF，`/display/v1/**` 单入口）→ **Feign 并行** → 领域服务层（`gkxlumen-innov` / `gkxlumen-topic` / `gkxlumen-metrics`）→ **Feign /internal** → 算法层（`gkx_show_service` 读 ADS / 久新 API / 燕大 KG / 智谱 / 深势）。展示 BFF 职责：页面级聚合、Redis 缓存、分区降级、D9 就绪度注入；**不直连 Python / DB**。领域服务 Feign 调 Python 算法层（含 show-service）是合规路径。要素归属速查见 §2.2。决策来源：项目负责人 2026-10-22 确认，`徐腾强 @qike366.com` 落地骨架（commit `4b867f8`）。关联任务 `DEVOPS-LUMEN-TOPIC-PY-SHOW-L01`。 |
+| **D16** | **功能验收缺项表** | 计算逻辑已登记的缺字段、缺行，可以在库 `gkxlumenx_gapfill` 建 `gapfill_` 前缀表，由 Python 用 LLM 或其他方式灌数。禁止写入 ODS、DWD、ADS 和供应方库。读缺项表算出的 ADS 批次号以 `gapfill_` 开头。未闭合的 `Q-*` 按客户决策清单里已写的临时默认实施。缺项补齐并按该默认实算完成后，D4 不得再是 mock，改为 live。细则见 `data-lineage-policy.md` §2.4。决策：项目负责人 2026-10-28。 |
 
 ### 2.1 对象存储桶（D14）
 

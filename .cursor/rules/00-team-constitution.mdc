@@ -46,6 +46,7 @@ alwaysApply: true
 11. **交互规范唯一来源（D10）**：交互行为 / 状态覆盖 / 键盘可达 / 无障碍 / Arco 组件选型边界以 `UX-UE 通用交互组件规范.md` 为准；视觉 token / 配色 / 字号 / 圆角 / 阴影仍以 `Design.md` + Arco 主题为准（分层互补，不互相覆盖语义）；ux/ui/frontend handoff 必带 **§19 设计走查清单 + §3.4 验收用例** 对照；导航/页签按 Figma 定制但须保留 Arco 同类组件状态、键盘与无障碍语义。注：D10 于 demo 阶段经用户放行免 PM+架构师双签，上线前需补签确认
 12. **demo 原型 / lumen 正式隔离（D12）**：`demo-*` 仓只做原型；正式开发只在 `lumen-*`。**lumen 前端调用链禁止调用任何 `demo-*` 项目服务**（含 nginx / `VITE_*` 直连，以及 Java Feign、helm 回落到 `demo-svc-platform` / `demo-platform-*` / `demo-algo-*` / `demo-svc-topic-py`）。lumen 前端只经 `gkxlumen-platform-gateway` 调 `gkxlumen-*`，算法下游只允许 `lumen-algo-py` / `lumen-etl-es-py`。对照 demo 可读代码后重写，禁止 merge。详见 `architecture-baseline.md` §2 D12 / §3.1
 13. **对象存储桶（D14）**：正式业务只写桶 `gkx-lumen` 下 `architecture-baseline.md` **§2.1** 的六个目录。可观测只用 `tempo-blocks`、`loki-chunks`。禁止自造桶或顶层目录，禁止前端直连 RustFS，禁止业务读写 `milvus` 桶，禁止 Demo 写 `gkx-lumen`。凭证放 Secret 或主机环境文件，不进 git
+14. **功能验收缺项（D16）**：已登记的数据缺项，可在库 `gkxlumenx_gapfill` 建 `gapfill_` 前缀表，由 Python 用 LLM 或其他方式灌数。禁止写入 ODS / DWD / ADS / 供应方库。未闭合的 `Q-*` 按客户决策清单里已写的临时默认实施。缺项补齐并按该默认实算完成后，D4 不得再是 mock。细则 `data-lineage-policy.md` **§2.4**、`architecture-baseline.md` D16
 
 ## 3. 人机协作铁律（违反必拒）
 
