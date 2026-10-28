@@ -1,0 +1,227 @@
+{
+ "metric_id": "M_ENT_CITY_COMPARE_TOPIC",
+ "metric_name": "多城市企业群对标值",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）+ code/_snapshots21/ 落盘快照",
+ "formula": "city_value = GROUP BY city 的均值/计数；技术力=专利三维分均值；投资活跃度=关系边/千家企业",
+ "blocking_tables": {
+  "tech_power": {
+   "triage": "source_absent",
+   "evidence": "_work_gkx21/TABLE_ABSENCE_EVIDENCE.md §tech_power"
+  },
+  "biz_power": {
+   "triage": "source_absent",
+   "evidence": "_work_gkx21/TABLE_ABSENCE_EVIDENCE.md §biz_power"
+  }
+ },
+ "proxy_path": "专利三维分（技术力）+ 关系边密度（投资活跃度）+ 标签覆盖率（链覆盖）",
+ "proxy_deviation": "商业力维无任何代理（不造）；企业密度缺行政区面积分母，只出企业数；需求点名的北京/上海/苏州在底册只有 163/16/0 家，不可比，故对标表实际只含深圳都市圈四市",
+ "benchmark_availability": {
+  "targets": [
+   "深圳市",
+   "北京市",
+   "上海市",
+   "苏州市",
+   "广州市",
+   "东莞市",
+   "惠州市"
+  ],
+  "orgs_in_base": {
+   "深圳市": 95600,
+   "北京市": 163,
+   "上海市": 16,
+   "苏州市": 1,
+   "广州市": 49605,
+   "东莞市": 33590,
+   "惠州市": 9979
+  },
+  "comparable_threshold": 1000,
+  "missing_targets": [
+   "北京市",
+   "上海市",
+   "苏州市"
+  ]
+ },
+ "cities": [
+  {
+   "city": "深圳市",
+   "orgs": 95600,
+   "orgs_with_patent": 59919,
+   "patents": 1050184,
+   "avg_tech_power": 0.0987,
+   "invest_edges": 62578,
+   "invest_per_1k_orgs": 654.58,
+   "chain_tagged_orgs": 19854,
+   "chain_coverage": 0.2077,
+   "comparable": true
+  },
+  {
+   "city": "北京市",
+   "orgs": 163,
+   "orgs_with_patent": 26,
+   "patents": 635,
+   "avg_tech_power": 0.1009,
+   "invest_edges": 0,
+   "invest_per_1k_orgs": 0.0,
+   "chain_tagged_orgs": 13,
+   "chain_coverage": 0.0798,
+   "comparable": false
+  },
+  {
+   "city": "上海市",
+   "orgs": 16,
+   "orgs_with_patent": 1,
+   "patents": 4,
+   "avg_tech_power": 0.0932,
+   "invest_edges": 0,
+   "invest_per_1k_orgs": 0.0,
+   "chain_tagged_orgs": 1,
+   "chain_coverage": 0.0625,
+   "comparable": false
+  },
+  {
+   "city": "苏州市",
+   "orgs": 1,
+   "orgs_with_patent": 0,
+   "patents": 0,
+   "avg_tech_power": null,
+   "invest_edges": 0,
+   "invest_per_1k_orgs": 0.0,
+   "chain_tagged_orgs": 0,
+   "chain_coverage": 0.0,
+   "comparable": false
+  },
+  {
+   "city": "广州市",
+   "orgs": 49605,
+   "orgs_with_patent": 29841,
+   "patents": 554311,
+   "avg_tech_power": 0.1,
+   "invest_edges": 28282,
+   "invest_per_1k_orgs": 570.14,
+   "chain_tagged_orgs": 10857,
+   "chain_coverage": 0.2189,
+   "comparable": true
+  },
+  {
+   "city": "东莞市",
+   "orgs": 33590,
+   "orgs_with_patent": 25193,
+   "patents": 342575,
+   "avg_tech_power": 0.1064,
+   "invest_edges": 6212,
+   "invest_per_1k_orgs": 184.94,
+   "chain_tagged_orgs": 3282,
+   "chain_coverage": 0.0977,
+   "comparable": true
+  },
+  {
+   "city": "惠州市",
+   "orgs": 9979,
+   "orgs_with_patent": 7553,
+   "patents": 93989,
+   "avg_tech_power": 0.1079,
+   "invest_edges": 2610,
+   "invest_per_1k_orgs": 261.55,
+   "chain_tagged_orgs": 952,
+   "chain_coverage": 0.0954,
+   "comparable": true
+  }
+ ],
+ "topics": [
+  {
+   "dimension": "技术力",
+   "label": "平均技术力（专利三维）",
+   "shenzhen": 0.0987,
+   "best_city": "惠州市",
+   "best_value": 0.1079,
+   "worst_city": "深圳市",
+   "worst_value": 0.0987,
+   "gap_to_best": -0.0092,
+   "topic": "深圳落后 惠州市（平均技术力（专利三维） 0.0987 vs 0.1079）"
+  },
+  {
+   "dimension": "企业规模",
+   "label": "企业底册数量",
+   "shenzhen": 95600,
+   "best_city": "深圳市",
+   "best_value": 95600,
+   "worst_city": "惠州市",
+   "worst_value": 9979,
+   "gap_to_best": 0,
+   "topic": "深圳领先（企业底册数量 95600 vs 95600）"
+  },
+  {
+   "dimension": "专利强度",
+   "label": "专利总量",
+   "shenzhen": 1050184,
+   "best_city": "深圳市",
+   "best_value": 1050184,
+   "worst_city": "惠州市",
+   "worst_value": 93989,
+   "gap_to_best": 0,
+   "topic": "深圳领先（专利总量 1050184 vs 1050184）"
+  },
+  {
+   "dimension": "投资活跃度",
+   "label": "每千家企业的投资/股东关系边数",
+   "shenzhen": 654.58,
+   "best_city": "深圳市",
+   "best_value": 654.58,
+   "worst_city": "东莞市",
+   "worst_value": 184.94,
+   "gap_to_best": 0.0,
+   "topic": "深圳领先（每千家企业的投资/股东关系边数 654.58 vs 654.58）"
+  },
+  {
+   "dimension": "链覆盖",
+   "label": "有链标签企业占比",
+   "shenzhen": 0.2077,
+   "best_city": "广州市",
+   "best_value": 0.2189,
+   "worst_city": "惠州市",
+   "worst_value": 0.0954,
+   "gap_to_best": -0.0112,
+   "topic": "深圳落后 广州市（有链标签企业占比 0.2077 vs 0.2189）"
+  }
+ ],
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "三类对标值里两类有代理（技术力→专利三维分均值、投资活跃度→关系边密度），企业密度只能出企业数（缺面积分母），商业力整维无源。更硬的约束是对标城市：北京 163 家、上海 16 家、苏州 0 家，需求点名的三个城市在本库不可比，对标只能落在深圳都市圈四市。两维可算、一维缺分母、一维整缺、对标集不完整，判部分支持。",
+  "criteria": {
+   "target_cities": 7,
+   "comparable_cities": 4,
+   "dims_with_proxy": 2,
+   "dims_missing": 2,
+   "proxy_used": true
+  }
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是截面城市对标（当前底册时点），不是年度序列，故无基期年份；底册不带历史版本，无法做「某年对标」。专利侧年份窗口 2021—2024 仅影响专利计数口径，不构成城市对标的基期。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/base_20261021.json",
+   "table": "gkx.dwd_org_base_info",
+   "rows": 189116,
+   "role": "城市归属与企业数"
+  },
+  {
+   "path": "code/_snapshots21/patent_ipc4_by_name_20261021.json",
+   "table": "gkx.dwd_patent",
+   "rows": 581585,
+   "role": "技术力与专利强度"
+  },
+  {
+   "path": "code/_snapshots21/ent_edges_20261021.json",
+   "table": "gkx.dwd_org_invest_info + gkx.dwd_org_shareholder_info",
+   "rows": 117001,
+   "role": "投资活跃度"
+  },
+  {
+   "path": "code/_snapshots21/chain21_layer_20261022.json",
+   "table": "gkx.dwd_org_industry_tags",
+   "rows": 36993,
+   "role": "链覆盖率"
+  }
+ ]
+}

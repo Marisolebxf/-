@@ -1,0 +1,506 @@
+{
+ "metric_name": "图谱 API 节点/边供给能力",
+ "source": {
+  "db": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）",
+  "snapshots": [
+   "code/_snapshots21/graph_algo_23_20261023.json",
+   "code/_snapshots21/ent_graph109_20261023.json",
+   "code/_snapshots21/inventor_scholar_bridge_20261023.json",
+   "code/_snapshots21/chain_firm_index_20261023.json",
+   "code/_snapshots21/papers_city_year_gkx21.json"
+  ]
+ },
+ "nodes": {
+  "paper": {
+   "rows": 100900,
+   "snapshot": "a25_paper_panel.json",
+   "graph_nodes": 20436,
+   "note": "论文 100,900 篇；入图机构 20,436 个"
+  },
+  "paper_institution": {
+   "rows": 20436,
+   "graph_nodes": 20436,
+   "note": "原始机构串，未做上下级归并"
+  },
+  "patent": {
+   "rows": 2939895,
+   "note": "按公开件计，未做同族合并（§3.67）"
+  },
+  "patent_applicant": {
+   "rows": 169226,
+   "note": "全量申请人去重数（star_applicant_agg_gkx）"
+  },
+  "patent_inventor": {
+   "rows": 69647,
+   "distinct_names": 31188,
+   "covered_patents": 20000,
+   "note": "20,000 件专利样本，非全量"
+  },
+  "scholar": {
+   "rows": 21316,
+   "names": 18763,
+   "relation_rows": 1065385,
+   "relation_scholars": 20015
+  },
+  "firm": {
+   "rows": 189116,
+   "with_any_edge": 177444,
+   "firm_firm_nodes": 19768
+  },
+  "research_org": {
+   "rows": 20000,
+   "note": "dwd_forg_research_org_info 20,000 行（样例表）"
+  },
+  "university": {
+   "rows": 20000,
+   "note": "dwd_forg_university_org_info 20,000 行（样例表）"
+  },
+  "policy": {
+   "rows": 20000,
+   "city_tagged": 10294,
+   "note": "dwd_policy_base 20,000 条"
+  },
+  "industry_chain": {
+   "rows": 12,
+   "l1": 41,
+   "tree_nodes": 1273
+  }
+ },
+ "edges": {
+  "coauthor": {
+   "rows": 38208,
+   "nodes": 20436,
+   "source": "dwd_zh_paper.author_info_list",
+   "status": "available"
+  },
+  "coapplicant": {
+   "rows": 1192,
+   "in_base": 14,
+   "patents_with_multi": 1806,
+   "source": "dwd_patent_assignees",
+   "status": "proxy"
+  },
+  "invest": {
+   "rows": 9312,
+   "source": "dwd_org_invest_info",
+   "status": "available"
+  },
+  "shareholder": {
+   "rows": 17082,
+   "source": "dwd_org_shareholder_info",
+   "status": "available"
+  },
+  "industry_chain": {
+   "rows": 35046,
+   "source": "dwd_org_industry_tags",
+   "status": "available"
+  },
+  "industry_l1": {
+   "rows": 49234,
+   "source": "dwd_org_industry_tags",
+   "status": "available"
+  },
+  "tech_ipc": {
+   "rows": 523352,
+   "source": "dwd_patent × IPC4",
+   "status": "proxy"
+  },
+  "transfer": {
+   "rows": 69,
+   "rows_raw": 22809,
+   "source": "patent_transfer_rows_20261022.json",
+   "status": "proxy"
+  },
+  "policy": {
+   "rows": 0,
+   "source": "—",
+   "status": "absent"
+  },
+  "talent": {
+   "rows": 0,
+   "source": "—",
+   "status": "absent"
+  },
+  "service": {
+   "rows": 0,
+   "source": "—",
+   "status": "absent"
+  },
+  "cooperation": {
+   "rows": 0,
+   "source": "—",
+   "status": "absent"
+  }
+ },
+ "relation_9": [
+  {
+   "relation": "投资",
+   "status": "available",
+   "source": "gkx.dwd_org_invest_info",
+   "edge_n": 9312,
+   "node_n": 10548,
+   "note": "46,967 行原始边；两端都在底册的 9312 条"
+  },
+  {
+   "relation": "归属",
+   "status": "available",
+   "source": "gkx.dwd_org_shareholder_info",
+   "edge_n": 17082,
+   "node_n": 16791,
+   "note": "400,286 行；非空边 77,411、去重 70,034；两端都在底册的 17082 条"
+  },
+  {
+   "relation": "产业所属",
+   "status": "available",
+   "source": "gkx.dwd_org_industry_tags",
+   "edge_n": 35046,
+   "node_n": 35046,
+   "note": "企业→链（INB4）；企业→一级环节（INB6）另有 49234 条"
+  },
+  {
+   "relation": "技术应用",
+   "status": "proxy",
+   "source": "gkx.dwd_patent (申请人) × IPC 小类",
+   "edge_n": 523352,
+   "node_n": 122563,
+   "note": "申请人名对齐底册；同一申请人多 IPC 各计一条；名称重名 34 处不拆分"
+  },
+  {
+   "relation": "科研合作",
+   "status": "absent",
+   "source": "gkx.dwd_patent_assignees（共同申请人）",
+   "edge_n": 14,
+   "node_n": 0,
+   "note": "共 22198 行、1806 件专利有 ≥2 个申请人；两申请人同时落在底册的 14 对"
+  },
+  {
+   "relation": "人才关系",
+   "status": "absent",
+   "source": "gkx.dwd_patent_inventors",
+   "edge_n": 0,
+   "node_n": 0,
+   "note": "69,647 行发明人姓名，但无 org_id / 任职单位列（列清单：dwd_id,patent_id,pn,sequence,name,created_time,updated_time,creater,updater,table_data_source,operator_remarks,is_deleted,insert_remark），无法建企业—人才边"
+  },
+  {
+   "relation": "政策适用",
+   "status": "absent",
+   "source": "gkx.dwd_policy_base（20,000 条政策文本）",
+   "edge_n": 0,
+   "node_n": 0,
+   "note": "政策表只有文本字段，无企业外键；live ADS policy_graph_edge 3,726 条但 calc_batch_id=mock_20260623，属造数面，不参与结论"
+  },
+  {
+   "relation": "服务提供",
+   "status": "absent",
+   "source": "—",
+   "edge_n": 0,
+   "node_n": 0,
+   "note": "gkx 无 svc/service 关系表（命中 0 张）；服务机构池与企业的服务边不存在"
+  },
+  {
+   "relation": "合作",
+   "status": "absent",
+   "source": "—",
+   "edge_n": 0,
+   "node_n": 0,
+   "note": "gkx 无 coop/collab/alliance/partner 关系表（命中 0 张）"
+  }
+ ],
+ "relation_available_n": 4,
+ "relation_absent_n": 5,
+ "endpoints": [
+  {
+   "path": "/graph/node/paper/{id}",
+   "status": "available",
+   "returns": "论文节点 + 作者机构列表 + 年份",
+   "basis": "a25_paper_panel"
+  },
+  {
+   "path": "/graph/node/firm/{org_id}",
+   "status": "available",
+   "returns": "企业节点 + 投资/股东/产业标签邻居",
+   "basis": "base + ent_edges + industry"
+  },
+  {
+   "path": "/graph/node/patent/{id}",
+   "status": "partial",
+   "returns": "专利节点 + 申请人；发明人仅 20,000 件样本有",
+   "basis": "dwd_patent + inventors"
+  },
+  {
+   "path": "/graph/neighbors/coauthor/{inst}",
+   "status": "available",
+   "returns": "机构共著邻居（边权=共同署名篇数）",
+   "basis": "collab graph P2"
+  },
+  {
+   "path": "/graph/neighbors/invest/{org_id}",
+   "status": "available",
+   "returns": "投资/股东邻居",
+   "basis": "ent_edges"
+  },
+  {
+   "path": "/graph/path",
+   "status": "partial",
+   "returns": "只在同域内最短路（论文共著 P2 / 企业投资图 P2）；跨域 404",
+   "basis": "无统一 node_id，跨域路径不可建"
+  },
+  {
+   "path": "/graph/community/{domain}",
+   "status": "partial",
+   "returns": "仅论文共著图返回 Louvain 社群；企业图社群为算法产物",
+   "basis": "graph_algo_23 + ent_graph109"
+  },
+  {
+   "path": "/graph/centrality/{domain}",
+   "status": "partial",
+   "returns": "论文图 P2 四类中心性；企业图仅度/中介",
+   "basis": "graph_algo_23"
+  },
+  {
+   "path": "/graph/policy/{id}",
+   "status": "unavailable",
+   "returns": "404：政策图节点/边在 gkx 不存在",
+   "basis": "policy_graph_node/edge 0 行"
+  },
+  {
+   "path": "/graph/cross-domain/path",
+   "status": "unavailable",
+   "returns": "404：无统一节点编号，跨域边只有 4/9 类",
+   "basis": "graph_node 缺表"
+  }
+ ],
+ "api_contract": {
+  "version": "20261023",
+  "id_spaces": {
+   "paper": "dwd_zh_paper.id",
+   "firm": "dwd_org_base_info.org_id",
+   "patent": "dwd_patent.patent_id",
+   "policy": "dwd_policy_base.id",
+   "industry": "industry_code (INB4/INB6)"
+  },
+  "cross_domain_id": null,
+  "pagination": "node/edge 端点一律 limit≤1000、cursor=主键；禁止全图导出",
+  "rate_limit": "单客户端 ≤5 req/s；全表扫类查询不开放"
+ },
+ "blocked": {
+  "graph_node": "gkx 无表；live ADS 145 行为 ORG0000000x 演示节点",
+  "graph_edge": "gkx 无表；live ADS 589 行为演示边",
+  "graph_membership": "gkx 无表；live ADS 120 行",
+  "enterprise_centrality": "gkx 无表；live ADS 114 行",
+  "policy_graph_node": "gkx 无表；live ADS 806 行",
+  "policy_graph_edge": "gkx 无表；live ADS 3,726 行，calc_batch_id=mock_20260623"
+ },
+ "rejected_dimensions": [
+  {
+   "dimension": "政策图端点",
+   "reason": "policy_graph_node / policy_graph_edge 在 gkx 均不存在；live ADS 的 806 / 3,726 行是 mock_20260623 造数",
+   "replacement": "政策只作为文本节点，不提供图邻居/路径",
+   "negative_evidence": "code/_probe_blocked_f1_20261023.json → policy_graph_node、policy_graph_edge"
+  },
+  {
+   "dimension": "跨域最短路",
+   "reason": "无统一 node_id；graph_node 缺表，企业/论文/专利/政策各自一套 id",
+   "replacement": "同域内最短路（论文共著 P2、企业投资图 P2）",
+   "negative_evidence": "graph_node：gkx 0 行；api_contract.cross_domain_id=null"
+  },
+  {
+   "dimension": "人才/服务/合作边",
+   "reason": "发明人表无 org_id；svc 关系表 0 张；coop 表 0 张",
+   "replacement": "人才只给姓名桥匹配率；服务/合作端点 404",
+   "negative_evidence": "P20、P14、_probe_blocked_f1_20261023.json"
+  },
+  {
+   "dimension": "社区归属官方口径",
+   "reason": "graph_membership 缺表；Louvain 社群编号不稳定（§3.60）",
+   "replacement": "社群端点标 experimental，不返回稳定主数据",
+   "negative_evidence": "graph_membership：gkx 0 行；§3.60 删边稳定性"
+  }
+ ],
+ "verdict_kind": "negative_evidence",
+ "absence_probe": [
+  {
+   "table": "graph_node",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='graph_node'",
+   "gkx_hits": 0,
+   "live_ads_rows": 145,
+   "live_dwd_rows": 0,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "无法做跨域异构图的统一节点编号，所有中心性只能用单域自建节点",
+   "proxy": "论文机构名 / 专利申请人名 / 人才姓名，各自归一后建单域图"
+  },
+  {
+   "table": "graph_edge",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='graph_edge'",
+   "gkx_hits": 0,
+   "live_ads_rows": 589,
+   "live_dwd_rows": 0,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "多类型边（合作/供应/技术/人才流动）无法入图",
+   "proxy": "只用共著边；其余三类在 gkx 无表承接，本族不自造"
+  },
+  {
+   "table": "graph_membership",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='graph_membership'",
+   "gkx_hits": 0,
+   "live_ads_rows": 120,
+   "live_dwd_rows": null,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "官方社群归属/社群演化不可得，只能自跑 Louvain",
+   "proxy": "自跑 Louvain（resolution=1.0, seed=20261021），社群编号仅为算法产物"
+  },
+  {
+   "table": "enterprise_centrality",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='enterprise_centrality'",
+   "gkx_hits": 0,
+   "live_ads_rows": 114,
+   "live_dwd_rows": null,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "无官方中心性结果可复用/对照",
+   "proxy": "自算四类中心性；量纲与官方表不可比"
+  },
+  {
+   "table": "policy_graph_node",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='policy_graph_node'",
+   "gkx_hits": 0,
+   "live_ads_rows": 806,
+   "live_dwd_rows": null,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "政策图节点编号不可得",
+   "proxy": "政策主表 dwd_policy_info 自建节点"
+  },
+  {
+   "table": "policy_graph_edge",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='policy_graph_edge'",
+   "gkx_hits": 0,
+   "live_ads_rows": 3726,
+   "live_dwd_rows": null,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "政策与企业/机构的官方关联边不可得，政策中心性拒拟",
+   "proxy": "政策文本 × 机构名精确匹配（仅强名称），匹配率单列"
+  }
+ ],
+ "derived": {
+  "relation_available_pct": {
+   "value": 44.4444,
+   "numerator": 4,
+   "denominator": 9,
+   "denominator_note": "有边/代理边的关系类数 / 9 类要求（4 / 9）"
+  },
+  "relation_absent_n": {
+   "value": 5,
+   "numerator": 5,
+   "denominator": 9,
+   "denominator_note": "缺结构的关系类数 / 9 类（5 / 9）"
+  },
+  "paper_graph_p2_node_share_pct": {
+   "value": 74.4911,
+   "numerator": 15223,
+   "denominator": 20436,
+   "denominator_note": "论文图 P2 节点数 / P0 节点数（15,223 / 20,436）"
+  },
+  "paper_graph_p2_edge_share_pct": {
+   "value": 96.7468,
+   "numerator": 36965,
+   "denominator": 38208,
+   "denominator_note": "论文图 P2 边数 / P0 边数（36,965 / 38,208）"
+  },
+  "patent_applicant_map_pct": {
+   "value": 92.9898,
+   "numerator": 157363,
+   "denominator": 169226,
+   "denominator_note": "能落到底册的申请人名数 / 申请人去重数（157,363 / 169,226）"
+  },
+  "paper_with_inst_pct": {
+   "value": 99.9653,
+   "numerator": 100865,
+   "denominator": 100900,
+   "denominator_note": "有机构串的论文数 / 论文总数（100,865 / 100,900）"
+  },
+  "paper_with_city_pct": {
+   "value": 47.3756,
+   "numerator": 47802,
+   "denominator": 100900,
+   "denominator_note": "可归珠三角城市的论文数 / 论文总数（47,802 / 100,900）"
+  },
+  "policy_city_tagged_pct": {
+   "value": 51.47,
+   "numerator": 10294,
+   "denominator": 20000,
+   "denominator_note": "有城市标签的政策数 / 政策总数（10,294 / 20,000）"
+  },
+  "firm_with_any_edge_pct": {
+   "value": 93.8281,
+   "numerator": 177444,
+   "denominator": 189116,
+   "denominator_note": "至少有一条可用关系的底册企业数 / 底册企业数（177,444 / 189,116）"
+  },
+  "firm_firm_node_pct": {
+   "value": 10.4528,
+   "numerator": 19768,
+   "denominator": 189116,
+   "denominator_note": "企业—企业图节点数 / 底册企业数（19,768 / 189,116）"
+  },
+  "coapplicant_in_base_pct": {
+   "value": 1.1745,
+   "numerator": 14,
+   "denominator": 1192,
+   "denominator_note": "两端都在底册的共同申请人对 / 全部共同申请人对（14 / 1,192）"
+  },
+  "transfer_resolved_pct": {
+   "value": 0.9295,
+   "numerator": 212,
+   "denominator": 22809,
+   "denominator_note": "两端都能解析的转让行 / 转让行数（212 / 22,809）"
+  },
+  "inventor_sample_coverage_pct": {
+   "value": 0.6803,
+   "numerator": 20000,
+   "denominator": 2939895,
+   "denominator_note": "发明人表覆盖专利件数 / 专利全表行数（20,000 / 2,939,895）"
+  },
+  "tech_ipc_per_firm": {
+   "value": 4.2701,
+   "numerator": 523352,
+   "denominator": 122563,
+   "denominator_note": "企业—IPC4 对数 / 有 IPC 的企业数（523,352 / 122,563）"
+  },
+  "endpoint_available_pct": {
+   "value": 40.0,
+   "numerator": 4,
+   "denominator": 10,
+   "denominator_note": "完全可用的端点 / 10 个端点"
+  },
+  "endpoint_partial_pct": {
+   "value": 40.0,
+   "numerator": 4,
+   "denominator": 10,
+   "denominator_note": "部分可用（需降级/限域）的端点 / 10 个端点"
+  },
+  "endpoint_unavailable_pct": {
+   "value": 20.0,
+   "numerator": 2,
+   "denominator": 10,
+   "denominator_note": "不可用（应 404）的端点 / 10 个端点"
+  },
+  "node_domain_rows_total": {
+   "value": 3570548,
+   "numerator": 3570548,
+   "denominator": "7+ 节点域",
+   "denominator_note": "各节点域行数直接相加只作规模参考；域间有重叠，不是单一图节点数"
+  }
+ },
+ "sources": [
+  "code/_snapshots21/graph_algo_23_20261023.json",
+  "code/_snapshots21/ent_graph109_20261023.json",
+  "code/_snapshots21/inventor_scholar_bridge_20261023.json",
+  "code/_probe_blocked_f1_20261023.json",
+  "PENDING_RULINGS_20261023.md P20"
+ ],
+ "metric_id": "M_SYNTH_GRAPHAPI_116_1",
+ "generated_at": "2026-10-23 04:55:04",
+ "support_judgment": "部分支持",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "图谱 API 是截面能力清单，不做年度切片；各节点域的行数来自各自快照，域间重叠，不能相加当单一图规模。"
+}

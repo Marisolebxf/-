@@ -1,0 +1,366 @@
+{
+ "metric": "M_SVC_RELATION_DENSITY",
+ "metric_name": "服务关系链密度",
+ "support_judgment": "部分支持",
+ "verdict_kind": "partial_with_gaps",
+ "generated_at": "2026-10-23T04:40:00+08:00",
+ "sources": {
+  "db": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "tables": [
+   "gkx.dwd_org_org_product_info",
+   "gkx.dwd_org_invest_info",
+   "gkx.dwd_org_shareholder_info",
+   "gkx.dwd_org_base_info"
+  ],
+  "snapshots": [
+   "code/_snapshots21/svc21_facts_20261022.json",
+   "code/_probe_blocked_f2_20261023.json"
+  ],
+  "demo_used": false
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标（快照日 2026-10-22），无年度基期；投资/股东边不带可靠年份，不做时间序列。",
+ "point_sets": {
+  "P0": {
+   "definition": "服务机构池全部机构（org_id 去重）",
+   "n": 44153
+  },
+  "P1": {
+   "definition": "P0 中度 ≥1 的机构（剔除孤立点）",
+   "n": 12905
+  },
+  "P2": {
+   "definition": "P1 的最大连通分量",
+   "n": 7040
+  },
+  "normalization": "密度分母 n(n-1)；平均度归一化分母 n-1",
+  "isolated_handling": "P0 中的孤立点在 P0 口径记度 0 并计入分母；P1 口径剔除并单列数量"
+ },
+ "edges": {
+  "invest_raw_touching_pool": 41888,
+  "invest_both_in_pool": 5682,
+  "invest_one_end_in_pool": 36206,
+  "shareholder_raw_touching_pool": 372205,
+  "shareholder_both_in_pool": 16217,
+  "shareholder_one_end_in_pool": 355988,
+  "undirected_internal_edges": 13141,
+  "from_invest_only": 5667,
+  "added_by_shareholder": 7474,
+  "max_degree": 329,
+  "components": 2270,
+  "giant_component_nodes": 7040,
+  "second_component_nodes": 33
+ },
+ "degree_buckets": {
+  "0": 31248,
+  "1": 8149,
+  "2-4": 3905,
+  "5-9": 605,
+  "10+": 246
+ },
+ "density": {
+  "P0": {
+   "n": 44153,
+   "edges": 13141,
+   "density": 1.3481797902611021e-05,
+   "density_x1e4": 0.1348,
+   "mean_degree": 0.5952,
+   "normalized_mean_degree": 1.348e-05
+  },
+  "P1": {
+   "n": 12905,
+   "edges": 13141,
+   "density": 0.00015782509074252135,
+   "density_x1e4": 1.5783,
+   "mean_degree": 2.0366,
+   "normalized_mean_degree": 0.000158
+  }
+ },
+ "city_slices": [
+  {
+   "city": "深圳市",
+   "nodes": 25597,
+   "internal_edges": 7780,
+   "active_nodes": 7614,
+   "density": 2.3749169259859217e-05,
+   "density_x1e4": 0.2375,
+   "mean_degree": 0.6079,
+   "active_share_pct": 29.7457
+  },
+  {
+   "city": "广州市",
+   "nodes": 12641,
+   "internal_edges": 3102,
+   "active_nodes": 3225,
+   "density": 3.882784469663212e-05,
+   "density_x1e4": 0.3883,
+   "mean_degree": 0.4908,
+   "active_share_pct": 25.5122
+  },
+  {
+   "city": "东莞市",
+   "nodes": 4300,
+   "internal_edges": 294,
+   "active_nodes": 400,
+   "density": 3.1808370794722405e-05,
+   "density_x1e4": 0.3181,
+   "mean_degree": 0.1367,
+   "active_share_pct": 9.3023
+  },
+  {
+   "city": "惠州市",
+   "nodes": 1594,
+   "internal_edges": 129,
+   "active_nodes": 176,
+   "density": 0.00010160512467893962,
+   "density_x1e4": 1.0161,
+   "mean_degree": 0.1619,
+   "active_share_pct": 11.0414
+  }
+ ],
+ "derived": {
+  "invest_both_resolve_pct": {
+   "value": 13.5647,
+   "numerator": 5682,
+   "denominator": 41888,
+   "denominator_note": "分子=池内两端都可解析的投资边数（invest_both_in_pool），分母=触碰池的投资边原始行数 invest_raw_touching_pool"
+  },
+  "shareholder_both_resolve_pct": {
+   "value": 4.357,
+   "numerator": 16217,
+   "denominator": 372205,
+   "denominator_note": "分子=池内两端都可解析的股东边数（shareholder_both_in_pool），分母=触碰池的股东边原始行数 shareholder_raw_touching_pool"
+  },
+  "invest_share_of_internal_edges_pct": {
+   "value": 43.1246,
+   "numerator": 5667,
+   "denominator": 13141,
+   "denominator_note": "分子=仅由投资边构成的池内无向边数（from_invest_only），分母=投资+股东合并去重后的无向边数 undirected_internal_edges"
+  },
+  "shareholder_added_share_pct": {
+   "value": 56.8754,
+   "numerator": 7474,
+   "denominator": 13141,
+   "denominator_note": "分子=股东边在投资边之外新增的无向边数（added_by_shareholder），分母=合并去重后的无向边数 undirected_internal_edges"
+  },
+  "isolated_share_p0_pct": {
+   "value": 70.7721,
+   "numerator": 31248,
+   "denominator": 44153,
+   "denominator_note": "分子=P0 中度数为 0 的机构数（degree_buckets.0），分母=服务机构池家数 P0.n"
+  },
+  "degree1_share_p1_pct": {
+   "value": 63.1461,
+   "numerator": 8149,
+   "denominator": 12905,
+   "denominator_note": "分子=P1 中度数恰为 1 的机构数（degree_buckets.1），分母=非孤立机构数 P1.n"
+  },
+  "degree10plus_share_p1_pct": {
+   "value": 1.9062,
+   "numerator": 246,
+   "denominator": 12905,
+   "denominator_note": "分子=P1 中度数 ≥10 的机构数（degree_buckets.10+），分母=非孤立机构数 P1.n"
+  },
+  "giant_share_p1_pct": {
+   "value": 54.5525,
+   "numerator": 7040,
+   "denominator": 12905,
+   "denominator_note": "分子=最大连通分量节点数 giant_component_nodes，分母=P1.n（非孤立机构数）"
+  },
+  "giant_share_p0_pct": {
+   "value": 15.9446,
+   "numerator": 7040,
+   "denominator": 44153,
+   "denominator_note": "分子=最大连通分量节点数 giant_component_nodes，分母=服务机构池家数 P0.n"
+  },
+  "p1_over_p0_pct": {
+   "value": 29.2279,
+   "numerator": 12905,
+   "denominator": 44153,
+   "denominator_note": "分子=非孤立机构数 P1.n，分母=服务机构池家数 P0.n"
+  },
+  "p1_density_over_p0_density_x": {
+   "value": 11.7065,
+   "numerator": 0.0001578251,
+   "denominator": 1.3481798e-05,
+   "denominator_note": "分子=去孤立点后的 P1 密度 density.P1.density，分母=全池 P0 密度 density.P0.density（倍率）"
+  },
+  "sz_edge_share_pct": {
+   "value": 59.204,
+   "numerator": 7780,
+   "denominator": 13141,
+   "denominator_note": "分子=深圳域内边数 city_slices[深圳市].internal_edges，分母=池内全部无向边数 undirected_internal_edges"
+  },
+  "degree1_share_p0_pct": {
+   "value": 18.4563,
+   "numerator": 8149,
+   "denominator": 44153,
+   "denominator_note": "分子=P0 中度数恰为 1 的机构数（degree_buckets.1），分母=服务机构池家数 P0.n"
+  },
+  "degree2_4_share_p0_pct": {
+   "value": 8.8442,
+   "numerator": 3905,
+   "denominator": 44153,
+   "denominator_note": "分子=P0 中度数 2—4 的机构数（degree_buckets.2-4），分母=服务机构池家数 P0.n"
+  },
+  "degree5_9_share_p0_pct": {
+   "value": 1.3702,
+   "numerator": 605,
+   "denominator": 44153,
+   "denominator_note": "分子=P0 中度数 5—9 的机构数（degree_buckets.5-9），分母=服务机构池家数 P0.n"
+  },
+  "degree10plus_share_p0_pct": {
+   "value": 0.5572,
+   "numerator": 246,
+   "denominator": 44153,
+   "denominator_note": "分子=P0 中度数 ≥10 的机构数（degree_buckets.10+），分母=服务机构池家数 P0.n"
+  },
+  "combined_over_invest_only_x": {
+   "value": 2.3189,
+   "numerator": 13141,
+   "denominator": 5667,
+   "denominator_note": "分子=投资+股东合并去重后的无向边数 undirected_internal_edges，分母=仅投资边构成的边数 from_invest_only（倍率）"
+  },
+  "hz_density_over_sz_density_x": {
+   "value": 4.2783,
+   "numerator": 1.0161,
+   "denominator": 0.2375,
+   "denominator_note": "分子=惠州密度 city_slices[惠州市].density，分母=深圳密度 city_slices[深圳市].density（倍率）"
+  },
+  "hz_edges_over_sz_edges_pct": {
+   "value": 1.6581,
+   "numerator": 129,
+   "denominator": 7780,
+   "denominator_note": "分子=惠州域内边数 city_slices[惠州市].internal_edges，分母=深圳域内边数 city_slices[深圳市].internal_edges"
+  }
+ },
+ "city_slice_consistency": {
+  "nodes_sum_4city": 44132,
+  "internal_edges_sum_4city": 11305,
+  "cross_city_edges": 1836,
+  "nodes_outside_4city": 21,
+  "note": "四市节点之和小于 P0（差额为注册地不在四市或为空），四市域内边之和小于 E（差额为跨城边）；两项差额均不为负。"
+ },
+ "norm_denominators": {
+  "P0_n_minus_1": 44152,
+  "P1_n_minus_1": 12904,
+  "note": "平均度归一化分母取 n-1（§3.60），不取 n。"
+ },
+ "absence_probe": {
+  "file": "code/_probe_blocked_f2_20261023.json",
+  "gkx_schema": "gkx",
+  "gkx_table_total": null,
+  "blocked_tables": [
+   {
+    "table": "enterprise_cooperation",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "enterprise_supply_chain",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "svc_org_card",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "svc_org_circle",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "svc_metric_series",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "样例级",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 228 行，属样例级"
+   },
+   {
+    "table": "svc_metric_fact",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "样例级",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 6 行，属样例级"
+   },
+   {
+    "table": "svc_metric_dist",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "样例级",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 142 行，属样例级"
+   },
+   {
+    "table": "enterprise_industry_chain",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "industry_chain_node",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "样例级",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 114 行，属样例级"
+   },
+   {
+    "table": "svc_region_dist",
+    "gkx_exists": false,
+    "gkx_schema_hits": 0,
+    "live_shell_rows": 0,
+    "live_demo_row_class": "样例级",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 24 行，属样例级"
+   }
+  ]
+ },
+ "rejected_dimensions": [
+  {
+   "dimension": "服务合作关系密度",
+   "reason": "gkx 无 enterprise_cooperation / enterprise_supply_chain / svc_org_circle，information_schema 命中 0 行；演示库同名表不构成支持，铁律禁引",
+   "alternative": "投资/股东边密度",
+   "difference": "投资/股东是股权关系，不代表业务合作或服务采购；边数会系统性低估服务关系，且方向不可解释为合作强度"
+  },
+  {
+   "dimension": "密度时间序列",
+   "reason": "gkx 无 svc_metric_series（0 行），投资/股东边无可靠年份字段，不能按年切片",
+   "alternative": "快照截面密度",
+   "difference": "只能给单日截面，不能给趋势与环比"
+  },
+  {
+   "dimension": "服务类型分层密度",
+   "reason": "gkx 无 svc_org_card / svc_org_circle，服务类型标签无承载表",
+   "alternative": "按城市切分",
+   "difference": "城市切片替代服务类型切片，无法回答「哪类服务关系更密」"
+  }
+ ],
+ "gaps": [
+  "合作边、供应链边、服务关系边三类业务边整块缺失（gkx 0 表；live 侧为演示库，铁律禁引，不构成支持）",
+  "股东边 95.64% 只有一端可解析，边集对股东关系的覆盖不完整",
+  "投资边金额字段单位未在表结构中标注，本件不使用金额，只计边数",
+  "池内 31,248 家（70.77%）为孤立点，密度对点集选择极敏感"
+ ]
+}

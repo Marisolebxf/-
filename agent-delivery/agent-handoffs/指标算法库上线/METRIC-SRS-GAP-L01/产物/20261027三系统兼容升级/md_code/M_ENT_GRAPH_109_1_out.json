@@ -1,0 +1,312 @@
+{
+ "metric_id": "M_ENT_GRAPH_109_1",
+ "metric_name": "企业实体关系抽取",
+ "script": "M_ENT_GRAPH_109_1.py",
+ "data_source": "gkx @ 183.240.141.251:3318（只读）",
+ "grain": "relation_type -> edge list; node = base enterprise / chain / L1 / IPC4",
+ "probes": {
+  "base_firm_n": 189116,
+  "base_credit_valid_n": 189115,
+  "firm_with_any_edge_n": 177444,
+  "firm_with_any_edge_pct": 93.8281,
+  "firm_without_firm_firm_edge_n": 169281,
+  "firm_without_firm_firm_edge_pct": 89.5117,
+  "relation_required_n": 9,
+  "relation_available_n": 4,
+  "relation_insufficient_n": 1,
+  "relation_absent_n": 4,
+  "relation_coverage_pct": 44.4444,
+  "relation_direct_coverage_pct": 33.3333,
+  "firm_firm_edge_pct": 10.4883,
+  "largest_component_share_of_base_pct": 5.5389,
+  "no_any_edge_firm_n": 11672,
+  "no_any_edge_pct": 6.1719,
+  "transfer_unresolved_pct": 99.0705,
+  "coassignee_pair_in_base_pct": 1.1745,
+  "firm_firm": {
+   "directed_edge_n": 26463,
+   "undirected_pair_n": 19684,
+   "invest_edge_n": 9312,
+   "shareholder_edge_n": 17082,
+   "transfer_edge_n": 69,
+   "self_loop_excluded_n": 24,
+   "component_n": 3623,
+   "largest_component_n": 10475,
+   "largest_component_share_pct": 52.8107,
+   "top5_component_sizes": [
+    10475,
+    20,
+    20,
+    19,
+    17
+   ],
+   "singleton_component_n": 0,
+   "component_size_buckets": {
+    "2_5": 3495,
+    "6_10": 106,
+    "11_50": 21,
+    "51_100": 0,
+    "gt_100": 1
+   },
+   "node_with_edge_n": 19835,
+   "degree_mean": 1.9848,
+   "degree_median": 1,
+   "degree_p90": 3,
+   "degree_max": 335,
+   "isolate_n": 169281,
+   "isolate_pct": 89.5117
+  },
+  "industry": {
+   "scan_rows": 2283762,
+   "bad_credit_rows": 2,
+   "base_firm_n": 35046,
+   "firm_chain_pair_n": 35046,
+   "firm_l1_pair_n": 49234,
+   "chain_firm_n": {
+    "INB2505": 4036,
+    "INB1333": 6313,
+    "INB1309": 5050,
+    "INB1502": 2186,
+    "INB1204": 1688,
+    "INB1306": 9773,
+    "INB1236": 102,
+    "INB1323": 1227,
+    "INB1303": 2193,
+    "INB1354": 1372,
+    "INB2503": 552,
+    "INB1209": 554
+   }
+  },
+  "tech": {
+   "firm_ipc_pair_n": 523352,
+   "firm_n": 122563,
+   "ipc4_n": 631,
+   "ambiguous_name_hits": 34,
+   "mean_ipc_per_firm": 4.2701
+  },
+  "transfer": {
+   "rows": 22809,
+   "resolved_both_ends_n": 212,
+   "unresolved_n": 22597,
+   "pair_n": 69,
+   "firm_n": 120,
+   "mapped_to_single_org_pair_n": 69
+  },
+  "collaboration": {
+   "assignee_rows": 22198,
+   "patent_with_multi_assignee_n": 1806,
+   "coassignee_pair_n": 1192,
+   "coassignee_pair_in_base_n": 14
+  },
+  "edge_total_by_type": {
+   "invest": 9312,
+   "shareholder": 17082,
+   "industry_chain": 35046,
+   "industry_l1": 49234,
+   "tech_application": 523352,
+   "tech_transfer": 69,
+   "research_cooperation": 14
+  },
+  "denominator_note": "企业侧比例分母是底册 189,116；关系类型覆盖率分母是 SRS 的 9 类。两个分母不可互换，也不能用 190 万链上企业当底册。",
+  "field_basis": {
+   "投资": "dwd_org_invest_info，两端 org_id 均在底册",
+   "归属": "dwd_org_shareholder_info，两端 org_id 均在底册",
+   "产业所属": "dwd_org_industry_tags，industry_code 首个 INB4；一企一链（单值归属）",
+   "技术应用": "dwd_patent 申请人名 × IPC 小类，名称对齐底册",
+   "技术转移": "dwd_patent_transfer，转让前后权利人名均在底册且唯一对应"
+  }
+ },
+ "derived": {
+  "invest_raw_rows_n": 46967,
+  "invest_in_base_share_of_raw_rows_pct": 19.8267,
+  "shareholder_raw_rows_n": 400286,
+  "shareholder_nonnull_edge_n": 77411,
+  "shareholder_dedup_edge_n": 70034,
+  "shareholder_in_base_share_of_dedup_pct": 24.391,
+  "firm_l1_over_chain_edge_n": 14188,
+  "transfer_resolved_both_ends_share_of_rows_pct": 0.9295,
+  "transfer_pair_share_of_rows_pct": 0.3025,
+  "chain_share_of_industry_base_pct": {
+   "合成生物": 11.5163,
+   "智能终端": 18.0135,
+   "人工智能": 14.4096,
+   "数字创意": 6.2375,
+   "机器人": 4.8165,
+   "软件与信息服务": 27.8862,
+   "低空经济": 0.291,
+   "传感器": 3.5011,
+   "集成电路": 6.2575,
+   "具身智能": 3.9149,
+   "生物医药": 1.5751,
+   "智能网联汽车": 1.5808
+  },
+  "denominator_note": "invest_in_base_share_of_raw_rows_pct 的分母是投资表原始行 46,967；shareholder_in_base_share_of_dedup_pct 的分母是归属表去重边 70,034；firm_l1_over_chain_edge_n = 一级环节边 49,234 − 链边 35,046；transfer_* 的分母是转让表原始行 22,809；chain_share_of_industry_base_pct 的分母是产业所属企业 35,046。"
+ },
+ "probes_negative": {
+  "live": {
+   "DWD": {
+    "graph_edge": 0,
+    "graph_node": 0,
+    "policy_graph_edge": null,
+    "policy_graph_node": null,
+    "enterprise_tag": 0,
+    "policy_edge_batches": []
+   },
+   "ADS": {
+    "graph_edge": 589,
+    "graph_node": 145,
+    "policy_graph_edge": 3726,
+    "policy_graph_node": 806,
+    "enterprise_tag": null,
+    "policy_edge_batches": [
+     {
+      "calc_batch_id": "mock_20260623",
+      "c": 3726
+     }
+    ]
+   }
+  },
+  "gkx_graph_tables": [],
+  "inventor_rows": 69647,
+  "inventor_columns": [
+   "dwd_id",
+   "patent_id",
+   "pn",
+   "sequence",
+   "name",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "operator_remarks",
+   "is_deleted",
+   "insert_remark"
+  ],
+  "policy_rows": 20000,
+  "coop_tables": [],
+  "svc_tables": [],
+  "gkx_side": "无 graph_edge/graph_node；无 coop/collab；无 svc 关系；发明人表无 org_id；政策表无企业外键",
+  "live_side": "DWD graph_edge/graph_node 0 行；ADS graph_edge 589 / graph_node 145 为ORG0000000x 演示节点；policy_graph_edge 3,726 条 calc_batch_id=mock_20260623",
+  "conclusion": "9 类关系中 4 类可建边（投资/归属/产业所属/技术应用），科研合作、人才、政策、服务、合作 5 类缺结构，判部分支持。"
+ },
+ "result": {
+  "relation_rows": [
+   {
+    "relation": "投资",
+    "status": "available",
+    "source": "gkx.dwd_org_invest_info",
+    "edge_n": 9312,
+    "node_n": 10548,
+    "note": "46,967 行原始边；两端都在底册的 9312 条"
+   },
+   {
+    "relation": "归属",
+    "status": "available",
+    "source": "gkx.dwd_org_shareholder_info",
+    "edge_n": 17082,
+    "node_n": 16791,
+    "note": "400,286 行；非空边 77,411、去重 70,034；两端都在底册的 17082 条"
+   },
+   {
+    "relation": "产业所属",
+    "status": "available",
+    "source": "gkx.dwd_org_industry_tags",
+    "edge_n": 35046,
+    "node_n": 35046,
+    "note": "企业→链（INB4）；企业→一级环节（INB6）另有 49234 条"
+   },
+   {
+    "relation": "技术应用",
+    "status": "proxy",
+    "source": "gkx.dwd_patent (申请人) × IPC 小类",
+    "edge_n": 523352,
+    "node_n": 122563,
+    "note": "申请人名对齐底册；同一申请人多 IPC 各计一条；名称重名 34 处不拆分"
+   },
+   {
+    "relation": "科研合作",
+    "status": "insufficient",
+    "source": "gkx.dwd_patent_assignees（共同申请人）",
+    "edge_n": 14,
+    "node_n": 0,
+    "note": "共 22198 行、1806 件专利有 ≥2 个申请人；两申请人同时落在底册的 14 对"
+   },
+   {
+    "relation": "人才关系",
+    "status": "absent",
+    "source": "gkx.dwd_patent_inventors",
+    "edge_n": 0,
+    "node_n": 0,
+    "note": "69,647 行发明人姓名，但无 org_id / 任职单位列（列清单：dwd_id,patent_id,pn,sequence,name,created_time,updated_time,creater,updater,table_data_source,operator_remarks,is_deleted,insert_remark），无法建企业—人才边"
+   },
+   {
+    "relation": "政策适用",
+    "status": "absent",
+    "source": "gkx.dwd_policy_base（20,000 条政策文本）",
+    "edge_n": 0,
+    "node_n": 0,
+    "note": "政策表只有文本字段，无企业外键；live ADS policy_graph_edge 3,726 条但 calc_batch_id=mock_20260623，属造数面，不参与结论"
+   },
+   {
+    "relation": "服务提供",
+    "status": "absent",
+    "source": "—",
+    "edge_n": 0,
+    "node_n": 0,
+    "note": "gkx 无 svc/service 关系表（命中 0 张）；服务机构池与企业的服务边不存在"
+   },
+   {
+    "relation": "合作",
+    "status": "absent",
+    "source": "—",
+    "edge_n": 0,
+    "node_n": 0,
+    "note": "gkx 无 coop/collab/alliance/partner 关系表（命中 0 张）"
+   }
+  ],
+  "firm_firm_graph": {
+   "node_n": 19835,
+   "undirected_edge_n": 19684,
+   "directed_edge_n": 26463,
+   "component_n": 3623,
+   "largest_component_n": 10475,
+   "largest_component_share_pct": 52.8107,
+   "component_size_buckets": {
+    "2_5": 3495,
+    "6_10": 106,
+    "11_50": 21,
+    "51_100": 0,
+    "gt_100": 1
+   },
+   "degree_median": 1,
+   "degree_p90": 3,
+   "degree_max": 335
+  },
+  "bipartite": {
+   "firm_chain_edge_n": 35046,
+   "firm_chain_node_n": 35046,
+   "firm_l1_edge_n": 49234,
+   "firm_ipc_edge_n": 523352,
+   "firm_ipc_node_n": 122563,
+   "ipc4_node_n": 631
+  }
+ },
+ "support_judgment": "部分支持",
+ "verdict_kind": "partial_relation_coverage",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面件：关系边是库内当前快照，无统一年度键；投资/转让有日期字段但不构成年度序列，不设基期，不做跨年增长率。",
+ "sources": [
+  "code/_snapshots21/ent_graph109_20261023.json",
+  "code/_snapshots21/ent_edges_20261021.json",
+  "code/_snapshots21/base_20261021.json",
+  "code/_snapshots21/chain_firm_index_20261023.json",
+  "code/_snapshots21/patent_ipc4_by_name_20261021.json",
+  "code/_snapshots21/patent_transfer_rows_20261022.json",
+  "gkx.dwd_org_invest_info (46,967)",
+  "gkx.dwd_org_shareholder_info (400,286)",
+  "gkx.dwd_org_industry_tags (2,283,762)",
+  "gkx.dwd_patent_assignees (22,198)"
+ ]
+}

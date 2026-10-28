@@ -1,0 +1,755 @@
+{
+ "metric_id": "M_ENT_PATENT_TOTAL",
+ "metric_name": "专利总量",
+ "generated_at": "2026-10-23 02:27:37",
+ "definition": "企业作为专利权人（受让人映射到 org_id）的专利去重件数；不过滤法律状态，不按产业过滤",
+ "data_source": "gkx @ 183.240.141.251:3318（只读）：dwd_patent 全量聚合 × dwd_org_base_info；本脚本零 DB",
+ "support_judgment": "完全转换支持",
+ "verdict_kind": "converted",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面累计件，无报告期。dwd_patent.apdt_year 仅 2021—2026（2017—2020 零行），故「总量」实为六年窗口累计；2026 为残年（74,810 行）。本指标不按年报期，因此 used/missing 留空，年份窗口在此说明。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/star_applicant_agg_gkx.json",
+   "kind": "snapshot",
+   "role": "169,226 申请人 [件数, 授权数]，件数合计 = 表行数 2,939,895"
+  },
+  {
+   "path": "code/_snapshots21/star_base_rows_gkx.json",
+   "kind": "snapshot",
+   "role": "底册 189,116 行（org_id/名称/省/市/区/行业/机构类型）"
+  },
+  {
+   "path": "code/_snapshots21/patent_panel_innov_20261021.json",
+   "kind": "snapshot",
+   "role": "全量面板：年 / 国别 / IPC（10 块，2,939,895 行）"
+  },
+  {
+   "path": "code/_snapshots21/a25_patent_sample.json",
+   "kind": "snapshot",
+   "role": "20 万行连续切片（6.8%），用于件型分布"
+  },
+  {
+   "path": "code/_snapshots21/patent_value_agg_gkx.json",
+   "kind": "snapshot",
+   "role": "value 字段填充率与均值（旁证，不进公式）"
+  },
+  {
+   "path": "code/_snapshots21/gkx_columns_20261023.json",
+   "kind": "snapshot",
+   "role": "全库列字典，用于「结果表/产业列/受让人列是否存在」探针"
+  }
+ ],
+ "probes": {
+  "enterprise_patent_detail_present": [],
+  "patent_tables_in_gkx": [
+   "dwd_patent",
+   "dwd_patent_abstract",
+   "dwd_patent_applicants",
+   "dwd_patent_assignees",
+   "dwd_patent_bak_20260912",
+   "dwd_patent_cited",
+   "dwd_patent_claim",
+   "dwd_patent_description",
+   "dwd_patent_family",
+   "dwd_patent_inventors",
+   "dwd_patent_legal",
+   "dwd_patent_priority_filings",
+   "dwd_patent_title",
+   "dwd_substance_patent"
+  ],
+  "industry_columns": [
+   "csrc_industry",
+   "gics_industry",
+   "gics_industry_group",
+   "gics_sub_industry",
+   "industry",
+   "industry_code",
+   "industry_l1_code",
+   "industry_l1_name",
+   "industry_l2_code",
+   "industry_l2_name",
+   "industry_l3_code",
+   "industry_l3_name"
+  ],
+  "future_industry_columns": [],
+  "assignee_columns": [
+   "first_current_assignee_name"
+  ],
+  "legal_status_columns": []
+ },
+ "compute": {
+  "pub_stats": {
+   "n": 157363,
+   "sum": 2557248,
+   "mean": 16.2506,
+   "median": 5,
+   "p25": 2,
+   "p75": 12,
+   "p90": 25,
+   "p95": 42,
+   "p99": 135,
+   "min": 1,
+   "max": 81376
+  },
+  "grant_stats": {
+   "n": 157363,
+   "sum": 1903793,
+   "mean": 12.0981,
+   "median": 4,
+   "p25": 1,
+   "p75": 10,
+   "p90": 22,
+   "p95": 35,
+   "p99": 107,
+   "min": 0,
+   "max": 18235
+  },
+  "coverage": {
+   "base_rows": 189116,
+   "firms_with_patents": 157363,
+   "firms_without_patents": 31753,
+   "firm_coverage_pct": 83.2098,
+   "total_pub": 2557248,
+   "total_grant": 1903793,
+   "library_rows": 2939895,
+   "library_grant": 2140420,
+   "pub_coverage_pct": 86.9843,
+   "grant_coverage_pct": 88.9448,
+   "unmatched_rows": 382647,
+   "unmatched_rows_pct": 13.0157,
+   "name_match_pct": 92.9845,
+   "matched_names": 157354,
+   "agg_names": 169226,
+   "firms_with_zero_grant": 13609,
+   "grant_rate_pct": 74.4469,
+   "library_grant_rate_pct": 72.806,
+   "value_fill_pct": 67.8532,
+   "value_mean": 17760.56
+  },
+  "concentration": {
+   "top10_patents": 279355,
+   "top10_share_pct": 10.924,
+   "top50_patents": 455215,
+   "top50_share_pct": 17.801,
+   "top100_patents": 538962,
+   "top100_share_pct": 21.0759,
+   "top1000_patents": 908706,
+   "top1000_share_pct": 35.5345
+  },
+  "city_dist": {
+   "深圳市": {
+    "patents": 1336877,
+    "pct": 52.278
+   },
+   "广州市": {
+    "patents": 675414,
+    "pct": 26.4118
+   },
+   "东莞市": {
+    "patents": 432677,
+    "pct": 16.9196
+   },
+   "惠州市": {
+    "patents": 110820,
+    "pct": 4.3336
+   },
+   "北京市": {
+    "patents": 638,
+    "pct": 0.0249
+   },
+   "西安市": {
+    "patents": 405,
+    "pct": 0.0158
+   },
+   "杭州市": {
+    "patents": 117,
+    "pct": 0.0046
+   },
+   "抚顺市": {
+    "patents": 106,
+    "pct": 0.0041
+   },
+   "天津市": {
+    "patents": 87,
+    "pct": 0.0034
+   },
+   "包头市": {
+    "patents": 37,
+    "pct": 0.0014
+   },
+   "成都市": {
+    "patents": 15,
+    "pct": 0.0006
+   },
+   "贵阳市": {
+    "patents": 9,
+    "pct": 0.0004
+   },
+   "西宁市": {
+    "patents": 7,
+    "pct": 0.0003
+   },
+   "长沙市": {
+    "patents": 6,
+    "pct": 0.0002
+   },
+   "佛山市": {
+    "patents": 6,
+    "pct": 0.0002
+   },
+   "石家庄市": {
+    "patents": 5,
+    "pct": 0.0002
+   },
+   "上海市": {
+    "patents": 4,
+    "pct": 0.0002
+   },
+   "大连市": {
+    "patents": 3,
+    "pct": 0.0001
+   },
+   "武汉市": {
+    "patents": 3,
+    "pct": 0.0001
+   },
+   "济南市": {
+    "patents": 3,
+    "pct": 0.0001
+   },
+   "中山市": {
+    "patents": 3,
+    "pct": 0.0001
+   },
+   "喀什地区": {
+    "patents": 2,
+    "pct": 0.0001
+   },
+   "兰州市": {
+    "patents": 1,
+    "pct": 0.0
+   },
+   "榆林市": {
+    "patents": 1,
+    "pct": 0.0
+   },
+   "南昌市": {
+    "patents": 1,
+    "pct": 0.0
+   },
+   "海口市": {
+    "patents": 1,
+    "pct": 0.0
+   }
+  },
+  "city_firm_dist": {
+   "深圳市": {
+    "firms": 77846,
+    "pct": 49.4691
+   },
+   "广州市": {
+    "firms": 39041,
+    "pct": 24.8095
+   },
+   "东莞市": {
+    "firms": 31675,
+    "pct": 20.1286
+   },
+   "惠州市": {
+    "firms": 8744,
+    "pct": 5.5566
+   },
+   "北京市": {
+    "firms": 26,
+    "pct": 0.0165
+   },
+   "天津市": {
+    "firms": 4,
+    "pct": 0.0025
+   },
+   "杭州市": {
+    "firms": 4,
+    "pct": 0.0025
+   },
+   "长沙市": {
+    "firms": 2,
+    "pct": 0.0013
+   },
+   "西安市": {
+    "firms": 2,
+    "pct": 0.0013
+   },
+   "包头市": {
+    "firms": 2,
+    "pct": 0.0013
+   },
+   "武汉市": {
+    "firms": 2,
+    "pct": 0.0013
+   },
+   "喀什地区": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "石家庄市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "抚顺市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "大连市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "兰州市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "西宁市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "榆林市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "上海市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "贵阳市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "济南市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "中山市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "南昌市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "成都市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "海口市": {
+    "firms": 1,
+    "pct": 0.0006
+   },
+   "佛山市": {
+    "firms": 1,
+    "pct": 0.0006
+   }
+  },
+  "province_dist": {
+   "广东省": {
+    "patents": 2555797,
+    "pct": 99.9433
+   },
+   "北京市": {
+    "patents": 638,
+    "pct": 0.0249
+   },
+   "陕西省": {
+    "patents": 406,
+    "pct": 0.0159
+   },
+   "浙江省": {
+    "patents": 117,
+    "pct": 0.0046
+   },
+   "辽宁省": {
+    "patents": 109,
+    "pct": 0.0043
+   },
+   "天津市": {
+    "patents": 87,
+    "pct": 0.0034
+   },
+   "内蒙古": {
+    "patents": 37,
+    "pct": 0.0014
+   },
+   "四川省": {
+    "patents": 15,
+    "pct": 0.0006
+   },
+   "贵州省": {
+    "patents": 9,
+    "pct": 0.0004
+   },
+   "青海省": {
+    "patents": 7,
+    "pct": 0.0003
+   },
+   "湖南省": {
+    "patents": 6,
+    "pct": 0.0002
+   },
+   "河北省": {
+    "patents": 5,
+    "pct": 0.0002
+   },
+   "上海市": {
+    "patents": 4,
+    "pct": 0.0002
+   },
+   "湖北省": {
+    "patents": 3,
+    "pct": 0.0001
+   },
+   "山东省": {
+    "patents": 3,
+    "pct": 0.0001
+   },
+   "新疆": {
+    "patents": 2,
+    "pct": 0.0001
+   },
+   "甘肃省": {
+    "patents": 1,
+    "pct": 0.0
+   },
+   "江西省": {
+    "patents": 1,
+    "pct": 0.0
+   },
+   "海南省": {
+    "patents": 1,
+    "pct": 0.0
+   }
+  },
+  "industry_l1_dist": {
+   "制造业": {
+    "patents": 1019390,
+    "pct": 39.8628
+   },
+   "批发和零售业": {
+    "patents": 475289,
+    "pct": 18.586
+   },
+   "科学研究和技术服务业": {
+    "patents": 420303,
+    "pct": 16.4358
+   },
+   "信息传输、软件和信息技术服务业": {
+    "patents": 211977,
+    "pct": 8.2893
+   },
+   "未填": {
+    "patents": 170228,
+    "pct": 6.6567
+   },
+   "建筑业": {
+    "patents": 67016,
+    "pct": 2.6206
+   },
+   "租赁和商务服务业": {
+    "patents": 56966,
+    "pct": 2.2276
+   },
+   "电力、热力、燃气及水生产和供应业": {
+    "patents": 39254,
+    "pct": 1.535
+   },
+   "金融业": {
+    "patents": 21732,
+    "pct": 0.8498
+   },
+   "房地产业": {
+    "patents": 18378,
+    "pct": 0.7187
+   },
+   "居民服务、修理和其他服务业": {
+    "patents": 14187,
+    "pct": 0.5548
+   },
+   "交通运输、仓储和邮政业": {
+    "patents": 12816,
+    "pct": 0.5012
+   },
+   "水利、环境和公共设施管理业": {
+    "patents": 7936,
+    "pct": 0.3103
+   },
+   "文化、体育和娱乐业": {
+    "patents": 7913,
+    "pct": 0.3094
+   },
+   "教育": {
+    "patents": 7755,
+    "pct": 0.3033
+   },
+   "农、林、牧、渔业": {
+    "patents": 2307,
+    "pct": 0.0902
+   },
+   "卫生和社会工作": {
+    "patents": 2065,
+    "pct": 0.0808
+   },
+   "住宿和餐饮业": {
+    "patents": 1045,
+    "pct": 0.0409
+   },
+   "采矿业": {
+    "patents": 539,
+    "pct": 0.0211
+   },
+   "公共管理、社会保障和社会组织": {
+    "patents": 115,
+    "pct": 0.0045
+   },
+   "国际组织": {
+    "patents": 37,
+    "pct": 0.0014
+   }
+  },
+  "industry_l2_top10": [
+   {
+    "name": "计算机、通信和其他电子设备制造业",
+    "patents": 408119,
+    "pct": 15.9593
+   },
+   {
+    "name": "批发业",
+    "patents": 344487,
+    "pct": 13.471
+   },
+   {
+    "name": "软件和信息技术服务业",
+    "patents": 185879,
+    "pct": 7.2687
+   },
+   {
+    "name": "未填",
+    "patents": 178237,
+    "pct": 6.9699
+   },
+   {
+    "name": "科技推广和应用服务业",
+    "patents": 162830,
+    "pct": 6.3674
+   },
+   {
+    "name": "研究和试验发展",
+    "patents": 143575,
+    "pct": 5.6144
+   },
+   {
+    "name": "零售业",
+    "patents": 130609,
+    "pct": 5.1074
+   },
+   {
+    "name": "电气机械和器材制造业",
+    "patents": 130434,
+    "pct": 5.1006
+   },
+   {
+    "name": "专业技术服务业",
+    "patents": 110098,
+    "pct": 4.3053
+   },
+   {
+    "name": "专用设备制造业",
+    "patents": 78101,
+    "pct": 3.0541
+   }
+  ],
+  "kind_dist_sample": {
+   "A": {
+    "rows": 78127,
+    "pct": 39.0635
+   },
+   "U": {
+    "rows": 62481,
+    "pct": 31.2405
+   },
+   "D": {
+    "rows": 35382,
+    "pct": 17.691
+   },
+   "B": {
+    "rows": 24010,
+    "pct": 12.005
+   }
+  },
+  "kind_sample_share_pct": 6.803,
+  "year_dist": {
+   "2022": 601893,
+   "2026": 74810,
+   "2021": 604512,
+   "2023": 611811,
+   "2025": 440401,
+   "2024": 606468
+  },
+  "country_dist": {
+   "China": 2848905,
+   "WO": 89935,
+   "Hong Kong": 952,
+   "Japan": 79,
+   "Taiwan Province": 20,
+   "Macao": 4
+  },
+  "top10_by_pub": [
+   {
+    "name": "华为技术有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "pub_cnt": 81376,
+    "grant_cnt": 13360,
+    "share_pct": 3.1822
+   },
+   {
+    "name": "比亚迪股份有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "pub_cnt": 29024,
+    "grant_cnt": 17072,
+    "share_pct": 1.135
+   },
+   {
+    "name": "维沃移动通信有限公司",
+    "city": "东莞市",
+    "industry_l1": "批发和零售业",
+    "pub_cnt": 28712,
+    "grant_cnt": 11145,
+    "share_pct": 1.1228
+   },
+   {
+    "name": "华南理工大学",
+    "city": "广州市",
+    "industry_l1": null,
+    "pub_cnt": 28053,
+    "grant_cnt": 18235,
+    "share_pct": 1.097
+   },
+   {
+    "name": "OPPO广东移动通信有限公司",
+    "city": "东莞市",
+    "industry_l1": "制造业",
+    "pub_cnt": 25765,
+    "grant_cnt": 8547,
+    "share_pct": 1.0075
+   },
+   {
+    "name": "广东工业大学",
+    "city": "广州市",
+    "industry_l1": null,
+    "pub_cnt": 21326,
+    "grant_cnt": 14061,
+    "share_pct": 0.8339
+   },
+   {
+    "name": "广东电网有限责任公司",
+    "city": "广州市",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "pub_cnt": 18922,
+    "grant_cnt": 8566,
+    "share_pct": 0.7399
+   },
+   {
+    "name": "中山大学",
+    "city": "广州市",
+    "industry_l1": null,
+    "pub_cnt": 17475,
+    "grant_cnt": 11025,
+    "share_pct": 0.6834
+   },
+   {
+    "name": "中兴通讯股份有限公司",
+    "city": "深圳市",
+    "industry_l1": "制造业",
+    "pub_cnt": 15634,
+    "grant_cnt": 1634,
+    "share_pct": 0.6114
+   },
+   {
+    "name": "深圳大学",
+    "city": "深圳市",
+    "industry_l1": null,
+    "pub_cnt": 13068,
+    "grant_cnt": 8913,
+    "share_pct": 0.511
+   }
+  ],
+  "entity_split": {
+   "non_enterprise_orgs": 1123,
+   "non_enterprise_pub": 199436,
+   "non_enterprise_pub_pct": 7.7989,
+   "enterprise_orgs": 156240,
+   "enterprise_pub": 2357812,
+   "enterprise_pub_pct": 92.2011,
+   "enterprise_grant": 1777120,
+   "enterprise_grant_pct": 93.3463,
+   "top_non_enterprise": [
+    {
+     "name": "华南理工大学",
+     "pub_cnt": 28053,
+     "grant_cnt": 18235
+    },
+    {
+     "name": "广东工业大学",
+     "pub_cnt": 21326,
+     "grant_cnt": 14061
+    },
+    {
+     "name": "中山大学",
+     "pub_cnt": 17475,
+     "grant_cnt": 11025
+    },
+    {
+     "name": "深圳大学",
+     "pub_cnt": 13068,
+     "grant_cnt": 8913
+    },
+    {
+     "name": "华南农业大学",
+     "pub_cnt": 10428,
+     "grant_cnt": 6439
+    }
+   ]
+  },
+  "derived": {
+   "non_enterprise_grant": 126673,
+   "non_enterprise_grant_pct": 6.6537,
+   "firms_with_zero_grant_pct": 8.6482,
+   "top5_non_enterprise_pub": 90350,
+   "top5_non_enterprise_share_pct": 45.3028,
+   "four_city_pub": 2555788,
+   "four_city_pub_pct": 99.9429,
+   "out_of_province_pub": 1451,
+   "pub_minus_grant": 653455,
+   "pub_minus_grant_pct_of_pub": 25.5531,
+   "star_subset_pub": 1069438,
+   "star_subset_share_of_matched_pct": 41.8199,
+   "top1pct_firms": 1573,
+   "unmatched_names": 11872,
+   "firms_without_patents_pct": 16.7902,
+   "kind_ab_pct": 51.0685,
+   "country_china_pct": 96.905,
+   "country_wo_pct": 3.0591
+  },
+  "library": {
+   "table_rows": 2939895,
+   "names": 169226,
+   "grant_sum": 2140420
+  }
+ },
+ "reasons": [
+  "结果面 enterprise_patent_detail 两库均无（gkx 280 表无此表，live 为空壳），但原料侧 dwd_patent 2,939,895 行 + 底册 189,116 行齐全，件数可现算 → 完全转换支持。",
+  "名称等值匹配覆盖 157,363/189,116 家企业（83.2% 的企业有专利），匹配不上的权利人按 calc-logic 要求 drop。",
+  "专利件数只归第一申请人：无 assignees 多值列，非第一受让人的共有专利会漏计（方向明确，幅度不可量化）。",
+  "不按产业过滤是 calc-logic 明文要求；gkx 也没有 future_industry_code 列，这一点与口径要求恰好一致。"
+ ]
+}

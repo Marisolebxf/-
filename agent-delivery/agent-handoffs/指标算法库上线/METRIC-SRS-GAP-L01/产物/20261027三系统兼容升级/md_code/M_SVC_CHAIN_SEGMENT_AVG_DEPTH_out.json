@@ -1,0 +1,158 @@
+{
+ "metric_id": "M_SVC_CHAIN_SEGMENT_AVG_DEPTH",
+ "metric_name": "环节平均服务深度",
+ "generated_at": "2026-10-22T14:46:50+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "分母与分组可算（六环节 44,153 家口径）；分子「机构×环节服务深度分」无源：口径未签（Q-SVCCHAIN-02）且 gkx 无任何 svc_* 深度表/列 → 全部分格为「—」",
+ "formula_source": "calc-logic SVC/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md（0.2.0 目标口径）",
+ "formula": "avg_depth(s) = AVG(depth_i), i ∈ {org: stage(org)=s}；空 → null（不伪造 0）",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_org_product_info（分母/分组）",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_org_product_info(main_activities 单词计数)",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_kw_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "四列整列为空自检（development_employee / arch_development_am / impact_score / download_num）",
+   "snapshot": "code/_snapshots21/city_family_probe_20261021.json"
+  }
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件不产出任何深度数值：分子（机构×环节服务深度分）在 gkx 与 live 均无来源，口径未签（Q-SVCCHAIN-02），故不存在可声明的基期窗口；分母侧的环节计数为截面存量。",
+ "population_orgs": 44153,
+ "finance_cover": 6759,
+ "stage_rows": [
+  {
+   "stage_id": "stage-research",
+   "stage_name": "研发与科研合作",
+   "org_count": 30776,
+   "avg_depth": null,
+   "display": "—",
+   "depth_status": "无源",
+   "empty_rule": "环节有机构但深度分缺失 → 空（不伪造 0）"
+  },
+  {
+   "stage_id": "stage-ip",
+   "stage_name": "知识产权与标准",
+   "org_count": 776,
+   "avg_depth": null,
+   "display": "—",
+   "depth_status": "无源",
+   "empty_rule": "环节有机构但深度分缺失 → 空（不伪造 0）"
+  },
+  {
+   "stage_id": "stage-transfer",
+   "stage_name": "技术转移与孵化",
+   "org_count": 13878,
+   "avg_depth": null,
+   "display": "—",
+   "depth_status": "无源",
+   "empty_rule": "环节有机构但深度分缺失 → 空（不伪造 0）"
+  },
+  {
+   "stage_id": "stage-pilot",
+   "stage_name": "中试熟化",
+   "org_count": 8,
+   "avg_depth": null,
+   "display": "—",
+   "depth_status": "无源",
+   "empty_rule": "环节有机构但深度分缺失 → 空（不伪造 0）"
+  },
+  {
+   "stage_id": "stage-testing",
+   "stage_name": "检测认证",
+   "org_count": 4533,
+   "avg_depth": null,
+   "display": "—",
+   "depth_status": "无源",
+   "empty_rule": "环节有机构但深度分缺失 → 空（不伪造 0）"
+  },
+  {
+   "stage_id": "stage-market",
+   "stage_name": "市场化服务",
+   "org_count": 10702,
+   "avg_depth": null,
+   "display": "—",
+   "depth_status": "无源",
+   "empty_rule": "环节有机构但深度分缺失 → 空（不伪造 0）"
+  }
+ ],
+ "depth_gap": {
+  "missing_input": "机构×环节 服务深度分（0—100）",
+  "blocking": [
+   "Q-SVCCHAIN-02 口径未签",
+   "SVC-P0-3 机构×环节成员表未建",
+   "gkx 无 svc_* 结果面/深度列"
+  ],
+  "rejected_alternatives": [
+   {
+    "alt": "研发人员数（development_employee）",
+    "why": "整列为空（0 行非空）"
+   },
+   {
+    "alt": "研发费用（arch_development_am）",
+    "why": "整列为空（0 行非空）"
+   },
+   {
+    "alt": "上市研发费用（dwd_org_stock_finance_info）",
+    "why": "仅上市主体，且是投入口径不是服务深度"
+   },
+   {
+    "alt": "环节家数归一化",
+    "why": "把广度当深度，语义造假"
+   },
+   {
+    "alt": "产业链环节覆盖率（industry_link_code）",
+    "why": "码域与链树不一致（§3.9），且是产业轴不是服务环节轴"
+   }
+  ],
+  "empty_column_evidence": [
+   {
+    "table": "dwd_org_annual_financial_info",
+    "column": "development_employee",
+    "known_fact": "非空/非零计数 0（DATA_FACTS §3.10，2026-10-22 08:00 逐列探针）",
+    "used_by_this_metric": false
+   },
+   {
+    "table": "dwd_org_annual_financial_info",
+    "column": "arch_development_am",
+    "known_fact": "非空/非零计数 0（DATA_FACTS §3.10，2026-10-22 08:00 逐列探针）",
+    "used_by_this_metric": false
+   },
+   {
+    "table": "dwd_zh_journal",
+    "column": "impact_score",
+    "known_fact": "非空/非零计数 0（DATA_FACTS §3.10，2026-10-22 08:00 逐列探针）",
+    "used_by_this_metric": false
+   },
+   {
+    "table": "dwd_zh_paper",
+    "column": "download_num",
+    "known_fact": "非空/非零计数 0（DATA_FACTS §3.10，2026-10-22 08:00 逐列探针）",
+    "used_by_this_metric": false
+   }
+  ]
+ },
+ "difference_vs_old_draft": {
+  "old": "演示库 svc_chain_gap 6 行 fixture（研发 93.02 等，pending_client_confirm=1），正文判定不可引用",
+  "new": "gkx 无同名表，深度分在源侧即不存在；本件六格全部「—」",
+  "conclusion": "两版结论同向（不可算），但证据不同：旧稿靠「壳表有值但矛盾」，本件靠「源侧无表无列」"
+ },
+ "compute": {
+  "status": "dual_gap",
+  "elapsed_sec": 0.478
+ }
+}

@@ -1,0 +1,306 @@
+{
+ "metric_id": "M_ENT_PROFIT_MARGIN",
+ "metric_name": "企业净利率",
+ "probe_date": "2026-10-22",
+ "db": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）",
+ "source": {
+  "db": "gkx",
+  "host": "183.240.141.251:3318",
+  "tables": [
+   "gkx.dwd_org_annual_financial_info",
+   "gkx.dwd_org_annual_report_asset"
+  ],
+  "pulled_at": "2026-10-22"
+ },
+ "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_PROFIT_MARGIN.md",
+ "formula": "margin_i = pure_profit_i / operating_revenue_i * 100，仅当 revenue_i > 0",
+ "probes": {
+  "fin_rows": 90926,
+  "fin_orgs": 8127,
+  "fin_rev_pos": 2191,
+  "fin_pairs": 2095,
+  "fin_pairs_orgs": 1257,
+  "asset_rows": 527034,
+  "asset_numeric_pairs": 11970,
+  "asset_pairs_orgs": 7452,
+  "asset_both_wan_rows": 11974,
+  "asset_xsze_placeholder_rows": 514140,
+  "asset_xsze_blank_rows": 144,
+  "asset_unpaired_rows": 515064,
+  "asset_probe_note": "asset_xsze_placeholder_rows 是 xsze 严格等于「企业选择不公示」的行数；asset_both_wan_rows 是 xsze 与 jlr 同时为万元数值的行数；asset_unpaired_rows = 全表 − asset_both_wan_rows，其中含占位串、空值（asset_xsze_blank_rows）与其它非数值文本。asset_both_wan_rows 与 asset_numeric_pairs 差 4 行：后者还要通过 parse_wan 的正则（要求整串是「数字+万元」，4 行含多余文本被丢弃）。旧稿把 526,890（= 全表 − 144 空值）误标为「占位串行数」，已改（§3.47）。",
+  "row_total": 12550,
+  "pairs_raw_sum": 14065,
+  "org_latest_rows": 6526,
+  "base_orgs": 189116,
+  "coverage_pct": 3.4508,
+  "rd_col_arch_development_am_nonzero": 0,
+  "rd_col_development_employee_nonzero": 0
+ },
+ "distribution": {
+  "n": 6526,
+  "min": -20888020.8333,
+  "p10": -54.3063,
+  "median": 0.7205,
+  "mean": -10169.5231,
+  "mean_ex_anomaly": -0.0117,
+  "n_ex_anomaly": 5940,
+  "p90": 14.6658,
+  "max": 657382.4561,
+  "neg_share": 30.3708,
+  "zero_band_10pct_share": 67.0549,
+  "anomaly_rows": 586,
+  "anomaly_share": 8.9795
+ },
+ "by_source": {
+  "dwd_org_annual_financial_info": {
+   "orgs": 1255,
+   "neg": 307
+  },
+  "dwd_org_annual_report_asset": {
+   "orgs": 5271,
+   "neg": 1675
+  }
+ },
+ "custom_thresholds": {
+  "revenue_floor_yuan": 10000000.0,
+  "anomaly_abs_margin_pct": 100.0,
+  "note": "两项均为本件自定义、待甲方确认；不是官方口径。"
+ },
+ "named_pool": 203,
+ "anomaly_examples": [
+  {
+   "name": "",
+   "city": "",
+   "year": 2014,
+   "margin": -20888020.8333,
+   "rev_yuan": 28800.0,
+   "np_yuan": -6015750000.0
+  },
+  {
+   "name": "广州海达星宇技术有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "margin": -20344584.6,
+   "rev_yuan": 5.0,
+   "np_yuan": -1017229.23
+  },
+  {
+   "name": "",
+   "city": "",
+   "year": 2014,
+   "margin": -12721311.6078,
+   "rev_yuan": 4077348.83,
+   "np_yuan": -518692250000.0
+  },
+  {
+   "name": "",
+   "city": "",
+   "year": 2025,
+   "margin": -6396239.212,
+   "rev_yuan": 20035841.18,
+   "np_yuan": -1281540330000.0
+  },
+  {
+   "name": "广东曼克维通信科技有限公司",
+   "city": "广州市",
+   "year": 2014,
+   "margin": -4049071.4408,
+   "rev_yuan": 993.69,
+   "np_yuan": -40235218.0
+  }
+ ],
+ "top10": [
+  {
+   "name": "广东广惠高速公路有限公司",
+   "city": "广州市",
+   "year": 2025,
+   "margin": 49.9453,
+   "rev_yuan": 2022964170.11,
+   "np_yuan": 1010375410.79
+  },
+  {
+   "name": "广东广博房地产（集团）有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "margin": 43.8536,
+   "rev_yuan": 22861833.15,
+   "np_yuan": 10025744.86
+  },
+  {
+   "name": "广州越秀集团股份有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "margin": 36.1214,
+   "rev_yuan": 1274736498.28,
+   "np_yuan": 460452702.23
+  },
+  {
+   "name": "广州远正智能科技股份有限公司",
+   "city": "广州市",
+   "year": 2014,
+   "margin": 34.6974,
+   "rev_yuan": 15708489.83,
+   "np_yuan": 5450437.29
+  },
+  {
+   "name": "广东珠三角城际轨道交通有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "margin": 34.4091,
+   "rev_yuan": 14982242.72,
+   "np_yuan": 5155256.39
+  },
+  {
+   "name": "万联证券股份有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "margin": 32.3129,
+   "rev_yuan": 2044974007.99,
+   "np_yuan": 660790679.95
+  },
+  {
+   "name": "中国南航集团进出口贸易有限公司",
+   "city": "广州市",
+   "year": 2014,
+   "margin": 28.8846,
+   "rev_yuan": 137976635.96,
+   "np_yuan": 39853980.21
+  },
+  {
+   "name": "招商银行股份有限公司",
+   "city": "深圳市",
+   "year": 2022,
+   "margin": 28.5941,
+   "rev_yuan": 44933800.0,
+   "np_yuan": 12848400.0
+  },
+  {
+   "name": "广州熵能创新材料股份有限公司",
+   "city": "广州市",
+   "year": 2016,
+   "margin": 26.2319,
+   "rev_yuan": 87355040.02,
+   "np_yuan": 22914865.72
+  },
+  {
+   "name": "广州市科传计算机科技股份有限公司",
+   "city": "广州市",
+   "year": 2016,
+   "margin": 25.6605,
+   "rev_yuan": 62561875.52,
+   "np_yuan": 16053698.19
+  }
+ ],
+ "bottom10": [
+  {
+   "name": "东莞市恒建环保科技有限公司",
+   "city": "东莞市",
+   "year": 2013,
+   "margin": -60.2564,
+   "rev_yuan": 14476461.04,
+   "np_yuan": -8722992.45
+  },
+  {
+   "name": "新菲光通信技术有限公司",
+   "city": "深圳市",
+   "year": 2023,
+   "margin": -57.0894,
+   "rev_yuan": 72324203.11,
+   "np_yuan": -41289457.87
+  },
+  {
+   "name": "广州市家庭医生在线信息有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "margin": -47.2105,
+   "rev_yuan": 25956675.85,
+   "np_yuan": -12254272.89
+  },
+  {
+   "name": "广州都市圈网络科技有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "margin": -34.0963,
+   "rev_yuan": 27113195.77,
+   "np_yuan": -9244596.86
+  },
+  {
+   "name": "广东安居宝数码科技股份有限公司",
+   "city": "广州市",
+   "year": 2024,
+   "margin": -33.951,
+   "rev_yuan": 16348488.91,
+   "np_yuan": -5550477.48
+  },
+  {
+   "name": "广州市泰洲进出口贸易股份有限公司",
+   "city": "广州市",
+   "year": 2014,
+   "margin": -19.4138,
+   "rev_yuan": 15410701.61,
+   "np_yuan": -2991806.79
+  },
+  {
+   "name": "广州星晨互联网科技股份有限公司",
+   "city": "广州市",
+   "year": 2018,
+   "margin": -16.2924,
+   "rev_yuan": 10921629.89,
+   "np_yuan": -1779395.15
+  },
+  {
+   "name": "广州代代星电子科技有限公司",
+   "city": "广州市",
+   "year": 2014,
+   "margin": -16.0104,
+   "rev_yuan": 60045485.75,
+   "np_yuan": -9613541.25
+  },
+  {
+   "name": "深圳市龙日园艺景观有限公司",
+   "city": "深圳市",
+   "year": 2014,
+   "margin": -14.6872,
+   "rev_yuan": 21457211.22,
+   "np_yuan": -3151472.45
+  },
+  {
+   "name": "深圳好食食品有限公司",
+   "city": "深圳市",
+   "year": 2014,
+   "margin": -14.0363,
+   "rev_yuan": 17388344.49,
+   "np_yuan": -2440685.16
+  }
+ ],
+ "kpi_years_present": [
+  2013,
+  2025
+ ],
+ "kpi_years_n": 13,
+ "support_judgment": "部分支持",
+ "judgment_reason": "净利率公式本身在 gkx 可算：年报财务表 2,095 组「正营收+非空净利」、资产表 11,650 组可解析数值对，合并去重后 6526 家企业出数；但相对 189,116 家底册只覆盖 3.4508%，且资产表 527,034 行里未披露营收的行占绝大多数、研发投入两列（arch_development_am / development_employee）全为 0，无法做研发口径的交叉校验——分母侧覆盖率不足是硬缺口，故判部分支持。",
+ "base_years_used": [
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "base_years_missing": [],
+ "base_years_note": "企业级 KPI 取「每家企业最新可得年」，不构建年度时序；base_years_used 记录实际出现过的年度，用于说明数据新旧分布。",
+ "proxy_deviation": {
+  "proxy": "无代理：净利与营收都是源表原生数值列",
+  "coverage_pct": 3.4508,
+  "deviation_note": "覆盖率 3.4508%，缺口是「未披露」而非「算错」；能出数的企业偏上市/规上/年报披露主体，净利率均值不可外推到全库。"
+ },
+ "verdict_kind": "computed"
+}

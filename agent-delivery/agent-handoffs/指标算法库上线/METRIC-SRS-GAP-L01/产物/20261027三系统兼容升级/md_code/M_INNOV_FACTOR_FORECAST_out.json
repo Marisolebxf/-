@@ -1,0 +1,298 @@
+{
+ "metric_id": "M_INNOV_FACTOR_FORECAST",
+ "metric_name": "监测趋势预测",
+ "domain": "INNOV / DS-01-FACTORS",
+ "formula_owner": "王惠（calc-logic 口径，本轮沿用并实测）",
+ "generated_at": "2026-10-23",
+ "source_db": "gkx",
+ "source_detail": {
+  "论文/项目": "gkx.dwd_zh_paper.cover_year_start / gkx.dwd_zh_project.approval_year",
+  "专利": "patent_panel_innov_20261021.json（全量，零专利 SQL）"
+ },
+ "definition_used": "Holt 线性趋势（满 8 期），年预 2 期，点预测+80% 区间，件数非负",
+ "probes": {
+  "dwd_patent": 2939895,
+  "dwd_zh_paper": 100900,
+  "dwd_zh_project": 58453,
+  "conference_entities": 0,
+  "patent_year_coverage": [
+   2021,
+   2026
+  ],
+  "patent_missing_years": [
+   2017,
+   2018,
+   2019,
+   2020
+  ]
+ },
+ "forecasts": {
+  "论文": {
+   "train": [
+    {
+     "year": 2008,
+     "value": 374
+    },
+    {
+     "year": 2009,
+     "value": 441
+    },
+    {
+     "year": 2010,
+     "value": 512
+    },
+    {
+     "year": 2011,
+     "value": 539
+    },
+    {
+     "year": 2012,
+     "value": 633
+    },
+    {
+     "year": 2013,
+     "value": 717
+    },
+    {
+     "year": 2014,
+     "value": 1926
+    },
+    {
+     "year": 2015,
+     "value": 3082
+    },
+    {
+     "year": 2016,
+     "value": 4710
+    },
+    {
+     "year": 2017,
+     "value": 6903
+    },
+    {
+     "year": 2018,
+     "value": 6067
+    },
+    {
+     "year": 2019,
+     "value": 6174
+    },
+    {
+     "year": 2020,
+     "value": 6336
+    },
+    {
+     "year": 2021,
+     "value": 6758
+    },
+    {
+     "year": 2022,
+     "value": 6331
+    },
+    {
+     "year": 2023,
+     "value": 6651
+    }
+   ],
+   "forecast": [
+    {
+     "year": 2024,
+     "value": 7165.8,
+     "pi80": [
+      5699.4,
+      8632.2
+     ]
+    },
+    {
+     "year": 2025,
+     "value": 7361.1,
+     "pi80": [
+      5287.2,
+      9435.0
+     ]
+    }
+   ],
+   "fit": {
+    "sigma": 1144.2,
+    "in_sample_mape": 0.1956,
+    "alpha": 0.5,
+    "beta": 0.3,
+    "n_periods": 16
+   },
+   "excluded": "2024（32,379 篇入库批）与 2025/2026（645 期未满 + 采集未闭环）不入训练集",
+   "baseline_years": [
+    2008,
+    2023
+   ]
+  },
+  "项目": {
+   "train": [
+    {
+     "year": 2008,
+     "value": 1496
+    },
+    {
+     "year": 2009,
+     "value": 1910
+    },
+    {
+     "year": 2010,
+     "value": 2521
+    },
+    {
+     "year": 2011,
+     "value": 3248
+    },
+    {
+     "year": 2012,
+     "value": 3596
+    },
+    {
+     "year": 2013,
+     "value": 3718
+    },
+    {
+     "year": 2014,
+     "value": 3728
+    },
+    {
+     "year": 2015,
+     "value": 4009
+    },
+    {
+     "year": 2016,
+     "value": 4077
+    },
+    {
+     "year": 2017,
+     "value": 4476
+    },
+    {
+     "year": 2018,
+     "value": 4686
+    },
+    {
+     "year": 2019,
+     "value": 4816
+    },
+    {
+     "year": 2020,
+     "value": 4719
+    }
+   ],
+   "forecast": [
+    {
+     "year": 2021,
+     "value": 5049.2,
+     "pi80": [
+      4645.8,
+      5452.6
+     ]
+    },
+    {
+     "year": 2022,
+     "value": 5200.2,
+     "pi80": [
+      4629.8,
+      5770.6
+     ]
+    }
+   ],
+   "fit": {
+    "sigma": 314.7,
+    "in_sample_mape": 0.0661,
+    "alpha": 0.5,
+    "beta": 0.3,
+    "n_periods": 13
+   },
+   "excluded": "2021-2023（入库截断，仅 2,339/58/6 条）不入训练集",
+   "baseline_years": [
+    2008,
+    2020
+   ]
+  },
+  "专利": {
+   "train": [
+    {
+     "year": 2021,
+     "value": 604512
+    },
+    {
+     "year": 2022,
+     "value": 601893
+    },
+    {
+     "year": 2023,
+     "value": 611811
+    },
+    {
+     "year": 2024,
+     "value": 606468
+    },
+    {
+     "year": 2025,
+     "value": 440401
+    },
+    {
+     "year": 2026,
+     "value": 74810
+    }
+   ],
+   "forecast": [],
+   "reason": "apdt_year 仅 2021-2026 共 6 期 < 8 期门槛；2017–2020 在 gkx.dwd_patent 中零行，不能靠「补 0」把序列拉长到 8 期；2026 采集止于 2026-10（残年），末端截断；6 期样本下 Holt 的 β（趋势）与 σ（残差）均不可靠，ARIMA(p,d,q) 需 ≥30 期，故不做外推，仅保留历史序列。",
+   "baseline_years": [
+    2021,
+    2026
+   ],
+   "missing_years_not_imputed": [
+    2017,
+    2018,
+    2019,
+    2020
+   ]
+  },
+  "期刊": {
+   "train": [],
+   "forecast": [],
+   "reason": "dwd_zh_journal（2,796 行）是期刊名录，无年度件数时序列；publication_type 全为「期刊」，不含会议。"
+  },
+  "会议": {
+   "train": [],
+   "forecast": [],
+   "reason": "会议实体 0（zh_paper / en_journal 均无会议类型），无法建序列。"
+  }
+ },
+ "backtest": {
+  "论文_2024实测": {
+   "actual": 32379,
+   "pred": 7165.8,
+   "note": "实测 32,379 远超 80% 区间上界，证实 2024 为入库批；外推口径不受其影响"
+  },
+  "论文_2025实测": {
+   "actual": 6548,
+   "pred": 7361.1,
+   "note": "实测 6,548 落在 80% 区间内，但 2025 仍有 645 期未满，仅作披露"
+  },
+  "项目_2021实测": {
+   "actual": 2339,
+   "pred": 5049.2,
+   "note": "实测 2,339 远低于区间下界，证实 2021 起入库截断"
+  },
+  "专利_不外推": {
+   "actual": null,
+   "pred": null,
+   "note": "6 期 < 8 期门槛；2017–2020 零行不得补 0"
+  }
+ },
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "criteria": {
+   "structure": "论文/项目序列满足 Holt 门槛（16/13 期）；专利仅 6 期且 2017–2020 零行；期刊/会议无序列",
+   "volume": "论文 10.09 万篇、项目 5.85 万项、专利 293.99 万件",
+   "reproducible": true,
+   "all_four_factors": false
+  },
+  "note": "seed 要求会议/项目/专利/期刊四类外推，实际仅论文、项目两类可做 Holt；专利样本过短（6 期、2017–2020 结构性缺失、2026 残年）不做外推；期刊/会议无年度件数承载 -> 部分支持。"
+ },
+ "elapsed_sec": 0.0
+}

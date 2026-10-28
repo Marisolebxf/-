@@ -1,0 +1,353 @@
+{
+ "metric_id": "M_CHAIN_CYCLE_STAGE",
+ "metric_name": "产业周期阶段",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）+ code/_snapshots21/ 落盘快照",
+ "formula": "融资热度腿：post(2022-2024)/pre(2018-2020)-1 >=+10% 成长、-10%~+10% 成熟、<=-10% 衰退；new_share>=25% 且热度>=0 覆盖为孕育",
+ "blocking_tables": {
+  "chain_stage": {
+   "triage": "source_absent",
+   "evidence": "_work_gkx21/TABLE_ABSENCE_EVIDENCE.md §chain_stage"
+  }
+ },
+ "proxy_path": "L1 链内融资事件数三年窗口对比（主判）+ L2 成立年份结构（辅判/孕育覆盖）",
+ "proxy_deviation": "融资事件按企业名挂链命中 14,626/25,654=57.0%，链内未命中部分按无归属处理；融资热度反映资本关注度而非产出，衰退期的语义是「资本退潮」不是「产业萎缩」",
+ "rejected_proxy": {
+  "leg": "链内样本营收 CAGR",
+  "why": "有效样本 n_rev 逐年塌陷（如软件与信息服务 2014 年 198 家 → 2022 年 11 家），CAGR 度量的是财报覆盖衰减而不是产业增速；各链 CAGR 落在 -99% ~ +26%，与深圳产业实际不符，故不采用",
+  "evidence": "chains[].l3_revenue_rejected"
+ },
+ "stage_rule": {
+  "pre_window": [
+   2018,
+   2020
+  ],
+  "post_window": [
+   2022,
+   2024
+  ],
+  "growth_threshold": 0.1,
+  "birth_override": 0.25,
+  "min_events": 50
+ },
+ "coverage": {
+  "chains": 12,
+  "fin_matched": 14626,
+  "fin_rows": 25654,
+  "fin_unmatched": 11028,
+  "fin_match_rate": 0.5701,
+  "tag_rows": 2283762,
+  "multi_chain_rows": 131978,
+  "fin_le_50_events": 3,
+  "total_orgs_with_year": 43751
+ },
+ "stage_distribution": {
+  "成熟期": 2,
+  "成长期": 2,
+  "衰退期": 8
+ },
+ "chains": [
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "orgs_with_year": 3863,
+   "median_est_year": 2014,
+   "new_share_2020_2024": 0.1054,
+   "fin_events_pre_2018_2020": 106,
+   "fin_events_post_2022_2024": 95,
+   "fin_event_change": -0.1038,
+   "fin_events_total": 506,
+   "stage": "衰退期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 4,
+    "last_year": 2025,
+    "last_n": 3,
+    "cagr": 0.2402,
+    "n_ratio": 0.75
+   }
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "orgs_with_year": 1297,
+   "median_est_year": 2014,
+   "new_share_2020_2024": 0.0864,
+   "fin_events_pre_2018_2020": 33,
+   "fin_events_post_2022_2024": 40,
+   "fin_event_change": 0.2121,
+   "fin_events_total": 240,
+   "stage": "成长期",
+   "confidence": "样本不足",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 3,
+    "last_year": 2023,
+    "last_n": 1,
+    "cagr": -0.7105,
+    "n_ratio": 0.333
+   }
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "orgs_with_year": 153,
+   "median_est_year": 2011,
+   "new_share_2020_2024": 0.1111,
+   "fin_events_pre_2018_2020": 34,
+   "fin_events_post_2022_2024": 34,
+   "fin_event_change": 0.0,
+   "fin_events_total": 175,
+   "stage": "成熟期",
+   "confidence": "样本不足",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 2,
+    "last_year": 2016,
+    "last_n": 2,
+    "cagr": 0.0234,
+    "n_ratio": 1.0
+   }
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "orgs_with_year": 1537,
+   "median_est_year": 2012,
+   "new_share_2020_2024": 0.0982,
+   "fin_events_pre_2018_2020": 233,
+   "fin_events_post_2022_2024": 263,
+   "fin_event_change": 0.1288,
+   "fin_events_total": 1032,
+   "stage": "成长期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 4,
+    "last_year": 2025,
+    "last_n": 6,
+    "cagr": 0.4066,
+    "n_ratio": 1.5
+   }
+  },
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "orgs_with_year": 12755,
+   "median_est_year": 2016,
+   "new_share_2020_2024": 0.2055,
+   "fin_events_pre_2018_2020": 790,
+   "fin_events_post_2022_2024": 400,
+   "fin_event_change": -0.4937,
+   "fin_events_total": 3272,
+   "stage": "衰退期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 14,
+    "last_year": 2025,
+    "last_n": 5,
+    "cagr": 0.4907,
+    "n_ratio": 0.357
+   }
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "orgs_with_year": 4703,
+   "median_est_year": 2015,
+   "new_share_2020_2024": 0.1693,
+   "fin_events_pre_2018_2020": 1188,
+   "fin_events_post_2022_2024": 798,
+   "fin_event_change": -0.3283,
+   "fin_events_total": 5024,
+   "stage": "衰退期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 14,
+    "last_year": 2025,
+    "last_n": 5,
+    "cagr": 0.1035,
+    "n_ratio": 0.357
+   }
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "orgs_with_year": 2474,
+   "median_est_year": 2014,
+   "new_share_2020_2024": 0.1451,
+   "fin_events_pre_2018_2020": 128,
+   "fin_events_post_2022_2024": 111,
+   "fin_event_change": -0.1328,
+   "fin_events_total": 512,
+   "stage": "衰退期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 7,
+    "last_year": 2025,
+    "last_n": 4,
+    "cagr": 0.5402,
+    "n_ratio": 0.571
+   }
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "orgs_with_year": 6221,
+   "median_est_year": 2014,
+   "new_share_2020_2024": 0.1226,
+   "fin_events_pre_2018_2020": 363,
+   "fin_events_post_2022_2024": 267,
+   "fin_event_change": -0.2645,
+   "fin_events_total": 1757,
+   "stage": "衰退期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 10,
+    "last_year": 2025,
+    "last_n": 6,
+    "cagr": 0.2961,
+    "n_ratio": 0.6
+   }
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "orgs_with_year": 5946,
+   "median_est_year": 2014,
+   "new_share_2020_2024": 0.1095,
+   "fin_events_pre_2018_2020": 142,
+   "fin_events_post_2022_2024": 132,
+   "fin_event_change": -0.0704,
+   "fin_events_total": 634,
+   "stage": "成熟期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 5,
+    "last_year": 2025,
+    "last_n": 2,
+    "cagr": 0.2893,
+    "n_ratio": 0.4
+   }
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "orgs_with_year": 3162,
+   "median_est_year": 2014,
+   "new_share_2020_2024": 0.1379,
+   "fin_events_pre_2018_2020": 95,
+   "fin_events_post_2022_2024": 51,
+   "fin_event_change": -0.4632,
+   "fin_events_total": 395,
+   "stage": "衰退期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 2,
+    "last_year": 2025,
+    "last_n": 1,
+    "cagr": 1.61,
+    "n_ratio": 0.5
+   }
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "orgs_with_year": 864,
+   "median_est_year": 2013,
+   "new_share_2020_2024": 0.1528,
+   "fin_events_pre_2018_2020": 74,
+   "fin_events_post_2022_2024": 49,
+   "fin_event_change": -0.3378,
+   "fin_events_total": 316,
+   "stage": "衰退期",
+   "confidence": "样本不足",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 5,
+    "last_year": 2023,
+    "last_n": 1,
+    "cagr": -0.5765,
+    "n_ratio": 0.2
+   }
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "orgs_with_year": 776,
+   "median_est_year": 2014,
+   "new_share_2020_2024": 0.1379,
+   "fin_events_pre_2018_2020": 193,
+   "fin_events_post_2022_2024": 160,
+   "fin_event_change": -0.171,
+   "fin_events_total": 763,
+   "stage": "衰退期",
+   "confidence": "跨窗口各>=50 事件",
+   "l3_revenue_rejected": {
+    "first_year": 2013,
+    "first_n": 5,
+    "last_year": 2025,
+    "last_n": 1,
+    "cagr": -0.5339,
+    "n_ratio": 0.2
+   }
+  }
+ ],
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "chain_stage 结果面不存在，三条候选腿里营收腿被数据证据否决（样本从 198 家塌到 11 家），但融资腿与年龄结构腿成立：25,654 条融资事件中 14,626 条可挂链，12 链各有 175—5,024 条事件，跨窗口样本均 >=50 的有 11 链。阶段标签可由「资本热度方向 + 年龄结构」规则映射得到，不需要外部参数表与结果面，故判部分支持；但热度≠产出，且 8 链落在衰退期的结论主要由 2022—2024 融资退潮驱动，只能作方向性判断。",
+  "criteria": {
+   "result_table_exists": false,
+   "legs_total": 3,
+   "legs_usable": 2,
+   "legs_rejected": 1,
+   "chains_judged": 12,
+   "chains_total": 12,
+   "proxy_used": true
+  }
+ },
+ "base_years_used": [
+  2018,
+  2019,
+  2020,
+  2022,
+  2023,
+  2024
+ ],
+ "base_years_missing": [
+  2021
+ ],
+ "base_years_note": "主判腿用两个三年窗口（2018—2020 与 2022—2024）对比，2021 为疫情异常年，主动留空不入窗口，不是缺年补 0；年龄腿用截至 2024 的成立年份分布。融资事件在 2025—2026 大幅减少（919/618→238），为未完整年度，不入窗口。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/chain21_fin_degree_20261022.json",
+   "table": "gkx.dwd_org_financing_info",
+   "rows": 25654,
+   "role": "链×年融资事件数（L1 主判腿）"
+  },
+  {
+   "path": "code/_snapshots21/chain21_year_20261022.json",
+   "table": "gkx.dwd_org_industry_tags × gkx.dwd_org_base_info",
+   "rows": 35046,
+   "role": "链×成立年份分布（L2 辅判腿）"
+  },
+  {
+   "path": "code/_snapshots21/chain_lm_fin_20261021.json",
+   "table": "gkx.dwd_org_annual_financial_info + gkx.dwd_org_stock_finance_info",
+   "rows": 156,
+   "role": "L3 营收腿（已否决，仅留证）"
+  },
+  {
+   "path": "code/_snapshots21/chain21_layer_20261022.json",
+   "table": "gkx.dwd_org_industry_tags",
+   "rows": 36993,
+   "role": "企业名→链映射"
+  }
+ ]
+}

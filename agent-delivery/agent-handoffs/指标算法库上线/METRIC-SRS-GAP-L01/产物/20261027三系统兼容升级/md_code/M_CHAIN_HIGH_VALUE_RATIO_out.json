@@ -1,0 +1,70 @@
+{
+ "metric_id": "M_CHAIN_HIGH_VALUE_RATIO",
+ "metric_name": "产业链高价值环节占比",
+ "generated_at": "2026-10-22T16:03:44+08:00",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "probes": {
+  "chain_columns": [
+   "pk_id",
+   "industry_code",
+   "industry_name",
+   "industry_link_code",
+   "industry_link_name",
+   "level",
+   "parent_code",
+   "parent_name",
+   "node_company_count",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "is_deleted",
+   "operator_remarks",
+   "insert_remark"
+  ],
+  "chain_rows": 1273,
+  "chain_levels": [
+   {
+    "level": 0,
+    "n": 1273
+   }
+  ],
+  "value_like_columns": [],
+  "value_table_scan": {
+   "%chain%value%": [],
+   "%chain%importance%": [],
+   "%link_value%": [],
+   "%node_value%": [],
+   "%industry_value%": [],
+   "%chain_weight%": []
+  },
+  "value_table_hits": 0,
+  "node_company_count_nonnull": 1273,
+  "node_company_count_positive": 0,
+  "node_company_count_fill": 1.0,
+  "node_company_count_positive_share": 0.0
+ },
+ "notes": [],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：占比是「当前链树内高价值环节数 / 环节总数」，链树无版本列、无有效期列，不构造年度序列。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_industry_chain_info",
+   "role": "链树（唯一的环节定义源）"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.information_schema.columns",
+   "role": "字段名模式扫描"
+  }
+ ],
+ "judgment_reason": "链树 `dwd_industry_chain_info`（1273 行、1 个层级）没有任何价值类字段（value/importance/weight/scale/score 逐个扫，命中 0 个）；全库按 6 类词根扫环节价值表，命中 0 张。唯一沾边的 `node_company_count` 是「节点内企业数」，非 NULL 1273 行（填充率 1.0）但正值只有 0 行——整列恒为 0，是空壳字段，语义既不是价值、也没有值。「高价值」这一维在 gkx 无结构与数据闭环，故判完全不支持。",
+ "conclusion": "否定性证据齐备：价值类字段 0 个、价值表 0 张；唯一替代量 `node_company_count` 填充率 1.0 但正值 0 行（恒 0 空壳）。高价值环节占比无分子可定义。"
+}

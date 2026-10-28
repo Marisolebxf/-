@@ -1,0 +1,324 @@
+{
+ "metric_id": "M_INNOV_DS_01_EVENTS_003",
+ "metric_name": "重要性等级",
+ "date": "2026-10-22",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）/ dwd_event 全表 20 行",
+ "formula": "0.5×关注度 + 0.5×影响力；P70/P30 三档；本件因输入不存在，不执行",
+ "verdict": "完全不支持",
+ "context_news_rows": 108052,
+ "tested_tables": {
+  "dwd_event": {
+   "rows": 20,
+   "method": "COUNT(*)",
+   "sec": 0.1,
+   "slow": false,
+   "estimate": 20
+  },
+  "dwd_merger_acquisition_events_party_info": {
+   "rows": 20000,
+   "method": "COUNT(*)",
+   "sec": 0.1,
+   "slow": false,
+   "estimate": 19779
+  }
+ },
+ "event_probe": {
+  "rows": 20,
+  "columns": [
+   "dwd_id",
+   "id",
+   "event_name",
+   "organizer",
+   "start_date",
+   "end_date",
+   "event_url",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "operator_remarks",
+   "is_deleted",
+   "insert_remark"
+  ],
+  "n_columns": 15,
+  "date_min": "2026-05-13",
+  "date_max": "2026-05-14",
+  "distinct_dates": [
+   "2026-05-13",
+   "2026-05-14"
+  ],
+  "distinct_names": 20,
+  "distinct_organizers": 19,
+  "top_organizers": [
+   [
+    "主办：国药励展",
+    2
+   ],
+   [
+    "主办：国药励展、药渡集团",
+    1
+   ],
+   [
+    "主办：国药励展；承办：药持网",
+    1
+   ],
+   [
+    "主办：国药励展、长济医疗",
+    1
+   ],
+   [
+    "主办单位：国药励展、商帅商学院",
+    1
+   ]
+  ],
+  "url_domains": [
+   [
+    "mm.reed-sinopharm.com",
+    20
+   ]
+  ],
+  "sample": [
+   {
+    "dwd_id": 1,
+    "event_name": "第二届创新药智造未来论坛",
+    "organizer": "主办：国药励展、药渡集团",
+    "start_date": "2026-05-14",
+    "end_date": "2026-05-14",
+    "event_url": "https://mm.reed-sinopharm.com/cn/minisite/index/1325",
+    "table_data_source": "gkx_prod"
+   },
+   {
+    "dwd_id": 2,
+    "event_name": "2026第十九届医药技术转移大会-中医药方向",
+    "organizer": "主办：国药励展；承办：药持网",
+    "start_date": "2026-05-14",
+    "end_date": "2026-05-14",
+    "event_url": "https://mm.reed-sinopharm.com/cn/minisite/index/1323",
+    "table_data_source": "gkx_prod"
+   },
+   {
+    "dwd_id": 3,
+    "event_name": "2026首届居家健康与POCT发展论坛",
+    "organizer": "主办：国药励展、长济医疗",
+    "start_date": "2026-05-14",
+    "end_date": "2026-05-14",
+    "event_url": "https://mm.reed-sinopharm.com/cn/minisite/index/1412",
+    "table_data_source": "gkx_prod"
+   },
+   {
+    "dwd_id": 4,
+    "event_name": "2026第25届企业家大会（定邀）",
+    "organizer": "主办单位：国药励展、商帅商学院",
+    "start_date": "2026-05-14",
+    "end_date": "2026-05-14",
+    "event_url": "https://mm.reed-sinopharm.com/cn/minisite/index/1314",
+    "table_data_source": "gkx_prod"
+   },
+   {
+    "dwd_id": 5,
+    "event_name": "2026医药创新灯塔论坛暨创新药生态大会主论坛",
+    "organizer": "主办：国药励展",
+    "start_date": "2026-05-13",
+    "end_date": "2026-05-13",
+    "event_url": "https://mm.reed-sinopharm.com/cn/minisite/index/1336",
+    "table_data_source": "gkx_prod"
+   }
+  ]
+ },
+ "field_audit": {
+  "required": [
+   {
+    "field": "event_id",
+    "purpose": "事件稳定主键（跨源去重后）",
+    "exists": false,
+    "semantic_substitute": "dwd_id（自增行号，不是业务事件 id）"
+   },
+   {
+    "field": "event_time",
+    "purpose": "事件发生/首发时间，精确到日",
+    "exists": false,
+    "semantic_substitute": "start_date（仅会议开始日）"
+   },
+   {
+    "field": "chain_id",
+    "purpose": "所属产业链（12 条顶层链之一，可多值）",
+    "exists": false,
+    "semantic_substitute": null
+   },
+   {
+    "field": "event_type",
+    "purpose": "事件类型（融资/并购/新品/政策/专利/人事…）",
+    "exists": false,
+    "semantic_substitute": null
+   },
+   {
+    "field": "attention_score",
+    "purpose": "关注度 0—100（报道量、搜索量、互动量合成）",
+    "exists": false,
+    "semantic_substitute": null
+   },
+   {
+    "field": "influence_score",
+    "purpose": "影响力 0—100（媒体层级、覆盖范围、持续时长合成）",
+    "exists": false,
+    "semantic_substitute": null
+   },
+   {
+    "field": "event_status",
+    "purpose": "事件状态（萌芽/发酵/消退），用于实时更新",
+    "exists": false,
+    "semantic_substitute": null
+   },
+   {
+    "field": "updated_at",
+    "purpose": "等级最近重算时间",
+    "exists": false,
+    "semantic_substitute": "updated_time（行更新时间，不是事件状态更新时间）"
+   },
+   {
+    "field": "report_count",
+    "purpose": "报道条数（关注度的最小可核验原子）",
+    "exists": false,
+    "semantic_substitute": null
+   },
+   {
+    "field": "source_list",
+    "purpose": "报道源列表（影响力的最小可核验原子）",
+    "exists": false,
+    "semantic_substitute": "event_url（单条官网链接，不是报道源列表）"
+   }
+  ],
+  "n_required": 10,
+  "n_exists": 0,
+  "n_semantically_usable": 2,
+  "hard_missing": [
+   "chain_id",
+   "event_type",
+   "attention_score",
+   "influence_score",
+   "event_status",
+   "report_count",
+   "source_list"
+  ]
+ },
+ "why_not_proxy": "旧稿用 dwd_policy_base 的 20,000 条政策当事件代理，并用主题/引用/区域字段合成关注度与影响力。政策不是事件：没有发生时间线、没有传播过程、没有事件状态；本批规则明确禁止用新闻/政策串伪事件，故本件不产出任何等级。",
+ "requirements": {
+  "grain": "一行 = 一个去重后的科创事件（跨媒体报道聚类后）",
+  "minimum_rows": 20000,
+  "refresh": "日更；事件状态变化时增量重算",
+  "fields": [
+   {
+    "field": "event_id",
+    "purpose": "事件稳定主键（跨源去重后）"
+   },
+   {
+    "field": "event_time",
+    "purpose": "事件发生/首发时间，精确到日"
+   },
+   {
+    "field": "chain_id",
+    "purpose": "所属产业链（12 条顶层链之一，可多值）"
+   },
+   {
+    "field": "event_type",
+    "purpose": "事件类型（融资/并购/新品/政策/专利/人事…）"
+   },
+   {
+    "field": "attention_score",
+    "purpose": "关注度 0—100（报道量、搜索量、互动量合成）"
+   },
+   {
+    "field": "influence_score",
+    "purpose": "影响力 0—100（媒体层级、覆盖范围、持续时长合成）"
+   },
+   {
+    "field": "event_status",
+    "purpose": "事件状态（萌芽/发酵/消退），用于实时更新"
+   },
+   {
+    "field": "updated_at",
+    "purpose": "等级最近重算时间"
+   },
+   {
+    "field": "report_count",
+    "purpose": "报道条数（关注度的最小可核验原子）"
+   },
+   {
+    "field": "source_list",
+    "purpose": "报道源列表（影响力的最小可核验原子）"
+   }
+  ],
+  "derived": [
+   {
+    "field": "importance_score",
+    "formula": "0.5×attention_score + 0.5×influence_score"
+   },
+   {
+    "field": "importance_level",
+    "formula": "≥P70 高；≤P30 低；其余中（样本<20 用 P70/P40）"
+   }
+  ],
+  "acceptance": [
+   "每个事件至少有 1 条可回溯报道 URL 与 1 个媒体源",
+   "attention/influence 均有 0—100 标度说明与版本号",
+   "同一事件跨源重复报道必须聚为一行，重复率 <5%",
+   "等级分布不得出现单一档位 >60%"
+  ]
+ },
+ "remediation": [
+  {
+   "step": 1,
+   "action": "接入事件流（新闻聚类/招标/融资/专利/政策五源），建 event 主表",
+   "owner": "数据接入",
+   "blocking": true
+  },
+  {
+   "step": 2,
+   "action": "建媒体源层级表（央媒/全国/行业/地方），给 influence 提供权威度",
+   "owner": "数据治理",
+   "blocking": true
+  },
+  {
+   "step": 3,
+   "action": "跑关注度/影响力两件上游，落 0—100 分与版本号",
+   "owner": "算法",
+   "blocking": true
+  },
+  {
+   "step": 4,
+   "action": "按 P70/P30 切档，输出 importance_level 与重算时间",
+   "owner": "算法",
+   "blocking": false
+  }
+ ],
+ "support_judgment": {
+  "data_support_level": "完全不支持",
+  "reason": "dwd_event 只有 20 行、15 列，日期仅 2026-05-13 至 2026-05-14，内容是医药论坛名录，不是科创事件流；10 个必需字段里原样存在的只有 0 个，chain_id/事件类型/关注度/影响力/事件状态/报道量/报道源全部缺失；全库没有事件簇表或事件结果面。没有输入就不能合成等级，用政策或新闻代理会伪造事件语义，故判完全不支持。",
+  "criteria": {
+   "event_table_exists": true,
+   "event_table_is_stream": false,
+   "rows": 20,
+   "required_fields": 10,
+   "fields_present": 0,
+   "upstream_attention_exists": false,
+   "upstream_influence_exists": false,
+   "policy_proxy_used": false
+  }
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "事件表只有 2026-05-13/14 两天，且不是年度序列；本指标没有可用的年度基期。used/missing 为空不是「缺年补 0」，而是事件流本身不存在。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/event21_probe_20261022.json",
+   "table": "gkx.dwd_event",
+   "rows": 20,
+   "role": "事件表全量取证"
+  },
+  {
+   "path": "_work_gkx21/GKX_INVENTORY.json",
+   "role": "280 张表清单，确认无事件簇表"
+  }
+ ]
+}

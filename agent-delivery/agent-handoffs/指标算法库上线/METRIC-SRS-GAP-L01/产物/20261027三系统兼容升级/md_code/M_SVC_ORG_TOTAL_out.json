@@ -1,0 +1,164 @@
+{
+ "metric_id": "M_SVC_ORG_TOTAL",
+ "metric_name": "入库服务机构总数",
+ "generated_at": "2026-10-27T23:31:54+08:00",
+ "support_judgment": "完全转换支持",
+ "judgment_reason": "gkx 无 svc_org_circle，但 dwd_org_org_product_info 有 45,011 行经营范围文本、按 org_id 去重得 44,153 家；与底册 189,116 行回联命中 44,132 家（99.95%）。人口结构+当前数据量均足，现在即可经转换得到唯一键计数",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_org_product_info",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_base_info",
+   "rows": 189116,
+   "snapshot": "code/_snapshots21/base_20261021.json"
+  }
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：总数是「当前在池」的唯一键计数，不含年度分母。成立年分布仅作披露（见 M_SVC_NEW_CNT），不参与本件计数。",
+ "population": {
+  "defined_as": "gkx.dwd_org_org_product_info 中有 main_activities 文本的机构，按 org_id 去重",
+  "product_info_rows": 45011,
+  "distinct_org_id": 44153,
+  "service_text_rows": 41478,
+  "join_base_rows": 44132,
+  "join_base_rate": 0.999524,
+  "not_in_base": 21,
+  "shenzhen": 25597,
+  "outside_shenzhen": 18556,
+  "shenzhen_share": 0.579734
+ },
+ "city_dist": [
+  [
+   "深圳市",
+   25597
+  ],
+  [
+   "广州市",
+   12641
+  ],
+  [
+   "东莞市",
+   4300
+  ],
+  [
+   "惠州市",
+   1594
+  ],
+  [
+   "（空）",
+   21
+  ]
+ ],
+ "prov_dist": [
+  [
+   "广东省",
+   44132
+  ],
+  [
+   "（空）",
+   21
+  ]
+ ],
+ "size_dist": [
+  [
+   "小型",
+   22750
+  ],
+  [
+   "中型",
+   8545
+  ],
+  [
+   "微型",
+   6632
+  ],
+  [
+   "未知",
+   4320
+  ],
+  [
+   "大型",
+   1906
+  ]
+ ],
+ "industry_top": [
+  [
+   "制造业",
+   13129
+  ],
+  [
+   "科学研究和技术服务业",
+   7396
+  ],
+  [
+   "批发和零售业",
+   7036
+  ],
+  [
+   "信息传输、软件和信息技术服务业",
+   6696
+  ],
+  [
+   "租赁和商务服务业",
+   3426
+  ],
+  [
+   "建筑业",
+   1569
+  ],
+  [
+   "房地产业",
+   1457
+  ],
+  [
+   "交通运输、仓储和邮政业",
+   703
+  ],
+  [
+   "金融业",
+   576
+  ],
+  [
+   "居民服务、修理和其他服务业",
+   556
+  ]
+ ],
+ "probe": {
+  "text_len_median": 212,
+  "text_len_p90": 511,
+  "text_len_max": 1504,
+  "base_rows": 189116,
+  "base_distinct_name": 189069,
+  "name_dup_rows": 47,
+  "rows_per_org": 1.019
+ },
+ "audit_chain": {
+  "downstream_population_anchor": 44153,
+  "stage_multiplicity_sum": 60673,
+  "stage_union_orgs": 34578,
+  "note": "同域各件的人口分母一律取 44,153；六环节多命中合计 60,673、环节去重 34,578 是环节维的两个派生量，不是另一个机构池"
+ },
+ "difference_vs_old_draft": {
+  "population": "旧稿 43,296（演示库 svc_org_circle）→ 本件 44,153（gkx 经营范围机构）",
+  "shenzhen": "旧稿 14,033 → 本件 25,597",
+  "reason": "换源后人口由「人工圈定名单」变为「有经营范围文本的 gkx 机构」，池子更大且深圳占比更高；两版分母不可直接比较绝对数"
+ },
+ "gaps": {
+  "curated_list": "gkx 无人工认定的服务机构名录；本件人口是经营范围代理，含制造企业与高校",
+  "exit_side": "无注销/吊销事件流，无法给出净新增"
+ },
+ "compute": {
+  "status": "ok",
+  "elapsed_sec": 0.667,
+  "sql_count": 0
+ }
+}

@@ -1,0 +1,216 @@
+{
+ "metric_id": "M_ENT_TYPE_DIST_TOPIC",
+ "metric_name": "重点企业类型分布",
+ "script": "M_ENT_TYPE_DIST_TOPIC.py",
+ "as_of": "2026-10-23",
+ "source": {
+  "db": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）",
+  "snapshots": [
+   "code/_snapshots21/star_roster_gkx_20261021.json",
+   "code/_snapshots21/tech_tags_20261021.json",
+   "code/_snapshots21/base_20261021.json",
+   "code/_snapshots21/chain_firm_index_20261023.json",
+   "code/_snapshots21/w13e3_probe_20261023.json",
+   "code/M_ENT_KEY_TOTAL_out.json"
+  ]
+ },
+ "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_DIST_TOPIC.md",
+ "support_judgment": "部分支持",
+ "verdict_kind": "proxy_constructed",
+ "four_judgment": {
+  "表结构直接支持（开发库+三方库）": "否：两库均无重点企业类型分布结果表",
+  "表数据直接支持（开发库+三方库）": "否：无结果表",
+  "依赖表结构支持（开发库/三方库）": "部分：gkx 有 tech_tag 与 stock_base；无 foreign tag_code；名单需另建",
+  "依赖表数据支持（开发库/三方库）": "是（高企/科技型中小/上市三类）/否（外资标签、年度、完整产业过滤）：4,561 家名单内三类均可算"
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是单期截面：名单与标签均无 stat_year，环比没有上年格。used/missing 为空，不是把缺年按 0 摊入；同比按空处理。",
+ "result": {
+  "key_list": {
+   "declared": "M_ENT_KEY_TOTAL：专利总量 >= 50 的重点企业",
+   "implemented": "star_roster_gkx_20261021：授权 >= 50 的明星企业 4,561 家",
+   "n": 4561,
+   "grant_min": 50,
+   "grant_sum": 699284,
+   "key_total_ge50_assignees": 6917,
+   "key_total_minus_roster": 2356,
+   "why_substituted": "KEY_TOTAL 的 6,917 是受让人口径（总量 >=50），含高校院所且未全部映射 org_id；名单要按 org_id 与标签/上市主档连接，故用已交付的 4,561 家名单代理。"
+  },
+  "types": [
+   {
+    "tag_code": "high_tech",
+    "name": "高新技术企业",
+    "n": 2804,
+    "share_pct": 61.48,
+    "source": "dwd_org_tech_tag（org_tag 含「高新技术企业」）",
+    "available": true
+   },
+   {
+    "tag_code": "sme",
+    "name": "科技型中小企业",
+    "n": 1663,
+    "share_pct": 36.46,
+    "source": "dwd_org_tech_tag（org_tag 含「科技型中小企业」；calc-logic 的 sme 类）",
+    "available": true
+   },
+   {
+    "tag_code": "listed",
+    "name": "上市企业",
+    "n": 425,
+    "share_pct": 9.32,
+    "source": "dwd_org_stock_base（org_id 命中；含申报稿/终止，非仅正常上市）",
+    "available": true
+   },
+   {
+    "tag_code": "foreign",
+    "name": "外资企业",
+    "n": 0,
+    "share_pct": 0.0,
+    "source": "无 tag_code；仅 org_type 工商登记类型，226 家为文本旁证",
+    "available": false,
+    "text_proxy_n": 226,
+    "text_proxy_share_pct": 4.96
+   }
+  ],
+  "four_type_sum": 5118,
+  "four_type_sum_pct": 112.21,
+  "non_exclusive_note": "四类不是互斥分类：一企可同时是高企、科技型中小、上市、外资；计位和可以超过名单家数。",
+  "overlap": [
+   {
+    "pair": "high_tech ∩ sme",
+    "n": 1636,
+    "pct_of_roster": 35.87
+   },
+   {
+    "pair": "high_tech ∩ listed",
+    "n": 408,
+    "pct_of_roster": 8.95
+   },
+   {
+    "pair": "sme ∩ listed",
+    "n": 68,
+    "pct_of_roster": 1.49
+   },
+   {
+    "pair": "high_tech ∩ sme ∩ listed",
+    "n": 68,
+    "pct_of_roster": 1.49
+   }
+  ],
+  "union_three_available": 2848,
+  "union_three_share_pct": 62.44,
+  "none_three": 1713,
+  "none_three_share_pct": 37.56,
+  "extra_tags_not_in_four": {
+   "专精特新": {
+    "n": 2166,
+    "share_pct": 47.49
+   },
+   "小巨人": {
+    "n": 869,
+    "share_pct": 19.05
+   },
+   "创新型中小企业": {
+    "n": 1685,
+    "share_pct": 36.94
+   },
+   "note": "这三类不在本条四类里；小巨人是专精特新的子集，不能与四类相加。"
+  },
+  "micro_size_probe": {
+   "n": 2030,
+   "share_pct": 44.51,
+   "unknown_size_n": 280,
+   "source": "dwd_org_base_info.org_size ∈ {小型, 微型}",
+   "usable_for_this_metric": false,
+   "why": "calc-logic 明令禁止用 org_size 替代 sme；本条 sme 是「科技型中小企业」标签，与需规原文「小微（注册资本+员工人数）」不是同一个分类。此探针只用于量化口径差异，不参与四类计数。",
+   "base_level_n": 125477,
+   "base_level_share_pct": 66.35
+  },
+  "stat_year_available": false,
+  "yoy_available": false,
+  "yoy_note": "标签表无 stat_year，名单是单期快照；上年同格不存在，环比记空，不按 0 摊入。",
+  "tag_table": {
+   "rows": 202424,
+   "orgs": 32322,
+   "note": "dwd_org_tech_tag 202,424 行 / 32,322 家；标签是多值，非互斥。"
+  },
+  "listed_source": {
+   "stock_base_rows": 1080,
+   "stock_base_orgs": 975,
+   "stock_type_dist": {
+    "深交所A股": 836,
+    "上交所A股": 220,
+    "深交所B股": 24
+   },
+   "listing_status_dist": {
+    "正常上市": 646,
+    "申报稿阶段": 310,
+    "IPO审核未通过公司": 65,
+    "终止上市": 35,
+    "*ST": 15,
+    "ST": 7,
+    "其他": 2
+   },
+   "normal_listed_rows": 646,
+   "note": "975 家是 stock_base 去重主体；其中正常上市 646 行，申报稿 310、终止 35、*ST/ST 22。本件 listed 取 975 家集合与名单的交集 425 家，未再按状态细分。"
+  },
+  "foreign_proxy": {
+   "tag_code_available": false,
+   "gkx_column_hits": {
+    "foreign_investment": {
+     "found": false,
+     "tables": []
+    },
+    "is_foreign": {
+     "found": false,
+     "tables": []
+    }
+   },
+   "org_type_text_n": 226,
+   "org_type_text_share_pct": 4.96,
+   "text_keywords": [
+    "外商投资",
+    "中外合资",
+    "中外合作",
+    "外国"
+   ],
+   "usable_as_tag": false,
+   "why": "org_type 是工商登记企业类型，不是 foreign 标签；可作旁证，不能与 high_tech/sme/listed 同权。"
+  },
+  "industry_filter": {
+   "declared": "选产业经 enterprise_industry_chain",
+   "local_name_match_rows": 21994,
+   "local_name_match_share_pct": 11.6329,
+   "note": "名单内的产业过滤需按 credit_code 连接链归属表；本地快照只能按名对齐 11.63%。"
+  },
+  "roster_city_top": [
+   {
+    "city": "深圳市",
+    "n": 2590,
+    "share_pct": 56.79
+   },
+   {
+    "city": "广州市",
+    "n": 1020,
+    "share_pct": 22.36
+   },
+   {
+    "city": "东莞市",
+    "n": 775,
+    "share_pct": 16.99
+   },
+   {
+    "city": "惠州市",
+    "n": 176,
+    "share_pct": 3.86
+   }
+  ]
+ },
+ "notes": [
+  "名单代理是授权 >=50 的 4,561 家，不是 KEY_TOTAL 的 6,917 个受让人；差异在 §二 写明。",
+  "四类非互斥：计位和 5,118 超过名单 4,561，禁止把四类相加当总数。",
+  "listed 取 stock_base 主体集合（含申报稿/终止），不是「仅正常上市」。",
+  "foreign 只有 org_type 文本旁证 226 家，无 tag_code，故该维判缺。"
+ ]
+}

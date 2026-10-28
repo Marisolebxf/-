@@ -1,0 +1,154 @@
+{
+ "metric_id": "M_CHAIN_BOTTLENECK_COUNT",
+ "metric_name": "产业链瓶颈堵点数",
+ "generated_at": "2026-10-22T16:06:43+08:00",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "probes": {
+  "dimension_scan": {
+   "D1_供需缺口": {
+    "%capacity%": [],
+    "%demand%": [],
+    "%gap%": []
+   },
+   "D2_技术依赖": {
+    "%import%": [
+     "dwd_org_important_news_info"
+    ],
+    "%depend%": [],
+    "%citation%": [
+     "dwd_en_paper_citation",
+     "dwd_zh_paper_citation"
+    ]
+   },
+   "D3_产能利用": {
+    "%utiliz%": [],
+    "%production%": [],
+    "%output_capacity%": []
+   },
+   "D4_交付周期": {
+    "%order%": [],
+    "%delivery%": [],
+    "%lead_time%": []
+   },
+   "D5_替代性": {
+    "%supplier%": [],
+    "%substitut%": [],
+    "%vendor%": []
+   },
+   "兜底_瓶颈": {
+    "%bottleneck%": [],
+    "%chokepoint%": [],
+    "%constraint%": []
+   }
+  },
+  "dimension_verdicts": {
+   "D1_供需缺口": {
+    "all_hits": [],
+    "kept": [],
+    "dropped": {}
+   },
+   "D2_技术依赖": {
+    "all_hits": [
+     "dwd_en_paper_citation",
+     "dwd_org_important_news_info",
+     "dwd_zh_paper_citation"
+    ],
+    "kept": [],
+    "dropped": {
+     "dwd_en_paper_citation": "英文论文引用，非技术依赖",
+     "dwd_org_important_news_info": "企业重要资讯，非进口依赖",
+     "dwd_zh_paper_citation": "中文论文引用，非技术依赖"
+    }
+   },
+   "D3_产能利用": {
+    "all_hits": [],
+    "kept": [],
+    "dropped": {}
+   },
+   "D4_交付周期": {
+    "all_hits": [],
+    "kept": [],
+    "dropped": {}
+   },
+   "D5_替代性": {
+    "all_hits": [],
+    "kept": [],
+    "dropped": {}
+   },
+   "兜底_瓶颈": {
+    "all_hits": [],
+    "kept": [],
+    "dropped": {}
+   }
+  },
+  "dims_with_any_table": 0,
+  "dims_total": 5,
+  "bottleneck_like_tables": {
+   "%bottleneck%": [],
+   "%chokepoint%": [],
+   "%constraint%": []
+  },
+  "chain_nodes": 1273,
+  "node_company_count_positive": 0,
+  "macro_index": {
+   "rows": 20000,
+   "distinct_index_code": 287,
+   "year_range": {
+    "a": 1949,
+    "b": 2026
+   },
+   "dim_cal": [
+    {
+     "dim_cal": "JDZ",
+     "n": 12494
+    },
+    {
+     "dim_cal": "TB",
+     "n": 7506
+    }
+   ],
+   "capacity_like_hits": []
+  },
+  "macro_stat_scan": {
+   "%statistic%": [],
+   "%industrial%": [
+    "dwd_industrial_fund_basic_info",
+    "dwd_industrial_fund_basic_info_bak_20260911",
+    "dwd_industrial_fund_investment_project_info",
+    "dwd_industrial_fund_investment_project_info_bak_20260911",
+    "dwd_industrial_fund_investment_strategy",
+    "dwd_industrial_fund_investment_strategy_bak_20260911",
+    "dwd_industrial_fund_lp_info",
+    "dwd_industrial_fund_lp_info_bak_20260911",
+    "dwd_industrial_fund_management_institution",
+    "dwd_industrial_fund_management_institution_bak_20260911"
+   ],
+   "%industry_stat%": [],
+   "%macro%": [
+    "dwd_macro_index_data"
+   ]
+  }
+ },
+ "notes": [],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：堵点数是「当前存量堵点清单的条数」；五维输入均无年度字段，不构造年度序列。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.information_schema.tables",
+   "role": "五维载体表的词根扫描"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_industry_chain_info",
+   "role": "环节（节点）定义源"
+  }
+ ],
+ "judgment_reason": "五维输入（供需缺口/技术依赖/产能利用/交付周期/替代性）逐维按 3 类词根扫描 gkx 表名，剔除误匹配后**有节点级载体的维度 0/5**；瓶颈本体词根（bottleneck/chokepoint/constraint）命中 0 张。最像的 `dwd_macro_index_data`（20000 行、287 个指数、1949—2026 年）经查 `dim_cal` 只有 JDZ/TB 两值、按 cap/util/产能检索 0 条，不含产能利用率，且为宏观口径、不落环节，不能救 D3。五维均无一维具备「结构 + 数据」闭环，故不存在「至少一维可算」的部分支持下限，判完全不支持。另：链树 1273 个节点里 `node_company_count>0` 的仅 0 个，「空位环节」是结构占位而非堵点，不能顶替本指标（§1.6 边界）。",
+ "conclusion": "否定性证据齐备：五维有表 0/5、瓶颈词根 0 张、宏观/工业统计类表扫描见 `macro_stat_scan`。五维评分无法构造。"
+}

@@ -1,0 +1,918 @@
+{
+ "metric_id": "M_SYNTH_DS_23_GRAPH_ALGO_007",
+ "metric_name": "紧密中心性计算与展示",
+ "generated_at": "2026-10-23",
+ "db": "gkx（三方库 183.240.141.251:3318，只读）；本脚本零 SQL，只读族级共享快照",
+ "data_source": "gkx @ 183.240.141.251:3318（只读账号 gkx_reader_zp）：dwd_zh_paper.author_info_list -> code/_snapshots21/a25_paper_panel.json（100,900 篇中文论文，2026-10-22 落盘）-> 本脚本零 SQL 建图；DB 侧仅核对表存在性与行数",
+ "formula": "C_C(v) = (r_v-1)/(n-1) * (r_v-1)/sum d(v,u)，r_v 为分量内可达节点数（networkx wf_improved）",
+ "reporting_unit": "正文以百分比（x100）报紧密中心性：2.239 表示 2.239%，即 0.02239；在巨型分量内它等于「分量内平均距离」的倒数。",
+ "scope": {
+  "main_point_set": "P2 巨型连通分量（15,223 节点 / 36,965 边）",
+  "main_reason": "closeness 依赖「可达节点数」，跨连通分量不可比；只有 P2 内所有节点两两可达，读数才等价于「到全体的平均距离倒数」",
+  "sensitivity_point_sets": [
+   "P0 全图（含 3,540 个孤立点，恒 0）",
+   "P1 有边子图（16,896 节点 / 646 个分量）",
+   "P3 度>=5 子图",
+   "P4 度>=10 子图"
+  ]
+ },
+ "graph": {
+  "full": {
+   "n_nodes": 20436,
+   "n_edges": 38208,
+   "density": 0.00018298,
+   "avg_degree": 3.7393,
+   "weighted_avg_degree": 9.9188,
+   "isolates": 3540,
+   "max_degree": 194,
+   "components": 4186,
+   "giant_nodes": 15223,
+   "giant_share": 0.7449,
+   "edge_weight_mean": 1.3263,
+   "single_weight_edges": 30328
+  },
+  "giant": {
+   "n_nodes": 15223,
+   "n_edges": 36965,
+   "density": 0.00031904,
+   "avg_degree": 4.8565,
+   "weighted_avg_degree": 12.7977,
+   "isolates": 0,
+   "max_degree": 194,
+   "components": 1,
+   "giant_nodes": 15223,
+   "giant_share": 1.0,
+   "edge_weight_mean": 1.3176,
+   "single_weight_edges": 29710
+  },
+  "point_sets": [
+   {
+    "id": "P0",
+    "name": "全图（含孤立点）",
+    "note": "全底册节点，孤立点度为 0，中心性无定义或恒 0",
+    "n_nodes": 20436,
+    "n_edges": 38208,
+    "coverage_nodes": 1.0,
+    "coverage_edges": 1.0,
+    "n_components": 4186,
+    "largest_component": 15223,
+    "isolates": 3540,
+    "avg_degree": 3.7393,
+    "density": 0.0001829843,
+    "max_degree": 194,
+    "median_degree": 2.0,
+    "component_sizes_top5": [
+     15223,
+     14,
+     13,
+     10,
+     9
+    ]
+   },
+   {
+    "id": "P1",
+    "name": "有边子图（度>=1）",
+    "note": "剔除孤立点后的诱导子图，仍含 4,186 个连通分量",
+    "n_nodes": 16896,
+    "n_edges": 38208,
+    "coverage_nodes": 0.826776,
+    "coverage_edges": 1.0,
+    "n_components": 646,
+    "largest_component": 15223,
+    "isolates": 0,
+    "avg_degree": 4.5227,
+    "density": 0.0002676962,
+    "max_degree": 194,
+    "median_degree": 3.0,
+    "component_sizes_top5": [
+     15223,
+     14,
+     13,
+     10,
+     9
+    ]
+   },
+   {
+    "id": "P2",
+    "name": "巨型连通分量",
+    "note": "主口径：全部中心性与社群划分都在此点集上算",
+    "n_nodes": 15223,
+    "n_edges": 36965,
+    "coverage_nodes": 0.744911,
+    "coverage_edges": 0.967468,
+    "n_components": 1,
+    "largest_component": 15223,
+    "isolates": 0,
+    "avg_degree": 4.8565,
+    "density": 0.0003190426,
+    "max_degree": 194,
+    "median_degree": 3,
+    "component_sizes_top5": [
+     15223
+    ]
+   },
+   {
+    "id": "P3",
+    "name": "P2 内度>=5 诱导子图",
+    "note": "子图敏感性检验：度数门槛截断后排名如何变",
+    "n_nodes": 4469,
+    "n_edges": 17160,
+    "coverage_nodes": 0.218683,
+    "coverage_edges": 0.449121,
+    "n_components": 41,
+    "largest_component": 4424,
+    "isolates": 35,
+    "avg_degree": 7.6796,
+    "density": 0.0017187937,
+    "max_degree": 158,
+    "median_degree": 5,
+    "component_sizes_top5": [
+     4424,
+     2,
+     2,
+     2,
+     2
+    ]
+   },
+   {
+    "id": "P4",
+    "name": "P2 内度>=10 诱导子图",
+    "note": "子图敏感性检验：只留高连接节点",
+    "n_nodes": 1573,
+    "n_edges": 6963,
+    "coverage_nodes": 0.076972,
+    "coverage_edges": 0.182239,
+    "n_components": 13,
+    "largest_component": 1561,
+    "isolates": 12,
+    "avg_degree": 8.8531,
+    "density": 0.0056317728,
+    "max_degree": 95,
+    "median_degree": 7,
+    "component_sizes_top5": [
+     1561,
+     1,
+     1,
+     1,
+     1
+    ]
+   }
+  ],
+  "components": {
+   "n_components_full": 4186,
+   "sizes_top10": [
+    15223,
+    14,
+    13,
+    10,
+    9,
+    9,
+    9,
+    9,
+    7,
+    7
+   ],
+   "size_hist": {
+    "101+": 1,
+    "6-20": 21,
+    "3-5": 180,
+    "2": 444,
+    "1": 3540
+   },
+   "isolates": 3540,
+   "isolate_share": 0.173224,
+   "giant_share_nodes": 0.744911,
+   "giant_share_edges": 0.967468
+  }
+ },
+ "construction": {
+  "papers_used": 100900,
+  "inst_universe": 84320,
+  "edge_pairs_universe": 126849,
+  "min_papers": 2,
+  "nodes_before_threshold": 84320,
+  "edges_kept": 38208,
+  "upto_year": null,
+  "from_year": null,
+  "source": "gkx @ 183.240.141.251:3318（只读账号 gkx_reader_zp）：dwd_zh_paper.author_info_list → code/_snapshots21/a25_paper_panel.json，2026-10-22 落盘；本模块零 SQL"
+ },
+ "point_sets": [
+  {
+   "id": "P0",
+   "name": "全图（含孤立点）",
+   "note": "全底册节点，孤立点度为 0，中心性无定义或恒 0",
+   "n_nodes": 20436,
+   "n_edges": 38208,
+   "coverage_nodes": 1.0,
+   "coverage_edges": 1.0,
+   "n_components": 4186,
+   "largest_component": 15223,
+   "isolates": 3540,
+   "avg_degree": 3.7393,
+   "density": 0.0001829843,
+   "max_degree": 194,
+   "median_degree": 2.0,
+   "component_sizes_top5": [
+    15223,
+    14,
+    13,
+    10,
+    9
+   ]
+  },
+  {
+   "id": "P1",
+   "name": "有边子图（度>=1）",
+   "note": "剔除孤立点后的诱导子图，仍含 4,186 个连通分量",
+   "n_nodes": 16896,
+   "n_edges": 38208,
+   "coverage_nodes": 0.826776,
+   "coverage_edges": 1.0,
+   "n_components": 646,
+   "largest_component": 15223,
+   "isolates": 0,
+   "avg_degree": 4.5227,
+   "density": 0.0002676962,
+   "max_degree": 194,
+   "median_degree": 3.0,
+   "component_sizes_top5": [
+    15223,
+    14,
+    13,
+    10,
+    9
+   ]
+  },
+  {
+   "id": "P2",
+   "name": "巨型连通分量",
+   "note": "主口径：全部中心性与社群划分都在此点集上算",
+   "n_nodes": 15223,
+   "n_edges": 36965,
+   "coverage_nodes": 0.744911,
+   "coverage_edges": 0.967468,
+   "n_components": 1,
+   "largest_component": 15223,
+   "isolates": 0,
+   "avg_degree": 4.8565,
+   "density": 0.0003190426,
+   "max_degree": 194,
+   "median_degree": 3,
+   "component_sizes_top5": [
+    15223
+   ]
+  },
+  {
+   "id": "P3",
+   "name": "P2 内度>=5 诱导子图",
+   "note": "子图敏感性检验：度数门槛截断后排名如何变",
+   "n_nodes": 4469,
+   "n_edges": 17160,
+   "coverage_nodes": 0.218683,
+   "coverage_edges": 0.449121,
+   "n_components": 41,
+   "largest_component": 4424,
+   "isolates": 35,
+   "avg_degree": 7.6796,
+   "density": 0.0017187937,
+   "max_degree": 158,
+   "median_degree": 5,
+   "component_sizes_top5": [
+    4424,
+    2,
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "id": "P4",
+   "name": "P2 内度>=10 诱导子图",
+   "note": "子图敏感性检验：只留高连接节点",
+   "n_nodes": 1573,
+   "n_edges": 6963,
+   "coverage_nodes": 0.076972,
+   "coverage_edges": 0.182239,
+   "n_components": 13,
+   "largest_component": 1561,
+   "isolates": 12,
+   "avg_degree": 8.8531,
+   "density": 0.0056317728,
+   "max_degree": 95,
+   "median_degree": 7,
+   "component_sizes_top5": [
+    1561,
+    1,
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "results": {
+  "n_nodes": 15223,
+  "n_edges": 36965,
+  "centrality_stats_pct": {
+   "P0": {
+    "n": 20436,
+    "n_zero": 3540,
+    "min": 0.0,
+    "p10": 0.0,
+    "p25": 0.017,
+    "median": 12.393,
+    "mean": 9.759,
+    "p75": 13.955,
+    "p90": 15.093,
+    "p99": 16.863,
+    "max": 19.965,
+    "sum": 199439.66,
+    "scale": 100
+   },
+   "P1": {
+    "n": 16896,
+    "n_zero": 0,
+    "min": 0.006,
+    "p10": 7.718,
+    "p25": 13.697,
+    "median": 15.697,
+    "mean": 14.277,
+    "p75": 17.221,
+    "p90": 18.501,
+    "p99": 20.62,
+    "max": 24.148,
+    "sum": 241228.142,
+    "scale": 100
+   },
+   "P2": {
+    "n": 15223,
+    "n_zero": 0,
+    "min": 7.134,
+    "p10": 14.27,
+    "p25": 16.019,
+    "median": 17.747,
+    "mean": 17.587,
+    "p75": 19.319,
+    "p90": 20.652,
+    "p99": 22.946,
+    "max": 26.802,
+    "sum": 267722.172,
+    "scale": 100
+   },
+   "P3": {
+    "n": 4469,
+    "n_zero": 35,
+    "min": 0.0,
+    "p10": 18.745,
+    "p25": 20.507,
+    "median": 22.179,
+    "mean": 21.935,
+    "p75": 23.809,
+    "p90": 25.273,
+    "p99": 28.421,
+    "max": 32.072,
+    "sum": 98026.176,
+    "scale": 100
+   },
+   "P4": {
+    "n": 1573,
+    "n_zero": 12,
+    "min": 0.0,
+    "p10": 21.807,
+    "p25": 23.66,
+    "median": 25.387,
+    "mean": 25.315,
+    "p75": 27.439,
+    "p90": 29.048,
+    "p99": 32.563,
+    "max": 35.361,
+    "sum": 39820.6,
+    "scale": 100
+   }
+  },
+  "top20": [
+   {
+    "rank": 1,
+    "name": "华南理工大学",
+    "type": "高校",
+    "degree": 156,
+    "papers": 334,
+    "value": 26.802,
+    "implied_mean_distance": 3.731
+   },
+   {
+    "rank": 2,
+    "name": "广州地铁设计研究院股份有限公司",
+    "type": "院所",
+    "degree": 131,
+    "papers": 298,
+    "value": 26.533,
+    "implied_mean_distance": 3.769
+   },
+   {
+    "rank": 3,
+    "name": "广东电网有限责任公司电力科学研究院",
+    "type": "院所",
+    "degree": 115,
+    "papers": 196,
+    "value": 26.331,
+    "implied_mean_distance": 3.798
+   },
+   {
+    "rank": 4,
+    "name": "中国能源建设集团广东省电力设计研究院有限公司",
+    "type": "院所",
+    "degree": 130,
+    "papers": 365,
+    "value": 26.173,
+    "implied_mean_distance": 3.821
+   },
+   {
+    "rank": 5,
+    "name": "不详",
+    "type": "其他",
+    "degree": 82,
+    "papers": 75,
+    "value": 25.945,
+    "implied_mean_distance": 3.854
+   },
+   {
+    "rank": 6,
+    "name": "广东工业大学",
+    "type": "高校",
+    "degree": 89,
+    "papers": 269,
+    "value": 25.88,
+    "implied_mean_distance": 3.864
+   },
+   {
+    "rank": 7,
+    "name": "中山大学",
+    "type": "高校",
+    "degree": 78,
+    "papers": 158,
+    "value": 25.708,
+    "implied_mean_distance": 3.89
+   },
+   {
+    "rank": 8,
+    "name": "广州地铁集团有限公司",
+    "type": "企业",
+    "degree": 90,
+    "papers": 214,
+    "value": 25.571,
+    "implied_mean_distance": 3.911
+   },
+   {
+    "rank": 9,
+    "name": "华南理工大学电力学院",
+    "type": "高校",
+    "degree": 103,
+    "papers": 210,
+    "value": 25.446,
+    "implied_mean_distance": 3.93
+   },
+   {
+    "rank": 10,
+    "name": "南方电网科学研究院有限责任公司",
+    "type": "院所",
+    "degree": 125,
+    "papers": 211,
+    "value": 25.37,
+    "implied_mean_distance": 3.942
+   },
+   {
+    "rank": 11,
+    "name": "清华大学",
+    "type": "高校",
+    "degree": 66,
+    "papers": 42,
+    "value": 25.282,
+    "implied_mean_distance": 3.955
+   },
+   {
+    "rank": 12,
+    "name": "清华大学深圳国际研究生院",
+    "type": "高校",
+    "degree": 83,
+    "papers": 133,
+    "value": 25.276,
+    "implied_mean_distance": 3.956
+   },
+   {
+    "rank": 13,
+    "name": "广州大学",
+    "type": "高校",
+    "degree": 62,
+    "papers": 152,
+    "value": 25.26,
+    "implied_mean_distance": 3.959
+   },
+   {
+    "rank": 14,
+    "name": "华南农业大学",
+    "type": "高校",
+    "degree": 78,
+    "papers": 238,
+    "value": 25.177,
+    "implied_mean_distance": 3.972
+   },
+   {
+    "rank": 15,
+    "name": "暨南大学",
+    "type": "高校",
+    "degree": 63,
+    "papers": 155,
+    "value": 25.176,
+    "implied_mean_distance": 3.972
+   },
+   {
+    "rank": 16,
+    "name": "广东电网有限责任公司广州供电局",
+    "type": "企业",
+    "degree": 75,
+    "papers": 188,
+    "value": 25.099,
+    "implied_mean_distance": 3.984
+   },
+   {
+    "rank": 17,
+    "name": "深圳供电局有限公司",
+    "type": "企业",
+    "degree": 101,
+    "papers": 342,
+    "value": 24.918,
+    "implied_mean_distance": 4.013
+   },
+   {
+    "rank": 18,
+    "name": "中国水利水电科学研究院",
+    "type": "院所",
+    "degree": 80,
+    "papers": 47,
+    "value": 24.892,
+    "implied_mean_distance": 4.017
+   },
+   {
+    "rank": 19,
+    "name": "同济大学",
+    "type": "高校",
+    "degree": 42,
+    "papers": 25,
+    "value": 24.854,
+    "implied_mean_distance": 4.023
+   },
+   {
+    "rank": 20,
+    "name": "北京交通大学",
+    "type": "高校",
+    "degree": 31,
+    "papers": 26,
+    "value": 24.848,
+    "implied_mean_distance": 4.024
+   }
+  ],
+  "top1_name": "华南理工大学",
+  "top1_pct": 26.802,
+  "top1_implied_mean_distance": 3.731,
+  "top100_type_mix": {
+   "高校": 63,
+   "院所": 16,
+   "其他": 1,
+   "企业": 20
+  },
+  "type_mix_all": {
+   "高校": 10235,
+   "其他": 925,
+   "企业": 2408,
+   "院所": 1655
+  },
+  "distance_bands_from_closeness": {
+   ">=33.3 跳": {
+    "n": 0,
+    "share_pct": 0.0
+   },
+   "25.0-33.3 跳": {
+    "n": 0,
+    "share_pct": 0.0
+   },
+   "20.0-25.0 跳": {
+    "n": 0,
+    "share_pct": 0.0
+   },
+   "10.0-20.0 跳": {
+    "n": 70,
+    "share_pct": 0.46
+   },
+   "<10.0 跳": {
+    "n": 15153,
+    "share_pct": 99.54
+   }
+  },
+  "mean_pct": 17.587,
+  "mean_implied_distance": 5.686,
+  "median_implied_distance": 5.635,
+  "max_raw": 0.26802,
+  "mean_raw": 0.17587,
+  "median_raw": 0.17747,
+  "min_raw": 0.07134,
+  "min_implied_distance": 14.017,
+  "max_implied_distance": 3.731,
+  "spearman_vs_degree": 0.607677,
+  "spearman_vs_betweenness": 0.496407,
+  "spearman_vs_pagerank": 0.386608,
+  "top100_overlap_vs_degree": {
+   "top100_intersection": 60,
+   "jaccard": 0.4286
+  },
+  "top100_overlap_vs_betweenness": {
+   "top100_intersection": 62,
+   "jaccard": 0.4493
+  },
+  "peer_cross_check": {
+   "006_degree_subgraph_spearman": {
+    "P3": 0.818892,
+    "P4": 0.744959,
+    "note": "同族 006 的度中心性在同样两个子图上的秩相关，用于说明「closeness 对截断更稳健」"
+   },
+   "006_degree_top100": {
+    "P3": {
+     "top100_intersection": 87,
+     "jaccard": 0.7699
+    },
+    "P4": {
+     "top100_intersection": 82,
+     "jaccard": 0.6949
+    }
+   }
+  },
+  "subgraph_sensitivity": {
+   "P3": {
+    "coverage_nodes_pct": 21.87,
+    "n_nodes": 4469,
+    "spearman_vs_P2": 0.996947,
+    "top100": {
+     "top100_intersection": 98,
+     "jaccard": 0.9608
+    },
+    "max_pct": 32.072,
+    "median_pct": 22.179
+   },
+   "P4": {
+    "coverage_nodes_pct": 7.7,
+    "n_nodes": 1573,
+    "spearman_vs_P2": 0.986691,
+    "top100": {
+     "top100_intersection": 92,
+     "jaccard": 0.8519
+    },
+    "max_pct": 35.361,
+    "median_pct": 25.387
+   }
+  },
+  "isolates_full": 3540,
+  "isolate_share_pct": 17.32,
+  "giant_share_nodes_pct": 74.49,
+  "n_zero_closeness_giant": 0,
+  "p0_zero_share_pct": 17.32,
+  "derived_numbers": {
+   "p0_denom_n_minus_1": 20435,
+   "p1_denom_n_minus_1": 16895,
+   "p2_denom_n_minus_1": 15222,
+   "sub_p3_denom_n_minus_1": 4468,
+   "sub_p4_denom_n_minus_1": 1572,
+   "community_modularity_012": 0.755103
+  }
+ },
+ "display_spec": {
+  "entry": "图谱页节点属性面板 / 机构榜单",
+  "sort": "按紧密中心性降序，同分按机构名升序",
+  "fields": [
+   "rank",
+   "name",
+   "type",
+   "degree",
+   "papers",
+   "value(%)",
+   "implied_mean_distance"
+  ],
+  "pagination_hint": "top20 可直接展示；全量 15,223 行见快照 nodes 数组。展示时必须标注「在巨型分量 15,223 个机构内计算」"
+ },
+ "support_judgment": "完全转换支持",
+ "support_reason": "两库均无紧密中心性结果面（gkx 侧 enterprise_centrality 不存在，见附录 B），但所需结构只有一张边表：dwd_zh_paper.author_info_list 重建的机构合著图。在巨型分量 15,223 节点 / 36,965 边上做 15,223 次全源 BFS，精确算得每个节点的 closeness（非抽样、非近似），最大值 华南理工大学 的 26.802%，反推分量内平均距离 3.731 跳。数据量足够、结构足够，现在就能算，故判完全转换支持。",
+ "caveats": [
+  "closeness 只在连通分量内有意义；P0 含 4,186 个分量、P1 含 646 个，读数不可跨分量比较。",
+  "本指标衡量「到全体的平均距离」，不衡量「认识谁」；一个边缘高校的 closeness 可能高于知名企业。",
+  "节点是论文原始机构串，未做上下级归并，院系级碎片会拉低母体机构的 closeness。",
+  "边只有论文共著，不含业务合作边；「近」是共著意义上的近。",
+  "巨型分量占全图 74.49% 节点、96.75% 边，剩余 25.51% 的节点不在本口径内。"
+ ],
+ "paper_year_dist": {
+  "n_papers": 100900,
+  "year_min": 1980,
+  "year_max": 2026,
+  "n_years": 47,
+  "dist": {
+   "1980": 4,
+   "1981": 5,
+   "1982": 9,
+   "1983": 9,
+   "1984": 13,
+   "1985": 20,
+   "1986": 13,
+   "1987": 15,
+   "1988": 14,
+   "1989": 8,
+   "1990": 7,
+   "1991": 8,
+   "1992": 2,
+   "1993": 2,
+   "1994": 5,
+   "1995": 4,
+   "1996": 10,
+   "1997": 8,
+   "1998": 9,
+   "1999": 14,
+   "2000": 21,
+   "2001": 46,
+   "2002": 30,
+   "2003": 48,
+   "2004": 88,
+   "2005": 82,
+   "2006": 106,
+   "2007": 230,
+   "2008": 374,
+   "2009": 441,
+   "2010": 512,
+   "2011": 539,
+   "2012": 633,
+   "2013": 717,
+   "2014": 1926,
+   "2015": 3082,
+   "2016": 4710,
+   "2017": 6903,
+   "2018": 6067,
+   "2019": 6174,
+   "2020": 6336,
+   "2021": 6758,
+   "2022": 6331,
+   "2023": 6651,
+   "2024": 32379,
+   "2025": 6548,
+   "2026": 2989
+  },
+  "share_2021_2024": 0.516541,
+  "note": "建图层 _collab_graph21.build() 未按年过滤（from_year/upto_year 默认 None），图中论文年份覆盖 1980—2026；本族是截面图，不做年度除法"
+ },
+ "sources": [
+  {
+   "file": "code/_snapshots21/graph_algo_23_20261023.json",
+   "content": "族级共享快照：图规模 / 度分布 / 连通分量 / 四个中心性 / 社群划分 / 零模型，P2 节点级中间件 15223 行",
+   "source": "gkx @ 183.240.141.251:3318（只读账号 gkx_reader_zp）：dwd_zh_paper.author_info_list -> code/_snapshots21/a25_paper_panel.json（100,900 篇中文论文，2026-10-22 落盘）-> 本脚本零 SQL 建图；DB 侧仅核对表存在性与行数"
+  },
+  {
+   "file": "code/_build_graph_algo_23.py",
+   "content": "快照构建器（零 SQL 建图；DB 仅核对表存在性）",
+   "source": "本目录脚本"
+  },
+  {
+   "file": "code/_collab_graph21.py",
+   "content": "族基线建图层（build + giant；本族 001/002/011 同源）",
+   "source": "本目录脚本"
+  },
+  {
+   "file": "code/_snapshots21/a25_paper_panel.json",
+   "content": "100,900 篇中文论文（含 author_info_list）",
+   "source": "gkx @ 183.240.141.251:3318 / dwd_zh_paper"
+  },
+  {
+   "file": "code/_snapshots21/edge_sources_23_20261023.json",
+   "content": "族级边源探针产物：10 张候选边源表的实测行数 + 中文引用网闭合率",
+   "source": "gkx @ 183.240.141.251:3318 / information_schema + COUNT(*)"
+  },
+  {
+   "file": "code/_probe_edge_sources_23.py",
+   "content": "边源探针脚本（只读，生成上一行的 JSON）",
+   "source": "本目录脚本"
+  }
+ ],
+ "edge_sources": {
+  "probe": "code/_probe_edge_sources_23.py",
+  "generated_at": "2026-10-23 03:44",
+  "source": "gkx @ 183.240.141.251:3318（只读，information_schema + COUNT(*)）",
+  "purpose": "本族五件共用：证明「边只有论文共著可重建」这一判断的边界，并逐表给出替代边源的实测规模",
+  "tables": {
+   "dwd_zh_paper": {
+    "exists": true,
+    "rows": 100900
+   },
+   "dwd_scholar": {
+    "exists": true,
+    "rows": 21316
+   },
+   "dwd_scholar_coauthor": {
+    "exists": true,
+    "rows": 1187606
+   },
+   "dwd_scholar_paper_relation": {
+    "exists": true,
+    "rows": 1065385
+   },
+   "dwd_org_subsidiary_info": {
+    "exists": true,
+    "rows": 178900
+   },
+   "dwd_org_invest_info": {
+    "exists": true,
+    "rows": 46967
+   },
+   "dwd_zh_paper_citation": {
+    "exists": true,
+    "rows": 20031
+   },
+   "dwd_en_paper_citation": {
+    "exists": true,
+    "rows": 1352
+   },
+   "dwd_en_paper_cited_by_info": {
+    "exists": true,
+    "rows": 77144
+   },
+   "dwd_zh_paper_reference": {
+    "exists": true,
+    "rows": 20045
+   }
+  },
+  "absent_tables": [
+   "enterprise_centrality",
+   "enterprise_cooperation",
+   "enterprise_supply_chain",
+   "graph_node",
+   "graph_edge",
+   "graph_membership",
+   "dwd_zh_paper_author"
+  ],
+  "present_tables": [],
+  "citation_closure_zh": {
+   "rows": 20031,
+   "paper_ids": 100900,
+   "cited_ids_total": 144020,
+   "cited_ids_internal": 0,
+   "closure_pct": 0.0,
+   "note": "闭合率 = 引用串里能对上本库 dwd_zh_paper.id 的比例。低闭合率意味着引用网是「本库论文 -> 外部论文」的单向表，在有向图上跑 PageRank 会得到一张大面积悬挂节点的图"
+  },
+  "scholar_level_note": "dwd_scholar_coauthor 实测 1,187,606 行（scholar_id ↔ co_scholar_id，含 co_scholar_org_name_zh / co_paper_count），是一张现成的**学者级**共著边表。本族不用它，口径理由是：001/002/011 三件的基线是**机构级**共著图（节点 = 论文 author_info_list 的机构串），五件必须同图才可交叉验证。换学者级会改节点定义与全部读数，属另建口径，不在本批。",
+  "processlist_total": 17,
+  "processlist_long_running": 3
+ },
+ "base_years_used": [
+  1980,
+  1981,
+  1982,
+  1983,
+  1984,
+  1985,
+  1986,
+  1987,
+  1988,
+  1989,
+  1990,
+  1991,
+  1992,
+  1993,
+  1994,
+  1995,
+  1996,
+  1997,
+  1998,
+  1999,
+  2000,
+  2001,
+  2002,
+  2003,
+  2004,
+  2005,
+  2006,
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "截面图口径：不按年切分、不做年度除法。建图层 `_collab_graph21.build()` 的 from_year/upto_year 默认 None，**未按年过滤**，图中 100900 篇论文覆盖 1980—2026 共 47 个年份（逐年篇数见本件 `paper_year_dist`），其中 2021—2024 占 51.65%。已归档的 M_SYNTH_DS_23_GRAPH_ALGO_011 把 `base_years_used` 写成 [2021,2022,2023,2024]，与建图代码行为不符；本批按实际年份声明，并在 §二 披露该口径差（图本身与 011 一致：20,436 节点 / 38,208 边）。"
+}

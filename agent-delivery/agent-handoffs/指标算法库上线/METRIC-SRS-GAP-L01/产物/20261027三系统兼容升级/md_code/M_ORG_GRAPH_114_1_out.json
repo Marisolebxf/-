@@ -1,0 +1,701 @@
+{
+ "metric_id": "M_ORG_GRAPH_114_1",
+ "metric_name": "科研机构实体识别构建",
+ "domain": "GRAPH / 产业全要素图谱（序号 114）",
+ "formula_owner": "AI-20261022（推测定义，wanghui=false）",
+ "support_judgment": "部分支持",
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "实体主表是 2026-10 快照（截面）；论文属性取自 100,900 篇（1980—2026），专利属性为存量（库内 2021—2026，2017—2020 零行，不按 0 摊入）；2026 为残年，只用于「当前属性」不做趋势。",
+ "inputs": {
+  "entity_master": "gkx.dwd_research_institute_base_info 2,074 行（27 列）",
+  "text_corpus": "a25_paper_panel.json 100,900 篇署名机构串（435,937 条实例）",
+  "attributes": "org_family_panel_20261021.json（论文/专利/项目/学者/政策/转让）",
+  "foreign_registries": "gkx.dwd_forg_research_org_info / dwd_forg_university_org_info",
+  "change_log": "gkx.dwd_org_changerecord_info 3,245,250 行（对底册零命中）"
+ },
+ "entity_master": {
+  "rows": 2074,
+  "distinct_names": 2070,
+  "duplicate_names": {
+   "广州市从化区规划编制研究中心": 2,
+   "国家药品监督管理局南方医药经济研究所": 2,
+   "广州市从化区经济社会发展研究中心": 2,
+   "深圳市深圳医学科学院教育基金会": 2
+  },
+  "duplicate_name_rows": 8,
+  "distinct_org_id": 2074,
+  "distinct_external_id": 2074,
+  "id_prefix_dist": {
+   "52": {
+    "n": 1480,
+    "map": "民办非企业单位（民政）"
+   },
+   "12": {
+    "n": 578,
+    "map": "事业单位（机构编制）",
+    "note": "org_type 为空的 3 家全部落在 12 前缀，可直接补为事业单位，补全后类型覆盖 2,074/2,074"
+   },
+   "34": {
+    "n": 5,
+    "map": "司法鉴定机构（司法行政）"
+   },
+   "53": {
+    "n": 5,
+    "map": "基金会（民政）"
+   },
+   "51": {
+    "n": 4,
+    "map": "社会团体（民政）"
+   },
+   "11": {
+    "n": 1,
+    "map": "机关"
+   },
+   "19": {
+    "n": 1,
+    "map": "编办管理其他机构"
+   }
+  },
+  "id_note": "external_id 是登记管理码：12=事业单位、52=民办非企业、51=社会团体、53=基金会、34=司法鉴定；前缀与 org_type 100% 一致，可作类型校验规则。",
+  "city_dist": {
+   "深圳市": 1014,
+   "广州市": 822,
+   "东莞市": 127,
+   "惠州市": 111
+  },
+  "type_dist": {
+   "民办非企业单位": 1480,
+   "事业单位": 575,
+   "司法鉴定机构": 5,
+   "基金会": 5,
+   "社会团体": 4,
+   "": 3,
+   "编办管理其他机构": 1,
+   "机关": 1
+  }
+ },
+ "field_fill": {
+  "counts": {
+   "名称 name_cn": 2074,
+   "类型 org_type": 2071,
+   "类型（按 external_id 前缀补全后）": 2074,
+   "登记状态 reg_status": 2074,
+   "省份/城市/区县": 2074,
+   "成立日期 incorporation_date": 1996,
+   "注册资本 registered_capital": 2044,
+   "地址 address": 2074,
+   "经纬度 addr_lng": 2056,
+   "英文名 name_en": 2074,
+   "登记机关 registration_org": 2074,
+   "法定代表人 lerep": 2074,
+   "统一社会信用代码 external_id": 2074
+  },
+  "pct": {
+   "名称 name_cn": 1.0,
+   "类型 org_type": 0.9986,
+   "类型（按 external_id 前缀补全后）": 1.0,
+   "登记状态 reg_status": 1.0,
+   "省份/城市/区县": 1.0,
+   "成立日期 incorporation_date": 0.9624,
+   "注册资本 registered_capital": 0.9855,
+   "地址 address": 1.0,
+   "经纬度 addr_lng": 0.9913,
+   "英文名 name_en": 1.0,
+   "登记机关 registration_org": 1.0,
+   "法定代表人 lerep": 1.0,
+   "统一社会信用代码 external_id": 1.0
+  },
+  "note": "地址/英文名/类型/登记状态/省份/城市/区县为 100%；经纬度 99.13%、注册资本 98.55%、成立日期 96.24%（78 家无成立日）。"
+ },
+ "recognition": {
+  "papers": 100900,
+  "affiliation_instances": 435937,
+  "distinct_affiliations": 84320,
+  "dictionary_aliases": 2241,
+  "prefix_buckets": 1015,
+  "alias_collisions": 0,
+  "alias_collision_examples": {},
+  "matched_strings": 1566,
+  "matched_instances": 9671,
+  "matched_orgs": 235,
+  "org_like_strings": 61595,
+  "org_like_instances": 353993,
+  "org_like_matched_strings": 1463,
+  "string_recall_on_org_like": 0.0238,
+  "instance_recall_on_org_like": 0.0263,
+  "overall_string_hit_rate": 0.0186,
+  "overall_instance_hit_rate": 0.0222,
+  "precision_samples": [
+   {
+    "affiliation": "广州中医药大学第一附属医院",
+    "count": 1552,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "广州中医药大学",
+    "count": 618,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "广州中医药大学第一临床医学院",
+    "count": 477,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "广州中医药大学第四临床医学院",
+    "count": 240,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "广州中医药大学中药学院",
+    "count": 136,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "广州中医药大学针灸康复临床医学院",
+    "count": 106,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "中国科学院深圳先进技术研究院",
+    "count": 99,
+    "matched": "中国科学院深圳先进技术研究院"
+   },
+   {
+    "affiliation": "哈尔滨工业大学(深圳)土木与环境工程学院",
+    "count": 93,
+    "matched": "哈尔滨工业大学（深圳）（哈尔滨工业大学深圳科技创新研究院）"
+   },
+   {
+    "affiliation": "广州中医药大学第二临床医学院",
+    "count": 92,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "广东省中医院",
+    "count": 90,
+    "matched": "广东省中医院（广州中医药大学第二附属医院、广州中医药大学第二临床医学院、广东省中医药科学院）"
+   },
+   {
+    "affiliation": "中国林业科学研究院热带林业研究所",
+    "count": 67,
+    "matched": "中国林业科学研究院热带林业研究所"
+   },
+   {
+    "affiliation": "广州海关技术中心",
+    "count": 60,
+    "matched": "广州海关技术中心"
+   },
+   {
+    "affiliation": "中国科学院广州能源研究所",
+    "count": 57,
+    "matched": "中国科学院广州能源研究所"
+   },
+   {
+    "affiliation": "广州中医药大学第二附属医院",
+    "count": 54,
+    "matched": "广州中医药大学（广州中医药研究院）"
+   },
+   {
+    "affiliation": "中山大学肿瘤防治中心",
+    "count": 51,
+    "matched": "中山大学肿瘤防治中心（中山大学附属肿瘤医院、中山大学肿瘤研究所）"
+   }
+  ],
+  "narrow_scope": {
+   "rule": "字符串含 研究院/研究所/研究中心/实验室，且不含 大学/学院/医院/公司/集团",
+   "strings": 3604,
+   "instances": 14503,
+   "matched_strings": 252,
+   "matched_instances": 1234,
+   "string_recall": 0.0699,
+   "instance_recall": 0.0851,
+   "top_misses": [
+    {
+     "affiliation": "中国食品药品检定研究院",
+     "count": 446
+    },
+    {
+     "affiliation": "中国石油勘探开发研究院",
+     "count": 156
+    },
+    {
+     "affiliation": "中国城市规划设计研究院深圳分院",
+     "count": 82
+    },
+    {
+     "affiliation": "中国水利水电科学研究院",
+     "count": 77
+    },
+    {
+     "affiliation": "南方电网科学研究院",
+     "count": 67
+    },
+    {
+     "affiliation": "中国工程物理研究院流体物理研究所",
+     "count": 59
+    },
+    {
+     "affiliation": "中国林业科学研究院林业科技信息研究所",
+     "count": 57
+    },
+    {
+     "affiliation": "核工业西南物理研究院",
+     "count": 56
+    },
+    {
+     "affiliation": "中国地震局地球物理研究所",
+     "count": 55
+    },
+    {
+     "affiliation": "中国核动力研究设计院核反应堆系统设计技术重点实验室",
+     "count": 54
+    },
+    {
+     "affiliation": "中国工程物理研究院激光聚变研究中心",
+     "count": 54
+    },
+    {
+     "affiliation": "中国环境科学研究院,环境基准与风险评估国家重点实验室",
+     "count": 53
+    },
+    {
+     "affiliation": "河南省疾病预防控制中心性病艾滋病防治研究所",
+     "count": 51
+    },
+    {
+     "affiliation": "国家粮食和物资储备局科学研究院",
+     "count": 51
+    },
+    {
+     "affiliation": "中国计量科学研究院",
+     "count": 49
+    }
+   ],
+   "note": "漏配样本清一色是省外国家级院所（中国食品药品检定研究院 446 次、中国石油勘探开发研究院 156 次…），属底册只收广东的收录边界，不是匹配规则失效。"
+  },
+  "candidate_new_entities": [
+   {
+    "affiliation": "中山大学附属第一医院",
+    "count": 739
+   },
+   {
+    "affiliation": "深圳市中医院",
+    "count": 668
+   },
+   {
+    "affiliation": "华南理工大学电力学院",
+    "count": 635
+   },
+   {
+    "affiliation": "中山大学孙逸仙纪念医院",
+    "count": 596
+   },
+   {
+    "affiliation": "南方医科大学南方医院",
+    "count": 595
+   },
+   {
+    "affiliation": "郑州大学第一附属医院磁共振科",
+    "count": 585
+   },
+   {
+    "affiliation": "广东工业大学",
+    "count": 563
+   },
+   {
+    "affiliation": "华南理工大学",
+    "count": 538
+   },
+   {
+    "affiliation": "北京中医药大学",
+    "count": 521
+   },
+   {
+    "affiliation": "华南农业大学",
+    "count": 520
+   },
+   {
+    "affiliation": "广州医科大学附属第二医院",
+    "count": 453
+   },
+   {
+    "affiliation": "中国食品药品检定研究院",
+    "count": 446
+   },
+   {
+    "affiliation": "中南大学土木工程学院",
+    "count": 398
+   },
+   {
+    "affiliation": "上海交通大学机械与动力工程学院",
+    "count": 396
+   },
+   {
+    "affiliation": "广州工商学院",
+    "count": 385
+   },
+   {
+    "affiliation": "东北大学资源与土木工程学院",
+    "count": 371
+   },
+   {
+    "affiliation": "仲恺农业工程学院",
+    "count": 367
+   },
+   {
+    "affiliation": "广东药科大学",
+    "count": 346
+   },
+   {
+    "affiliation": "中国中医科学院广安门医院",
+    "count": 346
+   },
+   {
+    "affiliation": "新能源电力系统国家重点实验室(华北电力大学)",
+    "count": 330
+   },
+   {
+    "affiliation": "扬州大学动物科学与技术学院",
+    "count": 329
+   },
+   {
+    "affiliation": "长安大学公路学院",
+    "count": 323
+   },
+   {
+    "affiliation": "南方医科大学珠江医院",
+    "count": 323
+   },
+   {
+    "affiliation": "西南交通大学电气工程学院",
+    "count": 322
+   },
+   {
+    "affiliation": "浙江大学电气工程学院",
+    "count": 314
+   },
+   {
+    "affiliation": "广东科技学院",
+    "count": 310
+   },
+   {
+    "affiliation": "南京航空航天大学自动化学院",
+    "count": 305
+   },
+   {
+    "affiliation": "中国农业科学院北京畜牧兽医研究所",
+    "count": 300
+   },
+   {
+    "affiliation": "广东食品药品职业学院",
+    "count": 295
+   },
+   {
+    "affiliation": "清华大学深圳国际研究生院",
+    "count": 293
+   }
+  ],
+  "candidate_note": "候选新实体 = 规则判为机构串、但词典未命中；多为省外高校/医院与企业研究院，不在「广东省科研机构底册」的收录范围内，不等于识别失败。"
+ },
+ "attribute_extraction": {
+  "counts": {
+   "论文产出量 papers": 236,
+   "专利数量 patents": 219,
+   "专利 IPC 小类": 194,
+   "科研项目 projects": 53,
+   "学者 scholars": 29,
+   "政策提及 policy": 72,
+   "专利受让 transfer_in": 10,
+   "人员规模 employees": 0,
+   "地址 address": 2074,
+   "经纬度 lng": 2056,
+   "注册资本 capital": 2044,
+   "成立日期 incorporation": 1996
+  },
+  "pct": {
+   "论文产出量 papers": 0.1138,
+   "专利数量 patents": 0.1056,
+   "专利 IPC 小类": 0.0935,
+   "科研项目 projects": 0.0256,
+   "学者 scholars": 0.014,
+   "政策提及 policy": 0.0347,
+   "专利受让 transfer_in": 0.0048,
+   "人员规模 employees": 0.0,
+   "地址 address": 1.0,
+   "经纬度 lng": 0.9913,
+   "注册资本 capital": 0.9855,
+   "成立日期 incorporation": 0.9624
+  },
+  "personnel_note": "人员规模无字段：dwd_research_institute_base_info 无 employees/org_size 列；dwd_org_base_info.org_size 只覆盖企业库，与本底册 external_id 零交集。"
+ },
+ "maintenance": {
+  "change_records_matched": 0,
+  "reason": "dwd_org_changerecord_info（3,245,250 行）按 org_id 与 external_id 连接底册均 0 行；该表是工商变更库，事业单位/民办非企业不在其中。",
+  "etl_timestamp_only": "底册 updated_time 只能判断入湖批次，不能判断实体内容变更时点。",
+  "recommendation": "建「机构实体变更日志」（org_id, field, old, new, changed_at, source），否则需求里的「实体维护更新」无法审计。"
+ },
+ "foreign_registries": {
+  "tables": {
+   "research": {
+    "rows": 20000,
+    "countries": 186
+   },
+   "university": {
+    "rows": 20000,
+    "countries": 219
+   }
+  },
+  "country_top": [
+   {
+    "src": "university",
+    "country": "United States",
+    "n": 3636
+   },
+   {
+    "src": "research",
+    "country": "United States",
+    "n": 2976
+   },
+   {
+    "src": "research",
+    "country": "China",
+    "n": 1843
+   },
+   {
+    "src": "research",
+    "country": "France",
+    "n": 1808
+   },
+   {
+    "src": "university",
+    "country": "India",
+    "n": 1510
+   },
+   {
+    "src": "university",
+    "country": "Japan",
+    "n": 1259
+   },
+   {
+    "src": "research",
+    "country": "Russia",
+    "n": 1226
+   },
+   {
+    "src": "research",
+    "country": "Germany",
+    "n": 1147
+   },
+   {
+    "src": "research",
+    "country": "India",
+    "n": 1014
+   },
+   {
+    "src": "university",
+    "country": "China",
+    "n": 971
+   },
+   {
+    "src": "research",
+    "country": "Japan",
+    "n": 897
+   },
+   {
+    "src": "university",
+    "country": "Indonesia",
+    "n": 768
+   },
+   {
+    "src": "university",
+    "country": "Russia",
+    "n": 699
+   },
+   {
+    "src": "university",
+    "country": "Mexico",
+    "n": 522
+   },
+   {
+    "src": "university",
+    "country": "Germany",
+    "n": 496
+   },
+   {
+    "src": "research",
+    "country": "United Kingdom",
+    "n": 489
+   },
+   {
+    "src": "research",
+    "country": "Portugal",
+    "n": 487
+   },
+   {
+    "src": "research",
+    "country": "Spain",
+    "n": 484
+   },
+   {
+    "src": "research",
+    "country": "Canada",
+    "n": 478
+   },
+   {
+    "src": "university",
+    "country": "France",
+    "n": 463
+   }
+  ],
+  "caveat": "两表各 20,000 行，正好是取数上限，按国家分布看是抽样而非全量名录；只能作别名词典的补充，不能宣称「全球机构全覆盖」。"
+ },
+ "limits": [
+  "人员规模无字段，4 项要求属性里缺 1 项。",
+  "论文/专利属性覆盖 11.33% / 10.56%，项目 2.56%、学者 1.40%，属性提取集中在大所大校。",
+  "词典对「科研型机构串」的召回见 recognition 段；漏配主要是省外机构与企业研究院，属底册收录边界，不是匹配算法失效。",
+  "无实体变更日志，维护更新机制不可审计。",
+  "无实体消歧（同名不同实体、同一实体多写法）的人工标注集，无法给准确率/召回率的置信区间。"
+ ],
+ "probes": {
+  "inst_fill": {
+   "ok": true,
+   "sec": 0.93,
+   "cols": [
+    "n",
+    "ext",
+    "ext_d",
+    "name_d",
+    "addr",
+    "lng",
+    "cap",
+    "en",
+    "inc",
+    "typ",
+    "st",
+    "area",
+    "regorg",
+    "lerep"
+   ],
+   "rows": [
+    [
+     2074,
+     2074,
+     2074,
+     2070,
+     2074,
+     2056,
+     2044,
+     2074,
+     1996,
+     2074,
+     2074,
+     2074,
+     2074,
+     2074
+    ]
+   ],
+   "sql": "SELECT COUNT(*) AS n, COUNT(external_id) AS ext, COUNT(DISTINCT external_id) AS ext_d, COUNT(DISTINCT name_cn) AS name_d, COUNT(address) AS addr, COUNT(addr_lng) AS lng, COUNT(registered_capital_value) AS cap, COUNT(name_en) AS en, COUNT(incorporation_date) AS inc, COUNT(org_type) AS typ, COUNT(reg_status) AS st, COUNT(area) AS area, COUNT(registration_org) AS regorg, COUNT(lerep) AS lerep FROM gkx.dwd_research_institute_base_info"
+  },
+  "inst_id_prefix": {
+   "ok": true,
+   "sec": 0.94,
+   "cols": [
+    "p",
+    "n"
+   ],
+   "rows": [
+    [
+     "52",
+     1480
+    ],
+    [
+     "12",
+     578
+    ],
+    [
+     "34",
+     5
+    ],
+    [
+     "53",
+     5
+    ],
+    [
+     "51",
+     4
+    ],
+    [
+     "11",
+     1
+    ],
+    [
+     "19",
+     1
+    ]
+   ],
+   "sql": "SELECT LEFT(external_id, 2) AS p, COUNT(*) AS n FROM gkx.dwd_research_institute_base_info GROUP BY p ORDER BY n DESC"
+  },
+  "inst_dup_names": {
+   "ok": true,
+   "sec": 0.34,
+   "cols": [
+    "name_cn",
+    "n"
+   ],
+   "rows": [
+    [
+     "国家药品监督管理局南方医药经济研究所",
+     2
+    ],
+    [
+     "广州市从化区经济社会发展研究中心",
+     2
+    ],
+    [
+     "广州市从化区规划编制研究中心",
+     2
+    ],
+    [
+     "深圳市深圳医学科学院教育基金会",
+     2
+    ]
+   ],
+   "sql": "SELECT name_cn, COUNT(*) AS n FROM gkx.dwd_research_institute_base_info GROUP BY name_cn HAVING COUNT(*) > 1 ORDER BY n DESC"
+  },
+  "chg_head": {
+   "ok": true,
+   "sec": 26.72,
+   "cols": [
+    "n",
+    "orgs",
+    "dmin",
+    "dmax",
+    "kinds"
+   ],
+   "rows": [
+    [
+     0,
+     0,
+     null,
+     null,
+     0
+    ]
+   ],
+   "sql": "SELECT COUNT(*) AS n, COUNT(DISTINCT c.org_id) AS orgs, MIN(c.update_date) AS dmin, MAX(c.update_date) AS dmax, COUNT(DISTINCT c.update_content) AS kinds FROM gkx.dwd_org_changerecord_info c JOIN gkx.dwd_research_institute_base_info i ON i.org_id = c.org_id"
+  }
+ }
+}

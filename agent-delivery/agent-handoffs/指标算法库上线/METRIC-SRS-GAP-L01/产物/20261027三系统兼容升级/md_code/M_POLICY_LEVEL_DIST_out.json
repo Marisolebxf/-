@@ -1,0 +1,134 @@
+{
+ "metric_id": "M_POLICY_LEVEL_DIST",
+ "metric_name": "政策级别分布",
+ "generated_at": "2026-10-25 03:23:06",
+ "support_judgment": "完全转换支持",
+ "judgment_reason": "`rank` 列 20,000 行全部有值（357 行为空数组），可确定派生四级+未标注；五档合计 20,000 与 COUNT(*) 完全一致，国家级 2,174 行的 province/city 全部为空，结构自证成立。多值仅「省级+市级」2,473 条需要一条归并规则，本件按最高层级优先并在产物里给出另一归并的敏感性。结构与数据量都足够，故判完全转换支持。",
+ "source": "gkx @ 183.240.141.251:3318（只读用户 gkx_reader_zp）.dwd_policy_base；窄投影 id/rank/type/province/city/district/publish_year/status/ministry/publish_date/title",
+ "snapshot": "code/_snapshots21/policy_dims_20261023.json",
+ "builder": "code/_build_policy_dims_20261023.py",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：统计库内全部政策的层级分布，不做年度序列、不设年度分母。publish_year 的 3 行缺失不进入任何年度口径。",
+ "level_dist": [
+  {
+   "level": 4,
+   "label": "国家级",
+   "rule": "rank 含「国家级」",
+   "n": 2174,
+   "pct": 10.87
+  },
+  {
+   "level": 3,
+   "label": "省级",
+   "rule": "rank 含「省级」（含省级+市级双标）",
+   "n": 9922,
+   "pct": 49.61
+  },
+  {
+   "level": 2,
+   "label": "市级",
+   "rule": "rank 含「市级」",
+   "n": 6149,
+   "pct": 30.745
+  },
+  {
+   "level": 1,
+   "label": "区县级",
+   "rule": "rank 含「区级」或「园区级」",
+   "n": 1398,
+   "pct": 6.99
+  },
+  {
+   "level": 0,
+   "label": "未标注",
+   "rule": "rank 为空数组",
+   "n": 357,
+   "pct": 1.785
+  }
+ ],
+ "level_total": 20000,
+ "total_rows": 20000,
+ "rank_dist_raw": [
+  {
+   "rank": "省级",
+   "n": 7449,
+   "pct": 37.245
+  },
+  {
+   "rank": "市级",
+   "n": 6149,
+   "pct": 30.745
+  },
+  {
+   "rank": "市级+省级",
+   "n": 2473,
+   "pct": 12.365
+  },
+  {
+   "rank": "国家级",
+   "n": 2174,
+   "pct": 10.87
+  },
+  {
+   "rank": "区级",
+   "n": 1254,
+   "pct": 6.27
+  },
+  {
+   "rank": "__NULL__",
+   "n": 357,
+   "pct": 1.785
+  },
+  {
+   "rank": "园区级",
+   "n": 144,
+   "pct": 0.72
+  }
+ ],
+ "rank_level_cross": {
+  "省级|3": 7449,
+  "市级|2": 6149,
+  "市级+省级|3": 2473,
+  "国家级|4": 2174,
+  "区级|1": 1254,
+  "__NULL__|0": 357,
+  "园区级|1": 144
+ },
+ "dual_tag_sensitivity": {
+  "current_rule": "最高行政层级优先：省级+市级 → 省级",
+  "dual_rows": 2473,
+  "province_if_dual_to_province": 9922,
+  "city_if_dual_to_province": 6149,
+  "province_if_dual_to_city": 7449,
+  "city_if_dual_to_city": 8622,
+  "note": "两种归并都自洽，差别只在 2,473 条双标记录；正文默认「高层级优先」，因发文机关同时含省级与市级时，省级是约束性层级。"
+ },
+ "national_structure_check": {
+  "national_rows": 2174,
+  "province_null_total": 2524,
+  "province_null_national": 2174,
+  "all_national_province_null": true,
+  "city_null_total": 9706
+ },
+ "unknown_rows": 357,
+ "shares": {
+  "national_pct": 10.87,
+  "province_pct": 49.61,
+  "city_pct": 30.745,
+  "district_pct": 6.99,
+  "unknown_pct": 1.785
+ },
+ "reconciliation": {
+  "sum_of_five": 20000,
+  "count_star": 20000,
+  "diff": 0,
+  "ok": true
+ },
+ "population_notes": [
+  "分母是 20,000 行库内存量；「国家级」指 rank 含国家级，不代表政策效力等级评定。",
+  "357 行 rank 为空数组，只能记为「未标注」，不能按 0 或按市级摊入。",
+  "园区级 144 行并入区县级；若单列，区县级为 1,254、园区级 144。",
+  "省级 9,922 行里有 2,473 行是「省级+市级」双标，归并规则改变会移动这 2,473 行。"
+ ]
+}

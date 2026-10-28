@@ -1,0 +1,160 @@
+{
+  "metric_id": "M_ENT_ATTRACTION_INDEX",
+  "metric_name": "招引推荐指数",
+  "script": "M_ENT_ATTRACTION_INDEX.py",
+  "data_source": "gkx",
+  "probe": {
+    "base": 189116,
+    "tags": 2283762,
+    "shareholder": 400286,
+    "invest": 46967,
+    "product": 45011,
+    "policy": 20000,
+    "fin": 90926,
+    "policy_sample_rows": 3000,
+    "policy_content_filled_rate": 1.0,
+    "policy_content_filled": 20000,
+    "policy_keywords_filled": 3000,
+    "product_sample_rows": 5000,
+    "product_desc_fill_rate": 0.6926,
+    "product_desc_filled": 31175,
+    "product_org_filled": 45011,
+    "tags_sample_rows": 200000,
+    "tags_link_filled_sample": 200000,
+    "tags_link_fill_rate": 1.0,
+    "fin_rev_filled": 2040,
+    "tags_chain_join_rows_sample": 0
+  },
+  "compute": {
+    "sz_orgs": 95600,
+    "n_nodes_with_degree": 95652,
+    "n_scored": 95652,
+    "n_positive_sz_link": 50358,
+    "score_stats": {
+      "min": 0.0,
+      "max": 0.561416,
+      "mean": 0.00103716,
+      "median": 0.001045
+    },
+    "note": "王惠中心度=供应链边度中心度；gkx 无供应链表，用投资+股东边代理（方向与王惠 M_SVC_DEEP_180_1 同）",
+    "top10_by_sz_degree": [
+      {
+        "org_id": "5ff1152fd1351d7f220cde799b5e51b9",
+        "name_cn": null,
+        "city": null,
+        "degree": 810,
+        "sz_links": 537,
+        "sz_degree_centrality_proxy": 0.561416
+      },
+      {
+        "org_id": "a76829a85507cf4081383ac3350f62eb",
+        "name_cn": "深圳市创新投资集团有限公司",
+        "city": "深圳市",
+        "degree": 612,
+        "sz_links": 466,
+        "sz_degree_centrality_proxy": 0.487188
+      },
+      {
+        "org_id": "9914a894af2ad61425993d0361f0d9bb",
+        "name_cn": "深圳市高新投创业投资有限公司",
+        "city": "深圳市",
+        "degree": 390,
+        "sz_links": 342,
+        "sz_degree_centrality_proxy": 0.35755
+      },
+      {
+        "org_id": "c42e9c8a2ae57c55ac4ca0906c44cca6",
+        "name_cn": null,
+        "city": null,
+        "degree": 329,
+        "sz_links": 209,
+        "sz_degree_centrality_proxy": 0.218503
+      },
+      {
+        "org_id": "88ead26ec0596a2be0da291e81d73d1f",
+        "name_cn": "深圳市中小担创业投资有限公司",
+        "city": "深圳市",
+        "degree": 210,
+        "sz_links": 176,
+        "sz_degree_centrality_proxy": 0.184002
+      },
+      {
+        "org_id": "4c210b004d8001e912e544d0fb834057",
+        "name_cn": "深圳市投资控股有限公司",
+        "city": "深圳市",
+        "degree": 204,
+        "sz_links": 175,
+        "sz_degree_centrality_proxy": 0.182957
+      },
+      {
+        "org_id": "2df555622c40eef0942daa7e29268edc",
+        "name_cn": null,
+        "city": null,
+        "degree": 229,
+        "sz_links": 145,
+        "sz_degree_centrality_proxy": 0.151593
+      },
+      {
+        "org_id": "df08c7aa1d49766c7f3272091dc5b0ae",
+        "name_cn": "中信证券股份有限公司",
+        "city": "深圳市",
+        "degree": 258,
+        "sz_links": 141,
+        "sz_degree_centrality_proxy": 0.147411
+      },
+      {
+        "org_id": "76b1ae51c9f7266555a5332261d307ad",
+        "name_cn": null,
+        "city": null,
+        "degree": 113,
+        "sz_links": 112,
+        "sz_degree_centrality_proxy": 0.117092
+      },
+      {
+        "org_id": "181a0ffe7baaa7747f8b4b7f2d126114",
+        "name_cn": null,
+        "city": null,
+        "degree": 98,
+        "sz_links": 98,
+        "sz_degree_centrality_proxy": 0.102456
+      }
+    ]
+  },
+  "gkx_spotcheck": {
+    "source": "gkx",
+    "inventory_file": "_work_gkx21/GKX_INVENTORY.json",
+    "inventory_rows": {
+      "dwd_org_industry_tags": 2283762,
+      "dwd_org_invest_info": 46967,
+      "dwd_policy_base": 20000,
+      "dwd_org_org_product_info": 45011
+    },
+    "probe_rows_match": true
+  },
+  "support_judgment": {
+    "data_support_level": "部分支持",
+    "reason": "三维中：产业相关度 tags 已由 gkx 全量承载（2,283,762 行），但链路码与 dwd_industry_chain_info 关联仅 0 行（20 万行样本口径）、投入产出表缺失，产业链融入度仍不可闭合；政策匹配度有政策文本（20,000）与企业文本（45,011）但 GPT 契合层未建（keywords 填充 3000）；深圳连接度可用投资/股东边代理中心度（scored=95652，含深圳连接企业 50358），但引力模型子项缺人口/GDP/距离。始终有依赖维数据不足 → 部分支持。库存自校验：True",
+    "dimension_verdicts": {
+      "产业相关度": "部分",
+      "政策匹配度": "部分",
+      "深圳连接度": "代理可算；引力模型子项（人口/GDP/距离）库内无 → 部分"
+    },
+    "dimension_detail": {
+      "产业相关度": {
+        "结构": "tags 2,283,762 行有表且 industry_link_code 样本填充率高，但 tags.industry_code×industry_link_code 与 dwd_industry_chain_info 关联 0 行（链路码体系不匹配）；投入产出表缺失",
+        "数据量": "tags=2283762 行（链路码样本填充率 1.0）、tags×chain_info 关联 0 行（20 万行样本）；收入填充 2040",
+        "verdict": "部分"
+      },
+      "政策匹配度": {
+        "结构": "policy_base 2 万行有 content/keywords 表结构",
+        "数据量": "content 填充 20000；keywords 填充 3000；企业侧文本 org_product_info=45011 行、desc 填充 31175；GPT 分类层未建",
+        "verdict": "部分"
+      },
+      "深圳连接度": {
+        "结构": "无供应链表；投资/股东边可代理中心度",
+        "data": "scored=95652, sz_linked=50358",
+        "verdict": "代理可算；引力模型子项（人口/GDP/距离）库内无 → 部分"
+      }
+    }
+  }
+}

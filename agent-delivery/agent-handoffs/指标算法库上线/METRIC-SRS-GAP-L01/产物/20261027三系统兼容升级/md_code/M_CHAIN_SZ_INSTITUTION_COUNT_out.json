@@ -1,0 +1,187 @@
+{
+ "metric_id": "M_CHAIN_SZ_INSTITUTION_COUNT",
+ "metric_name": "深圳产业链机构数",
+ "generated_at": "2026-10-22T15:38:24+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "「深圳有多少家机构」可算（名称口径 1,030 家，与 inst_city 快照一致）；「机构属哪条链」只能名称代理，覆盖率低且机构表无产业链字段，链维度只能作下限展示。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_industry_tags",
+   "rows": 2283762,
+   "snapshot": "code/_snapshots21/chain_panel21.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_industry_chain_info",
+   "rows": 1273,
+   "snapshot": "code/_snapshots21/chain_tree_20261021.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_base_info",
+   "rows": 189116,
+   "snapshot": "code/_snapshots21/base_20261021.json"
+  }
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：统计当前存量，不设年度分母。",
+ "headline": {
+  "value": 226,
+  "unit": "家（深圳机构）",
+  "institution_pool": 840,
+  "mapped_to_chain": 86,
+  "chain_map_rate": 0.3805,
+  "definition": "主档名称含研究院/研究所/大学/学院/实验室等关键词的深圳法人"
+ },
+ "facts": [
+  {
+   "label": "全国机构池（名称口径）",
+   "value": 840
+  },
+  {
+   "label": "深圳机构数",
+   "value": 226
+  },
+  {
+   "label": "可映射到链的深圳机构",
+   "value": 86
+  },
+  {
+   "label": "链映射覆盖率",
+   "value": 0.3805
+  },
+  {
+   "label": "名称多链冲突",
+   "value": 2
+  }
+ ],
+ "chains": [
+  {
+   "chain": "INB2503",
+   "name": "生物医药",
+   "value": 39,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1502",
+   "name": "数字创意",
+   "value": 34,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1309",
+   "name": "人工智能",
+   "value": 8,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1306",
+   "name": "软件与信息服务",
+   "value": 3,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1333",
+   "name": "智能终端",
+   "value": 1,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1204",
+   "name": "机器人",
+   "value": 1,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB2505",
+   "name": "合成生物",
+   "value": 0,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1323",
+   "name": "传感器",
+   "value": 0,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1303",
+   "name": "集成电路",
+   "value": 0,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1354",
+   "name": "具身智能",
+   "value": 0,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1209",
+   "name": "智能网联汽车",
+   "value": 0,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  },
+  {
+   "chain": "INB1236",
+   "name": "低空经济",
+   "value": 0,
+   "nonleaf": null,
+   "leaves": null,
+   "l1": null
+  }
+ ],
+ "method_steps": [
+  "读取主档快照 189,116 行",
+  "筛名称含研究院/研究所/大学/学院/实验室等的机构",
+  "按 city 取深圳子集",
+  "按 12 链关键词表匹配机构名称",
+  "统计每链机构数与链映射覆盖率"
+ ],
+ "population": {
+  "defined_as": "gkx.dwd_org_base_info 名称命中机构关键词",
+  "pool": 840,
+  "sz": 226,
+  "city_dist": {
+   "深圳市": 1014,
+   "广州市": 822,
+   "东莞市": 127,
+   "惠州市": 111
+  }
+ },
+ "compute": {
+  "formula": "COUNT(DISTINCT credit_code) WHERE city='深圳市' AND name~机构词",
+  "chain_rule": "机构名称命中链关键词，首个命中归链；无命中不计入链",
+  "map_rate": 0.3805
+ }
+}

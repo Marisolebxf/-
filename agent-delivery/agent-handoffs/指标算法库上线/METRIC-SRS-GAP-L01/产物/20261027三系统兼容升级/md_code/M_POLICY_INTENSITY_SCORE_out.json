@@ -1,0 +1,193 @@
+{
+ "metric_id": "M_POLICY_INTENSITY_SCORE",
+ "verdict_kind": "negative_evidence",
+ "support_judgment": "完全不支持",
+ "publishable": false,
+ "registered_metric_value": null,
+ "headline": {
+  "policy_total": 20000,
+  "sub_items_total": 5,
+  "sub_items_computable": 1,
+  "dims_total": 3,
+  "dims_full": 0,
+  "dims_empty": 2,
+  "score": null,
+  "reason": "按正本「缺维不进平均」，可进平均的完整维为 0 个 → 分数不存在。三项里两项整块为空（效果、成本），覆盖维只剩区县标记一项。"
+ },
+ "sub_items": [
+  {
+   "dim": "效果",
+   "item": "实施日完备率",
+   "field": "implementation_date",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false,
+   "evidence": "全表 20,000 行取值为 0000-00-00（date 列的非 NULL 零值），COUNT(col) 会给 20,000 的假象，按 DATE_FORMAT 归一后有效日期 0 行"
+  },
+  {
+   "dim": "效果",
+   "item": "支持方式完备率",
+   "field": "policy_support.support_way",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false,
+   "evidence": "policy_support 20,000 行 JSON_TYPE='NULL'；JSON_LENGTH(null) 返回 1，不能用它判空"
+  },
+  {
+   "dim": "覆盖",
+   "item": "支持对象种类数",
+   "field": "policy_support.support_object",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false,
+   "evidence": "同上，JSON null，子键无法读取"
+  },
+  {
+   "dim": "覆盖",
+   "item": "区县落地标记",
+   "field": "district",
+   "nonnull": 1165,
+   "denominator": 20000,
+   "computable": true,
+   "evidence": "1,165 行有值、872 行是字面 'NULL'；有值的集中在少数城市，且区名取值只有少数几种"
+  },
+  {
+   "dim": "成本",
+   "item": "扶持行为完备率",
+   "field": "policy_support.support_behavior",
+   "nonnull": 0,
+   "denominator": 20000,
+   "computable": false,
+   "evidence": "JSON null；且表内无任何金额列，不能用金额顶替（见 amount_columns_probe）"
+  }
+ ],
+ "dims": [
+  {
+   "dim": "效果",
+   "items": 2,
+   "computable_items": 0,
+   "full": false
+  },
+  {
+   "dim": "覆盖",
+   "items": 2,
+   "computable_items": 1,
+   "full": false
+  },
+  {
+   "dim": "成本",
+   "items": 1,
+   "computable_items": 0,
+   "full": false
+  }
+ ],
+ "district_probe": {
+  "rows_with_district": 1165,
+  "rows_without_district": 18835,
+  "distinct_district_values": 32,
+  "top_values": [
+   [
+    "通州区",
+    136
+   ],
+   [
+    "海淀区",
+    113
+   ],
+   [
+    "大兴区",
+    111
+   ],
+   [
+    "顺义区",
+    103
+   ],
+   [
+    "怀柔区",
+    83
+   ],
+   [
+    "东城区",
+    81
+   ],
+   [
+    "房山区",
+    58
+   ],
+   [
+    "普陀区",
+    54
+   ],
+   [
+    "朝阳区",
+    51
+   ],
+   [
+    "桐乡市",
+    48
+   ]
+  ],
+  "rows_by_city": [
+   [
+    "北京市",
+    887
+   ],
+   [
+    "上海市",
+    205
+   ],
+   [
+    "嘉兴市",
+    48
+   ],
+   [
+    "鹤壁市",
+    18
+   ],
+   [
+    "深圳市",
+    7
+   ]
+  ],
+  "note": "区县字段只有 1,165 行有值（5.825%），且取值集中在少数城市；把它当作「政策落到区县」的唯一证据，等于让 94.175% 的政策恒取 0"
+ },
+ "validity_probe": {
+  "status_dist": {
+   "有效": 20000
+  },
+  "expire_date_nonnull": 0,
+  "implementation_date_nonnull": 0,
+  "note": "status 单值「有效」+ expire_date 全空 → 「有效」条件恒真，不构成任何区分度"
+ },
+ "amount_columns_probe": {
+  "policy_table_columns": 33,
+  "amount_like_columns_in_policy_tables": 0,
+  "amount_like_columns_in_gkx": 123,
+  "scope": "123 个金额类列全部落在 dwd_bid_* 招标表；dwd_policy_base 33 列里没有任何金额/资金/补贴列",
+  "rule": "无源维度置 null，不置 0；不得自造「资金强度」"
+ },
+ "result_surface_absent": {
+  "gkx_policy_tables": [
+   "dwd_policy_base",
+   "dwd_policy_base_bak_20260923",
+   "dwd_global_policy_base",
+   "dwd_global_policy_base_bak_20260923"
+  ],
+  "ads_policy_intensity": "不存在（gkx 只有 dwd_* 层）",
+  "note": "注册表 source_tables 写的是 ads.policy_intensity，该表在 gkx 侧不存在"
+ },
+ "probes": {
+  "support_json_type_dist": {
+   "JSON_NULL": 20000
+  },
+  "support_way_rows": 0,
+  "support_object_rows": 0,
+  "support_behavior_rows": 0,
+  "district_nonnull": 1165,
+  "implementation_date_nonnull": 0
+ },
+ "reused_from": "code/_snapshots21/policy_struct_20261023.json",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面件：本件不出分、不设基期。政策池为 20,000 条存量全表；若将来补数后要按年出分，须先解决 2023/2024 的采集断档，否则「某年力度为 0」会是断档而不是真实归零。"
+}
