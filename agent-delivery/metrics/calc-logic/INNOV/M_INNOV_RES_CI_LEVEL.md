@@ -1,9 +1,21 @@
-# 竞争情报等级（M_INNOV_RES_CI_LEVEL）
+# M_INNOV_RES_CI_LEVEL · 竞争情报等级（gkx 口径重建件）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_RES_CI_LEVEL.md`；复现脚本 `metrics/repro/M_INNOV_RES_CI_LEVEL.py` → `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：评价型（EVAL，0—100 分 + 三档）｜ **域**：INNOV（创新技术 / RES-CI）｜ **UI 挂载**：科技信息展示系统 · 科技发展态势 · 科技发展规划 · 研究领域分析 · 竞争情报等级
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（overlap×100 + P70/P30，V1.5-20260901，标注「公式与 algorithm_type 未签」）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_RES_CI_LEVEL.py`、产物 `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_RES_CI_LEVEL.md`；复现脚本 `metrics/repro/M_INNOV_RES_CI_LEVEL.py` → `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_RES_CI_LEVEL.py`、产物 `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +65,7 @@
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_RES_CI_LEVEL.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_RES_CI_LEVEL.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json` |
@@ -61,16 +73,11 @@
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_RES_CI_LEVEL.py`、产物 `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：评价型（EVAL，0—100 分 + 三档）｜ **域**：INNOV（创新技术 / RES-CI）｜ **UI 挂载**：科技信息展示系统 · 科技发展态势 · 科技发展规划 · 研究领域分析 · 竞争情报等级
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（overlap×100 + P70/P30，V1.5-20260901，标注「公式与 algorithm_type 未签」）
-> **主算库**：`gkx`（183.240.141.251:3318，只读账号 `gkx_reader_zp`）｜ **SQL 条数**：0（全部读落盘快照）
-> **产物**：`code/M_INNOV_RES_CI_LEVEL.py` → `code/M_INNOV_RES_CI_LEVEL_out.json` ｜ **成文日期**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -110,7 +117,7 @@
 
 结构性发现与 GRADE 一致：手机系（华为/维沃/OPPO/中兴/荣耀）互相之间的分值普遍在 50—63，电力系（广东电网/广州供电局/深圳供电局）在 54—60，惠科与所有企业的分值都在 18.5—37.5。惠科是唯一的「孤岛」，11 对全部低档。
 
-**结论**：分值、矩阵、三档、对角线规则全部可复现；但维度覆盖 1/3、无市场重叠、样本仅 12 家，按 §〇 判**部分支持**。复现代码见 `code/M_INNOV_RES_CI_LEVEL.py`，结果见 `code/M_INNOV_RES_CI_LEVEL_out.json`。
+**结论**：分值、矩阵、三档、对角线规则全部可复现；但维度覆盖 1/3、无市场重叠、样本仅 12 家，按 §〇 判**部分支持**。复现代码见 `metrics/repro/M_INNOV_RES_CI_LEVEL.py`，结果见 `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`。
 
 ---
 
@@ -243,10 +250,10 @@ P70=48.43、P30=39.66，与 GRADE 同一套（同一 overlap、同一分位算�
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_INNOV_RES_CI_LEVEL.py
+cd code && python3 M_INNOV_RES_CI_LEVEL.py
 ```
 
-脚本零 SQL，只读三份快照，输出 `code/M_INNOV_RES_CI_LEVEL_out.json`。产物含五个契约字段与 `probes`、`formula`、`diagonal_rule`、`score_stats`、`histogram_10bin`、`level_dist`、`level_share`、`top10`、`bottom5`、`boundary_high`、`boundary_low`、`per_enterprise`、`matrix`、`consistency_with_grade`、`pairs`、`gaps`。
+脚本零 SQL，只读三份快照，输出 `metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`。产物含五个契约字段与 `probes`、`formula`、`diagonal_rule`、`score_stats`、`histogram_10bin`、`level_dist`、`level_share`、`top10`、`bottom5`、`boundary_high`、`boundary_low`、`per_enterprise`、`matrix`、`consistency_with_grade`、`pairs`、`gaps`。
 
 实测输出（2026-10-22 运行）：
 
@@ -474,7 +481,7 @@ overlap 定义为 IPC / 关键词 / 学者三维平均；分值只做线性放�
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_INNOV_RES_CI_LEVEL.py
 ```
 
@@ -486,7 +493,7 @@ python3 M_INNOV_RES_CI_LEVEL.py
 | `_snapshots21/patent_ipc4_by_name_20261021.json` | 581,585 行 IPC4×申请人 |
 | `_snapshots21/org_family_panel_20261021.json` | 机构面板 |
 
-输出：`code/M_INNOV_RES_CI_LEVEL_out.json`（覆盖写）。复现校验：两次运行，`matrix`、`score_stats`、`level_dist` 逐字段一致。
+输出：`metrics/repro/out/M_INNOV_RES_CI_LEVEL_out.json`（覆盖写）。复现校验：两次运行，`matrix`、`score_stats`、`level_dist` 逐字段一致。
 
 自检清单：
 
@@ -506,11 +513,9 @@ python3 M_INNOV_RES_CI_LEVEL.py
 1. 包昌火, 谢新洲.《竞争情报与企业竞争力》. 华夏出版社. https://www.bookschina.com/
 2. 官思发, 李宗洁. (2015). 竞争情报分析方法研究. 《情报理论与实践》. http://www.itapress.cn/
 3. Hyndman, R. J., & Fan, Y. (1996). Sample Quantiles in Statistical Packages. *The American Statistician*, 50(4), 361—365. https://doi.org/10.1080/00031305.1996.10473566
-4. OECD.《Patent Analytics for Policy》. https://www.oecd.org/sti/
-5. WIPO.《IPC 国际专利分类》. https://www.wipo.int/classifications/ipc/
-6. 国家知识产权局.《专利分类国际标准》. https://www.cnipa.gov.cn/
-7. 深圳市科技创新局.《深圳市科技计划项目管理办法》. http://stic.sz.gov.cn/
-
+4. WIPO.《IPC 国际专利分类》. https://www.wipo.int/classifications/ipc/
+5. 国家知识产权局.《专利分类国际标准》. https://www.cnipa.gov.cn/
+6. 深圳市科技创新局.《深圳市科技计划项目管理办法》. http://stic.sz.gov.cn/
 ---
 
 # 附件
@@ -558,11 +563,3 @@ python3 M_INNOV_RES_CI_LEVEL.py
 **D.4 与旧稿的差异**：旧稿（`demo` 口径）overlap 均值 0.1921，×100 后均值 19.21，本件均值 43.36。差异来自 IPC4 集合构建方式与样本选择，分值与阈值不可跨稿复用。
 
 **D.5 复现边界**：脚本只读三份冻结快照，不连库；12 家名单硬编码，换样本需改名单并重跑；矩阵与阈值会同步变化。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

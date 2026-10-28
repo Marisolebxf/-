@@ -1,9 +1,20 @@
-# 科研机构基础指标模型构建（M_ORG_BASE_99_1）
+# M_ORG_BASE_99_1 · 科研机构基础指标模型构建
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_BASE_99_1.md`；复现脚本 `metrics/repro/M_ORG_BASE_99_1.py` → `metrics/repro/out/M_ORG_BASE_99_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **数据支持度**：部分支持
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_BASE_99_1.py`、产物 `metrics/repro/out/M_ORG_BASE_99_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_BASE_99_1.md`；复现脚本 `metrics/repro/M_ORG_BASE_99_1.py` → `metrics/repro/out/M_ORG_BASE_99_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_BASE_99_1.py`、产物 `metrics/repro/out/M_ORG_BASE_99_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_BASE_99_1.md` |
 | 复现脚本 | `metrics/repro/M_ORG_BASE_99_1.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_BASE_99_1_out.json` |
@@ -67,15 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_BASE_99_1.py`、产物 `metrics/repro/out/M_ORG_BASE_99_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 域：科研机构（ORG）｜类型：底册 + 四维基础模型｜形态：多表（机构清单 / 领域布局 / 重点机构 / 实力榜 / 成长榜 / 新增动态）
-> **数据支持度**：部分支持
-> 判定：D2 重点机构、D3 实力分、D4 新增动态可**直接转换**；D1 产业领域**只能反推**（标签库不可连）；D3 的资讯维与影响力维**不可转换**
-> 一句话口径：以 `gkx.dwd_research_institute_base_info` 的 2,074 家广东科研机构为唯一底册，按「领域布局 → 重点机构 → 实力与成长 → 新增动态」四维给出可复核的基础事实表，唯一给分的是 D3 实力分
-> 复现：`python3 code/M_ORG_BASE_99_1.py` → `code/M_ORG_BASE_99_1_out.json`
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -148,10 +155,10 @@ D1 是本件最大的口径妥协：产业链标签库与本底册几乎不可�
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6 | 科研机构八类模型的功能定义 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 811–813 行 |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6 | 科研机构八类模型的功能定义 | `《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 811–813 行 |
 | 2 | 同上 §1.1.1.1.1.1.1.6.1 | 重点技术领域布局模型原文 | 同文件第 815 行起 |
-| 3 | 《科技专题算法库需求》序号 99 | 指标名「科研机构基础指标模型构建」出处 | `需求文档原件（GitLab 外本地归档）.xlsx`（第 99 行） |
-| 4 | 旧版交付 `20261019_.../M_ORG_BASE_99_1.md` | 前一轮口径，本件在其上改判 | `(GitLab 外本地历史批次工作稿)` |
+| 3 | 《科技专题算法库需求》序号 99 | 指标名「科研机构基础指标模型构建」出处 | `需求方附件（不入仓）：科技专题算法库需求.xlsx`（第 99 行） |
+| 4 | 旧版交付 `20261019_.../M_ORG_BASE_99_1.md` | 前一轮口径，本件在其上改判 | `（20261019 批调研区，历史批次成果已并入现版）/` |
 | 5 | UNESCO Institute for Statistics, R&D statistics | 国际机构底册口径参照 | https://uis.unesco.org/en/topic/research-and-development |
 | 6 | OECD Frascati Manual 2015 | 研发投入口径参照（本件未采用） | https://www.oecd.org/sti/inno/frascati-manual.htm |
 | 7 | 国家统计局《中国科技统计年鉴》 | 机构分类与科技活动统计口径 | https://www.stats.gov.cn/sj/ndsj/ |
@@ -219,7 +226,7 @@ D4 直接数 `inc_year`。2001–2026 共 26 个年份有值，2016 年峰值 32
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 M_ORG_BASE_99_1.py`，读面板快照、不连数据库，约 0.4 秒完成，输出 `code/M_ORG_BASE_99_1_out.json`。关键字段如下（数值取自本次实跑）：
+执行 `cd code && python3 M_ORG_BASE_99_1.py`，读面板快照、不连数据库，约 0.4 秒完成，输出 `metrics/repro/out/M_ORG_BASE_99_1_out.json`。关键字段如下（数值取自本次实跑）：
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -439,7 +446,7 @@ D3 资讯维属于表义错配而非数据缺失：1,668,414 行确实是资讯�
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 _build_org_family_panel.py          # 建面板（约 90 秒，需 gkx 只读账号）
 python3 M_ORG_BASE_99_1.py                  # 读面板出结果（约 0.4 秒，零 SQL）
 python3 -c "import json;d=json.load(open('M_ORG_BASE_99_1_out.json'));print(d['dimensions'])"
@@ -459,16 +466,12 @@ python3 -c "import json;d=json.load(open('M_ORG_BASE_99_1_out.json'));print(d['d
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6 科研机构深度分析模型构建，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 811–813 行。
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6 科研机构深度分析模型构建，`《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 811–813 行。
 2. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1 科研机构重点技术领域布局模型，同上文件第 815 行起。
-3. 《科技专题算法库需求》序号 99「科研机构基础指标模型构建」，`需求文档原件（GitLab 外本地归档）.xlsx`。
-4. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.1–§3.17（含 §3.10 四列整列为空的记录）。
-5. UNESCO Institute for Statistics, *Research and Development Statistics*, https://uis.unesco.org/en/topic/research-and-development
-6. OECD, *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*, https://www.oecd.org/sti/inno/frascati-manual.htm
-7. 国家统计局，《中国科技统计年鉴》，https://www.stats.gov.cn/sj/ndsj/
-8. 科学技术部，《中国科技统计年鉴》与科技统计年度数据，https://www.most.gov.cn/kjtj/
-9. 国家知识产权局，《专利统计年报》，https://www.cnipa.gov.cn/col/col61/index.html
-
+3. UNESCO Institute for Statistics, *Research and Development Statistics*, https://uis.unesco.org/en/topic/research-and-development
+4. 国家统计局，《中国科技统计年鉴》，https://www.stats.gov.cn/sj/ndsj/
+5. 科学技术部，《中国科技统计年鉴》与科技统计年度数据，https://www.most.gov.cn/kjtj/
+6. 国家知识产权局，《专利统计年报》，https://www.cnipa.gov.cn/col/col61/index.html
 # 附件
 
 ## 附录 B　原始需求原文摘录
@@ -530,10 +533,3 @@ LEFT JOIN gkx.dwd_zh_paper p ON c.paper_id = p.paper_id WHERE p.paper_id IS NULL
 三、权重与阈值的取值依据。专利与论文各 0.35 是因为两者都直接反映产出且覆盖机构数相近（219 vs 236）；项目 0.20 因其只覆盖 53 家；学者 0.10 因其只覆盖 29 家，权重低是为了让缺维机构少受影响。P90 作为重点机构阈值是分位惯例，实测落在 70 这个整数附近，便于业务方记忆与复核。
 
 四、结论。本件方法在本库条件下是可行且可复算的，但只能支撑「四市内相对比较 + 机构事实查询」，不能支撑「全国对标 + 投入产出效率」。若甲方需要后者，需先补全国机构名录与机构级研发投入两张表，届时本件的四维结构可以直接扩展为六维，不需要重构。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

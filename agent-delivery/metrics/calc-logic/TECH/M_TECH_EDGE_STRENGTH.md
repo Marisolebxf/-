@@ -1,9 +1,20 @@
 # 技术–技术关联强度（M_TECH_EDGE_STRENGTH）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_EDGE_STRENGTH.md`；复现脚本 `metrics/repro/M_TECH_EDGE_STRENGTH.py` → `metrics/repro/out/M_TECH_EDGE_STRENGTH_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术图谱指标（DS-02 技术关系面·边强度件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技信息展示系统 · 技术评估 · 弦线图（线条粗细 = 技术间关联强度） ｜ **数据支持度**：**完全转换支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_EDGE_STRENGTH.py`、产物 `metrics/repro/out/M_TECH_EDGE_STRENGTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_EDGE_STRENGTH.md`；复现脚本 `metrics/repro/M_TECH_EDGE_STRENGTH.py` → `metrics/repro/out/M_TECH_EDGE_STRENGTH_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_EDGE_STRENGTH.py`、产物 `metrics/repro/out/M_TECH_EDGE_STRENGTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +62,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_EDGE_STRENGTH.md` |
 | 复现脚本 | `metrics/repro/M_TECH_EDGE_STRENGTH.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_EDGE_STRENGTH_out.json` |
@@ -59,15 +70,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_EDGE_STRENGTH.py`、产物 `metrics/repro/out/M_TECH_EDGE_STRENGTH_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术图谱指标（DS-02 技术关系面·边强度件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技信息展示系统 · 技术评估 · 弦线图（线条粗细 = 技术间关联强度） ｜ **数据支持度**：**完全转换支持**
-> **公式定义人（20261020-TECH-d）**：仿王惠 ai-1020（需求未给公式，本轮按 IPC4 共类关联强度重建）｜ **wanghui：false** ｜ 直接（结构/数据）：否 / 否（无「关联强度」结果面）｜ 依赖（结构/数据）：是 / 是（`dwd_patent` 主分类+附加分类全量，620 个 IPC4、4,032 条 co≥5 边现转可算）
-> **先验对勘**：support_level.json 先验「完全不支持」；本批实测**升档为完全转换支持**——先验按「无技术关系结果表」判定，未评估「由专利共类现转」的路径；实证见 §二 / §三。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -217,7 +224,7 @@ $$
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，本报告按 van Eck & Waltman 的概率型归一化重建；已由脚本 `code/M_TECH_EDGE_STRENGTH.py` 实测跑通，结果见同目录 `M_TECH_EDGE_STRENGTH_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
+> **口径说明**：需求未给公式，本报告按 van Eck & Waltman 的概率型归一化重建；已由脚本 `metrics/repro/M_TECH_EDGE_STRENGTH.py` 实测跑通，结果见同目录 `M_TECH_EDGE_STRENGTH_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：概率型 AS 作边权、集合型 Jaccard 作对照、共现计数作展示
 
@@ -277,14 +284,14 @@ AS 按 $c_{ij}N/(n_in_j)$ 计算，Jaccard 按 $c_{ij}/(n_i+n_j-c_{ij})$ 计算�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_TECH_EDGE_STRENGTH.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_TECH_EDGE_STRENGTH.py` |
 | 公共图库 | 同目录 `_tech_d_graphlib.py`（共类网络 + PageRank，与 005 共用） |
 | 结果产物 | 同目录 `M_TECH_EDGE_STRENGTH_out.json` |
 | 数据来源 | `code/_snapshots/tech_d_patent_sample.jsonl`（gkx `dwd_patent` PK 等距 10 段 × 2 万 = 20 万件） |
 | 大表纪律 | 不整表扫描；分片取数后本地构图（全流程 < 2 秒） |
 
 ```bash
-python3 metrics/repro/M_TECH_EDGE_STRENGTH.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_TECH_EDGE_STRENGTH.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -363,7 +370,7 @@ python3 metrics/repro/M_TECH_EDGE_STRENGTH.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_TECH_EDGE_STRENGTH.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_TECH_EDGE_STRENGTH.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维 | 候选表 / 字段 | 实测行数 / 结论 | 支撑判断 |
 |---|---|---|---|
@@ -411,7 +418,6 @@ python3 metrics/repro/M_TECH_EDGE_STRENGTH.py
 4. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` §1.1.1.1.4.1.3.1.4（弦线图口径）；`_staging/M_TECH_ENTITY_INFLUENCE.md`（同批中心性件，明确「边强度用 AS、中心性用 co」的分工）。
 5. 世界知识产权组织（WIPO）. (2019). *World Intellectual Property Indicators 2019*（专利申请/授权按 IPC 分类与申请人属地的全球统计，本报告 IPC4 共类网络与节点规模口径的国际参照）. https://www.wipo.int/edocs/pubdocs/en/wipo_pub_941_2019.pdf
 6. 国家知识产权局. (2023). 《2023 年知识产权统计年报汇编》（IPC 分类×省市属地交叉出表的官方口径，本报告共类构图与节点规模核对的国内参照）. https://www.cnipa.gov.cn/tjxx/jianbao/year2023/indexy.html
-
 ---
 
 # 附件
@@ -488,15 +494,8 @@ M1（即刻）：全期无向边表 + 三口径权重 + 逐点 Top10 + 节点度
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_TECH_EDGE_STRENGTH.py`（2026-10-21 TECH-d 批）；公共库：`../code/_tech_d_graphlib.py`；产物：`../code/M_TECH_EDGE_STRENGTH_out.json`
+- 脚本：`../code/M_TECH_EDGE_STRENGTH.py`（2026-10-21 TECH-d 批）；公共库：`../code/_tech_d_graphlib.py`；产物：`../metrics/repro/out/M_TECH_EDGE_STRENGTH_out.json`
 - 关键数：620 节点 / 378 入网 / 17,085 共现对 / 4,032 条 co≥5 边 / 2,136 条 co≥10；密度 0.0566、平均度 21.33；AS 中位 2.487、p90 36.612、最大 9,687.294；G06F–G06N 4,376 / 4.127 / 0.1831；A61K–A61P 2,343 / 52.141 / 0.7471
 - 复跑：`python3 code/M_TECH_EDGE_STRENGTH.py`（只读快照、幂等）
 - 字段对应：`graph`=网络规模与 AS 分布；`top_edges_by_co/ass/jaccard`=三口径头部；`ass_stability_by_co`=分桶诊断；`top_nodes_by_degree`=枢纽；`ui_tech_point_top10`=逐点邻居；`support_judgment` 与 §〇.3 一致
 - 工程注意：IPC4 截断后必须再排重（否则自环与共现虚高）；成对键须 `tuple(sorted(...))`（否则同一无向边被计两次）
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

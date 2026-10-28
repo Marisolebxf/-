@@ -1,9 +1,22 @@
 # 产业技术影响力（M_INNOV_POT_TECH_INFL）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POT_TECH_INFL.md`；复现脚本 `metrics/repro/M_INNOV_POT_TECH_INFL.py` → `metrics/repro/out/M_INNOV_POT_TECH_INFL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 产业发展潜力评估 → 技术影响力评估（需求清单序号 150）
+> - **数据支持度**：**完全不支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（两张表都在）；依赖数据 = **否**（被引表回连主表 0.0162%，同族字段整列空壳）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POT_TECH_INFL.py`、产物 `metrics/repro/out/M_INNOV_POT_TECH_INFL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POT_TECH_INFL.md`；复现脚本 `metrics/repro/M_INNOV_POT_TECH_INFL.py` → `metrics/repro/out/M_INNOV_POT_TECH_INFL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POT_TECH_INFL.py`、产物 `metrics/repro/out/M_INNOV_POT_TECH_INFL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_POT_TECH_INFL.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_POT_TECH_INFL.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_POT_TECH_INFL_out.json` |
@@ -64,20 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_POT_TECH_INFL.py`、产物 `metrics/repro/out/M_INNOV_POT_TECH_INFL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 产业发展潜力评估 → 技术影响力评估（需求清单序号 150）
-> **UI 挂载**：产业发展潜力评估页「技术影响力评估」——产业技术影响力指标的分布与排名
-> **派单标签**：潜力点技术影响力（与本 ID 的「产业技术影响力」为同一口径，object = 产业）
-> **数据支持度**：**完全不支持**
-> **公式定义人**：王惠 calc-logic（`metrics/calc-logic/INNOV/M_INNOV_POT_TECH_INFL.md`）
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（两张表都在）；依赖数据 = **否**（被引表回连主表 0.0162%，同族字段整列空壳）
-> **铁律**：专利维零 SQL，只读 `_snapshots21/` 缓存与已复核探针；不扫 `dwd_patent` 294 万行，不按 `pn` 回连（无索引）
-> wanghui: true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -376,14 +380,11 @@ $$
 
 ## 参考文献
 
-1. OECD. *OECD Patent Statistics Manual*. <https://www.oecd.org/sti/inno/oecdpatentstatisticsmanual.htm>
-2. EPO. *PATSTAT Global — patent family and citation data*. <https://www.epo.org/en/searching-for-patents/business/patstat>
-3. WIPO. *World Intellectual Property Indicators 2023*. <https://www.wipo.int/publications/en/details.jsp?id=4674>
-4. Lanjouw, J. O., Schankerman, M. *Patent quality and research productivity: Measuring innovation with multiple indicators*. Economic Journal 114(495), 2004. <https://doi.org/10.1111/j.1468-0297.2004.00216.x>
-5. 国家知识产权局. *知识产权统计年报（2024）*. <https://www.cnipa.gov.cn/col/col61/index.html>
-6. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_TECH_INFL.md`
-7. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（第 923、943—945 行）
-
+1. EPO. *PATSTAT Global — patent family and citation data*. <https://www.epo.org/en/searching-for-patents/business/patstat>
+2. WIPO. *World Intellectual Property Indicators 2023*. <https://www.wipo.int/publications/en/details.jsp?id=4674>
+3. Lanjouw, J. O., Schankerman, M. *Patent quality and research productivity: Measuring innovation with multiple indicators*. Economic Journal 114(495), 2004. <https://doi.org/10.1111/j.1468-0297.2004.00216.x>
+4. 国家知识产权局. *知识产权统计年报（2024）*. <https://www.cnipa.gov.cn/col/col61/index.html>
+5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（第 923、943—945 行）
 ---
 
 # 附件
@@ -513,17 +514,9 @@ Lanjouw-Schankerman 用被引、同族、维持、诉讼合成。前两项本项
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_POT_TECH_INFL.py` |
-| 输出 | `code/M_INNOV_POT_TECH_INFL_out.json`（2,847 字节） |
+| 脚本 | `metrics/repro/M_INNOV_POT_TECH_INFL.py` |
+| 输出 | `metrics/repro/out/M_INNOV_POT_TECH_INFL_out.json`（2,847 字节） |
 | 耗时 | 40 秒（含 1 次回连尝试，超时后降级到已复核事实） |
 | 新增 SQL | 1 条（回连明细，超时未返回；主结论用已复核的 475 行事实） |
 | 关键数字 | 20,515 行被引 / 正值 3,657 / 合计 10,786 / 回连 475（0.0162%）/ 同族前缀 0/3,000 / 族表 20,593 行 |
 | 判档 | 完全不支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

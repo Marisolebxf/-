@@ -1,9 +1,20 @@
-# 技术路径关键节点（深圳 IPC4 卡位域识别）（M_TECH_PATH_KEYNODE）
+# 技术路径关键节点（M_TECH_PATH_KEYNODE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_PATH_KEYNODE.md`；复现脚本 `metrics/repro/M_TECH_PATH_KEYNODE.py` → `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术链路径模型（TECH 族·关键节点件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术路径关键节点（TOPIC-TECH-05 / DS-02-TECHPATH）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_PATH_KEYNODE.py`、产物 `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_PATH_KEYNODE.md`；复现脚本 `metrics/repro/M_TECH_PATH_KEYNODE.py` → `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_PATH_KEYNODE.py`、产物 `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_PATH_KEYNODE.md` |
 | 复现脚本 | `metrics/repro/M_TECH_PATH_KEYNODE.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json` |
@@ -60,15 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_PATH_KEYNODE.py`、产物 `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术链路径模型（TECH 族·关键节点件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术路径关键节点（TOPIC-TECH-05 / DS-02-TECHPATH）｜ **数据支持度**：**部分支持**
-> **口径版本**：20261022 三方库 `gkx` 版（专利维零 SQL，全部读授权缓存）｜ **公式定义人**：仿王惠（推测定义）｜ **wanghui: false**
-> 直接（结构/数据）：部分 / 三合一分可算，±50% 档稳健；割点型「不可替代」实测证伪 ｜ 依赖（结构/数据）：否 / 被引、合作、转让三条加权口径缺源
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -338,9 +345,9 @@ T1 七个点之间的边数与密度：
 **代码与运行**：
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_TECH_PATH_KEYNODE.py
-# 输出 code/M_TECH_PATH_KEYNODE_out.json；实测耗时 4.9 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_TECH_PATH_KEYNODE_out.json；实测耗时 4.9 秒（全离线，零 SQL）
 ```
 
 **核心结果**：
@@ -400,7 +407,7 @@ D11 是方法缺口：静态图看不到「某个域的关键度是升还是降�
 | 边输入 | `code/_snapshots21/patent_ipc4_by_name_20261021.json` |
 | 名单输入 | `code/_snapshots_gkx21/sz_patent_city_name_gkx.json` |
 | 共用图库 | `code/_path_graph21.py` |
-| 产物 | `code/M_TECH_PATH_KEYNODE_out.json` |
+| 产物 | `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json` |
 | 基期 | `base_years_used=[2021,2022,2023,2024]`、`base_years_missing=[2017,2018,2019,2020]` |
 | 关键参数 | 权重 40/35/25；T1 三维 ≥0.90；T2 Score≥0.80 且两维 ≥0.85 |
 
@@ -478,7 +485,6 @@ D11 是方法缺口：静态图看不到「某个域的关键度是升还是降�
 4. 世界知识产权组织（WIPO）. (2025). *IPC Publication 2025.01*. https://www.wipo.int/classifications/ipc/
 5. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
 6. 深圳市人民政府. (2022). 《深圳市关于发展壮大战略性新兴产业集群和培育发展未来产业的意见》（深府〔2022〕1 号）. https://www.sz.gov.cn/
-
 ---
 
 # 附件
@@ -487,10 +493,10 @@ D11 是方法缺口：静态图看不到「某个域的关键度是升还是降�
 
 | 项 | 内容 |
 |---|---|
-| 计算脚本 | `code/M_TECH_PATH_KEYNODE.py` |
+| 计算脚本 | `metrics/repro/M_TECH_PATH_KEYNODE.py` |
 | 共用图库 | `code/_path_graph21.py` |
-| 结果产物 | `code/M_TECH_PATH_KEYNODE_out.json` |
-| 运行方式 | `python3 M_TECH_PATH_KEYNODE.py` |
+| 结果产物 | `metrics/repro/out/M_TECH_PATH_KEYNODE_out.json` |
+| 运行方式 | `cd code && python3 M_TECH_PATH_KEYNODE.py` |
 | 实测耗时 | 4.9 秒 |
 | 主库 | `gkx` @ `183.240.141.251:3318`（只读账号 `gkx_reader_zp`） |
 | 本件是否连库 | **否** |
@@ -596,10 +602,3 @@ C.3.6 特征向量/PageRank。与强度高度相关（0.8781），增量信息�
 | 当前数据量 | 238 节点 / 1,464 边 / 16 割点 |
 | 现在能否得到 | 流量型卡位可以；不可替代型已证伪 |
 | 建议支持度 | **部分支持** |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

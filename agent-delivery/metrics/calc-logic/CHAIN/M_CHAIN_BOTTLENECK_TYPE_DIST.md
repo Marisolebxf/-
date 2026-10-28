@@ -1,9 +1,22 @@
 # 瓶颈类型分布（M_CHAIN_BOTTLENECK_TYPE_DIST）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_BOTTLENECK_TYPE_DIST.md`；复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_TYPE_DIST.py` → `metrics/repro/out/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：DIST（瓶颈类型桶分布）｜ **域**：产业链分析／产业链监测／堵点识别｜ **UI 挂载**：产业链监测页「瓶颈类型」堆叠条与类型下钻
+> - **数据支持度**：**部分支持**｜ **依赖性质**：四类型可现算，旧桶枚举不可复原｜ **公式定义人**：calc-logic v0.2.0 读表口径（徐腾强，2026-10-14 拍板）；本件类型定义自建
+> - **一句话结论**：48 个「链 × 类型」判定位命中 22 个（45.83%），技术型 6、产品型 6、资本型 5、政策型 5；10 条链至少命中一类，机器人与集成电路零命中。
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_TYPE_DIST.py`、产物 `metrics/repro/out/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_BOTTLENECK_TYPE_DIST.md`；复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_TYPE_DIST.py` → `metrics/repro/out/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_BOTTLENECK_TYPE_DIST.py`、产物 `metrics/repro/out/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_BOTTLENECK_TYPE_DIST.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_BOTTLENECK_TYPE_DIST.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json` |
@@ -64,16 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_BOTTLENECK_TYPE_DIST.py`、产物 `metrics/repro/out/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：DIST（瓶颈类型桶分布）｜ **域**：产业链分析／产业链监测／堵点识别｜ **UI 挂载**：产业链监测页「瓶颈类型」堆叠条与类型下钻
-> **数据支持度**：**部分支持**｜ **依赖性质**：四类型可现算，旧桶枚举不可复原｜ **公式定义人**：calc-logic v0.2.0 读表口径（徐腾强，2026-10-14 拍板）；本件类型定义自建
-> **本件脚本**：`code/M_CHAIN_BOTTLENECK_TYPE_DIST.py`｜ **产物**：`code/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`｜ **主算库**：`gkx @ 183.240.141.251:3318`（只读）
-> **一句话结论**：48 个「链 × 类型」判定位命中 22 个（45.83%），技术型 6、产品型 6、资本型 5、政策型 5；10 条链至少命中一类，机器人与集成电路零命中。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -282,7 +290,7 @@ $$\text{primary}(c)=\arg\min_{d:\,\text{hit}(c,d)=1}\frac{I_d(c)}{\theta_d}$$
 **敏感性**：把倍数从 0.8 改为 0.6，命中数降到 20（41.67%）；改为 1.0，命中数升到 24（50.00%）。三个阈值下命中数只在 20—24 之间，类型排序也稳定（技术/产品始终在前两位），说明 22 这个数不是靠调参凑出来的。这是本件能过「部分支持」而不是「不可用」的重要理由：结论对口径选择不敏感。
 
 ```bash
-python3 M_CHAIN_BOTTLENECK_TYPE_DIST.py
+cd code && python3 M_CHAIN_BOTTLENECK_TYPE_DIST.py
 # 期望首行：[ok] M_CHAIN_BOTTLENECK_TYPE_DIST slots=48 hits=22 rate=45.83% dist={...}
 ```
 
@@ -294,7 +302,7 @@ python3 _work_gkx21/rebuild_metric.py M_CHAIN_BOTTLENECK_TYPE_DIST --check
 
 它会比对重跑前后的语义指纹（剔除 `generated_at` / `elapsed_sec`）。本脚本自带 `base_years_used/_missing/_note` 三键，裸跑不会丢基期声明。
 
-产物顶层键（节选，完整见 `code/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`）：
+产物顶层键（节选，完整见 `metrics/repro/out/M_CHAIN_BOTTLENECK_TYPE_DIST_out.json`）：
 
 ```json
 {
@@ -443,11 +451,8 @@ python3 _work_gkx21/rebuild_metric.py M_CHAIN_BOTTLENECK_TYPE_DIST --check
 ## 参考文献
 
 1. 工信部：产业链供应链堵点卡点治理　https://www.miit.gov.cn/
-2. OECD：供应链韧性与中断风险　https://www.oecd.org/sti/
-3. 国家统计局：产业统计口径　https://www.stats.gov.cn/
-4. 世界银行：全球价值链报告　https://www.worldbank.org/
-5. 项目内 calc-logic 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_BOTTLENECK_TYPE_DIST.md`
-
+2. 国家统计局：产业统计口径　https://www.stats.gov.cn/
+3. 世界银行：全球价值链报告　https://www.worldbank.org/
 ---
 
 # 附件
@@ -532,11 +537,3 @@ WHERE title LIKE '%具身智能%' OR title LIKE '%人形机器人%';
 | 戊 聚类 | 统计分群 | 能发现未知结构 | 群名不稳、不可对账 |
 
 **落地取舍**：主指标用甲族，页面标注「类型=相对短板维」；若甲方要真正的成因分类，唯一路径是组织一次专家标注（乙族），并在标注结果上训练一个可复现的规则表——在拿到标注之前，任何「成因」结论都是把维度名当成因用。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

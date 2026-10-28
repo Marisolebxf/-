@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：未挂载 UI，算法库内部件
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_INNOV_CITY_TALENT_INDEX_GLOBAL —— 人才创新指数（全球城市语境）
 
 口径来源：注册表 `formula = pending_cosign: human:唐绍祖（未签）`、`algorithm_type: third_party`、

@@ -1,9 +1,20 @@
-# 企业分类型数量（M_ENT_TYPE_COUNT）
+# 各类型企业数（M_ENT_TYPE_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TYPE_COUNT.md`；复现脚本 `metrics/repro/M_ENT_TYPE_COUNT.py` → `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：COUNT × 6（六类资质/属性分别去重计数）｜ **域**：企业分析／重点企业类型分析／类型与区域分析｜ **UI 挂载**：企业分析·类型与区域分析「各类型企业数」六卡｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_TYPE_COUNT.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TYPE_COUNT.py`、产物 `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TYPE_COUNT.md`；复现脚本 `metrics/repro/M_ENT_TYPE_COUNT.py` → `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TYPE_COUNT.py`、产物 `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_TYPE_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_ENT_TYPE_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_TYPE_COUNT_out.json` |
@@ -62,17 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_TYPE_COUNT.py`、产物 `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT × 6（六类资质/属性分别去重计数）｜ **域**：企业分析／重点企业类型分析／类型与区域分析｜ **UI 挂载**：企业分析·类型与区域分析「各类型企业数」六卡｜ **数据支持度**：**部分支持**
-> **口径来源**：王惠（`(王惠口径正本，GitLab 外本地归档)M_ENT_TYPE_COUNT.md`）→ 2026-08-30 calc-logic 六类一律改挂 `enterprise_tag.tag_code`（`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md`）
-> **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_TYPE_COUNT.py` → `code/M_ENT_TYPE_COUNT_out.json`
-> **wanghui**：true（§五 必含王惠口径对照）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -110,7 +115,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx.dwd_org_stock_base` | 上市旁证 | 1,080 行 / 975 家 |
 | `code/_snapshots21/tech_tags_20261021.json` | 标签行级快照 | 32,322 家 × 202,424 行 |
 | `code/_snapshots21/ent_count21_facts_20261023.json` | 族级事实快照 | 六类计数与分布 |
-| `code/M_ENT_TYPE_COUNT_out.json` | 本件产物 | 六类、重叠、变体、缺口全部落盘 |
+| `metrics/repro/out/M_ENT_TYPE_COUNT_out.json` | 本件产物 | 六类、重叠、变体、缺口全部落盘 |
 
 ---
 
@@ -125,6 +130,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 重叠是这份报告的核心。高企与专精特新交集 14,634 家，占专精特新总量的 98.68%，也就是说本库的「专精特新」几乎全部同时是「高企」；高企与小巨人交集 2,003 家，占小巨人 99.85%；小微与外资交集 7,927 家，小微与上市交集 731 家。六类都不命中的企业有 53,257 家，占底册 28.16%。这些数说明六类不是六个并列的桶，而是六个相互嵌套的标签。
 
 结论是 **部分支持**：四类（高企/专精特新/小巨人/小微）数据完备，外资与上市两类口径有结构性缺口。外资的 `org_type` 是工商登记类型自由文本，含港澳台时 10,417、剔除后 3,307，两个数差 7,110；上市的 `listing_status` 非空 1,971，但 `dwd_org_stock_base` 只有 975 家 A/B 股，差额 996 家无法拆分市场。只要这两类仍靠自由文本与单列证券代码，六类就不能算「完全转换支持」。
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > | 需求出处 | 展示系统 §1.1.1.2.4.2.3.1；算法库「企业基础指标模型 → 重点企业类型」 |<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_TYPE_COUNT.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -175,7 +225,7 @@ A 族是资质类的权威来源，问题是有效期：高企三年、专精特
 2. 工业和信息化部：《优质中小企业梯度培育管理暂行办法》。https://www.miit.gov.cn/
 3. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
 4. 项目内 calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md`
-5. 王惠 20260817：`(王惠口径正本，GitLab 外本地归档)M_ENT_TYPE_COUNT.md`
+5. 王惠 20260817：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md（王惠正本已演化并入）`
 6. 同族已交付件：`M_ENT_HIGH_TECH_COUNT.md`、`M_ENT_INNOVATIVE_COUNT.md`、`M_ENT_TYPE_RATIO.md`
 
 ### 1.6 推测原意与依赖维度
@@ -288,7 +338,7 @@ calc-logic 的正本很明确：六类一律走 `enterprise_tag.tag_code`，并�
 复现命令：
 
 ```bash
-python3 M_ENT_TYPE_COUNT.py
+cd code && python3 M_ENT_TYPE_COUNT.py
 ```
 
 脚本输出：
@@ -467,13 +517,9 @@ calc-logic 2026-08-30 版把六类统一到 `enterprise_tag.tag_code`，并明�
 
 ## 参考文献
 
-1. 科技部火炬中心：高新技术企业认定管理工作网。https://www.innocom.gov.cn/
-2. 工业和信息化部：《优质中小企业梯度培育管理暂行办法》。https://www.miit.gov.cn/
-3. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
-4. 中国证券监督管理委员会：上市公司名录。http://www.csrc.gov.cn/
-5. 项目内 calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md`
-6. 王惠 20260817：`(王惠口径正本，GitLab 外本地归档)M_ENT_TYPE_COUNT.md`
-
+1. 工业和信息化部：《优质中小企业梯度培育管理暂行办法》。https://www.miit.gov.cn/
+2. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
+3. 中国证券监督管理委员会：上市公司名录。http://www.csrc.gov.cn/
 ---
 
 # 附件
@@ -630,15 +676,7 @@ calc-logic 2026-08-30 版把六类统一到 `enterprise_tag.tag_code`，并明�
 | 文件 | 说明 |
 |---|---|
 | `_staging21/M_ENT_TYPE_COUNT.md` | 本报告 |
-| `code/M_ENT_TYPE_COUNT.py` | 复算脚本 |
-| `code/M_ENT_TYPE_COUNT_out.json` | 产物 |
+| `metrics/repro/M_ENT_TYPE_COUNT.py` | 复算脚本 |
+| `metrics/repro/out/M_ENT_TYPE_COUNT_out.json` | 产物 |
 | `code/_snapshots21/ent_count21_facts_20261023.json` | 族级快照 |
 | `code/_snapshots21/tech_tags_20261021.json` | 标签快照 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

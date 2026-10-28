@@ -1,9 +1,21 @@
 # 产业链重点布局推荐数（M_CHAIN_LAYOUT_RECOMMEND_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_LAYOUT_RECOMMEND_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_LAYOUT_RECOMMEND_COUNT.py` → `metrics/repro/out/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（环节级计数·布局建议）｜ **域**：产业链分析／深圳产业发展分析／布局推荐｜ **UI 挂载**：深圳产业链页「重点布局」卡与推荐环节清单
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_LAYOUT_RECOMMEND_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_LAYOUT_RECOMMEND_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_LAYOUT_RECOMMEND_COUNT.py` → `metrics/repro/out/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_LAYOUT_RECOMMEND_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_LAYOUT_RECOMMEND_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_LAYOUT_RECOMMEND_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json` |
@@ -61,19 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_LAYOUT_RECOMMEND_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（环节级计数·布局建议）｜ **域**：产业链分析／深圳产业发展分析／布局推荐｜ **UI 挂载**：深圳产业链页「重点布局」卡与推荐环节清单
-> **数据支持度**：**部分支持**
-> **口径来源**：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_LAYOUT_RECOMMEND_COUNT.md`（v0.2.0，2026-10-14，human:徐滕强拍板方案A「单链发展方案条数 + 读表口径」）
-> **王惠正本**：`王惠口径正本（GitLab 外本地归档）`（V2-20260819，四指标布局优先级评分，阈值 ≥60 或高于深圳均值）
-> **复现**：`python3 M_CHAIN_LAYOUT_RECOMMEND_COUNT.py` → `code/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）；本脚本零 DB，只读 `code/_snapshots21/` 落盘快照
-> **基期声明**：截面指标。`base_years_used=[]`、`base_years_missing=[]`；链树、叶级企业数、深圳挂链均为当日快照，不涉及年度序列
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -196,7 +200,7 @@ C 族的局限也要写明：它没有「产业增长」「市场占有率」「
 | 编号 | 来源 | 用途 |
 |---|---|---|
 | R1 | `gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_LAYOUT_RECOMMEND_COUNT.md` | 方案A、读表口径、旧稿废止 |
-| R2 | `王惠口径正本（GitLab 外本地归档）` | 四指标评分与 ≥60 阈值 |
+| R2 | `gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_LAYOUT_RECOMMEND_COUNT.md（王惠正本已演化并入）` | 四指标评分与 ≥60 阈值 |
 | R3 | `_work_gkx21/REM_QUEUE_20261023.json` | 该件 case=C、阻塞表清单 |
 | R4 | `code/_snapshots21/chain_tree_20261021.json` | 1,273 节点 / 954 叶 |
 | R5 | `code/_snapshots21/chain_stage_leaf_20261021.json` | 叶级全国/深圳企业数 |
@@ -381,7 +385,7 @@ python3 M_CHAIN_LAYOUT_RECOMMEND_COUNT.py
 # 期望末行：[ok] M_CHAIN_LAYOUT_RECOMMEND_COUNT leaves=954 recommend=251 (A22/B27/C202)
 ```
 
-脚本零 DB，读三份快照，秒级完成。产物 `code/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json` 字段：`recommended`（251 行逐环节明细）、`by_chain`（12 行，含 `cond_scale` / `cond_key` / `cond_gap` 三个条件的单独计数）、`params`（门槛与敏感性）、`checks`（合计与分档一致性）、`live_probe`。
+脚本零 DB，读三份快照，秒级完成。产物 `metrics/repro/out/M_CHAIN_LAYOUT_RECOMMEND_COUNT_out.json` 字段：`recommended`（251 行逐环节明细）、`by_chain`（12 行，含 `cond_scale` / `cond_key` / `cond_gap` 三个条件的单独计数）、`params`（门槛与敏感性）、`checks`（合计与分档一致性）、`live_probe`。
 
 复现时先看 `checks.sum_recommend` 是否仍为 251；再看 `checks.tier_sum` 是否等于它。前者变了说明快照更新，后者不等说明分档逻辑有 bug。
 
@@ -516,14 +520,9 @@ live 侧 `chain_node_scoring` 41 行、`chain_panorama_nodes` 41 行，是 8 条
 
 ## 参考文献
 
-1. calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_LAYOUT_RECOMMEND_COUNT.md`（v0.2.0，2026-10-14）。
-2. 王惠正本：`王惠口径正本（GitLab 外本地归档）`（V2-20260819）。
-3. 派单书 v5/v6/v7：`_work_gkx21/DISPATCH_BRIEF_v5.md`、`DISPATCH_BRIEF_v6.md`、`DISPATCH_BRIEF_v7.md`。
-4. 实测事实：`_work_gkx21/DATA_FACTS_gkx21.md` §3.50—§3.68（链归属、去脏、叶级挂接）。
-5. 工业和信息化部. 产业基础创新发展目录（2021 年版）[EB/OL]. https://www.miit.gov.cn/.
-6. 深圳市工业和信息化局. 深圳市培育发展未来产业行动计划（2024—2025）[EB/OL]. https://gxj.sz.gov.cn/.
-7. 国家统计局. 战略性新兴产业分类（2018）[EB/OL]. https://www.stats.gov.cn/.
-
+1. 工业和信息化部. 产业基础创新发展目录（2021 年版）[EB/OL]. https://www.miit.gov.cn/.
+2. 深圳市工业和信息化局. 深圳市培育发展未来产业行动计划（2024—2025）[EB/OL]. https://gxj.sz.gov.cn/.
+3. 国家统计局. 战略性新兴产业分类（2018）[EB/OL]. https://www.stats.gov.cn/.
 ---
 
 # 附件
@@ -622,11 +621,3 @@ live 侧 `chain_node_scoring` 41 行、`chain_panorama_nodes` 41 行，是 8 条
 **问：7.952% 基准可以改吗？**
 
 答：可以，但改基准会直接改 C 档规模：基准降到 0，推荐数从 251 降到 49。基准是口径选择，不是自然常数，必须在页面标注。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

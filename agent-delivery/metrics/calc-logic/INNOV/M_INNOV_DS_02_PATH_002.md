@@ -1,9 +1,24 @@
 # 关键节点重要性（M_INNOV_DS_02_PATH_002）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_02_PATH_002.md`；复现脚本 `metrics/repro/M_INNOV_DS_02_PATH_002.py` → `metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：DS（专题服务指标面，DS_02 图谱路径族）｜ **域**：科学技术全景 / 技术点图谱（INNOV）｜ **UI 挂载**：科学技术全景 → 展示关键路径与关键节点（图谱特殊样式标记）
+> - **数据支持度**：**完全转换支持**｜ **依赖性质**：A 类（专利 IPC4 共类边由 `dwd_patent` 重建）；企业合作边结构性无源
+> - **一句话结论**：在三段主键抽样的 397,295 件专利上建 IPC4 共类网，得 **461 节点 / 6,422 边**；按「度 ≥ P90 且 ≥3」选出 **49 个关键节点（10.6291%）**，头部为 `G06F`（度 214、加权度 36,098）、`B01D`（199）、`B08B`（198）；四类中心性两两 Spearman **0.860675—0.894059**，三段子样本与全样本的 PageRank 相关 **0.955116—0.966299** → **可算、可复现、名次稳定**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_INNOV_DS_02_PATH_002.py`｜ **产物**：`metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json`｜ **样本快照**：`code/_snapshots21/tech_d_ipc4_sample_20261023.jsonl`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_02_PATH_002.py`、产物 `metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_02_PATH_002.md`；复现脚本 `metrics/repro/M_INNOV_DS_02_PATH_002.py` → `metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_02_PATH_002.py`、产物 `metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_02_PATH_002.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_02_PATH_002.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json` |
@@ -59,18 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_02_PATH_002.py`、产物 `metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：DS（专题服务指标面，DS_02 图谱路径族）｜ **域**：科学技术全景 / 技术点图谱（INNOV）｜ **UI 挂载**：科学技术全景 → 展示关键路径与关键节点（图谱特殊样式标记）
-> **数据支持度**：**完全转换支持**｜ **依赖性质**：A 类（专利 IPC4 共类边由 `dwd_patent` 重建）；企业合作边结构性无源
-> **公式定义人**：无（需求只给「中心度、影响力等」举例，按图论标准方法推定）｜ **口径归属**：非王惠系（calc-logic 无本指标条目）
-> **复现脚本**：`code/M_INNOV_DS_02_PATH_002.py`｜ **产物**：`code/M_INNOV_DS_02_PATH_002_out.json`｜ **样本快照**：`code/_snapshots21/tech_d_ipc4_sample_20261023.jsonl`
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读）
-> **一句话结论**：在三段主键抽样的 397,295 件专利上建 IPC4 共类网，得 **461 节点 / 6,422 边**；按「度 ≥ P90 且 ≥3」选出 **49 个关键节点（10.6291%）**，头部为 `G06F`（度 214、加权度 36,098）、`B01D`（199）、`B08B`（198）；四类中心性两两 Spearman **0.860675—0.894059**，三段子样本与全样本的 PageRank 相关 **0.955116—0.966299** → **可算、可复现、名次稳定**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -264,10 +272,10 @@ PageRank 用 `co` 加权、`alpha=0.85`、60 次迭代。`G06F` 0.043292 远高�
 ### 2.7 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_02_PATH_002.py
 # 首次运行会落盘样本（三段共约 200 秒），之后读快照约 4 秒
-# → code/M_INNOV_DS_02_PATH_002_out.json
+# → metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json
 ```
 
 复现判据：
@@ -469,11 +477,6 @@ IPC4 是专利分类体系的第三层（如 `G06F` 电数字数据处理），�
 3. Page L., Brin S., Motwani R., Winograd T. The PageRank citation ranking: Bringing order to the web. Stanford InfoLab Technical Report, 1999. http://ilpubs.stanford.edu:8090/422/
 4. Boldi P., Vigna S. Axioms for centrality. *Internet Mathematics*, 2014, 10(3-4): 222-262. https://doi.org/10.1080/15427951.2013.865686
 5. 世界知识产权组织. 国际专利分类（IPC）指南. https://www.wipo.int/classifications/ipc/
-6. 本地产物：
-   - `code/M_INNOV_DS_02_PATH_002.py`
-   - `code/M_INNOV_DS_02_PATH_002_out.json`
-   - `code/_snapshots21/tech_d_ipc4_sample_20261023.jsonl`
-
 ---
 
 # 附件
@@ -542,18 +545,11 @@ IPC4 是专利分类体系的第三层（如 `G06F` 电数字数据处理），�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_DS_02_PATH_002.py` |
-| 产物 | `code/M_INNOV_DS_02_PATH_002_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_DS_02_PATH_002.py` |
+| 产物 | `metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json` |
 | 样本 | 397,295 件（13.5139%） |
 | 图 | 461 节点 / 6,422 边 |
 | 关键节点 | 49 |
 | 判档 | 完全转换支持 |
 | 首次耗时 | 201.7 秒（含三段取数） |
 | 复跑耗时 | 4.1 秒 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

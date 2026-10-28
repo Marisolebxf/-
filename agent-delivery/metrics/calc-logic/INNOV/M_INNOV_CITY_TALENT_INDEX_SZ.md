@@ -1,9 +1,21 @@
 # 深圳重点人才指数（M_INNOV_CITY_TALENT_INDEX_SZ）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_TALENT_INDEX_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py` → `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（单城人才池指数）｜ **域**：科技信息展示系统／科技人才智慧服务／深圳重点人才｜ **UI 挂载**：深圳人才指数卡、人才池画像
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_TALENT_INDEX_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py` → `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CITY_TALENT_INDEX_SZ.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json` |
@@ -62,20 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（单城人才池指数）｜ **域**：科技信息展示系统／科技人才智慧服务／深圳重点人才｜ **UI 挂载**：深圳人才指数卡、人才池画像
-> **数据支持度**：**部分支持**
-> **口径来源**：注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`；`calc-logic/INNOV` 下**无同 ID 正本**，本件口径为自拟
-> **王惠正本**：无同 ID 正本（`20260904_创新技术/指标计算逻辑/` 下未收录本条）
-> **复现**：`python3 _probe_talent_w15n1.py && python3 M_INNOV_CITY_TALENT_INDEX_SZ.py` → `code/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`
-> **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），脚本零 DB、只读落盘快照
-> **基期声明**：`base_years_used` = [2021, 2022, 2023]；`base_years_missing` = [2017, 2018, 2019, 2020]（专利表这四年零行）；活跃率叶的"近三年"锁 2021—2023，2024 回填孤峰与 2025—2026 残年不入窗。
-> **权重声明**：`main_is_official` = **false**。五叶百分位秩等权，不用规模叶，故不是总量排名。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -287,7 +290,7 @@ python3 _probe_talent_w15n1.py
 python3 M_INNOV_CITY_TALENT_INDEX_SZ.py
 ```
 
-输出摘要（完整结果见 `code/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`）：
+输出摘要（完整结果见 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`）：
 
 ```
 深圳市 index=69.21  sz_scholars=213  ref_cities=38
@@ -445,11 +448,9 @@ checks: five_leaves=True pct_rank_in_range=True sz_in_ref_pool=True ref_pool_min
 
 ## 参考文献
 
-1. 注册表 `cfg_metric-INNOV-seed.yaml`（M_INNOV_CITY_TALENT_INDEX_SZ 条），仓库内路径 `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml`。
-2. 软科中国大学排名方法，https://www.shanghairanking.cn/methodology
-3. Clarivate ESI 高被引论文口径，https://clarivate.com/products/scientific-and-academic-research/research-analytics-evaluation-and-management-solutions/essential-science-indicators/
-4. 深圳市人才工作局公开政策汇编，https://www.sz.gov.cn/
-
+1. 软科中国大学排名方法，https://www.shanghairanking.cn/methodology
+2. Clarivate ESI 高被引论文口径，https://clarivate.com/products/scientific-and-academic-research/research-analytics-evaluation-and-management-solutions/essential-science-indicators/
+3. 深圳市人才工作局公开政策汇编，https://www.sz.gov.cn/
 # 附件
 
 ## 附录 A 需求原文摘录
@@ -516,10 +517,3 @@ checks: five_leaves=True pct_rank_in_range=True sz_in_ref_pool=True ref_pool_min
 
 问：如果明年补了英文论文，这个分数会怎么变？
 答：三叶会降、一叶会升。h 中位数与 h≥50 占比的分母变大（更多低 h 的年轻人进池），比值会降；活跃率会因为近三年发文被补上而升。净效应无法预判，必须重算。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

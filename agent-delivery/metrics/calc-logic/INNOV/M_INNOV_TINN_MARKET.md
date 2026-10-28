@@ -1,9 +1,22 @@
 # 技术市场潜力（M_INNOV_TINN_MARKET）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_TINN_MARKET.md`；复现脚本 `metrics/repro/M_INNOV_TINN_MARKET.py` → `metrics/repro/out/M_INNOV_TINN_MARKET_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠已定义（INNOV 家族 · 科技创新评估）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.2.3，原文第 907 行）
+> - **数据支持度**：**完全不支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（转让表、法律事件表、市场表都在）；依赖数据 = **否**（转让表无 `patent_id`/`ipc4`；法律事件仅 2 万行、诉讼命中 0；市场表 15 行度量列全空）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_TINN_MARKET.py`、产物 `metrics/repro/out/M_INNOV_TINN_MARKET_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_TINN_MARKET.md`；复现脚本 `metrics/repro/M_INNOV_TINN_MARKET.py` → `metrics/repro/out/M_INNOV_TINN_MARKET_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_TINN_MARKET.py`、产物 `metrics/repro/out/M_INNOV_TINN_MARKET_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_TINN_MARKET.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_TINN_MARKET.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_TINN_MARKET_out.json` |
@@ -63,16 +76,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_TINN_MARKET.py`、产物 `metrics/repro/out/M_INNOV_TINN_MARKET_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：王惠已定义（INNOV 家族 · 科技创新评估）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.2.3，原文第 907 行）
-> **UI 挂载**：技术创新力指标展示页「技术市场潜力分析」卡片（五维雷达 + 领域活跃度排名）
-> **数据支持度**：**完全不支持**
-> **口径来源**：`metrics/calc-logic/INNOV/M_INNOV_TINN_MARKET.md`（V1.5-20260901）＋需求原文 1.1.1.1.4.1.7.2.3
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（转让表、法律事件表、市场表都在）；依赖数据 = **否**（转让表无 `patent_id`/`ipc4`；法律事件仅 2 万行、诉讼命中 0；市场表 15 行度量列全空）
-> **铁律**：不产出任何领域分；不用专利数量、授权率或产业链交易额顶替「市场潜力」；诉讼维 0 命中不得写成「无诉讼风险」
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: true
 
 ---
@@ -345,9 +354,7 @@ $$
 4. 国家知识产权局. *专利权质押登记办法*. <https://www.cnipa.gov.cn/col/col1510/index.html>
 5. WIPO. *Technology transfer and licensing*. <https://www.wipo.int/technology-transfer/en/>
 6. 国家知识产权局. *知识产权统计年报（2024）*. <https://www.cnipa.gov.cn/col/col61/index.html>
-7. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_TINN_MARKET.md`
-8. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 907 行
-
+7. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 907 行
 ---
 
 # 附件
@@ -484,18 +491,10 @@ Gartner 类模型靠专家判断，不可核验，也不属事件型指标，本
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_TINN_MARKET.py` |
-| 输出 | `code/M_INNOV_TINN_MARKET_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_TINN_MARKET.py` |
+| 输出 | `metrics/repro/out/M_INNOV_TINN_MARKET_out.json` |
 | 耗时 | 0.1 秒（纯读快照） |
 | SQL | 0 条（失败查询在前置探针中落盘） |
 | 关键数字 | 转让 22,809 行 / 0.7758% 覆盖 / 无 `patent_id` / 许可 56 / 开放许可 6 / 质押 104 / 诉讼 0 / 市场表 15 行全空 |
 | 交付 | 无领域分、无排名 |
 | 判档 | 完全不支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

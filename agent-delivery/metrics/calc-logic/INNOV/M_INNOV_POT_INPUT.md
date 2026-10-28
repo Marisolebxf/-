@@ -1,9 +1,21 @@
 # 产业投入（M_INNOV_POT_INPUT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POT_INPUT.md`；复现脚本 `metrics/repro/M_INNOV_POT_INPUT.py` → `metrics/repro/out/M_INNOV_POT_INPUT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（行业横截面指数 0—100）｜ **域**：INNOV（创新机会）｜ **UI 挂载**：产业潜力 → 投入维度
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（calc-logic INNOV V1.5-20260901，作为潜力综合的子维）｜ wanghui: true
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POT_INPUT.py`、产物 `metrics/repro/out/M_INNOV_POT_INPUT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POT_INPUT.md`；复现脚本 `metrics/repro/M_INNOV_POT_INPUT.py` → `metrics/repro/out/M_INNOV_POT_INPUT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POT_INPUT.py`、产物 `metrics/repro/out/M_INNOV_POT_INPUT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -26,7 +38,7 @@
 
 行业横截面指数 0—100：0.45·研发投入强度 + 0.30·研发投入规模(log10) + 0.25·创新载体密度；固投增长率与人才投入强度因整列为空未入式
 
-> 一句话口径（源件 §0.3）：王惠把「产业投入」拆成三个子维：研发投入强度、固定资产投资增长率、人才投入强度。本库只交付第一个——利润表 `dwd_org_income_statement` 的 `yysr`（营业收入）与 `yffy`（研发费用）在 2024 年合并报表口径下有 1,559 家企业可用，合计研发 5,412.96 亿元、营收 146,772.60 亿元、加权强度 3.69%；固定资产投资与研发人员两组字段在 `dwd_org_annual_financial_info`（90,926 行）里**整列为空**（`fixed_assets`、`arch_development_am`、`development_employee` 非空均为 0）。结构与量都够出行业横截面分，但三子维只交付 1 维，判**部分支持**。本档位与 `code/M_INNOV_POT_INPUT_out.json` 的 `support_judgment` 一致。
+> 一句话口径（源件 §0.3）：王惠把「产业投入」拆成三个子维：研发投入强度、固定资产投资增长率、人才投入强度。本库只交付第一个——利润表 `dwd_org_income_statement` 的 `yysr`（营业收入）与 `yffy`（研发费用）在 2024 年合并报表口径下有 1,559 家企业可用，合计研发 5,412.96 亿元、营收 146,772.60 亿元、加权强度 3.69%；固定资产投资与研发人员两组字段在 `dwd_org_annual_financial_info`（90,926 行）里**整列为空**（`fixed_assets`、`arch_development_am`、`development_employee` 非空均为 0）。结构与量都够出行业横截面分，但三子维只交付 1 维，判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_POT_INPUT_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -51,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：王惠把「产业投入」拆成三个子维：研发投入强度、固定资产投资增长率、人才投入强度。本库只交付第一个——利润表 `dwd_org_income_statement` 的 `yysr`（营业收入）与 `yffy`（研发费用）在 2024 年合并报表口径下有 1,559 家企业可用，合计研发 5,412.96 亿元、营收 146,772.60 亿元、加权强度 3.69%；固定资产投资与研发人员两组字段在 `dwd_org_annual_financial_info`（90,926 行）里**整列为空**（`fixed_assets`、`arch_development_am`、`development_employee` 非空均为 0）。结构与量都够出行业横截面分，但三子维只交付 1 维，判**部分支持**。本档位与 `code/M_INNOV_POT_INPUT_out.json` 的 `support_judgment` 一致。
+- **判档理由**：王惠把「产业投入」拆成三个子维：研发投入强度、固定资产投资增长率、人才投入强度。本库只交付第一个——利润表 `dwd_org_income_statement` 的 `yysr`（营业收入）与 `yffy`（研发费用）在 2024 年合并报表口径下有 1,559 家企业可用，合计研发 5,412.96 亿元、营收 146,772.60 亿元、加权强度 3.69%；固定资产投资与研发人员两组字段在 `dwd_org_annual_financial_info`（90,926 行）里**整列为空**（`fixed_assets`、`arch_development_am`、`development_employee` 非空均为 0）。结构与量都够出行业横截面分，但三子维只交付 1 维，判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_POT_INPUT_out.json` 的 `support_judgment` 一致。
 - **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 - **复现实测耗时**：约 1.6 秒（源件落盘记录）
 
@@ -59,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_POT_INPUT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_POT_INPUT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_POT_INPUT_out.json` |
@@ -67,16 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_POT_INPUT.py`、产物 `metrics/repro/out/M_INNOV_POT_INPUT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（行业横截面指数 0—100）｜ **域**：INNOV（创新机会）｜ **UI 挂载**：产业潜力 → 投入维度
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（calc-logic INNOV V1.5-20260901，作为潜力综合的子维）｜ wanghui: true
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（三子维只交付 1 维；固定资产与研发人员两组字段整列为空）
-> **一句话口径**：行业级投入指数 = 0.45×研发投入强度 + 0.30×研发投入规模 + 0.25×创新载体密度；固投增长率与人才投入强度因字段整列为空未入式。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -104,7 +111,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-王惠把「产业投入」拆成三个子维：研发投入强度、固定资产投资增长率、人才投入强度。本库只交付第一个——利润表 `dwd_org_income_statement` 的 `yysr`（营业收入）与 `yffy`（研发费用）在 2024 年合并报表口径下有 1,559 家企业可用，合计研发 5,412.96 亿元、营收 146,772.60 亿元、加权强度 3.69%；固定资产投资与研发人员两组字段在 `dwd_org_annual_financial_info`（90,926 行）里**整列为空**（`fixed_assets`、`arch_development_am`、`development_employee` 非空均为 0）。结构与量都够出行业横截面分，但三子维只交付 1 维，判**部分支持**。本档位与 `code/M_INNOV_POT_INPUT_out.json` 的 `support_judgment` 一致。
+王惠把「产业投入」拆成三个子维：研发投入强度、固定资产投资增长率、人才投入强度。本库只交付第一个——利润表 `dwd_org_income_statement` 的 `yysr`（营业收入）与 `yffy`（研发费用）在 2024 年合并报表口径下有 1,559 家企业可用，合计研发 5,412.96 亿元、营收 146,772.60 亿元、加权强度 3.69%；固定资产投资与研发人员两组字段在 `dwd_org_annual_financial_info`（90,926 行）里**整列为空**（`fixed_assets`、`arch_development_am`、`development_employee` 非空均为 0）。结构与量都够出行业横截面分，但三子维只交付 1 维，判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_POT_INPUT_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -249,9 +256,9 @@ $$I_{i}=0.45\cdot P\left(\frac{RD_i}{REV_i}\right)+0.30\cdot P\left(\log_{10} RD
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_POT_INPUT.py
-# 输出 code/M_INNOV_POT_INPUT_out.json；实测耗时 1.6 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_INNOV_POT_INPUT_out.json；实测耗时 1.6 秒（全离线，零 SQL）
 ```
 
 **行业投入指数前十二**：
@@ -389,20 +396,10 @@ python3 code/M_INNOV_POT_INPUT.py
 ---
 
 ## 参考文献
-
-> 下列条目为口径与方法来源；项目内文件按相对路径给出，外部文件给出可访问 URL。
-
 1. 国家统计局. (2024). 《中国统计年鉴》R&D 经费内部支出. https://www.stats.gov.cn/
 2. 欧盟委员会. (2024). *EU Industrial R&D Investment Scoreboard*. https://iri.jrc.ec.europa.eu/scoreboard.html
-3. OECD. (2023). *Science, Technology and Innovation Outlook*. https://www.oecd.org/sti/
-4. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
-5. 科学技术部. (2024). 《中国科技统计年鉴》. https://www.most.gov.cn/
-6. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_COMPOSITE.md`（王惠 V1.5-20260901）。
-7. 项目内数据纪律（非外部文献）：`_work_gkx21/DATA_FACTS_gkx21.md` §3.1、§3.5、§3.10。
-8. 项目内缓存清单（非外部文献）：`_work_gkx21/SHARED_ASSETS.md`（`tech_tags_20261021.json`、`base_20261021.json`）。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
+3. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
+4. 科学技术部. (2024). 《中国科技统计年鉴》. https://www.most.gov.cn/
 ---
 
 # 附件
@@ -540,8 +537,8 @@ python3 code/M_INNOV_POT_INPUT.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_POT_INPUT.py`（20261021 版，全离线，零 SQL）
-- 产物：`code/M_INNOV_POT_INPUT_out.json`
+- 脚本：`metrics/repro/M_INNOV_POT_INPUT.py`（20261021 版，全离线，零 SQL）
+- 产物：`metrics/repro/out/M_INNOV_POT_INPUT_out.json`
 - 输入：`code/_snapshots21/a25_income.json`、`a25_facts.json`、`star_base_rows_gkx.json`
 - 源表：`gkx.dwd_org_income_statement` / `dwd_org_base_info` / `dwd_org_tech_tag`（**未直接查询**）
 - 耗时：1.6 秒
@@ -550,10 +547,3 @@ python3 code/M_INNOV_POT_INPUT.py
 - 覆盖：1,559 家财务、1,481 家归行业（95.00%）、78 家未匹配
 - 标记：top1 ≥50% 的行业 26 个；财务企业 <5 的行业 10 个
 - 工程注意：固投与研发人员两列整列为空；载体密度是代理；华为投资控股占科技推广行业研发 95.7%
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

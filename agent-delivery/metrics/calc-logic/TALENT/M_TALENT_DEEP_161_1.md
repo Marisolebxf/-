@@ -1,9 +1,22 @@
-# M_TALENT_DEEP_161_1（M_TALENT_DEEP_161_1）
+# 人才供需分析评价模型（M_TALENT_DEEP_161_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_DEEP_161_1.md`；复现脚本 `metrics/repro/M_TALENT_DEEP_161_1.py` → `metrics/repro/out/M_TALENT_DEEP_161_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：需求派生（TALENT 家族 · 深度分析 161）｜ **域**：科技信息展示系统 · 科技人才态势 · 人才供需
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否（无供需结果表）；直接数据 = 否；依赖结构 = 是（招聘流水 670 万行估算、学者池 21,316、论文面板）；依赖数据 = **部分**（需求侧可抽样、供给侧可判簇，但岗位无学历/技能/薪资、岗位簇命中仅 5.99%、两侧量纲不同）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_DEEP_161_1.py`、产物 `metrics/repro/out/M_TALENT_DEEP_161_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_DEEP_161_1.md`；复现脚本 `metrics/repro/M_TALENT_DEEP_161_1.py` → `metrics/repro/out/M_TALENT_DEEP_161_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_DEEP_161_1.py`、产物 `metrics/repro/out/M_TALENT_DEEP_161_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TALENT_DEEP_161_1.md` |
 | 复现脚本 | `metrics/repro/M_TALENT_DEEP_161_1.py` |
 | 复现产物 | `metrics/repro/out/M_TALENT_DEEP_161_1_out.json` |
@@ -63,16 +76,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_DEEP_161_1.py`、产物 `metrics/repro/out/M_TALENT_DEEP_161_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：需求派生（TALENT 家族 · 深度分析 161）｜ **域**：科技信息展示系统 · 科技人才态势 · 人才供需
-> **UI 挂载**：人才洞察页「岗位需求 × 学者供给 × 20+8 簇稀缺度」
-> **数据支持度**：**部分支持**
-> **口径来源**：需求原文「人才供需/紧缺分析」段＋本文 §1.6 的「岗位流水 vs 学者存量」口径；calc-logic 无本指标实现
-> **四判定摘要**：直接结构 = 否（无供需结果表）；直接数据 = 否；依赖结构 = 是（招聘流水 670 万行估算、学者池 21,316、论文面板）；依赖数据 = **部分**（需求侧可抽样、供给侧可判簇，但岗位无学历/技能/薪资、岗位簇命中仅 5.99%、两侧量纲不同）
-> **铁律**：两侧单位不同，只算「岗位/学者」倍数，不折算缺口人数；抽样口径必须披露；无学历/薪资不做层级筛选
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: false
 
 ---
@@ -192,7 +201,7 @@ calc-logic 未找到 `M_TALENT_DEEP_161_1` 的实现；注册表 seed 只有「�
 3. 深圳市人力资源和社会保障局. *人力资源市场供求分析*. <http://hrss.sz.gov.cn/>
 4. 深圳市人民政府. *深圳市「20+8」产业集群政策*. <https://www.sz.gov.cn/>
 5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（人才供需段）
-6. 同批产物：`code/M_TALENT_DEEP_161_1_out.json`
+6. 同批产物：`metrics/repro/out/M_TALENT_DEEP_161_1_out.json`
 7. 岗位样本快照：`code/_snapshots21/recruit161_20261022.json`
 8. 学者/论文快照：`code/_snapshots21/probe_a26_20261022.json`、`code/_snapshots21/a25_paper_panel.json`
 
@@ -306,10 +315,10 @@ WHERE dwd_id BETWEEN {lo} AND {hi} AND is_deleted=0 AND dwd_id % 97 = 0;
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_TALENT_DEEP_161_1.py` |
+| 脚本 | `metrics/repro/M_TALENT_DEEP_161_1.py` |
 | 公共库 | `code/_talent21_common.py`（含 `scholars()`、`anchored_papers`、`clusters_of`） |
 | 数据快照 | `recruit161_20261022.json`（本脚本首跑生成）、`probe_a26_20261022.json`、`a25_paper_panel.json` |
-| 输出 | `code/M_TALENT_DEEP_161_1_out.json` |
+| 输出 | `metrics/repro/out/M_TALENT_DEEP_161_1_out.json` |
 | 库名 / 端口 | `gkx` @ 183.240.141.251:3318（`gkx_reader_zp`，只读）；本指标 SQL 6 条 |
 | 运行 | `python3 code/M_TALENT_DEEP_161_1.py` |
 | 耗时 | 82.8 秒（首跑）/ 22.6 秒（命中缓存） |
@@ -453,11 +462,6 @@ WHERE dwd_id BETWEEN {lo} AND {hi} AND is_deleted=0 AND dwd_id % 97 = 0;
 3. 深圳市人力资源和社会保障局. *人力资源市场供求分析*. <http://hrss.sz.gov.cn/>
 4. 深圳市人民政府. *深圳市「20+8」产业集群政策*. <https://www.sz.gov.cn/>
 5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（人才供需段）
-6. 同批产物：`code/M_TALENT_DEEP_161_1_out.json`
-7. 岗位样本快照：`code/_snapshots21/recruit161_20261022.json`
-8. 学者/论文快照：`code/_snapshots21/probe_a26_20261022.json`、`code/_snapshots21/a25_paper_panel.json`
-9. 注册表口径：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-TALENT-seed.yaml`（v0.1.0，`is_mock: true`）
-
 ---
 
 # 附件
@@ -580,17 +584,10 @@ Burning Glass 用岗位数对比求职者数算紧张度，是最标准的做法
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_TALENT_DEEP_161_1.py` |
-| 输出 | `code/M_TALENT_DEEP_161_1_out.json` |
+| 脚本 | `metrics/repro/M_TALENT_DEEP_161_1.py` |
+| 输出 | `metrics/repro/out/M_TALENT_DEEP_161_1_out.json` |
 | 耗时 | 82.8 秒（首跑） |
 | SQL | 6 条 |
 | 关键数字 | 样本 82,201 / 深圳 19.73% / 研发岗 9.49% / 簇命中 5.99% / 倍数 74.2—1,358.0 |
 | 交付 | 需求结构 + 供给簇 + 稀缺度倍数 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

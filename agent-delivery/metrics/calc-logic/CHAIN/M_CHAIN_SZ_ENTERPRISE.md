@@ -1,9 +1,20 @@
 # 深圳企业维度（M_CHAIN_SZ_ENTERPRISE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_SZ_ENTERPRISE.md`；复现脚本 `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py` → `metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（三维合成评分，王惠系）｜ **域**：产业链分析／深圳产业发展分析／深圳产业现状／综合优势｜ **UI 挂载**：链全景页「深圳产业现状」企业维度得分卡（优势评分的四个输入维之一）｜ **数据支持度**：**部分支持**｜ **wanghui**: true
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py`、产物 `metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_SZ_ENTERPRISE.md`；复现脚本 `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py` → `metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py`、产物 `metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_SZ_ENTERPRISE.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json` |
@@ -66,15 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py`、产物 `metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（三维合成评分，王惠系）｜ **域**：产业链分析／深圳产业发展分析／深圳产业现状／综合优势｜ **UI 挂载**：链全景页「深圳产业现状」企业维度得分卡（优势评分的四个输入维之一）｜ **数据支持度**：**部分支持**｜ **wanghui**: true
-> **公式定义人**：王惠（《产业链分析》指标计算逻辑 V2-20260824；`metrics/calc-logic/CHAIN/M_CHAIN_SZ_ENTERPRISE.md`，对齐状态「待闭合/待甲方确认」）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：在（tags 228 万 + 底册 18.9 万）/ 部分（营收覆盖 0.65%、研发覆盖 876 家）
-> **同族关系**：本指标是 `M_CHAIN_SZ_ADVANTAGE_SCORE` 的**四维之一（权重 25%）**；与 `M_CHAIN_SZ_ENTERPRISE_COUNT` 共享「企业数量」这一三级，后者是它的输入而非独立结论。三者同源，**不得互为验证**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -110,7 +117,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「深圳企业维度」是把「深圳在这条链上的企业有多强」压缩成一个 0–100 分的三维评分：企业数量、企业规模（营业收入）、企业质量（上市企业研发强度），三个三级各自在四城集合上 min-max，再等权平均。它是深圳优势评分的四个输入维之一（权重 25%），本身不直接对外，但它的偏差会原样传导到优势评分与优势排名。
 
-本次实测（2026-10-21，脚本 `code/M_CHAIN_SZ_ENTERPRISE.py`，耗时 < 0.1 秒，读缓存矩阵）得到深圳企业维度 **34.89–100.00**（中位 48.94、均值 55.16）：数字创意 100.00（数量/规模/质量三维全满）、集成电路 81.70 排第一；其余 10 条链深圳均为第 2 名，得分 34.89–66.74，第一名全部是广州。
+本次实测（2026-10-21，脚本 `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py`，耗时 < 0.1 秒，读缓存矩阵）得到深圳企业维度 **34.89–100.00**（中位 48.94、均值 55.16）：数字创意 100.00（数量/规模/质量三维全满）、集成电路 81.70 排第一；其余 10 条链深圳均为第 2 名，得分 34.89–66.74，第一名全部是广州。
 
 **这个「10 条链第 2 名」的结论高度可疑，原因不在算法而在输入。** 企业数量维深圳在 10 条链里都是满分（数量最多，合理）；真正拉开差距的是企业规模维——深圳在 12 条链里有 5 条规模得分为 0.00（生物医药、合成生物、智能网联汽车，以及并列的低值），而广州的规模维几乎条条靠前。进一步核查发现，广州的「规模」由少数几家**年份陈旧、行业错挂**的企业撑起：人工智能链上广州营收前四名是唯品会 111.02 亿（2014 年，电商）、广船国际 105.58 亿（2016 年，造船）、广百股份 42.60 亿（2015 年，百货）、广电运通 35.56 亿（2025 年，金融设备）；生物医药链上广州第一是**珠江啤酒 19.14 亿（2015 年）**。与此同时，深圳真正的巨头在营收表里几乎不存在：华为 42 行年报**营收全为 NULL**、腾讯 33 行**全为 NULL**、富士康 0 行有值、比亚迪 77 行里只有 1 行有值且数值为 0.0000001 亿（约 100 元）。
 
@@ -193,7 +200,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：公式来自王惠 V2-20260824，本报告只补源侧现转规则；数值由 `code/M_CHAIN_SZ_ENTERPRISE.py` 当日现算。
+> **口径说明**：公式来自王惠 V2-20260824，本报告只补源侧现转规则；数值由 `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py` 当日现算。
 
 ### 2.1 公式出处
 
@@ -331,8 +338,8 @@ GROUP BY b.city;   -- 一股多期按 occur_period 取最新
 
 #### 2.7.1 复现代码入库位置与运行方式
 
-- 脚本：`code/M_CHAIN_SZ_ENTERPRISE.py`（读缓存矩阵，耗时 < 0.1 秒）
-- 输出：`code/M_CHAIN_SZ_ENTERPRISE_out.json`
+- 脚本：`metrics/repro/M_CHAIN_SZ_ENTERPRISE.py`（读缓存矩阵，耗时 < 0.1 秒）
+- 输出：`metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json`
 - 附加探测：`code/_probe_sz_adv_scale.py` → `code/_snapshots/sz_adv_scale_probe_20261021.json`（营收量级、龙头覆盖率、链内 Top 企业）
 
 #### 2.7.2 复现结果（摘要表）
@@ -471,9 +478,6 @@ elapsed_sec         0.0
 5. 国家质量监督检验检疫总局, 中国国家标准化管理委员会. (2017). 《国民经济行业分类》（GB/T 4754—2017）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=A703F0E23DD165A5A1318679F312D158
 
 6. IMD World Competitiveness Center. (2026). *World Competitiveness Ranking Methodology*（标准化值 + 分层权重的加权合成范式）. https://www.imd.org/centers/wcc/world-competitiveness-center/rankings/world-competitiveness-ranking/methodology/
-
-7. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_SZ_ENTERPRISE.md`；`M_CHAIN_SZ_ADVANTAGE_SCORE.md`（V2-20260824）；王惠《产业链分析》指标计算逻辑 V2。
-
 ---
 
 # 附件
@@ -601,15 +605,7 @@ $ python3 code/_probe_sz_adv_scale.py
 
 | 文件 | 内容 |
 |---|---|
-| `code/M_CHAIN_SZ_ENTERPRISE.py` | 三维 min-max + 四城排名 |
-| `code/M_CHAIN_SZ_ENTERPRISE_out.json` | 链级得分、分量、覆盖率、支持度判定 |
+| `metrics/repro/M_CHAIN_SZ_ENTERPRISE.py` | 三维 min-max + 四城排名 |
+| `metrics/repro/out/M_CHAIN_SZ_ENTERPRISE_out.json` | 链级得分、分量、覆盖率、支持度判定 |
 | `code/_probe_sz_adv_scale.py` | 营收量级、龙头覆盖、链内 Top 企业 |
 | `code/_snapshots/sz_adv_scale_probe_20261021.json` | 上述探测的结构化结果 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

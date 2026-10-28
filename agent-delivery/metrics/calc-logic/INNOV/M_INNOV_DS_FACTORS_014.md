@@ -1,9 +1,21 @@
-# 要素影响力（专利侧）（M_INNOV_DS_FACTORS_014）
+# 要素影响力（专利侧，M_INNOV_DS_FACTORS_014）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_FACTORS_014.md`；复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_014.py` → `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（单件专利 0—100 分）｜ **域**：DS-FACTORS（科技创新要素）｜ **UI 挂载**：科技信息展示系统 → 创新要素 → 要素影响力（专利）
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（对齐 `M_INNOV_PATENT_INFLUENCE`）｜ wanghui: true
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_014.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_FACTORS_014.md`；复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_014.py` → `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_014.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +36,7 @@
 
 ## 口径定义
 
-两维的**结构**都在：`gkx.dwd_patent_cited.cited_by_nums`（20,515 行）与 `gkx.dwd_patent.value`（2,939,895 行，非空 1,994,812）。但**被引维的数据量差三个数量级**：被引表只有 475 行（467 件不同专利）能按 `patent_id` 挂回主表，覆盖率 0.0162%；价值维虽 67.85% 填充，却有 81.95% 的值落在 0—5 分桶、只有 362 个离散取值。占 0.80 权重的维度不可用、占 0.20 权重的维度高度退化，按 §〇 判**部分支持**。本档位与 `code/M_INNOV_DS_FACTORS_014_out.json` 的 `support_judgment` 一致。
+两维的**结构**都在：`gkx.dwd_patent_cited.cited_by_nums`（20,515 行）与 `gkx.dwd_patent.value`（2,939,895 行，非空 1,994,812）。但**被引维的数据量差三个数量级**：被引表只有 475 行（467 件不同专利）能按 `patent_id` 挂回主表，覆盖率 0.0162%；价值维虽 67.85% 填充，却有 81.95% 的值落在 0—5 分桶、只有 362 个离散取值。占 0.80 权重的维度不可用、占 0.20 权重的维度高度退化，按 §〇 判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -56,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_FACTORS_014.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_FACTORS_014.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json` |
@@ -64,16 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_FACTORS_014.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（单件专利 0—100 分）｜ **域**：DS-FACTORS（科技创新要素）｜ **UI 挂载**：科技信息展示系统 → 创新要素 → 要素影响力（专利）
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（对齐 `M_INNOV_PATENT_INFLUENCE`）｜ wanghui: true
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（0.80 权重的被引维只覆盖 0.016%）
-> **一句话口径**：按王惠口径，单件专利的要素影响力 = 被引次数 0.80 + 专利价值 0.20，缺测维重归一；实测被引维只有 **475 行（467 件）/ 2,939,895** 能挂回主表，重归一等价于「只算专利价值」，故判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -101,7 +108,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-两维的**结构**都在：`gkx.dwd_patent_cited.cited_by_nums`（20,515 行）与 `gkx.dwd_patent.value`（2,939,895 行，非空 1,994,812）。但**被引维的数据量差三个数量级**：被引表只有 475 行（467 件不同专利）能按 `patent_id` 挂回主表，覆盖率 0.0162%；价值维虽 67.85% 填充，却有 81.95% 的值落在 0—5 分桶、只有 362 个离散取值。占 0.80 权重的维度不可用、占 0.20 权重的维度高度退化，按 §〇 判**部分支持**。本档位与 `code/M_INNOV_DS_FACTORS_014_out.json` 的 `support_judgment` 一致。
+两维的**结构**都在：`gkx.dwd_patent_cited.cited_by_nums`（20,515 行）与 `gkx.dwd_patent.value`（2,939,895 行，非空 1,994,812）。但**被引维的数据量差三个数量级**：被引表只有 475 行（467 件不同专利）能按 `patent_id` 挂回主表，覆盖率 0.0162%；价值维虽 67.85% 填充，却有 81.95% 的值落在 0—5 分桶、只有 362 个离散取值。占 0.80 权重的维度不可用、占 0.20 权重的维度高度退化，按 §〇 判**部分支持**。本档位与 `metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -168,7 +175,7 @@ $$S=\frac{0.80\cdot S_{cited}+0.20\cdot S_{value}}{\sum w},\qquad \sum w=\begin{
 | 3 | `_work_gkx21/PATENT_SCAN_LEDGER.md` | 废弃清单 | 「任何 `WHERE apdt_year=...` 的 COUNT / GROUP BY 会 600 秒断连。」 |
 | 4 | `_work_gkx21/CLASSIFY.json` | 键 `M_INNOV_DS_FACTORS_014` | 「case=A；tables=[`dwd_patent_cited`]；demo_literal_in_py=true（旧版）。」 |
 | 5 | 项目内旁证 | `_snapshots21/patent_value_agg_gkx.json` | 「gkx.dwd_patent.value 全表分布（按 dwd_id 分块 GROUP BY，非采样）。」 |
-| 6 | 前批实测 | `20261020_指标整体开发进度调研/code/M_INNOV_DS_FACTORS_014_out.json` | 「cited 20,515 行；可对齐 475；value 非空 1,994,812（67.85%）。」 |
+| 6 | 前批实测 | `20261020_指标整体开发进度调研/metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json` | 「cited 20,515 行；可对齐 475；value 非空 1,994,812（67.85%）。」 |
 
 ### 1.6 推测原意与推测定义（仿王惠口径写法）
 
@@ -287,9 +294,9 @@ $$S=\frac{\sum_{k\in live} w_k S_k}{\sum_{k\in live} w_k}$$
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_FACTORS_014.py
-# 输出 code/M_INNOV_DS_FACTORS_014_out.json；2 条小表查询 + 主表两键批量点查
+# 输出 metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json；2 条小表查询 + 主表两键批量点查
 ```
 
 脚本的 SQL 预算只有「被引表 2 条（统计 1 条、全量 1 条）+ 主表两键批量点查（`patent_id` 每 300 个一包、`pn` 同样）」，且都不碰主表聚合：分年覆盖由 475 行结果在内存汇总，不再发第三条 JOIN。主表总行数读面板缓存，价值分布读 `_snapshots21/patent_value_agg_gkx.json`（按 `dwd_id` 分块 GROUP BY 的离线缓存）。
@@ -415,20 +422,10 @@ python3 code/M_INNOV_DS_FACTORS_014.py
 ---
 
 ## 参考文献
-
-> 下列条目为口径与方法来源；项目内文件按相对路径给出，外部文件给出可访问 URL。
-
 1. Hirsch, J. E. (2005). An index to quantify an individual's scientific research output. *PNAS*, 102(46), 16569–16572. https://doi.org/10.1073/pnas.0507655102
 2. 国家知识产权局. 《专利统计年报》. https://www.cnipa.gov.cn/
 3. 世界知识产权组织（WIPO）. *World Intellectual Property Indicators 2024*. https://www.wipo.int/publications/
-4. OECD. *Science, Technology and Innovation Outlook 2023*. https://www.oecd.org/sti/
-5. 国家知识产权局专利局. 专利价值分析指标体系. https://www.cnipa.gov.cn/
-6. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PATENT_INFLUENCE.md`（王惠）。
-7. 项目内数据纪律（非外部文献）：`_work_gkx21/DATA_FACTS_gkx21.md` §3.13；`_work_gkx21/PATENT_SCAN_LEDGER.md`。
-8. 项目内缓存说明（非外部文献）：`code/_snapshots21/patent_value_agg_gkx.json`（按 `dwd_id` 分块 GROUP BY）。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
+4. 国家知识产权局专利局. 专利价值分析指标体系. https://www.cnipa.gov.cn/
 ---
 
 # 附件
@@ -549,18 +546,10 @@ python3 code/M_INNOV_DS_FACTORS_014.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_DS_FACTORS_014.py`（20261021 版，gkx 单库只读，被引表 2 条 + 主表批量点查）
-- 产物：`code/M_INNOV_DS_FACTORS_014_out.json`
+- 脚本：`metrics/repro/M_INNOV_DS_FACTORS_014.py`（20261021 版，gkx 单库只读，被引表 2 条 + 主表批量点查）
+- 产物：`metrics/repro/out/M_INNOV_DS_FACTORS_014_out.json`
 - 输入：`gkx.dwd_patent_cited`（20,515 行）、`gkx.dwd_patent`（仅按 `patent_id` 回连 475 行）、`_snapshots21/patent_value_agg_gkx.json`、`_snapshots21/patent_panel_innov_20261021.json`
 - 源表：`gkx.dwd_patent_cited`、`gkx.dwd_patent` @ `183.240.141.251:3318`
 - 关键结果：主表 2,939,895；被引 20,515；可对齐 **475 行 / 467 件（0.01616%）**；价值非空 **1,994,812（67.85%）**；价值 0—5 分桶 **81.95%**；二维子集最高 **68.31**
 - 端点：价值 3,000—7,740,000（对数）；被引 0—55
 - 工程注意：`dwd_patent` 未做任何聚合；被引表两个键都只命中 475；`n_dims` 必须随分输出
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

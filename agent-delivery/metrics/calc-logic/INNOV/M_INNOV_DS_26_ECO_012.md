@@ -1,9 +1,24 @@
 # 协同绩效与影响力智能评估（M_INNOV_DS_26_ECO_012）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_26_ECO_012.md`；复现脚本 `metrics/repro/M_INNOV_DS_26_ECO_012.py` → `metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：DS（专题服务指标面，DS_26 生态协同族）｜ **域**：科学技术全景 / 创新生态（INNOV）｜ **UI 挂载**：科学技术全景 → 创新生态 → 协同绩效评估
+> - **数据支持度**：**部分支持**｜ **依赖性质**：C 类（企业合作边结构性无源，项目合作维整列为空）
+> - **一句话结论**：用「产出量 P + 网络邻居 N + 合作成果占比 S」三维等权评分 20,436 个论文机构（均值 25.7118，头部华为 68.5874、广州中医药大学第一附属医院 59.6910）；但**载体实体表不存在、项目合作维 `funded_institution` 整列为空、企业合作边逐字命中 0**，故判**部分支持**，评分只能落在「机构名」粒度，不能落在「载体」粒度。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_INNOV_DS_26_ECO_012.py`｜ **产物**：`metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_26_ECO_012.py`、产物 `metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_26_ECO_012.md`；复现脚本 `metrics/repro/M_INNOV_DS_26_ECO_012.py` → `metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_26_ECO_012.py`、产物 `metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_26_ECO_012.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_26_ECO_012.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json` |
@@ -61,18 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_26_ECO_012.py`、产物 `metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：DS（专题服务指标面，DS_26 生态协同族）｜ **域**：科学技术全景 / 创新生态（INNOV）｜ **UI 挂载**：科学技术全景 → 创新生态 → 协同绩效评估
-> **数据支持度**：**部分支持**｜ **依赖性质**：C 类（企业合作边结构性无源，项目合作维整列为空）
-> **公式定义人**：无（calc-logic 只写「多维度综合评估」）｜ **口径归属**：非王惠系
-> **复现脚本**：`code/M_INNOV_DS_26_ECO_012.py`｜ **产物**：`code/M_INNOV_DS_26_ECO_012_out.json`
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读）
-> **一句话结论**：用「产出量 P + 网络邻居 N + 合作成果占比 S」三维等权评分 20,436 个论文机构（均值 25.7118，头部华为 68.5874、广州中医药大学第一附属医院 59.6910）；但**载体实体表不存在、项目合作维 `funded_institution` 整列为空、企业合作边逐字命中 0**，故判**部分支持**，评分只能落在「机构名」粒度，不能落在「载体」粒度。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -252,9 +260,9 @@ P10 到 P90 只差 28.21 分，且 P50 与 P90 只差 0.5008 分——分数在 
 ### 2.6 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_26_ECO_012.py
-# → code/M_INNOV_DS_26_ECO_012_out.json
+# → metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json
 ```
 
 复现判据：
@@ -459,11 +467,6 @@ S 维的低区分度是结构性的：共著文化下大部分机构 S 都在 70
 2. Katz J. S., Martin B. R. What is research collaboration? *Research Policy*, 1997, 26(1): 1-18. https://doi.org/10.1016/S0048-7333(96)00917-1
 3. Abramo G., D'Angelo C. A., Costa F. Research collaboration and productivity: is there correlation? *Higher Education*, 2009, 57(2): 155-171. https://doi.org/10.1007/s10734-008-9139-z
 4. 世界知识产权组织. 专利合作条约（PCT）申请人指南. https://www.wipo.int/pct/
-5. 本地产物：
-   - `code/M_INNOV_DS_26_ECO_012.py`
-   - `code/M_INNOV_DS_26_ECO_012_out.json`
-   - `code/_snapshots21/a25_paper_panel.json`
-
 ---
 
 # 附件
@@ -530,18 +533,10 @@ S 维的低区分度是结构性的：共著文化下大部分机构 S 都在 70
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_DS_26_ECO_012.py` |
-| 产物 | `code/M_INNOV_DS_26_ECO_012_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_DS_26_ECO_012.py` |
+| 产物 | `metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json` |
 | 评分集 | 20,436 |
 | 均值 | 25.7118 |
 | 头部 | 华为 68.5874 |
 | 判档 | 部分支持 |
 | 重跑耗时 | 约 30 秒（读快照） |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

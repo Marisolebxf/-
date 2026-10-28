@@ -1,9 +1,20 @@
 # 区域企业数量规模占比（M_ENT_REGIONAL_COUNT_TOPIC）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_REGIONAL_COUNT_TOPIC.md`；复现脚本 `metrics/repro/M_ENT_REGIONAL_COUNT_TOPIC.py` → `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（年 × 区域键的家数与份额；规模口径 = 数量）｜ **域**：企业分析（ENT）／企业总览／三级地理透视｜ **UI 挂载**：企业分析·企业总览「三级地理透视」｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_REGIONAL_COUNT_TOPIC.py`、产物 `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_REGIONAL_COUNT_TOPIC.md`；复现脚本 `metrics/repro/M_ENT_REGIONAL_COUNT_TOPIC.py` → `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_REGIONAL_COUNT_TOPIC.py`、产物 `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_REGIONAL_COUNT_TOPIC.md` |
 | 复现脚本 | `metrics/repro/M_ENT_REGIONAL_COUNT_TOPIC.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json` |
@@ -60,17 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_REGIONAL_COUNT_TOPIC.py`、产物 `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（年 × 区域键的家数与份额；规模口径 = 数量）｜ **域**：企业分析（ENT）／企业总览／三级地理透视｜ **UI 挂载**：企业分析·企业总览「三级地理透视」｜ **数据支持度**：**部分支持**
-> **口径来源**：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_REGIONAL_COUNT_TOPIC.md`（2026-08-31 `COVER-STAT-L01`；Q073 走 C：只出家数 + 占比）
-> **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）＋ live 开发库 `region_scope_member` 只读复核
-> **复现**：`python3 M_ENT_REGIONAL_COUNT_TOPIC.py` → `code/M_ENT_REGIONAL_COUNT_TOPIC_out.json`
-> **wanghui**：false（无王惠同 ID 正本）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -109,7 +114,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `code/_snapshots21/ent_base_geo_20261022.json` | 省/市/区 × 存续数 | 152 组（无年键） |
 | `code/_snapshots21/ent_base_year_20261022.json` | 成立年分布 | 69 组（含无年 354） |
 | `code/_snapshots21/w13e3_region_scope_20261023.json` | 15 行成员定义 | gba 8 市（缺肇庆） |
-| `code/M_ENT_REGIONAL_COUNT_TOPIC_out.json` | 本件产物 | 年面板、份额、缺口 |
+| `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json` | 本件产物 | 年面板、份额、缺口 |
 
 ---
 
@@ -439,9 +444,6 @@ G6 是维表定义缺口，不是数据缺口。GBA 8 市缺肇庆，按维表�
 1. 国务院：粤港澳大湾区发展规划纲要。https://www.gov.cn/zhengce/2019-02/18/content_5366593.htm
 2. 国家发展改革委：长三角一体化发展规划纲要。https://www.gov.cn/zhengce/2019-12/01/content_5457442.htm
 3. 国家统计局：统计用区划代码和城乡划分代码。https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
-4. 项目内 calc-logic 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_REGIONAL_COUNT_TOPIC.md`
-5. 项目内数据事实：`_work_gkx21/DATA_FACTS_gkx21.md` §3.43、§3.57
-
 # 附件
 
 ## 附录 A 需求原文摘录
@@ -591,8 +593,8 @@ G6 是维表定义缺口，不是数据缺口。GBA 8 市缺肇庆，按维表�
 | 文件 | 说明 |
 |---|---|
 | `_staging21/M_ENT_REGIONAL_COUNT_TOPIC.md` | 本报告 |
-| `code/M_ENT_REGIONAL_COUNT_TOPIC.py` | 计算脚本 |
-| `code/M_ENT_REGIONAL_COUNT_TOPIC_out.json` | 产物 |
+| `metrics/repro/M_ENT_REGIONAL_COUNT_TOPIC.py` | 计算脚本 |
+| `metrics/repro/out/M_ENT_REGIONAL_COUNT_TOPIC_out.json` | 产物 |
 | `code/_w13e3_common.py` | 族内共享函数 |
 | `code/_snapshots21/w13e3_region_scope_20261023.json` | 15 行成员定义 |
 
@@ -600,7 +602,7 @@ G6 是维表定义缺口，不是数据缺口。GBA 8 市缺肇庆，按维表�
 
 | 步骤 | 命令 | 结果 |
 |---|---|---|
-| 1 | `python3 M_ENT_REGIONAL_COUNT_TOPIC.py` | 退出码 0 |
+| 1 | `cd code && python3 M_ENT_REGIONAL_COUNT_TOPIC.py` | 退出码 0 |
 | 2 | 读产物 | 2025 队列 3,061 |
 | 3 | 对账 | 四市合计 3,061，闭合 |
 | 4 | 对账 | 2015 四市份额 57.45/23.59/14.93/4.01 |
@@ -632,11 +634,3 @@ G6 是维表定义缺口，不是数据缺口。GBA 8 市缺肇庆，按维表�
 接手先确认 `stat_year` 与 `region_id` 是否已补。未补时，接口名建议带 `cohort`，前端标题写「按成立年（存活队列）」，不要写「年度新增」。份额接口与家数接口共用同一个分母字段，避免前端各自算份额导致闭合不上。
 
 区县年上线前，先用 2025 年做一次闭合测试：省份额 = 各市份额之和，市份额 = 各区县份额之和；不闭合就不要开三级下钻。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

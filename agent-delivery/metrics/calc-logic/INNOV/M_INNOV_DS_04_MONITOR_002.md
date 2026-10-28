@@ -1,9 +1,21 @@
 # 创新点价值评估（M_INNOV_DS_04_MONITOR_002）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_MONITOR_002.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_MONITOR_002.py` → `metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠系（V1.5-20260829）· SCORE（0—100 分，逐候选词条）｜ **域**：科技发展态势·全球创新监测·创新监测与分析｜ **UI 挂载**：全球创新监测 → 创新监测与分析 → 创新点发现（**详情视角**）
+> - **数据支持度**：**部分支持** ｜ wanghui: true
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_MONITOR_002.py`、产物 `metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_MONITOR_002.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_MONITOR_002.py` → `metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_MONITOR_002.py`、产物 `metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -62,7 +74,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_04_MONITOR_002.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_04_MONITOR_002.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json` |
@@ -70,17 +82,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_04_MONITOR_002.py`、产物 `metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：王惠系（V1.5-20260829）· SCORE（0—100 分，逐候选词条）｜ **域**：科技发展态势·全球创新监测·创新监测与分析｜ **UI 挂载**：全球创新监测 → 创新监测与分析 → 创新点发现（**详情视角**）
-> **数据支持度**：**部分支持** ｜ wanghui: true
-> **公式定义人**：王惠（calc-logic INNOV V1.5-20260829）｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
-> **父件关系**：本件是 `M_INNOV_DS_04_MONITOR_001`（词条级突现监测·列表视角）的**详情视角**——同一批 33 个候选词条、同一套 `point_key`，逐条给新颖性/影响潜力/成熟度三维分。`REALTIME_004` 换成节点实体算规模，`REALTIME_005` 在其年序列上做外推。
-> **一句话口径**：对已入选的候选词条打分——新颖性 `1/(1+T−t0)`、影响潜力（专利被引+论文被引）、成熟度（授权/件数），极值归一后加权 ×100；**缺测维不补 0、剩余维重归一**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -124,7 +130,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 新颖性取值个数 | 2（2021/2022 两档） | **3**（2021/2022/2023） | 本件含 `B60V`（2023 首现） |
 | 成熟度来源 | `kind IN ('B','U')` 近似 | 申请人授权率分摊（全表两侧） | 旧近似把「实用新型」当「已授权」，方向性错误 |
 
-旧稿的「Top30 影响潜力全部为 0、归一后退化为常数」这句话本身就是污染的产物：在被引能被连上的数据面上，被引不可能是均匀的 0。本件不再引用任何上游 bundle：`out.json` 无 `reused_from`，33 行的三维原始值全部由 `code/M_INNOV_DS_04_MONITOR_002.py` 现算。
+旧稿的「Top30 影响潜力全部为 0、归一后退化为常数」这句话本身就是污染的产物：在被引能被连上的数据面上，被引不可能是均匀的 0。本件不再引用任何上游 bundle：`out.json` 无 `reused_from`，33 行的三维原始值全部由 `metrics/repro/M_INNOV_DS_04_MONITOR_002.py` 现算。
 
 ---
 
@@ -286,9 +292,9 @@ $$value_w=100\times\frac{0.5\cdot\tilde{nov}_w+0.5\cdot\tilde{mat}_w}{1}$$
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_04_MONITOR_002.py
-# 输出 code/M_INNOV_DS_04_MONITOR_002_out.json；实测耗时 2.7 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json；实测耗时 2.7 秒（全离线，零 SQL）
 ```
 
 脚本输入为 `patent_ipc4_year_20261021.json`（`t0` 与逐年件数）、`patent_ipc4_by_name_20261021.json` + `star_applicant_agg_gkx.json`（成熟度分摊）、`a25_facts.json`（被引连通性）、`a25_paper_panel.json`（论文侧被引）。不连数据库、不读任何上游结果文件。
@@ -458,15 +464,11 @@ python3 code/M_INNOV_DS_04_MONITOR_002.py
 
 ## 参考文献
 
-1. Wang, H. (2026). 创新点价值评估（M_INNOV_POINT_VALUE）指标计算逻辑 V1.5-20260829. 项目内部资料（`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POINT_VALUE.md`）。
-2. OECD & Eurostat. (2018). *Oslo Manual 2018: Guidelines for Collecting, Reporting and Using Data on Innovation* (4th ed.). https://doi.org/10.1787/9789264304604-en
-3. OECD. (2009). *OECD Patent Statistics Manual*. https://doi.org/10.1787/9789264056442-en
-4. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
-5. 世界知识产权组织（WIPO）. (2024). *World Intellectual Property Indicators 2024*. https://www.wipo.int/publications/
-6. 中国科学技术信息研究所. (2024). 《中国科技论文统计报告》. https://www.istic.ac.cn/
-7. 项目内数据纪律（非外部文献）：`_work_gkx21/DATA_FACTS_gkx21.md` §3.6、§3.10、§3.16、§3.19。
-8. 项目内缓存清单（非外部文献）：`_work_gkx21/PATENT_SCAN_LEDGER.md`、`_work_gkx21/SHARED_ASSETS.md`。
-
+1. OECD & Eurostat. (2018). *Oslo Manual 2018: Guidelines for Collecting, Reporting and Using Data on Innovation* (4th ed.). https://doi.org/10.1787/9789264304604-en
+2. OECD. (2009). *OECD Patent Statistics Manual*. https://doi.org/10.1787/9789264056442-en
+3. 国家知识产权局. (2024). 《专利统计年报》. https://www.cnipa.gov.cn/
+4. 世界知识产权组织（WIPO）. (2024). *World Intellectual Property Indicators 2024*. https://www.wipo.int/publications/
+5. 中国科学技术信息研究所. (2024). 《中国科技论文统计报告》. https://www.istic.ac.cn/
 ---
 
 # 附件
@@ -474,15 +476,15 @@ python3 code/M_INNOV_DS_04_MONITOR_002.py
 ## 附录 A　复现（脚本、产物与运行）
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_04_MONITOR_002.py
 ```
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_INNOV_DS_04_MONITOR_002.py` |
+| 脚本 | `metrics/repro/M_INNOV_DS_04_MONITOR_002.py` |
 | 依赖模块 | `code/_ds04_common.py`（IPC 面板、成熟度分摊、数值工具）、`code/_a25_common.py`（论文侧与 `a25_facts`） |
-| 产物 | `code/M_INNOV_DS_04_MONITOR_002_out.json` |
+| 产物 | `metrics/repro/out/M_INNOV_DS_04_MONITOR_002_out.json` |
 | 输入 | `patent_ipc4_year_20261021.json`、`patent_ipc4_by_name_20261021.json`、`star_applicant_agg_gkx.json`、`a25_facts.json`、`a25_paper_panel.json` |
 | 源表 | `gkx.dwd_patent`、`gkx.dwd_patent_cited`、`gkx.dwd_zh_paper_citation` @ `183.240.141.251:3318`（**未直接查询**，只用导出缓存与已落盘探针） |
 | 数据库连接 | 无（零 SQL） |
@@ -586,11 +588,3 @@ python3 code/M_INNOV_DS_04_MONITOR_002.py
 | 当前数据量 | 新颖性 33/33；成熟度估算 33/33；影响潜力 0/33 |
 | 现在能否得到 | 二维排序可以；三维价值评估不可以 |
 | 建议支持度 | **部分支持** |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

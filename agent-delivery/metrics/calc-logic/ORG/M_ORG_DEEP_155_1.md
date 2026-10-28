@@ -1,9 +1,20 @@
-# 科研机构扶持推荐模型（M_ORG_DEEP_155_1）
+# M_ORG_DEEP_155_1 · 科研机构扶持推荐模型
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_DEEP_155_1.md`；复现脚本 `metrics/repro/M_ORG_DEEP_155_1.py` → `metrics/repro/out/M_ORG_DEEP_155_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **数据支持度**：部分支持
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_DEEP_155_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_155_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_DEEP_155_1.md`；复现脚本 `metrics/repro/M_ORG_DEEP_155_1.py` → `metrics/repro/out/M_ORG_DEEP_155_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_DEEP_155_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_155_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_DEEP_155_1.md` |
 | 复现脚本 | `metrics/repro/M_ORG_DEEP_155_1.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_DEEP_155_1_out.json` |
@@ -63,15 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_DEEP_155_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_155_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 域：科研机构（ORG）｜类型：多准则决策指标｜形态：扶持推荐指数 + 三态判定 + 排名清单
-> **数据支持度**：部分支持
-> 判定：成果维**可转换**（279 家）；经费效率维**部分转换**（53 家，只有项目资助额）；人才结构维**部分转换**（29 家，只有学者库）；三维齐全**只有 15 家**，可判定扶持标准 15 家、推荐 2 家、无法判定 59 家；`development_employee` **整列为空**，人均类指标全部不可算
-> 一句话口径：以「成果水平 C ≥ P75、经费效率 E ≥ P50、人才结构 T ≥ P50」三条阈值判定扶持资格，缺任一维记「无法判定」而不是「不达标」，指数按 0.45/0.30/0.25 加权并在缺维时重归一
-> 复现：`python3 code/M_ORG_DEEP_155_1.py` → `code/M_ORG_DEEP_155_1_out.json`（零 SQL，约 0.14 秒）
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -149,7 +156,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型 | 三维、阈值、两项产出 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 882–892 行 |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型 | 三维、阈值、两项产出 | `《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 882–892 行 |
 | 2 | 同文档 §1.1.1.1.1.1.1.6.6 科研机构引入推荐模型 | 同族权重思路（154 的口径） | 同上第 871–881 行 |
 | 3 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 | `development_employee` 整列为空 | 本轮事实底稿 |
 | 4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.16 | 缺失年不按 0 摊入 | 同上 |
@@ -231,7 +238,7 @@ $$\text{Index}_i=\frac{0.45C_i+0.30E_i+0.25T_i}{\sum_{k\in\text{可用}} w_k}$$
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 M_ORG_DEEP_155_1.py`，零 SQL，约 0.14 秒，输出 `code/M_ORG_DEEP_155_1_out.json`。
+执行 `cd code && python3 M_ORG_DEEP_155_1.py`，零 SQL，约 0.14 秒，输出 `metrics/repro/out/M_ORG_DEEP_155_1_out.json`。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -445,7 +452,7 @@ $$\text{Index}_i=\frac{0.45C_i+0.30E_i+0.25T_i}{\sum_{k\in\text{可用}} w_k}$$
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_ORG_DEEP_155_1.py
 python3 -c "import json;d=json.load(open('M_ORG_DEEP_155_1_out.json'));print(d['coverage'],d['thresholds'],len(d['recommended']))"
 ```
@@ -462,16 +469,13 @@ python3 -c "import json;d=json.load(open('M_ORG_DEEP_155_1_out.json'));print(d['
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 882–892 行。
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.7 科研机构扶持推荐模型，`《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 882–892 行。
 2. 同文档 §1.1.1.1.1.1.1.6.6 科研机构引入推荐模型（154 的口径），第 871–881 行。
-3. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.10（`development_employee` 整列为空）、§3.16（缺失年不摊 0）、§3.18（重跑后对账）。
-4. Charnes, A., Cooper, W. W., & Rhodes, E. (1978), *Measuring the efficiency of decision making units*, European Journal of Operational Research, https://doi.org/10.1016/0377-2217(78)90138-8
-5. REF, *Research Excellence Framework — Panel criteria and working methods*, https://www.ref.ac.uk/
-6. OECD, *Frascati Manual 2015*, https://www.oecd.org/sti/frascati-manual.htm
-7. 科技部、财政部，《中央财政科技计划（专项、基金等）绩效评价办法》，https://www.most.gov.cn/
-8. 广东省财政厅，省级科研机构经费管理，https://czt.gd.gov.cn/
-9. 深圳市科技创新局，科技研发资金管理办法，https://stic.sz.gov.cn/
-
+3. Charnes, A., Cooper, W. W., & Rhodes, E. (1978), *Measuring the efficiency of decision making units*, European Journal of Operational Research, https://doi.org/10.1016/0377-2217(78)90138-8
+4. REF, *Research Excellence Framework — Panel criteria and working methods*, https://www.ref.ac.uk/
+5. 科技部、财政部，《中央财政科技计划（专项、基金等）绩效评价办法》，https://www.most.gov.cn/
+6. 广东省财政厅，省级科研机构经费管理，https://czt.gd.gov.cn/
+7. 深圳市科技创新局，科技研发资金管理办法，https://stic.sz.gov.cn/
 # 附件
 
 ## 附录 B　原始需求原文摘录
@@ -540,10 +544,3 @@ FROM gkx.dwd_org_annual_financial_info;
 六、一句话结论。本件可以上线为「科研机构扶持候选池（带置信标签）」，但不能上线为「扶持资金分配依据」；前者是筛选工具，后者需要真经费、真人才与效果标签补齐后才成立。
 
 七、遗留事项。E 的分子分母期错位需要项目表按年拆分资助额才能修正；2024 年论文尖峰的成因尚未定位到期刊；学者库的 145 人是否覆盖了各机构的骨干，需要人事部门抽检 20 家核对。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

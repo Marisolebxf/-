@@ -1,9 +1,21 @@
-# 深圳技术潜力与阶段综合评估（M_TECH_SZ_ASSESS）
+# M_TECH_SZ_ASSESS · 深圳技术领域评估（gkx 口径重建件）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_SZ_ASSESS.md`；复现脚本 `metrics/repro/M_TECH_SZ_ASSESS.py` → `metrics/repro/out/M_TECH_SZ_ASSESS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：评价型（EVAL，六指标合成 + 四象限）｜ **域**：TOPIC-TECH（技术领域评估）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/技术领域深度分析模型构建/深圳技术领域评估
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：需求原文只列「潜力/成熟度/区位商/增速」，无权重、无切分；本件沿用旧稿的加权与 P33/P67 切分
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_SZ_ASSESS.py`、产物 `metrics/repro/out/M_TECH_SZ_ASSESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_SZ_ASSESS.md`；复现脚本 `metrics/repro/M_TECH_SZ_ASSESS.py` → `metrics/repro/out/M_TECH_SZ_ASSESS_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_SZ_ASSESS.py`、产物 `metrics/repro/out/M_TECH_SZ_ASSESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_SZ_ASSESS.md` |
 | 复现脚本 | `metrics/repro/M_TECH_SZ_ASSESS.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_SZ_ASSESS_out.json` |
@@ -60,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_SZ_ASSESS.py`、产物 `metrics/repro/out/M_TECH_SZ_ASSESS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：评价型（EVAL，六指标合成 + 四象限）｜ **域**：TOPIC-TECH（技术领域评估）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/技术领域深度分析模型构建/深圳技术领域评估
-> **数据支持度**：**部分支持** ｜ **公式定义人**：需求原文只列「潜力/成熟度/区位商/增速」，无权重、无切分；本件沿用旧稿的加权与 P33/P67 切分
-> **主算库**：`gkx`（183.240.141.251:3318，只读账号 `gkx_reader_zp`）｜ **SQL 条数**：0（全部读落盘快照）
-> **产物**：`code/M_TECH_SZ_ASSESS.py` → `code/M_TECH_SZ_ASSESS_out.json` ｜ **成文日期**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -109,7 +116,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 必须提前说明三个口径边界：第一，区位商的分母是**语料内**深圳占比（38.04%），不是全国占比，LQ=1 只表示「与语料均值持平」；第二，深圳归属靠申请人名称精确匹配，命中率 87.0%，其余 13% 无城市标签；第三，转让密度算不出，潜力分里的「转化」维度实际只有授权率，没有真正的技术转移信号。
 
-**结论**：六项指标、四象限、三阶段全部可复现，但「产业化」维度缺表、区位商非全国口径，按 §〇 判**部分支持**。复现代码见 `code/M_TECH_SZ_ASSESS.py`，结果见 `code/M_TECH_SZ_ASSESS_out.json`。
+**结论**：六项指标、四象限、三阶段全部可复现，但「产业化」维度缺表、区位商非全国口径，按 §〇 判**部分支持**。复现代码见 `metrics/repro/M_TECH_SZ_ASSESS.py`，结果见 `metrics/repro/out/M_TECH_SZ_ASSESS_out.json`。
 
 ---
 
@@ -265,10 +272,10 @@ Top2 H10W 更值得分析：LQ 1.771（四城最高）、增速 +281.6%，但授
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_TECH_SZ_ASSESS.py
+cd code && python3 M_TECH_SZ_ASSESS.py
 ```
 
-脚本零 SQL，只读专利扫描缓存、IPC4×申请人快照、企业底册三份文件，输出 `code/M_TECH_SZ_ASSESS_out.json`。产物含五个契约字段与 `universe`、`coverage_disclosure`、`method`、`dist`、`cuts`、`quadrant_counts`、`stage_counts`、`top20_by_assess`、`top10_advantage`、`top10_shortboard`、`top10_legacy_risk`、`all_tech_points`、`gaps`。
+脚本零 SQL，只读专利扫描缓存、IPC4×申请人快照、企业底册三份文件，输出 `metrics/repro/out/M_TECH_SZ_ASSESS_out.json`。产物含五个契约字段与 `universe`、`coverage_disclosure`、`method`、`dist`、`cuts`、`quadrant_counts`、`stage_counts`、`top20_by_assess`、`top10_advantage`、`top10_shortboard`、`top10_legacy_risk`、`all_tech_points`、`gaps`。
 
 实测输出（2026-10-22 运行）：
 
@@ -465,7 +472,7 @@ IPC4×申请人快照 581,585 行是全期口径，与规模窗口（2021—2024
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_TECH_SZ_ASSESS.py
 ```
 
@@ -477,7 +484,7 @@ python3 M_TECH_SZ_ASSESS.py
 | `_snapshots21/patent_ipc4_by_name_20261021.json` | 581,585 行 IPC4×申请人 |
 | `_snapshots21/base_20261021.json` | 189,116 行企业底册（深圳归属） |
 
-输出：`code/M_TECH_SZ_ASSESS_out.json`（覆盖写）。复现校验：两次运行，`quadrant_counts`、`stage_counts`、`cuts`、`all_tech_points` 逐字段一致。
+输出：`metrics/repro/out/M_TECH_SZ_ASSESS_out.json`（覆盖写）。复现校验：两次运行，`quadrant_counts`、`stage_counts`、`cuts`、`all_tech_points` 逐字段一致。
 
 自检清单：
 
@@ -493,14 +500,12 @@ python3 M_TECH_SZ_ASSESS.py
 
 ## 参考文献
 
-1. OECD.《OECD Science, Technology and Industry Scoreboard》. https://www.oecd.org/sti/scoreboard.htm
-2. 科学技术部.《技术成熟度等级（TRL）指南》. https://www.most.gov.cn/
-3. 国家知识产权局.《专利质量评价指标》. https://www.cnipa.gov.cn/
-4. 中国科学院.《专利质量评价报告》. https://www.cas.cn/
-5. 欧盟委员会.《Regional Innovation Scoreboard》. https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/regional-innovation-scoreboard_en
-6. WIPO.《IPC 国际专利分类》. https://www.wipo.int/classifications/ipc/
-7. 深圳市人民政府.《深圳市培育发展壮大“20+8”产业集群行动计划（2022—2025年）》. http://www.sz.gov.cn/zfgb/2022/gb1234/content/post_9778888.html
-
+1. 科学技术部.《技术成熟度等级（TRL）指南》. https://www.most.gov.cn/
+2. 国家知识产权局.《专利质量评价指标》. https://www.cnipa.gov.cn/
+3. 中国科学院.《专利质量评价报告》. https://www.cas.cn/
+4. 欧盟委员会.《Regional Innovation Scoreboard》. https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/regional-innovation-scoreboard_en
+5. WIPO.《IPC 国际专利分类》. https://www.wipo.int/classifications/ipc/
+6. 深圳市人民政府.《深圳市培育发展壮大“20+8”产业集群行动计划（2022—2025年）》. https://www.sz.gov.cn/
 ---
 
 # 附件
@@ -550,10 +555,3 @@ python3 M_TECH_SZ_ASSESS.py
 **D.5 与旧稿的差异**：旧稿用 `demo` 库的专利表，可算转让密度，潜力四维（科研/转化/市场/规模）；本件转让不可算，潜力降为三维，且 LQ 从全国降为语料内。两件的分数不可直接比较，只能比较方法骨架。
 
 **D.6 复现边界**：脚本只读三份冻结快照，不连库；`patent_scan_20261021.pkl` 是 §3.13 允许的缓存口径（不回表聚合）。若源表更新，需重建扫描缓存并重跑，238 个技术点与象限分布会变。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

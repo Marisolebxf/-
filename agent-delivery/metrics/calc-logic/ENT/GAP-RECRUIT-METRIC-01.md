@@ -1,7 +1,22 @@
 # 深圳连接度（GAP-RECRUIT-METRIC-01）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-01.md`；复现脚本 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-01.py` → `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-01_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GAP（未注册指标，招引模型三维之一）｜ **域**：企业招引（ENT-RECRUIT）｜ **UI 挂载**：科技专题服务系统 → 企业综合竞争力评估 / 招引企业推荐
+> - **数据支持度**：**完全转换支持**｜ **依赖性质**：资本与组织边可重建（`dwd_org_invest_info` / `dwd_org_shareholder_info` / `dwd_org_subsidiary_info`）；供应链边结构性无源
+> - **一句话结论**：对 62,868 家有三类资本/组织边的企业算出 $Conn_{SZ}$，均值 **36.1847**、中位 **7.9034**，>0 者 **31,952** 家；三条边源全部来自 gkx 真实表，供应链维按「无表」剔除而不是拿投资边冒充 → **结构+数据量均足，可现转**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/GAP-RECRUIT-METRIC-01.py`｜ **产物**：`metrics/repro/out/GAP-RECRUIT-METRIC-01_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
+
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-01.md`；复现脚本 `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-01.py` → `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-01_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；本地备份指针已随 20261027 批清零，验收以本仓为准）
 
 ## 基础信息
 
@@ -24,7 +39,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-01.md` §二（GAP-RECRUIT-METRIC-01.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-01.md` §二（GAP-RECRUIT-METRIC-01.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,26 +66,19 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-01.md` |
-| 复现脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-01.py` |
-| 复现产物 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-01_out.json` |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
+| 正本 MD | `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-01.md` |
+| 复现脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-01.py` |
+| 复现产物 | `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-01_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
-
-> **类型**：GAP（未注册指标，招引模型三维之一）｜ **域**：企业招引（ENT-RECRUIT）｜ **UI 挂载**：科技专题服务系统 → 企业综合竞争力评估 / 招引企业推荐
-> **数据支持度**：**完全转换支持**｜ **依赖性质**：资本与组织边可重建（`dwd_org_invest_info` / `dwd_org_shareholder_info` / `dwd_org_subsidiary_info`）；供应链边结构性无源
-> **公式定义人**：仿王惠（推测定义，非招标原文闭合口径）｜ **口径归属**：GAP 未注册，`cfg_metric-ENT-seed` 无条目
-> **复现脚本**：`code/GAP-RECRUIT-METRIC-01.py`｜ **产物**：`code/GAP-RECRUIT-METRIC-01_out.json`
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读）
-> **一句话结论**：对 62,868 家有三类资本/组织边的企业算出 $Conn_{SZ}$，均值 **36.1847**、中位 **7.9034**，>0 者 **31,952** 家；三条边源全部来自 gkx 真实表，供应链维按「无表」剔除而不是拿投资边冒充 → **结构+数据量均足，可现转**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -169,7 +177,7 @@ $$Conn_{SZ}(i)=\frac{1}{|K_i|}\sum_{k\in K_i}S_k(i),\qquad K_i=\{k: |N_k(i)|>0\}
 
 ### 1.4 计算公式与本批实现式
 
-本批实现式（`code/GAP-RECRUIT-METRIC-01.py`）：
+本批实现式（`metrics/repro/GAP-RECRUIT-METRIC-01.py`）：
 
 ```python
 s1 = sz_invest / total_invest * 100              # D1
@@ -268,9 +276,9 @@ D3 稳健性：把 D1 与股东边合并重算，去掉子公司名称代理。�
 ### 2.7 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/GAP-RECRUIT-METRIC-01.py
-# → code/GAP-RECRUIT-METRIC-01_out.json
+# → metrics/repro/out/GAP-RECRUIT-METRIC-01_out.json
 ```
 
 复现判据（任一对不上即视为口径漂移，不要只改一个数）：
@@ -352,7 +360,7 @@ python3 code/GAP-RECRUIT-METRIC-01.py
 | `dwd_org_subsidiary_info` | 178,900 行子公司边 | gkx |
 | `dwd_org_base_info` | 底册快照 189,116 行 | `code/_snapshots21/base_20261021.json` |
 | `_snapshots21/w15c3_facts_20261023.json` | 表存在性/行数探针 | 本批族级探针 |
-| `code/GAP-RECRUIT-METRIC-01.py` | 本件脚本 | 本地代码 |
+| `metrics/repro/GAP-RECRUIT-METRIC-01.py` | 本件脚本 | 本地代码 |
 
 ---
 
@@ -465,15 +473,9 @@ python3 code/GAP-RECRUIT-METRIC-01.py
 ## 参考文献
 
 1. 深圳市地方金融监督管理局. 深圳市招商引资工作若干措施. 2023. https://www.sz.gov.cn/
-2. 国务院. 关于进一步优化外商投资环境加大吸引外商投资力度的意见（国发〔2023〕11号）. https://www.gov.cn/zhengce/content/202308/content_6899945.htm
+2. 国务院. 关于进一步优化外商投资环境加大吸引外商投资力度的意见（国发〔2023〕11号）. https://www.gov.cn/
 3. Borgatti S. P., Mehra A., Brass D. J., Labianca G. Network analysis in the social sciences. *Science*, 2009, 323(5916): 892-895. https://doi.org/10.1126/science.1165821
 4. Granovetter M. S. The strength of weak ties. *American Journal of Sociology*, 1973, 78(6): 1360-1380. https://doi.org/10.1086/225469
-5. 本地产物与快照：
-   - `code/GAP-RECRUIT-METRIC-01.py`：本件脚本
-   - `code/GAP-RECRUIT-METRIC-01_out.json`：本件产物
-   - `code/_snapshots21/base_20261021.json`：底册 189,116 行
-6. `_work_gkx21/DATA_FACTS_gkx21.md`：gkx 表清单、§3.60 业务边缺失、§3.68 慢查询纪律
-
 ---
 
 # 附件
@@ -546,16 +548,9 @@ python3 code/GAP-RECRUIT-METRIC-01.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/GAP-RECRUIT-METRIC-01.py` |
-| 产物 | `code/GAP-RECRUIT-METRIC-01_out.json` |
+| 脚本 | `metrics/repro/GAP-RECRUIT-METRIC-01.py` |
+| 产物 | `metrics/repro/out/GAP-RECRUIT-METRIC-01_out.json` |
 | 评分企业 | 62,868 |
 | 均值 / 中位 | 36.1847 / 7.9034 |
 | 判档 | 完全转换支持 |
 | 运行耗时 | 15.9 秒 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,19 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""资讯正面情感占比（M_CHAIN_NEWS_SENTIMENT_RATIO）—— 词典代理，自包含。
+"""资讯正面情感占比（M_CHAIN_NEWS_SENTIMENT_RATIO）—— 20261027 三系统兼容版
 
-口径：gkx 全库没有任何情感/极性列（information_schema 检索 sentiment / polarity /
-    emotion 零命中），链资讯表 13 个字段里也没有极性字段。正式口径不可执行，
-    只能用标题词典代理：
-        pos = 命中「增长/突破/获批/签约/融资…」20 个正向词
-        neg = 命中「下降/亏损/处罚/诉讼/停产…」20 个负向词
-        极性 = pos>neg 正 / neg>pos 负 / 持平中性；比例 = pos/(pos+neg)，中性不进分母。
-这不是正式值：正式值需甲方提供情感标注或可核验模型，代理值只作排序参考。
+【适用系统】科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（三系统同一接口）
+【维护者】唐绍祖
+【兼容设计】见 ../第三方库指标计算过程/M_CHAIN_NEWS_SENTIMENT_RATIO.md「一・三、三系统需求兼容性设计」
+          与 ../过程文件/04_兼容接口设计规约.md
+【基线】20261021 词典代理版（计算口径不变，兼容层只包装入参/出参）
 
-上游：极性由 `code/_build_chain_panel21.py`（同一目录、可运行）按上述 40 词逐条判定后
-落进 `chain_panel21.json`；本脚本只做链级汇总，不重判文本，保证与资讯数同源同批行。
+三系统调用注意（后端必读）
+--------------------------
+1. 算法库同事：`compute({"industry_tag": "INB1303", "hot_thresholds": {"views": N, "comments": M}})`。
+   注意：gkx 资讯表**没有浏览量/评论数列**，`hot_thresholds` 目前只是接口位，
+   传了会进 `assumptions` 声明「阈值判定不可执行」，不会报错也不会生效。
+2. 专题系统同事：只传 `{"industry_tag": "INB1303"}` 即可出该链极性条；不传=12 链全量。
+3. 展示系统同事：订阅/推送过滤用 `sentiment_filter`（"positive"/"negative"）；
+   消费出参 `display.sentiment_bar`（极性条）与 `display.subscription_feed`（样本位）。
+4. **代理值不进验收**：0.9202 是 40 词词典代理（gkx 全库无情感/极性列），只可排序参考。
+5. **中性不进分母**：value = pos/(pos+neg)；不要拿 value 与资讯总数互除校验。
+6. 三条零样本链（INB1306/INB1333/INB1209）是资讯标签体系覆盖缺口，不是真零资讯，前端勿显示 0%。
 
-产物：chains[].value = 正面占比（小数，4 位）；同时给 pos/neg/neu。
+口径（与 20261021 基线一致，未改动）
+------------------------------------
+    pos = 标题命中正向词（20 词）；neg = 命中负向词（20 词）
+    极性 = pos>neg 正 / neg>pos 负 / 持平中性
+    比例 = pos/(pos+neg)，中性不进分母
+极性判定由上游 `code/_build_chain_panel21.py` 落进 chain_panel21.json；本脚本只做链级汇总。
 
 运行：cd code && python3 M_CHAIN_NEWS_SENTIMENT_RATIO.py
 产物：code/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json（覆盖写）
@@ -27,6 +39,16 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 SNAP = os.path.join(HERE, "_snapshots21")
 OUT = os.path.join(HERE, "M_CHAIN_NEWS_SENTIMENT_RATIO_out.json")
+
+APPLICABLE = ["科技专题服务算法库", "科技专题系统", "科技信息展示系统"]
+
+# 缺省参数（md「入参兼容策略」表与此一一对应）
+DEFAULTS = {
+    "industry_tag": None,       # 链码；None → 12 链全量（专题/展示常传单链）
+    "hot_thresholds": None,     # 算法库 L37 阈值接口位 {"views":..,"comments":..}；gkx 无该两列，暂不可执行
+    "sentiment_filter": None,   # 展示/订阅过滤："positive"/"negative"；None → 全极性分布
+    "as_of": None,              # 传统计时点；None → 快照批次（2026-10-22 落盘批行，与三件套同源）
+}
 
 BASE_USED = []
 BASE_MISSING = []
@@ -59,13 +81,26 @@ def load(name):
         return json.load(f)
 
 
-def main():
+def compute(params: dict | None = None) -> dict:
+    """三系统统一入口。参数语义与缺省行为见模块 docstring 与 md「入参兼容策略」。"""
+    p_in = dict(params or {})
+    p = {**DEFAULTS, **{k: v for k, v in p_in.items() if v is not None}}
+    assumptions: list[str] = []
+    if p["hot_thresholds"]:
+        assumptions.append("hot_thresholds 阈值判定不可执行：gkx.dwd_industry_chain_news_info "
+                           "无浏览量/评论数列（算法库 L37 接口位保留，待上游补列后启用）")
+    assumptions.append("情感值为 40 词词典代理（gkx 全库无情感/极性列），只可排序参考、不进验收口径")
+
     t0 = time.time()
     panel = load("chain_panel21.json")
     chains = panel["chains"]
     diag = load("news21_code_diag_20261022.json")
+
+    scope = [p["industry_tag"]] if p["industry_tag"] else None
     rows = []
     for c in chains:
+        if scope and c["chain"] not in scope:
+            continue
         nw = c.get("news") or {}
         pos, neg, neu = nw.get("pos", 0), nw.get("neg", 0), nw.get("neu", 0)
         den = pos + neg
@@ -73,7 +108,20 @@ def main():
                      "value": round(pos / den, 4) if den else None,
                      "pos": pos, "neg": neg, "neu": neu, "denom": den,
                      "samples": pos + neg + neu})
+    if scope and not rows:
+        assumptions.append(f"industry_tag={p['industry_tag']} 不在 12 链清单内或零样本")
     rows.sort(key=lambda r: -(r["value"] if r["value"] is not None else -1))
+
+    if p["sentiment_filter"] == "positive":
+        feed = [{"chain": r["chain"], "name": r["name"], "positive_samples": r["pos"]}
+                for r in rows if r["pos"]]
+    elif p["sentiment_filter"] == "negative":
+        feed = [{"chain": r["chain"], "name": r["name"], "negative_samples": r["neg"]}
+                for r in rows if r["neg"]]
+    else:
+        feed = [{"chain": r["chain"], "name": r["name"],
+                 "positive": r["pos"], "negative": r["neg"]} for r in rows]
+
     tp = sum(r["pos"] for r in rows)
     tn = sum(r["neg"] for r in rows)
     tneu = sum(r["neu"] for r in rows)
@@ -105,7 +153,7 @@ def main():
         "pos": tp, "neg": tn, "neutral": tneu,
         "chain_label_expansion": tp + tn + tneu,
     }
-    compute = {
+    compute_meta = {
         "formula": "pos/(pos+neg)",
         "lexicon_size": len(POS) + len(NEG),
         "lexicon_pos": POS,
@@ -114,6 +162,7 @@ def main():
         "neutral_policy": "中性不计入分母",
         "chain_rule": "industry_code JSON 数组逐码取前 7 位归链，同链去重",
         "proxy": True,
+        "hot_threshold_interface": "算法库 L37 阈值判定接口位（views/comments 列缺失，暂不可执行）",
         "zero_chain_reason": "资讯表 230 个 7 位码与 12 链根码仅 9 个重合；INB1306/INB1333/INB1209 零命中，"
                              "是资讯标签体系覆盖缺口，不是这三条链真的没有资讯",
     }
@@ -125,6 +174,9 @@ def main():
     out = {
         "metric_id": "M_CHAIN_NEWS_SENTIMENT_RATIO",
         "metric_name": "资讯正面情感占比",
+        "applicable_systems": APPLICABLE,
+        "params_effective": {k: p[k] for k in DEFAULTS},
+        "assumptions": assumptions,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S+08:00"),
         "support_judgment": "部分支持",
         "judgment_reason": "链资讯 108,052 条标题可取，但 gkx 全库没有任何情感/极性列（information_schema "
@@ -135,16 +187,31 @@ def main():
         "base_years_missing": BASE_MISSING,
         "base_years_note": BASE_NOTE,
         "headline": headline,
-        "facts": facts,
+        "value": headline["value"],
+        "detail": {"facts": facts},
+        "display": {                      # 展示系统直接消费段
+            "sentiment_bar": [{"chain": r["chain"], "name": r["name"],
+                               "positive": r["pos"], "negative": r["neg"], "neutral": r["neu"]}
+                              for r in rows],
+            "subscription_feed": feed,
+        },
         "chains": rows,
         "method_steps": STEPS,
         "population": population,
-        "compute": compute,
+        "compute": compute_meta,
+        "elapsed_sec": round(time.time() - t0, 2),
     }
+    return out
+
+
+def main():
+    # 缺省运行 = 专题系统姿势（只看 12 链全量分布，不传阈值/过滤）
+    result = compute()
     with open(OUT, "w", encoding="utf-8") as f:
-        json.dump(out, f, ensure_ascii=False, indent=1)
-    print("[ok]", "M_CHAIN_NEWS_SENTIMENT_RATIO", json.dumps(headline, ensure_ascii=False),
-          "chains", len(rows), "sec", round(time.time() - t0, 2))
+        json.dump(result, f, ensure_ascii=False, indent=1)
+    print("[ok]", "M_CHAIN_NEWS_SENTIMENT_RATIO", json.dumps(result["headline"], ensure_ascii=False),
+          "chains", len(result["chains"]), "sec", result["elapsed_sec"])
+    print("wrote", OUT)
 
 
 if __name__ == "__main__":

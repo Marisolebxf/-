@@ -1,9 +1,20 @@
 # 痛难点严重度（M_ENT_PAINPOINT_SEVERITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_PAINPOINT_SEVERITY.md`；复现脚本 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py` → `metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（企业级偏离度合成与分档）｜ **域**：企业分析·风险洞察·发展痛难点（ENT）｜ **UI 挂载**：科技专题服务系统·企业深度分析「企业发展痛难点识别模型」（算法库 §1.1.1.1.1.1.1.5.3，需求 ID ALGO-ENT-DEEP-143；SRS 需规序号 143 同族）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py`、产物 `metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_PAINPOINT_SEVERITY.md`；复现脚本 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py` → `metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py`、产物 `metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +61,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_PAINPOINT_SEVERITY.md` |
 | 复现脚本 | `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json` |
@@ -58,15 +69,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py`、产物 `metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（企业级偏离度合成与分档）｜ **域**：企业分析·风险洞察·发展痛难点（ENT）｜ **UI 挂载**：科技专题服务系统·企业深度分析「企业发展痛难点识别模型」（算法库 §1.1.1.1.1.1.1.5.3，需求 ID ALGO-ENT-DEEP-143；SRS 需规序号 143 同族）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020-ENT-i）**：王惠（calc-logic 真源：偏离度加权汇总+轻/中/重三档，需求文档提供构建方法——本 MD 沿用并实测）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分（阈值配置表缺）/ 部分（人才维全空；财务原料 1.98%–3.49%）
-> wanghui: true（王惠定义过——wanghui_agg 收录，§五 必含）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -100,7 +107,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「痛难点严重度」是企业发展痛难点识别模型的分档输出：企业各项经营指标实际表现与判断阈值之间的偏离程度，按经营竞争力/盈利能力/生产效率/人才状况四维加权汇总后分档——轻度 0–20%、中度 20–50%、重度 >50%。与 COUNT 件（面量计数）和 GAP 件（连续差值）不同，本条把差距压缩成**序数档位**，是单企诊断报告（TOPIC 件）的定级字段与帮扶资源分级的依据。需求文档给出构建方法叙述（「量化评估关键指标表现」「设定判断阈值」），口径真源为项目内 calc-logic（王惠调研结果规范化迁移：偏离度公式 + 四维加权 + 三档分界）。权威方法侧，偏离度合成可对标官方多维加权评价范式（工信部高新区指标体系的加权合成结构 (工业和信息化部, 2024)、国家统计局效益指标的官方口径 (国家统计局, 2023)），阈值分档的方法谱系见预警阈值设定文献与 OECD 诊断工具基准法 (OECD, 2020)。实测（2026-10-21，脚本 `code/M_ENT_PAINPOINT_SEVERITY.py`）：阈值配置表 live 两 schema 均无——王惠口径的偏离度分母（阈值）与档界（20%/50%）均无正式载体；`arch_development_am` 列存在性验证通过（calc-logic src 的存疑列名实测在库）；财务七列填充 1.98%–3.49%、研发人员 0 行；行业分组键 186,809 行 20 门类可用。降级轨（行业 P25 代理阈值 + 等权）：34 家可算企业中 6 家存在偏离（重度 5/中度 1/轻度 0——P25 代理下偏离者多为深偏离），分档结构可产出 → **部分支持**（先验「完全直接支持」被实测推翻）。
+「痛难点严重度」是企业发展痛难点识别模型的分档输出：企业各项经营指标实际表现与判断阈值之间的偏离程度，按经营竞争力/盈利能力/生产效率/人才状况四维加权汇总后分档——轻度 0–20%、中度 20–50%、重度 >50%。与 COUNT 件（面量计数）和 GAP 件（连续差值）不同，本条把差距压缩成**序数档位**，是单企诊断报告（TOPIC 件）的定级字段与帮扶资源分级的依据。需求文档给出构建方法叙述（「量化评估关键指标表现」「设定判断阈值」），口径真源为项目内 calc-logic（王惠调研结果规范化迁移：偏离度公式 + 四维加权 + 三档分界）。权威方法侧，偏离度合成可对标官方多维加权评价范式（工信部高新区指标体系的加权合成结构 (工业和信息化部, 2024)、国家统计局效益指标的官方口径 (国家统计局, 2023)），阈值分档的方法谱系见预警阈值设定文献与 OECD 诊断工具基准法 (OECD, 2020)。实测（2026-10-21，脚本 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py`）：阈值配置表 live 两 schema 均无——王惠口径的偏离度分母（阈值）与档界（20%/50%）均无正式载体；`arch_development_am` 列存在性验证通过（calc-logic src 的存疑列名实测在库）；财务七列填充 1.98%–3.49%、研发人员 0 行；行业分组键 186,809 行 20 门类可用。降级轨（行业 P25 代理阈值 + 等权）：34 家可算企业中 6 家存在偏离（重度 5/中度 1/轻度 0——P25 代理下偏离者多为深偏离），分档结构可产出 → **部分支持**（先验「完全直接支持」被实测推翻）。
 
 ---
 
@@ -217,7 +224,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按 calc-logic 王惠口径展开（公式定义人=王惠），已由脚本 `code/M_ENT_PAINPOINT_SEVERITY.py` 于 2026-10-21 直连 live（`gkxlumenx_dwd`/`gkxlumenx_ads`）与三方库 gkx 完成实测（阈值面探测 + 原料审计含存疑列核验 + 代理基线分档降级轨出数），结果见同目录 `M_ENT_PAINPOINT_SEVERITY_out.json`。因阈值配置表缺（偏离度分母与档界双缺）+ 人才维全空，本批为「口径验证 + 降级分档演示」——正式分档须待 Q014 闭合。文内引用格式为 SCI 常用「叙述后附 (Author)」。
+> **口径说明**：本节按 calc-logic 王惠口径展开（公式定义人=王惠），已由脚本 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py` 于 2026-10-21 直连 live（`gkxlumenx_dwd`/`gkxlumenx_ads`）与三方库 gkx 完成实测（阈值面探测 + 原料审计含存疑列核验 + 代理基线分档降级轨出数），结果见同目录 `M_ENT_PAINPOINT_SEVERITY_out.json`。因阈值配置表缺（偏离度分母与档界双缺）+ 人才维全空，本批为「口径验证 + 降级分档演示」——正式分档须待 Q014 闭合。文内引用格式为 SCI 常用「叙述后附 (Author)」。
 
 ### 2.1 方法选择：为何用「相对偏离度 + 加权分档」而非绝对差或序数直接分档
 
@@ -261,12 +268,12 @@ $$Band(e) = \begin{cases} \text{轻度} & 0 < Sev(e) \le 20\% \\ \text{中度} &
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_PAINPOINT_SEVERITY.py` |
 | 结果产物 | 同目录 `M_ENT_PAINPOINT_SEVERITY_out.json` |
 | 探测库 | live 两 schema（`gkxlumenx_dwd`/`gkxlumenx_ads`，阈值面）；三方库 gkx（原料审计+降级分档轨）；行数只读 `_work_gkx21/GKX_INVENTORY.json` |
 
 ```bash
-python3 metrics/repro/M_ENT_PAINPOINT_SEVERITY.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_PAINPOINT_SEVERITY.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -327,7 +334,7 @@ python3 metrics/repro/M_ENT_PAINPOINT_SEVERITY.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_PAINPOINT_SEVERITY.py` 并确认审计与降级分档读数合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_PAINPOINT_SEVERITY.py` 并确认审计与降级分档读数合理，再写本档支持度。
 
 | 依赖维度 | 候选表/字段 | 开发库（实测） | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -341,7 +348,7 @@ python3 metrics/repro/M_ENT_PAINPOINT_SEVERITY.py
 **四判定（§〇）**：直接结构/数据 = 否；依赖结构 = **部分**（原料列在、阈值配置缺）；依赖数据 = **部分**（人才维全空 + 七列 2–3%）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_PAINPOINT_SEVERITY_out.json` 实测——阈值配置表（Q014）live 两 schema 均无，王惠口径的偏离度分母与分档档界双缺位（正式分档无从执行）；`development_employee` 全空（人才维断，缺维重归一）；财务七列填充 1.98%–3.49%（34 家可算）。降级轨（P25 代理+等权+三维）6 家出偏离（重 5/中 1/轻 0）——分档结构演示级可交付。**先验标签「完全直接支持」与实测矛盾（无结果面、无阈值面），以实测为准。**
+依据：`metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json` 实测——阈值配置表（Q014）live 两 schema 均无，王惠口径的偏离度分母与分档档界双缺位（正式分档无从执行）；`development_employee` 全空（人才维断，缺维重归一）；财务七列填充 1.98%–3.49%（34 家可算）。降级轨（P25 代理+等权+三维）6 家出偏离（重 5/中 1/轻 0）——分档结构演示级可交付。**先验标签「完全直接支持」与实测矛盾（无结果面、无阈值面），以实测为准。**
 
 ---
 
@@ -413,11 +420,6 @@ python3 metrics/repro/M_ENT_PAINPOINT_SEVERITY.py
 3. 国务院国资委. (2019). 《中央企业负责人经营业绩考核办法》（A/B/C/D 四级考核分级与差异化处置——连续业绩→序数级别→分级施策的官方范式；三档目标值制的基准可回溯设计）. https://www.gov.cn/zhengce/zhengceku/2019-11/01/content_5447595.htm
 
 4. OECD. (2020). *Digital business diagnostic tools for SMEs and entrepreneurship*（可比组基准与评估方法谱系——阈值/基准生成的国际参照）. https://doi.org/10.1787/516bdf9c-en
-
-5. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_PAINPOINT_SEVERITY.md` — 偏离度定义、四维加权、三档分界、Q014 阈值待建登记。
-
-6. 项目内旁证（非外部文献）：`.../ENT/M_ENT_PAINPOINT_COUNT.md`（OR 计数件——四维骨架与阈值依赖同源）、`.../ENT/M_ENT_PAINPOINT_TOPIC.md`（诊断报告件——diag_level 定级字段消费方）。
-
 ---
 
 # 附件
@@ -444,7 +446,7 @@ python3 metrics/repro/M_ENT_PAINPOINT_SEVERITY.py
 - calc-logic 登记（王惠规范化迁移）：src 财务表九列（含 `arch development am` 存疑列名）+ 行业对标；todo 阈值配置表待建；match 517,597 行（旧版数据）。
 - B2 批次锚点（PROGRESS.md，2026-10-20）：财务/人力维系统性薄（七列 2–3%、研发全 NULL）。
 - 20261019 support_level.json 先验：「完全直接支持」——**本批实测推翻**：无结果面、阈值面 live 两 schema 无 → 部分支持。
-- 本批实测（`code/M_ENT_PAINPOINT_SEVERITY.py`，2026-10-21）：live 两 schema 无阈值表；`arch_development_am` 列存在；七列填充 0–3.49%；分组键 186,809 行 20 门类；降级分档轨 34 家/6 偏离（重 5/中 1/轻 0）；`support_judgment = 部分支持`。
+- 本批实测（`metrics/repro/M_ENT_PAINPOINT_SEVERITY.py`，2026-10-21）：live 两 schema 无阈值表；`arch_development_am` 列存在；七列填充 0–3.49%；分组键 186,809 行 20 门类；降级分档轨 34 家/6 偏离（重 5/中 1/轻 0）；`support_judgment = 部分支持`。
 
 ## 附录 C　痛难点严重度类似指标权威构建方法可行性报告（完整版）
 
@@ -537,15 +539,7 @@ python3 metrics/repro/M_ENT_PAINPOINT_SEVERITY.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_PAINPOINT_SEVERITY.py`；产物：`../code/M_ENT_PAINPOINT_SEVERITY_out.json`
+- 脚本：`../code/M_ENT_PAINPOINT_SEVERITY.py`；产物：`../metrics/repro/out/M_ENT_PAINPOINT_SEVERITY_out.json`
 - 探测库：live 两 schema（阈值面）；三方库 gkx（原料审计+降级分档轨）
 - 关键结果：live 两 schema 无阈值表；`arch_development_am` 在；七列 0–3.49%；分组键 20 门类；降级分档 34 家/6 偏离（重 5/中 1/轻 0）；`support_judgment = 部分支持`
 - 工程注意：Q014 四项一揽子会签（本条牵头）；缺维重归一纪律；分母封顶保护；降级档位结构解释随读数发布；diag_level 映射对接。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

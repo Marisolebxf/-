@@ -43573,3 +43573,216 @@ tasks:
       - "差集两列：mock 种子有而指标库无；指标库 SYNTH 域有而三叶 mock 未挂。只标对应关系，不改口径、不改 seed、不把 D1 改绿"
       - "handoff 落 agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-METRIC-XREF-L01.md，行主键与清单单一致（metric_id）"
     update_time: "2026-10-28T10:17:28+08:00"
+  - id: SYSINT-TFMAP-02-L01
+    title: "技术领域与产业节点关联：子学科同步进本侧表，LLM 关联产业节点"
+    status: "in_progress"
+    claimed_by: "agent:algorithm-agent"
+    supervised_by: "human:淮政玮"
+    claim_type: coordinator_dispatch
+    claimed_at: "2026-10-28T11:44:08+08:00"
+    lock_until: "2026-10-28T19:44:08+08:00"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "WBS-02-08。关联落本侧映射表。菜单在 demo-ui-system-test。【同步】灌子学科，【关联】走 LLM。监管人待指定。"
+    depends_on:
+      - "SYSINT-DICT-02-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    touched_files:
+      - "repos/demo-ui-system-test"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-algo-py"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TFMAP-02-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TFMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "本侧映射表落库。其他模块读这张表，不在请求路径上打久新或字典接口。密码和模型密钥不进 git"
+      - "demo-ui-system-test 维护管理有菜单。【同步】按 subfield_id 更新子学科目录，不整表清空。【关联】调用 LLM，只接受本侧已有产业节点，失败行保持未映射"
+      - "页面列出已映射和未映射的子学科，并给出两侧数量"
+      - "输入子学科关键字能定位子学科，级联只显示该子学科已关联的产业节点、产业、集群。未关联则级联为空"
+      - "不改政策三页的提交逻辑，不替换政策页产业集群下拉。不建技术链、人才、科研机构深度分析页。不改 iticsci 专题仓。Java 不调模型。handoff 写明表名、菜单路径、LLM 落点和本侧目录缺口"
+    evidence: "agent-handoffs/SYSINT-TFMAP-02-L01.md"
+    update_time: "2026-10-28T11:50:00+08:00"
+  - id: LUMEN-INTEL-VIT-PY-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-10-28T03:40:28.652Z"
+    last_seen_at: "2026-10-28T03:40:28.652Z"
+    lock_until: "2026-10-28T07:40:28.652Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "区域创新活力 — Python 装包与 /internal 任务执行"
+    status: "claimed"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      2026-10-28 项目负责人更正：原 DoD「不要求灌 gapfill」仍有效。建表在 LUMEN-INTEL-VIT-GAPFILL-L01，灌行在 LUMEN-INTEL-VIT-GAPFILL-DATA-L01。原「D4 保持 mock」作废。活力按实现方案 6.2 默认方案实算：深圳 × 全国重点城市 × 最近3年；四维等权 0.25；对比集合内极值归一；缺维不补 0。本单不改 D4。五张实现单都交接后，区域创新活力分析可提测。强度：ponytail full。监管人 human:唐绍祖。派单说明 agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-PY-L01.md。登记表 DoD 与派单不一致时以派单为准。不实现要素与协同。
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-实现方案.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "新增 /internal/v1/synth/jobs/execute，只接受 leaf=vitality；elements 与 collaboration 拒绝"
+      - "出参 result 为 VitalityResult，字段与清单单活力叶一致，并带 methodVersion"
+      - "装包只调已有 compute_metric，不在该接口重写公式；指数位用 M_SYNTH_VIT_INDEX，与 M_SYNTH_186_1 同核只调用一处"
+      - "计算失败的格子为 null，带 metric_id 与 confidence；不补 0，不用随机数"
+      - "区域映射不到则失败，不默默改成深圳；窗参数先归一成中文再计算"
+      - "五阶段中文与 LUMEN-INTEL-MOCK-INV-L01 活力叶一致，过程不出现百分比"
+      - "不把缺项数写入 ODS/DWD/ADS/供应方库；本单不要求灌 gapfill 表"
+      - "handoff 含架构合规与 ponytail 行"
+    update_time: "2026-10-28T12:04:04+08:00"
+  - id: LUMEN-INTEL-VIT-BE-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-10-28T03:40:33.725Z"
+    last_seen_at: "2026-10-28T03:40:33.725Z"
+    lock_until: "2026-10-28T07:40:33.725Z"
+    claimed_by: "agent:api-agent"
+    title: "区域创新活力 — Java 任务白名单与 Adapter"
+    status: "claimed"
+    agent: "api-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      2026-10-28 项目负责人更正：原 DoD「不关闭 Q-SYNTH」不挡实现。Java 只透传活力两键，计算按实现方案 6.2 默认方案（等权、深圳 × 全国重点城市 × 最近3年）。完成态 D4 不得为 mock，改 live 在 LUMEN-INTEL-VIT-GAPFILL-DATA-L01。五张实现单都交接后，区域创新活力分析可提测。强度：ponytail full。监管人 human:唐绍祖。派单说明 agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-BE-L01.md。登记表 DoD 与派单不一致时以派单为准。不登记要素与协同。不并行改 LUMEN-INTEL-BE-1。
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-实现方案.md"
+    definition_of_done:
+      - "gkxlumen-topic-async-service 只登记 region_innovation_vitality 与 region_innovation_vitality_report，不登记要素与协同"
+      - "Adapter Feign http://gkxlumen-platform-entan-py:8000/internal/v1/synth/jobs/execute，配置禁止 demo-platform-*"
+      - "未知 analysisType 仍被拒绝"
+      - "报告键第一期结果为 {format, parent_task_id}，模板 synth-vitality-report-v1，不生成 PDF"
+      - "Java 仓库无活力指数公式；失败不把演示 JSON 写入正式结果"
+      - "handoff 含架构合规与 ponytail 行"
+    update_time: "2026-10-28T12:04:09+08:00"
+  - id: LUMEN-INTEL-VIT-FE-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-10-28T03:40:38.165Z"
+    last_seen_at: "2026-10-28T03:40:38.165Z"
+    lock_until: "2026-10-28T07:40:38.165Z"
+    claimed_by: "agent:frontend-agent"
+    title: "区域创新活力 — 接通真实分析任务"
+    status: "claimed"
+    agent: "frontend-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      2026-10-28 项目负责人更正：原 DoD「D4 mock 与 confidence=gapfill 仍显示 🧪」作废。角标跟指标 D4 走，禁止写死。D4 由 LUMEN-INTEL-VIT-GAPFILL-DATA-L01 改为 live 后去掉 🧪。默认条件是深圳 × 全国重点城市 × 最近3年，四维等权。强度：ponytail full。监管人 human:唐绍祖。派单说明 agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-FE-L01.md。登记表 DoD 与派单不一致时以派单为准。只接活力页。开工等 PY 与 BE 交接。本单交接不等于可提测。
+    depends_on:
+      - "LUMEN-INTEL-VIT-PY-L01"
+      - "LUMEN-INTEL-VIT-BE-L01"
+    collaborators:
+      - "algorithm-agent"
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-实现方案.md"
+    definition_of_done:
+      - "USE_MOCK=false 时活力「开始分析」走 #102，analysisType=region_innovation_vitality"
+      - "快照未接前 404 走现有 no_batch，禁止 fixture 填数"
+      - "不改要素页、协同页的数据路径"
+      - "D4 mock 与 confidence=gapfill 仍显示 🧪；不把种子 def_status 改成 aligned"
+      - "五阶段过程页文案与现在一致，不出现百分比"
+      - "handoff 含架构合规与 ponytail 行"
+    update_time: "2026-10-28T12:04:13+08:00"
+  - id: LUMEN-INTEL-VIT-GAPFILL-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-10-28T03:40:29.688Z"
+    last_seen_at: "2026-10-28T03:40:29.688Z"
+    lock_until: "2026-10-28T07:40:29.688Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "区域创新活力 — 功能验收缺项表"
+    status: "claimed"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      2026-10-28 项目负责人更正：本单只建三张 gapfill_ 表并把读路径接进公式，不灌业务行，不改 D4。原 DoD「D4 仍为 mock」作废。灌行与改 live 在 LUMEN-INTEL-VIT-GAPFILL-DATA-L01。等 PY 装包后再开工。强度：ponytail full。监管人 human:唐绍祖。派单说明 agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-GAPFILL-L01.md。登记表 DoD 与派单不一致时以派单为准。五张实现单都交接后，区域创新活力分析可提测。
+    depends_on:
+      - "LUMEN-INTEL-VIT-PY-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-实现方案.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "只在 gkxlumenx_gapfill 建 gapfill_ 前缀表，覆盖细稿已点名的三个活力缺项：新产品销售收入占比、研发人员数量、政策实施效果指数"
+      - "每行有 metric_id、gap_item、fill_method、fill_model（llm 时）、gapfill_batch_id、generated_at"
+      - "灌数只由 Python 完成；不写入 ODS/DWD/ADS/供应方库"
+      - "装包读到缺项表时格子带原 metric_id 与 confidence=gapfill；D4 仍为 mock"
+      - "不把验收用权重标成甲方官方权重；不关闭 Q-SYNTH-01 与 Q-SYNTH-V-01"
+      - "不为库中不存在的 M_SYNTH_ELEM_FOUR_DIM_SCORE 建表"
+      - "handoff 含架构合规与 ponytail 行"
+    update_time: "2026-10-28T12:04:18+08:00"
+  - id: LUMEN-INTEL-VIT-GAPFILL-DATA-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-10-28T04:02:11.438Z"
+    last_seen_at: "2026-10-28T04:02:11.438Z"
+    lock_until: "2026-10-28T08:02:11.438Z"
+    claimed_by: "agent:data-agent"
+    title: "区域创新活力 — 缺项表灌数并交出可提测"
+    status: "claimed"
+    agent: "data-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      2026-10-28 项目负责人：本单只灌 gapfill_ 行并在实算成功后把五条活力指标 D4 改为 live。建表与读路径在 LUMEN-INTEL-VIT-GAPFILL-L01，不要再灌一遍。四张前置单未交接前不改 D4，也不宣告可提测。五张单都交接后，区域创新活力分析可提测。强度：ponytail full。监管人 human:唐绍祖。派单说明 agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-GAPFILL-DATA-L01.md。登记表 DoD 与派单不一致时以派单为准。不做要素与协同。
+    depends_on:
+      - "LUMEN-INTEL-VIT-PY-L01"
+      - "LUMEN-INTEL-VIT-BE-L01"
+      - "LUMEN-INTEL-VIT-FE-L01"
+      - "LUMEN-INTEL-VIT-GAPFILL-L01"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-实现方案.md"
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_VIT_INDEX.md"
+    definition_of_done:
+      - "只往 gkxlumenx_gapfill 的 gapfill_ 表灌行，覆盖细稿已点名的三个活力缺项：新产品销售收入占比、研发人员数量、政策实施效果指数；细稿另写明且仍无源列的活力子项用同前缀补表灌入"
+      - "行覆盖装包里全国重点城市映射的城市与最近3年；每行有 metric_id、gap_item、fill_method、fill_model（llm 时）、gapfill_batch_id、generated_at"
+      - "灌数脚本只在 Python；不写入 ODS/DWD/ADS/供应方库；生产配置不读 gkxlumenx_gapfill"
+      - "默认条件深圳、全国重点城市、最近3年按实现方案 6.2 等权实算时，这三个缺项进入公式，不再是 null 占位；失败格仍为 null，不补 0"
+      - "实算成功后把 M_SYNTH_VIT_INDEX、M_SYNTH_VIT_DIM_SCORE、M_SYNTH_VIT_WEIGHT、M_SYNTH_VIT_INDICATOR、M_SYNTH_VIT_RANK 的 D4 改为 live，source_systems 写明 gapfill_ 批次；灌齐并实算完成前不改 live"
+      - "不关闭 Q-SYNTH-01、Q-SYNTH-V-01、Q-SYNTH-V-02；不把等权标成甲方官方权重"
+      - "本单与 PY、BE、FE、建表单全部交接后，区域创新活力分析可提测：USE_MOCK=false 下默认条件开始分析走真实任务，结果为 6.2 实算，五条 D4=live，页面无测试角标。handoff 含架构合规与 ponytail 行"
+    update_time: "2026-10-28T12:04:00+08:00"

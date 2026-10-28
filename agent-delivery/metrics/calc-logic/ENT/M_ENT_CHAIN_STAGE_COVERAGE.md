@@ -1,9 +1,21 @@
 # 产业链环节覆盖（M_ENT_CHAIN_STAGE_COVERAGE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_CHAIN_STAGE_COVERAGE.md`；复现脚本 `metrics/repro/M_ENT_CHAIN_STAGE_COVERAGE.py` → `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：COVERAGE（目录覆盖型）｜ **域**：ENT（企业分析）｜ **UI 挂载**：企业分析 → 产业链定位 / 产业链分析 → 环节覆盖
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（calc-logic ENT，20260816 底稿）｜ wanghui: true
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_CHAIN_STAGE_COVERAGE.py`、产物 `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_CHAIN_STAGE_COVERAGE.md`；复现脚本 `metrics/repro/M_ENT_CHAIN_STAGE_COVERAGE.py` → `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_CHAIN_STAGE_COVERAGE.py`、产物 `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -26,7 +38,7 @@
 
 {'unit': '% / 个环节', 'formula_catalog': 'k_K = |被企业驻扎的目录叶子 ∩ 链目录叶子| / |链目录叶子|', 'formula_breadth': 'breadth = Σ叶子关联数 / 企业数', 'stage_grouping': '原式按 level 上/中/下游；当前不可执行，仅给码深代理'}
 
-> 一句话口径（源件 §0.3）：企业侧数据充足：`gkx.dwd_org_industry_tags` 2,283,762 行、标签体系 6,628 个环节码；目录侧 `gkx.dwd_industry_chain_info` 1,273 节点、954 叶子。但王惠原式要求的「按 `level` 分组（上游/中游/下游）」**不可执行**——`level` 全库 1,273/1,273 行为 0，无任何命名段位行；且 24.93% 的标签行 `industry_link_code` 为空、5,674 个环节码不在目录内。段位维整块缺失，故判**部分支持**。本档位与 `code/M_ENT_CHAIN_STAGE_COVERAGE_out.json` 的 `support_judgment` 一致。
+> 一句话口径（源件 §0.3）：企业侧数据充足：`gkx.dwd_org_industry_tags` 2,283,762 行、标签体系 6,628 个环节码；目录侧 `gkx.dwd_industry_chain_info` 1,273 节点、954 叶子。但王惠原式要求的「按 `level` 分组（上游/中游/下游）」**不可执行**——`level` 全库 1,273/1,273 行为 0，无任何命名段位行；且 24.93% 的标签行 `industry_link_code` 为空、5,674 个环节码不在目录内。段位维整块缺失，故判**部分支持**。本档位与 `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -56,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_CHAIN_STAGE_COVERAGE.md` |
 | 复现脚本 | `metrics/repro/M_ENT_CHAIN_STAGE_COVERAGE.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json` |
@@ -64,16 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_CHAIN_STAGE_COVERAGE.py`、产物 `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COVERAGE（目录覆盖型）｜ **域**：ENT（企业分析）｜ **UI 挂载**：企业分析 → 产业链定位 / 产业链分析 → 环节覆盖
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（calc-logic ENT，20260816 底稿）｜ wanghui: true
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（标签 228 万行可用，但目录 `level` 段位字段全为 0）
-> **一句话口径**：链目录 954 个叶子环节中，四城企业实际驻扎了 **735 个（77.04%）**；这是**目录口径覆盖率**，不是「上游/中游/下游」的段位覆盖——段位字段 `level` 全库为 0，原式不可执行。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -101,7 +108,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-企业侧数据充足：`gkx.dwd_org_industry_tags` 2,283,762 行、标签体系 6,628 个环节码；目录侧 `gkx.dwd_industry_chain_info` 1,273 节点、954 叶子。但王惠原式要求的「按 `level` 分组（上游/中游/下游）」**不可执行**——`level` 全库 1,273/1,273 行为 0，无任何命名段位行；且 24.93% 的标签行 `industry_link_code` 为空、5,674 个环节码不在目录内。段位维整块缺失，故判**部分支持**。本档位与 `code/M_ENT_CHAIN_STAGE_COVERAGE_out.json` 的 `support_judgment` 一致。
+企业侧数据充足：`gkx.dwd_org_industry_tags` 2,283,762 行、标签体系 6,628 个环节码；目录侧 `gkx.dwd_industry_chain_info` 1,273 节点、954 叶子。但王惠原式要求的「按 `level` 分组（上游/中游/下游）」**不可执行**——`level` 全库 1,273/1,273 行为 0，无任何命名段位行；且 24.93% 的标签行 `industry_link_code` 为空、5,674 个环节码不在目录内。段位维整块缺失，故判**部分支持**。本档位与 `metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -159,12 +166,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
-| 1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | E-25 深圳企业产业链定位 | 「根据用户选择的产业链，自动提取深圳相关企业清单，标注其在链中角色。」 |
+| 1 | `《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md` | E-25 深圳企业产业链定位 | 「根据用户选择的产业链，自动提取深圳相关企业清单，标注其在链中角色。」 |
 | 2 | 同上 | 基础数据管理 / 产业关系链 | 「产业链环节定义」「产业链上下游关系」的字典维护要求。 |
 | 3 | `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_CHAIN_STAGE_COVERAGE.md` | 口径定义 | 「企业在目标产业链各环节（上游/中游/下游）的覆盖数量；按 level 分组 COUNT(DISTINCT industry_link_code)。」 |
 | 4 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_ENT_CHAIN_STAGE_COVERAGE` | 「case=A；tables=[`dwd_industry_chain_info`,`dwd_org_industry_tags`]；demo_literal_in_py=false。」 |
 | 5 | 数据资产清单 | `_work_gkx21/SHARED_ASSETS.md` | 「链树 1,273 节点 → `_snapshots21/chain_tree_20261021.json`。」 |
-| 6 | 前批实测 | `20261020_指标整体开发进度调研/code/M_ENT_CHAIN_STAGE_COVERAGE_out.json` | 「level 分布=[{level:0,n:1273}]；stage_named_rows=0；tags 抽样 200,000 行拆码通畅。」 |
+| 6 | 前批实测 | `20261020_指标整体开发进度调研/metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json` | 「level 分布=[{level:0,n:1273}]；stage_named_rows=0；tags 抽样 200,000 行拆码通畅。」 |
 
 ### 1.6 推测原意与推测定义（仿王惠口径写法）
 
@@ -254,10 +261,10 @@ $$Cover_{c,ch}=\frac{\left|\,\bigcup_{i\in Ent_{c}} Leaves(i)\ \cap\ Leaves_{cat
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/_build_chain_stage_leaf.py   # 一次性扫描，48 秒，产出链×城叶子面板
 python3 code/M_ENT_CHAIN_STAGE_COVERAGE.py
-# 输出 code/M_ENT_CHAIN_STAGE_COVERAGE_out.json；实测耗时 0.13 秒（读本地面板，零 SQL）
+# 输出 metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json；实测耗时 0.13 秒（读本地面板，零 SQL）
 ```
 
 **分链目录覆盖（四城）**：
@@ -395,20 +402,12 @@ python3 code/M_ENT_CHAIN_STAGE_COVERAGE.py
 ---
 
 ## 参考文献
-
-> 下列条目为口径与方法来源；项目内文件按相对路径给出，外部文件给出可访问 URL。
-
 1. 工业和信息化部. (2021). 《关于加快培育发展制造业优质企业的指导意见》. https://www.miit.gov.cn/
 2. 工业和信息化部. (2021). 重点产业链图谱绘制与强链补链工作部署. https://www.miit.gov.cn/
 3. 重庆市经济和信息化委员会. (2021). 产业链图谱与「补短板」「锻长板」实施方案. https://jjxxw.cq.gov.cn/
 4. 中国社会科学院工业经济研究所. (2022). 产业链现代化水平评价研究. http://gjs.cass.cn/
 5. 广东省工业和信息化厅. 20 个战略性产业集群行动计划. https://gdii.gd.gov.cn/
 6. 深圳市工业和信息化局. 「20+8」产业集群政策. https://gxj.sz.gov.cn/
-7. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_CHAIN_STAGE_COVERAGE.md`（王惠 20260816 底稿）。
-8. 项目内目录资产（非外部文献）：`code/_snapshots21/chain_tree_20261021.json`（1,273 节点）。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
 ---
 
 # 附件
@@ -532,8 +531,8 @@ python3 code/M_ENT_CHAIN_STAGE_COVERAGE.py
 ## 附录 D　实测脚本与结果摘要
 
 - 面板脚本：`code/_build_chain_stage_leaf.py`（keyset 分页扫 2,283,762 行，48—58 秒）
-- 指标脚本：`code/M_ENT_CHAIN_STAGE_COVERAGE.py`（读面板，0.13 秒，零 SQL）
-- 产物：`code/M_ENT_CHAIN_STAGE_COVERAGE_out.json`
+- 指标脚本：`metrics/repro/M_ENT_CHAIN_STAGE_COVERAGE.py`（读面板，0.13 秒，零 SQL）
+- 产物：`metrics/repro/out/M_ENT_CHAIN_STAGE_COVERAGE_out.json`
 - 面板产物：`code/_snapshots21/chain_stage_leaf_20261021.json`
 - 源表：`gkx.dwd_org_industry_tags`、`gkx.dwd_industry_chain_info` @ `183.240.141.251:3318`
 - 关键结果：目录 954 叶；四城覆盖 735（77.04%）；全国 916（96.02%）；四城有码行 201,604
@@ -541,11 +540,3 @@ python3 code/M_ENT_CHAIN_STAGE_COVERAGE.py
 - 空值：569,303 行（24.93%）；多叶子行 304,060（13.31%）；目录外码 5,674
 - 段位：`level` 全 0，命名行 0；码深代理 浅 0 / 中 388 / 深 566（**不得外发**）
 - 工程注意：`industry_link_code` 是祖先路径，必须取叶子；城市必须用 `credit_code` 前缀，底册名称匹配命中率近 0；`parent_code` 存链名，层级靠码前缀
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

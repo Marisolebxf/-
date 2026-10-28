@@ -1,9 +1,25 @@
 # 政策焦点指数（M_POLICY_FOCUS_INDEX）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_FOCUS_INDEX.md`；复现脚本 `metrics/repro/M_POLICY_FOCUS_INDEX.py` → `metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（单条政策 × 四维合成）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「文本焦点」小仪表、政策库列表的「焦点分」排序列、政策时序分析页的焦点分布直方图
+> - **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_FOCUS_INDEX.md`（制定背景 / 政策目标 / 适用范围 / 措施执行情况四维，闭集词频 + 截面 min-max 等权）
+> - **同域边界**：与算法库模型身份 `M_POLICY_DEEP_166_1` **同维、同词表**，区别在于本件是稳定 ID、产物落 `code/`；与已交付 `M_POLICY_INTENSITY_INDEX` 不同——那件是「城市 × 三维五项」的力度指数且判完全不支持，本件是「单条政策 × 四维词频」的文本焦点分，**两者不可互换、不可相加**；与 `M_POLICY_SUPPORT_STRENGTH` 也不同，那件在市级做支持力度，本件在文本级做写法清晰度。
+> - **一句话结论**：三维可算、一维缺失（措施执行情况依赖 `policy_support`，全表 JSON null）；等权 min-max 后分数 **0—36.6328**、均值 **2.9604**、中位 **2.4207**，但**前 10 名全是 41—418 字的极短文本**——因为词频维用「词频 ÷ 正文字数」，短文本一个词就能把比率顶满；截尾到 p99 后城市排名与主口径的秩相关只有 **0.6105**，说明刻度被极值单点主导，故判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_FOCUS_INDEX.py`｜ **产物**：`metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json`｜ **共用底数**：`code/_snapshots21/policy_text_20261023.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_FOCUS_INDEX.py`、产物 `metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_FOCUS_INDEX.md`；复现脚本 `metrics/repro/M_POLICY_FOCUS_INDEX.py` → `metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_FOCUS_INDEX.py`、产物 `metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_FOCUS_INDEX.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_FOCUS_INDEX.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json` |
@@ -59,18 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_FOCUS_INDEX.py`、产物 `metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（单条政策 × 四维合成）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「文本焦点」小仪表、政策库列表的「焦点分」排序列、政策时序分析页的焦点分布直方图
-> **数据支持度**：**部分支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_FOCUS_INDEX.md`（制定背景 / 政策目标 / 适用范围 / 措施执行情况四维，闭集词频 + 截面 min-max 等权）
-> **复现脚本**：`code/M_POLICY_FOCUS_INDEX.py`｜ **产物**：`code/M_POLICY_FOCUS_INDEX_out.json`｜ **共用底数**：`code/_snapshots21/policy_text_20261023.json`
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。本件是截面件，对 20,000 条存量政策逐条打分，不按年度切分；焦点指数度量的是「文本怎么写」，与发布年份无关。2023/2024 的零行是采集断档，不得读成「焦点为 0」。
-> **同域边界**：与算法库模型身份 `M_POLICY_DEEP_166_1` **同维、同词表**，区别在于本件是稳定 ID、产物落 `code/`；与已交付 `M_POLICY_INTENSITY_INDEX` 不同——那件是「城市 × 三维五项」的力度指数且判完全不支持，本件是「单条政策 × 四维词频」的文本焦点分，**两者不可互换、不可相加**；与 `M_POLICY_SUPPORT_STRENGTH` 也不同，那件在市级做支持力度，本件在文本级做写法清晰度。
-> **一句话结论**：三维可算、一维缺失（措施执行情况依赖 `policy_support`，全表 JSON null）；等权 min-max 后分数 **0—36.6328**、均值 **2.9604**、中位 **2.4207**，但**前 10 名全是 41—418 字的极短文本**——因为词频维用「词频 ÷ 正文字数」，短文本一个词就能把比率顶满；截尾到 p99 后城市排名与主口径的秩相关只有 **0.6105**，说明刻度被极值单点主导，故判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -288,8 +297,8 @@ $$F_i=100\times\frac{1}{|K|}\sum_{k\in K}\tilde r^{k}_i,\qquad K=\{\text{bg},\te
 ### 2.8 复现代码与结果
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_FOCUS_INDEX.py     # 只读快照，产出 code/M_POLICY_FOCUS_INDEX_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_FOCUS_INDEX.py     # 只读快照，产出 metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_FOCUS_INDEX --check
 ```
 
@@ -395,14 +404,9 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_FOCUS_INDEX --check
 
 ## 参考文献
 
-1. 黄萃, 任弢, 张剑. 政策文献量化研究：公共政策研究的新方向[J]. 公共管理学报, 2015, 12(2): 129-137. https://kns.cnki.net/kcms2/article/abstract?v=ggjTjMZ9K8Y
-2. Estrada M. A. R. Policy Modeling: Definition, Classification and Evaluation[J]. Journal of Policy Modeling, 2011, 33(4): 523-536. https://doi.org/10.1016/j.jpolmod.2011.01.002
-3. Rothwell R., Zegveld W. Reindustrialization and Technology[M]. Longman, 1985. https://www.worldcat.org/title/11547934
-4. 清华大学公共管理学院. 政策焦点指数构建方法（项目内部资料）. 见首部 calc-logic 路径.
-5. 国务院. 关于加强政策文件制定和监督管理工作的通知. https://www.gov.cn/zhengce/content/2019-03/15/content_5373898.htm
-6. 国家自然科学基金重点项目（71233005）政策文本量化研究结题报告. https://www.nsfc.gov.cn/
-7. MySQL 8.0 Reference Manual — JSON_TYPE. https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html
-
+1. 国务院. 关于加强政策文件制定和监督管理工作的通知. https://www.gov.cn/
+2. 国家自然科学基金重点项目（71233005）政策文本量化研究结题报告. https://www.nsfc.gov.cn/
+3. MySQL 8.0 Reference Manual — JSON_TYPE. https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html
 ---
 
 # 附件
@@ -516,15 +520,7 @@ Rothwell-Zegveld 三类工具需人工编码，且编码单位是「条款」不
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 指标 | `python3 code/M_POLICY_FOCUS_INDEX.py` | `code/M_POLICY_FOCUS_INDEX_out.json` |
+| 指标 | `python3 code/M_POLICY_FOCUS_INDEX.py` | `metrics/repro/out/M_POLICY_FOCUS_INDEX_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_FOCUS_INDEX --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21` | PASS |
 | 判档闸 | `python3 _work_gkx21/audit_verdict_enum.py _staging21` | 一致 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

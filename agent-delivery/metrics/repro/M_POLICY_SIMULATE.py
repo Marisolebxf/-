@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_POLICY_SIMULATE —— 政策效果推演（P1 政策评估族，否定性证据件）
 
 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_SIMULATE.md`

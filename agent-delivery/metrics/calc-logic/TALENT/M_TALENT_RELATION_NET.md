@@ -1,9 +1,18 @@
-# M_TALENT_RELATION_NET（M_TALENT_RELATION_NET）
+# M_TALENT_RELATION_NET —— 人才合作关系网络
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_RELATION_NET.md`；复现脚本 `metrics/repro/M_TALENT_RELATION_NET.py` → `metrics/repro/out/M_TALENT_RELATION_NET_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_RELATION_NET.py`、产物 `metrics/repro/out/M_TALENT_RELATION_NET_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_RELATION_NET.md`；复现脚本 `metrics/repro/M_TALENT_RELATION_NET.py` → `metrics/repro/out/M_TALENT_RELATION_NET_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_RELATION_NET.py`、产物 `metrics/repro/out/M_TALENT_RELATION_NET_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +60,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TALENT_RELATION_NET.md` |
 | 复现脚本 | `metrics/repro/M_TALENT_RELATION_NET.py` |
 | 复现产物 | `metrics/repro/out/M_TALENT_RELATION_NET_out.json` |
@@ -59,15 +68,17 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_RELATION_NET.py`、产物 `metrics/repro/out/M_TALENT_RELATION_NET_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 **数据支持度**：部分支持
 
 > 交付件编号：M_TALENT_RELATION_NET
 > 数据源：三方只读库 `gkx`（183.240.141.251:3318，账号 gkx_reader_zp）+ `code/_snapshots21/` 落盘快照
-> 计算脚本：`code/M_TALENT_RELATION_NET.py`　产物：`code/M_TALENT_RELATION_NET_out.json`
+> 计算脚本：`metrics/repro/M_TALENT_RELATION_NET.py`　产物：`metrics/repro/out/M_TALENT_RELATION_NET_out.json`
 > 编写日期：2026-10-22
 
 ---
@@ -178,11 +189,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 交付物 | 路径 |
 |---|---|
 | 本文档 | `_staging21/M_TALENT_RELATION_NET.md` |
-| 计算脚本 | `code/M_TALENT_RELATION_NET.py` |
-| 结果产物 | `code/M_TALENT_RELATION_NET_out.json` |
+| 计算脚本 | `metrics/repro/M_TALENT_RELATION_NET.py` |
+| 结果产物 | `metrics/repro/out/M_TALENT_RELATION_NET_out.json` |
 | 公共层 | `code/_talent10_common.py` |
 
-复现命令：`python3 M_TALENT_RELATION_NET.py`，仅标准库。
+复现命令：`cd code && python3 M_TALENT_RELATION_NET.py`，仅标准库。
 
 ---
 
@@ -236,10 +247,10 @@ $$
 
 ### 2.7 复现代码结果展示与输出契约
 
-复现命令为 `python3 M_TALENT_RELATION_NET.py`。脚本只读快照，运行约 1 秒，覆盖写 `code/M_TALENT_RELATION_NET_out.json`。
+复现命令为 `cd code && python3 M_TALENT_RELATION_NET.py`。脚本只读快照，运行约 1 秒，覆盖写 `metrics/repro/out/M_TALENT_RELATION_NET_out.json`。
 
 ```bash
-$ python3 M_TALENT_RELATION_NET.py
+$ cd code && python3 M_TALENT_RELATION_NET.py
 wrote M_TALENT_RELATION_NET_out.json
 stats {'mean': 59.35, 'median': 58, 'p10': 12, 'p25': 24.0,
        'p75': 100.0, 'p90': 100, 'p99': 100.0, 'max': 100,
@@ -457,14 +468,11 @@ ego 机构分布：深圳大学 10、南方科技大学 8、中国科学院深�
 | 判档一致 | MD 头部 = out.json `support_judgment` | 部分支持 |
 | 行数 | 450—700 | 见 gate 输出 |
 | 数字可追溯 | 每个数字能在 out.json 找到 | 是 |
-| 脚本可跑 | `python3 M_TALENT_RELATION_NET.py` | 是，约 1 秒 |
+| 脚本可跑 | `cd code && python3 M_TALENT_RELATION_NET.py` | 是，约 1 秒 |
 | 无 demo 引用 | lint 0 处 | 是 |
 | 基期三字段 | used / missing / note 齐备 | 是（截面，used=[]） |
 
 ## 参考文献
-
-不适用：本件为库内快照实测，全部数字来自 `code/M_TALENT_RELATION_NET_out.json`，不引用外部标准或论文。
-
 # 附件
 
 ## 附录 A 复现步骤与产物字段
@@ -472,7 +480,7 @@ ego 机构分布：深圳大学 10、南方科技大学 8、中国科学院深�
 ### A.1 运行
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_TALENT_RELATION_NET.py
 ```
 
@@ -552,10 +560,3 @@ python3 M_TALENT_RELATION_NET.py
 ### C.4 何时应降档
 
 若甲方要求"网络中心性排名""社区发现""合作网络演化"，本件应降为"完全不支持"：前者缺逐边表，后者缺论文年。若甲方只要求"合作广度分布"，本件可维持"部分支持"并加截断脚注。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

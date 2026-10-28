@@ -1,9 +1,24 @@
 # 社群属性与特征分析（M_SYNTH_DS_23_GRAPH_ALGO_013）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_DS_23_GRAPH_ALGO_013.md`；复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py` → `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：ALGO（图算法件，DS_23 图谱算法族第 13 号）｜ **域**：综合图谱 / 社群分析｜ **UI 挂载**：综合图谱 → 社群属性面板（社群画像卡 + 跨社群联系）
+> - **数据支持度**：**部分支持**｜ **依赖性质**：A 类（共著图可建）+ C 类（主题词与机构元数据覆盖不足）
+> - **一句话结论**：在 P2 巨连通片（**15,223 节点 / 36,965 边**，占全图节点 74.4911%、边 96.7468%）上读出 **60 个社群**，模块度 **0.755103**（与快照逐位一致），最大社群 1,637 节点（10.7535%）；跨社群边权占 19.1007%，主题词仅覆盖 **0.7919%** 论文、机构元数据精确匹配 **11.4038%** → 划分可交付，属性画像只能当线索，判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py`｜ **产物**：`metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_DS_23_GRAPH_ALGO_013.md`；复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py` → `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_DS_23_GRAPH_ALGO_013.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json` |
@@ -59,19 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：ALGO（图算法件，DS_23 图谱算法族第 13 号）｜ **域**：综合图谱 / 社群分析｜ **UI 挂载**：综合图谱 → 社群属性面板（社群画像卡 + 跨社群联系）
-> **数据支持度**：**部分支持**｜ **依赖性质**：A 类（共著图可建）+ C 类（主题词与机构元数据覆盖不足）
-> **公式定义人**：无（需求只写「社群属性与特征分析」）｜ **口径归属**：非王惠系
-> **复现脚本**：`code/M_SYNTH_DS_23_GRAPH_ALGO_013.py`｜ **产物**：`code/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`
-> **共用资产**：`code/_collab_graph21.py`（建图口径唯一入口）、`code/_snapshots21/graph_algo_23_20261023.json`（社群划分唯一来源）
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读）
-> **一句话结论**：在 P2 巨连通片（**15,223 节点 / 36,965 边**，占全图节点 74.4911%、边 96.7468%）上读出 **60 个社群**，模块度 **0.755103**（与快照逐位一致），最大社群 1,637 节点（10.7535%）；跨社群边权占 19.1007%，主题词仅覆盖 **0.7919%** 论文、机构元数据精确匹配 **11.4038%** → 划分可交付，属性画像只能当线索，判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -261,9 +268,9 @@ Louvain 有随机性（节点顺序敏感），同一张图重跑可能得到不
 ### 2.8 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_SYNTH_DS_23_GRAPH_ALGO_013.py
-# → code/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json
+# → metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json
 ```
 
 复现判据：
@@ -468,11 +475,6 @@ cid 是「按规模排序的序号」，不是稳定主键。下一次重跑若�
 2. Newman M. E. J., Girvan M. Finding and evaluating community structure in networks. *Physical Review E*, 2004, 69(2): 026113. https://doi.org/10.1103/PhysRevE.69.026113
 3. Fortunato S. Community detection in graphs. *Physics Reports*, 2010, 486(3-5): 75-174. https://doi.org/10.1016/j.physrep.2009.11.002
 4. Yang J., Leskovec J. Defining and evaluating network communities based on ground-truth. *Knowledge and Information Systems*, 2015, 42(1): 181-213. https://doi.org/10.1007/s10115-013-0693-z
-5. 本地产物：
-   - `code/M_SYNTH_DS_23_GRAPH_ALGO_013.py`
-   - `code/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json`
-   - `code/_snapshots21/graph_algo_23_20261023.json`
-
 ---
 
 # 附件
@@ -545,17 +547,10 @@ cid 是「按规模排序的序号」，不是稳定主键。下一次重跑若�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_DS_23_GRAPH_ALGO_013.py` |
-| 产物 | `code/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_013.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json` |
 | 点集 | P2，15,223 / 36,965 |
 | 社群数 | 60 |
 | 模块度 | 0.755103 |
 | 判档 | 部分支持 |
 | 重跑耗时 | 约 10 秒（读快照 + 聚合） |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

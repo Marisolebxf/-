@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """要素聚类（M_INNOV_FACTOR_CLUSTER）——A-16 批实现。
 
 口径（metrics/calc-logic/INNOV/M_INNOV_FACTOR_CLUSTER.md）：

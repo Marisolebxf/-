@@ -1,9 +1,20 @@
 # 深圳技术链模型（M_TECH_DEEP_131_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_DEEP_131_1.md`；复现脚本 `metrics/repro/M_TECH_DEEP_131_1.py` → `metrics/repro/out/M_TECH_DEEP_131_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术链深度分析模型（131 号·属地对偶件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·深圳技术链视图（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_DEEP_131_1.py`、产物 `metrics/repro/out/M_TECH_DEEP_131_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_DEEP_131_1.md`；复现脚本 `metrics/repro/M_TECH_DEEP_131_1.py` → `metrics/repro/out/M_TECH_DEEP_131_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_DEEP_131_1.py`、产物 `metrics/repro/out/M_TECH_DEEP_131_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_DEEP_131_1.md` |
 | 复现脚本 | `metrics/repro/M_TECH_DEEP_131_1.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_DEEP_131_1_out.json` |
@@ -64,17 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_DEEP_131_1.py`、产物 `metrics/repro/out/M_TECH_DEEP_131_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术链深度分析模型（131 号·属地对偶件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·深圳技术链视图（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**
-> **口径批次**：20261021 gkx 口径重建（原 20261020 开发库口径旧稿作废，差异见 §四 末节）
-> **直接（结构/数据）**：否 / 部分（无深圳结果面，按全国专利面板重切；切片与区级矩阵可算）
-> **依赖（结构/数据）**：部分（专利、企业底册、科技资质可算；产业规模无域级字段、应用领域桥覆盖 12.99%）
-> wanghui：false（非王惠系，§五 仅作方法对照）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -222,7 +227,7 @@ gkx 口径下的实测有三块硬数字。**切片**：2021—2024 深圳有 IP
 
 ## 二、计算过程
 
-> 口径说明：需求未给公式，以下为推定计算过程，由 `code/M_TECH_DEEP_131_1.py` 在 gkx 实测跑通，结果落 `code/M_TECH_DEEP_131_1_out.json`。比例均同时给出分子与分母。
+> 口径说明：需求未给公式，以下为推定计算过程，由 `metrics/repro/M_TECH_DEEP_131_1.py` 在 gkx 实测跑通，结果落 `metrics/repro/out/M_TECH_DEEP_131_1_out.json`。比例均同时给出分子与分母。
 
 ### 2.1 方法选择：为什么按申请人归属而不用发明人
 
@@ -266,7 +271,7 @@ gkx 口径下的实测有三块硬数字。**切片**：2021—2024 深圳有 IP
 
 产业规模维的核查结论是**无字段**：`dwd_org_stock_finance_info` 有 `operating_revenue`、`main_business_revenue` 等财务列，但粒度是「上市主体 × 报告期」，没有技术域标签，也没有非上市企业。要用它做域级产业规模，需要「企业→域」映射（本库无）与「非上市企业财务」（本库无），两条都断。
 
-应用领域维的核查结论是**桥接覆盖低**：产品表 80,258 行，其中能挂上统一社会信用代码的 10,425 行（12.99%），落到深圳的 6,047 行；行业字典 1,273 行。产品表还有一处结构问题——绝大多数行（98.23%，该计数见 `code/M_TECH_DEEP_130_1_out.json` 的 `attribute_face`）的 `company_name` 列存的是信用代码而不是企业名，导致「企业名→域」的直接匹配失效，只能走信用代码桥。
+应用领域维的核查结论是**桥接覆盖低**：产品表 80,258 行，其中能挂上统一社会信用代码的 10,425 行（12.99%），落到深圳的 6,047 行；行业字典 1,273 行。产品表还有一处结构问题——绝大多数行（98.23%，该计数见 `metrics/repro/out/M_TECH_DEEP_130_1_out.json` 的 `attribute_face`）的 `company_name` 列存的是信用代码而不是企业名，导致「企业名→域」的直接匹配失效，只能走信用代码桥。
 
 ### 2.7 复现代码结果展示
 
@@ -274,8 +279,8 @@ gkx 口径下的实测有三块硬数字。**切片**：2021—2024 深圳有 IP
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_TECH_DEEP_131_1.py` |
-| 结果产物 | `code/M_TECH_DEEP_131_1_out.json` |
+| 计算脚本 | `metrics/repro/M_TECH_DEEP_131_1.py` |
+| 结果产物 | `metrics/repro/out/M_TECH_DEEP_131_1_out.json` |
 | 共享常量 | `code/_snapshots21/tech5_constants_20261022.json` |
 | 专利面板 | `code/_snapshots21/patent_scan_20261021.pkl` |
 | 域×申请人缓存 | `code/_snapshots21/patent_ipc4_by_name_20261021.json` |
@@ -432,17 +437,15 @@ python3 _work_gkx21/rebuild_metric.py M_TECH_DEEP_131_1 --check
 
 ## 参考文献
 
-1. OECD. *Patent Statistics Manual*. Paris: OECD Publishing, 2009. https://doi.org/10.1787/9789264022432-en
-2. WIPO. *World Intellectual Property Indicators*. Geneva: WIPO, 2023. https://www.wipo.int/publications/en/details.jsp?id=4677
-3. 国家知识产权局. 2023 年中国专利调查报告. 北京: 国家知识产权局, 2024. https://www.cnipa.gov.cn/
-4. 深圳市统计局. 深圳统计年鉴. 深圳, 2024. https://tjj.sz.gov.cn/
-5. 深圳市科技创新局. 深圳市科技企业培育政策汇编. 深圳, 2023. https://stic.sz.gov.cn/
-6. Griliches Z. Patent statistics as economic indicators: a survey. *Journal of Economic Literature*, 1990, 28(4): 1661-1707. https://www.jstor.org/stable/2726973
-7. Hall B H, Jaffe A B, Trajtenberg M. Market value and patent citations. *RAND Journal of Economics*, 2005, 36(1): 16-38. https://www.jstor.org/stable/1593752
-8. 广东省市场监督管理局. 广东省战略性产业集群统计口径. 广州, 2023. https://amr.gd.gov.cn/
-9. 国家统计局. 国民经济行业分类（GB/T 4754-2017）. 北京, 2017. https://www.stats.gov.cn/
-10. 世界知识产权组织. 国际专利分类表（IPC）2023 版. 日内瓦: WIPO, 2023. https://www.wipo.int/classifications/ipc/
-
+1. WIPO. *World Intellectual Property Indicators*. Geneva: WIPO, 2023. https://www.wipo.int/publications/en/details.jsp?id=4677
+2. 国家知识产权局. 2023 年中国专利调查报告. 北京: 国家知识产权局, 2024. https://www.cnipa.gov.cn/
+3. 深圳市统计局. 深圳统计年鉴. 深圳, 2024. https://tjj.sz.gov.cn/
+4. 深圳市科技创新局. 深圳市科技企业培育政策汇编. 深圳, 2023. https://stic.sz.gov.cn/
+5. Griliches Z. Patent statistics as economic indicators: a survey. *Journal of Economic Literature*, 1990, 28(4): 1661-1707. https://www.jstor.org/stable/2726973
+6. Hall B H, Jaffe A B, Trajtenberg M. Market value and patent citations. *RAND Journal of Economics*, 2005, 36(1): 16-38. https://www.jstor.org/stable/1593752
+7. 广东省市场监督管理局. 广东省战略性产业集群统计口径. 广州, 2023. https://amr.gd.gov.cn/
+8. 国家统计局. 国民经济行业分类（GB/T 4754-2017）. 北京, 2017. https://www.stats.gov.cn/
+9. 世界知识产权组织. 国际专利分类表（IPC）2023 版. 日内瓦: WIPO, 2023. https://www.wipo.int/classifications/ipc/
 ---
 
 # 附件
@@ -518,10 +521,3 @@ python3 _work_gkx21/rebuild_metric.py M_TECH_DEEP_131_1 --check
 ### C.3 与 130/132/135 的口径绑定
 
 四件共用基期 2021—2024、去重键 pn、领域映射 IPC4-native-20261022、全国有 IPC 专利 2,420,915。本件的深圳域数 609 是 130 的 634 的子集；132 的域级事件判定用全国序列，不切深圳；135 的转化率分母用全国域量，与 130 一致。任何一件改基期，其余三件必须同步。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

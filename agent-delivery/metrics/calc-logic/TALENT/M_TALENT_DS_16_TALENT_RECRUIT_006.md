@@ -1,9 +1,22 @@
 # 文化融合风险评估（M_TALENT_DS_16_TALENT_RECRUIT_006）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_DS_16_TALENT_RECRUIT_006.md`；复现脚本 `metrics/repro/M_TALENT_DS_16_TALENT_RECRUIT_006.py` → `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：需求派生（TALENT 家族 · 招聘引进 16 号专题 006）｜ **域**：科技信息展示系统 · 科技人才态势 · 国际人才引进
+> - **数据支持度**：**完全不支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 否（宗教/族群 0 列、国籍/签证 0 列、文化/社区表 0 张）；依赖数据 = 否（`dwd_forg_base_info` 20,000 行是境外**企业**底册，`country` 去重 0）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_DS_16_TALENT_RECRUIT_006.py`、产物 `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_DS_16_TALENT_RECRUIT_006.md`；复现脚本 `metrics/repro/M_TALENT_DS_16_TALENT_RECRUIT_006.py` → `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_DS_16_TALENT_RECRUIT_006.py`、产物 `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TALENT_DS_16_TALENT_RECRUIT_006.md` |
 | 复现脚本 | `metrics/repro/M_TALENT_DS_16_TALENT_RECRUIT_006.py` |
 | 复现产物 | `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json` |
@@ -61,18 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_DS_16_TALENT_RECRUIT_006.py`、产物 `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：需求派生（TALENT 家族 · 招聘引进 16 号专题 006）｜ **域**：科技信息展示系统 · 科技人才态势 · 国际人才引进
-> **UI 挂载**：国际人才引进页「文化融合风险」（建议不上线自动评分，见 §5.4）
-> **数据支持度**：**完全不支持**
-> **口径来源**：需求原文「文化融合风险评估」段；calc-logic 无实现
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 否（宗教/族群 0 列、国籍/签证 0 列、文化/社区表 0 张）；依赖数据 = 否（`dwd_forg_base_info` 20,000 行是境外**企业**底册，`country` 去重 0）
-> **铁律**：身份、文化背景、融合结果三面全缺；仅海外经历 628/896 可算，方向相反，不落分。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -241,7 +247,7 @@ cd code
 python3 M_TALENT_DS_16_TALENT_RECRUIT_006.py
 ```
 
-读 `code/_snapshots21/zero_source_probe_20261022.json`，覆盖写 `code/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json`。零 SQL，约 0.1 秒。
+读 `code/_snapshots21/zero_source_probe_20261022.json`，覆盖写 `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json`。零 SQL，约 0.1 秒。
 
 #### 2.7.2 复现结果（摘要）
 
@@ -359,12 +365,10 @@ python3 M_TALENT_DS_16_TALENT_RECRUIT_006.py
 
 1. Ang, S., Van Dyne, L. Conceptualization of Cultural Intelligence. https://doi.org/10.1080/15216540601178067
 2. Ward, C., Kennedy, A. The measurement of sociocultural adaptation. https://doi.org/10.1016/S0147-1767(99)00014-0
-3. OECD. International Migration Outlook 2025. https://www.oecd.org/migration/
-4. 国家移民管理局. 外国人永久居留管理条例（征求意见稿）. https://www.nia.gov.cn/
-5. 深圳市科技创新局. 外籍人才服务政策. http://stic.sz.gov.cn/
-6. 国家统计局. 第七次全国人口普查公报. https://www.stats.gov.cn/
-7. 全国信息与文献标准化技术委员会. GB/T 7714—2015 信息与文献 参考文献著录规则. https://openstd.samr.gov.cn/
-
+3. 国家移民管理局. 外国人永久居留管理条例（征求意见稿）. https://www.nia.gov.cn/
+4. 深圳市科技创新局. 外籍人才服务政策. http://stic.sz.gov.cn/
+5. 国家统计局. 第七次全国人口普查公报. https://www.stats.gov.cn/
+6. 全国信息与文献标准化技术委员会. GB/T 7714—2015 信息与文献 参考文献著录规则. https://openstd.samr.gov.cn/
 ---
 
 # 附件
@@ -508,9 +512,9 @@ CQ/ISS 等自评或他评量表，需问卷。库内 0。
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_TALENT_DS_16_TALENT_RECRUIT_006.py` |
-| 产物 | `code/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json` |
-| 运行 | `python3 M_TALENT_DS_16_TALENT_RECRUIT_006.py` |
+| 脚本 | `metrics/repro/M_TALENT_DS_16_TALENT_RECRUIT_006.py` |
+| 产物 | `metrics/repro/out/M_TALENT_DS_16_TALENT_RECRUIT_006_out.json` |
+| 运行 | `cd code && python3 M_TALENT_DS_16_TALENT_RECRUIT_006.py` |
 | 耗时 | 约 0.1 秒 |
 | 本件 SQL | 0 |
 | 专利 SQL | 0 |
@@ -518,10 +522,3 @@ CQ/ISS 等自评或他评量表，需问卷。库内 0。
 | 判定 | 完全不支持 |
 | 可计算维度 | 0 |
 | 输出风险分/名单 | 无 / 无 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

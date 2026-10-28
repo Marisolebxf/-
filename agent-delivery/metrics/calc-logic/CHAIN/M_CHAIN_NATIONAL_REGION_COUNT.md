@@ -1,9 +1,20 @@
 # 全国分布区域数（M_CHAIN_NATIONAL_REGION_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_NATIONAL_REGION_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py` → `metrics/repro/out/M_CHAIN_NATIONAL_REGION_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：DIRECT（省级去重计数）｜ **域**：产业链分析·产业链区域分布（CHAIN）｜ **UI 挂载**：产业链概览「覆盖 N 个省级行政区」、区域分布地图的省域着色数、全国—深圳对比页的分母｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_NATIONAL_REGION_COUNT.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_NATIONAL_REGION_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_NATIONAL_REGION_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py` → `metrics/repro/out/M_CHAIN_NATIONAL_REGION_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_NATIONAL_REGION_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_NATIONAL_REGION_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_NATIONAL_REGION_COUNT_out.json` |
@@ -65,14 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_NATIONAL_REGION_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：DIRECT（省级去重计数）｜ **域**：产业链分析·产业链区域分布（CHAIN）｜ **UI 挂载**：产业链概览「覆盖 N 个省级行政区」、区域分布地图的省域着色数、全国—深圳对比页的分母｜ **数据支持度**：**部分支持**
-> **公式定义人（20261021）**：王惠（calc-logic 原文省级 `COUNT(DISTINCT province)` 口径；本报告未改公式，只补齐了「样本是否支撑全国」的前置校验）｜ 直接（结构/数据）：是 / 否（属地覆盖率 1.53%）｜ 依赖（结构/数据）：结构有 / 数据严重不足
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -113,9 +121,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 进一步的解释是：`dwd_org_base_info` 的属地字段本身是完整的，缺的是**链上企业与主档的联接**——2.28M 家链上主体里 97.7% 没有任何属地字段可查，它们多数只有信用代码与链标签，没有进入企业主档。因此本指标目前的真实可用场景是「广东四城内部的链分布对比」，一旦上线为「全国覆盖省数」，就会把一个 1.5% 的样本当成 100% 的总体。
 
-结论：脚本 `code/M_CHAIN_NATIONAL_REGION_COUNT.py` 0.5 秒跑通、省级轴与去重逻辑均正确、数字可复算；但「全国」这一关键依赖无样本，按 §〇 判**部分支持**，需甲方补全国企业主档或接受「广东四城口径」的展示文案。
+结论：脚本 `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py` 0.5 秒跑通、省级轴与去重逻辑均正确、数字可复算；但「全国」这一关键依赖无样本，按 §〇 判**部分支持**，需甲方补全国企业主档或接受「广东四城口径」的展示文案。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | #### 1.2.1.1.1.1.4.1.1.产业链基础指标模型构建（L37）<br>```<br>1.2.1.1.1.1.4.1.1.产业链基础指标模型构建<br>产业链基础指标模型基于产业专题数据，按照产业市场规模、产业企业规模、产业机构规模、产业投融资规模、全球产业区域分布、全国产业分布、产业动态资讯、深圳产业要素及深圳产业分布等九个核心维度进行指标体系构建。模型通过与数据融合中枢及各类产业、资讯、区域数据库建立稳定对接，采集销售额、企业与机构注册信息、投融资数据、区域分布数据、产业要素、热点资讯等多源数据，并执行统一的预处理与清洗流程，包括去重、去噪、缺失值补全、格式标准化及指标业务分析，以确保数据的准确性和一致性。各维度指标均依据业务需求和已有数据定义计算方法，如市场规模和增长率的环比分析、企业与机构数量趋势、投融资总额变化、全球及国内区域分布特征、产业热点资讯判定及统计，以及深圳市不同区域的产业要素和分布情况。所有计算结果经过有效性验证与调整，并通过API接口和消息队列同步至数据服务，实现按时间、地域、产业标签等条件的灵活查询与下载，支持用户开展市场分析、趋势研判、区域对比及政策制定等工作，同时通过定期更新与监测机制，确保指标体系的长期有效性与适应性。<br>（1）产业市场规模<br>通过对接产业数据库，计算该产业的年/月市场销售额，通过环比计算出增长率。<br>1）数据源对接：对接数据融合中枢中的产业数据库，建立数据获取渠道。通过数据源对接，获取产业数据库中的市场销售额数据，包括销售额、销售量、价格等信息。<br>2）数据清洗：按照产业标签及时间进行提取与市场规模相关属性数据，例如销售量、销售额等。同时，需要进行数据清洗处理，包括去重、去噪、格式化、补全等操作。在数据清洗的过程中，需要进行指标业务的分析，例如对数据的时间范围、地域分布、市场份额等进行分析，以确保数据准确性和可靠性。<br>3）数据处理：根据提取的销售量、销售额等指标，综合计算该产业的市场规模指标，并通过环比计算出增长率。需要对数据进行计算、归纳和统计等处理，得出市场规模指标和增长率指标。然后对计算结果进行有效性验证和调整，确保指标结果准确和可靠。<br>4）数据服务开发：开发API接口，提供根据产业标签、时间等条件查询对应的产业<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_NATIONAL_REGION_COUNT.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -204,7 +257,7 @@ D1 与 D2 都有独立二级拆解（§3.2、§3.3）；D3 只用于算覆盖率
 
 ## 二、计算过程
 
-> **口径说明**：本节按 calc-logic 的省级去重口径执行，并额外加了一道「样本充分性校验」——因为公式正确不代表结论可用。脚本 `code/M_CHAIN_NATIONAL_REGION_COUNT.py` 已跑通，结果见 `M_CHAIN_NATIONAL_REGION_COUNT_out.json`。
+> **口径说明**：本节按 calc-logic 的省级去重口径执行，并额外加了一道「样本充分性校验」——因为公式正确不代表结论可用。脚本 `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py` 已跑通，结果见 `M_CHAIN_NATIONAL_REGION_COUNT_out.json`。
 
 ### 2.1 方法选择：为什么沿用省级去重，而不是改用集中度或覆盖率
 
@@ -267,14 +320,14 @@ calc-logic 规定简称归一走 ETL、不进口径公式，本文遵守：`新�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py` |
 | 共用算路 | 同目录 `_gkx21_common.py`（桥表 35,046 家 / 52,906 条可联标签、主档省市快照） |
 | 结果产物 | 同目录 `M_CHAIN_NATIONAL_REGION_COUNT_out.json` |
-| 主算库 | `gkx.dwd_org_industry_tags`、`gkx.dwd_org_base_info`（唯一连库入口 `code/_gkxdb.py`） |
+| 主算库 | `gkx.dwd_org_industry_tags`、`gkx.dwd_org_base_info`（唯一连库入口 `metrics/repro/_gkxdb.py`） |
 | 耗时 | **0.4 秒**（读缓存） |
 
 ```bash
-python3 metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -452,11 +505,6 @@ python3 metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py
 3. European Commission. (2024). *European Innovation Scoreboard 2024 — Methodology report*（区域/国家层面覆盖广度与归一化处理的方法参照）. https://research-and-innovation.ec.europa.eu/document/download/074d5495-433a-440f-bcf9-dc620fce7af1_en?filename=ec_rtd_eis-2024-methodology-report.pdf
 
 4. OECD. (2009). *OECD Patent Statistics Manual*（区域归属与申请人地址匹配的口径纪律）. https://doi.org/10.1787/9789264056442-en
-
-5. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_NATIONAL_REGION_COUNT.md` —— 省级粒度、空值规则、简称 ETL 归一、值域实测记录。
-
-6. 项目内旁证（非外部文献）：`_work_full/DATA_FACTS_gkx.md` §企业主档 —— `dwd_org_base_info` 189,116 行、99.82% 广东的既有实测。
-
 ---
 
 # 附件
@@ -476,7 +524,7 @@ python3 metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py
 ## 附录 B　历史库表探测证据（摘要）
 
 - 2026-10-14 calc-logic 值域实测：`dwd_org_base_info` 18.9 万行，province distinct=30，残缺值 新疆 5／广西 4／内蒙古 3／宁夏 2，空串 1 行。
-- 2026-10-21 本批实测（`code/M_CHAIN_NATIONAL_REGION_COUNT.py`，0.5 秒）：
+- 2026-10-21 本批实测（`metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py`，0.5 秒）：
   - 主档 189,116 行：广东 188,776（99.82%）、北京 163、浙江 19、上海 16、四川 16、天津 13、陕西 12、云南 8、其他 21 省 92、空 1。
   - 标签 2,283,762 行；JOIN 主档得 35,046 行（1.53%），其中广东 35,022（99.93%）、省外 24。
   - 12 链省数：1—8，中位 2；数字创意、生物医药各 1 省；软件与信息服务 8 省。
@@ -551,17 +599,8 @@ python3 metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_CHAIN_NATIONAL_REGION_COUNT.py`（共用 `code/_gkx21_common.py`）
-- 产物：`code/M_CHAIN_NATIONAL_REGION_COUNT_out.json`
+- 脚本：`metrics/repro/M_CHAIN_NATIONAL_REGION_COUNT.py`（共用 `code/_gkx21_common.py`）
+- 产物：`metrics/repro/out/M_CHAIN_NATIONAL_REGION_COUNT_out.json`
 - 主算库：`gkx`（`dwd_org_industry_tags`、`dwd_org_base_info`）
 - 关键结果：主档 189,116 行、广东 99.82%、省外 339；链上标签 2,283,762 条、可联属地 35,046 家（1.53%）、省外 24；12 链省数 1—8、中位 2；耗时 0.4 秒
 - 工程注意：两列排序规则不同（`0900_ai_ci` vs `general_ci`）且标签表 `credit_code` 无索引；本版改为「标签表单表扫描 + Python 侧与主档字典联接」，避开 2.28M×18.9 万嵌套循环
-
-
-## 更新记录
-
-- 2026-08-21: 初版（模拟王惠调研；省市粒度混写 + scope 伪条件 + 老表漂移）
-- 2026-10-14: 0.2.0 口径钉死（省级默认、市级下钻不另开 ID；空值不计数；简称 ETL 归一；province 值域实核入 D2 注记）；补矩阵行 aligned/D3=none。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

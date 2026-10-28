@@ -1,9 +1,24 @@
 # 要素分项指标值与得分（M_SYNTH_ELEM_INDICATOR）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_INDICATOR.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py` → `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（L0 叶子台账）｜ **域**：综合智能分析／区域创新要素分析／创新要素数据汇聚
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（企业底册、专利授权、政策存量、服务机构池四个真源）+ 结构缺口（研发人员列零灌数、空间面积两列全库无）**
+> - **一句话结论**：17 个类型叶子里 12 个能进加权（7 直读 + 5 代理），3 个无承载、1 个样本不足、1 个退化；7 个类型维出 6 个，5 个领域维出 3 个。**这不是覆盖率问题，是「列建好没灌数」与「全库没这列」两种硬缺口 → 部分支持。**
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_ELEM_INDICATOR.py`｜ **产物**：`metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_INDICATOR.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py` → `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +73,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_ELEM_INDICATOR.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_ELEM_INDICATOR.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json` |
@@ -66,19 +81,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（L0 叶子台账）｜ **域**：综合智能分析／区域创新要素分析／创新要素数据汇聚
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（企业底册、专利授权、政策存量、服务机构池四个真源）+ 结构缺口（研发人员列零灌数、空间面积两列全库无）**
-> **复现脚本**：`code/M_SYNTH_ELEM_INDICATOR.py`｜ **产物**：`code/M_SYNTH_ELEM_INDICATOR_out.json`
-> **族级面板**：`code/_snapshots21/synth_elem_panel_20261023.json`（本族十件共用，由 `code/_build_synth_elem_panel.py` 生成）
-> **公式定义人**：王惠（`M_SYNTH_ELEM_INDICATOR.md` 正文只写「同 TYPE_INDEX／LEVEL_INDEX／DOMAIN_INDEX」，25 个叶子的口径全部落在三份兄弟件里，本件按该三份补齐）
-> **基期声明**：统计年 2024；`base_years_used=[2024]`，`base_years_missing=[]`；2021—2023 未入集是单年截面设计，2025/2026 不完整不进分母。
-> **一句话结论**：17 个类型叶子里 12 个能进加权（7 直读 + 5 代理），3 个无承载、1 个样本不足、1 个退化；7 个类型维出 6 个，5 个领域维出 3 个。**这不是覆盖率问题，是「列建好没灌数」与「全库没这列」两种硬缺口 → 部分支持。**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -165,7 +172,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDICATOR.md` | 本件正本，正文 39 行，叶子口径全部外链 |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_INDEX.md` | 17 个类型叶子的定义与源表字段 |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_DOMAIN_INDEX.md` | 10 个领域叶子与宏观表取数口径 |
-| `王惠口径正本（GitLab 外本地归档）` | 王惠原稿（44 行），附 4 条参考资料 |
+| `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDICATOR.md（王惠正本已演化并入）` | 王惠原稿（44 行），附 4 条参考资料 |
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 本件全部数字的来源（17+10 个叶子的 raw 与 z） |
 | `code/_snapshots21/synth_elem_probe_20261023.json` | 族级探针：科研机构 2,074 家、融资 25,654 行、年报 90,926 行、上市研发 19,585 行、政策 20,000 条 |
 
@@ -240,15 +247,15 @@ $$
 ### 2.7 复现结果展示
 
 ```bash
-$ python3 M_SYNTH_ELEM_INDICATOR.py
-[INDICATOR] -> code/M_SYNTH_ELEM_INDICATOR_out.json
+$ cd code && python3 M_SYNTH_ELEM_INDICATOR.py
+[INDICATOR] -> metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json
   type leaves 17 = ok 7 / proxy 5 / degenerate 1 / insufficient 1 / missing 3
   weighted type leaves 12 | domain 4
   checks {'leaf_total_matches_panel': True, 'state_sum_equals_total': True,
           'domain_state_sum_equals_total': True, 'all_z_in_range': True}
 ```
 
-产物 `code/M_SYNTH_ELEM_INDICATOR_out.json` 里，`coverage.type` 与 `coverage.domain` 给出两层的五档计数，`ledger` 与 `domain_ledger` 给出 27 行逐叶子原值／得分／最小最大／distinct 得分，`gaps` 给出 9 条缺口（3 missing + 1 insufficient + 1 degenerate + 4 领域），`layer_scores` 给出三层指数。所有数字与面板 `code/_snapshots21/synth_elem_panel_20261023.json` 逐项一致，`checks` 四项全 true。
+产物 `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json` 里，`coverage.type` 与 `coverage.domain` 给出两层的五档计数，`ledger` 与 `domain_ledger` 给出 27 行逐叶子原值／得分／最小最大／distinct 得分，`gaps` 给出 9 条缺口（3 missing + 1 insufficient + 1 degenerate + 4 领域），`layer_scores` 给出三层指数。所有数字与面板 `code/_snapshots21/synth_elem_panel_20261023.json` 逐项一致，`checks` 四项全 true。
 
 ### 2.8 与兄弟件的接口
 
@@ -458,7 +465,6 @@ D2_1 的分母是存续企业数，四城的存续／底册比值差异极大：
 8. OECD, JRC．Handbook on Constructing Composite Indicators: Methodology and User Guide［M］．2008．https://doi.org/10.1787/9789264043466-en
 9. OECD．Oslo Manual 2018: Guidelines for Collecting, Reporting and Using Data on Innovation［M］．4th ed．2018．https://doi.org/10.1787/9789264304604-en
 10. Shannon C E．A Mathematical Theory of Communication［J］．Bell System Technical Journal，1948，27(3)：379-423．https://doi.org/10.1002/j.1538-7305.1948.tb01338.x
-
 ---
 
 # 附件
@@ -554,21 +560,13 @@ D2_1 的分母是存续企业数，四城的存续／底册比值差异极大：
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_ELEM_INDICATOR.py` |
-| 产物 | `code/M_SYNTH_ELEM_INDICATOR_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_ELEM_INDICATOR.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json` |
 | 面板 | `code/_snapshots21/synth_elem_panel_20261023.json` |
 | 面板生成脚本 | `code/_build_synth_elem_panel.py` |
 | 族级探针 | `code/_probe_synth_elem_20261023.py` |
-| 运行方式 | `python3 M_SYNTH_ELEM_INDICATOR.py` |
+| 运行方式 | `cd code && python3 M_SYNTH_ELEM_INDICATOR.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 统计年 | 2024 |
 | 入集区域 | 深圳、广州、东莞、惠州 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

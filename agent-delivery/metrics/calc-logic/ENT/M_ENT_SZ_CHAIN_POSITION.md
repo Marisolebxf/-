@@ -1,9 +1,24 @@
 # 链中角色（M_ENT_SZ_CHAIN_POSITION）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SZ_CHAIN_POSITION.md`；复现脚本 `metrics/repro/M_ENT_SZ_CHAIN_POSITION.py` → `metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：CLASS（企业级链环节归属）｜ **域**：企业分析（ENT）· 产业链｜ **UI 挂载**：深圳产业链图谱节点着色、企业详情页「链上位置」标签、链招商补链清单
+> - **数据支持度**：**部分支持**｜ **依赖性质**：L1→上/中/下游映射（本工程自建，P17）可算；官方 position 列、链主识别、全量企业级分游三处无承载
+> - **一句话结论**：12 条链、**41** 个一级环节全部映射到上/中/下游（18/15/8），深圳名录企业 **2,590** 家中 **1,471** 家上链、**1,367** 家可判游，得到 上 **1,007** / 中 **743** / 下 **738**；但 **60.4243%** 的企业同时落在两个以上环节（三游相加 2,488 > 1,367），且 4 条链根本没有下游一级环节，故「位置」是标签分布而非互斥分类，判 **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_ENT_SZ_CHAIN_POSITION.py`｜ **产物**：`metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json`
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_SZ_CHAIN_POSITION.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SZ_CHAIN_POSITION.py`、产物 `metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SZ_CHAIN_POSITION.md`；复现脚本 `metrics/repro/M_ENT_SZ_CHAIN_POSITION.py` → `metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SZ_CHAIN_POSITION.py`、产物 `metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_SZ_CHAIN_POSITION.md` |
 | 复现脚本 | `metrics/repro/M_ENT_SZ_CHAIN_POSITION.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json` |
@@ -58,18 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_SZ_CHAIN_POSITION.py`、产物 `metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：CLASS（企业级链环节归属）｜ **域**：企业分析（ENT）· 产业链｜ **UI 挂载**：深圳产业链图谱节点着色、企业详情页「链上位置」标签、链招商补链清单
-> **数据支持度**：**部分支持**｜ **依赖性质**：L1→上/中/下游映射（本工程自建，P17）可算；官方 position 列、链主识别、全量企业级分游三处无承载
-> **公式定义人**：本件自建（`calc-logic/ENT/M_ENT_SZ_CHAIN_POSITION.md` 无同 ID 正本，按 v6 §八 处理，不造路径）
-> **复现脚本**：`code/M_ENT_SZ_CHAIN_POSITION.py`｜ **产物**：`code/M_ENT_SZ_CHAIN_POSITION_out.json`
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读，`gkx_reader_zp`）
-> **一句话结论**：12 条链、**41** 个一级环节全部映射到上/中/下游（18/15/8），深圳名录企业 **2,590** 家中 **1,471** 家上链、**1,367** 家可判游，得到 上 **1,007** / 中 **743** / 下 **738**；但 **60.4243%** 的企业同时落在两个以上环节（三游相加 2,488 > 1,367），且 4 条链根本没有下游一级环节，故「位置」是标签分布而非互斥分类，判 **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -130,6 +138,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 第三个事实是**上游偏高可能是名录偏差**。名录是「授权专利 ≥50 件」的代理名单（P15），只覆盖全量深圳上链企业的 15.3481%。专利多的企业天然偏研发/制造（上游），纯下游的贸易、服务、运营类企业专利少，进不了名录。因此「深圳 73.665% 的上链企业在 upstream」这个读数，至少有一部分是名录选择效应，不能直接读成「深圳产业偏上游」。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 算法库 §1.1.1.1.1.1.1.8（链环节上中下游划分方法，需求 ID ALGO-CHAIN-042）：产业链环节按上游/中游/下游划分<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > （MD 已注明挂接专题系统产业链页面：企业上链位置=上游/中游/下游，来自 §1.1.1.2.4.2.2 产业链全景图谱下钻）<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_SZ_CHAIN_POSITION.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -269,9 +323,9 @@ assignment_sum = sum(len(stages_of(f, stage_map)) for f in firms)
 ### 2.8 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_ENT_SZ_CHAIN_POSITION.py
-# → code/M_ENT_SZ_CHAIN_POSITION_out.json
+# → metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json
 ```
 
 复现判据：
@@ -453,12 +507,6 @@ project 侧 `chain_node.position` 只在项目 DWD（现网 8 链 CH001—CH008�
 2. 链环节上中下游划分方法. 算法库 §1.1.1.1.1.1.1.8，需求 ID ALGO-CHAIN-042.
 3. 深圳市. 关于发展壮大战略性新兴产业集群和培育发展未来产业的意见（2022）. https://www.sz.gov.cn/
 4. 广东省. 广东省制造业高质量发展「十四五」规划. https://www.gd.gov.cn/
-5. 本地产物：
-   - `code/M_ENT_SZ_CHAIN_POSITION.py`
-   - `code/M_ENT_SZ_CHAIN_POSITION_out.json`
-   - `code/_probe_blocked_f2_20261023.json`
-6. `_work_gkx21/PENDING_RULINGS_20261023.md`：P15 名录代理、P17 链环节映射
-
 ---
 
 # 附件
@@ -540,18 +588,10 @@ project 侧 `chain_node.position` 只在项目 DWD（现网 8 链 CH001—CH008�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_ENT_SZ_CHAIN_POSITION.py` |
-| 产物 | `code/M_ENT_SZ_CHAIN_POSITION_out.json` |
+| 脚本 | `metrics/repro/M_ENT_SZ_CHAIN_POSITION.py` |
+| 产物 | `metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json` |
 | 一级环节 | 41（18/15/8） |
 | 深圳可判游 | 1,367 |
 | 三游 | 1,007 / 743 / 738 |
 | 跨 ≥2 游 | 826 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

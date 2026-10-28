@@ -1,9 +1,22 @@
 # 期刊影响力（M_INNOV_JOURNAL_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_JOURNAL_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py` → `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：科技全域态势·科创要素（期刊实体评价）；需求原文另在「人才学术力评估分析·多指标评价体系」中把「期刊影响力」列为学术力维度之一｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无期刊影响力结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`dwd_zh_journal`、`dwd_en_journal` 均在，含 `impact_score`/`paper_nums`/`cite_nums` 三列）；依赖表数据支持（开发库/三方库） = **部分**（`impact_score` 中文刊 0/2,796、英文刊 0/605 全空；英文刊无 `cite_nums` 列）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_JOURNAL_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py` → `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_JOURNAL_INFLUENCE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json` |
@@ -61,16 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：科技全域态势·科创要素（期刊实体评价）；需求原文另在「人才学术力评估分析·多指标评价体系」中把「期刊影响力」列为学术力维度之一｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素
-> **数据支持度**：**部分支持**
-> **公式定义人**：王惠（V1.3-20260829）｜ **wanghui**: true
-> **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无期刊影响力结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`dwd_zh_journal`、`dwd_en_journal` 均在，含 `impact_score`/`paper_nums`/`cite_nums` 三列）；依赖表数据支持（开发库/三方库） = **部分**（`impact_score` 中文刊 0/2,796、英文刊 0/605 全空；英文刊无 `cite_nums` 列）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -173,7 +181,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 1.5 引用来源（可核验）
 
-**文档 1**：`原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`
+**文档 1**：`《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md`
 **章节 1**：`1.1.1.2.4.2.5.6.1 多指标评价体系`（上级 `1.1.1.2.4.2.5.6 人才学术力评估分析`）
 
 **原句 1（「期刊影响力」在需求中唯一的直接出现）**：
@@ -194,7 +202,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 > 支持按类别浏览各类科创要素（论文、期刊、专利、专家学者、会议、组织机构、课题、项目、成果等）；提供要素详情查看功能，点击特定要素可查看其完整基础信息，包括名称、属性、描述、关联关系等。
 
-**文档 2（王惠口径）**：`王惠口径正本（GitLab 外本地归档）`（V1.3-20260829）
+**文档 2（王惠口径）**：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_JOURNAL_INFLUENCE.md（王惠正本已演化并入）`（V1.3-20260829）
 
 > 期刊在学术传播中的影响程度。统计对象为期刊实体，从影响指数、发文量、被引用量综合，取值 0—100。
 
@@ -493,7 +501,7 @@ python3 M_INNOV_JOURNAL_INFLUENCE.py
 
 ### 3.3 支持度判定引用
 
-`code/M_INNOV_JOURNAL_INFLUENCE_out.json` → `support_judgment`：
+`metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json` → `support_judgment`：
 
 ```json
 {
@@ -586,11 +594,9 @@ G1/G2 是**字段级缺失**（有列无值、有表无列），G3/G4 是**口�
 
 1. 中国科学技术信息研究所.《中国科技期刊引证报告（核心版）》（CJCR）[R/OL]. 年度发布. https://www.istic.ac.cn/
 2. Garfield E. Citation analysis as a tool in journal evaluation[J]. Science, 1972, 178(4060): 471-479. https://doi.org/10.1126/science.178.4060.471
-3. 俞立平, 潘云涛, 武夷山. 基于因子分析的学术期刊评价指标分类研究[J]. 图书情报工作, 2009, 53(8): 146-149.（王惠口径文档引用来源）
-4. 科学技术部. 国家创新能力评价指标体系[EB/OL]. 2023-11-29. https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110675.html
-5. 中国科学技术发展战略研究院.《中国区域科技创新评价报告 2025》[R/OL]. 2025-09-23. http://casted.org.cn/zlyxw/20250922/268981.html
-6. Hirsch J E. An index to quantify an individual's scientific research output[J]. PNAS, 2005, 102(46): 16569-16572. https://doi.org/10.1073/pnas.0507655102
-
+3. 科学技术部. 国家创新能力评价指标体系[EB/OL]. 2023-11-29. https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110675.html
+4. 中国科学技术发展战略研究院.《中国区域科技创新评价报告 2025》[R/OL]. 2025-09-23. http://casted.org.cn/zlyxw/20250922/268981.html
+5. Hirsch J E. An index to quantify an individual's scientific research output[J]. PNAS, 2005, 102(46): 16569-16572. https://doi.org/10.1073/pnas.0507655102
 ---
 
 # 附件
@@ -741,7 +747,7 @@ CiteScore 用四年窗口，SJR 用页面秩与邻域加权，SNIP 按学科归�
 
 ```bash
 python3 code/M_INNOV_JOURNAL_INFLUENCE.py
-# → code/M_INNOV_JOURNAL_INFLUENCE_out.json
+# → metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json
 ```
 
 输出键：`dimension_fill`、`en_type_dist`、`real_backlink`、`paper_nums_consistency`、`score_v1`、`score_v2_proxy`、`en_journals`、`support_judgment`。
@@ -753,11 +759,3 @@ python3 code/M_INNOV_JOURNAL_INFLUENCE.py
 ### D.3 复现性
 
 脚本无随机性。若后续回填 `impact_score`，V1 的权重结构会自动恢复为 0.50/0.25/0.25，无需改代码；但 `score_v1.formula` 字段需同步更新，避免文档与输出不一致。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,21 @@
-# 全球服务机构分布（按国家计数）（M_SVC_ORG_CNT）
+# 全球服务机构分布（M_SVC_ORG_CNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_ORG_CNT.md`；复现脚本 `metrics/repro/M_SVC_ORG_CNT.py` → `metrics/repro/out/M_SVC_ORG_CNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：KPI（服务机构库·国家/省份分布计数）｜ **域**：SVC 服务机构（全球服务机构分布）｜ **UI 挂载**：科技专题服务系统·产业服务链分析·全球服务机构分布（§1.1.1.2.4.2.2）/ 算法库·服务机构基础指标模型（序号 101）
+> - **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：侯佳伟 calc-logic 迁移口径（COUNTRY/PROVINCE 分组 COUNT），本件只换源
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_ORG_CNT.py`、产物 `metrics/repro/out/M_SVC_ORG_CNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_ORG_CNT.md`；复现脚本 `metrics/repro/M_SVC_ORG_CNT.py` → `metrics/repro/out/M_SVC_ORG_CNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_ORG_CNT.py`、产物 `metrics/repro/out/M_SVC_ORG_CNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_ORG_CNT.md` |
 | 复现脚本 | `metrics/repro/M_SVC_ORG_CNT.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_ORG_CNT_out.json` |
@@ -60,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_ORG_CNT.py`、产物 `metrics/repro/out/M_SVC_ORG_CNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：KPI（服务机构库·国家/省份分布计数）｜ **域**：SVC 服务机构（全球服务机构分布）｜ **UI 挂载**：科技专题服务系统·产业服务链分析·全球服务机构分布（§1.1.1.2.4.2.2）/ 算法库·服务机构基础指标模型（序号 101）
-> **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：侯佳伟 calc-logic 迁移口径（COUNTRY/PROVINCE 分组 COUNT），本件只换源
-> **数据源**：gkx（183.240.141.251:3318，只读 gkx_reader_zp）+ `code/_snapshots21/`
-> **wanghui：false**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -179,9 +186,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.6 步骤 5｜产物与复现（D5）
 
-产物 `code/M_SVC_ORG_CNT_out.json` 含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`population`、`country_dist`、`province_dist`、`city_dist`、`country_covered`、`overseas_source_probe`、`pool_reconciliation`、`difference_vs_old_draft`、`gaps`。脚本自包含、零 DB、只读快照，运行约 0.7 秒。
+产物 `metrics/repro/out/M_SVC_ORG_CNT_out.json` 含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`population`、`country_dist`、`province_dist`、`city_dist`、`country_covered`、`overseas_source_probe`、`pool_reconciliation`、`difference_vs_old_draft`、`gaps`。脚本自包含、零 DB、只读快照，运行约 0.7 秒。
 
-复现：`python3 M_SVC_ORG_CNT.py`，打印 `pool=44153 countries=1 prov=[('广东省', 44132), ('（未回联底册）', 21)]`，覆盖写产物。
+复现：`cd code && python3 M_SVC_ORG_CNT.py`，打印 `pool=44153 countries=1 prov=[('广东省', 44132), ('（未回联底册）', 21)]`，覆盖写产物。
 
 ### 2.7 复现结果摘要
 
@@ -339,8 +346,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ---
 
 ## 参考文献
-
-1. 国家市场监督管理总局. (2025). 经营主体登记注册统计. https://www.samr.gov.cn/zw/tjxx/
+1. 国家市场监督管理总局. (2025). 经营主体登记注册统计. https://www.samr.gov.cn/
 
 2. 国家统计局. (2024). 《第五次全国经济普查公报（第二号）》. https://www.stats.gov.cn/sj/tjgb/
 
@@ -355,7 +361,6 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 7. Eurostat. (2024). *Business demography by country and NACE*. https://ec.europa.eu/eurostat/web/business-demography
 
 8. 商务部. (2024). 《中国服务贸易发展报告》. https://www.mofcom.gov.cn/
-
 ---
 
 # 附件
@@ -400,8 +405,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
-| `code/M_SVC_ORG_CNT.py` | 自包含计算脚本（零 DB） | 已跑通 |
-| `code/M_SVC_ORG_CNT_out.json` | 结果与元数据 | 已落盘 |
+| `metrics/repro/M_SVC_ORG_CNT.py` | 自包含计算脚本（零 DB） | 已跑通 |
+| `metrics/repro/out/M_SVC_ORG_CNT_out.json` | 结果与元数据 | 已落盘 |
 | `_staging21/M_SVC_ORG_CNT.md` | 本文件 | 已交付 |
 | `code/_snapshots21/svc21_facts_20261022.json` | 机构池快照 | 复用 |
 
@@ -457,7 +462,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 附录 E　复算步骤
 
 1. 确认快照存在：`ls code/_snapshots21/svc21_facts_20261022.json code/_snapshots21/base_20261021.json`。
-2. 运行：`python3 M_SVC_ORG_CNT.py`。
+2. 运行：`cd code && python3 M_SVC_ORG_CNT.py`。
 3. 校验：`province_dist` 求和 = `city_dist` 求和 = 44,153。
 4. 校验：`country_covered` 应为 1，不是 2（「未判定」不算国家）。
 5. 重跑：`python3 _work_gkx21/rebuild_metric.py M_SVC_ORG_CNT --check`。
@@ -507,18 +512,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 4. `support_judgment` 与头部档位一致
 5. `base_years_used/_missing/_note` 齐备
 6. `sources` 只有 gkx 库名、主机与快照路径
-7. 脚本 `python3 M_SVC_ORG_CNT.py` 可直接跑通
+7. 脚本 `cd code && python3 M_SVC_ORG_CNT.py` 可直接跑通
 8. 不 import 目录外 helper、不连演示库
 9. `rebuild_metric.py M_SVC_ORG_CNT --check` 一致
 10. `audit_md_vs_out.py` A 段无漂移
 11. 正文点名 44,153 ≠ 34,578
 12. 「全球」限定语写入 UI 文案
 
-> 生成本文件的时间：2026-10-22；数字均取自 `code/M_SVC_ORG_CNT_out.json`。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+> 生成本文件的时间：2026-10-22；数字均取自 `metrics/repro/out/M_SVC_ORG_CNT_out.json`。

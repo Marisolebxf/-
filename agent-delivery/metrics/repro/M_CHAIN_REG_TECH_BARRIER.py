@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题系统（按 UI 挂载推断）
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_CHAIN_REG_TECH_BARRIER 区域技术壁垒（技术力叶子）（20261021 改源版）
 
 口径（calc-logic/CHAIN/M_CHAIN_REG_TECH_BARRIER.md v0.2.0，徐滕强 2026-10-14 拍板）：

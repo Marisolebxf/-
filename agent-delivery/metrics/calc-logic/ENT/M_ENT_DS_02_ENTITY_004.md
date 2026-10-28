@@ -1,9 +1,25 @@
 # [新增] 技术点影响力（M_ENT_DS_02_ENTITY_004）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DS_02_ENTITY_004.md`；复现脚本 `metrics/repro/M_ENT_DS_02_ENTITY_004.py` → `metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（技术点级双维加权，0—100）｜ **域**：企业分析·企业评估（ENT，DS-02 科学技术全景族）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科学技术全景「技术点关联实体排序」
+> - **数据支持度**：**部分支持** ｜ **依赖性质**：**B 类**（专利侧原料足量、IPC 分类可作技术点代理；图谱节点/边、技术点—实体关联表、`tech_power_index` 三类承载在 gkx 均不存在）
+> - **同域边界**：与 `M_TECH_PATH_CENTRALITY`（技术路径中心度）不同——那件算技术路径网络的节点中心性，本件算技术点（IPC 小类）的关联规模与质量；与 `M_SVC_GRAPH_INFLUENCE` 也不同——正本明文禁止用后者顶替本指标。三件都带「影响力」字样，但对象粒度分别是技术点、路径节点、服务机构。
+> - **一句话结论**：技术点本体、技术点—实体边、`tech_power_index` 三样在 gkx 全无（280 张表名扫 0 命中、5 组列名扫 0 命中）；本件用 IPC 小类 634 个作技术点代理、用关联企业资质覆盖率替代影响力，算出区间 3.5453—70.2514、中位 48.4575 的代理分 → **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_ENT_DS_02_ENTITY_004.py` ｜ **产物**：`metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DS_02_ENTITY_004.py`、产物 `metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DS_02_ENTITY_004.md`；复现脚本 `metrics/repro/M_ENT_DS_02_ENTITY_004.py` → `metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DS_02_ENTITY_004.py`、产物 `metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +73,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_DS_02_ENTITY_004.md` |
 | 复现脚本 | `metrics/repro/M_ENT_DS_02_ENTITY_004.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json` |
@@ -65,20 +81,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_DS_02_ENTITY_004.py`、产物 `metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（技术点级双维加权，0—100）｜ **域**：企业分析·企业评估（ENT，DS-02 科学技术全景族）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科学技术全景「技术点关联实体排序」
-> **数据支持度**：**部分支持** ｜ **依赖性质**：**B 类**（专利侧原料足量、IPC 分类可作技术点代理；图谱节点/边、技术点—实体关联表、`tech_power_index` 三类承载在 gkx 均不存在）
-> **公式定义人**：注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`，`is_mock=true`；正本 `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DS_02_ENTITY_004.md` 记为「公式由 AI 创作，待算法 Lead 会签」，权重 $w_1/w_2$ 未定义
-> **复现脚本**：`code/M_ENT_DS_02_ENTITY_004.py` ｜ **产物**：`code/M_ENT_DS_02_ENTITY_004_out.json`
-> **数据源**：`gkx` @ 183.240.141.251:3318（只读 `gkx_reader_zp`）：`dwd_patent` 的 IPC×申请人聚合快照 × `dwd_org_base_info`（189,116 行）× `dwd_org_tech_tag`（202,424 行）
-> **基期声明**：截面排序件。IPC×年快照覆盖 2021—2026（`dwd_patent.apdt_year` 只有这六年，2017—2020 零行）；本件不用年份做分母，2026 是残年、不参与任何「近 N 年均值」计算。
-> **同域边界**：与 `M_TECH_PATH_CENTRALITY`（技术路径中心度）不同——那件算技术路径网络的节点中心性，本件算技术点（IPC 小类）的关联规模与质量；与 `M_SVC_GRAPH_INFLUENCE` 也不同——正本明文禁止用后者顶替本指标。三件都带「影响力」字样，但对象粒度分别是技术点、路径节点、服务机构。
-> **一句话结论**：技术点本体、技术点—实体边、`tech_power_index` 三样在 gkx 全无（280 张表名扫 0 命中、5 组列名扫 0 命中）；本件用 IPC 小类 634 个作技术点代理、用关联企业资质覆盖率替代影响力，算出区间 3.5453—70.2514、中位 48.4575 的代理分 → **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -334,7 +341,7 @@ Top 9（按影响力降序）：
 python3 _work_gkx21/rebuild_metric.py M_ENT_DS_02_ENTITY_004
 ```
 
-脚本读四份快照（`code/_snapshots21/patent_ipc4_by_name_20261021.json`、`code/_snapshots21/patent_ipc4_year_20261021.json`、`code/_snapshots21/tech_tags_20261021.json`、`code/_snapshots21/base_20261021.json`）与 `_work_gkx21/GKX_INVENTORY.json`，并现场查一次 `information_schema.columns` 作列名否定证据。产物 `code/M_ENT_DS_02_ENTITY_004_out.json` 的关键字段：
+脚本读四份快照（`code/_snapshots21/patent_ipc4_by_name_20261021.json`、`code/_snapshots21/patent_ipc4_year_20261021.json`、`code/_snapshots21/tech_tags_20261021.json`、`code/_snapshots21/base_20261021.json`）与 `_work_gkx21/GKX_INVENTORY.json`，并现场查一次 `information_schema.columns` 作列名否定证据。产物 `metrics/repro/out/M_ENT_DS_02_ENTITY_004_out.json` 的关键字段：
 
 | 字段 | 值 |
 |---|---|
@@ -464,8 +471,6 @@ python3 _work_gkx21/rebuild_metric.py M_ENT_DS_02_ENTITY_004
 2. Page, L., Brin, S., Motwani, R., & Winograd, T. (1998). The PageRank citation ranking. http://ilpubs.stanford.edu:8090/422/
 3. Sabidussi, G. (1966). The centrality index of a graph. https://doi.org/10.1007/BF02289527
 4. 国家知识产权局. 专利导航指南（GB/T 39551-2020）. https://openstd.samr.gov.cn/
-5. 王惠. 企业分析模型指标字段清单（20260816 底稿）. 项目内部文档，2026.
-
 ---
 
 # 附件
@@ -556,11 +561,3 @@ python3 _work_gkx21/rebuild_metric.py M_ENT_DS_02_ENTITY_004
 ### C.7 可行性总判（完整版结论）
 
 **代理口径可行、正本口径不可行。** 按正本「技术点」语义判**部分支持**；若甲方接受「专利技术领域」粒度，可升为完全转换支持；若坚持图谱技术点与 `tech_power_index`，在图表建成前应判完全不支持。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

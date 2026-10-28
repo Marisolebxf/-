@@ -1,7 +1,7 @@
 # repro/ —— 指标复现脚本与实测产物（20261021 改源工程批）
 
 > **是什么**：565 份指标信息 MD（`../calc-logic/{域}/M_*.md`）配套的 gkx 只读复现脚本与当日实测产物。
-> 2026-10-24 依淮政玮反馈从本地 `local-workspace/…/20261021_指标整体开发进度调研/code/` 入仓——
+> 2026-10-28 随 20261027 批（三系统兼容升级）全量刷新 `metrics/repro/`（历史：2026-10-24 依淮政玮反馈自本地调研区入仓）——
 > **本目录是 GitLab 上唯一可见的复现副本**；本地 `code/` 仍是工作底稿（含 `_snapshots21/` 等大缓存，不入仓）。
 
 ## 目录结构
@@ -22,7 +22,7 @@ cd agent-delivery/metrics/repro
 python3 M_{指标ID}.py        # 约几秒：全表拉取后本地聚合，产出 out/{ID}_out.json
 ```
 
-- 脚本从环境变量或 `local-workspace/config/database_env.yaml` 读 gkx 凭据（只读账号）；
+- 脚本从环境变量或本地工作区（不入仓）`config/database_env.yaml` 读 gkx 凭据（只读账号）；
 - 产物 `out/` 是**当日快照**：重跑会因源库数据增长产生合理漂移，与 MD 数值对照时以 MD 记录的实测日期为准；
 - `18 份早期批次件（CHAIN/ENT）`无本批脚本（口径早在库、无 gkx 复现步），其 calc-logic MD 本就自包含。
 
@@ -30,4 +30,4 @@ python3 M_{指标ID}.py        # 约几秒：全表拉取后本地聚合，产�
 
 每份 `../calc-logic/{域}/{ID}.md` 的「溯源与复现」表登记本目录路径：
 `复现脚本 = metrics/repro/{ID}.py`、`复现产物 = metrics/repro/out/{ID}_out.json`。
-MD 内不再出现 `local-workspace/` 路径（2026-10-24 已全量清除，避免验收方找不到路径）。
+MD/py/产物内不再出现本地工作区路径（2026-10-24 首清、2026-10-28 随 1027 批复清零）。

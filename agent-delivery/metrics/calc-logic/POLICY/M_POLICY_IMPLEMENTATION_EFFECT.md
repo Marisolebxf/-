@@ -1,9 +1,25 @@
 # 落地实效性（M_POLICY_IMPLEMENTATION_EFFECT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_IMPLEMENTATION_EFFECT.md`；复现脚本 `metrics/repro/M_POLICY_IMPLEMENTATION_EFFECT.py` → `metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INDEX（城市 × 三维）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策分析页「落地实效」城市对比卡（设计位）、深圳政策现状分析指标体系（设计位）
+> - **数据支持度**：**完全不支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md`（落地执行启动 / 受益覆盖 / 实施反馈三维，截面 min-max 等权）；王惠正本 `gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md（王惠正本已演化并入）`（V2-20260826）
+> - **同域边界**：与 `M_POLICY_INTENSITY_SCORE` 不同——那件是单条政策的三维五项打分，本件是城市级三维合成；两件共用 `implementation_date` 与 `policy_support` 两个字段，因此**同源同缺**（都已判完全不支持），但否定性证据的落点不同：那件缺五项子项，本件缺整维。
+> - **一句话结论**：三维里**启动维 0 行有效日期**（20,000 行全为 `0000-00-00`）、**覆盖维 0 个支持对象**（`policy_support` 20,000 行 JSON null）、**反馈维两库均无调查表**（gkx 280 表无反馈表，live 同名表 93 行为造数面）→ 可进平均的完整维 **0 个**，分数无定义，判**完全不支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_IMPLEMENTATION_EFFECT.py`（否定性证据探针）｜ **产物**：`metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json`｜ **共用底数**：`code/_snapshots21/policy_struct_20261023.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_IMPLEMENTATION_EFFECT.py`、产物 `metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_IMPLEMENTATION_EFFECT.md`；复现脚本 `metrics/repro/M_POLICY_IMPLEMENTATION_EFFECT.py` → `metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_IMPLEMENTATION_EFFECT.py`、产物 `metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_IMPLEMENTATION_EFFECT.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_IMPLEMENTATION_EFFECT.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json` |
@@ -58,19 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_IMPLEMENTATION_EFFECT.py`、产物 `metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INDEX（城市 × 三维）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策分析页「落地实效」城市对比卡（设计位）、深圳政策现状分析指标体系（设计位）
-> **数据支持度**：**完全不支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md`（落地执行启动 / 受益覆盖 / 实施反馈三维，截面 min-max 等权）；王惠正本 `王惠口径正本（GitLab 外本地归档）`（V2-20260826）
-> **复现脚本**：`code/M_POLICY_IMPLEMENTATION_EFFECT.py`（否定性证据探针）｜ **产物**：`code/M_POLICY_IMPLEMENTATION_EFFECT_out.json`｜ **共用底数**：`code/_snapshots21/policy_struct_20261023.json`
-> **判定类型**：`verdict_kind = negative_evidence`。本件不出分（`composite_score = null`），产物的作用是逐维证明为什么算不出。
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。截面评估：正本按「统计日」取当前有效政策，不设年度序列；本件不出分，故无基期年。若将来补数后按年出分，须先解决 2022-09 起 16 个月的发布断档，否则某年启动率为 0 会是断档而不是真实归零。
-> **同域边界**：与 `M_POLICY_INTENSITY_SCORE` 不同——那件是单条政策的三维五项打分，本件是城市级三维合成；两件共用 `implementation_date` 与 `policy_support` 两个字段，因此**同源同缺**（都已判完全不支持），但否定性证据的落点不同：那件缺五项子项，本件缺整维。
-> **一句话结论**：三维里**启动维 0 行有效日期**（20,000 行全为 `0000-00-00`）、**覆盖维 0 个支持对象**（`policy_support` 20,000 行 JSON null）、**反馈维两库均无调查表**（gkx 280 表无反馈表，live 同名表 93 行为造数面）→ 可进平均的完整维 **0 个**，分数无定义，判**完全不支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -343,8 +351,8 @@ gkx 侧政策主表有 20,000 行，live 侧 `gkxlumenx_dwd.policy_base_info` **
 ### 6.1 复现步骤（本件是探针，不是出分脚本）
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_IMPLEMENTATION_EFFECT.py    # 产出 code/M_POLICY_IMPLEMENTATION_EFFECT_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_IMPLEMENTATION_EFFECT.py    # 产出 metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_IMPLEMENTATION_EFFECT --check
 ```
 
@@ -378,13 +386,11 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_IMPLEMENTATION_EFFECT --check
 ## 参考文献
 
 1. Sabatier P. A. Top-down and bottom-up approaches to implementation research: a critical analysis and suggested synthesis[J]. Journal of Public Policy, 1986, 6(1): 21-48. https://doi.org/10.1017/S0143814X0000619X
-2. 财政部. 项目支出绩效评价管理办法（财预〔2020〕10号）. https://www.gov.cn/zhengce/zhengceku/2020-03/02/content_5487878.htm
+2. 财政部. 项目支出绩效评价管理办法（财预〔2020〕10号）. https://www.gov.cn/
 3. 中华人民共和国科学技术部. 关于深化科技评价改革的若干意见. https://www.most.gov.cn/ztzl/zdzx/tztg/201612/t20161222_4804.html
 4. 国务院. 关于全面实施预算绩效管理的意见. https://www.gov.cn/zhengce/2018-09/25/content_5325315.htm
-5. 天祝藏族自治县卫生健康局. 2023年度部门决算（满意度指标示例）. https://www.gstianzhu.gov.cn/art/2024/9/26/art_5585_1368776.html
-6. 梓潼县财政局. 梓潼2024年重点绩效评价报告. https://www.zitong.gov.cn/ztxrmzf/c100156/202411/f54dacc6913548228b940b232dbed15d.shtml
-7. MySQL 8.0 Reference Manual — The DATE, DATETIME, and TIMESTAMP Types. https://dev.mysql.com/doc/refman/8.0/en/datetime.html
-
+5. 梓潼县财政局. 梓潼2024年重点绩效评价报告. https://www.zitong.gov.cn/ztxrmzf/c100156/202411/f54dacc6913548228b940b232dbed15d.shtml
+6. MySQL 8.0 Reference Manual — The DATE, DATETIME, and TIMESTAMP Types. https://dev.mysql.com/doc/refman/8.0/en/datetime.html
 ---
 
 # 附件
@@ -509,15 +515,7 @@ Sabatier 的框架看目标清晰度、资源、执行结构、外部条件。�
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 探针 | `python3 code/M_POLICY_IMPLEMENTATION_EFFECT.py` | `code/M_POLICY_IMPLEMENTATION_EFFECT_out.json` |
+| 探针 | `python3 code/M_POLICY_IMPLEMENTATION_EFFECT.py` | `metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_IMPLEMENTATION_EFFECT --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21/M_POLICY_IMPLEMENTATION_EFFECT.md` | PASS |
 | 基期闸 | `python3 _work_gkx21/check_base_years.py _staging21/M_POLICY_IMPLEMENTATION_EFFECT.md` | OK |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

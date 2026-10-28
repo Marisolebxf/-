@@ -1,9 +1,20 @@
-# 深圳企业数量（M_ENT_SZ_COUNT）
+# 深圳企业数（M_ENT_SZ_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SZ_COUNT.md`；复现脚本 `metrics/repro/M_ENT_SZ_COUNT.py` → `metrics/repro/out/M_ENT_SZ_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：COUNT（区域子集去重计数）｜ **域**：企业分析／企业总览／深圳企业现状｜ **UI 挂载**：企业分析·企业总览「深圳企业数」卡｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_SZ_COUNT.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SZ_COUNT.py`、产物 `metrics/repro/out/M_ENT_SZ_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SZ_COUNT.md`；复现脚本 `metrics/repro/M_ENT_SZ_COUNT.py` → `metrics/repro/out/M_ENT_SZ_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SZ_COUNT.py`、产物 `metrics/repro/out/M_ENT_SZ_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_SZ_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_ENT_SZ_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_SZ_COUNT_out.json` |
@@ -61,17 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_SZ_COUNT.py`、产物 `metrics/repro/out/M_ENT_SZ_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT（区域子集去重计数）｜ **域**：企业分析／企业总览／深圳企业现状｜ **UI 挂载**：企业分析·企业总览「深圳企业数」卡｜ **数据支持度**：**部分支持**
-> **口径来源**：王惠（`(王惠口径正本，GitLab 外本地归档)M_ENT_SZ_COUNT.md`）→ 2026-08-28 `ENT-SYNTH-METRIC-COVER-STAT-L01` 钉死 `region_id LIKE '4403%'`（`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_SZ_COUNT.md`）
-> **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_SZ_COUNT.py` → `code/M_ENT_SZ_COUNT_out.json`
-> **wanghui**：true（§五 必含王惠口径对照）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -110,7 +115,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx.dwd_org_industry_tags` | 选产业时的链属过滤 | 28,031 家严格链属；深圳 16,875 家 |
 | `code/_snapshots21/base_20261021.json` | 底册行级快照 | 189,116 行 |
 | `code/_snapshots21/chain_linked_type_20261023.json` | 深圳链属 × 类型 | 16,875 家、六类 |
-| `code/M_ENT_SZ_COUNT_out.json` | 本件产物 | 全国/省/市/链四层与缺口全部落盘 |
+| `metrics/repro/out/M_ENT_SZ_COUNT_out.json` | 本件产物 | 全国/省/市/链四层与缺口全部落盘 |
 
 ---
 
@@ -125,6 +130,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 类型结构上，深圳 95,600 家里小微 84,375 家（88.26%）、高企 15,683 家（16.40%）、专精特新 8,802 家（9.21%）、外资 4,554 家（4.76%）、小巨人 1,271 家（1.33%）、上市 1,117 家（1.17%）。小微占比比全国高 21.91 个百分点，是深圳企业结构最显著的特征。
 
 结论是 **部分支持**：数可算、可勾稽，但计算键不是 calc-logic 要求的 `region_id`。gkx 底册没有这个列，只有中文市名；中文名能覆盖「注册地在深圳」，不能覆盖「行政区划码 4403」与深汕边界。只要 `region_id` 未绑，95,600 就只能作代理值发布，不能作正本值。
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > | 需求出处 | 展示系统 §1.1.1.2.4.1；算法库「企业基础指标模型 → 企业总览」 |<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_SZ_COUNT.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -174,7 +224,7 @@ A 族是正本口径，前提是底册有 `region_id` 或 adcode；本库没有�
 1. 国家统计局：《统计用区划代码和城乡划分代码》。https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
 2. 深圳市统计局：《深圳统计年鉴》。https://tjj.sz.gov.cn/
 3. 项目内 calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_SZ_COUNT.md`
-4. 王惠 20260817：`(王惠口径正本，GitLab 外本地归档)M_ENT_SZ_COUNT.md`
+4. 王惠 20260817：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_SZ_COUNT.md（王惠正本已演化并入）`
 5. 同族已交付件：`M_ENT_REGIONAL_COUNT_TOPIC.md`、`M_ENT_TOTAL_COUNT.md`
 6. 底册快照：`code/_snapshots21/base_20261021.json`
 
@@ -296,7 +346,7 @@ calc-logic 把键钉成 `region_id LIKE '4403%'`，理由是中文名有别名�
 复现命令：
 
 ```bash
-python3 M_ENT_SZ_COUNT.py
+cd code && python3 M_ENT_SZ_COUNT.py
 ```
 
 脚本输出：
@@ -465,10 +515,7 @@ calc-logic 2026-08-28 版把键收紧为 `region_id LIKE '4403%'`，理由是中
 1. 国家统计局：《统计用区划代码和城乡划分代码》。https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
 2. 深圳市统计局：《深圳统计年鉴》。https://tjj.sz.gov.cn/
 3. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
-4. 项目内 calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_SZ_COUNT.md`
-5. 王惠 20260817：`(王惠口径正本，GitLab 外本地归档)M_ENT_SZ_COUNT.md`
-6. 同族已交付件：`M_ENT_TOTAL_COUNT.md`、`M_ENT_REGIONAL_COUNT_TOPIC.md`、`M_ENT_TYPE_COUNT.md`
-
+4. 同族已交付件：`M_ENT_TOTAL_COUNT.md`、`M_ENT_REGIONAL_COUNT_TOPIC.md`、`M_ENT_TYPE_COUNT.md`
 ---
 
 # 附件
@@ -618,15 +665,7 @@ calc-logic 2026-08-28 版把键收紧为 `region_id LIKE '4403%'`，理由是中
 | 文件 | 说明 |
 |---|---|
 | `_staging21/M_ENT_SZ_COUNT.md` | 本报告 |
-| `code/M_ENT_SZ_COUNT.py` | 复算脚本 |
-| `code/M_ENT_SZ_COUNT_out.json` | 产物 |
+| `metrics/repro/M_ENT_SZ_COUNT.py` | 复算脚本 |
+| `metrics/repro/out/M_ENT_SZ_COUNT_out.json` | 产物 |
 | `code/_snapshots21/base_20261021.json` | 底册快照 |
 | `code/_snapshots21/chain_linked_type_20261023.json` | 链属 × 类型快照 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

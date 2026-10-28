@@ -1,9 +1,20 @@
 # 创新价值排名（M_INNOV_DS_06_CARRIER_003）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_06_CARRIER_003.md`；复现脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py` → `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV 指标（DS-06 深圳创新载体综合展示 · 创新价值排名）｜ **域**：科技创新 / 深圳创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测·创新载体综合展示（载体详情 / 创新价值排名展示）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py`、产物 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_06_CARRIER_003.md`；复现脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py` → `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py`、产物 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +35,7 @@
 
 ## 口径定义
 
-深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `code/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
+深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -54,14 +65,14 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `code/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
+- **判档理由**：深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
 - **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 
 ## 溯源与复现
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_06_CARRIER_003.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_06_CARRIER_003.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json` |
@@ -69,14 +80,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py`、产物 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 指标（DS-06 深圳创新载体综合展示 · 创新价值排名）｜ **域**：科技创新 / 深圳创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测·创新载体综合展示（载体详情 / 创新价值排名展示）｜ **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（沿用王惠 V1.5-20260830 三维骨架，对「全零维」的填充规则做缺测修正）｜ wanghui: true ｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -104,7 +112,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `code/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
+深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -198,10 +206,10 @@ GIS 展示解决「在哪里」，排名解决「谁更值得关注」。载体�
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.6.1.3（第 751–753 行） | 「展示各载体的创新价值排名，用户可查看不同载体的创新能力和表现，识别高价值创新载体。」 |
+| 1 | 原始产品需求文档 | `《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.6.1.3（第 751–753 行） | 「展示各载体的创新价值排名，用户可查看不同载体的创新能力和表现，识别高价值创新载体。」 |
 | 2 | 同上 | §1.1.1.1.4.1.6.1.2（第 747–749 行） | 「用户点击地图上的载体标记点，可查看该载体的基本介绍、创新成果展示以及在载体内的创新价值排名等详细信息。」 |
 | 3 | 同上 | §1.1.1.1.4.1.6.1（第 737–741 行） | 「深圳市创新载体综合展示的具体功能包括多层级地理展示、载体详情查看、创新价值排名展示、载体订阅功能、载体筛选与搜索、载体对比分析。」 |
-| 4 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）`，§计算逻辑说明 | 「同一维在本批深圳载体内极值归一。」 |
+| 4 | 王惠口径原文 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CARRIER_VALUE_RANK_SZ.md（王惠正本已演化并入）`，§计算逻辑说明 | 「同一维在本批深圳载体内极值归一。」 |
 | 5 | 同上 | 同上 §第三步 | 「缺测维不补 0，剩余维权重重归一。按 `value_score` 降序，`rank` 从 1 编（同分并列，下一排名跳过）。无三维有效值的载体不入榜。」 |
 | 6 | 同上 | 同上 §第三步·归一公式 | 「norm(x)=(x−min(x))/(max(x)−min(x))（全相同取 0.5）」 |
 | 7 | 王惠聚合登记 | `_work_20261019/wanghui_agg.json`（键 `M_INNOV_DS_06_CARRIER_003`） | 「def: 同M_INNOV_CARRIER_VALUE_RANK_SZ-深圳创新载体创新价值排名」 |
@@ -268,9 +276,9 @@ GIS 展示解决「在哪里」，排名解决「谁更值得关注」。载体�
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`metrics/repro/M_INNOV_DS_06_CARRIER_003.py`
-**运行命令**：`python3 M_INNOV_DS_06_CARRIER_003.py`
-**输出**：`code/M_INNOV_DS_06_CARRIER_003_out.json`（复用父指标同日实测产物 `M_INNOV_CARRIER_VALUE_RANK_SZ_out.json`，未重跑重查询；含一次 gkx 轻量核验，返回 `zh_journal = 2,796`、`en_journal = 605`、`patent_cited = 20,515`）
+**代码入库路径**：`gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_06_CARRIER_003.py`
+**运行命令**：`cd code && python3 M_INNOV_DS_06_CARRIER_003.py`
+**输出**：`metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`（复用父指标同日实测产物 `M_INNOV_CARRIER_VALUE_RANK_SZ_out.json`，未重跑重查询；含一次 gkx 轻量核验，返回 `zh_journal = 2,796`、`en_journal = 605`、`patent_cited = 20,515`）
 
 | 排名 | 载体 | 技术原始值（元） | 应用原始值 | 潜力原始值 | 分数 | 可用维数 |
 |---|---|---|---|---|---|---|
@@ -385,16 +393,12 @@ GIS 展示解决「在哪里」，排名解决「谁更值得关注」。载体�
 ---
 
 ## 参考文献
-
-> 下列条目均经联网核验存在；仅收录可打开的官方/出版社/DOI 页面。本批文献系与已入库 `M_INNOV_CARRIER_VALUE_RANK_SZ.md` 所用文献（国家知识产权局 2024 年度报告、Hirsch 2005、WIPO GII Appendix I、深圳政府在线报道）**不重复**。
-
 1. 国务院办公厅. (2021). 《关于完善科技成果评价机制的指导意见》（国办发〔2021〕26号）. 中国政府网. https://www.gov.cn/zhengce/content/2021-08/02/content_5628987.htm （破「四唯」、重质量实效与转化贡献，支撑「技术+应用+潜力」三维而非单看论文/专利数）
 2. 国家知识产权局专利管理司、中国技术交易所. (2012). 《专利价值分析指标体系操作手册》. 知识产权出版社. 中国科学院文献情报中心馆藏页：https://www.las.ac.cn/front/book/detail?id=4be1a36ddcdd983b497321ff9002eb2a （专利价值度 PVD：法律、技术、经济三层面 18 项支撑指标，支撑技术价值维的分层度量语义）
 3. Harhoff, D., Narin, F., Scherer, F. M., & Vopel, K. (1999). Citation Frequency and the Value of Patented Inventions. *Review of Economics and Statistics*, 81(3), 467–483. https://doi.org/10.1162/003465399558265 （专利被引与经济价值显著相关，同时指出被引存在年龄截断偏差，支撑潜在影响力维的设计与「当年窗被引会低估」的判断）
 4. 深圳市科技创新局. (2024). 《深圳市重点实验室管理办法》（深科创规〔2024〕2号）. 深圳市科技创新局网站. https://stic.sz.gov.cn/xxgk/ztzl/gfxwj/content/post_12826912.html （载体组建条件、周期评估与资助档次，为「载体」界定与排名结果的政策用途提供官方口径）
 5. WIPO. (2024). *Global Innovation Index 2024: Unlocking the Promise of Social Entrepreneurship*. World Intellectual Property Organization. https://www.wipo.int/web-publications/global-innovation-index-2024/en/index.html （多支柱指数的归一、加权、分维披露方法，支撑族 C「分维披露 + 锁口径」的排名纪律）
 6. CWTS. (2024). *Leiden Ranking 2024 — methodology and bibliometric indicators*. Leiden University. https://www.leidenranking.com/ （以被引、领域归一、规模校正构造机构排名，支撑族 B「年龄/领域归一」与「不可直接跨年比较」的判断）
-
 ---
 
 # 附件
@@ -518,15 +522,7 @@ GIS 展示解决「在哪里」，排名解决「谁更值得关注」。载体�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_DS_06_CARRIER_003.py`
-- 输出：`code/M_INNOV_DS_06_CARRIER_003_out.json`
+- 脚本：`metrics/repro/M_INNOV_DS_06_CARRIER_003.py`
+- 输出：`metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`
 - 关键字段：`compute.n_sz_carriers=2000`、`compute.n_ranked=538`、`compute.unranked_pct=73.1`、`compute.dimension_coverage_pct=8.97`、`compute.score_floor_from_missing_dim_fill=16.67`、`findings.floor_matches_stats_min=true`、`findings.rank1_has_no_tech_value=true`、`findings.comparability_break`
 - 判定：`support_judgment=部分支持`
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,20 @@
 # 产学研合作强度（M_CHAIN_ACADEMIC_COOP_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_ACADEMIC_COOP_SCORE.md`；复现脚本 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` → `metrics/repro/out/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（三维加权评分）｜ **域**：产业链（CHAIN·区域产业竞争力评价）｜ **UI 挂载**：科技专题·区域产业竞争力页（产学研协同卡，经 `mid2req.json` 挂 CHAIN-PORTAL-OVERVIEW / 产业实体关系抽取族）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_ACADEMIC_COOP_SCORE.md`；复现脚本 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` → `metrics/repro/out/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_ACADEMIC_COOP_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_ACADEMIC_COOP_SCORE_out.json` |
@@ -66,14 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（三维加权评分）｜ **域**：产业链（CHAIN·区域产业竞争力评价）｜ **UI 挂载**：科技专题·区域产业竞争力页（产学研协同卡，经 `mid2req.json` 挂 CHAIN-PORTAL-OVERVIEW / 产业实体关系抽取族）｜ **数据支持度**：**部分支持**
-> **公式定义人**：AI 补漏（待算法 Lead 会签）｜ wanghui：true（王惠表含 creator=ai 补漏条目，§五必含）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分在 / 三维中一维可真算、两维结构断裂（gkx 源侧 patent 294 万/paper 10.09 万/scholar 2.13 万量足，但 `dwd_patent` 无 applicants 列、人才流动轨迹表缺整表）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -107,7 +115,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「产学研合作强度」是产业链分析·区域产业竞争力评价体系中的协同创新分项，用于衡量指定产业链上企业与高校、科研机构之间产学研合作的紧密程度。三份原始需求说明书中**均未出现「产学研合作强度」字样**（详见 §1.5 与附录 A.3），其语义族可追溯至《科技专题服务算法库》「产业实体关系抽取」模型（要求构建产业—企业—人才—科研机构多类型关系网络）与「科研合作关系链条模型」（要求计算合作强度、紧密度、频率）；王惠口径表以 AI 补漏条目将其落为「校企任职关联学者数」，项目 calc-logic 真源（AI 补漏稿，待会签）扩展为联合专利、联合项目（合作论文）、人才流动三维等权评分。本报告对照了 Hagedoorn 等的研究伙伴关系测度传统、Mazzoleni 与 Nelson 的公共研究机构理论及国务院办公厅、国家知识产权局办公室等中文官方文件的产学研政策语境（§1.4 概要、附录 C 完整版），并以脚本 `code/M_CHAIN_ACADEMIC_COOP_SCORE.py` 于 2026-10-21 在 gkx 真源实测：合作论文维全量扫描 100,900 篇中文论文、命中校企共现 305 篇（如北京小白世纪网络科技有限公司×北京中医药大学、阳光电源股份有限公司×合肥工业大学）；联合专利维因 `dwd_patent` 缺 applicants 列退化为第一申请人分桶（30 万件采样：链上企业 6,744 / 学研方 27,740）；人才流动维 `scholar_org_id` 全空、混合机构名仅 9 例。按 §〇 口径，三维缺两维 → **部分支持**；§五给出王惠条目与 calc-logic 三维稿的对照与选用建议。
+「产学研合作强度」是产业链分析·区域产业竞争力评价体系中的协同创新分项，用于衡量指定产业链上企业与高校、科研机构之间产学研合作的紧密程度。三份原始需求说明书中**均未出现「产学研合作强度」字样**（详见 §1.5 与附录 A.3），其语义族可追溯至《科技专题服务算法库》「产业实体关系抽取」模型（要求构建产业—企业—人才—科研机构多类型关系网络）与「科研合作关系链条模型」（要求计算合作强度、紧密度、频率）；王惠口径表以 AI 补漏条目将其落为「校企任职关联学者数」，项目 calc-logic 真源（AI 补漏稿，待会签）扩展为联合专利、联合项目（合作论文）、人才流动三维等权评分。本报告对照了 Hagedoorn 等的研究伙伴关系测度传统、Mazzoleni 与 Nelson 的公共研究机构理论及国务院办公厅、国家知识产权局办公室等中文官方文件的产学研政策语境（§1.4 概要、附录 C 完整版），并以脚本 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` 于 2026-10-21 在 gkx 真源实测：合作论文维全量扫描 100,900 篇中文论文、命中校企共现 305 篇（如北京小白世纪网络科技有限公司×北京中医药大学、阳光电源股份有限公司×合肥工业大学）；联合专利维因 `dwd_patent` 缺 applicants 列退化为第一申请人分桶（30 万件采样：链上企业 6,744 / 学研方 27,740）；人才流动维 `scholar_org_id` 全空、混合机构名仅 9 例。按 §〇 口径，三维缺两维 → **部分支持**；§五给出王惠条目与 calc-logic 三维稿的对照与选用建议。
 
 ---
 
@@ -215,7 +223,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，本章按 calc-logic AI 补漏稿（三维等权）重建，并由脚本 `code/M_CHAIN_ACADEMIC_COOP_SCORE.py` 于 2026-10-21 在 gkx 真源（183.240.141.251:3318）**当日实测跑通（一维真算 + 两维结构断点披露）**，结果见同目录 `M_CHAIN_ACADEMIC_COOP_SCORE_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录与可核验网址见文末「参考文献」。
+> **口径说明**：需求未给公式，本章按 calc-logic AI 补漏稿（三维等权）重建，并由脚本 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` 于 2026-10-21 在 gkx 真源（183.240.141.251:3318）**当日实测跑通（一维真算 + 两维结构断点披露）**，结果见同目录 `M_CHAIN_ACADEMIC_COOP_SCORE_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：从研究伙伴关系文献到三维共现框架
 
@@ -262,13 +270,13 @@ $$\text{Coop}(c)=\frac{1}{3}\sum_{k=1}^{3}\frac{N_k(c)-\min_c N_k}{\max_c N_k-\m
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` |
 | 结果产物 | 同目录 `M_CHAIN_ACADEMIC_COOP_SCORE_out.json` |
 | 主算源 | gkx 真源（183.240.141.251:3318，只读；复用 `_chain_common.py` 连接器） |
 | 目标链 | INB1309（人工智能） |
 
 ```bash
-python3 metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -321,7 +329,7 @@ python3 metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_CHAIN_ACADEMIC_COOP_SCORE.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -422,11 +430,6 @@ python3 metrics/repro/M_CHAIN_ACADEMIC_COOP_SCORE.py
 8. Perkmann, M., Tartari, V., McKelvey, M., Autio, E., Broström, A., D'Este, P., … Sobrero, M. (2013). Academic engagement and commercialisation: A review of the literature on university–industry relations. *Research Policy*, 42(2), 423–442. https://doi.org/10.1016/j.respol.2012.09.007
 
 9. 国务院. (2017b). 《国家技术转移体系建设方案》（国发〔2017〕44号）. https://www.gov.cn/zhengce/content/2017-09/26/content_5227667.htm
-
-10. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_ACADEMIC_COOP_SCORE.md`（AI 补漏三维稿，待会签）；王惠表条目见 `../20261019_指标整体开发进度调研/_work_20261019/wanghui_agg.json`。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
 ---
 
 # 附件
@@ -557,14 +560,6 @@ Perkmann 等的系统评述把大学—产业关系拆成两条通道：学术�
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_CHAIN_ACADEMIC_COOP_SCORE.py`（2026-10-21，elapsed 388.6s）
-- 产物：`../code/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`
+- 产物：`../metrics/repro/out/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`
 - 关键结果：合作论文 305/100,900；专利分桶 企业 6,744/学研 27,740（30 万采样）；人才混合机构名 9/21,316；support_judgment=`部分支持`
 - 工程注意：gkx.tags 单引号 JSON 双 pattern LIKE；dwd_patent 无 applicants 列；scholar_org_id 全空串。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

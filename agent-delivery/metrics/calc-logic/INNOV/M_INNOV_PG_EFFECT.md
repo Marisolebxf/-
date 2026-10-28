@@ -1,9 +1,22 @@
 # 政策效果（M_INNOV_PG_EFFECT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_EFFECT.md`；复现脚本 `metrics/repro/M_INNOV_PG_EFFECT.py` → `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（增幅/相关性型）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 政策与条件保障力指标展示（需求清单序号 156）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = **部分**（论文与项目有年度序列，专利面板仅 2021 起无基线年，企业级政策—产出对齐键完全缺失）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_EFFECT.py`、产物 `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_EFFECT.md`；复现脚本 `metrics/repro/M_INNOV_PG_EFFECT.py` → `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_EFFECT.py`、产物 `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_PG_EFFECT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_PG_EFFECT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_PG_EFFECT_out.json` |
@@ -65,18 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PG_EFFECT.py`、产物 `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（增幅/相关性型）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 政策与条件保障力指标展示（需求清单序号 156）
-> **UI 挂载**：政策与条件保障力 → 政策效果评估 → 政策实施前后产出变化（专利 / 论文 / 项目）
-> **数据支持度**：**部分支持**
-> **公式定义人**：**王惠**（calc-logic V1.5-20260901；前后窗均值增幅；专利维不可算）
-> **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = **部分**（论文与项目有年度序列，专利面板仅 2021 起无基线年，企业级政策—产出对齐键完全缺失）
-> wanghui: true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -112,7 +118,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「政策效果」对应需求「政策效果评估」（序号 156），要求评估政策实施后科技产出是否提升。王惠 calc-logic 已登记本 ID，口径是「政策实施前后窗口的产出均值增幅」。这个口径本质是**前后对比**，不是因果识别；本报告严格执行，同时把因果识别的缺口逐条写出。
 
-`code/M_INNOV_PG_EFFECT.py` 零 SQL、0.16 秒复算，三维里只有两维可用。**专利维不可算**：`dwd_patent.apdt_year` 只有 2021—2026，2016—2020 在库内零行，基线窗（T-7..T-3）没有任何真实年份，分母不存在。按 §3.16「分母只取真实存在年份」，此处可用年份为空，`base_years_used = []`、`base_years_missing = [2016,2017,2018,2019,2020]`，指标判不可算，不用 0 或外推填补。
+`metrics/repro/M_INNOV_PG_EFFECT.py` 零 SQL、0.16 秒复算，三维里只有两维可用。**专利维不可算**：`dwd_patent.apdt_year` 只有 2021—2026，2016—2020 在库内零行，基线窗（T-7..T-3）没有任何真实年份，分母不存在。按 §3.16「分母只取真实存在年份」，此处可用年份为空，`base_years_used = []`、`base_years_missing = [2016,2017,2018,2019,2020]`，指标判不可算，不用 0 或外推填补。
 
 **论文维**：取 T=2021（语料成熟、避开 2024 回填峰），近期窗 2019—2021 均值 6,422.67 篇，基线窗 2014—2018 均值 4,537.60 篇，增幅 **+41.54%**。**项目维**：取 T=2020（录入停摆前最后完整年），近期窗 4,740.33 项、基线窗 4,001.60 项，增幅 **+18.46%**。两个数都高度依赖窗口：论文在 T=2020 是 +78.58%、T=2023 只有 +8.98%；项目在 T=2021 是 **−5.65%**、T=2023 是 **−82.41%**。窗口一挪结论就反转，说明增幅主要由语料覆盖变化驱动，不是政策效应。
 
@@ -165,7 +171,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
 | 1 | `gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` | 政策效果评估 · 序号 156 | 「评估政策实施后对科技创新的促进作用，包括专利产出、论文发表、项目立项等变化情况。」 |
-| 2 | `王惠口径正本（GitLab 外本地归档）` | 口径定义 | 「从专利、论文、项目三个维度评估政策实施后的产出变化。」 |
+| 2 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PG_EFFECT.md（王惠正本已演化并入）` | 口径定义 | 「从专利、论文、项目三个维度评估政策实施后的产出变化。」 |
 | 3 | 同上 | 计算逻辑说明 | 「以政策实施年为 T，比较 T-2..T 与 T-7..T-3 的均值增幅。」 |
 | 4 | 同上 | 维度表 | 「专利取申请年，论文取发表年，项目取立项年。」 |
 | 5 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_INNOV_PG_EFFECT` | 「case=A；tables=[`dwd_patent`,`dwd_zh_paper`,`dwd_zh_project`]。」 |
@@ -270,14 +276,14 @@ T=2020 时增幅 +78.58%（基线 2013—2017 均值 3,467.60），T=2023 时 +8
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_PG_EFFECT.py` |
-| 结果产物 | 同目录 `code/M_INNOV_PG_EFFECT_out.json` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_PG_EFFECT.py` |
+| 结果产物 | 同目录 `metrics/repro/out/M_INNOV_PG_EFFECT_out.json` |
 | 主算数据 | `code/_snapshots21/` 下的论文/项目/专利年度面板与 `pg_policy_rows_20261021.json` |
 | 主算库 | `gkx`（`183.240.141.251:3318`，只读） |
 | SQL 条数 / 耗时 | 面板快照导出若干条；本脚本 **0 条 SQL**，运行 0.16 秒 |
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_PG_EFFECT.py
 ```
 
@@ -410,7 +416,7 @@ Spearman：政策密度 vs 专利密度 **+1.00**；政策密度 vs 专利增幅
 
 ### 5.1 王惠原方法还原
 
-出处：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
+出处：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PG_EFFECT.md（王惠正本已演化并入）`（V1.5-20260901）。
 
 原文要点：三维（专利/论文/项目）；以政策实施年为 T；比较 T-2..T 与 T-7..T-3 均值；增幅 = (近期 − 基线) / 基线；三维分别计算。
 
@@ -447,9 +453,7 @@ Spearman：政策密度 vs 专利密度 **+1.00**；政策密度 vs 专利增幅
 4. Abadie, A., Diamond, A., & Hainmueller, J. (2010). Synthetic Control Methods for Comparative Case Studies. *Journal of the American Statistical Association*, 105(490), 493–505.
 5. Card, D., & Krueger, A. B. (1994). Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania. *American Economic Review*, 84(4), 772–793.
 6. OECD. (2015). *Frascati Manual 2015*. OECD Publishing. https://doi.org/10.1787/9789264239012-en
-7. 项目内口径文件（非外部文献）：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
-8. 项目内需求原文（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` 序号 156。
-
+7. 项目内需求原文（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` 序号 156。
 ---
 
 # 附件
@@ -570,18 +574,10 @@ Spearman：政策密度 vs 专利密度 **+1.00**；政策密度 vs 专利增幅
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_PG_EFFECT.py`（零 SQL，只读本地快照）
-- 产物：`code/M_INNOV_PG_EFFECT_out.json`
+- 脚本：`metrics/repro/M_INNOV_PG_EFFECT.py`（零 SQL，只读本地快照）
+- 产物：`metrics/repro/out/M_INNOV_PG_EFFECT_out.json`
 - 主算数据：`code/_snapshots21/` 论文/项目/专利年度面板 + `pg_policy_rows_20261021.json`
 - 源表：`gkx.dwd_zh_paper`、`gkx.dwd_zh_project`、`gkx.dwd_patent` @ `183.240.141.251:3318`
 - 耗时：0.16 秒
 - 关键结果：专利不可算（基线 2016—2020 零行）；论文 +41.54%（T=2021，T=2020 +78.58%，T=2023 +8.98%）；项目 +18.46%（T=2020，T=2021 −5.65%，T=2023 −82.41%）；四城 Spearman +1.00 / −0.80
 - 已知缺陷：专利基线零行；政策—企业键缺失；无对照城市；政策强度缺失；项目 2021 停摆；论文 2024 回填峰
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

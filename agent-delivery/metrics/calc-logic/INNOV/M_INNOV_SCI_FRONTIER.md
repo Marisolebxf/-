@@ -1,9 +1,22 @@
 # 科学研究前沿性（M_INNOV_SCI_FRONTIER）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCI_FRONTIER.md`；复现脚本 `metrics/repro/M_INNOV_SCI_FRONTIER.py` → `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠已定义（INNOV 家族 · 科学创造力）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.1.3，原文第 884—886 行）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（引文表、关键词表、作者表齐备）；依赖数据 = **否**（引文 782 篇可对齐、关键词 799 篇可对齐，共被引网在池内 0 条 w≥2 边）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCI_FRONTIER.py`、产物 `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCI_FRONTIER.md`；复现脚本 `metrics/repro/M_INNOV_SCI_FRONTIER.py` → `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCI_FRONTIER.py`、产物 `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_SCI_FRONTIER.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_SCI_FRONTIER.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json` |
@@ -65,16 +78,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_SCI_FRONTIER.py`、产物 `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：王惠已定义（INNOV 家族 · 科学创造力）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.1.3，原文第 884—886 行）
-> **UI 挂载**：科学创造力评估页「科学研究前沿性」卡片（前沿主题图谱 + 主题时间演变 + 空间分布）
-> **数据支持度**：**部分支持**
-> **口径来源**：`metrics/calc-logic/INNOV/M_INNOV_SCI_FRONTIER.md`（V1.5-20260901）＋需求原文 1.1.1.1.4.1.7.1.3
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（引文表、关键词表、作者表齐备）；依赖数据 = **否**（引文 782 篇可对齐、关键词 799 篇可对齐，共被引网在池内 0 条 w≥2 边）
-> **铁律**：共被引簇只在**本库论文池内**闭合，不引外部引文库补边；不可建的子项直接缺席，不以关键词频次替代「研究前沿」
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: true
 
 ---
@@ -189,7 +198,7 @@ calc-logic 补了四条可执行口径：研究前沿 = 共被引 ≥2 的连通
 5. van Eck, N. J., Waltman, L. *VOSviewer: A computer program for bibliometric mapping*. <https://www.vosviewer.com/>
 6. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_SCI_FRONTIER.md`
 7. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 884—886 行
-8. 同批实测：`code/M_INNOV_SCI_PAPER_out.json`（同一论文池 100,900 篇）
+8. 同批实测：`metrics/repro/out/M_INNOV_SCI_PAPER_out.json`（同一论文池 100,900 篇）
 
 ### 1.6 推测原意与推测定义
 
@@ -294,10 +303,10 @@ _P4  SELECT id, cover_year_start FROM gkx.dwd_zh_paper;                         
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_INNOV_SCI_FRONTIER.py` |
+| 脚本 | `metrics/repro/M_INNOV_SCI_FRONTIER.py` |
 | 公共库 | `code/_tail21_common.py` |
 | 数据快照 | `code/_snapshots21/probe_inn21_texts_20261022.json`（引文/关键词/作者行级 dump） |
-| 输出 | `code/M_INNOV_SCI_FRONTIER_out.json` |
+| 输出 | `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json` |
 | 运行 | `python3 code/M_INNOV_SCI_FRONTIER.py` |
 | 耗时 | 0.4 秒（纯内存，799 篇网络） |
 | SQL 条数 | 0（探针阶段 3 条已落盘） |
@@ -443,9 +452,7 @@ _P4  SELECT id, cover_year_start FROM gkx.dwd_zh_paper;                         
 4. Kleinberg, J. *Bursty and hierarchical structure in streams*. KDD 2002. <https://dl.acm.org/doi/10.1145/775047.775061>
 5. van Eck, N. J., Waltman, L. *VOSviewer*. <https://www.vosviewer.com/>
 6. 中国科学技术信息研究所. *中国科技论文统计结果（2024）*. <https://www.istic.ac.cn/>
-7. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_SCI_FRONTIER.md`
-8. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 884—886 行
-
+7. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 884—886 行
 ---
 
 # 附件
@@ -571,18 +578,10 @@ LDA / BERTopic 需要摘要或全文。库内 `dwd_zh_paper` 无摘要字段，�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_SCI_FRONTIER.py` |
-| 输出 | `code/M_INNOV_SCI_FRONTIER_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_SCI_FRONTIER.py` |
+| 输出 | `metrics/repro/out/M_INNOV_SCI_FRONTIER_out.json` |
 | 耗时 | 0.4 秒 |
 | SQL | 0 条（探针 3 条已落盘） |
 | 关键数字 | 782/799 可对齐 / 池内边 0 / 分量 0 / 24 条词边 / 733 篇可落城市 |
 | 可用子项 | 时间演变、空间分布 |
 | 不可用子项 | 研究前沿、热点方向（退化） |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

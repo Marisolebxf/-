@@ -1,9 +1,21 @@
 # 查询结果·服务类型分布（M_SVC_TYPE_DIST_QUERY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_TYPE_DIST_QUERY.md`；复现脚本 `metrics/repro/M_SVC_TYPE_DIST_QUERY.py` → `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：查询态口径卡（推荐图表分析·服务生态多样性）｜ **域**：SVC 服务机构（科技专题数据查询·数据智能分析·推荐图表分析）｜ **UI 挂载**：科技专题服务系统·数据查询·推荐图表分析·服务生态多样性图
+> - **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 查询态口径卡（2026-10-13 徐滕强选 A；D1 draft，挂 Q106）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_TYPE_DIST_QUERY.py`、产物 `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_TYPE_DIST_QUERY.md`；复现脚本 `metrics/repro/M_SVC_TYPE_DIST_QUERY.py` → `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_TYPE_DIST_QUERY.py`、产物 `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_TYPE_DIST_QUERY.md` |
 | 复现脚本 | `metrics/repro/M_SVC_TYPE_DIST_QUERY.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json` |
@@ -60,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_TYPE_DIST_QUERY.py`、产物 `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：查询态口径卡（推荐图表分析·服务生态多样性）｜ **域**：SVC 服务机构（科技专题数据查询·数据智能分析·推荐图表分析）｜ **UI 挂载**：科技专题服务系统·数据查询·推荐图表分析·服务生态多样性图
-> **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 查询态口径卡（2026-10-13 徐滕强选 A；D1 draft，挂 Q106）
-> **数据源**：gkx（183.240.141.251:3318，只读 gkx_reader_zp）+ `code/_snapshots21/` 落盘快照
-> **wanghui：false**（`REM_QUEUE_20261023.json` 中本件 `wanghui` 为 null，无王惠正本；见 §五 calc-logic 对照）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -235,7 +242,7 @@ $$
 
 禁联规则：不消费门户类型码、不复用 `M_SVC_ORG_CNT`、不拿 `M_SVC_PT_GLOBAL_TYPE_DIST` / `M_SVC_PT_SZ_TYPE_DIST` / `M_SVC_INDUSTRY_LAYOUT` 冒充查询结果。原因是这些件都是全库或固定截面，分母不是当前查询集合。
 
-产物 `code/M_SVC_TYPE_DIST_QUERY_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`structure_probe`、`value`、`pool_reference`、`demo_query_sets`、`shift_reading`、`gaps`、`calc_logic_baseline`、`cross_refs`。脚本 `code/M_SVC_TYPE_DIST_QUERY.py` 自包含，只读 `code/_snapshots21/svc21_rec_20261023.json` 与 `svc21_facts_20261022.json`，不连库。复现命令：`python3 M_SVC_TYPE_DIST_QUERY.py`。
+产物 `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`structure_probe`、`value`、`pool_reference`、`demo_query_sets`、`shift_reading`、`gaps`、`calc_logic_baseline`、`cross_refs`。脚本 `metrics/repro/M_SVC_TYPE_DIST_QUERY.py` 自包含，只读 `code/_snapshots21/svc21_rec_20261023.json` 与 `svc21_facts_20261022.json`，不连库。复现命令：`cd code && python3 M_SVC_TYPE_DIST_QUERY.py`。
 
 | 产物键 | 取值 |
 |---|---|
@@ -425,20 +432,13 @@ $$
 
 ## 参考文献
 
-1. 徐滕强. (2026). 《查询结果·服务类型分布（M_SVC_TYPE_DIST_QUERY）查询态口径卡》. 项目内部 calc-logic 文档，挂 Q106.
+1. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754-2017）. https://www.stats.gov.cn/sj/tjbz/gjtjbz/
 
-2. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754-2017）. https://www.stats.gov.cn/sj/tjbz/gjtjbz/
+2. 国家知识产权局. (2024). 《知识产权服务业统计调查制度》. https://www.cnipa.gov.cn/
 
-3. 国家知识产权局. (2024). 《知识产权服务业统计调查制度》. https://www.cnipa.gov.cn/
+3. 科技部. (2024). 《“创新积分制”工作指引（全国试行版）》. https://kjj.hebi.gov.cn/kjdt/art/2024/art_d7af249cd56041c38c5227b4e92af48f.html
 
-4. 科技部. (2024). 《“创新积分制”工作指引（全国试行版）》. https://kjj.hebi.gov.cn/kjdt/art/2024/art_d7af249cd56041c38c5227b4e92af48f.html
-
-5. 深圳市统计局. (2024). 《深圳统计年鉴 2024》. https://tjj.sz.gov.cn/zwgk/zfxxgkml/tjsj/tjnj/
-
-6. `_work_gkx21/REM_QUEUE_20261023.json`（本件 `calc_logic` 非 null、`wanghui` 为 null）.
-
-7. `_work_gkx21/DISPATCH_BRIEF_v7.md` §一（数据源口径 G8）与 `DATA_FACTS_gkx21.md` §3.24—§3.68.
-
+4. 深圳市统计局. (2024). 《深圳统计年鉴 2024》. https://tjj.sz.gov.cn/zwgk/zfxxgkml/tjsj/tjnj/
 # 附件
 
 ## 附录 A　原始需求原文摘录
@@ -483,8 +483,8 @@ if len(Q) == 0: rows = all_zero()               # 不回退全库
 
 | 文件 | 内容 |
 |---|---|
-| `code/M_SVC_TYPE_DIST_QUERY.py` | 读快照、两套规则分桶、四个示例集合 |
-| `code/M_SVC_TYPE_DIST_QUERY_out.json` | 全部正文数字、`support_judgment`、`sources` |
+| `metrics/repro/M_SVC_TYPE_DIST_QUERY.py` | 读快照、两套规则分桶、四个示例集合 |
+| `metrics/repro/out/M_SVC_TYPE_DIST_QUERY_out.json` | 全部正文数字、`support_judgment`、`sources` |
 | `_staging21/M_SVC_TYPE_DIST_QUERY.md` | 本文档 |
 
 ### C.5 变更记录
@@ -508,7 +508,7 @@ if len(Q) == 0: rows = all_zero()               # 不回退全库
 
 ## 附录 E　复算步骤
 
-1. `python3 M_SVC_TYPE_DIST_QUERY.py`；
+1. `cd code && python3 M_SVC_TYPE_DIST_QUERY.py`；
 2. 脚本只读 `_snapshots21/svc21_rec_20261023.json` 与 `svc21_facts_20261022.json`；
 3. 检查 `value.rule_a_sum == 25597` 且 `value.rule_b_sum == 25597`；
 4. 检查 `value.unclassified_a == 1030`（两套规则应相等）；
@@ -537,13 +537,3 @@ if len(Q) == 0: rows = all_zero()               # 不回退全库
 - [ ] 不与本体三类图例混用
 - [ ] ⓘ 卡引用本 ID
 - [ ] 示例集分布不写成「全库分布」
-
-
-## 更新记录
-
-- 2026-08-21: 初版，模拟王惠调研产出
-- 2026-08-27: 侯佳伟 1A 2A 3A（边界锁定、过渡分桶列、空态语义）
-- 2026-10-13: 徐滕强定性"查询代码逻辑非统计指标"，选 A 转查询态口径卡（不废止，保留指标身份作查询页口径真源），seed v0.2.0
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

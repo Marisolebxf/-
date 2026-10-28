@@ -1,9 +1,20 @@
 # 布局优先级评分（M_CHAIN_LAYOUT_PRIORITY_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_LAYOUT_PRIORITY_SCORE.md`；复现脚本 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` → `metrics/repro/out/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：MODEL-CALC（多指标加权评分）｜ **域**：产业链（CHAIN·产业布局·优先级排序）｜ **UI 挂载**：科技专题·产业链分析（布局优先级）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_LAYOUT_PRIORITY_SCORE.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_LAYOUT_PRIORITY_SCORE.md`；复现脚本 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` → `metrics/repro/out/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_LAYOUT_PRIORITY_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json` |
@@ -62,14 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL-CALC（多指标加权评分）｜ **域**：产业链（CHAIN·产业布局·优先级排序）｜ **UI 挂载**：科技专题·产业链分析（布局优先级）｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（calc-logic v0.2.0 两维四指标口径）｜ wanghui：true（§五必含对照）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -107,11 +115,56 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「布局优先级评分」要回答的是「这 12 条链，先布哪条、后布哪条」。需求文档把它归在「产业布局」栏目，calc-logic 给的是两维四指标：产业增长维 =（行业增长率 + 市场占有率）/2，产业竞争力维 =（技术创新能力 + 产业规模）/2，两维加权（默认各 0.5），各指标先极值归一化到 0–100。问题有三层：**权重无出处**（需求只说「依据重要性分配权重」，没有给 0.5/0.5）；**D2 市场占有率的分母不存在**（要全国该产业产值，库内没有；企业底册 189,116 家里 188,776 家在广东）；**空间可行性维为零**（布局本质是招商/选址，但开发库没有土地、园区、载体面积表，`M_INNOV_KEYD_LAND` 已判完全不支持）。
 
-脚本 `code/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` 于 2026-10-21 实算：8/12 链出分，分数 12.89–78.56，8 个不同值；排序为人工智能 78.56、集成电路 67.25、智能终端 64.78、具身智能 43.28、合成生物 42.13、机器人 28.05、传感器 20.72、软件与信息服务 12.89；智能网联汽车、低空经济、数字创意、生物医药因营收与增长率双缺不出分。**7 条可算增长率的链全部为负增长（−18.0% 至 −98.5%）**——这不是 12 条链同时衰退，而是年报录入在 2024 年后大面积停摆导致的可比口径塌陷，必须写明「受录入覆盖限制」，不得读成产业衰退。
+脚本 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` 于 2026-10-21 实算：8/12 链出分，分数 12.89–78.56，8 个不同值；排序为人工智能 78.56、集成电路 67.25、智能终端 64.78、具身智能 43.28、合成生物 42.13、机器人 28.05、传感器 20.72、软件与信息服务 12.89；智能网联汽车、低空经济、数字创意、生物医药因营收与增长率双缺不出分。**7 条可算增长率的链全部为负增长（−18.0% 至 −98.5%）**——这不是 12 条链同时衰退，而是年报录入在 2024 年后大面积停摆导致的可比口径塌陷，必须写明「受录入覆盖限制」，不得读成产业衰退。
 
 按 §〇 判**部分支持**：主分能算，但已不是王惠原式（缺 D2），且缺的恰好是「布局」最该有的空间维。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 该算法从产业增长、市场占有率、技术创新能力、产业规模等维度构建评价体系，评估各产业的布局优先级，为产业空间布局与资源配置提供依据。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_LAYOUT_PRIORITY_SCORE.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -210,7 +263,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求未给权重与归一化方法，本章采用王惠口径，并由脚本 `code/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` **当日实算**，结果见同目录 `M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`（耗时 1.4 秒）。**D2 无法计算**，主分为三维重算，已与王惠原式不同，文中逐处标注。
+> **口径说明**：需求未给权重与归一化方法，本章采用王惠口径，并由脚本 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` **当日实算**，结果见同目录 `M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`（耗时 1.4 秒）。**D2 无法计算**，主分为三维重算，已与王惠原式不同，文中逐处标注。
 
 ### 2.1 方法选择：为什么用极值归一化 + 等权
 
@@ -281,9 +334,9 @@ D4 取 2024 年链上企业年报营收合计，8/12 链可算：人工智能 38
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` |
 | 结果产物 | 同目录 `M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json` |
-| 主算库 | `gkx`（只读，唯一连库入口 `code/_gkxdb.py`） |
+| 主算库 | `gkx`（只读，唯一连库入口 `metrics/repro/_gkxdb.py`） |
 | 依赖表 | `gkx.dwd_org_base_info`、`gkx.dwd_org_annual_financial_info`、`gkx.dwd_org_stock_finance_info`、`gkx.dwd_org_industry_tags` |
 | 运行命令 | `python3 code/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` |
 
@@ -365,7 +418,7 @@ D4 取 2024 年链上企业年报营收合计，8/12 链可算：人工智能 38
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_CHAIN_LAYOUT_PRIORITY_SCORE.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 / 字段 | 开发库 live | 三方 gkx | 实测结论 |
 |---|---|---|---|---|
@@ -458,7 +511,6 @@ D4 取 2024 年链上企业年报营收合计，8/12 链可算：人工智能 38
 4. Gort, M., & Klepper, S. (1982). Time Paths in the Diffusion of Product Innovations. *The Economic Journal*, 92(367), 630–653. https://doi.org/10.2307/2232554
 
 5. 季良玉、李廉水. (2016). 中国制造业产业生命周期研究——基于 1993—2014 年数据的分析. 《河海大学学报（哲学社会科学版）》, 18(1), 30–37. https://doi.org/10.3876/j.issn.1671-4970.2016.01.007
-
 ---
 
 # 附件
@@ -601,14 +653,6 @@ D4 取 2024 年链上企业年报营收合计，8/12 链可算：人工智能 38
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_CHAIN_LAYOUT_PRIORITY_SCORE.py`
-- 产物：`../code/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`
+- 产物：`../metrics/repro/out/M_CHAIN_LAYOUT_PRIORITY_SCORE_out.json`
 - 关键结果：D1 7/12、D2 0/12、D3 12/12、D4 8/12；8 链出分，12.89–78.56，8 个不同值；空间表 0 张；`support_judgment=部分支持`；耗时 1.4 秒。
 - 工程注意：主分已非王惠原式（缺 D2）；`industry_chain_metric_fact` 为造数，不可用。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

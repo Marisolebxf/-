@@ -1,9 +1,20 @@
 # 创新载体多维度排名（M_INNOV_CARRIER_RANK_GLOBAL）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CARRIER_RANK_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py` → `metrics/repro/out/M_INNOV_CARRIER_RANK_GLOBAL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→创新载体排行榜→多维度排名展示｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CARRIER_RANK_GLOBAL.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_RANK_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CARRIER_RANK_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py` → `metrics/repro/out/M_INNOV_CARRIER_RANK_GLOBAL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_RANK_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CARRIER_RANK_GLOBAL.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CARRIER_RANK_GLOBAL_out.json` |
@@ -64,14 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_RANK_GLOBAL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→创新载体排行榜→多维度排名展示｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（本 MD 采用王惠 V1.5 口径：RANK(index_score) 三宇宙）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量部分足（排名链路可算、上游指数资源维缺测）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -107,9 +115,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「创新载体多维度排名」是创新载体排行榜的**榜单输出层**：需求原文要求「提供创新载体的多维度排名，包括总体排名、领域排名、地区排名等，用户可切换查看不同维度的排名情况」，但需求**没有给出排名所依据的指数定义、名次宇宙切法或同分处理规则**。本文按王惠 V1.5 口径还原：消费姊妹指标 `M_INNOV_CARRIER_INDEX_GLOBAL` 的创新能力指数，在总体、领域（IPC4）、地区（城市/国家）三个名次宇宙内分别 `RANK(index_score)` 降序取名次（同分同名次），并以 Nature Index 科研城市榜、WIPO S&T Cluster 榜与《中国创新指数》分层体系为榜单方法论旁证，论证「一个内核指数 × 多宇宙切片」的榜单架构与权威实践同构。
 
-复现代码为本批**自写自跑**的 `code/M_INNOV_CARRIER_RANK_GLOBAL.py`（派单指明该指标原先无脚本）：与 INDEX 同批 3,000 载体、同口径指数，产出总体名次（3,000 全排名，Top3＝科曼医疗 100 分/大族激光 57.06/麦格米特 37.07）、地区名次（269 个城市切片，深圳 1,376 载体内科曼医疗居首、广州 782、东莞 263）与领域名次（按 2024 年入集载体专利分布动态选 Top4 IPC4：B23K26 激光加工 15 家、H01R13 30 家等，大族激光/科曼医疗各据领域榜首）。排名功能可算可用，但与指数共用资源维缺测与名称对齐两大约束 → **部分支持**，§五 对照后维持采用王惠口径。
+复现代码为本批**自写自跑**的 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py`（派单指明该指标原先无脚本）：与 INDEX 同批 3,000 载体、同口径指数，产出总体名次（3,000 全排名，Top3＝科曼医疗 100 分/大族激光 57.06/麦格米特 37.07）、地区名次（269 个城市切片，深圳 1,376 载体内科曼医疗居首、广州 782、东莞 263）与领域名次（按 2024 年入集载体专利分布动态选 Top4 IPC4：B23K26 激光加工 15 家、H01R13 30 家等，大族激光/科曼医疗各据领域榜首）。排名功能可算可用，但与指数共用资源维缺测与名称对齐两大约束 → **部分支持**，§五 对照后维持采用王惠口径。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 将各领域科技创新与基础研究监测及汇总的创新成果数据，按照数据模型计算创新能力指数，进行排名展示。……创新载体排行榜的具体功能包括创新能力指数计算、多维度排名展示、排名筛选功能、创新载体详情查看。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CARRIER_RANK_GLOBAL.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -207,7 +260,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；排名消费的指数由姊妹指标 `M_INNOV_CARRIER_INDEX_GLOBAL` 产出（同批 3,000 载体、同脚本族），本指标脚本 `code/M_INNOV_CARRIER_RANK_GLOBAL.py` 为**本批自写自跑**（派单指明原无脚本），结果见同目录 `M_INNOV_CARRIER_RANK_GLOBAL_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录见文末「参考文献」。
+> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；排名消费的指数由姊妹指标 `M_INNOV_CARRIER_INDEX_GLOBAL` 产出（同批 3,000 载体、同脚本族），本指标脚本 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py` 为**本批自写自跑**（派单指明原无脚本），结果见同目录 `M_INNOV_CARRIER_RANK_GLOBAL_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：为什么是「单指标多宇宙榜单」而不是「三套独立打分」
 
@@ -253,7 +306,7 @@ $$Rank_{U}(e)=1+\left|\{e'\in U:\ Index(e')>Index(e)\}\right|$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_CARRIER_RANK_GLOBAL.py`（**本批自写**，派单指明原无脚本） |
+| 计算脚本 | `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py`（**本批自写**，派单指明原无脚本） |
 | 结果产物 | 同目录 `M_INNOV_CARRIER_RANK_GLOBAL_out.json` |
 | 主算库 | `gkx`（三方库；行数读 `GKX_INVENTORY.json`） |
 | 上游依赖 | `M_INNOV_CARRIER_INDEX_GLOBAL` 同批指数（脚本内同口径复算，不入库重复） |
@@ -344,7 +397,7 @@ python3 code/M_INNOV_CARRIER_RANK_GLOBAL.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CARRIER_RANK_GLOBAL.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | gkx（库存行数） | 实测结论 |
 |---|---|---|---|---|
@@ -428,10 +481,7 @@ python3 code/M_INNOV_CARRIER_RANK_GLOBAL.py
 
 5. 深圳市人民政府新闻办公室. (2024). 《创新驱动——深圳 6 个 90% 与 2023 创新数据》. https://www.sz.gov.cn/cn/zjsz/gl/content/post_12318783.html
 
-6. 项目内真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CARRIER_RANK_GLOBAL.md` —— 王惠 V1.5 口径原文；`.../M_INNOV_CARRIER_INDEX_GLOBAL.md` —— 上游指数口径。
-
-7. Hwang, C.-L., & Yoon, K. (1981). *Multiple Attribute Decision Making: Methods and Applications*（Lecture Notes in Economics and Mathematical Systems 186）. Springer. https://doi.org/10.1007/978-3-642-48318-9 （TOPSIS 原始方法；本报告以其「候选集依赖」性质说明为何不采用多准则排序）
-
+6. Hwang, C.-L., & Yoon, K. (1981). *Multiple Attribute Decision Making: Methods and Applications*（Lecture Notes in Economics and Mathematical Systems 186）. Springer. https://doi.org/10.1007/978-3-642-48318-9 （TOPSIS 原始方法；本报告以其「候选集依赖」性质说明为何不采用多准则排序）
 ---
 
 # 附件
@@ -618,14 +668,6 @@ SRS 要求「总体排名、领域排名、地区排名等，用户可切换查�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_CARRIER_RANK_GLOBAL.py`（本批自写）；产物：`code/M_INNOV_CARRIER_RANK_GLOBAL_out.json`
+- 脚本：`metrics/repro/M_INNOV_CARRIER_RANK_GLOBAL.py`（本批自写）；产物：`metrics/repro/out/M_INNOV_CARRIER_RANK_GLOBAL_out.json`
 - 关键数字：总体 n_ranked=3,000（Top1 科曼医疗）；地区 269 城切片（深圳 1,376）；领域演示 Top4 IPC4（B23K26 15 家/H01R13 30 家）；support_judgment=`部分支持`
 - 工程注意：三宇宙 rank 键分立（rank/rank_region/rank_field）防互相覆盖；领域演示切片按 2024 专利分布动态选取而非硬编码。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,20 @@
 # 多企业竞争情报比对（M_INNOV_DS_09_RESEARCH_004）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_09_RESEARCH_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py` → `metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：DS（专题服务指标面，DS_09 研究领域分析族）｜ **域**：科学技术全景 / 科技发展态势 → 科技发展规划（INNOV）｜ **UI 挂载**：科学技术全景 → 研究领域分析 → 多企业竞争情报比对（矩阵 + 战略定位图）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py`、产物 `metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_09_RESEARCH_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py` → `metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py`、产物 `metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_09_RESEARCH_004.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json` |
@@ -64,15 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py`、产物 `metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：DS（专题服务指标面，DS_09 研究领域分析族）｜ **域**：科学技术全景 / 科技发展态势 → 科技发展规划（INNOV）｜ **UI 挂载**：科学技术全景 → 研究领域分析 → 多企业竞争情报比对（矩阵 + 战略定位图）｜ **数据支持度**：**部分支持**
-> **口径归属**：**王惠系**（calc-logic/INNOV/`M_INNOV_RES_CI_COMPARE.md`；`M_INNOV_DS_09_RESEARCH_004.md` 同口径）｜ **公式定义人**：**王惠**
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：开发库结构有 / 数据「部分」（规模轴论文覆盖 16/60；无营收/份额）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -223,7 +230,7 @@ $$
 
 ## 二、计算过程
 
-> **口径说明**：采用王惠口径，脚本 `code/M_INNOV_DS_09_RESEARCH_004.py` 在三方库 `gkx` 实测跑通，产物 `M_INNOV_DS_09_RESEARCH_004_out.json`，运行 0.01 s，复用 002 缓存（`gkx` 源）。
+> **口径说明**：采用王惠口径，脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py` 在三方库 `gkx` 实测跑通，产物 `M_INNOV_DS_09_RESEARCH_004_out.json`，运行 0.01 s，复用 002 缓存（`gkx` 源）。
 
 ### 2.1 方法选择：矩阵用相似度、定位用「规模 × 重合度」的理由
 
@@ -295,8 +302,8 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_DS_09_RESEARCH_004.py` |
-| 结果产物 | `code/M_INNOV_DS_09_RESEARCH_004_out.json` |
+| 计算脚本 | `metrics/repro/M_INNOV_DS_09_RESEARCH_004.py` |
+| 结果产物 | `metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json` |
 | 输入缓存 | `code/_innov_res_feature_cache.json` |
 | 主算库 | 三方库 `gkx`（`183.240.141.251:3318`）；20261021 起旧开发库已停用、不引 |
 | 运行时长 | 0.01 s（复用 002 缓存） |
@@ -499,16 +506,11 @@ D3（规模）是为了代理 D4（市场地位）。D4 在库内**完全不存�
 
 3. Porter, M. E. (1980). *Competitive Strategy: Techniques for Analyzing Industries and Competitors*. Free Press. https://www.hbs.edu/faculty/Pages/item.aspx?num=195
 
-4. Strategic Consortium of Intelligence Professionals (SCIP). *What Is Competitive Intelligence?* https://www.scip.org/page/CI-MI-Basics-Topic-Hub
+4. World Intellectual Property Organization (WIPO). *International Patent Classification (IPC)*. https://www.wipo.int/en/web/classification-ipc
 
-5. World Intellectual Property Organization (WIPO). *International Patent Classification (IPC)*. https://www.wipo.int/en/web/classification-ipc
+5. 中华人民共和国国家质量监督检验检疫总局、中国国家标准化管理委员会. (2009). 《学科分类与代码》（GB/T 13745-2009）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=4C13F521FD6ECB6E5EC026FCD779986E
 
-6. 中华人民共和国国家质量监督检验检疫总局、中国国家标准化管理委员会. (2009). 《学科分类与代码》（GB/T 13745-2009）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=4C13F521FD6ECB6E5EC026FCD779986E
-
-7. 国务院办公厅. (2021). 《关于完善科技成果评价机制的指导意见》（国办发〔2021〕26号）. https://www.gov.cn/zhengce/zhengceku/2021-08/02/content_5628987.htm
-
-8. 项目内旁证：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_RES_CI_COMPARE.md`、`M_INNOV_RES_CI_LEVEL.md`、`M_INNOV_RES_GRADE.md`。
-
+6. 国务院办公厅. (2021). 《关于完善科技成果评价机制的指导意见》（国办发〔2021〕26号）. https://www.gov.cn/zhengce/zhengceku/2021-08/02/content_5628987.htm
 ---
 
 # 附件
@@ -614,14 +616,6 @@ SCIP 的结构化分析强调以矩阵形式组织竞争者与维度信息 (SCIP
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_INNOV_DS_09_RESEARCH_004.py`；产物：`../code/M_INNOV_DS_09_RESEARCH_004_out.json`
+- 脚本：`../code/M_INNOV_DS_09_RESEARCH_004.py`；产物：`../metrics/repro/out/M_INNOV_DS_09_RESEARCH_004_out.json`
 - 关键结果：60 家 / 3,540 非对角单元 / 展示 10×10（45 对）；象限 17/13/13/17；中位切点 3,585.5 / 0.1911
 - 工程注意：矩阵对称镜像；等级矩阵对角用「—」；复用 `_innov_res_feature_cache.json`。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,21 @@
 # 协同—创新产出关联结果（M_SYNTH_COLLAB_OUTPUT_CORR）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_COLLAB_OUTPUT_CORR.md`；复现脚本 `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py` → `metrics/repro/out/M_SYNTH_COLLAB_OUTPUT_CORR_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：关联结果（SYNTH·区域创新协同族之「效果评估」件）｜ **域**：综合（SYNTH）｜ **UI 挂载**：科技专题·综合智能分析 / 区域创新协同分析 / 协同效果评估｜ **数据支持度**：**部分支持**（本次交付状态：`insufficient`）
+> - **四判定摘要**：直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：结构有 / 年度序列未落盘、Y 归属口径未固化、X 三维不正交
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SYNTH_COLLAB_OUTPUT_CORR.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_OUTPUT_CORR_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_COLLAB_OUTPUT_CORR.md`；复现脚本 `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py` → `metrics/repro/out/M_SYNTH_COLLAB_OUTPUT_CORR_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_OUTPUT_CORR_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_COLLAB_OUTPUT_CORR.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_COLLAB_OUTPUT_CORR_out.json` |
@@ -64,15 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py`、产物 `metrics/repro/out/M_SYNTH_COLLAB_OUTPUT_CORR_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：关联结果（SYNTH·区域创新协同族之「效果评估」件）｜ **域**：综合（SYNTH）｜ **UI 挂载**：科技专题·综合智能分析 / 区域创新协同分析 / 协同效果评估｜ **数据支持度**：**部分支持**（本次交付状态：`insufficient`）
-> **公式定义人**：王惠（本 MD 采用王惠口径）｜ wanghui: true
-> **四判定摘要**：直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：结构有 / 年度序列未落盘、Y 归属口径未固化、X 三维不正交
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -109,6 +117,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 「协同—创新产出关联结果」是区域创新协同分析模型的**效果评估**件，回答「协同网络结构做得好，创新产出是否同步更好」。王惠口径把它定义为：同一区域内、评估窗口（默认近 5 个统计年）按年展开，协同侧取协同指数、网络密度、网络中心度三条 $X_{k,t}$，产出侧取同年联合发明专利授权去重数 $Y_t$，分别计算三条 Pearson 相关系数 $r_k\in[-1,1]$，有效样本 $n\ge3$ 且双侧方差大于 0，否则标 `status=insufficient`；并明确规定「页面按区域各自的时间序列出 $r$，不做多区域截面相关」「禁止导致/提升/影响效应表述」。本报告严格按此口径复现：协同侧三件套可由已落盘单窗事实计算，产出侧存量可按城取得，但**评估窗口内的区域×年序列未落盘**，$X_{k,t}$ 与 $Y_t$ 无法配对成 $n\ge3$ 的年样本，故交付状态为 `insufficient`，不输出任何 $r$ 作为交付值。为证明口径可执行、并量化「为什么不能凑数」，报告附了一组**仅作诊断、不作交付**的 4 城截面相关（$r_{\text{index}}=-0.7353$、$r_{\text{density}}=-0.6477$、$r_{\text{centrality}}=-0.7750$，Spearman 均为 $-1.0$），并给出精确置换检验：$n=4$ 时双侧 $p$ 的理论下限为 $2/4!=0.0833$，即使四城秩完全单调也达不到 0.05 显著，从统计上证明「截面替代时序」不可行。同时做了双恒值自检：零方差输入必须返回 `None` 而非 1.0/0.0。数据支持度判**部分支持**：结构齐、单窗量够，但年度序列、合作项目边、Y 的第一申请人归属固化三项缺口未补齐。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 区域创新协同分析模型基于深圳市产业全要素图谱，整合企业、科研机构与人才等创新主体的合作关系数据，综合对接各领域专题库，以完整度、中心度、密度三项区域创新协同网络指标为核心，构建量化分析体系。模型通过对区域内创新网络结构进行建模与指标计算，生成区域创新协同指数，用于衡量不同区域在创新合作方面的紧密程度、核心辐射力及网络覆盖水平。<br>><br>> （1）算法阐述 …… 该指数既可用于横向区域对比，也可用于纵向趋势分析，支持政策制定、资源优化配置及创新生态评估。<br>><br>> （2）算法输入与输出 输入：创新主体基础数据、合作关系数据。输出：区域创新协同指数、完整度、中心度、密度三类指标值及结构化分析报告、区域协同优势与不足诊断结果、趋势变化分析。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 定义联合专利、合作项目、人才流动等协同指标，计算创新协同指数，识别高效协同集群与孤立主体。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SYNTH_COLLAB_OUTPUT_CORR.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -289,14 +343,14 @@ $n=3$ 的 Pearson $r$ 有一个残酷的性质：在零假设下，$r$ 的抽样
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py` |
 | 共用模块 | 同目录 `_collab_c_common.py` |
 | 结果产物 | 同目录 `M_SYNTH_COLLAB_OUTPUT_CORR_out.json` |
 | 输入产物 | `M_SYNTH_191_1_out.json`、`_synthb_cache.json`、`M_SYNTH_COLLAB_RELATION_INPUT_out.json`、`M_ORG_COLLAB_CHAIN_out.json` |
 | 数据库访问 | **无**（按纪律复用已有 out.json，不重跑探针） |
 
 ```bash
-python3 metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py
 ```
 
 脚本输出字段含：`compute.cities`（四城 $X$ 三值与 $Y$ 存量）、`compute.delivery_status`、`compute.delivery_reason`、`compute.diagnostic_cross_section_only`（含 Pearson、Spearman、精确置换 $p$、最小可达 $p$）、`compute.self_test`（六项退化输入自检）、`baseline`、`support_judgment`、`support_reason`。以下为 2026-10-21 复算结果，与 out.json 一致。
@@ -372,7 +426,7 @@ python3 metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py
 
 ## 三、数据支撑情况
 
-> 判定顺序：先跑通 `code/M_SYNTH_COLLAB_OUTPUT_CORR.py` 并确认结果合理（交付状态、截面诊断、置换检验、自检四项），再落档。
+> 判定顺序：先跑通 `metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py` 并确认结果合理（交付状态、截面诊断、置换检验、自检四项），再落档。
 
 | 依赖维度 | 候选表 / 来源 | 开发库 live | demo / 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -460,9 +514,6 @@ python3 metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py
 4. 国家知识产权局. (2024). 《专利统计年报》（发明专利授权、联合申请与申请人统计口径）. https://www.cnipa.gov.cn/col/col61/index.html
 
 5. 国家统计局. (2025). 《中国统计年鉴》（区域研发投入与专利产出年度数据）. https://www.stats.gov.cn/sj/ndsj/
-
-6. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_OUTPUT_CORR.md`（王惠：区域×年 Pearson，$n\ge3$，不做截面、不做因果）。
-
 ---
 
 # 附件
@@ -533,16 +584,8 @@ python3 metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_SYNTH_COLLAB_OUTPUT_CORR.py`；共用模块：`code/_collab_c_common.py`
-- 产物：`code/M_SYNTH_COLLAB_OUTPUT_CORR_out.json`
+- 脚本：`metrics/repro/M_SYNTH_COLLAB_OUTPUT_CORR.py`；共用模块：`code/_collab_c_common.py`
+- 产物：`metrics/repro/out/M_SYNTH_COLLAB_OUTPUT_CORR_out.json`
 - 数据来源：复用 `M_SYNTH_191_1_out.json`、`_synthb_cache.json`、`M_SYNTH_COLLAB_RELATION_INPUT_out.json`、`M_ORG_COLLAB_CHAIN_out.json`；**未重跑 DB 探针**
 - 关键结果：`delivery_status=insufficient`；截面诊断 $r$ = −0.7353 / −0.6477 / −0.7750，Spearman 均 −1.0，置换 $p$ = 0.2917 / 0.2917 / 0.1250，最小可达 $p$ = 0.0833；自检 6/6 通过；support_judgment=`部分支持`
 - 工程注意：不得用截面替代时序；零方差必须返回 `None`；$X_2/X_3$ 与 $Y$ 同源；指数跨年归一参考系需固定
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

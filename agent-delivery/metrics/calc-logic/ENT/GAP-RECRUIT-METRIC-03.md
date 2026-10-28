@@ -1,7 +1,18 @@
 # 企业行业领域排名（GAP-RECRUIT-METRIC-03）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-03.md`；复现脚本 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-03.py` → `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-03_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：UNKNOWN（未注册 GAP）｜ **域**：企业招引（ENT-RECRUIT）｜ **UI 挂载**：招引企业推荐分析（E-26 引育推荐，wireframe 第 6 列）｜ **数据支持度**：**完全转换支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
+
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-03.md`；复现脚本 `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-03.py` → `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-03_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；本地备份指针已随 20261027 批清零，验收以本仓为准）
 
 ## 基础信息
 
@@ -24,7 +35,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-03.md` §二（GAP-RECRUIT-METRIC-03.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-03.md` §二（GAP-RECRUIT-METRIC-03.py 零改语义复算）。
 
 ## 源表字段
 
@@ -48,22 +59,19 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-03.md` |
-| 复现脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-03.py` |
-| 复现产物 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-03_out.json` |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
+| 正本 MD | `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-03.md` |
+| 复现脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-03.py` |
+| 复现产物 | `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-03_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
-
-> **类型**：UNKNOWN（未注册 GAP）｜ **域**：企业招引（ENT-RECRUIT）｜ **UI 挂载**：招引企业推荐分析（E-26 引育推荐，wireframe 第 6 列）｜ **数据支持度**：**完全转换支持**
-> **公式定义人（20261020-M0）**：仿王惠（推测定义）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量足（可现转）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -97,7 +105,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「企业行业领域排名」是《科技专题服务算法库》**招引企业综合推荐模型（§5.7，seq 147）**的四个输出项之一，指在给定「行业领域」内按招引推荐指数对候选企业进行排名，供招商部门按行业筛选优选目标。需求文档**只列输出、未给排名的字段、范围与并列规则**（handoff 已登记缺口 ER-B10：排名范围/排序字段/并列规则无独立 ID，禁止发明 `M_ENT_DOMAIN_RANK`）。本文在引用原句的基础上给出「推测定义」：行业维度采用《国民经济行业分类》（GB/T 4754—2017）大类，排序键为招引推荐指数 $Rec(e)$，排名方法为行业内 dense rank。脚本 `code/GAP-RECRUIT-METRIC-03.py` 已在三方库 `gkx` 换源重跑（读数与旧 demo 镜像逐项一致）：**186,135** 家可评分企业、覆盖 **108** 个行业（二级行业桶 94 个），Rec 代理分取值 606 种、有区分度。按 §〇，结构+当前数据量均足且现转结果合理 → **完全转换支持**（正式 Rec 公式与阈值待甲方闭合后替换代理排序键）。
+「企业行业领域排名」是《科技专题服务算法库》**招引企业综合推荐模型（§5.7，seq 147）**的四个输出项之一，指在给定「行业领域」内按招引推荐指数对候选企业进行排名，供招商部门按行业筛选优选目标。需求文档**只列输出、未给排名的字段、范围与并列规则**（handoff 已登记缺口 ER-B10：排名范围/排序字段/并列规则无独立 ID，禁止发明 `M_ENT_DOMAIN_RANK`）。本文在引用原句的基础上给出「推测定义」：行业维度采用《国民经济行业分类》（GB/T 4754—2017）大类，排序键为招引推荐指数 $Rec(e)$，排名方法为行业内 dense rank。脚本 `metrics/repro/GAP-RECRUIT-METRIC-03.py` 已在三方库 `gkx` 换源重跑（读数与旧 demo 镜像逐项一致）：**186,135** 家可评分企业、覆盖 **108** 个行业（二级行业桶 94 个），Rec 代理分取值 606 种、有区分度。按 §〇，结构+当前数据量均足且现转结果合理 → **完全转换支持**（正式 Rec 公式与阈值待甲方闭合后替换代理排序键）。
 
 ---
 
@@ -221,7 +229,7 @@ handoff 真源（`metrics/request/展示系统/pages/ENT-RECRUIT.yaml` ER-D05 / 
 ## 二、计算过程
 
 > **口径说明**：需求未给公式，以下为推测计算过程；已由脚本
-> `code/GAP-RECRUIT-METRIC-03.py` 在 `gkx`（183.240.141.251:3318，schema `gkx`）实测跑通，结果见同目录 `GAP-RECRUIT-METRIC-03_out.json`。
+> `metrics/repro/GAP-RECRUIT-METRIC-03.py` 在 `gkx`（183.240.141.251:3318，schema `gkx`）实测跑通，结果见同目录 `GAP-RECRUIT-METRIC-03_out.json`。
 
 ### 2.1 方法选择：国标行业分类为分组维、推荐指数为排序键
 
@@ -272,13 +280,13 @@ $$Rank(e\,|\,I)=1+\left|\{e'\in I: Rec(e')>Rec(e)\}\right|$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-03.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-03.py` |
 | 结果产物 | 同目录 `GAP-RECRUIT-METRIC-03_out.json` |
 | 主算库 | `gkx`（183.240.141.251:3318，schema `gkx`） |
 | 对照探测 | live `gkxlumenx_dwd.enterprise_recruit` 行数 |
 
 ```bash
-python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-03.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-03.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -338,7 +346,7 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/GAP-RECRUIT-METRIC-03.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/GAP-RECRUIT-METRIC-03.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -394,9 +402,6 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 5. OECD & JRC. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. OECD Publishing. https://doi.org/10.1787/9789264043466-en （Crossref 题名/出版者/年份已核；复合指标十步法，明确要求披露权重来源与不确定性，否则排名不可辩护；该站对脚本访问返回 403，人工浏览器可开）
 
 6. Saaty, T. L. (1990). How to Make a Decision: The Analytic Hierarchy Process. *European Journal of Operational Research*, 48(1), 9–26. https://doi.org/10.1016/0377-2217(90)90057-I （AHP 两两比较→权重→一致性比率 CR<0.1）
-
-7. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/request/展示系统/pages/ENT-RECRUIT.yaml`（ER-D05/ER-B10）；`ENT-UNREGISTERED-METRIC-GAP-清单-2026-08-03.md`。
-
 ---
 
 # 附件
@@ -566,13 +571,6 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/GAP-RECRUIT-METRIC-03.py`；产物：`../code/GAP-RECRUIT-METRIC-03_out.json`
+- 脚本：`../code/GAP-RECRUIT-METRIC-03.py`；产物：`../metrics/repro/out/GAP-RECRUIT-METRIC-03_out.json`
 - 关键结果：n_scored=186,135；行业桶=108；Rec 取值 606 种；support_judgment=`完全转换支持`
 - 工程注意：排序键为代理合成信号；正式版待 ER-B10 闭合后替换为 Rec。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
