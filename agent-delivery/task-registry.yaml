@@ -43826,3 +43826,36 @@ tasks:
       - "不关闭 Q-SYNTH-01、Q-SYNTH-V-01、Q-SYNTH-V-02；不把等权标成甲方官方权重"
       - "本单与 PY、BE、FE、建表单全部交接后，区域创新活力分析可提测：USE_MOCK=false 下默认条件开始分析走真实任务，结果为 6.2 实算，五条 D4=live，页面无测试角标。handoff 含架构合规与 ponytail 行"
     update_time: "2026-10-28T12:04:00+08:00"
+  - id: CROSS-MCP-7CHAIN-L02
+    title: "gkx-7chain MCP M1 实装—查询入口与五域 P0 分析工具"
+    status: "ready"
+    agent: "api-agent"
+    epic: "跨系统-MCP工具化"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 180000
+    note: |
+      2026-10-28 coordinator 建单。L01 盘点已落盘（方案 §3–§5），未启动编码。本叶只做 §5.5 M1 真实封装，不重复盘点，不做 M2/M3。不依赖 L01 状态：L01 仍含实现 DoD 且 in_progress，若挂依赖会把编码卡死。调用链 MCP→Java 网关→Python /internal/*。强度：ponytail full。网关地址以环境变量注入，不把 token 写进 git。
+    touched_files:
+      - "scripts/7chain-mcp-server.mjs"
+      - "scripts/7chain-mcp-selfcheck.mjs"
+      - ".cursor/mcp.json"
+      - "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L02.md"
+    design_refs:
+      - "agent-delivery/designs/7链分析四域功能点MCP工具化-盘点与方案.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "按 agent-delivery/designs/7链分析四域功能点MCP工具化-盘点与方案.md §5.5 M1 实现 gkx-7chain：scripts/7chain-mcp-server.mjs 注册并实现 search-enterprise、search-industry、search-policy、ent-evaluate、ent-recommend、ent-diagnose、chain-panorama、chain-analyze、policy-indicators、policy-apply、svc-analysis、synth-index、synth-collab；工具名、入参、返回与 §4.1 一致，统计数字透传 metric_id，mock 标记原样返回"
+      - "scripts/7chain-mcp-selfcheck.mjs 不连后端，断言上述工具的参数校验与路由；本地跑通为绿"
+      - ".cursor/mcp.json 注册 stdio server gkx-7chain，指向 scripts/7chain-mcp-server.mjs，网关地址只走环境变量 GKX_MCP_API_BASE"
+      - "调用链：MCP 只 HTTP 调 Java REST 网关（demo 阶段 demo-svc-platform 网关），由网关进 Python /internal/*；禁止 MCP 直连算法仓、禁止绕过网关；svc 若网关无路由，过渡直调须在配置与 handoff 标明 demo-only"
+      - "验收：企业、产业链、政策、服务机构、综合智能每域至少 1 个工具对真实网关调通并返回结果；search-* 三件与 synth-index、synth-collab 全通；handoff 附调用示例"
+      - "handoff 写 agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L02.md（范围、偏离、产物、验收证据、架构合规自检、ponytail: full、cost 四字段）。M2 其余工具与 M3 切 lumen 网关不在本叶"
+    update_time: "2026-10-28T16:18:05+08:00"
