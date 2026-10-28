@@ -105,3 +105,33 @@ javac + JUnit Platform Launcher 直跑）：主源码 87 class 编译零错；ar
 - ✅ 可观测：复用既有审计（create/asset_download audit）与 SSE 进度
 - ✅ demo/lumen 隔离（D12）：仅改 lumen-svc-platform，未引用 demo-*
 - ✅ D9：报告为展示产物，不新增统计指标，不涉 8 件套
+
+## 追加修复（2026-10-28，用户报「技术力评估选历史任务生成报告报错」）
+
+### 根因（与"选历史任务"无关，任何长标题报告都会触发）
+
+线上实例 `REP-20261028-001`（父 `SVC-20261027-006`）在"文件生成完成"节点失败：
+`Data truncation: Data too long for column 'result_asset_id'`。
+
+- `analysis_task.result_asset_id` 为 varchar(128)（`db/9x_gkxlumenx_topic_enterprise.sql:197`）；
+- 2026-10-27 文件名规范化把中文标题拼进文件名 → MinIO objectKey =
+  `gkx-analysis-results/analysis/tech_power_report/{parentTaskId}/{taskId}/{中文标题_时间戳_taskId}.pdf`，
+  固定前缀已 ~80 字符，中文标题（UTF-8 每字 3 字节按字符计 1）叠加后超过 128；
+- PDF 已成功上传 MinIO，死在最后回写 DB 指针一步 → 任务 failed。属上一波文件名改动的回归。
+
+### 修复（commit `946853c`，dev）
+
+1. `AnalysisAssetServiceImpl`：新增 `artifactObjectKey()` —— 文件名段剥成 ASCII
+   （`[^A-Za-z0-9._-]→_`），全中文剥空退化为 taskId，整长硬上限 128（超长截中段保扩展名）。
+   **下载显示名不受影响**：Controller 下载文件名优先读 `result_data` 摘要的完整中文 `fileName`，
+   objectKey 仅兜底。
+2. `AnalysisAssetServiceImplTest`：新增 2 例回归（中文长标题 ≤128 且纯 ASCII；超长 ASCII 截断保扩展名）。
+3. `gkxlumen-topic-async-service-biz/pom.xml`：显式钉 surefire 3.2.5 —— 默认 2.12.4 不认 JUnit5
+   会把 `*Test` 静默跑成 0 个（对齐 topic-svc-biz / cms 既有做法）；修复后全模块 145 测试真实执行全绿。
+4. 顺带：失败任务 `REP-20261028-001` 的 PDF 已在 MinIO 但 DB 指针未落，需用户点「重新生成」
+   重跑一次（新代码下会成功）；无需数据修复。
+
+### 追加验证
+
+- 本地：`mvn -pl gkxlumen-topic-async-service-biz test` → **145 tests, 0 failures**（surefire 3.2.5）
+- CI：pipeline 3181（commit `946853c`），backend:build 排队中
