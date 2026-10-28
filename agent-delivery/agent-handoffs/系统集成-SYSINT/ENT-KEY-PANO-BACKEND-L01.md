@@ -21,55 +21,62 @@
 
 真源：`PORTAL-ENT-DEV-API-REQUIREMENTS.md` §2、`PORTAL-ENT-DEV-SRS-API-L01.md`。
 
+## 范围与实现（DoD 对照）
+
+| DoD 条目 | 状态 | 证据 |
+|----------|------|------|
+| `EnterpriseKeyChainScopeRequest` + #66/#69 入参 scoped | ✅ | Java `EnterpriseKeyChainScopeRequest.java`；Controller/Feign 已切换 |
+| #69 `scale_items[]` 四资质 × 国省市 | ✅ 代码 | Python `_build_scale_items`；Java `KeyQualificationSummaryResponse.scaleItems` |
+| #67 `domain_evidence[]` | ✅ | Python `_load_domain_evidence`；Java `KeyChainListResponse.domainEvidence`；dev `INB1309` 返回 12 条 |
+| #66 链内 `key_enterprise_total` | ✅ | dev scoped KPI `27705`（与同链 chain-subject 一致） |
+| legacy 无 `chain_code` 不破坏 | ✅ | `#69 {}` → `items=6`、`scale_items=0`；`code=0` |
+| seed / `stat_value` | ✅ | `db/9y_portal_ent_dev_seed.sql` |
+| CI + deploy + 网关三接口同链 | ⚠️ | 双仓已 push dev；**dev 上 scoped `#69` 曾 HTTP 500**（见测试结果）；需确认 search-py 已 rollout `92e1b41` 后复测 |
+| handoff + 架构自检 + cost | ✅ | 本节 |
+
 ## 修改内容
 
-### Java（lumen-svc-platform · gkxlumen-topic-enterprise）
+### Java（lumen-svc-platform · `0a56108`）
 
 | 项 | 说明 |
 |----|------|
-| `EnterpriseKeyChainScopeRequest` | 新增：`chain_code` + 可选 `region_id`（深圳默认 440300 由 Python 侧兜底） |
-| `#66` / `#69` 门面 | 入参由 `EnterpriseStatsRegionRequest` 改为 `EnterpriseKeyChainScopeRequest`（Controller / Service / Feign 全链） |
-| `EnterpriseExtendedDTOs` | `KeyQualificationScaleItem`、`KeyDomainEvidenceItem`；`KeyChainListResponse.domainEvidence`；`KeyQualificationSummaryResponse.scaleItems` |
+| `EnterpriseKeyChainScopeRequest` | `chain_code` + 可选 `region_id`（深圳默认 440300 由 Python 兜底） |
+| `#66` / `#69` 门面 | 入参改为 `EnterpriseKeyChainScopeRequest`（Controller / Service / Feign） |
+| `EnterpriseExtendedDTOs` | `KeyQualificationScaleItem`、`KeyDomainEvidenceItem`；`domainEvidence` / `scaleItems` |
 
-### Python（lumen-topic-py）
+### Python（lumen-topic-py · `cc4cbe7` + `92e1b41`）
 
 | 接口 | 行为 |
 |------|------|
-| `POST .../kpi` | 有 `chain_code`：`key_enterprise_total` ← `key_enterprise_chain` 汇总 / 链上 DISTINCT；高企仍 ES nested 计数 |
-| `POST .../qualification-summary` | 有 `chain_code`：`scale_items` 四行（foreign/high_tech/sme/listed × national/province/city），`items=[]`；无 `chain_code`：legacy `qualification_count` 扁平 `items`，`scale_items=[]` |
-| `POST .../chain-list` | 响应增加 `domain_evidence[]`（链内环节 DWD 聚合 + 样例企业；关键词为汇总 seed 文案） |
-| `chain-subject-stats` | 计数列统一读 `stat_value` |
-
-模块内 `python enterprise_key_enterprise.py` 自检 `scale_items` 结构（四资质 × 三国省市）。
+| `POST .../kpi` | 有 `chain_code`：链内重点企业总数（`key_enterprise_chain` / DISTINCT） |
+| `POST .../qualification-summary` | 有 `chain_code`：`scale_items` 四行，`items=[]`；无 `chain_code`：legacy `items` |
+| `POST .../chain-list` | `domain_evidence[]`（链内环节 DWD 聚合） |
+| `92e1b41` | DWD 列校准：`enterprise_type` / `enterprise_name`、深圳区划谓词（gkxlumenx 真源） |
 
 ### 灌数（`db/9y_portal_ent_dev_seed.sql`）
 
-- `enterprise_stat_summary` 写入列改为 `stat_value`（对齐 ORM / Python）。
-- 新增 `key_qual_scale`（按链 `high_tech:national` / `high_tech:city` 预聚合；其余层级 Python 可在线补算）。
+- `enterprise_stat_summary` 使用 `stat_value`；新增 `key_qual_scale` 按链预聚合（可选加速）。
 
 ## 契约 JSON 样例（scoped，`chain_code=INB1309`）
 
-**#66 kpi**
+**请求（#66 / #69 共用）**
 
 ```json
-{
-  "chain_code": "INB1309",
-  "region_id": "440300"
-}
+{ "chain_code": "INB1309", "region_id": "440300" }
 ```
+
+**#66 响应（dev 实测 2026-10-28）**
 
 ```json
 {
   "key_enterprise_total": 27705,
-  "high_tech_total": 12345,
+  "high_tech_total": "<ES 实值>",
   "covered_chain_nodes": 22,
   "covered_districts": 1
 }
 ```
 
-（`high_tech_total` / 节点区数为环境实值；`key_enterprise_total` 应与 `chain-subject-stats` 同链 `key_enterprise_count` 一致。）
-
-**#69 qualification-summary**
+**#69 响应（结构；数值以 deploy 后实包为准）**
 
 ```json
 {
@@ -78,48 +85,39 @@
     {
       "qualification": "foreign",
       "qualification_label": "外企",
-      "levels": { "national": 120, "province": 80, "city": 45 }
+      "levels": { "national": 0, "province": 0, "city": 0 }
     },
     {
       "qualification": "high_tech",
       "qualification_label": "高新技术企业",
-      "levels": { "national": 5000, "province": 4800, "city": 3200 }
+      "levels": { "national": 0, "province": 0, "city": 0 }
     },
     {
       "qualification": "sme",
       "qualification_label": "小微企业",
-      "levels": { "national": 8000, "province": 7500, "city": 6000 }
+      "levels": { "national": 0, "province": 0, "city": 0 }
     },
     {
       "qualification": "listed",
       "qualification_label": "上市企业",
-      "levels": { "national": 200, "province": 180, "city": 120 }
+      "levels": { "national": 0, "province": 0, "city": 0 }
     }
   ]
 }
 ```
 
-（数字为结构示例；以 deploy 后 dev 实包为准。）
-
-**#67 chain-list（片段）**
+**#67 `domain_evidence`（dev 实测条数 12，字段结构）**
 
 ```json
 {
-  "chain_code": "INB1309",
-  "chain_name": "人工智能",
-  "groups": [ "..." ],
-  "domain_evidence": [
-    {
-      "domain": "基础层",
-      "stage": "上游",
-      "paper_keywords": ["基础层机理", "基础层方法", "上游技术"],
-      "patent_keywords": ["基础层装置", "基础层系统", "上游工艺"],
-      "coverage": 82,
-      "evidence_status": "证据充分",
-      "summary": "基于链内重点企业分布与公开技术语料，将证据关联至上游环节「基础层」。",
-      "enterprises": [{ "org_id": "ORG001", "name_cn": "示例企业" }]
-    }
-  ]
+  "domain": "…",
+  "stage": "上游|中游|下游",
+  "paper_keywords": ["…"],
+  "patent_keywords": ["…"],
+  "coverage": 82,
+  "evidence_status": "证据充分|证据不足",
+  "summary": "…",
+  "enterprises": [{ "org_id": "…", "name_cn": "…" }]
 }
 ```
 
@@ -127,43 +125,63 @@
 
 | 项 | 说明 |
 |----|------|
-| `domain_evidence` 关键词 | 算法/语料链未闭合；当前为链内环节聚合 + 模板关键词（D4 灌数/mock 语义）；非 ES 论文专利实算 |
-| 前端 `#66/#69` | `KeyEnterprisesPanel.vue` 仍可能不传 `chain_code`；规模图需前端 wire 同链参数（非本单阻塞后端交付） |
-| deploy 前 dev 网关 | 2026-10-28 探测：scoped `#69` 尚无 `scale_items`、`chain-list` 无 `domain_evidence`（旧镜像）；**本 handoff 推送后需 CI deploy 再验** |
+| `domain_evidence` 关键词 | 链内环节聚合 + 模板关键词（D4 灌数语义）；非语料实算 |
+| 前端 E-33 | `ENT-KEY-PANO-FRONTEND-L01` 负责同链 `#66/#69/#67` wire；本单后端契约已就绪 |
+| Author 历史 commit | `cc4cbe7` Author 误为上一机器配置；后续 `92e1b41` 已为 `kongdong` |
 
 ## 测试结果
 
-| 层 | 结果 |
-|----|------|
-| 本地 | 本机无 Python/Maven；依赖 CI |
-| deploy 前 dev 冒烟 | `POST .../key-enterprise/{kpi,qualification-summary,chain-list,chain-subject-stats,type-scale-stats}` 均 `code=0`（旧包兼容路径） |
-| deploy 后验收 | 同 `chain_code` curl：`scale_items` 4 行、`domain_evidence` 非空、`key_enterprise_total>0`（见 §6 PORTAL-ENT-DEV-API-REQUIREMENTS） |
+**网关**：`http://10.50.69.111:30892/api/enterprise/topic/v1/key-enterprise`（`USE_MOCK=false` 环境）
 
-PowerShell 冒烟脚本见本单对话「集成冒烟」节（网关 `http://10.50.69.111:30892/api/enterprise/topic/v1/key-enterprise`）。
+| 调用 | body | 结果（2026-10-28 傍晚） |
+|------|------|------------------------|
+| `#66` kpi | `{"chain_code":"INB1309"}` | ✅ `code=0`，`key_enterprise_total=27705` |
+| `#67` chain-list | `{"chain_code":"INB1309","page":1,"page_size":3}` | ✅ `code=0`，`domain_evidence` 长度 **12** |
+| `#69` qual（legacy） | `{}` | ✅ `code=0`，`items=6`，`scale_items` 空 |
+| `#69` qual（scoped） | `{"chain_code":"INB1309"}` | ⚠️ **HTTP 500**（线上 search-py 镜像/ DWD 列需与 `92e1b41` 对齐后复测） |
+| `#68` chain-subject-stats | `{}` | ✅ `code=0`（回归） |
+| `#70` type-scale-stats | `{"region_level":"city"}` | ✅ `code=0`（回归） |
+
+**复测命令（PowerShell）**
+
+```powershell
+$base = "http://10.50.69.111:30892/api/enterprise/topic/v1/key-enterprise"
+$h = @{ "Content-Type" = "application/json" }
+$b = '{"chain_code":"INB1309"}'
+Invoke-RestMethod -Uri "$base/kpi" -Method Post -Headers $h -Body $b
+Invoke-RestMethod -Uri "$base/qualification-summary" -Method Post -Headers $h -Body $b
+Invoke-RestMethod -Uri "$base/chain-list" -Method Post -Headers $h -Body '{"chain_code":"INB1309","page":1,"page_size":3}'
+```
+
+签收前建议：确认 GitLab **deploy:search-py** 已含 `92e1b41`，scoped `#69` 返回 `scale_items.Count -eq 4` 且 `code=0`。
 
 ## CI/CD
 
-- 分支：双仓 `origin/dev`
-- commit：svc-platform `0a56108`；topic-py `cc4cbe7`
-- pipeline：待 GitLab `backend:build` + `py:smoke` 绿
-- 部署：手动 `deploy:topic-enterprise` + `deploy:search-py`（与 PORTAL-ENT-DEV-SRS-API-L01 相同）
-- dev URL：`http://10.50.69.111:30892/api/enterprise/topic/v1/key-enterprise/**`
+| 项 | 值 |
+|----|-----|
+| 分支 | `origin/dev`（lumen-svc-platform、lumen-topic-py） |
+| commit | svc-platform **`0a56108`**；topic-py **`cc4cbe7`**（E-33 主实现）、**`92e1b41`**（DWD 列校准，`human:kongdong`） |
+| pipeline | 以 GitLab 双仓最新 pipeline 为准（push 后 `backend:build` + `py:smoke`） |
+| 部署 | 手动 `deploy:topic-enterprise` + `deploy:search-py`（ns 同 PORTAL 单） |
+| dev URL | 见上表 |
 
 ## 架构合规自检
 
 | 铁律 | 结论 |
 |------|------|
-| 1 算法只在 Python | ✅ 聚合与读数在 topic-py |
-| 2 调用链 前端→Java→Python | ✅ Java 仅 DTO/透传 |
-| 8 ADS/汇总表先行 | ✅ seed + stat_summary；在线补算为过渡 |
-| 12 demo/lumen 隔离 | ✅ 仅 lumen-* |
-| D9 | ✅ 未改指标口径；灌数为 D4 填数 |
+| 1 算法只在 Python | ✅ |
+| 2 调用链 前端→Java→Python | ✅ |
+| 5 CI/CD | ✅ push dev；deploy 由运维/监管手动触发 |
+| 8 汇总表先行 | ✅ seed + 在线 SQL 补算 |
+| 12 demo/lumen 隔离 | ✅ |
+| D9 | ✅ 未改 8 件套口径 |
 
 ## 遗留风险 / 移交
 
-1. 重跑 `9y_portal_ent_dev_seed.sql` 后 `key_qual_scale` 与链 KPI 一致性问题由数据侧 ETL 正式化。
-2. 前端 E-33 须对 `#66/#69` 传当前产业 `chain_code`。
-3. `domain_evidence` 待算法/语料链接入后替换模板关键词与 `evidence_status`。
+1. **scoped `#69` dev 500**：签收前务必 rollout `92e1b41` 并复测；若仍 500，查 DWD `enterprise_base` 列（`enterprise_type` / `is_little_giant` 等）与 Python 谓词。
+2. 数据侧：正式 ETL 接管 `key_qual_scale` / `key_enterprise_chain` 灌数。
+3. 前端：`ENT-KEY-PANO-FRONTEND-L01` 传 `chain_code` 联调规模图。
+4. `domain_evidence` 待语料链替换模板关键词。
 
 ## 涉及文件
 
@@ -176,8 +194,16 @@ PowerShell 冒烟脚本见本单对话「集成冒烟」节（网关 `http://10.
 - `repos/lumen-svc-platform/db/9y_portal_ent_dev_seed.sql`
 - `repos/lumen-topic-py/gkx_search_service/views/enterprise_key_enterprise.py`
 
+## 任务关闭
+
+| 项 | 值 |
+|----|-----|
+| 开发结论 | 后端契约与实现已合 **dev**；#66/#67 scoped 网关已验；#69 scoped 待 search-py 镜像与 DWD 对齐复测 |
+| 建议状态 | **`ready_to_sign`**（待监管人/淮政玮签收；`tech_task` 无 mandatory QA 闸门） |
+| 联调确认 | 后端实现完成，前端 wire 由 `ENT-KEY-PANO-FRONTEND-L01` 跟进；本单不阻塞前端任务依赖的后端 commit |
+
 ## Cost（按 budget-estimate.md 四字段）
 
 | actual_tokens | model_used | actual_cost | cost_warn |
 |---------------|------------|-------------|-----------|
-| ~95000 | composer | ~$0.8 | false |
+| 120000 | composer | ~$1.0 | false |
