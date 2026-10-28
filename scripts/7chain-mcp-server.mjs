@@ -3,14 +3,16 @@
  * gkx-7chain MCP · M1（CROSS-MCP-7CHAIN-L02）
  *
  * stdio JSON-RPC，循环同 scripts/metric-mcp-server.mjs。
- * HTTP 只打 GKX_MCP_API_BASE（demo 网关）。禁止直连 demo-algo-* / lumen-algo-py / Neo4j。
+ * HTTP 只打 GKX_MCP_API_BASE（demo 网关）。search-policy 的关键词列表与详情改打
+ * GKX_MCP_POLICY_BASE（lumen 网关 Java /policy/topic/v1/policy/search 与 /docs）。
+ * 禁止直连 demo-algo-* / lumen-algo-py / Neo4j，禁止直连 Python /internal/*。
  * 现网入口：NodePort 反代 /api → demo-platform-gateway。
  * 产业链 Java 门面在 gkx-innov /v1/industry/**；全局过滤器已剥第一段，
  * 所以网关路径是 /innov/v1/industry/**。/topic 路由再配 StripPrefix 会剥成 /industry/** 并 404。
  * /chain/v1/chain/** 落到 /v1/chain/**，控制器不在那里。
  *
- * ponytail: search-enterprise 用图谱 center 近似检索（没有独立 search API）。
- * 升级路径：网关出现统一企业检索后只改 searchEnterprise 这一条。
+ * search-enterprise 走专题页智能搜索：POST /enterprise/topic/v1/search/smart。
+ * 基址与政策检索相同（GKX_MCP_POLICY_BASE，lumen 网关）；可用 GKX_MCP_ENTERPRISE_BASE 覆盖。
  * ponytail: ent-recommend 把 industry 原样放进 body。现网 attract/cultivate 不按 industry 过滤，
  * 名单以返回为准，MCP 不编排名。
  */
@@ -225,6 +227,20 @@ function gatewayBase() {
   return assertBase((process.env.GKX_MCP_API_BASE || '').trim(), 'GKX_MCP_API_BASE');
 }
 
+function policyBase() {
+  return assertBase((process.env.GKX_MCP_POLICY_BASE || '').trim(), 'GKX_MCP_POLICY_BASE');
+}
+
+function enterpriseBase() {
+  const raw = (process.env.GKX_MCP_ENTERPRISE_BASE || process.env.GKX_MCP_POLICY_BASE || '').trim();
+  if (!raw) {
+    const err = new Error('GKX_MCP_ENTERPRISE_BASE 未设置（可与政策检索共用 GKX_MCP_POLICY_BASE）');
+    err.code = 'NO_BASE';
+    throw err;
+  }
+  return assertBase(raw, 'GKX_MCP_ENTERPRISE_BASE');
+}
+
 function upstreamMessage(res) {
   if (res.error) return res.error;
   if (!res.ok) {
@@ -298,20 +314,6 @@ function carried(json) {
   };
 }
 
-function enterpriseOf(node) {
-  if (!node || typeof node !== 'object') return null;
-  const enterprise_code = node.enterprise_code || node.org_id || node.id || node.node_key || null;
-  return { ...node, enterprise_code };
-}
-
-function graphNodes(json) {
-  const layers = [json, json?.data, json?.data?.graph, json?.data?.data];
-  for (const layer of layers) {
-    if (Array.isArray(layer?.nodes)) return layer.nodes;
-  }
-  return [];
-}
-
 const TOOLS = {};
 
 function define(name, description, inputSchema, validate, run) {
@@ -320,11 +322,11 @@ function define(name, description, inputSchema, validate, run) {
 
 define(
   'search-enterprise',
-  '按名称、统一社会信用代码或企业码检索企业，并可按产业、区域、类型（外企|高企|小微|上市）筛选。覆盖数据查询 L4 企业查询（US-E1-SCH）。先拿 enterprise_code 再交给 ent-evaluate / ent-diagnose。入参 q 与 industry/region/type 至少一项，limit 默认 20 上限 50。返回企业列表；命中单家时附 /v1/history 摘要。当前是 GET /entan/v1/entan/graph?center= 的实体图近似，不是独立 search。结果里的 mock / data_source / metric_id 原样保留。',
+  '按专题页「企业查询 / 智能搜索」检索企业。覆盖数据查询 L4 企业查询（US-E1-SCH）。q、industry、region、type 至少一项，拼成一条关键词，与页面智能输入一致（如「固态电池」「固态电池 深圳」）。type 只许 外企|高企|小微|上市。limit 默认 20 上限 50。POST /enterprise/topic/v1/search/smart，body 含 keyword、keywords、q、page、size。基址是 GKX_MCP_ENTERPRISE_BASE，未设时用 GKX_MCP_POLICY_BASE（lumen 网关，不是 demo 图谱）。enterprise_code 取 org_id，可交给 ent-evaluate / ent-diagnose。排序与页面默认相同：competitiveness_score desc。',
   {
     type: 'object',
     properties: {
-      q: { type: 'string', description: '名称或代码，可空，但与筛选至少给一项' },
+      q: { type: 'string', description: '智能搜索关键词，可空，但与筛选至少给一项' },
       industry: { type: 'string' },
       region: { type: 'string' },
       type: { type: 'string', enum: ['外企', '高企', '小微', '上市'] },
@@ -338,39 +340,36 @@ define(
   },
   async (args) => {
     const limit = clampLimit(args.limit, 20, 50).value;
-    const res = await gateway('GET', '/entan/v1/entan/graph', {
-      query: { center: args.q || '', entity: args.q || '', hops: 1, limit, industry: args.industry, region: args.region, type: args.type },
+    const keyword = [args.q, args.industry, args.region, args.type].map((part) => String(part || '').trim()).filter(Boolean).join(' ');
+    const base = enterpriseBase();
+    const res = await httpCall(base, 'POST', '/enterprise/topic/v1/search/smart', {
+      body: {
+        keyword,
+        keywords: [keyword],
+        q: keyword,
+        page: 1,
+        size: limit,
+        page_size: limit,
+        sort_field: 'competitiveness_score',
+        sort_order: 'desc',
+      },
     });
     const msg = upstreamMessage(res);
     if (msg) return fail(String(msg), { route: callMeta(res) });
-    const nodes = graphNodes(res.json).map(enterpriseOf).filter(Boolean);
-    const wantsFilter = Boolean(args.industry || args.region || args.type);
-    const filtered = nodes.filter((node) => {
-      if (args.industry && !includesText(node, args.industry)) return false;
-      if (args.region && !includesText(node, args.region)) return false;
-      if (args.type && !includesText(node, args.type)) return false;
-      return true;
-    });
-    // center=q 已交给图谱。筛选词若不在节点文本里，保留中心图并标明没滤上，避免把邻居全丢掉。
-    const filterApplied = !wantsFilter || filtered.length > 0;
-    const enterprises = (filterApplied ? filtered : nodes).slice(0, limit);
-    let history;
-    let history_error;
-    if (enterprises.length === 1 && enterprises[0].enterprise_code) {
-      const hist = await gateway('GET', '/entan/v1/history', { query: { org_id: enterprises[0].enterprise_code } });
-      const histMsg = upstreamMessage(hist);
-      if (histMsg) history_error = String(histMsg);
-      else {
-        const timeline = hist.json?.data?.timeline;
-        history = Array.isArray(timeline) ? { ...hist.json.data, timeline: timeline.slice(0, 5), timeline_total: timeline.length } : hist.json?.data;
-      }
-    }
+    const data = res.json?.data && typeof res.json.data === 'object' ? res.json.data : {};
+    const list = Array.isArray(data.list) ? data.list : [];
+    const enterprises = list.slice(0, limit).map((item) => ({
+      ...item,
+      enterprise_code: item?.org_id || item?.enterprise_code || item?.social_credit_code || null,
+      name: item?.name_cn || item?.name || null,
+    }));
     return finish(callMeta(res), {
       enterprises,
-      filter_applied: filterApplied,
+      total: data.total ?? enterprises.length,
+      page: data.page ?? 1,
+      size: data.size ?? limit,
+      mode: 'smart',
       ...carried(res.json),
-      history,
-      history_error,
     });
   },
 );
@@ -402,7 +401,7 @@ define(
 
 define(
   'search-policy',
-  '按标题、产业、效力层级检索政策，或用 subject_id 反查可匹配政策。覆盖数据查询 L4 政策查询。limit 默认 20。列表走 GET /policy/v1/policy/mock/policies，返回必须 data_source=mock，不得说成已入库。反查走 GET /policy/v1/policy/match。时序和区域对比用 policy-indicators。',
+  '按标题或关键词检索政策，并可按效力层级、产业词筛选；或用 subject_id 反查可匹配政策。覆盖数据查询 L4 政策查询。limit 默认 20。关键词列表走 lumen Java GET /policy/topic/v1/policy/search（q 与 keyword 同词，与专题页智能检索一致），再对每条 GET /policy/topic/v1/policy/docs/{id}，详情里的 content 原样带回。基址是 GKX_MCP_POLICY_BASE，不是 demo mock 清单。反查仍走 demo GET /policy/v1/policy/match。时序和区域对比用 policy-indicators。',
   {
     type: 'object',
     properties: {
@@ -430,23 +429,39 @@ define(
       const rows = (asArray(res.json) || []).slice(0, limit);
       return finish(callMeta(res), { policies: rows, mode: 'match', ...carried(res.json) });
     }
-    const res = await gateway('GET', '/policy/v1/policy/mock/policies', {
-      query: { q: args.q, level: args.level, industry: args.industry, limit },
+    const base = policyBase();
+    const keyword = [args.q, args.industry].map((part) => String(part || '').trim()).filter(Boolean).join(' ');
+    const res = await httpCall(base, 'GET', '/policy/topic/v1/policy/search', {
+      query: { q: keyword, keyword, level: args.level, limit },
     });
     const msg = upstreamMessage(res);
     if (msg) return fail(String(msg), { route: callMeta(res) });
-    let rows = asArray(res.json) || [];
-    if (args.q) rows = rows.filter((row) => includesText(row, args.q));
-    if (args.level) rows = rows.filter((row) => includesText(row, args.level));
-    if (args.industry) rows = rows.filter((row) => includesText(row, args.industry));
+    const data = res.json?.data && typeof res.json.data === 'object' ? res.json.data : {};
+    const items = Array.isArray(data.items) ? data.items.slice(0, limit) : [];
+    const policies = await Promise.all(items.map((item) => withPolicyDetail(base, item)));
     return finish(callMeta(res), {
-      policies: rows.slice(0, limit),
-      mode: 'list',
-      data_source: 'mock',
-      mock: true,
+      policies,
+      total: data.total,
+      honesty: data.honesty,
+      mode: 'search',
+      ...carried(res.json),
     });
   },
 );
+
+async function withPolicyDetail(base, item) {
+  const id = item?.policy_id || item?.id;
+  if (!id) return { ...item, detail_error: '缺少 policy_id' };
+  const doc = await httpCall(base, 'GET', `/policy/topic/v1/policy/docs/${encodeURIComponent(id)}`);
+  const docMsg = upstreamMessage(doc);
+  if (docMsg) return { ...item, detail_error: String(docMsg) };
+  const payload = doc.json?.data;
+  const detail = payload?.item;
+  if (!detail || typeof detail !== 'object') {
+    return { ...item, detail_error: '详情为空', detail_honesty: payload?.honesty };
+  }
+  return { ...item, ...detail, detail_honesty: payload?.honesty };
+}
 
 define(
   'synth-index',
