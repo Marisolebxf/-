@@ -43040,7 +43040,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-10-28 补齐契约登记：OpenAPI 契约（gen-openapi.py）补 relations.remark、attrs.definition/unit（对齐 390d85d 后端实现），两版 JSON 重生成（104/96 路径）并推远程 ef88b93c。至此 RELTYPE-CRUD 全链路（DDL/后端/契约/文档）闭环
+      2026-10-28 补充修复并部署（1fb10e2，pipeline 3192 image+deploy 绿）：久新报的 relations/create bad SQL 根因=前轮 sed 批量编辑误删 insertRelation lambda 的 return ps（编译失败导致线上跑的还是旧包）+remark 列缺 INSERT。已修：SQL 加 remark 列+参数 9 位对齐+补 return ps。真机验证：create 用字典值+remark → 200 成功；insight 200 正常。此修复同时覆盖 RELDEF-CRUD 的前置依赖（类型字典+remark 字段已全可用）
     depends_on: []
     definition_of_done:
       - "新表 cms_kg_relation_type（entity_type+name 唯一约束，软删列）DDL 入仓并真库执行"
@@ -43050,7 +43050,7 @@ tasks:
       - "存量关系 type 值自动导入为对应实体类型字典初始行"
       - "编译绿 + 真库冒烟（四 tab 各建/查/改/删一轮）"
       - "OpenAPI 契约登记 + handoff"
-    update_time: "2026-10-28T09:58:27+08:00"
+    update_time: "2026-10-28T17:21:14+08:00"
   - id: CMS-JX-RELDEF-CRUD-L01
     title: "关系定义层 CRUD（A 方案：公共字段+每类专属 JSON，对齐原型六家族）"
     status: "pending_test"
@@ -43430,13 +43430,14 @@ tasks:
       - "registry evidence 回填+状态 integration；完工停本地待人工验收"
     update_time: "2026-10-28T03:13:59+08:00"
   - id: CHAIN-PANORAMA-NARRATE-L01
+    blocked_by: "监管人 human:徐滕强 2026-10-28 裁定：产业全景本期不落 LLM（structureSummary 薄润色不纳入验收）；改补 as-built 设计文档。NARRATE 实现搁置。"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-28T01:36:10.212Z"
     last_seen_at: "2026-10-28T01:36:10.212Z"
     lock_until: "2026-10-29T01:36:10.212Z"
     claimed_by: "agent:coordinator-agent"
     title: "产业全景（panorama）— narrative v1 代差补齐（prompt 外置+三态统一）"
-    status: "ready"
+    status: "blocked"
     agent: "algorithm-agent"
     epic: "DOC-CHAIN-PANORAMA"
     priority: "P1"
@@ -43466,7 +43467,7 @@ tasks:
       - "temperature 写死 + 单测补三态用例（可注入/等价）；全仓回归绿"
       - "默认不改 Java 对外契约；FE 零改动自动生效（structureSummary 同源回显）；不碰 RustFS"
       - "handoff + cost 四字段 + ponytail: full；registry 状态流转+evidence；完工停本地待人工验收"
-    update_time: "2026-10-28T09:36:19+08:00"
+    update_time: "2026-10-28T17:37:37+08:00"
   - id: LUMEN-INTEL-MOCK-INV-L01
     model_used: "cursor-grok-4.7"
     evidence: "agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md"
