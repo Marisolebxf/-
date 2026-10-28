@@ -43463,3 +43463,82 @@ tasks:
       - "默认不改 Java 对外契约；FE 零改动自动生效（structureSummary 同源回显）；不碰 RustFS"
       - "handoff + cost 四字段 + ponytail: full；registry 状态流转+evidence；完工停本地待人工验收"
     update_time: "2026-10-28T09:36:19+08:00"
+  - id: LUMEN-INTEL-MOCK-INV-L01
+    title: "综合智能分析 — 盘点 lumen-ui-topic 三叶 mock 接口清单"
+    status: "ready"
+    agent: "frontend-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      只读分析，不认领后不改 lumen-ui-topic。行清单是 LUMEN-INTEL-IMPL-XREF-L01 与 LUMEN-INTEL-METRIC-XREF-L01 的行主键。真源：src/mock/intel/*、src/mock/register.ts 的 synth*Batch、src/mock/enterprise/analysisTaskStore.ts、API-SYNTH-INTEL-REPLICA-PLAN.md §2。
+    collaborators:
+      - "algorithm-agent"
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/API-SYNTH-INTEL-REPLICA-PLAN.md"
+      - "repos/lumen-ui-topic/src/mock/intel/"
+      - "repos/lumen-ui-topic/src/api/enterprise/types/analysisTask.ts"
+    definition_of_done:
+      - "只读盘点 lumen-ui-topic 综合智能分析 mock：跑批快照三键（synthVitalityBatch/synthElementBatch/synthCollabBatch）、任务中心六个 analysisType（region_innovation_vitality|elements|collaboration 及对应 _report）、复用的 #102–#109；每条写清注册键、HTTP 路径、入参、结果 JSON 顶层字段、挂载页面"
+      - "intelMetricSeed 与 synthReadinessSeed 中出现的 metric_id 逐条列出，并标注它挂在哪个 mock 结果字段/页面数字上；不改种子、不改业务代码"
+      - "handoff 落 agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md，表格行主键固定为「注册键或 analysisType + 字段路径」，供后续实现对照与指标对照接行"
+    update_time: "2026-10-28T10:00:01+08:00"
+  - id: LUMEN-INTEL-IMPL-XREF-L01
+    title: "综合智能分析 — mock 对照 system-ui-test 与算法 preview 实现"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      对照面：专题三叶 mock（活力/ 要素/ 协同的 batch-snapshot 与 region_innovation_* 任务）对 demo-ui-system-test 产业综合（vitality、element-type/layer/domain/synthesis、synergy 等）以及算法 preview catalog/comp.json（comp.vitality、comp.element-*、comp.synergy、comp.*-outcome）。不要把产业综合十模型整包当成专题三叶的同构实现，逐行判定对应、部分对应、无对应。依赖清单单未完成前保持 backlog。
+    depends_on:
+      - "LUMEN-INTEL-MOCK-INV-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "repos/demo-ui-system-test/src/views/industry-comp/industryCompMenuConfig.ts"
+      - "repos/lumen-ui-algo-apiview/src/catalog/comp.json"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md"
+    definition_of_done:
+      - "以 LUMEN-INTEL-MOCK-INV-L01 清单每一行为主键，对照 demo-ui-system-test 产业综合页（src/views/industry-comp/industryCompMenuConfig.ts 与 compModelCatalog.ts）：标注已有页面/slug、仅同名不同契约、或无对应"
+      - "同行对照 lumen-ui-algo-apiview src/catalog/comp.json：写明 endpoint id、path、runtime、status（如 local_mock / unavailable）；区分「preview 有目录但未接真实算法」与「已有 compute 实现」"
+      - "handoff 落 agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-IMPL-XREF-L01.md；只标对应关系，不改 demo-ui-system-test、不改 algo-apiview、不开 LUMEN-INTEL-BE-1"
+    update_time: "2026-10-28T10:00:18+08:00"
+  - id: LUMEN-INTEL-METRIC-XREF-L01
+    title: "综合智能分析 — mock 挂载指标与指标库对应关系"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "指标只走 metric-registry MCP。已知种子起点包括 M_SYNTH_VIT_*、M_SYNTH_ELEM_*、M_SYNTH_COLLAB_*（以 intelMetricSeed.ts 实际导出为准，不在本单预填齐套结论）。依赖清单单未完成前保持 backlog。"
+    depends_on:
+      - "LUMEN-INTEL-MOCK-INV-L01"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "repos/lumen-ui-topic/src/mock/intel/intelMetricSeed.ts"
+      - "agent-delivery/metric-mcp-usage-guide.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md"
+    definition_of_done:
+      - "以 LUMEN-INTEL-MOCK-INV-L01 列出的 metric_id 为行，逐条调用 metric-registry MCP metric-get：记录是否在库、中文名、algorithm_type、D1；禁止直接读 metrics/registry YAML"
+      - "差集两列：mock 种子有而指标库无；指标库 SYNTH 域有而三叶 mock 未挂。只标对应关系，不改口径、不改 seed、不把 D1 改绿"
+      - "handoff 落 agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-METRIC-XREF-L01.md，行主键与清单单一致（metric_id）"
+    update_time: "2026-10-28T10:00:25+08:00"
