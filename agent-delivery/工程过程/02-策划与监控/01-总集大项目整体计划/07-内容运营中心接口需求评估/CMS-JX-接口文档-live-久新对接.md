@@ -56,6 +56,10 @@ X-CMS-Operator: {操作人姓名或账号}
 { "code": 0, "msg": "ok", "data": { "total": 123, "page": 1, "size": 20, "records": [ ] } }
 ```
 
+### 1.3.1 响应 data.records 内字段说明
+
+> 列表/详情类接口的信封 `data.records[]` 内的业务字段，**在该接口自己的小节内定义**（如"关系·列表"的定义区块）；本节只约定信封结构。若小节内响应表仅列 code/msg/data 三行，表示 `data` 结构见对应请求小节说明或为简单确认（如 `{id, deleted}`）。
+
 ### 1.4 错误码
 
 | code | HTTP | 语义 |
@@ -1917,6 +1921,8 @@ _（本接口无额外字段说明，见通用约定）_
 | msg | string | 否 |  |
 | data | object | 否 |  |
 
+**`data.records[]` 字段**：id（关系行id）、fromEntityId/fromName（源实体）、type（关系类型）、toEntityId/toName（目标实体）、status（状态）、since（建立时间）、**remark（关系说明）**、breakTime（断裂时间，仅已断裂）。
+
 
 #### 3.18.2 关系·详情
 
@@ -1941,6 +1947,8 @@ _（本接口无额外字段说明，见通用约定）_
 | code | integer | 否 |  |
 | msg | string | 否 |  |
 | data | object | 否 |  |
+
+**`data` 字段**：id、fromEntityId/fromName（源实体）、type（关系类型）、toEntityId/toName（目标实体）、status（状态）、since（建立时间）、**remark（关系说明）**、breakTime（断裂时间，仅已断裂）。
 
 
 #### 3.18.3 关系·新建
@@ -2106,6 +2114,8 @@ _（本接口无额外字段说明，见通用约定）_
 | msg | string | 否 |  |
 | data | object | 否 |  |
 
+**`data.records[]` 字段**：id（属性行id）、name（属性名）、group（base基础/dyn动态）、dtype（数据类型）、**definition（定义）**、**unit（单位）**、constraint（约束条件）、value（当前值）、order（排序）。
+
 
 #### 3.19.2 属性·新增
 
@@ -2134,6 +2144,42 @@ _（本接口无额外字段说明，见通用约定）_
 | code | integer | 否 |  |
 | msg | string | 否 |  |
 | data | object | 否 |  |
+
+**`data.records[]` 字段**：id（属性行id）、name（属性名）、group（base基础/dyn动态）、dtype（数据类型）、**definition（定义）**、**unit（单位）**、constraint（约束条件）、value（当前值）、order（排序）。
+
+
+#### 3.19.3 属性·编辑
+
+`POST /api/open/cms/v1/kg/{entityType}/attrs/update`
+
+**路径枚举段**
+
+| 字段 | 说明 |
+|---|---|
+| {entityType} | 取值: industry / enterprise / policy / service |
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| name | string | 否 |  |
+| group | string | 否 | 枚举: base/dyn |
+| dtype | string | 否 |  |
+| constraint | string | 否 |  |
+| value | string | 否 |  |
+
+**响应 `data`**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| code | integer | 否 |  |
+| msg | string | 否 |  |
+| data | object | 否 |  |
+
+**`data.records[]` 字段**：id（属性行id）、name（属性名）、group（base基础/dyn动态）、dtype（数据类型）、**definition（定义）**、**unit（单位）**、constraint（约束条件）、value（当前值）、order（排序）。
+
+
+*`data.records[]` 字段**：id（属性行id）、name（属性名）、group（base基础/dyn动态）、dtype（数据类型）、**definition（定义）**、**unit（单位）**、constraint（约束条件）、value（当前值）、order（排序）。
 
 
 #### 3.19.3 属性·编辑
@@ -2424,7 +2470,35 @@ _（本接口无额外字段说明，见通用约定）_
 
 ---
 
-### 3.18.1 关系·LLM 策略/分析意见（2026-10-27 新增）
+### 3.18.1.1 关系类型字典（2026-10-27 新增，四端点）
+
+`{entityType}` ∈ enterprise | policy | service
+
+| 操作 | 接口 | body |
+|---|---|---|
+| 列表 | `POST .../relation-types/list` | `{}` |
+| 新增 | `POST .../relation-types/create` | `{"name":"类型名"}` |
+| 编辑 | `POST .../relation-types/update` | `{"id":"1","name":"新名"}` |
+| 删除 | `POST .../relation-types/delete` | `{"id":"1","reason":"原因"}`（被关系引用时 40901） |
+
+新建关系弹窗的"关系类型"建议改从此接口下拉取值（替代手填）。
+
+### 3.18.1.2 关系定义层（2026-10-27 新增，四端点，方案 A）
+
+带富字段的关系定义层：除名称外含定义描述 + 该类实体专属字段（extra 对象：enterprise=mode 合作模式/terms 合同条款；policy=effect 执行效果/feedback 反馈；service=content 服务内容/effect 服务效果；industry=participants 参与方）。
+
+| 操作 | 接口 | body |
+|---|---|---|
+| 列表 | `POST .../rel-defs/list` | `{}` |
+| 新增 | `POST .../rel-defs/create` | `{"name":"…","definition":"…","extra":{…},"order":1}` |
+| 编辑 | `POST .../rel-defs/update` | `{"id":"…","name":"…","definition":"…","extra":{…}}` |
+| 删除 | `POST .../rel-defs/delete` | `{"id":"…","reason":"原因"}`（被关系实例引用时 40901） |
+
+原型对照：企业=企业合作链定义（联合研发/供应链协作）、政策=政策传导关系定义（纵向/跨部门）、服务=服务机构引扶（客户服务/合作伙伴）、产业=产业链关系定义（上游供给/下游应用）——seed 已按原型预置八条。
+
+---
+
+
 
 ```
 POST /api/open/cms/v1/kg/{entityType}/relations/insight
