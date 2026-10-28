@@ -260,7 +260,7 @@ Python，`lumen-algo-py/vendor/entan-py`：
 
 ## 6.1 功能验收时缺项怎么补
 
-全系统规则是架构基线 **D16**、血缘规约 **§2.4**：只在库 `gkxlumenx_gapfill` 建 `gapfill_` 开头的表，由 `entan-py` 用 LLM 或其他方式灌入**计算逻辑里已经写明的缺项**。Java 和前端不建表、不灌数。生产配置不读这个库。
+全系统规则是架构基线 **D16**、血缘规约 **§2.4**：只在库 `gkxlumenx_gapfill` 建 `gapfill_` 开头的表，由 Python 用 LLM 或其他方式灌入**计算逻辑里已经写明的缺项**。Java 和前端不建表、不灌数。生产配置不读这个库。活力这一叶的灌数任务是 `LUMEN-INTEL-VIT-GAPFILL-DATA-L01`（data-agent）；建表和读路径是 `LUMEN-INTEL-VIT-GAPFILL-L01`。
 
 综合智能按这个办，不另造一套：
 
@@ -271,7 +271,7 @@ Python，`lumen-algo-py/vendor/entan-py`：
 
 ## 6.2 活力默认方案
 
-`Q-SYNTH-01`、`Q-SYNTH-V-01`、`Q-SYNTH-V-02` 仍是 🟡。本批不另开会，锁定客户决策清单里已经写下的临时默认，四张实现单都按这个算：
+`Q-SYNTH-01`、`Q-SYNTH-V-01`、`Q-SYNTH-V-02` 仍是 🟡。本批不另开会，锁定客户决策清单里已经写下的临时默认，五张实现单都按这个算：
 
 | 项 | 默认 |
 |---|---|
@@ -279,8 +279,8 @@ Python，`lumen-algo-py/vendor/entan-py`：
 | 权重 | 四维等权，各 0.25。与 `M_SYNTH_186_1` 同核，只调用一处。0.30/0.30/0.20/0.20 与熵权只作对照，不作为默认主数 |
 | 归一 | 对比集合内极值归一 |
 | 缺维 | 分母收缩，不补 0 |
-| 缺项 | §6.1 三张 `gapfill_` 表灌齐后进入公式。灌齐并实算完成前，对应指标 D4 不得改成 live |
-| 完成态 | 活力五条挂载（`M_SYNTH_VIT_INDEX`、`M_SYNTH_VIT_DIM_SCORE`、`M_SYNTH_VIT_WEIGHT`、`M_SYNTH_VIT_INDICATOR`、`M_SYNTH_VIT_RANK`）不再走 mock 占位。data-agent 把 D4 改为 live，`source_systems` 写明 `gapfill_` 批次 |
+| 缺项 | `LUMEN-INTEL-VIT-GAPFILL-L01` 建表并接入公式。`LUMEN-INTEL-VIT-GAPFILL-DATA-L01` 灌行。灌齐并实算完成前，对应指标 D4 不得改成 live |
+| 完成态 | 活力五条挂载（`M_SYNTH_VIT_INDEX`、`M_SYNTH_VIT_DIM_SCORE`、`M_SYNTH_VIT_WEIGHT`、`M_SYNTH_VIT_INDICATOR`、`M_SYNTH_VIT_RANK`）不再走 mock 占位。灌数单把 D4 改为 live，`source_systems` 写明 `gapfill_` 批次。五张单都交接后，本功能可提测 |
 
 ⓘ 可以保留「待甲方确认」。数本身按上表计算，不退回占位 JSON。
 
@@ -322,7 +322,11 @@ Python，`lumen-algo-py/vendor/entan-py`：
 | 1 | `lumen-algo-py` | `LUMEN-INTEL-VIT-PY-L01`：活力装包，按 §6.2 默认口径实算 | 不实现要素、协同 |
 | 2 | `lumen-svc-platform` | `LUMEN-INTEL-VIT-BE-L01`：只登记活力两键 | 不并行改 `LUMEN-INTEL-BE-1` 去加要素/协同 |
 | 3 | `lumen-ui-topic` | `LUMEN-INTEL-VIT-FE-L01`：只接活力页 | 等 1 和 2 的交接 |
-| 4 | `lumen-algo-py` | `LUMEN-INTEL-VIT-GAPFILL-L01`：三张缺项表灌齐后进入公式 | 灌齐并实算完成前，不得把 D4 改成 live |
-| 5 | data-agent | 五条活力指标 D4 改为 live，`source_systems` 写明 `gapfill_` 批次 | 等 4。不改要素、协同 |
+| 4 | `lumen-algo-py` | `LUMEN-INTEL-VIT-GAPFILL-L01`：建三张缺项表，并把读路径接进公式 | 不灌业务行，不改 D4 |
+| 5 | `lumen-algo-py` | `LUMEN-INTEL-VIT-GAPFILL-DATA-L01`：data-agent 灌 `gapfill_` 行；实算成功后五条活力指标 D4 改为 live，`source_systems` 写明 `gapfill_` 批次 | 等 1、2、3、4 都交接。灌齐并实算完成前不得改 live |
 
-1 和 2 可以并行。3 等 2 的白名单。4 等 1 的装包函数。5 等 4 的实算结果。WBS 索引在 `工程过程/02-策划与监控/02-智树工作计划/02-进度/01-自研模块WBS.md` 的「区域创新活力分析」行。
+1 和 2 可以并行。3 等 1 和 2 的交接。4 等 1 的装包函数。5 等前四张单交接后再灌数、再改 D4。
+
+五张单都交接之后，区域创新活力分析可提测：`USE_MOCK=false`，默认条件深圳 × 全国重点城市 × 最近3年，开始分析走真实任务，结果按 §6.2 实算，五条 D4 为 live，页面没有 🧪。缺任何一张都不提测。不另开测试单。
+
+WBS 索引在 `工程过程/02-策划与监控/02-智树工作计划/02-进度/01-自研模块WBS.md` 的「区域创新活力分析」行。
