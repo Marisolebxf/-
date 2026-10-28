@@ -6,10 +6,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | `agent:algorithm-agent` |
-| supervised_by | `human:唐绍祖` |
+| claimed_by | `human:淮政玮` |
+| supervised_by | `human:淮政玮` |
 | claim_type | `pull` |
-| 说明 | 用户要求连续执行。监管人取 `dispatch-rules.yaml` algorithm-agent 默认监管。行主键来自 `LUMEN-INTEL-MOCK-INV-L01`（该单 `ready_to_sign`，handoff 已落盘，尚未签收 `done`）。 |
+| 说明 | 2026-10-28 改由淮政玮本人认领。对照结论未改：三叶 mock 与 system-ui-test、算法 preview 无同路径实现。行主键来自 `LUMEN-INTEL-MOCK-INV-L01`。 |
 
 ## Ponytail
 

@@ -6,10 +6,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | `agent:data-agent` |
-| supervised_by | `human:徐滕强` |
+| claimed_by | `human:淮政玮` |
+| supervised_by | `human:淮政玮` |
 | claim_type | `pull` |
-| 说明 | 用户要求连续执行。监管人取 `dispatch-rules.yaml` data-agent 默认监管。行主键来自 `LUMEN-INTEL-MOCK-INV-L01`。 |
+| 说明 | 2026-10-28 改由淮政玮本人认领。指标对照结论未改：21/22 在库，缺 `M_SYNTH_ELEM_FOUR_DIM_SCORE`。行主键来自 `LUMEN-INTEL-MOCK-INV-L01`。 |
 
 ## Ponytail
 
