@@ -43992,3 +43992,35 @@ tasks:
       - "7chain-mcp-usage-guide.md 缺口与 GKX_MCP_POLICY_BASE 现状在 handoff 登记（只记录不实现，实现属 M3）"
       - "执行方状态上限 ready_to_sign，done 由验收方（human:唐绍祖 或升级 human:淮政玮）签发，禁跳态"
     update_time: "2026-10-28T23:38:51+08:00"
+  - id: LUMEN-INTEL-VIT-GAPFILL-DBA-L01
+    title: "区域创新活力 — 缺项库建库建表授权（DBA 真人单）"
+    status: ready
+    assigned_to: human:徐滕强
+    supervised_by: human:淮政玮
+    epic: E8-综合智能分析
+    priority: P1
+    repo: gkx-orchestration
+    delivery_phase: implementation
+    task_type: chore
+    effort_points: "1"
+    difficulty: S
+    estimated_tokens: 2000
+    note: |
+      2026-10-29 唐绍祖建单派发（执行 human:徐滕强，知会/验收 human:淮政玮）。
+      背景：LUMEN-INTEL-VIT-GAPFILL-L01 读路径与 DDL 已完成，但应用账号 gkxlumenx@% 无 CREATE DATABASE / GRANT 权限（已实测 Access denied），
+      建库 gkxlumenx_gapfill + 三张 gapfill_synth_* 空表 + 授权 gkxlumenx 写权限需 DBA 执行。
+      完整可复制 SQL 与核对语句见派单说明：agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-GAPFILL-DBA-L01.md
+      （DDL 正本 repos/lumen-algo-py/vendor/entan-py/scripts/mysql/create_gapfill_synth.sql，幂等可重复执行，不含 INSERT）。
+      本单完成后放行：LUMEN-INTEL-VIT-GAPFILL-L01 关单 + LUMEN-INTEL-VIT-GAPFILL-DATA-L01 灌数与 D4 改 live，区域创新活力分析可提测（2026-11-05）。
+      边界：只建 gkxlumenx_gapfill 库与 gapfill_ 前缀空表；不动 ODS/DWD/ADS/供应方库；生产配置不读该库；灌行由 DATA 单完成，本单不 INSERT。
+      执行回执写在派单说明文末「执行回执」表。
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-GAPFILL-DBA-L01.md"
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "192.168.88.43:3306 上执行派单说明第五节全量 SQL：建库 gkxlumenx_gapfill（utf8mb4）+ 三张 gapfill_synth_* 表 + GRANT ALL（或最小 SELECT,INSERT,UPDATE,DELETE）给 gkxlumenx@%"
+      - "核对：information_schema 查询 gapfill_synth_% 恰 3 行；三表 COUNT(*) 均为 0；SHOW GRANTS FOR 'gkxlumenx'@'%' 含 gkxlumenx_gapfill 授权"
+      - "执行回执落派单说明文末表格（日期/执行人/核对结果）或群内 @唐绍祖"
+      - "未动任何现有 gkxlumenx_* 业务库；未写入 ODS/DWD/ADS/供应方库"
+    update_time: "2026-10-29T02:30:00+08:00"
