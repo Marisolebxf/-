@@ -6,10 +6,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | `agent:frontend-agent` |
-| supervised_by | `human:孔东` |
+| claimed_by | `human:淮政玮` |
+| supervised_by | `human:淮政玮` |
 | claim_type | `pull` |
-| 说明 | 用户要求逐张领取并执行。监管人取 `dispatch-rules.yaml` 的 frontend-agent 默认监管。 |
+| 说明 | 2026-10-28 改由淮政玮本人认领。清单内容未改：跑批三键、六个 analysisType、22 个 metric 挂载仍以本文表格为准。 |
 
 ## Ponytail
 
