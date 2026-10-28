@@ -55,6 +55,8 @@
 
 验收合规 = 基线范围内 100% 叶子有入口（FULL + INTEG + DEMO）。
 
+功能验收遇到计算逻辑已登记、源数据仍缺的字段时，按 `data-lineage-policy.md` §2.4 / 架构基线 D16：只在 `gkxlumenx_gapfill` 使用 `gapfill_` 表灌数（LLM 或其他方式）。口径未闭合时按客户决策清单里的临时默认实算。缺项补齐并实算完成后 D4 不得再是 mock，该叶按 FULL 验收，不留在 DEMO。
+
 ---
 
 ## 4. 与 PDF / DOCX
