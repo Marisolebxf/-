@@ -41450,7 +41450,7 @@ tasks:
     lock_until: "2026-10-26T16:44:42.785Z"
     claimed_by: "agent:api-agent"
     title: "服务链 8 分析页报告下载全挂 — Java 产物链扩 svc *_report 白名单（大单）"
-    status: "in_progress"
+    status: "blocked"
     agent: "api-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -41463,6 +41463,7 @@ tasks:
     estimated_tokens: 60000
     note: |
       2026-10-26 human:徐滕强 拍板：服务链全部 8 个分析页的「生成/查看报告→下载 PDF」均报「功能尚未开放或不支持的 analysisType」；根因为 10-20 LUMEN-SVC-FE-MANUAL-FIX-L01（29793b3）前端产物类型 ${leaf}_report（如 shortboard_report）未在 Java ArtifactAnalysisTypes 登记（仅企业域 3 报告 3 导出），demo 原型为纯前端 PDF 渲染可下载，lumen 复刻改走 Java 异步产物链后后端能力缺失。大单统一修 Java 侧，前端零改动。监管人 human:徐滕强。
+      2026-10-28 api-agent：全模块共性修复 6373b88 已推 dev（org_coverage matrix 兜底/org_trend heat_by_field/维度分与深圳指标中文化/narration 尾章）；Bugbot 评审 P1 两处英文 code 泄漏已修（培育四维+completeness 等，commit ecf7d34 待推），17 用例绿。P2 已登记客户决策清单 Q-SVCCHAIN-02。当前阻塞：GitLab 整站 403（nginx 层）push 被拒，恢复后 pull --no-rebase 重推。
     collaborators:
       - "qa-agent"
     touched_files:
@@ -41487,7 +41488,7 @@ tasks:
       - "测试：SvcAnalysisTypesTest / AnalysisTaskServiceImplSvcJobTest / ArtifactAnalysisTypesTest 扩 8 类型的 create→snapshot→render→asset 全链用例，mvn 全绿；禁止回归企业域 3 报告 3 导出"
       - "回归验证：K8s dev 发布后，服务链短板分析页真实发起 shortboard_report 产物任务成功并下载 PDF（截图/日志入 evidence）；其余 7 叶至少抽 2 叶验证 create 成功"
       - "handoff 按 7 项合规自检（含 D8/D9/D10/D12/D14）+ cost 四字段回填；ponytail: full"
-    update_time: "2026-10-27T22:20:21+08:00"
+    update_time: "2026-10-28T12:11:09+08:00"
   - id: DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01
     cost_warn: "green"
     model_used: "composer"
@@ -42816,8 +42817,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 120000
-    note: |
-      监管人 2026-10-28 裁定（选 B 就地扩单，不建新工单）：范围扩入 T4-T7（shortboard/shenzhen/attract/cultivate 四叶 LLM 落点），05.7.2 升 v1.1（暂缓→演示口径+口径声明可上）。scope 变更记录；实现随 QA 反馈或下批一并收口，终审 I-1'/I-2/M1 同文件顺手收口。
+    note: "监管人 2026-10-28 裁定就地扩单 T4-T7（shortboard/shenzhen/attract/cultivate 四叶 LLM 落点），05.7.2 v1.1 已推（93257257）。QA 反馈窗口未阻塞扩单实现，监管人确认开工：scope 扩入四叶，同单继续。"
     collaborators:
       - "frontend-agent"
     touched_files:
@@ -42835,7 +42835,7 @@ tasks:
       - "FE：ok 渲染 narration，fallback/skipped 退规则稿；禁止前端补数；D9 ⓘ 按设计挂点"
       - "两叶各至少 1 条线上/dev 实证 narration=ok（或可解释 fallback）；handoff 根路径 SVC-TECH-TREND-NARRATE-L01.md + cost；ponytail: full"
       - "不含：STAGE（G1/G2/G4）、T4–T7、改口径、企业/产业链工单"
-    update_time: "2026-10-28T09:51:45+08:00"
+    update_time: "2026-10-28T10:17:08+08:00"
   - id: DOC-CHAIN-DIAG-FAMILY-L01
     evidence: |
       agent-delivery/agent-handoffs/DOC-CHAIN-DIAG-FAMILY-L01.md；产物：05.2.2-产业诊断分析链路.md（v0.1，元信息表+§1-§9，Mermaid 差异 flowchart+时序图，落点表 K1-K4/B1-B5 逐点位三档判定）+ 05.2-产业链.md §8 总册指针；关键实证：FE competition/tech_trends/causes/suggestions 零消费（全仓 grep）、kpi 块错位、bottleneck 无数字白名单（差距 G2，开放项 CHAIN-DIAG-01~07）；指标态 MCP 2026-10-27 实查（KEY_NODE_COUNT/BOTTLENECK_COUNT 族 D1 aligned/D2 provisional/D3 partial/D4 mock）；QC02/QC04 只引用客户决策清单 🟡（222/224 行），OPEN-CY 未回潮；cicd: skip
@@ -43039,7 +43039,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-10-27 完成并部署（镜像 17747bbe，pipeline 3150 image+deploy 绿）。真机全链路验证 7 项全过：①list 存量 seed 导入（政策扶持/测试 2 条）②create 成功③重名 400 拒绝④update 200⑤未引用 delete 200⑥被引用 delete 40901 拒删（含计数提示）⑦四列读写正常。commit 9a400fe 已推 origin/dev。待：久新前端对接（relation-types/list 做下拉）+ OpenAPI 登记下批随其它更新一起
+      2026-10-28 补齐契约登记：OpenAPI 契约（gen-openapi.py）补 relations.remark、attrs.definition/unit（对齐 390d85d 后端实现），两版 JSON 重生成（104/96 路径）并推远程 ef88b93c。至此 RELTYPE-CRUD 全链路（DDL/后端/契约/文档）闭环
     depends_on: []
     definition_of_done:
       - "新表 cms_kg_relation_type（entity_type+name 唯一约束，软删列）DDL 入仓并真库执行"
@@ -43049,7 +43049,7 @@ tasks:
       - "存量关系 type 值自动导入为对应实体类型字典初始行"
       - "编译绿 + 真库冒烟（四 tab 各建/查/改/删一轮）"
       - "OpenAPI 契约登记 + handoff"
-    update_time: "2026-10-27T21:43:46+08:00"
+    update_time: "2026-10-28T09:58:27+08:00"
   - id: CMS-JX-RELDEF-CRUD-L01
     title: "关系定义层 CRUD（A 方案：公共字段+每类专属 JSON，对齐原型六家族）"
     status: "pending_test"
