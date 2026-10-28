@@ -59,7 +59,17 @@ STAGE（org_coverage G1/G2 指纹/G4 RustFS）、T4–T7、口径修改、企业
 - **随扩单同文件收口（2026-10-28）**：I-1' 倒装「N星…领域名」反向配对 + I-2 档位词独立词形边界（后接标点才拒，语素假阳性放行）+ M1 growth 优先读 `heat.growth_pct`（3 年窗口与星级同源）+ M2 死代码 `star_pairs` 删除。
 - 遗留跟进：M5 topic-py 30s vs narrate 20s 余量提示（观察项暂不改）；`test_tech_wrong_dim_rejected` 弱断言保留作框架回归。
 
-### 5.1.2 扩单实现（2026-10-28，T4–T7 四叶；05.7.2 v1.1 就地扩单裁定）
+### 5.1.3 二轮评审修复（2026-10-28 14:40，requesting-code-review 扩单终审）
+
+- subagent 二轮评审：**1 Critical + 2 Important + 5 Minor**。
+- **C-1 任务链路断点（Critical）**：扩单四叶 narrate 挂 algo 装配叶，但 topic-py `_LEAF_SVCAN_PATH` 仍路由 `/models/*` 读面——narration 永不到达快照，且 `/models/gap?industry=` 内部调 leaf 会白烧 LLM 调用。修：四叶路由正名至 `/analysis/{leaf}`（与 T1–T3 同法），单测断言同步 6 处。
+- **I-A tier dict 形状（Important）**：`leaf_shenzhen` 的 tier 是 dict（`{label, tier, ...}`），原 `str()` 处理使 tier 校验在真实数据上恒 fallback（T5 上线即废）。修：dict/str 双形状归一化（取 label），单测补 dict 形状用例。
+- **I-B handoff 与代码不符**：M2 star_pairs 未实际删除 → 已删。
+- M-a narrate_shortboard 死代码段删除；M-b `_parse_output` 冗余 pack 参数删除；M-c sb/sz 补 no_key 用例（自检扩至 **14 场景**）。
+- 修后复验：eco_rec 14 + tech_trend 10 + coverage 8 + 装配 34 + topic-py 21 全 PASS。
+- **教训记录**：C-1/I-A 均为「单测绿但链路断」——测试桩形状与生产信封形状有差时自检不设防；后续 narrate 类实现单 DoD 须含「生产形状信封」用例（本单已补 sz tier dict 用例）。
+
+### 5.2 扩单实现（2026-10-28，T4–T7 四叶；05.7.2 v1.1 就地扩单裁定）
 
 | 叶 | prompt 包 | narrate 模块 | 事实包/校验特有件 |
 | --- | --- | --- | --- |
