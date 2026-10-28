@@ -1,9 +1,20 @@
 # 城市创新数据监控（M_INNOV_CITY_MONITOR_GLOBAL）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_MONITOR_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py` → `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：INNOV 域（王惠 V1.6 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分析→城市创新数据监控｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_MONITOR_GLOBAL.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_MONITOR_GLOBAL.md`；复现脚本 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py` → `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CITY_MONITOR_GLOBAL.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json` |
@@ -64,14 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py`、产物 `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域（王惠 V1.6 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分析→城市创新数据监控｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（本 MD 采用王惠 V1.6 口径：投入/产出/机构三组监控面板；无指数合成，监控为原始值直出）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量部分足（四组可监控；创新基金/投资规模组库内无带 city 键的结构化表而缺项；监控宇宙限库覆盖可信区）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -107,9 +115,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「城市创新数据监控」是全球创新监测→城市创新能力分析功能组的**数据底座层**：需求原文要求「监控全球主要城市的创新基金、投资规模，创新机构、企业在创新上的投入、产生的创新成果等数据，用户可查看各城市的创新数据详情」，但需求**没有给出监控指标集的构成、口径或更新频率**。本文按王惠 V1.6 口径还原：城内机构入集后按投入（上市研发经费）、产出（专利存量与年增量）、机构（城内机构数）、政策（有效政策件数）四组原始值直出监控面板——本指标与同族 INDEX/RANK/FACTOR 系不同，**不做归一与合成**，交付物是原始值本身；它隶属于科技部国家创新调查制度「创新能力监测」一脉的**监测预警文献系**（方法族 A），需求原文的「监控」措辞与国科发创〔2017〕96 号文对「创新能力监测」的定义（基于政府统计调查对创新主体投入产出进行的跟踪监测）逐字同构。
 
-复现代码 `code/M_INNOV_CITY_MONITOR_GLOBAL.py` 已实测三城监控面板（深圳/广州/东莞，库覆盖可信区，统计窗 2019—2024）：深圳上市研发 1.366 万亿元、专利存量 133.7 万件（2024 年增量 275,908 件）、有效政策 879 件、城内机构 95,600 家；广州研发 2,640.7 亿元、专利存量 67.5 万件；东莞研发 694.7 亿元、专利存量 43.3 万件。四处结构性缺口必须直书：创新基金/投资规模组无源（`dwd_zh_project` 无城市归属键、投资表无 city 字段）、监控宇宙限粤三城（底册 99.8% 偏粤）、论文产出组因城键缺失未入面板、政策 city 字段 48.5% NULL 使城市件数偏保守 → **部分支持**，§五 对照后维持王惠口径并把「创新基金/投资规模入湖（带 city 键）」列为第一优先补数项。
+复现代码 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py` 已实测三城监控面板（深圳/广州/东莞，库覆盖可信区，统计窗 2019—2024）：深圳上市研发 1.366 万亿元、专利存量 133.7 万件（2024 年增量 275,908 件）、有效政策 879 件、城内机构 95,600 家；广州研发 2,640.7 亿元、专利存量 67.5 万件；东莞研发 694.7 亿元、专利存量 43.3 万件。四处结构性缺口必须直书：创新基金/投资规模组无源（`dwd_zh_project` 无城市归属键、投资表无 city 字段）、监控宇宙限粤三城（底册 99.8% 偏粤）、论文产出组因城键缺失未入面板、政策 city 字段 48.5% NULL 使城市件数偏保守 → **部分支持**，§五 对照后维持王惠口径并把「创新基金/投资规模入湖（带 city 键）」列为第一优先补数项。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.1.4.1.4.6 城市创新能力分析（L578）<br>```<br>1.1.1.1.4.1.4.6. **城市创新能力分析**<br>通过对全球主要城市的创新成果数据进行分析，监控创新基金、投资规模，创新机构、企业在创新上的投入、产生的创新成果等要素，通过数据模型分析计算各大城市的创新能力排名。用户可自主选择排名中的城市进行创新对标分析，了解各个城市创新能力的差异，并可以订阅关注的城市，持续跟踪其创新动态。<br>城市创新能力分析的具体功能包括城市创新数据监控、创新能力排名计算、城市对标分析、创新能力要素分析、城市订阅功能、创新政策建议。<br>```<br>#### §1.1.1.1.4.1.4.6.1 城市创新数据监控（L584）<br>```<br>1.1.1.1.4.1.4.6.1. 城市创新数据监控<br>监控全球主要城市的创新基金、投资规模，创新机构、企业在创新上的投入、产生的创新成果等数据，用户可查看各城市的创新数据详情。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_MONITOR_GLOBAL.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -231,7 +284,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 V1.6 口径撰写（公式定义人=王惠）；已由脚本 `code/M_INNOV_CITY_MONITOR_GLOBAL.py` 在 `gkx` **实测跑通**（监控城市：深圳/广州/东莞——库覆盖可信区，统计窗 2019—2024），结果见同目录 `M_INNOV_CITY_MONITOR_GLOBAL_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
+> **口径说明**：本节按王惠 V1.6 口径撰写（公式定义人=王惠）；已由脚本 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py` 在 `gkx` **实测跑通**（监控城市：深圳/广州/东莞——库覆盖可信区，统计窗 2019—2024），结果见同目录 `M_INNOV_CITY_MONITOR_GLOBAL_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：监测类功能为什么锚定国家创新调查制度文献系
 
@@ -271,7 +324,7 @@ $$Monitor(c) = \langle\; RD_{c}^{{\scriptsize 2019\text{-}2024}},\; Pat_{c}^{sto
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_CITY_MONITOR_GLOBAL.py`（本批目录 code/ 下已有，本报告复用） |
+| 计算脚本 | `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py`（本批目录 code/ 下已有，本报告复用） |
 | 结果产物 | 同目录 `M_INNOV_CITY_MONITOR_GLOBAL_out.json` |
 | 主算库 | `gkx`（三方库，2026-10-21 改源批复算） |
 | 监控城市 | 深圳/广州/东莞（库覆盖可信区） |
@@ -340,7 +393,7 @@ python3 code/M_INNOV_CITY_MONITOR_GLOBAL.py
 | 项 | 旧版（20261020） | 本版（20261021） |
 |---|---|---|
 | 数据面 | 旧演示库 `gkxlumenx_ods`（`111.198.38.90:34306`） | 三方生产库 `gkx`（`183.240.141.251:3318`，280 表 / 270 非空） |
-| 连接入口 | 脚本内直接 `pymysql.connect(database=...)` | 统一走 `code/_gkxdb.py` 的 `gkx` 配置（该模块见到旧演示库地址直接 `raise`） |
+| 连接入口 | 脚本内直接 `pymysql.connect(database=...)` | 统一走 `metrics/repro/_gkxdb.py` 的 `gkx` 配置（该模块见到旧演示库地址直接 `raise`） |
 | 表名 | `dwd_*` | 同名 `dwd_*`，只换 schema 前缀 —— 本族五指标**不存在表名映射问题** |
 | 共享取数层 | 无 | 新增 `code/_city21_common.py`：一次取回机构/高企/学者/政策/研发经费五组原始量落 `_snapshots_gkx21/city_raw_gkx.json`，五指标共用，重跑零 DB 压力 |
 
@@ -370,8 +423,8 @@ python3 code/M_INNOV_CITY_MONITOR_GLOBAL.py
 **（4）复现方式**
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
-python3 code/M_INNOV_CITY_MONITOR_GLOBAL.py          # 结果写 code/M_INNOV_CITY_MONITOR_GLOBAL_out.json
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_INNOV_CITY_MONITOR_GLOBAL.py          # 结果写 metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json
 python3 _work_gkx21/gate_check.py _staging21
 ```
 
@@ -381,7 +434,7 @@ python3 _work_gkx21/gate_check.py _staging21
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CITY_MONITOR_GLOBAL.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -473,16 +526,11 @@ python3 _work_gkx21/gate_check.py _staging21
 
 6. 深圳市市场监督管理局. (2025). 《2024 年度专利数据统计分析报告》（PCT 16,347 件、连续 21 年全国大中城市第一；累计 22.98 万件）. https://amr.sz.gov.cn/gkmlpt/content/12/12201/post_12201017.html
 
-7. OECD. (2024). *Regions and Cities at a Glance 2024 — Methodologies*（区域原始指标面板与差异统计方法）. https://www.oecd.org/en/publications/oecd-regions-and-cities-at-a-glance-2024_f42db3bf-en/full-report/methodologies_b841d611.html
+7. 中国科学技术信息研究所. (2024). 《国家创新型城市创新能力评价报告 2024》（与监测报告并行发布的双报告机制；5 维度 30 指标）. 出版信息页：https://www.dushu.com/book/14155060/
 
-8. 中国科学技术信息研究所. (2024). 《国家创新型城市创新能力评价报告 2024》（与监测报告并行发布的双报告机制；5 维度 30 指标）. 出版信息页：https://www.dushu.com/book/14155060/
+8. Eurostat. (2024). *Regions and cities — city statistics (Urban Audit)*（按统一城市定义与变量字典发布城市级原始指标，每个变量带定义/单位/参考期/来源元数据）. https://ec.europa.eu/eurostat/web/cities （页面题名实测「Overview - Regions and cities - Eurostat」）
 
-9. 项目内真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/` 同族 md（INDEX_SZ/RANK_GLOBAL/FACTOR_GLOBAL）——王惠 V1.6 城市族源表登记（本指标监控面板复用同源表集）。
-
-10. Eurostat. (2024). *Regions and cities — city statistics (Urban Audit)*（按统一城市定义与变量字典发布城市级原始指标，每个变量带定义/单位/参考期/来源元数据）. https://ec.europa.eu/eurostat/web/cities （页面题名实测「Overview - Regions and cities - Eurostat」）
-
-11. Bettencourt, L. M. A., Lobo, J., & Strumsky, D. (2007). Invention in the city: Increasing returns to patenting as a scaling function of metropolitan size. *Research Policy*, 36(1), 107–120. https://doi.org/10.1016/j.respol.2006.09.026 （城市专利产出随人口超线性增长——「没有分母只能比体量不能比强弱」的学术依据，支撑 §4.1 与 C.3.6；题录经 Crossref 核对题名/卷期页一致，doi.org 解析返回 200）
-
+9. Bettencourt, L. M. A., Lobo, J., & Strumsky, D. (2007). Invention in the city: Increasing returns to patenting as a scaling function of metropolitan size. *Research Policy*, 36(1), 107–120. https://doi.org/10.1016/j.respol.2006.09.026 （城市专利产出随人口超线性增长——「没有分母只能比体量不能比强弱」的学术依据，支撑 §4.1 与 C.3.6；题录经 Crossref 核对题名/卷期页一致，doi.org 解析返回 200）
 ---
 
 # 附件
@@ -602,7 +650,7 @@ OECD Regions and Cities at a Glance 的 TL2/TL3 多维原始指标面板与差�
 
 #### C.4.4 数据可行性矩阵（维度 × 源表 × 行数 × 覆盖率 × 是否造数 × 结论）
 
-行数取 `code/M_INNOV_CITY_MONITOR_GLOBAL_out.json`（2026-10-20 当批）与 `DATA_FACTS_gkx.md`；标「D.2」的为 2026-10-21 现场探针。
+行数取 `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json`（2026-10-20 当批）与 `DATA_FACTS_gkx.md`；标「D.2」的为 2026-10-21 现场探针。
 
 | # | 维度 | 源表（全限定） | 行数（2026-10-21） | 覆盖率 / 填充 | 是否造数 | 结论 |
 |---:|---|---|---:|---|---|---|
@@ -658,7 +706,7 @@ OECD Regions and Cities at a Glance 的 TL2/TL3 多维原始指标面板与差�
 
 ### C.8 对甲方四问的逐条回答
 
-**第一问：这个指标现在能不能出数？** 四组能，一组不能。投入、机构、产出（专利）、政策四组已由 `code/M_INNOV_CITY_MONITOR_GLOBAL.py` 三城实测产出，且四组数值都能与官方公报或统计报告对上；"创新基金/投资规模"组三城均为 `null`，不是没算，是没有同构源。
+**第一问：这个指标现在能不能出数？** 四组能，一组不能。投入、机构、产出（专利）、政策四组已由 `metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py` 三城实测产出，且四组数值都能与官方公报或统计报告对上；"创新基金/投资规模"组三城均为 `null`，不是没算，是没有同构源。
 
 **第二问：出的是不是甲方要的那个东西？** 是一半。需求写的是"监控**全球主要城市**的**创新基金、投资规模**，创新机构、企业投入、创新成果"——五类对象里"机构/投入/成果"三类已交付，"基金/投资"缺项；"全球主要城市"实际只有粤三城。因此当前交付物应描述为"深圳都市圈三城创新数据监控面板"，不能叫"全球城市监控"。
 
@@ -666,11 +714,11 @@ OECD Regions and Cities at a Glance 的 TL2/TL3 多维原始指标面板与差�
 
 **第四问：补不齐的话替代口径是什么、还叫不叫这个名字？** 有两个可用替代，都要改列名：① **企业股权投资规模**（`dwd_org_invest_info`，46,967 行、金额填充 92.13%、`org_id` 可回连取城市）——可替代"投资规模"的体量感知，但必须改名为"企业股权投资（认缴出资额）"，因为它既不是财政科技支出也不是创投基金规模；② **科研项目资助额（省级）**——`dwd_zh_project` 的 `funded_amount` 100% 有值，可做省级"创新基金"参照，但 `funded_province` 实测全空，当前连省级都落不了。若两条都不接受，则该组只能标"数据接入中"并空置——**空着比填一个不同构的数更诚实**。
 
-**口径与答复提醒**：五类对象应表述为"四组已通（政策组 48.5% 城市归属 NULL 待裁决）、一组无同构源"；书面答复附 `code/M_INNOV_CITY_MONITOR_GLOBAL_out.json` 三城面板与 `fund_invest_group = null` 标注，并写明"全球主要城市实为粤三城"；验收以"四组可复算 + null 带无源标注"为基线，null 若被填 0 即失效；面板在落 ADS 之前只能称"可复现的一次性测算"，不宜称"持续监控"。
+**口径与答复提醒**：五类对象应表述为"四组已通（政策组 48.5% 城市归属 NULL 待裁决）、一组无同构源"；书面答复附 `metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json` 三城面板与 `fund_invest_group = null` 标注，并写明"全球主要城市实为粤三城"；验收以"四组可复算 + null 带无源标注"为基线，null 若被填 0 即失效；面板在落 ADS 之前只能称"可复现的一次性测算"，不宜称"持续监控"。
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_CITY_MONITOR_GLOBAL.py`；产物：`code/M_INNOV_CITY_MONITOR_GLOBAL_out.json`
+- 脚本：`metrics/repro/M_INNOV_CITY_MONITOR_GLOBAL.py`；产物：`metrics/repro/out/M_INNOV_CITY_MONITOR_GLOBAL_out.json`
 - 关键数字：三城面板——深圳研发 1.366 万亿/专利存量 1,336,877/增量 275,908/政策 879/机构 95,600；广州 2,640.7 亿/675,339/140,395/325/49,605；东莞 694.7 亿/432,677/89,347/8/33,590；基金投资组三城均 null；support_judgment=`部分支持`
 - 文献系：本指标属**监测预警系**（国家创新调查制度监测报告脉络）；与同族 BENCHMARK（标杆对比系）/COMPARE（对比系）/FACTOR（要素分解系）/INDEX（综合指数系）/RANK（排名方法论系）各自成系，互不混用。
 
@@ -715,10 +763,3 @@ SELECT column_name FROM information_schema.columns
 ```
 
 **读数说明**：第 (2)、(3) 两条是本批对原稿结论的**精确化**而非推翻。原稿写「`dwd_zh_project` 无城市归属键、`dwd_org_invest_info` 无 city 字段 → 该组无源」，两个字段判断都对；但"无源"这个词太粗：项目表有金额、无任何地区值（比"无城市键"更严重，连省都没有）；股权表有 92.13% 的金额且有 `org_id` 可回连城市（比"无源"更乐观）。两者都不同构于"创新基金/投资规模"，所以档位不变，但**替代方案的可能性完全不同**——这一区分已写入 C.4.4 与 C.8 第四问。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

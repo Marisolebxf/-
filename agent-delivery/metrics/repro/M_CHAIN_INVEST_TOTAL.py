@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题服务算法库
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_CHAIN_INVEST_TOTAL 投融资总额（gkx 三方库，20261023 重建版）。
 
 口径（calc-logic V1.0-20260904 / 王惠 20260904_ai补漏）：
@@ -121,7 +123,7 @@ def main():
     report = {
         "metric_name": "投融资总额",
         "unit": "万元（单币种内合计；不做汇率折算）",
-        "calc_logic_ref": "local-workspace/docs/metrics/王惠阶段性成果/20260904_ai补漏/指标计算逻辑/M_CHAIN_INVEST_TOTAL.md",
+        "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_INVEST_TOTAL.md（王惠正本已演化并入）",
         "data_source": {
             "engine": "只读快照（源：三方库 gkx @ 183.240.141.251:3318）",
             "tables": ["gkx.dwd_org_financing_info", "gkx.dwd_org_industry_tags"],

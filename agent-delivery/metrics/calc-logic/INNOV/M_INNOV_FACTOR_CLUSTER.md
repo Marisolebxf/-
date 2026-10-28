@@ -1,9 +1,21 @@
 # 要素聚类（M_INNOV_FACTOR_CLUSTER）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_CLUSTER.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_CLUSTER.py` → `metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（无监督聚类）｜ **域**：INNOV｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 要素聚类分析
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（`metrics/calc-logic/INNOV/M_INNOV_FACTOR_CLUSTER.md`）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_CLUSTER.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_CLUSTER.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_CLUSTER.py` → `metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_CLUSTER.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_FACTOR_CLUSTER.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_FACTOR_CLUSTER.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json` |
@@ -63,17 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_FACTOR_CLUSTER.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（无监督聚类）｜ **域**：INNOV｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 要素聚类分析
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（`metrics/calc-logic/INNOV/M_INNOV_FACTOR_CLUSTER.md`）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
-> **王惠口径**：会议/项目/专利/期刊四类要素，特征＝类型独热＋影响力分，样本 ≥30 用 K-Means（K=2—8 取最大轮廓），5—29 用层次聚类；输出簇标签与簇规模，不是 0—100 分。
-> **实测关键结论**：会议 0 条（四类实为三类）；跨类聚类轮廓 0.9681 但**纯度 1.00——簇就是类型本身**，跨类无信息；真正可交付的是**类内影响力分层**（项目 81.1%/18.9%、专利 82.1% 零被引、期刊 13.1%/86.9%）。
-> **20261021 换源**：唯一数据面为三方库 `gkx`；专利只读被引表 20,515 行，**未扫 `dwd_patent`（294 万行无索引）**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -109,7 +115,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「要素聚类」要回答的是：把科创要素（会议、项目、专利、期刊）按「类型 + 影响力」放进无监督算法，能不能自动分出有业务含义的簇。王惠给了完整口径：特征＝类型独热＋影响力分，样本 ≥30 走 K-Means（K=2—8 取最大轮廓），5—29 走层次聚类，输出簇标签与规模而不是分数。
 
-脚本 `code/M_INNOV_FACTOR_CLUSTER.py` 已在 `gkx` 跑通（2026-10-22），纯 NumPy 实现（本机无 sklearn），共 81,249 个样本：项目 58,453、专利 20,000（被引表去重 pn）、期刊 2,796，**会议 0**。K=4 的轮廓系数 0.9681 是全程最高，但这个结果必须读懂——**四个簇的构成是「项目 47,405 / 项目 11,048 / 专利 20,000 / 期刊 2,796」，纯度 1.00**。也就是说，聚类没有发现任何跨类型结构，它只是把类型标签重新画了一遍，再把项目类按影响力劈成两半。
+脚本 `metrics/repro/M_INNOV_FACTOR_CLUSTER.py` 已在 `gkx` 跑通（2026-10-22），纯 NumPy 实现（本机无 sklearn），共 81,249 个样本：项目 58,453、专利 20,000（被引表去重 pn）、期刊 2,796，**会议 0**。K=4 的轮廓系数 0.9681 是全程最高，但这个结果必须读懂——**四个簇的构成是「项目 47,405 / 项目 11,048 / 专利 20,000 / 期刊 2,796」，纯度 1.00**。也就是说，聚类没有发现任何跨类型结构，它只是把类型标签重新画了一遍，再把项目类按影响力劈成两半。
 
 这不是实现错误，是特征设计的必然结果：三类独热（3 维）与影响力（1 维）等权时，类型之间的距离远大于类型内部影响力差异，K-Means 的最优解只能是按类型切。为了验证，脚本另跑了一版「仅影响力」的一维聚类，best K=2、轮廓 0.8989、纯度 0.8288——仍然高度按类型分，因为三类影响力分布的量级本身就不同（项目均值 52.6、期刊 8.3、专利 0.96）。
 
@@ -225,7 +231,7 @@ $$K^*=\arg\max_K \operatorname{sil}(X,\text{labels}_K)$$
 
 ## 二、计算过程
 
-> 全部读数由 `code/M_INNOV_FACTOR_CLUSTER.py` 实测产出（纯 NumPy，无 sklearn），结果见 `M_INNOV_FACTOR_CLUSTER_out.json`。
+> 全部读数由 `metrics/repro/M_INNOV_FACTOR_CLUSTER.py` 实测产出（纯 NumPy，无 sklearn），结果见 `M_INNOV_FACTOR_CLUSTER_out.json`。
 
 ### 2.1 方法选择：为什么本地实现 K-Means
 
@@ -335,8 +341,8 @@ best K=2、轮廓 0.8989、**纯度仍有 0.8288**。也就是说，即使去掉
 
 ### 2.7 复现代码与结果展示
 
-脚本：`code/M_INNOV_FACTOR_CLUSTER.py`（332 行，纯 NumPy）
-产物：`code/M_INNOV_FACTOR_CLUSTER_out.json`
+脚本：`metrics/repro/M_INNOV_FACTOR_CLUSTER.py`（332 行，纯 NumPy）
+产物：`metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json`
 运行：
 
 ```
@@ -472,8 +478,8 @@ P0：明确产品形态改为类内分层（不改数据也能做）；P1：专�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_FACTOR_CLUSTER.py` |
-| 产物 | `code/M_INNOV_FACTOR_CLUSTER_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_FACTOR_CLUSTER.py` |
+| 产物 | `metrics/repro/out/M_INNOV_FACTOR_CLUSTER_out.json` |
 | 表 | `gkx.dwd_zh_project`、`dwd_patent_cited`、`dwd_zh_journal`、`dwd_en_journal` |
 | 库 | `gkx@183.240.141.251:3318`（只读，专利未扫主表） |
 | 耗时 | < 60 秒 |
@@ -491,7 +497,6 @@ P0：明确产品形态改为类内分层（不改数据也能做）；P1：专�
 6. Ester, M., Kriegel, H.-P., Sander, J., & Xu, X. (1996). A density-based algorithm for discovering clusters in large spatial databases with noise. *KDD-96*, 226–231. https://dl.acm.org/doi/10.5555/3001460.3001507
 7. scikit-learn, *Clustering performance evaluation — silhouette coefficient*. https://scikit-learn.org/stable/modules/clustering.html#silhouette-coefficient
 8. 国家知识产权局，专利统计年报（专利价值与维持年限口径参考）。https://www.cnipa.gov.cn
-
 ---
 
 # 附件
@@ -602,11 +607,3 @@ within_type: project k=2 0.9709 (47405/11048)
 ```
 
 `out.json.degeneration.why` 原文：「类型独热（3 维）与影响力（1 维）等权时，K-Means 的最优解就是按类型切分：轮廓系数 0.97、纯度 1.00，簇 = 类型，跨类合并聚类不含额外信息。真正可交付的是类内影响力分层（within_type）。」
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

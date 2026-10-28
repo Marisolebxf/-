@@ -1,9 +1,20 @@
 # 技术点影响力 / 实体优先级（M_TECH_ENTITY_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_ENTITY_INFLUENCE.md`；复现脚本 `metrics/repro/M_TECH_ENTITY_INFLUENCE.py` → `metrics/repro/out/M_TECH_ENTITY_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术图谱指标（DS-02 技术关系面·点中心性件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技信息展示系统 · 技术评估 · 技术关系网络「核心节点」+ 创新主体评估（实体排序） ｜ **数据支持度**：**完全转换支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_ENTITY_INFLUENCE.py`、产物 `metrics/repro/out/M_TECH_ENTITY_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_ENTITY_INFLUENCE.md`；复现脚本 `metrics/repro/M_TECH_ENTITY_INFLUENCE.py` → `metrics/repro/out/M_TECH_ENTITY_INFLUENCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_ENTITY_INFLUENCE.py`、产物 `metrics/repro/out/M_TECH_ENTITY_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_ENTITY_INFLUENCE.md` |
 | 复现脚本 | `metrics/repro/M_TECH_ENTITY_INFLUENCE.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_ENTITY_INFLUENCE_out.json` |
@@ -60,15 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_ENTITY_INFLUENCE.py`、产物 `metrics/repro/out/M_TECH_ENTITY_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术图谱指标（DS-02 技术关系面·点中心性件）｜ **域**：技术（TECH）｜ **UI 挂载**：科技信息展示系统 · 技术评估 · 技术关系网络「核心节点」+ 创新主体评估（实体排序） ｜ **数据支持度**：**完全转换支持**
-> **公式定义人（20261020-TECH-d）**：仿王惠 ai-1020（需求未给公式，本轮按共现加权 PageRank + 实体技术中心性重建）｜ **wanghui：false** ｜ 直接（结构/数据）：否 / 否（无「影响力」结果面）｜ 依赖（结构/数据）：是 / 是（IPC4 共类网络 378 节点 + 49,121 个申请人实体现转可算）
-> **先验对勘**：support_level.json 先验「完全不支持」；本批实测**升档为完全转换支持**——先验按「无技术影响力结果表」判定，未评估「共类网络 PageRank + 申请人加权」路径；实证见 §二 / §三。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -228,7 +235,7 @@ $$
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，本报告按加权 PageRank + 多因子归一化重建；已由脚本 `code/M_TECH_ENTITY_INFLUENCE.py` 实测跑通，结果见同目录 `M_TECH_ENTITY_INFLUENCE_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
+> **口径说明**：需求未给公式，本报告按加权 PageRank + 多因子归一化重建；已由脚本 `metrics/repro/M_TECH_ENTITY_INFLUENCE.py` 实测跑通，结果见同目录 `M_TECH_ENTITY_INFLUENCE_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：为什么用 PageRank 而不是度数、也不用 AS 加权
 
@@ -284,14 +291,14 @@ PageRank 的实现有三处必须交代的工程细节。**其一，节点集与
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_TECH_ENTITY_INFLUENCE.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_TECH_ENTITY_INFLUENCE.py` |
 | 公共图库 | 同目录 `_tech_d_graphlib.py`（共类网络 + PageRank，与 003 共用） |
 | 结果产物 | 同目录 `M_TECH_ENTITY_INFLUENCE_out.json` |
 | 数据来源 | `code/_snapshots/tech_d_patent_sample.jsonl`（gkx `dwd_patent` PK 等距 10 段 × 2 万 = 20 万件） |
 | 大表纪律 | 不整表扫描；分片取数后本地构图（全流程 < 3 秒） |
 
 ```bash
-python3 metrics/repro/M_TECH_ENTITY_INFLUENCE.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_TECH_ENTITY_INFLUENCE.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -377,7 +384,7 @@ python3 metrics/repro/M_TECH_ENTITY_INFLUENCE.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_TECH_ENTITY_INFLUENCE.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_TECH_ENTITY_INFLUENCE.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维 | 候选表 / 字段 | 实测行数 / 结论 | 支撑判断 |
 |---|---|---|---|
@@ -426,10 +433,8 @@ python3 metrics/repro/M_TECH_ENTITY_INFLUENCE.py
 2. Freeman, L. C. (1978). Centrality in social networks: Conceptual clarification. *Social Networks*, 1(3), 215–239. https://doi.org/10.1016/0378-8733(78)90021-7 （度/介数/接近中心性的概念界定；本报告据此说明为何弃用度数排序）
 3. Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). *The PageRank citation ranking: Bringing order to the web* (Technical Report 1999-66). Stanford InfoLab. http://ilpubs.stanford.edu:8090/422/ （PageRank 的收敛性与阻尼因子讨论）
 4. 国家知识产权局办公室. (2021). 《战略性新兴产业分类与国际专利分类参照关系表（2021）（试行）》（国知办函规字〔2021〕121 号）. https://www.cnipa.gov.cn/art/2021/2/10/art_75_156716.html （IPC4 → 产业语义映射，用于解释「技术中心性」的业务含义）
-5. 项目内旁证（非外部文献）：`_staging/M_TECH_EDGE_STRENGTH.md`（边件，明确「边强度用 AS、中心性用 co」的分工）；`_staging/M_TECH_ENTITY_REL.md`（同批实体网件，共用申请人数据）。
-6. Langville, A. N., & Meyer, C. D. (2006). *Google's PageRank and Beyond: The Science of Search Engine Rankings*. Princeton University Press. https://doi.org/10.1515/9781400830329 （PageRank 的收敛性、阻尼因子与加权变体的系统论述，本报告层一加权 PageRank 的算法依据）
-7. 世界知识产权组织（WIPO）. (2019). *World Intellectual Property Indicators 2019*（专利申请按申请人/来源国/IPC 技术领域的全球统计——本报告「技术中心性 + 实体技术站位」排名的国际口径参照）. https://www.wipo.int/edocs/pubdocs/en/wipo_pub_941_2019.pdf
-
+5. Langville, A. N., & Meyer, C. D. (2006). *Google's PageRank and Beyond: The Science of Search Engine Rankings*. Princeton University Press. https://doi.org/10.1515/9781400830329 （PageRank 的收敛性、阻尼因子与加权变体的系统论述，本报告层一加权 PageRank 的算法依据）
+6. 世界知识产权组织（WIPO）. (2019). *World Intellectual Property Indicators 2019*（专利申请按申请人/来源国/IPC 技术领域的全球统计——本报告「技术中心性 + 实体技术站位」排名的国际口径参照）. https://www.wipo.int/edocs/pubdocs/en/wipo_pub_941_2019.pdf
 ---
 
 # 附件
@@ -506,15 +511,8 @@ M1（即刻）：层一 PR + 三因子分、层二 TC + 三因子分、双榜 + 
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_TECH_ENTITY_INFLUENCE.py`（2026-10-21 TECH-d 批）；公共库：`../code/_tech_d_graphlib.py`；产物：`../code/M_TECH_ENTITY_INFLUENCE_out.json`
+- 脚本：`../code/M_TECH_ENTITY_INFLUENCE.py`（2026-10-21 TECH-d 批）；公共库：`../code/_tech_d_graphlib.py`；产物：`../metrics/repro/out/M_TECH_ENTITY_INFLUENCE_out.json`
 - 关键数：378 节点 / 3,855 边 / PR 和 1.0；G06F 0.04673 → 92.59；G06N 0.03291 → 72.06；G06V 增速 128.91% → 52.37；H05K −9.00% → 47.94；实体 49,121 / 4,200 入评；华为 83.05（TC 100.29）、华南理工 80.08（TC 47.02、授权率 63.44%）；分 0.09-83.05、中位 18.8、p90 25.65
 - 复跑：`python3 code/M_TECH_ENTITY_INFLUENCE.py`（只读快照、幂等）
 - 字段对应：`graph`=网络与 PR 守恒；`tech_influence_top/bottom`=节点两端；`entity.score_stats/top20`=主体分布与榜；`support_judgment` 与 §〇.3 一致
 - 工程注意：边权必须用 co 而非 AS（否则低频簇中心性爆炸）；悬挂节点需均分兜底；增速缺 2021 数据时记 0 并标注「样本不足」
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

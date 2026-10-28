@@ -1,9 +1,22 @@
 # 地方优势方向（M_INNOV_PLAN_LOCAL_ADV）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PLAN_LOCAL_ADV.md`；复现脚本 `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` → `metrics/repro/out/M_INNOV_PLAN_LOCAL_ADV_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：AI-20261016 定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技发展规划 · 综合发展规划 · 全球热点技术捕捉（需求清单序号 180）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = 部分（专利维可算；申请人维靠名称回连底册；论文维仅 7.6 成可归；分母池本身偏本地）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py`、产物 `metrics/repro/out/M_INNOV_PLAN_LOCAL_ADV_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PLAN_LOCAL_ADV.md`；复现脚本 `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` → `metrics/repro/out/M_INNOV_PLAN_LOCAL_ADV_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py`、产物 `metrics/repro/out/M_INNOV_PLAN_LOCAL_ADV_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_PLAN_LOCAL_ADV.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_PLAN_LOCAL_ADV_out.json` |
@@ -65,18 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py`、产物 `metrics/repro/out/M_INNOV_PLAN_LOCAL_ADV_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：AI-20261016 定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技发展规划 · 综合发展规划 · 全球热点技术捕捉（需求清单序号 180）
-> **UI 挂载**：科技发展规划页「全球热点技术捕捉」——属地技术方向比较优势视图
-> **数据支持度**：**部分支持**
-> **公式定义人**：AI-20261016（三维区位商 LQ + 截面归一）
-> **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是；依赖数据 = 部分（专利维可算；申请人维靠名称回连底册；论文维仅 7.6 成可归；分母池本身偏本地）
-> wanghui: false
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -112,7 +118,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「地方优势方向」是需求清单序号 180 要求「全球热点技术捕捉」提供的**属地视角**：全球热度榜告诉你「哪里热」，地方优势告诉你「深圳在哪些方向上相对有比较优势」。需求原文只写了「指导未来产业的布局和发展」，没有给公式；AI-20261016 calc-logic 给出了「三维区位商（LQ）+ 截面归一」的骨架：专利 LQ、资源（申请人）LQ、论文 LQ，三维几何平均后再除以截面几何均值。
 
-本文严格实现该公式，以 IPC4 为方向主键，以深圳为观察区域，输出 499 个可算方向。脚本 `code/M_INNOV_PLAN_LOCAL_ADV.py` 已跑通（26.6 秒、1 条 SQL、零专利 SQL）：LQ 中位数 **1.1134**、p90 1.748、最高 3.0236（G21D）、最低 0.0847；>1 的 288 个（57.72%）、≥1.5 的 102 个。
+本文严格实现该公式，以 IPC4 为方向主键，以深圳为观察区域，输出 499 个可算方向。脚本 `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` 已跑通（26.6 秒、1 条 SQL、零专利 SQL）：LQ 中位数 **1.1134**、p90 1.748、最高 3.0236（G21D）、最低 0.0847；>1 的 288 个（57.72%）、≥1.5 的 102 个。
 
 但本文必须把最重要的一条放在摘要里：**这个 LQ 的分母不是「全国」也不是「全球」**。专利池为 2,004,957 件，是「可回连申请人底册」的国内专利子集；底册 189,116 家企业中深圳有 95,600 家（50.5%），深圳专利占池 44.33%。也就是说，池子本身就偏向深圳，用深圳份额除以这个池的份额，LQ 会被系统性拉向 1 以上——实测中位数 1.11、57.72% 的方向 >1，正是这一偏差的体现，而不是「深圳在近六成技术方向上都有优势」。
 
@@ -196,7 +202,7 @@ AI-20261016 calc-logic（`gkx-orchestration/agent-delivery/metrics/calc-logic/IN
 
 ### 1.5 引用来源（可核验）
 
-**需求文档**：`需求文档原件（GitLab 外本地归档）.xlsx`，工作表「科技信息展示系统」，序号 **180**。
+**需求文档**：`需求方附件（不入仓）：国际科技信息中心项目_需求规格说明书功能清单-智慧服务门户系统、科技信息展示系统、新型高端智库系统、科技专题服务系统、深度挖掘算法（科技专题服务算法库、语义计算工.xlsx`，工作表「科技信息展示系统」，序号 **180**。
 
 **章节**：`1.1.1.1.4.1.9.1.1 全球热点技术捕捉`。
 
@@ -238,7 +244,7 @@ AI-20261016 calc-logic（`gkx-orchestration/agent-delivery/metrics/calc-logic/IN
 ## 二、计算过程
 
 > **口径说明**：需求未给公式，以下为「AI-20261016 三维 LQ + 本报告池构造/阈值」计算过程；已由脚本
-> `code/M_INNOV_PLAN_LOCAL_ADV.py` 在 `gkx` **实测跑通**，结果见同目录 `M_INNOV_PLAN_LOCAL_ADV_out.json`。
+> `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` 在 `gkx` **实测跑通**，结果见同目录 `M_INNOV_PLAN_LOCAL_ADV_out.json`。
 > 文内引用格式为 SCI 常用「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 公式出处与三维结构
@@ -344,14 +350,14 @@ lq_norm = lq / 0.7508
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` |
 | 结果产物 | 同目录 `M_INNOV_PLAN_LOCAL_ADV_out.json` |
 | 共享库 | `code/_plan21_common.py`（面板、城市、术语桥、统计、写盘） |
 | 主算库 | `gkx`（`183.240.141.251:3318`），专利读缓存 |
 | SQL 条数 / 耗时 | 1 条（论文）/ 26.6 秒 |
 
 ```bash
-python3 metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -442,7 +448,7 @@ python3 metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_PLAN_LOCAL_ADV.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | gkx 三方库 | 实测行数 / 覆盖 | 实测结论 |
 |---|---|---|---|---|
@@ -508,7 +514,6 @@ python3 metrics/repro/M_INNOV_PLAN_LOCAL_ADV.py
 5. 中国科学院科技战略咨询研究院、中国科学院文献情报中心、科睿唯安. (2024). 《2024 研究前沿》. https://casisd.cas.cn/ttxw1/zlyjytt/202411/t20241129_7448127.html
 
 6. 国家统计局、科学技术部、财政部. (2025). 《2024 年全国科技经费投入统计公报》. https://www.stats.gov.cn/sj/zxfb/202509/t20250929_1961429.html
-
 ---
 
 # 附件
@@ -630,15 +635,7 @@ CNIPA 区域专利分析常按 IPC 统计区域份额并与全国比较。这是
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_INNOV_PLAN_LOCAL_ADV.py`
-- 产物：`../code/M_INNOV_PLAN_LOCAL_ADV_out.json`
+- 产物：`../metrics/repro/out/M_INNOV_PLAN_LOCAL_ADV_out.json`
 - 主算库：`gkx`（专利读缓存，零专利 SQL）
 - 关键结果：`n=499`；中位 1.1134；>1 共 288；≥1.5 共 102；max 3.0236（G21D）；几何均值 0.7508；深圳占池 44.33%；论文覆盖 226；复合 vs 专利 0.924；`support_judgment=部分支持`
 - 工程注意：`min_pool_patent=100`、`CITY='深圳'`（前缀匹配）、归一常数 0.7508 在脚本中显式定义；改口径须重跑。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

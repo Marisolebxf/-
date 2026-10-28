@@ -1,9 +1,25 @@
 # 技术转化瓶颈诊断（M_TECH_CONVERT_BOTTLENECK）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_CONVERT_BOTTLENECK.md`；复现脚本 `metrics/repro/M_TECH_CONVERT_BOTTLENECK.py` → `metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（诊断型指数，按 IPC4 技术域打分并排序）｜ **域**：技术（TECH）／成果转化｜ **UI 挂载**：技术转化瓶颈页的「瓶颈域排行」、产业布局推荐页的「技术域风险」标签
+> - **数据支持度**：**部分支持**｜ **依赖性质**：三个结构算子（承接集中度 / 技术陈旧度 / 收缩度）可复算，成果转化维 `T_transfer` 无源
+> - **同域边界**：与 `M_TECH_BASE_96_1` 共用专利侧 IPC4 口径，但本件是**诊断打分**、那件是**能力计数**，两者不可互推。与 `M_INNOV_GBA_TECH_CONTRACT` 在 `T_transfer` 维同断源（技术合同登记表不存在），本件只引用结论、不重复探针。与 `M_TECH_DEEP_130_1` 的差别：那件深挖单域，本件横向比较 253 个域
+> - **一句话结论**：2021—2024 四个完整年里，253 个实质性 IPC4 域（覆盖有 IPC 专利的 0.948807）可按「承接集中度 0.5 + 技术陈旧度 0.3 + 收缩度 0.2」打分，P70 判瓶颈得到 76 个域（判瓶颈率 0.300395），P60/P70/P80 三档名单 Jaccard 0.7525 / 0.6711 说明排序稳定、不随规模漂移；但需求里的**成果转化维 `T_transfer` 在 gkx 无任何载体**（无技术合同登记表、无转化平台表、无产业化数据），五维资源框架只有技术维与市场结构维有算子 → **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_TECH_CONVERT_BOTTLENECK.py`｜ **产物**：`metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_CONVERT_BOTTLENECK.py`、产物 `metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_CONVERT_BOTTLENECK.md`；复现脚本 `metrics/repro/M_TECH_CONVERT_BOTTLENECK.py` → `metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_CONVERT_BOTTLENECK.py`、产物 `metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_CONVERT_BOTTLENECK.md` |
 | 复现脚本 | `metrics/repro/M_TECH_CONVERT_BOTTLENECK.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json` |
@@ -60,19 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_CONVERT_BOTTLENECK.py`、产物 `metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（诊断型指数，按 IPC4 技术域打分并排序）｜ **域**：技术（TECH）／成果转化｜ **UI 挂载**：技术转化瓶颈页的「瓶颈域排行」、产业布局推荐页的「技术域风险」标签
-> **数据支持度**：**部分支持**｜ **依赖性质**：三个结构算子（承接集中度 / 技术陈旧度 / 收缩度）可复算，成果转化维 `T_transfer` 无源
-> **复现脚本**：`code/M_TECH_CONVERT_BOTTLENECK.py`｜ **产物**：`code/M_TECH_CONVERT_BOTTLENECK_out.json`
-> **公式定义人**：无同ID正本；注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`，`is_mock: true`；SRS 章节号 `ALGO-TECH-CONVERT-BOTTLENECK`。**权重 0.5 / 0.3 / 0.2、入算门槛 1,000、判瓶颈阈值 P70 均为本件自定义、待甲方确认，不称官方口径**
-> **基期声明**：`base_years_used` = 2021—2024（四个完整年），`base_years_missing` = [2025, 2026]。专利表 `apdt_year` 覆盖 2021—2026（2017—2020 零行，不补 0）；2025 与 2026 是采集未完年，按缺失年处理、不进分母、不摊 0
-> **同域边界**：与 `M_TECH_BASE_96_1` 共用专利侧 IPC4 口径，但本件是**诊断打分**、那件是**能力计数**，两者不可互推。与 `M_INNOV_GBA_TECH_CONTRACT` 在 `T_transfer` 维同断源（技术合同登记表不存在），本件只引用结论、不重复探针。与 `M_TECH_DEEP_130_1` 的差别：那件深挖单域，本件横向比较 253 个域
-> **一句话结论**：2021—2024 四个完整年里，253 个实质性 IPC4 域（覆盖有 IPC 专利的 0.948807）可按「承接集中度 0.5 + 技术陈旧度 0.3 + 收缩度 0.2」打分，P70 判瓶颈得到 76 个域（判瓶颈率 0.300395），P60/P70/P80 三档名单 Jaccard 0.7525 / 0.6711 说明排序稳定、不随规模漂移；但需求里的**成果转化维 `T_transfer` 在 gkx 无任何载体**（无技术合同登记表、无转化平台表、无产业化数据），五维资源框架只有技术维与市场结构维有算子 → **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -264,7 +272,7 @@ P70 判出 76 个域，判瓶颈率 0.300395，与设计值 30% 吻合。稳定�
 
 ### 2.7 复现代码结果展示（`_out.json` 关键片段）
 
-以下片段原样引自 `code/M_TECH_CONVERT_BOTTLENECK_out.json`：
+以下片段原样引自 `metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json`：
 
 ```json
 {
@@ -409,9 +417,9 @@ P70 判出 76 个域，判瓶颈率 0.300395，与设计值 30% 吻合。稳定�
 ### 5.1 复现命令
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_TECH_CONVERT_BOTTLENECK.py
-# 覆盖写出 code/M_TECH_CONVERT_BOTTLENECK_out.json
+# 覆盖写出 metrics/repro/out/M_TECH_CONVERT_BOTTLENECK_out.json
 ```
 
 脚本不连数据库，只读两份快照缓存（`code/_snapshots21/patent_ipc4_year_20261021.json`、`code/_snapshots21/patent_ipc4_by_name_20261021.json`），因此**可离线复算**。缓存换版即结果换版，脚本不保留历史比分。
@@ -454,13 +462,10 @@ python3 code/M_TECH_CONVERT_BOTTLENECK.py
 
 ## 参考文献
 
-1. U.S. Department of Justice & FTC. *Horizontal Merger Guidelines*, 2010. https://www.justice.gov/atr/horizontal-merger-guidelines-08192010
-2. Hirschman A. O. *National Power and the Structure of Foreign Trade*. University of California Press, 1945.（HHI 原始出处）
-3. Utterback J. M., Abernathy W. J. *A Dynamic Model of Process and Product Innovation*. Omega, 1975. https://doi.org/10.1016/0305-0483(75)90068-7
-4. WIPO. *IPC—Technology Concordance Table*. https://www.wipo.int/classifications/ipc/
-5. 科技部火炬中心.《技术合同认定登记管理办法》. https://www.most.gov.cn/
-6. 项目内口径真源：注册表 `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-TECH-seed.yaml` 条目 `M_TECH_CONVERT_BOTTLENECK`（`formula` 为 `pending_cosign: human:唐绍祖（未签）`，`is_mock: true`）.
-
+1. Hirschman A. O. *National Power and the Structure of Foreign Trade*. University of California Press, 1945.（HHI 原始出处）
+2. Utterback J. M., Abernathy W. J. *A Dynamic Model of Process and Product Innovation*. Omega, 1975. https://doi.org/10.1016/0305-0483(75)90068-7
+3. WIPO. *IPC—Technology Concordance Table*. https://www.wipo.int/classifications/ipc/
+4. 科技部火炬中心.《技术合同认定登记管理办法》. https://www.most.gov.cn/
 ---
 
 # 附件
@@ -566,10 +571,3 @@ python3 code/M_TECH_CONVERT_BOTTLENECK.py
 **三问：补齐还差什么、谁能给？** 差技术合同登记、转化平台、产业化数据；来源是科技部门与统计部门。
 
 **四问：补不齐的替代口径？** 可用「技术结构瓶颈分」定位替代「转化瓶颈」，但必须改名并标注不含转化维；不建议用论文数或专利维持年限硬代。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

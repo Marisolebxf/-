@@ -1,9 +1,20 @@
-# 政策布局建议条数（王惠对冲计数 v2 复现）（M_POLICY_LAYOUT_REC_COUNT）
+# 政策布局建议条数（M_POLICY_LAYOUT_REC_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_LAYOUT_REC_COUNT.md`；复现脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py` → `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：衍生指标（政策布局推荐模型·布局建议条数；DS-11-POLICY-EVAL / DS-12-POLICY-SIM / E7-POLICY 页件）｜ **域**：政策（POLICY）｜ **UI 挂载**：DS-11-POLICY-EVAL（政策分析评价报告页）、DS-12-POLICY-SIM（政策模拟）、E7-POLICY（政策要素看板）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`、产物 `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_LAYOUT_REC_COUNT.md`；复现脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py` → `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`、产物 `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +62,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_LAYOUT_REC_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json` |
@@ -59,14 +70,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`、产物 `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：衍生指标（政策布局推荐模型·布局建议条数；DS-11-POLICY-EVAL / DS-12-POLICY-SIM / E7-POLICY 页件）｜ **域**：政策（POLICY）｜ **UI 挂载**：DS-11-POLICY-EVAL（政策分析评价报告页）、DS-12-POLICY-SIM（政策模拟）、E7-POLICY（政策要素看板）｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（171 对冲计数口径，本 MD 采用）｜ wanghui：false（衍生计数件，wanghui_agg 未单列——上游 171 已含 §五，本件沿用其结论不开独立 §五）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 方向键真实 2 行、机遇上游 0 过线（与 171 同源断供）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -218,7 +226,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本件采用王惠 171 对冲口径（v2 升级：既有 20261020 版为笛卡尔近似占位数，本批重写为全链对冲复现），复现脚本 `code/M_POLICY_LAYOUT_REC_COUNT.py`，结果见 `M_POLICY_LAYOUT_REC_COUNT_out.json`。文内 (Author) 与文末参考文献一一对应。
+> **口径说明**：本件采用王惠 171 对冲口径（v2 升级：既有 20261020 版为笛卡尔近似占位数，本批重写为全链对冲复现），复现脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`，结果见 `M_POLICY_LAYOUT_REC_COUNT_out.json`。文内 (Author) 与文末参考文献一一对应。
 
 ### 2.1 方法选择：对冲交集计数而非笛卡尔积
 
@@ -252,14 +260,14 @@ $$N_{\text{rec}} = |\{t:\ Opp_t=1 \wedge Short_t=1\}| = |\varnothing \cap \{5\}|
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`（v2 重写，2026-10-21 跑通） |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`（v2 重写，2026-10-21 跑通） |
 | 结果产物 | 同目录 `M_POLICY_LAYOUT_REC_COUNT_out.json` |
 | 主算库 | `gkx.dwd_policy_base`（方向键+短板字段） |
 | 上游依赖 | `M_POLICY_DEEP_170_1_out.json`（机遇侧）；171 链路共享代码段 |
 | 既有版本 | 20261020 版（笛卡尔近似，「2 条」）已被 v2 替换，占位数保留对照 |
 
 ```bash
-python3 metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -370,13 +378,9 @@ python3 metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py
 2. Howlett, M. (2015). The parameters of policy portfolios: verticality and horizontality in design spaces and their consequences for policy mix formulation. *Policy & Society*, 34(3–4), 235–245. https://doi.org/10.1177/0263774X15610059
 3. Heilmann, S. (2008a). From Local Experiments to National Policy: The Origins of China's Distinctive Policy Process. *The China Journal*, (59), 1–30. https://doi.org/10.1086/tcj.59.20066378
 4. Heilmann, S. (2008b). Policy Experimentation in China's Economic Rise. *Studies in Comparative International Development*, 43(1), 1–26. https://doi.org/10.1007/s12116-007-9014-4
-5. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_DEEP_171_1.md` —— 王惠对冲口径原稿（本件继承）。
-6. 项目内旁证（非外部文献）：`metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`；`code/M_POLICY_DEEP_170_1_out.json`；`code/M_POLICY_DEEP_171_1_out.json` —— v2 复现与上游实测。
-7. 国务院. 重大行政决策程序暂行条例（国令第713号）[Z]. 2019-04-20.（第三十六条决策后评估：实施后明显未达预期或公众意见较多时应组织评估——支撑「布局建议须有后评估闭环」的语义论证与本期序列设计）. https://www.gov.cn/zhengce/zhengceku/2019-05/08/content_5389670.htm
-8. Saisana, M., Saltelli, A., & Tarantola, S. (2005). Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. *Journal of the Royal Statistical Society: Series A*, 168(2), 307–323.（阈值与权重必须做敏感性分析；支撑 §4.1 的阈值弹性测算与「计数消费同一判定」的同源要求）. https://doi.org/10.1111/j.1467-985X.2005.00350.x
-
+5. 国务院. 重大行政决策程序暂行条例（国令第713号）[Z]. 2019-04-20.（第三十六条决策后评估：实施后明显未达预期或公众意见较多时应组织评估——支撑「布局建议须有后评估闭环」的语义论证与本期序列设计）. https://www.gov.cn/zhengce/zhengceku/2019-05/08/content_5389670.htm
+6. Saisana, M., Saltelli, A., & Tarantola, S. (2005). Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. *Journal of the Royal Statistical Society: Series A*, 168(2), 307–323.（阈值与权重必须做敏感性分析；支撑 §4.1 的阈值弹性测算与「计数消费同一判定」的同源要求）. https://doi.org/10.1111/j.1467-985X.2005.00350.x
 > 说明：第 7 条支撑「建议清单须可后评估」的制度依据，第 8 条支撑「阈值参数化 + 敏感性」的方法依据；两条均已联网核验。
-
 ---
 
 # 附件
@@ -510,14 +514,7 @@ python3 metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_POLICY_LAYOUT_REC_COUNT.py`（v2）；产物：`../code/M_POLICY_LAYOUT_REC_COUNT_out.json`
+- 脚本：`../code/M_POLICY_LAYOUT_REC_COUNT.py`（v2）；产物：`../metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`
 - 主算库：gkx 真源（与 171 共享方向键与短板代码段）
 - 关键数字：方向全集 5；机遇方向 0；短板方向 5/5；**布局建议条数 0**；support_judgment=`部分支持`
 - 工程注意：'NULL' 占位清洗沿用域内 `clean()`；既有版「2 条」笛卡尔近似已退役为对照区，三页取数点必须指向 v2 主口径。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,21 @@
 # 多元化指数（M_ENT_DIVERSIFICATION_INDEX）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DIVERSIFICATION_INDEX.md`；复现脚本 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` → `metrics/repro/out/M_ENT_DIVERSIFICATION_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：ENT（企业基础指标）｜ **域**：企业（ENT）· 企业分析 → 重点企业领域分布分析 → 领域分布分析｜ **UI 挂载**：科技信息展示系统·企业分析·重点企业领域分布分析相关页面（wanghui: true）
+> - **数据支持度**：**完全转换支持**｜ **公式定义人**：王惠（本 MD 采用王惠香农熵归一化口径）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库 gkx 结构有 / 数据量足（现转成功）
+> **版本与分级**
+> - **差异分级**：表述级差异（D5）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_DIVERSIFICATION_INDEX.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_DIVERSIFICATION_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DIVERSIFICATION_INDEX.md`；复现脚本 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` → `metrics/repro/out/M_ENT_DIVERSIFICATION_INDEX_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_DIVERSIFICATION_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_DIVERSIFICATION_INDEX.md` |
 | 复现脚本 | `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_DIVERSIFICATION_INDEX_out.json` |
@@ -59,14 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_DIVERSIFICATION_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：ENT（企业基础指标）｜ **域**：企业（ENT）· 企业分析 → 重点企业领域分布分析 → 领域分布分析｜ **UI 挂载**：科技信息展示系统·企业分析·重点企业领域分布分析相关页面（wanghui: true）
-> **数据支持度**：**完全转换支持**｜ **公式定义人**：王惠（本 MD 采用王惠香农熵归一化口径）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库 gkx 结构有 / 数据量足（现转成功）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -103,9 +112,55 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 「多元化指数」是企业分析模块「重点企业领域分布分析」下的量化评估指标，其产品任务是刻画目标企业集合在各产业链节点上分布的均衡程度，与覆盖领域数、覆盖广度、覆盖深度、企业领域分布共同构成「领域覆盖」五兄弟指标族，本指标在该族中承担「**均匀性维**」——当覆盖领域数告诉用户企业涉足了几个领域时，多元化指数进一步回答「这些领域上的布局是否均衡」。
 需求文档**只给出「用户可评估企业多元化程度」的功能性表述，未给出计算公式**；王惠 2026 年 8 月调研底稿给出香农熵归一化口径，为目前唯一闭合的正式定义，本报告予以采用并对照（§五）。
 权威方法层面，香农熵自 Shannon (1948) 信息论奠基以来，经 Jacquemin & Berry (1979) 引入企业多元化度量、Palepu (1985) 用于战略绩效检验，已是产业组织与战略管理文献中多元化的标准度量，方法可行性高。
-数据层面，脚本 `code/M_ENT_DIVERSIFICATION_INDEX.py` 已在 gkx 三方真源现转跑通：`dwd_org_industry_tags` 2,283,762 行 `industry_link_code` 全部可解析，摊平后覆盖 k=12,148 个去重链节点、N=5,319,383 个（节点,企业）对，香农熵 H=4.2244、归一化 H*=0.4492，头部节点 INB130602（计算机、通信和其他电子设备制造业链）占比 10.6%——结构+当前数据量均足且现转结果合理 → **完全转换支持**。
+数据层面，脚本 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` 已在 gkx 三方真源现转跑通：`dwd_org_industry_tags` 2,283,762 行 `industry_link_code` 全部可解析，摊平后覆盖 k=12,148 个去重链节点、N=5,319,383 个（节点,企业）对，香农熵 H=4.2244、归一化 H*=0.4492，头部节点 INB130602（计算机、通信和其他电子设备制造业链）占比 10.6%——结构+当前数据量均足且现转结果合理 → **完全转换支持**。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D5 表述级差异：语义基本一致，仅措辞/粒度表述不同**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 通过对接企业数据库，计算企业涉及的产业链/技术链领域。……根据提取的企业领域标签，综合计算企业所涉及的产业链/技术链领域指标，并通过环比计算增长率计算其趋势。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 本功能支持用户选择一家或多家重点企业，系统自动解析其业务范围、产品线与技术标签，并关联至具体产业领域，计算覆盖广度与深度。用户可识别企业核心赛道与新兴布局方向，辅助产业链招商与生态协同决策。将企业业务解构为标准化产业标签，实现跨领域布局的量化刻画与可视化表达。<br>><br>> 该功能基于企业年报、专利、产品信息等数据，自动将其映射至预设产业领域，并计算在各领域的参与深度。用户可评估企业多元化程度。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+语义一致，仅措辞/粒度不同。**单接口兼容**：任选一方表述（本件沿用算法侧），登记同义词即可，无口径改动。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_DIVERSIFICATION_INDEX.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -183,7 +238,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，§二 按王惠 calc-logic 口径展开；已由脚本 `code/M_ENT_DIVERSIFICATION_INDEX.py` 在三方真源 `gkx`（`dwd_org_industry_tags`）**实测跑通**，结果见同目录 `M_ENT_DIVERSIFICATION_INDEX_out.json`。文内引用为「叙述后附 (Author)」体例，完整题录与可核验网址见文末参考文献。
+> **口径说明**：需求未给公式，§二 按王惠 calc-logic 口径展开；已由脚本 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` 在三方真源 `gkx`（`dwd_org_industry_tags`）**实测跑通**，结果见同目录 `M_ENT_DIVERSIFICATION_INDEX_out.json`。文内引用为「叙述后附 (Author)」体例，完整题录与可核验网址见文末参考文献。
 
 ### 2.1 方法选择：为什么是归一化香农熵
 
@@ -238,12 +293,12 @@ $$H^* = \frac{H}{\ln k}, \quad k = 12{,}148$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` |
 | 结果产物 | 同目录 `M_ENT_DIVERSIFICATION_INDEX_out.json` |
 | 主算库 | 三方真源 `gkx`（`dwd_org_industry_tags` 直连；脚本从 `.env.local` 读取 GKX_SRC_* 凭据，密码不入库） |
 
 ```bash
-python3 metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py
 ```
 
 脚本输出 `result`（k、N、H、H*、头部节点）与 `support_judgment`（四档支持度机判）。以下为 **2026-10-20** 完整跑数结果（与 out.json 一致）。
@@ -296,7 +351,7 @@ python3 metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_DIVERSIFICATION_INDEX.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -372,11 +427,6 @@ python3 metrics/repro/M_ENT_DIVERSIFICATION_INDEX.py
 7. 国家统计局. (2018). 《战略性新兴产业分类（2018）》（国家统计局令第 23 号）. https://www.stats.gov.cn/xxgk/tjbz/gjtjbz/202008/t20200811_1782344.html
 
 8. 深圳市人民政府. (2022). 《深圳市人民政府关于发展壮大战略性新兴产业集群和培育发展未来产业的意见》（深府〔2022〕1 号）. https://www.sz.gov.cn/zfgb/2022/gb1248/content/post_9918806.html
-
-9. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DIVERSIFICATION_INDEX.md` — 王惠口径真源（香农熵归一化）。
-
-文献—方法—库表完整论证见**附录 C**；实测产物见**附录 B / D**。
-
 ---
 
 # 附件
@@ -482,15 +532,7 @@ Jacquemin & Berry (1979) 论证熵度量优于赫芬达尔指数之处：层级�
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_ENT_DIVERSIFICATION_INDEX.py`
-- 产物：`../code/M_ENT_DIVERSIFICATION_INDEX_out.json`
+- 产物：`../metrics/repro/out/M_ENT_DIVERSIFICATION_INDEX_out.json`
 - 主算库：三方真源 `gkx`（凭据经 `.env.local`，密码未写入任何交付物）
 - 关键结果：k=12,148；N=5,319,383；H=4.2244；H*=0.4492；support_judgment=`完全转换支持`
 - 工程注意：`industry_link_code` 为 JSON 数组串，必须摊平（未摊平会得 k=954、H*=0.7151 的失真值）。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

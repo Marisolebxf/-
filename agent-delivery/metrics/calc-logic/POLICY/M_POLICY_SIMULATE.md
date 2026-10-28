@@ -1,9 +1,25 @@
 # 政策效果推演（M_POLICY_SIMULATE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_SIMULATE.md`；复现脚本 `metrics/repro/M_POLICY_SIMULATE.py` → `metrics/repro/out/M_POLICY_SIMULATE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：SIM（省级基线 × 情景参数 × 弹性系数）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策分析页「效果推演」情景面板（设计位）、推演结果曲线图（设计位）
+> - **数据支持度**：**完全不支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_SIMULATE.md`（基线 + 弹性推演两步）；王惠正本 `gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_SIMULATE.md（王惠正本已演化并入）`（V1.0-20260904）
+> - **同域边界**：与 `M_POLICY_INTENSITY_SCORE` / `M_POLICY_INTENSITY_INDEX` 是上下游——那两件出「力度」，本件拿力度当基线 `B` 做外推。两件都判完全不支持，因此本件连基线都拿不到；这不是「上游质量差」，是「上游不存在」。
+> - **一句话结论**：推演公式 $\Delta Y=e\cdot(X_{sim}-X_{base})/X_{base}$、$Y_{sim}=B(1+\Delta Y)$ 需要四样东西——基线 `B`、情景 `X`、弹性 `e`、校验 `Y`。gkx 280 表里对应的 5 张表**一张都没有**；live 侧其中 4 张 0 行、唯一有行的 `policy_intensity` 631 行属造数面且关键列全 NULL；另有 `policy_simulate` 36 行亦为造数面。四段输入皆空，判**完全不支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_SIMULATE.py`（否定性证据探针）｜ **产物**：`metrics/repro/out/M_POLICY_SIMULATE_out.json`｜ **共用底数**：`code/_snapshots21/policy_dims_20261023.json`、`policy_struct_20261023.json`、`policy_fields_a23_20261021.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_SIMULATE.py`、产物 `metrics/repro/out/M_POLICY_SIMULATE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_SIMULATE.md`；复现脚本 `metrics/repro/M_POLICY_SIMULATE.py` → `metrics/repro/out/M_POLICY_SIMULATE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_SIMULATE.py`、产物 `metrics/repro/out/M_POLICY_SIMULATE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_SIMULATE.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_SIMULATE.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_SIMULATE_out.json` |
@@ -59,19 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_SIMULATE.py`、产物 `metrics/repro/out/M_POLICY_SIMULATE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：SIM（省级基线 × 情景参数 × 弹性系数）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策分析页「效果推演」情景面板（设计位）、推演结果曲线图（设计位）
-> **数据支持度**：**完全不支持**｜ **公式定义人**：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_SIMULATE.md`（基线 + 弹性推演两步）；王惠正本 `王惠口径正本（GitLab 外本地归档）`（V1.0-20260904）
-> **复现脚本**：`code/M_POLICY_SIMULATE.py`（否定性证据探针）｜ **产物**：`code/M_POLICY_SIMULATE_out.json`｜ **共用底数**：`code/_snapshots21/policy_dims_20261023.json`、`policy_struct_20261023.json`、`policy_fields_a23_20261021.json`
-> **判定类型**：`verdict_kind = negative_evidence`。本件不出推演值（`registered_metric_value = null`），产物逐段证明推演链四段输入（B/X/e/Y）全部缺位。
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。推演本应输出未来年份曲线，但基线表不存在、参数表 0 行，连基期都定不下来；这不是「基期缺失」，是「推演链未建立」。
-> **同域边界**：与 `M_POLICY_INTENSITY_SCORE` / `M_POLICY_INTENSITY_INDEX` 是上下游——那两件出「力度」，本件拿力度当基线 `B` 做外推。两件都判完全不支持，因此本件连基线都拿不到；这不是「上游质量差」，是「上游不存在」。
-> **一句话结论**：推演公式 $\Delta Y=e\cdot(X_{sim}-X_{base})/X_{base}$、$Y_{sim}=B(1+\Delta Y)$ 需要四样东西——基线 `B`、情景 `X`、弹性 `e`、校验 `Y`。gkx 280 表里对应的 5 张表**一张都没有**；live 侧其中 4 张 0 行、唯一有行的 `policy_intensity` 631 行属造数面且关键列全 NULL；另有 `policy_simulate` 36 行亦为造数面。四段输入皆空，判**完全不支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -353,8 +361,8 @@ $$\Delta Y_p=e\cdot\frac{X_{sim}-X_{base}}{X_{base}},\qquad Y_{sim,p}=B_p\times(
 ### 6.1 复现步骤（本件是探针，不是推演脚本）
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_SIMULATE.py    # 产出 code/M_POLICY_SIMULATE_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_SIMULATE.py    # 产出 metrics/repro/out/M_POLICY_SIMULATE_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_SIMULATE --check
 ```
 
@@ -385,13 +393,12 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_SIMULATE --check
 ## 参考文献
 
 1. 国务院. 关于全面实施预算绩效管理的意见. https://www.gov.cn/zhengce/2018-09/25/content_5325315.htm
-2. 财政部. 项目支出绩效评价管理办法（财预〔2020〕10号）. https://www.gov.cn/zhengce/zhengceku/2020-03/02/content_5487878.htm
+2. 财政部. 项目支出绩效评价管理办法（财预〔2020〕10号）. https://www.gov.cn/
 3. 中华人民共和国科学技术部. 关于深化科技评价改革的若干意见. https://www.most.gov.cn/ztzl/zdzx/tztg/201612/t20161222_4804.html
 4. 国务院. 优化营商环境条例（国令第722号）. https://www.gov.cn/zhengce/content/2019-10/23/content_5443963.htm
-5. 国务院办公厅. 关于进一步优化政务服务提升行政效能推动「高效办成一件事」的指导意见. https://www.gov.cn/zhengce/content/202401/content_6926257.htm
+5. 国务院办公厅. 关于进一步优化政务服务提升行政效能推动「高效办成一件事」的指导意见. https://www.gov.cn/
 6. ISO. ISO 31000:2018 Risk management — Guidelines. https://www.iso.org/standard/65694.html
 7. MySQL 8.0 Reference Manual — The DATE, DATETIME, and TIMESTAMP Types. https://dev.mysql.com/doc/refman/8.0/en/datetime.html
-
 ---
 
 # 附件
@@ -516,15 +523,7 @@ QPOL-02 未签，$e$ 无取值，推演无法完成——这不是数据问题�
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 探针 | `python3 code/M_POLICY_SIMULATE.py` | `code/M_POLICY_SIMULATE_out.json` |
+| 探针 | `python3 code/M_POLICY_SIMULATE.py` | `metrics/repro/out/M_POLICY_SIMULATE_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_SIMULATE --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21/M_POLICY_SIMULATE.md` | PASS |
 | 基期闸 | `python3 _work_gkx21/check_base_years.py _staging21/M_POLICY_SIMULATE.md` | OK |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

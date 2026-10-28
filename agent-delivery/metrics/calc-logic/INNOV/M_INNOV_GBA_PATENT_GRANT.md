@@ -1,9 +1,20 @@
 # 专利授权量（M_INNOV_GBA_PATENT_GRANT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_PATENT_GRANT.md`；复现脚本 `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py` → `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（计数）｜ **域**：INNOV · 湾区创新监测（DS-05）｜ **UI 挂载**：粤港澳大湾区创新指标数据 GIS（指标勾选）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py`、产物 `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_PATENT_GRANT.md`；复现脚本 `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py` → `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py`、产物 `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_GBA_PATENT_GRANT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json` |
@@ -65,14 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py`、产物 `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（计数）｜ **域**：INNOV · 湾区创新监测（DS-05）｜ **UI 挂载**：粤港澳大湾区创新指标数据 GIS（指标勾选）｜ **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（registry 口径，公式待签）｜ 直接（结构/数据）：部分 / 部分 ｜ 依赖（结构/数据）：有 / 4 城精确、7 城仅名称下界
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -108,7 +116,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「专利授权量」是招标文件「粤港澳大湾区创新指标数据」明确列出的指标，要求按区域在 GIS 上展示，并支持查看数据来源与计算方式。registry 将其定义为「期内授权专利件数，含发明/实用新型/外观，按专利号去重；专利权人地址或第一专利权人在湾区 11 城」，并特别注明「不是企业第一专利权人口径（≠ `M_ENT_PATENT_GRANT_COUNT`）」。
 
-**复现结论**：脚本 `code/M_INNOV_GBA_PATENT_GRANT.py` 已跑通，全部数字读全量扫描缓存（零专利 SQL）。2024 单年四个可比城市合计申请 **529,394** 件、授权 **381,952** 件，同申请年内授权率 **72.15%**；分城为深圳 275,908/190,081（68.89%）、广州 140,395/99,136（70.61%）、东莞 89,347/73,034（81.74%）、惠州 23,744/19,701（82.97%）。全窗（2021–2026）合计：深圳 968,510、广州 493,729、东莞 349,472、惠州 91,209。7 个无底册城市只能给名称 token 下界（珠海 875、佛山 591、中山 393、江门 395、肇庆 183、香港 286、澳门 91，均为全窗授权数），不参与排序。
+**复现结论**：脚本 `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py` 已跑通，全部数字读全量扫描缓存（零专利 SQL）。2024 单年四个可比城市合计申请 **529,394** 件、授权 **381,952** 件，同申请年内授权率 **72.15%**；分城为深圳 275,908/190,081（68.89%）、广州 140,395/99,136（70.61%）、东莞 89,347/73,034（81.74%）、惠州 23,744/19,701（82.97%）。全窗（2021–2026）合计：深圳 968,510、广州 493,729、东莞 349,472、惠州 91,209。7 个无底册城市只能给名称 token 下界（珠海 875、佛山 591、中山 393、江门 395、肇庆 183、香港 286、澳门 91，均为全窗授权数），不参与排序。
 
 **关键发现（本版新增）**：缓存缺「城市 × 年 × 件型」四维交叉，因此**无法再给出 B/U/D 类型拆分**。旧版据类型结构得出的「惠州授权率高是因为实用新型占比高」这一解释，在本版**不能复现**；本报告据实撤回该解释，只保留「同申请年内授权率」这一可复现读数，并把类型拆分登记为缺口。按 §〇，判 **部分支持**。
 
@@ -212,7 +220,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节为 registry 口径的可执行化。脚本 `code/M_INNOV_GBA_PATENT_GRANT.py` 已跑通并输出 `code/M_INNOV_GBA_PATENT_GRANT_out.json`；全部专利数字读全量扫描缓存，**没有发任何专利 SQL**。文内引用为「叙述后附 (Author)」，完整题录见文末。
+> **口径说明**：本节为 registry 口径的可执行化。脚本 `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py` 已跑通并输出 `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json`；全部专利数字读全量扫描缓存，**没有发任何专利 SQL**。文内引用为「叙述后附 (Author)」，完整题录见文末。
 
 ### 2.1 方法选择：为什么读缓存而不是查表
 
@@ -313,14 +321,14 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_GBA_PATENT_GRANT.py` |
-| 结果产物 | `code/M_INNOV_GBA_PATENT_GRANT_out.json` |
+| 计算脚本 | `metrics/repro/M_INNOV_GBA_PATENT_GRANT.py` |
+| 结果产物 | `metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json` |
 | 主算库 | `gkx`（三方库 `183.240.141.251:3318`，只读账号） |
 | 专利取数 | 全量扫描缓存，**零专利 SQL**；脚本耗时 2.1 秒 |
 | 城市底册 | `code/_snapshots21/base_20261021.json`（189,116 行） |
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_GBA_PATENT_GRANT.py
 ```
 
@@ -489,9 +497,6 @@ python3 code/M_INNOV_GBA_PATENT_GRANT.py
 5. 国家统计局. (2017). 《高技术产业（制造业）分类（2017）》. https://www.stats.gov.cn/sj/tjbz/gjtjbz/202302/t20230213_1902772.html （用于说明专利与产业分类的口径差异）
 
 6. 广东省统计局. 《广东统计年鉴》. https://stats.gd.gov.cn/gdtjnj/index.html
-
-7. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml` 第 1041–1059 行。
-
 ---
 
 # 附件
@@ -609,14 +614,7 @@ WIPO IP Statistics 按来源国、专利局、技术领域统计申请与授权�
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_INNOV_GBA_PATENT_GRANT.py`
-- 产物：`../code/M_INNOV_GBA_PATENT_GRANT_out.json`
+- 产物：`../metrics/repro/out/M_INNOV_GBA_PATENT_GRANT_out.json`
 - 主算库：`gkx`（183.240.141.251:3318）
 - 关键结果：2024 四城申请 529,394、授权 381,952、同申请年授权率 72.15%；深圳 190,081、广州 99,136、东莞 73,034、惠州 19,701；全窗四城授权 1,902,920；`support_judgment=部分支持`
 - 工程注意：全部数字读全量扫描缓存，零专利 SQL；7 城 token 下界单列且不参与排序；件型维缺失已如实登记，未用估算填补。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

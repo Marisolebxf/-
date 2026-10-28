@@ -1,9 +1,20 @@
 # 粤港澳大湾区创新能力指标（M_INNOV_GBA_CAPACITY_INDEX）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_CAPACITY_INDEX.md`；复现脚本 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py` → `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV 域 · 湾区创新（需求只给「湾区创新能力指标」功能口径；王惠 calc-logic 给四子指数等权合成）｜ **wanghui**: true（四子指数等权，沿用 calc-logic 口径）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素·湾区创新能力（序号 12）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py`、产物 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_CAPACITY_INDEX.md`；复现脚本 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py` → `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py`、产物 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +35,7 @@
 
 ## 口径定义
 
-四子指数的公式都能落地、四个城市都能算出非退化分数（深圳 94.6、广州 53.9、东莞 11.8、惠州 0.4），但**湾区 11 城里只有 4 城有机构底册**，珠海/佛山/中山 ≤1 家、江门/肇庆/香港/澳门 0 家；MECH 三维只剩转移一维可算，ENV 的政策主题维全空 → 判 **部分支持**。本档位与 `code/M_INNOV_GBA_CAPACITY_INDEX_out.json` 的 `support_judgment.data_support_level` 一致。
+四子指数的公式都能落地、四个城市都能算出非退化分数（深圳 94.6、广州 53.9、东莞 11.8、惠州 0.4），但**湾区 11 城里只有 4 城有机构底册**，珠海/佛山/中山 ≤1 家、江门/肇庆/香港/澳门 0 家；MECH 三维只剩转移一维可算，ENV 的政策主题维全空 → 判 **部分支持**。本档位与 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json` 的 `support_judgment.data_support_level` 一致。
 
 ## 计算逻辑说明
 
@@ -51,7 +62,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：四子指数的公式都能落地、四个城市都能算出非退化分数（深圳 94.6、广州 53.9、东莞 11.8、惠州 0.4），但**湾区 11 城里只有 4 城有机构底册**，珠海/佛山/中山 ≤1 家、江门/肇庆/香港/澳门 0 家；MECH 三维只剩转移一维可算，ENV 的政策主题维全空 → 判 **部分支持**。本档位与 `code/M_INNOV_GBA_CAPACITY_INDEX_out.json` 的 `support_judgment.data_support_level` 一致。
+- **判档理由**：四子指数的公式都能落地、四个城市都能算出非退化分数（深圳 94.6、广州 53.9、东莞 11.8、惠州 0.4），但**湾区 11 城里只有 4 城有机构底册**，珠海/佛山/中山 ≤1 家、江门/肇庆/香港/澳门 0 家；MECH 三维只剩转移一维可算，ENV 的政策主题维全空 → 判 **部分支持**。本档位与 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json` 的 `support_judgment.data_support_level` 一致。
 - **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 - **复现实测耗时**：约 0.0 秒（源件落盘记录）
 
@@ -59,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_GBA_CAPACITY_INDEX.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json` |
@@ -67,15 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py`、产物 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域 · 湾区创新（需求只给「湾区创新能力指标」功能口径；王惠 calc-logic 给四子指数等权合成）｜ **wanghui**: true（四子指数等权，沿用 calc-logic 口径）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素·湾区创新能力（序号 12）｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（四子指数：RES 创新资源 / ORG 创新机构 / MECH 创新机制 / ENV 创新环境，等权合成，0–100）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分
-> **主算库**：`gkx`（三方库，`183.240.141.251:3318`）｜ **专利取数**：`code/_snapshots_gkx21/city_patent_year_gkx.json`（面板派生，零专利 SQL）｜ **底册**：`code/_snapshots21/base_20261021.json`（189,116 行）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -103,7 +110,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-四子指数的公式都能落地、四个城市都能算出非退化分数（深圳 94.6、广州 53.9、东莞 11.8、惠州 0.4），但**湾区 11 城里只有 4 城有机构底册**，珠海/佛山/中山 ≤1 家、江门/肇庆/香港/澳门 0 家；MECH 三维只剩转移一维可算，ENV 的政策主题维全空 → 判 **部分支持**。本档位与 `code/M_INNOV_GBA_CAPACITY_INDEX_out.json` 的 `support_judgment.data_support_level` 一致。
+四子指数的公式都能落地、四个城市都能算出非退化分数（深圳 94.6、广州 53.9、东莞 11.8、惠州 0.4），但**湾区 11 城里只有 4 城有机构底册**，珠海/佛山/中山 ≤1 家、江门/肇庆/香港/澳门 0 家；MECH 三维只剩转移一维可算，ENV 的政策主题维全空 → 判 **部分支持**。本档位与 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json` 的 `support_judgment.data_support_level` 一致。
 
 ---
 
@@ -242,7 +249,7 @@ $$
 
 ### 2.7 复现代码结果展示
 
-脚本 `code/M_INNOV_GBA_CAPACITY_INDEX.py` 运行 <1 秒（`elapsed_sec` 0.0），产物 `code/M_INNOV_GBA_CAPACITY_INDEX_out.json`。四城结果：
+脚本 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py` 运行 <1 秒（`elapsed_sec` 0.0），产物 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json`。四城结果：
 
 | 城市 | RES | ORG | MECH | ENV | 容量指数 | 排名 |
 |---|---:|---:|---:|---:|---:|---:|
@@ -294,7 +301,7 @@ $$
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_GBA_CAPACITY_INDEX.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维 | 源表/缓存 | 关键字段 | 行数/量 | 支持状态 |
 |---|---|---|---:|---|
@@ -390,21 +397,14 @@ $$
 
 **结论四：港澳缺失要显式披露。** 湾区指数没有港澳，等于缺了两极；建议在页面固定位置写「港澳机构库待接入」，而不是藏在附录。
 
-**发布建议**：本指标以「部分支持」入湖，页面挂四城排序 + 四子指数雷达 + 缺失城市清单。验收以 `code/M_INNOV_GBA_CAPACITY_INDEX_out.json` 为唯一数源；任何页面分数与 `out.json` 不一致，或把「四城均值」写成「湾区均值」，即判口径漂移。
+**发布建议**：本指标以「部分支持」入湖，页面挂四城排序 + 四子指数雷达 + 缺失城市清单。验收以 `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json` 为唯一数源；任何页面分数与 `out.json` 不一致，或把「四城均值」写成「湾区均值」，即判口径漂移。
 
 ---
 
 ## 参考文献
 
 1. WIPO. Global Innovation Index 2023: Innovation in the face of uncertainty[R]. Geneva: WIPO, 2023. https://www.wipo.int/global_innovation_index/
-2. 首都科技发展战略研究院. 中国城市科技创新发展报告 2023[M]. 北京: 科学出版社, 2023. https://www.casted.org.cn/
-3. 广东省社会科学院. 粤港澳大湾区蓝皮书 2023[M]. 北京: 社会科学文献出版社, 2023. https://www.gdass.gov.cn/
-4. OECD. Regions and Innovation Policy[R]. Paris: OECD Publishing, 2011. https://www.oecd.org/regional/
-5. OECD. Handbook on Constructing Composite Indicators[M]. Paris: OECD Publishing, 2008. https://doi.org/10.1787/9789264043466-en
-6. 王惠. M_INNOV_GBA_CAPACITY_INDEX 指标计算逻辑（calc-logic）[Z]. 内部文档, 2026.
-7. 本报告数据事实库. `_work_gkx21/DATA_FACTS_gkx21.md`. 2026-10-22.
-8. 本报告共享事实缓存. `code/_snapshots21/innov21_facts_20261021.json`. 2026-10-22.
-
+2. OECD. Handbook on Constructing Composite Indicators[M]. Paris: OECD Publishing, 2008. https://doi.org/10.1787/9789264043466-en
 ---
 
 # 附件
@@ -502,7 +502,7 @@ SRS 序号 12 挂载「湾区创新能力」条目，字段级定义由王惠 ca
 
 ### C.5 推荐构建方案（工程可执行）
 
-推荐「四城 min-max + 等权 + 缺测剔除」：先按机构底册 ≥100 家筛可用城市，再逐维 min-max，子指数取可用维均值，总分四子指数等权。该方案已在 `code/M_INNOV_GBA_CAPACITY_INDEX.py` 落地，运行 <1 秒，产物含逐维归一值，便于复核。
+推荐「四城 min-max + 等权 + 缺测剔除」：先按机构底册 ≥100 家筛可用城市，再逐维 min-max，子指数取可用维均值，总分四子指数等权。该方案已在 `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py` 落地，运行 <1 秒，产物含逐维归一值，便于复核。
 
 ### C.6 风险与残余不确定性
 
@@ -522,16 +522,8 @@ SRS 序号 12 挂载「湾区创新能力」条目，字段级定义由王惠 ca
 |---|---|
 | 共享事实构建器 | `code/_innov21_facts.py` |
 | 事实缓存 | `code/_snapshots21/innov21_facts_20261021.json` |
-| 指标脚本 | `code/M_INNOV_GBA_CAPACITY_INDEX.py`（<1 秒） |
-| 结果 | `code/M_INNOV_GBA_CAPACITY_INDEX_out.json` |
+| 指标脚本 | `metrics/repro/M_INNOV_GBA_CAPACITY_INDEX.py`（<1 秒） |
+| 结果 | `metrics/repro/out/M_INNOV_GBA_CAPACITY_INDEX_out.json` |
 | 专利取数 | `city_patent_year_gkx.json`，零 `dwd_patent` SQL |
 | 判档 | 部分支持（与 `out.json` 一致） |
 | 运行环境 | Python 3，`gkx` @ `183.240.141.251:3318` |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

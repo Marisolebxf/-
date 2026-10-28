@@ -1,9 +1,24 @@
 # 区域创新要素类型指数（M_SYNTH_ELEM_TYPE_INDEX）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_TYPE_INDEX.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py` → `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（L2 维指数）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（类型维由 gkx 现算）+ 结构缺口（7 维只出 6 维、3 个叶子无承载、1 个退化、资金维上市口径、空间维名称弱代理）**
+> - **一句话结论**：类型指数四城为深圳 85.8575、广州 47.3739、东莞 16.6453、惠州 11.1180，六个可用维的等权均值逐城复算一致；但 17 个类型叶子里 3 个无承载、1 个样本不足、1 个退化，创新人才整维缺席，资金维只有 651 家上市主体、空间维只有名称弱代理——**算术闭合、覆盖 6/7 → 部分支持。**
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py`｜ **产物**：`metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_TYPE_INDEX.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py` → `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_ELEM_TYPE_INDEX.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json` |
@@ -60,19 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（L2 维指数）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
-> **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（类型维由 gkx 现算）+ 结构缺口（7 维只出 6 维、3 个叶子无承载、1 个退化、资金维上市口径、空间维名称弱代理）**
-> **复现脚本**：`code/M_SYNTH_ELEM_TYPE_INDEX.py`｜ **产物**：`code/M_SYNTH_ELEM_TYPE_INDEX_out.json`
-> **族级面板**：`code/_snapshots21/synth_elem_panel_20261023.json`（本族十件共用，由 `code/_build_synth_elem_panel.py` 生成）
-> **公式定义人**：王惠（`M_SYNTH_ELEM_TYPE_INDEX.md`：极值归一、维内加权、七维等权汇总）
-> **基期声明**：统计年 2024；`base_years_used=[2024]`，`base_years_missing=[]`；企业按 2024 成立年、融资按 2024 完成日、上市研发按 2024 年报期；高企名录、服务机构池、科研机构表、政策存量为当前时点存量，不按年截断。
-> **一句话结论**：类型指数四城为深圳 85.8575、广州 47.3739、东莞 16.6453、惠州 11.1180，六个可用维的等权均值逐城复算一致；但 17 个类型叶子里 3 个无承载、1 个样本不足、1 个退化，创新人才整维缺席，资金维只有 651 家上市主体、空间维只有名称弱代理——**算术闭合、覆盖 6/7 → 部分支持。**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -168,10 +175,10 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 文件 | 内容 |
 |---|---|
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_INDEX.md` | 本件正本，三步公式与七维十七叶明细 |
-| `王惠口径正本（GitLab 外本地归档）` | 王惠原稿，与 calc-logic 同源 |
+| `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_INDEX.md（王惠正本已演化并入）` | 王惠原稿，与 calc-logic 同源 |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_WEIGHT.md` | 跨维权重声明，本件沿用其 1/6 |
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 17 个类型叶子、6 个可用维、类型指数的唯一来源 |
-| `code/M_SYNTH_ELEM_RANK_out.json` | 兄弟件，提供序数归一与 11 城可执行性对照 |
+| `metrics/repro/out/M_SYNTH_ELEM_RANK_out.json` | 兄弟件，提供序数归一与 11 城可执行性对照 |
 
 ### 1.6 与旧稿的差异
 
@@ -306,13 +313,13 @@ $$
 
 本件只出六个维分与一个类型指数，不出「要素综合分」。原因是权重件已经把三条维指数按 1/3 合成综合分（`M_SYNTH_ELEM_INDEX`），若本件再出一个「七维加总」，同一个企业信息会被计入两次：一次在类型维的企业叶子里，一次在领域维的产业覆盖里。
 
-数值上看得更清楚：六维均值（=类型指数）是 85.8575、47.3739、16.6453、11.1180，而综合分是 77.6829、45.8001、31.3832、15.4755，差额分别是 8.1746、1.5738、−14.7379、−4.3575。**东莞的类型分比综合分低 14.7379，深圳高 8.1746**——如果读者把类型分当综合分用，就会得出「东莞要素配置很差」的结论，而综合分说它第三。六维直接相加（515.1447、284.2432、99.8715、66.708，见 `code/M_SYNTH_ELEM_TYPE_SCORE_out.json`）更是无意义的量，因为每一维都已经在 0—100 里，加总只是把权重放大六倍。
+数值上看得更清楚：六维均值（=类型指数）是 85.8575、47.3739、16.6453、11.1180，而综合分是 77.6829、45.8001、31.3832、15.4755，差额分别是 8.1746、1.5738、−14.7379、−4.3575。**东莞的类型分比综合分低 14.7379，深圳高 8.1746**——如果读者把类型分当综合分用，就会得出「东莞要素配置很差」的结论，而综合分说它第三。六维直接相加（515.1447、284.2432、99.8715、66.708，见 `metrics/repro/out/M_SYNTH_ELEM_TYPE_SCORE_out.json`）更是无意义的量，因为每一维都已经在 0—100 里，加总只是把权重放大六倍。
 
 ### 2.9 复现结果展示
 
 ```bash
-$ python3 M_SYNTH_ELEM_TYPE_INDEX.py
-[TYPE_INDEX] -> code/M_SYNTH_ELEM_TYPE_INDEX_out.json
+$ cd code && python3 M_SYNTH_ELEM_TYPE_INDEX.py
+[TYPE_INDEX] -> metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json
   index {'深圳市': 85.8575, '广州市': 47.3739, '东莞市': 16.6453, '惠州市': 11.118}
   order ['深圳市', '广州市', '东莞市', '惠州市']
   gaps {'深圳市->广州市': 38.4836, '广州市->东莞市': 30.7286, '东莞市->惠州市': 5.5273}
@@ -326,7 +333,7 @@ $ python3 M_SYNTH_ELEM_TYPE_INDEX.py
           'ordinal_matches_sibling_rank': True}
 ```
 
-产物 `code/M_SYNTH_ELEM_TYPE_INDEX_out.json` 里，`type_index` 是输出，`dim_table` 是六维台账（含被排除的叶子与原因），`leaf_table` 是 17 个叶子的原值、z 值、状态与来源，`dim_contrib` 是逐城六段贡献与占比，`single_dim_order`、`endpoint_count`、`drop_one_dim`、`zero_fill_counterexample`、`degenerate_leaf_sensitivity` 是五组敏感性。五项 `checks` 全 true。
+产物 `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json` 里，`type_index` 是输出，`dim_table` 是六维台账（含被排除的叶子与原因），`leaf_table` 是 17 个叶子的原值、z 值、状态与来源，`dim_contrib` 是逐城六段贡献与占比，`single_dim_order`、`endpoint_count`、`drop_one_dim`、`zero_fill_counterexample`、`degenerate_leaf_sensitivity` 是五组敏感性。五项 `checks` 全 true。
 
 ---
 
@@ -390,7 +397,7 @@ $ python3 M_SYNTH_ELEM_TYPE_INDEX.py
 | `code/_snapshots21/synth_elem_probe_20261023.json` | 族级探针（年报研发、学者、服务机构类型、空间列） | gkx |
 | `code/_snapshots21/cityfam_hightech_20261021.json` | 高企名录四城计数 | gkx |
 | `code/_snapshots21/service_pool_20261022.json` | 服务机构池 44,153 家 | gkx |
-| `code/M_SYNTH_ELEM_TYPE_INDEX_out.json` | 本件产物 | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json` | 本件产物 | 派生产物 |
 
 ### 3.6 与兄弟件的数字对账
 
@@ -406,7 +413,7 @@ $ python3 M_SYNTH_ELEM_TYPE_INDEX.py
 
 ### 3.7 11 城范围与本件的关系
 
-正本没有指定城市范围，但类型叶子的极值归一依赖进盘城市集合。兄弟件 `code/M_SYNTH_ELEM_RANK_out.json` 的 `default_scope_feasibility` 给出：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件用四城盘（广深加东莞 33,590、惠州 9,979），是「四个有量的城市」的取舍结果，不是正本的默认范围。
+正本没有指定城市范围，但类型叶子的极值归一依赖进盘城市集合。兄弟件 `metrics/repro/out/M_SYNTH_ELEM_RANK_out.json` 的 `default_scope_feasibility` 给出：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件用四城盘（广深加东莞 33,590、惠州 9,979），是「四个有量的城市」的取舍结果，不是正本的默认范围。
 
 ---
 
@@ -466,7 +473,7 @@ T_POL_1 用存量（879／325／8／0），不按发布年截断。原因是按�
 本路五件与前五件共用同一份面板，四处缺口必须逐字一致，不得各自解释：
 
 1. **11 城样本不可比**：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做极值归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件的四城盘是「四个有量的城市」的取舍，不是 11 城盘，分数不可扩到 11 城。
-2. **D2_1 分母存续口径**：四城存续率 99.3389%、97.3027%、58.1691%、60.2265%（见 `code/M_SYNTH_ELEM_DOMAIN_INDEX_out.json`），东莞的分母被压掉四成。序数归一会把东莞与广州的次序翻过来（差 0.0001），所以任何「东莞高于广州」的结论都必须带分母口径。本件不直接用 D2_1，但发布时须与领域件同一句话。
+2. **D2_1 分母存续口径**：四城存续率 99.3389%、97.3027%、58.1691%、60.2265%（见 `metrics/repro/out/M_SYNTH_ELEM_DOMAIN_INDEX_out.json`），东莞的分母被压掉四成。序数归一会把东莞与广州的次序翻过来（差 0.0001），所以任何「东莞高于广州」的结论都必须带分母口径。本件不直接用 D2_1，但发布时须与领域件同一句话。
 3. **人才侧缺「发明人—申请人」桥**：学者只能按机构名落城，覆盖 16,257/21,316、四城占 5.18%，四城硕博学者 111 人、东莞为 0。本件的空缺维／结构就是这条桥缺失的直接后果。
 4. **机构归属 A/B 双列待裁**：科研机构口径是「科研机构 2,074 家 ∪ 高校校名 2,933 个」（A 列），若只算科研机构（B 列），广州的科研机构得分会下降。本件沿用 A 列并在 §4.5 说明翻转风险。
 
@@ -520,7 +527,6 @@ T_POL_1 用存量（879／325／8／0），不按发布年截断。原因是按�
 8. OECD．Oslo Manual 2018［M］．2018．https://doi.org/10.1787/9789264304604-en
 9. OECD．Frascati Manual 2015［M］．2015．https://doi.org/10.1787/9789264239012-en
 10. Saisana M, Saltelli A, Tarantola S．Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators［J］．Journal of the Royal Statistical Society A，2005，168(2)：307-323．https://doi.org/10.1111/j.1467-985X.2005.00350.x
-
 ---
 
 # 附件
@@ -633,20 +639,12 @@ T_POL_1 用存量（879／325／8／0），不按发布年截断。原因是按�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_ELEM_TYPE_INDEX.py` |
-| 产物 | `code/M_SYNTH_ELEM_TYPE_INDEX_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_ELEM_TYPE_INDEX.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_ELEM_TYPE_INDEX_out.json` |
 | 面板 | `code/_snapshots21/synth_elem_panel_20261023.json` |
 | 维数 | 6/7 |
 | 加权叶子 | 12/17 |
-| 运行方式 | `python3 M_SYNTH_ELEM_TYPE_INDEX.py` |
+| 运行方式 | `cd code && python3 M_SYNTH_ELEM_TYPE_INDEX.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 统计年 | 2024 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

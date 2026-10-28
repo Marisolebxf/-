@@ -1,9 +1,22 @@
 # 产业科学影响力（M_INNOV_POT_SCI_INFL）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POT_SCI_INFL.md`；复现脚本 `metrics/repro/M_INNOV_POT_SCI_INFL.py` → `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 产业发展潜力评估 → 科学影响力评估（需求清单序号 149）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（被引表、作者表都在）；依赖数据 = **部分**（论文级可用，产业归属只有 0.36% 作者行可落）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POT_SCI_INFL.py`、产物 `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_POT_SCI_INFL.md`；复现脚本 `metrics/repro/M_INNOV_POT_SCI_INFL.py` → `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_POT_SCI_INFL.py`、产物 `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_POT_SCI_INFL.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_POT_SCI_INFL.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json` |
@@ -67,20 +80,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_POT_SCI_INFL.py`、产物 `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 产业发展潜力评估 → 科学影响力评估（需求清单序号 149）
-> **UI 挂载**：产业发展潜力评估页「科学影响力评估」——产业科学影响力指标的分布与排名
-> **派单标签**：潜力点科研影响力（与本 ID 的「产业科学影响力」为同一口径，object = 产业）
-> **数据支持度**：**部分支持**
-> **公式定义人**：王惠 calc-logic（`metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md`）
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（被引表、作者表都在）；依赖数据 = **部分**（论文级可用，产业归属只有 0.36% 作者行可落）
-> **铁律**：不造影响因子、不造引用权重；`dwd_zh_journal.impact_score` 与 `dwd_zh_paper.download_num` 整列为空（陷阱 §3.10），本文零引用
-> wanghui: true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -303,10 +307,10 @@ SELECT id, doi FROM gkx.dwd_zh_paper;                             -- 100,900 行
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_INNOV_POT_SCI_INFL.py` |
+| 脚本 | `metrics/repro/M_INNOV_POT_SCI_INFL.py` |
 | 公共库 | `code/_a26_common.py` |
 | 数据快照 | `code/_snapshots21/probe_a26_20261022.json`、`probe_infl_20261022/`、`star_base_rows_gkx.json` |
-| 输出 | `code/M_INNOV_POT_SCI_INFL_out.json`（16,371 字节） |
+| 输出 | `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json`（16,371 字节） |
 | 运行 | `python3 code/M_INNOV_POT_SCI_INFL.py` |
 | 耗时 | 1.1 秒 |
 | 新增 SQL | 0（探针另计 4 条，均 ≤10 万行） |
@@ -444,15 +448,12 @@ SELECT id, doi FROM gkx.dwd_zh_paper;                             -- 100,900 行
 
 ## 参考文献
 
-1. OECD. *Science, Technology and Industry Scoreboard 2023*. <https://www.oecd.org/sti/scoreboard.htm>
-2. NSF NCSES. *Science and Engineering Indicators 2024*. <https://ncses.nsf.gov/pubs/nsb20241>
-3. Waltman, L., van Eck, N. J., et al. *The Leiden Ranking 2011/2012*. JASIST 63(12), 2012. <https://arxiv.org/abs/1202.3941>
-4. CWTS. *International collaboration indicators*. <https://www.cwts.nl/>
-5. 国家知识产权局. *知识产权统计年报（2024）*. <https://www.cnipa.gov.cn/col/col61/index.html>
-6. 中国科学技术信息研究所. *中国科技论文统计结果（2024）*. <https://www.istic.ac.cn/>
-7. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md`
-8. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（第 923、939—941 行）
-
+1. NSF NCSES. *Science and Engineering Indicators 2024*. <https://ncses.nsf.gov/pubs/nsb20241>
+2. Waltman, L., van Eck, N. J., et al. *The Leiden Ranking 2011/2012*. JASIST 63(12), 2012. <https://arxiv.org/abs/1202.3941>
+3. CWTS. *International collaboration indicators*. <https://www.cwts.nl/>
+4. 国家知识产权局. *知识产权统计年报（2024）*. <https://www.cnipa.gov.cn/col/col61/index.html>
+5. 中国科学技术信息研究所. *中国科技论文统计结果（2024）*. <https://www.istic.ac.cn/>
+6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（第 923、939—941 行）
 ---
 
 # 附件
@@ -573,17 +574,9 @@ Hidalgo-Hausmann 的经济复杂度用出口结构推产业能力，对象是技
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_POT_SCI_INFL.py` |
-| 输出 | `code/M_INNOV_POT_SCI_INFL_out.json`（16,371 字节） |
+| 脚本 | `metrics/repro/M_INNOV_POT_SCI_INFL.py` |
+| 输出 | `metrics/repro/out/M_INNOV_POT_SCI_INFL_out.json`（16,371 字节） |
 | 耗时 | 1.1 秒 |
 | 新增 SQL | 0（探针 4 条另计） |
 | 关键数字 | 20,031 篇 / 144,020 次 / 篇均 7.19 / 机构匹配 4.88% / 产业归属 0.36% / 可归属 127 篇 / 产业达标 0 / 国际合作 58 篇 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

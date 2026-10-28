@@ -1,9 +1,24 @@
 # 七大结构层次评价（M_SYNTH_ELEM_LEVEL_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_LEVEL_SCORE.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py` → `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（L2 结构评价）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（成熟度、均衡度、达标均为 gkx 现算）+ 结构缺口（人才结构整结构空缺、两个结构均衡度恒 60、达标阈值是本批四城相对均值）**
+> - **一句话结论**：六个有值结构里深圳达标 5 个、广州 4 个、东莞 1 个、惠州 1 个，逐格可复算；但人才结构整结构空缺、两个结构的均衡度是常数 60、达标是「四城相对」而非绝对标准，且换中位数阈值广州会多达标一个——**判定可复算、标准不可外推 → 部分支持。**
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py`｜ **产物**：`metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_LEVEL_SCORE.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py` → `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -48,7 +63,7 @@
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_ELEM_LEVEL_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json` |
@@ -56,19 +71,11 @@
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（L2 结构评价）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
-> **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（成熟度、均衡度、达标均为 gkx 现算）+ 结构缺口（人才结构整结构空缺、两个结构均衡度恒 60、达标阈值是本批四城相对均值）**
-> **复现脚本**：`code/M_SYNTH_ELEM_LEVEL_SCORE.py`｜ **产物**：`code/M_SYNTH_ELEM_LEVEL_SCORE_out.json`
-> **族级面板**：`code/_snapshots21/synth_elem_panel_20261023.json`（本族十件共用，由 `code/_build_synth_elem_panel.py` 生成）
-> **公式定义人**：王惠（`M_SYNTH_ELEM_LEVEL_SCORE.md`：成熟度取维内等权、均衡度取熵比、达标 = 成熟度 ≥ 本批均值）
-> **基期声明**：统计年 2024；`base_years_used=[2024]`，`base_years_missing=[]`；达标阈值取本批四城该结构成熟度均值，换城市集合阈值就变。
-> **一句话结论**：六个有值结构里深圳达标 5 个、广州 4 个、东莞 1 个、惠州 1 个，逐格可复算；但人才结构整结构空缺、两个结构的均衡度是常数 60、达标是「四城相对」而非绝对标准，且换中位数阈值广州会多达标一个——**判定可复算、标准不可外推 → 部分支持。**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -161,10 +168,10 @@
 | 文件 | 内容 |
 |---|---|
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_SCORE.md` | 本件正本，三步公式与达标规则 |
-| `王惠口径正本（GitLab 外本地归档）` | 王惠原稿，与 calc-logic 同源 |
+| `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_SCORE.md（王惠正本已演化并入）` | 王惠原稿，与 calc-logic 同源 |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_INDEX.md` | 上游件，层次指数与结构分 |
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 六结构成熟度、均衡度的唯一来源 |
-| `code/M_SYNTH_ELEM_LEVEL_INDEX_out.json` | 兄弟件，提供结构分与层次指数对照 |
+| `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json` | 兄弟件，提供结构分与层次指数对照 |
 
 ### 1.6 与旧稿的差异
 
@@ -296,8 +303,8 @@ $$
 ### 2.9 复现结果展示
 
 ```bash
-$ python3 M_SYNTH_ELEM_LEVEL_SCORE.py
-[LEVEL_SCORE] -> code/M_SYNTH_ELEM_LEVEL_SCORE_out.json
+$ cd code && python3 M_SYNTH_ELEM_LEVEL_SCORE.py
+[LEVEL_SCORE] -> metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json
   meet {'深圳市': 5, '广州市': 4, '东莞市': 1, '惠州市': 1}
   miss {'深圳市': 1, '广州市': 2, '东莞市': 5, '惠州市': 5}
   null {'深圳市': 1, '广州市': 1, '东莞市': 1, '惠州市': 1}
@@ -310,7 +317,7 @@ $ python3 M_SYNTH_ELEM_LEVEL_SCORE.py
           'no_total_index_emitted': True}
 ```
 
-产物 `code/M_SYNTH_ELEM_LEVEL_SCORE_out.json` 里，`rows` 是六结构台账（成熟度、均衡度、结构分、阈值、margin、达标），`meet_count`／`miss_count`／`null_count` 是按城汇总，`alternative_thresholds` 是四种阈值的逐格标记，`alternative_meet_counts` 是四种阈值的汇总，`threshold_disagreements` 是会翻的格子，`balance_stats` 是均衡度分布。五项 `checks` 全 true。
+产物 `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json` 里，`rows` 是六结构台账（成熟度、均衡度、结构分、阈值、margin、达标），`meet_count`／`miss_count`／`null_count` 是按城汇总，`alternative_thresholds` 是四种阈值的逐格标记，`alternative_meet_counts` 是四种阈值的汇总，`threshold_disagreements` 是会翻的格子，`balance_stats` 是均衡度分布。五项 `checks` 全 true。
 
 ---
 
@@ -361,8 +368,8 @@ $ python3 M_SYNTH_ELEM_LEVEL_SCORE.py
 |---|---|---|
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 六结构成熟度与均衡度 | 派生产物（零 DB） |
 | `code/_snapshots21/synth_elem_probe_20261023.json` | 族级探针 | gkx |
-| `code/M_SYNTH_ELEM_LEVEL_SCORE_out.json` | 本件产物 | 派生产物 |
-| `code/M_SYNTH_ELEM_LEVEL_INDEX_out.json` | 兄弟件产物（层次指数） | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json` | 本件产物 | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_LEVEL_INDEX_out.json` | 兄弟件产物（层次指数） | 派生产物 |
 
 ### 3.5 与兄弟件的数字对账
 
@@ -378,7 +385,7 @@ $ python3 M_SYNTH_ELEM_LEVEL_SCORE.py
 
 ### 3.6 11 城范围与本件的关系
 
-达标阈值依赖进盘城市集合：均值与中位数都会随城市增减而变，达标标记跟着变。兄弟件 `code/M_SYNTH_ELEM_RANK_out.json` 的 `default_scope_feasibility` 给出：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件用四城盘，阈值只对四城有效，扩城必须重算阈值。
+达标阈值依赖进盘城市集合：均值与中位数都会随城市增减而变，达标标记跟着变。兄弟件 `metrics/repro/out/M_SYNTH_ELEM_RANK_out.json` 的 `default_scope_feasibility` 给出：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件用四城盘，阈值只对四城有效，扩城必须重算阈值。
 
 ---
 
@@ -437,7 +444,7 @@ $ python3 M_SYNTH_ELEM_LEVEL_SCORE.py
 本路五件与前五件共用同一份面板，四处缺口必须逐字一致，不得各自解释：
 
 1. **11 城样本不可比**：默认 11 城里只有深圳市（95,600 行）与广州市（49,605 行）主体量级够做极值归一，其余 9 城合计 224 行、占底册 189,116 行的 0.1184%。本件的四城盘是「四个有量的城市」的取舍，不是 11 城盘，分数不可扩到 11 城。
-2. **D2_1 分母存续口径**：四城存续率 99.3389%、97.3027%、58.1691%、60.2265%（见 `code/M_SYNTH_ELEM_DOMAIN_INDEX_out.json`），东莞的分母被压掉四成。序数归一会把东莞与广州的次序翻过来（差 0.0001），所以任何「东莞高于广州」的结论都必须带分母口径。本件不直接用 D2_1，但发布时须与领域件同一句话。
+2. **D2_1 分母存续口径**：四城存续率 99.3389%、97.3027%、58.1691%、60.2265%（见 `metrics/repro/out/M_SYNTH_ELEM_DOMAIN_INDEX_out.json`），东莞的分母被压掉四成。序数归一会把东莞与广州的次序翻过来（差 0.0001），所以任何「东莞高于广州」的结论都必须带分母口径。本件不直接用 D2_1，但发布时须与领域件同一句话。
 3. **人才侧缺「发明人—申请人」桥**：学者只能按机构名落城，覆盖 16,257/21,316、四城占 5.18%，四城硕博学者 111 人、东莞为 0。本件的空缺维／结构就是这条桥缺失的直接后果。
 4. **机构归属 A/B 双列待裁**：科研机构口径是「科研机构 2,074 家 ∪ 高校校名 2,933 个」（A 列），若只算科研机构（B 列），广州的科研机构得分会下降。本件沿用 A 列并在 §4.5 说明翻转风险。
 
@@ -494,7 +501,6 @@ $ python3 M_SYNTH_ELEM_LEVEL_SCORE.py
 8. OECD．Oslo Manual 2018［M］．2018．https://doi.org/10.1787/9789264304604-en
 9. Camp R C．Benchmarking: The Search for Industry Best Practices that Lead to Superior Performance［M］．Milwaukee：ASQC Quality Press，1989．
 10. Saisana M, Saltelli A, Tarantola S．Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators［J］．Journal of the Royal Statistical Society A，2005，168(2)：307-323．https://doi.org/10.1111/j.1467-985X.2005.00350.x
-
 ---
 
 # 附件
@@ -603,20 +609,12 @@ $ python3 M_SYNTH_ELEM_LEVEL_SCORE.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_ELEM_LEVEL_SCORE.py` |
-| 产物 | `code/M_SYNTH_ELEM_LEVEL_SCORE_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_ELEM_LEVEL_SCORE.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_ELEM_LEVEL_SCORE_out.json` |
 | 面板 | `code/_snapshots21/synth_elem_panel_20261023.json` |
 | 可判结构 | 6/7 |
 | 达标数 | 5／4／1／1 |
-| 运行方式 | `python3 M_SYNTH_ELEM_LEVEL_SCORE.py` |
+| 运行方式 | `cd code && python3 M_SYNTH_ELEM_LEVEL_SCORE.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 统计年 | 2024 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

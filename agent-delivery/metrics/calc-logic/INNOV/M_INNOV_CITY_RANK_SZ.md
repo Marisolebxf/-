@@ -1,9 +1,20 @@
 # 深圳城市科技发展排名（M_INNOV_CITY_RANK_SZ）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_RANK_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_RANK_SZ.py` → `metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV 域（王惠 V1.6 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测→科技发展城市分析展示→城市排名展示（需规序号 131）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_RANK_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_RANK_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_RANK_SZ.py` → `metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_RANK_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CITY_RANK_SZ.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CITY_RANK_SZ.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json` |
@@ -67,14 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_RANK_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域（王惠 V1.6 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测→科技发展城市分析展示→城市排名展示（需规序号 131）｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（本 MD 采用王惠 V1.6 四维等权口径）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据部分足（研发投入、专利、高企三维足量；创新人才维因 `development_employee` 全库 NULL 退化为学者数；对标宇宙受机构底册覆盖限制）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -110,7 +118,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「深圳城市科技发展排名」挂载于**科技信息展示系统 → 科技发展态势 → 深圳创新监测 → 科技发展城市分析展示 → 城市排名展示**（需规序号 131），需求原文要求「展示深圳市在不同科技发展指标上的城市排名，用户可查看深圳市在全国或全球范围内的排名位置」。需求文档**没有给出排名所用的指标集合、归一方法、加权规则或对标城市范围**；本文采用王惠 V1.6 闭合口径，把「科技发展指标」收口为研发投入、专利数量、高新技术企业数量、创新人才四维（借自同页序号 130 指标对比的指标集合），逐维排名后再等权归一求综合名次。
 
-复现代码 `code/M_INNOV_CITY_RANK_SZ.py` 已在 gkx 三方库跑通三城（深圳、广州、东莞）四维计算：深圳综合 79.8 居首（研发投入 1.366 万亿元、专利 1,336,877 件、高企 15,476 家、学者 165 人），广州 43.7 次之，东莞 0.0 末位。四维中三维与官方统计量级可交叉校验，但人才维在研发人员字段全空的现实下只剩学者数一条腿，且「全国/全球排名」的需求语义在当前数据下无法满足（机构底册可信覆盖仅粤三城）→ 判定**部分支持**。
+复现代码 `metrics/repro/M_INNOV_CITY_RANK_SZ.py` 已在 gkx 三方库跑通三城（深圳、广州、东莞）四维计算：深圳综合 79.8 居首（研发投入 1.366 万亿元、专利 1,336,877 件、高企 15,476 家、学者 165 人），广州 43.7 次之，东莞 0.0 末位。四维中三维与官方统计量级可交叉校验，但人才维在研发人员字段全空的现实下只剩学者数一条腿，且「全国/全球排名」的需求语义在当前数据下无法满足（机构底册可信覆盖仅粤三城）→ 判定**部分支持**。
 
 ---
 
@@ -278,14 +286,14 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_CITY_RANK_SZ.py` |
-| 结果产物 | 同目录 `code/M_INNOV_CITY_RANK_SZ_out.json` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_CITY_RANK_SZ.py` |
+| 结果产物 | 同目录 `metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json` |
 | 主算库 | `gkx`（三方库，2026-10-21 改源批复算） |
 | 脚本要点 | 城市名集合分片 5,000；`occur_period` 用 `LEFT(...,4)`；`COUNT(DISTINCT pn/org_id/scholar_id)` |
 | 结果落盘 | `json.dump(..., ensure_ascii=False, indent=1)` |
 
 ```bash
-python3 metrics/repro/M_INNOV_CITY_RANK_SZ.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_CITY_RANK_SZ.py
 ```
 
 脚本输出字段包括 `probes`（六张源表行数）、`compute.cities`（三城四维原值、分维名次、综合分与综合名次）与 `support_judgment`（机判支持度与理由）。本节展示的即 `M_INNOV_CITY_RANK_SZ_out.json` 的完整结果，未做二次加工；`probes` 六表行数已于 2026-10-21 对三方 `gkx` 全量复跑，与 20261020 版逐位一致（`dwd_org_stock_finance_info` 40,239 / `dwd_patent` 2,939,895 / `dwd_org_tech_tag` 202,424 / `dwd_scholar` 21,316 / `dwd_org_annual_financial_info` 90,926 / `dwd_org_base_info` 189,116）。
@@ -359,7 +367,7 @@ python3 metrics/repro/M_INNOV_CITY_RANK_SZ.py
 | 项 | 旧版（20261020） | 本版（20261021） |
 |---|---|---|
 | 数据面 | 旧演示库 `gkxlumenx_ods`（`111.198.38.90:34306`） | 三方生产库 `gkx`（`183.240.141.251:3318`，280 表 / 270 非空） |
-| 连接入口 | 脚本内直接 `pymysql.connect(database=...)` | 统一走 `code/_gkxdb.py` 的 `gkx` 配置（该模块见到旧演示库地址直接 `raise`） |
+| 连接入口 | 脚本内直接 `pymysql.connect(database=...)` | 统一走 `metrics/repro/_gkxdb.py` 的 `gkx` 配置（该模块见到旧演示库地址直接 `raise`） |
 | 表名 | `dwd_*` | 同名 `dwd_*`，只换 schema 前缀 —— 本族五指标**不存在表名映射问题** |
 | 共享取数层 | 无 | 新增 `code/_city21_common.py`：一次取回机构/高企/学者/政策/研发经费五组原始量落 `_snapshots_gkx21/city_raw_gkx.json`，五指标共用，重跑零 DB 压力 |
 
@@ -391,8 +399,8 @@ python3 metrics/repro/M_INNOV_CITY_RANK_SZ.py
 **（4）复现方式**
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
-python3 code/M_INNOV_CITY_RANK_SZ.py          # 结果写 code/M_INNOV_CITY_RANK_SZ_out.json
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_INNOV_CITY_RANK_SZ.py          # 结果写 metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json
 python3 _work_gkx21/gate_check.py _staging21
 ```
 
@@ -402,7 +410,7 @@ python3 _work_gkx21/gate_check.py _staging21
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CITY_RANK_SZ.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CITY_RANK_SZ.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -494,11 +502,6 @@ python3 _work_gkx21/gate_check.py _staging21
 6. United Nations Development Programme (UNDP). (2025). *Human Development Report 2025 — Technical Notes*（维度指数极值归一、goalposts 设定与合成规则）. https://hdr.undp.org/sites/default/files/2025_HDR/HDR25_Technical_Notes.pdf
 
 7. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*（R&D 经费与人员双轨测度口径）. https://doi.org/10.1787/9789264239012-en
-
-8. 项目内真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_RANK_SZ.md` —— 王惠 V1.6 口径原文（四维等权、源表字段登记）。
-
-文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
 ---
 
 # 附件
@@ -643,16 +646,8 @@ live 侧因外网不可达未复测；20261019/20 探测显示 live 侧无城市
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_INNOV_CITY_RANK_SZ.py`（128 行）  
-- 产物：`../code/M_INNOV_CITY_RANK_SZ_out.json`  
+- 产物：`../metrics/repro/out/M_INNOV_CITY_RANK_SZ_out.json`  
 - 主算库：`gkx`（2026-10-21 改源批实测）  
 - 关键结果：深圳 79.8（研发 1.366 万亿 / 专利 1,336,877 / 高企 15,476 / 学者 165），广州 43.7，东莞 0.0  
 - `support_judgment`：`部分支持`  
 - 工程注意：`occur_period` 为 `'YYYYMM'` 字符串须 `LEFT(,4)`；专利按申请人名分片 5,000 查询；`development_employee` 全空使人才维退化，已在 out.json 的 `support_note` 记录。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

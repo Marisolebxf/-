@@ -1,9 +1,23 @@
 # 资讯正面情感占比（M_CHAIN_NEWS_SENTIMENT_RATIO）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_NEWS_SENTIMENT_RATIO.md`；复现脚本 `metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py` → `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（三系统全部适用；差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：RATIO（占比型）｜ **域**：产业链分析（CHAIN）· 产业总览 · 产业概况｜ **UI 挂载**：链详情页「资讯」区三件套之二（情感极性条）
+> - **数据支持度**：**部分支持**｜ **公式定义人**：calc-logic 未收录正式口径；本件为 2026-10-22 词典代理实现（正/负各 20 词）
+> - **四判定摘要**：开发库直接结构 ✗（gkx 全库无情感列）｜直接数据 ✗（零条极性标注）｜依赖结构 ✓（链资讯 108,052 行、标题非空）｜依赖数据 部分（文本足量、标注为零）｜代理路径 △（词典可跑、准确率不可校验）
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py`｜ **产物**：`metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`｜ **实测日**：2026-10-22（20261027 批次兼容化复跑：2026-10-27）
+> **版本与分级**
+> - **差异分级**：D4 互补级差异（算法库生产侧：阈值判热点；展示侧消费侧：聚合推送订阅）｜ 依据：`gkx-orchestration/.../METRIC-SRS-GAP-L01/产物/file/M_CHAIN_NEWS_SENTIMENT_RATIO.md`
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py`、产物 `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_NEWS_SENTIMENT_RATIO.md`；复现脚本 `metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py` → `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py`、产物 `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_NEWS_SENTIMENT_RATIO.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json` |
@@ -58,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py`、产物 `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RATIO（占比型）｜ **域**：产业链分析（CHAIN）· 产业总览 · 产业概况｜ **UI 挂载**：链详情页「资讯」区三件套之二（情感极性条）
-> **数据支持度**：**部分支持**｜ **公式定义人**：calc-logic 未收录正式口径；本件为 2026-10-22 词典代理实现（正/负各 20 词）
-> **四判定摘要**：开发库直接结构 ✗（gkx 全库无情感列）｜直接数据 ✗（零条极性标注）｜依赖结构 ✓（链资讯 108,052 行、标题非空）｜依赖数据 部分（文本足量、标注为零）｜代理路径 △（词典可跑、准确率不可校验）
-> **复现脚本**：`code/M_CHAIN_NEWS_SENTIMENT_RATIO.py`｜ **产物**：`code/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`｜ **实测日**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -137,6 +146,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 要支撑的功能模块是：**产业链分析 → 产业总览 → 产业概况 → 资讯情感条**（链详情页「资讯」区三件套之二）。展示形态是一条按链的极性条：正面多少、负面多少、中性多少。用户从驾驶舱点进某条链，先看资讯总数判断「热不热」，再看极性条判断「好不好」。
 
 三件套（资讯数、情感占比、热点资讯数）必须同源同批行。若资讯数用 A 批行、情感占比用 B 批行，页面就会出现「资讯 8 万条、正负合计只有 3 万条」这种自相矛盾。本报告的口径设计与 `M_CHAIN_NEWS_COUNT` 完全共用一套链映射与同一份快照，正是为了避免这种错位。
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 来源：METRIC-SRS-GAP-L01 逐指标调研（`gkx-orchestration/.../METRIC-SRS-GAP-L01/产物/file/M_CHAIN_NEWS_SENTIMENT_RATIO.md` §二）。两侧各说一半（D4 互补级）：算法库讲「怎么把热点/情感算出来」，展示侧讲「算出来之后怎么推给用户」，拼起来才是完整链路，无定义冲突。
+
+| 系统 | 需求文档 | 章节锚点 | 原文 |
+|---|---|---|---|
+| **科技专题服务算法库** | 《科技专题服务算法库》 | 1.2.1.1.1.1.4.1.1 产业链基础指标模型构建（L37）；（7）产业动态资讯 | 「通过对接资讯数据库，搜索有关产业链的热点和最新资讯，设定判定热点指标（浏览量、评论数），通过设定该指标的阈值，收集的最新资讯会实时根据新闻。」「数据清洗：……对浏览量、评论数等指标进行分析，以便设定热点指标的阈值。」「热点判定：设定热点指标的阈值，根据指标的设定，判定每篇资讯是否为热点资讯。」 |
+| **科技信息展示系统** | 《科技信息展示系统和科技专题服务系统》 | §1.1.1.1.4.6.5.1.5 动态新闻与活动推送（L3676） | 「平台自动聚合创新载体相关新闻、产业动态和活动信息，智能推送热点资讯至用户端。支持订阅收藏，助力政策宣传与行业资源实时联动。」 |
+| **科技专题系统** | 同上（专题侧） | 产业链资讯消费页（同文档产业链分析域） | 以链详情页「资讯」区三件套消费情感统计结果（本件 UI 挂载即此）。 |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`，本节只写本指标个性。
+
+#### 兼容判定
+
+**单接口兼容（D4 互补兼容）**。两侧职责不同层：算法库侧是「情感/热点判定生产」（本件 py 的计算段），展示侧是「聚合推送消费」（本件出参 `display` 段 + 订阅过滤参数）。生产侧结果一出来，消费侧按 `chain`/`sentiment` 过滤即可，不存在口径冲突。
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `industry_tag` | 传链码/技术领域 | 传链码 | 传链码 | 缺省 12 链全量 |
+| `hot_thresholds` | 传 `{views, comments}`（阈值判定，L37 原文） | 不传 | 不传 | 缺省不用阈值（gkx 资讯表无浏览量/评论数列，阈值参数留接口位，`assumptions` 声明「阈值判定不可执行」） |
+| `sentiment_filter` | 不传 | 可传 `positive` | 传 `positive/negative`（推送订阅） | 缺省不过滤，返回全极性分布 |
+| `as_of` | 传统计时点 | 不传 | 不传 | 缺省取快照批次（2026-10-22 落盘批行，与三件套同源） |
+
+#### 出参兼容策略
+
+- 算法库消费：`compute`（词典、极性规则、逐条判定方法）+ `population`（分母定义），供其 API 文档与阈值扩展。
+- 专题系统消费：`chains[].value`（逐链极性条）+ `headline`（总体）。
+- 展示系统消费：`display.sentiment_bar`（按链极性条数据）+ `display.subscription_feed`（正面资讯样本位，供「智能推送/订阅」功能取数）。
+- `assumptions`：本件当前恒含「词典代理非金标」与「热点阈值列缺失」两条。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **代理值不进验收**：0.9202 是 40 词词典代理，gkx 无情感标注列；只可做排序/趋势参考，不可写进合同口径。
+2. **三条零样本链**（INB1306/INB1333/INB1209）是资讯标签体系与链树根码不重合（230 码仅 9 个重合），不是真没资讯；前端对这三条链要显示「标签覆盖缺口」而不是 0%。
+3. **中性不进分母**：pos/(pos+neg)，不要拿 value 与资讯总数做除法校验。
+4. 展示侧订阅推送：`display.subscription_feed` 是样本位，正式推送需接全量标题表，本接口不替代资讯列表接口。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`.../METRIC-SRS-GAP-L01/产物/file/M_CHAIN_NEWS_SENTIMENT_RATIO.md`（分级 D4、互补：生产侧 vs 消费侧）
+- 原文锚点：算法库 L37（7）产业动态资讯；展示系统 §1.1.1.1.4.6.5.1.5（L3676）
 
 ### 1.2 为什么需要这个指标
 
@@ -301,10 +356,10 @@ $$ratio=\frac{\sum_t \mathbf{1}[p(t)>n(t)]}{\sum_t \mathbf{1}[p(t)\neq n(t)]}$$
 
 ### 2.7 复现代码与结果展示
 
-脚本 `code/M_CHAIN_NEWS_SENTIMENT_RATIO.py` 只读 `code/_snapshots21/` 下已落盘快照，**零 SQL、零本地 helper**，可直接重跑；产物落盘为 `code/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`，下面 `[ok]` 行就是脚本打印的该 out.json 的 headline 摘要：
+脚本 `metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py` 只读 `code/_snapshots21/` 下已落盘快照，**零 SQL、零本地 helper**，可直接重跑；产物落盘为 `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`，下面 `[ok]` 行就是脚本打印的该 out.json 的 headline 摘要：
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_CHAIN_NEWS_SENTIMENT_RATIO.py
 # [ok] M_CHAIN_NEWS_SENTIMENT_RATIO {"value": 0.9202, ...} chains 12 sec 0.0
 ```
@@ -470,20 +525,13 @@ calc-logic 未收录本指标独立文件，旧稿留下的是读列口径：
 
 1. Pang, B., & Lee, L. (2008). Opinion Mining and Sentiment Analysis. *Foundations and Trends in Information Retrieval*, 2(1–2), 1–135. https://doi.org/10.1561/1500000011
 
-2. 中国知网 HowNet 情感词典. https://www.keenage.com/
+2. 大连理工大学信息检索研究室. 情感词汇本体库. https://ir.dlut.edu.cn/
 
-3. 大连理工大学信息检索研究室. 情感词汇本体库. https://ir.dlut.edu.cn/
+3. 国家统计局. 统计用产品分类目录与统计标准. https://www.stats.gov.cn/
 
-4. 国家统计局. 统计用产品分类目录与统计标准. https://www.stats.gov.cn/
+4. 深圳市统计局. 深圳统计年鉴（2025）. https://tjj.sz.gov.cn/zwgk/zfxxgkml/tjsj/tjnj/
 
-5. 深圳市统计局. 深圳统计年鉴（2025）. https://tjj.sz.gov.cn/zwgk/zfxxgkml/tjsj/tjnj/
-
-6. 国家互联网信息办公室. 互联网新闻信息服务管理规定（2017 年施行）. https://www.cac.gov.cn/
-
-7. OECD. Measuring the Digital Economy: A New Perspective. https://www.oecd.org/sti/
-
-8. 项目内旁证：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/`（资讯类指标口径目录）。
-
+5. 国家互联网信息办公室. 互联网新闻信息服务管理规定（2017 年施行）. https://www.cac.gov.cn/
 ---
 
 # 附件
@@ -613,18 +661,10 @@ calc-logic 未收录本指标独立文件，旧稿留下的是读列口径：
 
 ## 附录 D　实测脚本与结果摘要
 
-脚本：`code/M_CHAIN_NEWS_SENTIMENT_RATIO.py`（输出 `code/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`，运行 <1 秒）。
+脚本：`metrics/repro/M_CHAIN_NEWS_SENTIMENT_RATIO.py`（输出 `metrics/repro/out/M_CHAIN_NEWS_SENTIMENT_RATIO_out.json`，运行 <1 秒）。
 
 `judgment_reason` 原文：
 
 > 链资讯 108,052 条标题可取，但 gkx 全库没有任何情感/极性列（information_schema 检索 sentiment/polarity/emotion 零命中），40 词词典代理值只能作排序参考、不能作验收值；另有 3 条链因资讯标签体系与链树根码不重合而无样本。
 
 > 注：旧稿的 29.85% 与本稿的 0.9202 是两套语料上的两个代理值，不可互相校验；对照表落盘在 `code/_snapshots21/old_draft_deltas_20261022.json`。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

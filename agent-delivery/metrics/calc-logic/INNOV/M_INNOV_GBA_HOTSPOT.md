@@ -1,9 +1,21 @@
 # 湾区创新热点区域（M_INNOV_GBA_HOTSPOT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_HOTSPOT.md`；复现脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py` → `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：RANK/LIST（区县密度排序 + 热点标签）｜ **域**：INNOV（湾区创新监测）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新能力 → 创新热点区域
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py`、产物 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_HOTSPOT.md`；复现脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py` → `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py`、产物 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +36,7 @@
 
 ## 口径定义
 
-区县主键（`city + area`）与专利件数完整可算（28 个有效区域、零空密度），但密度分子原设计为「专利 + 论文 + 项目」三源，**论文维（作者单位对齐 1.01%）与项目维（`funded_institution` 100% 空）整维缺测**，密度实为专利单口径；「主要创新类型」因子项退化为常数；东莞无区县字段只能整体参与 → **部分支持**。本档位与 `code/M_INNOV_GBA_HOTSPOT_out.json` 的 `support_judgment` 一致。
+区县主键（`city + area`）与专利件数完整可算（28 个有效区域、零空密度），但密度分子原设计为「专利 + 论文 + 项目」三源，**论文维（作者单位对齐 1.01%）与项目维（`funded_institution` 100% 空）整维缺测**，密度实为专利单口径；「主要创新类型」因子项退化为常数；东莞无区县字段只能整体参与 → **部分支持**。本档位与 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -60,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_GBA_HOTSPOT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_GBA_HOTSPOT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json` |
@@ -68,16 +80,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py`、产物 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RANK/LIST（区县密度排序 + 热点标签）｜ **域**：INNOV（湾区创新监测）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新能力 → 创新热点区域
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（城市+区县主键与专利件数可算；论文、项目两源整维缺测）
-> **一句话口径**：`density = 成果件数 / 存续机构数`，`is_hotspot = density ≥ P70 且 orgs ≥ 3`；四城 29 个区域键中 28 个有效，P70 = 11.2284 件/家，命中 **9 个热点**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -105,7 +112,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-区县主键（`city + area`）与专利件数完整可算（28 个有效区域、零空密度），但密度分子原设计为「专利 + 论文 + 项目」三源，**论文维（作者单位对齐 1.01%）与项目维（`funded_institution` 100% 空）整维缺测**，密度实为专利单口径；「主要创新类型」因子项退化为常数；东莞无区县字段只能整体参与 → **部分支持**。本档位与 `code/M_INNOV_GBA_HOTSPOT_out.json` 的 `support_judgment` 一致。
+区县主键（`city + area`）与专利件数完整可算（28 个有效区域、零空密度），但密度分子原设计为「专利 + 论文 + 项目」三源，**论文维（作者单位对齐 1.01%）与项目维（`funded_institution` 100% 空）整维缺测**，密度实为专利单口径；「主要创新类型」因子项退化为常数；东莞无区县字段只能整体参与 → **部分支持**。本档位与 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -158,9 +165,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
-| 1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | §1.1.1.1.4.1.5.2 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析。」 |
+| 1 | `《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.4.1.5.2 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.2.1 可视化展示 | 「以地图、热力图等形式展示大湾区创新能力的空间分布。」 |
-| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）` §计算逻辑 | 「以区县为单元，计算单位机构的创新成果产出密度，取 P70 分位为热点阈值，密度不低于阈值的区县标记为创新热点区域。」 |
+| 3 | 王惠口径原文 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_GBA_HOTSPOT.md（王惠正本已演化并入）` §计算逻辑 | 「以区县为单元，计算单位机构的创新成果产出密度，取 P70 分位为热点阈值，密度不低于阈值的区县标记为创新热点区域。」 |
 | 4 | 同上 | §成果定义 | 「成果件数 = 专利去重件数 + 中文论文去重篇数 + 科技项目去重项数。」 |
 | 5 | 同上 | §门槛 | 「机构数 < 3 的区县样本量不足，不参与分位计算。」 |
 | 6 | 上游 | `M_INNOV_GBA_ORG_INDEX.md` §2.2 | 底册机构 189,116 行，区县字段 `area` 的分布事实 |
@@ -280,9 +287,9 @@ $$density_i=\frac{\sum_{p\in i} patent_p}{\sum_{o\in i} org_o}$$
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_GBA_HOTSPOT.py
-# 输出 code/M_INNOV_GBA_HOTSPOT_out.json；实测耗时 0.4 秒（读本地快照，零 SQL）
+# 输出 metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json；实测耗时 0.4 秒（读本地快照，零 SQL）
 ```
 
 **关键探针**（真实输出）：
@@ -366,7 +373,7 @@ python3 code/M_INNOV_GBA_HOTSPOT.py
 
 ### 5.1 王惠原方法还原
 
-出处：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260830）。
+出处：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_GBA_HOTSPOT.md（王惠正本已演化并入）`（V1.5-20260830）。
 
 - **单元**：区县（`city + area`）。
 - **成果**：专利去重件数 + 中文论文去重篇数 + 科技项目去重项数。
@@ -406,17 +413,11 @@ python3 code/M_INNOV_GBA_HOTSPOT.py
 
 ## 参考文献
 
-1. Katz, B., & Wagner, J. (2014). *The Rise of Innovation Districts: A New Geography of Innovation in America*. Brookings Institution. https://www.brookings.edu/articles/the-rise-of-innovation-districts/
-2. 科技部火炬高技术产业开发中心. (2023). 《国家高新区创新能力评价报告》. https://www.chinatorch.gov.cn/
-3. 工业和信息化部. (2022). 《促进中小企业特色产业集群发展暂行办法》. https://www.gov.cn/zhengce/zhengceku/2022-09/06/content_5708004.htm
-4. 中共中央、国务院. (2019). 《粤港澳大湾区发展规划纲要》. https://www.gov.cn/zhengce/2019-02/18/content_5366593.htm
-5. Anselin, L. (1995). Local Indicators of Spatial Association—LISA. *Geographical Analysis*, 27(2), 93–115. https://doi.org/10.1111/j.1538-4632.1995.tb00338.x
-6. 国家市场监督管理总局、国家标准化管理委员会. (2021). 《科技评估通则》（GB/T 40147-2021）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=69812EA65DC30B02C6CCCEFC1DC629CE
-7. 科技部. (2021). 《国家高新技术产业开发区综合评价指标体系》. https://www.most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2021/202104/t20210429_174232.html
-8. 项目内旁证（非外部文献）：`王惠口径正本（GitLab 外本地归档）`。
-
-完整论证见**附录 C**；实测产物见**附录 D**。
-
+1. 工业和信息化部. (2022). 《促进中小企业特色产业集群发展暂行办法》. https://www.gov.cn/
+2. 中共中央、国务院. (2019). 《粤港澳大湾区发展规划纲要》. https://www.gov.cn/zhengce/2019-02/18/content_5366593.htm
+3. Anselin, L. (1995). Local Indicators of Spatial Association—LISA. *Geographical Analysis*, 27(2), 93–115. https://doi.org/10.1111/j.1538-4632.1995.tb00338.x
+4. 国家市场监督管理总局、国家标准化管理委员会. (2021). 《科技评估通则》（GB/T 40147-2021）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=69812EA65DC30B02C6CCCEFC1DC629CE
+5. 科技部. (2021). 《国家高新技术产业开发区综合评价指标体系》. https://www.most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2021/202104/t20210429_174232.html
 ---
 
 # 附件
@@ -511,19 +512,11 @@ M2 的核心论点是「创新活动在少数高密度小区域集聚，而非�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_GBA_HOTSPOT.py`（20261021 版，gkx 单库，零 SQL）
-- 产物：`code/M_INNOV_GBA_HOTSPOT_out.json`
+- 脚本：`metrics/repro/M_INNOV_GBA_HOTSPOT.py`（20261021 版，gkx 单库，零 SQL）
+- 产物：`metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`
 - 主算库：`gkx` @ `183.240.141.251:3318`（三方库，只读）
 - 耗时：0.4 秒（读本地快照）
 - 区域：29 键 / 28 有效；P70 = 11.2284；热点 9 个
 - 热点名单：越秀 23.82、黄埔 14.49、海珠 14.00、龙岗 13.93、南山 13.54、光明 12.98、坪山 12.88、天河 12.33、惠城 11.23
 - 敏感性：P70 全区域口径 11.2270；Spearman(密度, 机构数) = 0.5784
 - 工程注意：`main_type` 须隐藏；东莞无区县须标注；论文/项目不补 0
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

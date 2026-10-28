@@ -1,9 +1,22 @@
 # 专家学者影响力（M_INNOV_SCHOLAR_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCHOLAR_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py` → `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技全域态势（需求清单序号 11 / Q109 / Q-MO-DS01-02）
+> - **数据支持度**：**完全转换支持**
+> - **四判定摘要**：直接结构 = 否（无现成影响力结果表）；直接数据 = 否；依赖结构 = 是（`dwd_scholar` 三列齐备）；依赖数据 = 是（21,316 行三列 100% 非空）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCHOLAR_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py` → `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_SCHOLAR_INFLUENCE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json` |
@@ -64,19 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：王惠已定义（calc-logic INNOV）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技全域态势（需求清单序号 11 / Q109 / Q-MO-DS01-02）
-> **UI 挂载**：科技全域态势页「要素影响力」卡片与「专家 H 指数排行」联动视图
-> **数据支持度**：**完全转换支持**
-> **公式定义人**：王惠 calc-logic（`metrics/calc-logic/INNOV/M_INNOV_SCHOLAR_INFLUENCE.md`）
-> **四判定摘要**：直接结构 = 否（无现成影响力结果表）；直接数据 = 否；依赖结构 = 是（`dwd_scholar` 三列齐备）；依赖数据 = 是（21,316 行三列 100% 非空）
-> **铁律**：h 指数是供应方外采值，本脚本**不重算 Hirsch 公式**，只做量纲统一与合成；院士标签仅展示、不进分
-> wanghui: true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -294,10 +299,10 @@ Top 3 是南开大学陈军（100.00，h=286、被引 328,858、发文 2,487）�
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_INNOV_SCHOLAR_INFLUENCE.py` |
+| 脚本 | `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py` |
 | 公共库 | `code/_a26_common.py`（快照加载、百分位、Spearman、写盘） |
 | 数据快照 | `code/_snapshots21/probe_a26_20261022.json`（由 `code/_probe_a26.py` 生成） |
-| 输出 | `code/M_INNOV_SCHOLAR_INFLUENCE_out.json` |
+| 输出 | `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json` |
 | 运行 | `python3 code/M_INNOV_SCHOLAR_INFLUENCE.py` |
 | 耗时 | 0.8 秒（21,316 行内存计算） |
 | SQL 条数 | 2 |
@@ -446,9 +451,7 @@ Top 3 是南开大学陈军（100.00，h=286、被引 328,858、发文 2,487）�
 4. OpenAlex. *Authors API and citation counts*. <https://docs.openalex.org/api-entities/authors>
 5. 国家知识产权局. *知识产权统计年报（2024）*. <https://www.cnipa.gov.cn/col/col61/index.html>
 6. 中国科学技术信息研究所. *中国科技论文统计结果（2024）*. <https://www.istic.ac.cn/>
-7. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_SCHOLAR_INFLUENCE.md`
-8. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（第 189、1021—1027 行）
-
+7. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md`（第 189、1021—1027 行）
 ---
 
 # 附件
@@ -570,17 +573,9 @@ Altmetric Attention Score 统计新闻、政策文件、社交媒体提及。本
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_SCHOLAR_INFLUENCE.py` |
-| 输出 | `code/M_INNOV_SCHOLAR_INFLUENCE_out.json`（20,294 字节） |
+| 脚本 | `metrics/repro/M_INNOV_SCHOLAR_INFLUENCE.py` |
+| 输出 | `metrics/repro/out/M_INNOV_SCHOLAR_INFLUENCE_out.json`（20,294 字节） |
 | 耗时 | 0.8 秒 |
 | SQL | 2 条（学者主档、院士名单） |
 | 关键数字 | 21,316 人 / 中位 51.66 / P99 78.95 / 最高 98.74 / T1 168 人 / 719 行冲突 / 112 院士命中 80 |
 | 敏感性 | 主口径 vs 百分位口径 Spearman 0.998，Top 50 重合 45 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

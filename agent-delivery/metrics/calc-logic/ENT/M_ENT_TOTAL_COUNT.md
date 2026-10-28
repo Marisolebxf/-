@@ -1,9 +1,20 @@
 # 企业总数（M_ENT_TOTAL_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TOTAL_COUNT.md`；复现脚本 `metrics/repro/M_ENT_TOTAL_COUNT.py` → `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：COUNT（集合级去重计数）｜ **域**：企业分析／企业总览／企业整体概况｜ **UI 挂载**：企业分析·企业总览「企业总数」卡｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TOTAL_COUNT.py`、产物 `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TOTAL_COUNT.md`；复现脚本 `metrics/repro/M_ENT_TOTAL_COUNT.py` → `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TOTAL_COUNT.py`、产物 `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_TOTAL_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_ENT_TOTAL_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json` |
@@ -64,17 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_TOTAL_COUNT.py`、产物 `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT（集合级去重计数）｜ **域**：企业分析／企业总览／企业整体概况｜ **UI 挂载**：企业分析·企业总览「企业总数」卡｜ **数据支持度**：**部分支持**
-> **口径来源**：王惠（`(王惠口径正本，GitLab 外本地归档)M_ENT_TOTAL_COUNT.md`）→ 2026-08-27 `ENT-SYNTH-METRIC-COVER-STAT-L01` 按架构师口头改「国内 ∪ 国外主档」（`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TOTAL_COUNT.md`）
-> **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_TOTAL_COUNT.py` → `code/M_ENT_TOTAL_COUNT_out.json`
-> **wanghui**：true（§五 必含王惠口径对照）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -113,7 +118,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx.dwd_industry_chain_info` | 链树目录 | 1,273 行 / 12 个根码 |
 | `code/_snapshots21/ent_count21_facts_20261023.json` | 本族共享事实快照 | 底册、类型、链、交叉全部落盘 |
 | `code/_snapshots21/base_20261021.json` | 底册行级快照 | 189,116 行，含省/市/成立年 |
-| `code/M_ENT_TOTAL_COUNT_out.json` | 本件产物 | 计数、结构、缺口、校验全部落盘 |
+| `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json` | 本件产物 | 计数、结构、缺口、校验全部落盘 |
 
 ---
 
@@ -177,7 +182,7 @@ A 族是本指标的原意，前提是有一个全国法人库；本项目 gkx �
 1. 国家市场监督管理总局：国家企业信用信息公示系统。https://www.gsxt.gov.cn/
 2. 国家统计局：《中国统计年鉴》法人单位数章节。https://www.stats.gov.cn/sj/ndsj/
 3. 项目内 calc-logic 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TOTAL_COUNT.md`
-4. 王惠 20260817 正本：`(王惠口径正本，GitLab 外本地归档)M_ENT_TOTAL_COUNT.md`
+4. 王惠 20260817 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TOTAL_COUNT.md（王惠正本已演化并入）`
 5. 同族已交付件：`M_ENT_REGIONAL_COUNT_TOPIC.md`、`M_ENT_SZ_COUNT.md`、`M_ENT_TYPE_COUNT.md`
 
 ### 1.6 推测原意与依赖维度
@@ -298,7 +303,7 @@ $$total(C) = total_{dom}(C)$$
 复现命令只有一条：
 
 ```bash
-python3 M_ENT_TOTAL_COUNT.py
+cd code && python3 M_ENT_TOTAL_COUNT.py
 ```
 
 脚本输出四行摘要，分别是并集、国内、国外、名称非空数、交集：
@@ -475,13 +480,8 @@ calc-logic 2026-08-27 版把定义改成「国内机构 ∪ 国外机构按企�
 
 ## 参考文献
 
-1. 国家市场监督管理总局：国家企业信用信息公示系统。https://www.gsxt.gov.cn/
-2. 国家统计局：《中国统计年鉴》法人单位数。https://www.stats.gov.cn/sj/ndsj/
-3. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
-4. 项目内 calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TOTAL_COUNT.md`
-5. 王惠 20260817：`(王惠口径正本，GitLab 外本地归档)M_ENT_TOTAL_COUNT.md`
-6. 共享快照说明：`_work_gkx21/SHARED_ASSETS.md`
-
+1. 国家统计局：《中国统计年鉴》法人单位数。https://www.stats.gov.cn/sj/ndsj/
+2. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
 ---
 
 # 附件
@@ -643,15 +643,7 @@ calc-logic 2026-08-27 版把定义改成「国内机构 ∪ 国外机构按企�
 | 文件 | 说明 |
 |---|---|
 | `_staging21/M_ENT_TOTAL_COUNT.md` | 本报告 |
-| `code/M_ENT_TOTAL_COUNT.py` | 复算脚本，零 SQL |
-| `code/M_ENT_TOTAL_COUNT_out.json` | 产物，含判档与全部引用数字 |
+| `metrics/repro/M_ENT_TOTAL_COUNT.py` | 复算脚本，零 SQL |
+| `metrics/repro/out/M_ENT_TOTAL_COUNT_out.json` | 产物，含判档与全部引用数字 |
 | `code/_snapshots21/ent_count21_facts_20261023.json` | 族级共享快照 |
 | `code/_build_ent_count21_facts.py` | 快照生成脚本 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

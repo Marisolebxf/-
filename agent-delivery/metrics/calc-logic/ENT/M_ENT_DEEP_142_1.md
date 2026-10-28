@@ -1,9 +1,21 @@
 # 企业发展历程模型（M_ENT_DEEP_142_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DEEP_142_1.md`；复现脚本 `metrics/repro/M_ENT_DEEP_142_1.py` → `metrics/repro/out/M_ENT_DEEP_142_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（事件时间线）｜ **域**：ENT（企业分析）｜ **UI 挂载**：企业分析 → 企业详情 → 发展历程 / 重大事件
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：项目侧规范化（ALGO-ENT-DEEP-142，非王惠）｜ wanghui: false
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DEEP_142_1.py`、产物 `metrics/repro/out/M_ENT_DEEP_142_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DEEP_142_1.md`；复现脚本 `metrics/repro/M_ENT_DEEP_142_1.py` → `metrics/repro/out/M_ENT_DEEP_142_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DEEP_142_1.py`、产物 `metrics/repro/out/M_ENT_DEEP_142_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -26,7 +38,7 @@
 
 {'unit': '企业×事件', 'event_types': ['E0 成立', 'E1 上市/挂牌', 'E2 股权融资', 'E3 并购当事人', 'E4 对外投资', 'E5 股权结构'], 'dated_types': ['E0（年粒度）', 'E2（日）', 'E3（日）'], 'undated_types': ['E1', 'E4', 'E5'], 'threshold': '对外投资「重大」阈值 1000 万元（库内金额单位按万元解释）'}
 
-> 一句话口径（源件 §0.3）：五类事件的表结构与行数都不缺：融资 25,654 行、并购主表 3,444 行 + 当事人 20,000 行、对外投资 46,967 行、股东 400,286 行、上市状态 1,971 家。但**日期字段严重不均**：`listing_date` 全库 0 行非空；对外投资表只有入库时间 `created_time`（多为 2026-08），没有投资发生日；股东表是当前快照，没有变更日期。五类中只有融资与并购能定位到日 → **部分支持**。本档位与 `code/M_ENT_DEEP_142_1_out.json` 的 `support_judgment.data_support_level` 一致。
+> 一句话口径（源件 §0.3）：五类事件的表结构与行数都不缺：融资 25,654 行、并购主表 3,444 行 + 当事人 20,000 行、对外投资 46,967 行、股东 400,286 行、上市状态 1,971 家。但**日期字段严重不均**：`listing_date` 全库 0 行非空；对外投资表只有入库时间 `created_time`（多为 2026-08），没有投资发生日；股东表是当前快照，没有变更日期。五类中只有融资与并购能定位到日 → **部分支持**。本档位与 `metrics/repro/out/M_ENT_DEEP_142_1_out.json` 的 `support_judgment.data_support_level` 一致。
 
 ## 计算逻辑说明
 
@@ -59,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_DEEP_142_1.md` |
 | 复现脚本 | `metrics/repro/M_ENT_DEEP_142_1.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_DEEP_142_1_out.json` |
@@ -67,16 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_DEEP_142_1.py`、产物 `metrics/repro/out/M_ENT_DEEP_142_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（事件时间线）｜ **域**：ENT（企业分析）｜ **UI 挂载**：企业分析 → 企业详情 → 发展历程 / 重大事件
-> **数据支持度**：**部分支持** ｜ **公式定义人**：项目侧规范化（ALGO-ENT-DEEP-142，非王惠）｜ wanghui: false
-> 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（五类事件中仅两类带业务日期）
-> **一句话口径**：把并购、股权融资、上市、对外投资、股权变更五类事件按日期归并成一条倒序时间线；当前只有 **融资（24,598 条）** 与 **并购当事人（12,387 条）** 能定位到日，上市、对外投资、股权变更三类无事件日期，时间线只能部分还原。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -104,7 +111,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-五类事件的表结构与行数都不缺：融资 25,654 行、并购主表 3,444 行 + 当事人 20,000 行、对外投资 46,967 行、股东 400,286 行、上市状态 1,971 家。但**日期字段严重不均**：`listing_date` 全库 0 行非空；对外投资表只有入库时间 `created_time`（多为 2026-08），没有投资发生日；股东表是当前快照，没有变更日期。五类中只有融资与并购能定位到日 → **部分支持**。本档位与 `code/M_ENT_DEEP_142_1_out.json` 的 `support_judgment.data_support_level` 一致。
+五类事件的表结构与行数都不缺：融资 25,654 行、并购主表 3,444 行 + 当事人 20,000 行、对外投资 46,967 行、股东 400,286 行、上市状态 1,971 家。但**日期字段严重不均**：`listing_date` 全库 0 行非空；对外投资表只有入库时间 `created_time`（多为 2026-08），没有投资发生日；股东表是当前快照，没有变更日期。五类中只有融资与并购能定位到日 → **部分支持**。本档位与 `metrics/repro/out/M_ENT_DEEP_142_1_out.json` 的 `support_judgment.data_support_level` 一致。
 
 ---
 
@@ -163,10 +170,10 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
 | 1 | `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DEEP_142_1.md` | 算法定义 | 「四类重大事件按 event_time 归并倒序时间线：并购、上市/融资、股权变更、重大投资（金额超阈值，如 >1000 万）。」 |
-| 2 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` | ALGO-ENT-DEEP-142 | 「企业发展历程模型，算法库 §1.1.1.1.1.1.1.5.2，公式待算法 Lead 会签。」 |
+| 2 | `《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` | ALGO-ENT-DEEP-142 | 「企业发展历程模型，算法库 §1.1.1.1.1.1.1.5.2，公式待算法 Lead 会签。」 |
 | 3 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_ENT_DEEP_142_1` | 「case=A；tables=[`dwd_merger_acquisition_events_party_info`,`dwd_org_base_info`,`dwd_org_invest_info`,`dwd_org_merger_acquisition_info`,`dwd_org_shareholder_info`]；demo_literal_in_py=false。」 |
 | 4 | 数据资产清单 | `_work_gkx21/SHARED_ASSETS.md` | 「企业底册 189,116 行（org_id/信用码/名称/省/市/成立年）。」 |
-| 5 | 前批实测 | `20261020_指标整体开发进度调研/code/M_ENT_DEEP_142_1_out.json` | 「listing_status 非空≈1,971；listing_date 全空 0；股东 400,286 行仅当前快照。」 |
+| 5 | 前批实测 | `20261020_指标整体开发进度调研/metrics/repro/out/M_ENT_DEEP_142_1_out.json` | 「listing_status 非空≈1,971；listing_date 全空 0；股东 400,286 行仅当前快照。」 |
 | 6 | 项目内口径 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 | 「四列整列为空：`development_employee`、`arch_development_am`、`impact_score`、`download_num`。」（同类陷阱，提醒日期列也要先自检） |
 
 ### 1.6 推测原意与推测定义（仿王惠口径写法）
@@ -262,9 +269,9 @@ $$
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_ENT_DEEP_142_1.py
-# 输出 code/M_ENT_DEEP_142_1_out.json；实测耗时 156.76 秒（五张表在线只读，无专利查询）
+# 输出 metrics/repro/out/M_ENT_DEEP_142_1_out.json；实测耗时 156.76 秒（五张表在线只读，无专利查询）
 ```
 
 **五类事件可用性**：
@@ -415,20 +422,13 @@ python3 code/M_ENT_DEEP_142_1.py
 ---
 
 ## 参考文献
-
-> 下列条目为口径与方法来源；项目内文件按相对路径给出，外部文件给出可访问 URL。
-
-1. Greiner, L. E. (1972). Evolution and Revolution as Organizations Grow. *Harvard Business Review*, 50(4), 37–46. https://hbr.org/1972/07/evolution-and-revolution-as-organizations-grow
-2. 中国证券监督管理委员会. 上市公司信息披露管理办法. http://www.csrc.gov.cn/
-3. 国家市场监督管理总局. 企业信息公示暂行条例. https://www.samr.gov.cn/
-4. 上海证券交易所. 上市公司公告与上市日期查询. https://www.sse.com.cn/
-5. 深圳证券交易所. 上市公司公告与上市日期查询. https://www.szse.cn/
-6. 全国中小企业股份转让系统（新三板）. 挂牌公司信息. https://www.neeq.com.cn/
-7. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DEEP_142_1.md`（ALGO-ENT-DEEP-142）。
-8. 项目内需求原文（非外部文献）：`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` §1.1.1.1.1.1.1.5.2。
-
+1. 中国证券监督管理委员会. 上市公司信息披露管理办法. http://www.csrc.gov.cn/
+2. 国家市场监督管理总局. 企业信息公示暂行条例. https://www.samr.gov.cn/
+3. 上海证券交易所. 上市公司公告与上市日期查询. https://www.sse.com.cn/
+4. 深圳证券交易所. 上市公司公告与上市日期查询. https://www.szse.cn/
+5. 全国中小企业股份转让系统（新三板）. 挂牌公司信息. https://www.neeq.com.cn/
+6. 项目内需求原文（非外部文献）：`《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` §1.1.1.1.1.1.1.5.2。
 文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
-
 ---
 
 # 附件
@@ -547,8 +547,8 @@ python3 code/M_ENT_DEEP_142_1.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_ENT_DEEP_142_1.py`（20261021 版，gkx 单库只读，零 demo）
-- 产物：`code/M_ENT_DEEP_142_1_out.json`
+- 脚本：`metrics/repro/M_ENT_DEEP_142_1.py`（20261021 版，gkx 单库只读，零 demo）
+- 产物：`metrics/repro/out/M_ENT_DEEP_142_1_out.json`
 - 源表：`dwd_org_base_info`、`dwd_org_financing_info`、`dwd_org_merger_acquisition_info`、`dwd_merger_acquisition_events_party_info`、`dwd_org_invest_info`、`dwd_org_shareholder_info` @ `183.240.141.251:3318`
 - 耗时：156.76 秒（五张表在线只读；含底册 189,116 行的 COUNT 与股东表 400,286 行扫描，期间库上有并发）
 - 关键结果：有事件企业 9,458（5.01%）；可入线事件 36,985（融资 24,598 + 并购 12,387）
@@ -557,11 +557,3 @@ python3 code/M_ENT_DEEP_142_1.py
 - 类型覆盖：1 类 3,204、2 类 4,141、3 类 2,113
 - 无日期事件：上市 1,971 家、投资 46,967 行、股权 400,286 行
 - 工程注意：`created_time` 是入库时间，不是事件日期；`ggrq=1900-01-01` 是哨兵；`listing_date` 全空；金额单位按万元解释并标注风险
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

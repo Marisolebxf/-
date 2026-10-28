@@ -1,9 +1,20 @@
 # 城市企业密度（M_ENT_CITY_DENSITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_CITY_DENSITY.md`；复现脚本 `metrics/repro/M_ENT_CITY_DENSITY.py` → `metrics/repro/out/M_ENT_CITY_DENSITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：RATIO（企业数 / 城市土地面积）｜ **域**：企业分析（ENT）· 区域透视｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_CITY_DENSITY.py`、产物 `metrics/repro/out/M_ENT_CITY_DENSITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_CITY_DENSITY.md`；复现脚本 `metrics/repro/M_ENT_CITY_DENSITY.py` → `metrics/repro/out/M_ENT_CITY_DENSITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_CITY_DENSITY.py`、产物 `metrics/repro/out/M_ENT_CITY_DENSITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_CITY_DENSITY.md` |
 | 复现脚本 | `metrics/repro/M_ENT_CITY_DENSITY.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_CITY_DENSITY_out.json` |
@@ -65,15 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_CITY_DENSITY.py`、产物 `metrics/repro/out/M_ENT_CITY_DENSITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RATIO（企业数 / 城市土地面积）｜ **域**：企业分析（ENT）· 区域透视｜ **数据支持度**：**部分支持**
-> **口径来源**：王惠 calc-logic `ENT/M_ENT_CITY_DENSITY.md`｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 _work_gkx21/rebuild_metric.py M_ENT_CITY_DENSITY` → `code/M_ENT_CITY_DENSITY_out.json`
-> **wanghui**：true（§五 含王惠口径对照）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -295,7 +302,7 @@ $$\rho_{c}=\frac{N_{c}}{A_{c}}\times 100,\qquad A_{c}>0$$
 
 ### 2.7 复现代码与结果展示
 
-脚本 `code/M_ENT_CITY_DENSITY.py` 只连 gkx，读分子快照、现查四条探针。产物 `code/M_ENT_CITY_DENSITY_out.json` 含 `probes`（分子量与四条探针结果）、`numerator`（前 15 城）、`denominator`（状态与说明）、`density_result`（computed 与 rows）四块。
+脚本 `metrics/repro/M_ENT_CITY_DENSITY.py` 只连 gkx，读分子快照、现查四条探针。产物 `metrics/repro/out/M_ENT_CITY_DENSITY_out.json` 含 `probes`（分子量与四条探针结果）、`numerator`（前 15 城）、`denominator`（状态与说明）、`density_result`（computed 与 rows）四块。
 
 脚本自己写 `support_judgment` 与 `base_years_*`。`base_years_used` 为空，因为本件是截面；`base_years_note` 写明「分子为当前主档全量计数；分母缺，无年度序列可谈」。
 
@@ -449,11 +456,9 @@ $$\rho_{c}=\frac{N_{c}}{A_{c}}\times 100,\qquad A_{c}>0$$
 
 ## 参考文献
 
-1. 项目内 calc-logic：`M_ENT_CITY_DENSITY.md`.
-2. 国家统计局·城市统计年鉴. https://www.stats.gov.cn/
-3. 民政部·全国行政区划信息查询平台. https://www.mca.gov.cn/
-4. 自然资源部·国土调查成果. https://www.mnr.gov.cn/
-
+1. 国家统计局·城市统计年鉴. https://www.stats.gov.cn/
+2. 民政部·全国行政区划信息查询平台. https://www.mca.gov.cn/
+3. 自然资源部·国土调查成果. https://www.mnr.gov.cn/
 ---
 
 # 附件
@@ -499,7 +504,7 @@ $$\rho_{c}=\frac{N_{c}}{A_{c}}\times 100,\qquad A_{c}>0$$
 | 禁引 demo | `python3 _work_gkx21/lint_nodemo.py _staging21/M_ENT_CITY_DENSITY.md` | 0 命中 |
 | 基期三字段 | `python3 _work_gkx21/check_base_years.py _staging21/M_ENT_CITY_DENSITY.md` | OK |
 | 重跑一致 | `python3 _work_gkx21/rebuild_metric.py M_ENT_CITY_DENSITY --check` | 内容未变 |
-| 产物指纹 | `sha256sum code/M_ENT_CITY_DENSITY_out.json` | `046863955413`（前 12 位，定稿值） |
+| 产物指纹 | `sha256sum metrics/repro/out/M_ENT_CITY_DENSITY_out.json` | `046863955413`（前 12 位，定稿值） |
 | 文档-产物 | `python3 _work_gkx21/audit_md_vs_out.py --only M_ENT_CITY_DENSITY` | 无漂移 |
 
 ## 附录 E 逐项明细
@@ -572,8 +577,8 @@ $$\rho_{c}=\frac{N_{c}}{A_{c}}\times 100,\qquad A_{c}>0$$
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
 | `_staging21/M_ENT_CITY_DENSITY.md` | 指标文档（本文件） | 已交付 |
-| `code/M_ENT_CITY_DENSITY.py` | 自包含计算脚本 | 已跑通 |
-| `code/M_ENT_CITY_DENSITY_out.json` | 结果面 | 已落盘 |
+| `metrics/repro/M_ENT_CITY_DENSITY.py` | 自包含计算脚本 | 已跑通 |
+| `metrics/repro/out/M_ENT_CITY_DENSITY_out.json` | 结果面 | 已落盘 |
 | `code/_snapshots21/ent_base_geo_20261022.json` | 分子快照 | 随件保留 |
 
 ## 附录 J 复现实验记录
@@ -626,11 +631,3 @@ $$\rho_{c}=\frac{N_{c}}{A_{c}}\times 100,\qquad A_{c}>0$$
 **问：能对外发布密度吗？**
 
 答：现在不能。面积表到位前，任何密度数值都不是本件口径。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

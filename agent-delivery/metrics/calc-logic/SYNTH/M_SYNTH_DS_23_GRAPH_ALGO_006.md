@@ -1,9 +1,24 @@
 # 度中心性计算与展示（M_SYNTH_DS_23_GRAPH_ALGO_006）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_DS_23_GRAPH_ALGO_006.md`；复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py` → `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：ALGO（图算法，输出节点级结构位置与榜单）｜ **域**：综合（SYNTH）／知识图谱算法｜ **UI 挂载**：图谱页节点属性面板、机构连接度榜单、图谱节点大小映射
+> - **数据支持度**：**完全转换支持**｜ **依赖性质**：**A 类（论文共著边由 `dwd_zh_paper` 全量重建）+ 结构性无源（供应/合作/技术流三类业务边在库内均无表）**
+> - **一句话结论**：巨连通片 15,223 节点 / 36,965 边，度中心性最高为广州中医药大学第一附属医院 **12.745‰**（度 194）；度分布基尼 0.51、HHI 2.151，前 10% 节点占 41.5% 的度总量；换到「度≥5」子图后 top-100 只剩 87 个重合、秩相关 0.818892 → **读数可用，但必须标清在哪个点集上算。完全转换支持（边源可重建）。**
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py`｜ **产物**：`metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`｜ **族级快照**：`code/_snapshots21/graph_algo_23_20261023.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_DS_23_GRAPH_ALGO_006.md`；复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py` → `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -64,7 +79,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_DS_23_GRAPH_ALGO_006.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json` |
@@ -72,19 +87,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：ALGO（图算法，输出节点级结构位置与榜单）｜ **域**：综合（SYNTH）／知识图谱算法｜ **UI 挂载**：图谱页节点属性面板、机构连接度榜单、图谱节点大小映射
-> **数据支持度**：**完全转换支持**｜ **依赖性质**：**A 类（论文共著边由 `dwd_zh_paper` 全量重建）+ 结构性无源（供应/合作/技术流三类业务边在库内均无表）**
-> **复现脚本**：`code/M_SYNTH_DS_23_GRAPH_ALGO_006.py`｜ **产物**：`code/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`｜ **族级快照**：`code/_snapshots21/graph_algo_23_20261023.json`
-> **公式定义人**：旧系统侧为三张图表的表依赖（`graph_node` / `graph_edge` / `graph_membership`，演示库汇总层，gkx 内均不存在）；算法口径为 Freeman（1978）度中心性。
-> **语义声明**：旧稿只留表依赖、没有公式文本。**本件按「在机构共著关系图上算每个机构直接相连的邻居数，并给出可展示的榜单」理解**，交付物是「一套可复算的节点级读数 + 榜单 + 点集口径声明」，不是「企业影响力评分」。
-> **基期声明**：建图用全部 100,900 篇中文论文（1980—2026，未按年过滤），`base_years_used` 如实列为全区间；本件是截面图，不做年度除法。
-> **一句话结论**：巨连通片 15,223 节点 / 36,965 边，度中心性最高为广州中医药大学第一附属医院 **12.745‰**（度 194）；度分布基尼 0.51、HHI 2.151，前 10% 节点占 41.5% 的度总量；换到「度≥5」子图后 top-100 只剩 87 个重合、秩相关 0.818892 → **读数可用，但必须标清在哪个点集上算。完全转换支持（边源可重建）。**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -191,7 +198,7 @@ $$C_D^{\prime}(v)=1000\cdot\frac{d_v}{n-1}$$
 
 ### 1.5 输出结构
 
-`code/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json` 的顶层键：`metric_id` / `metric_name` / `generated_at` / `db` / `data_source` / `formula` / `reporting_unit` / `scope` / `graph` / `point_sets` / `results` / `display_spec` / `support_judgment` / `support_reason` / `caveats` / `paper_year_dist` / `sources` / `edge_sources` / `base_years_used` / `base_years_missing` / `base_years_note`。
+`metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json` 的顶层键：`metric_id` / `metric_name` / `generated_at` / `db` / `data_source` / `formula` / `reporting_unit` / `scope` / `graph` / `point_sets` / `results` / `display_spec` / `support_judgment` / `support_reason` / `caveats` / `paper_year_dist` / `sources` / `edge_sources` / `base_years_used` / `base_years_missing` / `base_years_note`。
 
 `results` 下分五块：规模（`n_nodes` / `n_edges` / `mean_degree` / `max_degree`）、分布（`buckets_giant` / `gini` / `hhi` / `kcore`）、点集统计（`centrality_stats_permille` 的 P0—P4 五套）、榜单（`top20` / `top100_type_mix`）、敏感性与相关性（`subgraph_sensitivity` / `spearman_degree_vs_*`）。正文里出现的每个数字都能在这五块里找到。
 
@@ -319,10 +326,10 @@ k-core 与本件的关系要说清：k-core 是**子图筛选口径**，不是�
 ### 2.7 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/_build_graph_algo_23.py          # 建族级快照（约 20 分钟，含精确 Brandes）
 python3 code/M_SYNTH_DS_23_GRAPH_ALGO_006.py  # 读快照出本件产物
-# → code/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json
+# → metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json
 ```
 
 本件脚本零 SQL、零建图，运行时间约 1 秒（瓶颈是 5.7 MB 快照的 JSON 解析）。产物里 `results.centrality_stats_permille.P2` 是主口径的五数概括，`results.top20` 是榜单，`results.subgraph_sensitivity` 是敏感性，`results.thresholds` 是门槛表——正文的每张表都对应其中一块。
@@ -542,12 +549,6 @@ top20 里高校 11 个、院所 5 个、企业 3 个、其他 1 个。第 1 名�
 3. Barabási A.-L., Albert R. Emergence of scaling in random networks. *Science*, 1999, 286(5439): 509-512. https://doi.org/10.1126/science.286.5439.509
 4. Borgatti S. P., Everett M. G. A graph-theoretic perspective on centrality. *Social Networks*, 2006, 28(4): 466-484. https://doi.org/10.1016/j.socnet.2005.11.005
 5. Watts D. J., Strogatz S. H. Collective dynamics of small-world networks. *Nature*, 1998, 393(6684): 440-442. https://doi.org/10.1038/30918
-6. 本地产物与快照：
-   - `code/_snapshots21/graph_algo_23_20261023.json`：族级共享快照
-   - `code/_collab_graph21.py`：合著图建图层
-   - `code/_snapshots21/edge_sources_23_20261023.json`：边源探针产物
-7. `_work_gkx21/DATA_FACTS_gkx21.md`：gkx 侧表清单与性能纪律（§3.68 慢查询传染）
-
 ---
 
 # 附件
@@ -641,17 +642,10 @@ top20 里高校 11 个、院所 5 个、企业 3 个、其他 1 个。第 1 名�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_DS_23_GRAPH_ALGO_006.py` |
-| 产物 | `code/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json` |
 | 快照 | `code/_snapshots21/graph_algo_23_20261023.json` |
 | 建图 | `code/_collab_graph21.py`（`min_papers=2`） |
 | 主口径 | P2，无向、无权、精确 |
 | 最大读数 | 12.745‰（度 194） |
 | 判档 | 完全转换支持 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

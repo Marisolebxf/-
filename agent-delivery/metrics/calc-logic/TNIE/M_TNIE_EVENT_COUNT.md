@@ -1,9 +1,24 @@
 # 抽取事件条数（M_TNIE_EVENT_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TNIE-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TNIE_EVENT_COUNT.md`；复现脚本 `metrics/repro/M_TNIE_EVENT_COUNT.py` → `metrics/repro/out/M_TNIE_EVENT_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：CLASS（事件计数，代理口径）｜ **域**：创新分析（INNOV）· 事件｜ **UI 挂载**：创新活动监测、区域活动密度对比、活动型报道专题
+> - **数据支持度**：**部分支持**｜ **依赖性质**：事件表 `dwd_event` 仅 20 行且为单一展会系列，真事件计数不可建；仅能以媒体报道中的活动型标题条数做代理，且媒体 ≠ 事件
+> - **一句话结论**：`dwd_event` 只有 **20 行**、覆盖 **2** 天、**20** 个名称中 **17** 个含展会词、组织者 top5 全含「国药励展」，是单一展会系列而非通用事件面；真事件计数判拒拟，只能交「活动型标题条数」代理 **18,884** 条（占全库报道 **1.1319%**）、2025 年起 **6,213** 条（占同期 **1.1982%**），故判 **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_TNIE_EVENT_COUNT.py`｜ **产物**：`metrics/repro/out/M_TNIE_EVENT_COUNT_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TNIE_EVENT_COUNT.py`、产物 `metrics/repro/out/M_TNIE_EVENT_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TNIE-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TNIE_EVENT_COUNT.md`；复现脚本 `metrics/repro/M_TNIE_EVENT_COUNT.py` → `metrics/repro/out/M_TNIE_EVENT_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TNIE_EVENT_COUNT.py`、产物 `metrics/repro/out/M_TNIE_EVENT_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TNIE_EVENT_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_TNIE_EVENT_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_TNIE_EVENT_COUNT_out.json` |
@@ -63,19 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TNIE_EVENT_COUNT.py`、产物 `metrics/repro/out/M_TNIE_EVENT_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：CLASS（事件计数，代理口径）｜ **域**：创新分析（INNOV）· 事件｜ **UI 挂载**：创新活动监测、区域活动密度对比、活动型报道专题
-> **数据支持度**：**部分支持**｜ **依赖性质**：事件表 `dwd_event` 仅 20 行且为单一展会系列，真事件计数不可建；仅能以媒体报道中的活动型标题条数做代理，且媒体 ≠ 事件
-> **公式定义人**：本件自建（`calc-logic/INNOV/M_TNIE_EVENT_COUNT.md` 路径不存在；抽取事件计数在 gkx 无事件面，按 v8 降级为代理口径）
-> **口径归属**：事件计数本体归注册表原义（gkx 无事件面）；代理读数归本件。
-> **复现脚本**：`code/M_TNIE_EVENT_COUNT.py`｜ **产物**：`code/M_TNIE_EVENT_COUNT_out.json`
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读，`gkx_reader_zp`）
-> **一句话结论**：`dwd_event` 只有 **20 行**、覆盖 **2** 天、**20** 个名称中 **17** 个含展会词、组织者 top5 全含「国药励展」，是单一展会系列而非通用事件面；真事件计数判拒拟，只能交「活动型标题条数」代理 **18,884** 条（占全库报道 **1.1319%**）、2025 年起 **6,213** 条（占同期 **1.1982%**），故判 **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -249,9 +256,9 @@ proxy_since_2025 = sum(1 for d, t in rows
 ### 2.7 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_TNIE_EVENT_COUNT.py
-# → code/M_TNIE_EVENT_COUNT_out.json
+# → metrics/repro/out/M_TNIE_EVENT_COUNT_out.json
 ```
 
 复现判据：
@@ -410,14 +417,7 @@ python3 code/M_TNIE_EVENT_COUNT.py
 
 1. 国家统计局. 中国统计年鉴（2024）. https://www.stats.gov.cn/sj/ndsj/
 2. 深圳市统计局. 深圳统计年鉴（2024）. https://tjj.sz.gov.cn/
-3. 中国会展经济研究会. 中国会展经济发展报告. https://www.cces.org.cn/
-4. 国家知识产权局. 专利统计年报（2024）. https://www.cnipa.gov.cn/
-5. 本地产物：
-   - `code/M_TNIE_EVENT_COUNT.py`
-   - `code/M_TNIE_EVENT_COUNT_out.json`
-   - `code/_snapshots21/f3_facts_20261023.json`
-6. `_work_gkx21/DISPATCH_BRIEF_v8.md`：负证据三件套与代理口径声明
-
+3. 国家知识产权局. 专利统计年报（2024）. https://www.cnipa.gov.cn/
 ---
 
 # 附件
@@ -476,10 +476,3 @@ python3 code/M_TNIE_EVENT_COUNT.py
 ### C.3 事件面补齐后的最小字段集
 
 至少需要：事件 ID、名称、开始日期、结束日期、主办方、举办城市、事件类型、参与人数（可选）。有这七列，才能做时间序列、地区分布、类型结构三张表。当前 `dwd_event` 只有前五列中的四列，缺城市与类型，也没有参与人数。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

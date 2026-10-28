@@ -1,9 +1,25 @@
 # 实施路径与风险辅助（M_POLICY_DS_11_POLICY_EVAL_015）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DS_11_POLICY_EVAL_015.md`；复现脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_015.py` → `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：EVAL（单条政策 × 四要素）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「实施路径」标签页（设计位）、政策对比页「风险提示」区块（设计位）
+> - **数据支持度**：**部分支持**｜ **公式定义人**：**无同 ID 正本**——注册表 `cfg_metric-POLICY-seed.yaml` 的 `formula` 为 `pending_cosign: human:唐绍祖（未签）`，`calc_logic_ref` 为空；本件口径取自需求原文四要素（落地路径 / 时间进度表 / 关键节点 / 风险分析）与本报告自拟的五环节词表，**不是甲方已签口径**。
+> - **同域边界**：与 `M_POLICY_LAYOUT_REC_COUNT`（171）**不得互相顶替**——那件出「布局建议」，没有路径图、进度表、风险清单三样专出；与 `M_POLICY_DEEP_166_1` 也不同——那件的「堵点」是文本焦点，不是方案实施风险。两处裁定已写进产物 `cross_checks`。
+> - **一句话结论**：五环节文本提及率可算（**17,540 / 18,763 = 93.4819%** 的政策至少提到一个环节），但它只是「文中出现环节词」，不是「真实流转路径」；进度表与关键节点缺日期字段（`implementation_date` 有效 **0 / 20,000**，全表 `0000-00-00`），风险清单缺风险事件表（两库均无）→ 四要素 **1 / 4 可算**，故判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_DS_11_POLICY_EVAL_015.py`｜ **产物**：`metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json`｜ **共用底数**：`code/_snapshots21/policy_base_20261021.json`、`policy_content_20261021.json`、`policy_struct_20261023.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_015.py`、产物 `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DS_11_POLICY_EVAL_015.md`；复现脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_015.py` → `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_015.py`、产物 `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_DS_11_POLICY_EVAL_015.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_015.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json` |
@@ -58,19 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_015.py`、产物 `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：EVAL（单条政策 × 四要素）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策详情页「实施路径」标签页（设计位）、政策对比页「风险提示」区块（设计位）
-> **数据支持度**：**部分支持**｜ **公式定义人**：**无同 ID 正本**——注册表 `cfg_metric-POLICY-seed.yaml` 的 `formula` 为 `pending_cosign: human:唐绍祖（未签）`，`calc_logic_ref` 为空；本件口径取自需求原文四要素（落地路径 / 时间进度表 / 关键节点 / 风险分析）与本报告自拟的五环节词表，**不是甲方已签口径**。
-> **复现脚本**：`code/M_POLICY_DS_11_POLICY_EVAL_015.py`｜ **产物**：`code/M_POLICY_DS_11_POLICY_EVAL_015_out.json`｜ **共用底数**：`code/_snapshots21/policy_base_20261021.json`、`policy_content_20261021.json`、`policy_struct_20261023.json`
-> **判定类型**：`verdict_kind = partial_support`。四要素里 1 个可用（落地路径 → 文本代理），3 个不可用（进度表 / 关键节点 / 风险清单）。
-> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。截面件：以 20,000 条政策的当前快照为总体，发布年跨 1981—2024，但年份只作描述属性，不进入任何分母。
-> **同域边界**：与 `M_POLICY_LAYOUT_REC_COUNT`（171）**不得互相顶替**——那件出「布局建议」，没有路径图、进度表、风险清单三样专出；与 `M_POLICY_DEEP_166_1` 也不同——那件的「堵点」是文本焦点，不是方案实施风险。两处裁定已写进产物 `cross_checks`。
-> **一句话结论**：五环节文本提及率可算（**17,540 / 18,763 = 93.4819%** 的政策至少提到一个环节），但它只是「文中出现环节词」，不是「真实流转路径」；进度表与关键节点缺日期字段（`implementation_date` 有效 **0 / 20,000**，全表 `0000-00-00`），风险清单缺风险事件表（两库均无）→ 四要素 **1 / 4 可算**，故判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -285,9 +293,9 @@ $$h_{i,k}=\mathbb{1}\left[\exists\,w\in L_k:\ w\in T_i\right],\qquad H_i=\sum_{k
 ### 2.7 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_DS_11_POLICY_EVAL_015.py
-# → code/M_POLICY_DS_11_POLICY_EVAL_015_out.json
+# → metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json
 ```
 
 脚本只读三份落盘快照，不发 SQL：`policy_struct_20261023.json`（日期可用性）、`policy_content_20261021.json`（18,763 条正文）、`policy_dims_20261023.json`（层级/城市/类型）。运行后产物里的关键块是 `stages`（五环节逐项分子分母）、`stage_count_dist`（环节数分布）、`risks`（四类风险）、`timeline`（日期可用性）、`elements`（四要素可算性）、`slices`（城市/层级）。正文的所有比例都能在这四块里找到分子与分母，例如 17,540 / 18,763 = 93.4819% 对应 `stage_summary.docs_any_stage` / `stage_summary` 的分母 18,763。
@@ -387,8 +395,8 @@ S2 到 S5 的词质量明显更好：「申报」「评审」「拨付」「绩�
 ### 5.1 复现步骤
 
 ```bash
-cd agent-delivery/metrics/repro
-python3 code/M_POLICY_DS_11_POLICY_EVAL_015.py     # 产出 code/M_POLICY_DS_11_POLICY_EVAL_015_out.json
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+python3 code/M_POLICY_DS_11_POLICY_EVAL_015.py     # 产出 metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_DS_11_POLICY_EVAL_015 --check
 ```
 
@@ -422,12 +430,10 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_DS_11_POLICY_EVAL_015 --check
 
 1. 中华人民共和国国务院. 国家行政机关公文处理办法（国发〔2000〕23号）. https://www.gov.cn/gongbao/content/2000/content_60592.htm
 2. van der Aalst W. Process Mining: Data Science in Action[M]. 2nd ed. Springer, 2016. https://doi.org/10.1007/978-3-662-49851-4
-3. 薛澜, 陈玲. 中国公共政策过程的研究：西方学者的视角及其启示[J]. 中国行政管理, 2005, (7): 99-103. https://kns.cnki.net/kcms2/article/abstract?v=policy_process
-4. ISO. ISO 31000:2018 Risk management — Guidelines. https://www.iso.org/standard/65694.html
-5. 中共中央, 国务院. 关于全面实施预算绩效管理的意见. https://www.gov.cn/zhengce/2018-09/25/content_5325315.htm
-6. 国务院. 优化营商环境条例（国令第722号）. https://www.gov.cn/zhengce/content/2019-10/23/content_5443963.htm
-7. MySQL 8.0 Reference Manual — The DATE, DATETIME, and TIMESTAMP Types（零日期说明）. https://dev.mysql.com/doc/refman/8.0/en/datetime.html
-
+3. ISO. ISO 31000:2018 Risk management — Guidelines. https://www.iso.org/standard/65694.html
+4. 中共中央, 国务院. 关于全面实施预算绩效管理的意见. https://www.gov.cn/zhengce/2018-09/25/content_5325315.htm
+5. 国务院. 优化营商环境条例（国令第722号）. https://www.gov.cn/zhengce/content/2019-10/23/content_5443963.htm
+6. MySQL 8.0 Reference Manual — The DATE, DATETIME, and TIMESTAMP Types（零日期说明）. https://dev.mysql.com/doc/refman/8.0/en/datetime.html
 ---
 
 # 附件
@@ -551,14 +557,7 @@ python3 _work_gkx21/rebuild_metric.py M_POLICY_DS_11_POLICY_EVAL_015 --check
 
 | 步骤 | 命令 | 输出 |
 |---|---|---|
-| 探针 | `python3 code/M_POLICY_DS_11_POLICY_EVAL_015.py` | `code/M_POLICY_DS_11_POLICY_EVAL_015_out.json` |
+| 探针 | `python3 code/M_POLICY_DS_11_POLICY_EVAL_015.py` | `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json` |
 | 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_DS_11_POLICY_EVAL_015 --check` | 内容未变 |
 | 结构闸 | `python3 _work_gkx21/gate_check.py _staging21/M_POLICY_DS_11_POLICY_EVAL_015.md` | PASS |
 | 基期闸 | `python3 _work_gkx21/check_base_years.py _staging21/M_POLICY_DS_11_POLICY_EVAL_015.md` | OK |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

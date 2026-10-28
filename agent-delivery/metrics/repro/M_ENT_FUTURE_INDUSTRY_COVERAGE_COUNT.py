@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题系统（按 UI 挂载推断）
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT 覆盖未来产业数（零 DB，族级快照重算）。
 
 目标口径（calc-logic COVER-STAT-L01 / E-32）：

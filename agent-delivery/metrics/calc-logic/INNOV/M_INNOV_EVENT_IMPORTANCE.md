@@ -1,9 +1,20 @@
 # 事件重要性等级（M_INNOV_EVENT_IMPORTANCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_EVENT_IMPORTANCE.md`；复现脚本 `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py` → `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV｜ **域**：科技发展态势·科技全域态势·科创事件｜ **UI 挂载**：事件筛选（高/中/低）、地图标记点分级、排序｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py`、产物 `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_EVENT_IMPORTANCE.md`；复现脚本 `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py` → `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py`、产物 `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -50,7 +61,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_EVENT_IMPORTANCE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json` |
@@ -58,14 +69,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py`、产物 `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV｜ **域**：科技发展态势·科技全域态势·科创事件｜ **UI 挂载**：事件筛选（高/中/低）、地图标记点分级、排序｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（20260904 口径 V1.3-20260829）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：有 / 有（上游两件均为代理）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -103,7 +111,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 王惠 20260904 口径给出的聚合规则是**先合成分、再按分位切档**：综合分 $=0.5\times attention+0.5\times influence$，$\ge P70$ 为高、$\le P30$ 为低、其余为中，样本 <20 时退化为固定阈 70/40。本报告**完全沿用该聚合规则**（这是本批五个指标中唯一一个公式未改的），只替换了输入口径（见 §五）。
 
-实测结果：6,406 个事件簇中高 1,922、中 2,562、低 1,922，比例 30.00 : 39.99 : 30.00，与 P70/P30 的设计完全吻合；综合分区间 8.88–90.11，均值 37.54、中位 34.42。脚本 `code/M_INNOV_EVENT_IMPORTANCE.py` 已跑通并产出 `code/M_INNOV_EVENT_IMPORTANCE_out.json`。
+实测结果：6,406 个事件簇中高 1,922、中 2,562、低 1,922，比例 30.00 : 39.99 : 30.00，与 P70/P30 的设计完全吻合；综合分区间 8.88–90.11，均值 37.54、中位 34.42。脚本 `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py` 已跑通并产出 `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json`。
 
 档位结论：**部分支持**。分档本身没有新缺口，但它的两个输入分别是「媒体报道量代理」与「媒体称谓层级代理」，等级因此继承了两者的语义偏差；此外本口径存在一个**结构性不对称**——影响力无法把高关注事件降档（0 例），只能把低关注事件升档（51 例），这一点必须在产品说明中写清。
 
@@ -157,10 +165,10 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 编号 | 来源 | 位置 | 用途 |
 |---|---|---|---|
-| S1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | 第 209–211 行 | 语义锚定（三档、排序、动态） |
-| S2 | `王惠口径正本（GitLab 外本地归档）` | 「计算逻辑说明」 | 聚合规则原文 |
-| S3 | `code/M_INNOV_EVENT_ATTENTION_out.json` | `stats`, `top20` | 上游关注度 |
-| S4 | `code/M_INNOV_EVENT_INFLUENCE_out.json` | `stats`, `top20` | 上游影响力 |
+| S1 | `《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md` | 第 209–211 行 | 语义锚定（三档、排序、动态） |
+| S2 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_EVENT_IMPORTANCE.md（王惠正本已演化并入）` | 「计算逻辑说明」 | 聚合规则原文 |
+| S3 | `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json` | `stats`, `top20` | 上游关注度 |
+| S4 | `metrics/repro/out/M_INNOV_EVENT_INFLUENCE_out.json` | `stats`, `top20` | 上游影响力 |
 | S5 | `_work_full/B5_INNOV.json` | `M_INNOV_EVENT_IMPORTANCE` 条目 | 元信息：`formula_source_1019=王惠` |
 
 ### 1.6 推测原意与推测定义（仿王惠口径写法）
@@ -259,10 +267,10 @@ P70 = **42.4275**，P30 = **27.645**（线性插值分位）。切档结果：
 
 | 项目 | 内容 |
 |---|---|
-| 脚本 | `code/M_INNOV_EVENT_IMPORTANCE.py` |
+| 脚本 | `metrics/repro/M_INNOV_EVENT_IMPORTANCE.py` |
 | 共享库 | `code/_innov_event_lib.py`（`build()` 同时产出三件） |
-| 上游 | `code/M_INNOV_EVENT_ATTENTION_out.json`、`code/M_INNOV_EVENT_INFLUENCE_out.json` |
-| 输出 | `code/M_INNOV_EVENT_IMPORTANCE_out.json` |
+| 上游 | `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`、`metrics/repro/out/M_INNOV_EVENT_INFLUENCE_out.json` |
+| 输出 | `metrics/repro/out/M_INNOV_EVENT_IMPORTANCE_out.json` |
 | 运行 | `python3 code/M_INNOV_EVENT_IMPORTANCE.py` |
 
 #### 2.7.2 复现结果（摘要表）
@@ -399,7 +407,6 @@ Top8 全部来自 `INB1309`，且分数集中在 81–90，第 1 名与第 8 名
 6. 黄萃, 任弢, 张剑. 政策文献量化研究：公共政策研究的新方向. 公共管理学报, 2015, 12(2): 129–137.
 7. 黄骏飞, 张博文, 熊霖霏. 中国科技创新政策的演化与量化评价. 统计与决策, 2023, 39(14): 168–173. https://doi.org/10.13546/j.cnki.tjyjc.2023.14.031
 8. 国务院. 新一代人工智能发展规划（国发〔2017〕35 号）. 2017-07-20. https://www.gov.cn/zhengce/content/2017-07/20/content_5211996.htm
-
 ---
 
 # 附件
@@ -523,11 +530,3 @@ level = "高" if C >= p70 else ("低" if C <= p30 else "中")
 但它是一个**纯合成指标**，其质量完全由上游决定。上游两件的语义分别是「媒体报道量代理」与「媒体称谓层级代理」，等级因此只能表述为「传播重要性」。加之无标注数据可校验、分位随窗漂移、降档能力数学缺失，本指标判 **部分支持**。
 
 若甲方补齐受众行为数据、媒体评级表与一批专家标注，本指标可先升上游、再升自身，届时可重估为「完全转换支持」。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

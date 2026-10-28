@@ -1,9 +1,20 @@
 # 企业竞争力排名（M_ENT_COMPETITIVENESS_RANK）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_COMPETITIVENESS_RANK.md`；复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py` → `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：RANK（多维加权）｜ **域**：企业服务／企业评价／竞争力排名｜ **UI 挂载**：企业竞争力榜单、企业画像「竞争力」卡、区域企业实力对比｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py`、产物 `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_COMPETITIVENESS_RANK.md`；复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py` → `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py`、产物 `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_COMPETITIVENESS_RANK.md` |
 | 复现脚本 | `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json` |
@@ -66,15 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py`、产物 `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RANK（多维加权）｜ **域**：企业服务／企业评价／竞争力排名｜ **UI 挂载**：企业竞争力榜单、企业画像「竞争力」卡、区域企业实力对比｜ **数据支持度**：**部分支持**
-> **口径来源**：王惠（`王惠阶段性成果/20260817/指标计算逻辑-V3-2/M_ENT_COMPETITIVENESS_RANK.md`）｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_COMPETITIVENESS_RANK.py` → `code/M_ENT_COMPETITIVENESS_RANK_out.json`
-> **wanghui**：true（§五 必含王惠口径对照）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -129,7 +136,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 Top100 的城市分布是深圳 57、广州 35、东莞 4、惠州 4。这个分布与四市的企业基数基本同向，说明评分没有明显的城市偏好；但也说明它测的是「大企业密集度」，不是「城市竞争力」。
 
-结论是「部分支持」：榜单可出、可看结构，但缺经营与风险两维，不能当「综合竞争力」的权威排名。脚本 `code/M_ENT_COMPETITIVENESS_RANK.py` 只读快照，重跑 0.4 秒。
+结论是「部分支持」：榜单可出、可看结构，但缺经营与风险两维，不能当「综合竞争力」的权威排名。脚本 `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py` 只读快照，重跑 0.4 秒。
 
 ## 一、需求定义概述
 
@@ -305,11 +312,11 @@ Top100 城市分布 57/35/4/4 说明榜单由深圳与广州主导。东莞与�
 
 脚本只读快照，零 SQL。产物含 `weights`、`candidates`、`top100_city_mix`、`top100`。
 
-产物落在 `code/M_ENT_COMPETITIVENESS_RANK_out.json`，是脚本唯一写出的文件；重跑会整体覆盖，不做增量追加。校验时以该文件的 `support_judgment`、`sources` 与正文逐项对账，任一项对不上即视为漂移。
+产物落在 `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json`，是脚本唯一写出的文件；重跑会整体覆盖，不做增量追加。校验时以该文件的 `support_judgment`、`sources` 与正文逐项对账，任一项对不上即视为漂移。
 
 | 命令 | 期望 | 备注 |
 |---|---|---|
-| `python3 M_ENT_COMPETITIVENESS_RANK.py` | top100 | 0.4 秒 |
+| `cd code && python3 M_ENT_COMPETITIVENESS_RANK.py` | top100 | 0.4 秒 |
 | `rebuild_metric.py M_ENT_COMPETITIVENESS_RANK --check` | 语义一致 | 重跑对账 |
 
 ### 2.8 与旧稿的差异
@@ -672,12 +679,8 @@ Top100 城市分布 57/35/4/4 说明榜单由深圳与广州主导。东莞与�
 
 ## 参考文献
 
-1. Porter (1980), Competitive Strategy. https://www.simonandschuster.com/
-2. Barney (1991), Firm Resources and Sustained Competitive Advantage. https://doi.org/10.1177/014920639101700108
-3. 中国企业联合会. https://www.cec-ceda.org.cn/
-4. 国家统计局. https://www.stats.gov.cn/
-5. 项目内 calc-logic V2：`M_ENT_COMPETITIVENESS_RANK.md`
-
+1. Barney (1991), Firm Resources and Sustained Competitive Advantage. https://doi.org/10.1177/014920639101700108
+2. 国家统计局. https://www.stats.gov.cn/
 ---
 
 # 附件
@@ -696,7 +699,7 @@ Top100 城市分布 57/35/4/4 说明榜单由深圳与广州主导。东莞与�
 
 ## 附录 B 探测证据与产物字段
 
-下表是本件产物的关键字段与本次运行落盘值，任一行与 `code/M_ENT_COMPETITIVENESS_RANK_out.json` 对不上即为产物漂移。
+下表是本件产物的关键字段与本次运行落盘值，任一行与 `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json` 对不上即为产物漂移。
 
 | 字段 | 内容/用途 |
 |---|---|
@@ -794,8 +797,8 @@ Top10 如下，与产物 `top100` 对应。看榜时注意五维分解：创新�
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
 | `_staging21/M_ENT_COMPETITIVENESS_RANK.md` | 指标文档（本文件） | 已交付 |
-| `code/M_ENT_COMPETITIVENESS_RANK.py` | 自包含计算脚本 | 已跑通 |
-| `code/M_ENT_COMPETITIVENESS_RANK_out.json` | 结果面 | 已落盘 |
+| `metrics/repro/M_ENT_COMPETITIVENESS_RANK.py` | 自包含计算脚本 | 已跑通 |
+| `metrics/repro/out/M_ENT_COMPETITIVENESS_RANK_out.json` | 结果面 | 已落盘 |
 | `code/_snapshots21/` | 只读快照 | 随件保留 |
 | `_work_gkx21/*.py` | 六条自查 | 通过 |
 
@@ -851,11 +854,3 @@ Top10 如下，与产物 `top100` 对应。看榜时注意五维分解：创新�
 **问：多久更新？**
 
 答：年度。专利与资本关系变化慢。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

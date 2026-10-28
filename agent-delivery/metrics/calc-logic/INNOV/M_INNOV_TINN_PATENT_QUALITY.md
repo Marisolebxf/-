@@ -1,9 +1,22 @@
 # 专利质量（M_INNOV_TINN_PATENT_QUALITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_TINN_PATENT_QUALITY.md`；复现脚本 `metrics/repro/M_INNOV_TINN_PATENT_QUALITY.py` → `metrics/repro/out/M_INNOV_TINN_PATENT_QUALITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：王惠已定义（INNOV 家族 · 科技创新评估）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.2.2，原文第 903 行）
+> - **数据支持度**：**完全不支持**
+> - **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（五张表/字段都在）；依赖数据 = **否**（价值附表各约 2 万行、对主表覆盖 0.68%—0.70%，且回连主表四次 60 秒超时）
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_TINN_PATENT_QUALITY.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_TINN_PATENT_QUALITY.py`、产物 `metrics/repro/out/M_INNOV_TINN_PATENT_QUALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_TINN_PATENT_QUALITY.md`；复现脚本 `metrics/repro/M_INNOV_TINN_PATENT_QUALITY.py` → `metrics/repro/out/M_INNOV_TINN_PATENT_QUALITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_TINN_PATENT_QUALITY.py`、产物 `metrics/repro/out/M_INNOV_TINN_PATENT_QUALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_TINN_PATENT_QUALITY.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_TINN_PATENT_QUALITY.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_TINN_PATENT_QUALITY_out.json` |
@@ -64,16 +77,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_TINN_PATENT_QUALITY.py`、产物 `metrics/repro/out/M_INNOV_TINN_PATENT_QUALITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：王惠已定义（INNOV 家族 · 科技创新评估）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.2.2，原文第 903 行）
-> **UI 挂载**：技术创新力指标展示页「专利质量评估」卡片（五维雷达 + 领域排名）
-> **数据支持度**：**完全不支持**
-> **口径来源**：`metrics/calc-logic/INNOV/M_INNOV_TINN_PATENT_QUALITY.md`（V1.5-20260901）＋需求原文 1.1.1.1.4.1.7.2.2
-> **四判定摘要**：直接结构 = 否；直接数据 = 否；依赖结构 = 是（五张表/字段都在）；依赖数据 = **否**（价值附表各约 2 万行、对主表覆盖 0.68%—0.70%，且回连主表四次 60 秒超时）
-> **铁律**：不产出任何领域分；不用 `M_INNOV_PATENT_INFLUENCE`、高价值专利、专利成果质量等指标顶替；不用申请量或授权率冒充质量
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: true
 
 ---
@@ -119,6 +128,52 @@ wanghui: true
 因此本文件**不产出任何领域分、不产出任何排名、不产出任何雷达图数据**。档位判「完全不支持」，与「部分支持」的区别在于：部分支持至少有一个维度能出数，而这里五个维度**一个都出不来**。修复路径在 §四写死：把五张附表扩到全量并在表内冗余 `ipc4` / `apdt_year`，或给主表建可用索引并允许分块聚合；在此之前，这条指标在页面上应显示「数据不足」，而不是显示一个用申请量算出来的替代分。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | #### 4）数据服务开发：开发API接口，提供根据地区标签、时间等条件查询对应的专利申请（L154）<br>```<br>4）数据服务开发：开发API接口，提供根据地区标签、时间等条件查询对应的专利申请成功数和增长率指标。通过API接口，用户可以灵活地查询每个地区的专利申请成功数和增长率指标，并进行相关分析和应用。<br>5）数据同步：采用API接口、消息队列等方式将计算结果同步到数据服务中，以便用户查询和使用。将计算结果同步到数据服务中，可以方便用户查询、下载和使用每个地区的专利申请成功数和增长率指标，促进技术创新和应用。同时，需要定期更新数据和指标，并对其进行监测和分析，以确保数据和指标的有效性和可靠性。<br>（8）领先专利主体机构<br>通过对接技术数据库，设定判定领先的指标，比如专利数等，并设定一个指标的阈值，识别领先专利主体机构，并计算数据。<br>1）数据源对接：对接数据融合中枢中的技术数据库，建立数据获取渠道。通过数据源对接，获取技术数据库中的专利信息数据，包括专利名称、申请号、公开号、申请时间、公开时间、专利类型等信息。<br>2）指标设定：根据业务需求，设定领先专利主体机构的判定指标，并设定阈值。指标的选择需要考虑到行业特点和业务目标，例如可以选择专利数量、专利质量、专利技术覆盖范围等指标。同时，需要根据指标的特点和实际情况，设定合理的阈值，以区分领先和非领先的主体机构。<br>3）数据清洗：根据领先指标及时间进行提取与专利相关属性数据，例如专利类型、专利状态等。针对专利数据，需要进行数据清洗处理，包括去重、去噪、格式化、补全等操作。同时，需要进行指标业务的分析，例如对数据的时间范围、专利类型、技术领域、专利申请者等进行分析，以确保数据准确性和可靠性。<br>4）数据处理：根据设定的领先指标和阈值，计算领先专利主体机构。需要对数据进行计算、归纳和统计等处理，得出领先专利主体机构和相应的指标结果。同时，需要对计算结果进行有效性验证和调整，确保指标结果准确和可靠。在数据处理过程中，需要进行指标业务的分析，例如对领先专利主体机构的类型、技术领域、地域分布等进行分析，以便更好地理解和解释数据。<br>5）数据服务开发：开发API接口，提供根据领先指标、时间等条件查询对应的领先专利主体机构和指标结果。通过API接口，用户可以灵<br>``` |
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.1.4.1.7.2.2 专利质量评估（L900）<br>```<br>1.1.1.1.4.1.7.2.2. 专利质量评估<br>通过引文分析、权利要求分析、家族专利分析等方法，评估专利的技术创新质量和价值，用户可查看专利质量指标（如被引次数、权利要求数量、家族规模等）的分布情况和排名，识别高质量专利。<br>```<br>#### §1.1.1.1.4.1.7.2 技术创新力指标展示（L890）<br>```<br>1.1.1.1.4.1.7.2. **技术创新力指标展示**<br>通过收集和分析专利技术创新的数量、专利技术创新的质量、技术市场的潜力等关键指标，构建技术创新力评估体系。结合专利－发明人－学者－地域－产业等知识图谱数据，该功能能够全面分析不同产业领域的技术创新规模、质量和市场潜力，为决策者提供技术创新能力的发展状况和空间分布特征，帮助识别具有高技术创新力的领域和区域，为技术发展战略制定和创新资源优化配置提供科学依据。<br>技术创新力指标展示的具体功能包括专利数量统计分析、专利质量评估、技术市场潜力分析、技术创新力综合评估、技术创新空间分布、技术创新趋势预测。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_TINN_PATENT_QUALITY.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -336,15 +391,12 @@ $$
 
 ## 参考文献
 
-1. OECD. *Patent quality indicators*. <https://www.oecd.org/sti/intellectual-property-statistics-and-analysis.htm>
-2. Lanjouw, J. O., Schankerman, M. *Patent quality and research productivity*. Economic Journal 114(495), 2004. <https://academic.oup.com/ej/article/114/495/441/5087380>
-3. Harhoff, D., Narin, F., Scherer, F. M., Vopel, K. *Citation frequency and the value of patented inventions*. REStat 81(3), 1999. <https://direct.mit.edu/rest/article/81/3/511/57243>
-4. EPO. *DOCDB patent family definition*. <https://www.epo.org/searching-for-patents/data/bulk-data-sets/docdb.html>
-5. WIPO. *Patent families: definition and use*. <https://www.wipo.int/patents/en/topics/patent_families.html>
-6. 国家知识产权局. *专利审查指南（2023）*. <https://www.cnipa.gov.cn/col/col1510/index.html>
-7. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_TINN_PATENT_QUALITY.md`
-8. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 903 行
-
+1. Lanjouw, J. O., Schankerman, M. *Patent quality and research productivity*. Economic Journal 114(495), 2004. <https://academic.oup.com/ej/article/114/495/441/5087380>
+2. Harhoff, D., Narin, F., Scherer, F. M., Vopel, K. *Citation frequency and the value of patented inventions*. REStat 81(3), 1999. <https://direct.mit.edu/rest/article/81/3/511/57243>
+3. EPO. *DOCDB patent family definition*. <https://www.epo.org/searching-for-patents/data/bulk-data-sets/docdb.html>
+4. WIPO. *Patent families: definition and use*. <https://www.wipo.int/patents/en/topics/patent_families.html>
+5. 国家知识产权局. *专利审查指南（2023）*. <https://www.cnipa.gov.cn/col/col1510/index.html>
+6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 903 行
 ---
 
 # 附件
@@ -479,18 +531,10 @@ Lanjouw-Schankerman 用被引与同族构造质量权重。它比五维简单，
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_TINN_PATENT_QUALITY.py` |
-| 输出 | `code/M_INNOV_TINN_PATENT_QUALITY_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_TINN_PATENT_QUALITY.py` |
+| 输出 | `metrics/repro/out/M_INNOV_TINN_PATENT_QUALITY_out.json` |
 | 耗时 | 0.2 秒（纯读快照，无 SQL） |
 | SQL | 0 条（失败查询在前置探针中落盘） |
 | 关键数字 | 五表 20,593 / 20,026 / 20,515 / 20,000 行 / 覆盖 0.68%—0.70% / 可回连 475 件 / 四次 60 秒超时 / 权利要求 CN 14,353·EN 5,221 |
 | 交付 | 无领域分、无排名 |
 | 判档 | 完全不支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,20 @@
 # 创新载体质量（M_INNOV_CARRIER_QUALITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CARRIER_QUALITY.md`；复现脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py` → `metrics/repro/out/M_INNOV_CARRIER_QUALITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：MODEL（INNOV 域·载体三型之分级加权型）｜ **域**：创新监测（INNOV）｜ **UI 挂载**：科技信息展示系统·科技成果展示·科技创新生态展示 / 创新载体地图与增量分析（分类筛选与载体详情）｜ **数据支持度**：**完全转换支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CARRIER_QUALITY.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_QUALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CARRIER_QUALITY.md`；复现脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py` → `metrics/repro/out/M_INNOV_CARRIER_QUALITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_QUALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CARRIER_QUALITY.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CARRIER_QUALITY.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CARRIER_QUALITY_out.json` |
@@ -63,14 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py`、产物 `metrics/repro/out/M_INNOV_CARRIER_QUALITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（INNOV 域·载体三型之分级加权型）｜ **域**：创新监测（INNOV）｜ **UI 挂载**：科技信息展示系统·科技成果展示·科技创新生态展示 / 创新载体地图与增量分析（分类筛选与载体详情）｜ **数据支持度**：**完全转换支持**
-> **公式定义人（20261021-B5 补全批次）**：王惠（标签族口径）+ 本批 agent（分级加权补全）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量足（可现转）｜ wanghui：true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -104,9 +112,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「创新载体质量」回答的是载体三型的第二问：「同样是载体，谁更有含金量」。三份需求说明书中以「团队实力」「新增**各级**创新载体」等表述隐含质量分级要求，未给出公式；本报告把科技部火炬统计对研发机构「国家级×3 + 省级×1/10」的分级折算思想 (科技部, 2021) 移植到 `dwd_org_tech_tag` 标签族，构建「分级得分（国家级 3/省级 2/普通 1）× 产出旁证（2024 授权专利极值归一）」等权合成的载体质量分，并与姊妹指标划清口径边界：COUNT 数存量、QUALITY 称含金量、RANK 排座次。脚本 `code/M_INNOV_CARRIER_QUALITY.py` 已在 `gkx` 三方库跑通：有标签载体 32,322 家（国家级 31,680 / 省级 209 / 普通 433），质量分 n=32,321、分布 0.0-100.0、均值 49.22，Top3 为比亚迪（100.0）/广东电网（66.51）/惠科（61.26），深圳切片 18,090 家（均值 49.34 与全库持平）。按 §〇，结构+当前数据量均足且现转结果合理 → **完全转换支持**；缺口在于科研机构/海外载体无标签覆盖（缺测而非零分）与「曾获/现持」标签时效未分层，详见 §四。
+「创新载体质量」回答的是载体三型的第二问：「同样是载体，谁更有含金量」。三份需求说明书中以「团队实力」「新增**各级**创新载体」等表述隐含质量分级要求，未给出公式；本报告把科技部火炬统计对研发机构「国家级×3 + 省级×1/10」的分级折算思想 (科技部, 2021) 移植到 `dwd_org_tech_tag` 标签族，构建「分级得分（国家级 3/省级 2/普通 1）× 产出旁证（2024 授权专利极值归一）」等权合成的载体质量分，并与姊妹指标划清口径边界：COUNT 数存量、QUALITY 称含金量、RANK 排座次。脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py` 已在 `gkx` 三方库跑通：有标签载体 32,322 家（国家级 31,680 / 省级 209 / 普通 433），质量分 n=32,321、分布 0.0-100.0、均值 49.22，Top3 为比亚迪（100.0）/广东电网（66.51）/惠科（61.26），深圳切片 18,090 家（均值 49.34 与全库持平）。按 §〇，结构+当前数据量均足且现转结果合理 → **完全转换支持**；缺口在于科研机构/海外载体无标签覆盖（缺测而非零分）与「曾获/现持」标签时效未分层，详见 §四。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 科技信息展示系统的建设内容主要包括科技发展态势、科技政策跟踪、科技人才态势、科技数据资源、科技知识图谱、科技成果展示和科技服务全景7个大功能模块。科技发展态势的子功能包括科技全域态势、科学技术全景、技术发展跟踪、全球创新监测、湾区创新监测、深圳创新监测、科技创新评估、科技指数和科技发展规划；科技政策跟踪的子功能包括科创政策全景、政策分析评价、政策效果推演；科技人才态势的子功能包括全球领域人才态势、<br>><br>> 全球创新监测的具体功能包括创新成果综合展示、具体创新成果展示、全球创新实时数据、创新载体排行榜、创新监测与分析、城市创新能力分析。<br>><br>> 基于GIS地理信息技术，将具体的创新成果数据在地图上进行标注展示。用户可通过地理范围调整与筛选，查看选择区域内的创新成果信息，点击创新成果名称可查看详细信息，也可查看关联的载体信息。该功能支持用户订阅关注的区域、领域、创新成果类型，实现持续监测与关注。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CARRIER_QUALITY.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -217,7 +270,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，以下为王惠标签族口径 + 火炬分级折算思想的推测计算过程；已由脚本 `code/M_INNOV_CARRIER_QUALITY.py` 在 `gkx` **实测跑通**，结果见同目录 `M_INNOV_CARRIER_QUALITY_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author/机构)」；完整题录见文末「参考文献」。
+> **口径说明**：需求未给公式，以下为王惠标签族口径 + 火炬分级折算思想的推测计算过程；已由脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py` 在 `gkx` **实测跑通**，结果见同目录 `M_INNOV_CARRIER_QUALITY_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author/机构)」；完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：分级折算而非综合指数
 
@@ -279,14 +332,14 @@ $$Quality(c)=\frac{norm(tier(c))+norm(granted_{2024}(c))}{2}\times 100$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_CARRIER_QUALITY.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_CARRIER_QUALITY.py` |
 | 结果产物 | 同目录 `M_INNOV_CARRIER_QUALITY_out.json` |
 | 主算库 | `gkx`（三方库；行数读 `GKX_INVENTORY.json`） |
 
 **换源说明（2026-10-21）**：原脚本以旧开发库为源；本次改为 `from _gkxdb import gkx` 直连三方库，删除 `_devdb` 入口，三级 tier 词表、极值归一与等权合成均未改动。2026-10-21 重跑产物 `M_INNOV_CARRIER_QUALITY_out.json` 与 20261020 基线逐项比对见下。
 
 ```bash
-python3 metrics/repro/M_INNOV_CARRIER_QUALITY.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_CARRIER_QUALITY.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -348,7 +401,7 @@ python3 metrics/repro/M_INNOV_CARRIER_QUALITY.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CARRIER_QUALITY.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CARRIER_QUALITY.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | gkx（库存行数） | 实测结论 |
 |---|---|---|---|---|
@@ -424,9 +477,6 @@ python3 metrics/repro/M_INNOV_CARRIER_QUALITY.py
 ---
 
 ## 参考文献
-
-> 下列条目均经联网核验存在；仅收录可打开的官方页面。
-
 1. 科学技术部. (2021). 《国家高新技术产业开发区综合评价指标体系》（国科发火〔2021〕106 号）. https://www.most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2021/202104/t20210429_174232.html （研发机构国家级×3、省级×1/10 分级折算的直接政策范本）
 
 2. 科技部、财政部、国家税务总局. (2016). 《高新技术企业认定管理办法》（国科发火〔2016〕32 号）. https://most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2016/201602/t20160205_123998.html （资质认定的多维硬条件与名录动态管理）
@@ -435,12 +485,9 @@ python3 metrics/repro/M_INNOV_CARRIER_QUALITY.py
 
 4. 科学技术部. (2024). 《国家高新技术产业开发区综合评价指标体系》（工信部规〔2024〕169 号修订版）. https://www.miit.gov.cn/jgsj/ghs/wjfb/art/2024/art_5a0070fe7d3c4d42b56c37fc4a23f090.html （分级评价体系的最新官方演进）
 
-5. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/**/M_INNOV_CARRIER_INDEX_GLOBAL.md` — 王惠载体指数 V1.5「创新能力」维（二元标签+授权专利等权）。
-
-6. OECD/JRC（Nardo, M., Saisana, M., Saltelli, A., Tarantola, S. 等执笔）. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*（归一/加权/聚合/稳健性与敏感性检验；本报告用其说明「tier 三档归一后仅剩三个值」的统计性质）. OECD 出版页：https://www.oecd.org/en/publications/handbook-on-constructing-composite-indicators-methodology-and-user-guide_9789264043466-en.html （该站对脚本访问返回 403，人工浏览器可开）；DOI：https://doi.org/10.1787/9789264043466-en
+5. OECD/JRC（Nardo, M., Saisana, M., Saltelli, A., Tarantola, S. 等执笔）. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*（归一/加权/聚合/稳健性与敏感性检验；本报告用其说明「tier 三档归一后仅剩三个值」的统计性质）. OECD 出版页：https://www.oecd.org/en/publications/handbook-on-constructing-composite-indicators-methodology-and-user-guide_9789264043466-en.html （该站对脚本访问返回 403，人工浏览器可开）；DOI：https://doi.org/10.1787/9789264043466-en
 
 文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
 ---
 
 # 附件
@@ -621,7 +668,7 @@ python3 metrics/repro/M_INNOV_CARRIER_QUALITY.py
 
 ### C.8 对甲方四问的逐条回答
 
-**第一问：这个指标现在能不能出数？** 能。32,321 家载体已产出 0—100 连续分，分布非退化（mean 49.22、median 50.0、Top3 100.0/66.51/61.26），脚本 `code/M_INNOV_CARRIER_QUALITY.py` 可复跑，三张源表全部在白名单内。
+**第一问：这个指标现在能不能出数？** 能。32,321 家载体已产出 0—100 连续分，分布非退化（mean 49.22、median 50.0、Top3 100.0/66.51/61.26），脚本 `metrics/repro/M_INNOV_CARRIER_QUALITY.py` 可复跑，三张源表全部在白名单内。
 
 **第二问：出的是不是甲方要的那个东西？** 一半是。需求要「新增**各级**创新载体」与「团队实力、历史业绩」，本指标的 tier 三级正对应「各级」，授权专利可作「历史业绩」的代理；但「团队实力」对应的人才字段（`development_employee`）全库为空，当前分里没有任何团队信息，因此不能声称覆盖了详情卡的全部语义。
 
@@ -631,13 +678,6 @@ python3 metrics/repro/M_INNOV_CARRIER_QUALITY.py
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_INNOV_CARRIER_QUALITY.py`；产物：`../code/M_INNOV_CARRIER_QUALITY_out.json`
+- 脚本：`../code/M_INNOV_CARRIER_QUALITY.py`；产物：`../metrics/repro/out/M_INNOV_CARRIER_QUALITY_out.json`
 - 关键结果：标签覆盖 32,322（国家级 31,680/省级 209/普通 433）；质量分 n=32,321，0.0-100.0，mean 49.22；深圳 18,090（mean 49.34）；Top=比亚迪 100.0；support_judgment=`完全转换支持`
 - 工程注意：tags 全表 20 万行拉取后本地分组；专利按名称 GROUP BY 一次完成，避免逐载体子查询。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

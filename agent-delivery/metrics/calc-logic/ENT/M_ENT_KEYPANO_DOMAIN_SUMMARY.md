@@ -1,9 +1,20 @@
 # 领域摘要（M_ENT_KEYPANO_DOMAIN_SUMMARY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_KEYPANO_DOMAIN_SUMMARY.md`；复现脚本 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` → `metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（重点企业全景·领域证据摘要·王惠五步法）｜ **域**：企业分析（ENT，KEYPANO 重点企业全景族）｜ **UI 挂载**：科技信息展示系统·重点企业全景（全景页面两支柱之汇总面）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`、产物 `metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_KEYPANO_DOMAIN_SUMMARY.md`；复现脚本 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` → `metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`、产物 `metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_KEYPANO_DOMAIN_SUMMARY.md` |
 | 复现脚本 | `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json` |
@@ -65,15 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`、产物 `metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（重点企业全景·领域证据摘要·王惠五步法）｜ **域**：企业分析（ENT，KEYPANO 重点企业全景族）｜ **UI 挂载**：科技信息展示系统·重点企业全景（全景页面两支柱之汇总面）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261019 调研）**：王惠（creator=王惠，五步法原文口径：链位归集→关键词抽取→领域映射→覆盖率→证据摘要；覆盖阈值 60%）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分（文本源在但英文侧薄）/ 部分（链位归集断、映射表未建）
-> wanghui: true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -107,7 +114,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「领域摘要」是科技信息展示系统「重点企业全景」页面的**两支柱之汇总面**（与「企业清单」的名单面互为表里）：从目标产业链**当前链位（上游/中游/下游）**的重点企业论文与专利中抽取技术关键词，映射到产业链细分领域，计算映射覆盖率并生成证据摘要——覆盖率 ≥60% 判「证据充分」，否则「证据不足」；摘要汇总论文关键词、专利关键词与关联重点企业，作为全景页的领域证据底座，供后续 QUAL/REGIONAL/TYPE 分布族与「关键链位」识别调用。口径真源是王惠的 calc-logic 五步法（链位归集→关键词抽取→领域映射→覆盖率→证据摘要），属文本挖掘+共词分析的技术谱系：Callon 的共词映射确立了「关键词共现揭示科学技术动力学的地位」(Callon, Courtial & Lavergne, 1991)；小境界定的 NLP 术语抽取范式（TF-IDF/TextRank）是关键词工程基源 (Manning, Raghavan & Schütze, 2008)；中文官方语境有国知局《战略性新兴产业分类与国际专利分类参照关系表》的 1,872 条产业-IPC 对照 (国家知识产权局办公室, 2021) 与工信部产业链「链长制」诊断范式 (工业和信息化部, 2021)。实测（2026-10-21，脚本 `code/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`，**仅连三方库 gkx**，全表名 `gkx.` 限定）：`dwd_org_industry_tags` 2,283,762 行（2,283,762 家 org）；`dwd_industry_chain_info` 1,273 行且 **level 分布全 0**（上/中/下游分组键缺失，族内 MATCH/DEPTH 叶同证）；tags↔chain_info JOIN 0 行；专利池 `dwd_patent` 294 万级、keywords 样本 10 万填充率 **100%**；论文 zh 100,900 篇、en **1,387 篇**（薄）、`dwd_zh_author` 62,002 人/23,327 机构（单位名称可对齐企业）；专利摘要表 20,000 行（薄）；关键词→细分领域映射表**未建**。五步中断在链位归集与领域映射两环 → **部分支持**。
+「领域摘要」是科技信息展示系统「重点企业全景」页面的**两支柱之汇总面**（与「企业清单」的名单面互为表里）：从目标产业链**当前链位（上游/中游/下游）**的重点企业论文与专利中抽取技术关键词，映射到产业链细分领域，计算映射覆盖率并生成证据摘要——覆盖率 ≥60% 判「证据充分」，否则「证据不足」；摘要汇总论文关键词、专利关键词与关联重点企业，作为全景页的领域证据底座，供后续 QUAL/REGIONAL/TYPE 分布族与「关键链位」识别调用。口径真源是王惠的 calc-logic 五步法（链位归集→关键词抽取→领域映射→覆盖率→证据摘要），属文本挖掘+共词分析的技术谱系：Callon 的共词映射确立了「关键词共现揭示科学技术动力学的地位」(Callon, Courtial & Lavergne, 1991)；小境界定的 NLP 术语抽取范式（TF-IDF/TextRank）是关键词工程基源 (Manning, Raghavan & Schütze, 2008)；中文官方语境有国知局《战略性新兴产业分类与国际专利分类参照关系表》的 1,872 条产业-IPC 对照 (国家知识产权局办公室, 2021) 与工信部产业链「链长制」诊断范式 (工业和信息化部, 2021)。实测（2026-10-21，脚本 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`，**仅连三方库 gkx**，全表名 `gkx.` 限定）：`dwd_org_industry_tags` 2,283,762 行（2,283,762 家 org）；`dwd_industry_chain_info` 1,273 行且 **level 分布全 0**（上/中/下游分组键缺失，族内 MATCH/DEPTH 叶同证）；tags↔chain_info JOIN 0 行；专利池 `dwd_patent` 294 万级、keywords 样本 10 万填充率 **100%**；论文 zh 100,900 篇、en **1,387 篇**（薄）、`dwd_zh_author` 62,002 人/23,327 机构（单位名称可对齐企业）；专利摘要表 20,000 行（薄）；关键词→细分领域映射表**未建**。五步中断在链位归集与领域映射两环 → **部分支持**。
 
 ---
 
@@ -191,7 +198,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 calc-logic 五步法展开，已由脚本 `code/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` 于 2026-10-21 直连三方库 gkx 完成逐环实测，结果见同目录 `M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`。因链位归集与领域映射两环断，本批为「五步法依赖审计」而非出数——在 level 全 0 的分组键上做上/中/下游分组是空转。文内引用格式为 SCI 常用「叙述后附 (Author)」。
+> **口径说明**：本节按王惠 calc-logic 五步法展开，已由脚本 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` 于 2026-10-21 直连三方库 gkx 完成逐环实测，结果见同目录 `M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`。因链位归集与领域映射两环断，本批为「五步法依赖审计」而非出数——在 level 全 0 的分组键上做上/中/下游分组是空转。文内引用格式为 SCI 常用「叙述后附 (Author)」。
 
 ### 2.1 方法选择：为何走共词分析+官方分类对照的组合路线
 
@@ -227,12 +234,12 @@ $$Cov(L) = \frac{|\{k \in K_L : \exists d \in D, k \mapsto d\}|}{|K_L|} \times 1
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` |
 | 结果产物 | 同目录 `M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json` |
 | 探测库 | 三方库 `gkx`（链位/语料/映射表）；行数只读 `_work_gkx21/GKX_INVENTORY.json` |
 
 ```bash
-python3 metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py
 ```
 
 脚本输出 `probe`（链位归集、文本语料、映射表扫描）与 `support_judgment`（机判）。以下展示为 **2026-10-21** 完整跑数结果（与 out.json 一致）。
@@ -290,7 +297,7 @@ python3 metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` 并确认探针结论，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py` 并确认探针结论，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库（实测） | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -308,7 +315,7 @@ python3 metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py
 **四判定（§〇）**：直接结构/数据 = 否（无结果面）；依赖结构 = **部分**（语料表在，层级键值域缺、映射表缺）；依赖数据 = **部分**（语料量足，分组键 0、映射无）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json` 实测——①链位归集断：`dwd_industry_chain_info` 1,273 行 level 全 0（分布 `[{"level": 0, "n": 1273}]`），上/中/下游分组键无从取值，tags↔chain_info JOIN 0 行；②文本源在：专利 294 万且 keywords 样本填充率 100.0%，论文 zh 100,900 篇+作者单位 23,327 机构，但英文侧仅 1,387 篇、专利摘要表 20,000 行；③领域映射断：库内无关键词→产业链细分领域映射表（王惠 calc-logic 自标「未建」）。五步中断在 1/3 两环 → **部分支持**。
+依据：`metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json` 实测——①链位归集断：`dwd_industry_chain_info` 1,273 行 level 全 0（分布 `[{"level": 0, "n": 1273}]`），上/中/下游分组键无从取值，tags↔chain_info JOIN 0 行；②文本源在：专利 294 万且 keywords 样本填充率 100.0%，论文 zh 100,900 篇+作者单位 23,327 机构，但英文侧仅 1,387 篇、专利摘要表 20,000 行；③领域映射断：库内无关键词→产业链细分领域映射表（王惠 calc-logic 自标「未建」）。五步中断在 1/3 两环 → **部分支持**。
 
 ---
 
@@ -371,24 +378,19 @@ wanghui_agg 登记：def=「从目标产业链当前链位（上游/中游/下�
 
 1. Callon, M., Courtial, J.-P., & Laville, F. (1991). Co-word analysis as a tool for describing the network of interactions between basic and technological research: The case of polymer chemistry. *Scientometrics*, 22(1), 155–205. https://doi.org/10.1007/BF02019280 （关键词共现揭示领域结构——共词分析范式基源）
 
-2. Manning, C. D., Raghavan, P., & Schütze, H. (2008). *Introduction to Information Retrieval*. Cambridge University Press. 全文开放页：https://nlp.stanford.edu/IR-book/information-retrieval-book.html （TF-IDF/术语抽取教科书方法——关键词工程基源）
+2. 国家知识产权局办公室. (2021). 《战略性新兴产业分类与国际专利分类参照关系表（2021）（试行）》（国知办函规字〔2021〕121 号；1,872 条 IPC 对照）. 印发通知：https://www.cnipa.gov.cn/art/2021/2/10/art_75_156716.html ；首次发布报道：https://www.cnipa.gov.cn/art/2021/3/2/art_53_157086.html （「关键词→领域映射」的官方对照范式）
 
-3. 国家知识产权局办公室. (2021). 《战略性新兴产业分类与国际专利分类参照关系表（2021）（试行）》（国知办函规字〔2021〕121 号；1,872 条 IPC 对照）. 印发通知：https://www.cnipa.gov.cn/art/2021/2/10/art_75_156716.html ；首次发布报道：https://www.cnipa.gov.cn/art/2021/3/2/art_53_157086.html （「关键词→领域映射」的官方对照范式）
+3. 工业和信息化部. (2021). 《关于巩固回升向好趋势加力振作工业经济的通知》（工信部运行〔2021〕167 号；产业链链长制与补链强链部署）. https://www.gov.cn/zhengce/zhengceku/2022-11/30/content_5729585.htm （链位语义的政策语境：上/中/下游环节识别与诊断）
 
-4. 工业和信息化部. (2021). 《关于巩固回升向好趋势加力振作工业经济的通知》（工信部运行〔2021〕167 号；产业链链长制与补链强链部署）. https://www.gov.cn/zhengce/zhengceku/2022-11/30/content_5729585.htm （链位语义的政策语境：上/中/下游环节识别与诊断）
+4. World Intellectual Property Organization. (2024). *International Patent Classification (IPC)*. WIPO. https://www.wipo.int/classifications/ipc/en/ （专利技术内容的国际分类母版，部/大类/小类/组/分组五级；对应族 E「技术内容归类」的口径）
 
-5. World Intellectual Property Organization. (2024). *International Patent Classification (IPC)*. WIPO. https://www.wipo.int/classifications/ipc/en/ （专利技术内容的国际分类母版，部/大类/小类/组/分组五级；对应族 E「技术内容归类」的口径）
+5. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. OECD Publishing. https://doi.org/10.1787/9789264239012-en （R&D 活动边界与统计分类的国际口径，对应族 E「活动归类」；该站对脚本访问返回 403，人工浏览器可开）
 
-6. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. OECD Publishing. https://doi.org/10.1787/9789264239012-en （R&D 活动边界与统计分类的国际口径，对应族 E「活动归类」；该站对脚本访问返回 403，人工浏览器可开）
+6. 国家知识产权局办公室. (2018). 《国际专利分类与国民经济行业分类参照关系表（2018）》（国知办发规字〔2018〕31 号；21,863 条参照关系，覆盖 821 个行业小类）. https://www.cnipa.gov.cn/art/2018/10/8/art_75_131968.html （「专利分类→行业小类」的官方多对多对照，比 2021 版战新表粒度更细，是本指标域侧骨架的首选）
 
-7. 国家知识产权局办公室. (2018). 《国际专利分类与国民经济行业分类参照关系表（2018）》（国知办发规字〔2018〕31 号；21,863 条参照关系，覆盖 821 个行业小类）. https://www.cnipa.gov.cn/art/2018/10/8/art_75_131968.html （「专利分类→行业小类」的官方多对多对照，比 2021 版战新表粒度更细，是本指标域侧骨架的首选）
+7. Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. *Journal of Machine Learning Research*, 3, 993–1022. https://www.jmlr.org/papers/v3/blei03a.html （主题模型：把文档表示为词分布、把词归入主题，是「共词聚类」之外的词侧替代路线）
 
-8. Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. *Journal of Machine Learning Research*, 3, 993–1022. https://www.jmlr.org/papers/v3/blei03a.html （主题模型：把文档表示为词分布、把词归入主题，是「共词聚类」之外的词侧替代路线）
-
-9. Chen, C. (2006). CiteSpace II: Detecting and visualizing emerging trends and transient patterns in scientific literature. *Journal of the American Society for Information Science and Technology*, 57(3), 359–377. https://doi.org/10.1002/asi.20317 （共词网络的工程化实现与突变词检测，支撑族 A「簇结构可解释性」的局限判断；该站对脚本访问返回 403，人工浏览器可开）
-
-10. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_KEYPANO_DOMAIN_SUMMARY.md` — 王惠五步法原文与阈值 60%。
-
+8. Chen, C. (2006). CiteSpace II: Detecting and visualizing emerging trends and transient patterns in scientific literature. *Journal of the American Society for Information Science and Technology*, 57(3), 359–377. https://doi.org/10.1002/asi.20317 （共词网络的工程化实现与突变词检测，支撑族 A「簇结构可解释性」的局限判断；该站对脚本访问返回 403，人工浏览器可开）
 ---
 
 # 附件
@@ -413,7 +415,7 @@ wanghui_agg 登记：def=「从目标产业链当前链位（上游/中游/下�
 
 ## 附录 B　历史库表探测证据（摘要）
 
-- 本批实测（`code/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`，2026-10-21，仅三方库 gkx；行数只读 `_work_gkx21/GKX_INVENTORY.json`）：`dwd_org_industry_tags` 2,283,762 行；`dwd_industry_chain_info` 1,273 行 level 全 0；tags↔chain_info JOIN 0 行；专利 keywords 10 万样本填充率 100%；`dwd_zh_paper` 100,900 / `dwd_zh_author` 62,002（23,327 机构）/ `dwd_en_paper` 1,387 / `dwd_patent_abstract` 20,000；映射表扫描空；`support_judgment = 部分支持`（chain_level_ready=false、mapping_table_ready=false）。
+- 本批实测（`metrics/repro/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`，2026-10-21，仅三方库 gkx；行数只读 `_work_gkx21/GKX_INVENTORY.json`）：`dwd_org_industry_tags` 2,283,762 行；`dwd_industry_chain_info` 1,273 行 level 全 0；tags↔chain_info JOIN 0 行；专利 keywords 10 万样本填充率 100%；`dwd_zh_paper` 100,900 / `dwd_zh_author` 62,002（23,327 机构）/ `dwd_en_paper` 1,387 / `dwd_patent_abstract` 20,000；映射表扫描空；`support_judgment = 部分支持`（chain_level_ready=false、mapping_table_ready=false）。
 - 王惠侧探针（wanghui_agg match 字段，时点较早）：chain_info 1,273 行、org_base 50,000、org_tags 19,029、patent 86,028、4 张语料表 0 行空表——本批对照：org_tags 扩容 120 倍、4 张空表全部有数。
 - 族内传导：MATCH/DEPTH 叶同受 chain_info.level 全 0 断（KEYPANO 族共用卡点）。
 
@@ -559,15 +561,7 @@ wanghui_agg 登记：def=「从目标产业链当前链位（上游/中游/下�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`；产物：`../code/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`
+- 脚本：`../code/M_ENT_KEYPANO_DOMAIN_SUMMARY.py`；产物：`../metrics/repro/out/M_ENT_KEYPANO_DOMAIN_SUMMARY_out.json`
 - 探测库：三方库 gkx（全表名 `gkx.` 限定）
 - 关键结果：org_tags 2,283,762 行；chain_info 1,273 行 level 全 0；tags↔chain_info JOIN 0 行；专利 keywords 100% 填充（10 万样本）；zh_paper 100,900 / zh_author 62,002（23,327 机构）/ en_paper 1,387 / patent_abstract 20,000；映射表扫描空；`support_judgment = 部分支持`（chain_level_ready=false、mapping_table_ready=false）
 - 工程注意：level 回填为族共用卡点优先修复；映射表官方表先行；v0 全链口径非正式摘要可先行联调。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

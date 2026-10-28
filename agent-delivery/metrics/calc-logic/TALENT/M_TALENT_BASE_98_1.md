@@ -1,9 +1,22 @@
-# M_TALENT_BASE_98_1（M_TALENT_BASE_98_1）
+# 人才分布与结构基础统计（M_TALENT_BASE_98_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_BASE_98_1.md`；复现脚本 `metrics/repro/M_TALENT_BASE_98_1.py` → `metrics/repro/out/M_TALENT_BASE_98_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：需求派生（TALENT 家族 · 基础统计）｜ **域**：科技信息展示系统 · 科技人才态势 · 人才分布图 / 人才洞察分析（需求 1.1.1.1.4.3.1.1—1.1.1.1.4.3.1.2，原文第 1467—1573 行）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否（无 `talent_dist` 结果表）；直接数据 = 否；依赖结构 = 是（学者主档 + 三张子表齐全）；依赖数据 = **部分**（四族计数都能出数，但子表与主档只有 9.3% 可连，四族不能交叉切片，D2/D3 无年份列）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_BASE_98_1.py`、产物 `metrics/repro/out/M_TALENT_BASE_98_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_BASE_98_1.md`；复现脚本 `metrics/repro/M_TALENT_BASE_98_1.py` → `metrics/repro/out/M_TALENT_BASE_98_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_BASE_98_1.py`、产物 `metrics/repro/out/M_TALENT_BASE_98_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TALENT_BASE_98_1.md` |
 | 复现脚本 | `metrics/repro/M_TALENT_BASE_98_1.py` |
 | 复现产物 | `metrics/repro/out/M_TALENT_BASE_98_1_out.json` |
@@ -64,16 +77,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_BASE_98_1.py`、产物 `metrics/repro/out/M_TALENT_BASE_98_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：需求派生（TALENT 家族 · 基础统计）｜ **域**：科技信息展示系统 · 科技人才态势 · 人才分布图 / 人才洞察分析（需求 1.1.1.1.4.3.1.1—1.1.1.1.4.3.1.2，原文第 1467—1573 行）
-> **UI 挂载**：人才分布图页「区域分布概览 / 城市详情 / 学历结构」三张统计卡
-> **数据支持度**：**部分支持**
-> **口径来源**：需求原文「区域分布概览」「城市与区域详情」「产研结构」；calc-logic **未覆盖**本指标，四族口径为本文 §1.6 自建
-> **四判定摘要**：直接结构 = 否（无 `talent_dist` 结果表）；直接数据 = 否；依赖结构 = 是（学者主档 + 三张子表齐全）；依赖数据 = **部分**（四族计数都能出数，但子表与主档只有 9.3% 可连，四族不能交叉切片，D2/D3 无年份列）
-> **铁律**：只做分组计数，不加权、不合成、不出增长率；分母只取真实存在的年份，缺失年份不按 0 摊入
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: false
 
 ---
@@ -199,7 +208,7 @@ DS13-D01 进一步给出 `A1需规ID: ALGO-TALENT-BASE-98`、`algo_lib_leaf: 人
 4. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
 5. 联合国. *International Standard Classification of Education (ISCED 2011)*. <http://uis.unesco.org/en/topic/international-standard-classification-education-isced>
 6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 1467—1573 行
-7. 同批产物：`code/M_TALENT_BASE_98_1_out.json`；`code/_snapshots21/probe_talent21_20261022.json`
+7. 同批产物：`metrics/repro/out/M_TALENT_BASE_98_1_out.json`；`code/_snapshots21/probe_talent21_20261022.json`
 8. 属地底册：`_snapshots21/base_20261021.json`（企业底册 189,116 行）、`gkx.dwd_org_heis_info`（3,501 行）
 
 ### 1.6 推测原意与推测定义
@@ -309,10 +318,10 @@ FROM gkx.dwd_org_heis_info;                          -- 3,501 行
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_TALENT_BASE_98_1.py` |
+| 脚本 | `metrics/repro/M_TALENT_BASE_98_1.py` |
 | 公共库 | `code/_talent21_common.py` |
 | 数据快照 | `probe_a26_20261022.json`、`probe_talent21_20261022.json`、`base_20261021.json` |
-| 输出 | `code/M_TALENT_BASE_98_1_out.json` |
+| 输出 | `metrics/repro/out/M_TALENT_BASE_98_1_out.json` |
 | 库名 / 端口 | `gkx` @ 183.240.141.251:3318（`gkx_reader_zp`，只读）；本指标 SQL 0 条 |
 | 运行 | `python3 code/M_TALENT_BASE_98_1.py` |
 | 耗时 | 1.6 秒 |
@@ -456,14 +465,9 @@ D4 的年度序列还改变了「结构变化」这句话的含义：它只能�
 
 1. 教育部. *全国高等学校名单*. <https://www.moe.gov.cn/>
 2. 国家统计局. *中国统计年鉴（2024）*. <https://www.stats.gov.cn/>
-3. OECD. *Science, Technology and Innovation Scoreboard*. <https://www.oecd.org/sti/scoreboard.htm>
-4. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
-5. UNESCO. *ISCED 2011*. <http://uis.unesco.org/en/topic/international-standard-classification-education-isced>
-6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 1467—1573 行
-7. 同批产物：`code/M_TALENT_BASE_98_1_out.json`
-8. 属地底册：`_snapshots21/base_20261021.json`、`gkx.dwd_org_heis_info`
-9. 注册表口径：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-TALENT-seed.yaml`（v0.1.0，`is_mock: true`，formula `pending_cosign`）、`metric-readiness-matrix-TALENT.yaml`、`metric-srs-map.yaml`
-
+3. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
+4. UNESCO. *ISCED 2011*. <http://uis.unesco.org/en/topic/international-standard-classification-education-isced>
+5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 1467—1573 行
 ---
 
 # 附件
@@ -585,17 +589,10 @@ D4 完整年 2015 → 2024：1,615 → 494（博士 635 → 339）；残年 2025
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_TALENT_BASE_98_1.py` |
-| 输出 | `code/M_TALENT_BASE_98_1_out.json` |
+| 脚本 | `metrics/repro/M_TALENT_BASE_98_1.py` |
+| 输出 | `metrics/repro/out/M_TALENT_BASE_98_1_out.json` |
 | 耗时 | 1.6 秒 |
 | SQL | 0 条 |
 | 关键数字 | 21,316 学者 / 17,761 可属地 / 2,108 机构 / 97,249 标签 / 43,766 学历行 / 博士 37.53% |
 | 交付 | 四族单维统计（D1—D4），无交叉、无增长率 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

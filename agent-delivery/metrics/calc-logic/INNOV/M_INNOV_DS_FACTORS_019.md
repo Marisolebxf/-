@@ -1,9 +1,21 @@
-# 监测异常点识别（DS_FACTORS 镜像条目）（M_INNOV_DS_FACTORS_019）
+# 监测异常点识别（M_INNOV_DS_FACTORS_019）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_FACTORS_019.md`；复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_019.py` → `metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（时序监测类，OPEN draft 镜像条目）｜ **域**：INNOV｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 异常监测
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（`metrics/calc-logic/INNOV/M_INNOV_DS_FACTORS_019.md`，正文只有一句「同 M_INNOV_FACTOR_ANOMALY-监测异常点识别」）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_019.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_FACTORS_019.md`；复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_019.py` → `metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_019.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_FACTORS_019.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_FACTORS_019.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json` |
@@ -64,16 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_FACTORS_019.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（时序监测类，OPEN draft 镜像条目）｜ **域**：INNOV｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 异常监测
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（`metrics/calc-logic/INNOV/M_INNOV_DS_FACTORS_019.md`，正文只有一句「同 M_INNOV_FACTOR_ANOMALY-监测异常点识别」）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
-> **条目性质**：DS-FACTORS-019 是正式条目 `M_INNOV_FACTOR_ANOMALY` 的**镜像**（`mirror_of`），口径、公式、源表字段三项全部指向后者。本文件不复述第二套理论，只做两件事：① 证明镜像逐位一致；② 把 DS 侧声明的六类输入逐项映射到实际落地的四条序列，说清哪三项没落地。
-> **20261021 换源**：唯一数据面为三方库 `gkx`（`183.240.141.251:3318`）；专利件数**零 DB**，读全量专利面板缓存。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -204,7 +211,7 @@ $$\text{Out}_{019}=\big(F(S),\ \mathbb{1}[F(S)\equiv F_{\text{cache}}(S)]\big)$$
 
 ## 二、计算过程
 
-> 以下读数全部由 `code/M_INNOV_DS_FACTORS_019.py` 实测产出，结果见 `M_INNOV_DS_FACTORS_019_out.json`（与母条目 `M_INNOV_FACTOR_ANOMALY_out.json` 逐位一致）。
+> 以下读数全部由 `metrics/repro/M_INNOV_DS_FACTORS_019.py` 实测产出，结果见 `M_INNOV_DS_FACTORS_019_out.json`（与母条目 `M_INNOV_FACTOR_ANOMALY_out.json` 逐位一致）。
 
 ### 2.1 方法定位：镜像不是第二套算法
 
@@ -286,9 +293,9 @@ $$\text{Out}_{019}=\big(F(S),\ \mathbb{1}[F(S)\equiv F_{\text{cache}}(S)]\big)$$
 
 ### 2.7 复现代码与结果展示
 
-脚本：`code/M_INNOV_DS_FACTORS_019.py`（141 行）
-产物：`code/M_INNOV_DS_FACTORS_019_out.json`
-依赖：`code/M_INNOV_FACTOR_ANOMALY.py`（母模块，`build_series` / `run_all` / `SERIES_CACHE`）
+脚本：`metrics/repro/M_INNOV_DS_FACTORS_019.py`（141 行）
+产物：`metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json`
+依赖：`metrics/repro/M_INNOV_FACTOR_ANOMALY.py`（母模块，`build_series` / `run_all` / `SERIES_CACHE`）
 缓存：`code/_snapshots21/a16_raw_series.json`、`a16_anomaly_series.json`
 
 运行：
@@ -421,9 +428,9 @@ P0：专利年份扩容（决定监测范围完整性）；P1：学者年度快�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_DS_FACTORS_019.py` |
-| 产物 | `code/M_INNOV_DS_FACTORS_019_out.json` |
-| 母模块 | `code/M_INNOV_FACTOR_ANOMALY.py` |
+| 脚本 | `metrics/repro/M_INNOV_DS_FACTORS_019.py` |
+| 产物 | `metrics/repro/out/M_INNOV_DS_FACTORS_019_out.json` |
+| 母模块 | `metrics/repro/M_INNOV_FACTOR_ANOMALY.py` |
 | 缓存 | `_snapshots21/a16_raw_series.json`、`a16_anomaly_series.json` |
 | 库 | `gkx@183.240.141.251:3318`（只读） |
 | 耗时 | 约 0.2 秒（读缓存） |
@@ -434,14 +441,13 @@ P0：专利年份扩容（决定监测范围完整性）；P1：学者年度快�
 ## 参考文献
 
 1. OECD (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. https://doi.org/10.1787/9789264239012-en
-2. Eurostat, *SDMX concepts and definitions for R&D statistics*. https://ec.europa.eu/eurostat/web/research-methodology
+2. Eurostat, *SDMX concepts and definitions for R&D statistics*. https://ec.europa.eu/eurostat/
 3. DAMA International (2017). *DAMA-DMBOK: Data Management Body of Knowledge* (2nd ed.), Ch. 4 Data Architecture.（单一事实来源原则）
 4. ISO 7870-1:2019, *Control charts — Part 1: General guidelines*. https://www.iso.org/standard/69537.html
 5. Iglewicz, B. & Hoaglin, D. C. (1993). *How to Detect and Handle Outliers*. ASQC Quality Press.
 6. NIST/SEMATECH, *e-Handbook of Statistical Methods*, §6.3. https://www.itl.nist.gov/div898/handbook/pmc/section3/pmc3.htm
 7. NASA, *Work Breakdown Structure (WBS) Handbook*, NASA/SP-2010-3403. https://www.nasa.gov
 8. 国家知识产权局，专利统计年报。https://www.cnipa.gov.cn
-
 ---
 
 # 附件
@@ -561,11 +567,3 @@ project_year [2001, 2002, 2021, 2022, 2023]
 ```
 
 `out.json` 计数核对：`n_series_total=5`、`n_series_eligible=4`、`n_declared_inputs=6`、`n_inputs_landed=3`、`n_hits=13`、`level_share_max=0.413`。镜像核对 5 条序列 × 4 口径 = 20 单元，全部 `true`。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

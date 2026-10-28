@@ -1,9 +1,20 @@
-# 科研机构重点技术领域布局模型（M_ORG_DEEP_149_1）
+# M_ORG_DEEP_149_1 · 科研机构重点技术领域布局模型
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_DEEP_149_1.md`；复现脚本 `metrics/repro/M_ORG_DEEP_149_1.py` → `metrics/repro/out/M_ORG_DEEP_149_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **数据支持度**：部分支持
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_DEEP_149_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_149_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_DEEP_149_1.md`；复现脚本 `metrics/repro/M_ORG_DEEP_149_1.py` → `metrics/repro/out/M_ORG_DEEP_149_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_DEEP_149_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_149_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_DEEP_149_1.md` |
 | 复现脚本 | `metrics/repro/M_ORG_DEEP_149_1.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_DEEP_149_1_out.json` |
@@ -62,15 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_DEEP_149_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_149_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 域：科研机构（ORG）｜类型：布局结构指标｜形态：机构 × 领域矩阵 + 领域实力榜 + 补强清单
-> **数据支持度**：部分支持
-> 判定：领域识别**可转换**（194 家 / 259 个 IPC4 小类 / 5,781 件专利 → 7 大领域）；领域实力评分**可转换但只覆盖 9.35% 的机构**（545 个机构×领域对）；补强清单**可转换**（88 家 / 209 个缺口）；技术知识图谱**不可转换**（库内无节点边表，只有两列聚合）
-> 一句话口径：以专利 IPC4 小类为主证据、论文关键词与项目学科为辅助证据，把每家机构的专利存量拆到 7 个技术领域，算出「领域份额 × 规模折算」的结构强度，并按城市前 5 领域给出补强清单
-> 复现：`python3 code/M_ORG_DEEP_149_1.py` → `code/M_ORG_DEEP_149_1_out.json`（零 SQL，约 0.42 秒）
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -147,7 +154,7 @@ CWTS 与 Leiden Ranking 的做法更靠近本件：先给机构打领域标签�
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1 科研机构重点技术领域布局模型 | 四项产出、输入清单 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 814–824 行 |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1 科研机构重点技术领域布局模型 | 四项产出、输入清单 | `《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 814–824 行 |
 | 2 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 | 四列整列为空的清单（含研发人员数） | 本轮事实底稿 |
 | 3 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.13 | 专利面板是唯一取数入口 | 同上 |
 | 4 | WIPO, *International Patent Classification (IPC)* | IPC 小类口径 | https://www.wipo.int/classifications/ipc/en/ |
@@ -240,7 +247,7 @@ $$S_{i,d}=100\times\frac{0.70\,s_{i,d}+0.20\,k_{i,d}+0.10\,\mathbf{1}[J_i=d]}{\s
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 M_ORG_DEEP_149_1.py`，零 SQL，约 0.42 秒，输出 `code/M_ORG_DEEP_149_1_out.json`。脚本只依赖标准库与同目录的 `_org_deep21_common.py`，不 import 任何被隔离的 helper，也不读取本目录之外的 bundle。
+执行 `cd code && python3 M_ORG_DEEP_149_1.py`，零 SQL，约 0.42 秒，输出 `metrics/repro/out/M_ORG_DEEP_149_1_out.json`。脚本只依赖标准库与同目录的 `_org_deep21_common.py`，不 import 任何被隔离的 helper，也不读取本目录之外的 bundle。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -436,7 +443,7 @@ HHI 最低的是深圳清华大学研究院（0.2270），意味着它的专利�
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_ORG_DEEP_149_1.py
 python3 -c "import json;d=json.load(open('M_ORG_DEEP_149_1_out.json'));print(d['coverage'],d['strength_dist'])"
 ```
@@ -453,17 +460,14 @@ python3 -c "import json;d=json.load(open('M_ORG_DEEP_149_1_out.json'));print(d['
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1 科研机构重点技术领域布局模型，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 814–824 行。
-2. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.10（四列整列为空）、§3.13（专利面板为唯一入口）、§3.18（重跑后正文须对账）。
-3. WIPO, *International Patent Classification (IPC)*, https://www.wipo.int/classifications/ipc/en/
-4. WIPO, *IPC Technology Concordance Table*, https://www.wipo.int/ipstats/en/
-5. OECD, *Patent statistics and analysis*, https://www.oecd.org/sti/intellectual-property-statistics-and-analysis.htm
-6. CWTS, *Leiden Ranking — field-normalised indicators*, https://www.cwts.nl/
-7. 国家标准化管理委员会，GB/T 39551-2020《专利导航指南》, https://openstd.samr.gov.cn/
-8. 国家知识产权局，专利分类与统计, https://www.cnipa.gov.cn/
-9. 广东省科学技术厅，科研机构与平台管理, https://gdstc.gd.gov.cn/
-10. 深圳市科技创新局，科研机构支持计划, https://stic.sz.gov.cn/
-
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1 科研机构重点技术领域布局模型，`《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 814–824 行。
+2. WIPO, *International Patent Classification (IPC)*, https://www.wipo.int/classifications/ipc/en/
+3. WIPO, *IPC Technology Concordance Table*, https://www.wipo.int/ipstats/en/
+4. CWTS, *Leiden Ranking — field-normalised indicators*, https://www.cwts.nl/
+5. 国家标准化管理委员会，GB/T 39551-2020《专利导航指南》, https://openstd.samr.gov.cn/
+6. 国家知识产权局，专利分类与统计, https://www.cnipa.gov.cn/
+7. 广东省科学技术厅，科研机构与平台管理, https://gdstc.gd.gov.cn/
+8. 深圳市科技创新局，科研机构支持计划, https://stic.sz.gov.cn/
 # 附件
 
 ## 附录 B　原始需求原文摘录
@@ -524,10 +528,3 @@ IPC4 覆盖与映射：
 六、一句话结论。本件可以上线为「科研机构技术布局矩阵 + 补强清单」，但不能上线为「科技综合实力评价」；前者是结构描述，后者需要人才、国际合作、图谱三源补齐后才成立。
 
 七、遗留事项。7 个领域里有 14 个 IPC4 小类是部级兜底归类的，需要领域专家逐条复核；经管人文只有 6 件专利，是否保留这个领域需要产品确认；补强清单的排序权重（缺口数 × 城市份额）尚未与业务方对齐，当前只按缺口数与专利量排序。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

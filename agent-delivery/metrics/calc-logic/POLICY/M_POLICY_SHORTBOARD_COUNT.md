@@ -1,9 +1,21 @@
 # 政策短板清单条数（M_POLICY_SHORTBOARD_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_SHORTBOARD_COUNT.md`；复现脚本 `metrics/repro/M_POLICY_SHORTBOARD_COUNT.py` → `metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：统计指标（政策分析评价·短板诊断）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技信息展示系统·政策分析评价·政策短板诊断卡片
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_POLICY_SHORTBOARD_COUNT.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_SHORTBOARD_COUNT.py`、产物 `metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_SHORTBOARD_COUNT.md`；复现脚本 `metrics/repro/M_POLICY_SHORTBOARD_COUNT.py` → `metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_SHORTBOARD_COUNT.py`、产物 `metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_SHORTBOARD_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_SHORTBOARD_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json` |
@@ -59,16 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_SHORTBOARD_COUNT.py`、产物 `metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：统计指标（政策分析评价·短板诊断）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技信息展示系统·政策分析评价·政策短板诊断卡片
-> **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（三维阈值计数框架来自 169 / 171，本件收口为独立计数件）｜ wanghui：true（§五 含对照）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库 `gkx` 结构有 / 数据部分（合规维可算，覆盖与有效两维由代理撑起）
-> **一句话口径**：对 `gkx.dwd_policy_base` 20,000 条政策按「覆盖性 / 有效性 / 合规性」三维阈值判定，触发几维就记几条短板；实测合规维触发（文号规范率 **34.16%** < 90%），覆盖与有效两维因代理口径判为不触发，**短板清单条数 = 1**；方向级辅助视图 5/5 触发，但方向数不是 KPI 条数。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -113,6 +120,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 方向级辅助视图显示 5/5 方向触发，但方向数不是 KPI 条数：5 个方向里每个都继承了「对象覆盖缺口（5/301）」这一全局条件，不能重复加总成 5 条短板。结论：**部分支持**；框架采王惠，代理收口记「仿王惠 ai-1020」。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 识别政策体系的薄弱环节，为政策布局建议提供依据。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_POLICY_SHORTBOARD_COUNT.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -241,7 +293,7 @@ $$S=\sum_{d\in\{cov,val,com\}}\mathbf{1}[v_d<\theta_d]$$
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 M_POLICY_SHORTBOARD_COUNT.py`，零 SQL、0.18 秒，读取四份快照并覆盖写出 `code/M_POLICY_SHORTBOARD_COUNT_out.json`。脚本不连数据库、不 import 任何本地 helper。
+执行 `cd code && python3 M_POLICY_SHORTBOARD_COUNT.py`，零 SQL、0.18 秒，读取四份快照并覆盖写出 `metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json`。脚本不连数据库、不 import 任何本地 helper。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -437,17 +489,14 @@ $$S=\sum_{d\in\{cov,val,com\}}\mathbf{1}[v_d<\theta_d]$$
 
 ## 参考文献
 
-1. Rothwell, R., & Zegveld, W. (1985). *Reindustrialization and Technology*. Longman. https://www.worldcat.org/
-2. Howlett, M., & Rayner, J. (2013). Patching vs Packaging in Policy Formulation. *Politics and Governance*, 1(2), 170–182. https://doi.org/10.17645/pag.v1i2.95
-3. 国家市场监督管理总局, 国家标准化管理委员会. 党政机关公文格式 GB/T 9704—2012. https://openstd.samr.gov.cn/
-4. 国务院. 国务院政策文件库. https://www.gov.cn/zhengce/
-5. 中共中央办公厅, 国务院办公厅. 党政机关公文处理工作条例. https://www.gov.cn/
-6. OECD & JRC. (2008). *Handbook on Constructing Composite Indicators*. https://doi.org/10.1787/9789264043466-en
-7. 包国宪, 等. (2019). 公共政策评估的质量标准研究. 中国行政管理. https://kns.cnki.net/
-8. 贠杰. (2020). 公共政策评估的维度与方法. 政治学研究. https://kns.cnki.net/
-9. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.4 / §3.10（占位符、整列为空）。
-10. 同批政策文档 `第三方库指标计算过程/M_POLICY_DEEP_169_1.md`（三维阈值与 `shortboard_count` 口径）。
-
+1. Howlett, M., & Rayner, J. (2013). Patching vs Packaging in Policy Formulation. *Politics and Governance*, 1(2), 170–182. https://doi.org/10.17645/pag.v1i2.95
+2. 国家市场监督管理总局, 国家标准化管理委员会. 党政机关公文格式 GB/T 9704—2012. https://openstd.samr.gov.cn/
+3. 国务院. 国务院政策文件库. https://www.gov.cn/zhengce/
+4. 中共中央办公厅, 国务院办公厅. 党政机关公文处理工作条例. https://www.gov.cn/
+5. OECD & JRC. (2008). *Handbook on Constructing Composite Indicators*. https://doi.org/10.1787/9789264043466-en
+6. 包国宪, 等. (2019). 公共政策评估的质量标准研究. 中国行政管理. https://kns.cnki.net/
+7. 贠杰. (2020). 公共政策评估的维度与方法. 政治学研究. https://kns.cnki.net/
+8. 同批政策文档 `第三方库指标计算过程/M_POLICY_DEEP_169_1.md`（三维阈值与 `shortboard_count` 口径）。
 # 附件
 
 ## 附录 A　原文摘录与复现入口
@@ -465,9 +514,9 @@ $$S=\sum_{d\in\{cov,val,com\}}\mathbf{1}[v_d<\theta_d]$$
 ### A.2 复现入口（命令与快照指纹）
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_SHORTBOARD_COUNT.py
-python3 -c "import json;d=json.load(open('code/M_POLICY_SHORTBOARD_COUNT_out.json'));print(d['shortboard_count'],d['compliance']['code_ok_pct'])"
+python3 -c "import json;d=json.load(open('metrics/repro/out/M_POLICY_SHORTBOARD_COUNT_out.json'));print(d['shortboard_count'],d['compliance']['code_ok_pct'])"
 ```
 
 | 项 | 值 | 校验方式 |
@@ -516,10 +565,3 @@ FROM gkx.dwd_policy_base;
 **五、一句话备忘。** 条数不是评价，是体检表的行数；行数只说明查了几项、几项不合格，不说明身体状况好不好。
 
 ---
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

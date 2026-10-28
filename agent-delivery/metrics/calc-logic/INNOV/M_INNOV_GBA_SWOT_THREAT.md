@@ -1,9 +1,21 @@
-# 湾区创新能力威胁因素（M_INNOV_GBA_SWOT_THREAT）
+# M_INNOV_GBA_SWOT_THREAT · 大湾区技术威胁识别（gkx 口径重建件）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_SWOT_THREAT.md`；复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_THREAT.py` → `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：评价型（EVAL，威胁分 0—100）｜ **域**：INNOV（创新技术 / GBA）｜ **UI 挂载**：科技信息展示系统 · 科技发展态势 · 大湾区创新协同 · 技术威胁识别
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（旧稿口径；本件 D1 弃算、D3 补相对判据，已标注改写）
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_THREAT.py`、产物 `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_SWOT_THREAT.md`；复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_THREAT.py` → `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_SWOT_THREAT.py`、产物 `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -49,7 +61,7 @@ D2 竞争挤压与 D3 结构风险在 850,656 条 IPC4 归属性上可算，四�
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_GBA_SWOT_THREAT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_GBA_SWOT_THREAT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json` |
@@ -57,16 +69,11 @@ D2 竞争挤压与 D3 结构风险在 850,656 条 IPC4 归属性上可算，四�
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_SWOT_THREAT.py`、产物 `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：评价型（EVAL，威胁分 0—100）｜ **域**：INNOV（创新技术 / GBA）｜ **UI 挂载**：科技信息展示系统 · 科技发展态势 · 大湾区创新协同 · 技术威胁识别
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（旧稿口径；本件 D1 弃算、D3 补相对判据，已标注改写）
-> **主算库**：`gkx`（183.240.141.251:3318，只读账号 `gkx_reader_zp`）｜ **SQL 条数**：0（全部读落盘快照）
-> **产物**：`code/M_INNOV_GBA_SWOT_THREAT.py` → `code/M_INNOV_GBA_SWOT_THREAT_out.json` ｜ **成文日期**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -108,7 +115,7 @@ D3 用 IPC4 HHI，阈值 0.25。四城实测：惠州 0.0238、深圳 0.0181、�
 
 D1 的阻断值得单独记：政策表 20,000 行 status **全部为「有效」**，没有失效状态；`policy_base` 没有 `expire_date` 列；近窗（2023—2024）只有 **1 条**政策（2024 年），2023 年为 0。三条独立阻断，任何一条都足以让「退坡率」算不出来。
 
-**结论**：D2/D3 可复现、四城有区分度；D1 不可算、阈值改写有副作用、覆盖仅 4/11 城，按 §〇 判**部分支持**。复现代码见 `code/M_INNOV_GBA_SWOT_THREAT.py`，结果见 `code/M_INNOV_GBA_SWOT_THREAT_out.json`。
+**结论**：D2/D3 可复现、四城有区分度；D1 不可算、阈值改写有副作用、覆盖仅 4/11 城，按 §〇 判**部分支持**。复现代码见 `metrics/repro/M_INNOV_GBA_SWOT_THREAT.py`，结果见 `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`。
 
 ---
 
@@ -260,10 +267,10 @@ HHI(IPC4) = $\sum (n_i/N)^2$，$n_i$ 是该城第 i 个 IPC4 的件数，N 是�
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_INNOV_GBA_SWOT_THREAT.py
+cd code && python3 M_INNOV_GBA_SWOT_THREAT.py
 ```
 
-脚本零 SQL，只读四份快照，输出 `code/M_INNOV_GBA_SWOT_THREAT_out.json`。产物含五个契约字段与 `universe`、`windows`、`rule_rewrites`、`panel_hhi_median`、`cities`、`ranking`、`gaps`。
+脚本零 SQL，只读四份快照，输出 `metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`。产物含五个契约字段与 `universe`、`windows`、`rule_rewrites`、`panel_hhi_median`、`cities`、`ranking`、`gaps`。
 
 实测输出（2026-10-22 运行）：
 
@@ -448,7 +455,7 @@ python3 M_INNOV_GBA_SWOT_THREAT.py
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_INNOV_GBA_SWOT_THREAT.py
 ```
 
@@ -461,7 +468,7 @@ python3 M_INNOV_GBA_SWOT_THREAT.py
 | `_snapshots21/gba_policy_20261021.json` | 政策 20,000 行 |
 | `_snapshots21/policy_base_20261021.json` | 政策日期/城市 |
 
-输出：`code/M_INNOV_GBA_SWOT_THREAT_out.json`（覆盖写）。复现校验：两次运行，`cities`、`ranking`、`panel_hhi_median` 逐字段一致。
+输出：`metrics/repro/out/M_INNOV_GBA_SWOT_THREAT_out.json`（覆盖写）。复现校验：两次运行，`cities`、`ranking`、`panel_hhi_median` 逐字段一致。
 
 自检清单：
 
@@ -480,12 +487,10 @@ python3 M_INNOV_GBA_SWOT_THREAT.py
 
 1. Weihrich, H. (1982). The TOWS Matrix—A Tool for Situational Analysis. *Long Range Planning*, 15(2), 54—66. https://doi.org/10.1016/0024-6301(82)90120-0
 2. 科学技术部.《技术预测与关键技术选择》. https://www.most.gov.cn/
-3. OECD.《Innovation Policy Mix》. https://www.oecd.org/sti/inno/policy-mix.htm
-4. 国家统计局.《中国科技统计年鉴》. https://www.stats.gov.cn/sj/ndsj/
-5. 广东省人民政府.《粤港澳大湾区发展规划纲要》. https://www.gd.gov.cn/gkmlpt/content/2/2422/post_2422368.html
-6. 深圳市人民政府.《深圳市培育发展壮大“20+8”产业集群行动计划（2022—2025年）》. http://www.sz.gov.cn/zfgb/2022/gb1234/content/post_9778888.html
-7. WIPO.《IPC 国际专利分类》. https://www.wipo.int/classifications/ipc/
-
+3. 国家统计局.《中国科技统计年鉴》. https://www.stats.gov.cn/sj/ndsj/
+4. 广东省人民政府.《粤港澳大湾区发展规划纲要》. https://www.gd.gov.cn/
+5. 深圳市人民政府.《深圳市培育发展壮大“20+8”产业集群行动计划（2022—2025年）》. https://www.sz.gov.cn/
+6. WIPO.《IPC 国际专利分类》. https://www.wipo.int/classifications/ipc/
 ---
 
 # 附件
@@ -532,11 +537,3 @@ python3 M_INNOV_GBA_SWOT_THREAT.py
 **D.4 与旧稿的差异**：旧稿用 `demo` 库，政策表有失效状态、11 城有归城数据，三线齐全；本件换 gkx 后 D1 废、覆盖降到 4 城。旧稿的威胁分不可与本件比较。
 
 **D.5 复现边界**：脚本只读四份冻结快照，不连库；`gba_patent.city_year` 只到 2024，2025/2026 字段为 null 属预期，不是 bug。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

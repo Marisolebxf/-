@@ -1,9 +1,20 @@
 # 技术投入金额（M_TECH_INVEST_AMOUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_INVEST_AMOUNT.md`；复现脚本 `metrics/repro/M_TECH_INVEST_AMOUNT.py` → `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：技术投入测度（技术域 × 年 × 金额）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术投入结构（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_INVEST_AMOUNT.py`、产物 `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_INVEST_AMOUNT.md`；复现脚本 `metrics/repro/M_TECH_INVEST_AMOUNT.py` → `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_INVEST_AMOUNT.py`、产物 `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_INVEST_AMOUNT.md` |
 | 复现脚本 | `metrics/repro/M_TECH_INVEST_AMOUNT.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json` |
@@ -64,15 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_INVEST_AMOUNT.py`、产物 `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术投入测度（技术域 × 年 × 金额）｜ **域**：技术（TECH）｜ **UI 挂载**：科技专题·技术投入结构（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**
-> **口径版本**：20261022 三方库 `gkx` 版（专利侧零 SQL，研发费用读授权缓存）｜ **公式定义人**：仿王惠（推测定义）｜ **wanghui: false**
-> 直接（结构/数据）：上市主体研发费用的域级分摊可复算 ｜ 依赖（结构/数据）：否 / 非上市研发、政府专项、基金项目金额三项缺源
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -308,9 +315,9 @@ E04C 2021 年 0.0231 亿 → 2024 年 0.0873 亿，增长 278.21%，但第一大
 **代码与运行**：
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_TECH_INVEST_AMOUNT.py
-# 输出 code/M_TECH_INVEST_AMOUNT_out.json；实测耗时 1.2 秒（全离线，零 SQL）
+# 输出 metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json；实测耗时 1.2 秒（全离线，零 SQL）
 ```
 
 **核心结果**：
@@ -370,7 +377,7 @@ D7 的基金表只有基金级资本，没有投资项目。576 只基金、1,21
 | 专利结构 | `code/_snapshots21/patent_ipc4_by_name_20261021.json` |
 | 基金输入 | `code/_snapshots21/pg_fund_rows_20261021.json` |
 | 全国上下文 | `code/_snapshots21/city_family_probe_20261021.json#stock_period` |
-| 产物 | `code/M_TECH_INVEST_AMOUNT_out.json` |
+| 产物 | `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json` |
 | 基期 | `base_years_used=[2021,2022,2023,2024]`、`base_years_missing=[2017,2018,2019,2020]` |
 
 ---
@@ -439,13 +446,11 @@ D7 的基金表只有基金级资本，没有投资项目。576 只基金、1,21
 ## 参考文献
 
 1. 国家统计局. (2024). 《中国科技统计年鉴》. https://www.stats.gov.cn/
-2. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. https://www.oecd.org/sti/frascati-manual-2015.htm
-3. 国家税务总局. (2023). 《研发费用加计扣除政策执行指引》. https://www.chinatax.gov.cn/
-4. 深圳市统计局. (2025). 《深圳市统计年鉴》. https://tjj.sz.gov.cn/
-5. 深圳市地方金融管理局. 深圳市私募基金管理人及基金备案统计. https://jr.sz.gov.cn/
-6. 中国证券监督管理委员会. 上市公司年报披露规范. https://www.csrc.gov.cn/
-7. 世界知识产权组织（WIPO）. (2025). *IPC Publication 2025.01*. https://www.wipo.int/classifications/ipc/
-
+2. 国家税务总局. (2023). 《研发费用加计扣除政策执行指引》. https://www.chinatax.gov.cn/
+3. 深圳市统计局. (2025). 《深圳市统计年鉴》. https://tjj.sz.gov.cn/
+4. 深圳市地方金融管理局. 深圳市私募基金管理人及基金备案统计. https://jr.sz.gov.cn/
+5. 中国证券监督管理委员会. 上市公司年报披露规范. https://www.csrc.gov.cn/
+6. 世界知识产权组织（WIPO）. (2025). *IPC Publication 2025.01*. https://www.wipo.int/classifications/ipc/
 ---
 
 # 附件
@@ -454,9 +459,9 @@ D7 的基金表只有基金级资本，没有投资项目。576 只基金、1,21
 
 | 项 | 内容 |
 |---|---|
-| 计算脚本 | `code/M_TECH_INVEST_AMOUNT.py` |
+| 计算脚本 | `metrics/repro/M_TECH_INVEST_AMOUNT.py` |
 | 共用取数层 | `code/_tech21_scope.py`（零 SQL，只读缓存） |
-| 结果产物 | `code/M_TECH_INVEST_AMOUNT_out.json` |
+| 结果产物 | `metrics/repro/out/M_TECH_INVEST_AMOUNT_out.json` |
 | 运行方式 | `python3 code/M_TECH_INVEST_AMOUNT.py` |
 | 实测耗时 | 1.2 秒 |
 | 主库 | `gkx` @ `183.240.141.251:3318`（只读账号 `gkx_reader_zp`） |
@@ -556,10 +561,3 @@ C.3.4 基金投向法。按基金投资项目统计，优点是能看资本流�
 | 当前数据量 | 412 家 / 1,545.04 亿元 / 238 域 / 4 年 |
 | 现在能否得到 | 上市部门域级金额可以；全社会技术投入不可以 |
 | 建议支持度 | **部分支持** |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

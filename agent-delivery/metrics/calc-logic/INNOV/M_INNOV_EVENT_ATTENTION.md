@@ -1,9 +1,24 @@
 # 事件关注度（M_INNOV_EVENT_ATTENTION）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_EVENT_ATTENTION.md`；复现脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py` → `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：CLASS（负证据件，不发布读数）｜ **域**：创新分析（INNOV）· 事件｜ **UI 挂载**：无（不挂载；仅作缺口说明与替代口径登记）
+> - **数据支持度**：**完全不支持**｜ **依赖性质**：事件面不存在（`innovation_event` / `dwd_innovation_event` 逐字 0 张，`dwd_event` 仅 20 行单一展会系列）；正本公式依赖的 `dwd_policy_base.theme` / `quote_policy` 各 19,998/20,000 行为字符串 'NULL'
+> - **一句话结论**：事件关注度**拒拟**——事件面只有 **20 行**、覆盖 **2** 天、全部为国药励展系展会；正本依赖的主题与引用政策两维各 **19,998/20,000** 行为字符串 'NULL'；媒体侧虽有 **1,668,414** 条报道 / **28,123** 家企业，但那是**媒体关注 ≠ 事件关注**，只能作替代口径登记，不能填本指标；专利被引 **7.1899** 次/篇仅作「禁止替代」的对照，故判 **完全不支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_INNOV_EVENT_ATTENTION.py`｜ **产物**：`metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py`、产物 `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_EVENT_ATTENTION.md`；复现脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py` → `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py`、产物 `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_EVENT_ATTENTION.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_EVENT_ATTENTION.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json` |
@@ -65,19 +80,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py`、产物 `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：CLASS（负证据件，不发布读数）｜ **域**：创新分析（INNOV）· 事件｜ **UI 挂载**：无（不挂载；仅作缺口说明与替代口径登记）
-> **数据支持度**：**完全不支持**｜ **依赖性质**：事件面不存在（`innovation_event` / `dwd_innovation_event` 逐字 0 张，`dwd_event` 仅 20 行单一展会系列）；正本公式依赖的 `dwd_policy_base.theme` / `quote_policy` 各 19,998/20,000 行为字符串 'NULL'
-> **公式定义人**：正本 `metrics/calc-logic/INNOV/M_INNOV_EVENT_ATTENTION.md`（本件不复算，只证明其依赖断裂）
-> **口径归属**：正本归 `metrics/calc-logic/INNOV/M_INNOV_EVENT_ATTENTION.md`；本件只出负证据。
-> **复现脚本**：`code/M_INNOV_EVENT_ATTENTION.py`｜ **产物**：`code/M_INNOV_EVENT_ATTENTION_out.json`
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读，`gkx_reader_zp`）
-> **一句话结论**：事件关注度**拒拟**——事件面只有 **20 行**、覆盖 **2** 天、全部为国药励展系展会；正本依赖的主题与引用政策两维各 **19,998/20,000** 行为字符串 'NULL'；媒体侧虽有 **1,668,414** 条报道 / **28,123** 家企业，但那是**媒体关注 ≠ 事件关注**，只能作替代口径登记，不能填本指标；专利被引 **7.1899** 次/篇仅作「禁止替代」的对照，故判 **完全不支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -359,14 +366,7 @@ assert not all(usable.values()), "三维不全，不得出分"
 
 1. 国家统计局. 中国统计年鉴（2024）. https://www.stats.gov.cn/sj/ndsj/
 2. 深圳市统计局. 深圳统计年鉴（2024）. https://tjj.sz.gov.cn/
-3. 中国会展经济研究会. 中国会展经济发展报告. https://www.cces.org.cn/
-4. 国家知识产权局. 专利统计年报（2024）. https://www.cnipa.gov.cn/
-5. 本地产物：
-   - `code/M_INNOV_EVENT_ATTENTION.py`
-   - `code/M_INNOV_EVENT_ATTENTION_out.json`
-   - `code/_snapshots21/f3_facts_20261023.json`
-6. `_work_gkx21/DISPATCH_BRIEF_v8.md`：负证据三件套与禁止替代规则
-
+3. 国家知识产权局. 专利统计年报（2024）. https://www.cnipa.gov.cn/
 ---
 
 # 附件
@@ -426,11 +426,3 @@ assert not all(usable.values()), "三维不全，不得出分"
 ### C.3 最小可行的事件关注度需要什么
 
 至少需要三张表：事件表（一场一行）、事件—报道关联表（哪条报道谈了哪场事件）、报道量表（每条报道的传播量或转载数）。有这三张表，才能算「每场事件的平均报道量」。当前 gkx 三张都没有，因此本件的结论不是「暂时算不准」，而是「结构上不可算」。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

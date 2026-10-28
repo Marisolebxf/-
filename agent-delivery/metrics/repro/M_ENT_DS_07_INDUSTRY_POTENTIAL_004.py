@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
+#!/usr/bin/env python3
 """M_ENT_DS_07_INDUSTRY_POTENTIAL_004 科学影响力评估 — 依赖侧实测脚本
 
 calc-logic（AI 补漏规范化，SRS《科技创新评估.md》序号149，公式待算法 Lead 会签）：

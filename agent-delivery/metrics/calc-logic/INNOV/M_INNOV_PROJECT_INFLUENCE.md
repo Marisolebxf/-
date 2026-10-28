@@ -1,9 +1,22 @@
 # 项目（含课题）影响力（M_INNOV_PROJECT_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PROJECT_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_PROJECT_INFLUENCE.py` → `metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（要素实体评价）｜ **域**：DS-01 科技全域态势 · 科创要素 ｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 科创要素（项目详情页属性）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`dwd_zh_project` 58,453 / `dwd_en_project` 20,000 / `dwd_zh_project_output` 20,133 均在）；依赖表数据支持（开发库/三方库） = **部分**（参与机构维退化、结题状态整列为空、英文项目无年份、产出表覆盖 34.33%）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PROJECT_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PROJECT_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_PROJECT_INFLUENCE.py` → `metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PROJECT_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_PROJECT_INFLUENCE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_PROJECT_INFLUENCE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json` |
@@ -62,17 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PROJECT_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（要素实体评价）｜ **域**：DS-01 科技全域态势 · 科创要素 ｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 科创要素（项目详情页属性）
-> **数据支持度**：**部分支持**
-> **公式定义人**：王惠（V1.3-20260829，`metrics/calc-logic/INNOV/M_INNOV_PROJECT_INFLUENCE.md`）｜ **wanghui**: true
-> **四判定摘要**：表结构直接支持（开发库+三方库） = 否（无结果面）；表数据直接支持（开发库+三方库） = 否；依赖表结构支持（开发库/三方库） = **是**（`dwd_zh_project` 58,453 / `dwd_en_project` 20,000 / `dwd_zh_project_output` 20,133 均在）；依赖表数据支持（开发库/三方库） = **部分**（参与机构维退化、结题状态整列为空、英文项目无年份、产出表覆盖 34.33%）
-> **一句话口径**：单个项目的影响力 = 资助金额归一（0.50）+ 结题完备度（0.50），参与机构数判缺测后重归一，取值 0—100。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -300,7 +307,7 @@ v2 与 v3 的 **Spearman 相关系数 = 1.000000**。
 ```bash
 cd .../20261021_指标整体开发进度调研
 python3 code/M_INNOV_PROJECT_INFLUENCE.py
-# 输出 code/M_INNOV_PROJECT_INFLUENCE_out.json；实测 0.66 秒（零 SQL）
+# 输出 metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json；实测 0.66 秒（零 SQL）
 ```
 
 脚本只读三份本地快照：`_snapshots21/probe_infl_20261022/zh_project.json`（58,453 行）、`en_project.json`（20,000 行）、`zh_project_output.json`（20,133 行）。
@@ -532,8 +539,8 @@ G7 是**采集截止**：与专利侧（2024—2026 有数据、2017—2020 没�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_PROJECT_INFLUENCE.py`（零 SQL） |
-| 产物 | `code/M_INNOV_PROJECT_INFLUENCE_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_PROJECT_INFLUENCE.py`（零 SQL） |
+| 产物 | `metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json` |
 | 快照 | `code/_snapshots21/probe_infl_20261022/{zh_project,en_project,zh_project_output}.json` |
 | 行数 | 58,453 / 20,000 / 20,133 |
 | 运行耗时 | 0.66 秒 |
@@ -549,9 +556,7 @@ G7 是**采集截止**：与专利侧（2024—2026 有数据、2017—2020 没�
 4. 科学技术部.《中国科技统计年鉴》[M/OL]. 北京: 中国统计出版社. https://www.stats.gov.cn/
 5. 国家科技评估中心.《科技项目绩效评价规范》[S/OL]. https://www.ncste.org/
 6. 教育部.《高等学校科技统计资料汇编》[M/OL]. https://www.moe.gov.cn/
-7. 项目内口径文件（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PROJECT_INFLUENCE.md`（V1.3-20260829）。
-8. 项目内需求原文（非外部文献）：`02-科技信息展示系统|科技发展态势|科技全域态势.md` 序号 11。
-
+7. 项目内需求原文（非外部文献）：`02-科技信息展示系统|科技发展态势|科技全域态势.md` 序号 11。
 ---
 
 # 附件
@@ -709,16 +714,8 @@ v1 的上界 83.33 是恒定机构维的直接后果；v3 与 v2 的秩完全一
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_PROJECT_INFLUENCE.py`（零 SQL，0.66 秒）
-- 产物：`code/M_INNOV_PROJECT_INFLUENCE_out.json`
+- 脚本：`metrics/repro/M_INNOV_PROJECT_INFLUENCE.py`（零 SQL，0.66 秒）
+- 产物：`metrics/repro/out/M_INNOV_PROJECT_INFLUENCE_out.json`
 - 输入：`probe_infl_20261022/{zh_project,en_project,zh_project_output}.json`
 - 关键结果：中文 58,453 条（金额 100% 非空，中位 30 万）；v1 均值 45.26（区间 16.67—83.33）；v2 均值 42.88 中位 51.40；v3 均值 65.35；v2 vs v3 Spearman = 1.000；英文 19,919 条均值 7.77；产出覆盖 34.33%
 - 工程注意：① 中英文金额量纲差四个数量级，禁止合并归一；② `participating_institution` 是依托单位不是参与机构集合，直接用会把三维变二维；③ `completion_status` / `project_status` / `funded_institution` 三列整列为空，用前必须 `IS NOT NULL` 验；④ `approval_year` 只能用 1986—2021，2022 起断崖
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

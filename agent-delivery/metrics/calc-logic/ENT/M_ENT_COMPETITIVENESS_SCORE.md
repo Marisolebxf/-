@@ -1,9 +1,21 @@
 # 综合竞争力分（M_ENT_COMPETITIVENESS_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_COMPETITIVENESS_SCORE.md`；复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py` → `metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **同名指标族**（D2 拆分，本件=原 ID 继承算法库口径）：M_ENT_COMPETITIVENESS_SCORE_ZT → 科技专题系统/科技信息展示系统 ｜ md：`第三方库指标计算过程/M_ENT_COMPETITIVENESS_SCORE_ZT.md` ｜ py：`code/M_ENT_COMPETITIVENESS_SCORE_ZT.py` ｜ 判定：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）02_D2兼容判定与拆分_总结.md`
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：MODEL（企业综合评价模型）｜ **域**：企业分析·企业评估·综合竞争力评估（ENT）｜ **UI 挂载**：科技信息展示系统·企业分析「企业竞争力分析—个性化竞争力评价与输出」（§1.1.1.2.4.2.3.10.2「计算企业综合竞争力得分」；算法库「深圳企业竞争力水平分析模型」§1.1.1.1.1.1.1.5.1 输出「综合竞争力指数」）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：口径级分歧（本件复核为可兼容·配置型）（D2）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_COMPETITIVENESS_SCORE.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py`、产物 `metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_COMPETITIVENESS_SCORE.md`；复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py` → `metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py`、产物 `metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -54,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_COMPETITIVENESS_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json` |
@@ -62,14 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py`、产物 `metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（企业综合评价模型）｜ **域**：企业分析·企业评估·综合竞争力评估（ENT）｜ **UI 挂载**：科技信息展示系统·企业分析「企业竞争力分析—个性化竞争力评价与输出」（§1.1.1.2.4.2.3.10.2「计算企业综合竞争力得分」；算法库「深圳企业竞争力水平分析模型」§1.1.1.1.1.1.1.5.1 输出「综合竞争力指数」）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020）**：王惠（calc-logic 真源：四维九三级指标，极值归一化 0—100，维内加权 → 一级权重（Q014 或熵值法）加权 → 综合竞争力得分；本 MD 沿用并逐维复现）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：结构齐（gkx 财务表 90,926 行四维字段在）/ 填充系统性薄（营收 2.4%/资产 2.9%/员工 3.5%；研发人员全空；学历无字段）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -103,9 +112,55 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「综合竞争力分」是企业竞争力分析功能的核心输出：企业级 0—100 综合得分，从企业规模、财务状况、人力资源、市场表现四个维度综合反映企业竞争力水平，是雷达图、排名（`M_ENT_COMPETITIVENESS_RANK`）与短板提示的共同数据底座。需求文档**没有给出计算公式**——展示系统原文仅「计算企业综合竞争力得分」，算法库原文给出四维体系与「设定权重及计算方法……加权整合」的叙述但无公式；口径真源为 calc-logic `M_ENT_COMPETITIVENESS_SCORE.md`（王惠调研结果规范化迁移）：九个三级指标（资产总额、从业人员数、营业收入利润率、资产负债率、总资产周转率、本科及以上学历占比、研发人员占比、市场占有率、销售收入）先极值归一化 0—100，维内加权得维度分，再按一级权重（Q014 待定或熵值法）合成总分。权威方法侧，四维财务评价的指标口径全部有国家统计局官方定义可依（营业收入、利润总额、资产负债率、营业收入利润率），赋权路径有极值熵权法等中文方法论文献支撑。实测（2026-10-20，脚本 `code/M_ENT_COMPETITIVENESS_SCORE.py`）：gkx 财务表 90,926 行中资产>0 2,628（2.9%）、员工>0 3,170（3.5%）、营收>0 2,191（2.4%）、三要素齐 2,102（2.3%）、`development_employee` 全空、本科及以上学历字段不存在，年份 2021—2025 分布均衡（各约 7—8 千行）——九个三级指标中六个原料 2—4% 填充、一个全空、一个无字段，量级不足以支撑全国归一化 → **部分支持**；先验标签「完全直接支持」被实测推翻（现网评分表非本条口径），以实测为准。
+「综合竞争力分」是企业竞争力分析功能的核心输出：企业级 0—100 综合得分，从企业规模、财务状况、人力资源、市场表现四个维度综合反映企业竞争力水平，是雷达图、排名（`M_ENT_COMPETITIVENESS_RANK`）与短板提示的共同数据底座。需求文档**没有给出计算公式**——展示系统原文仅「计算企业综合竞争力得分」，算法库原文给出四维体系与「设定权重及计算方法……加权整合」的叙述但无公式；口径真源为 calc-logic `M_ENT_COMPETITIVENESS_SCORE.md`（王惠调研结果规范化迁移）：九个三级指标（资产总额、从业人员数、营业收入利润率、资产负债率、总资产周转率、本科及以上学历占比、研发人员占比、市场占有率、销售收入）先极值归一化 0—100，维内加权得维度分，再按一级权重（Q014 待定或熵值法）合成总分。权威方法侧，四维财务评价的指标口径全部有国家统计局官方定义可依（营业收入、利润总额、资产负债率、营业收入利润率），赋权路径有极值熵权法等中文方法论文献支撑。实测（2026-10-20，脚本 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py`）：gkx 财务表 90,926 行中资产>0 2,628（2.9%）、员工>0 3,170（3.5%）、营收>0 2,191（2.4%）、三要素齐 2,102（2.3%）、`development_employee` 全空、本科及以上学历字段不存在，年份 2021—2025 分布均衡（各约 7—8 千行）——九个三级指标中六个原料 2—4% 填充、一个全空、一个无字段，量级不足以支撑全国归一化 → **部分支持**；先验标签「完全直接支持」被实测推翻（现网评分表非本条口径），以实测为准。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D2 口径级分歧：定义方向一致，但维度构成/计算方法/权重有实质差异**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 深圳企业竞争力水平分析模型算法基于企业基础指标模型库与企业专题库，通过设计覆盖企业规模、财务状况、人力资源及市场表现等方面的指标体系，系统化对比计算深圳企业与全国企业的指标值，从多维度综合分析深圳企业的竞争力水平。该算法不仅可识别深圳企业在不同维度的优势与短板，还能为政府、行业组织、投资机构及企业自身提供竞争力提升的决策依据。<br>><br>> 该算法通过对接财务报表、税务数据、人力资源信息、市场表现及企业调查等多源数据，经过标准化预处理以确保数据的准确性与一致性。基于企业规模、财务状况、市场表现及人力资源，定义具有代表性的分析指标，并设定权重及计算方法，对深圳企业与全国企业的指标值进行加权整合，形成综合竞争力评价结果。<br>><br>> 算法从财务稳定性、市场竞争力、人才结构和运营效率等维度，对深圳企业的优势与短板进行系统化分析，帮助相关部门与企业明确提升方向。<br>><br>> 输入：财务报表数据、税务数据、人力资源信息、市场表现数据、企业调查数据、企业规模与分类信息、分析指标体系与权重设置。<br>><br>> 输出：综合竞争力指数、各分析维度的优势与短板分析报告、竞争力排名、趋势变化图表。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 1.1.1.2.4.2.3.10. **企业竞争力分析**<br>><br>> 本功能提供整合技术力、商业力等维度的综合竞争力评估框架，支持用户自定义指标体系并进行企业评分。用户可全面衡量企业综合实力，支撑投资、合作或政策支持决策。构建「技术+市场+组织」三位一体的企业综合竞争力评价体系。<br>><br>> 该功能根据用户设定，计算企业综合竞争力得分，并生成雷达图、排名及短板提示。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧维度/参数集不同但模型同构。**单接口兼容·配置型**：维度加权引擎 + dims/weights 参数吸收两侧口径；无需拆分 _ZT/_ZS（依据分级处置建议「组织三方案会签，统一维度与权重」，本件以参数化预实现会签结果，甲方落定权重后无需改签名）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_COMPETITIVENESS_SCORE.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -177,7 +232,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 calc-logic 口径展开（公式定义人=王惠），已由脚本 `code/M_ENT_COMPETITIVENESS_SCORE.py` 于 2026-10-20 在三方 gkx 完成九指标原料的填充率实测；因六项指标填充 2—4%、一项全空、一项无字段，本批为「原料审计」而非出数——极值归一化的全国 min/max 在当前覆盖上不可信，强行出分会制造伪分布。结果见同目录 `M_ENT_COMPETITIVENESS_SCORE_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」。
+> **口径说明**：本节按王惠 calc-logic 口径展开（公式定义人=王惠），已由脚本 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py` 于 2026-10-20 在三方 gkx 完成九指标原料的填充率实测；因六项指标填充 2—4%、一项全空、一项无字段，本批为「原料审计」而非出数——极值归一化的全国 min/max 在当前覆盖上不可信，强行出分会制造伪分布。结果见同目录 `M_ENT_COMPETITIVENESS_SCORE_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」。
 
 ### 2.1 方法选择：为何用「极值归一 + 两级加权」而非 z 分数或端到端模型
 
@@ -228,12 +283,12 @@ $$Score_i = \sum_{k=1}^{4} W_k\cdot D_{ik},\qquad W_k\ \text{由 Q014 确定或�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py` |
 | 结果产物 | 同目录 `M_ENT_COMPETITIVENESS_SCORE_out.json` |
 | 探测库 | 三方 `gkx`（`dwd_org_annual_financial_info` 全量填充统计） |
 
 ```bash
-python3 metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py
 ```
 
 脚本输出 `probe`（六项填充统计、年份分布、学历字段存在性）与 `support_judgment`（机判）。以下展示为 **2026-10-20** 完整跑数结果（与 out.json 一致）。
@@ -295,7 +350,7 @@ python3 metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_COMPETITIVENESS_SCORE.py` 并确认填充实测，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py` 并确认填充实测，再写本档支持度。
 
 | 依赖维度 | 候选表/字段 | 开发库（实测） | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -309,7 +364,7 @@ python3 metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py
 **四判定（§〇）**：直接结构/数据 = 否（现网评分表为 innov/operate/growth 口径 demo）；依赖结构 = **是**（gkx 财务表字段齐，九指标中七项有列）；依赖数据 = **部分**（六项 2—4% 填充、一项全空、一项无字段——量不足以支撑全国归一化）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_COMPETITIVENESS_SCORE_out.json` 实测——四维九三级指标原料：gkx 财务表 90,926 行中资产>0 2.9%、员工>0 3.5%、营收>0 2.4%、利润非空 2.6%、负债>0 2.6%、财务三要素齐 2.3%；`development_employee` 全空；本科及以上学历人数无字段（待建）；市场占有率需行业营收汇总（同样依赖低填充营收）。极值归一化对填充量敏感——2—4% 覆盖撑不起全国可比 min/max，人力资源维两指标一空一无 → **部分支持**（表结构在、原料结构性薄，非无法构建）。**先验标签「完全直接支持」与实测矛盾（无结果面、现网表非本条口径），以实测为准。**
+依据：`metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json` 实测——四维九三级指标原料：gkx 财务表 90,926 行中资产>0 2.9%、员工>0 3.5%、营收>0 2.4%、利润非空 2.6%、负债>0 2.6%、财务三要素齐 2.3%；`development_employee` 全空；本科及以上学历人数无字段（待建）；市场占有率需行业营收汇总（同样依赖低填充营收）。极值归一化对填充量敏感——2—4% 覆盖撑不起全国可比 min/max，人力资源维两指标一空一无 → **部分支持**（表结构在、原料结构性薄，非无法构建）。**先验标签「完全直接支持」与实测矛盾（无结果面、现网表非本条口径），以实测为准。**
 
 ---
 
@@ -381,11 +436,6 @@ python3 metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py
 7. IMD World Competitiveness Center. (2026). *World Competitiveness Ranking Methodology*（因子—子因子分层聚合隔离缺陷传导——两级加权结构的方法论参照）. https://www.imd.org/centers/wcc/world-competitiveness-center/rankings/world-competitiveness-ranking/methodology/
 
 8. Porter, M. E. (1990). The Competitive Advantage of Nations. *Harvard Business Review*, 68(2), 77–93. https://hbr.org/1990/03/the-competitive-advantage-of-nations （竞争力四要素理论框架——维度设计的理论依据）
-
-9. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_SCORE.md` — 四维九三级指标体系、三步公式与源表登记。
-
-10. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_RANK.md` — 下游排名口径（本条分数为排序键）。
-
 ---
 
 # 附件
@@ -425,7 +475,7 @@ python3 metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py
 
 - calc-logic 登记（王惠规范化迁移）：源表 `gkx.dwd_org_annual_financial_info`（底稿 match 517,597 行）；待建「本科及以上学历人数字段」与结果表 `ads_ent_competitiveness_score`；关联 Q014。
 - B2 批次锚点（PROGRESS.md，2026-10-20）：gkx `dwd_org_annual_financial_info` 90,926 行填充率：营收 2.4%/资产 2.9%/员工 3.5%/三要素齐 2.3%；`development_employee` 全 NULL——财务/人力维系统性薄；`ads_ent_*` 评分表族均不存在——SCORE 族未出数是 ENT 域最大断点。
-- 本批实测（`code/M_ENT_COMPETITIVENESS_SCORE.py`，2026-10-20）：见 §2.7.2 三张摘要表；`support_judgment.criteria = {financial_table_exists: true, fill_rate_revenue_pct: 2.4, rd_employee_any: false, bachelor_field_exists: false}`。
+- 本批实测（`metrics/repro/M_ENT_COMPETITIVENESS_SCORE.py`，2026-10-20）：见 §2.7.2 三张摘要表；`support_judgment.criteria = {financial_table_exists: true, fill_rate_revenue_pct: 2.4, rd_employee_any: false, bachelor_field_exists: false}`。
 
 ## 附录 C　综合竞争力分类似指标权威构建方法可行性报告（完整版）
 
@@ -503,15 +553,7 @@ Porter 钻石模型以要素条件、需求条件、相关支持产业、企业�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_COMPETITIVENESS_SCORE.py`；产物：`../code/M_ENT_COMPETITIVENESS_SCORE_out.json`
+- 脚本：`../code/M_ENT_COMPETITIVENESS_SCORE.py`；产物：`../metrics/repro/out/M_ENT_COMPETITIVENESS_SCORE_out.json`
 - 探测库：三方 `gkx`
 - 关键结果：财务表 90,926 行填充 assets 2.9%/emp 3.5%/rev 2.4%/profit 2.6%/liab 2.6%/fin3 2.3%；`development_employee` 全空；学历字段不存在；年份 2021—2025 均衡（6,908—7,892）；`support_judgment.data_support_level = 部分支持`
 - 工程注意：填充不足不出数；资产负债率为唯一负向指标；熵权待扩源后启用；本条是排名与雷达图的唯一上游，作竞争力族总里程碑统筹。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

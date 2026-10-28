@@ -1,9 +1,20 @@
 # 短板因素分析（M_INNOV_DS_05_GBA_ANALYSIS_004）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ANALYSIS_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV 指标（DS-05 湾区创新能力分析 · SWOT 之 W）｜ **域**：科技创新 / 湾区创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ANALYSIS_004.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +35,7 @@
 
 ## 口径定义
 
-短板清单无现成结果表 → 非完全直接支持；12 分项中 7 项可算、11 城中 4 城有数据，且王惠原阈值 `rank ≥ 9` 在四城宇宙下**恒不命中**（`direct_hits = 0`），必须做阈值映射才能产出任何结果 → **部分支持**，与 `code/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json` 的 `support_judgment` 一致。
+短板清单无现成结果表 → 非完全直接支持；12 分项中 7 项可算、11 城中 4 城有数据，且王惠原阈值 `rank ≥ 9` 在四城宇宙下**恒不命中**（`direct_hits = 0`），必须做阈值映射才能产出任何结果 → **部分支持**，与 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
@@ -52,14 +63,14 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：短板清单无现成结果表 → 非完全直接支持；12 分项中 7 项可算、11 城中 4 城有数据，且王惠原阈值 `rank ≥ 9` 在四城宇宙下**恒不命中**（`direct_hits = 0`），必须做阈值映射才能产出任何结果 → **部分支持**，与 `code/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json` 的 `support_judgment` 一致。
+- **判档理由**：短板清单无现成结果表 → 非完全直接支持；12 分项中 7 项可算、11 城中 4 城有数据，且王惠原阈值 `rank ≥ 9` 在四城宇宙下**恒不命中**（`direct_hits = 0`），必须做阈值映射才能产出任何结果 → **部分支持**，与 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json` 的 `support_judgment` 一致。
 - **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 
 ## 溯源与复现
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_05_GBA_ANALYSIS_004.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json` |
@@ -67,14 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 指标（DS-05 湾区创新能力分析 · SWOT 之 W）｜ **域**：科技创新 / 湾区创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT）｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true ｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -102,7 +110,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-短板清单无现成结果表 → 非完全直接支持；12 分项中 7 项可算、11 城中 4 城有数据，且王惠原阈值 `rank ≥ 9` 在四城宇宙下**恒不命中**（`direct_hits = 0`），必须做阈值映射才能产出任何结果 → **部分支持**，与 `code/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json` 的 `support_judgment` 一致。
+短板清单无现成结果表 → 非完全直接支持；12 分项中 7 项可算、11 城中 4 城有数据，且王惠原阈值 `rank ≥ 9` 在四城宇宙下**恒不命中**（`direct_hits = 0`），必须做阈值映射才能产出任何结果 → **部分支持**，与 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json` 的 `support_judgment` 一致。
 
 ---
 
@@ -112,7 +120,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 需求原文只写「如资源分配不均、机构协同不足、机制障碍、环境约束等」并要求「改进建议」，**没有给出阈值、排名方向和映射规则**；可复现口径取自王惠 `M_INNOV_GBA_SWOT_WEAKNESS`（`rank ≥ 9` 入选、12 项固定建议映射）。
 
-脚本 `code/M_INNOV_DS_05_GBA_ANALYSIS_004.py` 实测得到两个关键事实：王惠原阈值在 4 城宇宙下零命中（`n_weak_direct_total = 0`），按城数比例映射后仅惠州 5 项、东莞 2 项入选，合计 7 项；广州与深圳因无短板触发 `weak_signal` 兜底。叠加机制维 `joint_patent` 全为 0 导致 `mech_index` 恒等 50、完全不可分辨，本指标判**部分支持**。
+脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py` 实测得到两个关键事实：王惠原阈值在 4 城宇宙下零命中（`n_weak_direct_total = 0`），按城数比例映射后仅惠州 5 项、东莞 2 项入选，合计 7 项；广州与深圳因无短板触发 `weak_signal` 兜底。叠加机制维 `joint_patent` 全为 0 导致 `mech_index` 恒等 50、完全不可分辨，本指标判**部分支持**。
 
 ---
 
@@ -196,9 +204,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.5.3.4（第 681–683 行） | 「识别并分析粤港澳大湾区创新能力的短板因素，如资源分配不均、机构协同不足、机制障碍、环境约束等，用户可查看各短板因素的具体表现和改进建议。」 |
+| 1 | 原始产品需求文档 | `《原始产品需求文档》（需求方原件不入仓）科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.5.3.4（第 681–683 行） | 「识别并分析粤港澳大湾区创新能力的短板因素，如资源分配不均、机构协同不足、机制障碍、环境约束等，用户可查看各短板因素的具体表现和改进建议。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.3（第 663–667 行） | 「通过统计大湾区的创新资源、创新机构、创新机制、创新环境等创新能力促成因素进行分析，以SWOT图表方式呈现……」 |
-| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）`，§计算逻辑说明 | 「湾区 11 城、入集、12 个分项与优势因素完全相同，只改入选方向。」 |
+| 3 | 王惠口径原文 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_GBA_SWOT_WEAKNESS.md（王惠正本已演化并入）`，§计算逻辑说明 | 「湾区 11 城、入集、12 个分项与优势因素完全相同，只改入选方向。」 |
 | 4 | 同上 | 同上 §第二步 | 「短板清单：该城 `rank ≥ 9` 的分项。无命中则取 `rank` 最大的 1 项，并标记 `weak_signal=1`。」 |
 | 5 | 同上 | 同上 §改进建议映射表 | 「专利资源→加大专利申请与布局；研发投入→提高研发人员或上市研发经费；载体数量→引入和培育创新主体……」 |
 | 6 | 需求映射 | `_work_20261019/mid2req.json`（键 `M_INNOV_DS_05_GBA_ANALYSIS_004`） | 页级映射至 DS-05-GBA-ANALYSIS（seq 116），语义弱于第 1 行原句，本报告以原句为准 |
@@ -264,9 +272,9 @@ $$
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py`
-**运行命令**：`python3 M_INNOV_DS_05_GBA_ANALYSIS_004.py`
-**输出**：`code/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`（复用父指标同日实测产物；含一次 gkx 轻量核验，本次返回 `dwd_org_base_info` 可计数）
+**代码入库路径**：`gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py`
+**运行命令**：`cd code && python3 M_INNOV_DS_05_GBA_ANALYSIS_004.py`
+**输出**：`metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`（复用父指标同日实测产物；含一次 gkx 轻量核验，本次返回 `dwd_org_base_info` 可计数）
 
 | 城市 | 专利数 | 研发经费（元） | 机构数 | 高企数 | 政策数 | 高企密度 | 原阈值(≥9) | 比例阈值(≥4) | 放宽阈值(≥3) | 兜底项 |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -376,18 +384,13 @@ $$
 ---
 
 ## 参考文献
-
-> 下列条目均经联网核验存在；仅收录可打开的官方/出版社/DOI 页面。本批文献系与已入库 `M_INNOV_CARRIER_*`、`M_INNOV_CITY_*` 十件所用文献不重复。
-
 1. 国务院办公厅. (2021). 《关于完善科技成果评价机制的指导意见》（国办发〔2021〕26号）. 中国政府网. https://www.gov.cn/zhengce/content/2021-08/02/content_5628987.htm （「破四唯」、分类评价、重质量与转化贡献，支撑改进建议的政策取向）
 2. Hill, T., & Westbrook, R. (1997). SWOT Analysis: It's Time for a Product Recall. *Long Range Planning*, 30(1), 46–52. https://doi.org/10.1016/S0024-6301(96)00095-7 （批评传统 SWOT 条目不可度量，主张以可比较的量化差距替代定性罗列，直接支撑「位次+缺口」双证据设计）
 3. Venkatraman, N., & Ramanujam, V. (1986). Measurement of Business Performance in Strategy Research: A Comparison of Approaches. *Academy of Management Review*, 11(4), 801–814. https://doi.org/10.5465/amr.1986.4283976 （区分「应该达到」与「实际达到」的绩效差距，支撑短板需给出目标值口径的论证）
 4. 深圳市科技创新局. (2024). 《深圳市重点实验室管理办法》（深科创规〔2024〕2号）. 深圳市科技创新局网站. https://stic.sz.gov.cn/xxgk/ztzl/gfxwj/content/post_12826912.html （载体组建条件、周期评估与资助档次，为「载体数量/科技型机构」类短板提供可引用的政策动作）
 5. 中共中央、国务院. (2019). 《粤港澳大湾区发展规划纲要》. 中国政府网. https://www.gov.cn/zhengce/2019-02/18/content_5366593.htm （湾区 11 城范围与 2022/2035 发展目标；目标为定性表述，无数值目标值，支撑 §4.1「目标值缺省」的判断）
 6. 中共中央、国务院. (2019). 《关于支持深圳建设中国特色社会主义先行示范区的意见》. 中国政府网. https://www.gov.cn/zhengce/2019-08/18/content_5422183.htm （「研发投入强度、产业创新能力世界一流」等目标表述，同样为定性目标，说明不能直接当逐城目标值）
-
 > 文献选取原则：只保留能直接支撑「位次+缺口」设计、目标值缺省判断与政策动作描述的条目；两类文件（规划纲要、示范区意见）均只作定性目标证据，不被当作可逐城对标的数值目标。凡不能打开或不能对应正文论点的条目一律不列。
-
 ---
 
 # 附件
@@ -516,15 +519,7 @@ $$
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_DS_05_GBA_ANALYSIS_004.py`
-- 输出：`code/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`
+- 脚本：`metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_004.py`
+- 输出：`metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_004_out.json`
 - 关键字段：`thresholds.direct_hits=0`、`summary.n_weak_scaled_total=7`、`summary.n_weak_loose_total=14`、`summary.mech_index_constant=true`、`summary.joint_patent_all_zero=true`、`summary.weak_signal_cities=["广州","深圳"]`
 - 判定：`support_judgment=部分支持`
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

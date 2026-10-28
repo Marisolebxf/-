@@ -1,9 +1,20 @@
-# 科研机构实体识别构建（M_ORG_GRAPH_114_1）
+# M_ORG_GRAPH_114_1 · 科研机构实体识别构建
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_GRAPH_114_1.md`；复现脚本 `metrics/repro/M_ORG_GRAPH_114_1.py` → `metrics/repro/out/M_ORG_GRAPH_114_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **数据支持度**：部分支持
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_GRAPH_114_1.py`、产物 `metrics/repro/out/M_ORG_GRAPH_114_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_GRAPH_114_1.md`；复现脚本 `metrics/repro/M_ORG_GRAPH_114_1.py` → `metrics/repro/out/M_ORG_GRAPH_114_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_GRAPH_114_1.py`、产物 `metrics/repro/out/M_ORG_GRAPH_114_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_GRAPH_114_1.md` |
 | 复现脚本 | `metrics/repro/M_ORG_GRAPH_114_1.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_GRAPH_114_1_out.json` |
@@ -64,15 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_GRAPH_114_1.py`、产物 `metrics/repro/out/M_ORG_GRAPH_114_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 域：产业全要素图谱（GRAPH）｜类型：主数据/实体识别指标｜形态：实体主表 + 别名索引 + 识别评测 + 属性填充率
-> **数据支持度**：部分支持
-> 判定：实体主表**可转换**（2,074 行 / 27 列 / 1 个主键 / 0 重复主键）；词典识别**部分转换**（2,241 条别名，对 435,937 条署名串命中 9,671 条 / 235 家，实例召回 2.22%）；规则识别**部分转换**（机构类串实例召回 2.63%，窄口径 8.51%）；属性提取**部分支持**（论文 11.38%、专利 10.56%、项目 2.56%、学者 1.40%、人员规模 0%）
-> 一句话口径：以 `dwd_research_institute_base_info` 为实体主表，用规范名 + 去括号别名建词典，对论文署名串做词典与规则双路识别，再用论文/专利/项目/学者四源回填属性，逐项给覆盖率与误匹配样例
-> 复现：`python3 code/M_ORG_GRAPH_114_1.py` → `code/M_ORG_GRAPH_114_1_out.json`（零 SQL，约 2.05 秒）
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -153,7 +160,7 @@ NER 方面，学术界主流是 BERT 类模型 + 标注集（如 CoNLL、MSRA）
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.2.13 科研机构实体识别构建 | 四项基础属性、四项关键属性、三套机制 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 411–413 行 |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.2.13 科研机构实体识别构建 | 四项基础属性、四项关键属性、三套机制 | `《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 411–413 行 |
 | 2 | 同文档 §1.1.1.1.1.1.1.2.7 企业实体识别构建 | 同族「规则 + 词典 + 属性」范式 | 同上第 393–395 行 |
 | 3 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 | 人员规模相关列整列为空 | 本轮事实底稿 |
 | 4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.1 | `credit_code` 不是统一社会信用代码 | 同上 |
@@ -234,7 +241,7 @@ NER 方面，学术界主流是 BERT 类模型 + 标注集（如 CoNLL、MSRA）
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 M_ORG_GRAPH_114_1.py`，零 SQL，约 2.05 秒，输出 `code/M_ORG_GRAPH_114_1_out.json`。
+执行 `cd code && python3 M_ORG_GRAPH_114_1.py`，零 SQL，约 2.05 秒，输出 `metrics/repro/out/M_ORG_GRAPH_114_1_out.json`。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -479,7 +486,7 @@ NER 方面，学术界主流是 BERT 类模型 + 标注集（如 CoNLL、MSRA）
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_ORG_GRAPH_114_1.py
 python3 -c "import json;d=json.load(open('M_ORG_GRAPH_114_1_out.json'));print(d['entity_master']['rows'],d['recognition']['matched_instances'],d['attribute_extraction']['pct']['人员规模 employees'])"
 ```
@@ -497,16 +504,14 @@ python3 -c "import json;d=json.load(open('M_ORG_GRAPH_114_1_out.json'));print(d[
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.2.13 科研机构实体识别构建，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 411–413 行。
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.2.13 科研机构实体识别构建，`《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 411–413 行。
 2. 同文档 §1.1.1.1.1.1.1.2.7 企业实体识别构建（同族范式），第 393–395 行。
-3. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.1（`credit_code` 不是统一社会信用代码）、§3.10（整列为空）、§3.18（重跑后对账）。
-4. ROR, *Research Organization Registry*, https://ror.org/
-5. ISNI, *International Standard Name Identifier*, https://www.isni.org/
-6. Wikidata, *Wikidata:Introduction*, https://www.wikidata.org/
-7. 国家市场监督管理总局，法人和其他组织统一社会信用代码编码规则（GB 32100-2015），https://www.samr.gov.cn/
-8. 国家事业单位登记管理局，事业单位登记管理暂行条例，https://www.gov.cn/
-9. 广东省民政厅，社会组织登记，https://smzt.gd.gov.cn/
-
+3. ROR, *Research Organization Registry*, https://ror.org/
+4. ISNI, *International Standard Name Identifier*, https://www.isni.org/
+5. Wikidata, *Wikidata:Introduction*, https://www.wikidata.org/
+6. 国家市场监督管理总局，法人和其他组织统一社会信用代码编码规则（GB 32100-2015），https://www.samr.gov.cn/
+7. 国家事业单位登记管理局，事业单位登记管理暂行条例，https://www.gov.cn/
+8. 广东省民政厅，社会组织登记，https://smzt.gd.gov.cn/
 # 附件
 
 ## 附录 B　原始需求原文摘录
@@ -576,10 +581,3 @@ FROM gkx.dwd_org_annual_financial_info;
 六、一句话结论。本件可以上线为「科研机构主数据 + 识别覆盖率评测」，但不能上线为「高精度实体识别服务」；前者是字典与基线，后者需要别名、层级、标注三样补齐后才成立。
 
 七、遗留事项。4 组重名机构（8 行）需要业务方确认是否合并；「中国城市规划设计研究院深圳分院」「南方电网科学研究院」这类在粤但未收录的机构，建议单建「企业/央企研究机构」表；NER 模型若要上线，需先有 500 条以上的标注集，否则无法评测。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

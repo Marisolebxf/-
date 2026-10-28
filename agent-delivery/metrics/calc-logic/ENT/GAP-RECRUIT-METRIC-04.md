@@ -1,7 +1,18 @@
 # 可视化行业分布（GAP-RECRUIT-METRIC-04）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-04.md`；复现脚本 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-04.py` → `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-04_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：UNKNOWN（未注册 GAP）｜ **域**：企业培育（ENT-CULTIVATE，148 培育企业综合推荐模型输出）｜ **UI 挂载**：培育企业推荐分析（E-27，wireframe 第 6 列）｜ **数据支持度**：**完全转换支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
+
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-04.md`；复现脚本 `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-04.py` → `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-04_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；本地备份指针已随 20261027 批清零，验收以本仓为准）
 
 ## 基础信息
 
@@ -24,7 +35,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-04.md` §二（GAP-RECRUIT-METRIC-04.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-04.md` §二（GAP-RECRUIT-METRIC-04.py 零改语义复算）。
 
 ## 源表字段
 
@@ -47,22 +58,19 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/第三方库指标计算过程/GAP-RECRUIT-METRIC-04.md` |
-| 复现脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-04.py` |
-| 复现产物 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-04_out.json` |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
+| 正本 MD | `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/GAP-RECRUIT-METRIC-04.md` |
+| 复现脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-04.py` |
+| 复现产物 | `gkx-orchestration/agent-delivery/metrics/repro/out/GAP-RECRUIT-METRIC-04_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
-
-> **类型**：UNKNOWN（未注册 GAP）｜ **域**：企业培育（ENT-CULTIVATE，148 培育企业综合推荐模型输出）｜ **UI 挂载**：培育企业推荐分析（E-27，wireframe 第 6 列）｜ **数据支持度**：**完全转换支持**
-> **公式定义人（20261020-M0）**：仿王惠（推测定义）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量足（可现转）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -96,7 +104,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「可视化行业分布」是《科技专题服务算法库》**培育企业综合推荐模型（§5.8，seq 148）**的四个输出项之一，原文表述为「可视化行业分布图」——对培育推荐的企业群按行业维度的分布统计并可视化。需求文档**只列输出、未定义统计对象集合、统计量与行业分类层级**（handoff 已登记缺口 ER-B10：统计量/分母/分类无独立 ID，禁止发明分布 ID；图表壳不另开 n/a_ops）。本文给出「推测定义」：培育场景聚焦深圳市内企业，行业维度采用《国民经济行业分类》（GB/T 4754—2017）大类，统计量为行业桶企业数与占比。脚本 `code/GAP-RECRUIT-METRIC-04.py` 已在三方库 `gkx` 换源重跑（读数与旧 demo 镜像逐项一致）：深圳 **95,600** 家企业、**98** 个二级行业桶，Top5 行业（批发业 26.3%、零售业 11.7%、软件和信息技术服务业 11.6%、计算机通信电子设备制造 8.7%、科技推广和应用服务业 6.0%）——数据集可直接喂饼图/条形图。按 §〇，结构+当前数据量均足且现转分布非退化 → **完全转换支持**。
+「可视化行业分布」是《科技专题服务算法库》**培育企业综合推荐模型（§5.8，seq 148）**的四个输出项之一，原文表述为「可视化行业分布图」——对培育推荐的企业群按行业维度的分布统计并可视化。需求文档**只列输出、未定义统计对象集合、统计量与行业分类层级**（handoff 已登记缺口 ER-B10：统计量/分母/分类无独立 ID，禁止发明分布 ID；图表壳不另开 n/a_ops）。本文给出「推测定义」：培育场景聚焦深圳市内企业，行业维度采用《国民经济行业分类》（GB/T 4754—2017）大类，统计量为行业桶企业数与占比。脚本 `metrics/repro/GAP-RECRUIT-METRIC-04.py` 已在三方库 `gkx` 换源重跑（读数与旧 demo 镜像逐项一致）：深圳 **95,600** 家企业、**98** 个二级行业桶，Top5 行业（批发业 26.3%、零售业 11.7%、软件和信息技术服务业 11.6%、计算机通信电子设备制造 8.7%、科技推广和应用服务业 6.0%）——数据集可直接喂饼图/条形图。按 §〇，结构+当前数据量均足且现转分布非退化 → **完全转换支持**。
 
 ---
 
@@ -220,7 +228,7 @@ handoff 真源（`metrics/request/展示系统/pages/ENT-RECRUIT.yaml` ER-D08 / 
 ## 二、计算过程
 
 > **口径说明**：需求未给公式，以下为推测计算过程；已由脚本
-> `code/GAP-RECRUIT-METRIC-04.py` 在 `gkx`（183.240.141.251:3318，schema `gkx`）实测跑通，结果见同目录 `GAP-RECRUIT-METRIC-04_out.json`。
+> `metrics/repro/GAP-RECRUIT-METRIC-04.py` 在 `gkx`（183.240.141.251:3318，schema `gkx`）实测跑通，结果见同目录 `GAP-RECRUIT-METRIC-04_out.json`。
 
 ### 2.1 方法选择：国标行业分组的分布统计
 
@@ -263,13 +271,13 @@ ER-B10 闭合后：(1) 分母从「深圳全量」替换为培育推荐名单（
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-04.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-04.py` |
 | 结果产物 | 同目录 `GAP-RECRUIT-METRIC-04_out.json` |
 | 主算库 | `gkx`（183.240.141.251:3318，schema `gkx`） |
 | 对照探测 | live `gkxlumenx_dwd.enterprise_industry_distribution` 行数 |
 
 ```bash
-python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）/code/GAP-RECRUIT-METRIC-04.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/GAP-RECRUIT-METRIC-04.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -283,7 +291,7 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 | 深圳企业且有行业分类 | **95,064**（原记 94,657，已校订） |
 | live `enterprise_industry_distribution` 行数 | **0**（无现成结果面） |
 
-> 校订说明（2026-10-21）：本行原记 94,657，与 `code/GAP-RECRUIT-METRIC-04_out.json` 的 `sz_with_industry = 95,064` 差 407 家。
+> 校订说明（2026-10-21）：本行原记 94,657，与 `metrics/repro/out/GAP-RECRUIT-METRIC-04_out.json` 的 `sz_with_industry = 95,064` 差 407 家。
 > 已按 out.json 改为 95,064（占 95,600 的 99.44%，未分类 536 家），全文（§4.1、附录 C.4）口径随之统一。
 > 差异来源疑为旧探针是否剔除行业名空串/占位值；**不影响任何结论**：Top1 仍为批发业 26.33%，一级桶按 out.json 为 **21 个**（20 国标门类 + 未分类）。
 
@@ -336,7 +344,7 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/GAP-RECRUIT-METRIC-04.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/GAP-RECRUIT-METRIC-04.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数） | 实测结论 |
 |---|---|---|---|---|
@@ -388,12 +396,9 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 3. 深圳市人民政府. (2022). 《关于发展壮大战略性新兴产业集群和培育发展未来产业的意见》（深府〔2022〕1 号）. 深圳政府在线：https://www.sz.gov.cn/zfgb/2022/gb1248/content/post_9918806.html
 
-4. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/request/展示系统/pages/ENT-RECRUIT.yaml`（ER-D08/ER-B10）。
+4. United Nations Statistics Division. (2008). *International Standard Industrial Classification of All Economic Activities (ISIC), Rev.4*. https://unstats.un.org/unsd/classifications/Econ/isic （国际产业分类母版，支撑族 A′「分类骨架可迁移、参照期不可迁移」的判断）
 
-5. United Nations Statistics Division. (2008). *International Standard Industrial Classification of All Economic Activities (ISIC), Rev.4*. https://unstats.un.org/unsd/classifications/Econ/isic （国际产业分类母版，支撑族 A′「分类骨架可迁移、参照期不可迁移」的判断）
-
-6. Ellison, G., & Glaeser, E. L. (1997). Geographic Concentration in U.S. Manufacturing Industries: A Dartboard Approach. *Journal of Political Economy*, 105(5), 889–927. https://doi.org/10.1086/262098 （产业地理集中度的 dartboard 检验，支撑族 D「输出偏离度而非构成份额」的判断；doi.org 对脚本访问返回 403，浏览器可开）
-
+5. Ellison, G., & Glaeser, E. L. (1997). Geographic Concentration in U.S. Manufacturing Industries: A Dartboard Approach. *Journal of Political Economy*, 105(5), 889–927. https://doi.org/10.1086/262098 （产业地理集中度的 dartboard 检验，支撑族 D「输出偏离度而非构成份额」的判断；doi.org 对脚本访问返回 403，浏览器可开）
 ---
 
 # 附件
@@ -574,7 +579,7 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ### C.8 对甲方四问的逐条回答
 
-**第一问：这个指标现在能不能出数？** 能。深圳 95,600 家企业、98 个二级行业桶、Top1 批发业 26.33%，数据集（行业, 数量, 占比）已由 `code/GAP-RECRUIT-METRIC-04.py` 现转出，可直接喂饼图/条形图。
+**第一问：这个指标现在能不能出数？** 能。深圳 95,600 家企业、98 个二级行业桶、Top1 批发业 26.33%，数据集（行业, 数量, 占比）已由 `metrics/repro/GAP-RECRUIT-METRIC-04.py` 现转出，可直接喂饼图/条形图。
 
 **第二问：出的是不是甲方要的那个东西？** 数据形态是，口径不是。需求要的是「培育企业群的行业构成」，当前分母是深圳全量，出的是「基数版」；统计量（数量+占比）与分类层级（国标大类）两项已对，缺的是「名单」这一对象集合。
 
@@ -584,13 +589,6 @@ python3 《20261021 指标整体开发进度调研》批次（GitLab 外本地�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/GAP-RECRUIT-METRIC-04.py`；产物：`../code/GAP-RECRUIT-METRIC-04_out.json`
+- 脚本：`../code/GAP-RECRUIT-METRIC-04.py`；产物：`../metrics/repro/out/GAP-RECRUIT-METRIC-04_out.json`
 - 关键结果：深圳企业=95,600；二级桶=98；Top1 批发业 26.33%；support_judgment=`完全转换支持`
 - 工程注意：分母为深圳全量基线；正式版待 ER-B10 闭合后支持名单口径。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

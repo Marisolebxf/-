@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技专题服务算法库
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_CHAIN_DEEP_125_1 —— 产业瓶颈堵点识别模型（五维加权综合分）
 
 旧稿读 chain_bottleneck 的五维得分（tech/talent/market/capital/policy）与

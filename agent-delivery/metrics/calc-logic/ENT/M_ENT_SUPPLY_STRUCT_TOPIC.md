@@ -1,9 +1,20 @@
 # 供应链结构指标（M_ENT_SUPPLY_STRUCT_TOPIC）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SUPPLY_STRUCT_TOPIC.md`；复现脚本 `metrics/repro/M_ENT_SUPPLY_STRUCT_TOPIC.py` → `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GRAPH（供应子图的度、距离、稳定性、密度、强度）｜ **域**：企业分析（ENT）／企业结构｜ **UI 挂载**：无页面挂载（页面引用、seed 未登记）｜ **数据支持度**：**完全不支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SUPPLY_STRUCT_TOPIC.py`、产物 `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SUPPLY_STRUCT_TOPIC.md`；复现脚本 `metrics/repro/M_ENT_SUPPLY_STRUCT_TOPIC.py` → `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SUPPLY_STRUCT_TOPIC.py`、产物 `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_SUPPLY_STRUCT_TOPIC.md` |
 | 复现脚本 | `metrics/repro/M_ENT_SUPPLY_STRUCT_TOPIC.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json` |
@@ -67,17 +78,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_SUPPLY_STRUCT_TOPIC.py`、产物 `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：GRAPH（供应子图的度、距离、稳定性、密度、强度）｜ **域**：企业分析（ENT）／企业结构｜ **UI 挂载**：无页面挂载（页面引用、seed 未登记）｜ **数据支持度**：**完全不支持**
-> **口径来源**：calc-logic 无正本（`REM_QUEUE_20261023.json` 中 `calc_logic=null`、`wanghui=null`）；口径沿用 20261016 版 AI 拟定的五子指标定义，并以 `科技专题算法库需求.xlsx` 的「供应链结构」语义为约束
-> **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）＋ live 开发库 111.198.38.90:34306
-> **复现**：`python3 M_ENT_SUPPLY_STRUCT_TOPIC.py` → `code/M_ENT_SUPPLY_STRUCT_TOPIC_out.json`
-> **判定类型**：`verdict_kind = negative_evidence`（否定性探针，不是「缺数据待补」）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -118,7 +123,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx.dwd_org_invest_info` | 投资边替代候选 | 46,967 行 |
 | `gkx.dwd_org_shareholder_info` | 股权边替代候选 | 400,286 行 |
 | `gkx.dwd_bid_win_candidate_out` | 中标共现替代候选 | 39,520 行 / 29,429 项目 |
-| `code/M_ENT_SUPPLY_STRUCT_TOPIC_out.json` | 本件产物 | 五子指标逐条不可算理由 |
+| `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json` | 本件产物 | 五子指标逐条不可算理由 |
 
 ---
 
@@ -397,11 +402,6 @@ G7 决定这份数据能不能被引用。供应关系是商业敏感数据，�
 ## 参考文献
 
 1. 国家统计局：《中国投入产出表》。https://www.stats.gov.cn/sj/ndsj/
-2. 全国公共资源交易平台。https://www.ggzy.gov.cn/
-3. 国家企业信用信息公示系统。https://www.gsxt.gov.cn/
-4. 项目内数据事实：`_work_gkx21/DATA_FACTS_gkx21.md` §3.24、§3.31
-5. 项目内派单记录：`_work_gkx21/REM_QUEUE_20261023.json`
-
 # 附件
 
 ## 附录 A 原文摘录
@@ -603,15 +603,15 @@ G7 决定这份数据能不能被引用。供应关系是商业敏感数据，�
 | 文件 | 说明 |
 |---|---|
 | `_staging21/M_ENT_SUPPLY_STRUCT_TOPIC.md` | 本报告 |
-| `code/M_ENT_SUPPLY_STRUCT_TOPIC.py` | 探针与产物脚本 |
-| `code/M_ENT_SUPPLY_STRUCT_TOPIC_out.json` | 产物（五子指标 + 三组否定探针） |
+| `metrics/repro/M_ENT_SUPPLY_STRUCT_TOPIC.py` | 探针与产物脚本 |
+| `metrics/repro/out/M_ENT_SUPPLY_STRUCT_TOPIC_out.json` | 产物（五子指标 + 三组否定探针） |
 | `code/_w13e3_common.py` | 族内共享函数 |
 
 ## 附录 J 复现实验记录
 
 | 步骤 | 命令 | 结果 |
 |---|---|---|
-| 1 | `python3 M_ENT_SUPPLY_STRUCT_TOPIC.py` | 退出码 0 |
+| 1 | `cd code && python3 M_ENT_SUPPLY_STRUCT_TOPIC.py` | 退出码 0 |
 | 2 | 读产物 `gkx_side` | 表名命中 0 |
 | 3 | 读产物 `live_side` | supply 表 0 行 |
 | 4 | live 探针 `graph_edge` | 152 条 supply |
@@ -644,10 +644,3 @@ G7 决定这份数据能不能被引用。供应关系是商业敏感数据，�
 本件当前不应排期。如果产品侧坚持要一个「供应链结构」的可视化，建议改为「样本供应图」并显式标注 145 节点样本；同时另立 `M_ENT_BID_COOCCURRENCE` 承接中标共现，避免用供应指标名交付共现结果。
 
 甲方补数后，先跑 §3.6 的门槛检查，再谈五子指标。门槛不过，不要开工。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

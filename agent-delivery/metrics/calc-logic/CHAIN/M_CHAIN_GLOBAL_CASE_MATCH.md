@@ -1,9 +1,20 @@
-# 全球成功案例匹配（M_CHAIN_GLOBAL_CASE_MATCH）
+# 全球案例匹配（M_CHAIN_GLOBAL_CASE_MATCH）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_GLOBAL_CASE_MATCH.md`；复现脚本 `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py` → `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：COMPARE（案例匹配度）｜ **域**：产业链分析／产业链对标／全球案例｜ **UI 挂载**：链路对标页「全球案例」卡片、产业链招商参考｜ **数据支持度**：**完全不支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py`、产物 `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_GLOBAL_CASE_MATCH.md`；复现脚本 `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py` → `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py`、产物 `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_GLOBAL_CASE_MATCH.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json` |
@@ -66,15 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py`、产物 `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COMPARE（案例匹配度）｜ **域**：产业链分析／产业链对标／全球案例｜ **UI 挂载**：链路对标页「全球案例」卡片、产业链招商参考｜ **数据支持度**：**完全不支持**
-> **口径来源**：王惠（`王惠阶段性成果/20260904_ai补漏/指标计算逻辑/M_CHAIN_GLOBAL_CASE_MATCH.md`）｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_CHAIN_GLOBAL_CASE_MATCH.py` → `code/M_CHAIN_GLOBAL_CASE_MATCH_out.json`
-> **wanghui**：true（§五 必含王惠口径对照）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -244,13 +251,13 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 专利国家码 | 只到国别，无结构 |
 | 新闻叙述 | 无结构化向量 |
 
-作为口径复核的收口，这里再说明一次本节的边界：上述结果全部由 `code/M_CHAIN_GLOBAL_CASE_MATCH.py` 在本地快照上重算，不连库、不依赖任何外部服务；重跑后产物会被整体覆盖，正文中的每个数字都能在产物里找到对应字段。若某一步结果为空，脚本直接报错而不是写兜底值，因此产物为空的唯一含义是「数据不足」，不是「计算失败」。
+作为口径复核的收口，这里再说明一次本节的边界：上述结果全部由 `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py` 在本地快照上重算，不连库、不依赖任何外部服务；重跑后产物会被整体覆盖，正文中的每个数字都能在产物里找到对应字段。若某一步结果为空，脚本直接报错而不是写兜底值，因此产物为空的唯一含义是「数据不足」，不是「计算失败」。
 
 还有一点需要交代清楚：本节的每一个中间量都保留了原始精度，正文只做展示性四舍五入，因此把正文数字相乘除回推时会有末位差异，这不是算错。复核时应以产物里的原始值为准，不要用正文的两位小数反算分母；反算会把舍入误差放大成量级差，进而被误判成口径不一致。
 
 最后说明本节与下游的关系：这些中间量不是只给本文档看的，它们会被链级、城市级与企业级的其他指标引用。任何一处改动都要连同引用方一起重跑，否则会出现「同一家企业两份文档数字不同」的情况。因此本节的口径一经会签，就应视为冻结口径，改动必须走变更流程。
 
-作为口径复核的收口，这里再说明一次本节的边界：上述结果全部由 `code/M_CHAIN_GLOBAL_CASE_MATCH.py` 在本地快照上重算，不连库、不依赖任何外部服务；重跑后产物会被整体覆盖，正文中的每个数字都能在产物里找到对应字段。若某一步结果为空，脚本直接报错而不是写兜底值，因此产物为空的唯一含义是「数据不足」，不是「计算失败」。
+作为口径复核的收口，这里再说明一次本节的边界：上述结果全部由 `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py` 在本地快照上重算，不连库、不依赖任何外部服务；重跑后产物会被整体覆盖，正文中的每个数字都能在产物里找到对应字段。若某一步结果为空，脚本直接报错而不是写兜底值，因此产物为空的唯一含义是「数据不足」，不是「计算失败」。
 
 还有一点需要交代清楚：本节的每一个中间量都保留了原始精度，正文只做展示性四舍五入，因此把正文数字相乘除回推时会有末位差异，这不是算错。复核时应以产物里的原始值为准，不要用正文的两位小数反算分母；反算会把舍入误差放大成量级差，进而被误判成口径不一致。
 
@@ -667,9 +674,6 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 1. Porter (1998), Clusters and the New Economics of Competition. https://hbr.org/1998/11/clusters-and-the-new-economics-of-competition
 2. Hidalgo & Hausmann (2009), The Building Blocks of Economic Complexity. https://doi.org/10.1073/pnas.0900943106
 3. European Cluster Excellence Initiative. https://www.cluster-analysis.org/
-4. OECD 产业集群与区域创新. https://www.oecd.org/sti/
-5. 项目内 calc-logic V2：`M_CHAIN_GLOBAL_CASE_MATCH.md`
-
 ---
 
 # 附件
@@ -688,7 +692,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 附录 B 探测证据与产物字段
 
-下表是本件产物的关键字段与本次运行落盘值，任一行与 `code/M_CHAIN_GLOBAL_CASE_MATCH_out.json` 对不上即为产物漂移。
+下表是本件产物的关键字段与本次运行落盘值，任一行与 `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json` 对不上即为产物漂移。
 
 | 字段 | 内容/用途 |
 |---|---|
@@ -792,8 +796,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
 | `_staging21/M_CHAIN_GLOBAL_CASE_MATCH.md` | 指标文档（本文件） | 已交付 |
-| `code/M_CHAIN_GLOBAL_CASE_MATCH.py` | 自包含计算脚本 | 已跑通 |
-| `code/M_CHAIN_GLOBAL_CASE_MATCH_out.json` | 结果面 | 已落盘 |
+| `metrics/repro/M_CHAIN_GLOBAL_CASE_MATCH.py` | 自包含计算脚本 | 已跑通 |
+| `metrics/repro/out/M_CHAIN_GLOBAL_CASE_MATCH_out.json` | 结果面 | 已落盘 |
 | `code/_snapshots21/` | 只读快照 | 随件保留 |
 | `_work_gkx21/*.py` | 六条自查 | 通过 |
 
@@ -849,11 +853,3 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 **问：匹配度算法要重新研究吗？**
 
 答：不用。余弦相似度足够，复杂模型在 60 个案例上会过拟合。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,22 @@
 # 科学论文数量（M_INNOV_SCI_PAPER）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCI_PAPER.md`；复现脚本 `metrics/repro/M_INNOV_SCI_PAPER.py` → `metrics/repro/out/M_INNOV_SCI_PAPER_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：王惠已定义（INNOV 家族 · 科学创造力）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.1.1，原文第 875—877 行）
+> - **数据支持度**：**完全转换支持**
+> - **四判定摘要**：直接结构 = 否（无现成论文计数结果表）；直接数据 = 否；依赖结构 = 是（`dwd_zh_paper` 主键、发表年、作者串齐备）；依赖数据 = 是（100,900 行、发表年 100% 可解析、92.98% 可落城市）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCI_PAPER.py`、产物 `metrics/repro/out/M_INNOV_SCI_PAPER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_SCI_PAPER.md`；复现脚本 `metrics/repro/M_INNOV_SCI_PAPER.py` → `metrics/repro/out/M_INNOV_SCI_PAPER_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_SCI_PAPER.py`、产物 `metrics/repro/out/M_INNOV_SCI_PAPER_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_SCI_PAPER.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_SCI_PAPER.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_SCI_PAPER_out.json` |
@@ -67,16 +80,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_SCI_PAPER.py`、产物 `metrics/repro/out/M_INNOV_SCI_PAPER_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：王惠已定义（INNOV 家族 · 科学创造力）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估（需求 1.1.1.1.4.1.7.1.1，原文第 875—877 行）
-> **UI 挂载**：科学创造力评估页「科学论文数量分析」卡片（柱/折），支持年、季、月三种时间粒度与研究机构、地域两个切片
-> **数据支持度**：**完全转换支持**
-> **口径来源**：`metrics/registry/cfg_metric-INNOV-seed.yaml` 的 `M_INNOV_SCI_PAPER` 条（定义 + 禁止 reuse 清单）＋需求原文 1.1.1.1.4.1.7.1.1
-> **四判定摘要**：直接结构 = 否（无现成论文计数结果表）；直接数据 = 否；依赖结构 = 是（`dwd_zh_paper` 主键、发表年、作者串齐备）；依赖数据 = 是（100,900 行、发表年 100% 可解析、92.98% 可落城市）
-> **铁律**：计数型指标不做任何加权，不引入 `impact_score`；`download_num` 整列为 0，不得当论文热度使用
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: true
 
 ---
@@ -299,10 +308,10 @@ FROM gkx.dwd_zh_paper;
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_INNOV_SCI_PAPER.py` |
+| 脚本 | `metrics/repro/M_INNOV_SCI_PAPER.py` |
 | 公共库 | `code/_tail21_common.py`（快照加载、年份/季度派生、城市识别、写盘） |
 | 数据源 | `gkx.dwd_zh_paper`（100,900 行）＋ `gkx.dwd_en_paper`（1,387 行，对照） |
-| 输出 | `code/M_INNOV_SCI_PAPER_out.json` |
+| 输出 | `metrics/repro/out/M_INNOV_SCI_PAPER_out.json` |
 | 运行 | `python3 code/M_INNOV_SCI_PAPER.py` |
 | 耗时 | 54.6 秒（含 1 条 SQL 与内存解析） |
 | SQL 条数 | 1 |
@@ -455,14 +464,11 @@ FROM gkx.dwd_zh_paper;
 ## 参考文献
 
 1. 国家统计局、科学技术部. *中国科技统计年鉴 2024*. <https://www.stats.gov.cn/sj/ndsj/>
-2. OECD. *Frascati Manual 2015*. <https://www.oecd.org/sti/frascati-manual-2015-9789264239012-en.htm>
-3. Clarivate. *Web of Science Core Collection*. <https://clarivate.com/webofsciencegroup/solutions/web-of-science-core-collection/>
-4. Elsevier. *Scopus content coverage guide*. <https://www.elsevier.com/products/scopus/content>
-5. 中国科学技术信息研究所. *中国科技论文统计结果（2024）*. <https://www.istic.ac.cn/>
-6. 国家科技图书文献中心. *中文科技期刊数据库收录规范*. <https://www.nstl.gov.cn/>
-7. 项目口径真源：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-INNOV-seed.yaml`（`M_INNOV_SCI_PAPER`）
-8. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 871—877 行
-
+2. Clarivate. *Web of Science Core Collection*. <https://clarivate.com/webofsciencegroup/solutions/web-of-science-core-collection/>
+3. Elsevier. *Scopus content coverage guide*. <https://www.elsevier.com/products/scopus/content>
+4. 中国科学技术信息研究所. *中国科技论文统计结果（2024）*. <https://www.istic.ac.cn/>
+5. 国家科技图书文献中心. *中文科技期刊数据库收录规范*. <https://www.nstl.gov.cn/>
+6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 871—877 行
 ---
 
 # 附件
@@ -589,16 +595,9 @@ OpenAlex、Dimensions 用 DOI 或标题指纹做跨库去重。库内无 DOI 字
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_SCI_PAPER.py` |
-| 输出 | `code/M_INNOV_SCI_PAPER_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_SCI_PAPER.py` |
+| 输出 | `metrics/repro/out/M_INNOV_SCI_PAPER_out.json` |
 | 耗时 | 54.6 秒 |
 | SQL | 1 条（论文主档窄列） |
 | 关键数字 | 100,900 篇 / 436,086 署名 / 84,320 机构 / 92.98% 城市 / 2024 尖峰 32,379（32.09%）/ 剔除后 +1.06% |
 | 对账 | 93,817 + 7,083 = 100,900；机构实例分性质合计 435,937 + 未判 149 = 436,086 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
