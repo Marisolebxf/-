@@ -15,6 +15,7 @@
 | v1.1 | 2026-10-27 | ① `/map` 的 `objectPoints` 由恒空改为真实企业点位（U3）；② `/influence` 后端实现规格（U1/U2，此前仅 mock）；③ 全局 `USE_MOCK=false` 后未实现端点的 404 空态约定（U4） |
 | **v1.2** | 2026-10-27 | ⚠️ **修正 `/influence` 响应结构**：v1.1 §2 写成简化的 `{count, averageScore, items[]}`，与冻结的 `types/situation.ts` **不一致**（真实类型是 `InfluenceDataset`：`analyzableFactorCount/cards[]/defaultFactorType/totalCount`）。按 U5「lumen 现实现为真源」以 `types/situation.ts` 为准重写 §2，并补「过滤器支持矩阵」（哪些入参真实生效、哪些未应用必须诚实声明）。**无 delete 端点的字段变更，前端结构仍零改动** |
 | **v1.3** | 2026-10-27 | ① **新增 `POST /display/v1/situation/compare`（C6 叶）**：响应在既有 `{years, series[], availableFactorKeys}` 上**追加可选 `notes?: string[]`**（口径备注，纯增量，视图不读也不影响既有渲染）；入参在既有 `{enabledFactorKeys, selectedFactorKeys, selectedFieldValues, activeRegionKey}` 上追加可选 `searchTerm` / `timeRange`（与 C4 的筛选语义同族）。② **地域入参字段统一**：`scopeOf` 此前只认 `regionPaths`，导致 compare/influence 传的 `activeRegionKey` 被**静默忽略**（返回全量却不报错）。现解析顺序 `regionPaths` → `activeRegionKey` → `focusRegionKeys`。详情与自测见 §6 |
+| **v1.4** | 2026-10-28 | ① **`/influence` 地域入参并入 `scopeOf`**：此前本端点只认 `activeRegionKey`，用户在筛选栏选「地域范围」后榜单仍是全量（**静默忽略**），现与 `/map` `/overview` `/compare` 同源。② **`/cluster` 入参替换**：`focusRegionKeys` **废弃**（它是「地图上的区域列表」，取首项会把样本静默缩到一个城市），改收 `regionPaths` / `activeRegionKey` / `searchTerm` / `timeRange`；**响应新增可选 `scopeLabel`**（样本真实范围，UI 据此标注）。入出参同步进 `types/situation.ts`，**视图零改动**。详见 §7 |
 
 ## 6. 新增实现：`POST /display/v1/situation/compare`（C6 叶）
 
@@ -110,7 +111,8 @@
 | 端点 | 后端状态 | 前端表现 |
 |------|---------|---------|
 | map / overview / influence | lumen 已实现 | 真实数据 |
-| timeline / events / cluster / compare | **无后端 → 404** | api 层收敛为诚实空态（对应区块空、无报错弹窗、不白屏）；错误处理**只许在 `src/api/`** 实现，不动视图 |
+| cluster / compare | lumen 已实现（C5 / C6 叶） | 真实数据；仅 `enterprise` 有数据源（cluster 只有企业样本、compare 只有企业年度序列），其余要素不伪造 |
+| timeline / events | **无后端 → 404** | api 层收敛为诚实空态（对应区块空、无报错弹窗、不白屏）；错误处理**只许在 `src/api/`** 实现，不动视图 |
 | map.objectPoints（element 降级时） | 200 + 空 + emptyReason | 空态 |
 
 ## 5. 冻结清单（C3 叶后不得再改，改则 bump v1.2 走变更记录）
@@ -118,3 +120,71 @@
 1. influence 响应字段名与类型（§2）
 2. objectPoints 字段与脏坐标剔除规则（§3）
 3. 404 空态收敛位置（§4）
+
+## 7. 变更：`/influence` 地域入参与 `/cluster` 入出参（v1.4，2026-10-28）
+
+> **动机**：走查分析发现两个「筛选框勾了、数据一动不动」的静默忽略点。两处都是
+> **同一类根因：端点各认一半入参，没有并入唯一翻译层 `scopeOf`**。修复方式是并入，不是"多认一个字段"。
+
+### 7.1 `/influence`：地域入参并入 `scopeOf`
+
+| 入参 | 修复前 | 修复后 |
+|------|--------|--------|
+| `regionPaths`（地域范围级联） | ❌ **被忽略**（页面主地域筛选，勾了不动） | ✅ 生效 |
+| `activeRegionKey`（地图点选 / 关键词候选） | ✅ 生效 | ✅ 生效（与 `regionPaths` 同源，解析顺序 `regionPaths` → `activeRegionKey`） |
+| `searchTerm` / `timeRange` | ✅ 生效 | ✅ 生效（此前地域是端点自己解析、年份却借 `scopeOf`，同一端点两套来源 = 一半生效的根源） |
+| `selectedFieldValues`（学科领域） | ❌ 不参与 | ❌ 不参与（企业主表无领域列，诚实声明） |
+
+自测（2026-10-28，本地 element :7082 + display :7099，HTTP 200）
+
+| 入参 | cards | count | avg |
+|---|---|---|---|
+| `{}` | 1 | **189,115** | 37.78 |
+| `regionPaths=[["深圳市"]]` | 1 | **95,600** | 37.47 |
+| `regionPaths=[["深圳市","南山区"]]` | 1 | **16,039** | 37.78 |
+| `activeRegionKey=南山区` | 1 | **16,039** | 37.78（与级联一致 → 同源已成立） |
+| `searchTerm=腾讯` | 1 | **19** | 38.32 |
+
+### 7.2 `/cluster`：废弃 `focusRegionKeys`，改收显式筛选入参
+
+**⚠️ 废弃 `focusRegionKeys` 的理由（必须写清，否则后来人会加回来）**：
+
+它是前端「当前地图上的区域列表」，不是用户选中的范围。无筛选时列表是 30 个城市，
+后端 `firstRegionKey()` 取首项 = 数据量最大的城市 → **聚类样本被静默缩到一个市**，
+而页面文案只写「当前筛选范围」。教训：**列表型入参不是范围选择**——
+宁可不过滤，也别拿一个没人选过的默认值偷偷过滤。
+
+| 入参 | 修复前 | 修复后 |
+|------|--------|--------|
+| `focusRegionKeys` | 取首项当范围（**静默缩样**） | **废弃**（后端不再消费，前端不再传） |
+| `regionPaths` / `activeRegionKey` | ❌ 未传 | ✅ 生效（走 `scopeOf`，与另四个端点同源） |
+| `searchTerm` | ❌ 固定传 `null`（聚类不响应关键词） | ✅ 生效 |
+| `timeRange` | ❌ 未传 | ✅ 生效（默认随页面时间范围 2020–2026） |
+
+**响应新增（可选字段，纯增量）**：`scopeLabel: string` —— 当前筛选下样本的真实范围，
+无筛选时为「全量样本」，与 `/overview` 的 `scopeLabel` 同口径。用途：让聚类 Tab 标注这批样本的来源，
+否则用户对着不知来源的散点做判断。
+
+自测（2026-10-28，HTTP 200，`startYear/endYear` 为前端默认 2020–2026）
+
+| 入参 | items | scopeLabel | 涉及地域数 |
+|---|---|---|---|
+| `{}` | 200 | 全量样本 | **6**（修复前恒为 1） |
+| `timeRange=2020-2026` | 200 | 注册年：2020-2026 | 4 |
+| `regionPaths=[["深圳市"]]` | 200 | 城市：深圳市 · 注册年：2020-2026 | 1 |
+| `regionPaths=[["深圳市","南山区"]]` | 200 | 区县：南山区 · 注册年：2020-2026 | 1 |
+| `activeRegionKey=广州市` | 200 | 城市：广州市 · 注册年：2020-2026 | 1 |
+| `searchTerm=腾讯` | **2** | 关键词：腾讯 · 注册年：2020-2026 | — |
+| 深圳市 + 腾讯 | **2** | 城市：深圳市 · 关键词：腾讯 · 注册年：2020-2026 | — |
+
+> 注：`cluster` 的 200 条是**当前筛选范围内的影响力 Top-N**（工程口径），
+> 不是全库前 N；四维度中 `growth` 仍为**空桶 + emptyReason**（`revenue_growth_rate` 整列 NULL）。
+
+### 7.3 前端改动面（视图零 diff）
+
+| 文件 | 改动 |
+|---|---|
+| `src/types/situation.ts` | `SituationClusterParams` 用 `regionPaths`/`activeRegionKey`/`searchTerm`/`timeRange` 替换 `focusRegionKeys`；`ClusterDataset` 新增可选 `scopeLabel` |
+| `src/views/situation/overview/index.vue` | cluster 请求改传上述字段 + watch 依赖加地域/关键词/时间；聚类范围文案改用后端 `scopeLabel` |
+| `src/mock/modules/situation.ts` | 双轨同语义（地域/关键词过滤 + 返回 `scopeLabel`），保证 `USE_MOCK=true` 可切回 |
+
