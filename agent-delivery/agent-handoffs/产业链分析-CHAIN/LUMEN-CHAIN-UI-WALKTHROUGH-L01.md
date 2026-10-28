@@ -1,7 +1,6 @@
 # LUMEN-CHAIN-UI-WALKTHROUGH-L01 · 产业链分析模块页面 demo 布局对齐与人走查整改
 
-> 格式参考 `templates/handoff-template.md`；本单 **进行中**，本文为首批（产业诊断关键环节/瓶颈 + 底部报告区）as-built。  
-> Demo 真源：`repos/demo-ui-topic/src/app/pages/industry-center/IndustryDiagnosisPage.tsx`（`KeyLinkResult` 双栏 + `ResultReportPanel`）。
+> 格式参考 `templates/handoff-template.md`。Demo 真源：`repos/demo-ui-topic/src/app/pages/industry-center/`（诊断 `IndustryDiagnosisPage.tsx`、区域 `IndustryRegionalPage.tsx`）。
 
 ## 任务认领（必填）
 
@@ -10,126 +9,118 @@
 | claimed_by | `agent:frontend-agent` |
 | supervised_by | `human:孔东` |
 | claim_type | `pull` |
-| 说明 | 2026-10-28 孔东走查登记任务；本批关联 commit `2b8630c` 后认领并转 `in_progress`。 |
+| 说明 | 2026-10-28 孔东走查登记；本单分多批 push，见下方 commit。 |
 
 ## Ponytail（coding 任务必填）
 
 | 字段 | 值 |
 |------|-----|
 | ponytail | `full` |
-| 说明 | 对齐 demo 布局/双栏/报告区骨架；复用 G6、`SectionPanel`、`SystemReportReader` 路径；扩展 GetResult 解析不伪造代表企业/归因。未用 YAGNI 跳过 D8/D9/D10、评审自闸、诚实空态。 |
+| 说明 | demo 五维（布局/交互/样式/评审/Mock 门控）；`USE_MOCK=false` 不伪造排名/叶子/地图分数；地图坐标用 `regionalCompareMapPoints` 演示行政中心并注明。未用 YAGNI 跳过 D8/D9/D10、评审自闸。 |
 
 ## Headroom
 
 | 字段 | 值 |
 |------|-----|
 | headroom | `skip` |
-| 说明 | 本机未挂 Headroom；对照 demo TSX 与 lumen Vue 页 DOM 结构。 |
+| 说明 | 对照 demo TSX 与 lumen Vue DOM；未挂 Headroom。 |
 
 ## 图即契约
 
 | 字段 | 值 |
 |------|-----|
-| diagram_id | N/A（纯 FE 布局复刻，无架构图变更） |
+| diagram_id | N/A |
 | 图 diff | — |
 | 会签态 | — |
 
-## 范围与实现（首批 · 2026-10-28）
+## 范围与实现
 
-### 问题（走查）
+### 批 A · commit `2b8630c`（已 push）
 
-- **关键环节识别**、**产业瓶颈堵点识别** 结果区与 demo 差距大：详情堆在主栏下方，缺 **右侧详情/归因栏**；结果区底部缺 **诊断报告生成** 区块。
+- 关键环节 / 瓶颈堵点：双栏 + 底部 `IndustryAnalysisResultReportPanel`；`parseKeyLinkDetail` / `parseBottleneckNodeDetail`；`industryReplicaFix.selfcheck` 断言。
 
-### 已落地
+### 批 B · 本 handoff 对应 commit（待填 hash）
 
-1. **`IndustryKeyLinkResultBoard.vue`**（新）：指标条 + `diagnosis-result-grid` 双栏；左 G6 全链路；右 `diagnosis-link-detail`（`data-testid="key-link-detail"`），环节详情 / 代表企业 / 企业画像分区。
-2. **`IndustryBottleneckResultBoard.vue`**（重写）：双栏；右侧「瓶颈智能识别与归因建议」`a-descriptions`；KPI 读 `kpi.bottleneck_count`、`kpi.max_severity`（对齐 `CHAIN-DIAG-NARRATE-L01` 实包语义）。
-3. **`IndustryAnalysisResultReportPanel.vue`**（新）：底部 `SectionPanel`，文案键 `DIAGNOSIS_L6_REPORT`；「生成报告 / 查看报告」；有报告走 `openReport`，否则提示（与 demo `ResultReportPanel` 结构对齐，非终态交互）。
-4. **`IndustryDiagnosisPage.vue`**：key_link / bottleneck 改用上述组件；`cycle` / `key_link` / `bottleneck` 成功结果末尾统一挂报告面板。
-5. **解析**：`industryWorkspaceRuntime.js` 扩展 `parseKeyLinkDetail`（`representative_enterprises.items`、环节字段、竞争/技术趋势等）；`industryChainTask.ts` 新增 `parseBottleneckNodeDetail`（`sections.node_details.items`）。
-6. **配置**：`industryWorkspace.ts` 增加 `DIAGNOSIS_L6_REPORT`。
-7. **自检**：`industryReplicaFix.selfcheck.mjs` 更新 key-link / parse 断言。
+1. **产业周期**：配置区业务态缩短冻结提示；QC06 / 周期旅程 / 联网检索说明包进 `IndustryReviewOnly`；`IndustryCycleResultBoard` 业务态空文案与 demo 一致。
+2. **区域产业指数 / 竞争力结果**（`IndustryRegionalResultBoard.vue`）：
+   - 指数区：四 KPI、柱/雷达、排名表、叶子贡献表、优劣势（扩展 `parseRegionalBoard`：`indexRows` / `leafRows` / `kpiSummary` / `gisItems`）。
+   - 竞争力区：标题 **「综合竞争力计算与横向排名」** + 四 KPI（对齐 demo `buildCompetitivenessResult.summaryMetrics`）；柱状/三维热力/GIS 地图/排名明细/优劣势/版本边界。
+   - `RegionalCompareMap.vue` + `regionalCompareMapPoints.ts`（分数来自 Java，经纬度演示坐标）；`IndustryRegionalPage` 传 `region-codes`。
+3. **结果区 rhythm**（`industryDiagnosis.css`）：`.diagnosis-result { gap: 16px }`、直接子级标题 margin 归零（对齐 demo）；区域图表/地图去掉叠 margin；去掉 KPI 区多余 `mt-4`。
+4. **排名明细表**：选中行 `diagnosis-rank-row--selected`（浅蓝底 `#e8f3ff`，仅首列 inset 主色条）；未选中时第 1 名 `diagnosis-rank-row--leader`；点击行时不再与第 1 名双高亮。
+5. **自检**：`industryReplicaFix.selfcheck.mjs`（竞争力标题、compSummaryCards 等）；`regionalCompareMapPoints.selfcheck.mjs`（新增）。
 
-### 同 commit 附带（非本单主范围）
+### 未闭合（后续走查）
 
-- `enterprise/development` 重点企业/明星企业链域 scope 小改（commit message 标注 `SYSINT-04-04-L01`）；走查整改以诊断页为主。
-
-### 未闭合（后续本单继续）
-
-- 周期识别结果区：demo 级周期模型自定义 + 底部报告区信息密度。
-- 产业链其余工作台（区域、深圳、查询、全景专业版等）五维走查清单与差距登记。
-- `USE_MOCK=false` 下实包侧栏仍空时，区分 parser vs 后端字段并联调微调。
-- Design §14 + 产品实现规程附录 D/E 扫描摘要（完工批补）。
+- 周期结果区 demo 级报告密度与其它诊断类型附录 D/E 全量扫描。
+- 产业链其余工作台（深圳、查询、全景专业版等）五维清单。
+- `objectSummary` 未选产业文案、叶子表无 `leaf_contributions` 时空态联调。
+- CI / K8s dev 目视验收（本批 push 后）。
 
 ## 偏离说明
 
-- 报告「生成」仍为骨架：依赖既有 analysis 任务 / `SystemReportReader` 链路，未新增 Java 契约。
-- 代表企业 / 画像无数据时保持诚实空文案，不用 Demo fixture 填名。
+- 报告「生成」仍为骨架（批 A）；区域 GIS 无后端坐标时用前端演示点 + Alert 说明。
+- `.env.development` 本地联调改动 **未纳入 commit**（网关/Mock 开关属本机配置）。
 
 ## 产物清单
 
-- 代码：`repos/lumen-ui-topic` `origin/dev` commit **`2b8630c`**
-- 本 handoff：`agent-handoffs/产业链分析-CHAIN/LUMEN-CHAIN-UI-WALKTHROUGH-L01.md`
+- 代码：`repos/lumen-ui-topic` `origin/dev` — `2b8630c` + **本批 commit（见 CI/CD）**
+- handoff：本文件
 
 ## 测试结果
 
-- `node src/views/industry-center/industryReplicaFix.selfcheck.mjs` — 绿（本地 2026-10-28）
-- CI：待本批 push 后 Pipeline（未在本 handoff 批次单独盯 Job ID）
+- `node src/views/industry-center/industryReplicaFix.selfcheck.mjs` — 绿（2026-10-28）
+- `node src/utils/regionalCompareMapPoints.selfcheck.mjs` — 绿（2026-10-28）
+- CI：待本批 push 后 GitLab dev Pipeline
 
 ## 遗留风险
 
-- GetResult 字段名与 parser 不一致时侧栏为空（诚实），需 Java 实包对照 `CHAIN-DIAG-NARRATE-L01` 微调。
-- 周期 / 其它模块布局仍可能与 demo 有差距，需人走查逐项闭合。
+- GetResult 缺 `sections.*.items` 时对应图表/表诚实空态；需 Java 实包对照联调。
+- 地图演示坐标与真实行政区划边界不一致（产品已知，非 GIS 终态）。
 
-## CI/CD（必填 · 首批）
+## CI/CD（必填）
 
 | 项 | 值 |
 |----|-----|
-| 分支 | `lumen-ui-topic` `origin/dev` |
-| commit | `2b8630cbbb612eb9301f098518f467c24168aa39` |
-| pipeline URL / ID | 待 GitLab dev 流水线 |
-| K8s rollout | 待 CI deploy |
-| dev 测试 URL | 专题 dev 网关 / 本地 Vite；诊断页 `key_link` / `bottleneck` 结果态目视 |
+| 分支 | `lumen-ui-topic` / `gkx-orchestration` → `origin/dev` |
+| commit（批 A） | `2b8630cbbb612eb9301f098518f467c24168aa39` |
+| commit（批 B） | `e87b4df`（lumen-ui-topic）；编排仓 handoff 同批 |
+| pipeline URL / ID | 待 GitLab |
+| K8s rollout | 待 CI |
+| dev 测试 | 区域 `/industry-center/regional` 指数/竞争力结果；诊断周期配置/结果业务态 |
 
 ## 可观测性
 
-- 沿用 analysisTask / industry 现有请求链；本批无新增埋点。
+- 沿用既有 analysis / topic 请求链；本批无新增 `observability.ts` 埋点。
 
 ## 架构合规自检
 
 | 铁律 | 结果 |
 |------|------|
-| 1 算法只在 Python | ✅ |
-| 2 调用链 FE→Java | ✅ |
-| 3 Nebula | ✅ 不直连 |
-| 4 可观测 | ✅ 沿用 |
-| 5 CI | ✅ push `origin/dev` |
-| 6 demo2 不 merge | ✅ Vue 组件重写 |
-| 7 只调 Java | ✅ |
-| 8 诚实空 | ✅ 无 fixture 填代表企业 |
-| 9 D8 | ✅ Arco + 现有 diagnosis token |
-| 10 D9 | ✅ 评审挂点未删 |
-| 11 D10 | ✅ 双栏/报告区结构 |
-| 12 D12 | ✅ 不打 demo 服务 |
+| 1–7 调用链 / Nebula / CI / demo 隔离 | ✅ |
+| 8 诚实空 / 无 fixture 填数 | ✅ |
+| 9 D9 评审挂点 / metric 入口 | ✅ |
+| 10 D10 双栏、表格联动、Arco 表 | ✅ |
+| 11 D12 不打 demo 服务 | ✅ |
 
-## 涉及文件（本批）
+## 涉及文件（批 B）
 
-- `src/components/industry-center/IndustryKeyLinkResultBoard.vue`（新）
-- `src/components/industry-center/IndustryAnalysisResultReportPanel.vue`（新）
-- `src/components/industry-center/IndustryBottleneckResultBoard.vue`
-- `src/views/industry-center/IndustryDiagnosisPage.vue`
-- `src/views/industry-center/industryDiagnosis.css`
-- `src/assets/layout/diagnosis-shell.css`
-- `src/config/industryWorkspace.ts`
+- `src/components/industry-center/IndustryRegionalResultBoard.vue`
+- `src/components/industry-center/IndustryCycleResultBoard.vue`
+- `src/components/industry-center/RegionalCompareMap.vue`（新）
 - `src/utils/industryChainTask.ts`
-- `src/utils/industryWorkspaceRuntime.js`
+- `src/utils/regionalCompareMapPoints.ts`（新）
+- `src/utils/regionalCompareMapPoints.selfcheck.mjs`（新）
+- `src/views/industry-center/IndustryDiagnosisPage.vue`
+- `src/views/industry-center/IndustryRegionalPage.vue`
+- `src/views/industry-center/industryDiagnosis.css`
 - `src/views/industry-center/industryReplicaFix.selfcheck.mjs`
 
-## cost（进行中 · 首批回填）
+## cost
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 95000（本批走查+实现+派单登记估计，任务未完工） |
+| actual_tokens | 145000（批 A+B 走查+区域结果+样式修正估计，任务未全量完工） |
 | model_used | composer（Cursor Agent） |
 | actual_cost | 待账单核对 |
 | cost_warn | green |
