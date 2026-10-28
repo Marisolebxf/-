@@ -43828,3 +43828,128 @@ tasks:
       - "不关闭 Q-SYNTH-01、Q-SYNTH-V-01、Q-SYNTH-V-02；不把等权标成甲方官方权重"
       - "本单与 PY、BE、FE、建表单全部交接后，区域创新活力分析可提测：USE_MOCK=false 下默认条件开始分析走真实任务，结果为 6.2 实算，五条 D4=live，页面无测试角标。handoff 含架构合规与 ponytail 行"
     update_time: "2026-10-28T12:04:00+08:00"
+  - id: CROSS-MCP-7CHAIN-L02
+    model_used: "grok-4.7"
+    evidence: "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L02.md"
+    cost_warn: "green"
+    actual_tokens: 180000
+    actual_cost: 0.97
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-28T08:23:26.925Z"
+    last_seen_at: "2026-10-28T08:23:26.925Z"
+    lock_until: "2026-10-29T08:23:26.925Z"
+    claimed_by: "agent:api-agent"
+    title: "gkx-7chain MCP M1 实装—查询入口与五域 P0 分析工具"
+    status: "integration"
+    agent: "api-agent"
+    epic: "跨系统-MCP工具化"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 180000
+    note: |
+      2026-10-28 coordinator 建单。L01 盘点已落盘（方案 §3–§5），未启动编码。本叶只做 §5.5 M1 真实封装，不重复盘点，不做 M2/M3。不依赖 L01 状态：L01 仍含实现 DoD 且 in_progress，若挂依赖会把编码卡死。调用链 MCP→Java 网关→Python /internal/*。强度：ponytail full。网关地址以环境变量注入，不把 token 写进 git。
+      已认领 agent:api-agent / human:淮政玮，claim_type=派单 coordinator_dispatch（task-claim 无该字段）。联调通过：selfcheck 绿，五域与 search/synth 对 demo 网关 http://192.168.88.50:30889/api 调通。产业链走 /innov/v1/industry/**，需 GKX_MCP_TOKEN（不入库）。
+    touched_files:
+      - "scripts/7chain-mcp-server.mjs"
+      - "scripts/7chain-mcp-selfcheck.mjs"
+      - ".cursor/mcp.json"
+      - "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L02.md"
+    design_refs:
+      - "agent-delivery/designs/7链分析四域功能点MCP工具化-盘点与方案.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "按 agent-delivery/designs/7链分析四域功能点MCP工具化-盘点与方案.md §5.5 M1 实现 gkx-7chain：scripts/7chain-mcp-server.mjs 注册并实现 search-enterprise、search-industry、search-policy、ent-evaluate、ent-recommend、ent-diagnose、chain-panorama、chain-analyze、policy-indicators、policy-apply、svc-analysis、synth-index、synth-collab；工具名、入参、返回与 §4.1 一致，统计数字透传 metric_id，mock 标记原样返回"
+      - "scripts/7chain-mcp-selfcheck.mjs 不连后端，断言上述工具的参数校验与路由；本地跑通为绿"
+      - ".cursor/mcp.json 注册 stdio server gkx-7chain，指向 scripts/7chain-mcp-server.mjs，网关地址只走环境变量 GKX_MCP_API_BASE"
+      - "调用链：MCP 只 HTTP 调 Java REST 网关（demo 阶段 demo-svc-platform 网关），由网关进 Python /internal/*；禁止 MCP 直连算法仓、禁止绕过网关；svc 若网关无路由，过渡直调须在配置与 handoff 标明 demo-only"
+      - "验收：企业、产业链、政策、服务机构、综合智能每域至少 1 个工具对真实网关调通并返回结果；search-* 三件与 synth-index、synth-collab 全通；handoff 附调用示例"
+      - "handoff 写 agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L02.md（范围、偏离、产物、验收证据、架构合规自检、ponytail: full、cost 四字段）。M2 其余工具与 M3 切 lumen 网关不在本叶"
+    update_time: "2026-10-28T16:38:20+08:00"
+  - id: ENT-KEY-PANO-BACKEND-L01
+    model_used: "composer"
+    evidence: "agent-handoffs/系统集成-SYSINT/ENT-KEY-PANO-BACKEND-L01.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 0.8
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-28T08:53:21.127Z"
+    last_seen_at: "2026-10-28T08:53:21.127Z"
+    lock_until: "2026-10-28T12:53:21.127Z"
+    claimed_by: "agent:api-agent"
+    title: "E-33 重点企业全景 · 按链 scoped 接口契约与实现（#66/#67/#69）"
+    status: "integration"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 180000
+    note: "双仓已推 dev：svc-platform 0a56108 topic-py cc4cbe7；待 CI deploy 后 dev curl 验收 scale_items/domain_evidence"
+    depends_on:
+      - "PORTAL-ENT-DEV-SRS-API-L01"
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-api/.../EnterpriseExtendedDTOs.java"
+      - "gkxlumen-topic-enterprise/.../EnterpriseKeyEnterpriseController.java"
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_key_enterprise.py"
+      - "lumen-svc-platform/db/*portal*seed*.sql"
+    design_refs:
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/PORTAL-ENT-DEV-API-REQUIREMENTS.md"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/PORTAL-ENT-DEV-SRS-API-L01.md"
+      - "repos/demo-ui-topic/src/app/pages/development/KeyEnterprisesPanorama.tsx"
+    definition_of_done:
+      - "契约：新增或扩展 EnterpriseKeyChainScopeRequest（chain_code 必填；region_id 可选默认深圳口径）。#66 key-enterprise/kpi、#69 qualification-summary 入参改为 scoped；OpenAPI/handoff 与 PORTAL-ENT-DEV-API-REQUIREMENTS.md §2 一致"
+      - "#69 响应增加 scale_items[]：qualification=foreign|high_tech|sme|listed，levels 含 national/province/city（enterprise_count）。Java KeyQualificationSummaryResponse 透传 snake_case scale_items；废弃 E-33 消费扁平 items 六类 tag 全库计数"
+      - "#67 chain-list 响应增加 domain_evidence[]：domain、stage、paper_keywords、patent_keywords、coverage、evidence_status、summary、enterprises[{org_id,name_cn}]。Java KeyChainListResponse 补字段；Python chain_list 按 chain_code 组装（算法未闭合时允许 D16/汇总表灌数，D4=mock 须在数据卡注明，禁止前端 fixture）"
+      - "#66 带 chain_code 时 key_enterprise_total=该链重点企业数（与 #67 同口径：key_enterprise tag + industry_chains.chain_code）"
+      - "Python enterprise_key_enterprise.py 实现上述三接口读数；汇总/seed 可重跑；至少 INB170102（或 handoff 指定 chain_code）在 dev 网关 USE_MOCK=false 下 scale_items 四行可读、domain_evidence 非空、#66 计数>0"
+      - "CI：topic-enterprise + topic-py pipeline 绿；手动 deploy dev 后附 curl/网关回归摘录（#66/#67/#69 同 chain_code）"
+      - "handoff agent-handoffs/系统集成-SYSINT/ENT-KEY-PANO-BACKEND-L01.md：契约 JSON 样例、偏离说明、架构铁律自检、cost 四字段；ponytail: full"
+    update_time: "2026-10-28T17:18:01+08:00"
+  - id: ENT-KEY-PANO-FRONTEND-L01
+    title: "E-33 重点企业全景 · 按链 refreshKeyPanorama 正式接线（#66/#67/#69）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "依赖 ENT-KEY-PANO-BACKEND-L01 合 dev 后联调。USE_MOCK=false 禁止伪造 scale_items/domain_evidence。监管 human:孔东。"
+    depends_on:
+      - "ENT-KEY-PANO-BACKEND-L01"
+      - "SYSINT-04-04-L01"
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "src/views/enterprise/development/KeyEnterprisesPanel.vue"
+      - "src/api/enterprise/types/stats-featured.ts"
+      - "src/api/enterprise/featured.ts"
+      - "src/mock/enterprise/topicApiCatalog.ts"
+    design_refs:
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/PORTAL-ENT-DEV-API-REQUIREMENTS.md"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+      - "repos/demo-ui-topic/src/app/pages/development/KeyEnterprisesPanorama.tsx"
+    definition_of_done:
+      - "链码：仅从 normalizedIndustryPath 解析 L0 INB*（辅以 clusters）；失败时空态+文案，禁止 silent 用 industries[0] 或仅靠 matchChainCode 中文名"
+      - "加载：实现 refreshKeyPanorama(chain_code) 并行 POST #66/#69/#67（同 body chain_code）；watch industryPath 与级联变更 debounce 重拉；#68 chain-subject-stats 仅 Tab 首屏一次（产业列表），不参与 KPI"
+      - "顶栏「重点企业 N 家」= #66.key_enterprise_total（scoped）；规模区 buildScaleChart 仅 scale_items；领域工作台+右下统计同源 data.domain_evidence"
+      - "类型/API：scoped 请求体含 chain_code；与 Java DTO 对齐；Mock 仅 USE_MOCK=true 补 scale_items+domain_evidence 形状"
+      - "对齐 demo：资质图为外企/高企/小微/上市×全国/广东省/深圳市"
+      - "验收：dev USE_MOCK=false，切换产业 Network 三次 scoped 请求 chain_code 变化；附录 D E-33 扫描摘要"
+      - "handoff agent-handoffs/系统集成-SYSINT/ENT-KEY-PANO-FRONTEND-L01.md；ponytail: full"
+    update_time: "2026-10-28T16:47:01+08:00"
