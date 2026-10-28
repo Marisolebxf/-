@@ -1,9 +1,20 @@
 # 技术规模（M_TECH_OUTPUT_SCALE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_OUTPUT_SCALE.md`；复现脚本 `metrics/repro/M_TECH_OUTPUT_SCALE.py` → `metrics/repro/out/M_TECH_OUTPUT_SCALE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（体量统计·成果侧代理）｜ **域**：TECH（技术点体系 / DS-03 技术发展跟踪）｜ **UI 挂载**：科技专题·技术点气泡图（大小维）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_OUTPUT_SCALE.py`、产物 `metrics/repro/out/M_TECH_OUTPUT_SCALE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_OUTPUT_SCALE.md`；复现脚本 `metrics/repro/M_TECH_OUTPUT_SCALE.py` → `metrics/repro/out/M_TECH_OUTPUT_SCALE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_OUTPUT_SCALE.py`、产物 `metrics/repro/out/M_TECH_OUTPUT_SCALE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_OUTPUT_SCALE.md` |
 | 复现脚本 | `metrics/repro/M_TECH_OUTPUT_SCALE.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_OUTPUT_SCALE_out.json` |
@@ -61,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_OUTPUT_SCALE.py`、产物 `metrics/repro/out/M_TECH_OUTPUT_SCALE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（体量统计·成果侧代理）｜ **域**：TECH（技术点体系 / DS-03 技术发展跟踪）｜ **UI 挂载**：科技专题·技术点气泡图（大小维）｜ **数据支持度**：**部分支持**
-> **公式定义人**：AI-20261016（seed 只写「成果与应用体量」，且明令禁止以论文/专利/交易额冒名）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分（成果侧足，应用侧无表）
-> **口径归属**：非王惠系；本文产出的是 `patent_volume_proxy`（技术点专利体量），**不是** seed 原义的「技术规模」。
-> wanghui: false
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -108,7 +114,7 @@ seed 把「技术规模」定义为「成果 + 应用体量」，并明文禁止
 
 本文的处理方式是：先按 seed 原义逐项找承载（应用侧的产品数、产值、装机量、交易额；成果侧的论文、专利），把每项的实测可用性写死；再交付一个**明确改名**的代理量 `patent_volume_proxy`——技术点在 2021–2026 窗口内的专利件数及其分布形态。代理量本身算得很扎实：378 个节点中 366 个有量，合计 2,380,595 件，CR10 27.95%、HHI 150.0、Gini 0.6643，五档分级齐全；两条独立尺子（IPC 分类 vs 专利关键词）在生物医药域只差 0.8%。
 
-**可行性结论**：脚本 `code/M_TECH_OUTPUT_SCALE.py` 跑通（2.07 秒），三层对账闭合（2,939,895 → 2,420,915 → 2,380,595）；但应用侧无任何承载，且 seed 禁止专利量冒名，故按 §〇 判 **部分支持**——能算体量，不能算「技术规模」专名。
+**可行性结论**：脚本 `metrics/repro/M_TECH_OUTPUT_SCALE.py` 跑通（2.07 秒），三层对账闭合（2,939,895 → 2,420,915 → 2,380,595）；但应用侧无任何承载，且 seed 禁止专利量冒名，故按 §〇 判 **部分支持**——能算体量，不能算「技术规模」专名。
 
 ---
 
@@ -195,7 +201,7 @@ seed 把「技术规模」定义为「成果 + 应用体量」，并明文禁止
 
 ## 二、计算过程
 
-> **口径说明**：seed 未给公式；以下为可复核实现，已由 `code/M_TECH_OUTPUT_SCALE.py` 实测跑通，结果见 `M_TECH_OUTPUT_SCALE_out.json`。本文所有结论都限定在「专利体量代理」范围内。
+> **口径说明**：seed 未给公式；以下为可复核实现，已由 `metrics/repro/M_TECH_OUTPUT_SCALE.py` 实测跑通，结果见 `M_TECH_OUTPUT_SCALE_out.json`。本文所有结论都限定在「专利体量代理」范围内。
 
 ### 2.1 为什么必须改名：禁令的三层含义
 
@@ -271,13 +277,13 @@ HHI 只有 150（远低于 2,500 的「高集中」线），说明**节点层面
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_TECH_OUTPUT_SCALE.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_TECH_OUTPUT_SCALE.py` |
 | 结果产物 | 同目录 `M_TECH_OUTPUT_SCALE_out.json` |
 | 共享层 | `../code/_tech5_common.py` |
 | 事实缓存 | `../code/_snapshots/tech5_facts.json`、`tech5_ipc4_stats.json`、`tech5_kw_patent.json` |
 
 ```bash
-python3 metrics/repro/M_TECH_OUTPUT_SCALE.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_TECH_OUTPUT_SCALE.py
 ```
 
 输出字段：`proxy_name`、`proxy_disclaimer`、`band_distribution`、`concentration`、`volume_stats`、`section_rollup`、`reconciliation`、`keyword_crosscheck`、`application_side_blockers`、`data_window_finding`、`top20`、`all_nodes`。
@@ -396,9 +402,7 @@ python3 metrics/repro/M_TECH_OUTPUT_SCALE.py
 5. 中国科学技术信息研究所. 《中国科技论文统计结果》（论文计量口径）. https://www.istic.ac.cn/
 
 6. 国家知识产权局. 《国际专利分类与国民经济行业分类参照表（2023）》. https://www.cnipa.gov.cn/
-
 文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
 ---
 
 # 附件
@@ -510,13 +514,6 @@ ISTIC 的中国科技论文统计以篇数、被引、期刊层次为核心。�
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_TECH_OUTPUT_SCALE.py`
-- 产物：`../code/M_TECH_OUTPUT_SCALE_out.json`
+- 产物：`../metrics/repro/out/M_TECH_OUTPUT_SCALE_out.json`
 - 关键结果：366 有量节点 / 2,380,595 件；S1–S5 = 25/83/164/94/0；CR10 27.95%、HHI 150.0、Gini 0.6643；双尺比值 1.008（生物医药）/0.868（集成电路）；耗时 2.07 s
 - 工程注意：`reconciliation` 字段保留三层对账，任何口径调整都应同步更新该块，否则节点合计与主表会对不上。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

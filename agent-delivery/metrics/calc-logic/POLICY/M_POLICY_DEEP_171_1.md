@@ -1,9 +1,21 @@
 # 政策布局推荐模型（M_POLICY_DEEP_171_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DEEP_171_1.md`；复现脚本 `metrics/repro/M_POLICY_DEEP_171_1.py` → `metrics/repro/out/M_POLICY_DEEP_171_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：深度指标（政策深度分析模型构建·政策布局推荐模型）｜ **域**：政策（POLICY）｜ **UI 挂载**：DS-11-POLICY-EVAL、DS-12-POLICY-SIM、E7-POLICY（算法库模型件）
+> - **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DEEP_171_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_171_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DEEP_171_1.md`；复现脚本 `metrics/repro/M_POLICY_DEEP_171_1.py` → `metrics/repro/out/M_POLICY_DEEP_171_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DEEP_171_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_171_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_DEEP_171_1.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_DEEP_171_1.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_DEEP_171_1_out.json` |
@@ -60,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_DEEP_171_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_171_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：深度指标（政策深度分析模型构建·政策布局推荐模型）｜ **域**：政策（POLICY）｜ **UI 挂载**：DS-11-POLICY-EVAL、DS-12-POLICY-SIM、E7-POLICY（算法库模型件）
-> **数据支持度**：**部分支持**
-> **公式定义人**：王惠（机遇 × 短板对冲计数口径，本 MD 采用）｜ wanghui：true（§五 含对照）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库 `gkx` 结构有 / 方向键真实值仅 2 行、机遇侧上游 0 过线
-> **一句话口径**：方向键取 `theme` 数组摊平后的 5 个方向，机遇方向 = 该方向至少 1 条政策过 170 机遇线（≥60），短板方向 = 对象覆盖缺口或有效/文号/正文任一低于阈值，布局建议数 = 两侧同时成立的方向数；实测机遇侧 0 个方向、短板侧 5 个方向、**布局建议数 = 0**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -246,7 +253,7 @@ $$N_{rec}=\sum_t Opp_t\cdot Short_t$$
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 M_POLICY_DEEP_171_1.py`，零 SQL、0.15 秒，读取政策快照与 170 产物，覆盖写出 `code/M_POLICY_DEEP_171_1_out.json`。脚本不连数据库、不 import 任何本地 helper。
+执行 `cd code && python3 M_POLICY_DEEP_171_1.py`，零 SQL、0.15 秒，读取政策快照与 170 产物，覆盖写出 `metrics/repro/out/M_POLICY_DEEP_171_1_out.json`。脚本不连数据库、不 import 任何本地 helper。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -434,16 +441,13 @@ $$N_{rec}=\sum_t Opp_t\cdot Short_t$$
 ## 参考文献
 
 1. Howlett, M., & Rayner, J. (2013). Patching vs Packaging in Policy Formulation: Assessing Policy Portfolio Design. *Politics and Governance*, 1(2), 170–182. https://doi.org/10.17645/pag.v1i2.95
-2. Howlett, M. (2015). Policy Design: What, Who, How and Why? In *Designing Public Policies*. https://doi.org/10.1057/9781137436350_2
-3. Heilmann, S. (2008). From Local Experiments to National Policy: The Origins of China's Distinctive Policy Process. *The China Journal*, 59, 1–30. https://doi.org/10.1086/tcj.59.20066378
-4. UN-GGIM. (2023). *UN-IGIF Action Plan*. https://ggim.un.org/
-5. Saaty, T. L. (1977). A Scaling Method for Priorities in Hierarchical Structures. *Journal of Mathematical Psychology*, 15(3), 234–281. https://doi.org/10.1016/0022-2496(77)90033-5
-6. Markowitz, H. (1952). Portfolio Selection. *The Journal of Finance*, 7(1), 77–91. https://doi.org/10.1111/j.1540-6261.1952.tb01525.x
-7. 国务院. 国务院政策文件库. https://www.gov.cn/zhengce/
-8. 国家统计局. 统计用区划代码和城乡划分代码编制规则. https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
-9. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.4 / §3.9 / §3.16（占位符、码域不一致、缺失年纪律）。
-10. 同批政策文档 `第三方库指标计算过程/M_POLICY_DEEP_169_1.md` 与 `M_POLICY_BASE_100_1.md`。
-
+2. Heilmann, S. (2008). From Local Experiments to National Policy: The Origins of China's Distinctive Policy Process. *The China Journal*, 59, 1–30. https://doi.org/10.1086/tcj.59.20066378
+3. UN-GGIM. (2023). *UN-IGIF Action Plan*. https://ggim.un.org/
+4. Saaty, T. L. (1977). A Scaling Method for Priorities in Hierarchical Structures. *Journal of Mathematical Psychology*, 15(3), 234–281. https://doi.org/10.1016/0022-2496(77)90033-5
+5. Markowitz, H. (1952). Portfolio Selection. *The Journal of Finance*, 7(1), 77–91. https://doi.org/10.1111/j.1540-6261.1952.tb01525.x
+6. 国务院. 国务院政策文件库. https://www.gov.cn/zhengce/
+7. 国家统计局. 统计用区划代码和城乡划分代码编制规则. https://www.stats.gov.cn/sj/tjbz/tjyqhdmhcxhfdm/
+8. 同批政策文档 `第三方库指标计算过程/M_POLICY_DEEP_169_1.md` 与 `M_POLICY_BASE_100_1.md`。
 # 附件
 
 ## 附录 A　原文摘录与复现入口
@@ -461,10 +465,10 @@ $$N_{rec}=\sum_t Opp_t\cdot Short_t$$
 ### A.2 复现入口（命令与快照指纹）
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_DEEP_170_1.py     # 上游先生成
 python3 code/M_POLICY_DEEP_171_1.py
-python3 -c "import json;d=json.load(open('code/M_POLICY_DEEP_171_1_out.json'));print(d['n_opp_dirs'],d['n_short_dirs'],d['layout_rec_count'])"
+python3 -c "import json;d=json.load(open('metrics/repro/out/M_POLICY_DEEP_171_1_out.json'));print(d['n_opp_dirs'],d['n_short_dirs'],d['layout_rec_count'])"
 ```
 
 | 项 | 值 | 校验方式 |
@@ -472,7 +476,7 @@ python3 -c "import json;d=json.load(open('code/M_POLICY_DEEP_171_1_out.json'));p
 | Python | 3.11（仅标准库） | `json` / `os` / `re` |
 | 主算库 | `gkx` @ `183.240.141.251:3318`（只读） | 快照导出阶段使用 |
 | 本脚本耗时 | 0.15 秒 | 无 DB 往返 |
-| 上游产物 | `code/M_POLICY_DEEP_170_1_out.json` | 同目录、可复跑 |
+| 上游产物 | `metrics/repro/out/M_POLICY_DEEP_170_1_out.json` | 同目录、可复跑 |
 | 出口校验 | `n_opp_dirs=0` 且 `layout_rec_count=0` | 不等则口径被改 |
 | 基期字段 | `base_years_used=[]`、`base_years_missing=[]` | 截面指标 |
 
@@ -515,11 +519,3 @@ WHERE industry_link_name IS NOT NULL AND industry_link_name NOT IN ('NULL','null
 **三、阈值与方向的取值依据。** 短板阈值取 90%，与 169 的合规阈值一致；对象覆盖用 301 个链环节做分母，是因为库内没有「政策应有方向」的外部基准，只能用产业环节做粗代理。方向键用 `theme` 而不是产业环节，是因为机遇侧（170）以 `theme` 分组，两侧必须同键才能交集。若改用产业环节，机遇侧需要重建，属于二期工作。
 
 **四、结论。** 本件方法在本库条件下可行且可复算，能支撑「5 个方向的短板诊断表 + 对象覆盖缺口 + 机遇侧不可判说明」，不能支撑「布局推荐清单 / 效果预测」。若甲方需要后者，需先补 `theme` 与机遇侧数据，届时对冲链路可直接全量复算，不需要重构。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

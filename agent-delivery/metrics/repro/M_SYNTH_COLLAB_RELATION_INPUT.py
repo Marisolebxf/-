@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：未挂载 UI，算法库内部件
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_SYNTH_COLLAB_RELATION_INPUT 协同关系输入统计（gkx 换源重建，零 SQL）。
 
 口径（项目内 calc-logic 0.3.2，非王惠 xlsx）：

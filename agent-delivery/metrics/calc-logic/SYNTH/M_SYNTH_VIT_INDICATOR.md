@@ -1,9 +1,24 @@
 # 活力分项指标值与得分（M_SYNTH_VIT_INDICATOR）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_VIT_INDICATOR.md`；复现脚本 `metrics/repro/M_SYNTH_VIT_INDICATOR.py` → `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（L2 分项明细）｜ **域**：综合智能分析／区域创新活力分析／指标体系构建
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（12 分项全部取同族子模型产物，零 SQL）+ 结构缺口（3 个分项四城全缺：新产品销售收入占比、研发人员数量、政策实施效果指数）**
+> - **一句话结论**：12 个正本分项里 8 个有标准化得分并进维、1 个（高学历人才占比）有值但因饱和不进维、3 个四城全缺；四维覆盖率 1.0 / 0.6667 / 0.3333 / 0.6667；**本件只展示不重算**——因为用 12 分项等权重算出来的四维分与子模型综合分最大差 **23.0** 分，重算会造出第二套四维分。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_VIT_INDICATOR.py`｜ **产物**：`metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_VIT_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_VIT_INDICATOR.md`；复现脚本 `metrics/repro/M_SYNTH_VIT_INDICATOR.py` → `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_VIT_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -62,7 +77,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_VIT_INDICATOR.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_VIT_INDICATOR.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json` |
@@ -70,20 +85,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-# 活力分项指标值与得分（M_SYNTH_VIT_INDICATOR）
-
-> **类型**：MODEL（L2 分项明细）｜ **域**：综合智能分析／区域创新活力分析／指标体系构建
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（12 分项全部取同族子模型产物，零 SQL）+ 结构缺口（3 个分项四城全缺：新产品销售收入占比、研发人员数量、政策实施效果指数）**
-> **复现脚本**：`code/M_SYNTH_VIT_INDICATOR.py`｜ **产物**：`code/M_SYNTH_VIT_INDICATOR_out.json`
-> **族级面板**：`code/_snapshots21/vit_family_20261023.json`（本族五件共用，由 `code/_build_vit_family_panel.py` 生成）
-> **否定性证据**：`code/_snapshots21/vit_absence_20261023.json`（三缺项逐条留证）
-> **公式定义人**：王惠（`M_SYNTH_VIT_INDICATOR.md`：分项叶子分别见 182/183/184/185，本指标只汇总展示，不重算、不另选代表指标）
-> **基期声明**：统计年 2024；`base_years_used=[2024]`、`base_years_missing=[]`。高质量论文为全历史累计的高被引池（阈值 6 次），政策存量是当前有效集而不是 2024 年出台量，产品标签为当前截面，四者不是同一时间窗。
-> **一句话结论**：12 个正本分项里 8 个有标准化得分并进维、1 个（高学历人才占比）有值但因饱和不进维、3 个四城全缺；四维覆盖率 1.0 / 0.6667 / 0.3333 / 0.6667；**本件只展示不重算**——因为用 12 分项等权重算出来的四维分与子模型综合分最大差 **23.0** 分，重算会造出第二套四维分。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -169,12 +175,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 |---|---|
 | `code/_snapshots21/vit_family_20261023.json` | 族级面板：12 分项的原始读数、宏观配对 |
 | `code/_snapshots21/vit_absence_20261023.json` | 三缺项探针：`a77234` 0 行、`development_employee` 0 非空、政策日期 20,000 行占位 |
-| `code/M_SYNTH_182_1_out.json` | 科技维与三个分项（专利/论文/转化） |
-| `code/M_SYNTH_183_1_out.json` | 产业维与三个子维 |
-| `code/M_SYNTH_184_1_out.json` | 人才维与两个在场子维 |
-| `code/M_SYNTH_185_1_out.json` | 政策维与两个在场子维 |
-| `code/M_SYNTH_VIT_DIM_SCORE_out.json` | 四维分（本件的对照基准） |
-| `code/M_SYNTH_VIT_INDEX_out.json` | 加权维完整度（0.8333）与 12 分项缺项清单（本件 §4.7 引用） |
+| `metrics/repro/out/M_SYNTH_182_1_out.json` | 科技维与三个分项（专利/论文/转化） |
+| `metrics/repro/out/M_SYNTH_183_1_out.json` | 产业维与三个子维 |
+| `metrics/repro/out/M_SYNTH_184_1_out.json` | 人才维与两个在场子维 |
+| `metrics/repro/out/M_SYNTH_185_1_out.json` | 政策维与两个在场子维 |
+| `metrics/repro/out/M_SYNTH_VIT_DIM_SCORE_out.json` | 四维分（本件的对照基准） |
+| `metrics/repro/out/M_SYNTH_VIT_INDEX_out.json` | 加权维完整度（0.8333）与 12 分项缺项清单（本件 §4.7 引用） |
 | `code/_snapshots21/base_20261021.json` | 企业底册 189,116 行 |
 
 ### 1.6 与旧稿的差异
@@ -278,12 +284,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ### 2.7 复现结果展示
 
 ```bash
-python3 M_SYNTH_VIT_INDICATOR.py
+cd code && python3 M_SYNTH_VIT_INDICATOR.py
 # === M_SYNTH_VIT_INDICATOR ===
 # leaves=12 scored=8 has_value=9 missing=3
 # 科技 3/3  产业 2/3  人才 1/3  政策 2/3
 # 重算 vs 子模型 max|diff|=23.0（人才维广州）
-# → code/M_SYNTH_VIT_INDICATOR_out.json
+# → metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json
 ```
 
 脚本零 SQL：12 分项的 `raw` 与 `score` 全部读自四份子模型产物，`absence_probe` 的三条探针结果读自族级否定性证据快照。这样做的原因与 DIM_SCORE 相同——五件族内文档必须共用同一组原始读数，否则同一件里的「专利 128,478」与另一件里的「专利 128,478」稍有出入，读者就无法判断哪个是真的。若某份产物缺失，脚本直接报错，不退回默认值。
@@ -376,8 +382,8 @@ python3 M_SYNTH_VIT_INDICATOR.py
 |---|---|---|
 | `code/_snapshots21/vit_family_20261023.json` | 12 分项原值、宏观配对 | 本族五件共用 |
 | `code/_snapshots21/vit_absence_20261023.json` | 三条缺项探针 | 否定性证据 |
-| `code/M_SYNTH_VIT_INDICATOR_out.json` | 12 分项、三口径覆盖率、重算对照、派生比值 | 本件产物 |
-| `code/M_SYNTH_182_1_out.json` ~ `code/M_SYNTH_185_1_out.json` | 四个子模型产物 | 同族上游 |
+| `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json` | 12 分项、三口径覆盖率、重算对照、派生比值 | 本件产物 |
+| `metrics/repro/out/M_SYNTH_182_1_out.json` ~ `metrics/repro/out/M_SYNTH_185_1_out.json` | 四个子模型产物 | 同族上游 |
 
 ---
 
@@ -559,12 +565,11 @@ python3 M_SYNTH_VIT_INDICATOR.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_VIT_INDICATOR.py` |
+| 脚本 | `metrics/repro/M_SYNTH_VIT_INDICATOR.py` |
 | 面板 | `code/_snapshots21/vit_family_20261023.json` |
-| 产物 | `code/M_SYNTH_VIT_INDICATOR_out.json` |
+| 产物 | `metrics/repro/out/M_SYNTH_VIT_INDICATOR_out.json` |
 | 取数 | 零 SQL，读四份子模型 `_out.json` |
 | 合成 | 不合成（`weights.main=null`） |
 | 权重声明 | `main_is_official=false` |
 | 缺项策略 | 留行、null、探针；不补 0、不换码 |
 | 判档 | 部分支持 |
-

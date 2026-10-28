@@ -1,9 +1,20 @@
 # 重大成果突破数（M_INNOV_BREAKTHROUGH_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_BREAKTHROUGH_COUNT.md`；复现脚本 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` → `metrics/repro/out/M_INNOV_BREAKTHROUGH_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：MODEL（INNOV 域·成果计数的尾部突破型）｜ **域**：创新监测（INNOV）｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测 / 创新成果综合展示（重点成果突出显示、创新价值排序）；算法库侧呼应「区域科技创新成果综合评价模型」｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_BREAKTHROUGH_COUNT.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py`、产物 `metrics/repro/out/M_INNOV_BREAKTHROUGH_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_BREAKTHROUGH_COUNT.md`；复现脚本 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` → `metrics/repro/out/M_INNOV_BREAKTHROUGH_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py`、产物 `metrics/repro/out/M_INNOV_BREAKTHROUGH_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_BREAKTHROUGH_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_BREAKTHROUGH_COUNT_out.json` |
@@ -64,14 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py`、产物 `metrics/repro/out/M_INNOV_BREAKTHROUGH_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（INNOV 域·成果计数的尾部突破型）｜ **域**：创新监测（INNOV）｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测 / 创新成果综合展示（重点成果突出显示、创新价值排序）；算法库侧呼应「区域科技创新成果综合评价模型」｜ **数据支持度**：**部分支持**
-> **公式定义人（20261021-B5 补全批次）**：王惠（价值锚字段族）+ 本批 agent（尾部计数口径）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / **部分**（专利维足、论文/项目突破判定维弱）｜ wanghui：true
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -105,9 +113,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「重大成果突破数」回答「报告期内出了多少件够得上『重大/突破』的成果」。三份需求说明书中它以两种面目出现：展示侧「重点成果突出显示（用户可设置创新价值阈值）」与算法库侧「重大科学发现、重大科学突破」输入项，但均未给出「重大」的判定阈值。本报告以国际文献计量学的尾部计数传统（ESI 高被引论文 top 1% 阈值法 (Clarivate, 2024)；国知局高价值专利五条件口径 (国家知识产权局, 2021)）与国务院办公厅成果评价「分类多维」精神 (国务院办公厅, 2021) 为方法基底，构建「专利双 P90 + 论文 1 区 + 项目国家级」的 OR 型尾部计数口径。脚本 `code/M_INNOV_BREAKTHROUGH_COUNT.py` 已在 `gkx.dwd_patent` 实测（2020-2024 窗，抽 20,000 件）：value P90=62,000、被引 P90=0（正被引仅 3,657/20,515 行）、同口径突破命中 1,404 件（抽样读数，重算基准见 §五 附表）；**论文维 jn_zone 当日 0 行非空（1 区判定字段全空）、项目维 project_level 全 58,453 行均为「国家级」（判据失去区分度）**——按 §〇「部分依赖维始终缺数据」的定义，判**部分支持**：专利突破计数可真实交付，论文/项目两类的突破判定需先补数据（期刊分区表灌数、项目级别真实化）才能闭合。这与 ACHIEVE_VALUE 姊妹指标（同样受 jn_zone 全空拖累）结论同源，属同一根因的两个表现。
+「重大成果突破数」回答「报告期内出了多少件够得上『重大/突破』的成果」。三份需求说明书中它以两种面目出现：展示侧「重点成果突出显示（用户可设置创新价值阈值）」与算法库侧「重大科学发现、重大科学突破」输入项，但均未给出「重大」的判定阈值。本报告以国际文献计量学的尾部计数传统（ESI 高被引论文 top 1% 阈值法 (Clarivate, 2024)；国知局高价值专利五条件口径 (国家知识产权局, 2021)）与国务院办公厅成果评价「分类多维」精神 (国务院办公厅, 2021) 为方法基底，构建「专利双 P90 + 论文 1 区 + 项目国家级」的 OR 型尾部计数口径。脚本 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` 已在 `gkx.dwd_patent` 实测（2020-2024 窗，抽 20,000 件）：value P90=62,000、被引 P90=0（正被引仅 3,657/20,515 行）、同口径突破命中 1,404 件（抽样读数，重算基准见 §五 附表）；**论文维 jn_zone 当日 0 行非空（1 区判定字段全空）、项目维 project_level 全 58,453 行均为「国家级」（判据失去区分度）**——按 §〇「部分依赖维始终缺数据」的定义，判**部分支持**：专利突破计数可真实交付，论文/项目两类的突破判定需先补数据（期刊分区表灌数、项目级别真实化）才能闭合。这与 ACHIEVE_VALUE 姊妹指标（同样受 jn_zone 全空拖累）结论同源，属同一根因的两个表现。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 在评价过程中，算法依据成果特征与分析目标构建指标体系，主要包括：1）基础科学成果指标：代表性论文数量与质量、学术影响力、重大科学发现。2）应用科技成果指标：高价值专利数量、新技术/新材料/新工艺的技术成熟度、产业化应用情况。3）科研机构指标：研究人员结构、成果转化率、国际合作程度、科研平台建设水平。<br>><br>> （bid_desc，序号 182 行）：基于相关数据，开展产业综合分析模型构建，提供区域科技创新成果综合评价模型、区域产业创新成果综合评价模型……<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_BREAKTHROUGH_COUNT.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -204,7 +257,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式，以下为王惠价值锚字段族 + 尾部计数思想的推测计算过程；已由脚本 `code/M_INNOV_BREAKTHROUGH_COUNT.py` 在 `gkx` **实测跑通**（可算维），结果见同目录 `M_INNOV_BREAKTHROUGH_COUNT_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author/机构)」；完整题录见文末「参考文献」。
+> **口径说明**：需求未给公式，以下为王惠价值锚字段族 + 尾部计数思想的推测计算过程；已由脚本 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` 在 `gkx` **实测跑通**（可算维），结果见同目录 `M_INNOV_BREAKTHROUGH_COUNT_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author/机构)」；完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：尾部计数，而不是加权评分或人工清单
 
@@ -212,7 +265,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.2 步骤 1｜成果入集与分型（achieve_type）
 
-第一段叙事：统计对象沿用王惠 ACHIEVE_VALUE 的三型入集——专利（`dwd_patent` 按 `pn` 去重、`apdt_year` 落窗）、中文论文（`dwd_zh_paper` 按 `id` 去重、`cover_year_start` 落窗）、国内项目（`dwd_zh_project` 按 `id`、`approval_year` 落 YYYYMMDD 整型窗，B5 锚点坑：数字 BETWEEN 失效须整型区间）。统计窗为 **2020-2024** 五年（与 20261020 版及 `code/M_INNOV_BREAKTHROUGH_COUNT.py` 的 `YEAR_LO/YEAR_HI` 一致，本版未动窗口；姊妹指标 ACHIEVE_VALUE 取 2019-2024，故两指标的专利批不互为子集，横向比较时须注意批次不同）。每类成果打 `achieve_type` 标签，突破判定在**同型批内**进行——专利的 value 分位与论文的引用分位不可混比，这与王惠「同一维在同一 achieve_type 内极值归一，避免专利价值与论文下载量混比」的处理同源。资讯/机构动态不入本指标（王惠原文口径）。抽样规模各型 20,000 行（SSCursor 流式），专利全表 293.99 万行、窗内抽样 20,000 行，抽样比约 0.8%，分位数在百万级批与万级抽样的稳定性差异已在 §2.7.3 披露。
+第一段叙事：统计对象沿用王惠 ACHIEVE_VALUE 的三型入集——专利（`dwd_patent` 按 `pn` 去重、`apdt_year` 落窗）、中文论文（`dwd_zh_paper` 按 `id` 去重、`cover_year_start` 落窗）、国内项目（`dwd_zh_project` 按 `id`、`approval_year` 落 YYYYMMDD 整型窗，B5 锚点坑：数字 BETWEEN 失效须整型区间）。统计窗为 **2020-2024** 五年（与 20261020 版及 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` 的 `YEAR_LO/YEAR_HI` 一致，本版未动窗口；姊妹指标 ACHIEVE_VALUE 取 2019-2024，故两指标的专利批不互为子集，横向比较时须注意批次不同）。每类成果打 `achieve_type` 标签，突破判定在**同型批内**进行——专利的 value 分位与论文的引用分位不可混比，这与王惠「同一维在同一 achieve_type 内极值归一，避免专利价值与论文下载量混比」的处理同源。资讯/机构动态不入本指标（王惠原文口径）。抽样规模各型 20,000 行（SSCursor 流式），专利全表 293.99 万行、窗内抽样 20,000 行，抽样比约 0.8%，分位数在百万级批与万级抽样的稳定性差异已在 §2.7.3 披露。
 
 $$A_T=\{a: type(a)=T,\ year(a)\in[2020,2024]\},\quad T\in\{patent, paper, project\}$$
 
@@ -246,12 +299,12 @@ $$BreakthroughCount=\sum_T \lvert\{a\in A_T: B_T(a)\}\rvert$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` |
 | 结果产物 | 同目录 `M_INNOV_BREAKTHROUGH_COUNT_out.json` |
 | 主算库 | `gkx`（各表与 gkx 同行数） |
 
 ```bash
-python3 metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -317,7 +370,7 @@ python3 metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_BREAKTHROUGH_COUNT.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 `gkx`（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -391,11 +444,6 @@ python3 metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py
 3. 国务院办公厅. (2021). 《关于完善科技成果评价机制的指导意见》（国办发〔2021〕26 号）. https://www.gov.cn/zhengce/zhengceku/2021-08/02/content_5628987.htm （分类多维评价、反对单一量化标准）
 
 4. World Intellectual Property Organization (WIPO). (2024). *Global Innovation Index 2024*. https://www.wipo.int/en/web/global-innovation-index/2024/index （创新产出尾部计数的国际排名语境）
-
-5. 项目内旁证（非外部文献）：`王惠口径正本（GitLab 外本地归档）` — 王惠 V1.5 价值锚字段族与 P70/P30 分档（本指标二值化的口径母体）。
-
-文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
 ---
 
 # 附件
@@ -428,7 +476,7 @@ python3 metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py
 
 ## 附录 B　历史库表探测证据（摘要）
 
-- 20261021 实测（`code/M_INNOV_BREAKTHROUGH_COUNT.py` probes）：`dwd_zh_journal.jn_zone` 非空 **0/2,796**；`dwd_zh_project.project_level` GROUP BY 单值 {国家级: 58,453}；`dwd_patent_cited` 正 cited 3,657 行；`dwd_en_paper` 1,387 行。
+- 20261021 实测（`metrics/repro/M_INNOV_BREAKTHROUGH_COUNT.py` probes）：`dwd_zh_journal.jn_zone` 非空 **0/2,796**；`dwd_zh_project.project_level` GROUP BY 单值 {国家级: 58,453}；`dwd_patent_cited` 正 cited 3,657 行；`dwd_en_paper` 1,387 行。
 - B5 批次锚点（`_work_full/PROGRESS.md`）：被引稀疏 0.7%；JOURNAL_INFLUENCE 因 impact_score 全空重归一两维；approval_year=YYYYMMDD 整型坑；value 1,994,812 非空。
 - 姊妹指标实测：`M_INNOV_ACHIEVE_VALUE_out.json` v2（其脚本为 2019-2024 窗，专利 n=5,000，P70/P30 分档 high 1,532/low 1,749）——分档语言与本指标 P90 尾部同族。
 
@@ -498,13 +546,6 @@ ESI 把高被引论文定义为同领域同年份被引 top 1%，阈值为该 to
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_INNOV_BREAKTHROUGH_COUNT.py`；产物：`../code/M_INNOV_BREAKTHROUGH_COUNT_out.json`
+- 脚本：`../code/M_INNOV_BREAKTHROUGH_COUNT.py`；产物：`../metrics/repro/out/M_INNOV_BREAKTHROUGH_COUNT_out.json`
 - 关键结果：专利 20,000 批 value P90=62,000、突破 1,404 件（AND 双锚 0 件）；论文 1 区 0（jn_zone 0/2,796）；项目「国家级」7,122/7,122（单值）；support_judgment=`部分支持`
 - 工程注意：专利关联子查询（cited/transfer）在大窗上耗时约 3 分钟/2 万行，生产版改 JOIN 预聚合。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

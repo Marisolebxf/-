@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_INNOV_DS_09_COMPREHENSIVE_006 科技人才流动监控（王惠口径＝产业界↔学术界 · 20261021 改源版）
 
 王惠口径（calc-logic/INNOV/M_INNOV_PLAN_TALENT_FLOW.md）：

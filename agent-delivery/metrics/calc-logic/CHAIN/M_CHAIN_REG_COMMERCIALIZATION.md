@@ -1,9 +1,22 @@
 # 区域产业化程度（M_CHAIN_REG_COMMERCIALIZATION）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_REG_COMMERCIALIZATION.md`；复现脚本 `metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py` → `metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：STAT（计数型规模指标）｜**域**：CHAIN｜**UI 挂载**：科技信息展示系统 / 产业链分析 / 区域产业指数评价 / 区域产业指数
+> - **数据支持度**：**完全转换支持**｜**公式定义人**：王惠｜**复现脚本**：`metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py`｜**产物**：`metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json`
+> - **四判定摘要**：开发库直接结构 = 否（无「区域产业化程度」结果面）；开发库依赖结构 = 是（`dwd_org_industry_tags` + `dwd_org_base_info` + `dwd_patent` 三表齐备）；依赖数据 = **是**（2,283,786 行标签 / 189,116 行底册 / 2,939,895 件专利，当日全量现转成功）；结果 = 48 个链×城单元全部非零且互不相同
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_REG_COMMERCIALIZATION.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py`、产物 `metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_REG_COMMERCIALIZATION.md`；复现脚本 `metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py` → `metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py`、产物 `metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_REG_COMMERCIALIZATION.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json` |
@@ -63,16 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py`、产物 `metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（计数型规模指标）｜**域**：CHAIN｜**UI 挂载**：科技信息展示系统 / 产业链分析 / 区域产业指数评价 / 区域产业指数
-> **数据支持度**：**完全转换支持**｜**公式定义人**：王惠｜**复现脚本**：`code/M_CHAIN_REG_COMMERCIALIZATION.py`｜**产物**：`code/M_CHAIN_REG_COMMERCIALIZATION_out.json`
-> **四判定摘要**：开发库直接结构 = 否（无「区域产业化程度」结果面）；开发库依赖结构 = 是（`dwd_org_industry_tags` + `dwd_org_base_info` + `dwd_patent` 三表齐备）；依赖数据 = **是**（2,283,786 行标签 / 189,116 行底册 / 2,939,895 件专利，当日全量现转成功）；结果 = 48 个链×城单元全部非零且互不相同
-> **关键口径**：本指标算的是「链上企业作为**第一申请人**的专利件数」，**不是**「专利产业化率」；统计年 2025 按申请年 ≤2024 截断 ｜ 取证时间：2026-10-21
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -113,6 +121,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 必须同时成立的限制有三条：其一，2,283,786 行标签里只有 52,906 行（2.32%）能通过 `credit_code` 落到主档，属地归属实际建立在可溯源标签之上；其二，只有 37.66% 的专利能按第一申请人名称对上链上企业，其余不外推；其三，一件专利只按第一申请人计一次，但企业多链归属时会在各链各计一次，故链合计大于去重专利件数。按 §〇 判**完全转换支持**，但对外发布时必须附这三条口径说明。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 「区域产业指数模型算法用于量化评估特定区域产业的发展水平与竞争力，综合考虑企业能力竞争力、学术生态竞争力、配套生态竞争力三大核心维度，通过科学设计指标体系与阈值标准，计算区域产业指数，并为政策制定、行业研究和投资决策提供参考。」<br>><br>> 「在数据采集阶段，算法对接企业信息库、知识产权数据库、高校与科研机构统计库、人才数据及配套服务数据等多源信息，并进行标准化清洗与结构化处理，确保数据精准与可比性。」<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 「本功能提供可配置的多维度产业评价体系，支持用户自定义指标、权重与评价对象，生成区域产业指数并可视化呈现。用户可对单一区域多产业或多个区域同一产业进行横向对比，精准识别优势领域与发展短板。」<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_CHAIN_REG_COMMERCIALIZATION.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -242,12 +296,12 @@ $$V(c,r)=\left|\bigcup_{n\in E(c,r)} P(n)\right|$$
 **代码与运行方式**
 
 ```bash
-cd (GitLab 外本地历史批次工作稿)
+cd （20261020 批调研区，历史批次成果已并入现版）
 python3 code/M_CHAIN_REG_COMMERCIALIZATION.py
 # 读取 _snapshots/chain_reg_panel_20261021.json（链×城面板）
 #     _snapshots/chain_reg_patent_20261021.json（专利普查）
 #     _snapshots/chain_reg_small_20261021.json（主档映射）
-# 输出 code/M_CHAIN_REG_COMMERCIALIZATION_out.json
+# 输出 metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json
 ```
 
 **复现结果（48 个链×城单元）**
@@ -441,10 +495,8 @@ python3 code/M_CHAIN_REG_COMMERCIALIZATION.py
 2. 国家知识产权局知识产权发展研究中心. 2024年中国专利调查报告[R/OL]. 2025-01-24. https://www.cnipa-ipdrc.org.cn/news_content.aspx?newsId=413
 3. 国家知识产权局. 我国企业发明专利产业化率创"十四五"新高[N/OL]. 知识产权报, 2025-02-26. https://www.cnipa.gov.cn/art/2025/2/26/art_55_197690.html
 4. 中国科学技术发展战略研究院. 中国区域科技创新评价报告2024[R/OL]. 2024-09-09. http://www.casted.org.cn/p91/ppbg/20240909/268576.html
-5. 教育部科学技术与信息化司. 2024年高等学校科技统计资料汇编[R/OL]. 2025-11-30. http://www.moe.gov.cn/s78/A16/A16_tjdc/202512/t20251211_1423144.html
-
+5. 教育部科学技术与信息化司. 2024年高等学校科技统计资料汇编[R/OL]. 2025-11-30. https://www.moe.gov.cn/
 > 说明：第 1 条为国家标准全文页（现行有效）；第 2、3 条为国家知识产权局系统发布，其中「专利产业化率＝用于生产出产品并投放市场的专利占全部有效专利的比例」的定义直接引自第 2 条正文脚注；第 4 条用于区域评价方法族对照；第 5 条用于学术生态指标的机构/人员统计口径对照。
-
 ---
 
 # 附件
@@ -453,7 +505,7 @@ python3 code/M_CHAIN_REG_COMMERCIALIZATION.py
 
 **A.1 检索结论**
 
-- 检索范围：`gkx-orchestration/agent-delivery/bid-reference/` 下三份说明书，以及 `需求文档原件（GitLab 外本地归档）.xlsx`。
+- 检索范围：`gkx-orchestration/agent-delivery/bid-reference/` 下三份说明书，以及 `需求方附件（不入仓）：科技专题算法库需求.xlsx`。
 - 检索词：「区域产业化程度」「产业化程度」「区域产业指数」。
 - 结果：**三份说明书均未出现「区域产业化程度」「产业化程度」**；「区域产业指数」命中 2 处（见下）。
 
@@ -535,19 +587,11 @@ python3 code/M_CHAIN_REG_COMMERCIALIZATION.py
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_CHAIN_REG_COMMERCIALIZATION.py`（160 行） |
+| 脚本 | `metrics/repro/M_CHAIN_REG_COMMERCIALIZATION.py`（160 行） |
 | 公共模块 | `code/_chain_reg_common.py`（114 行，统一装配 4 份本地缓存） |
 | 输入快照 | `_snapshots/chain_reg_panel_20261021.json`、`chain_reg_patent_20261021.json`、`chain_reg_small_20261021.json` |
-| 输出 | `code/M_CHAIN_REG_COMMERCIALIZATION_out.json` |
+| 输出 | `metrics/repro/out/M_CHAIN_REG_COMMERCIALIZATION_out.json` |
 | 运行耗时 | 约 1.1 秒（纯本地聚合，不连库） |
 | 单元数 | 48 |
 | 非零单元 | 48 |
 | 结果取值个数 | 48（全互异） |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

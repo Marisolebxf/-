@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：未挂载 UI，算法库内部件
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_SYNTH_VIT_WEIGHT 活力指数权重配置与权重弹性 —— gkx 换源版
 
 口径真源（旧系统）：`biz_power` / `tech_power` / `eval_weight` 三张造数表，

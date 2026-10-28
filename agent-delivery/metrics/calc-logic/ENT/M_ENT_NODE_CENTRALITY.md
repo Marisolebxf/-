@@ -1,9 +1,25 @@
 # 供应链中心性（M_ENT_NODE_CENTRALITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_NODE_CENTRALITY.md`；复现脚本 `metrics/repro/M_ENT_NODE_CENTRALITY.py` → `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：GRAPH（网络中心性）｜ **域**：企业分析·风险洞察·供应链关系 ｜ **UI 挂载**：企业供应链关系分析「关键节点与断链风险识别」、企业详情页「供应链位置」
+> - **数据支持度**：**部分支持** ｜ **依赖性质**：**B 类**（公式闭、图算法闭；真供应链边表整块不存在，只能用工商股权边建代理图）
+> - **同域边界**：与 `M_SVC_RELATION_DENSITY`（关系密度）统计量不同——那件算边数/可能边数，本件算单节点度占比；与 `M_SYNTH_COLLAB_CENTRALITY`（合作网络中心性）数据源不同——那件建的是论文合作网，本件建的是股权关系网。两件的中心度数值**不可互换**。
+> - **一句话结论**：代理图 $V=265{,}398$、$E=275{,}677$、最大度 3,819、度中位数 1；底册 189,116 家里只有 33,023 家（17.46%）进得了图，且度 1 节点占 75.63% → 分布可算、可排序，但算出来的是**股权网络中心度**，不是供应链中心度 → **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_ENT_NODE_CENTRALITY.py` ｜ **产物**：`metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_NODE_CENTRALITY.py`、产物 `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_NODE_CENTRALITY.md`；复现脚本 `metrics/repro/M_ENT_NODE_CENTRALITY.py` → `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_NODE_CENTRALITY.py`、产物 `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -59,7 +75,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_NODE_CENTRALITY.md` |
 | 复现脚本 | `metrics/repro/M_ENT_NODE_CENTRALITY.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json` |
@@ -67,20 +83,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_NODE_CENTRALITY.py`、产物 `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：GRAPH（网络中心性）｜ **域**：企业分析·风险洞察·供应链关系 ｜ **UI 挂载**：企业供应链关系分析「关键节点与断链风险识别」、企业详情页「供应链位置」
-> **数据支持度**：**部分支持** ｜ **依赖性质**：**B 类**（公式闭、图算法闭；真供应链边表整块不存在，只能用工商股权边建代理图）
-> **公式定义人**：王惠《企业分析模型指标字段清单》20260816 底稿 → Q014 正式化（`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_NODE_CENTRALITY.md`）
-> **复现脚本**：`code/M_ENT_NODE_CENTRALITY.py` ｜ **产物**：`code/M_ENT_NODE_CENTRALITY_out.json`
-> **数据源**：`gkx` @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **基期声明**：截面件。图快照为 2026-10-22 一次性拉取的三表全量边，不按年份切分，因此**不设年度基期**；分母 $|V|-1$ 用当期节点数，跨期不可直接比较。
-> **同域边界**：与 `M_SVC_RELATION_DENSITY`（关系密度）统计量不同——那件算边数/可能边数，本件算单节点度占比；与 `M_SYNTH_COLLAB_CENTRALITY`（合作网络中心性）数据源不同——那件建的是论文合作网，本件建的是股权关系网。两件的中心度数值**不可互换**。
-> **一句话结论**：代理图 $V=265{,}398$、$E=275{,}677$、最大度 3,819、度中位数 1；底册 189,116 家里只有 33,023 家（17.46%）进得了图，且度 1 节点占 75.63% → 分布可算、可排序，但算出来的是**股权网络中心度**，不是供应链中心度 → **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -257,7 +264,7 @@ Q014 已经把公式定成度中心性，本件没有改公式的权限。但更
 python3 _work_gkx21/rebuild_metric.py M_ENT_NODE_CENTRALITY
 ```
 
-脚本 `code/M_ENT_NODE_CENTRALITY.py` 读三份源：`code/_snapshots21/ent_edges_20261021.json`（投资 + 股东边）、`code/_snapshots21/org_subsidiary_edges_20261022.json`（子公司边 178,874 条）、`code/_snapshots21/base_20261021.json`（名称/城市），并现场查 `dwd_industry_chain_info` 的行数与列名作为否定性证据。产物 `code/M_ENT_NODE_CENTRALITY_out.json` 的关键字段：
+脚本 `metrics/repro/M_ENT_NODE_CENTRALITY.py` 读三份源：`code/_snapshots21/ent_edges_20261021.json`（投资 + 股东边）、`code/_snapshots21/org_subsidiary_edges_20261022.json`（子公司边 178,874 条）、`code/_snapshots21/base_20261021.json`（名称/城市），并现场查 `dwd_industry_chain_info` 的行数与列名作为否定性证据。产物 `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json` 的关键字段：
 
 | 字段 | 值 | 含义 |
 |---|---|---|
@@ -351,7 +358,7 @@ python3 _work_gkx21/rebuild_metric.py M_ENT_NODE_CENTRALITY
 
 ### 5.1 旧稿口径还原
 
-`(GitLab 外本地历史批次工作稿)` 是上一版，494 行，结构闸能过，但有三处硬伤：
+`（20261020 批调研区，历史批次成果已并入现版）/_staging_rejected/20261021_1220/M_ENT_NODE_CENTRALITY.md` 是上一版，494 行，结构闸能过，但有三处硬伤：
 
 1. **边数没去重、没剔自环**：旧稿写「最终有效边 303,228 条」，等于把并行边与自环都算进去了。本版清洗后是 275,677 条，差额主要来自 20,174 条并行边与 24 条自环；
 2. **正文出现产物里没有的数**：旧稿正文写「三表有效行数之和 46,967 + 77,411 + 178,874 = 303,252」，又写旧稿一个三十余万行的演示图读数。这两个数在本件产物里都查不到（数字审计 4 处未命中），且后一个数来自**演示库**的 live 表，属于把演示值写进结论；
@@ -364,7 +371,7 @@ python3 _work_gkx21/rebuild_metric.py M_ENT_NODE_CENTRALITY
 | 旧稿问题 | 本版处置 |
 |---|---|
 | 边数含重复/自环 | 清洗顺序固定为「空值 → 自环 → 并行边」，三个阶段各自落计数（24 / 20,174），最终 $E=275{,}677$ |
-| 正文数字无出处 | 正文只引 `code/M_ENT_NODE_CENTRALITY_out.json` 里有的字段；旧值一律写成「旧稿」并注明已作废 |
+| 正文数字无出处 | 正文只引 `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json` 里有的字段；旧值一律写成「旧稿」并注明已作废 |
 | 引用演示库数字 | 全文不出现任何演示库表名与数值；否定性证据全部来自 gkx 280 张表的表名扫描 |
 | 判档嵌套 | `support_judgment` 为顶层字符串「部分支持」，与文档头部逐字一致 |
 
@@ -392,9 +399,7 @@ python3 _work_gkx21/rebuild_metric.py M_ENT_NODE_CENTRALITY
 1. Sabidussi, G. (1966). The centrality index of a graph. *Psychometrika*, 31(4), 581—603. https://doi.org/10.1007/BF02289527
 2. Page, L., Brin, S., Motwani, R., & Winograd, T. (1998). The PageRank citation ranking: Bringing order to the web. http://ilpubs.stanford.edu:8090/422/
 3. Freeman, L. C. (1977). A set of measures of centrality based on betweenness. *Sociometry*, 40(1), 35—41. https://doi.org/10.2307/3033543
-4. 王惠. 企业分析模型指标字段清单（20260816 底稿）. 项目内部文档，2026.
-5. MySQL 8.0 Reference Manual — INFORMATION_SCHEMA STATISTICS. https://dev.mysql.com/doc/refman/8.0/en/information-schema-statistics-table.html
-
+4. MySQL 8.0 Reference Manual — INFORMATION_SCHEMA STATISTICS. https://dev.mysql.com/doc/refman/8.0/en/information-schema-statistics-table.html
 ---
 
 # 附件
@@ -421,7 +426,7 @@ python3 _work_gkx21/rebuild_metric.py M_ENT_NODE_CENTRALITY
 
 | 探针 | 结果 | 出处 |
 |---|---|---|
-| gkx 表总数 | 280 | `code/M_ENT_NODE_CENTRALITY_out.json` 的 `probes.table_name_scan.total_tables` |
+| gkx 表总数 | 280 | `metrics/repro/out/M_ENT_NODE_CENTRALITY_out.json` 的 `probes.table_name_scan.total_tables` |
 | supply 语义命中表 | 2（`dwd_bid_purchase_agency_out`、`..._bak_20260911`） | 同上 |
 | graph/centrality 语义命中表 | 0 | 同上 |
 | 链定义表行数 | 1,273 | `probes.chain_info.rows` |
@@ -483,11 +488,3 @@ python3 _work_gkx21/rebuild_metric.py M_ENT_NODE_CENTRALITY
 ### C.7 可行性总判（完整版结论）
 
 **公式可行、算法可行、代理数据可行、语义不可行。** 在「供应链」这三个字上判部分支持；如果甲方愿意把指标改名为「股权关联中心度」，可升为完全转换支持。本件按需求原义判**部分支持**。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,20 @@
-# 深圳科技竞争力（M_INNOV_CITY_COMPETE_SZ）
+# 城市创新竞争力对比·深圳（M_INNOV_CITY_COMPETE_SZ）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_COMPETE_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` → `metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分析→城市对标分析｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_COMPETE_SZ.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_COMPETE_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` → `metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CITY_COMPETE_SZ.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json` |
@@ -63,14 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分析→城市对标分析｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（本 MD 采用王惠 V1.5 口径：优势/弱势/成长三轴 LQ，城内极值归一×100）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量部分足（专利轴可用可官方对表；论文轴无城市归属键断链；产业轴靠 IPC 无官方映射表；对标宇宙限库覆盖可信区）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -106,9 +114,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「城市创新竞争力对比·深圳」是全球创新监测→城市创新能力分析功能组的**竞争力对比层**：需求原文要求「对全球主要城市创新能力进行对比分析，为深圳提供对标城市推荐和差距分析」，并指出「用户可以查看深圳与对标城市在科技创新方面的差距，系统基于差距分析给出针对性建议」。需求**没有给出竞争力定义**、对标城市选择标准、差距分析方法。本文按王惠 V1.5 口径还原：深圳与入集对标城在优势技术领域数、弱势技术领域数、技术领域成长性三轴上的 LQ（区位商）对比。文献系锚定**竞争力对比系**：以 Porter 的「集群竞争力」与 LQ 区位商方法 (Porter, 2003) 为理论骨架（方法族 A），专利导航的先进制造与新兴产业技术对标方法论作中文官方口径锚（方法族 B，国知局 GB/T 39551-2020），深圳知识产权事业发展统计公报的 PCT 口径作本地量级锚（方法族 C）。
 
-复现代码 `code/M_INNOV_CITY_COMPETE_SZ.py` 已实测（库覆盖可信区，统计窗 2019—2024）：深圳优势 IPC4 数 183、弱势 28、近三年（2022—2024）均值 278,219 对 2021 年 285,907 为 **−2.69%**（高位平台微降，不是追赶）。三处结构性约束必须直书：论文轴 `dwd_zh_paper` 缺城市归属键断链（默认不并入）、产业轴靠 IPC 小类人工归产业无官方映射表、对标宇宙限库覆盖可信区 → **部分支持**，§五 对照后维持王惠口径并给出论文轴城市归属增强建议。
+复现代码 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` 已实测（库覆盖可信区，统计窗 2019—2024）：深圳优势 IPC4 数 183、弱势 28、近三年（2022—2024）均值 278,219 对 2021 年 285,907 为 **−2.69%**（高位平台微降，不是追赶）。三处结构性约束必须直书：论文轴 `dwd_zh_paper` 缺城市归属键断链（默认不并入）、产业轴靠 IPC 小类人工归产业无官方映射表、对标宇宙限库覆盖可信区 → **部分支持**，§五 对照后维持王惠口径并给出论文轴城市归属增强建议。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 通过对全球主要城市的创新成果数据进行分析，监控创新基金、投资规模，创新机构、企业在创新上的投入、产生的创新成果等要素，通过数据模型分析计算各大城市的创新能力排名。用户可自主选择排名中的城市进行创新对标分析，了解各个城市创新能力的差异，并可以订阅关注的城市，持续跟踪其创新动态。<br>><br>> 城市创新能力分析的具体功能包括城市创新数据监控、创新能力排名计算、城市对标分析、创新能力要素分析、城市订阅功能、创新政策建议。<br>><br>> 对全球主要城市创新能力进行对比分析，为深圳提供对标城市推荐和差距分析……用户可以查看深圳与对标城市在科技创新方面的差距，系统基于差距分析给出针对性建议。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_COMPETE_SZ.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -193,7 +246,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 **三句结论**：
 
 1. **最贴的仍是族 A（Porter 集群映射的 LQ）+ 族 B（国知局专利导航）**：A 给 LQ 的学理与三分法，B 给中文官方口径；族 G 补上了 LQ 的数学正典（RCA 同构），族 E/F 补的是「区域/城市层级官方对标」的输出范式与分组纪律。
-2. **贴的那族在开发库能落地**：城市 × IPC4 专利矩阵已实测（深圳城内 609 个 IPC4、宇宙 629 个），三轴可算（183/28/−0.0269），脚本 `code/M_INNOV_CITY_COMPETE_SZ.py` 已跑通；族 F 的专利子集亦可由同一矩阵支撑。
+2. **贴的那族在开发库能落地**：城市 × IPC4 专利矩阵已实测（深圳城内 609 个 IPC4、宇宙 629 个），三轴可算（183/28/−0.0269），脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` 已跑通；族 F 的专利子集亦可由同一矩阵支撑。
 3. **落地后差的是三个「对不齐」**：论文轴无城市键（对不齐论文）、对标宇宙限粤三城（对不齐「全球」）、IPC→产业无官方对照表（对不齐产业口径）——三项都在「对照面」而不是「算法」上。
 
 ### 1.5 引用来源（可核验）
@@ -216,7 +269,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；已由脚本 `code/M_INNOV_CITY_COMPETE_SZ.py` 在三方库 `gkx` **实测跑通**（库覆盖可信区，统计窗 2019—2024），结果见同目录 `M_INNOV_CITY_COMPETE_SZ_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
+> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；已由脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` 在三方库 `gkx` **实测跑通**（库覆盖可信区，统计窗 2019—2024），结果见同目录 `M_INNOV_CITY_COMPETE_SZ_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：竞争力对比为什么锚定 LQ 区位商文献系
 
@@ -281,7 +334,7 @@ $$Compete(c)=\frac{100}{3}\bigl(D_{adv}(c)+D_{weak}(c)+D_{growth}(c)\bigr)$$
 
 | 专利 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_CITY_COMPETE_SZ.py`（本批目录 code/ 下已有，本报告复用） |
+| 计算脚本 | `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py`（本批目录 code/ 下已有，本报告复用） |
 | 结果产物 | 同目录 `M_INNOV_CITY_COMPETE_SZ_out.json` |
 | 主算库 | `gkx`（三方库 183.240.141.251:3318，只读账号；逐表行数与旧演示面（已禁用）逐位一致） |
 | 对标宇宙 | 深圳/广州/东莞（库覆盖可信区） |
@@ -340,7 +393,7 @@ python3 code/M_INNOV_CITY_COMPETE_SZ.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CITY_COMPETE_SZ.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数，20261021 复核） | 实测结论 |
 |---|---|---|---|---|
@@ -412,9 +465,6 @@ python3 code/M_INNOV_CITY_COMPETE_SZ.py
 ---
 
 ## 参考文献
-
-> 下列条目均经联网核验存在；仅收录可打开的官方/出版社页面。文内 (Author) 与此对应。中文官方机构文献优先排列。
-
 1. 国家知识产权局. (2020). 《专利导航指南》系列国家标准（GB/T 39551-2020，含区域产业结构与专利布局匹配度分析）. https://www.cnipa.gov.cn/art/2020/11/21/art_53_155152.html
 
 2. Porter, M. E. (2003). The Economic Performance of Regions: Measures for Identifying Competitive Regions. *Regional Studies*, 37(6-7), 549–578（集群映射与 LQ 区位商方法）. DOI：https://doi.org/10.1080/0034340032000108688 ；哈佛 CSC 全文：https://www.hbs.edu/faculty/Pages/item.aspx?num=15400
@@ -425,16 +475,13 @@ python3 code/M_INNOV_CITY_COMPETE_SZ.py
 
 5. OECD/JRC（Nardo, M., Saisana, M., Saltelli, A., Tarantola, S. 等执笔）. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. OECD 出版页：https://www.oecd.org/en/publications/handbook-on-constructing-composite-indicators-methodology-and-user-guide_9789264043466-en.html
 
-6. 项目内真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_COMPETE_SZ.md` —— 王惠 V1.5 口径原文。
+6. European Commission. (2024). *Regional Innovation Scoreboard — performance indicators*. European Commission. https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/regional-innovation-scoreboard_en （curl 200；区域创新绩效四分组、相对强项/弱项与专业化画像，支撑族 E）
 
-> 以下 7–11 条为 D 批补厚新增（§1.4 族 E/F/G 与附录 C.3 的方法学出处），逐条注明检索时的可达性；1–6 条为原稿条目，未改动。
+7. 国家市场监督管理总局、国家标准化管理委员会. (2023). 《新型城镇化 创新型城市评价指南》（GB/T 43560-2023，2023-12-28 发布并实施）. https://std.samr.gov.cn/gb/search/gbDetailed?id=0DF2F72AE29F403DE06397BE0A0A87C4 （curl 200；五维 30 指标体系、线性加权与权重规则，支撑族 F）
 
-7. European Commission. (2024). *Regional Innovation Scoreboard — performance indicators*. European Commission. https://research-and-innovation.ec.europa.eu/statistics/performance-indicators/regional-innovation-scoreboard_en （curl 200；区域创新绩效四分组、相对强项/弱项与专业化画像，支撑族 E）
-8. 国家市场监督管理总局、国家标准化管理委员会. (2023). 《新型城镇化 创新型城市评价指南》（GB/T 43560-2023，2023-12-28 发布并实施）. https://std.samr.gov.cn/gb/search/gbDetailed?id=0DF2F72AE29F403DE06397BE0A0A87C4 （curl 200；五维 30 指标体系、线性加权与权重规则，支撑族 F）
-9. 中国科学技术信息研究所. (2025). 《国家创新型城市创新能力评价报告2024》. 科学技术文献出版社（ISBN 9787523519936）. 发布信息与评价方法参见湖南省科学技术厅报道 https://kjt.hunan.gov.cn/kjt/xxgk/gzdt/szdt/zz/202501/t20250114_33564774.html （curl 200；5 维度 30 指标、覆盖 101 个国家创新型城市与 288 个地级及以上城市）
-10. Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the National Academy of Sciences*, 106(26), 10570–10575. https://doi.org/10.1073/pnas.0900943106 （Crossref 已核题名/刊名/卷期页；doi.org 对脚本访问返回 403，属出版社反爬，人工浏览器可开）
-11. 项目内旁证（非外部文献）：`开发库指标计算过程/M_INNOV_CITY_RANK_GLOBAL.md`（同族排名件，同样标注「论文城键补齐前不得升档」）、`M_INNOV_CITY_COMPARE_SZ.md`（四维体量对比件，与本案赛道对比分工）。
+8. 中国科学技术信息研究所. (2025). 《国家创新型城市创新能力评价报告2024》. 科学技术文献出版社（ISBN 9787523519936）. 发布信息与评价方法参见湖南省科学技术厅报道 https://kjt.hunan.gov.cn/kjt/xxgk/gzdt/szdt/zz/202501/t20250114_33564774.html （curl 200；5 维度 30 指标、覆盖 101 个国家创新型城市与 288 个地级及以上城市）
 
+9. Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the National Academy of Sciences*, 106(26), 10570–10575. https://doi.org/10.1073/pnas.0900943106 （Crossref 已核题名/刊名/卷期页；doi.org 对脚本访问返回 403，属出版社反爬，人工浏览器可开）
 ---
 
 # 附件
@@ -555,7 +602,7 @@ WIPO GII 的投入/产出两支柱七子柱框架 (Dutta et al., 2024)。可迁�
 
 读法：第 1–7 行构成专利轴全链路（原料 → 归属 → 聚合 → 三轴），是本次唯一可交付的部分；第 8 行是论文轴断链，第 9–10 行是「对照面」缺口，第 11 行是物化缺失，第 12 行提醒「同族对账≠交叉验证」。第 6 行是本次新算出的结构事实：三轴只覆盖城内 609 个 IPC4 中的 211 个，余下 398 个（65.4%）落在 LQ≈1 的灰区——这意味着「183 个优势领域」的表述必须配「灰区 398 个」一起读，否则会被误读为「深圳在 183/609 的赛道上领先」。
 
-**口径说明（2026-10-21 已校订）**：本表与 §2.7.2、§C.4 的底表行数原记 **210,459 / 449,935**，与 `code/M_INNOV_CITY_COMPETE_SZ_out.json` 的 `probes`（2,939,895 / 100,900）相差 14 倍与 4.5 倍。
+**口径说明（2026-10-21 已校订）**：本表与 §2.7.2、§C.4 的底表行数原记 **210,459 / 449,935**，与 `metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json` 的 `probes`（2,939,895 / 100,900）相差 14 倍与 4.5 倍。
 已按 out.json 与 `information_schema` 实测统一为 **`gkx.dwd_patent` 2,939,895 行（深圳 890,009）、`gkx.dwd_zh_paper` 100,900 行**，并补全库名（两表均只在 ods 库，dwd 库无同名表）。
 **改的是读数，不改任何结论**：三轴（优势 183 / 弱势 28 / 变化 −2.69%）与「论文轴断链」「灰区 398 个 IPC4」均不变。
 
@@ -585,7 +632,7 @@ WIPO GII 的投入/产出两支柱七子柱框架 (Dutta et al., 2024)。可迁�
 
 ### C.8 对甲方四问的逐条回答
 
-**① 这个指标现在能不能出数？** 能，而且是三条轴一起出：深圳优势 183 个 IPC4、弱势 28 个、近三年均值较 2021 年 −2.69%，三城并排的分领域 LQ 表也能出（脚本 `code/M_INNOV_CITY_COMPETE_SZ.py` 已跑通）。但出的是**专利口径**，论文侧一斤一两都没有。
+**① 这个指标现在能不能出数？** 能，而且是三条轴一起出：深圳优势 183 个 IPC4、弱势 28 个、近三年均值较 2021 年 −2.69%，三城并排的分领域 LQ 表也能出（脚本 `metrics/repro/M_INNOV_CITY_COMPETE_SZ.py` 已跑通）。但出的是**专利口径**，论文侧一斤一两都没有。
 
 **② 出的是不是甲方要的那个东西？** 七成是。需求要「对全球主要城市对比、给深圳对标推荐与差距分析」，现在给的是「深圳 vs 广州 vs 东莞」的赛道级差距——差距结构对了，比较范围不对。另有一处必须改口径表述：三轴只覆盖城内 609 个 IPC4 中的 211 个，余下 398 个（65.4%）在 LQ≈1 的灰区，产品层若只报「183 个优势领域」会被读成「领先三分之一赛道以上」。
 
@@ -595,14 +642,6 @@ WIPO GII 的投入/产出两支柱七子柱框架 (Dutta et al., 2024)。可迁�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_CITY_COMPETE_SZ.py`；产物：`code/M_INNOV_CITY_COMPETE_SZ_out.json`
+- 脚本：`metrics/repro/M_INNOV_CITY_COMPETE_SZ.py`；产物：`metrics/repro/out/M_INNOV_CITY_COMPETE_SZ_out.json`
 - 关键数字：深圳三轴 183 优势 IPC4/28 弱势/近三年较 2021 年 −2.69%；专利量级与官方 PCT 锚吻合；support_judgment=`部分支持`
 - 文献系：本指标属**竞争力对比系**（Porter LQ 集群映射+国知局专利导航）；与已入库 COMPARE_SZ（四维体量对比系——体量 vs 赛道分工）及同族 MONITOR（监测预警系）/INDEX（综合指数系）/RANK（排名方法论系）/FACTOR（要素分解系）各自成系，互不混用。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

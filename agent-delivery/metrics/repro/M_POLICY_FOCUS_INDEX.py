@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统（按 UI 挂载推断）
+# 【分级】无直接文档对应（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_POLICY_FOCUS_INDEX 政策焦点指数 —— gkx 复现（2026-10-23）
 
 口径（calc-logic/POLICY/M_POLICY_FOCUS_INDEX.md，权重待 QPOL-02）：

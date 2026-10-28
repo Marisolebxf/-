@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 【20261027 抬头治理件】维护者：唐绍祖 ｜ 适用系统：科技信息展示系统
+# 【分级】单系统（未入 D1–D5 跨系统分级；本批只加抬头注释，不改计算逻辑与产物数值）
 """M_ENT_KEYPANO_DOMAIN_SUMMARY 领域摘要 — 依赖侧实测脚本（20261021 改源版，王惠五步法逐环探针）
 
 王惠口径（wanghui_agg / calc-logic ENT/M_ENT_KEYPANO_DOMAIN_SUMMARY.md）五步：

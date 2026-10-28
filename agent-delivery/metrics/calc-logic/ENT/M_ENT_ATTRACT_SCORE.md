@@ -1,9 +1,20 @@
-# 招引推荐评分（M_ENT_ATTRACT_SCORE）
+# 企业招引评分（M_ENT_ATTRACT_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_ATTRACT_SCORE.md`；复现脚本 `metrics/repro/M_ENT_ATTRACT_SCORE.py` → `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：SCORE（四维加权）｜ **域**：企业服务／招引推荐／企业评分｜ **UI 挂载**：招引推荐列表、企业画像「招引价值」卡、招商线索池｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_ATTRACT_SCORE.py`、产物 `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_ATTRACT_SCORE.md`；复现脚本 `metrics/repro/M_ENT_ATTRACT_SCORE.py` → `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_ATTRACT_SCORE.py`、产物 `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_ATTRACT_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_ENT_ATTRACT_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json` |
@@ -66,15 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_ATTRACT_SCORE.py`、产物 `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：SCORE（四维加权）｜ **域**：企业服务／招引推荐／企业评分｜ **UI 挂载**：招引推荐列表、企业画像「招引价值」卡、招商线索池｜ **数据支持度**：**部分支持**
-> **口径来源**：本件重建。注册表 `calc_logic_ref` 指向 `calc-logic/ENT/M_ENT_ATTRACT_SCORE.md`，该文件把本指标定义为 `M_ENT_ATTRACTION_INDEX` 的**别名**（`attract_score = M_ENT_ATTRACTION_INDEX`），并明确「不另算第二套三维」；四维公式在任何 calc-logic 与王惠阶段性成果目录里都不存在｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_ATTRACT_SCORE.py` → `code/M_ENT_ATTRACT_SCORE_out.json`
-> **wanghui**：false（原稿曾标 true 并引 `指标计算逻辑-V2/M_ENT_ATTRACT_SCORE.md`，经查该文件全仓不存在，已改正）
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -129,7 +136,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 三处代理必须说清楚。技术维只看专利，研发投入大但专利少的企业会被低估；成长维用资本事件条数代替，已经上市的成熟企业反而得分高；属地适配用「当前城市是否深圳」这一条，没有区域产业匹配的含义。
 
-结论是「部分支持」：分可用于排序与线索筛选，但不能当验收值。上游指数一旦出数，本件应整体替换而不是修补。脚本 `code/M_ENT_ATTRACT_SCORE.py` 只读快照，重跑 0.4 秒。
+结论是「部分支持」：分可用于排序与线索筛选，但不能当验收值。上游指数一旦出数，本件应整体替换而不是修补。脚本 `metrics/repro/M_ENT_ATTRACT_SCORE.py` 只读快照，重跑 0.4 秒。
 
 ## 一、需求定义概述
 
@@ -301,11 +308,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 脚本只读快照，零 SQL。产物含 `weights`、`candidates`、`top100` 与 `top30_outside_shenzhen`。
 
-产物落在 `code/M_ENT_ATTRACT_SCORE_out.json`，是脚本唯一写出的文件；重跑会整体覆盖，不做增量追加。校验时以该文件的 `support_judgment`、`sources` 与正文逐项对账，任一项对不上即视为漂移。
+产物落在 `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json`，是脚本唯一写出的文件；重跑会整体覆盖，不做增量追加。校验时以该文件的 `support_judgment`、`sources` 与正文逐项对账，任一项对不上即视为漂移。
 
 | 命令 | 期望 | 备注 |
 |---|---|---|
-| `python3 M_ENT_ATTRACT_SCORE.py` | top100 + 市外 top30 | 0.4 秒 |
+| `cd code && python3 M_ENT_ATTRACT_SCORE.py` | top100 + 市外 top30 | 0.4 秒 |
 | `rebuild_metric.py M_ENT_ATTRACT_SCORE --check` | 语义一致 | 重跑对账 |
 
 ### 2.8 与旧稿的差异
@@ -752,11 +759,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 参考文献
 
 1. Hwang & Yoon (1981), Multiple Attribute Decision Making. https://doi.org/10.1007/978-3-642-48318-9
-2. Saaty (1980), The Analytic Hierarchy Process. https://doi.org/10.1016/0377-2217(87)901067
-3. 国家知识产权局. https://www.cnipa.gov.cn/
-4. 深圳市商务局. https://commerce.sz.gov.cn/
-5. 项目内 calc-logic V2：`M_ENT_ATTRACT_SCORE.md`
-
+2. 国家知识产权局. https://www.cnipa.gov.cn/
+3. 深圳市商务局. https://commerce.sz.gov.cn/
 ---
 
 # 附件
@@ -775,7 +779,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 附录 B 探测证据与产物字段
 
-下表是本件产物的关键字段与本次运行落盘值，任一行与 `code/M_ENT_ATTRACT_SCORE_out.json` 对不上即为产物漂移。
+下表是本件产物的关键字段与本次运行落盘值，任一行与 `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json` 对不上即为产物漂移。
 
 | 字段 | 内容/用途 |
 |---|---|
@@ -874,8 +878,8 @@ Top100 前 10 与市外 top3 如下，与产物 `top100`、`top30_outside_shenzh
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
 | `_staging21/M_ENT_ATTRACT_SCORE.md` | 指标文档（本文件） | 已交付 |
-| `code/M_ENT_ATTRACT_SCORE.py` | 自包含计算脚本 | 已跑通 |
-| `code/M_ENT_ATTRACT_SCORE_out.json` | 结果面 | 已落盘 |
+| `metrics/repro/M_ENT_ATTRACT_SCORE.py` | 自包含计算脚本 | 已跑通 |
+| `metrics/repro/out/M_ENT_ATTRACT_SCORE_out.json` | 结果面 | 已落盘 |
 | `code/_snapshots21/` | 只读快照 | 随件保留 |
 | `_work_gkx21/*.py` | 六条自查 | 通过 |
 
@@ -931,11 +935,3 @@ Top100 前 10 与市外 top3 如下，与产物 `top100`、`top30_outside_shenzh
 **问：多久更新？**
 
 答：季度。专利与资本事件都是低频变化。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

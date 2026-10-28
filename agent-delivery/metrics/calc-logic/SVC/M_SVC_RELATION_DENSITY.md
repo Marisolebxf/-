@@ -1,9 +1,24 @@
 # 服务关系链密度（M_SVC_RELATION_DENSITY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_RELATION_DENSITY.md`；复现脚本 `metrics/repro/M_SVC_RELATION_DENSITY.py` → `metrics/repro/out/M_SVC_RELATION_DENSITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：RATIO（机构级关系密度）｜ **域**：服务机构（SVC）· 关系网络｜ **UI 挂载**：服务机构关系图概览卡、城市服务机构网络密度对比
+> - **数据支持度**：**部分支持**｜ **依赖性质**：图结构量（点数/边数/连通分量）A 类可算；「服务合作边」整维结构性无源，以投资/股东边替代并声明
+> - **一句话结论**：服务机构池 **44,153** 家、去孤立点 **12,905** 家、池内无向边 **13,141** 条，全池密度 **0.1348/万对**、去孤立点后 **1.5783/万对**；但边只来自**投资/股东**两类股权关系——真正的「服务合作边」在 gkx 一张表都没有，时序密度亦无承载，故判 **部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SVC_RELATION_DENSITY.py`｜ **产物**：`metrics/repro/out/M_SVC_RELATION_DENSITY_out.json`
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SVC_RELATION_DENSITY.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_RELATION_DENSITY.py`、产物 `metrics/repro/out/M_SVC_RELATION_DENSITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_RELATION_DENSITY.md`；复现脚本 `metrics/repro/M_SVC_RELATION_DENSITY.py` → `metrics/repro/out/M_SVC_RELATION_DENSITY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_RELATION_DENSITY.py`、产物 `metrics/repro/out/M_SVC_RELATION_DENSITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_RELATION_DENSITY.md` |
 | 复现脚本 | `metrics/repro/M_SVC_RELATION_DENSITY.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_RELATION_DENSITY_out.json` |
@@ -61,18 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_RELATION_DENSITY.py`、产物 `metrics/repro/out/M_SVC_RELATION_DENSITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：RATIO（机构级关系密度）｜ **域**：服务机构（SVC）· 关系网络｜ **UI 挂载**：服务机构关系图概览卡、城市服务机构网络密度对比
-> **数据支持度**：**部分支持**｜ **依赖性质**：图结构量（点数/边数/连通分量）A 类可算；「服务合作边」整维结构性无源，以投资/股东边替代并声明
-> **公式定义人**：本件自建（无同 ID 正本（注册表无记录），按 v6 §八 处理，不造路径）
-> **复现脚本**：`code/M_SVC_RELATION_DENSITY.py`｜ **产物**：`code/M_SVC_RELATION_DENSITY_out.json`
-> **实测日期**：2026-10-23｜**数据源**：gkx @ 183.240.141.251:3318（只读，`gkx_reader_zp`）
-> **一句话结论**：服务机构池 **44,153** 家、去孤立点 **12,905** 家、池内无向边 **13,141** 条，全池密度 **0.1348/万对**、去孤立点后 **1.5783/万对**；但边只来自**投资/股东**两类股权关系——真正的「服务合作边」在 gkx 一张表都没有，时序密度亦无承载，故判 **部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -131,6 +139,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 第三件是**连通结构**。图不是一张大网，而是 2,270 个碎块，最大一块 7,040 家（占去孤立点后的 54.5525%），第二块只有 33 家，其余全是长尾小分量。这说明服务机构之间的关系高度依赖少数集团型主体（最大度 329），一旦把这些主体从图里拿掉，整个网络会散成大量孤岛。密度的「平均」在这里几乎没有解释力，必须同时给分量结构。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 政策服务分析阶段致力于构建政策效能评估体系和产业服务生态分析框架，为优化政策供给和完善服务体系提供数据支撑。在政策分析维度，通过政策焦点识别模型，精准把握政策关注的重点领域和方向；运用政策力度评估模型，量化衡量政策的支持强度和资源投入力度；建立政策效果评估模型，科学评价政策实施的实际成效和影响范围；通过政策短板识别，找出政策体系中的薄弱环节和覆盖盲区；利用政策机遇识别模型，挖掘政策红利和发展机会；<br>><br>> 本章节共包含十类模型：服务链短板分析模型聚焦识别影响服务质量与运营效能的薄弱环节；服务关系链模型量化分析服务机构间的合作、交易与信用网络结构；金融服务机构技术力评估模型衡量金融机构在资金运作与服务能力方面的综合水平；知识产权服务机构技术力评估模型评判知识产权服务机构在专业能力与业务覆盖上的实力表现；人力资源服务机构技术力评估模型测评人才供给能力、服务规范性与客户满意度；市场营销服务机构技术力评估模<br>><br>> 1.1.1.1.1.1.1.9.2.服务关系链模型<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 利用图谱计算指标（如节点异常度、异常关系密度等），对网络中的异常行为或异常模式进行实时监测，发现潜在风险链条。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SVC_RELATION_DENSITY.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -254,9 +308,9 @@ $P_0$ 的度分布：度 0 共 31,248 家（70.7721%）、度 1 共 8,149 家、
 ### 2.7 复现代码结果展示
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_SVC_RELATION_DENSITY.py
-# → code/M_SVC_RELATION_DENSITY_out.json
+# → metrics/repro/out/M_SVC_RELATION_DENSITY_out.json
 ```
 
 复现判据：
@@ -429,12 +483,6 @@ gkx 的 280 张表里没有 `enterprise_cooperation`，`information_schema.TABLE
 2. 图密度与连通性度量方法. 算法库 §1.1.1.1.1.1.1.2，需求 ID ALGO-SVC-021.
 3. Wasserman S., Faust K. *Social Network Analysis: Methods and Applications*. Cambridge University Press, 1994. https://doi.org/10.1017/CBO9780511815478
 4. Newman M. E. J. *Networks: An Introduction*. Oxford University Press, 2010. https://doi.org/10.1093/acprof:oso/9780199206650.001.0001
-5. 本地产物：
-   - `code/M_SVC_RELATION_DENSITY.py`
-   - `code/M_SVC_RELATION_DENSITY_out.json`
-   - `code/_probe_blocked_f2_20261023.json`
-6. `_work_gkx21/DATA_FACTS_gkx21.md`：§3.60 图算法点集与基准、§3.73 服务机构池口径
-
 ---
 
 # 附件
@@ -519,18 +567,11 @@ gkx 的 280 张表里没有 `enterprise_cooperation`，`information_schema.TABLE
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SVC_RELATION_DENSITY.py` |
-| 产物 | `code/M_SVC_RELATION_DENSITY_out.json` |
+| 脚本 | `metrics/repro/M_SVC_RELATION_DENSITY.py` |
+| 产物 | `metrics/repro/out/M_SVC_RELATION_DENSITY_out.json` |
 | 池家数 | 44,153 |
 | 非孤立家数 | 12,905 |
 | 无向边 | 13,141 |
 | $P_0$ 密度 | 0.1348/万对 |
 | $P_1$ 密度 | 1.5783/万对 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

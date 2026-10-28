@@ -1,9 +1,20 @@
-# 查询结果·科研机构绩效（M_ORG_PERF_QUERY）
+# M_ORG_PERF_QUERY · 科研机构绩效查询（结果面）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_PERF_QUERY.md`；复现脚本 `metrics/repro/M_ORG_PERF_QUERY.py` → `metrics/repro/out/M_ORG_PERF_QUERY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **数据支持度**：部分支持
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ORG_PERF_QUERY.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_PERF_QUERY.py`、产物 `metrics/repro/out/M_ORG_PERF_QUERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_PERF_QUERY.md`；复现脚本 `metrics/repro/M_ORG_PERF_QUERY.py` → `metrics/repro/out/M_ORG_PERF_QUERY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_PERF_QUERY.py`、产物 `metrics/repro/out/M_ORG_PERF_QUERY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +63,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_PERF_QUERY.md` |
 | 复现脚本 | `metrics/repro/M_ORG_PERF_QUERY.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_PERF_QUERY_out.json` |
@@ -60,15 +71,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_PERF_QUERY.py`、产物 `metrics/repro/out/M_ORG_PERF_QUERY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 域：科研机构（ORG）｜类型：查询结果面｜形态：机构×年×维度宽表 + 即席查询契约 + 数据标记
-> **数据支持度**：部分支持
-> 判定：查询接口**可转换**（325 家机构、4 类过滤、0.02 毫秒级响应）；「绩效结果宽表」**不可直接支持**（gkx 内 75 张机构相关表无一张是绩效结果表，只能离线物化）；年度序列**部分转换**（专利到 2024、论文到 2025、项目到 2022）；财务维**不可转换**（年报财务表对底册命中 0 行）
-> 一句话口径：把 2,074 家机构里 325 家「至少一项有产出信号」的机构物化成「机构 × 年 × 维度」宽表，提供名称/城市/类型/专利下限四类过滤，所有源不覆盖的年份返回 `null` 而不是 0
-> 复现：`python3 code/M_ORG_PERF_QUERY.py` 生成 `code/M_ORG_PERF_QUERY_out.json`（零 SQL，约 0.40 秒）
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -111,6 +118,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 审计发现两处查询层硬缺陷。第一，38 家机构有累计专利但没有任何年度序列（合计 788 件，占池内专利总量 12.02%），最大的是哈工大深圳（394 件）与电子科技大学（深圳）高等研究院（143 件），原因是累计与年度走两条不同的匹配链；第二，机构名未消歧，3 对是真正的同实体异名（如「深圳先进技术研究院」80 件与「中国科学院深圳先进技术研究院」943 件），另有 33 对是母体与下属所（如「广东省科学院」与「广东省科学院新材料研究所」），前者必须提示合并，后者不应合并。
 
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.2.4.1.2.1.1 人才与科研产出分析视图（L4192）<br>```<br>1.1.1.2.4.1.2.1.1. 人才与科研产出分析视图<br>该功能整合人才结构与科研机构绩效数据，自动匹配饼图、柱状图等可视化形式。用户可一目了然地识别人才分布特征与科研资源投入重点，支撑人才政策制定或科研合作决策。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ORG_PERF_QUERY.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
+
 ## 一、需求定义概述
 
 ### 1.1 所属功能模块（要开发什么）
@@ -149,7 +201,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1（3）调用方式 | 「按机构查询」的原始要求 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 824 行 |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1（3）调用方式 | 「按机构查询」的原始要求 | `《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 824 行 |
 | 2 | 展示系统 §1.1.1.2.4.2.4.4.1 评价框架配置 | 用户自选指标 → 现状解读 | `科技信息展示系统和科技专题服务系统.md` 第 4699–4709 行 |
 | 3 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.3 | live ADS 的 score 类表为样例级 | 本轮事实底稿 |
 | 4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 | 财务表对底册零命中 | 同上 |
@@ -228,7 +280,7 @@ $$v_{i,k,y}=\begin{cases}\text{计数}, & y\in Y_k\\ \text{null}, & y\notin Y_k\
 
 ### 2.7 步骤 6：复现代码与结果展示
 
-执行 `python3 M_ORG_PERF_QUERY.py`，零 SQL，约 0.40 秒，输出 `code/M_ORG_PERF_QUERY_out.json`（约 150 KB，含 325 条宽表）。脚本只依赖标准库与同目录的 `_org_m21_common.py`。
+执行 `cd code && python3 M_ORG_PERF_QUERY.py`，零 SQL，约 0.40 秒，输出 `metrics/repro/out/M_ORG_PERF_QUERY_out.json`（约 150 KB，含 325 条宽表）。脚本只依赖标准库与同目录的 `_org_m21_common.py`。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -419,7 +471,7 @@ $$v_{i,k,y}=\begin{cases}\text{计数}, & y\in Y_k\\ \text{null}, & y\notin Y_k\
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_ORG_PERF_QUERY.py
 python3 -c "import json;d=json.load(open('M_ORG_PERF_QUERY_out.json'));print(d['pool'],d['audit']['patents_without_series']['n'])"
 ```
@@ -437,17 +489,13 @@ python3 -c "import json;d=json.load(open('M_ORG_PERF_QUERY_out.json'));print(d['
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1（3）调用方式，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 824 行。
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1（3）调用方式，`《原始产品需求文档》（需求方原件不入仓）科技专题服务算法库.md` 第 824 行。
 2. 《科技信息展示系统和科技专题服务系统》§1.1.1.2.4.2.4.4.1 评价框架配置，同目录第 4699–4709 行。
-3. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.3（live ADS 样例级）、§3.10（财务表零命中）、§3.13（专利年份窗口）。
-4. `_snapshots21/probe_org_perf_tables_20261022.json`，75 张机构相关表清单。
-5. ISO 8000-61, *Data quality — Data quality management: Process reference model*, https://www.iso.org/standard/72264.html
-6. OECD, *Data and metadata reporting and presentation handbook*, https://www.oecd.org/sti/
-7. W3C, *Data on the Web Best Practices — Data Quality Vocabulary*, https://www.w3.org/TR/vocab-dqv/
-8. 国家统计局，《统计上划分信息相关产业暂行规定》, https://www.stats.gov.cn/
-9. 深圳市科技创新局，科研机构年度报告制度, https://stic.sz.gov.cn/
-10. 广东省科学技术厅，广东省科技统计年鉴, https://gdstc.gd.gov.cn/
-
+3. ISO 8000-61, *Data quality — Data quality management: Process reference model*, https://www.iso.org/standard/72264.html
+4. W3C, *Data on the Web Best Practices — Data Quality Vocabulary*, https://www.w3.org/TR/vocab-dqv/
+5. 国家统计局，《统计上划分信息相关产业暂行规定》, https://www.stats.gov.cn/
+6. 深圳市科技创新局，科研机构年度报告制度, https://stic.sz.gov.cn/
+7. 广东省科学技术厅，广东省科技统计年鉴, https://gdstc.gd.gov.cn/
 # 附件
 
 ## 附录 B　原始需求原文摘录
@@ -507,10 +555,3 @@ FROM gkx.dwd_patent;
 六、结论。本件在当前数据条件下已把「查询面」做到可用：325 家、八区块、四类过滤、两处审计。要升级为需求所暗示的「绩效结果面」，必须补三样东西：财务表与底册的统一 ID（投入侧）、项目数据到 2025（趋势）、机构别名与母子维表（消歧）。三样都不具备时，页面标题应写「机构画像」而不是「绩效查询」。
 
 七、遗留事项。第一，论文 2024 采集尖峰是否要在图上做平滑，需要产品确认；第二，38 家「有累计无序列」的机构是否要在卡片上显示「年度数据缺失」标记，需要产品确认；第三，高校本部（深圳大学、南方科技大学）是否要单独建一张「高校表」并入查询，需要业务方决定。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

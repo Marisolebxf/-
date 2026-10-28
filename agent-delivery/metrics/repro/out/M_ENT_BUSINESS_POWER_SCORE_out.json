@@ -3,6 +3,27 @@
   "metric_name": "商业力得分",
   "script": "M_ENT_BUSINESS_POWER_SCORE.py",
   "data_source": "gkx",
+  "applicable_systems": [
+    "科技专题服务算法库",
+    "科技专题系统"
+  ],
+  "params_effective": {
+    "dims": [
+      "市场",
+      "产品",
+      "品牌",
+      "技术合作",
+      "产业链覆盖率",
+      "关键环节参与度"
+    ],
+    "weights": null,
+    "org_scope": null,
+    "normalize": "minmax"
+  },
+  "assumptions": [
+    "weights 缺省 → 等权占位（Q014 未定）",
+    "3/6 维数据断链（dwd_org_industry_chain_dtl 无表 + 4 待建字段），当前不可出总分"
+  ],
   "probe": {
     "chain_dtl_gkx": "NO_TABLE",
     "chain_info_gkx": 1273,
@@ -46,6 +67,36 @@
       "verdict": "缺"
     }
   },
+  "engine": {
+    "normalize": "minmax",
+    "weights_effective": {
+      "市场": 0.1667,
+      "产品": 0.1667,
+      "品牌": 0.1667,
+      "技术合作": 0.1667,
+      "产业链覆盖率": 0.1667,
+      "关键环节参与度": 0.1667
+    },
+    "dims_active": [
+      "市场",
+      "产品",
+      "品牌",
+      "技术合作",
+      "产业链覆盖率",
+      "关键环节参与度"
+    ],
+    "dims_blocked": [
+      "产品",
+      "产业链覆盖率",
+      "关键环节参与度"
+    ],
+    "ready": false,
+    "blockers": [
+      "Q014 权重未落定",
+      "dwd_org_industry_chain_dtl 无表",
+      "4 个三级指标字段待建（新产品收入占比/产品质量/外部专家人月/行业荣誉tag语义）"
+    ]
+  },
   "support_judgment": {
     "data_support_level": "部分支持",
     "reason": "六维中：市场维财务填充率低（2095/90,926，2.3%）；产品/产业链覆盖/关键环节三维依赖的 dwd_org_industry_chain_dtl 在 gkx（及 live）均不存在（gkx industry_chain_info=1,273 仅链定义，无企业×节点关联）；品牌维资讯 1,668,414 行可算声量、tech_tag 202,424 待核荣誉语义；技术合作维专利 2,939,895 行可解析联合申请、外部专家人月无字段。4 个待建字段 + 1 张关键表缺失 → 始终有依赖维不闭合 → 部分支持。",
@@ -58,6 +109,23 @@
         "行业荣誉tag语义"
       ],
       "weights_closed": false
+    }
+  },
+  "display": {
+    "score_radar": {
+      "dims": [
+        "市场",
+        "产品",
+        "品牌",
+        "技术合作",
+        "产业链覆盖率",
+        "关键环节参与度"
+      ],
+      "values": null,
+      "note": "数据到位后此处返回 0-100 分（minmax 归一 + weights 加权）"
+    },
+    "ranking": {
+      "note": "同上；当前探针模式不产出企业排名"
     }
   }
 }

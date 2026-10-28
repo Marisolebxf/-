@@ -1,9 +1,20 @@
 # 覆盖领域数（M_ENT_DOMAIN_COVERAGE_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DOMAIN_COVERAGE_COUNT.md`；复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py` → `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：COUNT（集合级去重计数）｜ **域**：企业分析／重点企业领域分布分析／领域分布分析｜ **UI 挂载**：企业分析·领域分布分析「覆盖领域数」卡｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_DOMAIN_COVERAGE_COUNT.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py`、产物 `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DOMAIN_COVERAGE_COUNT.md`；复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py` → `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py`、产物 `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_DOMAIN_COVERAGE_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json` |
@@ -64,17 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py`、产物 `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT（集合级去重计数）｜ **域**：企业分析／重点企业领域分布分析／领域分布分析｜ **UI 挂载**：企业分析·领域分布分析「覆盖领域数」卡｜ **数据支持度**：**部分支持**
-> **口径来源**：王惠（`(王惠口径正本，GitLab 外本地归档)M_ENT_DOMAIN_COVERAGE_COUNT.md`）→ 2026-08-27 `ENT-SYNTH-METRIC-COVER-STAT-L01` 锁定 15 集群（`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DOMAIN_COVERAGE_COUNT.md`）
-> **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）＋ live 开发库只读复核
-> **复现**：`python3 M_ENT_DOMAIN_COVERAGE_COUNT.py` → `code/M_ENT_DOMAIN_COVERAGE_COUNT_out.json`
-> **wanghui**：true（§五 必含王惠口径对照）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -113,7 +118,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx.dwd_org_tech_tag` | 技术标签（旁证，不当领域键） | 202,424 行 / 32,322 家 |
 | `code/_snapshots21/chain_firm_index_20261023.json` | 已去脏链属企业索引 | 1,714,457 家、12 链 × 城市/省 |
 | `code/_snapshots21/w13e3_probe_20261023.json` | 本族否定性探针 | 280 表 / 6,312 列 / live 259 表 |
-| `code/M_ENT_DOMAIN_COVERAGE_COUNT_out.json` | 本件产物 | 覆盖、分布、缺口全部落盘 |
+| `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json` | 本件产物 | 覆盖、分布、缺口全部落盘 |
 
 阻塞表的逐表证据不在本文件重复抄录，直接引用 `_work_gkx21/TABLE_ABSENCE_EVIDENCE.md` 与 `_work_gkx21/TABLE_ABSENCE.json` 的 `industry_cluster` / `industry_cluster_map` 条目（两者均 `exists_in_gkx=false`、`derivable=false`）。这样做的原因与同族件一致：证据块本身带 SQL 与行数，抄一遍会产生两个版本，日后对不上。
 
@@ -128,6 +133,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 随后按 12 条产业链根码做代理：`dwd_org_industry_tags` 2,283,762 行，剔除 2 条畸形信用码与 569,303 行空数组后，得到 1,714,457 家链属企业；12 条链中软件与信息服务 917,842 家（53.5354%）、数字创意 261,837 家（15.2723%）、智能终端 143,389 家（8.3635%），前三合计 77.1713%，HHI 0.330732。338 个城市标签里有 205 个能覆盖全部 12 条链（60.65%），覆盖最低的果洛藏族自治州只有 4 条链、59 家企业。
 
 结论是 **部分支持**：降维到 12 链后，计数函数在任何企业集合上都能跑通，且王惠 20260817 的原口径本来就是 `credit_code + industry_code`，与代理口径同源；但只要甲方坚持 15 集群，就缺目录与映射这两块结构，无法靠现有数据补出，故不能判完全转换支持。
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > | 需求出处 | 展示系统 §1.1.1.2.4.2.3.2；算法库「企业基础指标模型 → 企业领域分布」 |<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_DOMAIN_COVERAGE_COUNT.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -177,7 +227,7 @@ A 族是需求原意：先有一个权威目录，再把企业挂上去。它的
 1. 国家统计局：《战略性新兴产业分类（2018）》。https://www.stats.gov.cn/sj/tjbz/201812/t20181218_1640317.html
 2. 国家统计局：《国民经济行业分类（GB/T 4754-2017）》。https://www.stats.gov.cn/sj/tjbz/gjtjbz/201710/t20171017_1758922.html
 3. 项目内 calc-logic 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DOMAIN_COVERAGE_COUNT.md`
-4. 王惠 20260817 正本：`(王惠口径正本，GitLab 外本地归档)M_ENT_DOMAIN_COVERAGE_COUNT.md`
+4. 王惠 20260817 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DOMAIN_COVERAGE_COUNT.md（王惠正本已演化并入）`
 5. 同族已交付件：`第三方库指标计算过程/M_ENT_DOMAIN_COVERAGE_BREADTH.md`、`第三方库指标计算过程/M_ENT_DOMAIN_COVERAGE_DEPTH.md`
 
 ### 1.6 推测原意与依赖维度
@@ -251,7 +301,7 @@ $$nominal = \frac{12}{15} = 80.00\%$$
 
 ### 2.4 计算步骤（脚本逐步实现）
 
-脚本 `code/M_ENT_DOMAIN_COVERAGE_COUNT.py` 分五步。第一步读探针，确认 15 集群目录与映射在两库都不存在；第二步读链索引，取出 12 个链根与逐链家数；第三步读城市与名单子集，算不同集合上的覆盖数；第四步算集中度与覆盖分布；第五步把四判定、缺口和全部数字写进产物。
+脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py` 分五步。第一步读探针，确认 15 集群目录与映射在两库都不存在；第二步读链索引，取出 12 个链根与逐链家数；第三步读城市与名单子集，算不同集合上的覆盖数；第四步算集中度与覆盖分布；第五步把四判定、缺口和全部数字写进产物。
 
 第一步的否定性证据必须保留在产物里，而不是只写在正文。原因是判「部分支持」时，下游最常问的一句话是「你凭什么说集群目录没有」；把表名命中数、列命中数、live 行数三组证据落盘，任何人重跑脚本都能得到同一组答案。
 
@@ -463,13 +513,8 @@ G6 影响底册口径。底册 189,116 家与链属 1,714,457 家的交集没有
 ## 参考文献
 
 1. 国家统计局：战略性新兴产业分类（2018）。https://www.stats.gov.cn/sj/tjbz/201812/t20181218_1640317.html
-2. 国家统计局：国民经济行业分类（GB/T 4754-2017）。https://www.stats.gov.cn/sj/tjbz/gjtjbz/201710/t20171017_1758922.html
+2. 国家统计局：国民经济行业分类（GB/T 4754-2017）。https://www.stats.gov.cn/
 3. 工信部等：《关于加快培育发展制造业优质企业的指导意见》。https://www.gov.cn/zhengce/zhengceku/2021-07/03/content_5622668.htm
-4. 项目内 calc-logic 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DOMAIN_COVERAGE_COUNT.md`
-5. 王惠 20260817 正本：`(王惠口径正本，GitLab 外本地归档)M_ENT_DOMAIN_COVERAGE_COUNT.md`
-6. 项目内数据事实：`_work_gkx21/DATA_FACTS_gkx21.md` §3.50、§3.52、§3.53、§3.54
-7. 项目内阻塞表证据：`_work_gkx21/TABLE_ABSENCE.json` 的 `industry_cluster_map` 条目
-
 # 附件
 
 ## 附录 A 需求原文摘录
@@ -555,7 +600,7 @@ A 族（权威目录）要求目录与映射，本件缺；B 族（链树）可�
 | 检查 | 结果 |
 |---|---|
 | 脚本可跑 | `python3 M_ENT_DOMAIN_COVERAGE_COUNT.py` 通过 |
-| 产物存在 | `code/M_ENT_DOMAIN_COVERAGE_COUNT_out.json` |
+| 产物存在 | `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json` |
 | 档位一致 | 文档与产物均为部分支持 |
 | 基期字段 | used/missing 为空，note 说明截面 |
 | demo 词 | 0 |
@@ -623,8 +668,8 @@ A 族（权威目录）要求目录与映射，本件缺；B 族（链树）可�
 | 文件 | 说明 |
 |---|---|
 | `_staging21/M_ENT_DOMAIN_COVERAGE_COUNT.md` | 本报告 |
-| `code/M_ENT_DOMAIN_COVERAGE_COUNT.py` | 计算脚本 |
-| `code/M_ENT_DOMAIN_COVERAGE_COUNT_out.json` | 产物 |
+| `metrics/repro/M_ENT_DOMAIN_COVERAGE_COUNT.py` | 计算脚本 |
+| `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_COUNT_out.json` | 产物 |
 | `code/_w13e3_common.py` | 族内共享读取与面板函数 |
 | `code/_snapshots21/w13e3_probe_20261023.json` | 族级探针 |
 
@@ -632,7 +677,7 @@ A 族（权威目录）要求目录与映射，本件缺；B 族（链树）可�
 
 | 步骤 | 命令 | 结果 |
 |---|---|---|
-| 1 | `python3 M_ENT_DOMAIN_COVERAGE_COUNT.py` | 写出产物，退出码 0 |
+| 1 | `cd code && python3 M_ENT_DOMAIN_COVERAGE_COUNT.py` | 写出产物，退出码 0 |
 | 2 | 读产物 `support_judgment` | 部分支持 |
 | 3 | 对账 | 1,714,457 = 2,283,762 − 569,303 − 2 |
 | 4 | 对账 | 205 + 43 + 29 + 24 + 15 + 16 + 3 + 2 + 1 = 338 |
@@ -664,11 +709,3 @@ A 族（权威目录）要求目录与映射，本件缺；B 族（链树）可�
 开发接手时先看三件事：第一，15 集群目录与 map 是否已补；第二，链索引快照是否更新；第三，UI 文案是否写明「12 条产业链」。三件事里任何一件没做，都不要把覆盖数直接挂到「领域分布」卡上。
 
 如果只做代理口径，建议把接口命名为 `domain_coverage_chain_count`，不要叫 `domain_coverage_count`，从命名上避免与 15 集群混淆。等 dim 补齐后再提供同名的 15 集群接口，两个接口并存一个版本周期，便于对账。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

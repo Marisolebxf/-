@@ -1,9 +1,20 @@
 # 科研机构影响力（M_INNOV_ORG_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_ORG_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_ORG_INFLUENCE.py` → `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：IND（实体影响力评分）｜ **域**：创新评价（INNOV）· 机构学术影响力｜ **UI 挂载**：科技发展态势 · 创新主体画像 · 科研机构影响力榜｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：详略级差异（D3）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_ORG_INFLUENCE.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_ORG_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_ORG_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_ORG_INFLUENCE.py` → `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_ORG_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -58,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_ORG_INFLUENCE.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_ORG_INFLUENCE.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json` |
@@ -66,14 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_ORG_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：IND（实体影响力评分）｜ **域**：创新评价（INNOV）· 机构学术影响力｜ **UI 挂载**：科技发展态势 · 创新主体画像 · 科研机构影响力榜｜ **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 V1.3 缺失维再归一化（推测定义；需求未给公式）｜ wanghui：false（本指标无王惠登记条目，V1.3 仅作方法范式）｜ 直接（结构/数据）：是 / 部分 ｜ 依赖（结构/数据）：是 / 部分
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -92,7 +100,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 本指标落**第三档**。原因有三层。第一层是**属地边界**：`dwd_research_institute_base_info` 2,074 家 100% 位于广东（深圳 1,014、广州 822、东莞 127、惠州 111），省外为 0，因此「全国科研机构影响力榜」在分母上就不成立。第二层是**匹配边界**：2,074 家里只有 255 家能在申请人聚合缓存 `star_applicant_agg_gkx.json` 中匹配到第一申请人专利，覆盖 12.30%，共 14,276 件。第三层是**实体边界**：底册只收「科研机构」，不收高校与企业，而深圳专利产出最高的主体恰恰是深圳大学、华为这类高校与企业，它们不在底册里。
 
-判断依据全部来自 `code/M_INNOV_ORG_INFLUENCE_out.json`：`universe.institute_roster=2074`、`patent_link.match_share_of_roster=0.123`、`scored=312`。
+判断依据全部来自 `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`：`universe.institute_roster=2074`、`patent_link.match_share_of_roster=0.123`、`scored=312`。
 
 ### 0.2 四判定（拆分证据，供落到档位）
 
@@ -120,6 +128,52 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 结论是**部分支持**：方法可复现、结果有区分度，但底册只覆盖广东、只有 12.30% 的机构能对上专利、高校与企业不在其中。这份榜可以回答「广东的院所谁强」，不能回答「全国的机构谁强」，更不能替代「高校影响力榜」。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D3 详略级差异：一方有完整算法定义，另一方仅功能/展示级要求**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技专题服务算法库》 | > 科技专题服务算法库是深度挖掘算法的重要服务引擎，面向政府、高校、科研机构、智库与科研企业的专题化分析与决策场景，提供从指标体系构建、知识图谱计算、深度分析与评价、预测仿真到推荐匹配的一体化能力。算法库贯通产业、技术、企业、人才、政策与服务机构等关键要素，在统一的数据底座与算力平台上，将分散的多源数据加工为结构化的指标与可计算的知识网络，输出可挖掘、可分析、可预测的智能成果，支撑线上智能分析与线下大<br>><br>> 围绕专题业务的本质特征，算法库构建可配置的指标体系与跨要素知识图谱，结合图结构计算、时序分析与机理模型，形成面向产业链与技术链的全景洞察，支持态势监测、趋势研判、瓶颈识别、路径优化与政策仿真。通过对企业、科研机构与人才的综合画像与评估，算法库实现对创新主体的竞争力判断与协同潜力识别，并在招引、培育与重点布局等决策环节提供面向场景的推荐与匹配结果。同时，算法库强调结果的可解释与评估，以模型卡、特征贡<br>><br>> 业务流程整体划分为5个阶段，包括①基础能力构建 - 建立指标体系和知识图谱；②产业要素分析 - 分析产业链和技术链；③创新主体分析 - 评估企业、科研机构和人才；④政策服务分析 - 评价政策和服务机构；⑤综合评价模型。<br>> |
+| 《科技信息展示系统和科技专题服务系统》 | > 从展示层来说，主要分为超大屏、中屏、小屏展示方式，针对各展示方式的内容定位、使用场景与用户需求进行建设，实现面向政府用户的决策场景、面向高校科研机构和企业的创新场景、面向智库用户的智库场景、面向访问人员的接待场景可视化应用。<br>><br>> 科技信息展示系统以政府、高校、科研机构、智库、科研企业为主要服务对象，以需求为导向、以数据为核心、以创新为驱动力。面向基础研究、应用基础研究和8大未来产业服务群落，提供基于智慧搜索、深度挖掘算法、科技指数计算、超大模型智算、亿级科技知识图谱的业务数据成果，构建面向政府用户的决策场景、面向高校科研机构和产业企业的创新场景、面向智库用户的智库场景、面向访问人员的接待场景的可视化专题。<br>><br>> 科技信息展示系统以政府、高校、科研机构、智库、科研企业为主要服务对象，以需求为导向、以数据为核心、以创新为驱动力。面向基础研究、应用基础研究和8大未来产业服务群落，提供基于智慧搜索、深度挖掘算法、科技指数计算、超大模型智算、亿级科技知识图谱的业务数据成果，构建面向政府用户的决策场景、面向高校科研机构和产业企业的创新场景、面向智库用户的智库场景、面向访问人员的接待场景的可视化专题。场景需求收集用户在<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+算法侧完整算法定义、系统侧功能/展示级要求。**单接口兼容**：以算法侧口径为唯一实现，系统侧以缺省参数+出参裁剪满足（依据分级处置建议「以算法侧定义为准，系统侧按展示裁剪」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_ORG_INFLUENCE.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -196,7 +250,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 - `_work_full/DISPATCH_BRIEF.md` 簇提示：原句「ORG_INFLUENCE：机构影响力，注意机构底册只有 2,074 家且全在广东」。
 - `_work_full/DATA_FACTS_gkx.md` 机构域：原句「`dwd_research_institute_base_info` 2,074 家，广东 100%，深圳 1,014」。
-- `code/M_INNOV_ORG_INFLUENCE_out.json`：`alternative_graph_test.verdict`，原句「学者合著网 118.76 万边属真实网络，但学者所属机构字段与 2,074 家科研机构底册 Top50 命中极少」。
+- `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`：`alternative_graph_test.verdict`，原句「学者合著网 118.76 万边属真实网络，但学者所属机构字段与 2,074 家科研机构底册 Top50 命中极少」。
 - 申请人聚合缓存：按 `first_applicant_name` 聚合，只有 `[件数, 授权数]`，无申请人列表、无 `value`。
 
 ### 1.6 推测原意与推测定义
@@ -304,7 +358,7 @@ GROUP BY scholar_org_name_zh ORDER BY n DESC LIMIT 50;
 
 ### 2.7 复现代码结果展示
 
-脚本：`code/M_INNOV_ORG_INFLUENCE.py`；输出：`code/M_INNOV_ORG_INFLUENCE_out.json`；命令 `python3 code/M_INNOV_ORG_INFLUENCE.py`；实测耗时 **10.2 秒**（专利聚合与论文计数均走缓存；100,900 篇论文的 JSON 解析在面板阶段完成）。
+脚本：`metrics/repro/M_INNOV_ORG_INFLUENCE.py`；输出：`metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json`；命令 `python3 code/M_INNOV_ORG_INFLUENCE.py`；实测耗时 **10.2 秒**（专利聚合与论文计数均走缓存；100,900 篇论文的 JSON 解析在面板阶段完成）。
 
 | 指标 | 实测值 | 说明 |
 |---|---:|---|
@@ -466,7 +520,6 @@ Top 榜里已经出现两组同名实体： 「中国科学院深圳先进技术
 8. Schankerman, M., & Pakes, A. (1986). Estimates of the Value of Patent Rights in European Countries During the Post-1950 Period. *The Economic Journal*, 96(384), 1052–1076. https://doi.org/10.2307/2233173 （Oxford/JSTOR 对脚本访问返回 403，Crossref 元数据已核对题名/卷期/年份；该记录只存起始页 1052，止页 1076 按纸本卷期补全，人工浏览器可开）
 9. Hirsch, J. E. (2005). An index to quantify an individual's scientific research output. *PNAS*, 102(46), 16569–16572. https://doi.org/10.1073/pnas.0507655102 （PNAS 对脚本访问返回 403，Crossref 元数据已核对，人工浏览器可开）
 10. 国家知识产权局.《专利统计年报》（按申请人类型发布申请/授权/有效量，专利统计口径）. https://www.cnipa.gov.cn/col/col61/index.html （族 B「先分主体类型、再比分领域」的官方口径来源）
-
 ---
 
 # 附件
@@ -646,7 +699,7 @@ Top 榜里已经出现两组同名实体： 「中国科学院深圳先进技术
 
 ## 附录 D 实测脚本与结果摘要
 
-脚本 `code/M_INNOV_ORG_INFLUENCE.py` 分五段：底册读取、专利申请人聚合与匹配、论文 JSON 流式解析、两维归一打分、合著网可行性检验。输出 `code/M_INNOV_ORG_INFLUENCE_out.json` 含 `universe`、`patent_link`、`paper_link`、`score_dist`、`top25`、`dimension_coverage`、`alternative_graph_test`、`support_judgment` 八个证据块。实测 10.2 秒（专利与论文聚合均走缓存），无外部依赖。
+脚本 `metrics/repro/M_INNOV_ORG_INFLUENCE.py` 分五段：底册读取、专利申请人聚合与匹配、论文 JSON 流式解析、两维归一打分、合著网可行性检验。输出 `metrics/repro/out/M_INNOV_ORG_INFLUENCE_out.json` 含 `universe`、`patent_link`、`paper_link`、`score_dist`、`top25`、`dimension_coverage`、`alternative_graph_test`、`support_judgment` 八个证据块。实测 10.2 秒（专利与论文聚合均走缓存），无外部依赖。
 
 脚本不落中间表；论文解析每次全量重跑。若产品需要接口级响应，应把 `org_id → score` 物化，并锁定 min/max 快照。复现命令：`python3 code/M_INNOV_ORG_INFLUENCE.py`。
 
@@ -663,11 +716,3 @@ Top 榜里已经出现两组同名实体： 「中国科学院深圳先进技术
 
 这一处理与专利指标「同族不去重」的原则一致：指标层保留原始记录，展示层做合并。
 两层分工明确，才能既保证可审计，又保证用户看到的是干净的榜。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

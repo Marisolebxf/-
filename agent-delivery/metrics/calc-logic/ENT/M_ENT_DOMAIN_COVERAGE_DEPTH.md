@@ -1,9 +1,21 @@
 # 领域覆盖深度（M_ENT_DOMAIN_COVERAGE_DEPTH）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DOMAIN_COVERAGE_DEPTH.md`；复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` → `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：ENT（企业基础指标）｜ **域**：企业（ENT）· 企业分析 → 重点企业领域分布分析 → 领域分布分析｜ **UI 挂载**：科技信息展示系统·企业分析·重点企业领域分布分析相关页面（wanghui: true）
+> - **数据支持度**：**部分支持**｜ **公式定义人**：王惠（原口径；当前 level 维无效，码深代理待会签）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：结构有但 level 字段无效 / tags 量足、层级维无效（代理可算但语义待签）
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_DOMAIN_COVERAGE_DEPTH.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py`、产物 `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_DOMAIN_COVERAGE_DEPTH.md`；复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` → `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py`、产物 `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_DOMAIN_COVERAGE_DEPTH.md` |
 | 复现脚本 | `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json` |
@@ -60,14 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py`、产物 `metrics/repro/out/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：ENT（企业基础指标）｜ **域**：企业（ENT）· 企业分析 → 重点企业领域分布分析 → 领域分布分析｜ **UI 挂载**：科技信息展示系统·企业分析·重点企业领域分布分析相关页面（wanghui: true）
-> **数据支持度**：**部分支持**｜ **公式定义人**：王惠（原口径；当前 level 维无效，码深代理待会签）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：结构有但 level 字段无效 / tags 量足、层级维无效（代理可算但语义待签）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -105,9 +114,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 它与 BREADTH（横向的「面」）正交：广度管「踩了几个领域」、深度管「在链图谱中扎到第几层」——需求原句「计算覆盖广度与深度」明确把两者并列为领域覆盖的两翼，本指标即其中「深」的那一翼。
 需求文档未给出公式；王惠调研底稿给出闭合口径「企业集合命中节点的最大 level ÷ 该链最大 level」，源表登记为 `gkx.dwd_org_industry_tags`（企业-节点关联）+ `gkx.dwd_industry_chain_info`（节点层级）。
 实测层面出现五兄弟中唯一的**硬断点**：`dwd_industry_chain_info` 1,273 行的 `level` 字段**无一例外全为 0**（与 B2 批次锚点「stage 分型无判定依据」同源），王惠公式的分母分子双双失效。
-脚本 `code/M_ENT_DOMAIN_COVERAGE_DEPTH.py` 探测确认该断点后，验证了**码长代理**的可行性：INB 码根 7 位、每层延展 +2 位，(len−7)/2 即层级深度，对 1,273 个链码算得 12 条链的深度结构（最大深度分布 {3:2, 4:4, 5:3, 6:2, 7:1}），且 228 万行 tags 可关联企业命中深度——**结构可代、量足**，但代理语义（目录树深度）≠ 王惠语义（业务环节纵深），归一化分母也随代理口径变化 → **部分支持**，代理启用待甲方会签。
+脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` 探测确认该断点后，验证了**码长代理**的可行性：INB 码根 7 位、每层延展 +2 位，(len−7)/2 即层级深度，对 1,273 个链码算得 12 条链的深度结构（最大深度分布 {3:2, 4:4, 5:3, 6:2, 7:1}），且 228 万行 tags 可关联企业命中深度——**结构可代、量足**，但代理语义（目录树深度）≠ 王惠语义（业务环节纵深），归一化分母也随代理口径变化 → **部分支持**，代理启用待甲方会签。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 本功能支持用户选择一家或多家重点企业，系统自动解析其业务范围、产品线与技术标签，并关联至具体产业领域，计算覆盖广度与深度。用户可识别企业核心赛道与新兴布局方向，辅助产业链招商与生态协同决策。<br>><br>> 该功能基于企业年报、专利、产品信息等数据，自动将其映射至预设产业领域，并计算在各领域的参与深度。用户可评估企业多元化程度。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_ENT_DOMAIN_COVERAGE_DEPTH.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -199,7 +253,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：需求未给公式；王惠口径因 level 失效无法原样落地。以下 §2.1–2.3 叙述王惠公式与其失效原因（探测证据进正文而非伪计算），§2.4–2.6 给出**码深代理口径**的计算过程（已由脚本 `code/M_ENT_DOMAIN_COVERAGE_DEPTH.py` 在三方真源 gkx 实测验证可行性，结果见同目录 `M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`；代理口径**未经会签，正式采用前不得上线**）。
+> **口径说明**：需求未给公式；王惠口径因 level 失效无法原样落地。以下 §2.1–2.3 叙述王惠公式与其失效原因（探测证据进正文而非伪计算），§2.4–2.6 给出**码深代理口径**的计算过程（已由脚本 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` 在三方真源 gkx 实测验证可行性，结果见同目录 `M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`；代理口径**未经会签，正式采用前不得上线**）。
 
 ### 2.1 方法选择：树形图谱层级深度，以及它的两个前提
 
@@ -245,12 +299,12 @@ $$DEPTH^{proxy}(E) = \max_{e \in E} \max_{j \in hits(e)} \frac{d(j)}{\max_{j' \i
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` |
 | 结果产物 | 同目录 `M_ENT_DOMAIN_COVERAGE_DEPTH_out.json` |
 | 主算库 | 三方真源 `gkx`（`dwd_industry_chain_info` 直连；tags 可行性验证） |
 
 ```bash
-python3 metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -297,7 +351,7 @@ python3 metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_DOMAIN_COVERAGE_DEPTH.py` 并确认探测与代理结论，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py` 并确认探测与代理结论，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库/三方（实测） | 实测结论 |
 |---|---|---|---|
@@ -388,18 +442,14 @@ python3 metrics/repro/M_ENT_DOMAIN_COVERAGE_DEPTH.py
 
 5. Wasserman, S., & Faust, K. (1994). *Social Network Analysis: Methods and Applications*. Cambridge University Press. https://doi.org/10.1017/CBO9780511815478 （图深度/网络度量工具箱，对照方法族 D）
 
-6. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DOMAIN_COVERAGE_DEPTH.md` — 王惠口径真源（level 树形层级归一化）。
+6. United Nations Statistics Division. (2008). *International Standard Industrial Classification of All Economic Activities (ISIC), Revision 4*. United Nations. https://unstats.un.org/unsd/classifications/Econ/isic （门类—大类—中类—小类四级层级，方法族 A1 的国际官方实例）
 
-7. United Nations Statistics Division. (2008). *International Standard Industrial Classification of All Economic Activities (ISIC), Revision 4*. United Nations. https://unstats.un.org/unsd/classifications/Econ/isic （门类—大类—中类—小类四级层级，方法族 A1 的国际官方实例）
+7. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754—2017）. https://www.stats.gov.cn/sj/tjbz/gmjjhyfl/202501/P020250116506795831658.pdf （四级行业分类的法定码位段，方法族 A2 的层级依据）
 
-8. 国家统计局. (2017). 《国民经济行业分类》（GB/T 4754—2017）. https://www.stats.gov.cn/sj/tjbz/gmjjhyfl/202501/P020250116506795831658.pdf （四级行业分类的法定码位段，方法族 A2 的层级依据）
+8. Hidalgo, C. A., Klinger, B., Barabási, A.-L., & Hausmann, R. (2007). The Product Space Conditions the Development of Nations. *Science*, 317(5837), 482–487. https://doi.org/10.1126/science.1144581 （产品空间的共现建边与邻近度，方法族 A3 的学术对照；doi.org 对脚本访问返回 403，人工浏览器可开）
 
-9. Hidalgo, C. A., Klinger, B., Barabási, A.-L., & Hausmann, R. (2007). The Product Space Conditions the Development of Nations. *Science*, 317(5837), 482–487. https://doi.org/10.1126/science.1144581 （产品空间的共现建边与邻近度，方法族 A3 的学术对照；doi.org 对脚本访问返回 403，人工浏览器可开）
-
-10. Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the National Academy of Sciences*, 106(26), 10570–10575. https://doi.org/10.1073/pnas.0900943106 （能力嵌套与复杂度反射法，支撑「深度可由共现结构而非目录树定义」的论证；doi.org 对脚本访问返回 403，人工浏览器可开）
-
+9. Hidalgo, C. A., & Hausmann, R. (2009). The building blocks of economic complexity. *Proceedings of the National Academy of Sciences*, 106(26), 10570–10575. https://doi.org/10.1073/pnas.0900943106 （能力嵌套与复杂度反射法，支撑「深度可由共现结构而非目录树定义」的论证；doi.org 对脚本访问返回 403，人工浏览器可开）
 文献—方法—库表完整论证见**附录 C**；实测产物见**附录 B / D**。
-
 ---
 
 # 附件
@@ -544,15 +594,7 @@ OECD 手册的引用距离、原创性-通用性刻画技术深浅 (OECD, 2009)�
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_ENT_DOMAIN_COVERAGE_DEPTH.py`
-- 产物：`../code/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`
+- 产物：`../metrics/repro/out/M_ENT_DOMAIN_COVERAGE_DEPTH_out.json`
 - 主算库：三方真源 `gkx`
 - 关键结果：level_dist={0:1273}（王惠口径失效证据）；code_depth_proxy：12 链、最大深度分布 {3:2, 4:4, 5:3, 6:2, 7:1}；tags_ready=true；support_judgment=`部分支持`
 - 工程注意：脚本为探测+代理验证性质，未输出正式全库分值（代理未会签）；正式化前置见 §四 与 §5.4。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

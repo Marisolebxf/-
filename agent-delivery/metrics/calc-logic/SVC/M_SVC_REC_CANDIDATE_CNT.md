@@ -1,9 +1,21 @@
 # 候选机构数（M_SVC_REC_CANDIDATE_CNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_REC_CANDIDATE_CNT.md`；复现脚本 `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py` → `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：已废止指标（原登记为 STAT，2026-10-13 撤销指标身份）｜ **域**：SVC 服务机构（产业服务链分析·服务机构推荐·招引/培育名单）｜ **UI 挂载**：招引/培育页「共 N 家候选」文案
+> - **数据支持度**：**完全不支持**（四档口径见 §〇）｜ **公式来源**：无。注册表 `formula` 为空，calc-logic 正本明写「无。不计算。」
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py`、产物 `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_REC_CANDIDATE_CNT.md`；复现脚本 `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py` → `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py`、产物 `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_REC_CANDIDATE_CNT.md` |
 | 复现脚本 | `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json` |
@@ -60,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py`、产物 `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：已废止指标（原登记为 STAT，2026-10-13 撤销指标身份）｜ **域**：SVC 服务机构（产业服务链分析·服务机构推荐·招引/培育名单）｜ **UI 挂载**：招引/培育页「共 N 家候选」文案
-> **数据支持度**：**完全不支持**（四档口径见 §〇）｜ **公式来源**：无。注册表 `formula` 为空，calc-logic 正本明写「无。不计算。」
-> **数据源**：gkx（183.240.141.251:3318，只读 gkx_reader_zp）+ `code/_snapshots21/` 落盘快照
-> **wanghui：false**（王惠未定义过本指标，无 §五 对照章节）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -239,7 +246,7 @@ gkx 当前 280 张表，表名逐个小写化后按五个模式匹配：`svc`、
 
 ### 3.12 否定性探针的可复现性
 
-探针脚本 `code/M_SVC_REC_CANDIDATE_CNT.py` 只读两个落盘快照：`gkx_columns_20261023.json`（表/列字典）与 `svc21_rec_20261023.json`（池与 9 组阶梯）。它不连库、不重扫表，运行时间约 1 秒。任何人拿到仓库都可以用 `python3 M_SVC_REC_CANDIDATE_CNT.py` 复现 3.1—3.4 的全部数字；这也是「完全不支持」档仍然要求 py + out.json 的意义——负结论不能只靠散文。
+探针脚本 `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py` 只读两个落盘快照：`gkx_columns_20261023.json`（表/列字典）与 `svc21_rec_20261023.json`（池与 9 组阶梯）。它不连库、不重扫表，运行时间约 1 秒。任何人拿到仓库都可以用 `cd code && python3 M_SVC_REC_CANDIDATE_CNT.py` 复现 3.1—3.4 的全部数字；这也是「完全不支持」档仍然要求 py + out.json 的意义——负结论不能只靠散文。
 
 ### 3.13 表名关键词检索的误判风险
 
@@ -332,16 +339,9 @@ gkx 当前 280 张表，表名逐个小写化后按五个模式匹配：`svc`、
 
 ## 参考文献
 
-1. 徐滕强. (2026-10-13). 《SVC-METRIC-COVER-STAT-L01 指标覆盖评审：候选机构数废止判定》. 项目内部记录.
+1. 全国人民代表大会常务委员会. (2017). 《中华人民共和国统计法》. https://www.stats.gov.cn/
 
-2. 侯佳伟. (2026-08-28). 《SVC-ALGO-STAT-21-L01 序号 19：候选机构数口径意见（1B）》. 项目内部记录.
-
-3. 项目组. (2026). 《USM/IA/TRACE-SVCCHAIN-RECOMMEND 服务推荐链路追踪》. 项目内部文档.
-
-4. 全国人民代表大会常务委员会. (2017). 《中华人民共和国统计法》. https://www.stats.gov.cn/sj/tjfg/
-
-5. 国家统计局. (2024). 《统计指标定义与分类通则》. https://www.stats.gov.cn/sj/tjbz/
-
+2. 国家统计局. (2024). 《统计指标定义与分类通则》. https://www.stats.gov.cn/sj/tjbz/
 ---
 
 # 附件
@@ -391,8 +391,8 @@ gkx 当前 280 张表，表名逐个小写化后按五个模式匹配：`svc`、
 
 | 文件 | 作用 | 本次状态 |
 |---|---|---|
-| `code/M_SVC_REC_CANDIDATE_CNT.py` | 否定性证据探针（零 DB） | 已跑通 |
-| `code/M_SVC_REC_CANDIDATE_CNT_out.json` | 证据与元数据 | 已落盘 |
+| `metrics/repro/M_SVC_REC_CANDIDATE_CNT.py` | 否定性证据探针（零 DB） | 已跑通 |
+| `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json` | 证据与元数据 | 已落盘 |
 | `_staging21/M_SVC_REC_CANDIDATE_CNT.md` | 本文件 | 已交付 |
 | `code/_snapshots21/gkx_columns_20261023.json` | 表/列字典 | 复用 |
 
@@ -477,19 +477,9 @@ gkx 当前 280 张表，表名逐个小写化后按五个模式匹配：`svc`、
 4. `support_judgment` 与文档头部档位一致（完全不支持）
 5. `base_years_used/_missing/_note` 三字段齐备（空表 + 说明）
 6. `sources` 只写 gkx 库名 + 主机 + 快照路径，无演示库痕迹
-7. 脚本自包含：`python3 M_SVC_REC_CANDIDATE_CNT.py` 可直接跑通
+7. 脚本自包含：`cd code && python3 M_SVC_REC_CANDIDATE_CNT.py` 可直接跑通
 8. 否定性证据四层齐全（表/列/同名表/语义）
 9. 注册表 retired 状态未被改动
 10. 正文不出现「候选机构数 = 某个具体 N」的表述
 
-> 生成本文件的时间：2026-10-23；数字均取自 `code/M_SVC_REC_CANDIDATE_CNT_out.json`。
-
-
-## 更新记录
-
-- 2026-08-21: 初版，模拟王惠调研产出
-- 2026-08-28: 侯佳伟 1B 不写 ADS（仍挂 STAT）
-- 2026-10-13: human:徐滕强 判定为实时筛选结果集 length，废止指标身份（同 SELECTED_COUNT）
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+> 生成本文件的时间：2026-10-23；数字均取自 `metrics/repro/out/M_SVC_REC_CANDIDATE_CNT_out.json`。

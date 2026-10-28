@@ -1,9 +1,21 @@
-# 深圳科研机构优势分析模型（M_ORG_DEEP_151_1）
+# M_ORG_DEEP_151_1 · 科研机构优势度评估（gkx 口径重建件）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_DEEP_151_1.md`；复现脚本 `metrics/repro/M_ORG_DEEP_151_1.py` → `metrics/repro/out/M_ORG_DEEP_151_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：评价型（EVAL，三维分位合成）｜ **域**：TOPIC-ORG（科研机构深度分析）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/科研机构深度分析模型构建/科研机构优势度评估
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：需求原文只给「综合评估机构优势与不足」，无维度、无权重、无阈值；本件沿用旧稿的三维等权 + 75/25 阈值
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_DEEP_151_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_151_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_DEEP_151_1.md`；复现脚本 `metrics/repro/M_ORG_DEEP_151_1.py` → `metrics/repro/out/M_ORG_DEEP_151_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_DEEP_151_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_151_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ORG_DEEP_151_1.md` |
 | 复现脚本 | `metrics/repro/M_ORG_DEEP_151_1.py` |
 | 复现产物 | `metrics/repro/out/M_ORG_DEEP_151_1_out.json` |
@@ -63,16 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_DEEP_151_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_151_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：评价型（EVAL，三维分位合成）｜ **域**：TOPIC-ORG（科研机构深度分析）｜ **UI 挂载**：智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/科研机构深度分析模型构建/科研机构优势度评估
-> **数据支持度**：**部分支持** ｜ **公式定义人**：需求原文只给「综合评估机构优势与不足」，无维度、无权重、无阈值；本件沿用旧稿的三维等权 + 75/25 阈值
-> **主算库**：`gkx`（183.240.141.251:3318，只读账号 `gkx_reader_zp`）｜ **SQL 条数**：0（全部读落盘快照）
-> **产物**：`code/M_ORG_DEEP_151_1.py` → `code/M_ORG_DEEP_151_1_out.json` ｜ **成文日期**：2026-10-22
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -112,7 +119,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 外部参照：全国高校名单去重后 2,933 所、31 省，广东 173 所，深圳 11 所（占 0.375%）。这份名单只作背景，不入分。
 
-**结论**：三维分位可复现，但覆盖 9.37%、三个分母不同源、产业维缺失，按 §〇 判**部分支持**。复现代码见 `code/M_ORG_DEEP_151_1.py`，结果见 `code/M_ORG_DEEP_151_1_out.json`。
+**结论**：三维分位可复现，但覆盖 9.37%、三个分母不同源、产业维缺失，按 §〇 判**部分支持**。复现代码见 `metrics/repro/M_ORG_DEEP_151_1.py`，结果见 `metrics/repro/out/M_ORG_DEEP_151_1_out.json`。
 
 ---
 
@@ -255,10 +262,10 @@ D3 的基准面最弱：只有 12 家深圳机构有学者记录，中位数 1.5
 ### 2.7 步骤 6｜复现代码与结果展示
 
 ```bash
-python3 M_ORG_DEEP_151_1.py
+cd code && python3 M_ORG_DEEP_151_1.py
 ```
 
-脚本零 SQL，只读机构面板、NSFC 快照、高校名单三份文件，输出 `code/M_ORG_DEEP_151_1_out.json`。产物含五个契约字段与 `probes`、`universe`、`consistency`、`benchmark`、`dim_stats`、`ai_dist`、`ai_top10`、`ai_bottom10`、`adv_orgs`、`weak_orgs`、`org_rows`、`hei_frame`、`gaps`。
+脚本零 SQL，只读机构面板、NSFC 快照、高校名单三份文件，输出 `metrics/repro/out/M_ORG_DEEP_151_1_out.json`。产物含五个契约字段与 `probes`、`universe`、`consistency`、`benchmark`、`dim_stats`、`ai_dist`、`ai_top10`、`ai_bottom10`、`adv_orgs`、`weak_orgs`、`org_rows`、`hei_frame`、`gaps`。
 
 实测输出（2026-10-22 运行）：
 
@@ -469,7 +476,7 @@ python3 M_ORG_DEEP_151_1.py
 ## 附录 A　复现
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_ORG_DEEP_151_1.py
 ```
 
@@ -481,7 +488,7 @@ python3 M_ORG_DEEP_151_1.py
 | `_snapshots21/nsfc_org_dist_20261022.json` | 全国 1,593 家 NSFC 机构分布 |
 | `_snapshots21/heis21_20261022.json` | 全国高校名单（外部参照） |
 
-输出：`code/M_ORG_DEEP_151_1_out.json`（覆盖写）。复现校验：两次运行，`ai_dist`、`adv_orgs`、`weak_orgs`、`org_rows` 逐字段一致。
+输出：`metrics/repro/out/M_ORG_DEEP_151_1_out.json`（覆盖写）。复现校验：两次运行，`ai_dist`、`adv_orgs`、`weak_orgs`、`org_rows` 逐字段一致。
 
 自检清单：
 
@@ -500,11 +507,9 @@ python3 M_ORG_DEEP_151_1.py
 1. 中国科学院.《研究所综合评估办法》. https://www.cas.cn/
 2. 国家自然科学基金委员会.《国家自然科学基金年度报告》. https://www.nsfc.gov.cn/
 3. 科学技术部科技评估中心.《科技评估方法》. https://www.ncste.org/
-4. OECD.《Frascati Manual 2015》. https://www.oecd.org/sti/inno/frascati-manual.htm
-5. QS.《World University Rankings: Methodology》. https://www.topuniversities.com/qs-world-university-rankings/methodology
-6. 教育部.《全国高等学校名单》. http://www.moe.gov.cn/jyb_xxgk/s5743/s5744/
-7. 深圳市科技创新局.《深圳市科技计划项目管理办法》. http://stic.sz.gov.cn/
-
+4. QS.《World University Rankings: Methodology》. https://www.topuniversities.com/qs-world-university-rankings/methodology
+5. 教育部.《全国高等学校名单》. http://www.moe.gov.cn/jyb_xxgk/s5743/s5744/
+6. 深圳市科技创新局.《深圳市科技计划项目管理办法》. http://stic.sz.gov.cn/
 ---
 
 # 附件
@@ -553,10 +558,3 @@ python3 M_ORG_DEEP_151_1.py
 **D.5 与旧稿的差异**：旧稿（`demo` 口径）用成立年、产业标签、六维加权；本件换成 gkx 后产业标签失效、经费改用 NSFC、学者覆盖骤降，因此维度从六降到三，分数不可与旧稿比较。
 
 **D.6 复现边界**：脚本不连库，只读三份冻结快照；`nsfc_org_dist_20261022.json` 由 `dwd_zh_project` 全量聚合（58,453 项），与面板项目字段交叉核对差异 0.00%。若源表更新，需重建快照并重跑，文档数值同步修订。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,21 @@
-# 产业链边数（链位关系数）（M_CHAIN_EDGE_COUNT）
+# 产业链边数（M_CHAIN_EDGE_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_EDGE_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_EDGE_COUNT.py` → `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **数据支持度**：**部分支持**
+> - **一句话结论**：`gkx.dwd_industry_chain_info` 能直接数出 **1,261 条父子归属边**（1,273 个环节节点减 12 个链根），但注册表所要求的“归属/参与/供应/依赖”四类图谱关系边在 gkx 无源表，因此本件判 **部分支持**，可交付值是“父子边 1,261 条”，不能声称等于“产业链全部关系边”。
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_EDGE_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_EDGE_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_EDGE_COUNT.py` → `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_EDGE_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_EDGE_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_EDGE_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json` |
@@ -61,19 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_EDGE_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **一句话结论**：`gkx.dwd_industry_chain_info` 能直接数出 **1,261 条父子归属边**（1,273 个环节节点减 12 个链根），但注册表所要求的“归属/参与/供应/依赖”四类图谱关系边在 gkx 无源表，因此本件判 **部分支持**，可交付值是“父子边 1,261 条”，不能声称等于“产业链全部关系边”。
->
-> **数据支持度**：**部分支持**
->
-> **公式定义人**：AI 补漏调研（2026-08-21 初版，`calc-logic/CHAIN/M_CHAIN_EDGE_COUNT.md`）；本件复算与判档：指标文档写手（2026-10-22）
->
-> **复现脚本 / 产物**：`code/M_CHAIN_EDGE_COUNT.py` → `code/M_CHAIN_EDGE_COUNT_out.json`
->
-> **基期声明**：截面指标，无年度基期。源表无版本列、无时间分区，快照日期 2026-10-22，`base_years_used=[]`、`base_years_missing=[]`，note 写明“截面指标”。
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -270,12 +274,12 @@ $$
 
 ### 2.7 复现代码与产物
 
-计算脚本：`code/M_CHAIN_EDGE_COUNT.py`。脚本只读快照、不连库，入口处即声明两份输入；输出 `code/M_CHAIN_EDGE_COUNT_out.json`，顶层含 `support_judgment`、`base_years_used`、`base_years_missing`、`base_years_note` 四键，另含 `headline`、`per_chain`、`depth_distribution`、`edge_types`、`caliber_compare`、`integrity`。
+计算脚本：`metrics/repro/M_CHAIN_EDGE_COUNT.py`。脚本只读快照、不连库，入口处即声明两份输入；输出 `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json`，顶层含 `support_judgment`、`base_years_used`、`base_years_missing`、`base_years_note` 四键，另含 `headline`、`per_chain`、`depth_distribution`、`edge_types`、`caliber_compare`、`integrity`。
 
 复现步骤：
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_EDGE_COUNT.py
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_EDGE_COUNT
 python3 _work_gkx21/audit_md_vs_out.py --dir _staging21
@@ -401,7 +405,7 @@ python3 _work_gkx21/audit_md_vs_out.py --dir _staging21
 2. 取 `len(industry_code) > 7` 的行，边为 `(industry_link_code, industry_code)`。
 3. 按 `industry_code[:7]` 分组得 12 条链。
 4. 用 `industry_code not in 父码集合` 得叶子，其余为容器。
-5. 与 `code/M_CHAIN_EDGE_COUNT_out.json` 的 `headline`、`per_chain` 逐项比对。
+5. 与 `metrics/repro/out/M_CHAIN_EDGE_COUNT_out.json` 的 `headline`、`per_chain` 逐项比对。
 
 ### 5.4 发布建议
 
@@ -414,8 +418,6 @@ python3 _work_gkx21/audit_md_vs_out.py --dir _staging21
 3. 国家发展和改革委员会. 产业结构调整指导目录（2024 年本）[EB/OL]. https://www.ndrc.gov.cn/
 4. 工业和信息化部. 产业链供应链韧性与安全水平提升相关文件[EB/OL]. https://www.miit.gov.cn/
 5. Porter M E. The Competitive Advantage of Nations[M]. New York: Free Press, 1990.
-6. 项目内部. 链位关系数（M_CHAIN_EDGE_COUNT）计算逻辑：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_EDGE_COUNT.md`
-
 # 附件
 
 ## 附录 A 原文摘录与口径出处
@@ -531,11 +533,3 @@ weight, confidence, valid_from, valid_to, source_system
 ```
 
 只要这张表落地，本指标即可从“部分支持”升为“完全直接支持”，且能同时支持新增边、失效边、强度加权三种衍生指标。
-
-
-## 更新记录
-
-- 2026-08-21: 初版，模拟王惠调研产出
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

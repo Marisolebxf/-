@@ -1,9 +1,20 @@
 # 创新能力指数（M_ENT_INNOVATION_INDEX）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_INNOVATION_INDEX.md`；复现脚本 `metrics/repro/M_ENT_INNOVATION_INDEX.py` → `metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（企业综合评价模型·创新三准则层加权评分）｜ **域**：企业分析·企业评估·综合竞争力评估（ENT）｜ **UI 挂载**：算法库「深圳企业竞争力水平分析模型」§1.1.1.1.1.1.1.5.1 创新能力评估分支（SRS 需规清单序号 141）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_INNOVATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_INNOVATION_INDEX.md`；复现脚本 `metrics/repro/M_ENT_INNOVATION_INDEX.py` → `metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_INNOVATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_INNOVATION_INDEX.md` |
 | 复现脚本 | `metrics/repro/M_ENT_INNOVATION_INDEX.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json` |
@@ -64,14 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_INNOVATION_INDEX.py`、产物 `metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（企业综合评价模型·创新三准则层加权评分）｜ **域**：企业分析·企业评估·综合竞争力评估（ENT）｜ **UI 挂载**：算法库「深圳企业竞争力水平分析模型」§1.1.1.1.1.1.1.5.1 创新能力评估分支（SRS 需规清单序号 141）｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020）**：王惠（calc-logic 真源：三准则层 14 三级指标，极值归一×100 → 层内加权 → 层间加权 → 0—100 分）｜ 直接（结构/数据）：否（无结果面）/ 否 ｜ 依赖（结构/数据）：财务/专利/标签表结构在 / 研发投入 0/90,926、五项待建零承载、获奖标签 0 命中
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -105,7 +113,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 摘要
 
-「创新能力指数」是企业评估域的综合评分：企业级 0—100 分，从创新投入能力、创新产出能力、创新的可持续发展能力三个准则层（14 个三级指标）加权综合反映企业创新水平，是深圳企业竞争力水平分析模型中与综合竞争力分（COMPETITIVENESS_SCORE）并行但语义独立的创新专项评分。需求文档给出竞争力模型的维度叙述但**未写创新专项的指标清单、归一化方法与权重**；口径真源为 calc-logic（王惠调研结果规范化迁移）：三级指标极值归一化 ×100 → 层内加权 → 层间加权三步合成，权重待甲方确认（Q014）。权威方法侧，国家统计局《中国创新指数》以「创新环境/投入/产出/成效」四领域 18 指标逐级等权合成国家级指数 (国家统计局, 2024)，欧盟创新记分牌（EIS）以四支柱 32 指标重构综合创新指数 (European Commission, 2026)——两者共同确认「投入—产出—可持续」三段式与极值标准化路径的权威性。实测（2026-10-20，脚本 `code/M_ENT_INNOVATION_INDEX.py`）：14 项三级指标中专利三项原料足（294 万专利 + `dwd_patent_legal` 20,000 行）；财务侧薄填充（`arch_development_am` 研发投入 **0/90,926**、`development_employee` 研发人员 **0**、`employees_number` 从业 3,184）；五项待建复核——资本化研发/科研平台/软件著作权/无形资产明细四模式探针零命中、学历结构仅命中学者个人背景表（`dwd_scholar_education_background`，系人才非企业口径，误中）；获奖类标签 LIKE 探针 **0 类命中** → **部分支持**；先验标签「完全直接支持」被实测推翻（无结果面、研发投入全空），以实测为准。
+「创新能力指数」是企业评估域的综合评分：企业级 0—100 分，从创新投入能力、创新产出能力、创新的可持续发展能力三个准则层（14 个三级指标）加权综合反映企业创新水平，是深圳企业竞争力水平分析模型中与综合竞争力分（COMPETITIVENESS_SCORE）并行但语义独立的创新专项评分。需求文档给出竞争力模型的维度叙述但**未写创新专项的指标清单、归一化方法与权重**；口径真源为 calc-logic（王惠调研结果规范化迁移）：三级指标极值归一化 ×100 → 层内加权 → 层间加权三步合成，权重待甲方确认（Q014）。权威方法侧，国家统计局《中国创新指数》以「创新环境/投入/产出/成效」四领域 18 指标逐级等权合成国家级指数 (国家统计局, 2024)，欧盟创新记分牌（EIS）以四支柱 32 指标重构综合创新指数 (European Commission, 2026)——两者共同确认「投入—产出—可持续」三段式与极值标准化路径的权威性。实测（2026-10-20，脚本 `metrics/repro/M_ENT_INNOVATION_INDEX.py`）：14 项三级指标中专利三项原料足（294 万专利 + `dwd_patent_legal` 20,000 行）；财务侧薄填充（`arch_development_am` 研发投入 **0/90,926**、`development_employee` 研发人员 **0**、`employees_number` 从业 3,184）；五项待建复核——资本化研发/科研平台/软件著作权/无形资产明细四模式探针零命中、学历结构仅命中学者个人背景表（`dwd_scholar_education_background`，系人才非企业口径，误中）；获奖类标签 LIKE 探针 **0 类命中** → **部分支持**；先验标签「完全直接支持」被实测推翻（无结果面、研发投入全空），以实测为准。
 
 ---
 
@@ -176,7 +184,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 calc-logic 口径展开（公式定义人=王惠），已由脚本 `code/M_ENT_INNOVATION_INDEX.py` 于 2026-10-20 在三方 gkx 完成财务维填充、专利维体量、获奖标签命中与五项待建复核的实测；因投入层半缺、产出层两项零承载，本批为「原料审计」而非出数——九个零值指标进分会把「是否披露」误当「创新能力」。结果见同目录 `M_ENT_INNOVATION_INDEX_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」。本节与 COMPETITIVENESS_SCORE 叶共用评分学骨架（极值归一 + 两级加权），但指标体系、准则层结构、断点结构与出数纪律的论证各自独立展开。
+> **口径说明**：本节按王惠 calc-logic 口径展开（公式定义人=王惠），已由脚本 `metrics/repro/M_ENT_INNOVATION_INDEX.py` 于 2026-10-20 在三方 gkx 完成财务维填充、专利维体量、获奖标签命中与五项待建复核的实测；因投入层半缺、产出层两项零承载，本批为「原料审计」而非出数——九个零值指标进分会把「是否披露」误当「创新能力」。结果见同目录 `M_ENT_INNOVATION_INDEX_out.json`。文内引用格式为 SCI 常用「叙述后附 (Author)」。本节与 COMPETITIVENESS_SCORE 叶共用评分学骨架（极值归一 + 两级加权），但指标体系、准则层结构、断点结构与出数纪律的论证各自独立展开。
 
 ### 2.1 方法选择：为何用「三准则层极值归一 + 两级加权」而非单一专利计数或端到端模型
 
@@ -226,12 +234,12 @@ $$InnovationIndex_i = \sum_{k=1}^{3} W_k \cdot L_{ik},\qquad W_k\ \text{由 Q014
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_ENT_INNOVATION_INDEX.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_ENT_INNOVATION_INDEX.py` |
 | 结果产物 | 同目录 `M_ENT_INNOVATION_INDEX_out.json` |
 | 探测库 | 三方 `gkx`（财务填充 + 专利体量 + 获奖标签 + 五项待建复核） |
 
 ```bash
-python3 metrics/repro/M_ENT_INNOVATION_INDEX.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_ENT_INNOVATION_INDEX.py
 ```
 
 脚本输出 `probe`（financial_fill、patent_legal_rows、award_like_tags、missing_check）与 `support_judgment`（机判）。以下展示为 **2026-10-20** 完整跑数结果（与 out.json 一致）。
@@ -302,7 +310,7 @@ python3 metrics/repro/M_ENT_INNOVATION_INDEX.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_ENT_INNOVATION_INDEX.py` 并确认原料实测，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_ENT_INNOVATION_INDEX.py` 并确认原料实测，再写本档支持度。
 
 | 依赖维度 | 候选表/字段 | 开发库（实测） | 三方 gkx（实测） | 实测结论 |
 |---|---|---|---|---|
@@ -315,7 +323,7 @@ python3 metrics/repro/M_ENT_INNOVATION_INDEX.py
 **四判定（§〇）**：直接结构/数据 = 否（无结果面）；依赖结构 = **部分**（专利/财务/标签表结构在，五项待建结构性无承载）；依赖数据 = **部分**（专利三项足；财务九项 0—3.5%；获奖零命中）。
 
 **数据支持度（以脚本 `support_judgment` 为准）**：**部分支持**
-依据：`code/M_ENT_INNOVATION_INDEX_out.json` 实测——14 项三级指标：专利三项原料足（294 万专利 + 法务 20,000 行）；财务侧薄填充（研发 0/90,926、研发人员 0、从业 3,184）；五项 calc-logic 自标待建复核确认零承载（资本化/平台/软著/无形四项探针零命中，学历项仅误中学者个人表）；获奖类标签 LIKE 探针 0 类命中。三准则层中投入层半缺、产出层两项缺、可持续层薄 → **部分支持**（表结构在、原料结构性薄与缺建，非无法构建）。**先验标签「完全直接支持」与实测矛盾（无结果面、研发投入全空），以实测为准。**
+依据：`metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json` 实测——14 项三级指标：专利三项原料足（294 万专利 + 法务 20,000 行）；财务侧薄填充（研发 0/90,926、研发人员 0、从业 3,184）；五项 calc-logic 自标待建复核确认零承载（资本化/平台/软著/无形四项探针零命中，学历项仅误中学者个人表）；获奖类标签 LIKE 探针 0 类命中。三准则层中投入层半缺、产出层两项缺、可持续层薄 → **部分支持**（表结构在、原料结构性薄与缺建，非无法构建）。**先验标签「完全直接支持」与实测矛盾（无结果面、研发投入全空），以实测为准。**
 
 ---
 
@@ -384,11 +392,6 @@ python3 metrics/repro/M_ENT_INNOVATION_INDEX.py
 5. 国家统计局, 国家知识产权局. (2024). 《2023 年全国专利密集型产业增加值数据公告》（第 613 号；IPC-行业映射与专利分数计数法——专利归集口径的官方实践）. https://www.cnipa.gov.cn/art/2024/12/31/art_74_196992.html
 
 6. 工业和信息化部. (2022). 《优质中小企业梯度培育管理暂行办法》（工信部企业〔2022〕63 号；创新型中小企业评价指标（创新能力/成长性/专业化三类六指标、60 分制）——企业创新打分的政策实践对照）. https://www.gov.cn/zhengce/zhengceku/2022-06/02/5693548/files/b688da806d224e828076e99a2cbb9151.pdf
-
-7. 项目内口径真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_INNOVATION_INDEX.md` — 三准则层 14 指标体系表、三步公式、源表字段与五项待建登记。
-
-8. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_SCORE.md` — 同族评分叶（共享 Q014 与财务扩源里程碑，指标体系独立）。
-
 ---
 
 # 附件
@@ -418,7 +421,7 @@ python3 metrics/repro/M_ENT_INNOVATION_INDEX.py
 
 - calc-logic 登记（王惠规范化迁移）：源表三族（`dwd_org_annual_financial_info` / `dwd_patent` + `dwd_patent_legal` / `dwd_org_tech_tag`）；五项待建逐条登记（资本化研发字段/科研平台表/学历结构字段/软件著作权表/无形资产明细字段）；落表 `ads_ent_innovation_index` 待建；Q014 关联。
 - B2 批次锚点（PROGRESS.md，2026-10-20）：`M_ENT_INNOVATION_INDEX` 部分支持；R&D 0/90,926 + 五待建表零承载；专利 294 万行足；`dwd_patent_legal` 20,000 行。
-- 本批实测（`code/M_ENT_INNOVATION_INDEX.py`，2026-10-20）：rd=0、rde=0、emp=3,184；patent_legal=20,000；award_like_tags=[]（0 类命中）；missing_check 四项零命中 + 学历项误中 [dwd_scholar_education_background(+bak)]；`support_judgment = 部分支持`。
+- 本批实测（`metrics/repro/M_ENT_INNOVATION_INDEX.py`，2026-10-20）：rd=0、rde=0、emp=3,184；patent_legal=20,000；award_like_tags=[]（0 类命中）；missing_check 四项零命中 + 学历项误中 [dwd_scholar_education_background(+bak)]；`support_judgment = 部分支持`。
 
 ## 附录 C　创新能力指数类似指标权威构建方法可行性报告（完整版）
 
@@ -498,15 +501,7 @@ Hall 等以 1963—1999 美国专利全量证明引用强度（citations/patent�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_ENT_INNOVATION_INDEX.py`；产物：`../code/M_ENT_INNOVATION_INDEX_out.json`
+- 脚本：`../code/M_ENT_INNOVATION_INDEX.py`；产物：`../metrics/repro/out/M_ENT_INNOVATION_INDEX_out.json`
 - 探测库：三方 `gkx`
 - 关键结果：`arch_development_am` 0/90,926、`development_employee` 0、`employees_number` 3,184；`dwd_patent_legal` 20,000 行；获奖标签 0 类命中；五项待建四零命中 + 学历误中学者表；`support_judgment = 部分支持`
 - 工程注意：投入层整断是根因缺口；Q014 会签与 COMPETITIVENESS 叶合并；专利子指数过渡须口径注明；与 COMPETITIVENESS_SCORE 共骨架但体系独立，页面须显式区分。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

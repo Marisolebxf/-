@@ -1,9 +1,24 @@
-# 技术成熟度评分（M_CHAIN_TECH_MATURITY_SCORE）
+# 产业链技术成熟度评分（M_CHAIN_TECH_MATURITY_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_TECH_MATURITY_SCORE.md`；复现脚本 `metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py` → `metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：SCORE（专利时间序列 + 阈值映射）｜ **域**：产业链分析／产业链全景／技术能级｜ **UI 挂载**：链详情页「技术成熟度」刻度条、链间技术能级对比
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（专利面板 293.99 万行全量可算）+ B 类（公开年缺失、历史窗口缺失、链匹配仅 30.05%）**
+> - **一句话结论**：12 条链的专利增速分落在 **49.22—90.0**，10 条判「成熟」、2 条判「衰退」（智能网联汽车 49.22、数字创意 75.21）；但 90 分是「$|g|\le 5\%$」的封顶档，10 条链并列 90 使分数在链间几乎不可比，本件因此判 **部分支持** 并明确「只可用于分档、不可用于精确排序」。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py`｜ **产物**：`metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json`｜ **模式**：只读快照，零数据库连接
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_TECH_MATURITY_SCORE.md`；复现脚本 `metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py` → `metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +72,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_CHAIN_TECH_MATURITY_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json` |
@@ -65,19 +80,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py`、产物 `metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：SCORE（专利时间序列 + 阈值映射）｜ **域**：产业链分析／产业链全景／技术能级｜ **UI 挂载**：链详情页「技术成熟度」刻度条、链间技术能级对比
-> **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（专利面板 293.99 万行全量可算）+ B 类（公开年缺失、历史窗口缺失、链匹配仅 30.05%）**
-> **公式定义人**：注册表只给「技术成熟度评分」名词与 0—100 区间；**增速分档阈值（$\pm 5\%$、六档 0/25/50/70/90/衰减）由本件自定义并声明，非官方口径**，**待甲方会签**
-> **复现脚本**：`code/M_CHAIN_TECH_MATURITY_SCORE.py`｜ **产物**：`code/M_CHAIN_TECH_MATURITY_SCORE_out.json`｜ **模式**：只读快照，零数据库连接
-> **基期声明**：统计年 2024，主窗口 $k=3$（2021→2024），上期增速用 2021→2023 的 $k=2$ 年化值。`base_years_used=[2021,2022,2023,2024]`、`base_years_missing=[2017,2018,2019,2020]`（源表零行）、`base_years_note` 已写明 2025/2026 为采集残年且主动排除。
-> **同域对账**：与 `M_CHAIN_REG_TECH_MATURITY`（链 × 城 48 格）同面板、同阈值，链级 Spearman 0.6397、12 条链中 7 条同阶段；与 `M_TECH_MATURITY_LEVEL`（深圳 IPC4 域级 L1—L5 五因子）只做方向对账，不互换数值。
-> **一句话结论**：12 条链的专利增速分落在 **49.22—90.0**，10 条判「成熟」、2 条判「衰退」（智能网联汽车 49.22、数字创意 75.21）；但 90 分是「$|g|\le 5\%$」的封顶档，10 条链并列 90 使分数在链间几乎不可比，本件因此判 **部分支持** 并明确「只可用于分档、不可用于精确排序」。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -168,8 +175,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 1 | `gkx.dwd_patent` | 183.240.141.251:3318 | 专利明细来源 |
 | 2 | `code/_snapshots21/patent_panel_innov_20261021.json` | 仓内快照 | 2,939,895 行专利面板 |
 | 3 | `code/_snapshots21/chain_firm_index_20261023.json` | 仓内快照 | 1,714,457 家去脏链企业 |
-| 4 | `code/M_CHAIN_REG_TECH_MATURITY_out.json` | 仓内产物 | 链 × 城同面板对账 |
-| 5 | `code/M_TECH_MATURITY_LEVEL_out.json` | 仓内产物 | 深圳 IPC4 域级方向对账 |
+| 4 | `metrics/repro/out/M_CHAIN_REG_TECH_MATURITY_out.json` | 仓内产物 | 链 × 城同面板对账 |
+| 5 | `metrics/repro/out/M_TECH_MATURITY_LEVEL_out.json` | 仓内产物 | 深圳 IPC4 域级方向对账 |
 | 6 | ISO 16290:2013. Space systems — Definition of the Technology Readiness Levels | https://www.iso.org/standard/56064.html | TRL 定义 |
 
 ### 1.6 本报告的口径与边界（须与甲方会签）
@@ -285,7 +292,7 @@ Spearman 0.6397 说明两件的链级排序**中度一致**，不是完全一致
 ### 2.7 复现代码与结果
 
 ```bash
-cd agent-delivery/metrics/repro
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_CHAIN_TECH_MATURITY_SCORE.py
 # 输出 M_CHAIN_TECH_MATURITY_SCORE_out.json（只读快照，零 DB）
 ```
@@ -429,12 +436,9 @@ UI 用色带 + 档位名，不显示两位小数分数（避免「89.5 vs 90.0�
 ## 参考文献
 
 1. ISO 16290:2013. Space systems — Definition of the Technology Readiness Levels (TRLs) and their criteria of assessment. https://www.iso.org/standard/56064.html
-2. Ernst, H. (1997). The use of patent data for technological forecasting: The diffusion of CNC-technology in the machine tool industry. *Small Business Economics*, 9(4), 361–381. https://doi.org/10.1023/A:1007922003277
-3. Lanjouw, J. O., & Schankerman, M. (2004). Patent quality and research productivity. *The Economic Journal*, 114(495), 441–465. https://doi.org/10.1111/j.1468-0297.2004.00216.x
-4. Griliches, Z. (1990). Patent statistics as economic indicators: A survey. *Journal of Economic Literature*, 28(4), 1661–1707. https://www.jstor.org/stable/2726978
-5. 国家知识产权局. 专利统计年报. https://www.cnipa.gov.cn/
-6. 项目内部. 专利面板快照：`code/_snapshots21/patent_panel_innov_20261021.json`
-
+2. Lanjouw, J. O., & Schankerman, M. (2004). Patent quality and research productivity. *The Economic Journal*, 114(495), 441–465. https://doi.org/10.1111/j.1468-0297.2004.00216.x
+3. Griliches, Z. (1990). Patent statistics as economic indicators: A survey. *Journal of Economic Literature*, 28(4), 1661–1707. https://www.jstor.org/stable/2726978
+4. 国家知识产权局. 专利统计年报. https://www.cnipa.gov.cn/
 # 附件
 
 ## 附录 A 原文摘录与口径出处
@@ -531,15 +535,7 @@ UI 用色带 + 档位名，不显示两位小数分数（避免「89.5 vs 90.0�
 
 ## 附录 D 实测脚本与结果摘要
 
-- 脚本：`code/M_CHAIN_TECH_MATURITY_SCORE.py`（只读快照，零 DB 连接）
-- 产物：`code/M_CHAIN_TECH_MATURITY_SCORE_out.json`
+- 脚本：`metrics/repro/M_CHAIN_TECH_MATURITY_SCORE.py`（只读快照，零 DB 连接）
+- 产物：`metrics/repro/out/M_CHAIN_TECH_MATURITY_SCORE_out.json`
 - 关键结果：分数 49.22—90.0；10 成熟 / 2 衰退；可归属专利 883,300（30.05%）；Spearman 0.6397
 - 复现要求：`code/_snapshots21/patent_panel_innov_20261021.json`、`code/_snapshots21/chain_firm_index_20261023.json`
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

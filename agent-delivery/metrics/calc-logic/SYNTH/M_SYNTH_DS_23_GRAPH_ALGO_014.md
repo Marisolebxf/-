@@ -1,9 +1,18 @@
-# 发明人—学者桥图算法（M_SYNTH_DS_23_GRAPH_ALGO_014）
+# 发明人共现图与姓名桥算法（M_SYNTH_DS_23_GRAPH_ALGO_014）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_DS_23_GRAPH_ALGO_014.md`；复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_014.py` → `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_014.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_DS_23_GRAPH_ALGO_014.md`；复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_014.py` → `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_014.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_DS_23_GRAPH_ALGO_014.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_014.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json` |
@@ -63,14 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_014.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> 20261023 gkx 换源版 · 类型：**THIRD_PARTY** · 域：综合（SYNTH） · UI 挂载：人才分析 / 发明人网络 ｜ **数据支持度**：部分支持
-> 产物：`code/M_SYNTH_DS_23_GRAPH_ALGO_014.py` → `code/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json`
-> 主表：`gkx.dwd_patent_inventors`（69,647 行 / 20,000 件专利）、`gkx.dwd_scholar`（21,316 行）、`gkx.dwd_scholar_paper_relation`（1,065,385 行）
-> 点集：P0 31,188 节点 / 77,296 边；P2 巨片 2,617 节点 / 11,931 边
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -447,20 +453,19 @@ P0 6,954 个连通片、1,725 个孤立点、最大片 2,617（8.391%），说�
 1. Brandes, U. A faster algorithm for betweenness centrality. *Journal of Mathematical Sociology*, 2001. https://doi.org/10.1080/0022250X.2001.9990249
 2. Newman, M. E. J. Coauthorship networks and patterns of scientific collaboration. *PNAS*, 2004. https://doi.org/10.1073/pnas.0307545100
 3. NetworkX. Centrality. https://networkx.org/documentation/stable/reference/algorithms/centrality.html
-
 # 附件
 
 ## 附录 A 复现
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 -u code/M_SYNTH_DS_23_GRAPH_ALGO_014.py
 ```
 
 实测输出：
 
 ```text
-wrote code/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json
+wrote metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_014_out.json
 {"inventor_nodes": 31188, "edges": 77296, "bridge": 783, "giant": 2617}
 ```
 
@@ -520,10 +525,3 @@ WHERE table_schema='gkx' AND table_name='node_influence';
 | 碰撞敏感性 | 剔除歧义名后的结构变化 | 不是稳健性证明 |
 
 以上术语在正文首次出现时都带了量级；本表只做集中对照，不引入新数字。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

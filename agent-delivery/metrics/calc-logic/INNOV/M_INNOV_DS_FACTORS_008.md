@@ -1,9 +1,21 @@
 # 要素影响力（会议）（M_INNOV_DS_FACTORS_008）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_FACTORS_008.md`；复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_008.py` → `metrics/repro/out/M_INNOV_DS_FACTORS_008_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：MODEL（要素评价类）｜ **域**：INNOV（科技信息展示系统）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 要素影响力分析（会议要素）
+> - **数据支持度**：**完全不支持** ｜ **公式定义人**：**王惠**（`calc-logic/INNOV/M_INNOV_DS_FACTORS_008.md` → 指向 `M_INNOV_CONFERENCE_INFLUENCE`）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：否 / 否
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_DS_FACTORS_008.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_008.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_008_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_FACTORS_008.md`；复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_008.py` → `metrics/repro/out/M_INNOV_DS_FACTORS_008_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_FACTORS_008.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_008_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +69,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_FACTORS_008.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_FACTORS_008.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_FACTORS_008_out.json` |
@@ -65,16 +77,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_FACTORS_008.py`、产物 `metrics/repro/out/M_INNOV_DS_FACTORS_008_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（要素评价类）｜ **域**：INNOV（科技信息展示系统）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 要素影响力分析（会议要素）
-> **数据支持度**：**完全不支持** ｜ **公式定义人**：**王惠**（`calc-logic/INNOV/M_INNOV_DS_FACTORS_008.md` → 指向 `M_INNOV_CONFERENCE_INFLUENCE`）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：否 / 否
-> **王惠口径**：三维加权（会议热度 0.5 / 投稿数 0.25 / 参与人数 0.25），0-100。本文 §五 结论：**保留王惠（但当前不可算）**。
-> **20261021 换源**：唯一数据面改为三方库 `gkx`（280 表，与 20261020 开发库 ODS 同源同量）。本版在 `gkx` 上重跑全部探针，结论与读数不变。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -110,7 +117,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「要素影响力（会议）」属「科技全域态势 → 要素影响力分析」的一类要素，王惠给定的口径直接复用了正式指标「会议影响力（M_INNOV_CONFERENCE_INFLUENCE）」：以**会议**为统计对象，从**会议热度**（影响指数，缺失时用论文下载量）、**投稿数**（会议论文数）、**参与人数**（会议论文去重作者数）三维按 0.5/0.25/0.25 加权，取值 0-100。
 
-脚本 `code/M_INNOV_DS_FACTORS_008.py` 已在 `gkx`（三方库，280 张表）上重跑（2026-10-22），把可能承载「会议」的表逐一探过，结论是**会议实体数 = 0**：
+脚本 `metrics/repro/M_INNOV_DS_FACTORS_008.py` 已在 `gkx`（三方库，280 张表）上重跑（2026-10-22），把可能承载「会议」的表逐一探过，结论是**会议实体数 = 0**：
 
 - `gkx.dwd_zh_journal` 2,796 行，`publication_type` 去重后**只有「期刊」**；
 - `gkx.dwd_en_journal` 605 行，类型分布 Journal 578 / Book in series 21 / Book 6，**无 Conference / Proceedings**；
@@ -122,6 +129,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 **没有会议实体，三维全部无分母**，连「热度」维的备选路径也断了：`impact_score` 在两张期刊表里 0/2,796 与 0/605 全空，`download_num > 0` 为 0/100,900。按 §〇 判**完全不支持**；§五 结论为**保留王惠口径、但当前不可实施**，并明确反对用「期刊影响力改名成会议影响力」的方式虚假交付。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.1.4.1.1.3.3 分析数据展示功能（L186）<br>```<br>1.1.1.1.4.1.1.3.3. 分析数据展示功能<br>提供科创要素关联分析功能，展示不同要素之间的关联关系和影响程度；支持要素影响力分析，通过算法模型评估各要素的重要性和影响力；提供要素聚类分析，将相似要素进行自动分类和归纳；支持要素比较分析，用户可选择多个要素进行横向对比。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_DS_FACTORS_008.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -245,7 +297,7 @@ $$S_c=100\times\left(0.5\,\tilde{H}_c+0.25\,\tilde{P}_c+0.25\,\tilde{A}_c\right)
 
 ## 二、计算过程
 
-> **口径说明**：本章记录「按王惠口径逐步执行时，每一步在哪一步失败」，而不是给出一个虚假的计算结果。脚本 `code/M_INNOV_DS_FACTORS_008.py` 已完成全部探针，产物 `M_INNOV_DS_FACTORS_008_out.json` 中 `compute` 段为空（无会议实体可算）。
+> **口径说明**：本章记录「按王惠口径逐步执行时，每一步在哪一步失败」，而不是给出一个虚假的计算结果。脚本 `metrics/repro/M_INNOV_DS_FACTORS_008.py` 已完成全部探针，产物 `M_INNOV_DS_FACTORS_008_out.json` 中 `compute` 段为空（无会议实体可算）。
 
 ### 2.1 方法选择：为何必须「先有会议实体」
 
@@ -273,7 +325,7 @@ SELECT publication_type, COUNT(*) FROM gkx.dwd_zh_paper  GROUP BY publication_ty
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_DS_FACTORS_008.py` 并确认结果合理（本例为确认「不可算」），再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_DS_FACTORS_008.py` 并确认结果合理（本例为确认「不可算」），再写本档支持度。
 
 ### 3.1 一级依赖维（A/B 类标注）
 
@@ -323,12 +375,12 @@ SELECT publication_type, COUNT(*) FROM gkx.dwd_zh_paper  GROUP BY publication_ty
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_DS_FACTORS_008.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_FACTORS_008.py` |
 | 结果产物 | 同目录 `M_INNOV_DS_FACTORS_008_out.json`（`compute` 段为空，无会议实体可算） |
 | 主算库 | `gkx`（三方库，`gkx.` 前缀访问）｜ 取证时间 2026-10-22 |
 
 ```bash
-python3 metrics/repro/M_INNOV_DS_FACTORS_008.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_FACTORS_008.py
 ```
 
 **（2）探针全表**
@@ -452,11 +504,6 @@ python3 metrics/repro/M_INNOV_DS_FACTORS_008.py
 2. 中国计算机学会. (2026). 第七版《中国计算机学会推荐国际学术会议和期刊目录》（A/B/C 三级，2026 年发布；前版 2022 版共 10 领域）. https://www.ccf.org.cn/Academic_Evaluation/By_category/
 
 3. CORE (Computing Research and Education Association of Australasia). CORE Conference Ranking Portal（会议 A*/A/B/C 分级，年度更新）. https://portal.core.edu.au/conf-ranks/
-
-4. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CONFERENCE_INFLUENCE.md` — 本指标口径真源（王惠三维与权重）。
-
-文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
 ---
 
 # 附件
@@ -637,16 +684,8 @@ python3 metrics/repro/M_INNOV_DS_FACTORS_008.py
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_INNOV_DS_FACTORS_008.py`
-- 产物：`../code/M_INNOV_DS_FACTORS_008_out.json`
+- 产物：`../metrics/repro/out/M_INNOV_DS_FACTORS_008_out.json`
 - 主算库：`gkx`（三方库 183.240.141.251:3318，20261021 起唯一数据面）
 - 取证时间：2026-10-22
 - 关键结果：会议实体 0；会议类 `publication_type` 枚举为空；`impact_score` 0/2,796 与 0/605；`download_num` >0 为 0/100,900；`gkx.dwd_event` 20 行；`support_judgment='完全不支持'`。
 - 工程注意：① 不能用刊名含 Proceedings 判定会议（21 种全为丛书）；② 不能用 `cite_nums` 代会议热度；③ `dwd_event` 未入白名单。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

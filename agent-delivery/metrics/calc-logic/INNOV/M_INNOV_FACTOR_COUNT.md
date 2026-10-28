@@ -1,9 +1,21 @@
 # 科创要素数量统计（M_INNOV_FACTOR_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_COUNT.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_COUNT.py` → `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：STAT（存量计数）｜ **域**：DS-01｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 科创要素总览（按 `factor_type` 分组）
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：AI-20261016（王惠未调研本指标，`calc-logic` 标注「王惠调研：否」）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_COUNT.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_COUNT.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_COUNT.py` → `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_COUNT.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -63,7 +75,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_FACTOR_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_FACTOR_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json` |
@@ -71,16 +83,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_FACTOR_COUNT.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：STAT（存量计数）｜ **域**：DS-01｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 科创要素总览（按 `factor_type` 分组）
-> **数据支持度**：**部分支持** ｜ **公式定义人**：AI-20261016（王惠未调研本指标，`calc-logic` 标注「王惠调研：否」）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
-> **口径**：选定范围（区域/时间窗/图层过滤）下科创要素**去重存量**；对象默认含论文、专利、人才、企业、科研机构、服务机构；会议/期刊/项目/成果**无基础指标叶**，走 ADS 列表计数，**不另造 CNT ID**；窗口默认自然年可切，按 `factor_type` 分组。
-> **20261021 换源**：唯一数据面为三方库 `gkx`；专利 2,939,895 件**零 DB**，读全量面板缓存；底册 18.9 万行一次扫描（`org_type × city × industry` 落盘复用）。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -230,7 +237,7 @@ $$N_{f}=\big|\{\,e\in E_f\ \big|\ \text{scope}(e)\ \text{满足区域/年份/图
 
 ## 二、计算过程
 
-> 全部读数由 `code/M_INNOV_FACTOR_COUNT.py` 在 `gkx` 实测产出，结果见 `code/M_INNOV_FACTOR_COUNT_out.json`。
+> 全部读数由 `metrics/repro/M_INNOV_FACTOR_COUNT.py` 在 `gkx` 实测产出，结果见 `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json`。
 
 ### 2.1 方法选择：为什么是「逐类独立计数」而不是「一次 UNION 去重」
 
@@ -332,8 +339,8 @@ $$N_{f}=\big|\{\,e\in E_f\ \big|\ \text{scope}(e)\ \text{满足区域/年份/图
 
 ### 2.7 复现代码与结果展示
 
-脚本：`code/M_INNOV_FACTOR_COUNT.py`（240 行）
-产物：`code/M_INNOV_FACTOR_COUNT_out.json`
+脚本：`metrics/repro/M_INNOV_FACTOR_COUNT.py`（240 行）
+产物：`metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json`
 缓存：`code/_snapshots21/a16_count_org.json`（底册三键分组，6—8 分钟查询，落盘复用）
 
 运行：
@@ -513,8 +520,8 @@ P0：口径澄清（服务机构是否单列、是否需要合计数）；P1：�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_FACTOR_COUNT.py` |
-| 产物 | `code/M_INNOV_FACTOR_COUNT_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_FACTOR_COUNT.py` |
+| 产物 | `metrics/repro/out/M_INNOV_FACTOR_COUNT_out.json` |
 | 缓存 | `code/_snapshots21/a16_count_org.json`（底册三键分组） |
 | 库 | `gkx@183.240.141.251:3318`（只读；专利零 DB） |
 | 耗时 | 读缓存约 1 秒；`--refresh-org` 6—8 分钟（需 daemon） |
@@ -529,10 +536,9 @@ P0：口径澄清（服务机构是否单列、是否需要合计数）；P1：�
 3. 国家统计局，《中国科技统计年鉴》（年度，科技活动人员与机构口径）. https://www.stats.gov.cn
 4. 科学技术部，《中国科技统计年鉴》与火炬统计年鉴（高新技术企业口径）. https://www.most.gov.cn
 5. 国家知识产权局，《专利统计年报》（申请/授权/有效三口径分列）. https://www.cnipa.gov.cn
-6. Eurostat, *Statistics on research and development — methodology*. https://ec.europa.eu/eurostat/web/research-methodology
+6. Eurostat, *Statistics on research and development — methodology*. https://ec.europa.eu/eurostat/
 7. WIPO (2023). *World Intellectual Property Indicators*. https://www.wipo.int/publications
 8. 深圳市科技创新委员会，科技统计与创新调查数据。http://stic.sz.gov.cn
-
 ---
 
 # 附件
@@ -666,10 +672,3 @@ $ python3 code/M_INNOV_FACTOR_COUNT.py
 ```
 
 底册城市分布（`city_split.org_all`）：深圳市 95,600 / 广州市 49,605 / 东莞市 33,590 / 惠州市 9,979 / 北京市 163 / 上海市 16 / 天津 13 / 成都 13 / 杭州 13 / 西安 9 / 昆明 8 / 长沙 7（十二城合计 189,016，另 100 行城市为空）。
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

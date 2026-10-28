@@ -1,9 +1,21 @@
 # 全球服务机构规模分布（M_SVC_PT_GLOBAL_SCALE_DIST）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_PT_GLOBAL_SCALE_DIST.md`；复现脚本 `metrics/repro/M_SVC_PT_GLOBAL_SCALE_DIST.py` → `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技专题系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：态值（规模维分布）｜ **域**：SVC 服务机构（全球供给面·规模分面）｜ **UI 挂载**：科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（规模筛选位）
+> - **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic v0.2.0 钉版（注册资本六桶 + 员工数并行披露）
+> **版本与分级**
+> - **差异分级**：表述级差异（D5）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SVC_PT_GLOBAL_SCALE_DIST.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_PT_GLOBAL_SCALE_DIST.py`、产物 `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_PT_GLOBAL_SCALE_DIST.md`；复现脚本 `metrics/repro/M_SVC_PT_GLOBAL_SCALE_DIST.py` → `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_PT_GLOBAL_SCALE_DIST.py`、产物 `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -52,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SVC_PT_GLOBAL_SCALE_DIST.md` |
 | 复现脚本 | `metrics/repro/M_SVC_PT_GLOBAL_SCALE_DIST.py` |
 | 复现产物 | `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json` |
@@ -60,16 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_PT_GLOBAL_SCALE_DIST.py`、产物 `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：态值（规模维分布）｜ **域**：SVC 服务机构（全球供给面·规模分面）｜ **UI 挂载**：科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（规模筛选位）
-> **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic v0.2.0 钉版（注册资本六桶 + 员工数并行披露）
-> **数据源**：gkx（183.240.141.251:3318，只读 `gkx_reader_zp`）+ `code/_snapshots21/` 落盘快照；**零 SQL 运行**
-> **本件池**：44,153 家，**与 M_SVC_PT_GLOBAL_TOTAL / GLOBAL_TYPE_DIST / REGION_ORG / SZ_TOTAL / SZ_REGION_ORG / SZ_FIELD_DIST / CHAIN_NODE_ORG / KEYORG_SCALE 同池**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -108,6 +115,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 判档 **部分支持**：资本链完整且闭合，但「规模」的第一语义是人数/营收，不是注册资本；员工链覆盖 3.58%，用它分桶只能作画像、不能作分布结论。加上境外轴无源，两重缺口叠加，不抬档。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D5 表述级差异：语义基本一致，仅措辞/粒度表述不同**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 提供多维度组合检索，支持按机构名称、服务类型、产业领域、**规模**等条件筛选……<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+语义一致，仅措辞/粒度不同。**单接口兼容**：任选一方表述（本件沿用算法侧），登记同义词即可，无口径改动。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_SVC_PT_GLOBAL_SCALE_DIST.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -235,10 +287,10 @@ gkx 的 `registered_capital_value` 以**元**存储，而钉版阈值是**万元
 ### 2.8 复现代码与结果
 
 ```bash
-python3 M_SVC_PT_GLOBAL_SCALE_DIST.py
+cd code && python3 M_SVC_PT_GLOBAL_SCALE_DIST.py
 ```
 
-结果覆盖写 `code/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`，下表逐键摘录（数字与产物一一对应，可直接复核）。
+结果覆盖写 `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`，下表逐键摘录（数字与产物一一对应，可直接复核）。
 
 | 产物键 | 取值 |
 |---|---|
@@ -394,9 +446,9 @@ python3 M_SVC_PT_GLOBAL_SCALE_DIST.py
 
 ## 参考文献
 
-1. 工业和信息化部、国家统计局、国家发展改革委、财政部. (2011). 《中小企业划型标准规定》（工信部联企业〔2011〕300 号）. https://www.gov.cn/zwgk/2011-07/04/content_1898747.htm
+1. 工业和信息化部、国家统计局、国家发展改革委、财政部. (2011). 《中小企业划型标准规定》（工信部联企业〔2011〕300 号）. https://www.gov.cn/
 
-2. 国家统计局. (2017). 《统计上大中小微型企业划分办法（2017）》. https://www.stats.gov.cn/sj/tjbz/gjtjbz/202302/t20230213_1902774.html
+2. 国家统计局. (2017). 《统计上大中小微型企业划分办法（2017）》. https://www.stats.gov.cn/
 
 3. 国家市场监督管理总局. (2024). 经营主体登记注册资本与认缴制相关统计. https://www.samr.gov.cn/
 
@@ -413,7 +465,6 @@ python3 M_SVC_PT_GLOBAL_SCALE_DIST.py
 9. OECD. (2015). *Frascati Manual 2015*. https://doi.org/10.1787/9789264239012-en
 
 10. 商务部、国家统计局. (2012). 《国际服务贸易统计制度》. http://images.mofcom.gov.cn/fms/accessory/201208/1345790488502.pdf
-
 ---
 
 # 附件
@@ -488,7 +539,7 @@ A 中小企业划型：营收/人数/资产按行业组合，官方语义最强�
 
 ## 附录 E 复算步骤
 
-1. `python3 M_SVC_PT_GLOBAL_SCALE_DIST.py`；
+1. `cd code && python3 M_SVC_PT_GLOBAL_SCALE_DIST.py`；
 2. 核对 `bucket_sum`＝44,153；
 3. 核对 `capital_unit.median_raw / 10000`＝1,200；
 4. 核对 `employee_chain.coverage`＝0.03583；
@@ -522,12 +573,4 @@ A 中小企业划型：营收/人数/资产按行业组合，官方语义最强�
 
 注册资本是历史登记值，不是当日余额；用当日汇率折算在方法上就是错的（登记日汇率不可得）。折了会制造一个看似精确、实际无意义的数。本件单列外币桶，语义干净、可加总。
 
-> 生成本文件的时间：2026-10-22；数字均取自 `code/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
+> 生成本文件的时间：2026-10-22；数字均取自 `metrics/repro/out/M_SVC_PT_GLOBAL_SCALE_DIST_out.json`。

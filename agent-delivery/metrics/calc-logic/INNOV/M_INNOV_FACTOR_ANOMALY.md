@@ -1,9 +1,21 @@
 # 监测异常点识别（M_INNOV_FACTOR_ANOMALY）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_ANOMALY.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_ANOMALY.py` → `metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（时序监测类）｜ **域**：INNOV（科技信息展示系统）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 异常监测
+> - **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（`metrics/calc-logic/INNOV/M_INNOV_FACTOR_ANOMALY.md`）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_ANOMALY.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_ANOMALY.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_ANOMALY.py` → `metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_ANOMALY.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +68,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_FACTOR_ANOMALY.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_FACTOR_ANOMALY.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json` |
@@ -64,16 +76,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_FACTOR_ANOMALY.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（时序监测类）｜ **域**：INNOV（科技信息展示系统）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 科技全域态势 → 异常监测
-> **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（`metrics/calc-logic/INNOV/M_INNOV_FACTOR_ANOMALY.md`）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分是
-> **王惠口径**：MAD 稳健离群（|x−median|/MAD > 3.5）+ 邻期突变（|Δ| > MAD×3），时序长度 ≥8。本文 §五 结论：**采用王惠口径，但必须换基准（同比 + 低基数门槛）**，否则在趋势序列上退化。
-> **20261021 换源**：唯一数据面为三方库 `gkx`（`183.240.141.251:3318`）。专利年度件数**零 DB**，读全量专利面板缓存；其余序列只扫 10 万—106 万行小表。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -109,7 +116,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「监测异常点识别」要回答的是：在一条按年聚合的科创要素时序上，哪些年份相对序列中枢显著偏离（异常点），哪些年份发生邻期跳变（突变点）。王惠给的口径是 MAD 稳健判据（阈值 3.5）加邻期突变判据（MAD×3），并要求时序长度 ≥8。
 
-脚本 `code/M_INNOV_FACTOR_ANOMALY.py` 已在 `gkx` 跑通（2026-10-22）：五条候选序列中**四条合格**（中文论文 46 期、学者-论文关系 38 期、机构新设 46 期、项目立项 38 期），专利序列因只有 6 期被口径挡在门外。按**口径原式**（全序列中枢）计算，中文论文序列 46 期中 **19 期**被判异常（41.3%），项目序列 38 期中 **12 期**（31.6%）——命中率高到无法解释，说明该判据在单调增长序列上失效，而不是「发现了 19 个异常」。
+脚本 `metrics/repro/M_INNOV_FACTOR_ANOMALY.py` 已在 `gkx` 跑通（2026-10-22）：五条候选序列中**四条合格**（中文论文 46 期、学者-论文关系 38 期、机构新设 46 期、项目立项 38 期），专利序列因只有 6 期被口径挡在门外。按**口径原式**（全序列中枢）计算，中文论文序列 46 期中 **19 期**被判异常（41.3%），项目序列 38 期中 **12 期**（31.6%）——命中率高到无法解释，说明该判据在单调增长序列上失效，而不是「发现了 19 个异常」。
 
 改用**同比 + 低基数门槛**后，四条序列共命中 **13 期**：中文论文 2014（+168.6%）、2024（+386.8%）、2025（−79.8%）；学者关系 1989（+22.5%）、2025（−70.8%）；机构新设 1992（+131.1%）、1993（+84.4%）、2025（−42.8%）；项目立项 2001（+38.8%）、2002（+38.2%）、2021（−50.4%）、2022（−97.5%）、2023（−89.7%）。逐条核对后，**13 期全部指向入库节奏或采集窗口，而不是真实科技活动异常**——最典型的是 2024 年中文论文 32,379 篇（邻年 5 倍）与 2025 年全面回落。
 
@@ -241,7 +248,7 @@ $$M=\{i:\ |\Delta_i|>3s\}$$
 
 ## 二、计算过程
 
-> **口径说明**：以下主体沿用王惠，工程细节为落地补充；全部读数由 `code/M_INNOV_FACTOR_ANOMALY.py` 在 `gkx` 实测产出，结果见 `M_INNOV_FACTOR_ANOMALY_out.json`。
+> **口径说明**：以下主体沿用王惠，工程细节为落地补充；全部读数由 `metrics/repro/M_INNOV_FACTOR_ANOMALY.py` 在 `gkx` 实测产出，结果见 `M_INNOV_FACTOR_ANOMALY_out.json`。
 
 ### 2.1 方法选择：为什么用 MAD，以及为什么 MAD 还不够
 
@@ -335,8 +342,8 @@ $$
 
 ### 2.7 复现代码与结果展示
 
-脚本：`code/M_INNOV_FACTOR_ANOMALY.py`（约 470 行）
-产物：`code/M_INNOV_FACTOR_ANOMALY_out.json`
+脚本：`metrics/repro/M_INNOV_FACTOR_ANOMALY.py`（约 470 行）
+产物：`metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json`
 中间缓存：`code/_snapshots21/a16_raw_series.json`（原始序列）、`code/_snapshots21/a16_anomaly_series.json`（四套口径检测结果）
 
 运行方式与耗时：
@@ -483,8 +490,8 @@ P0（决定指标能否改名上线）：专利年份扩容、2024 论文批次�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_INNOV_FACTOR_ANOMALY.py` |
-| 产物 | `code/M_INNOV_FACTOR_ANOMALY_out.json` |
+| 脚本 | `metrics/repro/M_INNOV_FACTOR_ANOMALY.py` |
+| 产物 | `metrics/repro/out/M_INNOV_FACTOR_ANOMALY_out.json` |
 | 缓存 | `_snapshots21/a16_raw_series.json`、`_snapshots21/a16_anomaly_series.json` |
 | 库 | `gkx@183.240.141.251:3318`（只读） |
 | 耗时 | 冷跑 209.9 秒；读缓存 0.1 秒 |
@@ -502,7 +509,6 @@ P0（决定指标能否改名上线）：专利年份扩容、2024 论文批次�
 6. Breunig, M. M., Kriegel, H.-P., Ng, R. T., & Sander, J. (2000). LOF: Identifying Density-Based Local Outliers. *SIGMOD 2000*. https://doi.org/10.1145/342009.335388
 7. 国家自然科学基金委员会，年度报告与资助统计。https://www.nsfc.gov.cn
 8. 国家知识产权局，专利统计年报。https://www.cnipa.gov.cn
-
 ---
 
 # 附件
@@ -612,11 +618,3 @@ real 3m29.9s
 ```
 
 `summary.yoy_floor_hits` 合计 13 期，与 §2.4 表逐格一致；`summary.level_degenerate_series` 为 `["zh_paper_year","project_year"]`，与 §2.3 的退化判定一致。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

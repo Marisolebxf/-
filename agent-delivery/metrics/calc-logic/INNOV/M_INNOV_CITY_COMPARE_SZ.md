@@ -1,9 +1,20 @@
 # 深圳科技发展指标对比（M_INNOV_CITY_COMPARE_SZ）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_COMPARE_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py` → `metrics/repro/out/M_INNOV_CITY_COMPARE_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测→科技发展城市分析展示→科技发展指标对比｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_COMPARE_SZ.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_COMPARE_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_COMPARE_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py` → `metrics/repro/out/M_INNOV_CITY_COMPARE_SZ_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_COMPARE_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -56,7 +67,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_CITY_COMPARE_SZ.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_CITY_COMPARE_SZ_out.json` |
@@ -64,14 +75,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_COMPARE_SZ_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域（王惠 V1.5 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测→科技发展城市分析展示→科技发展指标对比｜ **数据支持度**：**部分支持**
-> **公式定义人**：王惠（本 MD 采用王惠 V1.5 口径：研发投入/专利/高企/创新人才四维对比）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量部分足（三维足量、人才维仅学者近似对齐；对标宇宙限库覆盖可信区）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -107,9 +115,54 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 「深圳科技发展指标对比」是深圳创新监测→科技发展城市分析展示功能组的**指标对比层**：需求原文要求「提供深圳市与选定城市在科技发展各项指标上的对比分析，包括研发投入、专利数量、高新技术企业数量、创新人才等指标」，但需求**没有给出四维的计算口径、对标城市范围或对比呈现方式**。本文按王惠 V1.5 口径还原：深圳+对标城入集，对比研发投入（上市研发经费，缺则研发人员）、专利数量（城内去重件数）、高新技术企业数量（高企标签去重）、创新人才（学者去重数+研发人员）四维，所选城内归一——与姊妹指标 `M_INNOV_CITY_BENCHMARK_GLOBAL` 构成「全球对标（GII/2thinknow 文献系）vs 深圳对比（国内官方口径）」的成对视角，本指标的口径锚是**国家统计局创新统计体系与深圳市统计公报**。
 
-复现代码 `code/M_INNOV_CITY_COMPARE_SZ.py` 已实测三城演示对比（深圳/广州/东莞，库覆盖可信区内选城，2024 统计年）：深圳四维全优（研发 3,555.5 亿/专利 275,908 件/高企 15,683 家/学者 194 人），综合 100.0；广州 28.64、东莞 0.0。四维中三维（研发/专利/高企）数据足量且与官方口径可交叉验证（深圳高企库内 15,683 vs 官方 2.47 万家，采集覆盖率约 63%）；创新人才维因 `development_employee` 全库 NULL 只剩学者近似对齐一条腿，深圳 194 名学者相对「各类人才总量超过 679 万」的官方体量 (深圳市人民政府新闻办公室, 2024) 显著低估 → **部分支持**，§五 对照后维持王惠口径并给出人才维的补数与外部口径混用建议。
+复现代码 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py` 已实测三城演示对比（深圳/广州/东莞，库覆盖可信区内选城，2024 统计年）：深圳四维全优（研发 3,555.5 亿/专利 275,908 件/高企 15,683 家/学者 194 人），综合 100.0；广州 28.64、东莞 0.0。四维中三维（研发/专利/高企）数据足量且与官方口径可交叉验证（深圳高企库内 15,683 vs 官方 2.47 万家，采集覆盖率约 63%）；创新人才维因 `development_employee` 全库 NULL 只剩学者近似对齐一条腿，深圳 194 名学者相对「各类人才总量超过 679 万」的官方体量 (深圳市人民政府新闻办公室, 2024) 显著低估 → **部分支持**，§五 对照后维持王惠口径并给出人才维的补数与外部口径混用建议。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | > 通过城市比对、排名分析等手段，展示深圳市与其他城市在科技发展方面的对比情况，包括竞争力分析、发展水平评估等内容，并提供针对性的发展建议。该功能将深圳市置于全国乃至全球科技发展格局中进行定位分析，帮助用户了解深圳市的科技发展水平和竞争力，识别优势与不足，为科技发展规划和政策制定提供决策支持。<br>><br>> 科技发展城市分析展示的具体功能包括城市选择功能、科技发展指标对比、城市排名展示、竞争力分析、发展建议提供、趋势分析、报告生成与导出。<br>><br>> 提供深圳市与选定城市在科技发展各项指标上的对比分析，包括研发投入、专利数量、高新技术企业数量、创新人才等指标，用户可查看各指标的对比结果。<br>><br>> 用户可选择与深圳市进行比对的城市，包括国内主要城市和国际创新城市。提供城市列表和搜索功能，方便用户快速选择目标城市。<br>> |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_CITY_COMPARE_SZ.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -206,7 +259,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 二、计算过程
 
-> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；已由脚本 `code/M_INNOV_CITY_COMPARE_SZ.py` 在三方库 `gkx` **实测跑通**（对标城：深圳/广州/东莞——库覆盖可信区内选城，统计年 2024），结果见同目录 `M_INNOV_CITY_COMPARE_SZ_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
+> **口径说明**：本节按王惠 V1.5 口径撰写（公式定义人=王惠）；已由脚本 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py` 在三方库 `gkx` **实测跑通**（对标城：深圳/广州/东莞——库覆盖可信区内选城，统计年 2024），结果见同目录 `M_INNOV_CITY_COMPARE_SZ_out.json`。文内引用格式为「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：国内官方统计口径为什么是本指标的锚
 
@@ -260,7 +313,7 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `code/M_INNOV_CITY_COMPARE_SZ.py`（本批目录 code/ 下已有，本报告复用） |
+| 计算脚本 | `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py`（本批目录 code/ 下已有，本报告复用） |
 | 结果产物 | 同目录 `M_INNOV_CITY_COMPARE_SZ_out.json` |
 | 主算库 | `gkx`（三方库 183.240.141.251:3318，只读账号；逐表行数与旧演示面（已禁用）逐位一致） |
 | 对标城 | 深圳/广州/东莞（库覆盖可信区；also_serves `M_INNOV_CITY_FACTOR_GLOBAL`） |
@@ -326,7 +379,7 @@ python3 code/M_INNOV_CITY_COMPARE_SZ.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_CITY_COMPARE_SZ.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_CITY_COMPARE_SZ.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（实测行数，20261021 复核） | 实测结论 |
 |---|---|---|---|---|
@@ -414,14 +467,11 @@ python3 code/M_INNOV_CITY_COMPARE_SZ.py
 4. 深圳市人民政府新闻办公室. (2024). 《创新驱动——2023 国家高新技术企业 2.47 万家、PCT 连续 20 年首位、人才总量超 679 万》. https://www.sz.gov.cn/cn/zjsz/gl/content/post_12318783.html
 
 5. 科技部、财政部、国家税务总局. (2016). 《高新技术企业认定管理办法》（国科发火〔2016〕32 号）. https://www.most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2016/201602/t20160205_123998.html
-
-6. 项目内真源（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_COMPARE_SZ.md` —— 王惠 V1.5 口径原文。
-7. Acs, Z. J., Anselin, L., & Varga, A. (2002). Patents and innovation counts as measures of regional production of new knowledge. *Research Policy*, 31(7), 1069–1085. https://doi.org/10.1016/S0048-7333(01)00184-6 （专利作为区域创新产出的测度及其局限，支撑 §2.4「相对比较优于绝对值引用」的判断）
-8. Crescenzi, R., Rodríguez-Pose, A., & Storper, M. (2007). The territorial dynamics of innovation: a Europe–United States comparative analysis. *Journal of Economic Geography*, 7(6), 673–709. https://doi.org/10.1093/jeg/lbm030 （区域创新比较的框架与可比性条件，支撑 §1.4.1 逐族对照；该站对脚本访问返回 403，人工浏览器可开）
-9. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. OECD Publishing. https://doi.org/10.1787/9789264239012-en （R&D 经费与人员的国际统计口径，支撑 §2.3 对「上市口径 vs 全社会 R&D」边界差的解释；该站对脚本访问返回 403，人工浏览器可开）
-10. WIPO. (2024). *Global Innovation Index 2024*. World Intellectual Property Organization. https://www.wipo.int/global_innovation_index/en/2024/ （全球城市/经济体创新指数的合成与排名形态，支撑 §1.4.1 对族 D「不合成」的分工判断）
-11. 2thinknow. (2024). *Innovation Cities Program*. https://www.2thinknow.com/ （商业城市创新指数，族 D 的另一代表；本指标不采用其合成口径）
-
+6. Acs, Z. J., Anselin, L., & Varga, A. (2002). Patents and innovation counts as measures of regional production of new knowledge. *Research Policy*, 31(7), 1069–1085. https://doi.org/10.1016/S0048-7333(01)00184-6 （专利作为区域创新产出的测度及其局限，支撑 §2.4「相对比较优于绝对值引用」的判断）
+7. Crescenzi, R., Rodríguez-Pose, A., & Storper, M. (2007). The territorial dynamics of innovation: a Europe–United States comparative analysis. *Journal of Economic Geography*, 7(6), 673–709. https://doi.org/10.1093/jeg/lbm030 （区域创新比较的框架与可比性条件，支撑 §1.4.1 逐族对照；该站对脚本访问返回 403，人工浏览器可开）
+8. OECD. (2015). *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*. OECD Publishing. https://doi.org/10.1787/9789264239012-en （R&D 经费与人员的国际统计口径，支撑 §2.3 对「上市口径 vs 全社会 R&D」边界差的解释；该站对脚本访问返回 403，人工浏览器可开）
+9. WIPO. (2024). *Global Innovation Index 2024*. World Intellectual Property Organization. https://www.wipo.int/global_innovation_index/en/2024/ （全球城市/经济体创新指数的合成与排名形态，支撑 §1.4.1 对族 D「不合成」的分工判断）
+10. 2thinknow. (2024). *Innovation Cities Program*. https://www.2thinknow.com/ （商业城市创新指数，族 D 的另一代表；本指标不采用其合成口径）
 ---
 
 # 附件
@@ -582,7 +632,7 @@ GII/2thinknow 的多维指数合成 (WIPO, 2024; 2thinknow, 2024)。与本指标
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`code/M_INNOV_CITY_COMPARE_SZ.py`；产物：`code/M_INNOV_CITY_COMPARE_SZ_out.json`
+- 脚本：`metrics/repro/M_INNOV_CITY_COMPARE_SZ.py`；产物：`metrics/repro/out/M_INNOV_CITY_COMPARE_SZ_out.json`
 - 关键数字：三城综合 100.00/28.64/0.00；深圳四维 3,555.5 亿/275,908 件/15,683 家/194 人；四维有数 4/4（人才维学术口径）；support_judgment=`部分支持`
 - 成对视角：本指标（深圳对比，国家统计局/深圳公报口径）与 `M_INNOV_CITY_BENCHMARK_GLOBAL`（全球对标，GII/2thinknow 文献系）构成 CITY 双件；also_serves `M_INNOV_CITY_FACTOR_GLOBAL`（人才/资金/政策三维为其子集）。跨文档引用相对链接，勿加 `./` 前缀。
 
@@ -601,11 +651,3 @@ SELECT COUNT(*), SUM(region_id IS NOT NULL AND region_id<>''),
 结果：`enterprise_base` 189,115 行，`region_id` 非空 **0**，`city` 非空 189,114——区域分组键在交付环境只能用 `city`。
 
 > 校订说明（2026-10-21）：§2.4 与 §2.7.2 原记广州高企 **7,544** 家，与 `M_INNOV_CITY_COMPARE_SZ_out.json` 的 7,556 及表内 `d_ht=0.327` 不自洽（(7,544-3,607)/12,076=0.326）。7,544 是姊妹指标 `M_INNOV_CITY_BENCHMARK_GLOBAL` 的存续过滤口径，非本脚本口径，属跨文档串数；已改回本脚本 **7,556**，差 12 家在正文注明。**四维综合分与档位不变。**
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

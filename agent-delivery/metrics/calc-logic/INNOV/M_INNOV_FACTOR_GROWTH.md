@@ -1,9 +1,20 @@
 # 科创要素增长趋势（M_INNOV_FACTOR_GROWTH）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_GROWTH.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_GROWTH.py` → `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：INNOV 域 · 科技全域态势（需求只给「增长趋势跟踪」功能口径，无公式；本报告按同比 + CAGR + OLS 斜率三件套构造）｜ **wanghui**: false（seed 公式 pending_cosign，唐绍祖未签）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素·科创要素统计分析功能（序号 11）｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_GROWTH.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_GROWTH.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_GROWTH.py` → `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_GROWTH.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -24,7 +35,7 @@
 
 ## 口径定义
 
-专利、论文、项目三条时序都能算出同比、CAGR 与 OLS 斜率，但**专利只有 2021–2026 六期**（2017–2020 零行，2026 为残年，可比窗口只剩 2021–2025 的 5 个观测），**期刊与会议没有任何年度件数序列**，四要素中两维完全缺时序、一维只有 5 年 → 判 **部分支持**。本档位与 `code/M_INNOV_FACTOR_GROWTH_out.json` 的 `support_judgment` 字段一致。
+专利、论文、项目三条时序都能算出同比、CAGR 与 OLS 斜率，但**专利只有 2021–2026 六期**（2017–2020 零行，2026 为残年，可比窗口只剩 2021–2025 的 5 个观测），**期刊与会议没有任何年度件数序列**，四要素中两维完全缺时序、一维只有 5 年 → 判 **部分支持**。本档位与 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json` 的 `support_judgment` 字段一致。
 
 ## 计算逻辑说明
 
@@ -46,7 +57,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 数据支持度与缺口
 
 - **判档**：部分支持
-- **判档理由**：专利、论文、项目三条时序都能算出同比、CAGR 与 OLS 斜率，但**专利只有 2021–2026 六期**（2017–2020 零行，2026 为残年，可比窗口只剩 2021–2025 的 5 个观测），**期刊与会议没有任何年度件数序列**，四要素中两维完全缺时序、一维只有 5 年 → 判 **部分支持**。本档位与 `code/M_INNOV_FACTOR_GROWTH_out.json` 的 `support_judgment` 字段一致。
+- **判档理由**：专利、论文、项目三条时序都能算出同比、CAGR 与 OLS 斜率，但**专利只有 2021–2026 六期**（2017–2020 零行，2026 为残年，可比窗口只剩 2021–2025 的 5 个观测），**期刊与会议没有任何年度件数序列**，四要素中两维完全缺时序、一维只有 5 年 → 判 **部分支持**。本档位与 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json` 的 `support_judgment` 字段一致。
 - **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 - **复现实测耗时**：约 10.08 秒（源件落盘记录）
 
@@ -54,7 +65,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_FACTOR_GROWTH.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_FACTOR_GROWTH.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json` |
@@ -62,15 +73,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_FACTOR_GROWTH.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：INNOV 域 · 科技全域态势（需求只给「增长趋势跟踪」功能口径，无公式；本报告按同比 + CAGR + OLS 斜率三件套构造）｜ **wanghui**: false（seed 公式 pending_cosign，唐绍祖未签）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素·科创要素统计分析功能（序号 11）｜ **数据支持度**：**部分支持**
-> **公式定义人**：AI-20261022（仿王惠口径推测定义：年同比 + 复合增长率；原 seed 未给分母口径）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分
-> **主算库**：`gkx`（三方库，`183.240.141.251:3318`）｜ **专利取数**：`code/_snapshots21/patent_panel_innov_20261021.json`（全量 2,939,895 行，零专利 SQL）｜ **论文/项目**：`gkx.dwd_zh_paper` / `gkx.dwd_zh_project`（小表聚合）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -98,7 +105,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 0.3 本指标套用（一句话）
 
-专利、论文、项目三条时序都能算出同比、CAGR 与 OLS 斜率，但**专利只有 2021–2026 六期**（2017–2020 零行，2026 为残年，可比窗口只剩 2021–2025 的 5 个观测），**期刊与会议没有任何年度件数序列**，四要素中两维完全缺时序、一维只有 5 年 → 判 **部分支持**。本档位与 `code/M_INNOV_FACTOR_GROWTH_out.json` 的 `support_judgment` 字段一致。
+专利、论文、项目三条时序都能算出同比、CAGR 与 OLS 斜率，但**专利只有 2021–2026 六期**（2017–2020 零行，2026 为残年，可比窗口只剩 2021–2025 的 5 个观测），**期刊与会议没有任何年度件数序列**，四要素中两维完全缺时序、一维只有 5 年 → 判 **部分支持**。本档位与 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json` 的 `support_judgment` 字段一致。
 
 ---
 
@@ -242,7 +249,7 @@ CAGR 的公式看起来简单，分母却是最容易出错的地方。正确写
 
 ### 2.7 复现代码结果展示
 
-脚本 `code/M_INNOV_FACTOR_GROWTH.py` 运行 3.92 秒，产物 `code/M_INNOV_FACTOR_GROWTH_out.json`。核心输出如下（全部可在 out.json 中逐字核对）：
+脚本 `metrics/repro/M_INNOV_FACTOR_GROWTH.py` 运行 3.92 秒，产物 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json`。核心输出如下（全部可在 out.json 中逐字核对）：
 
 | 要素 | 可比窗口 | 观测 | 年份差 | CAGR | 斜率（件/年） | R² | 方向 |
 |---|---|---:|---:|---:|---:|---:|---|
@@ -285,7 +292,7 @@ CAGR 的公式看起来简单，分母却是最容易出错的地方。正确写
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_FACTOR_GROWTH.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_FACTOR_GROWTH.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维 | 源表/缓存 | 关键字段 | 行数（`gkx`） | 支持状态 |
 |---|---|---|---:|---|
@@ -357,7 +364,7 @@ CAGR 的公式看起来简单，分母却是最容易出错的地方。正确写
 
 **结论四：期刊/会议标「数据不足」。** 两者无年度件数序列，不能算增长率；建议隐藏增长曲线，或提示「需补期刊年度发文量/会议论文表」。
 
-**发布建议**：本指标以「部分支持」入湖，页面挂三条增长线（专利 2021–2025、论文 2005–2023、项目 2005–2020）+ 两条「不可计算」说明。验收以 `code/M_INNOV_FACTOR_GROWTH_out.json` 为唯一数源；任何页面增长率与 `out.json` 不一致，或出现「专利五年年均」却未标分母，即判口径漂移。
+**发布建议**：本指标以「部分支持」入湖，页面挂三条增长线（专利 2021–2025、论文 2005–2023、项目 2005–2020）+ 两条「不可计算」说明。验收以 `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json` 为唯一数源；任何页面增长率与 `out.json` 不一致，或出现「专利五年年均」却未标分母，即判口径漂移。
 
 **复核入口**：`out.json` 的 `baseline_policy`（真实年份集与分母）、`cagr_denominator_check`（错误分母对照）、`main_view`（页面三块主视图）三处足以支撑一次完整复核；不需回库，也不需重跑脚本。
 
@@ -369,12 +376,7 @@ CAGR 的公式看起来简单，分母却是最容易出错的地方。正确写
 2. Hyndman, R. J., Athanasopoulos, G. Forecasting: Principles and Practice[M]. 3rd ed. Melbourne: OTexts, 2021. https://otexts.com/fpp3/
 3. 国家统计局. 统计指标解释：增长速度[EB/OL]. 2024. https://www.stats.gov.cn/sj/ndsj/
 4. 科学技术部. 中国科技统计年鉴 2023[M]. 北京: 中国统计出版社, 2023. https://www.most.gov.cn/kjtj/
-5. OECD. OECD Science, Technology and Innovation Outlook 2023[R]. Paris: OECD Publishing, 2023. https://www.oecd.org/sti/
-6. WIPO. IP Statistics Data Center[EB/OL]. 2024. https://www.wipo.int/ipstats/
-7. 王惠. M_INNOV_FACTOR_GROWTH 指标计算逻辑（seed，pending_cosign）[Z]. 内部文档, 2026.
-8. 本报告数据事实库. `_work_gkx21/DATA_FACTS_gkx21.md` §3.13. 2026-10-22.
-9. 本报告专利面板缓存. `code/_snapshots21/patent_panel_innov_20261021.json`. 2026-10-22.
-
+5. WIPO. IP Statistics Data Center[EB/OL]. 2024. https://www.wipo.int/ipstats/
 ---
 
 # 附件
@@ -492,7 +494,7 @@ SRS 序号 11 挂载在「科创要素统计分析功能」下，未单列「增
 
 ### C.5 推荐构建方案（工程可执行）
 
-推荐「真实年份集 + 同比 + CAGR + OLS」：先裁剪出每个要素的真实年份集，再算三件套，最后用「斜率占均值百分比」做跨要素可比。该方案已在 `code/M_INNOV_FACTOR_GROWTH.py` 落地，运行 3.92 秒，产物含分母核对字段。
+推荐「真实年份集 + 同比 + CAGR + OLS」：先裁剪出每个要素的真实年份集，再算三件套，最后用「斜率占均值百分比」做跨要素可比。该方案已在 `metrics/repro/M_INNOV_FACTOR_GROWTH.py` 落地，运行 3.92 秒，产物含分母核对字段。
 
 ### C.6 风险与残余不确定性
 
@@ -512,15 +514,8 @@ SRS 序号 11 挂载在「科创要素统计分析功能」下，未单列「增
 |---|---|
 | 共享事实构建器 | `code/_innov21_facts.py` |
 | 事实缓存 | `code/_snapshots21/innov21_facts_20261021.json` |
-| 指标脚本 | `code/M_INNOV_FACTOR_GROWTH.py`（3.92 秒） |
-| 结果 | `code/M_INNOV_FACTOR_GROWTH_out.json` |
+| 指标脚本 | `metrics/repro/M_INNOV_FACTOR_GROWTH.py`（3.92 秒） |
+| 结果 | `metrics/repro/out/M_INNOV_FACTOR_GROWTH_out.json` |
 | 专利取数 | 面板缓存，零 `dwd_patent` SQL |
 | 判档 | 部分支持（与 `out.json` 一致） |
 | 运行环境 | Python 3，`gkx` @ `183.240.141.251:3318` |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

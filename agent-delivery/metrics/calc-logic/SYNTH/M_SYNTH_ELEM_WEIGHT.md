@@ -1,9 +1,24 @@
 # 类型/层次/领域权重分布（M_SYNTH_ELEM_WEIGHT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_WEIGHT.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py` → `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：未挂载 UI，算法库内部件（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：MODEL（权重配置 + 敏感性）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
+> - **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（三条维指数由 gkx 现算）+ 配置缺口（官方权重在库内不存在、无判断矩阵）**
+> - **一句话结论**：主权重三维各 1/3、合计 1，四城综合分 77.6829／45.8001／31.3832／15.4755；熵权参照 0.494062／0.364148／0.14179；**权重本件自拟（`main_is_official=false`）**；单纯形 5,151 组里深圳恒居首（100%），第二名广州 84.6049%／东莞 15.3951%，翻转门槛是领域权重 ≥ 0.61。**公式闭合、权重无出处 → 部分支持。**
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_SYNTH_ELEM_WEIGHT.py`｜ **产物**：`metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_WEIGHT.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py` → `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -48,7 +63,7 @@
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_SYNTH_ELEM_WEIGHT.md` |
 | 复现脚本 | `metrics/repro/M_SYNTH_ELEM_WEIGHT.py` |
 | 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json` |
@@ -56,19 +71,11 @@
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：MODEL（权重配置 + 敏感性）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
-> **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（三条维指数由 gkx 现算）+ 配置缺口（官方权重在库内不存在、无判断矩阵）**
-> **复现脚本**：`code/M_SYNTH_ELEM_WEIGHT.py`｜ **产物**：`code/M_SYNTH_ELEM_WEIGHT_out.json`
-> **族级面板**：`code/_snapshots21/synth_elem_panel_20261023.json`
-> **公式定义人**：算法 2026-09 回填（`ENT-SYNTH-METRIC-COVER-STAT-L01`），非王惠原稿；王惠稿只写「可采用等权重，也可根据评估重点自行制定」
-> **基期声明**：统计年 2024；`base_years_used=[2024]`，`base_years_missing=[]`；权重是结构参数，不随年重估。
-> **一句话结论**：主权重三维各 1/3、合计 1，四城综合分 77.6829／45.8001／31.3832／15.4755；熵权参照 0.494062／0.364148／0.14179；**权重本件自拟（`main_is_official=false`）**；单纯形 5,151 组里深圳恒居首（100%），第二名广州 84.6049%／东莞 15.3951%，翻转门槛是领域权重 ≥ 0.61。**公式闭合、权重无出处 → 部分支持。**
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（沿用《总览说明》）
 
@@ -157,9 +164,9 @@
 |---|---|
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_WEIGHT.md` | 本件正本 106 行，含「权 1/3×3」与 `is_mock: true` |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDEX.md` | 合成公式与「各占约 33.3%」的原句 |
-| `王惠口径正本（GitLab 外本地归档）` | 王惠稿，权重句与 calc-logic 同源 |
+| `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDEX.md（王惠正本已演化并入）` | 王惠稿，权重句与 calc-logic 同源 |
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 三条维指数（`index.type_index` / `level_index` / `domain_index`） |
-| `code/M_SYNTH_ELEM_INDEX_out.json` | 兄弟件，综合分复算对象 |
+| `metrics/repro/out/M_SYNTH_ELEM_INDEX_out.json` | 兄弟件，综合分复算对象 |
 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.59 | 权重类指标必填三件套的规矩 |
 
 ### 1.6 与旧稿的差异
@@ -242,8 +249,8 @@ $$
 ### 2.9 复现结果展示
 
 ```bash
-$ python3 M_SYNTH_ELEM_WEIGHT.py
-[WEIGHT] -> code/M_SYNTH_ELEM_WEIGHT_out.json
+$ cd code && python3 M_SYNTH_ELEM_WEIGHT.py
+[WEIGHT] -> metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json
   main weights {'type': 0.3333333333, 'level': 0.3333333333, 'domain': 0.3333333333} sum 1.0
   elem_score {'深圳市': 77.6829, '广州市': 45.8001, '东莞市': 31.3832, '惠州市': 15.4755}
   entropy w {'type': 0.494062, 'level': 0.364148, 'domain': 0.14179} order ['深圳市', '广州市', '东莞市', '惠州市']
@@ -252,7 +259,7 @@ $ python3 M_SYNTH_ELEM_WEIGHT.py
           'grid_covers_simplex': True, 'entropy_weights_sum_to_one': True}
 ```
 
-产物 `code/M_SYNTH_ELEM_WEIGHT_out.json` 里，`weights` 段是声明，`dim_scores` 是输入，`elem_score` 是输出，`entropy_reference` 是客观参照，`elasticity` 三组，`flip_thresholds` 六个组合，`simplex_grid` 是网格。全部数字与面板 `code/_snapshots21/synth_elem_panel_20261023.json` 的 `index` 段一致。
+产物 `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json` 里，`weights` 段是声明，`dim_scores` 是输入，`elem_score` 是输出，`entropy_reference` 是客观参照，`elasticity` 三组，`flip_thresholds` 六个组合，`simplex_grid` 是网格。全部数字与面板 `code/_snapshots21/synth_elem_panel_20261023.json` 的 `index` 段一致。
 
 ### 2.10 四套权重方案的对照
 
@@ -324,8 +331,8 @@ S1 抬高类型维、压低领域维，与 S0 次序一致但分值整体上移�
 |---|---|---|
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 三条维指数、27 个叶子、综合分 | 派生产物（零 DB） |
 | `code/_snapshots21/synth_elem_probe_20261023.json` | 族级探针（科研机构、融资、年报、上市研发、政策） | gkx |
-| `code/M_SYNTH_ELEM_INDEX_out.json` | 兄弟件产物，用于交叉校验 | 派生产物 |
-| `code/M_SYNTH_ELEM_WEIGHT_out.json` | 本件产物 | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_INDEX_out.json` | 兄弟件产物，用于交叉校验 | 派生产物 |
+| `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json` | 本件产物 | 派生产物 |
 
 ---
 
@@ -406,7 +413,6 @@ S1 抬高类型维、压低领域维，与 S0 次序一致但分值整体上移�
 8. Shannon C E．A Mathematical Theory of Communication［J］．Bell System Technical Journal，1948，27(3)：379-423．https://doi.org/10.1002/j.1538-7305.1948.tb01338.x
 9. Saisana M, Saltelli A, Tarantola S．Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators［J］．Journal of the Royal Statistical Society A，2005，168(2)：307-323．https://doi.org/10.1111/j.1467-985X.2005.00350.x
 10. 国家知识产权局．2025 年知识产权工作进展情况［R］．2026-01-23．https://www.cnipa.gov.cn/art/2026/1/28/art_55_203775.html
-
 ---
 
 # 附件
@@ -514,21 +520,13 @@ S1 抬高类型维、压低领域维，与 S0 次序一致但分值整体上移�
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_SYNTH_ELEM_WEIGHT.py` |
-| 产物 | `code/M_SYNTH_ELEM_WEIGHT_out.json` |
+| 脚本 | `metrics/repro/M_SYNTH_ELEM_WEIGHT.py` |
+| 产物 | `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json` |
 | 面板 | `code/_snapshots21/synth_elem_panel_20261023.json` |
 | 主权重 | 0.3333333333 × 3 |
 | 熵权 | 0.494062／0.364148／0.14179 |
 | 网格步长 | 0.01（5,151 组） |
 | 解析阈值 | 领域权重 0.61734 |
-| 运行方式 | `python3 M_SYNTH_ELEM_WEIGHT.py` |
+| 运行方式 | `cd code && python3 M_SYNTH_ELEM_WEIGHT.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

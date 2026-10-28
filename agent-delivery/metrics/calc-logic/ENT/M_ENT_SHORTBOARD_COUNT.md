@@ -1,9 +1,20 @@
 # 短板指标数（M_ENT_SHORTBOARD_COUNT）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SHORTBOARD_COUNT.md`；复现脚本 `metrics/repro/M_ENT_SHORTBOARD_COUNT.py` → `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技信息展示系统（按 UI 挂载推断）（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：COUNT（截面判定）｜ **域**：企业分析／企业评估／综合竞争力｜ **UI 挂载**：企业竞争力画像「短板指标数」卡 + 短板明细｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **分级**：无直接文档对应（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SHORTBOARD_COUNT.py`、产物 `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_SHORTBOARD_COUNT.md`；复现脚本 `metrics/repro/M_ENT_SHORTBOARD_COUNT.py` → `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_SHORTBOARD_COUNT.py`、产物 `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -55,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_ENT_SHORTBOARD_COUNT.md` |
 | 复现脚本 | `metrics/repro/M_ENT_SHORTBOARD_COUNT.py` |
 | 复现产物 | `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json` |
@@ -63,16 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_SHORTBOARD_COUNT.py`、产物 `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：COUNT（截面判定）｜ **域**：企业分析／企业评估／综合竞争力｜ **UI 挂载**：企业竞争力画像「短板指标数」卡 + 短板明细｜ **数据支持度**：**部分支持**
-> **口径来源**：算法 2026-09（同业=同链，空值不判，L3 跟 SCORE）→ `gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_SHORTBOARD_COUNT.md`｜ **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`python3 M_ENT_SHORTBOARD_COUNT.py` → `code/M_ENT_SHORTBOARD_COUNT_out.json`
-> **wanghui**：false（王惠侧无本件正本，§五 只做同族对照）
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -120,7 +126,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `code/_snapshots21/base_20261021.json` | 底册（org → credit） | 189,116 家 |
 | `code/_snapshots21/supply_family_20261023.json` | 链归属（credit → chain） | 链标签 2,283,762 行规整结果 |
 
-正文所有数字都能在 `code/M_ENT_SHORTBOARD_COUNT_out.json` 里检索到，字段路径在附录 B 列出。
+正文所有数字都能在 `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json` 里检索到，字段路径在附录 B 列出。
 
 ---
 
@@ -380,7 +386,7 @@ cd code
 python3 M_ENT_SHORTBOARD_COUNT.py
 ```
 
-产物 `code/M_ENT_SHORTBOARD_COUNT_out.json` 节选：
+产物 `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json` 节选：
 
 ```json
 {
@@ -513,16 +519,11 @@ G6 决定时效。72.81% 的企业判定年落在 2014/2015，这个数字必须
 
 ## 参考文献
 
-1. 项目内 calc-logic 正本：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_SHORTBOARD_COUNT.md`。https://github.com/gkx-orchestration/agent-delivery
+1. 国务院国资委：企业绩效评价标准值。http://www.sasac.gov.cn/
 
-2. 国务院国资委：企业绩效评价标准值。http://www.sasac.gov.cn/
+2. 国家统计局：企业统计报表制度。https://www.stats.gov.cn/
 
-3. 国家统计局：企业统计报表制度。https://www.stats.gov.cn/
-
-4. 工业和信息化部：中小企业划型标准规定。https://www.miit.gov.cn/
-
-5. 国家企业信用信息公示系统：企业年报公示。https://www.gsxt.gov.cn/
-
+3. 工业和信息化部：中小企业划型标准规定。https://www.miit.gov.cn/
 # 附件
 
 ## 附录 A 需求原文摘录
@@ -616,8 +617,8 @@ G6 决定时效。72.81% 的企业判定年落在 2014/2015，这个数字必须
 | 交付物 | 路径 |
 |---|---|
 | 本文档 | `_staging21/M_ENT_SHORTBOARD_COUNT.md` |
-| 脚本 | `code/M_ENT_SHORTBOARD_COUNT.py` |
-| 产物 | `code/M_ENT_SHORTBOARD_COUNT_out.json` |
+| 脚本 | `metrics/repro/M_ENT_SHORTBOARD_COUNT.py` |
+| 产物 | `metrics/repro/out/M_ENT_SHORTBOARD_COUNT_out.json` |
 
 ## 附录 J 复现实验记录
 
@@ -645,11 +646,3 @@ G6 决定时效。72.81% 的企业判定年落在 2014/2015，这个数字必须
 查询侧：画像卡按 `org_id` 取最新 `data_year` 一行；列表页需带 `data_year` 展示，禁止隐去年份。
 
 前端侧：数字旁必须显示「（2014 年）」这类年份标签；`n_l3_judged` 小于 3 时建议加「样本不足」提示。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,20 @@
-# 技术基础指标模型——技术动态资讯（王惠口径：技术创新趋势预测）（M_TECH_DS_07_TECH_INNOV_006）
+# 技术基础指标模型——技术动态资讯（M_TECH_DS_07_TECH_INNOV_006）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_DS_07_TECH_INNOV_006.md`；复现脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py` → `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_006_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：技术基础指标模型（l6，DS-07 基础指标族·趋势件）｜ **域**：技术（TECH）｜ **UI 挂载**：DS-07 技术基础指标 / 技术发展历程（专题库技术发展分析） ｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_TECH_DS_07_TECH_INNOV_006.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py`、产物 `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_DS_07_TECH_INNOV_006.md`；复现脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py` → `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_006_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py`、产物 `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -53,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TECH_DS_07_TECH_INNOV_006.md` |
 | 复现脚本 | `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py` |
 | 复现产物 | `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_006_out.json` |
@@ -61,15 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py`、产物 `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_006_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：技术基础指标模型（l6，DS-07 基础指标族·趋势件）｜ **域**：技术（TECH）｜ **UI 挂载**：DS-07 技术基础指标 / 技术发展历程（专题库技术发展分析） ｜ **数据支持度**：**部分支持**
-> **公式定义人（20261020-TECH-d）**：王惠（wanghui_agg 收录：def=同 M_INNOV_TINN_FORECAST-技术创新趋势预测；creator=王惠）｜ **wanghui：true（§五 必含，见文末 §五）** ｜ 直接（结构/数据）：否 / 否（无预测结果面）｜ 依赖（结构/数据）：部分（年申请量 / 年转移两维可逐年拟合，年被引维因 `cited_by_date` 全为 `'null'` 且覆盖 0.70% 不可生成）
-> **先验对勘**：support_level.json 先验「完全直接支持」；本批实测**降档为部分支持**——先验按「dwd_patent 表存在且量大」计，未核王惠三维中被引维的可生成性；实测见 §二 / §三。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -110,6 +117,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 **右截断是本次实测最重要的方法论发现**：样本 2025 年 23,331 件、仅为 2024 年 33,562 件的 69.5%，2026 年 4,703 件（不足 10 个月），两年度均不可入拟合，也不可用来做精度检验。按 §〇 落 **部分支持**：数量维与转移维的外推现转可交付（含区间），被引维不可生成；需求原文的「资讯热度/阅读量」在库内无源，另列缺口。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.1.4.1.7.2 技术创新力指标展示（L890）<br>```<br>1.1.1.1.4.1.7.2. **技术创新力指标展示**<br>通过收集和分析专利技术创新的数量、专利技术创新的质量、技术市场的潜力等关键指标，构建技术创新力评估体系。结合专利－发明人－学者－地域－产业等知识图谱数据，该功能能够全面分析不同产业领域的技术创新规模、质量和市场潜力，为决策者提供技术创新能力的发展状况和空间分布特征，帮助识别具有高技术创新力的领域和区域，为技术发展战略制定和创新资源优化配置提供科学依据。<br>技术创新力指标展示的具体功能包括专利数量统计分析、专利质量评估、技术市场潜力分析、技术创新力综合评估、技术创新空间分布、技术创新趋势预测。<br>```<br>#### §1.1.1.1.4.1.7.2.6 技术创新趋势预测（L916）<br>```<br>1.1.1.1.4.1.7.2.6. 技术创新趋势预测<br>基于历史数据和算法模型，预测特定领域技术创新力的未来发展趋势，用户可查看预测结果和置信区间，为技术发展规划提供参考。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_TECH_DS_07_TECH_INNOV_006.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -218,7 +270,7 @@ $$
 
 ## 二、计算过程
 
-> **口径说明**：需求只给「算趋势」，本报告按王惠 FORECAST 口径实现三维年度序列 + Holt 外推；已由脚本 `code/M_TECH_DS_07_TECH_INNOV_006.py` 实测跑通，结果见同目录 `M_TECH_DS_07_TECH_INNOV_006_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
+> **口径说明**：需求只给「算趋势」，本报告按王惠 FORECAST 口径实现三维年度序列 + Holt 外推；已由脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py` 实测跑通，结果见同目录 `M_TECH_DS_07_TECH_INNOV_006_out.json`。文内引用为 SCI 叙述式 (Author, year)，完整题录见文末「参考文献」。
 
 ### 2.1 方法选择：Holt 线性趋势为主、阻尼趋势为辅、被引维降级
 
@@ -270,13 +322,13 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py` |
 | 结果产物 | 同目录 `M_TECH_DS_07_TECH_INNOV_006_out.json` |
 | 数据来源 | 快照 `tech_d_graph2_20261021.json`（40 域年度序列）+ `tech_d_small_tables_20261021.json`（转移年度）+ `tech_d_metrics_20261021.json`（376 域 S 曲线） |
 | 大表纪律 | 序列来自 PK 分片抽样的年度计数，未做整表扫描；转移年度计数来自全量表聚合（22,809 行） |
 
 ```bash
-python3 metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -350,7 +402,7 @@ python3 metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_TECH_DS_07_TECH_INNOV_006.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_TECH_DS_07_TECH_INNOV_006.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维 | 候选表 / 字段 | 实测行数 / 结论 | 支撑判断 |
 |---|---|---|---|
@@ -422,13 +474,11 @@ wanghui_agg 登记：def=「同 M_INNOV_TINN_FORECAST-技术创新趋势预测�
 
 > 下列条目均经联网核验存在；仅收录可打开的官方/出版社页面。文内 (Author) 与此对应。中文官方机构文献优先。
 
-1. Holt, C. C. (2004). Forecasting seasonals and trends by exponentially weighted moving averages. *International Journal of Forecasting*, 20(1), 5–10. https://doi.org/10.1016/j.ijforecast.2003.09.015 （Holt 线性趋势原始报告 1957 年 ONR-RM-52 的正式重印；王惠 FORECAST 口径的模型本体）
+1. Holt, C. C. (2004). Forecasting seasonals and trends by exponentially weighted moving averages. *International Journal of Forecasting*, 20(1), 5–10. https://doi.org/10.1016/j.ijforecast.2003.09.015 
 2. Gardner, E. S., Jr., & McKenzie, E. (1985). Forecasting trends in time series. *Management Science*, 31(10), 1237–1246. https://doi.org/10.1287/mnsc.31.10.1237 （阻尼趋势 AR(1) 参数 φ 的原始论文；1,001 条 M 竞争序列上证明阻尼改善长 lead time 精度）
 3. 中华人民共和国科学技术部. (2019). 《第六次国家技术预测工作启动会》（战略规划司组织，17 领域，含技术竞争评价、科技前沿趋势分析；要求重视大数据与人工智能在预测中的应用）. https://www.most.gov.cn/ztzl/lhzt/lhzt2019/xwfblhzt2019/201902/t20190227_145343.html （官方技术预测方法论语境）
 4. 国家统计局. (2024). 《2023 年中国创新指数测算结果》（创新产出指数 199.7，含每万名 R&D 人员高价值发明专利拥有量指数）. https://www.stats.gov.cn/sj/sjjd/202410/t20241025_1957136.html （官方年度趋势序列范式，可作宏观背景对照）
 5. 国家知识产权局办公室. (2021). 《战略性新兴产业分类与国际专利分类参照关系表（2021）（试行）》（国知办函规字〔2021〕121 号）. https://www.cnipa.gov.cn/art/2021/2/10/art_75_156716.html （IPC4 → 产业语义映射，用于把域级趋势解释为产业趋势）
-6. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_TINN_FORECAST.md`（王惠口径注册真源）；`开发库指标计算过程/M_TECH_DS_07_TECH_INNOV_004.md`（同批主体件，共享年度序列与市场潜力维）。
-
 ---
 
 # 附件
@@ -503,16 +553,8 @@ M1（即刻）：两维趋势服务——40 域阻尼 Holt + 区间 + 生命周�
 
 ## 附录 D　实测脚本与结果摘要
 
-- 脚本：`../code/M_TECH_DS_07_TECH_INNOV_006.py`（2026-10-21 TECH-d 批）；产物：`../code/M_TECH_DS_07_TECH_INNOV_006_out.json`
+- 脚本：`../code/M_TECH_DS_07_TECH_INNOV_006.py`（2026-10-21 TECH-d 批）；产物：`../metrics/repro/out/M_TECH_DS_07_TECH_INNOV_006_out.json`
 - 关键数：40 域拟合；G06F 2025 阻尼 3,836（3,476-4,195）；G06N 1,907（1,627-2,186）；G06V 1,632（1,393-1,870）；转移 2025 标准 8,167 / 阻尼 7,242 / 实际 5,799；定相 4/20/10/6；S 曲线 2025 阻尼 482,347
 - 复跑：`python3 code/M_TECH_DS_07_TECH_INNOV_006.py`（只读快照、幂等；不连库）
 - 字段对应：`domains[]`=域级观测与两法预测；`phase_dist`/`phases[]`=生命周期；`dim_market_transfer`=转移维；`dim_quality_cited`=被引维（不可用）；`s_curve_376_domains`=全域 S 曲线；`support_judgment` 与 §〇.3 一致
 - 工程注意：`transfer_year` 含 `y='0'` 的脏值（287 条），聚合时须过滤；`cited_by_date` 的字面 `'null'` 不可用 `IS NOT NULL` 判空；JSON 序列化 `default=str` 防 Decimal/date 报错
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

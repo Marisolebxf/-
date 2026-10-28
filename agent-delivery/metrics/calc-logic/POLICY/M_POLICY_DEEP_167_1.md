@@ -1,9 +1,22 @@
 # 政策力度评估模型（M_POLICY_DEEP_167_1）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DEEP_167_1.md`；复现脚本 `metrics/repro/M_POLICY_DEEP_167_1.py` → `metrics/repro/out/M_POLICY_DEEP_167_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：深度指标（力度评估·五子项结构化 + 文本代理）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技专题服务算法库 → 深度分析模型 → 政策力度评估
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是（`gkx.dwd_policy_base`）；依赖数据 = **部分**（五子项里 4 项无真值，仅 V4 区县标记 5.83% 有变异；政策级指数退化为 0/100 二值）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DEEP_167_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_167_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DEEP_167_1.md`；复现脚本 `metrics/repro/M_POLICY_DEEP_167_1.py` → `metrics/repro/out/M_POLICY_DEEP_167_1_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DEEP_167_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_167_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +64,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_DEEP_167_1.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_DEEP_167_1.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_DEEP_167_1_out.json` |
@@ -59,17 +72,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_DEEP_167_1.py`、产物 `metrics/repro/out/M_POLICY_DEEP_167_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：深度指标（力度评估·五子项结构化 + 文本代理）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技专题服务算法库 → 深度分析模型 → 政策力度评估
-> **数据支持度**：**部分支持**
-> **公式定义人**：仿王惠 ai-1020（五子项等权·min-max）｜ wanghui: true（子项框架沿用，指数退化已如实披露）
-> **四判定摘要**：直接结构/数据 = 否 / 否；依赖结构 = 是（`gkx.dwd_policy_base`）；依赖数据 = **部分**（五子项里 4 项无真值，仅 V4 区县标记 5.83% 有变异；政策级指数退化为 0/100 二值）
-> **一句话口径**：王惠五子项（实施日、支持方式、支持对象、区县落地、扶持行为）逐项算完备率后 min-max 等权合成；实测只有 V4 可用，指数二值化，故另设 17 词工具密度作空壳期诊断，但明确声明它**不是**财政投入
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径
 
@@ -231,7 +238,7 @@ MySQL 的 `date` 类型允许 `0000-00-00`（在非严格模式下），它是�
 
 ### 2.7 复现代码与结果展示
 
-执行 `python3 code/M_POLICY_DEEP_167_1.py`，只读四份快照，零 SQL，输出 `code/M_POLICY_DEEP_167_1_out.json`。关键字段：
+执行 `python3 code/M_POLICY_DEEP_167_1.py`，只读四份快照，零 SQL，输出 `metrics/repro/out/M_POLICY_DEEP_167_1_out.json`。关键字段：
 
 | 字段 | 实测值 | 含义 |
 |---|---|---|
@@ -448,9 +455,7 @@ V2/V3/V5 的修复只有上游灌数一条路。`policy_support` 需要按 JSON 
 3. 财政部，《地方政府预算公开办法》，https://www.mof.gov.cn/
 4. 国务院，《政府信息公开条例》，https://www.gov.cn/zhengce/2019-04/15/content_5382991.htm
 5. MySQL 8.0 Reference Manual, *The DATE, DATETIME, and TIMESTAMP Types*（零日期语义），https://dev.mysql.com/doc/refman/8.0/en/datetime.html
-6. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 / §3.13。
-7. 同批范式 `第三方库指标计算过程/M_INNOV_PG_COUNT_DIST.md`。
-
+6. 同批范式 `第三方库指标计算过程/M_INNOV_PG_COUNT_DIST.md`。
 # 附件
 
 ## 附录 A　原文摘录（需求原文 + 复现入口）
@@ -464,9 +469,9 @@ V2/V3/V5 的修复只有上游灌数一条路。`policy_support` 需要按 JSON 
 ### A.2 复现入口（命令与快照指纹）
 
 ```bash
-cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
+cd （20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_DEEP_167_1.py
-python3 -c "import json;d=json.load(open('code/M_POLICY_DEEP_167_1_out.json'));print(d['index']);print([ (s['code'],s['available']) for s in d['subitems']])"
+python3 -c "import json;d=json.load(open('metrics/repro/out/M_POLICY_DEEP_167_1_out.json'));print(d['index']);print([ (s['code'],s['available']) for s in d['subitems']])"
 ```
 
 | 项 | 值 |
@@ -517,11 +522,3 @@ GROUP BY city HAVING n >= 50 ORDER BY d DESC LIMIT 12;
 **三、替代方案的成本。** 文本工具词密度是零成本替代（只需正文），但它测的是书写强度；财政投入口径需要接预算与台账，成本最高但语义最准；企业受惠反推需要政策—企业关联键，本库没有。本件选零成本替代作诊断，把高成本方案写进修复路径。
 
 **四、结论。** 本期发布子项完备率与文本密度，不发布力度总分；补齐 `policy_support` 与 `support_amount` 后可恢复五子项满配，届时需重跑全量并打版本号。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

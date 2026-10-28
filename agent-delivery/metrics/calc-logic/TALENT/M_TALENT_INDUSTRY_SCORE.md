@@ -1,9 +1,22 @@
-# M_TALENT_INDUSTRY_SCORE（M_TALENT_INDUSTRY_SCORE）
+# 人才产业力指数（M_TALENT_INDUSTRY_SCORE）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_INDUSTRY_SCORE.md`；复现脚本 `metrics/repro/M_TALENT_INDUSTRY_SCORE.py` → `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：需求派生（TALENT 家族 · 产业关联）｜ **域**：科技信息展示系统 · 科技人才态势 · 人才洞察分析（产研对比）/ 关联画像（需求 1.1.1.1.4.3.1.2、1.1.1.1.4.3.3，原文第 1539—1541、1971—1990 行）
+> - **数据支持度**：**部分支持**
+> - **四判定摘要**：直接结构 = 否（无 `industry_score` 结果表）；直接数据 = 否；依赖结构 = 是（学者主档 + 论文面板 + 专利快照齐全）；依赖数据 = **部分**（IND 维 35.35% 非零、PAT 维 45.46%、LINK 维 27.01%、H 维 100%）
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_INDUSTRY_SCORE.py`、产物 `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_INDUSTRY_SCORE.md`；复现脚本 `metrics/repro/M_TALENT_INDUSTRY_SCORE.py` → `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_INDUSTRY_SCORE.py`、产物 `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -57,7 +70,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_TALENT_INDUSTRY_SCORE.md` |
 | 复现脚本 | `metrics/repro/M_TALENT_INDUSTRY_SCORE.py` |
 | 复现产物 | `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json` |
@@ -65,16 +78,12 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+---
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_INDUSTRY_SCORE.py`、产物 `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+# 最新指标调研报告
 
-> **类型**：需求派生（TALENT 家族 · 产业关联）｜ **域**：科技信息展示系统 · 科技人才态势 · 人才洞察分析（产研对比）/ 关联画像（需求 1.1.1.1.4.3.1.2、1.1.1.1.4.3.3，原文第 1539—1541、1971—1990 行）
-> **UI 挂载**：人才产业画像页「20+8 集群归属 + 产业关联度分档 + 簇内榜」
-> **数据支持度**：**部分支持**
-> **口径来源**：需求原文「产研对比分析」「专利－发明人－学者－地域－产业知识图谱」＋《深圳市「20+8」产业集群》分类；calc-logic **未覆盖**本指标，四维权重为派单给定
-> **四判定摘要**：直接结构 = 否（无 `industry_score` 结果表）；直接数据 = 否；依赖结构 = 是（学者主档 + 论文面板 + 专利快照齐全）；依赖数据 = **部分**（IND 维 35.35% 非零、PAT 维 45.46%、LINK 维 27.01%、H 维 100%）
-> **铁律**：缺测维不补 0，按剩余权重重归一；论文簇只认「姓名+机构前缀」双锚定；专利两字姓名与池内同名判缺测
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
+
 wanghui: false
 
 ---
@@ -200,7 +209,7 @@ Top 5 是李克强（清华大学，80.69，智能网联汽车/网络与通信�
 4. OECD. *Science, Technology and Industry Scoreboard*. <https://www.oecd.org/sti/scoreboard.htm>
 5. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
 6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 859、1539—1541、1971—1990 行
-7. 同批产物：`code/M_TALENT_INDUSTRY_SCORE_out.json`
+7. 同批产物：`metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json`
 8. 论文面板：`code/_snapshots21/a25_paper_panel.json`（100,900 篇、215,816 条作者记录）
 
 ### 1.6 推测原意与推测定义
@@ -306,10 +315,10 @@ FROM gkx.dwd_zh_paper;                    -- 100,900 行，20,048 条有关键�
 
 | 项 | 内容 |
 |---|---|
-| 脚本 | `code/M_TALENT_INDUSTRY_SCORE.py` |
+| 脚本 | `metrics/repro/M_TALENT_INDUSTRY_SCORE.py` |
 | 公共库 | `code/_talent21_common.py`（含 28 类字典与 `clusters_of`） |
 | 数据快照 | `a25_paper_panel.json`、`patent_inventor_counts_gkx.json`、`probe_a26_20261022.json`、`probe_talent21_20261022.json` |
-| 输出 | `code/M_TALENT_INDUSTRY_SCORE_out.json` |
+| 输出 | `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json` |
 | 库名 / 端口 | `gkx` @ 183.240.141.251:3318（`gkx_reader_zp`，只读）；本指标 SQL 0 条 |
 | 运行 | `python3 code/M_TALENT_INDUSTRY_SCORE.py` |
 | 耗时 | 17.6 秒 |
@@ -453,13 +462,8 @@ IND 维与 `M_TALENT_ATTRACT_SCORE` 的 M 维共用 28 类字典与同一份论�
 1. 深圳市人民政府. *深圳市「20+8」产业集群政策*. <https://www.sz.gov.cn/>
 2. 国家统计局. *国民经济行业分类（GB/T 4754—2017）*. <https://www.stats.gov.cn/>
 3. WIPO. *IPC—Technology Concordance Table*. <https://www.wipo.int/classifications/ipc/en/>
-4. OECD. *Science, Technology and Industry Scoreboard*. <https://www.oecd.org/sti/scoreboard.htm>
-5. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
-6. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 859、1539—1541、1971—1990 行
-7. 同批产物：`code/M_TALENT_INDUSTRY_SCORE_out.json`
-8. 论文面板：`code/_snapshots21/a25_paper_panel.json`
-9. 注册表口径：`gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-TALENT-seed.yaml`（v0.1.0，`is_mock: true`，formula `pending_cosign`）、`metric-readiness-matrix-TALENT.yaml`、`metric-srs-map.yaml`
-
+4. 深圳市统计局. *深圳统计年鉴*. <https://tjj.sz.gov.cn/>
+5. 项目需求原文：`gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` 第 859、1539—1541、1971—1990 行
 ---
 
 # 附件
@@ -581,17 +585,10 @@ OECD 与 WIPO 都用「分类码→产业」的对照表做映射。本文用 28
 
 | 项 | 值 |
 |---|---|
-| 脚本 | `code/M_TALENT_INDUSTRY_SCORE.py` |
-| 输出 | `code/M_TALENT_INDUSTRY_SCORE_out.json` |
+| 脚本 | `metrics/repro/M_TALENT_INDUSTRY_SCORE.py` |
+| 输出 | `metrics/repro/out/M_TALENT_INDUSTRY_SCORE_out.json` |
 | 耗时 | 17.6 秒 |
 | SQL | 0 条 |
 | 关键数字 | 20,420 人 / 锚定 62,735 篇 / 关联 17,228 篇 / 强关联 69 / 最大簇 1,969 / 纯姓名 Spearman 0.7891 |
 | 交付 | 四维产业关联分 + 28 簇汇总，无贡献维 |
 | 判档 | 部分支持 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

@@ -1,9 +1,20 @@
 # 创新价值（M_INNOV_DS_04_ACHIEVE_OVERVIEW_001）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` → `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题系统 + 科技信息展示系统（差异见「一・三、三系统需求兼容性设计」）
+> **指标画像**
+> - **类型**：DS（专题服务指标面，DS_04 创新成果价值族）｜ **域**：创新成果（INNOV）｜ **UI 挂载**：创新成果综合展示 → 创新价值排序 / 创新价值分类展示 ｜ **数据支持度**：**部分支持**
+> **版本与分级**
+> - **差异分级**：互补级差异（D4）｜ 依据：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md`
+> - **20261027 批次**：三系统兼容升级件（格式样板：M_CHAIN_PATENT_COUNT）｜ 兼容接口契约：`（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md` ｜ py 复跑：2026-10-27
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py`、产物 `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` → `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py`、产物 `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -60,7 +71,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md` |
 | 复现脚本 | `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` |
 | 复现产物 | `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json` |
@@ -68,15 +79,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py`、产物 `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：DS（专题服务指标面，DS_04 创新成果价值族）｜ **域**：创新成果（INNOV）｜ **UI 挂载**：创新成果综合展示 → 创新价值排序 / 创新价值分类展示 ｜ **数据支持度**：**部分支持**
-> **公式定义人（王惠口径，wanghui: true）**：王惠 V1.5（calc-logic `M_INNOV_ACHIEVE_VALUE`「成果扩散潜力代理」）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：开发库结构有 / 数据「部分」（论文与项目两型关键子维无区分度）
-> **别名说明**：本 ID 为王惠已入库指标 `M_INNOV_ACHIEVE_VALUE`（创新成果价值）的 DS 域展示别名，计算步骤完全一致，本文件不另设公式。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -115,6 +122,51 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 **可行性结论**：本文按王惠 V1.5 口径在**三方库 `gkx`** 上直接重算（三类成果 × 三维、批内极值归一、缺测维不补 0、等权 ×100、P70/P30 分档，窗口 2019–2024，每型 5,000 行），并同步复核四张依赖表的空值与区分度。三类成果各 5,000 条、合计 15,000 条：专利型得分区间 33.33–66.67、均值 38.57、三档 1,532/1,719/1,749，深圳切片 2,353 条（47.06%）；项目型区间 17.42–83.33、均值 51.51；**中文论文型恒为 50.0，完全退化**。按 §〇，「论文与项目两型的关键子维始终取不到有区分度的数据」→ **部分支持**。
 
 ---
+
+
+### 1.1.0 三系统需求文档原文对照（20261027 批次新增）
+
+> 逐字摘自 METRIC-SRS-GAP-L01 单指标报告 §二（自动定位），完整锚点见该文件。判定：**D4 互补级差异：各文档侧重不同侧面**。
+
+| 需求文档 | 原文（逐字） |
+|---|---|
+| 《科技信息展示系统和科技专题服务系统》 | #### §1.1.1.1.4.1.4.1 创新成果综合展示（L440）<br>```<br>1.1.1.1.4.1.4.1. **创新成果综合展示**<br>通过大数据检索、分析技术和创新价值数值计算模型，将全球的创新成果、创新资讯、创新机构、企业动态按照创新价值进行分类展示。该功能利用地理位置数据进行全球地图落点，以高亮、闪烁、飞线等可视化形式直观突出重点，并展示逻辑关系，为用户提供实时的创新观察服务。<br>创新成果综合展示的具体功能包括创新成果分类展示、地理位置可视化、重点成果突出显示、创新价值排序、实时更新展示。<br>```<br>#### §1.1.1.1.4.1.4.1.4 创新价值排序（L458）<br>```<br>1.1.1.1.4.1.4.1.4. 创新价值排序<br>根据创新价值数值计算模型对创新成果进行排序，用户可按价值高低查看创新成果列表，了解全球创新热点。<br>```<br>#### §1.1.1.1.4.1.4.5 创新监测与分析（L548）<br>```<br>1.1.1.1.4.1.4.5. **创新监测与分析**<br>过设置数据监测模型，将搜集的创新数据按照特定规则进行及时告知，提醒用户关注。该功能旨在发现创新点，关注创新价值，进行创新提前布局。用户可订阅关注的领域、创新载体，在设置创新关注点后，系统将利用模型算法以通知、邮件的方式智能推送科技创新信息，帮助用户把握创新机会。<br>创新监测与分析的具体功能包括监测模型设置、创新点发现、创新价值评估、订阅管理、创新关注点设置、智能推送。<br>``` |
+
+### 一・三、三系统需求兼容性设计
+
+> 共性约定见 `（过程文件见 METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/ 同名报告附录，本地工作区）04_兼容接口设计规约.md`（参数契约/出参结构/assumptions 机制），本节只写本指标个性。
+
+#### 兼容判定
+
+两侧各说一段完整链路（如生产侧 vs 消费侧）。**单接口兼容**：合并各侧要求为一张口径卡，计算段服务生产侧要求，出参 display 段服务消费侧要求（依据分级处置建议「合并各侧要求为一张口径卡」）。（判级原文见 1.1.0 表头依据链接）
+
+#### 入参兼容策略（`compute(params)`，全部可选）
+
+| 参数 | 算法库 | 专题系统 | 展示系统 | 缺省行为（缺参时 `assumptions` 声明） |
+|---|---|---|---|---|
+| `start_date/end_date` | 常传 | 可能不传 | 常传 | 基线口径窗口（见 §二与产物 `base_years_*`） |
+| `region/industry_tag` | 全量或指定 | 挂载页上下文传 | 下钻传 | 缺省全量（基线口径） |
+| `weights/dims` | 全维全参 | 子集或不传 | 自定义子集 | 基线内置口径，不做加权改写 |
+| `format` | `detail` | `detail` | `display` | 缺省 `detail` + 附 `display` 段 |
+
+#### 出参兼容策略
+
+- 算法库消费：`value/detail`（主值与计算明细，= 基线 `headline/stats`）+ 产物 `rule`（口径回显）。
+- 专题系统消费：基线逐行明细段（`chains/rows/items` 等，见 §三）。
+- 展示系统消费：`display` 段（主数字卡片 + 序列/分布的可视化友好结构）。
+- `assumptions`：恒含「本件为 20261021 基线口径包装，参数子集在快照粒度上不可再分时显式声明」。
+
+#### 三系统调用注意事项（后端必读）
+
+1. **数值唯一性**：三系统拿到的主值同源（同一 _out.json），不存在「专题版数字/展示版数字」两套账；B1 铁律：正文数字=产物数字。
+2. 本件支持度结论与数据缺口见 §〇/§三/§四（沿用 20261021 结论，未改判）；调用方在支持度不足的维度上不得自行补数。
+3. 展示侧如需裁剪维度/字段，只用 `display` 段，不要改读基线明细段后自行删列（口径易漂移）。
+4. 兼容层不改变基线数学定义；若甲方会签后口径变更，走新版本 ID，不在本件上原地改公式。
+
+#### 依据
+
+- METRIC-SRS-GAP-L01 单指标报告：`gkx-orchestration/agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/file/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md`
+- 三文档原文：见 1.1.0 对照表（逐字引用）
 
 ## 一、需求定义概述
 
@@ -216,7 +268,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 二、计算过程
 
 > **口径说明**：需求未给公式，以下为王惠 V1.5 升级版口径的复现过程；已由脚本  
-> `code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` 在 `gkx` 上 **实测跑通**：三型各取 5,000 行、现场算三维并分档，同时复核四张依赖表的空值率，结果见同目录 `M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`。为避免拖垮远程库，专利不跑 294 万行全表，而是「取 5,000 行样本 → 按 `pn` 批量回填被引/转化」，公式与分子不变。  
+> `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` 在 `gkx` 上 **实测跑通**：三型各取 5,000 行、现场算三维并分档，同时复核四张依赖表的空值率，结果见同目录 `M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`。为避免拖垮远程库，专利不跑 294 万行全表，而是「取 5,000 行样本 → 按 `pn` 批量回填被引/转化」，公式与分子不变。  
 > 文内引用格式为 SCI 常用「叙述后附 (Author)」；完整题录与可核验网址见文末「参考文献」。
 
 ### 2.1 方法选择：为何三类成果分算而不混排
@@ -294,7 +346,7 @@ $$V_x=100\times\frac{1}{|\mathcal{K}_x|}\sum_{k\in\mathcal{K}_x}n_{xk}$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` |
+| 计算脚本 | `gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` |
 | 结果产物 | 同目录 `M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json` |
 | 样本策略 | 三型各 5,000 行（窗口 2019–2024），与旧版同序同量，便于逐项对比 |
 | 校验源 | 三方库 `gkx`（`183.240.141.251:3318`，只读）：专利/被引/转化/论文/期刊/项目六表 |
@@ -302,7 +354,7 @@ $$V_x=100\times\frac{1}{|\mathcal{K}_x|}\sum_{k\in\mathcal{K}_x}n_{xk}$$
 | 运行时长 | 34.2 s（含 6 表探针与三型评分） |
 
 ```bash
-python3 metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py
+python3 gkx-orchestration/agent-delivery/metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py
 ```
 
 脚本输出字段含：`probes_today`（四张表空值/区分度）、`compute.by_type`（三型分布与分档）、`compute.degenerate_types`、`compute.patent_sz_slice`、`support_judgment`。以下展示为 **2026-10-21** 一次完整跑数结果（与 out.json 一致）。
@@ -372,7 +424,7 @@ python3 metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py
 
 ## 三、数据支撑情况
 
-> **判定顺序（本版强制）**：先跑通 `code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` 并确认结果合理，再写本档支持度。
+> **判定顺序（本版强制）**：先跑通 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` 并确认结果合理，再写本档支持度。
 
 | 依赖维度 | 候选表 | 开发库 live | 三方 gkx（20261021 实测） | 实测结论 |
 |---|---|---|---|---|
@@ -459,14 +511,7 @@ python3 metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py
 
 4. Harhoff, D., Narin, F., Scherer, F. M., & Vopel, K. (1999). Citation frequency and the value of patented inventions. *The Review of Economics and Statistics*, 81(3), 511–515. https://doi.org/10.1162/003465399558265
 
-5. OECD/JRC（Nardo, M., Saisana, M., Saltelli, A., Tarantola, S. 等执笔）. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://www.oecd.org/sdd/42495745.pdf
-
-6. Cherchye, L., Moesen, W., Rogge, N., & Van Puyenbroeck, T. (2007). An introduction to ‘benefit of the doubt’ composite indicators. *Social Indicators Research*, 82(1), 111–145. https://doi.org/10.1007/s11205-006-9029-7
-
-7. 项目内真源（非外部文献）：`王惠口径正本（GitLab 外本地归档）` — 王惠 V1.5 闭合口径（本文件复用其公式）。
-
-文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
-
+5. Cherchye, L., Moesen, W., Rogge, N., & Van Puyenbroeck, T. (2007). An introduction to ‘benefit of the doubt’ composite indicators. *Social Indicators Research*, 82(1), 111–145. https://doi.org/10.1007/s11205-006-9029-7
 ---
 
 # 附件
@@ -611,15 +656,7 @@ python3 metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py
 ## 附录 D　实测脚本与结果摘要
 
 - 脚本：`../code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py`  
-- 产物：`../code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`  
+- 产物：`../metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`  
 - 数据源：`gkx.dwd_patent` / `dwd_patent_cited` / `dwd_patent_transfer` / `dwd_zh_paper` / `dwd_zh_journal` / `dwd_zh_project`（现场重算，未复用旧 out.json）  
 - 关键结果：三型各 5,000 条（合计 15,000）；专利 33.33–66.67（1,532/1,719/1,749）；论文恒 50.0（退化）；项目 17.42–83.33（1,531/1,966/1,503）；深圳切片 2,353 条（47.06%）；`support_judgment=部分支持`；与 20261020 上游数值逐项一致（仅换数据源，公式未动）  
 - 工程注意：`dwd_zh_journal` 影响因子与分区 100% 空、`dwd_zh_paper.download_num` 100% 为 0、`dwd_zh_project.project_level` 全单值——三项恒值/空壳已在 out.json 的 `probes_today` 与 `degenerate_types` 中标注。
-
-
-## 更新记录
-
-- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-

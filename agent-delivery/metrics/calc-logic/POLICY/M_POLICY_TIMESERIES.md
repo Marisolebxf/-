@@ -1,9 +1,24 @@
 # 政策时序指标（M_POLICY_TIMESERIES）
 
-> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_TIMESERIES.md`；复现脚本 `metrics/repro/M_POLICY_TIMESERIES.py` → `metrics/repro/out/M_POLICY_TIMESERIES_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+> **归属与维护**
+> - **维护者**：唐绍祖
+> - **适用系统**：科技专题服务算法库（单系统件；抬头治理批次 20261027）
+> **指标画像**
+> - **类型**：SERIES（年度/月度时序）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技专题服务系统「政策时序分析」趋势图、政策追踪页的年度柱状与同比标注
+> - **数据支持度**：**部分支持**｜ **公式定义人**：注册表 `formula` = 「发布量=`COUNT(DISTINCT policy_id) GROUP BY 期`；增长率/连续性 `pending_algorithm`」；本件按该条款实现同比与连续性，增长口径为本件定义
+> - **一句话结论**：政策发布量 2015—2021 从 **1,261** 条升到 **2,120** 条（年化 **9.0444%**），2015-01—2022-08 **92 个月无一个空月**；但 2022-09 起 **50 个月里 48 个月零记录**，最近三年趋势不可算，故判**部分支持**。
+> **复现与产物**
+> - **复现脚本**：`metrics/repro/M_POLICY_TIMESERIES.py`｜ **产物**：`metrics/repro/out/M_POLICY_TIMESERIES_out.json`
+> **版本与分级**
+> - **分级**：单系统（未入 D1–D5 跨系统分级清单，不涉及三系统口径分歧）｜ 全量分类见 `METRIC-SRS-GAP-L01/产物/20261027三系统兼容升级/分级清单（过程文件 _分级清单.json 随批归档）`
+> - **20261027 批次**：抬头治理件（计算口径与产物数值未改动，与 20261021 基线一致）
 
-> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_TIMESERIES.py`、产物 `metrics/repro/out/M_POLICY_TIMESERIES_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+---
+
+> 指标最终唯一解释口径（真源）。20261027 批（三系统兼容升级版）覆盖；骨架对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_TIMESERIES.md`；复现脚本 `metrics/repro/M_POLICY_TIMESERIES.py` → `metrics/repro/out/M_POLICY_TIMESERIES_out.json`。（**正本全文见本件下方「最新指标调研报告」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_TIMESERIES.py`、产物 `metrics/repro/out/M_POLICY_TIMESERIES_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。本地工作区目录不对外；验收以本仓为准。
 
 ---
 
@@ -51,7 +66,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 值 |
 |---|---|
-| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 入库批次 | 20261027_指标整体开发进度调研（三系统兼容升级版，正本见文末「最新指标调研报告」） |
 | 正本 MD | `M_POLICY_TIMESERIES.md` |
 | 复现脚本 | `metrics/repro/M_POLICY_TIMESERIES.py` |
 | 复现产物 | `metrics/repro/out/M_POLICY_TIMESERIES_out.json` |
@@ -59,18 +74,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ---
 
-# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
-
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_TIMESERIES.py`、产物 `metrics/repro/out/M_POLICY_TIMESERIES_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
-
-> **类型**：SERIES（年度/月度时序）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技专题服务系统「政策时序分析」趋势图、政策追踪页的年度柱状与同比标注
-> **数据支持度**：**部分支持**｜ **公式定义人**：注册表 `formula` = 「发布量=`COUNT(DISTINCT policy_id) GROUP BY 期`；增长率/连续性 `pending_algorithm`」；本件按该条款实现同比与连续性，增长口径为本件定义
-> **复现脚本**：`code/M_POLICY_TIMESERIES.py`｜ **产物**：`code/M_POLICY_TIMESERIES_out.json`
-> **共用底数**：`code/_snapshots21/policy_dims_20261023.json`、`code/_snapshots21/policy_struct_20261023.json`
-> **基期声明**：`base_years_used=[2015..2021]`（七个完整年）、`base_years_missing=[2022,2023,2024]`；2022 库内只有 1—8 月，按不完整年排除；2023 全年零行、2024 仅 1 行，按采集断档记「未测」，不按 0 摊入趋势或均值。
-> **一句话结论**：政策发布量 2015—2021 从 **1,261** 条升到 **2,120** 条（年化 **9.0444%**），2015-01—2022-08 **92 个月无一个空月**；但 2022-09 起 **50 个月里 48 个月零记录**，最近三年趋势不可算，故判**部分支持**。
-
 ---
+
+# 最新指标调研报告
+
+> 本节为 20261027 批正本全文（三系统兼容升级版；替换 20261021 调研正本 · 2026-10-24 并入版）。口径与数值以本节为准；`metrics/repro/` 内脚本与产物已同步本批。
 
 ## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
 
@@ -179,7 +187,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 1 | `gkx.dwd_policy_base` | gkx @ 183.240.141.251:3318，只读 | 政策底表，20,000 行 |
 | 2 | `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-POLICY-seed.yaml` | `metric_id: M_POLICY_TIMESERIES` | 注册表定义与公式状态（`pending_algorithm`） |
 | 3 | `gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.1.1.1.1.3（3）政策时序指标 | 需求原文 |
-| 4 | `批次《20261021 改源工程》数据事实登记件 DATA_FACTS_gkx21.md（GitLab 外本地工作稿）` | §3.16、§3.49、§3.56 | 基期不许摊 0、信号终止记未测、`table_rows` 不可用 |
+| 4 | `（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/_work_gkx21/DATA_FACTS_gkx21.md` | §3.16、§3.49、§3.56 | 基期不许摊 0、信号终止记未测、`table_rows` 不可用 |
 | 5 | `第三方库指标计算过程/M_CHAIN_POLICY_MATCH_SCORE.md` | §2.3 剔除词表 | 12 词表与 620 条剔除口径的来源 |
 
 同 ID 的 calc-logic 正本在 `calc-logic/POLICY/` 下不存在（该目录现有 19 份，均为 DEEP/评分件），注册表也未给 `calc_logic_ref`。本件口径以注册表 `formula` 与需求原文为准，不虚构正本路径。
@@ -267,13 +275,13 @@ $$\mathrm{CAGR}=\left(\frac{2120}{1261}\right)^{1/6}-1=9.0444\%$$
 ### 2.7 复现代码与产物
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 _build_policy_dims_20261023.py      # 分类轴底数（约 45 秒，连 gkx）
 python3 _build_policy_struct_20261023.py    # 时间轴底数（约 55 秒，连 gkx）
 python3 M_POLICY_TIMESERIES.py              # 只读快照，不连库
 ```
 
-`M_POLICY_TIMESERIES.py` 不连数据库，只读两份快照，重跑不会因为源库抖动改变数字，也不会影响其它政策件。产出文件是 `code/M_POLICY_TIMESERIES_out.json`，顶层写 `support_judgment`、`base_years_used/_missing/_note`，序列在 `series`（37 条）、同比在 `growth.yoy_by_year`、年化在 `growth.cagr`、连续性在 `continuity`、构成在 `composition`、层级序列在 `level_series`。
+`M_POLICY_TIMESERIES.py` 不连数据库，只读两份快照，重跑不会因为源库抖动改变数字，也不会影响其它政策件。产出文件是 `metrics/repro/out/M_POLICY_TIMESERIES_out.json`，顶层写 `support_judgment`、`base_years_used/_missing/_note`，序列在 `series`（37 条）、同比在 `growth.yoy_by_year`、年化在 `growth.cagr`、连续性在 `continuity`、构成在 `composition`、层级序列在 `level_series`。
 
 正文里的每个数字都能在产物里找到同名键：1,261 / 2,120 / 2,402 / 289 / 1 / 0 在 `series[].rows`；9.0444 / 8.3698 在 `growth.cagr.cagr_pct` / `cagr_policy_pct`；92 / 50 / 48 在 `continuity.dense_months` / `tail_months` / `tail_empty_months`；40.5234 / 25.4717 在 `composition[].policy_doc_share_pct`。
 
@@ -375,7 +383,7 @@ live 侧的 `dwd.policy_base_info` 在 20261019 的实测里是 0 行，`ads.pol
 ### 5.1 复现命令
 
 ```bash
-cd agent-delivery/metrics/repro
+cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
 python3 M_POLICY_TIMESERIES.py
 python3 -c "import json;d=json.load(open('M_POLICY_TIMESERIES_out.json'));print(d['support_judgment'], d['headline']['peak_year'], d['growth']['cagr']['cagr_pct'])"
 ```
@@ -415,7 +423,6 @@ python3 -c "import json;d=json.load(open('M_POLICY_TIMESERIES_out.json'));print(
 2. 国家统计局. (2017). 统计上大中小微型企业划分办法（2017）. https://www.stats.gov.cn/
 3. 国务院政策文件库（政策文本检索入口）. https://www.gov.cn/zhengce/
 4. OECD & European Commission JRC. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. https://doi.org/10.1787/9789264043466-en
-
 ---
 
 # 附件
@@ -496,10 +503,3 @@ python3 -c "import json;d=json.load(open('M_POLICY_TIMESERIES_out.json'));print(
 | 重跑一致 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_TIMESERIES --check` | 语义一致 |
 | 文档-产物 | `python3 _work_gkx21/audit_md_vs_out.py --only M_POLICY_TIMESERIES` | 无实质漂移 |
 | 判档一致性 | `python3 _work_gkx21/audit_verdict_enum.py _staging21` | 与 out.json 同档 |
-
-
-## 更新记录
-
-- 2026-10-23: 新建（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
-
