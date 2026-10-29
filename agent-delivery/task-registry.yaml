@@ -28842,7 +28842,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 350000
     note: |
-      2026-10-24 增量：嵌入模式底色修正——is-portal-embed 原 background:none 简写连底色一并重置导致整页透白（违 D8），改为保留 --sci-bg-page #d8e7fc；lumen-ui-topic commit f76fd2c 已推 origin/dev（监管人聊天授权）；handoff 补 §0.2（orchestration e7ba9ea2）。待门户侧配菜单后实嵌复验
+      2026-10-29 增量：按钮权限 btn:topic:ent:compare（加入对比）全量放开——删除 v-permission 绑定（ElementProfile 1 处 + ResultList 2 处）、capabilityLevels.compare 等级门、matrix.ts 码定义与 L2 分配、portal/perms.ts mock 码；docs/门户菜单权限注册清单.md 同步（§4.1 删行、§六 JSON 删 6 个 topic_btn_ent_compare_* 注册项、计数 33→27）。验证：type-check 绿 + portal/menu selfcheck 绿 + 全仓 grep 零残留。改动停本地工作区待人工验收（闸门 2026-10-20），验收通过后随本任务推送。btn:topic:ent:profile-compare 等其他权限码未动
     depends_on: []
     touched_files:
       - "src/App.vue"
@@ -28858,7 +28858,7 @@ tasks:
       - "安全配置（方案 §12.4/§10.1）：部署侧配置 CSP frame-ancestors 仅允许门户域名嵌入，禁止 X-Frame-Options ALLOWALL/DENY"
       - "页面适配（方案 §12.6）：html/body/#app 100% 宽高自适应门户内容区，不强依赖浏览器全屏高度"
       - "联调验收：与门户体验环境 https://edu.itic-sci.com/portal 完成实际嵌入联调（PAGE_READY/路由/登录态/异常场景），handoff 附截图或录屏证据"
-    update_time: "2026-10-24T11:13:50+08:00"
+    update_time: "2026-10-29T15:33:30+08:00"
   - id: LUMEN-UAC-JAVA-FACADE-L01
     feishu_bitable_record_id: reczz28MTKaQhMH9
     claimed_at: "2026-10-12T10:11:09.972Z"
@@ -44215,19 +44215,28 @@ tasks:
       - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-SCHEME-L01.md，ponytail: N/A，evidence 指向实施方案与 handoff；状态到 ready_to_sign，不标 done，不建开发叶，不改技术方案.md"
     update_time: "2026-10-29T12:59:24+08:00"
   - id: CHAIN-ODS-SYNC-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-29T07:37:45.924Z"
+    last_seen_at: "2026-10-29T07:37:45.924Z"
+    lock_until: "2026-10-29T11:37:45.924Z"
+    claimed_by: "human:徐滕强"
     title: "产业链数据同步 — 三方库 gkx 贴源四表 → Demo ODS（参照政策 sync-ods，含日期类型自动转换）"
-    status: "ready"
+    status: "claimed"
     agent: "algorithm-agent"
     epic: "CHAIN-ODS-SYNC"
     priority: "P1"
     repo: "demo-algo-science + demo-ui-system-test"
     delivery_phase: "implementation"
     task_type: "feature"
-    effort_points: "5"
-    difficulty: "M"
+    effort_points: "8"
+    difficulty: "L"
     estimated_tokens: 300000
     note: |
-      用户 2026-10-29 提出。参照物：政策模块数据同步按钮（demo-ui-system-test src/views/policy/pages/BasicPage.vue + demo-algo-ent-analysis polan/ods_sync.py + api/policy_routes.py /internal/policy/sync-ods）。与灌数据按钮（generate.py 码表造数）互补，不复用码表。
+      用户 2026-10-29 提出并认领改口径。
+      参照物：政策模块数据同步（demo-ui-system-test BasicPage.vue + demo-algo-ent-analysis polan/ods_sync.py /internal/policy/sync-ods）。与「灌数据」码表造数互补。
+      【口径修订 2026-10-29 human 确认】Demo ODS 四表必须 mode=replace：先 TRUNCATE 目标表再从头全量同步，禁止默认 upsert 差集补齐。接口 body 固定 {mode: replace}（或 UI 仅暴露「清空后全量同步」一档）。
+      【性能硬约束】dwd_org_industry_tags / dwd_org_industry_product_tags / dwd_industry_chain_news_info 三表数据量大——禁止一次性 SELECT * 进内存；须流式/分批（主键游标或 LIMIT 批次，批大小可配，建议≥500～2000 视行宽）、进度可轮询（written/todo）；TRUNCATE 后全量写入可走 INSERT…SELECT 跨库或服务端侧分批；日期脏值行内转换不得拖垮吞吐；handoff 须附直播行数探针 + 单表耗时。dwd_industry_chain_info 体量小可同路径。
+      claimed_by=human:徐滕强 supervised_by=human:徐滕强（2026-10-29 改派自 agent:algorithm-agent/human:淮政玮）。
     touched_files:
       - "demo-algo-science/chainan/llm_ods/ods_sync.py（新增）"
       - "demo-algo-science/api/main.py（新增 /internal/industry/sync-ods 路由 + status 扩展）"
@@ -44242,4 +44251,4 @@ tasks:
       - "产业链基础指标页新增「数据同步」按钮 + 数据同步说明弹卡（flow 四步：源只读 → 目标 Demo ODS → upsert 差集补齐 → 到此为止），同步中/灌数互斥"
       - "自检：至少一个可运行检查覆盖日期脏值转换逻辑（如 tests/test_chain_ods_sync_dates.py），离线可跑"
       - "同步后 ODS 行数变化可查（status），不自动触发重灌；写入 handoff agent-handoffs/CHAIN-ODS-SYNC-L01.md，回填 cost 四字段，ponytail: 行说明强度"
-    update_time: "2026-10-29T15:14:11+08:00"
+    update_time: "2026-10-29T15:38:01+08:00"
