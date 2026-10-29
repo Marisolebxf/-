@@ -75,7 +75,7 @@ D1 ≥ pending_test ──→ §4 人工走查（人工验收闸门：改动停�
 
 ## 3. 开工顺序
 
-1. A0：体检（网关 192.168.88.50:9999 可达性、element 六端点 curl、`{dwd}.enterprise_base`/`{ads}.enterprise_score`/两张 dist 表行数、真 token 获取方式核验）。
+1. A0：体检（网关 `10.50.69.111:30895`、element 六端点 curl、`{dwd}.enterprise_base`/`{ads}.enterprise_score`/两张 dist 表行数、真 token 获取方式核验）。
 2. C1 → C2 → C3（`lumen-svc-platform` 串行，一 REST 路径一叶）。
 3. D1：`lumen-ui-science-pc` 契约适配 + `.env` 切 `VITE_APP_USE_MOCK=false`；三绿（type-check/自检/build）；`views/situation/**` diff 为零自检。
 4. §4 人工走查（监管人执行）；红项按缺口/修单处理，仍停本地。
