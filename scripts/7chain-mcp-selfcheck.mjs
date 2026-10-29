@@ -4,7 +4,7 @@
  * 跑法：node scripts/7chain-mcp-selfcheck.mjs
  */
 import assert from 'node:assert/strict';
-import { callTool, handleRequest, listToolDefs, setHttpFetch, truncateGraph } from './7chain-mcp-server.mjs';
+import { callTool, clearMintedToken, handleRequest, listToolDefs, setHttpFetch, truncateGraph } from './7chain-mcp-server.mjs';
 
 const M1 = [
   'search-enterprise', 'search-industry', 'search-policy',
@@ -358,11 +358,39 @@ await hits('synth-collab', { action: 'index', region: '深圳' }, {
 }
 
 {
+  clearMintedToken();
   const calls = callsFor(424, { code: 1, msg: 'token expired' });
   const result = await callTool('chain-panorama', { chain_id: 'INB1701' });
   assert.equal(result.isError, true);
-  assert.match(textOf(result), /GKX_MCP_TOKEN/);
-  assert.equal(calls.length, 1);
+  assert.match(textOf(result), /换票失败/);
+  assert.equal(calls.length, 2);
+  assert.match(calls[1].url, /\/auth\/oauth2\/token$/);
+  assert.equal(calls[1].init.method, 'POST');
+  assert.equal(textOf(result).includes('pig'), false);
+}
+
+{
+  clearMintedToken();
+  process.env.GKX_MCP_TOKEN = 'stale-token';
+  const calls = installFetch(async (url, init) => {
+    if (String(url).includes('/auth/oauth2/token')) {
+      return jsonResponse(200, { access_token: 'fresh-token', expires_in: 3600 });
+    }
+    if (init.headers.Authorization === 'Bearer stale-token') return jsonResponse(424, { msg: '用户凭证已过期' });
+    return jsonResponse(200, { code: 0, data: [{ chain_id: 'INB1701', chain_name: '新一代信息技术' }] });
+  });
+  const result = await callTool('search-industry', { q: '信息' });
+  assert.notEqual(result.isError, true, textOf(result));
+  assert.match(textOf(result), /INB1701/);
+  assert.equal(textOf(result).includes('fresh-token'), false);
+  assert.equal(calls.length, 3);
+  assert.equal(calls[2].init.headers.Authorization, 'Bearer fresh-token');
+  const again = await callTool('search-industry', { q: '信息' });
+  assert.notEqual(again.isError, true, textOf(again));
+  assert.equal(calls.length, 4);
+  assert.equal(calls.filter((call) => String(call.url).includes('/auth/oauth2/token')).length, 1);
+  delete process.env.GKX_MCP_TOKEN;
+  clearMintedToken();
 }
 
 const missing = JSON.parse(await handleRequest(9, 'nope', {}));

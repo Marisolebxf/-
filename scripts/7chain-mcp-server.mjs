@@ -43,9 +43,16 @@ const SVC_INDICATOR_TOPIC = { field: 'layout', trend: 'new', shenzhen: 'sz' };
 const SVC_MODEL_TOPIC = { tech: 'tech', gap: 'gap', attract: 'attract', cultivate: 'cultivate' };
 
 let httpFetch = null;
+let mintedToken = '';
+let mintedUntil = 0;
 
 export function setHttpFetch(fn) {
   httpFetch = fn;
+}
+
+export function clearMintedToken() {
+  mintedToken = '';
+  mintedUntil = 0;
 }
 
 function getFetch() {
@@ -165,7 +172,43 @@ export function truncateGraph(payload) {
   return { payload: copy, truncated: true, node_count: countNodes(copy) };
 }
 
-async function httpCall(base, method, relPath, { query, body } = {}) {
+function currentBearer() {
+  if (mintedToken && Date.now() < mintedUntil) return mintedToken;
+  return (process.env.GKX_MCP_TOKEN || '').trim();
+}
+
+async function mintToken() {
+  const root = gatewayBase();
+  const url = new URL('auth/oauth2/token', `${root}/`);
+  const id = (process.env.GKX_MCP_CLIENT_ID || 'pig').trim();
+  const secret = (process.env.GKX_MCP_CLIENT_SECRET || 'pig').trim();
+  const { headers } = traceHeaders();
+  headers.Authorization = `Basic ${Buffer.from(`${id}:${secret}`).toString('base64')}`;
+  headers.Accept = 'application/json';
+  headers['Content-Type'] = 'application/x-www-form-urlencoded';
+  const res = await getFetch()(url, {
+    method: 'POST',
+    headers,
+    body: 'grant_type=client_credentials',
+    redirect: 'manual',
+    signal: AbortSignal.timeout(Number(process.env.GKX_MCP_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS),
+  });
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = null;
+  }
+  const token = json?.access_token || json?.data?.access_token;
+  if (!res.ok || !token) return false;
+  mintedToken = String(token);
+  const ttl = Number(json.expires_in || json.data?.expires_in) || 3600;
+  mintedUntil = Date.now() + Math.max(30, ttl - 60) * 1000;
+  return true;
+}
+
+async function httpCall(base, method, relPath, { query, body, token } = {}) {
   const root = assertBase(base, 'base');
   const url = new URL(relPath.replace(/^\//, ''), `${root}/`);
   if (url.origin !== new URL(root).origin) throw new Error('拒绝越出配置的基址');
@@ -175,8 +218,8 @@ async function httpCall(base, method, relPath, { query, body } = {}) {
     }
   }
   const { traceId, headers } = traceHeaders();
-  const token = (process.env.GKX_MCP_TOKEN || '').trim();
-  if (token) headers.Authorization = `Bearer ${token}`;
+  const bearer = token !== undefined ? token : (process.env.GKX_MCP_TOKEN || '').trim();
+  if (bearer) headers.Authorization = `Bearer ${bearer}`;
   headers.Accept = 'application/json';
   const init = {
     method,
@@ -262,12 +305,20 @@ function callMeta(res, extra = {}) {
     upstream_trace_id: res.upstreamTraceId,
     ...extra,
   };
-  if (res.status === 401 || res.status === 424) meta.hint = '该路由需要环境变量 GKX_MCP_TOKEN，token 不进 git';
+  if (res.authHint) meta.hint = res.authHint;
+  else if (res.status === 401 || res.status === 424) meta.hint = '该路由需要环境变量 GKX_MCP_TOKEN，token 不进 git';
   return meta;
 }
 
 async function gateway(method, relPath, opts) {
-  return httpCall(gatewayBase(), method, relPath, opts);
+  const first = await httpCall(gatewayBase(), method, relPath, { ...opts, token: currentBearer() });
+  if (first.status !== 401 && first.status !== 424) return first;
+  const minted = await mintToken();
+  if (!minted) {
+    first.authHint = 'client_credentials 换票失败。可设 GKX_MCP_CLIENT_ID / GKX_MCP_CLIENT_SECRET，或更新 GKX_MCP_TOKEN';
+    return first;
+  }
+  return httpCall(gatewayBase(), method, relPath, { ...opts, token: mintedToken });
 }
 
 function synthBody(args) {

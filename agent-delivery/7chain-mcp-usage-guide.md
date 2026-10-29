@@ -38,7 +38,7 @@
 | `GKX_MCP_TIMEOUT_MS` | 可选，默认 30000 | 单次 HTTP 超时 |
 | `GKX_MCP_SVC_BASE` | 可选 | 仅当 svc 网关返回 404 时，改打该域的 `/v1/svc/*`，结果带 `demo_only` |
 
-demo 网关上，服务机构、综合、政策指标和 `search-policy` 的 `subject_id` 反查不带 token 也能 200。`search-industry`、`chain-panorama`、`chain-analyze` 不带 token 会 424。Cursor 若只注入 `mcp.json` 里的基址，产业链工具会失败，需要在启动 Cursor 的环境里另设 `GKX_MCP_TOKEN`。企业智能搜索和政策关键词检索不走这条 token，未设 `GKX_MCP_POLICY_BASE` 时直接失败、不打 demo 网关。
+demo 网关上，服务机构、综合、政策指标和 `search-policy` 的 `subject_id` 反查不带 token 也能 200。`search-industry`、`chain-panorama`、`chain-analyze` 打到 401/424 时，MCP 用 `client_credentials` 向同一基址的 `/auth/oauth2/token` 换票并重试一次。客户端默认 `pig:pig`，可用 `GKX_MCP_CLIENT_ID` / `GKX_MCP_CLIENT_SECRET` 覆盖。换到的 `access_token` 只留在进程内存，不进 git、不进 `mcp.json`。已设 `GKX_MCP_TOKEN` 时先用它，过期再换票。企业智能搜索和政策关键词检索不走这条 token，未设 `GKX_MCP_POLICY_BASE` 时直接失败、不打 demo 网关。
 
 取 token（demo 网关默认 OAuth 客户端 `pig:pig`，`access_token` 不要提交）：
 
@@ -220,7 +220,7 @@ MCP 面板里 gkx-7chain 为绿之后，在本仓库对话说：
 把 route.status、metric_id 或 data_source、以及 error 原文发我。
 ```
 
-424 且提示需要 `GKX_MCP_TOKEN`：token 没进 MCP 进程。`search-enterprise` 或 `search-policy` 报未设置 `GKX_MCP_POLICY_BASE`：lumen 基址没进 MCP 进程。空 `enterprises`：智能搜索没有命中，换关键词再试，不要把空列表补成名单。
+424 且提示换票失败：客户端凭证被拒，检查 `GKX_MCP_CLIENT_ID` / `GKX_MCP_CLIENT_SECRET`。改完服务端脚本后要重开 MCP，旧进程不会热加载。`search-enterprise` 或 `search-policy` 报未设置 `GKX_MCP_POLICY_BASE`：lumen 基址没进 MCP 进程。空 `enterprises`：智能搜索没有命中，换关键词再试，不要把空列表补成名单。
 
 ---
 
@@ -268,7 +268,7 @@ where.exe node
 }
 ```
 
-`command` 换成 `where.exe node` 的结果。路径里的反斜杠在 JSON 里写成 `\\`。token 过期后只改 `GKX_MCP_TOKEN`，大约 12 小时。
+`command` 换成 `where.exe node` 的结果。路径里的反斜杠在 JSON 里写成 `\\`。`GKX_MCP_TOKEN` 可以不写：产业链工具在 401/424 时会自己换票。手写的 token 大约 12 小时过期，过期后同样自动换票。
 
 也可以在 WorkBuddy 里改同一份文件：侧边栏 **插件** → 右上角 **MCP 服务器** → **配置 MCP**。
 
