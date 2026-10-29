@@ -44480,7 +44480,7 @@ tasks:
     lock_until: "2026-10-29T14:22:04.738Z"
     claimed_by: "human:孔东"
     title: "专题系统测试缺陷修复 — 前端（bug-registry 20261026-1028 前端侧 16 项）"
-    status: "claimed"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "专题系统-测试缺陷修复"
     priority: "P0"
@@ -44490,8 +44490,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 150000
-    note: |
-      20261026-1028 QA 三轮共 22 BUG（qa/bug-registry.yaml，全 open）中前端侧 16 个。监管人 human:孔东（认领+监管）。强度：ponytail full。字典翻译优先接线已有层（entTagDictionaryStore / RECRUIT_MODE_META / RecruitWeightDimension.label / SZ_STATUS_BENCHMARK_CITY_OPTIONS），不新造机制；028-006/008 共用组件一改双闭合。与 QA-TOPIC-BUGFIX-API-L01 协同：字典字段双端分工、B 类判定结果驱动前端空态文案。
+    note: "2026-10-29 孔东指令直接开工：本轮先修 A 类编码渲染 4 处（027-002/027-007/028-004/028-006/008），其余类别等 A 类闭合后再排。修完停本地走人工验收。"
     touched_files:
       - "repos/lumen-ui-topic/src/components/enterprise/recruit/RecruitResultPanel.vue"
       - "repos/lumen-ui-topic/src/components/enterprise/keyAnalysis/TypeRegionPanel.vue"
@@ -44502,7 +44501,7 @@ tasks:
       - "修完停本地工作区走人工验收闸门（2026-10-20 用户裁定），未经派单授权不 commit/push"
       - "30892 dev 复测对应 source_case 用例转绿；同步收紧 FUNC-02120 用例 toCanonical 别名归一，防编码回归用例假绿"
       - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-FE-L01.md：含 BUG-ID 对照表 + 产品实现规程附录 D 防漏扫描摘要；task-registry cost 4 字段回填"
-    update_time: "2026-10-29T18:22:04+08:00"
+    update_time: "2026-10-29T18:33:08+08:00"
   - id: QA-TOPIC-BUGFIX-API-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-29T10:22:04.846Z"
@@ -44510,7 +44509,7 @@ tasks:
     lock_until: "2026-10-29T14:22:04.846Z"
     claimed_by: "agent:api-agent"
     title: "专题系统测试缺陷修复 — 接口侧（gkxlumen-topic/metrics：500 根因 + 字典字段 + B 类判定）"
-    status: "claimed"
+    status: "backlog"
     agent: "api-agent"
     epic: "专题系统-测试缺陷修复"
     priority: "P0"
@@ -44520,7 +44519,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "监管人 human:徐滕强（仅监管，执行人待指派后认领）。强度：ponytail full。与 QA-TOPIC-BUGFIX-FE-L01 协同：A 类字典字段双端分工、B 类判定结论驱动前端空态文案与 D3 状态。数据缺项涉及指标 D1-D4 时走 metric-registry 查询，不直读 seed YAML。"
+    note: |
+      2026-10-29 复核调整：优先级重排，先根因后兜底——接口侧先修 A 类编码根因（027-002 tag_name 中文名、027-007 object_name 完备、028-004 详情名称链路、028-006/008 筛选权重回显契约），后再处理 028-005 五百错误与 B 类判定。回落 backlog 待细化排期，勿在 A 类闭合前开工。
     touched_files:
       - "repos/lumen-svc-platform/gkxlumen-topic"
       - "repos/lumen-svc-platform/gkxlumen-metrics"
@@ -44530,4 +44530,30 @@ tasks:
       - "A 类接口侧：typeRows.tag_name、cityBenchmark object_name、企业名称等 VO 字段补中文名，或与前端单书面约定兜底分工（写入两单 handoff）"
       - "B 类 5 个（026-001/002、027-004/005/008）逐条判定链路 vs 数据缺项：链路问题修默认条件/参数回退；数据缺项按 D16 登记 gapfill_ 流程，禁止写入 ODS/DWD/ADS/供应方库，禁止伪闭合"
       - "修复后联调确认（note 含「联调通过」），trace_id 回填 bug-registry 对应条目；handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-L01.md + cost 4 字段回填"
-    update_time: "2026-10-29T18:22:04+08:00"
+    update_time: "2026-10-29T18:33:08+08:00"
+  - id: QA-TOPIC-BUGFIX-API-DICT-L01
+    title: "专题系统 A 类编码泄漏根因修复 — 接口侧字典/VO 中文名（前端仅兜底）"
+    status: "ready"
+    agent: "api-agent"
+    epic: "专题系统-测试缺陷修复"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      2026-10-29 孔东指令建单：如 027-002/027-007 类问题前端只能作兜底，根因在接口侧字典/VO。监管人 human:徐滕强（本单即 QA-TOPIC-BUGFIX-API-L01 的 A 类根因部分，拆单先行；其余 500/B 类仍留原单 backlog）。强度：ponytail full。依赖：QA-TOPIC-BUGFIX-FE-L01 前端兜底已同步开工，双端对齐字段清单见两单 handoff。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-svc-platform/gkxlumen-topic"
+      - "repos/lumen-svc-platform/gkxlumen-metrics"
+    definition_of_done:
+      - "BUG-027-002：重点企业类型分析 typeRows.tag_name 返回中文名（字典 join），编码不再透出到前端"
+      - "BUG-027-007：多城市对标 cityBenchmark rows 的 object_name 完备（北京/上海/苏州/广州 + NATIONAL），不再依赖前端区划码兜底"
+      - "BUG-028-004：深圳现状清单→企业详情链路 VO 携带 name_cn，抽屉不再显示编号"
+      - "BUG-028-006/008：招引/培育分析结果契约回显筛选条件与权重的可读名称（或提供 code→name 字典接口），前端本次筛选/权重说明不再拼接原始 code/英文键"
+      - "原则：VO 出中文名为根因修复，前端兜底仅过渡；修复后与 QA-TOPIC-BUGFIX-FE-L01 联调并在 note 记录联调通过；trace_id 回填 bug-registry 对应条目"
+      - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-DICT-L01.md + cost 4 字段回填"
+    update_time: "2026-10-29T18:33:51+08:00"
