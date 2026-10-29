@@ -44475,3 +44475,88 @@ tasks:
       - "单测：纯函数装配逻辑（scopeOf 翻译 + 数值强转）"
       - "git 只 commit 不 push；handoff 落 agent-handoffs/科技发展态势-IM/SITUATION-IM-C1-L01.md（含 ponytail + cost 四字段）；回填契约 §7 实装对照表一行"
     update_time: "2026-10-28T21:10:00+08:00"
+  - id: QA-TOPIC-BUGFIX-FE-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-10-29T10:22:04.738Z"
+    last_seen_at: "2026-10-29T10:22:04.738Z"
+    lock_until: "2026-10-29T14:22:04.738Z"
+    claimed_by: "human:孔东"
+    title: "专题系统测试缺陷修复 — 前端（bug-registry 20261026-1028 前端侧 16 项）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "专题系统-测试缺陷修复"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: |
+      C 类进度 2026-10-29：① 027-001 IndustryClusterSelect 多选 flex/minWidth 约束（含 :deep 收缩，共 3 文件内共享组件，多页复用需回归）② 027-003 CompareItemCard tags_flat Set 去重 ③ 027-006 当前代码未复现类名泄漏（alert content 均正常文案），判定旧构建产物，不改码待 30892 复测确认 ④ 028-007/009 RecruitResultPanel 详情侧栏加标题容器+aria-label（窄屏语义化，不动自动选中逻辑保 FUNC-01452 兼容）。tsc/eslint 绿，未 commit。累计本地 10 文件待孔东验收。
+    touched_files:
+      - "repos/lumen-ui-topic/src/components/enterprise/recruit/RecruitResultPanel.vue"
+      - "repos/lumen-ui-topic/src/components/enterprise/keyAnalysis/TypeRegionPanel.vue"
+      - "repos/lumen-ui-topic/src/components/enterprise/szStatus/CityBenchmarkPanel.vue"
+      - "repos/lumen-ui-topic/src/components/enterprise/EnterpriseDetailDrawer.vue"
+    definition_of_done:
+      - "修复 bug-registry.yaml 前端侧缺陷并逐条对照 BUG-ID：A 类编码渲染 4 处（RecruitResultPanel 本次筛选/权重 label 化、TypeRegionPanel 类型饼图 tag 字典解析、CityBenchmarkPanel 对标城市名兜底、sz-status 清单行补 name_cn）；C 类 5 个（027-001/003/006、028-007/009）；D 类 4 个（028-001/002/003/010）；E 类 028-011 菜单卡死；F 类 028-012 评审层泄漏"
+      - "修完停本地工作区走人工验收闸门（2026-10-20 用户裁定），未经派单授权不 commit/push"
+      - "30892 dev 复测对应 source_case 用例转绿；同步收紧 FUNC-02120 用例 toCanonical 别名归一，防编码回归用例假绿"
+      - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-FE-L01.md：含 BUG-ID 对照表 + 产品实现规程附录 D 防漏扫描摘要；task-registry cost 4 字段回填"
+    update_time: "2026-10-29T20:53:45+08:00"
+  - id: QA-TOPIC-BUGFIX-API-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-29T10:22:04.846Z"
+    last_seen_at: "2026-10-29T10:22:04.846Z"
+    lock_until: "2026-10-29T14:22:04.846Z"
+    claimed_by: "agent:api-agent"
+    title: "专题系统测试缺陷修复 — 接口侧（gkxlumen-topic/metrics：500 根因 + 字典字段 + B 类判定）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "专题系统-测试缺陷修复"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: |
+      B 类判定清单 2026-10-29（前端侧已复核代码，接单后按此执行）：① 026-001/002 默认条件不显示总数/清单＝后端默认态聚合缺失（空 chain_codes/tag_codes 时聚合返回空，非空后正常；前端默认请求含 region_id=440300/year 2022-2026/空筛选数组，需带 trace 复现）；② 027-005 识别依据无数据＝数据缺口，走 D16 gapfill_ 灌数；③ 027-008 对比表空＝指标 Q013/Q014/Q016 未闭合（公式待甲方）+数据未灌，保持诚实空态。前置：先修 QA-TOPIC-BUGFIX-API-DICT-L01（A 类根因），再处理本单。
+    touched_files:
+      - "repos/lumen-svc-platform/gkxlumen-topic"
+      - "repos/lumen-svc-platform/gkxlumen-metrics"
+      - "agent-delivery/qa/bug-registry.yaml"
+    definition_of_done:
+      - "BUG-028-005 企业详情关系图谱页签 500：取 K8s 日志/网关 trace 定位根因并修复，遵守前端→Java REST→Python /internal 调用链不越层"
+      - "A 类接口侧：typeRows.tag_name、cityBenchmark object_name、企业名称等 VO 字段补中文名，或与前端单书面约定兜底分工（写入两单 handoff）"
+      - "B 类 5 个（026-001/002、027-004/005/008）逐条判定链路 vs 数据缺项：链路问题修默认条件/参数回退；数据缺项按 D16 登记 gapfill_ 流程，禁止写入 ODS/DWD/ADS/供应方库，禁止伪闭合"
+      - "修复后联调确认（note 含「联调通过」），trace_id 回填 bug-registry 对应条目；handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-L01.md + cost 4 字段回填"
+    update_time: "2026-10-29T20:33:30+08:00"
+  - id: QA-TOPIC-BUGFIX-API-DICT-L01
+    title: "专题系统 A 类编码泄漏根因修复 — 接口侧字典/VO 中文名（前端仅兜底）"
+    status: "ready"
+    agent: "api-agent"
+    epic: "专题系统-测试缺陷修复"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      2026-10-29 孔东指令建单：如 027-002/027-007 类问题前端只能作兜底，根因在接口侧字典/VO。监管人 human:徐滕强（本单即 QA-TOPIC-BUGFIX-API-L01 的 A 类根因部分，拆单先行；其余 500/B 类仍留原单 backlog）。强度：ponytail full。依赖：QA-TOPIC-BUGFIX-FE-L01 前端兜底已同步开工，双端对齐字段清单见两单 handoff。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-svc-platform/gkxlumen-topic"
+      - "repos/lumen-svc-platform/gkxlumen-metrics"
+    definition_of_done:
+      - "BUG-027-002：重点企业类型分析 typeRows.tag_name 返回中文名（字典 join），编码不再透出到前端"
+      - "BUG-027-007：多城市对标 cityBenchmark rows 的 object_name 完备（北京/上海/苏州/广州 + NATIONAL），不再依赖前端区划码兜底"
+      - "BUG-028-004：深圳现状清单→企业详情链路 VO 携带 name_cn，抽屉不再显示编号"
+      - "BUG-028-006/008：招引/培育分析结果契约回显筛选条件与权重的可读名称（或提供 code→name 字典接口），前端本次筛选/权重说明不再拼接原始 code/英文键"
+      - "原则：VO 出中文名为根因修复，前端兜底仅过渡；修复后与 QA-TOPIC-BUGFIX-FE-L01 联调并在 note 记录联调通过；trace_id 回填 bug-registry 对应条目"
+      - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-DICT-L01.md + cost 4 字段回填"
+    update_time: "2026-10-29T18:33:51+08:00"
