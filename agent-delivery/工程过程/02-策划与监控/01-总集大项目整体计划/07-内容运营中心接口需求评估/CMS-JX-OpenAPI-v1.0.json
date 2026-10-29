@@ -67,6 +67,12 @@
    "name": "图谱·关系链"
   },
   {
+   "name": "图谱·关系类型字典"
+  },
+  {
+   "name": "图谱·关系定义层"
+  },
+  {
    "name": "图谱·实体属性"
   },
   {
@@ -6230,6 +6236,611 @@
         "properties": {
          "id": {
           "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relation-types/list": {
+   "post": {
+    "tags": [
+     "图谱·关系类型字典"
+    ],
+    "summary": "关系类型·列表（该类型全量，order_no ASC）",
+    "operationId": "关系类型·列表（该类型全量，order_no ASC）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relation-types/create": {
+   "post": {
+    "tags": [
+     "图谱·关系类型字典"
+    ],
+    "summary": "关系类型·新增（name 必填；同类型下不可重名）",
+    "operationId": "关系类型·新增（name 必填；同类型下不可重名）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "name"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relation-types/update": {
+   "post": {
+    "tags": [
+     "图谱·关系类型字典"
+    ],
+    "summary": "关系类型·编辑",
+    "operationId": "关系类型·编辑",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relation-types/delete": {
+   "post": {
+    "tags": [
+     "图谱·关系类型字典"
+    ],
+    "summary": "关系类型·删除（软删；被关系引用时 40901 拒删）",
+    "operationId": "关系类型·删除（软删；被关系引用时 40901 拒删）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/rel-defs/list": {
+   "post": {
+    "tags": [
+     "图谱·关系定义层"
+    ],
+    "summary": "关系定义·列表（含 extra 家族专属字段对象）",
+    "operationId": "关系定义·列表（含 extra 家族专属字段对象）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/rel-defs/create": {
+   "post": {
+    "tags": [
+     "图谱·关系定义层"
+    ],
+    "summary": "关系定义·新增（name 必填；同类型下不可重名）",
+    "operationId": "关系定义·新增（name 必填；同类型下不可重名）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "definition": {
+          "type": "string"
+         },
+         "extra": {
+          "type": "string",
+          "description": "家族专属字段对象：enterprise=mode/terms; policy=effect/feedback; service=content/effect; industry=participants"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "name"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/rel-defs/update": {
+   "post": {
+    "tags": [
+     "图谱·关系定义层"
+    ],
+    "summary": "关系定义·编辑",
+    "operationId": "关系定义·编辑",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "definition": {
+          "type": "string"
+         },
+         "extra": {
+          "type": "string"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/rel-defs/delete": {
+   "post": {
+    "tags": [
+     "图谱·关系定义层"
+    ],
+    "summary": "关系定义·删除（软删；被关系实例引用时 40901 拒删）",
+    "operationId": "关系定义·删除（软删；被关系实例引用时 40901 拒删）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
          }
         }
        }

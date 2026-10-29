@@ -99,7 +99,7 @@ honesty `upstream` 改为 `demo-algo-ent-analysis /internal/...`（不再写 `lu
 
 | 键 | 值 |
 |---|---|
-| `MILVUS_URI` | `http://192.168.88.43:19530` |
+| `MILVUS_URI` | `http://10.50.69.111:19530` |
 | `MILVUS_COLLECTION_PREFIX` | `gkxlumen_industry_` |
 | `EMBED_BASE_URL` | `http://gkxlumen-embed-tei:8080/v1/embeddings` |
 | `EMBED_MODEL` | `BAAI/bge-base-zh-v1.5` |

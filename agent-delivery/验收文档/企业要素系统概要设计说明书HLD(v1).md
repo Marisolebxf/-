@@ -157,7 +157,7 @@ flowchart TB
 | 前端 | React + Vite + Arco Design + ECharts（图表）+ AntV G6（图谱）+ Leaflet（地图）+ dayjs；主色 `#165DFF` |
 | 应用服务 | Java（REST），只读 ADS |
 | 算法服务 | Python（NLP / 图谱算法 / 模型推理），`/internal/*` |
-| 图谱 | NebulaGraph 3.x（`192.168.88.43:9669`，space `gkx_enterprise`） |
+| 图谱 | NebulaGraph 3.x（`10.50.75.136:9669`，space `gkx_enterprise`） |
 | 存储 | MySQL 8.0（DWD/ADS/cfg）+ NebulaGraph + Redis/ES（平台级，按需） |
 
 ### 2.4 部署视图（K8s dev）
@@ -170,7 +170,7 @@ flowchart LR
   JPOD --> PYPOD["Python 算法 Pod（/internal/*）"]
   JPOD --> MYSQL[("MySQL ads/gkx_dwd/gkx_cfg")]
   PYPOD --> MYSQL
-  PYPOD --> NEBULA[("NebulaGraph graphd 192.168.88.43:9669")]
+  PYPOD --> NEBULA[("NebulaGraph graphd 10.50.75.136:9669")]
 ```
 
 - CI/CD：push → Pipeline 绿 → K8s dev rollout（架构铁律 5）。

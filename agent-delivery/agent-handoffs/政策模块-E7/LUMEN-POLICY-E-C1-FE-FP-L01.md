@@ -112,13 +112,13 @@
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines?ref=dev
 - 部署 namespace / 镜像 tag：待 E0 滚本 SHA；**当前已发布仍是 `gkx-lumen-topic:97963375`**
 - K8s rollout：本叶未点名 deploy
-- dev 测试 URL：http://192.168.88.50:30892 （E0 后复测）
+- dev 测试 URL：http://10.50.69.111:30892 （E0 后复测）
 
 ## 可观测性（建议）
 
 - OTEL_SERVICE_NAME：`lumen-ui-topic` / `gkxlumen-topic-async-service-biz`
 - traceId（缺陷复现）：`6d2565eb49b41650e411f061c8220465`
-- Tempo：http://192.168.88.50:30201/api/traces/6d2565eb49b41650e411f061c8220465
+- Tempo：http://10.50.69.111:30201/api/traces/6d2565eb49b41650e411f061c8220465
 - 修后 Create 须新抽样 `X-Trace-Id`
 
 ## 修改内容

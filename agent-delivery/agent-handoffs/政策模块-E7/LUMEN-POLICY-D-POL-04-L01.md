@@ -160,7 +160,7 @@ US-E7-POL-04，金路径 #5。路由仅 `/policy/recommendation`（`analysisKey=
 - commit：`5c5caaf5664f592bbbfc0ed97e5b31e726e680d6`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines?ref=dev
 - 部署：随仓既有 CI；本叶不改 helm
-- dev URL：`http://192.168.88.50:30892`（发布后：`/policy/recommendation` 开始分析 → wait_view → 查看结果 → 深圳三维结果板）
+- dev URL：`http://10.50.69.111:30892`（发布后：`/policy/recommendation` 开始分析 → wait_view → 查看结果 → 深圳三维结果板）
 
 ## 可观测性
 

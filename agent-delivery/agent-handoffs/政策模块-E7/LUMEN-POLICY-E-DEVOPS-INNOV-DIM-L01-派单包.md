@@ -16,7 +16,7 @@
 
 政策 E1 复测 clusters **500**：Java 读了 `gkxlumenx_dim.industry_cluster_map`。C1 `300ad30` 已把默认/Helm 绑到 `demo_gkxlumenx_dim`。只滚前端不够。
 
-探活：`GET http://192.168.88.50:30899/topic/v1/meta/industry-clusters?include_l0=true` 不得 500。
+探活：`GET http://10.50.69.111:30899/topic/v1/meta/industry-clusters?include_l0=true` 不得 500。
 （网关路径以现网为准：也可能是 `/policy` 前缀以外的 topic meta；以 30892 前端实际打的 `/api/topic/v1/meta/industry-clusters` 经网关为准。）
 
 前端 `gkx-lumen-topic:006d186d` 已绿，本轮不要重滚 UI。Python 政策 HTTP 不重滚。

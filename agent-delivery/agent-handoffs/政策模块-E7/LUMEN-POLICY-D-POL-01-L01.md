@@ -161,7 +161,7 @@ US-E7-POL-01 / 01b / 05，金路径 #2。SHELL 三项工作区由 `PolicyShellPl
 - commit：`67628df0e3055e7bfa7bd58f4c205cdca1e896b6`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines?ref=dev
 - 部署：随仓既有 CI；本叶不改 helm
-- dev URL：`http://192.168.88.50:30892`（发布后：产业篮勾 1 产业 → 政策三项；或直开 `/policy/overview`）
+- dev URL：`http://10.50.69.111:30892`（发布后：产业篮勾 1 产业 → 政策三项；或直开 `/policy/overview`）
 
 ## 可观测性
 

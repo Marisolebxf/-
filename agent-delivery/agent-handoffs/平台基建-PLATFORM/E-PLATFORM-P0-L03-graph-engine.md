@@ -15,7 +15,7 @@
 | DoD 项 | 状态 | 产物 |
 |--------|------|------|
 | 对齐 ent-analysis-demo nebula_loader / nebula_query / nebula.py | ✅ | `entan/common/nebula.py`、`entan/graph/nebula_loader.py`、`entan/graph/nebula_query.py`（自 demo bootstrap） |
-| dev graphd 192.168.88.43:9669；space schema 文档化 | ✅ | `conf/settings.yaml` + `docs/nebula-space-schema.md` |
+| dev graphd 10.50.75.136:9669；space schema 文档化 | ✅ | `conf/settings.yaml` + `docs/nebula-space-schema.md` |
 | POST `/internal/graph/subgraph` → nodes/edges + source:nebula | ✅ | `api/main.py` |
 | PG 兜底 source:pg | ✅ | Nebula 不可用或 backend=pg 时读 `ads.graph_node/edge` |
 | opentelemetry-instrument + OTLP :4318 | ✅ | `docker/Dockerfile`、`api/otel_middleware.py`、`api/logging_config.py`、`requirements.txt` |
@@ -67,12 +67,12 @@
 
 | 项 | 值 |
 |----|-----|
-| graphd | `192.168.88.43:9669` |
+| graphd | `10.50.75.136:9669` |
 | space | `entan` |
 | user | `root` / 空密码 |
 
 ```text
-GKX_NEBULA_HOSTS=192.168.88.43:9669
+GKX_NEBULA_HOSTS=10.50.75.136:9669
 GKX_NEBULA_SPACE=entan
 GKX_GRAPH_BACKEND=nebula
 ```
@@ -108,7 +108,7 @@ GKX_GRAPH_BACKEND=nebula
 
 | 项 | 说明 | Owner |
 |----|------|-------|
-| 本地 Nebula 连通 | agent 执行环境无法访问 `192.168.88.43:9669`（超时）；dev K8s / 内网需验收 `source:nebula` | devops / qa |
+| 本地 Nebula 连通 | agent 执行环境无法访问 `10.50.75.136:9669`（超时）；dev K8s / 内网需验收 `source:nebula` | devops / qa |
 | CI py:smoke | 待 `feat/E-PLATFORM-P0-L03` push 后 GitLab _runner 确认 | coordinator |
 | entan-py Deployment | 镜像 build 依赖 helm 已创建 `gkx-gkx-platform-entan-py`（deploy job） | devops P0-L06 |
 

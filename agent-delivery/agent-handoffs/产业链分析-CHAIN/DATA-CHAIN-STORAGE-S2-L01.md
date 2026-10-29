@@ -1,4 +1,4 @@
-﻿# DATA-CHAIN-STORAGE-S2-L01 · 产业链存储 S2 — sources/etl/seeds + Demo ODS 建表
+# DATA-CHAIN-STORAGE-S2-L01 · 产业链存储 S2 — sources/etl/seeds + Demo ODS 建表
 
 > **日期**：2026-08-13  
 > **确认**：`human:李伟`（监管/建表 Owner）· 实质完成并放行进入会签/签收路径  
@@ -28,7 +28,7 @@
 
 ## 问题清单
 
-- Demo 默认内网 `192.168.88.43` 超时 → 改用可达入口 `111.198.38.90:34306` 完成 `--apply`
+- Demo 默认内网 `10.50.11.76` 超时 → 改用可达入口 `111.198.38.90:34306` 完成 `--apply`
 - 三方 live 资讯编码 `IC*` 与链表 `INB*` 不一致（开放项 DIFF-03，不挡 S2 建表）
 - 仓内 `gkx_schema_ddl.sql` 产业链旧片段滞后（DIFF-04）
 

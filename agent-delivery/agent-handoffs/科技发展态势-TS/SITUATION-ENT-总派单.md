@@ -20,7 +20,7 @@
 ## 2. 叶清单与 DoD
 
 ### A0 · 数据/环境体检叶（无代码）
-**范围**：① curl 直连 `gkxlumen-element` 六端点并记录响应；② 核对 `{dwd}.enterprise_base`(189,115) / `{ads}.enterprise_score`(189,115) / `enterprise_domain_dist`(30) / `enterprise_type_dist`(35) 行数与脏值（空坐标、异常注册日期、空名称）；③ 核验网关 `192.168.88.50:9999` 可达与真实 token 获取方式（`ENABLE_MOCK_AUTH` 组合是否可用）；④ 输出体检报告。
+**范围**：① curl 直连 `gkxlumen-element` 六端点并记录响应；② 核对 `{dwd}.enterprise_base`(189,115) / `{ads}.enterprise_score`(189,115) / `enterprise_domain_dist`(30) / `enterprise_type_dist`(35) 行数与脏值（空坐标、异常注册日期、空名称）；③ 核验网关 `10.50.69.111:30895` 可达与真实 token 获取方式（`ENABLE_MOCK_AUTH` 组合是否可用）；④ 输出体检报告。
 **DoD**：体检报告 + 六端点样本响应（作为 C 段联调对照基线）。**不写任何代码。**
 
 ### C1 · element 企业端点补强叶（U3 点位）
@@ -55,7 +55,7 @@ git：默认只 commit 不 push（走查通过后监管人人工推）
 
 | 项 | 现状 | 核验方式 |
 |----|------|---------|
-| 网关 192.168.88.50:9999 | 未实测 | curl /health 类探活 |
+| 网关 `10.50.69.111:30895` | health 200（2026-10-27 补验） | `GET /display/actuator/health` |
 | element/display 服务运行态 | 未实测 | 服务直连 curl 六端点 |
 | 真实 token | mock token 给真网关会 424 | PigX 登录或 `ENABLE_MOCK_AUTH=true + USE_MOCK=false` 组合验证 |
 | 库连接 | 默认 `demo_gkxlumenx_dwd` | 行数核对 |

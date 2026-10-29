@@ -114,7 +114,7 @@ SEARCH `mode`：`smart` / `industry` / `advanced`。记录字段对齐 Demo `Ind
 - commit：`lumen-svc-platform` `83422eef8a69bf180e90c2d97693f479b97203a2`（`feat(topic-chain): add industry search/overview/snapshot facade [agent:api-agent]`）
 - pipeline：push `origin/dev` 触发；手动 `deploy:topic-chain` 或 `helm:deploy`
 - 部署：ns=`dev`；镜像 `gkxlumen-topic-chain`；端口 **7095**
-- 网关 NodePort：`http://192.168.88.50:30899/chain/topic/v1/industry/health`（服务 rollout 后）
+- 网关 NodePort：`http://10.50.69.111:30899/chain/topic/v1/industry/health`（服务 rollout 后）
 - K8s rollout：本单提交后由 CI；Python chain 路由待镜像升级
 
 ## 可观测性

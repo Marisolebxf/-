@@ -48,7 +48,7 @@
 
 ## 偏离说明
 
-- 监管称六表已在 `demo_gkxlumenx_dwd`。2026-08-16 对 `192.168.88.43:3306` / `demo_gkxlumenx_dwd` 抽检：**六表均不存在**。同日三方 `gkx` @ `183.240.141.251:3318` **六表均在**。结构复制暂以三方 live `SHOW CREATE` 为真源（**不是** `gkx-mysql-raw` 沙箱旧稿压列名）。待 Demo 建表后以 Demo `SHOW CREATE` 覆盖（OPEN-CHAIN-INDANA-01）。  
+- 监管称六表已在 `demo_gkxlumenx_dwd`。2026-08-16 对 `10.50.11.76:3306` / `demo_gkxlumenx_dwd` 抽检：**六表均不存在**。同日三方 `gkx` @ `183.240.141.251:3318` **六表均在**。结构复制暂以三方 live `SHOW CREATE` 为真源（**不是** `gkx-mysql-raw` 沙箱旧稿压列名）。待 Demo 建表后以 Demo `SHOW CREATE` 覆盖（OPEN-CHAIN-INDANA-01）。  
 - CSV 标 `document_id` 为主键；现表 PRI=`pk_id`。按铁律 **现表 DDL 赢**，不改列（OPEN-CHAIN-INDANA-02）。  
 - GDF 派单包现行仅「企业」域，**无**行业分析 Mapping 作业名，不编造（OPEN-CHAIN-INDANA-03）。
 

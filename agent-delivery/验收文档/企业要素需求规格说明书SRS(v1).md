@@ -142,7 +142,7 @@ ENT=企业要素；FDS=功能设计说明书；HLD=概要设计说明书；IA=�
 | 前端 | React + Vite + **Arco Design**（`@arco-design/web-react`）+ ECharts + AntV G6 + Leaflet + dayjs；主色 `#165DFF`、页面底色 `#D8E7FC`（D8） |
 | 应用服务 | Java REST，**只读 ADS**；不写算法、不直连 nGQL |
 | 算法服务 | Python `/internal/*`（NLP、图谱、模型推理） |
-| 图谱 | NebulaGraph（`192.168.88.43:9669`），space `gkx_enterprise`；**禁 Neo4j** |
+| 图谱 | NebulaGraph（`10.50.75.136:9669`），space `gkx_enterprise`；**禁 Neo4j** |
 | 数据 | 标准表 ADS 先行 + Mock 数据填充；三方源到位后由数据工厂做映射 |
 | 部署 | K8s dev（CI 触发 rollout） |
 

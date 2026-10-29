@@ -65,7 +65,7 @@ ReplicaSet：现网 `gkx-lumen-topic-594f54559b` 镜像 `1ce03cc4` ready 1（pod
 
 ## 产物清单
 
-- 现网前端：`lumen-ui-topic` `1ce03cc4` @ `http://192.168.88.50:30892`
+- 现网前端：`lumen-ui-topic` `1ce03cc4` @ `http://10.50.69.111:30892`
 - 本文 handoff（编排仓；无业务仓 diff）
 
 ## 验收证据
@@ -75,7 +75,7 @@ kubectl -n dev get deploy gkx-lumen-topic
 IMAGE=harbor.htmisoft.net/gkx/gkx-lumen-topic:1ce03cc4  READY=1/1
 rollout status: successfully rolled out
 
-GET http://192.168.88.50:30892/
+GET http://10.50.69.111:30892/
 HTTP 200
 Content-Length: 456
 Last-Modified: Wed, 02 Sep 2026 08:49:19 GMT
@@ -95,7 +95,7 @@ JDBC 未动。无正式前缀数据面变更。innov / 政策 Python 镜像未�
 ## 测试结果
 
 - `kubectl -n dev`：`gkx-lumen-topic` 1/1，镜像 `1ce03cc4`（≥ 目标 SHA `1ce03cc460ca2803c6bcd423794912ba0b211e72`）。
-- 30892 HTTP 200（88.50 与工作站各测一次）。
+- 30892 HTTP 200（10.50.69.111 与工作站各测一次）。
 - innov 仍 `300ad303`；政策 Python 仍 `ea3acc39`；topic-policy 仍 `7d12b8dd`。
 
 ## CI/CD（必填）
@@ -107,7 +107,7 @@ JDBC 未动。无正式前缀数据面变更。innov / 政策 Python 镜像未�
 - namespace：`dev`
 - 镜像：`gkx-lumen-topic:1ce03cc4`（已换掉 `c4758206`）
 - K8s rollout：`gkx-lumen-topic` **成功**（RS `594f54559b`）
-- dev URL：http://192.168.88.50:30892 HTTP **200**
+- dev URL：http://10.50.69.111:30892 HTTP **200**
 
 ## 可观测性
 

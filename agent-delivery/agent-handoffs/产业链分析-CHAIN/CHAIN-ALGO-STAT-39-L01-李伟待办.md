@@ -542,7 +542,7 @@ xlsx/seed 口径是：**最新批次快照、要素库关联企业去重总数�
 | 产品表（非本指标 ODS）          | `dwd_org_industry_product_tags` 现网 `is_deleted=0` = 20000；不要拿来顶本指标。                                                                                                  |
 | 项目 DWD v5              | 现行对象表 = `industry_chain_entity_rel`（`entity_type=enterprise`，`entity_id=credit_code`）。旧名 `industry_chain_enterprise` **已替换，不记缺失**。正式 GDF CHAIN Mapping 派单包仍无（只有企业域）。 |
 | ADS v2                 | 应落 `industry_chain_metric_fact.metric_id=M_CHAIN_ENTERPRISE_COUNT`。Java 只读 ADS。                                                                                      |
-| Demo 库                 | 2026-08-26 改读 `**111.198.38.90:34306**`（MySQL 8.0.46）。库：`demo_gkxlumenx_ods/dwd/ads`。`192.168.88.43` 本机超时，不以它为准。                                                     |
+| Demo 库                 | 2026-08-26 改读 `**111.198.38.90:34306**`（MySQL 8.0.46）。库：`demo_gkxlumenx_ods/dwd/ads`。`10.50.11.76` 本机超时，不以它为准。                                                     |
 
 
 **demo 对照（非口径真源）· 该实例实测**

@@ -163,7 +163,7 @@ US-E7-POL-06，金路径 #3 的过程 / wait_view 段。三路由共用 `PolicyA
 - commit：`d6e13bd7438d8dee1d048410a24f3d0abbf78e5e`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines?ref=dev
 - 部署：随仓既有 CI；本叶不改 helm
-- dev URL：`http://192.168.88.50:30892`（发布后：三项分析「开始分析」→ 过程壳）
+- dev URL：`http://10.50.69.111:30892`（发布后：三项分析「开始分析」→ 过程壳）
 
 ## 可观测性
 

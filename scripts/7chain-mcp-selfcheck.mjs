@@ -4,7 +4,7 @@
  * 跑法：node scripts/7chain-mcp-selfcheck.mjs
  */
 import assert from 'node:assert/strict';
-import { callTool, handleRequest, listToolDefs, setHttpFetch, truncateGraph } from './7chain-mcp-server.mjs';
+import { callTool, clearMintedToken, handleRequest, listToolDefs, setHttpFetch, truncateGraph } from './7chain-mcp-server.mjs';
 
 const M1 = [
   'search-enterprise', 'search-industry', 'search-policy',
@@ -20,6 +20,8 @@ const saved = {
   GKX_MCP_API_BASE: process.env.GKX_MCP_API_BASE,
   GKX_MCP_TOKEN: process.env.GKX_MCP_TOKEN,
   GKX_MCP_SVC_BASE: process.env.GKX_MCP_SVC_BASE,
+  GKX_MCP_POLICY_BASE: process.env.GKX_MCP_POLICY_BASE,
+  GKX_MCP_ENTERPRISE_BASE: process.env.GKX_MCP_ENTERPRISE_BASE,
 };
 
 function restoreEnv() {
@@ -59,6 +61,8 @@ function parsed(result) {
 process.env.GKX_MCP_API_BASE = 'http://gateway.test/api';
 delete process.env.GKX_MCP_TOKEN;
 delete process.env.GKX_MCP_SVC_BASE;
+delete process.env.GKX_MCP_POLICY_BASE;
+delete process.env.GKX_MCP_ENTERPRISE_BASE;
 
 const names = listToolDefs().map((tool) => tool.name);
 assert.deepEqual(names, M1, 'tools/list 必须正好是 M1 的 13 个工具');
@@ -126,7 +130,47 @@ await rejects('synth-index', { index: 'nope' }, /index/);
 await rejects('synth-collab', { action: 'graph' }, /region/);
 await rejects('synth-collab', { action: 'graph', region: '深圳', hops: 3 }, /上限 2/);
 
-await hits('search-enterprise', { q: '华为', limit: 5 }, { method: 'GET', path: '/api/entan/v1/entan/graph' });
+{
+  const calls = callsFor(200, { code: 0, data: { list: [] } });
+  const missing = await callTool('search-enterprise', { q: '华为' });
+  assert.equal(missing.isError, true);
+  assert.match(textOf(missing), /GKX_MCP_POLICY_BASE|GKX_MCP_ENTERPRISE_BASE/);
+  assert.equal(calls.length, 0);
+}
+{
+  process.env.GKX_MCP_POLICY_BASE = 'http://policy.test';
+  const calls = installFetch(async (url, init) => {
+    assert.equal(init.method, 'POST');
+    assert.match(String(url), /^http:\/\/policy\.test\/enterprise\/topic\/v1\/search\/smart$/);
+    const sent = JSON.parse(init.body);
+    assert.equal(sent.keyword, '固态电池');
+    assert.deepEqual(sent.keywords, ['固态电池']);
+    assert.equal(sent.q, '固态电池');
+    assert.equal(sent.size, 5);
+    assert.equal(sent.sort_field, 'competitiveness_score');
+    return jsonResponse(200, {
+      code: 0,
+      data: {
+        list: [{ org_id: 'abc', name_cn: '国轩高科股份有限公司' }],
+        total: 197,
+        page: 1,
+        size: 5,
+        metric_id: 'M_KEEP',
+        data_source: 'mock',
+      },
+    });
+  });
+  const result = await callTool('search-enterprise', { q: '固态电池', limit: 5 });
+  assert.notEqual(result.isError, true, textOf(result));
+  assert.equal(calls.length, 1);
+  const body = parsed(result);
+  assert.equal(body.data.mode, 'smart');
+  assert.equal(body.data.total, 197);
+  assert.equal(body.data.enterprises[0].enterprise_code, 'abc');
+  assert.equal(body.data.enterprises[0].name, '国轩高科股份有限公司');
+  assert.match(JSON.stringify(body), /M_KEEP/);
+  delete process.env.GKX_MCP_POLICY_BASE;
+}
 await hits('search-industry', { q: '光刻' }, { method: 'GET', path: '/api/innov/v1/industry/list' });
 await hits('search-policy', { subject_id: 'E0001' }, { method: 'GET', path: '/api/policy/v1/policy/match' });
 await hits('ent-evaluate', { enterprise_codes: ['E1'], sub_type: 'tech' }, {
@@ -194,17 +238,50 @@ await hits('synth-collab', { action: 'index', region: '深圳' }, {
 }
 
 {
-  const calls = callsFor(200, {
-    code: 0,
-    data: { list: [{ policy_id: 'p1', title: '光刻专项', level: '国家', data_source: 'should-not-be-called-live' }] },
+  const calls = callsFor(200, { code: 0, data: { items: [] } });
+  const result = await callTool('search-policy', { q: '光刻' });
+  assert.equal(result.isError, true);
+  assert.match(textOf(result), /GKX_MCP_POLICY_BASE/);
+  assert.equal(calls.length, 0);
+}
+
+{
+  process.env.GKX_MCP_POLICY_BASE = 'http://policy.test';
+  const calls = installFetch(async (url) => {
+    const target = String(url);
+    if (target.includes('/policy/search')) {
+      return jsonResponse(200, {
+        code: 0,
+        data: {
+          items: [{ policy_id: 'p1', title: '光刻专项' }],
+          total: 1,
+          honesty: { empty: false, source: 'dwd' },
+        },
+      });
+    }
+    return jsonResponse(200, {
+      code: 0,
+      data: {
+        item: { policy_id: 'p1', title: '光刻专项', content: '正文' },
+        honesty: { empty: false },
+      },
+    });
   });
   const result = await callTool('search-policy', { q: '光刻', level: '国家' });
-  assert.equal(calls[0].url.includes('/policy/mock/policies'), true);
+  assert.notEqual(result.isError, true, textOf(result));
+  assert.equal(calls.length, 2);
+  assert.match(calls[0].url, /^http:\/\/policy\.test\/policy\/topic\/v1\/policy\/search\?/);
+  assert.match(calls[0].url, /(?:^|[?&])q=/);
+  assert.match(calls[0].url, /(?:^|[?&])keyword=/);
+  assert.match(calls[0].url, /(?:^|[?&])level=/);
+  assert.match(calls[1].url, /^http:\/\/policy\.test\/policy\/topic\/v1\/policy\/docs\/p1$/);
   const body = parsed(result);
-  assert.equal(body.data.data_source, 'mock');
-  assert.equal(body.data.mock, true);
+  assert.equal(body.data.mode, 'search');
+  assert.equal(body.data.mock, undefined);
   assert.equal(body.data.policies.length, 1);
-  assert.equal(body.data.policies[0].data_source, 'should-not-be-called-live');
+  assert.equal(body.data.policies[0].content, '正文');
+  assert.equal(body.data.honesty.source, 'dwd');
+  delete process.env.GKX_MCP_POLICY_BASE;
 }
 
 {
@@ -281,11 +358,39 @@ await hits('synth-collab', { action: 'index', region: '深圳' }, {
 }
 
 {
+  clearMintedToken();
   const calls = callsFor(424, { code: 1, msg: 'token expired' });
   const result = await callTool('chain-panorama', { chain_id: 'INB1701' });
   assert.equal(result.isError, true);
-  assert.match(textOf(result), /GKX_MCP_TOKEN/);
-  assert.equal(calls.length, 1);
+  assert.match(textOf(result), /换票失败/);
+  assert.equal(calls.length, 2);
+  assert.match(calls[1].url, /\/auth\/oauth2\/token$/);
+  assert.equal(calls[1].init.method, 'POST');
+  assert.equal(textOf(result).includes('pig'), false);
+}
+
+{
+  clearMintedToken();
+  process.env.GKX_MCP_TOKEN = 'stale-token';
+  const calls = installFetch(async (url, init) => {
+    if (String(url).includes('/auth/oauth2/token')) {
+      return jsonResponse(200, { access_token: 'fresh-token', expires_in: 3600 });
+    }
+    if (init.headers.Authorization === 'Bearer stale-token') return jsonResponse(424, { msg: '用户凭证已过期' });
+    return jsonResponse(200, { code: 0, data: [{ chain_id: 'INB1701', chain_name: '新一代信息技术' }] });
+  });
+  const result = await callTool('search-industry', { q: '信息' });
+  assert.notEqual(result.isError, true, textOf(result));
+  assert.match(textOf(result), /INB1701/);
+  assert.equal(textOf(result).includes('fresh-token'), false);
+  assert.equal(calls.length, 3);
+  assert.equal(calls[2].init.headers.Authorization, 'Bearer fresh-token');
+  const again = await callTool('search-industry', { q: '信息' });
+  assert.notEqual(again.isError, true, textOf(again));
+  assert.equal(calls.length, 4);
+  assert.equal(calls.filter((call) => String(call.url).includes('/auth/oauth2/token')).length, 1);
+  delete process.env.GKX_MCP_TOKEN;
+  clearMintedToken();
 }
 
 const missing = JSON.parse(await handleRequest(9, 'nope', {}));

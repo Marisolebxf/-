@@ -75,7 +75,7 @@ Nacos：`FORCE_NACOS_REPUBLISH=true` 已灌（[helm:chart 26080](https://gitlab.
 探活（网关，非 localhost）：
 
 ```text
-GET http://192.168.88.50:30899/policy/topic/v1/policy/health
+GET http://10.50.69.111:30899/policy/topic/v1/policy/health
 HTTP 200
 java.status=up  service=gkxlumen-topic-policy-biz
 python.name=lumen-algo-py  pathPrefix=/internal/policy
@@ -84,9 +84,9 @@ degraded=false
 ```
 
 entan-py：`GET /internal/policy/status` → `backend=mysql`，`policy_focus=47082`。  
-JDBC：`demo_gkxlumenx_ads` @ 192.168.88.43:3306。无正式前缀数据面。  
+JDBC：`demo_gkxlumenx_ads` @ 10.50.11.76:3306。无正式前缀数据面。  
 Nacos DataId：`gkxlumen-topic-policy-biz-dev.yml`；async `policy.algo-base-url` → entan-py。  
-前端：`http://192.168.88.50:30892` HTTP **200**，镜像 `gkx-lumen-topic:97963375`（≥ POL-04 `5c5caaf`）。
+前端：`http://10.50.69.111:30892` HTTP **200**，镜像 `gkx-lumen-topic:97963375`（≥ POL-04 `5c5caaf`）。
 
 ## 修改内容
 

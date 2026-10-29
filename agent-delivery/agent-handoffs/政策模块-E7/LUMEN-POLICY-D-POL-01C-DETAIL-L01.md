@@ -130,7 +130,7 @@
 - commit：`d5ea3f7a62683fe6338a5abf04329c7a00007f09`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines?ref=dev
 - 部署：随仓既有 CI；本叶不改 helm
-- dev URL：`http://192.168.88.50:30892/policy/search`（发布后点「查看详情」）
+- dev URL：`http://10.50.69.111:30892/policy/search`（发布后点「查看详情」）
 
 ## 可观测性
 

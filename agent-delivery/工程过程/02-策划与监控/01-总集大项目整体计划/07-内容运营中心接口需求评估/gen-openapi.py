@@ -264,6 +264,16 @@ kg_op("relations/delete", "图谱·关系链", "关系·删除（软删+审计�
 kg_op("relations/break", "图谱·关系链", "关系·标记断裂（不物理删，badge 灰化）",
       {"type": "object", "required": ["id", "reason"], "properties": {"id": {}, "reason": {}}})
 kg_op("relations/history", "图谱·关系链", "关系·演变历史", schemas["DetailBody"])
+kg_op("relation-types/list", "图谱·关系类型字典", "关系类型·列表（该类型全量，order_no ASC）", {"type": "object", "properties": {}})
+kg_op("relation-types/create", "图谱·关系类型字典", "关系类型·新增（name 必填；同类型下不可重名）",
+      schema_of([F("name", req=True), F("order", "integer")]))
+kg_op("relation-types/update", "图谱·关系类型字典", "关系类型·编辑", {**schema_of([F("name"), F("order", "integer")]), "required": ["id"]})
+kg_op("relation-types/delete", "图谱·关系类型字典", "关系类型·删除（软删；被关系引用时 40901 拒删）", {**schemas["DeleteBody"], "required": ["id", "reason"]})
+kg_op("rel-defs/list", "图谱·关系定义层", "关系定义·列表（含 extra 家族专属字段对象）", {"type": "object", "properties": {}})
+kg_op("rel-defs/create", "图谱·关系定义层", "关系定义·新增（name 必填；同类型下不可重名）",
+      schema_of([F("name", req=True), F("definition"), F("extra", desc="家族专属字段对象：enterprise=mode/terms; policy=effect/feedback; service=content/effect; industry=participants"), F("order", "integer")]))
+kg_op("rel-defs/update", "图谱·关系定义层", "关系定义·编辑", {**schema_of([F("name"), F("definition"), F("extra"), F("order", "integer")]), "required": ["id"]})
+kg_op("rel-defs/delete", "图谱·关系定义层", "关系定义·删除（软删；被关系实例引用时 40901 拒删）", {**schemas["DeleteBody"], "required": ["id", "reason"]})
 kg_op("relations/insight", "图谱·关系链", "关系·LLM 策略/分析意见（结果落库缓存；关系内容变更自动失效；force=true 强制重生成）",
       {"type": "object", "properties": {"id": {"type": "string", "description": "关系行 id（必填）"}, "force": {"type": "boolean", "description": "true=忽略缓存强制重新生成"}}, "required": ["id"]})
 # 属性

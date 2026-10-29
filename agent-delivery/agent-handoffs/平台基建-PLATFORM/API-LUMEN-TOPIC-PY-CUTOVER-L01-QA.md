@@ -35,7 +35,7 @@
 
 ## 测试结果
 
-测试时间：2026-08-14 14:51–14:55 +08。网关 `http://192.168.88.50:30899`；前端 `http://192.168.88.50:30892` HTTP 200。
+测试时间：2026-08-14 14:51–14:55 +08。网关 `http://10.50.69.111:30899`；前端 `http://10.50.69.111:30892` HTTP 200。
 
 | # | 用例 | 证据 | 结果 |
 |---|------|------|------|
@@ -85,7 +85,7 @@
   `helm:deploy` [#21542](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/21542)、`deploy:topic-enterprise` [#21544](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/21544)、`deploy:topic-async-service` [#21545](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/21545) **success**（本 QA **不重跑**）
 - 部署 namespace：`dev`
 - K8s rollout：topic-enterprise / topic-async-service 1/1 Running
-- dev 测试 URL：`POST http://192.168.88.50:30899/enterprise/topic/v1/search/meta/filters` → 200 `code=0`
+- dev 测试 URL：`POST http://10.50.69.111:30899/enterprise/topic/v1/search/meta/filters` → 200 `code=0`
 
 ## 可观测性（建议）
 

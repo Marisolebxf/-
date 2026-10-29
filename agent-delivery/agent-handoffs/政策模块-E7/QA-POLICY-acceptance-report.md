@@ -216,7 +216,7 @@
 | DEF-FE-01 | 🟡 降级 | B2/B6 Leaflet 未接省/市 GeoJSON，先比例圆点降级（非 choropleth）；底图瓦片需联网 | 规格已定，待 GeoJSON 资产+三级下钻人工评审升级 | frontend/UI | GeoJSON 接入+人工评审 |
 | DEF-FE-02 | 🟡 待点测 | B3 G6 v5 `NodeEvent.CLICK` 下钻命中以构建通过为准 | 建议联调期人工点测确认 | frontend | 人工点测确认 |
 | DEF-FE-03 | 🟢 已闭环 | 专题 3 页 recharts→ECharts 迁移 | QA grep 确认已迁移、无 recharts 引用 | — | 无（已完成） |
-| DEF-NEB-01 | 🟡 环境 | 本地无 NebulaGraph（192.168.88.43:9669 不可达） | nebula_loader 安全跳过，图谱走 PG/SQLite 镜像，API 自动回退；`set POLAN_NEBULA_ENABLED=1` 可灌入 | 算法/运维 | 生产环境接 Nebula 复测 |
+| DEF-NEB-01 | 🟡 环境 | 本地无 NebulaGraph（10.50.75.136:9669 不可达） | nebula_loader 安全跳过，图谱走 PG/SQLite 镜像，API 自动回退；`set POLAN_NEBULA_ENABLED=1` 可灌入 | 算法/运维 | 生产环境接 Nebula 复测 |
 | DEF-ALGO-01 | 🟢 观察 | `/v1/policy/analysis/intensity` handoff 记 count=3，QA 实跑返回 LIMIT 100 行 | 端点功能正常，仅查询口径/默认 limit 差异 | algorithm | 无（非缺陷） |
 | DEF-PERF-01 | 🟢 优化 | topic build 主 chunk 5.2MB（>500kB warning） | 非错误，exit 0 | frontend | 建议后续 manualChunks 拆包 |
 

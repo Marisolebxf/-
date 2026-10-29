@@ -844,7 +844,7 @@ gkx-common-py/
 | 组件             | 连接信息                                | 用途              | 谁用               |
 | -------------- | ----------------------------------- | --------------- | ---------------- |
 | PostgreSQL     | `117.50.223.145:5432/demo_gdf_data` | ADS/DWD/cfg 只读  | 全部服务             |
-| NebulaGraph    | `192.168.88.43:9669`                | 全域图谱查询          | graph            |
+| NebulaGraph    | `10.50.75.136:9669`                | 全域图谱查询          | graph            |
 | Elasticsearch  | 待 devops 确认                         | 全文检索            | search           |
 | Redis          | 待确认                                 | 缓存热点（排行/趋势/KPI） | search、analytics |
 | OTLP Collector | `:4318`                             | 链路追踪 → Tempo    | 全部服务             |

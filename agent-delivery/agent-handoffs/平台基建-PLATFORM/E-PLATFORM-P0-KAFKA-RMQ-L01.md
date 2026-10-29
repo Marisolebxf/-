@@ -61,7 +61,7 @@ flowchart LR
 
 ## 问题清单
 
-- `E-PLATFORM-P0-ENV-CUTOVER-L02` 写明当时不接 Kafka，demo AI / Worker 和部分 values 仍指向旧 AMQP（主机 `192.168.88.43`，端口 `5672`）。本叶改这条口径。
+- `E-PLATFORM-P0-ENV-CUTOVER-L02` 写明当时不接 Kafka，demo AI / Worker 和部分 values 仍指向旧 AMQP（主机 `10.50.11.76`，端口 `5672`）。本叶改这条口径。
 - 运行配置把口令嵌在 AMQP URL 里。本文件不抄录口令。
 - `OTEL_INFRA_OPS_HANDOFF.md` 另写了一台 `192.168.88.48:5672`，和运行配置不是同一台。该手记还带有口令，编码叶删除这些行，不要把口令写进新提交或 commit message。
 - `task_completed` 正文在 `callback.py` 里按几十 MB 设计。Kafka 默认 1MB 不够。topic 与客户端上限锁定为 64MiB。
@@ -96,7 +96,7 @@ MySQL root 口令不改。helm 里已有的 MySQL 业务账号行本叶和后续
 
 | 仓 | 文件 | 角色 |
 |----|------|------|
-| `lumen-topic-py` | `conf/settings.yaml` | `rabbitmq` 段：队列 `gkx.analysis.result`，死信交换机名 `gkx.analysis.result.dlx`，URL 指向 `192.168.88.43:5672` |
+| `lumen-topic-py` | `conf/settings.yaml` | `rabbitmq` 段：队列 `gkx.analysis.result`，死信交换机名 `gkx.analysis.result.dlx`，URL 指向 `10.50.11.76:5672` |
 | `lumen-topic-py` | `gkx_ai_service/deps.py` | 读 `GKX_RABBITMQ_*`，缺省回落到本机 `5672` |
 | `lumen-topic-py` | `gkx_ai_service/mq_producer.py` | `aio-pika` 发布，声明死信交换机和队列 |
 | `lumen-topic-py` | `gkx_ai_service/views/callback.py` | `task_completed` 调用 `publish_analysis_result` |
@@ -112,7 +112,7 @@ MySQL root 口令不改。helm 里已有的 MySQL 业务账号行本叶和后续
 | `lumen-topic-py` | `tests/test_analysis_callback.py` | mock `publish_analysis_result`，断言文案仍写 RabbitMQ |
 | `lumen-topic-py` | `.env.example` | 当前没有 MQ 变量 |
 | `demo-svc-topic-py` | 与上表相同的相对路径 | 原型副本。k8s 服务名是 `demo-platform-ai-py`、`demo-platform-worker-py`。禁止从 lumen merge |
-| `demo-svc-platform` | `helm/gkx-platform/values.yaml` | `aiPy.env` 与 `workerPy.env` 的 `GKX_RABBITMQ_URL`，主机 `192.168.88.43:5672` |
+| `demo-svc-platform` | `helm/gkx-platform/values.yaml` | `aiPy.env` 与 `workerPy.env` 的 `GKX_RABBITMQ_URL`，主机 `10.50.11.76:5672` |
 | `demo-svc-platform` | `helm/gkx-platform/values-demo.yaml` | `workerPy.enabled: false`，注释写 Kafka 尚未接线 |
 | `demo-svc-platform` | `helm/gkx-platform/templates/ai-service-py.yaml` | 注释写连接 RabbitMQ |
 | `demo-svc-platform` | `helm/gkx-platform/templates/ai-worker-py.yaml` | 注释写 RabbitMQ 消费者 |

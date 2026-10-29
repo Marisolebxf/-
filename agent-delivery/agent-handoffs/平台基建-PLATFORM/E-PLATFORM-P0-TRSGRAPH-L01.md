@@ -19,7 +19,7 @@
 ## 范围与实现
 
 - 图客户端默认 graphd 改为 `10.50.75.136:9669`。覆盖 `lumen-algo-py`（chain settings、`graph_project.py`、vendor/entan-py）、`demo-algo-ent-analysis`（settings、k8s、CI、entan/polan 默认 host）、`demo-algo-science`、`demo-svc-topic-py`、`lumen-topic-py`。地址、账号、space 在各仓已有配置文件。口令字段留空，只认 `GKX_NEBULA_PASSWORD` / `LUMEN_ALGO_NEBULA_PASSWORD`。
-- 用现有 `project_graph` 从 `192.168.88.43` 的 demo DWD 重灌 `demo_gkx_chain`。返回 `source=nebula`，写入点 157、边 200。随后在新库 `MATCH (v:chain) RETURN id(v) LIMIT 3` 读回 `chain:INB1710`、`chain:INB180102`、`chain:INB1701`。
+- 用现有 `project_graph` 从 `10.50.11.76` 的 demo DWD 重灌 `demo_gkx_chain`。返回 `source=nebula`，写入点 157、边 200。随后在新库 `MATCH (v:chain) RETURN id(v) LIMIT 3` 读回 `chain:INB1710`、`chain:INB180102`、`chain:INB1701`。
 - 未拷贝旧库文件，未建 `gkx_chain`，未迁 `entan` / `demo_entan` 数据，未改 Java / 前端。
 - 运行中的 Pod 尚未 rollout，仍带着旧的 `GKX_NEBULA_HOSTS`。本单未提交、未部署。
 
@@ -38,7 +38,7 @@
 
 - 重灌命令：`python -m lumen_common.algorithms.chain.graph_project`（工作目录 `repos/lumen-algo-py`）。结果 `status=ok`，`space=demo_gkx_chain`，`vertices_written=157`，`edges_written=200`，`source=nebula`。
 - 读回：`USE demo_gkx_chain` 成功；`MATCH (v:chain) RETURN id(v) LIMIT 3` 返回三个 chain vid。
-- 代码与配置检索：`repos` 与 `.cursor` 下已无 `192.168.88.43:9669` / `192.168.88.44:9669`。历史 handoff、验收文档、归档未改。
+- 代码与配置检索：`repos` 与 `.cursor` 下已无 `10.50.75.136:9669` / `192.168.88.44:9669`。历史 handoff、验收文档、归档未改。
 
 ## 架构合规自检
 
@@ -60,7 +60,7 @@
 
 ## 测试结果
 
-- DWD 干跑与实写均连上 `192.168.88.43` 的 demo MySQL，表读取无 `table_errors`。
+- DWD 干跑与实写均连上 `10.50.11.76` 的 demo MySQL，表读取无 `table_errors`。
 - 新库读回 3 个 chain vid。`SUBMIT JOB STATS` 已提交，未等待统计作业完成。
 
 ## 遗留风险

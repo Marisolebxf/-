@@ -18,7 +18,7 @@
 
 1. 查 GitLab `gkx-lumen/lumen-ui-topic` 对 `ee3ff6f` 的 Pipeline（`cicd-pipeline.md`：push `dev` 应自动 `deploy:k8s`）。未绿则 `blocked` 写 job 名，不要手改 yaml。  
 2. `kubectl -n dev`：`gkx-lumen-topic` image tag 含 `ee3ff6f`（或更新）；`rollout status` 1/1。  
-3. `curl -I http://192.168.88.50:30892` → 200。  
+3. `curl -I http://10.50.69.111:30892` → 200。  
 4. 静态资源或 HTML 能证明新包（可选：搜 `industry-search-page` / 对比旧 `b0032e17`）。  
 5. handoff 本 ID；tech_task 转 ready_to_sign，**不标 done**。
 

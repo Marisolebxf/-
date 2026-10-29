@@ -9,7 +9,7 @@
 |---|--------|------|----------|------|
 | E1 | Python `GET :8000/tech-news/healthz` | 200 ok | `{"status":"ok","mode":"llm","persist":true}` | ✅ |
 | E2 | Java demo `GET :7090/...` | 可达 | 连接失败（本机未起 gkx-innov） | ❌ 残留 |
-| E3 | 网关 `192.168.88.50:9999/innov/v1/tech-news/**` | 200/业务体 | HTTP 502 | ❌ 残留 |
+| E3 | 网关 `10.50.69.111:9999/innov/v1/tech-news/**` | 200/业务体 | HTTP 502 | ❌ 残留 |
 
 ## Python 行为点验（直连 `/internal`）
 

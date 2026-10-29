@@ -61,7 +61,7 @@ flowchart LR
     ENTPY["demo-algo-ent-analysis<br/>graph + models"]
   end
   ADS[("MySQL ADS<br/>gkx_* / ads_*")]
-  NEB[("NebulaGraph<br/>192.168.88.43:9669")]
+  NEB[("NebulaGraph<br/>10.50.75.136:9669")]
 
   PC --> GW
   TOPIC --> GW
@@ -105,7 +105,7 @@ flowchart LR
 | P0-D-07 | OTel | Tempo 可见 `gkxlumen-metrics`、`gkxlumen-topic` trace | **OPEN** | L06 |
 | P0-D-08 | CI | `demo-algo-ent-analysis` `py:smoke` 绿（graph 模块） | **OPEN** | L03 |
 | P0-D-09 | CI | `demo-algo-ent-analysis` `py:smoke` 绿（models 模块） | **OPEN** | L04 |
-| P0-D-10 | Nebula | dev `192.168.88.43:9669` 连通 + space schema 已建 | **OPEN** | L03 |
+| P0-D-10 | Nebula | dev `10.50.75.136:9669` 连通 + space schema 已建 | **OPEN** | L03 |
 | P0-D-11 | curl | `POST /internal/graph/subgraph` → `source: nebula` | **OPEN** | L03 |
 | P0-D-12 | curl | `GET /internal/models/registry` → E7 占位模型 ≥1 | **OPEN** | L04 |
 | P0-D-13 | CI | `lumen-ui-science-topic` `frontend:build`+`image` 绿 | **OPEN** | L00/L07 |
@@ -124,7 +124,7 @@ flowchart LR
 ### 4.1 curl 补验入口（示例）
 
 ```bash
-export GW="http://192.168.88.50:9999"
+export GW="http://10.50.69.111:9999"
 export TOKEN="<Bearer>"
 
 curl -s -H "Authorization: Bearer $TOKEN" "$GW/metrics/v1/catalog?element=ENT"
