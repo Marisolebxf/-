@@ -44,7 +44,7 @@
   - `deploy:topic-svc` / `deploy:topic-enterprise` 绿（tag `868987d6`）
 - topic-py：https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines/5941
   - 手动 `deploy:search-py` 绿；in-pod `/healthz` `gkx-search-service` ok
-- 本机不到 88.50；未在工作站 curl 网关。对比篮写路径待 DDL。
+- 本机不到 10.50.69.111；未在工作站 curl 网关。对比篮写路径待 DDL。
 
 ## 架构合规自检
 

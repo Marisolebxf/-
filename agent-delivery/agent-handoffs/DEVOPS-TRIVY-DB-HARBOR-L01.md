@@ -69,7 +69,7 @@ pc / topic 原先已有 `trivy:frontend`（dev 会跑，但一直打 ghcr 失败
 - pipeline：5676 / 5677 / 5678
 - 部署 namespace / 镜像 tag：mobile、topic 本趟 `deploy:k8s` 已绿；pc deploy 仍为 manual
 - K8s rollout：mobile + topic 成功；pc 未自动发
-- dev 测试 URL：mobile http://192.168.88.50:30898 ；topic http://192.168.88.50:30892 ；pc 未在本叶强制 rollout
+- dev 测试 URL：mobile http://10.50.69.111:30898 ；topic http://10.50.69.111:30892 ；pc 未在本叶强制 rollout
 
 ## 可观测性（建议）
 

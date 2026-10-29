@@ -105,7 +105,7 @@ python -m pytest -q tests/test_chain_sync.py tests/test_chain_search.py tests/te
 - 全量：`148 passed, 1 warning`（Starlette TestClient deprecation，与本单无关；SEARCH 140 基线 + SYNC 8）
 - SYNC：Demo 链 KPI + 信封；Q056/QC07 即使 ADS 有数也置空；snapshot 缺 `publish_status` 不假成功；非 `demo_` 库名 422；`created_task` 恒 false
 
-只读联调（Demo MySQL `192.168.88.43`，未写库）：
+只读联调（Demo MySQL `10.50.11.76`，未写库）：
 
 | 请求 | 结果 |
 |---|---|

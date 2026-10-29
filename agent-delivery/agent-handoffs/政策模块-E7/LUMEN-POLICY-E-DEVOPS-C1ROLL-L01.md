@@ -64,7 +64,7 @@ ReplicaSet：现网 `gkx-lumen-topic-666bbc7bb7` 镜像 `006d186d` ready 1；旧
 
 ## 产物清单
 
-- 现网前端：`lumen-ui-topic` `006d186d` @ `http://192.168.88.50:30892`
+- 现网前端：`lumen-ui-topic` `006d186d` @ `http://10.50.69.111:30892`
 - 本文 handoff（编排仓；无业务仓 diff）
 
 ## 验收证据
@@ -73,10 +73,10 @@ ReplicaSet：现网 `gkx-lumen-topic-666bbc7bb7` 镜像 `006d186d` ready 1；旧
 kubectl -n dev get deploy gkx-lumen-topic
 IMAGE=harbor.htmisoft.net/gkx/gkx-lumen-topic:006d186d  READY=1/1
 
-GET http://192.168.88.50:30892/
+GET http://10.50.69.111:30892/
 HTTP 200
 
-GET http://192.168.88.50:30899/policy/topic/v1/policy/health
+GET http://10.50.69.111:30899/policy/topic/v1/policy/health
 HTTP 200
 java.status=up  service=gkxlumen-topic-policy-biz
 python.name=lumen-algo-py  pathPrefix=/internal/policy
@@ -109,7 +109,7 @@ JDBC 未动。无正式前缀数据面变更。
 - namespace：`dev`
 - 镜像：`gkx-lumen-topic:006d186d`（已换掉 `97963375`）
 - K8s rollout：`gkx-lumen-topic` **成功**（rev 由 E0 的 209 进到 ReplicaSet `666bbc7bb7`）
-- dev URL：http://192.168.88.50:30892 HTTP **200**
+- dev URL：http://10.50.69.111:30892 HTTP **200**
 
 ## 可观测性
 

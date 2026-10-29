@@ -162,7 +162,7 @@ flowchart TB
 
 原型在 `demo-platform-entan-py`（dev 命名空间）实际联调出数过程中的修复，详见 [POLICY-灌数流程说明.md](./POLICY-灌数流程说明.md)：
 
-1. **网关路由**：`add_gateway_route_policy.py` 修正为指向实时平台（MySQL `192.168.88.43:3306` / Redis `192.168.88.43:6379`），`/api/policy/**` 打通。
+1. **网关路由**：`add_gateway_route_policy.py` 修正为指向实时平台（MySQL `10.50.11.76:3306` / Redis `10.50.11.76:6379`），`/api/policy/**` 打通。
 2. **镜像缺包**：`docker/Dockerfile` 补 `COPY polan ./polan`（原镜像未含政策包导致 FastAPI 404）。
 3. **PG 同库**：`polan/common/db.py` 自动检测 `ENTAN_PG_HOST` → 与企业共用同一 PostgreSQL（schema 仍各自独立，互不冲突）。
 4. **一键灌数**：新增 `POST /internal/policy/run-pipeline` + `GET /internal/policy/status`；前端政策页加「灌数据」按钮。

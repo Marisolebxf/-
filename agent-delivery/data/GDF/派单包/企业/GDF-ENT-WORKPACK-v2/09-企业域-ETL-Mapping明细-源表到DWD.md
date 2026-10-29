@@ -1,4 +1,4 @@
-﻿> **【GDF-ENT-WORKPACK-v2.1 冻结快照 · Mapping 施工真源】** 日期 2026-08-13。  
+> **【GDF-ENT-WORKPACK-v2.1 冻结快照 · Mapping 施工真源】** 日期 2026-08-13。  
 > 仓内真源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）。本文件为投递给 GDF 的副本；变更须升工作包版本后重发。  
 > 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。
 
@@ -9,7 +9,7 @@
 > **日期**：2026-08-12
 > **范围**：GDF 三方源表（`dwd_org_*` / `dwd_patent*`）→ 项目 DWD（`gkxlumenx_dwd.enterprise_*` / `risk_*`）的字段级映射
 > **配套文档**：`企业域-数据ETL流转架构.md`（架构总纲）、`DWD表结构设计-企业工商表-MySQL-v3.1.md`（目标表 DDL）
-> **目标库**：`gkxlumenx_dwd`（MySQL 8.0，192.168.88.43:3306）
+> **目标库**：`gkxlumenx_dwd`（MySQL 8.0，10.50.11.76:3306）
 > **交付对象**：GDF 三方 ETL 团队
 
 ---

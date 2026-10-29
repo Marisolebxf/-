@@ -19,14 +19,14 @@ C1 Trace（clusters，Create 未发出）：2806c27e8fc030c5d159c875f922b73a
 
 - QA：[复测L0VID后金路径](3e743483-884d-4c3c-b7a7-127b2b4e092f) FAIL 2/3（#1/#2 PASS）
 - 缺陷包：`agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-L0VID-RETEST-L01-defect-pack.md`
-- 总控：`LUMEN-POLICY-ABCDE-长任务总控.md` §4（金路径只认 `http://192.168.88.50:30892`）
+- 总控：`LUMEN-POLICY-ABCDE-长任务总控.md` §4（金路径只认 `http://10.50.69.111:30892`）
 - 现网：`gkx-lumen-topic:1ce03cc4` · innov `300ad303` · clusters 200
-- Tempo：http://192.168.88.50:30201/api/traces/2806c27e8fc030c5d159c875f922b73a
+- Tempo：http://10.50.69.111:30201/api/traces/2806c27e8fc030c5d159c875f922b73a
 
 ## 根因（已闭合项不要再派）
 
 `src/composables/analysisTaskGate.ts` `createAnalysisFingerprint` 只走 `crypto.subtle.digest('SHA-256')`。  
-已发布验收源是 **HTTP** `http://192.168.88.50:30892` → `isSecureContext=false` → `crypto.subtle` 为 `undefined` → 点「开始分析」抛 `TypeError`，无 toast，不进 `view=processing`，Create 0。
+已发布验收源是 **HTTP** `http://10.50.69.111:30892` → `isSecureContext=false` → `crypto.subtle` 为 `undefined` → 点「开始分析」抛 `TypeError`，无 toast，不进 `view=processing`，Create 0。
 
 上一轮 L0 滤空 / VID 预填已在 `1ce03cc` 修好（#2 本轮 PASS）。**不要**再改 `clusterL0Options` / `require-graph-vid`。
 

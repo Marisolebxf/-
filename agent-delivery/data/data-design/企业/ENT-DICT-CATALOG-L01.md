@@ -6,7 +6,7 @@
 > **执行**：`agent:data-agent` · **监管**：`human:淮政玮`  
 > **日期**：2026-07-29  
 > **范围**：盘点 + DDL 设计 + 种子策略；**不做**前端改码 / Java / 全量国标灌数  
-> **实测库**：MySQL `192.168.88.43`（`gkxlumenx_dim` / `gkxlumenx_dwd`）
+> **实测库**：MySQL `10.50.11.76`（`gkxlumenx_dim` / `gkxlumenx_dwd`）
 
 ---
 

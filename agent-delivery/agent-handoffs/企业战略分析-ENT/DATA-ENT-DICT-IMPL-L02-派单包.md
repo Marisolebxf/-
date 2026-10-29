@@ -46,7 +46,7 @@ L01 已完成字典盘点与 DDL 设计，口径已闭合。本单把设计**落
 
 ### 必须做
 
-1. **执行 DDL**（MySQL `192.168.88.43`）：`region_scope` / `region_scope_member`；`tag_dict` ALIGN  
+1. **执行 DDL**（MySQL `10.50.11.76`）：`region_scope` / `region_scope_member`；`tag_dict` ALIGN  
 2. **种子**：Q056 — 区域成员按法定边界初始化（可运营改）；热门城市 Mock；全球 = G20 主要科创城市 Mock（可扩 `dim.city`）  
 3. **Python meta**  
    - 新增 `/meta/region-scopes`（或等价）读 `region_scope`  

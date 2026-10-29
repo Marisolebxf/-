@@ -102,7 +102,7 @@ ODS 四表（角色=ODS，供应方表名带 `dwd_`）：`dwd_industry_chain_inf
 
 - `PYTHONPATH=. python tests/test_chain_read_v2.py` → `ok`（形变 + live list 为 INB 非 CH*）
 - live：`list` 10 条 INB；`INB1303` A2 enterprise_count=72；A6/A9/A7/M1 有数；不再读 `gkxlumenx_dwd.chain`
-- Demo MySQL（`settings.yaml` `192.168.88.43`，库 `demo_gkxlumenx_*`）**replace + append 实跑**：
+- Demo MySQL（`settings.yaml` `10.50.11.76`，库 `demo_gkxlumenx_*`）**replace + append 实跑**：
 
 | 项 | replace 后 | append 后 |
 |---|---|---|

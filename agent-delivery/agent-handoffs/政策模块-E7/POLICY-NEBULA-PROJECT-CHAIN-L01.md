@@ -70,7 +70,7 @@
 - CI 产物镜像：`harbor.htmisoft.net/gkx/gkx-entan-py-api:32124a03`
 - namespace / Deployment：`dev` / `demo-platform-entan-py`
 - rollout：Pod `demo-platform-entan-py-c4c5779f8-xlnf2`，`1/1 Running`，`restart=0`
-- Pod 环境：`POLAN_NEBULA_ENABLED=1`、`POLAN_NEBULA_HOSTS=192.168.88.43:9669`、`POLAN_NEBULA_SPACE=demo_gkx_chain`、`POLAN_GRAPH_BACKEND=nebula`
+- Pod 环境：`POLAN_NEBULA_ENABLED=1`、`POLAN_NEBULA_HOSTS=10.50.75.136:9669`、`POLAN_NEBULA_SPACE=demo_gkx_chain`、`POLAN_GRAPH_BACKEND=nebula`
 - K8s 服务实调：`GET /v1/policy/graph?limit=3` → HTTP 200，`source=nebula`、`nodes=24`、`edges=22`
 - OTEL service：`gkx-entan-py`
 - trace_id：`1854b8f4688ca5206b10e22cfdb1ed3e`

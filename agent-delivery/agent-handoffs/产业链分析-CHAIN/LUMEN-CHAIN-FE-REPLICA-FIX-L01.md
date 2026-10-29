@@ -160,7 +160,7 @@ Tab `TITLE_MOUNTS`、资讯 Timeline、查询 header 归评审、卡片拉满、
 - pipeline URL / ID：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5365（Passed）
 - 部署 namespace / 镜像 tag：K8s dev / `91e9d47`
 - K8s rollout：`deploy:k8s` Job `#23337` success
-- dev 测试 URL / 命令与结果：`http://192.168.88.50:30892`；`e2e:chain-gold` Job `#23338` success
+- dev 测试 URL / 命令与结果：`http://10.50.69.111:30892`；`e2e:chain-gold` Job `#23338` success
 
 ## 可观测性
 

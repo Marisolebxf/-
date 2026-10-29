@@ -31,7 +31,7 @@
 | 1 | 轨道 | 跨系统平台能力（展示+专题共用产业锚点）。D12：lumen 只经网关调 `gkxlumen-*`；算法只在 Python `/internal/*`。禁止 lumen 调任何 `demo-*` 服务 |
 | 2 | 建库切面 | **仅**产业链灌数：DWD 链表 + 上图 VID 稳定后 **一次** `embed/rebuild`。禁止映射逐行 embed |
 | 3 | 消费切面 | 政策/企业 **重灌同步** = L0+L1，**不调** Milvus / LLM / rebuild。search / L2 只走按钮或 ETL Job |
-| 4 | 物理引擎 | 现网 Milvus **2.4 standalone** = **`192.168.88.43:19530`**。不采购第二套向量云。<br>🟢 **2026-09-11 `human:淮政玮` 确认**（升级项 A 关闭）：地址口径就是 88.43，并提供 compose 真源（见 §5）。原设计稿 `192.168.88.48:19530` **作废**（该机无 Milvus 容器 / 无进程 / 19530 refused，`CROSS-VEC-DEVOPS-NET-L01` 从节点与 4 个 Pod 实测）。SAD 01 §2.1 / 02 §2 / 03 §0 已于 2026-09-11 同步订正（台账 C 关闭） |
+| 4 | 物理引擎 | 现网 Milvus **2.4 standalone** = **`10.50.69.111:19530`**。不采购第二套向量云。<br>🟢 **2026-09-11 `human:淮政玮` 确认**（升级项 A 关闭）：地址口径就是 10.50.11.76，并提供 compose 真源（见 §5）。原设计稿 `192.168.88.48:19530` **作废**（该机无 Milvus 容器 / 无进程 / 19530 refused，`CROSS-VEC-DEVOPS-NET-L01` 从节点与 4 个 Pod 实测）。SAD 01 §2.1 / 02 §2 / 03 §0 已于 2026-09-11 同步订正（台账 C 关闭） |
 | 5 | collection | **禁止**读写或 drop `amcpdp-*`。<br>**⚠️ as-built 更正（同上实测）**：前缀必须用下划线 **`gkxlumen_industry_`**（建议名 `gkxlumen_industry_anchor`）。Milvus 硬校验拒绝连字符，`gkxlumen-industry-anchor` 实测报 `code 1100 Invalid collection name`——原写法**物理建不出来**。SAD 03 §0 已于 2026-09-11 同步修订（台账 C 关闭） |
 | 6 | 定码 | 向量分数 **不得**写成 `industry_link_code` / `chain:INB*`。定码仍走图谱 VID + FETCH。无码只留 `{name}` |
 | 7 | theme | 政策 `theme` **只进** DWD `ext5`，**退出** `related_entities.industry` |
@@ -103,7 +103,7 @@ SAD-L01 ──┬── POLICY-L0（可抢跑；本总控授权：不等 SAD 双
 |---|-----|-------------------|------------|
 | 1 | POLICY-L0 | 纯 `theme=监督管理` 且标题无链名 → 产业槽 **无** `chain:INB*`；theme 在 `ext5` | 标题含图上链名仍可 L1 对码 |
 | 2 | PY-INDEX | 本地 pytest 内存 rebuild/search 绿；单测无 `amcpdp-` | 19530 不通 → degraded/非 0，禁止假 VID |
-| 3 | DEVOPS-NET | helm/env 文档化可连 **`192.168.88.43:19530`**（as-built，§0 #4）；不得 drop `amcpdp-*` | 仅探测，不 insert 业务向量 |
+| 3 | DEVOPS-NET | helm/env 文档化可连 **`10.50.69.111:19530`**（as-built，§0 #4）；不得 drop `amcpdp-*` | 仅探测，不 insert 业务向量 |
 | 4 | CHAIN-HOOK | 灌链末段仅一次 rebuild；点未稳定则跳过并保留上一 `index_version` | — |
 | 5 | API-FEIGN | Java 只 Feign `/internal/industry/embed/*`；未就绪 **501** + honesty | 禁止 200 假 VID |
 | 6 | POLICY-SEARCH | 独立入口才 search；reload/append 默认同步不调 search | LLM 假 `chain:` 必须丢 |
@@ -112,7 +112,7 @@ P1 不挡本轮闭环：Job A/B、Hang、MATCH/ENT。
 
 ---
 
-## 5. as-built · Milvus 实例拓扑（`192.168.88.43`）
+## 5. as-built · Milvus 实例拓扑（`10.50.11.76`）
 
 > 来源：2026-09-11 `human:淮政玮` 提供的 docker compose（确认升级项 A 时附）+ `CROSS-VEC-DEVOPS-NET-L01` 只读实测。**这是运维既有环境，本管线只消费，不改。**
 
@@ -123,7 +123,7 @@ P1 不挡本轮闭环：Job A/B、Hang、MATCH/ENT。
 | MinIO | `minio:latest`，卷 `/docker/milvus-minio`，**数据端口 9900 / 控制台 9901**（非默认 9000）；bucket **`a-bucket`**；`STORAGE_TYPE=minio` |
 | 鉴权 | compose **未设** `authorizationEnabled` → 走镜像内默认 **`false`**（与实测 `/milvus/configs/milvus.yaml:586` 一致） |
 | 同实例在用 collection | `aip_kb_1` · `aip_kb_2` · `spk_id_speaker_embeddings`（**只读，禁动**） |
-| `amcpdp-*` | **该实例上不存在**：连字符名被 Milvus `code 1100` 拒，物理不可能建出。设计稿的隔离对象不在 88.43（另有 88.49 / 88.54 / 88.249 也开 19530，88.54 疑似多媒体：`clip_image_collection` / `assets*`，未确认，不写入盘点） |
+| `amcpdp-*` | **该实例上不存在**：连字符名被 Milvus `code 1100` 拒，物理不可能建出。设计稿的隔离对象不在 10.50.11.76（另有 88.49 / 88.54 / 88.249 也开 19530，88.54 疑似多媒体：`clip_image_collection` / `assets*`，未确认，不写入盘点） |
 
 ### 5.1 对升级项 B（开鉴权）的影响 —— 运维需知
 
@@ -145,9 +145,9 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 
 | 项 | 内容 | owner | 状态 |
 |---|------|-------|------|
-| A | Milvus 地址口径 = `192.168.88.43:19530` | `human:淮政玮` | 🟢 **已关闭**（§0 #4 + §5） |
+| A | Milvus 地址口径 = `10.50.69.111:19530` | `human:淮政玮` | 🟢 **已关闭**（§0 #4 + §5） |
 | B | 开 `authorizationEnabled` + 建受限角色（影响同实例 `aip_kb_*`，需运维窗口；`milvus` 容器无配置卷见 §5.1） | 运维 + `human:淮政玮` | 🟡 待窗口 |
-| C | 设计稿订正：`88.48` → `88.43`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `human:淮政玮` 2026-09-11 下令改 SAD | 🟢 **SAD 包已改**（01/02/03 + INDEX/00/L2/L3 + 两份 decisions）。handoff `CROSS-VEC-*.md` 是历史留痕，不回改 |
+| C | 设计稿订正：`88.48` → `10.50.11.76`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `human:淮政玮` 2026-09-11 下令改 SAD | 🟢 **SAD 包已改**（01/02/03 + INDEX/00/L2/L3 + 两份 decisions）。handoff `CROSS-VEC-*.md` 是历史留痕，不回改 |
 | D | entan helm values 已改未点 `helm:deploy`；PY-INDEX 向量代码进 entan 镜像前不影响功能 | devops | 🟡 待触发 |
 | E | 88.54 是否才是 `amcpdp-*` 帧库 | — | ⚪ **已关闭：本管线不需要**（理由见 §6.2） |
 | F | **灌链调度**：`CHAIN-HOOK` 已把索引维护挂进灌链，索引新鲜度 = 灌链频率。<br>🟢 **2026-09-11 01:40 `human:淮政玮` 拍板：每日凌晨定时一次**，与 02 §3.2 夜管线对齐，**排在 `JOB-A` 之前且与其串行**（§0 #19）。施工叶 `CROSS-VEC-CHAIN-CRON-L01`（P2，backlog，**未派** —— 监管人已收工） | devops | 🟢 已决，待施工 |
@@ -155,7 +155,7 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 | H | **`rebuild` 网关可达（写操作）**：`@Inner(false)`，任何能打到网关的调用方都可触发 `drop`+`create`。<br>🟢 **2026-09-11 `human:淮政玮` 决定：维持现状**（运维需随时手动重建）。<br>⚠️ **风险登记（一次性，不再复议）**：现网 Milvus 无鉴权（§0 #16 / 台账 B），反复调用可将本方索引打空（自伤式 DoS，不影响他人库——前缀守卫仍在）。**缓解建议**：台账 B 开鉴权后收敛，或在网关侧对该路径加限流。灌链已自动维护索引（`CHAIN-HOOK`），正常业务无需手动 rebuild | `human:淮政玮` | 🟢 已决（带风险留痕） |
 | I | **`degraded=true` 对外一律 501**：内存回退时不透传候选。🟢 **2026-09-11 `human:淮政玮` 决定：保持 501**（回退向量是字面哈希，透出去是半可信数据）。现状代码即符合，**零改动**。`bge` 上线后若产品要「降级可用 + 前端角标」再议 | `human:淮政玮` | 🟢 已决 |
 | J | dev 上留有 **3 条红 pipeline**（`API-FEIGN` 作者本机无 JDK/Maven，只能靠 CI 编译，三轮红全在其新增测试代码上，主代码首轮即通过）。当前 HEAD pipeline **6091 全绿**且 `deploy:topic-chain` 成功 | 段 E / qa | ⚪ 仅事实登记，无需返工 |
-| K | **凭据落地事件（已闭环）**：`VECQ2-SPIKE` 探针曾把 88.43 yinfa-nacos 的 `ai-server-local.yaml`（**含明文数据库口令**）拉到本机 `%TEMP%`。2026-09-11 01:21 coordinator **已删除该文件**（6854 字节，复验 `Test-Path=False`，Temp 内无其它 Nacos/ai-server 残留）；口令**未进入任何交付物、未进 git**。已向 `EMBED-DEPLOY` 下达纪律：不得把含凭据的远端配置落到本地或仓内，引用只写键名不抄值 | coordinator | 🟢 已闭环（登记备查） |
+| K | **凭据落地事件（已闭环）**：`VECQ2-SPIKE` 探针曾把 10.50.11.76 yinfa-nacos 的 `ai-server-local.yaml`（**含明文数据库口令**）拉到本机 `%TEMP%`。2026-09-11 01:21 coordinator **已删除该文件**（6854 字节，复验 `Test-Path=False`，Temp 内无其它 Nacos/ai-server 残留）；口令**未进入任何交付物、未进 git**。已向 `EMBED-DEPLOY` 下达纪律：不得把含凭据的远端配置落到本地或仓内，引用只写键名不抄值 | coordinator | 🟢 已闭环（登记备查） |
 | L | **MCP `user-ssh-executor` 已损坏**（`namespaceStatus: error`，重试与 `mcp_auth` 均失败）。`EMBED-DEPLOY` 改用本机临时脚本走同一套预置连接完成，凭据只在内存、收工已删脚本。**后续需要 SSH 的叶（如 `CHAIN-CRON`、段 E）开工前必须先修此 MCP** | devops / 工具面 | 🔴 待修 |
 | M | **Convoy 纪律破例一次（coordinator 失误，登记备查）**：`EMBED-DEPLOY` `git add` 之后、`commit` 之前，coordinator 的提交把它的两个产物文件（`CROSS-VEC-EMBED-DEPLOY-L01.md` / `as-built/embed-tei-dev.yaml`）带进了 `d08fc0d4`（署名 `[agent:coordinator-agent]`）。devops 另发 `e51344c0` 更正署名并补 CI/CD 字段，**内容无误**。教训：同仓有 coding 叶在途时，coordinator 提交前应先 `git status` 确认暂存区只含自己的文件 | coordinator | 🟢 已更正 |
 | H1–H5 | `EMBED-DEPLOY` 开放项（详见其 handoff）：H1 清单未进 CI；H2 端点无鉴权；H3 权重挂公网；H4 单副本单节点 PVC；H5 **prod 环境尚无此端点** | `human:淮政玮` | 🟡 待拍（dev 可用，不挡 SWITCH） |
@@ -173,7 +173,7 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 - `gkxlumen-platform-ai-py` 的 openapi 只有 evaluation / recommend / risk，**无 embedding**
 - **19 台主机 × 38 个常见推理端口** TCP 扫描零命中（命中的都是 nginx / Patroni / 前端）
 - dev 侧唯一模型配置 = `LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4` + `LLM_MODEL=glm-5.2`（**云 LLM，非 embedding**）
-- `aip_kb_*` 的写入方**未定位**（88.84 SSH 不通；88.43 的 19530 无 ESTABLISHED 可溯源）→ 与本管线目标无关，不再追
+- `aip_kb_*` 的写入方**未定位**（88.84 SSH 不通；10.50.11.76 的 19530 无 ESTABLISHED 可溯源）→ 与本管线目标无关，不再追
 
 **② 同实例维度（补齐 §5 的 as-built）**
 
@@ -193,7 +193,7 @@ dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedd
 - harbor 的 `internet` 项目实测像 docker.io 代理；ghcr 代理项目匿名不可见、`registries` API 401 → 既然能直连，不纠结 harbor
 - ⚠️ 上述权重可达性测的是 **small（≈91MB）**；实际要用 **base（≈400MB）**，可达性同理但体积大 4 倍，注意拉取耗时与节点磁盘
 
-**④ 未探完（后续需要就自己补，不得假设）**：`kubectl auth can-i create deployment -n dev`、节点 CPU/内存余量、StorageClass、88.43 同机负载评估（探针 SSH 反复掉线中断）。
+**④ 未探完（后续需要就自己补，不得假设）**：`kubectl auth can-i create deployment -n dev`、节点 CPU/内存余量、StorageClass、10.50.11.76 同机负载评估（探针 SSH 反复掉线中断）。
 
 ### 6.4 解 hold 施工路径（模型已定后）
 
@@ -221,7 +221,7 @@ dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedd
 | 资源 | 常驻约 857 MiB，`/data` 391MB；requests `500m/1Gi`、limits `2/4Gi` |
 | 自愈 | 权重落 PVC；删 Pod 后 **2m01s 自愈**（权重 1.17s 从缓存加载，首启 87s；恢复时间大头是 candle warmup ≈110s），复测仍 768 |
 | 可达性 | 四个 Python Pod 逐个实测 `TCP_OK / health=200 / embeddings=200 / dim=768`：`lumen-platform-algo-py` · `-worker` · `gkxlumen-platform-entan-py` · `-worker` |
-| 选址理由 | 选 K8s dev 而非 88.43 同机：88.43 上住着 **26 个在跑业务容器**（milvus/nebula/ES/kafka/MySQL），动它要运维窗口；dev 加 Deployment 对现网零触碰，且四个消费方都在集群内 |
+| 选址理由 | 选 K8s dev 而非 10.50.11.76 同机：10.50.11.76 上住着 **26 个在跑业务容器**（milvus/nebula/ES/kafka/MySQL），动它要运维窗口；dev 加 Deployment 对现网零触碰，且四个消费方都在集群内 |
 
 **🟢 §0 #17 的语义缺陷已用真模型验掉**：查询「集成电路产量增长23.1%」加 bge 指令前缀后 —— 集成电路 **0.5030** / 半导体制造 0.3768 / 矿产勘探 **0.1571**。字面哈希时代矿产勘探排 top1（0.329 vs 0.327），现在差距拉开 **3.2 倍**。（#17 的「禁止采 top1 定码」作为纵深防御仍保留。）
 
@@ -252,10 +252,10 @@ dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedd
 ### 6.2 E 项关闭理由
 
 1. **`amcpdp-*` 全程只是「禁止对象」，不是依赖对象**（01 §2.1 / 03 §0 / §0 #5 都是禁止读写 / drop / 共用 index）。不需要知道它在哪，只需要不碰它。
-2. **已双重物理隔离**：`MILVUS_URI` 固定 `88.43`（不指向 88.54），且 §0 #16 前缀守卫只放行 `gkxlumen_industry_`。即使 88.54 真是帧库，本管线代码既连不上也建不出。
-3. **88.43 上「禁止碰 `amcpdp-*`」是空集**：连字符名被 Milvus `code 1100` 拒，该前缀在此实例物理不可能存在（`amcpdp-frame` 实测同报 1100）。约束天然满足。
+2. **已双重物理隔离**：`MILVUS_URI` 固定 `10.50.11.76`（不指向 88.54），且 §0 #16 前缀守卫只放行 `gkxlumen_industry_`。即使 88.54 真是帧库，本管线代码既连不上也建不出。
+3. **10.50.11.76 上「禁止碰 `amcpdp-*`」是空集**：连字符名被 Milvus `code 1100` 拒，该前缀在此实例物理不可能存在（`amcpdp-frame` 实测同报 1100）。约束天然满足。
 4. **模型不通用**：VEC-Q2 是文本 embedding，`amcpdp` 是图片 / 视频帧多模态（`clip_image_collection`）。维度与模型都不同，01 §2.1 已明确不复用。确认了也不会去读。
 
 **何时才需要重开**：将来真要做多模态检索（图片 / 视频找产业）→ 属新 Epic；或运维要做资产台账 / 配额规划 → 属运维范畴。
 
-⚠️ E 里真正值得管的不是「amcpdp 在哪」，而是 **88.43 / 88.49 / 88.54 / 88.249 四台都开着 19530 且大概率同为无鉴权**——这是暴露面问题，已并入 **B 项**。本管线只需开 88.43 的鉴权即可闭环，其余三台属运维资产面。
+⚠️ E 里真正值得管的不是「amcpdp 在哪」，而是 **10.50.11.76 / 88.49 / 88.54 / 88.249 四台都开着 19530 且大概率同为无鉴权**——这是暴露面问题，已并入 **B 项**。本管线只需开 10.50.11.76 的鉴权即可闭环，其余三台属运维资产面。

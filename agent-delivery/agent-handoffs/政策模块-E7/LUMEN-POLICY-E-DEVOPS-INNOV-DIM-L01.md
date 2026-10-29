@@ -78,18 +78,18 @@ INNOV_DIM_SCHEMA=demo_gkxlumenx_dim
 INNOV_MYSQL_DB=demo_gkxlumenx_ads
 Pod=gkxlumen-platform-innov-57c9b77566-scrlx
 
-GET http://192.168.88.50:30899/topic/v1/meta/industry-clusters?include_l0=true
+GET http://10.50.69.111:30899/topic/v1/meta/industry-clusters?include_l0=true
 HTTP 200  code=0  items=15  mapped=9  pending_vendor=6  with_l0=9
 policy_version=sz-10+5-2026  q068=pending_client
 X-Trace-Id=d37b6beb5cee5fc3f7fe11481a451fa4
 
-GET http://192.168.88.50:30899/innov/v1/meta/industry-clusters?include_l0=true
+GET http://10.50.69.111:30899/innov/v1/meta/industry-clusters?include_l0=true
 HTTP 200  X-Trace-Id=b6c89cf35e61d6de3b49cbdc77de49f2
 
-GET http://192.168.88.50:30892/api/topic/v1/meta/industry-clusters?include_l0=true
+GET http://10.50.69.111:30892/api/topic/v1/meta/industry-clusters?include_l0=true
 HTTP 200  （前端代理，镜像仍 006d186d）
 
-GET http://192.168.88.50:30892/
+GET http://10.50.69.111:30892/
 HTTP 200
 ```
 
@@ -124,7 +124,7 @@ HTTP 200
 
 - OTEL_SERVICE_NAME：`gkxlumen-innov`
 - 滚后 traceId：`d37b6beb5cee5fc3f7fe11481a451fa4`（topic 前缀） / `b6c89cf35e61d6de3b49cbdc77de49f2`（innov 前缀）
-- Tempo：http://192.168.88.50:30201/api/traces/d37b6beb5cee5fc3f7fe11481a451fa4
+- Tempo：http://10.50.69.111:30201/api/traces/d37b6beb5cee5fc3f7fe11481a451fa4
 - 原 500 根因 trace：`071b34f54c36d31761617fc884567f03`（C1 已记；本叶未复用）
 
 ## 架构合规自检

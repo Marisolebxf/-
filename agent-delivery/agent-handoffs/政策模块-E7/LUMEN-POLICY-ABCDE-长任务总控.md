@@ -15,7 +15,7 @@
 | B | `lumen-algo-py` | `origin/dev` | `LUMEN-POLICY-PY-BOOT-L01` → SHARED → **HARNESS** → METRIC / GRAPH / RUNTIME / 分析 Job | A 联调闸门后；对照 `demo-algo-ent-analysis/polan` **迁入** `vendor/polan`（禁止 git merge）。**算子方法冻结**；专题 Job 只加 harness 包装（§0 #13）。同仓串行 |
 | C | `lumen-svc-platform` | `origin/dev` | 骨架 `FACADE/JOB`；施工 **一 REST 路径一叶**（[`LUMEN-POLICY-CD-细叶拆单.md`](./LUMEN-POLICY-CD-细叶拆单.md)） | 新建 **`gkxlumen-topic-policy`**；Job 扩 `gkxlumen-topic-async-service`；禁止 Feign `demo-platform-entan-py` |
 | D | `lumen-ui-topic` | `origin/dev` | 共享壳一叶 + **一实施权威故事一叶**（同上拆单） | 复刻 `demo-ui-topic` 五维；只调 Java；同仓串行。**禁止**改 `lumen-ui-science-*` |
-| E | devops + qa | K8s `dev` | `LUMEN-POLICY-E-DEVOPS-L01` · `LUMEN-POLICY-E-QA-SMOKE-L01` | D 闸4 后；只认已发布前端 `http://192.168.88.50:30892`；金路径 §4 |
+| E | devops + qa | K8s `dev` | `LUMEN-POLICY-E-DEVOPS-L01` · `LUMEN-POLICY-E-QA-SMOKE-L01` | D 闸4 后；只认已发布前端 `http://10.50.69.111:30892`；金路径 §4 |
 
 厚包：A [`LUMEN-POLICY-A-总派单.md`](./LUMEN-POLICY-A-总派单.md) · B [`LUMEN-POLICY-PY-B-总派单.md`](./LUMEN-POLICY-PY-B-总派单.md) · C [`LUMEN-POLICY-JAVA-C-总派单.md`](./LUMEN-POLICY-JAVA-C-总派单.md) · D [`LUMEN-POLICY-FE-D-总派单.md`](./LUMEN-POLICY-FE-D-总派单.md) · **[C/D 细叶拆单](./LUMEN-POLICY-CD-细叶拆单.md)** · E [`LUMEN-POLICY-E-总派单.md`](./LUMEN-POLICY-E-总派单.md)  
 金路径：本文件 §4 · 缺陷包：[`long-task-e-defect-pack.md`](../../templates/long-task-e-defect-pack.md)  
@@ -152,7 +152,7 @@ A RECLOSE ──可选 MOCK
 
 ## 4. 金路径（段 E1 · 只点 K8s dev 已发布前端）
 
-已发布前端：`http://192.168.88.50:30892`。环境禁止 localhost。QA **不改代码**。
+已发布前端：`http://10.50.69.111:30892`。环境禁止 localhost。QA **不改代码**。
 
 I2-12：切条件 **不**自动起任务；条件栏「开始分析」；同用户同条件只允许一条在跑；当天已成功直接打开结果；「重新分析」可强制重跑。
 

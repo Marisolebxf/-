@@ -153,7 +153,7 @@ DoD：
 监管人：human:淮政玮
 执行：agent:qa-agent
 depends_on：D-POL-01C-FILTER 已推 dev，且 E0 点名 lumen-ui-topic、gkxlumen-topic-policy、lumen-algo-py 发布为绿。
-环境：http://192.168.88.50:30892 的 /policy/search。禁止 localhost。
+环境：http://10.50.69.111:30892 的 /policy/search。禁止 localhost。
 
 期望（未发生即红）：
 1. 关键词「半导体」仍能出卡，卡上无「加入对比篮」「深度分析」。

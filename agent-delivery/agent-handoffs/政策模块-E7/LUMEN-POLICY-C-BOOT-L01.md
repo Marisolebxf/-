@@ -89,7 +89,7 @@
 - commit：`0f8c269f2b1135fc1b57dc5fe7aea766d915dd8f`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines?ref=dev
 - 部署：首发须 `helm:chart`（`FORCE_NACOS_REPUBLISH=true`）灌网关路由并创建 `gkxlumen-platform-topic-policy`；`deploy:topic-policy` 本叶 manual
-- 探活（Deployment 起来后）：`GET http://192.168.88.50:30899/policy/topic/v1/policy/health`
+- 探活（Deployment 起来后）：`GET http://10.50.69.111:30899/policy/topic/v1/policy/health`
 
 ## 可观测性
 

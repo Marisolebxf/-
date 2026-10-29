@@ -17,5 +17,5 @@
 
 ## 探测
 
-- `http://192.168.88.50:9999/innov/v1/tech-news/extractions`：本机探测超时（dev 网关本会话不可达）
+- `http://10.50.69.111:9999/innov/v1/tech-news/extractions`：本机探测超时（dev 网关本会话不可达）
 - 配置层覆盖结论不依赖在线探测

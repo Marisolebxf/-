@@ -1094,7 +1094,7 @@ tasks:
       - 路由 /innov 可访问
       - VITE 构建指向 dev 网关
       - push → frontend:build + frontend:image 绿 → deploy:k8s dev 自动成功
-      - http://192.168.88.50:30891/innov 可打开
+      - http://10.50.69.111:30891/innov 可打开
       - 请求失败时 UI/控制台可见 traceId（observability.ts）
     evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L07-ui-port.md
 
@@ -1336,7 +1336,7 @@ tasks:
     acceptance_note: "本地 SMOKE-OK + push 6b4428e；Nebula 内网连通与 GitLab py:smoke 待 qa/devops 确认"
     definition_of_done:
       - 对齐 demo-algo-ent-analysis：nebula_loader / nebula_query / nebula.py 模式
-      - dev graphd 192.168.88.43:9669 可连；space schema（Tag/Edge）文档化
+      - dev graphd 10.50.75.136:9669 可连；space schema（Tag/Edge）文档化
       - POST /internal/graph/subgraph 返回 nodes/edges + **source: nebula**
       - Nebula 不可用时 PG 兜底返回 source: pg（与 demo 一致）
       - opentelemetry-instrument + OTLP :4318
@@ -15955,7 +15955,7 @@ tasks:
       - "agent-delivery/cicd-pipeline.md"
     definition_of_done:
       - "GitLab lumen-ui-topic Pipeline 对 ee3ff6f（或其后）绿或已登记 waiver"
-      - "K8s ns=dev deploy gkx-lumen-topic 镜像 tag 含该 SHA；rollout 1/1；http://192.168.88.50:30892 HTTP 200"
+      - "K8s ns=dev deploy gkx-lumen-topic 镜像 tag 含该 SHA；rollout 1/1；http://10.50.69.111:30892 HTTP 200"
       - "未改 helm/业务代码；D12 仍走 gkxlumen-platform-gateway 非 demo-*"
       - "handoff LUMEN-CHAIN-E-DEVOPS-SKIN-L01.md；ponytail + cost 四字段；不标 done"
     update_time: "2026-09-02T05:16:18+08:00"
@@ -22907,7 +22907,7 @@ tasks:
       - "agent-delivery/architecture-baseline.md"
     definition_of_done:
       - "总控点名服务在 K8s dev rollout 健康：gkx-lumen-topic、gkxlumen-topic-enterprise-biz、gkxlumen-topic-async-service、gkxlumen-platform-search-py、gkxlumen-entan-py-api、gkxlumen-platform-gateway"
-      - "已发布前端 http://192.168.88.50:30892 可访问；企业侧路由是 lumen 不是 demo-*"
+      - "已发布前端 http://10.50.69.111:30892 可访问；企业侧路由是 lumen 不是 demo-*"
       - "核实库连接与总控 §1.1 一致：数据面 demo_gkxlumenx_*；Java 写侧 gkxlumenx_topic_enterprise（Q-ENT-DB-01 未拍板前不得自行切库）"
       - "未绿则 blocked 并写明哪个 deploy（规约 §11.4 = C2，只重开 E0 不派业务修）；禁止用 localhost 充发布"
       - "handoff agent-handoffs/企业战略分析-ENT/LUMEN-ENT-E-DEVOPS-L01.md；ponytail + cost 四字段"
@@ -22943,7 +22943,7 @@ tasks:
       - "agent-delivery/observability.md"
     definition_of_done:
       - "开跑前确认：总控 §4 #2 画像判红尺度已定稿；Q-ENT-DB-01（#3/#5 会写正式前缀库 gkxlumenx_topic_enterprise）已拍板。未定稿不得开跑"
-      - "只在 K8s dev 已发布 lumen-ui-topic（http://192.168.88.50:30892）走总控 §4 八条金路径；禁止 localhost / pnpm dev"
+      - "只在 K8s dev 已发布 lumen-ui-topic（http://10.50.69.111:30892）走总控 §4 八条金路径；禁止 localhost / pnpm dev"
       - "每条 PASS/FAIL；期望未发生必红（§11.3）；空态只有写进该行才算过；5xx / 打到 demo-* / 白屏错跳 / 侧栏整组不可见 算不过"
       - "#3 只认浮层出对比结果（整页路由缺失不判红）；#5 succeeded 后必须显式点击才展结果，自动跳转 = 红"
       - "FAIL 先按 §11.4 填建议分类 C1–C6；C1 必附 X-Trace-Id + Tempo 链接；缺陷包按 templates/long-task-e-defect-pack.md；QA 不改业务代码"
@@ -27281,7 +27281,7 @@ tasks:
     touched_files:
       - "agent-delivery/agent-handoffs/政策模块-E7/**"
     definition_of_done:
-      - "只点已发布 http://192.168.88.50:30892，禁止 localhost。金路径总控 §4 五条全部手跑或 e2e:policy-gold；期望未发生必红；QA 不改代码"
+      - "只点已发布 http://10.50.69.111:30892，禁止 localhost。金路径总控 §4 五条全部手跑或 e2e:policy-gold；期望未发生必红；QA 不改代码"
       - "失败先填 C1–C6 缺陷包（模板 long-task-e-defect-pack.md），C1 必带 X-Trace-Id；空态仅当该行允许才算过；Job failed ≠ 空态"
       - "handoff + 缺陷包路径 + cost；不要自行 done"
     update_time: "2026-09-02T18:49:21+08:00"
@@ -28055,7 +28055,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "升级项 A 已关闭：2026-09-11 human:淮政玮 硬确认 Milvus 地址 = 192.168.88.43:19530，并提供 compose 真源（已落总控 §5 as-built）。B/C/D/E 仍 🟡。"
+    note: "升级项 A 已关闭：2026-09-11 human:淮政玮 硬确认 Milvus 地址 = 10.50.69.111:19530，并提供 compose 真源（已落总控 §5 as-built）。B/C/D/E 仍 🟡。"
     depends_on:
       - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files: []
@@ -28095,7 +28095,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 120000
     note: |
-      AV-1 通过 → pending_test。实测：真连 88.43:19530，真建 gkxlumen_industry_anchor（1516 条锚点 = 102 chain + 1414 segment，dim=256/COSINE），aip_kb_*/spk_id_* 名单前后一致未动。pytest 21 + 全仓 388 绿。诚实短板：仅字面哈希向量 hashgram-blake2b，无语义能力（VEC-Q2 待真模型）。
+      AV-1 通过 → pending_test。实测：真连 10.50.11.76:19530，真建 gkxlumen_industry_anchor（1516 条锚点 = 102 chain + 1414 segment，dim=256/COSINE），aip_kb_*/spk_id_* 名单前后一致未动。pytest 21 + 全仓 388 绿。诚实短板：仅字面哈希向量 hashgram-blake2b，无语义能力（VEC-Q2 待真模型）。
     depends_on:
       - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files:
@@ -28434,7 +28434,7 @@ tasks:
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-长任务总控.md §0 #18 §5 §6.3 §6.4"
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-DEVOPS-NET-L01.md"
     definition_of_done:
-      - "第一步先查后建：确认现网（K8s dev 各 ns / 88.43 / 88.48 / 88.49 / 88.54 / 88.249 / Nacos 配置）是否已有可复用的 embedding 端点（特别是写 aip_kb_* 的那套 RAG）；若已有 bge 类端点且 lumen Pod 可直达 → 直接复用，零部署收工"
+      - "第一步先查后建：确认现网（K8s dev 各 ns / 10.50.11.76 / 88.48 / 88.49 / 88.54 / 88.249 / Nacos 配置）是否已有可复用的 embedding 端点（特别是写 aip_kb_* 的那套 RAG）；若已有 bge 类端点且 lumen Pod 可直达 → 直接复用，零部署收工"
       - "若无可复用端点：部署 bge-base-zh-v1.5（dim 768），对外提供 OpenAI 兼容 POST /v1/embeddings"
       - "产出端点 URL + 实测返回向量 dim=768 的原始请求/响应证据 + 从 lumen Pod 实测可达的证据"
       - "as-built 拓扑写入 handoff：部署位置、镜像来源与 tag、权重获取途径、资源占用、重启存活策略"
@@ -28842,7 +28842,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 350000
     note: |
-      2026-10-24 增量：嵌入模式底色修正——is-portal-embed 原 background:none 简写连底色一并重置导致整页透白（违 D8），改为保留 --sci-bg-page #d8e7fc；lumen-ui-topic commit f76fd2c 已推 origin/dev（监管人聊天授权）；handoff 补 §0.2（orchestration e7ba9ea2）。待门户侧配菜单后实嵌复验
+      2026-10-29 增量：按钮权限 btn:topic:ent:compare（加入对比）全量放开——删除 v-permission 绑定（ElementProfile 1 处 + ResultList 2 处）、capabilityLevels.compare 等级门、matrix.ts 码定义与 L2 分配、portal/perms.ts mock 码；docs/门户菜单权限注册清单.md 同步（§4.1 删行、§六 JSON 删 6 个 topic_btn_ent_compare_* 注册项、计数 33→27）。验证：type-check 绿 + portal/menu selfcheck 绿 + 全仓 grep 零残留。改动停本地工作区待人工验收（闸门 2026-10-20），验收通过后随本任务推送。btn:topic:ent:profile-compare 等其他权限码未动
     depends_on: []
     touched_files:
       - "src/App.vue"
@@ -28858,7 +28858,7 @@ tasks:
       - "安全配置（方案 §12.4/§10.1）：部署侧配置 CSP frame-ancestors 仅允许门户域名嵌入，禁止 X-Frame-Options ALLOWALL/DENY"
       - "页面适配（方案 §12.6）：html/body/#app 100% 宽高自适应门户内容区，不强依赖浏览器全屏高度"
       - "联调验收：与门户体验环境 https://edu.itic-sci.com/portal 完成实际嵌入联调（PAGE_READY/路由/登录态/异常场景），handoff 附截图或录屏证据"
-    update_time: "2026-10-24T11:13:50+08:00"
+    update_time: "2026-10-29T15:33:30+08:00"
   - id: LUMEN-UAC-JAVA-FACADE-L01
     feishu_bitable_record_id: reczz28MTKaQhMH9
     claimed_at: "2026-10-12T10:11:09.972Z"
@@ -31326,7 +31326,7 @@ tasks:
     last_seen_at: "2026-10-17T17:26:29.811Z"
     lock_until: "2026-10-17T19:26:29.811Z"
     claimed_by: "agent:devops-agent"
-    title: "lumen ai-py 数据库地址漏改（仍 192.168.88.43），阻塞 Kafka 端到端实证"
+    title: "lumen ai-py 数据库地址漏改（仍 10.50.11.76），阻塞 Kafka 端到端实证"
     status: "done"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
@@ -31357,7 +31357,7 @@ tasks:
     last_seen_at: "2026-10-17T17:59:23.737Z"
     lock_until: "2026-10-17T19:59:23.737Z"
     claimed_by: "agent:devops-agent"
-    title: "lumen-algo-py 数据库地址仍 192.168.88.43，异步分析在算法创建阶段失败，阻塞 Kafka 端到端实证"
+    title: "lumen-algo-py 数据库地址仍 10.50.11.76，异步分析在算法创建阶段失败，阻塞 Kafka 端到端实证"
     status: "done"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
@@ -31377,7 +31377,7 @@ tasks:
       - "k8s/worker.yaml"
     definition_of_done:
       - "k8s/api.yaml 与 k8s/worker.yaml 的 LUMEN_ALGO_MYSQL_HOST 改为 10.50.11.76，前提是 dwd/ads/cfg 三库在 10.50.11.76 上存在且该账号可读"
-      - "核实企业评估/风险/推荐路径是否依赖 Milvus（现配 192.168.88.43:19530）及集群内可达性，结论写入 handoff"
+      - "核实企业评估/风险/推荐路径是否依赖 Milvus（现配 10.50.69.111:19530）及集群内可达性，结论写入 handoff"
       - "push dev 后 CI 绿，deploy:api 与 deploy:worker successfully rolled out"
       - "handoff 含 commit、pipeline/job ID"
     update_time: "2026-10-18T03:20:29+08:00"
@@ -34912,7 +34912,7 @@ tasks:
     lock_until: "2026-10-24T08:16:22.403Z"
     claimed_by: "human:孔东"
     title: "专题内容管理 CMS 公共控件与通用表单框架"
-    status: "integration"
+    status: "ready_to_sign"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -34922,7 +34922,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "2026-10-24 human:孔东确认可以验收。handoff 已写。本地预览通过。未接 Java 写接口。"
+    note: "2026-10-29 转待签收：孔东确认可验收，handoff 已写、本地预览通过（未接 Java 写接口为既有偏离项）"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/WBS.md"
       - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/技术方案.md"
@@ -34930,7 +34930,7 @@ tasks:
       - "企业、产业全景、专题服务的正文编辑套同一框架：列表、新建、编辑、发布"
       - "富文本、名单、时间线、按产业切换可复用。控件用仓内 Arco，不另引组件库"
       - "政策扶持不做出 CMS 表单"
-    update_time: "2026-10-24T13:23:23+08:00"
+    update_time: "2026-10-29T14:10:13+08:00"
   - id: SYSINT-03-01C-L01
     model_used: "glm-5.3-Flash (Cursor agent)"
     evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-03-01C-L01.md"
@@ -39837,7 +39837,7 @@ tasks:
       - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ADV-FILTER-派单说明.md"
       - "agent-delivery/长任务执行规约.md"
     definition_of_done:
-      - "只测已发布 http://192.168.88.50:30892/policy/search，禁止 localhost"
+      - "只测已发布 http://10.50.69.111:30892/policy/search，禁止 localhost"
       - "关键词半导体出卡且无加入对比篮/深度分析；有数产业筛选 total>0；无关联节点空态且非 5xx；请求无 support_strength/fund/tax/land/talent/CL-*"
       - "失败先分 C1–C6，QA 不改代码"
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-FILTER-L01.md"
@@ -40151,7 +40151,7 @@ tasks:
       - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-TS-长任务总控.md"
       - "agent-delivery/templates/long-task-e-defect-pack.md"
     definition_of_done:
-      - "只点已发布 http://192.168.88.50:30892/policy/overview，锚点高性能与前沿新材料。总控 §4 四条期望未发生必红"
+      - "只点已发布 http://10.50.69.111:30892/policy/overview，锚点高性能与前沿新材料。总控 §4 四条期望未发生必红"
       - "B2 对账仍有明显错配则第 3 条红，不要求改时序公式"
       - "QA 不改代码；失败写 C1–C6 缺陷包；handoff + cost"
     update_time: "2026-10-24T11:30:58+08:00"
@@ -43097,14 +43097,14 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 50000
-    note: "A0 体检完成：库/六端点/基线全绿（本地 local profile）；网关 192.168.88.50 不可达（环境卡点，不阻塞本地 C/D 段）；element 旧实例僵死已重启修复"
+    note: "A0 体检完成：库/六端点/基线全绿（本地 local profile）；网关真源 10.50.69.111:30895 health 200；element 旧实例僵死已重启修复"
     design_refs:
       - "agent-handoffs/科技发展态势-TS/SITUATION-ENT-长任务总控.md"
     definition_of_done:
       - "体检报告落盘：element 六端点 curl 响应样本、enterprise_base/enterprise_score/两张 dist 表行数与脏值结论、网关可达性与 token 核验结论"
       - "报告作为 C 段（C1/C2/C3）联调对照基线，handoff 含 ponytail 与 cost 四字段"
       - "全程只读：不写业务代码、不写任何数据库"
-    update_time: "2026-10-28T00:56:32+08:00"
+    update_time: "2026-10-29T15:18:21+08:00"
   - id: SITUATION-ENT-C1-L01
     cost_warn: "green"
     actual_cost: 0.9
@@ -43855,7 +43855,7 @@ tasks:
     estimated_tokens: 180000
     note: |
       2026-10-28 coordinator 建单。L01 盘点已落盘（方案 §3–§5），未启动编码。本叶只做 §5.5 M1 真实封装，不重复盘点，不做 M2/M3。不依赖 L01 状态：L01 仍含实现 DoD 且 in_progress，若挂依赖会把编码卡死。调用链 MCP→Java 网关→Python /internal/*。强度：ponytail full。网关地址以环境变量注入，不把 token 写进 git。
-      已认领 agent:api-agent / human:淮政玮，claim_type=派单 coordinator_dispatch（task-claim 无该字段）。联调通过：selfcheck 绿，五域与 search/synth 对 demo 网关 http://192.168.88.50:30889/api 调通。产业链走 /innov/v1/industry/**，需 GKX_MCP_TOKEN（不入库）。
+      已认领 agent:api-agent / human:淮政玮，claim_type=派单 coordinator_dispatch（task-claim 无该字段）。联调通过：selfcheck 绿，五域与 search/synth 对 demo 网关 http://10.50.69.111:30889/api 调通。产业链走 /innov/v1/industry/**，需 GKX_MCP_TOKEN（不入库）。
     touched_files:
       - "scripts/7chain-mcp-server.mjs"
       - "scripts/7chain-mcp-selfcheck.mjs"
@@ -44001,3 +44001,254 @@ tasks:
       - "评审模式 Metric/Trace 不泄漏；USE_MOCK=false 空态诚实"
       - "handoff + Design §14 + 附录 D/E 扫描摘要 + cost 四字段"
     update_time: "2026-10-28T20:47:29+08:00"
+  - id: LUMEN-UI-ALGO-APIVIEW-PORTAL-L01
+    model_used: "glm-5.3"
+    evidence: "agent-handoffs/门户集成-PORTAL/LUMEN-UI-ALGO-APIVIEW-PORTAL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 180000
+    actual_cost: 3
+    supervised_by: "human:孔东"
+    claimed_at: "2026-10-29T03:58:37.801Z"
+    last_seen_at: "2026-10-29T03:58:37.801Z"
+    lock_until: "2026-10-30T03:58:37.801Z"
+    claimed_by: "agent:frontend-agent"
+    title: "算法库联调台 — 门户 iframe 嵌入 + 统一用户中心接入改造"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-ALGO-LIB-DEMO"
+    priority: "P1"
+    repo: "lumen-ui-algo-apiview"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 200000
+    note: "联调中：等 nginx /dma/algovwz/ 反代 + 门户菜单注册（systemCode=algo）。三绿自测过（selfcheck/type-check/build + 120 tests）。GitLab 故障：业务仓改动留本地；主仓 registry commit 72ed6e99 待 push。"
+    touched_files:
+      - "src/portal/*"
+      - "src/main.ts"
+      - "src/router/index.ts"
+      - "src/utils/request.ts"
+      - "src/layout/AlgoShell.vue"
+      - "src/assets/main.css"
+      - "vite.config.ts"
+      - "env.d.ts"
+      - ".env"
+      - ".env.example"
+      - "scripts/gen-portal-menu-doc.mjs"
+      - "docs/门户菜单权限注册清单.md"
+    design_refs:
+      - "repos/lumen-ui-topic/src/portal/（LUMEN-PORTAL-IFRAME-L01 已评审实现）"
+      - "docs/国科信项目统一门户 iframe 集成技术方案.md（V1.1，topic docs 真源）"
+    definition_of_done:
+      - "src/portal/ 模块（embed/messenger/auth/perms/route-sync/sessionExpired/noPermission/index/selfcheck）复刻 topic 已评审实现并适配 Hash 路由 + /dma/algovwz/ 部署后缀 + systemCode=algo"
+      - "嵌入态布局：is-portal-embed 隐藏侧栏/顶栏、内容满高贴边（AlgoShell + main.css）"
+      - "iframe 通信链路可用：PAGE_READY/ROUTE_CHANGE/subPath 深链恢复，PAGE_READY 不依赖权限接口（off 态）"
+      - "权限链路三态开关 VITE_PORTAL_PERM_SOURCE=off|real|mock；当前 off（服务端未接入统一用户中心校验）：不调 /admin/get-permission-info、不拦菜单、token 走本地默认账号静默登录（401/424 静默重登+重放，不跳登录页）"
+      - "vite base=/dma/algovwz/；门户菜单注册清单 regenerate（URL 带部署前缀无双前缀）"
+      - "三绿验证：portal.selfcheck.mjs + type-check + build + 既有 node --test 全过"
+      - "handoff 提交 agent-handoffs/LUMEN-UI-ALGO-APIVIEW-PORTAL-L01.md；GitLab 故障期改动全部留本地不推（恢复后由监管人验收再推 origin/dev）"
+    update_time: "2026-10-29T12:00:47+08:00"
+  - id: KG-CLOSELOOP-R01
+    title: "燕大七要素上图写侧：抽取链能否跑通"
+    status: "ready"
+    agent: "architect-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "长任务 KG-CLOSELOOP 第一波。监管人 human:淮政玮。认领用 coordinator_dispatch、lock 24h。只写文档，不改技术方案.md，不写凭据。总控已授权后续认领不必再问。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md"
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-调研段-总派单.md"
+    definition_of_done:
+      - "七要素各一行写明源表、TAG、EDGE、抽取脚本是否绑定、测试环境能否跑通一条；空格写还没有"
+      - "写侧 Schema、构建、审核、删除/修改分列开放或未开放；未实测不写成已跑通"
+      - "第一刀只推荐一个要素，并写明为什么不是政策、为什么先避开 Organization 默认桶"
+      - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-R01.md，ponytail: N/A；状态到 ready_to_sign，不标 done"
+    update_time: "2026-10-29T12:58:44+08:00"
+  - id: KG-CLOSELOOP-R02
+    title: "我方数据出口能否喂燕大上图"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "长任务 KG-CLOSELOOP 第一波。监管人 human:淮政玮。只写文档，不改库。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md"
+    definition_of_done:
+      - "七要素各一行：我方表层级、燕大抽取表、字段对齐程度、VID/业务键是否一致，结论为可喂/不能喂/还没有派单包"
+      - "GDF Graph、我方 nebula loader、燕大抽取链三条路径只列事实，不在本叶选定生产路径"
+      - "人才与科研机构没有灌数证据的写成未验证"
+      - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-R02.md，ponytail: N/A；状态到 ready_to_sign，不标 done，不配 GDF 作业"
+    update_time: "2026-10-29T12:58:51+08:00"
+  - id: KG-CLOSELOOP-R04
+    title: "燕大查询与分析接口可调用契约"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "长任务 KG-CLOSELOOP 第一波。监管人 human:淮政玮。样例不等于契约。密钥不落盘。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md"
+    definition_of_done:
+      - "读端点、九类查询、已知图算法作业各有一行，状态只允许可调用/仅有样例/还没有契约"
+      - "PageRank、Louvain、Degree 的离线作业已跑通与在线接口可调用分开写"
+      - "Q-KG 未书面回复的保持未回复，不改写成已确认"
+      - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-R04.md，ponytail: N/A；状态到 ready_to_sign，不标 done，不写生产查询"
+    update_time: "2026-10-29T12:58:55+08:00"
+  - id: KG-CLOSELOOP-R05
+    title: "专题与展示的图谱消费清单"
+    status: "ready"
+    agent: "product-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "长任务 KG-CLOSELOOP 第一波。监管人 human:淮政玮。只补消费清单，不改页面。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md"
+    definition_of_done:
+      - "展示四页 DS-21～DS-24 与专题产业链、企业、服务、政策、人才都有行；没打开的写还没有"
+      - "四列写清页面、展示内容、燕大接口/自研/页面关系图/只读 ADS、归本闭环或排除"
+      - "CMS overlay 与不碰 Nebula 的图标明排除；统计数字没有 metric_id 的写还没有，禁止临时编号"
+      - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-R05.md，ponytail: N/A；状态到 ready_to_sign，不改技术方案.md，不标 done"
+    update_time: "2026-10-29T12:59:10+08:00"
+  - id: KG-CLOSELOOP-R03
+    title: "生产图空间唯一落点建议"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "长任务 KG-CLOSELOOP 第二波。等 R01、R02 handoff 且状态≥ready_to_sign 再升 ready。监管人 human:淮政玮。"
+    depends_on:
+      - "KG-CLOSELOOP-R01"
+      - "KG-CLOSELOOP-R02"
+    design_refs:
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md"
+    definition_of_done:
+      - "demo_gkx_chain、gkx_policy、gkx_local_1、gkx_full_1 四个空间各写明谁在写、能否当生产"
+      - "只推荐一个生产空间；双写生产写明禁止"
+      - "若推荐改掉 L01 锁定的 demo_gkx_chain，写成待授权人确认，本叶不改技术方案.md、不执行切换"
+      - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-R03.md，ponytail: N/A；状态到 ready_to_sign，不标 done"
+    update_time: "2026-10-29T12:59:15+08:00"
+  - id: KG-CLOSELOOP-R06
+    title: "自研算法与燕大分析接口的边界"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "长任务 KG-CLOSELOOP 第二波。等 R04 handoff 且状态≥ready_to_sign 再升 ready。监管人 human:淮政玮。"
+    depends_on:
+      - "KG-CLOSELOOP-R04"
+    design_refs:
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md"
+    definition_of_done:
+      - "需求清单 31 项计算各归一类：燕大在线可调用、只有离线作业、lumen-algo-py 自研、不做；对不上的写还没有"
+      - "自研行必须有 metric_id，或写明没有身份证因此第一刀不做；指标查询走 MCP，不读种子 YAML"
+      - "时序类在图快照空白时归不做；实现列不出现 Java"
+      - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-R06.md，ponytail: N/A；状态到 ready_to_sign，不写算法代码，不标 done"
+    update_time: "2026-10-29T12:59:19+08:00"
+  - id: KG-CLOSELOOP-SCHEME-L01
+    title: "七要素上图与图谱消费实施方案"
+    status: "backlog"
+    agent: "doc-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "XL"
+    estimated_tokens: 200000
+    note: "长任务 KG-CLOSELOOP 第三波。等 R03、R05、R06 handoff 且状态≥ready_to_sign 再升 ready。监管人 human:淮政玮。定义轨，ponytail N/A。"
+    depends_on:
+      - "KG-CLOSELOOP-R03"
+      - "KG-CLOSELOOP-R05"
+      - "KG-CLOSELOOP-R06"
+    design_refs:
+      - "agent-delivery/agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/技术方案.md"
+    definition_of_done:
+      - "实施方案.md 写齐两目标的可执行步骤、工作边界定稿、总控 15 项结论或待拍板、相对 L01 的范围变更、风险、明确不做"
+      - "第一刀只有一个要素、一个图空间、一条页面"
+      - "待拍板不超过总控点名的两件：数怎么进燕大图、生产读哪张图；新的结构歧义单独标升级"
+      - "handoff：agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-SCHEME-L01.md，ponytail: N/A，evidence 指向实施方案与 handoff；状态到 ready_to_sign，不标 done，不建开发叶，不改技术方案.md"
+    update_time: "2026-10-29T12:59:24+08:00"
+  - id: CHAIN-ODS-SYNC-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-29T07:37:45.924Z"
+    last_seen_at: "2026-10-29T07:37:45.924Z"
+    lock_until: "2026-10-29T11:37:45.924Z"
+    claimed_by: "human:徐滕强"
+    title: "产业链数据同步 — 三方库 gkx 贴源四表 → Demo ODS（参照政策 sync-ods，含日期类型自动转换）"
+    status: "claimed"
+    agent: "algorithm-agent"
+    epic: "CHAIN-ODS-SYNC"
+    priority: "P1"
+    repo: "demo-algo-science + demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      用户 2026-10-29 提出并认领改口径。
+      参照物：政策模块数据同步（demo-ui-system-test BasicPage.vue + demo-algo-ent-analysis polan/ods_sync.py /internal/policy/sync-ods）。与「灌数据」码表造数互补。
+      【口径修订 2026-10-29 human 确认】Demo ODS 四表必须 mode=replace：先 TRUNCATE 目标表再从头全量同步，禁止默认 upsert 差集补齐。接口 body 固定 {mode: replace}（或 UI 仅暴露「清空后全量同步」一档）。
+      【性能硬约束】dwd_org_industry_tags / dwd_org_industry_product_tags / dwd_industry_chain_news_info 三表数据量大——禁止一次性 SELECT * 进内存；须流式/分批（主键游标或 LIMIT 批次，批大小可配，建议≥500～2000 视行宽）、进度可轮询（written/todo）；TRUNCATE 后全量写入可走 INSERT…SELECT 跨库或服务端侧分批；日期脏值行内转换不得拖垮吞吐；handoff 须附直播行数探针 + 单表耗时。dwd_industry_chain_info 体量小可同路径。
+      claimed_by=human:徐滕强 supervised_by=human:徐滕强（2026-10-29 改派自 agent:algorithm-agent/human:淮政玮）。
+    touched_files:
+      - "demo-algo-science/chainan/llm_ods/ods_sync.py（新增）"
+      - "demo-algo-science/api/main.py（新增 /internal/industry/sync-ods 路由 + status 扩展）"
+      - "demo-ui-system-test/src/views/chain/pages/BasicPage.vue（新增数据同步按钮+说明弹卡）"
+      - "demo-ui-system-test/src/api/chain/index.ts（新增 syncChainOds API）"
+    definition_of_done:
+      - "对齐政策模块已有实现：复用/参照 demo-algo-ent-analysis polan/ods_sync.py 的列交集复制、id 差集 upsert、分批流式拷贝模式，不整表扫 LONGTEXT"
+      - "同步范围 = 三方库 gkx（183.240.141.251:3318，只读）产业链四表：dwd_industry_chain_info / dwd_org_industry_tags / dwd_org_industry_product_tags / dwd_industry_chain_news_info → 项目 MySQL demo_gkxlumenx_ods 同名表"
+      - "只写 Demo ODS：不算指标、不写 DWD/ADS、不跑 pipeline；正式库（live plane）禁用同步入口"
+      - "日期类型异常自动转换：create_time/publish_date/updated_time 等日期列在入库前做规范化（字符串/None/非法格式→合法 datetime/date 或 NULL，0000-00-00 类脏值→NULL 或列默认值），转换失败行记入 skipped 并在 status 里可见，不中断整表同步"
+      - "新增接口 POST /internal/industry/sync-ods（body {mode: upsert}，后台线程执行，复用 _sync_state 模式）+ status 返回 last_sync_tables 进度（table/written/skipped/todo）"
+      - "产业链基础指标页新增「数据同步」按钮 + 数据同步说明弹卡（flow 四步：源只读 → 目标 Demo ODS → upsert 差集补齐 → 到此为止），同步中/灌数互斥"
+      - "自检：至少一个可运行检查覆盖日期脏值转换逻辑（如 tests/test_chain_ods_sync_dates.py），离线可跑"
+      - "同步后 ODS 行数变化可查（status），不自动触发重灌；写入 handoff agent-handoffs/CHAIN-ODS-SYNC-L01.md，回填 cost 四字段，ponytail: 行说明强度"
+    update_time: "2026-10-29T15:38:01+08:00"

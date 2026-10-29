@@ -13,7 +13,7 @@
 
 | 角色 | 节点 | 管理 IP | 备注 |
 |---|---|---|---|
-| control-plane | htsvr050 | 192.168.88.50 | etcd1 `7091a7ecb1386a6b` |
+| control-plane | htsvr050 | 10.50.69.111 | etcd1 `7091a7ecb1386a6b` |
 | control-plane | htsvr051 | 192.168.88.51 | etcd2 `2e0e2fc07d1bcbad`；**VIP 现钉在此** |
 | control-plane | htsvr052(hostname htsvr100) | 192.168.88.52 | etcd3 `113e04d41b1efd37` |
 | worker | htsvr053/076/077/078/079 | — | 5 节点 |
@@ -131,4 +131,4 @@
 
 ---
 
-*本报告由 AI agent 基于 SSH 只读诊断 + 受控可逆处置生成；所有存储/虚拟化平台层操作均交人工/运维执行。SSH 诊断范围仅限 K8s 节点（88.50 及其跳板可达的 51/52），未触碰 TrueNAS/vCenter。*
+*本报告由 AI agent 基于 SSH 只读诊断 + 受控可逆处置生成；所有存储/虚拟化平台层操作均交人工/运维执行。SSH 诊断范围仅限 K8s 节点（10.50.69.111 及其跳板可达的 51/52），未触碰 TrueNAS/vCenter。*

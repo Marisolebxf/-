@@ -251,15 +251,15 @@ D panorama 透传 Python `/internal/chain/{chainId}/panorama`，只读、不写�
 
 ### 经网关 curl（不是直打 :8000）
 
-开发网关根：`http://192.168.88.50:30889`。
+开发网关根：`http://10.50.69.111:30889`。
 
 ```bash
-curl -X POST "http://192.168.88.50:30889/chain/v1/chain/graph/ner" \
+curl -X POST "http://10.50.69.111:30889/chain/v1/chain/graph/ner" \
   -H "Content-Type: application/json" \
   -H "X-Trace-Id: chain-step3-f6ce03c" \
   -d '{"op_id":"CHAIN_NER_INDUSTRY","scope":"one","id":"INB13","mode":"rule","dry_run":true}'
 
-curl "http://192.168.88.50:30889/chain/v1/chain/INB13/panorama" \
+curl "http://10.50.69.111:30889/chain/v1/chain/INB13/panorama" \
   -H "X-Trace-Id: chain-step3-f6ce03c"
 ```
 

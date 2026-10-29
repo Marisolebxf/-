@@ -1,7 +1,7 @@
 # CROSS-VEC-PY-INDEX-L01 · 产业锚点索引（embed/rebuild + embed/search）
 
 > 派单包 `派单/CROSS-VEC-PY-INDEX-L01-派单包.md`；总控 §0 #4 #5 #11 #16 / §4 第 2 行；设计 `03-详细设计.md` §0–§2、`02-概要设计.md` §1.1。
-> **本叶最重要的两条**：①「客户端前缀守卫」已落成硬闸（`assert_owned_collection`，`aip_kb_1` 类名字一律抛错，含单测）；②真连了现网 `192.168.88.43:19530`，**真建了** collection `gkxlumen_industry_anchor`（1516 条锚点），三个别的系统的 collection 一个没动。
+> **本叶最重要的两条**：①「客户端前缀守卫」已落成硬闸（`assert_owned_collection`，`aip_kb_1` 类名字一律抛错，含单测）；②真连了现网 `10.50.69.111:19530`，**真建了** collection `gkxlumen_industry_anchor`（1516 条锚点），三个别的系统的 collection 一个没动。
 > **本轮 embedding 是字面哈希向量，不是语义模型**（仓内无文本模型，见 §偏离 2）。`model_version` 写的是实际用的算法名，不是编的模型名。
 
 ## 任务认领（必填）
@@ -71,7 +71,7 @@
 
 | # | 偏离 | 理由 / as-built |
 |---|------|-----------------|
-| 1 | collection 名用 `gkxlumen_industry_anchor`（下划线），不是 03 §0 的 `gkxlumen-industry-*`；地址用 `192.168.88.43:19530` 不是 88.48 | 沿用 `CROSS-VEC-DEVOPS-NET-L01` 实测结论（连字符被 Milvus `code 1100` 拒；88.48 无监听）。代码里**不硬编码业务前缀**，一律读 env `MILVUS_COLLECTION_PREFIX`（默认值与 k8s 注入值一致）。SAD 文本修订仍是 DEVOPS-NET 升级项 A / C，🟡 未闭。 |
+| 1 | collection 名用 `gkxlumen_industry_anchor`（下划线），不是 03 §0 的 `gkxlumen-industry-*`；地址用 `10.50.69.111:19530` 不是 88.48 | 沿用 `CROSS-VEC-DEVOPS-NET-L01` 实测结论（连字符被 Milvus `code 1100` 拒；88.48 无监听）。代码里**不硬编码业务前缀**，一律读 env `MILVUS_COLLECTION_PREFIX`（默认值与 k8s 注入值一致）。SAD 文本修订仍是 DEVOPS-NET 升级项 A / C，🟡 未闭。 |
 | 2 | **embedding 不是语义模型**：`model_version = hashgram-blake2b-c1c3-256-v0`，`dim=256` | 仓内**没有**已装文本 embedding 模型（`requirements.txt` 无 sentence-transformers / transformers，连 numpy 都不在），按总控 §0 #11「不要凭空装一个」，本轮用 stdlib blake2b 的字符 1/2/3-gram 有符号哈希向量 + L2 归一（配 COSINE）。它**只有字面相似度**，做不到「芯片 ≈ 集成电路」。名字如实写成算法名而不是假模型名。正式模型 / 维度 / 阈值 = **VEC-Q2**，会签后换 `embed_text` + 升 `MODEL_VERSION` + 重跑一次 rebuild 即可（collection 里每行都带 `model_version`，可对账）。 |
 | 3 | 用内置 `hash()` 的诱惑没走，改用 `blake2b` | Python 内置 `hash()` 对 str 按进程加盐 → api 进程建的索引、worker 进程检索会落到不同桶，索引直接失效。这属于「lazy 不能省的正确性」。 |
 | 4 | `kinds` 子集过滤在客户端做（多取 4 倍再筛），没用 Milvus dynamic field 的 `filter` 表达式 | 少一份对 2.4 动态字段 filter 语法的依赖，代码更短且两个 store 共用同一条路径；锚点千级、`limit ≤ 64`，代价可忽略。 |
@@ -121,16 +121,16 @@ python -m pytest -q            # 全仓回归
 | `test_routes_exist_and_degraded_maps_to_503` | 两条路径在 OpenAPI 里；不可用 → HTTP 503 |
 | `test_route_rejects_foreign_collection_with_422` | body 传 `collection=aip_kb_1` → 422 且 msg 点名该库 |
 
-### 2. 真连过 19530（本机可直达 `192.168.88.43`，未走跳板）
+### 2. 真连过 19530（本机可直达 `10.50.11.76`，未走跳板）
 
 ```text
-MILVUS_URI=http://192.168.88.43:19530 python scripts/milvus_probe.py     # 建库前（复用 DEVOPS-NET 脚本）
-  TCP 192.168.88.43:19530 ok
+MILVUS_URI=http://10.50.69.111:19530 python scripts/milvus_probe.py     # 建库前（复用 DEVOPS-NET 脚本）
+  TCP 10.50.69.111:19530 ok
   collections=3 本前缀(gkxlumen_industry_)=尚未创建
   只读不动（禁止 drop/insert）：['aip_kb_1', 'aip_kb_2', 'spk_id_speaker_embeddings']
 ```
 
-词表读取（只读 demo DWD `192.168.88.43:3306` / `demo_gkxlumenx_dwd`）：`load_anchors()` → **1516** 条。
+词表读取（只读 demo DWD `10.50.11.76:3306` / `demo_gkxlumenx_dwd`）：`load_anchors()` → **1516** 条。
 
 ### 3. 真建了 collection（如实记录）
 
@@ -148,7 +148,7 @@ python -c "... rebuild({}) ..."
 
 ```text
 python scripts/milvus_probe.py
-  TCP 192.168.88.43:19530 ok
+  TCP 10.50.69.111:19530 ok
   collections=4 本前缀(gkxlumen_industry_)=['gkxlumen_industry_anchor']
   只读不动（禁止 drop/insert）：['aip_kb_1', 'aip_kb_2', 'spk_id_speaker_embeddings']
 ```
@@ -221,7 +221,7 @@ search({"query":"集成电路","top_k":2})
 - dev 测试 URL / 命令与结果：
 
 ```text
-# 本机（连通 88.43，命令可原样在 Pod 内跑，env 已注入）
+# 本机（连通 10.50.11.76，命令可原样在 Pod 内跑，env 已注入）
 python -c "from lumen_common.algorithms.industry_embed import rebuild; print(rebuild({}))"
   → code=0 indexed=1516 index_version=20260911002447 degraded=false
 python -c "from lumen_common.algorithms.industry_embed import search; print(search({'query':'集成电路','top_k':2}))"

@@ -48,7 +48,7 @@
 - 现网政策 Mock：`PolicyMockPage.vue` + `polan/mockgen/incr.py` + `GET /v1/policy/mock/policies`
 - 现网产业链 indana：`IndanaCrudPage.vue`（行业分析六表，**不是**产业链四表）
 - 存储清单：`storage/{POLICY,ENT,CHAIN,SVC}/sources/inventory*.md`
-- 现网 `demo_gkxlumenx_ods`：经 88.50 `demo-platform-entan-py` 只读 `SHOW TABLES` / `SHOW COLUMNS` / 行数（**未写**正式 `gkxlumenx_ods`）
+- 现网 `demo_gkxlumenx_ods`：经 10.50.69.111 `demo-platform-entan-py` 只读 `SHOW TABLES` / `SHOW COLUMNS` / 行数（**未写**正式 `gkxlumenx_ods`）
 
 ## 已锁主表总表（每域一行 · 实现叶只认此表）
 

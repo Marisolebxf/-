@@ -28,7 +28,7 @@
 
 1. **页面级视觉截图比对延后**：底座件未被任何页面组装渲染（M1 页 FE-TS-01A 才组装），「与 demo 逐区块截图比对」在 FE-TS-01A handoff 中以整页对照表交付；本次以布局 DNA（grid 尺寸/圆角/间距/56px 筛选条）代码级对齐。
 2. **收藏服务端接口未接**：Java 接口文档未出（BE-TS-CONTRACT-01 进行中），`useFollow` 以 localStorage 真源 + `ponytail:` 升级注释交付，D4 服务端接线留待 API 文档冻结。
-3. **mock 登录冒烟**：`ENABLE_MOCK_AUTH=false`（.env.development 现值）走真登录打 `192.168.88.50:9999` 超时——反向证明 USE_MOCK=false 零 mock 执行（D12 合规）；mock 态注册路径经 build 验证。
+3. **mock 登录冒烟**：`ENABLE_MOCK_AUTH=false`（.env.development 现值）走真登录打 `10.50.69.111:9999` 超时——反向证明 USE_MOCK=false 零 mock 执行（D12 合规）；mock 态注册路径经 build 验证。
 
 ## 验收证据
 
