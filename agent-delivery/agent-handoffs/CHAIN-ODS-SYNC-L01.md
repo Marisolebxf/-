@@ -21,11 +21,15 @@
 ### 调用链（架构铁律 2/12 合规）
 
 ```
-UI(数据同步按钮) → 网关 /chain/internal/** (StripPrefix=1, 直连 innov-py, 网关注释明示「灌数/状态仍走此路由」)
-→ Python POST /internal/industry/sync-ods（后台线程）
+UI(数据同步按钮) → 网关 /innov/v1/industry/internal/** → Java gkx-innov ChainController /v1/industry/internal/**（Feign 透传）→ Python /internal/industry/sync-ods（后台线程）
 → 三方 gkx 183.240.141.251:3318（只读）→ demo_gkxlumenx_ods 四表
-Java 零改动（demo-svc-platform 与 lumen-svc-platform 均未触碰；lumen 前端调用链不涉本功能，D12 合规）
+兼容旁路：网关 /chain/internal/** → 直连 innov-py /internal/**（既有路由，运维入口）
 ```
+
+### 偏离补记（2026-10-29 17:47 线上 404 修复）
+
+- 初版判断「Java 零改动」依据的是 `/chain/internal/**` 直连路由，但 UI `${INTERNAL}` 前缀实际经 `/innov/**` 落 Java `ChainController /v1/industry/**`——该前缀下 sync-ods 无映射 → Spring 404（`path: /v1/industry/internal/industry/sync-ods`）。
+- 修复：demo-svc-platform `gkx-innov` 照 `run-chain-pipeline` 三件套同构补透传（ChainAlgoClient/ChainService/ChainController 各 +6~8 行，Java 零算法），提交 `5863e17`，merge 后 `01a3cdc` 推 dev，CI 编译+deploy 为准（本机仅 JDK8 无法本地编译）。原 handoff「Java 零改动」结论作废，以此节为准。
 
 ### 关键行为
 
