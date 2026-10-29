@@ -1,7 +1,7 @@
 # APIVIEW 合规交付与 lumen 联调拆分
 
-> **日期**：2026-10-29
-> **状态**：前端拆分已按方案 A 落代码；合理调试 NodePort 定为 **30894**（30899 被占）。69 条清单、密封包、镜像 digest 仍待 `human:唐绍祖`。架构基线未把方案 A 升成新决策。
+> **日期**：2026-10-29（晚间按验收表再校端口与对外入口）
+> **状态**：前端拆分已按方案 A 落代码并推 `origin/dev`。合理台 NodePort 定 **30894**（30899 被 kubepi 占用）。登录 AES key 已对齐 lumen auth（`gkx-lumen-gkx-lu`）。69 条清单、密封包、镜像 digest 仍待 `human:唐绍祖`。架构基线未把方案 A 升成新决策。
 > **提出**：把现有算法联调台拆成「合规交付」和「线上试算」两条链，并冻结合同内 69 条算法的 Python 闭包。
 > **待签字**：`human:唐绍祖`（69 条清单与锁定 tag）。方案 A 已按 2026-10-29「开始落地」写入 nginx，产品前端仍走 Java 链。
 > **本文件角色**：拆分方案与锁定清单模板。冲突时的展示名以 [`算法合规与合理区分规约.md`](../../算法合规与合理区分规约.md) 为准（D17）。
@@ -12,13 +12,14 @@
 
 ## 1. 要解决的事
 
-现在占着 NodePort **30897** 的是 `lumen-ui-algo-apiview`，算法请求打的是 demo 进程。拆分后这个端口留给合规台，不改它的 demo upstream。合理调试改挂新端口 **30894**（原拟 30899，被 kubepi 占用）。
+拆分前占着 NodePort **30897** 的是 `gkx-lumen-algo-apiview`，算法请求却打 demo 进程。拆分后 **30897 留给合规台**（`demo-ui-algo-apiview`），demo upstream 不变；合理调试改挂 **30894**（原计划 30899，被 `default/kubepi` 占用后改绑）。
 
 | 页面族 | 现网服务 | 代码仓 |
 | --- | --- | --- |
 | 创新监测、产业链 | `demo-platform-innov-py` | `demo-algo-science` |
 | 企业、政策、产业综合、人才、机构、技术基础 | `demo-platform-entan-py` | `demo-algo-ent-analysis` |
-| 登录 `/api/auth/**` | `demo-platform-gateway` → `gkx-auth` | `demo-svc-platform` |
+| 登录 `/api/auth/**`（合规台） | `demo-platform-gateway` → `gkx-auth` | `demo-svc-platform` |
+| 登录 `/api/auth/**`（合理台） | `gkxlumen-platform-gateway` → `gkxlumen-auth` | `lumen-svc-platform` |
 
 这和 D12 相反：lumen 前端调用链不得打到 `demo-*` 服务。同时，合同合规交付需要一份与算法中台当前算法一致、锁定后别人不能改结果的展示；业务侧还要能在 lumen 环境上继续试算。两件事不能共用同一个前端、同一套可随意修改的 Python。
 
@@ -37,29 +38,31 @@ demo-ui-algo-apiview
 
 合理调试（按业务继续改）  NodePort 30894
 lumen-ui-algo-apiview
-  → gkxlumen-innov-py
-  → gkxlumen-entan-py-api / gkxlumen-entan-py-worker
+  → gkxlumen-platform-innov-py / gkxlumen-platform-entan-py（方案 A 直连 + X-Apiview-Direct）
+  登录兜底 gkxlumen-platform-gateway → gkxlumen-auth
   代码仓 lumen-algo-py（vendor/innov-py、vendor/entan-py）
 ```
 
 | | 合规交付 | 合理调试 |
 | --- | --- | --- |
-| 前端仓 | `demo-ui-algo-apiview`（新建） | `lumen-ui-algo-apiview`（保留） |
-| NodePort | **30897**（沿用现网端口） | **30894**（新开） |
-| 验收地址 | http://10.50.69.111:30897 | http://10.50.69.111:30894 |
-| 算法进程 | `demo-platform-innov-py`、`demo-platform-entan-py` | `gkxlumen-innov-py`、`gkxlumen-entan-py-api`、`gkxlumen-entan-py-worker` |
+| 前端仓 | `demo-ui-algo-apiview` | `lumen-ui-algo-apiview` |
+| NodePort | **30897** | **30894** |
+| 验收内网 | http://10.50.69.111:30897 | http://10.50.69.111:30894 |
+| 验收对外 | https://edu.itic-sci.com/dma/algovwz/ | **不对外** |
+| 算法进程 | `demo-platform-innov-py`、`demo-platform-entan-py` | `gkxlumen-platform-innov-py`、`gkxlumen-platform-entan-py` |
 | 算法代码 | `demo-algo-science`、`demo-algo-ent-analysis` | `lumen-algo-py` |
+| 登录 AES key | demo `gkxgkxgkxgkxgkxg`（对齐 demo auth） | lumen `gkx-lumen-gkx-lu`（对齐 gkxlumen-auth） |
 | 用途 | 与算法中台当前合规算法一致的验收展示 | 测线上 lumen 环境里的算法 |
 | 锁定后 | 69 条闭包、对应页面目录、nginx upstream、运行镜像 tag 冻结 | 继续开发；不回灌 demo 锁定闭包 |
 
-验收环境端口（2026-10-29 定）：
+验收环境（与验收表一致，2026-10-29）：
 
-| 验收环境 | 前端仓 | NodePort | 地址 |
+| 验收环境 | 前端仓 | 内网 | 对外 |
 | --- | --- | --- | --- |
-| 验收环境-实现-算法 preview（合规交付） | `demo-ui-algo-apiview` | 30897 | http://10.50.69.111:30897 |
-| 验收环境-实现-算法 preview（合理调试用） | `lumen-ui-algo-apiview` | 30894 | http://10.50.69.111:30894 |
+| 验收环境-实现-算法 preview（合规交付） | `demo-ui-algo-apiview` | http://10.50.69.111:30897 | https://edu.itic-sci.com/dma/algovwz/ |
+| 验收环境-实现-算法 preview（合理调试用） | `lumen-ui-algo-apiview` | http://10.50.69.111:30894 | 不对外 |
 
-端口调整：现网 30897 上的 Deployment 是 `gkx-lumen-algo-apiview`，请求已经进 demo 算法进程。拆分后 **30897 留给合规台**，服务改挂 `demo-ui-algo-apiview`，upstream 仍是 `demo-platform-innov-py` 与 `demo-platform-entan-py`。`lumen-ui-algo-apiview` 从 30897 挪走，改挂 **30894**，upstream 改为 lumen 算法进程。30897 不再改去打 `gkxlumen-*`。
+端口调整：**30897 留给合规台**，Service/`demo-ui-algo-apiview`，upstream 仍是 `demo-platform-innov-py` 与 `demo-platform-entan-py`。`lumen-ui-algo-apiview` 从 30897 挪走，改挂 **30894**，upstream 改为 lumen 算法进程（方案 A）。30897 不再改去打 `gkxlumen-*`。CI 先 apply Service 再 apply ConfigMap/Deployment，避免 NodePort 失败时半更新 nginx。
 
 `demo-svc-platform` 只承担合规台登录。改网关业务路由不算改合规算法，但不得把合规台的算法请求改去别的服务。
 
@@ -69,9 +72,9 @@ lumen-ui-algo-apiview
 
 ## 3. 仓与发布
 
-`demo-ui-algo-apiview` 从 `lumen-ui-algo-apiview` 的锁定提交整仓复制，新 Git 远程。复制后两边不再 merge。
+`demo-ui-algo-apiview` 从 `lumen-ui-algo-apiview` 整仓复制为新 Git 远程。复制后两边不再 merge。工作区：`workspaces/fe-algo.code-workspace`（主仓 + 两台前端）；全量 `gkx-lumen.code-workspace` 亦已收录 `demo-ui-algo-apiview`。
 
-复制时保持合规台 nginx 指向 `demo-platform-innov-py` 与 `demo-platform-entan-py`，并占用 NodePort 30897。`lumen-ui-algo-apiview` 的 nginx 去掉这两处 upstream，改为第 6 节的 lumen 目标，NodePort 改为 30894。
+合规台 nginx 指向 `demo-platform-innov-py` 与 `demo-platform-entan-py`，NodePort **30897**。`lumen-ui-algo-apiview` nginx 改为第 6 节 lumen 目标，NodePort **30894**。
 
 发布约定：
 
@@ -177,7 +180,9 @@ CODEOWNERS：
 
 方案 B（Java 转发 `/internal/*`）没有现成路由，这次没有做。若架构师改回 B，再撤掉本台直连和放行头。
 
-端口：2026-10-29 job 19778 证实 30899 已被占用（`values-lumen.yaml` 记为 kubepi）。合理调试台改用 **30894**（`zhipu-tts` 空闲）。CI 已拆成先 apply Service，失败则停，不再半改 ConfigMap。
+端口：原计划 **30899** 被 `default/kubepi` 占用，现网合理台定为 **30894**。清单里 CI **先 apply Service** 再 apply ConfigMap/Deployment。Service NodePort 失败则停，避免只改 nginx 半更新。Harbor `/data` 满盘会导致 `frontend:image` 推镜像失败，需清历史镜像后再重跑 pipeline。
+
+登录：合理台必须用 lumen auth 的 `encode-key`（`gkx-lumen-gkx-lu`）。前端误用 demo key `gkxgkx…` 时表现为「用户名或密码错误」；连续失败会把 `admin` 写库锁定（`lock_flag=9`）。默认账号 `admin` / `gkx@2026`。
 
 ---
 
@@ -194,12 +199,12 @@ UI 指到 lumen 进程，测到的是该进程的代码和它当时连接的库�
 
 ## 8. 实施顺序
 
-69 条锁定仍未做。前端拆分按下面顺序发布，避免两个 Service 抢 30897。
+69 条锁定仍未做。前端拆分发布顺序（避免抢 30897、避免 NodePort 失败半更新）：
 
 1. 唐绍祖填写第 9 节清单后再打 `compliance-lock-*`、收 `compliance_locked/`、钉合规镜像。这次不代替他做。
 2. 先发布 `lumen-algo-py` 的 innov 放行头，再手动点 `deploy:innov`。
-3. 再发布 `lumen-ui-algo-apiview`：先 apply Service→**30894**，成功后再 apply ConfigMap/Deployment（upstream 第 6 节）。
-4. 30897 空出来之后再发布 `demo-ui-algo-apiview`，新 Service 占用 30897，upstream 仍是 `demo-platform-*`。
+3. 再发布 `lumen-ui-algo-apiview`：Service **30894** + 第 6 节 upstream + 登录 AES key `gkx-lumen-gkx-lu`（`5104f52` 已推）。Harbor 绿后确认 http://10.50.69.111:30894 。
+4. 30897 空出来之后再发布 `demo-ui-algo-apiview`，Service **30897**，upstream 仍是 `demo-platform-*`；对外入口 https://edu.itic-sci.com/dma/algovwz/ 。
 5. 69 条签字之后，再把锁定决策补进架构基线。
 
 ---
