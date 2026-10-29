@@ -44001,3 +44001,32 @@ tasks:
       - "评审模式 Metric/Trace 不泄漏；USE_MOCK=false 空态诚实"
       - "handoff + Design §14 + 附录 D/E 扫描摘要 + cost 四字段"
     update_time: "2026-10-28T20:47:29+08:00"
+  - id: CHAIN-ODS-SYNC-L01
+    title: "产业链数据同步 — 三方库 gkx 贴源四表 → Demo ODS（参照政策 sync-ods，含日期类型自动转换）"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "CHAIN-ODS-SYNC"
+    priority: "P1"
+    repo: "demo-algo-science + demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 300000
+    note: |
+      用户 2026-10-29 提出。参照物：政策模块数据同步按钮（demo-ui-system-test src/views/policy/pages/BasicPage.vue + demo-algo-ent-analysis polan/ods_sync.py + api/policy_routes.py /internal/policy/sync-ods）。与灌数据按钮（generate.py 码表造数）互补，不复用码表。
+    touched_files:
+      - "demo-algo-science/chainan/llm_ods/ods_sync.py（新增）"
+      - "demo-algo-science/api/main.py（新增 /internal/industry/sync-ods 路由 + status 扩展）"
+      - "demo-ui-system-test/src/views/chain/pages/BasicPage.vue（新增数据同步按钮+说明弹卡）"
+      - "demo-ui-system-test/src/api/chain/index.ts（新增 syncChainOds API）"
+    definition_of_done:
+      - "对齐政策模块已有实现：复用/参照 demo-algo-ent-analysis polan/ods_sync.py 的列交集复制、id 差集 upsert、分批流式拷贝模式，不整表扫 LONGTEXT"
+      - "同步范围 = 三方库 gkx（183.240.141.251:3318，只读）产业链四表：dwd_industry_chain_info / dwd_org_industry_tags / dwd_org_industry_product_tags / dwd_industry_chain_news_info → 项目 MySQL demo_gkxlumenx_ods 同名表"
+      - "只写 Demo ODS：不算指标、不写 DWD/ADS、不跑 pipeline；正式库（live plane）禁用同步入口"
+      - "日期类型异常自动转换：create_time/publish_date/updated_time 等日期列在入库前做规范化（字符串/None/非法格式→合法 datetime/date 或 NULL，0000-00-00 类脏值→NULL 或列默认值），转换失败行记入 skipped 并在 status 里可见，不中断整表同步"
+      - "新增接口 POST /internal/industry/sync-ods（body {mode: upsert}，后台线程执行，复用 _sync_state 模式）+ status 返回 last_sync_tables 进度（table/written/skipped/todo）"
+      - "产业链基础指标页新增「数据同步」按钮 + 数据同步说明弹卡（flow 四步：源只读 → 目标 Demo ODS → upsert 差集补齐 → 到此为止），同步中/灌数互斥"
+      - "自检：至少一个可运行检查覆盖日期脏值转换逻辑（如 tests/test_chain_ods_sync_dates.py），离线可跑"
+      - "同步后 ODS 行数变化可查（status），不自动触发重灌；写入 handoff agent-handoffs/CHAIN-ODS-SYNC-L01.md，回填 cost 四字段，ponytail: 行说明强度"
+    update_time: "2026-10-29T15:14:11+08:00"
