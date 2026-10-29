@@ -1257,7 +1257,7 @@ gkxlumen:
 |---|---|---|---|---|
 | **A1** | L3 新建几个服务 | (a) 3 个（element/graph/datacatalog）(b) 2 个（data 暂缓）(c) 按组切 7 个 | ✅ **已裁决 = (a) 新建 3 个**（2026-10-25 徐腾强：「展示侧不复用专题侧」）；若 data 供方迟迟未定可先退 **(b)** | §7.2 · **§7.6 复用边界清单** · §7.7（偏离说明，已接受） |
 | **A2** | 要素域服务命名 | 保持 `gkxlumen-situation` / 改 `gkxlumen-element` | ✅ **已确认改为 `gkxlumen-element`**（2026-10-25）：承载 24 页跨 5 组；`situation` 易被误解为只服务 trend 组；`element` 对齐基线 D1「七要素」既有术语 | §7.3 |
-| **A3** | 直连久新库 D3/D7 豁免 | 准予并登记 / 不准 / 下沉 Python | ✅ **已裁决：准予过渡期直连久新只读库**（2026-10-26）。**两条实现路径均可，按实现方便选**：(a) **Java 侧直连**　(b) **下沉到展示侧 Python `gkx_show_service`**。**必须登记切换条件与隔离措施，避免永久旁路 ADS** | D3 / D7；答复 A7 前 `channel/jiuxin-*` 仍出桩 |
+| **A3** | 直连久新库 D3/D7 豁免 | 准予并登记 / 不准 / 下沉 Python | ✅ **已裁决：准予过渡期直连久新只读库**（2026-10-26）。**两条实现路径均可，按实现方便选**：(a) **Java 侧直连**　(b) **下沉到展示侧 Python `gkx_show_service`**。**必须登记切换条件与隔离措施，避免永久旁路 ADS**。→ **已选 (b) 并于 2026-10-29 落地，切换条件与隔离措施见 §15.1** | D3 / D7；答复 A7 前 `channel/jiuxin-*` 仍出桩 |
 | **A4** | 路径前缀与迁移顺序（吸收原 Q-DISP-04） | 一步到位 `/display/v1/**` / 先补 `/situation/**` 再迁 | ✅ **已裁决 = (a) 一步到位 `/display/v1/**`**（2026-10-26）。徐腾强：**「方便网关正确转发，不再先补 `/situation/**`」** | D5 / D15 |
 | **A5** | **`demo_gkxlumenx_ads` 整改口径**（R1） | 统一切 `gkxlumenx_ads` / 沿用 demo | ⚠️ **已裁决 ≠ 提交方建议**（2026-10-26）：**暂不强制切正式 ADS**。现状——业务数据都在 `demo_*`、正式库基本没数、**专题侧也仍读 demo 尚未切库**。**新建展示服务先与现网一致（读 `demo_gkxlumenx_ads`，库名配置化）**，等正式库有数、专题侧切库时再统一整改。**原则：不为改名先把联调切挂**。→ **R1 由「阻塞」降为「已知延后」**，整改单改为**跟随专题侧切库节奏** | D12；R1；**与 §7.6 / 数据源配置强相关** |
 | **A6** | 智树自建维度读法 | 先直读 ADS / 必须走 `gkx_show_service` | ✅ **已裁决 = 先直读 ADS**（2026-10-25）。**仅限门面实装前**；门面实装后按场景分流——纯查询 / 聚合 / 分页**继续直读 ADS**（D3），需算法加工**走门面**（D2，`policy` 组 `polan` 算法大概率走此路） | D3；`storage/README.md:89`；R3 |
@@ -1272,6 +1272,72 @@ gkxlumen:
 | **A15** | **订阅模块归属**（§10.9） | (a) 复用 `topic-async-service` + 展示侧订阅关系 (b) 展示侧自建 (c) 落 `element` 内 | ✅ **已裁决 = (a)**（2026-10-25）：订阅**只复用异步执行能力**，订阅关系与触发规则落展示侧，不落专题库 | 依赖 A9（`app_user` 落点）与 R8（XXL-Job 未部署） |
 
 > **编号说明**：本文 A 系列已吸收原 `architecture-display-optimized.md` 的 Q-DISP-01~09（Q-DISP-04 并入 A4，06→A1，07→A3，08→A7，09→§6.1 已修正并落地），**不再保留双编号**。
+
+---
+
+### 15.1 A3 落地登记：久新库只读直连链路
+
+A3 裁决要求「**必须登记切换条件与隔离措施，避免永久旁路 ADS**」。本条为该要求的正式登记。
+
+**落地日期**：2026-10-29　**实现路径**：**(b) 下沉展示侧 Python `gkx_show_service`**
+
+**未选 (a) Java 直连的原因**：`gkx_show_service` 在 D15 中已被定为展示系统专属 Python 门面；
+若 Java 直连，将与「展示 BFF 不直连外部库」的分层不一致，且与专题侧
+（`SYSINT-DICT-02-L01` 已定 Java 只转发、不直连）口径相左。
+
+#### 链路
+
+```
+展示系统 Java（gkxlumen-innov）
+  └─ RemoteShowPythonClient   @FeignClient("gkxlumen-platform-show-py")
+       └─ POST /internal/gkx-show/gba/indicator/*
+            └─ gkx_show_service   FastAPI :8082，前缀 /internal/gkx-show/**
+                 └─ gkx_show_service/jiuxin.py   久新只读通道（唯一出口）
+                      └─ 久新 Doris  47.93.119.170:29030 / gkx_technology_analysis_dev
+```
+
+Java 侧**不直连久新、不使用只读账号**；久新凭据仅存在于 Python 侧环境变量。
+
+#### 隔离措施（A3 要求项之一）
+
+| # | 措施 | 落点 |
+|---|---|---|
+| 1 | 收敛单一通道 | 久新访问只走 `gkx_show_service/jiuxin.py`；禁止在 `views/` 内散写 SQL 或自建连接 |
+| 2 | 只读 | SQL 白名单仅放行单条 `SELECT`，拦截 `INSERT/UPDATE/DELETE/DROP/ALTER/CREATE/TRUNCATE/REPLACE/GRANT` 及多语句 |
+| 3 | 配置可切 | 总开关 `GKX_JIUXIN_ENABLED`；置 `0` 即整体停用并回落空态，**不旁路到其他库** |
+| 4 | 凭据不进 git | `GKX_JIUXIN_PASSWORD` 只走 K8s Secret / 环境变量；`.env.example` 该行保持注释且为空 |
+
+#### 切换条件（A3 要求项之二）
+
+> **切换条件：数据工厂（GDF）`ts_*` 表就绪后，改读 ADS，本链路停用。**
+
+判据与步骤：
+
+1. GDF 完成久新源入湖，产出 `ts_*` 结果表并落 ADS；
+2. ADS 中对应指标有数据且通过口径比对；
+3. 将 `GKX_JIUXIN_ENABLED` 置 `0`，本链路整体停用；
+4. 接口路径保持不变、改为读 ADS，**对上游 Java 无感**。
+
+**未满足前本链路保持启用**。避免「永久旁路 ADS」的责任人为本切换条件的 Owner
+（待指定；建议落数据 Lead，与 A11 预跑读表清单同一责任人）。
+
+#### 落地证据（2026-10-29 实测）
+
+| 检查项 | 结果 |
+|---|---|
+| `/healthz` | `jiuxin_readonly_channel: "up"` |
+| `/gba/indicator/capability` | `reachable: true`；命中湾区城市 7 个 |
+| `/gba/indicator/paper` | 真实数据，例：广州 2024=`31788`、2025=`44556` |
+| 只读防护 | `DROP TABLE` / `SELECT 1; DELETE` 均被拦截 |
+
+#### 已知限制
+
+**专利授权量口径不可靠，禁止对外出数。** 按「专利 → 机构 → 城市」关联实测，
+2024 年深圳仅得 1 条、广州/东莞 0 条，而算法库既有产出为「广州 2024 授权 99,136」，
+相差 4 个数量级——机构关联覆盖率极低。接口固定返回 `quality="unreliable"`，
+调用方不得作为指标真值展示；出数前须先确定城市级授权口径。
+
+**工程侧记录**：`lumen-topic-py` 仓 `docs/JIUXIN-LINK.md`。
 
 ---
 

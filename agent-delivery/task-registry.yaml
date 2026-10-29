@@ -44325,3 +44325,151 @@ tasks:
       - "自检：至少一个可运行检查覆盖日期脏值转换逻辑（如 tests/test_chain_ods_sync_dates.py），离线可跑"
       - "同步后 ODS 行数变化可查（status），不自动触发重灌；写入 handoff agent-handoffs/CHAIN-ODS-SYNC-L01.md，回填 cost 四字段，ponytail: 行说明强度"
     update_time: "2026-10-29T17:03:55+08:00"
+  - id: SITUATION-IM-A0-L01
+    cost_warn: "green"
+    actual_cost: 1.4
+    model_used: "auto"
+    actual_tokens: 260000
+    evidence: "agent-handoffs/科技发展态势-IM/SITUATION-IM-A0-L01.md"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-10-28T12:10:00.000Z"
+    last_seen_at: "2026-10-28T12:10:00.000Z"
+    lock_until: "2026-10-29T12:10:00.000Z"
+    claimed_by: "agent:data-agent"
+    title: "创新监测三页·数据打通 A0——数据/环境/指标体检（只读：innov 端点清单与行数、企业侧四表、三页逐卡片有源判定、metric_id 映射表、天地图可达性）"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      2026-10-28 human:李伟 授权 SITUATION-IM 长任务（WBS-05-19 子任务 05-19-01～23）后建单，开工前勾选 C1–C10 已毕（C1=①角标不算 UI 改动·C2=①registry 直接改·C4=①IM 契约作本期真源·C10=走查签收 human:李伟，其余按默认）。因本会话无 task MCP 工具、经 human:李伟 当场指示，按文件直接更新 registry（不 track MCP 路径）。
+      范围：只读核验，不写任何业务代码、不写任何库。七项产出：①gkxlumen-innov 现有可用 /internal 端点清单与三张表（dwm_org_achievement_year / ads_node_influence / dim_tech_domain）行数；②是否需要 innov 侧新增端点（=结构升级，命中则本单 blocked 升级 human:李伟）；③算法侧 /internal 是否就位（指标体系/SWOT/城市对标/缺口外推）；④企业侧四表行数与脏值复核；⑤三页每个 Tab 逐卡片「有源/空态」判定 + 行数量级；⑥三页每个统计数字 ↔ metric-readiness-matrix-INNOV.yaml 的 metric_id 逐条映射表（映射不上的走 D1 missing 红问号）；⑦天地图 key 与内网瓦片可达性。
+      pilot 顺序：先 M6 深圳 → M5 湾区 → M4 全球。边界口径：可改接口契约，不可改 UI 与实现效果（角标挂载点属评审层叠加，须满足总控 §0.1 三条）。git：默认只 commit 不 push，走查通过后由 human:李伟 人工推送。
+      2026-10-28 体检结论：①innov 现有 34 个 REST 端点（源码静态分析，服务本地 7090 未启动故未动态验证），其中城市 rank/compare/detail/advice/index-method、载体 rank/compare/detail/index-method、事件 list+geo+heatmap+stats、图谱域树/子图/影响分、预测、三套字典 共约 20 张卡片可直接喂数；②B2 命中：成果聚合、指标树+城市×指标序列+provenance、领域四维、alerts+订阅、SWOT 全套、关联飞线、结论生成 共 7 项能力在 innov 不存在 → 需新增 /internal/* = 结构升级项，本单已升级 human:李伟，未批前受影响 C 叶 blocked、其余继续；③B3 命中：算法侧未就位，按 C3=① 空态+emptyReason+口径注释；④澄清：display→innov 走 Feign 不经网关，故现有端点无需改 @Inner，缺的不是鉴权是能力；⑤企业侧四表行数继承 ENT A0 基线（未复测，诚实标注）；⑥天地图 key 已配（.env.development:35，公网瓦片，可达性未实测）；⑦metric_id：三页对齐约 55 条（见报告 §6.1），映射不上的按 D1 missing 出红问号。
+      全程只读：未写业务代码、未 commit、未 push、未写任何库。
+    depends_on: []
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-长任务总控.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-总派单.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-API-CONTRACT-01.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-前置条件与未决项.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-开工前勾选表.md"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-INNOV.yaml"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md §4.4"
+    definition_of_done:
+      - "体检报告落盘 agent-handoffs/科技发展态势-IM/SITUATION-IM-A0-L01.md：innov 端点清单与行数、企业侧四表行数与脏值、本地服务现状（前端 3000 / display 7099 / element 7082）、天地图可达性结论"
+      - "metric_id 逐条映射表：三页每个统计数字 ↔ INNOV 矩阵 metric_id；映射不上的点位明确列出，按 D1 missing 出红问号（IconQuestionCircle），禁止显示伪 8 件套"
+      - "三页逐卡片判定表：每个 Tab 每个卡片标注 有源(行数) / 空态(原因)，作为 C/D 段空态口径基线"
+      - "结构升级判定：innov 需新增 /internal/* 或算法未就位时，写明该叶 blocked + 升级 human:李伟；按 C3=① 处理（空态 + emptyReason + 口径注释），不得自行扩范围"
+      - "deferred 清单：写面端点（alerts/read、subscriptions、push-records）、详情端点（carriers/{id}）等，逐项注明二期"
+      - "全程只读：不写业务代码、不写任何数据库（含 demo 库）；不触碰 views/innov 与 @/api/innov（U10）"
+      - "handoff 含 ponytail 与 cost 四字段；已回填 evidence、WBS §4.4；契约 §7 无需回填（A0 无端点改动）"
+    update_time: "2026-10-28T21:00:00+08:00"
+  - id: SITUATION-IM-R0-L01
+    cost_warn: "green"
+    actual_cost: 0
+    model_used: "auto"
+    actual_tokens: 0
+    supervised_by: "human:李伟"
+    claimed_at: "2026-10-28T13:10:00.000Z"
+    last_seen_at: "2026-10-28T13:10:00.000Z"
+    lock_until: "2026-10-29T13:10:00.000Z"
+    claimed_by: "agent:frontend-agent"
+    title: "评审底座：src/review/ + 组件升级（8 件套 + 就绪度四行 + 自闸）+ readiness 只读镜像 + SITUATION-IM-data-gap-catalog.yaml"
+    status: "claimed"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: |
+      2026-10-28 human:李伟 建单（WBS-05-19-02），走 C2=① 授权路径 2 直接更新 registry（无 task MCP 工具）。按 C8=① 与 C1 并行（两仓各一张，不冲突）。
+      角标不算 UI 改动的前提（C1=① 三条判据，逐叶验收必核）：① 挂点是既有数字节点旁的兄弟节点，不改变布局流与尺寸（不加换行、不改 padding/间距表）；② 评审模式关闭时 DOM 零残留；③ 不引入新颜色/新字号/新控件，复用 src/components/lineage/* 既有样式与 Arco 组件。三条任一不满足即判效果改动，该叶退回。
+      枚举必须从数据层取，不在前端写死（尤指领域/城区维度）。pending_hint 等缺口长文案一律走 data-gap-catalog 真源，禁止前端硬编码。
+    design_refs:
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-长任务总控.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-总派单.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-开工前勾选表.md"
+      - "agent-handoffs/科技发展态势-IM/SITUATION-IM-A0-L01.md"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-INNOV.yaml"
+      - "lumen-ui-topic/src/review/（照其结构）"
+    definition_of_done:
+      - "src/review/ 三件套：feature.ts 总开关 + index.ts 唯一出口 + README.md 上线清理清单（照 lumen-ui-topic/src/review/）；src/stores/review.ts 评审模式 + 组件自闸"
+      - "MetricSpecHint.vue 升级：8 件套 + version + 就绪度四行（D1/D2/D3/D4），ⓘ 用 Arco IconInfoCircle 替换纯文本符号，并补自闸；MockBadge.vue 补自闸；新增 SchemaGapBadge / PendingBadge（含 pending_ods 蓝钟）/ IngestingBadge / ReviewMetricBadges"
+      - "readiness 只读镜像：从 INNOV yaml 生成，集中单文件，头注释注明真源路径与同步任务号"
+      - "新建 agent-delivery/metrics/registry/SITUATION-IM-data-gap-catalog.yaml：pending_hint 缺口长文案真源（从 INNOV 矩阵 d2_gap/d3_gap/d4_note 提取），前端禁硬编码"
+      - "三绿：build 0 error / lint 0 error / 单测全绿；评审关闭后 DOM 零泄漏（有断言或手测证据）"
+      - "样式零新增：不改任何 styles/*.css，不改既有组件布局流与尺寸"
+      - "handoff 落 agent-handoffs/科技发展态势-IM/SITUATION-IM-R0-L01.md（含 ponytail + cost 四字段）；git 只 commit 不 push"
+    update_time: "2026-10-28T21:10:00+08:00"
+  - id: SITUATION-IM-C1-L01
+    cost_warn: "green"
+    actual_cost: 3.6
+    model_used: "auto"
+    actual_tokens: 620000
+    evidence: "agent-handoffs/科技发展态势-IM/SITUATION-IM-C1-L01.md"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-10-28T13:10:00.000Z"
+    last_seen_at: "2026-10-28T13:10:00.000Z"
+    lock_until: "2026-10-29T13:10:00.000Z"
+    claimed_by: "agent:api-agent"
+    title: "pilot M6 深圳 · carriers 端点打通：POST /v1/situation/shenzhen-innovation/carriers（display + RemoteInnovClient + innov 侧 /internal/*）"
+    status: "integration"
+    agent: "api-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: |
+      2026-10-28 human:李伟 建单（WBS-05-19-03，pilot 首叶），走 C2=① 授权路径 2 直接更新 registry。同日 human:李伟 批准「innov 侧新增 /internal/* 只读端点」（A0 报告 §4.3 升级请求），本叶据此含 innov 侧改动。
+      pilot 顺序按 A0 §9 建议调整：C1 carriers → C4 city-benchmark → C5 operation-timeline → C3 field-distribution → C2 indicator-systems（最可能 blocked 的放最后）。
+      边界：可改接口契约（改动前先 bump `SITUATION-IM-API-CONTRACT-01.md`），不可改 UI 与实现效果。数据只读 `demo_gkxlumenx_*`，禁止写正式 `gkxlumenx_*`。
+
+      2026-10-28 实施结论（执行方：本会话主 agent 代 api-agent 执行，实际动仓范围见下）：
+      交付 —— ①innov 新增 ShenzhenController.java：`POST /internal/innov/v1/shenzhen/carriers`，`@Inner(value=false)`；
+      ②display 新增 ShenzhenInnovationController.java：`POST /v1/situation/shenzhen-innovation/carriers`，装配对齐前端 SzInnovationCarrier；
+      ③RemoteInnovClient 新增 shenzhenCarriers 并标 `@NoToken`（与下游 @Inner 配对），另加 `url=${feign.innov.url:}` 便于本地自测。
+      验证证据 —— 编译通过（须 JDK17，本机默认 JAVA_HOME 是 JDK8 会报「无效的目标发行版:17」），产物确认 ShenzhenController.class / ShenzhenInnovationController.class 落盘；
+      等价 SQL 直连 demo 库实测成功返回深圳 3 条（含真实经纬度与指数），证明 COLLATE 修复生效。
+      ⚠️ HTTP 端到端自测未完成：本机缺 Nacos，且 Feign url 依赖由 Nacos 供给的 ${server.servlet.context-path}，innov 无法脱离 Nacos 独立运行（jar 已构建成功 118.6MB）。按 DoD 第 7 条如实记为「未动态验证」，解决条件：可达的 Nacos 或补全本地配置。
+      前置同日完成：human:李伟 授权后执行 innovPy 全流水线灌数（P1–P9），补 11 张缺失的 demo ODS 贴源表，五张事实表由 0 行恢复为 carrier_index 140 / city_index 365 / innovation_event 230 / node_influence 544 / dwd.org_achievement_year 1312；正式库零写入（详见 A0 报告 §1.2）。
+      诚实表：9 个字段有源（id/name/type/level/location/district/domain/value/rank）；street、description、patents、papers、projects、talents、rdInvestment、domainDist、domainCover、孵化企业数、合作机构数、isSubscribed 共 12 个无源，统一登记 noSourceFields 由前端按 D1 missing 出红问号，未伪造任何数值。
+      值域偏离三条（保留原值未硬映射）：type 含 incubator 不在 SzCarrierType 枚举内；level 为 national/provincial 与前端五档语义不同；regionKey 中文区名无法映射 adminCode（数据源只到市本级 440300）。
+      数据性质：city_index.indicator_values.source=benchmark_manual_pack（innovPy 批处理灌入的演示基准包），非数仓实算，已写入返回的 dataSourceNote 并按 D4=mock 标注。
+      已同步：A0 报告 §1.2 更正、契约 bump v0.3（新增 §4.7 数据真源与换算规则，含 COLLATE 纪律）。
+    depends_on:
+      - "SITUATION-IM-A0-L01"
+    design_refs:
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-长任务总控.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-总派单.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-API-CONTRACT-01.md"
+      - "agent-handoffs/科技发展态势-IM/SITUATION-IM-A0-L01.md"
+      - "agent-handoffs/科技发展态势-TS/SITUATION-IM-开工前勾选表.md"
+      - "lumen-svc-platform/gkxlumen-display 的 SituationController.java:310-324（诚实声明注释范例）"
+    definition_of_done:
+      - "display 侧新增 POST /v1/situation/shenzhen-innovation/carriers（契约 §4 第 11 条），返回 R{code,data,msg} 信封 + emptyReason + scopeLabel + asOf + metricIds"
+      - "scopeOf 唯一翻译层：regionKey → innov adminCode；禁止散写（陷阱：regionKey(store) ≠ regionPaths(请求体 string[][])，混写会让筛选永远不生效）"
+      - "RemoteInnovClient 扩只读方法（照现有 health() 写法；U3 范围内，不算结构升级）；innov 侧新增端点加 @Inner(true)，display 侧 @NoToken 与之配对（照 element 同款）"
+      - "innov 侧新增 POST /internal/innov/v1/shenzhen/carriers（已批准的结构升级项）：行政区（district）层级 + talents/rdInvestment。若 dim_carrier 无层级/talents/rdInvestment 列 → 如实返回空态 + emptyReason=NO_SOURCE_COLUMN，**禁止伪造数值**"
+      - "逐块降级（不许整包 catch）+ emptyReason；数值强转 int/double（Long→String 坑规避）；Pager/分页字段与前端 SzCarrier 对齐"
+      - "端点 Javadoc 必须写「哪些入参真的生效」诚实声明注释（照 SituationController.java:310-324 范例）"
+      - "本地 curl 自测 200（**前提：先起 gkxlumen-innov 7090**，否则如实记录为「未动态验证」并在 handoff 遗留列明）"
+      - "单测：纯函数装配逻辑（scopeOf 翻译 + 数值强转）"
+      - "git 只 commit 不 push；handoff 落 agent-handoffs/科技发展态势-IM/SITUATION-IM-C1-L01.md（含 ponytail + cost 四字段）；回填契约 §7 实装对照表一行"
+    update_time: "2026-10-28T21:10:00+08:00"

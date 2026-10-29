@@ -5,6 +5,7 @@
 > **2026-10-22 晚**：草稿已确认作建叶底稿。已有监管人即负责人。完成日期要求取倒排「功能开发」计划完成时间（11月倒排计划 · 科技信息展示系统）。页面计划里冲出该日的叶结束日不写入。开始时间仍待填写。这两列是我方栏位，不是对端承诺。方案行与菜单注册行在倒排里没有单独的功能开发完成日，仍为无截至时间。
 > **2026-10-26 `human:淮政玮` 口径**：「展示系统本身就是集成，整体放到展示系统集成」。据此，展示系统的跨页公共物与技术架构设计件也归第 5 项，不再散落在原页面计划。
 > **2026-10-27 `human:李伟` 建叶登记**：原以「挂接登记」记入的五件转为正式叶，任务号不变（沿用已有 ID，未新建）；原无监管人的 `BE-TS-IMPL-01`、`BE-TS-DATA-01` 由 `human:李伟` 认领。派单说明见 `agent-handoffs/科技发展态势-TS/派单说明/`。
+> **2026-10-28 `human:李伟` 挂接**：创新监测三页（DS-04/05/06）数据打通长任务 `SITUATION-IM`（**23 叶**，WBS-05-19-01～23）挂接 **§4.4**，授权句已生效；边界口径：**可改接口契约，不可改 UI 与实现效果**（角标挂载点属评审层叠加，须满足总控 §0.1 三条）。总控 / 总派单 / 契约 / 前置条件四份：`agent-handoffs/科技发展态势-TS/SITUATION-IM-*.md`；决策纪要本夹 `纪要/2026-10-28-SITUATION-IM-边界与裁定.md`。
 > 本表列为「开始时间」时未标注的，均为**待填写**。不自行补日期。
 
 ---
@@ -26,6 +27,7 @@
 - `WBS-05-NN` 一条线一行；`NN a / NN b` 表示同一菜单的前端 / 后端两行。
 - `WBS-05-08-0N` 是 `WBS-05-08` 的**子任务行**，与 `SYSINT-05-08-0N-L01` 一一对应，不另算菜单。
 - `WBS-05-18-0N` 是 `WBS-05-18` 的**子任务行**（SITUATION-ENT 长任务管线 · 企业维度数据跑通，2026-10-27 挂接），口径同 `WBS-05-08-0N`，不另算菜单。
+- `WBS-05-19-0N` 是 `WBS-05-19` 的**子任务行**（SITUATION-IM 长任务管线 · 创新监测三页数据打通 + 评审就绪，2026-10-28 挂接），口径同上，不另算菜单。
 - 一个 WBS 行可以索引多个任务 ID；反过来一个任务只挂一行，不重复编号。
 - **计划叶 `LT-5-*` 不是任务**。`05-展示系统集成工作计划.md` §0 写明「计划叶 ID 不是 registry 任务」。本表只在 §1 的「计划叶」列引用它作排期对照，不当任务号用。
 
@@ -64,9 +66,9 @@
 | 科技发展态势 | DS-01 | 科技全域态势 | WBS-05-18 | `FE-TS-01A`(integration)、`BE-TS-IMPL-01`(backlog)、`BE-TS-DATA-01`(backlog)、`DS-01-METRIC-OPEN-L01`(integration)、`SITUATION-ENT-*` 长任务管线（10-27 挂接，待建，见 §4.3） | 前端整页复刻已 push、三绿；REST 待 `BE-TS-CONTRACT-01` 冻结。指标语义卡仍草稿未签。10-27 起企业维度数据跑通长任务挂接本行 | LT-5-SIT-DS01 |
 | 科技发展态势 | DS-02 | 科学技术全景 | WBS-05-01a / 01b | `SYSINT-05-01A-L01`(ready)、`SYSINT-05-01B-L01`(ready)、`FE-TS-02A`(integration)、`DS-02-METRIC-OPEN-L01`(integration) | 对接叶已建号未开工；复刻页 integration；读图归第 7 项 | LT-5-SIT-DS02 |
 | 科技发展态势 | DS-03 | 技术发展跟踪 | WBS-05-02a / 02b | `SYSINT-05-02A-L01`(ready)、`SYSINT-05-02B-L01`(ready)、`FE-TS-03A`(integration)、`DS-03-METRIC-OPEN-L01`(integration) | 三个 Tab 可开或空态；材料未到时空态。名称收口为「技术发展跟踪」 | LT-5-SIT-DS03 |
-| 科技发展态势 | DS-04 | 全球创新监测 | WBS-05-19 | `FE-TS-04A`(integration)、`DS-04-METRIC-OPEN-L01`(integration)；已有 `E-INNOV-M1-L08`（tier FULL，路由 `/innov`） | 综合 / 实时 / 载体 / 监测 / 能力五块可切换；不另起一套 innov 地图 | LT-5-SIT-DS04 |
-| 科技发展态势 | DS-05 | 湾区创新监测 | WBS-05-19 | `FE-TS-05A`(integration)、`DS-05-METRIC-OPEN-L01`(integration) | 成果地图 / 四维 / SWOT / 指标四块已完成，联调待 REST | LT-5-SIT-DS05 |
-| 科技发展态势 | DS-06 | 深圳创新监测 | WBS-05-19 | `FE-TS-06A`(integration)、`DS-06-METRIC-OPEN-L01`(integration) | note「handoff 已 push ea1e4aad；lumen b4e1eda；联调确认」；**模块目录无同名 `FE-TS-06A.md`** | LT-5-SIT-DS06 |
+| 科技发展态势 | DS-04 | 全球创新监测 | WBS-05-19 | `FE-TS-04A`(integration)、`DS-04-METRIC-OPEN-L01`(integration)；已有 `E-INNOV-M1-L08`（tier FULL，路由 `/innov`）；**`SITUATION-IM-*` 长任务管线（10-28 挂接，待建，见 §4.4）** | 综合 / 实时 / 载体 / 监测 / 能力五块可切换；不另起一套 innov 地图 | LT-5-SIT-DS04 |
+| 科技发展态势 | DS-05 | 湾区创新监测 | WBS-05-19 | `FE-TS-05A`(integration)、`DS-05-METRIC-OPEN-L01`(integration)；同上 `SITUATION-IM-*` 长任务管线（见 §4.4） | 成果地图 / 四维 / SWOT / 指标四块已完成，联调待 REST | LT-5-SIT-DS05 |
+| 科技发展态势 | DS-06 | 深圳创新监测 | WBS-05-19 | `FE-TS-06A`(integration)、`DS-06-METRIC-OPEN-L01`(integration)；同上 `SITUATION-IM-*` 长任务管线（**pilot 起点**，见 §4.4） | note「handoff 已 push ea1e4aad；lumen b4e1eda；联调确认」；**模块目录无同名 `FE-TS-06A.md`** | LT-5-SIT-DS06 |
 | 科技发展态势 | DS-07 | 科技创新评估 | WBS-05-20 | `FE-TS-07A`(claimed，P2)、`DS-07-METRIC-OPEN-L01`(integration) | 复刻未开工；评估对象范围未补则按详设空态 | LT-5-SIT-DS07 |
 | 科技发展态势 | DS-08 | 科技指数 | WBS-05-21 | `FE-TS-08A`(integration)、`FE-DISPLAY-TECHINDEX-NEW-L01`(integration)、`FE-DISPLAY-TECHINDEX-MOCK-ALGO-L01`(pending_test)、`DS-08-METRIC-OPEN-L01`(integration) | 九域 + 8 件套 + 算法口径页已出，布局溢出由 fix 8a46d7d 修；mock 权重（40/30/20/10）一致性已修待抽测。**只做展示侧，不做智库后台** | LT-5-SIT-DS08 |
 | 科技发展态势 | DS-09 | 科技发展规划 | WBS-05-22 | `FE-TS-09A`(integration)、`DS-09-METRIC-OPEN-L01`(integration) | 综合规划 / 重点领域 / 研究分析可切换；预警模型可 501，不编制规划正文 | LT-5-SIT-DS09 |
@@ -171,6 +173,53 @@
 | WBS-05-18-08 · `SITUATION-ENT-C6-L01` | 要素比较 `/compare` 端点补全（用户走查反馈：「接口要补上，只有一个要素可先无法验证」） | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-10-27） | handoff `科技发展态势-TS/SITUATION-ENT-C6-L01.md`：新增 display `POST /v1/situation/compare`（复用 element `/trend` 的注册年计数），返回 `{years, series, availableFactorKeys, notes}`，**契约 bump v1.3**（`notes` 为可选新增，视图零改动）；前端 `fetchSituationCompare` 从「未上线空态 shim」切回 `post()`。七组自测全 200：深圳市 2022–2024 = **4032/3658/2628（与库级 join 计数逐位吻合）**、东莞 1815/1636/1079、南山区、关键词「腾讯」、只勾 scholar 空态。**只有 enterprise 有年度序列，刻意不伪造第二条曲线**，原因写在 `notes`；UI 如实停在「当前可比要素 (1/4)」。**顺带修真问题**：`scopeOf` 此前只认 `regionPaths`，compare/influence 的 `activeRegionKey` 被**静默忽略**（返回全量不报错）→ 现按 regionPaths→activeRegionKey→focusRegionKeys 解析。三绿（type-check / build 1m6s / 浏览器冒烟无报错弹窗）。⚠️ 改动停本地未 commit | C4 ≥ integration | 无截至时间 |
 
 > 验收（U6）：**本地联调 + 人工走查**（对规约 §11.2「只认 K8s 已发布」的授权豁免，仅本管线有效），走查清单见总控 §4。git 默认只 commit 不 push，走查通过后监管人人工推。同仓 Convoy：`lumen-svc-platform` / `lumen-ui-science-pc` 各同时只派 1 张 coding 单。
+
+### 4.4 WBS-05-19 的子任务（SITUATION-IM 长任务管线 · 创新监测三页数据打通 + 评审就绪）
+
+> **2026-10-28 `human:李伟` 授权长任务**（**授权句已生效：「后续认领不必再问」**）。目标：DS-04 全球 / DS-05 湾区 / DS-06 深圳三页在 `USE_MOCK=false` 下从「裸 fetch 不存在的路由 + 一次性 dataset」跑成「真实后端端点 + 筛选联动 + 诚实空态 + 指标血缘/就绪度角标」闭环。
+> **边界口径（与 ENT 不同）**：**可改接口契约；不可改 UI 与实现效果**。ENT 的判据是 `views/situation/**` diff 为零；本管线**额外允许**「接线层（api / types / models / stores）+ 评审层（review / lineage）+ 角标挂载点」，但**只允许接线层动作，不允许任何效果变化**：`styles/*.css` 零 diff、视图结构与组件层级不动、角标关闭后 DOM 零残留（三条判据见总控 §0.1）。
+> registry 任务由 coordinator 按 **`human:李伟` 2026-10-28 授权的路径 2**（无 task MCP 工具，直接更新 `task-registry.yaml` + 每份 handoff/commit 注明）建单后回写本表状态列。本管线 `supervised_by` = 总控授权人 `human:李伟`（WBS-05-19 行 FE 口径监管孔东，本管线叶归总控授权人）。
+> **开工前勾选已毕（2026-10-28 `human:李伟`）**：C1=①（角标不算 UI 改动，须满足三条判据）· C2=①（registry 授权直改）· C4=①（IM 契约作本期真源）· C10=走查签收 `human:李伟`；C3/C5/C6/C7/C8/C9 按默认① → **勾选表由阻塞件转为留痕件，A0 可开工**。
+
+| 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
+|---|---|---|---|---|---|---|---|
+| WBS-05-19-01 · `SITUATION-IM-A0-L01` | 体检（无代码）：innov 可用端点清单与行数、企业四表脏值复核、三页逐卡片有源/空态判定、**统计数字 ↔ `metric_id` 逐条映射表**、天地图可达性、是否触及结构升级 | 李伟 | `gkx-orchestration`（含 `lumen-svc-platform` 只读核验） | **integration**（2026-10-28 完成体检，待 `human:李伟` 签收） | **体检报告已出** `agent-handoffs/科技发展态势-IM/SITUATION-IM-A0-L01.md`：① innov 现有 34 端点清单，其中≈20 张卡片可直接喂数；② **7 项能力缺 → B2 命中，需 innov 新增 `/internal/*`（结构升级，已升级待批）**；③ 算法侧未就位 → B3 命中，按 C3=① 空态处理；④ **innov 本地未起（7090 未监听**）、display 7099 / element 7082 实测 200、前端 3000 未起；⑤ metric_id 映射：三页对齐约 55 条，映射不上的走红问号；⑥ 天地图 key 已配（公网瓦片，可达性未实测）。**未签 off 前为 integration** | 无 | 无截至时间 |
+| WBS-05-19-02 · `SITUATION-IM-R0-L01` | 评审底座：`src/review/` + 组件升级（8 件套 + 就绪度四行 + 自闸）+ readiness 只读镜像 + **`SITUATION-IM-data-gap-catalog.yaml`** | 李伟 | `lumen-ui-science-pc` | **claimed**（2026-10-28 建单，`agent:frontend-agent`，lock 24h） | 未开工。DoD = 三绿 + 关闭评审 DOM 零泄漏 + `pending_hint` 有真源文件 + 样式零新增。**按 C8=① 与 C1 并行**（两仓各一张） | 可与 C 段并行（C8=①） | 无截至时间 |
+| WBS-05-19-03 · `SITUATION-IM-C1-L01` | **pilot 首叶 · M6 深圳 `carriers`**：`POST /v1/situation/shenzhen-innovation/carriers`（display + `RemoteInnovClient` + **innov 侧新增 `/internal/innov/v1/shenzhen/carriers`**） | 李伟 | `lumen-svc-platform` | **integration**（2026-10-28 完成实装，待 `human:李伟` 签收） | 交付：innov `ShenzhenController.java` + display `ShenzhenInnovationController.java` + `RemoteInnovClient.shenzhenCarriers`（`@NoToken`↔`@Inner` 配对）。**编译通过**（JDK17）、等价 SQL 实测深圳 3 条有真实经纬度与指数。诚实表：9 字段有源 / 12 字段无源登记 `noSourceFields`，未伪造数值。⚠️ **HTTP 端到端自测未做**：本机缺 Nacos 且 Feign url 依赖其占位符，innov 无法独立启动 —— 记为「未动态验证」，非代码问题。同日已完成 `innovPy` 灌数（`carrier_index` 0→140、`city_index` 0→365 等；正式库零写入） | A0 ≥ integration；与 R0 并行 | 无截至时间 |
+| WBS-05-19-04～07 · `SITUATION-IM-C2..C5-L01` | M6 深圳其余 4 端点：`city-benchmark` / `operation-timeline` / `field-distribution` / `indicator-systems` | 李伟 | `lumen-svc-platform` | 待建 | 未开工。**pilot 顺序按 A0 §9 调整**：C1 carriers → C4 city-benchmark → C5 operation-timeline → C3 field-distribution → C2 indicator-systems（最可能 blocked 的排最后） | **C1 验过 pilot 范式后**再放，同仓串行 | 无截至时间 |
+| WBS-05-19-08 · `SITUATION-IM-D1-L01` | M6 前端装配接线：api 去裸 fetch + `models/` 装配层 + 页级 store + 空态 | 李伟 | `lumen-ui-science-pc` | 待建 | 未开工。DoD = 三绿 + tabs/styles **零 diff** + 页面实跑 | C1–C5 ≥ integration | 无截至时间 |
+| WBS-05-19-09 · `SITUATION-IM-R1-L01` | M6 角标挂载（按 A0 映射表逐数字挂 ⓘ / 红问号 / 🧪） | 李伟 | `lumen-ui-science-pc` | 待建 | 未开工。挂不上的列遗留，**不显伪 8 件套** | D1 + R0 ≥ integration | 无截至时间 |
+| WBS-05-19-10～14 · `SITUATION-IM-C6..C10-L01` | M5 湾区 5 端点：`achievements` / `capability` / `swot` / `indicators` / `alerts`（**契约前缀 `bay-innovation`，勿按菜单名改路径**） | 李伟 | `lumen-svc-platform` | 待建 | 未开工 | **pilot 链路验过**（C1–D1–R1） | 无截至时间 |
+| WBS-05-19-15 · `SITUATION-IM-D2-L01` | M5 前端接线 | 李伟 | `lumen-ui-science-pc` | 待建 | 未开工 | C6–C10 ≥ integration | 无截至时间 |
+| WBS-05-19-16 · `SITUATION-IM-R2-L01` | M5 角标挂载 | 李伟 | `lumen-ui-science-pc` | 待建 | 未开工 | D2 + R0 | 无截至时间 |
+| WBS-05-19-17～21 · `SITUATION-IM-C11..C15-L01` | M4 全球 5 端点：`achievements` / `realtime` / `carriers` / `alerts` / `cities`（写面 deferred） | 李伟 | `lumen-svc-platform` | 待建 | 未开工。`realtime` 的 D2 轮询以 Open Item 结论为准（C5） | pilot 链路验过 | 无截至时间 |
+| WBS-05-19-22 · `SITUATION-IM-D3-L01` | M4 前端接线 | 李伟 | `lumen-ui-science-pc` | 待建 | 未开工 | C11–C15 ≥ integration | 无截至时间 |
+| WBS-05-19-23 · `SITUATION-IM-R3-L01` | M4 角标挂载 | 李伟 | `lumen-ui-science-pc` | 待建 | 未开工 | D3 + R0 | 无截至时间 |
+
+**端点 × 任务 ID 对照**（全部 `POST /display/v1/situation/**`，前端 BASE 写死 `/display/v1/situation`）：
+
+| 页 | 任务 | 端点 |
+|---|---|---|
+| M6 深圳 | C1 / C2 / C3 / C4 / C5 | `/shenzhen-innovation/carriers` · `/indicator-systems` · `/field-distribution` · `/city-benchmark` · `/operation-timeline` |
+| M5 湾区 | C6 / C7 / C8 / C9 / C10 | `/bay-innovation/achievements` · `/capability` · `/swot` · `/indicators` · `/alerts` |
+| M4 全球 | C11 / C12 / C13 / C14 / C15 | `/global-innovation/achievements` · `/realtime` · `/carriers` · `/alerts` · `/cities` |
+
+**文件索引（本管线圈）**：
+
+| 件 | 路径 | 作用 |
+|---|---|---|
+| 长任务总控 | `agent-handoffs/科技发展态势-TS/SITUATION-IM-长任务总控.md` | U1–U12 裁定、边界铁律、叶表、走查清单（§4） |
+| 总派单（厚包） | `agent-handoffs/科技发展态势-TS/SITUATION-IM-总派单.md` | 八条铁律、逐叶 DoD、`/goal` 头模板 |
+| 契约真源 | `agent-handoffs/科技发展态势-TS/SITUATION-IM-API-CONTRACT-01.md` | 端点 / 入参 / 信封 / 偏离表 / deferred |
+| 前置条件与未决项 | `agent-handoffs/科技发展态势-TS/SITUATION-IM-前置条件与未决项.md` | Part A 已具备 / Part B 缺口 / Part C 待拍板 C1–C10 |
+| **开工前勾选表** | `agent-handoffs/科技发展态势-TS/SITUATION-IM-开工前勾选表.md` | C1–C10 逐项勾选（`human:李伟` 留痕，开工前必填） |
+| 跑任务提示词 | `agent-delivery/prompts/SITUATION-IM-三个创新监测页面整体打通-跑任务提示词.md` | 复制即用执行说明（含 12 处前序纠错） |
+| 就绪度真源 | `agent-delivery/metrics/registry/metric-readiness-matrix-INNOV.yaml` | 143 条，D4 全 mock |
+| 决策纪要 | 本夹 `纪要/2026-10-28-SITUATION-IM-边界与裁定.md` | 拍板记录与理由 |
+| 逐叶 handoff | `agent-handoffs/科技发展态势-IM/{task-id}.md` | 每叶一份，`ponytail:` + cost 四字段 |
+
+> **pilot 闸门**：C1–C5 → D1 → R1 必须**先跑通并走查通过一页**，才放 M5 / M4 的 C 段（避免 15 个端点按错误范式批量复制）。
+> **停本地**：本管线所有改动 commit 后停本地，**走查通过后由 `human:李伟` 人工推送**（U11）。同仓 Convoy 同 §4.3。
 
 ## 5. 展示系统公共底座与跨页物
 
