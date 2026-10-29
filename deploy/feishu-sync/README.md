@@ -167,8 +167,8 @@ kubectl -n zhipu-tts get pods -l app=gkx-feishu-sync
 kubectl -n zhipu-tts get svc gkx-feishu-sync
 # 期望：TYPE=NodePort  PORT(S)=8787:30894/TCP
 
-curl -sS "http://192.168.88.50:30894/health"
-curl -sS "http://192.168.88.50:30894/internal/feishu-bitable/webhook" \
+curl -sS "http://10.50.69.111:30894/health"
+curl -sS "http://10.50.69.111:30894/internal/feishu-bitable/webhook" \
   -H "Content-Type: application/json" \
   -H "X-GKX-Webhook-Secret: ***" \
   -d '{"type":"url_verification","challenge":"ok"}'
