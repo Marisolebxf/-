@@ -118,6 +118,11 @@ agent-delivery/
     ├── README.md
     ├── code-registry.yaml              # 系统码 / 类型码 / 当前最大序号
     ├── bug-registry.yaml               # BUG 编号台账（按日取号，2026-10-13 增）
+    ├── bugs/                           # BUG 正文（2026-10-29 起一条一文件）
+    │   └── {系统码}/
+    │       ├── R{n}-{轮次短名}.md      # 历史轮次，不再追加
+    │       ├── items/{编号}.md
+    │       └── assets/{编号}/          # 截图原件
     ├── test-cases/
     │   └── {系统码}/
     │       └── {模块层-中文}/          # 与 catalog modules[].id 对齐，如 enterprise-企业分析
@@ -314,3 +319,4 @@ agent-delivery/
 | v1.0 | 2026-08-07 | 正式版：确认 FUNC；扩展列主表右侧；试点 SEARCH/COMPARE |
 | v1.1 | 2026-10-13 | §4 目录树对齐总集测试模板-v2 交付形态（QA-WORKSPACE-RESTRUCT-L01）：算法库系统码 SDWJSF-KJZTFWSFK（旧 KJZTFWALGO 废弃）；test-records/evidence 轮次化；新增 coverage/reports/delivery/tools/bug-registry 落点；COMP/INT/PERF 同模块目录混放约定；复测模板 |
 | v1.3 | 2026-10-14 | §8 增补执行判别与时序两条（QA-SPEC-SCRIPT-AUTHORING-L01，源自脚本重写试点 retro）：S1 allow_skip 边界（被测功能自身行为缺失不适用 skip）+ S2 跨 tick 断言时序提示。编写侧配套条款同批落 `as-built/prompts/_script.md`（母表闸门 D1/D2 + P1~P6 + expect 双层格式）与 `as-built/schema.md`（X2~X4/X8/X9） |
+| v1.4 | 2026-10-29 | §4 补 `bugs/`：三系统分目录；历史轮次不再追加；新缺陷一条一文件，截图原件进 `assets/` |
