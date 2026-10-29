@@ -288,7 +288,7 @@ kg_op("attrs/history", "图谱·实体属性", "属性·变更记录/多版本�
       {"type": "object", "properties": {
           "attrId": {"type": "string", "description": "只看某属性行"},
           "name": {"type": "string", "description": "按属性名精确"},
-          "group": {"type": "string", "enum": ["base", "dyn"], "description": "政策多版本管理传 base"},
+          "group": {"type": "string", "enum": ["base", "dyn", "basic"], "description": "base/dyn；basic 视同 base（兼容前端）"},
           "page": {"type": "integer"}, "size": {"type": "integer"}}})
 kg_op("attrs/current", "图谱·实体属性", "属性·当前值+版本号",
       {"type": "object", "required": ["attrId"], "properties": {"attrId": {"type": "string", "description": "属性行 id"}}})
