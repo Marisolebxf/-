@@ -1,4 +1,4 @@
-﻿# 派单包：FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01（bugfix · v1.0）
+# 派单包：FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01（bugfix · v1.0）
 
 - **派单方**：coordinator（architect-agent 起草）
 - **执行 Agent**：`data-agent`
@@ -27,7 +27,7 @@
 FE → gkxlumen-gateway
    → gkxlumen-topic-enterprise-biz (Java, Feign)
    → demo-platform-search-py (gkx-search-service, Python)   ← 故障源
-   → MySQL 192.168.88.43:3306 / gkxlumenx_dwd
+   → MySQL 10.50.11.76:3306 / gkxlumenx_dwd
 ```
 
 **错误链**：

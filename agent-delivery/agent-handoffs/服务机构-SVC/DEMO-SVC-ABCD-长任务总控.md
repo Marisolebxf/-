@@ -99,7 +99,7 @@ A SEED → A MOCK → **A RECLOSE（退出门，C 只认这一叶）**
 
 E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-service` · `lumen-topic-py` · `lumen-algo-py`。库：`demo_gkxlumenx_*`。D12：前端不得打 `demo-*` 服务。
 
-**已发布前端外网基址（E1）**：http://111.198.38.90:50892/ （内网 NodePort `192.168.88.50:30892` 对本机可能不可达，以本外网为准）。
+**已发布前端外网基址（E1）**：http://111.198.38.90:50892/ （内网 NodePort `10.50.69.111:30892` 对本机可能不可达，以本外网为准）。
 
 ---
 

@@ -70,7 +70,7 @@
 ### 3.1 curl 补验入口（示例）
 
 ```bash
-export GW="http://192.168.88.50:9999"
+export GW="http://10.50.69.111:9999"
 export TOKEN="<Bearer>"
 
 curl -s -H "Authorization: Bearer $TOKEN" "$GW/innov/v1/meta/data-status"

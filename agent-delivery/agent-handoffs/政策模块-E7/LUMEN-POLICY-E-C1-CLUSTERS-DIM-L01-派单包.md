@@ -32,7 +32,7 @@ QA 建议 C5（表不存在）。Tempo：`Table 'gkxlumenx_dim.industry_cluster_
 1. `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-C1RETEST-L01-defect-pack.md`
 2. `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ABCDE-长任务总控.md` §0 #6/#9
 3. `agent-delivery/data/data-design/storage/CHAIN/stores/mysql/dim-industry-cluster.md`
-4. Tempo：http://192.168.88.50:30201/api/traces/071b34f54c36d31761617fc884567f03
+4. Tempo：http://10.50.69.111:30201/api/traces/071b34f54c36d31761617fc884567f03
 
 ## 必须改
 

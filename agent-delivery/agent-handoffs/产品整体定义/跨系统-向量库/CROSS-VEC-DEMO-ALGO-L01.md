@@ -95,7 +95,7 @@ flowchart LR
 
 | 键 | 值 | 说明 |
 |---|---|---|
-| `MILVUS_URI` | `http://192.168.88.43:19530` | HTTP v2 + urllib；只 search |
+| `MILVUS_URI` | `http://10.50.69.111:19530` | HTTP v2 + urllib；只 search |
 | `MILVUS_COLLECTION_PREFIX` | `gkxlumen_industry_` | 前缀守卫；禁碰 `amcpdp-*` |
 | `EMBED_BASE_URL` | `http://gkxlumen-embed-tei:8080/v1/embeddings` | query 前缀「为这个句子生成表示以用于检索相关文章：」；锚点不加 |
 | `EMBED_MODEL` | `BAAI/bge-base-zh-v1.5` | dim 768；TEI 已 L2 归一，客户端不再归一 |

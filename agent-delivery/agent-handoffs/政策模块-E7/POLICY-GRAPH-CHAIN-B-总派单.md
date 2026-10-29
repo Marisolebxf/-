@@ -49,7 +49,7 @@
 
 ## 本叶交付
 
-1. `polan` Nebula 默认 space = `demo_gkx_chain`；K8s 打开 Nebula（hosts 走现网 `192.168.88.43:9669` 惯例）。  
+1. `polan` Nebula 默认 space = `demo_gkx_chain`；K8s 打开 Nebula（hosts 走现网 `10.50.75.136:9669` 惯例）。  
 2. loader：按映射 UPSERT 点边；`IF NOT EXISTS` 增量 DDL，**禁止 DROP SPACE**。  
 3. `/v1/policy/graph`：Nebula 可用时 `source=nebula`；不可用时 `mysql`/`ads`，禁止撒谎。  
 4. Tempo-Demo 抽样或 nGQL 证据：访问 `demo_gkx_chain`。  

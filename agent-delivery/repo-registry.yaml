@@ -1,4 +1,4 @@
-# 仓库注册表：demo（POC）与 lumen（正式）镜像关系
+﻿# 仓库注册表：demo（POC）与 lumen（正式）镜像关系
 # 来源：GitLab 组 gkx-lumen 项目列表（2026-06-16 确认）
 # demo2 独立演进，不参与本表；lumen 为全新 fork，不 merge demo2。
 # 本地根目录：${GKX_ROOT}
@@ -53,7 +53,8 @@ migration_to_gkx_lumen:
     - { old_group: gkx-lumen, old_path: lumen-ui-topic,     old_id: null, new_path: lumen-ui-science-topic,    new_id: 232, status: pushed,  role: frontend_lumen_topic_science,     notes: "E-PLATFORM-P0-L00：科技专题服务系统正式前端（fork pc 框架 + CI NodePort 30892）" }
     - { old_group: gkx-lumen, old_path: demo-admin-ui,            old_id: 233, new_path: lumen-ui-admin,             new_id: 251, status: pushed,  role: frontend_lumen_admin,             notes: "DEVOPS-LUMEN-UI-ADMIN-L01：从 demo-admin-ui 复制；NodePort 30893；gateway=gkxlumen-platform-gateway" }
     - { old_group: null, old_path: null, old_id: null, new_path: lumen-etl-es-py, new_id: 253, status: pushed, role: python_etl_es, notes: "DWD→ES ETL；正式 Deployment=gkxlumen-platform-etl-es-py。demo-platform-etl-es-py 由 CUTOVER 关闭" }
-    - { old_group: null, old_path: null, old_id: null, new_path: lumen-ui-algo-apiview, new_id: null, status: pushed, role: frontend_lumen_algo_apiview, notes: "算法前端正式交付；GitLab path=lumen-ui-algo-apiview；只调 Java REST，不直连 Python" }
+    - { old_group: null, old_path: null, old_id: null, new_path: lumen-ui-algo-apiview, new_id: null, status: pushed, role: frontend_lumen_algo_apiview, notes: "合理调试台；NodePort 30894；仅本台 nginx 直连 gkxlumen-platform-innov-py / entan-py，登录走 lumen gateway" }
+    - { old_group: null, old_path: null, old_id: null, new_path: demo-ui-algo-apiview, new_id: null, status: pushed, role: frontend_demo_algo_apiview, notes: "合规交付台；从 lumen-ui-algo-apiview 整仓复制后不再 merge；NodePort 30897；upstream 仍是 demo-platform-innov-py / demo-platform-entan-py" }
   # 4 个不迁移仓（RFC-002 §13 Q4 + Q4a 决议），仅加 archive 公告，M6 随老 group archive
   archive_repos:
     - { old_group: gkx-lumen, old_path: gkx_ui_demo,         old_id: 172, decision: Q4,  reason: "4 月以来零活跃" }
@@ -90,7 +91,7 @@ design_reference:
 
 # gkx-lumen 组项目一览（截图确认）
 # 正式 lumen：lumen-svc-platform | lumen-ui-science-pc | lumen-ui-science-mobile | lumen-ui-topic-mobile | lumen-ui-topic | lumen-ui-admin | lumen-ui-algo-apiview | lumen-algo-py | lumen-etl-es-py
-# demo 原型：demo-svc-platform | demo-ui-* | demo-admin-ui | demo-algo-* | demo-svc-topic-py
+# demo 原型：demo-svc-platform | demo-ui-* | demo-ui-algo-apiview | demo-admin-ui | demo-algo-* | demo-svc-topic-py
 # D12：lumen 前端调用链禁止打到任何 demo-* 服务（含 Java Feign / helm 回落）
 # 注：GitLab 仓库名 fronted 为原文拼写（非 frontend）
 #
@@ -195,6 +196,18 @@ cicd:
       deploy: deploy:k8s
       deploy_trigger: auto_on_dev
       dev_url: http://10.50.69.111:30892
+    demo-ui-algo-apiview:
+      ci: true
+      image: gkx-demo-algo-apiview
+      deploy: deploy:k8s
+      deploy_trigger: auto_on_dev
+      dev_url: http://10.50.69.111:30897
+    lumen-ui-algo-apiview:
+      ci: true
+      image: gkx-lumen-algo-apiview
+      deploy: deploy:k8s
+      deploy_trigger: auto_on_dev
+      dev_url: http://10.50.69.111:30894
     lumen-svc-platform:
       ci: false  # 待 L02b 移植
       image: gkxlumen-*
@@ -385,13 +398,22 @@ repos:
 
   - id: ui_algo_apiview
     role: frontend_algo_apiview
+    demo:
+      name: demo-ui-algo-apiview
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-ui-algo-apiview.git
+      local: ${GKX_ROOT}/repos/demo-ui-algo-apiview
+      branch: dev
+      dev_url: http://10.50.69.111:30897
+      note: 合规交付台。算法请求打 demo-platform-innov-py / demo-platform-entan-py。与 lumen 台不再 merge。
     lumen:
       name: lumen-ui-algo-apiview
       remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-algo-apiview.git
       local: ${GKX_ROOT}/repos/lumen-ui-algo-apiview
       branch: dev
+      dev_url: http://10.50.69.111:30894
     notes: |
-      算法前端正式交付仓。只调 Java REST（经 gkxlumen-platform-gateway），不直连 Python / DB。
+      合理调试台只这一张 nginx 直连 gkxlumen-platform-innov-py / gkxlumen-platform-entan-py，登录走 gkxlumen-platform-gateway。
+      展示前端与专题前端仍禁止直连 Python。69 条合规算法未锁定前，不要改 demo 算法仓去“对齐”本台。
       瘦工作区：workspaces/fe-algo.code-workspace。
 
   - id: topic_py
@@ -475,3 +497,4 @@ topic_platform:
   waves:
     Wave0: [E-PLATFORM-P0, E-INNOV-M1]
     Wave1: [E-E7-POLICY-M1]
+

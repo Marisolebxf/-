@@ -139,10 +139,10 @@ python -m pytest -q                          # 全仓回归
 
 > DoD 要求的两条（「VID 稳定 → 调一次 rebuild」「点未稳定 → 不调 rebuild 且保留旧版本」）由前 3 例覆盖。
 
-### 2. 真跑了一次完整灌链（本机可直达 `192.168.88.43`，未走跳板）
+### 2. 真跑了一次完整灌链（本机可直达 `10.50.11.76`，未走跳板）
 
 ```text
-env: MILVUS_URI=http://192.168.88.43:19530  LUMEN_ALGO_MYSQL_HOST=192.168.88.43 (demo_gkxlumenx_dwd)
+env: MILVUS_URI=http://10.50.69.111:19530  LUMEN_ALGO_MYSQL_HOST=10.50.11.76 (demo_gkxlumenx_dwd)
 python -c "from lumen_common.algorithms.chain.graph_project import project_graph; project_graph({})"
 
 {"status":"ok","wrote":true,
@@ -171,7 +171,7 @@ python -c "search({'query':'集成电路','top_k':2})"
     items: chain:INB1303 集成电路 1.0 / segment:INB1303050301 射频集成电路 0.8044
 
 python scripts/milvus_probe.py
-  TCP 192.168.88.43:19530 ok
+  TCP 10.50.69.111:19530 ok
   collections=4 本前缀(gkxlumen_industry_)=['gkxlumen_industry_anchor']
   只读不动（禁止 drop/insert）：['aip_kb_1', 'aip_kb_2', 'spk_id_speaker_embeddings']
 ```
@@ -247,7 +247,7 @@ python -c "project_graph({'dry_run': True})"   # 真读 DWD（1516 锚点），�
 - commit：**`95f31bf`** `feat(chain): rebuild industry anchor index once at chain ingest tail [agent:algorithm-agent]`；**`1646874`** `test(chain): scope rebuild call-site guard to rebuild callers only [agent:algorithm-agent]`（守卫只盯 rebuild 调用方，避免误伤 JOB-A 的 `search` 消费）
 - pipeline URL / ID：push 触发 GitLab CI（`def03e6..95f31bf`、`95f31bf..1646874  dev -> dev`）；dev 自动 `deploy:api` / `deploy:worker`
 - 部署 namespace / 镜像 tag：`dev`；`gkx-lumen-algo-py-api:1646874*` / `-worker:1646874*`（由 CI 打 tag）
-- K8s rollout：**未在本叶点名验证**（提交时刻 CI 刚触发）。本叶验收不依赖 Pod：逻辑由 pytest 覆盖，现网效果由本机直连 88.43 实测（证据 2 / 3）。段 E 由 coordinator 点名 CI deploy 绿。
+- K8s rollout：**未在本叶点名验证**（提交时刻 CI 刚触发）。本叶验收不依赖 Pod：逻辑由 pytest 覆盖，现网效果由本机直连 10.50.11.76 实测（证据 2 / 3）。段 E 由 coordinator 点名 CI deploy 绿。
 - dev 测试 URL / 命令与结果：
 
 ```text

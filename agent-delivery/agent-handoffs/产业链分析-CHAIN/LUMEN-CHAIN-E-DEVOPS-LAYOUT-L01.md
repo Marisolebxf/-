@@ -32,7 +32,7 @@
 - GitLab Pipeline **#5044 success**（`1064c038…` / `dev`）
 - 镜像已从 `gkx-lumen-topic:ee3ff6f7` 滚到 **`gkx-lumen-topic:1064c038`**
 - deploy `gkx-lumen-topic` ns=`dev` ready **1/1**，rollout status 成功
-- http://192.168.88.50:30892 → **HTTP 200**（不是 localhost）
+- http://10.50.69.111:30892 → **HTTP 200**（不是 localhost）
 - http://111.198.38.90:50892 → **HTTP 200**（外网映射，不挡 PASS；本机 curl 通）
 - D12：nginx `proxy_pass` 仍是 `http://gkxlumen-platform-gateway:9999/`，未指向 `demo-*`
 
@@ -71,7 +71,7 @@
 
 | 项 | 值 |
 |----|-----|
-| URL | http://192.168.88.50:30892 |
+| URL | http://10.50.69.111:30892 |
 | curl -I | HTTP/1.1 **200 OK** Server: nginx |
 | HTML title | 深圳国际科技专题服务系统 |
 | Last-Modified | Fri, 14 Aug 2026 08:11:47 GMT（与镜像构建时间一致） |
@@ -115,9 +115,9 @@
 - GitLab API：sha=`1064c038…` pipeline **5044 success**，四 job 全绿
 - `kubectl -n dev get deploy gkx-lumen-topic`：image=`…:1064c038`，1/1
 - `rollout status --timeout=180s`：successfully rolled out
-- `curl -I http://192.168.88.50:30892`：200
+- `curl -I http://10.50.69.111:30892`：200
 - `curl -I http://111.198.38.90:50892`：200（外网映射，失败不挡 PASS；本次通）
-- SSH 入口：MCP ssh-executor serverName=`88.50`（本机无 kubectl）
+- SSH 入口：MCP ssh-executor serverName=`10.50.69.111`（本机无 kubectl）
 
 ## 遗留风险
 
@@ -131,7 +131,7 @@
 - pipeline URL / ID：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5044 （ID **5044**）
 - 部署 namespace / 镜像 tag：`dev` / `harbor.htmisoft.net/gkx/gkx-lumen-topic:1064c038`
 - K8s rollout：成功
-- dev 测试 URL：http://192.168.88.50:30892 → HTTP 200
+- dev 测试 URL：http://10.50.69.111:30892 → HTTP 200
 
 ## 可观测性
 

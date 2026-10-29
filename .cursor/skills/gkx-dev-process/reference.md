@@ -68,6 +68,14 @@
 
 每个对接维度和每个一级工作包在文末各加一行：设计、开发、整体、阻塞行数。
 
+## 飞书出站（今日快照第 7 步）
+
+- 配置：`agent-delivery/feishu/feishu-daily-snapshot-board.yaml`
+- 命令：`node scripts/sync-feishu-daily-snapshot.mjs --date YYYY-MM-DD`（`--dry-run` 只解析）
+- 真源：仓内 `当日进展/YYYY-MM-DD.md`；飞书只读投影，格子改动下一轮覆盖
+- 表：多维表格「GKX 当日进展」内「当日八列」+「维度汇总」
+- 不挂 K8s Cron；不读回 git；缺凭据软失败（退出码 0 时看 `[WARN]`，接口错则非 0）
+
 ## Excel 列（两份导出共用）
 
 在 2026-10-22 调查表的列上增加「WBS」「工作细项任务号」「任务说明」「任务状态」。一行一个实现任务。

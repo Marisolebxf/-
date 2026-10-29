@@ -5,7 +5,7 @@
 > **规范**：`qa-test-case-spec.md` v1.0  
 > **用例真源**：`qa/test-cases/KJZTFWXT/enterprise-企业分析/SEARCH-企业查询/FUNC-企业查询-用例.md` v1.1  
 > **任务**：`ENT-MOD-SEARCH-QA-ACCEPT-L01`  
-> **环境**：`http://192.168.88.50:30892` · `lumen-ui-topic`  
+> **环境**：`http://10.50.69.111:30892` · `lumen-ui-topic`  
 > **执行人**：  
 > **审核员**：  
 > **日期**：  

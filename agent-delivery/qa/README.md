@@ -31,7 +31,7 @@
 
 ## 用例库
 
-执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://192.168.88.50:30892`；B 线环境：`https://edu.itic-sci.com/tts/svcz/`）。
+执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://10.50.69.111:30892`；B 线环境：`https://edu.itic-sci.com/tts/svcz/`）。
 
 | 模块 | 文件 | 编号 | 状态 | 入口 |
 |------|------|------|------|------|

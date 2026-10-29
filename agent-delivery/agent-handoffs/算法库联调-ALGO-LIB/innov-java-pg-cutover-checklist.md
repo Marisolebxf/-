@@ -24,7 +24,7 @@
 |------|------|
 | Python 科技/产业链 | ✅ `INNOV_PG_*` → `demo_gdf_data` |
 | Python 企能 | ✅ `ENTAN_PG_*` → 同库 |
-| Java `gkx-innov` | ❌ `INNOV_MYSQL_*` → `192.168.88.43/innov` |
+| Java `gkx-innov` | ❌ `INNOV_MYSQL_*` → `10.50.11.76/innov` |
 | Helm innov / innovPy | ❌ 仍注入 `INNOV_MYSQL_*` |
 | 访问方式 | JdbcTemplate 内联 SQL（无 MyBatis）；只读 |
 

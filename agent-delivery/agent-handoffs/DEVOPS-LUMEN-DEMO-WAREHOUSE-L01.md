@@ -68,7 +68,7 @@
 - commit：
   - `lumen-svc-platform` `47bed29` fix(helm): point lumen warehouse at demo_gkxlumenx_* [agent:devops-agent]
   - `lumen-algo-py` `bc30dc6` fix(k8s): point algo-py warehouse at demo_gkxlumenx_* [agent:devops-agent]
-- pipeline URL / ID：push 已触发各仓 CI；Python/helm env 由 88.50 `kubectl set env` 即时生效，未等 manual `helm:deploy`
+- pipeline URL / ID：push 已触发各仓 CI；Python/helm env 由 10.50.69.111 `kubectl set env` 即时生效，未等 manual `helm:deploy`
 - 部署 namespace / 镜像 tag：`dev`；镜像 tag 未换（仅 env）
 - K8s rollout：成功（7 deploy READY=1）
 - dev 测试 URL / 命令与结果：见上方 env 抽检

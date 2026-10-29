@@ -28,9 +28,9 @@
 
 ## 范围与实现
 
-写库落在 **`gkxlumenx_topic_enterprise`**（与企业篮同库、账号与 demo 相同：`192.168.88.43:3306` / `root` / `htrfadmin`）。topic-chain 本身连的是只读 `demo_gkxlumenx_ads`，故用户态写操作在 **topic-enterprise**，chain 门面 Feign 过去。路径优先 `/chain/topic/v1/industry/**`。
+写库落在 **`gkxlumenx_topic_enterprise`**（与企业篮同库、账号与 demo 相同：`10.50.11.76:3306` / `root` / `htrfadmin`）。topic-chain 本身连的是只读 `demo_gkxlumenx_ads`，故用户态写操作在 **topic-enterprise**，chain 门面 Feign 过去。路径优先 `/chain/topic/v1/industry/**`。
 
-**DDL 安全**：只提交增量脚本 `db/9x_gkxlumenx_topic_enterprise_chain_ux_l01.sql`（`CREATE TABLE IF NOT EXISTS` + 幂等 INSERT）。**未改** `db/9x_gkxlumenx_topic_enterprise.sql`（该文件含 `DROP TABLE IF EXISTS`，**禁止再跑**）。本机 TCP 探 `192.168.88.43:3306` 超时，**未对线上执行任何 SQL**。内网执行时只跑增量文件。
+**DDL 安全**：只提交增量脚本 `db/9x_gkxlumenx_topic_enterprise_chain_ux_l01.sql`（`CREATE TABLE IF NOT EXISTS` + 幂等 INSERT）。**未改** `db/9x_gkxlumenx_topic_enterprise.sql`（该文件含 `DROP TABLE IF EXISTS`，**禁止再跑**）。本机 TCP 探 `10.50.11.76:3306` 超时，**未对线上执行任何 SQL**。内网执行时只跑增量文件。
 
 ### 新增表（同库，不 DROP）
 
@@ -44,7 +44,7 @@
 | `chain_regional_metric` | 区域指数可添加指标总表（index / competitiveness） |
 | `chain_regional_template` | 官方/个人模板；官方 seed=`TPL-CHAIN-REGIONAL-OFFICIAL` |
 
-### 对外路径（网关 `{GW}=http://192.168.88.50:30899`）
+### 对外路径（网关 `{GW}=http://10.50.69.111:30899`）
 
 | 能力 | 方法 | 网关路径 | 服务内 | 写库 |
 |---|---|---|---|---|
@@ -121,7 +121,7 @@
 |---|---|---|---|
 | 高筛隔离 | `biz_type=industry` 落库 | **独立 `chain_filter_template`**，不给 `ent_*` 加 `biz_type` | 学服务机构篮；避免企业方案串数据；侯佳伟确认新表同库 |
 | 写库位置 | 未强制 | topic-enterprise 写；topic-chain Feign | chain 数据源是只读 Demo ADS，不能写用户态 |
-| 线上 DDL | 应落库 | 增量脚本已写；**本机未执行** | `192.168.88.43:3306` 本机超时；须内网只跑增量文件 |
+| 线上 DDL | 应落库 | 增量脚本已写；**本机未执行** | `10.50.11.76:3306` 本机超时；须内网只跑增量文件 |
 | 对标城 | 诚实空 | `benchmark.items=[]` + `pending_ref=Q016` | 禁止发明清单 |
 
 ## 产物清单
@@ -185,7 +185,7 @@
 
 ## 遗留风险 / 开放项
 
-1. **增量 SQL 未上库**：请在能访问 `192.168.88.43` 的机器只执行  
+1. **增量 SQL 未上库**：请在能访问 `10.50.11.76` 的机器只执行  
    `lumen-svc-platform/db/9x_gkxlumenx_topic_enterprise_chain_ux_l01.sql`  
    **不要**执行 `db/9x_gkxlumenx_topic_enterprise.sql`（会 DROP 既有 `ent_*` 表）。
 2. **前端接线另单**：`useFilterTemplates('industry')` 现仍打企业 `/filter-template`；`gkx-industry-search-recents:v1` 与区域模板仍 localStorage。collaborator=`frontend-agent`。

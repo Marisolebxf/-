@@ -48,17 +48,17 @@
 | `gkxlumen-platform-ai-py` openapi | 只有 evaluation / recommend / risk，**无 embedding** |
 | 19 台主机 × 38 个常见推理端口 TCP 扫描 | **零命中**（命中的都是 nginx / Patroni / 前端） |
 | dev 侧唯一模型配置 | `LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4` + `LLM_MODEL=glm-5.2` → **云 LLM，不是 embedding** |
-| `aip_kb_*` 写入方 | **未定位**（88.84 SSH 连不上；88.43 的 19530 无 ESTABLISHED 可溯源）。与本叶目标无关，按补料指示不再追 |
+| `aip_kb_*` 写入方 | **未定位**（88.84 SSH 连不上；10.50.11.76 的 19530 无 ESTABLISHED 可溯源）。与本叶目标无关，按补料指示不再追 |
 | 现网 dim 佐证 | `aip_kb_1` / `aip_kb_2` = **dim 1024 / COSINE**；`spk_id_speaker_embeddings` = dim 192 / IP（声纹，与文本无关）。均**不是** 768，即使定位到写入方也不能直接复用 |
 
 → **判定：走部署。** 模型已由 `human:淮政玮` 2026-09-11 01:13 拍定，无需反推现网 1024 维那套是什么。
 
 ### 第二步：部署位置选型
 
-选 **K8s `dev` 起 Deployment**，不选「88.43 同机加容器」。理由：
+选 **K8s `dev` 起 Deployment**，不选「10.50.11.76 同机加容器」。理由：
 
-1. **硬闸优先**：88.43 上住着 `milvus` / `milvus-minio` / `milvus-etcd` + nebula / ES / kafka / MySQL 等 26 个在跑业务容器，动它要运维窗口；K8s dev 加一个新 Deployment 对现有业务**零触碰**。
-2. **四个消费 Pod 全在集群内**，走 ClusterIP DNS 比跨机 IP 更稳（88.43 本叶作业期间 SSH 反复掉线，探针就是这么中断的）。
+1. **硬闸优先**：10.50.11.76 上住着 `milvus` / `milvus-minio` / `milvus-etcd` + nebula / ES / kafka / MySQL 等 26 个在跑业务容器，动它要运维窗口；K8s dev 加一个新 Deployment 对现有业务**零触碰**。
+2. **四个消费 Pod 全在集群内**，走 ClusterIP DNS 比跨机 IP 更稳（10.50.11.76 本叶作业期间 SSH 反复掉线，探针就是这么中断的）。
 3. dev ns **无** ResourceQuota / LimitRange / NetworkPolicy，节点余量充足（worker 8C/16G，requests 仅 11–31%），`kubectl auth can-i create deployment/service/pvc -n dev` 全 `yes`（本叶补测）。
 4. 延迟代价可忽略：实测集群内单条 22ms（见 §验收证据 3）。
 
@@ -218,7 +218,7 @@ TOP1 = 集成电路
 
 ### 7. 对现有系统零影响的依据
 
-- **未碰 88.43**：本叶全程没有对 `milvus` / `milvus-minio` / `milvus-etcd` 执行任何 docker / 配置 / 重启操作；新服务跑在 K8s `dev` 的 `htsvr079`，与 88.43 只有「无」这一种关系（embedding 服务不连 Milvus）。
+- **未碰 10.50.11.76**：本叶全程没有对 `milvus` / `milvus-minio` / `milvus-etcd` 执行任何 docker / 配置 / 重启操作；新服务跑在 K8s `dev` 的 `htsvr079`，与 10.50.11.76 只有「无」这一种关系（embedding 服务不连 Milvus）。
 - **Milvus 只读一次**，前后 collection 名单一致且完整（含 PY-INDEX 建的那张）：
 
 ```text
@@ -305,7 +305,7 @@ kubectl -n dev exec <各 Pod> -- python /tmp/reach.py
 |------|------|
 | 算法只在 Python | ✅ embedding 是独立推理服务，**只有 Python 侧调用**；Java / 前端零改动、零新通道 |
 | 调用链不可越层 | ✅ 仍 FE → GW → Java → Python `/internal` → （Milvus 19530 ∥ embedding 8080）；新边只挂在 Python 之后 |
-| 图谱仅 Nebula | ✅ 未动 `192.168.88.43:9669` / space `demo_gkx_chain`；向量不替代建图 |
+| 图谱仅 Nebula | ✅ 未动 `10.50.75.136:9669` / space `demo_gkx_chain`；向量不替代建图 |
 | 可观测 | ✅ 未破坏现有 OTel；TEI 的 OTLP / Prometheus 接入路径已写明（上文），未为省事装作不存在 |
 | CI/CD | ✅ 仅 `gkx-orchestration` push `origin/dev`，未 force；未触发业务仓 pipeline；未点 `helm:deploy` |
 | demo2 不 merge lumen（D12） | ✅ 未改任何 `demo-*` 仓 / 镜像 / 服务。新服务名 `gkxlumen-embed-tei` 属 lumen 侧；**注意**：它与 `demo-*` Pod 同处 dev ns 网络可达，但本叶**未**给任何 demo 服务配置它，lumen 也未依赖任何 demo 服务 |

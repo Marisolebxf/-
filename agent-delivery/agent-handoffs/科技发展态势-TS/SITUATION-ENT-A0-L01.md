@@ -13,13 +13,13 @@
 | 项 | 结果 | 证据 |
 |----|------|------|
 | 开发库 `10.50.11.76:3306` | ✅ **可达**（TCP 通，mysql 客户端实测查询成功） | Test-NetConnection + mysql 查询（§二） |
-| K8s 网关 `192.168.88.50:9999` | ❌ **不可达**（TCP/Ping 全败，HTTP 000）——本机当前不在该网段（疑 VPN/内网未连） | Test-NetConnection 9999/7082 均 False |
+| K8s 网关 | ✅ 真源 `http://10.50.69.111:30895`，`/display/actuator/health` **200 UP** | 见下方 2026-10-27 补验 |
 | 本机 kubeconfig | ❌ 指向 `127.0.0.1:16443`（本地集群未起），无法看 K8s dev | kubectl 报 connection refused |
 | 本地 `gkxlumen-element`（:7082，local profile，直连开发库） | ✅ 运行中；**发现旧实例僵死（TCP 接受连接后零字节关闭）**，已停掉并用当前代码重建重启（PID 55840，26s 启动完成），六端点全通 | netstat / 日志 `target/element-local.out.log` |
 | 本地 `gkxlumen-display`（:7099，local profile） | ✅ 运行中（昨夜 21:49 起的实例，健康）；`/v1/situation/**` 在 local profile 放行（`ignore-urls`），**curl 自测无需 token**，仅需内部头 `from: Y` | `application-local.yml` L50-56 |
-| 真实网关 token 获取 | ⚠️ **未能核验**（网关不可达）。本地链路结论：local profile 已放行聚合端点、@Inner 用 `from: Y` 头；网关侧 token 组合（PigX 登录 / `ENABLE_MOCK_AUTH`）留待网络恢复后补验，不阻塞 C 段（本地联调） | — |
+| 真实网关 token 获取 | ⚠️ 无 token 调 `/display/v1/situation/map` 返回 **401**。local profile 已放行聚合端点、`@Inner` 用 `from: Y` 头；PigX 登录 token 留 D1 前置 | 见下方补验 |
 
-> **2026-10-27 补验（授权人提供真实网关地址 `http://10.50.69.111:30895`）**：① `/display/actuator/health` → **200 UP**（Redis 7.4.0 UP、Nacos 发现 13 服务）；② 无 token POST `/display/v1/situation/map` → **401「访问令牌不存在」**（真实 token 需 PigX 登录获取，组合验证留 D1 前置）；③ ⚠️ **注册中心服务列表不含 `gkxlumen-element`**（display 视角 Nacos 13 服务无 element）——K8s 路径 display→element Feign 依赖服务发现，**element 未注册/未部署到 K8s dev 是缺口**（本地 local profile 不受影响；K8s 全链路验证前需部署 element 或确认其 Nacos 注册策略，记录为 C2/D1 前置风险）。原「网关 192.168.88.50:9999 不可达」结论作废（地址有误，真源=10.50.69.111:30895）。
+> **2026-10-27 补验（授权人提供真实网关地址 `http://10.50.69.111:30895`）**：① `/display/actuator/health` → **200 UP**（Redis 7.4.0 UP、Nacos 发现 13 服务）；② 无 token POST `/display/v1/situation/map` → **401「访问令牌不存在」**（真实 token 需 PigX 登录获取，组合验证留 D1 前置）；③ ⚠️ **注册中心服务列表不含 `gkxlumen-element`**（display 视角 Nacos 13 服务无 element）——K8s 路径 display→element Feign 依赖服务发现，**element 未注册/未部署到 K8s dev 是缺口**（本地 local profile 不受影响；K8s 全链路验证前需部署 element 或确认其 Nacos 注册策略，记录为 C2/D1 前置风险）。网关真源是 `10.50.69.111:30895`。
 
 **环境根因记录**：昨夜启动的 element 旧实例处于「连接即零字节关闭」的僵死态（对 curl/原始 TCP 均如此；期间 display 经 Feign 仍能取到真实数据）。处置：`Stop-Process 53576` → `mvn -pl gkxlumen-element -am install -DskipTests`（JDK 17）→ 重启 local profile → 六端点全绿。**教训（沉淀给 C 段）：本地联调前先 `curl /actuator/health` 探活，勿信任「进程在=服务可用」。**
 
@@ -74,7 +74,7 @@
 2. **C2 对照基线已存档**（本报告 §四 + map-baseline.json）。
 3. **C3 数据域确认**：真实分数域 11.34–70.28、无 A 级；`score_level` 可作 rankScope 语义参考。
 4. **D1 注意**：mock 值（92,000/华为 96.8）与真值差异巨大，走查期望以本报告为准。
-5. **网关侧验证后补**：网络恢复后补 `192.168.88.50:9999` 健康探测与 token 核验（不阻塞本地 C/D 段，但阻塞「经网关」全链路验证与生产 .env 切换验证）。
+5. **网关**：真源是 `http://10.50.69.111:30895`（health 200）。经网关的全链路仍差 PigX 登录 token，不阻塞本地 C/D 段。
 6. ⚠️ **domain-dist 口径风险**：人工智能占比 98.7%，页面饼图将近乎全幅单域——如需产品口径复核，属口径侧问题，本管线不擅改（记录，不阻塞）。
 
 ## 六、本叶操作留痕（全部只读/环境操作）

@@ -5,7 +5,7 @@
 ## 问题清单
 
 - `demo-algo-science` 原为空仓，需从 `SZCGKX/innov-algo-demo` bootstrap。
-- 本机（Windows 开发机）无法直连 MySQL `192.168.88.43:3306`（连接超时），流水线数据验证需在集群内或内网执行。
+- 本机（Windows 开发机）无法直连 MySQL `10.50.11.76:3306`（连接超时），流水线数据验证需在集群内或内网执行。
 - GitLab Runner（tag `rag`）`py:smoke` 每次需 docker 内全量 `pip install`（含 scipy/OTel），耗时长；Pipeline #4121 在日志已输出 `SMOKE-OK` 后 job 仍 hung，已手动 cancel 并重触发 #4126。
 - SSH MCP（K8s 节点）连接失败，无法从 agent 环境直接 `kubectl port-forward` 验证 dev `/internal/status` 与 Tempo。
 
@@ -39,7 +39,7 @@
 | 项 | 结果 | 证据 |
 |----|------|------|
 | 本地 import 冒烟 | ✅ `LOCAL-SMOKE-OK` | 全模块 `import` 通过（`OTEL_TRACES_EXPORTER=none`） |
-| `scripts/run_all.py` 幂等 | ⏳ 待内网 MySQL | 本机连接 `192.168.88.43` 超时 |
+| `scripts/run_all.py` 幂等 | ⏳ 待内网 MySQL | 本机连接 `10.50.11.76` 超时 |
 | `ads_innovation_event` > 0 | ⏳ 待集群跑流水线 | Pod 启动 `INNOV_RUN_ON_START=1` 自动触发 |
 | GET `/internal/status` P1–P4 | ⏳ 待集群验证 | API 已实现 `pipelines` + `p1_p4_complete` |
 | CI `py:smoke` | 🟡 运行中 | Pipeline #4126 job log 正在 pip install |
@@ -72,7 +72,7 @@
 本地：LOCAL-SMOKE-OK（import 全模块）
 CI #4126：py:smoke running（docker pip install 中）
 CI #4121：py:smoke 日志 SMOKE-OK 后 runner hung → canceled
-MySQL 流水线：本机 192.168.88.43:3306 超时，未执行 run_all.py
+MySQL 流水线：本机 10.50.11.76:3306 超时，未执行 run_all.py
 ```
 
 ### trace_id_sample
@@ -118,7 +118,7 @@ MySQL 流水线：本机 192.168.88.43:3306 超时，未执行 run_all.py
 
 ## 阻塞项（需协调）
 
-1. **本机网络**：无法达 `192.168.88.43` MySQL 与 K8s dev 网段 → 流水线数据与 `/internal/status` 验证需在内网/集群执行。
+1. **本机网络**：无法达 `10.50.11.76` MySQL 与 K8s dev 网段 → 流水线数据与 `/internal/status` 验证需在内网/集群执行。
 2. **CI Runner**：`py:smoke` 耗时长且 #4121 hung；#4126 重跑中，需 devops 关注 runner 健康。
 3. **Deploy 前置**：`gkx-gkx-platform-innov-py` Deployment 需由 `demo-svc-platform` helm 或 L02b 创建。
 4. **SSH MCP**：连接 K8s 节点失败，agent 无法代执行 `kubectl` 验证。

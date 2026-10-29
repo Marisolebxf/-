@@ -3,7 +3,7 @@
 > **任务**：`ENT-MOD-SEARCH-QA-ACCEPT-L01`（企业查询 Sprint 验收场景回归）  
 > **分工**：`qa-agent` 出用例 / 汇总结论；**界面操作由人工执行**（监管：`human:黄敬洲`）  
 > **脚本真源**：`sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md` §2  
-> **正式仓 / 环境**：`lumen-ui-topic` · `http://192.168.88.50:30892`  
+> **正式仓 / 环境**：`lumen-ui-topic` · `http://10.50.69.111:30892`  
 > **入口**：登录后 → 侧栏「企业分析」→「企业查询」  
 > **Sprint Goal 必测**：S-T1、S-T2；**S-T3 为 stretch**（有余力再测）  
 > **暂缓不测**：US-E1-SCH-06 对比篮接力、US-E1-SCH-07 导出完整链路  
@@ -202,7 +202,7 @@
 ```text
 执行人：
 日期：
-环境：http://192.168.88.50:30892
+环境：http://10.50.69.111:30892
 S-T2：Pass/Fail/Blocked — 失败用例号：
 S-T1：Pass/Fail/Blocked — 失败用例号：
 S-T3：Pass/Fail/Skip/Blocked — 失败用例号：

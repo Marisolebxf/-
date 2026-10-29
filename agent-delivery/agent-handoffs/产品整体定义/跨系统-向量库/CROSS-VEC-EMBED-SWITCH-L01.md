@@ -64,7 +64,7 @@
 
 | # | 偏离 | 理由 / as-built |
 |---|------|-----------------|
-| 1 | 本机无 kubectl；TEI 是 ClusterIP。rebuild 经 SSH `88.50` `kubectl port-forward --address 0.0.0.0 svc/gkxlumen-embed-tei 18080:8080`，本机 `EMBED_BASE_URL=http://192.168.88.50:18080` 调 `embed_text` 后写 88.43:19530 | MCP `user-ssh-executor` 本叶可用（台账 L 当时损坏，现已 `ready`）。port-forward 收工已 cancel。未把 TEI 改成 Ingress / NodePort。 |
+| 1 | 本机无 kubectl；TEI 是 ClusterIP。rebuild 经 SSH `10.50.69.111` `kubectl port-forward --address 0.0.0.0 svc/gkxlumen-embed-tei 18080:8080`，本机 `EMBED_BASE_URL=http://10.50.69.111:18080` 调 `embed_text` 后写 10.50.11.76:19530 | MCP `user-ssh-executor` 本叶可用（台账 L 当时损坏，现已 `ready`）。port-forward 收工已 cancel。未把 TEI 改成 Ingress / NodePort。 |
 | 2 | `EMBED_BASE_URL` 未设时仍走 hashgram（dim 768），不是 TEI | 单测「不联网回退路径绿」。生产 k8s 已注入 URL；URL 有值但连不上 → **不**回退哈希，诚实 503。 |
 | 3 | 矿产勘探分数 0.196573，与 DEVOPS 裸向量 0.1571 不完全相等 | DEVOPS 比的是四个**短名**的裸 TEI 余弦；本叶 search 的锚点向量是 `name + aliases`。search 路径 top1 仍是集成电路 **0.50304**（与 DEVOPS 0.5030 对齐），矿产勘探不进 top-50。 |
 | 4 | helm `values.yaml` 加了 `EMBED_*`，但 `entanPy.enabled=false`，本叶未点 `helm:deploy` | 与 DEVOPS-NET 同表补键；entan 未启用，不影响现网 algo-py。algo-py 的真注入点是 `k8s/api.yaml` / `worker.yaml`（随本仓 CI deploy）。 |

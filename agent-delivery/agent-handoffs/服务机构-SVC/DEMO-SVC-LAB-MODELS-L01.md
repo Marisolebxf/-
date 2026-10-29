@@ -60,7 +60,7 @@
 | GET `/v1/svc/graph?limit=20` | shown=20，**edges=10**，`rel=participates` |
 | GET `limit=200` | shown=200，edges=129 |
 | 点中心 1 跳 | 3 点 / 2 边 |
-| Nebula | **failed**（`192.168.88.43:9669` Timeout / BAD；未报假成功） |
+| Nebula | **failed**（`10.50.75.136:9669` Timeout / BAD；未报假成功） |
 | pending | 一律 1 |
 | 未做 | UI-MODELS 十模型页、50892、正式库、CREATE Edge、拷贝 30999 fixture 机构 |
 
