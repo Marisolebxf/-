@@ -1,7 +1,7 @@
 # CHAIN-ODS-SYNC-L01 · 产业链数据同步（三方 gkx → Demo ODS，replace 全量）
 
 - 任务：`CHAIN-ODS-SYNC-L01`（feature，P1，L/8 点）
-- 执行：`agent:algorithm-agent`｜监管：registry 记录 `supervised_by=human:徐滕强`（建单口径原列 `human:淮政玮`，以 registry 为准）
+- 执行：`agent:algorithm-agent`｜监管：`human:徐滕强`（2026-10-29 人确认改派：claimed_by 与 supervised_by 均为徐滕强；建单初稿口径为 human:淮政玮，已作废）
 - 仓库：`demo-algo-science`（主实现）+ `demo-ui-system-test`（产业链基础指标页按钮）
 - 分支：两仓 `origin/dev` 直推（禁 main、禁 force）
 - 强度：ponytail full（可观测/幂等/进度回传/写门禁均按铁律交付，未用 YAGNI 裁剪）
@@ -72,7 +72,7 @@ Java 零改动（demo-svc-platform 与 lumen-svc-platform 均未触碰；lumen �
 
 ## 5. 偏离说明
 
-1. **registry `supervised_by` 与建单话术不一致**：建单 `human:淮政玮`，registry 现值 `human:徐滕强`（2026-10-29 改派记录）。按 registry 为准执行，无实质影响。
+1. **监管人改派（人确认）**：建单初稿 `human:淮政玮`，2026-10-29 人确认改派为 `human:徐滕强`（claimed_by/supervised_by 同步更新）。按改派后口径执行，无实质影响。
 2. **demo-algo-science 落后 origin/dev 20 提交**：`git pull --no-rebase`（merge）前本地 `conf/settings.yaml` 有未提交 host 迁移改动，与上游 `92faa5a`（同值替换）撞车——按多会话保护规约用 `git stash push`（未 drop，可恢复）后 pull。配置值与上游一致，仅差一行注释，不影响运行。
 3. **UI 同步按钮三文件改动**（BasicPage.vue / api/chain/index.ts 新增封装）：`touched_files` 计划中的 `BasicIndicators` 无需改动（进度挂在既有 dataStatus 标签）。
 
