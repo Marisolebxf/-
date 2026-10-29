@@ -3,7 +3,7 @@ name: gkx-bug-record
 description: >
   登记或修订 GKX 三系统缺陷（科技专题服务系统 KJZTFWXT、科技信息展示系统 KJXXZSXT、
   深度挖掘算法 SDWJSF-KJZTFWSFK）。Use when the user says 提交bug、记bug、登记缺陷、
-  修订bug、补截图、bug编号冲突, or invokes gkx-bug-record. 占号后只提交缺陷文件并推到 origin/dev。
+  修订bug、补截图、bug编号冲突, or invokes gkx-bug-record. 文字写入台账并推 origin/dev；同一条的编号和文字列写入飞书，截图只上传飞书、不进 git。
 ---
 
 # GKX 缺陷登记
@@ -42,18 +42,19 @@ description: >
 2. 该系统当天序号 = `max(本地 registry, origin/dev registry)` 已有序号 + 1。本地 registry 缺远端已有条目时，先把那些条目补进来，不要整文件覆盖。
 3. 正文：`qa/bugs/{系统码}/items/{编号}.md`，按 `qa/bugs/_template.md`。
 4. 台账：`qa/bug-registry.yaml` 追加一条，并在 `note` 末尾加一句这个编号是什么。`updated` 改为当天。
-5. 截图：把对话里的原始文件 `cp` 到 `qa/bugs/{系统码}/assets/{编号}/`，保留原扩展名和字节。不重新导出、不改格式。正文用相对路径 `../assets/{编号}/{文件名}`。没有图就写「无」。
+5. 截图不进仓库。有图时正文「截图」写 `飞书附件`，没有写 `无`。不要把对话附件 `cp` 到 `assets/`，不要在 Markdown 里写图片路径或 base64。
 6. 登记：本 skill 提交写 `人工`。用户给出脚本编号或试跑目录时写 `轮次`，并填关联脚本。不要把已有 `人工` 改成 `轮次`。
 7. 结论只写一种：`产品缺陷`、`数据缺口`、`环境不可用`、`用例与现网不一致`。判别见 `reference.md`。
 8. 预期抄用例原文。找不到用例就写用户认为应该怎样，关联用例写「无」，不编用例号。实际用用户原话。环境用用户正在看的地址；没说就写「未说明」。
 9. 登记人只写用户自己报出的姓名。没报就写「未具名」。
 10. 不要往历史轮次文件追加。`KJZTFWXT/R1-20261023-脚本修订.md` 保持不动。
+11. 文字落盘后立刻把这一条写入飞书「GKX 当日进展 / 缺陷」，不能只传截图。在编排仓根执行 `node scripts/sync-feishu-bug.mjs --id {编号}`。这条命令从刚写的台账和正文写入这些列：BUG编号、标题、结论、模块、入口、环境、预期、实际、状态、关联用例、发现日期。有图时对每个对话附件原路径再加一个 `--image`，多张就重复该参数；没图不要加。用附件的原始路径，不先拷进仓库。登记人、登记方式只留在正文，飞书没有这两列。命令没跑成，或飞书行里缺 BUG编号，登记不算完成。失败只说「飞书未推」，不回滚文字，不挡住后面的 git push。全量补投影不带 `--id`，覆盖上述文字列，不清除已有附件。
 
 ## 提交并推送
 
 占号并写完文件后立刻提交、推送，不必再问。
 
-- 只 `git add` 本次的 registry、`items/{编号}.md`、`assets/{编号}/`。工作区里其它改动不要带上。
+- 只 `git add` 本次的 registry 和 `items/{编号}.md`。不要加入图片。工作区里其它改动不要带上。
 - 分支只推 `origin/dev`。禁止 force，禁止推 `main`。
 - 提交说明含 `[agent:qa-agent]`。Windows PowerShell 5 不用 heredoc，用重复的 `-m`。
 - `git push origin dev` 被拒：`git pull --no-rebase --no-autostash origin dev`，然后只再推一次。
@@ -62,14 +63,14 @@ description: >
 
 ## 修订已有缺陷
 
-用户给出编号时，改 `items/{编号}.md`；没有再查历史轮次文件。不新占号。补图放进该编号的 `assets/`。
+用户给出编号时，改 `items/{编号}.md`；没有再查历史轮次文件。不新占号。补图不落盘，用 `--image` 追加到该编号的飞书附件列，正文「截图」写 `飞书附件`。
 
-状态仍用 `open` / `fixed` / `verified` / `closed` / `deferred`。只有用户明确说修复已验证，才写成 `verified`。复测仍失败保持 `open`。改完同样只提交相关文件并推 `origin/dev`。
+状态仍用 `open` / `fixed` / `verified` / `closed` / `deferred`。只有用户明确说修复已验证，才写成 `verified`。复测仍失败保持 `open`。改完同样只提交相关文件并推 `origin/dev`，并再跑一次 `node scripts/sync-feishu-bug.mjs --id {编号}`，把 BUG编号和其余文字列按正文覆写到飞书。补图时另加 `--image`。
 
 ## 不要做
 
 - 占号前不写文件
-- 不把截图 base64 写进 Markdown
+- 不把截图拷进 `qa/bugs/**/assets/`，不把图片路径或 base64 写进 Markdown
 - 不提交 `.env`、密钥，以及不是本次缺陷的文件
 - 不把 `git reset --hard`、rebase、force push 用于撞号
 - 不顺延已经推送过的旧编号
