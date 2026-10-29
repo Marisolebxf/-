@@ -22,7 +22,7 @@
 
 **演示脚本真源**：`agent-delivery/sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md` §2  
 
-**环境**：`http://192.168.88.50:30892`（`repo-registry` · lumen-ui-topic / NodePort 30892）
+**环境**：`http://10.50.69.111:30892`（`repo-registry` · lumen-ui-topic / NodePort 30892）
 
 ---
 
@@ -104,7 +104,7 @@
 监管：human:黄敬洲
 认领：先按 gkx-task-claim-supervision 写入 claimed → in_progress
 派单包：agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-QA-ACCEPT-L01-派单包.md
-被测：lumen-ui-topic · http://192.168.88.50:30892
+被测：lumen-ui-topic · http://10.50.69.111:30892
 真源：sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md §2
 分工：界面操作人工执行；qa-agent 出用例/汇总结论/写 handoff
 必测：S-T1、S-T2；stretch：S-T3；暂缓：SCH-06/07

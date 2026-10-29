@@ -30,7 +30,7 @@
 | gkxlumen-topic-async-service | 绿 | [5127](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5127) `deploy:topic-async-service` **22411** · sha `b9e638a8` |
 | gkxlumen-topic-svc | 绿 | 同管线 `deploy:topic-svc` **22413** · image `…/gkxlumen-topic-svc:b9e638a8` · rollout success |
 
-本机仍无法 SSH/NodePort 直连 `192.168.88.50`；K8s 以 CI kubectl rollout 日志为准。
+本机仍无法 SSH/NodePort 直连 `10.50.69.111`；K8s 以 CI kubectl rollout 日志为准。
 
 ## 途中阻塞与修复（已解）
 

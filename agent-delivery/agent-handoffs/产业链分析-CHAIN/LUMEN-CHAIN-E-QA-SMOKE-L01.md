@@ -1,4 +1,4 @@
-﻿# LUMEN-CHAIN-E-QA-SMOKE-L01 · 产业链段 E1 — 已发布前端 USM 金路径冒烟
+# LUMEN-CHAIN-E-QA-SMOKE-L01 · 产业链段 E1 — 已发布前端 USM 金路径冒烟
 
 > 格式参考 `templates/handoff-template.md`；内容按 2026-08-14 对 K8s 已发布 `lumen-ui-topic` 实测。本单 **不改业务代码**。
 
@@ -29,21 +29,21 @@
 
 **ALL_PASS**（五条金路径均为 PASS）。联调通过。
 
-- 证据源：http://192.168.88.50:30892 （deploy `gkx-lumen-topic`，**不是** demo / localhost）
+- 证据源：http://10.50.69.111:30892 （deploy `gkx-lumen-topic`，**不是** demo / localhost）
 - Playwright：**已用**（Chromium / Playwright 1.62.1，headless，点已发布前端）
 - 登录：**成功**（登录页默认测试账号；已发布包 LoginView 走 mockLogin，SPA 得 token 后可进产业中心。真实 `POST /api/auth/login` 网关 404，不挡本金路径）
-- D12：**合规**。本会话捕获的 `/api/*` 全部打到 `192.168.88.50:30892` → `gkxlumen-platform-gateway`；无 `demo-algo` / `demo-svc` / `demo-platform` host。已发布 JS 对上述字符串 0 命中。
+- D12：**合规**。本会话捕获的 `/api/*` 全部打到 `10.50.69.111:30892` → `gkxlumen-platform-gateway`；无 `demo-algo` / `demo-svc` / `demo-platform` host。已发布 JS 对上述字符串 0 命中。
 - 缺陷包：无（无 FAIL，未 MCP `task-create`）
 
 ## 五条金路径
 
 | # | 故事 | 路由 | 判定 | HTTP | X-Trace-Id | Tempo |
 |---|------|------|------|------|------------|-------|
-| 1 | `US-CHAIN-TOPIC-01` | `/industry-center/search` | **PASS** | POST search **200** | `d55fe84493021ff8f5fbec649cd7ce32` | [Tempo API](http://192.168.88.50:30201/api/traces/d55fe84493021ff8f5fbec649cd7ce32) |
-| 2 | `US-CHAIN-OV-01` / `US-CHAIN-OV-06` | `/industry-center/overview` | **PASS** | GET overview **200**；GET kpi **200** | overview `b89873e8fcc4c58f5c503489734f8607`；kpi `362ad835f2b8d9f6bf88aad2ddfddaaf` | [overview](http://192.168.88.50:30201/api/traces/b89873e8fcc4c58f5c503489734f8607) · [kpi](http://192.168.88.50:30201/api/traces/362ad835f2b8d9f6bf88aad2ddfddaaf) |
-| 3 | `US-CHAIN-PANORAMA-01` | `/industry-center/panorama` | **PASS** | GET snapshot **200** | `da938c800282ead4006fa3d17c5418aa` | [Tempo API](http://192.168.88.50:30201/api/traces/da938c800282ead4006fa3d17c5418aa) |
-| 4 | `US-CHAIN-DIAG-03` → `04` | `/industry-center/diagnosis?tab=key-link` | **PASS**（诚实失败） | POST Create **200**；GET detail **200** | Create `521c5d529045618049844db2edf4bb11`；detail `67b8349bae7a310ca7de2702dd117c83` | [Create](http://192.168.88.50:30201/api/traces/521c5d529045618049844db2edf4bb11) |
-| 5 | `US-CHAIN-SZ-03` 负例 | `/industry-center/shenzhen?tab=development` | **PASS** | 页面拦截，**未发** development Create；catalog GET **200** | `92ee794b42a5d1fc3459226ebacac618` | [Tempo API](http://192.168.88.50:30201/api/traces/92ee794b42a5d1fc3459226ebacac618) |
+| 1 | `US-CHAIN-TOPIC-01` | `/industry-center/search` | **PASS** | POST search **200** | `d55fe84493021ff8f5fbec649cd7ce32` | [Tempo API](http://10.50.69.111:30201/api/traces/d55fe84493021ff8f5fbec649cd7ce32) |
+| 2 | `US-CHAIN-OV-01` / `US-CHAIN-OV-06` | `/industry-center/overview` | **PASS** | GET overview **200**；GET kpi **200** | overview `b89873e8fcc4c58f5c503489734f8607`；kpi `362ad835f2b8d9f6bf88aad2ddfddaaf` | [overview](http://10.50.69.111:30201/api/traces/b89873e8fcc4c58f5c503489734f8607) · [kpi](http://10.50.69.111:30201/api/traces/362ad835f2b8d9f6bf88aad2ddfddaaf) |
+| 3 | `US-CHAIN-PANORAMA-01` | `/industry-center/panorama` | **PASS** | GET snapshot **200** | `da938c800282ead4006fa3d17c5418aa` | [Tempo API](http://10.50.69.111:30201/api/traces/da938c800282ead4006fa3d17c5418aa) |
+| 4 | `US-CHAIN-DIAG-03` → `04` | `/industry-center/diagnosis?tab=key-link` | **PASS**（诚实失败） | POST Create **200**；GET detail **200** | Create `521c5d529045618049844db2edf4bb11`；detail `67b8349bae7a310ca7de2702dd117c83` | [Create](http://10.50.69.111:30201/api/traces/521c5d529045618049844db2edf4bb11) |
+| 5 | `US-CHAIN-SZ-03` 负例 | `/industry-center/shenzhen?tab=development` | **PASS** | 页面拦截，**未发** development Create；catalog GET **200** | `92ee794b42a5d1fc3459226ebacac618` | [Tempo API](http://10.50.69.111:30201/api/traces/92ee794b42a5d1fc3459226ebacac618) |
 
 Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo，粘贴上表 trace id。
 
@@ -92,7 +92,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 
 ## 测试结果
 
-- Playwright 对 http://192.168.88.50:30892 五条金路径 **ALL_PASS**。
+- Playwright 对 http://10.50.69.111:30892 五条金路径 **ALL_PASS**。
 - 登录页默认测试账号 → 登录成功。
 - D12：本会话 API 无 demo-* host。
 - 截图（本机临时目录，不入库）：`01-search` / `02-overview` / `03-panorama` / `04-diagnosis` / `05-shenzhen`。
@@ -110,7 +110,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 - pipeline：未触发（QA 不改代码）
 - 部署 namespace：`dev`（沿用 E0：`gkx-lumen-topic` 镜像 `gkx-lumen-topic:b0032e17`）
 - K8s rollout：E0 已 PASS，本单未再滚
-- dev 测试 URL：http://192.168.88.50:30892 ；网关 http://192.168.88.50:30899
+- dev 测试 URL：http://10.50.69.111:30892 ；网关 http://10.50.69.111:30899
 
 ## 可观测性（建议）
 

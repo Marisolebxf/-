@@ -176,7 +176,7 @@ GET /v1/policy/simulate?scope_code=440000 → 3 条
 | QPOL-02 推演参数 | 力度/效果/焦点/短板/机遇/布局/三维 权重阈值未定 | 规则基线经验权重（settings_policy.yaml weights），全部标 is_mock + pending；可配置 | 算法 lead+甲方 |
 | QPOL-03 匹配规则 | 关联度/产业适配/匹配相似度规则未定 | 临时共现/特征重合规则 | 算法 lead+甲方 |
 | 效果/落地数据缺口 | 执行监测/宏观经济/社会发展数据无 ODS 来源 | effect/impl 的社会·环境维度用受控随机代理（seed 固定），ext 标 data_gap=待采购 | PM+数据 lead |
-| Nebula 可用性 | 本地无 Nebula（192.168.88.43:9669 不可达/未配） | nebula_loader 安全跳过；图谱在 PG/SQLite 镜像 policy_graph_node/edge，API 自动回退；有环境时 set POLAN_NEBULA_ENABLED=1 即灌入 | 算法/运维 |
+| Nebula 可用性 | 本地无 Nebula（10.50.75.136:9669 不可达/未配） | nebula_loader 安全跳过；图谱在 PG/SQLite 镜像 policy_graph_node/edge，API 自动回退；有环境时 set POLAN_NEBULA_ENABLED=1 即灌入 | 算法/运维 |
 | 后端形态 | 本地用 SQLite 验证全链路 | 默认 sqlite 保证零依赖真跑；生产 set POLAN_DB_BACKEND=pg 切 PostgreSQL（同 entan 库形态，DDL 单一 spec 生成，schema_policy_ads.sql 为 PG 交付物） | 算法/data |
 | 深度字段格式 | elements/keypoints/factors/pedigree 真源结构待确认 | Mock 用 JSON/分隔符；生产解析规范待 data-agent + 供方确认，schema 不变 | data-agent |
 

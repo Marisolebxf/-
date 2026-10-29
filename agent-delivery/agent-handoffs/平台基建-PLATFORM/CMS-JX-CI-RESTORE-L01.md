@@ -20,7 +20,7 @@ ponytail: `full`（纯找回 aebbf77 已评审内容 + 两处环境适配，无�
 |---|---|---|
 | `.gitlab-ci.yml` | `backend:image:cms` job + `helm:deploy` needs 补 cms + `deploy:cms` set-image job | 无（模板引用不变） |
 | `gkxlumen-cms/Dockerfile` | java:21-anolis 基础 + OTel agent + 7098 端口 | 基础镜像 `harbor.htmisoft.net` → **`harbor.test.com/zp-tts`**（对齐 topic/metrics 现行写法） |
-| `helm/.../values.yaml` | `microservices.cms`（platformDb=gkxlumenx_cms / 7098 / ClusterIP / CMS_SOURCE_* env） | `CMS_SOURCE_MYSQL_HOST` 直接写 **10.50.11.76**（原 192.168.88.43 已废弃） |
+| `helm/.../values.yaml` | `microservices.cms`（platformDb=gkxlumenx_cms / 7098 / ClusterIP / CMS_SOURCE_* env） | `CMS_SOURCE_MYSQL_HOST` 直接写 **10.50.11.76**（原 10.50.11.76 已废弃） |
 | `helm/.../values-lumen.yaml` | `cms: { enabled: true }` | — |
 
 ## 验证（pipeline 2591）

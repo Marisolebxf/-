@@ -31,7 +31,7 @@
 
 | 项 | 值 |
 |---|-----|
-| 原 MySQL | `192.168.88.43:3306/innov` — 无外网映射 |
+| 原 MySQL | `10.50.11.76:3306/innov` — 无外网映射 |
 | 新 PG | `111.198.38.90:20644/demo_gdf_data` — 外网可连 |
 | 新增文件 | 39 个（含迁移脚本 + PG schema）|
 | 迁移脚本 | `scripts/migrate_innov_mysql_to_pg.py` |
@@ -60,8 +60,8 @@ cd scripts && python -c "import run_all; run_all.main_all()"
 |--------|------|----------|
 | PG gkx_szc_ods (111.198.38.90:20644) | ✅ 可连 | 企业真实数据 + 政策 299 行 |
 | PG demo_gdf_data (111.198.38.90:20644) | ✅ 可连 | 70 ODS mock 表 |
-| MySQL innov (192.168.88.43:3306) | ❌ 不可达 | 无外网映射 |
-| NebulaGraph (192.168.88.43:9669) | ❌ 不可达 | 内网 |
+| MySQL innov (10.50.11.76:3306) | ❌ 不可达 | 无外网映射 |
+| NebulaGraph (10.50.75.136:9669) | ❌ 不可达 | 内网 |
 
 ## 6. 当前可推进任务
 

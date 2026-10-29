@@ -106,7 +106,7 @@
 - 未就绪体**不带任何 Python 返回的候选**：`degraded=true` 时 Python 仍可能给出内存回退命中的 VID，那批 VID 半可信，顺 501 漏出去就等于变相假数据。诊断细节走 `log.warn("industry embed {} not ready: {}", op, reason)`。
 - `query` 为空/空白 → **HTTP 400** + `R.failed("query must not be blank")`（信任边界校验，不伪装成「未就绪」）。
 
-**不做**（按派单逐条确认未越界）：`jobs/enrich` 门面（= `CROSS-VEC-API-JOB-L01`，本叶零代码，仅在 controller javadoc 写了一句「不在本模块」）、Java 直连 `192.168.88.43:19530` / 引 Milvus SDK（零依赖变更，全仓 `pom.xml` 未动）、Java 做 embedding / 分词 / 打分 / 二次排序、改前端、改 Python、改 helm/values、把 503/degraded 翻成 200。
+**不做**（按派单逐条确认未越界）：`jobs/enrich` 门面（= `CROSS-VEC-API-JOB-L01`，本叶零代码，仅在 controller javadoc 写了一句「不在本模块」）、Java 直连 `10.50.69.111:19530` / 引 Milvus SDK（零依赖变更，全仓 `pom.xml` 未动）、Java 做 embedding / 分词 / 打分 / 二次排序、改前端、改 Python、改 helm/values、把 503/degraded 翻成 200。
 
 ## 偏离
 

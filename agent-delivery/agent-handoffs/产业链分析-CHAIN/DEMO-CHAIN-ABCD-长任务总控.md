@@ -12,7 +12,7 @@
 | B | `lumen-algo-py` | `DEMO-CHAIN-PY-*`（14） | A 满足 **联调闸门**（handoff + `integration`/`pending_test`）后 SHARED 升 ready |
 | C | `lumen-svc-platform` | 骨架 `FACADE/JOB`；施工真源 **一 REST 路径一叶**（[`DEMO-CHAIN-CD-细叶拆单.md`](./DEMO-CHAIN-CD-细叶拆单.md)） | 2026-08-18 改切法；厚包不删；对应 B 读面 / Runtime 满足联调闸门 |
 | D | `lumen-ui-topic` | 骨架 `ENTRY/WORKSPACE/SKIN/LAYOUT`；施工真源 **一实施权威故事一叶**（同上拆单） | 五维 + V1–V7 钉在故事叶；废止 `US-CHAIN-TOPIC-02~17`；不等人审截图 |
-| E | devops + qa | `LUMEN-CHAIN-E-DEVOPS-L01` · `LUMEN-CHAIN-E-QA-SMOKE-L01` · **`LUMEN-CHAIN-E-CI-PLAYWRIGHT-L01`** | E0/E1 已 `ready_to_sign`（不标 done）。金路径默认走 GitLab `e2e:chain-gold`。前端 http://192.168.88.50:30892 |
+| E | devops + qa | `LUMEN-CHAIN-E-DEVOPS-L01` · `LUMEN-CHAIN-E-QA-SMOKE-L01` · **`LUMEN-CHAIN-E-CI-PLAYWRIGHT-L01`** | E0/E1 已 `ready_to_sign`（不标 done）。金路径默认走 GitLab `e2e:chain-gold`。前端 http://10.50.69.111:30892 |
 
 厚包：A 派单说明 · [B 总派单](./DEMO-CHAIN-PY-B-总派单.md) · [C 总派单](./DEMO-CHAIN-JAVA-C-总派单.md) · [D 总派单](./DEMO-CHAIN-FE-D-总派单.md) · **[C/D 细叶拆单](./DEMO-CHAIN-CD-细叶拆单.md)** · [E 总派单](./DEMO-CHAIN-E-总派单.md)
 

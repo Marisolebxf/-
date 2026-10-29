@@ -16,8 +16,8 @@
 | 本地 entity-extract → list/get/`q` HTTP 冒烟 | ✅ PASS（FastAPI TestClient） |
 | 证据 | `agent-handoffs/evidence/E-TECH-NEWS-ENTITY-M4-L02-api-smoke.json` + `…-preview.html` |
 | 复现脚本 | `demo-algo-science/scripts/tech_news_entity_m4_l02_smoke.py` |
-| MySQL `192.168.88.43:3306` | ❌ 仍 timeout |
-| K8s PC `http://192.168.88.50:30891` | ❌ HTTP 502 |
+| MySQL `10.50.11.76:3306` | ❌ 仍 timeout |
+| K8s PC `http://10.50.69.111:30891` | ❌ HTTP 502 |
 | 登录态网关截图 | ⚠️ 未取到（依赖上述环境） |
 
 **解阻方式**：以可复现的本地联机 API 冒烟 + 列表/回看字段预览页作为本期证据；正式登录态截图留作环境恢复后补档（不挡关单，标残留）。

@@ -50,7 +50,7 @@
 
 ## 遗留风险
 
-- K8s 上仍是旧前端镜像，**需要 devops 再跑 E0 rollout** 后才能在 http://192.168.88.50:30892 看到新皮肤。
+- K8s 上仍是旧前端镜像，**需要 devops 再跑 E0 rollout** 后才能在 http://10.50.69.111:30892 看到新皮肤。
 - catalog API 真 0 行时推荐区诚实空（不造假卡）。
 - 未改三模式/入篮语义。
 
@@ -67,7 +67,7 @@
 - pipeline URL / ID：push 后 GitLab `frontend:build` 待跑；本机未取 pipeline ID
 - 部署 namespace / 镜像 tag：待 E0
 - K8s rollout：本单不跑；**需 E0**
-- dev 测试 URL：http://192.168.88.50:30892 （rollout 后）
+- dev 测试 URL：http://10.50.69.111:30892 （rollout 后）
 
 ## 可观测性（建议）
 

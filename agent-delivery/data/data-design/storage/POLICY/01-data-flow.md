@@ -143,7 +143,7 @@ flowchart TD
 | 点名 | K8s | 入口 |
 |------|-----|------|
 | `lumen-ui-topic` | `gkx-lumen-topic` | NodePort **30892** |
-| `gkxlumen-topic-policy` | `gkxlumen-platform-topic-policy:7097` | 网关 `/policy/**` → `http://192.168.88.50:30899/policy/topic/v1/policy/health` |
+| `gkxlumen-topic-policy` | `gkxlumen-platform-topic-policy:7097` | 网关 `/policy/**` → `http://10.50.69.111:30899/policy/topic/v1/policy/health` |
 | `gkxlumen-topic-async-service` | `gkxlumen-platform-topic-async-service:7094` | `gkxlumen.topic.async.policy.algo-base-url` → entan-py |
 | 政策 HTTP | `gkxlumen-platform-entan-py:8000`（entan-api 制品） | `/internal/policy/**`；**不是** `lumen-platform-algo-py` |
 | 产业向量 HTTP | `lumen-platform-algo-py:8000`（CHAIN 模块 Feign） | `/internal/industry/embed/*`；政策重灌 **不**走这条 |

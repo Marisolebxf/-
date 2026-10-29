@@ -1,4 +1,4 @@
-﻿# PY-LUMEN-TOPIC-PY-PORT-L01-QA · lumen-topic-py 迁检索/AI/worker 切流验收
+# PY-LUMEN-TOPIC-PY-PORT-L01-QA · lumen-topic-py 迁检索/AI/worker 切流验收
 
 ## 任务认领（必填）
 
@@ -36,7 +36,7 @@
 
 ## 测试结果
 
-测试时间：2026-08-14 14:51–14:55 +08。入口：网关 `http://192.168.88.50:30899`；前端 `http://192.168.88.50:30892`。禁止 localhost。
+测试时间：2026-08-14 14:51–14:55 +08。入口：网关 `http://10.50.69.111:30899`；前端 `http://10.50.69.111:30892`。禁止 localhost。
 
 | # | 用例 | 证据 | 结果 |
 |---|------|------|------|
@@ -45,13 +45,13 @@
 | 2b | `POST /search/suggest` `{"prefix":"huawei","size":5}` | HTTP **200**，`code=0`，`data=[]`（诚实空态）；`X-Trace-Id=406b83179050507b43fd89d596dd0aa9` | **PASS** |
 | 2c | `POST /search/query` `{"keyword":"huawei","page":1,"size":5}` | HTTP **200**，`code=0`，`list=[]` `total=0`（诚实空态）；`X-Trace-Id=f669f6b0fb6068416d5fb4f0d5ecd67a` | **PASS** |
 | 3 | 隔离：响应/错误不得含 `30805` / `demo-platform-search-py` / `demo-platform-ai-py` | 上列全部 body + Tempo 金路径 payload 均 0 命中 | **PASS** |
-| 4 | demo 仍活 `GET http://192.168.88.50:30805/healthz` | HTTP **200**，`service=gkx-search-service`；demo Deployment 1/1 Running | **PASS** |
+| 4 | demo 仍活 `GET http://10.50.69.111:30805/healthz` | HTTP **200**，`service=gkx-search-service`；demo Deployment 1/1 Running | **PASS** |
 | 5 | K8s 三件套 Ready + 镜像 `gkxlumen-*` | 见下表 | **PASS** |
 | 6 | 集群内 healthz | search `service=gkxlumen-search-service` `es_available=true`；AI `status=ok`（探针名见 WARN） | **PASS** |
 | 7 | 分析任务（可选） | `POST /topicAsync/topic/v1/analysis/tasks/list` → 200 `code=0` 空页；create → 200 `code=1` 校验文案，未打厨房 | **WARN**（不挡） |
 | 8 | CI 只核证据 | Python pipeline **5026** 全绿 | **PASS** |
 
-### K8s（SSH `88.50`，ns=`dev`，约 44–46min 龄）
+### K8s（SSH `10.50.69.111`，ns=`dev`，约 44–46min 龄）
 
 | 资源 | Ready | 镜像 |
 |------|-------|------|
@@ -68,7 +68,7 @@ lumen Service 为 ClusterIP（search `:8080` / AI `:8081`），**未**占用 308
 ### Tempo（金路径 filters）
 
 - Grafana：`http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf）` → Explore → Tempo → TraceID `338e664a81c06d9c0fd48d21f2df67a1`
-- API：`http://192.168.88.50:30201/api/traces/338e664a81c06d9c0fd48d21f2df67a1` → HTTP 200，约 20KB
+- API：`http://10.50.69.111:30201/api/traces/338e664a81c06d9c0fd48d21f2df67a1` → HTTP 200，约 20KB
 - `service.name`：`gkxlumen-gateway` → `gkxlumen-topic-enterprise-biz` → **`gkxlumen-search-service`**
 - payload 含 `gkxlumen-platform-search-py`×4；`demo-platform-search-py`×0、`30805`×0、`gkx-search-service`×0
 
@@ -86,7 +86,7 @@ lumen Service 为 ClusterIP（search `:8080` / AI `:8081`），**未**占用 308
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines/5026 （smoke + 三镜像 + 三 deploy，全绿；本 QA **不重跑**）
 - 部署 namespace：`dev`
 - K8s rollout：三 Deployment 1/1 Running，镜像 tag `5d204114`
-- dev 测试 URL：`POST http://192.168.88.50:30899/enterprise/topic/v1/search/meta/filters` → 200 `code=0`
+- dev 测试 URL：`POST http://10.50.69.111:30899/enterprise/topic/v1/search/meta/filters` → 200 `code=0`
 
 ## 可观测性（建议）
 

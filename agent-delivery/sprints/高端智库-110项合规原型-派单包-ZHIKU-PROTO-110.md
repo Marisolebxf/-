@@ -334,7 +334,7 @@ deploy:k8s:
       '
   environment:
     name: $DEPLOY_NAMESPACE
-    url: http://192.168.88.50:309xx   # ← NodePort，S0 前与派单人确认
+    url: http://10.50.69.111:309xx   # ← NodePort，S0 前与派单人确认
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
       when: on_success

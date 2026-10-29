@@ -1094,7 +1094,7 @@ tasks:
       - 路由 /innov 可访问
       - VITE 构建指向 dev 网关
       - push → frontend:build + frontend:image 绿 → deploy:k8s dev 自动成功
-      - http://192.168.88.50:30891/innov 可打开
+      - http://10.50.69.111:30891/innov 可打开
       - 请求失败时 UI/控制台可见 traceId（observability.ts）
     evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L07-ui-port.md
 
@@ -1336,7 +1336,7 @@ tasks:
     acceptance_note: "本地 SMOKE-OK + push 6b4428e；Nebula 内网连通与 GitLab py:smoke 待 qa/devops 确认"
     definition_of_done:
       - 对齐 demo-algo-ent-analysis：nebula_loader / nebula_query / nebula.py 模式
-      - dev graphd 192.168.88.43:9669 可连；space schema（Tag/Edge）文档化
+      - dev graphd 10.50.75.136:9669 可连；space schema（Tag/Edge）文档化
       - POST /internal/graph/subgraph 返回 nodes/edges + **source: nebula**
       - Nebula 不可用时 PG 兜底返回 source: pg（与 demo 一致）
       - opentelemetry-instrument + OTLP :4318
@@ -15955,7 +15955,7 @@ tasks:
       - "agent-delivery/cicd-pipeline.md"
     definition_of_done:
       - "GitLab lumen-ui-topic Pipeline 对 ee3ff6f（或其后）绿或已登记 waiver"
-      - "K8s ns=dev deploy gkx-lumen-topic 镜像 tag 含该 SHA；rollout 1/1；http://192.168.88.50:30892 HTTP 200"
+      - "K8s ns=dev deploy gkx-lumen-topic 镜像 tag 含该 SHA；rollout 1/1；http://10.50.69.111:30892 HTTP 200"
       - "未改 helm/业务代码；D12 仍走 gkxlumen-platform-gateway 非 demo-*"
       - "handoff LUMEN-CHAIN-E-DEVOPS-SKIN-L01.md；ponytail + cost 四字段；不标 done"
     update_time: "2026-09-02T05:16:18+08:00"
@@ -22907,7 +22907,7 @@ tasks:
       - "agent-delivery/architecture-baseline.md"
     definition_of_done:
       - "总控点名服务在 K8s dev rollout 健康：gkx-lumen-topic、gkxlumen-topic-enterprise-biz、gkxlumen-topic-async-service、gkxlumen-platform-search-py、gkxlumen-entan-py-api、gkxlumen-platform-gateway"
-      - "已发布前端 http://192.168.88.50:30892 可访问；企业侧路由是 lumen 不是 demo-*"
+      - "已发布前端 http://10.50.69.111:30892 可访问；企业侧路由是 lumen 不是 demo-*"
       - "核实库连接与总控 §1.1 一致：数据面 demo_gkxlumenx_*；Java 写侧 gkxlumenx_topic_enterprise（Q-ENT-DB-01 未拍板前不得自行切库）"
       - "未绿则 blocked 并写明哪个 deploy（规约 §11.4 = C2，只重开 E0 不派业务修）；禁止用 localhost 充发布"
       - "handoff agent-handoffs/企业战略分析-ENT/LUMEN-ENT-E-DEVOPS-L01.md；ponytail + cost 四字段"
@@ -22943,7 +22943,7 @@ tasks:
       - "agent-delivery/observability.md"
     definition_of_done:
       - "开跑前确认：总控 §4 #2 画像判红尺度已定稿；Q-ENT-DB-01（#3/#5 会写正式前缀库 gkxlumenx_topic_enterprise）已拍板。未定稿不得开跑"
-      - "只在 K8s dev 已发布 lumen-ui-topic（http://192.168.88.50:30892）走总控 §4 八条金路径；禁止 localhost / pnpm dev"
+      - "只在 K8s dev 已发布 lumen-ui-topic（http://10.50.69.111:30892）走总控 §4 八条金路径；禁止 localhost / pnpm dev"
       - "每条 PASS/FAIL；期望未发生必红（§11.3）；空态只有写进该行才算过；5xx / 打到 demo-* / 白屏错跳 / 侧栏整组不可见 算不过"
       - "#3 只认浮层出对比结果（整页路由缺失不判红）；#5 succeeded 后必须显式点击才展结果，自动跳转 = 红"
       - "FAIL 先按 §11.4 填建议分类 C1–C6；C1 必附 X-Trace-Id + Tempo 链接；缺陷包按 templates/long-task-e-defect-pack.md；QA 不改业务代码"
@@ -27281,7 +27281,7 @@ tasks:
     touched_files:
       - "agent-delivery/agent-handoffs/政策模块-E7/**"
     definition_of_done:
-      - "只点已发布 http://192.168.88.50:30892，禁止 localhost。金路径总控 §4 五条全部手跑或 e2e:policy-gold；期望未发生必红；QA 不改代码"
+      - "只点已发布 http://10.50.69.111:30892，禁止 localhost。金路径总控 §4 五条全部手跑或 e2e:policy-gold；期望未发生必红；QA 不改代码"
       - "失败先填 C1–C6 缺陷包（模板 long-task-e-defect-pack.md），C1 必带 X-Trace-Id；空态仅当该行允许才算过；Job failed ≠ 空态"
       - "handoff + 缺陷包路径 + cost；不要自行 done"
     update_time: "2026-09-02T18:49:21+08:00"
@@ -28055,7 +28055,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "升级项 A 已关闭：2026-09-11 human:淮政玮 硬确认 Milvus 地址 = 192.168.88.43:19530，并提供 compose 真源（已落总控 §5 as-built）。B/C/D/E 仍 🟡。"
+    note: "升级项 A 已关闭：2026-09-11 human:淮政玮 硬确认 Milvus 地址 = 10.50.69.111:19530，并提供 compose 真源（已落总控 §5 as-built）。B/C/D/E 仍 🟡。"
     depends_on:
       - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files: []
@@ -28095,7 +28095,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 120000
     note: |
-      AV-1 通过 → pending_test。实测：真连 88.43:19530，真建 gkxlumen_industry_anchor（1516 条锚点 = 102 chain + 1414 segment，dim=256/COSINE），aip_kb_*/spk_id_* 名单前后一致未动。pytest 21 + 全仓 388 绿。诚实短板：仅字面哈希向量 hashgram-blake2b，无语义能力（VEC-Q2 待真模型）。
+      AV-1 通过 → pending_test。实测：真连 10.50.11.76:19530，真建 gkxlumen_industry_anchor（1516 条锚点 = 102 chain + 1414 segment，dim=256/COSINE），aip_kb_*/spk_id_* 名单前后一致未动。pytest 21 + 全仓 388 绿。诚实短板：仅字面哈希向量 hashgram-blake2b，无语义能力（VEC-Q2 待真模型）。
     depends_on:
       - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files:
@@ -28434,7 +28434,7 @@ tasks:
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-长任务总控.md §0 #18 §5 §6.3 §6.4"
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-DEVOPS-NET-L01.md"
     definition_of_done:
-      - "第一步先查后建：确认现网（K8s dev 各 ns / 88.43 / 88.48 / 88.49 / 88.54 / 88.249 / Nacos 配置）是否已有可复用的 embedding 端点（特别是写 aip_kb_* 的那套 RAG）；若已有 bge 类端点且 lumen Pod 可直达 → 直接复用，零部署收工"
+      - "第一步先查后建：确认现网（K8s dev 各 ns / 10.50.11.76 / 88.48 / 88.49 / 88.54 / 88.249 / Nacos 配置）是否已有可复用的 embedding 端点（特别是写 aip_kb_* 的那套 RAG）；若已有 bge 类端点且 lumen Pod 可直达 → 直接复用，零部署收工"
       - "若无可复用端点：部署 bge-base-zh-v1.5（dim 768），对外提供 OpenAI 兼容 POST /v1/embeddings"
       - "产出端点 URL + 实测返回向量 dim=768 的原始请求/响应证据 + 从 lumen Pod 实测可达的证据"
       - "as-built 拓扑写入 handoff：部署位置、镜像来源与 tag、权重获取途径、资源占用、重启存活策略"
@@ -31326,7 +31326,7 @@ tasks:
     last_seen_at: "2026-10-17T17:26:29.811Z"
     lock_until: "2026-10-17T19:26:29.811Z"
     claimed_by: "agent:devops-agent"
-    title: "lumen ai-py 数据库地址漏改（仍 192.168.88.43），阻塞 Kafka 端到端实证"
+    title: "lumen ai-py 数据库地址漏改（仍 10.50.11.76），阻塞 Kafka 端到端实证"
     status: "done"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
@@ -31357,7 +31357,7 @@ tasks:
     last_seen_at: "2026-10-17T17:59:23.737Z"
     lock_until: "2026-10-17T19:59:23.737Z"
     claimed_by: "agent:devops-agent"
-    title: "lumen-algo-py 数据库地址仍 192.168.88.43，异步分析在算法创建阶段失败，阻塞 Kafka 端到端实证"
+    title: "lumen-algo-py 数据库地址仍 10.50.11.76，异步分析在算法创建阶段失败，阻塞 Kafka 端到端实证"
     status: "done"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
@@ -31377,7 +31377,7 @@ tasks:
       - "k8s/worker.yaml"
     definition_of_done:
       - "k8s/api.yaml 与 k8s/worker.yaml 的 LUMEN_ALGO_MYSQL_HOST 改为 10.50.11.76，前提是 dwd/ads/cfg 三库在 10.50.11.76 上存在且该账号可读"
-      - "核实企业评估/风险/推荐路径是否依赖 Milvus（现配 192.168.88.43:19530）及集群内可达性，结论写入 handoff"
+      - "核实企业评估/风险/推荐路径是否依赖 Milvus（现配 10.50.69.111:19530）及集群内可达性，结论写入 handoff"
       - "push dev 后 CI 绿，deploy:api 与 deploy:worker successfully rolled out"
       - "handoff 含 commit、pipeline/job ID"
     update_time: "2026-10-18T03:20:29+08:00"
@@ -39837,7 +39837,7 @@ tasks:
       - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ADV-FILTER-派单说明.md"
       - "agent-delivery/长任务执行规约.md"
     definition_of_done:
-      - "只测已发布 http://192.168.88.50:30892/policy/search，禁止 localhost"
+      - "只测已发布 http://10.50.69.111:30892/policy/search，禁止 localhost"
       - "关键词半导体出卡且无加入对比篮/深度分析；有数产业筛选 total>0；无关联节点空态且非 5xx；请求无 support_strength/fund/tax/land/talent/CL-*"
       - "失败先分 C1–C6，QA 不改代码"
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-FILTER-L01.md"
@@ -40151,7 +40151,7 @@ tasks:
       - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-TS-长任务总控.md"
       - "agent-delivery/templates/long-task-e-defect-pack.md"
     definition_of_done:
-      - "只点已发布 http://192.168.88.50:30892/policy/overview，锚点高性能与前沿新材料。总控 §4 四条期望未发生必红"
+      - "只点已发布 http://10.50.69.111:30892/policy/overview，锚点高性能与前沿新材料。总控 §4 四条期望未发生必红"
       - "B2 对账仍有明显错配则第 3 条红，不要求改时序公式"
       - "QA 不改代码；失败写 C1–C6 缺陷包；handoff + cost"
     update_time: "2026-10-24T11:30:58+08:00"
@@ -43855,7 +43855,7 @@ tasks:
     estimated_tokens: 180000
     note: |
       2026-10-28 coordinator 建单。L01 盘点已落盘（方案 §3–§5），未启动编码。本叶只做 §5.5 M1 真实封装，不重复盘点，不做 M2/M3。不依赖 L01 状态：L01 仍含实现 DoD 且 in_progress，若挂依赖会把编码卡死。调用链 MCP→Java 网关→Python /internal/*。强度：ponytail full。网关地址以环境变量注入，不把 token 写进 git。
-      已认领 agent:api-agent / human:淮政玮，claim_type=派单 coordinator_dispatch（task-claim 无该字段）。联调通过：selfcheck 绿，五域与 search/synth 对 demo 网关 http://192.168.88.50:30889/api 调通。产业链走 /innov/v1/industry/**，需 GKX_MCP_TOKEN（不入库）。
+      已认领 agent:api-agent / human:淮政玮，claim_type=派单 coordinator_dispatch（task-claim 无该字段）。联调通过：selfcheck 绿，五域与 search/synth 对 demo 网关 http://10.50.69.111:30889/api 调通。产业链走 /innov/v1/industry/**，需 GKX_MCP_TOKEN（不入库）。
     touched_files:
       - "scripts/7chain-mcp-server.mjs"
       - "scripts/7chain-mcp-selfcheck.mjs"
@@ -43962,6 +43962,78 @@ tasks:
       - "对齐 demo：资质图为外企/高企/小微/上市×全国/广东省/深圳市"
       - "验收：dev USE_MOCK=false，切换产业 Network 三次 scoped 请求 chain_code 变化；附录 D E-33 扫描摘要"
       - "handoff agent-handoffs/系统集成-SYSINT/ENT-KEY-PANO-FRONTEND-L01.md；ponytail: full"
+    update_time: "2026-10-28T16:47:01+08:00"
+  - id: CROSS-MCP-7CHAIN-L03
+    evidence: "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L03.md"
+    title: "gkx-7chain MCP 高价值封装示范 — 区域创新活力分析（深圳）执行单"
+    status: ready_to_sign
+    claimed_by: "human:唐绍祖"
+    supervised_by: "human:唐绍祖"
+    claim_type: "coordinator_dispatch"
+    dispatched_by: "human:唐绍祖"
+    claimed_at: "2026-10-28T20:55:00+08:00"
+    lock_until: "2026-10-29T00:55:00+08:00"
+    agent: "api-agent"
+    epic: "跨系统-MCP工具化"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "spike"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 60000
+    note: |
+      2026-10-28 唐绍祖建单并自派自收（派发人=接收人=human:唐绍祖，淮政玮口头派单转登记；完成状态「已收，未完成」= claimed）。
+      任务内容：用 gkx-7chain MCP synth-index（index=vitality, region=深圳）真实执行一次「深圳地区创新活力分析」并输出结果，作为高价值 MCP 封装示范场景。
+      用法真源偏差登记：派单话术引用 agent-delivery/7chain-mcp-usage-guide.md，仓内暂无此文件（全仓检索无命中）；暂以 CROSS-MCP-7CHAIN-L02 handoff + scripts/7chain-mcp-server.mjs 为用法真源，若执行时仍未落盘则在 handoff 补记缺口。
+      GKX_MCP_POLICY_BASE（lumen 网关政策正文改道）当前代码未出现，属 M3 切网关范畴；本单 synth-index 只走 GKX_MCP_API_BASE=demo 网关 http://192.168.88.50:30889/api，不受影响、不阻塞，只登记不实现。
+      不挂 depends_on：L02 处 integration（联调中），MCP server 本身已可用（selfcheck 绿、五域调通），挂依赖会卡死本单（同 L02 不挂 L01 之先例）。
+      D9 铁律：M_SYNTH_186_1 现 data_source=mock，原样透传不冒充 real、缺维不补 0；业务侧真数等 LUMEN-INTEL-VIT 四单+灌数单完成（1028_淮哥大任务总索引），本单不替代业务链路施工。
+    touched_files:
+      - "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L03.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L02.md"
+      - "agent-delivery/designs/7链分析四域功能点MCP工具化-盘点与方案.md"
+    definition_of_done:
+      - "用 gkx-7chain MCP synth-index（index=vitality, region=深圳）对 GKX_MCP_API_BASE=demo 网关真实调用成功，返回含 metric_id=M_SYNTH_186_1；data_source=mock 原样透传不冒充"
+      - "输出《深圳地区创新活力分析》结果：活力指数与可得维度分（科技/产业/人才/政策），每条数字带 metric_id 与 data_source，缺维不补 0、不编造"
+      - "调用证据（HTTP 状态、X-Trace-Id 抽样、调用时间）与结果落盘 agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L03.md，体例含任务认领/ponytail/交付物/核心结论/下游承接 + 架构合规自检 + cost 四字段"
+      - "7chain-mcp-usage-guide.md 缺口与 GKX_MCP_POLICY_BASE 现状在 handoff 登记（只记录不实现，实现属 M3）"
+      - "执行方状态上限 ready_to_sign，done 由验收方（human:唐绍祖 或升级 human:淮政玮）签发，禁跳态"
+    update_time: "2026-10-28T23:38:51+08:00"
+  - id: LUMEN-INTEL-VIT-GAPFILL-DBA-L01
+    title: "区域创新活力 — 缺项库建库建表授权（DBA 真人单）"
+    status: ready
+    assigned_to: human:徐滕强
+    supervised_by: human:淮政玮
+    epic: E8-综合智能分析
+    priority: P1
+    repo: gkx-orchestration
+    delivery_phase: implementation
+    task_type: chore
+    effort_points: "1"
+    difficulty: S
+    estimated_tokens: 2000
+    note: |
+      2026-10-29 唐绍祖建单派发（执行 human:徐滕强，知会/验收 human:淮政玮）。
+      背景：LUMEN-INTEL-VIT-GAPFILL-L01 读路径与 DDL 已完成，但应用账号 gkxlumenx@% 无 CREATE DATABASE / GRANT 权限（已实测 Access denied），
+      建库 gkxlumenx_gapfill + 三张 gapfill_synth_* 空表 + 授权 gkxlumenx 写权限需 DBA 执行。
+      完整可复制 SQL 与核对语句见派单说明：agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-GAPFILL-DBA-L01.md
+      （DDL 正本 repos/lumen-algo-py/vendor/entan-py/scripts/mysql/create_gapfill_synth.sql，幂等可重复执行，不含 INSERT）。
+      本单完成后放行：LUMEN-INTEL-VIT-GAPFILL-L01 关单 + LUMEN-INTEL-VIT-GAPFILL-DATA-L01 灌数与 D4 改 live，区域创新活力分析可提测（2026-11-05）。
+      边界：只建 gkxlumenx_gapfill 库与 gapfill_ 前缀空表；不动 ODS/DWD/ADS/供应方库；生产配置不读该库；灌行由 DATA 单完成，本单不 INSERT。
+      执行回执写在派单说明文末「执行回执」表。
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/派单说明/派单-LUMEN-INTEL-VIT-GAPFILL-DBA-L01.md"
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "192.168.88.43:3306 上执行派单说明第五节全量 SQL：建库 gkxlumenx_gapfill（utf8mb4）+ 三张 gapfill_synth_* 表 + GRANT ALL（或最小 SELECT,INSERT,UPDATE,DELETE）给 gkxlumenx@%"
+      - "核对：information_schema 查询 gapfill_synth_% 恰 3 行；三表 COUNT(*) 均为 0；SHOW GRANTS FOR 'gkxlumenx'@'%' 含 gkxlumenx_gapfill 授权"
+      - "执行回执落派单说明文末表格（日期/执行人/核对结果）或群内 @唐绍祖"
+      - "未动任何现有 gkxlumenx_* 业务库；未写入 ODS/DWD/ADS/供应方库"
+    update_time: "2026-10-29T02:30:00+08:00"
     update_time: "2026-10-28T19:20:14+08:00"
   - id: LUMEN-CHAIN-UI-WALKTHROUGH-L01
     model_used: "composer (Cursor Agent)"

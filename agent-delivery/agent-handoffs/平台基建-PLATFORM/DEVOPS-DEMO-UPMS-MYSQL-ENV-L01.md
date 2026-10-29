@@ -42,7 +42,7 @@
 
 ## 遗留风险
 
-- 若 Secret 里的口令与 88.43 `gkxx` 仍不一致，新副本还会拒。那时要改 Secret / `mysql.rootPassword`，不要把口令写进 Nacos 文档。
+- 若 Secret 里的口令与 10.50.11.76 `gkxx` 仍不一致，新副本还会拒。那时要改 Secret / `mysql.rootPassword`，不要把口令写进 Nacos 文档。
 
 ## CI/CD（必填）
 

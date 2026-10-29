@@ -54,7 +54,7 @@
 
 ## 测试结果
 
-- 现网 MySQL `192.168.88.43`：`demo_gkxlumenx_dim.industry_cluster` = 15；`industry_cluster_map` = 15。`gkxlumenx_dim` 无这两张表（故旧默认必然 500）。
+- 现网 MySQL `10.50.11.76`：`demo_gkxlumenx_dim.industry_cluster` = 15；`industry_cluster_map` = 15。`gkxlumenx_dim` 无这两张表（故旧默认必然 500）。
 - 映射 L0 例：`INB1303` / `INB1309` / `INB1204` 等（长度 7，满足 `INB`≥6）；空集群保持 map 0 条诚实空。
 - Helm YAML：`python yaml.safe_load` 两文件通过。
 - 本机无 `mvn` / `JAVA_HOME`，未跑 Maven；CI 应跑 `IndustryClusterSchemaBindTest`。
@@ -73,13 +73,13 @@
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines （push 触发；本会话未等绿）
 - 部署 namespace：`dev` / 镜像：待 CI 出 `gkxlumen-innov` 新 tag
 - K8s rollout：**需要 E0 滚 `gkxlumen-innov`**（本叶未自行 helm upgrade）
-- 探活：滚完后 `GET http://192.168.88.50:30899/innov/v1/meta/industry-clusters?include_l0=true`（前端现网为 `/api/topic/v1/meta/industry-clusters`）不得 500
+- 探活：滚完后 `GET http://10.50.69.111:30899/innov/v1/meta/industry-clusters?include_l0=true`（前端现网为 `/api/topic/v1/meta/industry-clusters`）不得 500
 
 ## 可观测性
 
 - OTEL_SERVICE_NAME：`gkxlumen-innov`
 - 根因 traceId：`071b34f54c36d31761617fc884567f03`
-- Tempo：http://192.168.88.50:30201/api/traces/071b34f54c36d31761617fc884567f03
+- Tempo：http://10.50.69.111:30201/api/traces/071b34f54c36d31761617fc884567f03
 - 滚后应用新 X-Trace-Id 验 200
 
 ## 涉及文件

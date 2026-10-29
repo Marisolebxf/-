@@ -169,7 +169,7 @@ system-test 旧 `/policy/text` 会跳到 parse。apiview 仍保留 `/policy/text
 | `OPEN-POLICY-XDOM-01` | 覆盖度分母 | 过「本批去重」，不过「全产业链」 |
 | `OPEN-POLICY-DIM-02` | 布局无专家库 | 过机遇+短板融合 |
 | `OPEN-POLICY-FLOW-01` | 正式 GDF 未接 | Demo 只认 `run_all_policy` |
-| 本机未连 88.43 | 未在现场灌 Demo 库 | 你点灌数据后以 ADS 为准 |
+| 本机未连 10.50.11.76 | 未在现场灌 Demo 库 | 你点灌数据后以 ADS 为准 |
 
 ---
 

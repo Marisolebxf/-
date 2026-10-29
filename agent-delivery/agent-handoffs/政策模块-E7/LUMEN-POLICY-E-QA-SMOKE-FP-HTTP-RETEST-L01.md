@@ -1,4 +1,4 @@
-﻿# LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01 · 政策专题 E1 — HTTP 指纹发布后金路径复测
+# LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01 · 政策专题 E1 — HTTP 指纹发布后金路径复测
 
 > 格式参考 `templates/handoff-template.md`。对 K8s 已发布 `lumen-ui-topic` 手跑。本单 **不改业务代码**。  
 > 总控：[`LUMEN-POLICY-ABCDE-长任务总控.md`](./LUMEN-POLICY-ABCDE-长任务总控.md) §4  
@@ -42,12 +42,12 @@
 
 **联调通过**。总控 §4 五条全 **PASS**。上一轮 C1（HTTP 源 `crypto.subtle` 缺失导致点「开始分析」抛错）**本轮已闭合**：`isSecureContext=false` / `crypto.subtle` 仍缺失，但 UI 点开始分析发出 SHA-256 64 位 `analysis_fp`，进 `view=processing`，Job `status=success` 后 wait_view 点「查看分析结果」。**不要**再派「subtle 缺失」或 L0 滤空。
 
-- 证据源：http://192.168.88.50:30892 （禁止 localhost）
+- 证据源：http://10.50.69.111:30892 （禁止 localhost）
 - Playwright：Chromium / `@playwright/test` 1.51，headless，只点已发布前端；**未**用 30892 代理 POST 改判 PASS
 - CI：`e2e:policy-gold` 未绿，本叶手跑。未把 `e2e:chain-gold` 当政策结论
 - 门：前端 **`gkx-lumen-topic:7cd3be47`**；innov **`gkxlumen-innov:300ad303`**；clusters GET **200** 非 500
 - UI Create：#3 `POLICY-20260902-007` / #4 `POLICY-20260902-008` / #5 `POLICY-20260902-009` 均为 `reused=false`、`status=success`
-- D12：`/api/*` 均打 `192.168.88.50:30892`；无 demo-* host
+- D12：`/api/*` 均打 `10.50.69.111:30892`；无 demo-* host
 - 金路径未红，状态 `ready_to_sign`。INB4 短码 Java 业务拒见残差包 [`LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01-defect-pack.md`](./LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01-defect-pack.md)（**不改本叶判定、不改 Java、不要打回 integration**）
 
 ## 门核
@@ -70,12 +70,12 @@
 | 4 | `US-E7-POL-03` | `/policy/analysis` | **PASS** | 同 #3 VID 预填；UI 点开始分析进过程页；`POLICY-20260902-008` success 后 wait_view 出结果页 | Create **200** success | **`0add7834e15372c12aa2c868b706e776`** |
 | 5 | `US-E7-POL-04` | `/policy/recommendation` | **PASS** | `object_ids[]=chain:INB170101`；一级权重 100%；UI 点开始分析进过程页；`POLICY-20260902-009` success 后 wait_view | Create **200** success | **`a198768e15a5279eccc86e9f902852c1`** |
 
-Tempo（#1 search）：http://192.168.88.50:30201/api/traces/ea86d1b3ca82f488f4551d4acda15bb8  
-Tempo（#2 clusters）：http://192.168.88.50:30201/api/traces/55b48ab2d58dee8a5d31d1cf908ca8eb  
-Tempo（#2 INB4 Create）：http://192.168.88.50:30201/api/traces/2edc10cd9e69edfd9a1276df51fd3730  
-Tempo（#3 Create）：http://192.168.88.50:30201/api/traces/7419f4a39a44ee9f7cc260aaf99d6257  
-Tempo（#4 Create）：http://192.168.88.50:30201/api/traces/0add7834e15372c12aa2c868b706e776  
-Tempo（#5 Create）：http://192.168.88.50:30201/api/traces/a198768e15a5279eccc86e9f902852c1  
+Tempo（#1 search）：http://10.50.69.111:30201/api/traces/ea86d1b3ca82f488f4551d4acda15bb8  
+Tempo（#2 clusters）：http://10.50.69.111:30201/api/traces/55b48ab2d58dee8a5d31d1cf908ca8eb  
+Tempo（#2 INB4 Create）：http://10.50.69.111:30201/api/traces/2edc10cd9e69edfd9a1276df51fd3730  
+Tempo（#3 Create）：http://10.50.69.111:30201/api/traces/7419f4a39a44ee9f7cc260aaf99d6257  
+Tempo（#4 Create）：http://10.50.69.111:30201/api/traces/0add7834e15372c12aa2c868b706e776  
+Tempo（#5 Create）：http://10.50.69.111:30201/api/traces/a198768e15a5279eccc86e9f902852c1  
 Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo。
 
 ### 1. US-E7-POL-01c
@@ -124,7 +124,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 
 ## 测试结果
 
-- Playwright 对 http://192.168.88.50:30892：**5 passed**（1.5m）。`results.json` `unexpected=0`。
+- Playwright 对 http://10.50.69.111:30892：**5 passed**（1.5m）。`results.json` `unexpected=0`。
 - 探针：HTTP 非安全上下文 `crypto.subtle` 缺失；回退 SHA-256 生效；click 进 processing。
 - 手跑记录：`evidence/LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01/run-notes.json` · `policy-gold.spec.ts` · `crypto-subtle-probe.json` · `shots/`
 
@@ -141,7 +141,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 - pipeline：未触发业务仓 CI
 - 部署 namespace：`dev`；镜像 `gkx-lumen-topic:7cd3be47` · `gkxlumen-innov:300ad303` · `gkxlumen-topic-policy:868987d6` · `gkxlumen-topic-async-service:868987d6` · 政策 Python `gkxlumen-entan-py-api:ea3acc39`
 - K8s rollout：本单未再滚；沿用 E0 `7cd3be47`
-- dev 测试 URL：http://192.168.88.50:30892
+- dev 测试 URL：http://10.50.69.111:30892
 
 ## 可观测性（建议）
 

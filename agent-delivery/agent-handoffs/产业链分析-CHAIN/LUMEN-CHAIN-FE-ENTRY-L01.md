@@ -167,7 +167,7 @@ P0 整页主 KPI 零角标 = **0**。
 - 分支：`lumen-ui-topic` `dev`（禁止 main、禁止 force）
 - commit：`lumen-ui-topic` `76e5599f120346e4b20f78f2ba8504e055e431ca`（`feat(chain): add industry search, overview, and sidebar entry [agent:frontend-agent]`）
 - pipeline：push `origin/dev` → `frontend:build`（`npm run build`）→ image → `deploy:k8s` ns=`dev`
-- dev URL：http://192.168.88.50:30892 （rollout 后）
+- dev URL：http://10.50.69.111:30892 （rollout 后）
 - 本机：`npm run type-check` 绿；`npm run build` 绿；selfcheck 绿
 
 ## 可观测性

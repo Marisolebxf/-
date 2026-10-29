@@ -32,7 +32,7 @@ gateway地址 / chain / {Controller @RequestMapping} / {方法映射}
 
 | 段 | 当前值 |
 |---|---|
-| gateway地址 | 外网 `http://111.198.38.90:50199`（内网 NodePort `http://192.168.88.50:30899`） |
+| gateway地址 | 外网 `http://111.198.38.90:50199`（内网 NodePort `http://10.50.69.111:30899`） |
 | 网关前缀 | `/chain`（StripPrefix=1） |
 | Controller | `/topic/v1/industry` |
 | 内部写库（前端勿调） | topic-enterprise `/topic/v1/chain-ux/**` |

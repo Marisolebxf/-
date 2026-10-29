@@ -10,7 +10,7 @@
 
 | 项 | 值 |
 |---|---|
-| Host | `192.168.88.43` |
+| Host | `10.50.11.76` |
 | Port | `3306` |
 | 版本 | MySQL **8.0.41**（实测）✅ |
 | 管理员账号 | `root` / `htrfadmin` —— **仅用于建库 + 建用户 + 授权**，业务代码不用 |
@@ -52,7 +52,7 @@
 
 | 项 | 值 |
 |---|---|
-| graphd | `192.168.88.43:9669` |
+| graphd | `10.50.75.136:9669` |
 | user | `root` / 空密码 |
 | space | `entan`（企业）/ `gkx_policy`（政策） |
 
@@ -112,7 +112,7 @@ FLUSH PRIVILEGES;
 
 | env | 值 |
 |---|---|
-| `INNOV_MYSQL_HOST` | `192.168.88.43` |
+| `INNOV_MYSQL_HOST` | `10.50.11.76` |
 | `INNOV_MYSQL_PORT` | `3306` |
 | `INNOV_MYSQL_USER` | `gkxlumenx` |
 | `INNOV_MYSQL_PASSWORD` | `GKX@Lumen2026` |
@@ -123,7 +123,7 @@ FLUSH PRIVILEGES;
 
 | env | 值 |
 |---|---|
-| `ENTAN_MYSQL_HOST` | `192.168.88.43` |
+| `ENTAN_MYSQL_HOST` | `10.50.11.76` |
 | `ENTAN_MYSQL_PORT` | `3306` |
 | `ENTAN_MYSQL_USER` | `gkxlumenx` |
 | `ENTAN_MYSQL_PASSWORD` | `GKX@Lumen2026` |
@@ -136,7 +136,7 @@ FLUSH PRIVILEGES;
 | env | 值 |
 |---|---|
 | `POLAN_DB_BACKEND` | `mysql`（本地零依赖调试可用 `sqlite`） |
-| `POLAN_MYSQL_HOST` | `192.168.88.43` |
+| `POLAN_MYSQL_HOST` | `10.50.11.76` |
 | `POLAN_MYSQL_PORT` | `3306` |
 | `POLAN_MYSQL_USER` | `gkxlumenx` |
 | `POLAN_MYSQL_PASSWORD` | `GKX@Lumen2026` |
@@ -146,7 +146,7 @@ FLUSH PRIVILEGES;
 
 ### 5.4 Java `gkx-innov`（demo-svc-platform）
 
-- JDBC：`jdbc:mysql://192.168.88.43:3306/gkxlumenx_ads?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false`
+- JDBC：`jdbc:mysql://10.50.11.76:3306/gkxlumenx_ads?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false`
 - user/password：`gkxlumenx` / `GKX@Lumen2026`
 - 跨库表用全限定名（`gkxlumenx_dwd.xxx`）。Helm 注入见迁移文档 §7.4。
 
@@ -158,7 +158,7 @@ FLUSH PRIVILEGES;
 # demo-algo-science/scripts/_conn_check.py（用完即删）
 # 密码取自本文 §1 应用账号，勿在脚本里硬编码明文（避免 pre-commit 误拦）
 import pymysql
-c = pymysql.connect(host="192.168.88.43", port=3306,
+c = pymysql.connect(host="10.50.11.76", port=3306,
                     user="gkxlumenx", password=__import__("os").environ["INNOV_MYSQL_PASSWORD"],
                     charset="utf8mb4")
 cur = c.cursor(); cur.execute("SHOW DATABASES")

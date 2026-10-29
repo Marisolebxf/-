@@ -66,12 +66,12 @@
   - https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines
   - https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines
 - 部署 namespace：`dev`（topic 本次 CI YAML 会再滚一次 `deploy:k8s`，随后跑 `e2e:chain-gold`）
-- K8s URL：http://192.168.88.50:30892
+- K8s URL：http://10.50.69.111:30892
 - 金路径 job：`e2e:chain-gold`（首跑进行中，未在本 handoff 内等绿）
 
 ## 可观测性（建议）
 
-- 失败时 Playwright trace 在 job artifact（`e2e/test-results`）；QA 再抄页面 `X-Trace-Id` → Tempo `http://192.168.88.50:30201`
+- 失败时 Playwright trace 在 job artifact（`e2e/test-results`）；QA 再抄页面 `X-Trace-Id` → Tempo `http://10.50.69.111:30201`
 
 ## 涉及文件
 

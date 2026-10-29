@@ -31,7 +31,7 @@
 ## 偏离
 
 - 产业链 meta 复用存量 chain Feign，未新开 Java→算法直连。
-- 本机不到 `192.168.88.50` NodePort；dev 验收以 CI rollout / 仓内单测 / `e2e:chain-gold` 为准。
+- 本机不到 `10.50.69.111` NodePort；dev 验收以 CI rollout / 仓内单测 / `e2e:chain-gold` 为准。
 
 ## 产物清单
 

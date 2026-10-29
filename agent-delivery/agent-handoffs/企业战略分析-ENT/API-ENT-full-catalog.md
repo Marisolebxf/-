@@ -142,7 +142,7 @@ Content-Type: application/json
 | 三模块任务中心 #102–109 | 已交付（CORE=`done`） | 路径与契约可对接 |
 | 报告/导出六类 | 已交付（ARTIFACT=`review`） | 复用 #102/#106，Java 本地生成 |
 | 评估辅助/模板 #113–121 | 已交付（EVAL=`review`） | 仅企业评估使用 |
-| Python / MinIO 生产地址 | 已确认 | Python `http://demo-platform-ai-py:8081`；MinIO `http://192.168.88.43:9900`；bucket `gkxlumen-topic-analysis-results` |
+| Python / MinIO 生产地址 | 已确认 | Python `http://demo-platform-ai-py:8081`；MinIO `http://10.50.11.76:9900`；bucket `gkxlumen-topic-analysis-results` |
 
 明细契约：§3 总览表 #102–121 → §4.Q（分析）/ §4.EVAL（评估辅助与模板）。
 
@@ -9436,7 +9436,7 @@ GET /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
     "status": "success",
     "resultData": null,
     "resultAssetId": "analysis/enterprise_eval/EVAL-20260727-001/result.json",
-    "resultUrl": "http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json",
+    "resultUrl": "http://10.50.11.76:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json",
     "resultSize": 20480,
     "resultBucket": "gkxlumen-topic-analysis-results",
     "errorMsg": null,
@@ -9499,7 +9499,7 @@ Accept: application/json
 
 ```http
 HTTP/1.1 302 Found
-Location: http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json
+Location: http://10.50.11.76:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json
 ```
 
 
@@ -9743,7 +9743,7 @@ data: {"type":"connected"}
   "task_id": "EVAL-20260727-001",
   "analysis_type": "enterprise_eval",
   "status": "success",
-  "result_url": "http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json",
+  "result_url": "http://10.50.11.76:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json",
   "result_asset_id": "analysis/enterprise_eval/EVAL-20260727-001/result.json",
   "result_size": 20480,
   "result_bucket": "gkxlumen-topic-analysis-results",
@@ -9883,7 +9883,7 @@ data: {"type":"connected"}
   "task_id": "REC-20260727-001",
   "analysis_type": "talent_recommend",
   "status": "success",
-  "result_url": "http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/talent_recommend/REC-20260727-001/result.json",
+  "result_url": "http://10.50.11.76:9900/gkxlumen-topic-analysis-results/analysis/talent_recommend/REC-20260727-001/result.json",
   "result_asset_id": "analysis/talent_recommend/REC-20260727-001/result.json",
   "result_size": 15360,
   "result_bucket": "gkxlumen-topic-analysis-results",

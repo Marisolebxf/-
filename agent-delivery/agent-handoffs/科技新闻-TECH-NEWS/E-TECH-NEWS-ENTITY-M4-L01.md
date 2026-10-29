@@ -32,7 +32,7 @@
 
 ## 2. 偏离
 
-- 本机无法连通 `192.168.88.43:3306`（超时），未做 live MySQL 写入验收；默认仍 `sqlite`，不破坏 CI。
+- 本机无法连通 `10.50.11.76:3306`（超时），未做 live MySQL 写入验收；默认仍 `sqlite`，不破坏 CI。
 - 正式库需已执行 `ads_tech_news_entity.sql`；运维侧执行 DDL + 配 `INNOV_MYSQL_*` 后设 `TECH_NEWS_IE_STORE=mysql|dual`。
 
 ---

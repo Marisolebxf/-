@@ -54,7 +54,7 @@
 | DWD | `demo_gkxlumenx_dwd` |
 | ADS | `demo_gkxlumenx_ads` |
 
-### 行数（2026-09-02 05:45 UTC+8 · 88.50 / ns `dev`）
+### 行数（2026-09-02 05:45 UTC+8 · 10.50.69.111 / ns `dev`）
 
 | 表 | n |
 |----|--:|
@@ -92,7 +92,7 @@ DWD 上其余 `policy_*` 分析结果表多为 0 行（Job 产出，本退出门
 
 ### 复跑命令
 
-在 88.50：
+在 10.50.69.111：
 
 ```text
 kubectl -n dev exec deploy/demo-platform-entan-py -- python -c "from polan.common.db import connect; c=connect(); print(c.ods,c.dwd,c.ads)"

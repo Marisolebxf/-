@@ -75,7 +75,7 @@ handoff：agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L02-metrics-registr
 - 分支：feat/E-PLATFORM-P0-L03
 
 ## DoD
-- dev graphd 192.168.88.43:9669 可连；schema 文档化
+- dev graphd 10.50.75.136:9669 可连；schema 文档化
 - POST /internal/graph/subgraph → nodes/edges + source:nebula
 - PG 兜底 source:pg；opentelemetry-instrument + OTLP :4318
 - push → py:smoke 绿
@@ -231,7 +231,7 @@ handoff：agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L06-platform-deploy
 
 ## DoD
 - EventMap 真实 API：点位、热力、列表、详情、关联分析
-- http://192.168.88.50:30891/innov 无 console 报错
+- http://10.50.69.111:30891/innov 无 console 报错
 
 ## 交付
 handoff：agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L08-eventmap-e2e.md

@@ -25,7 +25,7 @@
 
 ## 问题清单
 
-- **现网审计（88.50 / MySQL 192.168.88.43，2026-08-14）**
+- **现网审计（10.50.69.111 / MySQL 10.50.11.76，2026-08-14）**
   - lumen `innov-py`：`schema_to_db` = `demo_gkxlumenx_*`（`values-lumen.yaml` 的 `innovPy.env` 只有 LLM，整表覆盖掉 MySQL）。
   - lumen Java：`INNOV_MYSQL_DB=innov`、原 user=root；库 `innov` 存在 **68** 张 M1 表，`ads_innovation_event=230`，`dwm_graph_node=472`。
   - `gkxlumenx` 原先无 `innov.*` 权限；已 `GRANT ALL ON innov.*`，现可读 230/472。

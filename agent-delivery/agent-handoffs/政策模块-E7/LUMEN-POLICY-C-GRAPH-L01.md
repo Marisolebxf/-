@@ -90,7 +90,7 @@
 - commit：`36e5a7237f1cb901bd25639aab0b1e42704cc60a`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines?ref=dev
 - 部署：不改 helm；首发 Deployment 仍须 `helm:chart`（遗留，不挡编码）；`deploy:topic-policy` 仍 BOOT 的 manual
-- 探活：`GET http://192.168.88.50:30899/policy/topic/v1/policy/graph`（Deployment 起来后）
+- 探活：`GET http://10.50.69.111:30899/policy/topic/v1/policy/graph`（Deployment 起来后）
 
 ## 可观测性
 

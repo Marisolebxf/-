@@ -29,7 +29,7 @@ def mysql_conf() -> dict:
             "缺少 INNOV_MYSQL_PASSWORD / GKX_MYSQL_PASSWORD（见 algo-mysql-connection-info.md）"
         )
     return dict(
-        host=os.environ.get("INNOV_MYSQL_HOST", "192.168.88.43"),
+        host=os.environ.get("INNOV_MYSQL_HOST", "10.50.11.76"),
         port=int(os.environ.get("INNOV_MYSQL_PORT", "3306")),
         user=os.environ.get("INNOV_MYSQL_USER", "gkxlumenx"),
         password=password,

@@ -44,7 +44,7 @@
 
 - **请点 demo-svc-platform `helm:deploy`**（Nacos hook 已绿，应比 21724 快）。
 - 另点 **lumen-etl-es-py `deploy:etl-es-py`** 把 helm 的 `latest` 钉成 SHA。
-- 外网 `http://192.168.88.50:30806` 将失效，改打 in-cluster DNS。
+- 外网 `http://10.50.69.111:30806` 将失效，改打 in-cluster DNS。
 
 ## CI/CD（必填）
 
