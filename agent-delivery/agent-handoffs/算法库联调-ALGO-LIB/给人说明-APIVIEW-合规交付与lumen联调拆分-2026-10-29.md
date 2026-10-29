@@ -1,7 +1,7 @@
 # APIVIEW 合规交付与 lumen 联调拆分
 
 > **日期**：2026-10-29
-> **状态**：前端拆分已按方案 A 落代码。69 条清单、密封包、镜像 digest 仍待 `human:唐绍祖`。架构基线未把方案 A 升成新决策。
+> **状态**：前端拆分已按方案 A 落代码；合理调试 NodePort 定为 **30894**（30899 被占）。69 条清单、密封包、镜像 digest 仍待 `human:唐绍祖`。架构基线未把方案 A 升成新决策。
 > **提出**：把现有算法联调台拆成「合规交付」和「线上试算」两条链，并冻结合同内 69 条算法的 Python 闭包。
 > **待签字**：`human:唐绍祖`（69 条清单与锁定 tag）。方案 A 已按 2026-10-29「开始落地」写入 nginx，产品前端仍走 Java 链。
 > **本文件角色**：拆分方案与锁定清单模板。冲突时的展示名以 [`算法合规与合理区分规约.md`](../../算法合规与合理区分规约.md) 为准（D17）。
@@ -12,7 +12,7 @@
 
 ## 1. 要解决的事
 
-现在占着 NodePort **30897** 的是 `lumen-ui-algo-apiview`，算法请求打的是 demo 进程。拆分后这个端口留给合规台，不改它的 demo upstream。合理调试改挂新端口 **30899**。
+现在占着 NodePort **30897** 的是 `lumen-ui-algo-apiview`，算法请求打的是 demo 进程。拆分后这个端口留给合规台，不改它的 demo upstream。合理调试改挂新端口 **30894**（原拟 30899，被 kubepi 占用）。
 
 | 页面族 | 现网服务 | 代码仓 |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ demo-ui-algo-apiview
   → demo-platform-entan-py      代码仓 demo-algo-ent-analysis
   登录仍走 demo-platform-gateway → gkx-auth（不进算法锁定）
 
-合理调试（按业务继续改）  NodePort 30899
+合理调试（按业务继续改）  NodePort 30894
 lumen-ui-algo-apiview
   → gkxlumen-innov-py
   → gkxlumen-entan-py-api / gkxlumen-entan-py-worker
@@ -45,8 +45,8 @@ lumen-ui-algo-apiview
 | | 合规交付 | 合理调试 |
 | --- | --- | --- |
 | 前端仓 | `demo-ui-algo-apiview`（新建） | `lumen-ui-algo-apiview`（保留） |
-| NodePort | **30897**（沿用现网端口） | **30899**（新开） |
-| 验收地址 | http://10.50.69.111:30897 | http://10.50.69.111:30899 |
+| NodePort | **30897**（沿用现网端口） | **30894**（新开） |
+| 验收地址 | http://10.50.69.111:30897 | http://10.50.69.111:30894 |
 | 算法进程 | `demo-platform-innov-py`、`demo-platform-entan-py` | `gkxlumen-innov-py`、`gkxlumen-entan-py-api`、`gkxlumen-entan-py-worker` |
 | 算法代码 | `demo-algo-science`、`demo-algo-ent-analysis` | `lumen-algo-py` |
 | 用途 | 与算法中台当前合规算法一致的验收展示 | 测线上 lumen 环境里的算法 |
@@ -57,9 +57,9 @@ lumen-ui-algo-apiview
 | 验收环境 | 前端仓 | NodePort | 地址 |
 | --- | --- | --- | --- |
 | 验收环境-实现-算法 preview（合规交付） | `demo-ui-algo-apiview` | 30897 | http://10.50.69.111:30897 |
-| 验收环境-实现-算法 preview（合理调试用） | `lumen-ui-algo-apiview` | 30899 | http://10.50.69.111:30899 |
+| 验收环境-实现-算法 preview（合理调试用） | `lumen-ui-algo-apiview` | 30894 | http://10.50.69.111:30894 |
 
-端口调整：现网 30897 上的 Deployment 是 `gkx-lumen-algo-apiview`，请求已经进 demo 算法进程。拆分后 **30897 留给合规台**，服务改挂 `demo-ui-algo-apiview`，upstream 仍是 `demo-platform-innov-py` 与 `demo-platform-entan-py`。`lumen-ui-algo-apiview` 从 30897 挪走，改挂 **30899**，upstream 改为 lumen 算法进程。30897 不再改去打 `gkxlumen-*`。
+端口调整：现网 30897 上的 Deployment 是 `gkx-lumen-algo-apiview`，请求已经进 demo 算法进程。拆分后 **30897 留给合规台**，服务改挂 `demo-ui-algo-apiview`，upstream 仍是 `demo-platform-innov-py` 与 `demo-platform-entan-py`。`lumen-ui-algo-apiview` 从 30897 挪走，改挂 **30894**，upstream 改为 lumen 算法进程。30897 不再改去打 `gkxlumen-*`。
 
 `demo-svc-platform` 只承担合规台登录。改网关业务路由不算改合规算法，但不得把合规台的算法请求改去别的服务。
 
@@ -71,11 +71,11 @@ lumen-ui-algo-apiview
 
 `demo-ui-algo-apiview` 从 `lumen-ui-algo-apiview` 的锁定提交整仓复制，新 Git 远程。复制后两边不再 merge。
 
-复制时保持合规台 nginx 指向 `demo-platform-innov-py` 与 `demo-platform-entan-py`，并占用 NodePort 30897。`lumen-ui-algo-apiview` 的 nginx 去掉这两处 upstream，改为第 6 节的 lumen 目标，NodePort 改为 30899。
+复制时保持合规台 nginx 指向 `demo-platform-innov-py` 与 `demo-platform-entan-py`，并占用 NodePort 30897。`lumen-ui-algo-apiview` 的 nginx 去掉这两处 upstream，改为第 6 节的 lumen 目标，NodePort 改为 30894。
 
 发布约定：
 
-- 合规台镜像名独立，NodePort **30897**。合理调试台 NodePort **30899**。两个端口不互换、不共用一个 Service。
+- 合规台镜像名独立，NodePort **30897**。合理调试台 NodePort **30894**。两个端口不互换、不共用一个 Service。
 - 登记 `agent-delivery/repo-registry.yaml` 与 `agent-delivery/paths.yaml`。
 - 分支仍是 `origin/dev`，禁止直推 `main`。
 - 本地 `pnpm dev`：合规台代理到 demo 算法进程；lumen 台代理到 lumen 算法进程。
@@ -177,7 +177,7 @@ CODEOWNERS：
 
 方案 B（Java 转发 `/internal/*`）没有现成路由，这次没有做。若架构师改回 B，再撤掉本台直连和放行头。
 
-端口：`values-lumen.yaml` 写过 10.50.69.111:30899 被 `default/kubepi` 占用。清单里 Service 在 Deployment 前面。Service 申请 30899 失败时，后面的 Deployment 不会被这次 apply 改掉，现网 30897 仍打旧 nginx。30899 被占时不要改清单去强绑。
+端口：2026-10-29 job 19778 证实 30899 已被占用（`values-lumen.yaml` 记为 kubepi）。合理调试台改用 **30894**（`zhipu-tts` 空闲）。CI 已拆成先 apply Service，失败则停，不再半改 ConfigMap。
 
 ---
 
@@ -194,11 +194,11 @@ UI 指到 lumen 进程，测到的是该进程的代码和它当时连接的库�
 
 ## 8. 实施顺序
 
-69 条锁定仍未做。前端拆分按下面顺序发布，避免两个 Service 抢 30897，也避免一次失败的 30899 把现网 nginx 改去打 lumen。
+69 条锁定仍未做。前端拆分按下面顺序发布，避免两个 Service 抢 30897。
 
 1. 唐绍祖填写第 9 节清单后再打 `compliance-lock-*`、收 `compliance_locked/`、钉合规镜像。这次不代替他做。
 2. 先发布 `lumen-algo-py` 的 innov 放行头，再手动点 `deploy:innov`。
-3. 再发布 `lumen-ui-algo-apiview`，Service 从 30897 改到 30899，upstream 改为第 6 节。30899 申请失败就停，不要改现网 Deployment。
+3. 再发布 `lumen-ui-algo-apiview`：先 apply Service→**30894**，成功后再 apply ConfigMap/Deployment（upstream 第 6 节）。
 4. 30897 空出来之后再发布 `demo-ui-algo-apiview`，新 Service 占用 30897，upstream 仍是 `demo-platform-*`。
 5. 69 条签字之后，再把锁定决策补进架构基线。
 
