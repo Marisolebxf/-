@@ -284,6 +284,23 @@ kg_op("attrs/create", "图谱·实体属性", "属性·新增",
 _attr_upd = schema_of([F("name"), F("group", enum=["base", "dyn"]), F("dtype"), F("definition"), F("unit"), F("constraint"), F("value")]); _attr_upd["required"] = ["id"]
 kg_op("attrs/update", "图谱·实体属性", "属性·编辑", _attr_upd)
 kg_op("attrs/delete", "图谱·实体属性", "属性·删除", schemas["DeleteBody"])
+kg_op("attrs/history", "图谱·实体属性", "属性·变更记录/多版本管理（审计倒序；含 version 快照）",
+      {"type": "object", "properties": {
+          "attrId": {"type": "string", "description": "只看某属性行"},
+          "name": {"type": "string", "description": "按属性名精确"},
+          "group": {"type": "string", "enum": ["base", "dyn"], "description": "政策多版本管理传 base"},
+          "page": {"type": "integer"}, "size": {"type": "integer"}}})
+kg_op("attrs/current", "图谱·实体属性", "属性·当前值+版本号",
+      {"type": "object", "required": ["attrId"], "properties": {"attrId": {"type": "string", "description": "属性行 id"}}})
+kg_op("attrs/template", "图谱·实体属性", "属性·下载 CSV 导入模板（属性名称/属性定义/数据类型/单位）",
+      {"type": "object", "properties": {}})
+kg_op("attrs/import", "图谱·实体属性", "属性·批量导入（rows 或 csv；四列必填；同名更新否则新增）",
+      {"type": "object", "properties": {
+          "group": {"type": "string", "enum": ["base", "dyn"], "description": "缺省 base"},
+          "rows": {"type": "array", "items": {"type": "object", "properties": {
+              "name": {"type": "string"}, "definition": {"type": "string"},
+              "dtype": {"type": "string"}, "unit": {"type": "string"}}}},
+          "csv": {"type": "string", "description": "CSV 原文（含表头；与 rows 二选一）"}}})
 
 # ================= 专家知识（{domain} 有限枚举段） =================
 DM = {"name": "domain", "in": "path", "required": True, "schema": {"type": "string", "enum": ["industry", "enterprise", "policy", "service", "region"]}}
