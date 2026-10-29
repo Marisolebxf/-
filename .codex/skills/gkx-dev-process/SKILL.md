@@ -11,4 +11,4 @@ description: >
 
 真源与 Cursor 同文：`.cursor/skills/gkx-dev-process/SKILL.md`。改技能先改那边。打分表在同目录 `reference.md`（Cursor 侧）。
 
-不建任务，不签收方案，不用口令里的百分数。今日快照写 `agent-delivery/工程过程/当日进展/`。领导简报写 `agent-delivery/工程过程/领导简报/`。
+不建任务，不签收方案，不用口令里的百分数。今日快照写 `agent-delivery/工程过程/当日进展/`，末尾出站投影飞书（见 Cursor 侧 SKILL 第 7 步）。领导简报写 `agent-delivery/工程过程/领导简报/`。

@@ -3,8 +3,8 @@ name: gkx-dev-process
 description: >
   GKX 系统集成过程：建档、记一笔、今日快照、查询、领导简报。
   Use when the user says 按规约建档, 记一笔, 今日快照, 查对接, 今天到哪了,
-  导出领导简报, 领导简报, or gkx-dev-process.
-  Reads task-registry via MCP only. Writes 当日进展, 进度, 领导简报.
+  导出领导简报, 领导简报, 同步飞书, or gkx-dev-process.
+  Reads task-registry via MCP only. Writes 当日进展, 进度, 领导简报；今日快照末尾出站投影飞书。
   Does not task-create, does not sign off scheme tasks, does not use oral percentages.
 ---
 
@@ -18,7 +18,8 @@ description: >
 |---|---|
 | 按系统集成整体过程规约建档：{维度} | 建档 |
 | 记一笔 / 记约定时点 / 追加流水、纪要、风险 | 记一笔 |
-| 今日快照 | 今日快照 |
+| 今日快照 | 今日快照（仓内落盘后顺带飞书出站） |
+| 同步飞书 | 只推飞书，不重算快照 |
 | 今天到哪了 / 查对接：{维度} | 查询 |
 | 导出领导简报 | 领导简报 |
 
@@ -34,7 +35,7 @@ description: >
 - 不编截止日期、开始时间、指标条数、风险系数、扣分、扣款、人天
 - 不把智树内部出门日写成完成日期要求或对端承诺
 - 不改 scope-baseline
-- 不回写飞书
+- 不把飞书格子改回 git；不手改飞书八列指望当真源
 
 任务只用 MCP `task-registry` 的 `task-get`（已知 ID）或 `task-query`（按监管人、epic，不拉全表）。先看工具 schema 再调。
 
@@ -69,10 +70,15 @@ PM 说「今日快照」才跑。步骤见 [reference.md](reference.md)。
 4. 覆盖写 `agent-delivery/工程过程/当日进展/YYYY-MM-DD.md`。同一天只留这一份。
 5. 把同一组数追加到该维 `进度.md`（不覆盖旧日），只刷新该维 `README.md` 顶部「当前」。
 6. 另写 `agent-delivery/工程过程/当日进展/WBS汇总-YYYY-MM-DD.xlsx`。表内是本端实现任务，不含定义轨。没有挂上第 2–7 项草案号的，工作项归进「自研模块」，并且只写在第一个 sheet。列、分 sheet 和合并见 [reference.md](reference.md)。不覆盖 `04-系统集成/WBS汇总-2026-10-22.xlsx`。八列表和 §7.1 百分比仍只算第 2 至第 7 项 WBS 行。
+7. **飞书出站**：仓内 md / xlsx 写完后，在编排仓根执行  
+   `node scripts/sync-feishu-daily-snapshot.mjs --date YYYY-MM-DD`  
+   （配置见 `agent-delivery/feishu/feishu-daily-snapshot-board.yaml`）。只投影「当日八列」与「维度汇总」，不推 WBS 汇总 xlsx。凭据用本机 `.env` 的 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`。缺凭据或接口失败：快照文件仍保留，对人说明「飞书未推」+ 错误摘要，**不回滚**仓内文件。成功则简报飞书表链接。
 
 阻塞只抄口令里的「阻塞：…」。抄进去的同时在该维 `风险.md` 追加一条。没有这句就不标红。
 
 当天没有口令：当日进展写「今日未报」，状态仍按任务状态，不另造红。
+
+PM 只说「同步飞书」：不重算打分，对已有最新（或点名日期的）`当日进展/YYYY-MM-DD.md` 跑同上命令。
 
 ## 查询
 
