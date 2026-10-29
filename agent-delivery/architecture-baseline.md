@@ -121,7 +121,7 @@ flowchart LR
 
 ---
 
-## 2. 锁定决策（16 项）
+## 2. 锁定决策（17 项）
 
 | # | 决策 | 内容 |
 |---|------|------|
@@ -141,6 +141,7 @@ flowchart LR
 | **D14** | **对象存储按 §2.1：业务一个桶、用途是目录** | 正式业务只写 RustFS `http://10.50.69.111:19000` 上的桶 `gkx-lumen`（路径风格，控制台 `:19001`）。六个用途是这个桶里的目录，不是各自独立的桶。可观测仍用旧实例 `:30900` 上的 `tempo-blocks`、`loki-chunks`。存储设计说明见 [minio.md](data/data-design/storage/platform/minio.md)，与本节冲突时以本节为准。禁止自造桶或顶层目录，禁止前端直连对象存储，禁止业务读写 `milvus` 桶。凭证放 K8s Secret `gkxlumen-platform-rustfs` 或主机 `/data/middleware/.env`，不进 git。决策 2026-10-20，同日收敛为目录。 |
 | **D15** | **展示系统 Python 门面独立于专题系统** | 在 `lumen-topic-py` 仓内新增 `gkx_show_service` 子项目作为**科技信息展示系统专属 Python 门面**，与专题侧 `gkx_search_service` / `gkx_svc_service` **进程级 + 镜像级 + 路由级三重隔离**：镜像 `gkxlumen-show-service`（端口 8082），路由前缀 `/internal/gkx-show/**`，K8s Deployment `gkxlumen-platform-show-py`。展示门面只读正式 ADS、不写 ADS、不承接算法职责（D2 算法库统一出口不变，数据加工/写 ADS 仍归 `lumen-algo-py/vendor/entan-py` / `innov-py`）。共享仅限 `gkx_common` 工具链（observability/response/config）。协作边界用 `CODEOWNERS` 划定。**调用链层级（三层）**：终端 → `gkxlumen-gateway` → `gkxlumen-display`（展示聚合 BFF，`/display/v1/**` 单入口）→ **Feign 并行** → 领域服务层（`gkxlumen-innov` / `gkxlumen-topic` / `gkxlumen-metrics`）→ **Feign /internal** → 算法层（`gkx_show_service` 读 ADS / 久新 API / 燕大 KG / 智谱 / 深势）。展示 BFF 职责：页面级聚合、Redis 缓存、分区降级、D9 就绪度注入；**不直连 Python / DB**。领域服务 Feign 调 Python 算法层（含 show-service）是合规路径。要素归属速查见 §2.2。决策来源：项目负责人 2026-10-22 确认，`徐腾强 @qike366.com` 落地骨架（commit `4b867f8`）。关联任务 `DEVOPS-LUMEN-TOPIC-PY-SHOW-L01`。 |
 | **D16** | **功能验收缺项表** | 计算逻辑已登记的缺字段、缺行，可以在库 `gkxlumenx_gapfill` 建 `gapfill_` 前缀表，由 Python 用 LLM 或其他方式灌数。禁止写入 ODS、DWD、ADS 和供应方库。读缺项表算出的 ADS 批次号以 `gapfill_` 开头。未闭合的 `Q-*` 按客户决策清单里已写的临时默认实施。缺项补齐并按该默认实算完成后，D4 不得再是 mock，改为 live。细则见 `data-lineage-policy.md` §2.4。决策：项目负责人 2026-10-28。 |
+| **D17** | **合规算法冲突时分成「合规 / 合理」** | 唐绍祖锁定的合规算法，其调用闭包（入口、中间函数、这些函数读到的变量；含 worker 上的同一条链）除他本人外不得修改。业务探索与该条冲突时，全过程复制到新包再改副本，新路由不得复用锁定 URL。算法中台 `demo-ui-system-test` 的指标展示名成对出现：`{原名}-合规`、`{原名}-合理`。没有冲突的指标保持原名。`-合理` 不进合规展示台 `demo-ui-algo-apiview`。两条的 `metric_id`、路由、Python 入口各自独立。细则见 [算法合规与合理区分规约.md](算法合规与合理区分规约.md)。决策：2026-10-29。 |
 
 ### 2.1 对象存储桶（D14）
 
@@ -346,6 +347,13 @@ shared_core:
 - [ ] 无 `git merge` demo → lumen；对照实现是读代码后重写
 - [ ] 已知历史债（§3.1 `D12-DEBT-*`）未作为新能力的默认下游；新 PR 不得再扩大回落
 
+### 5.4 合规算法冲突（D17）
+
+- [ ] 未改唐绍祖锁定闭包中的函数、变量，以及 worker 上的同一条链
+- [ ] 与锁定算法冲突的改动是全过程复制后的新路由，未复用锁定 URL
+- [ ] `demo-ui-system-test` 对冲突指标成对展示 `{原名}-合规` 与 `{原名}-合理`；无冲突的指标保持原名
+- [ ] `-合理` 未进入 `demo-ui-algo-apiview`；两条的 `metric_id`、路由、Python 入口各自独立
+
 ### 5.2 前端规范合规（D8）
 
 - [ ] 新页面使用 `@arco-design/web-react`（不是 AntD v5；除非是 demo2 历史代码维护）
@@ -375,6 +383,7 @@ shared_core:
 | 图谱引擎 | [graph-engine.md](graph-engine.md) | D6 NebulaGraph 协议；一张 `G_科创`（storage 决策 #7）。下一 graphd 为 TRSGraph，运行时地址待 `E-PLATFORM-P0-TRSGRAPH-L01` 闸门 |
 | 调用链铁律 | [本文 §1](#1-目标拓扑方案-a) · [§4](#4-机器可读依赖规则agent-校验用) | `前端 → Java → Python /internal/*`；D12 见 [§2](#2-锁定决策14-项) / [§3.1](#31-仓边界d12-与历史债)。工程过程索引：[04-产品集成.md](工程过程/04-产品集成.md) |
 | 对象存储桶（D14） | [本文 §2.1](#21-对象存储桶d14) | 正式业务桶 `gkx-lumen`（`10.50.69.111:19000`），六个用途是目录。可观测桶 `tempo-blocks`、`loki-chunks` 在 `:30900`。设计说明 [minio.md](data/data-design/storage/platform/minio.md) 与本节冲突时以本节为准 |
+| 合规 / 合理（D17） | [算法合规与合理区分规约.md](算法合规与合理区分规约.md) | 锁定闭包不得改。冲突时复制全过程；算法中台展示名 `{原名}-合规` 与 `{原名}-合理` |
 | 消息总线（D13） | [本文 §1.1](#11-消息总线kafka) | Kafka `10.50.11.76:9092`；运行时不用 RabbitMQ。图 `ARCH-MSG-KAFKA` |
 | 仓与环境映射 | [repo-registry.yaml](repo-registry.yaml) | demo↔lumen 仓、服务名、环境、`branch_policy` |
 | CI/CD | [cicd-pipeline.md](cicd-pipeline.md) | push → Pipeline 绿 → K8s dev；设计类 `cicd: skip` |
@@ -429,3 +438,4 @@ shared_core:
 | v2.2.19 | 2026-10-20 | **新增 D14 对象存储桶**：§2.1 为各项目用桶的唯一规约。正式业务桶在 RustFS `10.50.69.111:19000`。禁止自造桶名，禁止前端直连，禁止业务读写 `milvus` 桶。凭证不进 git。 |
 | v2.2.20 | 2026-10-20 | **D14 收敛为目录**：正式业务只保留桶 `gkx-lumen`。`gkx-analysis-results`、`gkx-user-reports`、`gkx-source-reports`（含政策原始文件）、`gkx-cms-images`、`gkx-user-assets`、`gkx-others` 改为该桶内目录。可观测仍是独立桶 `tempo-blocks`、`loki-chunks`。 |
 | v2.2.21 | 2026-10-22 | **新增 D15 展示系统 Python 门面独立**：在 `lumen-topic-py` 仓内新增 `gkx_show_service` 子项目，与专题侧 `gkx_search_service` / `gkx_svc_service` 进程级 + 镜像级 + 路由级三重隔离（镜像 `gkxlumen-show-service` :8082，前缀 `/internal/gkx-show/**`，Deployment `gkxlumen-platform-show-py`）。展示门面只读正式 ADS + 按需调 algo-py `/internal/*`，不写 ADS、不承接算法职责（D2 不变）。骨架由徐腾强 `4b867f8` 落地；§4 依赖规则补 `python_show_facade` 块；协作边界用 `CODEOWNERS` 划定。关联任务 `DEVOPS-LUMEN-TOPIC-PY-SHOW-L01`。 |
+| v2.2.22 | 2026-10-29 | **新增 D17 合规算法冲突时分成「合规 / 合理」**。正文 [算法合规与合理区分规约.md](算法合规与合理区分规约.md)。锁定闭包除唐绍祖外不得改；冲突则全过程复制。算法中台 `demo-ui-system-test` 展示 `{原名}-合规` 与 `{原名}-合理`。`-合理` 不进 `demo-ui-algo-apiview`。 |
