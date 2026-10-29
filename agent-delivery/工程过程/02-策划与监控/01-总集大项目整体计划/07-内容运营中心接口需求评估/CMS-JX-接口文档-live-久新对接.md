@@ -2223,7 +2223,7 @@ _（本接口无额外字段说明，见通用约定）_
 |---|---|---|---|
 | attrId | string | 否 | 只看某属性行 |
 | name | string | 否 | 按属性名精确过滤 |
-| group | string | 否 | `base` / `dyn`；政策「多版本管理」传 `group=base` 只看基础属性 |
+| group | string | 否 | `base` / `dyn`；传 `basic` 视同 `base`（兼容前端）；政策「多版本管理」传 `base` 只看基础属性 |
 | page | integer | 否 | 默认 1 |
 | size | integer | 否 | 默认 20，上限 100 |
 

@@ -119,4 +119,19 @@ Java 零改动（demo-svc-platform 与 lumen-svc-platform 均未触碰；lumen �
 - actual_cost: 1.2
 - cost_warn: green
 
+## 10. 代码评审（requesting-code-review，2026-10-29）
+
+评审员子代理结论：**0 Critical / 3 Important / 5 Minor → Needs fixes（轻度，~15 行）**。Spec 轴 8 项零缺口；SQL 注入面/SSCursor 并发/每批 commit 幂等/UI 回包匹配等 8 项顾虑核查排除。同日修复并推送：
+
+| 级别 | 问题 | 修复 | 提交 |
+|---|---|---|---|
+| I1 | 复合主键 keyset 只按首列推进会静默漏行 | `pick_pk()` 只认单列 PRI，复合/无主键降级 SSCursor 流式（宁慢勿漏）+ 新增测试 | algo `da0775d` |
+| I2 | `_start_chain_pipeline` 锁外查 sync 后锁内不复查 → 竞态窗口 | `_start_chain_pipeline` 锁内补查 `_sync_state["sync_running"]` | algo `da0775d` |
+| I4 | UI 轮询 600×3s=30min < 实测 32.4min | 预算 1200 次（≈60min） | UI `d445a3f` |
+| m1 | written 计原始批大小（含被清洗丢弃行） | 两分支改 `written += len(clean_rows)`，written+skipped=todo | algo `da0775d` |
+| m4 | keyset 测试写死 `rows[-1][0]`，测不出 pk 列错位 | 测试改用 `cols.index(pk)` 与实现同式 | algo `da0775d` |
+
+修复后验证：自检 **13 passed**（+复合主键降级用例）、路由注册与 I2 守卫断言通过、UI `pnpm build` ✓ 12.39s。
+未修（留档）：m2 既有灌数 UX 瑕疵（非本 PR 引入）、m3 门禁后缀式风格（白名单兜底仍闭合）、m5 无主键分支闲置（四表全有主键）。
+
 ponytail: full——可观测（status 进度/错误回传）、幂等语义（replace 明示 TRUNCATE）、写门禁、互斥、大表分批均为铁律交付项，未裁剪；未新增任何第三方依赖（pymysql/pyyaml/fastapi 均为仓内已有）。
