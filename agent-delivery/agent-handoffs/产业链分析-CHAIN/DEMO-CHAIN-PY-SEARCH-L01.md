@@ -96,7 +96,7 @@ python -m pytest -q tests/test_chain_search.py tests/test_chain_shared.py --tb=s
 - 全量：`140 passed, 1 warning`（Starlette TestClient deprecation，与本单无关）
 - SEARCH：关键词命中 / 高筛 / 空命中 / 非 `demo_` 库名 422；源码无 elasticsearch
 
-示例请求（Demo `192.168.88.43` `demo_gkxlumenx_dwd.industry_chain` 10 行）：
+示例请求（Demo `10.50.11.76` `demo_gkxlumenx_dwd.industry_chain` 10 行）：
 
 | 请求 | 命中 |
 |---|---:|

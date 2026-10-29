@@ -52,7 +52,7 @@
 | hang | **3525**（`svcgraph_20260820_140108`） |
 | 边 | **0**（Q062 诚实空） |
 | GET `/v1/svc/graph?limit=3` | hang_total=3525，shown=3，edges=[] |
-| Nebula | **failed**（本机 `192.168.88.43:9669` Timeout / BAD；hang 仍可查，未报假成功） |
+| Nebula | **failed**（本机 `10.50.75.136:9669` Timeout / BAD；hang 仍可查，未报假成功） |
 | pending | 一律 1 |
 | 未做 | 十模型、50892、正式库、造边、CHAIN 表 |
 

@@ -41,7 +41,7 @@
 
 - 仓：`lumen-ui-topic` · `origin/dev`
 - 页：`/policy/overview` · `/policy/analysis` · `/policy/recommendation`（`PolicyAnalysisConfigPage`）
-- 根因：已发布验收源 `http://192.168.88.50:30892` → `isSecureContext=false` → `crypto.subtle` 为 `undefined`。`createAnalysisFingerprint` 只走 `crypto.subtle.digest('SHA-256')`，点「开始分析」抛 `TypeError`，无 toast，不进 `view=processing`，Create 0。
+- 根因：已发布验收源 `http://10.50.69.111:30892` → `isSecureContext=false` → `crypto.subtle` 为 `undefined`。`createAnalysisFingerprint` 只走 `crypto.subtle.digest('SHA-256')`，点「开始分析」抛 `TypeError`，无 toast，不进 `view=processing`，Create 0。
 - 修复：
   1. 共享函数一次修：`createAnalysisFingerprint` 改走 `sha256Hex`。`crypto.subtle` 可用时仍 Web Crypto；HTTP 用纯函数 SHA-256 回退。同输入与 subtle 字节一致，输出 `/^[a-f0-9]{64}$/`。无新 npm。政策/企业/产业链共用该函数。
   2. `startAnalysis`：指纹抛错或非 64 位小写 hex → `Message.error('分析指纹生成失败')`，禁止静默。成功路径仍 `job.startOrReuse` → `view=processing`。切条件不自动 create。
@@ -67,7 +67,7 @@
   - 与 subtle 有值时同输入同哈希（并对照 `node:crypto` createHash）
   - INB4 提交 `{ industry_id: 'INB1303' }`，无 `industry_vid`（源码断言未回退）
 - `npx vue-tsc --build` → 零 error
-- 浏览器：本机未对已发布 `30892` 复测。**需 E0 再滚 `lumen-ui-topic` 前端** 后 QA 在 http://192.168.88.50:30892 复跑金路径 #3～#5。
+- 浏览器：本机未对已发布 `30892` 复测。**需 E0 再滚 `lumen-ui-topic` 前端** 后 QA 在 http://10.50.69.111:30892 复跑金路径 #3～#5。
 
 ## 遗留风险
 
@@ -83,13 +83,13 @@
 - pipeline URL / ID：push 后 GitLab CI（`lumen-ui-topic` / `gkx-lumen`）；本叶未等流水线绿
 - 部署 namespace / 镜像 tag：**需 E0 再滚前端**；勿把旧 `1ce03cc4` 当本修验收
 - K8s rollout：待 devops
-- dev 测试 URL：http://192.168.88.50:30892 （滚完后才认）
+- dev 测试 URL：http://10.50.69.111:30892 （滚完后才认）
 
 ## 可观测性
 
 - OTEL_SERVICE_NAME：`lumen-ui-topic`（前端 observability 未改）
 - C1 根因 Trace（clusters，Create 未发出）：`2806c27e8fc030c5d159c875f922b73a`
-- Tempo：http://192.168.88.50:30201/api/traces/2806c27e8fc030c5d159c875f922b73a
+- Tempo：http://10.50.69.111:30201/api/traces/2806c27e8fc030c5d159c875f922b73a
 - Loki：按该 trace 搜 `industry-clusters`。Create span 本轮不存在。
 
 ## 涉及文件
@@ -129,4 +129,4 @@
 
 ## 给 coordinator
 
-**联调通过**（代码层：vue-tsc --build 零 error + selfcheck 绿 + 已 push `origin/dev`）。请派 **E0 再滚 `lumen-ui-topic` 前端**，之后 QA 只认 http://192.168.88.50:30892 复测金路径 #3～#5。不要自行 done。不要把本叶当金路径已绿。
+**联调通过**（代码层：vue-tsc --build 零 error + selfcheck 绿 + 已 push `origin/dev`）。请派 **E0 再滚 `lumen-ui-topic` 前端**，之后 QA 只认 http://10.50.69.111:30892 复测金路径 #3～#5。不要自行 done。不要把本叶当金路径已绿。

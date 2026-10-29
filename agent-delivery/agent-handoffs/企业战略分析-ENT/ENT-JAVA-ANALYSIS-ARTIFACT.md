@@ -86,7 +86,7 @@
 ## 7. 开放项
 
 1. 目标库执行 `retry_of_task_id` 增量 DDL
-2. Nacos 文档已按生产值对齐：Python `http://demo-platform-ai-py:8081`、MinIO `http://192.168.88.43:9900`、bucket `gkxlumen-topic-analysis-results`；实际 DataId 仍须由运维核对/发布，AK/SK 优先由 `GKX_MINIO_*` 注入
+2. Nacos 文档已按生产值对齐：Python `http://demo-platform-ai-py:8081`、MinIO `http://10.50.11.76:9900`、bucket `gkxlumen-topic-analysis-results`；实际 DataId 仍须由运维核对/发布，AK/SK 优先由 `GKX_MINIO_*` 注入
 3. K8s / 联调环境冒烟：创建 report/export → SSE → `/asset` 下载
 4. 部署镜像确认中文字体（YaHei / Noto CJK）
 5. coordinator 验收后转 `done`

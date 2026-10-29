@@ -150,7 +150,7 @@ US-E7-POL-02，金路径 #3 结果段。路由仅 `/policy/overview`（`analysis
 - commit：`ed592164dbb8eb0e97bdfffbf459c9b388e02c0e`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines?ref=dev
 - 部署：随仓既有 CI；本叶不改 helm
-- dev URL：`http://192.168.88.50:30892`（发布后：`/policy/overview` 开始分析 → wait_view → 查看结果 → 时序结果板）
+- dev URL：`http://10.50.69.111:30892`（发布后：`/policy/overview` 开始分析 → wait_view → 查看结果 → 时序结果板）
 
 ## 可观测性
 

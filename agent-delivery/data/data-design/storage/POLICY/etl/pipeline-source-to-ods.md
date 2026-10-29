@@ -20,8 +20,8 @@ engine: mysql
 | 角色 | 库.表 |
 |---|---|
 | 源（只读） | `183.240.141.251:3318` / `gkx.dwd_policy_base` · `gkx.dwd_global_policy_base`（账号 `gkx_reader_zp`） |
-| Demo 目标 | `192.168.88.43` / `demo_gkxlumenx_ods` 同名表 |
-| lumen 目标 | `192.168.88.43` / `gkxlumenx_ods` 同名表（须二次确认） |
+| Demo 目标 | `10.50.11.76` / `demo_gkxlumenx_ods` 同名表 |
+| lumen 目标 | `10.50.11.76` / `gkxlumenx_ods` 同名表（须二次确认） |
 
 DDL 真源 [`../sources/ods-ddl.md`](../sources/ods-ddl.md)。目标表须已存在；脚本**不** `CREATE DATABASE` / `CREATE TABLE`。
 

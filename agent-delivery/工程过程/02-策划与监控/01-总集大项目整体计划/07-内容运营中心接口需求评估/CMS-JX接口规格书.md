@@ -388,7 +388,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 ### 5.3 CMS-JX-KG-ATTR-L01 · 实体属性管理
 
 原型模块：entity-attr（基础属性定义 + 动态属性更新两卡片）。**运营侧 schema 配置，不影响真源表结构**。
-**原型明确移除、不做**：状态、停用、版本与变更、批量导入、保存属性（docx 第三节尾注）。
+**原型曾标注移除、现已按最新原型恢复**：版本与变更（attrs/history + attrs/current）、批量导入（attrs/template + attrs/import）。仍不做：状态、停用、保存属性（docx 第三节尾注中的「整页保存」按钮）。
 
 **端点**：
 - 属性字段：`POST /api/open/cms/v1/kg/{entityType}/attrs/list | /create | /update | /delete`（update/delete body 含 id）

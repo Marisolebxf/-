@@ -40,7 +40,7 @@ task: DATA-CHAIN-INDANA-STORAGE-L01
 | 实例 | 六表 `dwd_industry_analysis_*` |
 |---|---|
 | 三方入站 `gkx` @ `183.240.141.251:3318` | **存在**（`SHOW CREATE` 已快照） |
-| Demo `demo_gkxlumenx_dwd` @ `192.168.88.43:3306` | **不存在**（OPEN-CHAIN-INDANA-01） |
+| Demo `demo_gkxlumenx_dwd` @ `10.50.11.76:3306` | **不存在**（OPEN-CHAIN-INDANA-01） |
 | 正式 `gkxlumenx_dwd` | **禁止本叶 CREATE/ALTER** |
 
 CSV：`doc/md-extract/_csv/市场研究（金融、宏观行业、行业分析、产业链）数据汇总表__行业分析要素库.csv`

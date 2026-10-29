@@ -1,6 +1,6 @@
 # E-PLATFORM-P0-KAFKA-E2E-L01 · dev 实证 Kafka 正式链路（异步分析 → gkx.analysis.result → Worker → Java 回调）
 
-> 结论：**红**。两次真实创建的 `enterprise_eval` 任务都在 Python AI 创建下游任务时失败，原因是 `gkxlumen-platform-ai-py` 连不上 MySQL `192.168.88.43`（2003 超时）。链路没有走到 Kafka，`gkx.analysis.result` end offset 仍为 0。失败归类：**与 Kafka 无关的既有问题（AI Python 数据库依赖不可达）**。
+> 结论：**红**。两次真实创建的 `enterprise_eval` 任务都在 Python AI 创建下游任务时失败，原因是 `gkxlumen-platform-ai-py` 连不上 MySQL `10.50.11.76`（2003 超时）。链路没有走到 Kafka，`gkx.analysis.result` end offset 仍为 0。失败归类：**与 Kafka 无关的既有问题（AI Python 数据库依赖不可达）**。
 
 ## 任务认领（必填）
 
@@ -64,7 +64,7 @@
 
 | # | 时间（本地） | 请求 | HTTP / code | taskId | traceId | 终态 | 失败原因（Java `errorMsg` 原文） |
 |---|---|---|---|---|---|---|---|
-| 1 | 2026-10-18 01:19:24 | `POST /api/topicAsync/topic/v1/analysis/tasks`，`enterprise_eval` + `force=true` | 200 / 0，`reused=false`，`status=running` | `EVAL-20261018-001` | `2d5795e25e3f87c7a8e586ee2f2cf622` | 01:19:35 `failed` | `创建下游任务失败：系统异常: (2003, "Can't connect to MySQL server on '192.168.88.43' (timed out)")` |
+| 1 | 2026-10-18 01:19:24 | `POST /api/topicAsync/topic/v1/analysis/tasks`，`enterprise_eval` + `force=true` | 200 / 0，`reused=false`，`status=running` | `EVAL-20261018-001` | `2d5795e25e3f87c7a8e586ee2f2cf622` | 01:19:35 `failed` | `创建下游任务失败：系统异常: (2003, "Can't connect to MySQL server on '10.50.11.76' (timed out)")` |
 | 2（同条件重试一次，用于区分偶发） | 2026-10-18 01:21:25 | 同上 | 200 / 0，`status=running` | `EVAL-20261018-002` | `d004fea933f4bef117da6c98da8afe51` | 01:21:35 `failed` | 同上，原文一致 |
 
 两次都是创建后约 10 秒失败，与 MySQL 连接超时一致。错误前缀「创建下游任务失败」来自 Java `EnterpriseEvalAnalysisAdapterImpl.unwrap`，后半段 `(2003, ...)` 是 pymysql 错误，说明 Java → Python `/internal/*` 这一跳是通的，失败点在 AI Python 访问 MySQL。
@@ -85,14 +85,14 @@
 
 ### 根因定位（只读）
 
-- `lumen-topic-py/k8s/dev-ai-py.yaml` L59–60：`GKX_MYSQL_HOST = 192.168.88.43`，库 `demo_gkxlumenx_dwd`。
+- `lumen-topic-py/k8s/dev-ai-py.yaml` L59–60：`GKX_MYSQL_HOST = 10.50.11.76`，库 `demo_gkxlumenx_dwd`。
 - `lumen-topic-py/k8s/dev-search-py.yaml` L55–56：同一个库，`GKX_MYSQL_HOST` 已在 `0b1309f`（2026-10-17，`fix(k8s): search 改连现网 MySQL/ES…`）改为 `10.50.11.76`。该提交也动了 `dev-ai-py.yaml`，但没有改 MySQL 地址；Kafka 提交 `21cc71e` 对 `dev-ai-py.yaml` 只替换了总线变量。
-- 本机到 `192.168.88.43:3306` 可连通（`Test-NetConnection` True），集群 Pod 内超时。说明是集群到该地址不通，不是库宕机。本机无 kubectl 凭证，未进 Pod 复核。
+- 本机到 `10.50.11.76:3306` 可连通（`Test-NetConnection` True），集群 Pod 内超时。说明是集群到该地址不通，不是库宕机。本机无 kubectl 凭证，未进 Pod 复核。
 - 历史：`EVAL-20261013-002`（10-13）成功；`EVAL-20261014-001`（10-14）失败原因为 `DWD enterprise_base 未找到企业`，当时还能连上库。`gkxlumen-platform-ai-py` 于 2026-10-18 00:33（job 13295）重新部署，之后连库超时。重新调度后 Pod 落到不通 `192.168.88.x` 的节点，或该网段对集群关闭，两者都可能，本叶无法区分。
 
 ## 问题清单
 
-- **主阻塞**：`gkxlumen-platform-ai-py` 连 MySQL `192.168.88.43` 超时，`enterprise_eval` 无法创建下游任务，Kafka 段不会被触发。风险洞察、人才推荐由同一个 AI 进程处理，按同一份 env 推断也会受影响（未实测，避免多造记录）。
+- **主阻塞**：`gkxlumen-platform-ai-py` 连 MySQL `10.50.11.76` 超时，`enterprise_eval` 无法创建下游任务，Kafka 段不会被触发。风险洞察、人才推荐由同一个 AI 进程处理，按同一份 env 推断也会受影响（未实测，避免多造记录）。
 - **观察项（与本叶无关）**：经网关调用 `POST /api/enterprise/topic/v1/search/by-codes` 和 `POST /api/enterprise/topic/v1/search/query` 均返回 HTTP 500（`{"status":500,"path":"/topic/v1/search/query"}`）。因此本叶无法预先核验企业编码。
 - **观察项**：本机 aiokafka 0.14 `describe_consumer_groups` 解码失败，无法查看 Worker 组成员数。
 
@@ -177,12 +177,12 @@
 
 ## 复测（2026-10-18）
 
-> 结论：**仍为红**。修复 `lumen-topic-py` `a11364e` 已部署，但错误原文不变。复测确认 2003 不是 ai-py 报的，是它下游的算法服务 `lumen-algo-py`（`lumen-platform-algo-py`）报的；该服务的 MySQL 仍指向 `192.168.88.43`。**更正首轮根因**：首轮把故障归到 `dev-ai-py.yaml` 的 `GKX_MYSQL_HOST`，这个判断不对。ai-py 的企业评估路径不读这个变量；真正需要改的是 `lumen-algo-py/k8s/api.yaml`（以及 `worker.yaml`）的 `LUMEN_ALGO_MYSQL_HOST`。分类不变：与 Kafka 无关的既有问题（算法服务数据库依赖不可达）。
+> 结论：**仍为红**。修复 `lumen-topic-py` `a11364e` 已部署，但错误原文不变。复测确认 2003 不是 ai-py 报的，是它下游的算法服务 `lumen-algo-py`（`lumen-platform-algo-py`）报的；该服务的 MySQL 仍指向 `10.50.11.76`。**更正首轮根因**：首轮把故障归到 `dev-ai-py.yaml` 的 `GKX_MYSQL_HOST`，这个判断不对。ai-py 的企业评估路径不读这个变量；真正需要改的是 `lumen-algo-py/k8s/api.yaml`（以及 `worker.yaml`）的 `LUMEN_ALGO_MYSQL_HOST`。分类不变：与 Kafka 无关的既有问题（算法服务数据库依赖不可达）。
 
 ### 被测部署
 
 - `lumen-topic-py`（project 9）pipeline **2556**（`a11364ee`）：`py:smoke` 13420 ✅，`py:image:*` 13421–13423 ✅，**`deploy:ai-py` 13425 ✅**；`deploy:ai-worker` 13426、`deploy:search-py` 13424 为 manual 未点（本叶不点）。
-- `lumen-algo-py`（project 8）最近部署：pipeline **2553**（`c0290161`，`fix(ci): e2e:chain-gold trigger full project path`），`deploy:api` **13412** ✅、`deploy:worker` **13413** ✅（2026-10-17T17:12Z）。该提交 `k8s/api.yaml`：`LUMEN_ALGO_MYSQL_HOST = 192.168.88.43`，`LUMEN_ALGO_MYSQL_DWD_DB = demo_gkxlumenx_dwd`。`origin/dev` 上 `api.yaml`、`worker.yaml` 仍是 `192.168.88.43`。
+- `lumen-algo-py`（project 8）最近部署：pipeline **2553**（`c0290161`，`fix(ci): e2e:chain-gold trigger full project path`），`deploy:api` **13412** ✅、`deploy:worker` **13413** ✅（2026-10-17T17:12Z）。该提交 `k8s/api.yaml`：`LUMEN_ALGO_MYSQL_HOST = 10.50.11.76`，`LUMEN_ALGO_MYSQL_DWD_DB = demo_gkxlumenx_dwd`。`origin/dev` 上 `api.yaml`、`worker.yaml` 仍是 `10.50.11.76`。
 
 ### 企业编码选取（只读）
 
@@ -195,7 +195,7 @@
 
 | # | 时间（本地） | 入参要点 | HTTP / code | taskId | traceId | 终态 | 失败原因（Java `errorMsg` 原文） |
 |---|---|---|---|---|---|---|---|
-| 3 | 2026-10-18 01:53:16 | `enterprise_eval`，`subType=competitiveness`，`enterpriseCodes=["demo-org-bj-10"]`，`TPL-SYSTEM-COMPETITIVENESS`，新 `analysis_fp=4e0baa8d…bb6c2`，`force=true` | 200 / 0，`reused=false`，`running` | `EVAL-20261018-003` | `fc7b25d575e93de7ccb2c4f02932dd81`（`traceparent=00-fc7b25d575e93de7ccb2c4f02932dd81-8272911f0d40ff2a-01`） | 01:53:27 `failed` | `创建下游任务失败：系统异常: (2003, "Can't connect to MySQL server on '192.168.88.43' (timed out)")` |
+| 3 | 2026-10-18 01:53:16 | `enterprise_eval`，`subType=competitiveness`，`enterpriseCodes=["demo-org-bj-10"]`，`TPL-SYSTEM-COMPETITIVENESS`，新 `analysis_fp=4e0baa8d…bb6c2`，`force=true` | 200 / 0，`reused=false`，`running` | `EVAL-20261018-003` | `fc7b25d575e93de7ccb2c4f02932dd81`（`traceparent=00-fc7b25d575e93de7ccb2c4f02932dd81-8272911f0d40ff2a-01`） | 01:53:27 `failed` | `创建下游任务失败：系统异常: (2003, "Can't connect to MySQL server on '10.50.11.76' (timed out)")` |
 
 **没有重试**：派单允许同样的失败重试 1 次。但根因已定位到一个确定的配置项，重试只会多一条失败记录，不会带来新信息，所以没有重试。
 
@@ -228,7 +228,7 @@
 
 ### 失败分类与建议
 
-- **分类**：与 Kafka 无关的既有问题，算法服务 `lumen-platform-algo-py` 的 MySQL `192.168.88.43` 在集群内不可达。
+- **分类**：与 Kafka 无关的既有问题，算法服务 `lumen-platform-algo-py` 的 MySQL `10.50.11.76` 在集群内不可达。
 - **建议修复角色**：`devops-agent` 把 `lumen-algo-py/k8s/api.yaml` 与 `worker.yaml` 的 `LUMEN_ALGO_MYSQL_HOST` 改为 `10.50.11.76`，库名保持 `demo_gkxlumenx_dwd`。账号口令由 `algorithm-agent` 确认现网可用，并核对 `LUMEN_ALGO_MYSQL_*` 下其他库名（ODS、任务表所在库）在 10.50.11.76 上是否存在。推 dev 后点 `deploy:api`、`deploy:worker`（QA 不点）。
 - `lumen-topic-py` 的 `a11364e` 不需要回退，保留无害；search 与 ai-py 已经一致。
 - **下一轮复测**：直接用 `demo-org-bj-10` 和本节的入参。修复后若出现 `DWD 未汇聚到企业特征` 一类数据错误，结果会是 `task_failed` 同步回 Java，同样不走 Kafka。届时需要换成画像字段更全的企业，或改测风险洞察。
@@ -301,7 +301,7 @@ end 恰好为 1，说明没有重试重发。结果对象存储指针只由 Work
 
 | 侧 | 库.表 | 配置依据 | `EVAL-20261018*` 只读查询 |
 |---|---|---|---|
-| Java `gkxlumen-topic-async-service` | `gkxlumenx_topic_enterprise.analysis_task` @ 10.50.11.76 | `lumen-svc-platform/helm/gkxlumen-platform/configs/gkxlumen-topic-async-service-biz-dev.yml` L9；`AnalysisTaskEntity` `@TableName("analysis_task")`；host 由 `values-lumen.yaml` L38 → `_helpers.tpl` L124–125 注入 `MYSQL_HOST` | 4 行：-001/-002/-003 `failed`（MySQL 2003 → 192.168.88.43），-004 `success` |
+| Java `gkxlumen-topic-async-service` | `gkxlumenx_topic_enterprise.analysis_task` @ 10.50.11.76 | `lumen-svc-platform/helm/gkxlumen-platform/configs/gkxlumen-topic-async-service-biz-dev.yml` L9；`AnalysisTaskEntity` `@TableName("analysis_task")`；host 由 `values-lumen.yaml` L38 → `_helpers.tpl` L124–125 注入 `MYSQL_HOST` | 4 行：-001/-002/-003 `failed`（MySQL 2003 → 10.50.11.76），-004 `success` |
 | 算法 `lumen-platform-algo-py` | `gkxlumenx_cfg.lumen_analysis_task` @ 10.50.11.76 | `lumen-algo-py/lumen_common/tasks/repository.py` L11–14；`k8s/api.yaml` L36、`worker.yaml` L34 `LUMEN_ALGO_MYSQL_CFG_DB` | 1 行：-004 `success`，progress 100 |
 
 两张表本来就分开（各服务各管自己的状态），靠 `task_id` 加 HTTP 回调对齐。本轮链路已经闭合，所以**不算失败**。运维看不到 `EVAL-20261018*` 的原因：-001 到 -003 在算法服务连库这一步就失败了，根本没写进算法表；-004 是修复后的第一条。
@@ -359,6 +359,6 @@ end 恰好为 1，说明没有重试重发。结果对象存储指针只由 Work
 ### 遗留（不属 Kafka 迁移范围）
 
 - 企业检索 `search/query` 和 `search/by-codes` 返回 500，`e2e:chain-gold` 因此长期是红的。
-- ai-py 没有注入 `GKX_ES_HOST`，推荐模块会回落到 192.168.88.43；集群里 Milvus 地址同样不可达，影响产业锚点和政策 enrich。
+- ai-py 没有注入 `GKX_ES_HOST`，推荐模块会回落到 10.50.11.76；集群里 Milvus 地址同样不可达，影响产业锚点和政策 enrich。
 - demo-svc-platform 的 `backend:image:*` 长期失败（找不到 jar），所以 helm:deploy 走不通。
 - `enterprise_risk_summary` 是空表；多份 k8s 清单里有明文 MySQL 口令。

@@ -271,7 +271,7 @@ PrimaryWorkbenchTabs 贯穿全分析层：
 |------|------|------|
 | 1.算法只在Python | ✅ | 所有🔧标记模型由 algorithm-agent 在 Python 仓实现 |
 | 2.调用链 前端→Java REST→Python | ✅ | 前端不直连 Python，经 Java BFF 聚合 |
-| 3.图谱用NebulaGraph | ✅ | CP1 图谱数据走 NebulaGraph（192.168.88.43:9669） |
+| 3.图谱用NebulaGraph | ✅ | CP1 图谱数据走 NebulaGraph（10.50.75.136:9669） |
 | 4.可观测性 | ✅ | 前端 observability.ts 埋点 + Java Agent + Python instrument |
 | 5.CI/CD | ✅ | push → Pipeline 绿 → K8s dev rollout |
 | 6.demo2 只读 merge | ✅ | 本产物为设计文档，不直接 merge 进 lumen |

@@ -229,14 +229,14 @@ kubectl -n dev logs deploy/demo-platform-gateway --tail=200 | grep -E '加载路
 
 ### 7.2 看 demo 网关路由是否在库里
 
-库是 **`gkxx`**（不是 `gkxlumenx`）。MySQL 在内网 `192.168.88.43`。口令从 **upms Pod 环境变量**取，不要写进文档：
+库是 **`gkxx`**（不是 `gkxlumenx`）。MySQL 在内网 `10.50.11.76`。口令从 **upms Pod 环境变量**取，不要写进文档：
 
 ```bash
 kubectl -n dev exec deploy/demo-platform-upms -- printenv MYSQL_HOST MYSQL_PORT MYSQL_DATABASE MYSQL_USERNAME
 # 密码：printenv MYSQL_PASSWORD   ← 只在跳板上用，禁止回传到聊天
 ```
 
-查路由（在跳板上用客户端连 88.43，库 `gkxx`）：
+查路由（在跳板上用客户端连 10.50.11.76，库 `gkxx`）：
 
 ```sql
 SELECT route_id, uri, sort_order, predicates, filters

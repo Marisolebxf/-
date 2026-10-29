@@ -65,7 +65,7 @@ ReplicaSet：现网 `gkx-lumen-topic-58c6445` 镜像 `7cd3be47` ready 1（pod `g
 
 ## 产物清单
 
-- 现网前端：`lumen-ui-topic` `7cd3be47` @ `http://192.168.88.50:30892`
+- 现网前端：`lumen-ui-topic` `7cd3be47` @ `http://10.50.69.111:30892`
 - 本文 handoff（编排仓；无业务仓 diff）
 
 ## 验收证据
@@ -75,7 +75,7 @@ kubectl -n dev get deploy gkx-lumen-topic
 IMAGE=harbor.htmisoft.net/gkx/gkx-lumen-topic:7cd3be47  READY=1/1
 rollout status: successfully rolled out
 
-GET http://192.168.88.50:30892/
+GET http://10.50.69.111:30892/
 HTTP 200
 Content-Length: 456
 Last-Modified: Wed, 02 Sep 2026 09:53:48 GMT
@@ -107,7 +107,7 @@ JDBC 未动。无正式前缀数据面变更。innov / 政策 Python 镜像未�
 - namespace：`dev`
 - 镜像：`gkx-lumen-topic:7cd3be47`（已换掉 `1ce03cc4`）
 - K8s rollout：`gkx-lumen-topic` **成功**（RS `58c6445`）
-- dev URL：http://192.168.88.50:30892 HTTP **200**
+- dev URL：http://10.50.69.111:30892 HTTP **200**
 
 ## 可观测性
 

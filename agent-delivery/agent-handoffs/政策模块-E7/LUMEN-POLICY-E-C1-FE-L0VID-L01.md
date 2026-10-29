@@ -69,7 +69,7 @@
   - `INB1303` 提交 `{ industry_id: 'INB1303' }`，无 `industry_vid`
   - SHA-256 64 位小写断言仍绿
 - `npx vue-tsc --build` → 零 error
-- 浏览器：本机未对已发布 `30892` 复测（现网仍是旧镜像）。**需 E0 再滚 `lumen-ui-topic` 前端** 后 QA 在 http://192.168.88.50:30892 复跑金路径 #2～#5。
+- 浏览器：本机未对已发布 `30892` 复测（现网仍是旧镜像）。**需 E0 再滚 `lumen-ui-topic` 前端** 后 QA 在 http://10.50.69.111:30892 复跑金路径 #2～#5。
 
 ## 遗留风险
 
@@ -85,13 +85,13 @@
 - pipeline URL / ID：push 后 GitLab CI（`lumen-ui-topic` / `gkx-lumen`）；本叶未等流水线绿
 - 部署 namespace / 镜像 tag：**需 E0 再滚前端**；勿把旧 `c4758206` 当本修验收
 - K8s rollout：待 devops
-- dev 测试 URL：http://192.168.88.50:30892 （滚完后才认）
+- dev 测试 URL：http://10.50.69.111:30892 （滚完后才认）
 
 ## 可观测性
 
 - OTEL_SERVICE_NAME：`lumen-ui-topic`（前端 observability 未改）
 - C1 根因 Trace：`a15b911860aa8089b8ea3b3fe6f44506`
-- Tempo：http://192.168.88.50:30201/api/traces/a15b911860aa8089b8ea3b3fe6f44506
+- Tempo：http://10.50.69.111:30201/api/traces/a15b911860aa8089b8ea3b3fe6f44506
 - 指纹：禁止再改；Create SHA-256 已绿（缺陷包三项 POST）
 
 ## 涉及文件
@@ -129,4 +129,4 @@
 
 ## 给 coordinator
 
-**联调通过**（代码层：vue-tsc 零 error + selfcheck 绿 + 已 push `origin/dev`）。请派 **E0 再滚 `lumen-ui-topic` 前端**，之后 QA 只认 http://192.168.88.50:30892 复测金路径 #2～#5。不要自行 done。
+**联调通过**（代码层：vue-tsc 零 error + selfcheck 绿 + 已 push `origin/dev`）。请派 **E0 再滚 `lumen-ui-topic` 前端**，之后 QA 只认 http://10.50.69.111:30892 复测金路径 #2～#5。不要自行 done。

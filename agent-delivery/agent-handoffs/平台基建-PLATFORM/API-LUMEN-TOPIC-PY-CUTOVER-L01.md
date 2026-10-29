@@ -46,7 +46,7 @@
 - 前置 Python：https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines/5026 全绿（含 3 个 deploy）
 - 本仓 commit：`1ceb8e3` 已 push `origin/dev`
 - 本仓 pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5027
-- 网关回归：`POST http://192.168.88.50:30899/enterprise/topic/v1/search/meta/filters` → **HTTP 200** `code=0`（含 listing_statuses / operating_statuses 等字典，2026-08-14）
+- 网关回归：`POST http://10.50.69.111:30899/enterprise/topic/v1/search/meta/filters` → **HTTP 200** `code=0`（含 listing_statuses / operating_statuses 等字典，2026-08-14）
 
 ## 遗留风险
 
@@ -61,7 +61,7 @@
 - pipeline URL / ID：https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5027
 - 部署 namespace：`dev`
 - K8s rollout：**success** `helm:deploy` [#21542](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/21542) · `deploy:topic-enterprise` [#21544](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/21544) · `deploy:topic-async-service` [#21545](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/21545)
-- dev 测试 URL：`POST http://192.168.88.50:30899/enterprise/topic/v1/search/meta/filters` → **200** `code=0`
+- dev 测试 URL：`POST http://10.50.69.111:30899/enterprise/topic/v1/search/meta/filters` → **200** `code=0`
 
 ## 可观测性（建议）
 

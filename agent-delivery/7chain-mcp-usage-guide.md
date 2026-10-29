@@ -23,7 +23,7 @@
 }
 ```
 
-`GKX_MCP_API_BASE` 用验收表「科技专题服务算法库」的域名：`https://edu.itic-sci.com/tts/alogp`（内网对照 `http://10.50.69.111:30889`）。后面的 `/api` 由该站反代到 demo Java 网关。主机名是 `edu.itic-sci.com`。不要写开发节点 `192.168.88.50:30889`。专题页面 `https://edu.itic-sci.com/tts/svcz` 和展示系统 `https://edu.itic-sci.com/tid` 的 `/api` 会 401，不是这条 MCP 的基址。
+`GKX_MCP_API_BASE` 用验收表「科技专题服务算法库」的域名：`https://edu.itic-sci.com/tts/alogp`（内网对照 `http://10.50.69.111:30889`）。后面的 `/api` 由该站反代到 demo Java 网关。主机名是 `edu.itic-sci.com`。不要写开发节点 `10.50.69.111:30889`。专题页面 `https://edu.itic-sci.com/tts/svcz` 和展示系统 `https://edu.itic-sci.com/tid` 的 `/api` 会 401，不是这条 MCP 的基址。
 
 `GKX_MCP_POLICY_BASE` 是 lumen 网关：`https://edu.itic-sci.com/tts/lumen/api`（内网对照 `http://10.50.69.111:30895`）。外层 Nginx 去掉 `/tts/lumen/api` 后转到该网关。企业智能搜索和政策关键词检索都用它。不要指到 `/tts/alogp/api` 或 `/tts/svcz/api`。
 

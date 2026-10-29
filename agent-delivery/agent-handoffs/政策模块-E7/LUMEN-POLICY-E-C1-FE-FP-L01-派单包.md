@@ -21,7 +21,7 @@ X-Trace-Id：6d2565eb49b41650e411f061c8220465
 - QA：[E1 金路径冒烟](101081ec-6da6-4080-a632-30d38fceebdb) FAIL 1/4
 - 缺陷包：`agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-L01-defect-pack.md`
 - 已发布镜像当时：`gkx-lumen-topic:97963375`（SCOPE `2659503` 尚未滚到 30892；**指纹问题在 HEAD 仍在**）
-- Tempo：http://192.168.88.50:30201/api/traces/6d2565eb49b41650e411f061c8220465
+- Tempo：http://10.50.69.111:30201/api/traces/6d2565eb49b41650e411f061c8220465
 
 ## 必须修（按优先级）
 

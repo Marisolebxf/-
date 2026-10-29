@@ -1,4 +1,4 @@
-﻿# LUMEN-CHAIN-E-FIX-KEYLINK-L01 · 段 E 第 2 轮复测（只测失败故事）
+# LUMEN-CHAIN-E-FIX-KEYLINK-L01 · 段 E 第 2 轮复测（只测失败故事）
 
 > 日期：2026-08-14  
 > Task ID：`LUMEN-CHAIN-E-FIX-KEYLINK-L01`  
@@ -38,7 +38,7 @@
 | 项 | 值 |
 |----|----|
 | 故事 | `US-CHAIN-DIAG-03` → `US-CHAIN-DIAG-04` |
-| 已发布 URL | http://192.168.88.50:30892/industry-center/diagnosis?tab=key-link |
+| 已发布 URL | http://10.50.69.111:30892/industry-center/diagnosis?tab=key-link |
 | 镜像 tag | `gkx-lumen-algo-py-api:4c6a6a53`（E0 coordinator kubectl 已确认 ready 1/1；commit `4c6a6a5313c8f8b27e3e7099f432210537407dfb`） |
 | task_id | `CHAIN-20260814-015` |
 | 终态 | **success**（Java/FE；约 6–7s；五阶段均「已完成」，含 freeze） |
@@ -46,7 +46,7 @@
 | Create X-Trace-Id | `f2c457e460961b4ca16b2d660cd243a6` |
 | detail X-Trace-Id | `0914864b69ccf4d2d25e0526b142f74f`（success 轮询） |
 | result X-Trace-Id | `5793c2b8785e68be618e38e2583310b8` |
-| D12 | **合规**。本会话 `/api/*` 仅 `192.168.88.50:30892`；demo-* host **0** |
+| D12 | **合规**。本会话 `/api/*` 仅 `10.50.69.111:30892`；demo-* host **0** |
 | 缺陷包 | 无（本轮 PASS） |
 
 ## 复测步骤与证据
@@ -60,8 +60,8 @@ Playwright 1.62.1 Chromium headless，点 **K8s 已发布**前端（禁止 local
 5. 成功后停留约 4s：**未**自动进 `view=result`；按钮「查看分析结果」可见。  
 6. 点击后 URL 变为 `view=result`。  
 
-Create Tempo：[f2c457e460961b4ca16b2d660cd243a6](http://192.168.88.50:30201/api/traces/f2c457e460961b4ca16b2d660cd243a6)（API 200，body 有 batches）。  
-detail Tempo：[0914864b69ccf4d2d25e0526b142f74f](http://192.168.88.50:30201/api/traces/0914864b69ccf4d2d25e0526b142f74f)（API 200）。  
+Create Tempo：[f2c457e460961b4ca16b2d660cd243a6](http://10.50.69.111:30201/api/traces/f2c457e460961b4ca16b2d660cd243a6)（API 200，body 有 batches）。  
+detail Tempo：[0914864b69ccf4d2d25e0526b142f74f](http://10.50.69.111:30201/api/traces/0914864b69ccf4d2d25e0526b142f74f)（API 200）。  
 Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo。
 
 ### PASS 门（规约 §11.3，须同时）
@@ -108,7 +108,7 @@ Job **succeeded** 后结果页：关键环节数 `0`；市场规模「暂无正�
 - 部署 namespace：`dev`  
 - 镜像 tag：`gkx-lumen-algo-py-api:4c6a6a53`（E0 已滚）  
 - K8s rollout：E0 已确认 ready 1/1；本单未再滚  
-- dev 测试 URL：http://192.168.88.50:30892  
+- dev 测试 URL：http://10.50.69.111:30892  
 
 ## 可观测性（建议）
 

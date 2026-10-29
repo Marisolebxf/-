@@ -63,7 +63,7 @@
 ## 测试结果
 
 - 本地 `python -c "from polan.mockgen.incr import self_check; self_check()"`：**OK**（`id=MOCK20260901e14d1f`）。断言覆盖：`policy_list_where` 四字段 `LIKE %s` + `rank IN (...)`；`q_title=___NOHIT___` → `list=[]`；标题命中返回刚写入行。
-- SSH `192.168.88.50` 现网 `demo-platform-entan-py`（ClusterIP `10.97.63.95:8000`，镜像仍为 push 前）：
+- SSH `10.50.69.111` 现网 `demo-platform-entan-py`（ClusterIP `10.97.63.95:8000`，镜像仍为 push 前）：
   - `GET /v1/policy/mock/policies?limit=5` → **HTTP 200**，`data.list=[]`，`ods_count=0`，`X-Trace-Id=a00c61dc869ff6cd911e4d887e8946ed`
   - 带 `q_title=___NOHIT___` 仍 200 + 空列表（现网进程尚未滚本叶代码；空态与 SPEC 一致）
 - **50100 未点验**：本机未开联调台；K8s 未见 NodePort 50100。本地验证通过，K8s 待滚后再点 50100 搜索条。

@@ -251,7 +251,7 @@ C 空白名单 / 无 `op_id` → HTTP 包络 `code=1`。`SVC_RE_TECH` 出参必�
 
 ### 经网关 curl 样例（不是直打 :8000）
 
-发版后（gateway + gkx-innov 热更）用网关根（系统测代理 `VITE_ADMIN_PROXY_PATH`，如 `http://192.168.88.50:30889`）：
+发版后（gateway + gkx-innov 热更）用网关根（系统测代理 `VITE_ADMIN_PROXY_PATH`，如 `http://10.50.69.111:30889`）：
 
 ```http
 POST {GW}/entan/v1/svc/graph/ner
@@ -266,7 +266,7 @@ POST {GW}/entan/v1/svc/graph/hang
 GET {GW}/entan/v1/svc/graph?limit=1
 ```
 
-本机探测 `192.168.88.50:30889` **超时**（发版前旧路由仍直连 Python，新 Java 路由尚未 rollout）。证据以代码 + helm Path 为准，不伪称已 live。
+本机探测 `10.50.69.111:30889` **超时**（发版前旧路由仍直连 Python，新 Java 路由尚未 rollout）。证据以代码 + helm Path 为准，不伪称已 live。
 
 ### 架构合规
 
@@ -317,7 +317,7 @@ apiview `svc.graph` 每 `op_id` 一条：ner / intra / hang-industry|tech|enterp
 
 ### 浏览器 / 网关
 
-`192.168.88.50:30889` 本机仍超时。现网点验走 **50100**（`http://111.198.38.90:50100/#/industry-service/graph`，`/api` → 网关）。见下方「叶收口」。
+`10.50.69.111:30889` 本机仍超时。现网点验走 **50100**（`http://111.198.38.90:50100/#/industry-service/graph`，`/api` → 网关）。见下方「叶收口」。
 
 ### 架构合规
 

@@ -5,7 +5,7 @@
 角色：qa-agent
 监管人：human:淮政玮
 认领：coordinator_dispatch · lock 24h
-只认：http://192.168.88.50:30892
+只认：http://10.50.69.111:30892
 强度：ponytail full
 金路径：总控 §4 五条（#2 = 页内集群→L0，不强制篮）。
 期望未发生必红。QA 不改代码。

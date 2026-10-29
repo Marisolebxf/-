@@ -82,7 +82,7 @@ emptyReason: "企业维度暂无数据"（仅空集时出现）
 
 ## 五、环境事实更新（对 A0 报告的增补）
 
-- **真实网关地址 = `http://10.50.69.111:30895`**（用户 10-27 提供；A0 记的 `192.168.88.50:9999` 作废）。`/display/actuator/health` → **200 UP**（Redis 7.4.0 UP）。
+- **真实网关地址 = `http://10.50.69.111:30895`**。`/display/actuator/health` → **200 UP**（Redis 7.4.0 UP）。
 - **网关鉴权**：无 token POST `/display/v1/situation/map` → **401「访问令牌不存在」**（真实 token 需 PigX 登录获取；C 段本地 local profile 不受影响，D1 前置需解决）。
 - ⚠️ **Nacos 服务列表（display 视角 13 个服务）不含 `gkxlumen-element`**：K8s 路径 display→element 走服务发现，**element 未注册/未部署到 K8s dev 是硬缺口**（走 K8s 全链路前需部署或确认注册策略）。本地 local profile 联调不受影响。
 

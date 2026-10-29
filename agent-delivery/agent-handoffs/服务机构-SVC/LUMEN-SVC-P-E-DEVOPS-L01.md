@@ -95,7 +95,7 @@ sequenceDiagram
 
 | | 外网产品 | 集群 NodePort |
 |--|----------|----------------|
-| URL | **http://111.198.38.90:50892/**（总控真源 / 本叶验收） | `http://192.168.88.50:30892`（CI `E2E_BASE_URL`；本机超时不可达） |
+| URL | **http://111.198.38.90:50892/**（总控真源 / 本叶验收） | `http://10.50.69.111:30892`（CI `E2E_BASE_URL`；本机超时不可达） |
 | 映射 | NAT → 同 Deployment `gkx-lumen-topic` | `svc gkx-lumen-topic` `80:30892/TCP` |
 | 滚前 | `index-BcwVodOr.js`，无 `rec-list` / `ServiceOrgCompareBasket` | — |
 | 滚后 | `index-1yWyr-FK.js`：**HIT** `rec-list` · `ServiceOrgCompareBasket` · `service-portal` | CI rollout 日志 |

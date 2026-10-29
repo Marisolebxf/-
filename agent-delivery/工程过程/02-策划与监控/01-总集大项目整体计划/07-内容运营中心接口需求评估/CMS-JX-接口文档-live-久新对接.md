@@ -2,11 +2,11 @@
 
 | 项 | 值 |
 |---|---|
-| 文档版本 | live-1.3（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；含 10-24 字段兼容修复 + 10-27 关系类型字典/LLM 生成接口新增） |
-| 更新日期 | 2026-10-27 |
+| 文档版本 | live-1.4（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；含属性变更记录/多版本/CSV 模板与批量导入） |
+| 更新日期 | 2026-10-29 |
 | 提供 | 科技专题服务系统项目组（智树侧） |
 | 适用 | 久新 CMS 对接；**仅含已上线接口** |
-| 接口数量 | **96**（v1.2 新增已失效政策列表；v1.3 新增关系类型字典四端点与关系链 LLM 生成） |
+| 接口数量 | **108**（v1.4 相对 v1.3 新增 attrs/history、attrs/current、attrs/template、attrs/import） |
 | 范围说明 | 未上线能力（政策力度榜单/统计、企业全景等门户类）不在本文档 |
 
 > 下文按模块列出全部已上线接口。若需在 Apifox / Postman 调试，可另导入同目录 `CMS-JX-OpenAPI-v1.0-live.json`（OpenAPI 3.0）。
@@ -2176,39 +2176,7 @@ _（本接口无额外字段说明，见通用约定）_
 | msg | string | 否 |  |
 | data | object | 否 |  |
 
-**`data.records[]` 字段**：id（属性行id）、name（属性名）、group（base基础/dyn动态）、dtype（数据类型）、**definition（定义）**、**unit（单位）**、constraint（约束条件）、value（当前值）、order（排序）。
-
-
-*`data.records[]` 字段**：id（属性行id）、name（属性名）、group（base基础/dyn动态）、dtype（数据类型）、**definition（定义）**、**unit（单位）**、constraint（约束条件）、value（当前值）、order（排序）。
-
-
-#### 3.19.3 属性·编辑
-
-`POST /api/open/cms/v1/kg/{entityType}/attrs/update`
-
-**路径枚举段**
-
-| 字段 | 说明 |
-|---|---|
-| {entityType} | 取值: industry / enterprise / policy / service |
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| name | string | 否 |  |
-| group | string | 否 | 枚举: base/dyn |
-| dtype | string | 否 |  |
-| constraint | string | 否 |  |
-| value | string | 否 |  |
-
-**响应 `data`**
-
-| 字段 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| code | integer | 否 |  |
-| msg | string | 否 |  |
-| data | object | 否 |  |
+**`data.records[]` 字段**：id（属性行id）、name（属性名）、group（base基础/dyn动态）、dtype（数据类型）、**definition（定义）**、**unit（单位）**、constraint（约束条件）、value（当前值）、**version（版本号，每次编辑 +1）**、order（排序）。
 
 
 #### 3.19.4 属性·删除
@@ -2235,6 +2203,99 @@ _（本接口无额外字段说明，见通用约定）_
 | code | integer | 否 |  |
 | msg | string | 否 |  |
 | data | object | 否 |  |
+
+
+#### 3.19.5 属性·变更记录 / 多版本管理
+
+`POST /api/open/cms/v1/kg/{entityType}/attrs/history`
+
+> 对应原型：产业「变更记录」、政策「多版本管理」。数据来自 `cms_op_audit`（`KG_ATTR`），按属性表 `entity_type` 过滤；**任一字段编辑成功后 `version` 累加 +1**。
+
+**路径枚举段**
+
+| 字段 | 说明 |
+|---|---|
+| {entityType} | 取值: industry / enterprise / policy / service |
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| attrId | string | 否 | 只看某属性行 |
+| name | string | 否 | 按属性名精确过滤 |
+| group | string | 否 | `base` / `dyn`；传 `basic` 视同 `base`（兼容前端）；政策「多版本管理」传 `base` 只看基础属性 |
+| page | integer | 否 | 默认 1 |
+| size | integer | 否 | 默认 20，上限 100 |
+
+**响应 `data`**
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| total / page / size | integer | 分页 |
+| records[] | array | 变更行 |
+
+**`data.records[]` 字段**：attrId、action（新增/编辑/删除）、operator、reason、name、group、version、snapshot（改前/创建快照对象）、time。
+
+
+#### 3.19.6 属性·当前值 + 版本号
+
+`POST /api/open/cms/v1/kg/{entityType}/attrs/current`
+
+> 多版本对比时拉取当前态。
+
+**路径枚举段**
+
+| 字段 | 说明 |
+|---|---|
+| {entityType} | 取值: industry / enterprise / policy / service |
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| attrId | string | 是 | 属性行 id |
+
+**响应 `data` 字段**：attrId、name、definition、unit、value、version。
+
+
+#### 3.19.7 属性·下载 CSV 导入模板
+
+`POST /api/open/cms/v1/kg/{entityType}/attrs/template`
+
+> 对应原型：企业基本信息管理「下载 CSV 模板」。四列：`属性名称,属性定义,数据类型,单位`。
+
+**路径枚举段**
+
+| 字段 | 说明 |
+|---|---|
+| {entityType} | 取值: industry / enterprise / policy / service（企业为主入口，其他类型同样可用） |
+
+**请求体**：可空 `{}`。
+
+**响应 `data` 字段**：filename、contentType（`text/csv;charset=utf-8`）、csv（含 BOM 的 CSV 原文，前端直接落盘即可）。
+
+
+#### 3.19.8 属性·批量导入
+
+`POST /api/open/cms/v1/kg/{entityType}/attrs/import`
+
+> 对应原型：企业基本信息管理「批量导入」。四列均必填；`dtype` 枚举同新增；同名未删行则更新（version+1），否则新增；`group` 缺省 `base`。
+
+**路径枚举段**
+
+| 字段 | 说明 |
+|---|---|
+| {entityType} | 取值: industry / enterprise / policy / service |
+
+**请求体（二选一）**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| rows | array | 与 csv 二选一 | `[{name, definition, dtype, unit}, ...]` |
+| csv | string | 与 rows 二选一 | CSV 原文（可含表头） |
+| group | string | 否 | `base` / `dyn`，缺省 `base` |
+
+**响应 `data` 字段**：total、created、updated、failed、records[]（每项：name、id、action=`created|updated|failed`、error?）。
 
 
 ### 3.20 专家知识

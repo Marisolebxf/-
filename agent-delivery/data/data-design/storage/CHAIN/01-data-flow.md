@@ -146,7 +146,7 @@ flowchart LR
 | OPEN-CHAIN-POLICY-01 | 附录 B 政策挂接；施工范围见 POLICY 流图 §3 | `human:淮政玮` | **已放行** · 2026-08-21 · 不经李伟 |
 | OPEN-CHAIN-VEC-01 | §9 向量面增量会签：灌链末段一次 rebuild + Milvus `gkxlumen_industry_anchor` 进入 CHAIN 存储树（不进 ADS） | `human:李伟` | 增量 · **未会签**；施工已按 CROSS-VEC 总控特殊授权先行 |
 | OPEN-CHAIN-VEC-02 | 每日凌晨定时灌链（= 索引刷新）；排在 Job A 之前且串行 | devops | 已拍板 · 施工叶 `CROSS-VEC-CHAIN-CRON-L01` backlog |
-| OPEN-CHAIN-VEC-03 | 设计稿 `88.48` / `gkxlumen-industry-*` 订正为 `88.43` / `gkxlumen_industry_`（SAD 01/02/03） | 李伟 / 徐滕强 | 文档项 · 不挡施工 |
+| OPEN-CHAIN-VEC-03 | 设计稿 `88.48` / `gkxlumen-industry-*` 订正为 `10.50.11.76` / `gkxlumen_industry_`（SAD 01/02/03） | 李伟 / 徐滕强 | 文档项 · 不挡施工 |
 
 
 
@@ -275,7 +275,7 @@ flowchart TB
 ```mermaid
 flowchart LR
   DWD["demo_gkxlumenx_dwd<br/>industry_chain + node"] -->|"project_graph"| G["Nebula demo_gkx_chain<br/>VID 稳定"]
-  G -->|"末段一次 rebuild"| VEC["Milvus 192.168.88.43:19530<br/>gkxlumen_industry_anchor"]
+  G -->|"末段一次 rebuild"| VEC["Milvus 10.50.69.111:19530<br/>gkxlumen_industry_anchor"]
   TEI["TEI bge-base-zh-v1.5<br/>ClusterIP 仅集群内"] -->|"embed_text"| PY["lumen-algo-py"]
   PY -->|"drop+create+insert 仅本前缀"| VEC
   POL["政策 / 企业重灌"] -.->|"同步不调 rebuild / search"| VEC
@@ -289,7 +289,7 @@ flowchart LR
 |---|---|
 | 建库切面 | **仅**产业链灌数。DWD 链表写完 **且** 上图 `chain`/`segment` VID 稳定后，整库 **一次** `POST /internal/industry/embed/rebuild`。禁止映射逐行 embed。 |
 | 消费切面 | 政策 / 企业 **重灌同步** = L0+L1，**不调** Milvus / LLM / rebuild。search 只走按钮或 ETL Job A。 |
-| 引擎 | 现网 Milvus **2.4 standalone** `192.168.88.43:19530`。不采购第二套向量云。原设计稿 `88.48` **作废**。 |
+| 引擎 | 现网 Milvus **2.4 standalone** `10.50.69.111:19530`。不采购第二套向量云。原设计稿 `88.48` **作废**。 |
 | collection | **`gkxlumen_industry_anchor`**。前缀必须下划线 `gkxlumen_industry_`（连字符名物理建不出，`code 1100`）。**禁止**读写 / drop `amcpdp-*` / `aip_kb_*` / `spk_id_*`。 |
 | 客户端守卫 | 现网 `authorizationEnabled=false`。`create`/`drop`/`insert` 必须以 `MILVUS_COLLECTION_PREFIX` 开头，否则拒绝。这是当前唯一隔离。 |
 | embedding | 目标态 `bge-base-zh-v1.5` dim **768** COSINE；端点 `http://gkxlumen-embed-tei:8080/v1/embeddings`（ClusterIP）。query 侧加指令前缀，锚点侧不加。客户端 **不再** L2 归一。 |

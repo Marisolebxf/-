@@ -17,11 +17,11 @@
 
 | 项 | 值 |
 |---|---|
-| MySQL Host | `192.168.88.43:3306`（内网）/ `111.198.38.90:34306`（外网） |
+| MySQL Host | `10.50.11.76:3306`（内网）/ `111.198.38.90:34306`（外网） |
 | User | `gkxlumenx` |
 | DWD 库 | `gkxlumenx_dwd`（97 张表） |
 | 企业相关表 | 14 张有数据，10 张空表 |
-| ES | `http://192.168.88.43:9200`（xpack.security; elastic/htrfadmin） |
+| ES | `http://10.50.11.76:9200`（xpack.security; elastic/htrfadmin） |
 | ES 索引 | 别名 `gkx_enterprise` → 实体 `gkx_enterprise_v1` |
 
 ### 1.3 实现清单

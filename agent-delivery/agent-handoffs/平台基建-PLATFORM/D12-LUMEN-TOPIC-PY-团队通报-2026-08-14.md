@@ -94,7 +94,7 @@ lumen 侧 **没有** 再开 30805/30807，避免和 demo 抢 NodePort。集群�
 金路径（已实测，2026-08-14）：
 
 ```http
-POST http://192.168.88.50:30899/enterprise/topic/v1/search/meta/filters
+POST http://10.50.69.111:30899/enterprise/topic/v1/search/meta/filters
 Content-Type: application/json
 
 {}
@@ -199,7 +199,7 @@ CI：
 企业检索/AI 已从 demo-platform-search-py 切到新仓 lumen-topic-py。
 检索：http://gkxlumen-platform-search-py:8080
 AI：http://gkxlumen-platform-ai-py:8081
-验证：POST http://192.168.88.50:30899/enterprise/topic/v1/search/meta/filters → 200
+验证：POST http://10.50.69.111:30899/enterprise/topic/v1/search/meta/filters → 200
 请 lumen 侧不要再写 demo-platform-* / gkx-ai-service。
 demo-svc-topic-py 保留给 demo 前端。
 仓名禁止 lumen-svc-topic-py；禁止 merge demo→lumen。

@@ -7285,6 +7285,335 @@
     }
    }
   },
+  "/api/open/cms/v1/kg/{entityType}/attrs/history": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·变更记录/多版本管理（审计倒序；含 version 快照）",
+    "operationId": "属性·变更记录/多版本管理（审计倒序；含 version 快照）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "attrId": {
+          "type": "string",
+          "description": "只看某属性行"
+         },
+         "name": {
+          "type": "string",
+          "description": "按属性名精确"
+         },
+         "group": {
+          "type": "string",
+          "enum": [
+           "base",
+           "dyn",
+           "basic"
+          ],
+          "description": "base/dyn；basic 视同 base（兼容前端）"
+         },
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/attrs/current": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·当前值+版本号",
+    "operationId": "属性·当前值+版本号",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "attrId"
+        ],
+        "properties": {
+         "attrId": {
+          "type": "string",
+          "description": "属性行 id"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/attrs/template": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·下载 CSV 导入模板（属性名称/属性定义/数据类型/单位）",
+    "operationId": "属性·下载 CSV 导入模板（属性名称/属性定义/数据类型/单位）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/attrs/import": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·批量导入（rows 或 csv；四列必填；同名更新否则新增）",
+    "operationId": "属性·批量导入（rows 或 csv；四列必填；同名更新否则新增）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "group": {
+          "type": "string",
+          "enum": [
+           "base",
+           "dyn"
+          ],
+          "description": "缺省 base"
+         },
+         "rows": {
+          "type": "array",
+          "items": {
+           "type": "object",
+           "properties": {
+            "name": {
+             "type": "string"
+            },
+            "definition": {
+             "type": "string"
+            },
+            "dtype": {
+             "type": "string"
+            },
+            "unit": {
+             "type": "string"
+            }
+           }
+          }
+         },
+         "csv": {
+          "type": "string",
+          "description": "CSV 原文（含表头；与 rows 二选一）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/open/cms/v1/expert/{domain}/list": {
    "post": {
     "tags": [
