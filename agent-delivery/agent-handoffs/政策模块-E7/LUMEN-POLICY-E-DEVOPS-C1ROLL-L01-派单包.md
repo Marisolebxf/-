@@ -7,7 +7,7 @@
 认领：coordinator_dispatch · lock 24h
 仓：lumen-ui-topic CI/K8s（本轮只滚前端）
 强度：ponytail full
-点名：lumen-ui-topic → http://192.168.88.50:30892 镜像必须含 006d186（或其后 SHA）
+点名：lumen-ui-topic → http://10.50.69.111:30892 镜像必须含 006d186（或其后 SHA）
 数仓：demo_gkxlumenx_*。禁止改正式前缀 JDBC。
 禁止：等聊天「已经滚了」；改业务代码；把 innov/entan/CHAIN e2e 红当本轮失败；改 Java/Python helm（本轮不需要）。
 ```

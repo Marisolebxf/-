@@ -1,6 +1,6 @@
 # 段 E 缺陷包（测试驱动调度）
 
-> 来源：`LUMEN-POLICY-E-QA-SMOKE-C1RETEST-L01` 复测已发布 `http://192.168.88.50:30892`（镜像 **`gkx-lumen-topic:006d186d`**，已换掉 `97963375`）。QA **不改代码**。  
+> 来源：`LUMEN-POLICY-E-QA-SMOKE-C1RETEST-L01` 复测已发布 `http://10.50.69.111:30892`（镜像 **`gkx-lumen-topic:006d186d`**，已换掉 `97963375`）。QA **不改代码**。  
 > 规约：`长任务执行规约.md` §11。**禁止**无 `X-Trace-Id` 开 C1。  
 > 总控：`LUMEN-POLICY-ABCDE-长任务总控.md` §4（#2 = 页内集群→L0，不强制篮）。
 
@@ -10,14 +10,14 @@
 |------|-----|
 | 管线 / 总控 | `LUMEN-POLICY-ABCDE-长任务总控.md` §4 · §0 #6/#9/#10 |
 | 故事 ID | `US-E7-POL-01` / `US-E7-POL-05` / `US-E7-POL-02` / `US-E7-POL-03` / `US-E7-POL-04`（#2～#5） |
-| 已发布 URL | http://192.168.88.50:30892/policy/overview · `/policy/analysis` · `/policy/recommendation` |
+| 已发布 URL | http://10.50.69.111:30892/policy/overview · `/policy/analysis` · `/policy/recommendation` |
 | 操作步骤 | 登录 → `/policy/overview` 页内选集群再选 L0；另以 `object_ids[]=INB170101` 预填三项配置页，点「开始分析」 |
 | 期望 | #2 先集群再该 map 下 L0 恰好 1 个，开始分析可点（时序三维全开）。#3～#5 开始分析 → 过程页 → succeeded 后 wait_view 点结果 |
 | 实际现象 | 1) `GET /api/topic/v1/meta/industry-clusters?include_l0=true` **HTTP 500**。Tempo：`Table 'gkxlumenx_dim.industry_cluster_map' doesn't exist`，服务 `gkxlumen-innov`。2) 页内产业下拉「无相关产业数据」，开始分析 disabled。catalog 降级项均为 `INB\d{4}` 短码，`requireGraphVid`（`INB`≥6）滤空。3) URL 预填 `INB170101` 时 **图上 VID：chain:INB170101 已显示**，但 hint 仍「尚未选择分析对象」（父级 `clusterId` 空），开始分析仍 disabled。Create **未发出**。 |
 | HTTP / 页面态 | clusters **500**；配置页；非 5xx 页面。无 `view=processing` |
 | **失败分类** | **C5 结构/库闸**（主：`gkxlumenx_dim.industry_cluster_map` 不存在；现网数仓约定是 `demo_gkxlumenx_*`，innov 打了正式前缀 dim）。连带 **C1 FE**：VID 已形成仍因无集群不可提交 |
 | **X-Trace-Id** | clusters 500：`071b34f54c36d31761617fc884567f03`（30892）· `8c38804c66e812b26505c544e0d6a083`（30899） |
-| Tempo | http://192.168.88.50:30201/api/traces/071b34f54c36d31761617fc884567f03 （batches=6，gateway + innov，error span 如上表） |
+| Tempo | http://10.50.69.111:30201/api/traces/071b34f54c36d31761617fc884567f03 （batches=6，gateway + innov，error span 如上表） |
 | Loki | 按 `071b34f54c36d31761617fc884567f03` 搜 `industry_cluster_map` |
 | 怀疑层 | **Java/发布-配错**：`gkxlumen-innov` meta 读正式 `gkxlumenx_dim`；表不在 / JDBC 未指向 demo 前缀。FE 降级 catalog 短码诚实滤空，符合 VID 规则，但金路径无可用 L0 |
 | 诚实空态？ | **否**。总控 #2 不允许把「无相关产业数据」当完成；#3 Job 未 succeeded ≠ 空态 |

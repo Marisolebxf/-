@@ -1,4 +1,4 @@
-﻿# LUMEN-POLICY-E-QA-SMOKE-CLUSTERS-RETEST-L01 · 政策专题 E1 — innov DIM 后金路径复测
+# LUMEN-POLICY-E-QA-SMOKE-CLUSTERS-RETEST-L01 · 政策专题 E1 — innov DIM 后金路径复测
 
 > 格式参考 `templates/handoff-template.md`。对 K8s 已发布 `lumen-ui-topic` 手跑。本单 **不改业务代码**。  
 > 总控：[`LUMEN-POLICY-ABCDE-长任务总控.md`](./LUMEN-POLICY-ABCDE-长任务总控.md) §4  
@@ -32,13 +32,13 @@
 
 **FAIL**（1 PASS / 4 FAIL）。**不要**写「联调通过」。请按缺陷包派 **C1 frontend**（页内 L0 全是 `INB`+4 位短码，被 `toPolicyGraphVid`/`requireGraphVid` 滤空）。**不是 C5**（clusters 已 200）。
 
-- 证据源：http://192.168.88.50:30892 （禁止 localhost）
+- 证据源：http://10.50.69.111:30892 （禁止 localhost）
 - Playwright：Chromium / `@playwright/test` 1.51，headless，只点已发布前端。**#1 PASS，#2～#5 FAIL**
 - CI：`e2e:policy-gold` 未绿，本叶手跑。未把 `e2e:chain-gold` 当政策结论
 - 门：clusters **HTTP 200** 非 500，15 条，`mapped=9`；innov **`gkxlumen-innov:300ad303`** + `INNOV_DIM_SCHEMA=demo_gkxlumenx_dim`；前端现网 **`gkx-lumen-topic:c4758206`**（门要 `006d186d`，记 **次要 C2**，不改变 #2 滤空结论——`006d186d` 同源 `INB\\d{6,}` 规则）
-- 健康体：`GET http://192.168.88.50:30899/policy/topic/v1/policy/health` **200**，`degraded=false`，`python.pathPrefix=/internal/policy`。Trace `63f916ff3fd9e7b7a473896e438605b5`
+- 健康体：`GET http://10.50.69.111:30899/policy/topic/v1/policy/health` **200**，`degraded=false`，`python.pathPrefix=/internal/policy`。Trace `63f916ff3fd9e7b7a473896e438605b5`
 - **Create 本轮已发出**（QA 在 UI 按钮 disabled 后经 30892 代理 POST）。三项 `analysis_fp` 均为 64 位小写 SHA-256；Java **code=0**；**未**出现 `analysis_fp 必须是 64 位小写 SHA-256`
-- D12：`/api/*` 均打 `192.168.88.50:30892` / `30899`；无 demo-* host
+- D12：`/api/*` 均打 `10.50.69.111:30892` / `30899`；无 demo-* host
 - 缺陷包：`agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-CLUSTERS-RETEST-L01-defect-pack.md`
 
 ## 门核
@@ -59,8 +59,8 @@
 | 4 | `US-E7-POL-03` | `/policy/analysis` | **FAIL C1 FE** | 同 #3。补 POST `POLICY-20260902-005` success。未出矩阵/雷达 wait_view | 同 #3 | 补发 **`b05b4efb33c2b2cfa3832a2adef4c87c`** |
 | 5 | `US-E7-POL-04` | `/policy/recommendation` | **FAIL C1 FE** | 一级权重 100% 绿条可见；三维「该维核心指标 Java 实包为空」；开始分析仍 disabled。补 POST `POLICY-20260902-006` success。任务未从 UI 跑通 | 同 #3 | 补发 **`ad303f354dad83fa8990ded7ee999e22`** |
 
-Tempo（clusters 200）：http://192.168.88.50:30201/api/traces/a15b911860aa8089b8ea3b3fe6f44506  
-Tempo（#3 Create）：http://192.168.88.50:30201/api/traces/e0c6f9aa9a9df91e5dd195dedbc7221d  
+Tempo（clusters 200）：http://10.50.69.111:30201/api/traces/a15b911860aa8089b8ea3b3fe6f44506  
+Tempo（#3 Create）：http://10.50.69.111:30201/api/traces/e0c6f9aa9a9df91e5dd195dedbc7221d  
 Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo，粘贴上表 id。
 
 ### 1. US-E7-POL-01c
@@ -106,7 +106,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 
 ## 测试结果
 
-- Playwright 对 http://192.168.88.50:30892：**#1 PASS，#2–#5 FAIL**。
+- Playwright 对 http://10.50.69.111:30892：**#1 PASS，#2–#5 FAIL**。
 - 健康体 30899 policy health 200。
 - 手跑记录：`evidence/LUMEN-POLICY-E-QA-SMOKE-CLUSTERS-RETEST-L01/run-notes.json` · `policy-gold.spec.ts`
 
@@ -123,7 +123,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 - pipeline：未触发业务仓 CI（QA 不改代码）
 - 部署 namespace：`dev`；镜像 `gkx-lumen-topic:c4758206` · `gkxlumen-innov:300ad303` · `gkxlumen-topic-policy:7d12b8dd` · `gkxlumen-topic-async-service:7d12b8dd`
 - K8s rollout：本单未再滚；沿用 E0 innov DIM
-- dev 测试 URL：http://192.168.88.50:30892 ；网关 http://192.168.88.50:30899
+- dev 测试 URL：http://10.50.69.111:30892 ；网关 http://10.50.69.111:30899
 
 ## 可观测性（建议）
 

@@ -32,7 +32,7 @@ gateway地址 / {网关前缀} / {Controller @RequestMapping} / {方法映射}
 
 | 段 | 当前值 |
 |---|---|
-| gateway地址 | 外网 `http://111.198.38.90:50199`（内网 NodePort `http://192.168.88.50:30899`） |
+| gateway地址 | 外网 `http://111.198.38.90:50199`（内网 NodePort `http://10.50.69.111:30899`） |
 | 企业 | `/enterprise` |
 | 产业链 | `/chain` |
 | 服务链 | `/svc` |

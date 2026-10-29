@@ -30,7 +30,7 @@
 ## 问题清单
 
 - 旧 `DEMO-SVC-SEED-ODS/MOCK/ENRICH` 标过 `integration`，但 `out/` 证据未入库、`pipeline-demo-mock.md` 仍写「S2 待回填」→ **不能当 C 闸门**
-- 内网 `192.168.88.43:3306` 本机不可达 → 沿用 NAT `111.198.38.90:34306`
+- 内网 `10.50.11.76:3306` 本机不可达 → 沿用 NAT `111.198.38.90:34306`
 - ADS 全表 `pending_client_confirm` 曾 >24（含非 MOCK 残留）；**MOCK 码 24 户 pending=24**
 - OPEN-SVC-FLOW-01/03/04（DAG / MinIO / ES·Nebula SLA）仍开放，**不挡**「Demo MySQL 可测」
 - 正式 schema `gkxlumenx_{ods,dwd,ads}` 存在；本叶 **零写入**

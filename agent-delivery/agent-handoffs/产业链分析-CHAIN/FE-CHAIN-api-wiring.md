@@ -143,11 +143,11 @@
 ## L02b.1 vite dev proxy
 
 - 在 `vite.config.ts` 新增 `server.proxy['/topic']`，`changeOrigin: true`。
-- **代理目标**：`process.env.VITE_GATEWAY_TARGET || 'http://192.168.88.50:30892'`（env 可覆盖）。
+- **代理目标**：`process.env.VITE_GATEWAY_TARGET || 'http://10.50.69.111:30892'`（env 可覆盖）。
 - **选址依据**：
   - 检查全部业务前端仓（`lumen-ui-science-pc` / `demo-ui-science` / `lumen-ui-topic` / 本仓）**均无既有 proxy 目标**可沿用。
   - 检查 `demo-svc-platform/helm/gkx-platform/values.yaml`：**gateway 为 ClusterIP（port 9999），未暴露 NodePort**；前端走 nginx 同源 `proxy_pass` 到集群内 gateway，无对外 dev 直连地址。
-  - 故采用任务建议的占位 dev 地址 `http://192.168.88.50:30892` 作默认，并以 `VITE_GATEWAY_TARGET` 暴露覆盖点。**联调/上线前需把 gateway 暴露 NodePort/Ingress 后改此 env 指向真实地址**。
+  - 故采用任务建议的占位 dev 地址 `http://10.50.69.111:30892` 作默认，并以 `VITE_GATEWAY_TARGET` 暴露覆盖点。**联调/上线前需把 gateway 暴露 NodePort/Ingress 后改此 env 指向真实地址**。
 - `.env.example` 同步新增 `VITE_GATEWAY_TARGET` 说明。
 
 ## L02b.2 默认开关：API-first + 失败回退 mock

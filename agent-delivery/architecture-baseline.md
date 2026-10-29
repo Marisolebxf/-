@@ -422,7 +422,7 @@ shared_core:
 | v2.2.12 | 2026-08-23 | §6 刷新：数据真源改 [storage](data/data-design/storage/README.md)，[数据库设计.md](数据库设计.md) 标作废；表内文件改为可点链接；D6/D7/§5.1 同步改指 storage |
 | v2.2.13 | 2026-08-26 | **D4 小屏分仓**：`lumen-ui-science-mobile`=展示小屏；`lumen-ui-topic-mobile`=专题小屏（全量复制后删减）。拓扑增 TOPICMOB。规范 `Design-mobile.md` v1.0（LT-6-NORM / 孔东 C1–C7）。 |
 | v2.2.14 | 2026-08-27 | D4 小屏规范指针改为 `Design-mobile.md` **v1.1.2**（C5 上限按页选用，禁止套版）。不改拓扑。 |
-| v2.2.15 | 2026-10-15 | **D6 落点决议**（计划确认即签字，不改产品名）：TRSGraph `10.50.75.136:9669` 为下一 graphd；协议仍是 nGQL / Nebula，`source` 仍为 `nebula`。只迁 `demo_gkx_chain`（重灌、不拷文件、不双写）；不迁 `entan` / `demo_entan`；不建正式名 `gkx_chain`；不并入亿集 API；客户端保持 `nebula3-python>=3.4,<3.9`；口令只进环境变量或 Secret。运行时地址保持 `192.168.88.43:9669`，直到 `E-PLATFORM-P0-TRSGRAPH-L01` 闸门（storage ONLINE + nGQL 探针）通过。 |
+| v2.2.15 | 2026-10-15 | **D6 落点决议**（计划确认即签字，不改产品名）：TRSGraph `10.50.75.136:9669` 为下一 graphd；协议仍是 nGQL / Nebula，`source` 仍为 `nebula`。只迁 `demo_gkx_chain`（重灌、不拷文件、不双写）；不迁 `entan` / `demo_entan`；不建正式名 `gkx_chain`；不并入亿集 API；客户端保持 `nebula3-python>=3.4,<3.9`；口令只进环境变量或 Secret。运行时地址保持 `10.50.75.136:9669`，直到 `E-PLATFORM-P0-TRSGRAPH-L01` 闸门（storage ONLINE + nGQL 探针）通过。 |
 | v2.2.16 | 2026-10-15 | **补充 `E-PLATFORM-P0-TRSGRAPH-L01` 目标**：storage 已 ONLINE。所有使用图库的配置与代码默认 host 指向 `10.50.75.136:9669`，地址、账号、space 写入各仓已有配置文件；口令不进 git。数据重灌范围仍只 `demo_gkx_chain`。 |
 | v2.2.17 | 2026-10-15 | **配置已切**：各仓图客户端 settings / k8s / CI / 代码默认 host 改为 `10.50.75.136:9669`。口令仍只走环境变量。`demo_gkx_chain` 重灌与旧库停写验收尚未完成。 |
 | v2.2.18 | 2026-10-17 | **新增 D13 消息总线 = Kafka**：bootstrap `10.50.11.76:9092`；运行时禁止 RabbitMQ。正式 / 原型 topic 与消费组隔离。图 `ARCH-MSG-KAFKA`（draft）。业务仓仍有 AMQP 客户端，记 `D13-DEBT-RMQ`。不改 MySQL root，口令不进 git。任务 `E-PLATFORM-P0-KAFKA-RMQ-L01`。 |

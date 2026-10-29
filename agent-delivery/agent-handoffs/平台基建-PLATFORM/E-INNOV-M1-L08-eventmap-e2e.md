@@ -67,7 +67,7 @@ vue-tsc --build  →  0 errors
 
 | 项 | 状态 | 说明 |
 |----|------|------|
-| http://192.168.88.50:30891/innov EventMap 有数据 | 🟡 **DEFERRED L10** | PM waiver v2 |
+| http://10.50.69.111:30891/innov EventMap 有数据 | 🟡 **DEFERRED L10** | PM waiver v2 |
 | 热力开关 / 分页 / 详情抽屉 / 无 console 报错 | 🟡 **DEFERRED L10** | 待 L10 qa + coordinator 补验 |
 
 ### L10 补验清单

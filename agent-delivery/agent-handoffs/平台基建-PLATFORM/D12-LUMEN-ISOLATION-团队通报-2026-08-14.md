@@ -99,7 +99,7 @@ lumen 检索/AI **没有**再开 30805/30807；entan **没有**抢 demo 的 3080
 检索金路径（上午已 QA 签收）：
 
 ```http
-POST http://192.168.88.50:30899/enterprise/topic/v1/search/meta/filters
+POST http://10.50.69.111:30899/enterprise/topic/v1/search/meta/filters
 Content-Type: application/json
 
 {}
@@ -111,7 +111,7 @@ Content-Type: application/json
 
 - `gkxlumen-platform-innov-py` / `entan-py*` / `etl-es-py` Ready，镜像是上表 `gkxlumen-*` / `lumen-etl-es-py`
 - demo `demo-platform-search-py` 30805 仍应活着（证明没覆盖 demo 制品）
-- 外网 `http://192.168.88.50:30806` **不再**当正式 ETL 入口
+- 外网 `http://10.50.69.111:30806` **不再**当正式 ETL 入口
 
 ---
 

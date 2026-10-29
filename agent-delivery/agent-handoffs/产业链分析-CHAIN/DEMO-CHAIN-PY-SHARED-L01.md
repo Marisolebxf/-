@@ -92,7 +92,7 @@ python -m pytest -q tests/test_chain_shared.py --tb=short
 - 全量：`127 passed, 1 warning in 2.22s`（Starlette TestClient deprecation，与本单无关）
 - SHARED 闸门：`11 passed`（`demo_` 通过；`gkxlumenx_dwd/ads/ods` 拒绝；缺 8 件套失败；health 200；无 search/jobs；trace 复用）
 
-只读联调（Demo MySQL `192.168.88.43`，未写库）：
+只读联调（Demo MySQL `10.50.11.76`，未写库）：
 
 | 项 | 结果 |
 |---|---|

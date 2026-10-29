@@ -1,4 +1,4 @@
-﻿# LUMEN-POLICY-E-QA-SMOKE-L0VID-RETEST-L01 · 政策专题 E1 — L0VID 发布后金路径复测
+# LUMEN-POLICY-E-QA-SMOKE-L0VID-RETEST-L01 · 政策专题 E1 — L0VID 发布后金路径复测
 
 > 格式参考 `templates/handoff-template.md`。对 K8s 已发布 `lumen-ui-topic` 手跑。本单 **不改业务代码**。  
 > 总控：[`LUMEN-POLICY-ABCDE-长任务总控.md`](./LUMEN-POLICY-ABCDE-长任务总控.md) §4  
@@ -33,14 +33,14 @@
 
 ## 结论（给 coordinator）
 
-**FAIL**（2 PASS / 3 FAIL）。**不要**写「联调通过」。请按缺陷包派 **C1 frontend**（`createAnalysisFingerprint` 在 `http://192.168.88.50:30892` 非安全上下文调用 `crypto.subtle.digest`，点「开始分析」抛 TypeError，无 Create、无过程页）。**不是 C5**。**不是**上一轮 L0 滤空（本轮 #2 已能选 INB4）。
+**FAIL**（2 PASS / 3 FAIL）。**不要**写「联调通过」。请按缺陷包派 **C1 frontend**（`createAnalysisFingerprint` 在 `http://10.50.69.111:30892` 非安全上下文调用 `crypto.subtle.digest`，点「开始分析」抛 TypeError，无 Create、无过程页）。**不是 C5**。**不是**上一轮 L0 滤空（本轮 #2 已能选 INB4）。
 
-- 证据源：http://192.168.88.50:30892 （禁止 localhost）
+- 证据源：http://10.50.69.111:30892 （禁止 localhost）
 - Playwright：Chromium / `@playwright/test` 1.51，headless，只点已发布前端
 - CI：`e2e:policy-gold` 未绿，本叶手跑。未把 `e2e:chain-gold` 当政策结论
 - 门：前端 **`gkx-lumen-topic:1ce03cc4`**；innov **`gkxlumen-innov:300ad303`**；clusters GET **200** 非 500
 - **未**用 30892 代理 POST 改判 PASS。UI Create **0 次**
-- D12：`/api/*` 均打 `192.168.88.50:30892` / `30899`；无 demo-* host
+- D12：`/api/*` 均打 `10.50.69.111:30892` / `30899`；无 demo-* host
 - 缺陷包：`agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-L0VID-RETEST-L01-defect-pack.md`
 
 ## 门核
@@ -51,7 +51,7 @@
 | innov | `gkxlumen-innov:300ad303` | `gkxlumen-platform-innov` 镜像 `gkxlumen-innov:300ad303`；`INNOV_DIM_SCHEMA=demo_gkxlumenx_dim` | **PASS** |
 | clusters GET | 非 500 | 30892 `/api/topic/v1/meta/industry-clusters?include_l0=true` **200** `code=0` items=15，含 `INB1303`。探活 Trace `d73a04710224ea0d68e2d92b2ed513c7`；页内 `#2` `2806c27e8fc030c5d159c875f922b73a` | **PASS** |
 
-健康体：`GET http://192.168.88.50:30899/policy/topic/v1/policy/health` **200**，`degraded=false`，`python.pathPrefix=/internal/policy`。Trace `86aa1c93dfe8aa8679f8f781105fe96f`。
+健康体：`GET http://10.50.69.111:30899/policy/topic/v1/policy/health` **200**，`degraded=false`，`python.pathPrefix=/internal/policy`。Trace `86aa1c93dfe8aa8679f8f781105fe96f`。
 
 ## 五条金路径
 
@@ -63,8 +63,8 @@
 | 4 | `US-E7-POL-03` | `/policy/analysis` | **FAIL C1 FE** | 同 #3 VID 预填可点开始分析；点后未进过程页 / wait_view | 同 #3 | 无 Create |
 | 5 | `US-E7-POL-04` | `/policy/recommendation` | **FAIL C1 FE** | `object_ids[]=chain:INB170101`；一级权重 100% 绿；开始分析 enabled；点后未进过程页。三维仍「该维核心指标 Java 实包为空」（不挡提交） | 同 #3 | 无 Create |
 
-Tempo（#1 search）：http://192.168.88.50:30201/api/traces/cdb77d06d63b18a4f2a80ab5770654c2  
-Tempo（#2 clusters）：http://192.168.88.50:30201/api/traces/2806c27e8fc030c5d159c875f922b73a  
+Tempo（#1 search）：http://10.50.69.111:30201/api/traces/cdb77d06d63b18a4f2a80ab5770654c2  
+Tempo（#2 clusters）：http://10.50.69.111:30201/api/traces/2806c27e8fc030c5d159c875f922b73a  
 Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo。
 
 ### 1. US-E7-POL-01c
@@ -111,7 +111,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 
 ## 测试结果
 
-- Playwright 对 http://192.168.88.50:30892：**#1 PASS，#2 PASS，#3–#5 FAIL**。
+- Playwright 对 http://10.50.69.111:30892：**#1 PASS，#2 PASS，#3–#5 FAIL**。
 - 探针：`isSecureContext=false` / `crypto.subtle` 缺失；click 栈到 `PolicyAnalysisConfigPage` `startAnalysis`。
 - 手跑记录：`evidence/LUMEN-POLICY-E-QA-SMOKE-L0VID-RETEST-L01/run-notes.json` · `policy-gold.spec.ts` · `crypto-subtle-probe.json`
 
@@ -128,7 +128,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 - pipeline：未触发业务仓 CI（QA 不改代码）
 - 部署 namespace：`dev`；镜像 `gkx-lumen-topic:1ce03cc4` · `gkxlumen-innov:300ad303` · `gkxlumen-topic-policy:868987d6` · `gkxlumen-topic-async-service:868987d6` · 政策 Python `gkxlumen-entan-py-api:ea3acc39`
 - K8s rollout：本单未再滚；沿用 E0 `1ce03cc4`
-- dev 测试 URL：http://192.168.88.50:30892 ；网关 http://192.168.88.50:30899
+- dev 测试 URL：http://10.50.69.111:30892 ；网关 http://10.50.69.111:30899
 
 ## 可观测性（建议）
 

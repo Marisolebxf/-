@@ -1,4 +1,4 @@
-﻿# build_ppt.ps1
+# build_ppt.ps1
 # 用 officecli 构建团队宣讲 PPT（31 页 + speaker notes）
 # 主题：从 Vibe Coding 到团队 AI 协作
 # 日期：2026-06-18 团队宣讲（1 小时）
@@ -496,7 +496,7 @@ Add-SubTitle -Idx 18 -Text "已写进 00-team-constitution.mdc，所有 agent �
 $rules = @(
     "1. 算法只在 Python，Java 禁 NLP/模型推理",
     "2. 调用链：前端 → Java REST → Python /internal/*，不可越层",
-    "3. 图谱：NebulaGraph（192.168.88.43:9669），禁止 Neo4j",
+    "3. 图谱：NebulaGraph（10.50.75.136:9669），禁止 Neo4j",
     "4. 可观测性：Java Agent + Python instrument + 前端 observability.ts",
     "5. CI/CD：push → Pipeline 绿 → K8s dev rollout，对 dev 测试",
     "6. demo2 只读：禁止 merge 进 lumen；UI/UE 沙箱产物只在 demo2",

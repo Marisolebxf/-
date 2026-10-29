@@ -20,12 +20,12 @@
 
 - 新 GitLab 组变量原先缺 `HARBOR_REGISTRY` / `HARBOR_PROJECT`；`KUBECONFIG_B64` 已在，但文档仍写「须重配」。
 - 飞书 CI 的 node 基础镜像在 `zp-tts/node`，搬运脚本清单只覆盖 `library`。
-- 前端 `environment.url` 仍指向 `192.168.88.50`。
+- 前端 `environment.url` 仍指向 `10.50.69.111`。
 - 作业 11554 是旧提交，不能重试。
 
 ## 修改内容
 
-- 组 `sz-gkx/gkx-lumen`（id 74）已有 `HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`。本次补了非密钥变量 `HARBOR_REGISTRY=10.50.62.9:30303`、`HARBOR_PROJECT=zp-tts`。kubeconfig 的 server 是 `https://10.50.192.46:6443`，不含 `192.168.88.50`。口令只在 GitLab。
+- 组 `sz-gkx/gkx-lumen`（id 74）已有 `HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`。本次补了非密钥变量 `HARBOR_REGISTRY=10.50.62.9:30303`、`HARBOR_PROJECT=zp-tts`。kubeconfig 的 server 是 `https://10.50.192.46:6443`，不含 `10.50.69.111`。口令只在 GitLab。
 - Harbor 上 `library` 已有 python 3.11、nginx 1.27-alpine、maven 3.9.6-eclipse-temurin-17、python-algo-base 3.11、trivy 0.50.0、helm-kubectl 3.15.4、trivy-db 2。`library/node` 不存在。`zp-tts/node:22.12.0-alpine` 清单 HTTP 200，digest `sha256:5352667a8ab72b3000ce0f1cd622741e996506d0076a16d18e2d3b6aac4bf6da`。脚本改成与飞书 CI 同一侧，不把 node 再送进 library。
 - 前端仓 `.gitlab-ci.yml` 的发布地址改为新节点 NodePort。kubeconfig 注释改为 API `10.50.192.46`。`paths.yaml` 的 `pc_frontend` / `topic_frontend` 与 `cicd-pipeline.md` §2、§3 已回写。
 - 收口之后按同一方式把前端拉起来，见下文「前端 NodePort」。`demo-ui-science`、`demo-ui-topic` 已去掉 SSH 到 `192.168.88.63`，改成镜像加 NodePort。
@@ -180,7 +180,7 @@ Kafka 仍不接线。
 ### 仍未收口
 
 - node02（`10.50.179.112`）的 22 端口拒绝，Harbor 证书没拷过去；调度到该节点的 Python 镜像会因证书校验失败拉不下来。
-- demo 的 ai / worker 以及 `.env.example`、`conf/settings.yaml` 里，RabbitMQ 仍是旧地址 `192.168.88.43:5672`。CI 实际 apply 的 bootstrap 已不含这条旧 MySQL / ES。
+- demo 的 ai / worker 以及 `.env.example`、`conf/settings.yaml` 里，RabbitMQ 仍是旧地址 `10.50.11.76:5672`。CI 实际 apply 的 bootstrap 已不含这条旧 MySQL / ES。
 - lumen 异步服务的对象存储端点在 Nacos 配置里。默认升级不重发配置，要让 rustfs 端点进线上 Nacos，须 `FORCE_NACOS_REPUBLISH=true`。`MYSQL_HOST` 由 Pod 环境变量覆盖，不依赖重发。
 - lumen release 在 `12173` 失败后状态是 failed，要等 `14a204a` 的新 `helm:deploy` 才会再装。
 

@@ -72,7 +72,7 @@
 ## 测试结果
 
 - `node scripts/7chain-mcp-selfcheck.mjs` → `7chain-mcp-selfcheck: ok`（不连后端）。
-- 真实基址：`http://192.168.88.50:30889/api`。这是 `gkx-demo-ui` NodePort 30889 的 `/api` 反代到 `demo-platform-gateway:9999`。本机直连 ClusterIP `10.105.230.86:9999` 超时；`30887` 拒绝连接。未改用 `gkxlumen-platform-gateway`（30899，属 M3）。
+- 真实基址：`http://10.50.69.111:30889/api`。这是 `gkx-demo-ui` NodePort 30889 的 `/api` 反代到 `demo-platform-gateway:9999`。本机直连 ClusterIP `10.105.230.86:9999` 超时；`30887` 拒绝连接。未改用 `gkxlumen-platform-gateway`（30899，属 M3）。
 - 产业链请求带了 `GKX_MCP_TOKEN`（进程环境，不入库）。其余抽到的路径无 token 也是 200。
 
 | 工具 | 结果摘要 |
@@ -108,7 +108,7 @@
 - pipeline URL / ID：无。`cicd: skip`（编排仓本地 stdio，不发 K8s）
 - 部署 namespace / 镜像 tag：不适用
 - K8s rollout：不适用
-- dev 测试 URL / 命令与结果：`node scripts/7chain-mcp-selfcheck.mjs` 绿；上表对 `http://192.168.88.50:30889/api` 的真实调用
+- dev 测试 URL / 命令与结果：`node scripts/7chain-mcp-selfcheck.mjs` 绿；上表对 `http://10.50.69.111:30889/api` 的真实调用
 
 ## 可观测性（建议）
 

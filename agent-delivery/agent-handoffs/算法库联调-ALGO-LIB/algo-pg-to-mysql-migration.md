@@ -12,7 +12,7 @@
 
 ## 0. 背景与决策
 
-- 生产（总集）最终统一 **TDSQL（MySQL 兼容）**；开发/联调阶段全部收敛到 **MySQL 8.0**（实例 `192.168.88.43:3306`，实测 8.0.41）。
+- 生产（总集）最终统一 **TDSQL（MySQL 兼容）**；开发/联调阶段全部收敛到 **MySQL 8.0**（实例 `10.50.11.76:3306`，实测 8.0.41）。
 - **彻底去 PG**：Python + Java + Helm + PG 遗留脚本/依赖/文档，全部清理归零。
 - **放弃 PG 存量数据**（原 `117.50.223.145/demo_gdf_data`），改为空库重灌——因为 4 模块 mock 均自包含、可复现（§5）。
 - `realdata`（连甲方 GP）不在真实调用链，本波**退役删除**（§6）。
@@ -188,7 +188,7 @@ python scripts/run_all_policy.py
 - [ ] `innov/common/db.py` + `chainan/common/db.py`：psycopg2→pymysql；游标；`upsert` 的 `ON CONFLICT`→`ON DUPLICATE KEY UPDATE`；`_load_pks`→`information_schema`；`Json`→`json.dumps`；连接改读 `INNOV_MYSQL_*`（建议抽公共基类）
 - [ ] `innov/common/tables.py` + `innov_table_map.yaml`：目标值加 `gkxlumenx_` 前缀（建议另存 `mysql_table_map.yaml`）
 - [ ] 生成 `scripts/sql/mysql/schema_mysql.sql`（§3）；`init_schema` 改读它
-- [ ] `conf/settings.yaml`：`db.pg_*` → `db.mysql_*`（值见连接文件；host 192.168.88.43、user gkxlumenx）
+- [ ] `conf/settings.yaml`：`db.pg_*` → `db.mysql_*`（值见连接文件；host 10.50.11.76、user gkxlumenx）
 - [ ] 🗑️ 删 `innov/realdata/` + `scripts/run_realdata_ent.py`（§6）；清理 `scripts/sql/pg/`、`migrate_innov_mysql_to_pg.py`
 
 ### 7.2 demo-algo-ent-analysis（Python）
@@ -201,13 +201,13 @@ python scripts/run_all_policy.py
 
 ### 7.3 Java（仅 `demo-svc-platform/gkx-innov`）
 - [x] `pom.xml`：`org.postgresql:postgresql` → `com.mysql:mysql-connector-j`（版本由 `gkx-common-bom` 管理，无需写 version）
-- [x] `application.yml`：JDBC 改 `jdbc:mysql://${INNOV_MYSQL_HOST:192.168.88.43}:${INNOV_MYSQL_PORT:3306}/${INNOV_MYSQL_DATABASE:gkxlumenx_ads}?useUnicode=...&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true`，user `gkxlumenx`
+- [x] `application.yml`：JDBC 改 `jdbc:mysql://${INNOV_MYSQL_HOST:10.50.11.76}:${INNOV_MYSQL_PORT:3306}/${INNOV_MYSQL_DATABASE:gkxlumenx_ads}?useUnicode=...&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true`，user `gkxlumenx`
 - [x] 6 个 Controller：`schema.table`→`gkxlumenx_*.table`（53 处，脚本机械替换）；`EventController` `to_char`→`DATE_FORMAT` + fmt 串 `YYYY-MM`→`%Y-%m`；无 `"rank"` 双引号标识符
 - [x] `InnovDao.java`：移除 `org.postgresql.util.PGobject` import 与分支，MySQL JSON 列走 `String` 反序列化
 - [ ] 切库后重新构建镜像 + K8s dev rollout（CI）—— 待部署验证（本地无 mvn 环境，见 §12）
 
 ### 7.4 Helm
-- [x] `demo-svc-platform/helm/gkx-platform/values.yaml`：3 段（Java `innov` / `innovPy` / `entanPy`）`INNOV_PG_*`/`ENTAN_PG_*` → `*_MYSQL_*`，指 192.168.88.43 / gkxlumenx；Python 段去掉不读的 `*_DATABASE`
+- [x] `demo-svc-platform/helm/gkx-platform/values.yaml`：3 段（Java `innov` / `innovPy` / `entanPy`）`INNOV_PG_*`/`ENTAN_PG_*` → `*_MYSQL_*`，指 10.50.11.76 / gkxlumenx；Python 段去掉不读的 `*_DATABASE`
 - [x] `lumen-svc-platform/helm/gkxlumen-platform/values.yaml`：`ENTAN_PG_*`（542–554）→ `ENTAN_MYSQL_*`
 - [x] 移除 `*_PG_{DWD,ADS}_SCHEMA`，改注入 `ENTAN_MYSQL_{DWD,ADS,CFG}_DB`（`gkxlumenx_*`）
 
@@ -313,7 +313,7 @@ python scripts/run_all_policy.py
 
 **已改（`origin/dev`，commit `…8d50f64`）**：
 - `gkx_common/db.py`：`pg8000` → `pymysql`（`charset=utf8mb4`；`execute(sql, params or None)` 规避 `%` 解析）。
-- `gkx_common/config.py`：`GKX_PG_*` → `GKX_MYSQL_*`（默认 `192.168.88.43:3306` / `gkxlumenx` / 库 `gkxlumenx_dwd`；新增 `mysql_dwd_db`/`mysql_ads_db`）。
+- `gkx_common/config.py`：`GKX_PG_*` → `GKX_MYSQL_*`（默认 `10.50.11.76:3306` / `gkxlumenx` / 库 `gkxlumenx_dwd`；新增 `mysql_dwd_db`/`mysql_ads_db`）。
 - `gkx_search_service/views/*.py`（12 文件）+ `gkx_common/mock.py`：SQL/注释 `dwd.` → `gkxlumenx_dwd.`；`NULLS LAST` 移除（MySQL DESC 天然 NULL 末位）。仅 `dwd.*` 被引用，无 `ads.*` 表。
 - **2026-07-29 补记**：行政区划企业检索码表落地为 **`gkxlumenx_dim.code_region`**（源 PG `dim.admin_division`，非 DWD）。见 `agent-delivery/data/ddl/gkxlumenx_dim_code_region.sql` + `agent-handoffs/企业战略分析-ENT/DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md`。
 - `gkx_ai_service/sql/evaluation.sql`：PG DDL → MySQL 8.0（`ads.`→`gkxlumenx_ads.`、`JSONB`→`JSON`、`BIGSERIAL`→`BIGINT AUTO_INCREMENT`、`` `rank` `` 反引号、索引内联 `KEY`、`COMMENT ON`→表 `COMMENT=`、`ON CONFLICT DO NOTHING`→`INSERT IGNORE`）。仅交付物，运行时用内存 store。
@@ -339,7 +339,7 @@ python scripts/run_all_policy.py
 - **前端** `demo-ui-system-test`（`origin/main`）：`src/api/entan/index.ts` 全部 `enterpriseId:number` → `orgId:string`；组件 `TechPower.vue`/`BizPower.vue`（`row.org_id`/`cur.value.org_id`）、`GraphView.vue`（`centers:string[]`、选项/候选 `e.org_id`/`c.org_id`、`_eid` 保留字符串、"PostgreSQL 兜底"→"MySQL 兜底"）；`entanHelp.ts` 血缘文案表名/键位（`dwd.enterprise`→`dwd.enterprise_base`、`enterprise_id`→`org_id`、`enterprise_industry`→`enterprise_industry_chain`）。
 - **清理**：删除过时 PG 期 `scripts/schema_dwd_patch.sql` / `scripts/schema_ads.sql`（未被 `init_schema` 引用）。
 
-**验证证据（本地 MySQL `192.168.88.43` 全量重跑）**：
+**验证证据（本地 MySQL `10.50.11.76` 全量重跑）**：
 - `python scripts/run_all.py` 绿；关键落库计数：`enterprise_base=120`/`extra=120`/`finance_history=696`/`patent_history=696`/`executive=411`/`industry_chain=141`/`cooperation=286`/`supply_chain=174`/`parent_subsidiary=21`/`invest=28`/`financing=100`/`bid=200`/`news=200`/`enterprise_tag=171`/`tag_dict=7`；ADS `enterprise_score=120`/`ranking=720`/`diagnosis=120`/`centrality=114`/`tech_power=120`/`biz_power=120`/`entity_recognition=120`/`graph_node=144`/`graph_edge=576`/`key_enterprise=83`/`realdata_enterprise_risk=39`。样本键位 `org_id='ORG00000001'` + `enterprise_code`。
 - FastAPI（uvicorn 起服）逐个 `/entan/v1/*` 以 `org_id`(ORG00000050) 请求全部 `code=0` 有数据（含 `tech-power/{org_id}`、`biz-power/{org_id}`、`enterprises/{org_id}/report`、`graph?center=org_id`、`evaluation/compute`）。
 - 一致性：entan 全仓业务代码 `enterprise_id` 归零（仅剩 `api/main.py` 一处 `body.get("enterprise_id")` 向后兼容回退；`chain_*` 表的 `enterprise_id` 属产业链模块本地键，非企业模块，不在废除范围）。

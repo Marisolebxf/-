@@ -448,7 +448,7 @@ helpers.bulk(es, [
 
 ```yaml
 mysql:
-  host: 192.168.88.43
+  host: 10.50.11.76
   port: 3306
   user: gkxlumenx
   password: "<线下，禁止写入派单包/文档>"
@@ -514,9 +514,9 @@ spec:
             - containerPort: 8090
           env:
             - name: MYSQL_HOST
-              value: "192.168.88.43"
+              value: "10.50.11.76"
             - name: ES_HOSTS
-              value: "http://192.168.88.43:9200"
+              value: "http://10.50.11.76:9200"
 ```
 
 ### 9.2 启动
@@ -536,7 +536,7 @@ docker run -p 8090:8090 etl-es-py
 
 ```bash
 # 1. 确认 DWD 表有数据
-mysql -h 192.168.88.43 -u gkxlumenx -p -e "SELECT COUNT(*) FROM gkxlumenx_dwd.enterprise_base;"
+mysql -h 10.50.11.76 -u gkxlumenx -p -e "SELECT COUNT(*) FROM gkxlumenx_dwd.enterprise_base;"
 
 # 2. 启动 ETL 服务
 uvicorn app.main:app --host 0.0.0.0 --port 8090
@@ -562,9 +562,9 @@ curl -X POST "http://localhost:8090/internal/etl/modules/forg_finance/sync?full=
 curl -X POST "http://localhost:8090/internal/etl/modules/forg_relations/sync?full=true&sync=true"
 
 # 8. 验证 ES 文档数（物理索引分别核对，别名确认 fan-out）
-curl http://192.168.88.43:9200/gkx_enterprise_v1/_count
-curl http://192.168.88.43:9200/gkx_enterprise_global_v1/_count
-curl http://192.168.88.43:9200/gkx_enterprise/_count
+curl http://10.50.11.76:9200/gkx_enterprise_v1/_count
+curl http://10.50.11.76:9200/gkx_enterprise_global_v1/_count
+curl http://10.50.11.76:9200/gkx_enterprise/_count
 ```
 
 ## 10.1 日常增量调度（K8s CronJob）

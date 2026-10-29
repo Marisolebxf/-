@@ -2,7 +2,7 @@
 -- 项目 DWD = 下列 CREATE TABLE（仅表名相对入站现表去掉 dwd_ 前缀；列/类型/主键/索引语义不改）。
 -- 禁止对本文件 APPLY 到正式库 gkxlumenx_dwd。
 --
--- Demo 抽检（2026-08-16 · 192.168.88.43:3306 / demo_gkxlumenx_dwd / user gkxlumenx）：
+-- Demo 抽检（2026-08-16 · 10.50.11.76:3306 / demo_gkxlumenx_dwd / user gkxlumenx）：
 --   SHOW TABLES LIKE 'dwd_industry_analysis%' → 空
 --   SHOW TABLES LIKE 'industry_analysis%'     → 空
 --   六张 dwd_industry_analysis_* 均 1146 Table doesn't exist

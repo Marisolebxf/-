@@ -30,7 +30,7 @@
 | Pipeline | https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-science-topic/-/pipelines/4117 |
 | 镜像 | `harbor.htmisoft.net/gkx/gkx-lumen-topic:4b9e6604` |
 | deploy namespace | `dev`（目标） |
-| dev URL | http://192.168.88.50:30892 |
+| dev URL | http://10.50.69.111:30892 |
 
 ### Pipeline job 结果
 
@@ -76,7 +76,7 @@
 ## 阻塞项
 
 1. **K8s API 不可达（deploy:k8s）**
-   - Job log：`The connection to the server 192.168.88.50:6443 was refused`
+   - Job log：`The connection to the server 10.50.69.111:6443 was refused`
    - 组变量 `KUBECONFIG_B64` 指向的 API Server 当前拒绝连接；需 infra/coordinator 恢复集群或更新 kubeconfig 后 **retry pipeline #4117** 或重跑 `deploy:k8s`。
 2. **:30892 未验证**
    - 依赖 deploy 成功；agent 侧 curl 内网 IP 超时（可能不在同一 VPN）。

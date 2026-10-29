@@ -105,7 +105,7 @@
 - commit：`lumen-ui-science-mobile` `92d107fe1232d2278ee692a118254897c738a187`
 - pipeline URL / ID：push 后 GitLab `lumen-ui-science-mobile` pipelines
 - 部署 namespace / 镜像 tag：CI 触发后填写
-- K8s rollout：push 后看 `http://192.168.88.50:30898`
+- K8s rollout：push 后看 `http://10.50.69.111:30898`
 - dev 测试 URL / 命令与结果：本地 `pnpm test`；`pnpm type-check`；`pnpm dev` → `#/display/trend/tech-overall-situation` 与 `#/topic/enterprise-center/overview`
 
 ## 可观测性

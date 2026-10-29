@@ -33,12 +33,12 @@
 
 ## 问题清单
 
-- `lumen-topic-py/k8s/dev-ai-py.yaml` 中 `GKX_MYSQL_HOST="192.168.88.43"`，集群内不可达 → 异步分析任务全部 `failed`，ai-py 无法走到 Kafka 发布。
+- `lumen-topic-py/k8s/dev-ai-py.yaml` 中 `GKX_MYSQL_HOST="10.50.11.76"`，集群内不可达 → 异步分析任务全部 `failed`，ai-py 无法走到 Kafka 发布。
 - 同仓 `k8s/dev-search-py.yaml` 已于 `0b1309f` 改为 `10.50.11.76`；两文件 USER / DATABASE / 口令行一致（coordinator 核实）。
 
 ## 修改内容
 
-- `k8s/dev-ai-py.yaml`：`GKX_MYSQL_HOST` 值 `192.168.88.43` → `10.50.11.76`，上方加注释「与 dev-search-py.yaml 对齐，勿写回 192.168.88.43」。
+- `k8s/dev-ai-py.yaml`：`GKX_MYSQL_HOST` 值 `10.50.11.76` → `10.50.11.76`，上方加注释「与 dev-search-py.yaml 对齐，勿写回旧内网地址」。
 - 未动其他行（口令行、PORT/USER/DATABASE、OTel、Kafka、MinIO env 均不变）；未改其他文件。
 
 ## 偏离说明
@@ -61,11 +61,11 @@
 
 | 位置 | 值 | 影响 |
 |------|-----|------|
-| `conf/settings.yaml:9` `es.host` | 192.168.88.43 | **ai-py 有影响**：`gkx_ai_service/views/recommend.py` 用 `ESClient`，而 `dev-ai-py.yaml` 未注入 `GKX_ES_HOST` → 推荐模块集群内会连 192.168.88.43（search-py 已注入 `10.50.11.76`）。建议另开叶补 `GKX_ES_HOST`（+ ES 账号 env 走 secret） |
-| `conf/settings.yaml:17` `db.host` | 192.168.88.43 | 被 env 覆盖的服务（ai-py、search-py）无影响；`dev-ai-worker.yaml` 未注入 MySQL env，但 worker 代码未引用 db 模块，暂无影响 |
-| `conf/settings.yaml:53` `java_callback.base_url` | http://192.168.88.50:30899/topicAsync | ai-py / worker 均注入 `GKX_JAVA_CALLBACK_BASE_URL`，集群内无影响；仅本地默认 |
-| `conf/settings.yaml:65` `minio.endpoint` | 192.168.88.43:9900 | ai-py / worker 均注入 `GKX_MINIO_ENDPOINT`（rustfs svc），集群内无影响 |
-| `.env.example:9,16` | 192.168.88.43 | 模板，非运行时 |
+| `conf/settings.yaml:9` `es.host` | 10.50.11.76 | **ai-py 有影响**：`gkx_ai_service/views/recommend.py` 用 `ESClient`，而 `dev-ai-py.yaml` 未注入 `GKX_ES_HOST` → 推荐模块集群内会连 10.50.11.76（search-py 已注入 `10.50.11.76`）。建议另开叶补 `GKX_ES_HOST`（+ ES 账号 env 走 secret） |
+| `conf/settings.yaml:17` `db.host` | 10.50.11.76 | 被 env 覆盖的服务（ai-py、search-py）无影响；`dev-ai-worker.yaml` 未注入 MySQL env，但 worker 代码未引用 db 模块，暂无影响 |
+| `conf/settings.yaml:53` `java_callback.base_url` | http://10.50.69.111:30899/topicAsync | ai-py / worker 均注入 `GKX_JAVA_CALLBACK_BASE_URL`，集群内无影响；仅本地默认 |
+| `conf/settings.yaml:65` `minio.endpoint` | 10.50.11.76:9900 | ai-py / worker 均注入 `GKX_MINIO_ENDPOINT`（rustfs svc），集群内无影响 |
+| `.env.example:9,16` | 10.50.11.76 | 模板，非运行时 |
 
 - 另：`conf/settings.yaml` 与 `dev-ai-py.yaml` 仍有明文凭据入 git（与 D13「口令不进 git」冲突），属既有债，本叶红线不动口令行。
 

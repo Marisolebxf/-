@@ -36,7 +36,7 @@
 | `src/types/topic.ts` | 七要素 + catalog 类型 |
 | `src/router/routes.ts` | 注册 `/topic` |
 | `src/utils/request.ts` | traceId 错误提示 + `silentError`（壳页探测静默） |
-| `.env.development` | `VITE_APP_API_URL=http://192.168.88.50:9999`（dev 网关） |
+| `.env.development` | `VITE_APP_API_URL=http://10.50.69.111:9999`（dev 网关） |
 
 ### API 调用链（方案 A）
 
@@ -91,7 +91,7 @@ vite build  →  dist/ 含 topic chunk
 
 ### K8s dev 访问
 
-- **目标 URL**：http://192.168.88.50:30892/topic
+- **目标 URL**：http://10.50.69.111:30892/topic
 - **状态**：🟡 依赖 P0-L00 `deploy:k8s` 恢复；本机 curl 内网可能超时
 - **本地 dev**：`pnpm dev` → http://localhost:3000/topic
 
@@ -102,7 +102,7 @@ vite build  →  dist/ 含 topic chunk
 
 ## 阻塞项
 
-1. **P0-L00 deploy:k8s** — K8s API `192.168.88.50:6443` refused，:30892 暂不可验。
+1. **P0-L00 deploy:k8s** — K8s API `10.50.69.111:6443` refused，:30892 暂不可验。
 2. **P0-L05 topic Java** — `/topic/v1/health`、`/metrics/v1/catalog` 就绪后可去掉占位 KPI。
 
 ## 接力清单

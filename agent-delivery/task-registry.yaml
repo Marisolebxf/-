@@ -1094,7 +1094,7 @@ tasks:
       - 路由 /innov 可访问
       - VITE 构建指向 dev 网关
       - push → frontend:build + frontend:image 绿 → deploy:k8s dev 自动成功
-      - http://192.168.88.50:30891/innov 可打开
+      - http://10.50.69.111:30891/innov 可打开
       - 请求失败时 UI/控制台可见 traceId（observability.ts）
     evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L07-ui-port.md
 
@@ -1336,7 +1336,7 @@ tasks:
     acceptance_note: "本地 SMOKE-OK + push 6b4428e；Nebula 内网连通与 GitLab py:smoke 待 qa/devops 确认"
     definition_of_done:
       - 对齐 demo-algo-ent-analysis：nebula_loader / nebula_query / nebula.py 模式
-      - dev graphd 192.168.88.43:9669 可连；space schema（Tag/Edge）文档化
+      - dev graphd 10.50.75.136:9669 可连；space schema（Tag/Edge）文档化
       - POST /internal/graph/subgraph 返回 nodes/edges + **source: nebula**
       - Nebula 不可用时 PG 兜底返回 source: pg（与 demo 一致）
       - opentelemetry-instrument + OTLP :4318
@@ -15955,7 +15955,7 @@ tasks:
       - "agent-delivery/cicd-pipeline.md"
     definition_of_done:
       - "GitLab lumen-ui-topic Pipeline 对 ee3ff6f（或其后）绿或已登记 waiver"
-      - "K8s ns=dev deploy gkx-lumen-topic 镜像 tag 含该 SHA；rollout 1/1；http://192.168.88.50:30892 HTTP 200"
+      - "K8s ns=dev deploy gkx-lumen-topic 镜像 tag 含该 SHA；rollout 1/1；http://10.50.69.111:30892 HTTP 200"
       - "未改 helm/业务代码；D12 仍走 gkxlumen-platform-gateway 非 demo-*"
       - "handoff LUMEN-CHAIN-E-DEVOPS-SKIN-L01.md；ponytail + cost 四字段；不标 done"
     update_time: "2026-09-02T05:16:18+08:00"
@@ -22907,7 +22907,7 @@ tasks:
       - "agent-delivery/architecture-baseline.md"
     definition_of_done:
       - "总控点名服务在 K8s dev rollout 健康：gkx-lumen-topic、gkxlumen-topic-enterprise-biz、gkxlumen-topic-async-service、gkxlumen-platform-search-py、gkxlumen-entan-py-api、gkxlumen-platform-gateway"
-      - "已发布前端 http://192.168.88.50:30892 可访问；企业侧路由是 lumen 不是 demo-*"
+      - "已发布前端 http://10.50.69.111:30892 可访问；企业侧路由是 lumen 不是 demo-*"
       - "核实库连接与总控 §1.1 一致：数据面 demo_gkxlumenx_*；Java 写侧 gkxlumenx_topic_enterprise（Q-ENT-DB-01 未拍板前不得自行切库）"
       - "未绿则 blocked 并写明哪个 deploy（规约 §11.4 = C2，只重开 E0 不派业务修）；禁止用 localhost 充发布"
       - "handoff agent-handoffs/企业战略分析-ENT/LUMEN-ENT-E-DEVOPS-L01.md；ponytail + cost 四字段"
@@ -22943,7 +22943,7 @@ tasks:
       - "agent-delivery/observability.md"
     definition_of_done:
       - "开跑前确认：总控 §4 #2 画像判红尺度已定稿；Q-ENT-DB-01（#3/#5 会写正式前缀库 gkxlumenx_topic_enterprise）已拍板。未定稿不得开跑"
-      - "只在 K8s dev 已发布 lumen-ui-topic（http://192.168.88.50:30892）走总控 §4 八条金路径；禁止 localhost / pnpm dev"
+      - "只在 K8s dev 已发布 lumen-ui-topic（http://10.50.69.111:30892）走总控 §4 八条金路径；禁止 localhost / pnpm dev"
       - "每条 PASS/FAIL；期望未发生必红（§11.3）；空态只有写进该行才算过；5xx / 打到 demo-* / 白屏错跳 / 侧栏整组不可见 算不过"
       - "#3 只认浮层出对比结果（整页路由缺失不判红）；#5 succeeded 后必须显式点击才展结果，自动跳转 = 红"
       - "FAIL 先按 §11.4 填建议分类 C1–C6；C1 必附 X-Trace-Id + Tempo 链接；缺陷包按 templates/long-task-e-defect-pack.md；QA 不改业务代码"
@@ -27281,7 +27281,7 @@ tasks:
     touched_files:
       - "agent-delivery/agent-handoffs/政策模块-E7/**"
     definition_of_done:
-      - "只点已发布 http://192.168.88.50:30892，禁止 localhost。金路径总控 §4 五条全部手跑或 e2e:policy-gold；期望未发生必红；QA 不改代码"
+      - "只点已发布 http://10.50.69.111:30892，禁止 localhost。金路径总控 §4 五条全部手跑或 e2e:policy-gold；期望未发生必红；QA 不改代码"
       - "失败先填 C1–C6 缺陷包（模板 long-task-e-defect-pack.md），C1 必带 X-Trace-Id；空态仅当该行允许才算过；Job failed ≠ 空态"
       - "handoff + 缺陷包路径 + cost；不要自行 done"
     update_time: "2026-09-02T18:49:21+08:00"
@@ -28055,7 +28055,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "升级项 A 已关闭：2026-09-11 human:淮政玮 硬确认 Milvus 地址 = 192.168.88.43:19530，并提供 compose 真源（已落总控 §5 as-built）。B/C/D/E 仍 🟡。"
+    note: "升级项 A 已关闭：2026-09-11 human:淮政玮 硬确认 Milvus 地址 = 10.50.69.111:19530，并提供 compose 真源（已落总控 §5 as-built）。B/C/D/E 仍 🟡。"
     depends_on:
       - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files: []
@@ -28095,7 +28095,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 120000
     note: |
-      AV-1 通过 → pending_test。实测：真连 88.43:19530，真建 gkxlumen_industry_anchor（1516 条锚点 = 102 chain + 1414 segment，dim=256/COSINE），aip_kb_*/spk_id_* 名单前后一致未动。pytest 21 + 全仓 388 绿。诚实短板：仅字面哈希向量 hashgram-blake2b，无语义能力（VEC-Q2 待真模型）。
+      AV-1 通过 → pending_test。实测：真连 10.50.11.76:19530，真建 gkxlumen_industry_anchor（1516 条锚点 = 102 chain + 1414 segment，dim=256/COSINE），aip_kb_*/spk_id_* 名单前后一致未动。pytest 21 + 全仓 388 绿。诚实短板：仅字面哈希向量 hashgram-blake2b，无语义能力（VEC-Q2 待真模型）。
     depends_on:
       - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files:
@@ -28434,7 +28434,7 @@ tasks:
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-长任务总控.md §0 #18 §5 §6.3 §6.4"
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-DEVOPS-NET-L01.md"
     definition_of_done:
-      - "第一步先查后建：确认现网（K8s dev 各 ns / 88.43 / 88.48 / 88.49 / 88.54 / 88.249 / Nacos 配置）是否已有可复用的 embedding 端点（特别是写 aip_kb_* 的那套 RAG）；若已有 bge 类端点且 lumen Pod 可直达 → 直接复用，零部署收工"
+      - "第一步先查后建：确认现网（K8s dev 各 ns / 10.50.11.76 / 88.48 / 88.49 / 88.54 / 88.249 / Nacos 配置）是否已有可复用的 embedding 端点（特别是写 aip_kb_* 的那套 RAG）；若已有 bge 类端点且 lumen Pod 可直达 → 直接复用，零部署收工"
       - "若无可复用端点：部署 bge-base-zh-v1.5（dim 768），对外提供 OpenAI 兼容 POST /v1/embeddings"
       - "产出端点 URL + 实测返回向量 dim=768 的原始请求/响应证据 + 从 lumen Pod 实测可达的证据"
       - "as-built 拓扑写入 handoff：部署位置、镜像来源与 tag、权重获取途径、资源占用、重启存活策略"
@@ -31326,7 +31326,7 @@ tasks:
     last_seen_at: "2026-10-17T17:26:29.811Z"
     lock_until: "2026-10-17T19:26:29.811Z"
     claimed_by: "agent:devops-agent"
-    title: "lumen ai-py 数据库地址漏改（仍 192.168.88.43），阻塞 Kafka 端到端实证"
+    title: "lumen ai-py 数据库地址漏改（仍 10.50.11.76），阻塞 Kafka 端到端实证"
     status: "done"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
@@ -31357,7 +31357,7 @@ tasks:
     last_seen_at: "2026-10-17T17:59:23.737Z"
     lock_until: "2026-10-17T19:59:23.737Z"
     claimed_by: "agent:devops-agent"
-    title: "lumen-algo-py 数据库地址仍 192.168.88.43，异步分析在算法创建阶段失败，阻塞 Kafka 端到端实证"
+    title: "lumen-algo-py 数据库地址仍 10.50.11.76，异步分析在算法创建阶段失败，阻塞 Kafka 端到端实证"
     status: "done"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
@@ -31377,7 +31377,7 @@ tasks:
       - "k8s/worker.yaml"
     definition_of_done:
       - "k8s/api.yaml 与 k8s/worker.yaml 的 LUMEN_ALGO_MYSQL_HOST 改为 10.50.11.76，前提是 dwd/ads/cfg 三库在 10.50.11.76 上存在且该账号可读"
-      - "核实企业评估/风险/推荐路径是否依赖 Milvus（现配 192.168.88.43:19530）及集群内可达性，结论写入 handoff"
+      - "核实企业评估/风险/推荐路径是否依赖 Milvus（现配 10.50.69.111:19530）及集群内可达性，结论写入 handoff"
       - "push dev 后 CI 绿，deploy:api 与 deploy:worker successfully rolled out"
       - "handoff 含 commit、pipeline/job ID"
     update_time: "2026-10-18T03:20:29+08:00"
@@ -39837,7 +39837,7 @@ tasks:
       - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ADV-FILTER-派单说明.md"
       - "agent-delivery/长任务执行规约.md"
     definition_of_done:
-      - "只测已发布 http://192.168.88.50:30892/policy/search，禁止 localhost"
+      - "只测已发布 http://10.50.69.111:30892/policy/search，禁止 localhost"
       - "关键词半导体出卡且无加入对比篮/深度分析；有数产业筛选 total>0；无关联节点空态且非 5xx；请求无 support_strength/fund/tax/land/talent/CL-*"
       - "失败先分 C1–C6，QA 不改代码"
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-FILTER-L01.md"
@@ -40151,7 +40151,7 @@ tasks:
       - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-TS-长任务总控.md"
       - "agent-delivery/templates/long-task-e-defect-pack.md"
     definition_of_done:
-      - "只点已发布 http://192.168.88.50:30892/policy/overview，锚点高性能与前沿新材料。总控 §4 四条期望未发生必红"
+      - "只点已发布 http://10.50.69.111:30892/policy/overview，锚点高性能与前沿新材料。总控 §4 四条期望未发生必红"
       - "B2 对账仍有明显错配则第 3 条红，不要求改时序公式"
       - "QA 不改代码；失败写 C1–C6 缺陷包；handoff + cost"
     update_time: "2026-10-24T11:30:58+08:00"
@@ -43855,7 +43855,7 @@ tasks:
     estimated_tokens: 180000
     note: |
       2026-10-28 coordinator 建单。L01 盘点已落盘（方案 §3–§5），未启动编码。本叶只做 §5.5 M1 真实封装，不重复盘点，不做 M2/M3。不依赖 L01 状态：L01 仍含实现 DoD 且 in_progress，若挂依赖会把编码卡死。调用链 MCP→Java 网关→Python /internal/*。强度：ponytail full。网关地址以环境变量注入，不把 token 写进 git。
-      已认领 agent:api-agent / human:淮政玮，claim_type=派单 coordinator_dispatch（task-claim 无该字段）。联调通过：selfcheck 绿，五域与 search/synth 对 demo 网关 http://192.168.88.50:30889/api 调通。产业链走 /innov/v1/industry/**，需 GKX_MCP_TOKEN（不入库）。
+      已认领 agent:api-agent / human:淮政玮，claim_type=派单 coordinator_dispatch（task-claim 无该字段）。联调通过：selfcheck 绿，五域与 search/synth 对 demo 网关 http://10.50.69.111:30889/api 调通。产业链走 /innov/v1/industry/**，需 GKX_MCP_TOKEN（不入库）。
     touched_files:
       - "scripts/7chain-mcp-server.mjs"
       - "scripts/7chain-mcp-selfcheck.mjs"

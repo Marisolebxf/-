@@ -32,7 +32,7 @@
 
 - `python -m entan.yiji_sim.selfcheck`：`yiji_sim self_check OK nodes=8 fact=8 infer=3 drops=1 ledger=11`
 - 自检断言：N102 三条规则均未命中；`unresolved_no_paper_vertex` 带 `reason_zh` 与 `span`。
-- 现网验收（滚完 CI 后）：http://192.168.88.50:30889 `#/entan/graph` 选 `DOC-PAPER` → 预览推理，应看到正文摘录、规则扫描 3 行未命中、抽出 0、丢弃 1 条中文原因。
+- 现网验收（滚完 CI 后）：http://10.50.69.111:30889 `#/entan/graph` 选 `DOC-PAPER` → 预览推理，应看到正文摘录、规则扫描 3 行未命中、抽出 0、丢弃 1 条中文原因。
 
 ## 遗留风险
 
@@ -46,7 +46,7 @@
 - pipeline URL：https://gitlab.htmisoft.net/gkx-lumen/demo-algo-ent-analysis/-/pipelines?ref=dev ；https://gitlab.htmisoft.net/gkx-lumen/demo-ui-system-test/-/pipelines?ref=dev
 - 部署：`demo-platform-entan-py` + `gkx-demo-ui` NodePort 30889
 - K8s rollout：提交 push 后由 CI 触发
-- 验收 URL：http://192.168.88.50:30889
+- 验收 URL：http://10.50.69.111:30889
 
 ## 可观测性（建议）
 

@@ -1,4 +1,4 @@
-﻿# LUMEN-POLICY-E-QA-SMOKE-L01 · 政策专题 E1 — 已发布金路径冒烟
+# LUMEN-POLICY-E-QA-SMOKE-L01 · 政策专题 E1 — 已发布金路径冒烟
 
 > 格式参考 `templates/handoff-template.md`；内容按 2026-09-02 对 K8s 已发布 `lumen-ui-topic` 实测。本单 **不改业务代码**。  
 > 总控：[`LUMEN-POLICY-ABCDE-长任务总控.md`](./LUMEN-POLICY-ABCDE-长任务总控.md) §4  
@@ -31,11 +31,11 @@
 
 **FAIL**（1 PASS / 4 FAIL）。**不要**写「联调通过」。请按缺陷包派 **C1 frontend**（先修 `analysis_fp` SHA-256 + 篮 VID）。
 
-- 证据源：http://192.168.88.50:30892 （deploy `gkx-lumen-topic:97963375`，**不是** demo / localhost）
+- 证据源：http://10.50.69.111:30892 （deploy `gkx-lumen-topic:97963375`，**不是** demo / localhost）
 - Playwright：已用（Chromium / `@playwright/test` 1.51，headless，点已发布前端）
 - CI：`e2e:policy-gold` 未绿，本叶手跑。**未**把 `e2e:chain-gold` [26183](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/26183)（CHAIN #4 wait_view）当政策结论
-- 健康体（辅助）：`GET http://192.168.88.50:30899/policy/topic/v1/policy/health` **200**，`java.status=up` `gkxlumen-topic-policy-biz`，`python.pathPrefix=/internal/policy`，`baseUrl=http://gkxlumen-platform-entan-py:8000`，`degraded=false`。Trace `3a4516e481c696b1ee1a9178a944538f`
-- D12：本会话 `/api/*` 均打 `192.168.88.50:30892` → gateway；无 demo-* host
+- 健康体（辅助）：`GET http://10.50.69.111:30899/policy/topic/v1/policy/health` **200**，`java.status=up` `gkxlumen-topic-policy-biz`，`python.pathPrefix=/internal/policy`，`baseUrl=http://gkxlumen-platform-entan-py:8000`，`degraded=false`。Trace `3a4516e481c696b1ee1a9178a944538f`
+- D12：本会话 `/api/*` 均打 `10.50.69.111:30892` → gateway；无 demo-* host
 - 缺陷包：`agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-L01-defect-pack.md`
 
 ## 五条金路径
@@ -48,7 +48,7 @@
 | 4 | `US-E7-POL-03` | `/policy/analysis` | **FAIL C1** | 同上，未出区域矩阵/雷达；未 succeeded | POST tasks **200** 同上 msg | **`6d2565eb49b41650e411f061c8220465`** |
 | 5 | `US-E7-POL-04` | `/policy/recommendation` | **FAIL C1** | VID 与「一级权重 100%」文案可见；开始分析仍 disabled（指标未入模）。即使提交也会撞同一 `analysis_fp` 闸 | 无有效 Create | 同 #4 闸门 |
 
-Tempo：http://192.168.88.50:30201/api/traces/6d2565eb49b41650e411f061c8220465  
+Tempo：http://10.50.69.111:30201/api/traces/6d2565eb49b41650e411f061c8220465  
 Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo，粘贴上表 id。
 
 ### 1. US-E7-POL-01c
@@ -99,7 +99,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 
 ## 测试结果
 
-- Playwright 对 http://192.168.88.50:30892：**#1 PASS，#2–#5 FAIL**。
+- Playwright 对 http://10.50.69.111:30892：**#1 PASS，#2–#5 FAIL**。
 - 健康体 30899 policy health 200。
 - 手跑记录：`evidence/LUMEN-POLICY-E-QA-SMOKE-L01/run-notes.json` · `policy-gold.spec.ts`
 
@@ -116,7 +116,7 @@ Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Gr
 - pipeline：未触发业务仓 CI（QA 不改代码）
 - 部署 namespace：`dev`；镜像 `gkx-lumen-topic:97963375` · `gkxlumen-topic-policy:7d12b8dd` · `gkxlumen-topic-async-service:7d12b8dd` · `gkxlumen-entan-py-api:ea3acc39`（E0 已核）
 - K8s rollout：E0 已绿，本单未再滚
-- dev 测试 URL：http://192.168.88.50:30892 ；网关 http://192.168.88.50:30899
+- dev 测试 URL：http://10.50.69.111:30892 ；网关 http://10.50.69.111:30899
 
 ## 可观测性（建议）
 

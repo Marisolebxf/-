@@ -1,6 +1,6 @@
 # E-PLATFORM-P0-KAFKA-ALGOPY-DB-L01 · lumen-algo-py 集群 MySQL 地址纠正
 
-> 起因：dev 异步企业评估 `EVAL-20261018-003` 失败 `(2003) Can't connect to MySQL server on '192.168.88.43'`；`lumen-algo-py` 的 api / worker 清单把库指到集群内不可达的 88.43。
+> 起因：dev 异步企业评估 `EVAL-20261018-003` 失败 `(2003) Can't connect to MySQL server on '10.50.11.76'`；`lumen-algo-py` 的 api / worker 清单把库指到集群内不可达的 10.50.11.76。
 
 ## 任务认领（必填）
 
@@ -30,23 +30,23 @@
 | 字段 | 值 |
 |------|-----|
 | diagram_id | `ARCH-MSG-KAFKA` |
-| 图 diff | 无边变更：仅 `lumen-algo-py`（api/worker）→ MySQL 的物理地址由 88.43 改为 10.50.11.76，与图中同库节点一致；Kafka 边、topic 未动 |
+| 图 diff | 无边变更：仅 `lumen-algo-py`（api/worker）→ MySQL 的物理地址由 10.50.11.76 改为 10.50.11.76，与图中同库节点一致；Kafka 边、topic 未动 |
 | 会签态 | `draft`（抄 `architecture-baseline.md` §ARCH-MSG-KAFKA `signoff_status`） |
 
 ## 问题清单
 
-- `k8s/api.yaml`、`k8s/worker.yaml` 的 `LUMEN_ALGO_MYSQL_HOST="192.168.88.43"` 在集群内不可达，worker 在 `validate/data_gather` 前即连库失败 → 任务 failed。
+- `k8s/api.yaml`、`k8s/worker.yaml` 的 `LUMEN_ALGO_MYSQL_HOST="10.50.11.76"` 在集群内不可达，worker 在 `validate/data_gather` 前即连库失败 → 任务 failed。
 - 同账号 `gkxlumenx` 已在 `10.50.11.76:3306` 被 `lumen-topic-py` search/ai 使用（`k8s/dev-search-py.yaml` / `dev-ai-py.yaml`）。
 
 ## 修改内容
 
 | 文件 | 改动 |
 |------|------|
-| `k8s/api.yaml` | `LUMEN_ALGO_MYSQL_HOST` → `"10.50.11.76"`，加注释「与 lumen-topic-py search/ai 对齐，勿写回 192.168.88.43（集群内不可达）」 |
+| `k8s/api.yaml` | `LUMEN_ALGO_MYSQL_HOST` → `"10.50.11.76"`，加注释「与 lumen-topic-py search/ai 对齐，勿写回旧内网地址（集群内不可达）」 |
 | `k8s/worker.yaml` | 同上 |
 | `k8s/README.md` | Secret 示例中的 `LUMEN_ALGO_MYSQL_HOST` 同步为 10.50.11.76 |
 
-未改：口令行、DB 名、`MILVUS_URI`、Kafka / OTel / embed 配置、任何 Python 代码（`lumen_common/db.py` 等代码内默认值 88.43 仍在，见遗留风险）。
+未改：口令行、DB 名、`MILVUS_URI`、Kafka / OTel / embed 配置、任何 Python 代码（`lumen_common/db.py` 等代码内默认值 10.50.11.76 仍在，见遗留风险）。
 
 偏离说明：无（MILVUS_URI 按派单第 3 步结论「不改」）。
 
@@ -63,19 +63,19 @@ MySQL 8.0.39 @ 10.50.11.76:3306，账号 `gkxlumenx` 对三库均有 `ALL PRIVIL
 | `gkxlumenx_cfg` | ✅ | 8 | `lumen_analysis_task`(89) `lumen_analysis_task_node`(479) `lumen_analysis_task_retry`(19) — 存在且可 SELECT |
 
 缺库：无；缺表：无。注意 `enterprise_risk_summary` 为空表（风险洞察路径可能出空结果，非连接问题）。
-另：10.50 的 `lumen_analysis_task` 中查不到 `EVAL-20261018*` 行——该失败任务记录应在旧库 88.43，新库上需重新发起评估才能复测。
+另：10.50 的 `lumen_analysis_task` 中查不到 `EVAL-20261018*` 行——该失败任务记录应在旧库 10.50.11.76，新库上需重新发起评估才能复测。
 
 ### Milvus 结论
 
 - 企业评估（technology/business/competitiveness）、风险洞察（supply_chain/pain_points）、引育推荐（attraction/cultivation）三条异步路径的节点代码均**不导入** `industry_embed`；只有产业锚点 `/industry/embed/*`、政策产业 enrich、chain `graph_project` 用 Milvus。
 - `open_store()` 在调用时才建连（模块 import 不连），启动不强依赖；`/healthz` 不探 Milvus。
-- grep `repo-registry.yaml`、`lumen-topic-py`、`demo-svc-topic-py`、`demo-svc-platform`（含 helm values）、`lumen-svc-platform` 与编排仓 `agent-delivery`：只出现 `192.168.88.43:19530` / `192.168.88.48:19530`，**无 10.50.* Milvus 地址**。本机 TCP：`10.50.11.76:19530` 不通，`192.168.88.43:19530` 通（本机结果仅参考）。
+- grep `repo-registry.yaml`、`lumen-topic-py`、`demo-svc-topic-py`、`demo-svc-platform`（含 helm values）、`lumen-svc-platform` 与编排仓 `agent-delivery`：只出现 `10.50.69.111:19530` / `192.168.88.48:19530`，**无 10.50.* Milvus 地址**。本机 TCP：`10.50.11.76:19530` 不通，`10.50.69.111:19530` 通（本机结果仅参考）。
 - 结论：无可信新地址且三条路径不强依赖 → **`MILVUS_URI` 不改**，风险见下。
 
 ## 遗留风险
 
-1. **Milvus 集群内不可达**：`MILVUS_URI=http://192.168.88.43:19530` 在集群内大概率同样不通，影响产业锚点 rebuild/search、政策产业 enrich；需 devops 确认 10.50 网段 Milvus 实例或打通网络后另起叶。
-2. **代码内默认值仍为 88.43**：`lumen_common/db.py`、`algorithms/svcan/db.py`、`algorithms/chain/demo_guard.py`、`scripts/seed_chain_bottleneck_demo.py` 默认 host 仍为 `192.168.88.43`；清单 env 覆盖后无影响，但脱离清单运行会再踩坑（本叶红线禁改代码逻辑）。
+1. **Milvus 集群内不可达**：`MILVUS_URI=http://10.50.69.111:19530` 在集群内大概率同样不通，影响产业锚点 rebuild/search、政策产业 enrich；需 devops 确认 10.50 网段 Milvus 实例或打通网络后另起叶。
+2. **代码内默认值仍为 10.50.11.76**：`lumen_common/db.py`、`algorithms/svcan/db.py`、`algorithms/chain/demo_guard.py`、`scripts/seed_chain_bottleneck_demo.py` 默认 host 仍为 `10.50.11.76`；清单 env 覆盖后无影响，但脱离清单运行会再踩坑（本叶红线禁改代码逻辑）。
 3. **Secret 覆盖语义**：`envFrom: lumen-algo-mysql`（optional）在 K8s 中优先级低于 `env`，即使 Secret 里写了旧 host 也会被清单值覆盖；反之若将来要用 Secret 改 host，须先删清单里的 env 行。
 4. **明文口令入 git**（既有债，与 D13「口令不进 git」冲突）：本叶红线不动口令行。
 5. `enterprise_risk_summary` 空表，风险洞察可能出空态。

@@ -73,11 +73,11 @@ FE (lumen-ui-science-pc)
 
 | 名称 | URL | 说明 |
 |------|-----|------|
-| `Tempo` | `http://192.168.88.50:30201` | **lumen** 主源（已从 demo 切过来） |
-| `Loki` | `http://192.168.88.50:30311` | **lumen** 主源 |
+| `Tempo` | `http://10.50.69.111:30201` | **lumen** 主源（已从 demo 切过来） |
+| `Loki` | `http://10.50.69.111:30311` | **lumen** 主源 |
 | `Tempo-Lumen` / `Loki-Lumen` | 同上 | 别名，与主源等价 |
-| `Tempo-Demo` | `http://192.168.88.50:30200` | **demo** / system-test |
-| `Loki-Demo` | `http://192.168.88.50:30310` | **demo** / system-test |
+| `Tempo-Demo` | `http://10.50.69.111:30200` | **demo** / system-test |
+| `Loki-Demo` | `http://10.50.69.111:30310` | **demo** / system-test |
 
 science-pc：`VITE_GRAFANA_TEMPO_DS=Tempo` / `Loki`。system-test：`Tempo-Demo` / `Loki-Demo`。Explore 选对应源即可。
 

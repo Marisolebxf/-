@@ -21,7 +21,7 @@ innov `300ad303` / 政策 Python **不重滚**。
 ## 做法
 
 1. 看 origin/dev pipeline frontend:build / image / deploy。未自动则点名，直到 Deployment `gkx-lumen-topic` 镜像 ≥ `7cd3be4`。
-2. GET http://192.168.88.50:30892 HTTP 200。
+2. GET http://10.50.69.111:30892 HTTP 200。
 3. innov / 政策 Python 不重滚。
 4. 不要把 `e2e:chain-gold` 红当本叶失败。
 5. handoff：`agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-DEVOPS-FE-FP-HTTP-L01.md` + ponytail: full + cost。

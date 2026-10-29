@@ -12,7 +12,7 @@
 | npm i && npm run dev 可跑，空布局壳 + 空路由可访问 | ✅ 代码已就位（Vite + Vue3 + Arco 工程骨架、19 个二级路由全部可空跑访问）；⚠️ **本机环境限制未能本地实跑验证**，见「四、已知限制」 |
 | Arco 主题 token 生效（主色 #165DFF） | ✅ `src/styles/design-tokens.css` 与 lumen-ui-topic 同源同值；`@arco-design/web-vue/dist/arco.css` 已在 `main.ts` 引入 |
 | CI 在 dev 分支可触发构建 | ✅ `.gitlab-ci.yml` `workflow.rules` 限定仅 `dev` 分支；已推送到 `origin/dev` |
-| dev 分支 push → Pipeline 绿，dev 环境可访问 | ⚠️ 已推送，Pipeline 应已自动触发；**未能从本环境确认 Pipeline 结果**，需淮政玮登录 GitLab 确认绿色 + `http://192.168.88.50:30895` 可访问 |
+| dev 分支 push → Pipeline 绿，dev 环境可访问 | ⚠️ 已推送，Pipeline 应已自动触发；**未能从本环境确认 Pipeline 结果**，需淮政玮登录 GitLab 确认绿色 + `http://10.50.69.111:30895` 可访问 |
 | 不改动任何需求范围外内容 | ✅ 仅新建 `demo-ui-gaoduanzhiku-view` 仓内文件；未触碰其他仓库 |
 
 ## 二、产物清单
@@ -46,7 +46,7 @@
 ## 四、已知限制（需人工核实）
 
 1. **本机无 Node.js**，且无法在无人值守情况下完成 winget 安装所需的 UAC 管理员提权确认，因此**未能在本机执行 `npm install` / `npm run dev` / `npm run build` 本地验证**。所有代码基于对 `lumen-ui-topic` 现有工程（已验证可运行）的严格对齐编写，人工审阅未发现明显语法/引用错误，但仍建议淮政玮在有 Node 环境的机器上跑一次 `npm install && npm run dev` 做最终确认。
-2. **GitLab Pipeline 结果未验证**：已推送到 `origin/dev`（commit `4e7b5d8`），`.gitlab-ci.yml` 的 `workflow.rules` 应已自动触发构建；本环境无 GitLab API/浏览器访问能力，无法确认 Pipeline 是否绿、`http://192.168.88.50:30895` 是否可访问，需淮政玮登录 GitLab 确认。
+2. **GitLab Pipeline 结果未验证**：已推送到 `origin/dev`（commit `4e7b5d8`），`.gitlab-ci.yml` 的 `workflow.rules` 应已自动触发构建；本环境无 GitLab API/浏览器访问能力，无法确认 Pipeline 是否绿、`http://10.50.69.111:30895` 是否可访问，需淮政玮登录 GitLab 确认。
 3. **NodePort 30895** 为本次新分配，已在 `.gitlab-ci.yml` / `k8s/zhiku-view.yaml` 注释中说明；若集群侧该端口已被其他服务占用，需运维协调后更新。
 4. **task-registry `repo` 字段**历史遗留为 `demo-ui-gdzk`，与实际执行仓 `demo-ui-gaoduanzhiku-view` 不一致（工具限制无法直接改字段），已在任务 note 中记录，请 coordinator 后续订正 S0-S6 全部任务的 `repo` 字段。
 5. **覆盖矩阵 3 项待核实**（功能序号 52 热点分析 / 101 图表样式切换 / 105 一键跳转原文页面）：规划方案 `原型规划方案-demo-ui-gaoduanzhiku-view.md` §3.2 页面映射表未明确标注这 3 项的页面归属，S0 已在 `docs/coverage-matrix-110.md` 中标注拟定归属并打 ⚠️，S1 开工前建议核实。

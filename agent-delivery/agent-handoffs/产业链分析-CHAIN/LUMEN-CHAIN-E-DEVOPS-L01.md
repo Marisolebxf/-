@@ -1,4 +1,4 @@
-﻿# LUMEN-CHAIN-E-DEVOPS-L01 · 产业链段 E0 — K8s dev 发布门
+# LUMEN-CHAIN-E-DEVOPS-L01 · 产业链段 E0 — K8s dev 发布门
 
 > 格式参考 `templates/handoff-template.md`；内容按 2026-08-14 集群实测。本单**只检查、不改 helm/CI、不改业务代码**。
 
@@ -29,7 +29,7 @@
 
 **PASS**
 
-- 前端已发布 URL：http://192.168.88.50:30892 （`lumen-ui-topic` → deploy `gkx-lumen-topic`，title=深圳国际科技专题服务系统）
+- 前端已发布 URL：http://10.50.69.111:30892 （`lumen-ui-topic` → deploy `gkx-lumen-topic`，title=深圳国际科技专题服务系统）
 - 三个点名 deploy 均为 ready **1/1**，rollout status 成功
 - D12：前端 nginx / Java Feign **未**指向 `demo-platform-*` / `demo-svc-*` / `demo-algo-*`；CHAIN 算法下游是 `lumen-platform-algo-py`，不是 `demo-algo-science` / `demo-platform-innov-py`
 - 产业链 health 返回联调库 `demo_gkxlumenx_ods/dwd/ads`（只读）
@@ -62,7 +62,7 @@
 
 | 项 | 值 |
 |----|-----|
-| URL | http://192.168.88.50:30892 |
+| URL | http://10.50.69.111:30892 |
 | curl -I | HTTP/1.1 **200 OK** Server: nginx |
 | HTML title | 深圳国际科技专题服务系统 |
 | 证据性质 | K8s NodePort 已发布页，**不是** localhost / `pnpm dev` |
@@ -86,7 +86,7 @@
 
 | 组件 | 应用配置 | 判定 |
 |------|----------|------|
-| topic-chain JDBC | `demo_gkxlumenx_ads` @ 192.168.88.43:3306 | 符合 `demo_gkxlumenx_*` |
+| topic-chain JDBC | `demo_gkxlumenx_ads` @ 10.50.11.76:3306 | 符合 `demo_gkxlumenx_*` |
 | CHAIN health（经网关/前端反代） | `targets.ODS/DWD/ADS = demo_gkxlumenx_ods/dwd/ads`，`readonly=true` | **CHAIN 冒烟库闸门通过** |
 | lumen-algo-py env | `LUMEN_ALGO_MYSQL_{DWD,ADS,CFG}_DB=gkxlumenx_*`（无 `demo_` 前缀） | 与 health 返回的 demo_ 目标不一致；health 以 Python 模块口径为准。遗留：env 字面量仍是正式库名 |
 | topic-async-service JDBC | `gkxlumenx_topic_enterprise` | 企业模块库名，无 `demo_` 前缀；**CHAIN Feign 不走该库**。登记为残差，本单不改 helm |
@@ -94,8 +94,8 @@
 CHAIN 冒烟路径实测：
 
 ```
-curl http://192.168.88.50:30899/chain/topic/v1/industry/health  → HTTP 200, status=ok, module=chain, trace_id 有值
-curl http://192.168.88.50:30892/api/chain/topic/v1/industry/health → HTTP 200, 同上
+curl http://10.50.69.111:30899/chain/topic/v1/industry/health  → HTTP 200, status=ok, module=chain, trace_id 有值
+curl http://10.50.69.111:30892/api/chain/topic/v1/industry/health → HTTP 200, 同上
 ```
 
 ## 可观测性
@@ -132,7 +132,7 @@ curl http://192.168.88.50:30892/api/chain/topic/v1/industry/health → HTTP 200,
 - `kubectl -n dev get deploy,svc` + `rollout status`：点名 deploy 1/1
 - 前端 30892：200 + lumen 专题系统 title
 - 网关 30899 与前端 `/api/chain/...` health：200 + demo_gkxlumenx_* + trace_id
-- SSH 入口：MCP ssh-executor serverName=`88.50`（本机无 kubectl）
+- SSH 入口：MCP ssh-executor serverName=`10.50.69.111`（本机无 kubectl）
 
 ## 遗留风险
 
@@ -147,7 +147,7 @@ curl http://192.168.88.50:30892/api/chain/topic/v1/industry/health → HTTP 200,
 - pipeline：未触发（只读核对）
 - 部署 namespace：`dev`
 - K8s rollout：成功（见上表）
-- dev 测试 URL：http://192.168.88.50:30892 ；health：http://192.168.88.50:30899/chain/topic/v1/industry/health
+- dev 测试 URL：http://10.50.69.111:30892 ；health：http://10.50.69.111:30899/chain/topic/v1/industry/health
 
 ## cost 四字段（估）
 

@@ -94,7 +94,7 @@ def main() -> int:
         "env_note": {
             "TECH_NEWS_IE_STORE": os.environ.get("TECH_NEWS_IE_STORE"),
             "mysql_live": False,
-            "k8s_pc": "http://192.168.88.50:30891 → 502 at smoke time",
+            "k8s_pc": "http://10.50.69.111:30891 → 502 at smoke time",
         },
     }
     path = out_dir / "E-TECH-NEWS-ENTITY-M4-L02-api-smoke.json"

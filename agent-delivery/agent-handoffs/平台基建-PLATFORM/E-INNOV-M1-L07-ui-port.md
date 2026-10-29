@@ -31,7 +31,7 @@
 
 | 文件 | VITE_APP_API_URL | 说明 |
 |------|------------------|------|
-| `.env.development` | `http://192.168.88.50:9999` | 本地 dev 直连 dev 网关 |
+| `.env.development` | `http://10.50.69.111:9999` | 本地 dev 直连 dev 网关 |
 | `.env.production` | （空） | K8s nginx 反代 `/api` → `gkx-gkx-platform-gateway:9999` |
 
 ### CI/CD 调整
@@ -105,7 +105,7 @@ vite build  →  dist/ 产出正常
 
 ### K8s dev 访问
 
-- **目标 URL**：http://192.168.88.50:30891/innov
+- **目标 URL**：http://10.50.69.111:30891/innov
 - **状态**：本机探测超时（内网不可达或 deploy 未完成）；待 `deploy:k8s` 绿后由内网验收
 
 ## 产物清单

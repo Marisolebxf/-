@@ -32,7 +32,7 @@
 - [x] 招投标只灌中标、缺采购角色
 - [x] seeds 矩阵招投标/风险/MinIO/图谱仍写「待扩展」
 - [x] Nebula space 未在 `demo_entan` / `demo_gkx_enterprise` 间定名
-- [ ] 本机 `seed_demo_graph.py --apply`：graphd `192.168.88.43:9669` 超时（脚本/nGQL 已出，待内网补灌）
+- [ ] 本机 `seed_demo_graph.py --apply`：graphd `10.50.75.136:9669` 超时（脚本/nGQL 已出，待内网补灌）
 - [ ] 全链路强验收建议等 `DEMO-ENT-UI-SEED-ODS-L01` 待测合入
 
 ## 范围与实现
@@ -108,7 +108,7 @@
 
 ## 遗留风险
 
-- 本机无法连 graphd，demo_entan 尚未在 88.43 落地
+- 本机无法连 graphd，demo_entan 尚未在 10.50.11.76 落地
 - 灌数 UI 主路径仍 `pending_test`，全链路强验收未做
 - Helm 真源若另写 nebula space，需与 `ENTAN_NEBULA_SPACE=demo_entan` 对齐（bootstrap yaml 已加）
 

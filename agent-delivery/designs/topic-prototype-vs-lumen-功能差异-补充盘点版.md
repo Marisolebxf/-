@@ -33,7 +33,7 @@
 | 栈 | React 18 + Vite + Arco | Vue 3 + Vite + Arco Vue |
 | 导航 | `src/app/components/Layout.tsx` | `src/router/menu.ts` |
 | 路由 | `src/app/routes.tsx` | `src/router/routes.ts` |
-| URL | `http://192.168.88.63/gkx_topic_demo`；本地常 `4177`/`5173` | `http://192.168.88.50:30892`；本地 `:3000` |
+| URL | `http://192.168.88.63/gkx_topic_demo`；本地常 `4177`/`5173` | `http://10.50.69.111:30892`；本地 `:3000` |
 
 ---
 
@@ -103,7 +103,7 @@
 |------|------|
 | 两边拉到 `origin/dev` | ✅ |
 | 菜单/路由代码盘点 | ✅ |
-| `http://192.168.88.50:30892` | ❌ 超时 |
+| `http://10.50.69.111:30892` | ❌ 超时 |
 | 点击级/截图对比 | ⏭ 未做 |
 
 ---

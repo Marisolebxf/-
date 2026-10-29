@@ -1,5 +1,5 @@
 -- 产业链维 · Demo 库结构纠正（对齐设计，不碰正式库）
--- 抽样：2026-08-20  dev/demo-platform-innov-py → 192.168.88.43
+-- 抽样：2026-08-20  dev/demo-platform-innov-py → 10.50.11.76
 -- 设计真源：
 --   ODS 四表 = md-extract CSV / llm_ods field_mysql_ddl / demo_gkxlumenx_ods_chain_tables.sql
 --   DWD v5 14 表 = chainan.llm_ods.ddl._dwd_ddl

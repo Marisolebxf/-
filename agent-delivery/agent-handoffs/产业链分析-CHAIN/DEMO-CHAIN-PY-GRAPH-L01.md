@@ -116,7 +116,7 @@ python -m pytest -q tests/test_chain_graph.py --tb=short
 - 全量：`179 passed, 1 warning`（Starlette TestClient deprecation，与本单无关）
 - GRAPH：映射单元测 + 无客户端 `failed` + `enabled=false` → `skipped` + 正式 space 422 + search/sync/jobs 不偷写图
 
-现网实投（`192.168.88.43:9669`，space `demo_gkx_chain`）：
+现网实投（`10.50.75.136:9669`，space `demo_gkx_chain`）：
 
 | 项 | 结果 |
 |---|---|

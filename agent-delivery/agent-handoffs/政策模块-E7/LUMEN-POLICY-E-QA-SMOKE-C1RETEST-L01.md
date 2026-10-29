@@ -32,11 +32,11 @@
 
 **FAIL**（1 PASS / 4 FAIL）。**不要**写「联调通过」。请按缺陷包先派 **C5 api/data**（`industry_cluster_map` / demo 前缀），clusters 有可挂图 L0 后再复测 #2～#5。
 
-- 证据源：http://192.168.88.50:30892 （deploy **`gkx-lumen-topic:006d186d`**，已换掉 `97963375`）
+- 证据源：http://10.50.69.111:30892 （deploy **`gkx-lumen-topic:006d186d`**，已换掉 `97963375`）
 - Playwright：Chromium / `@playwright/test` 1.51，headless，只点已发布前端
 - CI：`e2e:policy-gold` 未绿，本叶手跑。**未**把 `e2e:chain-gold` [26205](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/26205) 当本叶结论
-- 健康体：`GET http://192.168.88.50:30899/policy/topic/v1/policy/health` **200**，`degraded=false`，`python.pathPrefix=/internal/policy`。Trace `374a933df17559351f2bc9ccf535c56d`
-- D12：本会话 `/api/*` 均打 `192.168.88.50:30892` / `30899`；无 demo-* host
+- 健康体：`GET http://10.50.69.111:30899/policy/topic/v1/policy/health` **200**，`degraded=false`，`python.pathPrefix=/internal/policy`。Trace `374a933df17559351f2bc9ccf535c56d`
+- D12：本会话 `/api/*` 均打 `10.50.69.111:30892` / `30899`；无 demo-* host
 - 缺陷包：`agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-C1RETEST-L01-defect-pack.md`
 
 ## 五条金路径
@@ -49,7 +49,7 @@
 | 4 | `US-E7-POL-03` | `/policy/analysis` | **FAIL C5/C1** | 同上，未出矩阵/雷达；未 succeeded | 无 Create | 同 #2 |
 | 5 | `US-E7-POL-04` | `/policy/recommendation` | **FAIL C5/C1** | 一级权重 100% 绿条可见；指标 Java 实包空；开始分析仍 disabled。任务未跑通 | 无 Create | 同 #2 |
 
-Tempo（clusters 500）：http://192.168.88.50:30201/api/traces/071b34f54c36d31761617fc884567f03  
+Tempo（clusters 500）：http://10.50.69.111:30201/api/traces/071b34f54c36d31761617fc884567f03  
 error span：`gkxlumen-innov` `Table 'gkxlumenx_dim.industry_cluster_map' doesn't exist`
 
 ### 1. US-E7-POL-01c
@@ -100,7 +100,7 @@ error span：`gkxlumen-innov` `Table 'gkxlumenx_dim.industry_cluster_map' doesn'
 
 ## 测试结果
 
-- Playwright 对 http://192.168.88.50:30892：**#1 PASS，#2–#5 FAIL**。
+- Playwright 对 http://10.50.69.111:30892：**#1 PASS，#2–#5 FAIL**。
 - 健康体 30899 policy health 200。
 - 手跑记录：`evidence/LUMEN-POLICY-E-QA-SMOKE-C1RETEST-L01/run-notes.json` · `policy-gold.spec.ts`
 
@@ -117,7 +117,7 @@ error span：`gkxlumen-innov` `Table 'gkxlumenx_dim.industry_cluster_map' doesn'
 - pipeline：未触发业务仓 CI（QA 不改代码）
 - 部署 namespace：`dev`；镜像 `gkx-lumen-topic:006d186d` · `gkxlumen-topic-policy:7d12b8dd` · `gkxlumen-topic-async-service:7d12b8dd` · `gkxlumen-entan-py-api:ea3acc39`
 - K8s rollout：E0 C1ROLL 已把前端滚到 006d186d；本单未再滚
-- dev 测试 URL：http://192.168.88.50:30892 ；网关 http://192.168.88.50:30899
+- dev 测试 URL：http://10.50.69.111:30892 ；网关 http://10.50.69.111:30899
 
 ## 可观测性（建议）
 
