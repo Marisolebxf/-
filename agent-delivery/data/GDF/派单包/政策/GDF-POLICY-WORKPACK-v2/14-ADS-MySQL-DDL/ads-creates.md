@@ -228,6 +228,8 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_text_parse` (
   COMMENT='D1 政策文本解析：摘要 + 结构化要素 + 自动标签';
 ```
 
+目标键，现网未改：`policy_id` 仍是 `longtext`，不改类型。目标是前 64 个字符的唯一索引。清重口径待确认。上面的 CREATE 仍是现网结构，不要据此去改现网。
+
 ```sql
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_match` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '现网 demo 有此列，口径待补',

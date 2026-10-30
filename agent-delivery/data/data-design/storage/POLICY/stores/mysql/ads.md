@@ -74,6 +74,8 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 抽取写完 DWD 后，按 `policy_id` 删除 ADS 中该政策的行，再插入 DWD 当前行（含已逻辑删除行，`id` 不变）。Java 读本表：政策详情的产业槽、按产业检索、时序板按链码拉政策，都等值关联这张镜像。算法增量与图谱仍读 DWD。有效行：`is_deleted=0`。索引与 DWD 相同。
 
+目标键，现网未改：与 DWD 一样，`(policy_id, industry_link_code)` 唯一。清重口径待确认。不要据此去改现网。
+
 ## 展示窗口消费（DS-10/11/12）
 
 对照 [`../../windows/display-ds10-12.md`](../../windows/display-ds10-12.md)。KPI 不另建表。  
@@ -325,6 +327,8 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_text_parse` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='D1 政策文本解析：摘要 + 结构化要素 + 自动标签';
 ```
+
+目标键，现网未改：`policy_id` 仍是 `longtext`，不改类型。目标是前 64 个字符的唯一索引。清重口径待确认。上面的 CREATE 仍是现网结构，不要据此去改现网。
 
 ```sql
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_match` (

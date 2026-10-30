@@ -81,6 +81,8 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_base_info` (
   COMMENT='政策主表（国内+国际同表）';
 ```
 
+目标索引，现网未改：单列 `policy_id` 的普通索引（不是唯一键）。主键仍是 `id`，唯一键仍是 `(source_plane, policy_id)`。清重不涉及这列。不要按这句话去改现网。
+
 ## 政策–产业关联：`policy_industry_rel`
 
 本节是 `policy_industry_rel` 的结构真源。上文 `policy_base_info` 的 as-built 37 列清单不是这张关联表的依据。
@@ -118,6 +120,8 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_industry_rel` (
 
 索引：`(policy_id, is_deleted)` 给按政策读取、同步和增量跳过；`(industry_link_code, is_deleted, policy_id)` 给按链码查政策，末列 `policy_id` 让关联子查询不用回表。`is_deleted` 不做最左列。条件写 `is_deleted=0`，不用 `COALESCE`。
 
+目标键，现网未改：`(policy_id, industry_link_code)` 唯一。ADS 同名表同一目标。上面的 CREATE 仍是 2026-10-26 已核对的现网结构，不要改写它。清重口径待确认。现网若已有重复行，不能加这个键。不要据此去改现网。
+
 ADS 镜像见 [`ads.md`](./ads.md) 的 `policy_industry_rel`。同步发生在单次抽取提交内：删掉 ADS 里该 `policy_id` 的行，再按 DWD 当前行插入（`id`、`is_deleted` 一致）。Java 只读 ADS。
 
 ## 政策文本解析：`policy_text_parse`
@@ -142,5 +146,29 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_text_parse` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='D1 政策文本解析：摘要 + 结构化要素 + 自动标签';
+```
+
+目标键，现网未改：`policy_id` 仍是 `longtext`，不改类型。目标是给 `policy_id` 前 64 个字符加唯一索引。清重口径待确认。现网有重复或前 64 字相撞时不能加。上面的 CREATE 仍是 2026-10-26 已建空表的结构，不要把它改成带这个索引的语句，也不要据此去改现网。
+
+## 脚本作业状态：`script_state`
+
+C1 / C2 的增量留痕。2026-10-30 收进设计。demo 与产线都还没有这张表，本节不授权执行。库名写成 `demo_gkxlumenx_dwd` 只为和本文件其他表一致；产线库名换成 `gkxlumenx_dwd`。`policy_id` 为 `varchar(100)`、`utf8mb4_0900_ai_ci`，与 `policy_base_info.policy_id` 一致。缺表时脚本退出码 4，脚本不建表。这张表不是业务写库边。
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`script_state` (
+  `job`          varchar(16)  NOT NULL COMMENT '作业标识：c1 抽取产业 / c2 条款结构化',
+  `policy_id`    varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '对应 policy_base_info.policy_id',
+  `content_hash` varchar(32)  NOT NULL DEFAULT '' COMMENT '输入指纹',
+  `status`       varchar(20)  NOT NULL COMMENT 'done|empty|no_match|degraded|failed|llm_unavailable',
+  `batch_id`     varchar(32)  NOT NULL DEFAULT '' COMMENT '本趟运行标识',
+  `tried_at`     datetime     NOT NULL COMMENT '最近一次尝试时间',
+  `next_try_at`  datetime     DEFAULT NULL COMMENT '下次可重试时间；NULL=终态',
+  `try_count`    int          NOT NULL DEFAULT 0 COMMENT '累计尝试次数',
+  `note`         varchar(500) NOT NULL DEFAULT '' COMMENT '备注',
+  PRIMARY KEY (`job`, `policy_id`),
+  KEY `idx_job_due` (`job`, `next_try_at`, `policy_id`),
+  KEY `idx_job_status` (`job`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  COMMENT='脚本作业状态：一次处理一行，供增量判定与排障使用';
 ```
 

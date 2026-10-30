@@ -25,3 +25,5 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_industry_rel` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='政策–产业关联。抽取写入，不回写主表';
 ```
+
+目标键，现网未改：`(policy_id, industry_link_code)` 唯一。DWD 与 ADS 同一目标。上面的 CREATE 仍是现网已有结构。清重口径待确认。现网若已有重复行，不能加这个键。不要按这句话去改现网。

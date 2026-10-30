@@ -61,6 +61,8 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_base_info` (
   COMMENT='政策主表（国内+国际同表）';
 ```
 
+目标索引，现网未改：单列 `policy_id` 的普通索引，不是唯一键。上面的唯一键仍是 `(source_plane, policy_id)`。不要按这句话去改现网。
+
 ## 与 Demo as-built 的差集（诚实）
 
 | Demo as-built（`stores/mysql/dwd.md`） | 产线 |
