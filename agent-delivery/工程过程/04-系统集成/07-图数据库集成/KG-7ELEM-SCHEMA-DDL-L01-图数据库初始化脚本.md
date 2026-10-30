@@ -1,0 +1,62 @@
+CREATE SPACE IF NOT EXISTS demo_gkx_chain (partition_num=10, replica_factor=1, vid_type=FIXED_STRING(80));
+:sleep 20
+USE demo_gkx_chain;
+
+-- 企业
+CREATE TAG IF NOT EXISTS enterprise (name string, node_type string, enterprise_code string, chain_role string, weight double, props string);
+-- 产业链环节
+CREATE TAG IF NOT EXISTS segment (name string, segment_key string, chain_id string, chain_stage string, weight double, props string);
+-- 科研机构
+CREATE TAG IF NOT EXISTS research ();
+-- 技术：论文
+CREATE TAG IF NOT EXISTS paper ();
+-- 技术：专利
+CREATE TAG IF NOT EXISTS patent ();
+-- 技术：项目
+CREATE TAG IF NOT EXISTS project ();
+-- 人才
+CREATE TAG IF NOT EXISTS person ();
+-- 服务机构
+CREATE TAG IF NOT EXISTS institution (name string, institution_type string, weight double, props string);
+-- 政策
+CREATE TAG IF NOT EXISTS policy (name string, weight double, props string);
+
+-- 人才 — 人才，无向，写入时两个方向各一条
+-- 科研机构 — 科研机构，无向，写入时两个方向各一条
+-- 人才 — 科研机构，无向，写入时两个方向各一条
+-- 企业 — 企业，双向，写入时两个方向各一条
+CREATE EDGE IF NOT EXISTS cooperate ();
+-- 人才 — 科研机构，有向
+-- 科研机构 — 科研机构，有向
+CREATE EDGE IF NOT EXISTS belong ();
+-- 论文、专利、项目之间，有向
+-- 政策 — 政策，有向
+CREATE EDGE IF NOT EXISTS cite (weight double, props string);
+-- 人才 — 论文、专利、项目，有向
+-- 科研机构 — 论文、专利、项目，有向
+CREATE EDGE IF NOT EXISTS participate ();
+-- 人才 — 论文、专利、项目，有向
+CREATE EDGE IF NOT EXISTS author_of ();
+-- 科研机构 — 政策，有向
+CREATE EDGE IF NOT EXISTS publish ();
+-- 政策 — 政策，无向，写入时两个方向各一条
+CREATE EDGE IF NOT EXISTS policy_relate ();
+-- 政策 — 企业，有向
+-- 政策 — 人才，有向
+-- 政策 — 科研机构，有向
+CREATE EDGE IF NOT EXISTS policy_apply_to ();
+-- 产业链环节 — 产业链环节，有向
+CREATE EDGE IF NOT EXISTS depends_on (dependency_type string, weight double, props string);
+-- 企业 — 产业链环节，有向
+-- 服务机构 — 产业链环节，有向
+CREATE EDGE IF NOT EXISTS participates ();
+-- 科研机构 — 科研机构，双向，写入时两个方向各一条
+CREATE EDGE IF NOT EXISTS research_coop ();
+-- 人才 — 人才，双向，写入时两个方向各一条
+CREATE EDGE IF NOT EXISTS talent_coop ();
+-- 服务机构 — 企业，有向
+CREATE EDGE IF NOT EXISTS service_provide ();
+-- 企业 — 企业，有向
+CREATE EDGE IF NOT EXISTS supply (weight double, props string);
+-- 企业 — 企业，有向
+CREATE EDGE IF NOT EXISTS parent_sub (weight double, props string);
