@@ -44642,7 +44642,7 @@ tasks:
     estimated_tokens: 140000
     note: |
       来源：KG-YANDA-SCHEMA-REQ-L01 已签收（v1.2，查询侧 14 实体/17 关系/31 计算）。本单把这份查询需求，再加上真正读图或写图的算法，收敛成七要素建图必须支持的三元组。七要素：企业、产业链环节、科研机构、技术、人才、服务机构、政策。技术要素按已有口径是论文/专利/项目，不是展示清单里的 technology 技术点。边界：不重做实体属性清单，不重做 KG-YANDA-GAP-L01 差集，不把 SYSINT-SCHEME-07-L03/L04/L05 未签收台账当成已放行契约。统计指标、纯前端交互、写入版本管理不进三元组。未知来源表标待确认，禁止臆造。
-      2026-10-30 human:淮政玮 认领本单，作为汇总签收，不重复做子单判定。执行拆成三张：KG-7ELEM-BUILD-REQ-L02 消费清单与归并（ready）；KG-7ELEM-BUILD-REQ-L03 必须三元组与关系总图（等 L02）；KG-7ELEM-BUILD-REQ-L04 建图动作与缺口（等 L03）。三张各自落盘。本单把三份收成主文 KG-7ELEM-BUILD-REQ-L01-七要素必须三元组与建图需求.md 后送签。
+      2026-10-30 human:淮政玮 认领本单，作为汇总签收。执行拆成四张：KG-7ELEM-BUILD-REQ-L02 消费清单与归并（ready）；KG-7ELEM-BUILD-REQ-L03 必须三元组与关系总图（等 L02）；KG-7ELEM-BUILD-REQ-L04 建图动作与缺口（等 L03）；KG-7ELEM-BUILD-REQ-L05 建图完整 schema 与存储设计缺项（等 L03，与 L04 并列）。四张各自落盘。本单把四份收成主文后送签。
     depends_on:
       - "KG-YANDA-SCHEMA-REQ-L01"
     collaborators:
@@ -44661,7 +44661,7 @@ tasks:
       - "七要素之间关系总表：七类两两之间哪些边必须建、哪些明确不建；不建的写出原因（无消费 / 已有边覆盖 / 待确认）"
       - "建图需求：每条必须三元组给出建图动作（抽取来源占位、是否已有写图流水线、缺口）。未知表名标待确认，不臆造。不写接口实现，不改图空间"
       - "交付 handoff，落盘 agent-delivery/工程过程/04-系统集成/07-图数据库集成/，经 human:淮政玮 签收"
-    update_time: "2026-10-30T10:53:45+08:00"
+    update_time: "2026-10-30T10:59:15+08:00"
   - id: KG-7ELEM-BUILD-REQ-L02
     title: "七要素建图·消费清单与实体归并"
     status: "ready"
@@ -44753,3 +44753,37 @@ tasks:
       - "来源材料里没有的表名写待确认，禁止臆造表名、枚举和样本量"
       - "交付 agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L04-建图需求.md，以及 handoff agent-handoffs/KG-7ELEM-BUILD-REQ-L04.md。不写接口，不改图空间，不配 GDF 作业"
     update_time: "2026-10-30T10:53:33+08:00"
+  - id: KG-7ELEM-BUILD-REQ-L05
+    title: "七要素建图·完整 schema 与存储设计缺项"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 60000
+    note: |
+      总单 KG-7ELEM-BUILD-REQ-L01 的第 4 张子单，与 L04 并列，都等 L03 的必须三元组。先给出建图要的完整 schema（Tag / Edge / 属性 / VID），再对照 storage 存储设计，只列存储设计的缺项。不重做 SYSINT-SCHEME-07-L07：那张单对的是现网写图代码和已有入图目标态，本单不改代码。七要素没有对应存储域的，缺项写「无对应存储域」。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L05-建图schema与存储设计缺项.md"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-to-nebula.md"
+      - "agent-delivery/data/data-design/storage/CHAIN/etl/pipeline-to-nebula.md"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/pipeline-to-nebula.md"
+      - "agent-delivery/data/data-design/storage/SVC/etl/pipeline-to-nebula.md"
+      - "agent-delivery/data/data-design/storage/COMP/etl/pipeline-to-nebula.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L07-入图schema差异清单.md"
+    definition_of_done:
+      - "建图 schema 全表：只覆盖 KG-7ELEM-BUILD-REQ-L03 已定的必须三元组。每个 Tag 写名称、VID 规则、属性名、类型、必选或可选。每条 Edge 写名称、起点 Tag、终点 Tag、方向、属性。不新增 L03 没有的边"
+      - "与 storage 存储设计逐项对照：真源是 agent-delivery/data/data-design/storage 下 ENT、CHAIN、POLICY、SVC、COMP 的 etl/pipeline-to-nebula.md 与 stores/nebula。每项标成：存储设计已有、缺 Tag、缺 Edge、缺属性、无对应存储域"
+      - "缺项只指存储设计没有、但建图 schema 需要的内容。逐条回指存储文件章节；文件里没有的写「存储设计未写」，不臆造表名和字段"
+      - "交付 agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L05-建图schema与存储设计缺项.md，以及 handoff agent-handoffs/KG-7ELEM-BUILD-REQ-L05.md。不改 storage 文档，不改代码，不改图空间"
+    update_time: "2026-10-30T10:59:08+08:00"
