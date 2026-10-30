@@ -44837,3 +44837,42 @@ tasks:
       - "缺项只指存储设计没有、但建图 schema 需要的内容。逐条回指存储文件章节；文件里没有的写「存储设计未写」，不臆造表名和字段"
       - "交付 agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L05-建图schema与存储设计缺项.md，以及 handoff agent-handoffs/KG-7ELEM-BUILD-REQ-L05.md。不改 storage 文档，不改代码，不改图空间"
     update_time: "2026-10-30T11:19:48+08:00"
+  - id: ENT-ES-SEARCH-OPTIMIZE-L01
+    title: "ES企业搜索统一优化：ngram替代wildcard + 生产settings + 深分页防护 + 文档同步"
+    status: "backlog"
+    agent: "agent:xtq"
+    epic: "企业战略分析-ENT"
+    priority: "P1"
+    repo: "lumen-topic-py + lumen-etl-es-py + gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 250000
+    note: |
+      背景：7000 万企业数据灌数前的统一优化窗口。v2 测试索引（gkx_enterprise_v2，119万文档）已完成 A/B 验证：bigram match_phrase 与 wildcard 语义等价 ALL PASS（7 用例含全名精确/铁塔子串/严格子串/中间子串），磁盘膨胀仅 +7.3%（ngram 子字段 8.3MB/119万，外推 7000 万约 +1.5GB），bigram 参数定稿 (2,2) 不改 (2,4)。范围裁定（用户 2026-10-30 拍板）：单工单统一处理；P3 中仅做文档同步，by-codes 分批/random_score/SVC wildcard/nested 拆分本轮不动。硬时序约束：mapping+settings 必须在 7000 万正式灌数前定稿（零 reindex 成本窗口）。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-etl-es-py/conf/es/gkx_enterprise_mappings.json"
+      - "repos/lumen-etl-es-py/app/es.py"
+      - "repos/lumen-etl-es-py/conf/settings.yaml"
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_search.py"
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_compare.py"
+      - "repos/lumen-topic-py/gkx_common/params.py"
+      - "repos/lumen-topic-py/tests/test_qa_passthrough_fixes.py"
+      - "repos/lumen-topic-py/tests/test_query_tree_dsl.py"
+      - "repos/lumen-topic-py/tests/test_smart_keyword_scope.py"
+      - "agent-delivery/data/data-design/企业/企业搜索-ES索引设计.md"
+      - "agent-delivery/data/data-design/storage/ENT/stores/elasticsearch/index-enterprise.md"
+    design_refs:
+      - "agent-delivery/data/data-design/企业/企业搜索-ES索引设计.md §3.1"
+      - "v2 索引 A/B 验证记录（2026-10-30，语义 ALL PASS / 膨胀 +7.3%）"
+    definition_of_done:
+      - "【灌数前·P0】lumen-etl-es-py mapping 转正：gkx_enterprise_mappings.json 合入 name_cn/former_names/name_en 的 .ngram 子字段（cn_bigram/en_bigram，2,2），app/es.py build_index_settings 深合并 bigram analysis（不覆盖 ik/pinyin）"
+      - "【灌数前·P0】生产 settings：15 分片/1 副本经环境变量或 settings.yaml 生效（ETL_NUMBER_OF_SHARDS/REPLICAS），refresh_interval 参数化默认 30s；灌数期 replicas=0 + refresh=-1 临时配置与灌后 force merge 1 段 + 副本回 1 写入运维手册"
+      - "【查询侧·P0】lumen-topic-py 两入口 wildcard→match_phrase 打 .ngram（enterprise_search.py:1073 查企业 + enterprise_compare.py:48 智能搜索），单字(len<2)分支走主字段 ik match；tags_flat/industry_chain_names_flat 的 wildcard 改 terms 精确匹配；环境变量开关可回退 wildcard"
+      - "【查询侧·P0】深分页防护：gkx_common/params.py page_params 加 page 上限（建议 ≤200），超限回落或 400"
+      - "【测试】三个测试文件断言同步（test_qa_passthrough_fixes/test_query_tree_dsl/test_smart_keyword_scope），新增单字分支与 ngram 用例；全量 pytest 通过（存量 business_scope 断言失败一并修复）"
+      - "【文档同步】企业搜索-ES索引设计.md §3.1 settings 更新（15片/refresh 30s/force merge）+ §3.4 analyzer 表补 cn_bigram/en_bigram + .ngram 子字段说明；storage/ENT 三件套（index-enterprise/sync/pipeline-dwd-to-es）字段清单补 ngram；GDF 派单包 v3/v4 12-DWD到ES.md 检查确认灌数链路无需变更（ngram 随 mapping 自动生成）并补说明"
+      - "【验收】v2 验证脚本 scripts/verify_v2_ngram.py 全绿基线留存；改造后对 v1 别名回归 7 用例语义一致；handoff 含 A/B 数据（语义 ALL PASS / 膨胀 +7.3% / 单字兜底实测 宁=210）与架构合规自检"
+    update_time: "2026-10-30T11:57:28+08:00"
