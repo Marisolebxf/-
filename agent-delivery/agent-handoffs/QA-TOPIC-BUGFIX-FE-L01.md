@@ -178,3 +178,25 @@
 ### 代码状态
 
 - 已 push **`lumen-ui-topic` `a8dfca5`**。
+
+---
+
+## 追加修改（2026-10-30 · 全景图谱环节 status 样式）
+
+走查：节点第二行「活跃环节」等与环节名同字号同权重，难区分；不使用 Arco Tag / 标签底。
+
+| 项 | 实现 |
+|----|------|
+| 文案 | `industryPanoramaNodeSublineText`：演进变化 > status 中文 > stage |
+| 样式 | `industryPanoramaSublineTextStyle`：仅 **字色**（如活跃 `#0FC6C2`、瓶颈 `#FF7D00`） |
+| 图谱 | `IndustryPanoramaGraph.vue`：名称 12px/500；第二行 10px/400、无 background 的 G6 副文本 |
+| 结构列表 | `IndustryStructureList.vue` + `industry-topic-node-status-subline`（12px 小字 + 同色值） |
+
+### 验收
+
+- 全景 circle 节点：上行环节名、下行 status 小一号且有色差，无 pill/Tag 底。
+- `node src/utils/industryStructureLabels.selfcheck.mjs` 通过。
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `8ddd999`**。
