@@ -1,5 +1,9 @@
 # CHANGELOG · GDF-POLICY-WORKPACK
 
+## v2.0.5 · 2026-10-30
+
+- 清重口径已定，本轮改表语句收进 `sql/update_round1.sql`。只执行这一份。含新建 `script_state`、关联表清重后加 `uk_pid_code`、ADS 条款表清重后加 `uk_ptp_pid`、主表加普通索引 `idx_pid`。主表不删行。DWD `policy_text_parse` 不改。本仓不代跑。
+
 ## v2.0.4 · 2026-10-30
 
 - 增加 `22`。签收 GDF round1 回包（指纹、函数差异），并逐条回答交付说明里的问题和建议。

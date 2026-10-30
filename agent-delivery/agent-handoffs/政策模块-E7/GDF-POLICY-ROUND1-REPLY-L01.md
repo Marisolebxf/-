@@ -36,8 +36,8 @@
 
 - 回包指纹按 LF 与交付说明一致。CRL 检出时整文件哈希不同。
 - 不确认「五个核心函数全部逐字节一致」。C2 `structure_one` 已按交付说明改成按内容指纹跳过。
-- `policy_support` 字面 `'null'` 已确认是源上就没有。清重口径仍待确认。嵌入服务的 NodePort 数字未写入包。
-- 建议 A–D 已于 2026-10-30 确认并写入设计。产线未建 `script_state`，现网未 ALTER。清重口径仍待确认。
+- `policy_support` 字面 `'null'` 已确认是源上就没有。嵌入服务的 NodePort 数字未写入包。
+- 建议 A–D 已于 2026-10-30 确认并写入设计。清重口径已定，改表语句在 `sql/update_round1.sql`。本仓未执行。
 
 ## 修改内容
 
@@ -59,7 +59,7 @@
 - Milvus 地址按 `10.50.69.111:19530` 写入答复。没有从代理机再探测。
 - 锚点：要等产业链产线完成并做「产业链入向量库」才产生。政策 C1 不建锚点。
 - `LLM_API_KEY` 测试密钥写在 `22` 第 6 条和 `12` 环境表。`script_state` 产线未建，缺表时退出码 4。
-- 目标唯一键未加到现网。清重口径未定。`policy_support` 字面 `'null'` 是源上就没有，不回刷。
+- 目标唯一键的语句在 `sql/update_round1.sql`，本仓未执行。`policy_support` 字面 `'null'` 是源上就没有，不回刷。
 
 ## CI/CD（必填）
 
@@ -84,12 +84,15 @@
 - `agent-delivery/data/data-design/storage/POLICY/stores/mysql/ads.md`
 - `agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/README.md`
 - `agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/CHANGELOG.md`
+- `agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/sql/update_round1.sql`
+- `agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/sql/README.md`
+- `agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/sql/script_state.sql`
 
 ## 架构合规
 
 | 铁律 | 结果 |
 |---|---|
 | 调用链 | 未改。仍是 GDF 节点跑包内 Python，不配内部 HTTP |
-| 不改产线表 | 是。未执行 DDL，未 ALTER |
+| 不改产线表 | 语句已写入 `sql/update_round1.sql`。本仓未执行 |
 | 不代替 WBS-06-03 | 是 |
 | D12 | 未改 lumen 仓，未调用 demo 服务 |

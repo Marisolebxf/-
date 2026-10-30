@@ -5,7 +5,7 @@
 > **回包**：`工程过程/04-系统集成/06-GDF数据治理集成/对接文档/GDF侧提交/政策/GDF-POLICY-WORKPACK-v2/round1/`  
 > **读者**：GDF。本章是对首次派单回包的签收和答复。不是 Wave A/B 执行结果，也不是产线已跑通。
 
-2026-10-30 已确认四条建议。现行包 `scripts/` 是回包两份再加上补偿软删。`12`、`15`、`10` 和表设计已按确认改过。产线仍未建 `script_state`，也未改现网表。本章第 1 节的函数对照，是签收当时相对派单脚本的记录。
+2026-10-30 已确认四条建议。现行包 `scripts/` 是回包两份再加上补偿软删。`12`、`15`、`10` 和表设计已按确认改过。本轮要执行的语句在 `sql/update_round1.sql`，本仓没有在库上跑。本章第 1 节的函数对照，是签收当时相对派单脚本的记录。
 
 ## 1. 签收
 
@@ -63,16 +63,16 @@
 | 13 | 锚点谁灌的、何时验收 | 「产业链入向量库」这一步负责灌。时机是产业链产线完成之后、政策 C1 要出链码之前。政策重灌做完不会产生锚点。 |
 | 14 | 能否安装 `python3-pip` 和 `pymysql` | 可以。代理机 `10.50.238.250` 完全给 GDF 独立使用，GDF 自行安装。脚本依赖 Python 3.9+ 和 `pymysql`。临时 `PYTHONPATH` 不算正式运行。 |
 | 15 | `/opt/policy/scripts` 能否创建 | 本包不规定这个路径，不创建，也不授权写入工作区外的目录。节点上的目录由 GDF 自定。 |
-| 16 | 正式环境 `script_state` 谁建 | GDF 在 `gkxlumenx_dwd` 执行本包 `sql/script_state.sql`。只这一份，不要 `DROP`，不要顺手加唯一键。本侧不代跑。缺表时脚本退出码 4，不要在作业里建表。 |
+| 16 | 正式环境 `script_state` 谁建 | GDF 执行本包 `sql/update_round1.sql`。建表在这一份里，不要再单独跑 `script_state.sql`，不要 `DROP`。本侧不代跑。缺表时脚本退出码 4，不要在作业里建表。 |
 | 17 | 数据库口令 | 不重复提供。不进本包，不进 handoff，不进对话。 |
-| 18 | 三张目标表要不要改结构 | 回包原则是不改 `policy_industry_rel` 和 `policy_text_parse` 的现网结构。本叶同意：现网不改。目标键只写在设计旁注，清重待确认，见第 4 节。 |
+| 18 | 三张目标表要不要改结构 | 要改的只有索引，不改列类型。语句在 `sql/update_round1.sql`。见第 25 条和第 4 节。 |
 | 19 | embedding / Milvus 服务端要不要改 | 不要。只要地址、鉴权和上面已写明的模型、余弦、768 维。 |
 | 20 | 锚点集合要不要重建 | 不要。设计写明不重建、不改 `METRIC_TYPE=COSINE`。 |
 | 21 | Milvus 距离度量必须是 IP 或 COSINE | 采用设计里的 `COSINE`。不是 L2。IP 不作为本包口径。 |
 | 22 | 向量维度与灌库模型一致 | 是。默认模型 `BAAI/bge-base-zh-v1.5`，768 维。 |
 | 23 | `kind` 只能是 `chain` 或 `segment` | 是。现行 `milvus_search` 已丢掉其他值。 |
 | 24 | `policy_support` 全是字面 `'null'` | 源上就没有结构化要素。不是洗入时弄丢的。`09` 仍是「JSON 原样」，不改、不回刷。字面 `'null'` 不能走要素抬升，C2 只能切条或走模型。这是预期。 |
-| 25 | 给关联表和解析表加唯一键 | 目标已写入设计旁注：关联表 `(policy_id, industry_link_code)` 唯一；`policy_text_parse.policy_id` 前 64 字唯一，类型仍是 `longtext`；主表另记单列 `policy_id` 普通索引。现网 CREATE 不改。清重口径仍待确认。本任务不查重，不写可执行的改表语句，现网未改。 |
+| 25 | 给关联表和解析表加唯一键 | 按回包建议加。清重口径已定，语句在 `sql/update_round1.sql`。关联表 DWD 与 ADS：键 `(policy_id, industry_link_code)`，空串也算；同一键留 `is_deleted=0`，同状态留 `update_time` 最新，时间相同留 `id` 最大，其余物理删除。ADS `policy_text_parse`：完整 `policy_id` 相同的重复行留最新；全文不同、仅前 64 字相同的不删，加索引会停住。类型仍是 `longtext`。主表只加普通索引 `idx_pid`，不删行，不改 `(source_plane, policy_id)`。DWD `policy_text_parse` 本轮不改。本侧不代跑。 |
 | 26 | 源侧 `is_deleted` / `is_history` 之后，目标行怎么办 | Wave A/B 取数仍不过滤这两列。C1 每趟开始前：关联仍有效、但主表没有当前行的 `policy_id`，软删关联并同步 ADS。源行同时还有当前行时不动。C2 不删条款，只在 `script_state`（`job=c2`）把备注写成「源行已非当前，条款保留」。 |
 | 27 | 以后你们升级脚本，运行层怎么合并 | 现行包 `scripts/` 已是回包加上补偿软删。以后只把业务函数的差异贴回来，保留状态表、退出码和补偿。贴完跑 `--self-check`。 |
 
@@ -80,13 +80,13 @@
 
 ## 4. 建议：2026-10-30 已确认
 
-四条都已写入设计。产线未建表，现网未改。清重口径仍待确认。不改 `09`，不改 `01-data-flow.md`。
+四条都已写入设计。清重口径已定，本轮改表语句在 `sql/update_round1.sql`。本仓不代跑。不改 `09`，不改 `01-data-flow.md`。
 
 | # | 建议 | 已写入 |
 |---|---|---|
 | A | 用 round1 两份脚本替换现行包 `scripts/` | `scripts/`、`12`、`15`。退出码 7 是未追平，不记失败 |
 | B | `script_state` 收进建表设计 | `10/script_state-MySQL.md`、`dwd.md`。未执行 |
-| C | 唯一键与主表 `policy_id` 普通索引 | 设计旁注。现网 CREATE 未改。清重待确认 |
+| C | 唯一键与主表 `policy_id` 普通索引 | 口径已定。可执行语句在 `sql/update_round1.sql` |
 | D | C1 补偿软删；C2 保留条款并备注 | `scripts/` 与 `12`。`--self-check` 已覆盖名单判定 |
 
-代理机用 `http://10.50.69.111:<嵌入服务 NodePort>` 访问嵌入服务，NodePort 数字不在本包。锚点要等产业链产线完成并做完「产业链入向量库」才有。`policy_support` 源上就没有。清重口径仍待确认。`LLM_API_KEY` 现用测试密钥，见第 6 条。
+代理机用 `http://10.50.69.111:<嵌入服务 NodePort>` 访问嵌入服务，NodePort 数字不在本包。锚点要等产业链产线完成并做完「产业链入向量库」才有。`policy_support` 源上就没有。清重口径见第 25 条。`LLM_API_KEY` 现用测试密钥，见第 6 条。

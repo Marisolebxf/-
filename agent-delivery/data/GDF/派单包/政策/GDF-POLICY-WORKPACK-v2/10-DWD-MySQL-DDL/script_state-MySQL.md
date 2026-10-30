@@ -1,12 +1,12 @@
 # `script_state`（C1 / C2 作业留痕）
 
 > **日期**：2026-10-30  
-> **状态**：要执行的文件是 [sql/script_state.sql](../sql/script_state.sql)。在 `gkxlumenx_dwd` 执行一次。本仓不代跑。脚本发现缺表时退出码 4，并且不建表。  
+> **状态**：要执行的文件是 [sql/update_round1.sql](../sql/update_round1.sql)。建表段与 [sql/script_state.sql](../sql/script_state.sql) 相同，不要再单独跑片段。本仓不代跑。脚本发现缺表时退出码 4，并且不建表。  
 > **谁写**：`scripts/policy_c1_industry.py`、`scripts/policy_c2_clauses.py`。不是 Wave B 的 Mapping 表。
 
 `policy_id` 为 `varchar(100)`，排序规则 `utf8mb4_0900_ai_ci`，与 `policy_base_info.policy_id` 一致。两边不一致时，列对列比较会报 1267。
 
-下面与 `sql/script_state.sql` 是同一份建表语句。执行以那个文件为准。不要 `DROP`。
+下面与 `sql/update_round1.sql` 里的建表段是同一份语句。执行以那个文件为准。不要 `DROP`。
 
 ```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`script_state` (

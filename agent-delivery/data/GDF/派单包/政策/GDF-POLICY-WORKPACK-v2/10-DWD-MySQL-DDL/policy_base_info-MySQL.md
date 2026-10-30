@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_base_info` (
   COMMENT='政策主表（国内+国际同表）';
 ```
 
-目标索引，现网未改：单列 `policy_id` 的普通索引，不是唯一键。上面的唯一键仍是 `(source_plane, policy_id)`。不要按这句话去改现网。
+目标索引：单列 `policy_id` 的普通索引 `idx_pid`，不是唯一键。上面的唯一键仍是 `(source_plane, policy_id)`。加索引的语句在 `sql/update_round1.sql`。这列不清重，不删行。本仓不代跑。
 
 ## 与 Demo as-built 的差集（诚实）
 

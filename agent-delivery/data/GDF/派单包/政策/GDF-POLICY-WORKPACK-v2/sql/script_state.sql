@@ -1,4 +1,5 @@
 -- C1 / C2 作业留痕。库 gkxlumenx_dwd。
+-- 产线不要单独执行本文件。建表段已并入 update_round1.sql，只跑那一份。
 -- 可重复执行。不要 DROP。
 -- policy_id 排序规则必须与 policy_base_info.policy_id 同为 utf8mb4_0900_ai_ci。
 -- 缺这张表时脚本退出码 4，脚本自己不建表。

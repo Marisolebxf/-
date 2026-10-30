@@ -19,7 +19,7 @@
 | `policy_base_info.is_history` | `gkxlumenx_dwd` | 表已在、列不在：只 `ADD` `is_history int NULL`。列已在则跳过，不改类型 |
 | `policy_industry_rel` | `gkxlumenx_dwd` | 按 `10/policy_industry_rel-MySQL.md` 建空表。Wave B **不要洗**这张表 |
 | `policy_industry_rel` | `gkxlumenx_ads` | 同结构空表。由本侧建。GDF 不在 ADS 上配 Mapping |
-| `script_state` | `gkxlumenx_dwd` | 执行 `sql/script_state.sql`。缺表时 C1/C2 退出码 4。不要在作业里建表，不要 `DROP` |
+| `script_state` | `gkxlumenx_dwd` | 执行 `sql/update_round1.sql`（含建表、清重、索引）。缺表时 C1/C2 退出码 4。不要在作业里建表，不要 `DROP` |
 
 ADS `policy_text_parse`：C2 合并条款用。没有冻结的产线 DDL 时，本包不猜列、不新建。缺表记缺口，不在 GDF 里造一张。
 

@@ -74,7 +74,7 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 抽取写完 DWD 后，按 `policy_id` 删除 ADS 中该政策的行，再插入 DWD 当前行（含已逻辑删除行，`id` 不变）。Java 读本表：政策详情的产业槽、按产业检索、时序板按链码拉政策，都等值关联这张镜像。算法增量与图谱仍读 DWD。有效行：`is_deleted=0`。索引与 DWD 相同。
 
-目标键，现网未改：与 DWD 一样，`(policy_id, industry_link_code)` 唯一。清重口径待确认。不要据此去改现网。
+目标键：与 DWD 一样，`(policy_id, industry_link_code)` 唯一。清重口径与 DWD 相同：同一键留有效行，同状态留最新，其余物理删除。语句在政策派单包 `sql/update_round1.sql`。上面的结构说明不改。本仓不代跑。
 
 ## 展示窗口消费（DS-10/11/12）
 
@@ -328,7 +328,7 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_text_parse` (
   COMMENT='D1 政策文本解析：摘要 + 结构化要素 + 自动标签';
 ```
 
-目标键，现网未改：`policy_id` 仍是 `longtext`，不改类型。目标是前 64 个字符的唯一索引。清重口径待确认。上面的 CREATE 仍是现网结构，不要据此去改现网。
+目标键：`policy_id` 仍是 `longtext`，不改类型。前 64 个字符的唯一索引在政策派单包 `sql/update_round1.sql`。完整 `policy_id` 相同的重复行留最新；全文不同、仅前 64 字相同的不删。上面的 CREATE 仍是现网结构，不把索引写进 CREATE。本仓不代跑。
 
 ```sql
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_match` (

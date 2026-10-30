@@ -18,7 +18,7 @@
 | POLICY-C1 抽取产业 | `scripts/policy_c1_industry.py` | `python policy_c1_industry.py --limit 100` |
 | POLICY-C2 条款结构化 | `scripts/policy_c2_clauses.py` | `python policy_c2_clauses.py --limit 100` |
 
-重做一条：必须同时加 `--policy-id <id>` 和 `--force`。只有 `--force` 时退出码 2。`--limit` 只能是 1 到 100。退出码 0 表示本批已追平。退出码 7 表示还没追平，要再调度，不算作业失败，也不回滚 B。退出码 1、2、3、4 才记该作业失败。C1 缺 `EMBED_BASE_URL` 或 `MILVUS_URI` 时退出码 3。缺 `script_state` 时退出码 4，脚本不建表。先执行 `sql/script_state.sql`。
+重做一条：必须同时加 `--policy-id <id>` 和 `--force`。只有 `--force` 时退出码 2。`--limit` 只能是 1 到 100。退出码 0 表示本批已追平。退出码 7 表示还没追平，要再调度，不算作业失败，也不回滚 B。退出码 1、2、3、4 才记该作业失败。C1 缺 `EMBED_BASE_URL` 或 `MILVUS_URI` 时退出码 3。缺 `script_state` 时退出码 4，脚本不建表。先执行 `sql/update_round1.sql`。
 
 | 环境变量 | 含义 |
 |---|---|
