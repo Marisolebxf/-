@@ -44529,9 +44529,9 @@ tasks:
     update_time: "2026-10-30T11:43:29+08:00"
   - id: QA-TOPIC-BUGFIX-API-DICT-L01
     cost_warn: "green"
-    actual_cost: 0.25
+    actual_cost: 0.31
     model_used: "glm-5.3-Flash"
-    actual_tokens: 128000
+    actual_tokens: 152000
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-29T14:14:57.858Z"
     last_seen_at: "2026-10-29T14:14:57.858Z"
@@ -44550,7 +44550,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      完工待走查 v2：4 组 BUG 修复落 lumen-topic-py 40eb2e7+4945207；【028 增量 8037b4e，2026-10-30 前端反馈】overview.tags 同码重复+字典不一致已修：生产取证 DWD tag_dict 仅 7 权威码（含 sme_tech=科技型中小企业），ES 在用 6 码且 key_enterprise 不在字典，ES nested tags 同码多条层级变体。修复＝gkx_common.dicts 新增 tag_dict_rows()（DWD 真源+静态兑底）+dedupe_tags()（按码去重、层级 national>province>city>district 取优、tag_name 字典同源），overview 与 detail 资质统一接入；契约字段不变（tag_code/tag_value/tag_level/tag_name），前端可移除去重兑底。⚠️ 数据侧待办：tag_dict 缺 key_enterprise（2.8 万家在用）请 data-agent 补字典行（tag_name=重点企业）。自检 5/5，全量 315 过。
+      完工待走查 v3：单 1 修复（40eb2e7+4945207）+【028 增量 I：8037b4e overview 标签去重统一】+【028 增量 II：6c4575f qualifications 类别/认定时间】。增量 II 生产取证：ES tags 源头仅 tag_code/tag_value 两字段（200 家采样），无 tag_level/类别/认定时间。修复：① dedupe_tags 判级补 tag_value 前缀启发式（国家级>省级>市级>区县级，ETL 灌 tag_level 后可删）；② qualifications tag 条目补 category（DWD tag_dict.tag_category 同源：资质/性质）+approve_date 诚实 null 占位；carrier 补 category=载体且 create_year/approve_date 双键兼容；③ Java QualificationItem 补 category/approveDate（lumen-svc-platform ee1729e 本地，mvn compile 过）。⚠️ 数据侧两项待办：a）tag_dict 缺 key_enterprise（2.8 万家在用）补字典行；b）ES tags/ETL 补认定时间字段（approve_date 现无数据源，接口已留位不伪造）。自检 8/8，全量 318 过。
     depends_on: []
     touched_files:
       - "repos/lumen-svc-platform/gkxlumen-topic"
@@ -44562,7 +44562,7 @@ tasks:
       - "BUG-028-006/008：招引/培育分析结果契约回显筛选条件与权重的可读名称（或提供 code→name 字典接口），前端本次筛选/权重说明不再拼接原始 code/英文键"
       - "原则：VO 出中文名为根因修复，前端兜底仅过渡；修复后与 QA-TOPIC-BUGFIX-FE-L01 联调并在 note 记录联调通过；trace_id 回填 bug-registry 对应条目"
       - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-DICT-L01.md + cost 4 字段回填"
-    update_time: "2026-10-30T11:58:09+08:00"
+    update_time: "2026-10-30T12:10:53+08:00"
   - id: SYSINT-SCHEME-07-L06
     title: "算法中台产业链/企业/政策入图流程说明"
     status: "ready"
