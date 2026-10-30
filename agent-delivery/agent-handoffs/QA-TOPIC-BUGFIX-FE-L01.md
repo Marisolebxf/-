@@ -106,7 +106,7 @@
 
 ### 代码状态
 
-- 截至 handoff 追加：**本地已改，未 push**（基线 commit `0a923f6` 之后）；走查通过后单独 commit 并在此节补 commit hash。
+- 已 push **`lumen-ui-topic` `origin/dev` → `a8dfca5`**（基线 `0a923f6` 之后）。
 
 ---
 
@@ -151,9 +151,9 @@
 
 | 范围 | 状态 |
 |------|------|
-| 标签字典/ScaleChip/对比篮/抽屉头/推荐区 | 本地改动，待 commit |
-| 查询结果卡片单行标签 + 专利列宽 | 同上 |
-| commit hash | 走查通过后 `[agent:frontend-agent]` 提交 `dev` 后回填本节 |
+| 标签字典/ScaleChip/对比篮/抽屉头/推荐区 | 已含于 `a8dfca5` |
+| 查询结果卡片单行标签 + 专利列宽 | 已含于 `a8dfca5` |
+| commit hash | **`lumen-ui-topic` `a8dfca5`**（编排 handoff `a5729cf0`） |
 
 ---
 
@@ -177,4 +177,4 @@
 
 ### 代码状态
 
-- 同上批次：**本地已改，未 push**。
+- 已 push **`lumen-ui-topic` `a8dfca5`**。
