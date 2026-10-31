@@ -45519,8 +45519,18 @@ tasks:
       - "本叶只出落实记录和 handoff，不写同步代码、不调 LLM、不改业务仓、不建深度页、不改政策三页、不改 WBS-02-08 与 SYSINT-06-19。handoff 指向派单说明"
     update_time: "2026-10-31T14:31:42+08:00"
   - id: SYSINT-INDDISC-02-L01
+    model_used: "grok-4.7"
+    evidence: "agent-delivery/agent-handoffs/SYSINT-INDDISC-02-L01.md"
+    cost_warn: "green"
+    actual_tokens: 80000
+    actual_cost: 0.34
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-31T08:46:31.992Z"
+    last_seen_at: "2026-10-31T08:46:31.992Z"
+    lock_until: "2026-10-31T12:46:31.992Z"
+    claimed_by: "agent:doc-agent"
     title: "展示系统产业领域 ↔ 久新学科领域映射：两侧口径澄清与挂载方案"
-    status: "backlog"
+    status: "integration"
     agent: "doc-agent"
     epic: "E-PM-DELIVERY"
     priority: "P0"
@@ -45530,7 +45540,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "2026-10-31 李伟提出展示系统产业领域与久新学科领域挂不上钩，淮政玮认领进三要素集成。对应 WBS-02-13。监管人 human:淮政玮。解锁走 scan → confirm，勿手改 ready。"
+    note: |
+      2026-10-31 李伟提出展示系统产业领域与久新学科领域挂不上钩，淮政玮认领进三要素集成。对应 WBS-02-13。监管人 human:淮政玮。未手改 ready，由 backlog 直接 task-claim。依赖 SYSINT-SURVEY-02-L01 仍 in_progress（调研记录已在），SYSINT-TFMAP-02-L01 已 done。口径记录已写，领域对领域没有可确认映射。待会签，不标 done。
     depends_on:
       - "SYSINT-SURVEY-02-L01"
       - "SYSINT-TFMAP-02-L01"
@@ -45551,39 +45562,4 @@ tasks:
       - "给出领域对领域的映射表；不可映射项明写原因，不编造映射、不把未确认写成已对齐"
       - "补齐路径指明归属哪条已有 WBS 叶（WBS-02-08 / WBS-02-12 等），本叶不另开实现叶"
       - "handoff 落在 agent-delivery/agent-handoffs/SYSINT-INDDISC-02-L01.md，含 ponytail: off；不改业务仓、不改指标 seed、不写 ADS、不改 subfield_topic_map"
-    update_time: "2026-10-31T16:10:08+08:00"
-  - id: SYSINT-06-20-L01
-    title: "GDF：技术节点与产业映射落地（同步+关联两过程）"
-    status: "backlog"
-    agent: "algorithm-agent"
-    epic: "E-PM-DELIVERY"
-    priority: "P1"
-    repo: "gkx-orchestration"
-    delivery_phase: "implementation"
-    task_type: "feature"
-    effort_points: "8"
-    difficulty: "L"
-    estimated_tokens: 120000
-    note: "WBS-06-20。监管人 human:徐滕强。过程参考中台「技术节点与产业映射」。依赖 SYSINT-TECHMAP-02-L01。主键 technology_node_id。2026-10-31 只建单，不认领。开始时间 2026-10-31。完成日期要求暂无截至时间。"
-    depends_on:
-      - "SYSINT-TECHMAP-02-L01"
-    collaborators:
-      - "data-agent"
-      - "api-agent"
-    touched_files:
-      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/"
-      - "agent-delivery/data/GDF/"
-    design_refs:
-      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHMAP-02-L01.md"
-      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHMAP-02-L01.md"
-      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
-      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/派单说明-SYSINT-06-20-L01.md"
-      - "agent-delivery/data/GDF/GDF协作指南.md"
-      - "agent-delivery/architecture-baseline.md"
-    definition_of_done:
-      - "GDF 平台具备与中台「技术节点与产业映射」同语义的两过程：【同步】按 technology_node_id 灌或更新节点目录，不整表清空，不丢已有关联；【关联】人工触发后把未映射技术节点对上本侧已有产业节点（集群/产业/节点），校验失败保持未映射"
-      - "平台可展示已映射/未映射清单与两侧数量（展示名 + technology_node_id）；查询只读映射结果，不在查询路径自动同步或自动关联"
-      - "过程与落表口径对照 WBS-02-12（SYSINT-TECHMAP-02-L01）；本叶是 GDF 侧落地，不替代中台 demo 页，不并进 WBS-06-19，不重开 WBS-02-03 深度页"
-      - "作业/脚本与表结构落在编排仓派单包或 GDF 约定目录；密码与模型密钥不进 git；Java 和页面只读已落库映射，不直连久新，不在 Java 调模型"
-      - "handoff 写明 GDF 工位或作业名、表名、与中台技术节点映射的对照差异；执行结果未回不写可对端；不要把任务标 done；handoff 路径 agent-delivery/agent-handoffs/SYSINT-06-20-L01.md"
-    update_time: "2026-10-31T16:46:56+08:00"
+    update_time: "2026-10-31T16:46:46+08:00"
