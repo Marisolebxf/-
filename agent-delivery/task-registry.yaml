@@ -45300,3 +45300,22 @@ tasks:
       - "验证：任选 3 家真源 gkx.dwd_org_risk_zhixing 有记录的企业，enterprise_risk_summary 行存在且计数与明细一致；挑 1 家风险企业跑 pain_points.compute 确认 management 维度命中「经营合规风险需关注」；BIT 微电子类真源零风险企业保持零行不伪闭合"
       - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账（明细 vs 汇总 org 数）+ cost 四字段回填"
     update_time: "2026-10-31T11:21:27+08:00"
+  - id: ENT-RISK-SUMMARY-PROD-SCHEMA-L01
+    title: "正式库 enterprise_risk_summary 宽表改造：加 org_id 维度或算法侧适配（正式环境痛难点管理维度解锁）"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "算法库联调-ALGO-LIB"
+    priority: "P2"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      2026-10-31 从 ENT-RISK-SUMMARY-ETL-L01 note 拆出的跟进单（代码评审 Minor-4：note 承诺需登记载体）：正式库 gkxlumenx_dwd.enterprise_risk_summary 为无 org_id 宽聚合表，算法 real_data.py _load_risk_rows 检测到无 org_id 直接跳过（日志 warning）→ 即使 demo 侧聚合单交付，正式环境管理维度仍会空。本单收口正式库布局与算法联动。
+    definition_of_done:
+      - "正式库 enterprise_risk_summary 布局改造方案定稿（迁长表加 org_id+risk_type vs 保留宽表+算法侧适配），经架构师评审拍板"
+      - "与 lumen-algo-py real_data.py 的宽表跳过逻辑（_load_risk_rows）联动修复，算法能按 org 关联读取正式库风险汇总"
+      - "改造走正式数据流程（GDF/CDC 或产线 ETL），禁 demo 仓 assert_demo_mysql_targets 之外的路径写正式库；handoff 含前后布局对账与 cost 回填"
+    update_time: "2026-10-31T11:22:48+08:00"
