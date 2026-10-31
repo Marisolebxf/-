@@ -1,6 +1,6 @@
 # SYSINT-TFMAP-02-L01 · 技术领域与产业节点关联：子学科同步进本侧表，LLM 关联产业节点
 
-> 范围真源：`agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TFMAP-02-L01.md`（origin/dev `1ed5b9d8`）。图 `SYSINT-TFMAP-02-SEQ` 在该文件「调用时序」。图文冲突以图为准。本叶按该图实现。任务保持 `in_progress`，未签收。
+> 范围真源：`agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TFMAP-02-L01.md`（origin/dev `1ed5b9d8`）。图 `SYSINT-TFMAP-02-SEQ` 在该文件「调用时序」。图文冲突以图为准。本叶按该图实现。2026-10-31 用户下令完成并验收。下文「测试结果」是 2026-10-28 当时的记录，以文末复核为准。
 
 ## 任务认领（必填）
 
@@ -146,5 +146,63 @@
 - `repos/demo-svc-platform`：`gkx-innov` 包 `com.topcomm.gkx.innov.subfield`、`gkx-innov/src/main/resources/application.yml`、`helm/gkx-platform/configs/gkx-gateway-dev.yml`、`helm/gkx-platform/values.yaml`
 - `repos/lumen-algo-py`：`lumen_common/algorithms/subfield_topic.py`、`lumen_algo_service/views/subfield_topic.py`、`lumen_algo_service/main.py`、`tests/test_subfield_topic_link.py`
 - `agent-delivery/agent-handoffs/SYSINT-TFMAP-02-L01.md`
+
+## 2026-10-31 复核
+
+对 `10.50.11.76` 上的 `demo_gkxlumenx_dim.subfield_topic_map` 只读计数（未打印口令）：
+
+| 项 | 值 |
+|---|---|
+| 行数 | 390 |
+| 子学科 | 252 |
+| 已映射子学科（至少一条非空 `node_id`） | 130 |
+| 关联行 / 空关联行 | 268 / 122 |
+| `synced_at` | 2026-10-29 22:54:51 至 22:59:41 |
+| `linked_at` 最晚 | 2026-10-29 22:59:41 |
+
+表结构与代码里的 `CREATE TABLE` 一致。同步和关联已经在 demo 库留下结果。本会话没有再点菜单，也没有重跑同步或关联。
+
+三仓代码在 `origin/dev`，工作区对这批文件是干净的：
+
+- `demo-ui-system-test`：`ab985e5`、`9007013`、`107764f`
+- `demo-svc-platform`：`af8144c`、`67a80d5`、`d6064d3`
+- `lumen-algo-py`：`6ffece8`
+
+## 范围与实现
+
+DoD 对照：映射表已落在 `demo_gkxlumenx_dim.subfield_topic_map`。菜单、同步、关联、统计和关键字查询的代码已在 `origin/dev`。已映射 130、未映射为已同步但没有 `node_id` 的子学科。本会话用库内行数核对，没有再走浏览器。
+
+## 偏离
+
+2026-10-28 交接写过「表未建、未部署、页面未点」。2026-10-29 库内已有同步和关联结果，该句作废。本会话仍未再点页面。
+
+## 产物清单
+
+- 表：`demo_gkxlumenx_dim.subfield_topic_map`
+- 菜单：维护管理 → 子学科与专题映射，`/ops/subfield-topic`
+- 上文「涉及文件」和三仓 commit
+
+## 验收证据
+
+2026-10-31 只读计数见上表。用户当日下令验收。证据路径即本 handoff。
+
+## 架构合规自检
+
+- ✅ 调用链：页面 → demo 网关 → gkx-innov；同步再走字典，关联再走 lumen-algo-py `/internal`
+- ✅ 算法只在 Python。Java 只转发和校验 id
+- ✅ 图谱：本叶不写图库
+- ✅ 可观测：Python 路由挂在已有 lumen-algo-py 应用上
+- ✅ 密钥不进 git
+- ✅ D12：未把 demo 服务接到 lumen 前端
+- ✅ 本页数字是维护统计，不加指标 ⓘ
+
+## Cost 回填
+
+本会话没有 Console 精确数。验收复核按会话量级记一笔，价表没有 Grok 档，按主力档（输入 $3/M、输出 $15/M，算法 75/25）估算。
+
+- actual_tokens: 25000
+- model_used: grok-4.7
+- actual_cost: 0.15
+- cost_warn: green
 
 ponytail: full

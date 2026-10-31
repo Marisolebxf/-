@@ -10,7 +10,7 @@
 |---|---|---|---|---|
 | 企业 | v4.0 | [GDF-ENT-WORKPACK-v4](../../../../../data/GDF/派单包/企业/GDF-ENT-WORKPACK-v4/README.md) | 未记 | 现行，可对外投递。Owner 徐滕强 |
 | 产业链 | v2.0 | [GDF-CHAIN-WORKPACK-v2](../../../../../data/GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v2/README.md) | 未记 | 现行，可对外投递 |
-| 政策 | v2.0.3 | [GDF-POLICY-WORKPACK-v2](../../../../../data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/README.md) | 未记 | 现行。Owner 淮政玮。任务 `GDF-POLICY-WORKPACK-V2-L01` |
+| 政策 | v2.0.3 | [GDF-POLICY-WORKPACK-v2](../../../../../data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/README.md) | 未记 | 现行。Owner 淮政玮。任务 `GDF-POLICY-WORKPACK-V2-L01`。2026-10-30 收到 GDF round1 回包，回复任务 `GDF-POLICY-ROUND1-REPLY-L01` |
 
 总索引：[派单包 README](../../../../../data/GDF/派单包/README.md)。历史包（企业 v1–v3、产业链 v1、政策 v1.0.4）不在上表，禁止当现行施工包。
 

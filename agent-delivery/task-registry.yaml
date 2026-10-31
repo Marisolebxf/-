@@ -30691,9 +30691,7 @@ tasks:
       - "自检脚本：对每个 entity_type 各造 1 行真源 + 1 行 overlay 覆盖 + 1 行虚拟实体 + 1 行软删，验证 join 视图四态输出正确"
     update_time: "2026-10-15T20:03:17+08:00"
   - id: CMS-JX-ENT-CRUD-L01
-    update_time: "2026-10-17T21:46:17+08:00"
     feishu_bitable_record_id: reczz28NdE2jW6v6
-  - id: CMS-JX-ENT-CRUD-L01
     model_used: "glm-5.3"
     evidence: "agent-handoffs/平台基建-PLATFORM/CMS-JX-ENT-CRUD-L01.md"
     cost_warn: "green"
@@ -31144,6 +31142,11 @@ tasks:
       - "接口挂 /cms/v1/expert/region*，鉴权与 OTel 同老设计单；OpenAPI 入 handoff；字段以原型 expert-knowledge-page.js region 分组为准"
     update_time: "2026-10-16T18:12:35+08:00"
   - id: ENT-RISK-INGEST-BTN-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ENT-RISK-INGEST-BTN-L01-handoff.md"
+    cost_warn: "green"
+    actual_tokens: 85000
+    actual_cost: 3.5
     feishu_bitable_record_id: reczz28NegbCyOuK
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-15T08:07:12.540Z"
@@ -31151,7 +31154,7 @@ tasks:
     lock_until: "2026-10-16T08:07:12.540Z"
     claimed_by: "human:徐滕强"
     title: "风险域（risk_*）灌数按钮：ODS→DWD 每表限量小样 + 控制台入口"
-    status: "integration"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "算法库联调-ALGO-LIB"
     priority: "P1"
@@ -31162,7 +31165,9 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      用户 2026-10-15 指示：重写 ES 验证通过后开工；risk 源表 ODS 已有数（司法 325万/被执行 53万/失信 7.4万/处罚 6.6万/破产 3.6万/异常 5564/税务 471）；先每表 1 万条小样，全量放开待小样验证后另议。流程逻辑对齐企业灌数（gdf_sim 模式：分批+唯一键去重+_map_optional 容错）。
+      联调确认：2026-10-31 集群内复跑 ingest-risk 全流程通过，落库数与 handoff 一致，幂等复验 OK。联调通过，推 pending_test 等 QA。
+      
+      〔背景补记 2026-10-31 coordinator，恢复被覆盖的历史 note〕原 note（2026-10-15）：用户指示重写 ES 验证通过后开工；risk 源表 ODS 基线行数：司法 325万/被执行 53万/失信 7.4万/处罚 6.6万/破产 3.6万/异常 5564/税务 471；政策约束：先每表 1 万条小样，全量放开待小样验证后另议（决策权在用户）。小样约束已由后续单 ENT-RISK-SUMMARY-ETL-L01 DoD 继承；该单 DoD 修订 v2 见其 note。
     touched_files:
       - "entan/llm_ods/risk_ingest.py（新增映射+灌数）"
       - "api/main.py（/internal/ingest-risk 按钮）"
@@ -31174,7 +31179,7 @@ tasks:
       - "接口返回 started/running/mode=ingest-risk；/internal/status 的 dwd 段新增 risk 表行数采样；失败写 last_error 不伪装成功"
       - "手工触发全流程验证：按钮点击→异步跑完→每表≈1万行落库→无 1062/1114/OOM；pytest 冒烟（映射去重+SQL 拼装）通过"
       - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账与 cost 回填"
-    update_time: "2026-10-15T20:04:13+08:00"
+    update_time: "2026-10-31T11:21:51+08:00"
   - id: SVC-PANORAMA-API-L01
     feishu_bitable_record_id: reczz28O01TIolyz
     title: "科技服务全景（科技交流/科技竞赛/科技传播）接口需求全权负责：评估/沟通/接口缺项/对接开发/联调"
@@ -36452,9 +36457,9 @@ tasks:
     update_time: "2026-10-23T13:06:07+08:00"
   - id: FE-ENT-EVAL-REPORT-REAL-L01
     cost_warn: "green"
-    actual_cost: 2.1
-    model_used: "glm-5.3"
-    actual_tokens: 210000
+    actual_cost: 4.8
+    model_used: "Composer (Cursor)"
+    actual_tokens: 480000
     evidence: "agent-handoffs/FE-ENT-EVAL-REPORT-REAL-L01.md"
     supervised_by: "human:孔东"
     claimed_at: "2026-10-22T09:06:24.960Z"
@@ -36472,7 +36477,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 250000
-    note: "验收通过（2026-10-24 监管人孔东走查，含两轮修正：满宽自适应+按块切页、封面紧凑化）。双仓已推 dev：lumen-ui-topic 2df95de；gkx-orchestration 858909c0。联调通过"
+    note: |
+      三仓已推 dev（2026-10-31 产业链 PDF）：lumen-ui-topic fa01c49；lumen-svc-platform 2599089；orchestration bd89aeaf+handoff。reportExport/industryChainTask selfcheck ok；联调通过（块式报告+chain:report:export API 导出+Java 七键 Assembler）
     touched_files:
       - "src/components/report/SystemReportReader.vue"
       - "src/components/report/enterpriseDomainReports.ts"
@@ -36485,7 +36491,7 @@ tasks:
       - "权限与埋点：沿用 ReportExportButton 现有 permCode 与付费闸门；导出动作埋点保留"
       - "自检：reportExport.selfcheck.mjs 断言七章节包含真实数据字段（排名/得分），无「同源摘要」「Wave 0 Mock」占位串；vue-tsc 绿"
       - "handoff + cost 四字段回填；ponytail: full"
-    update_time: "2026-10-24T10:59:30+08:00"
+    update_time: "2026-10-31T13:41:10+08:00"
   - id: QA-KJZTFWSFK-SCRIPT-ENTAN-INNOVATION-L01
     cost_warn: "green"
     actual_cost: 0
@@ -43583,8 +43589,13 @@ tasks:
       - "handoff 落 agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-METRIC-XREF-L01.md，行主键与清单单一致（metric_id）"
     update_time: "2026-10-28T10:17:28+08:00"
   - id: SYSINT-TFMAP-02-L01
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/SYSINT-TFMAP-02-L01.md"
+    cost_warn: "green"
+    actual_tokens: 25000
+    actual_cost: 0.15
     title: "技术领域与产业节点关联：子学科同步进本侧表，LLM 关联产业节点"
-    status: "in_progress"
+    status: "done"
     claimed_by: "agent:algorithm-agent"
     supervised_by: "human:淮政玮"
     claim_type: coordinator_dispatch
@@ -43599,7 +43610,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "WBS-02-08。关联落本侧映射表。菜单在 demo-ui-system-test。【同步】灌子学科，【关联】走 LLM。监管人待指定。"
+    note: "WBS-02-08。关联落本侧映射表。菜单在 demo-ui-system-test。【同步】灌子学科，【关联】走 LLM。监管人待指定。2026-10-31 用户下令验收。demo 库 subfield_topic_map 已有 2026-10-29 同步和关联结果（390 行，130 个已映射子学科）。联调通过。"
     depends_on:
       - "SYSINT-DICT-02-L01"
     collaborators:
@@ -43620,7 +43631,7 @@ tasks:
       - "页面列出已映射和未映射的子学科，并给出两侧数量"
       - "输入子学科关键字能定位子学科，级联只显示该子学科已关联的产业节点、产业、集群。未关联则级联为空"
       - "不改政策三页的提交逻辑，不替换政策页产业集群下拉。不建技术链、人才、科研机构深度分析页。不改 iticsci 专题仓。Java 不调模型。handoff 写明表名、菜单路径、LLM 落点和本侧目录缺口"
-    update_time: "2026-10-28T11:35:00+08:00"
+    update_time: "2026-10-31T14:20:16+08:00"
   - id: METRIC-CALC-REFRESH-1027-L01
     evidence: "agent-delivery/agent-handoffs/指标算法库上线/METRIC-CALC-REFRESH-1027-L01/METRIC-CALC-REFRESH-1027-L01.md"
     supervised_by: "human:唐绍祖"
@@ -44483,6 +44494,10 @@ tasks:
       - "git 只 commit 不 push；handoff 落 agent-handoffs/科技发展态势-IM/SITUATION-IM-C1-L01.md（含 ponytail + cost 四字段）；回填契约 §7 实装对照表一行"
     update_time: "2026-10-28T21:10:00+08:00"
   - id: QA-TOPIC-BUGFIX-FE-L01
+    model_used: "Composer (Cursor)"
+    cost_warn: "green"
+    actual_tokens: 420000
+    actual_cost: 4.2
     evidence: "agent-handoffs/QA-TOPIC-BUGFIX-FE-L01.md"
     supervised_by: "human:孔东"
     claimed_at: "2026-10-29T10:22:04.738Z"
@@ -44500,8 +44515,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 150000
-    note: |
-      2026-10-29 前端批次已 commit lumen-ui-topic 0a923f6（dev 本地，待孔东 push/30892 走查）。handoff 含 BUG 对照表。未闭合：026-001/002、027-005/008、028-011；A 类根因/API-500 见 API-DICT-L01、API-L01 handoff。联调待后端+30892 复测。
+    note: "2026-10-31 追加：报告接线/资产中心门控/候选名单并发/mock recommend_report；lumen-ui-topic 57386ac 已推 dev；handoff 已更新"
     touched_files:
       - "repos/lumen-ui-topic/src/components/enterprise/recruit/RecruitResultPanel.vue"
       - "repos/lumen-ui-topic/src/components/enterprise/keyAnalysis/TypeRegionPanel.vue"
@@ -44512,7 +44526,7 @@ tasks:
       - "修完停本地工作区走人工验收闸门（2026-10-20 用户裁定），未经派单授权不 commit/push"
       - "30892 dev 复测对应 source_case 用例转绿；同步收紧 FUNC-02120 用例 toCanonical 别名归一，防编码回归用例假绿"
       - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-FE-L01.md：含 BUG-ID 对照表 + 产品实现规程附录 D 防漏扫描摘要；task-registry cost 4 字段回填"
-    update_time: "2026-10-29T21:10:44+08:00"
+    update_time: "2026-10-31T11:54:39+08:00"
   - id: QA-TOPIC-BUGFIX-API-L01
     evidence: "agent-handoffs/QA-TOPIC-BUGFIX-API-L01.md"
     supervised_by: "human:徐滕强"
@@ -44545,9 +44559,9 @@ tasks:
     update_time: "2026-10-30T11:43:29+08:00"
   - id: QA-TOPIC-BUGFIX-API-DICT-L01
     cost_warn: "green"
-    actual_cost: 0.31
+    actual_cost: 0.38
     model_used: "glm-5.3-Flash"
-    actual_tokens: 152000
+    actual_tokens: 185000
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-29T14:14:57.858Z"
     last_seen_at: "2026-10-29T14:14:57.858Z"
@@ -44566,7 +44580,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      完工待走查 v3：单 1 修复（40eb2e7+4945207）+【028 增量 I：8037b4e overview 标签去重统一】+【028 增量 II：6c4575f qualifications 类别/认定时间】。增量 II 生产取证：ES tags 源头仅 tag_code/tag_value 两字段（200 家采样），无 tag_level/类别/认定时间。修复：① dedupe_tags 判级补 tag_value 前缀启发式（国家级>省级>市级>区县级，ETL 灌 tag_level 后可删）；② qualifications tag 条目补 category（DWD tag_dict.tag_category 同源：资质/性质）+approve_date 诚实 null 占位；carrier 补 category=载体且 create_year/approve_date 双键兼容；③ Java QualificationItem 补 category/approveDate（lumen-svc-platform ee1729e 本地，mvn compile 过）。⚠️ 数据侧两项待办：a）tag_dict 缺 key_enterprise（2.8 万家在用）补字典行；b）ES tags/ETL 补认定时间字段（approve_date 现无数据源，接口已留位不伪造）。自检 8/8，全量 318 过。
+      完工待走查 v4（评审二轮后）。lumen-topic-py 本地 7 commit（已 rebase origin/dev）：50570d7 A类修复 → e345b0b 评审修正 → fa7bc4e 图谱空态 → 592cc07 space 切 demo_gkx_chain → f6b6790 标签去重统一 → ff4d240 qualifications 增量 → e37358a 评审二轮修正（I1 补 listed_date+上市场景测试守卫；I3/M1 码表启动 warm-up+300s 重试间隔+httpx 上下文，禁 async 路由同步 HTTP）。lumen-svc-platform 本地 2 commit：ee1729e QualificationItem 补 category/approveDate；f99fedd GraphResponse 补 emptyReason（I2 诊断字段 Java 断链修复）。两轮深度评审记录： abc0bee9（一轮） 23e98893（二轮两仓联合）。全量 319 passed（3 存量红票外）。数据侧待办不变：① tag_dict 补 key_enterprise；② ES tags 补认定时间字段。M 级遗留已记录：M4 empty_reason 含内网 host（建议后续挂评审层门控）、M6 顶层 tags 未去重（存量契约）、M7 brief_card 透码（票外）。
     depends_on: []
     touched_files:
       - "repos/lumen-svc-platform/gkxlumen-topic"
@@ -44578,7 +44592,7 @@ tasks:
       - "BUG-028-006/008：招引/培育分析结果契约回显筛选条件与权重的可读名称（或提供 code→name 字典接口），前端本次筛选/权重说明不再拼接原始 code/英文键"
       - "原则：VO 出中文名为根因修复，前端兜底仅过渡；修复后与 QA-TOPIC-BUGFIX-FE-L01 联调并在 note 记录联调通过；trace_id 回填 bug-registry 对应条目"
       - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-DICT-L01.md + cost 4 字段回填"
-    update_time: "2026-10-30T12:10:53+08:00"
+    update_time: "2026-10-30T12:51:08+08:00"
   - id: SYSINT-SCHEME-07-L06
     title: "算法中台产业链/企业/政策入图流程说明"
     status: "ready"
@@ -44897,3 +44911,607 @@ tasks:
       - "【文档同步】企业搜索-ES索引设计.md §3.1 settings 更新（15片/refresh 30s/force merge）+ §3.4 analyzer 表补 cn_bigram/en_bigram + .ngram 子字段说明；storage/ENT 三件套（index-enterprise/sync/pipeline-dwd-to-es）字段清单补 ngram；GDF 派单包 v3/v4 12-DWD到ES.md 检查确认灌数链路无需变更（ngram 随 mapping 自动生成）并补说明"
       - "【验收】v2 验证脚本 scripts/verify_v2_ngram.py 全绿基线留存；改造后对 v1 别名回归 7 用例语义一致；handoff 含 A/B 数据（语义 ALL PASS / 膨胀 +7.3% / 单字兜底实测 宁=210）与架构合规自检"
     update_time: "2026-10-30T11:57:28+08:00"
+  - id: KG-7ELEM-SCHEMA-DDL-L01
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/KG-7ELEM-SCHEMA-DDL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 20000
+    actual_cost: 0.5
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T04:42:50.751Z"
+    last_seen_at: "2026-10-30T04:42:50.751Z"
+    lock_until: "2026-10-31T04:42:50.751Z"
+    claimed_by: "agent:data-agent"
+    title: "七要素建图·图数据库初始化脚本"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 40000
+    note: |
+      输入只认已签收的总单必须三元组。产物是一份可在 Nebula 上执行的初始化脚本，正文不写任务号、路径、章节或其他文档名。目标空间 demo_gkx_chain。不执行脚本。supervised_by=human:淮政玮。claim_type=coordinator_dispatch，lock_hours=24。
+      2026-10-30 第二次返工后复验：达到。15 条 CREATE EDGE，边名与总单关系列一致，M01–M24 的端点对写在对应 CREATE 上方注释。institution 留给服务机构，科研机构用 research。无围栏，未执行。停在 integration。未会签，未标 done。evidence=agent-handoffs/KG-7ELEM-SCHEMA-DDL-L01.md。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-SCHEMA-DDL-L01-图数据库初始化脚本.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L03-必须三元组与关系.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L05-建图schema与存储设计缺项.md"
+    definition_of_done:
+      - "交付一份自包含 Markdown：agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-SCHEMA-DDL-L01-图数据库初始化脚本.md。正文只有可执行的 Nebula 初始化语句，不写任务号、文件路径、章节号或其他文档名"
+      - "语句覆盖已签收必须建的七个端点 Tag 与全部必须三元组。同一边名只 CREATE EDGE 一次；不同端点对用注释写在语句旁，不再发一条 CREATE。不建的边不进脚本"
+      - "语句使用正式空间 demo_gkx_chain、IF NOT EXISTS，且语法可在 Nebula 上执行。不实际连接、不执行、不 DROP、不改现网。没有已写明类型的属性不新造列、不编类型；该 Tag 或 Edge 仍给出无属性或只含已写明列的 CREATE"
+      - "交付 handoff agent-handoffs/KG-7ELEM-SCHEMA-DDL-L01.md。不改已签收的 L01–L05 正文，不改 storage，不改代码"
+    update_time: "2026-10-30T13:38:54+08:00"
+  - id: KG-7ELEM-LOAD-PATH-L02
+    cost_warn: "green"
+    actual_cost: 1.5
+    model_used: "grok-4.7"
+    actual_tokens: 180000
+    evidence: "agent-handoffs/KG-7ELEM-LOAD-PATH-L02.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T05:16:26.427Z"
+    last_seen_at: "2026-10-30T05:16:26.427Z"
+    lock_until: "2026-10-31T05:16:26.427Z"
+    claimed_by: "agent:data-agent"
+    title: "七要素上图路径·企业"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      长任务 KG-7ELEM-LOAD 的企业域调研叶。与 L03、L04、L05、L06 并行。总控 agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md。我方入口在 demo-algo-ent-analysis 与 demo-algo-science。第 3 问示例在本叶目录，不接真实库、不执行。supervised_by=human:淮政玮。claim_type=coordinator_dispatch。lock_hours=24。2026-10-30 本会话已授权开跑。不连 Doris。问1我方6燕大3，问2我方5燕大4，问3共2。待确认5。燕大独有3：SUBSIDIARY_OF、BELONGS_TO_NODE、名称唯一对齐。未标完成。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L02-企业.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L03-必须三元组与关系.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-to-nebula.md"
+      - "agent-delivery/agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md"
+    definition_of_done:
+      - "企业域三问表：关系库能直接上的写清源表、字段、Tag 或 Edge、我方代码入口和上图步骤；燕大已实现的另列，不当生产放行"
+      - "缺项要先加工的：写清缺哪张表或哪一列，以及建议的加工层。不写 ODS，不写供应方库，不建表、不灌数"
+      - "不能靠源表、要先用其他技术的：写清技术名称、代码里有没有、建议落在 Python 的哪一类入口。没有代码的写未实现。表名没有的写待确认"
+      - "交付 工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L02-企业.md 和 handoff agent-handoffs/KG-7ELEM-LOAD-PATH-L02.md。不改代码，不执行 nGQL，不改已签收建图正文"
+    update_time: "2026-10-30T13:32:07+08:00"
+  - id: KG-7ELEM-LOAD-PATH-L03
+    cost_warn: "green"
+    actual_cost: 2
+    model_used: "grok-4.7"
+    actual_tokens: 180000
+    evidence: "agent-handoffs/KG-7ELEM-LOAD-PATH-L03.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T05:16:26.766Z"
+    last_seen_at: "2026-10-30T05:16:26.766Z"
+    lock_until: "2026-10-31T05:16:26.766Z"
+    claimed_by: "agent:data-agent"
+    title: "七要素上图路径·产业链"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      长任务 KG-7ELEM-LOAD 的产业链域调研叶。与 L02、L04、L05、L06 并行。总控 agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md。只读已有代码。我方与燕大分开写。三问：关系库能直接上、缺项要先加工、不能靠源表要先用其他技术。第 3 问可以在本叶目录附 Python 示例脚本说明核心逻辑。不接真实库、不执行、不放进业务仓、不加新依赖。示例不能把未实现写成已实现。supervised_by=human:淮政玮。claim_type=coordinator_dispatch。lock_hours=24。2026-10-30 本会话已授权开跑。不连 Doris。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L03-产业链.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L03-必须三元组与关系.md"
+      - "agent-delivery/data/data-design/storage/CHAIN/etl/pipeline-to-nebula.md"
+      - "agent-delivery/agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md"
+    definition_of_done:
+      - "产业链域三问表：关系库能直接上的写清源表、字段、Tag 或 Edge、我方代码入口和上图步骤；燕大已实现的另列"
+      - "缺项要先加工的：写清缺哪张表或哪一列，以及建议的加工层。不写 ODS，不写供应方库，不建表、不灌数"
+      - "不能靠源表、要先用其他技术的：写清技术名称、代码里有没有、建议落在 Python 的哪一类入口。没有代码的写未实现。表名没有的写待确认"
+      - "交付 工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L03-产业链.md 和 handoff agent-handoffs/KG-7ELEM-LOAD-PATH-L03.md。不改代码，不执行 nGQL，不改已签收建图正文"
+    update_time: "2026-10-30T13:28:51+08:00"
+  - id: KG-7ELEM-LOAD-PATH-L04
+    cost_warn: "green"
+    actual_cost: 0.8
+    model_used: "grok-4.7"
+    actual_tokens: 180000
+    evidence: "agent-handoffs/KG-7ELEM-LOAD-PATH-L04.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T05:16:27.433Z"
+    last_seen_at: "2026-10-30T05:16:27.433Z"
+    lock_until: "2026-10-31T05:16:27.433Z"
+    claimed_by: "agent:data-agent"
+    title: "七要素上图路径·政策"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      长任务 KG-7ELEM-LOAD 的政策域调研叶。与 L02、L03、L05、L06 并行。总控 agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md。向量或语义相似未实现。我方入口在 demo-algo-ent-analysis。第 3 问示例在本叶目录，不接真实库、不执行。supervised_by=human:淮政玮。claim_type=coordinator_dispatch。lock_hours=24。2026-10-30 本会话已授权开跑。不连 Doris。问1=2 问2=5 问3=4 待确认=5 燕大可执行独有=0。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L04-政策.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L03-必须三元组与关系.md"
+      - "agent-delivery/data/data-design/storage/POLICY/etl/pipeline-to-nebula.md"
+      - "agent-delivery/agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md"
+    definition_of_done:
+      - "政策域三问表：关系库能直接上的写清源表、字段、Tag 或 Edge、我方代码入口和上图步骤；燕大已实现的另列"
+      - "缺项要先加工的：写清缺哪张表或哪一列，以及建议的加工层。不写 ODS，不写供应方库，不建表、不灌数"
+      - "不能靠源表、要先用其他技术的：包括向量或语义相似。只有代码里已经有的才写成已实现；没有的写未实现并给建议方法。建议落在 Python，不落在 Java。表名没有的写待确认"
+      - "交付 工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L04-政策.md 和 handoff agent-handoffs/KG-7ELEM-LOAD-PATH-L04.md。不改代码，不执行 nGQL，不改已签收建图正文"
+    update_time: "2026-10-30T13:28:33+08:00"
+  - id: KG-7ELEM-LOAD-PATH-L05
+    cost_warn: "green"
+    actual_cost: 0.63
+    model_used: "grok-4.7"
+    actual_tokens: 150000
+    evidence: "agent-handoffs/KG-7ELEM-LOAD-PATH-L05.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T05:16:28.076Z"
+    last_seen_at: "2026-10-30T05:16:28.076Z"
+    lock_until: "2026-10-31T05:16:28.076Z"
+    claimed_by: "agent:data-agent"
+    title: "七要素上图路径·服务机构"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      长任务 KG-7ELEM-LOAD 的服务机构域调研叶。与 L02、L03、L04、L06 并行。总控 agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md。只读已有代码。我方与燕大分开写。服务机构互相 participates 不补进必须边。第 3 问可以在本叶目录附 Python 示例脚本说明核心逻辑。不接真实库、不执行、不放进业务仓、不加新依赖。示例不能把未实现写成已实现。supervised_by=human:淮政玮。claim_type=coordinator_dispatch。lock_hours=24。2026-10-30 本会话已授权开跑。不连 Doris。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L05-服务机构.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L03-必须三元组与关系.md"
+      - "agent-delivery/data/data-design/storage/SVC/etl/pipeline-to-nebula.md"
+      - "agent-delivery/agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md"
+    definition_of_done:
+      - "服务机构域三问表：关系库能直接上的写清源表、字段、Tag 或 Edge、我方代码入口和上图步骤；燕大已实现的另列"
+      - "缺项要先加工的：写清缺哪张表或哪一列，以及建议的加工层。不写 ODS，不写供应方库，不建表、不灌数"
+      - "不能靠源表、要先用其他技术的：写清技术名称、代码里有没有、建议落在 Python 的哪一类入口。没有代码的写未实现。服务机构互相 participates 不补进必须边。表名没有的写待确认"
+      - "交付 工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L05-服务机构.md 和 handoff agent-handoffs/KG-7ELEM-LOAD-PATH-L05.md。不改代码，不执行 nGQL，不改已签收建图正文"
+    update_time: "2026-10-30T13:27:54+08:00"
+  - id: KG-7ELEM-LOAD-PATH-L06
+    cost_warn: "green"
+    actual_cost: 1.18
+    model_used: "grok-4.7"
+    actual_tokens: 280000
+    evidence: "agent-handoffs/KG-7ELEM-LOAD-PATH-L06.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T05:16:32.796Z"
+    last_seen_at: "2026-10-30T05:16:32.796Z"
+    lock_until: "2026-10-31T05:16:32.796Z"
+    claimed_by: "agent:data-agent"
+    title: "七要素上图路径·科研机构、人才、技术"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 90000
+    note: |
+      长任务 KG-7ELEM-LOAD 的科研机构、人才、技术调研叶。与 L02–L05 并行。technology 技术点不计入技术。我方写图入口在 demo 算法仓。久新只读探查 2026-10-30 已连上，密码和连接串不进产物。supervised_by=human:淮政玮。claim_type=coordinator_dispatch。lock_hours=24。问1=2 问2=9 问3=0。待确认6。燕大有写图而我方没有7。久新能对上字段但我方没有写图2。未签收。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L06-科研人才技术.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L03-必须三元组与关系.md"
+      - "agent-delivery/agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md"
+    definition_of_done:
+      - "科研机构、人才、技术三问表：关系库能直接上的写清源表、字段、Tag 或 Edge、我方代码入口和上图步骤；燕大已实现的另列"
+      - "缺项要先加工的：写清缺哪张表或哪一列，以及建议的加工层。这三类没有独立 pipeline-to-nebula 时写明，不另造存储域。不写 ODS，不写供应方库"
+      - "不能靠源表、要先用其他技术的：写清技术名称、代码里有没有、建议落在 Python 的哪一类入口。technology 技术点不计入技术。表名没有的写待确认"
+      - "交付 工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L06-科研人才技术.md 和 handoff agent-handoffs/KG-7ELEM-LOAD-PATH-L06.md。不改代码，不执行 nGQL，不改已签收建图正文"
+    update_time: "2026-10-30T13:33:33+08:00"
+  - id: KG-7ELEM-LOAD-PATH-L01
+    cost_warn: "green"
+    actual_cost: 0.76
+    model_used: "grok-4.7"
+    actual_tokens: 180000
+    evidence: "agent-handoffs/KG-7ELEM-LOAD-PATH-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T05:33:39.094Z"
+    last_seen_at: "2026-10-30T05:33:39.094Z"
+    lock_until: "2026-10-31T05:33:39.094Z"
+    claimed_by: "agent:data-agent"
+    title: "七要素上图路径方案：关系库、加工与其他技术"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 60000
+    note: |
+      长任务 KG-7ELEM-LOAD 的汇总叶。L02–L06 均已 integration 且有 handoff。不重做子单判定，不重写子单示例脚本。不派段 E。supervised_by=human:淮政玮。claim_type=coordinator_dispatch。lock_hours=24。2026-10-30 五叶到齐后本会话开跑汇总。问1=13 问2=17 问3=8。我方已实现10。待确认25。燕大独有12。久新能对上但我方没有写图2。子单冲突4处。未签收。
+    depends_on:
+      - "KG-7ELEM-LOAD-PATH-L02"
+      - "KG-7ELEM-LOAD-PATH-L03"
+      - "KG-7ELEM-LOAD-PATH-L04"
+      - "KG-7ELEM-LOAD-PATH-L05"
+      - "KG-7ELEM-LOAD-PATH-L06"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L01-上图路径方案.md"
+    design_refs:
+      - "agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md"
+      - "agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-总派单.md"
+    definition_of_done:
+      - "总表按三个问题收口：关系库能直接上、缺项要先加工、不能靠源表要先用其他技术。每行回指 L02 至 L06 已写的结论，不新裁，不把两域对同一条边的说法合成第三套"
+      - "写明我方已实现条数、燕大有代码但我方没有的条数、待确认条数。未实现的保持未实现"
+      - "交付 工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L01-上图路径方案.md 和 handoff agent-handoffs/KG-7ELEM-LOAD-PATH-L01.md。不改五张子单，不改代码，不执行 nGQL"
+    update_time: "2026-10-30T13:46:47+08:00"
+  - id: KG-ENT-GRAPH-LOAD-L01
+    title: "企业维度入图：燕大派单包、GDF接口契约与gapfill"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      图谱 WBS-07-00G。目标是完成企业维度入图。燕大负责入库，我方出派单包、接口契约和 gapfill_ 清单。小版本从 v0.1 起。上图路径 L02 已在 integration，组装时读它，不等签收。企业—科研机构、企业—技术、企业—人才不建。technology 技术点不计入。空间仍是 demo_gkx_chain。supervised_by=human:淮政玮。本单只登记，未领取。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/data/GDF/派单包/入图/GDF-KG-ENT-WORKPACK-v0.1/"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L02-企业.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-SCHEMA-DDL-L01-图数据库初始化脚本.md"
+      - "agent-delivery/data/GDF/GDF协作指南.md"
+    definition_of_done:
+      - "企业维派单包按小版本投给燕大。图结构用七要素必须建的整体 schema，范围只做企业维：企业端点，以及两端都是企业的 cooperate、supply、parent_sub，企业到环节的 participates 企业这一端。包内写清源表、字段、VID、方向和已掌握的入图逻辑。燕大据此加自身研究完成企业维入库，可以分批，每一批对应一个小版本。不改已投递的企业贴源洗数包。密码和连接串不进包"
+      - "GDF 与燕大知识图谱引擎的接口契约：哪张表成功后触发哪个调度作业，请求与回执字段。GDF 不直写 Nebula。现网回调未上线的写明，不写成已经能调"
+      - "缺项用 gapfill_ 的清单：哪些数据、补在哪一层、怎么补。不写 ODS，不写供应方库。分批节奏与燕大小版本一致。只写方法和表名，本任务不建表、不灌数"
+      - "交付 agent-delivery/data/GDF/派单包/入图/GDF-KG-ENT-WORKPACK-v0.1/ 与 handoff agent-handoffs/KG-ENT-GRAPH-LOAD-L01.md。不执行 nGQL，不改图空间，不改已签收建图正文"
+    update_time: "2026-10-30T14:50:22+08:00"
+  - id: GDF-POLICY-ROUND1-REPLY-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-30T13:34:38.319Z"
+    last_seen_at: "2026-10-30T13:34:38.319Z"
+    lock_until: "2026-10-30T17:34:38.319Z"
+    claimed_by: "agent:data-agent"
+    title: "政策包 v2 首次回包：签收 round1 并按反馈迭代派单包"
+    status: "in_progress"
+    agent: "data-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 50000
+    note: "2026-10-30 开工。认领 agent:data-agent，监管人 human:淮政玮。"
+    depends_on:
+      - "GDF-POLICY-WORKPACK-V2-L01"
+    collaborators:
+      - "human:辜少彬"
+    touched_files:
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/对接文档/GDF侧提交/政策/GDF-POLICY-WORKPACK-v2/round1/"
+      - "agent-delivery/agent-handoffs/政策模块-E7/GDF-POLICY-ROUND1-REPLY-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/对接文档/工程侧/README.md"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/对接文档/GDF侧提交/政策/GDF-POLICY-WORKPACK-v2/round1/交付说明.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/README.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/12-DWD后加工-抽取产业与条款结构化.md"
+    definition_of_done:
+      - "对照 round1 交付说明、policy_c1_industry.py、policy_c2_clauses.py、sql/script_state.sql 写出签收说明：哪些结果确认、哪些不确认。GDF 在代理机上的实测不写成产线已跑通"
+      - "迭代现行包 data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2：写入签收情况，并回答交付说明第七章、第八章列出的需支持项（环境变量与软件、Milvus 锚点、policy_support、唯一键、源侧删除后的目标行）。未由人拍板的项保持待确认，不代答"
+      - "不改政策 v1，不建 GDF 作业，不改产线表，不代替 WBS-06-03 跑通。handoff：agent-handoffs/政策模块-E7/GDF-POLICY-ROUND1-REPLY-L01.md"
+    update_time: "2026-10-30T21:34:56+08:00"
+  - id: ENT-RISK-SUMMARY-ETL-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ENT-RISK-SUMMARY-ETL-L01-handoff.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 4
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-31T03:40:26.774Z"
+    last_seen_at: "2026-10-31T03:40:26.774Z"
+    lock_until: "2026-10-31T07:40:26.774Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "风险域汇总表 enterprise_risk_summary 真实 ETL：明细小样执行 + GROUP BY 聚合（管理维度痛点解锁）"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "算法库联调-ALGO-LIB"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "联调确认：明细灌数→聚合→lumen 算法命中三段全链路集群实跑通过（含正向命中与负向不伪闭合），联调通过，推 pending_test 等 QA。"
+    depends_on:
+      - "ENT-RISK-INGEST-BTN-L01"
+    touched_files:
+      - "entan/llm_ods/risk_ingest.py（补聚合步骤）"
+      - "entan/llm_ods/risk_summary_agg.py（或并入上文件）"
+      - "api/main.py（聚合随 ingest-risk 流程执行）"
+    definition_of_done:
+      - "执行 run_risk_ingest（按钮或手动）一次，demo_gkxlumenx_dwd 六张 risk_* 明细表各落库≈1万行小样（RISK_INGEST_LIMIT 默认档），无 1062/1114/OOM"
+      - "新增聚合步骤（risk_ingest 完成后或独立脚本）：从 risk_* 明细 GROUP BY org_id,risk_type 生成 enterprise_risk_summary(total_count/current_count/history_count/latest_date)，幂等可重跑；risk_type 枚举对齐 lumen-algo-py real_data.py 读取口径（executed/dishonest/abnormal/punishment）"
+      - "current/history 判定口径按明细表状态字段对齐（risk_executed.exec_status / risk_dishonest.fulfillment_status / risk_abnormal.remove_date），口径写进脚本注释并在 handoff 说明"
+      - "验证：任选 3 家真源 gkx.dwd_org_risk_zhixing 有记录的企业，enterprise_risk_summary 行存在且计数与明细一致；挑 1 家风险企业跑 pain_points.compute 确认 management 维度命中「经营合规风险需关注」；BIT 微电子类真源零风险企业保持零行不伪闭合"
+      - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账（明细 vs 汇总 org 数）+ cost 四字段回填"
+    update_time: "2026-10-31T12:02:53+08:00"
+  - id: ENT-RISK-SUMMARY-PROD-SCHEMA-L01
+    title: "正式库 enterprise_risk_summary 宽表改造：加 org_id 维度或算法侧适配（正式环境痛难点管理维度解锁）"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "算法库联调-ALGO-LIB"
+    priority: "P2"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      2026-10-31 从 ENT-RISK-SUMMARY-ETL-L01 note 拆出的跟进单（代码评审 Minor-4：note 承诺需登记载体）：正式库 gkxlumenx_dwd.enterprise_risk_summary 为无 org_id 宽聚合表，算法 real_data.py _load_risk_rows 检测到无 org_id 直接跳过（日志 warning）→ 即使 demo 侧聚合单交付，正式环境管理维度仍会空。本单收口正式库布局与算法联动。
+    definition_of_done:
+      - "正式库 enterprise_risk_summary 布局改造方案定稿（迁长表加 org_id+risk_type vs 保留宽表+算法侧适配），经架构师评审拍板"
+      - "与 lumen-algo-py real_data.py 的宽表跳过逻辑（_load_risk_rows）联动修复，算法能按 org 关联读取正式库风险汇总"
+      - "改造走正式数据流程（GDF/CDC 或产线 ETL），禁 demo 仓 assert_demo_mysql_targets 之外的路径写正式库；handoff 含前后布局对账与 cost 回填"
+    update_time: "2026-10-31T11:22:48+08:00"
+  - id: SYSINT-ROUTE-02-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-31T05:06:34.860Z"
+    last_seen_at: "2026-10-31T05:06:34.860Z"
+    lock_until: "2026-10-31T09:06:34.860Z"
+    claimed_by: "agent:frontend-agent"
+    title: "产业链节点主流技术路线：用已映射技术领域填充"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "开工第1步：子学科映射页按产业集群、产业、产业节点反查技术路线。第2步等人工测试。"
+    depends_on:
+      - "SYSINT-TFMAP-02-L01"
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "产业链全景图谱节点「主流技术路线」只列出该产业节点在 WBS-02-08 映射表中已关联的子学科：名称用中文名，标识用 subfield_id，与政策分析「技术领域」同一口径"
+      - "没有关联时仍显示「暂无已发布主流技术路线」。不用节点 technologies/inputs/outputs 拼投入→工艺→产出，不用 fixture 填数"
+      - "打开页签只读映射表：专题前端 → 专题 Java → 该表。不打子学科字典，不调用 LLM，不直连久新，不调用 demo 服务"
+      - "不改政策三页的技术领域选择和提交逻辑。不重开 WBS-02-03。不改 iticsci 仓"
+      - "handoff 写明查询接口、表名和空态"
+    update_time: "2026-10-31T13:06:41+08:00"
+  - id: SYSINT-TOPIC-CHAIN-GAP-02-L01
+    title: "专题·产业链分析三要素嵌入供数缺口清单收口"
+    status: "backlog"
+    agent: "doc-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "WBS-02-10。监管人 human:淮政玮。分析稿已落盘，本叶做定义收口/会签，不重开 WBS-02-03 深度页。完成日期要求待指定。"
+    depends_on: []
+    collaborators:
+      - "product-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/专题-产业链分析-三要素对接需求.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/技术方案.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/专题-产业链分析-三要素对接需求.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/技术方案.md"
+    definition_of_done:
+      - "缺口清单覆盖产业链菜单全部带「开始分析」的页（周期/区域指数/关键环节/瓶颈堵点/深圳对比/深圳发展/区域竞争力）及全景主流技术路线，并标明三要素垂向与非本项指标"
+      - "每条依赖指标写出页内 metric_id、候选久新/调研线索、数据收集现状、接口是否具备；不把 UI「可用」写成已接入"
+      - "技术方案 §5.3 引用本清单；WBS-02-03 仍为不建深度叶；handoff 指向清单与 WBS-02-10"
+      - "会签前不派产业链 Job 的嵌入实现开发叶；不改 scope-baseline；SCI-INT 283 叶不算专题已覆盖"
+    update_time: "2026-10-31T13:25:11+08:00"
+  - id: SYSINT-TOPIC-CHAIN-ALIGN-02-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-10-31T05:36:43.296Z"
+    last_seen_at: "2026-10-31T05:36:43.296Z"
+    lock_until: "2026-11-03T05:36:43.296Z"
+    claimed_by: "human:唐绍祖"
+    title: "专题产业链三要素指标与久新 ADS 对照对齐（只出记录）"
+    status: "claimed"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "WBS-02-11。监管人/认领人 human:唐绍祖（2026-10-31 指派）。依赖 WBS-02-10。完成日期要求待指定。不是嵌入实现叶。"
+    depends_on:
+      - "SYSINT-TOPIC-CHAIN-GAP-02-L01"
+    collaborators:
+      - "doc-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/专题-产业链分析-三要素对接需求.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/指标支持.csv"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/调研记录.md"
+    definition_of_done:
+      - "按缺口清单总表，对技术成熟度/专利/科研机构/技术壁垒/人才结构/瓶颈技术·人才等叶写出「页内 metric_id ↔ 久新候选表/字段 ↔ 是否同口径」对照记录"
+      - "只读 metric-registry MCP 与已有调研；不改指标 seed、不改 D1–D4、不写 ADS、不灌数"
+      - "三分清单（公用/久新/智树自算）未到前，不把任一条判给久新或智树自算；写「待三分清单」"
+      - "不建技术链/人才/科研机构深度分析页；不重开 WBS-02-03；与 TOPIC-CHAIN-METRIC-MIGRATE-L01（demo M_CHAIN 口径）分流，本叶只做三要素久新对照"
+      - "handoff 指向对照表路径与 WBS-02-11"
+    update_time: "2026-10-31T13:36:53+08:00"
+  - id: SYSINT-06-19-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-31T06:27:36.093Z"
+    last_seen_at: "2026-10-31T06:27:36.093Z"
+    lock_until: "2026-10-31T10:27:36.093Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "GDF：子学科与产业关联落地（同步+关联两过程）"
+    status: "in_progress"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "WBS-06-19。监管人 human:淮政玮。过程参考中台「子学科与专题映射」的同步和关联。依赖 SYSINT-TFMAP-02-L01。2026-10-31 认领并开工。完成日期要求待指定。"
+    depends_on:
+      - "SYSINT-TFMAP-02-L01"
+    collaborators:
+      - "data-agent"
+      - "api-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/"
+      - "agent-delivery/data/GDF/"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TFMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/WBS.md"
+      - "agent-delivery/data/GDF/GDF协作指南.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "GDF 平台具备与图1/中台「子学科与专题映射」同语义的两过程：【同步】按 subfield_id 灌/更新子学科目录（不整表清空、不丢已有关联）；【关联】人工触发后把未映射子学科对上本侧已有产业节点（集群/产业/节点），校验失败保持未映射"
+      - "平台可展示已映射/未映射清单与两侧数量（中文名 + subfield_id）；查询只读映射结果，不在查询路径自动同步或自动关联"
+      - "过程与落表口径对照 WBS-02-08（SYSINT-TFMAP-02-L01）真源；本叶是 GDF 侧落地，不替代中台 demo 页，不重开 WBS-02-03 深度页"
+      - "作业/脚本与表结构落在编排仓派单包或 GDF 约定目录；密码与模型密钥不进 git；Java/页面仍只读 ADS 或已落库映射结果，不直连久新、不在 Java 调模型"
+      - "handoff 写明 GDF 工位/作业名、表名、与 TFMAP 对照差异；执行结果未回不写可对端；不要把任务标 done"
+    update_time: "2026-10-31T14:27:42+08:00"
+  - id: SYSINT-TECHMAP-02-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-31T06:28:49.535Z"
+    last_seen_at: "2026-10-31T06:28:49.535Z"
+    lock_until: "2026-10-31T10:28:49.535Z"
+    claimed_by: "agent:data-agent"
+    title: "技术节点与产业关联：落实可同步表与新建 DWD"
+    status: "claimed"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "2026-10-31 用户下令领取并执行，分两步：先出方案，再开发到算法中台。调研记录已交付，依赖 SYSINT-SURVEY-02-L01 仍是 in_progress，按用户明令升 ready。监管人取 data-agent 花名册默认 human:徐滕强。"
+    depends_on:
+      - "SYSINT-SURVEY-02-L01"
+    collaborators:
+      - "algorithm-agent"
+      - "api-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/调研记录.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/对接文档/对端/2026-10-22-ADS_SCHEMA-5.11.0.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "技术路线的关联粒度锁定为候选技术节点，主键 technology_node_id。正式 tech_id、代表路径、簇群、子学科都不是这条技术路线的主键"
+      - "交出可同步清单：技术域每张候选表写明久新表名、主键、行数量级、能否经接口同步进本侧库，以及不能同步的原因。ads_technology_profile 必须在可同步清单里。正式目录、政策证据空表、投资额、模拟商业价值必须标成还没有或不能当主数据"
+      - "维护管理下给出 1 个或多个菜单，与「子学科与专题映射」并列。每个菜单都有【同步】和【建立关联】。建立关联逐条对象是 technology_node_id，结果落新建 DWD（技术节点 ID + 本侧产业节点 ID）。不写入 subfield_topic_map"
+      - "本叶只出落实记录和 handoff，不写同步代码、不调 LLM、不改业务仓、不建深度页、不改政策三页、不改 WBS-02-08 与 SYSINT-06-19。handoff 指向派单说明"
+    update_time: "2026-10-31T14:28:51+08:00"

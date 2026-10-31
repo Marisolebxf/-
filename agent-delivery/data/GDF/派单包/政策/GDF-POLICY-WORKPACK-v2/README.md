@@ -1,7 +1,7 @@
 # GDF-POLICY-WORKPACK-v2
 
 > **读者**：GDF 数据中台产线（不使用 Cursor）  
-> **版本**：v2.0.3（2026-10-26）· **现行政策包** · Mapping 继承 v1.0.4，可投递；待 GDF 预填 / 导入核对 · MAP-01 已关（永远分 UK） · 取数不过滤 `is_deleted` / `is_history`，原样进 DWD，应用侧再滤 · `16` 为字典核对，不改 `09` 列规则 · Wave C 脚本在 `scripts/`，流程图在 `12` · Wave D 说明在 `17`（MDC 脚本未进包，先不要建作业）  
+> **版本**：v2.0.5（2026-10-30）· **现行政策包** · Mapping 继承 v1.0.4，可投递；待 GDF 预填 / 导入核对 · MAP-01 已关（永远分 UK） · 取数不过滤 `is_deleted` / `is_history`，原样进 DWD，应用侧再滤 · `16` 为字典核对，不改 `09` 列规则 · Wave C 的 `scripts/` 已是回包加补偿软删，流程图在 `12`。round1 签收和答复在 `22`。产线要执行的 SQL 只在 `sql/update_round1.sql` · Wave D 说明在 `17`（MDC 脚本未进包，先不要建作业）  
 > **任务**：`GDF-POLICY-WORKPACK-V2-L01` · Owner `human:淮政玮`  
 > **贴源结构真源**：`data-design/storage/POLICY/sources/ods-ddl.md`  
 > **Mapping 施工真源**：[09-政策域-ETL-Mapping明细-源表到DWD.md](09-政策域-ETL-Mapping明细-源表到DWD.md)  
@@ -22,7 +22,8 @@
 | [06-WaveB-Mapping派工.md](06-WaveB-Mapping派工.md) | 洗入一张 `policy_base_info`；C 不进字段配置 |
 | [09-政策域-ETL-Mapping明细-源表到DWD.md](09-政策域-ETL-Mapping明细-源表到DWD.md) | **正式 Mapping** |
 | [16-Mapping过程与字典核对.md](16-Mapping过程与字典核对.md) | 过程是否清楚、字典实值是否齐。不改 09 |
-| [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 主表 + 产业关联表 |
+| [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 主表 + 产业关联表。`script_state` 的可执行文件在 `sql/` |
+| [sql/](sql/) | 本轮产线只执行 `update_round1.sql`：建 `script_state`、清重、加索引 |
 | [11-作废与误源对照.md](11-作废与误源对照.md) | 误源 |
 | [12-DWD后加工-抽取产业与条款结构化.md](12-DWD后加工-抽取产业与条款结构化.md) | C1 / C2 流程图、读写、脚本 |
 | [scripts/](scripts/) | `policy_c1_industry.py`、`policy_c2_clauses.py`，复制到 GDF Python 节点 |
@@ -34,6 +35,7 @@
 | [19-实时指标-POLICY-MRC.md](19-实时指标-POLICY-MRC.md) | 匹配与推演不进 T+1。计算不在 GDF 时，血缘导入工位，见 `21` |
 | [20-灌数闸门.md](20-灌数闸门.md) | 负责人确认前不写 mock |
 | [21-数据血缘.md](21-数据血缘.md) | 血缘追溯接口的需求。三类来源。接口未接通 |
+| [22-round1回包签收与答复.md](22-round1回包签收与答复.md) | round1 签收、逐条答复。清重口径已定，改表语句在 `sql/update_round1.sql` |
 | [CHANGELOG.md](CHANGELOG.md) | 相对 v1.0.4 |
 
 ## 投递约定

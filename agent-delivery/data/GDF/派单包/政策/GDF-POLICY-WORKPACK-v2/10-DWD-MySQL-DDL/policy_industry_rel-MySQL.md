@@ -25,3 +25,5 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_industry_rel` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='政策–产业关联。抽取写入，不回写主表';
 ```
+
+目标键：`(policy_id, industry_link_code)` 唯一。DWD 与 ADS 同一目标。上面的 CREATE 仍是现网已有结构，不把唯一键写进 CREATE。清重和加键在 `sql/update_round1.sql`。同一键留 `is_deleted=0`，同状态留 `update_time` 最新，时间相同留 `id` 最大，其余物理删除。空链码也按这个键并成一行。本仓不代跑。
