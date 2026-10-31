@@ -69,7 +69,7 @@ PM 说「今日快照」才跑。步骤见 [reference.md](reference.md)。
 3. 收集当天已经落在流水或本轮口令里的原话。口令里的百分数只留在「当日进展」单元格，不进三个数。
 4. 覆盖写 `agent-delivery/工程过程/当日进展/YYYY-MM-DD.md`。同一天只留这一份。
 5. 把同一组数追加到该维 `进度.md`（不覆盖旧日），只刷新该维 `README.md` 顶部「当前」。
-6. 另写 `agent-delivery/工程过程/当日进展/WBS汇总-YYYY-MM-DD.xlsx`。表内是本端实现任务，不含定义轨。没有挂上第 2–7 项草案号的，工作项归进「自研模块」，并且只写在第一个 sheet。列、分 sheet 和合并见 [reference.md](reference.md)。不覆盖 `04-系统集成/WBS汇总-2026-10-22.xlsx`。八列表和 §7.1 百分比仍只算第 2 至第 7 项 WBS 行。
+6. 另写 `agent-delivery/工程过程/当日进展/WBS汇总-YYYY-MM-DD.xlsx`。表内是本端实现任务，不含定义轨。第 2 项 `WBS.md` 里已经写了任务号的行全部进「对接三要素」sheet，含 `WBS-02-09`～`WBS-02-12`，不因 definition 拿掉（见 [reference.md](reference.md)）。没有挂上第 2–7 项草案号的，工作项归进「自研模块」，并且只写在第一个 sheet。列、分 sheet 和合并见 [reference.md](reference.md)。不覆盖 `04-系统集成/WBS汇总-2026-10-22.xlsx`。八列表和 §7.1 百分比仍只算第 2 至第 7 项 WBS 行。
 7. **飞书出站**：仓内 md / xlsx 写完后，在编排仓根执行  
    `node scripts/sync-feishu-daily-snapshot.mjs --date YYYY-MM-DD`  
    （配置见 `agent-delivery/feishu/feishu-daily-snapshot-board.yaml`）。只投影「当日八列」与「维度汇总」，不推 WBS 汇总 xlsx。凭据用本机 `.env` 的 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`。缺凭据或接口失败：快照文件仍保留，对人说明「飞书未推」+ 错误摘要，**不回滚**仓内文件。成功则简报飞书表链接。
