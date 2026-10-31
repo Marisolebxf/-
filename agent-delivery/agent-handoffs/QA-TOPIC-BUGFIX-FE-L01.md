@@ -226,3 +226,31 @@
 
 - 已 push **`lumen-ui-topic` `57386ac`**（`origin/dev`）。
 
+---
+
+## 追加修改（2026-10-31 · 深圳现状雷达对象 B）
+
+走查：多城市横向对标切换「对比对象 B」后，`city-insight` 已成功，雷达仍停在 `city-benchmark.radar_pair`；切换 B 还会再打 `city-benchmark`。无新 BUG-ID，不改 `bug-registry.yaml`。
+
+| 项 | 实现 |
+|----|------|
+| 请求拆分 | `compareCityCode` 只调 `city-insight`；`city-benchmark` 仅随产业链或对标城市池变化 |
+| 雷达取值 | 轴满分 100；深圳用 `sz_value`，对象 B 用 `compare_value`（真实分，不再把深圳折成 100） |
+| 维度 | 优先用本次 insight 的 `advantages` + `shortboards` |
+
+### 涉及文件（`lumen-ui-topic`）
+
+| 路径 | 说明 |
+|------|------|
+| `src/composables/useSzStatusAnalysis.ts` | 对象 B 与城市池监听拆开 |
+| `src/components/enterprise/szStatus/CityBenchmarkPanel.vue` | 雷达绑定 city-insight 真实分 |
+
+### 验收
+
+- 切换对比对象 B：仅 `POST .../sz-status/city-insight`，不请求 `city-benchmark`。
+- 示例返回：深圳 77 / 41 / 75，北京 74 / 38 / 72，轴最大 100。
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `0d98231`**。
+
