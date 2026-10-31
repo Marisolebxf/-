@@ -295,3 +295,24 @@
 
 - 已 push **`lumen-ui-topic` `origin/dev` → `4e10751`**。
 
+---
+
+## 追加修改（2026-10-31 · 关键环节代表企业「查看详情」）
+
+走查：快览抽屉与企业查询同为 `ElementProfile`；点「查看详情」误跳 `enterprise-detail` 整页。应与企业查询一致 → **`EnterpriseDetailDrawer`**。
+
+| 项 | 实现 |
+|----|------|
+| 快览 | `ElementProfile` drawer + `entProfilePanorama`（不变） |
+| 查看详情 | `useProfileDrawer.onOpenDetail` 打开 `EnterpriseDetailDrawer`，不再 `router.push` |
+
+### 涉及文件
+
+| 路径 | 说明 |
+|------|------|
+| `src/components/industry-center/IndustryKeyLinkResultBoard.vue` | 挂载 `EnterpriseDetailDrawer` |
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `3e5b302`**。
+
