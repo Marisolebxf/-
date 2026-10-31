@@ -8,9 +8,9 @@
 任务：SYSINT-TOPIC-CHAIN-ALIGN-02-L01
 标题：专题产业链三要素指标与久新 ADS 对照对齐（只出记录）
 WBS：WBS-02-11
-监管人：待指定（认领前由 PM 指定 supervised_by）
-执行：agent:data-agent。协作 doc-agent。
-状态：backlog。依赖 SYSINT-TOPIC-CHAIN-GAP-02-L01。依赖未到 ready_to_sign/会签确认前不要开工实现对照终稿；可先读调研草稿。
+监管人：human:唐绍祖（已指派；claimed_by / supervised_by 同此人）
+执行：可由 human:唐绍祖 本人推进，或再派 agent:data-agent（须其确认）。协作 doc-agent。
+状态：claimed。依赖 SYSINT-TOPIC-CHAIN-GAP-02-L01。依赖未到 ready_to_sign/会签确认前不要开工实现对照终稿；可先读调研草稿。
 仓：gkx-orchestration。分支 origin/dev。
 开始时间：2026-10-31。完成日期要求：待指定。
 
