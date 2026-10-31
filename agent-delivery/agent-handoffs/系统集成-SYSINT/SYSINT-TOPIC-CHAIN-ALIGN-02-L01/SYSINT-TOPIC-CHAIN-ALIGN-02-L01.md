@@ -3,7 +3,7 @@
 > 任务类型：调研/定义（spike）。只读分析，不改业务仓、不改指标 seed、不写 ADS、不灌数、不建深度页。
 > 监管人：`human:唐绍祖` · 执行：`human:唐绍祖` · 建单日：2026-10-31 · 状态：**调研草稿已交付，待依赖会签后出终稿**
 > 上游：`SYSINT-TOPIC-CHAIN-GAP-02-L01`（WBS-02-10，缺口清单收口，**backlog 未会签——本单按派单说明先交付草稿**）
-> 派单：[派单说明-SYSINT-TOPIC-CHAIN-ALIGN-02-L01](../../工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TOPIC-CHAIN-ALIGN-02-L01.md)
+> 派单：[派单说明-SYSINT-TOPIC-CHAIN-ALIGN-02-L01](../../../工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TOPIC-CHAIN-ALIGN-02-L01.md)
 
 ## 1. 任务认领（必填）
 
