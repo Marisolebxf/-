@@ -45259,3 +45259,30 @@ tasks:
       - "迭代现行包 data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2：写入签收情况，并回答交付说明第七章、第八章列出的需支持项（环境变量与软件、Milvus 锚点、policy_support、唯一键、源侧删除后的目标行）。未由人拍板的项保持待确认，不代答"
       - "不改政策 v1，不建 GDF 作业，不改产线表，不代替 WBS-06-03 跑通。handoff：agent-handoffs/政策模块-E7/GDF-POLICY-ROUND1-REPLY-L01.md"
     update_time: "2026-10-30T21:34:56+08:00"
+  - id: ENT-RISK-SUMMARY-ETL-L01
+    title: "风险域汇总表 enterprise_risk_summary 真实 ETL：明细小样执行 + GROUP BY 聚合（管理维度痛点解锁）"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "算法库联调-ALGO-LIB"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      2026-10-31 排查企业发展痛难点三格空（技术研发/融资/管理）的收口单。结论：①链路/代码全通，管理维度必空的根因= demo DWD enterprise_risk_summary 全库 0 行；②真源 gkx 库风险域结构齐备且 org_id 与 demo 对齐（被执行 53.5万行/35041 orgs、处罚 8.1万/19174、失信 7.3万、异常 5千/4435）→ 属 ETL 映射缺失，非缺数非覆盖率问题；③用户拍板走真实 ETL 聚合，禁 LLM 灌数。既有 ENT-RISK-INGEST-BTN-L01 只灌 risk_* 明细（且从未执行），本单=执行明细灌数+补 summary 聚合。附带发现：正式库 gkxlumenx_dwd 该表为无 org_id 宽聚合表，算法 real_data.py 直接跳过，正式环境跟进另立单。融资/招投标覆盖率 2.9%/3.2% 为真源真实比例，不在此单范围（走 gkx-supplier-q-daily 向供应方出题）。
+    depends_on:
+      - "ENT-RISK-INGEST-BTN-L01"
+    touched_files:
+      - "entan/llm_ods/risk_ingest.py（补聚合步骤）"
+      - "entan/llm_ods/risk_summary_agg.py（或并入上文件）"
+      - "api/main.py（聚合随 ingest-risk 流程执行）"
+    definition_of_done:
+      - "执行 run_risk_ingest（按钮或手动）一次，demo_gkxlumenx_dwd 六张 risk_* 明细表各落库≈1万行小样（RISK_INGEST_LIMIT 默认档），无 1062/1114/OOM"
+      - "新增聚合步骤（risk_ingest 完成后或独立脚本）：从 risk_* 明细 GROUP BY org_id,risk_type 生成 enterprise_risk_summary(total_count/current_count/history_count/latest_date)，幂等可重跑；risk_type 枚举对齐 lumen-algo-py real_data.py 读取口径（executed/dishonest/abnormal/punishment）"
+      - "current/history 判定口径按明细表状态字段对齐（risk_executed.exec_status / risk_dishonest.fulfillment_status / risk_abnormal.remove_date），口径写进脚本注释并在 handoff 说明"
+      - "验证：任选 3 家真源 gkx.dwd_org_risk_zhixing 有记录的企业，enterprise_risk_summary 行存在且计数与明细一致；挑 1 家风险企业跑 pain_points.compute 确认 management 维度命中「经营合规风险需关注」；BIT 微电子类真源零风险企业保持零行不伪闭合"
+      - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账（明细 vs 汇总 org 数）+ cost 四字段回填"
+    update_time: "2026-10-31T10:34:28+08:00"
