@@ -1,7 +1,7 @@
 # GDF-CHAIN-WORKPACK-v2
 
 > **读者**：GDF 数据中台产线（不使用 Cursor）  
-> **版本**：v2.0（2026-10-20 · 基线对齐 10-19 清单）· **可对外投递**  
+> **版本**：v2.1（2026-10-31 · 基线对齐 10-19 清单 + 新增 `12` 产业链入向量库）· **可对外投递**  
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`（产业链要素库 Sheet）  
 > **Mapping 施工真源**：[09-产业链域-ETL-Mapping明细-源表到DWD.md](09-产业链域-ETL-Mapping明细-源表到DWD.md)  
 > **建表 DDL**：仓内 `data-design/产业链/产业链-DWD表设计-业务需求驱动(v5).md`（指针见 [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/)）  
@@ -20,6 +20,7 @@
 | [09-产业链域-ETL-Mapping明细-源表到DWD.md](09-产业链域-ETL-Mapping明细-源表到DWD.md) | **正式 Mapping** |
 | [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 建表指针 |
 | [11-作废与误源对照.md](11-作废与误源对照.md) | 误源对照 |
+| [12-DWD后加工-产业链入向量库.md](12-DWD后加工-产业链入向量库.md) | **v2.1 新增**：链表洗完+上图稳定后整库一次 rebuild；政策抽产业的锚点来源 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本 |
 
 ## 投递约定
