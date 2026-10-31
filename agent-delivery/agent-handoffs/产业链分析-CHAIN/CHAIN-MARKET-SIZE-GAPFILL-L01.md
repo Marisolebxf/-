@@ -69,7 +69,7 @@
 - `python3 -m pytest tests/test_chain_market_size.py tests/test_chain_sync.py` → **11 passed**
 - `pnpm type-check`（lumen-ui-topic，vue-tsc --build）→ **0 error**
 - 种子脚本 `--apply` 实写 24 行成功
-- 线上验证：dev 页面「产业全景 → 任一链 → 市场规模」Tab 显示数值 + 🧪（待 K8s rollout 后人工走查）
+- 线上验证：**通过**（用户 2026-10-31 19:25 确认）——dev 环境产业全景 → 市场规模 Tab 显示数值 + 🧪
 
 ## 架构合规自检
 
@@ -84,8 +84,9 @@
 
 - 分支：`dev`（lumen-algo-py / lumen-ui-topic）
 - commit：lumen-algo-py `3606c37`（4 文件：sync.py / 种子脚本 / 2 测试）；lumen-ui-topic `ae11c75`（rebase 后 3 文件）
-- pipeline：lumen-ui-topic `3417`（frontend:build → image → trivy → deploy:k8s → e2e:chain-gold）
-- K8s rollout：CI 绿自动 dev rollout；线上走查 = 「产业全景 → 任一链 → 市场规模」Tab 显数值 + 🧪
+- pipeline：lumen-ui-topic `3417` **全绿**（build 19:23:33 ✅ → image ✅ → trivy ✅ → deploy:k8s 19:23:58 ✅ → e2e:chain-gold 19:25:17 ✅）
+- K8s rollout：**成功**，dev 环境 19:23:58 起新镜像生效
+- dev 测试 URL：产业全景 → 任一链 → 详情 → 市场规模 Tab（用户 19:25 走查通过）
 
 ## 可观测性（建议）
 
