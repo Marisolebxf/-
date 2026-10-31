@@ -45268,8 +45268,18 @@ tasks:
       - "不改政策 v1，不建 GDF 作业，不改产线表，不代替 WBS-06-03 跑通。handoff：agent-handoffs/政策模块-E7/GDF-POLICY-ROUND1-REPLY-L01.md"
     update_time: "2026-10-30T21:34:56+08:00"
   - id: ENT-RISK-SUMMARY-ETL-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ENT-RISK-SUMMARY-ETL-L01-handoff.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 4
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-31T03:40:26.774Z"
+    last_seen_at: "2026-10-31T03:40:26.774Z"
+    lock_until: "2026-10-31T07:40:26.774Z"
+    claimed_by: "agent:algorithm-agent"
     title: "风险域汇总表 enterprise_risk_summary 真实 ETL：明细小样执行 + GROUP BY 聚合（管理维度痛点解锁）"
-    status: "ready"
+    status: "integration"
     agent: "algorithm-agent"
     epic: "算法库联调-ALGO-LIB"
     priority: "P1"
@@ -45279,15 +45289,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 50000
-    note: |
-      2026-10-31 立单背景：企业发展痛难点三格空排查收口。①链路/代码全通，管理维度必空根因= demo DWD enterprise_risk_summary 全库 0 行；②真源 gkx 库风险域齐备且 org_id 与 demo 对齐（被执行 53.5万行/35041 orgs、处罚 8.1万/19174、失信 7.3万、异常 5千/4435）→ ETL 映射缺失非缺数；③用户拍板真实 ETL 聚合，禁 LLM 灌数。融资/招投标覆盖率不在此单（走 gkx-supplier-q-daily）。
-      
-      DoD 修订 v2（2026-10-31 代码评审 [Review b66ef799] 认领前生效，与 definition_of_done 冲突时以本节为准）：
-      1. 明细落库：八张 risk_* 明细表（judicial_case/dishonest/executed/abnormal/punishment/tax_punish/bankruptcy/illegal）按 RISK_INGEST_LIMIT 默认档小样落库，源不足 1 万的 tax_punish≈528 / illegal≈247 按全量落，无 1062/1114/OOM。
-      2. Schema 前置：demo 库 enterprise_risk_summary 现为宽表（abnormal/punishment/executed/dishonest/total 列，无 risk_type，见 demo_dwd_ads_schema_bootstrap.sql:678），须先迁移为长表布局（对齐 schema_mysql.sql uk_risk_summary(org_id,risk_type)），同步调整 gdf_sim.py seed 路径；迁移前后行数快照留 handoff。
-      3. 聚合：按全量八类 risk_type（executed/dishonest/abnormal/punishment/illegal/tax_punish/judicial_case/bankruptcy，对齐 real_data.py _WIDE_RISK_COUNT_FIELDS）GROUP BY org_id,risk_type 产 total_count/current_count/history_count/latest_date，幂等可重跑；禁只聚 4 类（会静默少计 risk_current_count，违反 D9）。
-      4. current/history 口径：executed→exec_status、dishonest→fulfillment_status、abnormal/illegal→remove_date；无状态字段的表（tax_punish/judicial_case/bankruptcy）current=total、history=0；口径写入脚本注释与 handoff。
-      5. 验证：任选 3 家真源 gkx.dwd_org_risk_zhixing 有记录企业，summary 行存在且计数与明细一致；在 lumen-algo-py 服务侧（LUMEN_ALGO_MYSQL_DWD_DB=demo_gkxlumenx_dwd，assert_rows_not_mock 通过）跑 pain_points.compute 确认 management 维度命中「经营合规风险需关注」（该标题只在 lumen 仓存在，demo 仓 pain_points 是 mock 种子不适用）；真源零风险企业（如深圳比特微电子 09a2d3ef...）保持零行不伪闭合。
+    note: "联调确认：明细灌数→聚合→lumen 算法命中三段全链路集群实跑通过（含正向命中与负向不伪闭合），联调通过，推 pending_test 等 QA。"
     depends_on:
       - "ENT-RISK-INGEST-BTN-L01"
     touched_files:
@@ -45300,7 +45302,7 @@ tasks:
       - "current/history 判定口径按明细表状态字段对齐（risk_executed.exec_status / risk_dishonest.fulfillment_status / risk_abnormal.remove_date），口径写进脚本注释并在 handoff 说明"
       - "验证：任选 3 家真源 gkx.dwd_org_risk_zhixing 有记录的企业，enterprise_risk_summary 行存在且计数与明细一致；挑 1 家风险企业跑 pain_points.compute 确认 management 维度命中「经营合规风险需关注」；BIT 微电子类真源零风险企业保持零行不伪闭合"
       - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账（明细 vs 汇总 org 数）+ cost 四字段回填"
-    update_time: "2026-10-31T11:21:27+08:00"
+    update_time: "2026-10-31T12:02:53+08:00"
   - id: ENT-RISK-SUMMARY-PROD-SCHEMA-L01
     title: "正式库 enterprise_risk_summary 宽表改造：加 org_id 维度或算法侧适配（正式环境痛难点管理维度解锁）"
     status: "backlog"
