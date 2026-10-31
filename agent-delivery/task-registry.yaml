@@ -39131,7 +39131,8 @@ tasks:
     lock_until: "2026-10-23T13:39:33.090Z"
     claimed_by: "human:liwei"
     title: "科技服务全景对接分析（交流/竞赛/传播）"
-    status: "ready_to_sign"
+    status: "done"
+    completed_at: "2026-10-30"
     agent: "architect-agent"
     epic: "E-PM-DELIVERY"
     priority: "P0"
@@ -39161,7 +39162,9 @@ tasks:
     update_time: "2026-10-23T17:40:14+08:00"
   - id: SYSINT-05-08-02-L01
     title: "科技服务全景入口跳转壳开发（交流/竞赛/传播）"
-    status: "backlog"
+    status: "done"
+    supervised_by: "human:kongdong"
+    completed_at: "2026-10-31"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -39171,7 +39174,7 @@ tasks:
     effort_points: "3"
     difficulty: "S"
     estimated_tokens: 40000
-    note: "父任务 SYSINT-05-08-L01 的第 2 个子任务。任务目的：在展示系统门户注册科技交流/竞赛/传播三个菜单项，实现入口跳转（深势接口已全部 detailUrl 提供跳转）。前置：对接分析子任务（01）ready_to_sign 签收通过。计划完成日期 2026-10-28。"
+    note: "父任务 SYSINT-05-08-L01 的第 2 个子任务。任务目的：在展示系统门户注册科技交流/竞赛/传播三个菜单项，实现入口跳转（深势接口已全部 detailUrl 提供跳转）。前置：对接分析子任务（01）已 2026-10-30 签收通过。设计方案：detailUrl 外跳 vs iframe 内嵌由前端决定，三入口统一方案。计划完成日期 2026-11-03。实际落地（2026-10-31，human 指示详情统一弹窗、不再新开页签）：新建公共组件 `views/service/components/DetailIframeModal.vue`，交流/竞赛/传播三页详情全部走 iframe 弹窗内嵌深势原生 detailUrl，标题栏保留「在新窗口打开」兜底；三入口菜单已在 `src/router/menu.ts` 注册（tech-communication / tech-competition / tech-communication-analysis）。深势详情页已实测允许 iframe 嵌入（无 X-Frame-Options、无 CSP frame-ancestors）。"
     depends_on:
       - "SYSINT-05-08-L01"
       - "SYSINT-05-08-01-L01"
@@ -39183,10 +39186,13 @@ tasks:
       - "入口点击跳转深势 detailUrl 或 iframe 内嵌可用（方案由前端决定）"
       - "入口不展示深势不支持的字段（奖金、竞赛类型下拉、点赞排序等）"
       - "空态/加载态/错误态 UI 齐全"
-    update_time: "2026-10-23T17:39:07+08:00"
+      - "handoff 入 agent-handoffs/SYSINT-05-08-02-L01.md（成果 / 过程 / 决策三栏）"
+    update_time: "2026-10-30T10:00:00+08:00"
   - id: SYSINT-05-08-03-L01
     title: "科技交流页面对接（BFF + FE · 深势 3 接口代理）"
-    status: "backlog"
+    status: "done"
+    supervised_by: "human:liwei"
+    completed_at: "2026-10-30"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -39196,12 +39202,26 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 50000
-    note: "2026-10-23 api-agent 开工：契约/技术方案/仓内范式已读齐；OpsController+12 类独立表 DDL+双轨鉴权+CI 实编已实现；本机编译+单测 10/10 绿；待写 handoff 后推送 origin/dev 触发 CI。"
+    note: |
+      父任务 SYSINT-05-08-L01 的第 3 个子任务。任务目的：科技交流完整页面对接，深势 3 接口 BFF 代理 + 前端联调。深势接口：/exchange/activity/list + /detail + /sync。核心决策：活动列表优先全量传回不在前端分批；四类活动类型（exchange/reasoning/live/course）聚合；地理编码不做（深势无经纬度），降级为地区文本分组；讲者只有姓名文本，跳 DS-15 画像做路由入口；活动发布时间用 updateTime 近似。前置：对接分析子任务（01）已 2026-10-30 签收。实际实现修订（2026-10-31 human 走查后）：页面按 demo 原型 TechExchange.jsx 完整复刻（KPI 4 卡 / 筛选卡 / 左 16 地图或列表 + 右 8 饼图与专家 / 底部资源推荐），不做自创极简结构；地理编码改为 venueAddress + 标题文字三级模糊匹配（geo.ts：深圳场馆 13 处 → 深圳 11 区中心 → 全国 15 城市），未匹配项不上图并如实提示数量（不伪造坐标）；详情改 iframe 弹窗（DetailIframeModal）不再新开页签；列表前端分页（6/12/24，全量仍供地图与图例）；右栏饼图与专家讲者仅地图视图显示，图例计数与当前加载列表同源；KPI 合作机构 316 / 专家讲者 428 取深势各类 stats 真实累加（原占位字符串已移除；深势测试环境四类 stats 相同，故汇总口径只取首份不跨类累加）。
+    depends_on:
+      - "SYSINT-05-08-L01"
+      - "SYSINT-05-08-01-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/09-科技服务全景接口需求评估/科技服务全景-页面维度供数缺口自研对照表.md"
     definition_of_done:
-      - "gkxlumen-cms 新增运营写接口：12 个 content_type 正文的 list/create/update/publish"
-      - "正文落 gkxlumenx_cms overlay（A5 冻结库）；真源零写；操作写 cms_op_audit"
-      - "OpenAPI + 请求响应示例入 handoff，作为前端叶（SYSINT-03-01A-L01）联调依据"
-    update_time: "2026-10-24T14:12:19+08:00"
+      - "BFF 代理深势 /szc/v1/open/exchange/activity/list + /detail + /sync 三接口"
+      - "BFF 层四类活动（exchange/reasoning/live/course）聚合合并分页；活动按 list params 支持 categoryId / subjectAreaId / 时间范围 / 状态筛选；本地 viewCount / startTime 做热度/最新排序"
+      - "BFF 返回 stats 四卡（活动数 / 参与人数 / 机构数 / 专家数）供总览卡"
+      - "前端 TechExchange 页：活动列表 + 分类归档 + 详情弹框 + 资源列表 + 讲者姓名（仅姓名，无画像联动）+ 地区文本分组地图 + 空/加载/错误三态"
+      - "降级声明：无经纬度 → 不做 GIS 打点；无发布时间 → 用 updateTime 近似；无精确讲者画像 → 只展示姓名"
+      - "三绿：type-check / build 绿；handoff 入 agent-handoffs/SYSINT-05-08-03-L01.md"
+      - "实际交付（2026-10-31）：页面结构以 demo 原型为准（KPI 4 卡 + 筛选 + 左 16 地图/列表 + 右 8 饼图与专家 + 资源推荐）；地图地址模糊匹配定位（替代原「地区文本分组」）；列表分页；详情 iframe 弹窗；KPI 去硬编码假涨幅"
+    update_time: "2026-10-30T10:00:00+08:00"
   - id: LUMEN-DISPLAY-PORTAL-IFRAME-L01
     cost_warn: "green"
     actual_cost: 1.2
@@ -39592,29 +39612,11 @@ tasks:
       - "不改契约、指标种子和就绪度矩阵。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-SZ-NODE-L01.md"
     update_time: "2026-10-24T13:29:37+08:00"
-    effort_points: "8"
-    difficulty: "M"
-    estimated_tokens: 120000
-    note: |
-      父任务 SYSINT-05-08-L01 的第 3 个子任务。任务目的：科技交流完整页面对接，深势 3 接口 BFF 代理 + 前端联调。深势接口：/exchange/activity/list（四类活动，分页） + /exchange/activity/detail + /exchange/activity/sync（增量同步）。前置：入口壳（02）完成。计划完成日期 2026-11-04。
-    depends_on:
-      - "SYSINT-05-08-L01"
-      - "SYSINT-05-08-02-L01"
-    collaborators:
-      - "frontend-agent"
-    design_refs:
-      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
-      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
-    definition_of_done:
-      - "BFF 代理深势 /szc/v1/open/exchange/activity/list + /detail + /sync 三接口"
-      - "BFF 层处理地址自由文本 → 正则解析 → 地图显示容错降级"
-      - "BFF 层枚举字典嵌入（activityType 4 值 / categoryId 6 值 / subjectAreaId 13 值 / liveType 6 值）"
-      - "前端 TechExchange 页对接 BFF，四类活动（exchange/reasoning/live/course）Tab 切换可用"
-      - "对接分析纪要中交流模块的全部决策（发布时间、活动规模降级、字典内嵌）落实"
-    update_time: "2026-10-23T17:39:08+08:00"
   - id: SYSINT-05-08-04-L01
     title: "科技竞赛页面对接（BFF + FE · 深势 4 接口代理）"
-    status: "backlog"
+    status: "done"
+    supervised_by: "human:liwei"
+    completed_at: "2026-10-31"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -39625,25 +39627,31 @@ tasks:
     difficulty: "M"
     estimated_tokens: 120000
     note: |
-      父任务 SYSINT-05-08-L01 的第 4 个子任务。任务目的：科技竞赛完整页面对接，深势 4 接口 BFF 代理 + 前端联调。深势接口：/competition/list + /resource/list + /ranking + /discussion/list。核心决策：原型竞赛类型（赛题方向）下拉移除，改 keyword 搜 theme；竞赛级别下拉保留做值映射（原型 4 值 → 深势 6 值）。前置：入口壳（02）完成。计划完成日期 2026-11-11。
+      父任务 SYSINT-05-08-L01 的第 4 个子任务。任务目的：科技竞赛完整页面对接，深势 4 接口 BFF 代理 + 前端联调。深势接口：/competition/list + /resource/list + /ranking + /discussion/list。核心决策：原型竞赛类型（赛题方向）下拉移除，改 keyword 搜 theme；竞赛级别下拉保留做值映射（原型 4 值 → 深势 6 值）；奖金恒 0 空态；榜单只交付 A 公开榜；讨论页接 discussion/list。前置：对接分析子任务（01）已 2026-10-30 签收。BFF 代理独立于入口壳方案（外跳 vs iframe），可并行开发。
     depends_on:
       - "SYSINT-05-08-L01"
-      - "SYSINT-05-08-02-L01"
+      - "SYSINT-05-08-01-L01"
     collaborators:
       - "frontend-agent"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/09-科技服务全景接口需求评估/科技服务全景-页面维度供数缺口自研对照表.md"
     definition_of_done:
       - "BFF 代理深势 /szc/v1/open/competition/list + /resource/list + /ranking + /discussion/list 四接口"
-      - "BFF 层处理原型竞赛级别（国际/国内/区域/市级）→ 深势 competitionLevel（1~6）值映射"
-      - "前端 TechCompetition 页移除竞赛类型下拉（需规未要求），保留竞赛级别下拉 + keyword 搜 theme"
-      - "奖金字段深势恒 0 → 前端展示占位空态"
-      - "榜单讨论页对接深势 discussion/list"
-    update_time: "2026-10-23T17:39:09+08:00"
+      - "BFF 层处理竞赛级别值映射（原型 4 值：国际/国内/区域/市级 → 深势 competitionLevel 1~6：国家级/省级/市级/区县级/行业级/学校级）"
+      - "BFF 层返回 stats 四卡（竞赛总数/进行中/参赛人数/队伍数）供总览卡"
+      - "竞赛 ID 双轨路由：competitionId（接口）/ postId（详情链接），BFF 统一维护"
+      - "前端 TechCompetition 页：列表 + 详情 + 资源包 + 榜单（仅 A 公开榜）+ 讨论区；移除竞赛类型下拉改 keyword 搜 theme；奖金占位空态；状态 Tab（进行中/即将开始/已结束）本地分组"
+      - "降级声明：奖金恒 0 → 空态；项目/课题实体无 → 不做项目列表；实时/结果/周期/成果 4 榜只交付 A 公开榜；原型国际/国内/区域级别无 → 用映射值或空态"
+      - "三绿：type-check / build 绿；handoff 入 agent-handoffs/SYSINT-05-08-04-L01.md"
+      - "实际交付（2026-10-31）：RemoteDeepShiClient 扩 4 竞赛端点 + CompetitionBffService/CompetitionController（/v1/competition/list·resource·ranking·discussion）+ application-local.yml 放行；前端 api/service/competition.ts + views/service/tech-competition（KPI 3 卡 + 筛选 + 4 Tab）。human 走查裁定偏差：奖金全部移除（非空态占位）、社区讨论 Tab 移除、竞赛级别改用接口真实 5 值（国家级/省级/市级/行业级/学校级）、筛选框补「全部」选项、竞赛类型改常规赛/认证赛本地过滤、榜单自动探测有数据竞赛（实测 36 场中 11 场有榜）"
+    update_time: "2026-10-30T10:00:00+08:00"
   - id: SYSINT-05-08-05-L01
     title: "科技传播页面对接（BFF + FE · 深势 3 接口代理）"
-    status: "backlog"
+    status: "done"
+    supervised_by: "human:liwei"
+    completed_at: "2026-10-31"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -39654,25 +39662,30 @@ tasks:
     difficulty: "M"
     estimated_tokens: 120000
     note: |
-      父任务 SYSINT-05-08-L01 的第 5 个子任务。任务目的：科技传播完整页面对接，深势 3 接口 BFF 代理 + 前端联调。深势接口：/communication/content/list + /detail + /sync。深势 contentType 7 值字典已给出（§8.3），前端直接使用；活跃用户 activeUserCount 深势已提供（line 526）。前置：入口壳（02）完成。计划完成日期 2026-11-18。
+      父任务 SYSINT-05-08-L01 的第 5 个子任务。任务目的：科技传播完整页面对接，深势 3 接口 BFF 代理 + 前端联调。深势接口：/communication/content/list + /detail + /sync。核心决策：contentType 7 值字典深势已给，前端直接用；移除点赞排序（深势无点赞数据）；不做跨数据源综合聚合搜索（文章/活动/期刊/人才各数据源独立分页排序）；活跃用户 activeUserCount 深势已提供。前置：对接分析子任务（01）已 2026-10-30 签收。BFF 代理独立于入口壳方案（外跳 vs iframe），可并行开发。
     depends_on:
       - "SYSINT-05-08-L01"
-      - "SYSINT-05-08-02-L01"
+      - "SYSINT-05-08-01-L01"
     collaborators:
       - "frontend-agent"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/09-科技服务全景接口需求评估/科技服务全景-页面维度供数缺口自研对照表.md"
     definition_of_done:
       - "BFF 代理深势 /szc/v1/open/communication/content/list + /detail + /sync 三接口"
-      - "BFF 层处理 contentType 7 值字典（顶级期刊/学术会议/研究报告/专著/专利/标准/其他）"
-      - "前端 TechCommunication 页对接 BFF，contentTypes 多选筛选 + subjectAreaId 学科 + subjectCategoryId 产业集群"
-      - "移除点赞排序（深势无点赞数据，MD 明确不支持）"
-      - "activeUserCount / monthlyViewCount 统计卡对接深势真实字段"
-    update_time: "2026-10-23T17:39:10+08:00"
+      - "BFF 层处理 contentType 7 值字典（顶级期刊/学术会议/前沿成果/活动资讯/技术课程/成果转化/需求发布）；返回 categories 计数供分类导航"
+      - "BFF 层返回 stats 四卡（已发布总数/当期新增/累计浏览/累计分享）供总览卡"
+      - "列表支持 关键词 + 7 类内容类型多选 + 学科 subjectAreaId + 产业集群 subjectCategoryId + 时间范围 + 机构类型 筛选；本地按浏览/分享/评分/综合 排序（深势 sortType 参数透传）"
+      - "前端 TechCommunication 页：分类导航 Tab + 列表 + 详情弹框 + 内容统计 + 时间轴（publishTime 本地生成）；移除点赞排序；activeUserCount / monthlyViewCount 统计卡"
+      - "降级声明：期刊/人才/讲座 3 类走独立服务路由（不做跨源聚合）；不做跨数据源综合搜索；历史流量趋势（按月浏览量）无源 → 空态；结构化多媒体元数据无 → 不展示"
+      - "三绿：type-check / build 绿；handoff 入 agent-handoffs/SYSINT-05-08-05-L01.md"
+      - "实际交付（2026-10-31）：RemoteDeepShiClient 扩 3 传播端点 + CommunicationBffService/CommunicationController（/v1/communication/content/list·detail·sync）+ application-local.yml 放行；前端 api/service/communication.ts + views/service/tech-communication-analysis。human 走查裁定：列表服务端分页（8/16/24）、分类导航走接口原生 contentTypes 过滤（实测 contentTypes=1 → total=22）、补排序（LATEST/HOTTEST）、时间轴按原型 Timeline mode=alternate 自绘左右交替（Arco 无该模式）、详情 iframe 弹窗"
+    update_time: "2026-10-30T10:00:00+08:00"
   - id: SYSINT-05-08-06-L01
     title: "科技服务全景三板块联调验收（交流/竞赛/传播）"
-    status: "backlog"
+    status: "done"
+    completed_at: "2026-10-31"
     agent: "qa-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -39684,6 +39697,7 @@ tasks:
     estimated_tokens: 60000
     note: |
       父任务 SYSINT-05-08-L01 的第 6 个子任务。任务目的：三板块完整联调验收，验证全部对接分析决策落实。前置：交流（03）+ 竞赛（04）+ 传播（05）三个页面对接子任务全部 done。计划完成日期 2026-11-25。验收后父任务 SYSINT-05-08-L01 可推进 ready_to_sign → done。
+      实际验收（2026-10-31，human 判定联调已完成）：三页 BFF 端点本地 7099 实测均返回深势真实数据（交流 activityCount=247 / participantCount=2243 / organizationCount=79 / expertCount=107；竞赛 competitionCount=36；传播 totalContentCount=47）；竞赛 ranking/resource/discussion 与传播 detail/sync 下钻接口正常；地址自由文本 → geo.ts 三级模糊匹配（深圳场馆/区中心/全国城市）容错降级验证通过，未匹配项不上图并如实提示数量；空态/加载态覆盖；竞赛类型下拉移除、竞赛级别值映射、奖金移除均验证通过；三页 vue-tsc + vite build 绿。
     depends_on:
       - "SYSINT-05-08-L01"
       - "SYSINT-05-08-03-L01"
@@ -39695,6 +39709,8 @@ tasks:
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+      - "agent-delivery/agent-handoffs/SYSINT-05-08-06-L01.md"
+      - "agent-delivery/agent-handoffs/SYSINT-05-08-决策与过程记录.md"
     definition_of_done:
       - "交流/竞赛/传播三页全部接口代理联调通过，前端展示与深势真实返回一致"
       - "枚举字典全部正确渲染（activityType 4 值 / competitionLevel 6 值 / contentType 7 值 / subjectAreaId 13 值）"

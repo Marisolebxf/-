@@ -83,7 +83,7 @@
 | 科技成果展示 | DS-25～DS-29 | 软科学成果展示 / 科技创新生态展示 / 科技时空演进展示 / 大型科学仪器共享 / 创新载体孵化载体 | WBS-05-05 | `SYSINT-05-05-L01`(claimed)、`FE-DISPLAY-ACHIEVE-ALIGN-L01`(pending_test) | 五页可打开或空态；仪器只展示、不做预约闭环；时空演进**禁止用专题 B 面时间轴冒充**；口径未绿用角标不改数 | LT-5-ACH-DS25～DS29 |
 | 科技服务全景 | DS-30 之① | 科技创新生态服务（全景里唯一智树自研子菜单） | WBS-05-06 | `SYSINT-05-06-L01`(claimed)、`FE-DISPLAY-SVC-ECO-ALIGN-L01`(review) | 列表与详情可开或空态；demo 侧原地更新 `InnovationEcosystem.jsx` | LT-5-SVC-ECO |
 | 科技服务全景 | DS-30 之② | 智库服务 | WBS-05-07 | `SYSINT-05-07-L01`(ready)、`FE-DISPLAY-SVC-THINKTANK-RECTIFY-L01`(in_progress) | 2026-10-23 起**不按跳转**，要求智谱提供接口；接口未到为空态。智树不做高端智库后台。demo 页按需规 566–574 整改中 | LT-5-SVC-HUB |
-| 科技服务全景 | DS-30 之③④⑤ | 科技交流 / 科技竞赛 / 科技传播 | WBS-05-08（子 05-08-01～06） | `SYSINT-05-08-L01`(claimed)、`SYSINT-05-08-01-L01`(ready_to_sign)、`-02`～`-06`(backlog)、`SVC-PANORAMA-API-L01`(claimed)、`SVC-PANORAMA-GAP-L01`(ready_to_sign) | 详见 §4.2 | LT-5-SVC-HUB |
+| 科技服务全景 | DS-30 之③④⑤ | 科技交流 / 科技竞赛 / 科技传播 | WBS-05-08（子 05-08-01～06） | `SYSINT-05-08-L01`(claimed)、`SYSINT-05-08-01-L01`(done ✅ 10-30)、`SYSINT-05-08-03-L01`(done ✅ 10-30)、`-02/-04/-05/-06`(done ✅ 10-31)、`SVC-PANORAMA-API-L01`(claimed)、`SVC-PANORAMA-GAP-L01`(ready_to_sign) | -01 签收 ✅；-02 三入口菜单壳（iframe 弹窗）；-03 交流 BFF + FE；-04 竞赛 BFF + FE；-05 传播 BFF + FE；-06 联调验收 —— 六个子任务 2026-10-31 全部 done | LT-5-SVC-HUB |
 | 跨全部菜单 | — | 本项菜单注册与用户权限 | WBS-05-09 | 未建任务（监管人待指定） | 相对路径进统一用户中心；地址不写主机名；配菜单的人 2026-10-22 纪要未点名 | LT-5-SSO |
 
 ---
@@ -131,7 +131,7 @@
 | WBS-05-05 · `SYSINT-05-05-L01` | 科技成果展示（五页作为一个菜单） | 徐滕强 | `lumen-ui-science-pc`、展示 Java | **claimed** | 未开工。原型侧的 5 个 New 页由 `FE-DISPLAY-ACHIEVE-ALIGN-L01` 建出（pending_test） | `SYSINT-SCHEME-05-L01`。五页可打开或空态；仪器只做展示，不做预约闭环；口径未绿用角标，不改数 | 2026-11-05 |
 | WBS-05-06 · `SYSINT-05-06-L01` | 科技创新生态服务 | 徐滕强 → 2026-10-23 改侯佳伟 | `lumen-ui-science-pc`、展示 Java | **claimed** | 未开工。原型侧对齐见 `FE-DISPLAY-SVC-ECO-ALIGN-L01`（review） | `SYSINT-SCHEME-05-L01`。列表与详情可开，或空态；菜单进统一用户中心 | 2026-11-09 |
 | WBS-05-07 · `SYSINT-05-07-L01` | 智库服务 | 李伟（registry 记一线孔东） | `lumen-ui-science-pc`、展示 Java | **ready** | 2026-10-23 起**不按前端跳转**，要求智谱提供接口；接口未到为空态。原型页整改见 `FE-DISPLAY-SVC-THINKTANK-RECTIFY-L01`（in_progress） | `SYSINT-SCHEME-05-L01`。对端是智谱；智树页面能调到智谱接口；**智树不做高端智库后台** | 2026-11-09 |
-| WBS-05-08 · `SYSINT-05-08-L01` | 科技交流、科技竞赛、科技传播（父） | 李伟 | `lumen-ui-science-pc` | **claimed** | 挂接自建任务 `SVC-PANORAMA-API-L01`（父统筹单，claimed）、`SVC-PANORAMA-GAP-L01`（对照表成品，ready_to_sign）。子任务见 §4.2 | `SYSINT-SCHEME-05-L01`。对端名称「北大深势」只出现在规约，能力评估文未署此名，**名称核对还没有** | 2026-11-09 |
+| WBS-05-08 · `SYSINT-05-08-L01` | 科技交流、科技竞赛、科技传播（父） | 李伟 | `lumen-ui-science-pc` | **claimed** | 挂接自建任务 `SVC-PANORAMA-API-L01`（父统筹单，claimed）、`SVC-PANORAMA-GAP-L01`（对照表成品，ready_to_sign）。**2026-10-30：对接分析（-01）已签收 ✅；-02 入口壳（孔东）、-03 交流 BFF（李伟）、-04 竞赛 BFF（李伟）、-05 传播 BFF（李伟）全部 ready 并行派单；-06 联调验收（李伟）等 -02~05 完成后派单**。子任务详见 §4.2 | `SYSINT-SCHEME-05-L01`。对端名称「北大深势」只出现在规约，能力评估文未署此名，**名称核对还没有** | 2026-11-09 |
 | **WBS-05-09** | 本项菜单注册与用户权限（全景、技术发展、人才态势、数据资源、成果展示、生态服务、智库、交流、竞赛、传播） | **待指定**（2026-10-22 纪要未点名） | 统一用户中心配置；业务仓不写主机名 | **未建任务** | — | `SYSINT-SCHEME-05-L01`。各菜单叶负责自己的相对路径；这些菜单以相对路径可见，对应用户登录后能进；地址不写主机名；交流 / 竞赛 / 传播跳转失败仍有提示；智库不按跳转走智谱接口 | 无截至时间 |
 | WBS-05-18 | 科技全域态势（DS-01，含 M1 聚合 BFF 消费） | 孔东（FE）/ 李伟（BE） | `lumen-ui-science-pc`、`gkxlumen-display` | **integration** | `FE-TS-01A` handoff `科技发展态势-TS/FE-TS-01A.md`：整页复刻 integration；所依赖的底座 `FE-TS-S01` 已 done。后端 `BE-TS-IMPL-01` 未开工。指标卡 `DS-01-METRIC-OPEN-L01`：赋号草稿、类型未签、公式待 `human:唐绍祖` 共签。**2026-10-27 挂接 `SITUATION-ENT` 长任务管线（企业维度数据跑通，子任务见 §4.3，授权人 `human:李伟`）** | `FE-TS-S01`、`BE-TS-CONTRACT-01` 冻结（M1）。11 要素图层 / 科创事件双 Tab；久新人才、科研机构、论文、专利未到则**空态** | 计划 LT-5-SIT-DS01：10-16 → 10-20 |
 | WBS-05-19 | 创新监测三页（DS-04 全球 / DS-05 湾区 / DS-06 深圳） | 孔东 | `lumen-ui-science-pc` | **integration** | `FE-TS-04A` / `05A` / `06A` 三份 handoff 均已 push（`06A` note「handoff 已 push ea1e4aad；lumen b4e1eda；联调确认」，但模块目录**无同名 `FE-TS-06A.md`**）。已有 innov 事件地图只对齐，不另起一套 | `BE-TS-CONTRACT-01`（M4 / M5 / M6 契约未冻结）。订阅 / 推送的对端宋泉未确认则该块空态 | 计划 10-28 → 10-31（DS-06 及以后冲出 V1 开发出门） |
@@ -147,12 +147,12 @@
 
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
-| WBS-05-08-01 · `SYSINT-05-08-01-L01` | 科技服务全景对接分析（交流 / 竞赛 / 传播） | 李伟 | `lumen-ui-science-pc` | **ready_to_sign** | **已完成**（2026-10-23 晚落盘 271 行纪要 + 深势 MD 接口审计）。evidence：本夹 `纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md`、`对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md`。12 项会议结论全覆盖；字典枚举决策已固化（不走接口）；原型字段映射决策完成（竞赛类型下拉移除、竞赛级别保留并做值映射）；OpenAPI 合规性审计经李伟审阅 | 父 `SYSINT-05-08-L01`。待监管人签收 | 计划 2026-10-23（实际当日完成） |
-| WBS-05-08-02 · `SYSINT-05-08-02-L01` | 科技服务全景入口跳转壳开发 | 未标注 | `lumen-ui-science-pc` | **backlog** | 未开工 | `SYSINT-05-08-L01`、`-08-01` 签收通过。三个门户入口菜单注册；跳转深势 `detailUrl` 或 iframe；**不展示深势不支持的字段（奖金、竞赛类型下拉、点赞排序等）**；空 / 加载 / 错误三态齐全 | 计划 2026-10-28 |
-| WBS-05-08-03 · `SYSINT-05-08-03-L01` | 科技交流页面对接（BFF + FE，深势 3 接口代理） | 未标注 | `lumen-svc-platform` | **backlog** | 未开工 | `-08-01` 签收 | 待定 |
-| WBS-05-08-04 · `SYSINT-05-08-04-L01` | 科技竞赛页面对接（BFF + FE，深势 4 接口代理） | 未标注 | `lumen-svc-platform` | **backlog** | 未开工 | `-08-01` 签收 | 待定 |
-| WBS-05-08-05 · `SYSINT-05-08-05-L01` | 科技传播页面对接（BFF + FE，深势 3 接口代理） | 未标注 | `lumen-svc-platform` | **backlog** | 未开工 | `-08-01` 签收 | 待定 |
-| WBS-05-08-06 · `SYSINT-05-08-06-L01` | 科技服务全景三板块联调验收 | 未标注 | `lumen-ui-science-pc` | **backlog** | 未开工 | `-08-02`～`-08-05` 完成 | 待定 |
+| WBS-05-08-01 · `SYSINT-05-08-01-L01` | 科技服务全景对接分析（交流 / 竞赛 / 传播） | 李伟 | `lumen-ui-science-pc` | **done** ✅ 2026-10-30 签收 | **已完成并签收**（2026-10-23 晚落盘 271 行纪要 + 深势 MD 接口审计；2026-10-30 `human:李伟` 签收）。evidence：本夹 `纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md`、`对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md`。12 项会议结论全覆盖；字典枚举决策已固化（不走接口）；原型字段映射决策完成（竞赛类型下拉移除、竞赛级别保留并做值映射）；OpenAPI 合规性审计经李伟审阅 | 父 `SYSINT-05-08-L01`。✅ 已签收 | 计划 2026-10-23（实际当日完成，10-30 签收） |
+| WBS-05-08-02 · `SYSINT-05-08-02-L01` | 科技服务全景入口跳转壳开发 | 孔东（前端壳） | `lumen-ui-science-pc` | **done** ✅ 2026-10-31 完成 | 已完成。三入口菜单在 `src/router/menu.ts` 注册（tech-communication / tech-competition / tech-communication-analysis）；跳转方案按 `human` 2026-10-31 指示定为 **iframe 弹窗**，公共组件 `views/service/components/DetailIframeModal.vue`，标题栏保留「在新窗口打开」兜底；深势详情页实测无 `X-Frame-Options` / 无 CSP `frame-ancestors`，可内嵌；深势不支持字段（奖金、竞赛类型下拉、点赞排序）均不展示。handoff：[`SYSINT-05-08-02-L01.md`](../../../agent-handoffs/SYSINT-05-08-02-L01.md) | 父 `-08-L01`（claimed）、`-08-01`（done ✅）均满足 | 2026-11-03 |
+| WBS-05-08-03 · `SYSINT-05-08-03-L01` | 科技交流页面对接（BFF + FE，深势 3 接口代理） | 李伟（BFF 主责） | `lumen-svc-platform` | **done** ✅ 2026-10-30 完成 | 已完成 ✅ BFF 三文件 + 前端 API + 页面 + menu 路由。BFF：`RemoteDeepShiClient`（4 方法全 `@NoToken`）+ `ExchangeBffService`（四类并行 + 分区降级 + 8 组内嵌枚举字典）+ `ExchangeController`（6 端点：overview/list/detail/sync/recommendation/dictionaries）。深势寻址 `gkxlumen.deep-shi.base-url`。前端：`api/service/exchange.ts` + `views/service/tech-communication/index.vue`（四类 Tab + 活动列表 + KPI 卡 + 详情弹框 + 空/加载/错误三态）+ router menu.ts resolve。三绿：mvn compile / vue-tsc / pnpm build。降级：深势不可达返回 `_bff_source=deep-shi-unreachable` 空壳不 5xx；字典 BFF 内嵌不走接口。2026-10-31 走查返工：原型复刻、`geo.ts` 地址模糊匹配、前端分页、四类 stats 只取首份。handoff：[`SYSINT-05-08-03-L01.md`](../../../agent-handoffs/SYSINT-05-08-03-L01.md) | 父 `-08-L01`、`-08-01`（done ✅）均满足 | 2026-10-30（提前） |
+| WBS-05-08-04 · `SYSINT-05-08-04-L01` | 科技竞赛页面对接（BFF + FE，深势 4 接口代理） | 李伟（BFF 主责） | `lumen-svc-platform` | **done** ✅ 2026-10-31 完成 | 已完成。BFF：`RemoteDeepShiClient` 扩 4 端点 + `CompetitionBffService`/`CompetitionController`（`/v1/competition/list`·`resource`·`ranking`·`discussion`）+ security 放行。前端：`api/service/competition.ts` + `views/service/tech-competition`（KPI 3 卡 + 筛选「全部」项 + 4 Tab：进行中/即将开始/已结束/排行榜）。human 走查裁定偏差：奖金全部移除（非空态占位）、社区讨论 Tab 移除、竞赛级别改用接口真实 5 值（国家级/省级/市级/行业级/学校级）、竞赛类型改常规赛/认证赛本地过滤、榜单自动探测有数据竞赛（实测 36 场中 11 场有榜）。handoff：[`SYSINT-05-08-04-L01.md`](../../../agent-handoffs/SYSINT-05-08-04-L01.md) | 父 `-08-L01`、`-08-01`（done ✅）均满足 | 2026-11-11 |
+| WBS-05-08-05 · `SYSINT-05-08-05-L01` | 科技传播页面对接（BFF + FE，深势 3 接口代理） | 李伟（BFF 主责） | `lumen-svc-platform` | **done** ✅ 2026-10-31 完成 | 已完成。BFF：`RemoteDeepShiClient` 扩 3 端点 + `CommunicationBffService`/`CommunicationController`（`/v1/communication/content/list`·`detail`·`sync`）+ security 放行。前端：`api/service/communication.ts` + `views/service/tech-communication-analysis`。human 走查裁定：列表服务端分页（8/16/24）、分类导航走接口原生 `contentTypes` 过滤（实测 `contentTypes=1` → total=22）、补排序（LATEST/HOTTEST）、时间轴按原型 `Timeline mode="alternate"` 自绘左右交替（Arco 无该模式）、详情 iframe 弹窗。handoff：[`SYSINT-05-08-05-L01.md`](../../../agent-handoffs/SYSINT-05-08-05-L01.md) | 父 `-08-L01`、`-08-01`（done ✅）均满足。**BFF 与入口壳方案已统一为 iframe 弹窗** | 2026-11-18 |
+| WBS-05-08-06 · `SYSINT-05-08-06-L01` | 科技服务全景三板块联调验收 | 李伟（QA 归总控） | `lumen-ui-science-pc` | **done** ✅ 2026-10-31 完成 | 已完成（human 判定联调已完成）。实测：三页 BFF 端点（localhost:7099）均返回深势真实数据——交流 activityCount=247 / participantCount=2243 / organizationCount=79 / expertCount=107，竞赛 competitionCount=36，传播 totalContentCount=47；竞赛 ranking/resource/discussion 与传播 detail/sync 下钻正常；地址自由文本 → `geo.ts` 三级模糊匹配容错降级验证通过（未匹配项不上图并如实提示数量）；竞赛类型下拉移除、竞赛级别值映射、奖金移除均验证通过；三页 `vue-tsc` + `vite build` 绿。handoff：[`SYSINT-05-08-06-L01.md`](../../../agent-handoffs/SYSINT-05-08-06-L01.md)、跨任务决策轨迹：[`SYSINT-05-08-决策与过程记录.md`](../../../agent-handoffs/SYSINT-05-08-决策与过程记录.md) | `-08-02`～`-08-05` 全部完成 ✅ | 2026-10-31（提前） |
 
 > **2026-10-26 `human:李伟` 挂接**：`SVC-PANORAMA-API-L01`、`SVC-PANORAMA-GAP-L01` 两件自建任务挂在 WBS-05-08 下，不新开叶。产物 `工程过程/02-策划与监控/01-总集大项目整体计划/09-科技服务全景接口需求评估/科技服务全景-页面维度供数缺口自研对照表.md`（161 行，§五 10 项待会签）。今日快照已出，百分比不回改，明日快照按注册表现状态计入。
 
@@ -243,14 +243,14 @@
 
 | 状态 | 条数 | 涉及 WBS 行 / 任务 |
 |---|---|---|
-| done | **3** | 05-16 `ARCH-DISPLAY-REDESIGN-L01`；05-25 `FE-TS-S01`；05-26 批 A `FE-DISPLAY-SMALL-BATCH-A` |
+| done | **8** | 05-16 `ARCH-DISPLAY-REDESIGN-L01`；05-25 `FE-TS-S01`；05-26 批 A `FE-DISPLAY-SMALL-BATCH-A`；05-08-02～05-08-06（5 条，2026-10-31 完成） |
 | ready_to_sign | **3** | 05-12 `DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01`；05-08-01 `SYSINT-05-08-01-L01`；05-08 挂接 `SVC-PANORAMA-GAP-L01` |
 | integration | **22** | 05-15 `BE-TS-CONTRACT-02`；05-18 `FE-TS-01A`；05-01a `FE-TS-02A`；05-02a `FE-TS-03A`；05-19 `FE-TS-04A/05A/06A`；05-21 `FE-TS-08A`；05-22 `FE-TS-09A`；05-24 `FE-TS-10A`；05-27 `LUMEN-DISPLAY-PORTAL-IFRAME-L01`；05-28 `TECHINDEX-NEW-L01` + `PROTO-TUNE-L01`；05-29 `DS-01`～`DS-09-METRIC-OPEN-L01`（9 条） |
 | pending_test | **3** | 05-28 内 `ACHIEVE-ALIGN-L01`、`TECHINDEX-MOCK-ALGO-L01`、`GI-TOPBAR-OVERLAY-L01` |
 | review | **4** | 05-17 / 05-17b `ARCH-TS-L3-DESIGN-01`、`ARCH-TS-L3-01`（待 `human:徐滕强` 裁决 A1–A6）；05-28 内 `SVC-ECO-ALIGN-L01`、`KG-SERVICE-ALIGN-L01` |
 | claimed | **9** | 05-10 `BE-TS-CONTRACT-01`；05-11 `BE-TS-AGG-01`；05-20 `FE-TS-07A`；05-29 内 `SCI-DISPLAY-METRIC-L123-INV`；05-04、05-05、05-06、05-08 `SYSINT-05-0X-L01`；05-08 挂接 `SVC-PANORAMA-API-L01` |
 | in_progress | **5** | 05-00 `SYSINT-SCHEME-05-L01`；05-23 内 `DISPLAY-POLICY-GAP-AC-L01`、`POLICY-TRACK-OPT-L01`；05-28 内 `SVC-THINKTANK-RECTIFY-L01`、`TOTALCHECK-L01` |
-| backlog | **8** | 05-13 `BE-TS-IMPL-01`；05-14 `BE-TS-DATA-01`；05-08-02～05-08-06（5 条）；05-26 批 B `FE-DISPLAY-SMALL-BATCH-B` |
+| backlog | **3** | 05-13 `BE-TS-IMPL-01`；05-14 `BE-TS-DATA-01`；05-26 批 B `FE-DISPLAY-SMALL-BATCH-B` |
 | ready | **7** | 05-01a / 01b / 02a / 02b / 03a / 03b、05-07（全部 `SYSINT-05-0X-L01`） |
 | **合计** | **65** | 另有 05-09（未建任务）不计入。2026-10-27 新增 ARCH-TS-L3 两件；SITUATION-ENT-A0-L01（05-18-01）已建并 `ready_to_sign`。另有 05-18-02～05（管线 C1/C2/C3/D1，registry 待建）不计入 |
 
@@ -264,7 +264,7 @@
 | C4 | 页数口径 34 vs 35 未定 | 05-24 是否计入，以及全部菜单计数 | 会签前由 `human:淮政玮` 定 |
 | C5 | WBS-05-09 无监管人、未建任务 | 全部菜单的可见性 | 待指定 |
 | C6 | 数据资源（05-04）**供方仍未找到**；久新 42 个 API 未确认 | 05-04、05-11 的久新侧源 | `human:郭万迎` 对外催办（久新侧 李乐 / 任欢） |
-| C7 | 05-08-02～05-08-06 无监管人、全部 backlog | 交流 / 竞赛 / 传播三入口 | 待指定 |
+| C7 | ~~05-08-02～05-08-06 无监管人、全部 backlog~~ **2026-10-31 已解决**：五个子任务全部 `done`（`human` 判定联调已完成，三页 BFF 端点实测真实数据），监管人同步登记 | 交流 / 竞赛 / 传播三入口 | 已关闭 |
 | C8 | ~~`ARCH-TS-L3-DESIGN-01` / `ARCH-TS-L3-01` 有成品无 registry 条目~~ **2026-10-27 已解决**：两条已补登记入 `task-registry.yaml`（status `review`，`supervised_by` = `human:徐滕强`），WBS-05-17 / 05-17b 已可被任务系统索引 | 05-17 / 05-17b | 已关闭 |
 | C9 | **`ARCH-TS-L3-01` §7 六项待裁决 A1–A6 未签署**，L3 归属（`gkxlumen-element` vs 复用 `topic-*`）未定；`BE-TS-IMPL-01` 因此开工无依据 | 05-17 / 05-17b / 05-13 | `human:徐滕强` 逐项签署 |
 | C10 | **A5 久新主体键是否对齐**未答复（`ARCH-TS-L3-01` 标为最大技术风险），`channel/jiuxin-*` 只能出桩实现 | 05-17b、05-18 的久新要素 | `human:郭万迎` 向久新催办（侧 李乐 / 任欢） |
