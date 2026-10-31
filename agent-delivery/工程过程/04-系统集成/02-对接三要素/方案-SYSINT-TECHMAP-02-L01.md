@@ -52,7 +52,7 @@ Java `gkx-innov` 按页写入本侧表。按 `technology_node_id` 更新名称�
 
 ## 关联
 
-人点击【关联】才调用模型。一次只处理 20 个尚未关联的节点，避免浏览器和网关超时。剩下的再点一次。
+人点击【关联】才调用模型。一次请求只处理 20 个尚未关联的节点。页面点一次会连续请求多批，某一批调用失败就停下，剩下的再点一次。模型按技术主题归入产业节点，名称不必字面相同；纯社会、法律、文学且没有产业技术含义的可以不关联。
 
 调用：`demo-ui-system-test` → 网关 `/ops/v1/tech-node-maps/**` → `gkx-innov` → `lumen-algo-py` `POST /internal/tech-node-industry/link`。
 

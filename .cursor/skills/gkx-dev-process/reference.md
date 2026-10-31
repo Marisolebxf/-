@@ -89,7 +89,7 @@
 - 定义轨：`delivery_phase` 是 `definition`，或 `task_type` 是 `definition`。方案任务、回写定义单、调研如果落在这两类里，不进表。
 - 其余都进：`implementation`、`crosscut`，以及 `feature` / `bugfix` / `tech_task` / `spike` / `chore` 里不属于定义轨的。`chore` 进表，不进 §7.1 百分比，完成百分比留空。
 - 只认注册表里已有的任务。WBS 上写了「智谱」「待指定」但没有任务号的行，不是本端任务，不进表。
-- 第 2 项 `02-对接三要素/WBS.md` 数据行里已经写了任务号的，全部进「对接三要素」sheet。含 `WBS-02-09` `SYSINT-ROUTE-02-L01`、`WBS-02-10` `SYSINT-TOPIC-CHAIN-GAP-02-L01`、`WBS-02-11` `SYSINT-TOPIC-CHAIN-ALIGN-02-L01`、`WBS-02-12` `SYSINT-TECHMAP-02-L01`。这四行不因为 `task_type` 或 `delivery_phase` 是 definition 从该 sheet 拿掉。完成百分比仍按本表开发分；方案未 `done` 记 0。§7.1 设计分算法不变。
+- 第 2 项 `02-对接三要素/WBS.md` 数据行里已经写了任务号的，全部进「对接三要素」sheet。含 `WBS-02-09` `SYSINT-ROUTE-02-L01`（全景读技术节点映射）、`WBS-02-10` `SYSINT-TOPIC-CHAIN-GAP-02-L01`、`WBS-02-11` `SYSINT-TOPIC-CHAIN-ALIGN-02-L01`、`WBS-02-12` `SYSINT-TECHMAP-02-L01`（菜单「技术节点与产业映射」）。这四行不因为 `task_type` 或 `delivery_phase` 是 definition 从该 sheet 拿掉。完成百分比仍按本表开发分；方案未 `done` 记 0。§7.1 设计分算法不变。
 - 不读 `task-registry.yaml`。用 MCP `task-query` 按状态分批把 `limit` 放到能收回该状态，再丢掉定义轨。WBS 上已写明的任务号用 `task-get`。
 
 ### 列
