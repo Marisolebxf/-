@@ -254,3 +254,44 @@
 
 - 已 push **`lumen-ui-topic` `origin/dev` → `0d98231`**。
 
+---
+
+## 追加修改（2026-10-31 · 产业关键环节识别结果页）
+
+走查：关键环节 Tab 结果页 KPI 条、侧栏代表企业与 demo 不一致；代表企业仅名称+「查看企业」，缺卡片样式与 tag。无新 BUG-ID。
+
+| 项 | 实现 |
+|----|------|
+| 顶部 KPI | 对齐 demo 五卡（关键环节数 / 高端化链均值 / 高价值占比 / 战略重要性 / 市场集中度 + 评审挂点）；去掉误用的市场规模/投融资链级字段 |
+| 样式 | 诊断页引入 `industryOverview.css`、`industryTopicAnalysis.css` |
+| 代表企业 | demo 同构卡片；`enterprise_id` 批量 `#6 search/by-codes` 补全名称、经营状态、资质 tag、产业链 tag |
+| 企业画像 | 移除侧栏内嵌「企业画像」列表；「查看企业」走通用 `ElementProfile` 抽屉 |
+
+### 涉及文件（`lumen-ui-topic`）
+
+| 路径 | 说明 |
+|------|------|
+| `src/components/industry-center/IndustryKeyLinkResultBoard.vue` | KPI / 卡片 / 抽屉 / by-codes hydration |
+| `src/utils/industryChainTask.ts` | `parseKeyLinkMetricCards` |
+| `src/utils/industryWorkspaceRuntime.js` | `enterprise_id`、代表企业字段 |
+| `src/utils/entSearchMappers.ts` | `hydrateKeyLinkEnterprises` |
+| `src/views/industry-center/IndustryDiagnosisPage.vue` | 样式 import |
+| `src/views/industry-center/industryReplicaFix.selfcheck.mjs` | `parseKeyLinkDetail` 断言 |
+
+### 同批工作区（导航文案，非 BUG 台账）
+
+| 路径 | 说明 |
+|------|------|
+| `src/router/menu.ts` | 「重点企业领域分布分析」；竞争力菜单文案/顺序微调 |
+| `src/views/enterprise/EnterpriseKeyAnalysis.vue` | 与菜单文案对齐 |
+
+### 验收
+
+- 关键环节结果：顶部 5 张 metric 卡有边框与大号数值样式。
+- 代表企业：有状态/资质/产业 tag（by-codes 命中时）；未命中仍显示结果内企业名。
+- 「查看企业」打开通用抽屉，无侧栏「企业画像」区块。
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `4e10751`**。
+
