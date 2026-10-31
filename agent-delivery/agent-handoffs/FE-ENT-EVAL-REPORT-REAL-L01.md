@@ -165,7 +165,7 @@
 |----|------|--------|
 | lumen-ui-topic | dev | `fa01c49` feat(report): 产业链块式报告 + chain PDF API 导出 |
 | lumen-svc-platform | dev | `2599089` feat(artifact): 产业链块式 PDF chain:report:export |
-| gkx-orchestration | dev | `042d18b2` docs(handoff): FE-ENT-EVAL-REPORT-REAL-L01 产业链 PDF 批次 |
+| gkx-orchestration | dev | `b444cd5f` + `bd89aeaf` handoff 产业链 PDF 批次 |
 
 ## Cost
 
