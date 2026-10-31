@@ -200,3 +200,29 @@
 ### 代码状态
 
 - 已 push **`lumen-ui-topic` `origin/dev` → `8ddd999`**。
+
+---
+
+## 追加修改（2026-10-31 · 报告接线 / 资产中心门控 / 候选名单并发）
+
+走查与 FE-ENT-EVAL-REPORT 联调衍生的前端修补（**无新 BUG-ID**；不修改 `bug-registry.yaml`）。
+
+| 主题 | 实现 | 文件 |
+|------|------|------|
+| 风险 HTML 报告入参 | `RiskReportPanel` 补 `enterprise-count`、`result-payload`、痛难点/供应链维度 | `PainPointsPanel.vue`, `SupplyChainInsightPanel.vue` |
+| 引育报告任务元数据 | 结果区传完整 `activeTask` | `RecruitWorkbench.vue`, `CandidatePanel.vue` |
+| 个人资产中心未上线 | `PERSONAL_ASSETS_CENTER_ENABLED`（`app.ts` 已 false）门控按钮与文案；处理中不再跳转 `/personal/assets` | `RecruitOutputTaskModal.vue`, `RecruitProcessingPanel.vue`, `SearchExportWorkflow.vue` |
+| 候选名单重复请求 | 同 `elementKey` 共享 inflight；Abort 静默 | `useCandidateLists.ts` |
+| Mock 推荐报告 PDF | `recommend_report` 子任务走 `finishIntelReportArtifact` | `analysisTaskStore.ts` |
+
+### 验收
+
+- 风险/供应链结果页打开 HTML 报告：对象数与 payload 与结果区一致（非空任务）。
+- `PERSONAL_ASSETS_CENTER_ENABLED=false` 时无「去个人资产中心 / 查看导出记录」入口。
+- Mock 下引育「下载 PDF」（API 模式）可 success 并下载。
+- `node src/components/report/reportExport.selfcheck.mjs` 仍 ok（依赖项已在 FE-ENT 批次）。
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `57386ac`**（`origin/dev`）。
+
