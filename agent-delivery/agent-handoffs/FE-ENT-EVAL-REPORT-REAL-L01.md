@@ -128,13 +128,13 @@
 - ✅ 权限：`ReportExportButton` / `useBlockReportExport` 闸门不变
 - ⚠️ 服务端块式 PDF 与前端 ECharts 雷达/饼图不完全同构（条形用 CSS；章节来自快照 sections + export 表）
 
-### 三仓提交（待 push 后回填 hash）
+### 三仓提交（2026-10-31 push dev）
 
 | 仓 | 分支 | commit |
 |----|------|--------|
-| lumen-ui-topic | dev | （push 后填） |
-| lumen-svc-platform | dev | （push 后填） |
-| gkx-orchestration | dev | handoff + registry（push 后填） |
+| lumen-ui-topic | dev | `7acdc3c` feat(report): 块式 HTML 报告扩域 + API PDF 导出 |
+| lumen-svc-platform | dev | `39e4cd7` feat(artifact): 块式 PDF 模板 block-report |
+| gkx-orchestration | dev | `e89de664` docs(handoff): FE-ENT-EVAL-REPORT-REAL-L01 + registry |
 
 ## Cost
 
