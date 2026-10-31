@@ -31144,6 +31144,11 @@ tasks:
       - "接口挂 /cms/v1/expert/region*，鉴权与 OTel 同老设计单；OpenAPI 入 handoff；字段以原型 expert-knowledge-page.js region 分组为准"
     update_time: "2026-10-16T18:12:35+08:00"
   - id: ENT-RISK-INGEST-BTN-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ENT-RISK-INGEST-BTN-L01-handoff.md"
+    cost_warn: "green"
+    actual_tokens: 85000
+    actual_cost: 3.5
     feishu_bitable_record_id: reczz28NegbCyOuK
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-15T08:07:12.540Z"
@@ -31151,7 +31156,7 @@ tasks:
     lock_until: "2026-10-16T08:07:12.540Z"
     claimed_by: "human:徐滕强"
     title: "风险域（risk_*）灌数按钮：ODS→DWD 每表限量小样 + 控制台入口"
-    status: "integration"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "算法库联调-ALGO-LIB"
     priority: "P1"
@@ -31161,8 +31166,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      用户 2026-10-15 指示：重写 ES 验证通过后开工；risk 源表 ODS 已有数（司法 325万/被执行 53万/失信 7.4万/处罚 6.6万/破产 3.6万/异常 5564/税务 471）；先每表 1 万条小样，全量放开待小样验证后另议。流程逻辑对齐企业灌数（gdf_sim 模式：分批+唯一键去重+_map_optional 容错）。
+    note: "联调确认：2026-10-31 集群内复跑 ingest-risk 全流程通过，落库数与 handoff 一致，幂等复验 OK。联调通过，推 pending_test 等 QA。"
     touched_files:
       - "entan/llm_ods/risk_ingest.py（新增映射+灌数）"
       - "api/main.py（/internal/ingest-risk 按钮）"
@@ -31174,7 +31178,7 @@ tasks:
       - "接口返回 started/running/mode=ingest-risk；/internal/status 的 dwd 段新增 risk 表行数采样；失败写 last_error 不伪装成功"
       - "手工触发全流程验证：按钮点击→异步跑完→每表≈1万行落库→无 1062/1114/OOM；pytest 冒烟（映射去重+SQL 拼装）通过"
       - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账与 cost 回填"
-    update_time: "2026-10-15T20:04:13+08:00"
+    update_time: "2026-10-31T10:42:30+08:00"
   - id: SVC-PANORAMA-API-L01
     feishu_bitable_record_id: reczz28O01TIolyz
     title: "科技服务全景（科技交流/科技竞赛/科技传播）接口需求全权负责：评估/沟通/接口缺项/对接开发/联调"
@@ -45261,7 +45265,7 @@ tasks:
     update_time: "2026-10-30T21:34:56+08:00"
   - id: ENT-RISK-SUMMARY-ETL-L01
     title: "风险域汇总表 enterprise_risk_summary 真实 ETL：明细小样执行 + GROUP BY 聚合（管理维度痛点解锁）"
-    status: "backlog"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "算法库联调-ALGO-LIB"
     priority: "P1"
@@ -45285,4 +45289,4 @@ tasks:
       - "current/history 判定口径按明细表状态字段对齐（risk_executed.exec_status / risk_dishonest.fulfillment_status / risk_abnormal.remove_date），口径写进脚本注释并在 handoff 说明"
       - "验证：任选 3 家真源 gkx.dwd_org_risk_zhixing 有记录的企业，enterprise_risk_summary 行存在且计数与明细一致；挑 1 家风险企业跑 pain_points.compute 确认 management 维度命中「经营合规风险需关注」；BIT 微电子类真源零风险企业保持零行不伪闭合"
       - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账（明细 vs 汇总 org 数）+ cost 四字段回填"
-    update_time: "2026-10-31T10:34:28+08:00"
+    update_time: "2026-10-31T10:42:38+08:00"
