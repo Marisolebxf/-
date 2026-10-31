@@ -22,7 +22,9 @@
 - D16 规约库 `demo_gkxlumenx_gapfill` 应用账号无 CREATE DATABASE 权限（实测 1044）；上跳板找 root 授权被拒（root 禁远程），已按安全边界停止
 - 用户拍板：种子表过渡落 `demo_gkxlumenx_dim`（账号有全部权限），表名/追溯字段不变
 
-## 修改内容
+## 范围与实现
+
+M_CHAIN_MARKET_SIZE（市场规模）D16 缺项演示数据闭环：dim 过渡库种子表 → 算法层读通挂 `dataset.marketSize` → 前端市场 Tab 双态展示（有值 + 🧪 / 无值诚实空态）。
 
 **lumen-algo-py**（commit 见 CI/CD 节）
 
@@ -64,21 +66,35 @@
 | D16 规约库 `demo_gkxlumenx_gapfill` → `demo_gkxlumenx_dim` 过渡 | 应用账号无建库权限，DBA 单未排期；用户 2026-10-31 明确选定 | 读端两库按序探测，DBA 建库后种子脚本重跑即迁移，读端无需改码 |
 | 演示数值为规则法生成（fill_method=rule） | 三方 gkx 无营收金额（Q056/Q058 关联），D16 允许 LLM/规则法灌数 | UI 挂 🧪 MockBadge（source=gapfill_chain_market_size），D4 仍为 mock，不进生产口径 |
 
-## 测试结果
+## 验收证据
 
-- `python3 -m pytest tests/test_chain_market_size.py tests/test_chain_sync.py` → **11 passed**
-- `pnpm type-check`（lumen-ui-topic，vue-tsc --build）→ **0 error**
-- 种子脚本 `--apply` 实写 24 行成功
-- 线上验证：**通过**（用户 2026-10-31 19:25 确认）——dev 环境产业全景 → 市场规模 Tab 显示数值 + 🧪
+- Python：`pytest tests/test_chain_market_size.py tests/test_chain_sync.py` → **11 passed**
+- 前端：`pnpm type-check` → **0 error**；GitLab pipeline `3417` **五阶段全绿**（build/image/trivy/deploy:k8s/e2e:chain-gold，末段 19:25:17 success）
+- 数据：种子 `--apply` 实写 24 行成功（`{"rows": 24, "db": "demo_gkxlumenx_dim"}`）
+- 线上：**通过**（用户 2026-10-31 19:25 走查确认）——产业全景 → 市场规模 Tab 显示数值 + 🧪
+- 工单成本：registry cost 四字段已回填（green）
 
 ## 架构合规自检
 
 | 铁律 | 状态 |
 |------|------|
-| D1 调用链（算法只读 MySQL，前端只经 Java） | ✅ marketSize 由算法层 sync 返回，前端零硬编码 |
-| D9 数据血缘 | ✅ 数字旁 MockBadge + ReviewMetricBadges(metric_id=M_CHAIN_MARKET_SIZE)；追溯字段齐 |
+| D1 调用链（前端→Java→Python /internal，不越层） | ✅ marketSize 由算法层 sync 返回，前端零硬编码、不直连 MySQL |
+| D2 算法只在 Python | ✅ 读表逻辑在 lumen-algo-py，Java 未加算法 |
+| D3 图谱 NebulaGraph | ✅ 本任务不涉图谱 |
+| D4 可观测埋点 | ✅ 沿用 chain sync 既有埋点，无新独立 trace 节点（见可观测性节） |
+| D8 前端规范 | ✅ 复用 Arco + 评审层 MockBadge/ReviewMetricBadges，未新造组件 |
+| D9 数据血缘 | ✅ 数字旁 MockBadge + ReviewMetricBadges(metric_id=M_CHAIN_MARKET_SIZE)；追溯五件套齐 |
 | D16 gapfill | ✅ `gapfill_` 前缀表、demo_ 前缀库、不写 ODS/DWD/ADS/供应方库、未闭合 Q056 按 🟡 默认实施 |
 | D12 demo/lumen 隔离 | ✅ 改动只在 lumen-algo-py / lumen-ui-topic |
+
+## Cost 回填
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 60000 |
+| model_used | glm-5.3-Flash |
+| actual_cost | $0.80 |
+| cost_warn | green（< $10 暂停线） |
 
 ## CI/CD（必填）
 
