@@ -56,6 +56,14 @@ handoff：agent-delivery/agent-handoffs/SYSINT-TECHMAP-02-L01.md。含 ponytail:
 - 本叶执行建表、同步或 LLM。
 ```
 
+## 2026-10-31 执行顺序
+
+用户下令分两步，且第二步同叶开发，覆盖上文「不改业务仓、不写同步代码」：
+
+1. 方案：[方案-SYSINT-TECHMAP-02-L01.md](./方案-SYSINT-TECHMAP-02-L01.md)。一个菜单。只同步 `ads_technology_profile`。
+2. 开发到算法中台：`demo-ui-system-test` 菜单，`gkx-innov` 写 `dwd_tech_node_industry_map`，字典与模型仍走已有 Python 内部接口。不改子学科映射，不改 iticsci。
+3. 纠正已发布到 lumen 的全景「主流技术路线」。该页签不再读子学科映射。改读 `demo_gkxlumenx_dwd.dwd_tech_node_industry_map` 的 `technology_node_id`。没有关联行就保持「暂无已发布主流技术路线」。
+
 ## 附：调研结论（2026-10-22 调研记录 + schema 5.11.0 §24–§25）
 
 库是久新 Doris `gkx_technology_analysis_dev`。技术域 29 张 `ads_technology_*`。ADS 不建外键，关系靠同名 ID 列。
