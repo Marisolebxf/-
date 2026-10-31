@@ -96,7 +96,7 @@
 | 草案号 | 任务 | 状态 |
 |---|---|---|
 | WBS-02-07 | `SYSINT-DICT-02-L01` | in_progress。清单见 [字典下拉接口.md](./字典下拉接口.md) |
-| WBS-02-08 | `SYSINT-TFMAP-02-L01` | backlog。本侧映射表 + 维护菜单。派单见 [派单说明-SYSINT-TFMAP-02-L01.md](./派单说明-SYSINT-TFMAP-02-L01.md) |
+| WBS-02-08 | `SYSINT-TFMAP-02-L01` | 2026-10-31 验收。本侧映射表 + 维护菜单。派单见 [派单说明-SYSINT-TFMAP-02-L01.md](./派单说明-SYSINT-TFMAP-02-L01.md) |
 | WBS-02-09 | `SYSINT-ROUTE-02-L01` | backlog。先在子学科映射页按产业节点查出技术路线；人工测试通过后再迁到 lumen 全景图谱 |
 | WBS-02-10 | `SYSINT-TOPIC-CHAIN-GAP-02-L01` | backlog。专题·产业链「开始分析」三要素嵌入供数缺口清单收口。不重开深度页 |
 | WBS-02-11 | `SYSINT-TOPIC-CHAIN-ALIGN-02-L01` | claimed。监管人/认领人 human:唐绍祖。依赖 WBS-02-10。页内 metric ↔ 久新 ADS 对照记录。不改 seed、不灌数 |
