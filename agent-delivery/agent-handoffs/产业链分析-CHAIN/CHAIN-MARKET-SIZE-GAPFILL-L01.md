@@ -29,7 +29,7 @@
 - `lumen_common/algorithms/chain/sync.py`
   - `_load_market_size(db, chain_id)`：fail-soft 读 `{prefix}_gapfill` → 1044/表缺失自动降级 `{prefix}_dim`；`db=None`（测试注入路径）返回 None；命中挂 `dataset.marketSize`（含 metricId/statYear/value/unit/yoy/source/fillMethod/batchId）
 - `scripts/seed_gapfill_market_size.py`
-  - 12 链 × 2024/2025 共 24 行种子；优先建规约库，1044 自动降级 dim；行含 `metric_id/gap_item/fill_method/gapfill_batch_id/generated_at` 追溯字段；`assert ads.startswith("demo_")` 防误写生产
+  - 24 条链 × 2024 年 1 期共 24 行种子；优先建规约库，1044 自动降级 dim；行含 `metric_id/gap_item/fill_method/gapfill_batch_id/generated_at` 追溯字段；`assert ads.startswith("demo_")` 防误写生产
 - `tests/test_chain_market_size.py`（新增）
   - 降级读通 + 双库全缺返回 None 两个用例
 - `tests/test_chain_sync.py`
@@ -44,6 +44,18 @@
 **数据（demo 库）**
 
 - `demo_gkxlumenx_dim.gapfill_chain_market_size`：24 行已落（`--apply` 实测输出 `{"rows": 24, "db": "demo_gkxlumenx_dim"}`）
+
+### mock 表完整档案（D16 追溯）
+
+| 项 | 值 |
+|------|------|
+| 库.表 | `demo_gkxlumenx_dim.gapfill_chain_market_size`（规约库建不了 → dim 过渡，见偏离说明） |
+| 唯一键 | `uk_chain_year (chain_id, stat_year)`；重跑脚本 `ON DUPLICATE KEY UPDATE` 幂等刷新 |
+| 数据范围 | 24 条链（机器人 4 / 智能网联汽车 4 / 集成电路 7 / 生物医药 / 人工智能 / 新能源 / 高端装备等）× `stat_year=2024` 1 期 |
+| 字段 | `id` 自增主键；`chain_id` varchar(64)；`stat_year` int；`market_size_yi` decimal(14,2)（亿元）；`yoy_pct` decimal(8,2)；追溯五件套 `metric_id`(=`M_CHAIN_MARKET_SIZE`) / `gap_item`(=annual_revenue_sum: 三方 gkx 财报表无可加金额) / `fill_method`(=`rule`) / `fill_model`(NULL，rule 法不用) / `gapfill_batch_id`(=`gapfill_chain_market_size:YYYYMMDD`)；`generated_at` / `is_deleted` / `created_time` / `updated_time` |
+| 数值生成规则 | 团队临时默认（D16 允许）：人写死在脚本 `SEED` 字典，量级对齐对应产业公开报告同阶（如集成电路 5800 亿/机器人 5200 亿），同比 ±10~22% 区间；非计算产物、非 8 件套终值 |
+| 消费方 | 仅算法层 `sync._load_market_size`（fail-soft 只读）；前端经 Java 间接展示并挂 🧪；无其他读取方 |
+| 停用条件 | 三方 gkx 营收金额真源接入后停读（policy §2.4 换真源）；DBA 建正式 gapfill 库后重跑种子脚本迁移 |
 
 ## 偏离说明
 
@@ -71,9 +83,9 @@
 ## CI/CD（必填）
 
 - 分支：`dev`（lumen-algo-py / lumen-ui-topic）
-- commit：见两仓 dev 最新（算法侧含 2ff88f5 企业 ID 修复同源会话）
-- pipeline：push 后 GitLab CI 自动触发
-- K8s rollout：待 CI 绿后 dev rollout（人工验收闸门：改动停在本地/推送后等走查，不自动视为交付完成）
+- commit：lumen-algo-py `3606c37`（4 文件：sync.py / 种子脚本 / 2 测试）；lumen-ui-topic `ae11c75`（rebase 后 3 文件）
+- pipeline：lumen-ui-topic `3417`（frontend:build → image → trivy → deploy:k8s → e2e:chain-gold）
+- K8s rollout：CI 绿自动 dev rollout；线上走查 = 「产业全景 → 任一链 → 市场规模」Tab 显数值 + 🧪
 
 ## 可观测性（建议）
 
