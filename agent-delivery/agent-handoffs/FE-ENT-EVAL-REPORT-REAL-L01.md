@@ -104,11 +104,43 @@
 4. 其余 6 个报告域若要升级到分块模板 v2，按同模式另立叶。
 5. 若甲方要求 PDF 文字可选中/文件级归档，升级路径：服务端生成（ENT-JAVA-ANALYSIS-ARTIFACT 已有底子）。
 
+## 续交付（2026-10-31）— 块式 HTML 报告扩域 + 服务端 PDF 存储 + API 导出
+
+### 范围
+
+| 项 | 实现 |
+|----|------|
+| 前端块式报告 | 评估/风险/引育/重点企业/深圳现状统一 `BlockReportReader` + `EnterpriseBlockReportView`；文案去提示词泄漏；产业链展示名；引育「推荐补充信息」表；分布图与排名图分块修复 |
+| Java PDF 模板 | 非评估三模式走 `analysis/block-report.html` + `BlockReportModel`（KPI/文字/CSS 条形/表）；评估仍 `analysis/eval/{technology,business,competitiveness}` |
+| PDF 存储与二次下载 | 沿用 `ArtifactExecutionServiceImpl` 上传 MinIO + 子任务 `resultAssetId`；`createAnalysisArtifactTask` 幂等复用已成功产物 |
+| HTML 报告页 PDF | `reportPdfExport.ts`：`VITE_REPORT_PDF_EXPORT=api\|html2canvas`（默认 api）；`exportBlockReportPdf` 保留；有父任务时 API 轮询 + `analysisTaskAssetDownload`；无任务（重点/深圳）回退 html2canvas |
+| 环境变量 | `.env.development` / `.env.production` / `env.d.ts` 同步 `VITE_REPORT_PDF_EXPORT=api` |
+
+### 验证
+
+- `node src/components/report/reportExport.selfcheck.mjs`：ok
+- Java `ArtifactRenderServiceImplTest.rendersRecommendAsBlockReport`：本机未装 Maven，CI 待绿
+- 浏览器走查：引育分布图/排名图、深圳产业链名称（会话内已验）
+
+### 架构合规（续）
+
+- ✅ D12：HTML 报告 PDF 仅调 topic 分析产物接口，无 demo 直连
+- ✅ 权限：`ReportExportButton` / `useBlockReportExport` 闸门不变
+- ⚠️ 服务端块式 PDF 与前端 ECharts 雷达/饼图不完全同构（条形用 CSS；章节来自快照 sections + export 表）
+
+### 三仓提交（待 push 后回填 hash）
+
+| 仓 | 分支 | commit |
+|----|------|--------|
+| lumen-ui-topic | dev | （push 后填） |
+| lumen-svc-platform | dev | （push 后填） |
+| gkx-orchestration | dev | handoff + registry（push 后填） |
+
 ## Cost
 
 | 字段 | 值 |
 |-----|-----|
-| actual_tokens | ≈210000（含首轮与本轮重开） |
-| model_used | glm-5.3（Cursor） |
-| actual_cost | ≈$2.1 |
+| actual_tokens | ≈380000（含 v2 重开 + 2026-10-31 扩域/Java/PDF API） |
+| model_used | Composer（Cursor） |
+| actual_cost | ≈$3.8 |
 | cost_warn | green |
