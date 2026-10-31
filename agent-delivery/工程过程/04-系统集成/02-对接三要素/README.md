@@ -100,7 +100,7 @@
 | WBS-02-09 | `SYSINT-ROUTE-02-L01` | in_progress。监管人淮政玮。全景「主流技术路线」已改读技术节点映射表。任务未关 |
 | WBS-02-10 | `SYSINT-TOPIC-CHAIN-GAP-02-L01` | backlog。专题·产业链「开始分析」三要素嵌入供数缺口清单收口。不重开深度页 |
 | WBS-02-11 | `SYSINT-TOPIC-CHAIN-ALIGN-02-L01` | claimed。监管人/认领人 human:唐绍祖。依赖 WBS-02-10。页内 metric ↔ 久新 ADS 对照记录。不改 seed、不灌数 |
-| WBS-02-12 | `SYSINT-TECHMAP-02-L01` | in_progress。监管人徐滕强。菜单「技术节点与产业映射」。技术路线锁定为 `technology_node_id`。方案、算法中台菜单、全景改读 `dwd_tech_node_industry_map` 已落盘。网关 `/ops/v1/tech-node-maps` 已挂上。GDF 落地另见 WBS-06-20，不取消本叶。任务未关 |
+| WBS-02-12 | `SYSINT-TECHMAP-02-L01` | in_progress。监管人淮政玮。菜单「技术节点与产业映射」。技术路线锁定为 `technology_node_id`。方案、算法中台菜单、全景改读 `dwd_tech_node_industry_map` 已落盘。网关 `/ops/v1/tech-node-maps` 已挂上。GDF 落地另见 WBS-06-20，不取消本叶。任务未关 |
 
 ---
 

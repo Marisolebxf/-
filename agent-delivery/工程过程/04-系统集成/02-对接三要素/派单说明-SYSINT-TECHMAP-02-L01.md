@@ -8,7 +8,7 @@
 任务：SYSINT-TECHMAP-02-L01
 标题：技术节点与产业关联：落实可同步表与新建 DWD
 WBS：WBS-02-12
-监管人：待指定。未指定前不认领、不改业务仓。指定后 task-claim，claimed_by=agent:data-agent，supervised_by 用指定的人。
+监管人：human:淮政玮。2026-10-31 用户纠正，此前按 data-agent 花名册默认写成徐滕强。claimed_by=agent:data-agent，supervised_by=human:淮政玮。
 执行：agent:data-agent。协作 algorithm-agent（关联过程只定粒度，不在本叶调用）、api-agent（同步接口只定边界，不在本叶实现）。同一 task-id，不另开任务。
 状态：backlog，未认领。依赖 SYSINT-SURVEY-02-L01。
 仓：只写 gkx-orchestration。分支 origin/dev。
