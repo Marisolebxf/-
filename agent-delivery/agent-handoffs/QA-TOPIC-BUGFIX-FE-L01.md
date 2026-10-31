@@ -226,3 +226,93 @@
 
 - 已 push **`lumen-ui-topic` `57386ac`**（`origin/dev`）。
 
+---
+
+## 追加修改（2026-10-31 · 深圳现状雷达对象 B）
+
+走查：多城市横向对标切换「对比对象 B」后，`city-insight` 已成功，雷达仍停在 `city-benchmark.radar_pair`；切换 B 还会再打 `city-benchmark`。无新 BUG-ID，不改 `bug-registry.yaml`。
+
+| 项 | 实现 |
+|----|------|
+| 请求拆分 | `compareCityCode` 只调 `city-insight`；`city-benchmark` 仅随产业链或对标城市池变化 |
+| 雷达取值 | 轴满分 100；深圳用 `sz_value`，对象 B 用 `compare_value`（真实分，不再把深圳折成 100） |
+| 维度 | 优先用本次 insight 的 `advantages` + `shortboards` |
+
+### 涉及文件（`lumen-ui-topic`）
+
+| 路径 | 说明 |
+|------|------|
+| `src/composables/useSzStatusAnalysis.ts` | 对象 B 与城市池监听拆开 |
+| `src/components/enterprise/szStatus/CityBenchmarkPanel.vue` | 雷达绑定 city-insight 真实分 |
+
+### 验收
+
+- 切换对比对象 B：仅 `POST .../sz-status/city-insight`，不请求 `city-benchmark`。
+- 示例返回：深圳 77 / 41 / 75，北京 74 / 38 / 72，轴最大 100。
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `0d98231`**。
+
+---
+
+## 追加修改（2026-10-31 · 产业关键环节识别结果页）
+
+走查：关键环节 Tab 结果页 KPI 条、侧栏代表企业与 demo 不一致；代表企业仅名称+「查看企业」，缺卡片样式与 tag。无新 BUG-ID。
+
+| 项 | 实现 |
+|----|------|
+| 顶部 KPI | 对齐 demo 五卡（关键环节数 / 高端化链均值 / 高价值占比 / 战略重要性 / 市场集中度 + 评审挂点）；去掉误用的市场规模/投融资链级字段 |
+| 样式 | 诊断页引入 `industryOverview.css`、`industryTopicAnalysis.css` |
+| 代表企业 | demo 同构卡片；`enterprise_id` 批量 `#6 search/by-codes` 补全名称、经营状态、资质 tag、产业链 tag |
+| 企业画像 | 移除侧栏内嵌「企业画像」列表；「查看企业」走通用 `ElementProfile` 抽屉 |
+
+### 涉及文件（`lumen-ui-topic`）
+
+| 路径 | 说明 |
+|------|------|
+| `src/components/industry-center/IndustryKeyLinkResultBoard.vue` | KPI / 卡片 / 抽屉 / by-codes hydration |
+| `src/utils/industryChainTask.ts` | `parseKeyLinkMetricCards` |
+| `src/utils/industryWorkspaceRuntime.js` | `enterprise_id`、代表企业字段 |
+| `src/utils/entSearchMappers.ts` | `hydrateKeyLinkEnterprises` |
+| `src/views/industry-center/IndustryDiagnosisPage.vue` | 样式 import |
+| `src/views/industry-center/industryReplicaFix.selfcheck.mjs` | `parseKeyLinkDetail` 断言 |
+
+### 同批工作区（导航文案，非 BUG 台账）
+
+| 路径 | 说明 |
+|------|------|
+| `src/router/menu.ts` | 「重点企业领域分布分析」；竞争力菜单文案/顺序微调 |
+| `src/views/enterprise/EnterpriseKeyAnalysis.vue` | 与菜单文案对齐 |
+
+### 验收
+
+- 关键环节结果：顶部 5 张 metric 卡有边框与大号数值样式。
+- 代表企业：有状态/资质/产业 tag（by-codes 命中时）；未命中仍显示结果内企业名。
+- 「查看企业」打开通用抽屉，无侧栏「企业画像」区块。
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `4e10751`**。
+
+---
+
+## 追加修改（2026-10-31 · 关键环节代表企业「查看详情」）
+
+走查：快览抽屉与企业查询同为 `ElementProfile`；点「查看详情」误跳 `enterprise-detail` 整页。应与企业查询一致 → **`EnterpriseDetailDrawer`**。
+
+| 项 | 实现 |
+|----|------|
+| 快览 | `ElementProfile` drawer + `entProfilePanorama`（不变） |
+| 查看详情 | `useProfileDrawer.onOpenDetail` 打开 `EnterpriseDetailDrawer`，不再 `router.push` |
+
+### 涉及文件
+
+| 路径 | 说明 |
+|------|------|
+| `src/components/industry-center/IndustryKeyLinkResultBoard.vue` | 挂载 `EnterpriseDetailDrawer` |
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `3e5b302`**。
+
