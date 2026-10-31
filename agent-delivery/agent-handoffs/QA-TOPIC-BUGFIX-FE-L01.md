@@ -316,3 +316,31 @@
 
 - 已 push **`lumen-ui-topic` `origin/dev` → `3e5b302`**。
 
+---
+
+## 追加修改（2026-10-31 · 重点企业类型分析默认区域）
+
+走查：类型分析页区域 Cascader 显示「全国热门科创城市 / 深圳 / 全部」，但树未命中 synthetic「全部」叶，请求仍带 **`region_id: 'all'`**，overview/map 等数据异常。
+
+| 项 | 实现 |
+|----|------|
+| 入参 | `regionScopeResolve` 剥路径末段 `all`/`全部` 再解析；`shenzhen` token 兜底 **`440300`** |
+| Cascader | `RegionSelect`：完整 path 不在 `region-scopes` 树时绑上级 path，保留 `district: all` 语义 |
+
+### 涉及文件（`lumen-ui-topic`）
+
+| 路径 | 说明 |
+|------|------|
+| `src/utils/regionScopeResolve.ts` | 全市叶 + 热门城市 bind |
+| `src/components/search/RegionSelect.vue` | path 与 API 树对齐 |
+| `src/utils/regionScopeResolve.selfcheck.mjs` | `hot-city/shenzhen/all → 440300` |
+
+### 验收
+
+- 首次进入类型分析 Tab：Network 中 key-analysis 公共入参 **`region_id=440300`**（非 `all`）。
+- 区域下拉选中态与文案一致（深圳全市）。
+
+### 代码状态
+
+- 已 push **`lumen-ui-topic` `origin/dev` → `8e7d38b`**。
+
