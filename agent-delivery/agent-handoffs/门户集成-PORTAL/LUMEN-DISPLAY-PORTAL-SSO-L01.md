@@ -64,7 +64,7 @@
 - 分支：`dev`
 - commit：
   - `lumen-ui-science-pc` `4161753` feat(auth): 独立打开时走统一用户中心授权码登录
-  - `lumen-svc-platform` `e5daa4f` feat(sso): 提供授权码登录地址与 code 换票
+  - `lumen-svc-platform` `5bd0f87` feat(sso): 提供授权码登录地址与 code 换票（rebase 后；原本地 `e5daa4f`）
 - pipeline URL / ID：push 后由 GitLab 触发，提交时未知
 - 部署 namespace / 镜像 tag：未在本叶确认
 - K8s rollout：未在本叶确认
