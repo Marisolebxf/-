@@ -4,7 +4,14 @@
 
 ## 1. 已锁定
 
-久新侧「学科领域」= 子学科 `subfield_id`，沿用 WBS-02-08。不是 `technology_node_id`（WBS-02-12），不是正式技术目录 `tech_id`。
+久新侧「学科领域」= 子学科 `subfield_id`，沿用 WBS-02-08。明确不用另外三套口径：
+
+- 上一级学科 `field_id`（`ads_discipline_field`，26 行），以及更上一级的 `domain_id`（`ads_discipline_domain`，4 行）；
+- 技术节点 `technology_node_id`（那是 WBS-02-12）；
+- 正式技术目录 `tech_id`；
+- 下一级 `topic_id`（`ads_discipline_topic`，4516 行）也不是本叶口径。
+
+> 2026-11-01 李伟追加：久新侧按子学科 `subfield_id`，不按上一级学科 `field_id`，也不按 `technology_node_id` / `tech_id`；展示侧「产业领域」先不指定表和字段，本叶先把出处列全，列完由李伟指定。
 
 ## 2. 两侧字典真源
 
@@ -52,6 +59,25 @@
 
 `M_ORG_INDUSTRY_COVER`（科研机构产业领域覆盖）：指标支持表写明候选表 `ads_institution_industry`，库内支持「结果表在」，D1 `draft`，D4 `mock`，口径是否等于指标库：还没有。不标已对齐。
 
+### 2.4 展示侧「产业领域」出处清单（真源待指定）
+
+2026-11-01 李伟追加要求：「产业领域」这个词在展示系统里对过不止一处，本叶先把出处列到表和字段，标清哪一处是筛选字典、哪一处只是指标口径，**列完由李伟指定哪一处为准；在此之前不得把其中任何一张写成已对齐**。
+
+| # | 出处 | 关键字段 | 本叶标注的角色 | 依据 |
+|---|---|---|---|---|
+| 1 | `{INNOV_DIM_SCHEMA}.industry_cluster` + `industry_cluster_map`（深圳 10+5：集群 `CL-*`、L0 `INB*`） | `cluster_id`、`cluster_group`、`cluster_name`、`sort_order`；`industry_id`、`industry_name` | **筛选字典**。页面「产业分类」级联确实读它，选项是产业集群不是学科 | 本文件 §2.1；种子 `industry-cluster-sz-10+5-2026.yaml` |
+| 2 | `dwd_industry_chain_info`（三方要素库，产业链目录叶子） | `chain_name`、`node_name`、`node_stage`（上/中/下游）、`parent_chain`、`upstream_link_code` / `downstream_link_code` | **待定**。它是目录类，具备当筛选字典的形态；是否与第 1 项的 `INB*` 同源未核 | `data-source-mapping-registry.yaml` §产业链标准表字段映射；政策/服务卖方题里的「我方链」 |
+| 3 | `dwd_org_industry_tags`（三方要素库，主体↔链标签，李伟称「机构标签」） | `industry_code`、`industry_link_code` | **待定**。企业↔链官方源表；现网码值多为 `INB*` 列表字面量（如 `['INB1333','INB1502']`），不是一行一码；多码拆行规则、空值约定、与主档 JOIN 键均**未书面确认**（ENT-P0-2 在问） | `ENT-SUPPLIER-QUESTIONS.md` ENT-P0-2；`data-source-mapping-registry.yaml` 的 `dwd.enterprise_industry` 源表清单 |
+| 4 | `dwd.enterprise_industry`（本侧标准/DWD 结果表，企业侧产业） | `enterprise_id`、`industry_chain`、`industry_chain_node`、`industry_chain_role`、`participation_depth` | **仅指标口径**。承接企业侧「属于哪条链、在哪个环节」的画像结果，源是第 2/3 项等入站表；`participation_depth` 标 🔧 待算法。未见它承担页内筛选 | `data-source-mapping-registry.yaml` 第 222–230 行 |
+| 5 | 久新 `ads_institution_industry`（1,354,245 行） | `institution_id` + `taxonomy_id` + `industry_id`，另有 `industry_code`、`industry_name_zh`、`industry_level` | **久新产业分类，不是学科**，也不等于展示侧任何一本字典；只是 `M_ORG_INDUSTRY_COVER` 的候选表。表内没有 `subfield_id` | 本文件 §2.3 |
+
+清单结论：
+
+- 以上五处**互不合并**，本叶不挑一张当唯一真源；「产业领域」真源由 `human:李伟` 指定后再动。
+- 第 1 项目前是页面筛选的唯一确认字典；第 2/3 项与它的同源关系未核，不得默认相等。
+- 第 4、5 项都不承担页内筛选，只承担指标口径，不得写成「展示侧产业领域已覆盖」。
+- 可能存在第五处以上出处，查到即补；不因为清单已有五处就停。
+
 ## 3. 领域对领域的映射
 
 没有同名 ID，没有已经对齐的字典，本叶不编造名称对照，也不把 LLM 结果抄成领域映射。
@@ -64,6 +90,8 @@
 | `ads_institution_industry` | `ads_discipline_subfield` | 不可映射 | 机构产业表没有 `subfield_id`。机构学科表没有 `industry_id`。两张结果表不能互相当筛选条件 |
 | `M_ORG_INDUSTRY_COVER` | 展示 `CL-*` / `INB*` | 不可映射 | 指标候选表是久新产业分类，不是展示集群种子。口径未对齐 |
 | `technology_node_id` / `tech_id` | 本叶任一侧 | 排除 | 分别属于 WBS-02-12 和正式技术目录，不是学科领域 |
+| `dwd_industry_chain_info` / `dwd_org_industry_tags` / `dwd.enterprise_industry`（§2.4 第 2–4 项） | `subfield_id` | 未结论 | 三处出处已在 §2.4 列出；角色与真源待 `human:李伟` 指定，在此之前不编造映射 |
+| `field_id` / `domain_id`（上一级） | 本叶任一侧 | 排除 | 2026-11-01 追加：久新侧只用子学科 `subfield_id`，不用上一级学科 |
 
 WBS-02-08 的 `subfield_topic_map` 在关联产业节点时，会从 `industry_cluster` / `industry_cluster_map`（`cluster_id LIKE 'CL-%'`）带出 `industry_id` 和 `cluster_id`。那是子学科对产业链节点，粒度不是领域对领域。任务备注里已有 2026-10-29 的同步和关联结果（390 行，130 个已映射子学科）。本叶未逐条复核，不把这 130 条写成已对齐的领域映射。
 

@@ -48,6 +48,7 @@
 - 领域对领域：没有同名 ID，没有已对齐字典。6 行对照全部是不可映射或排除，原因写在方案 §3。不编造名称对照。
 - `M_ORG_INDUSTRY_COVER` 的候选表是 `ads_institution_industry`（久新产业分类，无 `subfield_id`）。D1 `draft`，D4 `mock`，口径还没有。
 - 补齐：子学科落到展示集群，归 WBS-02-08 已有的 `subfield_topic_map`，本叶不改表，也不把已有 LLM 行标成已对齐。机构产业覆盖对不上展示 `INB*` 或 `subfield_id`，WBS-02-08 与 WBS-02-12 都接不住，本叶不另开实现叶。
+- **2026-11-01 追加（李伟口径）**：久新侧学科领域进一步排除上一级 `field_id` / `domain_id` 与下一级 `topic_id`，只留子学科 `subfield_id`。新增方案 §2.4「展示侧产业领域出处清单」，列出五处——① `industry_cluster` + `industry_cluster_map`（`CL-*` / `INB*`，**筛选字典**）；② `dwd_industry_chain_info`（目录类，角色待定）；③ `dwd_org_industry_tags`（主体↔链标签，`INB*` 多码未拆行，角色待定）；④ `dwd.enterprise_industry`（企业侧画像，**仅指标口径**）；⑤ 久新 `ads_institution_industry`（**产业分类非学科**，只是 `M_ORG_INDUSTRY_COVER` 候选）。五处互不合并，真源交 `human:李伟` 指定，在此之前不写已对齐。§3 相应加两行（第 2–4 项未结论、`field_id` 排除）。
 
 ## 测试结果
 
@@ -59,6 +60,7 @@
 - `SYSINT-SURVEY-02-L01` 仍是 `in_progress`，不是 `done`。本叶使用的是已落盘的调研记录。扫描不会因该依赖未签收而把本任务升到 ready。
 - WBS-02-08 已有 130 个已映射子学科。本叶未逐条复核，不能当成领域字典。
 - 展示页有的列名写成「产业领域」，本叶只确认了「产业分类」级联的字典。那些列名的行键未逐页核对。
+- §2.4 清单里第 2/3 项（`dwd_industry_chain_info`、`dwd_org_industry_tags`）与第 1 项 `INB*` 的同源关系**未核**；`dwd_org_industry_tags` 的多码拆行、空值、与主档 JOIN 键仍未书面确认（ENT-P0-2 待回复）。第 4 项 `dwd.enterprise_industry` 是否实装、行数多少本叶未查。这三条都影响「哪一处能当筛选字典」的判断，故角色一律写「待定」，等 `human:李伟` 指定。
 
 ## CI/CD（必填）
 
