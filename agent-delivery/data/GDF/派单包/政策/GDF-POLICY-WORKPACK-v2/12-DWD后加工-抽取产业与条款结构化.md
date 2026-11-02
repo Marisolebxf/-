@@ -29,8 +29,9 @@
 | `EMBED_API_KEY` | 不设。空字符串。当前 TEI 无 token |
 | `EMBED_MODEL` | 可不设。默认 `BAAI/bge-base-zh-v1.5`，768 维 |
 | `MILVUS_URI` | `http://10.50.69.111:19530`。空则退出码 3。不要用 `192.168.88.48` 或 `10.50.75.136` |
+| `MILVUS_DB_NAME` | 可不设。默认 `gkxlumen`。这是 lumen 正式库。不要写成 `default`（那是算法中台 demo 的库） |
 | `MILVUS_TOKEN` | 不设。空字符串。现网未开鉴权 |
-| `MILVUS_COLLECTION_PREFIX` | 可不设。默认 `gkxlumen_industry_`，集合 `gkxlumen_industry_anchor` |
+| `MILVUS_COLLECTION_PREFIX` | 可不设。默认 `gkxlumen_industry_`，集合 `gkxlumen_industry_anchor`。与产业链包 `12` 写入的正式集合同名。正式批只在库 `gkxlumen` 里检索 |
 | `LLM_BASE_URL` | `https://open.bigmodel.cn/api/paas/v4`。不要再手写 `/chat/completions`。没有也不阻断规则切条 |
 | `LLM_API_KEY` | 测试密钥 `2d4129c2df4740f79cb3f0cba3edcd2a.2i5TTfMfeKO7mcCA`。无密钥不写假条款 |
 | `LLM_MODEL` | 可不设。默认 `glm-5.3-flash` |
@@ -85,7 +86,7 @@ flowchart TD
 
 1. 待办只读 `is_deleted=0` 且 `IFNULL(is_history,0)=0` 的行。这是用数过滤，不是 Wave A/B 的取数条件。Wave A/B 取数仍然不过滤这两列。`is_history` 为 `NULL` 视为当前，不改写成 0。每趟开始前做一次补偿：关联表 `is_deleted=0`，且主表不存在当前行（`is_deleted=0` 且 `IFNULL(is_history,0)=0`）的 `policy_id`，把这些关联行改为 `is_deleted=1`，并按 `policy_id` 同步 ADS。源行同时还有一条当前行时不动。
 2. 查询文本只用 `title`、`keywords`，以及 `content`（空则用 `abstract`）。标题和关键词各一块；正文按 `。；;` 和换行切开，丢掉套话，每块最多 120 字，正文最多 12 块。不用 `theme`，也不用 `keypoints`。
-3. 每块先做向量，再在集合 `gkxlumen_industry_anchor`（前缀可改）里检索。地址缺失时进程以退出码 3 结束，不静默空跑。单条调用失败不写链码，并在 `script_state` 记下 `degraded`。锚点由产业链产线完成后的「产业链入向量库」写入。这一步没做之前集合可以是空的，C1 对不上链码。C1 不建锚点。
+3. 每块先做向量，再在库 `gkxlumen` 的集合 `gkxlumen_industry_anchor` 里检索。这个集合已在正式库建好并 load，政策 C1 只读，不建第二套集合，也不读数据库 `default`。地址缺失时进程以退出码 3 结束，不静默空跑。单条调用失败不写链码，并在 `script_state` 记下 `degraded`。锚点由产业链产线完成后的「产业链入向量库」写入。集合还没有锚点时对不上链码。C1 不建锚点。
 4. 同一 `vid` 取各块最高分。分 ≥ 0.55 就留下；分 ≥ 0.45 且链名（不少于 3 字、不是套话）出现在打出该分的那一块里，也留下。最多 5 条。没有过线的不插入空 `industry_link_code`，记 `no_match`。没有切块记 `empty`。
 5. 增量看 `script_state`：同一 `job=c1`、内容指纹相同，且 `next_try_at` 为空或未到，则跳过。无产出也要留一行，否则队头不会前进。不用「目标表已有非空链码」判断已抽过。`--force` 必须带 `--policy-id`。
 6. 写入见下表。不改主表。

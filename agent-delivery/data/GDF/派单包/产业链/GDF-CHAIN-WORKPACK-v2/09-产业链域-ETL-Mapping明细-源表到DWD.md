@@ -1,6 +1,6 @@
 # 产业链域 ETL Mapping 明细 — 源表到 DWD
 
-> **版本**：v2.2（2026-11-02：round1 核对 20 题答复落稿——链树列语义按真源实测重写 §3.1~3.4；答复全文见 `23-核对签收与答复.md`。基线对齐 10-19 三方承诺清单；变更史见 CHANGELOG）  
+> **版本**：v2.2（2026-11-02：round1 核对 20 题答复落稿——链树列语义按真源实测重写 §3.1~3.4；同日晚补 §3.0 三方列错位。答复全文见 `23-核对签收与答复.md`。基线对齐 10-19 三方承诺清单；变更史见 CHANGELOG）  
 > **日期**：2026-11-02（v2.0 = 2026-10-20；v1.0 = 2026-09-01）  
 > **范围**：GDF 三方承诺表（产业链要素库）→ 项目 DWD（`gkxlumenx_dwd.industry_chain_*`）字段级映射  
 > **配套**：`产业链-DWD表设计-业务需求驱动(v5).md`（DDL 真源）· `storage/CHAIN/stores/mysql/dwd-chain.md`（入口）  
@@ -98,68 +98,88 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 ## 3. 逐表字段
 
+### 3.0 三方 `dwd_industry_chain_info` → DWD 定稿
+
+三方列里的值不在列名位置。下表是 2026-11-02 用「谐波减速器」对三方原列和 demo ODS 核对后的结果，作为本包定稿。GDF 贴源原样镜像进 `gkxlumenx_ods`。Mapping 读三方列，按下表写入，不按列注释改读，也不先重排成 demo ODS 再映射。
+
+| 列 | 三方里实际存的 | demo ODS 重排后 |
+|---|---|---|
+| `industry_link_code` | 父级码 `INB1204010102` | 己码 `INB120401010202` |
+| `industry_link_name` | 父名「减速器」 | 己名「谐波减速器」 |
+| `industry_code` | 己码 `INB120401010202` | 根码 `INB1204` |
+| `industry_name` | 己名「谐波减速器」 | 根名「机器人」 |
+| `level` | `0`（这列没有层级） | `4` |
+| `parent_name` | 层级数字 `4` | 父名「减速器」 |
+| `parent_code` | 根链中文名「机器人」 | 父码 `INB1204010102` |
+
+分表只看三方 `parent_name` 转成的整数：`0` 或 `1` 写入 `industry_chain`；`2` 至 `7` 写入 `industry_chain_node`。同一源行只进一张表。
+
+**写入 `industry_chain`（`parent_name` 为 0 或 1）**
+
+| 源字段 | 目标字段 | 写入 |
+|---|---|---|
+| `industry_code` | `chain_id` | 原值 |
+| `industry_code` | `chain_code` | 与 `chain_id` 相同 |
+| `industry_name` | `chain_name` | 原值 |
+| `parent_name` | `chain_level` | 整数。`0` 或 `1` |
+| `parent_name` | `chain_tier` | `L0` 或 `L1`，与 `chain_level` 同一个数 |
+| `industry_link_code` | `parent_chain_id` | `chain_level=0` 写 NULL；`chain_level=1` 写原值 |
+| `industry_code` | `industry_id` | `chain_level=0` 时写 `industry_code` |
+| `industry_link_code` | `industry_id` | `chain_level=1` 时写 `industry_link_code` |
+| — | `status` | `active` |
+| — | `future_industry_flag` | 写 `0`。现网 demo 53 行全是 `0` |
+| `industry_link_name` | — | 不写入 |
+| `parent_code` | — | 不写入 |
+| `level` | — | 不写入 |
+| `node_company_count` | — | 不写入 |
+| — | `chain_short_name` / `chain_category` / `description` | 不写入 |
+
+**写入 `industry_chain_node`（`parent_name` 为 2 至 7）**
+
+| 源字段 | 目标字段 | 写入 |
+|---|---|---|
+| `industry_code` | `node_id` | 原值 |
+| `industry_code` | `node_code` | 与 `node_id` 相同 |
+| `industry_name` | `node_name` | 原值 |
+| `parent_name` | `node_level` | 整数。`2` 至 `7` |
+| `industry_link_code` | `chain_id` | 原值。直接父级码。例：`INB120401010202` → `INB1204010102` |
+| — | `parent_node_id` | NULL |
+| `industry_code` 末两位 | `sort_no` | 转整数。例：`INB120401010202` → `2` |
+| `industry_code` 末两位 | `stage_code` | `1`–`4` 写 `upstream`；`5`–`8` 写 `midstream`；`9` 及以上写 `downstream` |
+| `industry_name` | `description` | 与 `node_name` 相同 |
+| — | `status` | `active` |
+| `industry_link_name` | — | 不写入 |
+| `parent_code` | — | 不写入 |
+| `level` | — | 不写入 |
+| `node_company_count` | — | 不写入 |
+| — | `node_type` / `importance_level` / `node_path` | 不写入。现网另有 22 行 `node_type` 已有值，不是这张源表加工出来的 |
+
+码长必须等于 `7 + 2 × parent_name`。对不上的行进治理清单，不改用别的列分表。
+
 公共治理列（`id` / `source_*` / `etl_batch_id` / `data_version` / `valid_*` / `is_deleted` / `created_time` / `updated_time` / `ext`）按 v5 §3.3 系统生成，下表不重复。过滤：`is_deleted = 0`。
 
-### 3.1 `dwd_industry_chain_info` → `industry_chain`（**v2.2 重写**：列语义按真源实测修正，round2 问 1~6 答复落稿）
+### 3.1 `industry_chain`
 
-> **真源列语义（2026-11-02 实测 1,273 行）**：`industry_code` = 自身 INB 码、全唯一、码长 7→21 与层级 0→7 一一对应；`industry_link_code`/`industry_link_name` = **直接父级**的码/名（12 根链为空串）；`parent_code` = 所属**根链中文名**；`parent_name` = **层级序号 0..7**；`level` 列全 0 **无效禁用**。分层判定用 `parent_name`（或码长），不用 `level`。
+字段对应以 §3.0 为准。`parent_name` → `chain_level`。唯一键 `chain_id`。验收行数 **53**（`chain_level=0` 的 12 行 + `chain_level=1` 的 41 行）。
 
-**行过滤**：层级 ∈ {0, 1}（按 `parent_name` ∈ {0,1} 或码长 ∈ {7,9} 判定）。层级 ≥2 不进本表。
+### 3.2 `industry_chain_node`
 
-| 源字段 | 目标字段 | 类型 | 转换 |
-|---|---|---|---|
-| `industry_code` | `chain_id` | 直接 | INB 原文，全唯一（round2 问 4 拍板，废止 `industry_link_code` 主键用法） |
-| `industry_code` | `chain_code` | 直接 | 与 `chain_id` 同值 |
-| `industry_name` | `chain_name` | 直接 | 自身名（round2 问 6 拍板；`industry_link_name` 是父名，不映射） |
-| `industry_code` | `industry_id` | 派生 | L0：=自身码；L1：=所属根链码（= `industry_link_code`，即直接父级，如 `INB130301`→`INB1303`） |
-| `industry_link_code` | `parent_chain_id` | 直接 | L0 为空串→NULL；L1=根链码。**不跳级**（round2 问 5 拍板） |
-| `parent_name` | （层级判定 + 校验） | 派生 | 层级序号 0..7；只用于行过滤与校验，不落库 |
-| `level` | — | **禁用** | 全 0，无区分度；禁止按 `level∈{0,1}` 分表（v2.0 旧规则废止） |
-| （层级） | `chain_level` | 派生 | 0/1（= `parent_name` 数值） |
-| （层级） | `chain_tier` | 派生 | `L0`/`L1` |
-| — | `future_industry_flag` | 派生 | **按簇表派生（round2 问 17 拍板，弃 INB13 前缀）**：`industry_id` ∈ `gkxlumenx_dim.industry_cluster_map`（`cluster_group='fut'`，政策版 `sz-10+5-2026`）→ 1，否则 0。当前 fut 成员 6 条根链：机器人/具身智能/软件与信息服务/人工智能/低空经济/合成生物 |
-| — | `status` | 派生 | `active` |
-| `parent_code` | — | 不映射 | 是根链中文名，非码；根链归属已由 `industry_id` 表达 |
-| `node_company_count` | — | 不映射 | 企业数走 ADS |
-| — | `chain_short_name` / `chain_category` / `description` | 不映射 | 介绍正文 CMS |
+字段对应以 §3.0 为准。`parent_name` → `node_level`。`industry_link_code` → `chain_id`。`parent_node_id` 写 NULL。唯一键 `(chain_id, node_id)`。验收行数 **1,220**。
 
-**UK**：`chain_id` Upsert。**行数验收线：53（L0 12 + L1 41）**——超出即分层判定错误。
+### 3.3 → `industry_chain_node_rel`
 
-### 3.2 `dwd_industry_chain_info` → `industry_chain_node`（**v2.2 重写**）
-
-**行过滤**：层级 ∈ {2..7}（按 `parent_name` ∈ {2..7} 或码长 ≥ 11 判定）。
-
-| 源字段 | 目标字段 | 类型 | 转换 |
-|---|---|---|---|
-| `industry_code` | `node_id` / `node_code` | 直接 | INB 原文，全唯一 |
-| `industry_link_code` | `chain_id` | 关联 | 自身**直接父级**码；父为 L1 链（层级=2）时即链表 `chain_id`；**v2.2 修正**：不再「沿祖先升到 L1 跳级归属」，L2~L7 的 `chain_id` = 直接父级码（父必在链表或节点表），沿 `parent_node_id`/`parent_chain_id` 上溯可达根链 |
-| `industry_link_code` | `parent_node_id` | 直接 | **直接父级**码（round2 问 5 拍板，补齐父子指针）；父为 L1 链时（层级=2）置 NULL——此时归属由 `chain_id` 表达 |
-| `industry_name` | `node_name` | 直接 | 自身名；`description` 同源可填（门户节点简介） |
-| `parent_name` | （层级判定） | 派生 | `node_level` = `parent_name` 数值（2..7） |
-| `industry_code` | `sort_no` | 派生 | **同 `chain_id` 内按 `industry_code` 升序序号（1,2,3…）**（round2 问 16 拍板，废止「末段解析数字」） |
-| （排序） | `stage_code` | 派生 | **采用**（round2 问 18 拍板，不置 NULL）：同链按 `sort_no` 三等分 `upstream`/`midstream`/`downstream`，余数归 upstream |
-| — | `status` | 派生 | `active` |
-| — | `node_type` / `importance_level` / `node_path` | 不映射 | |
-| `node_company_count` | — | 不映射 | ADS |
-
-**UK**：`(chain_id, node_id)` Upsert。**行数验收线：1,220**。
-
-### 3.3 → `industry_chain_node_rel`（v2.2 启用：节点表已带 `parent_node_id`，父子边随之生成）
-
-只生成**树父子边**（相邻伪造 upstream 边仍禁止）。父为 L1 链的边不写（归属在 `node.chain_id`）。
+同一 `chain_id` 内按 `sort_no` 从小到大，相邻两条节点写一条边。验收 **913** 行。
 
 | 目标字段 | 规则 |
 |---|---|
-| `relation_id` | `node-rel:{chain_id}:{source}:{target}`（≤64） |
-| `chain_id` | 子节点的 `chain_id` |
-| `source_node_id` | 父节点 `node_id`（仅当父也在 `industry_chain_node`） |
-| `target_node_id` | 子 `node_id` |
-| `relation_type` | `parent_child` |
-| `relation_direction` | `directed` |
-| `confidence` | 1.0 |
+| `relation_id` | `node-rel:{chain_id}:{source_node_id}:{target_node_id}`。超过 64 字符时改为这段文字的 SHA-256 前 64 位 |
+| `chain_id` | 两条节点共同的 `chain_id` |
+| `source_node_id` | `sort_no` 较小的 `node_id` |
+| `target_node_id` | `sort_no` 较大的下一邻 `node_id` |
+| `relation_type` | `upstream` |
+| `relation_direction` | `forward` |
+| `confidence` | `0.8` |
 | `relation_weight` / `evidence_ref` | NULL |
-
-父不在节点表（父是 L1 链）→ **不写边**，归属已在 `node.chain_id`。
 
 ### 3.4 `dwd_org_industry_tags` → `industry_chain_entity_rel`（v2.2 修订：解析格式与脏值钉死，命中率待重测）
 
@@ -220,8 +240,8 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 | ID | 项 | 状态 |
 |---|---|---|
-| OPEN-CHAIN-MAP-01 | `stage_code` 三等分是否保留 | **已定（round2 问 18）：采用，同链按 sort_no 三等分** |
-| OPEN-CHAIN-MAP-02 | `future_industry_flag` 规则 | **已定（round2 问 17）：按簇表 fut 组派生，弃 INB13 前缀** |
+| OPEN-CHAIN-MAP-01 | `stage_code` | **已定（2026-11-02 对照 demo）：码末两位 1–4 / 5–8 / 9+** |
+| OPEN-CHAIN-MAP-02 | `future_industry_flag` | **已定（2026-11-02 对照 demo）：链树作业写 0** |
 | OPEN-CHAIN-MAP-03 | 产品 tags → entity_rel product | 本期不洗 |
 | OPEN-CHAIN-MAP-06 | 分析 `industry_code` → INB `chain_id` | 挡后续按链资讯；本期 B2 不洗 |
 | OPEN-CHAIN-MAP-07 | 链上企业全国/广东口径 | **待 ODS 补灌后命中率重测（round2 问 7）** |

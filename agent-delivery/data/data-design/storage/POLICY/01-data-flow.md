@@ -159,7 +159,7 @@ flowchart LR
   DWD -->|"theme 只进 ext5"| EXT["ext5"]
   DWD -->|"L1 标题/摘要/关键词/要点"| L1["match_industry_anchors"]
   L1 --> REL["policy_industry_rel"]
-  BTN["按钮 / Job A"] -->|"search top-k"| VEC["Milvus gkxlumen_industry_anchor"]
+  BTN["按钮 / Job A"] -->|"search top-k"| VEC["Milvus 库 gkxlumen<br/>gkxlumen_industry_anchor"]
   VEC -->|"候选名+vid+score"| L1
   REL -.->|"不写"| OLD["related_entities.industry 弃用"]
 ```
