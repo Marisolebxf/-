@@ -18,7 +18,7 @@
 
 ## 范围与实现
 
-产业链维入图派单包 v0.1，目录 `agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/`。抽取说明在 `agent-delivery/data/Graph/建图/产业链/`。
+产业链维入图派单包 v0.1，目录 `agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/`。抽取说明在 `agent-delivery/data/Graph/建图/产业链/`。
 
 公用的背景、两个空间、schema、MySQL 账号不另写，指向企业包 `00`、`03`、`04`。本包只写环节。第一批只写 Tag `segment`，源表 `gkxlumenx_dwd.industry_chain_node`，VID `segment:{node_id}`。不写 Tag `chain`。`depends_on` 的正式行是 `parent_child`，不改名，不进第一批。服务机构 `participates` 正式加工不产行。企业到环节的 `participates` 等企业点先在 `gkx_chain`。
 
@@ -36,7 +36,7 @@ GDF 不直写 Nebula。`06` 写明目标作业 `segment_vertex` 和现网回调�
 
 ## 产物清单
 
-- `agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/`
+- `agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/`
 - `agent-delivery/data/Graph/建图/产业链/`
 - `agent-delivery/工程过程/04-系统集成/07-图数据库集成/WBS.md` 的 `WBS-07-00H`
 - 本 handoff
@@ -84,11 +84,11 @@ GDF 不直写 Nebula。`06` 写明目标作业 `segment_vertex` 和现网回调�
 
 ## 涉及文件
 
-- `agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/00-派单说明.md`
-- `agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/01-产业链维需求.md`
-- `agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/05-回签.md`
-- `agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/06-GDF触发契约.md`
-- `agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/07-gapfill清单.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/00-派单说明.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/01-产业链维需求.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/05-回签.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/06-GDF触发契约.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/07-gapfill清单.md`
 - `agent-delivery/data/Graph/建图/产业链/`
 
 ## 遗留风险

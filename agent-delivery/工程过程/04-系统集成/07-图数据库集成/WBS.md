@@ -36,7 +36,7 @@ WBS-07-00 的方案必须先做需求梳理：展示系统、专题系统界面�
 | WBS-07-00F4 · `KG-7ELEM-LOAD-PATH-L05` | 服务机构上图路径 | 淮政玮 | `gkx-orchestration` | 同 00F1 | 只读服务机构域。与其余域叶并行 | 无开始时间 | 2026-11-09 |
 | WBS-07-00F5 · `KG-7ELEM-LOAD-PATH-L06` | 科研机构、人才、技术上图路径 | 淮政玮 | `gkx-orchestration` | 同 00F1 | 这三类没有独立存储入图流程。只读燕大与我方已有代码。`technology` 技术点不计入技术 | 无开始时间 | 2026-11-09 |
 | WBS-07-00G · `KG-ENT-GRAPH-LOAD-L01` | 企业维度入图 | 淮政玮 | `gkx-orchestration` | `KG-7ELEM-BUILD-REQ-L03`、`L05` 已签收。上图路径 L01–L06 与初始化脚本已签收 | 三件套：燕大派单包按小版本投递并完成企业维入库；GDF 与燕大图谱引擎的接口契约；缺项 gapfill_ 清单与燕大分批对齐。燕大加工入图写入新建空间 `gkx_chain`，与 demo 的 `demo_gkx_chain` 隔离。GDF 只调 API，不直写图。不建企业到科研机构、技术、人才 | 无开始时间 | 2026-11-09 |
-| WBS-07-00H · `KG-CHAIN-GRAPH-LOAD-L01` | 产业链维度入图 | 淮政玮 | `gkx-orchestration` | `KG-7ELEM-BUILD-REQ-L03`、`L05` 与 `KG-7ELEM-LOAD-PATH-L03` 已签收。空间和 schema 沿用 00G | 三件套同 00G，范围只做环节：派单包 `data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/`，抽取说明 `data/Graph/建图/产业链/`。第一批只写 Tag `segment`。不写 Tag `chain`。`depends_on` 与服务机构 `participates` 不进第一批。企业到环节等企业点先在 `gkx_chain`。不改已投递的产业链贴源包 | 无开始时间 | 2026-11-09 |
+| WBS-07-00H · `KG-CHAIN-GRAPH-LOAD-L01` | 产业链维度入图 | 淮政玮 | `gkx-orchestration` | `KG-7ELEM-BUILD-REQ-L03`、`L05` 与 `KG-7ELEM-LOAD-PATH-L03` 已签收。空间和 schema 沿用 00G | 三件套同 00G，范围只做环节：派单包 `data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/`，抽取说明 `data/Graph/建图/产业链/`。第一批只写 Tag `segment`。不写 Tag `chain`。`depends_on` 与服务机构 `participates` 不进第一批。企业到环节等企业点先在 `gkx_chain`。不改已投递的产业链贴源包 | 无开始时间 | 2026-11-09 |
 
 ## 开发子项
 
