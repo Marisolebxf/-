@@ -1,6 +1,6 @@
 # FE-POL-01B · 科创政策全景 — 其余 4 Tab（动向/舆情/比对/订阅）整段复刻
 
-> 交付日期：2026-11-02 · 仓：`repos/lumen-ui-science-pc` · 状态：**本地工作区交付，等人工走查**（2026-10-20 闸门：走查通过前不推 dev）
+> 交付日期：2026-11-02 · 仓：`repos/lumen-ui-science-pc` · 状态：**已推 origin/dev，转待测试**
 
 ## 任务认领（必填）
 
@@ -101,10 +101,66 @@
 
 ## CI/CD（必填）
 
-- 分支：`dev`（**本地未推**，等人工走查放行）
-- commit：走查通过后按闸门流程推
-- pipeline / K8s：push dev 后 CI 触发
+- 分支：`dev`（已推 `origin/dev`）
+- commit：`189b139`（lumen-ui-science-pc）/ `04be90b8`（gkx-orchestration handoff）
+- pipeline / K8s：CI 触发（push dev → Pipeline → K8s dev rollout）
 - dev 验证命令：`node src/views/policy/panorama/FE-POL-01B.test.mjs && node src/views/policy/panorama/FE-POL-01A.test.mjs && node src/views/policy/policy.test.mjs && pnpm type-check && pnpm build`
+
+## 范围与实现
+
+与 DoD 对照：
+
+| DoD 条 | 实现 |
+|---|---|
+| 动向跟踪 Tab（趋势时间线+来源同步+企业匹配推送+深链 ?tab=match） | ✅ `TrendTab.vue`（pipelineSteps 冻结 + jobs 表 + 权威源 + 趋势统计 + 时间轴 + 热力/趋势图 + `KeyFieldAnalysisPanel.vue`）；匹配弹窗 `PolicyMatchPanel.vue`；深链 `initialTab='trend'` + 挂载自动开弹窗 |
+| 舆情评估 Tab（情感分析+传播指标+舆情列表） | ✅ `SentimentTab.vue`（正/中/负分布 + 主题情感分解 + 样本量）+ `RegionalDifferencePanel.vue` + `FeedbackPanel.vue`（三渠道+聚类）+ `EvaluationReportModal.vue` + `ImplementationTracker.vue` |
+| 重点比对 Tab 4 弹窗族（全 Teleport） | ✅ `CompareTab.vue` 六能力入口 + `ComparisonModal` / `VersionCompareModal`（diff 三态高亮）/ `DepartmentCompareModal`（≥2 闸门+堆叠图）/ `BenchmarkCompareModal`（雷达/条形/热力+报告导出），全部 `popup-container="body"` |
+| 订阅中心（CRUD+双 Tab 收件箱+localStorage D7） | ✅ `SubscribeTab.vue`（立即推送/修改/取消+未读 Badge/标已读/清空）+ `SubscribeModal.vue`（条件/频率/通道表单）；localStorage 键名冻结 demo |
+| 状态机自检（policySubscription + PolicyPanorama 断言语义） | ✅ `FE-POL-01B.test.mjs`（订阅引擎归一化/求交/格式化/摘要 + 匹配评分 + 版本 diff + 深链 + 组件锚点 20 项） |
+| 截图比对五件套 + D9 同 01A 口径 + 三绿 + handoff + 停本地等验收 | ✅ D9（ⓘ+🧪；订阅中心无统计数字 demo 同款）+ 三绿 + handoff 本文件；走查放行后已推 dev |
+
+## 偏离
+
+- 无范围偏离。4 个执行中判定见问题清单（图标替换 / seed 冻结不可改型 / 角标覆盖订阅 Tab 豁免），均为语义等价落法。
+
+## 产物清单
+
+- 业务仓 `lumen-ui-science-pc` @ dev：commit `189b139`（18 文件，+3291/-7）
+- 编排仓 handoff：本文件（commit `04be90b8`）
+- 自检：`src/views/policy/panorama/FE-POL-01B.test.mjs`
+- 导出工具：`trackingExport.ts`（4 报告出口：详情对比/版本对比/评估/对标）
+
+## 验收证据
+
+- ✅ 自检 ×3 全绿：`FE-POL-01B.test.mjs` + `FE-POL-01A.test.mjs` 回归 + `policy.test.mjs` 回归
+- ✅ `pnpm type-check` 0 错（六轮修复 17 处）
+- ✅ `pnpm build` 绿（built in 27.93s）
+- ✅ 附录 D 防漏扫描：互斥 display 叠加 0 / v-if+v-show 同节点 0 / USE_MOCK=false fixture 填数 0 / 菜单差集 0
+- 联调确认：前端链路联调通过（mock 双轨；BE-POL-CONTRACT-01 定稿后换接）
+- K8s dev 走查：push dev 后 CI 自动 rollout，走查入口同 01A（/policy/panorama）
+
+## 架构合规自检
+
+| 铁律 | 结果 |
+|---|---|
+| 调用链 FE→Java→Python（不越层） | ✅ 无新 api 面；数据走 S01 mock 双轨 `fetchPolicyPanorama` |
+| D12 不调 demo-* | ✅ 零 demo 依赖；demo 只读对照（D6 语义等价重写） |
+| D8 Design token / Arco 优先 | ✅ 全 Arco 组件（a-modal/a-table/a-steps/a-tabs…）；token 沿用 pp-* 类自含样式；无原生 select/input 回退 |
+| D9 指标 8 件套 + 四维 | ✅ 统计数字 ⓘ（读 S01 镜像）+ Mock 🧪；订阅中心无统计数字（demo 同款）；USE_MOCK=false 零 fixture 填数 |
+| D10 交互规范 | ✅ 弹层 6 件全 Teleport to body；键盘可达（a-* 语义）；禁 emoji 表状态 |
+| 可观测埋点 | ✅ `trackPolicyInteraction('panorama', …)` 沿用 |
+| 无新依赖 | ✅ package.json 零改动（echarts/vue-echarts/xlsx 仓内已装） |
+
+## Cost 回填
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | ≈ 410000（含本轮走查修正会话累计） |
+| model_used | GLM-4.7（Cursor agent） |
+| actual_cost | ≈ $8.5 |
+| cost_warn | 否（< $10 阈值） |
+
+> cost 四字段随后同步 registry（task-update-fields）。
 
 ## 可观测性（建议）
 
