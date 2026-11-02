@@ -10,7 +10,7 @@ description: >
 
 # Graph 派单包签收自检
 
-签收 Graph 入图派单任务（`ready_to_sign` → `done`，或用户说「签收」）时必须先跑本检查。未通过不得签收。只读，不改派单包，不连 Nebula，不执行 nGQL。
+签收 Graph 入图派单任务（`ready_to_sign` → `done`，或用户说「签收」）时必须先跑本检查。未通过不得签收。`task-update-status` 把 `KG-*-GRAPH-LOAD-*` 改为 `done` 时会自动再跑本脚本，退出码非 0 则 `GATE_DENIED`，不改状态。只读，不改派单包，不连 Nebula，不执行 nGQL。
 
 ## 何时用
 

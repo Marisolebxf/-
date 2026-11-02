@@ -14,7 +14,7 @@ description: >
 
 GDF派单中有明确的建表语句和相关注释，派单包任务执行时，需要从dwd.md/ads.md copy相关的sql语句。
 
-签收（`ready_to_sign` → `done`，或用户说「签收」）时必须先跑本检查。未通过不得签收。只读，不改库、不改派单包。
+签收（`ready_to_sign` → `done`，或用户说「签收」）时必须先跑本检查。未通过不得签收。`task-update-status` 把 `GDF-*-WORKPACK-*` 改为 `done` 时会自动再跑本脚本，退出码非 0 则 `GATE_DENIED`，不改状态。只读，不改库、不改派单包。
 
 ## 何时用
 

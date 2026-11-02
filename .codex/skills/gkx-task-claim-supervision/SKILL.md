@@ -25,6 +25,15 @@ description: Use when starting implementation, documentation changes, demo chang
 
 禁止倒序、跳步或以“已有 task-id / 仅改文档 / 紧急修复”为由绕过上述流程。只回答问题、只读诊断或维护本 skill 本身时，不触发项目任务认领。
 
+## 派单包签收
+
+把下面两类任务改为 `done` 之前，先读对应 skill 并跑它的脚本。未通过不得调用 `task-update-status`。服务端在写入前会再跑同一脚本，非 0 则 `GATE_DENIED`。
+
+| 任务 ID | Skill |
+|---|---|
+| `GDF-POLICY-WORKPACK-*`、`GDF-ENT-WORKPACK-*`、`GDF-CHAIN-WORKPACK-*` | `gkx-gdf-ddl-signoff` |
+| `KG-ENT-GRAPH-LOAD-*`、`KG-CHAIN-GRAPH-LOAD-*` | `gkx-graph-pack-signoff` |
+
 ## 开工门禁
 
 在修改代码、文档、Demo、任务状态或创建 handoff 前：
