@@ -43053,7 +43053,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-10-28 补充修复并部署（1fb10e2，pipeline 3192 image+deploy 绿）：久新报的 relations/create bad SQL 根因=前轮 sed 批量编辑误删 insertRelation lambda 的 return ps（编译失败导致线上跑的还是旧包）+remark 列缺 INSERT。已修：SQL 加 remark 列+参数 9 位对齐+补 return ps。真机验证：create 用字典值+remark → 200 成功；insight 200 正常。此修复同时覆盖 RELDEF-CRUD 的前置依赖（类型字典+remark 字段已全可用）
+      2026-10-28 bugbot 二轮修复部署完成（46636a6，pipeline 3210 image+deploy 全绿）：I-3 relation-types 四端点补 entityType 枚举校验 + I-4 rel_insight.sql 坏 SQL 注释修正。至此 RELTYPE-CRUD 全链路（DDL/后端/契约/部署/文档）闭环
     depends_on: []
     definition_of_done:
       - "新表 cms_kg_relation_type（entity_type+name 唯一约束，软删列）DDL 入仓并真库执行"
@@ -43063,7 +43063,7 @@ tasks:
       - "存量关系 type 值自动导入为对应实体类型字典初始行"
       - "编译绿 + 真库冒烟（四 tab 各建/查/改/删一轮）"
       - "OpenAPI 契约登记 + handoff"
-    update_time: "2026-10-28T17:21:14+08:00"
+    update_time: "2026-10-28T20:36:35+08:00"
   - id: CMS-JX-RELDEF-CRUD-L01
     title: "关系定义层 CRUD（A 方案：公共字段+每类专属 JSON，对齐原型六家族）"
     status: "pending_test"
@@ -43981,6 +43981,7 @@ tasks:
       - "验收：dev USE_MOCK=false，切换产业 Network 三次 scoped 请求 chain_code 变化；附录 D E-33 扫描摘要"
       - "handoff agent-handoffs/系统集成-SYSINT/ENT-KEY-PANO-FRONTEND-L01.md；ponytail: full"
     update_time: "2026-10-28T16:47:01+08:00"
+<<<<<<< Updated upstream
   - id: CROSS-MCP-7CHAIN-L03
     evidence: "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L03.md"
     title: "gkx-7chain MCP 高价值封装示范 — 区域创新活力分析（深圳）执行单"
@@ -45690,12 +45691,18 @@ tasks:
     claimed_by: "agent:api-agent"
     title: "CMS 智能搜索四模块接口：转发专题 Java 门面（企业/产业/政策/服务链）"
     status: "pending_test"
+=======
+  - id: CMS-JX-ATTR-HISTORY-L01
+    title: "实体属性变更记录/多版本管理（history/current 端点 + version 列）"
+    status: "done"
+>>>>>>> Stashed changes
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P1"
     repo: "lumen-svc-platform"
     delivery_phase: "implementation"
     task_type: "feature"
+<<<<<<< Updated upstream
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
@@ -46145,3 +46152,46 @@ tasks:
       - "D9：KPI 行（serviceKpis 自带 metric_id）旁 ⓘ+🧪；Arco 全替换；观测头；fixed 弹层 Teleport to body"
       - "交付三绿；完工停本地工作区等 human:孔东 人工验收；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-04A.md"
     update_time: "2026-11-02T15:05:12+08:00"
+  - id: FIX-CHAIN-SEARCH-L01
+    supervised_by: "human:侯佳伟"
+    claimed_at: "2026-11-02T07:11:42.011Z"
+    last_seen_at: "2026-11-02T07:11:42.011Z"
+    lock_until: "2026-11-02T11:11:42.011Z"
+    claimed_by: "agent:api-agent"
+    title: "产业链高级筛选 400 修复 — industry/search 条件 value 兼容数组（后端）"
+    status: "claimed"
+    agent: "api-agent"
+    epic: "E-PLATFORM"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: |
+      claim_type=coordinator_dispatch（2026-11-02 用户线上报障裁定后端兼容并指示派单；由 coordinator 会话代派，监管人按 dispatch-rules#agent_supervisors 默认映射 api-agent→human:侯佳伟）。执行入口见 agent-delivery/agent-handoffs/专题前端-TOPIC-FE/FIX-CHAIN-SEARCH-L01-派单包.md
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "gkxlumen-topic-chain"
+    definition_of_done:
+      - "后端 /chain/topic/v1/industry/search 接受 conditions[].value 为字符串数组（operator=in），返回结构与非空筛选结果与简单筛选一致"
+      - "向后兼容：value 传标量字符串时行为不变（按单值处理）"
+      - "异常入参（null / 非法类型）返回明确 400 校验信息而非 Jackson 原始报错"
+      - "原报错场景回归验证：mode=advanced + industry_link in [\"CL-SEI-01|INB1303|INB130301\"] 查询成功返回结果（附 curl 证据）"
+      - "touch gkxlumen-topic-chain 模块；commit 带 [agent:api-agent]，推 origin/dev，CI 绿"
+    update_time: "2026-11-02T15:12:00+08:00"
+=======
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "2026-10-28 上午 9b1cdff 已交付全部内容（version 列+history/current 端点+部署验证），本单与其重复——合并到该单不重复开发。登记为重复单关闭"
+    definition_of_done:
+      - "cms_kg_attr 加 version 列（DEFAULT 1，每次 update 累加+1）DDL 入仓并真库执行"
+      - "2 端点：/kg/{entityType}/attrs/history（变更记录分页查询，复用 cms_op_audit）与 /kg/{entityType}/attrs/current（当前值+版本号）"
+      - "list/detail 输出补 version 字段；update 自动 version+1"
+      - "编译绿 + 部署后真机验证（history/current 实测）"
+      - "OpenAPI 登记"
+    update_time: "2026-10-28T19:49:39+08:00"
+>>>>>>> Stashed changes
