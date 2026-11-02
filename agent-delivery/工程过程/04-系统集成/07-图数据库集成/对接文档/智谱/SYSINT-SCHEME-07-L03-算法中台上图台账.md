@@ -414,6 +414,6 @@ L05 差集公式：**GAP = 需求清单 −（L03 ✅已实现 ∪ L04 ✅已实
 | demo-algo-ent-analysis | `e:\gkx-lumen\repos\demo-algo-ent-analysis\` | 已 clone |
 | demo-algo-science | `e:\gkx-lumen\repos\demo-algo-science\` | 已 clone |
 | cfg_metric 种子文件（11 个） | `agent-delivery/metrics/registry/cfg_metric-*-seed.yaml` | 2026-10-27 统计 |
-| SYSINT-SCHEME-07-L02 对齐轴 | `agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L02-对齐轴.md` | v1.0 |
+| SYSINT-SCHEME-07-L02 对齐轴 | `agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/智谱/SYSINT-SCHEME-07-L02-对齐轴.md` | v1.0 |
 | 致燕大需求清单 v1.0 | `agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/外部接口依赖/KG-YANDA-SCHEMA-REQ/科技信息展示系统-知识图谱实体、实体关系属性需求清单.md` | v1.0 |
 | WBS-07 | `agent-delivery/工程过程/04-系统集成/07-图数据库集成/WBS.md` | 2026-10-26 |

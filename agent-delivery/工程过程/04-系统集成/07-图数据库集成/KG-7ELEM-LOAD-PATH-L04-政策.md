@@ -5,7 +5,7 @@
 > 必须边只认已签收 `KG-7ELEM-BUILD-REQ-L03-必须三元组与关系.md`：政策点，以及 M16 `cite`、M11 `policy_relate`、M12–M14 `policy_apply_to`、M10 `publish`。不新增、不删除必须边。技术 `cite` 不并进 M16。  
 > 我方写图入口：`repos/demo-algo-ent-analysis`。`lumen-algo-py` 的 `lumen_algo_service`、`lumen_common` 没有政策写图。`lumen-algo-py/vendor/entan-py/polan/graph/` 有同名文件，本叶不把它写成入口。  
 > 燕大只对照 `yanda/tech-kg-api`（2026-10-30 工作区）。燕大代码不写成生产放行。  
-> 未签收、只作索引：`对接文档/我方/SYSINT-SCHEME-07-L03-算法中台上图台账.md`、`SYSINT-SCHEME-07-L06-算法中台入图流程.md`、`SYSINT-SCHEME-07-L04-燕大七要素上图对照.md`。已实现以仓库里能打开的代码为准。L03 第七章写「政策无 Nebula 写图」，与现行 demo 代码不符，不采。
+> 未签收、只作索引：`对接文档/智谱/SYSINT-SCHEME-07-L03-算法中台上图台账.md`、`SYSINT-SCHEME-07-L06-算法中台入图流程.md`、`SYSINT-SCHEME-07-L04-燕大七要素上图对照.md`。已实现以仓库里能打开的代码为准。L03 第七章写「政策无 Nebula 写图」，与现行 demo 代码不符，不采。
 
 七要素端点里，本叶写政策点。`publish` 的科研机构一端归 `KG-7ELEM-LOAD-PATH-L06`。`policy_apply_to` 到企业归 L02，到人才或科研机构归 L06。本叶写政策这一端的来源。
 
