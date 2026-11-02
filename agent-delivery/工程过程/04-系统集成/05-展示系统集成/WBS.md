@@ -174,15 +174,15 @@
 | WBS-05-23-11 · `BE-POL-IMPL-01` | 展示聚合接口实现（`/display/v1/policy/**`） | 李伟 | `lumen-svc-platform` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-CONTRACT-01`。契约未冻结不开工。不实现、不转调 `/topic/v1/policy` | 无截至时间 |
 | WBS-05-23-12 · `BE-POL-DATA-01` | 统计读面与已有政策 ADS 对齐 | 李伟 | `gkx-orchestration` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-CONTRACT-01`、`GDF-POLICY-MDC-STAT-L01`。不新开 GDF 包，不写第二套统计脚本 | 无截至时间 |
 | WBS-05-23-13 · `FE-POL-REAL-01` | 七页切真实接口并联调 | 孔东 | `lumen-ui-science-pc` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-IMPL-01`、`BE-POL-DATA-01` 与 `FE-POL-01B`、`02A`、`03A`、`04A`、`05A`、`06A`、`07A`。模型未注册保持 501 | 无截至时间 |
-| WBS-05-23-14 · `POL-DISPLAY-SURVEY-L01` | 存量调研定稿（四叶合成） | 淮政玮 | `gkx-orchestration` | **ready** | 父单不写正文。等四叶 handoff 后合成对照定稿。总控 `科技政策跟踪-POL/POL-DISPLAY-长任务总控.md` | 总控叶表：四叶 handoff 齐。注册表 depends_on 仍为空 | 无截至时间 |
-| WBS-05-23-16 · `POL-DISPLAY-SURVEY-DS10-L01` | 调研分册 · 科创政策全景 | 淮政玮 | `gkx-orchestration` | **in_progress** | 2026-11-03 开工。产物 `survey/DS-10.md` | 无前置。与 17～19 并行 | 无截至时间 |
-| WBS-05-23-17 · `POL-DISPLAY-SURVEY-DS11-L01` | 调研分册 · 政策分析评价 | 淮政玮 | `gkx-orchestration` | **in_progress** | 2026-11-03 开工。产物 `survey/DS-11.md` | 无前置 | 无截至时间 |
-| WBS-05-23-18 · `POL-DISPLAY-SURVEY-DS12-L01` | 调研分册 · 政策效果推演 | 淮政玮 | `gkx-orchestration` | **in_progress** | 2026-11-03 开工。产物 `survey/DS-12.md` | 无前置。推演与布局推荐分键 | 无截至时间 |
-| WBS-05-23-19 · `POL-DISPLAY-SURVEY-PC-L01` | 调研分册 · 核增四页合一 | 淮政玮 | `gkx-orchestration` | **in_progress** | 2026-11-03 开工。产物 `survey/PC.md` | 无前置 | 无截至时间 |
+| WBS-05-23-14 · `POL-DISPLAY-SURVEY-L01` | 存量调研定稿（四叶合成） | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 四叶已合成。定稿在对照文件第 7 节 | 四叶 handoff 已齐 | 无截至时间 |
+| WBS-05-23-16 · `POL-DISPLAY-SURVEY-DS10-L01` | 调研分册 · 科创政策全景 | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 分册已落盘。能力表 24 行：可接 9，501 共 13，跨项 2 | 无前置。与 17～19 并行 | 无截至时间 |
+| WBS-05-23-17 · `POL-DISPLAY-SURVEY-DS11-L01` | 调研分册 · 政策分析评价 | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 分册已落盘。可接 2，501 共 9，跨项 1。5 行交互壳记未见 | 无前置 | 无截至时间 |
+| WBS-05-23-18 · `POL-DISPLAY-SURVEY-DS12-L01` | 调研分册 · 政策效果推演 | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 分册已落盘。12 条：501 共 10，跨项索引 2，可接统计读面 0 | 无前置。推演与布局推荐分键 | 无截至时间 |
+| WBS-05-23-19 · `POL-DISPLAY-SURVEY-PC-L01` | 调研分册 · 核增四页合一 | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 分册已落盘。可接 0，501 共 12，跨项 5 | 无前置 | 无截至时间 |
 | WBS-05-23-15 · `POL-DISPLAY-SDD-L01` | 系统详细设计说明书（三叶合成） | 淮政玮 | `gkx-orchestration` | **backlog** | 2026-11-03 详设段已确认。父单等三叶 handoff 后合成 `sdd/科技政策跟踪-系统详细设计说明书.md`。不写 OpenAPI | 总控叶表：调研父单 handoff，再加三叶 handoff。注册表 depends_on 仍只指调研父单 | 无截至时间 |
-| WBS-05-23-20 · `POL-DISPLAY-SDD-CHAIN-L01` | 详设分册 · 调用链与边界 | 淮政玮 | `gkx-orchestration` | **backlog** | 2026-11-03 已建未开工。产物 `sdd/调用链与边界.md` | 调研父单 handoff 落盘后直接认领，不等签收 | 无截至时间 |
-| WBS-05-23-21 · `POL-DISPLAY-SDD-METRIC-L01` | 详设分册 · 指标与 501 | 淮政玮 | `gkx-orchestration` | **backlog** | 2026-11-03 已建未开工。产物 `sdd/指标与501.md` | 同上。与 20、22 并行 | 无截至时间 |
-| WBS-05-23-22 · `POL-DISPLAY-SDD-INPUT-L01` | 详设分册 · 契约输入清单 | 淮政玮 | `gkx-orchestration` | **backlog** | 2026-11-03 已建未开工。产物 `sdd/契约输入清单.md`。不写字段表 | 同上 | 无截至时间 |
+| WBS-05-23-20 · `POL-DISPLAY-SDD-CHAIN-L01` | 详设分册 · 调用链与边界 | 淮政玮 | `gkx-orchestration` | **in_progress** | 2026-11-03 调研定稿后开工。产物 `sdd/调用链与边界.md` | 调研父单 handoff 已落盘 | 无截至时间 |
+| WBS-05-23-21 · `POL-DISPLAY-SDD-METRIC-L01` | 详设分册 · 指标与 501 | 淮政玮 | `gkx-orchestration` | **in_progress** | 2026-11-03 调研定稿后开工。产物 `sdd/指标与501.md` | 同上。与 20、22 并行 | 无截至时间 |
+| WBS-05-23-22 · `POL-DISPLAY-SDD-INPUT-L01` | 详设分册 · 契约输入清单 | 淮政玮 | `gkx-orchestration` | **in_progress** | 2026-11-03 调研定稿后开工。产物 `sdd/契约输入清单.md`。不写字段表 | 同上 | 无截至时间 |
 
 ### 4.2 WBS-05-08 的子任务（科技交流 / 竞赛 / 传播）
 
