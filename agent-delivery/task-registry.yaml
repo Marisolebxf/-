@@ -45965,3 +45965,183 @@ tasks:
       - "只写 demo_gkxlumenx_*。目标库不是 demo_ 前缀则拒绝。不写 gkxlumenx_*，不写图库，不建 GDF 作业，不改 D4，不改指标库 seed。不代替 SYSINT-06-21-L01、SYSINT-06-21-01-L03、SYSINT-06-15-L01"
       - "handoff 写在 agent-delivery/agent-handoffs/SYSINT-06-21-02-L01.md。五个菜单能点按钮跑通对应链路。不是可对端"
     update_time: "2026-11-02T15:03:26+08:00"
+  - id: FE-KG-S01
+    title: "科技知识图谱 — 前端模块基座（路由挂接/四页页壳/mock 种子冻结/api 双轨/kg 样式抽取/D9 挂点）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-KNOWLEDGE-GRAPH"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 180000
+    note: "规划真源：agent-delivery/agent-handoffs/科技知识图谱-KG/KG-模块开发规划与任务拆分.md（2026-11-02 定稿）。批 1 启动件，BE-KG-CONTRACT-01 同批启动。"
+    depends_on: []
+    touched_files:
+      - "src/views/knowledge-graph/"
+      - "src/api/knowledgeGraph.ts"
+      - "src/mock/modules/"
+      - "src/styles/"
+      - "src/router/menu.ts"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技知识图谱-KG/KG-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "四页路由挂接：menu.ts graph 组 4 项（graph-analysis/graph-indicators/graph-algorithms/graph-service）替换 DevelopingView 为真实页壳（views/knowledge-graph/），fullBleed 不开（常规滚动页对齐 DR 四窗），路由 name/path/permCode 不变"
+      - "Mock 种子冻结：src/mock/modules/knowledgeGraph*.ts 冻结自 demo tech-knowledge-graph/mockData.js（43KB，确定性生成器 _kgSeed=20260826，头注释标真源路径+同步任务 ID，派生链禁手写、禁 Math.random）；USE_MOCK=false 零 fixture 渲染（D12）"
+      - "src/api/knowledgeGraph.ts defineApi 双轨（mock/网关）+ request.ts 复用；api 不感知 mock；real 路径占位待 BE-KG-CONTRACT-01 冻结"
+      - "公共件盘点接入：PageTabFrame/StatCard/chartOptions/GraphChart/InsightDetailDrawer/MetricSpecHint/MockBadge/ExportFlowPanel 逐件核对可用性并记录（KG 不引 TiandituMap，理由入 handoff）；模块私有件目录 views/knowledge-graph/components/ 立项"
+      - "demo style.css（21KB kg-* 类体系）按选择器命中规则整块抽取进 styles/demo-knowledge-graph.css，token 对齐 Design.md"
+      - "D9 挂点盘点：demo 种子自带 metric_id（M_KG_* 系/serviceKpis）沿用原值；缺位占位 id 登记，未入 metric-registry 的在 handoff 注明待正名"
+      - "观测：pageview 沿用仓内 observability 机制"
+      - "pnpm type-check 0 错 + pnpm build 绿；handoff 落 agent-handoffs/科技知识图谱-KG/"
+    update_time: "2026-11-02T15:03:49+08:00"
+  - id: BE-KG-CONTRACT-01
+    title: "科技知识图谱 — Java 接口契约定义与数据需求评审（四页 55 叶，出 API-KG 文档）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-KNOWLEDGE-GRAPH"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: "监管 human:李伟。D1 决策：FE 复刻期算法为前端演示 + 🧪，Python 真算需求在本单登记，不阻塞 FE。"
+    depends_on: []
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技知识图谱-KG/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技知识图谱-KG/KG-模块开发规划与任务拆分.md"
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技知识图谱/README.md"
+    definition_of_done:
+      - "以 KG-模块开发规划与任务拆分.md §4「接口用途与数据需求」为输入（分析：图谱节点边查询/切片聚合/时序序列/智能分析/查询历史；指标：告警KPI/黑名单族/融合统计/决策模型；算法：图算法执行 Java→Python /internal/*、结果查询、子图快照；服务：分享CRUD+令牌校验/操作日志通知/资产检索/收藏历史/ETL状态/实时监控轮询/权限审计）"
+      - "路径/DTO/枚举由 Java 侧主导定义并出具 API-KG 接口文档，冻结后落 agent-handoffs/科技知识图谱-KG/"
+      - "前端不猜路径：FE-KG-* 单 real 路径占位待本单冻结后联调替换"
+      - "契约定义 → 实现 → 数据对接的内部拆分、排期由 human:李伟 自行决策建单（参照 DR/TA 模式）"
+      - "架构铁律对照：Java 不写算法（真算走 Python /internal/*）、不直连 nGQL、只读 ADS；图谱查询不扫全图（运营库聚合优先）"
+    update_time: "2026-11-02T15:04:02+08:00"
+  - id: FE-KG-01A
+    title: "分析展示 — 整页复刻：动态查询/数据过滤/多维分析/交互式可视化（graph+全屏）/时序演化/智能分析中心 Hub（8 叶）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-KNOWLEDGE-GRAPH"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 260000
+    note: "批 1。智能分析真算走 Python（BE-KG-CONTRACT-01 登记），复刻期前端演示 + 🧪（D1）。"
+    depends_on:
+      - "FE-KG-S01"
+    touched_files:
+      - "src/views/knowledge-graph/analysis/"
+      - "src/views/knowledge-graph/models/"
+      - "src/views/knowledge-graph/components/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技知识图谱-KG/KG-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+    definition_of_done:
+      - "demo 真源：AnalysisDisplay.jsx(677) + KgIntelligenceHub.jsx(364) + kgIntelligence.js + graphFilter.js，复刻五件套（布局/交互/样式/评审/Mock 开关数据）"
+      - "动态查询（关键词+实体属性+时间范围+查询历史）、数据过滤（实体/关系类型/领域/地域）、多维切片（antd Segmented→a-radio-group type=button）、交互式可视化（ECharts graph network+节点选中列表+全屏 Modal Teleport to body+图表容器显式高度）、时序演化（line+bar+dataZoom）、智能分析中心 Hub（模式识别/异常检测/趋势预测/聚类 insight 卡+InsightDetailDrawer 下钻+Tab 高亮回跳）、动态 KPI 行"
+      - "算法层移植 models/*.ts 纯函数（kgIntelligence/graphFilter 保持确定性种子），graphFilter.test.mjs/kgIntelligence.test.mjs/patternRecognition.test.mjs/dynamicQuery.test.mjs 按断言语义摘选移植最小自检"
+      - "D9：统计数字旁 ⓘ（MetricSpecHint）+ 🧪（MockBadge）；Arco 组件全替换（图标显式 import、32px/4px token）；观测头"
+      - "交付三绿（pnpm type-check 0 错 + 自检 + pnpm build）；完工停本地工作区等 human:孔东 人工验收，不自动 commit/push；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-01A.md"
+    update_time: "2026-11-02T15:04:28+08:00"
+  - id: FE-KG-02A
+    title: "指标展示 — 整页复刻：告警条+KPI+3 Tab（黑名单触发/融合统计指标/优化决策模型，15 叶）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-KNOWLEDGE-GRAPH"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 280000
+    note: "批 2。复用批 1 PageTabFrame/KPI 沉淀；写操作（反馈提交等）会话级演示态（D3 口径）。"
+    depends_on:
+      - "FE-KG-S01"
+    touched_files:
+      - "src/views/knowledge-graph/indicators/"
+      - "src/views/knowledge-graph/components/"
+      - "src/views/knowledge-graph/models/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技知识图谱-KG/KG-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+    definition_of_done:
+      - "demo 真源：IndicatorDisplay.jsx(165) + BlacklistTriggerPanel(16KB) + FusionIndicatorsPanel(15KB) + OptimizeDecisionPanel(17KB)，复刻五件套"
+      - "黑名单触发 Tab：图谱监测指标卡/专家规则库表/触发记录表+详情抽屉（InsightDetailDrawer 三段：图谱监测/规则判别/自动拦截联动）/黑名单库/通知联动/审计日志"
+      - "融合统计指标 Tab：指标整合列表/权重配置三场景预设/两两相关系数/一致性检验/评估对象综合评分"
+      - "优化决策模型 Tab：动态指标卡/专家规则联合/算法选择/训练历史表/风险预警/反馈闭环 Timeline（a-timeline）"
+      - "fusionMetrics.selfcheck/decisionModel.selfcheck/blacklistTrigger.selfcheck 按断言语义摘选移植最小自检"
+      - "D9：KPI（活跃告警/融合指标数/模型准确率/已处理事件）旁 ⓘ+🧪；Arco 全替换；观测头"
+      - "交付三绿；完工停本地工作区等 human:孔东 人工验收；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-02A.md"
+    update_time: "2026-11-02T15:04:42+08:00"
+  - id: FE-KG-03A
+    title: "算法展示 — 整页复刻：三算法切换（路径搜索/中心性计算/社群发现，15 叶），算法层移植 models 纯函数 + 🧪"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-KNOWLEDGE-GRAPH"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: "批 2。CentralityPanel(838 行) 为本单最大件；Python 真算接入归 BE-KG-CONTRACT-01，前端只换数据源不改 UI。"
+    depends_on:
+      - "FE-KG-S01"
+    touched_files:
+      - "src/views/knowledge-graph/algorithms/"
+      - "src/views/knowledge-graph/models/"
+      - "src/views/knowledge-graph/components/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技知识图谱-KG/KG-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+    definition_of_done:
+      - "demo 真源：AlgorithmDisplay.jsx(51) + PathSearchPanel(343)/pathSearchAlgo(17KB) + CentralityPanel(838)/centralityAlgo(16KB) + CommunityPanel(421)/communityAlgo(18KB)，复刻五件套"
+      - "三算法 a-radio-group type=button solid 切换：路径搜索（起点终点/多算法 BFS·最短路径·权重优先/结果列表+graph 高亮/多样性对比/场景化标签）；中心性（度/紧密/中介/PageRank 维度切换+排行表+对比图+节点详情）；社群发现（Louvain·标签传播切换/社群结构图/属性特征分析/演化追踪）"
+      - "算法层移植 models/*.ts 纯函数（pathSearchAlgo/centralityAlgo/communityAlgo 保持确定性种子与 demo 断言语义）+ 4 个 selfcheck.mjs 摘选移植最小自检；UI 挂 🧪「演示级，未接算法仓」（D1）"
+      - "D9：统计数字旁 ⓘ+🧪；图表复用 GraphChart/chartOptions；Arco 全替换；观测头"
+      - "交付三绿；完工停本地工作区等 human:孔东 人工验收；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-03A.md"
+    update_time: "2026-11-02T15:04:56+08:00"
+  - id: FE-KG-04A
+    title: "服务展示 — 整页复刻（XL）：3 Tab（图分享状态机族/图查询三视图/图分析集成含实时监控轮询，17 叶）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-KNOWLEDGE-GRAPH"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 420000
+    note: "批 3（最大件单独排）。若体量压批可拆 04A+04B（分享/查询 vs 集成），拆分决策由 coordinator + 孔东拍板。"
+    depends_on:
+      - "FE-KG-S01"
+    touched_files:
+      - "src/views/knowledge-graph/service/"
+      - "src/views/knowledge-graph/models/"
+      - "src/views/knowledge-graph/components/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技知识图谱-KG/KG-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+    definition_of_done:
+      - "demo 真源：ServiceDisplay.jsx(1624 全模块最大) + 分享族 4 件（shareHistory/kgShareExport/kgShareRegistry/kgShareSync）+ 集成族 4 面板（IntegrationEtlPanel/IntegrationSecurityPanel/RealtimeMonitorPanel/QueryAssetDeepAnalysisDrawer）+ modelingGraphBuilder，复刻五件套"
+      - "图分享 Tab：一键分享 Modal（名称/类型/格式/平台/权限/同步开关）/多格式导出 png·pdf·html·xlsx/链接权限面板（复制/有效期/密码）/嵌入预览下载/撤回恢复/操作历史追溯时间线/实时同步通知中心 Drawer"
+      - "图查询 Tab：AutoComplete 关键词智能搜索+查询历史/时间范围·实体类型·业务线·发布方·标签多维筛选（a-range-picker mode=year 等按经验清单）/列表·网格·缩略图三视图（AssetThumb SVG 族移植）/资产详情预览抽屉/查询历史与收藏/深度分析抽屉"
+      - "图分析集成 Tab：多源 ETL 面板/智能建模工作台（实体类型勾选·自定义·标签·关系定义·a-steps 四步·AI 抽取开关·网络化展现 graph）/图表构建 bar·line·pie 切换/实时监控轮询（D2：30s 常量、不可见暂停、卸载清理）/决策联动表/分级权限与安全审计面板"
+      - "分享状态机族（shareHistory/kgShareRegistry/kgShareExport/kgShareSync）整块移植不拆散，shareHistory.selfcheck 等 6 个 test/selfcheck 摘选移植；写操作 localStorage 会话级（D3）"
+      - "D9：KPI 行（serviceKpis 自带 metric_id）旁 ⓘ+🧪；Arco 全替换；观测头；fixed 弹层 Teleport to body"
+      - "交付三绿；完工停本地工作区等 human:孔东 人工验收；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-04A.md"
+    update_time: "2026-11-02T15:05:12+08:00"
