@@ -1,6 +1,6 @@
 # FE-POL-01A · 科创政策全景 — 检索主链路整段复刻
 
-> 交付日期：2026-11-02 · 仓：`repos/lumen-ui-science-pc` · 状态：**停本地工作区，待孔东人工验收**（2026-10-20 闸门，不自动 commit/push）
+> 交付日期：2026-11-02 · 仓：`repos/lumen-ui-science-pc` · 状态：**走查修正完成，已推 origin/dev，转待测试**（监管人 human:孔东 2026-11-02 走查：①去高级检索面包屑 ②分组标题留白）
 
 ## 任务认领（必填）
 
@@ -29,6 +29,11 @@
   1. `a-radio-button` 非 Arco Vue 组件（AntD 概念；Arco 用 `a-radio` + group `type="button"`）——已按 Arco 正确用法落，语义等价（按钮形单选）
   2. `IconShare` 不存在于 Arco Vue icon 集（React 版名）——换 `IconShareAlt`（仓内 14 处先例统一用名）
   3. 高级检索整页壳 `DisplayAdvancedFilterPage` 拆 `.vue`（壳+prelude+面包屑）+ `.ts`（`buildBooleanPreview` 纯逻辑，测试可直接 import）——demo 单 JSX 混两种职责，Vue 化按仓内惯例分文件
+
+## 走查修正（human:孔东 2026-11-02 18:22，已实施并复验三绿）
+
+1. **去掉高级检索面包屑**：`DisplayAdvancedFilterPage.vue` 移除 `nav.display-advanced-filter-breadcrumb`（「科创政策全景/检索全景/高级检索功能」）；切回检索靠 SearchHub 模式 Tab（demo 同语义入口保留）
+2. **分组标题留白**：`.pp-result-group__head` 加 16px 水平内边距 + 首组 16px 顶距；第 2 组起 20px 顶距 + 浅分隔线（对齐 demo `Divider orientation="left"` 分段感）
 
 ## 修改内容
 
@@ -95,9 +100,9 @@
 
 ## CI/CD（必填）
 
-- 分支：本地 `dev`（基于 origin/dev 同步基线）
-- commit：**无**（2026-10-20 人工验收闸门：改动停本地工作区，等孔东走查通过后再 commit/push）
-- pipeline / K8s：未触发（同上）
+- 分支：`dev`（已推 `origin/dev`，走查通过后放行）
+- commit：见下方双仓提交记录
+- pipeline / K8s：CI 触发（push dev → Pipeline → K8s dev rollout）
 - dev 验证命令：`node src/views/policy/panorama/FE-POL-01A.test.mjs && node src/views/policy/policy.test.mjs && pnpm type-check && pnpm build`
 
 ## 可观测性（建议）
