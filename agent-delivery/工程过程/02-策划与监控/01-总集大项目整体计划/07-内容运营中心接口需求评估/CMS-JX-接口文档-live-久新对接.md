@@ -2,11 +2,11 @@
 
 | 项 | 值 |
 |---|---|
-| 文档版本 | live-1.4（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；含属性变更记录/多版本/CSV 模板与批量导入） |
-| 更新日期 | 2026-10-29 |
+| 文档版本 | live-1.5（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；新增智能搜索四接口） |
+| 更新日期 | 2026-11-02 |
 | 提供 | 科技专题服务系统项目组（智树侧） |
 | 适用 | 久新 CMS 对接；**仅含已上线接口** |
-| 接口数量 | **108**（v1.4 相对 v1.3 新增 attrs/history、attrs/current、attrs/template、attrs/import） |
+| 接口数量 | **112**（v1.5 新增 smart-search/enterprise、industry、policy、service） |
 | 范围说明 | 未上线能力（政策力度榜单/统计、企业全景等门户类）不在本文档 |
 
 > 下文按模块列出全部已上线接口。若需在 Apifox / Postman 调试，可另导入同目录 `CMS-JX-OpenAPI-v1.0-live.json`（OpenAPI 3.0）。
@@ -2297,6 +2297,46 @@ _（本接口无额外字段说明，见通用约定）_
 
 **响应 `data` 字段**：total、created、updated、failed、records[]（每项：name、id、action=`created|updated|failed`、error?）。
 
+
+### 3.19.9 智能搜索·企业
+
+`POST /api/open/cms/v1/smart-search/enterprise`
+
+> 复用专题系统企业智能检索链路（关键词包含匹配，多词 AND）。行内字段原样透传，不解释不改写。
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| keyword | string | 是 | 关键词（多词空格分隔） |
+| page | integer | 否 | 默认 1 |
+| size | integer | 否 | 默认 20，上限 100 |
+
+**响应 `data`**：`{total, page, size, records[]}`；records 为企业文档（org_id / name_cn / social_credit_code / 行业 / 地区等，全量字段以实际返回为准）。
+
+### 3.19.10 智能搜索·产业
+
+`POST /api/open/cms/v1/smart-search/industry`
+
+**请求体**：同 3.19.9。
+
+**响应 `data`**：`{total, page, size, records[]}`；records 为产业链节点（id / stableId / objectType / name / aliases / tags 等）。
+
+### 3.19.11 智能搜索·政策
+
+`POST /api/open/cms/v1/smart-search/policy`
+
+**请求体**：同 3.19.9（page/size 自动换算下游 limit/offset）。
+
+**响应 `data`**：`{total, page, size, records[]}`；records 为政策条目（policy_id / title 等）。
+
+### 3.19.12 智能搜索·服务机构
+
+`POST /api/open/cms/v1/smart-search/service`
+
+**请求体**：同 3.19.9。
+
+**响应 `data`**：`{total, page, size, records[]}`；records 为服务机构文档（org_id / service_org_code / name_cn 等）。
 
 ### 3.20 专家知识
 

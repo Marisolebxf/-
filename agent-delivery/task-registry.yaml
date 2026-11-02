@@ -45677,3 +45677,43 @@ tasks:
       - "单测绿：test_chain_market_size + test_chain_sync 全通过"
       - "handoff CHAIN-MARKET-SIZE-GAPFILL-L01.md（含 dim 过渡偏离说明）"
     update_time: "2026-10-31T19:27:38+08:00"
+  - id: CMS-JX-SMART-SEARCH-L01
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/CMS-JX-SMART-SEARCH-L01.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 4.2
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-02T02:28:44.467Z"
+    last_seen_at: "2026-11-02T02:28:44.467Z"
+    lock_until: "2026-11-02T06:28:44.467Z"
+    claimed_by: "agent:api-agent"
+    title: "CMS 智能搜索四模块接口：转发专题 Java 门面（企业/产业/政策/服务链）"
+    status: "pending_test"
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "联调确认：四接口集群冒烟全通（enterprise total=10000 / industry 9 / policy 1020 翻页正常 / service 95；空 keyword 40001 守卫生效），镜像 11dbc694 已上线，handoff+文档 live-1.5 已推。联调通过，转待测试。"
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "gkxlumen-cms/src/main/java/com/topcomm/gkxlumen/cms/controller/SmartSearchController.java（新增）"
+      - "gkxlumen-cms/src/main/java/com/topcomm/gkxlumen/cms/service/SmartSearchService.java（新增）"
+      - "gkxlumen-cms/src/main/resources/application.yml（下游 baseUrl 配置项）"
+      - "gkx-orchestration agent-delivery CMS-JX-接口文档-live-久新对接.md"
+      - "gkx-orchestration gen-openapi.py"
+    definition_of_done:
+      - "四个 POST 接口匿名可通（X-CMS-Api-Key 保护）：/smart-search/enterprise|industry|policy|service，返回统一信封 {total,page,size,records[]}，行内字段原样透传"
+      - "下游为四个专题 Java 门面匿名转发（enterprise /topic/v1/search/smart、chain /topic/v1/industry/search mode=smart、policy /topic/v1/policy/search、svc /topic/v1/service/search/orgs），Python 零改动、专题模块零改动"
+      - "URL 走 nacos cms-dev.yml 配置（RestTemplate + 配置 baseUrl），零新依赖；D12 合规仅调 gkxlumen-*"
+      - "keyword/page/size 归一化：keyword→各下游参数名（keywords/keyword/mode+keyword/keyword），page/size→policy 的 limit/offset 换算"
+      - "至少一个可运行自检覆盖归一化/转发逻辑（无框架小测试或断言脚本）；handoff 附四接口真实冒烟 curl+响应摘要"
+      - "CMS-JX-接口文档-live-久新对接.md 与 gen-openapi.py 补四接口小节并推送"
+      - "commit 带 [agent:api-agent]，push origin/dev；cost 四字段回填 task-registry"
+    update_time: "2026-11-02T11:31:59+08:00"

@@ -302,6 +302,15 @@ kg_op("attrs/import", "图谱·实体属性", "属性·批量导入（rows 或 c
               "dtype": {"type": "string"}, "unit": {"type": "string"}}}},
           "csv": {"type": "string", "description": "CSV 原文（含表头；与 rows 二选一）"}}})
 
+kg_op("smart-search/enterprise", "智能搜索", "企业智能搜索（keyword 必填；page/size 可选；转发专题门面原样透传）",
+      {"type": "object", "required": ["keyword"], "properties": {"keyword": {"type": "string"}, "page": {"type": "integer"}, "size": {"type": "integer"}}})
+kg_op("smart-search/industry", "智能搜索", "产业智能搜索（keyword 必填；下游 mode=smart）",
+      {"type": "object", "required": ["keyword"], "properties": {"keyword": {"type": "string"}, "page": {"type": "integer"}, "size": {"type": "integer"}}})
+kg_op("smart-search/policy", "智能搜索", "政策智能搜索（keyword 必填；page/size 自动换算 limit/offset）",
+      {"type": "object", "required": ["keyword"], "properties": {"keyword": {"type": "string"}, "page": {"type": "integer"}, "size": {"type": "integer"}}})
+kg_op("smart-search/service", "智能搜索", "服务机构智能搜索（keyword 必填）",
+      {"type": "object", "required": ["keyword"], "properties": {"keyword": {"type": "string"}, "page": {"type": "integer"}, "size": {"type": "integer"}}})
+
 # ================= 专家知识（{domain} 有限枚举段） =================
 DM = {"name": "domain", "in": "path", "required": True, "schema": {"type": "string", "enum": ["industry", "enterprise", "policy", "service", "region"]}}
 ek_fields = [F("sectionId", req=True, desc="section 标识（12 个，见规格 §6.1–§6.5）"), F("title", req=True),
