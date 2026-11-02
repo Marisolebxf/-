@@ -226,7 +226,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 | OPEN-CHAIN-MAP-06 | 分析 `industry_code` → INB `chain_id` | 挡后续按链资讯；本期 B2 不洗 |
 | OPEN-CHAIN-MAP-07 | 链上企业全国/广东口径 | **待 ODS 补灌后命中率重测（round2 问 7）** |
 | OPEN-CHAIN-FLOW-01 | 正式 DAG 名 | 产线回写 |
-| OPEN-CHAIN-FLOW-02 | 正式图空间名 + 上图/rebuild 契约 + 点数稳定判定 | 架构师确认中，round2 随 `12` 补（round2 问 8~13） |
+| OPEN-CHAIN-FLOW-02 | 正式图空间名 + 上图/rebuild 契约 + 点数稳定判定 | **已定（2026-11-02 二次确认）**：空间 `gkx_chain`；契约见 `12`§5 |
 
 ---
 

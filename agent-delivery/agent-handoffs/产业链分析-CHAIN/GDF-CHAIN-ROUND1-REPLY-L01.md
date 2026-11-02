@@ -95,3 +95,19 @@
 | actual_tokens | 80000 |
 | actual_cost | 5 |
 | cost_warn | `green` |
+
+---
+
+## 8. round2 契约补全追加（2026-11-02 晚，任务 GDF-CHAIN-ROUND2-CONTRACT-L01）
+
+徐滕强三项拍板/确认落地：
+
+| 项 | 结论 | 落点 |
+|---|---|---|
+| 图空间名 | `gkx_chain`（demo 名去前缀） | `12` 全文替换（占位名零残留）；`23` 问 13 已答复 |
+| 上图/rebuild 契约 | 从 `lumen-algo-py` 源码考古获得：上图 `POST /internal/v1/chain/graph/project`（回执 status/vertex_counts/edges_written/industry_index/...）；rebuild `POST /internal/industry/embed/rebuild`（code/data.indexed/index_version）；`index_version`=yyyyMMddHHmmss | `12` 新增 §5.1~5.2 |
+| 点数稳定判定 | 四连判（读表无错/点数>0/写入≥锚点/词表非空）经现网推演合理（1273=53+1220 贴合）；两条边界写入（只防丢点不防多点；entity_rel 0 行为预期态） | `12`§5.3 |
+
+- 正式图谱由 GDF 专门代码读写；我方代码 demo 闸门（assert_demo_nebula_space / FORMAL_SPACE 常量）**不进 GDF 契约**，其正式化改造属 algo 域另派。
+- `23` 问 8~13 改「已答复」；开工判定 `12` 后加工 → **可起草**；09 OPEN-CHAIN-FLOW-02 关闭；CHANGELOG v2.2.1。
+- 20 题至此全部闭环（问 7 保持「待 ODS 补灌重测」跟踪在 CHAIN-ODS-SYNC-L01）。

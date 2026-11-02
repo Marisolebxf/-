@@ -1,7 +1,7 @@
 # 12 — DWD 后加工：产业链入向量库（CHAIN-B4-VEC-REBUILD）
 
 > **读者**：GDF 数据中台产线。本文件描述"产业链入向量库"这一环节在 GDF 侧的**触发条件、执行方式、验收口径与禁止事项**。  
-> **版本**：v2.2 修订（2026-11-02，round2 问 8~13 答复）：图空间名与接口契约标注**待架构师确认（round2 补）**；`demo_gkx_chain` 为占位名，禁止按此建空间。环境红线见 `23-核对签收与答复.md` §1（GDF 禁读 demo 库）。  
+> **版本**：v2.2 修订（2026-11-02，round2 问 8~13 答复）：图空间名与接口契约标注**待架构师确认（round2 补）**；`gkx_chain` 为占位名，禁止按此建空间。环境红线见 `23-核对签收与答复.md` §1（GDF 禁读 demo 库）。  
 > **为什么要有这一步**：产业链洗数（Wave B）只是把链树写进 DWD。下游"政策抽取产业"（政策派单包 `12` 的 POLICY-C1）检索的锚点集合，要等**本环节执行后才有内容**。锚点为空时政策 C1 对不上链码、只记 `no_match`——这是**设计内行为**，不是故障。
 
 ---
@@ -12,7 +12,7 @@
 
 ```mermaid
 flowchart LR
-  B1["CHAIN-B1-TREE<br/>DWD 链表写完"] --> G["上图 project_graph<br/>Nebula demo_gkx_chain<br/>chain/segment VID 稳定"]
+  B1["CHAIN-B1-TREE<br/>DWD 链表写完"] --> G["上图 project_graph<br/>Nebula gkx_chain<br/>chain/segment VID 稳定"]
   G -->|"末段一次（lumen 算法侧自动）"| R["embed/rebuild<br/>TEI 编码 → Milvus 整库替换"]
   R --> V["Milvus gkxlumen_industry_anchor<br/>锚点集合就绪"]
   V -->|"只读检索（政策C1 / Job A）"| P["政策抽产业定码<br/>match_industry_anchors 二次对码"]
@@ -48,7 +48,7 @@ flowchart LR
 | # | 条件 | 检查方式 |
 |---|---|---|
 | 1 | Wave B `CHAIN-B1-TREE` 当日 `success`（`industry_chain` / `industry_chain_node` 有当日批次数据） | ETL 调度状态 |
-| 2 | 上图（`project_graph` → Nebula `demo_gkx_chain`）完成且 chain/segment 点数**稳定** | 上图回执；点数不稳定时 rebuild **跳过**，保留上一版索引（`index_version` 不变，诚实记 skip） |
+| 2 | 上图（`project_graph` → Nebula `gkx_chain`）完成且 chain/segment 点数**稳定** | 上图回执；点数不稳定时 rebuild **跳过**，保留上一版索引（`index_version` 不变，诚实记 skip） |
 | 3 | 由我方算法侧在灌链末段自动执行；GDF 无需（也不得）自行发起 | — |
 
 **每日节奏**：凌晨灌链批：Wave B → 上图 → rebuild（串行）。下游 Job A（= 政策包 `12` POLICY-C1 语义抽槽在 CROSS-VEC 语境的称呼）排在 rebuild **之后**且串行——rebuild 的 drop+create 窗口内 search 返 `degraded=true`，不给假 VID，所以**禁止并排**。
@@ -81,7 +81,67 @@ flowchart LR
 
 ---
 
-## 5. 验收与回执口径
+## 5. 接口契约（v2.2 补全，round2 问 8~13 答复；实现源 = 我方 `lumen-algo-py`）
+
+> 正式图谱（Nebula 空间 **`gkx_chain`**，2026-11-02 定名）由 **GDF 专门代码读写**；我方算法侧只负责上图动作与向量索引产出。以下契约描述「我方上图动作的回执字段」与「GDF 的编排落点」——**GDF 不调用 rebuild、不实现上图**。
+
+### 5.1 上图动作（我方 `project_graph`，每日灌链末段自动执行）
+
+`POST /internal/v1/chain/graph/project`（我方内部调用面；GDF 只消费其回执）
+
+- 请求体（均可选）：`{"dry_run": false, "ensure_schema": true}`
+- **响应关键字段（GDF 判定与回执依据）**：
+
+```json
+{
+  "status": "ok",                  // ok / skipped / dry_run / failed；GDF 只认 ok 为「上图完成」
+  "space": "gkx_chain",
+  "wrote": true,
+  "vertex_counts": {"chain": 53, "segment": 1220, "enterprise": 0, "institution": 0},
+  "edge_counts": {"belongs_to": 1220, "depends_on": 0, "participates": 0},
+  "vertices_written": 1273,        // 实际写入点数（点数稳定判定③用）
+  "edges_written": 1220,
+  "skipped_total": 0,
+  "dwd_rows": {"industry_chain": 53, "industry_chain_node": 1220, "...": "读取的 DWD 行数"},
+  "industry_index": {"status": "ok|skipped|failed", "index_version": "...", "indexed": N, "detail": "..."},
+  "industry_index_version": "20261102174000",   // 末段 rebuild 成功后的版本；跳过/失败 = null
+  "trace_id": "..."
+}
+```
+
+### 5.2 向量 rebuild（我方 `POST /internal/industry/embed/rebuild`；**GDF 禁止调用**，硬闸 #4）
+
+- 请求体：可空（锚点自动取自本次上图读到的同一批 DWD 链/节点名，索引与图点同源）
+- 响应：`{"code": 0, "data": {"indexed": N, "index_version": "...", "kinds": {...}}, "msg": ""}`；`code≠0` → HTTP 503
+- **`index_version` 格式 = 时间戳字符串 `yyyyMMddHHmmss`**（如 `20261102174000`；round2 问 9/11 答复）
+- collection：`gkxlumen_industry_anchor`（dim 768 / COSINE），整库 drop+create 替换语义
+
+### 5.3 「点数稳定」判定（round2 问 12 答复；我方 `_index_skip_reason` 四连判，全部通过才触发 rebuild）
+
+| # | 判定 | 卡住的故障 |
+|---|---|---|
+| 1 | DWD 链五表读取无错 | 读库报错 → 锚点不可信 |
+| 2 | `chain` 点数 > 0 且 `segment` 点数 > 0 | 链表空 → 空索引顶掉好索引 |
+| 3 | `vertices_written` ≥ `chain` + `segment` 点数 | 上图写丢点 → 锚点缺码，政策 C1 大量 no_match |
+| 4 | 锚点词表非空（链名/环节名有值） | 名称全空 → 全噪声向量 |
+
+**任一不过 → rebuild 跳过**，回执 `industry_index.status=skipped` 并写明原因，`industry_index_version` 保留上一版（GDF 回执写 `skip`）。
+
+**两条已知边界（非缺陷，防误读）**：① 判定只防「丢点」不防「多点」——图空间残留历史点不影响放行，因上图与索引都是整库替换语义，风险可控；② `entity_rels` 未灌时 `participates=0` 属**预期态**（企业挂接排在 `enterprise_base` 就绪后），判定不涉及边数。
+
+### 5.4 GDF 编排落点（汇总）
+
+```text
+每日批：Wave B(CHAIN-B1-TREE) success
+  → 上图动作由我方灌链末段自动执行（GDF 无动作）
+  → GDF 读上图回执：status=ok 且 industry_index.status=ok → 记 industry_index_version（数字）
+                     status=ok 但 industry_index=skipped/failed → 回执写 skip + 沿用昨日索引
+  → 之后才允许排 Job A（政策 C1）；禁止与 rebuild 并排（硬闸 #6）
+```
+
+---
+
+## 6. 验收与回执口径
 
 | 检查项 | 期望 |
 |---|---|
@@ -92,7 +152,7 @@ flowchart LR
 
 ---
 
-## 6. 与其他文件的关系
+## 7. 与其他文件的关系
 
 | 文件 | 关系 |
 |---|---|
