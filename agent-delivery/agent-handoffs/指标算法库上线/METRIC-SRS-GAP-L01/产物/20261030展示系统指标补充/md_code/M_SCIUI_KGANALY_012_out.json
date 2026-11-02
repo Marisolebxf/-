@@ -1,0 +1,125 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_012",
+  "metric_name": "分析洞察（科技知识图谱·指标展示·图查询资产·深入分析）",
+  "facts": {
+    "ui_mount": "QueryAssetDeepAnalysisDrawer.jsx:119-127「分析洞察」Card——analysis.insights.map 渲染（Tag type + Text text 三条：核心发现/关联提示/数据说明）；生成器 queryAssetDeepAnalysis.js:36-46",
+    "ui_generator": "queryAssetDeepAnalysis.js:18-34 buildDeepAnalysis——hashSeed（31 进制滚动哈希）+seededInt 确定性种子随机：nodeCount 18..86 / edgeCount node..4n / density=e/(n(n-1)/2) / bridgeCount 2..9 / score 72..96；insights 三条模板文案填参",
+    "ui_insight_templates": [
+      "核心发现：在「{field}」领域识别 {bridgeCount} 个桥接节点，建议优先关注跨机构合作边。",
+      "关联提示：与标签「{tags}」相关的子结构可用于{scenario}。",
+      "数据说明：来源 {source}；当前为演示级 Mock 分析，正式环境由图分析服务返回。（自带 Mock 披露）"
+    ],
+    "ui_asset_source": "mockData.js:839+ graphQueryAssets 六条 mock 资产（AI 产学研合作子图/量子计算技术演进报告/生物医药机构关联图/新能源合作路径桑基/…），ServiceDisplay.jsx:60-74 导入、:1683 挂 Drawer",
+    "jiuxin_table_count_live": 218,
+    "asset_registry_absence": {
+      "dev": "gkxlumenx 542 表词族（asset/报表/看板/registry/dashboard/report）无查询资产登记面——graphQueryAssets 所示『资产』（子图/报告/图表）无 DB 面",
+      "gkx": "gkx 280 表专利/学者要素域，无资产/看板登记面",
+      "jiuxin": "久新 218 表 ADS 结果面（图/合作/人才域），词族 feedback/model 0 命中（族级快照在案），无资产登记面"
+    },
+    "jiuxin_nodes_total": 19430,
+    "jiuxin_edges_total": 587252,
+    "sample_frame": {
+      "nodes": 5000,
+      "induced_edges": 38383,
+      "frame_rule": "ads_technology_graph_node ORDER BY technology_node_id LIMIT 5000（001 同款确定性采样框）"
+    },
+    "derived_bridge": {
+      "definition": "桥接节点=采样框内跨社区边端点（community_id 不同）——UI 文案『桥接节点』的图分析口径落点",
+      "cross_community_edges": 13132,
+      "bridge_nodes": 3973,
+      "cross_edge_ratio_pct": 34.21
+    },
+    "derived_communities": {
+      "definition": "采样框内 community_id 去重计数（直读久新图库社区标注，非算法重算）",
+      "community_count": 460,
+      "top3_sizes": [
+        [
+          "tgc_eb6df842b46e918d4d4e7f1d576ce708",
+          1046
+        ],
+        [
+          "tgc_b46766fa95186fbd5d4e34a299b67946",
+          960
+        ],
+        [
+          "tgc_38ff2ffc7e3f5d2769f46a388070ffd2",
+          921
+        ]
+      ]
+    },
+    "derived_cross_domain_ratio": {
+      "definition": "跨域边占比（UI 参数 x%）：以 relation_type 复合边（多类型关系边）占比为最近似口径",
+      "multi_type_edges": 0,
+      "ratio_pct": 0.0,
+      "top3_rel_types": [
+        [
+          "WEAK_DEPENDENCY",
+          16628
+        ],
+        [
+          "PATENT_CONVERGENCE",
+          14287
+        ],
+        [
+          "KNOWLEDGE_DEPENDENCY",
+          6045
+        ]
+      ]
+    },
+    "ui_generator_repro_asset001": {
+      "node": 61,
+      "edge": 176,
+      "density_pct": 9.6,
+      "bridge": 7,
+      "communities": 5,
+      "cross_domain_pct": 34,
+      "note": "queryAssetDeepAnalysis.js hashSeed/seededInt 移植复现（Python 端口），asset-001 输入与 UI 完全同值——确定性生成器可精确复现"
+    },
+    "ui_insight_repro_asset001": [
+      "核心发现：在「人工智能」领域识别 7 个桥接节点，建议优先关注跨机构合作边。",
+      "关联提示：与标签「合作网络、产学研」相关的子结构可用于风险核查单 URL 跳转预览。",
+      "数据说明：来源 ADS_KG_SUBGRAPH；当前为演示级 Mock 分析，正式环境由图分析服务返回。"
+    ]
+  },
+  "derived": [
+    {
+      "name": "桥接节点数（真图实算）",
+      "value": 3973,
+      "basis": "久新真图 5000 节点框，跨社区边 13132 条的端点去重"
+    },
+    {
+      "name": "社群数（真图实算）",
+      "value": 460,
+      "basis": "采样框内 community_id 去重（直读图库社区标注）"
+    },
+    {
+      "name": "跨域边占比（真图实算）",
+      "value": 0.0,
+      "basis": "多 relation_type 复合边 0 条 / 框内边 38383"
+    },
+    {
+      "name": "UI 模拟值对照（asset-001）",
+      "value": "桥接 7 / 社群 5 / 跨域 34%",
+      "basis": "hashSeed 种子随机数移植复现——与真图实算值无对应关系（纯演示参数）"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "查询资产登记面（graphQueryAssets 所示子图/报告/图表资产）",
+      "how": "dev 542 表 + gkx 280 表 + 久新 218 表词族（asset/report/dashboard/registry/看板）",
+      "hits": "0——三源均无资产登记面；资产清单为 mockData 写死 6 条"
+    },
+    {
+      "what": "图分析服务返回面（UI 数据说明自注『正式环境由图分析服务返回』）",
+      "how": "三源词族（analysis/insight/service_result）",
+      "hits": "0——无洞察文本落盘面；洞察生成器为前端 queryAssetDeepAnalysis.js 种子随机模板"
+    }
+  ],
+  "support_judgment": "部分支持",
+  "support_rationale": "洞察=模板文本+数值参数：数值参数（桥接节点/社群数/跨域边占比）久新真图采样框内可实算（本脚本实算在案）；但『资产』实体登记面三源缺失→资产粒度洞察生成链断裂（分析对象不可寻址），文本模板本身是 UI 固定文案——部分支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "洞察为资产分析截面输出，无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=探针快照日（久新图为单版本快照）；洞察为截面分析输出，非年度基期概念"
+}

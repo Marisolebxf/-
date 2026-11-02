@@ -1,0 +1,128 @@
+{
+ "metric_id": "M_SCIUI_TALENTIR_003",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/talent-trend/components/CostTab.jsx:221",
+  "repos/demo-ui-science/src/pages/talent-trend/components/CostTab.jsx:243",
+  "repos/demo-ui-science/src/pages/policy-tracking/simulation/sharedCharts.jsx:711",
+  "repos/demo-ui-science/src/pages/talent-trend/data.js:1474"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现该指标名——主需求《科技信息展示系统和科技专题服务系统.md》人才引进推荐评估章（:2305-2470）无「引进效果指数」；最近邻是 :2424 引进成本预测「历史成本趋势追踪（放大显示引才成本的历史变化趋势，辅助分析历年引进投入与效果）」——行为在、指标名与算式无；核增需求与算法库两份真源 0 命中"
+ },
+ "facts": {
+  "gkx_table_count": 280,
+  "gkx_intro_effect_like_tables": [
+   "dwd_org_recruit_info"
+  ],
+  "dev_intro_effect_like_tables": [
+   "gkxlumenx_ads.impact_prediction",
+   "gkxlumenx_ads.policy_effect",
+   "gkxlumenx_ads.svc_attraction_recommend",
+   "gkxlumenx_cms.cms_pano_cluster_effect",
+   "gkxlumenx_dwd.enterprise_recruit",
+   "gkxlumenx_dwd.policy_effect_eval",
+   "gkxlumenx_ods.dwd_org_recruit_info",
+   "gkxlumenx_topic_enterprise.ent_recruit_candidate"
+  ],
+  "jiuxin_table_count": 210,
+  "jiuxin_intro_effect_like_tables": [],
+  "jiuxin_capability_model_formula": "0.25*科研毅力+0.25*创新能力+0.40*学科匹配度+0.10*政治倾向；政治倾向无数据统一50分",
+  "jiuxin_capability_dimension_codes": [
+   "INNOVATION_CAPABILITY",
+   "POLITICAL_ORIENTATION",
+   "RESEARCH_PERSEVERANCE"
+  ],
+  "jiuxin_capability_assessment_rows": 99996,
+  "jiuxin_capability_overall_nonnull": 99996,
+  "jiuxin_potential_result_rows": 100000,
+  "jiuxin_potential_composite_nonnull": 80170,
+  "jiuxin_potential_composite_min_max_avg": [
+   0.55993,
+   95.882025,
+   50.0
+  ],
+  "jiuxin_profile_intro_cols": []
+ },
+ "derived": [
+  {
+   "key": "jiuxin_capability_overall_coverage_pct",
+   "value": 100.0,
+   "numerator": 99996,
+   "denominator": 99996,
+   "note": "分子=ads_talent_capability_assessment.overall_score 非空行数；分母=同表总行数（同表同 WHERE 全量非采样）——capability 综合评分面自身覆盖度，非引进效果指数"
+  },
+  {
+   "key": "jiuxin_potential_composite_coverage_pct",
+   "value": 80.17,
+   "numerator": 80170,
+   "denominator": 100000,
+   "note": "分子=ads_talent_potential_result.potential_composite_score 非空行数；分母=同表总行数（同表全量）——潜力动量面自身覆盖度，非引进效果指数"
+  },
+  {
+   "key": "introduction_effect_index",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "不可算——『引进效果指数』评分口径三源未立项：capability 四维（科研毅力/创新/学科匹配/政治倾向）与 potential 五维（近期影响/产出动量/引用动量/领导力/主题扩展）均无『引进-产出对位』维；三源无引进事件台账（到岗时间/引进投入），引进前后对比的分母无源；按 B10 不写伪分，此键留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 引进效果评分面（表名 introduc/recruit/attract/onboard/hire/effect/impact/outcome 词族）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx（280 表）词族扫",
+   "hits": 1,
+   "hit_detail": "命中 ['dwd_org_recruit_info']——逐表语义核对：无一张是引进效果/引进产出评分结果面（gkx 为要素明细库，无评分工程）"
+  },
+  {
+   "probe": "dev 引进事件/效果承载（gkxlumenx_* 全 schema introduc/recruit/attract/onboard/hire/effect/impact/talent 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_* 16 schema（542 表）",
+   "hits": 8,
+   "hit_detail": "命中 ['gkxlumenx_ads.impact_prediction', 'gkxlumenx_ads.policy_effect', 'gkxlumenx_ads.svc_attraction_recommend', 'gkxlumenx_cms.cms_pano_cluster_effect', 'gkxlumenx_dwd.enterprise_recruit', 'gkxlumenx_dwd.policy_effect_eval', 'gkxlumenx_ods.dwd_org_recruit_info', 'gkxlumenx_topic_enterprise.ent_recruit_candidate']——语义排除：招聘/一般 impact 表，无引进效果评分结果面"
+  },
+  {
+   "probe": "久新引进效果评分面（210 表 introduc/recruit/attract/onboard/hire 词族）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（210 表，2026-11-01 实测）词族扫 + ads_talent_capability_dimension_metric 维度枚举核对",
+   "hits": 0,
+   "hit_detail": "表名 0 命中（[]）；capability 维度枚举 = ['INNOVATION_CAPABILITY', 'POLITICAL_ORIENTATION', 'RESEARCH_PERSEVERANCE']——无『引进』维；profile 96 列引进词族命中 []"
+  },
+  {
+   "probe": "需求原文「引进效果指数」定义段",
+   "source": "doc",
+   "sql": "rg 引进效果/效果指数 三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份需求说明书均未出现「引进效果指数」指标名（主需求 :2424 引进成本预测叶只述「历年引进投入与效果」趋势追踪行为，无算式）；UI effectScore 为 data.js:1474 random(55,92) mock 演示值"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：『引进效果指数』评分口径三源未立项（capability 四维无引进维、potential 五维是学者自身动量非引进-产出对位、无引进事件台账），依赖侧仅原始事实列（profile 计数列）——按 Lane 6 框架（仅原始事实列则完全不支持，评分口径缺口登记待裁定）判完全不支持",
+  "替代面读数：capability 综合评分面覆盖 100.0%（99996/99996）；potential 动量面覆盖 80.17%（80170/100000）——两面都是『学者能力』面，语义≠引进效果，登记为升档候选口径（若甲方裁定引进效果=能力面代理）",
+  "久新活库：实测 210 张（2026-11-01 探测日），正文不写死表总数",
+  "mock 披露：CostTab trendOption 消费的 effectScore 为 data.js:1474 random(55,92) 演示值；sharedCharts.jsx:713 实查为 NewPolicyPredictionChart 通用预测图（y 轴名『效果指数』，政策效果推演组件复用位）——派单 mount 勘误在回执登记，UI mock 值不作数据证据（B10）",
+  "B11 对账：capability 99,996/100,000 与 TALENTIR_002 族内记录零漂移；potential 100,000 与 TALENTIR_004 profile 行数一致；gkx 280 表与共享快照一致",
+  "升档触发器（B10）：①建引进事件台账（引进主体×到岗年×投入）+ 裁定效果=引进前后产出对比口径 → 转换可算升完全转换支持；②甲方裁定引进效果=capability/potential 能力面代理 → 部分支持（语义披露）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件为快照型评估（效果指数无年度序列承载；CostTab trend 7 年为 mock 演示值不参与判定）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "99996",
+   "99996",
+   "100000",
+   "80170",
+   "280",
+   "210",
+   "96",
+   "55",
+   "92",
+   "20261101"
+  ]
+ }
+}

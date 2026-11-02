@@ -1,0 +1,140 @@
+{
+  "metric_id": "M_SCIUI_DATATHM_063",
+  "batch": "S3-05",
+  "metric_name": "资源总数",
+  "ui_evidence": [
+    "repos/demo-ui-science/src/pages/data-resources/components/AccessSourceAnalysisDetail.jsx:373 (<Statistic title=\"资源总数\" value={channels.reduce((s, c) => s + c.count, 0)} suffix=\"个\" />)",
+    "repos/demo-ui-science/src/pages/data-resources/components/AccessSourceAnalysisDetail.jsx:371 (归集总量 Σ volume=33,670，与资源总数并列)",
+    "repos/demo-ui-science/src/pages/data-resources/components/AccessSourceAnalysisDetail.jsx:363 (渠道数 channels.length=5，三卡并列)",
+    "repos/demo-ui-science/src/pages/data-resources/mockData.js:101-107 (accessSourceAnalysis.channels 5 渠道) (五渠道 count: 485/356/245/120/50)"
+  ],
+  "requirement_trace": {
+    "named_in_srs": false,
+    "note": "「资源总数」字面三份说明书 0 命中。语义锚 SRS 接入视窗 seq 351「渠道归集数据量统计」（自动统计并展示各渠道归集的数据量）与主需求 :2613 渠道归集语境——本读数是 seq 351 渠道汇总统计的「条数维」总计读数；组件注释自标「需规 seq 351–355」"
+  },
+  "facts": {
+    "ui": {
+      "mock_channels_count_5": true,
+      "mock_resource_total_sum": 1256,
+      "mock_volume_total_sum": 33670,
+      "mock_share_sum_pct": 100.0,
+      "mock_detail_rows": 12,
+      "mock_detail_channel_distinct": 5,
+      "mock_detail_vs_channels_total_gap": 1244
+    },
+    "three_source": {
+      "dev_table_total": 542,
+      "dev_registry_hits": [
+        "gkxlumenx_cfg.cfg_model_registry",
+        "gkxlumenx_cfg.model_registry",
+        "gkxlumenx_job.xxl_job_registry"
+      ],
+      "gkx_table_total": 280,
+      "gkx_hits": [],
+      "gkx_dwd_dim_source_code_rows": 4,
+      "gkx_dwd_dim_source_code_cols_sorted": [
+        "create_time",
+        "created_time",
+        "creater",
+        "dwd_id",
+        "insert_remark",
+        "is_deleted",
+        "operator_remarks",
+        "rid",
+        "source_code",
+        "source_name",
+        "table_data_source",
+        "updated_time",
+        "updater"
+      ],
+      "jiuxin_table_total": 218,
+      "jiuxin_resource_hits_sorted": [
+        "ads_city_subfield_resource_yearly",
+        "ads_institution_subfield_resource_yearly",
+        "ads_recommendation_resource_direction",
+        "ads_research_resource_shortage_yearly",
+        "ads_resource_benchmark_city",
+        "ads_resource_optimization_recommendation",
+        "ads_resource_optimization_recommendation_evidence"
+      ],
+      "jiuxin_desc_paper_count_present": true
+    },
+    "table_level_approximation_from_036": {
+      "three_source_all": 1032,
+      "three_source_all_asof": "2026-11-01（lane7 快照日；久新 2026-11-02 实跑已 215 张，036 口径沿用其探测日，本件漂移已登记）",
+      "three_source_no_backup": 930,
+      "note": "M_SCIUI_DATATHM_036_out.json derived（dev 542 + gkx 280 + 久新 210 全口径；剔备份 930）——表级「数据表总数」近似，非资源条目口径"
+    }
+  },
+  "derived": [
+    {
+      "key": "resource_total_by_channel",
+      "value": null,
+      "numerator": null,
+      "denominator": null,
+      "note": "正式口径 Σ count(c)（渠道×资源条数登记面）三源无承载面——mock 1256 为演示值不作数据证据（B10）"
+    },
+    {
+      "key": "resource_total_table_approximation_all",
+      "value": 1032,
+      "numerator": null,
+      "denominator": null,
+      "note": "表级近似：dev 542 + gkx 280 + 久新 210（036 产物互引；含备份/配置/空表；久新 2026-11-02 实跑 215 张，036 口径沿用 2026-11-01 探测日）"
+    },
+    {
+      "key": "resource_total_table_approximation_no_backup",
+      "value": 930,
+      "numerator": null,
+      "denominator": null,
+      "note": "表级近似剔备份：1032 - dev 备份 3 - gkx 备份 99（036 产物互引；配置 schema 与空表未剔）"
+    }
+  ],
+  "absence_probe": [
+    {
+      "probe": "资源登记/目录词族（resource|catalog|inventory|metadata|registry）",
+      "source": "dev",
+      "sql": "information_schema.tables WHERE table_schema LIKE 'gkxlumenx%' AND table_name REGEXP ...",
+      "hits": 3,
+      "hit_detail": "542 表词族命中 3 张（['gkxlumenx_cfg.cfg_model_registry', 'gkxlumenx_cfg.model_registry', 'gkxlumenx_job.xxl_job_registry']）——模型配置/调度注册语义排除，dev 侧无资源目录登记面"
+    },
+    {
+      "probe": "资源登记/归集词族（resource|catalog|collect|inventory|registry）",
+      "source": "gkx",
+      "sql": "SHOW FULL TABLES FROM gkx + 词族过滤（经 _gkxdb.py 2026-11-02 实跑）",
+      "hits": 0,
+      "hit_detail": "280 表唯一近邻 dwd_dim_source_code（数据源维度表 4 行：['dwd_id', 'source_code', 'rid', 'source_name', 'create_time', 'created_time', 'updated_time', 'creater', 'updater', 'table_data_source', 'operator_remarks', 'is_deleted', 'insert_remark']，登记数据来源编码非资源条目）——语义排除"
+    },
+    {
+      "probe": "资源登记词族（resource）",
+      "source": "jiuxin",
+      "sql": "SHOW TABLES + DESC 两张 resource 命名表（Doris，information_schema 无权限）",
+      "hits": 7,
+      "hit_detail": "218 张 ads 面命中 7 张：ads_city_subfield_resource_yearly（27,720 行，city×subfield×year 论文/人才/项目计数）与 ads_institution_subfield_resource_yearly（985,555 行，institution×subfield×year）——「resource」指论文计量资源非接入数据资源条目，语义排除；无接入资源目录登记面",
+      "live_vs_snapshot_note": "2026-11-02 实跑 215 张 vs lane7 快照（2026-11-01）210 张：新增 5 张 ads_talent_*（honor_detail/integrity_score_demo/media_sentiment/topic_value_evidence/topic_value_summary），0 张消失——人才面扩充，resource 词族命中数不变（B11 漂移登记）"
+    }
+  ],
+  "support_judgment": "部分支持",
+  "notes": [
+    "判档：表级资源近似面（三库表清单+计数）三源结构+数据双在——但「渠道×资源条数」口径登记面（资源目录/归集台账）三源逐一零命中 → 部分支持",
+    "mock 披露：资源总数 1256 = Σ channels.count（485+356+245+120+50）；同区归集总量 33,670 = Σ volume；share 合计 100.0% 自洽；但同组件 seq 352 明细面仅 12 行（asd-001~012），汇总 1256 vs 明细 12 量级断裂——汇总卡与明细表非同一登记面（B10 不作数据证据）",
+    "口径双维披露：同名「归集」读数有 count（资源条数，个）与 volume（数据量）两维，本件取 count 维；volume 维归 M_SCIUI_DATATHM_067",
+    "B11 对账：dev 542/gkx 280 与 lane7 快照零漂移；久新快照 210（2026-11-01）→ 2026-11-02 实跑 215（新增 5 张 ads_talent_*）——活库增长漂移已登记（B5/B11），resource 词族命中数不变"
+  ],
+  "base_years_used": [],
+  "base_years_missing": [],
+  "base_years_note": "本件为存量盘点型（无年度序列需求）",
+  "ctx_refs": {
+    "note": "正文引用型数字登记（外部参照/跨件引用）",
+    "refs": [
+      "542",
+      "280",
+      "210",
+      "215",
+      "1032",
+      "930",
+      "1256",
+      "33670",
+      "12"
+    ]
+  }
+}

@@ -1,0 +1,129 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_068",
+ "batch": "S3-05",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:426",
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:421",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:35"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「连接活跃度」字面；语义锚 SRS seq 344「资源接口状态跟踪」（三指标语境——mock 注释自标「seq 344：连接活跃度/调用频率/失败率」）；活跃度算式与统计周期无定义"
+ },
+ "facts": {
+  "dev_table_count": 542,
+  "gkx_table_count": 280,
+  "jiuxin_table_count_snapshot_20261101": 210,
+  "dev_registry_like_tables": [
+   "gkxlumenx_app.app_article_collect",
+   "gkxlumenx_bi.jimu_report_data_source",
+   "gkxlumenx_bi.onl_drag_dataset_head",
+   "gkxlumenx_bi.onl_drag_dataset_item",
+   "gkxlumenx_bi.onl_drag_dataset_param",
+   "gkxlumenx_codegen.gen_datasource_conf"
+  ],
+  "dev_registry_semantic_note": "6 张命中全为 BI 配置/收藏——非连接监测，语义排除（同 056/057）",
+  "gkx_collect_like_tables": [
+   "dwd_org_changerecord_info"
+  ],
+  "gkx_collect_semantic_note": "dwd_org_changerecord_info=机构变更记录——语义排除（同 056/057）",
+  "connection_monitor_absence_note": "连接/链路状态监测面（connection/link/heartbeat/monitor 词族）三源 0 命中（L4 探针扩展核）——连接活跃度的前提面未立项；sys_log 系统操作日志语义排除（057 已登）",
+  "ui_mount_render_block": "OverviewWindow.jsx:421-437 资源接口状态跟踪渲染块（interfaceStatusMetrics.map——三指标 Progress percent+status 色）",
+  "ui_mount_label": "连接活跃度 label（ism[0]）——value 92.4% status good",
+  "ui_mount_context_monitor": "OverviewWindow.jsx:377-398 ApplicationStatusMonitor 合并块（resourceUsageStats：平均响应 245ms/异常告警 12 条严重 2）",
+  "ui_mount_context_rate": "OverviewWindow.jsx:413-419 接口成功率 99.2%（stats.successRate）——同区语境读数",
+  "ui_mount_section_title": "OverviewWindow.jsx:423「资源接口状态跟踪」区标题",
+  "ui_mock_interface_status_metrics": {
+   "连接活跃度": {
+    "value": 92.4,
+    "status": "good"
+   },
+   "调用频率": {
+    "value": 88.6,
+    "status": "good"
+   },
+   "失败率": {
+    "value": 0.8,
+    "status": "good"
+   }
+  },
+  "ui_mock_context_stats": {
+   "avgResponseTime": 245,
+   "successRate": 99.2,
+   "alarmCount": 12,
+   "alarmCritical": 2
+  },
+  "ui_mock_note": "三指标 status 全 good（演示态圆润）；92.4% 无量纲定义（分母是什么？活跃连接/总连接？活跃时长/监测时长？——口径完全悬空）；与 seq 344 三字段注释自标对应"
+ },
+ "derived": [
+  {
+   "key": "data_connection_activity",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『数据连接活跃度』= 连接/链路活跃程度的百分比读数——连接状态监测面（哪些连接何时活跃/空闲/断开）三源零承载（L4 探词 0 命中）。与 057 同根更悬空：日均尚有算式形态（Σ调用/天数），活跃度连算式形态都无定义（百分比分母悬空）。mock 92.4% 为手写常量（status 全 good）。按 B10 留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 连接/链路状态监测面（connection/link/heartbeat/monitor/call/usage 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表，L4 探针 2026-11-01 实跑+连接词族扩展核）",
+   "hits": 0,
+   "hit_detail": "registry 词族 6 张语义排除（同 056/057）；call/usage/connection/link/heartbeat 词族 0 命中——dev 无连接监测面；sys_log 系统操作日志语义排除（057 已登）"
+  },
+  {
+   "probe": "gkx 连接监测面（同词族）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx（280 表）词族扫（经 _gkxdb.py，L4 探针）",
+   "hits": 0,
+   "hit_detail": "collect 词族 1 张语义排除（同 056/057）；无连接监测面"
+  },
+  {
+   "probe": "久新连接监测面（同词族）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（L4 探针 211 表）词族扫",
+   "hits": 0,
+   "hit_detail": "ads_* 无连接/链路监测表（分析面按主题切分，无基础设施监控域）"
+  },
+  {
+   "probe": "需求原文连接活跃度定义段",
+   "source": "doc",
+   "sql": "rg 连接活跃度|活跃度 三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份说明书未出现「连接活跃度」字面；语义锚 SRS seq 344「资源接口状态跟踪」（三指标语境——mock 注释自标「seq 344：连接活跃度/调用频率/失败率」）；活跃度算式（分母=总连接/监测时长？）与统计周期均无定义"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：连接活跃度是连接状态监测面的百分比读数——监测面三源零承载（与 057 同根）且比日均更悬空：057 尚有算式形态（Σ调用/天数），活跃度连算式形态都无定义（百分比分母悬空）→ 判完全不支持",
+  "三指标连坐论证：interfaceStatusMetrics 三指标（连接活跃度/调用频率/失败率）是一套监控三件套（RED/USE 范式：Up/Rate/Error）——共享同一监测前提，前提缺位则三读数连坐（057 已判调用频率，本件判活跃度，失败率若族内立项同判）",
+  "UI 语义核：连接活跃度挂在总体视窗应用状态监控区（ApplicationStatusMonitor 合并块）——与 resourceUsageStats（平均响应 245ms/异常告警 12 条严重 2/接口成功率 99.2%）同区成套——整区是 USE 方法（Utilization/Saturation/Errors）的展示形态，监测前提全缺",
+  "mock 披露：92.4/88.6/0.8 三值 status 全 good（演示态圆润）；百分比无量纲定义（分母悬空——活跃连接数/总连接数？活跃时长/监测时长？）；resourceUsageStats 语境值（245ms/99.2%/12/2）同为手写常量，不作活跃度原料（B10）",
+  "B11 对账：三源表数 542/280/210；L4 探针与 056/057 共享（同一语义排除证据零漂移）",
+  "升档触发器（B10）：①连接监测面立项（网关/探针心跳：连接×时间戳×状态）→ 活跃度直查→ 升完全直接支持；②乙方自建拨测（定时探测连接可用性）→ 升完全转换支持（拨测周期与算式须登记）；③维持现状 → 完全不支持（UI 三指标建议「暂无数据」）",
+  "权威口径参照：USE 方法（Utilization/Saturation/Errors）——连接活跃度是 Utilization 维；GB/T 33850-2017 服务监控——状态类指标的周期采集规范"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "连接状态时间序列整体缺承载（监测面不存在即无期次）"
+ ],
+ "base_years_note": "活跃度为监测快照读数；期次序列无需求承载",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "542",
+   "280",
+   "210",
+   "92.4",
+   "88.6",
+   "0.8",
+   "245",
+   "99.2",
+   "12",
+   "421",
+   "426",
+   "344"
+  ]
+ }
+}

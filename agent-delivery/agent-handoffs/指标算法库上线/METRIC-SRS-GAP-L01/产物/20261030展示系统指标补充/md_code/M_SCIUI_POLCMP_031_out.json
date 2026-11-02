@@ -1,0 +1,148 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_031",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1007",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1026",
+  "repos/demo-ui-science/src/pages/policy-tracking/PolicyPanorama.jsx:3765"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「执行效率/兑现速度」未出现在三份需求真源；语义源=UI mock 实现层（policyEvaluationReports.dimensions 权重行，评分维形态）"
+ },
+ "facts": {
+  "gkx_table_count": 280,
+  "gkx_speed_like_tables": [
+   "dwd_fund_bond_allocation",
+   "dwd_fund_bond_allocation_bak_20260911",
+   "dwd_fund_equity_sector_allocation",
+   "dwd_fund_equity_sector_allocation_bak_20260911"
+  ],
+  "gkx_speed_like_trap_note": "allocation 命中 4 张为基金配置表（fund_bond/equity_sector_allocation——基金资产配置语境），非政策拨付",
+  "gkx_policy_col_count": 33,
+  "gkx_policy_time_cols": [
+   "publish_date",
+   "publish_year",
+   "implementation_date",
+   "expire_date",
+   "created_time",
+   "updated_time",
+   "updater"
+  ],
+  "gkx_policy_rows": 20000,
+  "gkx_policy_impl_date_nonnull": 0,
+  "gkx_policy_text_gongzuori_rows": 1706,
+  "gkx_policy_text_daozhang_rows": 74,
+  "gkx_policy_text_xianshi_rows": 220,
+  "dev_speed_like_tables": [],
+  "dev_policy_family_rows": {
+   "policy_base_info": 40000,
+   "policy_effect_eval": 0,
+   "policy_simulation_result": 0,
+   "enterprise_fund_project": 0
+  },
+  "dev_policy_effect_eval_key_cols": [
+   "eval_batch_no",
+   "effect_index",
+   "execution_effect_score",
+   "eval_stage",
+   "exec_status"
+  ],
+  "jiuxin_table_count": 203,
+  "jiuxin_time_like_cols": {
+   "ads_research_problem_deployment": [
+    "approved_direction_ids"
+   ],
+   "ads_research_problem_development_snapshot": [
+    "monthly_cycle_status"
+   ],
+   "ads_research_problem_profile": [
+    "lifecycle_status"
+   ],
+   "ads_research_problem_release": [
+    "approval_policy",
+    "approved_at",
+    "decision_approval_policy"
+   ]
+  }
+ },
+ "derived": [
+  {
+   "key": "gkx_policy_text_daozhang_share_pct",
+   "value": 0.37,
+   "numerator": 74,
+   "denominator": 20000,
+   "note": "分子=文本含「到账」的政策行数（title+content+keypoints 拼串 LIKE），分母=gkx.dwd_policy_base 全表 20,000 行；同表同池（B3）；语义=政策自述到账承诺的覆盖面，不是实测兑现时长"
+  },
+  {
+   "key": "gkx_policy_impl_date_nonnull_share_pct",
+   "value": 0.0,
+   "numerator": 0,
+   "denominator": 20000,
+   "note": "分子=implementation_date 非空且非零日期行数，分母=全表 20,000；同表同池（B3）；语义=政策侧施行时间锚可用率——它只界定「政策窗口起点」，不承载企业侧兑付时点"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 兑付流水时间对（申报时点×到账时点）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx；280 表名扫 cash/disburse/arrive/pay/grant/allocat/到账/拨付",
+   "hits": 4,
+   "hit_detail": "allocation 命中 4 张 dwd_fund_bond/equity_sector_allocation（含 bak）——基金资产配置表（债券/股票配置比例），基金投资语境非政策拨付；无任何「企业×政策×申报时间×到账时间」流水表——兑现速度的事件对结构零承载"
+  },
+  {
+   "probe": "gkx 政策表企业侧时间列",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM gkx.dwd_policy_base；33 列时间类盘点",
+   "hits": 7,
+   "hit_detail": "时间列仅 publish_date/publish_year/implementation_date/expire_date/created_time/updated_time——全部是政策生命周期锚（政策什么时候发布/施行/到期），无企业申报/到账时间；implementation_date 非空率见派生键（政策窗口起点可用，企业侧事件零承载）"
+  },
+  {
+   "probe": "dev 执行效率结果表",
+   "source": "dev",
+   "sql": "information_schema.TABLES 扫 cash/disburse/arrive/allocat/pay + 政策族行数 + effect_eval 列",
+   "hits": 0,
+   "hit_detail": "无到账/拨付时间表；policy_effect_eval 含 execution_effect_score（执行效果分）与 eval_batch_no/eval_stage（批次列——若有数据即可构成效率序列）但实测 0 行；policy_simulation_result 0 行、enterprise_fund_project（approve_date 列在）0 行（B4 情形②：结构在值空）"
+  },
+  {
+   "probe": "久新兑付/审批时长面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES；203 表全表 DESC 列扫 approv/cash/disburse/arrive/duration/cycle/elapsed/_days",
+   "hits": 4,
+   "hit_detail": "命中均为语义无关：ads_research_problem_deployment.approved_direction_ids/approval_policy（科研问题部署审批方向）、ads_research_problem_release.approved_at（发布审核时间——平台自身工单时间非政策兑现）、ads_research_problem_development_snapshot.monthly_cycle_status与 ads_research_problem_profile.lifecycle_status（问题研发周期状态，cycle 词根误中）；无任何兑付时长/审批周期结果面"
+  },
+  {
+   "probe": "需求原文「执行效率」定义段",
+   "source": "doc",
+   "sql": "rg 执行效率/兑现速度/到账周期 三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份需求真源均未出现「执行效率/兑现速度」指标名（「平均到账周期」是同族姊妹件 POLCMP_025 的语义，亦未在需求出现）；本件语义源=UI mock 维度名（policyEvaluationReports dimensions 权重行）"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：执行效率（兑现速度）的两个候选口径——平均兑现时长（申报→到账）或按时兑现率（限期内占比）——分子分母都依赖「企业×政策」兑付事件流水（带申报时点与到账时点），该流水三源零承载。与 POLCMP_029 执行率/POLCMP_001 落实率共享族级缺口，本件独立留证",
+  "mock 披露：policyData.js:1007/:1026 两份评估报告的「执行效率」78/90 分是 weighted dimensions 演示值（weight:20 参与总分加权），PolicyPanorama.jsx:3765 消费——演示值不参与支持度结论；注意 UI 把「执行效率」实现为 0-100 评分维而非时长读数，口径本身由前端定义",
+  "文本面边界：政策文本「个工作日」承诺（如 30 个工作日内拨付）是政策自述时限（制度设计），不是实测兑现时长——时限承诺的执行情况恰恰需要本件缺失的兑付流水来度量",
+  "B11 对账：gkx 政策 20,000 行与共享快照零漂移；dev 政策族行数与 Lane6 探针零漂移",
+  "升档触发器（B10）：接入政务兑付流水（免申即享平台兑付记录含申请时间/拨付时间，厦门 15 天/衢州 24 小时类口径）→ 事件对闭合，平均时长与时限达标率均可直算，升完全转换支持"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "兑付事件时间序列"
+ ],
+ "base_years_note": "本件无兑付时间序列可算（事件对零承载）；implementation_date 仅界定政策窗口起点",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "20000",
+   "0",
+   "1706",
+   "74",
+   "220",
+   "280",
+   "40,000",
+   "203"
+  ]
+ }
+}

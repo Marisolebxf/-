@@ -1,0 +1,131 @@
+{
+  "metric_id": "M_SCIUI_DATATHM_038",
+  "metric_name": "数据资产数量",
+  "mount": "repos/demo-ui-science/src/pages/data-resources/components/AssetApplicationBasicSummary.jsx:63（数据资产列 name；命中计数 filtered.length :178）",
+  "category": "无业务逻辑数值类",
+  "srs_seq": "378-379（应用视窗/资产应用总览/应用基本情况汇总+多维筛选，excel_row 381-382）",
+  "support_judgment": "部分支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "逻辑资产目录面三源零承载，无登记年份维",
+    "物理存量口径为快照计数，无年度基期"
+  ],
+  "base_years_note": "部分支持档：物理口径基期=探针快照日（dev 2026-11-01 / 久新 210 表快照+212 live 复核），非年度基期；逻辑资产口径无基期",
+  "facts": {
+    "generated": "20261102",
+    "precedent_reuse": [
+      "M_SCIUI_DATATHM_036_out.json",
+      "_probe_s304_l7_quality_out.json"
+    ],
+    "dev_table_count_all": 542,
+    "dev_data_schema_table_count": 444,
+    "dev_config_schema_table_count": 98,
+    "gkx_table_count": 280,
+    "gkx_backup_like_table_count": 99,
+    "gkx_regular_table_count": 181,
+    "jiuxin_table_count": 210,
+    "jiuxin_nonzero_table_count": 206,
+    "jiuxin_table_count_live": 212,
+    "dev_asset_like_tables": [
+      "gkxlumenx_bi.onl_drag_dataset_head",
+      "gkxlumenx_bi.onl_drag_dataset_item",
+      "gkxlumenx_bi.onl_drag_dataset_param",
+      "gkxlumenx_ods.dwd_org_annual_report_asset"
+    ],
+    "gkx_asset_like_tables": [
+      "dwd_org_annual_report_asset",
+      "dwd_org_annual_report_asset_bak_zczeconv"
+    ],
+    "jiuxin_asset_like_tables": [],
+    "dev_asset_hits_semantic": "dev 命中 2 组：gkxlumenx_bi.onl_drag_dataset_*（3 张 BI 拖拽报表配置面，语义=报表配置非数据资产目录）+ gkxlumenx_ods.dwd_org_annual_report_asset（企业年报资产明细——财务资产科目，语义≠数据资产），均语义排除",
+    "gkx_asset_hits_semantic": "gkx 命中 dwd_org_annual_report_asset(_bak_zczeconv)——同企业年报财务资产，语义排除",
+    "ui_mock_asset_rows": 7,
+    "ui_mock_asset_names_sorted": [
+      "基础研究主题库",
+      "医学影像数据集",
+      "工程设计规范库",
+      "农业科技数据库",
+      "环境监测数据集",
+      "AI训练数据集",
+      "材料性能库"
+    ],
+    "ui_mock_data_type_distribution": {
+      "半结构化数据": 2,
+      "实时流数据": 1,
+      "结构化数据": 2,
+      "非结构化数据": 2
+    },
+    "ui_mock_disclosure": "assetRanking 7 行为叙事截断演示清单（每行含 seq 378 六字段画像：数据类型/应用主体/部署位置/使用周期/业务模块/使用单位），非全量资产登记；『命中 N 条』随筛选联动",
+    "absence_probe": [
+      {
+        "db": "dev",
+        "what": "542 表扫 asset/资产 词族 + 数据资产目录存在性",
+        "hit": [
+          "gkxlumenx_bi.onl_drag_dataset_head",
+          "gkxlumenx_bi.onl_drag_dataset_item",
+          "gkxlumenx_bi.onl_drag_dataset_param",
+          "gkxlumenx_ods.dwd_org_annual_report_asset"
+        ],
+        "verdict": "命中均语义排除（BI 报表配置面/企业年报财务资产）；无逻辑数据资产目录（数据集登记面）"
+      },
+      {
+        "db": "gkx",
+        "what": "280 表扫同词族",
+        "hit": [
+          "dwd_org_annual_report_asset",
+          "dwd_org_annual_report_asset_bak_zczeconv"
+        ],
+        "verdict": "命中为企业年报财务资产（语义排除）；无数据资产目录"
+      },
+      {
+        "db": "jiuxin",
+        "what": "live 212 表扫同词族",
+        "hit": [],
+        "verdict": "零命中——ads_* 分析面无资产目录"
+      },
+      {
+        "db": "doc",
+        "what": "三份需求真源检索『数据资产数量/资产数量』",
+        "hit": [],
+        "verdict": "字面零命中；seq 378 原文『为每项被应用的数据资产整理基础信息』——资产是列举对象非计数指标；cfg_metric 无条目"
+      }
+    ]
+  },
+  "derived": [
+    {
+      "key": "data_asset_count_logical_catalog",
+      "value": null,
+      "numerator": null,
+      "denominator": null,
+      "note": "逻辑资产口径（数据集登记目录）三源零承载——无资产目录面，逻辑资产数量不可得"
+    },
+    {
+      "key": "data_asset_count_physical_three_source_all",
+      "value": 1032.0,
+      "numerator": null,
+      "denominator": null,
+      "note": "物理存量口径全口径=036 件同源复用（542+280+210=1,032；含 99 备份+98 配置 schema）"
+    },
+    {
+      "key": "data_asset_count_physical_no_backup",
+      "value": 926.0,
+      "numerator": null,
+      "denominator": null,
+      "note": "物理存量口径剔备份剔空=539+181+206=926（036 件剔备份口径 930 的空表收紧变体：久新取非空 206）"
+    },
+    {
+      "key": "data_asset_count",
+      "value": null,
+      "numerator": null,
+      "denominator": null,
+      "note": "B10：资产语义边界（物理表 vs 逻辑数据集）未裁，主读数 null；多口径并列交付（B10 多口径并列）"
+    }
+  ],
+  "notes": [
+    "久新活库 212 live 复核 vs 快照 210：活库增长披露（教训 6 不写死）",
+    "口径核：UI 无独立资产数 StatCard，派单值=assetRanking 行数（mock 7）；seq 378 资产是列举对象非计数指标",
+    "同族先例：DATATHM_036（表总数 部分支持：多口径 1,032/930）/037（库均表数）——本件共享其计数底账与判档根因",
+    "语义排除三处：BI 拖拽配置面/企业年报财务资产（dev+gkx）——『asset』字面≠数据资产",
+    "逻辑资产目录（数据集登记面）三源零承载——006 件价值分级共享同一基建缺口"
+  ]
+}

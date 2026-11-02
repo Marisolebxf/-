@@ -140,7 +140,7 @@ flowchart LR
 | `dwd_org_financing_info` | `org_id`、`id`、`funding_amount`、`completion_date`、`funding_round`、`investors_name` | `gkxlumenx_dwd.svc_org_finance_event`，类型 `FINANCING`。只挂本批圈定机构 |
 | `dwd_org_invest_info` | `org_id`、`id`、`investment_amount`、`inv_org_id`、`inv_name`、`created_time` | 同表，类型 `INVEST` |
 
-GDF 执行时只操作 `gkxlumenx_*`。圈定和投融资事件进 `gkxlumenx_dwd`，卡面和基础指标进 `gkxlumenx_ads`。图谱挂表、Nebula 不在这条抽取里。GDF 不直写图库。内容运营仍写 CMS 接口，不写 ADS。
+GDF 执行时只操作 `gkxlumenx_*`。圈定和投融资事件进 `gkxlumenx_dwd`，卡面和基础指标进 `gkxlumenx_ads`。图谱挂表、Nebula 不在这条抽取里。GDF 不直写图库。§3.6 内容运营不进 GDF 派单：它仍是现网 CMS 写接口，不写 ADS，也不由 GDF 作业承接。
 
 ## 2. 谁触发、写哪套库
 
@@ -150,7 +150,7 @@ GDF 执行时只操作 `gkxlumenx_*`。圈定和投融资事件进 `gkxlumenx_dw
 | 十模型 | 另一次 `POST /internal/svc/run-models` | demo 的 circle / card | `demo_gkxlumenx_ads` 模型表 | 抽样行数，不是全量 |
 | 图谱挂表 | 另一次 `POST /internal/svc/graph/ner` 等。空请求默认不落库 | demo 的 circle / card | hang 写 `demo_gkxlumenx_dwd`；图库 space 代码固定 `demo_gkx_chain` | hang 有行；图库行数未闭合 |
 | ES | 人手 `POST /internal/etl/svc-org` | 配置默认 `demo_gkxlumenx_*` | 索引别名 `gkx_svc_org`；水位在 `gkxlumenx_cfg` | 文档 43296；之后卡面更新未再记水位 |
-| 内容运营 | CMS 写接口 | 视图跨库读 demo circle/card | `gkxlumenx_cms`，不写 ADS | overlay 7 行；视图 43299 行 |
+| 内容运营 | CMS 写接口。不进 GDF 派单（§3.6） | 视图跨库读 demo circle/card | `gkxlumenx_cms`，不写 ADS | overlay 7 行；视图 43299 行 |
 | 专题查询 | 专题服务读 | 只读 `demo_gkxlumenx_ads` / `_dwd` | 不写 | 代码如此，不是产线 ADS |
 | GDF | 无作业 | — | 执行时只应操作 `gkxlumenx_*`，且不直写图库 | 未跑通 |
 
@@ -174,7 +174,7 @@ flowchart TB
   ROOT --> G["GDF 产线作业<br/>未建，未跑通"]
 ```
 
-圈定和基础指标在同一次 `run-pipeline` 里。十模型、图谱、ES、内容运营都是另外的触发。GDF 还没有这条作业。
+圈定和基础指标在同一次 `run-pipeline` 里。十模型、图谱、ES、内容运营都是另外的触发。内容运营不进 GDF 派单。GDF 还没有这条作业。
 
 ### 3.2 加工逻辑 · 圈定、卡面、事件
 
@@ -280,6 +280,8 @@ flowchart LR
 
 ### 3.6 加工逻辑 · 内容运营
 
+这一节只记现网。`SYSINT-06-21-01-L03` 的 GDF 加工派单不包含本节：不建 CMS 表，不写 `ServiceOrgService`，不把 `cms_entity_overlay` / `cms_svc_business_domain` / `v_cms_svc` 写进派单包。
+
 `diagram_id=SVC-PROC-LOGIC-CMS-20261102`
 
 ```mermaid
@@ -298,7 +300,7 @@ flowchart LR
   OV --> VIEW
 ```
 
-视图读 demo 圈定和卡面。写路径不写 ADS。
+视图读 demo 圈定和卡面。写路径不写 ADS。这张图不进入 §3.7 的 GDF 目标态。
 
 ### 3.7 加工逻辑 · GDF 目标态
 
@@ -318,7 +320,7 @@ flowchart LR
   ADS -.-> ES
 ```
 
-实线是 GDF 团队以后只操作 `gkxlumenx_*` 时的边界。虚线表示现在没有这条作业，ES 和图谱也不是 GDF 直接写的。demo 库上已经跑过的 Python，不能填进这张图当成产线已跑通。
+实线是 GDF 团队以后只操作 `gkxlumenx_*` 时的边界。虚线表示现在没有这条作业，ES 和图谱也不是 GDF 直接写的。§3.6 内容运营不在这张图里，也不进派单包。demo 库上已经跑过的 Python，不能填进这张图当成产线已跑通。
 
 ### 3.8 库分隔
 
@@ -351,6 +353,286 @@ flowchart TB
   ESOLD["卡面后来又更新"] --> NOWATER["没有新的水位行<br/>索引不自动跟上"]
   DRY["图谱空请求"] --> NOROW["dry_run 不落库"]
 ```
+
+### 3.10 专题八个分析菜单
+
+图 1 红框是 `http://10.50.69.111:30892`（`lumen-ui-topic`）侧栏「产业服务链分析」的八个菜单。菜单在 `src/router/menu.ts`。三条路由：
+
+| 菜单 | 路由 | 查询 |
+|---|---|---|
+| 服务机构产业领域分析 | `/service/institution-judgment` | `workspace=field&tab=coverage` |
+| 服务机构新增趋势分析 | 同上 | `workspace=trend&tab=trend` |
+| 服务机构技术力评估分析 | 同上 | `workspace=capability&tab=capability` |
+| 服务链短板分析 | `/service/chain-analysis` | `workspace=chain&tab=chain` |
+| 服务链图谱分析 | 同上 | `workspace=graph&tab=graph` |
+| 深圳服务链现状分析 | 同上 | `workspace=shenzhen&tab=shenzhen` |
+| 引入服务机构推荐分析 | `/service/institution-decision` | `workspace=attract&tab=attract` |
+| 培育服务机构推荐分析 | 同上 | `workspace=cultivate&tab=cultivate` |
+
+`demo-ui-topic` 同名菜单把阶段写进浏览器本地任务，用页内样本出数。那条路径不服务 30892，本节不展开。
+
+八页共用这一条展示链。改筛选不建任务。点「开始分析」才 `POST /topicAsync/topic/v1/analysis/tasks`。同用户同条件已有在跑任务就打开那条；当天已成功就打开结果。过程页只显示阶段，不显示结果数字。用户点「查看结果」后，前端 `GET /topicAsync/topic/v1/analysis/tasks/{id}/result`，只画这次快照。
+
+Java `gkxlumen-topic-async-service` 把叶子交给 `lumen-topic-py` 的 `POST /internal/gkx-svc/analysis/tasks/create`。topic-py 再调 `lumen-algo-py`：
+
+| 叶子 | 算法路径 |
+|---|---|
+| `org_coverage` | `/internal/v1/svcan/analysis/org_coverage` |
+| `org_trend` | `/internal/v1/svcan/analysis/org_trend` |
+| `tech_power` | `/internal/v1/svcan/analysis/tech_power` |
+| `shortboard` | `/internal/v1/svcan/analysis/shortboard` |
+| `graph` | `/internal/v1/svcan/analysis/graph` |
+| `shenzhen` | `/internal/v1/svcan/analysis/shenzhen` |
+| `attract` | `/internal/v1/svcan/analysis/attract` |
+| `cultivate` | `/internal/v1/svcan/analysis/cultivate` |
+
+装配只读，不写 ADS。库名是连接上的 `{ods}` / `{dwd}` / `{ads}`。L01 核对到的专题读面落在 `demo_gkxlumenx_*`。下面表里的物理表按这个前缀理解。角标上的 `metric_id` 是页面挂的身份证；种子作业没有把其中若干 ID 写成 ADS 行，§5 仍把那些 ID 标成未覆盖。口径未确认的项保持未闭合，本文不改 D4。
+
+图上任务 `SVC-20261030-…` 的快照本叶没有重放。条上的具体分数不写入本文。
+
+这八页不进 §1.2 的 GDF 抽取，也不进 §3.6 的内容运营。
+
+#### 服务机构产业领域分析
+
+`diagram_id=SVC-MENU-FIELD-20261102`。叶子 `org_coverage`。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=field"]
+  PICK["对比篮选定 1 到 50 家机构<br/>产业下拉只筛展示字段"]
+  BTN["开始分析"]
+  JAVA["Java 建任务 org_coverage"]
+  ALGO["算法装配覆盖矩阵<br/>再润色结论文字"]
+  GET["查看结果 GET result"]
+  BOARD["热力图或矩阵图<br/>广度 TOP3 / 深度 TOP / 合作建议"]
+
+  OPEN --> PICK --> BTN --> JAVA --> ALGO --> GET --> BOARD
+```
+
+过程四步：任务提交与分析对象冻结；装载机构领域覆盖与服务深度快照；计算服务广度与深度矩阵；生成领域覆盖结论与可视化。
+
+空对比篮不能开始。未传机构时，算法按命中产业领域数从服务机构卡面里取候选，最多 50 家。页面自己的开始按钮要求对比篮里已有机构。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 机构名称、城市 | 结果矩阵里的机构行 | `{ads}.svc_org_card` 的 `name_cn` / `city`。只保留卡面里真实存在的 `org_id` |
+| 产业领域轴 | 矩阵字段，最多 12 个，按覆盖机构数降序 | `{dwd}.enterprise_industry_chain` 的 `chain_code` / `chain_name` |
+| 色块或条上的服务深度 | 格子分值，1 到 100 | 同一行 `chain_score` 乘 100 后取整并夹到 1–100。未命中的格子不下发，页面留白。角标 `M_SVC_ORG_COVERAGE_DEPTH`。口径 Q-SVCCHAIN-02 未闭合 |
+| 服务广度 | 该机构在当前可见领域里的格子数 | 上表格子计数。角标 `M_SVC_ORG_COVERAGE_BREADTH`。种子作业不写这个 `metric_id` |
+| 产业下拉之后的图 | 前端用下拉的产业编码或名称去对 `chain_code` / `chain_name` | 对上了只留这些领域，广度和深度 TOP 按可见格子重数。一个都对不上就仍画全部领域。这一步不再查库 |
+| 服务广度 TOP3 | 可见格子的广度降序取 3 | 同源格子，无第二张表 |
+| 服务深度 TOP 领域（按机构） | 每家取可见格子里深度最高的领域，再按该深度降序取 3 | 同源格子 |
+| 合作建议 | 润色状态为 ok 时显示模型写的叙述和建议句；否则显示规则句 | 规则句只用上面的广度、深度和机构名。模型只改 `narration.text` 和建议句，不改矩阵数字。无覆盖或无模型密钥则跳过，任务仍成功 |
+| 暂无覆盖数据 | 选中机构在可见领域里没有格子 | 不参与 TOP。不补 0 |
+
+#### 服务机构新增趋势分析
+
+`diagram_id=SVC-MENU-TREND-20261102`。叶子 `org_trend`。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=trend"]
+  PICK["选定主领域、对比领域和时间窗"]
+  BTN["开始分析"]
+  JAVA["Java 建任务 org_trend"]
+  ALGO["按成立年份聚合年度新增<br/>再算热度档"]
+  GET["查看结果 GET result"]
+  BOARD["折线、年度明细、热度星级"]
+
+  OPEN --> PICK --> BTN --> JAVA --> ALGO --> GET --> BOARD
+```
+
+过程四步：任务提交与趋势窗口冻结；装载主领域与对比领域新增序列；计算年度新增与热度研判；生成趋势曲线与研判结论。
+
+算法把全量年度点放进快照。前端按 3 / 5 / 8 年窗口截断展示。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 分领域年度新增 | 折线和年度明细的点数 | `{dwd}.enterprise_industry_chain` 连接 `{ads}.svc_org_card`，再连接 `{ods}.dwd_org_base_info`。按 `chain_code`、`chain_name`、`incorporation_year` 对 `org_id` 去重计数。角标 `M_SVC_NEW_CNT`。口径 Q-SVC-010 未闭合 |
+| 全量年度新增 | 未指定领域时的总序列 | 先读 `{ads}.svc_metric_series`，`metric_id` 为 `M_SVC_NEW_CNT` 或 `M_SVC_ORG_NEW_COUNT`。这张序列没有点时，按成立年份回算 |
+| 市场热度星级 | 近 3 年均值相对再往前 3 年均值的增幅 | 增幅 ≥20% 为 5 星高热，≥10% 为 4 星较高，≥0 为 3 星平稳，≥−10% 为 2 星降温，其余 1 星低迷。不足 3 个年度点，或没有前序基期，不评级。页面角标走 `GAP-SVC-ORG-HEAT`。`M_SVC_ORG_MARKET_HEAT` 种子不写。Q-SVCCHAIN-02 未闭合 |
+| 热度研判文字 | 润色只改叙述 | 星级和档位词保持上面的规则。失败则留下规则稿，任务仍成功 |
+| 曲线上的机构画像入口 | 点名称打开机构抽屉 | 名称来自序列点上的机构，抽屉另读机构卡面。趋势图本身不另算一张评分表 |
+
+#### 服务机构技术力评估分析
+
+`diagram_id=SVC-MENU-CAP-20261102`。叶子 `tech_power`。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=capability"]
+  PICK["对比篮 2 到 5 家<br/>页面上的维度权重只作配置展示"]
+  BTN["开始分析"]
+  JAVA["Java 建任务 tech_power<br/>产业编码进入任务指纹"]
+  ALGO["读技术力得分最新批次<br/>产业只筛机构名单"]
+  GET["查看结果 GET result"]
+  BOARD["综合得分、维度、排名、雷达、核心结论"]
+
+  OPEN --> PICK --> BTN --> JAVA --> ALGO --> GET --> BOARD
+```
+
+过程四步：任务提交与分析条件冻结；装载对比机构与技术力指标快照；计算维度得分并合成技术力评价；生成横向对比排名与雷达结果。
+
+少于 2 家不能开始。页面权重不写入 CREATE 参数，前端不做加权求和。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 机构名称 | 得分行左连卡面 | `{ads}.svc_tech_power_score` 最新 `calc_batch_id` 左连 `{ads}.svc_org_card.name_cn` |
+| 技术力综合得分、排名、雷达 | 行上的 `score`，按分排序 | 同一张 `svc_tech_power_score`。角标 `M_SVC_ORG_TECH_SCORE`。五维在 `dimension_scores`。代码注明当前等权 20。Q060、Q-SVCCHAIN-01 未闭合 |
+| 产业下拉 | 只留下该产业挂链上的 `org_id` | `{dwd}.enterprise_industry_chain`。挂链上没有机构则整页空，不回退全量 |
+| 核心结论文字 | 润色只改叙述 | 少于 2 家跳过。得分、排名、权重保持规则结果 |
+| 暂无技术力评估结果 | 快照 `tech` 为空 | 不补 0 分 |
+
+#### 服务链短板分析
+
+`diagram_id=SVC-MENU-SHORT-20261102`。叶子 `shortboard`。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=chain"]
+  PICK["选定产业"]
+  BTN["开始分析"]
+  JAVA["Java 建任务 shortboard"]
+  ALGO["有产业则按挂链重算六环节<br/>无产业则读短板表最新批次"]
+  GET["查看结果 GET result"]
+  BOARD["链路轨道、环节机构数、平均深度、瓶颈列表"]
+
+  OPEN --> PICK --> BTN --> JAVA --> ALGO --> GET --> BOARD
+```
+
+过程四步：任务提交与产业领域冻结；装载服务链环节与机构覆盖快照；计算环节强度并识别短板瓶颈；生成链路短板结论与可视化。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 六环节轨道 | 快照 `gap` / `shortboard.stages` | 选定产业时：先用 `{dwd}.enterprise_industry_chain` 取出该产业机构，再按服务环节汇总覆盖格。未选产业时：`{ads}.svc_chain_gap` 最新 `calc_batch_id` |
+| 环节服务机构数 | 行上 `org_count_in_stage` | 上一步的环节行。页面角标 `GAP-SVC-CHAIN-SEGMENT`。种子不写 `M_SVC_CHAIN_SEGMENT_ORG_COUNT` |
+| 平均服务深度 | 行上 `avg_depth` | 产业重算时，是该环节覆盖格深度的平均。深度与覆盖矩阵同一套 `chain_score×100`。种子不写 `M_SVC_CHAIN_SEGMENT_AVG_DEPTH` |
+| 瓶颈堵点 | `runtime_flag` 非空的环节 | 0 家为 blank，不多于 1 家为 weak，平均深度低于 55 为 bottleneck。规则号 Q-SVCCHAIN-03，未闭合。页面角标 `GAP-SVC-CHAIN-BOTTLENECK`。种子不写 `M_SVC_CHAIN_BOTTLENECK` |
+| 供给不足 | 产业挂链上没有机构，或没有环节行 | 文案「该产业服务供给数据不足，暂无法判定」。不补 0 |
+| 未发现明显短板 | 有环节行且没有 flag | 文案「当前演示规则下未发现明显短板」 |
+| 短板研判文字 | 润色只改叙述 | 档位词保持上面的 flag。Q-SVCCHAIN-03 的声明随叙述下发 |
+
+#### 服务链图谱分析
+
+`diagram_id=SVC-MENU-GRAPH-20261102`。叶子 `graph`。画布另走同步读面。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=graph"]
+  PICK["选定产业和滤镜<br/>切滤镜不建任务"]
+  DRAW["出图 POST /svc/topic/v1/service/eco-graph"]
+  PY["topic-py GET /internal/v1/svcan/models/relation"]
+  HANG["只取包络里的 hang 点边"]
+  CANVAS["画布、两列密度、度中心性"]
+  BTN["开始分析另建 graph 任务"]
+  LEAF["算法 /analysis/graph 装配另一份点边"]
+
+  OPEN --> PICK --> DRAW --> PY --> HANG --> CANVAS
+  PICK --> BTN --> LEAF
+```
+
+过程四步仍登记在任务上：任务提交与产业领域冻结；装载主体节点与关系边快照；构建服务生态关系图谱；生成图谱统计与探索视图。页面画布只渲染 eco-graph 返回的 `nodes` / `edges`。`relation_top` 不画成图。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 画布上的点 | eco-graph 的 `hang_nodes`，或历史包络 `hang.nodes` | 带产业时锁定该切片，切片为空不回退全量。当前 `fetch_models(kind=relation)` 填的是 `{ads}.svc_relation_chain` 最新批次的 `relation_top`（`org_id` / `density` / `centrality` / `hop_level`），查询本身不下发 `hang_nodes`。没有 hang 点时画布为空 |
+| 画布上的边 | 同一包络的 `hang_edges`，两端都必须在 hang 点内 | 允许的展示类型是 `belongs_to`、`participates`、`supplies`、`depends_on`。投资、合作、人才流动在展示层并进 `participates`。图库 `demo_gkx_chain` 的实际点数、边数仍是 §7 未闭合 |
+| 子网密度、生态密度 | 两列只显示 eco-graph 返回值 | topic-py 按可见点边算 `2E/(N×(N−1))`。N 小于 2 时页面显示 0。角标 `M_SVC_RELATION_DENSITY`。Q062 未闭合。前端不用自己的公式覆盖这两列 |
+| 度中心性 TOP5 | 跟当前可见子网一致 | 点的度来自当前边集。角标仍是 `M_SVC_RELATION_DENSITY` |
+| 生态影响力 | 页面挂红问号 | 角标 `GAP-SVC-GRAPH-INFLUENCE`。种子不写 `M_SVC_GRAPH_INFLUENCE`，页面不输出评分 |
+| 异步叶子里的另一份点边 | `GET result` 的 graph 装配 | `{ads}.svc_org_card`，加上 `{ods}.dwd_org_invest_info`、`dwd_org_shareholder_info`、`dwd_org_subsidiary_info`，以及 `{dwd}.enterprise_supply_chain`。选定产业时先用挂链限定机构。这份点边不替代上面的画布 |
+
+#### 引入服务机构推荐分析
+
+`diagram_id=SVC-MENU-ATTRACT-20261102`。叶子 `attract`。名单数字走同步接口。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=attract"]
+  PICK["选定产业和筛选<br/>页面权重不进任务参数"]
+  BTN["开始分析"]
+  JAVA["Java 建任务 attract"]
+  VIEW["查看结果之后才要名单"]
+  LIST["POST /svc/topic/v1/service/rec-list<br/>kind=attract"]
+  BOARD["招引名单、优先级、推荐理由、AI 叙述"]
+
+  OPEN --> PICK --> BTN --> JAVA --> VIEW --> LIST --> BOARD
+```
+
+过程五步：任务提交与推荐条件冻结；权限与配置校验；候选机构数据汇聚；推荐算法计算；招引推荐名单组装。
+
+页面上的四维权重只展示，不重算名单分。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 招引综合分、优先级、名次 | rec-list 行 | `{ads}.svc_attraction_recommend` 最新 `calc_batch_id` 的 `attraction_index`、`priority_level`、`rank_no`，按 `rank_no` 升序。角标 `M_SVC_REC_ATTRACT_SCORE`。Q063、Q-SVC-010、Q-SVCCHAIN-05 未闭合。装配注释里的权重是 35/30/20/15，页面不按这个权重重算已落库的分 |
+| 机构名称、城市、服务类型 | 同一查询左连卡面 | `{ads}.svc_org_card` |
+| 推荐理由 | 行上 `recommend_reason` | 同一张推荐表。页面标注演示口径 |
+| 产业筛选后的名单 | 链码过滤 | `{dwd}.enterprise_industry_chain`。链码对不上挂链时按 2026-10-22 的名称映射降到旧码；仍对不上则空名单，不回退全量。映射是静态快照，重灌后应删 |
+| AI 叙述 | 只在润色状态为 ok 时显示 | 叙述来自 rec-list 包络顶层。模型不改分数 |
+| 候选机构数 | 页面没有单独的计数按钮 | `M_SVC_REC_CANDIDATE_CNT` 已退出统计，本节不给它做结果项 |
+
+异步叶子 `/analysis/attract` 读的是同一张 `svc_attraction_recommend`，选定产业时再用挂链过滤。页面名单以 rec-list 为准。
+
+#### 培育服务机构推荐分析
+
+`diagram_id=SVC-MENU-CULT-20261102`。叶子 `cultivate`。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=cultivate"]
+  PICK["四维权重默认 25/30/25/20<br/>权重合计不是 100 不能开始"]
+  BTN["开始分析"]
+  JAVA["Java 建任务 cultivate<br/>权重不写入任务参数"]
+  VIEW["查看结果之后才要名单"]
+  LIST["POST /svc/topic/v1/service/rec-list<br/>kind=cultivate"]
+  BOARD["培育名单、成长阶段、建议、AI 叙述"]
+
+  OPEN --> PICK --> BTN --> JAVA --> VIEW --> LIST --> BOARD
+```
+
+过程五步：任务提交与培育条件冻结；权限与配置校验；本土机构数据汇聚；培育评估计算；培育名单与建议组装。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 培育综合分 | rec-list 行上的分 | `{ads}.svc_cultivation_recommend` 最新 `calc_batch_id` 的 `cultivation_index`，按分降序。页面权重不重算这列。角标 `GAP-SVC-REC-CULTIVATE-SCORE`。Q063、Q-SVCCHAIN-05 未闭合。装配注释里的默认权重是 25/30/25/20 |
+| 优先级、成长阶段、建议 | 同行的 `priority_level`、`growth_stage`、`advice` | 同一张培育推荐表。建议文本标注演示口径 |
+| 机构名称、城市、服务类型 | 左连卡面 | `{ads}.svc_org_card` |
+| 产业筛选后的名单 | 与引入名单同一套链码过滤 | `{dwd}.enterprise_industry_chain`。对不上则空名单 |
+| AI 叙述 | 润色状态为 ok 才显示 | 不改分数 |
+| 候选机构数 | 页面没有单独计数 | 同引入菜单，`M_SVC_REC_CANDIDATE_CNT` 不作为本页结果项 |
+
+#### 深圳服务链现状分析
+
+`diagram_id=SVC-MENU-SZ-20261102`。叶子 `shenzhen`。
+
+```mermaid
+flowchart TB
+  OPEN["打开菜单<br/>workspace=shenzhen"]
+  PICK["勾选对比指标<br/>完整度不在可选项里"]
+  BTN["开始分析"]
+  JAVA["Java 建任务 shenzhen"]
+  ALGO["装配四城对比和梯队"]
+  GET["查看结果 GET result"]
+  BOARD["评价框架、城市柱、梯队仪表"]
+
+  OPEN --> PICK --> BTN --> JAVA --> ALGO --> GET --> BOARD
+```
+
+过程四步：任务提交与对比指标冻结；装载五城市服务链基准数据；计算深圳横向对比与梯队位置；生成现状对比结论与图表。
+
+全不选对比指标时，页面提示至少选一个，并保留上次图形。没有城市场景时图表区为空。缺城不补列，缺值显示「无数据」，不填 0。
+
+| 结果项 | 页面上怎么来 | 数据血缘 |
+|---|---|---|
+| 统一评价框架说明 | 快照里的框架名和口径句 | 文案是「同一产业、同一统计周期、同一指标口径」。Q-SVCCHAIN-04 未闭合。无框架字段时仍显示这张说明卡 |
+| 服务机构数量 | 城市柱的规模 | 深圳、北京、广州取 `{ads}.svc_org_card` 按 `city` 计数。上海在卡面为 0 行时该格为空。角标 `M_SVC_SZ_SCALE`。选定产业时，深圳列改按 `{dwd}.enterprise_industry_chain` 计数 |
+| 平均技术力 | 城市柱的技术力 | 跨城可比值取 `{dwd}.sz_city_benchmark.avg_tech_power`。另有 `tech_local`：本库 `{ads}.svc_tech_power_score` 的均值，样本注释为 300 家，口径不同，只作参照。角标 `M_SVC_ORG_TECH_SCORE` |
+| 服务网络密度 | 只有深圳格有数 | `{ads}.svc_relation_chain` 最新批次的汇总 `density`。其他城市为空。角标 `M_SVC_RELATION_DENSITY`。Q062 未闭合 |
+| 服务链完整度 | 快照里有，页面不放进可选列表、柱图和结论 | 深圳按 `{ads}.svc_chain_gap` 里有机构的环节数除以 6。其他城市取对标表 `chain_completeness` 除以 100。页面角标走缺口问号。种子不写 `M_SVC_SZ_CHAIN_COMPLETENESS` |
+| 梯队仪表 | 只认快照里的 `tier` | `{dwd}.sz_city_benchmark` 各城 `avg_tech_power` 从高到低排序。深圳排前 2 为第一梯队，前 4 为第二梯队，其余第三梯队。对标表没有深圳行则「梯队待定」，仪表无数值。`GAP_SZ_TIER` 未闭合。页面不把 `M_SVC_SZ_TIER` 写进种子 |
+| 对比结论文字 | 润色只改叙述 | 梯队措辞保持上面的排序。基准城演示口径随叙述下发 |
+| 全国平均列 | 快照里的对照列 | 规模是卡面城市均值。技术力是对标表均值。密度和完整度这两格标缺失 |
 
 ## 4. 指标计算
 
@@ -534,7 +816,9 @@ flowchart LR
 - 种子指标每个 `metric_id` 的行数。年报内存合成写进卡面的行数。技术力 400 行按六类 `model_id` 的分布。
 - `gkxlumenx_ods.dwd_org_base_info` 与 demo 同为 189116 行，未逐行比对。
 - `belongs_to`、`service_provide` 在图库里是否另有边。MySQL hang 与 demo ADS `graph_edge` 里是 0。
+- 图 1 任务 `SVC-20261030-…` 的结果快照未重放。条上的分数不作为本文实测值。
+- `GET /internal/v1/svcan/models/relation` 当前查询只填 `relation_top`。图谱菜单画布要的 `hang_nodes` 从哪一次上图写入，未闭合。
 
 ## 8. 交给下游，本叶不做
 
-`SYSINT-06-21-01-L03` 才能写 GDF 派单包。父任务 `SYSINT-06-21-L01` 使用本链路，不在本叶落地作业。不代替 `SYSINT-06-15-L01`。不改企业 v4、产业链 v2、政策 v2，不改 06-19 / 06-20 派单包。
+`SYSINT-06-21-01-L03` 才能写 GDF 派单包。包按 §1.2，不收录 §3.6 内容运营。父任务 `SYSINT-06-21-L01` 使用本链路，不在本叶落地作业。不代替 `SYSINT-06-15-L01`。不改企业 v4、产业链 v2、政策 v2，不改 06-19 / 06-20 派单包。

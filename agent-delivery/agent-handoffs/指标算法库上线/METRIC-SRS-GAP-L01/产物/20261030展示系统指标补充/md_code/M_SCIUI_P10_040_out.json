@@ -1,0 +1,94 @@
+{
+ "metric_id": "M_SCIUI_P10_040",
+ "batch": "S3-08",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview-new/instrument-sharing-new/mockData.js:39-44",
+  "repos/demo-ui-science/src/pages/achievement-preview-new/instrument-sharing-new/InstrumentSharingNewPage.jsx:883-892"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「仪器开放共享率」指标名；但主需求文档 3565 行给出背景口径原文「开放共享仪器5612台套，共享率60.59%」（SRS 大型科学仪器共享.md:75「系统自动统计共享率及使用频率」上位覆盖）。UI mock lineage 自带口径 v1.0：源表 ads_is_share_rate / 分子表 ads_is_instrument_share。"
+ },
+ "facts": {
+  "ui_mount": "InstrumentSharingNewPage.jsx:883-892 KPIS.map → KpiTile（label/value/unit/metricId/lineage）；mock KPIS[2] 即共享率卡",
+  "ui_mock": "mockData.js:39-44 { key: shareRate, label: 共享率, value: 60.59, unit: %, metricId: M_IS_SHARE_RATE, lineage: 口径：开放共享台套数 ÷ 入网仪器总台套数 × 100%（5,612 / 9,262 = 60.59%）。源表：ads_is_share_rate；更新频率：T+1；版本：v1.0 }",
+  "ui_mock_const": "mockData.js:14 PLATFORM_PROFILE.shareRate=60.59（含 sharedTotal=5612/instrumentTotal=9262 背景：需规 3565 行 2020-12 底口径）——ui_demo_fallback 演示值",
+  "probe_jiuxin_ads_is_tables": [],
+  "probe_jiuxin_table_count_live": 218,
+  "probe_dev_ads_is_tables": [],
+  "probe_dev_table_total": 542,
+  "probe_gkx_instrument_family": [],
+  "probe_gkx_table_count": 280,
+  "probe_jiuxin_instrument_family": [],
+  "probe_jiuxin_booking_order_family": [],
+  "reqdoc_baseline": "主需求 3565 行：截止 2020-12 底，注册 499 家管理单位、入网仪器 9,262 台套、总原值 81.12 亿元、开放共享 5,612 台套、共享率 60.59%、有效订单 1,336 个（深科技创新〔2017〕117 号依据：财政资金≥30% 且单台套原值≥30 万元须入网开放）"
+ },
+ "derived": [
+  {
+   "name": "instrument_open_share_rate",
+   "value": null,
+   "note": "负结论 null 登记：分子（开放共享台套数）与分母（入网仪器总台套数）的承载源表（ads_is_instrument_share / ads_is_instrument_registry）三源均不存在，公式无法执行；UI 卡 60.59% 为需规背景数（2020-12 底快照）非库内实算。"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "jiuxin 指定源表 ads_is_instrument_share / ads_is_share_rate / ads_is* 前缀全族直查（派单指引优先项）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES LIKE 'ads_is%'（快照 jiuxin_ads_is_hits；218 表现场实数）",
+   "hits": 0,
+   "note": "派单「若实存该表且数据足判完全直接/转换支持」的前件不成立——表不存在"
+  },
+  {
+   "probe": "dev 17 schema（542 表）ads_is* / 仪器台账（instrument/equip/apparatus + open_rate/share_rate 列）",
+   "source": "dev",
+   "sql": "information_schema 词族扫描（快照 dev_ads_is_hits / dev_instrument_family_hits；命中的 chain_hotspot news_freq_score 等为无关语义）",
+   "hits": 0
+  },
+  {
+   "probe": "gkx 280 表仪器台账/共享标志列",
+   "source": "gkx",
+   "sql": "information_schema.tables 词族扫描（快照 gkx_instrument_family）；dwd_medical_device 为医疗器械注册库（10,000 行 FDA 风格），无开放共享标志列",
+   "hits": 0,
+   "note": "唯一 device 词族表 dwd_medical_device 语义错位（注册库≠共享台账，无 open/share 列）"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档理由：UI 口径 v1.0 自带源表指引（ads_is_share_rate / 分子表 ads_is_instrument_share，深圳市大型科学仪器共享平台 ADS 层），派单要求 jiuxin 直查优先——实测 jiuxin 218 表（SHOW TABLES 实数）无任何 ads_is* 表，dev 542 表 / gkx 280 表仪器台账与开放标志列零命中。分子分母两依赖均无承载，公式无法执行 → 完全不支持（派单升档条件「实存且数据足」前件不成立）。",
+  "60.59%（5,612/9,262）是主需求 3565 行的背景口径数（2020-12 底快照，来源深圳市大型科学仪器共享平台），非三源库内数据；UI mock 引用其作演示值（ui_demo_fallback 披露）。",
+  "修复路径单一明确：接入深圳市大型科学仪器共享平台 ADS 表（ads_is_instrument_registry + ads_is_instrument_share）→ 直接升完全直接支持；或对接 nrii 国家网络管理平台目录转换构建 → 完全转换支持。",
+  "本件为薄壳：共享探针 code/_shared_s308_laneC.py + 快照；本脚本仅做三源断言+判档落盘。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "2020",
+  "2021",
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_note": "共享率为存量截面读数（无时序维度）。需规背景数仅 2020-12 底单一时点（60.59%）；库内无任何年份承载。若接入共享平台 ADS 表（T+1 更新）可建年度序列，以接入年或 2020（需规快照年）为基期。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "1336",
+   "2020",
+   "218",
+   "280",
+   "30",
+   "4337",
+   "499",
+   "5,612",
+   "542",
+   "5612",
+   "60.59",
+   "81.12",
+   "9,262",
+   "9262",
+   "T+1",
+   "v1.0"
+  ]
+ }
+}

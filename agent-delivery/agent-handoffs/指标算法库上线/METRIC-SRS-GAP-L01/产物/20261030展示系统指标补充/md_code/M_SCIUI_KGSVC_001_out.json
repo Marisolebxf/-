@@ -1,0 +1,94 @@
+{
+  "metric_id": "M_SCIUI_KGSVC_001",
+  "metric_name": "业务线数据流向（桑基）（科技知识图谱·服务展示·图分析集成）",
+  "facts": {
+    "ui_mount": "ServiceDisplay.jsx:530-546 硬编码 sankey option（人才 ODS/专利 ADS/项目 JSON→图谱池→图查询/业务嵌入，5 links 值 18-50）",
+    "dev_etl_lineage_family": [
+      "gkxlumenx_job.sys_job_log",
+      "gkxlumenx_job.xxl_job_log",
+      "gkxlumenx_job.xxl_job_log_report",
+      "gkxlumenx_job.xxl_job_logglue"
+    ],
+    "dev_family_rows": {
+      "gkxlumenx_ads.industry_chain_graph_snapshot": 0,
+      "gkxlumenx_cms.cms_pano_dev_history": 0,
+      "gkxlumenx_dwd.enterprise_finance_history": 40239,
+      "gkxlumenx_dwd.enterprise_forg_finance_history": 51,
+      "gkxlumenx_dwd.enterprise_history_name": 2,
+      "gkxlumenx_dwd.enterprise_patent_history": 0,
+      "gkxlumenx_job.sys_job_log": 0,
+      "gkxlumenx_job.xxl_job_log": 0,
+      "gkxlumenx_job.xxl_job_log_report": 0,
+      "gkxlumenx_job.xxl_job_logglue": 0,
+      "gkxlumenx_ods.company_history_name": 0,
+      "gkxlumenx_topic_enterprise.chain_search_history": 9,
+      "gkxlumenx_topic_enterprise.ent_search_history": 27
+    },
+    "gkx_etl_lineage_family": [],
+    "jiuxin_etl_lineage_family": [
+      "ads_talent_mobility_flow_detail",
+      "ads_talent_mobility_yearly_flow"
+    ]
+  },
+  "derived": [
+    {
+      "source": "三源 ETL/血缘词族探针",
+      "dev_hits": [
+        "gkxlumenx_job.sys_job_log",
+        "gkxlumenx_job.xxl_job_log",
+        "gkxlumenx_job.xxl_job_log_report",
+        "gkxlumenx_job.xxl_job_logglue"
+      ],
+      "dev_rows": {
+        "gkxlumenx_ads.industry_chain_graph_snapshot": 0,
+        "gkxlumenx_cms.cms_pano_dev_history": 0,
+        "gkxlumenx_dwd.enterprise_finance_history": 40239,
+        "gkxlumenx_dwd.enterprise_forg_finance_history": 51,
+        "gkxlumenx_dwd.enterprise_history_name": 2,
+        "gkxlumenx_dwd.enterprise_patent_history": 0,
+        "gkxlumenx_job.sys_job_log": 0,
+        "gkxlumenx_job.xxl_job_log": 0,
+        "gkxlumenx_job.xxl_job_log_report": 0,
+        "gkxlumenx_job.xxl_job_logglue": 0,
+        "gkxlumenx_ods.company_history_name": 0,
+        "gkxlumenx_topic_enterprise.chain_search_history": 9,
+        "gkxlumenx_topic_enterprise.ent_search_history": 27
+      },
+      "gkx_hits": [],
+      "jiuxin_hits": [
+        "ads_talent_mobility_flow_detail",
+        "ads_talent_mobility_yearly_flow"
+      ],
+      "ui_hardcode": "5 links 值 [40,28,18,50,36]——S3-07 族级探针 flow 词族亦零命中（双探针印证）",
+      "verdict": "业务线数据流向（ODS→图谱池→应用）依赖 ETL 任务编排/血缘面——三源缺位；dev 接入登记面（S3-04 DATAIN 族查过 gkxlumenx_* 任务/批次表族）是「接入侧」非「图谱侧流向」，语义不符"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev ETL/血缘/快照词族",
+      "how": "gkxlumenx* 词族+逐张计数（本件）",
+      "hits": "合并命中见 facts（行数落键）"
+    },
+    {
+      "what": "久新 etl/snapshot 词族",
+      "how": "SHOW TABLES 词族（本件+族级双探针）",
+      "hits": "flow 族族级零命中；etl/snapshot 本件留证"
+    },
+    {
+      "what": "gkx etl/snapshot 词族",
+      "how": "280 表词族（本件）",
+      "hits": "逐一留证"
+    },
+    {
+      "what": "dev 图结构面（26 张）",
+      "how": "族级快照",
+      "hits": "全 0 行"
+    }
+  ],
+  "support_judgment": "完全不支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "UI 读数为硬编码 5 links（18-50），无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=探针快照日（当日截面）；非年度基期，非「缺年按 0 摊入」"
+}

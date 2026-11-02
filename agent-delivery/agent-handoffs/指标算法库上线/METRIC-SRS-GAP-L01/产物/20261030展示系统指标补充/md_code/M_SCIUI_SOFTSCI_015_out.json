@@ -1,0 +1,104 @@
+{
+ "metric_id": "M_SCIUI_SOFTSCI_015",
+ "batch": "S3-07-L2",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/instrument-sharing/components/InstrumentSharingPage.jsx:884",
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/instrument-sharing/components/InstrumentSharingPage.jsx:899"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求说明书未出现「选中仪器统计详情」指标名；SRS 1.1.1.1.4.6.4.1.4「仪器详细信息智能展示」（弹窗显示型号/功能/制造商/原值/服务价格/归属单位等）为上位功能覆盖。"
+ },
+ "facts": {
+  "ui_detail_fields": [
+   "利用率(usageRate%)",
+   "预约量(reservationCount 单)",
+   "服务次数(serviceCount 次)",
+   "状态(statusLabel)",
+   "所属机构(agency)"
+  ],
+  "ui_detail_field_count": 5,
+  "fields_unsupported_in_three_sources": [
+   "usageRate",
+   "reservationCount",
+   "serviceCount",
+   "statusLabel"
+  ],
+  "fields_proxy_available": [
+   "agency(同构列 gkx.dwd_medical_device.company_name)"
+  ],
+  "gkx_dwd_medical_device_rows": 10000,
+  "gkx_medical_device_company_top5": [
+   {
+    "company_name": "Highridge Medical, LLC",
+    "count": 1997
+   },
+   {
+    "company_name": "Smith & Nephew, Inc.",
+    "count": 1557
+   },
+   {
+    "company_name": "NEXXT SPINE, LLC",
+    "count": 706
+   },
+   {
+    "company_name": "GLOBUS MEDICAL, INC.",
+    "count": 676
+   },
+   {
+    "company_name": "Paragon 28, Inc.",
+    "count": 618
+   }
+  ],
+  "gkx_medical_device_company_nullcnt": 0
+ },
+ "derived": [],
+ "absence_probe": [
+  {
+   "probe": "dev 17 schema 仪器运营字段（usage/rate/reserv/service/order 列词族，表名+列名双扫）",
+   "source": "dev",
+   "sql": "information_schema.columns WHERE table_schema LIKE 'gkxlumenx%' + 词族匹配（_probe_s307_l2_out.json）",
+   "hits": 0
+  },
+  {
+   "probe": "gkx 280 表 + dwd_medical_device 15 列运营字段断言（本脚本 ops_like==[]）",
+   "source": "gkx",
+   "sql": "information_schema.columns WHERE table_schema='gkx' 词族扫描 + 15 列逐一核对",
+   "hits": 0
+  },
+  {
+   "probe": "久新 218 表（SHOW TABLES 实数）仪器运营字段表名+列名",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES + information_schema.columns 词族匹配",
+   "hits": 0
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档理由：详情卡五字段中 4 个运营字段（利用率/预约量/服务次数/状态）三源零承载（同批 SOFTSCI_004/010 已证状态与流水族，本件独立断言运营字段族）；仅「所属机构」有 gkx 医疗器械 company_name 同构列（10,000 行 0 空值）——单字段可得不足以支撑整卡。",
+  "UI 详情卡为运营读数聚合体（device 级 4 个 KPI + 1 个归属信息），其数据源只能是共享平台设备管理/订单系统。",
+  "mock 详情值（利用率 76%/预约 128 单/服务 342 次等）为演示值，不参与支持度结论。",
+  "本件为薄壳：共享快照引用 + 运营字段族断言。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "2021-2026"
+ ],
+ "base_years_note": "详情卡为单仪器实时读数（无时序），不适用基期年份；运营字段接入后以接入年为首个可观测年。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "5",
+   "4",
+   "10000",
+   "10,000",
+   "0",
+   "1997",
+   "1,997",
+   "1557",
+   "76",
+   "128",
+   "342"
+  ]
+ }
+}

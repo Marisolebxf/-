@@ -1,0 +1,242 @@
+{
+ "metric_id": "M_SCIUI_ECOSYS_001",
+ "batch": "S3-07-L2",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/innovation-ecosystem/components/InnovationEcosystemWorkbench.jsx:1957-1965",
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/innovation-ecosystem/mock/innovationEcosystemMock.js:360"
+ ],
+ "facts": {
+  "ui_mount": "InnovationEcosystemWorkbench.jsx:1957-1965 生态指标 tab 右栏「区域生态位次」compare 卡列表（label/value/hint 三元组）",
+  "ui_mock_card": "innovationEcosystemMock.js:360 { label: 跨区协作率, stage: collaboration, periods: ANNUAL_PERIODS, value: 46%, hint: 重点链路继续升温 }",
+  "ui_mock_note": "mock 46% 为演示值不参与判档（ui_demo_fallback 披露）；同组另三卡：平台能级 91/人才净流入 +8.4%/成果转化周期 4.8",
+  "ui_filter_chain": "InnovationEcosystemPage.jsx:541-567 filteredMetricCompare（关键词/分析维度/区域三重过滤）",
+  "jiuxin_table": "ads_institution_collaboration_yearly",
+  "jiuxin_rows": 14380246,
+  "jiuxin_null_year_rows": 0,
+  "jiuxin_key_columns": [
+   "collaboration_strength",
+   "collaborator_city_name",
+   "collaborator_institution_id",
+   "collaborator_province_name",
+   "institution_id",
+   "is_cross_region_collaboration",
+   "is_domestic_collaboration",
+   "is_international_collaboration",
+   "statistics_year"
+  ],
+  "jiuxin_column_total": 43,
+  "dev_table_total": 542,
+  "dev_enterprise_cooperation": "gkxlumenx_dwd.enterprise_cooperation 10 列（id/org_id/partner_type/partner_org_id/partner_name/cooperation_type/project_count/patent_count/create_time/update_time）0 行空壳",
+  "gkx_table_count": 280,
+  "jiuxin_table_count_live": 218,
+  "named_in_srs": false,
+  "named_note": "三份说明书未出现「跨区协作率」指标名（检索记录附录 A）；派单书清单挂载点空，实查定位。"
+ },
+ "derived": [
+  {
+   "name": "cross_region_collaboration_rate_yearly",
+   "value": {
+    "2015": 30.82,
+    "2016": 31.05,
+    "2017": 31.4,
+    "2018": 31.19,
+    "2019": 31.74,
+    "2020": 31.88,
+    "2021": 32.43,
+    "2022": 33.92,
+    "2023": 34.02,
+    "2024": 34.49,
+    "2025": 34.4,
+    "2026": 37.97
+   },
+   "formula": "cross_region_rate = SUM(is_cross_region_collaboration=1) / COUNT(*) × 100，按 statistics_year 分组（机构协作对粒度→年度率聚合）",
+   "source": "jiuxin ads_institution_collaboration_yearly",
+   "years": [
+    "2015",
+    "2016",
+    "2017",
+    "2018",
+    "2019",
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+    "2026"
+   ]
+  },
+  {
+   "name": "collab_pairs_yearly",
+   "value": {
+    "2015": [
+     607222,
+     187124,
+     334480,
+     272602
+    ],
+    "2016": [
+     651394,
+     202234,
+     357934,
+     293354
+    ],
+    "2017": [
+     716752,
+     225074,
+     393076,
+     323574
+    ],
+    "2018": [
+     802654,
+     250338,
+     443916,
+     358606
+    ],
+    "2019": [
+     890464,
+     282618,
+     491186,
+     399146
+    ],
+    "2020": [
+     1025760,
+     326998,
+     568160,
+     457464
+    ],
+    "2021": [
+     1164988,
+     377772,
+     641506,
+     523294
+    ],
+    "2022": [
+     1313520,
+     445484,
+     705602,
+     607678
+    ],
+    "2023": [
+     1558298,
+     530148,
+     843216,
+     714792
+    ],
+    "2024": [
+     2146142,
+     740192,
+     1167596,
+     978104
+    ],
+    "2025": [
+     3015548,
+     1037214,
+     1663100,
+     1351822
+    ],
+    "2026": [
+     487504,
+     185102,
+     229054,
+     258380
+    ]
+   },
+   "note": "[total, cross_region, international, domestic]"
+  },
+  {
+   "name": "mock_reference",
+   "value": 46,
+   "disclosure": "ui_demo_fallback：mock 46% 演示值；真实 2024 全国机构口径 34.49%（口径差：mock 为区域链路语义，库为省域跨区机构对语义）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 542 表 collaboration/cooperation 词族",
+   "source": "dev",
+   "sql": "information_schema.columns 词族扫描（_probe_s307_l2 快照）",
+   "hits": [
+    "gkxlumenx_dwd.enterprise_cooperation"
+   ],
+   "rows": 0,
+   "note": "结构空壳"
+  },
+  {
+   "probe": "gkx 280 表 collaboration 词族",
+   "source": "gkx",
+   "sql": "information_schema.columns 词族扫描（快照）",
+   "hits": 0
+  },
+  {
+   "probe": "jiuxin 218 表（SHOW TABLES 实数）collaboration 词族",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES+列扫描（快照）",
+   "hits": [
+    "ads_institution_collaboration_yearly",
+    "ads_institution_collaboration_subfield_yearly",
+    "ads_research_problem_collaboration_recommendation",
+    "ads_talent_collaborator",
+    "ads_talent_institution_cooperation"
+   ],
+   "primary": "ads_institution_collaboration_yearly"
+  }
+ ],
+ "support_judgment": "完全转换支持",
+ "notes": [
+  "判档理由：久新 ads_institution_collaboration_yearly（14,380,246 行，43 列）直接含 is_cross_region_collaboration 标志列 + statistics_year（2015-2026 全序列无空年份）——年度跨区协作率聚合即得（30.82%→37.97%）；从机构对粒度到 UI 区域链路语义需聚合转换（非 100% 直出），判完全转换支持。",
+  "口径转换点：库口径=跨省机构协作对占比（is_cross_region 按 collaborator_province_name 判定）；UI mock 语义=市内跨区（南山-宝安链路）链路率。若 UI 需市内跨区口径，需 city_location 级机构表自关联（ads_institution_profile 83,745 行含 city_location_id 可作维度）。",
+  "2026 年数据不完整（487,504 对，仅为 2025 的 16%）——年度序列使用应截止 2025（或按 metrics_as_of_date 标注截断）。",
+  "12 年序列单调上行（30.82→34.40 稳态，2026 跳升 37.97 或有收录滞后偏差），趋势与 mock「重点链路继续升温」方向一致。",
+  "本件为薄壳：复用共享快照词族面 + 久新年度聚合实算（每件独立重跑，非跨件缓存）。"
+ ],
+ "base_years_used": [
+  "2015",
+  "2016",
+  "2017",
+  "2018",
+  "2019",
+  "2020",
+  "2021",
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_missing": [
+  "2013",
+  "2014"
+ ],
+ "base_years_note": "久新序列 2015-2026 全覆盖（无空年份）；2013-2014 无数据。基期建议 2015（序列首年）；2026 为不完整年（487,504 对，16% of 2025）需截断标注。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "10",
+   "12",
+   "14,380,246",
+   "14380246",
+   "16",
+   "2015",
+   "2024",
+   "2025",
+   "2026",
+   "2146142",
+   "218",
+   "280",
+   "30.82",
+   "3015548",
+   "34.4",
+   "34.49",
+   "37.97",
+   "4.8",
+   "43",
+   "46",
+   "487504",
+   "542",
+   "8.4",
+   "83,745",
+   "83745",
+   "91"
+  ]
+ }
+}

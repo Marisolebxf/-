@@ -1,0 +1,225 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_041",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1834",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1829",
+  "repos/demo-ui-science/src/pages/policy-tracking/simulation/estimate/EstimateWorkbench.jsx:42"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「税收增长」未出现在三份需求真源（政策仿真语境的「经济效益等方面」涵盖其语义但无定义）；语义源=UI mock policySimulationParams.indicators 第 5 槽位（unit 亿元）"
+ },
+ "facts": {
+  "gkx_table_count": 280,
+  "gkx_tax_like_tables": [
+   "dwd_org_risk_tax_punish",
+   "dwd_org_risk_tax_punish_bak_20260911"
+  ],
+  "gkx_fin_rows": 90926,
+  "gkx_fin_tax_nonzero_rows": 2187,
+  "gkx_orgs_with_tax_nonzero": 1284,
+  "gkx_orgs_with_2plus_tax_years": 452,
+  "gkx_tax_by_year_top6": [
+   [
+    2025,
+    30,
+    1935017409.82
+   ],
+   [
+    2024,
+    35,
+    1541535065.6
+   ],
+   [
+    2023,
+    45,
+    1140941531.88
+   ],
+   [
+    2022,
+    39,
+    597471609.46
+   ],
+   [
+    2021,
+    39,
+    1192258065.0
+   ],
+   [
+    2020,
+    53,
+    47173269.28
+   ]
+  ],
+  "gkx_tax_punish_rows": 528,
+  "gkx_enjoy_like_tables": [
+   "dwd_agg_subsidiary_info",
+   "dwd_agg_subsidiary_info_bak_20260923",
+   "dwd_org_subsidiary_info",
+   "dwd_org_subsidiary_info_bak_20260911"
+  ],
+  "gkx_policy_col_count": 33,
+  "gkx_policy_enjoy_like_cols": [],
+  "gkx_policy_rows": 20000,
+  "gkx_policy_text_shuishou_rows": 1734,
+  "gkx_policy_text_huiji_rows": 187,
+  "gkx_policy_text_jianshui_rows": 138,
+  "dev_tax_like_tables": [
+   [
+    "gkxlumenx_dwd",
+    "risk_tax_punish"
+   ],
+   [
+    "gkxlumenx_ods",
+    "dwd_org_risk_tax_punish"
+   ]
+  ],
+  "dev_finhist_rows": 40239,
+  "dev_finhist_cols": [
+   "org_id",
+   "data_year",
+   "data_source",
+   "revenue",
+   "main_business_revenue",
+   "total_profit",
+   "net_profit",
+   "total_fixed_assets",
+   "total_assets",
+   "total_liabilities",
+   "revenue_growth_rate",
+   "profit_margin",
+   "gross_margin",
+   "rd_investment",
+   "rd_investment_ratio",
+   "rd_staff_count",
+   "create_time",
+   "update_time"
+  ],
+  "dev_finhist_tax_cols": [],
+  "dev_risk_tax_punish_rows": 528,
+  "dev_policy_family_rows": {
+   "policy_base_info": 40000,
+   "policy_effect_eval": 0,
+   "policy_simulation_result": 0,
+   "enterprise_fund_project": 0
+  },
+  "jiuxin_table_count": 203,
+  "jiuxin_tax_like_tables": [
+   "ads_talent_taxonomy",
+   "ads_talent_taxonomy_closure",
+   "ads_talent_taxonomy_metrics",
+   "ads_talent_taxonomy_node",
+   "ads_talent_taxonomy_relation"
+  ],
+  "jiuxin_tax_like_cols": {
+   "ads_industry": [
+    "taxonomy_id",
+    "taxonomy_release_id"
+   ],
+   "ads_institution_industry": [
+    "taxonomy_id",
+    "taxonomy_release_id"
+   ],
+   "ads_talent_industry_activity": [
+    "taxonomy_id",
+    "taxonomy_release_id"
+   ],
+   "ads_talent_industry_capability_simulation": [
+    "taxonomy_id"
+   ],
+   "ads_talent_taxonomy": [
+    "taxonomy_id",
+    "taxonomy_kind",
+    "taxonomy_code"
+   ],
+   "ads_talent_taxonomy_closure": [
+    "taxonomy_id"
+   ],
+   "ads_talent_taxonomy_metrics": [
+    "taxonomy_id"
+   ],
+   "ads_talent_taxonomy_node": [
+    "taxonomy_id"
+   ],
+   "ads_talent_taxonomy_relation": [
+    "talent_taxonomy_relation_id",
+    "taxonomy_id"
+   ]
+  }
+ },
+ "derived": [
+  {
+   "key": "gkx_tax_sum_2024_yoy_pct_allorgs",
+   "value": 35.1108,
+   "numerator": 400593533.72,
+   "denominator": 1140941531.88,
+   "note": "分子=2024−2023 全库 total_tax_paid 合计差（元），分母=2023 合计；同表同池全库口径（B3）；语义=全库企业税收面同比（覆盖 45/35 行极窄样本），不是「受惠企业群」税收增长——受惠群界定零承载，此键仅为证明税收原料的时间差分结构存在"
+  },
+  {
+   "key": "gkx_policy_text_shuishou_share_pct",
+   "value": 8.67,
+   "numerator": 1734,
+   "denominator": 20000,
+   "note": "分子=文本含「税收」的政策行数（title+content+keypoints 拼串 LIKE），分母=gkx.dwd_policy_base 全表 20,000 行；同表同池（B3）；语义=税收类政策叙述覆盖面，不是受惠企业税收值"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 政策×企业享受台账（受惠企业群界定）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx；280 表名扫 enjoy/benefit/reward/subsid/grant + dwd_policy_base 33 列扫",
+   "hits": 4,
+   "hit_detail": "表列双扫 0 语义命中（enjoy 族空列表、政策表享受列空列表均在案）——「哪些企业享受过哪项政策」关系零承载；税收原料（total_tax_paid）无法被限定到受惠子群"
+  },
+  {
+   "probe": "dev 企业税收面",
+   "source": "dev",
+   "sql": "information_schema.TABLES 扫 tax/revenue/invoice/duty + enterprise_finance_history 列盘点",
+   "hits": 0,
+   "hit_detail": "enterprise_finance_history（40,239 行）18 列无 tax 类列——revenue/main_business_revenue/rd_investment 在，税额缺；risk_tax_punish（528 行）是税务违法处罚负面面非纳税额；无企业纳税正面表"
+  },
+  {
+   "probe": "久新企业税收面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES；203 表扫 tax/revenue/invoice/duty + 全表 DESC 列扫 tax/revenue/invoice/amount_yuan/turnover",
+   "hits": 9,
+   "hit_detail": "表名命中 5 张全是 ads_talent_taxonomy* 分类树（taxonomy 词根误中）；列扫命中见 facts.jiuxin_tax_like_cols（taxonomy_id 等分类键误中）——无任何企业纳税额/税收贡献结果面"
+  },
+  {
+   "probe": "需求原文「税收增长/惠及企业税收」定义段",
+   "source": "doc",
+   "sql": "rg 税收增长/惠及企业 三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份需求真源均未出现「税收增长（亿元）」指标名；主需求 1.1.1.1.4.2.3.1 未出台政策仿真「经济效益/社会影响/创新促进等方面」是其结果指标语境但无定义；语义源=UI mock policySimulationParams.indicators 槽位"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：惠及企业税收增长 =（本期受惠企业税收−上期）/上期。税收原料在（gkx.dwd_org_annual_financial_info.total_tax_paid：90,926 行财务面中 1,284 家非零、452 家有 ≥2 年），但「受惠企业群」界定依赖政策×企业兑现台账——该台账三源零承载（与 POLCMP_002 惠及企业增长共享族级缺口，本件独立留证）。处理组不可界定 → 全库口径税收同比不等于本指标（混入非受惠企业），判完全不支持",
+  "税收原料质量披露：total_tax_paid 年度覆盖极窄（2025:30 行/2024:35 行/2023:45 行…），且 gkx 财务表单位未标注（元/千元未知）——即使处理组可得，原料量级也需先完成单位裁定（B9 前置）",
+  "mock 披露：policyData.js:1834 taxRevenue（税收增长 亿元）是 policySimulationParams 仿真结果指标槽位，与 POLCMP_002 企业增长/007 创新指数同组 mock——演示值不参与支持度结论",
+  "B11 对账：gkx 政策 20,000 行/财务面 90,926 行与共享快照体系零漂移；dev 政策族与 Lane6 探针零漂移",
+  "升档触发器（B10）：接入政务兑现台账（受惠企业名单闭合）+ 税务/财务税收面扩容（单位裁定）→ 可升完全转换支持；若甲方接受「全库企业税收同比」代理 → 语义已换（全库≠受惠群），本件不接受"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "受惠企业各期税收计数/金额序列"
+ ],
+ "base_years_note": "本件受惠群口径无可算序列（台账零承载）；全库税收面年度分布在 facts（原料证据非基期）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "90926",
+   "1284",
+   "452",
+   "20000",
+   "1734",
+   "187",
+   "40239",
+   "528",
+   "280",
+   "203"
+  ]
+ }
+}

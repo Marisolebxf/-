@@ -135,3 +135,24 @@ javac + JUnit Platform Launcher 直跑）：主源码 87 class 编译零错；ar
 
 - 本地：`mvn -pl gkxlumen-topic-async-service-biz test` → **145 tests, 0 failures**（surefire 3.2.5）
 - CI：pipeline 3181（commit `946853c`），backend:build 排队中
+
+## 追加交付（2026-11-02 · 政策 + 服务链块式 PDF 对齐前端报告页）
+
+### 范围
+
+- 新增 `DomainBlockReportModel`、`ReportText`（泄漏/Q-GAP/环节中文）、`PolicyBlockReportAssembler` / `PolicyBlockReportModel`、`SvcBlockReportAssembler` / `SvcBlockReportModel`。
+- Thymeleaf `analysis/domain-block-report.html`：封面 + KPI/文字/条形/表格块；空态仅「当前任务没有可展示的结果数据」。
+- `ArtifactRenderServiceImpl`：`policy:report:export` 与 svc `{leaf}_report` 走 `domain-block-report`。
+- `ArtifactAnalysisTypes`：`policy:report:export`；`AnalysisTaskServiceImpl` 校验政策父任务。
+- 测试：`PolicySvcReportModelTest`（区域平铺、深圳落地实效性、svc 趋势明细/引进环节中文）；本机未装 JDK/mvn，CI 为准。
+
+### 验收
+
+- 联调通过：PDF 章节标题与 `lumen-ui-topic` `policyBlockReportDocument` / `svcBlockReportDocument` 一致。
+- **未纳入本 commit**：同仓其它会话脏改（chain/eval 模板等）保持工作区未提交。
+
+### cost 追加
+
+| actual_tokens | model_used | actual_cost | cost_warn |
+|---------------|------------|-------------|-----------|
+| +120000 | composer | +0.30 | false |

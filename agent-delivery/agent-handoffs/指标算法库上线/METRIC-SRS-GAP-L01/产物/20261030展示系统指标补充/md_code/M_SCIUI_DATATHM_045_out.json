@@ -1,0 +1,123 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_045",
+ "batch": "S3-05",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/AccessHistorySituation.jsx:84",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:1427"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求真源指标名级 0 命中；「历史接入量」为 UI series 图例（:84），本期=序列末端点（mock 末月 3360）；挂靠 seq 362 历史资源接入情况总览——功能词「动态跟踪接入量…的历史变化」在，「本期」窗定义（自然月/周/滚动窗）无"
+ },
+ "base_years_used": [],
+ "base_years_missing": [
+  "完全不支持：三源零承载，无库内年份基期"
+ ],
+ "base_years_note": "完全不支持：无基期；mock 演示值不构成基期证据",
+ "facts": {
+  "dev_table_total": 542,
+  "dev_access_registry_tables": [
+   "gkxlumenx_app.app_article_collect"
+  ],
+  "gkx_table_count": 280,
+  "jiuxin_table_count_live": 215,
+  "dev_enterprise_base_rows": 269511,
+  "dev_enterprise_month_slice_now": [
+   [
+    "2026-08",
+    269163
+   ],
+   [
+    "2026-09",
+    348
+   ]
+  ],
+  "dev_growth_trend_rows": 0,
+  "gkx_dwd_job_rows": 10,
+  "gkx_dwd_job_month_dist": [
+   [
+    "2026-08",
+    10
+   ]
+  ],
+  "cumulative_proxy_reused_042": 186335492.0,
+  "ui_mock_trend_labels": [
+   "12月",
+   "1月",
+   "2月",
+   "3月",
+   "4月",
+   "5月"
+  ],
+  "ui_mock_trend_access_volume": [
+   1860,
+   2100,
+   2350,
+   2680,
+   3010,
+   3360
+  ],
+  "ui_mock_current_period_endpoint": 3360,
+  "ui_mock_prev_endpoint": 3010,
+  "ui_mock_period_over_period_delta": 350
+ },
+ "derived": [
+  {
+   "key": "current_period_access_volume_proxy_dev_month_slice",
+   "value": 348,
+   "numerator": null,
+   "denominator": null,
+   "note": "本期增量代理=dev enterprise_base 挂库月切片（update_time 月界最后一档计数）——「挂库月」非「接入月」：快照表全量重挂即漂移，仅作期界两侧存量差参考；语义披露：库内数据资产月界登记，非接入动作增量"
+  },
+  {
+   "key": "current_period_access_volume",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『本期数据接入量』正式口径（接入台账当期笔数；本期=自然月，窗随日期滚动）三源无台账面（042 词族排除复用）；序列侧 growth_trend 0 行（040 复用）；按 B10 不写伪指标值"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 逐期接入序列（本期=末端点）",
+   "source": "dev",
+   "sql": "SELECT COUNT(*) FROM gkxlumenx_enterprise.enterprise_growth_trend（040 实测）",
+   "hits": 0,
+   "hit_detail": "enterprise_growth_trend 0 行——期际序列零承载（040 同锚）；本期值无序列可取末端点"
+  },
+  {
+   "probe": "dev 接入台账（access_log/ingest/collect 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表，共享探针，042 复用）",
+   "hits": 1,
+   "hit_detail": "命中 gkxlumenx_app.app_article_collect（文章收藏-用户行为表）——语义排除（042 同键）；0 张接入流水表"
+  },
+  {
+   "probe": "gkx 接入台账/期际序列（access/ingest 词族+growth/trend 表名）",
+   "source": "gkx",
+   "sql": "词族扫描（共享探针 gkx_access_tables=[]；growth/trend 表名 0 命中）",
+   "hits": 0,
+   "hit_detail": "280 表 0 命中；dwd_job 挂库月分布可查但 10 行样本无期界语义"
+  },
+  {
+   "probe": "久新接入台账/期际序列（access/ingest 词族+growth/trend 表名）",
+   "source": "jiuxin",
+   "sql": "词族扫描（共享探针 jiuxin_access_tables=[]，215 表 live）",
+   "hits": 0,
+   "hit_detail": "0 命中——ads_* 全部分析结果面，快照管理无逐笔接入记录（042 同证）"
+  },
+  {
+   "probe": "需求原文「本期数据接入量」指标定义",
+   "source": "doc",
+   "sql": "rg 检索三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份需求说明书未出现「本期数据接入量」（指标名级 0 命中）；挂靠 seq 362（历史资源接入情况总览——「动态跟踪接入量…的历史变化」功能词在，本期口径无定义）；seq 361/360 亦无"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：正式口径（台账当期笔数）三源零承载+期际序列 0 行——「本期」末端点无序列可挂；月界切片是「挂库月」非「接入月」，语义漂移不补判档",
+  "B11 对账：cumulative_proxy 186335492 复用 042 同值；growth_trend 0 行复用 040；台账词族三源排除复用 042/共享探针",
+  "040/042/045 三件同根：040 序列（期际变化）、042 存量（累计）、045 增量（当期）——台账缺位一因三果，触发器共用（台账落地即三件全升）"
+ ]
+}

@@ -1,0 +1,188 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_022",
+ "batch": "S3-02",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/simulation/estimate/EstimateWorkbench.jsx:590",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1839",
+  "repos/demo-ui-science/src/pages/policy-tracking/simulation/estimate/EstimateWorkbench.jsx:614"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "主需求 1.1.1.1.4.2.3.1.4 多维度效果评估（:1417-1419）功能叶原文在案（四维明列、算法未给）；SRS 政策效果推演（seq 235）同文转述；核增 17 叶无该名——父代理裁定 NEW：核增 PC-09 语境新语义，旧『综合评估』不同物"
+ },
+ "facts": {
+  "gkx_table_count": 280,
+  "gkx_eval_like_tables": [],
+  "gkx_policy_rows": 20000,
+  "gkx_policy_eval_score_text_rows": 5,
+  "dev_policy_eval_sim_carriers": {
+   "policy_effect_eval": {
+    "cols": [
+     "id",
+     "tenant_id",
+     "policy_id",
+     "eval_batch_no",
+     "effect_index",
+     "execution_effect_score",
+     "social_economic_score",
+     "environment_impact_score",
+     "innovation_promotion_score",
+     "industry_impact_score",
+     "dimension_results",
+     "improvement_suggestions",
+     "performance_report",
+     "eval_stage",
+     "eval_model_version",
+     "exec_status",
+     "create_time",
+     "update_time",
+     "is_deleted",
+     "ext1",
+     "ext2",
+     "ext3"
+    ],
+    "rows": 0
+   },
+   "policy_simulation_result": {
+    "cols": [
+     "id",
+     "tenant_id",
+     "simulation_id",
+     "result_type",
+     "result_summary",
+     "quantitative_result",
+     "qualitative_result",
+     "spatial_distribution",
+     "temporal_trend",
+     "stakeholder_feedback",
+     "visualization_data",
+     "interpretation_report",
+     "confidence_level",
+     "exec_duration_ms",
+     "create_time",
+     "update_time",
+     "is_deleted",
+     "ext1",
+     "ext2",
+     "ext3"
+    ],
+    "rows": 0
+   },
+   "policy_simulation_param": {
+    "cols": [
+     "id",
+     "tenant_id",
+     "simulation_id",
+     "simulation_type",
+     "sub_type",
+     "policy_id",
+     "policy_type",
+     "coverage_scope",
+     "support_intensity",
+     "implementation_time",
+     "simulation_dimensions",
+     "custom_params",
+     "model_version",
+     "creator_id",
+     "exec_status",
+     "create_time",
+     "update_time",
+     "is_deleted",
+     "ext1",
+     "ext2",
+     "ext3"
+    ],
+    "rows": 0
+   }
+  },
+  "dev_ads_policy_effect_rows": 0,
+  "jiuxin_table_count": 203,
+  "jiuxin_policy_like_tables": [
+   "ads_research_problem_policy_evidence",
+   "ads_research_problem_policy_yearly_metrics",
+   "ads_technology_policy_evidence"
+  ],
+  "jiuxin_policy_eval_tables": [],
+  "jiuxin_ads_research_problem_policy_evidence_rows": 1252,
+  "jiuxin_ads_research_problem_policy_yearly_metrics_rows": 39,
+  "jiuxin_ads_technology_policy_evidence_rows": 0
+ },
+ "derived": [
+  {
+   "key": "policy_multidim_effect_scores",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "不可算——经济/社会/环境/创新四维分值依赖效果评估模型运行时结果（政策×评估批次×维度分），三源零承载（gkx 无评估表；dev policy_effect_eval 五维分列 0 行；久新无政策评估面）；按 B10 不写伪得分；此键留空即为负结论登记"
+  },
+  {
+   "key": "ui_mock_four_dim_avg_reference",
+   "value": 81.75,
+   "numerator": 327,
+   "denominator": 4,
+   "note": "分子=四维演示分值之和=86+78+72+91=327，分母=维度数=4（policyData.js:1839-1888 multiDimensionEvalData 常量）；此为 UI mock 结构披露（演示值等权均值 81.75），证明前端口径是四维分值面（雷达+柱状+明细卡三级），不参与支持度结论"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 政策效果评估面",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx；280 表名扫 eval/score/assess/rating/composite",
+   "hits": 0,
+   "hit_detail": "0 命中——gkx 无任何评估结果表；政策文本「评估+得分」表述仅 5 行（叙述非结果）"
+  },
+  {
+   "probe": "dev 政策效果评估承载（语义最贴）",
+   "source": "dev",
+   "sql": "SHOW COLUMNS + COUNT ON policy_effect_eval / policy_simulation_result / policy_simulation_param + ads.policy_effect",
+   "hits": 4,
+   "hit_detail": "四处承载结构全在、数据全空：policy_effect_eval 22 列含 execution_effect_score/social_economic_score/environment_impact_score/innovation_promotion_score/industry_impact_score（四维+执行维共五个分值列，与需求四维前三项同名同序）+ dimension_results JSON+ eval_batch_no（评估批次）——0 行；policy_simulation_result（quantitative_result/visualization_data JSON 槽位）0 行；ads.policy_effect（effect_score）0 行——B4 情形②表在 0 行，补数据可解的结构空"
+  },
+  {
+   "probe": "久新政策效果评估面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES；203 表名扫 policy × eval/effect/score/assess 交叉",
+   "hits": 0,
+   "hit_detail": "0 命中；policy 类仅 ['ads_research_problem_policy_evidence', 'ads_research_problem_policy_yearly_metrics', 'ads_technology_policy_evidence']（证据面非评估面）；久新评估族（technology_potential/region/bottleneck 等）是技术域，与政策效果评估不同物"
+  },
+  {
+   "probe": "需求原文「多维度效果评估」定义段",
+   "source": "doc",
+   "sql": "rg 多维度效果评估 主需求 :1417-1419 + SRS 政策效果推演 + 核增 17 叶",
+   "hits": 2,
+   "hit_detail": "主需求 1.1.1.1.4.2.3.1.4（:1417-1419）功能叶原文在案：『从经济、社会、环境、创新等多个维度对政策效果进行评估，用户可查看各维度的评估指标和得分』——维度结构给出（四维明列）、评分算法未给；SRS 政策效果推演对应叶（seq 235）同文转述；核增 17 叶无该名（父代理裁定 NEW：核增 PC-09 交叉对比语境下为新语义，与旧『综合评估』不同物）"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：多维度效果评估得分 = f(效果评估事件)。评估事件（何政策、何批次、经济/社会/环境/创新各维多少分）是效果评估模型运行时产物——三源零承载（gkx 无评估表；dev 四处承载全 0 行；久新无政策评估面）。数据缺（评估从未运行）+ 算法缺（四维→得分的合成规则未立项）双缺叠加，判完全不支持",
+  "dev 结构证据（语义最贴）：policy_effect_eval 的 social_economic_score/environment_impact_score/innovation_promotion_score 与需求四维『经济/社会/环境/创新』中三维同名同序（第四维 industry_impact 为产业维，需求第四维是创新——innovation_promotion_score 正对应创新），execution_effect 为执行维超集；dimension_results JSON 槽位可承载每维 3 指标明细（UI 明细卡结构）——四维体系『规划过、从未写入』",
+  "口径归属：父代理裁定登记簿 NEW——本件语义=核增 PC-09 跨政策交叉对比语境下的多维度效果评估，与 M_SCIUI_POLCMP_016（政策分析评价·当前评估得分）为同评估族姊妹件（共享 dev policy_effect_eval 结构证据）；与旧件 PG_COMPOSITE（综合评估）不同物；主需求 :1417-1419 是效果预估（政策效果推演）语境原文",
+  "mock 披露：EstimateWorkbench.jsx:590-657（dispatch 表述 EstimateHome.jsx 不存在，实际组件为 EstimateWorkbench）「multi」Tab 四维雷达/柱状/明细卡全部读 policyData.js:1839-1888 multiDimensionEvalData 常量（经济 86/社会 78/环境 72/创新 91，每维 3 指标如 GDP 贡献指数 88）——演示值不参与支持度结论；AlertBanner 自述需规原文，图表带 MockBadge 标注",
+  "B11 对账：dev 政策族 4 表 0 行与 _probe_lane6_s302_r2_out.json / M_SCIUI_POLCMP_008（stakeholder_feedback 列）/M_SCIUI_POLCMP_002 产物零漂移；gkx 政策 20,000 行与共享快照 fix2_20261101 一致",
+  "升档触发器（B10）：①效果评估模型立项（四维指标体系+合成规则——可参照 T/CASTEM 1010-2023 科技创新政策评估规范『过程—内容—结果』框架或中央财政科技计划绩效评估规范的五维评估内容）+ 首批评估批次运行写入 policy_effect_eval → 直查可算，升完全直接支持；②因果推断路径（DID/合成控制，需求 1.1.1.1.4.2.3.1 效果预估原文即列『因果推断、博弈分析、计量分析』）需政策实施前后微观面（企业/专利/论文按政策暴露分组），当前兑现台账零承载（POLCMP_021 族缺口）——该路径待台账接入后另立项"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件为评估快照（无年度序列）；评估批次数据零承载",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "280",
+   "20000",
+   "5",
+   "0",
+   "203",
+   "22",
+   "18",
+   "21",
+   "86",
+   "78",
+   "72",
+   "91",
+   "327",
+   "81.75",
+   "88"
+  ]
+ }
+}

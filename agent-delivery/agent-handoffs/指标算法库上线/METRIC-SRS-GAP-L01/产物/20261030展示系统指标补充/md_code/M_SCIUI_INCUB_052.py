@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""M_SCIUI_INCUB_052 路径强度抬升幅度 —— 薄壳校验脚本（负结论件）。
+
+UI：spaceTimeEvolutionMock.js:809-814 报表 trendSections[1]「路径强度抬升」
+{ metric: 76, unit: 条, badge: 高强度 21 条, values: [15,26,40,52,60] }
+（渲染链 SpaceTimeEvolutionPage.jsx:2097-2110 report-chart-stack）。
+抬升幅度=路径强度的增幅读数（时序抬升），前提同 050——区域对强度面三源
+零承载，增幅无从计算。
+"""
+from __future__ import annotations
+
+import json
+import sys
+
+sys.path.insert(0, "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code")
+
+SHARED = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s308_lane_a_out.json"
+OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_INCUB_052_out.json"
+
+
+def main() -> None:
+    with open(SHARED, encoding="utf-8") as f:
+        snap = json.load(f)
+
+    dev = snap["dev"]
+    gkx = snap["gkx"]
+    jx = snap["jiuxin"]
+    assert dev["table_total"] == 542 and gkx["table_count"] == 280
+    assert jx["table_count_live"] == 218
+    assert dev["word_path"] == ["gkxlumenx.sys_route_conf", "gkxlumenx_ads.chain_roadmap"]
+    assert gkx["word_path"] == []
+    assert jx["word_path"] == ["ads_research_problem_research_path", "ads_technology_evolution_path_step"]
+
+    out = {
+        "metric_id": "M_SCIUI_INCUB_052",
+        "batch": "S3-08",
+        "ui_evidence": [
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/space-time-evolution/mock/spaceTimeEvolutionMock.js:811",
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/space-time-evolution/components/SpaceTimeEvolutionPage.jsx:2097-2110",
+        ],
+        "requirement_trace": {
+            "named_in_srs": False,
+            "note": "「路径强度抬升幅度」指标名三份说明书未出现；INCUB 清单 row_01=607 l3=路径强度抬升（清单语义注同 050 知识图谱域，UI 实挂载=报表趋势段图表卡）；挂载位=spaceTimeEvolutionMock.js:811（清单定位）。",
+        },
+        "facts": {
+            "ui_mount": "spaceTimeEvolutionMock.js:809-814 report.trendSections[1] { key: paths, title: 路径强度抬升, metric: 76, unit: 条, badge: 高强度 21 条, values: [15,26,40,52,60] }——趋势报告页图表卡",
+            "ui_render_chain": "渲染链：report.trendSections（mock :801-815）→ buildReportViewModel（:1186-1238，trendSections=distributionCharts.map 覆盖 badge）→ :2097-2110 report-chart-stack SoftChartFrame（renderSparkBars + sr-only 序列播报）。注：与 051 同构——活跃 trendSections 实际被 buildDistributionCharts 输出（时空事件趋势）替换，mock「路径强度抬升」段标题存于 mock 源，清单挂载位登记",
+            "ui_semantics": "「路径强度抬升」语义=路径强度的增幅时序（五点 15→60，unit=条与 051 图表卡同为条数口径名实差）；mock badge「高强度 21 条」隐含强度分档统计",
+            "ui_mock_note": "mock 五点（15/26/40/52/60）与 metric 76 为演示常量，不参与支持度结论（ui_demo_fallback）；values 序列实为路径条数（与题名「强度抬升」名实不符，同 051 披露）",
+            "dev_table_total": dev["table_total"],
+            "dev_path_word_tables": dev["word_path"],
+            "gkx_table_count": gkx["table_count"],
+            "gkx_path_word_tables": gkx["word_path"],
+            "jiuxin_table_count_live": jx["table_count_live"],
+            "jiuxin_path_word_tables": jx["word_path"],
+            "jiuxin_path_note": "久新 path 词族 2 表（research_path/evolution_path_step）为技术主题演化域——无区域对、无强度列、无增幅时序",
+            "named_in_srs": False,
+        },
+        "derived": [
+            {
+                "name": "path_strength_uplift_magnitude",
+                "value": None,
+                "numerator": None,
+                "denominator": None,
+                "note": "路径强度抬升幅度 = (strength(t) - strength(t₀)) 或逐期增幅序列（区域对路径强度时序增幅）。前提=强度时序面三源零承载（INCUB_050 同根）→ 增幅不可计算，负结论 null 登记",
+            },
+        ],
+        "absence_probe": [
+            {"probe": "dev path 词族（542 表）",
+             "source": "dev", "sql": "information_schema 表名扫描（快照）",
+             "hits": 2,
+             "hit_detail": "sys_route_conf（语义错位）/chain_roadmap（域错位 0 行）——无区域对强度时序面"},
+            {"probe": "gkx path 词族（280 表）",
+             "source": "gkx", "sql": "information_schema 表名扫描（快照）",
+             "hits": 0, "note": "gkx word_path=[]"},
+            {"probe": "久新 path 词族（SHOW TABLES 实数 218 表）",
+             "source": "jiuxin", "sql": "SHOW TABLES + 词族扫描（快照）",
+             "hits": 2,
+             "hit_detail": "ads_research_problem_research_path/ads_technology_evolution_path_step 技术演化域——无区域对语义"},
+            {"probe": "现成增幅/抬升结果面",
+             "source": "三源", "sql": "词族扫描 + 列语义核（快照）",
+             "hits": 0,
+             "hit_detail": "三源无 uplift/growth/增幅 同构列；mock values 为路径条数序列非强度增幅"},
+        ],
+        "support_judgment": "完全不支持",
+        "notes": [
+            "判档理由：抬升幅度=强度时序的增幅派生——前提（区域对强度时序面）三源零承载（INCUB_050 同根：dev 2 表域错位/gkx 0/久新 2 表技术演化域）；三源亦无现成增幅结果面。前提缺位即增幅无从计算。",
+            "名实不符披露（B10，同 051）：mock「路径强度抬升」卡 unit=条、values 15→60 为路径条数序列——题名强度、实为条数；正式版接数前须先厘清口径。",
+            "同族关系：INCUB_050（强度本体）/INCUB_051（较上期差分）同根；本件为增幅口径（区间抬升 vs 逐期差分）——三件独立留证，判档同根（完全不支持）。",
+            "渲染链说明：活跃 report trendSections 被 buildDistributionCharts（:721-729，仅时空事件趋势）替换，mock 抬升段标题留存于 mock 源并经清单定位为挂载位——留证按 mock 源行号登记。",
+            "升档路径：与 050/051 共用——区域对强度时序面落库 → 增幅=区间差或逐期差序列（完全转换支持）。",
+        ],
+        "base_years_used": [],
+        "base_years_missing": ["2021-2026"],
+        "base_years_note": "增幅需强度时序（多时点）；三源无强度面即无时序；mock 五点（15-60）无年度基期语义。",
+        "ctx_refs": {"note": "正文引用型数字登记", "refs": sorted([
+            "76", "21", "15", "26", "40", "52", "60", "542", "280", "218", "2", "0"])},
+    }
+
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    print("written:", OUT)
+    print("judgment: 完全不支持 | 强度时序三源零承载，增幅无从计算（INCUB_050 同根）")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,203 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_043",
+ "batch": "S3-05",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/AccessHistorySituation.jsx:112",
+  "repos/demo-ui-science/src/pages/data-resources/components/AccessHistorySituation.jsx:305",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:1437"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求说明书未出现「同步异常数」。「异常数」为 UI 图例（:112）/「异常归档」为 Statistic 题名（:305）；挂靠 seq 362 功能句「动态跟踪……异常情况的历史变化」——功能在、异常判定标准/计数口径/期定义无"
+ },
+ "facts": {
+  "dev_table_total": 542,
+  "dev_xxl_job_log_rows": 0,
+  "dev_xxl_job_info_rows": 0,
+  "dev_xxl_job_group_rows": 0,
+  "dev_es_sync_row_count": 15,
+  "gkx_table_count": 280,
+  "gkx_sync_tables": [],
+  "jiuxin_table_count_live": 215,
+  "jiuxin_sync_tables": [
+   "ads_research_problem_update_signal",
+   "ads_scientific_update_signal"
+  ],
+  "dev_es_sync_cols": [
+   "module_name",
+   "last_sync_time",
+   "last_sync_count",
+   "last_sync_cost_s",
+   "updated_at",
+   "source_table",
+   "target_index",
+   "time_field",
+   "sync_status",
+   "update_mode",
+   "error_msg",
+   "begin_time",
+   "end_time",
+   "retry_count",
+   "is_active"
+  ],
+  "dev_xxl_job_log_cols": [
+   "id",
+   "job_group",
+   "job_id",
+   "executor_address",
+   "executor_handler",
+   "executor_param",
+   "executor_sharding_param",
+   "executor_fail_retry_count",
+   "trigger_time",
+   "trigger_code",
+   "trigger_msg",
+   "handle_time",
+   "handle_code",
+   "handle_msg",
+   "alarm_status"
+  ],
+  "dev_es_sync_status_dist_all15": [
+   [
+    "failed",
+    1
+   ],
+   [
+    "success",
+    14
+   ]
+  ],
+  "dev_es_sync_status_dist_excl_demo": [
+   [
+    "failed",
+    1
+   ],
+   [
+    "success",
+    13
+   ]
+  ],
+  "dev_es_sync_failed_detail_excl_demo": [
+   {
+    "module": "reg_info",
+    "status": "failed",
+    "error_msg": "RuntimeError: reg_info slice has 50000 build/bulk errors",
+    "retry_count": 1
+   }
+  ],
+  "dev_es_sync_demo_modules_disclosed": [
+   [
+    "reg_info_demo",
+    "success"
+   ]
+  ],
+  "ui_mock_anomaly_count_summary": 5,
+  "ui_mock_anomaly_trend": [
+   18,
+   16,
+   14,
+   12,
+   10,
+   8
+  ],
+  "ui_mock_anomaly_by_type_sorted": [
+   [
+    "同步延迟",
+    2
+   ],
+   [
+    "数据缺失",
+    1
+   ],
+   [
+    "格式异常",
+    1
+   ],
+   [
+    "接口错误",
+    1
+   ]
+  ]
+ },
+ "derived": [
+  {
+   "key": "sync_failed_module_count_current_snapshot",
+   "value": 1.0,
+   "numerator": 1,
+   "denominator": 14,
+   "note": "模块级当前状态附带读数（非「期」口径）：es_sync_watermark 排除 demo 模块后 14 模块中 failed 1 个（reg_info，RuntimeError 5 万 build/bulk 错误，retry_count=1）——单笔状态快照，不等于期内异常次数（该模块历史上可能已失败多次，仅留最后一笔）"
+  },
+  {
+   "key": "sync_anomaly_count_period",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『同步异常数（期）』正式口径（期内异常运行次数）三源无逐次运行日志（es_sync 单笔状态非序列、xxl_job_log 0 行、月维无承载）→ 不可构建；按 B10 留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 同步任务逐次运行日志（xxl_job_log 触发/状态/耗时序列）",
+   "source": "dev",
+   "sql": "SELECT COUNT(*) FROM gkxlumenx_job.xxl_job_log / xxl_job_info / xxl_job_group",
+   "hits": 0,
+   "hit_detail": "xxl_job_log=0 行、xxl_job_info=0 行、xxl_job_group=0 行——调度器全链空载体（xxl_job_log 列族结构在、零数据）：逐次触发序列不存在，「期」计数无从统计"
+  },
+  {
+   "probe": "dev es_sync_watermark 状态序列能力（单笔 vs 逐次）",
+   "source": "dev",
+   "sql": "SHOW COLUMNS + sync_status/error_msg/retry_count 值域实查",
+   "hits": 0,
+   "hit_detail": "状态三列结构在（sync_status/error_msg/retry_count）且实测有真实 failed（reg_info，RuntimeError），但每模块仅保留最后一笔状态（15 行=15 模块各 1 行）——是状态快照非运行日志：无时间序列、无失败历史，撑不起「期」口径；结构证据登记为依赖面（044 复用）"
+  },
+  {
+   "probe": "gkx 同步/异常面（sync/cycle/frequen/watermark 词族）",
+   "source": "gkx",
+   "sql": "词族扫描（共享探针 gkx_sync_tables=[]）",
+   "hits": 0,
+   "hit_detail": "280 表 0 命中（要素明细库无运行日志面）"
+  },
+  {
+   "probe": "久新同步面（sync/cycle/frequen/watermark/update 词族）",
+   "source": "jiuxin",
+   "sql": "词族扫描（共享探针 jiuxin_sync_tables）",
+   "hits": 2,
+   "hit_detail": "命中 ads_research_problem_update_signal / ads_scientific_update_signal——科研问题/科学数据的更新信号面（研究对象=科研内容更新非平台同步任务），语义排除"
+  },
+  {
+   "probe": "需求原文「同步异常/异常数」指标定义",
+   "source": "doc",
+   "sql": "rg 检索三份需求真源",
+   "hits": 0,
+   "hit_detail": "「异常数」为 UI 图例（:112）/「异常归档」为 Statistic 题名（:305）；seq 362 功能句「动态跟踪……异常情况的历史变化」在——异常判定标准（何种状态算异常）、计数口径（次数/任务数/记录数）、期定义均无"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：「同步异常数（期）」= 期内异常运行次数——需逐次运行日志；dev xxl 三表全空载体、es_sync_watermark 是单笔状态快照非序列（无失败历史）、gkx 0 命中、久新 2 张语义排除、「期」维全库无承载（041 同法）→ 完全不支持",
+  "本件新探针（状态三列实查）：es_sync_watermark 有 sync_status/error_msg/retry_count——排除 demo 模块后 14 模块 13 success + 1 failed（reg_info：RuntimeError: reg_info slice has 50000 build/bulk errors，retry 1；demo 模块 reg_info_demo=success 按纪律排除、行内披露）→ 模块级「当前异常状态」可读（附带交付键），但单笔状态≠期计数",
+  "结构证据层级：xxl_job_log「表存在但数据为空」（列族在零行）；es_sync_watermark 「表存在、状态列在、但序列语义不存在」（单笔快照）——两种缺形态分别登记",
+  "mock 披露：trend.anomalyCount 6 点单调递减（18→8）+ summary 5 条 + byType 四类合计 5——三组演示值内部自洽（治理改善叙事）但库内无对应承载，不作数据证据（B10）",
+  "B11 对账：xxl 三表 0 行与 019 实测一致；es_sync 15 行与 019/046 共证（状态三列为本批新读数，044 复用）",
+  "升档触发器（B10）：①xxl 调度器实装留日志（handle_code≠200 计异常逐次累计）→ 升完全直接支持；②es_sync 改逐次留痕表（模块×时间×状态序列）→ 升完全转换支持；③维持现状 → 完全不支持（UI 异常位建议暂无数据态；当前状态读数可作即期监控参考）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "期序列不可构建（无逐次运行日志面）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "5",
+   "18",
+   "8",
+   "0",
+   "15",
+   "14",
+   "13",
+   "1",
+   "542",
+   "280",
+   "215"
+  ]
+ }
+}
