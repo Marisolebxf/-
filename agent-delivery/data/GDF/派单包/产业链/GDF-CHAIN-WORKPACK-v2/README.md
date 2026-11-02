@@ -1,10 +1,11 @@
 # GDF-CHAIN-WORKPACK-v2
 
 > **读者**：GDF 数据中台产线（不使用 Cursor）  
-> **版本**：v2.1（2026-10-31 · 基线对齐 10-19 清单 + 新增 `12` 产业链入向量库）· **可对外投递**  
+> **版本**：v2.2（2026-11-02 · round1 核对签收与 20 题答复；链树映射按真源实测重写）· **可对外投递**  
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`（产业链要素库 Sheet）  
 > **Mapping 施工真源**：[09-产业链域-ETL-Mapping明细-源表到DWD.md](09-产业链域-ETL-Mapping明细-源表到DWD.md)  
-> **建表 DDL**：仓内 `data-design/产业链/产业链-DWD表设计-业务需求驱动(v5).md`（指针见 [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/)）  
+> **建表 DDL 真源**：[10-DWD-MySQL-DDL/dwd-chain.md](10-DWD-MySQL-DDL/dwd-chain.md)（包内复制件，库名 `gkxlumenx_dwd`；v5 文档作废）
+> **环境红线**：GDF 只读真源 `gkx` + `gkxlumenx_*` 正式库，禁读 demo（2026-11-02）  
 > **本侧对接**：见 `00-派单说明书.md`
 
 ## 文件索引
@@ -17,7 +18,8 @@
 | [03-连接与网络.md](03-连接与网络.md) | 连接元数据（密码线下） |
 | [04-技术字段与过滤规则.md](04-技术字段与过滤规则.md) | 过滤规则 |
 | [06-WaveB-Mapping派工.md](06-WaveB-Mapping派工.md) | Mapping 派工 |
-| [09-产业链域-ETL-Mapping明细-源表到DWD.md](09-产业链域-ETL-Mapping明细-源表到DWD.md) | **正式 Mapping** |
+| [09-产业链域-ETL-Mapping明细-源表到DWD.md](09-产业链域-ETL-Mapping明细-源表到DWD.md) | **正式 Mapping**（v2.2 重写链树） |
+| [23-核对签收与答复.md](23-核对签收与答复.md) | **round1 核对签收与 20 题逐题答复** |
 | [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 建表指针 |
 | [11-作废与误源对照.md](11-作废与误源对照.md) | 误源对照 |
 | [12-DWD后加工-产业链入向量库.md](12-DWD后加工-产业链入向量库.md) | **v2.1 新增**：链表洗完+上图稳定后整库一次 rebuild；政策抽产业的锚点来源 |

@@ -1,7 +1,7 @@
 # 12 — DWD 后加工：产业链入向量库（CHAIN-B4-VEC-REBUILD）
 
 > **读者**：GDF 数据中台产线。本文件描述"产业链入向量库"这一环节在 GDF 侧的**触发条件、执行方式、验收口径与禁止事项**。  
-> **版本**：v2.1 新增（2026-10-31）。口径真源：[`data-design/storage/CHAIN/01-data-flow.md`](../../../../data-design/storage/CHAIN/01-data-flow.md) **§9 产业锚点向量面** + [`agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-长任务总控.md`](../../../../../agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-长任务总控.md) §0。  
+> **版本**：v2.2 修订（2026-11-02，round2 问 8~13 答复）：图空间名与接口契约标注**待架构师确认（round2 补）**；`demo_gkx_chain` 为占位名，禁止按此建空间。环境红线见 `23-核对签收与答复.md` §1（GDF 禁读 demo 库）。  
 > **为什么要有这一步**：产业链洗数（Wave B）只是把链树写进 DWD。下游"政策抽取产业"（政策派单包 `12` 的 POLICY-C1）检索的锚点集合，要等**本环节执行后才有内容**。锚点为空时政策 C1 对不上链码、只记 `no_match`——这是**设计内行为**，不是故障。
 
 ---
@@ -30,12 +30,14 @@ flowchart LR
 
 **rebuild 的实现不在 GDF。** 写向量由我方算法服务完成（`lumen-algo-py` 灌链末段 `_hook_industry_index` 自动触发；运维也可手动打 `POST /internal/industry/embed/rebuild`，是同一条整库重建）。GDF 侧要做的是：
 
+> ⚠️ **round2 问 8~13 待办（2026-11-02）**：上图接口（方法/路径/请求/响应含写入点数）、rebuild 请求/响应体、`index_version` 字段名、「点数稳定」判定规则、正式图空间名——**五项已提交架构师确认，round2 随本文件修订补齐**。确认前 GDF 不需要也不得按占位名施工。
+
 | GDF 职责 | 说明 |
 |---|---|
 | **顺序保证** | 每日批内：Wave B（B1 链树）`success` → 上图完成且点数稳定 → 才轮到向量 rebuild。rebuild 失败**不回滚**已成功的 B1/上图 |
 | **不抢跑** | 链表未写完、或上图未完成时，**不请求** rebuild（未就绪返回 501/degraded，不给假索引） |
 | **不旁路** | **建库写入（rebuild）GDF 不执行**：调用面只有我方算法侧（lumen 灌链末段自动 + 运维手动 `/internal/industry/embed/rebuild`）。GDF 节点上**没有写向量库的脚本与凭据**。政策 C1 脚本按政策包 `12` 在 GDF 节点配置 `MILVUS_URI` / `EMBED_BASE_URL` 属**只读检索**消费切面，与本环节（建库）不冲突 |
-| **回执带索引版本** | 当日回执注明 `industry_index_version`（rebuild 成功后的版本号；跳过时诚实写 `skip`，不写数字） |
+| **回执带索引版本** | 当日回执注明 `industry_index_version`（rebuild 成功后的版本号；**跳过时诚实写 `skip`，不写数字**——此条已定） |
 
 > 与**政策派单包** `GDF-POLICY-WORKPACK-v2/15-GDF触发调度与回执.md` 的关系：本环节**排在 Wave B 之后**、与其他后加工并列；失败语义同政策包 C 系——只记本环节，不回滚 B，不连带其他作业失败。
 
