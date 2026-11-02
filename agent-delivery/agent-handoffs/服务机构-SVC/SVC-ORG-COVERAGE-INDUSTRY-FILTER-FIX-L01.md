@@ -75,6 +75,17 @@
 - [登记遗留] 集群级选择（只选集群不选 L0）时矩阵诚实空 `industry_filter_no_match`，与 tech_power 等叶既有语义一致非回归；后续可做集群级 Union L0 或空态文案明示「请选择到细分产业」。
 - [登记遗留] `selected_industry` 测试断言过松（envelope 未回显所选产业）；空态 reason 在「机构集无效+带产业」边缘场景会误标 `industry_filter_no_match`。均为极边缘，不阻塞。
 
+### 4.2 线上复测发现 P0 回归并已修复（2026-11-02 17:35 hotfix `84be2cb`）
+
+用户 16:57 部署后跑两条任务（SVC-20261102-002/003）全部筛空 `industry_filter_no_match`。跳板 kubectl 进 pod 实测定位：
+
+- **根因（本单 P0 回归）**：`matrix._chain_rows` 拼了产业条件占位符（`chain_code=%s OR LIKE×2`），但执行参数 `tuple(params)` **漏并 `ind_params`** → 占位符 5 个 vs 参数 1 个，pymysql 执行异常被 `_q` fail-soft 吞掉返回 `[]` → 诚实空态。单测 spy 只断言 SQL 文本不断言执行参数，subagent 评审亦未覆盖参数侧——双层都漏。
+- **修法**：`params = params + ind_params`（占位符顺序 = org_ids → key → 每名两参）；测试补「参数数 == 占位符数 + 首参 org + 产业码/名在参数中」三重断言防复活。
+- **pod 内验证**（镜像 `84be2cb`，pipeline 3464 全绿 + deploy:api 完成）：`build(db, [三叶草 org], industry="CL-SEI-02.INB2503")` → `status=ads_ready`，fields=[生物医药与生命健康, 生物医药]，orgs=[三叶草生物降解新材料科技（深圳）有限公司]，格值 depth=100。跳板 kubeconfig 副本已删。
+- **教训**：涉及 SQL 参数拼接的改动，测试必须断言**执行参数**而非仅 SQL 文本；fail-soft `_q` 会把占位符失配变成静默空态，评审需专门核对占位符/参数数量一致性。
+
+- **[线上复测确认] 前端仍在发旧码**：SVC-20261102-002 前端传 `CL-SEI-02.INB2503`（INB2503 是 dim 老码域，cluster_id 也是旧 CL-SEI-02），说明线上前端级联/默认仍走旧目录——本次前端动态目录改动（b167fec）虽已部署 pipeline 3458，但页面缓存或级联默认回填可能未生效，**需人工强刷页面后复测**；且 demo 库 `dim.industry_cluster_map` 只有 15 行老码（50 行新码在 `industry_cluster_map_20261029` 快照表，未切换真源表），新码 INB170201 依赖此表翻译的桥接在 demo 面暂不生效（INB2503 直等命中不受影响）。
+
 ## 5. 架构合规自检
 
 | 铁律 | 自检 |
