@@ -48,7 +48,7 @@
 
 | # | 问题 | 答复 |
 |---|---|---|
-| 1 | `EMBED_BASE_URL` | 网络是通的。代理机（GDF 服务器）不要填集群内短名 `gkxlumen-embed-tei:8080`。要填 `http://10.50.69.111:<NodePort>`。`10.50.69.111` 是集群地址，`<NodePort>` 是这个嵌入服务在该地址上的 NodePort，对应容器端口 8080。脚本会自己补 `/v1/embeddings`。本包的服务清单仍是 ClusterIP，没有记下 NodePort 数字，这里不编端口。 |
+| 1 | `EMBED_BASE_URL` | 网络是通的。代理机填 `http://10.50.69.111:30903`。2026-11-02 devops 另开 `gkxlumen-embed-tei-nodeport`，对应容器端口 8080。不要填集群内短名 `gkxlumen-embed-tei:8080`。脚本会自己补 `/v1/embeddings`。 |
 | 2 | `EMBED_API_KEY` | 不设。当前 TEI 没有 token。留空字符串，脚本不送 `Authorization`。不要写字面「（留空）」。 |
 | 3 | `MILVUS_URI` | `http://10.50.69.111:19530`。这是现网 Milvus 2.4 standalone，库 `default`。不要用设计稿里已作废的 `192.168.88.48:19530`，也不要用 `.env.example` 里的 `10.50.75.136:19530`。本答复没有从代理机探测这条地址是否通。 |
 | 4 | `MILVUS_TOKEN` | 不设。现网 `authorizationEnabled=false`。留空字符串，脚本不加令牌。 |

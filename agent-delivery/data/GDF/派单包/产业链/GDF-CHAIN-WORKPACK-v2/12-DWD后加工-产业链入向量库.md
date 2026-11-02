@@ -59,7 +59,7 @@ flowchart LR
 |---|---|
 | 向量库 | 现网 Milvus 2.4 standalone `10.50.69.111:19530`（**没进 K8s**）。不采购第二套向量云 |
 | collection | `gkxlumen_industry_anchor`（前缀必须下划线 `gkxlumen_industry_`；连字符名 Milvus 硬校验拒绝 `code 1100`）。**禁止**读写/drop `amcpdp-*` 等他人集合 |
-| embedding | `bge-base-zh-v1.5`，dim 768，COSINE。TEI 端点 K8s ClusterIP `http://gkxlumen-embed-tei:8080/v1/embeddings`；GDF 代理机经 `10.50.69.111` NodePort 访问（同政策包 `12` 口径） |
+| embedding | `bge-base-zh-v1.5`，dim 768，COSINE。集群内 `http://gkxlumen-embed-tei:8080/v1/embeddings`。GDF 代理机 `EMBED_BASE_URL=http://10.50.69.111:30903`（Service `gkxlumen-embed-tei-nodeport`，脚本自行补 `/v1/embeddings`） |
 | 词表 | DWD `industry_chain`（链名）+ `industry_chain_node`（环节名），当前约 1,516 点（102 chain + 1414 segment）。**词表真源 = DWD 链表 + 图**，禁止另建第二份产业 embedding |
 | VID | 只用图上链码（`chain:INB*` / `segment:INB*`），与上图 VID 同码。ODS 短码 / 中文名不得当 VID |
 | 锚点别名 | 链名/环节名按"与/和/、//"拆词生成别名（≥3 字），环节额外挂父链名——检索命中靠这些文本，定码仍走 VID |

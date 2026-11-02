@@ -25,7 +25,7 @@
 | `POLICY_MYSQL_HOST` / `POLICY_MYSQL_PORT` / `POLICY_MYSQL_USER` / `POLICY_MYSQL_PASSWORD` | 产线 MySQL。端口默认 3306 |
 | `POLICY_DWD_DB` | 默认 `gkxlumenx_dwd` |
 | `POLICY_ADS_DB` | 默认 `gkxlumenx_ads` |
-| `EMBED_BASE_URL` | 代理机填 `http://10.50.69.111:<NodePort>`。不要填集群内短名。NodePort 对容器端口 8080，数字不在本包，不编。脚本会补 `/v1/embeddings`。空则退出码 3。不要写成字面「（留空）」 |
+| `EMBED_BASE_URL` | 代理机填 `http://10.50.69.111:30903`。2026-11-02 devops 另开 Service `gkxlumen-embed-tei-nodeport`，对应容器端口 8080。不要填集群内短名。脚本会补 `/v1/embeddings`。空则退出码 3。不要写成字面「（留空）」 |
 | `EMBED_API_KEY` | 不设。空字符串。当前 TEI 无 token |
 | `EMBED_MODEL` | 可不设。默认 `BAAI/bge-base-zh-v1.5`，768 维 |
 | `MILVUS_URI` | `http://10.50.69.111:19530`。空则退出码 3。不要用 `192.168.88.48` 或 `10.50.75.136` |
