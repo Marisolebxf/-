@@ -18,7 +18,7 @@
 
 ## 范围与实现
 
-企业维入图派单包 v0.1，目录 `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/`。DoD 里的旧路径 `data/GDF/派单包/入图/GDF-KG-ENT-WORKPACK-v0.1/` 不作废改登记表，以任务备注里的 Graph 路径为准。
+企业维入图派单包 v0.1，目录 `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/`。DoD 里的旧路径 `data/GDF/派单包/入图/GDF-KG-ENT-WORKPACK-v0.1/` 不作废改登记表，以任务备注里的 Graph 路径为准。
 
 包内写明：七要素 schema 一次建在新建空间 `gkx_chain`；第一批只灌企业点、`supply`、`parent_sub`；源表、VID、方向在 `01`。GDF 不直写 Nebula。触发请求和回执写在 `06`，并写明 Java 对外路径和 callback 现网没有，今天不配进 DAG。`07` 只写缺口方法和 `gapfill_` 表名，不建表、不灌数。
 
@@ -26,14 +26,14 @@
 
 ## 偏离
 
-- 交付目录从 DoD 的 GDF 入图路径改为 `data/Graph/入图/`，与 GDF 平级。任务备注已声明旧路径作废。
+- 交付目录从 DoD 的 GDF 入图路径改为 `data/Graph/入图需求和派单/`，与 GDF 平级。任务备注已声明旧路径作废。
 - 「密码和连接串不进包」：图库口令和读接口密钥不进包。MySQL 只读口令按淮政玮指令明文写在 `04`。库限 `gkxlumenx_dwd`、`gkxlumenx_ads`。
 - DoD「不改图空间」按备注执行：不改 `demo_gkx_chain`。燕大目标是新建 `gkx_chain`。
 - 派单说明第 4 条写明回签上传目录：`工程过程/04-系统集成/07-图数据库集成/对接文档/燕大/`。本包尚未正式发给燕大。淮政玮 2026-11-02 签收本派单任务。
 
 ## 产物清单
 
-- `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/`（00–07，含 `03-schema-gkx_chain.ngql`）
+- `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/`（00–07，含 `03-schema-gkx_chain.ngql`）
 - `agent-delivery/data/Graph/README.md`
 - `agent-delivery/data/Graph/建图/README.md`
 - 本 handoff
@@ -80,12 +80,12 @@
 
 ## 涉及文件
 
-- `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/00-背景与派单说明.md`
-- `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/02-技术方案.md`
-- `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/05-回签.md`
-- `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/06-GDF触发契约.md`
-- `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/07-gapfill清单.md`
-- `agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/README.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/00-背景与派单说明.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/02-技术方案.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/05-回签.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/06-GDF触发契约.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/07-gapfill清单.md`
+- `agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/README.md`
 - `agent-delivery/agent-handoffs/KG-ENT-GRAPH-LOAD-L01.md`
 
 ## 遗留风险

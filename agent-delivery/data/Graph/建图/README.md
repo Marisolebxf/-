@@ -4,7 +4,7 @@
 
 燕大加工入图用的语句在入图包里，空间名已改成 `gkx_chain`：
 
-[../入图/KG-ENT-WORKPACK-v0.1/03-schema-gkx_chain.ngql](../入图/KG-ENT-WORKPACK-v0.1/03-schema-gkx_chain.ngql)
+[../入图需求和派单/KG-ENT-WORKPACK-v0.1/03-schema-gkx_chain.ngql](../入图需求和派单/KG-ENT-WORKPACK-v0.1/03-schema-gkx_chain.ngql)
 
 按维度分子目录。现在有企业、产业链：
 
