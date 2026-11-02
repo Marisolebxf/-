@@ -221,4 +221,4 @@
 - 门禁：`md_code/_gate_check_s310.py` **8/8 通过**（结构/禁demo/基期三键/判档一致/三件套/py 幂等/死引用 0）；行数 warn 7 件为非阻断代理（读数类表格化表达，S3-01 先例口径）。
 - 探针快照：`snapshots/_probe_s310_{basic,pano,keypath,keynode,entity,change}_out.json` 六件（久新 live 2026-11-02 实测；`_probe_s310_pano_out.json` 含三源词族+列质量）。
 - 副本路径适配复验：PANO 批 `code/` 引用 53 处，死链 0。
-- 待办：主表追加 8 行（科学技术全景 L2 组）+ registry 追加 8 条（ingest_batch=20261030_sciui_s310）——待用户指令后执行。
+- [x] 主表回填 8 行（UI 菜单序第 2 位插行 row20-27，总 791 行；全簿 2,184 链接 0 死链）+ registry 追加 8 条（ingest_batch=20261030_sciui_s310，269 条总数）——2026-11-02 20:4x 用户确认后执行，提交 70c4ab40（本地未推送）。
