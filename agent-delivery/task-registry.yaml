@@ -46820,7 +46820,13 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-11-02 用户要求：现有任务没有一张把 GDF 与知识图谱引擎的调度接口契约和各方能看懂的时序图写进两份集成方案。问 8 已定：上图是两个调度之间的任务转发，不是调用入图脚本。接口形状见亿级科技知识图谱API文档 §2.7 触发、§2.9 查询、§2.11 轮询。§2.11 示例第一步写的是 /task-center/trigger，那是方式 A，与「不要用内置图谱构建的默认实体去触发」冲突，本任务要在契约里写成三方都能看懂的一条调用。GDF 方案 §2.2 现在只有虚线「可触发建图 API」。图数据库方案 §2.2 现在是在线查图。两张旧图保留。本任务只补入图调度。ponytail: N/A（定义任务）。
+      基本方案（2026-11-02 用户锁定，详细设计不得改口径）：GDF 和知识图谱引擎平台通过「任务调度转发」接口通讯。实际的入图调度任务在知识图谱引擎平台完成。引擎收到任务后，独立读取增量数据。增量数据的判断条件与 GDF 一致。GDF 发起时只传两项：任务类型枚举、时间戳。
+      
+      本任务把上述基本方案细化成一份详细设计文档，路径 agent-delivery/工程过程/04-系统集成/GDF-GRAPH-SCHED-CONTRACT-L01-调度转发接口设计.md。文档要写清：任务类型枚举有哪些值、时间戳表示什么、增量条件如何与 GDF 对齐、引擎读哪些数据、触发后立刻返回什么、如何轮询到成功或失败。枚举取值和时间戳格式在详细设计里定，不要在基本方案外另加 GDF 必传字段。
+      
+      详细设计同时写入两份集成方案 §2.2 和 §2.3，并互相引用：06-GDF数据治理集成/技术方案.md、07-图数据库集成/技术方案.md。现有 SYSINT-SCHEME-06-SEQ 贴源总图和 SYSINT-SCHEME-07-SEQ 在线查图图保留，入图调度另给 diagram_id。
+      
+      其余约束：问 8。禁止《亿级科技知识图谱API文档》§2.7 方式 A（POST /api/v1/task-center/trigger，内置默认实体）。查询对照 §2.9，轮询对照 §2.11。方式 B 若不产生任务中心 taskId，文档里写明 GDF 拿哪一个号去轮询。GDF 不调用 POST /internal/v1/chain/graph/project，不在 GDF 节点跑入图脚本，不写 Nebula。正式图空间 gkx_chain。具体调度任务号由燕大线下给出，不进 git。收下不等于图已更新。不关闭 SYSINT-SCHEME-06-L01 和 SYSINT-SCHEME-07-L01。ponytail: N/A（定义任务）。
     depends_on:
       - "KG-CHAIN-GRAPH-LOAD-L01"
       - "KG-ENT-GRAPH-LOAD-L01"
@@ -46847,4 +46853,4 @@ tasks:
       - "同一段契约、同一张图写入两份集成方案的 §2.2 和 §2.3，文字一致并互相引用：06-GDF数据治理集成/技术方案.md，07-图数据库集成/技术方案.md。现有 SYSINT-SCHEME-06-SEQ 贴源总图和 SYSINT-SCHEME-07-SEQ 在线查图图保留。入图调度另给 diagram_id，不要改写那两张已有的图。"
       - "与 23 问 8、12 §5.4、KG-CHAIN 与 KG-ENT 的 06-GDF触发契约对齐。企业包仍是飞书值班的句子不要改成已经能调。不关闭 SYSINT-SCHEME-06-L01 和 SYSINT-SCHEME-07-L01。"
       - "handoff 写到 agent-handoffs/GDF-GRAPH-SCHED-CONTRACT-L01.md。不执行 nGQL，不改图空间，不把任务号写进 git。"
-    update_time: "2026-11-02T21:30:37+08:00"
+    update_time: "2026-11-02T21:46:39+08:00"
