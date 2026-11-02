@@ -1,0 +1,107 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_021",
+ "batch": "S3-04",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:575",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:72"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「调用量同比增速」指标名；语义锚 :2571『累计调用量…按时间区段趋势分析』（功能在、前提未建、同比口径无）"
+ },
+ "facts": {
+  "dev_call_log_tables": [],
+  "dev_sys_log_month_dist": [
+   [
+    "2026-07",
+    99
+   ],
+   [
+    "2026-08",
+    36
+   ],
+   [
+    "2026-09",
+    8
+   ],
+   [
+    "2026-10",
+    917
+   ]
+  ],
+  "gkx_call_like_tables": [],
+  "gkx_table_count": 280,
+  "jiuxin_table_count_live": 210,
+  "jiuxin_call_log_tables_live": [],
+  "jiuxin_probe_mode": "live"
+ },
+ "derived": [
+  {
+   "key": "call_volume_yoy_growth_pct",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『调用量同比增速』需 API 调用日志的年度两期面（本年/上年调用量）——三源词族 0 命中，调用日志面不存在 → 不可构建；内容年份面（论文/专利/企业/人才年分布）度量的是库内内容产出，与『接口调用次数』无语义关联，不作代理（代理路径不存在，区别于 015 的数据量变化率）；按 B10 留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 调用量日志面（call_log/invoke_log/api_log/access_log/request_log/usage_log/call_stat 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表）",
+   "hits": 0,
+   "hit_detail": "命中 []——0 张调用日志表；最近邻 sys_log （月分布 [['2026-07', 99], ['2026-08', 36], ['2026-09', 8], ['2026-10', 917]]）为平台管理操作日志（020 已语义排除：OAuth2 认证端点主导），非资源接口调用流水"
+  },
+  {
+   "probe": "gkx 调用量面（call/invoke/api/request/latency/response/duration/monitor/usage 词族）",
+   "source": "gkx",
+   "sql": "information_schema.tables 扫 gkx（280 表，S3-04 族级探针）",
+   "hits": 0,
+   "hit_detail": "命中 []——0 命中；gkx 为论文/专利/机构/学者等要素明细库，无任何调用统计面"
+  },
+  {
+   "probe": "久新调用量面（同词族）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（当日 live）词族扫",
+   "hits": 0,
+   "hit_detail": "0 命中——ads_* 全部为学科/人才/专利/项目分析结果面（按 metrics_as_of_date 快照管理），无调用统计；探测模式见 facts.jiuxin_probe_mode"
+  },
+  {
+   "probe": "需求原文「调用量/累计调用」定义段",
+   "source": "doc",
+   "sql": "rg 调用量 三份需求真源",
+   "hits": 2,
+   "hit_detail": "主需求 :2563（资源接口状态跟踪）『通过API日志采集与接口调用分析，动态跟踪…调用频率和失败率』；:2571（1.1.1.1.4.4.1.4.4 累计调用与趋势分析）『自动归集各类数据资源自上线以来的累计调用量，并按时间区段进行趋势分析』——功能在、且需求自点名前提（API日志采集/归集累计调用量）；『同比增速』口径无；UI yoy 列（31.7/29.0/22.2/13.8）为 mock 演示值"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：调用量年度同比需两期调用面（本年/上年接口调用次数）——三源调用日志词族 0 命中，前提不存在 → 不可构建；内容年份面与『调用』无语义关联不作代理（区别于 015——015 的『数据量』尚可用内容规模代理，本件『调用量』是服务侧动作计数，库内无任何服务调用留痕）→ 完全不支持",
+  "最近邻证据（dev sys_log，语义引用 020 排除）：按月分布 [['2026-07', 99], ['2026-08', 36], ['2026-09', 8], ['2026-10', 917]]——管理操作级量级（月均数十至千条），与 UI mock totalCalls 2,856,000 的调用量级差三个数量级以上，排除",
+  "mock 披露：OverviewWindow.jsx:575 导出 sheet「同比增速」列消费 overviewAnnualAccessTrend.yoy（31.7/29.0/22.2/13.8，mockData.js:72-78）——演示值不作数据证据；注意该 mock 序列语义是『资源接入』年度趋势，UI 将其复用于调用量语境属前端演示约定",
+  "权威口径参照（R2 深圳开放平台）：接口调用量累计 373,575,274 次、近七日 TOP10 逐接口计数——调用量统计的官方实践形态=平台侧调用日志聚合",
+  "B11 对账：词族扫描与 S3-04 族级探针/020 产物一致；542/280/210 共享快照",
+  "升档触发器（B10）：①API 网关/调用日志接入（含时间戳，可按年聚合）→ 升完全直接支持（与 020/022 共用工程）；②甲方裁定调用量代理口径（如页面访问日志）→ 须先立项日志采集，无库内即期路径"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "2025",
+  "2026"
+ ],
+ "base_years_note": "同比基期（上年/本年调用量）三源零承载——调用日志面不存在，base_years_missing 即全部年份",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "2856000",
+   "31.7",
+   "29.0",
+   "22.2",
+   "13.8",
+   "575",
+   "373575274",
+   "542",
+   "280",
+   "210"
+  ]
+ }
+}

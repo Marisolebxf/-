@@ -1,0 +1,121 @@
+{
+ "metric_id": "M_SCIUI_INCUB_011",
+ "batch": "S3-07-L2",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:419",
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:954",
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:1070"
+ ],
+ "facts": {
+  "ui_mount_card": "IncubationCarrierPage.jsx:419 企业成长画像 SoftEntitySummaryPanel metrics[0] { label: 成长分, value: growthScore, hint: 模拟评分 }（同卡：专利 累计/项目 代表成果）",
+  "ui_mount_trend_fn": "IncubationCarrierPage.jsx:940-984 buildGrowthScoreTrendOption：月度折线 y 轴 70-100，markLine 最高/最低",
+  "ui_mount_trend_frame": "IncubationCarrierPage.jsx:1070 SoftChartFrame title=成长评分趋势 badge=月度变化（入驻企业成长轨迹区）",
+  "ui_mock_monthly": "incubationCarrierMock.js:317-358 三企业各 6 点月序列（85→91 / 82→88 / 76→82）",
+  "ui_mock_scores": "incubationCarrierMock.js:374/390/406/422 四企业 growthScore=(91,88,82,76)",
+  "ui_mock_note": "mock 为演示值不参与判档；画像卡 hint 自标「模拟评分」（ui_demo_fallback 披露）",
+  "dev_table_total": 542,
+  "dev_enterprise_growth_trend": {
+   "columns": [
+    "id",
+    "region_id",
+    "stat_year",
+    "stat_month",
+    "new_enterprise_count",
+    "stat_date",
+    "create_time",
+    "update_time"
+   ],
+   "rows": 0
+  },
+  "dev_egt_score_like_columns": [],
+  "dev_growth_word_polluted_hits": [
+   "gkxlumenx_ads.chain_competitiveness.growth_score（产业链竞争力）",
+   "gkxlumenx_ads.chain_cycle.growth_rate（产业周期）",
+   "gkxlumenx_ads.chain_enterprise_stat.growth_rate（产业链企业统计）",
+   "gkxlumenx_ads.chain_institution_stat.growth_rate（产业链机构统计）",
+   "gkxlumenx_ads.chain_investment.amount_growth_rate/count_growth_rate（投资增速）",
+   "gkxlumenx_ads.chain_market.growth_rate（市场规模）"
+  ],
+  "gkx_table_count": 280,
+  "gkx_growth_word_polluted_hits": [
+   "gkx.dwd_fund_basic_info.fund_maturity_date（基金久期）",
+   "gkx.dwd_fund_bond_allocation.mkv_growth_rate（债市增速）",
+   "gkx.dwd_fund_equity_sector_allocation.mkv_growth_rate（股市增速）"
+  ],
+  "jiuxin_table_count_live": 218,
+  "named_in_srs": false,
+  "named_note": "三份说明书未出现「成长分/成长评分」指标名（检索记录附录 A）。"
+ },
+ "derived": [
+  {
+   "name": "incubating_enterprise_growth_score",
+   "value": null,
+   "reason": "企业成长评分需评分事实面（企业×月份×分值）；dev dwd.enterprise_growth_trend 词族命中但 0 行空壳（列清单见 facts，score_like=[]）；其余 growth 词族命中全为产业链/基金/投资语义污染。"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 542 表 growth/score/maturity 词族",
+   "source": "dev",
+   "sql": "information_schema.columns 词族扫描（_probe_s307_l2 快照）+ enterprise_growth_trend 列级实查",
+   "semantic_hits": 0,
+   "polluted": 9
+  },
+  {
+   "probe": "gkx 280 表 growth/score 词族",
+   "source": "gkx",
+   "sql": "information_schema.columns 词族扫描（快照）",
+   "semantic_hits": 0,
+   "polluted": 4
+  },
+  {
+   "probe": "jiuxin 218 表（SHOW TABLES 实数）growth/score 词族",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES+列扫描（快照）",
+   "semantic_hits": 0
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档理由：成长分=平台自设综合评分（成长验证/融资轮次/专利/项目多因子），需评分事实面（企业×月份×分值）+评分模型；三源无企业评分表。dev dwd.enterprise_growth_trend 为唯一词族命中，列级核验见 facts。",
+  "评分口径业界参照：火炬统计年报无企业成长分；企业创新积分制（科技部 2022 试点）为最接近口径（研发投入/知识产权/成长指标加权），但三源无积分表。",
+  "mock 月序列（85→91/82→88/76→82）与画像分（91/88/82/76）为演示值（ui_demo_fallback 披露）。",
+  "本件为薄壳：复用共享快照 + enterprise_growth_trend 列级实连核验。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "2021",
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_note": "评分事实面零承载，无任何月度评分可观测；评分模型接入后首个完整年为基期。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "100",
+   "218",
+   "280",
+   "3",
+   "4",
+   "542",
+   "6",
+   "70",
+   "76",
+   "78",
+   "79",
+   "80",
+   "81",
+   "82",
+   "84",
+   "85",
+   "87",
+   "88",
+   "89",
+   "90",
+   "91"
+  ]
+ }
+}

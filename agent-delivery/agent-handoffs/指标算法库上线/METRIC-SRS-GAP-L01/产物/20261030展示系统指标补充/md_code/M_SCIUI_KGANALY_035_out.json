@@ -1,0 +1,72 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_035",
+  "metric_name": "数据接入错误率（科技知识图谱·实时监控面板）",
+  "facts": {
+    "ui_mount": "pages/tech-knowledge-graph/realtimeMonitor.js:9（errorRate: '0.8%'，threshold 2.5% mock）",
+    "ui_semantics": "实时监控面板数据接入错误率读数（SRS row_01=498：接入错误率）",
+    "ui_demo_fallback": "0.8%/2.5% 均为前端 mock 常数（演示层）",
+    "srs_anchor": "SRS 原文「页面数据说明为准；如需纳入指标体系须先立项调研口径」",
+    "cat": "无业务逻辑数值类",
+    "dev_cfg_tables": [
+      "analysis_task",
+      "analysis_task_node",
+      "analysis_task_retry",
+      "cfg_model_registry",
+      "degrade_switch",
+      "es_sync_watermark",
+      "index_weight",
+      "lumen_analysis_task",
+      "lumen_analysis_task_node",
+      "lumen_analysis_task_retry",
+      "model_registry"
+    ],
+    "dev_jimu_datasources": 8,
+    "dev_task_total": 339,
+    "dev_task_failed": 115
+  },
+  "derived": [
+    {
+      "source": "dev gkxlumenx_cfg.lumen_analysis_task（接入/搬运任务链路）",
+      "task_error_rate_overall": 0.339233,
+      "status_breakdown": {
+        "cancelled": 12,
+        "failed": 115,
+        "success": 212
+      },
+      "ui_mock_reference": {
+        "errorRate": "0.8%",
+        "threshold": "2.5%",
+        "note": "mock 常数，演示层"
+      }
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "流式实时接入错误率承载（UI errorRate 语义的直接承载）",
+      "how": "dev cfg+bi 全表词族扫描（stream/realtime/ingest/error）+ gkx/久新词族",
+      "hits": "0（无流式监控面）"
+    },
+    {
+      "what": "批量接入/搬运错误率承载",
+      "how": "gkxlumenx_cfg.lumen_analysis_task 实查",
+      "hits": "339 任务 failed=115——可实算任务级错误率 33.92%"
+    },
+    {
+      "what": "数据源登记面",
+      "how": "gkxlumenx_bi.jimu_report_data_source",
+      "hits": "8 行（数据源侧无错误日志列）"
+    },
+    {
+      "what": "cfg 库 ETL 作业表",
+      "how": "information_schema 表清单",
+      "hits": "11 表（lumen_analysis_task/node 为主，无独立 ETL 错误日志表）"
+    }
+  ],
+  "support_judgment": "部分支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "无跨年度基期（dev 任务日志 2026-08-07 起）",
+    "无流式实时错误率时序（承载缺失）"
+  ],
+  "base_years_note": "物理口径基期=dev 任务日志 created_at 覆盖区间（2026-08-07～2026-11-01）；流式实时承载缺失；非「缺年按 0 摊入」"
+}

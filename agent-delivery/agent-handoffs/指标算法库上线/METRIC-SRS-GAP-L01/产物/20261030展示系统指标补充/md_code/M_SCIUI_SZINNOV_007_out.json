@@ -1,0 +1,187 @@
+{
+ "metric_id": "M_SCIUI_SZINNOV_007",
+ "batch": "S3-02",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/ShenzhenInnovation.tsx:617",
+  "repos/demo-ui-science/src/ShenzhenInnovation.tsx:624",
+  "repos/demo-ui-science/src/ShenzhenInnovation.tsx:651"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "SRS《深圳创新监测.md》seq 119 / excel_row 122『多维度指标展示』：『从论文、期刊、专利、专家学者、会议、组织机构、课题、项目、资金、政策、基础设施等多个维度展示科技发展指标…』——基础设施是 11 维枚举末位（维度名命中、指标定义未给）；主需求文档 :769/:779 同文；科技全域态势 SRS 的要素枚举（:42）不含基础设施——本维仅深圳创新监测模块明文"
+ },
+ "facts": {
+  "gkx_infra_tables": [],
+  "gkx_infra_columns": [],
+  "dev_infra_tables": [],
+  "jiuxin_infra_tables": [],
+  "jiuxin_sz_facility_series": {
+   "2000": 5,
+   "2001": 7,
+   "2002": 8,
+   "2003": 4,
+   "2004": 2,
+   "2005": 2,
+   "2006": 5,
+   "2007": 7,
+   "2008": 8,
+   "2009": 7,
+   "2010": 9,
+   "2011": 9,
+   "2012": 8,
+   "2013": 10,
+   "2014": 12,
+   "2015": 16,
+   "2016": 16,
+   "2017": 15,
+   "2018": 18,
+   "2019": 17,
+   "2020": 17,
+   "2021": 17,
+   "2022": 18,
+   "2023": 17,
+   "2024": 17,
+   "2025": 16,
+   "2026": 17
+  },
+  "jiuxin_sz_facility_yoy_delta": {
+   "2001": 2,
+   "2002": 1,
+   "2003": -4,
+   "2004": -2,
+   "2005": 0,
+   "2006": 3,
+   "2007": 2,
+   "2008": 1,
+   "2009": -1,
+   "2010": 2,
+   "2011": 0,
+   "2012": -1,
+   "2013": 2,
+   "2014": 2,
+   "2015": 4,
+   "2016": 0,
+   "2017": -1,
+   "2018": 3,
+   "2019": -1,
+   "2020": 0,
+   "2021": 0,
+   "2022": 1,
+   "2023": -1,
+   "2024": 0,
+   "2025": -1,
+   "2026": 1
+  }
+ },
+ "derived": [
+  {
+   "key": "jiuxin_sz_facility_2025_vs_ui_mock_ratio",
+   "value": 78.8,
+   "numerator": 1260,
+   "denominator": 16,
+   "note": "分子=UI mock 基础设施总量（1,260 个，演示值不作数据证据）；分母=久新深圳 2025 科研设施数（16 家，实测）——量级差 75 倍实证：facility 代理与 UI 语义不同物"
+  },
+  {
+   "key": "jiuxin_sz_facility_delta_2025",
+   "value": -1.0,
+   "numerator": 16,
+   "denominator": 17,
+   "note": "分子=2025 深圳科研设施数；分母=2024——差分增量（同表同年差分 B3）；『增量』语义的最近代理读数（2025=-1 家：负增量）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 基础设施/仪器/设施类表名扫描",
+   "source": "gkx",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%infra%' OR table_name LIKE '%facility%' OR table_name LIKE '%instrument%' OR table_name LIKE '%apparatus%' OR table_name LIKE '%equipment%' OR table_name LIKE '%platform%' OR table_name LIKE '%carrier%' OR table_name LIKE '%incubat%')",
+   "hits": 0,
+   "sample": [],
+   "note": "八关键词表名级 0 命中（280 表扫描）——设施底册结构缺失"
+  },
+  {
+   "probe": "gkx 基础设施语义列扫描",
+   "source": "gkx",
+   "sql": "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='gkx' AND (column_name LIKE '%infra%' OR column_name LIKE '%facility%' OR column_name LIKE '%instrument%' OR column_name LIKE '%apparatus%' OR column_name LIKE '%platform%') LIMIT 60",
+   "hits": 0,
+   "sample": [],
+   "note": "列名级 0 命中——表名+列名双级扫描后确认结构缺失"
+  },
+  {
+   "probe": "dev 设施/仪器类表扫描",
+   "source": "dev",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkxlumenx_dwd' AND (table_name LIKE '%%instrument%%' OR table_name LIKE '%%facility%%' OR table_name LIKE '%%infra%%')",
+   "hits": 0,
+   "sample": [],
+   "note": "instrument/facility/infra 表名 0 命中（137 表）"
+  },
+  {
+   "probe": "jiuxin 设施/仪器类表扫描（SHOW TABLES 关键词）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES",
+   "hits": 203,
+   "sample": [
+    "('ads_city_subfield_resource_yearly',)",
+    "('ads_discipline_domain',)",
+    "('ads_discipline_field',)",
+    "('ads_discipline_subfield',)",
+    "('ads_discipline_topic',)",
+    "('ads_emerging_topic_key_talent',)"
+   ],
+   "note": "instrument/facility/infra/equipment 关键词 0 命中（203 表）"
+  },
+  {
+   "probe": "jiuxin 深圳 facility（科研设施）计数按年（口径 B 代理）",
+   "source": "jiuxin",
+   "sql": "SELECT m.statistics_year, m.institution_count FROM ads_geo_yearly_institution_type_metrics m JOIN ads_location l ON l.location_id=m.location_id WHERE l.name_en='Shenzhen' AND m.institution_type_id='facility' ORDER BY m.statistics_year",
+   "hits": 27,
+   "sample": [
+    "(2000, 5)",
+    "(2001, 7)",
+    "(2002, 8)",
+    "(2003, 4)",
+    "(2004, 2)",
+    "(2005, 2)"
+   ],
+   "note": "2000-2026 深圳科研设施 5→17 家——OpenAlex facility 语义（国家实验室/望远镜/加速器），与 UI『基础设施 1,260 个』量级差 ~75 倍、语义不同物"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档依据（三源逐一留证 B4）：gkx 八关键词（infra/facility/instrument/apparatus/equipment/platform/carrier/incubat）表名+列名双级扫描 0 命中；dev 137 表 instrument/facility/infra 0 命中；久新 203 表同关键词 0 命中——『基础设施』底册表在三源结构级不存在",
+  "需求文书未定义计数口径（大科学装置/创新载体/仪器设施/新型基础设施？四种口径量级差数量级）；UI 自注数据源『深圳市科技创新委员会、深圳市统计局』（ShenzhenInnovation.tsx:651）不在三源——官方统计源（如深圳统计年鉴基础设施投资额）是唯一升档路径",
+  "最近代理（口径 B 对照面）：久新 ads_institution_type.facility=科研设施（OpenAlex 语义：国家实验室/望远镜/粒子加速器），深圳 2000-2026 序列 5→17 家、2025=16 家、2025 增量-1——量级与 UI mock（1,260 个/增量 302）差约 79 倍（derived.jiuxin_sz_facility_2025_vs_ui_mock_ratio=78.8）且语义不同物，不能作承载",
+  "『增量』语义佐证：UI 兄弟维同构（论文核心 27,956/增量 11,568=40.8%；专家核心 22,156/增量 9,168），『增量指标』应为年内新增计数——即便有设施底册还需 established/incorporation 时间列，三源亦无设施×时间面",
+  "本件与 SZINNOV_012（区级平台活跃度）共用『平台/设施对象维缺失』结论；与 SZINNOV_011 区级维不同——本件连市级设施面都不存在，判档更严一档"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "base_years_note": "UI 五年趋势窗（indicatorTrendYears 2021-2025）全缺——三源无基础设施计数面，无任何年份可取数；口径 B 代理序列（2000-2026）仅供对照不作交付",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "-1.0",
+   "10",
+   "12",
+   "1260",
+   "15",
+   "16",
+   "17",
+   "18",
+   "2",
+   "302",
+   "4",
+   "5",
+   "7",
+   "731",
+   "78.8",
+   "8",
+   "9"
+  ]
+ }
+}

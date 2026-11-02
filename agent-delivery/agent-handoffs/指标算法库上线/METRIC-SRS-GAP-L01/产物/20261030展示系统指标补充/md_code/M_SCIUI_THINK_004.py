@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""M_SCIUI_THINK_004 参与人数 —— 薄壳校验脚本（负结论件）。
+
+UI：TechExchange.jsx:198 科技交流活动详情抽屉「参与人数」行
+（value=`${participants} 人`）+ :140 KPI「参与人次 12.8 万」卡
++ TechCompetition.jsx:149 KPI「参赛人数 45.6 万人」卡 + :84 竞赛卡
+「N 人参与」——清单挂载位 row_01=707 mount=TechExchange.jsx:198。
+口径=科技活动/竞赛的参与人数统计——活动/竞赛台账+报名流水双缺
+（EXCH_001/CONTEST_001 已证台账零承载，本件独立留证）。
+"""
+from __future__ import annotations
+
+import json
+
+SHARED = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s309_alpha_out.json"
+OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_THINK_004_out.json"
+
+
+def main() -> None:
+    with open(SHARED, encoding="utf-8") as f:
+        snap = json.load(f)
+
+    dev = snap["dev"]
+    gkx = snap["gkx"]
+    jx = snap["jiuxin"]
+    assert dev["table_total"] == 542 and gkx["table_count"] == 280
+    assert jx["table_count_live"] == 218
+    # 参与词族：dev 1 表（投融资参与方异域）/ gkx 0 / jiuxin 0
+    assert dev["word_participant"] == ["gkxlumenx_dwd.industry_chain_investment_participant"]
+    assert gkx["word_participant"] == []
+    assert jx["word_participant"] == []
+
+    out = {
+        "metric_id": "M_SCIUI_THINK_004",
+        "batch": "S3-09",
+        "ui_evidence": [
+            "repos/demo-ui-science/src/pages/tech-service/TechExchange.jsx:198",
+            "repos/demo-ui-science/src/pages/tech-service/TechExchange.jsx:140",
+            "repos/demo-ui-science/src/pages/tech-service/TechCompetition.jsx:149",
+            "repos/demo-ui-science/src/pages/tech-service/TechCompetition.jsx:84",
+            "repos/demo-ui-science/src/pages/tech-service/mockData.js:224-229",
+        ],
+        "requirement_trace": {
+            "named_in_srs": False,
+            "note": "「参与人数」指标名三份说明书未出现；清单 row_01=707（_phase3_screen_v3.json）自注「该数字统计什么、怎么算，以页面数据说明为准；如需纳入指标体系须先立项调研口径」。科技交流/竞赛页为主需求科技创新服务全景平台（1.2 域）UI 挂载件。",
+        },
+        "facts": {
+            "ui_mount": "TechExchange.jsx:198 活动详情抽屉「活动信息」区 { label: 参与人数, value: `${participants} 人` } 行——清单挂载位",
+            "ui_kpi_exchange": "TechExchange.jsx:140 科技交流页 KPI 四卡之二「参与人次 12.8 万」（trend rise +22.3%）——ui_demo_fallback 演示值",
+            "ui_kpi_competition": "TechCompetition.jsx:149 科技竞赛页 KPI 四卡之三「参赛人数 45.6 万人」（trend rise +28.5%）——ui_demo_fallback 演示值",
+            "ui_card_stats": "TechCompetition.jsx:84 竞赛卡统计区 <UserOutlined/> {participants} 人参与（随 competition 对象渲染）；:83 {teams} 支团队并列",
+            "ui_mock_master": "mockData.js:224-229 techActivities 6 行（participants 5000/800/300/1200/2000/1500 人）+ :264-269 competitions 6 行（participants 5600/3200/2800/0/0/4500）——演示主档",
+            "dev_table_total": dev["table_total"],
+            "dev_participant_word_tables": dev["word_participant"],
+            "gkx_table_count": gkx["table_count"],
+            "gkx_participant_word_tables": gkx["word_participant"],
+            "jiuxin_table_count_live": jx["jiuxin_table_count_live"] if "jiuxin_table_count_live" in jx else jx["table_count_live"],
+            "jiuxin_participant_word_tables": jx["word_participant"],
+            "named_in_srs": False,
+        },
+        "derived": [
+            {
+                "name": "activity_competition_participant_count",
+                "value": None,
+                "numerator": None,
+                "denominator": None,
+                "note": "参与人数 = 活动报名流水/签到流水的去重计数（或人次口径）。活动台账+竞赛台账+报名流水三源零承载：dev participant 词族仅 1 表为投融资参与方（industry_chain_investment_participant，资本事件主体非活动参与者）、gkx 0、jiuxin 0。mock participants 字段为每活动预置常量 → 不可构建，负结论 null 登记",
+            },
+        ],
+        "absence_probe": [
+            {
+                "probe": "dev 参与流水面（participant/registration/enroll/signup 词族 542 表）",
+                "source": "dev",
+                "sql": "information_schema.tables 表名词族扫描（快照 dev.word_participant）+ 列级复探（_probe_s309_alpha_b 快照 dev.competition_like_columns）",
+                "hits": 1,
+                "hit_detail": "gkxlumenx_dwd.industry_chain_investment_participant 为投融资事件参与方表（participant=资本交易主体语义）；列级 participant 仅命中该表 participant_record_id——活动/竞赛报名参与域 0 命中",
+            },
+            {
+                "probe": "gkx 参与流水面（280 表）",
+                "source": "gkx",
+                "sql": "information_schema.tables 表名词族扫描（快照 gkx.word_participant）",
+                "hits": 0,
+                "note": "gkx word_participant=[]——要素库无活动/竞赛域",
+            },
+            {
+                "probe": "jiuxin 参与流水面（SHOW TABLES 实数 218 表）",
+                "source": "jiuxin",
+                "sql": "SHOW TABLES + participant/registration/enroll/signup 词族（快照 jiuxin.word_participant）",
+                "hits": 0,
+                "note": "jiuxin word_participant=[]——科研分析库无活动参与域",
+            },
+            {
+                "probe": "活动/竞赛台账（参与人数的宿主面）",
+                "source": "three",
+                "sql": "EXCH_001/CONTEST_001 词族证据复用（_shared_s309_gamma 快照 activity/contest 族）",
+                "hits": 0,
+                "hit_detail": "活动词族命中全异域（jiuxin 3 表科研难题/人才事件、dev 10 表产业链事件族、gkx 4 表外汇/并购）；竞赛词族 dev 0/gkx 0/jiuxin 2 表学术竞争度——台账零承载则参与计数无宿主",
+            },
+        ],
+        "support_judgment": "完全不支持",
+        "notes": [
+            "判档理由：参与人数需①活动/竞赛台账（宿主面）②报名/签到流水（计数面）。台账层 EXCH_001/CONTEST_001 已证三源零承载（词族命中全异域）；流水层本批 participant/registration/enroll/signup 词族三源探针：dev 仅 1 表投融资参与方（异域）、gkx 0、jiuxin 0。宿主与流水双缺，mock participants 为预置常量。",
+            "同族关系：与 EXCH_001（活动类型分布）/CONTEST_001（竞赛类型分布）共享台账缺口；与 THINK_003/005/013/014（竞赛族）同根；与 THINK_013（数据科学赛道报名数，路 β）为窄口径变体——报名流水是其共同地基。",
+            "口径提示（B9）：清单自注「该数字统计什么、怎么算，以页面数据说明为准」——UI 现挂载 KPI 卡为「人次」（12.8 万）而抽屉行为「人数」（N 人），人次 vs 人数口径未定；本件按人数口径判负（两种口径同等缺数据）。",
+            "升档路径：活动/竞赛报名系统接入（报名流水落库）→ 完全转换支持；签到系统直连 → 完全直接支持。",
+        ],
+        "base_years_used": [],
+        "base_years_missing": ["2021-2026"],
+        "base_years_note": "参与人数为活动/届次截面读数；三源无台账无流水无历史序列；mock participants 亦无年度聚合。",
+        "ctx_refs": {
+            "note": "正文引用型数字登记",
+            "refs": sorted(["542", "280", "218", "1", "0", "12.8", "45.6", "5000", "800", "300", "1200", "2000", "1500", "5600", "3200", "2800", "4500", "22.3", "28.5"]),
+        },
+    }
+
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    print("written:", OUT)
+    print("judgment: 完全不支持 | dev/gkx/jiuxin participant hits:",
+          len(dev["word_participant"]), len(gkx["word_participant"]), len(jx["word_participant"]))
+
+
+if __name__ == "__main__":
+    main()

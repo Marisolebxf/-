@@ -1,0 +1,127 @@
+{
+ "absence_probe": [
+  {
+   "hits": 0,
+   "note": "sync 词族唯一命中 gkxlumenx_cfg.es_sync_watermark（单模块快照面非历史台账）；job 词族命中调度框架表族（xxl_job_log 0 行空载）",
+   "probe": "dev 16 schema 542 表 access_history/sync_log/collect_log/ingest_log 词族",
+   "source": "dev",
+   "sql": "information_schema.tables LIKE 'gkxlumenx%' 词族扫描（_probe_lane3_s304_out.json facts.dev.word_family_tables）"
+  },
+  {
+   "hits": 0,
+   "note": "job 词族唯一命中 dwd_job=招聘岗位明细表（10 行），语义排除",
+   "probe": "gkx 280 表 sync/channel/cycle/etl/ingest/pipeline 词族",
+   "source": "gkx",
+   "sql": "information_schema.tables WHERE table_schema='gkx' 词族扫描（_probe_lane3_s304_out.json facts.gkx.word_family_tables）"
+  },
+  {
+   "hits": 0,
+   "note": "run 词族唯一命中 ads_recommendation_run=推荐系统运行表，语义排除；ads_* 按 metrics_as_of_date 快照管理无逐笔同步日志",
+   "probe": "久新 210 张 ads_* 表 sync/channel/cycle/etl/ingest/pipeline + task/schedul/frequen/interval/batch/refresh/job/run/exec 词族",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES 词族扫描（_probe_lane3_s304_out.json / _probe_lane3_s304b_out.json）"
+  },
+  {
+   "hits": 0,
+   "note": "seq 360-362 相邻叶功能描述在、成功率口径无",
+   "probe": "三份需求文档「渠道历史同步成功率/同步成功率」定义",
+   "source": "doc",
+   "sql": "rg 检索（附录 A.2）"
+  }
+ ],
+ "base_years_missing": [],
+ "base_years_note": "不适用（成功率口径无基年概念）",
+ "base_years_used": [],
+ "batch": "S3-04",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "75.0",
+   "12",
+   "15",
+   "14",
+   "1",
+   "542",
+   "280",
+   "210",
+   "0"
+  ]
+ },
+ "derived": [
+  {
+   "denominator": 15,
+   "key": "es_sync_snapshot_success_rate_pct",
+   "note": "dev gkxlumenx_cfg.es_sync_watermark 单模块最后一笔快照的成功模块占比（14/15），语义=模块快照成功率非渠道历史批次成功率；分子分母同表同 WHERE（B3）",
+   "numerator": 14,
+   "value": 93.33
+  }
+ ],
+ "facts": {
+  "dev_access_history_family_hits": 0,
+  "dev_es_sync_failed_modules": [
+   {
+    "last_sync_time": "2026-08-11 15:41:39",
+    "module_name": "reg_info",
+    "retry_count": 1,
+    "sync_status": "failed"
+   }
+  ],
+  "dev_es_sync_failed_modules_total": 1,
+  "dev_es_sync_reg_info_demo_row": {
+   "last_sync_time": "2026-10-19 01:37:38",
+   "module_name": "reg_info_demo",
+   "retry_count": 0,
+   "sync_status": "success"
+  },
+  "dev_es_sync_rows_with_demo_in_module_name": [
+   "reg_info_demo"
+  ],
+  "dev_es_sync_status_dist": [
+   [
+    "failed",
+    1
+   ],
+   [
+    "success",
+    14
+   ]
+  ],
+  "dev_es_sync_success_modules": 14,
+  "dev_es_sync_watermark_rows": 15,
+  "dev_sync_family_tables": [
+   "gkxlumenx_cfg.es_sync_watermark"
+  ],
+  "dev_sys_job_log_rows": 0,
+  "dev_table_total": 542,
+  "dev_xxl_job_log_report_rows": 0,
+  "dev_xxl_job_log_rows": 0,
+  "gkx_sync_channel_family_tables": {
+   "job": [
+    "dwd_job"
+   ]
+  },
+  "gkx_table_count": 280,
+  "jiuxin_sync_channel_family_tables": {},
+  "jiuxin_table_count": 210,
+  "jiuxin_task_family_tables": {
+   "run": [
+    "ads_recommendation_run"
+   ]
+  }
+ },
+ "metric_id": "M_SCIUI_DATATHM_014",
+ "notes": [
+  "mock 源 historyAccessDashboard.summary.successRate=75.0（12 条归档记录 7 成功 3 部分 2 失败口径）——演示值，不参与支持度结论",
+  "es_sync_watermark 15 行含 1 行键名含 demo（reg_info_demo），该行登记不引用（其 189,115 计数不进任何分子分母）",
+  "共享探针复用：_probe_lane3_s304_out.json（词族/结构）、_probe_lane3_s304b_out.json（es_sync 全量）"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "指标名未出现；语义锚=接入视窗·历史资源接入情况相邻叶（seq 360 历史归集记录/seq 361 更新周期/seq 362 动态趋势）"
+ },
+ "support_judgment": "完全不支持",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/AccessHistorySituation.jsx:298",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:1423-1430"
+ ]
+}

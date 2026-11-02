@@ -1,0 +1,77 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_036",
+  "metric_name": "数据更新频率（科技知识图谱·KPI 面板）",
+  "facts": {
+    "ui_mount": "pages/tech-knowledge-graph/mockData.js:1114（knowledgeGraphKPIs 数据更新频率='实时' mock）",
+    "ui_semantics": "知识图谱数据刷新节律读数（SRS row_01=499：某类数据每隔多久刷新一次）",
+    "ui_demo_fallback": "'实时' 为前端 mock 常数（演示层）",
+    "srs_anchor": "SRS 原文「如每日一次、每月一次」——节律档位制",
+    "cat": "无业务逻辑数值类",
+    "jiuxin_snapshot_versions": [
+      {
+        "as_of": "2026-10-29",
+        "data_version": 202610291012,
+        "update_time": "2026-10-29 10:12:20",
+        "n_nodes": 19430
+      }
+    ],
+    "jiuxin_distinct_asof_days": 1,
+    "jiuxin_node_update_time_window": [
+      "2026-10-29 10:12:20",
+      "2026-10-29 10:12:20"
+    ],
+    "jiuxin_edge_update_time_max": "2026-10-26 06:00:00",
+    "dev_task_exec_days": 23,
+    "dev_task_window": [
+      "2026-08-07",
+      "2026-11-01"
+    ],
+    "dev_window_span_days": 87
+  },
+  "derived": [
+    {
+      "source": "jiuxin ads_technology_graph_node 快照戳 + dev lumen_analysis_task 执行节律",
+      "jiuxin_batch_snapshot_cadence": {
+        "distinct_metrics_as_of_dates": 1,
+        "as_of_dates": [
+          "2026-10-29"
+        ],
+        "verdict": "批量快照制（非实时）"
+      },
+      "dev_task_cadence": {
+        "exec_days": 23,
+        "window": [
+          "2026-08-07",
+          "2026-11-01"
+        ],
+        "span_days": 87,
+        "exec_day_ratio": 0.2644,
+        "verdict": "近全日执行（工作日制批量节律）"
+      },
+      "ui_mock_reference": "数据更新频率='实时'（mock）——真图实查为批量快照制，非实时"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "流式实时同步承载（UI '实时' 语义直接承载）",
+      "how": "三源词族扫描（cdc/sync/stream/binlog）",
+      "hits": "0"
+    },
+    {
+      "what": "久新批量快照戳",
+      "how": "metrics_as_of_date/data_version/update_time GROUP BY",
+      "hits": "1 个 as_of 日期——批量快照制在案"
+    },
+    {
+      "what": "dev 批量任务节律",
+      "how": "lumen_analysis_task DATE(created_at) GROUP BY",
+      "hits": "2026-08-07～2026-11-01 窗口 23 个执行日（覆盖 26%）"
+    }
+  ],
+  "support_judgment": "部分支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "无跨年度更新节律史（快照戳与任务日志均为近期窗口）"
+  ],
+  "base_years_note": "物理口径基期=久新快照 metrics_as_of_date 与 dev 任务日志 created_at 覆盖窗口；实时同步承载缺失；非「缺年按 0 摊入」"
+}

@@ -1,0 +1,171 @@
+{
+ "absence_probe": [
+  {
+   "hits": 16,
+   "note": "16 列全部落在 gkxlumenx_pay（支付渠道：pay_channel/pay_refund_order/pay_trade_order）与 bi/dwd 零星（export_channel 报表导出/feedback_channel 舆情反馈/push_channels 推送渠道）——无一是数据接入渠道语义，语义排除；es_sync_watermark 19 列实测无 channel 列",
+   "probe": "dev 542 表 channel 列族（information_schema.columns LIKE '%channel%'）",
+   "source": "dev",
+   "sql": "SELECT table_schema,table_name,column_name FROM information_schema.columns WHERE table_schema LIKE 'gkxlumenx%' AND column_name LIKE '%channel%'"
+  },
+  {
+   "hits": 0,
+   "note": "两表均 0 行——调度器未投产，无渠道任务映射源",
+   "probe": "dev xxl_job_log / xxl_job_info（任务执行流水与任务注册面）",
+   "source": "dev",
+   "sql": "SELECT COUNT(*) FROM gkxlumenx_job.xxl_job_log; SELECT COUNT(*) FROM gkxlumenx_job.xxl_job_info"
+  },
+  {
+   "hits": 0,
+   "note": "job 词族唯一命中 dwd_job=招聘岗位明细（10 行），语义排除；gkx 为要素明细库无接入运营面",
+   "probe": "gkx 280 表 sync/channel/cycle/etl/ingest/pipeline 词族",
+   "source": "gkx",
+   "sql": "information_schema.tables WHERE table_schema='gkx' 词族扫描（_probe_lane3_s304_out.json）"
+  },
+  {
+   "hits": 0,
+   "note": "run 词族唯一命中 ads_recommendation_run=推荐运行表语义排除；快照管理无逐笔日志、无渠道维",
+   "probe": "久新 210 张 ads_* sync/channel/cycle/etl/ingest/pipeline + task/schedul/frequen/batch/job/run 词族",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES 词族扫描（_probe_lane3_s304_out.json / _probe_lane3_s304b_out.json）"
+  },
+  {
+   "hits": 0,
+   "note": "seq 360-361 相邻叶功能在、渠道×成功率口径无",
+   "probe": "三份需求文档「各渠道数据同步成功率」定义",
+   "source": "doc",
+   "sql": "rg 检索（附录 A.2）"
+  }
+ ],
+ "base_years_missing": [],
+ "base_years_note": "不适用（成功率口径无基年概念）",
+ "base_years_used": [],
+ "batch": "S3-04",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "98.2",
+   "95.6",
+   "97.8",
+   "92.3",
+   "96.8",
+   "17",
+   "542",
+   "280",
+   "210",
+   "0"
+  ]
+ },
+ "derived": [],
+ "facts": {
+  "dev_channel_columns": [
+   [
+    "gkxlumenx_bi.jimu_report_export_log",
+    "export_channel"
+   ],
+   [
+    "gkxlumenx_dwd.policy_public_opinion",
+    "feedback_channel"
+   ],
+   [
+    "gkxlumenx_dwd.policy_subscription",
+    "push_channels"
+   ],
+   [
+    "gkxlumenx_pay.pay_channel",
+    "channel_id"
+   ],
+   [
+    "gkxlumenx_pay.pay_channel",
+    "channel_mch_id"
+   ],
+   [
+    "gkxlumenx_pay.pay_channel",
+    "channel_name"
+   ],
+   [
+    "gkxlumenx_pay.pay_refund_order",
+    "channel_err_code"
+   ],
+   [
+    "gkxlumenx_pay.pay_refund_order",
+    "channel_err_msg"
+   ],
+   [
+    "gkxlumenx_pay.pay_refund_order",
+    "channel_id"
+   ],
+   [
+    "gkxlumenx_pay.pay_refund_order",
+    "channel_mch_id"
+   ],
+   [
+    "gkxlumenx_pay.pay_refund_order",
+    "channel_order_no"
+   ],
+   [
+    "gkxlumenx_pay.pay_refund_order",
+    "channel_pay_order_no"
+   ],
+   [
+    "gkxlumenx_pay.pay_refund_order",
+    "channel_user"
+   ],
+   [
+    "gkxlumenx_pay.pay_trade_order",
+    "channel_id"
+   ],
+   [
+    "gkxlumenx_pay.pay_trade_order",
+    "channel_mch_id"
+   ],
+   [
+    "gkxlumenx_pay.pay_trade_order",
+    "channel_order_no"
+   ]
+  ],
+  "dev_es_sync_watermark_columns": [
+   "begin_time",
+   "end_time",
+   "error_msg",
+   "is_active",
+   "last_sync_cost_s",
+   "last_sync_count",
+   "last_sync_time",
+   "module_name",
+   "retry_count",
+   "source_table",
+   "sync_status",
+   "target_index",
+   "time_field",
+   "update_mode",
+   "updated_at"
+  ],
+  "dev_es_sync_watermark_has_channel_col": false,
+  "dev_table_total": 542,
+  "dev_xxl_job_info_rows": 0,
+  "dev_xxl_job_log_rows": 0,
+  "gkx_sync_channel_family_tables": {
+   "job": [
+    "dwd_job"
+   ]
+  },
+  "gkx_table_count": 280,
+  "jiuxin_sync_channel_family_tables": {},
+  "jiuxin_table_count": 210
+ },
+ "metric_id": "M_SCIUI_DATATHM_031",
+ "notes": [
+  "mock 源 updateCycleStats：5 渠道（API接口 98.2/文件传输 95.6/数据库同步 97.8/人工录入 92.3/物联网采集 96.8）+ trend 6 点——演示值，不参与支持度结论",
+  "与 M_SCIUI_DATATHM_014 同物异构（总体 KPI 位 vs 渠道分列表格位），缺口同根（归档台账/执行日志），本件多渠道切片轴亦零承载",
+  "共享探针复用：_probe_lane3_s304_out.json"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "指标名未出现；语义锚=接入视窗·历史资源接入情况相邻叶（seq 360/361）+ UI mock updateCycleStats 渠道枚举"
+ },
+ "support_judgment": "完全不支持",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/AccessHistorySituation.jsx:417",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:1451-1456"
+ ]
+}

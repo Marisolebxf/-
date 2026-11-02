@@ -1,0 +1,136 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_021",
+ "batch": "S3-02",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2205",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2209",
+  "repos/demo-ui-science/src/pages/policy-tracking/analysis/PortraitTrio.jsx:38"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「复购/续享/再次享受」未出现在三份需求真源；主需求 1.1.1.1.4.2.2（政策分析评价·呈现政策、企业、人才的具体画像）为企业画像语境；指标语义源=UI mock 实现层（企业画像 metrics 槽位）"
+ },
+ "facts": {
+  "gkx_table_count": 280,
+  "gkx_enjoy_repeat_like_tables": [],
+  "gkx_policy_col_count": 33,
+  "gkx_policy_enjoy_like_cols": [],
+  "gkx_policy_rows": 20000,
+  "gkx_policy_text_fugou_xuxiang_rows": 67,
+  "gkx_policy_text_zaici_xiangshou_rows": 1,
+  "gkx_policy_text_chongfu_shenbao_rows": 216,
+  "dev_policy_enterprise_rel_tables": [
+   [
+    "gkxlumenx_ads",
+    "policy_entity"
+   ],
+   [
+    "gkxlumenx_dwd",
+    "policy_entity"
+   ],
+   [
+    "gkxlumenx_dwd",
+    "policy_entity_relation"
+   ],
+   [
+    "gkxlumenx_dwd",
+    "policy_entity_type"
+   ],
+   [
+    "gkxlumenx_dwd",
+    "policy_support_assessment"
+   ],
+   [
+    "gkxlumenx_dwd",
+    "policy_support_assessment_indicator"
+   ]
+  ],
+  "dev_gkxlumenx_ads_policy_entity_rows": 0,
+  "dev_gkxlumenx_dwd_policy_entity_rows": 0,
+  "dev_gkxlumenx_dwd_policy_entity_relation_rows": 0,
+  "dev_gkxlumenx_dwd_policy_entity_type_rows": 0,
+  "dev_gkxlumenx_dwd_policy_support_assessment_rows": 0,
+  "dev_gkxlumenx_dwd_policy_support_assessment_indicator_rows": 0,
+  "jiuxin_table_count": 203,
+  "jiuxin_policy_like_tables": [
+   "ads_research_problem_policy_evidence",
+   "ads_research_problem_policy_yearly_metrics",
+   "ads_technology_policy_evidence"
+  ],
+  "jiuxin_enjoy_repeat_like_tables": [],
+  "jiuxin_ads_research_problem_policy_evidence_rows": 1252,
+  "jiuxin_ads_research_problem_policy_yearly_metrics_rows": 39,
+  "jiuxin_ads_technology_policy_evidence_rows": 0
+ },
+ "derived": [
+  {
+   "key": "gkx_policy_text_fugou_share_pct",
+   "value": 0.335,
+   "numerator": 67,
+   "denominator": 20000,
+   "note": "分子=gkx.dwd_policy_base 文本含「复购」或「续享」的行数（title+content 拼串 LIKE），分母=全表 20,000 行；同表同池（B3）；语义=条款叙述覆盖面（如不得重复申报、可连续享受类条款），不是再次享受企业占比"
+  },
+  {
+   "key": "policy_repurchase_share_pct",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "不可算——分子（再次享受企业数）与分母（享受过政策企业数）同源于『企业×政策×享受期』兑现台账，该台账三源零承载（与 POLCMP_001 落实率 / POLCMP_002 惠及企业增长共享同一族级缺口）；按 B10 不写伪占比；此键留空即为负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 政策享受/复购台账表",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx；280 表名扫 enjoy/repeat/renew/repurchase/again/benefit + dwd_policy_base 33 列扫享受类列",
+   "hits": 0,
+   "hit_detail": "0 语义命中；33 列亦无 enjoy/enterprise/org/company/repeat/renew/benefit 类列（gkx_policy_enjoy_like_cols 空列表在案）——政策底表是文件库非台账"
+  },
+  {
+   "probe": "dev 企业×政策享受关系表",
+   "source": "dev",
+   "sql": "information_schema.TABLES 扫 gkxlumenx* 五 schema 的 enjoy/repeat/renew/cash/reward/fulfil + policy×enterprise 交叉",
+   "hits": 6,
+   "hit_detail": "命中 [['gkxlumenx_ads', 'policy_entity'], ['gkxlumenx_dwd', 'policy_entity'], ['gkxlumenx_dwd', 'policy_entity_relation'], ['gkxlumenx_dwd', 'policy_entity_type'], ['gkxlumenx_dwd', 'policy_support_assessment'], ['gkxlumenx_dwd', 'policy_support_assessment_indicator']]——policy_entity 系为政策实体图谱（政策关联的主体/机构实体，非企业享受兑现关系），且 dwd 层 policy_entity/policy_entity_relation 均 0 行；兑现/拨付/申报台账表 0 命中（B4：表不存在，要建表）"
+  },
+  {
+   "probe": "久新政策享受/复购面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES；203 表名扫 enjoy/repeat/renew/benefit + policy 类清单",
+   "hits": 0,
+   "hit_detail": "0 语义命中；policy 类仅 ['ads_research_problem_policy_evidence', 'ads_research_problem_policy_yearly_metrics', 'ads_technology_policy_evidence']（技术/问题的政策证据面，schema 文档在案空表）——无企业享受台账"
+  },
+  {
+   "probe": "需求原文「复购/续享/再次享受」语义段",
+   "source": "doc",
+   "sql": "rg 复购/续享/再次享受 三份需求真源（主需求+SRS 政策族+核增 17 叶）",
+   "hits": 0,
+   "hit_detail": "三份需求说明书均未出现「复购/续享/再次享受」字样；语义近邻：主需求 1.1.1.1.4.2.1.3.3 政策实施效果跟踪（『受益对象反馈』）与 1.1.1.1.4.2.1.3.6 政策匹配与推送（『根据企业登记信息匹配推送』）是惠企触达语境，无复购占比定义；语义源=UI mock 实现层（企业画像 metrics 槽位）"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：复购续享率 = 期内再次享受政策企业数 / 期内享受过政策企业数。分子分母同源于『企业×政策×享受期』兑现台账——该台账三源零承载（gkx 无表无列；dev 关系表 0 命中或 0 行；久新仅空政策证据表）。与 POLCMP_001 落实率 / POLCMP_002 惠及企业增长共享同一族级缺口（兑现事件无源）——三件互为同族旁证，任一件台账接入即可同时闭合三件分子分母",
+  "文本面证据边界：gkx 政策文本「复购|续享」67 行（0.335%）、「再次享受」仅 1 行、「重复申报|连续享受」216 行——均为条款叙述（禁止性/许可性规则），既无企业主体也无期次计数，不能充当任何口径的复购分子分母",
+  "mock 披露：policyData.js:2205-2209 policyPortraitSummaries 企业画像 detail.metrics[3] { label: '复购/续享率', value: '54%' }——演示值（同 metrics 组 惠及企业数 1.28 万家/申报通过率 63%/到账周期 46 天 均为 mock），不参与支持度结论；消费方 PortraitTrio.jsx:38-40（政策分析页三画像卡）",
+  "B11 对账：gkx 政策 20,000 行与共享快照 fix2_20261101.policy 一致；dev policy_entity 0 行与 _probe_lane6_s302_r2_out.json 零漂移；与 M_SCIUI_POLCMP_002 产物 dev_policy_enterprise_tables=[] 相互印证",
+  "升档触发器（B10）：接入政务兑现台账（免申即享兑付记录/财政拨付流水/企事速办工单，建 policy_enterprise_enjoy 关系表含享受期次）→ 分子=享受期次≥2 的企业数、分母=享受过企业数，直查可算升完全转换支持；与 POLCMP_001/002 共用同一接入工程"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件无年度序列可算（各期享受企业计数零承载）；文本面条款词命中仅叙述性证据",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "20000",
+   "67",
+   "1",
+   "216",
+   "203",
+   "280",
+   "203",
+   "54",
+   "1.28"
+  ]
+ }
+}

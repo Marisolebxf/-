@@ -1,0 +1,155 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_044",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:303",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:417",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:393"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求真源未出现「最高支持额度」；核增 4.2.4.1.4 政策数据治理·规划指标库四维是维度语义源——本件挂扶持力度维首位（pm1）；UI policyPcData.js:303 是 PC 端规划指标库演示槽位，消费引用 :417 政策详情卡 m1"
+ },
+ "facts": {
+  "gkx_policy_col_count": 33,
+  "gkx_policy_amount_like_cols": [
+   "policy_support"
+  ],
+  "gkx_policy_rows": 20000,
+  "gkx_text_zuigao_rows": 433,
+  "gkx_text_zuigao_amount_rows": 447,
+  "gkx_text_zhichi_title_rows": 1126,
+  "gkx_text_zuigao_sample": [
+   [
+    "18319118",
+    "北京市传统工艺美术保护发展资金管理暂行办法实施细则",
+    "2018"
+   ],
+   [
+    "18319342",
+    "关于开展征集省中小企业发展基金创新融资基金项目的通知",
+    "2016"
+   ],
+   [
+    "18319446",
+    "吉林省人民政府办公厅关于加快推进环保产业振兴发展的若干意见",
+    "2019"
+   ],
+   [
+    "18319491",
+    "陕西省人民政府办公厅关于印发加快发展我省文化产业若干政策措施的通知",
+    "2007"
+   ],
+   [
+    "18319566",
+    "北京市经济和信息化局关于补充征集2020年北京市支持中小企业发展资金改善中小企业融资环境奖励项目的通知",
+    "2020"
+   ],
+   [
+    "18319681",
+    "关于进一步鼓励和引导民间资本投资文化创意产业的若干政策",
+    "2014"
+   ],
+   [
+    "18319879",
+    "中国科学院科技促进发展局　中国科学院北京分院中关村科技园区管理委员会关于印发《促进中国科学院科技成果在京转移转化的若干措施》的通知",
+    "2018"
+   ],
+   [
+    "18320025",
+    "关于开展2017-2018年上海市科技创新券兑现工作的通知",
+    "2018"
+   ]
+  ],
+  "gkx_text_wanyuan_rows": 3143,
+  "gkx_policy_support_nonnull": 20000,
+  "gkx_global_policy_rows": 20000,
+  "gkx_global_text_zuigao_rows": 0,
+  "dev_policy_base_info_col_count": 44,
+  "dev_policy_base_info_amount_cols": [
+   "policy_support"
+  ],
+  "dev_text_zuigao_rows": 433,
+  "dev_policy_quantitative_index_rows": "no-table: (1146, \"Table 'gkxlumenx_dwd.policy_quantitative_index' does",
+  "dev_policy_index_info_rows": "no-table: (1146, \"Table 'gkxlumenx_dwd.policy_index_info' doesn't exis",
+  "jiuxin_table_count": 210,
+  "jiuxin_policy_amount_like_tables": [
+   "ads_research_problem_policy_evidence",
+   "ads_research_problem_policy_yearly_metrics",
+   "ads_technology_policy_evidence"
+  ]
+ },
+ "derived": [
+  {
+   "key": "zuigao_mention_share_pct",
+   "value": 2.165,
+   "numerator": 433,
+   "denominator": 20000,
+   "note": "分子=gkx 政策全文含「最高支持/最高资助/最高不超过」等语境的行数，分母=dwd_policy_base 全表 20,000；同表同池（B3）；叙述覆盖面（转换口径工作量指示器），不是最高支持额度读数"
+  },
+  {
+   "key": "max_support_amount_wan",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "不可直查——三源无「政策→最高支持额度」结构化承载（gkx policy_support 占位列/dev 量化表不存在/久新无政策条款量化面）；文本面窄窗金额 447 行（两段并集）可 NLP 抽取但无 gold 校准；额度本体写死在政策公告原文（如深圳揭榜挂帅最高 3000 万元）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 额度结构化列",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM dwd_policy_base（33 列）扫 amount/quota/limit/ceiling/cap/fund/subsid/grant/award",
+   "hits": 1,
+   "hit_detail": "唯一扶持类列 policy_support 实测 20,000/20,000 全为字面 'null' 占位（与 POLCMP_009 共证）——无额度数值列"
+  },
+  {
+   "probe": "dev 量化指标落位表",
+   "source": "dev",
+   "sql": "policy_quantitative_index / policy_index_info 行数",
+   "hits": 0,
+   "hit_detail": "两表不存在（1146 no-table）——规划指标库（扶持力度维）在开发库无落位；policy_base_info 44 列同构无额度列"
+  },
+  {
+   "probe": "久新政策条款量化面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（203 表）扫 policy/amount/quota/subsid/grant/award",
+   "hits": 3,
+   "hit_detail": "命中均为 policy 证据/语境表（POLCMP_009 已逐表排除：科技活动指标面非政策条款面）——无「政策→额度值」承载"
+  },
+  {
+   "probe": "需求原文「最高支持额度」定义段",
+   "source": "doc",
+   "sql": "rg 最高支持额度/支持额度/额度 三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份需求真源均未出现「最高支持额度」；核增 PC-04 规划指标库四维（扶持力度/适用范围/实施时效/申请条件）是维度语义源（本件挂扶持力度维首位 pm1）；UI policyPcData.js:303 演示值 10000 万元是唯一口径线索"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：最高支持额度是政策条款属性（额度写死在政策公告原文，如深圳 AI 揭榜挂帅按项目投资额 50% 最高 3000 万元），非统计量。库内无结构化承载（gkx 占位列/dev 无落位表/久新无量化面），但文本转换面有量：「最高支持/资助/不超过」语境 433 行、窄窗金额模式两段并集 447 行（正向 30 字符窗+反向 20 字符窗，两段有交叉计数，作并集口径读）、title 层支持语义 1,126 行、万元/亿元金额面 3,143 行——与 POLCMP_009 加计扣除比例同型缺口（结构缺+文本量在），判部分支持",
+  "抽取语义警示：「最高X万元」语境混有多重语义——项目资助上限（本指标）/贷款额度/社保基数/罚款上限/奖励封顶——窄窗正则须加「支持/资助/补助/奖励」动词锚并排除处罚语境；gold 校准集（人工标注）是精度保证的前置",
+  "mock 披露：policyPcData.js:303 pm1（sample 10000 万元）与 :417 m1（value '10000'）是 PC 端规划指标库演示值——mock 政策 pol-ai-2026「揭榜挂帅最高支持 1 亿元」的条款演示；演示值不参与支持度结论",
+  "B11 对账：gkx dwd_policy_base 20,000 行/policy_support 占位三证与 POLCMP_009 探针零漂移；dev 量化表 no-table 与 Lane6 探针零漂移；久新 24 张 metric 类命中逐表排除结论与 009 共证",
+  "升档触发器（B10）：①条款量化抽取管线（窄窗金额 447 行起步+gold 标注集）落地并以官方额度公告（R1 类）对表校验 → 升完全转换支持；②若甲方接受「制度值直录」（公告原文人工维护字典表）→ 零转换直查但语义降为常量引用"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "政策→最高支持额度 结构化序列"
+ ],
+ "base_years_note": "指标本体是条款属性无年度序列（额度随政策生效切换）；文本叙述面年度分布不作基期",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "20000",
+   "433",
+   "447",
+   "1126",
+   "3143",
+   "20000",
+   "0",
+   "33",
+   "203"
+  ]
+ }
+}

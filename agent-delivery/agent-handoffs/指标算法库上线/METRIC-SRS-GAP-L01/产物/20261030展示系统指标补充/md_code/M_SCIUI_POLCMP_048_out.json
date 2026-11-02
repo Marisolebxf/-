@@ -1,0 +1,193 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_048",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:323",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:485",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:474"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求真源未出现「信贷风险补偿」；核增 4.2.4.1.4 规划指标库四维是维度语义源（扶持力度维 pm3）；UI policyPcData.js:323 是 PC 端规划指标库演示槽位，消费引用 :485 政策详情卡 m2 + 条款树 :474"
+ },
+ "facts": {
+  "gkx_policy_col_count": 33,
+  "gkx_policy_riskcomp_cols": [],
+  "gkx_policy_rows": 20000,
+  "gkx_text_riskcomp_rows": 352,
+  "gkx_text_fengxianbuchang_rows": 335,
+  "gkx_text_xindai_rows": 1069,
+  "gkx_text_riskcomp_pct_rows": 31,
+  "gkx_text_riskcomp_title_rows": 22,
+  "gkx_text_riskcomp_sample": [
+   [
+    "18319052",
+    "国务院办公厅关于金融支持经济结构调整和转型升级的指导意见",
+    "2014"
+   ],
+   [
+    "18319203",
+    "国务院办公厅印发《关于提升大众创业万众创新示范基地带动作用进一步促改革稳就业强动能的实施意见》",
+    "2020"
+   ],
+   [
+    "18319253",
+    "中共中央国务院关于深化体制机制改革加快实施创新驱动发展战略的若干意见(2015-03-23)",
+    "2015"
+   ],
+   [
+    "18319367",
+    "甘肃省工业和信息化委员会关于切实做好稳妥降低企业杠杆率工作的通知",
+    "2017"
+   ],
+   [
+    "18319418",
+    "河南省人民政府关于印发河南省建设支撑型知识产权强省试点省实施方案的通知",
+    "2021"
+   ],
+   [
+    "18319440",
+    "云南省高新技术产业促进条例",
+    "2008"
+   ],
+   [
+    "18319446",
+    "吉林省人民政府办公厅关于加快推进环保产业振兴发展的若干意见",
+    "2019"
+   ],
+   [
+    "18319553",
+    "内蒙古自治区人民政府关于促进全区融资担保行业持续规范健康发展的指导意见",
+    "2015"
+   ]
+  ],
+  "gkx_text_fengxianbuchang_by_year": [
+   [
+    "2022",
+    5
+   ],
+   [
+    "2021",
+    23
+   ],
+   [
+    "2020",
+    44
+   ],
+   [
+    "2019",
+    27
+   ],
+   [
+    "2018",
+    39
+   ],
+   [
+    "2017",
+    36
+   ],
+   [
+    "2016",
+    40
+   ],
+   [
+    "2015",
+    39
+   ],
+   [
+    "2014",
+    19
+   ],
+   [
+    "2013",
+    17
+   ]
+  ],
+  "gkx_global_policy_rows": 20000,
+  "gkx_global_text_riskcomp_rows": 0,
+  "gkx_table_count": 280,
+  "gkx_finance_like_tables": [
+   "dwd_org_stock_finance_info",
+   "dwd_org_stock_finance_info_bak_20260911"
+  ],
+  "dev_text_riskcomp_rows": 352,
+  "dev_policy_quantitative_index_rows": "no-table: (1146, \"Table 'gkxlumenx_dwd.policy_quantitative_index' does",
+  "dev_policy_index_info_rows": "no-table: (1146, \"Table 'gkxlumenx_dwd.policy_index_info' doesn't exis",
+  "jiuxin_table_count": 210,
+  "jiuxin_riskcomp_like_tables": []
+ },
+ "derived": [
+  {
+   "key": "fxbuchang_mention_share_pct",
+   "value": 1.675,
+   "numerator": 335,
+   "denominator": 20000,
+   "note": "分子=gkx 政策全文含「风险补偿」的行数，分母=dwd_policy_base 全表 20,000；同表同池（B3）；叙述覆盖面（转换口径工作量指示器），不是补偿比例读数"
+  },
+  {
+   "key": "credit_risk_compensation_ratio",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "不可直查——三源无「政策→补偿比例」结构化承载；文本面窄窗比例 31 行可 NLP 抽取；比例本体写死在各地风险补偿资金管理办法（广州 20%-40% 分档 R1/深圳同构 R2/汕头 50% R3/国家专项担保分层 R4），mock 演示值 40% 与国家专精特新政策语境一致"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 风险补偿结构化列",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM dwd_policy_base（33 列）扫 risk/compensat/guarantee/credit/loan",
+   "hits": 0,
+   "hit_detail": "0 列命中——政策属性表无风险补偿比例列；280 表金融语义扫仅融资信息表（financing/stock_finance）非风险补偿资金池面"
+  },
+  {
+   "probe": "dev 量化指标落位表",
+   "source": "dev",
+   "sql": "policy_quantitative_index / policy_index_info 行数",
+   "hits": 0,
+   "hit_detail": "两表不存在（1146 no-table）——规划指标库（扶持力度维）在开发库无落位（与 009/044 共证）"
+  },
+  {
+   "probe": "久新风险补偿/担保量化面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（203 表）扫 risk/compensat/guarantee/credit/loan",
+   "hits": 0,
+   "hit_detail": "命中均为 credit 评级/信誉类表（科技信用评级面）非风险补偿资金池条款量化面——无「政策→补偿比例」承载"
+  },
+  {
+   "probe": "需求原文「信贷风险补偿」定义段",
+   "source": "doc",
+   "sql": "rg 信贷风险/风险补偿/信贷 三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份需求真源均未出现「信贷风险补偿」；核增 PC-04 规划指标库四维是维度语义源（扶持力度维 pm3）；UI policyPcData.js:323 演示值 40% 与条款树 :474「原则上不低于 40%」是唯一口径线索"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：信贷风险补偿比例是政策条款属性（比例写死在各地风险补偿资金管理办法原文：广州政银分档 20%-40% 最高 50%（R1）、深圳同构（R2）、汕头 50%（R3）、国家专项担保分层（R4））。库内无结构化承载，文本转换面窄量：「风险补偿」335 行提及、窄窗比例 31 行、title 层 22 行——与 POLCMP_044 同型缺口（提及量 335 vs 433、窄窗 31 vs 447，量级更低），判部分支持",
+  "文本面时间形态：提及集中在 2013-2022（科技型中小企业信贷风险补偿政策密集期，2020 年 44 行/2016 年 40 行/2018 年 39 行峰值），2022 年 5 行收尾——叙述面停在库内收录窗，现行办法（广州 2025 版 R1）在库内文本面无承载，对表校验须接外部公告源",
+  "抽取语义警示：「补偿比例」语境混有风险补偿（本指标）/生态补偿/征地补偿等多义——窄窗须加「信贷/贷款/不良」金融语境锚；gold 校准集前置",
+  "mock 披露：policyPcData.js:323 pm3（sample 40%）与 :485 m2（value '40'）、条款树 :474「第一款 补偿比例细则（原则上不低于 40%）」是 PC 端演示值——mock 政策 pol-zjtx-2025 的条款树演示；演示值不参与支持度结论",
+  "B11 对账：gkx dwd_policy_base 20,000 行与共享快照零漂移；文本面探针与 POLCMP_009（加计扣除 265 行）/POLCMP_002（惠及 187 行）同日同库可互推；dev no-table 与 Lane6 探针零漂移",
+  "升档触发器（B10）：①条款量化抽取管线（窄窗比例 31 行起步+gold 标注）并以各地资金管理办法（R1-R4）对表校验 → 升完全转换支持；②若甲方接受「制度值直录」（管理办法人工维护字典表）→ 零转换直查但语义降为常量引用"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "政策→信贷风险补偿比例 结构化序列"
+ ],
+ "base_years_note": "指标本体是条款属性无年度序列（比例随管理办法生效切换）；文本叙述面年度分布不作基期",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "20000",
+   "352",
+   "335",
+   "1069",
+   "31",
+   "22",
+   "0",
+   "33",
+   "203"
+  ]
+ }
+}

@@ -1,0 +1,199 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_033",
+ "batch": "S3-04",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/AccessSourceAnalysisDetail.jsx:152",
+  "repos/demo-ui-science/src/pages/data-resources/components/AccessSourceAnalysisDetail.jsx:141",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:115"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「分组归集数据量」指标名三份真源 0 命中——UI 派生读数；细分维语义叶=seq 351『支持按时间、业务类型、来源类别进行细分』（业务类型被需求明列为细分维，taxonomy 与量纲无定义）；组清单 l3『按质量等级＞归集量』的分组位在 UI 由分组下拉（GROUP_OPTIONS qualityLevel）承接，质量轴零承载（028 在案）"
+ },
+ "facts": {
+  "ui_mock_biztype_matrix": [
+   [
+    "基础研究",
+    5200,
+    800,
+    1200
+   ],
+   [
+    "产业应用",
+    2100,
+    4200,
+    1500
+   ],
+   [
+    "开源汇聚",
+    900,
+    1100,
+    2800
+   ],
+   [
+    "政务统计",
+    600,
+    400,
+    300
+   ]
+  ],
+  "ui_mock_biztype_row_sums": [
+   [
+    "产业应用",
+    7800
+   ],
+   [
+    "基础研究",
+    7200
+   ],
+   [
+    "开源汇聚",
+    4800
+   ],
+   [
+    "政务统计",
+    1300
+   ]
+  ],
+  "ui_mock_biztype_col_sums": [
+   [
+    "科研院所",
+    8800
+   ],
+   [
+    "企业",
+    6500
+   ],
+   [
+    "第三方平台",
+    5800
+   ]
+  ],
+  "ui_mock_biztype_grand_total": 21100,
+  "dev_biztype_like_columns": [],
+  "dev_enterprise_base_rows": 269511,
+  "dev_enterprise_base_data_source_dist": [
+   [
+    "ods_industry_code,ods_org_annual_report_base,ods_org_base_info",
+    189115
+   ],
+   [
+    "gkx_qh",
+    40000
+   ],
+   [
+    "ods_special_hongkong_company",
+    20000
+   ],
+   [
+    "ods_special_taiwan_company",
+    20000
+   ],
+   [
+    "ods_special_aomen_company",
+    396
+   ]
+  ],
+  "dev_quality_like_columns": [
+   "gkxlumenx_ads.enterprise_score.score_level",
+   "gkxlumenx_dwd.event_std.time_quality",
+   "gkxlumenx_ods.dwd_special_taiwan_company.company_quality"
+  ],
+  "gkx_table_count": 280,
+  "gkx_collect_like_tables": [
+   "dwd_org_changerecord_info"
+  ],
+  "jiuxin_table_count": 211,
+  "jiuxin_status": "live",
+  "jiuxin_collect_like_tables": []
+ },
+ "derived": [
+  {
+   "key": "ui_mock_biztype_rowcol_sum_identity",
+   "value": 21100,
+   "numerator": 21100,
+   "denominator": 21100,
+   "note": "分子=列合计之和（Σ渠道 21,100）；分母=行合计之和（Σ业务类型 21,100）——同一 4×3 矩阵的两种切片求和恒等（交叉表完备性校验）。对账披露：矩阵总计 21,100 vs mock channels 三渠道 volume 之和 27,740（差 6,640）——mock 内部 channels 与 byBizType 两面不对账（渠道列合计 8,800/6,500/5,800 vs channels volume 12,580/8,920/6,240）；且高等院校 4,120/政府部门 1,810 两渠道未入柱图（柱图仅取前三渠道）——演示值不作数据证据"
+  },
+  {
+   "key": "dev_group_by_data_source_volume_sum",
+   "value": 269511,
+   "numerator": 269511,
+   "denominator": 269511,
+   "note": "分子=按 data_source 分组的 5 组行数合计；分母=enterprise_base 总行数——恒等 269,511（与 027/028 派生键同值，族内 B11 对账）；血缘分组是明细端交叉维『渠道轴』的最近邻工程面"
+  },
+  {
+   "key": "biztype_channel_cross_volume",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『业务类型×渠道的归集量交叉明细（或按质量等级>归集量分组）』——交叉两轴（业务类型/质量等级 × 正式渠道 taxonomy）三源零承载（biz_type 词族 0 命中、质量词族 3 处全偏移、渠道轴 taxonomy 分叉）；按 B10 留空"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 业务类型轴（biz_type/business_type 词族）",
+   "source": "dev",
+   "sql": "information_schema.columns 扫 gkxlumenx_*（542 表）——本件独立复跑",
+   "hits": 0,
+   "hit_detail": "命中 []——0 处列承载；『业务类型』分组轴在 dev 无列级承载（mock byBizType 的四型：基础研究/产业应用/开源汇聚/政务统计，库内无同构编目）"
+  },
+  {
+   "probe": "dev 质量等级轴 + 资源级明细面",
+   "source": "dev",
+   "sql": "质量词族列扫（组探针）+台账词族（族探针，027/028 在案）",
+   "hits": 3,
+   "hit_detail": "质量词族 3 处列全语义偏移（score_level 评分档/time_quality 时间质量/company_quality 台企列，028 在案）；组清单 l3『按质量等级＞归集量』的质量分组轴零承载；资源级明细面零承载（028 §3.3 同证）"
+  },
+  {
+   "probe": "gkx 业务类型/质量等级轴 + 明细面",
+   "source": "gkx",
+   "sql": "280 表词族扫（族探针）+dwd_org_base_info 列清单（组探针）",
+   "hits": 1,
+   "hit_detail": "台账词族命中 dwd_org_changerecord_info（语义排除，族探针）；280 表为要素明细库，无『业务类型×渠道×量』交叉编目；dwd_org_base_info 38 列无 biz_type/质量列"
+  },
+  {
+   "probe": "久新业务类型/质量等级轴 + 明细面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（live，211 表）词族扫（族探针）",
+   "hits": 0,
+   "hit_detail": "命中 []——211 张 ads_* 全为分析结果面（学科/人才/专利/项目/技术），无业务类型×渠道归集交叉面"
+  },
+  {
+   "probe": "需求原文「分组归集数据量/业务类型细分」定义段",
+   "source": "doc",
+   "sql": "rg 分组归集数据量/业务类型 三份需求真源 + SRS 接入视窗.md",
+   "hits": 1,
+   "hit_detail": "「分组归集数据量」0 命中；细分维语义叶=seq 351『支持按时间、业务类型、来源类别进行细分』（SRS :61-70/主需求 :2607）——『业务类型』作为细分维被需求明列（举例式），但其 taxonomy（分几型、型名）与量纲无定义；UI byBizType 四型为演示约定"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：需求语义=『业务类型（或质量等级）×渠道的归集量交叉明细』；交叉两轴零承载（biz_type 词族本件独立扫 0 命中/质量词族 3 处全偏移/渠道轴 taxonomy 分叉）→ 需求交叉不可直算；血缘维分组（5 组恒等 269,511）+ 存量读数可交付 → 部分支持",
+  "mock 交叉复算：byBizType 4 型×3 渠道矩阵，行合计 [['产业应用', 7800], ['基础研究', 7200], ['开源汇聚', 4800], ['政务统计', 1300]]，列合计 [['科研院所', 8800], ['企业', 6500], ['第三方平台', 5800]]，总计 21100——行/列切片恒等（派生键）；柱图仅取前三渠道（科研院所/企业/第三方平台），高等院校4,120+政府部门 1,810 未入图（覆盖面披露）；演示值不作数据证据",
+  "业务类型轴独立扫：biz_type/business_type 词族 dev 542 表 0 命中（[]）——四型 taxonomy 无库内编目",
+  "三件套恒等：033（交叉明细）Σ=028（分组合计）Σ=027（总量）——数学恒等；本件是明细端（交叉矩阵），修复依赖最深（两轴编目+明细面）",
+  "B5 确定性：矩阵复算行/列合计按值降序+键名字典序双键；词族 sorted()",
+  "B11 对账：data_source 5 组/enterprise_base 269,511 与 027/028 同快照同值；族探针表数（dev 542/gkx 280/久新 211）族内一致",
+  "升档触发器（B10）：①建资源级明细面+业务类型字典+渠道字典（交叉两轴编目）→ 交叉明细直查升完全直接支持（族级并项，seq 351/352/354 五叶受益）；②甲方裁明细维=血缘轴单维（放弃交叉）→ 完全转换支持（本件交付形态退化为分组明细单维）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件无基期年份依赖（交叉明细读数；mock 时间细分位属 002 族）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "269511",
+   "189115",
+   "21100",
+   "27740",
+   "6640",
+   "4120",
+   "1810",
+   "12580",
+   "8920",
+   "6240",
+   "8800"
+  ]
+ }
+}

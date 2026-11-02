@@ -1,0 +1,109 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_007",
+  "metric_name": "图谱关系增量（每分钟）（科技知识图谱·实时数据监控）",
+  "facts": {
+    "ui_mount": "realtimeMonitor.js:7 MONITOR_METRICS { key:'relationRate', label:'关系增量/分钟', unit:'条', threshold:380, warnHigh:true }",
+    "ui_runtime": "RealtimeMonitorPanel.jsx:26-36 setInterval 3s tickMonitorSnapshot 随机游走模拟（init 245 条/分钟，jitter ±9%）——纯前端造数",
+    "ui_init_value": 245,
+    "ui_threshold": 380,
+    "dev_ops_word_table_rows": {
+      "gkxlumenx.sys_audit_log": 0,
+      "gkxlumenx_dim.code_operating_status": 6
+    },
+    "dev_graph_word_table_rows": {},
+    "dev_graph_tables_nonzero": {},
+    "dev_sys_log_rows_note": "gkxlumenx.sys_log 1060 行为用户操作日志（admin 等 3 账号），非数据接入事件流——语义排除",
+    "gkx_coauthor_edges_total": 1187606,
+    "gkx_coauthor_create_time_range": [
+      "2026-05-27 15:35:55",
+      "2026-07-24 18:07:54"
+    ],
+    "gkx_coauthor_create_time_day_dist_sample": [
+      [
+        "2026-05-27",
+        39227
+      ],
+      [
+        "2026-05-28",
+        2558
+      ],
+      [
+        "2026-07-23",
+        24344
+      ],
+      [
+        "2026-07-24",
+        1121477
+      ]
+    ],
+    "jiuxin_edge_time_col_dist": {
+      "metrics_as_of_date": {
+        "nonnull": 587252,
+        "min": "2026-10-16",
+        "max": "2026-10-16"
+      },
+      "update_time": {
+        "nonnull": 587252,
+        "min": "2026-10-26 06:00:00",
+        "max": "2026-10-26 06:00:00"
+      }
+    },
+    "jiuxin_tech_edges_total": 587252,
+    "jiuxin_edge_data_version_dist": [
+      [
+        202610260601,
+        587252
+      ]
+    ],
+    "jiuxin_edge_release_top5": [
+      [
+        "eto_mvp_cluster_chain_v1_20261016",
+        587252
+      ]
+    ],
+    "jiuxin_collab_table_time_range": {
+      "ads_talent_collaborator": {
+        "min": "2026-10-07 03:00:00",
+        "max": "2026-10-07 03:00:00",
+        "rows": 5051578
+      },
+      "ads_institution_collaboration_yearly": {
+        "min": "2026-10-20 09:00:00",
+        "max": "2026-10-20 09:00:00",
+        "rows": 14380246
+      }
+    }
+  },
+  "derived": [
+    {
+      "source": "久新边表批处理周期推算（非分钟级）",
+      "batch_update_time": "2026-10-26 06:00:00",
+      "edges_total": 587252,
+      "note": "update_time 全表单一值 2026-10-26 06:00:00（批处理覆盖写入）——无逐条入库时间，分钟级增量不可推；仅有快照总量",
+      "convertible_granularity": "快照间（若保留历史版本）"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev 分钟级数据接入事件流（边/关系入库流水）",
+      "how": "dev 542 表词族扫描（ingest/stream/event_log/op_log/audit）+ops 词族计数",
+      "hits": "sys_audit_log 0 行；sys_log 1060 行为用户操作日志（语义排除）；无数据接入事件面"
+    },
+    {
+      "what": "gkx 边表逐条入库时间（分钟级推导原料）",
+      "how": "dwd_scholar_coauthor create_time 分布探查",
+      "hits": "create_time 按天分布（非分钟级连续流）；且为批量 ETL 回填时间非业务发生时间"
+    },
+    {
+      "what": "久新边表分钟级时间戳",
+      "how": "ads_technology_graph_edge update_time/metrics_as_of_date 全表 MIN/MAX",
+      "hits": "两列均为全表单一值（2026-10-26 06:00:00 / 2026-10-16）——批处理覆盖写入，无事件流"
+    }
+  ],
+  "support_judgment": "完全不支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "增量为分钟级瞬时率，无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=探针快照日；指标本身是实时速率量纲（条/分钟），非年度基期概念"
+}

@@ -1,0 +1,160 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_049",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:333",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js:534",
+  "repos/demo-ui-science/src/pages/policy-tracking/PolicyPcPages.jsx:578"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求真源无该指标名；核增 4.2.4.1.4 规划指标库四维之「扶持力度」是维度语义源；export l3 挂「适用范围与除外情形」（与 UI dim 扶持力度有出入，拆件层级误差登记）；与 POLCMP_009（调整值）互为姊妹件"
+ },
+ "facts": {
+  "gkx_policy_col_count": 33,
+  "gkx_policy_intensity_cols": [
+   "policy_support"
+  ],
+  "gkx_policy_rows": 20000,
+  "gkx_text_jjkc_rows": 265,
+  "gkx_text_jjkc_with_pct_rows": 57,
+  "gkx_text_jjkc_title_rows": 15,
+  "gkx_jjkc_pct50_window_rows": 34,
+  "gkx_jjkc_pct75_window_rows": 13,
+  "gkx_jjkc_pct100_window_rows": 6,
+  "gkx_jjkc_pct120_window_rows": 0,
+  "gkx_jjkc_basevalue_title_sample": [
+   [
+    "18360129",
+    "关于提高科技型中小企业研究开发费用税前加计扣除比例的通知(2017-05-03)",
+    "科技部",
+    "2017"
+   ],
+   [
+    "18360011",
+    "财政部税务总局科技部关于提高研究开发费用税前加计扣除比例的通知",
+    "国家税务总局",
+    "2018"
+   ]
+  ],
+  "gkx_policy_support_nonnull": 20000,
+  "gkx_policy_support_distinct_sample": [
+   "null"
+  ],
+  "gkx_policy_support_pct_like": 0,
+  "dev_policy_base_info_rows": 40000,
+  "dev_text_jjkc_rows": 265,
+  "dev_policy_quantitative_index_rows": "no-table: (1146, \"Table 'gkxlumenx_dwd.policy_quantitative_index' does",
+  "dev_policy_index_info_rows": "no-table: (1146, \"Table 'gkxlumenx_dwd.policy_index_info' doesn't exis",
+  "jiuxin_table_count": 210,
+  "jiuxin_policy_metric_like_tables": [
+   "ads_emerging_topic_yearly_metrics",
+   "ads_geo_yearly_discipline_metrics",
+   "ads_geo_yearly_index",
+   "ads_geo_yearly_institution_type_metrics",
+   "ads_geo_yearly_metrics",
+   "ads_institution_yearly_metrics",
+   "ads_patent_analysis_cross_metric",
+   "ads_research_outcome_metric",
+   "ads_research_outcome_yearly_metric",
+   "ads_research_problem_discipline_metrics",
+   "ads_research_problem_institution_discipline_metrics",
+   "ads_research_problem_keyword_metrics",
+   "ads_research_problem_monthly_metrics",
+   "ads_research_problem_policy_evidence",
+   "ads_research_problem_policy_yearly_metrics",
+   "ads_research_problem_region_yearly_metrics",
+   "ads_research_problem_yearly_metrics",
+   "ads_talent_capability_dimension_metric",
+   "ads_talent_observed_citation_metrics",
+   "ads_talent_research_to_patent_metrics",
+   "ads_talent_taxonomy",
+   "ads_talent_taxonomy_closure",
+   "ads_talent_taxonomy_metrics",
+   "ads_talent_taxonomy_node",
+   "ads_talent_taxonomy_relation",
+   "ads_talent_yearly_metrics",
+   "ads_technology_policy_evidence",
+   "ads_technology_region_yearly_metrics",
+   "ads_technology_yearly_metrics"
+  ]
+ },
+ "derived": [
+  {
+   "key": "jjkc_mention_share",
+   "value": 1.325,
+   "numerator": 265,
+   "denominator": 20000,
+   "note": "叙述面提及占比（转换构建的工作量指示器）——与 POLCMP_009 derived[0] 同口径零漂移对账"
+  },
+  {
+   "key": "rd_deduction_ratio_base",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "不可直查——三源无结构化比例字段；基础值制度史线 50%(2008 立法确认)→75%(2017 科小/2018 全行业)→100%(2021 制造业/2022 科小/2023 普适化长期实施，财政部税务总局公告 2023 年第 7 号)在公告原文，库内仅文本提及"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 结构化比例列",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM dwd_policy_base（33 列）扫 intensity/ratio/percent/rate/deduct/tax",
+   "hits": 0,
+   "hit_detail": "33 列无比例结构化列；唯一扶持列 policy_support 占位三证（20,000/20,000 全 'null'、DISTINCT={'null'}、% 模式 0 命中）——与 POLCMP_009 共证零漂移"
+  },
+  {
+   "probe": "dev 量化指标承载表",
+   "source": "dev",
+   "sql": "SELECT COUNT(*)：policy_quantitative_index / policy_index_info",
+   "hits": 0,
+   "hit_detail": "两表不存在（1146 no-table）——规划指标库（扶持力度维）在开发库无落位表（与 POLCMP_009 共证）"
+  },
+  {
+   "probe": "久新政策条款量化面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（实测 210 张，探测日 2026-11-01）扫 policy/metric/index/quant/deduct/tax",
+   "hits": 0,
+   "hit_detail": "命中面与 009 同类目（年度指标/学科分解/指数/人才维度/专利分析/政策证据六类），deduct/tax 词根 0 命中——分析仓无政策条款量化面"
+  },
+  {
+   "probe": "需求文档定义",
+   "source": "doc",
+   "sql": "rg 加计扣除 主需求 + SRS 政策族四文件 + 核增 17 叶",
+   "hits": 0,
+   "hit_detail": "三份需求真源无该指标名；核增 PC-04 规划指标库四维是维度语义源；export mean 是占比类模板语（与 009 同款拆件模板误差），实义以 UI pm4 槽位为准；export l3「适用范围与除外情形」层级与 UI dim「扶持力度」有出入（拆件层级误差，登记不改判）"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：与 POLCMP_009（调整值）同判同缺口——结构化承载三源全缺（gkx 占位列/dev 落位表不存在/久新无条款量化面），文本转换面有量（265/57/15 三层，与 009 零漂移对账）。差异点在「值域」：049 基础值=制度基准史线 50%→75%→100%（50% 是 2008 年企业所得税法立法确认的基准档，96 年起试点时即 50%）；009 调整值=现行调整档（120% 集成电路线，普适档 100%）。两件对表校验共用同一窄窗抽取管线",
+  "基础值档位的库内证据：窄窗档位分布 50%/75%/100%/120% 四档在 265 行提及面中的分布落产物（gkx_jjkc_pct{50,75,100,120}_window_rows）——档位分布形态与制度推进史吻合（2017 科小 75%→2018 全行业 75%→2021 制造业 100%），title 样本含「关于提高科技型中小企业研究开发费用税前加计扣除比例的通知(2017)」「财政部税务总局科技部关于提高研究开发费用税前加计扣除比例的通知(2018)」两份基础值切换公告本体",
+  "制度史线（外部锚，R1/R2 核验在案）：1996 财工字 41 号试点 50%→2008 企业所得税法立法确认 50%→财税〔2017〕34 号科小 75%→财税〔2018〕99 号全行业 75%→2021 公告 13 号制造业 100%→2022 公告 16/28 号科小与 Q4 100%→2023 公告 7 号 100% 普适化长期实施。「基础值」建议口径：随年度切换的基准档序列（50%:≤2016 / 75%:2017-2020 / 100%:2021→，科小线提前一年）",
+  "UI mock 披露：policyPcData.js:333 pm4（sample 120%）是演示值——注意 mock 作者写的是现行调整档 120%（与 009 的 :523 同一槽位同值），基础值史线在 UI 无独立槽位，049/009 的拆分是拆件层设计（pm4 同槽两位），MD 登记此形态。演示值不参与支持度结论",
+  "升档触发器（B10）：与 009 共用——①条款量化抽取管线（窄窗 57 行起步+gold 标注集）落地并以制度史线对表校验 → 升完全转换支持；②制度值直录（公告字典表）→ 零转换直查但语义降常量引用。049 的直录形态比 009 更自然（基础值史线是封闭档位序列，一张年份×档位维表即可承载）"
+ ],
+ "base_years_used": [
+  2008,
+  2017,
+  2018,
+  2021,
+  2022,
+  2023
+ ],
+ "base_years_missing": [],
+ "base_years_note": "基础值制度史线锚年份（公告生效年）；库内文本面年度分布与 009 同（2005-2022，峰值 2017 年 38 行）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "265",
+   "20000",
+   "57",
+   "15",
+   "210",
+   "50",
+   "75",
+   "100",
+   "120"
+  ]
+ }
+}

@@ -1,0 +1,140 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_020",
+ "batch": "S3-04",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:388",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:833"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「接口平均响应时长」指标名；语义锚 :2559「接口响应速度」/:2563「API日志采集与接口调用分析」（功能在、工程前提未建）"
+ },
+ "facts": {
+  "dev_sys_log_total_rows": 1060,
+  "dev_sys_log_logtype_dist": [
+   [
+    "0",
+    917
+   ],
+   [
+    "9",
+    143
+   ]
+  ],
+  "dev_sys_log_time_dist_top8": [
+   [
+    135,
+    90
+   ],
+   [
+    134,
+    68
+   ],
+   [
+    136,
+    61
+   ],
+   [
+    138,
+    55
+   ],
+   [
+    137,
+    50
+   ],
+   [
+    139,
+    31
+   ],
+   [
+    133,
+    28
+   ],
+   [
+    140,
+    27
+   ]
+  ],
+  "dev_sys_log_time_avg_ms": 542.92,
+  "dev_sys_log_time_valid_rows": 1060,
+  "dev_sys_log_uri_top8": [
+   [
+    "/oauth2/token",
+    1052
+   ],
+   [
+    "/route",
+    8
+   ]
+  ],
+  "dev_api_latency_tables": [],
+  "gkx_call_like_tables": [],
+  "gkx_table_count": 280,
+  "jiuxin_table_count_live": 210,
+  "jiuxin_api_latency_tables_live": [],
+  "jiuxin_probe_mode": "live"
+ },
+ "derived": [
+  {
+   "key": "api_avg_response_time_ms",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『数据资源接口平均响应时长』三源无 API 调用耗时日志面（词族 0 命中）→ 不可构建；dev sys_log.time 是平台管理操作日志耗时（登录/token 刷新，OAuth2 管理端点），语义≠数据资源接口调用，排除不作分子；按 B10 留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev API 调用耗时日志面（api_log/access_log/invoke/latency/duration/response_time/call_log/trace 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表）",
+   "hits": 0,
+   "hit_detail": "命中 []——0 张接口耗时日志表；最近邻 sys_log（1060 行）有 time 耗时列但语义为平台管理操作日志（URI Top 为 /oauth2/token 等认证端点），非数据资源接口调用——语义排除（§3.3 专段）"
+  },
+  {
+   "probe": "gkx 调用监控面（call/invoke/api/request/latency/response/duration/monitor/usage 词族）",
+   "source": "gkx",
+   "sql": "information_schema.tables 扫 gkx（280 表，S3-04 族级探针）",
+   "hits": 0,
+   "hit_detail": "命中 []——0 命中；gkx 为要素明细库（论文/专利/机构/学者），无任何 API 调用监控面"
+  },
+  {
+   "probe": "久新调用监控面（同词族 + api_log/access_log/call_log/trace）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（当日 live）词族扫",
+   "hits": 0,
+   "hit_detail": "0 命中——ads_* 全部为学科/人才/专利/项目分析结果面（按 metrics_as_of_date 快照管理），无 API 调用日志；探测模式见 facts.jiuxin_probe_mode"
+  },
+  {
+   "probe": "需求原文「接口响应速度/API日志」定义段",
+   "source": "doc",
+   "sql": "rg 响应速度|API日志 三份需求真源",
+   "hits": 2,
+   "hit_detail": "主需求 :2559（1.1.1.1.4.4.1.4.1 应用系统状态监控）『包括服务可用性、接口响应速度及异常告警』；:2563（1.1.1.1.4.4.1.4.2 资源接口状态跟踪）『通过API日志采集与接口调用分析』——功能在、且需求自己点名了工程前提（API 日志采集），该前提三源未建；UI avgResponseTime 245 为 mock 演示值（mockData.js:835）"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：数据资源接口的调用级耗时均值需 API 网关/链路追踪日志——三源词族逐一 0 命中；dev sys_log 有耗时列但语义为平台管理操作日志（语义排除）；gkx 要素库/久新 ADS 结果面均无调用监控面 → 指标及关键依赖三源均无法构建 → 完全不支持",
+  "最近邻证据（dev sys_log，语义排除披露用）：1060 行平台操作日志，time 耗时列有效 1060 行、均值 542.92 ms、Top 耗时分布 [[135, 90], [134, 68], [136, 61], [138, 55], [137, 50], [139, 31], [133, 28], [140, 27]]；URI Top8 [['/oauth2/token', 1052], ['/route', 8]]…——登录/token 刷新等 OAuth2 认证端点主导，非数据资源接口",
+  "mock 披露：OverviewWindow.jsx:388-389「平均响应 ${stats.avgResponseTime} ms」消费 mockData.js:833-839 resourceUsageStats.avgResponseTime=245（注释自标需规 seq 343）——演示值，不作数据证据（B10）",
+  "需求侧证据：需求 :2563 明写『通过API日志采集与接口调用分析』——需求自身把 API 日志列为工程前提，该前提三源未建（缺口归属『表不存在』，修复动作是 API 网关日志/链路追踪接入）",
+  "权威口径参照（R2 云智慧 API 监控）：平均响应时间=一段时间内请求响应时间的平均值（不可用不计算）——即便有日志也须先定义可用性剔除口径",
+  "B11 对账：dev 542/gkx 280/久新 210 表数共享快照；词族扫描与 S3-04 族级探针一致",
+  "升档触发器（B10）：①API 网关/链路追踪日志接入（APM 面）→ 升完全直接支持（需工程立项）；②乙方自建探针拨测（主动测延迟）→ 升完全转换支持（非真实调用量加权）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "监控类指标，不涉基期年",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "245",
+   "343",
+   "1034",
+   "542",
+   "280",
+   "210"
+  ]
+ }
+}

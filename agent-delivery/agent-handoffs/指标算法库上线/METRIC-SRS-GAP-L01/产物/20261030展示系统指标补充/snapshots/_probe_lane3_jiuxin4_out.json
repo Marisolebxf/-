@@ -1,0 +1,634 @@
+{
+ "generated": "2026-11-01",
+ "batch": "S3-01",
+ "lane": 3,
+ "round": 4,
+ "probes": [
+  {
+   "tag": "stage vs potential 同节点同值率",
+   "sql": "SELECT COUNT(*) n, SUM(CASE WHEN a.development_potential_score = p.potential_score THEN 1 ELSE 0 END) same, SUM(CASE WHEN a.development_potential_score <> p.potential_score THEN 1 ELSE 0 END) diff FROM ads_technology_stage_assessment a JOIN ads_technology_potential_assessment p ON a.technology_node_id = p.technology_node_id AND a.model_version = p.model_version",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     38860,
+     38860,
+     0
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "hotspot_snapshot 按 model_version×status",
+   "sql": "SELECT model_version, hotspot_status, COUNT(*) c FROM ads_technology_hotspot_snapshot GROUP BY model_version, hotspot_status ORDER BY model_version, c DESC",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 10,
+   "data": [
+    [
+     "technology_insight_mvp_v1",
+     "INSUFFICIENT_EVIDENCE",
+     15976
+    ],
+    [
+     "technology_insight_mvp_v1",
+     "ESTABLISHED_GROWING",
+     2539
+    ],
+    [
+     "technology_insight_mvp_v1",
+     "MATURE",
+     766
+    ],
+    [
+     "technology_insight_mvp_v1",
+     "WATCH",
+     146
+    ],
+    [
+     "technology_insight_mvp_v1",
+     "EARLY_EMERGING",
+     3
+    ],
+    [
+     "technology_insight_mvp_v2_eto_cluster_technology",
+     "INSUFFICIENT_EVIDENCE",
+     15976
+    ],
+    [
+     "technology_insight_mvp_v2_eto_cluster_technology",
+     "ESTABLISHED_GROWING",
+     2539
+    ],
+    [
+     "technology_insight_mvp_v2_eto_cluster_technology",
+     "MATURE",
+     766
+    ],
+    [
+     "technology_insight_mvp_v2_eto_cluster_technology",
+     "WATCH",
+     146
+    ],
+    [
+     "technology_insight_mvp_v2_eto_cluster_technology",
+     "EARLY_EMERGING",
+     3
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "hotspot v2 Top5 by rank",
+   "sql": "SELECT technology_node_id, hotspot_score, hotspot_rank, hotspot_status FROM ads_technology_hotspot_snapshot WHERE model_version = 'technology_insight_mvp_v2_eto_cluster_technology' ORDER BY hotspot_rank LIMIT 5",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 5,
+   "data": [
+    [
+     "tcn_52fca1c4244d415a9f7934878ec582a7",
+     79.090792,
+     1,
+     "INSUFFICIENT_EVIDENCE"
+    ],
+    [
+     "tcn_b69c30792e55c3ef0df3feda96412196",
+     77.245098,
+     2,
+     "INSUFFICIENT_EVIDENCE"
+    ],
+    [
+     "tcn_0a30da22cc16974e62624682e25ac30e",
+     76.369602,
+     3,
+     "INSUFFICIENT_EVIDENCE"
+    ],
+    [
+     "tcn_4567f6e4059f4e6d795b79a102336e25",
+     76.108652,
+     4,
+     "EARLY_EMERGING"
+    ],
+    [
+     "tcn_51e197d549d75965d0ad6aefd98d474c",
+     74.775593,
+     5,
+     "INSUFFICIENT_EVIDENCE"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "region_assessment 北京市 Top3 样本",
+   "sql": "SELECT technology_node_id, location_name_zh, regional_potential_score, regional_rank, regional_stage_code, paper_evidence_count, patent_evidence_count, project_evidence_count, institution_count, company_count, strength_summary, weakness_summary FROM ads_technology_region_assessment WHERE location_name_zh = '北京市' ORDER BY regional_potential_score DESC LIMIT 3",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 3,
+   "data": [
+    [
+     "tcn_01ad5a91e62536744c32f982d0f41610",
+     "北京市",
+     100.0,
+     1,
+     "EARLY_RESEARCH",
+     5,
+     0,
+     2930,
+     458,
+     5,
+     "现有论文、专利、机构和项目证据形成的区域比较优势",
+     "政策、市场和真实应用案例尚未接入"
+    ],
+    [
+     "tcn_01ad5a91e62536744c32f982d0f41610",
+     "北京市",
+     100.0,
+     1,
+     "EARLY_RESEARCH",
+     5,
+     0,
+     2930,
+     458,
+     5,
+     "现有论文、专利、机构和项目证据形成的区域比较优势",
+     "政策、市场和真实应用案例尚未接入"
+    ],
+    [
+     "tcn_798f127e99db7cab9be603934175a00a",
+     "北京市",
+     99.990874,
+     2,
+     "EARLY_RESEARCH",
+     14,
+     0,
+     1712,
+     434,
+     1,
+     "现有论文、专利、机构和项目证据形成的区域比较优势",
+     "政策、市场和真实应用案例尚未接入"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "assessment_evidence evidence_type 分布",
+   "sql": "SELECT evidence_type, COUNT(*) c FROM ads_technology_assessment_evidence GROUP BY evidence_type ORDER BY c DESC",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 3,
+   "data": [
+    [
+     "PAPER",
+     102766
+    ],
+    [
+     "PATENT",
+     95170
+    ],
+    [
+     "RESEARCH_PROJECT",
+     71946
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "assessment_evidence quality 方向分布",
+   "sql": "SELECT evidence_quality, evidence_direction, COUNT(*) c FROM ads_technology_assessment_evidence GROUP BY evidence_quality, evidence_direction ORDER BY c DESC",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "TRACEABLE_INTERNAL_FACT",
+     "SUPPORTING",
+     269882
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "profile node_identity_type 分布",
+   "sql": "SELECT node_identity_type, COUNT(*) c FROM ads_technology_profile GROUP BY node_identity_type ORDER BY c DESC",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "ETO_RESEARCH_CLUSTER_TECHNOLOGY",
+     19430
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "profile chain_role/is_chain_connected 分布",
+   "sql": "SELECT chain_role, is_chain_connected, COUNT(*) c FROM ads_technology_profile GROUP BY chain_role, is_chain_connected ORDER BY c DESC",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 4,
+   "data": [
+    [
+     "INTERMEDIATE",
+     1,
+     10126
+    ],
+    [
+     "APPLICATION_END_CANDIDATE",
+     1,
+     4110
+    ],
+    [
+     "ISOLATED_IN_CHAIN",
+     0,
+     2761
+    ],
+    [
+     "SOURCE_CANDIDATE",
+     1,
+     2433
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "hotspot_yearly 2026 coverage_status 分布",
+   "sql": "SELECT statistics_year, coverage_status, COUNT(*) c FROM ads_technology_hotspot_yearly WHERE statistics_year IN (2024, 2025, 2026) GROUP BY statistics_year, coverage_status ORDER BY statistics_year, c DESC",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 3,
+   "data": [
+    [
+     2024,
+     "COMPLETE",
+     19430
+    ],
+    [
+     2025,
+     "COMPLETE",
+     19430
+    ],
+    [
+     2026,
+     "COMPLETE",
+     19430
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "institution_power 类型分布",
+   "sql": "SELECT institution_type_id, COUNT(*) c, AVG(technology_power_score) av FROM ads_institution_technology_power GROUP BY institution_type_id ORDER BY c DESC",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 9,
+   "data": [
+    [
+     "education",
+     16446,
+     56.063738
+    ],
+    [
+     "company",
+     13939,
+     37.743487
+    ],
+    [
+     "healthcare",
+     10877,
+     53.766875
+    ],
+    [
+     "facility",
+     9021,
+     60.108937
+    ],
+    [
+     "nonprofit",
+     5807,
+     43.624335
+    ],
+    [
+     "government",
+     4136,
+     51.520799
+    ],
+    [
+     "other",
+     3175,
+     41.556079
+    ],
+    [
+     "archive",
+     1011,
+     41.643592
+    ],
+    [
+     "funder",
+     286,
+     67.291941
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "hotspot Top5 节点中英名",
+   "sql": "SELECT p.technology_node_id, p.technology_name_zh, p.technology_name_en FROM ads_technology_profile p WHERE p.technology_node_id IN (SELECT DISTINCT technology_node_id FROM (SELECT technology_node_id FROM ads_technology_hotspot_snapshot WHERE model_version='technology_insight_mvp_v2_eto_cluster_technology' ORDER BY hotspot_rank LIMIT 5) t) ORDER BY p.technology_node_id",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 5,
+   "data": [
+    [
+     "tcn_0a30da22cc16974e62624682e25ac30e",
+     "医学教育中的移动技术整合",
+     null
+    ],
+    [
+     "tcn_4567f6e4059f4e6d795b79a102336e25",
+     "蒙特卡洛树搜索算法应用",
+     null
+    ],
+    [
+     "tcn_51e197d549d75965d0ad6aefd98d474c",
+     "地震波传播计算方法",
+     null
+    ],
+    [
+     "tcn_52fca1c4244d415a9f7934878ec582a7",
+     "量子搜索算法与计算复杂性",
+     null
+    ],
+    [
+     "tcn_b69c30792e55c3ef0df3feda96412196",
+     "JPEG图像压缩标准与架构",
+     null
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "stage_assessment 完整样本3",
+   "sql": "SELECT assessment_id, technology_node_id, stage_code, stage_confidence, current_status_description, key_bottleneck_summary, development_potential_score, risk_summary, action_recommendation FROM ads_technology_stage_assessment WHERE model_version='technology_insight_mvp_v2_eto_cluster_technology' LIMIT 3",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 3,
+   "data": [
+    [
+     "sa_00093fafebe015494368c4c111606ef1",
+     "tcn_a657067450f8331cddbeaf9d9fdb7287",
+     "ENGINEERING",
+     0.9,
+     "论文=2; 专利=4; 企业=0; 项目=0",
+     "尚未观察到关联企业证据",
+     22.628545,
+     "需结合市场、政策、标准和真实应用数据复核",
+     "优先补齐缺失证据并进行专家审核"
+    ],
+    [
+     "sa_0012004518d36812b322fe4c58135104",
+     "tcn_c905b4e6f5789f43e3eace0175951751",
+     "ENGINEERING",
+     0.9,
+     "论文=8; 专利=4; 企业=0; 项目=3",
+     "尚未观察到关联企业证据",
+     39.428175,
+     "需结合市场、政策、标准和真实应用数据复核",
+     "优先补齐缺失证据并进行专家审核"
+    ],
+    [
+     "sa_0038236fd663719d8d81804d381f644b",
+     "tcn_7f7af6137ce9bdf5be21a5855fb0134b",
+     "INDUSTRIALIZATION",
+     0.9,
+     "论文=9; 专利=3; 企业=11; 项目=21",
+     "当前内部证据未显示单一主导瓶颈",
+     66.012661,
+     "需结合市场、政策、标准和真实应用数据复核",
+     "优先补齐缺失证据并进行专家审核"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "potential_dimension 单节点全维度样本",
+   "sql": "SELECT technology_node_id, scenario_id, dimension_code, raw_value, dimension_score, dimension_weight, weighted_score, coverage_status FROM ads_technology_potential_dimension WHERE model_version='technology_insight_mvp_v2_eto_cluster_technology' AND technology_node_id = (SELECT MIN(technology_node_id) FROM ads_technology_potential_dimension) ORDER BY dimension_code",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 6,
+   "data": [
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "BASELINE",
+     "INDUSTRY_PARTICIPATION",
+     0.0,
+     0.0,
+     0.15,
+     0.0,
+     "AVAILABLE"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "BASELINE",
+     "PATENT_CONVERSION",
+     2.0,
+     21.704668,
+     0.2,
+     4.340934,
+     "AVAILABLE"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "BASELINE",
+     "PROJECT_EVIDENCE",
+     0.0,
+     0.0,
+     0.1,
+     0.0,
+     "AVAILABLE"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "BASELINE",
+     "SCIENTIFIC_GROWTH",
+     null,
+     75.876267,
+     0.2,
+     15.175253,
+     "AVAILABLE"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "BASELINE",
+     "SCIENTIFIC_IMPACT",
+     null,
+     21.817901,
+     0.15,
+     3.272685,
+     "AVAILABLE"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "BASELINE",
+     "SCIENTIFIC_SCALE",
+     3.0,
+     24.643574,
+     0.2,
+     4.928715,
+     "AVAILABLE"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "data_coverage 单节点全域样本",
+   "sql": "SELECT technology_node_id, domain_code, evidence_count, coverage_status, coverage_note FROM ads_technology_data_coverage WHERE technology_node_id = (SELECT MIN(technology_node_id) FROM ads_technology_data_coverage) ORDER BY domain_code",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 10,
+   "data": [
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "APPLICATION_CASE",
+     0,
+     "NO_MATCHED_EVIDENCE",
+     "Research projects are evidence cases, not confirmed market applications"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "ENTERPRISE",
+     0,
+     "NO_MATCHED_EVIDENCE",
+     null
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "INSTITUTION",
+     10,
+     "AVAILABLE",
+     null
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "LOCATION",
+     7,
+     "AVAILABLE",
+     null
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "MARKET",
+     0,
+     "NOT_AVAILABLE",
+     "No registered immutable source"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "PAPER",
+     3,
+     "AVAILABLE",
+     null
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "PATENT",
+     2,
+     "AVAILABLE",
+     null
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "POLICY",
+     0,
+     "NOT_AVAILABLE",
+     "No registered immutable source"
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "PROJECT",
+     0,
+     "NO_MATCHED_EVIDENCE",
+     null
+    ],
+    [
+     "tcn_0000a456e7b5a5eb059e721fb4314368",
+     "TRANSLATION",
+     0,
+     "NOT_AVAILABLE",
+     "Unified reviewed translation has not been published"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "region_assessment 区域名 Top15（按行数）",
+   "sql": "SELECT location_name_zh, COUNT(*) c FROM ads_technology_region_assessment GROUP BY location_name_zh ORDER BY c DESC LIMIT 15",
+   "source": "jiuxin",
+   "note": "",
+   "rows": 15,
+   "data": [
+    [
+     null,
+     2310560
+    ],
+    [
+     "北京市",
+     21918
+    ],
+    [
+     "上海",
+     16736
+    ],
+    [
+     "南京市",
+     13804
+    ],
+    [
+     "广州市",
+     13588
+    ],
+    [
+     "杭州市",
+     13206
+    ],
+    [
+     "武汉",
+     12620
+    ],
+    [
+     "深圳",
+     12466
+    ],
+    [
+     "西安",
+     10724
+    ],
+    [
+     "成都市",
+     10512
+    ],
+    [
+     "天津市",
+     9440
+    ],
+    [
+     "合肥市",
+     9278
+    ],
+    [
+     "长沙",
+     8800
+    ],
+    [
+     "济南市",
+     8536
+    ],
+    [
+     "重庆市",
+     7942
+    ]
+   ],
+   "status": "ok"
+  }
+ ]
+}

@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""M_SCIUI_INCUB_038 时空热点强度值 —— 薄壳校验脚本（负结论件）。
+
+UI：spaceTimeEvolutionMock.js:71 图层开关「热点强度」（heat layer，meta=8）
++kpis :65 热点区域 8 个 + regionStats level（high/medium）分档 + 图层渲染
+SpaceTimeEvolutionPage.jsx showAreas=heat。热点强度=区域热度的量化评价值。
+探针：dev heat 词族 2 表（chain_hotspot 含 hotspot_score 列 0 行/
+industry_chain_graph_snapshot 0 行）+ innovation_event（heat_score 列）0 行；
+gkx heat 词族 0 表；久新无热度/热点词族表——时空热点强度面三源零承载。
+"""
+from __future__ import annotations
+
+import json
+import sys
+
+sys.path.insert(0, "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code")
+
+SHARED = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s308_lane_a_out.json"
+OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_INCUB_038_out.json"
+
+
+def main() -> None:
+    with open(SHARED, encoding="utf-8") as f:
+        snap = json.load(f)
+
+    dev = snap["dev"]
+    gkx = snap["gkx"]
+    jx = snap["jiuxin"]
+    ch = dev["gkxlumenx_ads.chain_hotspot"]
+    ie = dev["gkxlumenx_ads.innovation_event"]
+    assert dev["table_total"] == 542 and gkx["table_count"] == 280
+    assert jx["table_count_live"] == 218
+    assert ch["rows"] == 0 and ie["rows"] == 0
+    assert "hotspot_score" in ch["columns"] and "heat_score" in ie["columns"]
+    assert gkx["word_heat"] == []
+
+    out = {
+        "metric_id": "M_SCIUI_INCUB_038",
+        "batch": "S3-08",
+        "ui_evidence": [
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/space-time-evolution/mock/spaceTimeEvolutionMock.js:71",
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/space-time-evolution/mock/spaceTimeEvolutionMock.js:65",
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/space-time-evolution/components/SpaceTimeEvolutionPage.jsx:656",
+        ],
+        "requirement_trace": {
+            "named_in_srs": False,
+            "note": "「时空热点强度值」指标名三份说明书未出现；INCUB 清单 row_01=593 自注「对某方面能力或状态的量化评价——计算方法需要立项调研后才能确定」；挂载位=spaceTimeEvolutionMock.js:71 heat 图层（清单定位）。",
+        },
+        "facts": {
+            "ui_mount": "spaceTimeEvolutionMock.js:71 layers[1] { key: heat, label: 热点强度, checked: true, meta: 8 }——地图图层开关；渲染链 SpaceTimeEvolutionPage.jsx showAreas=layers.heat（热区面渲染）",
+            "ui_kpi": ":65 kpis hotRegions { key: hotRegions, label: 热点区域, value: 8, unit: 个, trendLabel: 3 个重点 }——热点计数 KPI（分层开关 meta 同源 8）",
+            "ui_level_semantics": "regionStats[].level 三档 high/medium/watch（mock :108-112 南山 2022=medium→2024-2026=high）；hotRegions KPI 聚合=Σ level==high（SpaceTimeEvolutionPage.jsx:656/661/691）——「热点强度」以等级分档表达，非连续强度值",
+            "ui_mock_note": "mock 8 个热点区域/等级分档/年度 events 序列（南山 2022=118→2026=386）为演示常量，不参与支持度结论（ui_demo_fallback）",
+            "dev_table_total": dev["table_total"],
+            "dev_chain_hotspot": {"columns": ch["columns"], "rows": ch["rows"]},
+            "dev_innovation_event_heat": {"columns": ie["columns"], "rows": ie["rows"], "note": "20 列含 heat_score/importance_score/event_time/lng/lat——时空事件热度预留面，0 行空壳"},
+            "gkx_table_count": gkx["table_count"],
+            "gkx_heat_word_tables": gkx["word_heat"],
+            "jiuxin_table_count_live": jx["table_count_live"],
+            "jiuxin_heat_note": "久新 218 表无 heat/hotspot 词族表；最近语义面 ads_geo_yearly_metrics（171,736 行）为论文/项目/机构/流动事件计数，无热度评分列——计数≠热度强度值",
+            "named_in_srs": False,
+        },
+        "derived": [
+            {
+                "name": "spacetime_hotspot_intensity_value",
+                "value": None,
+                "numerator": None,
+                "denominator": None,
+                "note": "时空热点强度值 = 区域×时点热度量化评价（连续分值或等级）。热度评分事实面（区域×年×热度值）与热度模型（权重/分档阈值）三源零承载 → 不可构建，负结论 null 登记",
+            },
+        ],
+        "absence_probe": [
+            {"probe": "dev 热度词族（heat/hotspot 词族 542 表）",
+             "source": "dev", "sql": "information_schema 表名扫描 + 行数实证（_shared_s308_lane_a.py 快照）",
+             "hits": 2,
+             "hit_detail": "chain_hotspot（13 列含 hotspot_score/news_freq_score/investment_score/enterprise_growth_score/is_hot/rank_overall）0 行——产业链热点域空壳；industry_chain_graph_snapshot 0 行——非时空区域热点域"},
+            {"probe": "dev 时空事件热度预留面",
+             "source": "dev", "sql": "SELECT COUNT(*) FROM gkxlumenx_ads.innovation_event（快照）",
+             "hits": 1, "rows": 0,
+             "hit_detail": "20 列（event_type/event_time/importance_score/heat_score/country_code/city_code/admin_code/lng/lat/orgs/persons/domains）——结构最贴合本件（事件×热度×地理），但 0 行空壳"},
+            {"probe": "gkx heat 词族（280 表）",
+             "source": "gkx", "sql": "information_schema 表名扫描（快照）",
+             "hits": 0, "note": "gkx word_heat=[]——要素库无热度面"},
+            {"probe": "久新 热度/热点词族（SHOW TABLES 实数 218 表）",
+             "source": "jiuxin", "sql": "SHOW TABLES + 词族扫描（快照）",
+             "hits": 0,
+             "hit_detail": "无 heat/hotspot 词族表；ads_geo_yearly_metrics 为地理×年计数面（paper/project/institution/mobility_event/new_institution 五计数列）——计数可作热度模型原料但模型无定义且区域粒度为城市级（深圳单点），非 UI 区级热点分档语义"},
+        ],
+        "support_judgment": "完全不支持",
+        "notes": [
+            "判档理由：时空热点强度值需①热度事实面（区域×时点×热度值/等级）②热度模型（评分权重或分档阈值）。dev 两层逐一排除：chain_hotspot（含 hotspot_score 列）0 行、innovation_event（含 heat_score 列）0 行——空壳；gkx 0 表；久新无热度词族且 geo_yearly 为计数面无热度评分列。UI 等级分档（high/medium/watch）阈值亦无定义——两层皆缺。",
+            "UI 现行为等级分档语义：mock regionStats[].level 三档 + hotRegions KPI=Σhigh（:656/661/691）——「强度值」以档位表达，连续强度值（如 0-100 分）在 UI 也未定义。",
+            "同族关系：INCUB_050/051/052（路径强度族）同页面不同域（路径 vs 区域热点）；本件为区域热点强度域独件。",
+            "久新 geo_yearly 计数面（171,736 行）可作热度模型原料（如论文+项目加权），但①模型无定义②区域粒度城市级（深圳单点）非 UI 区级——不构成部分支持（关键维度缺失即整体从缺，模型裁定属立项事项）。",
+            "升档路径：热度模型立项（分档阈值/权重）+ 区域级计数面落库（geo_yearly 下钻区级或 events 落库）→ 完全转换支持。",
+        ],
+        "base_years_used": [],
+        "base_years_missing": ["2021-2026"],
+        "base_years_note": "热点强度为当期截面读数（mock 时间片 2022-2026 演示）；三源无热度面无历史序列。",
+        "ctx_refs": {"note": "正文引用型数字登记", "refs": sorted([
+            "8", "3", "118", "176", "244", "318", "386", "2022", "2026", "171736", "171,736",
+            "13", "20", "542", "280", "218", "0"])},
+    }
+
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    print("written:", OUT)
+    print("judgment: 完全不支持 | 热度面三源空壳/0 命中（chain_hotspot/innovation_event 双空壳）")
+
+
+if __name__ == "__main__":
+    main()

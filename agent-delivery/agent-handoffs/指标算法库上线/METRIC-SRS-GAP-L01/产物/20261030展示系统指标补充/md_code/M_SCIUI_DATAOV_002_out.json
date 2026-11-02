@@ -1,0 +1,212 @@
+{
+ "metric_id": "M_SCIUI_DATAOV_002",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:621",
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:73",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:72"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "主需求《科技信息展示系统和科技专题服务系统.md》:2489（1.1.1.1.4.4.1.1.1 资源接入情况总览）明列「年度增长趋势」——功能在、序列口径无；核增需求与算法库 0 命中"
+ },
+ "facts": {
+  "dev_enterprise_base_rows": 269511,
+  "dev_enterprise_reg_year_recent5": [
+   [
+    2022,
+    11881
+   ],
+   [
+    2023,
+    11331
+   ],
+   [
+    2024,
+    8529
+   ],
+   [
+    2025,
+    6337
+   ],
+   [
+    2026,
+    1864
+   ]
+  ],
+  "dev_access_registry_tables": [],
+  "gkx_paper_year_dist_sampled": [
+   [
+    "2026",
+    2989
+   ],
+   [
+    "2025",
+    6548
+   ],
+   [
+    "2024",
+    32379
+   ],
+   [
+    "2023",
+    6651
+   ],
+   [
+    "2022",
+    6331
+   ],
+   [
+    "2021",
+    6758
+   ],
+   [
+    "2020",
+    6336
+   ],
+   [
+    "2019",
+    6174
+   ],
+   [
+    "2018",
+    6067
+   ],
+   [
+    "2017",
+    6903
+   ]
+  ],
+  "gkx_patent_year_dist_sampled": [
+   [
+    "2026",
+    4986
+   ],
+   [
+    "2025",
+    29852
+   ],
+   [
+    "2024",
+    41193
+   ],
+   [
+    "2023",
+    41365
+   ],
+   [
+    "2022",
+    41239
+   ],
+   [
+    "2021",
+    41365
+   ]
+  ],
+  "gkx_table_count": 280,
+  "jiuxin_yearly_metrics_rows": 1278048,
+  "jiuxin_yearly_metrics_recent5": [
+   [
+    2022,
+    93811
+   ],
+   [
+    2023,
+    96384
+   ],
+   [
+    2024,
+    98624
+   ],
+   [
+    2025,
+    99248
+   ],
+   [
+    2026,
+    94753
+   ]
+  ],
+  "jiuxin_access_registry_tables": []
+ },
+ "derived": [
+  {
+   "key": "dev_enterprise_reg_yoy_2026_vs_2025_pct",
+   "value": -70.59,
+   "numerator": -4473,
+   "denominator": 6337,
+   "note": "分子=2026 年注册企业数-2025 年（增量）；分母=2025 年注册企业数（同表同 WHERE YEAR() 口径，B3 同基）——内容年份面的同比增速代理读数"
+  },
+  {
+   "key": "resource_annual_growth_trend",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『资源接入量』年度序列（资源总量/年度新增/同比）三源无台账承载（接入流水/归集记录按年面不存在）；本件交付内容年份面代理读数（企业注册年/论文年/专利年/人才年序列），语义=数据资产内容规模增长≠平台资源接入增长；按 B10 留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 资源接入台账（access_log/access_history/resource_access/ingest 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表）",
+   "hits": 0,
+   "hit_detail": "命中 []——无资源接入流水表；enterprise_base 等事实表的内容年份列是增长代理非接入记录"
+  },
+  {
+   "probe": "gkx 资源接入台账（同词族 + datasource 元数据面）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx（280 表）词族扫",
+   "hits": 0,
+   "hit_detail": "access_log/access_history/resource_access/ingest 词族 0 命中——gkx 为要素明细库，无平台接入流水；内容年份列（cover_year_start/apdt_year）可作增长代理"
+  },
+  {
+   "probe": "久新资源接入台账（210 表 access_log/access_history/resource_access/ingest/collect_log 词族）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（210 表，2026-11-01 实测）词族扫",
+   "hits": 0,
+   "hit_detail": "命中 []——0 张接入流水表；ads_* 结果面按 metrics_as_of_date 快照管理，非逐年接入记录"
+  },
+  {
+   "probe": "需求原文「年度增长趋势」定义段",
+   "source": "doc",
+   "sql": "rg 年度增长趋势 三份需求真源",
+   "hits": 1,
+   "hit_detail": "主需求 :2489（1.1.1.1.4.4.1.1.1 资源接入情况总览）：『在仪表盘上直观呈现各类资源的分布比例、年度增长趋势和不同来源机构的接入活跃度』——功能在、口径无；UI overviewAnnualAccessTrend 为 mock 演示值（Tag 自标「演示数据」）"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：『资源接入量』年度序列三源无台账（接入流水不存在）→ 直接承载无；内容年份面三源双在（dev 企业注册年 269,511 行、gkx 论文/专利年分布、久新人才年序列）→ 转换代理可算，语义披露后交付 → 部分支持",
+  "代理读数 1（dev）：enterprise_base 269511 行，近 5 年注册年分布 [[2022, 11881], [2023, 11331], [2024, 8529], [2025, 6337], [2026, 1864]]，2026 对 2025 同比 -70.59%（产物派生键）",
+  "代理读数 2（gkx，共享快照复用）：论文 cover_year_start 20 万采样近年分布 [['2026', 2989], ['2025', 6548], ['2024', 32379], ['2023', 6651], ['2022', 6331]]…；专利 apdt_year 同口径在案——采样，非全表（B11 快照键原文引用）",
+  "代理读数 3（久新）：ads_talent_yearly_metrics 近 5 年行分布 [[2022, 93811], [2023, 96384], [2024, 98624], [2025, 99248], [2026, 94753]]——学者×年产出记录的年度规模序列（内容年份面）",
+  "mock 披露：OverviewWindow.jsx:621 卡片消费的 overviewAnnualAccessTrend（2022 total 12,860 → 2026 total 30,398，yoy 31.7→13.8）为 mockData.js:72-78 演示值且 Tag 自标「近5年 · 演示数据」——不作数据证据（B10）",
+  "B9 规避：registration_date 零日期用 YEAR() BETWEEN 合法区间过滤，无 ='0000-00-00' 比较",
+  "B11 对账：gkx 年分布取自 _shared_probe_s3_01_out.json fix2_20261101（采样口径原样引用）；jiuxin 210 表/1,278,048 行与 009 产物一致",
+  "升档触发器（B10）：①建资源接入流水台账（资源×接入时间×记录数）→ 完全直接支持；②甲方裁定增长趋势=内容年份面代理（论文/专利/企业/人才年分布）→ 完全转换支持"
+ ],
+ "base_years_used": [
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_missing": [],
+ "base_years_note": "基期=dev 企业注册年近 5 年（2022-2026 实测）；gkx 采样分布与久新年序列覆盖同年段；资源接入台账缺失见 absence_probe",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "269511",
+   "269511",
+   "12860",
+   "30398",
+   "31.7",
+   "13.8",
+   "2022",
+   "2026",
+   "200000"
+  ]
+ }
+}

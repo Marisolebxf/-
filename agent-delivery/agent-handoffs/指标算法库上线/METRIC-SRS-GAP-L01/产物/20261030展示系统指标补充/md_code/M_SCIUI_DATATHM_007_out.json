@@ -1,0 +1,126 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_007",
+ "batch": "S3-04",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/ResourceSourceAnalysisDetail.jsx:139",
+  "repos/demo-ui-science/src/pages/data-resources/components/ResourceSourceAnalysisDetail.jsx:156",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:256"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「可靠性上期占比」指标名；语义锚 seq 331（excel_row 334）『分析资源来源的结构组成及变化，辅助判断数据质量和来源可靠性』——功能在、定义无"
+ },
+ "facts": {
+  "dev_table_count": 542,
+  "gkx_table_count": 280,
+  "jiuxin_table_count_snapshot_20261101": 210,
+  "dev_reliability_like_tables": [],
+  "gkx_reliability_like_tables": [],
+  "jiuxin_reliability_like_tables": [],
+  "jiuxin_probe_mode": "live",
+  "ui_mock_previous_period": "2026-04",
+  "ui_mock_previous_shares_by_type": [
+   [
+    "国内数据库",
+    20.1
+   ],
+   [
+    "国外数据库",
+    14.6
+   ],
+   [
+    "科研院所",
+    28.5
+   ],
+   [
+    "企业",
+    15.8
+   ],
+   [
+    "开源平台",
+    16.2
+   ]
+  ],
+  "ui_mock_source_types_defined": 5
+ },
+ "derived": [
+  {
+   "key": "reliability_high_share_prev_period_pct_by_type",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『上期』来源可靠性达标占比需三依赖：①来源可靠性评估面（评分×来源×期）三源 0 命中；②来源结构登记（分母）零承载；③评估期次管理（基期快照）零承载——单期读数都不可构建，基期读数更无从取；UI previous 值为 mock 演示常量（20.1/14.6/28.5/15.8/16.2），不作分子分母。按 B10 留空即负结论登记（与 DATATHM_008 共用三依赖缺口，族级并项）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 来源可靠性评估面（reliability/credible/trust/quality_monitor/data_quality/dq_/quality_check/quality_score 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表，L7 族探针 2026-11-02 实跑）",
+   "hits": 0,
+   "hit_detail": "命中 []——0 张；dev 的质量侧承载只有平台操作日志 sys_log（管理日志非数据质量评估，DATATHM_020 已证语义排除），无来源级可靠性评分面"
+  },
+  {
+   "probe": "gkx 来源可靠性评估面（同词族）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx（280 表）词族扫（经 _gkxdb.py）",
+   "hits": 0,
+   "hit_detail": "命中 []——gkx 为要素明细库（论文/专利/机构/学者），dwd_* 表无任何来源可靠性评分列；表级元数据 table_data_source 标签轴实测空载（DATAIN_003 已证三表值域）——来源轴本身无值，更无来源×可靠性评分面"
+  },
+  {
+   "probe": "久新来源可靠性评估面（同词族）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（2026-11-02 live，212 表）词族扫",
+   "hits": 0,
+   "hit_detail": "命中 []——ads_* 全部为学科/人才/专利/项目分析结果面（按 metrics_as_of_date 单日快照管理），无来源可靠性评估面；价值词族唯一命中 ads_technology_commercial_value_simulation 是技术商业化价值仿真（语义排除）"
+  },
+  {
+   "probe": "评估期次/环比基期管理面（快照分期）",
+   "source": "三源",
+   "sql": "词族 + 久新 metrics_as_of_date 值域（DATAIN_003 实测单日一期）",
+   "hits": 0,
+   "hit_detail": "三源均无评估期次登记：久新快照管理形态为单日一期（DATAIN_003 键 jiuxin_talent_yearly_as_of_dist 在案），无逐期评估序列——『上期/基期』在库内无承载"
+  },
+  {
+   "probe": "需求原文「来源可靠性」定义段",
+   "source": "doc",
+   "sql": "rg 可靠性 三份需求真源（主需求/SRS 总体视窗.md/核增）",
+   "hits": 3,
+   "hit_detail": "主需求 :2493 = SRS 总体视窗.md seq 331（excel_row 334）『详细分析资源来源的结构组成及变化，辅助判断数据质量和来源可靠性』——功能在、『可靠性』判定标准（阈值/维度/期次）无定义；『上期占比』指标名三源 0 命中（附录 A.2 检索记录）"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：来源可靠性『上期占比』需 评分面+来源登记分母+期次管理 三依赖，三源逐一 0 命中（词族探针在案）→ 指标及关键依赖三源均无法构建 → 完全不支持（与 DATATHM_008 同根，族级并项）",
+  "UI 语义核（派单预警处置）：ResourceSourceAnalysisDetail 是总体视窗·资源来源分析区的**评估面组件**（结构占比饼/趋势/环比对比/质量与可靠性评估卡/智能归纳明细五段），非纯演示页——组件注释自标需规 seq 331，但当前全部数据来自 mockData.js overviewSourceAnalysis 硬编码（五来源类型/reliability 93-96/环比 delta），无后端接口——功能需求真源在、数据面是 mock 演示（两层分开表述）",
+  "mock 披露：structureCompare.previousPeriod='2026-04'、五来源 previous 值 20.1/14.6/28.5/15.8/16.2（mockData.js:256-264）——演示常量，不作数据证据（B10）",
+  "B11 对账：三源表数 542/280/210 共享快照；词族命中与 _probe_s304_l7_quality_out.json 逐键一致（jiuxin 2026-11-02 live 复核 212 张，较 2026-11-01 快照 210 张多 2 张新增表，活库增长非口径漂移，纪律『活库表数不写死』在案）",
+  "升档触发器（B10）：①建来源可靠性评估面（来源×评分×期次流水）→ 本件与 008 一起升完全直接支持；②甲方裁定可靠性判定规则（如按来源类型的稽核通过率）且建来源登记分母 → 升完全转换支持（评分可由稽核流水聚合）",
+  "权威口径参照（R1 GB/T 36344-2018）：数据质量六维评价（规范性/完整性/准确性/一致性/时效性/可访问性）均为『满足要求元素数÷被评价元素数』的结构——可靠性若落地也应先定六维稽核规则再算达标占比，阈值无登记则占比无定义"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "环比基期（上期）整体缺承载",
+  "mock 演示基期 2026-04 无库内对应"
+ ],
+ "base_years_note": "期维三源零承载：无评估期次管理面，『上期/基期』无从取（探针第 4 件）；mock 的 2026-04→2026-05 是前端演示约定，不构成库内期次证据",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "542",
+   "280",
+   "210",
+   "212",
+   "20.1",
+   "14.6",
+   "28.5",
+   "15.8",
+   "16.2",
+   "2026-04",
+   "93",
+   "96",
+   "331",
+   "334"
+  ]
+ }
+}

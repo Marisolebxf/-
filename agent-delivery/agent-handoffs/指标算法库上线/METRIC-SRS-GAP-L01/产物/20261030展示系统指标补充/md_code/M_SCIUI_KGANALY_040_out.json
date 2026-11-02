@@ -1,0 +1,95 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_040",
+  "metric_name": "图谱聚类系数（知识图谱·融合统计指标）",
+  "facts": {
+    "ui_mount": "mockData.js:390 fusionIndicators[1] clustering（graphValue=0.68/ruleValue=0.70/modelValue=0.66/fusionValue=0.68，weight=0.20，unit=ratio；talent 场景权重升至 0.30）",
+    "ui_algo_source": "融合面板未给公式（mock 常量）；语义锚=Watts-Strogatz 平均局部聚类系数（R1）",
+    "dev_graph_word_table_rows": {
+      "gkxlumenx.sys_message_relation": 0,
+      "gkxlumenx_ads.chain_panorama_edges": 0,
+      "gkxlumenx_ads.enterprise_centrality": 0,
+      "gkxlumenx_ads.event_relation": 0,
+      "gkxlumenx_ads.graph_edge": 0,
+      "gkxlumenx_ads.graph_membership": 0,
+      "gkxlumenx_ads.graph_node": 0,
+      "gkxlumenx_ads.industry_chain_graph_diff": 0,
+      "gkxlumenx_ads.industry_chain_graph_snapshot": 0,
+      "gkxlumenx_ads.policy_graph_edge": 0,
+      "gkxlumenx_ads.policy_graph_node": 0,
+      "gkxlumenx_ads.realdata_innov_edge": 0,
+      "gkxlumenx_ads.svc_relation_chain": 0,
+      "gkxlumenx_bi.jimu_report_link": 5,
+      "gkxlumenx_bi.onl_drag_table_relation": 0,
+      "gkxlumenx_cms.cms_expert_knowledge": 61,
+      "gkxlumenx_cms.cms_kg_relation": 8,
+      "gkxlumenx_cms.cms_kg_relation_type": 7,
+      "gkxlumenx_config.config_tags_relation": 0,
+      "gkxlumenx_dwd.enterprise_graph_rel": 0,
+      "gkxlumenx_dwd.graph_edge": 0,
+      "gkxlumenx_dwd.graph_node": 0,
+      "gkxlumenx_dwd.policy_entity_relation": 0,
+      "gkxlumenx_dwd.risk_equity_pledge": 0,
+      "gkxlumenx_dwd.svc_org_graph_hang": 0
+    },
+    "dev_graph_tables_nonzero": {
+      "gkxlumenx_bi.jimu_report_link": 5,
+      "gkxlumenx_cms.cms_expert_knowledge": 61,
+      "gkxlumenx_cms.cms_kg_relation": 8,
+      "gkxlumenx_cms.cms_kg_relation_type": 7
+    },
+    "jiuxin_tech_nodes_total": 19430,
+    "jiuxin_tech_edges_total": 587252,
+    "jiuxin_tech_sample_frame": 5000,
+    "jiuxin_tech_sample_induced_edges": 38383,
+    "jiuxin_tech_sample_present_nodes": 4778,
+    "gkx_coauthor_sample_edges": 19995,
+    "gkx_coauthor_sample_nodes": 21763
+  },
+  "derived": [
+    {
+      "source": "jiuxin.ads_technology_graph_edge 诱导子图(5000节点框)",
+      "nodes": 4778,
+      "edges": 38383,
+      "avg_clustering": 0.234824,
+      "transitivity_global": 0.122238,
+      "nodes_ge2deg": 4472,
+      "nodes_lt2deg": 306,
+      "triangles": 95131,
+      "note": "主实算：WS 平均局部聚类 + transitivity 双口径并列（B10）"
+    },
+    {
+      "source": "gkx.dwd_scholar_coauthor 采样框(dwd_id前20000行,去重后)",
+      "nodes": 21763,
+      "edges": 19995,
+      "avg_clustering": 0.003915,
+      "transitivity_global": 0.000381,
+      "nodes_ge2deg": 2648,
+      "nodes_lt2deg": 19115,
+      "triangles": 13,
+      "note": "人-人合作语义备选（稀疏合作网聚类天然低）"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev 图结构面（graph_node/graph_edge/policy_graph_* 等 26 张）",
+      "how": "族级快照 _probe_s305_l3_call_out.json 精确计数",
+      "hits": "26 张全部 0 行（非零仅 jimu_report_link 5 / cms_expert_knowledge 61 / cms_kg_relation 8 / cms_kg_relation_type 7，均非图拓扑语义）"
+    },
+    {
+      "what": "久新现成结果面（density/clustering/community/composite 结果表）",
+      "how": "SHOW TABLES 词族扫描（本批共用）",
+      "hits": "无独立结果面；node 表自带 community_id 列（社群归属现成）"
+    },
+    {
+      "what": "gkx 图语义表",
+      "how": "族级快照 gkx_graph_word_tables",
+      "hits": "dwd_scholar_coauthor（合作边可作图原料）"
+    }
+  ],
+  "support_judgment": "完全转换支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "图谱为 2026-11-02 live 截面，无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=探针快照日（当日截面）；非年度基期，非「缺年按 0 摊入」"
+}

@@ -1,0 +1,121 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_032",
+ "batch": "S3-04",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/CumulativeCallTrendAnalysis.jsx:26",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:882"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「季度区段调用量」指标名；语义锚 SRS 总体视窗 seq 346『按时间区段进行趋势分析』（功能在、区段粒度与聚合口径无）"
+ },
+ "facts": {
+  "dev_call_rank_heat_tables": [
+   "gkxlumenx_ads.chain_hotspot",
+   "gkxlumenx_ads.enterprise_ranking",
+   "gkxlumenx_ads.industry_chain_graph_snapshot",
+   "gkxlumenx_dwd.enterprise_growth_trend",
+   "gkxlumenx_dwd.policy_support_rank"
+  ],
+  "dev_call_rank_heat_table_rows": {
+   "gkxlumenx_ads.chain_hotspot": 0,
+   "gkxlumenx_ads.enterprise_ranking": 0,
+   "gkxlumenx_ads.industry_chain_graph_snapshot": 0,
+   "gkxlumenx_dwd.enterprise_growth_trend": 0,
+   "gkxlumenx_dwd.policy_support_rank": 0
+  },
+  "dev_table_total": 542,
+  "dev_enterprise_update_month_dist": [
+   [
+    "2026-08",
+    269163
+   ],
+   [
+    "2026-09",
+    348
+   ]
+  ],
+  "gkx_call_rank_heat_tables": [],
+  "jiuxin_probe_mode": "live",
+  "jiuxin_table_count_live": 212,
+  "jiuxin_call_rank_heat_tables": [
+   "ads_emerging_topic_snapshot",
+   "ads_research_outcome_trend_case",
+   "ads_research_problem_competition_rank",
+   "ads_research_problem_development_snapshot",
+   "ads_research_problem_heat_component",
+   "ads_research_problem_hotspot_snapshot",
+   "ads_research_problem_overview_snapshot",
+   "ads_research_problem_region_snapshot",
+   "ads_technology_hotspot_signal",
+   "ads_technology_hotspot_signal_filter_stage_20261031",
+   "ads_technology_hotspot_signal_unfiltered_20261031",
+   "ads_technology_hotspot_snapshot",
+   "ads_technology_hotspot_yearly",
+   "ads_topic_country_snapshot"
+  ]
+ },
+ "derived": [
+  {
+   "key": "quarterly_call_volume_series",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『按季度区段聚合的资源调用量序列』需资源调用台账（调用×时间戳）——三源词族0 命中（dev 5 张命中全 0 行语义排除；gkx 0 命中；久新 14 张命中全为科研问题/技术热度语义排除）→ 不可构建；库内唯一时间序列面 enterprise_base.update_time 月维仅 2 点（批次式灌库）且语义为底册更新非调用，不作代理，按 B10 留空"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 资源调用台账面（call/invoke/usage/heat/hot/trend/ranking/visit/click/download/api_log 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表）+ 命中表 COUNT 复核",
+   "hits": 0,
+   "hit_detail": "词族命中 5 张全部语义排除且 0 行（chain_hotspot/enterprise_ranking/industry_chain_graph_snapshot/enterprise_growth_trend/policy_support_rank）——无一含调用×时间戳明细，季度聚合无从做起"
+  },
+  {
+   "probe": "gkx 调用词族（call/invoke/usage/rank/heat/hot/trend/visit/click/download）",
+   "source": "gkx",
+   "sql": "information_schema.tables 扫 gkx（280 表，经 _gkxdb.py）",
+   "hits": 0,
+   "hit_detail": "命中 []——gkx 为要素明细库，无任何调用监控面；要素表时间列（专利 apdt_year/论文 cover_year_start）是内容年份非调用时间，语义排除"
+  },
+  {
+   "probe": "久新调用词族（同词族 live 复核）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（活库 212 表）词族扫 + 语义核对",
+   "hits": 0,
+   "hit_detail": "命中 14 张全部语义排除（科研问题/技术热点/新兴主题热度与快照面）——快照管理形态 metrics_as_of_date 单日一期（DATAIN_003 已证），无逐期调用记录；探测模式 live"
+  },
+  {
+   "probe": "需求原文「按时间区段」定义段",
+   "source": "doc",
+   "sql": "rg 时间区段|季度 三份需求真源",
+   "hits": 1,
+   "hit_detail": "SRS 总体视窗.md seq 346『自动归集各类数据资源自上线以来的累计调用量，并按时间区段进行趋势分析』——『时间区段』粒度（周/月/季）无定义；UI PERIOD_OPTIONS 三档（近一周/近半年月/按季度）为前端演示约定（mockData.js:882-886 quarter 五点演示值），不作数据证据"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：季度区段调用量=按季度聚合的资源调用序列——前置依赖是资源调用台账（调用×时间戳），三源词族逐一 0 命中 → 指标及关键依赖三源均无法构建 → 完全不支持",
+  "时间序列最近邻披露：dev enterprise_base.update_time 月维仅 [['2026-08', 269163], ['2026-09', 348]]（2 点，批次式灌库，与 DATAIN_001/002 族同法同读数）——语义是企业底册更新时间非资源调用，且月维两点不足以构成季度序列，不作代理（B10）",
+  "mock 披露：CumulativeCallTrendAnalysis.jsx:26-77 双轴图（区段 bar+累计 line）消费 mockData.js:882-886 periods.quarter（2025Q2-2026Q2 五点 92 万→285.6 万）——演示值，不作数据证据",
+  "需求侧证据：seq 346 功能句把『按时间区段进行趋势分析』列为功能要求——工程前提（累计调用量归集+时间戳）三源未建（缺口归属『表不存在』，修复动作是调用台账接入）",
+  "权威口径参照（R2 深圳开放平台）：接口调用量按近七日/累计双窗口公示——区段聚合的官方实践形态，前提同样是调用日志",
+  "B11 对账：词族扫描与 L5/L6 族探针一致；enterprise_base 月维与 DATAIN_001/002/DATATHM_015 族同读数零漂移",
+  "升档触发器（B10）：①API 网关/调用台账接入（调用×时间戳）→ 升完全直接支持（周/月/季三粒度一次到位，族级共用）；②维持现状 → 完全不支持（UI 该图建议『暂无数据』）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "区段序列类读数，库内无调用时间轴，不涉基期年",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "346",
+   "542",
+   "280",
+   "212",
+   "920000",
+   "2856000"
+  ]
+ }
+}
