@@ -46794,3 +46794,45 @@ tasks:
       - "放开步骤可复现：①rowActions 加回 'export' ②删除 exportCurrentEnabled:false ③capabilityLevels.export 保留 L3/L4 不动；验证 = 条件卡导出按钮/导出选中/行内导出三处恢复且流程可用"
       - "隐藏后回归：企业查询页三处导出入口不可见；产业中心/服务机构页导出隐藏状态不受影响（其本就 show-export=false）"
     update_time: "2026-11-02T21:17:45+08:00"
+  - id: GDF-GRAPH-SCHED-CONTRACT-L01
+    title: "GDF与知识图谱引擎调度接口契约与时序图"
+    status: "ready"
+    agent: "architect-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    graph_role: "leaf"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      2026-11-02 用户要求：现有任务没有一张把 GDF 与知识图谱引擎的调度接口契约和各方能看懂的时序图写进两份集成方案。问 8 已定：上图是两个调度之间的任务转发，不是调用入图脚本。接口形状见亿级科技知识图谱API文档 §2.7 触发、§2.9 查询、§2.11 轮询。§2.11 示例第一步写的是 /task-center/trigger，那是方式 A，与「不要用内置图谱构建的默认实体去触发」冲突，本任务要在契约里写成三方都能看懂的一条调用。GDF 方案 §2.2 现在只有虚线「可触发建图 API」。图数据库方案 §2.2 现在是在线查图。两张旧图保留。本任务只补入图调度。ponytail: N/A（定义任务）。
+    depends_on:
+      - "KG-CHAIN-GRAPH-LOAD-L01"
+      - "KG-ENT-GRAPH-LOAD-L01"
+    collaborators:
+      - "doc-agent"
+      - "data-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/技术方案.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/技术方案.md"
+    design_refs:
+      - "agent-delivery/data/GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v2/23-核对签收与答复.md"
+      - "agent-delivery/data/GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v2/12-DWD后加工-产业链入向量库.md"
+      - "agent-delivery/data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/06-GDF触发契约.md"
+      - "agent-delivery/data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/06-GDF触发契约.md"
+      - "agent-delivery/designs/亿集知识图谱/亿级科技知识图谱API文档.md"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/技术方案.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/技术方案.md"
+    definition_of_done:
+      - "产出一份中文接口契约，读者是 GDF 产线、燕大知识图谱引擎、我方。每一步写清谁调用谁、立刻返回什么、什么叫做完。不要只堆路径缩写。"
+      - "契约按问 8 已定口径：链树 DWD 作业 success 之后，GDF 只调用引擎已经配好的入图调度任务触发接口。引擎立刻返回已收下和任务号，任务开始执行。GDF 再轮询，直到成功或失败才关单。收下不等于图已更新。失败不回滚已成功的 DWD。"
+      - "触发对照《亿级科技知识图谱API文档》§2.7，查询对照§2.9，轮询对照§2.11。禁止用 §2.7 方式 A（POST /api/v1/task-center/trigger，内置图谱构建的默认实体）。若用 §2.7 方式 B，契约要用中文写清 GDF 拿哪一个号去轮询，因为方式 B 返回的是执行记录，不创建任务中心 taskId，不要把两个号都叫作任务号。"
+      - "GDF 不调用 POST /internal/v1/chain/graph/project，不在 GDF 节点跑 script/ 里的入图实现，不写 Nebula，不直连 graphd。正式图空间名是 gkx_chain。具体任务号写明由燕大配置后线下给出，不写进 git。"
+      - "产出一张时序图。参与方用中文：GDF 调度、燕大知识图谱引擎、引擎内部入图作业。图上能分开看出触发、已收下、轮询中、成功、失败。Java 受理路径若出现，单独标成未上线，禁止配进 GDF 的 DAG。"
+      - "同一段契约、同一张图写入两份集成方案的 §2.2 和 §2.3，文字一致并互相引用：06-GDF数据治理集成/技术方案.md，07-图数据库集成/技术方案.md。现有 SYSINT-SCHEME-06-SEQ 贴源总图和 SYSINT-SCHEME-07-SEQ 在线查图图保留。入图调度另给 diagram_id，不要改写那两张已有的图。"
+      - "与 23 问 8、12 §5.4、KG-CHAIN 与 KG-ENT 的 06-GDF触发契约对齐。企业包仍是飞书值班的句子不要改成已经能调。不关闭 SYSINT-SCHEME-06-L01 和 SYSINT-SCHEME-07-L01。"
+      - "handoff 写到 agent-handoffs/GDF-GRAPH-SCHED-CONTRACT-L01.md。不执行 nGQL，不改图空间，不把任务号写进 git。"
+    update_time: "2026-11-02T21:30:37+08:00"
