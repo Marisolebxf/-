@@ -7,11 +7,15 @@
 任务：SYSINT-06-21-L01
 标题：服务机构：梳理专题跑通到 ADS、入 ES、入图谱的完整加工链路
 WBS：WBS-06-21
-监管人：human:徐滕强。未获开工指令前不认领。开工时 task-claim，claimed_by=agent:data-agent，supervised_by=human:徐滕强。
-状态：backlog，未认领。对照 SYSINT-06-15-L01，不代替该叶，也不等该叶跑通。
+监管人：human:淮政玮。未获开工指令前不认领。开工时 task-claim，claimed_by=agent:data-agent，supervised_by=human:淮政玮。
+状态：backlog，未认领。先做子任务 SYSINT-06-21-01-L01。对照 SYSINT-06-15-L01，不代替该叶，也不等该叶跑通。
 仓：只写 gkx-orchestration。说明放在本目录或 handoff。不改企业 v4、产业链 v2、政策 v2，不改 06-19 / 06-20 派单包。分支 origin/dev。注册表改动写完立刻 commit + push。未获「提交并推送」前，说明文档不要自行 push。
 开始时间：2026-11-02。完成日期要求：暂无截至时间。
 ```
+
+## 先做的子任务
+
+`SYSINT-06-21-01-L01`（WBS-06-21-01）调研现网 demo 与 lumen 里服务机构的数据处理。本叶的链路说明以那份调研为输入。派单见 [派单说明-SYSINT-06-21-01-L01.md](./派单说明-SYSINT-06-21-01-L01.md)。
 
 ## 要梳理的链路
 
