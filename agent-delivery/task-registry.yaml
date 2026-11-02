@@ -46570,7 +46570,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 30000
     note: |
-      2026-11-02 18:13 用户授权推送线上验证：commit 51c87d0 已推 origin/dev（含字段库裁剪收尾、评审 M-1 修复、热门场景线格式归一化、产业标签删除[并行会话 e6d8c55]。18:22 K8s dev 新构建上线（JS 指纹 CmrdZYK2，含 hideInLibrary/industry_attribute 映射/code→中文表），线上产物验证通过。后续并行会话又追加 cfa5812（领域下拉改Q068全量15个）。待用户页面走查确认。
+      追加：2026-11-02 18:30 用户报「保存方案不填名无提示」，已修（ae84d42 推送，18:34 新构建上线，chunk QueryConditionSummary-DIu19oZk 线上抽查含全部提示文案+ok-loading）。根因：后端拦截齐全（template_name 不能为空/超长/query_tree 不能为空），前端 onSaveOk 对 null 静默 return。修：before-ok 异步语义 + 空名/重名/50上限前置 warning + 失败 error + 成功 success + ok-loading 防重复。自检 10 项过。
     collaborators:
       - "frontend-agent"
     touched_files:
@@ -46584,7 +46584,7 @@ tasks:
       - "chainTags 字段全链路清除（类型/字段库/选项池/出站闸门），旧保存方案中的 chainTags/updatedAt 条件静默丢弃（DSL 出站闸门兜底）"
       - "FilterPanel 通用 hideInLibrary 能力（后续字段裁剪可复用）"
       - "改动停本地工作区待 human:孔东 走查；commit 带 [agent:frontend-agent]"
-    update_time: "2026-11-02T18:24:03+08:00"
+    update_time: "2026-11-02T18:41:34+08:00"
   - id: KG-CHAIN-GRAPH-LOAD-L01
     model_used: "grok-4.7"
     evidence: "agent-handoffs/KG-CHAIN-GRAPH-LOAD-L01.md"
@@ -46726,3 +46726,28 @@ tasks:
       - "服务类型筛选走 N-8 新路由，不改 portalRegionMap 的查询参数。环节占比不写回 panorama snapshot"
       - "Java 不写 ADS、不写算法。要计算时只走 Python /internal/*，算不出来就空态。handoff 列出新路由、空态样例和未改的旧路由"
     update_time: "2026-11-02T18:40:11+08:00"
+  - id: ENT-EXPORT-CURRENT-HIDE-L01
+    title: "企业查询「导出当前结果」隐藏决策登记与放开条件（chore）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-31-企业发展"
+    priority: "P2"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "chore"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "2026-11-02 用户拍板：需规（bid-reference/srs 2315 叶）无「导出当前结果」直接条文（对比篮/对比栏排查同日完成），先隐藏后放开。改动已在本地工作区（3 文件 +13 行）未 commit；按人工验收闸门待走查后推 origin/dev。本任务=登记决策依据与放开步骤，不新增开发。"
+    touched_files:
+      - "repos/lumen-ui-topic/src/config/enterpriseSearchConfig.ts"
+      - "repos/lumen-ui-topic/src/types/search.ts"
+      - "repos/lumen-ui-topic/src/components/search/SearchScaffold.vue"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/05-深度挖掘算法/科技专题服务算法库/企业/深度分析.md"
+    definition_of_done:
+      - "决策依据登记：需规 2315 叶无「导出当前结果/清单导出」直接条文；最接近挂靠 = 05-深度挖掘算法/科技专题服务算法库/企业/深度分析.md L209（招引推荐查询+数据导出）/L240（潜力企业筛选+数据导出）泛表述"
+      - "隐藏改动落库：enterpriseSearchConfig.ts（rowActions 去 export + exportCurrentEnabled:false + 放开步骤注释）、types/search.ts（exportCurrentEnabled 可选字段）、SearchScaffold.vue（透传 show-export），三文件已改待验收"
+      - "放开步骤可复现：①rowActions 加回 'export' ②删除 exportCurrentEnabled:false ③capabilityLevels.export 保留 L3/L4 不动；验证 = 条件卡导出按钮/导出选中/行内导出三处恢复且流程可用"
+      - "隐藏后回归：企业查询页三处导出入口不可见；产业中心/服务机构页导出隐藏状态不受影响（其本就 show-export=false）"
+    update_time: "2026-11-02T21:17:45+08:00"
