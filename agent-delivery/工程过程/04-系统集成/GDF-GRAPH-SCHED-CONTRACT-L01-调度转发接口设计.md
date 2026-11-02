@@ -26,7 +26,7 @@
 
 正式图空间名是 `gkx_chain`。这是引擎内部作业的目标，不是 GDF 这次请求的必传字段。具体调度任务号、definition id 由燕大配置后线下给，不写进 git。
 
-企业维入图不在本接口里当成已经能调。企业包现网仍是飞书值班，见企业入图包 `06-GDF触发契约.md`。
+企业三支、服务机构点、政策点与政策引用的枚举已在第 5 节。本版都不发起。企业包现网仍是飞书值班，见企业入图包 `06-GDF触发契约.md`。
 
 ## 2. 锁定的四条基本方案
 
@@ -94,7 +94,7 @@ sequenceDiagram
 
 ### 编写示例（企业维度）
 
-下例只写在本详细设计、这张时序图下面，不复制进两份集成方案里那五处相同的摘要。它用来看清同一张图落到企业维时，各方各写什么。企业维现网仍是飞书值班。本例不表示转发入口已经能调，也不配进 GDF 的 DAG。枚举字面值、时间戳字段名仍是还没有，下面用中文占位，不编 HTTP 字段，也不把未上线 Java 路径里的作业名当成枚举。
+下例只写在本详细设计、这张时序图下面，不复制进两份集成方案里那五处相同的摘要。它用来看清同一张图落到企业维时，各方各写什么。企业维现网仍是飞书值班。本例不表示转发入口已经能调，也不配进 GDF 的 DAG。时间戳字段名仍是还没有。枚举用第 5 节已经给定的字面值，不把未上线 Java 路径里的作业名当成枚举。
 
 企业点这一次，按图上的顺序写。供给边、母子边各是另一次转发，不并进同一次请求。
 
@@ -104,7 +104,7 @@ sequenceDiagram
 
 | 项 | 本例怎么写 | 本例不写进请求 |
 |---|---|---|
-| 任务类型枚举 | 「企业点入图」。字面值待燕大配置，不进 git。不把未上线 Java 的 `enterprise_vertex` 写成枚举 | 表名 `enterprise_base`、图空间 `gkx_chain`、VID 规则、脚本路径、schemaId、definition id、schedule id |
+| 任务类型枚举 | `enterprise_point` | 表名 `enterprise_base`、图空间 `gkx_chain`、VID 规则、脚本路径、schemaId、definition id、schedule id。不传未上线 Java 作业名 `enterprise_vertex` |
 | 时间戳 | 跟着这次 DWD `success` 交出去的那个时刻，供引擎自己判断增量。格式、时区还没有，不写成 `dwd_success_at` | 水位列名、cron |
 
 **立刻回执。** 引擎返回已收下，并给出这一次的受理号。内部入图作业开始。GDF 不关单。图还没有更新。受理号不编成 `PI-…` 或 `EXEC-…`。
@@ -117,8 +117,8 @@ sequenceDiagram
 
 | 另一次转发 | 何时发起 | 枚举在本例里表示 | 引擎内部写入（不进 GDF 请求） |
 |---|---|---|---|
-| 供给边 | `gkxlumenx_dwd.enterprise_supply_chain` 当天 Wave B `success`，且企业点已关单成功 | 供给边入图。字面值待燕大配置 | Edge `supply`，企业 → 企业 |
-| 母子边 | `gkxlumenx_dwd.enterprise_parent_subsidiary` 当天 Wave B `success`，且企业点已关单成功 | 母子边入图。字面值待燕大配置 | Edge `parent_sub`，母公司 → 子公司 |
+| 供给边 | `gkxlumenx_dwd.enterprise_supply_chain` 当天 Wave B `success`，且企业点已关单成功 | `enterprise_supply` | Edge `supply`，企业 → 企业 |
+| 母子边 | `gkxlumenx_dwd.enterprise_parent_subsidiary` 当天 Wave B `success`，且企业点已关单成功 | `enterprise_parent_sub` | Edge `parent_sub`，母公司 → 子公司 |
 
 `enterprise_cooperation`、`enterprise_industry_chain`、`enterprise_invest` 本版不写进示例，不分配枚举。
 
@@ -165,17 +165,45 @@ GDF 交出什么：任务类型枚举、时间戳。只有这两项。
 
 ## 5. 任务类型枚举
 
-枚举表示「引擎上哪一类已经配好的调度任务」。GDF 只传枚举。引擎用燕大线下配置的对照，找到自己平台上已经配好的那一个调度任务，再启动它。对照表不进 git。definition id、schedule id 都不作为 GDF 的必传字段。
+枚举表示「引擎上哪一类入图作业」。字面值由本文给定，GDF 一次只传其中一个。引擎用燕大线下配置的对照，找到自己平台上已经配好的那一个调度任务，再启动它。对照表不进 git。definition id、schedule id 都不作为 GDF 的必传字段，也不写进下表。
 
-| 业务 | 何时由 GDF 转发 | 引擎内部写入（已有文档能确定的） | 枚举字面值 |
-|---|---|---|---|
-| 环节点入图 | `gkxlumenx_dwd.industry_chain_node` 当天 Wave B `success` 之后，转发一次 | 正式空间 `gkx_chain`，Tag `segment`，VID `segment:{node_id}`。同一次识别若带出链，不把链写入图 | 待燕大配置，不进本文 |
-| 链、环节关系、企业到环节 | 本版不触发 | `industry_chain` 写出的是 Tag `chain`。`industry_chain_node_rel` 的正式行是 `parent_child`，不能当成 `depends_on`。`industry_chain_entity_rel` 要等企业点先在 `gkx_chain` 上 | 不分配 |
-| 企业点、供给边、母子边 | 不走本接口当成已经能调 | 企业入图包仍是飞书或工单交接 | 不在本文给出 |
+表外的字符串不是枚举。入口还没有，这条是以后配入口时的拒绝规则：收到表外字面值，不启动作业。
 
-未上线的 Java 路径里，`job` 曾写成 `segment_vertex`。那是 Java 受理路径上的作业名，不是引擎调度转发的枚举。本文不把它当成已经能传的枚举值。
+未上线 Java 路径上的作业名不是本枚举。不要传 `segment_vertex`、`enterprise_vertex`，也不要传 Java 路径里的 `supply`、`parent_sub`。
 
-「待燕大配置」的交付方式：燕大在引擎上配好环节点入图的调度任务之后，线下把「枚举字面值 → 该调度任务」告诉 GDF。配置正文不进 git，也不写进本文。
+### 5.1 已编号
+
+「本版转发」只有 `industry_segment`。其余行是字面值已经定下，本版不发起。不发起的原因写在「本版」列，不表示以后不能用这个字面值。
+
+| 枚举字面值 | 维度 | 何时才允许发起 | 引擎内部写入（不进 GDF 请求） | 本版 |
+|---|---|---|---|---|
+| `enterprise_point` | 企业 | `gkxlumenx_dwd.enterprise_base` 当天 Wave B `success` 之后一次 | 正式空间 `gkx_chain`，Tag `enterprise`，VID `ent:{org_id}` | 不发起。现网仍是飞书值班 |
+| `enterprise_supply` | 企业 | `gkxlumenx_dwd.enterprise_supply_chain` 当天 Wave B `success`，且 `enterprise_point` 已关单成功 | Edge `supply`，企业 → 企业 | 不发起。同上，且企业点还没在这条转发上成功 |
+| `enterprise_parent_sub` | 企业 | `gkxlumenx_dwd.enterprise_parent_subsidiary` 当天 Wave B `success`，且 `enterprise_point` 已关单成功 | Edge `parent_sub`，母公司 → 子公司 | 不发起。同上 |
+| `industry_segment` | 产业 | `gkxlumenx_dwd.industry_chain_node` 当天 Wave B `success` 之后一次 | Tag `segment`，VID `segment:{node_id}`。同一次识别若带出链，不把链写入图 | 转发。这是本版唯一发起的枚举 |
+| `industry_depends_on` | 产业 | 仅当 `industry_chain_node_rel` 的 `relation_type` 已是依赖白名单（`depends_on` 一类），两端环节点已在图上 | Edge `depends_on`，环节 → 环节 | 不发起。正式加工行是 `parent_child`，不能拿这个枚举去写 |
+| `industry_participates` | 产业 | `industry_chain_entity_rel` 里 `entity_type=enterprise` 的参与行可写，且 `enterprise_point`、`industry_segment` 都已关单成功 | Edge `participates`，企业 → 环节 | 不发起。企业点还没经本转发进 `gkx_chain` |
+| `service_org_point` | 服务机构 | `gkxlumenx_dwd.svc_org_circle` 当天作业 `success` 之后一次。卡面 `svc_org_card` 不是另一次枚举 | Tag `institution`，VID `institution:{org_id}`，`props` 内 `role=service` | 不发起。还没有服务机构入图触发契约 |
+| `policy_point` | 政策 | `gkxlumenx_dwd.policy_base_info` 国内、国际两个平面当天 Wave B 都 `success` 之后一次 | Tag `policy`，VID `pol:{policy_id}` | 不发起。还没有政策入图触发契约。不代替政策包 `15` 的 C1、C2 |
+| `policy_cite` | 政策 | `policy_point` 已关单成功，且本批 `pedigree` 里有约定格式 `上位政策:{pid}` | Edge `cite`，政策 → 政策。对不上格式的不造点 | 不发起。同上，且政策点还没经本转发进图 |
+
+企业三支的顺序与企业入图包 `06-GDF触发契约.md` 一致。产业第一批与产业链入图包 `06` 一致。服务机构点的源表与 `KG-7ELEM-LOAD-PATH-L05` 一致。政策点、政策引用与 `KG-7ELEM-LOAD-PATH-L04` 问 1 一致。
+
+### 5.2 不分配枚举
+
+下面这些没有任务类型字面值。GDF 不传，引擎也不要为它们单开一个「先占个名」的调度。
+
+| 范围 | 不分配的原因 |
+|---|---|
+| 链 Tag `chain`（源表 `industry_chain`） | 链不是环节。环节点作业若带出链，也不写入图 |
+| `industry_chain_node_rel` 的 `parent_child` | 父子不是 `depends_on`。不要改用 `industry_depends_on` |
+| 服务机构到环节 | 正式加工不产 `entity_type=service_institution` 的行。不另设枚举 |
+| `enterprise_cooperation`、`enterprise_invest`、`enterprise_industry_chain` | 双向合作还没落地；投资不进企业包；企业仓写出的归属边不是 `participates` |
+| 服务机构 `service_provide` 到企业、服务机构互相 `participates` | 没有可写的关系行，或已签收结论是不建 |
+| 政策 `policy_apply_to`、`policy_relate`、`publish` | 缺稳定对端，或边还没有 |
+| 科研机构、技术（论文、专利、项目）、人才 | `KG-7ELEM-LOAD-PATH-L06`：我方没有可执行的写图入口，Tag 与 Edge 的存储设计未写。不给点、也不给边编号 |
+
+燕大把上表 5.1 的每个字面值对照到引擎上已经配好的调度任务，线下告诉 GDF。对照正文不进 git。本版没有配进 DAG 的，不因为字面值已经写在这里就先发一次。
 
 ## 6. 时间戳
 
@@ -333,14 +361,15 @@ GDF 不调用第二套查询。问 10 写明上图只调两个调度接口：触
 | 项 | 状态 |
 |---|---|
 | 只接收「任务类型枚举 + 时间戳」、并立刻返回已收下和受理号的转发入口 | 还没有。方式 A 禁止；方式 B 与 Schedule 立即触发的形状对不上 |
-| 枚举字面值，以及它对应哪一个已配好的引擎调度任务 | 待燕大配置，不进本文 |
+| 枚举字面值 | 已在第 5 节给定。闭集以外不传 |
+| 每个字面值对应哪一个已配好的引擎调度任务 | 待燕大线下对照，不进 git |
 | 时间戳的字段名、格式、时区 | 还没有 |
 | 增量水位列名、cron | 还没有。原则仍是与 GDF 一致、由引擎自己判断 |
 | 受理号是不是执行号 | 还没有 |
 | 用现有 §2.9 的 GET 轮询到成功或失败 | 还没有。§2.10 的查询不更新终态 |
 | 成功/失败与 `执行完成` / `执行出错` / `COMPLETED` 的逐字对应 | 还没有 |
 | Java `POST /chain/v1/graph/jobs/{job}/sync` | 未上线，禁止配进 DAG |
-| 企业维走本转发 | 不写成已经能调。现网仍是飞书值班 |
+| 企业、服务机构、政策走本转发 | 字面值已有。本版不发起。企业现网仍是飞书值班；服务机构与政策还没有入图触发契约 |
 | 本接口在产线上跑通 | 还没有 |
 
 ## 15. 本文不改的范围
