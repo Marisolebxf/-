@@ -6,8 +6,8 @@ doc_id: SVC-STORAGE-CONTEXT
 element: SVC
 role: context
 status: draft
-version: "2026-08-19"
-updated: 2026-08-19
+version: "2026-11-02"
+updated: 2026-11-02
 signoff_owner: human:淮政玮
 task_id: ARCH-SVC-STORAGE-S1-L02
 ---
@@ -53,4 +53,17 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 1. [`01-data-flow.md`](./01-data-flow.md) 已由 **`human:淮政玮` 会签**（2026-08-19 `approved`）  
 2. S2 指针 + S3 细表 draft 已落盘。  
 3. **S4 入口已加回**（`DATA-SVC-STORAGE-S4-L02`）。**缺口文档已补**（`DATA-SVC-STORAGE-GAP-L02`：列对照 / 词表 / MinIO / 矩阵血缘）。  
-4. F-SEED / F-ALGO 已在 50100 出数。F-GATE 切法 A 见 [`formula-freeze-cut-a.md`](./formula-freeze-cut-a.md)。**不开 50892 / P 总控**，不重签本会签流图。  
+4. F-SEED / F-ALGO 已在 50100 出数。F-GATE 切法 A 见 [`formula-freeze-cut-a.md`](./formula-freeze-cut-a.md)。**不开 50892 / P 总控**，不重签本会签流图。
+
+## 6. 2026-11-02 现网对照（不改上面的铁律）
+
+铁律仍是设计边界。现网已经长出设计当时写成「阶段 F 不碰」的读路径和旁路。事实写在 [`02-asbuilt-process-chain.md`](./02-asbuilt-process-chain.md)，这里只钉和本节冲突的四点：
+
+| 本节原文 | 2026-11-02 看到的 |
+|---|---|
+| 阶段 F 不碰 `lumen-topic-py` / `lumen-algo-py` / `lumen-svc-platform` / `lumen-ui-topic` | `lumen-topic-py` 只读 `demo_gkxlumenx_*`。`lumen-svc-platform` 的内容运营写 `gkxlumenx_cms`，不写 ADS。ES 同步在 `lumen-etl-es-py`（不在这四仓名单里），别名 `gkx_svc_org` 已有 43296 篇 |
+| 灌数真源只认 50100 按钮 | 同一引擎还有 `POST /internal/svc/run-pipeline` 与 `python -m entan.svcseed`。L01 核对到的批次没有单独证明来自按钮。仓库里未见定时任务 |
+| 主路径写成 ODS → 模拟 GDF → DWD → ADS / 图 | demo 上是 Python 直接写。GDF 作业未建。图谱和十模型不是同一次 pipeline |
+| 只写 `demo_gkxlumenx_*` | 代码仍拒绝写正式 DWD/ADS。正式库同名表已建且 0 行。谁建的，未闭合 |
+
+图库行数未闭合。正式库 0 行不是产线已跑通。  

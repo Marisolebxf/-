@@ -14,7 +14,7 @@ element: SVC
 role: etl
 status: draft
 version: "2026-08-19"
-updated: "2026-08-19"
+updated: "2026-11-02"
 task_id: DATA-SVC-STORAGE-S3-L02
 gap_task: DATA-SVC-STORAGE-GAP-L02
 ---
@@ -66,7 +66,7 @@ demo_gkxlumenx_ads.svc_*                 ← 契约 / 模型回写
 | — | `node_id` | 与决策 #7 对齐：`org_id`↔`node_id`；space 固定 `demo_gkx_chain` |
 | — | `space_name`=`demo_gkx_chain` | 写死；禁 `gkx_service` |
 
-Nebula 投影见 [`../stores/nebula/graph-svc.md`](../stores/nebula/graph-svc.md)。F-ALGO 才写图，本单只建空表。
+Nebula 投影见 [`../stores/nebula/graph-svc.md`](../stores/nebula/graph-svc.md)。写作当时只建空表。2026-11-02 demo hang 已有 43296 行；图库行数未闭合。正式库 hang 0 行。年报 `dwd_org_annual_financial_info` 不进本 DWD，只供卡面人数和营收，见 [`../sources/inventory.md`](../sources/inventory.md)。
 
 ---
 

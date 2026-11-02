@@ -6,6 +6,7 @@
 > **人选 B（2026-08-20）**：名单卡面 [`stores/mysql/ads.md`](./stores/mysql/ads.md) `svc_org_card`；人主看图 [`01-data-flow.md`](./01-data-flow.md) **§1.1**（`SVC-STORAGE-LINEAGE`）。§1 工厂拓扑未改。  
 > **规则 A（2026-08-20）**：圈定 [`seeds/svc_rule_demo_kw_v1.md`](./seeds/svc_rule_demo_kw_v1.md) `v1.1`；淮总看列 [`seeds/svc-column-checklist.md`](./seeds/svc-column-checklist.md)。不再会签流图。  
 > **本阶段**：**S1–S4 文档闭环** + 缺口 / 卡面 + **规则 A 列清单**（`DATA-SVC-STORAGE-PATCH-L02`）。细表仍 **draft**。  
+> **2026-11-02 现网对照**：[`02-asbuilt-process-chain.md`](./02-asbuilt-process-chain.md)（`SYSINT-06-21-01-L02`，draft，待会签）。demo 库已有圈定行；正式库同名表 0 行；GDF 作业未建。这不是细表 approved，也不是产线跑通。  
 > **不要**：把「文档闭环 / 列清单」当成灌数完成或细表 approved。  
 > **灌数**：F-SEED = `DEMO-SVC-LAB-SEED-L01`（本入口不执行 50100）。  
 > **F-GATE 冻结**：[`formula-freeze-cut-a.md`](./formula-freeze-cut-a.md)（切法 A · `DEMO-SVC-LAB-GATE-L01`）。**不是**授权开 50892。  
@@ -17,8 +18,8 @@ doc_id: SVC-STORAGE-INDEX
 element: SVC
 role: index
 status: draft
-version: "2026-08-19"
-updated: 2026-08-19
+version: "2026-11-02"
+updated: 2026-11-02
 s4_task: DATA-SVC-STORAGE-S4-L02
 gap_task: DATA-SVC-STORAGE-GAP-L02
 card_task: DATA-SVC-STORAGE-CARD-L02
@@ -28,7 +29,8 @@ card_task: DATA-SVC-STORAGE-CARD-L02
 ## 读序（强制）
 
 1. [`00-context.md`](./00-context.md) — 边界与铁律  
-2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · 2026-08-19**）+ **§1.1 表级血缘（人选 B · 人主看图）**  
+2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · 2026-08-19**）+ **§1.1 表级血缘（人选 B · 人主看图）**。2026-11-02 只加了待会签对照，未改 `signoff_status`，未改 §1 工厂拓扑图  
+2b. [`02-asbuilt-process-chain.md`](./02-asbuilt-process-chain.md) — 现网加工链路、分场景流程图、指标库对照（draft · `SYSINT-06-21-01-L02`）  
 3. [`sources/inventory.md`](./sources/inventory.md) — ODS 表级清单（33 表与 ENT 共用；本波读法）  
 4. [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) — 模拟 GDF 指针（**不灌数**）  
 4b. [`etl/pipeline-to-nebula.md`](./etl/pipeline-to-nebula.md) — **112/113 图谱契约**（A/B/C/D · 灌数零图谱 · `SVC-GRAPH-TRIPLE`；**不灌数**）  

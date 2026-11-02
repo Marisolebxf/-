@@ -228,6 +228,8 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_text_parse` (
   COMMENT='D1 政策文本解析：摘要 + 结构化要素 + 自动标签';
 ```
 
+目标键：`policy_id` 仍是 `longtext`，不改类型。前 64 个字符的唯一索引在 `sql/update_round1.sql`，只改 ADS。完整 `policy_id` 相同的重复行留最新；全文不同、仅前 64 字相同的不删，加索引会停住。上面的 CREATE 仍是现网结构。DWD 同名表本轮不改。本仓不代跑。
+
 ```sql
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`policy_match` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '现网 demo 有此列，口径待补',
