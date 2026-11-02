@@ -39,7 +39,7 @@
 ## CI/CD（必填）
 
 - 分支：`lumen-ui-topic` @ `dev`
-- commit：（见 push 后 hash）
+- commit：`b18584a`
 
 ## cost（回填 registry）
 

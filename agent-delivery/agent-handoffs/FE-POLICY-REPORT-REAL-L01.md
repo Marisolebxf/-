@@ -42,7 +42,7 @@
 ## CI/CD（必填）
 
 - 分支：`lumen-ui-topic` @ `dev`
-- commit：（见 push 后 hash）
+- commit：`b18584a`（rebase 后 push dev）
 - pipeline / K8s：待 CI 绿后 QA 抽验
 
 ## cost（回填 registry）
