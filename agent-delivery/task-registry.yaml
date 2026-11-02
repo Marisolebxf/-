@@ -44295,7 +44295,8 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 150000
-    note: "监管 human:李伟。批 1 与 FE-POL-S01 同批启动；FE 单 mock 先行不阻塞。指标现状：POLICY 域 35 指标全 D1=aligned/D4=mock。"
+    note: |
+      监管 human:李伟。批 1 与 FE-POL-S01 同批启动；FE 单 mock 先行不阻塞。指标现状：POLICY 域 35 指标全 D1=aligned/D4=mock。2026-11-03：本单只出 API-POL 契约，系统详细设计说明书是 POL-DISPLAY-SDD-L01。WBS 口径为本单开工前阅读已会签的详设。注册表 depends_on 未改，因为更新工具不能写该字段。
     depends_on: []
     touched_files:
       - "agent-delivery/agent-handoffs/科技政策跟踪-POL/"
@@ -44306,7 +44307,7 @@ tasks:
       - "前端不猜路径：FE-POL-* 单 real 路径占位待本单冻结后联调替换"
       - "写操作（订阅/收藏/对比槽/收件箱）服务端化范围在本单契约评审拍板（D7：FE 会话级演示态先行，预留 api 层切换点）"
       - "契约定义 → 实现 → 数据对接的内部拆分、排期由 human:李伟 自行决策建单（参照 DR/TA 模式）；QPOL-01/03/05/07 口径 🟡 项在契约中标注临时默认，甲方拍板后闭合"
-    update_time: "2026-11-02T15:16:03+08:00"
+    update_time: "2026-11-03T00:12:57+08:00"
 
   - id: CROSS-MCP-7CHAIN-L03
     evidence: "agent-delivery/agent-handoffs/CROSS-MCP-7CHAIN-L03.md"
@@ -46989,3 +46990,52 @@ tasks:
       - "对比会话槽不写入专题对比篮；生成研报跳转在合入后的 dev 上可走通"
       - "pnpm type-check、自检、build 三绿；handoff 写明哪些块仍是 501"
     update_time: "2026-11-03T00:09:24+08:00"
+  - id: POL-DISPLAY-SURVEY-L01
+    title: "科技政策跟踪 — 存量调研（页面×任务×指标）"
+    status: "ready"
+    agent: "arch-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "2026-11-03 补建。监管 human:徐滕强。调研定稿，不是接口契约，也不是系统详细设计。初稿已在展示系统集成目录的对照文件，本单补全七页判定后定稿。下游是 POL-DISPLAY-SDD-L01。"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对照-科技政策跟踪-存量任务与依赖.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/DS10-12-科技政策跟踪/USM-DS10-12-科技政策跟踪.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POLICY-模块开发规划与任务拆分.md"
+    definition_of_done:
+      - "七页（DS-10、DS-11、DS-12、PC-1～PC-4）每页写清：对应用户故事、SRS 叶、已有任务号、metric_id、判定（可接统计读面 / 模型未注册则 501 / 跨项索引）"
+      - "专题 E-E7-POLICY-M1、门户政策扶持十条、政策 GDF 派单包只索引，不写成展示系统新建实现任务"
+      - "定稿落盘并写 handoff。可在已有初稿《对照-科技政策跟踪-存量任务与依赖.md》上补全，不另起一份平行清单"
+      - "不改业务仓，不写接口字段表，不新建前端复刻单"
+    update_time: "2026-11-03T00:12:46+08:00"
+  - id: POL-DISPLAY-SDD-L01
+    title: "科技政策跟踪 — 系统详细设计说明书"
+    status: "backlog"
+    agent: "arch-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: "2026-11-03 补建。监管 human:徐滕强。这是系统详细设计说明书，不是 BE-POL-CONTRACT-01 的 API-POL。契约单开工前以本说明书为输入。注册表更新工具不能改已有单的 depends_on，故契约单的硬依赖仍为空，WBS 把本单列为契约前置。"
+    depends_on:
+      - "POL-DISPLAY-SURVEY-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/05-功能-科技政策跟踪.md"
+      - "agent-delivery/ARCH-DISPLAY-01.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对照-科技政策跟踪-存量任务与依赖.md"
+    definition_of_done:
+      - "系统详细设计说明书落盘，覆盖：调用链（前端 → gkxlumen-display /display/v1/policy → Python /internal）、资源划分、每个展示区块挂哪些 metric_id、同步读 ADS 还是 Job、未注册模型的 501 与空态"
+      - "书面裁定 E-E7-POLICY-M1-L06 不是展示实现路径；同一算法可以复用，URL 不复用专题 /topic/v1/policy"
+      - "写清与专题政策、门户政策扶持、第 6 项 GDF、第 7 项读图的边界。不新开这些范围内的实现任务"
+      - "不写 OpenAPI 字段表。路径、DTO、枚举留给 BE-POL-CONTRACT-01"
+      - "会签名单按展示详设导读：架构、算法、数据、产品。未会签不算本单完成"
+    update_time: "2026-11-03T00:12:54+08:00"
