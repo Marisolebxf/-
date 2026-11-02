@@ -41419,15 +41419,18 @@ tasks:
       - "架构合规自检：调用链 前端→Java→Python /internal、LLM 只在算法侧且 Key 不出集群 Secret、无 RustFS 新写路径、Design.md §7.4/D9 角标对齐"
     update_time: "2026-10-27T20:02:54+08:00"
   - id: LUMEN-SVC-JAVA-SVC-REPORT-ARTIFACT-L01
-    evidence: |
-      全模块共性问题修复 6373b88 已推 lumen-svc-platform dev；评审 P1 修复 ecf7d34（培育四维+深圳 completeness 等中文标签）已推（merge 后 2c1bd7c）；17 用例绿；P2 已登记客户决策清单 Q-SVCCHAIN-02（commit 3c627f25）；registry blocked→in_progress 已推（4e7a9469）。待 CI dev 发布后在线复测培育/覆盖报告 PDF。
+    model_used: "composer"
+    cost_warn: "green"
+    actual_tokens: 300000
+    actual_cost: 0.75
+    evidence: "agent-handoffs/LUMEN-SVC-JAVA-SVC-REPORT-ARTIFACT-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T12:44:42.785Z"
     last_seen_at: "2026-10-26T12:44:42.785Z"
     lock_until: "2026-10-26T16:44:42.785Z"
     claimed_by: "agent:api-agent"
     title: "服务链 8 分析页报告下载全挂 — Java 产物链扩 svc *_report 白名单（大单）"
-    status: "in_progress"
+    status: "testing"
     agent: "api-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -41438,9 +41441,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      2026-10-26 human:徐滕强 拍板：服务链全部 8 个分析页的「生成/查看报告→下载 PDF」均报「功能尚未开放或不支持的 analysisType」；根因为 10-20 LUMEN-SVC-FE-MANUAL-FIX-L01（29793b3）前端产物类型 ${leaf}_report（如 shortboard_report）未在 Java ArtifactAnalysisTypes 登记（仅企业域 3 报告 3 导出），demo 原型为纯前端 PDF 渲染可下载，lumen 复刻改走 Java 异步产物链后后端能力缺失。大单统一修 Java 侧，前端零改动。监管人 human:徐滕强。
-      2026-10-28 api-agent：全模块共性修复 6373b88 已推 dev（org_coverage matrix 兜底/org_trend heat_by_field/维度分与深圳指标中文化/narration 尾章）；Bugbot 评审 P1 两处英文 code 泄漏已修（培育四维+completeness 等，commit ecf7d34 待推），17 用例绿。P2 已登记客户决策清单 Q-SVCCHAIN-02。当前阻塞：GitLab 整站 403（nginx 层）push 被拒，恢复后 pull --no-rebase 重推。
+    note: "lumen-svc-platform 6b7e255 domain block PDF；联调通过。"
     collaborators:
       - "qa-agent"
     touched_files:
@@ -41465,7 +41466,7 @@ tasks:
       - "测试：SvcAnalysisTypesTest / AnalysisTaskServiceImplSvcJobTest / ArtifactAnalysisTypesTest 扩 8 类型的 create→snapshot→render→asset 全链用例，mvn 全绿；禁止回归企业域 3 报告 3 导出"
       - "回归验证：K8s dev 发布后，服务链短板分析页真实发起 shortboard_report 产物任务成功并下载 PDF（截图/日志入 evidence）；其余 7 叶至少抽 2 叶验证 create 成功"
       - "handoff 按 7 项合规自检（含 D8/D9/D10/D12/D14）+ cost 四字段回填；ponytail: full"
-    update_time: "2026-10-28T14:39:29+08:00"
+    update_time: "2026-11-02T16:03:32+08:00"
   - id: DOC-SVC-ORG-COVERAGE-ANALYSIS-CHAIN-L01
     cost_warn: "green"
     model_used: "composer"
@@ -45993,9 +45994,18 @@ tasks:
       - "不代替 SYSINT-06-15-L01。handoff 路径 agent-delivery/agent-handoffs/SYSINT-06-21-L01.md"
     update_time: "2026-11-02T13:37:36+08:00"
   - id: FE-POLICY-REPORT-REAL-L01
+    model_used: "composer"
+    evidence: "agent-handoffs/FE-POLICY-REPORT-REAL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 180000
+    actual_cost: 0.45
+    claimed_at: "2026-11-02T08:03:22.864Z"
+    last_seen_at: "2026-11-02T08:03:22.864Z"
+    lock_until: "2026-11-02T12:03:22.864Z"
+    claimed_by: "agent:frontend-agent"
     supervised_by: "human:孔东"
     title: "lumen-ui-topic — 政策分析三项 HTML 报告覆盖结果板 + 下载（时序/区域对比/深圳现状）"
-    status: "ready"
+    status: "testing"
     agent: "frontend-agent"
     epic: "E-POLICY-PDR"
     priority: "P1"
@@ -46005,8 +46015,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 400000
-    note: |
-      对照 FE-ENT-EVAL-REPORT-REAL-L01 与产业链块式报告。现政策三 Host 仍是七段文字摘要，盖不住结果板。接口侧 policy:report:export 块式 PDF 已在 lumen-svc-platform 接入。本单只改 lumen-ui-topic。监管人 human:孔东，待其 frontend-agent 认领。
+    note: "lumen-ui-topic b18584a；联调通过：块式报告与 Java domain-block-report 章节对齐。"
     touched_files:
       - "src/components/policy/PolicyTimeseriesReportHost.vue"
       - "src/components/policy/PolicyRegionalReportHost.vue"
@@ -46025,11 +46034,20 @@ tasks:
       - "报告正文不得出现：平铺、跟…一样、同源摘要、以结果页为准、页签、USE_MOCK、仓库名，以及未解析的产业编码（chain: 或裸编号）。锚点显示产业或技术名称。评审角标不进报告正文。"
       - "reportExport.selfcheck.mjs 追加三类型章节断言与提示词扫描；vue-tsc 绿。"
       - "handoff + cost 四字段回填；ponytail: full。监管人 human:孔东。"
-    update_time: "2026-11-02T13:32:53+08:00"
+    update_time: "2026-11-02T16:03:31+08:00"
   - id: FE-SVC-REPORT-REAL-L01
+    model_used: "composer"
+    evidence: "agent-handoffs/FE-SVC-REPORT-REAL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 220000
+    actual_cost: 0.55
+    claimed_at: "2026-11-02T08:03:22.987Z"
+    last_seen_at: "2026-11-02T08:03:22.987Z"
+    lock_until: "2026-11-02T12:03:22.987Z"
+    claimed_by: "agent:frontend-agent"
     supervised_by: "human:孔东"
     title: "lumen-ui-topic — 产业服务链八叶 HTML 报告覆盖结果页 + 下载"
-    status: "ready"
+    status: "testing"
     agent: "frontend-agent"
     epic: "E7-产业服务链分析"
     priority: "P1"
@@ -46039,7 +46057,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 500000
-    note: "对照 FE-ENT-EVAL-REPORT-REAL-L01。现服务链 HTML 是七段占位（同源摘要），盖不住结果页。接口侧八叶 *_report 已改为中文块式 PDF。本单只改 lumen-ui-topic。监管人 human:孔东，待其 frontend-agent 认领。"
+    note: "lumen-ui-topic b18584a；联调通过：八叶 HTML 与 SvcBlockReportAssembler 一致。"
     touched_files:
       - "src/components/report/serviceDomainReports.ts"
       - "src/components/report/svcBlockReportDocument.ts"
@@ -46058,7 +46076,7 @@ tasks:
       - "报告正文不得出现：平铺、跟…一样、同源摘要、以结果页为准、页签、USE_MOCK、仓库名，以及未解析的产业编码。产业显示中文名称。评审角标不进报告正文。"
       - "替掉 serviceDomainReports.ts 里「同源摘要」占位文。reportExport.selfcheck.mjs 追加八叶章节断言与提示词扫描；vue-tsc 绿。"
       - "handoff + cost 四字段回填；ponytail: full。监管人 human:孔东。与 FE-POLICY-REPORT-REAL-L01 同改 reportExport.selfcheck.mjs，只追加本模块断言。"
-    update_time: "2026-11-02T13:32:54+08:00"
+    update_time: "2026-11-02T16:03:31+08:00"
   - id: SYSINT-06-21-01-L01
     model_used: "claude-sonnet-4.5"
     cost_warn: "green"
