@@ -6,6 +6,7 @@
 > **2026-10-26 `human:淮政玮` 口径**：「展示系统本身就是集成，整体放到展示系统集成」。据此，展示系统的跨页公共物与技术架构设计件也归第 5 项，不再散落在原页面计划。
 > **2026-10-27 `human:李伟` 建叶登记**：原以「挂接登记」记入的五件转为正式叶，任务号不变（沿用已有 ID，未新建）；原无监管人的 `BE-TS-IMPL-01`、`BE-TS-DATA-01` 由 `human:李伟` 认领。派单说明见 `agent-handoffs/科技发展态势-TS/派单说明/`。
 > **2026-10-28 `human:李伟` 挂接**：创新监测三页（DS-04/05/06）数据打通长任务 `SITUATION-IM`（**23 叶**，WBS-05-19-01～23）挂接 **§4.4**，授权句已生效；边界口径：**可改接口契约，不可改 UI 与实现效果**（角标挂载点属评审层叠加，须满足总控 §0.1 三条）。总控 / 总派单 / 契约 / 前置条件四份：`agent-handoffs/科技发展态势-TS/SITUATION-IM-*.md`；决策纪要本夹 `纪要/2026-10-28-SITUATION-IM-边界与裁定.md`。
+> **2026-11-03 挂接**：科技政策跟踪正式复刻单（`FE-POL-*`、`BE-POL-CONTRACT-01`）已在 registry，本表原先只索引两条 demo 原型单。改为父行 `WBS-05-23` + 子行 §4.1b。同日只补建真数链三张待排期单：`BE-POL-IMPL-01`、`BE-POL-DATA-01`、`FE-POL-REAL-01`。前后依赖见 [对照-科技政策跟踪-存量任务与依赖.md](./对照-科技政策跟踪-存量任务与依赖.md)。专题 `E-E7-POLICY-M1-L06` 不作为展示前置。
 > 本表列为「开始时间」时未标注的，均为**待填写**。不自行补日期。
 
 ---
@@ -29,6 +30,7 @@
 - `WBS-05-18-0N` 是 `WBS-05-18` 的**子任务行**（SITUATION-ENT 长任务管线 · 企业维度数据跑通，2026-10-27 挂接），口径同 `WBS-05-08-0N`，不另算菜单。
 - `WBS-05-19-0N` 是 `WBS-05-19` 的**子任务行**（SITUATION-IM 长任务管线 · 创新监测三页数据打通 + 评审就绪，2026-10-28 挂接），口径同上，不另算菜单。
 - `WBS-05-04-01` 是 `WBS-05-04` 的**子任务行**（科技数据资源四视窗对照已建成 GDF，2026-11-02 建叶），不另算菜单。
+- `WBS-05-23-0N` 是 `WBS-05-23` 的**子任务行**（科技政策跟踪）。05-23-01～10 挂已有复刻单与契约单；05-23-11～13 是 2026-11-03 补建的实现、对齐、真联调。不另算菜单。
 - 一个 WBS 行可以索引多个任务 ID；反过来一个任务只挂一行，不重复编号。
 - **计划叶 `LT-5-*` 不是任务**。`05-展示系统集成工作计划.md` §0 写明「计划叶 ID 不是 registry 任务」。本表只在 §1 的「计划叶」列引用它作排期对照，不当任务号用。
 
@@ -74,10 +76,10 @@
 | 科技发展态势 | DS-08 | 科技指数 | WBS-05-21 | `FE-TS-08A`(integration)、`FE-DISPLAY-TECHINDEX-NEW-L01`(integration)、`FE-DISPLAY-TECHINDEX-MOCK-ALGO-L01`(pending_test)、`DS-08-METRIC-OPEN-L01`(integration) | 九域 + 8 件套 + 算法口径页已出，布局溢出由 fix 8a46d7d 修；mock 权重（40/30/20/10）一致性已修待抽测。**只做展示侧，不做智库后台** | LT-5-SIT-DS08 |
 | 科技发展态势 | DS-09 | 科技发展规划 | WBS-05-22 | `FE-TS-09A`(integration)、`DS-09-METRIC-OPEN-L01`(integration) | 综合规划 / 重点领域 / 研究分析可切换；预警模型可 501，不编制规划正文 | LT-5-SIT-DS09 |
 | 科技发展态势 | — | 维护管理（M10 · `/trend/maintain/*`，不另开一级菜单） | WBS-05-24 | `FE-TS-10A`(integration) | 图层与数据源、技术图谱关键实体与关系维护；无权限是降级不是白屏。**报价表划掉且工作量为 0 的「维护技术图谱」不实现** | LT-5-SIT-OPS |
-| 科技政策跟踪 | DS-10 | 科创政策全景 | WBS-05-23 | `DISPLAY-POLICY-GAP-AC-L01`(in_progress)、`FE-DISPLAY-POLICY-TRACK-OPT-20260817-L01`(in_progress) | GAP 档 A 37 条 + 档 C 校验闸门已在 demo 仓落地**未 commit**，待 `human:淮政玮` 本地 `pnpm dev` 验；原型优化仍 in_progress | LT-5-POL-DS10 |
-| 科技政策跟踪 | DS-11 | 政策分析评价 | WBS-05-23 | 同上 | 三类报告可视化 | LT-5-POL-DS11 |
-| 科技政策跟踪 | DS-12 | 政策效果推演 | WBS-05-23 | 同上 | 效果预估与推演页可切换；与专题 `.8.6` 分键（推演 ≠ 布局推荐） | LT-5-POL-DS12 |
-| 科技政策跟踪 | PC-1～PC-4 | 政策数据治理 / 智能政策拆解 / 多维政策对比 / 智能研报生成 | WBS-05-23 | 同上 | 核增四叶，计入政策跟踪不另开一级菜单；演示级边界写在页上。**PC-4 的 Job 未注册则导出入口按 501 / 空态** | LT-5-POL-PC1～PC4 |
+| 科技政策跟踪 | DS-10 | 科创政策全景 | WBS-05-23-03 / 04 | `FE-POL-01A`(pending_test)、`FE-POL-01B`(integration)；基座 `FE-POL-S01`(pending_test) | 检索主链路待测试；其余 4 Tab 联调中，硬依赖 01A。真数等 `BE-POL-CONTRACT-01` | LT-5-POL-DS10 |
+| 科技政策跟踪 | DS-11 | 政策分析评价 | WBS-05-23-05 | `FE-POL-02A`(pending_test) | 整页复刻待测试。硬依赖只有基座，与全景可并行。模型未注册保持 501 | LT-5-POL-DS11 |
+| 科技政策跟踪 | DS-12 | 政策效果推演 | WBS-05-23-06 | `FE-POL-03A`(integration) | 双工作台联调中，停本地待验收。推演 ≠ 专题布局推荐 | LT-5-POL-DS12 |
+| 科技政策跟踪 | PC-1～PC-4 | 政策数据治理 / 智能政策拆解 / 多维政策对比 / 智能研报生成 | WBS-05-23-07～10 | `FE-POL-04A`(in_progress)、`05A`(integration)、`06A`(integration)、`07A`(ready_to_sign) | 四页硬依赖都只是基座。ChainSteps 归 04A，06A/07A 仍是占位。PC-4 Job 未注册则 501 | LT-5-POL-PC1～PC4 |
 | 科技人才态势 | DS-13～DS-16 | 全球领域人才态势 / 关注地区人才态势 / 重点科技人才画像 / 人才引进推荐评估 | WBS-05-03a / 03b | `SYSINT-05-03A-L01`(ready)、`SYSINT-05-03B-L01`(ready) | **只做菜单壳与非三要素区块**；四子页不重做，供数是 WBS-02-01（第 2 项）；资讯、职位变动、奖项荣誉、引进成本、尽调五类空态 | LT-5-TAL-DS13～DS16 |
 | 科技数据资源 | DS-17～DS-20 | 总体 / 接入 / 主题 / 应用四视窗 | WBS-05-04 | `SYSINT-05-04-L01`(claimed，监管 淮政玮 → 实际认领 孔东) | 四个视窗可切换；共建数据未到为空态。R6：data 组供方未找到（原华为云 2026-10-15 退出）。对照已建成 GDF 的分析见 WBS-05-04-01 | LT-5-RES-DS17～DS20 |
 | 科技知识图谱 | DS-21～DS-24 | 分析展示 / 指标展示 / 算法展示 / 服务展示 | **跨项索引（第 7 项）** | `FE-DISPLAY-KG-SERVICE-ALIGN-L01`(review) | 本表**不建叶**。第 7 项负责页面与查图；`FE-DISPLAY-KG-SERVICE-ALIGN-L01` 是 demo 侧 DS-24 服务展示合规对齐，原地更新 `ServiceDisplay.jsx` | LT-5-KG-DS21～DS24 |
@@ -139,7 +141,7 @@
 | WBS-05-20 | 科技创新评估（DS-07） | 孔东 | `lumen-ui-science-pc` | **claimed**（P2） | `FE-TS-07A` 仅 claimed，复刻未开工 | 评估对象范围未补则按详设空态 | 计划 11-03 → 11-04（结束日 = V1 测试末日） |
 | WBS-05-21 | 科技指数（DS-08） | 孔东 / 淮政玮 | `lumen-ui-science-pc`（正式）、`demo-ui-science`（原型侧） | **integration** | `FE-TS-08A` handoff `科技发展态势-TS/FE-TS-08A.md`（三级指标树 / 34 省地图 / 专家 H 指数 / 四维趋势 / 排行榜 / 20 人评议只读）；`FE-DISPLAY-TECHINDEX-NEW-L01` 九域 + 王惠 8 件套 + 唐绍祖算法口径，布局溢出由 fix 8a46d7d 修；`FE-DISPLAY-TECHINDEX-MOCK-ALGO-L01` mock 权重 40/30/20/10 派生一致已修，pending_test | **只做展示侧，不做智库后台**。专家评议 20 人只读 | 计划 11-04 → 11-05（晚于 V1 测试） |
 | WBS-05-22 | 科技发展规划（DS-09） | 孔东 | `lumen-ui-science-pc` | **integration** | `FE-TS-09A` handoff `科技发展态势-TS/FE-TS-09A.md`：综合规划 / 重点领域 / 研究分析可切换 | 预警模型可 501；**不编制规划正文** | 计划 11-05 → 11-06 |
-| WBS-05-23 | 科技政策跟踪（DS-10～DS-12 + 核增 PC-1～PC-4） | 淮政玮 / 郭万迎 | `demo-ui-science`（原型侧）；正式仓落地未排 | **in_progress** | `DISPLAY-POLICY-GAP-AC-L01` handoff `agent-handoffs/展示系统-政策跟踪/DISPLAY-POLICY-GAP-AC-L01.md`：6 簇代码已落地**未 commit**，待 `human:淮政玮` 本地 `pnpm dev` 验 demo，本单禁 git commit。`FE-DISPLAY-POLICY-TRACK-OPT-20260817-L01` 仍 in_progress（**无同名 handoff 文件**） | PC-4 的 Job 未注册则导出入口按 501 / 空态。冻范围依据为详设 §5 与 `USM-DS10-12-科技政策跟踪.md` | 计划 10-20 → 10-28（DS-10～12 窗内，PC 属 V2） |
+| WBS-05-23 | 科技政策跟踪（DS-10～DS-12 + 核增 PC-1～PC-4） | 孔东（FE）/ 李伟（契约与实现） | `lumen-ui-science-pc`；demo 原型另计 | **混** | 复刻单见 §4.1b。2026-11-03 补建三张待排期：`BE-POL-IMPL-01`、`BE-POL-DATA-01`、`FE-POL-REAL-01`。demo 侧仍挂 `DISPLAY-POLICY-GAP-AC-L01`(integration)、`FE-DISPLAY-POLICY-TRACK-OPT-20260817-L01`(in_progress，无同名 handoff)。依赖全文：[对照-科技政策跟踪-存量任务与依赖.md](./对照-科技政策跟踪-存量任务与依赖.md) | mock 复刻不等契约。真联调等契约、实现、统计对齐。专题 `E-E7-POLICY-M1-L06` 不是本行前置 | 计划 10-20 → 10-28（DS-10～12 窗内，PC 属 V2）；正式复刻 2026-11-02 已开工 |
 | WBS-05-24 | 维护管理（M10 · `/trend/maintain/*`） | 孔东 | `lumen-ui-science-pc` | **integration**（P2） | `FE-TS-10A` handoff `科技发展态势-TS/FE-TS-10A.md`：图层与数据源配置 / 维护技术图谱 / 关键实体与关系维护 / 已有能力入口；无权限是降级不是白屏 | 挂 DS-01 / DS-02，**不另开一级菜单**。**报价表划掉且工作量为 0 的「维护技术图谱」不实现** | 计划 11-06 → 11-07 |
 
 > **页数口径未统一（待定项）**：`formal-docs-registry.yaml` 记 **34 页**（M1 态势 9 页），`ARCH-DISPLAY-01.md` §6.3 记 **35 页**（trend 10 页）。差异应在于 `/trend/maintain/*`（本表 WBS-05-24）是否计入展示页。**会签前需定口径**；定之前本表两说并列，不自选一个。
@@ -151,6 +153,27 @@
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
 | WBS-05-04-01 · `SYSINT-05-04-01-L01` | 科技数据资源四视窗：对照已建成 GDF，分析哪些展示需求可从平台得到 | 淮政玮 | `gkx-orchestration` | **done**（2026-11-03 `human:淮政玮` 签收） | 已签收。结论见 [SYSINT-05-04-01-L01.md](../../../agent-handoffs/SYSINT-05-04-01-L01.md)：70 条里可得到 0、部分得到 29、得不到 41，没有一条能直接填进四视窗 | 需求清单认详设 `07-功能-科技数据资源.md` 与 `科技数据资源-DR/DR-模块开发规划与任务拆分.md` §4（DS-17～20，seq 330–399）。不等 `SYSINT-05-04-L01` 页面做完。分析结论落盘即本叶完成，不是可对端，不新建 GDF 作业 | 无截至时间 |
+
+### 4.1b WBS-05-23 的子任务（科技政策跟踪 · 只挂已有单）
+
+> 2026-11-03 挂接。父行仍是 WBS-05-23。05-23-01～10 是当时已有任务；05-23-11～13 同日补建，状态均为 backlog。依赖全文见 [对照-科技政策跟踪-存量任务与依赖.md](./对照-科技政策跟踪-存量任务与依赖.md)。
+> mock 复刻链：`FE-POL-S01` → 各页；只有 `FE-POL-01B` 再硬依赖 `FE-POL-01A`。真数链：`BE-POL-CONTRACT-01` 冻结之后才允许建展示 BFF 实现单；统计值还要等 `GDF-POLICY-MDC-STAT-L01`。专题 `E-E7-POLICY-M1-L06` 不进下表。
+
+| 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
+|---|---|---|---|---|---|---|---|
+| WBS-05-23-01 · `FE-POL-S01` | 政策跟踪前端基座（菜单 3→7、mock 种子、api 双轨、35 指标镜像） | 孔东 | `lumen-ui-science-pc` | **pending_test** | handoff `科技政策跟踪-POL/FE-POL-S01.md`。registry note 写已推 `origin/dev`、转待测试；handoff 头仍写停本地。状态以 registry 为准 | 无硬依赖。产品包 `DS10-12-PACK-L01` 已完成 | 无截至时间 |
+| WBS-05-23-02 · `BE-POL-CONTRACT-01` | 7 页 63 叶 Java 契约（API-POL）。本行就是接口详设，不另开详设单 | 李伟 | `lumen-svc-platform` | **backlog** | 未开工。规划 `科技政策跟踪-POL/POLICY-模块开发规划与任务拆分.md` §3.1 | 注册表无硬依赖。冻结前 FE 不猜路径。实现单由李伟在冻结后自拆，现在没有 | 无截至时间 |
+| WBS-05-23-03 · `FE-POL-01A` | 科创政策全景 · 检索主链路 | 孔东 | `lumen-ui-science-pc` | **pending_test** | handoff `科技政策跟踪-POL/FE-POL-01A.md`。走查后已推 `origin/dev` | 硬依赖 `FE-POL-S01` | 无截至时间 |
+| WBS-05-23-04 · `FE-POL-01B` | 科创政策全景 · 动向 / 舆情 / 比对 / 订阅 | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-01B.md`。note 写前端链路联调通过，状态仍为联调中 | 硬依赖 `FE-POL-01A` | 无截至时间 |
+| WBS-05-23-05 · `FE-POL-02A` | 政策分析评价整页 | 孔东 | `lumen-ui-science-pc` | **pending_test** | handoff `科技政策跟踪-POL/FE-POL-02A.md`。已推 `origin/dev` | 硬依赖 `FE-POL-S01`。与全景无硬依赖 | 无截至时间 |
+| WBS-05-23-06 · `FE-POL-03A` | 政策效果推演整页 | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-03A.md`。停本地待验收 | 硬依赖 `FE-POL-S01`。模型未注册则真路径 501 | 无截至时间 |
+| WBS-05-23-07 · `FE-POL-04A` | 智能政策库构建（政策数据治理） | 孔东 | `lumen-ui-science-pc` | **in_progress** | 无同名 handoff | 硬依赖 `FE-POL-S01`。ChainSteps 归本单，06A/07A 的占位等本单合入后替换 | 无截至时间 |
+| WBS-05-23-08 · `FE-POL-05A` | 智能政策拆解 | 孔东 | `lumen-ui-science-pc` | **integration** | note 写 handoff 已落盘；主仓目录未见 `FE-POL-05A.md` | 硬依赖 `FE-POL-S01`。文本解析模型未注册则 501 | 无截至时间 |
+| WBS-05-23-09 · `FE-POL-06A` | 多维政策对比 | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-06A.md`。停 worktree 待验收 | 硬依赖 `FE-POL-S01`。生成研报跳 07A，须两边合入同一 `dev` 再验 | 无截至时间 |
+| WBS-05-23-10 · `FE-POL-07A` | 智能研报生成 | 孔东 | `lumen-ui-science-pc` | **ready_to_sign** | 主仓目录未见 `FE-POL-07A.md`。note 写未 commit / push，ChainSteps 仍是占位 | 硬依赖 `FE-POL-S01`。Job 未注册则导出 501 | 无截至时间 |
+| WBS-05-23-11 · `BE-POL-IMPL-01` | 展示聚合接口实现（`/display/v1/policy/**`） | 李伟 | `lumen-svc-platform` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-CONTRACT-01`。契约未冻结不开工。不实现、不转调 `/topic/v1/policy` | 无截至时间 |
+| WBS-05-23-12 · `BE-POL-DATA-01` | 统计读面与已有政策 ADS 对齐 | 李伟 | `gkx-orchestration` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-CONTRACT-01`、`GDF-POLICY-MDC-STAT-L01`。不新开 GDF 包，不写第二套统计脚本 | 无截至时间 |
+| WBS-05-23-13 · `FE-POL-REAL-01` | 七页切真实接口并联调 | 孔东 | `lumen-ui-science-pc` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-IMPL-01`、`BE-POL-DATA-01` 与 `FE-POL-01B`、`02A`、`03A`、`04A`、`05A`、`06A`、`07A`。模型未注册保持 501 | 无截至时间 |
 
 ### 4.2 WBS-05-08 的子任务（科技交流 / 竞赛 / 传播）
 
@@ -262,6 +285,8 @@
 | backlog | **3** | 05-13 `BE-TS-IMPL-01`；05-14 `BE-TS-DATA-01`；05-26 批 B `FE-DISPLAY-SMALL-BATCH-B` |
 | ready | **7** | 05-01a / 01b / 02a / 02b / 03a / 03b、05-07（全部 `SYSINT-05-0X-L01`） |
 | **合计** | **65** | 另有 05-09（未建任务）不计入。2026-10-27 新增 ARCH-TS-L3 两件；SITUATION-ENT-A0-L01（05-18-01）已建并 `ready_to_sign`。另有 05-18-02～05（管线 C1/C2/C3/D1，registry 待建）不计入 |
+
+> **2026-11-03**：上表仍是 10-31 快照，**没有**把 §4.1b 的政策单算进去（含当日补建的 `BE-POL-IMPL-01`、`BE-POL-DATA-01`、`FE-POL-REAL-01` 三张 backlog）。`DISPLAY-POLICY-GAP-AC-L01` 现为 integration，不再算 in_progress。政策单状态以 §4.1b 为准，不在这里重算总条数。
 
 ### 6.2 当前卡点
 

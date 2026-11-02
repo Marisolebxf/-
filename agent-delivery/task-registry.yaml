@@ -46902,3 +46902,90 @@ tasks:
       - "得不到的写明缺的是平台能力、供数还是口径；未见不写成已有；不把平台建完写成每个数字都已有数"
       - "结论落盘 agent-delivery/agent-handoffs/SYSINT-05-04-01-L01.md；不改业务仓，不新建 GDF 派单包，不代替 SYSINT-05-04-L01 的页面交付"
     update_time: "2026-11-03T00:03:45+08:00"
+  - id: BE-POL-IMPL-01
+    title: "科技政策跟踪 — 展示聚合接口实现（/display/v1/policy）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 300000
+    note: |
+      2026-11-03 补建。监管 human:李伟。只实现 BE-POL-CONTRACT-01 冻结后的契约。展示对外只走 /display/v1/policy/**，禁止实现或转调 /topic/v1/policy（不把 E-E7-POLICY-M1-L06 当前置）。Java 不写算法；统计只读 ADS；模型未注册返回 501。写操作是否服务端化以契约评审结论为准。契约未冻结不开工。
+    depends_on:
+      - "BE-POL-CONTRACT-01"
+    touched_files:
+      - "lumen-svc-platform gkxlumen-display /display/v1/policy"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POLICY-模块开发规划与任务拆分.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对照-科技政策跟踪-存量任务与依赖.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/05-功能-科技政策跟踪.md"
+    definition_of_done:
+      - "按已冻结的 API-POL 实现 /display/v1/policy/**，路径、DTO、枚举与契约一致，经 gkxlumen-display 对外"
+      - "不新增 /topic/v1/policy 路由，不把展示页转到专题政策接口"
+      - "统计读面只读已发布 ADS，返回带 metric_id；没有批次则空态，不造数"
+      - "焦点、力度、效果、推演、文本解析、研报等模型未注册时返回 501；推演不得调用政策布局推荐"
+      - "请求带 X-Trace-Id；写操作仅实现契约已拍板要服务端化的部分"
+    update_time: "2026-11-03T00:09:04+08:00"
+  - id: BE-POL-DATA-01
+    title: "科技政策跟踪 — 统计读面与已有政策 ADS 对齐"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "2026-11-03 补建。监管 human:李伟。统计落数仍归 GDF-POLICY-MDC-STAT-L01，本单只把冻结契约里的统计 metric_id 对到已有 ADS。不新开 GDF 派单包，不写第二套 STAT 脚本，不改 D4。模型类指标不在本单计算。"
+    depends_on:
+      - "BE-POL-CONTRACT-01"
+      - "GDF-POLICY-MDC-STAT-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对照-科技政策跟踪-存量任务与依赖.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/17-指标离线加工-POLICY-MDC.md"
+    definition_of_done:
+      - "出一份对照：契约中每个统计 metric_id 对应的 ADS 表、字段、批次，或写明对不上"
+      - "对不上的只记缺口，不新建派单包、不新建表、不补假数"
+      - "模型、图谱抽取、研报 Job 不纳入本单落数"
+      - "结论交给 BE-POL-IMPL-01 使用，Java 仍只读已发布批次"
+    update_time: "2026-11-03T00:09:12+08:00"
+  - id: FE-POL-REAL-01
+    title: "科技政策跟踪 — 七页切真实接口并联调"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: "2026-11-03 补建。监管 human:孔东。这是七页 mock 复刻之后的真联调，不再做一遍页面。前置页面单未完或契约实现未完时保持待排期。"
+    depends_on:
+      - "BE-POL-IMPL-01"
+      - "BE-POL-DATA-01"
+      - "FE-POL-01B"
+      - "FE-POL-02A"
+      - "FE-POL-03A"
+      - "FE-POL-04A"
+      - "FE-POL-05A"
+      - "FE-POL-06A"
+      - "FE-POL-07A"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对照-科技政策跟踪-存量任务与依赖.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POLICY-模块开发规划与任务拆分.md"
+    definition_of_done:
+      - "USE_MOCK=false 时七页走已冻结的 /display/v1/policy/**，页面不再用 fixture 填数"
+      - "统计数字使用对照表上的 metric_id；D4 仍为 mock 时保留测试角标，不把状态改绿"
+      - "模型未注册的区块显示 501 或空态，推演页不接布局推荐结果"
+      - "对比会话槽不写入专题对比篮；生成研报跳转在合入后的 dev 上可走通"
+      - "pnpm type-check、自检、build 三绿；handoff 写明哪些块仍是 501"
+    update_time: "2026-11-03T00:09:24+08:00"
