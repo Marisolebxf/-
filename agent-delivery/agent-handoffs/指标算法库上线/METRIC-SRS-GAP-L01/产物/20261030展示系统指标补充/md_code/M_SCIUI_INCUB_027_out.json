@@ -1,0 +1,177 @@
+{
+ "metric_id": "M_SCIUI_INCUB_027",
+ "batch": "S3-07",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:1070",
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:941",
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/mock/incubationCarrierMock.js:320"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「成长评分趋势」指标名；语义锚 SRS 序号 546 企业成长轨迹与历史数据（主需求 :3701 同文）——成长曲线在案、评分口径无定义"
+ },
+ "facts": {
+  "ui_mount": "IncubationCarrierPage.jsx:1070（成长过程跟踪阶段 SoftChartFrame「成长评分趋势」）+ :941 buildGrowthScoreTrendOption（yAxis 成长分 min70-max100 折线）",
+  "ui_chart_config": "yAxis min=70 max=100 name=成长分（:951-953）；企业下拉切换 selectedGrowthEnterpriseId（:1047-1057）",
+  "ui_mock_series": [
+   {
+    "enterprise": "深智传感科技",
+    "months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06"
+    ],
+    "scores": [
+     85,
+     87,
+     88,
+     89,
+     90,
+     91
+    ]
+   },
+   {
+    "enterprise": "宝创机器视觉",
+    "months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06"
+    ],
+    "scores": [
+     82,
+     84,
+     85,
+     87,
+     88,
+     88
+    ]
+   },
+   {
+    "enterprise": "湾区微流控芯片",
+    "months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06"
+    ],
+    "scores": [
+     76,
+     78,
+     79,
+     80,
+     81,
+     82
+    ]
+   }
+  ],
+  "ui_mock_score_range": [
+   76,
+   91
+  ],
+  "ui_mock_granularity": "月（6 点/企业，2026-01 至 2026-06）",
+  "ui_mock_note": "mock monthlyGrowthScore 手写常数（与 fundingTimeline 融资历程并列但不联动计算）——演示值，不参与支持度结论",
+  "dev_table_total": 542,
+  "dev_growth_word_tables": [
+   "gkxlumenx_dwd.enterprise_growth_trend"
+  ],
+  "dev_growth_hits_note": "growth 词族唯一命中 gkxlumenx_dwd.enterprise_growth_trend——列实读：region_id/stat_year/stat_month/new_enterprise_count（区域新设企业月度计数面，非企业成长分序列），0 行",
+  "dev_growth_trend_rows": 0,
+  "dev_enterprise_monthly_note": "dev enterprise_* 35 表无「企业×月度成长分」面：finance_history 为年度财务（39,959 行快照）、financing 为事件面（25,621 行）——无月度评分快照表",
+  "gkx_table_count": 280,
+  "gkx_incub_growth_word_tables": [],
+  "jiuxin_table_count_live": 218,
+  "jiuxin_incub_word_tables": [],
+  "jiuxin_score_family_note": "久新评分族最近邻排除：ads_talent_capability_assessment（99,996 行）/ads_talent_potential_result（100,000 行）是人才能力/潜力评分模型（talent_id 维），ads_technology_potential_* 是技术潜力——均无企业（enterprise）成长分语义；incub 词族 0 命中",
+  "srs_anchor": "SRS 创新载体孵化载体.md 序号 546「企业成长轨迹与历史数据」（同步企业注册时间、成长阶段、融资记录等历程信息，自动生成企业成长曲线）+ 主需求 :3701 同文",
+  "named_in_srs": false,
+  "named_note": "「成长评分趋势」指标名在三份说明书与主需求均未出现；语义锚为序号 546 成长轨迹功能分句（成长分构成与月度口径无定义）",
+  "authoritative_reference": "企业成长评分参照族：①火炬孵化绩效指标（收入增长/融资/知识产权/毕业）为企业成长性的官方维度；②工信部 2025 办法认定条件（营收增速>20% 企业占比/投融资占比）为成长信号阈值；③风投界 growth score 惯例=融资轮次进度+营收增速+团队规模复合——月度评分无统一法定口径，平台自定"
+ },
+ "derived": [
+  {
+   "key": "enterprise_growth_score_monthly_series",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『成长评分趋势』需企业月度成长分序列（评分模型+月度运营信号快照）——dev 无企业级评分面（growth_trend 是区域计数面 0 行）；gkx/久新 0 命中（久新评分族全为人才/技术维）→ 不可构建，按 B10 留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 企业月度成长分序列面",
+   "source": "dev",
+   "sql": "growth 词族扫 542 表 + enterprise_growth_trend 列实读",
+   "hits": 1,
+   "hit_detail": "唯一命中 enterprise_growth_trend 列为 region_id/stat_year/stat_month/new_enterprise_count——区域新设企业月度计数（非企业级成长分），且 0 行；企业×月度评分快照无表"
+  },
+  {
+   "probe": "dev 成长分评分模型输入（企业运营信号序列）",
+   "source": "dev",
+   "sql": "enterprise_* 35 表语义核",
+   "hits": 0,
+   "hit_detail": "finance_history 年度财务/financing 融资事件/news 新闻流均为事件或年度面——无月度评分模型输入快照；且无企业-载体入驻关系（同 INCUB_026 结论，独立留证）"
+  },
+  {
+   "probe": "gkx 企业成长分面（incub/growth 词族，280 表）",
+   "source": "gkx",
+   "sql": "information_schema.tables 扫 gkx",
+   "hits": 0,
+   "hit_detail": "0 命中——gkx 为论文/专利/机构/学者要素库"
+  },
+  {
+   "probe": "久新企业成长分面（incub 词族+评分族语义核，live 218 表复核）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES 词族过滤 + 评分族 rowcounts 快照",
+   "hits": 0,
+   "hit_detail": "incub 0 命中；评分族（talent_capability/potential、technology_potential）全为人才/技术维度，无企业成长分模型"
+  },
+  {
+   "probe": "需求原文「成长评分趋势」定义段",
+   "source": "doc",
+   "sql": "rg 成长评分|成长曲线 三份说明书+主需求",
+   "hits": 1,
+   "hit_detail": "序号 546「自动生成企业成长曲线」（主需求 :3701 同文）——曲线语义在案但成长分构成/月度口径无定义；「成长评分趋势」指标名 0 命中；mock 月度分无算法源"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：月度评分序列双层依赖（评分模型输入+月度快照）三源均无法构建 → 完全不支持",
+  "权威口径：企业成长评分无统一法定月度口径——火炬绩效维度（收入增长/融资/知识产权）为构成参照、工信部 2025 阈值（营收增速 20%/投融资 20%）为信号参照，平台需自定模型",
+  "mock 披露：3 企业 × 6 个月（76-91 分）手写单调递增常数；fundingTimeline 融资历程与 monthlyGrowthScore 并列展示但不联动（mock 层无计算关系）",
+  "同族件关系：INCUB_011（在孵企业成长分，L2 批）为当期截面分、本件为其月度时序形态；INCUB_026（载体活跃度）为载体级聚合——三件共享「评分输入维无承载」（本件独立留证）",
+  "升档路径：企业月度运营快照（融资/营收/知产按月落表）+成长分模型落库 → 完全转换支持；接入工商/税务月度数据源亦可"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "月度序列基期整体缺失（mock 仅 2026-01 至 2026-06 演示；三源无承载）"
+ ],
+ "base_years_note": "时序指标基期=序列起点；序列本身无承载是判档主因；非「缺年按 0 摊入」",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "3",
+   "6",
+   "76",
+   "91",
+   "70",
+   "100",
+   "0",
+   "1",
+   "546",
+   "3701",
+   "542",
+   "280",
+   "218",
+   "99996",
+   "100000"
+  ]
+ }
+}

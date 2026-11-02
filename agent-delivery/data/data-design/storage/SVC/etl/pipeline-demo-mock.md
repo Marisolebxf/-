@@ -7,7 +7,7 @@ element: SVC
 role: etl
 status: draft
 version: "2026-08-19"
-updated: 2026-08-19
+updated: 2026-11-02
 engine: multi
 task_id: DATA-SVC-STORAGE-S2-L02
 ---
@@ -66,3 +66,13 @@ md-extract 国内机构要素库（结构约定）
 - 平行 `gkx_service` space  
 - 改 `lumen-topic-py` / `lumen-algo-py` / `lumen-svc-platform` / `lumen-ui-topic`  
 - 改 `storage/CHAIN` / `industry-center`
+
+## 7. 2026-11-02 现网（本文件 §1 的「→ hang Nebula」不是一次触发）
+
+§1 那一行是 S2 指针，不是现网时序。实测：
+
+- `run-pipeline` / `svcseed` 写 circle、card、finance_event 和基础指标表，不写 hang，不写 Nebula。
+- 十模型是另一次 `POST /internal/svc/run-models`。
+- 图谱是另一次 `POST /internal/svc/graph/ner` 等；空请求默认 `dry_run=true`。
+- 正式库 `gkxlumenx_*` 同名结果表 0 行。GDF 作业未建。
+- 行数、ES、内容运营、图库未闭合项见 [`../02-asbuilt-process-chain.md`](../02-asbuilt-process-chain.md)。

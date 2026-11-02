@@ -1,0 +1,187 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_036",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1868",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1863",
+  "repos/demo-ui-science/src/pages/policy-tracking/simulation/estimate/EstimateWorkbench.jsx:614"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「资源利用效率」在主需求 4 处命中均为科学仪器共享/载体评价语境（非政策效果评估环境维）；「能耗产出比」三份需求真源 0 命中；主需求 1.1.1.1.4.2.3.1.4 多维度效果评估仅枚举「环境」维度无指标定义"
+ },
+ "facts": {
+  "gkx_table_count": 280,
+  "gkx_resource_like_tables": [],
+  "gkx_energy_col_hits": [
+   [
+    "dwd_material_virtual_structure",
+    "energy_above_hull"
+   ],
+   [
+    "dwd_material_virtual_structure",
+    "formation_energy_per_atom"
+   ],
+   [
+    "dwd_material_virtual_structure_bak_20260923",
+    "energy_above_hull"
+   ],
+   [
+    "dwd_material_virtual_structure_bak_20260923",
+    "formation_energy_per_atom"
+   ],
+   [
+    "dwd_molecular_spectrum",
+    "collision_energy"
+   ],
+   [
+    "dwd_molecular_spectrum_bak_20260912",
+    "collision_energy"
+   ]
+  ],
+  "gkx_fin_col_count": 26,
+  "gkx_fin_output_like_cols": [
+   "operating_revenue",
+   "main_business_revenue"
+  ],
+  "gkx_fin_energy_like_cols": [],
+  "gkx_fin_rows": 90926,
+  "gkx_fin_revenue_nonzero_rows": 2193,
+  "gkx_policy_rows": 20000,
+  "gkx_policy_text_nenghao_rows": 638,
+  "gkx_policy_text_ziyuan_rows": 375,
+  "gkx_policy_text_jieneng_rows": 629,
+  "dev_energy_col_hits": [],
+  "jiuxin_table_count": 203,
+  "jiuxin_resource_like_tables": [
+   "ads_city_subfield_resource_yearly",
+   "ads_institution_subfield_resource_yearly",
+   "ads_recommendation_resource_direction",
+   "ads_research_resource_shortage_yearly",
+   "ads_resource_benchmark_city",
+   "ads_resource_optimization_recommendation",
+   "ads_resource_optimization_recommendation_evidence"
+  ],
+  "jiuxin_city_subfield_resource_cols": [
+   "city_location_id",
+   "statistics_year",
+   "subfield_id",
+   "city_name_zh",
+   "city_name_en",
+   "subfield_name_zh",
+   "subfield_name_en",
+   "field_id",
+   "field_name_zh",
+   "field_name_en",
+   "domain_id",
+   "paper_count",
+   "paper_fractional_count",
+   "publication_cohort_cited_by_count",
+   "citation_count",
+   "avg_citations_per_paper",
+   "avg_fwci",
+   "talent_count",
+   "project_count",
+   "funding_amount_cny",
+   "funding_amount_project_count",
+   "estimated_funding_project_count",
+   "funding_amount_coverage_rate",
+   "funding_amount_source",
+   "funding_amount_method",
+   "allocated_funding_cny",
+   "real_funding_cny",
+   "simulated_funding_cny",
+   "real_funding_project_count",
+   "simulated_funding_project_count",
+   "real_funding_coverage_rate",
+   "paper_coverage_status",
+   "citation_coverage_status",
+   "talent_coverage_status",
+   "funding_coverage_status",
+   "paper_counting_method",
+   "talent_assignment_method",
+   "funding_allocation_method",
+   "metrics_as_of_date",
+   "metric_definition_version",
+   "data_version",
+   "update_time"
+  ],
+  "jiuxin_city_subfield_resource_rows": 27720
+ },
+ "derived": [
+  {
+   "key": "gkx_fin_revenue_fill_pct",
+   "value": 2.4119,
+   "numerator": 2193,
+   "denominator": 90926,
+   "note": "分子=dwd_org_annual_financial_info.operating_revenue 非零行数，分母=同表全行数；同表同池（B3）；语义=产出侧（营业收入）填充率——产出侧有半数填充，但能耗侧 0 列（见 absence）,能耗产出比的分子分母只可得其一"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 能源消费序列面（能耗产出比的能耗侧）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx；280 表名扫 energy|consumption|efficiency|resource",
+   "hits": 0,
+   "hit_detail": "0 表命中——无能源消费/资源效率序列表"
+  },
+  {
+   "probe": "gkx 全库能耗语义列",
+   "source": "gkx",
+   "sql": "information_schema.columns 扫 energy|power_consum|electric|coal|fuel（ORDER BY，B5）",
+   "hits": 6,
+   "hit_detail": "仅命中材料科学（dwd_material_virtual_structure.energy_above_hull/formation_energy_per_atom）与分子光谱（dwd_molecular_spectrum.collision_energy）物理化学字段——语义完全错位，无任何能源消费列"
+  },
+  {
+   "probe": "gkx 企业财务表能耗列（企业级能耗产出比候选）",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM gkx.dwd_org_annual_financial_info；27 列逐一核对",
+   "hits": 0,
+   "hit_detail": "0 列命中——财务表有产出侧（operating_revenue/main_business_revenue）无能耗侧，企业级能耗产出比不可构建"
+  },
+  {
+   "probe": "dev 能耗面",
+   "source": "dev",
+   "sql": "三 schema 列扫 energy|power_consum|electric|coal|fuel（ORDER BY）",
+   "hits": 0,
+   "hit_detail": "0 列命中——dev 无任何能耗字段"
+  },
+  {
+   "probe": "久新资源/能耗面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES；203 表名扫 energy|consumption|efficiency|resource + DESC 结构核对",
+   "hits": 7,
+   "hit_detail": "命中 7 张 resource 表但全部是「科技资源」语义面：ads_city_subfield_resource_yearly（27,720 行——论文/人才/项目/经费计数，DESC 41 列逐一核对无任何能耗/能源消费字段）、ads_institution_subfield_resource_yearly、ads_resource_benchmark_city 等——「资源」指科研要素投入非能源消耗，语义错位"
+  },
+  {
+   "probe": "需求原文「资源利用效率（政策语境）/能耗产出比」定义段",
+   "source": "doc",
+   "sql": "rg 资源利用 三份需求真源",
+   "hits": 4,
+   "hit_detail": "主需求「资源利用」4 处命中全部在科学仪器共享（:2741 数据库检索效率/:3583 仪器共享/:3625 仪器利用率/:3733 服务频率）与算法库 :1277（空间资源利用——载体评价指标语境），均非政策效果评估的环境维「能耗产出比」；政策语境的环境维资源利用效率 0 定义；核增需求 0 命中"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：资源利用效率（能耗产出比）= 产出/能耗（单位 GDP 能耗的倒数形态，官方口径 R1）。依赖：①能耗序列 ②产出序列。产出侧 gkx 仅 2.4% 填充（营业收入 2,193/90,926 非零），能耗侧三源零承载（gkx 全库唯一 energy 列是材料形成能、dev 0 列、久新 7 张 resource 表全是科技资源语义非能耗）——分子分母双缺，判完全不支持",
+  "边界事实：与 034 碳强度共享同一能耗侧缺口（能源消费序列三源零承载），两件是同一数据源缺口在环境维的两个读数形态；久新 ads_city_subfield_resource_yearly 的「资源」是论文/人才/经费等科研要素，与能源消耗完全不同物（表名陷阱，DESC 已甄别）",
+  "mock 披露：policyData.js:1868「资源利用效率 72 分」是 multiDimensionEvalData 环境维 indicators 的前端演示常量（0-100 评分形态，演示值，不参与支持度结论）；消费方 EstimateWorkbench.jsx 四维雷达",
+  "B11 对账：gkx 政策 20,000 行与共享快照零漂移；gkx energy 列扫与 _probe_lane2_s303_out.json gkx_energy_col_hits 零漂移（6 列同清单）；财务表 90,926 行与 024 件同读数零漂移",
+  "升档触发器（B10）：接入区域/企业能耗序列（能源平衡表/重点用能单位数据）→ 与产出侧（营业收入/区域 GDP）配对即可算能耗产出比，可升完全转换支持；若甲方接受「全国单位 GDP 能耗官方序列」外接 → 粒度是全国年度非政策区域，单独立项"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "能耗观测基期年"
+ ],
+ "base_years_note": "本件无能耗序列可算（三源零承载）；产出侧营业收入按年（year 列）在但缺配对能耗侧",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "90926",
+   "2193",
+   "638",
+   "280",
+   "203"
+  ]
+ }
+}

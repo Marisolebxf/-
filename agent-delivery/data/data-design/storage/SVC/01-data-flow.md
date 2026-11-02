@@ -7,13 +7,13 @@ element: SVC
 role: data-flow
 status: approved
 version: "2026-08-19"
-updated: 2026-08-20
+updated: 2026-11-02
 engine: multi
 signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: "2026-08-19"
-amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。2026-08-19 GAP-L02：OPEN-03 写作关、OPEN-01 Demo 触发钉 50100；拓扑未改、细表仍 draft。2026-08-20 human:淮政玮 选 B：增 §1.1 表级血缘图 SVC-STORAGE-LINEAGE + ADS svc_org_card；§1 工厂拓扑边未改；细表仍 draft；不灌数。2026-08-20 规则 A：圈定升 svc_rule_demo_kw_v1.1；§1 工厂边未改；不再会签流图。"
+amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。2026-08-19 GAP-L02：OPEN-03 写作关、OPEN-01 Demo 触发钉 50100；拓扑未改、细表仍 draft。2026-08-20 human:淮政玮 选 B：增 §1.1 表级血缘图 SVC-STORAGE-LINEAGE + ADS svc_org_card；§1 工厂拓扑边未改；细表仍 draft；不灌数。2026-08-20 规则 A：圈定升 svc_rule_demo_kw_v1.1；§1 工厂边未改；不再会签流图。2026-11-02 SYSINT-06-21-01-L02：正文下增加现网对照补记（待会签）。不改 signoff_status，不改 §1 工厂拓扑图。新图在 02-asbuilt-process-chain.md。"
 task_id: ARCH-SVC-STORAGE-S1-L02
 ---
 ```
@@ -23,6 +23,9 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 > **本单不做**：DDL、建表、灌数、改 50100 页面、改 lumen 四仓、改 CHAIN。  
 > 本会签**只放行 S2 拓扑写作**。细表不得标 approved（S3 另单）。**仍禁止** F-SEED / 50100 灌数当底座退出门（须 S 契约表）。阶段 P / 50892 / lumen 四仓仍不在本总控。  
 > 三图同构 ENT/CHAIN；**阶段 F 在线读写以 50100 为准**（§2 实线）。50892 / Java 只读 ADS 画为虚线，**不在本总控施工**。
+
+> **2026-11-02 现网对照（待会签）。** `signoff_status` 仍是 `approved`，`signoff_at` 仍是 2026-08-19。本节不改下面 §1 的工厂拓扑图，也不把新图写进 §1。  
+> 现网和本文件正文有六处不一致，细节与分场景图在 [`02-asbuilt-process-chain.md`](./02-asbuilt-process-chain.md)：圈定、十模型、图谱是三次触发，`run-pipeline` 不写 hang；这条加工没有 GDF 作业；正式库同名表已建且 0 行，代码仍拒绝写入；`lumen-topic-py` 只读 demo、`lumen-etl-es-py` 已有 `gkx_svc_org` 43296 篇、内容运营写 `gkxlumenx_cms` 不写 ADS；图库行数未闭合，不能把 hang 写成 Nebula 已写入。未跑通不写成已跑通。
 
 ## 1. 批处理主链（工厂）
 

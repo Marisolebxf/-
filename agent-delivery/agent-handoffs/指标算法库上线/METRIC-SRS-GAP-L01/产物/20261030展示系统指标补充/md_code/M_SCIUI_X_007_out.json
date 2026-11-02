@@ -1,0 +1,135 @@
+{
+ "metric_id": "M_SCIUI_X_007",
+ "batch": "S3-02",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/tech-innovation-evaluation/TechInnovationEvaluationPage.tsx:313",
+  "repos/demo-ui-science/src/pages/tech-innovation-evaluation/TechInnovationEvaluationPage.tsx:345",
+  "(全 src/ 检索「空间分布权重|spatialWeight」0 命中——权重件无独立挂载点)"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份指定说明书（科技全域态势/技术发展跟踪/全球创新监测）未出现该指标名；《科技创新评估.md》seq 143「技术创新力综合评估」提及「用户可自定义指标权重」但未列维度清单，17% 示例值无需求原文对应。"
+ },
+ "facts": {
+  "dev_cfg_index_weight_rows": 2,
+  "dev_cfg_index_weight_types": [
+   {
+    "weight_version": "w_v1.0-demo",
+    "index_type": "carrier"
+   },
+   {
+    "weight_version": "w_v1.0-demo",
+    "index_type": "city"
+   }
+  ],
+  "dev_ads_eval_weight_rows": 0,
+  "dev_cfg_index_weight_spatial_dim_hits": 0,
+  "dev_cfg_index_weight_json_keys": [
+   {
+    "index_type": "carrier",
+    "keys": [
+     "ahp",
+     "final",
+     "method",
+     "indicators"
+    ]
+   },
+   {
+    "index_type": "city",
+    "keys": [
+     "ahp",
+     "final",
+     "method",
+     "indicators"
+    ]
+   }
+  ],
+  "gkx_weight_config_tables": 0,
+  "jiuxin_tables_total": 203,
+  "jiuxin_weight_like_tables": [],
+  "ui_tech_weights_demo": [
+   {
+    "key": "patentCount",
+    "label": "专利数量",
+    "weight": 36
+   },
+   {
+    "key": "quality",
+    "label": "专利质量",
+    "weight": 34
+   },
+   {
+    "key": "market",
+    "label": "市场潜力",
+    "weight": 30
+   }
+  ],
+  "ui_page_demo_weight_17_pct": 17
+ },
+ "derived": [
+  {
+   "key": "ui_techweights_mean_pct",
+   "value": 33.33,
+   "numerator": 100,
+   "denominator": 3,
+   "note": "分子=techWeights 三维组和（36+34+30，UI 校验和=100），分母=维数 3；UI 常量推导，演示值语义"
+  },
+  {
+   "key": "ui_fiveweights_mean_pct",
+   "value": 20.0,
+   "numerator": 100,
+   "denominator": 5,
+   "note": "分子=industryWeights/policyWeights 五维组和 100，分母=维数 5；空间分布若入组的中性基准，演示值语义"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "开发库权重配置表空间分布维（cfg.index_weight 2 行 JSON 逐行解析 + ads.eval_weight）",
+   "source": "dev",
+   "sql": "SELECT index_type, weights FROM gkxlumenx_cfg.index_weight —— carrier/city 两类，AHP×熵权法，子维度为 output/quality/activity/performance 与 output/resource/environment/institution，无 spatial/空间/region/district 键",
+   "hits": 0
+  },
+  {
+   "probe": "gkx 权重/配置类表扫描",
+   "source": "gkx",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%weight%' OR table_name LIKE '%config%' OR table_name LIKE '%coefficient%')",
+   "hits": 0
+  },
+  {
+   "probe": "久新权重配置类表（SHOW TABLES 203 张全清单语义过滤）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES —— weight/config/coefficient/param 语义过滤",
+   "hits": 0
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "权重件随主件链（X_006 同构）：空间分布维在技术创新力权重组的缺位是本件唯一实质问题。",
+  "UI techWeights 三维 36/34/30 与 17% 示例值均为演示值（mock），不参与支持度结论。",
+  "三源权重配置面实查：dev cfg.index_weight 2 行（carrier/city，无空间维）、ads.eval_weight 0 行、gkx 0 表、久新 203 表 0 命中——「空间分布权重」这一具体数值三源无承载。",
+  "权重语义本身可由评估框架承载（cfg.index_weight 的 AHP×熵权方法在案），但空间分布维不在任何已配置权重组内——判部分支持：结构可承载、数值无来源。",
+  "17% 示例值只能作为 UI 需求证据（页面预期有这么一个数），不能作为数据证据。",
+  "derived 两比分子分母均为 UI 常量组的和与维数（B3 同源口径，演示值语义披露）。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "权重为截面配置值（非时序读数），产物无年度键，无基期年缺口；cfg.index_weight effective_date=2026-01-01 仅一版，无历史版本序列。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "112",
+   "17",
+   "313",
+   "345",
+   "36",
+   "34",
+   "30",
+   "22",
+   "20",
+   "19",
+   "100",
+   "2026-01-01",
+   "203"
+  ]
+ }
+}

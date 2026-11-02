@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""M_SCIUI_DATATHM_053 调用量环比变化（较上期）——产物生成（S3-05 L1）。
+
+挂载 ResourceSourceAnalysisDetail.jsx:240（sourceColumns「环比变化」列 dataIndex change，Tag 渲染）。
+mock overviewSourceAnalysis.sourceTypes（mockData.js:160-190）五来源 change 14.2/22.1/18.3/12.5/8.6
+（040 已抄 volume/share——本件复用其 ui_mock_source_types_sorted 补 change 维度）。
+与 052 同断点（环比=序列差分——序列无则环比无）；本挂载是「来源结构」维度（052 是资产维度）。
+零新连库探针（041/049/052 全复用）；增量=mock change 与 volume 的相关性核验（非对账——演示值自证）。
+"""
+import json
+import os
+
+BASE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(BASE, "M_SCIUI_DATATHM_053_out.json")
+
+d040 = json.load(open(os.path.join(BASE, "M_SCIUI_DATATHM_040_out.json"), encoding="utf-8"))
+d041 = json.load(open(os.path.join(BASE, "M_SCIUI_DATATHM_041_out.json"), encoding="utf-8"))
+d052 = json.load(open(os.path.join(BASE, "M_SCIUI_DATATHM_052_out.json"), encoding="utf-8"))
+
+# —— mock 来源环比（040 ui_mock_source_types_sorted=[name,volume,share]——实查 mock 补 change 列）——
+mock_source_change = [
+    ["企业", 5234, 18.3], ["国内数据库", 6820, 14.2], ["开源平台", 5550, 22.1],
+    ["科研院所", 8234, 12.5], ["国外数据库", 4560, 8.6],
+]  # mockData.js:161-190 五来源 change（B5 按 change 降序；volume 对照在列）
+change_vals = [c for _, _, c in mock_source_change]
+
+facts = {
+    "dev_call_tables_reused_041": d041["facts"]["dev_call_tables"],
+    "gkx_table_count": d041["facts"]["gkx_table_count"],
+    "jiuxin_table_count_live": d041["facts"]["jiuxin_table_count_live"],
+    "dev_sys_log_rows_reused_041": d041["facts"]["dev_sys_log_rows"],
+    "ui_mock_source_change": mock_source_change,
+    "ui_mock_change_max": max(change_vals),
+    "ui_mock_change_min": min(change_vals),
+    "ui_mock_change_all_positive": all(c > 0 for c in change_vals),
+    "ui_052_shared_anchor": "asset_call_volume_mom_growth=null（052 同断点）",
+}
+
+derived = [
+    {
+        "key": "call_volume_period_over_period_change",
+        "value": None,
+        "numerator": None, "denominator": None,
+        "note": "『调用量环比变化（较上期）』正式口径（来源维度当期/上期调用量变化）需按来源×期聚合的调用序列——三源零承载（041/049/052 复用）；且来源标签三面全空（lane3，048/051 同锚）——序列与聚合轴双缺；按 B10 不写伪指标值"
+    },
+    {
+        "key": "observed_source_share_snapshot_only",
+        "value": None,
+        "numerator": None, "denominator": None,
+        "note": "附带交付尝试：来源结构的当期份额快照（share 列）在 mock 有值但无上期对照——环比变化需两期份额相减，单期快照不可算；库内侧来源标签三面空（lane3 复用）连单期份额都无——登记『双缺』（序列+聚合轴）"
+    },
+]
+
+absence_probe = [
+    {
+        "probe": "分子分母原料：按来源×期聚合调用序列",
+        "source": "dev/gkx/jiuxin",
+        "sql": "041/049/052 全套复用（call 词族 0 张×3+sys_log 语义双排除+环比管线可算不可用）",
+        "hits": 0,
+        "hit_detail": "环比双件（052/053）同一断点：序列差分无序列则无变化；本件聚合轴（来源）再叠标签三面空（lane3：scholar 单值/patent NULL 100%/zh_paper 空 100%）——双缺"
+    },
+    {
+        "probe": "mock change 值可复算性（与 volume/share 对照）",
+        "source": "ui",
+        "sql": "mockData.js sourceTypes 五行实读（本件核验）",
+        "hits": 0,
+        "hit_detail": "五来源 change 全正（+8.6~+22.1）且无上期 volume 列——环比变化不可复算（同 052 资产 growth 无基数）；change 与 volume 无相关性（国内数据库 6820 最大但 change 14.2 居中、企业 5234 最小 change 18.3 次高）——演示常量自证",
+    },
+    {
+        "probe": "需求原文「环比变化/较上期」指标定义",
+        "source": "doc",
+        "sql": "rg 检索三份需求真源",
+        "hits": 0,
+        "hit_detail": "指标名级 0 命中；「环比变化」为 UI 列题名（ResourceSourceAnalysisDetail sourceColumns）；期定义与变化量纲（百分点 vs 百分比）无——与 052 并条裁定的口径对象"
+    },
+]
+
+doc = {
+    "metric_id": "M_SCIUI_DATATHM_053",
+    "batch": "S3-05",
+    "ui_evidence": [
+        "repos/demo-ui-science/src/pages/data-resources/components/ResourceSourceAnalysisDetail.jsx:240",
+        "repos/demo-ui-science/src/pages/data-resources/mockData.js:160",
+    ],
+    "requirement_trace": {
+        "named_in_srs": False,
+        "note": "指标名级 0 命中；「环比变化」为 UI 列题名（来源结构对比表 change 字段，Tag 红绿渲染）；与 040（同 mock sourceTypes 的 volume/share 列）同卡不同列——结构快照列有 mock、环比列无源；挂靠 seq 365 来源结构分析族"
+    },
+    "base_years_used": [],
+    "base_years_missing": ["完全不支持：三源零承载，无库内年份基期"],
+    "base_years_note": "完全不支持：无基期；mock 演示值不构成基期证据",
+    "facts": facts,
+    "derived": derived,
+    "absence_probe": absence_probe,
+    "support_judgment": "完全不支持",
+    "notes": [
+        "判档：环比双件（052/053）同一断点（序列无）+本件聚合轴（来源标签）再缺——双缺判完全不支持",
+        "B11 对账：词族/sys_log=041；sys_log 边界=052；来源标签=lane3（048/051 同锚）；mock 五来源与 040 同款（volume/share 列 040 已抄）",
+        "与 040 同卡关系：040=来源结构当期快照（volume/share——亦判不支持但单期语义）、053=环比变化（两期差分）——040 若升档（标签落地）053 仍需两期积累（新标签首期无环比）",
+        "B9：change 单位 %；「较上期」期定义无（随 052 并条裁定）；mock 全正值披露（无下跌叙事）",
+    ],
+}
+
+with open(OUT, "w", encoding="utf-8") as f:
+    json.dump(doc, f, ensure_ascii=False, indent=1)
+print("done ->", OUT)
+print("change vals:", change_vals, "| all positive:", all(c > 0 for c in change_vals))
+print("support:", doc["support_judgment"])

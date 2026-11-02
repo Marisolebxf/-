@@ -7,7 +7,7 @@ element: SVC
 role: store-nebula
 status: draft
 version: "2026-08-19"
-updated: "2026-08-19"
+updated: "2026-11-02"
 engine: nebula
 s3_task: DATA-SVC-STORAGE-S3-L02
 ---
@@ -36,6 +36,8 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 | Edge | F-ALGO 再钉关系边类型（Q062）；本单不发明第二套边真源 |
 
 图谱菜单（50100）写 hang，**不是**十模型。十模型结果回 ADS；必要时可加边，仍在 `demo_gkx_chain`。
+
+2026-11-02：`demo_gkxlumenx_dwd.svc_org_graph_hang` 43296 行，space `demo_gkx_chain`，Tag `institution`，VID `institution:{org_id}`。ext 中 33861 行是机构到机构的 `participates`（`mapped_from=cooperation`）。`belongs_to` 与 `service_provide` 在这份 ext 里是 0。`service_provide` 不在本域允许边里，企业合作代码另写、点类型是 `service`。正式库 hang 0 行。graphd 超时，图库点数未闭合。不能把 hang 行数写成 Nebula 已写入。`gkxlumenx` 侧的图由 GDF 直写也不在范围内：GDF 不直写图库。
 
 ## 3. 读写（阶段 F）
 

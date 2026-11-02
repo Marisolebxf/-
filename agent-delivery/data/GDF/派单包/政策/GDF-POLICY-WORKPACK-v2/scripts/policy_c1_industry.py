@@ -19,7 +19,8 @@
 #   POLICY_MYSQL_HOST / POLICY_MYSQL_PORT / POLICY_MYSQL_USER / POLICY_MYSQL_PASSWORD
 #   POLICY_DWD_DB=gkxlumenx_dwd   POLICY_ADS_DB=gkxlumenx_ads
 #   EMBED_BASE_URL  EMBED_API_KEY（可空）  EMBED_MODEL（可空）
-#   MILVUS_URI      MILVUS_TOKEN（可空）   MILVUS_COLLECTION_PREFIX（默认同下）
+#   MILVUS_URI      MILVUS_DB_NAME（默认 gkxlumen）  MILVUS_TOKEN（可空）
+#   MILVUS_COLLECTION_PREFIX（默认同下）
 #
 #   python policy_c1_industry.py --limit 100
 #   python policy_c1_industry.py --policy-id <id> [--force]
@@ -46,6 +47,7 @@ SCORE_GRAY = 0.45
 DIM = 768
 PREFIX = "gkxlumen_industry_"
 COLLECTION_SUFFIX = "anchor"
+DB_NAME = "gkxlumen"
 QUERY_PREFIX = "为这个句子生成表示以用于检索相关文章："
 JOB = "c1"
 STATE_TABLE = "script_state"
@@ -242,8 +244,9 @@ def milvus_search(vector: list[float]) -> list[dict] | None:
     if not uri:
         return None
     prefix = os.environ.get("MILVUS_COLLECTION_PREFIX", PREFIX).strip() or PREFIX
+    db_name = os.environ.get("MILVUS_DB_NAME", DB_NAME).strip() or DB_NAME
     name = f"{prefix}{COLLECTION_SUFFIX}"
-    if not name.startswith(prefix):
+    if not name.startswith(prefix) or db_name == "default":
         return None
     headers = {"Content-Type": "application/json"}
     token = os.environ.get("MILVUS_TOKEN", "").strip()
@@ -251,7 +254,7 @@ def milvus_search(vector: list[float]) -> list[dict] | None:
         headers["Authorization"] = f"Bearer {token}"
     try:
         payload = _post(f"{uri}/v2/vectordb/entities/search", {
-            "dbName": "default",
+            "dbName": db_name,
             "collectionName": name,
             "data": [vector],
             "limit": CHUNK_TOP_K,
@@ -605,6 +608,8 @@ def self_check() -> None:
     assert compensate_policy_ids(["p1", "p2", "p2"], {"p1"}) == ["p2"]
     assert compensate_policy_ids(["p1"], {"p1"}) == []
     assert compensate_policy_ids(["p3"], set()) == ["p3"]
+    assert f"{PREFIX}{COLLECTION_SUFFIX}" == "gkxlumen_industry_anchor"
+    assert DB_NAME == "gkxlumen"
     print("self-check ok")
 
 

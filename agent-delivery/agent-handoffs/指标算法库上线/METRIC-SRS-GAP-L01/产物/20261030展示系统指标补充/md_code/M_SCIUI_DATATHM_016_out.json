@@ -1,0 +1,211 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_016",
+ "batch": "S3-04",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/ApplicationWindow.jsx:66",
+  "repos/demo-ui-science/src/pages/data-resources/ApplicationWindow.jsx:76",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:840"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「平台月活跃用户数」指标名；语义锚 SRS 应用视窗 seq 387「活跃用户」（图表伴随维度分句）/主需求 :2813 同文——月度口径/去重规则无定义"
+ },
+ "facts": {
+  "mock_series_granularity": "日（非月）",
+  "mock_dates": [
+   "05-16",
+   "05-17",
+   "05-18",
+   "05-19",
+   "05-20",
+   "05-21",
+   "05-22"
+  ],
+  "mock_users_series": [
+   3200,
+   3350,
+   3280,
+   3420,
+   3510,
+   3480,
+   3456
+  ],
+  "mock_users_last_value": 3456,
+  "mock_users_max_value": 3510,
+  "mock_users_min_value": 3200,
+  "mock_semantics_note": "users 序列是日活（DAU）口径的演示序列且未标注去重口径；月活（MAU）需按月窗去重，mock 无月粒度序列",
+  "dev_table_total": 542,
+  "dev_user_active_word_tables": [
+   "gkxlumenx.sys_tenant_user",
+   "gkxlumenx.sys_user",
+   "gkxlumenx.sys_user_dept",
+   "gkxlumenx.sys_user_post",
+   "gkxlumenx.sys_user_role",
+   "gkxlumenx_ads.graph_membership",
+   "gkxlumenx_app.app_user",
+   "gkxlumenx_app.app_user_role",
+   "gkxlumenx_config.users",
+   "gkxlumenx_dim.region_scope_member",
+   "gkxlumenx_flow.process_node_record_assign_user",
+   "gkxlumenx_job.xxl_job_user",
+   "gkxlumenx_mp.wx_account",
+   "gkxlumenx_mp.wx_account_fans",
+   "gkxlumenx_mp.wx_account_tag"
+  ],
+  "dev_sys_user_rows": 3,
+  "dev_sys_user_usernames": [
+   "admin",
+   "admin1",
+   "gkxtest01"
+  ],
+  "dev_sys_user_max_update_time": "2026-10-29 18:58:35",
+  "dev_sys_tenant_rows": 1,
+  "dev_sys_tenant_user_rows": 3,
+  "dev_sys_log_rows": 1060,
+  "dev_sys_log_title_top8": [
+   [
+    "登录成功",
+    912
+   ],
+   [
+    "登录失败",
+    140
+   ],
+   [
+    "新增修改路由",
+    8
+   ]
+  ],
+  "dev_sys_log_max_create_time": "2026-10-31 17:56:07",
+  "dev_user_word_hits_note": "16 张命中全部为框架管理面：pig 后台账号系（sys_user/sys_tenant_user/xxl_job_user）、管理操作日志（sys_log）、小程序账号配置（mp.wx_account）、内容点赞收藏（app_social_details）、图成员（ads.graph_membership）、流程指派（flow.process_node_record_assign_user）、superset 配置（config.users）、区域范围成员（dim.region_scope_member）、文章收藏（app.app_article_collect）——无一张是终端用户行为流水",
+  "dev_sys_log_monthly_dist": [
+   [
+    "2026-07",
+    99,
+    3
+   ],
+   [
+    "2026-08",
+    36,
+    4
+   ],
+   [
+    "2026-09",
+    8,
+    1
+   ],
+   [
+    "2026-10",
+    917,
+    1
+   ]
+  ],
+  "gkx_table_count": 280,
+  "gkx_user_active_word_tables": [],
+  "jiuxin_table_count_live": 212,
+  "jiuxin_user_active_word_tables_live": [
+   "ads_technology_community_member"
+  ],
+  "jiuxin_community_member_cols": [
+   "community_id",
+   "community_method",
+   "community_rank",
+   "community_resolution",
+   "community_role",
+   "community_seed",
+   "community_size",
+   "data_version",
+   "external_weight",
+   "external_weight_ratio",
+   "internal_weight",
+   "is_primary_community",
+   "membership_score",
+   "metric_definition_version",
+   "metrics_as_of_date",
+   "technology_node_id",
+   "update_time",
+   "weighted_degree"
+  ],
+  "jiuxin_community_member_rows": 19430,
+  "jiuxin_probe_mode": "live",
+  "jiuxin_hits_note": "唯一词族命中 ads_technology_community_member 是学科技术社区成员名册（成员登记面），非本平台用户的行为流水——语义排除"
+ },
+ "derived": [
+  {
+   "key": "platform_mau",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『平台月活跃用户数』需用户行为日志面（用户标识×行为时间戳×月窗去重）——三源零承载（dev 命中全为框架管理面；gkx 0 命中；久新唯一命中为学科社区成员名册）→ 不可构建，按 B10 留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 用户行为日志面（user/account/member/active/visit/login/online 词族，542 表）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（共享探针 _probe_s304_l5）",
+   "hits": 0,
+   "hit_detail": "16 张命中无一行为流水：sys_log 是管理操作日志（title Top 登录成功 912/登录失败 140），create_by 全为 admin 等运维账号——后台登录行为，非终端用户访问/调用行为"
+  },
+  {
+   "probe": "dev 用户主档量级（MAU 分母侧最近邻）",
+   "source": "dev",
+   "sql": "SELECT COUNT(*) FROM gkxlumenx.sys_user / sys_tenant_user",
+   "hits": 0,
+   "hit_detail": "sys_user 3 行（['admin', 'admin1', 'gkxtest01']——运维测试账号）；sys_tenant 1 / sys_tenant_user 3——无终端用户注册面，月活无从谈起"
+  },
+  {
+   "probe": "gkx 用户/活跃面（同词族，280 表）",
+   "source": "gkx",
+   "sql": "information_schema.tables 扫 gkx（共享探针）",
+   "hits": 0,
+   "hit_detail": "0 命中——gkx 为要素明细库（论文/专利/机构/学者），无任何用户行为表"
+  },
+  {
+   "probe": "久新用户/活跃面（同词族，live 复核）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES 词族过滤 + DESC 语义核",
+   "hits": 1,
+   "hit_detail": "唯一命中 ads_technology_community_member——学科技术社区成员名册（成员登记非行为流水），且非本平台用户体系——语义排除；探测模式见 facts.jiuxin_probe_mode"
+  },
+  {
+   "probe": "需求原文「月活跃用户数」定义段",
+   "source": "doc",
+   "sql": "rg 活跃用户 三份需求真源",
+   "hits": 2,
+   "hit_detail": "主需求 :2813 与 SRS seq 387「展示主题数据被调用次数、活跃用户、业务系统分布等多项指标」——「活跃用户」是图表伴随维度（功能分句），月度口径/去重规则/活跃行为定义均无；「平台月活跃用户数」指标名 0 命中；mock users 是日粒度演示序列"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：MAU 需「用户标识×行为时间戳×行为类型」的终端用户行为日志（月窗去重）——dev 命中全为框架管理面（3 个运维账号/1060 行管理日志），gkx 0 命中，久新唯一命中为学科社区成员名册（语义排除）→ 指标及关键依赖三源均无法构建 → 完全不支持",
+  "权威口径（R1 国家统计局互联网经济统计报表制度 U202/U203 表）：平台「月度活跃用户数」为法定报表指标（重点互联网出行/医疗平台按季填报）——官方仅要求填数、未公开去重口径细则；业界口径（R2/R3）：MAU=统计月内发生活跃行为的去重用户（设备 ID 或账号 ID），活跃行为定义（启动/登录/关键行为）由平台自定且须披露",
+  "mock 披露：usageCallTrend.users=[3200…3510]（7 个自然日，日粒度）——是 DAU 形态的演示序列且无去重标注；与 MAU（月窗去重）不同粒度不同口径，不作数据证据（B10）",
+  "最近邻证据（dev sys_log，语义排除披露用）：1060 行管理操作日志按月分布 [['2026-07', 99, 3], ['2026-08', 36, 4], ['2026-09', 8, 1], ['2026-10', 917, 1]]——月去重操作人 create_by 仅 admin 级账号，是后台运维登录行为，非平台终端用户活跃",
+  "B11 对账：dev 542/gkx 280/久新 210 表数共享快照；sys_user/sys_log 读数与 020 件同锚（sys_log 活表计数随时间增长：020 件 1,060 行与本件实时读数同量级）",
+  "升档触发器（B10）：①埋点/访问日志接入（用户标识×行为时间戳）→ 升完全直接支持（工程立项）；②建平台注册用户面 → 注册数可算但活跃不可算（仍缺行为日志，最多升部分支持且须口径披露「注册用户数非月活」）；③维持现状 → 完全不支持（UI 该位建议「暂无数据」）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "活跃度类监控指标，不涉基期年",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "3200",
+   "3350",
+   "3280",
+   "3420",
+   "3510",
+   "3480",
+   "3456",
+   "3",
+   "1060",
+   "912",
+   "140",
+   "542",
+   "280",
+   "210",
+   "1"
+  ]
+ }
+}

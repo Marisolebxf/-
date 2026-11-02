@@ -1,0 +1,278 @@
+{
+ "metric_id": "M_SCIUI_SZINNOV_011",
+ "batch": "S3-02",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/ShenzhenInnovation.tsx:3584",
+  "repos/demo-ui-science/src/ShenzhenInnovation.tsx:3621",
+  "repos/demo-ui-science/src/ShenzhenInnovation.tsx:224"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "SRS《深圳创新监测.md》seq 126 / excel_row 129『空间分布分析』（深圳市各科技领域分布展示面板）：『分析各科技领域的空间分布特征，包括分布范围、中心位置、扩散方向…』；相邻叶 seq 124 热力图展示；seq 112 多层级地理展示明文『可从区级、街道级、产业园级…逐级查看』——区级 GIS 粒度需求明文"
+ },
+ "facts": {
+  "gkx_admin_area_sz_prefix": {
+   "440306": 8,
+   "440303": 6,
+   "440305": 5,
+   "440309": 5,
+   "440304": 3,
+   "440307": 2,
+   "440308": 2,
+   "440311": 2,
+   "440361": 1
+  },
+  "gkx_admin_area_sz_rows": 34,
+  "gkx_sz_org_by_district": {
+   "宝安区": 25192,
+   "龙岗区": 17445,
+   "南山区": 16039,
+   "龙华区": 13879,
+   "福田区": 8810,
+   "光明区": 6879,
+   "罗湖区": 3630,
+   "坪山区": 3027,
+   "盐田区": 680
+  },
+  "gkx_sz_org_total": 95600,
+  "gkx_sz_district_top_industries_sample": {
+   "南山区": [
+    [
+     "信息传输、软件和信息技术服务业",
+     4417
+    ],
+    [
+     "批发和零售业",
+     3714
+    ],
+    [
+     "科学研究和技术服务业",
+     2253
+    ]
+   ],
+   "宝安区": [
+    [
+     "批发和零售业",
+     10427
+    ],
+    [
+     "制造业",
+     7448
+    ],
+    [
+     "信息传输、软件和信息技术服务业",
+     2491
+    ]
+   ]
+  },
+  "gkx_sz_org_with_industry": 95064,
+  "dev_sz_base_by_district": {
+   "宝安区": 18,
+   "南山区": 8,
+   "龙华区": 7,
+   "福田区": 4,
+   "龙岗区": 4,
+   "光明区": 3,
+   "坪山区": 2
+  },
+  "dev_sz_base_total": 46,
+  "jiuxin_district_locations": {
+   "宝安区": "loc_33704B6B0F53FD5BD50B01052277E7D9",
+   "龙岗区": "loc_73B6C2CA76CBAC5917D8924F4C6CA4B5",
+   "盐田区": "loc_7FDA04B37B2724F038AF6AC1D67D3486",
+   "福田区": "loc_EC2FA5CFB18AAB71091EECE8A406FC8B",
+   "光明区": "loc_76804FB73FB81540636DE7E3B44959BB",
+   "罗湖区": "loc_DA9D1AB1055ED83FDCD1ED31B6B56E77",
+   "龙华区": "loc_3B635B68C312CDC6FB0A297C85056319",
+   "坪山区": "loc_3CBEBA22E46432C0A41FFCC93369C230",
+   "南山区": "loc_EB3B46836D63522075436122D3DAFC64"
+  },
+  "jiuxin_geo_yearly_levels": {
+   "CITY": 132975,
+   "PROVINCE": 33518,
+   "COUNTRY": 5081,
+   "CONTINENT": 162
+  },
+  "jiuxin_district_institutions": {
+   "南山区": 38,
+   "福田区": 36,
+   "龙岗区": 15,
+   "宝安区": 10,
+   "罗湖区": 7,
+   "光明区": 6,
+   "坪山区": 5,
+   "龙华区": 4,
+   "盐田区": 3
+  },
+  "jiuxin_profile_with_district_total": 124,
+  "gkx_sz_district_covered": 95581
+ },
+ "derived": [
+  {
+   "key": "gkx_sz_district_org_top_share_pct",
+   "value": 26.35,
+   "numerator": 25192,
+   "denominator": 95600,
+   "note": "分子=Top1 区（宝安区 25192 家）；分母=深圳机构总数（city=深圳市 全量）；同表同口径（gkx.dwd_org_base_info，B3）——空间集中度读数"
+  },
+  {
+   "key": "gkx_sz_district_org_coverage_pct",
+   "value": 99.98,
+   "numerator": 95581,
+   "denominator": 95600,
+   "note": "分子=area 列 9 区有值行数；分母=深圳机构总数——区级聚合覆盖率（大鹏 0 行在分母缺口内）"
+  },
+  {
+   "key": "jiuxin_district_institution_coverage_pct",
+   "value": 100.0,
+   "numerator": 124,
+   "denominator": 124,
+   "note": "分子=深圳 9 区 district 键机构数；分母=全库 district 键机构总数（124）——久新 DISTRICT 键全为深圳（区级键仅服务深圳创新监测域）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx dwd_dim_admin_area 深圳子树（4403 前缀逐区计数）",
+   "source": "gkx",
+   "sql": "SELECT SUBSTRING(cur_code,1,6) p6, COUNT(*) c FROM gkx.dwd_dim_admin_area WHERE cur_code LIKE '4403%%' GROUP BY p6 ORDER BY c DESC",
+   "hits": 9,
+   "sample": [
+    "('440306', 8)",
+    "('440303', 6)",
+    "('440305', 5)",
+    "('440309', 5)",
+    "('440304', 3)",
+    "('440307', 2)"
+   ],
+   "note": "440303罗湖/440304福田/440305南山/440306宝安/440307盐田/440308(盐田并入前)/440309龙华/440310坪山 0 行/440311光明/440361大鹏——村级字典，坪山无键"
+  },
+  {
+   "probe": "gkx 深圳机构 area 区级分布（口径 A 主读数）",
+   "source": "gkx",
+   "sql": "SELECT area, COUNT(*) c FROM gkx.dwd_org_base_info WHERE city='深圳市' AND area IS NOT NULL AND area != '' GROUP BY area ORDER BY c DESC",
+   "hits": 9,
+   "sample": [
+    "('宝安区', 25192)",
+    "('龙岗区', 17445)",
+    "('南山区', 16039)",
+    "('龙华区', 13879)",
+    "('福田区', 8810)",
+    "('光明区', 6879)"
+   ],
+   "note": "95,600 家深圳机构按 9 区聚合；大鹏新区 0 行"
+  },
+  {
+   "probe": "gkx 深圳机构 area×industry_l1_name Top（每区 Top3）",
+   "source": "gkx",
+   "sql": "SELECT area, industry_l1_name, COUNT(*) c FROM gkx.dwd_org_base_info WHERE city='深圳市' AND area IN ('南山区','宝安区','龙岗区') AND industry_l1_name IS NOT NULL GROUP BY area, industry_l1_name ORDER BY area, c DESC LIMIT 30",
+   "hits": 30,
+   "sample": [
+    "('南山区', '信息传输、软件和信息技术服务业', 4417)",
+    "('南山区', '批发和零售业', 3714)",
+    "('南山区', '科学研究和技术服务业', 2253)",
+    "('南山区', '制造业', 1769)",
+    "('南山区', '租赁和商务服务业', 1599)",
+    "('南山区', '居民服务、修理和其他服务业', 442)"
+   ],
+   "note": "领域维=industry_l1_name（国民经济行业分类）——与 UI 八大未来产业（合成生物/量子信息…）语义不同"
+  },
+  {
+   "probe": "dev enterprise_base 深圳区级分布（精选层）",
+   "source": "dev",
+   "sql": "SELECT district, COUNT(*) c FROM enterprise_base WHERE city='深圳市' GROUP BY district ORDER BY c DESC",
+   "hits": 7,
+   "sample": [
+    "{'district': '宝安区', 'c': 18}",
+    "{'district': '南山区', 'c': 8}",
+    "{'district': '龙华区', 'c': 7}",
+    "{'district': '福田区', 'c': 4}",
+    "{'district': '龙岗区', 'c': 4}",
+    "{'district': '光明区', 'c': 3}"
+   ],
+   "note": "400 行精选层中深圳 46 家、7 区有值（宝安18/南山8/龙华7/福田4/龙岗4/光明3/坪山2）"
+  },
+  {
+   "probe": "jiuxin ads_location DISTRICT 级行数与名单",
+   "source": "jiuxin",
+   "sql": "SELECT name_zh, location_id FROM ads_location WHERE location_level='DISTRICT'",
+   "hits": 9,
+   "sample": [
+    "('宝安区', 'loc_33704B6B0F53FD5BD50B01052277E7D9')",
+    "('龙岗区', 'loc_73B6C2CA76CBAC5917D8924F4C6CA4B5')",
+    "('盐田区', 'loc_7FDA04B37B2724F038AF6AC1D67D3486')",
+    "('福田区', 'loc_EC2FA5CFB18AAB71091EECE8A406FC8B')",
+    "('光明区', 'loc_76804FB73FB81540636DE7E3B44959BB')",
+    "('罗湖区', 'loc_DA9D1AB1055ED83FDCD1ED31B6B56E77')"
+   ],
+   "note": "DISTRICT 级全库仅 9 行=深圳 9 区（大鹏缺）——久新区级地理键存在性主证据"
+  },
+  {
+   "probe": "jiuxin ads_geo_yearly_metrics 层级分布（DISTRICT 判定）",
+   "source": "jiuxin",
+   "sql": "SELECT m.location_level, COUNT(*) c FROM ads_geo_yearly_metrics m GROUP BY m.location_level ORDER BY c DESC",
+   "hits": 4,
+   "sample": [
+    "('CITY', 132975)",
+    "('PROVINCE', 33518)",
+    "('COUNTRY', 5081)",
+    "('CONTINENT', 162)"
+   ],
+   "note": "CITY 132,975 / PROVINCE 33,518 / COUNTRY 5,081 / CONTINENT 162——DISTRICT 0 行（对齐共享快照 #44 零漂移）"
+  },
+  {
+   "probe": "jiuxin ads_institution_profile 深市区级机构分布（口径 B）",
+   "source": "jiuxin",
+   "sql": "SELECT p.district_name, COUNT(*) c FROM ads_institution_profile p JOIN ads_location l ON l.location_id=p.district_location_id WHERE l.location_level='DISTRICT' GROUP BY p.district_name ORDER BY c DESC",
+   "hits": 9,
+   "sample": [
+    "('南山区', 38)",
+    "('福田区', 36)",
+    "('龙岗区', 15)",
+    "('宝安区', 10)",
+    "('罗湖区', 7)",
+    "('光明区', 6)"
+   ],
+   "note": "全库 district 键机构 124 家，深圳 9 区全量——DISTRICT 键链可用性验证（小盘）"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档主轴=区级粒度承载（派单书 §0.3）：gkx 主路径 dwd_org_base_info.city='深圳市' 95,600 行按 area 列聚合 9 区一次跑通（口径 A 交付面）；但『各科技领域』语义维不闭合——gkx industry_l1_name 是国民经济行业分类非 UI 八大未来产业，久新 field 维无区级聚合面，三源区级×领域映射需甲方裁定",
+  "10 区覆盖不齐（硬事实）：gkx 区划字典深圳子树 34 行中坪山区(440310) 0 键、机构 area 列大鹏新区 0 行；久新 ads_location DISTRICT 9 行缺大鹏——UI shenzhenDistricts 10 区（9 行政区+大鹏新区）中坪山区在久新有键且 gkx 机构面有值（3,027 家），大鹏新区双源机构面皆 0——区级地图 10 格有 1 格无数据",
+  "久新 CITY 面（ads_geo_yearly_metrics 171,736 行/CITY 132,975）对区级地图无直接承载——DISTRICT 级 0 数据行（探针在案）；ads_institution_profile.district_location_id 全库仅 124 机构（深圳 9 区全量=小盘对照），区级科研指标只能机构级自聚合",
+  "口径 A 读数（企业数量卡同构）：宝安 25,192 / 龙岗 17,445 / 南山 16,039 / 龙华 13,879 / 福田 8,810 / 光明 6,879 / 罗湖 3,630 / 坪山 3,027 / 盐田 680（大鹏 0）——Top1 宝安占深圳机构总量 26.35%",
+  "『中心位置/扩散方向』类空间形态学分析（需求原文分句）三源无 GIS 坐标面承载：gkx org 表有 addr_lng/addr_lat 坐标列（量级未探），可作 v2 扩展（热力图形态）；本件以区级计数为 v1 交付"
+ ],
+ "base_years_used": [
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "口径 A 为存量截面（org 底册当期）；需求的时间趋势面（seq 126『发展趋势』）需注册年序列（org.incorporation_date 可回算，见 SZINNOV_007 件），本件不展开",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "10",
+   "100.0",
+   "13879",
+   "15",
+   "16039",
+   "17445",
+   "25192",
+   "26.35",
+   "3",
+   "3027",
+   "36",
+   "3630",
+   "38",
+   "4",
+   "5",
+   "6",
+   "680",
+   "6879",
+   "7",
+   "8810",
+   "95600",
+   "99.98"
+  ]
+ }
+}

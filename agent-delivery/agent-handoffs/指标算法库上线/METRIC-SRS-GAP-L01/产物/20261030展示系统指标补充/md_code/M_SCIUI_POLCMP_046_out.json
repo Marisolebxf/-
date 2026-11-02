@@ -1,0 +1,146 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_046",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2178",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2183",
+  "repos/demo-ui-science/src/pages/policy-tracking/analysis/PortraitTrio.jsx:40"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「综合力度指数」指标名三份需求真源 0 命中；语义源=算法库 :1031-1039 政策力度评估模型（效果/覆盖/成本三维，无权重无算式）；UI DS-11 政策画像卡（PortraitTrio 消费）是唯一实证；export 自认口径需立项调研"
+ },
+ "facts": {
+  "gkx_policy_col_count": 33,
+  "gkx_policy_intensity_cols": [
+   "rank"
+  ],
+  "gkx_policy_rows": 20000,
+  "gkx_policy_support_nonnull": 20000,
+  "gkx_policy_support_distinct_sample": [
+   "null"
+  ],
+  "gkx_text_lidu_rows": 3919,
+  "gkx_text_lidu_title_rows": 23,
+  "dev_policy_intensity_eval_cols": [
+   "id",
+   "tenant_id",
+   "policy_id",
+   "eval_batch_no",
+   "intensity_index",
+   "effect_score",
+   "coverage_score",
+   "cost_score",
+   "intensity_level",
+   "rank_nationwide",
+   "rank_province",
+   "dimension_report",
+   "trend_analysis",
+   "prediction_result",
+   "eval_model_version",
+   "threshold_config",
+   "exec_status",
+   "create_time",
+   "update_time",
+   "is_deleted",
+   "ext1",
+   "ext2",
+   "ext3"
+  ],
+  "dev_policy_intensity_eval_rows": 0,
+  "dev_policy_support_rank_rows": 0,
+  "dev_policy_support_rank_strength_cols": [
+   "intensity_index"
+  ],
+  "dev_policy_time_analysis_rows": 0,
+  "dev_policy_time_analysis_strength_cols": [
+   "density_index_series",
+   "intensity_trend_series"
+  ],
+  "dev_policy_support_assessment_rows": 0,
+  "dev_policy_support_assessment_strength_cols": [
+   "strategy_guidance_score",
+   "policy_support_score",
+   "funding_support_score",
+   "project_support_score",
+   "implementation_effect_score",
+   "composite_score"
+  ],
+  "jiuxin_table_count": 210,
+  "jiuxin_policy_intensity_like_tables": [
+   "ads_institution_technology_power",
+   "ads_research_problem_policy_evidence",
+   "ads_research_problem_policy_yearly_metrics",
+   "ads_technology_policy_evidence"
+  ]
+ },
+ "derived": [
+  {
+   "key": "lidu_share_pct",
+   "value": 19.595,
+   "numerator": 3919,
+   "denominator": 20000,
+   "note": "「力度」叙述面占 gkx 政策全表比（政策自述力度语言的工作量指示器，非量化指数）"
+  },
+  {
+   "key": "composite_policy_intensity_index",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "不可算——组合口径未立项（裁定 NEW）；力度评估结果面三源 0 行（dev policy_intensity_eval 结构在但空，模型从未跑过）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 力度结构化列",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM dwd_policy_base（33 列）扫 intensity/strength/force/power/weight/score/index/rank/level",
+   "hits": 0,
+   "hit_detail": "33 列无力度量化列；唯一扶持列 policy_support 占位全 'null'（20,000/20,000，与 POLCMP_009 共证零漂移）"
+  },
+  {
+   "probe": "dev 力度评估结果面",
+   "source": "dev",
+   "sql": "SHOW COLUMNS + COUNT：policy_intensity_eval / policy_support_rank / policy_time_analysis / policy_support_assessment",
+   "hits": 0,
+   "hit_detail": "policy_intensity_eval 五列结构与算法库三维同构（intensity_index/effect/coverage/cost/intensity_level）但 0 行；邻表含力度列同样 0 行——评估模型规划过、从未运行"
+  },
+  {
+   "probe": "久新政策力度面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（实测 210 张，探测日 2026-11-01）扫 policy/intensity/strength/power",
+   "hits": 0,
+   "hit_detail": "policy 词根命中仅 3 张（政策证据/yearly_metrics，语义为关联证据与年度计数非力度评估）；intensity/strength/power 词根 0 命中——分析仓无政策力度评估面"
+  },
+  {
+   "probe": "需求文档定义",
+   "source": "doc",
+   "sql": "rg 综合力度/力度指数 主需求 + SRS 政策族四文件 + 核增 17 叶；算法库 :1031-1039",
+   "hits": 1,
+   "hit_detail": "「综合力度指数」指标名三源需求真源 0 命中；算法库 :1031-1039「政策力度评估模型」给效果/覆盖/成本三维框架（语义源，非闭合定义——无权重无算式）；export 自认需立项调研；父代理裁定 NEW（口径未调查，无候选）"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：组合口径未立项（裁定 NEW + export 自认）+ 力度结果面三源 0 行。最关键的证据是dev policy_intensity_eval：五列结构与算法库「政策力度评估模型」效果/覆盖/成本三维逐列同构（intensity_index/effect_score/coverage_score/cost_score/intensity_level）——开发库完整规划过该模型落位，但 0 行，模型从未运行。这是「结构在、数据空 + 口径未立项」的双缺叠加形态",
+  "语义源链：算法库 :1031-1039 政策力度评估模型（效果维/覆盖维/成本维三类指标+阈值+权重赋值与综合加权 → 政策力度指数，支持趋势跟踪与排行榜）是招标算法库明列算法——但它是科技专题服务系统侧算法，未给权重表与算式；UI 政策画像卡（policyData.js:2178 kpi 86 分 + metrics「发布密度 128 项/季/平均资助强度 3200 万元」）的演示值暗示组合维度但无权重。学术方法族（R2 四维框架：力度=颁布层级+协同度；R3 PMC 指数；熵权/AHP+TOPSIS）可补口径，但输入侧（资助金额结构化、层级评分）库内仍缺",
+  "文本叙述面边界：「力度」3,919 行（title 层 23 行）是政策自述力度语言（「加大支持力度」类修辞），非量化承载；叙述面占比 19.595% 只说明力度是高频政策词汇，不可作为指数输入。gkx 33 列无力度列、policy_support 占位（与 POLCMP_009 探针零漂移）",
+  "UI mock 披露：policyData.js:2178 政策画像卡 KPI「综合力度指数 86 分」与 metrics 四行（发布密度/平均资助强度/跨部门协同率/免申即享占比）是 DS-11 Wave0 扩展 mock 常量（演示值不参与支持度结论）——metrics 行恰与本批 053（跨部门协同率）交叉，mock 作者把两者设计为同一画像卡的组成读数",
+  "升档触发器（B10）：①力度评估模型立项（算法库三维框架 + 学术赋权方法族定权重）+ 输入侧结构化（资助金额抽取/层级评分回填）+ dev policy_intensity_eval 模型运行回填 → 升完全转换支持；②若甲方接受「政策文本 PMC 指数类」纯文本评价口径 → 需 NLP 量化管线立项（与 POLCMP_009 抽取管线共享），单独一条转换路径"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "指数无年度序列（口径未闭合、结果面 0 行）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "3919",
+   "23",
+   "20000",
+   "210",
+   "86",
+   "128",
+   "3200"
+  ]
+ }
+}

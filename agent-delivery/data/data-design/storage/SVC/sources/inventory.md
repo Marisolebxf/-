@@ -7,7 +7,7 @@ element: SVC
 role: source
 status: draft
 version: "2026-08-19"
-updated: 2026-08-19
+updated: 2026-11-02
 task_id: DATA-SVC-STORAGE-S2-L02
 s4_fill: DATA-SVC-STORAGE-S4-L02
 gap_task: DATA-SVC-STORAGE-GAP-L02
@@ -45,7 +45,8 @@ Q-SVC-010：Demo 该表无可靠 `business_scope`；`org_type` 不可作服务�
 |---|---|---|
 | 圈定主读 | `dwd_org_base_info` | `svc_rule_demo_kw_v1`；hang `org_id` |
 | A1/A2/A4/A5/A6 聚合读 | 同上主表 | 产业/地区/成立日等；深圳切片用 `city`/`area`（Q-SVC-004） |
-| A3 事件 hang | `dwd_org_financing_info`、`dwd_org_invest_info` | → `svc_org_finance_event`；可 0 行（Q-SVC-006） |
+| A3 事件 hang | `dwd_org_financing_info`、`dwd_org_invest_info` | → `svc_org_finance_event`；可 0 行（Q-SVC-006）。2026-11-02 demo 该 hang 15755 行 |
+| 卡面人数 / 营收 | `dwd_org_annual_financial_info` | 圈定作业读最新一行的 `year` / `employees_number` / `operating_revenue`，写入 `svc_org_card`，不进 DWD 主体。缺行只在内存合成，不回写 ODS。合成行数未闭合。原先放在「其余共用、不聚合」，和现网作业不一致 |
 | 招投标四表 | `dwd_bid_*_out` | **本波不圈定、不聚合**（与机构主表平行贴源，非主读） |
 | 其余共用表 | 下表未点名者 | 共用备查；本波不圈定、不聚合 |
 
@@ -88,7 +89,7 @@ Q-SVC-010：Demo 该表无可靠 `business_scope`；`org_type` 不可作服务�
 | `dwd_org_invest_info` | 投资事件 | 共用 |
 | `dwd_org_tech_tag` | 科技型标签 | 共用 |
 
-**本域 ODS 独有 = 无。** 禁止 `svc_org_base`。产业链 `dwd_org_industry_tags` 等属 `storage/CHAIN`，本清单不收入、本轮不改。
+**本域 ODS 独有 = 无。** 禁止 `svc_org_base`。产业链 `dwd_org_industry_tags` 等属 `storage/CHAIN`，本清单不收入、本轮不改。ES 作业 `service_org` 会按卡面中文名去连这张标签表；那不是圈定主读，也不把该表收进本清单。2026-11-02 `gkxlumenx_ods.dwd_org_industry_tags` 1000 行，不是服务机构作业写入的证据。
 
 ## 禁止
 

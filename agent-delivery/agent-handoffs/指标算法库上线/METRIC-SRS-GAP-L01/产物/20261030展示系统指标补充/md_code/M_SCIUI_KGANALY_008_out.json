@@ -1,0 +1,84 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_008",
+  "metric_name": "图谱关系活跃度（科技知识图谱·图谱地图分析）",
+  "facts": {
+    "ui_mount": "graphMapAnalysis.js:115 metrics[1] { key:'relationActivity', label:'关系活跃度', value:`${relationActivity}%`, meta:`${relationTypeCount} 类关系` }",
+    "ui_formula": "graphMapAnalysis.js:15-19 getRelationActivityScore = min(98, max(36, relationTypeCount*11 + layerCount*5))；:66-69 + round(contextAdjustment*2)（时间/事件修正）",
+    "ui_formula_params": {
+      "base_clamp": [
+        36,
+        98
+      ],
+      "relation_type_weight": 11,
+      "layer_weight": 5
+    },
+    "dev_graph_word_table_rows": {},
+    "dev_graph_tables_nonzero": {},
+    "gkx_coauthor_edges_total": 1187606,
+    "jiuxin_edge_relation_type_top20": [
+      [
+        "WEAK_DEPENDENCY",
+        257347
+      ],
+      [
+        "PATENT_CONVERGENCE",
+        212729
+      ],
+      [
+        "KNOWLEDGE_DEPENDENCY",
+        95208
+      ],
+      [
+        "CO_EVOLUTION",
+        21968
+      ]
+    ],
+    "jiuxin_relation_type_count": 4,
+    "jiuxin_community_count": 1731,
+    "jiuxin_edge_relation_source_dist": [
+      [
+        "DWS_INFERRED",
+        587252
+      ]
+    ]
+  },
+  "derived": [
+    {
+      "source": "jiuxin.ads_technology_graph_edge relation_type 去类 + UI 同构公式",
+      "relation_type_count": 4,
+      "layer_count": 3,
+      "raw_score": 59,
+      "activity_score": 59,
+      "formula_note": "min(98, max(36, 4*11+3*5))=min(98,59)=59——contextAdjustment 按 0 基线（无时间/事件选中态）"
+    },
+    {
+      "source": "敏感性对照：layerCount=全社区数（语义偏离 UI 演示 3 层）",
+      "layer_count": 1731,
+      "activity_score_capped": 98,
+      "note": "layerCount=1731 时 4*11+layer*5 远超 98 封顶——层位口径是首要敏感项"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev 现成「关系活跃度」结果面",
+      "how": "dev 图词族 26 张计数（族级快照）",
+      "hits": "全 0 行——结构在数据空"
+    },
+    {
+      "what": "gkx 关系活跃度/活跃度结果面",
+      "how": "gkx 280 表词族扫描（activity/active/liveness）",
+      "hits": "0——coauthor 边可算类型数（合著单一类=1）但无活跃度定义面"
+    },
+    {
+      "what": "久新现成「关系活跃度」指标行",
+      "how": "久新 218 表词族扫描（activity/active）",
+      "hits": "0——但边表 relation_type 4 类+社区分层数可按 UI 公式合成"
+    }
+  ],
+  "support_judgment": "完全转换支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "活跃度为规则合成指数（当日图截面输入），无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=图快照日（metrics_as_of_date=2026-10-16）；指数为截面合成值非时序量"
+}

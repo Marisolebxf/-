@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""M_SCIUI_P10_060 热分析测试服务量（次）—— 薄壳校验脚本。
+
+共享探针真源：code/_shared_s308_laneC.py（dev/gkx/jiuxin 三源词族+正读数）
+本脚本职责：①引用共享快照断言 ②三源检测服务流水/订单域零承载复核 ③判档 ④基期三键 ⑤落盘。
+"""
+from __future__ import annotations
+
+import json
+
+SHARED = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s308_laneC_out.json"
+OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_P10_060_out.json"
+
+
+def main() -> None:
+    with open(SHARED, encoding="utf-8") as f:
+        snap = json.load(f)
+
+    dev = snap["dev"]
+    gkx = snap["gkx"]
+    jiuxin = snap["jiuxin"]
+    # 订单/流水域零承载断言（共享快照）
+    assert jiuxin["jiuxin_booking_order_family"] == [], "jiuxin booking/order 族应为空（共享快照）"
+    assert jiuxin["jiuxin_service_family"] == [], "jiuxin service 族应为空（共享快照）"
+
+    out = {
+        "metric_id": "M_SCIUI_P10_060",
+        "batch": "S3-08",
+        "ui_evidence": [
+            "repos/demo-ui-science/src/pages/achievement-preview-new/instrument-sharing-new/mockData.js:185",
+            "repos/demo-ui-science/src/pages/achievement-preview-new/instrument-sharing-new/mockData.js:212-224",
+            "repos/demo-ui-science/src/pages/achievement-preview-new/instrument-sharing-new/InstrumentSharingNewPage.jsx:719-731",
+            "repos/demo-ui-science/src/pages/achievement-preview-new/instrument-sharing-new/InstrumentSharingNewPage.jsx:695-703",
+        ],
+        "requirement_trace": {
+            "named_in_srs": False,
+            "note": "三份说明书未出现「热分析测试服务量」指标名；上位功能叶 1.1.1.1.4.6.6.3 预约服务（SRS 大型科学仪器共享.md:123「用户可在地图上筛选并查看不同类别预约服务的空间分布，系统自动显示服务状态、周期及频率，帮助创新主体快速锁定可用资源和高效率检测服务」）为需求功能面上位覆盖；本件=预约服务域按服务类别（热分析测试）的年度服务量切片。",
+        },
+        "facts": {
+            "ui_mount": "InstrumentSharingNewPage.jsx:719-731「预约订单追踪与排期调度」表（ORDERS 12 行演示订单）+ :695-703「服务类型统计」图（CHART_METRICS.serviceType，M_IS_SERVICE_TYPE，源表 ads_is_service）+ :903-907 预约服务 Tab",
+            "ui_service_row": "mockData.js:185 ORG-005 哈尔滨工业大学（深圳）services 数组含「热分析测试」（flow: 预约→送样→测试→曲线交付；scope: 聚合物、金属材料）——机构能力清单语义（ui_demo_fallback 演示值）",
+            "ui_order_kpi": "mockData.js:53-57 有效订单 KPI（M_IS_VALID_ORDER value=1,336 个）：本年度已完成及服务中预约订单总数（不含已取消）；源表 ads_is_order；深圳市大型科学仪器共享平台；T+1；v1.0——服务量总口径的 lineage 契约",
+            "ui_mock": "mock SERVICES 14 项（type 6 类：检测服务/分析测试/软件测评/计量校准等）+ ORDERS 12 行演示订单，无「热分析」类目专项计数——ui_demo_fallback 演示值",
+            "jiuxin_booking_order_family": jiuxin["jiuxin_booking_order_family"],
+            "jiuxin_service_family": jiuxin["jiuxin_service_family"],
+            "jiuxin_ads_is_hits": jiuxin["jiuxin_ads_is_hits"],
+            "dev_service_family_note": "dev service 词族命中 22 表全为 test_*/analysis_task 异域面（bi.test_order 等），无检测服务流水",
+            "gkx_service_family": gkx["gkx_service_family"],
+            "gkx_table_count": gkx["gkx_table_count"],
+            "dev_table_total": dev["dev_table_total"],
+            "jiuxin_table_count_live": jiuxin["jiuxin_table_count_live"],
+        },
+        "derived": [
+            {
+                "name": "thermal_analysis_test_volume",
+                "value": None,
+                "note": "负结论登记：热分析测试服务量需「检测服务订单流水（服务类别+完成时间+机构）」按类别年度计数。lineage 指定源表族 ads_is_order（订单）/ads_is_service（服务目录）三源 0 实存；jiuxin booking/order 词族 0 命中、service 词族 0 命中；dev service 词族 22 表命中全为 test_*/analysis_task 异域面；gkx service 词族 7 表为 industry_analysis 族非检测服务。订单流水零承载，类别切片无从谈起，null 登记。",
+            },
+        ],
+        "absence_probe": [
+            {
+                "probe": "jiuxin 218 表（SHOW TABLES 实数）检测服务流水/订单域（booking|order|service|ads_is）",
+                "source": "jiuxin",
+                "sql": "SHOW TABLES + 表名词族匹配（快照 jiuxin.jiuxin_booking_order_family / jiuxin_service_family / jiuxin_ads_is_hits）",
+                "hits": 0,
+            },
+            {
+                "probe": "dev 17 schema（542 表）检测服务流水/订单台账",
+                "source": "dev",
+                "sql": "information_schema 表名+列名词族扫描 service|order|booking（快照 dev.dev_service_family_table_hits）",
+                "hits": 0,
+                "note": "22 表命中全为 test_*/analysis_task 异域面（bi.test_order 等内部测试表），无检测服务语义",
+            },
+            {
+                "probe": "gkx 280 表检测服务/订单词族",
+                "source": "gkx",
+                "sql": "information_schema.tables table_name REGEXP service|order|booking（快照 gkx.gkx_service_family）",
+                "hits": 0,
+                "note": "7 表命中为 dwd_industry_analysis_* 行业分析族，非检测服务流水",
+            },
+        ],
+        "support_judgment": "完全不支持",
+        "notes": [
+            "判档理由：热分析测试服务量 = 检测服务订单流水按服务类别的年度计数。lineage 源表族 ads_is_order/ads_is_service 三源 0 实存；订单/流水词族三源逐一探针零承载（jiuxin booking/order=0+service=0；dev 22 表命中全异域；gkx 7 表为行业分析族）。无流水即无类别切片，判完全不支持。",
+            "与 P10_062 理化分析测试服务量同族同因（INCUB_061 同族，派单标注）：两件共享「检测服务流水域」缺口，本件类别=热分析测试（ORG-005 哈工大深圳服务项），P10_062 类别=理化分析测试（ORG-002 南科大服务项）。",
+            "「热分析测试」在 UI 仅以机构能力清单项出现（mockData.js:185 services 数组），无专项计数挂载；服务量总口径由有效订单 KPI（M_IS_VALID_ORDER=1,336）lineage 契约代表。",
+            "UI mock SERVICES 14 项/ORDERS 12 行为演示值，不参与支持度结论（ui_demo_fallback 披露）。",
+            "本件为薄壳：共享探针 code/_shared_s308_laneC.py + 快照 _snapshots/_shared_s308_laneC_out.json；本脚本仅做断言+判档落盘（词族证据全量引用共享快照）。",
+        ],
+        "base_years_used": [],
+        "base_years_missing": ["2021-2026"],
+        "base_years_note": "服务量为年度流量读数（订单完成时间维度），订单流水零承载故无任何年度可用；lineage 口径「本年度已完成及服务中（不含已取消）」提示正式口径应取订单完成年度。若接入 ads_is_order 需以完成时间为基期轴。",
+        "ctx_refs": {
+            "note": "正文引用型数字登记",
+            "refs": sorted(["14", "12", "6", "1,336", "0", "542", "280", "218", "22", "7", "ORG-005", "v1.0"]),
+        },
+    }
+
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    print("written:", OUT)
+    print("judgment: 完全不支持 | jiuxin booking/service:", jiuxin["jiuxin_booking_order_family"], jiuxin["jiuxin_service_family"])
+
+
+if __name__ == "__main__":
+    main()

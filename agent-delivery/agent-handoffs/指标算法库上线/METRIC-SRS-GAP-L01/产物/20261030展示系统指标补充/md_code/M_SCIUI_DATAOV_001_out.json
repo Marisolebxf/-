@@ -1,0 +1,140 @@
+{
+ "metric_id": "M_SCIUI_DATAOV_001",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:643",
+  "repos/demo-ui-science/src/pages/data-resources/OverviewWindow.jsx:181",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:12"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "主需求《科技信息展示系统和科技专题服务系统.md》:2503-2505（1.1.1.1.4.4.1.1.5 多源数据整合分析）需求明列叶：『针对不同格式、标准和来源的数据资源，自动实现结构融合与归类统计，使所有数据在统一平台下实现高效关联和整体管理』——功能在、算式无；核增需求与算法库两份真源 0 命中"
+ },
+ "facts": {
+  "dev_schema_count": 16,
+  "dev_table_count": 542,
+  "dev_nonzero_tables": 231,
+  "dev_zero_tables": 311,
+  "dev_gen_datasource_conf_rows": 0,
+  "dev_jimu_report_data_source_rows": 8,
+  "dev_lumen_analysis_task_rows": 339,
+  "dev_analysis_task_type_dist": [
+   [
+    "attraction",
+    93
+   ],
+   [
+    "business",
+    23
+   ],
+   [
+    "competitiveness",
+    36
+   ],
+   [
+    "cultivation",
+    66
+   ],
+   [
+    "pain_points",
+    38
+   ],
+   [
+    "supply_chain",
+    47
+   ],
+   [
+    "technology",
+    36
+   ]
+  ],
+  "dev_integration_like_tables": [
+   "gkxlumenx_ods.dwd_org_merger_acquisition_info"
+  ],
+  "gkx_table_count": 280,
+  "jiuxin_table_count": 210,
+  "jiuxin_nonzero_tables": 206,
+  "jiuxin_zero_tables": 4
+ },
+ "derived": [
+  {
+   "key": "dev_nonzero_table_share_pct",
+   "value": 42.62,
+   "numerator": 231,
+   "denominator": 542,
+   "note": "分子=gkxlumenx_* 16 schema 中 table_rows>0 的表数；分母=同口径全部表数（information_schema 统计口径，非精确 COUNT——行数列为估算值，0 值可信非 0 为量级）"
+  },
+  {
+   "key": "dev_registered_datasource_total",
+   "value": 8.0,
+   "numerator": 0,
+   "denominator": 8,
+   "note": "分子=gen_datasource_conf 行数（代码生成器数据源配置）；分母=jimu_report_data_source 行数（报表数据源）——两登记面合计 n_src 条，value=分子+分母非比值（登记读数并列）"
+  },
+  {
+   "key": "multi_source_integration_analysis",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『整合分析』功能面（结构融合过程/融合结果表）三源未承载——dev integration/merge/fusion 词族 0 命中；本件交付的是盘点口径读数（源/表/行量级），整合过程需数据工程立项；按 B10 不写伪指标值，此键留空即负结论登记"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 整合过程承载（gkxlumenx_* 16 schema integrat/merge/fusion/combine 词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_*（542 表）",
+   "hits": 1,
+   "hit_detail": "命中 ['gkxlumenx_ods.dwd_org_merger_acquisition_info']——0 张整合过程/融合结果表；数据源登记面在（gen_datasource_conf/jimu/lumen_analysis_task）但均为空或任务调度配置，非资源整合分析结果面"
+  },
+  {
+   "probe": "gkx 数据资源登记面（datasource/data_source/source_info/job/task/integrat/access/metadata 词族）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx（280 表）词族扫",
+   "hits": 1,
+   "hit_detail": "命中 dwd_job（10 行）——职位表非任务登记（语义排除）；gkx 为要素明细库，无数据资源管理元数据面"
+  },
+  {
+   "probe": "久新数据资源登记面（210 表同词族）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（210 表，2026-11-01 实测）词族扫",
+   "hits": 0,
+   "hit_detail": "datasource/data_source/integrat/access 词族 0 命中——久新是 ads_* 结果面库，接入管理元数据不在此库"
+  },
+  {
+   "probe": "需求原文「多源数据整合分析」定义段",
+   "source": "doc",
+   "sql": "rg 多源数据整合分析 三份需求真源",
+   "hits": 1,
+   "hit_detail": "主需求 :2503-2505（1.1.1.1.4.4.1.1.5）：『针对不同格式、标准和来源的数据资源，自动实现结构融合与归类统计……』——功能行为在、融合算法定义无；UI resourceThemeDistribution 为 mock 演示值"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：需求语义=『结构融合+归类统计』；三源均无整合过程/融合结果承载（integration 词族 0 命中），但盘点口径（源/表/行量级）三源结构+数据双在（dev 16 schema 542 表、gkx 280 表、久新 ads_* 实测 210 张）→ 归类统计可交付、结构融合需立项 → 部分支持",
+  "盘点读数：dev 非空表 42.62%（231/542，information_schema 行数为估算口径，note 已披露）；数据源登记面合计 8 条（gen_datasource_conf 0 + jimu 8）——均为开发态配置面，量级为样例级",
+  "三源接入事实：gkx 280 表（第三方要素库整体接入）+ 久新 ads_* 结果面（上游持续加表）+ dev 自建派生表——「多源」事实本身成立，缺的是融合过程的工程承载",
+  "久新活库：实测 210 张（2026-11-01 探测日），非空 206 张",
+  "mock 披露：OverviewWindow.jsx:643 卡片消费的 resourceThemeDistribution（基础科学 4,230/工程技术 3,890/医学健康 3,156 等 7 主题）为 mockData.js:12-20 演示值——不作数据证据（B10）",
+  "B11 对账：gkx 280/dev 16 schema/久新行数分布全部取自共享快照 _lane7_shared_probe_out.json，零漂移",
+  "升档触发器（B10）：①建数据资源元数据登记面（资源×来源×格式×接入时间的资产目录）→ 归类统计升完全直接支持；②整合过程立项（ETL 融合任务/血缘表）→ 完整功能升完全转换支持"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件为存量盘点型（无年度序列需求；年度面由 DATAOV_002 承接）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "542",
+   "231",
+   "280",
+   "210",
+   "542",
+   "16",
+   "4230",
+   "3890",
+   "8",
+   "339"
+  ]
+ }
+}

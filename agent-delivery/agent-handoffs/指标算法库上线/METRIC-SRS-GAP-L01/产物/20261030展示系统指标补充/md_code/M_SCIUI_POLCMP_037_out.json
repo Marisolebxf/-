@@ -1,0 +1,150 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_037",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2207",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2200",
+  "repos/demo-ui-science/src/pages/policy-tracking/analysis/PortraitTrio.jsx:38"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「申报通过率/通过率」未出现在三份需求真源；主需求 1.1.1.1.4.2.2 政策分析评价（「呈现企业具体画像」）是企业画像语境位但无该读数；语义源=UI mock 实现层"
+ },
+ "facts": {
+  "gkx_table_count": 280,
+  "gkx_apply_like_tables": [
+   "dwd_patent_applicants"
+  ],
+  "gkx_patent_applicants_cols": [
+   "dwd_id",
+   "patent_id",
+   "pn",
+   "sequence",
+   "name",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "operator_remarks",
+   "is_deleted",
+   "insert_remark"
+  ],
+  "gkx_patent_applicants_rows": 28964,
+  "gkx_policy_col_count": 33,
+  "gkx_policy_apply_like_cols": [
+   "status"
+  ],
+  "gkx_policy_rows": 20000,
+  "gkx_policy_text_shenbao_rows": 5405,
+  "gkx_policy_text_tongguolv_rows": 13,
+  "gkx_policy_text_shouli_rows": 3056,
+  "gkx_policy_text_pingshen_rows": 3133,
+  "gkx_policy_text_tongguolv_with_number_rows": 4,
+  "dev_apply_like_tables": [
+   [
+    "gkxlumenx_ods",
+    "dwd_patent_applicants"
+   ]
+  ],
+  "dev_policy_family_rows": {
+   "policy_base_info": 40000,
+   "policy_effect_eval": 0,
+   "policy_search_record": 0,
+   "enterprise_fund_project": 0
+  },
+  "jiuxin_table_count": 203,
+  "jiuxin_apply_like_tables": [
+   "ads_technology_application_case"
+  ],
+  "jiuxin_apply_like_cols": {
+   "ads_research_problem_deployment": [
+    "approved_direction_ids"
+   ],
+   "ads_research_problem_release": [
+    "approval_policy",
+    "approved_at",
+    "decision_approval_policy"
+   ]
+  }
+ },
+ "derived": [
+  {
+   "key": "gkx_policy_text_shenbao_share_pct",
+   "value": 27.025,
+   "numerator": 5405,
+   "denominator": 20000,
+   "note": "分子=文本含「申报」的政策行数（title+content+keypoints 拼串 LIKE），分母=gkx.dwd_policy_base 全表 20,000 行；同表同池（B3）；语义=申报类政策叙述覆盖面（政策要求企业怎么申报），不是企业申报行为流水"
+  },
+  {
+   "key": "gkx_policy_text_tongguolv_share_pct",
+   "value": 0.065,
+   "numerator": 13,
+   "denominator": 20000,
+   "note": "分子=文本含「通过率」的政策行数，分母=全表 20,000；同表同池（B3）；语义=通过率一词在政策文本的出现面（多为评审规则自述），不是实测通过率"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 申报/审批工单流水表",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx；280 表名扫 declare/apply/applic/approv/exam/review/audit/submit",
+   "hits": 1,
+   "hit_detail": "命中 dwd_patent_applicants（专利申请人表）——专利著录语境的 applicants 词根，列结构与行数在案证伪；无任何「企业×政策×申报×审批结论」工单表"
+  },
+  {
+   "probe": "gkx 政策表申报/审批状态列",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM gkx.dwd_policy_base；33 列扫 declare/apply/approv/exam/review/audit/status",
+   "hits": 1,
+   "hit_detail": "命中 1 列 status（政策自身效力状态：现行有效/失效等），不是企业申报审批状态；无申报数/通过数字段"
+  },
+  {
+   "probe": "dev 申报/审批工单表",
+   "source": "dev",
+   "sql": "information_schema.TABLES 四 schema 扫 declare/apply/applic/approv/exam/review/audit/submit",
+   "hits": 1,
+   "hit_detail": "仅 gkxlumenx_ods.dwd_patent_applicants（与 gkx 同源镜像，专利申请人陷阱）；政策族无申报工单表（policy_search_record 是站内搜索记录 0 行）"
+  },
+  {
+   "probe": "久新申报/审批面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES；203 表扫同词典 + 全表 DESC 列扫 approv/apply/declare/submit/accept/reject",
+   "hits": 2,
+   "hit_detail": "表名命中 ads_technology_application_case（技术应用案例库，application=技术采纳语境非政策申报）与列命中 ads_research_problem_deployment.approved_direction_ids / ads_research_problem_release.approval_policy+approved_at+decision_approval_policy——均为久新平台自身「科研问题发布审核」工单语境（问题条目何时过审上线），不是政策申报审批；无任何申报通过率结果面"
+  },
+  {
+   "probe": "需求原文「申报通过率」定义段",
+   "source": "doc",
+   "sql": "rg 申报通过率/通过率/获批 三份需求真源",
+   "hits": 0,
+   "hit_detail": "三份需求真源均未出现「申报通过率」指标名；主需求政策分析评价语境（1.1.1.1.4.2.2「呈现企业具体画像」）是企业画像语境位但无该读数定义；语义源=UI mock 企业画像卡 metric"
+  }
+ ],
+ "support_judgment": "完全不支持",
+ "notes": [
+  "判档：申报通过率 = 获批申报数 / 提交申报总数。分子分母同源于「企业×政策×申报工单」流水（每条含申报主体/政策事项/受理/审批结论），该流水三源零承载——gkx 唯一 apply 类表是专利申请人（著录字段非审批行为）、dev 无工单表、久新审批列是平台自身发布审核。与 POLCMP_029/031 共享族级缺口（政务侧申报-审批流水无源），本件独立留证",
+  "mock 披露：policyData.js:2207 申报通过率 63% 是企业画像卡（PortraitTrio）演示值，同卡四读数（1.28 万家/63%/46 天/54%）全部为页内 mock（POLCMP_021/025 姊妹件同池）——演示值不参与支持度结论；summary 文案「中小微企业申报通过率仍有提升空间」同样是 mock 叙述",
+  "文本面边界：「通过率」13 行命中多为评审规则自述（如「评审通过率不低于 90%」是立项要求），带数字表述仅 4 行——制度设计值不是实测值；「申报」5,405 行是政策教企业怎么申报（流程叙述），不是企业的申报行为记录",
+  "B11 对账：gkx 政策 20,000 行与共享快照零漂移；dev 政策族与 Lane6 探针零漂移",
+  "升档触发器（B10）：接入政务申报审批工单（政策申报系统受理-审批闭环记录，黑龙江平台「申报/审批/兑现」八环节工单口径）→ 分子分母闭合，升完全转换支持；若采用「政策匹配成功数/推送数」代理 → 语义已换（匹配≠申报），本件不接受"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "各期申报与获批计数序列"
+ ],
+ "base_years_note": "本件无申报流水可算（工单零承载）；文本面通过率表述是制度设计值非实测序列",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "20000",
+   "5405",
+   "13",
+   "4",
+   "28964",
+   "280",
+   "40,000",
+   "203"
+  ]
+ }
+}

@@ -1,0 +1,100 @@
+{
+ "metric_id": "M_SCIUI_SOFTSCI_003",
+ "batch": "S3-07-L2",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/instrument-sharing/components/InstrumentSharingPage.jsx:1428",
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/instrument-sharing/components/InstrumentSharingPage.jsx:196"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求说明书未出现「仪器分类分布」指标名；SRS 大型科学仪器共享章（1.1.1.1.4.6.4）要求「按生物医药、电子电气…分类」落图与「仪器类别精准筛选」（1.1.1.1.4.6.4.1.2），语义为需求功能面的上位覆盖，非同名指标。"
+ },
+ "facts": {
+  "gkx_dwd_medical_device_rows": 10000,
+  "gkx_medical_device_major_type_dist_top5": [
+   {
+    "major_type": "Spinal bone screw, non-bioabsorb",
+    "count": 1062
+   },
+   {
+    "major_type": "Bone-screw internal spinal fixat",
+    "count": 734
+   },
+   {
+    "major_type": "Orthopaedic bone screw, non-bioa",
+    "count": 481
+   },
+   {
+    "major_type": "Polymeric spinal interbody fusio",
+    "count": 296
+   },
+   {
+    "major_type": "Metallic spinal interbody fusion",
+    "count": 277
+   }
+  ],
+  "gkx_medical_device_major_type_dist_top5_sum": 2850,
+  "gkx_medical_device_major_type_distinct_count": 660,
+  "gkx_medical_device_device_type_distinct_count_670": 670,
+  "shared_snapshot": "_snapshots/_s307_l2_shared_out.json"
+ },
+ "derived": [
+  {
+   "name": "gkx_medical_device_top5_major_type_share_pct",
+   "value": 28.5,
+   "numerator": 2850,
+   "denominator": 10000,
+   "note": "分子=Top5 大类计数和（gkx_medical_device_major_type_dist_top5_sum），分母=gkx.dwd_medical_device 全表行数（gkx_dwd_medical_device_rows），同源同表；表示医疗器械大类结构集中度，非 UI 口径的全市大型科学仪器分类分布。"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "开发库 gkxlumenx_* 全 schema 仪器台账面（表名含 instrument/equip/device/apparatus）",
+   "source": "dev",
+   "sql": "information_schema.columns WHERE table_schema LIKE 'gkxlumenx%' 表名+列名词族扫描（_snapshots/_probe_s307_l2_out.json dev.column_scan.table_name_hits）",
+   "hits": 0
+  },
+  {
+   "probe": "gkx 280 表仪器台账面：仅 dwd_medical_device（医疗器械注册库，非共享仪器台账）",
+   "source": "gkx",
+   "sql": "information_schema.columns WHERE table_schema='gkx' 词族扫描（同上快照 gkx.column_scan.table_name_hits）",
+   "hits": 1
+  },
+  {
+   "probe": "久新 218 表（现场 SHOW TABLES 实数）仪器/预约/状态词族",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES + 表名词族匹配（同上快照 jiuxin.table_name_hits；列扫描 information_schema.columns）",
+   "hits": 0
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档理由：仪器分类维度三源中仅 gkx.dwd_medical_device 有结构面（医疗器械，10,000 行，670 个 device_type，语义≠大型科学仪器共享台账）；无运行状态列、无共享标记列；dev/久新零承载 → 结构部分可得（医疗器械代理），台账主体缺失。",
+  "gkx.dwd_medical_device 是美国 FDA 风格器械注册数据（device_type 为英文注册名），与深圳共享平台 9,262 台套口径（SRS 附录 A）不是同一总体。",
+  "UI mock 值（typeDistribution：材料分析/检测服务等 12 类）为演示值，不参与支持度结论。",
+  "本件为薄壳：共享复算脚本 code/_shared_s307_l2.py，本脚本仅做存在性+判档+基期三键校验。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "2021-2026"
+ ],
+ "base_years_note": "仪器分类分布为存量结构读数（无时序维度），不适用基期年份；UI mock 序列为演示值不可作基期。若接入真实台账需以台账年度为基期。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "10000",
+   "10,000",
+   "670",
+   "1,062",
+   "734",
+   "481",
+   "296",
+   "277",
+   "9262",
+   "9,262",
+   "5612",
+   "499",
+   "60.59%"
+  ]
+ }
+}

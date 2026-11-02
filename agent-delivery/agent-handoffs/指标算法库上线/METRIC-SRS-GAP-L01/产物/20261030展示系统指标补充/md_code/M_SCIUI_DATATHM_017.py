@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""M_SCIUI_DATATHM_017 问题总数 · 三源探针脚本（S3-04 L7）。
+
+含义：科技数据资源·接入视窗·问题资源情况「动态历史趋势可视化」卡折线的『问题总数』序列
+（getProblemTrendOption series name='问题总数'，AccessWindow.jsx:160/165）。mock 演示 5 个月
+逐月序列 18/22/25/20/23（月总量级），另有列表态 8 条问题明细。
+UI：repos/demo-ui-science/src/pages/data-resources/AccessWindow.jsx:160（legend）/:165（序列）。
+
+判档路径（口径=「数据质量问题登记面（资源×异常类型×发现时间×级别×状态）的登记条数，
+按月聚合即趋势序列」）：
+- 需求语义核：seq 364-367 问题资源族——「智能异常检测与质量监控算法自动识别」+「错误日志采集」
+  （主需求 :2673）→ 前提是数据质量稽核流水面（检测规则×资源×异常事件）；
+- 直接承载：dev problem/issue/exception/anomaly/error_log/alarm/fault/defect 词族——
+  唯一命中 gkxlumenx_ads.chain_sz_problem（深圳产业链诊断面：chain 维度 problems JSON + problem_count，
+  0 行）——语义排除（产业链诊断非数据质量登记）；
+- gkx 280 表同词族 0 命中；久新 live 212 表 problem 词族 53 张全为 ads_research_problem_*
+  （基础研究问题清单域：研究命题≠数据质量问题，语义排除，抽 ads_research_outcome_problem 342 行核对）；
+- 数据质量稽核/异常事件登记面三源零承载 → 判完全不支持（指标及关键依赖三源均无法构建）。
+
+B11 锚：三源表数 542/280/210；词族 = _probe_s304_l7_quality_out.json（本件消费 problem 三组键）。
+"""
+import json
+import os
+
+BASE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(BASE, "M_SCIUI_DATATHM_017_out.json")
+SNAP7 = os.path.join(BASE, "_snapshots", "_lane7_shared_probe_out.json")
+PROBE = os.path.join(BASE, "_snapshots", "_probe_s304_l7_quality_out.json")
+
+snap = json.load(open(SNAP7, encoding="utf-8"))
+probe = json.load(open(PROBE, encoding="utf-8"))
+
+facts = {
+    "dev_table_count": sum(snap["dev"]["schema_table_counts"].values()),
+    "gkx_table_count": snap["gkx"]["table_count"],
+    "jiuxin_table_count_snapshot_20261101": len(snap["jiuxin"]["tables"]),
+    # 问题词族命中（L7 族探针 2026-11-02 实跑）
+    "dev_problem_like_tables": probe["dev_problem_like_tables"],   # [chain_sz_problem]
+    "gkx_problem_like_tables": probe["gkx_problem_like_tables"],   # []
+    "jiuxin_problem_like_tables_count": len(probe["jiuxin_problem_like_tables"]),  # 53
+    "jiuxin_problem_like_tables_sample": probe["jiuxin_problem_like_tables"][:12],
+    "jiuxin_probe_mode": probe["jiuxin_status"],
+    # 语义排除证据（2026-11-02 现场实跑）：见 note——chain_sz_problem 0 行产业链诊断面；
+    # 久新 ads_research_outcome_problem 342 行基础研究问题（研究命题域）
+    "dev_chain_sz_problem_rows": 0,
+    "dev_chain_sz_problem_semantic": "深圳产业链诊断结果面（chain_id/tech_score/problems JSON/problem_count），非数据质量问题登记",
+    "jiuxin_ads_research_outcome_problem_rows": 342,
+    "jiuxin_problem_tables_semantic": "ads_research_problem_* 为基础研究问题清单域（研究命题的识别/演化/预测），非数据质量问题",
+    # UI mock 演示值（结构证据，不作数据源）
+    "ui_mock_monthly_trend_total": [["1月", 18], ["2月", 22], ["3月", 25], ["4月", 20], ["5月", 23]],
+    "ui_mock_problem_list_rows": 8,
+    "ui_mock_problem_types_defined": ["完整性异常", "时效性延迟", "格式不兼容", "准确性存疑", "更新中断", "内容冲突", "格式错误", "数据缺失"],
+}
+
+derived = [{
+    "key": "data_quality_problem_total_count",
+    "value": None,
+    "numerator": None,
+    "denominator": None,
+    "note": "『问题总数』需数据质量问题登记面（资源×异常类型×发现时间×级别×状态）——三源零承载："
+            "dev 唯一词族命中 chain_sz_problem 为深圳产业链诊断面（0 行，语义排除）；gkx 0 命中；"
+            "久新 53 张 ads_research_problem_* 全为『基础研究问题清单』域（研究命题≠数据质量问题，"
+            "抽 ads_research_outcome_problem 342 行核对）。mock 月序列 18/22/25/20/23 与列表 8 条为演示值，"
+            "不作计数原料。按 B10 留空即负结论登记",
+}]
+
+absence_probe = [
+    {"probe": "dev 数据质量问题登记面（problem/issue/exception/anomaly/error_log/alarm/fault/defect 词族）",
+     "source": "dev",
+     "sql": "information_schema.tables 扫 gkxlumenx_*（542 表，L7 族探针 2026-11-02 实跑）",
+     "hits": 1,
+     "hit_detail": "唯一命中 gkxlumenx_ads.chain_sz_problem——列结构（chain_id/chain_name/tech_score/talent_score/"
+                   "market_score/capital_score/policy_score/problems JSON/causes JSON/suggestions JSON/problem_count/"
+                   "model_version）与行数 0 证明其为深圳产业链诊断结果面（按链维存诊断问题建议），"
+                   "非『数据接入过程的数据质量问题』登记——语义排除；dev 无数据质量稽核/异常事件表"},
+    {"probe": "gkx 数据质量问题登记面（同词族）",
+     "source": "gkx",
+     "sql": "SHOW TABLES FROM gkx（280 表）词族扫（经 _gkxdb.py）",
+     "hits": 0,
+     "hit_detail": "命中 []——gkx 为要素明细库（论文/专利/机构/学者），无数据质量稽核面，无异常事件登记表"},
+    {"probe": "久新数据质量问题登记面（同词族）",
+     "source": "jiuxin",
+     "sql": "SHOW TABLES（2026-11-02 live，212 表）词族扫 + 抽样语义核对",
+     "hits": 0,
+     "hit_detail": "problem 词族命中 53 张全部为 ads_research_problem_* 族（如 ads_research_outcome_problem "
+                   "342 行，列 release_id/outcome_id/problem_id/problem_title_zh/problem_type/problem_level——"
+                   "基础研究问题清单域：『研究命题』的识别/演化/预测面，语义≠数据接入的数据质量问题）"
+                   "——语义排除后 0 张；ads_* 无数据质量稽核/异常事件表"},
+    {"probe": "需求原文「问题资源」定义段",
+     "source": "doc",
+     "sql": "rg 问题资源|问题总数 三份需求真源（主需求/接入视窗.md/核增）",
+     "hits": 4,
+     "hit_detail": "主需求 :2673（L5 总述）『通过数据质量监测和错误日志采集，自动识别并汇总问题资源列表，"
+                   "包括数据缺失、格式错误、内容冲突等各类异常数据』——需求自己点名工程前提（数据质量监测+"
+                   "错误日志采集）；:2675 功能列举；SRS 接入视窗.md seq 364（自动识别与列表展示）/366（分级）/"
+                   "367（可视化统计报表）——功能族在、『问题总数』计数口径（全量登记 vs 未解决存量）无定义；"
+                   "『问题总数』字面在 UI legend（AccessWindow.jsx:160），三份说明书 0 命中"},
+]
+
+notes = [
+    "判档：数据质量问题登记面三源零承载（dev 唯一命中语义排除 / gkx 0 / 久新 53 张研究命题域语义排除）"
+    "→ 指标及关键依赖三源均无法构建 → 完全不支持；需求 :2673 自点名『数据质量监测+错误日志采集』"
+    "工程前提，该前提三源未建（缺口归属『表不存在』，修复动作=质量稽核流水面立项）",
+    "UI 语义核（派单预警处置）：AccessWindow:160 语境确认为**数据质量问题面**——问题资源情况区"
+    "（seq 364-367）的双 Tab：可视化统计报表（分级饼/趋势线/渠道统计/表分布）+ 自动识别列表展示"
+    "（8 条问题明细：完整性异常/时效性延迟/格式不兼容等，含状态流转 pending/processing/resolved）；"
+    "『问题总数』是趋势卡的总量序列（mock 5 个月 18/22/25/20/23），非静态单值",
+    "mock 披露：problemResourceStats.monthlyTrend（mockData.js:1709-1713）与 problemResources 8 行列表"
+    "（:821-829）为演示常量——注意 mock 自身不自洽：列表态 8 条 vs 趋态势月 18-25 条（两处 mock 未对齐，"
+    "进一步证明是演示值非真实读数）（B10）",
+    "B11 对账：三源表数 542/280/210 共享快照；问题词族与 _probe_s304_l7_quality_out.json 逐键一致；"
+    "久新 live 212 张较快照 210 多 2 张（活库增长披露，『活库表数不写死』）",
+    "升档触发器（B10）：①数据质量稽核流水面立项（检测规则×资源×异常事件，R1 GB/T 36344 六维规则库）"
+    "→ 问题总数与趋势序列直查 → 升完全直接支持；②乙方自建稽核规则跑批（资源级核查脚本）→ 事件登记可建"
+    "→ 升完全转换支持（规则集须登记）；③维持现状 → 完全不支持（UI 该位建议暂无数据）",
+    "权威口径参照（R1 GB/T 36344-2018）：数据质量六维（规范性/完整性/准确性/一致性/时效性/可访问性）"
+    "是问题检测的规则维度源——『问题』应定义为六维稽核规则的违例事件，计数口径才有锚",
+]
+
+support = "完全不支持"
+
+out = {
+    "metric_id": "M_SCIUI_DATATHM_017",
+    "batch": "S3-04",
+    "ui_evidence": [
+        "repos/demo-ui-science/src/pages/data-resources/AccessWindow.jsx:160",
+        "repos/demo-ui-science/src/pages/data-resources/AccessWindow.jsx:165",
+        "repos/demo-ui-science/src/pages/data-resources/mockData.js:1709",
+        "repos/demo-ui-science/src/pages/data-resources/mockData.js:821",
+    ],
+    "requirement_trace": {
+        "named_in_srs": False,
+        "note": "三份说明书未出现「问题总数」字面；需求明列功能族 seq 364-367（问题资源情况，"
+                "excel_rows 367-370）——功能在、计数口径无定义；『问题总数』字面仅见于 UI legend",
+    },
+    "facts": facts,
+    "derived": derived,
+    "absence_probe": absence_probe,
+    "support_judgment": support,
+    "notes": notes,
+    "base_years_used": [],
+    "base_years_missing": ["问题登记时间序列整体缺承载（mock 演示 5 个月无库内对应）"],
+    "base_years_note": "月度趋势需问题事件×发现时间流水——三源零承载（探针在案）；"
+                       "mock 的 1-5 月序列是演示约定，不构成期次证据",
+    "ctx_refs": {"note": "正文引用型数字登记",
+                 "refs": ["542", "280", "210", "212", "18", "22", "25", "20", "23", "8",
+                          "342", "53", "364", "367"]},
+}
+
+with open(OUT, "w", encoding="utf-8") as f:
+    json.dump(out, f, ensure_ascii=False, indent=1)
+print("done ->", OUT)

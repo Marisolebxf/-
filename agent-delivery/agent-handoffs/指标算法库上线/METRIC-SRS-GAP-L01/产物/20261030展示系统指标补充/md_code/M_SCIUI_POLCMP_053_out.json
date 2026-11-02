@@ -1,0 +1,170 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_053",
+ "batch": "S3-03",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2185",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2178",
+  "repos/demo-ui-science/src/pages/policy-tracking/analysis/PortraitTrio.jsx:40"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份需求真源无「跨部门协同率」指标名；主需求 5 处「跨部门协同」均为非政策域导出功能语；UI DS-11 政策画像卡 metrics 行是唯一实证；export 自认计算方法需立项调研"
+ },
+ "facts": {
+  "gkx_policy_rows": 20000,
+  "gkx_ministry_nonnull": 19989,
+  "gkx_ministry_null_literal": 11,
+  "gkx_ministry_dunhao_rows": 336,
+  "gkx_ministry_slash_rows": 118,
+  "gkx_ministry_dunhao_distinct": [
+   [
+    "北京市科学技术委员会、中关村科技园区管理委员会",
+    336
+   ]
+  ],
+  "gkx_ministry_slash_sample": [
+   "国务院/中央人民政府"
+  ],
+  "gkx_ministry_dept_hits_dist": [
+   [
+    0,
+    12367
+   ],
+   [
+    1,
+    7622
+   ]
+  ],
+  "gkx_joint_publish_combined_rows": 560,
+  "gkx_joint_publish_overlap_rows": 1,
+  "gkx_ministry_len_band": [
+   [
+    "a<=10",
+    16309
+   ],
+   [
+    "b11-20",
+    3344
+   ],
+   [
+    "c21-40",
+    336
+   ]
+  ],
+  "gkx_title_concat_org_rows": 225,
+  "gkx_title_concat_org_sample": [
+   "北京市经济和信息化委员会北京市财政局中国保险监督管理委员会北京监管局关于开展重点新材料首批次应用保险补偿机制试点工作征集和申报的通知",
+   "上海市经济和信息化委员会上海市科学技术委员会上海市人力资源和社会保障局关于印发《上海市战略性新兴产业紧缺人才开发目录》的通知",
+   "广东省科学技术厅广东省发展和改革委员会广东省工业和信息化厅广东省商务厅广东省市场监督管理局关于印发广东省培育前沿新材料战略性新兴产业集群行动计划(2021-2025年)的通知",
+   "浙江省财政厅浙江省水利厅关于印发浙江省水利建设与发展专项资金管理办法的通知",
+   "浙江省财政厅浙江省交通运输厅关于印发浙江省财政厅浙江省交通运输厅关于印发浙江省交通运输发展专项资金管理办法（试行）的通知"
+  ],
+  "gkx_text_xietong_rows": 2149,
+  "gkx_text_xietong_dept_rows": 700,
+  "gkx_global_policy_rows": 20000,
+  "dev_publish_organization_nonnull": 39989,
+  "dev_publish_organization_dunhao_rows": 336,
+  "dev_policy_time_series_indicator_cols": [
+   "id",
+   "tenant_id",
+   "stat_date",
+   "stat_period",
+   "period_label",
+   "publish_count",
+   "chain_ratio",
+   "year_over_year_ratio",
+   "cumulative_count",
+   "avg_daily_count",
+   "theme_distribution",
+   "dept_distribution",
+   "create_time",
+   "update_time",
+   "is_deleted",
+   "ext1",
+   "ext2",
+   "ext3"
+  ],
+  "dev_policy_time_series_indicator_rows": 0,
+  "jiuxin_table_count": 210,
+  "jiuxin_policy_dept_like_tables": [
+   "ads_institution_collaboration_subfield_yearly",
+   "ads_institution_collaboration_yearly",
+   "ads_research_problem_collaboration_recommendation",
+   "ads_research_problem_policy_evidence",
+   "ads_research_problem_policy_yearly_metrics",
+   "ads_talent_collaborator",
+   "ads_talent_institution_cooperation",
+   "ads_technology_policy_evidence"
+  ]
+ },
+ "derived": [
+  {
+   "key": "joint_publish_share_dunhao_pct",
+   "value": 1.681,
+   "numerator": 336,
+   "denominator": 19989,
+   "note": "口径 A 联合发文代理率：分子=顿号分隔联合署名行，分母=ministry 非空行（同表同列同 WHERE）；代理读数非指标本体——「应协同政策集」分母口径未定义，且顿号联合 DISTINCT 仅 1 值（北京市科委+中关村管委会 ×336）形态单值坍缩"
+  },
+  {
+   "key": "joint_publish_proxy_combined_pct",
+   "value": 2.802,
+   "numerator": 560,
+   "denominator": 19989,
+   "note": "两层融合联合发文代理率（UNION 去重口径）：分子=顿号联合署名∪title 层机关连写去重计数（两集合交集 1 行），分母=ministry 非空行（同表同 WHERE）；title 正则保守（仅 13 省份词表），读数语义是联合发文占比非协同率本体"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 部门协同关系面",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx（280 表）扫 dept/coord/collab/joint/syner/coop + dwd_policy_base 33 列扫协同类列",
+   "hits": 0,
+   "hit_detail": "280 表无部门协同关系表；33 列无协同列——唯一机关承载是 ministry（发布机关名文本列，19,989 非空）"
+  },
+  {
+   "probe": "dev 部门分布落位表",
+   "source": "dev",
+   "sql": "SHOW COLUMNS + COUNT：policy_time_series_indicator（含 dept_distribution 列）",
+   "hits": 0,
+   "hit_detail": "dept_distribution 列在（部门分布的时间序列落位设计）但全表 0 行——结构在数据空；政策族 33 表无联合发文/会签承载表"
+  },
+  {
+   "probe": "久新政策/部门协同面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（实测 210 张，探测日 2026-11-01）扫 policy/dept/coord/collab/joint/syner/coop",
+   "hits": 0,
+   "hit_detail": "命中面为政策证据/年度计数/合作类表（talent_institution_cooperation是人才-机构合作非部门协同；institution cooperation 类同），无一张是政府部门间协同关系承载"
+  },
+  {
+   "probe": "需求文档定义",
+   "source": "doc",
+   "sql": "rg 跨部门协同/协同率 主需求 + SRS 政策族四文件 + 核增 17 叶 + 算法库",
+   "hits": 0,
+   "hit_detail": "「跨部门协同」仅现于主需求非政策域语境（:2435 引进成本导出便利/:2625 数据来源明细导出/:2879 日志导出/:3267 成果筛查/:3465 载体协同治理——均为「便于跨部门协同使用」的导出功能语，非政策域协同率指标）；「协同率」三源 0 命中；export 自认计算方法需立项调研"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：结构侧有量（ministry/publish_organization 列在、19,989/39,989 非空）但语义不足——联合发文口径可算而当前联合署名面单值坍缩（顿号 336 行全部是同一值「北京市科学技术委员会、中关村科技园区管委会」，1.682% 且非部级跨部门形态）；「应协同政策集」分母口径未定义；执行侧协同面（会签/数据共享）三源全无。口径可裁剪+输入面有缺陷 → 部分支持",
+  "权威口径参照（R1/R4 核验在案）：联合发文是学界测度部际协同的标准观测窗——武汉大学环境治理研究以 976 份中央部门联合行文policy为样本（两部门联合 45%/两部门以上 55%）；京津冀/长三角创新政策研究以「多部门联合发布政策数量」为横向主体协同指标（京 46/津 38/冀 41；沪 91/苏 53/浙 49/皖 56）。对照可见本库 336 行单值形态离该口径的数据要求差距极大（联合署名解析需先做机关名切分与规范化）",
+  "同名连写形态的修正证据：ministry 列长度分布三段（≤10 字 16,309 / 11-20 字 3,344 / 21-40 字 336）——21-40 字段恰是顿号联合值；「广东省科学技术厅广东省发展和改革委员会…」五机关连写形态实际出现在 title 层（本件 title 探针在案），ministry 层连写 0 行。结论：ministry 列以单机关短值为主（≤20 字占 98.3%），多机关署名信息分散在 ministry 顿号（336 行单值）与 title 连写两层——联合发文的完整计数需两层数据融合（机关名切分+ title 回退解析），工程量非平凡",
+  "dev publish_organization 与 gkx ministry 同步同构（顿号 336 行一致）——两库同源同步（Lane6 r2 探针共证）；policy_time_series_indicator.dept_distribution 列在但 0 行，是「规划过落位、从未写入」形态（与 POLCMP_008 的 policy_public_opinion同族证据）",
+  "UI mock 披露：policyData.js:2185「跨部门协同率 68%」是 DS-11 政策画像卡 metrics 行 mock 常量（演示值不参与支持度结论）——68% 的量级远超库内联合署名面（1.682%），mock 值更接近「部门间数据共享率」类政务系统口径（R2 辽宁框架的跨部门数据共享率指标），恰说明 UI 语义与联合发文学术语境存在口径歧义，须甲方裁定",
+  "升档触发器（B10）：①机关名切分与规范化工程（词表+边界识别）落地 → 联合发文口径闭合，升完全转换支持（ministry 19,989 行原料在）；②若甲方裁定口径为执行侧「跨部门数据共享率」→ 需政务共享平台日志对接（外部源），单独立项；③若裁定为「会签部门数/政策」→ 需会签流水，三源无承载"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "联合署名面无年度序列计算（口径未闭合）；叙述面年度分布无计算意义",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "19989",
+   "336",
+   "118",
+   "2149",
+   "210",
+   "68",
+   "336"
+  ]
+ }
+}

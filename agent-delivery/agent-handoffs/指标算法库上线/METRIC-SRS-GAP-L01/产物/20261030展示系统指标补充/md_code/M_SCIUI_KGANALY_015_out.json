@@ -1,0 +1,90 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_015",
+  "metric_name": "反馈均分（科技知识图谱·指标展示·优化决策模型·决策反馈闭环）",
+  "facts": {
+    "ui_mount": "OptimizeDecisionPanel.jsx:379（决策反馈闭环 Tab Statistic：title=反馈均分, value=feedbackAdj.avgRating, suffix=/ 5）；:380-381 姊妹读数 反馈后准确率/目标误报率；:383 应用反馈优化按钮→applyFeedback",
+    "ui_value_chain": ":59 feedback=useState(mockData decisionFeedbackItems)；:66 feedbackAdj=useMemo(applyFeedbackLoop(feedback, perf))；decisionModel.js:48-62 applyFeedbackLoop——avgRating=Σ f.rating / n（全量均分含误判项，toFixed(1)）",
+    "ui_mock_feedback": [
+      {
+        "id": "fb-1",
+        "time": "2026-05-20 16:30",
+        "dept": "风控部",
+        "decisionId": "risk-1",
+        "result": "有效拦截",
+        "rating": 5
+      },
+      {
+        "id": "fb-2",
+        "time": "2026-05-20 12:10",
+        "dept": "信贷审批",
+        "decisionId": "risk-2",
+        "result": "确认违约风险",
+        "rating": 4
+      },
+      {
+        "id": "fb-3",
+        "time": "2026-05-19 18:00",
+        "dept": "客户服务",
+        "decisionId": "risk-4",
+        "result": "误判",
+        "rating": 2
+      },
+      {
+        "id": "fb-4",
+        "time": "2026-05-18 09:20",
+        "dept": "合规审计",
+        "decisionId": "risk-3",
+        "result": "有效预警",
+        "rating": 5
+      }
+    ],
+    "ui_formula_repro": {
+      "avg_rating": 4.0,
+      "valid_count": 3,
+      "false_positive_count": 1,
+      "accuracy_after": 93.0,
+      "recall_after": 88.8,
+      "f1_after": 90.9,
+      "false_positive_rate": 6.5,
+      "note": "applyFeedbackLoop 移植复现：均分=Σrating/n（5+4+2+5)/4=4.0；valid=3（含『有效/确认』）、误判=1；反馈后准确率 93.2/召回 88.8/F1 91.0/目标误报率 6.5——纯 mock 链自洽"
+    },
+    "jiuxin_feedback_model_word_tables": [],
+    "jiuxin_table_count_live": 218
+  },
+  "derived": [
+    {
+      "formula": "avgRating = Σ f.rating / |F|（decisionModel.js:52，全量均分含误判项）",
+      "derived": "mock 四条 (5+4+2+5)/4 = 4.0",
+      "note": "UI 均分公式形态复现——分母全量反馈（含误判项 rating=2），非仅有效项"
+    },
+    {
+      "formula": "反馈后指标联动（:54-56）accuracy += valid*0.15 - falsePos*0.25",
+      "derived": "valid=3/falsePos=1 → accuracy 92.8→93.0",
+      "note": "mock 反馈闭环联动复现——反馈记录三源无承载，联动无从真算"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev 决策反馈记录面（部门复核评分：dept/result/rating）",
+      "how": "dev 542 表词族（feedback/rating/review/评分）",
+      "hits": "0——evaluation_template 为企业评估配置（语义排除，010/011 在案）；无决策复核评分面"
+    },
+    {
+      "what": "gkx 反馈评分面",
+      "how": "gkx 280 表词族（feedback/rating/review）",
+      "hits": "0——专利/学者要素域无业务反馈评分场景"
+    },
+    {
+      "what": "久新决策反馈面",
+      "how": "久新 218 表词族（feedback/model/train/label）——S3-06 族级快照",
+      "hits": "0——feedback_model 词族 0 命中；且风险预警本身无落盘（blacklist/trigger 0 命中，010/011 在案）→复核无从发起"
+    }
+  ],
+  "support_judgment": "完全不支持",
+  "support_rationale": "反馈均分的计算原料=决策复核评分记录（谁/对哪条决策/结果/评分），三源均无：风险预警本身无落盘（010/011 在案）→复核评分更无从产生。UI 4.0 分为 mock 四条写死。与 010/011 共享「无决策记录面」负证据族",
+  "base_years_used": [],
+  "base_years_missing": [
+    "反馈均分为评估截面读数，无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=探针快照日；反馈均分为闭环截面量，非年度基期概念"
+}

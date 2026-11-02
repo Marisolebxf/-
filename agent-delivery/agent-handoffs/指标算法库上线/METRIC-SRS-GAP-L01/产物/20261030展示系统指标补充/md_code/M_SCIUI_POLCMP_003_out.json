@@ -1,0 +1,140 @@
+{
+ "metric_id": "M_SCIUI_POLCMP_003",
+ "batch": "S3-02",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2186",
+  "repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2461"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「免申即享」未出现在三份需求真源（主需求+SRS 政策族+核增 17 叶）；语义源=UI mock 实现层（政策画像卡）+ 政务侧免申即享改革语境（2021 年起国办推广）；核增需求 PC-04 规划指标库『扶持力度/适用范围/实施时效/申请条件』四维中最接近的是『申请条件』维（免申即享=申请条件为空集的特例）"
+ },
+ "facts": {
+  "gkx_policy_col_count": 33,
+  "gkx_policy_enjoy_mode_cols": [],
+  "gkx_policy_rows": 20000,
+  "gkx_text_mstjx_rows": 5,
+  "gkx_text_mstjx_detail": [
+   [
+    "18323658",
+    "@参保单位及参保人，稳岗返还和失业补助金申领12月31日截止，请尽快办理！",
+    "临沂市人民政府",
+    "2021",
+    "山东省"
+   ],
+   [
+    "18325911",
+    "黑龙江省人民政府关于印发黑龙江省国民经济和社会发展第十四个五年规划和二〇三五年远景目标纲要的通知",
+    "黑龙江省人民政府",
+    "2021",
+    "黑龙江省"
+   ],
+   [
+    "18363389",
+    "江西省人民政府印发关于有效应对疫情帮助中小企业纾困解难若干政策措施的通知",
+    "江西省发展和改革委员会",
+    "2022",
+    "江西省"
+   ],
+   [
+    "18406292",
+    "2020年度南京市科学技术局下属单位部门整体评价报告",
+    "南京市科学技术局",
+    "2021",
+    "江苏省"
+   ],
+   [
+    "18406534",
+    "北京市人民政府办公厅关于印发《北京市培育和激发市场主体活力持续优化营商环境实施方案》的通知",
+    "北京市科学技术委员会",
+    "2021",
+    "北京市"
+   ]
+  ],
+  "gkx_text_即申即享_rows": 1,
+  "gkx_text_直达快享_rows": 2,
+  "gkx_text_免申报_rows": 3,
+  "gkx_global_policy_rows": 20000,
+  "gkx_global_text_mstjx_rows": 0,
+  "dev_policy_base_info_col_count": 44,
+  "dev_policy_base_info_enjoy_mode_cols": [],
+  "dev_policy_base_info_rows": 40000,
+  "dev_text_mstjx_rows": 5,
+  "jiuxin_table_count": 203,
+  "jiuxin_policy_tag_like_tables": [
+   "ads_patent_analysis_classification",
+   "ads_patent_analysis_institution_classification",
+   "ads_research_problem_policy_evidence",
+   "ads_research_problem_policy_yearly_metrics",
+   "ads_research_resource_shortage_yearly",
+   "ads_technology_hotspot_signal_filter_stage_20261031",
+   "ads_technology_policy_evidence",
+   "ads_technology_stage_assessment",
+   "ads_technology_transfer_stage"
+  ]
+ },
+ "derived": [
+  {
+   "key": "gkx_mstjx_text_mention_share_pct",
+   "value": 0.025,
+   "numerator": 5,
+   "denominator": 20000,
+   "note": "分子=全文本（title+theme+content+keywords+keypoints 拼串）含『免申即享』的政策行数，分母=gkx.dwd_policy_base 全表；同表同池（B3）；口径 A=文本提及面，是真实免申即享政策的强下界（提及改革者自身未必免申即享，未提及者也可能免申即享）——非指标本义值"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 政策『享受方式』结构化列",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM gkx.dwd_policy_base（33 列）扫 enjoy/mode/method/declare/apply/process/channel/way",
+   "hits": 0,
+   "hit_detail": "命中 []——均为审计列（table_data_source/operator_remarks）或秩伪列，无享受方式语义；『免申即享』作为政策属性在三源无结构化承载"
+  },
+  {
+   "probe": "dev policy_base_info『享受方式』列",
+   "source": "dev",
+   "sql": "SHOW COLUMNS FROM policy_base_info（47 列）扫同类关键词",
+   "hits": 0,
+   "hit_detail": "命中 []——doc_type/etl_batch_id 等 ETL 列，无享受方式列；dev 与 gkx 同源数据（domestic 20,000 行文本命中同为 5）"
+  },
+  {
+   "probe": "久新政策属性标签面",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES（130 表）扫 policy/tag/label/category/classif",
+   "hits": 9,
+   "hit_detail": "仅 2 张政策证据空表（research_problem/technology 的 policy_evidence，schema 文档在案『当前无数据』）——语义为『技术/问题关联了哪些政策』，非政策享受方式属性表"
+  },
+  {
+   "probe": "核增需求原文「免申即享」",
+   "source": "doc",
+   "sql": "rg 免申即享 《科技信息展示系统(政策对比功能升级)核增需求.md》+ 三份 SRS 政策族",
+   "hits": 0,
+   "hit_detail": "核增 17 叶与 SRS 政策族均无；语义源=UI mock（policyData.js:2186 政策画像卡 24%）+ 政务侧免申即享改革语境（R1/R2）"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：分母（政策总数）三源充足（gkx 20,000/dev 40,000 双源池）；分子（免申即享政策清单）无结构化承载——享受方式是政策条款语义属性，需条款级 NLP 标注（核增需求 PC-06 条款精细化拆解正是该工程）才能闭合。判部分支持：分子依赖维始终缺结构化承载与 gold 校准集",
+  "口径 A 读数边界：5/20,000=0.025%——与 UI mock 的 24% 相差三个数量级，因为两者语义不同：mock 的 24% 是『政策库中被标注为免申即享的政策占比』（政务兑现平台口径，如辽宁 1,031 条/全量政策）；口径 A 的 0.025% 是『政策文本提及免申即享一词的占比』。5 条命中明细逐条核对：均为地方营商环境/纾困政策在条文中推行『免申即享』改革（如北京优化营商环境实施方案），非自身被标注免申即享——文本提及是改革的传播面不是政策的属性面",
+  "表述变体扫描：即申即享/直达快享/免申报同族表述另命中若干（产物键逐个在案），合并后仍是个位数量级——不足以支撑任何占比读数",
+  "B11 对账：gkx 政策 20,000 行与共享快照一致；文本命中 5 行与 dev domestic 面 5 行同源零漂移（同一数据双装载）",
+  "mock 披露：policyData.js:2186『免申即享占比 24%』是 policyPortraitSummaries 政策画像卡的 Wave0 mock（detail.metrics 数组演示值）——演示值不参与支持度结论",
+  "升档触发器（B10）：①核增 PC-06 条款精细化拆解落地并对政策库全量标注享受方式 → 分子闭合升完全转换支持（标注工程即分母全量 NLP 处理）；②接入政务免申即享政策清单（如深圳/辽宁公布的免申即享事项清单）→ 按政策名/文号匹配套 ID，分子直查升完全直接支持"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件为存量占比（无年度序列语义）；政策库 publish_year 跨 2012-2024 但占比不分期",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "20000",
+   "5",
+   "0.025",
+   "24%",
+   "20,000",
+   "40,000",
+   "1,031",
+   "130"
+  ]
+ }
+}

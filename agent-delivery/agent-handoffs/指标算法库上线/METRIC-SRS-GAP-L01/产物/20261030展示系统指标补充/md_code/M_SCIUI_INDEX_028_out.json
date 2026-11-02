@@ -1,0 +1,169 @@
+{
+ "metric_id": "M_SCIUI_INDEX_028",
+ "batch": "S3-02",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/techIndex.js:257",
+  "repos/demo-ui-science/src/techIndex.js:515",
+  "repos/demo-ui-science/src/techIndex.js:236"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「科技影响力指数」作为指标名未出现在三份需求真源；组合语义真源=主需求文档 :923（1.1.1.1.4.1.7.3 产业发展潜力指标展示：『以及科学影响力、技术影响力等科技影响力指标，构建产业发展潜力评估体系』）；SRS 科技指数.md 最近语义叶=seq 166『科技影响力趋势可视化』（趋势展示非指数本体）；UI techIndex.js 指标树四分项之一（weight 24）"
+ },
+ "facts": {
+  "jiuxin_power_rows": 64698,
+  "jiuxin_citation_score_coverage": {
+   "rows": 64698,
+   "nonnull": 64698,
+   "min": 3.196439,
+   "max": 100.0,
+   "avg": 50.0
+  },
+  "jiuxin_paper_score_coverage": {
+   "nonnull": 64698,
+   "min": 8.093111,
+   "max": 100.0
+  },
+  "jiuxin_fwci_cols_2026": {
+   "rows": 68010,
+   "fwci_nonnull": 21651,
+   "avg_cit_nonnull": 22342
+  },
+  "jiuxin_fwci_top5_2026": [
+   {
+    "institution_id": "ins_17fe2b03935d4056ae8e61c68bcccb4f",
+    "fwci": 314.5455
+   },
+   {
+    "institution_id": "ins_a5ca96ee44004e07a398add31e1e6ac7",
+    "fwci": 314.5455
+   },
+   {
+    "institution_id": "ins_5e98534032ad45d2acb77e411561a0ed",
+    "fwci": 314.5455
+   },
+   {
+    "institution_id": "ins_4aa92320ed1249599e9a7568f70a8304",
+    "fwci": 314.5455
+   },
+   {
+    "institution_id": "ins_228aec84d28942dd9b499c30b28173c1",
+    "fwci": 314.5455
+   }
+  ],
+  "jiuxin_region_snapshot_columns": [
+   "problem_id",
+   "location_level",
+   "location_id",
+   "model_version",
+   "location_name",
+   "location_name_zh",
+   "country_code",
+   "paper_count",
+   "patent_count",
+   "project_count",
+   "institution_count",
+   "company_count",
+   "research_heat_score",
+   "frontier_leadership_score",
+   "investment_score",
+   "investment_score_status",
+   "collaboration_breadth_score",
+   "competition_score",
+   "competition_rank",
+   "assessment_method",
+   "metrics_as_of_date",
+   "metric_definition_version",
+   "data_version",
+   "update_time"
+  ],
+  "jiuxin_region_snapshot_rows": 9367,
+  "jiuxin_region_snapshot_version": [
+   {
+    "as_of": "2026-10-19",
+    "version": "research_problem_real_monthly_metrics_v1",
+    "rows": 9367
+   }
+  ],
+  "jiuxin_region_country_investment_coverage": {
+   "country_rows": 1474,
+   "investment_score_nonnull": 0
+  },
+  "jiuxin_tech_patent_rows": 172644,
+  "jiuxin_inst_patent_rows": 100358,
+  "gkx_scholar_influence_cols": {
+   "rows": 21316,
+   "citation_nums_nonnull": 21316,
+   "h_index_nonnull": 21316,
+   "reference_nums_nonnull": 0
+  },
+  "dev_svc_tech_power_score_rows": 0
+ },
+ "derived": [
+  {
+   "key": "jiuxin_citation_score_nonnull_pct",
+   "value": 100.0,
+   "numerator": 64698,
+   "denominator": 64698,
+   "note": "分子=citation_score 非空行数，分母=power 全表行数；同表同池（B3）——科学影响力单维的现役覆盖度"
+  },
+  {
+   "key": "jiuxin_region_country_investment_nonnull_pct",
+   "value": 0.0,
+   "numerator": 0,
+   "denominator": 1474,
+   "note": "分子=国家级 investment_score 非空行数，分母=region_snapshot COUNTRY 级行数；同表同层（B3）——组合维缺格的量化证据"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "久新『科学+技术组合』科技影响力指数现成面",
+   "source": "jiuxin",
+   "sql": "DESCRIBE ads_institution_technology_power / ads_geo_yearly_index（列清单落 facts）",
+   "hits": 0,
+   "hit_detail": "power 四分项无技术影响力分列（专利维缺位：institution_patent 为计数画像非评分）；geo_yearly_index（通用指数承载表）实测 0 行——组合指数无现成结果面"
+  },
+  {
+   "probe": "gkx 科技影响力指数结果面",
+   "source": "gkx",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%influence%' OR table_name LIKE '%impact%' OR table_name LIKE '%index%')",
+   "hits": 4,
+   "hit_names": [
+    "dwd_dim_index_attribute",
+    "dwd_dim_index_cal",
+    "dwd_dim_index_dur",
+    "dwd_macro_index_data"
+   ],
+   "hit_detail": "四表为宏观经济指数族（dim_cal=环比/同比/绝对值，macro_index_data=宏观指标值 area_code 广东地市），语义属宏观经济域非科技影响力——存在性披露，不构成本指标承载"
+  },
+  {
+   "probe": "dev 科技影响力指数承载",
+   "source": "dev",
+   "sql": "SELECT COUNT(*) FROM gkxlumenx_ads.svc_tech_power_score",
+   "hits": 0,
+   "hit_detail": "实测 0 行——服务域造数面（skill P4.1 黑名单），存在性披露、值不引用"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档（裁定 NEW 口径）：科技影响力指数=组合语义（需求 :923『科学影响力、技术影响力等科技影响力指标』——产业发展潜力评估体系语境）；三源无『科学+技术组合』现成结果面——久新 power 的 citation_score 只是科学单维（论文被引族），技术影响力（专利侧）在 power 四分项中无分列（paper/citation/talent/topic 全学术族）；geo_yearly_index 指数承载表 0 行。组合口径需自建合成（科学分 citation_score 现役 + 技术分需从 institution_patent/technology_patent 明细新算），判部分支持",
+  "三源影响力分维谱系（本件盘点交付）：①久新 citation_score（机构科学影响力，64,698 行全覆盖）；②久新 fwci/avg_citations_per_paper（篇均影响力，816,120 行年面板）；③久新 region_snapshot 六评分（区域组合影响力族，投资分国家级缺格——组合维覆盖风险证据）；④gkx dwd_scholar citation_nums/h_index/reference_nums（学者级三列，非空数落产物）；⑤久新专利明细 23 列表×2（技术侧原料在案，评分未合成）",
+  "UI 口径注记：techIndex.js:257『科技影响力指数 weight 24』四分项描述=引用影响、传播强度、区域带动和全球对标——引用影响映射 citation_score/fwci（现役），传播强度/区域带动/全球对标三子维三源均无现成分列（组合缺口的具体形态）",
+  "B10 双口径：口径 A=科学影响力单维先行（citation_score 现役可直读，标注『非组合口径』）；口径 B=组合口径立项（科学分复用 citation_score + 技术分从专利明细合成 + 传播/对标子维定义）→ 结构齐备后升完全转换支持"
+ ],
+ "base_years_used": [
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "单维锚（citation_score/power 面）为 2026-09-18 时点快照；fwci 族有 2015-2026 年面板（趋势可视化 seq 166 语义可承接，本件不展开）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "64,698",
+   "816,120",
+   "21,316",
+   "24",
+   ":923"
+  ]
+ }
+}
