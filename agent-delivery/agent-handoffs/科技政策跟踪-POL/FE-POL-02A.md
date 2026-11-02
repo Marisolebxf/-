@@ -1,6 +1,6 @@
 # FE-POL-02A · 政策分析评价整页复刻（13 叶）— 3 主 Tab + 文本 3 子 Tab + analysis/interpret 组件族
 
-> 交付日期：2026-11-02 · 仓：`repos/lumen-ui-science-pc` · 状态：**完工停本地，等人工验收（2026-10-20 闸门）**
+> 交付日期：2026-11-02 · 仓：`repos/lumen-ui-science-pc` · 状态：**走查修正后已推 origin/dev，转待测试**
 
 ## 任务认领（必填）
 
@@ -108,10 +108,21 @@
 | 档 C T41/T42 闸门 | ✅ Switch 级联 disabled + Empty 降级 + 演示推进按钮 |
 | 图表 VChart + 显式高度 | ✅ 全部 `:style="{ height: 'Npx' }"` + autoresize |
 | D9 ⓘ/🧪/⚠️ | ✅ QPOL-02 三处（关联度/产业适配阈值 0.6 临时默认在 01A 全景页；本页焦点指数权重 0.4/0.35/0.25、效果评分权重、短板阈值 45.0 均标 ⚠️ 待甲方确认） |
-| 与 demo 逐区块截图比对 | ⚠️ 待人工走查（代码层已逐区块对照 demo 源码语义） |
+| 与 demo 逐区块截图比对 | ✅ 走查通过（2026-11-02 human:孔东；全景页间距问题已修正，见下节走查修正） |
 | 交付三绿 | ✅ 自检/type-check/build |
 | handoff 落科技政策跟踪-POL/ | ✅ 本文件 |
-| 完工停本地等人工验收 | ✅ |
+| 完工停本地等人工验收 | ✅ 走查通过后放行 commit/push |
+
+## 走查修正（2026-11-02 · human:孔东 走查反馈）
+
+**问题**：全景页（FE-POL-01B 范围）`.pp-card` 自绘卡片内容贴边——demo 真源用 antd `<Card>`（body 自带 padding），复刻降级成自绘 div 时丢失；监管指示「使用 Arco 卡片实现」。
+
+**修正**：`TrendTab` / `SentimentTab` / `CompareTab` 三组件共 **20 张卡**全部改 `a-card`：
+- `#title` / `#extra` 槽对应原 `__head`（标题 + MockBadge/操作钮）；`:body-style="{ padding: '16px' }"` 统一内边距
+- `.pp-card` 样式退化为布局壳（仅 `margin-bottom: 16px`；边框/圆角/背景交还 Arco）；删废弃 `.pp-card__head`
+- 内容类补偿性 padding 全部去除（`.pp-sentiment-grid` / `.pp-sentiment-topics` / `.pp-evaluation-list` / `.pp-compare-desc` / `.pp-compare-actions` / `.pp-benchmark-preview`）防双垫
+
+**修正后验证**：type-check ✅ / build ✅（28.97s）/ policy.test.mjs + FE-POL-01B.test.mjs 回归 ✅
 
 ## Cost 回填（task-update-fields 用）
 
