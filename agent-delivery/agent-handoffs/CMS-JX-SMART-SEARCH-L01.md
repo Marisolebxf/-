@@ -29,6 +29,12 @@
 
 - 首轮默认 Service 名误写 `-biz:9000/8500/8600/8700`，冒烟 DNS 不解析；按集群 svc 实名改 `gkxlumen-platform-topic-{enterprise:7093,chain:7095,policy:7097,svc:7096}`（commit 11dbc69）
 
+## 评审与修复（2026-11-02 bugbot 轮）
+
+- **C-1（Critical）**：下游异常消息携带 URL/原文经 50001 泄漏给调用方 → 5 处改固定文案「搜索服务暂不可用」，详情仅进日志（对齐 KgRelInsightService 降级模式）。commit 31a9130
+- **I-1（Important）**：自检原为同义反复 → 升级 RestTemplate 桩全链路验证：归一化（字符串 total/非 Map 行过滤）、policy limit/offset 换算（page3size20→offset40）、产业中文 URL 编码、page/size 钳制、下游 code!=0 不泄漏。5/5 绿。
+- 复用 cmsAlgoRestTemplate（60s 读超时）评审提及线程占用风险——搜索响应轻量、CMS 并发低，维持复用不另建 bean（ponytail）；如后续搜索量上来再拆短超时模板。
+
 ## 架构合规自检
 
 - D1 调用链：前端 → CMS → 专题 Java → Python ✅（CMS 未直调 Python）
