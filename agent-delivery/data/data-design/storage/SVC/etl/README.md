@@ -1,7 +1,8 @@
 # SVC · ETL 管道索引
 
 > Demo/Mock 与正式工厂**共用** [`../stores/`](../stores/)；本目录分**写入路径**。  
-> 细表 **draft**。**未灌数。**
+> 细表 **draft**。本索引自己不执行灌数。  
+> **2026-11-02**：demo 库服务机构表已有行，正式库同名表 0 行，GDF 作业未建。行数与触发见 [`../02-asbuilt-process-chain.md`](../02-asbuilt-process-chain.md)。不要把本索引早期的「未灌数」读成「库里没有表」。
 
 | 管道 | 文档 | 状态 |
 |---|---|---|
@@ -12,4 +13,4 @@
 | ODS → ADS（A1–A6 列对照） | [`ods-to-ads-mapping.md`](./ods-to-ads-mapping.md) | draft · `DATA-SVC-STORAGE-GAP-L02` |
 | → MinIO | [`pipeline-to-minio.md`](./pipeline-to-minio.md) | draft 指针 · 前缀 `svc/{task_id}/` |
 
-Demo 空表 DDL：[`../stores/mysql/ddl-demo-empty.sql`](../stores/mysql/ddl-demo-empty.sql)（**未执行**）。
+Demo 空表 DDL：[`../stores/mysql/ddl-demo-empty.sql`](../stores/mysql/ddl-demo-empty.sql)。本索引不执行它。2026-11-02 demo 表已有行、正式库同名表已建且 0 行；仓内这份 DDL 只写 `demo_gkxlumenx_*`，对不上正式库建表人，未闭合。

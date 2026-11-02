@@ -7,13 +7,13 @@ element: SVC
 role: store-mysql
 status: draft
 version: "2026-08-19"
-updated: "2026-08-19"
+updated: "2026-11-02"
 engine: mysql
 s3_task: DATA-SVC-STORAGE-S3-L02
 ---
 ```
 
-> **库名**：正式 `gkxlumenx_dwd`（本总控零写）；Demo **`demo_gkxlumenx_dwd`**。  
+> **库名**：正式 `gkxlumenx_dwd`（本总控零写；2026-11-02 同名三表已建且 0 行）；Demo **`demo_gkxlumenx_dwd`**（circle 43296、finance_event 15755、graph_hang 43296）。图库行数未闭合。见 [`../../02-asbuilt-process-chain.md`](../../02-asbuilt-process-chain.md)。  
 > **映射**：[`../../etl/ods-to-dwd-mapping.md`](../../etl/ods-to-dwd-mapping.md)。  
 > **DDL**：[`ddl-demo-empty.sql`](./ddl-demo-empty.sql)。  
 > **status=draft**。流图会签 **不算** 本文件 approved。
@@ -59,7 +59,7 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 
 | 写 | 读 |
 |---|---|
-| `demo-algo-ent-analysis`（F-SEED / F-ALGO；本单不跑） | 算法写 ADS / 图；**Java 禁扫 DWD** |
+| `demo-algo-ent-analysis`（F-SEED / F-ALGO）。2026-11-02 demo 已有行；本文件仍不执行灌数 | 算法写 ADS / 图；**Java 禁扫 DWD**。专题 `lumen-topic-py` 现网会读 demo DWD/ADS，不写 |
 
 ## 4. 禁止
 

@@ -7,7 +7,7 @@ element: SVC
 role: store-mysql
 status: draft
 version: "2026-08-19"
-updated: "2026-08-20"
+updated: "2026-11-02"
 engine: mysql
 s3_task: DATA-SVC-STORAGE-S3-L02
 gap_task: DATA-SVC-STORAGE-GAP-L02
@@ -16,7 +16,7 @@ card_task: DATA-SVC-STORAGE-CARD-L02
 ```
 
 > **必须文档**。阶段 P：Java **只读**本层。阶段 F：50100 → `demo-algo-ent-analysis` 直写 Demo ADS（联调台，不冒充产品链）。  
-> **库名**：正式 `gkxlumenx_ads`（本总控零写）；Demo **`demo_gkxlumenx_ads`**。  
+> **库名**：正式 `gkxlumenx_ads`（本总控零写；2026-11-02 同名表已建且 0 行，谁建的未闭合）；Demo **`demo_gkxlumenx_ads`**（卡面 43296 行）。行数见 [`../../02-asbuilt-process-chain.md`](../../02-asbuilt-process-chain.md)。  
 > **status=draft**。指标 8 件套真源仍是 metrics 体系；本文件只列物理表。  
 > **DDL**：[`ddl-demo-empty.sql`](./ddl-demo-empty.sql)。
 
@@ -42,6 +42,8 @@ card_task: DATA-SVC-STORAGE-CARD-L02
 | | `industry` | ODS `industry`（无列则空，Q-SVC-009） |
 | | `service_type_candidate` | `svc_org_circle` |
 | | `pending_client_confirm` | 默认 1（Q-SVC-010） |
+| | `org_size` | ODS `dwd_org_base_info.org_size`（2026-11-02 代码会写；上表 2026-08-20 未列） |
+| | `employees_number` / `operating_revenue` | ODS 年报最新一行；缺行内存合成后写入，不回写 ODS。合成行数未闭合 |
 
 禁止：地址/资本/法人等工商全列；Java/50100 为名单现拼 ODS。
 
@@ -73,6 +75,8 @@ metric_id 对齐 `metrics/registry/metric-readiness-matrix-SVC.yaml`。列对照
 公共列（各模型表）：`org_id`（可空：短板按环节汇总时用 `stage_code`）、`calc_batch_id`、`model_version`、`weights` JSON、`ext` JSON、`update_time`。
 
 六类 `model_id`：`SVC_FINANCE_TECH_POWER` / `SVC_IP_TECH_POWER` / `SVC_HR_TECH_POWER` / `SVC_MKT_TECH_POWER` / `SVC_CONSULT_TECH_POWER` / `SVC_INNOV_TECH_POWER`。
+
+2026-11-02 demo：技术力 400 行、引入 50、培育 50、短板 6、关系链 51。不是圈定全量。这些 `model_id` 与指标库 `M_SVC_DEEP_*` 不是同一个字符串。注册 ID 没有作为 `metric_id` 落进这些表。正式库同名表 0 行。对照表见 [`../../02-asbuilt-process-chain.md`](../../02-asbuilt-process-chain.md) §5。
 
 ## 4. 与 DWD / 图
 

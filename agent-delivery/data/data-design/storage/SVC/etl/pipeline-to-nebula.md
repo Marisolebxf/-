@@ -121,6 +121,18 @@ Nebula `USE` 失败或缺 Tag/Edge → `status=skipped`，**不报假成功**。
 | 图例 | **只有服务机构**（`GraphView` `CATS` 仅 `service`） |
 | Q062 | 待核验；不新建 `serve`/`coop`/`invest` EDGE |
 
+### 8.1 2026-11-02 连库结果（不改上表的代码事实）
+
+上表是代码行为。下面是 L01 在 MySQL 上看到的行，图库未连上：
+
+| 项 | 实测 |
+|---|---|
+| hang | `demo_gkxlumenx_dwd.svc_org_graph_hang` 43296 行，批次 `svcgraph_20261030_022647`，space `demo_gkx_chain`，Tag `institution` |
+| peers | 33861 行，`participates`，对端 `institution:`，`mapped_from=cooperation`。批次前缀 `svcgraph_` 是 `svcgraph_ops` 共用的。NER 函数本身 `written_edges` 为空；peers 与 intra 的合作对映射一致，不能单独写成 NER 写出 |
+| `belongs_to` / `service_provide` | hang.ext 里是 0。`service_provide` 不在本域允许边里 |
+| Nebula | 本机连 graphd 超时。行数未闭合。失败时来源可记 `ads` |
+| 正式库 | `gkxlumenx_dwd.svc_org_graph_hang` 0 行 |
+
 ## 9. 禁止
 
 Neo4j；Java 直连 nGQL；`CREATE SPACE gkx_service`；写 `gkx_chain`；`DROP SPACE demo_gkx_chain`；平行 `svc_org_base`；复制 `dwd_org_base_info` 全列；用名称相似度伪造 `ent:` / `chain:` / `pol:`；灌数路径调用 `run_graph` / `_upsert_nebula` / `_upsert_participates` / 写 `svc_org_graph_hang`；lumen Feign 打 `demo-*`（D12）。

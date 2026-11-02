@@ -1,5 +1,6 @@
 # SVC 存储设计变更
 
+| 2026-11-02 | `SYSINT-06-21-01-L02`：按 L01 现网核对更新存储文档。新增 `02-asbuilt-process-chain.md`（加工链路、分场景图、指标对照、§1.1 DWD 加工、§1.2 抽取源计划）。GDF 派单按 §1.2 读第三方 `dwd_*` 机构表，写 `gkxlumenx_*`。`01-data-flow.md` 只加待会签补记，不改 `signoff_status`，不改 §1 工厂拓扑图。不建表、不灌数、不建 GDF 作业 |
 | 2026-09-01 | 新建 `etl/pipeline-to-nebula.md`（`DEMO-SVC-GRAPH-TRIPLE-UI-L01` 步1）：与 POLICY §10–§20 同构；`diagram_id=SVC-GRAPH-TRIPLE`；灌数零图谱清单。不改代码、不灌数、不改会签流图 |
 | 2026-08-20 | 选 B：ADS `svc_org_card` 卡面 + `01-data-flow` §1.1 血缘图（`DATA-SVC-STORAGE-CARD-L02`）；§1 拓扑未改；不灌数、不 approved |
 | 2026-08-19 | S4 入口：`storage/README` + 本目录 README 文档闭环；旧路径 stub；inventory 本波读法（`DATA-SVC-STORAGE-S4-L02`）；不灌数、不 approved |
