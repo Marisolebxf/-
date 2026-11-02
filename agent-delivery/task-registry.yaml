@@ -45731,10 +45731,11 @@ tasks:
     difficulty: "M"
     estimated_tokens: 40000
     note: |
-      WBS-06-21。监管人 human:淮政玮。2026-11-02 用户把目标改为：分析服务机构的加工过程并落地到 GDF。先做 SYSINT-06-21-01-L01。其后 SYSINT-06-21-01-L02 依据调研结果检查 storage/SVC，更新文档，并输出完整加工链路和分场景流程图。父叶落地以这两叶为输入。加工过程含现有专题到 ADS、入 ES、入图谱。对照 SYSINT-06-15-L01，不代替该贴源叶，也不等它跑通。执行结果未回不写可对端。完成日期要求暂无截至时间。
+      WBS-06-21。监管人 human:淮政玮。2026-11-02 用户把目标改为：分析服务机构的加工过程并落地到 GDF。顺序是 SYSINT-06-21-01-L01 调研，SYSINT-06-21-01-L02 对照 storage/SVC 出链路和流程图，SYSINT-06-21-01-L03 等 L02 完成后生成 GDF 派单包。父叶不另起一套包。加工过程含现有专题到 ADS、入 ES、入图谱。对照 SYSINT-06-15-L01，不代替该贴源叶，也不等它跑通。执行结果未回不写可对端。完成日期要求暂无截至时间。
     depends_on:
       - "SYSINT-06-21-01-L01"
       - "SYSINT-06-21-01-L02"
+      - "SYSINT-06-21-01-L03"
     collaborators:
       - "algorithm-agent"
       - "api-agent"
@@ -45746,10 +45747,10 @@ tasks:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-BUILD-REQ-L04-建图需求.md"
     definition_of_done:
       - "分析说明写清服务机构现有加工：专题流水线到 ADS、入 ES（索引别名 gkx_svc_org、作业 service_org）、入图谱（Tag institution，边 participates、belongs_to、service_provide）。区分 demo_gkxlumenx_* 与 gkxlumenx_*。未跑通不写成已跑通。输入为 SYSINT-06-21-01-L01"
-      - "分析后的加工过程落成 GDF 派单包：GDF 要建的表、要跑的步骤、谁触发。GDF 不直写图库。内容运营写接口不写 ADS"
+      - "GDF 派单包由 SYSINT-06-21-01-L03 交付，本叶不另起一套包。包的内容以 SYSINT-06-21-01-L02 的链路和流程图为准"
       - "派单包落盘不是可对端。未在 GDF 建作业、执行结果未回，不写成已跑通。不执行建表，不灌数"
       - "不代替 SYSINT-06-15-L01。handoff 路径 agent-delivery/agent-handoffs/SYSINT-06-21-L01.md"
-    update_time: "2026-11-02T13:34:37+08:00"
+    update_time: "2026-11-02T13:37:36+08:00"
   - id: FE-POLICY-REPORT-REAL-L01
     supervised_by: "human:孔东"
     title: "lumen-ui-topic — 政策分析三项 HTML 报告覆盖结果板 + 下载（时序/区域对比/深圳现状）"
@@ -45883,3 +45884,36 @@ tasks:
       - "数据处理流程图按两类拆成多张：加工类型与加工逻辑；指标计算与指标计算逻辑场景。每张图有标题，能单独看懂"
       - "不建 GDF 作业，不执行建表，不灌数，不写可对端。不代替 SYSINT-06-15-L01 和 SYSINT-06-21-L01。handoff 路径 agent-delivery/agent-handoffs/SYSINT-06-21-01-L02.md"
     update_time: "2026-11-02T13:34:33+08:00"
+  - id: SYSINT-06-21-01-L03
+    supervised_by: "human:淮政玮"
+    title: "服务机构：依据加工链路生成 GDF 派单包"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      WBS-06-21-01C。挂在 SYSINT-06-21-01 下，父任务 SYSINT-06-21-L01。监管人 human:淮政玮。2026-11-02 用户下令：等 SYSINT-06-21-01-L02 完成后生成 GDF 派单包。内容只来自 L02 已写明的加工链路和流程图。不另起一套口径。发出日期先不记。不建作业，不执行建表，不写可对端。完成日期要求暂无截至时间。
+    depends_on:
+      - "SYSINT-06-21-01-L02"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/data/GDF/派单包/"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/派单说明-SYSINT-06-21-01-L02.md"
+      - "agent-delivery/data/GDF/派单包/README.md"
+      - "agent-delivery/data/data-design/storage/SVC/README.md"
+    definition_of_done:
+      - "以 SYSINT-06-21-01-L02 的 handoff 和它落盘的加工链路、流程图为输入。L02 未完成不写包。调研里没有的表不编造"
+      - "在 agent-delivery/data/GDF/派单包/服务机构/ 下出服务机构首版派单包。写明 GDF 要建的表、要跑的步骤、谁触发。区分 demo_gkxlumenx_* 与 gkxlumenx_*。GDF 不直写图库。内容运营写接口不写 ADS"
+      - "包写入派单包索引。发出日期先不记。不在 GDF 建作业，不执行建表，不灌数，不写可对端"
+      - "不改企业 v4、产业链 v2、政策 v2，不改 06-19 / 06-20 派单包。不代替 SYSINT-06-15-L01 和 SYSINT-06-21-L01"
+      - "handoff 路径 agent-delivery/agent-handoffs/SYSINT-06-21-01-L03.md"
+    update_time: "2026-11-02T13:37:33+08:00"
