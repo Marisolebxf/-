@@ -43992,13 +43992,14 @@ tasks:
       - "观测：pageview 沿用仓内 observability 机制；pnpm type-check 0 错 + pnpm build 绿；handoff 落 agent-handoffs/科技政策跟踪-POL/；完工停本地等人工验收不自动 push（2026-10-20 闸门）"
     update_time: "2026-11-02T17:07:08+08:00"
   - id: FE-POL-01A
+    evidence: "agent-handoffs/科技政策跟踪-POL/FE-POL-01A.md"
     supervised_by: "human:孔东"
     claimed_at: "2026-11-02T09:07:20.722Z"
     last_seen_at: "2026-11-02T09:07:20.722Z"
     lock_until: "2026-11-02T13:07:20.722Z"
     claimed_by: "agent:frontend-agent"
     title: "科创政策全景 · 检索主链路整段复刻 — 三模式检索/高级 DSL 布尔组合/结果列表/排序二次筛/导出/详情抽屉"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P0"
@@ -44008,7 +44009,8 @@ tasks:
     effort_points: "13"
     difficulty: "XL"
     estimated_tokens: 350000
-    note: "开工（监管人 human:孔东 2026-11-02 指令）。派单包：agent-handoffs/科技政策跟踪-POL/派单包-FE-POL-01A.md；先建 DSL 族最小自检，再区块复刻"
+    note: |
+      检索主链路整段复刻完工：SearchHub 三模式 + DSL 布尔族（FilterPanel/ConditionBuilder/queryEngine）+ 二次筛/分组/排序 + 导出/分享 + 详情/收藏抽屉 + D9 ⓘ/QPOL/Mock。三绿（自检×2 + type-check 0 错 + build 绿）+ 附录 D 扫描 0 泄漏。停本地待孔东人工验收。联调确认：前端链路就绪，待走查
     depends_on:
       - "FE-POL-S01"
     touched_files:
@@ -44028,7 +44030,7 @@ tasks:
       - "D9：结果统计数字旁 ⓘ（MetricSpecHint，读 S01 镜像）+ Mock 态 🧪 MockBadge；QPOL 🟡 项 ⚠️"
       - "与 demo 逐区块截图比对五件套（布局/交互/样式/评审/Mock 数据）；交付三绿（pnpm type-check 0 错 + 自检全绿 + pnpm build 绿）；防漏扫描按产品实现规程附录 D；handoff 落科技政策跟踪-POL/；完工停本地等人工验收"
       - "Arco 化铁律：demo 原生 select/input/antd 组件全量换 Arco 对应件（#option=\"{ data }\" 插槽/label 禁包裹 a-select/图标显式 import 等坑见经验清单 §1）"
-    update_time: "2026-11-02T17:07:26+08:00"
+    update_time: "2026-11-02T18:06:04+08:00"
   - id: FE-POL-01B
     title: "科创政策全景 · 其余 4 Tab 复刻 — 动向跟踪（企业匹配推送）/舆情评估/重点比对 4 弹窗/订阅中心"
     status: "backlog"
@@ -46566,3 +46568,37 @@ tasks:
       - "FilterPanel 通用 hideInLibrary 能力（后续字段裁剪可复用）"
       - "改动停本地工作区待 human:孔东 走查；commit 带 [agent:frontend-agent]"
     update_time: "2026-11-02T17:08:35+08:00"
+  - id: KG-CHAIN-GRAPH-LOAD-L01
+    title: "产业链维度入图：燕大派单包、GDF接口契约与gapfill"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      对齐企业维 KG-ENT-GRAPH-LOAD-L01。公用部分不复制：背景、gkx_chain 与 demo_gkx_chain 隔离、schema、MySQL 账号都看企业包 KG-ENT-WORKPACK-v0.1 的 00、03、04。本包只写环节。交付目录 agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/ 与建图/产业链/。第一批只写 Tag segment。depends_on 的正式行是 parent_child，不改名，不进第一批。服务机构 participates 正式加工不产行。企业 participates 等企业点先在 gkx_chain。不写 Tag chain。不改已投递产业链贴源包。口令不进本包。派单包在本地，尚未提交，尚未发给燕大。未认领。未执行 nGQL。未写会签通过。supervised_by 待认领时填 human:淮政玮。
+    depends_on:
+      - "KG-7ELEM-BUILD-REQ-L03"
+      - "KG-7ELEM-BUILD-REQ-L05"
+      - "KG-7ELEM-LOAD-PATH-L03"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/"
+      - "agent-delivery/data/Graph/建图/产业链/"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-7ELEM-LOAD-PATH-L03-产业链.md"
+      - "agent-delivery/data/Graph/入图/KG-ENT-WORKPACK-v0.1/"
+    definition_of_done:
+      - "产业链维派单包只写环节这一端：Tag segment，以及 depends_on、企业到环节的 participates、服务机构到环节的 participates。背景、空间、schema、MySQL 不另写，指向企业包。第一批只写环节点。depends_on 与服务机构 participates 不进第一批。企业 participates 等企业点已在 gkx_chain 上再写，本版不触发。不写 Tag chain，不把 parent_child、CHILD_OF、BELONGS_TO_NODE、DOWNSTREAM_OF、belongs_to 改名复用。不改已投递的产业链贴源洗数包。口令不进本包"
+      - "GDF 与知识图谱引擎的触发契约：哪张表成功后触发哪个作业。GDF 不直写 Nebula。现网回调未上线的写明，不写成已经能调"
+      - "缺项用 gapfill_ 的清单：哪些数据、补在哪一层、怎么补。不写 ODS，不写供应方库。只写方法和表名，本任务不建表、不灌数"
+      - "交付 agent-delivery/data/Graph/入图/KG-CHAIN-WORKPACK-v0.1/ 与 agent-delivery/data/Graph/建图/产业链/ 以及 handoff agent-handoffs/KG-CHAIN-GRAPH-LOAD-L01.md。不执行 nGQL，不改 demo 空间，不改已签收建图正文"
+    update_time: "2026-11-02T18:07:44+08:00"
