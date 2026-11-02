@@ -103,3 +103,9 @@
 - 把 Q060/Q062/Q063/Q-SVC-010 改绿  
 
 P 总控开工条件：**本 GATE 叶由 `human:淮政玮` 签收到 `done`** 之后，另写授权，不写「F 绿自动续 P」。
+
+## 8. 2026-11-02 现网对照（不改切法）
+
+切法 A 不因这次核对改写。对得上的部分：空间仍是代码里的 `demo_gkx_chain`；边名仍是已有集合，没有 `service_provide`；滤镜 ② 没有落到 hang（`belongs_to` 0 行，`ent:` / `segment:` / `chain:` 0 行）；`participates` 在 MySQL hang 里是机构到机构，`mapped_from=cooperation`，33861 行。
+
+对不上「图已经可用」的部分：graphd 超时，图库行数未闭合。推荐表各 50 行，符合列表抽样；技术力 400、关系链 51、短板 6，都不是圈定全量。正式库同名表 0 行。详见 [`02-asbuilt-process-chain.md`](./02-asbuilt-process-chain.md)。
