@@ -46652,3 +46652,67 @@ tasks:
       - "CHANGELOG bump 推 origin/dev"
       - "handoff 追加 round2 契约补全段"
     update_time: "2026-11-02T17:55:31+08:00"
+  - id: SYSINT-03-VIZ-FE-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-02T10:40:11.575Z"
+    last_seen_at: "2026-11-02T10:40:11.575Z"
+    lock_until: "2026-11-03T10:40:11.575Z"
+    claimed_by: "human:孔东"
+    title: "可视化四菜单·按门户页复刻（不改门户四页）"
+    status: "claimed"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 180000
+    note: |
+      使用人是运维人员。对应 WBS-03-05/06/07/08，但册内已有 SYSINT-03-05/06/07/08 四条薄叶子。本单是四页一起做的实现包，监管人 human:孔东。开工前不要与那四条同时改同一条 viz 路由。接口以《可视化四菜单-Java接口清单》为准：先接可复用接口，缺的等 SYSINT-03-VIZ-API-L01，缺数空态，不阻塞页面骨架。默认可视化页自建壳，不为抽公共壳去改门户页。
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/专题对齐-TOPIC/可视化管理-基于门页面复刻的复用与新建清单.md"
+      - "agent-delivery/agent-handoffs/专题对齐-TOPIC/可视化四菜单-Java接口清单.md"
+      - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/WBS.md"
+    definition_of_done:
+      - "四个可视化菜单可打开：chain-overview-viz、development-viz、svc-portal-viz 从占位换成实页；policy-news-display 在现有 PolicyNewsDisplayPage 上改，不新建第二套菜单"
+      - "以各模块门户页为复刻基准：专题全景 IndustryOverviewPage、企业发展 EnterpriseDevelopmentPage、专题服务 ServicePortal 各页、政策新闻展示现页。新代码放独立目录，不改门户四页的路由、请求参数和交互"
+      - "复用已有 WorkbenchTabs、JudgmentStrip、产业级联、MetricCard、UnifiedLeafletMap、IndustryPanoramaGraph 和已注册 ECharts。不新装 echarts-wordcloud 或 xlsx。热力用已有 leaflet.heat，不改地图组件对门户页的默认行为"
+      - "缺数只显示空态和原因，不写 fixture、不用相邻指标顶数。预测、SWOT、服务需求、供需匹配、服务效能、服务案例，以及政策词频/聚类/影响深度在接口清单标为不做的项，只做空态"
+      - "统计数字走 @/review 的ℹ与就绪度角标。强度 ponytail full。handoff 写明未改的门户文件，并附门户四页原功能仍在的说明"
+    update_time: "2026-11-02T18:40:11+08:00"
+  - id: SYSINT-03-VIZ-API-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-02T10:40:11.881Z"
+    last_seen_at: "2026-11-02T10:40:11.881Z"
+    lock_until: "2026-11-03T10:40:11.881Z"
+    claimed_by: "agent:api-agent"
+    title: "可视化四菜单·Java 只读接口（复用不改契约，新增 8 条，7 项不做）"
+    status: "claimed"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      派工给 Java 接口侧，监管人 human:徐滕强。执行仓 lumen-svc-platform 的 gkxlumen-topic。清单真源见 design_refs 第一条。与前端单 SYSINT-03-VIZ-FE-L01 并行：前端先用第 1 节旧接口搭骨架，第 2 节接口好了再接线。强度 ponytail full。
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/专题对齐-TOPIC/可视化四菜单-Java接口清单.md"
+      - "agent-delivery/agent-handoffs/专题对齐-TOPIC/可视化管理-基于门页面复刻的复用与新建清单.md"
+      - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/技术方案.md"
+    definition_of_done:
+      - "按《可视化四菜单-Java接口清单》第 1 节：R-1 至 R-5 五个旧接口的路径和已有字段不变，门户页与企业详情不用改调用参数"
+      - "按清单第 2 节落地 N-1 至 N-8 八个新只读接口，挂在现有专题前缀下。无行返回空数组并带原因，不补 0、不造数"
+      - "按清单第 3 节：预测、SWOT、服务需求、供需匹配、服务效能、服务案例、政策词频聚类与影响深度这 7 项没有新路由"
+      - "服务类型筛选走 N-8 新路由，不改 portalRegionMap 的查询参数。环节占比不写回 panorama snapshot"
+      - "Java 不写 ADS、不写算法。要计算时只走 Python /internal/*，算不出来就空态。handoff 列出新路由、空态样例和未改的旧路由"
+    update_time: "2026-11-02T18:40:11+08:00"
