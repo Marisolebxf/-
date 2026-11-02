@@ -38,6 +38,7 @@ import {
   SIGN_OFF_BY,
   TASK_TYPES,
 } from './lib/task-registry-lib.mjs';
+import { runPackSignoff } from './lib/pack-signoff-check.mjs';
 import { runReview, runAutoVerify } from './review-check.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -417,7 +418,7 @@ TOOLS['task-summary'] = {
 // VALID_STATUSES is imported from task-registry-lib.mjs (single source of truth).
 
 TOOLS['task-update-status'] = {
-  description: '更新任务状态（backlog→ready→claimed→in_progress→pending_test→testing→ready_to_sign→done）',
+  description: '更新任务状态（backlog→ready→claimed→in_progress→pending_test→testing→ready_to_sign→done）。GDF-*-WORKPACK-* 与 KG-*-GRAPH-LOAD-* 改为 done 时会先跑派单包自检，未通过则 GATE_DENIED，不改状态。',
   inputSchema: {
     type: 'object',
     properties: {
@@ -448,6 +449,12 @@ TOOLS['task-update-status'] = {
     const gate = checkTransitionGate(task.status, status, task, actorInfo);
     if (!gate.ok) {
       return { content: [{ type: 'text', text: JSON.stringify({ error: 'GATE_DENIED', reason: gate.reason, from: task.status, to: status }, null, 2) }] };
+    }
+    if (status === 'done' && task.status !== 'done') {
+      const pack = runPackSignoff(id);
+      if (!pack.ok) {
+        return { content: [{ type: 'text', text: JSON.stringify({ error: 'GATE_DENIED', reason: pack.reason, from: task.status, to: status }, null, 2) }] };
+      }
     }
 
     const patch = { status };
