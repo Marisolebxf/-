@@ -1,0 +1,70 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_059",
+  "metric_name": "模型误判率（科技知识图谱·指标展示·优化决策模型·风险识别优化）",
+  "facts": {
+    "ui_mount": "OptimizeDecisionPanel.jsx:360 <Statistic title='误判率' value={riskSummary.falseRate} suffix='%'>",
+    "ui_formula": "decisionModel.js:64-77 summarizeRiskDetection：falseRate = 3.5 + falseAlarm×1.2（演示公式）；falseAlarm=status 含「误」的告警数",
+    "ui_mock_source": "mockData.js decisionRiskAlerts 4 条（预警中×2/已复核×1/误报排除×1）",
+    "dev_alert_feedback_family": [],
+    "dev_family_rows": {
+      "gkxlumenx_job.qrtz_blob_triggers": 0,
+      "gkxlumenx_job.qrtz_cron_triggers": 0,
+      "gkxlumenx_job.qrtz_fired_triggers": 0,
+      "gkxlumenx_job.qrtz_paused_trigger_grps": 0,
+      "gkxlumenx_job.qrtz_simple_triggers": 0,
+      "gkxlumenx_job.qrtz_simprop_triggers": 0,
+      "gkxlumenx_job.qrtz_triggers": 0,
+      "gkxlumenx_ods.dwd_org_annual_report_asset": 527034
+    },
+    "gkx_alert_feedback_family": [],
+    "jiuxin_alert_feedback_family": []
+  },
+  "derived": [
+    {
+      "source": "三源告警标注流词族探针",
+      "dev_hits": [],
+      "dev_rows": {
+        "gkxlumenx_job.qrtz_blob_triggers": 0,
+        "gkxlumenx_job.qrtz_cron_triggers": 0,
+        "gkxlumenx_job.qrtz_fired_triggers": 0,
+        "gkxlumenx_job.qrtz_paused_trigger_grps": 0,
+        "gkxlumenx_job.qrtz_simple_triggers": 0,
+        "gkxlumenx_job.qrtz_simprop_triggers": 0,
+        "gkxlumenx_job.qrtz_triggers": 0,
+        "gkxlumenx_ods.dwd_org_annual_report_asset": 527034
+      },
+      "gkx_hits": [],
+      "jiuxin_hits": [],
+      "ui_demo_formula": "falseRate = 3.5 + falseAlarm×1.2（mock 演示公式——真误判率=FP/(FP+TN) 需标注集）",
+      "verdict": "告警三态闭环（预警中/已复核/误报排除）流三源缺位；误判率分母（TN 集）无从构建——与 066/063 同属「动态风险域三缺」"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev 告警/资产/黑名单词族",
+      "how": "gkxlumenx* 词族扫描+逐张计数（本件）",
+      "hits": "合并命中 8 张（行数见 facts）"
+    },
+    {
+      "what": "久新 alert/asset/blacklist 词族",
+      "how": "SHOW TABLES 词族（本件）",
+      "hits": "三族逐一留证（见 facts）"
+    },
+    {
+      "what": "gkx 告警/资产/黑名单词族",
+      "how": "280 表词族（本件+族级快照）",
+      "hits": "risk 族已有（dwd_org_risk_*）；alert/asset/blacklist 逐留"
+    },
+    {
+      "what": "dev 图结构面（26 张）",
+      "how": "族级快照 _probe_s305_l3_call_out.json",
+      "hits": "全 0 行"
+    }
+  ],
+  "support_judgment": "完全不支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "UI 读数为 mock 演示公式派生（3.5+误报×1.2），无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=探针快照日（当日截面）；非年度基期，非「缺年按 0 摊入」"
+}

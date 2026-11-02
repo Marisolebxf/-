@@ -1,0 +1,232 @@
+{
+ "metric_id": "M_SCIUI_P10_015",
+ "batch": "S3-08",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview-new/space-time-evolution-new/SpaceTimeEvolutionNewPage.jsx:984",
+  "repos/demo-ui-science/src/pages/achievement-preview-new/space-time-evolution-new/SpaceTimeEvolutionNewPage.jsx:343-361"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "srs_anchor": "科技时空演进展示.md 序号 501「地域流动明细与历史回溯」（需规描述：支持时空回放功能，用户可依时间轴回溯研究主体流动和分布演变历程，自动生成趋势变化报告）——本件即该功能叶的 UI 落位区块（同名）",
+  "note": "区块标题与 SRS 功能叶同名；SRS 另有序号 497「交互式时空地图分布呈现」含「动态筛选与回放功能」"
+ },
+ "facts": {
+  "ui_mount": "SpaceTimeEvolutionNewPage.jsx:984 SectionCard title=地域流动明细与历史回溯（时空回放）extra=Button 从 2018 回放（handleReplay）；:989-997 Table data=historyRows（年份/首位热点区域/值/增速/蝉联|新晋|基准五列）",
+  "ui_history_builder": "SpaceTimeEvolutionNewPage.jsx:343-361 historyRows useMemo：YEARS 逐年取 getHotspots(level,dimension,y,1)[0] 为首位热点，与前一年同名判蝉联/新晋/基准；:355-363 historySummary 演变摘要句",
+  "ui_mock_note": "ui_demo_fallback：mock 回放表由 CITY_PROFILES 外推热点（dimension 可切 papers/patents/funding/talent）——演示序列非真实回溯",
+  "jiuxin_geo_table": "ads_geo_yearly_metrics",
+  "jiuxin_geo_rows": 171736,
+  "jiuxin_geo_year_span": "2000-2026（27 年现场实数）",
+  "jiuxin_geo_levels": {
+   "CITY": 132975,
+   "PROVINCE": 33518,
+   "COUNTRY": 5081,
+   "CONTINENT": 162
+  },
+  "jiuxin_geo_flow_columns": [
+   "inbound_talent_count",
+   "outbound_talent_count",
+   "mobility_event_count"
+  ],
+  "jiuxin_flow_table": "ads_talent_mobility_yearly_flow",
+  "jiuxin_flow_rows": 51489,
+  "jiuxin_flow_location_dim_rows": 28672,
+  "jiuxin_flow_yearly_location_sum": {
+   "2018": 2652,
+   "2019": 2921,
+   "2020": 2153,
+   "2021": 2597,
+   "2022": 2567,
+   "2023": 2184,
+   "2024": 1905,
+   "2025": 975
+  },
+  "jiuxin_location_dict": "ads_location 22,229 行四级地域字典（location_id→name/lat/lng）",
+  "replay_rows_talent_top": [
+   {
+    "year": 2018,
+    "top": "China",
+    "talent_count": 44020
+   },
+   {
+    "year": 2019,
+    "top": "China",
+    "talent_count": 48918
+   },
+   {
+    "year": 2020,
+    "top": "China",
+    "talent_count": 54241
+   },
+   {
+    "year": 2021,
+    "top": "China",
+    "talent_count": 58255
+   },
+   {
+    "year": 2022,
+    "top": "China",
+    "talent_count": 62439
+   },
+   {
+    "year": 2023,
+    "top": "China",
+    "talent_count": 65765
+   },
+   {
+    "year": 2024,
+    "top": "China",
+    "talent_count": 69523
+   },
+   {
+    "year": 2025,
+    "top": "China",
+    "talent_count": 71259
+   }
+  ],
+  "dev_traj_word_hits": "trajectory 词族命中 sys_route_conf（路由配置）/gen_table（代码生成器）/xxl_job_info（调度执行器）——全框架语义污染，无时空轨迹面",
+  "gkx_traj_note": "280 表 trajectory 词族命中 dwd_drug（药物 trajectory 药代语义）——污染",
+  "dev_table_total": 542,
+  "gkx_table_count": 280,
+  "jiuxin_table_count_live": 218
+ },
+ "derived": [
+  {
+   "name": "replay_history_rows_2018_2025",
+   "value": {
+    "2018": [
+     "China",
+     44020
+    ],
+    "2019": [
+     "China",
+     48918
+    ],
+    "2020": [
+     "China",
+     54241
+    ],
+    "2021": [
+     "China",
+     58255
+    ],
+    "2022": [
+     "China",
+     62439
+    ],
+    "2023": [
+     "China",
+     65765
+    ],
+    "2024": [
+     "China",
+     69523
+    ],
+    "2025": [
+     "China",
+     71259
+    ]
+   },
+   "formula": "每年取 COUNTRY 级 talent_count 最大地点为首位热点（回放表同构：年份/首位热点/值/蝉联-新晋可由相邻年比较导出）",
+   "source": "jiuxin ads_geo_yearly_metrics WHERE location_level='COUNTRY'",
+   "share_basis": "同表同年同层级取 Top（B3 同基）"
+  },
+  {
+   "name": "location_flow_yearly",
+   "value": {
+    "2018": 2652,
+    "2019": 2921,
+    "2020": 2153,
+    "2021": 2597,
+    "2022": 2567,
+    "2023": 2184,
+    "2024": 1905,
+    "2025": 975
+   },
+   "formula": "SUM(talent_count) GROUP BY statistics_year（LOCATION 维 from→to 对流量合计，地域流动语义主读数）",
+   "source": "jiuxin ads_talent_mobility_yearly_flow"
+  },
+  {
+   "name": "mock_reference",
+   "value": "2018 起回放（YEARS[0]）",
+   "disclosure": "ui_demo_fallback：mock 回放起点 2018；库序列 2000 起更长（2000-2025 二十六年可回放，2018 起为 UI 习惯窗口）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 542 表 trajectory/route/track/replay 词族",
+   "source": "dev",
+   "hits": [
+    "gkxlumenx.sys_route_conf",
+    "gkxlumenx_codegen.gen_table",
+    "gkxlumenx_job.xxl_job_info"
+   ],
+   "note": "全框架配置语义（路由/代码生成/调度），无时空轨迹面"
+  },
+  {
+   "probe": "gkx 280 表 trajectory 词族",
+   "source": "gkx",
+   "hits": [
+    "dwd_drug"
+   ],
+   "note": "药物药代轨迹语义污染"
+  },
+  {
+   "probe": "jiuxin 218 表（SHOW TABLES 实数）trajectory/flow 词族",
+   "source": "jiuxin",
+   "hits": [
+    "ads_talent_mobility_yearly_flow",
+    "ads_talent_mobility_flow_detail"
+   ],
+   "primary": "ads_talent_mobility_yearly_flow",
+   "note": "正结论：LOCATION 维 28,672 行 from→to 流量 + ads_geo_yearly_metrics 171,736 行四级地域年表双面承载"
+  }
+ ],
+ "support_judgment": "完全转换支持",
+ "notes": [
+  "判档理由：派单预判「大概率零承载」被实测推翻——久新双面实证：ads_geo_yearly_metrics（171,736 行，2000-2026 四级地域年度面，含 inbound/outbound 流动列）承载分布演变明细；ads_talent_mobility_yearly_flow（51,489 行，LOCATION 维 28,672 行）承载地域流动 from→to 语义。回放表（年份×首位热点×蝉联/新晋）一步聚合转换即得，判完全转换支持。",
+  "口径转换点：mock 回放维度可切四维（papers/patents/funding/talent）；库面 talent 维最全（inbound/outbound 列现成），papers 维有 paper_count 列可用，patents/funding 维无对应列（该两维回放仍 mock）——talent 维为首选正式口径。",
+  "蝉联/新晋判定：相邻年首位热点同名→蝉联、异名→新晋（与 :343-361 mock 构建逻辑同构），2018-2025 实算 talent 维首位热点全序列见 derived[0]。",
+  "ads_location（22,229 行）提供 location_id→名称/经纬度解析，回放地图坐标面同源可解。",
+  "与 P10_025（主体路径追踪）同族不同粒度：本件地域级（COUNTRY/CITY），P10_025 主体级（机构/团队）；两件独立留证。"
+ ],
+ "base_years_used": [
+  "2018",
+  "2019",
+  "2020",
+  "2021",
+  "2022",
+  "2023",
+  "2024",
+  "2025"
+ ],
+ "base_years_missing": [],
+ "base_years_note": "ads_geo_yearly_metrics 2018-2025 全覆盖（本件回放窗口）；全序列 2000-2026（2026 为不完整年，talent 流动 0 行）。基期建议 2018（UI 回放习惯起点）；LOCATION 流动序列 2000-2025 二十六年。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "132975",
+   "162",
+   "171,736",
+   "171736",
+   "2000",
+   "2018",
+   "2025",
+   "2026",
+   "218",
+   "22,229",
+   "22229",
+   "26",
+   "27",
+   "28,672",
+   "280",
+   "28672",
+   "33518",
+   "5081",
+   "51,489",
+   "51489",
+   "542",
+   "8"
+  ]
+ }
+}

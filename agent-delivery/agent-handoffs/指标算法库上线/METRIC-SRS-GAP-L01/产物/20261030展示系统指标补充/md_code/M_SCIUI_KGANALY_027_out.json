@@ -1,0 +1,74 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_027",
+  "metric_name": "异常关系密度（科技知识图谱·黑名单触发·图谱指标实时监测）",
+  "facts": {
+    "ui_mount": "BlacklistTriggerPanel.jsx:147 列 title=异常关系密度（Progress 条）+ IndicatorDisplay.jsx:33 + mockData.js:285（value 0.62/threshold 0.55/desc『异常边 / 局部边集占比』）",
+    "ui_mock_value": 0.62,
+    "ui_threshold": 0.55,
+    "ui_semantic": "mockData.js:285 desc：异常边 / 局部边集占比（分母=局部边集，黑名单监测语境）",
+    "srs_anchor": "指标展示.md seq 408（excel_row 411）：「利用图谱计算指标（如节点异常度、异常关系密度等），对网络中的异常行为或异常模式进行实时监测」",
+    "cat": "需业务建模类（『异常』无标注真值，需口径裁定）",
+    "jiuxin_tech_nodes_total": 19430,
+    "jiuxin_tech_edges_total": 587252,
+    "jiuxin_tech_sample_nodes": 5000,
+    "jiuxin_tech_sample_induced_edges": 38383,
+    "jiuxin_edge_evidence_level_dist": {
+      "HIGH": 103358,
+      "LOW": 369428,
+      "MEDIUM": 114466
+    },
+    "jiuxin_evolution_temporal_dist": {
+      "TIME_ALIGNED": 388843,
+      "TIME_CONFLICT": 198409
+    },
+    "jiuxin_frame_low_edges": 24039
+  },
+  "derived": [
+    {
+      "source": "jiuxin.ads_technology_graph_edge 全图口径（evidence_level=LOW）",
+      "mode": "operational_A_low_evidence",
+      "denominator": "jiuxin_tech_edges_total",
+      "numerator": "low_evidence_edges_total",
+      "low_evidence_edges_total": 369428,
+      "density_low_evidence": 0.629079,
+      "frame_low_evidence_edges": 24039,
+      "frame_density_low_evidence": 0.626293
+    },
+    {
+      "source": "jiuxin.ads_technology_evolution_edge 全图口径（temporal_alignment_status=TIME_CONFLICT）",
+      "mode": "operational_B_time_conflict",
+      "denominator": "jiuxin_tech_edges_total",
+      "numerator": "time_conflict_edges_total",
+      "time_conflict_edges_total": 198409,
+      "density_time_conflict": 0.33786
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "『异常边』标注真值（风险/黑名单/异常标注列）",
+      "how": "久新 218 表词族扫描（anomal/abnormal/risk/black/fraud/outlier）",
+      "hits": "0 表——无标注面"
+    },
+    {
+      "what": "gkx 异常标注图面",
+      "how": "280 表词族扫描",
+      "hits": "0（dwd_org_company_abnormal 是企业经营异常目录，非图边标注——语义排除）"
+    },
+    {
+      "what": "dev 黑名单/异常图面",
+      "how": "族级快照",
+      "hits": "graph_* 26 张全 0 行；无黑名单词族表"
+    },
+    {
+      "what": "UI 演示值 0.62 的数据来源",
+      "how": "mockData.js:285 读码",
+      "hits": "写死常量（演示 Mock，非生产接口）"
+    }
+  ],
+  "support_judgment": "部分支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "无年度基期维（边证据属性为 2026-10-29 单截面：metrics_as_of_date 全表同值）"
+  ],
+  "base_years_note": "物理口径基期=探针快照日；边级证据属性无历史版本（单截面），非「缺年按 0 摊入」"
+}

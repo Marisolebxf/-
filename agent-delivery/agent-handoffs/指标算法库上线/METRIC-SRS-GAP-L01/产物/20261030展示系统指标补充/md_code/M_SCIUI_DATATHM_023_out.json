@@ -1,0 +1,162 @@
+{
+ "metric_id": "M_SCIUI_DATATHM_023",
+ "batch": "S3-04",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/data-resources/components/ResourceAppSubjectList.jsx:126",
+  "repos/demo-ui-science/src/pages/data-resources/mockData.js:849"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书未出现「应用主体总数」指标名；语义锚 SRS 总体视窗 seq 345/主需求 :2565「统计和展示所有资源实际应用主体，包括科研机构、企业、项目团队」——主体类型枚举在、计数口径无（UI Statistic 读数派生）"
+ },
+ "facts": {
+  "mock_subject_total": 10,
+  "mock_subject_by_type": {
+   "企业": 3,
+   "科研机构": 4,
+   "项目团队": 3
+  },
+  "mock_key_users": 4,
+  "mock_ui_note": "summary.total=resourceAppSubjects.length（mockData.js 数组长度）；组件挂载 ResourceAppSubjectList.jsx:126 Statistic「应用主体总数」",
+  "dev_enterprise_base_rows": 269511,
+  "dev_enterprise_base_distinct_names": 268647,
+  "dev_topic_enterprise_tables": [
+   "analysis_task",
+   "analysis_task_node",
+   "chain_compare_basket_item",
+   "chain_filter_template",
+   "chain_regional_metric",
+   "chain_regional_template",
+   "chain_search_example",
+   "chain_search_history",
+   "chain_search_scene",
+   "ent_compare_basket",
+   "ent_compare_basket_item",
+   "ent_compare_return_context",
+   "ent_cultivate_candidate",
+   "ent_filter_template",
+   "ent_query_example",
+   "ent_recruit_candidate",
+   "ent_search_example",
+   "ent_search_history",
+   "ent_search_scene",
+   "evaluation_template",
+   "svc_compare_basket_item"
+  ],
+  "dev_topic_enterprise_entity_like": [],
+  "dev_subject_word_tables": [],
+  "dev_table_total": 542,
+  "gkx_dwd_org_base_info_rows": 189116,
+  "gkx_dwd_forg_university_rows": 20000,
+  "gkx_dwd_research_institute_rows": 2074,
+  "gkx_dwd_scholar_rows": 21316,
+  "gkx_subject_word_tables": [],
+  "gkx_table_count": 280,
+  "gkx_counts_cache_anchor": {
+   "dwd_org_base_info": 189116,
+   "dwd_forg_university_org_info": 20000,
+   "dwd_research_institute_base_info": 2074,
+   "dwd_scholar": 21316
+  },
+  "jiuxin_table_count_live": 212,
+  "jiuxin_subject_word_tables_live": [],
+  "jiuxin_institution_word_tables": [
+   "ads_geo_yearly_institution_type_metrics",
+   "ads_institution_collaboration_subfield_yearly",
+   "ads_institution_collaboration_yearly",
+   "ads_institution_discipline_profile",
+   "ads_institution_industry",
+   "ads_institution_paper",
+   "ads_institution_patent",
+   "ads_institution_profile"
+  ],
+  "jiuxin_probe_mode": "live",
+  "jiuxin_hits_note": "institution 词族命中为科研机构分析结果面（协作/画像——分析对象），非「与平台发生资源应用关系的主体」登记面——语义不同"
+ },
+ "derived": [
+  {
+   "key": "app_subject_total_strict",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "『应用主体总数』严格口径（与平台发生过数据资源应用关系的主体数）需主体×应用关系登记面——三源零承载（subject 词族 0 命中）→ 不可构建，按 B10 留空即负结论登记"
+  },
+  {
+   "key": "registered_org_upperbound_dev_gkx_sum",
+   "value": 457763.0,
+   "numerator": 268647,
+   "denominator": 189116,
+   "note": "代理上界口径（量级参考）：分子=dev enterprise_base 去重企业名数，分母字段=gkx dwd_org_base_info 行数，两者相加**未去重**（跨源同名机构未映射，B3 披露：这是「注册/要素域主体」上界，非「应用主体」；dev ods 与 gkx 为同构样例/全量关系，叠加含跨源重复，仅量级参考不得对外发布）"
+  },
+  {
+   "key": "mock_vs_upperbound_ratio",
+   "value": 0.0022,
+   "numerator": 10,
+   "denominator": 457763,
+   "note": "mock 10 个应用主体占代理上界（dev 去重企业 268647 + gkx 机构 189116=457763）的百分比——演示叙事（十个头部主体）与底册体量（数十万级）的量级差披露"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 应用主体登记面/应用关系面（subject 词族 + topic_enterprise 库实体词族）",
+   "source": "dev",
+   "sql": "information_schema.tables 扫 gkxlumenx_* subject 词族（共享探针）；gkxlumenx_topic_enterprise 全 21 表 enterprise/subject/org 词族",
+   "hits": 0,
+   "hit_detail": "subject 词族 542 表 0 命中；topic_enterprise 库 21 表实体词族命中 []（enterprise 关系/标签表——企业域数据表非应用主体登记）"
+  },
+  {
+   "probe": "gkx 应用主体登记面（subject 词族，280 表）",
+   "source": "gkx",
+   "sql": "information_schema.tables 扫 gkx（共享探针）",
+   "hits": 0,
+   "hit_detail": "0 命中——gkx 有要素域机构底册 dwd_org_base_info（189,116 行），但那是「数据里的机构」不是「用数据的主体」，无应用关系表"
+  },
+  {
+   "probe": "久新应用主体登记面（subject/应用 词族，live 复核）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES 词族过滤",
+   "hits": 0,
+   "hit_detail": "subject 词族 0 命中；institution 词族命中为科研机构分析结果面（协作/画像）——分析对象主体非应用主体，语义不同；探测模式 live"
+  },
+  {
+   "probe": "需求原文「应用主体总数」定义段",
+   "source": "doc",
+   "sql": "rg 应用主体 三份需求真源",
+   "hits": 8,
+   "hit_detail": "SRS 总体视窗 seq 345/主需求 :2565「支持统计和展示所有资源实际应用主体，包括科研机构、企业、项目团队」——主体类型枚举在，「总数」口径（按什么去重/是否含历史主体）无定义；「应用主体总数」指标名本身 0 命中（UI 读数派生）"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档：严格口径（与平台发生过资源应用关系的主体数）依赖主体×应用关系登记面——三源零承载（subject 词族 0 命中）；但 dev/gkx 的机构企业底册结构+数据双在（enterprise_base 189,114 去重企业 + gkx org 底册 189,116），「注册/要素域主体」上界计数可转换交付→ 部分支持（口径级缺口，B10 双口径披露）",
+  "双口径说明（B10）：口径 A（严格·应用主体）=null 不可构建；口径 B（代理上界·注册/要素域主体）=dev 去重企业名与 gkx 机构行数之和（未去重跨源叠加，仅量级参考）；两者语义不同不得混用，正式发布必须先建应用关系登记面",
+  "mock 披露：resourceAppSubjects 10 条（科研机构 4/企业 3/项目团队 3，重点用户 4）——summary.total=数组长度，演示值不作数据证据（B10）",
+  "语义排障：本件核心是「数据里的主体」≠「用数据的主体」——gkx org 底册/久新 institution 分析面都是前者；后者需要应用关系表（谁调用过/接入过平台资源），三源均未立项",
+  "B11 对账：enterprise_base/org_base_info/university/research_institute/scholar 计数走 counts_cache 锚（零漂移）；dev 542/gkx 280/久新 210 表数共享快照",
+  "升档触发器（B10）：①建应用主体登记面（主体×资源应用关系表）→ 升完全直接支持；②甲方接受「注册主体」代理口径（enterprise_base 计数+口径披露）→ 升完全转换支持；③维持现状 → 部分支持（上界计数仅量级参考）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "登记面计数类指标，不涉基期年",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "10",
+   "4",
+   "3",
+   "269511",
+   "268647",
+   "189116",
+   "20000",
+   "2074",
+   "21316",
+   "457763",
+   "542",
+   "280",
+   "210",
+   "21",
+   "128000",
+   "312000"
+  ]
+ }
+}

@@ -1,0 +1,1057 @@
+{
+ "generated": "2026-11-01",
+ "batch": "S3-02",
+ "lane": 1,
+ "dims": {
+  "gkx": [
+   {
+    "tag": "gkx 基础设施/仪器/平台类表扫描（表名）",
+    "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%infra%' OR table_name LIKE '%facility%' OR table_name LIKE '%instrument%' OR table_name LIKE '%apparatus%' OR table_name LIKE '%equipment%' OR table_name LIKE '%platform%' OR table_name LIKE '%carrier%' OR table_name LIKE '%incubat%')",
+    "source": "gkx",
+    "note": "SZINNOV_007/012 表名级负结论候选；命中表再逐表 COUNT",
+    "rows": 0,
+    "data": [],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx 基础设施/平台语义列扫描（列名）",
+    "sql": "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='gkx' AND (column_name LIKE '%infra%' OR column_name LIKE '%facility%' OR column_name LIKE '%instrument%' OR column_name LIKE '%apparatus%' OR column_name LIKE '%platform%') LIMIT 60",
+    "source": "gkx",
+    "note": "列名级：表名未命中时列名兜底扫描",
+    "rows": 0,
+    "data": [],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_org_base_info 全列",
+    "sql": "SHOW COLUMNS FROM gkx.dwd_org_base_info",
+    "source": "gkx",
+    "note": "type 列候选=org_type",
+    "rows": 44,
+    "data": [
+     [
+      "dwd_id",
+      "bigint",
+      "NO",
+      "PRI",
+      null,
+      "auto_increment"
+     ],
+     [
+      "org_id",
+      "varchar(255)",
+      "NO",
+      "UNI",
+      null,
+      ""
+     ],
+     [
+      "name_cn",
+      "varchar(255)",
+      "NO",
+      "MUL",
+      null,
+      ""
+     ],
+     [
+      "incorporation_date",
+      "date",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "lerep",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "org_type",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "registration_org",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "start_date",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "end_date",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "registered_capital_value",
+      "double",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "address",
+      "text",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "province",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_org_base_info.org_type 分布",
+    "sql": "SELECT org_type, COUNT(*) c FROM gkx.dwd_org_base_info GROUP BY org_type ORDER BY c DESC LIMIT 25",
+    "source": "gkx",
+    "note": "组织类型维分布（平台/载体语义甄别）",
+    "rows": 25,
+    "data": [
+     [
+      "有限责任公司",
+      "58158"
+     ],
+     [
+      "有限责任公司(自然人投资或控股)",
+      "50294"
+     ],
+     [
+      "有限责任公司(自然人独资)",
+      "36708"
+     ],
+     [
+      "有限责任公司(法人独资)",
+      "12006"
+     ],
+     [
+      "其他有限责任公司",
+      "9015"
+     ],
+     [
+      "有限责任公司(港澳台投资、非独资)",
+      "4255"
+     ],
+     [
+      "有限责任公司(港澳台法人独资)",
+      "2113"
+     ],
+     [
+      "有限责任公司(非自然人投资或控股的法人独资)",
+      "1985"
+     ],
+     [
+      "事业单位",
+      "1816"
+     ],
+     [
+      "股份有限公司(非上市、自然人投资或控股)",
+      "1502"
+     ],
+     [
+      "股份有限公司(非上市)",
+      "1122"
+     ],
+     [
+      "有限责任公司(自然人投资或控股的法人独资)",
+      "1049"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_dim_admin_area 全列",
+    "sql": "SHOW COLUMNS FROM gkx.dwd_dim_admin_area",
+    "source": "gkx",
+    "note": "level_col=None, name_col=cur_name, 全 12 列",
+    "rows": 29,
+    "data": [
+     [
+      "dwd_id",
+      "bigint",
+      "NO",
+      "PRI",
+      null,
+      "auto_increment"
+     ],
+     [
+      "cur_code",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "rid",
+      "int",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "qh_base_id",
+      "int",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "source_code",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "update_time",
+      "datetime",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "cur_name",
+      "varchar(150)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "parent_code",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "country_code",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "country_name",
+      "varchar(150)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "province_code",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "province_name",
+      "varchar(150)",
+      "YES",
+      "",
+      null,
+      ""
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_dim_admin_area 总行数",
+    "sql": "SELECT COUNT(*) FROM gkx.dwd_dim_admin_area",
+    "source": "gkx",
+    "note": "对齐 GBA 件 20,000 先验",
+    "rows": 1,
+    "data": [
+     [
+      "20000"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_dim_admin_area 深圳市行",
+    "sql": "SELECT * FROM gkx.dwd_dim_admin_area WHERE cur_name = '深圳市' LIMIT 5",
+    "source": "gkx",
+    "note": "深圳市在区划字典中的键（区级子树入口）",
+    "rows": 0,
+    "data": [],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_dim_admin_area 深圳 10+1 区命中",
+    "sql": "SELECT dwd_id, cur_code, rid, qh_base_id, source_code, update_time FROM gkx.dwd_dim_admin_area WHERE cur_name IN ('南山区','宝安区','龙岗区','福田区','罗湖区','盐田区','龙华区','坪山区','光明区','大鹏新区','福田','南山') LIMIT 20",
+    "source": "gkx",
+    "note": "区级键存在性（区级地图粒度承载判定主证据）",
+    "rows": 0,
+    "data": [],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx 区县/行政区语义列扫描（列名）",
+    "sql": "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='gkx' AND (column_name LIKE '%district%' OR column_name LIKE '%county%' OR column_name LIKE '%admin_area%' OR column_name LIKE '%area_id%' OR column_name LIKE '%area_code%') LIMIT 80",
+    "source": "gkx",
+    "note": "哪些事实表挂了区划维（区级聚合起算点）",
+    "rows": 11,
+    "data": [
+     [
+      "dwd_bid_base_out",
+      "project_region_district"
+     ],
+     [
+      "dwd_bid_base_out",
+      "project_region_district_code"
+     ],
+     [
+      "dwd_bid_base_out_bak_20260911",
+      "project_region_district"
+     ],
+     [
+      "dwd_bid_base_out_bak_20260911",
+      "project_region_district_code"
+     ],
+     [
+      "dwd_bid_base_out_bak_20260923",
+      "project_region_district"
+     ],
+     [
+      "dwd_bid_base_out_bak_20260923",
+      "project_region_district_code"
+     ],
+     [
+      "dwd_dim_admin_area",
+      "area_code"
+     ],
+     [
+      "dwd_macro_index_data",
+      "area_code"
+     ],
+     [
+      "dwd_macro_index_data",
+      "area_code_type"
+     ],
+     [
+      "dwd_policy_base",
+      "district"
+     ],
+     [
+      "dwd_policy_base_bak_20260923",
+      "district"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx 产值/经济类表扫描（表名）",
+    "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%output%' OR table_name LIKE '%value%' OR table_name LIKE '%economic%' OR table_name LIKE '%gdp%' OR table_name LIKE '%profit%' OR table_name LIKE '%macro%')",
+    "source": "gkx",
+    "note": "含 dwd_output_value/dwd_high_tech_output/dwd_industry_added_value 三表不存在断言复核",
+    "rows": 3,
+    "data": [
+     [
+      "dwd_en_project_output"
+     ],
+     [
+      "dwd_macro_index_data"
+     ],
+     [
+      "dwd_zh_project_output"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_macro_index_data 全列",
+    "sql": "SHOW COLUMNS FROM gkx.dwd_macro_index_data",
+    "source": "gkx",
+    "note": "全 12 列",
+    "rows": 24,
+    "data": [
+     [
+      "dwd_id",
+      "bigint",
+      "NO",
+      "PRI",
+      null,
+      "auto_increment"
+     ],
+     [
+      "index_code",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "occur_period",
+      "int",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "area_code",
+      "varchar(32)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "dim_cal",
+      "varchar(32)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "dim_dur",
+      "varchar(32)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "rid",
+      "int",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "occur_period_t",
+      "varchar(20)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "occur_period_year",
+      "int",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "occur_period_month",
+      "int",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "index_value",
+      "decimal(38,8)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "unit_use",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx dwd_dim_index_attribute 全列",
+    "sql": "SHOW COLUMNS FROM gkx.dwd_dim_index_attribute",
+    "source": "gkx",
+    "note": "index_code=index_code, index_name=index_name",
+    "rows": 18,
+    "data": [
+     [
+      "dwd_id",
+      "bigint",
+      "NO",
+      "PRI",
+      null,
+      "auto_increment"
+     ],
+     [
+      "index_code",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "rid",
+      "int",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "uid",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "index_name",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "unit_show",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "unit_use",
+      "varchar(255)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "data_freq",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "time_attr_tag",
+      "varchar(50)",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "create_time",
+      "datetime",
+      "YES",
+      "",
+      null,
+      ""
+     ],
+     [
+      "created_time",
+      "datetime",
+      "NO",
+      "",
+      "CURRENT_TIMESTAMP",
+      "DEFAULT_GENERATED"
+     ],
+     [
+      "updated_time",
+      "datetime",
+      "NO",
+      "MUL",
+      null,
+      ""
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx 指标字典 产值/增加值/利润 命中",
+    "sql": "SELECT index_code, index_name FROM gkx.dwd_dim_index_attribute WHERE index_name LIKE '%产值%' OR index_name LIKE '%增加值%' OR index_name LIKE '%利润%' LIMIT 60",
+    "source": "gkx",
+    "note": "X_001 主口径候选指标码清单",
+    "rows": 60,
+    "data": [
+     [
+      "gmjj_jjzl_01_02",
+      "第二产业增加值"
+     ],
+     [
+      "a71344",
+      "按类型分:现代时尚产业增加值"
+     ],
+     [
+      "gmjj_jgzs_68_03_03",
+      "按门类分:住宿和餐饮业增加值指数(上年=100)"
+     ],
+     [
+      "gmjj_jjzl_01_03_06",
+      "按门类分:房地产业增加值"
+     ],
+     [
+      "a77464",
+      "服务业增加值:占GDP比重"
+     ],
+     [
+      "a77475",
+      "服务业增加值:现价:美元"
+     ],
+     [
+      "jjzl_bbj_01_03",
+      "按产业分:第三产业增加值(不变价)"
+     ],
+     [
+      "gmjj_jgzs_68_02_02",
+      "按门类分:建筑业增加值指数(上年=100)"
+     ],
+     [
+      "a77473",
+      "制造业增加值:现价:美元"
+     ],
+     [
+      "jjzl_bbj_01_01",
+      "按产业分:第一产业增加值(不变价)"
+     ],
+     [
+      "gmjj_jgzs_68_01",
+      "按产业分:第一产业增加值指数(上年=100)"
+     ],
+     [
+      "gmjj_jjzl_01_01",
+      "第一产业增加值"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkx 产值/增加值/利润指标数据覆盖（按指标码）",
+    "sql": "SELECT m.index_code, COUNT(*) rows_, COUNT(DISTINCT m.index_code) chk FROM gkx.dwd_macro_index_data m WHERE m.index_code IN (SELECT index_code FROM gkx.dwd_dim_index_attribute WHERE index_name LIKE '%产值%' OR index_name LIKE '%增加值%' OR index_name LIKE '%利润%') GROUP BY m.index_code ORDER BY rows_ DESC LIMIT 40",
+    "source": "gkx",
+    "note": "字典命中码在长表的实际行数（有码无数据的空壳甄别）",
+    "rows": 40,
+    "data": [
+     [
+      "gmjj_jjzl_01_02_01_01",
+      "1893",
+      "1"
+     ],
+     [
+      "gmjj_jjzl_01_02",
+      "879",
+      "1"
+     ],
+     [
+      "gmjj_jjzl_01_01",
+      "791",
+      "1"
+     ],
+     [
+      "gmjj_jjzl_01_03",
+      "776",
+      "1"
+     ],
+     [
+      "a77472",
+      "43",
+      "1"
+     ],
+     [
+      "a77473",
+      "41",
+      "1"
+     ],
+     [
+      "a77471",
+      "38",
+      "1"
+     ],
+     [
+      "a77464",
+      "37",
+      "1"
+     ],
+     [
+      "gmjj_jjzl_01_03_03",
+      "36",
+      "1"
+     ],
+     [
+      "a77474",
+      "35",
+      "1"
+     ],
+     [
+      "a77462",
+      "34",
+      "1"
+     ],
+     [
+      "gmjj_jjzl_01_03_06",
+      "31",
+      "1"
+     ]
+    ],
+    "status": "ok"
+   }
+  ],
+  "dev": [
+   {
+    "tag": "dev gkxlumenx_dwd 经济/产值类表扫描",
+    "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkxlumenx_dwd' AND (table_name LIKE '%output%' OR table_name LIKE '%economic%' OR table_name LIKE '%gdp%' OR table_name LIKE '%value%' OR table_name LIKE '%finance%')",
+    "source": "dev",
+    "note": "X_001 开发库经济类承载",
+    "rows": 3,
+    "data": [
+     [
+      "TABLE_NAME"
+     ],
+     [
+      "TABLE_NAME"
+     ],
+     [
+      "TABLE_NAME"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "dev gkxlumenx_dwd 全表清单",
+    "sql": "SHOW TABLES",
+    "source": "dev",
+    "note": "共 12 表；载体/平台类=",
+    "rows": 137,
+    "data": [
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ],
+     [
+      "Tables_in_gkxlumenx_dwd"
+     ]
+    ],
+    "status": "ok"
+   }
+  ],
+  "jiuxin": [
+   {
+    "tag": "jiuxin ads_shenzhen_* 表清单",
+    "sql": "SHOW TABLES LIKE 'ads_shenzhen%'",
+    "source": "jiuxin",
+    "note": "深圳专属表族——SZINNOV 三件与 X 族深圳切片的首要承载候选",
+    "rows": 2,
+    "data": [
+     [
+      "ads_shenzhen_institution_direction_funding"
+     ],
+     [
+      "ads_shenzhen_institution_field_funding"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "jiuxin ads_shenzhen_institution_direction_funding 行数",
+    "sql": "SELECT COUNT(*) FROM ads_shenzhen_institution_direction_funding",
+    "source": "jiuxin",
+    "note": "",
+    "rows": 1,
+    "data": [
+     [
+      "22857"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "jiuxin ads_shenzhen_institution_field_funding 行数",
+    "sql": "SELECT COUNT(*) FROM ads_shenzhen_institution_field_funding",
+    "source": "jiuxin",
+    "note": "",
+    "rows": 1,
+    "data": [
+     [
+      "1645"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "jiuxin 产业/经济/产值类表扫描",
+    "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx_technology_analysis_dev' AND (table_name LIKE '%industry%' OR table_name LIKE '%output%' OR table_name LIKE '%economic%' OR table_name LIKE '%gdp%' OR table_name LIKE '%value%' OR table_name LIKE '%finance%') LIMIT 40",
+    "source": "jiuxin",
+    "note": "X_001 久新产业维承载",
+    "status": "error: (1105, \"errCode = 2, detailMessage = Permission denied: user ['test2'@'%'] does not have privilege for [priv predicate: OR, Admin_priv,Select_priv] command on [internal].[informati",
+    "rows": 0,
+    "data": []
+   },
+   {
+    "tag": "jiuxin 经济语义列扫描（列名）",
+    "sql": "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='gkx_technology_analysis_dev' AND (column_name LIKE '%output%' OR column_name LIKE '%gdp%' OR column_name LIKE '%revenue%' OR column_name LIKE '%profit%' OR column_name LIKE '%added%' OR column_name LIKE '%production%') LIMIT 80",
+    "source": "jiuxin",
+    "note": "X_001 列级承载（含对照面甄别）",
+    "status": "error: (1105, \"errCode = 2, detailMessage = Permission denied: user ['test2'@'%'] does not have privilege for [priv predicate: OR, Admin_priv,Select_priv] command on [internal].[informati",
+    "rows": 0,
+    "data": []
+   },
+   {
+    "tag": "jiuxin 活跃度/运营类表扫描",
+    "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx_technology_analysis_dev' AND (table_name LIKE '%activity%' OR table_name LIKE '%active%' OR table_name LIKE '%monitor%' OR table_name LIKE '%operation%') LIMIT 40",
+    "source": "jiuxin",
+    "note": "SZINNOV_012 平台运行活跃度表名级",
+    "status": "error: (1105, \"errCode = 2, detailMessage = Permission denied: user ['test2'@'%'] does not have privilege for [priv predicate: OR, Admin_priv,Select_priv] command on [internal].[informati",
+    "rows": 0,
+    "data": []
+   },
+   {
+    "tag": "jiuxin 活跃度语义列扫描（列名）",
+    "sql": "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='gkx_technology_analysis_dev' AND (column_name LIKE '%activity%' OR column_name LIKE '%active%' OR column_name LIKE '%vitality%') LIMIT 80",
+    "source": "jiuxin",
+    "note": "SZINNOV_012 列级（含 *_count 列的活跃度代理候选）",
+    "status": "error: (1105, \"errCode = 2, detailMessage = Permission denied: user ['test2'@'%'] does not have privilege for [priv predicate: OR, Admin_priv,Select_priv] command on [internal].[informati",
+    "rows": 0,
+    "data": []
+   },
+   {
+    "tag": "jiuxin 平台/载体类表扫描",
+    "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx_technology_analysis_dev' AND (table_name LIKE '%platform%' OR table_name LIKE '%carrier%' OR table_name LIKE '%institution%' OR table_name LIKE '%org%') LIMIT 40",
+    "source": "jiuxin",
+    "note": "SZINNOV_012 平台载体域",
+    "status": "error: (1105, \"errCode = 2, detailMessage = Permission denied: user ['test2'@'%'] does not have privilege for [priv predicate: OR, Admin_priv,Select_priv] command on [internal].[informati",
+    "rows": 0,
+    "data": []
+   },
+   {
+    "tag": "jiuxin ads_location 层级分布",
+    "sql": "SELECT location_level, COUNT(*) c FROM ads_location GROUP BY location_level ORDER BY c DESC",
+    "source": "jiuxin",
+    "note": "COUNTRY/PROVINCE/CITY 之外有无 DISTRICT 级——区级承载主判定",
+    "rows": 5,
+    "data": [
+     [
+      "CITY",
+      "19729"
+     ],
+     [
+      "PROVINCE",
+      "2252"
+     ],
+     [
+      "COUNTRY",
+      "232"
+     ],
+     [
+      "DISTRICT",
+      "9"
+     ],
+     [
+      "CONTINENT",
+      "7"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "jiuxin ads_location 深圳 10+1 区命中",
+    "sql": "SELECT location_id, name_zh, name_en, location_level FROM ads_location WHERE name_zh IN ('南山区','宝安区','龙岗区','福田区','罗湖区','盐田区','龙华区','坪山区','光明区','大鹏新区') LIMIT 20",
+    "source": "jiuxin",
+    "note": "深圳区级键存在性",
+    "rows": 10,
+    "data": [
+     [
+      "loc_33704B6B0F53FD5BD50B01052277E7D9",
+      "宝安区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_73B6C2CA76CBAC5917D8924F4C6CA4B5",
+      "龙岗区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_7FDA04B37B2724F038AF6AC1D67D3486",
+      "盐田区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_EC2FA5CFB18AAB71091EECE8A406FC8B",
+      "福田区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_76804FB73FB81540636DE7E3B44959BB",
+      "光明区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_DA9D1AB1055ED83FDCD1ED31B6B56E77",
+      "罗湖区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_3B635B68C312CDC6FB0A297C85056319",
+      "龙华区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_3CBEBA22E46432C0A41FFCC93369C230",
+      "坪山区",
+      null,
+      "DISTRICT"
+     ],
+     [
+      "loc_8F042B565A6E158B564DD241E2ACA7D0",
+      "光明区",
+      "Guangming District",
+      "CITY"
+     ],
+     [
+      "loc_EB3B46836D63522075436122D3DAFC64",
+      "南山区",
+      null,
+      "DISTRICT"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "jiuxin ads_geo_yearly_metrics 层级分布",
+    "sql": "SELECT location_level, COUNT(*) c, COUNT(DISTINCT location_id) locs, MIN(statistics_year) y0, MAX(statistics_year) y1 FROM ads_geo_yearly_metrics GROUP BY location_level ORDER BY c DESC",
+    "source": "jiuxin",
+    "note": "对齐共享快照 #44（CITY 132,975）；DISTRICT 有无判定",
+    "rows": 4,
+    "data": [
+     [
+      "CITY",
+      "132975",
+      "11284",
+      "2000",
+      "2026"
+     ],
+     [
+      "PROVINCE",
+      "33518",
+      "1931",
+      "2000",
+      "2026"
+     ],
+     [
+      "COUNTRY",
+      "5081",
+      "224",
+      "2000",
+      "2026"
+     ],
+     [
+      "CONTINENT",
+      "162",
+      "6",
+      "2000",
+      "2026"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "jiuxin ads_institution_yearly_metrics 结构",
+    "sql": "SELECT column_name, column_type FROM information_schema.columns WHERE table_schema='gkx_technology_analysis_dev' AND table_name='ads_institution_yearly_metrics' ORDER BY ordinal_position LIMIT 40",
+    "source": "jiuxin",
+    "note": "816,120 行（INNOV_011 先验）；看有无 location_id/活跃度列",
+    "status": "error: (1105, \"errCode = 2, detailMessage = Permission denied: user ['test2'@'%'] does not have privilege for [priv predicate: OR, Admin_priv,Select_priv] command on [internal].[informati",
+    "rows": 0,
+    "data": []
+   },
+   {
+    "tag": "jiuxin ads_institution_yearly_metrics 行数复核",
+    "sql": "SELECT COUNT(*) FROM ads_institution_yearly_metrics",
+    "source": "jiuxin",
+    "note": "B11 对账 INNOV_011 的 816,120",
+    "rows": 1,
+    "data": [
+     [
+      "816120"
+     ]
+    ],
+    "status": "ok"
+   }
+  ]
+ }
+}

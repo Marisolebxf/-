@@ -1,0 +1,102 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_067",
+  "metric_name": "图谱风险综合评分（科技知识图谱·指标展示·黑名单联动触发）",
+  "facts": {
+    "ui_mount": "BlacklistTriggerPanel.jsx:151 风险评分列（RiskLevelTag）+ IndicatorDisplay.jsx:44 详情「规则判别」区风险评分行",
+    "ui_mock_source": "mockData.js:184 blacklistTriggers 5 条 riskScore [87,76,92,81,73]",
+    "ui_risk_level_rule": "BlacklistTriggerPanel.jsx:58-63 RiskLevelTag：≥90 极高（红）/≥80 高（橙）/≥70 中（金）/else 低（绿）",
+    "dev_blacklist_family": [
+      "gkxlumenx_job.qrtz_blob_triggers",
+      "gkxlumenx_job.qrtz_cron_triggers",
+      "gkxlumenx_job.qrtz_fired_triggers",
+      "gkxlumenx_job.qrtz_paused_trigger_grps",
+      "gkxlumenx_job.qrtz_simple_triggers",
+      "gkxlumenx_job.qrtz_simprop_triggers",
+      "gkxlumenx_job.qrtz_triggers"
+    ],
+    "dev_family_rows": {
+      "gkxlumenx_job.qrtz_blob_triggers": 0,
+      "gkxlumenx_job.qrtz_cron_triggers": 0,
+      "gkxlumenx_job.qrtz_fired_triggers": 0,
+      "gkxlumenx_job.qrtz_paused_trigger_grps": 0,
+      "gkxlumenx_job.qrtz_simple_triggers": 0,
+      "gkxlumenx_job.qrtz_simprop_triggers": 0,
+      "gkxlumenx_job.qrtz_triggers": 0
+    },
+    "gkx_blacklist_family": [],
+    "gkx_risk_tables": [
+      "dwd_org_risk_shixin",
+      "dwd_org_risk_shixin_bak_20260911",
+      "dwd_org_risk_shixin_bak_20260923",
+      "dwd_org_risk_tax_punish",
+      "dwd_org_risk_tax_punish_bak_20260911",
+      "dwd_org_risk_zhixing",
+      "dwd_org_risk_zhixing_bak_20260911"
+    ],
+    "jiuxin_blacklist_family": []
+  },
+  "derived": [
+    {
+      "source": "三源黑名单/触发面词族探针",
+      "dev_hits": [
+        "gkxlumenx_job.qrtz_blob_triggers",
+        "gkxlumenx_job.qrtz_cron_triggers",
+        "gkxlumenx_job.qrtz_fired_triggers",
+        "gkxlumenx_job.qrtz_paused_trigger_grps",
+        "gkxlumenx_job.qrtz_simple_triggers",
+        "gkxlumenx_job.qrtz_simprop_triggers",
+        "gkxlumenx_job.qrtz_triggers"
+      ],
+      "dev_rows": {
+        "gkxlumenx_job.qrtz_blob_triggers": 0,
+        "gkxlumenx_job.qrtz_cron_triggers": 0,
+        "gkxlumenx_job.qrtz_fired_triggers": 0,
+        "gkxlumenx_job.qrtz_paused_trigger_grps": 0,
+        "gkxlumenx_job.qrtz_simple_triggers": 0,
+        "gkxlumenx_job.qrtz_simprop_triggers": 0,
+        "gkxlumenx_job.qrtz_triggers": 0
+      },
+      "gkx_hits": [],
+      "jiuxin_hits": [],
+      "gkx_risk_upgrade_candidate": [
+        "dwd_org_risk_shixin",
+        "dwd_org_risk_shixin_bak_20260911",
+        "dwd_org_risk_shixin_bak_20260923",
+        "dwd_org_risk_tax_punish",
+        "dwd_org_risk_tax_punish_bak_20260911",
+        "dwd_org_risk_zhixing",
+        "dwd_org_risk_zhixing_bak_20260911"
+      ],
+      "ui_mock_scores": "[87, 76, 92, 81, 73]（blacklistTriggers 5 条）",
+      "verdict": "黑名单触发名单+风险评分面三源缺位；与 066（优化决策侧风险评分）同域同缺——gkx 企业风险表族是唯一真实风险语义升档候选"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev 告警/资产/黑名单词族",
+      "how": "gkxlumenx* 词族扫描+逐张计数（本件）",
+      "hits": "合并命中 8 张（行数见 facts）"
+    },
+    {
+      "what": "久新 alert/asset/blacklist 词族",
+      "how": "SHOW TABLES 词族（本件）",
+      "hits": "三族逐一留证（见 facts）"
+    },
+    {
+      "what": "gkx 告警/资产/黑名单词族",
+      "how": "280 表词族（本件+族级快照）",
+      "hits": "risk 族已有（dwd_org_risk_*）；alert/asset/blacklist 逐留"
+    },
+    {
+      "what": "dev 图结构面（26 张）",
+      "how": "族级快照 _probe_s305_l3_call_out.json",
+      "hits": "全 0 行"
+    }
+  ],
+  "support_judgment": "完全不支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "UI 读数为 mock 触发名单（5 条 73-92 分），无年度基期维"
+  ],
+  "base_years_note": "物理口径基期=探针快照日（当日截面）；非年度基期，非「缺年按 0 摊入」"
+}

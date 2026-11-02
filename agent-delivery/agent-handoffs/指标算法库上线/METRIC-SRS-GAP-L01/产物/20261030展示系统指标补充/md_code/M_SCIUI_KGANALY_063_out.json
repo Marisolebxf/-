@@ -1,0 +1,106 @@
+{
+  "metric_id": "M_SCIUI_KGANALY_063",
+  "metric_name": "行为频次指数（科技知识图谱·指标展示·优化决策模型·动态指标学习）",
+  "facts": {
+    "ui_mock_source": "mockData.js:566 decisionDynamicMetrics behaviorFreq {value:128, delta:12, desc:'近7日异常与正常行为加权频次'}",
+    "ui_algo_hint": "decisionModel.js bumpDynamicMetrics behaviorFreq 分支：Math.round(value+step*80)——mock 演进规则非算法",
+    "dev_behavior_event_family": [
+      "gkxlumenx.sys_audit_log",
+      "gkxlumenx_ads.svc_attraction_recommend",
+      "gkxlumenx_cms.cms_op_audit",
+      "gkxlumenx_dwd.industry_chain_extraction_result"
+    ],
+    "dev_behavior_event_rows": {
+      "gkxlumenx.sys_audit_log": 0,
+      "gkxlumenx_ads.svc_attraction_recommend": 0,
+      "gkxlumenx_cms.cms_op_audit": 476,
+      "gkxlumenx_dwd.industry_chain_extraction_result": 0
+    },
+    "gkx_behavior_event_family": [
+      "dwd_rel_reaction_substance",
+      "dwd_rel_reaction_substance_bak_20260912"
+    ],
+    "gkx_paper_yearly_counts_2016_2026": {
+      "2017": 3,
+      "2018": 1,
+      "2019": 3,
+      "2020": 7,
+      "2021": 7,
+      "2022": 14,
+      "2023": 22,
+      "2024": 29,
+      "2025": 64,
+      "2026": 1222
+    },
+    "gkx_paper_yearly_latest": [
+      2026,
+      1222
+    ],
+    "gkx_paper_total": 1387,
+    "jiuxin_behavior_event_family": []
+  },
+  "derived": [
+    {
+      "source": "gkx.dwd_en_paper cover_year_start 分年计数（成果产出流·年度粒度最接近候选）",
+      "yearly_counts": {
+        "2017": 3,
+        "2018": 1,
+        "2019": 3,
+        "2020": 7,
+        "2021": 7,
+        "2022": 14,
+        "2023": 22,
+        "2024": 29,
+        "2025": 64,
+        "2026": 1222
+      },
+      "latest_year": 2026,
+      "latest_count": 1222,
+      "yoy_delta": 1158,
+      "note": "最接近候选：『年度发文频次』≠UI『近7日行为加权频次』（粒度年度 vs 7 日/无异常-正常分型/无加权维）——不足以撑部分支持档，登记为语义换轨扩展项"
+    },
+    {
+      "source": "三源行为事件流词族探针（7 日粒度依赖）",
+      "dev_hits": {
+        "gkxlumenx.sys_audit_log": 0,
+        "gkxlumenx_ads.svc_attraction_recommend": 0,
+        "gkxlumenx_cms.cms_op_audit": 476,
+        "gkxlumenx_dwd.industry_chain_extraction_result": 0
+      },
+      "gkx_hits": [
+        "dwd_rel_reaction_substance",
+        "dwd_rel_reaction_substance_bak_20260912"
+      ],
+      "jiuxin_hits": [],
+      "verdict": "行为事件流（时序细粒度）三源缺位——UI 口径（近7日异常与正常行为加权频次）无法构建；权重方案（异常 vs 正常）亦为业务建模待定项"
+    }
+  ],
+  "absence_probe": [
+    {
+      "what": "dev 融合指标登记面（fusion/indicator 配置表）",
+      "how": "gkxlumenx* 词族扫描+逐张计数（本件）",
+      "hits": "词族命中 15 张（行数见 facts.dev_metric_config_rows）"
+    },
+    {
+      "what": "久新融合指标登记面",
+      "how": "SHOW TABLES 词族+列结构抽样（本件）",
+      "hits": "22 张 *_metrics 均为结果面（sample 列结构无『登记/配置』语义列）"
+    },
+    {
+      "what": "三源行为事件流（7 日粒度）",
+      "how": "behavior/action/event_log/click/visit/operate/audit 词族（本件）",
+      "hits": "dev/gkx/久新逐一留证（见 facts063）"
+    },
+    {
+      "what": "dev 图结构面（26 张）",
+      "how": "族级快照 _probe_s305_l3_call_out.json",
+      "hits": "全 0 行（非承载）"
+    }
+  ],
+  "support_judgment": "完全不支持",
+  "base_years_used": [],
+  "base_years_missing": [
+    "UI 口径为近 7 日滚动窗口（无年度基期维）；替代口径 gkx 论文年流基期见 facts"
+  ],
+  "base_years_note": "物理口径基期=探针快照日（当日截面）；UI 口径非年度基期，非「缺年按 0 摊入」"
+}

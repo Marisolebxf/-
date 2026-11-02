@@ -1,0 +1,167 @@
+{
+ "metric_id": "M_SCIUI_THINK_006",
+ "batch": "S3-09",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/tech-service/TechCommunication.jsx:141",
+  "repos/demo-ui-science/src/pages/tech-service/TechCommunication.jsx:154-161",
+  "repos/demo-ui-science/src/pages/tech-service/mockData.js:335-340",
+  "repos/demo-ui-science/src/pages/tech-service/mockData.js:299-308"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「平台内容总条数」指标名三份说明书未出现；清单 row_01=709（_phase3_screen_v3.json）l3=总内容数，mean 注「文章/报告等内容受用户欢迎程度的统计」（清单语义宽泛）。科技传播页为主需求科技创新服务全景平台（1.2 域）UI 挂载件。"
+ },
+ "facts": {
+  "ui_mount": "TechCommunication.jsx:141 统计概览四卡之一 { label: 总内容数, value: communicationStats.totalContents }——清单挂载位；:154-161 Statistic 卡渲染",
+  "ui_mock_stats": "mockData.js:335-340 communicationStats { totalContents: 3567, monthlyViews: 1258000, activeUsers: 45600, newContents: 234 }——ui_demo_fallback 演示值",
+  "ui_categories": "mockData.js:299-308 communicationCategories 九分类卡（创新成果展览 156/科学人讲坛 234/院士风采 89/学术期刊 45/学术会议 178/科技图书 567/信息素养 123/科学文化 234/新媒体 1890）——九类合计 3,516 ≠ totalContents 3,567（差 51，演示值不勾稽）",
+  "dev_table_total": 542,
+  "dev_cms_content_news": {
+   "rows": 12,
+   "columns": [
+    "id",
+    "domain",
+    "title",
+    "org_ids",
+    "kind",
+    "content",
+    "risk",
+    "status",
+    "pub_date",
+    "source_url",
+    "is_deleted",
+    "created_by",
+    "created_at",
+    "updated_by",
+    "updated_at"
+   ],
+   "note": "16 列含 domain/title/kind/content/pub_date/status——平台内容主档结构面（近乎空壳）"
+  },
+  "dev_cms_content_sz": {
+   "rows": 11
+  },
+  "dev_cms_content_region_roster": {
+   "rows": 6
+  },
+  "dev_cms_content_sum": 29,
+  "dev_app_article": {
+   "rows": 0,
+   "note": "app 文章主档 0 行空壳"
+  },
+  "dev_news_ods": {
+   "rows": 0,
+   "note": "ods 通用新闻 0 行空壳"
+  },
+  "gkx_table_count": 280,
+  "gkx_content_table_rows": {
+   "dwd_industry_analysis_content_types": 1000,
+   "dwd_industry_chain_news_info": 108052,
+   "dwd_news_base": 20000,
+   "dwd_org_important_news_info": 1668414,
+   "dwd_zh_paper_reference_content": 196619
+  },
+  "jiuxin_table_count_live": 218,
+  "jiuxin_content_word_tables": [
+   "ads_talent_media_report",
+   "ads_talent_media_sentiment_assessment"
+  ],
+  "jiuxin_content_word_rows": {
+   "ads_talent_media_report": 30,
+   "ads_talent_media_sentiment_assessment": 15
+  },
+  "named_in_srs": false
+ },
+ "derived": [
+  {
+   "name": "platform_content_total",
+   "value": null,
+   "numerator": null,
+   "denominator": null,
+   "note": "平台内容总条数 = 平台内容主档（文章/报告/视频等）全量 COUNT。本库真源判定：dev CMS 主档面三表合计 29 行（cms_content_news 12 + cms_content_sz 11 + cms_content_region_roster 6，结构在量近乎空壳）；app_article/ods.news 0 行空壳；gkx/jiuxin 新闻面为企业新闻/人才媒体报道语义（总体错位）。UI 口径的平台内容主档量不足、代理面语义错位 → 无可信总数，null 登记（负读数；判部分支持依据结构面在）"
+  },
+  {
+   "name": "gkx_news_family_total",
+   "value": 1994085,
+   "note": "gkx 内容词族五表行数合计（dwd_org_important_news_info 1,668,414 + dwd_zh_paper_reference_content 196,619 + dwd_industry_chain_news_info 108,052 + dwd_news_base 20,000 + dwd_industry_analysis_content_types 1,000）= 1,994,085——企业/产业链新闻语义代理面规模参照（非平台内容口径）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 平台内容主档量（cms/app/news 族行数实证 542 表）",
+   "source": "dev",
+   "sql": "COUNT(*) 逐表（_probe_s309_alpha_b 快照 + _shared_s309_alpha 快照 content_table_rows）",
+   "hits": 3,
+   "hit_detail": "cms_content_news 12 行 + cms_content_sz 11 行 + cms_content_region_roster 6 行 = 29 行；app_article/app_article_category/app_article_collect 0 行；ods.news 0 行；policy_latest_news/chain_news 0 行——结构面在、量近乎空壳（主降档因之一）"
+  },
+  {
+   "probe": "gkx 内容词族（280 表 content/article/publish/media/news/cms）",
+   "source": "gkx",
+   "sql": "表名词族扫描 + COUNT（快照 gkx.content_table_rows）",
+   "hits": 5,
+   "hit_detail": "五表合计 1,994,085 行——语义全为企业新闻/产业链新闻/论文引用内容（dwd_org_important_news_info=机构重要新闻等），非「平台发布内容」主档口径（总体错位，主降档因之二）"
+  },
+  {
+   "probe": "jiuxin 内容词族（SHOW TABLES 实数 218 表）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES + content/article/publish/media/news/cms 词族 + 行数（快照 jiuxin.word_content/_rows）",
+   "hits": 2,
+   "hit_detail": "ads_talent_media_report 30 行 + ads_talent_media_sentiment_assessment 15 行——人才媒体报道语义（30 列含 published_at/title/publisher），非平台内容主档"
+  },
+  {
+   "probe": "UI 分类勾稽核（演示值内部一致性）",
+   "source": "ui",
+   "sql": "九分类 count 合计 vs totalContents 人工核对",
+   "hits": 1,
+   "hit_detail": "九类合计 3,516 ≠ totalContents 3,567（差 51）——mock 自身不勾稽，演示值不可作基数"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档理由：平台内容总条数需「平台内容主档（发布内容×类型×状态）」。dev CMS 结构面完整在（cms_content_news 16 列含 domain/kind/content/pub_date/status）但量近乎空壳（三表合计 29 行）；gkx/jiuxin 新闻面量足但总体错位（企业新闻/人才媒体报道≠平台发布内容）。结构部分可得、可信总量不可得 → 部分支持（双降档因：主档量不足 + 代理总体错位）。",
+  "同族关系：与 THINK_009（内容发布时间趋势）共享内容主档缺口与探针快照；与 THINK_010/011/012（浏览/点赞族，路 β）同挂科技传播页四卡（月浏览量/累计浏览/点赞）——四卡同根。",
+  "语义错位披露（B10）：gkx 1,994,085 行为企业/产业链新闻面（org_important_news_info 机构重要新闻等），jiuxin 45 行为人才媒体报道——即使取数也只是「新闻池规模」而非「平台内容总数」；dev CMS 29 行是唯一口径正确的面但量不足。",
+  "UI 披露：mock totalContents 3,567 与九分类合计 3,516 不勾稽（差 51）——演示值双重不可作基数。",
+  "升档路径：dev CMS 主档灌数（平台发布内容接入）→ 完全直接支持；接受新闻池代理口径 → 仍部分支持且须标注「企业新闻池规模，非平台内容总数」。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "2021-2026"
+ ],
+ "base_years_note": "总条数为存量截面读数（无时序维度）；dev CMS 主档近乎空壳无年度可谈；若接入真实内容主档以收录起始年为基期。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "1,668,414",
+   "1,994,085",
+   "1000",
+   "108052",
+   "11",
+   "12",
+   "123",
+   "15",
+   "156",
+   "16",
+   "1668414",
+   "178",
+   "1890",
+   "196619",
+   "1994085",
+   "20000",
+   "218",
+   "234",
+   "280",
+   "29",
+   "3,516",
+   "3,567",
+   "30",
+   "3516",
+   "3567",
+   "45",
+   "51",
+   "542",
+   "567",
+   "6",
+   "89"
+  ]
+ }
+}

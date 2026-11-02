@@ -1,0 +1,212 @@
+{
+ "metric_id": "M_SCIUI_SOFTSCI_007",
+ "batch": "S3-07-L2",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:1009"
+ ],
+ "facts": {
+  "ui_mount": "IncubationCarrierPage.jsx:1009 SoftChartFrame title=孵化毕业统计 badge=在孵 vs 毕业",
+  "ui_build_fn": "IncubationCarrierPage.jsx:657 buildIncubationGraduationOption：在孵企业(bar,stack)+已毕业(bar,stack)+毕业率(line,右轴max=100)",
+  "ui_rate_formula": "IncubationCarrierPage.jsx:710 Math.round(d.graduated/(d.inIncubation+d.graduated)*100)",
+  "ui_mock_data": "incubationCarrierMock.js:279-284 五载体 inIncubation/graduated：(86,24)(112,38)(64,19)(58,12)(72,16)",
+  "ui_mock_note": "mock 为演示值不参与判档；五载体毕业率=22/25/23/17/18%，均值 21%（ui_demo_fallback 披露）",
+  "dev_table_total": 542,
+  "dev_carrier_tables": {
+   "carrier": {
+    "columns": [
+     "carrier_id",
+     "name",
+     "carrier_type",
+     "carrier_level",
+     "operator_org_uid",
+     "admin_code",
+     "lng",
+     "lat",
+     "source"
+    ],
+    "rows": 28
+   },
+   "carrier_index": {
+    "columns": [
+     "carrier_id",
+     "stat_period",
+     "domain_id",
+     "index_score",
+     "rank_total",
+     "rank_domain",
+     "rank_region",
+     "sub_scores",
+     "weight_version"
+    ],
+    "rows": 0
+   },
+   "carrier_org_rel": {
+    "columns": [
+     "id",
+     "carrier_id",
+     "org_uid",
+     "rel_type",
+     "start_date",
+     "end_date",
+     "attribution_coef"
+    ],
+    "rows": 57
+   },
+   "enterprise_innovation_carrier": {
+    "columns": [
+     "id",
+     "org_id",
+     "carrier_name",
+     "carrier_type",
+     "carrier_level",
+     "publish_date",
+     "create_time",
+     "update_time"
+    ],
+    "rows": 0
+   }
+  },
+  "dev_dim_carrier_rows": 28,
+  "dev_dim_carrier_types": [
+   {
+    "carrier_type": "incubator",
+    "carrier_level": "provincial",
+    "n": 10
+   },
+   {
+    "carrier_type": "research",
+    "carrier_level": "national",
+    "n": 8
+   },
+   {
+    "carrier_type": "university",
+    "carrier_level": "national",
+    "n": 10
+   }
+  ],
+  "dev_carrier_rel_rows": 57,
+  "dev_carrier_rel_type_domain": [
+   {
+    "rel_type": "self",
+    "n": 18,
+    "open_rels": "18",
+    "mn": null,
+    "mx": null
+   },
+   {
+    "rel_type": "tenant",
+    "n": 39,
+    "open_rels": "39",
+    "mn": "2024-01-01",
+    "mx": "2024-01-01"
+   }
+  ],
+  "dev_graduation_columns_eic": [],
+  "dev_graduation_columns_ci": [],
+  "dev_empty_indicator_tables": [
+   "gkxlumenx_dwd.enterprise_innovation_carrier=0",
+   "gkxlumenx_ads.carrier_index=0"
+  ],
+  "gkx_table_count": 280,
+  "jiuxin_table_count_live": 218,
+  "srs_anchor": null,
+  "named_in_srs": false,
+  "named_note": "三份说明书未出现「孵化毕业统计/毕业率」指标名（检索记录附录 A）。"
+ },
+ "derived": [
+  {
+   "name": "carrier_in_incubation_approx",
+   "value": 39,
+   "formula": "COUNT(*) WHERE rel_type='tenant' AND end_date IS NULL（在驻近似在孵）",
+   "disclosure": "tenant 在驻关系 ≠ 在孵企业认定（在孵需注册+入驻协议+科技型属性），近似口径 ui_demo_fallback 披露"
+  },
+  {
+   "name": "graduation_counts_and_rate",
+   "value": null,
+   "reason": "毕业语义零承载：rel_type 域={self,tenant} 无毕业态、end_date 全 NULL、无毕业企业名单表"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 542 表 incub/hatch/carrier/graduat 词族",
+   "source": "dev",
+   "sql": "information_schema.columns 词族扫描（_probe_s307_l2 快照）",
+   "hits": 4,
+   "hit_tables": [
+    "gkxlumenx_ads.carrier_index",
+    "gkxlumenx_dim.carrier",
+    "gkxlumenx_dim.carrier_org_rel",
+    "gkxlumenx_dwd.enterprise_innovation_carrier"
+   ]
+  },
+  {
+   "probe": "gkx 280 表 incub/hatch/carrier/graduat 词族",
+   "source": "gkx",
+   "sql": "information_schema.columns 词族扫描（快照）",
+   "hits": 0
+  },
+  {
+   "probe": "jiuxin 218 表（SHOW TABLES 实数）incub/hatch/carrier/graduat 词族",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES+列扫描（快照）",
+   "hits": 0
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "判档理由：载体维（dim.carrier 28 行 university/research）+ 在驻关系（carrier_org_rel tenant=39）可算「在孵(近似)」柱；「已毕业」柱与「毕业率」线零承载——毕业语义需 rel_type 毕业态或毕业企业名单表，三源均无。三系列缺二，判部分支持。",
+  "口径转换点：UI 毕业率分母=在孵+已毕业（期末口径）；权威口径（火炬 2019 指标体系 2.2/黄石 2.2/工信部 2025 六(八)）= 考核期毕业企业数 ÷ 在孵企业总数，接入时需转换。",
+  "同族关联：INCUB_012（在孵企业毕业率，IncubationCarrierNewPage.jsx:1396）同根因不同页挂载，各自独立留证；INCUB_015 修复建议已引本件。",
+  "mock 五载体（86/24、112/38、64/19、58/12、72/16）为演示值（ui_demo_fallback 披露）。",
+  "本件为薄壳：复用共享快照 + dev 载体链路四表实连复核（行数/列清单/rel_type 域断言）。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [
+  "2021",
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_note": "carrier_org_rel.start_date 仅 2024-01-01 单值（tenant 39 行同日），无年度序列；enterprise_innovation_carrier/carrier_index 0 行无 stat_period 可用。接入毕业数据后首个完整考核年为基期。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "10",
+   "1000",
+   "112",
+   "12",
+   "16",
+   "17",
+   "18",
+   "19",
+   "2",
+   "20",
+   "2024-01-01",
+   "21",
+   "218",
+   "22",
+   "23",
+   "24",
+   "25",
+   "28",
+   "280",
+   "30",
+   "38",
+   "39",
+   "4",
+   "5",
+   "50",
+   "500",
+   "542",
+   "57",
+   "58",
+   "6",
+   "64",
+   "72",
+   "75",
+   "86"
+  ]
+ }
+}

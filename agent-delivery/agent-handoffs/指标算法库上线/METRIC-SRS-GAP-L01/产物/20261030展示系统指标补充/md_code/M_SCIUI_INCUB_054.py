@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""M_SCIUI_INCUB_054 载体成长趋势 —— 薄壳校验脚本（负结论件）。
+
+UI：IncubationCarrierPage.jsx:556 成长阶段图表卡「载体成长趋势」
+（metric=activeCarrier.growthIndex 分，badge=企业与项目双指标）+
+buildGrowthOption(growthTrend) 月度双线（mock 1-6 月 enterprises 242→372/
+projects 58→100）。成长指数 growthIndex（mock 88/81/76/73）另挂排行
+（:121-128 score 排序）/摘要（:255 成长指数）/进度条（:1265）。
+探针：dev enterprise_growth_trend（区域×年月 新企业数）0 行、
+enterprise_innovation_carrier 0 行、dim.carrier 28 行（载体字典无指标列）；
+gkx 无载体面；久新无 incubat/carrier 词族——载体成长时序面三源零承载。
+"""
+from __future__ import annotations
+
+import json
+import sys
+
+sys.path.insert(0, "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code")
+
+SHARED = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s308_lane_a_out.json"
+OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_INCUB_054_out.json"
+
+
+def main() -> None:
+    with open(SHARED, encoding="utf-8") as f:
+        snap = json.load(f)
+
+    dev = snap["dev"]
+    gkx = snap["gkx"]
+    jx = snap["jiuxin"]
+    egt = dev["gkxlumenx_dwd.enterprise_growth_trend"]
+    eic = dev["gkxlumenx_dwd.enterprise_innovation_carrier"]
+    dc = dev["gkxlumenx_dim.carrier"]
+    assert dev["table_total"] == 542 and gkx["table_count"] == 280
+    assert jx["table_count_live"] == 218
+    assert egt["rows"] == 0 and eic["rows"] == 0 and dc["rows"] == 28
+    assert "new_enterprise_count" in egt["columns"] and "carrier_type" in eic["columns"]
+
+    out = {
+        "metric_id": "M_SCIUI_INCUB_054",
+        "batch": "S3-08",
+        "ui_evidence": [
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:556",
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/components/IncubationCarrierPage.jsx:564",
+            "repos/demo-ui-science/src/pages/achievement-preview/modules/incubation-carrier/mock/incubationCarrierMock.js:505-511",
+        ],
+        "requirement_trace": {
+            "named_in_srs": False,
+            "note": "「载体成长趋势」指标名三份说明书未出现；INCUB 清单 row_01=609（语义注：孵化器及其培育企业统计——回答孵化器有多少家、养得怎么样）；挂载位=IncubationCarrierPage.jsx:556（清单定位）。",
+        },
+        "facts": {
+            "ui_mount": "IncubationCarrierPage.jsx:555-566 成长阶段图表卡 { title: 载体成长趋势, metric: activeCarrier.growthIndex(分), badge: 企业与项目双指标 } + SoftEChart buildGrowthOption(growthTrend) 月度双线",
+            "ui_trend_data": "mock incubationCarrierMock.js:505-511 growthTrend 六点月序列：enterprises 242/268/296/320/346/372 + projects 58/64/71/82/91/100（1-6 月，企业与项目双指标）",
+            "ui_growth_index": "mock carriers[].growthIndex（:145/174/203/232 = 88/81/76/73 分）另挂三处：排行 buildRankItems（:121-128 score=growthIndex 降序）/摘要 buildSummaryMetrics（:255 成长指数·综合评分）/详情进度条（:1265 value=growthIndex）——成长指数为载体评分域（与成长趋势双线并挂一卡）",
+            "ui_mock_note": "mock 六点双线与 growthIndex 四值为演示常量，不参与支持度结论（ui_demo_fallback）；growthIndex 无算法定义（综合评分语义）",
+            "dev_table_total": dev["table_total"],
+            "dev_enterprise_growth_trend": {"columns": egt["columns"], "rows": egt["rows"]},
+            "dev_enterprise_innovation_carrier": {"columns": eic["columns"], "rows": eic["rows"]},
+            "dev_dim_carrier": {"columns": dc["columns"], "rows": dc["rows"], "note": "载体字典 28 行（carrier_id/name/type/level/admin_code/lng/lat/source）——无任何指标/时序列，仅地理字典"},
+            "gkx_table_count": gkx["table_count"],
+            "jiuxin_table_count_live": jx["table_count_live"],
+            "jiuxin_carrier_note": "久新 218 表无 incubat/carrier/孵化 词族表（快照词族未命中载体域）——载体成长时序无承载",
+            "named_in_srs": False,
+        },
+        "derived": [
+            {
+                "name": "carrier_growth_trend_monthly",
+                "value": None,
+                "numerator": None,
+                "denominator": None,
+                "note": "载体成长趋势 = 载体（孵化器）在孵企业数与项目成果数的月度双线序列（UI 口径）。载体×月度计数面三源零承载（dev 双表 0 行/久新无载体域）→ 不可构建，负结论 null 登记",
+            },
+        ],
+        "absence_probe": [
+            {"probe": "dev 载体成长时序预留面",
+             "source": "dev", "sql": "SELECT COUNT(*) FROM gkxlumenx_dwd.enterprise_growth_trend（快照）",
+             "hits": 1, "rows": 0,
+             "hit_detail": "8 列（id/region_id/stat_year/stat_month/new_enterprise_count/stat_date/create_time/update_time）——区域×年月新企业数时序预留面，0 行空壳（结构为区域粒度非载体粒度，且无 projects 计数列）"},
+            {"probe": "dev 载体事实面",
+             "source": "dev", "sql": "SELECT COUNT(*) FROM gkxlumenx_dwd.enterprise_innovation_carrier（快照）",
+             "hits": 1, "rows": 0,
+             "hit_detail": "8 列（org_id/carrier_name/carrier_type/carrier_level/publish_date）0 行——载体名录空壳；dim.carrier 28 行仅地理字典无指标"},
+            {"probe": "gkx 载体/成长词族（280 表）",
+             "source": "gkx", "sql": "information_schema 表名扫描（快照）",
+             "hits": 0, "note": "gkx 无载体域表"},
+            {"probe": "久新 载体域（SHOW TABLES 实数 218 表）",
+             "source": "jiuxin", "sql": "SHOW TABLES + 词族扫描（快照）",
+             "hits": 0,
+             "hit_detail": "无 incubat/carrier/孵化 词族表——载体成长时序零承载（机构域 ads_institution_* 为科研机构非孵化载体语义）"},
+        ],
+        "support_judgment": "完全不支持",
+        "notes": [
+            "判档理由：载体成长趋势需载体×时月×在孵企业数/项目数计数面。dev 双预留面 0 行（enterprise_growth_trend 为区域粒度新企业数、无项目列；enterprise_innovation_carrier 名录空壳；dim.carrier 28 行纯字典）；gkx 无载体域；久新无载体词族——计数面三源零承载。",
+            "growthIndex（成长指数 88/81/76/73）为载体评分域 mock 常量，与成长趋势双线并挂一卡但语义不同（评分 vs 计数时序）——本件按图表卡口径（企业/项目双线）留证，评分语义不复用 043/047 结论。",
+            "同族关系：派单提示 INCUB_011（成长分）同族——本批 INCUB_011 非 Lane A 件（路 A 13 件清单无 011），同族联动仅注记；INCUB_045（覆盖仪器台数）为仪器域非载体域。",
+            "dev enterprise_growth_trend 粒度警示：即使灌数，其结构=区域×月新企业数（region_id 维），非载体×月在孵数（carrier 维）——需结构改造而非仅灌数。",
+            "升档路径：载体（孵化器）运营数据接入（载体×月在孵企业/项目计数落库）→ 完全转换支持；growthIndex 评分另需模型立项。",
+        ],
+        "base_years_used": [],
+        "base_years_missing": ["2021-2026"],
+        "base_years_note": "成长趋势为月度时序（mock 1-6 月演示）；三源无载体计数面无历史序列。",
+        "ctx_refs": {"note": "正文引用型数字登记", "refs": sorted([
+            "242", "268", "296", "320", "346", "372", "58", "64", "71", "82", "91", "100",
+            "88", "81", "76", "73", "28", "8", "542", "280", "218", "0"])},
+    }
+
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    print("written:", OUT)
+    print("judgment: 完全不支持 | 载体成长时序面三源零承载（dev 双表 0 行+久新无载体域）")
+
+
+if __name__ == "__main__":
+    main()
