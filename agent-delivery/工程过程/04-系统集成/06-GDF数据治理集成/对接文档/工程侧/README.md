@@ -11,8 +11,8 @@
 | 企业 | v4.0 | [GDF-ENT-WORKPACK-v4](../../../../../data/GDF/派单包/企业/GDF-ENT-WORKPACK-v4/README.md) | 未记 | 现行，可对外投递。Owner 徐滕强 |
 | 产业链 | v2.0 | [GDF-CHAIN-WORKPACK-v2](../../../../../data/GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v2/README.md) | 未记 | 现行，可对外投递 |
 | 政策 | v2.0.3 | [GDF-POLICY-WORKPACK-v2](../../../../../data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/README.md) | 未记 | 现行。Owner 淮政玮。任务 `GDF-POLICY-WORKPACK-V2-L01`。2026-10-30 收到 GDF round1 回包，回复任务 `GDF-POLICY-ROUND1-REPLY-L01` |
-| 子学科产业关联 | 首版 | [GDF-SUBFIELD-TOPIC-WORKPACK](../../../../../data/GDF/派单包/子学科产业关联/GDF-SUBFIELD-TOPIC-WORKPACK/README.md) · [派单说明](../../派单说明-SYSINT-06-19-L01.md) | 未记 | 2026-10-31 成包。任务 `SYSINT-06-19-L01`，in_progress，监管人淮政玮。未建作业，未执行建表，未对 GDF 发出 |
-| 技术节点产业映射 | 首版 | [GDF-TECH-NODE-WORKPACK](../../../../../data/GDF/派单包/技术节点产业映射/GDF-TECH-NODE-WORKPACK/README.md) · [派单说明](../../派单说明-SYSINT-06-20-L01.md) | 未记 | 2026-10-31 成包。任务 `SYSINT-06-20-L01`，in_progress，监管人徐滕强。未建作业，未执行建表，未对 GDF 发出 |
+| 技术节点产业映射 | 首版 | [GDF-TECH-NODE-WORKPACK](../../../../../data/GDF/派单包/技术节点产业映射/GDF-TECH-NODE-WORKPACK/README.md) · [派单说明](../../派单说明-SYSINT-06-20-L01.md) | 2026-11-02 | 2026-10-31 成包。任务 `SYSINT-06-20-L01`，in_progress，监管人徐滕强。已对 GDF 发出。两张映射里优先开工。未建作业，未执行建表 |
+| 子学科产业关联 | 首版 | [GDF-SUBFIELD-TOPIC-WORKPACK](../../../../../data/GDF/派单包/子学科产业关联/GDF-SUBFIELD-TOPIC-WORKPACK/README.md) · [派单说明](../../派单说明-SYSINT-06-19-L01.md) | 2026-11-02 | 2026-10-31 成包。任务 `SYSINT-06-19-L01`，in_progress，监管人淮政玮。已对 GDF 发出。排在技术节点产业映射之后。未建作业，未执行建表 |
 
 总索引：[派单包 README](../../../../../data/GDF/派单包/README.md)。历史包（企业 v1–v3、产业链 v1、政策 v1.0.4）不在上表，禁止当现行施工包。
 
