@@ -57,30 +57,37 @@
 
 ## 4. 验收证据
 
-- `23`§8 闭环声明：11 问全部闭环
+- `23`§8 闭环声明：11 问全部闭环；问 9~10 脚本 v2.3.2 已交付
 - grep：`09` 正文 `stage_code` = 三等分；头注已与 v2.3.1 对齐
-- 开工判定：Wave A / CHAIN-B1-TREE 可起草；`12` 后加工暂不配置（等架构师 + PARAM）
+- 开工判定：Wave A / CHAIN-B1-TREE 可起草；入向量库脚本可配；上图/原子接口仍等架构师
+- `python …/script/industry_embed.py` → `industry_embed self-check OK`
+- **GDF 派单包 DDL 自检**（本会话补跑，非 WORKPACK 签收自动闸）：  
+  `python .cursor/skills/gkx-gdf-ddl-signoff/scripts/check_gdf_ddl.py --dimension chain`  
+  - 文件层：`industry_chain` / `node` / `node_rel` / `entity_rel` 四表 **文件一致**  
+  - 整次 **不通过（EXIT 1）**：本机未设 `GKX_LUMEN_MYSQL_PASSWORD`，demo/lumen 库未核对  
+  - 说明：`task-update-status → done` 的自动闸只认 `GDF-*-WORKPACK-*`；本单 ID=`GDF-CHAIN-ROUND2-REPLY-L02` **不会**自动触发；主包单 `GDF-CHAIN-WORKPACK-V2-L01` 已是 `done`（2026-10-21），本轮未再走签收闸
 
 ## 5. 架构合规自检
 
 | 铁律 | 状态 |
 |---|---|
 | 决策不外包 | ✅ 11 问均徐滕强拍板；问5~8 转架构师不代答引擎 |
-| D12 demo/lumen | ✅ `_SPACE_OK`/demo 闸门不进 GDF DAG |
+| D12 demo/lumen | ✅ `_SPACE_OK`/demo 闸门不进 GDF DAG；词表默认 `gkxlumenx_dwd` |
 | 调用链 | ✅ 原子入图转架构师/引擎，数据侧不写 nGQL |
 | 图谱协议 | ✅ 正式空间 `gkx_chain`；本单不改图写入路径 |
-| 算法只在 Python | ✅ 参数化由徐滕强改派单包脚本交付；本单不写算法 |
+| 算法只在 Python | ✅ 参数化脚本落包 `script/industry_embed.py`（无 Java 算法） |
 | D9/指标 | ✅ 不涉及页面指标；链树为数据底座 |
-| handoff / registry | ✅ 本文件 + MCP 回填 cost |
+| handoff / registry | ✅ 本文件 + MCP 回填 cost；AV-1 过 → `ready_to_sign` |
 
 ## 6. 遗留与移交
 
 | 项 | 去向 |
 |---|---|
 | 原子接口 + `definition_id` | **架构师**（round3 回写 `12`） |
-| `industry_embed.py` 参数化 | **已交付** `script/`（v2.3.2）；误建 algo 单已撤销 |
+| `industry_embed.py` 参数化 | **已交付** `script/`（v2.3.2） |
 | `stage_code` 排序含义 | 客户决策清单 🟡 待供应方确认 |
 | tags 贴满后命中率 | GDF Wave A；业务范围仍全量全国 |
+| GDF DDL 库核对 | 设好 `GKX_LUMEN_MYSQL_PASSWORD` 后复跑 `check_gdf_ddl.py --dimension chain` 至 EXIT 0 |
 
 ## cost
 
@@ -92,6 +99,23 @@
 | actual_cost | 4 |
 | cost_warn | `green` |
 
+## CI/CD（必填）
+
+- 分支：`dev`
+- commit（本叶相关）：`6d7a24bb`（问7）/ `e61f4175`（round2 落稿）/ `149faa55`（脚本参数化 v2.3.2）等已推 `origin/dev`
+- pipeline / 部署 / K8s：N/A（编排仓文档+派单包，无业务镜像 rollout）
+- 本地命令与结果：`python script/industry_embed.py` → OK；`check_gdf_ddl.py --dimension chain` → 文件一致，缺口令整次不通过
+
+## 可观测性
+
+- 本叶不涉及新服务埋点；脚本回执可读 `TRACE_ID`/`OTEL_TRACE_ID`（可选）
+
+## 涉及文件
+
+- `agent-delivery/data/GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v2/{09,12,23,CHANGELOG,script/industry_embed.py,script/README.md}`
+- `agent-delivery/agent-handoffs/产业链分析-CHAIN/GDF-CHAIN-ROUND2-REPLY-L02.md`
+- `agent-delivery/task-registry.yaml`（L02 / 误建 PARAM 撤销）
+
 ## 会签说明
 
-会签通过：round2 答复与包修正已推 `origin/dev`；待架构师原子接口确认与 algo 参数化单并行，不阻塞本单 definition 收口。
+会签通过：round2 答复与包修正及脚本参数化已推 `origin/dev`；问 5~8 仍等架构师；DDL 库核对待口令复跑。
