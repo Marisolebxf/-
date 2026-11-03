@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDotEnv, ORCH_ROOT } from './lib/feishu-bitable-config.mjs';
 import { feishuTenantToken, feishuApi, listAllBitableRecords, bitableFieldToString } from './lib/feishu-open-api.mjs';
+import { pushNamedWbsSheets } from './sync-feishu-wbs-sheets.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-daily-snapshot-board.yaml');
@@ -428,6 +429,7 @@ async function main() {
     await upsertAndPrune(cfg, token, summaryTableId, cfg.fieldNames.summary, summaryRows, summaryFieldsPayload, date);
   }
 
+  await pushNamedWbsSheets(token, date);
   if (!DRY_RUN) console.log('[done] 当日进展已投影到飞书');
 }
 
