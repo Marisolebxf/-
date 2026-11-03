@@ -23,7 +23,7 @@
 | diagram_id | `ENT-STORAGE-FLOW`、`CHAIN-STORAGE-FLOW`、`POLICY-STORAGE-FLOW` |
 | 图 diff | 未改图。未加边、未改虚线、禁止事项未变。不另画全局图。 |
 | 会签态 | 三张 L2 frontmatter 均为 `approved` |
-| 说明 | 代码对齐已会签流图和各域 `pipeline-to-nebula` 目标态。差异清单：`工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L07-入图schema差异清单.md` |
+| 说明 | 代码对齐已会签流图和各域 `pipeline-to-nebula` 目标态。差异清单：`工程过程/04-系统集成/07-图数据库集成/对接文档/智谱/SYSINT-SCHEME-07-L07-入图schema差异清单.md` |
 
 ## 范围
 

@@ -1,7 +1,7 @@
 # GDF-POLICY-WORKPACK-v2
 
 > **读者**：GDF 数据中台产线（不使用 Cursor）  
-> **版本**：v2.0.5（2026-10-30）· **现行政策包** · Mapping 继承 v1.0.4，可投递；待 GDF 预填 / 导入核对 · MAP-01 已关（永远分 UK） · 取数不过滤 `is_deleted` / `is_history`，原样进 DWD，应用侧再滤 · `16` 为字典核对，不改 `09` 列规则 · Wave C 的 `scripts/` 已是回包加补偿软删，流程图在 `12`。round1 签收和答复在 `22`。产线要执行的 SQL 只在 `sql/update_round1.sql` · Wave D 说明在 `17`（MDC 脚本未进包，先不要建作业）  
+> **版本**：v2.0.8（2026-11-02）· **现行政策包** · Mapping 继承 v1.0.4，可投递；待 GDF 预填 / 导入核对 · MAP-01 已关（永远分 UK） · 取数不过滤 `is_deleted` / `is_history`，原样进 DWD，应用侧再滤 · `16` 为字典核对，不改 `09` 列规则 · Wave C 的 `scripts/` 已是回包加补偿软删，流程图在 `12`。C1 只读 Milvus 库 `gkxlumen` 的集合 `gkxlumen_industry_anchor`，不读库 `default`。round1 签收和答复在 `22`。产线要执行的 SQL 只在 `sql/update_round1.sql` · Wave D 说明在 `17`（MDC 脚本未进包，先不要建作业）  
 > **任务**：`GDF-POLICY-WORKPACK-V2-L01` · Owner `human:淮政玮`  
 > **贴源结构真源**：`data-design/storage/POLICY/sources/ods-ddl.md`  
 > **Mapping 施工真源**：[09-政策域-ETL-Mapping明细-源表到DWD.md](09-政策域-ETL-Mapping明细-源表到DWD.md)  
@@ -25,7 +25,7 @@
 | [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 主表 + 产业关联表。`script_state` 的可执行文件在 `sql/` |
 | [sql/](sql/) | 本轮产线只执行 `update_round1.sql`：建 `script_state`、清重、加索引 |
 | [11-作废与误源对照.md](11-作废与误源对照.md) | 误源 |
-| [12-DWD后加工-抽取产业与条款结构化.md](12-DWD后加工-抽取产业与条款结构化.md) | C1 / C2 流程图、读写、脚本 |
+| [12-DWD后加工-抽取产业与条款结构化.md](12-DWD后加工-抽取产业与条款结构化.md) | C1 / C2 流程图、读写、脚本。C1 检索库 `gkxlumen` 的 `gkxlumen_industry_anchor` |
 | [scripts/](scripts/) | `policy_c1_industry.py`、`policy_c2_clauses.py`，复制到 GDF Python 节点 |
 | [13-现网DDL差集-GDF开工必读.md](13-现网DDL差集-GDF开工必读.md) | 只核产线库；缺列只 ADD |
 | [15-GDF触发调度与回执.md](15-GDF触发调度与回执.md) | B 成功后跑 C；MDC 说明在文末，脚本未配前不建作业 |

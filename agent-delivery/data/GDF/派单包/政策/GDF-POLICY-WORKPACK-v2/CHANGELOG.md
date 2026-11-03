@@ -1,5 +1,17 @@
 # CHANGELOG · GDF-POLICY-WORKPACK
 
+## v2.0.8 · 2026-11-02
+
+- 库 `gkxlumen` 的集合 `gkxlumen_industry_anchor` 已在现网建好并 load，0 条。C1 仍只读这一库，不读 `default`。
+
+## v2.0.7 · 2026-11-02
+
+- 正式锚点改为数据库隔离：库 `gkxlumen`，集合名改回 `gkxlumen_industry_anchor`。`12`、`22` 和 `scripts/policy_c1_industry.py` 的默认库、默认前缀一起改。v2.0.6 的集合名 `gkx_chain_industry_anchor` 作废。demo 仍在库 `default` 的同名集合。
+
+## v2.0.6 · 2026-11-02
+
+- 正式产业锚点集合改为 `gkx_chain_industry_anchor`（前缀 `gkx_chain_industry_`）。`12`、`22` 和 `scripts/policy_c1_industry.py` 的默认前缀一起改。与产业链包 `12` 写入的集合相同。`gkxlumen_industry_anchor` 只留给算法中台 demo。
+
 ## v2.0.5 · 2026-10-30
 
 - 清重口径已定，本轮改表语句收进 `sql/update_round1.sql`。只执行这一份。含新建 `script_state`、关联表清重后加 `uk_pid_code`、ADS 条款表清重后加 `uk_ptp_pid`、主表加普通索引 `idx_pid`。主表不删行。DWD `policy_text_parse` 不改。本仓不代跑。

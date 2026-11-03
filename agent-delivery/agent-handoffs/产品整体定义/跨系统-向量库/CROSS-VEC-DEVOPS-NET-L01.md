@@ -1,5 +1,7 @@
 # CROSS-VEC-DEVOPS-NET-L01 · Python 出网 Milvus 19530（env / helm / 只读探测）
 
+> **现行环境（2026-11-02）**：下文「尚未创建」是本叶探测当时的输出。现在 lumen 正式集合在库 `gkxlumen` 的 `gkxlumen_industry_anchor`，已建并 load，0 条。库 `default` 的同名集合是 demo。
+
 > 派单包 `派单/CROSS-VEC-DEVOPS-NET-L01-派单包.md`；总控 §0 #4 #5 #11 / §1；设计 `03-详细设计.md` §0。
 > **本叶最重要的一条**：总控冻结的 `192.168.88.48:19530` **现网没有 Milvus**；实测监听在 **`10.50.69.111:19530`**（Milvus v2.4.0 standalone，docker）。配置按实测地址落地，地址口径变更升级给监管人（下方 §问题清单 A）。
 

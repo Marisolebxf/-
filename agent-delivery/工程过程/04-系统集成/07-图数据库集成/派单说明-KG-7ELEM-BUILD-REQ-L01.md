@@ -28,10 +28,10 @@ Epic：E-SCI-INT
 
 必读（按这个顺序）：
 - agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/外部接口依赖/KG-YANDA-SCHEMA-REQ/知识图谱-实体关系属性需求清单.md（v1.2，查询侧真源）
-- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L03-算法中台上图台账.md
-- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L06-算法中台入图流程.md
-- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L04-燕大七要素上图对照.md（只用来标「燕大已有 EDGE / 新建」，不是已放行契约）
-- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/我方/SYSINT-SCHEME-07-L05-需求减已实现GAP.md（只作对照，不重做差集）
+- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/智谱/SYSINT-SCHEME-07-L03-算法中台上图台账.md
+- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/智谱/SYSINT-SCHEME-07-L06-算法中台入图流程.md
+- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/智谱/SYSINT-SCHEME-07-L04-燕大七要素上图对照.md（只用来标「燕大已有 EDGE / 新建」，不是已放行契约）
+- agent-delivery/工程过程/04-系统集成/07-图数据库集成/对接文档/智谱/SYSINT-SCHEME-07-L05-需求减已实现GAP.md（只作对照，不重做差集）
 - agent-delivery/工程过程/04-系统集成/07-图数据库集成/技术方案.md（调用链与「建图不进页面请求」的边界）
 - agent-delivery/diagram-as-contract.md
 任务查询只用 MCP task-get / task-query。禁止读 task-registry.yaml。

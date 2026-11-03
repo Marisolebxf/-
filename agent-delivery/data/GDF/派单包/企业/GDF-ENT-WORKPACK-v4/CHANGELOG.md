@@ -1,5 +1,9 @@
 # CHANGELOG — GDF-ENT-WORKPACK-v4
 
+## v4.0.3（2026-11-02，产业锚点向量不在本包）
+
+本包不读写 Milvus。正式产业锚点在库 `gkxlumen` 的集合 `gkxlumen_industry_anchor`，由产业链包 `12` 创建。demo 同名集合在库 `default`。Mapping、DDL、ES、图谱口径未改。
+
 ## v4.0.2（2026-10-22，round2 问询 31 题拍板合入）
 
 > 任务单：`GDF-ENT-WORKPACK-V4R2-L01`。round2 问询（`01-回填表-第2轮.md`，31 题）逐题拍板（human:徐滕强）后合入；回填物见 `交付客户-round2/round3/`。

@@ -1,5 +1,7 @@
 # CROSS-VEC-PY-INDEX-L01 · 产业锚点索引（embed/rebuild + embed/search）
 
+> **现行环境（2026-11-02）**：lumen 正式库是 `gkxlumen`，集合 `gkxlumen_industry_anchor` 已建并 load，0 条。demo 同名集合在库 `default`。本文是当时任务现场记录，不要按本文把正式读写打到 `default`。环境说明以 `as-built/发布注意事项.md` 和 `lumen-algo-py/k8s/README.md` 为准。
+
 > 派单包 `派单/CROSS-VEC-PY-INDEX-L01-派单包.md`；总控 §0 #4 #5 #11 #16 / §4 第 2 行；设计 `03-详细设计.md` §0–§2、`02-概要设计.md` §1.1。
 > **本叶最重要的两条**：①「客户端前缀守卫」已落成硬闸（`assert_owned_collection`，`aip_kb_1` 类名字一律抛错，含单测）；②真连了现网 `10.50.69.111:19530`，**真建了** collection `gkxlumen_industry_anchor`（1516 条锚点），三个别的系统的 collection 一个没动。
 > **本轮 embedding 是字面哈希向量，不是语义模型**（仓内无文本模型，见 §偏离 2）。`model_version` 写的是实际用的算法名，不是编的模型名。
