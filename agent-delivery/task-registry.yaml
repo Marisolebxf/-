@@ -29164,14 +29164,14 @@ tasks:
       - "2026-11-03 追加：产业领域经 subfield_topic_map 反查生效；结果页技术评估榜单表；报告最近列表上限+清理"
     update_time: "2026-11-03T15:20:00+08:00"
   - id: FE-TS-04A
-    evidence: "[object Object]"
+    evidence: "agent-handoffs/科技发展态势-TS/FE-TS-04A.md"
     feishu_bitable_record_id: reczz28MlyMJ6oge
     supervised_by: "human:孔东"
     claimed_at: "2026-10-13T03:58:41.695Z"
     last_seen_at: "2026-10-13T03:58:41.695Z"
     lock_until: "2026-11-12T03:58:41.695Z"
     claimed_by: "human:孔东"
-    title: "全球创新监测（M4）— 整页复刻：综合展示/实时数据轮询/载体排行/监测分析/能力分析"
+    title: "全球创新监测（M4）— 整页复刻：综合展示/实时数据（年度统计口径）/载体排行/监测分析/能力分析"
     status: "integration"
     agent: "frontend-agent"
     epic: "E-FE-TECH-SITUATION"
@@ -29183,7 +29183,49 @@ tasks:
     difficulty: "L"
     estimated_tokens: 210000
     note: |
-      人工点测已过（human:孔东），mock 环境基本完成，进入联调：等待 BE-TS-CONTRACT 契约冻结后切 USE_MOCK=false 对接 /situation/v1/innovation/dataset。type-check/build 三绿，handoff 已落 agent-handoffs/科技发展态势-TS/FE-TS-04A.md
+      2026-11-03 整改轮（真实链路收口）：删除「创新价值评估」随机分与随机四维、订阅规则拼装的伪推送记录、
+      「创新影响预测」标题空壳、MockDataNotice 死代码；补齐城市监控/智能推送/趋势图/领域分布 4 处空态与
+      实时错误态；实时胶囊改接后端 latestStatYear / latestCitedYear / asOf / caveat 真实元数据。
+      决策留痕：agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md；handoff：agent-handoffs/科技发展态势-TS/FE-TS-04A.md。
+      原 note 的「等待 BE-TS-CONTRACT 契约冻结后切 USE_MOCK=false」已过期：成果/载体/城市/实时四块自 2026-10-29
+      human 裁定后即走久新 Doris 真实链路（GlobalInnovationController → RemoteShowPythonClient → gkx_show_service）。
+
+      2026-11-03 第二轮审计（A 组已完成，11 项）：第一轮盯的是 Math.random 类随机造假，
+      第二轮发现的问题全是「写死的常量与固定权重」，随机数 grep 扫不到，故漏过。
+      已修：cityModel.clampScore 的 `Number(value || 0)` 把无源压成 0 分（城市列表默认每行
+      「综合创新指数 0」+ 8% 假进度条）、rank 按 0 分重排覆盖后端名次、4 处假保存/假导出 toast、
+      showToast 丢弃文案致模板恒显「操作成功！」、硬编码 createdAt=2026-05-24 的「全部区域」订阅规则、
+      口径说明宣称 Σ(维度得分×权重)+分位归一化+WIPO/Scopus 数据源（实为久新两张表且无该算法）、
+      载体指数口径写「更新 2026-05」「归一化到 0-100」、实时图右轴标「金额(亿美元)」实挂人才/项目数、
+      缺坐标兜底 [116,39] 北京、getNodeRealtimeStatus 用 150/80 阈值造「高影响/升温/新增」、
+      关键词编辑区因 getRuleConditionFields 缺 keywords 而永不渲染、block() 分块失败只 console.warn
+      致页面把「接口挂了」显示成「暂无数据」。
+      待裁定（B 组，未动）：载体指数权重 35/25/25/15 与基数 5000/2000/500/6、城市加权 0.7/0.3 与
+      0.55/0.45、订阅是否二期补写接口。剩余 P1 与 giDomains 硬编码领域筛选 → FE-TS-04F。
+
+      2026-11-03 追加（跨三仓库）：成果类型新增 project（= ads_project_profile，对应需求 seq 56
+      「创新资讯：创新基金 / 创新研究课题」）。Python achievement_indicator 加 project 分支
+      （SOURCE_PROJECT / PROJECT_FIELDS / _dedup_by_project / 排序改用 amount_cny）、Java
+      GlobalInnovationController 透传 description·amountCny·amountCnyValueType 且 importance 对
+      null 不再压 0（原 dbl(null)=0d 会让项目显示「创新价值 0」）、前端 types 加 project 并统一
+      指标文案（论文专利=被引数，项目=资助金额，模拟值加「（模拟）」）。
+      关键约束：amount_cny_value_type 必须一起展示（SIMULATED_SHENZHEN_MEDIAN_V1 是深圳中位数
+      模拟值，非真实拨款）；项目 SQL 列名依据 ADS_SCHEMA 文档、未连库实测，已加异常隔离使
+      project 失败不拖垮 paper/patent；Python 与 Java 需重新部署后生效。
+
+      2026-11-04 第三/四轮（走查反馈 + 首次部署）：①领域补齐——论文/项目经 primary_topic_id →
+      ads_discipline_topic.name_zh 100% 覆盖（必须两步查询，主 SQL JOIN 会 0.17s→15.1s），
+      专利/机构无可用入口实测超时放弃（D15-R1）；②推翻「久新无学者表」——ads_talent_profile
+      10 万条（姓名/机构/坐标 38.5%/h 指数 99.4%），新增 talent-list 链路 + 图谱专家节点
+      （with_location=true 只返回有坐标者）；③⚠️ 部署真相：GlobalInnovationController.java 等
+      三仓关键代码此前从未 git 提交，线上与本地 7099 跑的一直是旧镜像/旧进程——这是「页面没数据」
+      总根源；已推送 lumen-topic-py cc77099+97cd284、lumen-svc-platform b453975+a0f9e46 触发 CI；
+      k8s dev-show-py.yaml 明文密码改走 Secret（D14 合规）；④图谱「全部」视图不可点击双根因
+      （Playwright 实测）：__body 双列 grid 压画布到 252px + 工具条 216px 盖住画布点击全命中按钮；
+      修复 grid 单列 + 工具条 pointer-events 穿透 + G6 延迟初始化 + zoomRange 下限 0.15 + 配额 25；
+      ⑤项目经费数据链路全程实测正常（11 币种），「还是空」为 vite HMR 损坏态下前端未拿到新代码，
+      已重启 dev server 实测「资助金额 18174.8 万元」渲染。
+      决策留痕：M4-REMEDIATION-20261103.md §12-13；handoff：FE-TS-04A.md 第三/四轮。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29194,13 +29236,345 @@ tasks:
       - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-模块开发规划与任务拆分.md"
       - "agent-delivery/Design.md"
     definition_of_done:
-      - "综合展示：成果类型芯片 + 底座地图落点 + 成果列表联动"
-      - "实时数据：4 KPI + 趋势 + 领域分布，D2 轮询（30s 可配，页面不可见暂停、卸载清理）"
-      - "载体排行：多维筛选 + 五年分详情下钻"
-      - "监测分析：预警（创新点发现/城市监控）+ 推送记录（已读/未读）"
-      - "能力分析：10 城五维雷达 + 政策建议"
-      - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（六类用途见规划 §4 M4）；D9 ⓘ/🧪 + demo 截图比对；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-15T15:03:58+08:00"
+      - "综合展示：成果类型芯片 + 底座地图落点 + 成果列表联动（久新 ads_institution_paper / ads_location 真实计数）"
+      - "实时数据：4 KPI + 年度趋势 + 领域分布，按年统计口径（久新无数仓实时流，2026-10-29 裁定删除 30s 轮询）"
+      - "载体排行：多维筛选 + 详情下钻；无源维度（指数/排名分）显示「—」或空态，不得合成"
+      - "监测分析：创新点发现/城市监控/智能推送三块只有后端下发才展示；久新无预警表与推送事件表 → 显式空态说明，禁止造数"
+      - "能力分析：城市按久新真实计数展示，五维雷达等无源分项出空态（ads_geo_yearly_index 按文档「公式批准前保持空表」）"
+      - "D9 缺口角标 + demo 截图比对；pnpm build-only 绿；M3 既有 type-check 错误不计入本页判定"
+      - "2026-11-03 整改验收：全页 Math.random 归零、订阅规则不再生成推送记录、影响预测无空壳标题、4 处空态齐全"
+      - "2026-11-03 第二轮验收（A 组）：城市分数不再把无源压成 0 分/假进度条；4 处假保存·假导出 toast 已如实化；硬编码「全部区域」订阅规则已删；口径文案与真实数据源一致；实时图轴标签与坐标兜底已修；关键词编辑区不再死区；分块取数失败在页面可见并可重试"
+      - "2026-11-04 第三/四轮验收：论文/项目领域 100% 覆盖；聚焦专家有值（talent-list 10 万学者，图谱落点 with_location）；排行榜年份区间随数据推导；项目经费端到端实测 18174.8 万元；图谱全部视图 25 节点正常布局、画布恢复 544px 宽；三仓代码已提交推送触发 CI 部署"
+    update_time: "2026-11-04T00:45:00+08:00"
+  - id: FE-TS-04F
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 第二轮审计剩余 P1 清理"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "debt"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      2026-11-03 第二轮审计已清 A 组 11 项 P0（无源压 0 分、假保存 toast、硬编码订阅规则、
+      假口径文案、轴错标、坐标兜底、假状态标签、关键词死区、分块静默降级）。
+      本任务收口剩余 P1：
+      1) InnovationMonitor.vue:9 仍 import giDomains（8 个写死领域名当筛选选项，
+         后端真实 discipline 对不上时勾选不生效且无提示）→ 改为从真实数据提取领域名；
+      2) InnovationRealtime 聚焦机构/聚焦专家筛选恒空（节点类型永不产出 expert/org），
+         空态文案却说「实时流中暂无」，需改为「当前数据源不提供机构/专家维度」；
+      3) RealtimeKnowledgeGraph 关系边 weight 硬编码 0.72 + 按索引取模强连，需改为不画无源关系；
+      4) MonitorRuleDrawer 成果类型/订阅载体 checkbox 写死或错误绑定、口径模板卡片无 @click；
+      5) InnovationRanking 权重配置 appliedWeights 从不回写、Math.max(8,NaN) 产 width:NaN%；
+      6) CityInnovationAnalysis 趋势年度 allSettled 失败落 []、政策接口 catch 返回 [] 与
+         「暂无政策数据（国外城市通常无匹配）」文案矛盾（把故障说成数据源缺失）；
+      7) InnovationDetail 时间范围默认 2020–2026 静默剔除更早成果、地图 slice(0,200) 静默截断、
+         图例 5 类但只有 2 类有点位。
+      约束：不新增区块、不改既有样式结构。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "src/views/situation/global-innovation/tabs/"
+      - "src/views/situation/global-innovation/components/"
+      - "src/views/situation/global-innovation/models/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "全目录 @/mock 引用为 0（含 giDomains 这类展示字典）"
+      - "所有筛选器选项来自真实数据，选不到时给出「当前数据源无该维度」而不是「暂无变化」"
+      - "所有 toast 文案与实际行为一致，无「已保存/已推送/已创建任务」类不实表述"
+      - "空数据一律有空态文案，NaN 不再出现在 width/style/文本中"
+      - "pnpm type-check 与 build-only 双绿"
+    update_time: "2026-11-03T21:40:00+08:00"
+  - id: BE-TS-04I
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 企业动态接企业库（SRS seq 56 企业动态大类）"
+    status: "completed"
+    agent: "backend"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-lumen"
+    delivery_phase: "implementation"
+    task_type: "backend"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      架构裁定（human 2026-11-03）：三要素（论文/专利/项目/机构）查久新库，
+      企业维度查自己库（企业库 MySQL），**接口层聚合** —— 两条通道各自独立查询，
+      在 Python 成果接口里 extend 合并返回，不存在跨库 SQL 拼接。
+
+      口径裁定（human 淮政玮 2026-11-03 群聊）：
+      - 企业动态 = **投融资事件与发展历程**（明确否决「用资讯充」的提议）；
+      - **「对于宏观来说，企业获得的融资就是成果」** → enterprise 条目 = 一次融资事件，
+        value = 融资金额；time = 事件日期；地理 = 企业注册地。
+
+      实际落地（2026-11-03，与原 ES 方案不同，human 当日改定走 MySQL）：
+      1. 新建 `gkx_show_service/entdb.py`：企业库 MySQL 只读通道，与 jiuxin.py 完全对称
+        （SELECT 白名单 + 线程连接复用 + 120s TTL 缓存，凭据 GKX_ENTDB_* 可覆盖）；
+      2. `achievement_indicator.py` 加 enterprise 分支：单库三表 JOIN
+        （enterprise_financing × enterprise_base × enterprise_extra，全在 gkxlumenx_dwd 内），
+        按 org_id+日期+轮次构造事件标识并去重，失败只跳过自身（与 project/institution 同隔离）；
+      3. Java GlobalInnovationController 透传 financeRound/investors/currency；
+      4. 前端四大内容大类展示（创新成果/创新资讯/创新机构/企业动态），勾选大类时
+        展开细类再传后台（成果→paper+patent，资讯→project），types 协议保持细类。
+
+      数据源选型实测（同实例 10.50.11.76:3306）：
+      - demo_gkxlumenx_dwd.enterprise_financing：17,174 条，金额仅 2 条有值 → 不可用；
+      - **gkxlumenx_dwd.enterprise_financing：25,654 条，日期/轮次 100%，金额 34%（8,826 条）**；
+      - 坐标来自 enterprise_extra.lng/lat（100% 填充），三表 JOIN 300 条 0.87~0.97s；
+      - svc_org_finance_event（15,755 条）event_date 全空且为 seed 数据 → 排除。
+
+      验证（2026-11-03）：enterprise 单独 1.9s/50 条；五类型混合（year_from=2024）
+      2.5s/883 条（paper 288 + institution 300 + enterprise 295；patent 0 条为数据本身
+      最新只到 2023-01）；城市过滤（深圳市）0.95s/17 条；同日同轮次重复行已按事件标识去重。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "repos/lumen-topic-py/gkx_show_service/entdb.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/achievement_indicator.py"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/GlobalInnovationController.java"
+      - "repos/lumen-ui-science-pc/src/views/situation/global-innovation/"
+      - "repos/lumen-ui-science-pc/src/api/situation/globalInnovation.ts"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md"
+    definition_of_done:
+      - "企业动态可在成果列表按类型筛选出现，与论文/专利/机构混合展示"
+      - "动态条目带时间与地区，可被前端时间窗/区域筛选命中"
+      - "无坐标企业不落点，不产生 (0,0) 假点"
+    update_time: "2026-11-04T00:35:00+08:00"
+  - id: BE-TS-04H
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 项目成果落点的上游性能缺口（SRS seq 56 创新资讯）"
+    status: "pending"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-lumen"
+    delivery_phase: "implementation"
+    task_type: "data"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      SRS seq 56 的「创新资讯（创新基金 / 创新研究课题）」在久新对应 ads_project_profile。
+      2026-11-03 已实现门面 project 分支（字段、去重、前端展示全部就绪），但**上游查询性能不可用**，
+      故以 PROJECT_QUERY_ENABLED=False 关闭，前端也回退为 paper+patent。
+
+      实测数据（read_timeout=45s，久新 gkx_technology_analysis_dev）：
+      1) 单表都快：ads_project_profile LIMIT 300 0.10s；按 amount_cny 排序取 300 0.14~0.68s；
+         ads_project_institution WHERE project_id=? 0.06s；
+      2) 三表 JOIN（project → project_institution → institution_profile）LIMIT 2 就 11.60s，
+         加 WHERE latitude IS NOT NULL 或 ORDER BY 直接 30s 超时；
+      3) 改成两步法同样不行：IN (300 个 project_id) 查机构关系 8.07s；
+         IN (机构 ID) 查机构坐标 >45s 超时。
+      结论：这两张表按 ID 批量检索都是全表扫描，没有命中路径。
+
+      需要做的事（任选其一）：
+      A. 上游产出**项目落点物化表**：project_id + institution_id + 经纬度 + 城市/国家 +
+         amount_cny + amount_cny_value_type，一行一项目（关联多家机构时按 evidence_paper_count
+         最大者取一个代表机构），查询即单表；
+      B. 为 ads_project_institution / ads_institution_profile 建立可用的分桶或索引，
+         使 IN (批量 ID) 能走命中路径（实测当前不行）。
+
+      一并修正的事实（原文档/代码有误）：
+      - ads_project_institution **没有 role 列**，实为 relation_type / institution_role_code；
+        且 `role` 是 Doris 保留字，裸写会语法错误；
+      - 项目表 183.9 万行（非 2063）；start_year 填充率仅 4%，年度应取 effective_start_year（99.99%）；
+      - name 是真实项目名，但 name_zh / name_en 全空（无中文名）；
+      - amount_cny_value_type 有三种：SIMULATED_GLOBAL_SHENZHEN_MEDIAN_V1 占 91%（167.8 万）、
+        SIMULATED_SHENZHEN_MEDIAN_V1 9.8 万、SOURCE_CONVERTED 仅 6.3 万。
+        按 amount_cny DESC 排序的 Top300 **全是模拟值项目**。
+
+      恢复方式：物化表就绪后，把 gkx_show_service/views/achievement_indicator.py 的
+      PROJECT_QUERY_ENABLED 置 True，并把前端 globalInnovation.ts 的 types 加回 'project'。
+      若届时仍按金额排序，需改为「SOURCE_CONVERTED 优先」或对模拟值做显著标注，
+      否则首页头部全是模拟金额。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "_local/dw-docs/"
+      - "repos/lumen-topic-py/gkx_show_service/views/"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md"
+    definition_of_done:
+      - "项目成果可按城市落点查询，单次查询耗时与 paper/patent 同数量级（<2s）"
+      - "返回 amount_cny 时必须同时返回 amount_cny_value_type，且 SOURCE_CONVERTED 与模拟值可区分"
+      - "项目条目的年度取 effective_start_year，不得用填充率 4% 的 start_year"
+    update_time: "2026-11-03T23:40:00+08:00"
+  - id: BE-TS-04G
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 补城市维度项目金额（SRS seq 83 创新基金 / 投资规模）"
+    status: "pending"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-lumen"
+    delivery_phase: "implementation"
+    task_type: "data"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      SRS seq 83「城市创新数据监控」要求展示城市的创新基金、投资规模、机构企业投入与成果。
+      2026-11-03 核实：**城市维度完全没有金额数据**，前端无法补齐，需上游供数。
+
+      实测事实：
+      1) ads_geo_yearly_metrics 只有 4 列可当市域计数
+         （paper_count / talent_count / project_count / institution_count），
+         见 gkx_show_service/views/geo_indicator.py:103-108；
+      2) /global-innovation/cities 只返回论文数 / 被引数 / 人才数 / 机构数 / 项目数 5 个计数，
+         无任何金额字段（globalInnovation.ts:262-266）；
+      3) 全局维度已有项目经费：/global-innovation/realtime 的 funding 指标，
+         返回 byCurrency[{currency, projectCount, totalAmount}] + coverage{projectsWithAmount, projectsTotal, note}，
+         **按币种分组，不合并**（多币种直接相加无意义）；
+      4) ads_project_profile 有 amount_cny（1.4.0 新增），但无城市列；
+         项目 → 机构 → 城市 的链路（ads_project_institution → 机构位置）尚未在门面实现。
+
+      需要做的事（任选其一并说明口径）：
+      A. 数仓在 ads_geo_yearly_metrics 增加 project_amount_cny（或按币种分列），由 ETL 从
+         ads_project_profile JOIN ads_project_institution JOIN 机构地域聚合产出；
+      B. 门面新增城市金额聚合端点，复用现有 funding 的 byCurrency + coverage 结构，
+         城市级同样不得跨币种相加。
+
+      约束：
+      - 必须带 coverage（有金额项目数 / 项目总数），与实时 Tab 现有 funding 口径一致；
+      - 无金额时返回 null 并说明，**不补 0**（与 FE-TS-04A 已确立的「无源不压 0」一致）。
+
+      前端待办（本任务完成后另行派单）：城市 Tab 的指标卡接入金额，并标注币种与覆盖率。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "repos/lumen-topic-py/gkx_show_service/views/"
+      - "_local/dw-docs/"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md"
+    definition_of_done:
+      - "城市维度可取到项目金额，且按币种分组、不被合并成单一数值"
+      - "返回覆盖度（有金额项目数/项目总数），前端可据此显示「不代表全部投入」"
+      - "无金额城市返回 null 而非 0"
+    update_time: "2026-11-03T22:30:00+08:00"
+  - id: FE-TS-04B
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 领域×国家分布接入（WBS M4-26）"
+    status: "pending"
+    agent: "api-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      数据侧已就绪、页面未接：久新 ads_geo_yearly_discipline_metrics 实测 10,151,653 行，
+      4,468 Topic × 13,353 位置 × 2000–2026，行内自带 Domain/Field/Subfield/Topic 中英文名与
+      paper_count / cited_by_count / talent_count。深圳 M6 已通过 gkx_show_service/views/geo_indicator.py
+      的 /factor-metrics（subfield_ids 分支）在用该表，全球 M4 全仓零引用。
+      因此本任务不新建取数通道：给 /factor-metrics 或 /geo/metrics 增加 level=COUNTRY 的领域维度参数即可。
+      文档依据 ADS_SCHEMA 20.3；2000–2014 论文为 NOT_AVAILABLE，不得当 0。
+      2026-11-03 复核修正：`gkx_show_service/views/monitor_indicator.py:471-489` 的 `domain_distribution`
+      **已支持 `location_id` 入参**（默认 year_from=2020、全期聚合 3.36s / 限定近年 0.70s，
+      出参含 domain_id/paper_count/cited_by_count/percent）。因此后端不必新建接口，
+      本任务的实际工作量在「前端国家选中入口 + 联动」，以及把 Domain 粒度（当前仅 4 个）下沉到 Topic 粒度的取舍。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "gkx_show_service/views/geo_indicator.py"
+      - "gkxlumen-display/.../GlobalInnovationController.java"
+      - "src/api/situation/globalInnovation.ts"
+      - "src/views/situation/global-innovation/tabs/InnovationRealtime.vue"
+    design_refs:
+      - "_local/dw-docs/ADS_SCHEMA.md（§20.3 地域学科宽表）"
+      - "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "后端提供国家×领域查询（复用现有 python 通道，新增 level/topic 参数，不新建服务）"
+      - "实时 Tab 的领域分布支持按国家下钻，数值来自 discipline 宽表真实计数"
+      - "2000–2014 显示「未覆盖」而非 0；接口返回 coverage 状态供前端标注"
+      - "接入后 type-check / build-only 通过，并在 handoff 记录实测 SQL 与行数"
+    update_time: "2026-11-03T16:20:00+08:00"
+  - id: FE-TS-04C
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 领域—国家地图与排行榜（WBS M4-27）"
+    status: "pending"
+    agent: "api-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      久新 6.1.0 新增 ads_topic_country_snapshot 实测 209,517 行 / 4,467 Topic / 224 国家，
+      但全仓 repos/ 至今零引用（文档发布一个月未接）。
+      文档已给出联调方式（ADS_SCHEMA 20.3.2）：前端一次按 topic_id 读取全部国家、按 output_rank 排序，
+      地图与排行榜用 country_location_id 同步选中、GeoJSON 通过 country_code 关联；ads_location 有 232 国
+      且自带 country_code。
+      趋势口径固定：对照期 2020–2022、近期 2023–2025；对照期为 0 或两窗合计 <5 篇 → INSUFFICIENT_EVIDENCE；
+      其余 ±5% 稳定带判 UP/STABLE/DOWN；占比只能用 paper_fractional_share（同 Topic 合计为 1）。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "gkx_show_service/views/geo_indicator.py"
+      - "gkxlumen-display/.../GlobalInnovationController.java"
+      - "src/api/situation/globalInnovation.ts"
+      - "src/views/situation/global-innovation/"
+    design_refs:
+      - "_local/dw-docs/ADS_SCHEMA.md（§20.3.2 topic_country_snapshot）"
+      - "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "新增按 topic 取国家分布的只读端点，返回 output_rank / paper_fractional_share / growth_rate / trend_direction"
+      - "地图与排行榜按 country_location_id 联动，GeoJSON 用 country_code 匹配"
+      - "INSUFFICIENT_EVIDENCE 国家在地图与榜单上显式区分，不画成 0 增长"
+      - "不新增页面结构：复用实时 Tab 现有领域分布区块与其图例/列表"
+    update_time: "2026-11-03T16:20:00+08:00"
+  - id: FE-TS-04D
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 覆盖率披露与年度口径标注（WBS M4-34）"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: |
+      实测 ads_geo_yearly_metrics 的 COUNTRY 层 5,081 行中 paper_coverage_status 为
+      COMPLETE 2,563 / NOT_AVAILABLE 2,518 —— 即 2000–2014 这 15 年论文侧根本没覆盖，
+      与文档 20.2「2000–2014 论文字段为 NULL 且 NOT_AVAILABLE」一致。
+      若不披露，前端趋势图会被读成「2000 年论文数为 0」。
+      另 2026 为 metrics_as_of_date=2026-09-18 的未结束年度，不得与完整年直接比较。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "src/views/situation/global-innovation/tabs/InnovationRealtime.vue"
+      - "src/views/situation/global-innovation/models/realtimeModel.ts"
+    design_refs:
+      - "_local/dw-docs/ADS_SCHEMA.md（§20.2 覆盖状态与 2026 未结束年度）"
+      - "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "趋势图对 NOT_AVAILABLE 年份断线或置灰，绝不画成 0 值"
+      - "2026 标注为「未结束年度（截至 2026-09-18）」"
+      - "状态胶囊的 details 展示 coverage 状态来源，文案与 ADS_SCHEMA 一致"
+      - "不新增区块、不改样式：只在既有图表与胶囊内补口径"
+    update_time: "2026-11-03T16:20:00+08:00"
   - id: FE-TS-05A
     evidence: "agent-handoffs/科技发展态势-TS/FE-TS-05A.md"
     feishu_bitable_record_id: reczz28MlyQxLr3f
@@ -29220,7 +29594,14 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 140000
-    note: "联调确认：mock 验收通过，联调闸门待 API-TS-M5 + BE-TS-CONTRACT 契约冻结；与 FE-TS-03A 同批 push dev。"
+    note: |
+      2026-11-03 整改轮（真实链路收口）：删除计算方法弹窗的四维权重 30/25/25/20 与综合得分公式
+      （ads_geo_yearly_index 按数仓文档 2962 行「公式批准前保持空表」，实测 0 行）；
+      指标同比/环比为后端无源列（恒 NaN）→ 统一「—」且不着涨跌色；预警判定改三态，
+      无规则/无值时出「无法判定」而非「否」；SWOT 与诊断报告加数据 guard，去掉 1500ms 假生成；
+      通知记录补空态；页级取数失败补错误态 + 重试；新增报告与导出（纯前端）。
+      handoff：agent-handoffs/科技发展态势-TS/FE-TS-05A.md；决策：M5-M6-REMEDIATION-20261103.md。
+      原 note 的「联调闸门待 API-TS-M5 契约冻结」已过期：五端点自 2026-10-29 起走久新真实链路。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29231,12 +29612,13 @@ tasks:
       - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-模块开发规划与任务拆分.md"
       - "agent-delivery/Design.md"
     definition_of_done:
-      - "成果地图：11 城 67 点落点 + 城市/类型/领域/时间筛选联动（底座地图）"
-      - "创新能力：四维指数 + 计算方法说明 + 2020–2025 趋势 + 城市雷达"
-      - "SWOT：四象限全文 + 因素，默认展开短板维 + 诊断"
-      - "指标数据：6 指标 + 11 城构成 + 口径说明对比"
-      - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（四类用途见规划 §4 M5）；D9 ⓘ/🧪 + demo 截图比对；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-15T22:23:12+08:00"
+      - "成果地图：湾区城市点位落点 + 城市/类型/领域/时间筛选联动（久新 ads_location + 成果计数）"
+      - "创新能力：城市能力按久新真实计数展示；四维权重与综合得分无源（ads_geo_yearly_index 按文档保持空表）→ 权重显示「—」并在计算方法弹窗说明缺口"
+      - "SWOT：四象限由后端下发，默认展开短板维；未下发则整块空态，诊断报告必须有数据 guard，不得凭空出结论"
+      - "指标数据：指标清单 + 城市构成 + 口径说明；同比/环比为无源列 → 显示「—」，预警判定出「无法判定」而非「否」"
+      - "报告与导出：页头「生成报告 / 打印另存 PDF / 导出数据」三项均真实产出文件（纯前端 HTML + CSV）"
+      - "D9 ⓘ/🧪 + demo 截图比对；pnpm type-check 与 build-only 双绿，handoff 落本模块目录"
+    update_time: "2026-11-03T18:10:00+08:00"
   - id: FE-TS-06A
     feishu_bitable_record_id: reczz28MlyVdo1sw
     supervised_by: "human:孔东"
@@ -29255,7 +29637,13 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 210000
-    note: "handoff 已 push ea1e4aad；lumen b4e1eda；联调确认"
+    note: |
+      2026-11-03 整改轮（真实链路收口）：载体雷达三项（创新成果/创新价值/发展潜力）在久新全部无源
+      → 不再画雷达，出空态说明；对比摘要改为陈述真实计数，不再用 mock 加权分排名次；
+      订阅 toast 改「已加入本次会话」（无订阅写接口）；缺口瀑布删除 0.43/0.34/0.23 假归因，只画真实分差；
+      报告删除「未来预测」章节与写死的 2021-2025；领域「优/潜/弱」标注为机械分段而非综合评价；
+      指标页「生成并导出」改为真实 CSV 导出；页级取数失败补错误态 + 重试；新增报告与导出。
+      handoff：agent-handoffs/科技发展态势-TS/FE-TS-06A.md；决策：M5-M6-REMEDIATION-20261103.md。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29266,12 +29654,122 @@ tasks:
       - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-模块开发规划与任务拆分.md"
       - "agent-delivery/Design.md"
     definition_of_done:
-      - "载体综合：60 载体三级筛选（类型/区域/领域）+ 地图落点 + 排名 + 详情（底座地图/抽屉）"
-      - "指标系：10 系下钻至三级 + 构成 pill + 多指标对比 + 区间对比（2021–2025 历史序列）"
-      - "领域分布：8 领域 × 4 指标 + 集聚地图 + 优/潜/弱三档标记"
-      - "城市分析：锁定深圳 + 对标城市雷达 + 发展轨迹 + 缺口来源 + 外推预测"
-      - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（四类用途见规划 §4 M6）；D9 ⓘ/🧪 + demo 截图比对；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-16T11:55:05+08:00"
+      - "载体综合：载体三级筛选（类型/区域/领域）+ 地图落点 + 排名 + 详情；创新价值/排名分无源 → 显示「—」，不画雷达对比"
+      - "指标系：10 系下钻至三级 + 构成 pill + 多指标对比；期次按后端 history 实际长度，不写死年份"
+      - "领域分布：领域 × 指标 + 集聚地图；优势/潜力/薄弱三档标注为「按当前排序指标分段，非综合评价」"
+      - "城市分析：锁定深圳 + 对标城市；缺口瀑布只画真实分差，不做系数归因拆分；报告无预测章节"
+      - "报告与导出：页头「生成报告 / 打印另存 PDF / 导出数据」+ 指标页「生成并导出」均真实产出文件"
+      - "D9 ⓘ/🧪 + demo 截图比对；pnpm type-check 与 build-only 双绿，handoff 落本模块目录"
+    update_time: "2026-11-03T18:10:00+08:00"
+  - id: FE-TS-04E
+    evidence: "agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "科技发展态势三页（M4/M5/M6）· 生成报告与导出（纯前端）"
+    status: "completed"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      背景：M4/M5/M6 后端均无报告端点（只有技术发展跟踪 TrackingController 有 /reports 与报告记录表），
+      因此按 human 要求「参考技术发展追踪」，复用 M3 的报告结构，改用纯前端生成：
+      数据 → HTML（含数据口径区块）→ Word(.doc) / 打印另存 PDF / CSV。
+      公共工具沉淀：src/views/situation/shared/reportExport.ts（buildReportDocument / buildAutoTable /
+      downloadReportAsWord / printReportHtml / downloadCsv / reportTimestamp）。
+      诚实性约束写进工具注释：缺失字段一律「—」，不补 0、不外推、不生成结论。
+      入口：M4 global-innovation/index.vue、M5 bay-innovation/index.vue、M6 shenzhen-innovation/index.vue
+      页头各三按钮；M6 指标页「生成并导出」改为真实 CSV。
+    depends_on:
+      - "FE-TS-04A"
+      - "FE-TS-05A"
+      - "FE-TS-06A"
+    touched_files:
+      - "src/views/situation/shared/reportExport.ts"
+      - "src/views/situation/global-innovation/index.vue"
+      - "src/views/situation/bay-innovation/index.vue"
+      - "src/views/situation/shenzhen-innovation/index.vue"
+      - "src/views/situation/shenzhen-innovation/tabs/IndicatorTab.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/FE-TS-06A.md（M3 报告结构参考）"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "三页页头各有「生成报告 / 打印另存 PDF / 导出数据」，点击均真实产出文件，无空点击"
+      - "报告正文只包含页面真实取到的数据，缺失字段显示「—」，并带「数据口径」区块"
+      - "报告不含任何评分、名次、趋势外推或预测结论"
+      - "CSV 带 UTF-8 BOM，Excel 打开中文不乱码；含逗号/引号的字段正确转义"
+      - "pnpm type-check 与 build-only 双绿"
+    update_time: "2026-11-03T18:10:00+08:00"
+  - id: FE-TS-05B
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "湾区创新监测（M5）· 整改遗留 P1 清理"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "debt"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      2026-11-03 整改轮已清掉全部 P0（编造权重/公式/数据来源、NaN 直渲、编造预警判定、
+      假生成报告、通知记录空态、页级错误态）。以下 P1 属体验与一致性问题，未在本轮处理：
+      bayAreaModel 影响力分 85/65/45 的展示位置、热点卡片凑数逻辑、CapacityTab 环形图
+      单卡百分比 undefined、IndicatorsTab 表格与图表在单城市筛选下的空态、
+      OverviewTab 地图点位为空的空态。
+    depends_on:
+      - "FE-TS-05A"
+    touched_files:
+      - "src/views/situation/bay-innovation/models/bayAreaModel.ts"
+      - "src/views/situation/bay-innovation/tabs/CapacityTab.vue"
+      - "src/views/situation/bay-innovation/tabs/IndicatorsTab.vue"
+      - "src/views/situation/bay-innovation/tabs/OverviewTab.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "剩余展示位置的无源值统一「—」，不出现 undefined/NaN"
+      - "四类列表/图表在数据为空时有明确空态文案"
+      - "不新增区块、不改既有样式结构"
+    update_time: "2026-11-03T18:10:00+08:00"
+  - id: FE-TS-06B
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "深圳创新监测（M6）· 整改遗留 P1 清理"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "debt"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      2026-11-03 整改轮已清掉全部 P0（载体雷达假分、对比摘要假名次、缺口瀑布假归因、
+      报告预测章节、假订阅 toast、假导出按钮、领域优/潜/弱结论、页级错误态）。
+      以下 P1 未在本轮处理：IndicatorTab 最高/最低年份在空历史时渲染空白、
+      部分图表在单指标筛选下的空态、CarrierTab 搜索无结果提示、DomainTab 表格空态。
+    depends_on:
+      - "FE-TS-06A"
+    touched_files:
+      - "src/views/situation/shenzhen-innovation/tabs/IndicatorTab.vue"
+      - "src/views/situation/shenzhen-innovation/tabs/CarrierTab.vue"
+      - "src/views/situation/shenzhen-innovation/tabs/DomainTab.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "历史为空时年份类字段显示「—」，不出现空白或 NaN"
+      - "列表/图表空数据时均有空态文案"
+      - "不新增区块、不改既有样式结构"
+    update_time: "2026-11-03T18:10:00+08:00"
   - id: FE-TS-07A
     feishu_bitable_record_id: reczz28MlyabN4pI
     supervised_by: "human:孔东"
