@@ -85,7 +85,7 @@
 ### 1.5 引用来源
 
 - UI：`repos/demo-ui-science/src/pages/policy-tracking/policyData.js:711` — `{ key: 'employmentChange', label: '就业率变化', unit: 'pp', baseline: 0.8, target: 1.5 }`（`simulationIndicators` 第 3 项，组声明 `:708` 注释「推演结果指标（Bid · …）」）；三情景值 `:723/:731/:739`；消费方 `simulation/sharedCharts.jsx:26/95/144`。
-- 主需求：`local-workspace/docs/tasks/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.3（:1415 段）——「包括GDP增长、产业结构变化、就业率变化等指标」（枚举无定义，原文见附录 A）。
+- 主需求：`repos/demo-ui-algo-apiview/public/req-docs/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.3（:1415 段）——「包括GDP增长、产业结构变化、就业率变化等指标」（枚举无定义，原文见附录 A）。
 - 检索记录：核增需求 17 叶 + 《科技专题服务算法库.md》rg「就业率」0 命中（附录 A.2）。
 
 ### 1.6 推测原意与推测定义（含降档/升档触发器，B10 模板）

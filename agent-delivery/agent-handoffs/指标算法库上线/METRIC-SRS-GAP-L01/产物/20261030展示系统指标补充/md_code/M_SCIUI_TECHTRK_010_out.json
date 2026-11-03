@@ -1,0 +1,110 @@
+{
+ "metric_id": "M_SCIUI_TECHTRK_010",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:858",
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:815",
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:818"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「强化产业转化效率」指标名三份说明书未出现；《科技发展规划.md》seq 190 资源配置优化建议叶有「支持方案模拟和效果预测」功能句（附录 A 摘录），UI 的 expectedEffect +22.9% 是方案卡预期效果常量非效率公式"
+ },
+ "facts": {
+  "gkx_patent_transfer_rows": 22809,
+  "gkx_patent_transfer_by_year": {
+   "2026": 3246,
+   "2025": 5799,
+   "2024": 7711,
+   "2023": 3770,
+   "2022": 1670,
+   "2021": 326,
+   "0": 287
+  },
+  "gkx_patent_transfer_invalid_year_rows": 287,
+  "gkx_transfer_like_tables": [
+   "dwd_patent_transfer"
+  ],
+  "jiuxin_application_case_rows": 181735,
+  "jiuxin_application_case_nodes": 13415,
+  "jiuxin_case_type_dist": {
+   "RESEARCH_PROJECT": 181735
+  },
+  "jiuxin_market_status_dist": {
+   "NOT_VERIFIED_AS_MARKET_APPLICATION": 181735
+  },
+  "jiuxin_application_stage_dist": {
+   "(空)": 181735
+  },
+  "jiuxin_case_rows_2023plus": 24799,
+  "jiuxin_bottleneck_assessment_rows": 92544,
+  "jiuxin_bottleneck_nodes": 19430,
+  "jiuxin_bottleneck_code_dist": {
+   "PROJECT_EVIDENCE_GAP": 38860,
+   "MARKET_DATA_UNAVAILABLE": 38860,
+   "ENTERPRISE_PARTICIPATION_GAP": 14824
+  },
+  "dev_org_achievement_year_rows": 0,
+  "dev_enterprise_fund_project_rows": 0,
+  "dev_probe_status_this_run": "dev 不可达((2003, \"Can't connect to MySQL server on '10.50.11), dev_* 键沿用首跑实测值(2026-11-01 首跑在案)",
+  "gkx_patent_transfer_rows_2021plus": 22522
+ },
+ "derived": {
+  "gkx_patent_transfer_rate_2021plus": {
+   "value": 0.7661,
+   "numerator": 22522,
+   "denominator": 2939895,
+   "note": "分子=gkx.dwd_patent_transfer 2021+ 生效年事件数（全表精确 COUNT），分母=gkx.dwd_patent 总量（共享快照 _shared_probe_s3_01_out.json，同库同源）；比值为百分数"
+  },
+  "jiuxin_case_recency_ratio": {
+   "value": 13.6457,
+   "numerator": 24799,
+   "denominator": 181735,
+   "note": "分子=久新 application_case effective_start_year>=2023 行数，分母=同表全行；同表同源"
+  }
+ },
+ "absence_probe": [
+  {
+   "probe": "gkx transfer/conversion 结果面扫描",
+   "source": "gkx",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%transfer%' OR table_name LIKE '%convers%' OR table_name LIKE '%transformat%')",
+   "hits": 1,
+   "sample": [
+    "('dwd_patent_transfer',)"
+   ]
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "UI 的 +22.9%/-19.8% 是方案卡 mock 常量（演示值，不参与支持度结论），不是效率定义",
+  "「转化效率」权威口径（成果转化率=转化成果数/成果总数，教育部/科技部口径）所需分子（已转化成果）在三源均无权威承载：久新案例仅证明科研项目关联（market_status 全表 NOT_VERIFIED_AS_MARKET_APPLICATION）",
+  "gkx 专利转移口径 A 是权利人变更事件代理，包含转让/赠与/继承等非产业化转移，会高估转化；口径 B 是项目时序新鲜度，非效率语义——两口径均需甲方裁定",
+  "久新 bottleneck_assessment 全部为证据缺口诊断（PROJECT_EVIDENCE_GAP 38,860 / MARKET_DATA_UNAVAILABLE 38,860 / ENTERPRISE_PARTICIPATION_GAP 14,824），非堵点因果结论",
+  "共享快照复用：dwd_patent 总量 2,939,895（snapshot 键 dims.gkx[2]）；dwd_patent_transfer 为本件新增探针"
+ ],
+ "base_years_used": [
+  "2021",
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_missing": [],
+ "base_years_note": "口径 A 用 2021-2026 生效年（transfer_effective_date varchar 前四位，287 行 '0' 值已剔除并单列 invalid 计数）；口径 B 用 effective_start_year>=2023",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "22809",
+   "2939895",
+   "181735",
+   "24799",
+   "92544",
+   "13415",
+   "19356",
+   "25992",
+   "2860",
+   "29905"
+  ]
+ }
+}

@@ -84,7 +84,7 @@
 ### 1.5 引用来源
 
 - UI：`repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1868` — `{ name: '资源利用效率', score: 72 }`（`multiDimensionEvalData.dimensions[environment].indicators[2]`）；维度声明 `:1863-1870`；消费方 `simulation/estimate/EstimateWorkbench.jsx:614/627`。
-- 主需求：`local-workspace/docs/tasks/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.4（:1417 段）——「从经济、社会、环境、创新等多个维度对政策效果进行评估」（维度枚举，无指标定义，原文见附录 A）；「资源利用」另 4 处命中均为仪器/载体语境（附录 A.2）。
+- 主需求：`repos/demo-ui-algo-apiview/public/req-docs/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.4（:1417 段）——「从经济、社会、环境、创新等多个维度对政策效果进行评估」（维度枚举，无指标定义，原文见附录 A）；「资源利用」另 4 处命中均为仪器/载体语境（附录 A.2）。
 - 检索记录：核增需求 + 算法库 rg「资源利用」→ 算法库 :1277（空间资源利用·载体语境）1 处；「能耗产出比」三源 0 命中。
 
 ### 1.6 推测原意与推测定义（含降档/升档触发器，B10 模板）

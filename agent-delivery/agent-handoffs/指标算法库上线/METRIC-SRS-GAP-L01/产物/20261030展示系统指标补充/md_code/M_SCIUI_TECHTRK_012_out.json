@@ -1,0 +1,144 @@
+{
+ "metric_id": "M_SCIUI_TECHTRK_012",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:3549",
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:3523",
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:2916"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "SRS《全球创新监测.md》seq 80 订阅管理叶：「用户可订阅关注的领域、创新载体，设置订阅条件和推送频率」（附录 A 摘录）；UI 弹窗需求源头是《科技发展规划.md》seq 183 科创资源整合与推送叶；主需求文档 L569/L1245 有「推送频率」原词（每日/每周/每月）"
+ },
+ "facts": {
+  "gkx_news_base_rows": 20000,
+  "gkx_news_base_by_month": {
+   "2026-05": 27,
+   "2026-04": 252,
+   "2026-03": 643,
+   "2026-02": 372,
+   "2026-01": 276,
+   "2025-12": 430,
+   "2025-11": 340,
+   "2025-10": 353,
+   "2025-09": 374,
+   "2025-08": 431,
+   "2025-07": 409,
+   "2025-06": 402,
+   "2025-05": 375,
+   "2025-04": 455
+  },
+  "gkx_news_base_rows_total": 20000,
+  "gkx_news_base_fbsj_null": 0,
+  "gkx_news_base_fbsj_invalid": 0,
+  "gkx_news_recent12m_rows": 4657,
+  "gkx_news_recent12m_distinct_months": 12,
+  "gkx_org_news_by_month_200k_sample": {
+   "2026-05": 341,
+   "2026-04": 2043,
+   "2026-03": 4216,
+   "2026-02": 2602,
+   "2026-01": 2205,
+   "2025-12": 4245,
+   "2025-11": 3693,
+   "2025-10": 3416,
+   "2025-09": 3595,
+   "2025-08": 3710,
+   "2025-07": 3633,
+   "2025-06": 3273,
+   "2025-05": 3338,
+   "2025-04": 4353
+  },
+  "gkx_org_news_rows_total": 1668414,
+  "gkx_org_news_recent12m_rows_200k_sample": 39969,
+  "gkx_org_news_recent12m_distinct_months_200k_sample": 12,
+  "gkx_chain_news_rows_total": 108052,
+  "gkx_chain_news_recent12m_rows": 65661,
+  "gkx_chain_news_recent12m_distinct_months": 12,
+  "gkx_push_like_tables": [],
+  "jiuxin_push_tables": [],
+  "jiuxin_news_tables": [],
+  "jiuxin_subscr_tables": [],
+  "dev_push_like_tables": [],
+  "dev_policy_latest_news_rows": 0,
+  "dev_chain_news_rows": 0,
+  "dev_enterprise_news_recent12m_rows": 355614,
+  "dev_enterprise_news_recent12m_distinct_months": 12,
+  "dev_probe_status_this_run": "dev 不可达((2003, \"Can't connect to MySQL server on '10.50.11), dev_* 键沿用首跑实测值(2026-11-01 首跑在案)"
+ },
+ "derived": {
+  "gkx_info_supply_daily_avg": {
+   "value": 192.6521,
+   "numerator": 70318,
+   "denominator": 365,
+   "note": "分子=news_base+chain_news 近12整月（2025-05至2026-04）条数和（两表均 gkx 全表精确聚合，同库同源），分母=365 日；单位=条/日"
+  },
+  "gkx_news_base_monthly_avg": {
+   "value": 388.0833,
+   "numerator": 4657,
+   "denominator": 12,
+   "note": "分子=news_base 近12整月条数，分母=12 个月；单位=条/月，同表同源"
+  }
+ },
+ "absence_probe": [
+  {
+   "probe": "gkx push/subscri 类表扫描",
+   "source": "gkx",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%push%' OR table_name LIKE '%subscr%' OR table_name LIKE '%notif%' OR table_name LIKE '%message%')",
+   "hits": 0,
+   "sample": []
+  },
+  {
+   "probe": "久新 push 类表 SHOW",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES LIKE '%push%'",
+   "hits": 0,
+   "sample": []
+  },
+  {
+   "probe": "久新 news 类表 SHOW",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES LIKE '%news%'",
+   "hits": 0,
+   "sample": []
+  },
+  {
+   "probe": "久新 subscr 类表 SHOW",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES LIKE '%subscr%'",
+   "hits": 0,
+   "sample": []
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "UI 的每日/每周/每月是用户订阅配置选项（设置项语义），非系统实际推送节奏统计——需求原文（主文档 L1245）明确「定期（每日/每周/每月）向用户推送」，系统侧执行流水是本指标数据侧的真实缺口",
+  "三源推送行为流水均无承载：开发库五库扫描 0 表、gkx 280 表扫描 0、久新 SHOW TABLES 空——推送记录表属应用侧待建表",
+  "可交付代理口径：资讯供给频率（news_base+chain_news 条/日 192.6521、news_base 条/月 388.0833）——回答「系统有多大能力按既定频率推送」而非「已推送了多少」",
+  "org_important_news_info 166.8 万行大表按 20 万行采样协议取月分布（采样，非全表），未混入日频精确口径",
+  "policy_latest_news/chain_news 开发库侧 0 行（结构在、数据无），与 gkx 同名供给面不同源不同量",
+  "升档路径：应用侧建推送流水表（user_id/push_time/channel/content_id）即可升完全转换支持——推送频率=流水按日聚合，工程量小"
+ ],
+ "base_years_used": [
+  "2025",
+  "2026"
+ ],
+ "base_years_missing": [],
+ "base_years_note": "近12整月窗口 2025-05-01 至 2026-04-30；fbsj/publish_date 均 DATE 类型无 varchar 年份陷阱；news_base 零日期 0 行（fbsj_invalid=0）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "20000",
+   "1668414",
+   "108052",
+   "4657",
+   "65661",
+   "355614",
+   "39969",
+   "13.3671",
+   "1500",
+   "3331",
+   "355.25"
+  ]
+ }
+}

@@ -1,0 +1,194 @@
+{
+ "metric_id": "M_SCIUI_TECHTRK_014",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/techDevelopmentTracking.js:1100",
+  "repos/demo-ui-science/src/techDevelopmentTracking.js:1097-1105"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "三份说明书（《科技全域态势》《技术发展跟踪》《全球创新监测》）未出现「评估数据收集量」指标名；技术发展跟踪.md seq 52「评估流程概览」仅列环节名「数据收集」，无收集量指标定义。"
+ },
+ "facts": {
+  "jiuxin_ads_technology_profile_rows": 19430,
+  "jiuxin_profile_sum_paper_count": 108479,
+  "jiuxin_profile_sum_patent_count": 1071763,
+  "jiuxin_profile_sum_institution_count": 2528802,
+  "jiuxin_profile_sum_company_count": 99821,
+  "jiuxin_profile_sum_project_case_count": 181735,
+  "jiuxin_profile_sum_application_case_count": 181735,
+  "jiuxin_data_coverage_rows": 194300,
+  "jiuxin_data_coverage_node_count": 19430,
+  "jiuxin_data_coverage_by_domain": [
+   {
+    "domain_code": "APPLICATION_CASE",
+    "rows": 19430,
+    "evidence_sum": 181735,
+    "evidence_avg": 9.35
+   },
+   {
+    "domain_code": "ENTERPRISE",
+    "rows": 19430,
+    "evidence_sum": 99821,
+    "evidence_avg": 5.14
+   },
+   {
+    "domain_code": "INSTITUTION",
+    "rows": 19430,
+    "evidence_sum": 2528802,
+    "evidence_avg": 130.15
+   },
+   {
+    "domain_code": "LOCATION",
+    "rows": 19430,
+    "evidence_sum": 1354081,
+    "evidence_avg": 69.69
+   },
+   {
+    "domain_code": "MARKET",
+    "rows": 19430,
+    "evidence_sum": 0,
+    "evidence_avg": 0.0
+   },
+   {
+    "domain_code": "PAPER",
+    "rows": 19430,
+    "evidence_sum": 108479,
+    "evidence_avg": 5.58
+   },
+   {
+    "domain_code": "PATENT",
+    "rows": 19430,
+    "evidence_sum": 1071763,
+    "evidence_avg": 55.16
+   },
+   {
+    "domain_code": "POLICY",
+    "rows": 19430,
+    "evidence_sum": 0,
+    "evidence_avg": 0.0
+   },
+   {
+    "domain_code": "PROJECT",
+    "rows": 19430,
+    "evidence_sum": 181735,
+    "evidence_avg": 9.35
+   },
+   {
+    "domain_code": "TRANSLATION",
+    "rows": 19430,
+    "evidence_sum": 0,
+    "evidence_avg": 0.0
+   }
+  ],
+  "jiuxin_data_coverage_status_dist": [
+   {
+    "coverage_status": "AVAILABLE",
+    "rows": 102347
+   },
+   {
+    "coverage_status": "NOT_AVAILABLE",
+    "rows": 58290
+   },
+   {
+    "coverage_status": "NO_MATCHED_EVIDENCE",
+    "rows": 20248
+   },
+   {
+    "coverage_status": "RESEARCH_PROJECT_PROXY",
+    "rows": 13415
+   }
+  ],
+  "jiuxin_assessment_evidence_rows": 269882,
+  "jiuxin_assessment_evidence_by_type": [
+   {
+    "evidence_type": "PAPER",
+    "rows": 102766
+   },
+   {
+    "evidence_type": "PATENT",
+    "rows": 95170
+   },
+   {
+    "evidence_type": "RESEARCH_PROJECT",
+    "rows": 71946
+   }
+  ],
+  "jiuxin_graph_node_rows": 19430,
+  "jiuxin_graph_edge_rows": 587252,
+  "gkx_dwd_zh_paper_rows_shared_snapshot": 100900,
+  "gkx_dwd_news_base_rows_shared_snapshot": 20000,
+  "gkx_dwd_policy_base_rows_shared_snapshot": 20000,
+  "dev_gkxlumenx_dwd_paper_tables": 0
+ },
+ "derived": [
+  {
+   "key": "jiuxin_ui5source_align_rate_pct",
+   "value": 80.0,
+   "numerator": 4,
+   "denominator": 5,
+   "note": "分子=UI 五源(论文/专利/项目/资讯/知识图谱, techDevelopmentTracking.js:1100)中久新本轮证据量>0 的源数；分母=5。同源口径：分子分母均来自 jiuxin data_coverage/domain 与 graph_edge 实测。"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "dev 评估工作流数据收集量表（gkxlumenx_dwd 按关键词扫描）",
+   "source": "dev",
+   "sql": "SHOW TABLES FROM gkxlumenx_dwd LIKE '%coverage%'（另探 collect/gather/assess/score/potential/hotspot/heat/maturity/tech 各键，行号见 _probe_lane3_gkx_out.json）",
+   "hits": 0
+  },
+  {
+   "probe": "gkx 技术评估数据收集量结果面（280 表关键词扫描）",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx LIKE '%assess%'/'%evaluation%'/'%score%'/'%coverage%'（关键词逐一扫描，见 _probe_lane3_gkx_out.json）",
+   "hits": 0
+  },
+  {
+   "probe": "jiuxin 资讯/新闻域（203 表 news/media/literature 关键词扫描）",
+   "source": "jiuxin",
+   "sql": "SHOW TABLES 后本地过滤 news/media/literature/report（见 _probe_lane3_final_out.json）",
+   "hits": 0
+  },
+  {
+   "probe": "jiuxin MARKET/POLICY 域证据量（data_coverage 域级实测）",
+   "source": "jiuxin",
+   "sql": "SELECT domain_code, SUM(evidence_count) FROM ads_technology_data_coverage GROUP BY domain_code（MARKET=0, POLICY=0）",
+   "hits": 0
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "「评估数据收集量」UI 侧为评估工作流环节数据收集的状态注记（techDevelopmentTracking.js:1100），非数值读数；本件把「收集量」落为久新本轮评估（model_version=technology_insight_mvp_v2_eto_cluster_technology, metrics_as_of_date=2026-10-16）各源证据量实测。",
+  "jiuxin 本轮单版本节点数 19430（profile/data_coverage 同基），全表行数 38860/194300 为双 model_version（v1+v2 同内容）所致，读数时须去重。",
+  "UI 五源中「资讯」源在久新三源均无证据量（MARKET=0/POLICY=0、203 表无 news 类、gkx 新闻表未入评估链），是降档主因；gkx dwd_news_base=20000 行存在但未接入技术评估口径。",
+  "domain_code×coverage_status 矩阵、case_type 单一值等分布读数来自 _probe_lane3_jiuxin3/4_out.json 快照，与共享快照 _shared_probe_s3_01_out.json 的 ads_* 行数零漂移。"
+ ],
+ "base_years_used": [
+  "2026"
+ ],
+ "base_years_missing": [
+  "2025",
+  "2024"
+ ],
+ "base_years_note": "久新 data_coverage/stage_assessment 等 ADS 表为快照表（单 metrics_as_of_date=2026-10-16），无历史轮次；历史轮次评估记录（2023–2025 评估）三源均无承载。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "19430",
+   "38860",
+   "194300",
+   "269882",
+   "100900",
+   "20000",
+   "587252",
+   "108479",
+   "1071763",
+   "2528802",
+   "181735",
+   "99821",
+   "80",
+   "5",
+   "20252024"
+  ]
+ }
+}

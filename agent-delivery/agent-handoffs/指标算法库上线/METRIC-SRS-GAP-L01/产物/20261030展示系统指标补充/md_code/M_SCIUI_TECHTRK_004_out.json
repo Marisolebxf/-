@@ -1,0 +1,81 @@
+{
+ "metric_id": "M_SCIUI_TECHTRK_004",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:839"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "SRS《02-科技信息展示系统/科技发展态势/技术发展跟踪.md》8 叶与《科技全域态势.md》16 叶逐一核对，「人才规模」「区域人才规模」「人才总量」均未出现。《科技信息展示系统和科技专题服务系统.md》rg 检索「人才规模」命中均为科技专题服务系统/其他系统章节（如政策模拟参数），非本指标语境"
+ },
+ "facts": {
+  "dev_dwd_scholar_tables": 0,
+  "dev_dwd_talent_tables": 0,
+  "dev_probe_status_this_run": "dev 不可达((2003, \"Can't connect to MySQL server on '10.50.11), dev_* 键沿用首跑实测值(2026-11-01 首跑在案)",
+  "gkx_dwd_scholar_rows": 21316,
+  "gkx_scholar_name_zh_nonnull": 20420,
+  "jiuxin_ads_talent_profile_rows": 100000,
+  "jiuxin_talent_country_china": 21611,
+  "jiuxin_talent_country_top10": {
+   "中国": 21611,
+   "United States": 5654,
+   "United Kingdom": 1860,
+   "Australia": 1068,
+   "Hong Kong": 1065,
+   "Germany": 713,
+   "Canada": 641,
+   "Japan": 468,
+   "Singapore": 426,
+   "The Netherlands": 369
+  },
+  "jiuxin_talent_city_shenzhen": 512,
+  "jiuxin_talent_city_nonnull": 38467
+ },
+ "derived": [
+  {
+   "key": "jiuxin_talent_china_share_pct",
+   "value": 21.611,
+   "numerator": 21611,
+   "denominator": 100000,
+   "note": "分子=country_name='中国'，分母=ads_talent_profile 全表；同表同池（B3），share_basis=常驻国口径全池。注意这是『常驻国』非『国籍』（本库无国籍字段，见 M_TALENT_UI_CHINESE_RATIO 久新回填记录）"
+  },
+  {
+   "key": "jiuxin_talent_city_coverage_pct",
+   "value": 38.467,
+   "numerator": 38467,
+   "denominator": 100000,
+   "note": "分子=city 非空行数，分母=全表；城市维覆盖率（市级区域切片可用性）"
+  },
+  {
+   "key": "gkx_scholar_name_zh_share_pct",
+   "value": 95.7966,
+   "numerator": 20420,
+   "denominator": 21316,
+   "note": "中名率（池属性证据，与 M_TALENT_UI_CHINESE_RATIO 批次读数 95.7966 对账，零漂移）；share_basis=gkx 全池"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "SHOW TABLES LIKE '%scholar%' / '%talent%'（gkxlumenx_dwd，人才主档探测）",
+   "source": "dev",
+   "sql": "SHOW TABLES LIKE '%scholar%'; SHOW TABLES LIKE '%talent%'",
+   "hits": 0,
+   "hit_names": []
+  }
+ ],
+ "support_judgment": "完全直接支持",
+ "notes": [
+  "口径注记：本指标按 headcount（人头数）口径判档；OECD MSTI 的 FTE（全时当量）口径三源均无承载（无任何表含 FTE 列，见 MD §四），若甲方要求 FTE 口径 → 降为部分支持（触发器已写死 §1.6）",
+  "gkx.dwd_scholar 为中文学术圈池（中名率 95.80%），『全球人才规模』语义由久新 ads_talent_profile 承载更贴"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "人才计数为底账存量口径，无基期年；久新 ads_talent_yearly_location 虽有年份维（2000–2026），但其 2025 年去重仅 2,220、2026 年 708 人（履历活跃切片，非主档口径），不作用作基数",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "12458",
+   "1248"
+  ]
+ }
+}

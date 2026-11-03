@@ -1,0 +1,204 @@
+{
+ "metric_id": "M_SCIUI_TECHTRK_022",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/techDevelopmentTracking.js:50",
+  "repos/demo-ui-science/src/techDevelopmentTracking.js:506-549"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "SRS 技术发展跟踪.md seq 55「评估结果追踪」（excel_row 58）需求明列叶：『支持查看技术评估的历史记录和结果变化趋势…支持不同时期、不同方法评估结果的并排展示』；主文档 1.1.1.1.4.1.3.2.4 同文。但「历史得分序列」作为指标名与评分模型未在需求给出定义。"
+ },
+ "facts": {
+  "jiuxin_stage_assessment_rows": 38860,
+  "jiuxin_stage_assessment_as_of_dates": [
+   "2026-10-16"
+  ],
+  "jiuxin_stage_assessment_model_versions": [
+   "technology_insight_mvp_v1",
+   "technology_insight_mvp_v2_eto_cluster_technology"
+  ],
+  "jiuxin_hotspot_yearly_avg_by_year": {
+   "2015": 21.4714,
+   "2016": 23.3508,
+   "2017": 25.4551,
+   "2018": 27.258,
+   "2019": 28.5426,
+   "2020": 34.2939,
+   "2021": 40.9866,
+   "2022": 38.4781,
+   "2023": 35.907,
+   "2024": 34.4864,
+   "2025": 30.8505,
+   "2026": 19.8967
+  },
+  "jiuxin_hotspot_yearly_rows": 233160,
+  "jiuxin_shenzhen_hotspot_yearly_avg": {
+   "2015": {
+    "nodes": 6233,
+    "avg": 20.4871
+   },
+   "2016": {
+    "nodes": 6233,
+    "avg": 23.3206
+   },
+   "2017": {
+    "nodes": 6233,
+    "avg": 27.1277
+   },
+   "2018": {
+    "nodes": 6233,
+    "avg": 30.3516
+   },
+   "2019": {
+    "nodes": 6233,
+    "avg": 34.3202
+   },
+   "2020": {
+    "nodes": 6233,
+    "avg": 44.6869
+   },
+   "2021": {
+    "nodes": 6233,
+    "avg": 57.5708
+   },
+   "2022": {
+    "nodes": 6233,
+    "avg": 56.0331
+   },
+   "2023": {
+    "nodes": 6233,
+    "avg": 52.6473
+   },
+   "2024": {
+    "nodes": 6233,
+    "avg": 50.1555
+   },
+   "2025": {
+    "nodes": 6233,
+    "avg": 43.7929
+   },
+   "2026": {
+    "nodes": 6233,
+    "avg": 26.0608
+   }
+  },
+  "jiuxin_potential_as_of_dates_n": 1,
+  "ui_mock_timeline": {
+   "title": "评估结果追踪",
+   "years": [
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+    "2026"
+   ],
+   "events_n": 8,
+   "matrix_periods": [
+    "2023",
+    "2024",
+    "2025",
+    "current"
+   ]
+  },
+  "gkx_assess_like_tables": [],
+  "dev_evaluation_template_rows": 8,
+  "dev_assess_like_tables": [
+   [
+    "gkxlumenx_topic_enterprise",
+    "evaluation_template"
+   ],
+   [
+    "gkxlumenx_dwd",
+    "policy_support_assessment"
+   ],
+   [
+    "gkxlumenx_dwd",
+    "policy_support_assessment_indicator"
+   ]
+  ]
+ },
+ "derived": [
+  {
+   "key": "jiuxin_hotspot_avg_yoy_2025_vs_2024",
+   "value": -3.6359,
+   "numerator": -36359,
+   "denominator": 10000,
+   "note": "分子=2025 均分×10⁻⁴ 与 2024 均分×10⁻⁴ 之差（定点化避免浮点），分母=10⁴；同源 jiuxin hotspot_yearly 各年 19,430 节点均分。"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "gkx 280 表 评估/历轮/历史类结果面扫描",
+   "source": "gkx",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%assess%' OR table_name LIKE '%evaluation%' OR table_name LIKE '%history%')",
+   "note": "",
+   "hits": 0,
+   "sample": []
+  },
+  {
+   "probe": "dev evaluation_template 行数（参数模板非结果）",
+   "source": "dev",
+   "sql": "SELECT COUNT(*) FROM gkxlumenx_topic_enterprise.evaluation_template",
+   "note": "",
+   "hits": 1,
+   "sample": [
+    "(8,)"
+   ]
+  },
+  {
+   "probe": "dev gkxlumenx_dwd+ads 评估历史类表扫描",
+   "source": "dev",
+   "sql": "SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema IN ('gkxlumenx_dwd','gkxlumenx_ads','gkxlumenx_topic_enterprise') AND (table_name LIKE '%assess%' OR table_name LIKE '%evaluation%')",
+   "note": "",
+   "hits": 3,
+   "sample": [
+    "('gkxlumenx_topic_enterprise', 'evaluation_template')",
+    "('gkxlumenx_dwd', 'policy_support_assessment')",
+    "('gkxlumenx_dwd', 'policy_support_assessment_indicator')"
+   ]
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "「评估结果追踪」是需求明列叶（seq 55）；UI 双承载：顶部时间轴（2020-2026 七年 + 8 里程碑事件，全前端常量）与评估历史矩阵 periods 轴（2023/2024/2025/本次 四列，mock 演示值）。",
+  "主降档因：评估轮次轴无承载——久新 stage/potential 两评估表均单轮快照（metrics_as_of_date 单值 2026-10-16），UI 的 2023/2025 三列历史、时间轴 2020-2026 八事件在数据面均无对应发布行；dev evaluation_template 8 行是参数模板非历轮结果。",
+  "口径 A（替代轴）：hotspot_yearly 是唯一现成年度得分序列（2015-2026 各年 19,430 节点均分 21.47→19.90 全域读数见 facts）；语义是『技术节点热点分年度趋势』非『评估得分历史』，替代须甲方裁定。",
+  "口径 B（深圳）：深圳 6,233 节点 2015-2025 均分 20.4871→43.7929（2026 部分年 26.0608 不入比较），方向与全域一致（2021 峰值后回落）。",
+  "与 015 件共享底表与「轮次缺失」缺口（015 消费 current 列、本件消费 periods 历史列）；两件 absence_probe 互补不重复计证。"
+ ],
+ "base_years_used": [
+  "2015",
+  "2016",
+  "2017",
+  "2018",
+  "2019",
+  "2020",
+  "2021",
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_missing": [
+  "2023",
+  "2024",
+  "2025"
+ ],
+ "base_years_note": "评估矩阵的 2023/2024/2025 三轮在 stage/potential 快照无承载（base_years_missing 登记的是『评估轮次』缺失年）；hotspot_yearly 的 2015-2026 全序列可用（口径 A/B），2026 为 PARTIAL_YEAR。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "38860",
+   "19430",
+   "2026-10-16",
+   "233160",
+   "6233",
+   "2020",
+   "2026"
+  ]
+ }
+}

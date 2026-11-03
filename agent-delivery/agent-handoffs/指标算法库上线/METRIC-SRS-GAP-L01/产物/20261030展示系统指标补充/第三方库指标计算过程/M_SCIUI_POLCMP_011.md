@@ -242,7 +242,7 @@ UI mock 语义源（`policyData.js:543-545`，hotIssuesData id=4 创新联合体
 ## 附录 B 历史库表探测证据
 
 - 本件产物：`code/M_SCIUI_POLCMP_011_out.json`（2026-11-01 实跑：gkx 280 表词族扫 + 文本面四组读数 + 项目 7 表定性 + dev 五 schema 扫 + 久新补连与旁证登记 + absence 四件）。
-- 共享探针：`code/_snapshots/_shared_probe_s3_01_out.json`（fix2_20261101 政策底表 20,000 行——B11 对账锚）、`code/_probe_lane6_s302_r2_out.json`（dev 政策族表行数 0 行一致性来源）、`code/_probe_lane4_s302_out.json`（久新锁定时段快照）、ADS Schema 5.11.0 文档（`local-workspace/docs/reference/久新/2026-10-22-ADS_SCHEMA-5.11.0.md`；其「空表」表述与 11-01 实测 1,252 行不符，以实测为准）。
+- 共享探针：`code/_snapshots/_shared_probe_s3_01_out.json`（fix2_20261101 政策底表 20,000 行——B11 对账锚）、`code/_probe_lane6_s302_r2_out.json`（dev 政策族表行数 0 行一致性来源）、`code/_probe_lane4_s302_out.json`（久新锁定时段快照）、ADS Schema 5.11.0 文档（ADS Schema 5.11.0 参考文档，随任务工作区沉淀；其「空表」表述与 11-01 实测 1,252 行不符，以实测为准）。
 
 ### B.2 本件产物逐键清单（`code/M_SCIUI_POLCMP_011_out.json`）
 

@@ -80,7 +80,7 @@ def check_one(mid):
         ref_path = m3.group(1)
         fname = ref_path.split('/')[-1]
         if os.path.exists(os.path.join(CODE_DIR, fname)): continue
-        ws = '/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage'
+        ws = os.environ.get('METRIC_WS_FALLBACK', '')  # 兜底：编排主仓外任务工作区，默认禁用
         found = False
         if '/' in ref_path and '/code/' in ref_path:
             prefix = ref_path.split('/code/')[0]

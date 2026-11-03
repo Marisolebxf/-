@@ -1,0 +1,74 @@
+{
+ "metric_id": "M_TALENT_UI_COST_TREND",
+ "batch": "20261030_展示系统指标补充",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/talent-trend/components/CostTab.jsx:528",
+  "repos/demo-ui-science/src/pages/talent-trend/components/CostTab.jsx:531"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "SRS 叶「历史成本趋势追踪」（人才引进推荐评估页，excel_row 266 邻域）要求展示历年引进成本变化趋势；未给口径与数据源。"
+ },
+ "facts": {
+  "org_recruit_info_rows": 7981643,
+  "release_year_dist_sample50k": {
+   "2022": 11235,
+   "2023": 9274,
+   "2024": 10081,
+   "2025": 12904,
+   "2026": 6506
+  },
+  "release_sample_rows": 50000
+ },
+ "derived": {
+  "release_yoy_growth_pct": {
+   "value": -49.5815,
+   "numerator": -6398,
+   "denominator": 12904,
+   "note": "岗位发布量 2025→2026 同比（引才活跃度代理，非成本额）"
+  },
+  "latest_year_share_pct": {
+   "value": 13.012,
+   "numerator": 6506,
+   "denominator": 50000,
+   "note": "2026 年发布量占采样（5 万行）有日期岗位比例"
+  }
+ },
+ "absence_probe": [
+  {
+   "probe": "dwd_org_recruit_info columns sal/cost/pay",
+   "result": [],
+   "hit_rows": 0,
+   "verdict_kind": "negative_evidence"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "趋势结构（按年分组）与活跃度代理（岗位发布量年度分布）可复算；但「成本额」本身无任何数值列（探针即证），UI 双折线的纵轴（万元）无法真实出数，故部分支持。升档触发器：成本明细表或薪酬列回填后，同一 GROUP BY 骨架即可切换。",
+  "UI trendOption/marketTrendOption 数据为组件内 mock 常量，非接口返回。"
+ ],
+ "base_years_used": [
+  "2022",
+  "2023",
+  "2024",
+  "2025",
+  "2026"
+ ],
+ "base_years_missing": [],
+ "base_years_note": "年度集合来自前 5 万行采样（LIMIT 50000，非全量），年份集合=采样年份并集；全量分组因无索引超时未取证（absence_probe 登记）。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记。",
+  "refs": [
+   "183.240",
+   "141.251",
+   "3318",
+   "528",
+   "531",
+   "266",
+   "7981643",
+   "2.1",
+   "2.2",
+   "2.3"
+  ]
+ }
+}

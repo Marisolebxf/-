@@ -1,0 +1,142 @@
+{
+ "metric_id": "M_SCIUI_INNOV_008",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/globalInnovationMonitor.js:21",
+  "repos/demo-ui-science/src/pages/tech-innovation-evaluation-new/TechInnovationEvaluationNewPage.jsx:119",
+  "repos/demo-ui-science/src/pages/tech-innovation-evaluation-new/TechInnovationEvaluationNewPage.jsx:97",
+  "repos/demo-ui-science/src/pages/global-innovation/tabs/realtimeModel.js:29"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「指标趋势预测值」全称未命中；近似叶：SRS 全球创新监测 seq 71『创新影响预测』（基于知识图谱与节点影响分预测对领域创新的贡献度——预测对象是『影响』非指标趋势值）；科技创新评估 seq 139『科学创造力趋势预测』/seq 145『技术创新趋势预测』（明写『预测结果和置信区间』，与本件 UI 的 95% 置信区间图直接对应，但挂科技创新评估页）；科技全域态势.md:206 支持趋势预测功能（通用能力）"
+ },
+ "facts": {
+  "dev_forecast_tables": 0,
+  "dev_predict_tables": 1,
+  "dev_predict_table_names": [
+   "policy_prediction_indicator"
+  ],
+  "dev_probe_status_this_run": "dev 不可达((2003, \"Can't connect to MySQL server on '10.50.11), dev_* 键沿用首跑实测值(2026-11-01 首跑在案)",
+  "gkx_financing_yearly_2015_2025": {
+   "2015": 2602,
+   "2016": 3884,
+   "2017": 2909,
+   "2018": 2257,
+   "2019": 1666,
+   "2020": 1948,
+   "2021": 2019,
+   "2022": 1757,
+   "2023": 1266,
+   "2024": 919,
+   "2025": 618
+  },
+  "gkx_holt_params": {
+   "alpha": 0.8,
+   "beta": 0.2
+  },
+  "gkx_holt_level_2025": 687.81,
+  "gkx_holt_trend_2025": -112.56,
+  "gkx_holt_forecast_2026_point": 575.25,
+  "gkx_holt_forecast_2026_lo95": 0.0,
+  "gkx_holt_forecast_2026_hi95": 2819.84,
+  "gkx_holt_residual_sigma": 1145.2,
+  "jiuxin_forecast_by_metric": {
+   "PATENT_COUNT": {
+    "rows": 1218,
+    "problems": 406,
+    "year_min": 2026,
+    "year_max": 2028,
+    "with_ci": 1218
+   },
+   "PROJECT_COUNT": {
+    "rows": 1218,
+    "problems": 406,
+    "year_min": 2026,
+    "year_max": 2028,
+    "with_ci": 1218
+   },
+   "PAPER_COUNT": {
+    "rows": 1218,
+    "problems": 406,
+    "year_min": 2026,
+    "year_max": 2028,
+    "with_ci": 1218
+   },
+   "HOTSPOT_SCORE": {
+    "rows": 1218,
+    "problems": 406,
+    "year_min": 2026,
+    "year_max": 2028,
+    "with_ci": 1218
+   }
+  },
+  "jiuxin_forecast_method_coverage": {
+   "LLM_SCENARIO_ESTIMATION_NOT_BACKTESTED|AI_ESTIMATED_NOT_BACKTESTED": 4872
+  },
+  "jiuxin_forecast_rows": 4872,
+  "jiuxin_forecast_backtested_rows": 0,
+  "jiuxin_forecast_paper_2026_min_avg_max": [
+   0.0,
+   2.17,
+   14.0
+  ]
+ },
+ "derived": [
+  {
+   "key": "gkx_holt_2026_vs_2025_actual_pct",
+   "value": -6.92,
+   "numerator": -42.75,
+   "denominator": 618,
+   "note": "分子=Holt 2026 点预测−2025 实际值，分母=2025 实际值（618）；同池 gkx 融资事件（B3）。展示外推趋势方向（持续下行），非精确预测承诺"
+  },
+  {
+   "key": "gkx_holt_2026_ci_width_pct",
+   "value": 780.39,
+   "numerator": 4489.18,
+   "denominator": 575.25,
+   "note": "分子=95% 区间宽度，分母=点预测；区间占点预测比例（序列波动大 → 区间宽，正文 §2.5 解读）"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "开发库预测承载：SHOW TABLES LIKE '%forecast%' / '%predict%'（gkxlumenx_dwd）",
+   "source": "dev",
+   "sql": "SHOW TABLES LIKE '%forecast%'; SHOW TABLES LIKE '%predict%'",
+   "hits": 1,
+   "hit_names": [
+    "policy_prediction_indicator"
+   ],
+   "hit_detail": "唯一命中 policy_prediction_indicator 为政策模拟参数表（policy_prediction_indicator），非指标趋势预测结果面；forecast 关键词 0 命中"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "降档主因：三源无『统计模型级、可回测』的指标趋势预测结果面。久新 forecast_yearly 虽有 4,872 行（406 问题×4 指标×3 年），但 forecast_method=LLM_SCENARIO_ESTIMATION_NOT_BACKTESTED、backtest_error 全空（0/4,872）——LLM 情景估计非时间序列外推，与 SRS seq 139 的『预测结果和置信区间』方法论要求不同族",
+  "升档路径（B10 触发器）：①统计模型侧——三源年度序列（gkx 融资 2015–2025 / 久新 tech_yearly 1990–2026）现成可跑 Holt/ARIMA，工程量=一次建模脚本+回测流水线，落库后升完全转换支持；②口径侧——甲方接受 LLM 情景估计作为预测值 → 直接用久新面升档（需 UI 标注非统计预测）",
+  "本件 Holt 演示（gkx 融资序列）为方法可行性证明，参数 α=0.8/β=0.2 固定保证确定性（B5），非交付口径",
+  "UI 三处挂载的预测对象各不相同（监测页=专利/论文/投资额月序列；评估页=科学创造力得分；能力卡=趋势预测功能）——『指标』所指不闭合是本件与 INNOV_006 共同的口径风险"
+ ],
+ "base_years_used": [
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "base_years_missing": [],
+ "base_years_note": "Holt 训练窗=2015–2025 全量年（11 点）；2026 在途年排除于训练集；久新 LLM 面训练截止 2025-12-31（training_end_date 抽样核验）",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "4496",
+   "91520"
+  ]
+ }
+}

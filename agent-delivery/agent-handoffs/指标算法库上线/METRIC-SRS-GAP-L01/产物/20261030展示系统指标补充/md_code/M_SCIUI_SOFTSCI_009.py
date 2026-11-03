@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_SOFTSCI_009_out.json"
+OUT = "M_SCIUI_SOFTSCI_009_out.json"
 
 PT_COLS = ["dwd_id", "patent_transfer_id", "pn", "country", "transfer_effective_date", "transfer_before",
            "transfer_after", "created_time", "updated_time", "creater", "updater", "table_data_source",

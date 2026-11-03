@@ -85,7 +85,7 @@
 ### 1.5 引用来源
 
 - UI：`repos/demo-ui-science/src/pages/policy-tracking/policyData.js:712` — `{ key: 'spatialIndex', label: '空间协同指数', unit: '分', baseline: 72, target: 88 }`（`simulationIndicators` 第 4 项，组声明 `:708` 注释「推演结果指标（Bid · …）」）；三情景值 `:723/:731/:739`；消费方 `simulation/sharedCharts.jsx:26/95/144`。
-- 主需求：`local-workspace/docs/tasks/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.3（:1415 段，空间模拟指标枚举未含本指标）；1.1.1.1.4.2.3.2.4（:1443 段「把握政策的协同效应」定性）；:5211（产学研协同指数，不同物）。
+- 主需求：`repos/demo-ui-algo-apiview/public/req-docs/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.3（:1415 段，空间模拟指标枚举未含本指标）；1.1.1.1.4.2.3.2.4（:1443 段「把握政策的协同效应」定性）；:5211（产学研协同指数，不同物）。
 - 检索记录：核增需求 + 算法库 rg「空间协同」0 命中（附录 A.2）。
 
 ### 1.6 推测原意与推测定义（含降档/升档触发器，B10 模板）

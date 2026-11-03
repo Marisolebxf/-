@@ -317,7 +317,7 @@
 
 复现步骤（约 30-60 秒，三源各一连接）：
 
-1. `cd local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code && python3 M_SCIUI_TALENTPF_006.py` → 覆盖生成 `M_SCIUI_TALENTPF_006_out.json`（幂等只读，重跑应零漂移）；
+1. `cd 本批次交付目录（原落盘于编排主仓外任务工作区，已迁入本仓）code && python3 M_SCIUI_TALENTPF_006.py` → 覆盖生成 `M_SCIUI_TALENTPF_006_out.json`（幂等只读，重跑应零漂移）；
 2. 对照 §2.8 分步证据对照表逐键核数（重点三个派生键：份额 16.0986 / 相对增长 7,127,871.0 / 绑定覆盖率 100.0）；
 3. 族内对账：`jiuxin_yearly_discipline_rows`（3,790,547）与 `jiuxin_potential_pf_nonnull`（99,998）须与 PF_003 产物同数（零漂移）；field 26 个维表与 X_015 subfield 252 同体系；
 4. 判档一致性：MD 文首 / 摘要 / §〇 / 产物 `support_judgment` 四处均「完全转换支持」；

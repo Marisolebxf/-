@@ -13,7 +13,7 @@ import json
 
 import pymysql
 
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_SOFTSCI_007_out.json"
+OUT = "M_SCIUI_SOFTSCI_007_out.json"
 DEV = dict(host="10.50.11.76", port=3306, user="root", password="Gkxzp202600", charset="utf8mb4")
 FAMILIES = ("graduat", "incubat", "onincub", "inincub")
 

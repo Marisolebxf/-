@@ -85,7 +85,7 @@
 ### 1.5 引用来源
 
 - UI：`repos/demo-ui-science/src/pages/policy-tracking/simulation/interpret/InterpretWorkbench.jsx:411` — `<Card size="small" title="影响区域（柱图辅视 · 渗透指数）"><ImpactRegionBarChart regions={policyImpactScopeData.regions} /></Card>`；`:429` 空间图 valueLabel="渗透指数"；数据 `policyData.js:1999-2004`（南山 90/福田 82/宝安 75/龙岗 70）；`:1990/:1996` 覆盖面分列注释；图表组件 `simulation/sharedCharts.jsx:1148-1171`。
-- 主需求：`local-workspace/docs/tasks/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.2.3（:1441 段）——「包括受益对象、影响区域、影响行业等…了解政策的覆盖面和渗透深度」（功能语境，原文见附录 A）。
+- 主需求：`repos/demo-ui-algo-apiview/public/req-docs/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.2.3（:1441 段）——「包括受益对象、影响区域、影响行业等…了解政策的覆盖面和渗透深度」（功能语境，原文见附录 A）。
 - 检索记录：核增需求 + 算法库 rg「渗透」0 命中；主需求 2 处（:933 市场渗透率、:1441 渗透深度）均非本指标定义。
 
 ### 1.6 推测原意与推测定义（含降档/升档触发器，B10 模板）

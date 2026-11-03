@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_SOFTSCI_012_out.json"
+OUT = "M_SCIUI_SOFTSCI_012_out.json"
 
 SATISFACTION_HITS_DEV = sorted([
     "gkxlumenx_dwd.foreign_org_annual_financial_info.operating_revenue",

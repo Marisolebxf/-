@@ -14,9 +14,9 @@ from __future__ import annotations
 
 import json
 
-SHARED_A = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s309_alpha_out.json"
-SHARED_C = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_probe_s309_alpha_c_out.json"
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_THINK_009_out.json"
+SHARED_A = "_snapshots/_shared_s309_alpha_out.json"
+SHARED_C = "_snapshots/_probe_s309_alpha_c_out.json"
+OUT = "M_SCIUI_THINK_009_out.json"
 
 
 def main() -> None:
