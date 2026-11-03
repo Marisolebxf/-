@@ -7,7 +7,7 @@
 | claimed_by | `agent:arch-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `coordinator_dispatch` |
-| 说明 | 只写政策舆情评估的实现架构。不标 done，不会签 |
+| 说明 | 只写政策舆情评估的实现架构。2026-11-03 `human:淮政玮` 按说明书第 11 节再次签收 |
 
 ## Ponytail
 
@@ -23,10 +23,10 @@ ponytail: off
 |---|---|---|
 | 207 | 政策查询与对比 | 同步，复用多维检索的门面委托 |
 | 208 | 区域政策差异性分析 | 跨项读图，不新开资源 |
-| 209 | 政策实施效果跟踪 | 当前 501。接通时复刻算法库效果评估 |
-| 210 | 政策受众反馈收集 | 读 `gapfill_policy_audience_feedback`。mock 在表里，接口不直接返回 mock |
-| 211 | 政策效果评估报告 | 读 `gapfill_policy_assessment_report`。mock 在表里，接口不直接返回 mock |
-| 212 | 政策匹配与推送 | 当前 501。接通时复刻算法库匹配推送 |
+| 209 | 政策实施效果跟踪 | 读已有 `ads.policy_effect`。不另建表，不用 501 |
+| 210 | 政策受众反馈收集 | 读 `gapfill_policy_audience_feedback`。element 只读表 |
+| 211 | 政策效果评估报告 | 读 `gapfill_policy_assessment_report`。element 只读表 |
+| 212 | 政策匹配与推送 | 读已有 `ads.policy_match`。不灌假推送 |
 
 207 读已有 `stats`、`search`、`{id}/detail`。浏览器只打 `/display/v1/policy/**`。`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。无行则空，不造 0。D4 仍是 mock。
 
