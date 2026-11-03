@@ -145,7 +145,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 | `industry_link_code` | `chain_id` | **v2.3 修正（round2 问 1 拍板）**：填**所属 L1 链**的码（53 个之一），不是直接父级码。取法：`industry_link_code` 指向的祖先层级=1 时取该码；层级≥2 则沿父级继续向上，直到层级=1。例：`INB130301010101`（硅材料）→ 向上经 `INB1303010101`→`INB130301`→ **`INB130301`（半导体材料 L1）**。验收：1,220 行 `chain_id` 必须全部命中 `industry_chain`（53 行），命中率 100% |
 | `industry_link_code` | `parent_node_id` | **v2.3 修正（round2 问 1 拍板）**：填直接父级的码；父级为 L1 链时（`node_level=2`，共 165 行）写 NULL——此时归属已由 `chain_id` 表达。验收：L3~L7 共 1,055 行有父指针，且每行可在 `industry_chain_node` 命中 |
 | `industry_code` 末两位 | `sort_no` | 转整数。例：`INB120401010202` → `2` |
-| `industry_code` 末两位 | `stage_code` | **v2.2.3 定稿：写 NULL，本期不派生**（round2 问 4：同级序号≠上中下游，禁止误导下游） |
+| `industry_code` 末两位 | `stage_code` | **v2.3.1 徐滕强拍板（2026-11-03）：维持三等分派生**——末两位 `1`–`4` 写 `upstream`；`5`–`8` 写 `midstream`；`9` 及以上写 `downstream`。依据：假定供应方同级排序按供应流向排列（假定成立则字段可用）；GDF round2 问 4 的 958/185/77 分布为该规则结果。**风险已书面告知**：若供应方排序实为其他含义，此字段需按确认结果重算并刷新（登记客户决策清单 🟡 待供应方确认） |
 | `industry_name` | `description` | 与 `node_name` 相同 |
 | — | `status` | `active` |
 | `industry_link_name` | — | 不写入 |
@@ -244,7 +244,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 | ID | 项 | 状态 |
 |---|---|---|
-| OPEN-CHAIN-MAP-01 | `stage_code` | **已定（round2 问 4，2026-11-03）：本期写 NULL**——同级序号≠上中下游，等业务确认后另行派生 |
+| OPEN-CHAIN-MAP-01 | `stage_code` | **已定（2026-11-03 徐滕强）：维持三等分派生**（1-4/5-8/9+）；排序含义登记 🟡 待供应方确认，确认后如不符再重算刷新 |
 | OPEN-CHAIN-MAP-02 | `future_industry_flag` | **已定（2026-11-02 对照 demo）：链树作业写 0** |
 | OPEN-CHAIN-MAP-03 | 产品 tags → entity_rel product | 本期不洗 |
 | OPEN-CHAIN-MAP-06 | 分析 `industry_code` → INB `chain_id` | 挡后续按链资讯；本期 B2 不洗 |
