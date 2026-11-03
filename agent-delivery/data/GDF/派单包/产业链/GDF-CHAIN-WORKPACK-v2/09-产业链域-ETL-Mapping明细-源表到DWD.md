@@ -1,6 +1,6 @@
 # 产业链域 ETL Mapping 明细 — 源表到 DWD
 
-> **版本**：v2.3（2026-11-03：round2 答复落稿——node.chain_id 改所属 L1 链、parent_node_id 补直接父级、边表改真父子 1,055 条、stage_code 定 NULL；详见 `23-核对签收与答复.md` round2 节。v2.2=round1 答复；基线对齐 10-19 清单）  
+> **版本**：v2.3.1（2026-11-03：round2 全闭环——node.chain_id=所属 L1 链、parent_node_id=直接父级、边表真父子 1,055 条；`stage_code` **维持三等分派生** 1–4/5–8/9+；问7 挂接口径=全量全国。详见 `23`§8。v2.3=链树三处填充修正；v2.2=round1 答复）  
 > **日期**：2026-11-02（v2.0 = 2026-10-20；v1.0 = 2026-09-01）  
 > **范围**：GDF 三方承诺表（产业链要素库）→ 项目 DWD（`gkxlumenx_dwd.industry_chain_*`）字段级映射  
 > **配套**：`产业链-DWD表设计-业务需求驱动(v5).md`（DDL 真源）· `storage/CHAIN/stores/mysql/dwd-chain.md`（入口）  
