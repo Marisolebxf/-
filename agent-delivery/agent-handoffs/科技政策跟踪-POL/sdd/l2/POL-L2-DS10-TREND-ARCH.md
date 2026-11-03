@@ -5,7 +5,8 @@
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
-- 图：`POL-L2-DS10-TREND-ARCH-SEQ`（本叶新图，源文件无 frontmatter，记 `draft`）
+- 图：`POL-L2-DS10-TREND-ARCH-SEQ`（本叶新图，源文件无 frontmatter，不另填绿）
+- 签收：2026-11-03 `human:淮政玮`
 
 本叶只定科创政策全景二级「政策动向跟踪」的实现架构和整体流程。SRS 序号 **203–206**。用户故事 `US-DS-POL-02`。不写 OpenAPI 字段、请求体、响应体、枚举。那是 `POL-L2-DS10-TREND-API`。
 
@@ -36,7 +37,7 @@
 | 205 热点、影响、深度报告 | `POST /display/v1/policy/panorama/jobs` | 当前模型未见，501。接通后仍是这一条 Job，见第 7.2 节 |
 | 206 | `GET /display/v1/policy/panorama/stats` | 同步。时间轴和趋势读 `M_POLICY_TIMESERIES`，地域热力读 `M_POLICY_NATIONAL_DIST`。不另建查询 |
 
-`stats` 这一条资源的内部委托已经写在 `POL-L2-DS10-QRY-ARCH`：浏览器仍打 `/display/v1/policy/panorama/stats`，`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。本叶不新开第二条委托，不把浏览器改去打 `/topic/v1/policy`。203 的入库列表不走这条委托。
+`stats` 这一条资源的内部委托已经写在 `POL-L2-DS10-QRY-ARCH`：浏览器仍打 `/display/v1/policy/panorama/stats`，`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。本叶不另建一条统计查询。204 的订阅是另一条委托，接通后 `subscriptions` 也转到同一门面，业务不在展示服务，见第 7.1 节。浏览器都不改打 `/topic/v1/policy`。203 的入库列表不走专题门面。
 
 ```mermaid
 flowchart LR
@@ -157,13 +158,13 @@ trace 沿既有展示链走。`stats` 与 `ingest` 在 display 往下游带 trac
 - 不写 OpenAPI 字段表、请求体、响应体、枚举。
 - 不新造 `metric_id`。不改 D4。不把 mock 写成已上线。不把 QPOL-07 写成已闭合。
 - 不把 `GDF-POLICY-MOCK-GATE-L01` 写成已解开。不重开 GDF。
-- 浏览器不改打 `/topic/v1/policy`。本叶不新开专题政策查询。`stats` 的内部委托以检索叶为准。不把 `E-E7-POLICY-M1-L06` 写成展示前端联调单。
+- 浏览器不改打 `/topic/v1/policy`。`stats` 的内部委托以检索叶为准。204 只在服务内部把 `subscriptions` 委托给 `gkxlumen-topic-policy`。不把 `E-E7-POLICY-M1-L06` 写成展示前端联调单。
 - 不改 `FE-POL-01B`，不新建前端单。契约冻结前前端继续 mock。
 - 不把 localStorage 订阅、演示推送写成已经接通的服务。
 - 不改说明书、WBS、调研分册。
-- 不会签。不把本单标 done。
-- 第 7 节只写接通后的落点。不在本叶注册模型、不建表、不部署定时、不开发送。不把该节写成已经接通。
-- 政策订阅与外发的实现单是 `E-E7-POLICY-M1-L11`、`L12`、`L13`。本叶不认领、不实现。
+- 2026-11-03 `human:淮政玮` 签收本单。第 7 节仍是接通方案，不因签收写成已经接通。
+- 不在本叶注册模型、不建表、不部署定时、不开发送。
+- 政策订阅与外发的实现单是 `E-E7-POLICY-M1-L11`、`L12`、`L13`，监管都是 `human:淮政玮`。本叶不认领、不实现。
 
 ## 7. 501 的预计实现
 
@@ -199,11 +200,11 @@ flowchart LR
 
 门面内部要完成的事，由独立任务展开，不在本叶设计表结构和通道参数：
 
-| 任务 | 做什么 |
-|---|---|
-| `E-E7-POLICY-M1-L11` | 专题侧架构。订阅关系、对已入库政策的筛选、日/周/月、通知/邮件/短信落在 `gkxlumen-topic-policy` |
-| `E-E7-POLICY-M1-L12` | 在该门面实现上述能力。展示侧只加委托，不写订阅业务 |
-| `E-E7-POLICY-M1-L13` | 测试这条委托和外发。页面 localStorage 与「立即推送」不算通过 |
+| 任务 | 监管 | 做什么 |
+|---|---|---|
+| `E-E7-POLICY-M1-L11` | `human:淮政玮` | 专题侧架构。订阅关系、对已入库政策的筛选、日/周/月、通知/邮件/短信落在 `gkxlumen-topic-policy` |
+| `E-E7-POLICY-M1-L12` | `human:淮政玮` | 在该门面实现上述能力。展示侧只加委托，不写订阅业务 |
+| `E-E7-POLICY-M1-L13` | `human:淮政玮` | 测试这条委托和外发。页面 localStorage 与「立即推送」不算通过 |
 
 `ARCH-DISPLAY-01` A15 仍是其他展示页订阅模块的裁决。序号 204 按本次裁定改走专题政策门面，不把政策订阅关系落在展示侧库。态势模块的用户行为表不是这条服务。
 
