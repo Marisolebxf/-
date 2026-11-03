@@ -35,7 +35,11 @@ ponytail: full
 
 `GET /rank` 仍是 `@Inner(false)`，排序继续匿名公开。检索、正文、统计、portal、`/{id}` 以及 health、options、graph、metrics、indicators、timeline 的注解未动。
 
-没有令牌的收藏或导出请求会在门面被拒，进不了 `currentUserId()`。展示侧已有的 `PolicyPanoramaQueryController.forward` 会把下游失败收成空列表，并带 `honesty.fabricated=false`。本叶未改这段转发。
+没有令牌时，资源服务器不再把这 6 个路径放进 `permitAll`，请求在过滤器层被拒，到不了控制器。这与同文件的订阅入口相同。
+
+控制器本身没有改身份算法。`currentUserId()` 在 `SecurityUtils.getUser()` 为空或没有 id 时仍返回 null，不采用请求体里的 `user_id`。服务层 `userId` 空白时直接返回空的 history、favorites，`honesty.fabricated=false`，不插入收藏行。单测用 standalone MockMvc，不经过资源服务器：匿名 `GET /favorites` 断言调用 `favorites(null)`，两个列表都空。
+
+展示侧已有的 `PolicyPanoramaQueryController.forward` 会把下游失败收成空列表，并带 `honesty.fabricated=false`。本叶未改这段转发。
 
 ## 偏离
 
@@ -54,6 +58,8 @@ ponytail: full
 `mvn -pl gkxlumen-topic-policy/gkxlumen-topic-policy-biz -am test -Dtest=PolicyFacadeControllerTest -Dsurefire.failIfNoSpecifiedTests=false`
 
 `PolicyFacadeControllerTest`：Tests run: 21, Failures: 0, Errors: 0, Skipped: 0。BUILD SUCCESS。
+
+本会话用 Temurin 17（`JAVA_HOME=C:\Users\hzw\AppData\Local\gkx-build-tools\jdk-17.0.20.1+1`）在 `gkxlumen-topic-policy-biz` 再跑同一测试类，结果相同：21 通过，0 失败。
 
 新增 `favoritesAndShareAreNotInnerWhileRankStaysPublic`：上述 6 个方法没有 `@Inner`；`GET /rank` 的 `rank` 仍有 `@Inner(false)`。
 
