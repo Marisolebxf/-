@@ -37,9 +37,9 @@
 | 213 | `GET /display/v1/policy/panorama/version-diff` | `gkxlumen-display` 不直连库。转发到 Python `/internal/policy` 只读查询 `gkxlumenx_gapfill.gapfill_policy_version_diff` |
 | 214 时间、部门、产业 | `GET /display/v1/policy/panorama/search` 与 `{id}/detail` | 内部委托已有 `gkxlumen-topic-policy`。不另开对比查询 |
 | 214 力度、216、218 | `POST /display/v1/policy/panorama/jobs` | 增加 `sub_type=policy_intensity`。Python 调用已有 `polan.eval.intensity.run`，再读 `ads.policy_intensity` |
-| 214 条件、材料 | 同上一次详情对比读 | 只查 `gapfill_policy_detail_compare`。不把这两列写进接口常量 |
+| 214 条件、材料 | `GET /display/v1/policy/panorama/{id}/detail` | 同一次详情读。Python 只查 `gapfill_policy_detail_compare` 的申报条件、申报材料。不把这两列写进接口常量 |
 | 215 区域、类别 | `GET /display/v1/policy/panorama/stats` 与 `search` | 区域走已有地区分布。项目类别、技术类别走已有选项。总件数仍用 `M_POLICY_TOTAL_COUNT` |
-| 215 实施部门 | 同一次部门对比读 | 只查 `gapfill_policy_impl_dept`。现网收集不到实施部门，不按发布机构去重 |
+| 215 实施部门 | `GET /display/v1/policy/panorama/stats` | 同一次统计读。Python 只查 `gapfill_policy_impl_dept`。现网收集不到实施部门，不按发布机构去重，不另开路径 |
 | 217 | `GET /display/v1/policy/panorama/benchmark-report` | 只查 `gapfill_policy_benchmark_report`。导出内容从读到的行生成 |
 
 ```mermaid
@@ -84,7 +84,7 @@ flowchart LR
 | 213 的两个时点 | `policyVersionHistory` 本地版本号和日期 | 检索和 `GET /topic/v1/policy/docs/{id}` 的发布时间。下游 `/internal/policy/search` 与 `/internal/policy/docs/{id}` | 时点就是发布时间。展示走已有 `panorama/search` 和 `{id}/detail`。不从缺项表反查可选时点，不迁本地版本号。同一政策只有一个发布时间时，凑不齐两个时点，对比空 |
 | 214 的六维、216 的范围和字段、217 的格式、218 的视角和图种 | 页内常量。`DETAIL_COMPARE_DIMENSIONS`、`benchmarkDimensions` 另有需规没写的项 | 无接口 | 保持第 3 节闭集。不调接口，也不采纳 demo 多出来的维度 |
 | 215 的区域 | `deptCompareRegions`：国家部委、广东省、深圳市 | `GET /topic/v1/policy/indicators?kind=national` 与 `kind=sz`，下游 `/internal/policy/indicators`。这是地区分布，不是部委名单 | 展示走已有 `panorama/stats`。桶空则区域下拉空。不迁那三条常量 |
-| 215 的实施部门 | `departmentPolicyCompare` 本地部门 | 现网没有部门名单。`search/options` 不返回发布机构去重，底表也收集不到可对上的实施部门 | 做 mock。表 `gapfill_policy_impl_dept`，Python 灌区域、实施部门、方面、件数和清单标题。展示只读这张表。不扩 `search/options`，不迁本地部门表，不把件数写成新指标。表空则部门下拉空 |
+| 215 的实施部门 | `departmentPolicyCompare` 本地部门 | 现网没有部门名单。`search/options` 不返回发布机构去重，底表也收集不到可对上的实施部门 | 做 mock。表 `gapfill_policy_impl_dept`，Python 灌区域、实施部门、方面、件数和清单标题。浏览器读 `GET /display/v1/policy/panorama/stats`。不扩 `search/options`，不另开路径，不迁本地部门表，不把件数写成新指标。表空则部门下拉空 |
 | 215 的项目类别 | `deptPolicyByCategory` 的资金扶持、税收优惠等 | `search/options` 的 `policy_type`，来自 `dwd.policy_base_info` 去重 | 用这条。不用 demo 的五类扶持名 |
 | 215 的技术类别 | `deptPolicyByTech` 的人工智能、生物医药等 | `search/options?industry_code=` 的 `nodes`，来自 `dwd.industry_chain_node`。不传产业码则 `nodes` 为空 | 用这条。没有节点则技术类别空 |
 | 216、218 的对标对象 | `benchmarkRegions`：北京、上海、硅谷等，带写死分数 | 算法中台 `GET /v1/policy/analysis/intensity?scope_type=province` 读 `ads.policy_intensity`。lumen 同一函数在 vendor，但只挂了 `/v1`，专题门面没有转发 | 展示不打 `/v1`。对象从 `ads.policy_intensity` 已有的地区范围读出，走本叶 `policy_intensity` 同一次读取。没有海外城市。demo 的硅谷等不迁 |
@@ -124,7 +124,7 @@ flowchart LR
 2. `gkxlumen-display` 走已有分析任务管道，调 `POST /internal/policy/jobs/execute`。
 3. Python 调用已有 `polan.eval.intensity.run`，再按所选政策读 `ads.policy_intensity` 的力度分。Java 不打分，不抄公式。
 4. 申报时间、受理部门、产业类别继续读专题门面已有正文。这三列不进缺项表。
-5. 申报条件、申报材料没有字段、也没有模型。只建 `gapfill_policy_detail_compare`，按政策放这两列正文。
+5. 申报条件、申报材料没有字段、也没有模型。只建 `gapfill_policy_detail_compare`，按政策放这两列正文。浏览器读 `GET /display/v1/policy/panorama/{id}/detail`，同一次详情把这两列带出。
 
 `M_POLICY_INTENSITY_SCORE` 仍是本行的指标。`M_POLICY_INTENSITY_INDEX` 不挂本页。QPOL-02 的权重保持待确认。D4 保持 mock。三维缺数据时，`run()` 写不出力度分就让该格空，不在接口里补一个分数。
 
@@ -136,7 +136,7 @@ flowchart LR
 
 区域走已有地区分布。项目类别、技术类别走已有政策类型和产业节点。
 
-实施部门在现网收集不到，检索选项里也没有发布机构去重。建 `gapfill_policy_impl_dept`。一行有区域、实施部门、方面（项目类别或技术类别）、件数、清单标题。Python 灌这些行，接口只查表。不在接口里写部门名单，不把 demo 的部门常量迁进来，不把件数登记成新指标。方面的取值仍用已有词表里的政策类型或产业节点，不把 demo 的扶持类、技术类写进这张表。
+实施部门在现网收集不到，检索选项里也没有发布机构去重。建 `gapfill_policy_impl_dept`。一行有区域、实施部门、方面（项目类别或技术类别）、件数、清单标题。Python 灌这些行。浏览器读 `GET /display/v1/policy/panorama/stats`，同一次统计把这些行带出。不另开路径。不在接口里写部门名单，不把 demo 的部门常量迁进来，不把件数登记成新指标。方面的取值仍用已有词表里的政策类型或产业节点，不把 demo 的扶持类、技术类写进这张表。
 
 目录按发布机构筛不到这些部门。清单标题只在缺项表里，不写入政策底表。标题对不上已有政策时只显示标题，不编详情。表无行则部门对比空。
 
