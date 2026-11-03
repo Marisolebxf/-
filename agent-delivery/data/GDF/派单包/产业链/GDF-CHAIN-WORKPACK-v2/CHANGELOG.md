@@ -37,6 +37,19 @@
 - 同日补齐 12 文首、第 1 节警告和 23 遗留表残留：问 8~13 五项已定，正式空间 `gkx_chain`（lumen）。淮政玮确认。
 - `script/` 放入 `lumen-algo-py` 上图与 rebuild 原文（`graph_project.py`、`industry_embed.py` 及两条路由），供 GDF 对照 §5。不在 GDF 节点执行。
 
+## v2.3.2 — 2026-11-03（问 9~10 脚本参数化真交付）
+
+- **`script/industry_embed.py`**：全环境变量化；去掉 `lumen_common`/`polan`；`MILVUS_DB_NAME` 未配或 `default` 拒绝写入；词表默认读 `gkxlumenx_dwd`；`python industry_embed.py` 自检通过。
+- **`script/README.md`**：参数表（必配/可选）重写；GDF 配作业只设环境变量、不改代码。
+- 误建 `CHAIN-EMBED-PARAM-L01` 已撤销；问 9~10 以本版脚本为准。
+
+## v2.3.1 — 2026-11-03（round2 问 4 与问 5~10 拍板落稿）
+
+- **问 4 `stage_code`（徐滕强）**：维持三等分派生（末两位 1-4/5-8/9+ → upstream/midstream/downstream）；排序含义登记 🟡 待供应方确认，不符则重算刷新。09§3.0 与 OPEN-CHAIN-MAP-01 同步。
+- **问 5~8（徐滕强）**：原子接口方案与 definition_id **转我方架构师确认**（数据侧不代答引擎能力），确认结果随 round3 给出；幂等基线语义先行书面承诺。
+- **问 9~10（徐滕强，路线 A）**：承诺脚本全参数化 + 依赖内联（**v2.3.2 已落地脚本**；不另派 algo）。
+- 23 号答复 §8 问 4/5~8/9~10 全部按拍板更新。11 问至此**全部闭环**。
+
 ## v2.3 — 2026-11-03
 
 - **round2 答复落稿**（`23`§8，11 问）：①链树层级修正——`node.chain_id` 改填所属 L1 链（沿父级向上，命中率 100% 验收）、`parent_node_id` 补直接父级（L2 165 行 NULL）、边表改真父子 **1,055 条** `parent_child`（废弃兄弟相邻 913 条方案，书面更正）；②`stage_code` 定 NULL（同级序号≠上中下游）；③原子入图接口接受，引擎侧改造 round3 给承诺；④脚本全参数化（DB_NAME/collection/表名/闸门等），交付即运行；⑤`_SPACE_OK` 口径澄清（demo 域实现不进 GDF DAG）。

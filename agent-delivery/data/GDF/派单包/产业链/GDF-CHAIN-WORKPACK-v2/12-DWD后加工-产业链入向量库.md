@@ -25,7 +25,7 @@ flowchart LR
 
 本派单的正式集合名与 demo 相同，仍是 `gkxlumen_industry_anchor`（前缀 `gkxlumen_industry_`）。隔离改在 Milvus 数据库：正式库 `gkxlumen`，demo 库 `default`。同一台 Milvus `10.50.69.111:19530`。drop/create 带着 `dbName`，正式 rebuild 只替换 `gkxlumen` 里的同名集合，不会碰到 `default` 里那一份。
 
-上图在燕大知识图谱引擎的调度任务里面执行。入向量库不在该任务里。入图调度任务轮询到成功后，GDF 按 [`script/README.md`](script/README.md) 配置 `industry_embed.py` 的 `rebuild`，直接写库 `gkxlumen`。2026-11-02 已在库 `gkxlumen` 建好集合 `gkxlumen_industry_anchor` 并 load，当前 0 条。副本里的 `DB_NAME` 仍是 `default`。未按 README 改成 `gkxlumen` 之前不要执行，否则会 drop `default` 里 demo 正在用的集合。
+上图在燕大知识图谱引擎的调度任务里面执行。入向量库不在该任务里。入图调度任务轮询到成功后，GDF 按 [`script/README.md`](script/README.md) 配置 `industry_embed.py` 的 `rebuild`，直接写库 `gkxlumen`。2026-11-02 已在库 `gkxlumen` 建好集合 `gkxlumen_industry_anchor` 并 load，当前 0 条。**2026-11-03 路线 A**：脚本已全环境变量化；作业设 `MILVUS_DB_NAME=gkxlumen`（未配或 `default` 会拒绝写入），不必改代码。
 
 ---
 

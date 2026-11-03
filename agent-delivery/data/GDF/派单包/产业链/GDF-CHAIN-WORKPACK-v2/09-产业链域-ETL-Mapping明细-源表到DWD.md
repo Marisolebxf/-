@@ -1,6 +1,6 @@
 # 产业链域 ETL Mapping 明细 — 源表到 DWD
 
-> **版本**：v2.3（2026-11-03：round2 答复落稿——node.chain_id 改所属 L1 链、parent_node_id 补直接父级、边表改真父子 1,055 条、stage_code 定 NULL；详见 `23-核对签收与答复.md` round2 节。v2.2=round1 答复；基线对齐 10-19 清单）  
+> **版本**：v2.3.1（2026-11-03：round2 全闭环——node.chain_id=所属 L1 链、parent_node_id=直接父级、边表真父子 1,055 条；`stage_code` **维持三等分派生** 1–4/5–8/9+；问7 挂接口径=全量全国。详见 `23`§8。v2.3=链树三处填充修正；v2.2=round1 答复）  
 > **日期**：2026-11-02（v2.0 = 2026-10-20；v1.0 = 2026-09-01）  
 > **范围**：GDF 三方承诺表（产业链要素库）→ 项目 DWD（`gkxlumenx_dwd.industry_chain_*`）字段级映射  
 > **配套**：`产业链-DWD表设计-业务需求驱动(v5).md`（DDL 真源）· `storage/CHAIN/stores/mysql/dwd-chain.md`（入口）  
@@ -145,7 +145,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 | `industry_link_code` | `chain_id` | **v2.3 修正（round2 问 1 拍板）**：填**所属 L1 链**的码（53 个之一），不是直接父级码。取法：`industry_link_code` 指向的祖先层级=1 时取该码；层级≥2 则沿父级继续向上，直到层级=1。例：`INB130301010101`（硅材料）→ 向上经 `INB1303010101`→`INB130301`→ **`INB130301`（半导体材料 L1）**。验收：1,220 行 `chain_id` 必须全部命中 `industry_chain`（53 行），命中率 100% |
 | `industry_link_code` | `parent_node_id` | **v2.3 修正（round2 问 1 拍板）**：填直接父级的码；父级为 L1 链时（`node_level=2`，共 165 行）写 NULL——此时归属已由 `chain_id` 表达。验收：L3~L7 共 1,055 行有父指针，且每行可在 `industry_chain_node` 命中 |
 | `industry_code` 末两位 | `sort_no` | 转整数。例：`INB120401010202` → `2` |
-| `industry_code` 末两位 | `stage_code` | **v2.2.3 定稿：写 NULL，本期不派生**（round2 问 4：同级序号≠上中下游，禁止误导下游） |
+| `industry_code` 末两位 | `stage_code` | **v2.3.1 徐滕强拍板（2026-11-03）：维持三等分派生**——末两位 `1`–`4` 写 `upstream`；`5`–`8` 写 `midstream`；`9` 及以上写 `downstream`。依据：假定供应方同级排序按供应流向排列（假定成立则字段可用）；GDF round2 问 4 的 958/185/77 分布为该规则结果。**风险已书面告知**：若供应方排序实为其他含义，此字段需按确认结果重算并刷新（登记客户决策清单 🟡 待供应方确认） |
 | `industry_name` | `description` | 与 `node_name` 相同 |
 | — | `status` | `active` |
 | `industry_link_name` | — | 不写入 |
@@ -185,7 +185,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 **验收（B1 出数后三查）**：① 边表 1,055 行；② 每行 `source_node_id` 在节点表命中且 `node_level` = 子行减 1；③ 沿 `parent_node_id` 从任一 L7 节点上溯，终点必为某 L2 节点（其 `chain_id` 即所属链）——树完整可还原。
 
-### 3.4 `dwd_org_industry_tags` → `industry_chain_entity_rel`（v2.2 修订：解析格式与脏值钉死，命中率待重测）
+### 3.4 `dwd_org_industry_tags` → `industry_chain_entity_rel`（v2.3.1 修订：解析格式与脏值钉死；业务口径=全量全国）
 
 **拆行**：挂点列（`industry_link_code` / `industry_code`）为**单引号列表字面量**（`['INB1333']`，非标准 JSON）——按此格式解析炸行（round1 附注确认）。空列表 `[]`（真源占 24.9%）整行丢弃进治理清单。**脏值处置（round2 问 19 拍板）**：中文路径名列表（如 `['原材料','中药材种植',…]`，1 行）、异常 `credit_code`（日期串 1 行、全角括号 1 行）→ 不洗、进治理清单（带证据）。禁止截断码位猜 INB。
 
@@ -209,7 +209,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 | `company_name` | `ext.company_name` | 直接 | 不进独立列 |
 | `credit_code` | `ext.credit_code` | 直接 | |
 
-**全国/广东口径（round2 问 7）——待命中率重测后定**：round1 双方数字均不采信（GDF 真源抽样 15%；我方 ODS 残缺仅约 1,000 行）。流程：我方补灌 ODS 至真源全量 228 万（`CHAIN-ODS-SYNC-L01`）→ 真源全量重测 `credit_code`→`enterprise_base` 命中率 → round2 补充答复。本问不阻塞 Wave A 与 `CHAIN-B1-TREE`。
+**业务口径（round2 问 7，2026-11-03 徐滕强拍板）：全量全国，不存在「只做广东」**。不得以样例匹配率定业务范围（PoC 阶段样例匹配不上属正常现象）。执行规则不变：`credit_code` JOIN `enterprise_base` 命中才写 `org_id`，对不上不伪造；**未命中行进治理清单**（带 credit_code/company_name/挂点证据），待企业主档覆盖扩展后二次挂接——丢弃≠放弃，不因此缩小业务范围。命中率数字（round1 双方的 85%/15%/2%）均为样例期数字，不作范围依据。
 
 依赖：`enterprise_base` 就绪后运行（企业包 Mapping 3.1）。对账输出 drop 行数（无 org_id / 无 INB）。
 
@@ -244,11 +244,11 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 | ID | 项 | 状态 |
 |---|---|---|
-| OPEN-CHAIN-MAP-01 | `stage_code` | **已定（round2 问 4，2026-11-03）：本期写 NULL**——同级序号≠上中下游，等业务确认后另行派生 |
+| OPEN-CHAIN-MAP-01 | `stage_code` | **已定（2026-11-03 徐滕强）：维持三等分派生**（1-4/5-8/9+）；排序含义登记 🟡 待供应方确认，确认后如不符再重算刷新 |
 | OPEN-CHAIN-MAP-02 | `future_industry_flag` | **已定（2026-11-02 对照 demo）：链树作业写 0** |
 | OPEN-CHAIN-MAP-03 | 产品 tags → entity_rel product | 本期不洗 |
 | OPEN-CHAIN-MAP-06 | 分析 `industry_code` → INB `chain_id` | 挡后续按链资讯；本期 B2 不洗 |
-| OPEN-CHAIN-MAP-07 | 链上企业全国/广东口径 | **待 ODS 补灌后命中率重测（round2 问 7）** |
+| OPEN-CHAIN-MAP-07 | 链上企业挂接口径 | **已定（2026-11-03 徐滕强）：全量全国**；未命中行进治理清单待二次挂接，命中率随 Wave A 对账回执（仅作数据现状参考，不作范围依据） |
 | OPEN-CHAIN-FLOW-01 | 正式 DAG 名 | 产线回写 |
 | OPEN-CHAIN-FLOW-02 | 正式图空间名 + 上图/rebuild 契约 + 点数稳定判定 | **已定（2026-11-02 二次确认）**：空间 `gkx_chain`；契约见 `12`§5 |
 
