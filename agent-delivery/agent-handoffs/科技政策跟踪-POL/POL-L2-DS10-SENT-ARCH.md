@@ -7,7 +7,7 @@
 | claimed_by | `agent:arch-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `coordinator_dispatch` |
-| 说明 | 只写政策舆情评估的实现架构。不标 done，不会签 |
+| 说明 | 只写政策舆情评估的实现架构。2026-11-03 `human:淮政玮` 按说明书第 11 节再次签收 |
 
 ## Ponytail
 
@@ -23,18 +23,18 @@ ponytail: off
 |---|---|---|
 | 207 | 政策查询与对比 | 同步，复用多维检索的门面委托 |
 | 208 | 区域政策差异性分析 | 跨项读图，不新开资源 |
-| 209 | 政策实施效果跟踪 | 501，Job |
-| 210 | 政策受众反馈收集 | 501 |
-| 211 | 政策效果评估报告 | 501 |
-| 212 | 政策匹配与推送 | 501，Job |
+| 209 | 政策实施效果跟踪 | 读已有 `ads.policy_effect`。不另建表，不用 501 |
+| 210 | 政策受众反馈收集 | 读 `gapfill_policy_audience_feedback`。element 只读表 |
+| 211 | 政策效果评估报告 | 读 `gapfill_policy_assessment_report`。element 只读表 |
+| 212 | 政策匹配与推送 | 读已有 `ads.policy_match`。不灌假推送 |
 
 207 读已有 `stats`、`search`、`{id}/detail`。浏览器只打 `/display/v1/policy/**`。`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。无行则空，不造 0。D4 仍是 mock。
 
 208 不设资源。只消费第 7 项已有子图，挂接可空。不走 `E-E7-POLICY-M1-L06`。
 
-209、212 走 `POST panorama/jobs`。模型未接通时 501。接通后经 `gkxlumen-topic-async-service` 进 Python `/internal/*`，不进专题政策门面。
+209、212 走 `POST panorama/jobs`。正式 Python 未挂上时 501。接通后复刻算法库已有计算：209 用 `polan.eval.effect` 写 `ads.policy_effect`，212 用 `polan.text.match` 写 `ads.policy_match`。经 `gkxlumen-topic-async-service` 进 `/internal/policy`，不进专题政策门面，Java 不打分。
 
-210 走 `feedback`，211 走 `assessment-report`，都在 display 直接 501。
+210 走 `feedback`，211 走 `assessment-report`。真实采集和真实报告做不到。只新建 `gkxlumenx_gapfill` 的 `gapfill_policy_audience_feedback`、`gapfill_policy_assessment_report`。Python 把 mock 写入表，查询只 `SELECT`。接口不直接返回 mock。表空则空列表。灌数单是 `POL-L2-DS10-SENT-MOCK-210`、`POL-L2-DS10-SENT-MOCK-211`。209 与 212 不新建表，合规 mock 由 `POL-L2-DS10-SENT-MOCK-ADS` 执行已有 `run()` 写入 `ads.policy_effect` 与 `ads.policy_match`。三张灌数单均未在本叶执行。
 
 ## 产物路径
 
@@ -57,7 +57,7 @@ ponytail: off
 | 字段 | 值 |
 |---|---|
 | diagram_id | `POL-L2-DS10-SENT-ARCH-SEQ` |
-| 图 diff | 207 同步委托专题政策门面；208 只消费已有子图；209、212 的 Job 在模型未接通时于 display 进入 501；210、211 在 display 进入 501。禁止边：浏览器改打专题 URL、`L06`、本叶新开查图资源、本叶新指标 |
+| 图 diff | 207 同步委托专题政策门面；208 只消费已有子图；209 复刻 `polan.eval.effect` 并读 `ads.policy_effect`，212 复刻 `polan.text.match` 并读 `ads.policy_match`；210、211 只查 `gkxlumenx_gapfill` 两张缺项表。禁止边：浏览器改打专题 URL、`L06`、本叶新开查图资源、本叶新指标、本叶新写打分公式、接口直接返回 mock |
 | 会签态 | 本叶新图。源文件无 frontmatter，记 `draft`。不自填绿 |
 | 说明 | 图在架构稿第 2 节 |
 
