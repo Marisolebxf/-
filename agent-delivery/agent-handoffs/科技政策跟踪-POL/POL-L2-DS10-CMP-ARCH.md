@@ -52,7 +52,8 @@ ponytail: off
 ## 验收
 
 - 架构稿已落盘，含同步读面、Job、缺项表和跨项只消费。
-- 灌数单 `POL-L2-DS10-CMP-GAPFILL-L01` 本叶不执行。218 不建 `gapfill_policy_benchmark_viz`，以本架构为准。
+- 六叶输入条件在架构稿第 3 节。未列出的条件不收。少必选条件则该对比空。
+- 灌数单 `POL-L2-DS10-CMP-GAPFILL-L01` 本叶不执行。218 不建 `gapfill_policy_benchmark_viz`，以本架构第 9 节为准。
 - 未会签。不标 done。
 
 ## 开放项
