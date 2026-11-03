@@ -67,7 +67,10 @@
 | 决策不外包 | ✅ 11 问均徐滕强拍板；问5~8 转架构师不代答引擎 |
 | D12 demo/lumen | ✅ `_SPACE_OK`/demo 闸门不进 GDF DAG |
 | 调用链 | ✅ 原子入图转架构师/引擎，数据侧不写 nGQL |
-| handoff | ✅ 本文件 |
+| 图谱协议 | ✅ 正式空间 `gkx_chain`；本单不改图写入路径 |
+| 算法只在 Python | ✅ 参数化脚本归 `CHAIN-EMBED-PARAM-L01`，本单不写算法 |
+| D9/指标 | ✅ 不涉及页面指标；链树为数据底座 |
+| handoff / registry | ✅ 本文件 + MCP 回填 cost |
 
 ## 6. 遗留与移交
 
