@@ -50166,13 +50166,15 @@ tasks:
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
     update_time: "2026-11-03T11:31:01+08:00"
   - id: SYSINT-03-04A-L01
+    evidence: |
+      handoff: agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-03-04A-L01-缺项修复增量.md；commit lumen-ui-topic@a7adf8f（本地待验收）；selfcheck: src/views/policy/policyCmsGapFix.selfcheck.mjs ✅
     supervised_by: "human:孔东"
     claimed_at: "2026-11-03T03:49:47.199Z"
     last_seen_at: "2026-11-03T03:49:47.199Z"
     lock_until: "2026-11-03T07:49:47.199Z"
     claimed_by: "human:孔东"
     title: "政策新闻运营正文"
-    status: "claimed"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -50185,9 +50187,11 @@ tasks:
     note: |
       补挂账单：政策新闻 CMS 页（src/views/policy/PolicyNewsCmsPage.vue，commit 34411fe 2026-10-24）建成时无任务号——WBS-03-04a 原口径「确认无 CMS」，但前端已建成 3 屏完整功能（政策本体/统计与区域/力度评估，4 类 content_type 本机 mock 存储）。已知缺口见对照文档 §3.4/§4.2。
       
-      【2026-11-03 缺项优化补充】来源：agent-handoffs/专题对齐-TOPIC/门户内容管理-四页前端实现对照.md（v1.2，基线 09ad60a）§3.4/§4/§6。本页缺口（4 ✅/2 ⚠️/0 ❌，四页中最齐但两处语义缺口）：① B-4 政策力度榜单无「名次」字段——四字段齐（上榜政策/评估依据/专家评述/推荐理由）但 Top10 排序语义不成立，参照企业榜单 rank_no 模式补；② B-5 地理分布无层级——rows 仅「地理区域」自由文本+关联说明，需规 335(2) 要求国家/省/市/区四级；③ B-2 缺专家署名结构化字段（336(2) 榜单 expert_comment 为自由文本）。
+      【2026-11-03 缺项优化补充】来源：agent-handoffs/专题对齐-TOPIC/门户内容管理-四页前端实现对照.md（v1.2，基线 09ad60a）§3.4/§4/§6。本页缺口（4 ✅/2 ⚠️/0 ❌）：① B-4 政策力度榜单无「名次」字段；② B-5 地理分布无层级（需规 335(2) 要求国家/省/市/区四级）；③ B-2 缺专家署名结构化字段（挂 D-7）。
       
-      【2026-11-03 拍板 D-5 + D-7（human:孔东）】政策新闻 CMS【保留】，WBS-03-04a「确认无 CMS」口径作废。执行：① B-4 补榜单名次字段（rank_no，参照企业榜单模式，Top10 排序语义成立）；② B-5 地理分布补国家/省/市/区四级选择；③ B-2 随 D-7 拍板不做结构化专家署名（范围外），expert_comment 维持自由文本。注：政策 4 类 content_type 无 Java 写接口叶（企业/全景/服务均有），保留后需同步拆 Java 侧任务。
+      【2026-11-03 拍板 D-5 + D-7（human:孔东）】政策新闻 CMS【保留】，WBS-03-04a「确认无 CMS」口径作废。B-2 随 D-7 不做（范围外），expert_comment 维持自由文本。注：政策 4 类 content_type 无 Java 写接口叶，保留后需同步拆 Java 侧任务。
+      
+      【2026-11-03 缺项修复完成（B-4/B-5）】commit a7adf8f 停本地不 push 待验收：B-4 榜单加 rank_no 必填字段；B-5 CmsColumnKind 新增 cascader（值存「/」路径）+ region 列换国家/省/市/区四级静态 mock 树（中国 3 省市级样例 + 美国加州样例），种子同步。selfcheck/tsc（仅存量错误）/eslint 三绿，详见 handoff 缺项修复增量。剩余：Java 写接口叶待拆、USE_MOCK=false 接线等契约。
     depends_on:
       - "SYSINT-SCHEME-03-L01"
     design_refs:
@@ -50198,7 +50202,7 @@ tasks:
       - "政策时效状态三态可标记；分类按行业/区域/主题人工归档"
       - "法定名称、领导人、名次、分数不进正文；榜单排序语义可成立"
       - "菜单以相对路径进统一用户中心；handoff 回填并对照门户内容管理-四页前端实现对照.md 的 D-5 决策"
-    update_time: "2026-11-03T14:31:13+08:00"
+    update_time: "2026-11-03T14:38:59+08:00"
   - id: E-E7-POLICY-M1-L08
     model_used: "cursor-grok-4.5"
     evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L08.md"
