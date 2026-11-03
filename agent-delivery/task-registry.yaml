@@ -47476,7 +47476,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 8000
     note: |
-      claim_type=coordinator_dispatch。签收条件：可实现。接口不得直接返回 mock。209 查 ads.policy_effect，212 查 ads.policy_match。210、211 只查 gkxlumenx_gapfill 的 gapfill_ 表，mock 先写入表。会签未完成，停在 integration，不标 done。
+      claim_type=coordinator_dispatch。签收条件：可实现。接口不得直接返回 mock。209 查 ads.policy_effect，212 查 ads.policy_match，灌数单 POL-L2-DS10-SENT-MOCK-ADS。210 表 gapfill_policy_audience_feedback，灌数单 MOCK-210。211 表 gapfill_policy_assessment_report，灌数单 MOCK-211。三张灌数单 backlog，data-agent，未执行。会签未完成，停在 integration，不标 done。
     depends_on:
       - "POL-DISPLAY-SDD-L01"
     touched_files:
@@ -47487,7 +47487,7 @@ tasks:
     definition_of_done:
       - "落盘该二级的实现架构与整体流程（同步读面、Job、501 空态、跨项只消费）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-ARCH.md"
       - "服从 /display/v1/policy，不消费 /topic/v1/policy，不新造指标，不写字段表，不重开 GDF"
-    update_time: "2026-11-03T13:07:00+08:00"
+    update_time: "2026-11-03T13:17:18+08:00"
   - id: POL-L2-DS10-CMP-ARCH
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策重点比对 · 后台实现架构设计"
@@ -50406,3 +50406,80 @@ tasks:
       - "不改展示接口，不在控制器或 Python 响应里写死 mock。表里没有行时读取侧应得到空，不造 0。不改 D4"
       - "handoff 写明库、表、行数和灌数命令。不把本单标 done"
     update_time: "2026-11-03T13:16:24+08:00"
+  - id: POL-L2-DS10-SENT-MOCK-210
+    supervised_by: "human:淮政玮"
+    title: "科创政策全景 · 受众反馈缺项表灌数"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 12000
+    user_story: "US-DS-POL-03"
+    note: "监管 human:淮政玮。序号 210。依赖架构稿与 POL-L2-DS10-SENT-DATA。本单只建表灌数，不认领，不改接口。"
+    depends_on:
+      - "POL-L2-DS10-SENT-ARCH"
+      - "POL-L2-DS10-SENT-DATA"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-ARCH.md"
+    definition_of_done:
+      - "在 gkxlumenx_gapfill 建 gapfill_policy_audience_feedback，不写入 ODS、DWD、ADS"
+      - "用独立脚本灌入 mock 行：主体、渠道（问卷、在线评价、意见征集）、意见正文、可选评分、关联政策、时间，每行标记 mock"
+      - "查询请求不灌数。接口只 SELECT。表空则空列表。不新造 metric_id，不把 D4 改成 live"
+    update_time: "2026-11-03T13:17:15+08:00"
+  - id: POL-L2-DS10-SENT-MOCK-211
+    supervised_by: "human:淮政玮"
+    title: "科创政策全景 · 效果评估报告缺项表灌数"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 12000
+    user_story: "US-DS-POL-03"
+    note: "监管 human:淮政玮。序号 211。不是序号 209 的区域评分，也不是对标报告。不认领，不改接口。"
+    depends_on:
+      - "POL-L2-DS10-SENT-ARCH"
+      - "POL-L2-DS10-SENT-DATA"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-ARCH.md"
+    definition_of_done:
+      - "在 gkxlumenx_gapfill 建 gapfill_policy_assessment_report，不写入 ODS、DWD、ADS，不新开对象存储桶"
+      - "用独立脚本灌入 mock 行：范围、达成度、社会影响、问题、建议、报告正文，每行标记 mock"
+      - "查询请求不灌数。接口只 SELECT。表空则报告空。不挂 M_POLICY_DEEP_168_1，不把 D4 改成 live"
+    update_time: "2026-11-03T13:17:15+08:00"
+  - id: POL-L2-DS10-SENT-MOCK-ADS
+    supervised_by: "human:淮政玮"
+    title: "科创政策全景 · 效果与匹配合规 mock 落已有 ADS"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 12000
+    user_story: "US-DS-POL-03"
+    note: "监管 human:淮政玮。序号 209 与 212。协作 algorithm-agent。只跑已有 run()，不认领，不改接口。"
+    depends_on:
+      - "POL-L2-DS10-SENT-ARCH"
+      - "POL-L2-DS10-SENT-DATA"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-ARCH.md"
+    definition_of_done:
+      - "执行已有 polan.eval.effect.run，把区域效果写入 ads.policy_effect（scope_type=region_effect），落地实效写入 ads.policy_metric_timeseries，社会维与环境维保留受控代理并在行上标记 is_mock 与 QPOL-02"
+      - "执行已有 polan.text.match.run，把受控主体画像、match_score、match_reasons、rank_no 写入 ads.policy_match，metric_id 仍为 M_POLICY_MATCH，不另灌产业适配"
+      - "不新建表，不改公式，不新造 metric_id，不把 D4 改成 live。查询只读这两张已有表"
+    update_time: "2026-11-03T13:17:15+08:00"

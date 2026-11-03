@@ -218,3 +218,18 @@ sub_type 尚未放行时，这次 Job 返回空列表，不返回演示分。放
 - 不把 `polan.eval.effect`、`polan.text.match` 抄进 Java，不抄进 `gkxlumen-display`，不送进专题政策查询门面。
 - 不新造 `metric_id`，不改 D4。209、212 不另建表。社会维、环境维、匹配主体的受控代理由已有 `run()` 写入 ADS，采购或主数据到位后再换输入，不在本叶换公式。
 - `gkxlumen-display` 今天还没有全景控制器。实现时按契约补资源：207 委托已有门面；209、212 走已有 Job 管道并查 ADS；210、211 只查两张 `gapfill_` 表。任何一条都不在接口函数里返回 mock。
+
+## 8. 表与合规 mock
+
+界面上要出现、而真实采集或真实主数据还没有的数，先写入表，并标成 mock。接口只查询。D4 保持 mock，不把灌数写成已上线。不新造 `metric_id`。字段级 DDL 由 data-agent 在灌数单里定。本叶只定粒度和必须落表的内容。灌数单本叶不执行。
+
+| 序号 | 库表 | 新建 | 合规上要落表的 mock | 灌数单 |
+|---|---|---|---|---|
+| 207 | 已有政策目录与统计读面 | 否 | 不新灌。无行则空 | 无 |
+| 208 | 已有政策子图 | 否 | 不建表。无子图则空 | 无 |
+| 209 | `ads.policy_effect`（`scope_type=region_effect`）、`ads.policy_metric_timeseries` | 否 | 社会维、环境维是受控代理（QPOL-02：执行监测、宏观经济、社会发展数据待采购）。执行维按政策侧算出后，与这两维一起写入同一行。行上的扩展信息保留 `is_mock` 和缺口说明。落地实效写入时序表，`metric_id` 仍是 `M_POLICY_IMPLEMENTATION_EFFECT` | `POL-L2-DS10-SENT-MOCK-ADS` |
+| 210 | `gkxlumenx_gapfill.gapfill_policy_audience_feedback` | 是 | 反馈主体、渠道（问卷、在线评价、意见征集）、意见正文、可选评分、关联政策、时间。每行标记 mock。没有真实问卷 | `POL-L2-DS10-SENT-MOCK-210` |
+| 211 | `gkxlumenx_gapfill.gapfill_policy_assessment_report` | 是 | 范围、达成度、社会影响、问题、建议、报告正文。每行标记 mock。不是序号 209 的区域评分，也不是对标报告 | `POL-L2-DS10-SENT-MOCK-211` |
+| 212 | `ads.policy_match` | 否 | 受控主体画像（不是企业登记主数据）、政策、`match_score`、`match_reasons`、`rank_no`。`metric_id` 用已有 `M_POLICY_MATCH`。产业适配读同一张表，不另灌一套 | 与 209 同一张 `POL-L2-DS10-SENT-MOCK-ADS`，执行已有 `polan.text.match.run` |
+
+三张灌数单的执行人是 `data-agent`，监管 `human:淮政玮`，状态 backlog，依赖本架构和 `POL-L2-DS10-SENT-DATA`。`MOCK-ADS` 只跑仓库里已有的 `polan.eval.effect.run` 与 `polan.text.match.run`，不改公式，不另建 ADS 表。`MOCK-210`、`MOCK-211` 只在 `gkxlumenx_gapfill` 建表并灌数，不写入 ODS、DWD、ADS。查询请求不灌数。

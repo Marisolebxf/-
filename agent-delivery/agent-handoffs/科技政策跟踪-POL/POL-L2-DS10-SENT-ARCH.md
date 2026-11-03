@@ -34,7 +34,7 @@ ponytail: off
 
 209、212 走 `POST panorama/jobs`。正式 Python 未挂上时 501。接通后复刻算法库已有计算：209 用 `polan.eval.effect` 写 `ads.policy_effect`，212 用 `polan.text.match` 写 `ads.policy_match`。经 `gkxlumen-topic-async-service` 进 `/internal/policy`，不进专题政策门面，Java 不打分。
 
-210 走 `feedback`，211 走 `assessment-report`。真实采集和真实报告做不到。只新建 `gkxlumenx_gapfill` 的两张 `gapfill_` 表，Python 把 mock 写入表，查询只 `SELECT`。接口不直接返回 mock。表空则空列表，不造行。
+210 走 `feedback`，211 走 `assessment-report`。真实采集和真实报告做不到。只新建 `gkxlumenx_gapfill` 的 `gapfill_policy_audience_feedback`、`gapfill_policy_assessment_report`。Python 把 mock 写入表，查询只 `SELECT`。接口不直接返回 mock。表空则空列表。灌数单是 `POL-L2-DS10-SENT-MOCK-210`、`POL-L2-DS10-SENT-MOCK-211`。209 与 212 不新建表，合规 mock 由 `POL-L2-DS10-SENT-MOCK-ADS` 执行已有 `run()` 写入 `ads.policy_effect` 与 `ads.policy_match`。三张灌数单均未在本叶执行。
 
 ## 产物路径
 
