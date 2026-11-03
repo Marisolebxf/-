@@ -2,23 +2,128 @@
 
 - 角色：`agent:data-agent`
 - 日期：2026-11-03
-- 对象：`sdd/l2/POL-L2-DS11-VIZ-ARCH.md`
+- 对象：`POL-L2-DS11-VIZ-ARCH`
 - 监管：`human:淮政玮`
-- 对照：该稿第 5、9 节；`POL-L2-DS11-READ-ARCH` 第 8 节；`POL-L2-DS11-READ-SIGNOFF-DATA`
+- 对照：`POL-L2-DS11-VIZ-ARCH` 第 9 节；`科技政策跟踪-系统详细设计说明书.md` 第 11.2 节「评价 · 可视化 219–221」「评价 · 解读 222–226」；`POL-L2-DS11-READ-ARCH` 第 7、8 节；`POL-L2-DS11-READ-SIGNOFF-DATA`
 - 范围：SRS 219–222
-- 结论：**同意**
+- 结论：**不同意会签**
 
-本页只核对数据落点。不改架构正文，不改任务状态，不建表，不灌数，不定字段级 DDL。
+本页只核对架构第 9 节的数据落点能否让灌数单确定该灌哪些行。下游 DATA 分册还没有，本页不定字段级 DDL。不改架构稿，不改任务状态，不建库，不灌数。
 
-## 表、读取方、灌数方
+## 库表核对
 
-| 序号 | 表 | 读取方 | 灌数方 |
-|---|---|---|---|
-| 219 | 新建 `gkxlumenx_gapfill.gapfill_policy_eval_trend`。不写 ODS、DWD、ADS | `gkxlumen-element` 经 `POST /display/v1/policy/evaluation/jobs` 的趋势段只读。无行则图空 | `POL-L2-DS11-VIZ-GAPFILL-L01`（`data-agent`）。查询不灌数 |
-| 220 | 新建 `gkxlumenx_gapfill.gapfill_policy_eval_partition`。不写 ODS、DWD、ADS。不另建第三张可视化表 | 同一条 `jobs` 的分区段，`gkxlumen-element` 只读。无行则图空 | 同一张灌数单 |
-| 221 | 不建表。只消费第 7 项已有政策子图 | 展示只读该子图。无子图则空。Java 不写 nGQL | 无。不灌弦线矩阵、演示路径 |
-| 222 | 已有 `gkxlumenx_gapfill.gapfill_policy_eval_shell`。本叶不建 | `gkxlumen-element` 经 `GET /display/v1/policy/evaluation/shells` 只读模板选用行。无选用行则模板区空 | 无。`POL-L2-DS11-READ-GAPFILL-L01` 只灌 224、225 的解读条目和多媒体条目，不灌模板选用。本叶不把模板选用加进该灌数单 |
+| 口径 | 架构 | 判定 |
+|---|---|---|
+| 219 只建 `gkxlumenx_gapfill.gapfill_policy_eval_trend`。一行是时间、区域或类别上的趋势点，含指标名 | 第 5.1、9 节。灌数单 `POL-L2-DS11-VIZ-GAPFILL-L01`。写明不写入 ODS、DWD、ADS。未设供应方库落点。无行则图空 | 一致 |
+| 220 只建 `gkxlumenx_gapfill.gapfill_policy_eval_partition`。一行是地区、行业或群体的对照数，投向写在行里 | 第 5.2、9 节。同一张灌数单。不另建第三张可视化表。写明不写入 ODS、DWD、ADS | 一致 |
+| 221 不建表。只消费第 7 项已有子图 | 第 5.3、9 节。不灌弦线矩阵、演示路径，不新造图指标 | 一致 |
+| 222 读 `gkxlumenx_gapfill.gapfill_policy_eval_shell` 的模板选用行，本叶不建这张表 | 第 2、5.4、9 节把灌数写成 `POL-L2-DS11-READ-GAPFILL-L01`，并写「灌什么由解读二级定」 | 阻塞 |
+| 不新造 `metric_id`。D4 保持 mock。查询不灌数 | 第 7、9 节。219、220、222 不新挂指标。221 不挂 `M_POLICY_GRAPH_107_1`、`M_POLICY_RELATION_DEGREE` | 一致 |
 
-不新造 `metric_id`。不改 D4。导出的 PDF、Excel 不入库，操作日志不灌。
+阻塞原因：说明书第 11.2 节把「模板选用」放在解读行的 `gapfill_policy_eval_shell`，灌数单名为 `POL-L2-DS11-READ-GAPFILL-L01`。`POL-L2-DS11-READ-ARCH` 第 7 节写明 shell 只服务 224、225，序号 222 的模板选用不在该叶灌入；第 8 节写明该灌数单只灌解读条目和多媒体条目，不灌模板。`POL-L2-DS11-READ-SIGNOFF-DATA` 已同意这一收窄。本叶 `POL-L2-DS11-VIZ-GAPFILL-L01` 只覆盖 219、220。两张灌数单都没有 222 模板选用行的灌数内容，灌数单无法确定该灌哪些行。
 
-`POL-L2-DS11-VIZ-GAPFILL-L01` 本页不执行。字段级 DDL 留给 `POL-L2-DS11-VIZ-DATA`。签收仍由 human:淮政玮 做。
+须改的句子：
+
+1. 第 1 节范围表 222 行：「模板选用读解读二级那张壳表。」
+2. 第 2 节资源表 222 行：「这张表由解读二级建立和灌数，本叶不另建。」
+3. 第 5.4 节：「灌数单是 `POL-L2-DS11-READ-GAPFILL-L01`，不在本叶的灌数单里。」
+4. 第 8 节 222 行：「壳表的建立和灌数不在本叶。」
+5. 第 9 节 222 行：「灌数单是 `POL-L2-DS11-READ-GAPFILL-L01`」「灌什么由解读二级定。」
+
+这五句把 222 的模板选用行指给已经声明不灌模板的解读灌数单，又没有列出可灌的行。同格里的「不灌文件，不灌假日志」「无行则模板空」可以保留。改完后须能指出唯一灌数单，以及模板选用行要灌的内容。不能再写成由 `POL-L2-DS11-READ-GAPFILL-L01` 承接。本页不代改这五句，也不补 DDL。
+
+## 不灌清单
+
+| 序号 | 不灌 |
+|---|---|
+| 219 | 全景时序、效果分、五维雷达、写死曲线。不写入 ODS、DWD、ADS、供应方库 |
+| 220 | 全景分布、演示城市名单、新的效果指标。不建第三张可视化表 |
+| 221 | 不建表。不灌弦线矩阵、演示路径、新的图指标 |
+| 222 | 不灌 PDF、Excel、假操作日志、两套演示模板。模板选用行目前没有可执行的灌数内容，见上节阻塞 |
+
+`POL-L2-DS11-VIZ-GAPFILL-L01` 本页不执行。查询请求不灌数。
+
+## 签收边界
+
+本页不把任务标 done，不改 `task-registry.yaml`，不建库，不灌数。字段级 DDL 留给 `POL-L2-DS11-VIZ-DATA`。D4 保持 mock。签收仍由 human:淮政玮 做。222 的灌数归属改清之前，本页维持不同意会签。
+
+## 第二轮（2026-11-03 返工后）
+
+### 结论
+
+同意会签。
+
+第一轮不同意，是因为 222 被写成由 `POL-L2-DS11-READ-GAPFILL-L01` 灌进 `gapfill_policy_eval_shell`。返工后第 5.4 节与第 9 节改为：222 使用 `gkxlumenx_gapfill.gapfill_policy_eval_template`，唯一灌数单是 `POL-L2-DS11-VIZ-GAPFILL-L01`，与 219、220 同一张，覆盖三张表。不再由解读灌数单承接。对照 `POL-L2-DS11-READ-ARCH`：`gapfill_policy_eval_shell` 仍只服务 224、225，不灌模板。
+
+登记完成定义正文仍只写趋势表和分区表，没有第三张表。架构第 9 节已写明同一张灌数单覆盖三张表，这一条不构成不同意。本页不改注册。
+
+### 库表核对
+
+| 口径 | 架构第 9 节（并对照第 5.4 节） | 判定 |
+|---|---|---|
+| 库只允许 `gkxlumenx_gapfill`。表名以 `gapfill_` 开头。不写 ODS、DWD、ADS、供应方库 | 219、220、222 都在该库。第 5.1、5.2、5.4、7 节写明不写入 ODS、DWD、ADS。未设供应方库落点 | 一致 |
+| 219 `gapfill_policy_eval_trend` | 灌时间、区域或类别上的趋势点，含指标名。灌数单 `POL-L2-DS11-VIZ-GAPFILL-L01` | 一致 |
+| 220 `gapfill_policy_eval_partition` | 灌地区、行业或群体的对照数，投向写在行里。同一张灌数单 | 一致 |
+| 221 不建表 | 只消费已有政策子图。不灌弦线矩阵、演示路径、新的图指标 | 一致 |
+| 222 `gapfill_policy_eval_template` | 灌模板选用行：模板名，以及该行允许的汇报周期、分析维度、图表类型。同一张灌数单。不读壳表 | 一致 |
+| 灌数单唯一，且覆盖三张表 | 第 9 节末段写明覆盖 219、220、222。不灌 `gapfill_policy_eval_shell` | 一致 |
+| 不新造 `metric_id`。D4 保持 mock。本页不补 DDL | 第 7、9 节。字段级 DDL 仍留给 `POL-L2-DS11-VIZ-DATA` | 一致 |
+| 登记完成定义未写第三张表 | 注册正文仍只有趋势表、分区表。第 9 节已覆盖三张表 | 不构成不同意 |
+
+### 不灌清单
+
+| 序号 | 不灌 |
+|---|---|
+| 219 | 全景时序、效果分、五维雷达、写死曲线。不写入 ODS、DWD、ADS、供应方库 |
+| 220 | 全景分布、演示城市名单、新的效果指标 |
+| 221 | 不建表。不灌弦线矩阵、演示路径、新的图指标 |
+| 222 | PDF、Excel、假操作日志、解读条目、多媒体条目。不把模板选用写入 `gapfill_policy_eval_shell`。不由 `POL-L2-DS11-READ-GAPFILL-L01` 承接 |
+
+`POL-L2-DS11-VIZ-GAPFILL-L01` 状态 backlog。本页不执行。查询请求不灌数。
+
+### 签收边界
+
+本页不把任务标 done，不改 `task-registry.yaml`，不建库，不灌数，不补 DDL。D4 保持 mock。签收仍由 human:淮政玮 做。登记完成定义正文尚未写入 `gapfill_policy_eval_template`。执行该灌数单时以架构第 9 节为准。
+
+## 第三轮（2026-11-03 晚）
+
+- 角色：`agent:data-agent`
+- 对象：`POL-L2-DS11-VIZ-ARCH` 第 9 节（并核对第 5.4、7、8 节）
+- 对照：`POL-L2-DS11-READ-ARCH` 关于 shell 与 222 的句子；说明书第 11.2 节
+- 本轮重读当前全文，不沿用第二轮结论
+
+### 结论
+
+同意会签。
+
+第 9 节已经能让灌数单确定该灌哪些行。219、220、222 都在 `gkxlumenx_gapfill`，唯一灌数单是 `POL-L2-DS11-VIZ-GAPFILL-L01`，同一张单覆盖三张表。221 不建表。222 的模板选用行不再交给解读壳表。
+
+### 库表核对
+
+| 口径 | 当前文本 | 判定 |
+|---|---|---|
+| 219 只建 `gkxlumenx_gapfill.gapfill_policy_eval_trend` | 第 9 节该行只列这一张表。要灌的是时间、区域或类别上的趋势点，含指标名。灌数单 `POL-L2-DS11-VIZ-GAPFILL-L01` | 一致 |
+| 220 只建 `gkxlumenx_gapfill.gapfill_policy_eval_partition` | 第 9 节该行只列这一张表。要灌的是地区、行业或群体的对照数，投向写在行里。同一张灌数单。第 5.2 节不另建第三张可视化图的表 | 一致 |
+| 221 不建表 | 第 9 节写「不建表。无子图则空」。只消费已有政策子图。不灌弦线矩阵、演示路径、新的图指标 | 一致 |
+| 222 改为 `gkxlumenx_gapfill.gapfill_policy_eval_template`，唯一灌数单与 219、220 相同 | 第 9 节该行表名是 `gapfill_policy_eval_template`，灌数单写明同一张 `POL-L2-DS11-VIZ-GAPFILL-L01`。要灌的是模板选用行：模板名，以及该行允许的汇报周期、分析维度、图表类型。末段写明这一张单覆盖 219、220、222 三张表 | 一致 |
+| 模板行不得交给 READ 的壳表 | 第 9 节写「不灌 `gapfill_policy_eval_shell`」。第 5.4 节写模板选用不进壳表，不用 224、225 的行充当模板。`POL-L2-DS11-READ-ARCH` 第 7 节写 shell 只服务 224、225，序号 222 的模板选用不在该叶灌入；第 8 节写 `POL-L2-DS11-READ-GAPFILL-L01` 只灌解读条目和多媒体条目，不灌模板 | 一致 |
+| 不写 ODS、DWD、ADS、供应方库 | 第 5.1、5.2、5.4、7 节写明不写入 ODS、DWD、ADS，不加这三层的表。三张新建表都在 `gkxlumenx_gapfill`，表名以 `gapfill_` 开头。未设供应方库落点 | 一致 |
+| 不灌 PDF、Excel、假操作日志 | 第 9 节 222 的不灌列含 PDF、Excel、假操作日志。第 5.4 节：文件从当次读到的行生成，不灌文件；不建日志缺项表，不灌假日志 | 一致 |
+| 查询不灌数；接口不直接返回 mock | 第 9 节：接口只查询，查询请求不灌数。第 7 节：不允许接口函数直接返回 mock。无行则空，不在接口里补曲线或写死模板 | 一致 |
+| 说明书第 11.2 节仍把「模板选用」写在解读 222–226 行，表名仍是壳表，灌数单仍是 `POL-L2-DS11-READ-GAPFILL-L01`；可视化行仍只列趋势表和分区表 | 第 5.4 节写明不把说明书这一行再当作灌数依据，本叶不改写说明书。解读稿已收窄，不接模板行。可执行落点以第 9 节为准 | 不构成不同意 |
+| 灌数单登记的完成定义仍只写趋势表和分区表 | `POL-L2-DS11-VIZ-GAPFILL-L01` 的完成定义正文仍是这两张表。第 9 节已写明同一张单覆盖三张表。本页不改注册 | 不构成不同意 |
+
+### 不灌清单
+
+| 序号 | 不灌 |
+|---|---|
+| 219 | 全景时序、效果分、五维雷达、写死曲线。不写入 ODS、DWD、ADS、供应方库 |
+| 220 | 全景分布、演示城市名单、新的效果指标。不另建可视化图的第三张表 |
+| 221 | 不建表。不灌弦线矩阵、演示路径、新的图指标 |
+| 222 | PDF、Excel、假操作日志、两套演示模板、解读条目、多媒体条目。不写入 `gapfill_policy_eval_shell`。不由 `POL-L2-DS11-READ-GAPFILL-L01` 承接 |
+
+`POL-L2-DS11-VIZ-GAPFILL-L01` 仍是 backlog。本页不执行。查询请求不灌数。接口只读表。D4 保持 mock。字段级 DDL 仍留给 `POL-L2-DS11-VIZ-DATA`。
+
+### 签收边界
+
+本页不把任务标 done，签收仍由 human:淮政玮 做。

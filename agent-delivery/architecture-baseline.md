@@ -142,7 +142,7 @@ flowchart LR
 | **D15** | **展示系统 Python 门面独立于专题系统** | 在 `lumen-topic-py` 仓内新增 `gkx_show_service` 子项目作为**科技信息展示系统专属 Python 门面**，与专题侧 `gkx_search_service` / `gkx_svc_service` **进程级 + 镜像级 + 路由级三重隔离**：镜像 `gkxlumen-show-service`（端口 8082），路由前缀 `/internal/gkx-show/**`，K8s Deployment `gkxlumen-platform-show-py`。展示门面只读正式 ADS、不写 ADS、不承接算法职责（D2 算法库统一出口不变，数据加工/写 ADS 仍归 `lumen-algo-py/vendor/entan-py` / `innov-py`）。共享仅限 `gkx_common` 工具链（observability/response/config）。协作边界用 `CODEOWNERS` 划定。**调用链层级（三层）**：终端 → `gkxlumen-gateway` → `gkxlumen-display`（展示聚合 BFF，`/display/v1/**` 单入口）→ **Feign 并行** → 领域服务层（`gkxlumen-innov` / `gkxlumen-topic` / `gkxlumen-metrics`）→ **Feign /internal** → 算法层（`gkx_show_service` 读 ADS / 久新 API / 燕大 KG / 智谱 / 深势）。展示 BFF 职责：页面级聚合、Redis 缓存、分区降级、D9 就绪度注入；**不直连 Python / DB**。领域服务 Feign 调 Python 算法层（含 show-service）是合规路径。要素归属速查见 §2.2。决策来源：项目负责人 2026-10-22 确认，`徐腾强 @qike366.com` 落地骨架（commit `4b867f8`）。关联任务 `DEVOPS-LUMEN-TOPIC-PY-SHOW-L01`。 |
 | **D16** | **功能验收缺项表** | 计算逻辑已登记的缺字段、缺行，可以在库 `gkxlumenx_gapfill` 建 `gapfill_` 前缀表，由 Python 用 LLM 或其他方式灌数。禁止写入 ODS、DWD、ADS 和供应方库。读缺项表算出的 ADS 批次号以 `gapfill_` 开头。未闭合的 `Q-*` 按客户决策清单里已写的临时默认实施。缺项补齐并按该默认实算完成后，D4 不得再是 mock，改为 live。细则见 `data-lineage-policy.md` §2.4。决策：项目负责人 2026-10-28。 |
 | **D17** | **合规算法冲突时分成「合规 / 合理」** | 唐绍祖锁定的合规算法，其调用闭包（入口、中间函数、这些函数读到的变量；含 worker 上的同一条链）除他本人外不得修改。业务探索与该条冲突时，全过程复制到新包再改副本，新路由不得复用锁定 URL。算法中台 `demo-ui-system-test` 的指标展示名成对出现：`{原名}-合规`、`{原名}-合理`。没有冲突的指标保持原名。`-合理` 不进合规展示台 `demo-ui-algo-apiview`。两条的 `metric_id`、路由、Python 入口各自独立。细则见 [算法合规与合理区分规约.md](算法合规与合理区分规约.md)。决策：2026-10-29。 |
-| **D18** | **架构签收条件 = 可实现** | 签收架构设计或实现方案的条件是按稿可以落地。真算、真查或真模型做不到时，只接受一种替代：新建 ADS 表，往表里写 mock，Java 接口只读该表。禁止 Java 或 Python 在接口里直接返回写死的 mock JSON、常量列表或内存 fixture，也禁止前端用 fixture 充当该接口的返回。这种表不建在 ODS、DWD、供应方库，也不算 D16 的 `gapfill_` 缺项表。读到的数 D4 仍是 mock，界面保留 MockBadge。稿里写明要建哪些表、要灌哪些 mock、哪条接口只读。建表和灌数由 data-agent 的执行单做（Python 写 ADS），不写进接口实现任务。缺表名、缺 mock 范围或缺读取接口，不签收。决策：项目负责人 2026-11-03。 |
+| **D18** | **架构签收条件 = 可实现** | 签收架构设计的条件是按稿可以落地。真算、真查或真模型做不到时，只接受一种替代：新建 ADS 表，由 Python 把 mock 行写入该表，Java 接口只读该表。禁止 Java 或 Python 在接口里直接返回写死的 mock JSON、常量列表或内存 fixture，也禁止前端用 fixture 充当该接口的返回。这种表不建在 ODS、DWD、供应方库，也不算 D16 的 `gapfill_` 缺项表。读到的数 D4 仍是 mock，界面保留 MockBadge。架构稿必须写明表名、灌数方、读取接口，缺一不签收。决策：项目负责人 2026-11-03。 |
 
 ### 2.1 对象存储桶（D14）
 
@@ -340,7 +340,7 @@ shared_core:
 - [ ] **图即契约**：本 Epic 该有的 L0–L4 图已落点且节点名=仓/服务名；图文冲突以图为准（见 [diagram-as-contract.md](diagram-as-contract.md)）
 - [ ] **消息总线（D13）**：运行时只连 Kafka `10.50.11.76:9092`；无 RabbitMQ / AMQP / `aio-pika`；正式与原型 topic、消费组分开；口令不进 git
 - [ ] **对象存储桶（D14）**：正式业务只写 `gkx-lumen` 下 §2.1 的六个目录；可观测只用 `tempo-blocks`、`loki-chunks`；无自造桶或顶层目录；前端不直连 RustFS；业务不读写 `milvus`；Demo 不写 `gkx-lumen`；凭证不进 git
-- [ ] **架构可实现（D18）**：签收稿按调用链可以落地。做不到真实现时，只接受新建 ADS 表、data-agent 执行单灌 mock、接口读该表。接口直接返回 mock 的稿不签收。稿里写明表名、mock 范围、读取接口
+- [ ] **架构可实现（D18）**：签收稿按调用链可以落地。做不到真实现时，只接受新建 ADS 表、Python 灌 mock 行、接口读该表。接口直接返回 mock 的稿不签收。稿里写明表名、灌数方、读取接口
 
 ### 5.3 仓隔离合规（D12）
 
@@ -386,7 +386,7 @@ shared_core:
 | 调用链铁律 | [本文 §1](#1-目标拓扑方案-a) · [§4](#4-机器可读依赖规则agent-校验用) | `前端 → Java → Python /internal/*`；D12 见 [§2](#2-锁定决策14-项) / [§3.1](#31-仓边界d12-与历史债)。工程过程索引：[04-产品集成.md](工程过程/04-产品集成.md) |
 | 对象存储桶（D14） | [本文 §2.1](#21-对象存储桶d14) | 正式业务桶 `gkx-lumen`（`10.50.69.111:19000`），六个用途是目录。可观测桶 `tempo-blocks`、`loki-chunks` 在 `:30900`。设计说明 [minio.md](data/data-design/storage/platform/minio.md) 与本节冲突时以本节为准 |
 | 合规 / 合理（D17） | [算法合规与合理区分规约.md](算法合规与合理区分规约.md) | 锁定闭包不得改。冲突时复制全过程；算法中台展示名 `{原名}-合规` 与 `{原名}-合理` |
-| 架构签收（D18） | [本文 §2](#2-锁定决策18-项) D18 | 签收条件是可实现。做不到时只接受新建 ADS 表；建表和灌 mock 由 data-agent 执行单做，接口只读该表 |
+| 架构签收（D18） | [本文 §2](#2-锁定决策18-项) D18 | 签收条件是可实现。做不到时只接受新建 ADS 表、Python 灌 mock、接口读表 |
 | 消息总线（D13） | [本文 §1.1](#11-消息总线kafka) | Kafka `10.50.11.76:9092`；运行时不用 RabbitMQ。图 `ARCH-MSG-KAFKA` |
 | 仓与环境映射 | [repo-registry.yaml](repo-registry.yaml) | demo↔lumen 仓、服务名、环境、`branch_policy` |
 | CI/CD | [cicd-pipeline.md](cicd-pipeline.md) | push → Pipeline 绿 → K8s dev；设计类 `cicd: skip` |
@@ -443,4 +443,3 @@ shared_core:
 | v2.2.21 | 2026-10-22 | **新增 D15 展示系统 Python 门面独立**：在 `lumen-topic-py` 仓内新增 `gkx_show_service` 子项目，与专题侧 `gkx_search_service` / `gkx_svc_service` 进程级 + 镜像级 + 路由级三重隔离（镜像 `gkxlumen-show-service` :8082，前缀 `/internal/gkx-show/**`，Deployment `gkxlumen-platform-show-py`）。展示门面只读正式 ADS + 按需调 algo-py `/internal/*`，不写 ADS、不承接算法职责（D2 不变）。骨架由徐腾强 `4b867f8` 落地；§4 依赖规则补 `python_show_facade` 块；协作边界用 `CODEOWNERS` 划定。关联任务 `DEVOPS-LUMEN-TOPIC-PY-SHOW-L01`。 |
 | v2.2.22 | 2026-10-29 | **新增 D17 合规算法冲突时分成「合规 / 合理」**。正文 [算法合规与合理区分规约.md](算法合规与合理区分规约.md)。锁定闭包除唐绍祖外不得改；冲突则全过程复制。算法中台 `demo-ui-system-test` 展示 `{原名}-合规` 与 `{原名}-合理`。`-合理` 不进 `demo-ui-algo-apiview`。 |
 | v2.2.23 | 2026-11-03 | **新增 D18 架构签收条件 = 可实现**。做不到真算、真查或真模型时，只接受新建 ADS 表、Python 灌 mock 行、接口读表。禁止接口直接返回 mock。D4 仍为 mock。 |
-| v2.2.24 | 2026-11-03 | **D18 灌数落点**：要建的表和要灌的 mock 写在架构或实现方案里。建表和灌数由 data-agent 执行单做，不写进接口实现任务。 |

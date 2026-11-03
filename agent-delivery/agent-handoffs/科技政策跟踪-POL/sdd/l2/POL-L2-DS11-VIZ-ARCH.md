@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS11-VIZ-ARCH`
 - 日期：2026-11-03
-- 状态：架构稿已落盘。2026-11-03 修订：222 不把模板选用算进解读灌数单。会签未完成。未签收
+- 状态：架构稿已落盘。会签未完成。未签收
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -25,7 +25,7 @@
 | 219 | 多维指标趋势图 | 按时间、区域、类别切换，组合选取评估指标，看绩效趋势，并标出重点和波动 | 没有趋势模型。读缺项表。不借用全景时序 |
 | 220 | 分区/群体对比分析图 | 用柱状图、热力图看地区、行业或目标群体的政策效果，并可筛资源投向 | 没有分区模型。读另一张缺项表。不挂全景分布 |
 | 221 | 多维结构关联图 | 弦线图、关系网展示政策要素关联和效果传导，可追踪影响路径 | 跨项。只消费第 7 项已有子图。不建表，不新开资源 |
-| 222 | 报告模板定制与批量导出 | 选模板、汇报周期、分析维度、图表类型，批量生成 PDF、Excel，并归档操作日志 | 交互壳。有模板选用行才读出。解读灌数单不灌模板选用。无选用行则模板区空。不灌文件，不灌假日志 |
+| 222 | 报告模板定制与批量导出 | 选模板、汇报周期、分析维度、图表类型，批量生成 PDF、Excel，并归档操作日志 | 交互壳。模板选用读解读二级那张壳表。不灌文件，不灌假日志 |
 
 219、220 的行是灌入的 mock，D4 仍是 `mock`。本叶不把 mock 写成已上线。`GDF-POLICY-MOCK-GATE-L01` 与这两张缺项表无关，本叶不改那道闸门。
 
@@ -38,7 +38,7 @@
 | 219 | `POST /display/v1/policy/evaluation/jobs` | 不建任务。`gkxlumen-display` 识别到这次只要趋势，不转发 `gkxlumen-topic-async-service`，不调 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_eval_trend`。无行则图空 |
 | 220 | 同上 | 同一条 POST 的另一段。只要分区时同样不建任务。`gkxlumen-element` 只读 `gapfill_policy_eval_partition`。无行则图空 |
 | 221 | 不设 `/display/v1/policy` 资源 | 只消费第 7 项已有子图。挂接可空。不委托专题门面 `/graph` |
-| 222 | `GET /display/v1/policy/evaluation/shells` | `gkxlumen-element` 只读 `gapfill_policy_eval_shell` 里的模板选用行。表由解读二级为 224、225 建立。该灌数单不灌模板选用。本叶不另建表。无选用行则模板空 |
+| 222 | `GET /display/v1/policy/evaluation/shells` | `gkxlumen-element` 只读 `gapfill_policy_eval_shell` 里的模板选用行。这张表由解读二级建立和灌数，本叶不另建。无行则模板空 |
 
 `counts` 只服务短板条数和机遇条数，序号不在 219–222。本叶不读 `counts`，也不把趋势点或分区对照数写进那次响应。
 
@@ -127,10 +127,10 @@ flowchart LR
 
 没有导出模型。核增研报 `report/jobs`（614–618）和全景 `benchmark-report` 不是这条资源。
 
-壳表由解读二级建立，只灌 224、225 的解读条目和多媒体条目。`POL-L2-DS11-READ-GAPFILL-L01` 不灌模板选用。本叶不另建表，不把模板选用加进那张灌数单，也不把模板行拆进 `gapfill_policy_eval_trend`。
+说明书第 11.2 节把模板选用放在 `gapfill_policy_eval_shell`，灌数单是 `POL-L2-DS11-READ-GAPFILL-L01`，不在本叶的灌数单里。本叶不另建表，不把模板行拆进 `gapfill_policy_eval_trend`。
 
-- 浏览器读 `GET shells`。`gkxlumen-element` 只读这张壳表里的模板选用。没有选用行则模板区空。解读条目、焦点和摘要归解读二级，本叶不写。
-- 不返回一套写死的模板。
+- 浏览器读 `GET shells`。`gkxlumen-element` 只读这张壳表里的模板选用。解读条目、焦点和摘要归解读二级，本叶不写。
+- 表尚未建立或没有选用行时，模板区空。不返回一套写死的模板。
 - 导出要文件时，从这次读到的行生成。不写对象存储。不灌 PDF，不灌 Excel。
 - 操作日志是用户自己的记录。不建日志缺项表，不灌假日志。没有真实导出则日志空。
 
@@ -168,20 +168,20 @@ flowchart LR
 | 219 | 建 `gapfill_policy_eval_trend`。`jobs` 在只要趋势时不建任务，element 只查这张表 | 无趋势模型。效果评估和全景时序都不改挂 |
 | 220 | 建 `gapfill_policy_eval_partition`。同一条入口的分区段只查这张表 | 无分区模型。不挂全景分布 |
 | 221 | 不新开资源。有子图则只消费第 7 项，没有则该块空 | `E-E7-POLICY-M1-L02` 已完成。展示不写 nGQL |
-| 222 | 读已定的 `gapfill_policy_eval_shell`。没有选用行则模板区空。文件只从当次读到的行生成。不灌日志 | 无导出模型。壳表由解读二级建立，只灌 224、225。本叶不灌模板选用 |
+| 222 | 读已定的 `gapfill_policy_eval_shell`。文件从行生成。不灌日志 | 无导出模型。壳表的建立和灌数不在本叶 |
 
 迁移边界：算法中台页面留在 `demo-ui-system-test`。展示不嵌效果评估页，不打 `/v1/policy/graph`。专题 `/graph` 继续给专题自己用。展示不把 `effect.py` 抄进 Java，也不把 `policyData.js` 的常量写进接口。
 
 ## 9. 表与要灌的 mock
 
-界面上要出现、而真实趋势和分区对照还没有的内容，先写入本叶的两张缺项表。模板选用不在本叶灌入；壳表没有选用行则模板区空。接口只查询。D4 保持 mock。字段级 DDL 由数据分册定。本叶不执行灌数。
+界面上要出现、而真实趋势、分区对照、模板选用还没有的内容，先写入表。接口只查询。D4 保持 mock。字段级 DDL 由数据分册定。本叶不执行灌数。
 
 | 序号 | 库表 | 新建于本叶灌数单 | 要灌的 mock | 不灌 |
 |---|---|---|---|---|
 | 219 | `gkxlumenx_gapfill.gapfill_policy_eval_trend` | 是。`POL-L2-DS11-VIZ-GAPFILL-L01` | 时间、区域或类别上的趋势点，含指标名 | 全景时序、效果分、五维雷达、写死曲线 |
 | 220 | `gkxlumenx_gapfill.gapfill_policy_eval_partition` | 是。同一张灌数单 | 地区、行业或群体的对照数。投向写在行里 | 全景分布、演示城市名单、新的效果指标 |
 | 221 | 已有政策子图 | 否 | 不建表。无子图则空 | 弦线矩阵、演示路径、新的图指标 |
-| 222 | `gkxlumenx_gapfill.gapfill_policy_eval_shell` | 否。壳表由解读二级建立，该灌数单不灌模板选用 | 无选用行则模板区空。本叶不把模板选用加进解读灌数单 | PDF、Excel、假操作日志、两套演示模板 |
+| 222 | `gkxlumenx_gapfill.gapfill_policy_eval_shell` | 否。灌数单是 `POL-L2-DS11-READ-GAPFILL-L01` | 本叶只读模板选用。灌什么由解读二级定 | PDF、Excel、假操作日志、两套演示模板 |
 
 缺项表的行要能按第 3 节的条件拣出来：219 按切换维和指标名，220 按对象和图种，投向有值时再按投向。222 按模板选用。条件对不上的行不返回。
 

@@ -1,10 +1,16 @@
-"""产业锚点向量索引（GDF 派单包交付版 · 路线 A 全环境变量化）。
+"""产业锚点向量索引（CROSS-VEC-PY-INDEX-L01）。
 
-本文件**独立可跑**：不依赖 `lumen_common` / `polan`。GDF 平台配置本脚本的
-`rebuild`，直接写 Milvus；不调用我方 HTTP。
+建库切面（02 §1.1）：产业链灌数末段调 `embed/rebuild` **一次**；业务重灌只消费
+`embed/search`。`jobs/enrich` 跑批是 **CROSS-VEC-JOB-A-L01** 的叶，不在本模块。
 
-硬编码已全部改为环境变量（见同目录 `README.md` 参数表）。
-`MILVUS_DB_NAME`/`DB_NAME` 未配置或仍为 `default` 时**拒绝写入**（防误伤 demo）。
+物理引擎：现网 Milvus 2.4 standalone，走 HTTP v2 + stdlib urllib（仓内无 pymilvus，
+`scripts/milvus_probe.py` 已验证该路线）。向量走集群内 TEI（`EMBED_BASE_URL`，
+OpenAI 兼容 `/v1/embeddings`，dim 768，客户端不再 L2 归一）。`MILVUS_URI` 未配置
+时退化为进程内内存索引；`EMBED_BASE_URL` 未设时向量退回 hashgram（仅本地 pytest）。
+任一端点连不上则 **code≠0 + degraded**，绝不返回假 VID。
+
+VID 只信图上链码（`chain:` / `segment:`），与 `graph_project.map_graph` 同一套映射；
+向量分数**不是** `industry_link_code`，定码仍走图谱 FETCH。
 """
 from __future__ import annotations
 
@@ -17,32 +23,33 @@ import urllib.request
 
 import httpx
 
-try:
-    import pymysql
-    import pymysql.cursors
-except ImportError:  # pragma: no cover — 作业机须装 pymysql
-    pymysql = None  # type: ignore[assignment]
+from lumen_common.algorithms.chain.demo_guard import connect_chain_readonly
+from lumen_common.algorithms.chain.graph_project import map_graph
+from lumen_common.algorithms import policy  # noqa: F401  导入即把 vendor/entan-py 挂上 sys.path
+from lumen_common.observability import current_trace_id
+from lumen_common.response import error, ok
 
-# ------------------------------------------------------------------ 环境参数 --
+from polan.graph.entity import split_anchor_tokens  # noqa: E402  别名拆词与 L1 对码同源
 
+# Milvus 2.4 只收 [A-Za-z0-9_] 且不以数字开头；连字符名会被 code 1100 拒绝。
 DEFAULT_PREFIX = "gkxlumen_industry_"
 DEFAULT_COLLECTION_SUFFIX = "anchor"
-DEFAULT_DWD_SCHEMA = "gkxlumenx_dwd"
-DEFAULT_CHAIN_TABLE = "industry_chain"
-DEFAULT_NODE_TABLE = "industry_chain_node"
-DEFAULT_METRIC_TYPE = "COSINE"
-DEFAULT_DIM = 768
-DEFAULT_MODEL_VERSION = "bge-base-zh-v1.5-tei-1.8.3"
+DB_NAME = "default"
+METRIC_TYPE = "COSINE"
+DIM = 768
+# 现网 TEI `bge-base-zh-v1.5`（总控 §6.5）。返回向量已 L2 归一，客户端不再归一。
+# `EMBED_BASE_URL` 未设时退回 stdlib blake2b（仅本地 pytest / MemoryStore，degraded）。
+MODEL_VERSION = "bge-base-zh-v1.5-tei-1.8.3"
 DEFAULT_EMBED_MODEL = "BAAI/bge-base-zh-v1.5"
+# bge 非对称检索：query 侧加此前缀，锚点 / doc 侧不加（漏了召回会掉）。
 QUERY_PREFIX = "为这个句子生成表示以用于检索相关文章："
-DEFAULT_EMBED_BATCH = 32
+EMBED_BATCH = 32
 EMBED_RETRIES = 2
 KINDS = ("chain", "segment")
-DEFAULT_VID_LENGTH = 80
 
 
 class CollectionGuardError(RuntimeError):
-    """写操作命中非本项目 collection / 非法库名。现网未开鉴权，本守卫是唯一防线。"""
+    """写操作命中非本项目 collection。现网未开鉴权，本守卫是唯一防线。"""
 
 
 class MilvusUnavailable(RuntimeError):
@@ -50,45 +57,14 @@ class MilvusUnavailable(RuntimeError):
 
 
 class EmbedUnavailable(RuntimeError):
-    """TEI 不可用、空响应或 dim 不符。调用方必须 degraded，不许兜假 VID。"""
+    """TEI 不可用、空响应或 dim ≠ 768。调用方必须 degraded，不许兜假 VID。"""
 
 
-class AnchorSourceError(RuntimeError):
-    """词表源（MySQL）不可用或闸门拒绝。"""
-
-
-def _env(name: str, default: str = "") -> str:
-    return os.environ.get(name, default).strip()
-
-
-def _env_int(name: str, default: int) -> int:
-    raw = _env(name)
-    if not raw:
-        return default
-    return int(raw)
-
-
-def _truthy(name: str) -> bool:
-    return _env(name).lower() in ("1", "true", "yes")
-
-
-def milvus_db_name() -> str:
-    """正式库默认要求显式配置；禁止隐式 `default`（会 drop demo 同名集合）。"""
-    name = _env("MILVUS_DB_NAME") or _env("DB_NAME")
-    if not name:
-        raise CollectionGuardError(
-            "MILVUS_DB_NAME/DB_NAME 未配置，拒绝写入（禁止隐式 default）"
-        )
-    if name == "default" and not _truthy("ALLOW_MILVUS_DB_DEFAULT"):
-        raise CollectionGuardError(
-            "拒绝 dbName=default（会误伤 demo）；正式设 MILVUS_DB_NAME=gkxlumen；"
-            "确需 default 时设 ALLOW_MILVUS_DB_DEFAULT=1"
-        )
-    return name
-
+# ------------------------------------------------------------------ 前缀守卫 --
 
 def collection_prefix() -> str:
-    prefix = _env("MILVUS_COLLECTION_PREFIX", DEFAULT_PREFIX)
+    """前缀真源 = env（k8s api.yaml / worker.yaml 注入），不在代码里写死业务名。"""
+    prefix = os.environ.get("MILVUS_COLLECTION_PREFIX", DEFAULT_PREFIX).strip()
     if not _legal_name(prefix):
         raise CollectionGuardError(
             f"MILVUS_COLLECTION_PREFIX={prefix!r} 非法（空或含 Milvus 不收的字符），拒绝任何读写"
@@ -96,47 +72,8 @@ def collection_prefix() -> str:
     return prefix
 
 
-def collection_suffix() -> str:
-    return _env("MILVUS_COLLECTION_SUFFIX", DEFAULT_COLLECTION_SUFFIX) or DEFAULT_COLLECTION_SUFFIX
-
-
 def default_collection() -> str:
-    return f"{collection_prefix()}{collection_suffix()}"
-
-
-def metric_type() -> str:
-    return _env("MILVUS_METRIC_TYPE", DEFAULT_METRIC_TYPE) or DEFAULT_METRIC_TYPE
-
-
-def embed_dim() -> int:
-    return _env_int("EMBED_DIM", DEFAULT_DIM)
-
-
-def model_version() -> str:
-    return _env("EMBED_MODEL_VERSION", DEFAULT_MODEL_VERSION) or DEFAULT_MODEL_VERSION
-
-
-def embed_batch() -> int:
-    return max(1, _env_int("EMBED_BATCH", DEFAULT_EMBED_BATCH))
-
-
-def dwd_schema() -> str:
-    """词表库名闸门：拒绝 demo_ 前缀；正式默认 gkxlumenx_dwd。"""
-    schema = _env("CHAIN_DWD_SCHEMA", DEFAULT_DWD_SCHEMA) or DEFAULT_DWD_SCHEMA
-    if schema.startswith("demo_") and not _truthy("ALLOW_DEMO_DWD_SCHEMA"):
-        raise AnchorSourceError(
-            f"拒绝词表库 {schema!r}（demo_）；正式设 CHAIN_DWD_SCHEMA=gkxlumenx_dwd；"
-            "确需 demo 时设 ALLOW_DEMO_DWD_SCHEMA=1"
-        )
-    return schema
-
-
-def chain_table() -> str:
-    return _env("CHAIN_TABLE", DEFAULT_CHAIN_TABLE) or DEFAULT_CHAIN_TABLE
-
-
-def node_table() -> str:
-    return _env("CHAIN_NODE_TABLE", DEFAULT_NODE_TABLE) or DEFAULT_NODE_TABLE
+    return f"{collection_prefix()}{DEFAULT_COLLECTION_SUFFIX}"
 
 
 def _legal_name(name: str) -> bool:
@@ -147,6 +84,15 @@ def _legal_name(name: str) -> bool:
 
 
 def assert_owned_collection(name: str | None) -> str:
+    """create / drop / insert / delete / search 前必过：只允许本前缀 collection。
+
+    现网 Milvus `authorizationEnabled=false`，同实例住着 `aip_kb_*`、
+    `spk_id_speaker_embeddings` 等别的系统在用的库，任何能连 19530 的进程都是超级
+    权限，一次手滑就能 drop 掉别人的库。
+
+    ponytail: 前缀本身来自 env，运维把 env 改成别的系统前缀仍能绕过；账号级隔离要等
+    运维打开 `authorizationEnabled` 并建受限角色（k8s/README.md 升级项）。
+    """
     prefix = collection_prefix()
     text = str(name or "").strip()
     if not text.startswith(prefix) or not _legal_name(text):
@@ -156,70 +102,10 @@ def assert_owned_collection(name: str | None) -> str:
     return text
 
 
-def ok(data, msg=None):
-    return {"code": 0, "msg": msg, "data": data}
-
-
-def error(msg, data=None):
-    return {"code": 1, "msg": msg, "data": data}
-
-
-def current_trace_id() -> str | None:
-    return _env("TRACE_ID") or _env("OTEL_TRACE_ID") or None
-
-
-def split_anchor_tokens(name: str) -> list[str]:
-    """「半导体与集成电路」→ 半导体 / 集成电路。短于 3 字丢掉。"""
-    s = str(name or "").strip()
-    for sep in ("与", "和", "、", "/", "（", "("):
-        s = s.replace(sep, "|")
-    s = s.replace("）", "").replace(")", "")
-    return [t.strip() for t in s.split("|") if len(t.strip()) >= 3]
-
-
-def _vid(prefix: str, raw, vid_length: int = DEFAULT_VID_LENGTH) -> str | None:
-    text = str(raw or "").strip()
-    if not text:
-        return None
-    vid = f"{prefix}{text}"
-    if len(vid) > vid_length:
-        return None
-    return vid
-
-
-def map_chain_segment_vertices(chains: list[dict], nodes: list[dict]) -> list[dict]:
-    """锚点所需最小映射：只产出 chain/segment 顶点（与 graph_project.map_graph 同码规则）。"""
-    vertices: list[dict] = []
-    seen: set[str] = set()
-    for row in chains:
-        vid = _vid("chain:", row.get("chain_id"))
-        if not vid or vid in seen:
-            continue
-        seen.add(vid)
-        vertices.append({
-            "tag": "chain",
-            "vid": vid,
-            "name": row.get("chain_name") or row.get("chain_id"),
-            "chain_id": row.get("chain_id"),
-        })
-    for row in nodes:
-        vid = _vid("segment:", row.get("node_id"))
-        if not vid or vid in seen:
-            continue
-        seen.add(vid)
-        vertices.append({
-            "tag": "segment",
-            "vid": vid,
-            "name": row.get("node_name") or row.get("node_id"),
-            "segment_key": row.get("node_id") or row.get("node_code"),
-            "chain_id": row.get("chain_id"),
-        })
-    return vertices
-
-
 # -------------------------------------------------------------------- 向量化 --
 
 def _hashgram(text: str, dim: int) -> list[float]:
+    """本地回退：字符 1/2/3-gram → 有符号哈希桶 → L2 归一。仅 `EMBED_BASE_URL` 未设时用。"""
     blob = " ".join(str(text or "").lower().split())
     vec = [0.0] * dim
     for n in (1, 2, 3):
@@ -235,7 +121,7 @@ def _hashgram(text: str, dim: int) -> list[float]:
 
 def _embed_headers() -> dict[str, str]:
     headers = {"Content-Type": "application/json"}
-    token = _env("EMBED_API_KEY")
+    token = os.environ.get("EMBED_API_KEY", "").strip()
     if token:
         headers["Authorization"] = f"Bearer {token}"
     return headers
@@ -253,21 +139,20 @@ def _parse_embeddings(payload: dict, expected: int, dim: int) -> list[list[float
         vec = item.get("embedding") or []
         if len(vec) != dim:
             raise EmbedUnavailable(f"embedding dim {len(vec)} != {dim}，拒绝写入")
-        vecs.append([float(x) for x in vec])
+        vecs.append([float(x) for x in vec])  # TEI 已 L2 归一，客户端不再归一
     return vecs
 
 
 def _embed_tei(texts: list[str], dim: int) -> list[list[float]]:
-    base = _env("EMBED_BASE_URL").rstrip("/")
+    base = os.environ.get("EMBED_BASE_URL", "").strip().rstrip("/")
     url = f"{base}/v1/embeddings"
-    model = _env("EMBED_MODEL", DEFAULT_EMBED_MODEL) or DEFAULT_EMBED_MODEL
+    model = os.environ.get("EMBED_MODEL", DEFAULT_EMBED_MODEL).strip() or DEFAULT_EMBED_MODEL
     headers = _embed_headers()
     out: list[list[float]] = []
-    batch = embed_batch()
     timeout = httpx.Timeout(60.0, connect=5.0)
     with httpx.Client(timeout=timeout) as client:
-        for i in range(0, len(texts), batch):
-            chunk = texts[i : i + batch]
+        for i in range(0, len(texts), EMBED_BATCH):
+            chunk = texts[i : i + EMBED_BATCH]
             last: Exception | None = None
             for attempt in range(EMBED_RETRIES + 1):
                 try:
@@ -287,28 +172,30 @@ def _embed_tei(texts: list[str], dim: int) -> list[list[float]]:
     return out
 
 
-def embed_texts(texts: list[str], *, is_query: bool = False, dim: int | None = None) -> list[list[float]]:
-    dim = embed_dim() if dim is None else dim
+def embed_texts(texts: list[str], *, is_query: bool = False, dim: int = DIM) -> list[list[float]]:
+    """批量向量化。query 侧加指令前缀；锚点 / doc 侧不加。"""
     if not texts:
         return []
-    if not _env("EMBED_BASE_URL"):
+    if not os.environ.get("EMBED_BASE_URL", "").strip():
         return [_hashgram(str(t or ""), dim) for t in texts]
     payloads = [(QUERY_PREFIX + str(t or "")) if is_query else str(t or "") for t in texts]
     return _embed_tei(payloads, dim)
 
 
-def embed_text(text: str, dim: int | None = None, *, is_query: bool = False) -> list[float]:
+def embed_text(text: str, dim: int = DIM, *, is_query: bool = False) -> list[float]:
+    """单条向量化。现网走 TEI；无 `EMBED_BASE_URL` 时 hashgram 回退（不联网）。"""
     return embed_texts([text], is_query=is_query, dim=dim)[0]
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
-    return sum(x * y for x, y in zip(a, b))
+    return sum(x * y for x, y in zip(a, b))  # 两边都已 L2 归一
 
 
 # ---------------------------------------------------------------- 锚点词表 --
 
 def anchor_docs(chains: list[dict], nodes: list[dict]) -> list[dict]:
-    vertices = map_chain_segment_vertices(chains, nodes)
+    """DWD 链表 → 锚点文档。VID 复用 map_graph，与图上 chain/segment 点同码。"""
+    vertices = map_graph(chains, nodes, [], [])["vertices"]
     chain_names = {v["vid"]: v.get("name") for v in vertices if v["tag"] == "chain"}
     docs: list[dict] = []
     for v in vertices:
@@ -333,55 +220,27 @@ def anchor_docs(chains: list[dict], nodes: list[dict]) -> list[dict]:
     return docs
 
 
-def _mysql_connect_kwargs() -> dict:
-    host = _env("MYSQL_HOST") or _env("CHAIN_MYSQL_HOST")
-    if not host:
-        raise AnchorSourceError("MYSQL_HOST/CHAIN_MYSQL_HOST 未配置")
-    if pymysql is None:
-        raise AnchorSourceError("未安装 pymysql，无法读词表")
-    port = _env_int("MYSQL_PORT", _env_int("CHAIN_MYSQL_PORT", 3306))
-    user = _env("MYSQL_USER") or _env("CHAIN_MYSQL_USER") or "root"
-    password = _env("MYSQL_PASSWORD") or _env("CHAIN_MYSQL_PASSWORD")
-    return {
-        "host": host,
-        "port": port,
-        "user": user,
-        "password": password,
-        "charset": _env("MYSQL_CHARSET", "utf8mb4") or "utf8mb4",
-        "connect_timeout": _env_int("MYSQL_CONNECT_TIMEOUT", 10),
-        "read_timeout": _env_int("MYSQL_READ_TIMEOUT", 60),
-    }
-
-
 def load_anchors() -> list[dict]:
-    """读正式 DWD 链树（库/表名均可环境变量覆盖；默认 gkxlumenx_dwd）。"""
-    schema = dwd_schema()
-    t_chain = chain_table()
-    t_node = node_table()
-    conn = pymysql.connect(**_mysql_connect_kwargs())
+    """只读 demo DWD 链表（闸门在 connect_chain_readonly 内，非 demo_ 库直接拒）。"""
+    db = connect_chain_readonly()
     try:
-        cur = conn.cursor(pymysql.cursors.DictCursor)
-        cur.execute(
-            f"SELECT * FROM `{schema}`.`{t_chain}` WHERE IFNULL(is_deleted,0)=0"
-        )
-        chains = [dict(row) for row in cur.fetchall()]
-        cur.execute(
-            f"SELECT * FROM `{schema}`.`{t_node}` WHERE IFNULL(is_deleted,0)=0"
-        )
-        nodes = [dict(row) for row in cur.fetchall()]
+        chains = db.query(f"SELECT * FROM `{db.dwd}`.`industry_chain` WHERE IFNULL(is_deleted,0)=0")
+        nodes = db.query(f"SELECT * FROM `{db.dwd}`.`industry_chain_node` WHERE IFNULL(is_deleted,0)=0")
     finally:
-        conn.close()
+        db.close()
     return anchor_docs(chains, nodes)
 
 
 # ----------------------------------------------------------------- 存储后端 --
 
 class MemoryStore:
+    """进程内回退。语义与 Milvus 一致但**不持久化**，因此一律 degraded。"""
+
     kind = "memory"
     degraded = True
     _data: dict[str, list[dict]] = {}
 
-    def rebuild(self, collection: str, rows: list[dict], dim: int | None = None) -> None:
+    def rebuild(self, collection: str, rows: list[dict], dim: int = DIM) -> None:
         self._data[assert_owned_collection(collection)] = [dict(r) for r in rows]
 
     def search(self, collection: str, vector: list[float], limit: int) -> list[dict]:
@@ -392,17 +251,18 @@ class MemoryStore:
 
 
 class MilvusHttpStore:
+    """Milvus 2.4 HTTP v2（stdlib urllib）。不引 pymilvus，见 handoff 依赖一节。"""
+
     kind = "milvus"
     degraded = False
 
     def __init__(self, uri: str, timeout: int = 10) -> None:
         self.uri = uri.rstrip("/")
         self.timeout = timeout
-        self.db_name = milvus_db_name()
 
     def _post(self, path: str, body: dict):
         headers = {"Content-Type": "application/json"}
-        token = _env("MILVUS_TOKEN")
+        token = os.environ.get("MILVUS_TOKEN", "").strip()
         if token:
             headers["Authorization"] = f"Bearer {token}"
         req = urllib.request.Request(
@@ -414,30 +274,30 @@ class MilvusHttpStore:
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 payload = json.load(resp)
-        except (OSError, ValueError) as exc:
+        except (OSError, ValueError) as exc:  # URLError / HTTPError / socket / 非 JSON
             raise MilvusUnavailable(f"{path}: {type(exc).__name__}: {exc}") from exc
         if payload.get("code") not in (0, 200):
             raise MilvusUnavailable(f"{path} 返回 {payload}")
         return payload.get("data")
 
     def list_collections(self) -> list[str]:
-        return list(self._post("/v2/vectordb/collections/list", {"dbName": self.db_name}) or [])
+        return list(self._post("/v2/vectordb/collections/list", {"dbName": DB_NAME}) or [])
 
     def drop(self, collection: str) -> None:
         name = assert_owned_collection(collection)
-        self._post("/v2/vectordb/collections/drop", {"dbName": self.db_name, "collectionName": name})
+        self._post("/v2/vectordb/collections/drop", {"dbName": DB_NAME, "collectionName": name})
 
-    def create(self, collection: str, dim: int | None = None) -> None:
+    def create(self, collection: str, dim: int = DIM) -> None:
         name = assert_owned_collection(collection)
-        dim = embed_dim() if dim is None else dim
         self._post("/v2/vectordb/collections/create", {
-            "dbName": self.db_name,
+            "dbName": DB_NAME,
             "collectionName": name,
             "dimension": int(dim),
-            "metricType": metric_type(),
+            "metricType": METRIC_TYPE,
             "idType": "VarChar",
             "primaryFieldName": "vid",
             "vectorFieldName": "vector",
+            # 2.4 HTTP v2 的 params 是 map[string]string，数字必须传字符串（否则 code 1801）
             "params": {"max_length": "128"},
         })
 
@@ -445,13 +305,13 @@ class MilvusHttpStore:
         name = assert_owned_collection(collection)
         for i in range(0, len(rows), chunk):
             self._post("/v2/vectordb/entities/insert", {
-                "dbName": self.db_name,
+                "dbName": DB_NAME,
                 "collectionName": name,
                 "data": rows[i : i + chunk],
             })
         return len(rows)
 
-    def rebuild(self, collection: str, rows: list[dict], dim: int | None = None) -> None:
+    def rebuild(self, collection: str, rows: list[dict], dim: int = DIM) -> None:
         name = assert_owned_collection(collection)
         if name in self.list_collections():
             self.drop(name)
@@ -461,7 +321,7 @@ class MilvusHttpStore:
     def search(self, collection: str, vector: list[float], limit: int) -> list[dict]:
         name = assert_owned_collection(collection)
         data = self._post("/v2/vectordb/entities/search", {
-            "dbName": self.db_name,
+            "dbName": DB_NAME,
             "collectionName": name,
             "data": [vector],
             "limit": int(limit),
@@ -481,30 +341,29 @@ class MilvusHttpStore:
 
 
 def open_store():
-    uri = _env("MILVUS_URI")
+    """`MILVUS_URI` 有值 → 真库；空 → 内存回退（degraded）。"""
+    uri = os.environ.get("MILVUS_URI", "").strip()
     return MilvusHttpStore(uri) if uri else MemoryStore()
 
 
 # ------------------------------------------------------------------- 对外 API --
 
 def rebuild(payload: dict | None = None, *, anchors: list[dict] | None = None, store=None) -> dict:
+    """整库一次重建。禁止逐行 embed；空词表则跳过、保留上一版索引。"""
     payload = payload or {}
     store = store or open_store()
-    dim = embed_dim()
-    mv = model_version()
     collection = assert_owned_collection(payload.get("collection") or default_collection())
     meta = {
         "collection": collection,
         "store": store.kind,
-        "db_name": getattr(store, "db_name", None),
-        "model_version": mv,
-        "dim": dim,
-        "metric_type": metric_type(),
+        "model_version": MODEL_VERSION,
+        "dim": DIM,
+        "metric_type": METRIC_TYPE,
         "trace_id": current_trace_id(),
     }
     try:
         docs = load_anchors() if anchors is None else list(anchors)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001 读不到链表就诚实红，不建空索引
         return error(f"锚点词表读取失败: {type(exc).__name__}: {exc}",
                      {**meta, "indexed": 0, "degraded": True})
     if not docs:
@@ -513,7 +372,7 @@ def rebuild(payload: dict | None = None, *, anchors: list[dict] | None = None, s
 
     index_version = time.strftime("%Y%m%d%H%M%S")
     try:
-        vectors = embed_texts([d["text"] for d in docs])
+        vectors = embed_texts([d["text"] for d in docs])  # 锚点侧不加 query 前缀
     except EmbedUnavailable as exc:
         return error(f"embedding 不可用: {exc}", {**meta, "indexed": 0, "degraded": True})
     rows = [{
@@ -524,13 +383,13 @@ def rebuild(payload: dict | None = None, *, anchors: list[dict] | None = None, s
         "text": d["text"],
         "industry_code": d.get("industry_code") or "",
         "graph_source": d.get("graph_source") or "dwd_chain",
-        "model_version": mv,
+        "model_version": MODEL_VERSION,
         "index_version": index_version,
         "vector": vectors[i],
     } for i, d in enumerate(docs)]
     try:
-        store.rebuild(collection, rows, dim)
-    except (MilvusUnavailable, CollectionGuardError) as exc:
+        store.rebuild(collection, rows, DIM)
+    except MilvusUnavailable as exc:
         return error(f"Milvus 不可用: {exc}", {**meta, "indexed": 0, "degraded": True})
     return ok({
         **meta,
@@ -542,6 +401,7 @@ def rebuild(payload: dict | None = None, *, anchors: list[dict] | None = None, s
 
 
 def search(payload: dict | None = None, *, store=None) -> dict:
+    """单条 top-k 候选。只返回图上 VID + 名字 + 分数；分数不是 industry_link_code。"""
     payload = payload or {}
     store = store or open_store()
     collection = assert_owned_collection(payload.get("collection") or default_collection())
@@ -549,7 +409,7 @@ def search(payload: dict | None = None, *, store=None) -> dict:
         "collection": collection,
         "store": store.kind,
         "source": "industry_embed",
-        "model_version": model_version(),
+        "model_version": MODEL_VERSION,
         "trace_id": current_trace_id(),
     }
     query = str(payload.get("query") or "").strip()
@@ -559,6 +419,7 @@ def search(payload: dict | None = None, *, store=None) -> dict:
     top_k = max(1, min(int(payload.get("top_k") or 8), 50))
     kinds = [k for k in (payload.get("kinds") or KINDS) if k in KINDS] or list(KINDS)
     min_score = float(payload.get("min_score") or 0.0)
+    # kinds 是子集时多取一些再客户端筛，省掉对动态字段 filter 语法的依赖。
     limit = top_k if len(kinds) == len(KINDS) else min(top_k * 4, 64)
     try:
         hits = store.search(collection, embed_text(query, is_query=True), limit)
@@ -582,39 +443,3 @@ def search(payload: dict | None = None, *, store=None) -> dict:
         "index_version": next((str(h.get("index_version") or "") for h in hits), ""),
         "degraded": bool(store.degraded),
     })
-
-
-# ---------------------------------------------------------------- 最小自检 --
-
-def _self_check() -> None:
-    """无外部依赖的闸门自检：失败即非 0 退出。"""
-    assert split_anchor_tokens("半导体与集成电路") == ["半导体", "集成电路"]
-    docs = anchor_docs(
-        [{"chain_id": "INB01", "chain_name": "示范链"}],
-        [{"node_id": "INB0101", "node_name": "上游环节", "chain_id": "INB01"}],
-    )
-    assert {d["vid"] for d in docs} == {"chain:INB01", "segment:INB0101"}
-    os.environ.pop("MILVUS_DB_NAME", None)
-    os.environ.pop("DB_NAME", None)
-    os.environ.pop("ALLOW_MILVUS_DB_DEFAULT", None)
-    try:
-        milvus_db_name()
-        raise AssertionError("未配置 DB 名应拒绝")
-    except CollectionGuardError:
-        pass
-    os.environ["DB_NAME"] = "default"
-    try:
-        milvus_db_name()
-        raise AssertionError("default 应拒绝")
-    except CollectionGuardError:
-        pass
-    os.environ["MILVUS_DB_NAME"] = "gkxlumen"
-    assert milvus_db_name() == "gkxlumen"
-    store = MemoryStore()
-    result = rebuild({"collection": default_collection()}, anchors=docs, store=store)
-    assert result["code"] == 0 and result["data"]["indexed"] == 2, result
-    print("industry_embed self-check OK")
-
-
-if __name__ == "__main__":
-    _self_check()
