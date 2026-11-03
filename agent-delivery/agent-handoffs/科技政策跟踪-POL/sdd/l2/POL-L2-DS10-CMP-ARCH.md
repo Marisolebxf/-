@@ -73,6 +73,24 @@ flowchart LR
 
 215 的区域、部门能对上已有目录条件里的地区和发布机构。对不上的方面空，不新建词表。216 未勾选的字段不进 217 的报告，也不进 218 的图。
 
+### 3.1 条件从哪来
+
+对照了两处 demo 和现网 lumen。展示原型 `demo-ui-science` 的 `PolicyPanorama.jsx` 不调接口，选项都在 `policyData.js`。算法中台 `demo-ui-system-test` 的政策页调的是 `/v1/policy/**`，不是这六叶的对比窗。lumen 已接通的只有专题门面 `gkxlumen-topic-policy` 上的检索、选项、指标和正文，下游是 Python `/internal/policy/**`。浏览器仍只打 `/display/v1/policy/**`，由 display 内部委托这些门面。不把 `/v1/policy/**` 和 `policyData.js` 迁进来。
+
+| 条件 | demo 里实际从哪取 | lumen 里哪条接口能提供 | 本叶怎么用 |
+|---|---|---|---|
+| 213、214 的政策 | `policyListData` 本地数组 | `GET /topic/v1/policy/search`，查询参数原样到 `/internal/policy/search`。条目里有政策 id 和标题 | 展示走已有 `panorama/search`。不另开候选接口 |
+| 213 的两个时点 | `policyVersionHistory` 本地版本。没有接口 | 检索和 `GET /topic/v1/policy/docs/{id}` 只有发布时间，没有版本列表 | 没有来源。时点只从 `gapfill_policy_version_diff` 里该政策已有的时点读出。表空则不能选 |
+| 214 的六维、216 的范围和字段、217 的格式、218 的视角和图种 | 页内常量。`DETAIL_COMPARE_DIMENSIONS`、`benchmarkDimensions` 另有需规没写的项 | 无接口 | 保持第 3 节闭集。不调接口，也不采纳 demo 多出来的维度 |
+| 215 的区域 | `deptCompareRegions`：国家部委、广东省、深圳市 | `GET /topic/v1/policy/indicators?kind=national` 与 `kind=sz`，下游 `/internal/policy/indicators`。这是地区分布，不是部委名单 | 展示走已有 `panorama/stats`。桶空则区域下拉空。不迁那三条常量 |
+| 215 的实施部门 | `departmentPolicyCompare` 本地部门 | `search` 能按 `ministry`、`publish_code` 过滤。`GET /topic/v1/policy/search/options` 只返回 `level`、`status`、`policy_type`、`nodes`，没有部门去重 | 现没有部门名单接口。不迁本地部门表。下拉空。若要名单，只在已有 `search/options` 上由 Python 对发布机构去重，不新开展示路径 |
+| 215 的项目类别 | `deptPolicyByCategory` 的资金扶持、税收优惠等 | `search/options` 的 `policy_type`，来自 `dwd.policy_base_info` 去重 | 用这条。不用 demo 的五类扶持名 |
+| 215 的技术类别 | `deptPolicyByTech` 的人工智能、生物医药等 | `search/options?industry_code=` 的 `nodes`，来自 `dwd.industry_chain_node`。不传产业码则 `nodes` 为空 | 用这条。没有节点则技术类别空 |
+| 216、218 的对标对象 | `benchmarkRegions`：北京、上海、硅谷等，带写死分数 | 算法中台 `GET /v1/policy/analysis/intensity?scope_type=province` 读 `ads.policy_intensity`。lumen 同一函数在 vendor，但只挂了 `/v1`，专题门面没有转发 | 展示不打 `/v1`。对象从 `ads.policy_intensity` 已有的地区范围读出，走本叶 `policy_intensity` 同一次读取。没有海外城市。demo 的硅谷等不迁 |
+| 214 的力度值、216 的支持力度 | 政策对象上的本地字段，或标杆数组里的 `score` | 同上，力度行在 `ads.policy_intensity`。`run()` 已在 `polan.eval.intensity` | 这是结果，不是选项接口。选项选定后才读 |
+
+`search/options` 的下游是 `/internal/policy/search/options`，Python 读 `dwd.policy_base_info` 的去重，不写死词表。读失败时四个列表都空。
+
 ## 4. 整体流程
 
 1. 用户做部门对比。前端调 `stats` 和 `search`。件数来自已有政策总数；选定发布机构后，条数等于这次目录命中。无命中则清单空，不造 0。
