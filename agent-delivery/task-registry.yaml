@@ -49985,3 +49985,87 @@ tasks:
       - "落盘该二级数据架构到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC4-OUT-DATA.md，写明读哪些已有 ADS 或已落库结果"
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
     update_time: "2026-11-03T11:31:01+08:00"
+  - id: E-E7-POLICY-M1-L08
+    supervised_by: "human:淮政玮"
+    title: "专题政策门面 · 检索结果智能排序"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-01"
+    note: "监管 human:淮政玮。来源 POL-L2-DS10-QRY-ARCH 第 7.1 节，SRS 序号 199。排序模型加在专题政策门面，不在 gkxlumen-display 直连 Python。现网门面没有该入口，接上前展示 rank 仍 501。不把 E-E7-POLICY-M1-L06 当展示联调单。"
+    depends_on:
+      - "POL-L2-DS10-QRY-ARCH"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/controller/PolicyFacadeController.java"
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/feign/RemotePolicyPythonClient.java"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-ARCH.md"
+    definition_of_done:
+      - "gkxlumen-topic-policy 新增排序入口，与 search 一样转到 lumen-algo-py 的 /internal/policy；Java 不打分"
+      - "只覆盖相关性、时效性、重要性。发布时间、效力级别、浏览量仍走已有 search，不进本入口"
+      - "模型未接上时返回诚实空态，不返回 smartScore，不进 topic-async"
+      - "handoff 写明展示侧 GET /display/v1/policy/panorama/rank 只委托本入口，浏览器不改打专题 URL"
+    update_time: "2026-11-03T11:49:05+08:00"
+  - id: E-E7-POLICY-M1-L09
+    supervised_by: "human:淮政玮"
+    title: "专题政策门面 · 检索历史与收藏"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-01"
+    note: "监管 human:淮政玮。来源 POL-L2-DS10-QRY-ARCH 第 7.2 节，SRS 序号 201。展示不自建用户态。现网门面没有该入口，接上前展示 favorites 仍 501。"
+    depends_on:
+      - "POL-L2-DS10-QRY-ARCH"
+    touched_files:
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/controller/PolicyFacadeController.java"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-ARCH.md"
+    definition_of_done:
+      - "gkxlumen-topic-policy 新增历史与收藏入口。历史存检索条件，再次执行走已有 search；收藏存政策 id，打开走已有 docs"
+      - "身份沿用现有鉴权，不新建 display_user_*，不把浏览器 localStorage 当实现"
+      - "该用户没有记录时返回空列表，不造假收藏"
+      - "handoff 写明展示侧 GET /display/v1/policy/panorama/favorites 只委托本入口"
+    update_time: "2026-11-03T11:49:06+08:00"
+  - id: E-E7-POLICY-M1-L10
+    supervised_by: "human:淮政玮"
+    title: "专题政策门面 · 检索结果导出与分享"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-01"
+    note: "监管 human:淮政玮。来源 POL-L2-DS10-QRY-ARCH 第 7.3 节，SRS 序号 202。现网门面没有该入口，接上前展示 share 仍 501。"
+    depends_on:
+      - "POL-L2-DS10-QRY-ARCH"
+    touched_files:
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/controller/PolicyFacadeController.java"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-ARCH.md"
+    definition_of_done:
+      - "gkxlumen-topic-policy 新增导出与分享入口，导出对象是已有 search 返回的政策目录"
+      - "PDF 写桶 gkx-lumen 已有目录 gkx-user-reports；Excel 没有专目录，对象键放 gkx-others；不新造桶或顶层目录；前端不直连对象存储"
+      - "不把序号 217 对标报告和核增研报 614–618 当成本入口。展示侧分享链接仍打开 /display/v1/policy/panorama/share"
+      - "handoff 写明展示侧只委托本入口，不在展示侧组装文件或自建发信"
+    update_time: "2026-11-03T11:49:06+08:00"
