@@ -46851,6 +46851,11 @@ tasks:
       - "隐藏后回归：企业查询页三处导出入口不可见；产业中心/服务机构页导出隐藏状态不受影响（其本就 show-export=false）"
     update_time: "2026-11-02T21:17:45+08:00"
   - id: CMS-JX-SMART-COUNTRY-L01
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/CMS-JX-SMART-COUNTRY-L01.md"
+    cost_warn: "green"
+    actual_tokens: 110000
+    actual_cost: 4.8
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-03T02:38:18.200Z"
     last_seen_at: "2026-11-03T02:38:18.200Z"
@@ -46886,15 +46891,20 @@ tasks:
       - "Java→Python 链路只能传自有 country_code，禁止 loc_ 原码穿透"
       - "至少一个可运行自检覆盖映射翻译与 NOMATCH/CHN 语义；冒烟证据（四接口带/不带地区筛选对照）附 handoff"
       - "文档 live-1.6 + OpenAPI 同步推送；registry 状态流转 + cost 回填"
-    update_time: "2026-11-03T12:49:26+08:00"
+    update_time: "2026-11-03T14:43:35+08:00"
   - id: CMS-JX-SMART-INDUSTRY-L01
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/CMS-JX-SMART-INDUSTRY-L01.md"
+    cost_warn: "green"
+    actual_tokens: 150000
+    actual_cost: 6.5
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-03T02:38:18.333Z"
     last_seen_at: "2026-11-03T02:38:18.333Z"
     lock_until: "2026-11-03T10:38:18.333Z"
     claimed_by: "agent:api-agent"
     title: "智能搜索产业筛选与返回：领域/产业展开 + 前缀匹配 + 就近上浮"
-    status: "in_progress"
+    status: "pending_test"
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P1"
@@ -46905,7 +46915,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 90000
     note: |
-      【需求 2026-11-03 human:徐滕强】智能搜索加产业领域/产业筛选与返回。数据结构已核实：industry_cluster（7 领域 CL-SEI-01 等）→ industry_cluster_map（cluster→INB 产业码 15 条，gkxlumenx_dim）。企业 ES industry_chains_flat 存 L0 码（INB1204），chain_id=INB120401 等子码按前缀归属；返回时底层节点码就近上浮为产业 code+汉字。政策/服务链 MySQL 走已有 industry 高级筛选参数透传。兼容铁律：请求只增筛选、响应只增字段，其他前端不传新参数行为不变；Python 零改动。与 CMS-JX-SMART-COUNTRY-L01 相互独立可并行。【依赖说明】依赖 CMS-JX-SMART-SEARCH-L01（已上线 pending_test，实质无阻塞）。ponytail full。
+      联调确认：集群冒烟（镜像 d3d749be）全过——企业 INB1303 纯筛选 3547 条且 records 每条 industry_id=INB1303/industry_name=集成电路；领域 CL-SEI-01 展开后上浮各自正确（1306/1333/1236）；产业+country 组合 1764；政策 industry_code=9；服务 industry 真过滤；产业接口后置过滤精准 7；兼容回归无筛选旧调用一致。keyword 与 industry_ids 至少一个（拍板 11-03）。下游 Python 零改动。转待测试。
     depends_on:
       - "CMS-JX-SMART-SEARCH-L01"
     collaborators:
@@ -46922,7 +46932,7 @@ tasks:
       - "政策/服务链（MySQL）：复用 industry_cluster_map 展开 + 现有 industry 高级筛选参数透传，Python 零改动"
       - "至少一个可运行自检覆盖领域展开/前缀匹配/就近上浮；冒烟证据（带/不带产业筛选对照 + 返回新增字段样例）附 handoff"
       - "文档 live-1.6 + OpenAPI 同步；registry 状态流转 + cost 回填"
-    update_time: "2026-11-03T10:38:36+08:00"
+    update_time: "2026-11-03T14:43:35+08:00"
   - id: GDF-GRAPH-SCHED-CONTRACT-L01
     supervised_by: "human:徐滕强"
     claimed_by: "agent:architect-agent"
