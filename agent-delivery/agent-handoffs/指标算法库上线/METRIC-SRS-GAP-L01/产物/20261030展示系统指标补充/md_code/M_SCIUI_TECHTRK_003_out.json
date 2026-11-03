@@ -1,0 +1,94 @@
+{
+ "metric_id": "M_SCIUI_TECHTRK_003",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/TechDevelopmentPlan.tsx:1961"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "SRS《02-科技信息展示系统/科技发展态势/技术发展跟踪.md》8 叶逐一核对，「机构数量」未出现；最接近叶 seq 49 地理分布图展示（『技术评估结果按地理区域可视化』功能级）。《科技信息展示系统和科技专题服务系统.md》rg 检索「机构数量」命中均为科技专题服务系统章节（服务链/新增机构统计），非本系统技术发展跟踪语境"
+ },
+ "facts": {
+  "dev_dwd_enterprise_base_rows": 269511,
+  "dev_dwd_institute_tables": 0,
+  "dev_dwd_university_tables": 0,
+  "dev_probe_status_this_run": "dev 不可达((2003, \"Can't connect to MySQL server on '10.50.11), dev_* 键沿用首跑实测值(2026-11-01 首跑在案)",
+  "gkx_university_rows": 20000,
+  "gkx_research_institute_rows": 2074,
+  "gkx_forg_research_org_rows": 20000,
+  "gkx_forg_base_info_rows": 20000,
+  "jiuxin_ads_institution_profile_rows": 83745,
+  "jiuxin_ads_institution_profile_by_type": {
+   "教育机构": 16991,
+   "未知机构类型": 15516,
+   "企业": 15392,
+   "医疗机构": 11228,
+   "科研设施": 9317,
+   "非营利机构": 6210,
+   "政府机构": 4312,
+   "其他机构": 3404,
+   "档案与文化机构": 1071,
+   "科研资助机构": 304
+  },
+  "jiuxin_institution_city_shenzhen": 135,
+  "jiuxin_institution_province_guangdong": 448,
+  "jiuxin_institution_country_china": 9845,
+  "jiuxin_ads_institution_type_rows": 10,
+  "jiuxin_institution_research_type_rows": 37134,
+  "jiuxin_institution_research_type_city_shenzhen": 47
+ },
+ "derived": [
+  {
+   "key": "jiuxin_research_type_share_pct",
+   "value": 44.3418,
+   "numerator": 37134,
+   "denominator": 83745,
+   "note": "分子=科研类五型（education/facility/government/nonprofit/funder）机构数，分母=ads_institution_profile 全表；同表同 WHERE 池（B3 同基），科研类口径 share_basis=全类型底册"
+  },
+  {
+   "key": "jiuxin_shenzhen_share_of_guangdong_pct",
+   "value": 30.1339,
+   "numerator": 135,
+   "denominator": 448,
+   "note": "分子=city_name='深圳'，分母=province_name LIKE '%广东%'；同表同池，share_basis=广东省内底册"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "SHOW TABLES LIKE '%institute%' / '%univ%'（gkxlumenx_dwd，科研机构底册探测）",
+   "source": "dev",
+   "sql": "SHOW TABLES LIKE '%institute%'; SHOW TABLES LIKE '%univ%'",
+   "hits": 0,
+   "hit_names": []
+  },
+  {
+   "probe": "gkx 机构侧类型/城市维探测：dwd_forg_base_info.country 20 万采样分布",
+   "source": "gkx",
+   "sql": "SELECT t.country, COUNT(*) c FROM (SELECT country FROM gkx.dwd_forg_base_info LIMIT 200000) t GROUP BY t.country",
+   "hits": 1,
+   "note": "唯一值 NULL × 20,000（采样覆盖全表，未截断）：地理维不可用"
+  },
+  {
+   "probe": "gkx 评分类/机构分类结果面：SHOW TABLES LIKE '%score%'",
+   "source": "gkx",
+   "sql": "SHOW TABLES FROM gkx LIKE '%score%'",
+   "hits": 0
+  }
+ ],
+ "support_judgment": "完全直接支持",
+ "notes": [
+  "dev gkxlumenx_dwd 无论文/大学/院所底册表；enterprise_base 269,511 行为企业库（含非科研主体），不构成『机构数量』语义承载",
+  "gkx 四张机构侧表均为 20,000/2,074 量级底册，无统一机构类型维，无城市维（dwd_forg_base_info.country 采样 20,000 行全空）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "机构计数为底账口径（当前时点存量），无基期年；久新按类型/城市切片亦为存量快照",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "2890",
+   "4673",
+   "62074"
+  ]
+ }
+}

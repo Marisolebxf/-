@@ -84,7 +84,7 @@
 ### 1.5 引用来源
 
 - UI：`repos/demo-ui-science/src/pages/policy-tracking/policyData.js:1866` — `{ name: '碳强度改善', score: 70 }`（`multiDimensionEvalData.dimensions[environment].indicators[0]`）；维度声明 `:1863-1870`（environment score 72）；结构注释 `:1837`「DS-12 · 多维度效果评估（经济 / 社会 / 环境 / 创新）」；消费方 `simulation/estimate/EstimateWorkbench.jsx:614/627`。
-- 主需求：`local-workspace/docs/tasks/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.4（:1417 段）——「从经济、社会、环境、创新等多个维度对政策效果进行评估」（维度枚举，无指标定义，原文见附录 A）。
+- 主需求：`repos/demo-ui-algo-apiview/public/req-docs/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.1.4（:1417 段）——「从经济、社会、环境、创新等多个维度对政策效果进行评估」（维度枚举，无指标定义，原文见附录 A）。
 - 检索记录：核增需求 17 叶 + 《科技专题服务算法库.md》rg「碳强度/碳排放」0 命中（附录 A.2）。
 
 ### 1.6 推测原意与推测定义（含降档/升档触发器，B10 模板）

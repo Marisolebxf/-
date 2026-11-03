@@ -1,0 +1,74 @@
+{
+ "metric_id": "M_TALENT_UI_IR_SPLIT",
+ "batch": "20261030_展示系统指标补充",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/talent-trend/components/InsightPanel.jsx:131",
+  "repos/demo-ui-science/src/pages/talent-trend/data.js:1161"
+ ],
+ "requirement_trace": {
+  "named_in_srs": true,
+  "note": "SRS 叶「产研对比分析」(seq 251, excel_row 254) 要求展示学术界与产业界人才分布对比；两份需求真源均未给计算口径，本件为推测定义。"
+ },
+ "facts": {
+  "scholar_total": 21316,
+  "current_exp_scholars": 17723,
+  "current_exp_with_org_name": 17668,
+  "academic_university_scholars": 8438,
+  "institute_matched_scholars": 61,
+  "industry_scholars_proxy": 9169,
+  "academic_total_used": 8499
+ },
+ "derived": {
+  "academic_share_of_named_current_pct": {
+   "value": 48.1039,
+   "numerator": 8499,
+   "denominator": 17668,
+   "note": "分母 = facts.current_exp_with_org_name（在任且有机构名的 distinct 学者），分子 = 高校表命中 + 研究院表命中"
+  },
+  "industry_share_of_named_current_pct": {
+   "value": 51.8961,
+   "numerator": 9169,
+   "denominator": 17668,
+   "note": "分子 = 分母 − 学术侧（保守减法代理）"
+  },
+  "industry_per_academic_ratio": {
+   "value": 1.0788,
+   "numerator": 9169,
+   "denominator": 8499,
+   "note": "产业人数 / 学术人数（UI 双柱比值形态）"
+  },
+  "current_exp_share_pct": {
+   "value": 83.1441,
+   "numerator": 17723,
+   "denominator": 21316,
+   "note": "在任履历覆盖率（口径池相对主档 21,316）"
+  }
+ },
+ "absence_probe": [],
+ "support_judgment": "部分支持",
+ "notes": [
+  "学术侧链路（履历→高校表名等值）结构+数据量足；产业侧无机构类型字典字段支撑直分，只能做减法代理（absence_probe 记录研究院表探测结果），故部分支持。升档触发器：机构类型字典上线后按字典直分学术/产业/其他三分类。",
+  "collation 归一沿用共享快照：JOIN 两表必须 CONVERT...COLLATE utf8mb4_general_ci。",
+  "UI mock（data.js:1161-1165）为 5 领域硬编码随机值，正式版替换后双柱读数以本件口径为准。"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面件：在任履历截面（is_current=1），基期=数据装载日；无年份维。",
+ "ctx_refs": {
+  "note": "正文引用型数字登记，供闸5比对，不参与派生算术。",
+  "refs": [
+   "183.240",
+   "141.251",
+   "3318",
+   "34306",
+   "1161",
+   "131",
+   "251",
+   "254",
+   "2.1",
+   "2.2",
+   "2.3",
+   "1267"
+  ]
+ }
+}

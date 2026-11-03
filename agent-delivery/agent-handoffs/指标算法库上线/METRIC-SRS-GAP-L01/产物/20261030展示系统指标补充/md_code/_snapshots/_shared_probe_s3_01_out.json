@@ -1,0 +1,571 @@
+{
+ "generated": "2026-11-01",
+ "batch": "S3-01",
+ "dims": {
+  "gkx": [
+   {
+    "tag": "论文总数 gkx.dwd_zh_paper",
+    "sql": "SELECT COUNT(*) FROM gkx.dwd_zh_paper",
+    "source": "gkx",
+    "rows": 1,
+    "data": [
+     [
+      "100900"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "论文按年 gkx.dwd_zh_paper",
+    "sql": "SELECT publish_year, COUNT(*) FROM gkx.dwd_zh_paper WHERE publish_year IS NOT NULL GROUP BY publish_year ORDER BY publish_year DESC LIMIT 8",
+    "source": "gkx",
+    "status": "error: (1054, \"Unknown column 'publish_year' in 'field list'\")"
+   },
+   {
+    "tag": "专利总数 gkx.dwd_patent",
+    "sql": "SELECT COUNT(*) FROM gkx.dwd_patent",
+    "source": "gkx",
+    "rows": 1,
+    "data": [
+     [
+      "2939895"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "专利按年申请 gkx.dwd_patent",
+    "sql": "SELECT apdt_year, COUNT(*) FROM gkx.dwd_patent WHERE apdt_year IS NOT NULL GROUP BY apdt_year ORDER BY apdt_year DESC LIMIT 8",
+    "source": "gkx",
+    "status": "error: (2013, 'Lost connection to MySQL server during query (The read operation timed out)')"
+   },
+   {
+    "tag": "机构数 gkx.dwd_org_base_info（全表 COUNT 慎用，改大学表+院所表）",
+    "sql": "SELECT (SELECT COUNT(*) FROM gkx.dwd_university), (SELECT COUNT(*) FROM gkx.dwd_institute)",
+    "source": "gkx",
+    "status": "error: (1146, \"Table 'gkx.dwd_university' doesn't exist\")"
+   },
+   {
+    "tag": "人才数 gkx.dwd_scholar",
+    "sql": "SELECT COUNT(*) FROM gkx.dwd_scholar",
+    "source": "gkx",
+    "rows": 1,
+    "data": [
+     [
+      "21316"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "融资事件 gkx 投融资表探测",
+    "sql": "SELECT COUNT(*) FROM gkx.dwd_invest_event",
+    "source": "gkx",
+    "status": "error: (1146, \"Table 'gkx.dwd_invest_event' doesn't exist\")"
+   },
+   {
+    "tag": "新闻/资讯表探测 gkx",
+    "sql": "SELECT COUNT(*) FROM gkx.dwd_news",
+    "source": "gkx",
+    "status": "error: (1146, \"Table 'gkx.dwd_news' doesn't exist\")"
+   }
+  ],
+  "dev": [
+   {
+    "tag": "dev 库清单（非demo）",
+    "dbs": [
+     "gkxlumenx",
+     "gkxlumenx_ads",
+     "gkxlumenx_app",
+     "gkxlumenx_bi",
+     "gkxlumenx_cfg",
+     "gkxlumenx_cms",
+     "gkxlumenx_codegen",
+     "gkxlumenx_config",
+     "gkxlumenx_dim",
+     "gkxlumenx_dwd",
+     "gkxlumenx_flow",
+     "gkxlumenx_job",
+     "gkxlumenx_mp",
+     "gkxlumenx_ods",
+     "gkxlumenx_pay",
+     "gkxlumenx_report",
+     "gkxlumenx_topic_enterprise",
+     "gkxx",
+     "gkxx_app",
+     "gkxx_bi",
+     "gkxx_boot",
+     "gkxx_codegen",
+     "gkxx_config",
+     "gkxx_flow",
+     "gkxx_job",
+     "gkxx_mp",
+     "gkxx_pay",
+     "gkxx_report",
+     "tts"
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkxlumenx_dwd 表数（SHOW）",
+    "sql": "SELECT 1",
+    "source": "dev:gkxlumenx_dwd",
+    "rows": 1,
+    "data": [
+     [
+      "1"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "gkxlumenx_ads 表数（SHOW）",
+    "sql": "SELECT 1",
+    "source": "dev:gkxlumenx_ads",
+    "rows": 1,
+    "data": [
+     [
+      "1"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "dev 论文表探测",
+    "sql": "SHOW TABLES LIKE '%%paper%%'",
+    "source": "dev:gkxlumenx_dwd",
+    "rows": 0,
+    "data": [],
+    "status": "ok"
+   },
+   {
+    "tag": "dev 专利表探测",
+    "sql": "SHOW TABLES LIKE '%%patent%%'",
+    "source": "dev:gkxlumenx_dwd",
+    "rows": 4,
+    "data": [
+     [
+      "enterprise_chain_patent"
+     ],
+     [
+      "enterprise_patent_detail"
+     ],
+     [
+      "enterprise_patent_history"
+     ],
+     [
+      "enterprise_patent_org_rel"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "dev 投融资表探测",
+    "sql": "SHOW TABLES LIKE '%%invest%%'",
+    "source": "dev:gkxlumenx_dwd",
+    "rows": 5,
+    "data": [
+     [
+      "chain_investment"
+     ],
+     [
+      "enterprise_forg_invest"
+     ],
+     [
+      "enterprise_invest"
+     ],
+     [
+      "industry_chain_investment_event"
+     ],
+     [
+      "industry_chain_investment_participant"
+     ]
+    ],
+    "status": "ok"
+   }
+  ],
+  "jiuxin": [
+   {
+    "tag": "久新 论文总量 ads_literature_* 探测",
+    "sql": "SELECT COUNT(*) FROM ads_paper_profile",
+    "source": "jiuxin",
+    "rows": 1,
+    "data": [
+     [
+      "4000000"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "久新 技术成熟度表",
+    "sql": "SELECT COUNT(*) FROM ads_technology_stage_assessment",
+    "source": "jiuxin",
+    "rows": 1,
+    "data": [
+     [
+      "38860"
+     ]
+    ],
+    "status": "ok"
+   },
+   {
+    "tag": "久新 投资表探测",
+    "sql": "SELECT COUNT(*) FROM ads_technology_application_case",
+    "source": "jiuxin",
+    "rows": 1,
+    "data": [
+     [
+      "181735"
+     ]
+    ],
+    "status": "ok"
+   }
+  ]
+ },
+ "fix_20261101": [
+  {
+   "tag": "dwd_zh_paper 年份列探测",
+   "sql": "SHOW COLUMNS FROM gkx.dwd_zh_paper LIKE '%year%'",
+   "source": "gkx",
+   "rows": 1,
+   "data": [
+    [
+     "cover_year_start",
+     "varchar(22)",
+     "YES",
+     "MUL",
+     "None",
+     ""
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "dwd_zh_paper 按年分布（year 列）",
+   "sql": "SELECT year, COUNT(*) FROM gkx.dwd_zh_paper WHERE year IS NOT NULL AND year != '' GROUP BY year ORDER BY year DESC LIMIT 8",
+   "source": "gkx",
+   "status": "error: (1054, \"Unknown column 'year' in 'field list'\")"
+  },
+  {
+   "tag": "大学类表 LIKE",
+   "sql": "SHOW TABLES FROM gkx LIKE '%univ%'",
+   "source": "gkx",
+   "rows": 1,
+   "data": [
+    [
+     "dwd_forg_university_org_info"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "院所类表 LIKE",
+   "sql": "SHOW TABLES FROM gkx LIKE '%institute%'",
+   "source": "gkx",
+   "rows": 1,
+   "data": [
+    [
+     "dwd_research_institute_base_info"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "机构底册 LIKE org",
+   "sql": "SHOW TABLES FROM gkx LIKE '%org%'",
+   "source": "gkx",
+   "rows": 72,
+   "data": [
+    [
+     "dwd_en_report_org"
+    ],
+    [
+     "dwd_foreign_org_annual_financial_info"
+    ],
+    [
+     "dwd_foreign_org_annual_financial_info_ba"
+    ],
+    [
+     "dwd_forg_base_info"
+    ],
+    [
+     "dwd_forg_base_info_bak_20260923"
+    ],
+    [
+     "dwd_forg_executive_info"
+    ],
+    [
+     "dwd_forg_executive_info_bak_20260923"
+    ],
+    [
+     "dwd_forg_product_info"
+    ],
+    [
+     "dwd_forg_product_info_bak_20260923"
+    ],
+    [
+     "dwd_forg_research_org_info"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "投融资类表 LIKE",
+   "sql": "SHOW TABLES FROM gkx LIKE '%invest%'",
+   "source": "gkx",
+   "rows": 5,
+   "data": [
+    [
+     "dwd_industrial_fund_investment_project_i"
+    ],
+    [
+     "dwd_industrial_fund_investment_project_i"
+    ],
+    [
+     "dwd_industrial_fund_investment_strategy"
+    ],
+    [
+     "dwd_industrial_fund_investment_strategy_"
+    ],
+    [
+     "dwd_org_invest_info"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "融资类表 LIKE fin",
+   "sql": "SHOW TABLES FROM gkx LIKE '%financ%'",
+   "source": "gkx",
+   "rows": 7,
+   "data": [
+    [
+     "dwd_foreign_org_annual_financial_info"
+    ],
+    [
+     "dwd_foreign_org_annual_financial_info_ba"
+    ],
+    [
+     "dwd_org_annual_financial_info"
+    ],
+    [
+     "dwd_org_annual_financial_info_bak_202609"
+    ],
+    [
+     "dwd_org_financing_info"
+    ],
+    [
+     "dwd_org_stock_finance_info"
+    ],
+    [
+     "dwd_org_stock_finance_info_bak_20260911"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "新闻资讯类表 LIKE",
+   "sql": "SHOW TABLES FROM gkx LIKE '%news%'",
+   "source": "gkx",
+   "rows": 3,
+   "data": [
+    [
+     "dwd_industry_chain_news_info"
+    ],
+    [
+     "dwd_news_base"
+    ],
+    [
+     "dwd_org_important_news_info"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "资讯政策类表 LIKE",
+   "sql": "SHOW TABLES FROM gkx LIKE '%policy%'",
+   "source": "gkx",
+   "rows": 4,
+   "data": [
+    [
+     "dwd_global_policy_base"
+    ],
+    [
+     "dwd_global_policy_base_bak_20260923"
+    ],
+    [
+     "dwd_policy_base"
+    ],
+    [
+     "dwd_policy_base_bak_20260923"
+    ]
+   ],
+   "status": "ok"
+  }
+ ],
+ "fix2_20261101": [
+  {
+   "tag": "大学表行数",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_forg_university_org_info",
+   "source": "gkx",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "20000"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "院所表行数",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_research_institute_base_info",
+   "source": "gkx",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "2074"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "机构融资事件行数",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_org_financing_info",
+   "source": "gkx",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "25654"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "新闻底表行数",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_news_base",
+   "source": "gkx",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "20000"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "政策底表行数",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_policy_base",
+   "source": "gkx",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "20000"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "全球政策行数",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_global_policy_base",
+   "source": "gkx",
+   "note": "",
+   "rows": 1,
+   "data": [
+    [
+     "20000"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "论文年份分布（20万采样）",
+   "sql": "SELECT cover_year_start, COUNT(*) c FROM (SELECT cover_year_start FROM gkx.dwd_zh_paper LIMIT 200000) t WHERE cover_year_start REGEXP '^[0-9]{4}$' GROUP BY cover_year_start ORDER BY cover_year_start DESC LIMIT 10",
+   "source": "gkx",
+   "note": "20万行采样，非全表",
+   "rows": 10,
+   "data": [
+    [
+     "2026",
+     "2989"
+    ],
+    [
+     "2025",
+     "6548"
+    ],
+    [
+     "2024",
+     "32379"
+    ],
+    [
+     "2023",
+     "6651"
+    ],
+    [
+     "2022",
+     "6331"
+    ],
+    [
+     "2021",
+     "6758"
+    ],
+    [
+     "2020",
+     "6336"
+    ],
+    [
+     "2019",
+     "6174"
+    ],
+    [
+     "2018",
+     "6067"
+    ],
+    [
+     "2017",
+     "6903"
+    ]
+   ],
+   "status": "ok"
+  },
+  {
+   "tag": "专利申请年分布（20万采样）",
+   "sql": "SELECT apdt_year, COUNT(*) c FROM (SELECT apdt_year FROM gkx.dwd_patent LIMIT 200000) t WHERE apdt_year IS NOT NULL GROUP BY apdt_year ORDER BY apdt_year DESC LIMIT 8",
+   "source": "gkx",
+   "note": "20万行采样，非全表",
+   "rows": 6,
+   "data": [
+    [
+     "2026",
+     "4986"
+    ],
+    [
+     "2025",
+     "29852"
+    ],
+    [
+     "2024",
+     "41193"
+    ],
+    [
+     "2023",
+     "41365"
+    ],
+    [
+     "2022",
+     "41239"
+    ],
+    [
+     "2021",
+     "41365"
+    ]
+   ],
+   "status": "ok"
+  }
+ ]
+}

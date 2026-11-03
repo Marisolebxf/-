@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import json
 
-SHARED = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s309_gamma_out.json"
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_EXCH_001_out.json"
+SHARED = "_snapshots/_shared_s309_gamma_out.json"
+OUT = "M_SCIUI_EXCH_001_out.json"
 
 
 def main() -> None:

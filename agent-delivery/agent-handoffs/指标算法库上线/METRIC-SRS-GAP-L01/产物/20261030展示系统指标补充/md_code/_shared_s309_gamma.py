@@ -19,13 +19,13 @@ import re
 import sys
 from collections import Counter
 
-sys.path.insert(0, "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pymysql  # noqa: E402
 
 from _gkxdb import gkx  # noqa: E402
 
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s309_gamma_out.json"
+OUT = "_snapshots/_shared_s309_gamma_out.json"
 
 DEV = dict(
     host="10.50.11.76", port=3306, user="root", password="Gkxzp202600",

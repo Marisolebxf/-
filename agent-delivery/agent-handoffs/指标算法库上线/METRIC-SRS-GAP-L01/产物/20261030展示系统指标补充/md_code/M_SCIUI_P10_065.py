@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import json
 
-SHARED = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/_snapshots/_shared_s309_gamma_out.json"
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_P10_065_out.json"
+SHARED = "_snapshots/_shared_s309_gamma_out.json"
+OUT = "M_SCIUI_P10_065_out.json"
 
 # UI mock 宿主序列（mockData.js:813-817 investment.values，清单登记宿主）
 MOCK_HOST = [8.2, 9.6, 11.4, 10.8, 12.6, 14.2, 13.5, 15.8, 16.4, 18.2]

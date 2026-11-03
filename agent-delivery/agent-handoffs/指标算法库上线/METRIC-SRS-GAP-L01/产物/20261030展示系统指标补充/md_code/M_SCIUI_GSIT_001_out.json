@@ -1,0 +1,86 @@
+{
+ "metric_id": "M_SCIUI_GSIT_001",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/overviewData.js:54",
+  "repos/demo-ui-science/src/overviewData.js:578"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "SRS《02-科技信息展示系统/科技发展态势/科技全域态势.md》16 叶逐一核对，「论文总数」未出现；最接近叶为 seq 10 统计指标展示功能（『数量统计、分布比例、增长趋势』功能描述级），未点名指标名。《科技信息展示系统和科技专题服务系统.md》rg 检索「论文总数」0 命中"
+ },
+ "facts": {
+  "dev_dwd_paper_tables": null,
+  "gkx_dwd_zh_paper_rows": 100900,
+  "gkx_dwd_zh_paper_year_dist_top10": {
+   "2026": 2989,
+   "2025": 6548,
+   "2024": 32379,
+   "2023": 6651,
+   "2022": 6331,
+   "2021": 6758,
+   "2020": 6336,
+   "2019": 6174,
+   "2018": 6067,
+   "2017": 6903
+  },
+  "gkx_dwd_zh_paper_year4_valid": 100900,
+  "jiuxin_ads_paper_profile_rows": 4000000,
+  "jiuxin_ads_paper_profile_year_dist_top10": {
+   "2026": 91964,
+   "2025": 858620,
+   "2024": 616335,
+   "2023": 440998,
+   "2022": 354080,
+   "2021": 306284,
+   "2020": 276573,
+   "2019": 244223,
+   "2018": 223041,
+   "2017": 204017
+  },
+  "jiuxin_ads_paper_profile_year_null": 0,
+  "jiuxin_ads_paper_profile_language_top5": {
+   "en": 3828053,
+   "None": 81888,
+   "de": 19799,
+   "fr": 12188,
+   "es": 9980
+  }
+ },
+ "derived": [
+  {
+   "key": "paper_total_jiuxin_plus_gkx",
+   "value": 4100900,
+   "numerator": 4000000,
+   "denominator": 100900,
+   "note": "双库合计口径：久新 ads_paper_profile（OpenAlex 全语种池）+ gkx dwd_zh_paper（中文池）。numerator/denominator 此处分别为两加数（非比值），分子分母同库各自 COUNT(*)、口径见 facts 键名；两池可能存在中文论文重复收录，合计值仅作规模上界参考，不建议直接对外"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "SHOW TABLES LIKE '%paper%'（gkxlumenx_dwd）",
+   "source": "dev",
+   "sql": "SHOW TABLES LIKE '%paper%'",
+   "hits": -1,
+   "note": "未取证：(2003, \"Can't connect to MySQL server on '10.50.11.76' (timed out)\")"
+  }
+ ],
+ "support_judgment": "完全直接支持",
+ "notes": [
+  "dev 论文表探测未取证（连接失败），按共享快照 _shared_probe_s3_01_out.json dims.dev 记录 0 命中引用",
+  "gkx 年份分布查询 LIMIT 200000 未截断（全表 100,900 行 < 200,000），结果等同全表，非采样"
+ ],
+ "base_years_used": [
+  "2026",
+  "2025",
+  "2024",
+  "2023",
+  "2022"
+ ],
+ "base_years_missing": [],
+ "base_years_note": "两库年份列可用：gkx cover_year_start（varchar 四位年 100% 有效，B9 已规避类型陷阱）；久新 publication_year int。年份仅用于分布描述，总数读数为全库底账、不分年",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": []
+ }
+}

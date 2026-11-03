@@ -85,7 +85,7 @@
 ### 1.5 引用来源
 
 - UI：`repos/demo-ui-science/src/pages/policy-tracking/policyData.js:2208` — `{ label: '平均到账周期', value: '46 天' }`（`policyPortraitSummaries[1].detail.metrics` 第 3 项）；卡片声明 `:2196-2198`（title '企业画像'，subtitle '惠及企业结构与匹配度'）；消费方 `analysis/PortraitTrio.jsx:110`。
-- 主需求：`local-workspace/docs/tasks/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.2.5（:1449 段）——「包括政策发布、申报受理、评审评估、资金拨付、效果评估等环节」（流程枚举，非指标定义，原文见附录 A）。
+- 主需求：`repos/demo-ui-algo-apiview/public/req-docs/科技信息展示系统和科技专题服务系统.md` 1.1.1.1.4.2.3.2.5（:1449 段）——「包括政策发布、申报受理、评审评估、资金拨付、效果评估等环节」（流程枚举，非指标定义，原文见附录 A）。
 - 检索记录：核增需求 17 叶 + 《科技专题服务算法库.md》rg「到账/拨付」拨付 0 命中（附录 A.2）。
 
 ### 1.6 推测原意与推测定义（含降档/升档触发器，B10 模板）

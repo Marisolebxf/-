@@ -15,7 +15,7 @@ import json
 
 import pymysql
 
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_INCUB_012_out.json"
+OUT = "M_SCIUI_INCUB_012_out.json"
 DEV = dict(host="10.50.11.76", port=3306, user="root", password="Gkxzp202600", charset="utf8mb4")
 
 # 新版页 mockData.js 19 载体 graduateRate（:48,60,72,84,96,108,120,132,144,156,168,180,192,204,216,228,240,252,264,276,288,300 行）

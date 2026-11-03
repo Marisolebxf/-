@@ -1,0 +1,137 @@
+{
+ "metric_id": "M_SCIUI_INNOV_010",
+ "batch": "S3-01",
+ "ui_evidence": [
+  "repos/demo-ui-science/src/pages/global-innovation/tabs/realtimeModel.js:215",
+  "repos/demo-ui-science/src/pages/global-innovation/tabs/realtimeModel.js:26"
+ ],
+ "requirement_trace": {
+  "named_in_srs": false,
+  "note": "「区域投资额」全称未命中；近似叶：SRS 全球创新监测 seq 83『城市创新数据监控』（城市投资规模监控）；seq 68『可视化数据呈现』（柱状图形态）；技术发展跟踪.md:48 气泡图投资额（另页语境）"
+ },
+ "facts": {
+  "dev_probe_status_this_run": "dev 不可达((2003, \"Can't connect to MySQL server on '10.50.11), dev_* 键沿用首跑实测值(2026-11-01 首跑在案)",
+  "gkx_financing_cols": 20,
+  "gkx_fin_province_dist": {
+   "广东省": 24598
+  },
+  "gkx_fin_city_top12": {
+   "深圳市": 15211,
+   "广州市": 7075,
+   "东莞市": 1784,
+   "惠州市": 528
+  },
+  "jiuxin_project_institution_country_top12": {
+   "中国": {
+    "projects": 10280,
+    "institutions": 2972
+   },
+   "United States": {
+    "projects": 5599,
+    "institutions": 3311
+   },
+   "United Kingdom": {
+    "projects": 2313,
+    "institutions": 1016
+   },
+   "Germany": {
+    "projects": 2011,
+    "institutions": 806
+   },
+   "Australia": {
+    "projects": 1445,
+    "institutions": 385
+   },
+   "France": {
+    "projects": 1337,
+    "institutions": 1011
+   },
+   "Canada": {
+    "projects": 1311,
+    "institutions": 357
+   },
+   "Japan": {
+    "projects": 1161,
+    "institutions": 569
+   },
+   "Spain": {
+    "projects": 1123,
+    "institutions": 527
+   },
+   "The Netherlands": {
+    "projects": 1061,
+    "institutions": 239
+   },
+   "Italy": {
+    "projects": 996,
+    "institutions": 448
+   },
+   "Hong Kong": {
+    "projects": 993,
+    "institutions": 73
+   }
+  },
+  "jiuxin_project_institution_country_sample_note": "20 万行采样（ads_project_institution LIMIT 200000 后 join），非全表 22,571,355 行；全量 GROUP BY 在 Doris 查询超时（实测 query timeout），采样协议见 MD §2.4",
+  "jiuxin_region_snapshot_rows": 9367,
+  "jiuxin_region_snapshot_investment_score_nonnull": 0,
+  "jiuxin_project_profile_rows": 1838841,
+  "jiuxin_project_amount_cny_rows": 160822,
+  "jiuxin_shenzhen_funding_districts": 9
+ },
+ "derived": [
+  {
+   "key": "gkx_fin_guangdong_share_pct",
+   "value": 100.0,
+   "numerator": 24598,
+   "denominator": 24598,
+   "note": "分子=省份=广东省的融资事件数，分母=省份非空的融资事件数（24,598）；share_basis=gkx 融资池 join 机构底册子集（B3）——广东 100% 截断证据"
+  },
+  {
+   "key": "jiuxin_project_amount_cny_coverage_pct",
+   "value": 8.75,
+   "numerator": 160822,
+   "denominator": 1838841,
+   "note": "分子=amount_cny 非空项目数，分母=ads_project_profile 全表；区域金额聚合的覆盖率上限"
+  }
+ ],
+ "absence_probe": [
+  {
+   "probe": "开发库区域维承载：enterprise_invest region/province/city/country/area 列存在性",
+   "source": "dev",
+   "sql": "SHOW COLUMNS FROM enterprise_invest LIKE '%region%'（province/city/country/area 同法逐词）",
+   "hits": 0,
+   "hit_names": [],
+   "hit_detail": "区域类列 0 命中；enterprise_forg_invest 仅有 inv_country_code（股东国别，投资方向语义相反）"
+  },
+  {
+   "probe": "gkx 融资事件表区域列存在性（21 列逐一核对）",
+   "source": "gkx",
+   "sql": "SHOW COLUMNS FROM gkx.dwd_org_financing_info",
+   "hits": 0,
+   "hit_names": [],
+   "hit_detail": "区域类列 0 命中（列清单：org_id/name_cn/external_id/funding_round/funding_amount/funding_currency_code/completion_date/investors_name/data_source/pre_valuation/after_valuation/…）；区域维须 ⋈ dwd_org_base_info（province/city/area）"
+  }
+ ],
+ "support_judgment": "部分支持",
+ "notes": [
+  "降档主因①（gkx 池截断）：融资池省份 100% 广东省（24,598/24,598）——『全球区域投资额对比』在 gkx 侧退化为『广东省内城市对比』；城市维可算（Top12 见 facts）但语义非全球",
+  "降档主因②（久新金额覆盖）：项目金额 CNY 覆盖 8.7%（160,822/1,838,841，其中 amount 原值仅 63,122），按机构属地聚合后的区域金额是『有金额子集』口径，覆盖率需随读数披露；region_snapshot.investment_score 9,367 行全空（schema：跨币种不可比，未实现）",
+  "口径注记：久新项目-机构多对多（22,571,355 关联行），同一项目多机构属地会重复计入——区域聚合需按『主机构』或『均摊』口径裁定后才能出正式读数（B10 双口径待裁定）",
+  "UI mock 的『金额(亿美元)』月序列（316→465）为月度投资流；gkx 按月聚合可行（completion_date 100% 覆盖，INNOV_006 按年已证），但同受广东池截断",
+  "升档路径：接全球融资事件源（CB Insights/PitchBook R3/R4）→ 完全直接支持；或甲方接受『广东省内区域对比』语义 → gkx 侧升完全转换支持（城市维 join 覆盖已证）"
+ ],
+ "base_years_used": [
+  2024,
+  2025
+ ],
+ "base_years_missing": [],
+ "base_years_note": "区域聚合读数无固定基期年（存量累计口径）；城市/省份分布为全周期事件计数；2026 在途年不参与",
+ "ctx_refs": {
+  "note": "正文引用型数字登记",
+  "refs": [
+   "22857",
+   "29075",
+   "8826"
+  ]
+ }
+}

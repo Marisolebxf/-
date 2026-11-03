@@ -13,7 +13,7 @@ import json
 
 import pymysql
 
-OUT = "/Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261030_展示系统指标补充/code/M_SCIUI_ECOSYS_001_out.json"
+OUT = "M_SCIUI_ECOSYS_001_out.json"
 JX = dict(host="47.93.119.170", port=29030, user="test2",
           password="m+DWAG23RCXBP2L+y7ydaqu3aSuur7mxFOcl3iZHDgVe4eka",
           database="gkx_technology_analysis_dev", charset="utf8mb4")
