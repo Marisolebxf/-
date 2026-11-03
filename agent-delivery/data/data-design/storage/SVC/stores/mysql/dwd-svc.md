@@ -55,6 +55,63 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 
 源：`demo_gkxlumenx_ods.dwd_org_financing_info` / `dwd_org_invest_info`。列名见 [`../../etl/ods-to-dwd-mapping.md`](../../etl/ods-to-dwd-mapping.md) §3。Q-SVC-006：可空表。`event_type` ∈ {`FINANCING`,`INVEST`}。
 
+### 2.4 建表语句
+
+与 [`ddl-demo-empty.sql`](./ddl-demo-empty.sql) 同文。库名 `demo_gkxlumenx_dwd`。派单包只换库名。
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`svc_org_circle` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'hang ODS/ENT 同一机构键，不复制主体',
+  `rule_version` VARCHAR(32) NOT NULL DEFAULT 'svc_rule_demo_kw_v1',
+  `hit_fields` JSON NULL COMMENT '命中的 ODS 列名',
+  `service_type_candidate` VARCHAR(32) NULL COMMENT '六类候选，待核验',
+  `pending_client_confirm` TINYINT(1) NOT NULL DEFAULT 1,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_org_circle_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='SVC 圈定池 hang org_id；禁止平行 svc_org_base';
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`svc_org_graph_hang` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `node_id` VARCHAR(80) NOT NULL COMMENT 'Nebula vid；与 org_id 对齐 hang',
+  `space_name` VARCHAR(64) NOT NULL DEFAULT 'demo_gkx_chain',
+  `tag_name` VARCHAR(32) NULL COMMENT '建议复用 institution；不新建 space',
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_graph_hang` (`org_id`, `space_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='SVC hang 一张 G demo_gkx_chain；禁 gkx_service';
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`svc_org_finance_event` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `event_id` VARCHAR(64) NOT NULL,
+  `event_type` VARCHAR(16) NOT NULL COMMENT 'FINANCING / INVEST',
+  `amount` DECIMAL(20,2) NULL,
+  `event_date` DATE NULL,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_finance_event` (`org_id`, `event_id`, `event_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='投融资事件 hang；Q-SVC-006 允许 0 行';
+```
+
 ## 3. 读写（阶段 F）
 
 | 写 | 读 |
@@ -66,4 +123,4 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 - 38 列 `service_org` / `svc_org_base` 主体  
 - 以 `gkx-mysql-raw` as-built 倒逼本层  
 - 未评审标 `approved`  
-- 本文件粘贴替代 [`ddl-demo-empty.sql`](./ddl-demo-empty.sql) 的第二套 DDL
+- 在 §2.4 与 [`ddl-demo-empty.sql`](./ddl-demo-empty.sql) 之外再写一套列

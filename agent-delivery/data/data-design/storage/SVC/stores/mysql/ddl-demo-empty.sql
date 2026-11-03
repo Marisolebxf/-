@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_org_card` (
   `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_svc_org_card_org` (`org_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_general_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
 COMMENT='名单/详情卡面；线上不联 ODS；禁当 svc_org_base';
 
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_metric_fact` (

@@ -26,7 +26,7 @@ gkxlumenx_ods.dwd_org_industry_tags
 
 **CHAIN-B2-INDANA**：本期不配置、禁止写入 `industry_analysis_*`。
 
-顺序见 09 §4。
+顺序见 09 §4。链树按 09 §3.0 定稿字段对应加工。`parent_name` → `chain_level`（节点行 → `node_level`）。
 
 ## 3. 作业状态
 

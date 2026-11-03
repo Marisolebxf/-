@@ -1,7 +1,7 @@
 # GDF-CHAIN-WORKPACK-v2
 
 > **读者**：GDF 数据中台产线（不使用 Cursor）  
-> **版本**：v2.2（2026-11-02 · round1 核对签收与 20 题答复；链树映射按真源实测重写）· **可对外投递**  
+> **版本**：v2.2.6（2026-11-02 · 链树映射按真源实测重写；正式产业锚点在 Milvus 库 `gkxlumen`，集合 `gkxlumen_industry_anchor` 已建并 load、0 条，与 demo 的库 `default` 分开）· **可对外投递**  
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`（产业链要素库 Sheet）  
 > **Mapping 施工真源**：[09-产业链域-ETL-Mapping明细-源表到DWD.md](09-产业链域-ETL-Mapping明细-源表到DWD.md)  
 > **建表 DDL 真源**：[10-DWD-MySQL-DDL/dwd-chain.md](10-DWD-MySQL-DDL/dwd-chain.md)（包内复制件，库名 `gkxlumenx_dwd`；v5 文档作废）
@@ -22,7 +22,8 @@
 | [23-核对签收与答复.md](23-核对签收与答复.md) | **round1 核对签收与 20 题逐题答复** |
 | [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 建表指针 |
 | [11-作废与误源对照.md](11-作废与误源对照.md) | 误源对照 |
-| [12-DWD后加工-产业链入向量库.md](12-DWD后加工-产业链入向量库.md) | **v2.1 新增**：链表洗完+上图稳定后整库一次 rebuild；政策抽产业的锚点来源 |
+| [12-DWD后加工-产业链入向量库.md](12-DWD后加工-产业链入向量库.md) | DWD 成功后 GDF 触发引擎入图调度任务并轮询终态。写入 Milvus 库 `gkxlumen` 的 `gkxlumen_industry_anchor`。不写库 `default` |
+| [script/](script/README.md) | 入向量库脚本。GDF 配置 `industry_embed.py`。入图两份不配置 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本 |
 
 ## 投递约定

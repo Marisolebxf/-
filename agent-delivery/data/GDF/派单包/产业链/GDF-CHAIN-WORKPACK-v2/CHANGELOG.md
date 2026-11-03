@@ -2,12 +2,40 @@
 
 > v2 目录自 v2.0 起新记；v1.x 历史见 `../GDF-CHAIN-WORKPACK-v1/CHANGELOG.md`。
 
+## v2.2.7 — 2026-11-02
+
+- **入向量库由 GDF 配脚本**：问 9 指向 `script/README.md`。GDF 在平台上配置 `industry_embed.py` 的 `rebuild`，直接写库 `gkxlumen` 的 `gkxlumen_industry_anchor`。不调用 `POST /internal/industry/embed/rebuild`。副本里的 `DB_NAME=default` 和 demo 读库闸门，配作业前改掉。上图仍只走调度触发和轮询。
+- **问 12 的点数改为锚点条数**：入向量库看 `industry_chain` 53 行、`industry_chain_node` 1,220 行里有名称的行是否都写入集合。不再用图上 `chain` / `segment` 顶点数和 `vertices_written`。
+
+## v2.2.6 — 2026-11-02
+
+- **正式集合已建**：Milvus 库 `gkxlumen` 中创建 `gkxlumen_industry_anchor` 并 load。768 维、COSINE、主键 `vid`、动态字段打开，0 条。库 `default` 的同名集合未动。
+
+## v2.2.5 — 2026-11-02
+
+- **上图改为调度对接**：链树 DWD `success` 后，GDF 调用燕大知识图谱引擎的入图调度任务触发接口，引擎立刻返回已收下。GDF 轮询任务状态直到成功或失败。不调用 `POST /internal/v1/chain/graph/project`，不在 GDF 节点跑入图脚本。写入 `23` 问 8、问 10 和 `12` §5.1、§5.4。
+
+## v2.2.4 — 2026-11-02
+
+- **向量隔离改为 Milvus 数据库**：正式库 `gkxlumen`（现网已建，当前 0 个集合）。demo 仍用库 `default`。集合名两边都是 `gkxlumen_industry_anchor`。v2.2.2 的异名集合 `gkx_chain_industry_anchor` 作废。`lumen-algo-py` 的 `dbName` 仍是 `default`，正式 rebuild 改库之前禁止执行。
+
+## v2.2.3 — 2026-11-02
+
+- **23 按现网核对结果改答复**：分表只看 `parent_name`；`chain_tier` 只在链表写 `L0`/`L1`；`sort_no` 取码末两位；`future_industry_flag` 写 0，不 JOIN 簇表。正式库关系表当前 0 行，demo 为 913 行。
+- **正式向量集合三处共用**：`gkx_chain_industry_anchor` 由产业链 `12` 创建。政策 C1、技术节点产业映射、子学科产业关联都用这一集合，不另建。政策脚本默认前缀改为 `gkx_chain_industry_`。写入 `23` 问 9 下表。
+
+## v2.2.2 — 2026-11-02
+
+- **12 号向量集合与算法中台 demo 隔离**：正式集合 `gkx_chain_industry_anchor`（前缀 `gkx_chain_industry_`）。demo 中台按钮仍写 `gkxlumen_industry_anchor`（前缀 `gkxlumen_industry_`，对应 `demo_gkx_chain`）。同一台 Milvus，集合名分开。正式批不读、不写 demo 集合。答复记入 `23` 问 9 下表。
+
 ## v2.2.1 — 2026-11-02（二次确认）
 
 - **12 号契约补全**（round2 问 8~13 全部答复）：图空间正式定名 **`gkx_chain`**（徐滕强拍板，全文替换占位名）；新增 §5 接口契约（上图/rebuild 路径、请求响应字段、`index_version`=yyyyMMddHHmmss、点数稳定四连判 + 两条已知边界、GDF 编排落点）；章节顺延（验收→6、关系→7）。
 - **23 号答复同步更新**：问 8~13 从「待架构师确认」改「已答复」；开工判定表「12 后加工」从待 round2 改**可起草**。
 - 09 OPEN-CHAIN-FLOW-02 关闭。
 - 正式图谱由 GDF 专门代码读写；我方算法侧 demo 闸门（assert_demo_nebula_space 等）不进 GDF 契约，其正式化改造另行派单（algo 域）。
+- 同日补齐 12 文首、第 1 节警告和 23 遗留表残留：问 8~13 五项已定，正式空间 `gkx_chain`（lumen）。淮政玮确认。
+- `script/` 放入 `lumen-algo-py` 上图与 rebuild 原文（`graph_project.py`、`industry_embed.py` 及两条路由），供 GDF 对照 §5。不在 GDF 节点执行。
 
 ## v2.2 — 2026-11-02
 

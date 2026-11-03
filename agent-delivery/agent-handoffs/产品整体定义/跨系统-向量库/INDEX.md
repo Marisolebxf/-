@@ -24,7 +24,7 @@
 
 ## 一句话
 
-**一张产业锚点向量（受控词表 = 图上 chain/segment），展示与专题共用；只召回候选名，定码仍走图谱 VID + FETCH。** **建库挂在产业链灌数末段**（图点 VID 稳定后 rebuild）；政策/企业等业务灌数只消费检索，不负责建库。物理引擎复用现网 **Milvus 2.4 standalone**（`10.50.69.111:19530`，**向量库，没进 K8s**）；文本推理走 K8s TEI `http://gkxlumen-embed-tei:8080/v1/embeddings`。产业 collection 前缀 **`gkxlumen_industry_`**；**禁止**写入存量 `amcpdp-*`。Java 不跑向量算法；前端不直连向量库或 TEI。原记 `88.48` / 连字符前缀 **作废**。
+**一张产业锚点向量（受控词表 = 图上 chain/segment），展示与专题共用；只召回候选名，定码仍走图谱 VID + FETCH。** **建库挂在产业链灌数末段**（图点 VID 稳定后 rebuild）；政策/企业等业务灌数只消费检索，不负责建库。物理引擎复用现网 **Milvus 2.5.4 standalone**（`10.50.69.111:19530`，**向量库，没进 K8s**）。lumen 库 **`gkxlumen`**，集合 **`gkxlumen_industry_anchor`**（2026-11-02 已建并 load，0 条）；demo 用库 **`default`** 的同名集合。文本推理走 K8s TEI `http://gkxlumen-embed-tei:8080/v1/embeddings`。产业 collection 前缀 **`gkxlumen_industry_`**；**禁止**写入存量 `amcpdp-*`，也禁止 lumen 正式批去写库 `default`。Java 不跑向量算法；前端不直连向量库或 TEI。原记 `88.48` / 连字符前缀 **作废**。
 
 ## 与知识图谱 SAD 的分工
 
