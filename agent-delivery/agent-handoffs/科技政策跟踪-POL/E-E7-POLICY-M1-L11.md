@@ -93,3 +93,5 @@ ponytail: off
 
 - 新增 `sdd/l2/E-E7-POLICY-M1-L11.md`
 - 新增本 handoff
+
+2026-11-03 human:淮政玮 签收本架构。入口仍未接通，不灌假订阅。

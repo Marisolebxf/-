@@ -129,3 +129,5 @@ D16 列四表相同：`metric_id`（留空）、`gap_item`（序号和叶子名�
 - 部署 namespace / 镜像 tag：无
 - K8s rollout：未部署
 - dev 测试 URL / 命令与结果：定义单，未跑
+
+2026-11-03 human:淮政玮 签收。只定列，灌数仍由 POL-L2-DS10-TREND-GAPFILL-L01 执行。

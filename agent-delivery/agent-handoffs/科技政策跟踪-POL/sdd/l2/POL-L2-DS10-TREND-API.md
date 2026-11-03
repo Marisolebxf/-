@@ -7,6 +7,7 @@
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：`US-DS-POL-02`
 - 上游：`sdd/l2/POL-L2-DS10-TREND-ARCH.md`（2026-11-03 `human:淮政玮` 按说明书第 11 节签收，本分册以它为准，不改）、说明书第 11 节、SRS `科创政策全景.md` 序号 203–206、`sdd/契约输入清单.md` 全景里的 `stats` / `ingest` / `jobs` / `subscriptions`
+- 签收：2026-11-03 human:淮政玮 签收。空是空列表或空图，接口不直接返回 mock。
 
 本分册只定科创政策全景二级「政策动向跟踪」的后台接口。它是 `BE-POL-CONTRACT-01` 的输入，不是第二份 API-POL。不另建契约文件。
 
