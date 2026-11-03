@@ -1,9 +1,10 @@
 # 科技专题服务系统 · 需规逐句核对（政策分析 / 产业服务链分析 / 综合智能分析）
 
-> **核对日期**：2026-11-02（晚间实测）；2026-11-03 v2 修正验收真源为 srs 叶子并补叶级映射表
+> **核对日期**：2026-11-02（晚间实测）；2026-11-03 v2 修正验收真源为 srs 叶子并补叶级映射表；v3 经用户指定原始 Excel 复核
 > **执行**：agent:qa-agent（GLM `glm-5.3-flash`，Cursor 会话）
 > **核对真源**：现场站点 `https://edu.itic-sci.com/tts/svcz/`（1920×1080 视口，CDP 驱动，纯文字留证）
-> **需规验收真源**：`agent-delivery/bid-reference/srs/04-科技专题服务系统/科技专题战略分析/` 三份叶子文件——`政策分析.md`（7 叶，seq 110–116 / excel_row 113–119）、`产业服务链分析.md`（16 叶，seq 117–132 / excel_row 120–135）、`综合智能分析.md`（9 叶，seq 133–141 / excel_row 136–144）。依据 `bid-reference/README.md`：「需规验收原文以 `srs/` 叶子『需规功能描述』为准」（当前 `SOURCE.yaml status=coverage_ok`，未 cutover）
+> **需规原始真源（用户指定 2026-11-03）**：`/Users/z.ai/data/project/gkx/参考文档/需规/国际科技信息中心项目_需求规格说明书功能清单-…_v1.2(4).xlsx`「科技专题服务系统」sheet **行 113–144**（序号 110–141；G=智能服务集群 / H=科技专题服务系统 / I=科技专题战略分析；J/K/L=四五六级功能，M=需规功能描述）。已机器逐字比对：该 32 行 M 列与 srs 叶子「需规功能描述」**32/32 一致、零差异**；行 145 起进入「项目管理」三级，范围边界正确
+> **需规验收真源（仓内派生）**：`agent-delivery/bid-reference/srs/04-科技专题服务系统/科技专题战略分析/` 三份叶子文件——`政策分析.md`（7 叶，seq 110–116 / excel_row 113–119）、`产业服务链分析.md`（16 叶，seq 117–132 / excel_row 120–135）、`综合智能分析.md`（9 叶，seq 133–141 / excel_row 136–144）。依据 `bid-reference/README.md`：「需规验收原文以 `srs/` 叶子『需规功能描述』为准」（当前 `SOURCE.yaml status=coverage_ok`，未 cutover）
 > **招标章节对照**：`agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` §1.1.1.2.4.2.6–.8（L4973–L5225；cutover 前仍为设计/任务的招标章节真源；其六级功能描述与 srs 叶子「需规功能描述」逐句一致，仅两处虚词差异，见 §0.5）
 > **功能点对照**：`qa/total-set/KJZTFWXT/fp-split-run/work/T19–T21`（政策）、`T22–T29`（服务链）、`T30–T32`（综合智能）
 > **源码佐证**：`repos/lumen-ui-topic`（Vue3 + Arco；`src/views/policy/PolicyAnalysisConfigPage.vue` 等）
