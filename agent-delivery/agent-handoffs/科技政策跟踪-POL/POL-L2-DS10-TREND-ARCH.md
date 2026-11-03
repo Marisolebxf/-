@@ -8,7 +8,7 @@
 | supervised_by | `human:淮政玮` |
 | claim_type | `coordinator_dispatch` |
 | lock_until | `2026-11-04T04:00:30.744Z` |
-| 说明 | 2026-11-03 human:淮政玮按可实现条件复核后再次签收 |
+| 说明 | 2026-11-03 human:淮政玮按说明书第 11 节再次签收 |
 
 ## Ponytail
 
@@ -53,11 +53,11 @@ ponytail: off
 
 原 DoD 写「不消费 `/topic/v1/policy`」。签收口径：浏览器和展示对外 URL 仍只走 `/display/v1/policy/**`。`stats` 沿用检索叶已经写明的内部委托。204 的 `subscriptions` 由 `gkxlumen-display` 内部委托 `gkxlumen-topic-policy`，订阅与外发的实现不在展示服务。这不把 `E-E7-POLICY-M1-L06` 改成展示联调单。
 
-签收条件是可实现。204 以及时序、地域热力读已有表或已有门面。热点、影响、深度报告和主题分布没有模型或指标，只建 `gkxlumenx_gapfill` 的 `gapfill_` 表，Python 灌 mock，接口读表。接口不直接返回 mock，也不用 501 充当这几块。
+签收条件以说明书第 11 节为准。204 走专题门面，不灌假订阅。时序和地域热力读已有表，不另建缺项表。热点、影响、深度报告和主题分布只建第 11.1 节那四张 `gapfill_` 表，Python 灌 mock，接口读表。接口不直接返回 mock，也不用 501 充当这几块。
 
 ## 验收证据
 
-架构稿与本 handoff 已落盘。2026-11-03 human:淮政玮首次签收。同日按可实现条件复核四叶后再次签收。定义单，无业务 PR。随 `gkx-orchestration` 的 `origin/dev` 提交。
+架构稿与本 handoff 已落盘。2026-11-03 human:淮政玮按说明书第 11 节再次签收。四张表、灌数内容和 `POL-L2-DS10-TREND-GAPFILL-L01` 与第 11.1 节动向一行一致。定义单，无业务 PR。随 `gkx-orchestration` 的 `origin/dev` 提交。
 
 | 序号 | 签收链路 | 结论 |
 |---|---|---|
@@ -81,7 +81,7 @@ ponytail: off
 | CI/CD | ✅ 定义文档随 `origin/dev` 提交，未 force |
 | D12 | ✅ 不调用 demo 服务 |
 | D9 | ✅ 不新造 metric_id，不改 D4，不闭合 QPOL-07 |
-| D14 | ✅ 本叶不写对象存储。报告目录只写在预计实现里 |
+| D14 | ✅ 深度报告正文在缺项表行里。本叶不写对象存储 |
 
 ## 图即契约
 
@@ -89,7 +89,7 @@ ponytail: off
 |---|---|
 | diagram_id | `POL-L2-DS10-TREND-ARCH-SEQ` |
 | 图 diff | 203 读 element/ADS。204 委托专题门面。205 趋势与 206 时间、地域读已有统计表。205 三项与 206 主题读 gapfill。禁止边：浏览器改打专题 URL、接口直接返回 mock、用 501 充当这几块、热点改挂焦点指数、主题分布新造指标 |
-| 会签态 | 2026-11-03 human:淮政玮按可实现条件复核后再次签收。图源无 frontmatter，不另填绿 |
+| 会签态 | 2026-11-03 human:淮政玮按说明书第 11 节再次签收。图源无 frontmatter，不另填绿 |
 | 说明 | 图在架构稿第 2 节 |
 
 ## Cost
