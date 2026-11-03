@@ -67,13 +67,17 @@ display 日志原文（两条）：
 
 - **未登录态访问 `/tid/` → 整页跳 UC SSO 登录页**（`https://edu.itic-sci.com/uc/sso/login?...`，state 带回跳路径）：路由守卫 requiresAuth → redirectToStandaloneSso 链路完整工作。截图 `SSO-01-未登录访问跳UC登录页.png`。
 - **已登录态（门户 Cookie 会话）舆情页签操作**：`?tab=sentiment` 打开正常渲染四卡（受众反馈/评估报告/实施效果/匹配推送），点「开始分析」按钮正确进入 submitting→polling 态（按钮 disabled/loading）。截图 `SSO-01-舆情页签初始态.png`、`SSO-02-开始分析提交后.png`。
-- 复验时点线上入口 chunk 仍是旧版（鉴权正则无「访问令牌已过期」）——`1e9e0c9` 尚未部署（pipeline #3670 build 红，job #23696）；且后续浏览器会话中断（"No browser tab available" 重试 6+ 次无法恢复），J1 终态渲染未能继续观察。
+- 复验前段线上入口 chunk 仍是旧版（鉴权正则无「访问令牌已过期」）——`1e9e0c9` 尚未部署（pipeline #3670 build 红，job #23696）；且后续浏览器会话中断（"No browser tab available" 重试 6+ 次无法恢复），J1 终态渲染未能继续观察。
 
-### 4.2 部署阻塞与处置（如实记录）
+### 4.2 部署确认与线上产物验证（终态，2026-11-04 02:30 前后）
 
-- CI `frontend:build` 跑 `npm run build`，被基线 `a56ec07` 的断裂挡住（引用未提交文件 reportExport + tracking 23 个 type 错误），`1e9e0c9` 无法部署。
-- **基线已由本会话修复**：`66e37cb`（补提交 `reportExport.ts`）+ `9ee8d51`（tracking 类型加固）均已推 origin/dev，本地三绿验证通过。CI 应随之转绿，`1e9e0c9` 随最近一次成功 pipeline 一同部署。
-- 需要人工复验的动作（部署完成后）：登录态过期时在舆情评估页签点「开始分析」应弹重新登录引导（不再静默红条）；正常登录后 J1 开始分析→终态区域表+时序；J10 刷新当天复用直出结果；「重新分析」POST body 带 force:true。
+- CI `frontend:build` 曾被基线 `a56ec07` 断裂挡住（引用未提交文件 reportExport + tracking 23 个 type 错误），`1e9e0c9` 一度过不了 build。
+- **基线修复后 pipeline #3674（HEAD `9ee8d51`，含 `1e9e0c9`）全绿：build/package/scan/deploy ✅**（GitLab 页面核对；#3673 为中途态失败已被覆盖）。
+- **线上产物特征比对（浏览器 CDP 抓 chunk 验证，三处全部在位）**：
+  1. 入口 HTML 已引用新 chunk `index-DdBYeYgA.js`；主 chunk `isPortalAuthHttpError` 正则已含 `访问令牌已过期|sso check-token failed`（旧版 `index-D_oxCJWg.js` 无）；
+  2. 主 chunk 请求拦截器 `e.headers.systemCode="display"` 注入在位（全部走 `request` 的 `/display/v1/policy/**` 请求带齐）；
+  3. 政策 API 模块 chunk（`PendingBadge-DbPesoId.js`）：`oi=e=>we("/jobs",e)`（panoramaJobs）与 `ni=e=>Se(\`/jobs/${encodeURIComponent(e)}\`)`（panoramaJobDetail）走**无 optional** 的 Authed 辅助（`Se` 定义仅 `method:"get",headers:{skipErrorToast:!0}`）；其余 GET/PUT/DELETE 辅助（`u/I/Ie/Te`）保持 `optional:!0` 静默——与源码一一对应。
+- 修复已完整部署线上；监管人确认 J1/J10 自行手动测试（UC 登录需人工凭证/验证码，浏览器不自动完成）。人工复验动作：登录态过期时点「开始分析」应弹重新登录引导（不再静默红条）；正常登录后 J1 开始分析→终态区域表+时序；J10 刷新当天复用直出结果；「重新分析」POST body 带 force:true。
 
 ## 5. 截图清单
 
@@ -85,8 +89,8 @@ display 日志原文（两条）：
 
 ## 6. 未复验项（如实记录，不伪造）
 
-1. **J1 成功终态渲染**（区域表+时序）、**J10 当天复用直出**、**force:true 重新分析**——复验时点线上版本未部署 `1e9e0c9`（基线断裂挡 CI，现已由 `66e37cb`+`9ee8d51` 修复），且浏览器会话在轮询观察期间中断（"No browser tab available"，重试无法恢复）、UC 登录需人工凭证无法自动完成。留给部署后人工走查（监管人已确认自行手动测试）。
-2. **401 触发重登引导的端到端截图**（本地 token 过期场景）——线上未部署新构建无法复现；修复链路的路由守卫跳转部分（SSO-01-未登录）已验，拦截器 401 分支逻辑由 2b 组断言覆盖。
+1. **J1 成功终态渲染**（区域表+时序）、**J10 当天复用直出**、**force:true 重新分析**——线上已部署修复构建（§4.2 产物验证），但 UC 登录需人工凭证/验证码无法自动完成；监管人确认自行手动测试。部署本身已由 chunk 特征比对确认（三处修复特征全在位）。
+2. **401 触发重登引导的端到端截图**（本地 token 过期场景）——需有效 UC 凭证过期态配合；修复链路的路由守卫跳转部分（SSO-01-未登录跳 UC）已验，拦截器 401 分支逻辑由 2b 组断言覆盖。
 
 ## 7. 架构合规自检
 
@@ -94,6 +98,6 @@ display 日志原文（两条）：
 - ✅ 复用全局 401 引导链路，未自造第二套登录逻辑
 - ✅ 非 401 行为（optional 静默空）保持不变
 - ✅ 造任务数据零、伪造截图零、未写「联调通过」、未标 done
-- ⚠️ CI 红为基线遗留（他人提交断裂），非本提交引入；已在 §4.2 说明处置路径
+- ✅ 部署终态：pipeline #3674 全绿，修复已上线上并经 chunk 特征比对确认（§4.2）；此前的 CI 红为基线遗留，非本提交引入
 
 ponytail: full —— 核心修复 4 文件 +90/-6（`1e9e0c9`）；修复点收敛在 jobs 两入口 + 一条正则 + 一处默认头，其余全部复用既有拦截器链路。基线抢救另耗 `66e37cb`（1 文件补提交）+ `9ee8d51`（3 文件类型加固），均为让 CI/部署通道恢复所必需的最小集。
