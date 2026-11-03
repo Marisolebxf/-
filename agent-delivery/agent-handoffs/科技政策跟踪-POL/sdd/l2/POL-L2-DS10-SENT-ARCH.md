@@ -71,10 +71,10 @@ flowchart LR
 
 1. 用户做政策查询或页内并列查看。前端调 `stats`、`search`，打开一条时调 `{id}/detail`。207 读政策总数、类型分布、级别分布，以及目录和正文。无行则对应位置空，不造 0。数值在对齐前仍是 mock。
 2. 用户要看区域差异。本叶不发新的政策资源。子图能读到则只消费第 7 项已有结果；读不到则该块空。地区件数若只画统计，走第 1 步里已有的全国分布、深圳分布，不把 208 改判成统计读面。
-3. 用户要看实施效果。前端向 `jobs` 提交。正式 Python 尚未挂上效果评估时，display 返回 501，效果跟踪空。接通后读 `ads.policy_effect` 里 `scope_type=region_effect` 的落地实效，不展示算法库页面上的柱状图本身。
+3. 用户要看实施效果。前端向 `jobs` 提交。签收链路是读 `ads.policy_effect` 里 `scope_type=region_effect` 的落地实效，不展示算法库页面上的柱状图本身。sub_type 未挂上时，不得用 501 或手写效果数顶上。
 4. 用户要收集或查看受众反馈。前端调 `feedback`。Python 只查 `gapfill_policy_audience_feedback`。表里没有行则列表空。请求处理不写死问卷或评价。
 5. 用户要看或下载效果评估报告。前端调 `assessment-report`。Python 只查 `gapfill_policy_assessment_report`。表里没有行则报告空。下载内容来自该行，不在接口里放一份写死的报告。
-6. 用户要做政策匹配或推送。前端向 `jobs` 提交。正式 Python 尚未挂上匹配推送时，display 返回 501，匹配与推送空。接通后按主体读 `ads.policy_match` 的 Top 记录和理由。通知和邮件不走序号 202 的 `share`，也不走序号 204 的 `subscriptions`。
+6. 用户要做政策匹配或推送。前端向 `jobs` 提交。签收链路是按主体读 `ads.policy_match` 的 Top 记录和理由。sub_type 未挂上时，不得用 501 或演示分顶上。通知和邮件不走序号 202 的 `share`，也不走序号 204 的 `subscriptions`。
 
 ## 4. 六叶
 

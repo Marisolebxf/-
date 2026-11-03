@@ -50,7 +50,9 @@ ponytail: off
 
 ## 偏离
 
-原 DoD 写「不消费 `/topic/v1/policy`」。签收口径：浏览器和展示对外 URL 仍只走 `/display/v1/policy/**`。`stats` 沿用检索叶已经写明的内部委托。204 的 `subscriptions` 接通后也由 `gkxlumen-display` 内部委托 `gkxlumen-topic-policy`，订阅与外发的实现不在展示服务。这不把 `E-E7-POLICY-M1-L06` 改成展示联调单。入口未接上时，204 仍是 501。
+原 DoD 写「不消费 `/topic/v1/policy`」。签收口径：浏览器和展示对外 URL 仍只走 `/display/v1/policy/**`。`stats` 沿用检索叶已经写明的内部委托。204 的 `subscriptions` 由 `gkxlumen-display` 内部委托 `gkxlumen-topic-policy`，订阅与外发的实现不在展示服务。这不把 `E-E7-POLICY-M1-L06` 改成展示联调单。
+
+签收条件是可实现。204 以及时序、地域热力读已有表或已有门面。热点、影响、深度报告和主题分布没有模型或指标，只建 `gkxlumenx_gapfill` 的 `gapfill_` 表，Python 灌 mock，接口读表。接口不直接返回 mock，也不用 501 充当这几块。
 
 ## 验收证据
 
