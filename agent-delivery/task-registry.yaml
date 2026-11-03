@@ -47438,7 +47438,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "架构稿第 7 节补上 204 与 205 三项的接通方案。接通前仍 501。会签未完成，不标 done。"
+    note: "204 改为展示只委托 gkxlumen-topic-policy。实现任务 E-E7-POLICY-M1-L11/L12/L13，不在本单认领。接通前仍 501。会签未完成，不标 done。"
     depends_on:
       - "POL-DISPLAY-SDD-L01"
     touched_files:
@@ -47449,7 +47449,7 @@ tasks:
     definition_of_done:
       - "落盘该二级的实现架构与整体流程（同步读面、Job、501 空态、跨项只消费）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
       - "服从 /display/v1/policy，不消费 /topic/v1/policy，不新造指标，不写字段表，不重开 GDF"
-    update_time: "2026-11-03T12:19:07+08:00"
+    update_time: "2026-11-03T12:32:58+08:00"
   - id: POL-L2-DS10-SENT-ARCH
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策舆情评估 · 后台实现架构设计"
@@ -50174,6 +50174,7 @@ tasks:
       - "handoff 写明展示侧只委托本入口，不在展示侧组装文件或自建发信"
     update_time: "2026-11-03T12:22:18+08:00"
   - id: E-E7-POLICY-M1-L11
+    supervised_by: "human:淮政玮"
     title: "专题政策门面 · 政策订阅与外发 · 架构设计"
     status: "backlog"
     agent: "arch-agent"
@@ -50198,4 +50199,60 @@ tasks:
       - "落盘 gkxlumen-topic-policy 内的政策订阅与外发架构：订阅关系、对已入库政策的筛选、日/周/月、系统通知、邮件、短信"
       - "写明展示服务只委托该门面，不保存订阅关系，不发信，不跑定时。浏览器仍打 /display/v1/policy/panorama/subscriptions"
       - "不把本单标 done，不把入口未接上写成已经接通"
-    update_time: "2026-11-03T12:32:43+08:00"
+    update_time: "2026-11-03T12:32:58+08:00"
+  - id: E-E7-POLICY-M1-L12
+    supervised_by: "human:李伟"
+    title: "专题政策门面 · 政策订阅与外发 · 实现开发"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-02"
+    note: "监管 human:李伟。序号 204。业务只在 gkxlumen-topic-policy。展示侧只加委托。开工以 L11 架构稿为准。"
+    depends_on:
+      - "E-E7-POLICY-M1-L11"
+    collaborators:
+      - "arch-agent"
+    touched_files:
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/controller/PolicyFacadeController.java"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+    definition_of_done:
+      - "gkxlumen-topic-policy 实现政策订阅的保存、修改、取消、读取，以及按日/周/月经系统通知、邮件、短信外发"
+      - "筛选对象是已经入库的政策。不新开抓取，不把订阅写成收藏，不把序号 212 的匹配模型拿来顶替"
+      - "gkxlumen-display 的 /display/v1/policy/panorama/subscriptions 只委托该门面。展示服务不落订阅关系、不发信、不跑定时。浏览器不改打 /topic/v1/policy"
+      - "门面入口未接上时展示继续 501。入口接上且该用户没有订阅时返回空列表。localStorage 与立即推送不是本服务"
+    update_time: "2026-11-03T12:32:58+08:00"
+  - id: E-E7-POLICY-M1-L13
+    supervised_by: "human:黄敬洲"
+    title: "专题政策门面 · 政策订阅与外发 · 测试"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 8000
+    user_story: "US-DS-POL-02"
+    note: "监管 human:黄敬洲。序号 204。L12 实现完成后领取。业务断言对着专题门面，展示侧只查委托。"
+    depends_on:
+      - "E-E7-POLICY-M1-L12"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L13.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+    definition_of_done:
+      - "验证展示 /display/v1/policy/panorama/subscriptions 只委托 gkxlumen-topic-policy，浏览器不改打专题 URL"
+      - "验证保存、修改、取消、空列表与 501 的分界：入口未接上才 501，没有订阅时是空列表"
+      - "验证外发不是 FE-POL-01B 的 localStorage 或立即推送，失败不清空同页已经返回的时序和入库列表"
+      - "测试 handoff 落盘。不把本单标 done"
+    update_time: "2026-11-03T12:32:58+08:00"
