@@ -7,7 +7,7 @@
 | claimed_by | `agent:arch-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `pull` |
-| 说明 | 只写序号 223–226 的实现架构。2026-11-03 四角色会签同意。未签收，不标 done |
+| 说明 | 只写序号 223–226 的实现架构。2026-11-03 四角色会签同意。同日 `human:淮政玮` 签收 |
 
 ## Ponytail
 
@@ -50,7 +50,7 @@ ponytail: off
 - 未改 `FE-POL-02A`，未新建前端单，未重开 GDF
 - 浏览器未改打 `/topic/v1/policy` 或 `/v1/policy/**`
 - 未建 `gapfill_policy_eval_focus`、`gapfill_policy_eval_summary`、`ads.policy_gap`
-- 四角色会签已同意。未标 done
+- 四角色会签已同意。2026-11-03 `human:淮政玮` 已签收
 
 ## 图即契约
 
@@ -58,7 +58,7 @@ ponytail: off
 |---|---|
 | diagram_id | `POL-L2-DS11-READ-ARCH-SEQ` |
 | 图 diff | 223 短板与 224/225 走 element 查表；223 焦点 `policy_focus_ads` 调用 `focus.run` 后读 `ads.policy_focus`；226 只读 `ads.policy_text_parse`。禁止边：浏览器改打专题或中台 URL、display 直连 Python、接口直接返回 mock、请求里调用 `parse.run` |
-| 会签态 | 2026-11-03 四页同意。源文件无 frontmatter。签收仍由 `human:淮政玮` 做 |
+| 会签态 | 2026-11-03 四页同意。源文件无 frontmatter。同日 `human:淮政玮` 签收 |
 | 说明 | 图在架构稿第 2 节 |
 
 ## 范围与实现
@@ -80,7 +80,7 @@ DoD 写「不消费 `/topic/v1/policy`」。浏览器和展示对外 URL 仍只�
 
 ## 验收证据
 
-架构稿与本 handoff 已落盘。定义单，无业务 PR。四角色会签同意，未签收。
+架构稿与本 handoff 已落盘。定义单，无业务 PR。四角色会签同意。2026-11-03 `human:淮政玮` 签收。
 
 ## 架构合规自检
 
