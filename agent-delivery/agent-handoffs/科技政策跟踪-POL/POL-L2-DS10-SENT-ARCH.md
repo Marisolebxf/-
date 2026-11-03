@@ -23,16 +23,16 @@ ponytail: off
 |---|---|---|
 | 207 | 政策查询与对比 | 同步，复用多维检索的门面委托 |
 | 208 | 区域政策差异性分析 | 跨项读图，不新开资源 |
-| 209 | 政策实施效果跟踪 | 501，Job |
+| 209 | 政策实施效果跟踪 | 当前 501。接通时复刻算法库效果评估 |
 | 210 | 政策受众反馈收集 | 501 |
 | 211 | 政策效果评估报告 | 501 |
-| 212 | 政策匹配与推送 | 501，Job |
+| 212 | 政策匹配与推送 | 当前 501。接通时复刻算法库匹配推送 |
 
 207 读已有 `stats`、`search`、`{id}/detail`。浏览器只打 `/display/v1/policy/**`。`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。无行则空，不造 0。D4 仍是 mock。
 
 208 不设资源。只消费第 7 项已有子图，挂接可空。不走 `E-E7-POLICY-M1-L06`。
 
-209、212 走 `POST panorama/jobs`。模型未接通时 501。接通后经 `gkxlumen-topic-async-service` 进 Python `/internal/*`，不进专题政策门面。
+209、212 走 `POST panorama/jobs`。正式 Python 未挂上时 501。接通后复刻算法库已有计算：209 用 `polan.eval.effect` 写 `ads.policy_effect`，212 用 `polan.text.match` 写 `ads.policy_match`。经 `gkxlumen-topic-async-service` 进 `/internal/policy`，不进专题政策门面，Java 不打分。
 
 210 走 `feedback`，211 走 `assessment-report`，都在 display 直接 501。
 
@@ -57,7 +57,7 @@ ponytail: off
 | 字段 | 值 |
 |---|---|
 | diagram_id | `POL-L2-DS10-SENT-ARCH-SEQ` |
-| 图 diff | 207 同步委托专题政策门面；208 只消费已有子图；209、212 的 Job 在模型未接通时于 display 进入 501；210、211 在 display 进入 501。禁止边：浏览器改打专题 URL、`L06`、本叶新开查图资源、本叶新指标 |
+| 图 diff | 207 同步委托专题政策门面；208 只消费已有子图；209 复刻 `polan.eval.effect`、212 复刻 `polan.text.match`，正式入口未挂时于 display 进入 501；210、211 在 display 进入 501。禁止边：浏览器改打专题 URL、`L06`、本叶新开查图资源、本叶新指标、本叶新写打分公式 |
 | 会签态 | 本叶新图。源文件无 frontmatter，记 `draft`。不自填绿 |
 | 说明 | 图在架构稿第 2 节 |
 

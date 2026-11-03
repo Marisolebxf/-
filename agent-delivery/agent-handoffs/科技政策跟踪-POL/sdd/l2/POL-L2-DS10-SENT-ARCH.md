@@ -19,10 +19,10 @@
 |---|---|---|---|
 | 207 | 政策查询与对比 | 按类型、地域、时期查询，并同时查看多条政策正文 | 同步，复用多维检索已定的门面委托 |
 | 208 | 区域政策差异性分析 | 按地区对比覆盖、力度、实施条件 | 跨项读图。本叶不新开资源 |
-| 209 | 政策实施效果跟踪 | 执行情况、受益反馈、社会影响和效果指标 | 501。Job，模型未以可调用服务接通 |
+| 209 | 政策实施效果跟踪 | 执行情况、受益反馈、社会影响和效果指标 | 当前 501。接通时复刻算法库「效果评估」，不新写公式 |
 | 210 | 政策受众反馈收集 | 问卷、在线评价、意见征集及汇总 | 501。没有采集服务，也没有反馈指标 |
 | 211 | 政策效果评估报告 | 自动生成达成度、社会影响、问题与建议，并可下载 | 501。没有评估报告通道 |
-| 212 | 政策匹配与推送 | 按企业规模、行业、发展阶段匹配，并以通知或邮件推送 | 501。Job，两条模型都未接通 |
+| 212 | 政策匹配与推送 | 按企业规模、行业、发展阶段匹配，并以通知或邮件推送 | 当前 501。接通时复刻算法库「匹配推送」，不新写公式 |
 
 207 的 D4 仍是 `mock`。`GDF-POLICY-MOCK-GATE-L01` 仍是 blocked。闸门未解开时，正式值仍是 mock。本叶不把 mock 写成已上线。
 
@@ -34,7 +34,8 @@
 |---|---|---|
 | 207 | `GET /display/v1/policy/panorama/stats`、`search`、`{id}/detail` | 同步。浏览器只打这三条。`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`，对照与 `POL-L2-DS10-QRY-ARCH` 相同 |
 | 208 | 不设 `/display/v1/policy` 资源 | 只消费第 7 项已有子图。挂接可空 |
-| 209、212 | `POST /display/v1/policy/panorama/jobs` | 当前 501。模型接通后：前端 → 网关 → `gkxlumen-display` → `gkxlumen-topic-async-service` → Python `/internal/*` |
+| 209 | `POST /display/v1/policy/panorama/jobs` | 当前 501。接通后委托已有 `polan.eval.effect`，不进专题政策门面 |
+| 212 | `POST /display/v1/policy/panorama/jobs` | 当前 501。接通后委托已有 `polan.text.match`，不进专题政策门面 |
 | 210 | `GET /display/v1/policy/panorama/feedback` | 501。`gkxlumen-display` 直接返回 |
 | 211 | `GET /display/v1/policy/panorama/assessment-report` | 501。同上 |
 
@@ -51,7 +52,8 @@ flowchart LR
   fe --> gw --> bff
   bff -->|"207：stats / search / detail"| tp --> py
   bff -->|"208：只消费，可空"| graph
-  bff -->|"209 212：jobs，模型未接通则 501"| async --> py
+  bff -->|"209：jobs，复刻 effect，未挂则 501"| async --> py
+  bff -->|"212：jobs，复刻 match，未挂则 501"| async --> py
   bff -->|"210 feedback · 211 assessment-report"| empty
 ```
 
@@ -67,10 +69,10 @@ flowchart LR
 
 1. 用户做政策查询或页内并列查看。前端调 `stats`、`search`，打开一条时调 `{id}/detail`。207 读政策总数、类型分布、级别分布，以及目录和正文。无行则对应位置空，不造 0。数值在对齐前仍是 mock。
 2. 用户要看区域差异。本叶不发新的政策资源。子图能读到则只消费第 7 项已有结果；读不到则该块空。地区件数若只画统计，走第 1 步里已有的全国分布、深圳分布，不把 208 改判成统计读面。
-3. 用户要看实施效果。前端向 `jobs` 提交。`M_POLICY_IMPLEMENTATION_EFFECT` 未以可调用服务接通时，display 返回 501，效果跟踪空。不展示写死的效果数。
+3. 用户要看实施效果。前端向 `jobs` 提交。正式 Python 尚未挂上效果评估时，display 返回 501，效果跟踪空。接通后读 `ads.policy_effect` 里 `scope_type=region_effect` 的落地实效，不展示算法库页面上的柱状图本身。
 4. 用户要收集或查看受众反馈。前端调 `feedback`。display 返回 501。问卷、在线评价、意见征集的页面演示不是这条资源。
 5. 用户要看或下载效果评估报告。前端调 `assessment-report`。display 返回 501。前端 HTML 不是评估报告服务。
-6. 用户要做政策匹配或推送。前端向 `jobs` 提交。`M_POLICY_MATCH`、`M_POLICY_INDUSTRY_FIT` 未接通时，display 返回 501，匹配与推送空。不展示演示打分。通知和邮件不走序号 202 的 `share`，也不走序号 204 的 `subscriptions`。
+6. 用户要做政策匹配或推送。前端向 `jobs` 提交。正式 Python 尚未挂上匹配推送时，display 返回 501，匹配与推送空。接通后按主体读 `ads.policy_match` 的 Top 记录和理由。通知和邮件不走序号 202 的 `share`，也不走序号 204 的 `subscriptions`。
 
 ## 4. 六叶
 
@@ -98,17 +100,19 @@ flowchart LR
 
 不做什么：不走 `E-E7-POLICY-M1-L06`。不把专题门面的 `/graph` 改成展示浏览器地址。不重做抽取，不重开 GDF。
 
-### 4.3 209 政策实施效果跟踪 · 501
+### 4.3 209 政策实施效果跟踪 · 当前 501，接通时复刻效果评估
 
-读已有资源：`POST /display/v1/policy/panorama/jobs`。指标 `M_POLICY_IMPLEMENTATION_EFFECT`，MODEL，D4=mock。成功读面未见可调用服务。QPOL-02。
+读已有资源：`POST /display/v1/policy/panorama/jobs`。指标 `M_POLICY_IMPLEMENTATION_EFFECT`，MODEL，D4=mock。QPOL-02。
 
-流程：模型未接通时，前端 → 网关 → `gkxlumen-display` 对这次 Job 返回 501。不进专题政策门面，不读 ADS 填效果数，不建第二套任务表。
+参照实现是算法库「效果评估」页（`demo-ui-system-test` 的 `EffectEval.vue`）。页头写明 demo 数据为 mock，算法为轻量真实实现。计算在 `demo-algo-ent-analysis/polan/eval/effect.py`：按区域写 `ads.policy_effect`（`scope_type=region_effect`），执行维用政策侧有效率与力度，社会维和环境维是受控随机代理。落地实效写入 `ads.policy_metric_timeseries`，`metric_id` 为 `M_POLICY_IMPLEMENTATION_EFFECT`。同一次计算还写出效果评分 `M_POLICY_EFFECT_SCORE`，本叶不改挂这条。读面是 `GET /v1/policy/analysis/effect`。
 
-空态：实施效果空。概览卡上写死的数不是这条服务。同一指标在推演页的 page_use 不在本叶展开。
+`lumen-algo-py/vendor/entan-py` 里有同一份 `polan/eval/effect.py` 和同一条读路由。正式入口 `lumen_algo_service/main.py` 没有挂它。`RemotePolicyPythonClient` 也没有效果读面。`/internal/policy/jobs/execute` 的 sub_type 不含效果评估。所以展示侧现在仍是 501。
 
-接通之后：仍从 `/display/v1/policy/panorama/jobs` 进入，由 `gkxlumen-topic-async-service` 调用已注册的 Python `/internal/*`。Java 不计算效果。未注册则继续 501。
+接通之后：不新写公式。把已有 `polan.eval.effect` 挂到 lumen 正式 Python 的 `/internal/policy`。浏览器仍只打 `panorama/jobs`。`gkxlumen-display` 经 `gkxlumen-topic-async-service` 委托这次计算和 `ads.policy_effect` 读面。Java 不打分。社会维、环境维在采购数据到位前保持 mock，D4 不改。没有发信或报告通道时，不把这张区域表写成序号 211 的评估报告。
 
-不做什么：不把本叶改判成统计读面。不因 501 清空 207 的目录和正文。
+空态：未挂上之前，实施效果空。算法库页面上的柱和表不是展示服务。同一指标在推演页的 page_use 不在本叶展开。
+
+不做什么：不把本叶改判成统计读面。不因 501 清空 207 的目录和正文。不把 `M_POLICY_DEEP_168_1` 挂到本行。
 
 ### 4.4 210 政策受众反馈收集 · 501
 
@@ -130,17 +134,19 @@ flowchart LR
 
 不做什么：不挂 `M_POLICY_DEEP_168_1`。不把序号 217 的对标报告、核增研报 `report/jobs` 当成这张报告。
 
-### 4.6 212 政策匹配与推送 · 501
+### 4.6 212 政策匹配与推送 · 当前 501，接通时复刻匹配推送
 
 读已有资源：`POST /display/v1/policy/panorama/jobs`。指标 `M_POLICY_MATCH`、`M_POLICY_INDUSTRY_FIT`，都是 MODEL，D4=mock，`srs_refs` 为空。QPOL-03。
 
-流程：与 209 同一条 Job。两条都未以可调用服务接通时，这次提交返回 501。不展示演示打分。
+参照实现是算法库「匹配推送」页（`demo-ui-system-test` 的 `TextAnalysis.vue`）。计算在 `demo-algo-ent-analysis/polan/text/match.py`：按主体对政策打分，产业命中、地区或国家级普适、诉求重合、未过期四段相加，每主体取 Top 8，写入 `ads.policy_match`，`metric_id` 为 `M_POLICY_MATCH`。主体画像在参照实现里是受控随机生成的，不是企业登记主数据。读面是 `GET /v1/policy/match`，按 `subject_id` 返回政策标题、`match_score` 和 `match_reasons`。`M_POLICY_INDUSTRY_FIT` 在 vendor 指标表上读同一张 `policy_match`，不另写一套打分。
 
-`E-E7-POLICY-M1-L03` 只索引焦点、力度、效果三类模型，不改展示 URL，也不把匹配计算搬进 `gkxlumen-display`。
+`lumen-algo-py/vendor/entan-py` 里有同一份 `polan/text/match.py` 和 `GET /v1/policy/match`。正式入口 `lumen_algo_service/main.py` 没有挂它。展示 Java 没有匹配读面。`/internal/policy/jobs/execute` 的 sub_type 不含匹配。所以展示侧现在仍是 501。
 
-接通之后：仍走 `panorama/jobs` 和 `gkxlumen-topic-async-service`。推送通道不是序号 202 的导出分享，也不是序号 204 的订阅外发。没有发信通道时，匹配结果与推送都保持空，不另造通道。
+接通之后：不新写公式。把已有 `polan.text.match` 挂到 lumen 正式 Python 的 `/internal/policy`。浏览器仍只打 `panorama/jobs`。`gkxlumen-display` 经 `gkxlumen-topic-async-service` 委托这次计算和 `ads.policy_match` 读面。Java 不打分。D4 保持 mock。`E-E7-POLICY-M1-L03` 仍只索引焦点、力度、效果，不改展示 URL。
 
-不做什么：不新造匹配指标。不把产业适配写成 207 的目录筛选。
+推送通道不是序号 202 的导出分享，也不是序号 204 的订阅外发。没有发信通道时，只返回匹配列表，不另造通知或邮件。
+
+不做什么：不新造匹配指标。不把产业适配写成 207 的目录筛选。不把算法库页面上的 35 分演示行当成展示服务。
 
 ## 5. 点名排除
 
@@ -160,6 +166,6 @@ flowchart LR
 - 浏览器不改打 `/topic/v1/policy`。不把 `E-E7-POLICY-M1-L06` 写成展示路径。
 - 不改 `FE-POL-01A`、`FE-POL-01B`，不新建前端单。
 - 不重开 GDF，不加表，不加字段，不写 nGQL。
-- 不在本叶注册实施效果、匹配、产业适配模型，也不把它们送进专题政策门面。
-- 不把页面演示、写死效果数、演示打分、前端 HTML 写成服务。
+- 不在本叶改 Python 或 Java。209、212 的预计实现是挂已有 `polan.eval.effect`、`polan.text.match`，不新写公式，也不把它们送进专题政策门面。
+- 不把算法库页面、写死效果数、演示打分、前端 HTML 写成展示服务。
 - 不会签。不把本单标 done。
