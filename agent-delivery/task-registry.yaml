@@ -48637,7 +48637,7 @@ tasks:
     claimed_by: "agent:algorithm-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 推荐方案报告交互展示 · 后台指标设计"
-    status: "done"
+    status: "ready_to_sign"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48647,7 +48647,8 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "签收。四角色会签均同意，分册与 handoff 已核对。"
+    note: |
+      四角色会签通过（ARCH/ALGO/DATA/PRODUCT 各一页，均同意，见 sdd/l2/会签/POL-L2-DS11-PLAN-METRIC-SIGNOFF-*.md）。指标分册定稿：仅 229 挂已有 M_POLICY_DS_11_POLICY_EVAL_015（D4 保持 mock），其余四叶留空不新注册；ALGO 实读 simulate.py 验证不迁推演函数。待 human:淮政玮 签收
     depends_on:
       - "POL-L2-DS11-PLAN-ARCH"
     touched_files:
@@ -48658,7 +48659,7 @@ tasks:
     definition_of_done:
       - "落盘该二级指标挂接到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-METRIC.md，只使用说明书第 2 节已有 metric_id 与三档判定"
       - "未注册模型保持 501，不写可算出数的假公式，不改 D4，不新注册指标"
-    update_time: "2026-11-03T22:49:17+08:00"
+    update_time: "2026-11-03T22:29:21+08:00"
   - id: POL-L2-DS11-PLAN-DATA
     claimed_at: "2026-11-03T11:53:23.439Z"
     last_seen_at: "2026-11-03T11:53:23.439Z"
@@ -51376,8 +51377,14 @@ tasks:
       - "测试报告写 handoff；不改业务代码；不标 done"
     update_time: "2026-11-03T22:39:24+08:00"
   - id: POL-L2-DS10-SENT-JOBQ-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-JOBQ-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:58:49.996Z"
+    last_seen_at: "2026-11-03T14:58:49.996Z"
+    lock_until: "2026-11-03T18:58:49.996Z"
+    claimed_by: "agent:api-agent"
     title: "科创政策全景 · 政策舆情评估 · jobs 任务查询端点"
-    status: "ready"
+    status: "integration"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51388,13 +51395,14 @@ tasks:
     difficulty: "S"
     estimated_tokens: 12000
     user_story: "US-DS-POL-03"
-    note: "claim_type=coordinator_dispatch。监管 human:淮政玮。补 FE-L01 留下的 jobs 任务查询缺口，否则前端无法完成轮询、当天复用与重新分析（I2-12）。"
+    note: |
+      claim_type=coordinator_dispatch。监管 human:淮政玮。GET /display/v1/policy/panorama/jobs/{taskId} 已透传 topic-async。lumen-svc-platform 387502a 已推 origin/dev。display 模块 43 测试全绿含 5 新用例。未会签，不标 done。
     definition_of_done:
       - "gkxlumen-display 的 PolicyPanoramaController 增加 GET /v1/policy/panorama/jobs/{taskId}，service 委托 gkxlumen-topic-async-service 的 GET /topic/v1/analysis/tasks/{taskId}，复用 RemoteTopicAsyncClient，浏览器仍只打 /display/v1/policy/**"
       - "返回体原样透传 async-service 的任务状态与结果，display 不改写结果、不缓存、不造进度百分比；任务不存在或已过期返回空体，不 500 不 501"
       - "单测覆盖：透传调用、任务不存在空体、未带 token 时的行为与 jobs 一致；mvn 模块级测试通过"
       - "handoff 写明路径、委托链、与前端 TODO 的对接点；推 origin/dev，commit 带 [agent:api-agent]；不标 done"
-    update_time: "2026-11-03T22:39:38+08:00"
+    update_time: "2026-11-03T22:59:15+08:00"
   - id: POL-L2-DS10-SENT-IMPL-PY
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-IMPL-PY.md"
     supervised_by: "human:淮政玮"
@@ -51926,95 +51934,104 @@ tasks:
     update_time: "2026-11-03T20:32:59+08:00"
 - id: POL-L2-DS11-VIZ-TEMPLATE-L01
     title: "政策分析评价 · 可视化 · 222 模板选用表建表与灌数"
-      status: "backlog"
-      agent: "data-agent"
-      epic: "E-FE-POLICY-TRACKING"
-      priority: "P1"
-      repo: "lumen-algo-py"
-      delivery_phase: "implementation"
-      task_type: "feature"
-      effort_points: "3"
-      difficulty: "M"
-      estimated_tokens: 15000
-      user_story: "US-DS-POL-05"
-      note: "由 POL-L2-DS11-VIZ-GAPFILL-L01 会签记录派生：原单已按两张表交付完成，222 模板表补建。汇报周期词表由灌数评审把关（产品会签观察）。"
-      depends_on:
-        - "POL-L2-DS11-VIZ-DATA"
-      touched_files:
-        - "repos/lumen-algo-py/scripts/seed_gapfill_policy_eval_template.py"
-        - "repos/lumen-algo-py/scripts/mysql/gapfill_policy_eval_template.sql"
-      design_refs:
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-ARCH.md"
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-DATA.md"
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-VIZ-GAPFILL-L01.md"
-      definition_of_done:
-        - "在 gkxlumenx_gapfill 建 gapfill_policy_eval_template：模板名 + 该行允许的汇报周期、分析维度、图表类型，含 is_mock=1、metric_id 留空、fill_method=manual、gap_item=222 报告模板定制与批量导出、gapfill_batch_id、generated_at 追溯列；不写 ODS/DWD/ADS/供应方库，不碰 gapfill_policy_eval_shell"
-        - "独立脚本 --check/--apply 幂等灌入模板选用行，参照 seed_gapfill_policy_eval_viz.py 模式；查询不灌数"
-        - "图表类型闭集：趋势、柱状、热力、弦线、关系网；导出格式只 PDF、Excel；不灌文件本体、不灌假操作日志"
-        - "handoff 写明库、表、行数、灌数命令与验证证据；推 origin/dev，commit 带 [agent:data-agent]；不改 D4，不新造 metric_id"
-      update_time: "2026-11-03T21:59:38+08:00"
-    - id: POL-L2-DS10-SUB-FE-L01
-      supervised_by: "human:淮政玮"
-      claimed_at: "2026-11-03T14:25:51.013Z"
-      last_seen_at: "2026-11-03T14:25:51.013Z"
-      lock_until: "2026-11-04T14:25:51.013Z"
-      claimed_by: "agent:frontend-agent"
-      title: "科创政策全景 · 政策订阅 · 展示前端接线真实接口"
-      status: "in_progress"
-      agent: "frontend-agent"
-      epic: "E-FE-POLICY-TRACKING"
-      priority: "P1"
-      repo: "lumen-ui-science-pc"
-      delivery_phase: "implementation"
-      task_type: "feature"
-      effort_points: "5"
-      difficulty: "M"
-      estimated_tokens: 60000
-      user_story: "US-DS-POL-02"
-      note: "开工：订阅中心接 /display/v1/policy/panorama/subscriptions。"
-      collaborators:
-        - "arch-agent"
-      touched_files:
-        - "src/api/policy.ts"
-        - "src/views/policy/panorama/index.vue"
-        - "src/views/policy/panorama/components/SubscribeTab.vue"
-        - "src/views/policy/panorama/components/SubscribeModal.vue"
-      design_refs:
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
-      definition_of_done:
-        - "订阅中心改走真实接口：列表/新建/修改/取消经 /display/v1/policy/panorama/subscriptions（GET/POST/PUT+DELETE），defineApi 双轨保留 USE_MOCK 演示态；浏览器禁止改打 /topic 或网关专题路径"
-        - "字段契约对齐门面 PolicySubscriptionService：请求体 policy_type/industry_code/publish_organization/province/city/region/frequency（日|周|月或 day/week/month）/channels（系统通知|邮件|短信或 system/email/sms）；响应 subscriptions/pushes/honesty 原样消费；前端不传 user_id"
-        - "诚实态：无订阅显示空列表；pushes 为空时收件箱显示外发通道未上线的诚实提示，真实模式不造推送记录；订阅接口失败只影响本 Tab，不清空同页时序/入库等其他数据"
-        - "类型门 type-check 0 错 + 既有自检通过 + build 绿；handoff 落盘 agent-handoffs/科技政策跟踪-POL/；完工推送 origin/dev（human:淮政玮 2026-11-03 授权）触发 CI 部署；不标 done"
-      update_time: "2026-11-03T22:26:08+08:00"
-    - id: POL-L2-DS10-SUB-QA-L01
-      title: "科创政策全景 · 政策订阅 · 合规验收测试用例与关键路径验证（含界面截图）"
-      status: "backlog"
-      agent: "qa-agent"
-      epic: "E-E7-POLICY-M1"
-      priority: "P1"
-      repo: "gkx-orchestration"
-      delivery_phase: "implementation"
-      task_type: "feature"
-      effort_points: "5"
-      difficulty: "L"
-      estimated_tokens: 30000
-      user_story: "US-DS-POL-02"
-      note: |
-        建单依据：human:淮政玮 2026-11-03 21:53 指令 2。合并既有 L13 测试语义（委托/空列表/501 分界/外发非 localStorage）与用户新增要求（合规交付主路径数据准备 + 界面操作截图）。依赖前端接线单交付后执行。登录凭证走 K8s dev 现有测试账号，截图路径 agent-handoffs/科技政策跟踪-POL/screenshots/。
-      depends_on:
-        - "POL-L2-DS10-SUB-FE-L01"
-      collaborators:
-        - "arch-agent"
-      touched_files:
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SUB-QA-L01.md"
-      design_refs:
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
-        - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L13.md"
-      definition_of_done:
-        - "编写订阅单元测试用例文档：覆盖读取/新建/修改/取消/空列表主路径与关键路径（身份只取鉴权用户、请求体 user_id 不被采信、频率非法拒绝、通道未接通 pushes 恒空、失败不清空同页其他数据），每条含数据准备、步骤、期望结果，期望未发生必红"
-        - "合规交付主路径数据准备：登录 K8s dev 前端，新建一条真实订阅（类别+行业+部门+地区+频率+通道），经 GET 验证落库行存在且字段正确，取消后行不再出现在有效列表；验证数据库行数与页面一致，不伪造"
-        - "界面操作过程与截图：走查订阅中心 Tab 操作流（新建弹窗→保存→列表→修改→取消→空态→收件箱诚实提示）并截图存 handoff screenshots/；未就绪项如实标注，不伪造"
-        - "接口级验证：经网关调 /display/v1/policy/panorama/subscriptions 全链路（浏览器路径不变、展示只委托、无订阅空列表非 501、外发不是 localStorage/立即推送）；handoff 含全部证据；不把本单标 done"
-      update_time: "2026-11-03T22:25:45+08:00"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 15000
+    user_story: "US-DS-POL-05"
+    note: "由 POL-L2-DS11-VIZ-GAPFILL-L01 会签记录派生：原单已按两张表交付完成，222 模板表补建。汇报周期词表由灌数评审把关（产品会签观察）。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-DATA"
+    touched_files:
+      - "repos/lumen-algo-py/scripts/seed_gapfill_policy_eval_template.py"
+      - "repos/lumen-algo-py/scripts/mysql/gapfill_policy_eval_template.sql"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-DATA.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-VIZ-GAPFILL-L01.md"
+    definition_of_done:
+      - "在 gkxlumenx_gapfill 建 gapfill_policy_eval_template：模板名 + 该行允许的汇报周期、分析维度、图表类型，含 is_mock=1、metric_id 留空、fill_method=manual、gap_item=222 报告模板定制与批量导出、gapfill_batch_id、generated_at 追溯列；不写 ODS/DWD/ADS/供应方库，不碰 gapfill_policy_eval_shell"
+      - "独立脚本 --check/--apply 幂等灌入模板选用行，参照 seed_gapfill_policy_eval_viz.py 模式；查询不灌数"
+      - "图表类型闭集：趋势、柱状、热力、弦线、关系网；导出格式只 PDF、Excel；不灌文件本体、不灌假操作日志"
+      - "handoff 写明库、表、行数、灌数命令与验证证据；推 origin/dev，commit 带 [agent:data-agent]；不改 D4，不新造 metric_id"
+    update_time: "2026-11-03T21:59:38+08:00"
+  - id: POL-L2-DS10-SUB-FE-L01
+    cost_warn: "green"
+    actual_cost: 1.2
+    model_used: "glm-5.3"
+    actual_tokens: 180000
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SUB-FE-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:25:51.013Z"
+    last_seen_at: "2026-11-03T14:25:51.013Z"
+    lock_until: "2026-11-04T14:25:51.013Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科创政策全景 · 政策订阅 · 展示前端接线真实接口"
+    status: "pending_test"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-02"
+    note: "联调通过：commit f92ea3c，pipeline 3649 frontend:build / frontend:image / trivy / deploy:k8s 全绿（2026-11-03 22:50）。订阅 CRUD 已在 K8s dev 前端上线。进入待测试。"
+    collaborators:
+      - "arch-agent"
+    touched_files:
+      - "src/api/policy.ts"
+      - "src/views/policy/panorama/index.vue"
+      - "src/views/policy/panorama/components/SubscribeTab.vue"
+      - "src/views/policy/panorama/components/SubscribeModal.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
+    definition_of_done:
+      - "订阅中心改走真实接口：列表/新建/修改/取消经 /display/v1/policy/panorama/subscriptions（GET/POST/PUT+DELETE），defineApi 双轨保留 USE_MOCK 演示态；浏览器禁止改打 /topic 或网关专题路径"
+      - "字段契约对齐门面 PolicySubscriptionService：请求体 policy_type/industry_code/publish_organization/province/city/region/frequency（日|周|月或 day/week/month）/channels（系统通知|邮件|短信或 system/email/sms）；响应 subscriptions/pushes/honesty 原样消费；前端不传 user_id"
+      - "诚实态：无订阅显示空列表；pushes 为空时收件箱显示外发通道未上线的诚实提示，真实模式不造推送记录；订阅接口失败只影响本 Tab，不清空同页时序/入库等其他数据"
+      - "类型门 type-check 0 错 + 既有自检通过 + build 绿；handoff 落盘 agent-handoffs/科技政策跟踪-POL/；完工推送 origin/dev（human:淮政玮 2026-11-03 授权）触发 CI 部署；不标 done"
+    update_time: "2026-11-03T22:50:57+08:00"
+  - id: POL-L2-DS10-SUB-QA-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:51:15.830Z"
+    last_seen_at: "2026-11-03T14:51:15.830Z"
+    lock_until: "2026-11-04T02:51:15.830Z"
+    claimed_by: "agent:qa-agent"
+    title: "科创政策全景 · 政策订阅 · 合规验收测试用例与关键路径验证（含界面截图）"
+    status: "in_progress"
+    agent: "qa-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-02"
+    note: "开工：订阅合规验收测试用例编写与执行。"
+    depends_on:
+      - "POL-L2-DS10-SUB-FE-L01"
+    collaborators:
+      - "arch-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SUB-QA-L01.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L13.md"
+    definition_of_done:
+      - "编写订阅单元测试用例文档：覆盖读取/新建/修改/取消/空列表主路径与关键路径（身份只取鉴权用户、请求体 user_id 不被采信、频率非法拒绝、通道未接通 pushes 恒空、失败不清空同页其他数据），每条含数据准备、步骤、期望结果，期望未发生必红"
+      - "合规交付主路径数据准备：登录 K8s dev 前端，新建一条真实订阅（类别+行业+部门+地区+频率+通道），经 GET 验证落库行存在且字段正确，取消后行不再出现在有效列表；验证数据库行数与页面一致，不伪造"
+      - "界面操作过程与截图：走查订阅中心 Tab 操作流（新建弹窗→保存→列表→修改→取消→空态→收件箱诚实提示）并截图存 handoff screenshots/；未就绪项如实标注，不伪造"
+      - "接口级验证：经网关调 /display/v1/policy/panorama/subscriptions 全链路（浏览器路径不变、展示只委托、无订阅空列表非 501、外发不是 localStorage/立即推送）；handoff 含全部证据；不把本单标 done"
+    update_time: "2026-11-03T22:51:21+08:00"
