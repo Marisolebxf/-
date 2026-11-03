@@ -29120,7 +29120,32 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 140000
-    note: "mock 点测通过（setup/running/result 全链路），type-check 0 error，pnpm build 绿 ~38s。handoff FE-TS-03A.md。联调确认：mock 验收通过，联调闸门待 API-TS-M3 + BE-TS-CONTRACT 契约冻结。"
+    note: |
+      mock 点测通过（setup/running/result 全链路），type-check 0 error，pnpm build 绿 ~38s。handoff FE-TS-03A.md。
+
+      2026-11-03 核对更新：
+      - 联调已完成（USE_MOCK=false，meta/dataset 走 display 网关真实数据），不再是「待契约冻结」；
+      - 参数区：后端下发 5 套系统内置预设（parameterTemplates=5）+ 自定义模板保存/改名/删除/导入导出；
+        方法区：4 方法卡 + 详解/对比弹窗；案例与最佳实践久新无源 → 空态（noSourceFields 声明）；
+      - DoD 里「4 期历史矩阵」改为真实评估运行历史驱动（historyMatrix 无源 → 空，页面消费 evaluationHistory）；
+      - 2026-11-02～03 追加真评估接入 / 报告导出 / 范围挂载 / 落库回读 / D9 缺口角标，见
+        SITUATION-TS-TRACKING-EVAL-L01 / -REPORT-L01 / -PERSIST-L01 三单；
+      - ⚠️ D9 ⓘ 仍未挂：本页数字在指标库无已签收指标（DS-03 的 M_TECH_* 是另一套且 is_mock=true，
+        挂上去即错挂），现按规范落 D1 missing 红问号 + 治理引用，待 DS-03-METRIC-OPEN-L01 闭合后翻转。
+      改动停本地，未 commit / 未 push，等 human:孔东 走查。
+
+      2026-11-03 第二批（用户点名四项，已实测）：
+      - **产业领域接通**：复用科技全域态势同一条真源（innov `/v1/meta/industry-clusters/industry-subfields`
+        → `{dim}.subfield_topic_map`），display `resolveSubfieldIds` 把 CL-*/INB* 反查为 sub_* 再进
+        `subfield_ids`；同时修掉 meta 默认领域写死空串（前端把默认值覆盖成空 → 领域永不生效），
+        现下发目录首个 mapped 集群（实测 CL-SEI-01）；
+      - **结果页技术评估榜单表**：Top-20，10 条预览可展开；按后端 potential_rank 排序，前端只格式化不重算；
+      - **报告列表**：条数上限 5 条 + 清理入口（两段式确认 → 后端逻辑删除 status=deleted + 删本地产物，
+        OSS 对象保留并如实说明）；
+      - **领域提示二态化**：「已映射 N 个久新子学科，参与取数」/「未关联，本次不参与」，由反查结果驱动，
+        不再写死「暂未参与取数」。
+      实测：CL-SEI-01 → 39 个子学科，口径回传「技术领域：已生效…」；榜单 20 项展开正常；
+      清理后 `tech_evaluation_report` active 5 / deleted 2。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29136,7 +29161,8 @@ tasks:
       - "方法 Tab：4 评估方法详解 + 案例"
       - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（评估结果/历史矩阵/参数模板/方法知识四类用途见规划 §4 M3）"
       - "与 demo 逐区块截图比对 + D9 ⓘ/🧪；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-15T22:23:12+08:00"
+      - "2026-11-03 追加：产业领域经 subfield_topic_map 反查生效；结果页技术评估榜单表；报告最近列表上限+清理"
+    update_time: "2026-11-03T14:00:00+08:00"
   - id: FE-TS-04A
     evidence: "[object Object]"
     feishu_bitable_record_id: reczz28MlyMJ6oge
@@ -35547,7 +35573,7 @@ tasks:
   - id: SYSINT-05-02A-L01
     supervised_by: "human:孔东"
     title: "技术发展跟踪前端"
-    status: "ready"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35557,19 +35583,32 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "监管人 human:孔东。完成日期要求 2026-10-30。WBS-05-02a。书面依赖 WBS-05-02b。"
+    evidence: "agent-handoffs/科技发展态势-TS/FE-TS-03A.md"
+    note: |
+      监管人 human:孔东。完成日期要求 2026-10-30。WBS-05-02a。书面依赖 WBS-05-02b。
+
+      2026-11-03 核对补登（原记「已建号未开工」，与事实不符）：
+      - 同一菜单的 FE-TS-03A 已建成整页（setup/running/result 三阶段），并已切 USE_MOCK=false
+        联调真实数据（meta/dataset 走 display 网关，不再吃 mock 种子）；
+      - 2026-11-02～03 追加：真实评估运行接入、评估报告导出弹窗、范围挂载（区域键/中文名）、
+        历史与模板落库回读、D9 缺失角标、领域未生效提示（见 SITUATION-TS-TRACKING-* 三单）；
+      - 改动停本地工作区，未 commit / 未 push，等 human:孔东 走查（人工验收闸门）。
     depends_on:
       - "SYSINT-SCHEME-05-L01"
+    collaborators:
+      - "api-agent"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
     definition_of_done:
       - "结果、参数、方法三个 Tab 可开，或空态"
       - "名称用技术发展跟踪"
-    update_time: "2026-10-23T15:39:04+08:00"
+      - "接真实数据源（USE_MOCK=false），数字不带 mock 角标、不写假数"
+    update_time: "2026-11-03T12:00:00+08:00"
   - id: SYSINT-05-02B-L01
     supervised_by: "human:唐绍祖"
     title: "技术发展跟踪后端"
-    status: "ready"
+    status: "integration"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35579,15 +35618,135 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "监管人 human:唐绍祖。完成日期要求 2026-10-30。WBS-05-02b。三要素供数依赖 WBS-02-02。"
+    note: |
+      监管人 human:唐绍祖。完成日期要求 2026-10-30。WBS-05-02b。三要素供数依赖 WBS-02-02。
+
+      2026-11-03 核对补登（原记「已建号未开工」，与事实不符）：
+      - gkxlumen-display 已有 TrackingController：meta / dataset / evaluation/run|progress|result /
+        parameter-templates / report(+download) / reports 共 8 组端点，取数走久新只读通道
+        （ads_geo_yearly_metrics / ads_location / ads_technology_potential_* / hotspot / graph_edge），
+        评估值为久新模型 technology_insight_mvp_v2 规则基线产出，本层只装配不重算；
+      - 落库走域服务：tech_evaluation_history / tech_evaluation_report / evaluation_template；
+      - 改动停本地工作区，未 commit / 未 push，等 human:唐绍祖 走查（人工验收闸门）。
     depends_on:
       - "SYSINT-SCHEME-05-L01"
+    collaborators:
+      - "frontend-agent"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
     definition_of_done:
       - "三个 Tab 的接口可调，或空"
       - "专家评估法、经济分析法没有已签收实现，不在本叶新定义口径"
-    update_time: "2026-10-23T15:39:07+08:00"
+      - "无源字段走 noSourceFields 如实声明，不写假数、不补默认值"
+    update_time: "2026-11-03T12:00:00+08:00"
+  - id: SITUATION-TS-TRACKING-EVAL-L01
+    supervised_by: "human:孔东"
+    title: "技术发展跟踪 · 真实评估接入（久新模型装配 + 运行态进度）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-TS-TRACKING-EVAL-L01.md"
+    note: |
+      2026-11-02～11-03。WBS-05-02a/02b 补登（此前无单，改动无法验收）。
+      - 评估运行不再吃 mock：/evaluation/run 触发 6 段真实取数装配（趋势/城市/KPI/技术/热度/关联），
+        评分取自久新评估模型 technology_insight_mvp_v2（规则基线，非 LLM/专家判断），本层只展示不重算；
+      - 进度 = 真实已完成段数 / 总段数（不做时间预估百分比）；过场动画按段推进，不超前于后端上报；
+      - 页面配置的权重/阈值/方法不参与久新模型计算，页内如实标注（不假装参数生效）；
+      - 评估历史每次运行存档一条真实快照（完成时间/范围/评分/阶段/与上期差值）。
+      ⚠️ 改动停本地，未 commit / 未 push，等监管人走查（人工验收闸门）。
+    depends_on:
+      - "SYSINT-05-02B-L01"
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
+    definition_of_done:
+      - "评估运行走真实取数，mock 轨不再进结果页"
+      - "数字不带演示角标；无源字段走空态并声明"
+      - "type-check / build 绿，E2E 跑通一次完整评估"
+    update_time: "2026-11-03T14:00:00+08:00"
+  - id: SITUATION-TS-TRACKING-REPORT-L01
+    supervised_by: "human:孔东"
+    title: "技术发展跟踪 · 评估报告（HTML/PDF 生成、版式与字体、导出图、复用与最近报告）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-TS-TRACKING-REPORT-L01.md"
+    note: |
+      2026-11-02～11-03。WBS-05-02a/02b 补登（此前无单）。
+      - 报告 = 固定模板（域服务 Thymeleaf）+ 本次真实运行快照（KPI/五视图 PNG/榜单/六维/参数/建议/历史），
+        静态平铺不交互；HTML 与 PDF 同源（openhtmltopdf 转换，A4）；
+      - PDF 中文乱码根因：CSS 字体名引擎不认 + 候选 .ttc 字体集合 PDFBox 加载失败 →
+        改注册族名 gkx-cjk（Deng.ttf / Noto Sans SC），.ttc 一律跳过，失败记 ERROR；
+      - 版式重做（openhtmltopdf 无 flex/grid，栅格用 table），短章节 page-break-inside: avoid 防孤行标题；
+      - 导出图按视图给 gridLeft/gridRight 与长标签截断，去掉轴标签白底（防压住热力图色块），画布 1100×620@2x；
+      - 2026-11-03 补：同 runId + 同格式复用已有产物（不重复渲染、不堆文件）+ 「最近报告」列表直下。
+      ⚠️ 改动停本地，未 commit / 未 push，等监管人走查。
+    depends_on:
+      - "SITUATION-TS-TRACKING-EVAL-L01"
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
+    definition_of_done:
+      - "HTML / PDF 均可生成并下载，PDF 中文可提取、无乱码、无孤行标题"
+      - "报告内 6 张图完整不裁切、标签不压图"
+      - "同运行同格式二次生成走复用，页面能回看最近报告"
+    update_time: "2026-11-03T14:00:00+08:00"
+  - id: SITUATION-TS-TRACKING-PERSIST-L01
+    supervised_by: "human:唐绍祖"
+    title: "技术发展跟踪 · 范围挂载与持久化回读（区域/时间/领域口径 + 历史与模板跨重启 + D9 缺口角标）"
+    status: "integration"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-TS-TRACKING-PERSIST-L01.md"
+    note: |
+      2026-11-03。WBS-05-02a/02b 补登（此前无单）。修掉三处「看起来能用其实没接」：
+      - 范围挂载：此前 regionKeys/fieldValues 只透传后端零使用，且前端把 defaultRegionSelection
+        （单个 loc_ 字符串）当路径数组取末元素 → 退化成取字符串最后一个字符（后端收到 location_id="7"）。
+        现区域按 location_id 过滤年度趋势（level 跟随 CITY/COUNTRY，无数据回落全量并标注），
+        领域仅在拿到久新子学科 sub_* 时生效，其余如实标「未参与取数」；新增 scopeEffectNote 回传生效口径；
+        历史与报告写中文区域名（不再出现 loc_ 原文）；
+      - 落库回读：历史与自定义模板此前只写不读（页面随重启清空），且文案仍写「当前服务无数据源」——
+        与事实相反。现取数前从域服务回读（失败节流重试并在口径里明说），文案改为动态如实；
+      - D9：本页数字在指标库无已签收指标（DS-03 的 M_TECH_* 是另一套、is_mock=true，挂上去就是错挂）
+        → 按规范落 D1 missing 红问号 + 治理引用（DS-03-METRIC-OPEN-L01 / Q-MO-DS03-01…06），
+        受评审模式门控，关闭时 DOM 零泄漏。
+      ⚠️ 改动停本地，未 commit / 未 push，等监管人走查。
+    depends_on:
+      - "SYSINT-05-02B-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-TECH.yaml"
+    definition_of_done:
+      - "区域/时间真实进 SQL（实测全国 vs 单城市数值不同），领域未生效时页面明说"
+      - "服务重启后页面历史与自定义模板仍在（库回读），口径文案与事实一致"
+      - "D9 角标按 missing 语义呈现，评审模式关闭时零泄漏"
+    update_time: "2026-11-03T14:00:00+08:00"
   - id: SYSINT-05-03A-L01
     supervised_by: "human:孔东"
     title: "科技人才态势菜单壳前端"
