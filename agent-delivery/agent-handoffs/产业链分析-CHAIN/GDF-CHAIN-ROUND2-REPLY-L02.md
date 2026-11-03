@@ -61,11 +61,12 @@
 - grep：`09` 正文 `stage_code` = 三等分；头注已与 v2.3.1 对齐
 - 开工判定：Wave A / CHAIN-B1-TREE 可起草；入向量库脚本可配；上图/原子接口仍等架构师
 - `python …/script/industry_embed.py` → `industry_embed self-check OK`
-- **GDF 派单包 DDL 自检**（本会话补跑，非 WORKPACK 签收自动闸）：  
-  `python .cursor/skills/gkx-gdf-ddl-signoff/scripts/check_gdf_ddl.py --dimension chain`  
-  - 文件层：`industry_chain` / `node` / `node_rel` / `entity_rel` 四表 **文件一致**  
-  - 整次 **不通过（EXIT 1）**：本机未设 `GKX_LUMEN_MYSQL_PASSWORD`，demo/lumen 库未核对  
-  - 说明：`task-update-status → done` 的自动闸只认 `GDF-*-WORKPACK-*`；本单 ID=`GDF-CHAIN-ROUND2-REPLY-L02` **不会**自动触发；主包单 `GDF-CHAIN-WORKPACK-V2-L01` 已是 `done`（2026-10-21），本轮未再走签收闸
+- **GDF 派单包 DDL 自检**（本会话手跑；REPLY 单不走 WORKPACK 自动闸）：  
+  `python .cursor/skills/gkx-gdf-ddl-signoff/scripts/check_gdf_ddl.py --dimension chain` → **EXIT 0 通过**（2026-11-03）  
+  - 文件一致：`industry_chain` / `industry_chain_node` / `industry_chain_node_rel` / `industry_chain_entity_rel`  
+  - 库一致：上表各自在 `demo_gkxlumenx_dwd` 与 `gkxlumenx_dwd`  
+  - 口令仅进程环境注入，跑完已清除；未写入本文件  
+  - 说明：自动闸只认 `GDF-*-WORKPACK-*`→`done`；本单为 `GDF-CHAIN-ROUND2-REPLY-L02`；主包 `GDF-CHAIN-WORKPACK-V2-L01` 已是 `done`
 
 ## 5. 架构合规自检
 
@@ -87,7 +88,7 @@
 | `industry_embed.py` 参数化 | **已交付** `script/`（v2.3.2） |
 | `stage_code` 排序含义 | 客户决策清单 🟡 待供应方确认 |
 | tags 贴满后命中率 | GDF Wave A；业务范围仍全量全国 |
-| GDF DDL 库核对 | 设好 `GKX_LUMEN_MYSQL_PASSWORD` 后复跑 `check_gdf_ddl.py --dimension chain` 至 EXIT 0 |
+| GDF DDL 库核对 | **已通过** EXIT 0（四表文件+demo/lumen 库一致） |
 
 ## cost
 
@@ -104,7 +105,7 @@
 - 分支：`dev`
 - commit（本叶相关）：`6d7a24bb`（问7）/ `e61f4175`（round2 落稿）/ `149faa55`（脚本参数化 v2.3.2）等已推 `origin/dev`
 - pipeline / 部署 / K8s：N/A（编排仓文档+派单包，无业务镜像 rollout）
-- 本地命令与结果：`python script/industry_embed.py` → OK；`check_gdf_ddl.py --dimension chain` → 文件一致，缺口令整次不通过
+- 本地命令与结果：`python script/industry_embed.py` → OK；`check_gdf_ddl.py --dimension chain` → **EXIT 0 通过**
 
 ## 可观测性
 
@@ -118,4 +119,4 @@
 
 ## 会签说明
 
-会签通过：round2 答复与包修正及脚本参数化已推 `origin/dev`；问 5~8 仍等架构师；DDL 库核对待口令复跑。
+会签通过：round2 答复与包修正及脚本参数化已推 `origin/dev`；`gkx-gdf-ddl-signoff --dimension chain` EXIT 0；问 5~8 仍等架构师。
