@@ -72,6 +72,6 @@ mvn -pl gkxlumen-topic-policy/gkxlumen-topic-policy-biz -am test "-Dtest=PolicyF
 ## 还没做到
 
 - 外发通道仍未上线。没有调度器在日/周/月到点主动跑。通道接通之前，读取不会筛政策，也不会交异步执行记录。
-- 建表脚本未在现网执行。
+- 现网订阅表没有建成，行数没有读到。2026-11-03 用账号 `gkxlumenx` 连上 `10.50.11.76:3306`（`@@hostname` = `node03`）。`USE gkxlumenx_topic_policy` 失败，errno **1044**：`Access denied for user 'gkxlumenx'@'%' to database 'gkxlumenx_topic_policy'`。这不是 1049（库不存在），所以没有 `CREATE DATABASE`，也没有执行 `policy_subscription` 的 `CREATE TABLE`。该账号 `SHOW DATABASES` 看不到 `gkxlumenx_topic_policy`（同实例能看到 `gkxlumenx_topic_enterprise`），`SHOW GRANTS` 里也没有这个库。表是否已由别的账号建过，从该账号无法确认；没有 `SHOW CREATE TABLE`。没有插入订阅行。口令未写入本文。
 - 展示委托的测试类未在本机跑绿，原因见上。浏览器页面仍是 localStorage，本单不改前端。
 - 不把 `E-E7-POLICY-M1-L06` 改成展示联调单。未动 L13，未改任务状态。
