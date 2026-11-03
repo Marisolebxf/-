@@ -261,7 +261,7 @@
 | WBS-05-23-L2-04B · `POL-L2-DS10-CMP-API` | 科创政策全景 · 政策重点比对 · 后台接口设计（序号 213–218） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。部门件数、标杆力度可接。新旧对比、详情对比、对标报告、可视化为 501 | 硬依赖本二级 `POL-L2-DS10-CMP-ARCH` | 无截至时间 |
 | WBS-05-23-L2-04C · `POL-L2-DS10-CMP-METRIC` | 科创政策全景 · 政策重点比对 · 后台指标设计（序号 213–218） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。部门件数、标杆力度可接。新旧对比、详情对比、对标报告、可视化为 501 | 硬依赖本二级 `POL-L2-DS10-CMP-ARCH` | 无截至时间 |
 | WBS-05-23-L2-04D · `POL-L2-DS10-CMP-DATA` | 科创政策全景 · 政策重点比对 · 后台数据架构设计（序号 213–218） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。部门件数、标杆力度可接。新旧对比、详情对比、对标报告、可视化为 501 | 硬依赖本二级 `POL-L2-DS10-CMP-ARCH` | 无截至时间 |
-| WBS-05-23-L2-05A · `POL-L2-DS11-VIZ-ARCH` | 政策分析评价 · 政策分析报告可视化呈现 · 后台实现架构设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-05A · `POL-L2-DS11-VIZ-ARCH` | 政策分析评价 · 政策分析报告可视化呈现 · 后台实现架构设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 返工后第二轮四角色同意。219、220 各一次同步 `jobs`。222 读 `gapfill_policy_eval_template`。待淮政玮签收 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
 | WBS-05-23-L2-05B · `POL-L2-DS11-VIZ-API` | 政策分析评价 · 政策分析报告可视化呈现 · 后台接口设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-VIZ-ARCH` | 无截至时间 |
 | WBS-05-23-L2-05C · `POL-L2-DS11-VIZ-METRIC` | 政策分析评价 · 政策分析报告可视化呈现 · 后台指标设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-VIZ-ARCH` | 无截至时间 |
 | WBS-05-23-L2-05D · `POL-L2-DS11-VIZ-DATA` | 政策分析评价 · 政策分析报告可视化呈现 · 后台数据架构设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-VIZ-ARCH` | 无截至时间 |
@@ -269,7 +269,7 @@
 | WBS-05-23-L2-06B · `POL-L2-DS11-READ-API` | 政策分析评价 · 结果解读报告多维展示 · 后台接口设计（序号 223–226） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。短板条数可接。焦点指数 501。解读、多媒体壳、摘要 501。机遇条数无本段序号，不挂进本二级 | 硬依赖本二级 `POL-L2-DS11-READ-ARCH` | 无截至时间 |
 | WBS-05-23-L2-06C · `POL-L2-DS11-READ-METRIC` | 政策分析评价 · 结果解读报告多维展示 · 后台指标设计（序号 223–226） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。短板条数可接。焦点指数 501。解读、多媒体壳、摘要 501。机遇条数无本段序号，不挂进本二级 | 硬依赖本二级 `POL-L2-DS11-READ-ARCH` | 无截至时间 |
 | WBS-05-23-L2-06D · `POL-L2-DS11-READ-DATA` | 政策分析评价 · 结果解读报告多维展示 · 后台数据架构设计（序号 223–226） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。短板条数可接。焦点指数 501。解读、多媒体壳、摘要 501。机遇条数无本段序号，不挂进本二级 | 硬依赖本二级 `POL-L2-DS11-READ-ARCH` | 无截至时间 |
-| WBS-05-23-L2-07A · `POL-L2-DS11-PLAN-ARCH` | 政策分析评价 · 推荐方案报告交互展示 · 后台实现架构设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **integration** | 架构稿 `sdd/l2/POL-L2-DS11-PLAN-ARCH.md`。227–231 读 `gapfill_policy_eval_scheme`。未会签 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-07A · `POL-L2-DS11-PLAN-ARCH` | 政策分析评价 · 推荐方案报告交互展示 · 后台实现架构设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **integration** | 架构稿 `sdd/l2/POL-L2-DS11-PLAN-ARCH.md`。227–231 读 `gapfill_policy_eval_scheme`。2026-11-03 两轮四角色同意。待淮政玮签收 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
 | WBS-05-23-L2-07B · `POL-L2-DS11-PLAN-API` | 政策分析评价 · 推荐方案报告交互展示 · 后台接口设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。方案对比、参数模拟、实施路径 501。意见收集与方案归档是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-PLAN-ARCH` | 无截至时间 |
 | WBS-05-23-L2-07C · `POL-L2-DS11-PLAN-METRIC` | 政策分析评价 · 推荐方案报告交互展示 · 后台指标设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。方案对比、参数模拟、实施路径 501。意见收集与方案归档是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-PLAN-ARCH` | 无截至时间 |
 | WBS-05-23-L2-07D · `POL-L2-DS11-PLAN-DATA` | 政策分析评价 · 推荐方案报告交互展示 · 后台数据架构设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。方案对比、参数模拟、实施路径 501。意见收集与方案归档是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-PLAN-ARCH` | 无截至时间 |
@@ -349,6 +349,8 @@
 | WBS-05-23-L2-26B · `POL-L2-PC4-OUT-API` | 智能研报生成 · 结果智能输出 · 后台接口设计（序号 618） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。同一个研报 Job，未注册则 501。不是对比页的结果智能输出 | 硬依赖本二级 `POL-L2-PC4-OUT-ARCH` | 无截至时间 |
 | WBS-05-23-L2-26C · `POL-L2-PC4-OUT-METRIC` | 智能研报生成 · 结果智能输出 · 后台指标设计（序号 618） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。同一个研报 Job，未注册则 501。不是对比页的结果智能输出 | 硬依赖本二级 `POL-L2-PC4-OUT-ARCH` | 无截至时间 |
 | WBS-05-23-L2-26D · `POL-L2-PC4-OUT-DATA` | 智能研报生成 · 结果智能输出 · 后台数据架构设计（序号 618） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。同一个研报 Job，未注册则 501。不是对比页的结果智能输出 | 硬依赖本二级 `POL-L2-PC4-OUT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-06E · `POL-L2-DS11-READ-WIRING-L01` | DS11 结果解读报告多维展示 · 前端接线（/display/v1/policy/evaluation/** 三端点接入） | 淮政玮 | `lumen-ui-science-pc` | **ready** | 2026-11-03 新建。counts / shells / jobs 三端点接线 + Mock 开关对齐；只调 /display 前缀，禁止直调 /v1/policy/** | 硬依赖 `POL-L2-DS11-READ-IMPL-JAVA`、`-IMPL-PY`、`-GAPFILL-L01`（均已 done） | 无截至时间 |
+| WBS-05-23-L2-06F · `POL-L2-DS11-READ-TEST-L01` | DS11 结果解读报告多维展示 · 单元测试用例（合规交付主路径数据准备 + 关键路径验证 + 界面操作过程与截图） | 淮政玮 | `gkx-orchestration` | **ready** | 2026-11-03 新建。用例文档落 `工程过程/04-系统集成/05-展示系统集成/测试用例/`；界面操作逐步截图嵌入测试报告 | 硬依赖同上三单（均已 done）。在 23 Java + 36 Python 单测基础上补合规交付视角 | 无截至时间 |
 ### 4.2 WBS-05-08 的子任务（科技交流 / 竞赛 / 传播）
 
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |

@@ -52062,3 +52062,66 @@ tasks:
       - "topic-async 层白名单 policy_focus_ads / policy_text_parse 走 Python /internal/policy/jobs/execute"
       - "lumen-svc-platform commit 30a3192 已推 origin/dev；23 项单测全绿"
     update_time: "2026-11-03T23:42:20+08:00"
+  - id: POL-L2-DS11-READ-WIRING-L01
+    title: "DS11 结果解读报告多维展示 · 前端接线（/display/v1/policy/evaluation/** 三端点接入）"
+    status: "ready"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-05"
+    note: |
+      DS11-READ 后端三单已 done（lumen-svc-platform 30a3192 / lumen-algo-py 2d91249）。接线范围：前端只调 /display/v1/policy/evaluation/**，禁止直调 /v1/policy/**。监管人 human:淮政玮。WBS 索引行 WBS-05-23-L2-06E。
+    depends_on:
+      - "POL-L2-DS11-READ-IMPL-JAVA"
+      - "POL-L2-DS11-READ-IMPL-PY"
+      - "POL-L2-DS11-READ-GAPFILL-L01"
+    touched_files:
+      - "src/api/policy/evaluation.ts"
+      - "src/views/policy/evaluation/**"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-ARCH.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-IMPL-JAVA.md"
+    definition_of_done:
+      - "结果解读页 counts（短板条数 shortboard\\_cnt）接 GET /display/v1/policy/evaluation/counts，走网关 /display 前缀，空态诚实（无行不显示伪 0）"
+      - "解读与多媒体壳 5 行（3 解读 + 2 多媒体）接 GET /display/v1/policy/evaluation/shells"
+      - "焦点指数/文本解析摘要按白名单 subType（policy\\_focus\\_ads、policy\\_text\\_parse）接 POST /display/v1/policy/evaluation/jobs，异步任务完成后渲染结果"
+      - "USE\\_MOCK=false 时零 fixture 填数；mock 开关数据与 demo 评审态对齐"
+      - "pnpm type-check + build 三绿；handoff 落盘 agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-WIRING-L01.md（含 ponytail: 行与 cost 四字段）"
+    update_time: "2026-11-03T23:44:24+08:00"
+  - id: POL-L2-DS11-READ-TEST-L01
+    title: "DS11 结果解读报告多维展示 · 单元测试用例（合规交付主路径数据准备 + 关键路径验证 + 界面操作过程与截图）"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-05"
+    note: "覆盖三层：已有 23 Java + 36 Python 单测是基础，本单补合规交付视角的主路径数据准备清单、关键路径验证用例、以及带截图的界面操作过程。监管人 human:淮政玮。"
+    depends_on:
+      - "POL-L2-DS11-READ-IMPL-JAVA"
+      - "POL-L2-DS11-READ-IMPL-PY"
+      - "POL-L2-DS11-READ-GAPFILL-L01"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS11-READ-TEST-L01.md"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-ARCH.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
+    definition_of_done:
+      - "编写合规交付主路径测试用例文档：数据准备（ads.policy\\_effect scope\\_type=region\\_gap 行 + gapfill\\_policy\\_eval\\_shell 5 行 + policy\\_focus\\_ads/policy\\_text\\_parse 任务样本）逐条列出前置 SQL/脚本与预期值"
+      - "关键路径验证用例：counts 空态与有值两分支、shells 3 解读 + 2 多媒体、jobs 白名单校验（非法 subType 拒绝）与异步轮询完成、X-Trace-Id 贯通断言"
+      - "界面操作过程：在 lumen-ui-science-pc 结果解读页按步骤操作（打开页面 → 查看短板卡 → 展开解读 → 触发焦点指数任务 → 查看结果），每步截图存 handoff 附图目录"
+      - "截图嵌入测试报告，标注每张图对应的用例编号与断言结果"
+      - "handoff 落盘 agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-TEST-L01.md（含 ponytail: 行与 cost 四字段），测试用例文档可被 WBS WBS-05-23-L2-06F 索引"
+    update_time: "2026-11-03T23:44:25+08:00"
