@@ -1,6 +1,6 @@
 # 产业链域 ETL Mapping 明细 — 源表到 DWD
 
-> **版本**：v2.2（2026-11-02：round1 核对 20 题答复落稿——链树列语义按真源实测重写 §3.1~3.4；同日晚补 §3.0 三方列错位。答复全文见 `23-核对签收与答复.md`。基线对齐 10-19 三方承诺清单；变更史见 CHANGELOG）  
+> **版本**：v2.3（2026-11-03：round2 答复落稿——node.chain_id 改所属 L1 链、parent_node_id 补直接父级、边表改真父子 1,055 条、stage_code 定 NULL；详见 `23-核对签收与答复.md` round2 节。v2.2=round1 答复；基线对齐 10-19 清单）  
 > **日期**：2026-11-02（v2.0 = 2026-10-20；v1.0 = 2026-09-01）  
 > **范围**：GDF 三方承诺表（产业链要素库）→ 项目 DWD（`gkxlumenx_dwd.industry_chain_*`）字段级映射  
 > **配套**：`产业链-DWD表设计-业务需求驱动(v5).md`（DDL 真源）· `storage/CHAIN/stores/mysql/dwd-chain.md`（入口）  
@@ -142,10 +142,10 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 | `industry_code` | `node_code` | 与 `node_id` 相同 |
 | `industry_name` | `node_name` | 原值 |
 | `parent_name` | `node_level` | 整数。`2` 至 `7` |
-| `industry_link_code` | `chain_id` | 原值。直接父级码。例：`INB120401010202` → `INB1204010102` |
-| — | `parent_node_id` | NULL |
+| `industry_link_code` | `chain_id` | **v2.3 修正（round2 问 1 拍板）**：填**所属 L1 链**的码（53 个之一），不是直接父级码。取法：`industry_link_code` 指向的祖先层级=1 时取该码；层级≥2 则沿父级继续向上，直到层级=1。例：`INB130301010101`（硅材料）→ 向上经 `INB1303010101`→`INB130301`→ **`INB130301`（半导体材料 L1）**。验收：1,220 行 `chain_id` 必须全部命中 `industry_chain`（53 行），命中率 100% |
+| `industry_link_code` | `parent_node_id` | **v2.3 修正（round2 问 1 拍板）**：填直接父级的码；父级为 L1 链时（`node_level=2`，共 165 行）写 NULL——此时归属已由 `chain_id` 表达。验收：L3~L7 共 1,055 行有父指针，且每行可在 `industry_chain_node` 命中 |
 | `industry_code` 末两位 | `sort_no` | 转整数。例：`INB120401010202` → `2` |
-| `industry_code` 末两位 | `stage_code` | `1`–`4` 写 `upstream`；`5`–`8` 写 `midstream`；`9` 及以上写 `downstream` |
+| `industry_code` 末两位 | `stage_code` | **v2.2.3 定稿：写 NULL，本期不派生**（round2 问 4：同级序号≠上中下游，禁止误导下游） |
 | `industry_name` | `description` | 与 `node_name` 相同 |
 | — | `status` | `active` |
 | `industry_link_name` | — | 不写入 |
@@ -164,22 +164,26 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 ### 3.2 `industry_chain_node`
 
-字段对应以 §3.0 为准。`parent_name` → `node_level`。`industry_link_code` → `chain_id`。`parent_node_id` 写 NULL。唯一键 `(chain_id, node_id)`。验收行数 **1,220**。
+字段对应以 §3.0 为准。`parent_name` → `node_level`。**v2.3：`chain_id`=所属 L1 链（沿父级向上追溯，命中率 100% 验收）；`parent_node_id`=直接父级码（L2 共 165 行父为链，写 NULL）**。唯一键 `(chain_id, node_id)`。验收行数 **1,220**。
 
-### 3.3 → `industry_chain_node_rel`
+### 3.3 → `industry_chain_node_rel`（**v2.3 重写（round2 问 3 拍板）**：真父子边，废弃「兄弟相邻」方案）
 
-同一 `chain_id` 内按 `sort_no` 从小到大，相邻两条节点写一条边。验收 **913** 行。
+> **v2.2 的「同链按 sort_no 相邻写 upstream 边（913 行）」作废**——那是同父兄弟间的并列边，不是上下游，且违反旧版 09「禁止按 sort 相邻伪造 upstream」的既有禁令。v2.3 恢复真源显式父子关系。
+
+**生成规则**：逐节点看 `industry_link_code`（直接父级）——父级是**节点**（层级≥2）→ 生成一条父子边；父级是 **L1 链**（层级=1，即全部 L2 共 165 行）→ 不生成（归属已由节点表 `chain_id` 表达）。**验收行数：1,055**（420+388+142+80+25，即 L3~L7 各层行数之和）。
 
 | 目标字段 | 规则 |
 |---|---|
-| `relation_id` | `node-rel:{chain_id}:{source_node_id}:{target_node_id}`。超过 64 字符时改为这段文字的 SHA-256 前 64 位 |
-| `chain_id` | 两条节点共同的 `chain_id` |
-| `source_node_id` | `sort_no` 较小的 `node_id` |
-| `target_node_id` | `sort_no` 较大的下一邻 `node_id` |
-| `relation_type` | `upstream` |
-| `relation_direction` | `forward` |
-| `confidence` | `0.8` |
+| `relation_id` | `node-rel:{chain_id}:{父 node_id}:{子 node_id}`。超过 64 字符时改为这段文字的 SHA-256 前 64 位 |
+| `chain_id` | 子节点的所属 L1 链（与节点表新 `chain_id` 同值） |
+| `source_node_id` | **父节点** `node_id`（=子行 `parent_node_id`） |
+| `target_node_id` | **子节点** `node_id` |
+| `relation_type` | `parent_child` |
+| `relation_direction` | `directed` |
+| `confidence` | `1.0`（真源显式父子，非推导） |
 | `relation_weight` / `evidence_ref` | NULL |
+
+**验收（B1 出数后三查）**：① 边表 1,055 行；② 每行 `source_node_id` 在节点表命中且 `node_level` = 子行减 1；③ 沿 `parent_node_id` 从任一 L7 节点上溯，终点必为某 L2 节点（其 `chain_id` 即所属链）——树完整可还原。
 
 ### 3.4 `dwd_org_industry_tags` → `industry_chain_entity_rel`（v2.2 修订：解析格式与脏值钉死，命中率待重测）
 
@@ -240,7 +244,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 | ID | 项 | 状态 |
 |---|---|---|
-| OPEN-CHAIN-MAP-01 | `stage_code` | **已定（2026-11-02 对照 demo）：码末两位 1–4 / 5–8 / 9+** |
+| OPEN-CHAIN-MAP-01 | `stage_code` | **已定（round2 问 4，2026-11-03）：本期写 NULL**——同级序号≠上中下游，等业务确认后另行派生 |
 | OPEN-CHAIN-MAP-02 | `future_industry_flag` | **已定（2026-11-02 对照 demo）：链树作业写 0** |
 | OPEN-CHAIN-MAP-03 | 产品 tags → entity_rel product | 本期不洗 |
 | OPEN-CHAIN-MAP-06 | 分析 `industry_code` → INB `chain_id` | 挡后续按链资讯；本期 B2 不洗 |
