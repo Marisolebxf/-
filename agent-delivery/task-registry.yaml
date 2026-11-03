@@ -46841,7 +46841,7 @@ tasks:
     lock_until: "2026-11-03T10:38:18.200Z"
     claimed_by: "agent:api-agent"
     title: "智能搜索地区筛选：cms_country_map 国家映射 + 四接口 country_location_ids 过滤"
-    status: "in_progress"
+    status: "pending_test"
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P1"
@@ -46852,7 +46852,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 70000
     note: |
-      【需求 2026-11-03 human:徐滕强】智能搜索加地区筛选。久新 xlsx（/Users/xutengqiang/Downloads/国家中文名.xlsx，232 国 loc_+中文名）↔ gkxlumenx_dim.code_country（19 国三字码）。汉字精确匹配建映射（已验证 19/19 全匹配、无重名）；匹配不上置 NOMATCH（查询直接空，保留筛选语义）。企业 ES country_code 可筛；产业无地区概念参数忽略；政策/服务链仅国内数据→只放行中国，其余空返回。铁律：Java→Python 只传自有码，loc_ 原码不出 CMS。表放 gkxlumenx_cms 库。ponytail full。【依赖说明】依赖 CMS-JX-SMART-SEARCH-L01（已上线冒烟通过、pending_test 待签收，四接口生产可用），实质无阻塞。
+      联调确认：dev 库 cms_country_map 232 行（19 匹配+213 NOMATCH）已建并校验；四接口 country_location_ids 集群冒烟全过——企业 CHN=11/USA=0（真过滤，query_tree）/NOMATCH 必空/CHN+USA 并集=11；政策/服务仅中国放行（CHN=1020,95；USA=0）；产业参数忽略；兼容回归四接口不传 country 与旧版一致。下游 lumen-topic-py 55a4857 白名单 1 行配套。转待测试。
     depends_on:
       - "CMS-JX-SMART-SEARCH-L01"
     collaborators:
@@ -46870,7 +46870,7 @@ tasks:
       - "Java→Python 链路只能传自有 country_code，禁止 loc_ 原码穿透"
       - "至少一个可运行自检覆盖映射翻译与 NOMATCH/CHN 语义；冒烟证据（四接口带/不带地区筛选对照）附 handoff"
       - "文档 live-1.6 + OpenAPI 同步推送；registry 状态流转 + cost 回填"
-    update_time: "2026-11-03T10:38:34+08:00"
+    update_time: "2026-11-03T12:49:26+08:00"
   - id: CMS-JX-SMART-INDUSTRY-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-03T02:38:18.333Z"
