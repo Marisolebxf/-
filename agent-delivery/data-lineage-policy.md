@@ -486,6 +486,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - ✅ 字段命名与 metric_id 一致（驼峰转换或保留蛇形）
 - ❌ 在 Java 写指标计算逻辑（铁律 1）
 - ❌ 直连 ADS 之外的库（铁律 7）
+- ❌ 接口直接返回 mock JSON、常量列表或内存 fixture。做不到真算时，只允许 Python 把 mock 行写入新建的 ADS 表，接口读该表（`architecture-baseline.md` D18）。D4 仍是 mock
 
 ### 7.5 ui-agent / frontend-agent
 
@@ -515,6 +516,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - ✅ Epic 开工评审：metric_id 命名、口径冲突、版本管理
 - ✅ 里程碑评审：cfg_metric 完整性、ODS→DWD→DWS→ADS 血缘链是否断裂
 - ✅ 维护 `data-lineage-changelog.md`（口径变更全量历史）
+- ✅ 架构签收只认可实现。做不到时，稿里只接受新建 ADS 表、Python 灌 mock、接口读表（D18）
 
 ### 7.9 coordinator-agent
 
