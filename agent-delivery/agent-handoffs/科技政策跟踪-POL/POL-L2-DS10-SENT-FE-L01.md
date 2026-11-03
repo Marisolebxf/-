@@ -7,8 +7,8 @@
 - 强度：ponytail full
 - 用户故事：`US-DS-POL-03`（SRS 207–212 中的 209/210/211/212 四卡）
 - 设计依据（已签收，未偏离）：`sdd/l2/POL-L2-DS10-SENT-API.md`、`sdd/l2/POL-L2-DS10-SENT-ARCH.md`
-- 代码仓：`lumen-ui-science-pc` @ `origin/dev` commit **73cc1e8**（7 文件，+734/−64）
-- 伴单：后端 `POL-L2-DS10-SENT-API` 已上线 dev（`PolicyPanoramaController`）
+- 代码仓：`lumen-ui-science-pc` @ `origin/dev` commit **73cc1e8**（四卡接线，7 文件）+ **e29090c**（Job 轮询与当天复用闭合，5 文件）
+- 伴单：后端 `POL-L2-DS10-SENT-API` 已上线 dev（`PolicyPanoramaController`）；`POL-L2-DS10-SENT-JOBQ-L01` 任务查询端点 `387502a` 已上线 dev
 
 ## 1. 交付范围
 
@@ -51,8 +51,9 @@
 | | 接线前 | 接线后 |
 |---|---|---|
 | 数据源 | `policyImplementationData` 种子表格 | `POST /display/v1/policy/panorama/jobs` body `{"sub_type":"policy_effect"}`（异步任务） |
-| 起任务 | 无（种子直显） | **受理制**：仅用户点「开始分析」才 POST（I2-12：挂载/切条件不自动起任务）；受理后按钮禁用（同条件单飞）；失败卡内 `a-alert` 提示且不清反馈/报告同步块 |
-| 结果展示 | 种子表 | 受理提示含 taskId（`AnalysisTaskEntity` 序列化 `taskId`，兼容 `task_id`）；idle 态 `a-empty`「暂无实施效果数据，点击开始分析生成」不造 0 |
+| 起任务 | 无（种子直显） | **受理制**：仅用户点「开始分析」才 POST（I2-12：挂载/切条件不自动起任务）；submitting/polling 全程按钮禁用（单飞）；失败卡内 `a-alert` 提示且不清反馈/报告同步块 |
+| 结果展示 | 种子表 | 受理后轮询 `GET jobs/{taskId}`（见 §5），终态渲染区域效果表（scope_name/effect_score + 时序 implEffect + ext 口径说明）；idle 态 `a-empty`「暂无实施效果数据，点击开始分析生成」不造 0 |
+| 复用/重跑 | 无 | 当天同条件已成功直接打开结果；「重新分析」force:true（见 §5） |
 | 角标 | 无 | 工具栏挂 `PolicyMetricSpecTrigger metric-id="M_POLICY_IMPLEMENTATION_EFFECT"`（镜像有此指标）+ MockBadge |
 
 ### 2.4 政策匹配与推送（SentimentTab open-match 入口 · SRS 212）
@@ -60,38 +61,65 @@
 | | 接线前 | 接线后 |
 |---|---|---|
 | 入口 | 「配置匹配与推送」按钮开种子匹配弹窗 | USE_MOCK=true 保留原按钮；false 时卡片内联「匹配主体 + 开始匹配」：`POST jobs` body `{"sub_type":"policy_match","params":{"subject_id":"E0001"}}` |
-| 起任务 | 无 | 仅点「开始匹配」才 POST（切主体编号只改本地状态）；受理后按钮禁用（单飞）；失败如实提示（匿名时后端拒「未获取到当前用户」，前端原样展示不伪造用户） |
-| 结果 | 种子匹配列表 | 受理提示含 taskId；无外发推送通道，文案如实说明「仅返回匹配列表」 |
+| 起任务 | 无 | 仅点「开始匹配」才 POST（切主体编号只改本地状态）；submitting/polling 全程按钮禁用（单飞）；失败如实提示（匿名时后端拒「未获取到当前用户」，前端原样展示不伪造用户） |
+| 结果 | 种子匹配列表 | 受理后轮询 `GET jobs/{taskId}`（见 §5），终态渲染匹配卡列表（policy_title/match_score/match_reasons/rank_no）；无外发推送通道，文案如实说明「仅返回匹配列表」 |
+| 复用/重跑 | 无 | 同主体当天已成功直接打开结果（切主体不自动查）；「重新匹配」force:true（见 §5） |
 | 角标 | 卡头 MockBadge | 保留 + `PolicyMetricSpecTrigger metric-id="M_POLICY_MATCH"` |
 
 **subject 放 `params.subject_id` 的依据**：display `toAsyncCreateBody` 白名单只转发 `params`/`draft`（顶层 `subject` 会被丢弃）；Python `polan/job.py _match_where` 读 `body.params.subject_id` 过滤 `ads.policy_match`。主体沿用受控画像编号（E0001/U0001，ARCH §4.6）。
 
 ## 3. 交互铁律（I2-12）落实
 
-- ✅ 切条件不自动起任务：效果/匹配均无 watch 自动 POST；挂载只拉同步 GET（反馈/报告）
-- ✅ 同用户同条件单飞：受理未闭合前按钮 `disabled`（无轮询通道，不伪造完成态）
-- ✅ 失败不清同步块：反馈/报告/统计卡数据不受 jobs 失败影响，仅对应卡内 `a-alert`
-- ✅ 空态诚实：`a-empty` + 诚实文案；不造 0（无评分「—」）、不造演示分、无 501 充当
+- ✅ 切条件不自动起任务：效果/匹配均无 watch 自动 POST；挂载只拉同步 GET（反馈/报告）与复用回读
+- ✅ 同用户同条件单飞：submitting/polling/rerunning 全程按钮 `disabled`
+- ✅ 失败不清同步块：反馈/报告/统计卡数据不受 jobs 失败影响，仅对应卡内 `a-alert`；force 重跑失败保留旧结果
+- ✅ 空态诚实：`a-empty` + 诚实文案；不造 0（无评分「—」）、不造演示分、无 501 充当；空体 `data:null`=任务不存在如实提示
 - ✅ 匿名如实提示：后端拒/空身份时展示 `msg` 原文
-- ⚠️ 当天复用 / 重新分析 / 结果回读：**依赖任务查询端点，见 §5 缺口**
+- ✅ 当天复用 / 重新分析 / 结果回读：**已闭合**（2026-11-03 `e29090c`，见 §5）
 
 ## 4. 工程验证（三绿）
 
 | 项 | 命令 | 结果 |
 |---|---|---|
-| 类型 | `npx vue-tsc --noEmit` | ✅ 0 错误 |
-| 构建 | `pnpm build` | ✅ built in 1m16s |
-| 自检 | `node src/views/policy/panorama/FE-POL-SENT-LIVE.test.mjs` | ✅ 全绿（纯函数映射/api 路径锚点/双轨/I2-12/空态/角标/浏览器路径红线） |
+| 类型 | `npx vue-tsc --noEmit` | ✅ 0 错误（两次交付均过） |
+| 构建 | `pnpm build` | ✅ 四卡接线 1m16s / 轮询闭合 1m14s |
+| 自检 | `node src/views/policy/panorama/FE-POL-SENT-LIVE.test.mjs` | ✅ 全绿（纯函数映射/api 路径锚点/双轨/I2-12/空态/角标/浏览器路径红线 + **轮询状态机/当天复用/force 重跑/终态结果映射**） |
 | 回归 | `node src/views/policy/panorama/FE-POL-01B.test.mjs` | ✅ 全绿 |
 
 已知无关红：`node src/views/policy/policy.test.mjs` 的「种子冻结」断言在本机因 `demo-ui-science` 与 `lumen-ui-science-pc` 克隆行尾（CRLF/LF）不一致而 diff 误报——基线 commit `86ef333`（2026-11-02）未触碰 `policySeed.ts`，后端真源 `e277bd7`（2026-08-20）早于基线，内容未漂移；非本单引入、非本单修复。CI/Linux 环境行尾一致，不受影响。
 
-## 5. jobs 轮询缺口（重要）
+## 5. jobs 轮询与当天复用（已闭合，2026-11-03 追加）
 
-`gkxlumen-display` 的 `PolicyPanoramaController` 只有 `POST /v1/policy/panorama/jobs`（受理），**未暴露任务查询端点**（无 `GET jobs/{taskId}` / `GET jobs/{taskId}/result`）。上游 `gkxlumen-topic-async-service` 有 `GET /topic/v1/analysis/tasks/{taskId}` 与 `/result`，但浏览器禁止直打（D12 / 设计分册红线）。按任务指令未自造端点路径：
+~~display 未暴露任务查询端点~~ **已闭合**：lumen-svc-platform `387502a`（`POL-L2-DS10-SENT-JOBQ-L01`，api-agent）上线 `GET /display/v1/policy/panorama/jobs/{taskId}`，透传 `gkxlumen-topic-async-service` 的 `GET /topic/v1/analysis/tasks/{taskId}`（user_id 由服务端补当前登录用户）。前端闭合代码：`lumen-ui-science-pc` @ dev `e29090c`。
 
-- 效果卡/匹配卡当前为「受理 + 提示进行中」，代码内留 `TODO(POL-L2-DS10-SENT-FE-L01)` 注释
-- **缺口补法建议**：display 增加 `GET /display/v1/policy/panorama/jobs/{taskId}` 委托 `GET /topic/v1/analysis/tasks/{taskId}`（同 jobs 受理的委托方向）。端点上线后前端接：轮询→结果渲染（区域效果行 `scope_type=region_effect`、时序 `M_POLICY_IMPLEMENTATION_EFFECT`；匹配行 `policy_title/match_score/match_reasons/rank_no`）→当天成功同条件直接打开结果→「重新分析」传 `force:true`（`jobBodyOf` 已支持）
+### 端点行为（后端测试 `PolicyPanoramaServiceTest` 冻结）
+
+- 成功体：`{"code":0,"data":{"taskId":"...","status":"...","targetParams?":"...","resultData?":"..."}}`（前端 `parseJobDetail` 做 taskId/task_id 双读）
+- 上游不存在 / 无权 / 匿名拒绝 / Feign 异常 / 空白 taskId：归一为 `{"code":0,"data":null}` 空体，不 500
+- 载荷取法：终态 `success` 时 `targetParams.result_payload`（`applySvcSyncResult` 的政策 Job 落点，JSON 字符串）优先，`resultData` 兜底；坏 JSON → payload=null 不抛
+
+### 轮询参数
+
+| 参数 | 值 |
+|---|---|
+| 首查延迟 | 1.2s（`POLL_FIRST_MS`，受理后给同步落库留窗口） |
+| 间隔 | 3s（`POLL_INTERVAL_MS`，user_query 指定 3–5s 取下限） |
+| 封顶 | 120s（`POLL_MAX_MS`），超时如实提示「已停止等待，可重新分析」 |
+| 空体处理 | `data:null`=任务不存在：窗口内**继续等**（对齐 POST 同步落库前的窗口），封顶后按超时处理 |
+| 网络抖动 | 查询异常按继续轮询处理，封顶由 elapsed 兜底 |
+| 快路径 | 政策 Job 下游同步：POST 受理体若已是终态（relayJob 原样转 AnalysisTaskEntity）直接采纳，省一轮轮询 |
+
+### 当天复用与重新分析（I2-12）
+
+- **指纹**：sessionStorage 键 `pol-sent-job:{sub_type}:{cond}`（effect 条件摘要为空串、match 为 subject_id），值含 `yyyymmdd` 当天戳；跨天条目读取时自动清键失效
+- **复用**：组件挂载时 GET 回读当天已成功任务直接渲染结果（不自动起新任务）；match 卡切主体编号不自动查询（I2-12 切条件不自动起任务）
+- **重新分析/重新匹配**：结果态显示 ghost 按钮，POST body 带 `force:true`（display 白名单 `toAsyncCreateBody` 已含 force）强制重跑；重跑成功覆盖复用条目
+- **单飞**：submitting/polling/rerunning 全程按钮禁用；失败不清已有结果与同步块
+- **终态渲染**：`policy_effect` → 区域表（scope_name/scope_code/effect_score + 按 region_code 关联时序 metric_value 为落地实效 + ext.explanation 口径说明）；`policy_match` → 匹配卡列表（policy_title/match_score/match_reasons/rank_no）；空结果 `a-empty` 诚实文案不造 0
+
+### 状态机（组件 + 纯函数）
+
+`idle → submitting →（受理体已终态？done : polling → done | failed | timeout）`；轮询判定收敛在纯函数 `pollOutcomeOf(detail, elapsedMs) ∈ {continue, done, failed, timeout}`，组件只做定时器编排；`onBeforeUnmount` 清定时器。
 
 ## 6. 请求样例汇总
 
@@ -116,7 +144,9 @@ POST /display/v1/policy/panorama/jobs   {"sub_type":"policy_match","params":{"su
 
 ## 8. 产物清单
 
-- `lumen-ui-science-pc` @ dev：`73cc1e8`（`src/api/policy.ts`、`sentimentLive.ts`、`FE-POL-SENT-LIVE.test.mjs`、`FeedbackPanel.vue`、`SentimentTab.vue`、`ImplementationTracker.vue`、`EvaluationReportModal.vue`）
+- `lumen-ui-science-pc` @ dev：
+  - `73cc1e8`（四卡接线：`src/api/policy.ts`、`sentimentLive.ts`、`FE-POL-SENT-LIVE.test.mjs`、`FeedbackPanel.vue`、`SentimentTab.vue`、`ImplementationTracker.vue`、`EvaluationReportModal.vue`）
+  - `e29090c`（Job 轮询与当天复用闭合：`sentimentLive.ts` 扩展、`panoramaJobDetail`、两卡轮询编排与终态渲染、自检扩展）
 - 本 handoff（gkx-orchestration @ dev）
 
 ponytail: full —— 纯函数抽 `sentimentLive.ts` 是为 node 自检可 import（组件内联映射无法直测）；未加轮询/状态机等端点未就绪的空转代码。
