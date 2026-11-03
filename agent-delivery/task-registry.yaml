@@ -50508,7 +50508,7 @@ tasks:
       - "不改 D4，不把 GDF-POLICY-MOCK-GATE-L01 写成已解开。handoff 写明库、表、行数和灌数命令"
     update_time: "2026-11-03T14:27:21+08:00"
   - id: POL-L2-DS10-TREND-GAPFILL-L01
-    blocked_by: "账号 gkxlumenx 对库 gkxlumenx_gapfill 返回 1044，库尚未建立。脚本已推 lumen-algo-py 3827118c。授权后重跑 python scripts/seed_gapfill_policy_trend.py --apply。不改用别的库。"
+    blocked_by: ""
     cost_warn: "green"
     actual_cost: 0.05
     model_used: "grok-4.7"
@@ -50520,7 +50520,7 @@ tasks:
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策动向跟踪 · 缺项表灌 mock"
-    status: "in_progress"
+    status: "integration"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50531,7 +50531,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 8000
     user_story: "US-DS-POL-02"
-    note: "监管 human:淮政玮。gkxlumenx_gapfill 已由 root 建库并授权。继续 --apply。只灌四张动向缺项表。不标 done。"
+    note: "监管 human:淮政玮。--apply 退出码 0。库 gkxlumenx_gapfill 已写入 hotspot 6、impact 3、report 3、theme 5。不改展示接口，不在接口里返回 mock。不标 done。"
     depends_on:
       - "POL-L2-DS10-TREND-ARCH"
       - "POL-L2-DS10-TREND-DATA"
@@ -50543,7 +50543,7 @@ tasks:
       - "每行带 metric_id（留空）、gap_item、fill_method=manual、gapfill_batch_id、generated_at。不新注册指标，不填 fill_model"
       - "不改展示接口，不在控制器或 Python 响应里写死 mock。表里没有行时读取侧应得到空，不造 0。不改 D4"
       - "handoff 写明库、表、行数和灌数命令。不把本单标 done"
-    update_time: "2026-11-03T15:17:16+08:00"
+    update_time: "2026-11-03T15:23:43+08:00"
   - id: POL-L2-DS10-SENT-MOCK-210
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-MOCK-210.md"
     claimed_at: "2026-11-03T06:18:05.992Z"
@@ -50637,13 +50637,14 @@ tasks:
       - "不新建表，不改公式，不新造 metric_id，不把 D4 改成 live。查询只读这两张已有表"
     update_time: "2026-11-03T14:35:11+08:00"
   - id: POL-L2-DS10-CMP-GAPFILL-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-CMP-GAPFILL-L01.md"
     claimed_at: "2026-11-03T07:03:18.304Z"
     last_seen_at: "2026-11-03T07:03:18.304Z"
     lock_until: "2026-11-03T15:03:18.304Z"
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策重点比对 · 缺项表灌 mock"
-    status: "in_progress"
+    status: "pending_test"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50653,7 +50654,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "开工。以架构第 9 节为准，建四张缺项表并灌 mock。不建可视化表。不改 jobs/execute。"
+    note: "联调通过，进入待测试。"
     depends_on:
       - "POL-L2-DS10-CMP-ARCH"
       - "POL-L2-DS10-CMP-DATA"
@@ -50663,7 +50664,7 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_version_diff、gapfill_policy_detail_compare、gapfill_policy_benchmark_report、gapfill_policy_benchmark_viz。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入新旧变更摘要、多政策对照、对标报告正文、可视化对照数。接口只读这些表"
       - "不灌部门件数和标杆力度。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T15:03:22+08:00"
+    update_time: "2026-11-03T15:19:11+08:00"
   - id: POL-L2-DS11-VIZ-GAPFILL-L01
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 可视化 · 缺项表灌 mock"
@@ -51352,7 +51353,7 @@ tasks:
     lock_until: "2026-11-03T15:03:19.016Z"
     claimed_by: "agent:algorithm-agent"
     title: "科创政策全景 · 政策重点比对 · 力度作业接入"
-    status: "claimed"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51363,7 +51364,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 12000
     user_story: "US-DS-POL-04"
-    note: "监管 human:淮政玮。强度：ponytail full。只给已有 jobs/execute 增加 policy_intensity。不把 intensity.py 抄进 Java。与缺项灌数同仓，先灌数再改这条路由，避免并行改同一文件。"
+    note: "缺项表已灌完，开始接 policy_intensity。不改四张缺项表脚本。"
     depends_on:
       - "POL-L2-DS10-CMP-API"
       - "POL-L2-DS10-CMP-METRIC"
@@ -51374,7 +51375,7 @@ tasks:
       - "/internal/policy/jobs/execute 接受 sub_type=policy_intensity，调用已有 polan.eval.intensity.run，再读 ads.policy_intensity"
       - "算不出或未写入时返回空，不在路由里打分，不返回演示分"
       - "不新造 metric_id，不改 D4。handoff 写明 ponytail: full"
-    update_time: "2026-11-03T15:03:19+08:00"
+    update_time: "2026-11-03T15:19:11+08:00"
   - id: POL-L2-DS10-QRY-DISP-L01
     claimed_at: "2026-11-03T07:18:06.772Z"
     last_seen_at: "2026-11-03T07:18:06.772Z"

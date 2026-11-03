@@ -39,7 +39,7 @@ ponytail: full
 
 | 偏离 | 理由 | as-built |
 |------|------|----------|
-| 四张表没有在库上建出来 | `--apply` 连上了 `10.50.11.76:3306`，账号 `gkxlumenx` 对库 `gkxlumenx_gapfill` 返回 errno 1044。`SHOW DATABASES` 看不到名称里带 gap 的库。没有建表，没有插入 | DDL+INSERT 在 `scripts/mysql/gapfill_policy_trend.sql`。授权后仍用同一条 `--apply` |
+| 早先一轮没有写入 | 2026-11-03 早先 `--apply` 连上 `10.50.11.76:3306` 后，账号 `gkxlumenx` 对库 `gkxlumenx_gapfill` 返回 errno 1044。库随后已建好并授权给同一账号。本轮只重跑动向四张表 | `--apply` 退出码 0。库内 hotspot 6、impact 3、report 3、theme 5 |
 | 每张表多一列自增 `id` | DATA 第 5.1 节允许引擎要求主键时只加与业务无关的行号 | `bigint AUTO_INCREMENT`，不参与业务 |
 
 ## 产物清单
@@ -48,25 +48,26 @@ ponytail: full
 - `repos/lumen-algo-py/scripts/mysql/gapfill_policy_trend.sql`
 - 本 handoff
 
-未改 Java。未改展示服务。SQL 没有在库上执行成功。
+未改 Java。未改展示服务。授权后 `--apply` 已在 `gkxlumenx_gapfill` 建表并插入。
 
 ## 验收证据
 
-四张表没有建上。库内行数没有。脚本准备插入、尚未入库的行数是 hotspot 6、impact 3、report 3、theme 5。
+四张表已写入 `gkxlumenx_gapfill`。库内行数与期望一致。
 
 | 项 | 结果 |
 |---|---|
-| 目标库 | `gkxlumenx_gapfill`（账号无权使用，未写入） |
-| 表 | 四张都未建上 |
-| 库内行数 | 没有。未执行 SELECT COUNT |
-| 期望行数 | hotspot 6、impact 3、report 3、theme 5（只在 `--check` 里，不是库内行数） |
+| 目标库 | `gkxlumenx_gapfill`（`10.50.11.76:3306`，账号 `gkxlumenx`） |
+| `--apply` 退出码 | 0 |
+| `gapfill_policy_trend_hotspot` | 6 |
+| `gapfill_policy_trend_impact` | 3 |
+| `gapfill_policy_trend_report` | 3 |
+| `gapfill_policy_theme_dist` | 5 |
 
-命令（在 `repos/lumen-algo-py`，2026-11-03）：
+命令（在 `repos/lumen-algo-py`，2026-11-03，先 `git pull --no-rebase origin dev`，已是最新）：
 
-- `python scripts/seed_gapfill_policy_trend.py --check` → 退出码 0。输出 `{"mode":"check","ok":true,"db":"gkxlumenx_gapfill","rows":{"gapfill_policy_trend_hotspot":6,"gapfill_policy_trend_impact":3,"gapfill_policy_trend_report":3,"gapfill_policy_theme_dist":5}}`
-- `python scripts/seed_gapfill_policy_trend.py --apply` → 退出码 2。输出 `{"mode":"apply","connected":true,"tables_ready":false,"errno":1044,"reason":"Access denied for user 'gkxlumenx'@'%' to database 'gkxlumenx_gapfill'"}`
+- `python scripts/seed_gapfill_policy_trend.py --apply` → 退出码 0。输出 `{"mode":"apply","connected":true,"db":"gkxlumenx_gapfill","rows":{"gapfill_policy_trend_hotspot":6,"gapfill_policy_trend_impact":3,"gapfill_policy_trend_report":3,"gapfill_policy_theme_dist":5}}`
 
-`--apply` 已执行，没有写入。原因是应用账号不能创建或使用 `gkxlumenx_gapfill`。SQL 文件留在 `scripts/mysql/gapfill_policy_trend.sql`。没有改用别的账号，没有写 ODS、DWD、ADS、供应方库。
+早先同一条命令曾返回 errno 1044。授权后本轮写入成功。没有改用别的账号，没有写 ODS、DWD、ADS、供应方库。脚本未改，没有提交。
 
 自检锁住：三领域热点各 2 条、影响各 1 条、报告各 1 份；主题 5 条且不与科创/行业/园区/招商/人才这五个类型桶同名；`metric_id` 全空；`fill_method` 全是 `manual`；SQL 不出现 `fill_model`、`policy_type`、`gapfill_policy_qry_stat`、打分列名，也不出现 ODS、DWD、ADS 库名。
 
@@ -97,7 +98,7 @@ ponytail: full
 - commit：`3827118c542213a688c0e9917c1a256fc93a1475`
 - pipeline：本单不跟发布
 - 部署：无
-- 库：已连上 MySQL，库 `gkxlumenx_gapfill` 拒绝访问，表未建，行数没有
+- 库：`gkxlumenx_gapfill`。`--apply` 退出码 0。hotspot 6、impact 3、report 3、theme 5
 
 ## 涉及文件
 
@@ -107,7 +108,7 @@ ponytail: full
 ## 未做的事
 
 - 未改 task-registry，未把任务标成 done
-- 未把四张表建进 `gkxlumenx_gapfill`，未灌行
+- 四张动向表已灌入 `gkxlumenx_gapfill`（hotspot 6、impact 3、report 3、theme 5）
 - 未改 Java，未改展示服务，未在控制器或 Python 响应里写死 mock
 - 未灌订阅，未动 203 入库、时序、地域热力
 - 未改 D4
