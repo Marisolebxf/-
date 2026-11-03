@@ -51348,6 +51348,62 @@ tasks:
       - "改动停在 lumen-ui-science-pc 本地，不 commit、不 push"
       - "handoff 写明未推送。不标 done"
     update_time: "2026-11-03T15:51:50+08:00"
+  - id: POL-L2-DS10-SENT-FE-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T13:55:10.389Z"
+    last_seen_at: "2026-11-03T13:55:10.389Z"
+    lock_until: "2026-11-03T19:55:10.389Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科创政策全景 · 政策舆情评估 · 前端接线真实接口"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-03"
+    note: "claim_type=coordinator_dispatch。监管 human:淮政玮。舆情页签反馈/报告/效果/匹配四块卡片接真实接口。"
+    depends_on:
+      - "POL-L2-DS10-SENT-IMPL-JAVA"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-ARCH.md"
+    definition_of_done:
+      - "舆情页签受众反馈卡片改调 GET /display/v1/policy/panorama/feedback，评估报告卡片改调 GET /display/v1/policy/panorama/assessment-report；USE_MOCK=true 仍走种子，开关行为与检索页签一致"
+      - "实施效果跟踪卡片接 POST /display/v1/policy/panorama/jobs sub_type=policy_effect，政策匹配与推送卡片接 sub_type=policy_match；条件变化不自动起任务，须用户点开始分析；同用户同条件只允许一条在跑；当天已成功直接打开结果，另提供重新分析"
+      - "Job 失败不清空已返回的同步块；ads 无行则对应块为空态，不造 0、不造演示分、不返回 501；匿名请求 jobs 得到拒绝或空身份提示，不伪造用户"
+      - "浏览器全部请求落在 /display/v1/policy/**，无 /topicAsync/**、无 /policy/topic/**、无直连 Python；统计数字旁保留 ⓘ 与 MockBadge 角标；pnpm type-check 与自检通过"
+      - "handoff 写明每块卡片的接线前后行为、请求样例和空态截图；推 origin/dev，commit 带 [agent:frontend-agent]；不标 done"
+    update_time: "2026-11-03T21:55:20+08:00"
+  - id: POL-L2-DS10-SENT-QA-L01
+    title: "科创政策全景 · 政策舆情评估 · 合规验收测试"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-03"
+    note: "claim_type=coordinator_dispatch。监管 human:淮政玮。用例清单与界面步骤已在会话定稿。含数据准备核对与截图要求。期望未发生必红。"
+    depends_on:
+      - "POL-L2-DS10-SENT-FE-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-API.md"
+    definition_of_done:
+      - "对 207-212 每个用例记录：前置、输入条件、页面操作步骤、预期与实际、DevTools 网络断言（请求落在 /display/v1/policy/**）、结论；用例覆盖：三条同步读、jobs 免产业 XOR、裸别名拒绝、老 sub_type 校验未泄漏、匹配空态、失败不清空同步块、切条件不自动起任务、同条件单飞、匿名收藏空、空态不造 0 不 501"
+      - "数据准备：核对 dev 库 gapfill_policy_audience_feedback 6 行三渠道、gapfill_policy_assessment_report 2 行、ads.policy_effect region_effect 2 行、policy_metric_timeseries M_POLICY_IMPLEMENTATION_EFFECT 2 行、ads.policy_match 111 行 18 主体 rank 1-8；缺口先行报告不造数"
+      - "界面执行：科创政策全景页四个页签按用例逐条操作，S1-S6 匿名重跑一遍；关键步骤截图存 handoff 引用路径（截图含 URL 与网络面板证据；失败截图含报错与时间）"
+      - "每个用例给出合规判定：无行则空/不造 0/不 501/不写死 mock/角标在场/浏览器不越层；全部结论如实记录，期望未发生必红"
+      - "测试报告写入 agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-QA-L01.md，附用例结果总表与截图清单；不改业务代码，不标 done"
+    update_time: "2026-11-03T21:54:59+08:00"
   - id: POL-L2-DS10-SENT-IMPL-PY
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-IMPL-PY.md"
     supervised_by: "human:淮政玮"
