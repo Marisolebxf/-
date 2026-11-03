@@ -2,7 +2,7 @@
 
 > **性质**：只读核查留底。**零代码改动、零改绿、零 commit**。
 > **口径**：所有「真实 / mock / 空 / 未对接」判定都以 **2026-11-03 11:15—11:20 实跑端点 + 直连库查行数** 为准，不引用历史结论。凡未实测的一律标「未验证」，不推测。
-> **2026-11-03 13:00—14:00 补充实测**：`TrackingController` 12/13 端点已逐条跑通（含本轮新增 `POST /report-remove`），结论回填 §五；mock 汇总表补「技术发展跟踪」行。
+> **2026-11-03 13:00—14:00 补充实测**：`TrackingController` **13/13 端点全部跑通**（含本轮新增 `POST /report-remove`；`DELETE /parameter-templates/{key}` 15:20 补测：建临时模板 → 删除 `removed=true` → 列表回 5 条，`code=0`），结论回填 §五；mock 汇总表补「技术发展跟踪」行。
 > **凭据**：久新 Doris `47.93.119.170:29030`（账号在 `_local/dw-docs/README.md`）、MySQL `10.50.11.76:3306/demo_gkxlumenx_ads|dim`（账号见 `gkxlumen-element/application-local.yml`）。**凭据不入任何仓内文件**。
 > **配套台账**：mock 逐条清理清单见 `mock-ledger.md`（本文件只做状态汇总，不复制其清理动作列）；影响力专项见 `METRIC-LIB-ALGO-INFLUENCE-L01.md`；23 个算法指标可支持性见 `SITUATION-ENT-GAP-FILL-20261102.md` §十。
 
@@ -188,7 +188,7 @@ curl -X POST http://127.0.0.1:7099/v1/situation/events    -H "Content-Type: appl
 1. **没有改任何 `d4`**：566 条仍 `mock`，离线 precompute ≠ 在线服务。
 2. **没有去 mock**：期刊/会议/服务机构接替条件未达成。
 3. **UserBehavior（12 端点）未验证**：需登录令牌 + 部分依赖 Redis，如实标「未验证」，不写结论。
-   ~~Tracking 未逐条验证~~ → **2026-11-03 13:00–14:00 已补测 12/13**（唯一未复测 `DELETE /parameter-templates/{key}`），结论见 §五 `TrackingController` 行。
+   ~~Tracking 未逐条验证~~ → **2026-11-03 已验证 13/13**（13:00–14:00 批量 + 15:20 补测 `DELETE /parameter-templates/{key}`），结论见 §五 `TrackingController` 行。
 4. **没有核查新增 7 张久新表**的字段与用途。
 5. **页面级截图未做**：前端 `/trend/tech-overall-situation` 跳登录，依赖 upms（未启动），无演示账号。
 6. **未 commit / 未 push**：改动（`SituationController.java`、`SituationMockProvider.java`）停本地等人工走查。
