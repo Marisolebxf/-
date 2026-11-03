@@ -47377,14 +47377,18 @@ tasks:
       - "type-check/catalog 自检/build 绿；push origin/dev；handoff+截图+cost 四字段+架构合规自检（仅改 lumen-ui-algo-apiview）"
     update_time: "2026-11-03T10:58:10+08:00"
   - id: POL-L2-DS10-QRY-ARCH
-    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-ARCH.md"
+    model_used: "cursor-grok-4.5"
+    cost_warn: "green"
+    actual_tokens: 8000
+    actual_cost: 0.04
+    evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-ARCH.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-03T03:06:50.954Z"
     last_seen_at: "2026-11-03T03:06:50.954Z"
     lock_until: "2026-11-04T03:06:50.954Z"
     claimed_by: "agent:arch-agent"
     title: "科创政策全景 · 多维检索查询 · 后台实现架构设计"
-    status: "integration"
+    status: "done"
     agent: "arch-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -47394,7 +47398,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "架构稿与 handoff 已落盘。会签未完成，不标 done。"
+    note: "会签通过。human:淮政玮 2026-11-03 签收。浏览器仍只打 /display/v1/policy；本二级内部委托 gkxlumen-topic-policy。199/201/202 接通前 501，接通后委托门面新增入口。"
     depends_on:
       - "POL-DISPLAY-SDD-L01"
     touched_files:
@@ -47405,7 +47409,7 @@ tasks:
     definition_of_done:
       - "落盘该二级的实现架构与整体流程（同步读面、Job、501 空态、跨项只消费）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-ARCH.md"
       - "服从 /display/v1/policy，不消费 /topic/v1/policy，不新造指标，不写字段表，不重开 GDF"
-    update_time: "2026-11-03T11:11:59+08:00"
+    update_time: "2026-11-03T12:00:03+08:00"
   - id: POL-L2-DS10-TREND-ARCH
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策动向跟踪 · 后台实现架构设计"
@@ -47913,7 +47917,7 @@ tasks:
   - id: POL-L2-DS10-QRY-API
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 多维检索查询 · 后台接口设计"
-    status: "backlog"
+    status: "ready"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -47923,7 +47927,8 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。WBS-05-23-L2-01B。SRS 序号 197–202。定义单，不写代码。检索目录同步读面；智能排序、收藏、导出为 501"
+    note: |
+      监管 human:淮政玮。WBS-05-23-L2-01B。依赖 POL-L2-DS10-QRY-ARCH 已签收，可开工。定义单，不写代码。以已签收架构为准：浏览器只打 /display/v1/policy；展示内部委托专题政策门面。199/201/202 当前 501，预计实现见架构第 7 节。不要把 DoD 里的「不复用 /topic/v1/policy」写成禁止这次内部委托。
     depends_on:
       - "POL-L2-DS10-QRY-ARCH"
     touched_files:
@@ -47934,11 +47939,11 @@ tasks:
     definition_of_done:
       - "落盘该二级接口分册（路径、方法、同步或 Job、501 空态）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-API.md"
       - "只汇入 BE-POL-CONTRACT-01，不单独冻结第二份 API-POL，不写实现代码，不复用 /topic/v1/policy"
-    update_time: "2026-11-03T11:31:01+08:00"
+    update_time: "2026-11-03T12:00:07+08:00"
   - id: POL-L2-DS10-QRY-METRIC
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 多维检索查询 · 后台指标设计"
-    status: "backlog"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -47948,7 +47953,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。WBS-05-23-L2-01C。SRS 序号 197–202。定义单，不写代码。检索目录同步读面；智能排序、收藏、导出为 501"
+    note: "监管 human:淮政玮。WBS-05-23-L2-01C。依赖 POL-L2-DS10-QRY-ARCH 已签收，可开工。定义单，不写代码。不新造 metric_id，不改 D4。排序模型未注册时保持诚实空态，不写假公式。199/201/202 不是指标。"
     depends_on:
       - "POL-L2-DS10-QRY-ARCH"
     touched_files:
@@ -47959,11 +47964,11 @@ tasks:
     definition_of_done:
       - "落盘该二级指标挂接到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-METRIC.md，只使用说明书第 2 节已有 metric_id 与三档判定"
       - "未注册模型保持 501，不写可算出数的假公式，不改 D4，不新注册指标"
-    update_time: "2026-11-03T11:31:01+08:00"
+    update_time: "2026-11-03T12:00:08+08:00"
   - id: POL-L2-DS10-QRY-DATA
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 多维检索查询 · 后台数据架构设计"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -47973,7 +47978,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。WBS-05-23-L2-01D。SRS 序号 197–202。定义单，不写代码。检索目录同步读面；智能排序、收藏、导出为 501"
+    note: "监管 human:淮政玮。WBS-05-23-L2-01D。依赖 POL-L2-DS10-QRY-ARCH 已签收，可开工。定义单，不写代码。不新开 GDF，不把 D4 从 mock 改绿。历史与收藏、导出的落点以已签收架构第 7 节为准，不在展示侧建 display_user_*。"
     depends_on:
       - "POL-L2-DS10-QRY-ARCH"
     touched_files:
@@ -47984,7 +47989,7 @@ tasks:
     definition_of_done:
       - "落盘该二级数据架构到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-DATA.md，写明读哪些已有 ADS 或已落库结果"
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
-    update_time: "2026-11-03T11:31:01+08:00"
+    update_time: "2026-11-03T12:00:09+08:00"
   - id: POL-L2-DS10-TREND-API
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策动向跟踪 · 后台接口设计"
