@@ -103667,3 +103667,61 @@ tasks:
       - "handoff 写明库、表、行数、灌数命令与验证证据；推 origin/dev，commit 带 [agent:data-agent]；不改 D4，不新造 metric_id"
     update_time: "2026-11-03T21:59:38+08:00"
 
+  - id: POL-L2-DS11-QA-UT-L01
+    supervised_by: "human:淮政玮"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-QA-UT-L01.md"
+    claimed_at: "2026-11-03T14:10:43.749Z"
+    last_seen_at: "2026-11-03T14:10:43.749Z"
+    lock_until: "2026-11-03T18:10:43.749Z"
+    title: "政策分析评价 · DS11 单元测试用例与关键路径验证（含界面截图）"
+    status: "in_progress"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    note: "重放：第一阶段完成（22 条用例 + 三绿），进入第二阶段等待 BE 合入。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-API.md"
+    definition_of_done:
+      - "编写 DS11 评价页单元测试用例文档：覆盖 counts、jobs（6 种类）、shells（5 种类）的主路径与关键路径验证点，含数据准备、步骤、期望结果，期望未发生必红"
+      - "执行数据准备与接口级验证：重跑三个灌数脚本 --check 记录行数；BE 合入后经网关调 /display/v1/policy/evaluation/** 验证关键路径"
+      - "界面操作过程与截图：K8s dev 前端走查评价页操作流并截图存 screenshots/；未就绪项如实标注，不伪造。handoff 含全部证据"
+    update_time: "2026-11-03T22:10:59+08:00"
+
+  - id: POL-L2-DS11-BE-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:10:16.109Z"
+    last_seen_at: "2026-11-03T14:10:16.109Z"
+    lock_until: "2026-11-03T18:10:16.109Z"
+    title: "政策分析评价 · DS11 评价页后端读面与白名单接线"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 40000
+    note: "重放：开工（原状态被并行会话覆盖）。补趋势/分区/方案五叶/230/231 缺口。"
+    depends_on:
+      - "POL-L2-DS11-READ-GAPFILL-L01"
+      - "POL-L2-DS11-VIZ-GAPFILL-L01"
+      - "POL-L2-DS11-PLAN-GAPFILL-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-API.md"
+    definition_of_done:
+      - "在 gkxlumen-display 与 gkxlumen-element 落地 DS11 评价页读面：counts 短板、jobs 的 focus_ads 与 text_parse、shells 的解读与多媒体、趋势段与分区段同步读缺项表、方案五叶只读 gapfill_policy_eval_scheme、221 只消费已有子图。浏览器只打 /display/v1/policy/**"
+      - "display 不直连 Python、不直连库。policy_focus_ads 与 policy_text_parse 进 PolicyAnalysisTypes 白名单，223 焦点调已有 focus.run 后读 ads.policy_focus，226 只查 ads.policy_text_parse.summary，请求不调 parse.run。旧键 policy_focus 不改"
+      - "无行则空，不造 0，不返回 501。不改 D4，不新造 metric_id。ponytail full。handoff 含联调确认与自检证据，走 QA 闸门"
+    update_time: "2026-11-03T22:10:28+08:00"
