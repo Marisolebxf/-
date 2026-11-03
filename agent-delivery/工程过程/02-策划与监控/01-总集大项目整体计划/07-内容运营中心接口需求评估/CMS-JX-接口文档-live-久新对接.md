@@ -2310,6 +2310,7 @@ _（本接口无额外字段说明，见通用约定）_
 |---|---|---|---|
 | keyword | string | 是 | 关键词（多词空格分隔） |
 | country_location_ids | string[] | 否 | 久新地区码数组（live-1.6 新增；不传=不过滤） |
+| industry_ids | string[] | 否 | 产业码（INB*）或产业领域码（CL-*）数组（live-1.6 新增；领域自动展开旗下产业；不传=不过滤）。匹配语义：产业码前缀覆盖子链。返回 records 纯新增 `industry_id`/`industry_name`（数据所属产业就近上浮，可能为 null） |
 | page | integer | 否 | 默认 1 |
 | size | integer | 否 | 默认 20，上限 100 |
 
@@ -2322,7 +2323,7 @@ _（本接口无额外字段说明，见通用约定）_
 `POST /api/open/cms/v1/smart-search/industry`
 
 **请求体**：同 3.19.9。
-> live-1.6：支持 `country_location_ids`；产业无地区概念，参数收下忽略（不报错）。
+> live-1.6：支持 `country_location_ids`（收下忽略——产业无地区概念）与 `industry_ids`（按 id/stableId 前缀后置过滤，返回 total 同步收缩）。
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为产业链节点（id / stableId / objectType / name / aliases / tags 等）。
 
