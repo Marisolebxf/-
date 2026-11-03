@@ -51905,7 +51905,7 @@ tasks:
     lock_until: "2026-11-04T08:16:03.843Z"
     claimed_by: "agent:algorithm-agent"
     title: "政策分析评价 · 结果解读报告多维展示 · 焦点与摘要 Job"
-    status: "integration"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51916,7 +51916,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 20000
     user_story: "US-DS-POL-05"
-    note: "代码已落盘，待签收"
+    note: "回补签收：原签收 2026-11-03（commit 2d91249，36 项测试全绿）。"
     depends_on:
       - "POL-L2-DS11-READ-API"
       - "POL-L2-DS11-READ-METRIC"
@@ -51929,7 +51929,7 @@ tasks:
       - "policy_focus_ads 调用已有 polan.eval.focus.run，再读 ads.policy_focus 且 policy_id 非空。不改 focus.py，不扩大 DELETE 范围。无行则空，不返回写死指数，不调 focus-one"
       - "policy_text_parse 只查 ads.policy_text_parse.summary。请求里不调用 polan.text.parse.run。无行则空，不返回写死段落"
       - "推 origin/dev，commit 带 [agent:algorithm-agent]。不把展示浏览器指到 /v1/policy。不标 done"
-    update_time: "2026-11-03T20:32:59+08:00"
+    update_time: "2026-11-03T23:42:54+08:00"
   - id: POL-L2-DS11-VIZ-TEMPLATE-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-03T14:07:12.410Z"
@@ -52038,3 +52038,27 @@ tasks:
       - "界面操作过程与截图：走查订阅中心 Tab 操作流（新建弹窗→保存→列表→修改→取消→空态→收件箱诚实提示）并截图存 handoff screenshots/；未就绪项如实标注，不伪造"
       - "接口级验证：经网关调 /display/v1/policy/panorama/subscriptions 全链路（浏览器路径不变、展示只委托、无订阅空列表非 501、外发不是 localStorage/立即推送）；handoff 含全部证据；不把本单标 done"
     update_time: "2026-11-03T22:51:21+08:00"
+  - id: POL-L2-DS11-READ-IMPL-JAVA
+    title: "政策分析评价 · 结果解读报告多维展示 · Java 三层实现"
+    status: "done"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-05"
+    note: "回补签收：原签收 2026-11-03（commit 30a3192，23 测试全绿）。"
+    depends_on:
+      - "POL-L2-DS11-READ-API"
+      - "POL-L2-DS11-READ-METRIC"
+      - "POL-L2-DS11-READ-DATA"
+    definition_of_done:
+      - "display 层 PolicyEvaluationController/Service 对外只暴露 /display/v1/policy/evaluation/{counts,shells,jobs}"
+      - "element 层读 {ads}.policy_effect 与 {gapfill}.gapfill_policy_eval_shell，不返回写死 mock"
+      - "topic-async 层白名单 policy_focus_ads / policy_text_parse 走 Python /internal/policy/jobs/execute"
+      - "lumen-svc-platform commit 30a3192 已推 origin/dev；23 项单测全绿"
+    update_time: "2026-11-03T23:42:20+08:00"
