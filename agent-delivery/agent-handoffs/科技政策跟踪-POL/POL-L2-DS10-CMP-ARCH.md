@@ -7,7 +7,7 @@
 | claimed_by | `agent:arch-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `pull` |
-| 说明 | 2026-11-03 按可实现标准写完。未会签，不标 done |
+| 说明 | 2026-11-03 已签收。签收人 human:淮政玮。按可实现标准。 |
 
 ## Ponytail
 
@@ -54,7 +54,7 @@ ponytail: off
 - 架构稿已落盘，含同步读面、Job、缺项表和跨项只消费。
 - 六叶输入条件在架构稿第 3 节。数据来源在第 3.1 节。213 的时点用已有发布时间。215 的实施部门收集不到，读 `gapfill_policy_impl_dept`。
 - 灌数单 `POL-L2-DS10-CMP-GAPFILL-L01` 本叶不执行。218 不建 `gapfill_policy_benchmark_viz`。215 的部门表以本架构第 9 节为准。
-- 未会签。不标 done。
+- 2026-11-03 已签收。签收人 human:淮政玮。
 
 ## 开放项
 
