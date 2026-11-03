@@ -46788,3 +46788,76 @@ tasks:
       - "放开步骤可复现：①rowActions 加回 'export' ②删除 exportCurrentEnabled:false ③capabilityLevels.export 保留 L3/L4 不动；验证 = 条件卡导出按钮/导出选中/行内导出三处恢复且流程可用"
       - "隐藏后回归：企业查询页三处导出入口不可见；产业中心/服务机构页导出隐藏状态不受影响（其本就 show-export=false）"
     update_time: "2026-11-02T21:17:45+08:00"
+  - id: CMS-JX-SMART-COUNTRY-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-03T02:38:18.200Z"
+    last_seen_at: "2026-11-03T02:38:18.200Z"
+    lock_until: "2026-11-03T10:38:18.200Z"
+    claimed_by: "agent:api-agent"
+    title: "智能搜索地区筛选：cms_country_map 国家映射 + 四接口 country_location_ids 过滤"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 70000
+    note: |
+      【需求 2026-11-03 human:徐滕强】智能搜索加地区筛选。久新 xlsx（/Users/xutengqiang/Downloads/国家中文名.xlsx，232 国 loc_+中文名）↔ gkxlumenx_dim.code_country（19 国三字码）。汉字精确匹配建映射（已验证 19/19 全匹配、无重名）；匹配不上置 NOMATCH（查询直接空，保留筛选语义）。企业 ES country_code 可筛；产业无地区概念参数忽略；政策/服务链仅国内数据→只放行中国，其余空返回。铁律：Java→Python 只传自有码，loc_ 原码不出 CMS。表放 gkxlumenx_cms 库。ponytail full。【依赖说明】依赖 CMS-JX-SMART-SEARCH-L01（已上线冒烟通过、pending_test 待签收，四接口生产可用），实质无阻塞。
+    depends_on:
+      - "CMS-JX-SMART-SEARCH-L01"
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "gkxlumen-cms DDL 目录 cms_country_map.sql（新增）+ 灌数脚本"
+      - "gkxlumen-cms SmartSearchService（country 翻译与过滤）"
+      - "gkxlumen-cms CountryMapService/Repository（新增，cmsJdbcTemplate）"
+      - "gkx-orchestration 文档 live-1.6 + gen-openapi.py"
+    definition_of_done:
+      - "cms 库建 cms_country_map（country_location_id, country_code, name_zh；唯一键 country_location_id）+ xlsx 灌数脚本；匹配统计：232 国中 19 个精确匹配汉字，213 个置 country_code=NOMATCH"
+      - "四接口新增可选筛选项 country_location_ids（数组）；不传=行为与现版本完全一致（兼容铁律）"
+      - "企业：映射→country_code terms 过滤 ES country_code；含 NOMATCH 时直接返回空 records（保留查询语义不丢条件）"
+      - "产业：参数收下但忽略（无地区概念，不报错）；政策/服务链：仅 CHN（中国）放行，其余 country_location_id 快速返回空"
+      - "Java→Python 链路只能传自有 country_code，禁止 loc_ 原码穿透"
+      - "至少一个可运行自检覆盖映射翻译与 NOMATCH/CHN 语义；冒烟证据（四接口带/不带地区筛选对照）附 handoff"
+      - "文档 live-1.6 + OpenAPI 同步推送；registry 状态流转 + cost 回填"
+    update_time: "2026-11-03T10:38:34+08:00"
+  - id: CMS-JX-SMART-INDUSTRY-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-03T02:38:18.333Z"
+    last_seen_at: "2026-11-03T02:38:18.333Z"
+    lock_until: "2026-11-03T10:38:18.333Z"
+    claimed_by: "agent:api-agent"
+    title: "智能搜索产业筛选与返回：领域/产业展开 + 前缀匹配 + 就近上浮"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 90000
+    note: |
+      【需求 2026-11-03 human:徐滕强】智能搜索加产业领域/产业筛选与返回。数据结构已核实：industry_cluster（7 领域 CL-SEI-01 等）→ industry_cluster_map（cluster→INB 产业码 15 条，gkxlumenx_dim）。企业 ES industry_chains_flat 存 L0 码（INB1204），chain_id=INB120401 等子码按前缀归属；返回时底层节点码就近上浮为产业 code+汉字。政策/服务链 MySQL 走已有 industry 高级筛选参数透传。兼容铁律：请求只增筛选、响应只增字段，其他前端不传新参数行为不变；Python 零改动。与 CMS-JX-SMART-COUNTRY-L01 相互独立可并行。【依赖说明】依赖 CMS-JX-SMART-SEARCH-L01（已上线 pending_test，实质无阻塞）。ponytail full。
+    depends_on:
+      - "CMS-JX-SMART-SEARCH-L01"
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "gkxlumen-cms SmartSearchService（industry 展开与过滤）"
+      - "gkxlumen-cms IndustryClusterService（领域→产业展开 + 码表缓存）"
+      - "gkx-orchestration 文档 live-1.6 + gen-openapi.py"
+    definition_of_done:
+      - "四接口新增可选筛选项 industry_cluster_id（领域，选=展开旗下所有产业码）与 industry_id（产业，code 前缀匹配子链/子节点）；不传=行为与现版本完全一致（兼容铁律）"
+      - "企业 ES：industry_chains_flat 前缀匹配（wildcard 或 terms 展开），经 industry_cluster_map 领域→产业码展开"
+      - "返回增强：每条 records 增加 industry_id+industry_name（就近上浮：底层节点码→归属产业码→汉字，码表来源 dwd.industry_chain + industry_cluster_map），字段纯新增不删不改"
+      - "产业模块：自身即码本，直接支持并返回领域/产业汉字"
+      - "政策/服务链（MySQL）：复用 industry_cluster_map 展开 + 现有 industry 高级筛选参数透传，Python 零改动"
+      - "至少一个可运行自检覆盖领域展开/前缀匹配/就近上浮；冒烟证据（带/不带产业筛选对照 + 返回新增字段样例）附 handoff"
+      - "文档 live-1.6 + OpenAPI 同步；registry 状态流转 + cost 回填"
+    update_time: "2026-11-03T10:38:36+08:00"
