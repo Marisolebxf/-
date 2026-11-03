@@ -185,7 +185,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 
 **验收（B1 出数后三查）**：① 边表 1,055 行；② 每行 `source_node_id` 在节点表命中且 `node_level` = 子行减 1；③ 沿 `parent_node_id` 从任一 L7 节点上溯，终点必为某 L2 节点（其 `chain_id` 即所属链）——树完整可还原。
 
-### 3.4 `dwd_org_industry_tags` → `industry_chain_entity_rel`（v2.2 修订：解析格式与脏值钉死，命中率待重测）
+### 3.4 `dwd_org_industry_tags` → `industry_chain_entity_rel`（v2.3.1 修订：解析格式与脏值钉死；业务口径=全量全国）
 
 **拆行**：挂点列（`industry_link_code` / `industry_code`）为**单引号列表字面量**（`['INB1333']`，非标准 JSON）——按此格式解析炸行（round1 附注确认）。空列表 `[]`（真源占 24.9%）整行丢弃进治理清单。**脏值处置（round2 问 19 拍板）**：中文路径名列表（如 `['原材料','中药材种植',…]`，1 行）、异常 `credit_code`（日期串 1 行、全角括号 1 行）→ 不洗、进治理清单（带证据）。禁止截断码位猜 INB。
 
@@ -209,7 +209,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 | `company_name` | `ext.company_name` | 直接 | 不进独立列 |
 | `credit_code` | `ext.credit_code` | 直接 | |
 
-**全国/广东口径（round2 问 7）——待命中率重测后定**：round1 双方数字均不采信（GDF 真源抽样 15%；我方 ODS 残缺仅约 1,000 行）。流程：我方补灌 ODS 至真源全量 228 万（`CHAIN-ODS-SYNC-L01`）→ 真源全量重测 `credit_code`→`enterprise_base` 命中率 → round2 补充答复。本问不阻塞 Wave A 与 `CHAIN-B1-TREE`。
+**业务口径（round2 问 7，2026-11-03 徐滕强拍板）：全量全国，不存在「只做广东」**。不得以样例匹配率定业务范围（PoC 阶段样例匹配不上属正常现象）。执行规则不变：`credit_code` JOIN `enterprise_base` 命中才写 `org_id`，对不上不伪造；**未命中行进治理清单**（带 credit_code/company_name/挂点证据），待企业主档覆盖扩展后二次挂接——丢弃≠放弃，不因此缩小业务范围。命中率数字（round1 双方的 85%/15%/2%）均为样例期数字，不作范围依据。
 
 依赖：`enterprise_base` 就绪后运行（企业包 Mapping 3.1）。对账输出 drop 行数（无 org_id / 无 INB）。
 
@@ -248,7 +248,7 @@ v5 文案里企业权威键曾写 `enterprise_code`：本 Mapping **覆盖为生
 | OPEN-CHAIN-MAP-02 | `future_industry_flag` | **已定（2026-11-02 对照 demo）：链树作业写 0** |
 | OPEN-CHAIN-MAP-03 | 产品 tags → entity_rel product | 本期不洗 |
 | OPEN-CHAIN-MAP-06 | 分析 `industry_code` → INB `chain_id` | 挡后续按链资讯；本期 B2 不洗 |
-| OPEN-CHAIN-MAP-07 | 链上企业全国/广东口径 | **待 ODS 补灌后命中率重测（round2 问 7）** |
+| OPEN-CHAIN-MAP-07 | 链上企业挂接口径 | **已定（2026-11-03 徐滕强）：全量全国**；未命中行进治理清单待二次挂接，命中率随 Wave A 对账回执（仅作数据现状参考，不作范围依据） |
 | OPEN-CHAIN-FLOW-01 | 正式 DAG 名 | 产线回写 |
 | OPEN-CHAIN-FLOW-02 | 正式图空间名 + 上图/rebuild 契约 + 点数稳定判定 | **已定（2026-11-02 二次确认）**：空间 `gkx_chain`；契约见 `12`§5 |
 
