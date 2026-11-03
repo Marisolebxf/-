@@ -9,7 +9,7 @@ ponytail: full
 | claimed_by | `agent:data-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `coordinator_dispatch`。总控已认领并置 in_progress。本会话不改 task-registry |
-| 说明 | 用户授权在 `lumen-algo-py` 提交并推送 `origin/dev`。编排仓不提交 |
+| 说明 | 脚本已在 `lumen-algo-py` 的 `origin/dev`。本次脚本未改，不提交该仓。本 handoff 只记录本次 `--apply` 行数，并提交到 `gkx-orchestration` 的 `origin/dev`。不改 task-registry |
 
 ## Ponytail
 
@@ -63,11 +63,12 @@ ponytail: full
 | `gapfill_policy_trend_report` | 3 |
 | `gapfill_policy_theme_dist` | 5 |
 
-命令（在 `repos/lumen-algo-py`，2026-11-03，先 `git pull --no-rebase origin dev`，已是最新）：
+命令（在 `repos/lumen-algo-py`，2026-11-03）：
 
+- `python scripts/seed_gapfill_policy_trend.py --check` → 退出码 0。输出 `{"mode":"check","ok":true,"db":"gkxlumenx_gapfill","rows":{"gapfill_policy_trend_hotspot":6,"gapfill_policy_trend_impact":3,"gapfill_policy_trend_report":3,"gapfill_policy_theme_dist":5}}`
 - `python scripts/seed_gapfill_policy_trend.py --apply` → 退出码 0。输出 `{"mode":"apply","connected":true,"db":"gkxlumenx_gapfill","rows":{"gapfill_policy_trend_hotspot":6,"gapfill_policy_trend_impact":3,"gapfill_policy_trend_report":3,"gapfill_policy_theme_dist":5}}`
 
-早先同一条命令曾返回 errno 1044。授权后本轮写入成功。没有改用别的账号，没有写 ODS、DWD、ADS、供应方库。脚本未改，没有提交。
+随后在 `gkxlumenx_gapfill` 对四张表执行 `SELECT COUNT(*)`：hotspot 6、impact 3、report 3、theme 5。早先同一条 `--apply` 曾返回 errno 1044。授权后本轮写入成功。没有改用别的账号，没有写 ODS、DWD、ADS、供应方库。脚本未改，不提交 `lumen-algo-py`。
 
 自检锁住：三领域热点各 2 条、影响各 1 条、报告各 1 份；主题 5 条且不与科创/行业/园区/招商/人才这五个类型桶同名；`metric_id` 全空；`fill_method` 全是 `manual`；SQL 不出现 `fill_model`、`policy_type`、`gapfill_policy_qry_stat`、打分列名，也不出现 ODS、DWD、ADS 库名。
 
