@@ -52991,7 +52991,7 @@ tasks:
     estimated_tokens: 600000
     user_story: "US-DS-POL-02"
     note: |
-      ⚠️ 依赖缺口：TREND 二级后端只有 ARCH/API/METRIC/DATA（done）+ GAPFILL（integration），未见 display 侧 Java 实现单（对比 SENT 链有 IMPL-JAVA/IMPL-PY/JOBQ）。开工前需先建 POL-L2-DS10-TREND-IMPL-JAVA 单（ingest/subscriptions 委托/stats 三维扩展/jobs 三域读表），故建为 backlog；depends_on 待实现单建立后回填。订阅 204 已由 SUB-FE-L01（pending_test）覆盖，本单不重接。
+      依赖：POL-L2-DS10-TREND-IMPL-JAVA（display 四资源 Java 实现，已建）+ POL-L2-DS10-TREND-GAPFILL-L01（integration）。IMPL-JAVA 完成后本单转 ready。⚠️ 原 gap 说明：TREND 二级此前只有 ARCH/API/METRIC/DATA（done）+ GAPFILL（integration），无 display 侧实现单（对比 SENT 链），现已补建。订阅 204 已由 SUB-FE-L01（pending_test）覆盖，本单只验复用不重接。
     depends_on: []
     touched_files:
       - "src/views/policy/panorama/components/TrendTab.vue"
@@ -53009,4 +53009,33 @@ tasks:
       - "USE_MOCK=true 保留 demo 冻结种子视觉"
       - "留最小自检 test.mjs + pnpm type-check、pnpm build 两绿"
       - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
-    update_time: "2026-11-04T02:38:14+08:00"
+    update_time: "2026-11-04T02:44:15+08:00"
+  - id: POL-L2-DS10-TREND-IMPL-JAVA
+    title: "科创政策全景 · 政策动向跟踪 · 展示与缺项读面（display 四资源 Java 实现）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 600000
+    user_story: "US-DS-POL-02"
+    note: |
+      补 TREND 链 display 侧实现缺口（此前只有定义链 ARCH/API/METRIC/DATA 与灌数单，无 Java 实现单；对标 SENT 链 IMPL-JAVA 先例但更简：三域 jobs 读表不进 Python/异步服务，故无 IMPL-PY/JOBQ 伴单）。依赖 TREND-GAPFILL-L01（integration，四张表：hotspot/impact/report/theme_dist），闭合后本单转 ready；先例 commit 参照 SENT 链 PolicyPanoramaController。
+    depends_on:
+      - "POL-L2-DS10-TREND-GAPFILL-L01"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-DATA.md"
+    definition_of_done:
+      - "四资源按 TREND-API 分册落地，浏览器只打 /display/v1/policy/panorama/**：203 GET ingest（display → gkxlumen-element 只读已有 ADS 入库列表，无行空列表，不在本页发起抓取）；204 GET subscriptions（display 只委托 gkxlumen-topic-policy，展示不落库不灌假订阅）；205/206 GET stats（时序 M_POLICY_TIMESERIES、地域 M_POLICY_NATIONAL_DIST 沿用既有 stats 委托不另建查询；新增主题分布维由 element 只读 gapfill_policy_theme_dist）；205 热点/影响/深度报告 POST jobs（element 按种类只读 gapfill_policy_trend_hotspot / gapfill_policy_trend_impact / gapfill_policy_trend_report，原样返回行）"
+      - "三域 jobs 不进 Python、不进 gkxlumen-topic-async-service；Java 不识别热点、不写影响、不组装报告；用户点了其中一种才查表，切条件/切领域不自动起任务也不自动查另一域"
+      - "空态语义按分册 §6：无行则对应块空（空列表/空图），不用 501 充当功能，接口不直接返回 mock、不造 0；读失败只让对应块空，不清空已返回的时序、地域和入库列表"
+      - "不新造 metric_id，不改 D4，不把 GDF-POLICY-MOCK-GATE-L01 写成已解开；时序/地域 D4 仍 mock，D2 provisional 保留待核验"
+      - "display 不直连 Python 不直连库；对外路径不含 /topic/v1/policy、/v1/policy、/topicAsync/**（内部委托不受限）；trace 沿既有展示链带 traceId，不新设计观测点"
+      - "编译绿（mvn compile）+ 空态/有行两分支最小校验 + handoff 写入 agent-handoffs/科技政策跟踪-POL/ 并回填 cost 四字段"
+    update_time: "2026-11-04T02:44:04+08:00"
