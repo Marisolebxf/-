@@ -40,7 +40,7 @@ ponytail: full
 - `M_POLICY_TYPE_DIST` 5 行：科创 2、行业 1、园区 1、招商 1、人才 1。只在缺项表
 - `M_POLICY_VALIDITY_RATE` 1 行：`stat_rate=66.6700`（百分数）。口径未指定，手工演示
 
-上面是脚本里准备插入的行，不是库内行。本轮没有插入成功。
+上面这些行已经写入库。doc 6、stat 20、rank 18。
 
 每行带 `gap_item`、`fill_method=manual`、`fill_model` 空、`gapfill_batch_id=POL-L2-DS10-QRY-GAPFILL-L01`、`generated_at=2026-11-03 12:00:00`。目录和名次不是指标，`metric_id` 留空。
 
@@ -52,7 +52,7 @@ ponytail: full
 
 | 偏离 | 理由 | as-built |
 |------|------|----------|
-| 三张表没有建上，行没有灌上 | 2026-11-03 本机 TCP 已通。`--apply` 连上 `10.50.11.76:3306`，账号 `gkxlumenx`@`%`。`CREATE DATABASE` / `USE gkxlumenx_gapfill` 返回 errno 1044。`SHOW DATABASES` 列出 23 个库，名称里没有 gap。全局权限只有 `USAGE ON *.*`，没有 `gkxlumenx_gapfill` 的授权，也没有建库权限。失败后 rollback，没有插入 | DDL+INSERT 仍在脚本里。授权后仍用同一条 `--apply` |
+| 建库和授权由 root 完成，应用账号不建库 | `gkxlumenx`@`%` 没有 `CREATE DATABASE`。root 建了 `gkxlumenx_gapfill` 并 `GRANT ALL` 给 `gkxlumenx`@`%`。口令未写入本文 | 之后 `--apply` 以 `gkxlumenx` 建表并灌入 |
 | 数据落点单写过「199 不落新表」 | 该句早于签收补充。本单按 ARCH 第 7.1 节和说明书第 11.1 节准备名次表 | 只准备 `gapfill_policy_qry_rank`，不改 DATA 文档 |
 | 目录行、名次行 `metric_id` 为空 | 这两类没有已登记指标号。不新造 id | 统计行只用上面七个已有 id |
 | 有效率是手工百分数 | DATA 写明口径未指定，第一批不写正式库有效率列 | 缺项表一列 `stat_rate`，不写正式库 |
@@ -67,30 +67,25 @@ ponytail: full
 - `repos/lumen-algo-py/tests/test_policy_job.py`（先前另一次 commit，本轮未改）
 - 本 handoff
 
-未改 Java。未改展示服务。`--apply` 已执行，没有建表，没有插入。
+未改 Java。未改展示服务。授权之后 `--apply` 已建表并插入。
 
 ## 验收证据
 
-三张表没有建上。库内行数没有。脚本准备插入、尚未入库的行数仍是 doc 6、stat 20、rank 18。
+三张表已建上并灌入。`gkxlumenx`@`%` 对 `gkxlumenx_gapfill`.* 拥有 ALL PRIVILEGES。
 
 | 项 | 结果 |
 |---|---|
 | 实例 | `10.50.11.76:3306` |
-| 账号 | `gkxlumenx`@`%`（已连上） |
-| 目标库 | `gkxlumenx_gapfill`（无权使用，未写入） |
-| 表 | `gapfill_policy_qry_doc`、`gapfill_policy_qry_stat`、`gapfill_policy_qry_rank` 都未建上 |
-| 库内行数 | 没有。三次 `COUNT(*)` 都是 errno 1142，没有数字 |
-| 期望行数 | doc 6、stat 20、rank 18（只在脚本校验里，不是库内行数） |
+| 账号 | `gkxlumenx`@`%` |
+| 目标库 | `gkxlumenx_gapfill` |
+| 表 | `gapfill_policy_qry_doc`、`gapfill_policy_qry_stat`、`gapfill_policy_qry_rank` |
+| 库内行数 | doc 6、stat 20、rank 18 |
+| 授权 | `GRANT ALL PRIVILEGES ON gkxlumenx_gapfill.* TO gkxlumenx@%` |
 
 命令（在 `repos/lumen-algo-py`，2026-11-03。口令只放进进程环境变量，未打印、未写入本文）：
 
-- `python scripts/seed_gapfill_policy_qry.py --apply` → 退出码 2。输出 `{"mode":"apply","connected":true,"tables_ready":false,"errno":1044,"reason":"Access denied for user 'gkxlumenx'@'%' to database 'gkxlumenx_gapfill'"}`
-- `SHOW DATABASES` → 23 个库，没有名称含 gap 的库。`SHOW GRANTS` 对 `*.*` 只有 `USAGE`，没有 `gkxlumenx_gapfill`
-- `SELECT COUNT(*) FROM gkxlumenx_gapfill.gapfill_policy_qry_doc` → errno 1142，`SELECT command denied to user 'gkxlumenx'@'10.253.202.239' for table 'gapfill_policy_qry_doc'`
-- `SELECT COUNT(*) FROM gkxlumenx_gapfill.gapfill_policy_qry_stat` → errno 1142，同一账号对该表 `SELECT` 被拒绝
-- `SELECT COUNT(*) FROM gkxlumenx_gapfill.gapfill_policy_qry_rank` → errno 1142，同一账号对该表 `SELECT` 被拒绝
-
-没有改用别的账号。没有写 ODS、DWD、ADS、demo。更早一轮 `--apply` 曾是 errno 2003 超时；本轮网络已通，卡在库权限。
+- 授权后 `python scripts/seed_gapfill_policy_qry.py --apply` → 退出码 0。输出 `{"mode":"apply","connected":true,"db":"gkxlumenx_gapfill","rows":{"gapfill_policy_qry_doc":6,"gapfill_policy_qry_stat":20,"gapfill_policy_qry_rank":18}}`
+- 授权前同一条 `--apply` 曾返回 errno 1044。授权后的 `COUNT(*)` 就是上表行数。没有写 ODS、DWD、ADS、demo。
 
 自检锁住的是脚本，不是库内行：七个已有指标号齐全；级别、全国、时序、类型的件数合计都是 6；深圳全市 3；名次三个维度各是 1 到 6 的全排列；时效性与发布日期从新到旧一致；SQL 不出现打分列名，也不出现 ODS、DWD、ADS、demo 库名。
 
@@ -99,11 +94,11 @@ ponytail: full
 - ✅ 调用链：本单只跑已有灌库脚本，不改 Java，不改展示，不在接口里写死 mock
 - ✅ 灌数在 Python：`lumen-algo-py/scripts/seed_gapfill_policy_qry.py`，未把算法写进 Java
 - ✅ 图谱：未写 nGQL，未改图库
-- ✅ D16：语句只针对 `gkxlumenx_gapfill` 下 `gapfill_` 前缀三表；行上有 `gap_item`、`fill_method`、`fill_model`、`gapfill_batch_id`、`generated_at`。本轮语句没有执行成功
+- ✅ D16：语句只针对 `gkxlumenx_gapfill` 下 `gapfill_` 前缀三表；行上有 `gap_item`、`fill_method`、`fill_model`、`gapfill_batch_id`、`generated_at`。本轮已写入
 - ✅ 未写 ODS、DWD、ADS、供应方库。类型分布和有效率不进正式统计表
 - ✅ 未读 demo 库，未把 20000 行 demo 拷进正式库
 - ✅ 未改 D4，未动 `GDF-POLICY-MOCK-GATE-L01`
-- ✅ 名次表设计只有名次，没有打分列。库上这张表没有建成
+- ✅ 名次表只有名次，没有打分列。库上这张表已灌入 18 行
 - ✅ 未灌检索历史、收藏、导出文件
 - ✅ 未新造 `metric_id`。统计行只用已挂的七个指标号
 
@@ -121,7 +116,7 @@ ponytail: full
 ## CI/CD
 
 - 分支：`gkx-orchestration` 的 `dev`（只提交本 handoff）。`lumen-algo-py` 本轮无新 commit
-- 库：已连上 MySQL。库 `gkxlumenx_gapfill` 拒绝访问。三张表未建，行数没有
+- 库：`10.50.11.76:3306` 的 `gkxlumenx_gapfill`。三张表已灌入，行数 doc 6、stat 20、rank 18
 - pipeline：本单不跟发布
 - 部署：无
 - commit：本文件推 `origin/dev` 后即该 commit
@@ -137,8 +132,8 @@ ponytail: full
 
 ## 未做的事
 
-- 未改 task-registry，未把任务标成 done
-- 未把三张表建进 `gkxlumenx_gapfill`，未灌行
+- 未把任务标成 done
+- 三张表已建进 `gkxlumenx_gapfill` 并灌入
 - 未改 Java，未改 `policy_routes.py`，未改灌数脚本
 - 未灌 201 检索历史与收藏、202 导出文件
 - 未改 D4，未动 `GDF-POLICY-MOCK-GATE-L01`

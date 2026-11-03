@@ -69,10 +69,10 @@ PM 说「今日快照」才跑。步骤见 [reference.md](reference.md)。
 3. 收集当天已经落在流水或本轮口令里的原话。口令里的百分数只留在「当日进展」单元格，不进三个数。
 4. 覆盖写 `agent-delivery/工程过程/当日进展/YYYY-MM-DD.md`。同一天只留这一份。
 5. 把同一组数追加到该维 `进度.md`（不覆盖旧日），只刷新该维 `README.md` 顶部「当前」。
-6. 另写 `agent-delivery/工程过程/当日进展/WBS汇总-YYYY-MM-DD.xlsx`。表内是本端实现任务，不含定义轨。第 2 项 `WBS.md` 里已经写了任务号的行全部进「对接三要素」sheet，含 `WBS-02-09`～`WBS-02-12`，不因 definition 拿掉（见 [reference.md](reference.md)）。没有挂上第 2–7 项草案号的，工作项归进「自研模块」，并且只写在第一个 sheet。列、分 sheet 和合并见 [reference.md](reference.md)。不覆盖 `04-系统集成/WBS汇总-2026-10-22.xlsx`。八列表和 §7.1 百分比仍只算第 2 至第 7 项 WBS 行。
+6. 另写 `agent-delivery/工程过程/当日进展/WBS汇总-YYYY-MM-DD.xlsx`。2026-10-01 起写入第 2 至第 7 项 `WBS.md`、且格子里已有任务号的行，全部进对应 sheet，算实现轨，不因 definition 拿掉（方案、回写定义、调研、派单包都进；见 [reference.md](reference.md)）。没有任务号、或注册表没有该任务号的，不进表。没有挂上第 2–7 项草案号的本端实现任务，工作项归进「自研模块」，并且只写在第一个 sheet。列、分 sheet 和合并见 [reference.md](reference.md)。不覆盖 `04-系统集成/WBS汇总-2026-10-22.xlsx`。八列表和 §7.1 百分比仍只算第 2 至第 7 项 WBS 行。
 7. **飞书出站**：仓内 md / xlsx 写完后，在编排仓根执行  
    `node scripts/sync-feishu-daily-snapshot.mjs --date YYYY-MM-DD`  
-   （配置见 `agent-delivery/feishu/feishu-daily-snapshot-board.yaml`）。只投影「当日八列」与「维度汇总」，不推 WBS 汇总 xlsx。凭据用本机 `.env` 的 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`。缺凭据或接口失败：快照文件仍保留，对人说明「飞书未推」+ 错误摘要，**不回滚**仓内文件。成功则简报飞书表链接。
+   （配置见 `agent-delivery/feishu/feishu-daily-snapshot-board.yaml`）。投影「当日八列」与「维度汇总」。同一命令再把当日 `WBS汇总-YYYY-MM-DD.xlsx` 的「图数据库集成」「GDF 数据治理集成」两张 sheet 按工作细项任务号写入飞书同名表；不删已有任务行。凭据用本机 `.env` 的 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`。缺凭据或接口失败：快照文件仍保留，对人说明「飞书未推」+ 错误摘要，**不回滚**仓内文件。成功则简报飞书表链接。
 
 阻塞只抄口令里的「阻塞：…」。抄进去的同时在该维 `风险.md` 追加一条。没有这句就不标红。
 
@@ -95,7 +95,7 @@ PM 说「导出领导简报」才写。与今日快照同一套打分，范围�
 1. 读 `01-自研模块WBS.md` 的实现行（排除对照不进表）和第 2 至第 7 项各 `WBS.md`。
 2. 行内任务号用 `task-get`。第 1 项也用 §7.1（设计 30% + 开发 70%）。
 3. 写 `agent-delivery/工程过程/领导简报/YYYY-MM-DD.md`，文首标「草稿，未发」。七项各一段：这一项是什么、设计进度、开发进度、整体百分比、阻塞行数、尚未建任务的行数。对不上的写「待 PM 补」。
-4. 写 `agent-delivery/工程过程/领导简报/WBS与完成情况-YYYY-MM-DD.xlsx`。列与当日 WBS 汇总相同，自研模块同样在第一个 sheet。只收本端实现任务、不含定义轨。详见 [reference.md](reference.md)。
+4. 写 `agent-delivery/工程过程/领导简报/WBS与完成情况-YYYY-MM-DD.xlsx`。列与当日 WBS 汇总相同，自研模块同样在第一个 sheet。2026-10-01 起第 2 至第 7 项 WBS 上已有任务号的行进对应 sheet。详见 [reference.md](reference.md)。
 5. PM 当次没说「本周进度：按计划 / 超前 / 滞后」，文首不勾这三项。不写扣分、扣款、人天，不抄讨论稿附录里的样例原句。
 
 对人只报：两份路径、七项整体百分比、阻塞行数、无截至时间的行数。不把百分比说成已完成交付。

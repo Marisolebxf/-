@@ -5,7 +5,8 @@
 > 2026-10-30：七要素建图需求五行（WBS-07-00E 及 00E1～00E4）写入本表，监管人淮政玮，并收成一条长任务（总控 `agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-BUILD-长任务总控.md`）。00E 是汇总。00E1→00E2 顺序做，00E3 与 00E4 都等 00E2 的 handoff 且状态 ≥ integration，不等签收。这五行是定义，不是开发行。不派段 E。  
 > 2026-10-30：上图路径六行（WBS-07-00F 及 00F1～00F5）写入本表，监管人淮政玮。总控 `agent-handoffs/七要素建图-KG-7ELEM/KG-7ELEM-LOAD-长任务总控.md`。00F1～00F5 按域并行，只读代码和已有材料。00F 等五份 handoff 且状态 ≥ integration 再汇总。仍是定义，不派段 E，不改图空间。  
 > 2026-10-30：企业维入图一行（WBS-07-00G）写入本表，监管人淮政玮。燕大负责入库，我方出派单包、GDF 接口契约和 gapfill_ 清单。小版本从 v0.1 起，分批与燕大节奏一致。不改已投递的贴源洗数包，不改图空间。  
-> 2026-11-02：产业链维入图一行（WBS-07-00H）写入本表，监管人淮政玮。任务 `KG-CHAIN-GRAPH-LOAD-L01`。公用的背景、空间、schema、库账号沿用企业包，本行只写环节。第一批只写环节点。
+> 2026-11-02：产业链维入图一行（WBS-07-00H）写入本表，监管人淮政玮。任务 `KG-CHAIN-GRAPH-LOAD-L01`。公用的背景、空间、schema、库账号沿用企业包，本行只写环节。第一批只写环节点。  
+> 2026-11-03：燕大派单在本表索引。企业维包挂 WBS-07-00G，产业链维包挂 WBS-07-00H。调度转发契约 `GDF-GRAPH-SCHED-CONTRACT-L01` 写入 WBS-07-00I，监管人徐滕强。三份都还没有正式发出。燕大回签和入库还没有任务号，不另开行。
 > 2026-10-22 晚：草稿已确认作建叶底稿。已有监管人即负责人。2026-10-22 已按项写入两列。完成日期要求取倒排 [M-展示-V3-开发](../../02-策划与监控/02-智树工作计划/02-进度/02-进度.md) 的知识图谱功能开发出门 **2026-11-09**。倒排没有按 WBS-07-00～03 再拆开发完成日。00A～00E 沿用同一个出门日。页面计划冲出的 11-21～11-24、B3 内部需要日 2026-10-31、方案确认日 2026-10-20 都不写入。开始时间没有按行记录，写「无开始时间」。这两列是我方栏位，不是燕大承诺。  
 > 第 7 项不进统一用户中心。  
 > SAD v0.3 未会签，不能当本表的接口形状。正式图空间仍是 `demo_gkx_chain`，切换与否写在方案里，不单开一叶先改空间。  
@@ -35,8 +36,21 @@ WBS-07-00 的方案必须先做需求梳理：展示系统、专题系统界面�
 | WBS-07-00F3 · `KG-7ELEM-LOAD-PATH-L04` | 政策上图路径 | 淮政玮 | `gkx-orchestration` | 同 00F1 | 只读政策域。向量或语义是否已实现以代码为准，不把设想写成已实现 | 无开始时间 | 2026-11-09 |
 | WBS-07-00F4 · `KG-7ELEM-LOAD-PATH-L05` | 服务机构上图路径 | 淮政玮 | `gkx-orchestration` | 同 00F1 | 只读服务机构域。与其余域叶并行 | 无开始时间 | 2026-11-09 |
 | WBS-07-00F5 · `KG-7ELEM-LOAD-PATH-L06` | 科研机构、人才、技术上图路径 | 淮政玮 | `gkx-orchestration` | 同 00F1 | 这三类没有独立存储入图流程。只读燕大与我方已有代码。`technology` 技术点不计入技术 | 无开始时间 | 2026-11-09 |
-| WBS-07-00G · `KG-ENT-GRAPH-LOAD-L01` | 企业维度入图 | 淮政玮 | `gkx-orchestration` | `KG-7ELEM-BUILD-REQ-L03`、`L05` 已签收。上图路径 L01–L06 与初始化脚本已签收 | 三件套：燕大派单包按小版本投递并完成企业维入库；GDF 与燕大图谱引擎的接口契约；缺项 gapfill_ 清单与燕大分批对齐。燕大加工入图写入新建空间 `gkx_chain`，与 demo 的 `demo_gkx_chain` 隔离。GDF 只调 API，不直写图。不建企业到科研机构、技术、人才 | 无开始时间 | 2026-11-09 |
-| WBS-07-00H · `KG-CHAIN-GRAPH-LOAD-L01` | 产业链维度入图 | 淮政玮 | `gkx-orchestration` | `KG-7ELEM-BUILD-REQ-L03`、`L05` 与 `KG-7ELEM-LOAD-PATH-L03` 已签收。空间和 schema 沿用 00G | 三件套同 00G，范围只做环节：派单包 `data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/`，抽取说明 `data/Graph/建图/产业链/`。第一批只写 Tag `segment`。不写 Tag `chain`。`depends_on` 与服务机构 `participates` 不进第一批。企业到环节等企业点先在 `gkx_chain`。不改已投递的产业链贴源包 | 无开始时间 | 2026-11-09 |
+| WBS-07-00G · `KG-ENT-GRAPH-LOAD-L01` | 企业维度入图 | 淮政玮 | `gkx-orchestration` | `KG-7ELEM-BUILD-REQ-L03`、`L05` 已签收。上图路径 L01–L06 与初始化脚本已签收 | 燕大派单包 [KG-ENT-WORKPACK-v0.1](../../../data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/README.md)。三件套：派单包按小版本投递并完成企业维入库；GDF 与燕大图谱引擎的接口契约（见 00I）；缺项 gapfill_ 清单与燕大分批对齐。燕大加工入图写入新建空间 `gkx_chain`，与 demo 的 `demo_gkx_chain` 隔离。GDF 只调 API，不直写图。不建企业到科研机构、技术、人才。我方已签收。尚未正式发出。燕大尚未回签，尚未入库 | 无开始时间 | 2026-11-09 |
+| WBS-07-00H · `KG-CHAIN-GRAPH-LOAD-L01` | 产业链维度入图 | 淮政玮 | `gkx-orchestration` | `KG-7ELEM-BUILD-REQ-L03`、`L05` 与 `KG-7ELEM-LOAD-PATH-L03` 已签收。空间和 schema 沿用 00G | 三件套同 00G，范围只做环节：派单包 [KG-CHAIN-WORKPACK-v0.1](../../../data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/README.md)，抽取说明 `data/Graph/建图/产业链/`。第一批只写 Tag `segment`。不写 Tag `chain`。`depends_on` 与服务机构 `participates` 不进第一批。企业到环节等企业点先在 `gkx_chain`。不改已投递的产业链贴源包。我方已签收。尚未正式发出。燕大尚未回签，尚未入库 | 无开始时间 | 2026-11-09 |
+| WBS-07-00I · `GDF-GRAPH-SCHED-CONTRACT-L01` | GDF 与燕大图谱引擎的调度转发契约 | 徐滕强 | `gkx-orchestration` | `KG-ENT-GRAPH-LOAD-L01`、`KG-CHAIN-GRAPH-LOAD-L01` | 详细设计 [GDF-GRAPH-SCHED-CONTRACT-L01-调度转发接口设计.md](../GDF-GRAPH-SCHED-CONTRACT-L01-调度转发接口设计.md)。同一段契约写入第 6 项、第 7 项技术方案 §2.2 与 §2.3。会签 `draft`。还没有跑通。不关闭 `SYSINT-SCHEME-06-L01`、`SYSINT-SCHEME-07-L01`。企业维触发仍是飞书值班。具体调度任务号由燕大线下给，不进 git。尚未正式发出 | 无开始时间 | 2026-11-09 |
+
+## 燕大派单索引
+
+上表 00G、00H、00I 就是发给燕大的三份。本表只做索引，不另计百分比。
+
+| 派单 | 草案号 | 任务 | 位置 | 现在 |
+|---|---|---|---|---|
+| 企业维入图 v0.1 | WBS-07-00G | `KG-ENT-GRAPH-LOAD-L01` | [KG-ENT-WORKPACK-v0.1](../../../data/Graph/入图需求和派单/KG-ENT-WORKPACK-v0.1/README.md) | 我方已签收。尚未正式发出。燕大尚未回签，尚未入库 |
+| 产业链维入图 v0.1 | WBS-07-00H | `KG-CHAIN-GRAPH-LOAD-L01` | [KG-CHAIN-WORKPACK-v0.1](../../../data/Graph/入图需求和派单/KG-CHAIN-WORKPACK-v0.1/README.md) | 同上。第一批只写环节点 |
+| 调度转发契约 | WBS-07-00I | `GDF-GRAPH-SCHED-CONTRACT-L01` | [调度转发接口设计](../GDF-GRAPH-SCHED-CONTRACT-L01-调度转发接口设计.md) | integration。会签 `draft`。还没有跑通。尚未正式发出 |
+
+燕大回签、入库没有任务号，不进本项百分比。
 
 ## 开发子项
 
