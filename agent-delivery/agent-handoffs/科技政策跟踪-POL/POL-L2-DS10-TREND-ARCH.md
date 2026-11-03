@@ -8,13 +8,13 @@
 | supervised_by | `human:淮政玮` |
 | claim_type | `coordinator_dispatch` |
 | lock_until | `2026-11-04T04:00:30.744Z` |
-| 说明 | 2026-11-03 human:淮政玮签收。订阅与外发仍未接通 |
+| 说明 | 2026-11-03 human:淮政玮按可实现条件复核后再次签收 |
 
 ## Ponytail
 
 ponytail: off
 
-定义任务，不缩文档。未用 YAGNI 跳过调用链、501 空态、第 6 项只读边界和与 197–202、207–218 的分界。
+定义任务，不缩文档。未用 YAGNI 跳过调用链、缺项表读法、第 6 项只读边界和与 197–202、207–218 的分界。
 
 ## 范围
 
@@ -23,11 +23,11 @@ ponytail: off
 | 序号 | 叶子 | 流程 |
 |---|---|---|
 | 203 | 政策来源监控与更新 | 同步读 `ingest`。第 6 项已有结果。不重开 GDF |
-| 204 | 政策订阅服务 | 当前 `subscriptions` 501。接通后展示只委托 `gkxlumen-topic-policy`，实现不在展示服务。任务 `E-E7-POLICY-M1-L11` / `L12` / `L13` |
-| 205 | 重点领域政策分析 | 趋势读 `stats` 上的 `M_POLICY_TIMESERIES`。热点、影响、深度报告当前走 `jobs` 501。接通后仍是这一条 Job，见架构稿第 7.2 节 |
-| 206 | 政策动态可视化展示 | 时间轴和趋势读时序。地域热力读 `M_POLICY_NATIONAL_DIST`。主题分布不新造指标 |
+| 204 | 政策订阅服务 | 展示只委托 `gkxlumen-topic-policy`。不手写订阅列表。任务 `E-E7-POLICY-M1-L11` / `L12` / `L13` |
+| 205 | 重点领域政策分析 | 趋势读已有时序表。热点、影响、深度报告读三张 `gapfill_` 表 |
+| 206 | 政策动态可视化展示 | 时间轴和趋势读时序表。地域热力读全国分布表。主题分布读 `gapfill_policy_theme_dist` |
 
-浏览器只打 `/display/v1/policy/**`。203 走 `gkxlumen-element` → ADS。205、206 的统计读已有 `stats`，不另建查询。204 当前在 display 直接 501。接通后展示只委托 `gkxlumen-topic-policy`，订阅与外发的实现不在展示服务。localStorage 不是订阅服务。三项报告的接通方案仍在架构稿第 7.2 节。
+浏览器只打 `/display/v1/policy/**`。203 走 `gkxlumen-element` → ADS。205 的趋势、206 的时间与地域读已有统计表。204 由 display 委托专题门面，展示不返回手写订阅。localStorage 不是订阅服务。热点、影响、深度报告和主题分布由 element 读缺项表。
 
 ## 产物路径
 
@@ -37,7 +37,7 @@ ponytail: off
 
 本叶不写 197–202 和 207–218 的流程。点名排除 `search`、`rank`、`favorites`、`share`、`feedback`、`assessment-report`、`version-diff`、`benchmark-report`。`{id}/detail` 只在打开一条入库政策时复用，不在本叶重写。
 
-`jobs` 只承接 205 的三项未见模型。实施效果、匹配、力度不在本叶展开。
+`jobs` 接到 205 的热点、影响、深度报告时只读缺项表，不进 Python。实施效果、匹配、力度不在本叶展开。
 
 ## 未做事项
 
@@ -46,7 +46,7 @@ ponytail: off
 - 未改 `FE-POL-01B`，未新建前端单，未重开 GDF
 - 浏览器未改打 `/topic/v1/policy`。未把 `E-E7-POLICY-M1-L06` 写成展示前端联调单
 - 未改说明书、WBS、调研分册
-- 第 7 节是接通方案，不是已经接通。订阅与外发交给 `E-E7-POLICY-M1-L11`、`L12`、`L13`，监管都是 `human:淮政玮`。本单不认领这三张。未注册热点、影响、深度报告模型
+- 订阅与外发交给 `E-E7-POLICY-M1-L11`、`L12`、`L13`，监管都是 `human:淮政玮`。本单不认领这三张。热点、影响、深度报告和主题分布不新注册模型，改读 `gapfill_` 表
 
 ## 偏离
 
@@ -56,13 +56,22 @@ ponytail: off
 
 ## 验收证据
 
-架构稿与本 handoff 已落盘。2026-11-03 human:淮政玮签收。定义单，无业务 PR。随 `gkx-orchestration` 的 `origin/dev` 提交。
+架构稿与本 handoff 已落盘。2026-11-03 human:淮政玮首次签收。同日按可实现条件复核四叶后再次签收。定义单，无业务 PR。随 `gkx-orchestration` 的 `origin/dev` 提交。
+
+| 序号 | 签收链路 | 结论 |
+|---|---|---|
+| 203 | element 读已有 ADS 入库列表。无行则空列表 | 符合。读已有表 |
+| 204 | display 只委托 `gkxlumen-topic-policy`。不手写订阅。门面内部由 L11–L13 实现，本叶不建缺项表 | 符合。判定做得到，不走 501，不手写 mock |
+| 205 趋势 | `stats` 读 `M_POLICY_TIMESERIES` 所在表 | 符合。读已有表。D4 仍是 mock，接口不另造点 |
+| 205 热点、影响、深度报告 | element 读 `gapfill_policy_trend_hotspot`、`gapfill_policy_trend_impact`、`gapfill_policy_trend_report`。Python 灌 mock | 符合。没有模型，只走缺项表 |
+| 206 时间、地域 | 读时序表和 `M_POLICY_NATIONAL_DIST` 所在表 | 符合。读已有表 |
+| 206 主题分布 | element 读 `gapfill_policy_theme_dist` | 符合。没有指标，只走缺项表 |
 
 ## 架构合规自检
 
 | 铁律 | 结果 |
 |---|---|
-| 算法只在 Python | ✅ 本叶不写算法。热点、影响、深度报告接通后走 Python `/internal/*`，Java 不识别、不生成 |
+| 算法只在 Python | ✅ 本叶不写算法。热点、影响、深度报告没有模型，不进 Python；mock 行由 Python 灌进缺项表，Java 只读 |
 | 调用链 | ✅ 浏览器只打 `/display/v1/policy/**`。204 只在服务内部委托专题门面 |
 | 图谱 | ✅ 本叶不读图，不写 nGQL |
 | 可观测 | ✅ 沿既有展示链 trace，不新设计观测点 |
@@ -76,8 +85,8 @@ ponytail: off
 | 字段 | 值 |
 |---|---|
 | diagram_id | `POL-L2-DS10-TREND-ARCH-SEQ` |
-| 图 diff | 第 2 节是当前路径：203 读 element/ADS；205 趋势与 206 读已有 stats；205 三项未注册则 501；204 直接 501。第 7 节接通后：204 由 display 委托 gkxlumen-topic-policy，业务不在展示服务；三项报告仍走同一条 Job 进 Python。禁止边：浏览器改打专题 URL、展示服务自建订阅表或外发、热点改挂焦点指数、主题分布新造指标 |
-| 会签态 | 2026-11-03 human:淮政玮签收本单。图源无 frontmatter，不另填绿 |
+| 图 diff | 203 读 element/ADS。204 委托专题门面。205 趋势与 206 时间、地域读已有统计表。205 三项与 206 主题读 gapfill。禁止边：浏览器改打专题 URL、接口直接返回 mock、用 501 充当这几块、热点改挂焦点指数、主题分布新造指标 |
+| 会签态 | 2026-11-03 human:淮政玮按可实现条件复核后再次签收。图源无 frontmatter，不另填绿 |
 | 说明 | 图在架构稿第 2 节 |
 
 ## Cost

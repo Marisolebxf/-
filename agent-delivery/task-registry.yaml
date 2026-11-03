@@ -48229,7 +48229,7 @@ tasks:
     definition_of_done:
       - "落盘该二级数据架构到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-SENT-DATA.md，写明读哪些已有 ADS 或已落库结果"
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
-    update_time: "2026-11-03T13:10:01+08:00"
+    update_time: "2026-11-03T13:13:32+08:00"
   - id: POL-L2-DS10-CMP-API
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策重点比对 · 后台接口设计"
@@ -50326,9 +50326,10 @@ tasks:
       - "测试 handoff 落盘。不把本单标 done"
     update_time: "2026-11-03T12:43:34+08:00"
   - id: POL-L2-DS10-SENT-GAPFILL-L01
+    blocked_by: "误建在多维检索会话，不属于 POL-L2-DS10-QRY。不执行。"
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策舆情评估 · 受众反馈与评估报告缺项表灌数"
-    status: "backlog"
+    status: "blocked"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50339,7 +50340,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 8000
     user_story: "US-DS-POL-03"
-    note: "监管 human:淮政玮。序号 210、211。只建 gkxlumenx_gapfill 的两张 gapfill_ 表并灌 mock 行。接口只读表，不在本单实现。禁止接口直接返回 mock。架构未签收，本单 backlog。"
+    note: "误建在多维检索会话，已阻塞，不执行。舆情灌数不在 POL-L2-DS10-QRY 范围。"
     depends_on:
       - "POL-L2-DS10-SENT-ARCH"
     design_refs:
@@ -50350,4 +50351,31 @@ tasks:
       - "请求处理不写死份数据。本单不改展示接口，不把 mock 写进控制器"
       - "表里没有行时读取侧应得到空，不造 0。不改 D4，不把灌入行写成已采集或已生成"
       - "handoff 写明库、表、行数和灌数命令。不把本单标 done"
-    update_time: "2026-11-03T13:09:59+08:00"
+    update_time: "2026-11-03T13:13:18+08:00"
+  - id: POL-L2-DS10-QRY-GAPFILL-L01
+    supervised_by: "human:淮政玮"
+    title: "科创政策全景 · 多维检索查询 · 缺项表灌 mock"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 8000
+    user_story: "US-DS-POL-01"
+    note: "监管 human:淮政玮。序号 197–200 与 199。正式 ADS/DWD 仍空、排序模型没有时，只往 gkxlumenx_gapfill 的三张 gapfill_ 表灌 mock。接口只读表，禁止接口直接返回 mock。201、202 不在本单。"
+    depends_on:
+      - "POL-L2-DS10-QRY-ARCH"
+      - "POL-L2-DS10-QRY-DATA"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-DATA.md"
+    definition_of_done:
+      - "在库 gkxlumenx_gapfill 建 gapfill_policy_qry_doc、gapfill_policy_qry_stat、gapfill_policy_qry_rank。不写入 ODS、DWD、ADS 和供应方库，不读 demo 库，不把 20000 行 demo 拷进正式库"
+      - "用独立脚本灌入 mock 行。doc 供检索目录和正文；stat 覆盖 197/198/200 已挂的统计（总数、级别、全国、深圳、时序、类型、有效率），不写入 ads.policy_type_dist 和有效率列；rank 只放相关性、时效性、重要性的名次，没有 smartScore"
+      - "不灌检索历史、收藏或导出文件。不改展示接口，不在控制器或 Python 响应里写死 mock"
+      - "不改 D4，不把 GDF-POLICY-MOCK-GATE-L01 写成已解开。handoff 写明库、表、行数和灌数命令"
+    update_time: "2026-11-03T13:13:14+08:00"
