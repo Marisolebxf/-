@@ -227,7 +227,7 @@
 
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
-| WBS-05-23-L2-01A · `POL-L2-DS10-QRY-ARCH` | 科创政策全景 · 多维检索查询 · 后台实现架构设计（序号 197–202） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-01A · `POL-L2-DS10-QRY-ARCH` | 科创政策全景 · 多维检索查询 · 后台实现架构设计（序号 197–202） | 淮政玮 | `gkx-orchestration` | **in_progress** | 派单 `科技政策跟踪-POL/派单-POL-L2-DS10-QRY-ARCH.md`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
 | WBS-05-23-L2-01B · `POL-L2-DS10-QRY-API` | 科创政策全景 · 多维检索查询 · 后台接口设计（序号 197–202） | 李伟 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖本二级 `POL-L2-DS10-QRY-ARCH` | 无截至时间 |
 | WBS-05-23-L2-01C · `POL-L2-DS10-QRY-METRIC` | 科创政策全景 · 多维检索查询 · 后台指标设计（序号 197–202） | 唐绍祖 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖本二级 `POL-L2-DS10-QRY-ARCH` | 无截至时间 |
 | WBS-05-23-L2-01D · `POL-L2-DS10-QRY-DATA` | 科创政策全景 · 多维检索查询 · 后台数据架构设计（序号 197–202） | 徐滕强 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖本二级 `POL-L2-DS10-QRY-ARCH` | 无截至时间 |
