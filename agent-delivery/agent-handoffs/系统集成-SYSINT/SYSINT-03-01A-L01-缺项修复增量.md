@@ -18,6 +18,7 @@
 | **X-1** 链位整块覆盖写 | `EnterpriseChainSlotsDrawer.vue` | `mergeRows` 保存前从 store **重读最新父记录**再合并他人行（旧快照整条覆盖的根因修复）；带 ponytail 注释：仍非并发安全，接 Java 后由服务端按记录版本收口 |
 | **X-5** standard_ref 换设备失效 | `EnterpriseSectionForm.vue` | 选项 value 改「产业:标准名」稳定键；旧 contentId 引用并入选项保证回显 label 不显示裸码 |
 | **R-2** 死代码 | 删 `EnterpriseCmsListTab.vue`（12 KB，git rm，零业务引用） |
+| **资质荣誉拆 Tab**（孔东 2026-11-03 12:29 走查指令） | `cmsTypeSchema.ts` + `cmsMockSeeds.ts` + `EnterpriseCmsWorkspace.vue` | 新 content_type `ent_honor_list` 承接荣誉 4 列（名称/级别/年份/备注），`ent_basic_profile` 去掉 rows 只留档案字段+正文；工作台加「资质荣誉」Tab 与基础档案并列；种子两条荣誉原样搬家，演示数据无缝。注意：契约侧若已有 ent_basic_profile 荣誉字段，接 Java 时需同步该拆分（新增 8 类外的 content_type 需 Java 叶确认） |
 
 ## 不在本轮（有依赖，防弃件）
 
@@ -28,9 +29,9 @@
 
 ## 测试结果
 
-- `node --experimental-strip-types src/views/cms/enterprise/enterpriseCmsGapFix.selfcheck.mjs` ✅（逐项 assert 六个缺项的落点）
+- `node --experimental-strip-types src/views/cms/enterprise/enterpriseCmsGapFix.selfcheck.mjs` ✅（逐项 assert 六个缺项 + 荣誉拆分的落点）
 - `npm run type-check`：CMS 相关 0 错误（`vite.config.ts` 1 个 dual-package 存量错误非本轮引入，过滤确认）
-- `npx eslint src/views/cms/enterprise/` ✅ 0 error 0 warning
+- `npx eslint src/views/cms/enterprise/ src/components/cms/cmsTypeSchema.ts src/components/cms/cmsMockSeeds.ts` ✅ 0 error 0 warning
 - **未做浏览器走查**（改动停本地，待监管人验收时走查）
 
 ## 验收建议（走查路径）
@@ -41,6 +42,7 @@
 4. 企业编辑「产品」Tab 建两条 → 上移互换位置（B-3）
 5. 两个浏览器窗口分别开 企业编辑「链位」与 重点企业全景图，各加一行保存 → 互不吞行（X-1）
 6. 明星名单「入选标准」下拉 → 选后刷新（F5）→ 回显标准名而非裸码（X-5）
+7. 企业编辑「资质荣誉」Tab 与「基础档案」并列 → 荣誉两条（小巨人/科技进步奖）在独立 Tab；基础档案不再显示条目区（荣誉拆分）
 
 ## 架构合规自检
 
