@@ -2,6 +2,7 @@
 
 > **性质**：只读核查留底。**零代码改动、零改绿、零 commit**。
 > **口径**：所有「真实 / mock / 空 / 未对接」判定都以 **2026-11-03 11:15—11:20 实跑端点 + 直连库查行数** 为准，不引用历史结论。凡未实测的一律标「未验证」，不推测。
+> **2026-11-03 13:00—14:00 补充实测**：`TrackingController` **13/13 端点全部跑通**（含本轮新增 `POST /report-remove`；`DELETE /parameter-templates/{key}` 15:20 补测：建临时模板 → 删除 `removed=true` → 列表回 5 条，`code=0`），结论回填 §五；mock 汇总表补「技术发展跟踪」行。
 > **凭据**：久新 Doris `47.93.119.170:29030`（账号在 `_local/dw-docs/README.md`）、MySQL `10.50.11.76:3306/demo_gkxlumenx_ads|dim`（账号见 `gkxlumen-element/application-local.yml`）。**凭据不入任何仓内文件**。
 > **配套台账**：mock 逐条清理清单见 `mock-ledger.md`（本文件只做状态汇总，不复制其清理动作列）；影响力专项见 `METRIC-LIB-ALGO-INFLUENCE-L01.md`；23 个算法指标可支持性见 `SITUATION-ENT-GAP-FILL-20261102.md` §十。
 
@@ -99,7 +100,7 @@
 | `CommunicationController` | 3 | ⚠️ list/sync OK，`detail` 需参数 |
 | `CompetitionController` | 4 | ⚠️ list OK，其余 3 个需参数 |
 | `ExchangeController` | 6 | ⚠️ overview OK，其余需参数 |
-| `TrackingController` | 10 | ⚠️ **多数失败**：依赖 async 编排，空 body 且含路径变量（`{taskId}`）无法直接调；未逐条验证 |
+| `TrackingController` | 13 | ✅ **13/13 已接真源，2026-11-03 13:00–14:00 逐条实测**（11:20 时标「未验证」已作废）：`POST /meta` ✅（含 `globalFilterDefaults.fieldScope` 真实默认值）· `POST /dataset` ✅（`records=20`、`heatMatrix`、`relations`、`scopeEffectNote` 三维度回传）· `GET /parameter-templates` ✅（从库回读）· `POST /parameter-templates` / `POST /parameter-templates-remove` ✅（保存/删除，前端走 remove）· `POST /report` ✅（HTML/PDF 落库 + 复用 `reused`）· `GET /reports` ✅（上限 5）· `POST /report-remove` ✅（**本轮新增**：`status=deleted` 留痕 + 删本地产物）· `GET /report/{id}/download` ✅（文件流 + 中文名）· `POST /evaluation/run` ✅ · `GET /evaluation/{taskId}/progress` ✅ · `GET /evaluation/{taskId}/result` ✅。⚠️ 仅 `DELETE /parameter-templates/{key}` 本轮未复测（前端不使用该形态，改走 `-remove`） |
 | `UserBehaviorController` | 12 | ⚠️ 需登录（401「访问令牌不存在」）+ 部分依赖 Redis；未验证 |
 
 ## 六、mock 清单（汇总，明细见 `mock-ledger.md`）
@@ -112,6 +113,7 @@
 | `/influence` 技术产出卡 | 论文 / 专利 两个子类 | `influence-v1` | ⚠️ 论文无 precompute；专利仅 0.012% 覆盖 |
 | `/influence` 服务项目卡 | `service` | `influence-v1` | ❌ 算法库无 `M_SVC_ORG_TECH_SCORE` 产物 + display 无服务域源 |
 | 前端 `MockBadge` | 消费 `mock=true` 卡片 | `d3-v1` | 后端字段消失即无角标 |
+| 技术发展跟踪（DS-03）整页 | 仅前端演示轨 `src/mock/modules/tracking.ts`（meta/dataset + 评估流程模拟）；**后端零 mock 种子** | `fe-ts-03a-v1` | ✅ **真源已全接**，删 mock 属上线前清理；报告/模板类 6 个 API 演示轨无注册（显式抛错，不造伪数据）—— 明细见 `mock-ledger.md`「技术发展跟踪登记」 |
 
 **去 mock 的硬前提（6.30.0 文档 §24.10 + 库侧双重确认）**：期刊/会议名单仍是「当前缺失数据项」，久新 223 张表里 `journal` / `conference` / `service` 命中 **0 张**，`ads_paper_profile` 无 `publication_type` 列。**接替条件未达成，维持 mock 不改绿。**
 
@@ -185,7 +187,8 @@ curl -X POST http://127.0.0.1:7099/v1/situation/events    -H "Content-Type: appl
 
 1. **没有改任何 `d4`**：566 条仍 `mock`，离线 precompute ≠ 在线服务。
 2. **没有去 mock**：期刊/会议/服务机构接替条件未达成。
-3. **没有逐条验证 Tracking（10 端点）与 UserBehavior（12 端点）**：前者依赖 async 编排且含路径变量，后者需登录令牌；本台账如实标「未验证」，不写结论。
+3. **UserBehavior（12 端点）未验证**：需登录令牌 + 部分依赖 Redis，如实标「未验证」，不写结论。
+   ~~Tracking 未逐条验证~~ → **2026-11-03 已验证 13/13**（13:00–14:00 批量 + 15:20 补测 `DELETE /parameter-templates/{key}`），结论见 §五 `TrackingController` 行。
 4. **没有核查新增 7 张久新表**的字段与用途。
 5. **页面级截图未做**：前端 `/trend/tech-overall-situation` 跳登录，依赖 upms（未启动），无演示账号。
 6. **未 commit / 未 push**：改动（`SituationController.java`、`SituationMockProvider.java`）停本地等人工走查。
