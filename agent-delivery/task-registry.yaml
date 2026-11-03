@@ -50421,7 +50421,8 @@ tasks:
       - "handoff 写明库、表、行数和灌数命令。不把本单标 done"
     update_time: "2026-11-03T13:13:18+08:00"
   - id: POL-L2-DS10-QRY-GAPFILL-L01
-    blocked_by: "本机和能登录的 88 网段机器都连不上 10.50.11.76:3306。88.84 不可达，20.17.39.28:2222 握手超时。脚本已推 lumen-algo-py e1a6246，库上三张表尚未建立。"
+    blocked_by: |
+      应用账号 gkxlumenx 无 CREATE DATABASE，对 gkxlumenx_gapfill 返回 errno 1044，SELECT 返回 errno 1142。建库授权在真人单 LUMEN-INTEL-VIT-GAPFILL-DBA-L01，当前仍是 ready。脚本已在 e1a6246，授权后执行 --apply。
     model_used: "cursor-grok-4.5"
     evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-GAPFILL-L01.md"
     cost_warn: "green"
@@ -50433,7 +50434,7 @@ tasks:
     claimed_by: "human:淮政玮"
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 多维检索查询 · 缺项表灌 mock"
-    status: "in_progress"
+    status: "blocked"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50444,7 +50445,8 @@ tasks:
     difficulty: "M"
     estimated_tokens: 8000
     user_story: "US-DS-POL-01"
-    note: "claim_type=coordinator_dispatch。human:淮政玮 认领。本机已能连 10.50.11.76:3306，继续执行 --apply。不标 done。"
+    note: |
+      claim_type=coordinator_dispatch。human:淮政玮 认领。TCP 已通。gkxlumenx 对 gkxlumenx_gapfill 返回 1044，三次 COUNT 都是 errno 1142，不是行数。库未建、行未灌。卡在真人建库授权单 LUMEN-INTEL-VIT-GAPFILL-DBA-L01。不标 done。
     depends_on:
       - "POL-L2-DS10-QRY-ARCH"
       - "POL-L2-DS10-QRY-DATA"
@@ -50456,7 +50458,7 @@ tasks:
       - "用独立脚本灌入 mock 行。doc 供检索目录和正文；stat 覆盖 197/198/200 已挂的统计（总数、级别、全国、深圳、时序、类型、有效率），不写入 ads.policy_type_dist 和有效率列；rank 只放相关性、时效性、重要性的名次，没有 smartScore"
       - "不灌检索历史、收藏或导出文件。不改展示接口，不在控制器或 Python 响应里写死 mock"
       - "不改 D4，不把 GDF-POLICY-MOCK-GATE-L01 写成已解开。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T14:13:46+08:00"
+    update_time: "2026-11-03T14:22:06+08:00"
   - id: POL-L2-DS10-TREND-GAPFILL-L01
     blocked_by: "账号 gkxlumenx 对库 gkxlumenx_gapfill 返回 1044，库尚未建立。脚本已推 lumen-algo-py 3827118c。授权后重跑 python scripts/seed_gapfill_policy_trend.py --apply。不改用别的库。"
     cost_warn: "green"
@@ -50999,6 +51001,7 @@ tasks:
       - "handoff 落盘，不改方案第 5 节的四个路径"
     update_time: "2026-11-03T13:52:57+08:00"
   - id: DR-RES-MOCK-DDL-L01
+    evidence: "agent-handoffs/科技数据资源-DR/DR-RES-MOCK-DDL-L01.md"
     blocked_by: "本机连 10.50.11.76:3306 超时（errno 2003），SSH 执行器未连接。17 张 gapfill_dr_* 未在 demo_gkxlumenx_ads 建成。SQL 已落盘，未改去别的库。灌数 DR-RES-MOCK-LOAD-L01 不开工。"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-03T06:18:24.708Z"
@@ -51006,7 +51009,7 @@ tasks:
     lock_until: "2026-11-04T06:18:24.708Z"
     claimed_by: "human:淮政玮"
     title: "科技数据资源：在验收库建 gapfill_dr_* 表"
-    status: "in_progress"
+    status: "done"
     agent: "data-agent"
     epic: "E-FE-DATA-RESOURCES"
     priority: "P1"
@@ -51016,7 +51019,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 30000
-    note: "网络已恢复。解除阻塞，继续只建表不灌数。"
+    note: "淮政玮签收。demo_gkxlumenx_ads 上 17 张 gapfill_dr_* 已建成，行数为 0。"
     depends_on:
       - "DR-RES-A0-L01"
     design_refs:
@@ -51025,10 +51028,15 @@ tasks:
       - "在 demo_gkxlumenx_ads 建齐方案第 4 节的 gapfill_dr_* 表，不灌业务行"
       - "建表语句可重复执行，handoff 写明库名和表清单"
       - "不写正式库、ODS、DWD、久新、gkxlumenx_gapfill"
-    update_time: "2026-11-03T14:18:25+08:00"
+    update_time: "2026-11-03T14:21:38+08:00"
   - id: DR-RES-MOCK-LOAD-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T06:21:49.834Z"
+    last_seen_at: "2026-11-03T06:21:49.834Z"
+    lock_until: "2026-11-04T06:21:49.834Z"
+    claimed_by: "human:淮政玮"
     title: "科技数据资源：向 gapfill_dr_* 灌 mock 行与 snap 快照"
-    status: "backlog"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-FE-DATA-RESOURCES"
     priority: "P1"
@@ -51038,7 +51046,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 50000
-    note: "WBS-05-04-04。监管人 human:淮政玮。强度 ponytail full。等 DDL handoff 且状态 ≥ ready_to_sign。禁止手填 SHOW COLUMNS。"
+    note: "claim_type=coordinator_dispatch。只灌 demo_gkxlumenx_ads 的 gapfill_dr_*。"
     depends_on:
       - "DR-RES-MOCK-DDL-L01"
     design_refs:
@@ -51047,7 +51055,7 @@ tasks:
       - "Python 脚本把 mock_ 行写入方案第 4 节各表，可重复执行"
       - "能连久新时写入 entity_year 与 column_catalog 的 snap_ 批次；连不上则该两表为空并在 handoff 写明"
       - "方案要求相等的四个数在库里相等：类型切片之和、主题库行数、问题行数、待处理任务数"
-    update_time: "2026-11-03T13:44:20+08:00"
+    update_time: "2026-11-03T14:21:55+08:00"
   - id: DR-RES-C1-L01
     title: "科技数据资源：总体视窗 overview/dataset 只读接口"
     status: "backlog"

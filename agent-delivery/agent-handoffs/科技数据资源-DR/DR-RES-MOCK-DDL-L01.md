@@ -2,7 +2,7 @@
 
 | 字段 | 值 |
 |---|---|
-| claimed_by | `agent:data-agent` |
+| claimed_by | `human:淮政玮` |
 | supervised_by | `human:淮政玮` |
 | claim_type | 已认领，开工时已是 `in_progress` |
 | 状态 | 仍是 `in_progress`。本叶不改登记表，不标 `done` |
@@ -14,10 +14,10 @@ ponytail: full
 | 项 | 值 |
 |---|---|
 | 目标库 | `demo_gkxlumenx_ads` |
-| 实例 | `10.50.11.76:3306`（账号取自 `lumen-svc-platform` 的 `gkxlumen-element` `application-local.yml`，用户名 `gkxlumenx`。密码未写入本文、未写入 SQL） |
-| 是否已在库里建成 | **否** |
-| 行数是否为 0 | **未核对**。表没建成，没有执行 `COUNT(*)`。SQL 文件里没有 `INSERT`，本叶没有写入任何业务行 |
-| 卡点 | 本机连接 `10.50.11.76:3306` 超时。`errno` 2003，`Can't connect to MySQL server on '10.50.11.76' (timed out)`。SSH 执行器返回未连接，没有改从别的机器执行，也没有改去别的库 |
+| 实例 | `10.50.11.76:3306`（MySQL `@@hostname` = `node03`）。账号取自 `lumen-svc-platform` 的 `gkxlumen-element` `application-local.yml`，用户名 `gkxlumenx`。密码未写入本文、未写入 SQL |
+| 执行机器 | 本机 `DESKTOP-4QHU2S8` 直连。没有走 SSH |
+| 是否已在库里建成 | **是**。17 条 `CREATE TABLE IF NOT EXISTS` 已在该库执行成功 |
+| 行数是否为 0 | **是**。`SHOW TABLES FROM demo_gkxlumenx_ads LIKE 'gapfill_dr_%'` 返回 17 张，逐表 `SELECT COUNT(*)` 都是 0。没有 `INSERT`，没有写入任何业务行 |
 
 未写入正式库 `gkxlumenx_ads`、ODS、DWD、久新、库 `gkxlumenx_gapfill`。
 
@@ -57,7 +57,7 @@ ponytail: full
 
 | 铁律 | 结果 |
 |---|---|
-| 只写验收库 `demo_gkxlumenx_ads`，表名 `gapfill_dr_` | SQL 已限定该库。本机没连上，库上没有执行成功 |
+| 只写验收库 `demo_gkxlumenx_ads`，表名 `gapfill_dr_` | 已在该库建成 17 张空表 |
 | 不写正式 `gkxlumenx_ads`、ODS、DWD、久新、`gkxlumenx_gapfill` | 未写 |
 | D18 | 本叶只准备 mock 空表 DDL，不在接口里返回写死 mock，也没有灌行 |
 | 算法 / 调用链 / 可观测 | 本叶无代码 |
@@ -73,4 +73,6 @@ ponytail: full
 - `agent-delivery/agent-handoffs/科技数据资源-DR/DR-RES-MOCK-DDL-L01.sql`
 - `agent-delivery/agent-handoffs/科技数据资源-DR/DR-RES-MOCK-DDL-L01.md`
 
-连上 `10.50.11.76:3306` 之后，对 `demo_gkxlumenx_ads` 执行该 SQL，再用只读语句列出 `gapfill_dr_%` 并 `COUNT(*)`。本叶没有做这一步。
+已从本机 `DESKTOP-4QHU2S8` 直连 `10.50.11.76:3306`，对 `demo_gkxlumenx_ads` 执行该 SQL。只读核对：`SHOW TABLES FROM demo_gkxlumenx_ads LIKE 'gapfill_dr_%'` 为下列 17 张，每张 `COUNT(*)` = 0。
+
+`gapfill_dr_type_slice`、`gapfill_dr_source_channel`、`gapfill_dr_catalog_item`、`gapfill_dr_ingest_task`、`gapfill_dr_collection_fact`、`gapfill_dr_theme_library`、`gapfill_dr_theme_column`、`gapfill_dr_quality_issue`、`gapfill_dr_usage_subject`、`gapfill_dr_usage_series`、`gapfill_dr_call_event`、`gapfill_dr_api_probe`、`gapfill_dr_graph_node`、`gapfill_dr_resource_link`、`gapfill_dr_block_json`、`gapfill_dr_entity_year`、`gapfill_dr_column_catalog`。
