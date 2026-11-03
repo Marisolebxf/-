@@ -44,4 +44,13 @@
 - 兼容：请求只增 industry_ids、响应只增 industry_id/industry_name ✅；其他前端不传新参数行为不变 ✅
 - D12：仅调 gkxlumen-* ✅
 
+## 评审与修复（2026-11-03 bugbot 轮，回归安全视角）
+
+- 裁定：无筛选向后兼容 **SAFE**（企业走原 /smart、政策/服务精确回退原实现、新增字段纯增量不覆盖）；下游 Python country_code 白名单 **SAFE**（3/3 新测试）
+- **C-1（Critical，已修 e298d0e）**：IndustryClusterService 码表首查询无兜底——dim 库无权限时会异常穿透且 map 恒空导致每次重试风暴（波及所有企业搜索含旧调用）。修复：try-catch + 5 分钟失败负缓存
+- I：政策/服务多产业时 industryIds 迭代取首个（HashSet 任意序）——文档声明限制，产品后续如需多产业语义再升级
+- I：跨库前缀 gkxlumenx_dim/dwd 为部署级假设——需确认 demo/prod CMS 库账号均有跨库 SELECT 权（当前 dev 实测通过）
+- Minor：@Operation「keyword 必填」过期文案已随 e298d0e 更新；232 国覆盖率（19 命中）需向久新声明
+- 部署后回归（e298d0eb）：旧调用 66 / 产业 3547+上浮 / country USA=0 / 政策 1020 / 服务 95 / 产业 9 全过
+
 ponytail: full；cost 随后回填 registry。
