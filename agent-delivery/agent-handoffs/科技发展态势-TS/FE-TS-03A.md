@@ -79,7 +79,7 @@
 - `metric_id`（TS-M3-*）待 metric-registry 正式挂接后替换占位 —— **2026-11-03 进展**：本页数字在指标库**没有已签收指标**（DS-03 模块 `M_TECH_*` 是另一套、`is_mock=true`、算法服务未上线，挂上去即错挂），故按 D9 §2 先落 **D1 missing 红问号 + 治理引用**（`DS-03-METRIC-OPEN-L01` / `Q-MO-DS03-01…06`），不显伪 8 件套；详见 `docs/tracking-真评估接入设计.md` §11。
 - BE-TS-CONTRACT-01 / `API-TS-M3` 未冻前，`USE_MOCK=false` 仅做冒烟 —— **2026-11-03 进展**：已切 `USE_MOCK=false` 跑真实数据并完成联调（meta/dataset 经 display 网关取久新只读通道），本条关闭。
 - 联调确认：mock 验收通过，**联调闸门待 Java 契约冻结** —— **2026-11-03 更正**：联调已完成，闸门解除；本轮追加工作另立三单 `SITUATION-TS-TRACKING-EVAL-L01`（真评估接入）/ `-REPORT-L01`（报告生成与复用）/ `-PERSIST-L01`（范围挂载 + 落库回读 + D9 缺口角标）。
-- ⚠️ 人工验收闸门（2026-10-20 裁定）：上述改动全部停本地工作区，**未 commit / 未 push**，等 `human:孔东` / `human:唐绍祖` 走查通过后推送。
+- ⚠️ 人工验收闸门（2026-10-20 裁定）：上述改动已本地 commit（前端 `e5c5085` / 后端 `44b7843` / 台账 `b0cfe7eb`），**未 push**，等 `human:孔东` / `human:唐绍祖` 走查通过后推 `origin/dev`。
 
 ## 2026-11-03 第二批（用户点名四项）
 
