@@ -81,6 +81,7 @@
 - `agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md`
 - `agent-delivery/工程过程/04-系统集成/02-对接三要素/沟通流水.md`
 - `agent-delivery/agent-handoffs/SYSINT-INDDISC-02-L01.md`
+- `agent-delivery/agent-handoffs/科技发展态势-TS/INDUSTRY-DISCIPLINE-FACTOR-LINKAGE-20261102.md`（2026-11-02 增补：产业领域 ↔ 学科领域 ↔ 三要素**关联现状总览 + 展示/专题一致性检查清单**，汇总本叶结论、`subfield_topic_map` 唯一通道、DS-01 与专题两侧端点链路，供综合分析对照；本叶"领域对领域不可映射"结论不变）
 
 ## 架构合规自检
 

@@ -6,7 +6,9 @@
 > **2026-10-26 `human:淮政玮` 口径**：「展示系统本身就是集成，整体放到展示系统集成」。据此，展示系统的跨页公共物与技术架构设计件也归第 5 项，不再散落在原页面计划。
 > **2026-10-27 `human:李伟` 建叶登记**：原以「挂接登记」记入的五件转为正式叶，任务号不变（沿用已有 ID，未新建）；原无监管人的 `BE-TS-IMPL-01`、`BE-TS-DATA-01` 由 `human:李伟` 认领。派单说明见 `agent-handoffs/科技发展态势-TS/派单说明/`。
 > **2026-10-28 `human:李伟` 挂接**：创新监测三页（DS-04/05/06）数据打通长任务 `SITUATION-IM`（**23 叶**，WBS-05-19-01～23）挂接 **§4.4**，授权句已生效；边界口径：**可改接口契约，不可改 UI 与实现效果**（角标挂载点属评审层叠加，须满足总控 §0.1 三条）。总控 / 总派单 / 契约 / 前置条件四份：`agent-handoffs/科技发展态势-TS/SITUATION-IM-*.md`；决策纪要本夹 `纪要/2026-10-28-SITUATION-IM-边界与裁定.md`。
-> **2026-11-03 挂接**：科技政策跟踪正式复刻单已在 registry。父行 `WBS-05-23` + 子行 §4.1b。同日补建真数链三张单，并补建存量调研 `POL-DISPLAY-SURVEY-L01`、系统详细设计 `POL-DISPLAY-SDD-L01`。编写顺序是调研 → 详设 → 契约。前后依赖见 [对照-科技政策跟踪-存量任务与依赖.md](./对照-科技政策跟踪-存量任务与依赖.md)。专题 `E-E7-POLICY-M1-L06` 不作为展示前置。
+> **2026-11-03 收藏订阅与产业码过滤入库**：收藏订阅服务端化（`SITUATION-ENT-FOLLOW-SVR-L01`，05-18-16）22 个后端文件 + 5 表 DDL 已 commit+push（`lumen-svc-platform` `ad3afe9`，upms-api / upms-biz / display / element 四模块编译 EXIT=0），前端 3 文件同步入库（`lumen-ui-science-pc` `04ecf8c`）；同批带产业领域筛选 —— element `EnterpriseController` 8 端点支持 `industryId` 产业码过滤，已从 `WBS-02-13`（只出口径、不改业务仓）析出为独立实现叶 `WBS-02-14` · `SYSINT-INDDISC-02-L02`。
+> **2026-11-03 影响力第 6 卡上线**：`SITUATION-ENT-INTEGRATION-STATUS-L01`（WBS-05-18-18）—— 影响力 Tab 新增「项目（含课题）」卡（算法库 `M_INNOV_PROJECT_INFLUENCE` 真实 precompute，58,453 项 / 均分 42.9），display 重打包并拉起 element/innov，同日出全端点对接进度总台账（10 端点 × 11 要素 × 566 指标实测）。
+> **2026-11-03 挂接**：科技政策跟踪正式复刻单已在 registry。父行 `WBS-05-23` + 子行 §4.1b。同日补建真数链三张单，并补建存量调研 `POL-DISPLAY-SURVEY-L01`、系统详细设计 `POL-DISPLAY-SDD-L01`。编写顺序是调研 → 详设 → 契约。前后依赖见 [对照-科技政策跟踪-存量任务与依赖.md](./对照-科技政策跟踪-存量任务与依赖.md)。专题 `E-E7-POLICY-M1-L06` 不作为展示前置。同日按 SRS level5 拆二级设计，见 §4.1c（7 个一级、26 个二级，每个二级 4 张定义单）。
 > 本表列为「开始时间」时未标注的，均为**待填写**。不自行补日期。
 
 ---
@@ -30,7 +32,7 @@
 - `WBS-05-18-0N` 是 `WBS-05-18` 的**子任务行**（SITUATION-ENT 长任务管线 · 企业维度数据跑通，2026-10-27 挂接），口径同 `WBS-05-08-0N`，不另算菜单。
 - `WBS-05-19-0N` 是 `WBS-05-19` 的**子任务行**（SITUATION-IM 长任务管线 · 创新监测三页数据打通 + 评审就绪，2026-10-28 挂接），口径同上，不另算菜单。
 - `WBS-05-04-01` 是 `WBS-05-04` 的**子任务行**（科技数据资源四视窗对照已建成 GDF，2026-11-02 建叶），不另算菜单。
-- `WBS-05-23-0N` 是 `WBS-05-23` 的**子任务行**（科技政策跟踪）。05-23-01～10 挂已有复刻单与契约单；05-23-11～13 是实现、对齐、真联调；05-23-14～15 是存量调研与系统详细设计。不另算菜单。
+- `WBS-05-23-0N` 是 `WBS-05-23` 的**子任务行**（科技政策跟踪）。05-23-01～10 挂已有复刻单与契约单；05-23-11～13 是实现、对齐、真联调；05-23-14～15 是存量调研与系统详细设计。`WBS-05-23-L2-*` 是按 SRS level5 拆的二级设计单（§4.1c，26 个二级 × 4）。都不另算菜单。
 - 一个 WBS 行可以索引多个任务 ID；反过来一个任务只挂一行，不重复编号。
 - **计划叶 `LT-5-*` 不是任务**。`05-展示系统集成工作计划.md` §0 写明「计划叶 ID 不是 registry 任务」。本表只在 §1 的「计划叶」列引用它作排期对照，不当任务号用。
 
@@ -66,7 +68,7 @@
 
 | 一级菜单 | 叶 | 页名 | WBS 叶 | 挂载任务（含状态） | 完成摘要 | 计划叶 |
 |---|---|---|---|---|---|---|
-| 科技发展态势 | DS-01 | 科技全域态势 | WBS-05-18 | `FE-TS-01A`(integration)、`BE-TS-IMPL-01`(backlog)、`BE-TS-DATA-01`(backlog)、`DS-01-METRIC-OPEN-L01`(integration)、`SITUATION-ENT-*` 长任务管线（10-27 挂接，待建，见 §4.3） | 前端整页复刻已 push、三绿；REST 待 `BE-TS-CONTRACT-01` 冻结。指标语义卡仍草稿未签。10-27 起企业维度数据跑通长任务挂接本行 | LT-5-SIT-DS01 |
+| 科技发展态势 | DS-01 | 科技全域态势 | WBS-05-18 | `FE-TS-01A`(integration)、`BE-TS-IMPL-01`(backlog)、`BE-TS-DATA-01`(backlog)、`DS-01-METRIC-OPEN-L01`(integration)、`SITUATION-ENT-*` 长任务管线（10-27 挂接，见 §4.3；11-01 五单 `SITUATION-ENT-D2-L01` / `-D3-L01` / `-MOCK-LEDGER-L01` / `INFLUENCE-FIX-L01` / `GRANULARITY-FIX-L01` 均 integration，11-02 新增 `METRIC-LIB-ALGO-INFLUENCE-L01`(integration)，共 7 条 integration 停本地待走查（含 11-02 完工 `SITUATION-ENT-SPARK-L01`）；11-02 另补登记两条 backlog `SITUATION-ENT-FOLLOW-SVR-L01`（待裁定收藏表归属 upms）/ `SITUATION-ENT-TREND-FEAT-L01`） | 前端整页复刻已 push、三绿；REST 待 `BE-TS-CONTRACT-01` 冻结。指标语义卡仍草稿未签。10-27 起企业维度数据跑通长任务挂接本行；11-01 全维度打通五单（机构不做点位、期刊/会议 mock、mock 台账、影响力 Tab 修复、时间粒度打通）+ 11-02 指标库口径对齐与算法库优先接入（期刊/专家取算法库真实值，论文/专利/服务保留 mock，五卡挂 metric_id），七条 integration 改动停本地未 commit / 未 push 待 `human:李伟` 走查；11-02 要素卡年度趋势 spark 完工（论文 / 人才 / 项目 / 机构接久新真实年度序列，7101 探针末点 = 卡值、无断崖），收藏服务端化按只读铁律改落 upms 待裁定，趋势预测 / 异常监测待裁定，见 §4.3 05-18-15～17 | LT-5-SIT-DS01 |
 | 科技发展态势 | DS-02 | 科学技术全景 | WBS-05-01a / 01b | `SYSINT-05-01A-L01`(ready)、`SYSINT-05-01B-L01`(ready)、`FE-TS-02A`(integration)、`DS-02-METRIC-OPEN-L01`(integration) | 对接叶已建号未开工；复刻页 integration；读图归第 7 项 | LT-5-SIT-DS02 |
 | 科技发展态势 | DS-03 | 技术发展跟踪 | WBS-05-02a / 02b | `SYSINT-05-02A-L01`(ready)、`SYSINT-05-02B-L01`(ready)、`FE-TS-03A`(integration)、`DS-03-METRIC-OPEN-L01`(integration) | 三个 Tab 可开或空态；材料未到时空态。名称收口为「技术发展跟踪」 | LT-5-SIT-DS03 |
 | 科技发展态势 | DS-04 | 全球创新监测 | WBS-05-19 | `FE-TS-04A`(integration)、`DS-04-METRIC-OPEN-L01`(integration)；已有 `E-INNOV-M1-L08`（tier FULL，路由 `/innov`）；**`SITUATION-IM-*` 长任务管线（10-28 挂接，待建，见 §4.4）** | 综合 / 实时 / 载体 / 监测 / 能力五块可切换；不另起一套 innov 地图 | LT-5-SIT-DS04 |
@@ -79,7 +81,7 @@
 | 科技政策跟踪 | DS-10 | 科创政策全景 | WBS-05-23-03 / 04 | `FE-POL-01A`(pending_test)、`FE-POL-01B`(integration)；基座 `FE-POL-S01`(pending_test) | 检索主链路待测试；其余 4 Tab 联调中，硬依赖 01A。真数等 `BE-POL-CONTRACT-01` | LT-5-POL-DS10 |
 | 科技政策跟踪 | DS-11 | 政策分析评价 | WBS-05-23-05 | `FE-POL-02A`(pending_test) | 整页复刻待测试。硬依赖只有基座，与全景可并行。模型未注册保持 501 | LT-5-POL-DS11 |
 | 科技政策跟踪 | DS-12 | 政策效果推演 | WBS-05-23-06 | `FE-POL-03A`(integration) | 双工作台联调中，停本地待验收。推演 ≠ 专题布局推荐 | LT-5-POL-DS12 |
-| 科技政策跟踪 | PC-1～PC-4 | 政策数据治理 / 智能政策拆解 / 多维政策对比 / 智能研报生成 | WBS-05-23-07～10 | `FE-POL-04A`(in_progress)、`05A`(integration)、`06A`(integration)、`07A`(ready_to_sign) | 四页硬依赖都只是基座。ChainSteps 归 04A，06A/07A 仍是占位。PC-4 Job 未注册则 501 | LT-5-POL-PC1～PC4 |
+| 科技政策跟踪 | PC-1～PC-4 | 政策数据治理 / 智能政策拆解 / 多维政策对比 / 智能研报生成 | WBS-05-23-07～10 | `FE-POL-04A`(integration)、`05A`(integration)、`06A`(integration)、`07A`(ready_to_sign) | 四页硬依赖都只是基座。ChainSteps 归 04A，06A/07A 仍是占位。PC-4 Job 未注册则 501 | LT-5-POL-PC1～PC4 |
 | 科技人才态势 | DS-13～DS-16 | 全球领域人才态势 / 关注地区人才态势 / 重点科技人才画像 / 人才引进推荐评估 | WBS-05-03a / 03b | `SYSINT-05-03A-L01`(ready)、`SYSINT-05-03B-L01`(ready) | **只做菜单壳与非三要素区块**；四子页不重做，供数是 WBS-02-01（第 2 项）；资讯、职位变动、奖项荣誉、引进成本、尽调五类空态 | LT-5-TAL-DS13～DS16 |
 | 科技数据资源 | DS-17～DS-20 | 总体 / 接入 / 主题 / 应用四视窗 | WBS-05-04 | `SYSINT-05-04-L01`(claimed，监管 淮政玮 → 实际认领 孔东) | 四个视窗可切换；共建数据未到为空态。R6：data 组供方未找到（原华为云 2026-10-15 退出）。对照已建成 GDF 的分析见 WBS-05-04-01 | LT-5-RES-DS17～DS20 |
 | 科技知识图谱 | DS-21～DS-24 | 分析展示 / 指标展示 / 算法展示 / 服务展示 | **跨项索引（第 7 项）** | `FE-DISPLAY-KG-SERVICE-ALIGN-L01`(review) | 本表**不建叶**。第 7 项负责页面与查图；`FE-DISPLAY-KG-SERVICE-ALIGN-L01` 是 demo 侧 DS-24 服务展示合规对齐，原地更新 `ServiceDisplay.jsx` | LT-5-KG-DS21～DS24 |
@@ -136,7 +138,7 @@
 | WBS-05-07 · `SYSINT-05-07-L01` | 智库服务 | 李伟（registry 记一线孔东） | `lumen-ui-science-pc`、展示 Java | **ready** | 2026-10-23 起**不按前端跳转**，要求智谱提供接口；接口未到为空态。原型页整改见 `FE-DISPLAY-SVC-THINKTANK-RECTIFY-L01`（in_progress） | `SYSINT-SCHEME-05-L01`。对端是智谱；智树页面能调到智谱接口；**智树不做高端智库后台** | 2026-11-09 |
 | WBS-05-08 · `SYSINT-05-08-L01` | 科技交流、科技竞赛、科技传播（父） | 李伟 | `lumen-ui-science-pc` | **ready_to_sign** | 挂接自建任务 `SVC-PANORAMA-API-L01`（父统筹单，claimed）、`SVC-PANORAMA-GAP-L01`（对照表成品，ready_to_sign）。**2026-10-31：六个子任务（-01～-06）全部 done —— -01 对接分析已签收；-02 三入口 iframe 弹窗壳；-03 交流 BFF + FE；-04 竞赛 BFF + FE；-05 传播 BFF + FE；-06 联调验收（实测三页深势真实数据）**。三仓改动已推 `origin/dev`，父任务推进 ready_to_sign 待签收。子任务详见 §4.2 | `SYSINT-SCHEME-05-L01`。对端名称「北大深势」只出现在规约，能力评估文未署此名，**名称核对还没有** | 2026-11-09 |
 | **WBS-05-09** | 本项菜单注册与用户权限（全景、技术发展、人才态势、数据资源、成果展示、生态服务、智库、交流、竞赛、传播） | **待指定**（2026-10-22 纪要未点名） | 统一用户中心配置；业务仓不写主机名 | **未建任务** | — | `SYSINT-SCHEME-05-L01`。各菜单叶负责自己的相对路径；这些菜单以相对路径可见，对应用户登录后能进；地址不写主机名；交流 / 竞赛 / 传播跳转失败仍有提示；智库不按跳转走智谱接口 | 无截至时间 |
-| WBS-05-18 | 科技全域态势（DS-01，含 M1 聚合 BFF 消费） | 孔东（FE）/ 李伟（BE） | `lumen-ui-science-pc`、`gkxlumen-display` | **integration** | `FE-TS-01A` handoff `科技发展态势-TS/FE-TS-01A.md`：整页复刻 integration；所依赖的底座 `FE-TS-S01` 已 done。后端 `BE-TS-IMPL-01` 未开工。指标卡 `DS-01-METRIC-OPEN-L01`：赋号草稿、类型未签、公式待 `human:唐绍祖` 共签。**2026-10-27 挂接 `SITUATION-ENT` 长任务管线（企业维度数据跑通，子任务见 §4.3，授权人 `human:李伟`）** | `FE-TS-S01`、`BE-TS-CONTRACT-01` 冻结（M1）。11 要素图层 / 科创事件双 Tab；久新人才、科研机构、论文、专利未到则**空态** | 计划 LT-5-SIT-DS01：10-16 → 10-20 |
+| WBS-05-18 | 科技全域态势（DS-01，含 M1 聚合 BFF 消费） | 孔东（FE）/ 李伟（BE） | `lumen-ui-science-pc`、`gkxlumen-display` | **integration** | `FE-TS-01A` handoff `科技发展态势-TS/FE-TS-01A.md`：整页复刻 integration；所依赖的底座 `FE-TS-S01` 已 done。后端 `BE-TS-IMPL-01` 未开工。指标卡 `DS-01-METRIC-OPEN-L01`：赋号草稿、类型未签、公式待 `human:唐绍祖` 共签。**2026-10-27 挂接 `SITUATION-ENT` 长任务管线（企业维度数据跑通，子任务见 §4.3，授权人 `human:李伟`）**。**2026-11-03 影响力 Tab 由 5 卡扩为 6 卡（新增项目含课题，算法库真实产物），运行态实测 6 卡全出；11 要素 8 真 3 mock，566 指标 d4 仍全 mock**。**2026-11-03 产业领域筛选后端就绪**：element 8 个企业端点支持 `industryId` 产业码过滤（精确命中或前缀下钻，未传零回归），display `RemoteElementClient` 已透传；前端尚未接线，实现叶见 `WBS-02-14`（`SYSINT-INDDISC-02-L02`） | `FE-TS-S01`、`BE-TS-CONTRACT-01` 冻结（M1）。11 要素图层 / 科创事件双 Tab；久新人才、科研机构、论文、专利未到则**空态** | 计划 LT-5-SIT-DS01：10-16 → 10-20 |
 | WBS-05-19 | 创新监测三页（DS-04 全球 / DS-05 湾区 / DS-06 深圳） | 孔东 | `lumen-ui-science-pc` | **integration** | `FE-TS-04A` / `05A` / `06A` 三份 handoff 均已 push（`06A` note「handoff 已 push ea1e4aad；lumen b4e1eda；联调确认」，但模块目录**无同名 `FE-TS-06A.md`**）。已有 innov 事件地图只对齐，不另起一套 | `BE-TS-CONTRACT-01`（M4 / M5 / M6 契约未冻结）。订阅 / 推送的对端宋泉未确认则该块空态 | 计划 10-28 → 10-31（DS-06 及以后冲出 V1 开发出门） |
 | WBS-05-20 | 科技创新评估（DS-07） | 孔东 | `lumen-ui-science-pc` | **claimed**（P2） | `FE-TS-07A` 仅 claimed，复刻未开工 | 评估对象范围未补则按详设空态 | 计划 11-03 → 11-04（结束日 = V1 测试末日） |
 | WBS-05-21 | 科技指数（DS-08） | 孔东 / 淮政玮 | `lumen-ui-science-pc`（正式）、`demo-ui-science`（原型侧） | **integration** | `FE-TS-08A` handoff `科技发展态势-TS/FE-TS-08A.md`（三级指标树 / 34 省地图 / 专家 H 指数 / 四维趋势 / 排行榜 / 20 人评议只读）；`FE-DISPLAY-TECHINDEX-NEW-L01` 九域 + 王惠 8 件套 + 唐绍祖算法口径，布局溢出由 fix 8a46d7d 修；`FE-DISPLAY-TECHINDEX-MOCK-ALGO-L01` mock 权重 40/30/20/10 派生一致已修，pending_test | **只做展示侧，不做智库后台**。专家评议 20 人只读 | 计划 11-04 → 11-05（晚于 V1 测试） |
@@ -154,6 +156,22 @@
 |---|---|---|---|---|---|---|---|
 | WBS-05-04-01 · `SYSINT-05-04-01-L01` | 科技数据资源四视窗：对照已建成 GDF，分析哪些展示需求可从平台得到 | 淮政玮 | `gkx-orchestration` | **done**（2026-11-03 `human:淮政玮` 签收） | 已签收。结论见 [SYSINT-05-04-01-L01.md](../../../agent-handoffs/SYSINT-05-04-01-L01.md)：70 条里可得到 0、部分得到 29、得不到 41，没有一条能直接填进四视窗 | 需求清单认详设 `07-功能-科技数据资源.md` 与 `科技数据资源-DR/DR-模块开发规划与任务拆分.md` §4（DS-17～20，seq 330–399）。不等 `SYSINT-05-04-L01` 页面做完。分析结论落盘即本叶完成，不是可对端，不新建 GDF 作业 | 无截至时间 |
 
+### 4.1a2 科技数据资源后台接口
+
+> 2026-11-03 方案：[方案-科技数据资源-后台接口.md](./方案-科技数据资源-后台接口.md)。总控：[DR-RES-长任务总控.md](../../../agent-handoffs/科技数据资源-DR/DR-RES-长任务总控.md)。对外只四个 `GET /display/v1/data-ops/{overview|access|theme|application}/dataset`。表在 `demo_gkxlumenx_ads`，表名 `gapfill_dr_*`。签收条件按 D18。监管人淮政玮。`lumen-svc-platform` 同仓一次只派一叶。
+
+| 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 |
+|---|---|---|---|---|
+| WBS-05-04-02 · `DR-RES-A0-L01` | 复读久新现网列，确认 `entityStock` / `columnCatalog` 列名 | 淮政玮 | `gkx-orchestration` | 已建单，与契约并行 |
+| — · `BE-DR-CONTRACT-01` | 冻结四个 Dataset 路径、信封、键名与 `origin`。不新开契约号 | 淮政玮 | `gkx-orchestration` | 已有单，与 A0 并行 |
+| WBS-05-04-03 · `DR-RES-MOCK-DDL-L01` | 在 `demo_gkxlumenx_ads` 建 `gapfill_dr_*` | 淮政玮 | `gkx-orchestration` | 已建单，等 A0 |
+| WBS-05-04-04 · `DR-RES-MOCK-LOAD-L01` | Python 灌 `mock_` 行，并按需写 `snap_` | 淮政玮 | `gkx-orchestration` | 已建单，等 DDL |
+| WBS-05-04-05 · `DR-RES-C1-L01` | `GET .../overview/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等契约和灌数 |
+| WBS-05-04-06 · `DR-RES-C2-L01` | `GET .../access/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等 C1 |
+| WBS-05-04-07 · `DR-RES-C3-L01` | `GET .../theme/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等 C2 |
+| WBS-05-04-08 · `DR-RES-C4-L01` | `GET .../application/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等 C3 |
+| WBS-05-04-09 · `DR-RES-D1-L01` | 四条 `real()` 改走 `request()`，MockBadge 看 `origin` | 淮政玮 | `lumen-ui-science-pc` | 已建单，等 C1–C4 到 integration。不自动 push |
+
 ### 4.1b WBS-05-23 的子任务（科技政策跟踪 · 只挂已有单）
 
 > 2026-11-03 挂接。父行仍是 WBS-05-23。编写顺序是 05-23-14 调研 → 05-23-15 系统详细设计 → 05-23-02 契约。编号按建单先后，不表示施工先后。依赖全文见 [对照-科技政策跟踪-存量任务与依赖.md](./对照-科技政策跟踪-存量任务与依赖.md)。
@@ -162,15 +180,15 @@
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
 | WBS-05-23-01 · `FE-POL-S01` | 政策跟踪前端基座（菜单 3→7、mock 种子、api 双轨、35 指标镜像） | 孔东 | `lumen-ui-science-pc` | **pending_test** | handoff `科技政策跟踪-POL/FE-POL-S01.md`。registry note 写已推 `origin/dev`、转待测试；handoff 头仍写停本地。状态以 registry 为准 | 无硬依赖。产品包 `DS10-12-PACK-L01` 已完成 | 无截至时间 |
-| WBS-05-23-02 · `BE-POL-CONTRACT-01` | 7 页 63 叶 Java 契约（API-POL）。只出接口契约，不是系统详细设计 | 李伟 | `lumen-svc-platform` | **backlog** | 未开工。规划 `科技政策跟踪-POL/POLICY-模块开发规划与任务拆分.md` §3.1 | WBS 前置是 `POL-DISPLAY-SDD-L01`。注册表 `depends_on` 仍为空（更新工具不能写该字段）。冻结前 FE 不猜路径 | 无截至时间 |
+| WBS-05-23-02 · `BE-POL-CONTRACT-01` | 7 页 63 叶 Java 契约（API-POL）。只出接口契约，不是系统详细设计 | 李伟 | `lumen-svc-platform` | **backlog** | 未开工。规划 `科技政策跟踪-POL/POLICY-模块开发规划与任务拆分.md` §3.1。§4.1c 的 26 份接口分册是输入，本单仍只冻一份 API-POL | WBS 前置是 `POL-DISPLAY-SDD-L01`，并收齐 §4.1c 各二级 `*-API`。注册表 `depends_on` 仍为空（更新工具不能写该字段）。冻结前 FE 不猜路径 | 无截至时间 |
 | WBS-05-23-03 · `FE-POL-01A` | 科创政策全景 · 检索主链路 | 孔东 | `lumen-ui-science-pc` | **pending_test** | handoff `科技政策跟踪-POL/FE-POL-01A.md`。走查后已推 `origin/dev` | 硬依赖 `FE-POL-S01` | 无截至时间 |
 | WBS-05-23-04 · `FE-POL-01B` | 科创政策全景 · 动向 / 舆情 / 比对 / 订阅 | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-01B.md`。note 写前端链路联调通过，状态仍为联调中 | 硬依赖 `FE-POL-01A` | 无截至时间 |
 | WBS-05-23-05 · `FE-POL-02A` | 政策分析评价整页 | 孔东 | `lumen-ui-science-pc` | **pending_test** | handoff `科技政策跟踪-POL/FE-POL-02A.md`。已推 `origin/dev` | 硬依赖 `FE-POL-S01`。与全景无硬依赖 | 无截至时间 |
 | WBS-05-23-06 · `FE-POL-03A` | 政策效果推演整页 | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-03A.md`。停本地待验收 | 硬依赖 `FE-POL-S01`。模型未注册则真路径 501 | 无截至时间 |
-| WBS-05-23-07 · `FE-POL-04A` | 智能政策库构建（政策数据治理） | 孔东 | `lumen-ui-science-pc` | **in_progress** | 无同名 handoff | 硬依赖 `FE-POL-S01`。ChainSteps 归本单，06A/07A 的占位等本单合入后替换 | 无截至时间 |
-| WBS-05-23-08 · `FE-POL-05A` | 智能政策拆解 | 孔东 | `lumen-ui-science-pc` | **integration** | note 写 handoff 已落盘；主仓目录未见 `FE-POL-05A.md` | 硬依赖 `FE-POL-S01`。文本解析模型未注册则 501 | 无截至时间 |
+| WBS-05-23-07 · `FE-POL-04A` | 智能政策库构建（政策数据治理） | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-04A.md` 已入库 | 硬依赖 `FE-POL-S01`。ChainSteps 归本单，06A/07A 的占位等本单合入后替换 | 无截至时间 |
+| WBS-05-23-08 · `FE-POL-05A` | 智能政策拆解 | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-05A.md` 已入库 | 硬依赖 `FE-POL-S01`。文本解析模型未注册则 501 | 无截至时间 |
 | WBS-05-23-09 · `FE-POL-06A` | 多维政策对比 | 孔东 | `lumen-ui-science-pc` | **integration** | handoff `科技政策跟踪-POL/FE-POL-06A.md`。停 worktree 待验收 | 硬依赖 `FE-POL-S01`。生成研报跳 07A，须两边合入同一 `dev` 再验 | 无截至时间 |
-| WBS-05-23-10 · `FE-POL-07A` | 智能研报生成 | 孔东 | `lumen-ui-science-pc` | **ready_to_sign** | 主仓目录未见 `FE-POL-07A.md`。note 写未 commit / push，ChainSteps 仍是占位 | 硬依赖 `FE-POL-S01`。Job 未注册则导出 501 | 无截至时间 |
+| WBS-05-23-10 · `FE-POL-07A` | 智能研报生成 | 孔东 | `lumen-ui-science-pc` | **ready_to_sign** | handoff `科技政策跟踪-POL/FE-POL-07A.md` 已入库。文件头仍写停本地，状态以 registry 为准 | 硬依赖 `FE-POL-S01`。Job 未注册则导出 501 | 无截至时间 |
 | WBS-05-23-11 · `BE-POL-IMPL-01` | 展示聚合接口实现（`/display/v1/policy/**`） | 李伟 | `lumen-svc-platform` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-CONTRACT-01`。契约未冻结不开工。不实现、不转调 `/topic/v1/policy` | 无截至时间 |
 | WBS-05-23-12 · `BE-POL-DATA-01` | 统计读面与已有政策 ADS 对齐 | 李伟 | `gkx-orchestration` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-CONTRACT-01`、`GDF-POLICY-MDC-STAT-L01`。不新开 GDF 包，不写第二套统计脚本 | 无截至时间 |
 | WBS-05-23-13 · `FE-POL-REAL-01` | 七页切真实接口并联调 | 孔东 | `lumen-ui-science-pc` | **backlog** | 2026-11-03 新建。未开工 | 硬依赖 `BE-POL-IMPL-01`、`BE-POL-DATA-01` 与 `FE-POL-01B`、`02A`、`03A`、`04A`、`05A`、`06A`、`07A`。模型未注册保持 501 | 无截至时间 |
@@ -184,6 +202,153 @@
 | WBS-05-23-21 · `POL-DISPLAY-SDD-METRIC-L01` | 详设分册 · 指标与 501 | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 分册已落盘。评价 5 行交互壳并入 501。推演与布局推荐分键 | 同上。与 20、22 并行 | 无截至时间 |
 | WBS-05-23-22 · `POL-DISPLAY-SDD-INPUT-L01` | 详设分册 · 契约输入清单 | 淮政玮 | `gkx-orchestration` | **integration** | 2026-11-03 分册已落盘。25 条资源，不写字段表 | 同上 | 无截至时间 |
 
+### 4.1c WBS-05-23 的二级设计（科技政策跟踪 · 按 SRS level5）
+
+> 2026-11-03 拆解。一级 = SRS 四级页（7）。二级 = SRS `level5`（26）。核增页的叶子标题是「/」，二级名用 `level5`，所以治理、拆解、对比、研报按叶子各成一个二级。每个二级 4 张定义单，不写代码。
+>
+> 四单顺序：架构（分析、架构、整体流程）先行；接口、指标、数据三单读本二级架构单，彼此并行。二级之间无硬依赖。四单监管人一律 `human:淮政玮`。角色仍是 `arch-agent` / `api-agent` / `algorithm-agent` / `data-agent`。
+>
+> 不替代 §4.1b。`BE-POL-CONTRACT-01` 仍是唯一 API-POL 冻结口，26 份接口分册只作它的输入。`BE-POL-IMPL-01`、`BE-POL-DATA-01`、`FE-POL-REAL-01` 仍是实现与联调，不在本表重开。不新造指标，不重开 GDF，不消费 `/topic/v1/policy`，推演不含布局推荐。
+>
+> 注册表状态以建单结果为准。2026-11-03 起本表监管人一律淮政玮，与 registry `supervised_by` 一致。角色不改。
+
+| 一级 | 二级 | SRS 序号 | 四单 |
+|---|---|---|---|
+| DS-10 科创政策全景 | 多维检索查询 | 197–202 | `POL-L2-DS10-QRY-ARCH` / `POL-L2-DS10-QRY-API` / `POL-L2-DS10-QRY-METRIC` / `POL-L2-DS10-QRY-DATA` |
+| DS-10 科创政策全景 | 政策动向跟踪 | 203–206 | `POL-L2-DS10-TREND-ARCH` / `POL-L2-DS10-TREND-API` / `POL-L2-DS10-TREND-METRIC` / `POL-L2-DS10-TREND-DATA` |
+| DS-10 科创政策全景 | 政策舆情评估 | 207–212 | `POL-L2-DS10-SENT-ARCH` / `POL-L2-DS10-SENT-API` / `POL-L2-DS10-SENT-METRIC` / `POL-L2-DS10-SENT-DATA` |
+| DS-10 科创政策全景 | 政策重点比对 | 213–218 | `POL-L2-DS10-CMP-ARCH` / `POL-L2-DS10-CMP-API` / `POL-L2-DS10-CMP-METRIC` / `POL-L2-DS10-CMP-DATA` |
+| DS-11 政策分析评价 | 政策分析报告可视化呈现 | 219–222 | `POL-L2-DS11-VIZ-ARCH` / `POL-L2-DS11-VIZ-API` / `POL-L2-DS11-VIZ-METRIC` / `POL-L2-DS11-VIZ-DATA` |
+| DS-11 政策分析评价 | 结果解读报告多维展示 | 223–226 | `POL-L2-DS11-READ-ARCH` / `POL-L2-DS11-READ-API` / `POL-L2-DS11-READ-METRIC` / `POL-L2-DS11-READ-DATA` |
+| DS-11 政策分析评价 | 推荐方案报告交互展示 | 227–231 | `POL-L2-DS11-PLAN-ARCH` / `POL-L2-DS11-PLAN-API` / `POL-L2-DS11-PLAN-METRIC` / `POL-L2-DS11-PLAN-DATA` |
+| DS-12 政策效果推演 | 效果预估 | 232–236 | `POL-L2-DS12-EST-ARCH` / `POL-L2-DS12-EST-API` / `POL-L2-DS12-EST-METRIC` / `POL-L2-DS12-EST-DATA` |
+| DS-12 政策效果推演 | 科技政策推演 | 237–242 | `POL-L2-DS12-SIM-ARCH` / `POL-L2-DS12-SIM-API` / `POL-L2-DS12-SIM-METRIC` / `POL-L2-DS12-SIM-DATA` |
+| PC-1 政策数据治理 | 系统引用政策源数据清洗 | 602 | `POL-L2-PC1-CLEAN-ARCH` / `POL-L2-PC1-CLEAN-API` / `POL-L2-PC1-CLEAN-METRIC` / `POL-L2-PC1-CLEAN-DATA` |
+| PC-1 政策数据治理 | 政策库结构化 | 603 | `POL-L2-PC1-STRUCT-ARCH` / `POL-L2-PC1-STRUCT-API` / `POL-L2-PC1-STRUCT-METRIC` / `POL-L2-PC1-STRUCT-DATA` |
+| PC-1 政策数据治理 | 溯源索引构建 | 604 | `POL-L2-PC1-LINEAGE-ARCH` / `POL-L2-PC1-LINEAGE-API` / `POL-L2-PC1-LINEAGE-METRIC` / `POL-L2-PC1-LINEAGE-DATA` |
+| PC-1 政策数据治理 | 规划指标库搭建 | 605 | `POL-L2-PC1-INDLIB-ARCH` / `POL-L2-PC1-INDLIB-API` / `POL-L2-PC1-INDLIB-METRIC` / `POL-L2-PC1-INDLIB-DATA` |
+| PC-2 智能政策拆解 | 政策语义理解 | 606 | `POL-L2-PC2-SEM-ARCH` / `POL-L2-PC2-SEM-API` / `POL-L2-PC2-SEM-METRIC` / `POL-L2-PC2-SEM-DATA` |
+| PC-2 智能政策拆解 | 条款精细化拆解 | 607 | `POL-L2-PC2-CLAUSE-ARCH` / `POL-L2-PC2-CLAUSE-API` / `POL-L2-PC2-CLAUSE-METRIC` / `POL-L2-PC2-CLAUSE-DATA` |
+| PC-2 智能政策拆解 | 关键指标自动提取 | 608 | `POL-L2-PC2-EXTRACT-ARCH` / `POL-L2-PC2-EXTRACT-API` / `POL-L2-PC2-EXTRACT-METRIC` / `POL-L2-PC2-EXTRACT-DATA` |
+| PC-2 智能政策拆解 | 政策实体关联 | 609 | `POL-L2-PC2-ENT-ARCH` / `POL-L2-PC2-ENT-API` / `POL-L2-PC2-ENT-METRIC` / `POL-L2-PC2-ENT-DATA` |
+| PC-3 多维政策对比 | 跨政策交叉对比 | 610 | `POL-L2-PC3-XCMP-ARCH` / `POL-L2-PC3-XCMP-API` / `POL-L2-PC3-XCMP-METRIC` / `POL-L2-PC3-XCMP-DATA` |
+| PC-3 多维政策对比 | 可视化分析呈现 | 611 | `POL-L2-PC3-VIZ-ARCH` / `POL-L2-PC3-VIZ-API` / `POL-L2-PC3-VIZ-METRIC` / `POL-L2-PC3-VIZ-DATA` |
+| PC-3 多维政策对比 | 交互式对比配置 | 612 | `POL-L2-PC3-CFG-ARCH` / `POL-L2-PC3-CFG-API` / `POL-L2-PC3-CFG-METRIC` / `POL-L2-PC3-CFG-DATA` |
+| PC-3 多维政策对比 | 结果智能输出 | 613 | `POL-L2-PC3-OUT-ARCH` / `POL-L2-PC3-OUT-API` / `POL-L2-PC3-OUT-METRIC` / `POL-L2-PC3-OUT-DATA` |
+| PC-4 智能研报生成 | 政策深度分析 | 614 | `POL-L2-PC4-DEEP-ARCH` / `POL-L2-PC4-DEEP-API` / `POL-L2-PC4-DEEP-METRIC` / `POL-L2-PC4-DEEP-DATA` |
+| PC-4 智能研报生成 | 洞察结论自动提炼 | 615 | `POL-L2-PC4-INSIGHT-ARCH` / `POL-L2-PC4-INSIGHT-API` / `POL-L2-PC4-INSIGHT-METRIC` / `POL-L2-PC4-INSIGHT-DATA` |
+| PC-4 智能研报生成 | 模块化研报自动撰写 | 616 | `POL-L2-PC4-WRITE-ARCH` / `POL-L2-PC4-WRITE-API` / `POL-L2-PC4-WRITE-METRIC` / `POL-L2-PC4-WRITE-DATA` |
+| PC-4 智能研报生成 | 研报溯源展示 | 617 | `POL-L2-PC4-TRACE-ARCH` / `POL-L2-PC4-TRACE-API` / `POL-L2-PC4-TRACE-METRIC` / `POL-L2-PC4-TRACE-DATA` |
+| PC-4 智能研报生成 | 结果智能输出 | 618 | `POL-L2-PC4-OUT-ARCH` / `POL-L2-PC4-OUT-API` / `POL-L2-PC4-OUT-METRIC` / `POL-L2-PC4-OUT-DATA` |
+
+一级 7，二级 26，定义单 104。
+
+| 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
+|---|---|---|---|---|---|---|---|
+| WBS-05-23-L2-01A · `POL-L2-DS10-QRY-ARCH` | 科创政策全景 · 多维检索查询 · 后台实现架构设计（序号 197–202） | 淮政玮 | `gkx-orchestration` | **integration** | 架构稿 `sdd/l2/POL-L2-DS10-QRY-ARCH.md`。197、198、200 同步读面；199、201、202 为 501。会签未完成 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-01B · `POL-L2-DS10-QRY-API` | 科创政策全景 · 多维检索查询 · 后台接口设计（序号 197–202） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖本二级 `POL-L2-DS10-QRY-ARCH` | 无截至时间 |
+| WBS-05-23-L2-01C · `POL-L2-DS10-QRY-METRIC` | 科创政策全景 · 多维检索查询 · 后台指标设计（序号 197–202） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖本二级 `POL-L2-DS10-QRY-ARCH` | 无截至时间 |
+| WBS-05-23-L2-01D · `POL-L2-DS10-QRY-DATA` | 科创政策全景 · 多维检索查询 · 后台数据架构设计（序号 197–202） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。检索目录同步读面。智能排序、收藏、导出为 501 | 硬依赖本二级 `POL-L2-DS10-QRY-ARCH` | 无截至时间 |
+| WBS-05-23-L2-02A · `POL-L2-DS10-TREND-ARCH` | 科创政策全景 · 政策动向跟踪 · 后台实现架构设计（序号 203–206） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。来源监控跨项索引第 6 项。订阅 501。趋势可接，热点、影响、深度报告 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-02B · `POL-L2-DS10-TREND-API` | 科创政策全景 · 政策动向跟踪 · 后台接口设计（序号 203–206） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。来源监控跨项索引第 6 项。订阅 501。趋势可接，热点、影响、深度报告 501 | 硬依赖本二级 `POL-L2-DS10-TREND-ARCH` | 无截至时间 |
+| WBS-05-23-L2-02C · `POL-L2-DS10-TREND-METRIC` | 科创政策全景 · 政策动向跟踪 · 后台指标设计（序号 203–206） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。来源监控跨项索引第 6 项。订阅 501。趋势可接，热点、影响、深度报告 501 | 硬依赖本二级 `POL-L2-DS10-TREND-ARCH` | 无截至时间 |
+| WBS-05-23-L2-02D · `POL-L2-DS10-TREND-DATA` | 科创政策全景 · 政策动向跟踪 · 后台数据架构设计（序号 203–206） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。来源监控跨项索引第 6 项。订阅 501。趋势可接，热点、影响、深度报告 501 | 硬依赖本二级 `POL-L2-DS10-TREND-ARCH` | 无截至时间 |
+| WBS-05-23-L2-03A · `POL-L2-DS10-SENT-ARCH` | 科创政策全景 · 政策舆情评估 · 后台实现架构设计（序号 207–212） | 淮政玮 | `gkx-orchestration` | **done** | 2026-11-03 按说明书第 11 节签收。209、212 读已有 ADS。210、211 只读 gapfill 表。不用 501，接口不直接返回 mock | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-03B · `POL-L2-DS10-SENT-API` | 科创政策全景 · 政策舆情评估 · 后台接口设计（序号 207–212） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。查询对比可接统计。区域差异跨项读图。效果跟踪、反馈、评估报告、匹配为 501 | 硬依赖本二级 `POL-L2-DS10-SENT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-03C · `POL-L2-DS10-SENT-METRIC` | 科创政策全景 · 政策舆情评估 · 后台指标设计（序号 207–212） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。查询对比可接统计。区域差异跨项读图。效果跟踪、反馈、评估报告、匹配为 501 | 硬依赖本二级 `POL-L2-DS10-SENT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-03D · `POL-L2-DS10-SENT-DATA` | 科创政策全景 · 政策舆情评估 · 后台数据架构设计（序号 207–212） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。查询对比可接统计。区域差异跨项读图。效果跟踪、反馈、评估报告、匹配为 501 | 硬依赖本二级 `POL-L2-DS10-SENT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-04A · `POL-L2-DS10-CMP-ARCH` | 科创政策全景 · 政策重点比对 · 后台实现架构设计（序号 213–218） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。部门件数、标杆力度可接。新旧对比、详情对比、对标报告、可视化为 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-04B · `POL-L2-DS10-CMP-API` | 科创政策全景 · 政策重点比对 · 后台接口设计（序号 213–218） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。部门件数、标杆力度可接。新旧对比、详情对比、对标报告、可视化为 501 | 硬依赖本二级 `POL-L2-DS10-CMP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-04C · `POL-L2-DS10-CMP-METRIC` | 科创政策全景 · 政策重点比对 · 后台指标设计（序号 213–218） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。部门件数、标杆力度可接。新旧对比、详情对比、对标报告、可视化为 501 | 硬依赖本二级 `POL-L2-DS10-CMP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-04D · `POL-L2-DS10-CMP-DATA` | 科创政策全景 · 政策重点比对 · 后台数据架构设计（序号 213–218） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。部门件数、标杆力度可接。新旧对比、详情对比、对标报告、可视化为 501 | 硬依赖本二级 `POL-L2-DS10-CMP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-05A · `POL-L2-DS11-VIZ-ARCH` | 政策分析评价 · 政策分析报告可视化呈现 · 后台实现架构设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-05B · `POL-L2-DS11-VIZ-API` | 政策分析评价 · 政策分析报告可视化呈现 · 后台接口设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-VIZ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-05C · `POL-L2-DS11-VIZ-METRIC` | 政策分析评价 · 政策分析报告可视化呈现 · 后台指标设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-VIZ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-05D · `POL-L2-DS11-VIZ-DATA` | 政策分析评价 · 政策分析报告可视化呈现 · 后台数据架构设计（序号 219–222） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。趋势图、分区图 501。结构关联跨项。模板导出是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-VIZ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-06A · `POL-L2-DS11-READ-ARCH` | 政策分析评价 · 结果解读报告多维展示 · 后台实现架构设计（序号 223–226） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。短板条数可接。焦点指数 501。解读、多媒体壳、摘要 501。机遇条数无本段序号，不挂进本二级 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-06B · `POL-L2-DS11-READ-API` | 政策分析评价 · 结果解读报告多维展示 · 后台接口设计（序号 223–226） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。短板条数可接。焦点指数 501。解读、多媒体壳、摘要 501。机遇条数无本段序号，不挂进本二级 | 硬依赖本二级 `POL-L2-DS11-READ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-06C · `POL-L2-DS11-READ-METRIC` | 政策分析评价 · 结果解读报告多维展示 · 后台指标设计（序号 223–226） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。短板条数可接。焦点指数 501。解读、多媒体壳、摘要 501。机遇条数无本段序号，不挂进本二级 | 硬依赖本二级 `POL-L2-DS11-READ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-06D · `POL-L2-DS11-READ-DATA` | 政策分析评价 · 结果解读报告多维展示 · 后台数据架构设计（序号 223–226） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。短板条数可接。焦点指数 501。解读、多媒体壳、摘要 501。机遇条数无本段序号，不挂进本二级 | 硬依赖本二级 `POL-L2-DS11-READ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-07A · `POL-L2-DS11-PLAN-ARCH` | 政策分析评价 · 推荐方案报告交互展示 · 后台实现架构设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。方案对比、参数模拟、实施路径 501。意见收集与方案归档是交互壳，并入 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-07B · `POL-L2-DS11-PLAN-API` | 政策分析评价 · 推荐方案报告交互展示 · 后台接口设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。方案对比、参数模拟、实施路径 501。意见收集与方案归档是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-PLAN-ARCH` | 无截至时间 |
+| WBS-05-23-L2-07C · `POL-L2-DS11-PLAN-METRIC` | 政策分析评价 · 推荐方案报告交互展示 · 后台指标设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。方案对比、参数模拟、实施路径 501。意见收集与方案归档是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-PLAN-ARCH` | 无截至时间 |
+| WBS-05-23-L2-07D · `POL-L2-DS11-PLAN-DATA` | 政策分析评价 · 推荐方案报告交互展示 · 后台数据架构设计（序号 227–231） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。方案对比、参数模拟、实施路径 501。意见收集与方案归档是交互壳，并入 501 | 硬依赖本二级 `POL-L2-DS11-PLAN-ARCH` | 无截至时间 |
+| WBS-05-23-L2-08A · `POL-L2-DS12-EST-ARCH` | 政策效果推演 · 效果预估 · 后台实现架构设计（序号 232–236） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。只认 M_POLICY_SIMULATE。布局推荐不在 232–236 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-08B · `POL-L2-DS12-EST-API` | 政策效果推演 · 效果预估 · 后台接口设计（序号 232–236） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。只认 M_POLICY_SIMULATE。布局推荐不在 232–236 | 硬依赖本二级 `POL-L2-DS12-EST-ARCH` | 无截至时间 |
+| WBS-05-23-L2-08C · `POL-L2-DS12-EST-METRIC` | 政策效果推演 · 效果预估 · 后台指标设计（序号 232–236） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。只认 M_POLICY_SIMULATE。布局推荐不在 232–236 | 硬依赖本二级 `POL-L2-DS12-EST-ARCH` | 无截至时间 |
+| WBS-05-23-L2-08D · `POL-L2-DS12-EST-DATA` | 政策效果推演 · 效果预估 · 后台数据架构设计（序号 232–236） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。只认 M_POLICY_SIMULATE。布局推荐不在 232–236 | 硬依赖本二级 `POL-L2-DS12-EST-ARCH` | 无截至时间 |
+| WBS-05-23-L2-09A · `POL-L2-DS12-SIM-ARCH` | 政策效果推演 · 科技政策推演 · 后台实现架构设计（序号 237–242） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。文本解析与解读报告 501。关联分析跨项。布局推荐不在 237–242 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-09B · `POL-L2-DS12-SIM-API` | 政策效果推演 · 科技政策推演 · 后台接口设计（序号 237–242） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。文本解析与解读报告 501。关联分析跨项。布局推荐不在 237–242 | 硬依赖本二级 `POL-L2-DS12-SIM-ARCH` | 无截至时间 |
+| WBS-05-23-L2-09C · `POL-L2-DS12-SIM-METRIC` | 政策效果推演 · 科技政策推演 · 后台指标设计（序号 237–242） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。文本解析与解读报告 501。关联分析跨项。布局推荐不在 237–242 | 硬依赖本二级 `POL-L2-DS12-SIM-ARCH` | 无截至时间 |
+| WBS-05-23-L2-09D · `POL-L2-DS12-SIM-DATA` | 政策效果推演 · 科技政策推演 · 后台数据架构设计（序号 237–242） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。文本解析与解读报告 501。关联分析跨项。布局推荐不在 237–242 | 硬依赖本二级 `POL-L2-DS12-SIM-ARCH` | 无截至时间 |
+| WBS-05-23-L2-10A · `POL-L2-PC1-CLEAN-ARCH` | 政策数据治理 · 系统引用政策源数据清洗 · 后台实现架构设计（序号 602） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。只读第 6 项已有清洗结果，不重开 GDF | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-10B · `POL-L2-PC1-CLEAN-API` | 政策数据治理 · 系统引用政策源数据清洗 · 后台接口设计（序号 602） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。只读第 6 项已有清洗结果，不重开 GDF | 硬依赖本二级 `POL-L2-PC1-CLEAN-ARCH` | 无截至时间 |
+| WBS-05-23-L2-10C · `POL-L2-PC1-CLEAN-METRIC` | 政策数据治理 · 系统引用政策源数据清洗 · 后台指标设计（序号 602） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。只读第 6 项已有清洗结果，不重开 GDF | 硬依赖本二级 `POL-L2-PC1-CLEAN-ARCH` | 无截至时间 |
+| WBS-05-23-L2-10D · `POL-L2-PC1-CLEAN-DATA` | 政策数据治理 · 系统引用政策源数据清洗 · 后台数据架构设计（序号 602） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。只读第 6 项已有清洗结果，不重开 GDF | 硬依赖本二级 `POL-L2-PC1-CLEAN-ARCH` | 无截至时间 |
+| WBS-05-23-L2-11A · `POL-L2-PC1-STRUCT-ARCH` | 政策数据治理 · 政策库结构化 · 后台实现架构设计（序号 603） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。只读已结构化结果，不重开 GDF | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-11B · `POL-L2-PC1-STRUCT-API` | 政策数据治理 · 政策库结构化 · 后台接口设计（序号 603） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。只读已结构化结果，不重开 GDF | 硬依赖本二级 `POL-L2-PC1-STRUCT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-11C · `POL-L2-PC1-STRUCT-METRIC` | 政策数据治理 · 政策库结构化 · 后台指标设计（序号 603） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。只读已结构化结果，不重开 GDF | 硬依赖本二级 `POL-L2-PC1-STRUCT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-11D · `POL-L2-PC1-STRUCT-DATA` | 政策数据治理 · 政策库结构化 · 后台数据架构设计（序号 603） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。只读已结构化结果，不重开 GDF | 硬依赖本二级 `POL-L2-PC1-STRUCT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-12A · `POL-L2-PC1-LINEAGE-ARCH` | 政策数据治理 · 溯源索引构建 · 后台实现架构设计（序号 604） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。未见模型，501，不建实现任务 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-12B · `POL-L2-PC1-LINEAGE-API` | 政策数据治理 · 溯源索引构建 · 后台接口设计（序号 604） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。未见模型，501，不建实现任务 | 硬依赖本二级 `POL-L2-PC1-LINEAGE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-12C · `POL-L2-PC1-LINEAGE-METRIC` | 政策数据治理 · 溯源索引构建 · 后台指标设计（序号 604） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。未见模型，501，不建实现任务 | 硬依赖本二级 `POL-L2-PC1-LINEAGE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-12D · `POL-L2-PC1-LINEAGE-DATA` | 政策数据治理 · 溯源索引构建 · 后台数据架构设计（序号 604） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。未见模型，501，不建实现任务 | 硬依赖本二级 `POL-L2-PC1-LINEAGE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-13A · `POL-L2-PC1-INDLIB-ARCH` | 政策数据治理 · 规划指标库搭建 · 后台实现架构设计（序号 605） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。未见模型，501，不建实现任务 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-13B · `POL-L2-PC1-INDLIB-API` | 政策数据治理 · 规划指标库搭建 · 后台接口设计（序号 605） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。未见模型，501，不建实现任务 | 硬依赖本二级 `POL-L2-PC1-INDLIB-ARCH` | 无截至时间 |
+| WBS-05-23-L2-13C · `POL-L2-PC1-INDLIB-METRIC` | 政策数据治理 · 规划指标库搭建 · 后台指标设计（序号 605） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。未见模型，501，不建实现任务 | 硬依赖本二级 `POL-L2-PC1-INDLIB-ARCH` | 无截至时间 |
+| WBS-05-23-L2-13D · `POL-L2-PC1-INDLIB-DATA` | 政策数据治理 · 规划指标库搭建 · 后台数据架构设计（序号 605） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。未见模型，501，不建实现任务 | 硬依赖本二级 `POL-L2-PC1-INDLIB-ARCH` | 无截至时间 |
+| WBS-05-23-L2-14A · `POL-L2-PC2-SEM-ARCH` | 智能政策拆解 · 政策语义理解 · 后台实现架构设计（序号 606） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。未见模型，501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-14B · `POL-L2-PC2-SEM-API` | 智能政策拆解 · 政策语义理解 · 后台接口设计（序号 606） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC2-SEM-ARCH` | 无截至时间 |
+| WBS-05-23-L2-14C · `POL-L2-PC2-SEM-METRIC` | 智能政策拆解 · 政策语义理解 · 后台指标设计（序号 606） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC2-SEM-ARCH` | 无截至时间 |
+| WBS-05-23-L2-14D · `POL-L2-PC2-SEM-DATA` | 智能政策拆解 · 政策语义理解 · 后台数据架构设计（序号 606） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC2-SEM-ARCH` | 无截至时间 |
+| WBS-05-23-L2-15A · `POL-L2-PC2-CLAUSE-ARCH` | 智能政策拆解 · 条款精细化拆解 · 后台实现架构设计（序号 607） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。只呈现已落库条款树，跨项索引 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-15B · `POL-L2-PC2-CLAUSE-API` | 智能政策拆解 · 条款精细化拆解 · 后台接口设计（序号 607） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。只呈现已落库条款树，跨项索引 | 硬依赖本二级 `POL-L2-PC2-CLAUSE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-15C · `POL-L2-PC2-CLAUSE-METRIC` | 智能政策拆解 · 条款精细化拆解 · 后台指标设计（序号 607） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。只呈现已落库条款树，跨项索引 | 硬依赖本二级 `POL-L2-PC2-CLAUSE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-15D · `POL-L2-PC2-CLAUSE-DATA` | 智能政策拆解 · 条款精细化拆解 · 后台数据架构设计（序号 607） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。只呈现已落库条款树，跨项索引 | 硬依赖本二级 `POL-L2-PC2-CLAUSE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-16A · `POL-L2-PC2-EXTRACT-ARCH` | 智能政策拆解 · 关键指标自动提取 · 后台实现架构设计（序号 608） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。只呈现已落库提取结果，跨项索引 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-16B · `POL-L2-PC2-EXTRACT-API` | 智能政策拆解 · 关键指标自动提取 · 后台接口设计（序号 608） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。只呈现已落库提取结果，跨项索引 | 硬依赖本二级 `POL-L2-PC2-EXTRACT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-16C · `POL-L2-PC2-EXTRACT-METRIC` | 智能政策拆解 · 关键指标自动提取 · 后台指标设计（序号 608） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。只呈现已落库提取结果，跨项索引 | 硬依赖本二级 `POL-L2-PC2-EXTRACT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-16D · `POL-L2-PC2-EXTRACT-DATA` | 智能政策拆解 · 关键指标自动提取 · 后台数据架构设计（序号 608） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。只呈现已落库提取结果，跨项索引 | 硬依赖本二级 `POL-L2-PC2-EXTRACT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-17A · `POL-L2-PC2-ENT-ARCH` | 智能政策拆解 · 政策实体关联 · 后台实现架构设计（序号 609） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。只消费已有子图，Java 不写 nGQL | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-17B · `POL-L2-PC2-ENT-API` | 智能政策拆解 · 政策实体关联 · 后台接口设计（序号 609） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。只消费已有子图，Java 不写 nGQL | 硬依赖本二级 `POL-L2-PC2-ENT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-17C · `POL-L2-PC2-ENT-METRIC` | 智能政策拆解 · 政策实体关联 · 后台指标设计（序号 609） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。只消费已有子图，Java 不写 nGQL | 硬依赖本二级 `POL-L2-PC2-ENT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-17D · `POL-L2-PC2-ENT-DATA` | 智能政策拆解 · 政策实体关联 · 后台数据架构设计（序号 609） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。只消费已有子图，Java 不写 nGQL | 硬依赖本二级 `POL-L2-PC2-ENT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-18A · `POL-L2-PC3-XCMP-ARCH` | 多维政策对比 · 跨政策交叉对比 · 后台实现架构设计（序号 610） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。差异与冲突未见，501。表内件数复用全景分布，不新算 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-18B · `POL-L2-PC3-XCMP-API` | 多维政策对比 · 跨政策交叉对比 · 后台接口设计（序号 610） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。差异与冲突未见，501。表内件数复用全景分布，不新算 | 硬依赖本二级 `POL-L2-PC3-XCMP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-18C · `POL-L2-PC3-XCMP-METRIC` | 多维政策对比 · 跨政策交叉对比 · 后台指标设计（序号 610） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。差异与冲突未见，501。表内件数复用全景分布，不新算 | 硬依赖本二级 `POL-L2-PC3-XCMP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-18D · `POL-L2-PC3-XCMP-DATA` | 多维政策对比 · 跨政策交叉对比 · 后台数据架构设计（序号 610） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。差异与冲突未见，501。表内件数复用全景分布，不新算 | 硬依赖本二级 `POL-L2-PC3-XCMP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-19A · `POL-L2-PC3-VIZ-ARCH` | 多维政策对比 · 可视化分析呈现 · 后台实现架构设计（序号 611） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。未见模型，501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-19B · `POL-L2-PC3-VIZ-API` | 多维政策对比 · 可视化分析呈现 · 后台接口设计（序号 611） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC3-VIZ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-19C · `POL-L2-PC3-VIZ-METRIC` | 多维政策对比 · 可视化分析呈现 · 后台指标设计（序号 611） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC3-VIZ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-19D · `POL-L2-PC3-VIZ-DATA` | 多维政策对比 · 可视化分析呈现 · 后台数据架构设计（序号 611） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC3-VIZ-ARCH` | 无截至时间 |
+| WBS-05-23-L2-20A · `POL-L2-PC3-CFG-ARCH` | 多维政策对比 · 交互式对比配置 · 后台实现架构设计（序号 612） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。未见模型，501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-20B · `POL-L2-PC3-CFG-API` | 多维政策对比 · 交互式对比配置 · 后台接口设计（序号 612） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC3-CFG-ARCH` | 无截至时间 |
+| WBS-05-23-L2-20C · `POL-L2-PC3-CFG-METRIC` | 多维政策对比 · 交互式对比配置 · 后台指标设计（序号 612） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC3-CFG-ARCH` | 无截至时间 |
+| WBS-05-23-L2-20D · `POL-L2-PC3-CFG-DATA` | 多维政策对比 · 交互式对比配置 · 后台数据架构设计（序号 612） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。未见模型，501 | 硬依赖本二级 `POL-L2-PC3-CFG-ARCH` | 无截至时间 |
+| WBS-05-23-L2-21A · `POL-L2-PC3-OUT-ARCH` | 多维政策对比 · 结果智能输出 · 后台实现架构设计（序号 613） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。对比摘要导出未见，501。不是研报五叶 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-21B · `POL-L2-PC3-OUT-API` | 多维政策对比 · 结果智能输出 · 后台接口设计（序号 613） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。对比摘要导出未见，501。不是研报五叶 | 硬依赖本二级 `POL-L2-PC3-OUT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-21C · `POL-L2-PC3-OUT-METRIC` | 多维政策对比 · 结果智能输出 · 后台指标设计（序号 613） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。对比摘要导出未见，501。不是研报五叶 | 硬依赖本二级 `POL-L2-PC3-OUT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-21D · `POL-L2-PC3-OUT-DATA` | 多维政策对比 · 结果智能输出 · 后台数据架构设计（序号 613） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。对比摘要导出未见，501。不是研报五叶 | 硬依赖本二级 `POL-L2-PC3-OUT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-22A · `POL-L2-PC4-DEEP-ARCH` | 智能研报生成 · 政策深度分析 · 后台实现架构设计（序号 614） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。五叶一个研报 Job，未注册则 501。不是全景对标报告 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-22B · `POL-L2-PC4-DEEP-API` | 智能研报生成 · 政策深度分析 · 后台接口设计（序号 614） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。五叶一个研报 Job，未注册则 501。不是全景对标报告 | 硬依赖本二级 `POL-L2-PC4-DEEP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-22C · `POL-L2-PC4-DEEP-METRIC` | 智能研报生成 · 政策深度分析 · 后台指标设计（序号 614） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。五叶一个研报 Job，未注册则 501。不是全景对标报告 | 硬依赖本二级 `POL-L2-PC4-DEEP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-22D · `POL-L2-PC4-DEEP-DATA` | 智能研报生成 · 政策深度分析 · 后台数据架构设计（序号 614） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。五叶一个研报 Job，未注册则 501。不是全景对标报告 | 硬依赖本二级 `POL-L2-PC4-DEEP-ARCH` | 无截至时间 |
+| WBS-05-23-L2-23A · `POL-L2-PC4-INSIGHT-ARCH` | 智能研报生成 · 洞察结论自动提炼 · 后台实现架构设计（序号 615） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。同一个研报 Job，未注册则 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-23B · `POL-L2-PC4-INSIGHT-API` | 智能研报生成 · 洞察结论自动提炼 · 后台接口设计（序号 615） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-INSIGHT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-23C · `POL-L2-PC4-INSIGHT-METRIC` | 智能研报生成 · 洞察结论自动提炼 · 后台指标设计（序号 615） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-INSIGHT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-23D · `POL-L2-PC4-INSIGHT-DATA` | 智能研报生成 · 洞察结论自动提炼 · 后台数据架构设计（序号 615） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-INSIGHT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-24A · `POL-L2-PC4-WRITE-ARCH` | 智能研报生成 · 模块化研报自动撰写 · 后台实现架构设计（序号 616） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。同一个研报 Job，未注册则 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-24B · `POL-L2-PC4-WRITE-API` | 智能研报生成 · 模块化研报自动撰写 · 后台接口设计（序号 616） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-WRITE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-24C · `POL-L2-PC4-WRITE-METRIC` | 智能研报生成 · 模块化研报自动撰写 · 后台指标设计（序号 616） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-WRITE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-24D · `POL-L2-PC4-WRITE-DATA` | 智能研报生成 · 模块化研报自动撰写 · 后台数据架构设计（序号 616） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-WRITE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-25A · `POL-L2-PC4-TRACE-ARCH` | 智能研报生成 · 研报溯源展示 · 后台实现架构设计（序号 617） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。同一个研报 Job，未注册则 501 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-25B · `POL-L2-PC4-TRACE-API` | 智能研报生成 · 研报溯源展示 · 后台接口设计（序号 617） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-TRACE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-25C · `POL-L2-PC4-TRACE-METRIC` | 智能研报生成 · 研报溯源展示 · 后台指标设计（序号 617） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-TRACE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-25D · `POL-L2-PC4-TRACE-DATA` | 智能研报生成 · 研报溯源展示 · 后台数据架构设计（序号 617） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。同一个研报 Job，未注册则 501 | 硬依赖本二级 `POL-L2-PC4-TRACE-ARCH` | 无截至时间 |
+| WBS-05-23-L2-26A · `POL-L2-PC4-OUT-ARCH` | 智能研报生成 · 结果智能输出 · 后台实现架构设计（序号 618） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `arch-agent`。同一个研报 Job，未注册则 501。不是对比页的结果智能输出 | 硬依赖 `POL-DISPLAY-SDD-L01` 说明书已落盘。会签未完成不挡起草 | 无截至时间 |
+| WBS-05-23-L2-26B · `POL-L2-PC4-OUT-API` | 智能研报生成 · 结果智能输出 · 后台接口设计（序号 618） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `api-agent`。同一个研报 Job，未注册则 501。不是对比页的结果智能输出 | 硬依赖本二级 `POL-L2-PC4-OUT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-26C · `POL-L2-PC4-OUT-METRIC` | 智能研报生成 · 结果智能输出 · 后台指标设计（序号 618） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `algorithm-agent`。同一个研报 Job，未注册则 501。不是对比页的结果智能输出 | 硬依赖本二级 `POL-L2-PC4-OUT-ARCH` | 无截至时间 |
+| WBS-05-23-L2-26D · `POL-L2-PC4-OUT-DATA` | 智能研报生成 · 结果智能输出 · 后台数据架构设计（序号 618） | 淮政玮 | `gkx-orchestration` | **backlog** | 定义单，角色 `data-agent`。同一个研报 Job，未注册则 501。不是对比页的结果智能输出 | 硬依赖本二级 `POL-L2-PC4-OUT-ARCH` | 无截至时间 |
 ### 4.2 WBS-05-08 的子任务（科技交流 / 竞赛 / 传播）
 
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
@@ -212,6 +377,17 @@
 | WBS-05-18-06 · `SITUATION-ENT-C4-L01` | 筛选参数贯通（走查反馈：「筛选框没和接口数据挂钩」） | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-10-27） | handoff `科技发展态势-TS/SITUATION-ENT-C4C5-L01.md`：根因是 display `/map` `/overview` **完全不消费入参**（`scopeLabel` 甚至写死「全量样本」）。新增 `Scope` 翻译层（regionPaths/searchTerm/timeRange → city/district/name/注册年）+ element 侧 `appendScope` 统一过滤（overview/regions/districts/trend/points/influence 全接）。**地图级联选项刻意不随筛选收缩**（否则导航会被自己的筛选吃掉）。自测：深圳 95,600 / 腾讯 19 / 2025–2026 3,183 / 深圳+2025–2026 1,564，均与库级一致；/influence 深圳+2020–2026 **23,837 = 库 join 计数**。⚠️ 不支持项已诚实声明：学科领域无逐行列、日周月季无数据源、多选地域只取首项。改动停本地未 commit | D1 ≥ integration | 无截至时间 |
 | WBS-05-18-07 · `SITUATION-ENT-C5-L01` | 聚类分析真实数据接入（走查反馈：「聚类没数据展示」） | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-10-27） | handoff `科技发展态势-TS/SITUATION-ENT-C4C5-L01.md`：`/cluster` 此前**根本不存在**（D1 收为空态）。新增 element `/v1/element/enterprise/cluster` + display `POST /v1/situation/cluster`，前端改回 `post()`。四维逐列核对后只接三个真源：influence=score_total、conversion=tech_power.**transfer_score**、collaboration=tech_power.**cooperation_score**；**growth 无源**（`revenue_growth_rate` 整列 NULL）→ 空桶 + emptyReason，不补 0。**排坑**：`centrality_norm`/`pagerank_score` 逐行等于 score_total（同份分的拷贝），不能当第二维度。页面实跑：高影响力 200(Top 70.3)/高转化 200(Top 96.5)/高合作 200(Top 100)/高增长 0。改动停本地未 commit | C1/D1 ≥ integration | 无截至时间 |
 | WBS-05-18-08 · `SITUATION-ENT-C6-L01` | 要素比较 `/compare` 端点补全（用户走查反馈：「接口要补上，只有一个要素可先无法验证」） | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-10-27） | handoff `科技发展态势-TS/SITUATION-ENT-C6-L01.md`：新增 display `POST /v1/situation/compare`（复用 element `/trend` 的注册年计数），返回 `{years, series, availableFactorKeys, notes}`，**契约 bump v1.3**（`notes` 为可选新增，视图零改动）；前端 `fetchSituationCompare` 从「未上线空态 shim」切回 `post()`。七组自测全 200：深圳市 2022–2024 = **4032/3658/2628（与库级 join 计数逐位吻合）**、东莞 1815/1636/1079、南山区、关键词「腾讯」、只勾 scholar 空态。**只有 enterprise 有年度序列，刻意不伪造第二条曲线**，原因写在 `notes`；UI 如实停在「当前可比要素 (1/4)」。**顺带修真问题**：`scopeOf` 此前只认 `regionPaths`，compare/influence 的 `activeRegionKey` 被**静默忽略**（返回全量不报错）→ 现按 regionPaths→activeRegionKey→focusRegionKeys 解析。三绿（type-check / build 1m6s / 浏览器冒烟无报错弹窗）。⚠️ 改动停本地未 commit | C4 ≥ integration | 无截至时间 |
+| WBS-05-18-09 · `SITUATION-ENT-D2-L01` | 非企业要素落点：论文/人才/项目/机构/课题/成果走市域色阶 + 机构榜单；机构不做对象级点位（实测久新坐标=城市质心）；专利无市域源诚实降级；顺带修 `SituationController` 5 处失真注释 | 李伟 | `lumen-svc-platform` + `lumen-topic-py` | **integration**（2026-11-01） | handoff `科技发展态势-TS/SITUATION-ENT-D2-L01.md`：py 新增 `POST /internal/gkx-show/geo/factor-metrics`（市域聚合，8 城有数，year=2025）+ `carrier-list` cities 过滤；display `/map` 改为 `regions.layerKeys` 随勾选要素联动 + `institutionRanking` 榜单 + `notes`，**机构伪点位移除**（`objectPoints` 仅企业）；`unsupportedFactors` 如实声明专利无市域源（`ads_geo_yearly_metrics` 无 `patent_count`）。验证：py_compile OK / 实库直调 count=8 / Java 编译与打包 exit 0 / 重打 jar 重启 py+display 后页面实跑通过（悬停「深圳市 · 论文 影响力 24904.0」，无白屏无报错弹窗，仅勾专利为空态，地图无机构点位）。前端零改动；`notes`/`institutionRanking` 前端未消费（另单再议）。⚠️ 改动停本地未 commit 未 push | 草案 §3-D2 / §1.1（`ADS_SCHEMA.md` 6.30.0） | `SITUATION-ENT-C2-L01` | 无截至时间 |
+| WBS-05-18-10 · `SITUATION-ENT-D3-L01` | 期刊 / 会议两要素代码层 mock（数仓真无源，`ADS_SCHEMA.md` §24.10 明列缺失）；集中单一 Provider，评审模式 🧪 角标、非评审模式正常展示 | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-11-01 完工：display 层 `SituationMockProvider` + 前端 `MockBadge`；V1–V8 验证全过；改动停本地未 commit 待走查） | handoff `科技发展态势-TS/SITUATION-ENT-D3-L01.md`；规格 `D3-spec/spec.md` | 无 | 无截至时间 |
+| WBS-05-18-11 · `SITUATION-ENT-MOCK-LEDGER-L01` | mock 台账（跨页公共）：登记全部代码层 mock 点位、计划替换的真实源与去掉条件，供后期去 mock 接真数 | 李伟 | `gkx-orchestration` | **integration**（2026-11-01 随 D3 完工：`科技发展态势-TS/mock-ledger.md` 已建，表头 + D3 首条 4 行登记；停本地待走查） | 台账 `科技发展态势-TS/mock-ledger.md` | `SITUATION-ENT-D3-L01` | 无截至时间 |
+| WBS-05-18-12 · `INFLUENCE-FIX-L01` | 影响力 Tab 三缺陷修复（用户走查：「没跟筛选变动 / 只有企业+机构 / 值是错的」）：要素守门统一、机构卡吃地域与关键词、机构影响力按 INNOV 统一范式归一化、对象数量缺口径显示「—」、缺源 3 类 mock 补齐；**追加（2026-11-01 用户指令）年份放开到 2015 + 服务机构要素接线**（服务项目卡由不可达改为可达，默认 5 类卡） | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-11-01 完工：后端 7 条端点 + 追加 4 条端点 + 前端三绿 + 页面实跑通过（5 卡、年份可选 2015）；停本地待走查） | handoff `科技发展态势-TS/INFLUENCE-FIX-L01.md`；规格 `INFLUENCE-FIX-spec/spec.md`；台账「影响力登记」3 行 | `SITUATION-ENT-D3-L01` | 无截至时间 |
+| WBS-05-18-13 · `GRANULARITY-FIX-L01` | 多时间粒度趋势打通（需规「日/月/季/年等不同时间维度的趋势展示」）：element trend 加 granularity 白名单真实重分桶（registration_date 日粒度事实列）、display overview 透传 + trendGranularity 回传、前端趋势标题/轴注随粒度；久新五要素仅年度粒度如实标注不摊薄；含年份滑块塌缩浏览器验证 | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-11-01 完工：element 五档 curl 合计均 38,308 + display 透传 + 前端三绿 + 浏览器实测切月/季生效；停本地待走查） | handoff `科技发展态势-TS/GRANULARITY-FIX-L01.md` | `INFLUENCE-FIX-L01` | 无截至时间 |
+| WBS-05-18-14 · `METRIC-LIB-ALGO-INFLUENCE-L01` | 指标库口径对齐 + 算法库优先接入（影响力 Tab）：按 xlsx 更新影响力指标定义，并把算法库 precompute 真实值接入期刊 / 专家；论文 / 专利 / 服务项目保留 mock + 🧪，企业 / 机构保留可筛真实源；五卡全挂真实 metric_id 或卡级红「?」+ 缺口说明，受 @/review 门控 | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-11-02 完工：两探针数值无回归、五卡血缘齐、前端三绿 + 页面实跑；改动停本地未 commit / 未 push 待走查） | handoff `科技发展态势-TS/METRIC-LIB-ALGO-INFLUENCE-L01.md`：新增 Feign `RemoteAlgoScienceClient`（@NoToken 直连 :8000）+ 七指标常量 + `algoValueOf/subMap/attachMetric/markMock/buildTechnologyOutputCard/journalSubFactor/buildScholarInfluenceCard`；前端 `types/situation.ts` 扩 8 字段、`MetricSpecHint.vue` 加「口径局限」行、`metricCatalog.ts` 加 `INFLUENCE_METRIC_SOURCE/INFLUENCE_GAP_NOTE`、`InfluenceTab.vue` 卡头与子类挂 ⓘ / 红「?」+ 🧪。实测 journal n=2796 avg=4.1 无 mock、scholar n=21316 avg=50.0 items=46 无 mock、paper/patent/service mock=true | `GRANULARITY-FIX-L01`（05-18-13）；算法库 `demo-algo-science` precompute 可达（不可达降级回 mock） | 无截至时间 |
+| WBS-05-18-15 · `SITUATION-ENT-SPARK-L01` | 实时数据监控要素卡年度趋势 spark 接真实数据（需规「时间轴趋势」；demo 原型每卡有 2020–2026 趋势线，此前 8 卡 `series=null` 全显「暂无趋势数据」）：论文 / 人才 / 项目 / 机构接 py `monitor/yearly-trend` 真实年度序列（缺年 null 断点、不完整年 2026 排除、近 10 年窗口），卡值与序列同源者挂「末点即卡上数值」、不同源者（论文 / 人才）挂口径差说明；企业（等 ADS 逐年存量回补）/ 专利 / 期刊 / 会议维持空态不造数 | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-11-02 完工：7101 实例 `/overview` 探针实测 talent 159,546 / project 392,032 / institution 48,444 三卡末点与卡值一字不差、paper 858,620 按口径差标注、无 2026 断崖；javac 全量编译 EXIT=0 + 前端 vue-tsc EXIT=0；改动停本地未 commit / 未 push 待走查） | handoff `科技发展态势-TS/SITUATION-ENT-GAP-FILL-20261102.md` §二（含实施记录）：`SituationController` 新增 `sparkSeriesOf` + `SPARK_CALIBER_DIFF_NOTE/SAME_NOTE`、`buildFactorCards` 加 `yearlyRows` 参数、`/overview` 复用单次 `monitorYearlyTrend`；前端 `types/situation.ts` 加 `caliberNote`、`chartBuilders.buildFactorSparkOption` tooltip 展示口径 | `SITUATION-ENT-C6-L01`（企业存量快照）；py `monitor/yearly-trend` 可达 | 无截至时间 |
+| WBS-05-18-16 · `SITUATION-ENT-FOLLOW-SVR-L01` | **统一用户行为表服务端化**（收藏 / 订阅 / 标签 / 预警规则 / 推送记录；需规「基础信息查看功能·要素收藏和标签管理」）：范围由「要素收藏」扩展为覆盖全站 **10 页 15 个功能点**（原 15 个功能点均为 localStorage / 组件 ref 会话态，`src/api` 无任何收藏订阅接口）。DDL 已落盘 `lumen-svc-platform/db/9x_gkxlumenx_user_behavior.sql` 并**已在远程 `gkxlumenx`（upms 主库）执行建表** 5 张：`sys_user_relation`(17 字段) / `sys_user_tag`(11) / `sys_user_relation_tag`(8) / `sys_user_subscription_rule`(22) / `sys_user_notification`(16，建而不装，依赖 R8)。⚠️ 2026-11-02 归属三次校正：① display 只读 BFF（`application.yml:23`）不得落表；② `ARCH-DISPLAY-01.md:513`「写 `app_user`」是 **A9 未定**时旧表述，现确认 PC 用户 = 统一用户中心 SSO userId（非 `app_user`、非 `sys_user.user_id`），**不 join `sys_user`**；③ 否决 `gkxlumenx_dim`（`code_region` 注释「源 PG `dim.admin_division`」= ETL 同步，写入会被覆盖）与新建 `gkxlumenx_behavior` 库（需新增数据源），**拍板落 `gkxlumenx`** | 李伟 | `lumen-svc-platform` + `lumen-ui-science-pc` | **integration**（2026-11-02 **DDL 已执行**：远程 `10.50.11.76:3306` 库 `gkxlumenx` 五表建成，`EXIT=0`、`information_schema` 实查字段数 17/11/8/22/16 与索引 `uk_user_relation(tenant_id,user_id,relation_type,source_page,target_type,target_id)` 均与设计一致；**后端 17 文件已实现**（4 Entity + 3 DTO + 1 VO + 4 Mapper + Service/Impl + `@Inner` Controller 11 端点 + `@NoToken` Feign 11 方法 + display 转发 11 端点），`mvn compile` **EXIT=0**；**前端 `api/userBehavior.ts` + `useFollow` 服务端化 + 标签管理接线**（`factorTagStore` 改服务端 + 后端 `tags-by-target`，未收藏自动补 follow），`vue-tsc --build` **EXIT=0**；⚠️ **未联调**（Nacos `:8848` 本机/远程均不可达，upms 起不来）；**2026-11-03 已 commit+push**：后端 `lumen-svc-platform` `ad3afe9`（22 文件）+ 前端 `lumen-ui-science-pc` `04ecf8c`（`api/userBehavior.ts` / `useFollow.ts` / `factorTagStore.ts`，3 文件 +470/−91），远程库建表已生效需走查） | handoff `科技发展态势-TS/USER-BEHAVIOR-UNIFIED-TABLE-20261102.md`（设计论点 / 15 功能点落位映射 / 归属决策记录含 dim 与否决项 / 执行验证证据 / 后续 8 项清单） | 需规 excel_row 12「基础信息查看功能」；D4 决策注释 `useFollow.ts`；`ARCH-DISPLAY-01.md` §10.9、§10.9.1、`:513`；`gkxlumen-display/application.yml:23` 只读铁律 | `BE-TS-CONTRACT-01` 冻结（尚未产出）；R8 XXL-Job 未部署（通知实装阻塞）；upms 建表已完成 | 无截至时间 |
+| WBS-05-18-17 · `SITUATION-ENT-TREND-FEAT-L01` | 需规「监测数据趋势变化查看功能」剩余子项：趋势预测（基于历史数据预测未来趋势）、异常监测（自动识别标记异常点 / 突变点）——demo 原型无此二子项形态，未实现且此前未登记，本次补登记 | 李伟 | 待定 | **backlog**（待监管人裁定是否纳入本期：demo 无原型、无数据源支撑，属需规超 demo 差集；handoff `科技发展态势-TS/SITUATION-ENT-GAP-FILL-20261102.md` §三） | 需规 excel_row 15；`SITUATION-ENT-SPARK-L01`（真实趋势先行） | 待裁定 | 无截至时间 |
+
+| WBS-05-18-18 · `SITUATION-ENT-INTEGRATION-STATUS-L01` | 影响力 Tab 增第 6 卡「项目（含课题）」走算法库真实产物；出全端点对接进度总台账；display 重打包 + element/innov 拉起 | 李伟 | `lumen-svc-platform` + `gkx-orchestration` | **integration**（2026-11-03，已 commit+push，停人工走查） | 项目卡走 `M_INNOV_PROJECT_INFLUENCE` precompute：58,453 项 / 均分 42.9 / 1986—2021 国自然口径。**产物 `score.top10_v2` 只有 UUID 无项目名**，榜单改出承担机构维度（按承担项目数）+ 条目名后缀「（承担项目）」，`caliberNote` 与 `metricLimitations` 双处声明非对象级榜。顺修 4 处 `Long` 被平台 Jackson 序列化成字符串（`project.item.score` / `enterprise.count` / `service.count` / `dataset.totalCount`）+ 企业均分收敛 1 位小数。部署：display 113.9 MB 重打包重启（`JAVA_HOME` 须切 JDK 17；旧进程不停会让 `repackage` 把 jar 写成 0.2 MB 空壳），element / innov 拉起（此前 DOWN，企业卡与 4 个 innov 端点被假性降级）。台账 `科技发展态势-TS/SITUATION-ENT-INTEGRATION-STATUS-20261103.md`：10 端点 / 11 要素 **8 真 3 mock** / 影响力 6 卡（3 真 + 1 混合 + 2 mock）/ 566 指标 **d4 全 mock** / 10 项真实缺口 | 算法库 `:8000` 通用 `/compute`；**项目名缺失需算法侧把项目名落进产物**才可出对象级榜 | 无截至时间 |
 
 > 验收（U6）：**本地联调 + 人工走查**（对规约 §11.2「只认 K8s 已发布」的授权豁免，仅本管线有效），走查清单见总控 §4。git 默认只 commit 不 push，走查通过后监管人人工推。同仓 Convoy：`lumen-svc-platform` / `lumen-ui-science-pc` 各同时只派 1 张 coding 单。
 
@@ -316,6 +492,7 @@
 
 | 日期 | 变更 |
 |---|---|
+| 2026-11-03 | **科技数据资源后台接口建单**：方案改为四个 Dataset GET。建 `DR-RES-A0/DDL/LOAD/C1–C4/D1`，契约沿用 `BE-DR-CONTRACT-01`。总控 `科技数据资源-DR/DR-RES-长任务总控.md`。表名 `gapfill_dr_*` |
 | 2026-11-03 | **科技数据资源对照 GDF 签收**：`SYSINT-05-04-01-L01` 由 `human:淮政玮` 签收为 done。结论不变：70 条可得到 0、部分得到 29、得不到 41 |
 | 2026-11-02 | **科技数据资源对照 GDF**：WBS-05-04-01 监管人改为淮政玮，状态随 `SYSINT-05-04-01-L01` 到 ready_to_sign。结论见 `agent-handoffs/SYSINT-05-04-01-L01.md`：70 条可得到 0、部分得到 29、得不到 41 |
 | 2026-11-02 | **科技数据资源对照 GDF**：WBS-05-04 下新增子任务行 05-04-01（`SYSINT-05-04-01-L01`，backlog）。只分析四视窗展示需求哪些可从已建成 GDF 得到，不代替 `SYSINT-05-04-L01`，不新开 GDF 派单包。监管人待指定 |
