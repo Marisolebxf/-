@@ -71,7 +71,7 @@ C1 与 C2 互不依赖。不要合成一个「政策后处理」大作业。
 ## 4. 不要这样配
 
 1. 不要配任何 `/internal/`、`/v1/policy/clauses/`、`/policy/v1/jobs/`。那些不是 GDF 的加工入口。  
-2. 不要把 `demo_gkxlumenx_*` 配成 `POLICY_DWD_DB` / `POLICY_ADS_DB`。  
+2. 不要把 `demo_gkxlumenx_*` 配成 `POLICY_DWD_DB` / `POLICY_ADS_DB`。C1 的 `MILVUS_DB_NAME` 用 `gkxlumen`，集合 `gkxlumen_industry_anchor`。不要写成 `default`。  
 3. 不要在脚本外再写一套产业对码或条款切分。  
 4. 缺表不要让脚本建表。本轮改表只执行 `sql/update_round1.sql`。缺 `script_state` 时退出码 4。关联表和条款表按 `10/` 与 `13` 先有空表。  
 5. 发现 `policy_id` 跨 `source_plane` 撞车：脚本会退出。先停，不要改 UK。

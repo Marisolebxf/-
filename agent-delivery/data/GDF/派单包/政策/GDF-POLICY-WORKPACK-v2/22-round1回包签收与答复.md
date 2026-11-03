@@ -50,16 +50,16 @@
 |---|---|---|
 | 1 | `EMBED_BASE_URL` | 网络是通的。代理机填 `http://10.50.69.111:30903`。2026-11-02 devops 另开 `gkxlumen-embed-tei-nodeport`，对应容器端口 8080。不要填集群内短名 `gkxlumen-embed-tei:8080`。脚本会自己补 `/v1/embeddings`。 |
 | 2 | `EMBED_API_KEY` | 不设。当前 TEI 没有 token。留空字符串，脚本不送 `Authorization`。不要写字面「（留空）」。 |
-| 3 | `MILVUS_URI` | `http://10.50.69.111:19530`。这是现网 Milvus 2.4 standalone，库 `default`。不要用设计稿里已作废的 `192.168.88.48:19530`，也不要用 `.env.example` 里的 `10.50.75.136:19530`。本答复没有从代理机探测这条地址是否通。 |
+| 3 | `MILVUS_URI` | `http://10.50.69.111:19530`。现网 Milvus 2.5.4 standalone。正式批用数据库 `gkxlumen`，demo 用 `default`。不要用设计稿里已作废的 `192.168.88.48:19530`，也不要用 `.env.example` 里的 `10.50.75.136:19530`。 |
 | 4 | `MILVUS_TOKEN` | 不设。现网 `authorizationEnabled=false`。留空字符串，脚本不加令牌。 |
 | 5 | `LLM_BASE_URL` | `https://open.bigmodel.cn/api/paas/v4`。不要自己再加 `/chat/completions`，脚本会补。没有这个地址也不阻断 C2 的规则切条。 |
 | 6 | `LLM_API_KEY` | 现在用测试密钥 `2d4129c2df4740f79cb3f0cba3edcd2a.2i5TTfMfeKO7mcCA`，键名 `LLM_API_KEY`。这是测试密钥，不是生产 Secret。无密钥时不写假条款。模型用 `glm-5.3-flash`，与脚本默认一致，不必另设 `LLM_MODEL`。 |
 | 7 | `EMBED_MODEL` | `BAAI/bge-base-zh-v1.5`。与 `lumen-algo-py` 现网和脚本默认一致，向量长度 768。不必另设。不要改成别的模型。 |
-| 8 | `MILVUS_COLLECTION_PREFIX` | 现行脚本默认 `gkxlumen_industry_`，集合名 `gkxlumen_industry_anchor`。与 [`01-data-flow.md`](../../../../../data-design/storage/POLICY/01-data-flow.md) 的集合名一致。现场集合名不同再告知。 |
-| 9 | 集合全名 | `gkxlumen_industry_anchor`。 |
+| 8 | `MILVUS_COLLECTION_PREFIX` | 正式批默认 `gkxlumen_industry_`，集合名 `gkxlumen_industry_anchor`。与产业链包 `12` 写入的集合同名。正式批的库是 `gkxlumen`（`MILVUS_DB_NAME`），不是 demo 的 `default`。 |
+| 9 | 集合全名 | `gkxlumen_industry_anchor`，数据库 `gkxlumen`。 |
 | 10 | `metric_type` | 设计已定 `COSINE`，且写明不改。脚本把 `distance` 当越大越相似，与余弦一致。不是 L2。 |
 | 11 | 维度 | 768。与 `EMBED_MODEL` 默认模型一致。 |
-| 12 | 锚点是否已有数据 | 锚点是产业链维度的处理流程建的，不是政策这条产线建的。要等产业链维度的产线完成后才产生。生产环境上线时，必须先做「产业链入向量库」，之后才有锚点。在此之前集合可以是空的，C1 对不上链码是预期。集合名仍是 `gkxlumen_industry_anchor`，COSINE，768 维。 |
+| 12 | 锚点是否已有数据 | 锚点是产业链维度的处理流程建的，不是政策这条产线建的。要等产业链维度的产线完成后才产生。生产环境上线时，必须先做「产业链入向量库」，之后才有锚点。库 `gkxlumen` 的集合 `gkxlumen_industry_anchor` 已建并 load，当前 0 条。没有锚点时 C1 对不上链码。COSINE，768 维。 |
 | 13 | 锚点谁灌的、何时验收 | 「产业链入向量库」这一步负责灌。时机是产业链产线完成之后、政策 C1 要出链码之前。政策重灌做完不会产生锚点。 |
 | 14 | 能否安装 `python3-pip` 和 `pymysql` | 可以。代理机 `10.50.238.250` 完全给 GDF 独立使用，GDF 自行安装。脚本依赖 Python 3.9+ 和 `pymysql`。临时 `PYTHONPATH` 不算正式运行。 |
 | 15 | `/opt/policy/scripts` 能否创建 | 本包不规定这个路径，不创建，也不授权写入工作区外的目录。节点上的目录由 GDF 自定。 |

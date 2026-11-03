@@ -111,3 +111,4 @@
 - 正式图谱由 GDF 专门代码读写；我方代码 demo 闸门（assert_demo_nebula_space / FORMAL_SPACE 常量）**不进 GDF 契约**，其正式化改造属 algo 域另派。
 - `23` 问 8~13 改「已答复」；开工判定 `12` 后加工 → **可起草**；09 OPEN-CHAIN-FLOW-02 关闭；CHANGELOG v2.2.1。
 - 20 题至此全部闭环（问 7 随 GDF Wave A 贴满 tags 表后按真实命中率定口径；我方无代灌待办——2026-11-02 徐滕强澄清：灌正式 ODS 是 GDF 的活，demo 贴源单 CHAIN-ODS-SYNC-L01 保持原用途不动）。
+- 淮政玮确认五项已定、lumen 空间 `gkx_chain`。12 文首、第 1 节警告和 23 遗留表残留句已改齐。

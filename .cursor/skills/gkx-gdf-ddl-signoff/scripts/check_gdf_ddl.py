@@ -13,6 +13,7 @@ DIMS = {
     "policy": ("政策", "POLICY"),
     "ent": ("企业", "ENT"),
     "chain": ("产业链", "CHAIN"),
+    "svc": ("服务机构", "SVC"),
 }
 OBSOLETE = ("禁止当现行", "已被", "已作废")
 SQL_FENCE = re.compile(r"```sql\s*(.*?)```", re.S | re.I)
@@ -28,6 +29,8 @@ def dimension_from_task(task_id):
         return "policy"
     if "CHAIN" in upper or "产业" in task_id:
         return "chain"
+    if "SVC" in upper or "服务机构" in task_id:
+        return "svc"
     if "ENT" in upper or "企业" in task_id:
         return "ent"
     sys.exit("无法从任务 ID 判断维度")
@@ -46,6 +49,15 @@ def latest_pack(dim):
             continue
         version = int(re.search(r"-v(\d+)$", path.name, re.I).group(1))
         found.append((version, path))
+    if not found:
+        for path in base.glob("GDF-*-WORKPACK"):
+            if not path.is_dir():
+                continue
+            readme = path / "README.md"
+            head = readme.read_text(encoding="utf-8")[:400] if readme.exists() else ""
+            if any(mark in head for mark in OBSOLETE):
+                continue
+            found.append((0, path))
     if not found:
         sys.exit(f"没有现行派单包：{base}")
     return max(found)[1]

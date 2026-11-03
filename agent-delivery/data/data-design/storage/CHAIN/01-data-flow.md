@@ -289,8 +289,9 @@ flowchart LR
 |---|---|
 | 建库切面 | **仅**产业链灌数。DWD 链表写完 **且** 上图 `chain`/`segment` VID 稳定后，整库 **一次** `POST /internal/industry/embed/rebuild`。禁止映射逐行 embed。 |
 | 消费切面 | 政策 / 企业 **重灌同步** = L0+L1，**不调** Milvus / LLM / rebuild。search 只走按钮或 ETL Job A。 |
-| 引擎 | 现网 Milvus **2.4 standalone** `10.50.69.111:19530`。不采购第二套向量云。原设计稿 `88.48` **作废**。 |
-| collection | **`gkxlumen_industry_anchor`**。前缀必须下划线 `gkxlumen_industry_`（连字符名物理建不出，`code 1100`）。**禁止**读写 / drop `amcpdp-*` / `aip_kb_*` / `spk_id_*`。 |
+| 引擎 | 现网 Milvus **2.5.4 standalone** `10.50.69.111:19530`。不采购第二套向量云。原设计稿 `88.48` **作废**。 |
+| database | lumen 正式库 **`gkxlumen`**。demo 用库 **`default`**。正式 rebuild / 检索的 `dbName` 只许 `gkxlumen`。2026-11-02 正式集合已建并 load，0 条。 |
+| collection | 两边同名 **`gkxlumen_industry_anchor`**。前缀必须下划线 `gkxlumen_industry_`（连字符名物理建不出，`code 1100`）。**禁止**读写 / drop `amcpdp-*` / `aip_kb_*` / `spk_id_*`，也禁止正式批 drop 库 `default` 里的同名集合。 |
 | 客户端守卫 | 现网 `authorizationEnabled=false`。`create`/`drop`/`insert` 必须以 `MILVUS_COLLECTION_PREFIX` 开头，否则拒绝。这是当前唯一隔离。 |
 | embedding | 目标态 `bge-base-zh-v1.5` dim **768** COSINE；端点 `http://gkxlumen-embed-tei:8080/v1/embeddings`（ClusterIP）。query 侧加指令前缀，锚点侧不加。客户端 **不再** L2 归一。 |
 | 定码 | 向量 `score` **不得**写成 `industry_link_code` / `chain:INB*`。定码仍走图谱 VID + `match_industry_anchors`。禁止采 top1 写槽。 |

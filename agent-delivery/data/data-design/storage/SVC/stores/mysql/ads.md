@@ -62,6 +62,96 @@ metric_id 对齐 `metrics/registry/metric-readiness-matrix-SVC.yaml`。列对照
 
 `svc_metric_fact` 也可承载 A1–A6 的卡片快照（`metric_id` + `value` + `period` + `etl_batch_id`）。
 
+### 2.1 建表语句
+
+卡面和四张指标表。与 [`ddl-demo-empty.sql`](./ddl-demo-empty.sql) 同文。库名 `demo_gkxlumenx_ads`。十模型表不在这里。
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_org_card` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name_cn` VARCHAR(255) NULL COMMENT '展示投影 ODS name_cn',
+  `province` VARCHAR(64) NULL,
+  `city` VARCHAR(64) NULL,
+  `area` VARCHAR(64) NULL COMMENT '区县；优先 ODS area，live 仅 district 则写入本列',
+  `industry` VARCHAR(128) NULL COMMENT '展示投影 ODS industry；无列则空',
+  `org_size` VARCHAR(32) NULL COMMENT '投影 ODS org_size；禁止当分档',
+  `employees_number` INT NULL COMMENT '投影年报 employees_number',
+  `operating_revenue` DECIMAL(20,2) NULL COMMENT '投影年报 operating_revenue',
+  `service_type_candidate` VARCHAR(32) NULL COMMENT '来自 svc_org_circle',
+  `pending_client_confirm` TINYINT(1) NOT NULL DEFAULT 1,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_org_card_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='名单/详情卡面；线上不联 ODS；禁当 svc_org_base';
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_metric_fact` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `metric_id` VARCHAR(64) NOT NULL COMMENT 'M_SVC_*',
+  `period` VARCHAR(16) NULL,
+  `slice_key` VARCHAR(128) NULL,
+  `value` DECIMAL(20,4) NULL,
+  `yoy` DECIMAL(10,4) NULL,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_metric_fact` (`metric_id`, `period`, `slice_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='A1-A6 卡片快照';
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_metric_series` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `metric_id` VARCHAR(64) NOT NULL COMMENT 'M_SVC_INVEST_Y / M_SVC_NEW_CNT',
+  `period` VARCHAR(16) NOT NULL,
+  `value` DECIMAL(20,4) NULL,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_metric_series` (`metric_id`, `period`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='A3/A4 时序';
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_metric_dist` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `metric_id` VARCHAR(64) NOT NULL DEFAULT 'M_SVC_INDUSTRY_LAYOUT',
+  `category` VARCHAR(128) NOT NULL,
+  `value` DECIMAL(20,4) NULL,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_metric_dist` (`metric_id`, `category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='A1 产业布局分布';
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_region_dist` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `metric_id` VARCHAR(64) NOT NULL COMMENT 'M_SVC_ORG_CNT / M_SVC_SZ_DISTRICT',
+  `geo_level` VARCHAR(32) NOT NULL COMMENT 'country / province / sz_district',
+  `region_name` VARCHAR(128) NOT NULL,
+  `org_count` INT NULL,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_region_dist` (`metric_id`, `geo_level`, `region_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+COMMENT='A2 分布 / A6 深圳各区';
+```
+
 ## 3. 十模型回写（招标 §9 · 出数铁律：读本表 → 算 → 回写）
 
 | 模型 ID | 物理表 | 口径备注 |

@@ -4,7 +4,7 @@
 
 | 库表 | 当时 | 本包 |
 |------|------|------|
-| `gkxlumenx_dwd.svc_org_circle`、`svc_org_finance_event` | 已建，0 行 | 这一趟的写。不执行 CREATE |
+| `gkxlumenx_dwd.svc_org_circle`、`svc_org_finance_event` | 已建，0 行 | 这一趟的写。结构见 `10/`。不执行 CREATE |
 | `gkxlumenx_ads.svc_org_card` 和四张指标表 | 已建，0 行 | 这一趟的写。不执行 CREATE |
 | `gkxlumenx_ods.dwd_org_base_info` | 189116 行，没有和供应方逐行对过 | 不读、不写 |
 | 另外三张供应方表在 `gkxlumenx_ods` 的镜像 | 是否存在，未闭合 | 不读、不写 |
