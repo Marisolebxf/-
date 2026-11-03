@@ -47,6 +47,7 @@ ponytail: off
 - 浏览器未改打 `/topic/v1/policy`。未把 `E-E7-POLICY-M1-L06` 写成展示前端联调单
 - 未改说明书、WBS、调研分册
 - 订阅与外发交给 `E-E7-POLICY-M1-L11`、`L12`、`L13`，监管都是 `human:淮政玮`。本单不认领这三张。热点、影响、深度报告和主题分布不新注册模型，改读 `gapfill_` 表
+- 四张缺项表要灌的 mock 写在架构稿第 7.3 节。灌数执行单 `POL-L2-DS10-TREND-GAPFILL-L01` 交给 data-agent，本单不执行
 
 ## 偏离
 
@@ -66,6 +67,8 @@ ponytail: off
 | 205 热点、影响、深度报告 | element 读 `gapfill_policy_trend_hotspot`、`gapfill_policy_trend_impact`、`gapfill_policy_trend_report`。Python 灌 mock | 符合。没有模型，只走缺项表 |
 | 206 时间、地域 | 读时序表和 `M_POLICY_NATIONAL_DIST` 所在表 | 符合。读已有表 |
 | 206 主题分布 | element 读 `gapfill_policy_theme_dist` | 符合。没有指标，只走缺项表 |
+
+要灌的 mock 在架构稿第 7.3 节。热点表灌三个领域的热点名称和一句说明。影响表灌领域、对象、方向和一句结论。报告表灌标题、领域和正文，正文在行里。主题表灌主题名和件数。不灌分数、文件和类型分布。执行单 `POL-L2-DS10-TREND-GAPFILL-L01`，本单不灌数。
 
 ## 架构合规自检
 

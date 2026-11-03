@@ -160,7 +160,7 @@ trace 沿既有展示链走。`stats`、`ingest` 和缺项表读取在 display �
 - 不改 `FE-POL-01B`，不新建前端单。前端 mock 开关不是接口实现。
 - 不把 localStorage 订阅、演示推送写成已经接通的服务。
 - 不改说明书、WBS、调研分册。
-- 2026-11-03 `human:淮政玮` 按可实现条件复核四叶后再次签收。
+- 2026-11-03 `human:淮政玮` 按可实现条件复核四叶后再次签收。同日补充：缺项表要灌哪些 mock 见第 7.3 节。灌数执行单是 `POL-L2-DS10-TREND-GAPFILL-L01`，本叶不执行。
 - 不在本叶注册模型、不部署定时、不开发送。业务表不加。做不到的只建第 7.2 节和第 4.4 节的 `gapfill_` 表。
 - 政策订阅与外发的实现单是 `E-E7-POLICY-M1-L11`、`L12`、`L13`，监管都是 `human:淮政玮`。本叶不认领、不实现。
 
@@ -239,4 +239,19 @@ flowchart LR
 
 浏览器仍提交 `POST /display/v1/policy/panorama/jobs`。这三种不进 `gkxlumen-topic-async-service`，不进 Python。display 委托 `gkxlumen-element` 按种类读上表，把行返回。同一条 `jobs` 上的实施效果、匹配、力度仍由各自叶子使用各自已见模型。用户点了其中一种才查表。切领域不自动查另一域。表无行则该块空。读失败不清空已经返回的时序图和入库列表。
 
-主题分布用 `gapfill_policy_theme_dist`，挂在 `stats` 上，不进这三张表。见第 4.4 节。字段由 `POL-L2-DS10-TREND-DATA` 定，本叶不写列。
+主题分布用 `gapfill_policy_theme_dist`，挂在 `stats` 上，不进这三张表。见第 4.4 节。这四张表要灌的 mock 见第 7.3 节。列由 `POL-L2-DS10-TREND-DATA` 定，灌数由 `POL-L2-DS10-TREND-GAPFILL-L01` 执行。本叶不写列，不灌数。
+
+### 7.3 缺项表与要灌的 mock
+
+只建下面四张。库只允许 `gkxlumenx_gapfill`。不进 ODS、DWD、ADS，不写供应方库。203 读已有入库，不建表。204 由专题门面实现，不建缺项表。205 的趋势、206 的时间轴和地域热力读已有统计表，不建缺项表。
+
+每行都带 D16 要求的 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at`。这四张没有已挂指标，`metric_id` 留空，不新注册。`fill_method` 用 `manual`，不调用模型，不填 `fill_model`。`gap_item` 写序号和叶子名。D4 保持 mock。
+
+| 表 | 叶子 | 要灌的 mock | 不灌 |
+|---|---|---|---|
+| `gapfill_policy_trend_hotspot` | 205 热点识别 | 科创发展、人才引进、资金扶持各若干条。每条有领域名、热点名称、一句说明 | 焦点指数、热度分。不挂 `M_POLICY_FOCUS_INDEX` |
+| `gapfill_policy_trend_impact` | 205 政策影响评估 | 上述三个领域各一条。每条有领域名、影响对象、影响方向、一句结论 | 实施效果分、推演情景。不挂 `M_POLICY_IMPLEMENTATION_EFFECT`、`M_POLICY_SIMULATE` |
+| `gapfill_policy_trend_report` | 205 深度分析报告 | 上述三个领域各一份。每份有标题、领域名、正文。正文写在行里 | 文件、对象存储、评估报告和对标报告。不挂序号 211、217 |
+| `gapfill_policy_theme_dist` | 206 主题分布 | 若干主题名和件数，可带年份 | 政策类型分布的桶。不新造主题指标 |
+
+灌数执行单是 `POL-L2-DS10-TREND-GAPFILL-L01`。执行 `data-agent`，监管 `human:淮政玮`。它依赖 `POL-L2-DS10-TREND-DATA` 把列定下来之后再建表、写脚本、灌入上表这些行。本叶不认领、不执行。接口仍只读这些行，不在返回语句里写 mock。
