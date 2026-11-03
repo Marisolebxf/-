@@ -52940,3 +52940,73 @@ tasks:
       - "逐叶执行界面操作验证并截图嵌入测试报告：正常态（有行）与空态（未选方案/参数档对不上/无行）双路径，截图含浏览器地址与页面状态"
       - "结论含每叶通过/阻塞判定；handoff 落 agent-handoffs/科技政策跟踪-POL/"
     update_time: "2026-11-04T01:14:58+08:00"
+  - id: POL-L2-DS10-CMP-FE-L01
+    title: "科创政策全景 · 政策重点比对 · 展示前端接线真实接口（213–218 六叶）"
+    status: "ready"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 600000
+    user_story: "US-DS-POL-04"
+    note: |
+      后端链已全通：CMP-BE-L01（展示读面）、CMP-JOB-L01（力度作业）均 done，CMP-GAPFILL-L01 done（四张 gapfill 表已灌）。先例参照 POL-L2-DS10-SENT-FE-L01（commit 73cc1e8+e29090c）。范围即 FE-POL-01B 已复刻的比对工作区四弹窗 + CompareTab，不新开页。214 力度分依赖 policy_intensity 白名单，未挂上时结果空属已知缺口，前端按空态处理不造演示分。
+    depends_on:
+      - "POL-L2-DS10-CMP-BE-L01"
+      - "POL-L2-DS10-CMP-JOB-L01"
+      - "POL-L2-DS10-CMP-GAPFILL-L01"
+    touched_files:
+      - "src/views/policy/panorama/components/CompareTab.vue"
+      - "src/views/policy/panorama/components/VersionCompareModal.vue"
+      - "src/views/policy/panorama/components/DepartmentCompareModal.vue"
+      - "src/views/policy/panorama/components/BenchmarkCompareModal.vue"
+      - "src/views/policy/panorama/components/ComparisonModal.vue"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-CMP-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-CMP-ARCH.md"
+    definition_of_done:
+      - "USE_MOCK=false 时六叶只打 /display/v1/policy/panorama/**：213 GET version-diff；214 正文/条件/材料复用 search 与 {id}/detail；214 力度分与 218 可视化 POST jobs sub_type=policy_intensity（仅用户点击触发，切条件不自动起任务，单飞禁重复提交）；215/216 GET stats 读区域、类别、总件数、实施部门、支持力度；217 GET benchmark-report，导出内容从当次读到的行生成，无行不产文件"
+      - "空态诚实：无行则对应块/列/格空，不造 0、不造演示差异/PDF；读失败或 Job 失败不清空已返回的统计、目录和正文"
+      - "指标角标保留：M_POLICY_INTENSITY_SCORE（214/218）、M_POLICY_SUPPORT_STRENGTH（216）、M_POLICY_TOTAL_COUNT（215）的 ⓘ 与 MockBadge；不新造 metric_id、不改 D4"
+      - "浏览器不打 /topic/v1/policy、/v1/policy、/topicAsync/**（D12/调用链铁律）；不越层直连 Python"
+      - "USE_MOCK=true 保留 demo 冻结种子视觉，评审走查不受影响"
+      - "留最小自检 test.mjs（node 直跑，覆盖路径/方法/空态/禁项）+ pnpm type-check、pnpm build 两绿"
+      - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
+    update_time: "2026-11-04T02:37:58+08:00"
+  - id: POL-L2-DS10-TREND-FE-L01
+    title: "科创政策全景 · 政策动向跟踪 · 展示前端接线真实接口（203–206 四叶）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 600000
+    user_story: "US-DS-POL-02"
+    note: |
+      ⚠️ 依赖缺口：TREND 二级后端只有 ARCH/API/METRIC/DATA（done）+ GAPFILL（integration），未见 display 侧 Java 实现单（对比 SENT 链有 IMPL-JAVA/IMPL-PY/JOBQ）。开工前需先建 POL-L2-DS10-TREND-IMPL-JAVA 单（ingest/subscriptions 委托/stats 三维扩展/jobs 三域读表），故建为 backlog；depends_on 待实现单建立后回填。订阅 204 已由 SUB-FE-L01（pending_test）覆盖，本单不重接。
+    depends_on: []
+    touched_files:
+      - "src/views/policy/panorama/components/TrendTab.vue"
+      - "src/views/policy/panorama/components/KeyFieldAnalysisPanel.vue"
+      - "src/views/policy/panorama/components/ImplementationTracker.vue"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+    definition_of_done:
+      - "后端实现单建单并完成：display 落地 ingest / subscriptions / stats（时序、地域、主题）/ jobs（热点、影响、深度报告三域读表）公开资源，空态语义按 TREND-API 分册"
+      - "USE_MOCK=false 时四叶只打 /display/v1/policy/panorama/**：203 GET ingest；204 GET subscriptions（订阅前端已由 SUB-FE-L01 接线，本单只验复用不重接）；205/206 GET stats 读时序、地域、主题分布；205 热点/影响/深度报告 POST jobs（用户点击触发，切条件不自动起任务，单飞）"
+      - "空态诚实：无行则对应图/块空，不造 0、不在前端拼报告；读失败不清空已返回的时序、地域和入库列表；204 无订阅空列表不灌假订阅"
+      - "指标角标保留：M_POLICY_TIMESERIES、M_POLICY_NATIONAL_DIST 的 ⓘ 与 MockBadge；不新造 metric_id、不改 D4；主题分布无 metric_id 不补造"
+      - "浏览器不打 /topic/v1/policy、/v1/policy、/topicAsync/**；不越层直连 Python"
+      - "USE_MOCK=true 保留 demo 冻结种子视觉"
+      - "留最小自检 test.mjs + pnpm type-check、pnpm build 两绿"
+      - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
+    update_time: "2026-11-04T02:38:14+08:00"
