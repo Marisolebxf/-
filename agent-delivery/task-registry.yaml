@@ -51332,6 +51332,71 @@ tasks:
       - "改动停在 lumen-ui-science-pc 本地，不 commit、不 push"
       - "handoff 写明未推送。不标 done"
     update_time: "2026-11-03T15:51:50+08:00"
+  - id: POL-L2-DS10-SENT-FE-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-FE-L01.md"
+    supervised_by: "human:淮政玮"
+    title: "科创政策全景 · 政策舆情评估 · 前端接线真实接口"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-03"
+    note: |
+      claim_type=coordinator_dispatch。监管 human:淮政玮。四卡已接真实接口。lumen-ui-science-pc 73cc1e8 已推 origin/dev。三绿：type-check 0 错、build 成功、自检全绿。jobs 轮询缺口由 POL-L2-DS10-SENT-JOBQ-L01 补。未会签，不标 done。
+    definition_of_done:
+      - "舆情页签受众反馈卡片改调 GET /display/v1/policy/panorama/feedback，评估报告卡片改调 GET /display/v1/policy/panorama/assessment-report；USE_MOCK=true 仍走种子"
+      - "实施效果跟踪卡片接 POST /display/v1/policy/panorama/jobs sub_type=policy_effect，政策匹配与推送卡片接 sub_type=policy_match；切条件不自动起任务；同条件单飞；Job 失败不清空同步块；空态不造 0 不 501"
+      - "浏览器全部请求落在 /display/v1/policy/**；角标保留；type-check、自检、build 三绿"
+      - "handoff 写明接线前后行为、请求样例与缺口；不标 done"
+    update_time: "2026-11-03T22:39:55+08:00"
+  - id: POL-L2-DS10-SENT-QA-L01
+    title: "科创政策全景 · 政策舆情评估 · 合规验收测试"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-03"
+    note: "claim_type=coordinator_dispatch。监管 human:淮政玮。重建于 22:37。用例与界面步骤已在会话定稿。接线已落地（73cc1e8），可开工。"
+    depends_on:
+      - "POL-L2-DS10-SENT-FE-L01"
+    definition_of_done:
+      - "对 207-212 每个用例记录：前置、输入条件、页面操作步骤、预期与实际、DevTools 网络断言、结论；覆盖三条同步读、jobs 免 XOR、裸别名拒绝、老 sub_type 校验未泄漏、匹配空态、失败不清空同步块、切条件不自动起任务、同条件单飞、匿名空、空态不造 0 不 501"
+      - "数据准备核对：反馈 6 行三渠道、报告 2 行、区域效果 2 行、时序 2 行、匹配 111 行 18 主体 rank 1-8；缺口先报告不造数"
+      - "界面执行含截图（URL+网络面板证据）；期望未发生必红；每个用例给合规判定"
+      - "测试报告写 handoff；不改业务代码；不标 done"
+    update_time: "2026-11-03T22:39:24+08:00"
+  - id: POL-L2-DS10-SENT-JOBQ-L01
+    title: "科创政策全景 · 政策舆情评估 · jobs 任务查询端点"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 12000
+    user_story: "US-DS-POL-03"
+    note: "claim_type=coordinator_dispatch。监管 human:淮政玮。补 FE-L01 留下的 jobs 任务查询缺口，否则前端无法完成轮询、当天复用与重新分析（I2-12）。"
+    definition_of_done:
+      - "gkxlumen-display 的 PolicyPanoramaController 增加 GET /v1/policy/panorama/jobs/{taskId}，service 委托 gkxlumen-topic-async-service 的 GET /topic/v1/analysis/tasks/{taskId}，复用 RemoteTopicAsyncClient，浏览器仍只打 /display/v1/policy/**"
+      - "返回体原样透传 async-service 的任务状态与结果，display 不改写结果、不缓存、不造进度百分比；任务不存在或已过期返回空体，不 500 不 501"
+      - "单测覆盖：透传调用、任务不存在空体、未带 token 时的行为与 jobs 一致；mvn 模块级测试通过"
+      - "handoff 写明路径、委托链、与前端 TODO 的对接点；推 origin/dev，commit 带 [agent:api-agent]；不标 done"
+    update_time: "2026-11-03T22:39:38+08:00"
   - id: POL-L2-DS10-SENT-IMPL-PY
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-IMPL-PY.md"
     supervised_by: "human:淮政玮"
