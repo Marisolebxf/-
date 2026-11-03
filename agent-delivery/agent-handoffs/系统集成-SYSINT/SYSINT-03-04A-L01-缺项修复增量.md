@@ -3,7 +3,7 @@
 > **任务**：SYSINT-03-04A-L01（监管 human:孔东）
 > **日期**：2026-11-03 · agent:frontend-agent · 强度 ponytail full
 > **前置拍板**：D-5 保留（human:孔东 2026-11-03）；D-7 不做（专家署名范围外）
-> **代码基线**：`lumen-ui-topic` dev @ `6a3b8bf`（停本地，**未 push**，待监管人验收；含两轮：`a7adf8f` B-4 + 静态级联首版，`6a3b8bf` 按孔东拍板改 RegionSelect + 联想接口）
+> **代码基线**：`lumen-ui-topic` dev @ `05d7178`（停本地，**未 push**，待监管人验收；含三轮：`a7adf8f` B-4 + 静态级联首版，`6a3b8bf` 按孔东拍板改 RegionSelect + 联想接口，`05d7178` 走查修正）
 
 ## 本轮修复（对照文档 v1.2 §3.4/§4.2）
 
@@ -12,6 +12,8 @@
 | **B-4** 榜单无「名次」字段 | 336(2)（行 7997–7999）Top10 排序语义不成立 | 表单加 `rank_no`（必填、半宽、首位），placeholder 与关键词筛选同步含「名次」 | `cmsTypeSchema.ts` `policy_intensity_rank.formFields` |
 | **B-5** 地理分布无层级 | 335(2)（行 7991–7993）要求国家/省/市/区四级 | **改用企业查询页同款 `RegionSelect`**（孔东 2026-11-03 拍板：复用现成组件+接口）。数据源 `entRegionScopesStore`（region-scopes 接口，30min 缓存，失败回退本地树）；值存「/」label 路径（如 `全国/广东省/深圳市`），label↔code 互转工具 `regionLabelsToCodes` | `types.ts`（kind=region）+ `CmsScalarField.vue` + `regionOptions.ts` |
 | **C-3** 企业选择不可检索 | §4.3 | **改用查企业联想接口**（孔东 2026-11-03 拍板）。`enterpriseSelect` 字段与关系对象企业列换 `ent-select`：输入关键词调 `entSearchSuggest`（同查企业页），value=org_id；历史/种子值不在联想结果时并入选项兜底回显 | `types.ts`（kind=ent-select）+ `CmsScalarField.vue` + `cmsTypeSchema.ts` |
+| **走查①** 页头标题重复 | 孔东 2026-11-03 走查 | 删 `pol-cms__head`（h1+说明 p）——菜单已有页面名，正文区标题冗余；顺手修同文件 WorkbenchTabs emit 类型错误 | `PolicyNewsCmsPage.vue` |
+| **走查②** 产业筛选是普通下拉 | 孔东 2026-11-03 走查 | `CmsContentFrame` 产业筛选项换**通用产业级联** `IndustryThreeLevelCascader`（集群→L0 产业→链/节点，数据源 `useIndustryClusters`，同查企业高筛）；`applyListFilters` 升级路径串解析（仅勾集群=旗下产业全量、末段 INB 码=精确、节点名=名称匹配；记录侧 slug→中文名归一兼容 mock 种子）；「新建」默认产业取级联单选末段 | `CmsContentFrame.vue` + `cmsListFilters.ts` |
 
 ## 设计说明
 
@@ -38,6 +40,8 @@
 3. 种子数据 `pol-stats-1` 两条区域行显示「全国/广东省/深圳市」「全国/广东省」路径
 4. 种子 `pol-rank-1` 编辑回显名次 = 1
 5. 企业 CMS 任一「企业」字段（如基础档案）→ 输入「深芯」→ 联想出企业列表（同查企业页）；历史值 ENT-DEMO-001 仍回显不空白
+6. 页面顶部无重复标题区（直接是三段 Tab）；产业筛选为级联（勾「新一代信息技术」→ 列表只剩集成电路/人工智能/生物医药种子；勾到「集成电路」产业层同效）
+7. 级联产业筛选下点「新建」→ 抽屉默认产业取所选产业（选了多个时回退首个预置）
 
 ## 架构合规自检
 
