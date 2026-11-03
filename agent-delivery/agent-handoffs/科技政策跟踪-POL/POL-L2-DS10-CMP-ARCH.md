@@ -23,7 +23,7 @@ ponytail: off
 |---|---|---|
 | 213 | 政策新旧对比 | 读 `gapfill_policy_version_diff` |
 | 214 | 政策详情对比 | 正文走已有门面。力度读 `ads.policy_intensity`。条件与材料读 `gapfill_policy_detail_compare` |
-| 215 | 部门政策对比 | 已有 `M_POLICY_TOTAL_COUNT` 与目录。不新造部门指标 |
+| 215 | 部门政策对比 | 区域和类别走已有目录。实施部门读 `gapfill_policy_impl_dept`。不新造部门指标 |
 | 216 | 标杆比对功能 | 同一次力度计算读 `M_POLICY_SUPPORT_STRENGTH`。不新建表 |
 | 217 | 对标报告生成与导出 | 读 `gapfill_policy_benchmark_report`。不灌假文件 |
 | 218 | 对标结果可视化展示 | 读 `ads.policy_intensity`。不建可视化缺项表 |
@@ -52,8 +52,8 @@ ponytail: off
 ## 验收
 
 - 架构稿已落盘，含同步读面、Job、缺项表和跨项只消费。
-- 六叶输入条件在架构稿第 3 节。数据来源和现成接口在第 3.1 节。展示原型的选项是本地常量，不迁。部门名单和版本时点现没有接口。
-- 灌数单 `POL-L2-DS10-CMP-GAPFILL-L01` 本叶不执行。218 不建 `gapfill_policy_benchmark_viz`，以本架构第 9 节为准。
+- 六叶输入条件在架构稿第 3 节。数据来源在第 3.1 节。213 的时点用已有发布时间。215 的实施部门收集不到，读 `gapfill_policy_impl_dept`。
+- 灌数单 `POL-L2-DS10-CMP-GAPFILL-L01` 本叶不执行。218 不建 `gapfill_policy_benchmark_viz`。215 的部门表以本架构第 9 节为准。
 - 未会签。不标 done。
 
 ## 开放项

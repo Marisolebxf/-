@@ -21,7 +21,7 @@
 |---|---|---|---|
 | 213 | 政策新旧对比 | 同一政策两个时点，高亮新增、修改、删除，并给出变化统计 | 没有版本对比模型。读缺项表 |
 | 214 | 政策详情对比 | 多项政策在申报时间、部门、产业、条件、力度、材料上的差异 | 时间、部门、产业读已有正文。力度读已有力度表。条件与材料读缺项表 |
-| 215 | 部门政策对比 | 按区域实施部门，从项目类别、技术类别看扶持件数和清单 | 读已有政策总数和目录。不新造部门指标 |
+| 215 | 部门政策对比 | 按区域实施部门，从项目类别、技术类别看扶持件数和清单 | 区域和类别读已有目录。实施部门收集不到，读缺项表。不新造部门指标 |
 | 216 | 标杆比对功能 | 选对标范围、对象和字段，看支持力度 | 读力度评估已经写入的支持力度。不新建表 |
 | 217 | 对标报告生成与导出 | 差异、优劣、借鉴建议，在线查看并可导出 | 没有报告模型。正文读缺项表。不灌假文件 |
 | 218 | 对标结果可视化展示 | 雷达、柱、热力看地区或政策的差异 | 读同一张力度表。不另建可视化缺项表 |
@@ -38,7 +38,8 @@
 | 214 时间、部门、产业 | `GET /display/v1/policy/panorama/search` 与 `{id}/detail` | 内部委托已有 `gkxlumen-topic-policy`。不另开对比查询 |
 | 214 力度、216、218 | `POST /display/v1/policy/panorama/jobs` | 增加 `sub_type=policy_intensity`。Python 调用已有 `polan.eval.intensity.run`，再读 `ads.policy_intensity` |
 | 214 条件、材料 | 同上一次详情对比读 | 只查 `gapfill_policy_detail_compare`。不把这两列写进接口常量 |
-| 215 | `GET /display/v1/policy/panorama/stats` 与 `search` | 件数用已有 `M_POLICY_TOTAL_COUNT`。选定部门后的条数是目录查询的命中数。清单走 `search` |
+| 215 区域、类别 | `GET /display/v1/policy/panorama/stats` 与 `search` | 区域走已有地区分布。项目类别、技术类别走已有选项。总件数仍用 `M_POLICY_TOTAL_COUNT` |
+| 215 实施部门 | 同一次部门对比读 | 只查 `gapfill_policy_impl_dept`。现网收集不到实施部门，不按发布机构去重 |
 | 217 | `GET /display/v1/policy/panorama/benchmark-report` | 只查 `gapfill_policy_benchmark_report`。导出内容从读到的行生成 |
 
 ```mermaid
@@ -53,7 +54,7 @@ flowchart LR
   fe --> gw --> bff
   bff -->|"214 正文、215 目录"| tp
   bff -->|"216 218 与 214 的力度"| py --> ads
-  bff -->|"213 217 与 214 的条件材料"| py --> gap
+  bff -->|"213 217、214 的条件材料、215 实施部门"| py --> gap
 ```
 
 `gkxlumen-display` 不直连库，不写算法，不写 nGQL。`E-E7-POLICY-M1-L06` 不是本页路径。
@@ -64,14 +65,14 @@ flowchart LR
 
 | 序号 | 用户要选 | 必选 | 闭集 | 落到哪次读取 |
 |---|---|---|---|---|
-| 213 | 一条政策；两个时点 | 政策和两个时点都要有 | 时点是该政策已有版本上的时间，不接受任意日期 | `version-diff` 按这条政策和两个时点查缺项表 |
+| 213 | 一条政策；两个时点 | 政策和两个时点都要有 | 时点就是该政策的发布时间，不另编版本号，不接受任意日期 | `version-diff` 按这条政策和两个发布时间查缺项表 |
 | 214 | 至少两条政策；要对比的维度 | 至少两条政策。维度不选则六维都出 | 申报时间、受理部门、产业类别、申报条件、支持力度、申报材料 | 时间、部门、产业读已有正文。力度读 `ads.policy_intensity`。条件、材料读缺项表。未勾选的维不读 |
-| 215 | 区域；至少两个实施部门；看项目类别还是技术类别 | 至少两个部门。区域可不选 | 方面只有项目类别、技术类别。项目类别用已有政策类型，技术类别用已有产业条件 | `search` 按区域、部门、所选方面筛选。件数是这次命中，不是新指标 |
+| 215 | 区域；至少两个实施部门；看项目类别还是技术类别 | 至少两个部门。区域可不选 | 方面只有项目类别、技术类别。项目类别用已有政策类型，技术类别用已有产业条件。部门只来自缺项表 | 区域和方面走已有目录。实施部门只读缺项表。不把部门件数登记成新指标 |
 | 216 | 对标范围；至少两个对标对象；对标字段 | 范围、至少两个对象、至少一个字段 | 范围只有全球科创领先城市、国内先进地区。字段只有政策类型、支持力度、覆盖范围 | `policy_intensity` 按这些对象和已勾字段读 `ads.policy_intensity` |
 | 217 | 沿用 216 的对象和字段；是否导出以及格式 | 没有 216 的选择则报告空。导出可不做 | 格式只有 PDF、Word | `benchmark-report` 用同一组对象和字段查缺项表。不选格式则只在线看行 |
 | 218 | 沿用 216 的对象和字段；看地区还是看政策；图种 | 对象和字段沿用 216。图种不选则不出图 | 对象视角只有地区、政策。图种只有雷达、柱状、热力 | 同一张力度表。政策视角用 214 已选的政策，不另收一批政策 |
 
-215 的区域、部门能对上已有目录条件里的地区和发布机构。对不上的方面空，不新建词表。216 未勾选的字段不进 217 的报告，也不进 218 的图。
+215 的区域对已有地区分布。项目类别、技术类别对已有政策类型和产业节点。实施部门对不上发布机构，不按发布机构筛目录。216 未勾选的字段不进 217 的报告，也不进 218 的图。
 
 ### 3.1 条件从哪来
 
@@ -80,10 +81,10 @@ flowchart LR
 | 条件 | demo 里实际从哪取 | lumen 里哪条接口能提供 | 本叶怎么用 |
 |---|---|---|---|
 | 213、214 的政策 | `policyListData` 本地数组 | `GET /topic/v1/policy/search`，查询参数原样到 `/internal/policy/search`。条目里有政策 id 和标题 | 展示走已有 `panorama/search`。不另开候选接口 |
-| 213 的两个时点 | `policyVersionHistory` 本地版本。没有接口 | 检索和 `GET /topic/v1/policy/docs/{id}` 只有发布时间，没有版本列表 | 没有来源。时点只从 `gapfill_policy_version_diff` 里该政策已有的时点读出。表空则不能选 |
+| 213 的两个时点 | `policyVersionHistory` 本地版本号和日期 | 检索和 `GET /topic/v1/policy/docs/{id}` 的发布时间。下游 `/internal/policy/search` 与 `/internal/policy/docs/{id}` | 时点就是发布时间。展示走已有 `panorama/search` 和 `{id}/detail`。不从缺项表反查可选时点，不迁本地版本号。同一政策只有一个发布时间时，凑不齐两个时点，对比空 |
 | 214 的六维、216 的范围和字段、217 的格式、218 的视角和图种 | 页内常量。`DETAIL_COMPARE_DIMENSIONS`、`benchmarkDimensions` 另有需规没写的项 | 无接口 | 保持第 3 节闭集。不调接口，也不采纳 demo 多出来的维度 |
 | 215 的区域 | `deptCompareRegions`：国家部委、广东省、深圳市 | `GET /topic/v1/policy/indicators?kind=national` 与 `kind=sz`，下游 `/internal/policy/indicators`。这是地区分布，不是部委名单 | 展示走已有 `panorama/stats`。桶空则区域下拉空。不迁那三条常量 |
-| 215 的实施部门 | `departmentPolicyCompare` 本地部门 | `search` 能按 `ministry`、`publish_code` 过滤。`GET /topic/v1/policy/search/options` 只返回 `level`、`status`、`policy_type`、`nodes`，没有部门去重 | 现没有部门名单接口。不迁本地部门表。下拉空。若要名单，只在已有 `search/options` 上由 Python 对发布机构去重，不新开展示路径 |
+| 215 的实施部门 | `departmentPolicyCompare` 本地部门 | 现网没有部门名单。`search/options` 不返回发布机构去重，底表也收集不到可对上的实施部门 | 做 mock。表 `gapfill_policy_impl_dept`，Python 灌区域、实施部门、方面、件数和清单标题。展示只读这张表。不扩 `search/options`，不迁本地部门表，不把件数写成新指标。表空则部门下拉空 |
 | 215 的项目类别 | `deptPolicyByCategory` 的资金扶持、税收优惠等 | `search/options` 的 `policy_type`，来自 `dwd.policy_base_info` 去重 | 用这条。不用 demo 的五类扶持名 |
 | 215 的技术类别 | `deptPolicyByTech` 的人工智能、生物医药等 | `search/options?industry_code=` 的 `nodes`，来自 `dwd.industry_chain_node`。不传产业码则 `nodes` 为空 | 用这条。没有节点则技术类别空 |
 | 216、218 的对标对象 | `benchmarkRegions`：北京、上海、硅谷等，带写死分数 | 算法中台 `GET /v1/policy/analysis/intensity?scope_type=province` 读 `ads.policy_intensity`。lumen 同一函数在 vendor，但只挂了 `/v1`，专题门面没有转发 | 展示不打 `/v1`。对象从 `ads.policy_intensity` 已有的地区范围读出，走本叶 `policy_intensity` 同一次读取。没有海外城市。demo 的硅谷等不迁 |
@@ -93,9 +94,9 @@ flowchart LR
 
 ## 4. 整体流程
 
-1. 用户做部门对比。前端调 `stats` 和 `search`。件数来自已有政策总数；选定发布机构后，条数等于这次目录命中。无命中则清单空，不造 0。
-2. 用户做详情对比。时间、受理部门、产业类别从已有正文读出。支持力度从 `ads.policy_intensity` 按政策读出。申报条件、申报材料从缺项表读出。某一列无行则该列空。
-3. 用户做新旧对比。前端调 `version-diff`，只读缺项表。无行则对比空。
+1. 用户做部门对比。区域来自已有 `stats`。项目类别、技术类别来自已有选项。实施部门只读缺项表。选定部门后的件数和清单标题也在这张表里。总件数指标仍是已有政策总数，不把缺项件数登记成新指标。表无行则部门对比空。
+2. 用户做详情对比。时间、受理部门、产业类别从已有正文读出。受理部门不是 215 的实施部门，不读部门缺项表。支持力度从 `ads.policy_intensity` 按政策读出。申报条件、申报材料从缺项表读出。某一列无行则该列空。
+3. 用户做新旧对比。两个时点用该政策的发布时间，从已有检索和正文带出。前端再调 `version-diff`，用这两个发布时间查缺项表里的增改删。无行则对比空。
 4. 用户做标杆比对或看可视化。前端提交 `jobs`，`sub_type` 为 `policy_intensity`。Python 先跑已有 `run()`，再按地区或政策读 `ads.policy_intensity`。表无行则图空。
 5. 用户看对标报告。前端调 `benchmark-report`，只读缺项表里的正文。无行则报告空。不返回一份写死的 PDF。
 
@@ -108,9 +109,10 @@ flowchart LR
 算法中台没有版本对比模块，lumen 也没有两个时点的差异表。真实识别做不到。
 
 - 库 `gkxlumenx_gapfill`，表 `gapfill_policy_version_diff`。不写入 ODS、DWD、ADS。
-- 一行是同一政策的一个变更：时点、变更类型（新增、修改、删除）、一句摘要。
+- 一行是同一政策的一个变更：两个发布时间、变更类型（新增、修改、删除）、一句摘要。时点列填的就是发布时间，不另编版本号。
+- 可选时点不从本表读。来源是已有检索和正文上的发布时间。同一政策只有一个发布时间时，对比空。
 - 灌数是独立脚本，不是请求处理。执行单 `POL-L2-DS10-CMP-GAPFILL-L01`。
-- 表无行则对比空，不在接口里拼一段高亮。
+- 两个发布时间对不上行则对比空，不在接口里拼一段高亮。
 
 ### 5.2 214 政策详情对比 · 正文 + 力度表 + 缺项表
 
@@ -128,11 +130,15 @@ flowchart LR
 
 `sub_type` 尚未放行时，这次 Job 的力度结果为空，不返回演示分。
 
-### 5.3 215 部门政策对比 · 读已有总数和目录
+### 5.3 215 部门政策对比 · 目录加部门缺项表
 
 指标只用已有 `M_POLICY_TOTAL_COUNT`。不新造部门指标，不把门户扶持十条写成这页的任务。
 
-项目类别、技术类别是目录查询的筛选。发布机构选定后，清单走 `search`，条数是这次命中，不是另一条统计。没有部门列的分组时，该分组空，不建 `gapfill_` 表来填件数。
+区域走已有地区分布。项目类别、技术类别走已有政策类型和产业节点。
+
+实施部门在现网收集不到，检索选项里也没有发布机构去重。建 `gapfill_policy_impl_dept`。一行有区域、实施部门、方面（项目类别或技术类别）、件数、清单标题。Python 灌这些行，接口只查表。不在接口里写部门名单，不把 demo 的部门常量迁进来，不把件数登记成新指标。方面的取值仍用已有词表里的政策类型或产业节点，不把 demo 的扶持类、技术类写进这张表。
+
+目录按发布机构筛不到这些部门。清单标题只在缺项表里，不写入政策底表。标题对不上已有政策时只显示标题，不编详情。表无行则部门对比空。
 
 ### 5.4 216 标杆比对功能 · 读已有支持力度
 
@@ -171,7 +177,7 @@ flowchart LR
 - 不写 OpenAPI 字段表。
 - 不新造 `metric_id`。不改 D4。不把 `GDF-POLICY-MOCK-GATE-L01` 写成已解开。
 - 浏览器不改打专题 URL。不把 `E-E7-POLICY-M1-L06` 写成展示路径。
-- 不重开 GDF，不写 nGQL。不加 ODS、DWD 表。213、214 的条件与材料、217 只加第 9 节的 `gapfill_` 表。
+- 不重开 GDF，不写 nGQL。不加 ODS、DWD 表。213、214 的条件与材料、215 的实施部门、217 只加第 9 节的 `gapfill_` 表。
 - 不在本叶展开参数名。输入条件只到第 3 节的闭集。
 - 不在本叶改 Python 或 Java。力度的预计实现是挂已有 `polan.eval.intensity.run`。
 - 不允许接口函数直接返回 mock。
@@ -183,9 +189,9 @@ flowchart LR
 
 | 序号 | 可实现的做法 | 现在就能用的代码或表 |
 |---|---|---|
-| 213 | 建 `gapfill_policy_version_diff`，Python 灌 mock 行，`version-diff` 只查这张表 | 算法中台没有版本对比 |
+| 213 | 时点用已有发布时间。差异建 `gapfill_policy_version_diff`，`version-diff` 只查这张表 | 检索和正文已有发布时间。算法中台没有版本对比 |
 | 214 | 正文走已有门面；力度走 `policy_intensity` 读 `ads.policy_intensity`；条件与材料查 `gapfill_policy_detail_compare` | `polan.eval.intensity.run` 已在 vendor |
-| 215 | `stats` 用 `M_POLICY_TOTAL_COUNT`，清单走 `search` | 专题门面 search 已在跑 |
+| 215 | 区域和类别走已有目录。实施部门建 `gapfill_policy_impl_dept`，只查这张表 | 实施部门收集不到。总件数仍是 `M_POLICY_TOTAL_COUNT` |
 | 216 | 同一次 `policy_intensity` 读支持力度 | 同一份 `run()`，不另建表 |
 | 217 | 建 `gapfill_policy_benchmark_report`，报告只查这张表 | 算法中台没有对标报告生成 |
 | 218 | 图读 `ads.policy_intensity` | 不建可视化缺项表 |
@@ -194,16 +200,17 @@ flowchart LR
 
 ## 9. 表与要灌的 mock
 
-界面上要出现、而真实版本差、申报条件、申报材料、对标报告还没有的内容，先写入表。接口只查询。D4 保持 mock。字段级 DDL 由 `POL-L2-DS10-CMP-DATA` 定。灌数由 `POL-L2-DS10-CMP-GAPFILL-L01` 执行，本叶不执行。
+界面上要出现、而真实版本差、申报条件、申报材料、实施部门、对标报告还没有的内容，先写入表。接口只查询。D4 保持 mock。字段级 DDL 由 `POL-L2-DS10-CMP-DATA` 定。灌数由 `POL-L2-DS10-CMP-GAPFILL-L01` 执行，本叶不执行。
 
 | 序号 | 库表 | 新建 | 要灌的 mock | 不灌 |
 |---|---|---|---|---|
-| 213 | `gkxlumenx_gapfill.gapfill_policy_version_diff` | 是 | 政策、两个时点、变更类型、一句摘要 | 高亮 HTML、假 diff 文件 |
-| 214 条件、材料 | `gkxlumenx_gapfill.gapfill_policy_detail_compare` | 是 | 政策、申报条件、申报材料 | 时间、部门、产业、力度分 |
+| 213 | `gkxlumenx_gapfill.gapfill_policy_version_diff` | 是 | 政策、两个发布时间、变更类型、一句摘要 | 版本号、高亮 HTML、假 diff 文件。可选时点不灌在这张表 |
+| 214 条件、材料 | `gkxlumenx_gapfill.gapfill_policy_detail_compare` | 是 | 政策、申报条件、申报材料 | 时间、受理部门、产业、力度分 |
 | 214 力度、216、218 | `ads.policy_intensity` | 否 | 由已有 `run()` 写入。缺维则该格空 | 接口里的演示分。不建 `gapfill_policy_benchmark_viz` |
-| 215 | 已有总数与目录 | 否 | 不新灌 | 部门件数假行 |
+| 215 实施部门 | `gkxlumenx_gapfill.gapfill_policy_impl_dept` | 是 | 区域、实施部门、方面、件数、清单标题 | 发布机构去重、假政策正文、新的部门指标 |
+| 215 区域、类别、总件数 | 已有地区分布、选项和 `M_POLICY_TOTAL_COUNT` | 否 | 不新灌 | 把缺项件数改挂成政策总数 |
 | 217 | `gkxlumenx_gapfill.gapfill_policy_benchmark_report` | 是 | 对标对象、字段、差异、优劣、借鉴、正文 | PDF、Word、对象存储、核增研报 |
 
-缺项表的行要能按第 3 节的条件拣出来：213 按政策和两个时点，214 按政策，217 按 216 的对标对象和已勾字段。条件对不上的行不返回。
+缺项表的行要能按第 3 节的条件拣出来：213 按政策和两个发布时间，214 按政策，215 按区域、实施部门和方面，217 按 216 的对标对象和已勾字段。条件对不上的行不返回。
 
 灌数单执行人是 `data-agent`，监管 `human:淮政玮`，状态 backlog。它依赖本架构和 `POL-L2-DS10-CMP-DATA`。查询请求不灌数。
