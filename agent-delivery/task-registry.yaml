@@ -51887,3 +51887,69 @@ tasks:
       - "图表类型闭集：趋势、柱状、热力、弦线、关系网；导出格式只 PDF、Excel；不灌文件本体、不灌假操作日志"
       - "handoff 写明库、表、行数、灌数命令与验证证据；推 origin/dev，commit 带 [agent:data-agent]；不改 D4，不新造 metric_id"
     update_time: "2026-11-03T21:59:38+08:00"
+  - id: POL-L2-DS10-SUB-FE-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:25:51.013Z"
+    last_seen_at: "2026-11-03T14:25:51.013Z"
+    lock_until: "2026-11-04T14:25:51.013Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科创政策全景 · 政策订阅 · 展示前端接线真实接口"
+    status: "claimed"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-02"
+    note: |
+      建单依据：human:淮政玮 2026-11-03 21:53 指令 1。后端就绪：L12 done，pipeline 3626 deploy:topic-policy / deploy:display 绿，库表 gkxlumenx_topic_policy.policy_subscription 空表。切换点：src/views/policy/panorama/index.vue 订阅族（D7 localStorage，键 gkx-policy-display-subscriptions:v1）与 src/api/policy.ts panorama* 封装。收件箱 localStorage 假种子仅可在 USE_MOCK=true 保留。
+    collaborators:
+      - "arch-agent"
+    touched_files:
+      - "src/api/policy.ts"
+      - "src/views/policy/panorama/index.vue"
+      - "src/views/policy/panorama/components/SubscribeTab.vue"
+      - "src/views/policy/panorama/components/SubscribeModal.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
+    definition_of_done:
+      - "订阅中心改走真实接口：列表/新建/修改/取消经 /display/v1/policy/panorama/subscriptions（GET/POST/PUT+DELETE），defineApi 双轨保留 USE_MOCK 演示态；浏览器禁止改打 /topic 或网关专题路径"
+      - "字段契约对齐门面 PolicySubscriptionService：请求体 policy_type/industry_code/publish_organization/province/city/region/frequency（日|周|月或 day/week/month）/channels（系统通知|邮件|短信或 system/email/sms）；响应 subscriptions/pushes/honesty 原样消费；前端不传 user_id"
+      - "诚实态：无订阅显示空列表；pushes 为空时收件箱显示外发通道未上线的诚实提示，真实模式不造推送记录；订阅接口失败只影响本 Tab，不清空同页时序/入库等其他数据"
+      - "类型门 type-check 0 错 + 既有自检通过 + build 绿；handoff 落盘 agent-handoffs/科技政策跟踪-POL/；完工推送 origin/dev（human:淮政玮 2026-11-03 授权）触发 CI 部署；不标 done"
+    update_time: "2026-11-03T22:25:51+08:00"
+  - id: POL-L2-DS10-SUB-QA-L01
+    title: "科创政策全景 · 政策订阅 · 合规验收测试用例与关键路径验证（含界面截图）"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-02"
+    note: |
+      建单依据：human:淮政玮 2026-11-03 21:53 指令 2。合并既有 L13 测试语义（委托/空列表/501 分界/外发非 localStorage）与用户新增要求（合规交付主路径数据准备 + 界面操作截图）。依赖前端接线单交付后执行。登录凭证走 K8s dev 现有测试账号，截图路径 agent-handoffs/科技政策跟踪-POL/screenshots/。
+    depends_on:
+      - "POL-L2-DS10-SUB-FE-L01"
+    collaborators:
+      - "arch-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SUB-QA-L01.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L13.md"
+    definition_of_done:
+      - "编写订阅单元测试用例文档：覆盖读取/新建/修改/取消/空列表主路径与关键路径（身份只取鉴权用户、请求体 user_id 不被采信、频率非法拒绝、通道未接通 pushes 恒空、失败不清空同页其他数据），每条含数据准备、步骤、期望结果，期望未发生必红"
+      - "合规交付主路径数据准备：登录 K8s dev 前端，新建一条真实订阅（类别+行业+部门+地区+频率+通道），经 GET 验证落库行存在且字段正确，取消后行不再出现在有效列表；验证数据库行数与页面一致，不伪造"
+      - "界面操作过程与截图：走查订阅中心 Tab 操作流（新建弹窗→保存→列表→修改→取消→空态→收件箱诚实提示）并截图存 handoff screenshots/；未就绪项如实标注，不伪造"
+      - "接口级验证：经网关调 /display/v1/policy/panorama/subscriptions 全链路（浏览器路径不变、展示只委托、无订阅空列表非 501、外发不是 localStorage/立即推送）；handoff 含全部证据；不把本单标 done"
+    update_time: "2026-11-03T22:25:45+08:00"
