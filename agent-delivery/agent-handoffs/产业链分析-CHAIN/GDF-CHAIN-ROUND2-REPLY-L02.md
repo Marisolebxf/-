@@ -25,16 +25,17 @@
 | 1~3 链树 | `chain_id`=所属 L1 链 + `parent_node_id` 直接父级 + 真父子边 **1,055** 条 | `09` v2.3+ / `23`§8 |
 | 4 `stage_code` | **维持三等分派生**（1–4/5–8/9+）；排序含义 🟡 待供应方确认 | `09`§3.0 + OPEN-CHAIN-MAP-01 + `23`§8 |
 | 5~8 原子接口 | **转架构师确认**（数据侧不代答）；幂等基线先行书面承诺；`definition_id` 催燕大进包 | `23`§8；`12` 暂不配置 |
-| 9~10 参数化 | **路线 A**：env 全量化 + 依赖内联；跟踪单 `CHAIN-EMBED-PARAM-L01`（algo） | `23`§8 + 新单 ready |
+| 9~10 参数化 | **路线 A**：env 全量化 + 依赖内联；**徐滕强本人改脚本**（不另派 algo；误建 `CHAIN-EMBED-PARAM-L01` 已撤销） | `23`§8 |
 | 11 `_SPACE_OK` | demo 域实现不进 GDF DAG | `23`§8 |
 | 附：问7 挂接（round1 遗留口径） | **全量全国**（非广东样例）；未命中→治理清单二次挂接 | `23` / `09`§3.4 / OPEN-CHAIN-MAP-07 |
 
-### 两单职责拆分（为何不合并）
+### 分工（已按监管人纠正）
 
-| 单号 | 角色 | 交付物 |
-|---|---|---|
-| `GDF-CHAIN-ROUND2-REPLY-L02` | data-agent | 答复落稿、Mapping/CHANGELOG、转办架构师写清 |
-| `CHAIN-EMBED-PARAM-L01` | algorithm-agent | 改 `industry_embed.py` 真代码（L02 只写承诺与建单） |
+| 项 | 谁做 |
+|---|---|
+| round2 答复 / Mapping / CHANGELOG | 本单（data）落稿 |
+| 问 5~8 原子接口 / `definition_id` | **架构师**确认 |
+| 问 9~10 脚本参数化 | **徐滕强本人**（GDF 交付项，不另建 algo 工单） |
 
 ## 2. 偏离说明
 
@@ -52,7 +53,7 @@
 | 问7 全量全国口径 | `6d7a24bb` |
 | round2 全闭环落稿 | `e61f4175` |
 | registry 重建两单 | `3f89da9c` |
-| 配套 algo 单 | `CHAIN-EMBED-PARAM-L01` = ready |
+| 误建 PARAM 单 | `CHAIN-EMBED-PARAM-L01` 已 **blocked/撤销**（徐滕强纠正） |
 
 ## 4. 验收证据
 
@@ -68,7 +69,7 @@
 | D12 demo/lumen | ✅ `_SPACE_OK`/demo 闸门不进 GDF DAG |
 | 调用链 | ✅ 原子入图转架构师/引擎，数据侧不写 nGQL |
 | 图谱协议 | ✅ 正式空间 `gkx_chain`；本单不改图写入路径 |
-| 算法只在 Python | ✅ 参数化脚本归 `CHAIN-EMBED-PARAM-L01`，本单不写算法 |
+| 算法只在 Python | ✅ 参数化由徐滕强改派单包脚本交付；本单不写算法 |
 | D9/指标 | ✅ 不涉及页面指标；链树为数据底座 |
 | handoff / registry | ✅ 本文件 + MCP 回填 cost |
 
@@ -77,7 +78,7 @@
 | 项 | 去向 |
 |---|---|
 | 原子接口 + `definition_id` | **架构师**（round3 回写 `12`） |
-| `industry_embed.py` 参数化 | **`CHAIN-EMBED-PARAM-L01`**（algorithm-agent） |
+| `industry_embed.py` 参数化 | **徐滕强本人**（误建 algo 单已撤销） |
 | `stage_code` 排序含义 | 客户决策清单 🟡 待供应方确认 |
 | tags 贴满后命中率 | GDF Wave A；业务范围仍全量全国 |
 
