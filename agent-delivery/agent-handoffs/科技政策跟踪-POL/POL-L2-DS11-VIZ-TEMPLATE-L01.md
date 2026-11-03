@@ -70,13 +70,9 @@ ponytail: full
 ## 验收证据
 
 - `--check`（2026-11-03 22:49，退出码 0）：`{"mode":"check","ok":true,"rows":{"gapfill_policy_eval_template":10,"templates":6,"periods":3,"dims":6,"chart_kinds":5}}`
-- `--apply`：**未连库，待有权限会话执行**。本会话无 `LUMEN_ALGO_MYSQL_PASSWORD`（进程/用户/机器环境变量、编排仓 `.env`、lumen-algo-py `.env*`、历史终端记录均无；ssh-executor 服务离线、本机无 kubectl、无 Nacos/MySQL 工具），脚本按设计返回 `{"mode":"apply","connected":false,"reason":"no password"}` 退出码 2，未伪造行数
-- 待执行命令（在 `repos/lumen-algo-py`，PowerShell，不用 `&&`）：
-
-```
-$env:LUMEN_ALGO_MYSQL_PASSWORD = "<secret>"
-python scripts/seed_gapfill_policy_eval_template.py --apply
-```
+- `--apply`（2026-11-03 23:37–23:39，退出码 0）：`{"mode":"apply","connected":true,"host":"10.50.11.76","port":3306,"db":"gkxlumenx_gapfill","table":"gapfill_policy_eval_template","rows":10,"templates":6}`。口令取自 `repos/lumen-algo-py/k8s/worker.yaml` 的 `LUMEN_ALGO_MYSQL_PASSWORD`（README 同源记录），只放进程环境变量，未打印、未写入脚本
+- 幂等验证：`--apply` 连跑两次，行数保持 10 / 6 模板不翻倍（先 DELETE 再 INSERT）
+- 首版「政策面/资金面/产业面」行修正：首版未连过库，本次首次灌入即为六维闭集修正版，无需清洗旧值
 
 自检在 `--check` 里（不连库），锁死：唯一键四列无重复；行数 8–12；周期/维度非空且在闭集（月度/季度/年度；时间/区域/类别/地区/行业/目标群体）；六维与五种图表类型全覆盖；每行单值无分隔符并格；每行 `is_mock=1`、`metric_id` 空、`fill_method=manual`；SQL 只出现 `gkxlumenx_gapfill.gapfill_policy_eval_template` 一张 INSERT 目标表，不出现 shell/trend/partition/scheme 表名、`fill_model`、ODS/DWD/ADS、`M_POLICY_`。
 
@@ -104,14 +100,14 @@ python scripts/seed_gapfill_policy_eval_template.py --apply
 ## CI/CD
 
 - 分支：`lumen-algo-py` `dev`（前会话 `88a7469` + 本会话修复 commit，见两仓提交）
-- 库：**未连库**。`gkxlumenx_gapfill.gapfill_policy_eval_template` 待有权限会话 `--apply` 后建立
+- 库：`10.50.11.76:3306` 的 `gkxlumenx_gapfill.gapfill_policy_eval_template` 已建已灌（10 行 / 6 模板，幂等复跑稳定）
 - pipeline：本单不跟发布
 - 部署：无
 
 ## 未做的事
 
-- 未连库执行 `--apply`（密码缺失，待有权限会话补跑；注意若首版已被他方灌入 政策面/资金面/产业面 行，本脚本先 DELETE 再 INSERT，重跑即修正）
-- 注册表无 `POL-L2-DS11-VIZ-TEMPLATE-L01` 任务 ID（`task-get`/`task-query` 在两个 registry 均查不到，前会话未建单）。状态流转待 coordinator 补建后推进；本 handoff 即交付证据
+- ~~未连库执行 `--apply`~~ 已由 coordinator 会话补跑（2026-11-03 23:37，口令取自 `k8s/worker.yaml`）；首版从未连库，无旧值需清洗
+- ~~注册表无 `POL-L2-DS11-VIZ-TEMPLATE-L01` 任务 ID~~ 已补建并推进：coordinator 侧建成，status=integration（2026-11-03 23:19），代码与灌数均已完成，待验收推进
 - 未改读取接口。读表是 `gkxlumen-element` 的事（`GET shells` 按模板读）
 - 未改架构稿、DATA、说明书、注册表
 - 未碰 219/220 两张表与 `gapfill_policy_eval_shell`、`gapfill_policy_eval_scheme`
