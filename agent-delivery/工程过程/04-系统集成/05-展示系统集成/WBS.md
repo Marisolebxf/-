@@ -156,6 +156,22 @@
 |---|---|---|---|---|---|---|---|
 | WBS-05-04-01 · `SYSINT-05-04-01-L01` | 科技数据资源四视窗：对照已建成 GDF，分析哪些展示需求可从平台得到 | 淮政玮 | `gkx-orchestration` | **done**（2026-11-03 `human:淮政玮` 签收） | 已签收。结论见 [SYSINT-05-04-01-L01.md](../../../agent-handoffs/SYSINT-05-04-01-L01.md)：70 条里可得到 0、部分得到 29、得不到 41，没有一条能直接填进四视窗 | 需求清单认详设 `07-功能-科技数据资源.md` 与 `科技数据资源-DR/DR-模块开发规划与任务拆分.md` §4（DS-17～20，seq 330–399）。不等 `SYSINT-05-04-L01` 页面做完。分析结论落盘即本叶完成，不是可对端，不新建 GDF 作业 | 无截至时间 |
 
+### 4.1a2 科技数据资源后台接口
+
+> 2026-11-03 方案：[方案-科技数据资源-后台接口.md](./方案-科技数据资源-后台接口.md)。总控：[DR-RES-长任务总控.md](../../../agent-handoffs/科技数据资源-DR/DR-RES-长任务总控.md)。对外只四个 `GET /display/v1/data-ops/{overview|access|theme|application}/dataset`。表在 `demo_gkxlumenx_ads`，表名 `gapfill_dr_*`。签收条件按 D18。监管人淮政玮。`lumen-svc-platform` 同仓一次只派一叶。
+
+| 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 |
+|---|---|---|---|---|
+| WBS-05-04-02 · `DR-RES-A0-L01` | 复读久新现网列，确认 `entityStock` / `columnCatalog` 列名 | 淮政玮 | `gkx-orchestration` | 已建单，与契约并行 |
+| — · `BE-DR-CONTRACT-01` | 冻结四个 Dataset 路径、信封、键名与 `origin`。不新开契约号 | 淮政玮 | `gkx-orchestration` | 已有单，与 A0 并行 |
+| WBS-05-04-03 · `DR-RES-MOCK-DDL-L01` | 在 `demo_gkxlumenx_ads` 建 `gapfill_dr_*` | 淮政玮 | `gkx-orchestration` | 已建单，等 A0 |
+| WBS-05-04-04 · `DR-RES-MOCK-LOAD-L01` | Python 灌 `mock_` 行，并按需写 `snap_` | 淮政玮 | `gkx-orchestration` | 已建单，等 DDL |
+| WBS-05-04-05 · `DR-RES-C1-L01` | `GET .../overview/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等契约和灌数 |
+| WBS-05-04-06 · `DR-RES-C2-L01` | `GET .../access/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等 C1 |
+| WBS-05-04-07 · `DR-RES-C3-L01` | `GET .../theme/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等 C2 |
+| WBS-05-04-08 · `DR-RES-C4-L01` | `GET .../application/dataset` | 淮政玮 | `lumen-svc-platform` | 已建单，等 C3 |
+| WBS-05-04-09 · `DR-RES-D1-L01` | 四条 `real()` 改走 `request()`，MockBadge 看 `origin` | 淮政玮 | `lumen-ui-science-pc` | 已建单，等 C1–C4 到 integration。不自动 push |
+
 ### 4.1b WBS-05-23 的子任务（科技政策跟踪 · 只挂已有单）
 
 > 2026-11-03 挂接。父行仍是 WBS-05-23。编写顺序是 05-23-14 调研 → 05-23-15 系统详细设计 → 05-23-02 契约。编号按建单先后，不表示施工先后。依赖全文见 [对照-科技政策跟踪-存量任务与依赖.md](./对照-科技政策跟踪-存量任务与依赖.md)。
@@ -476,6 +492,7 @@
 
 | 日期 | 变更 |
 |---|---|
+| 2026-11-03 | **科技数据资源后台接口建单**：方案改为四个 Dataset GET。建 `DR-RES-A0/DDL/LOAD/C1–C4/D1`，契约沿用 `BE-DR-CONTRACT-01`。总控 `科技数据资源-DR/DR-RES-长任务总控.md`。表名 `gapfill_dr_*` |
 | 2026-11-03 | **科技数据资源对照 GDF 签收**：`SYSINT-05-04-01-L01` 由 `human:淮政玮` 签收为 done。结论不变：70 条可得到 0、部分得到 29、得不到 41 |
 | 2026-11-02 | **科技数据资源对照 GDF**：WBS-05-04-01 监管人改为淮政玮，状态随 `SYSINT-05-04-01-L01` 到 ready_to_sign。结论见 `agent-handoffs/SYSINT-05-04-01-L01.md`：70 条可得到 0、部分得到 29、得不到 41 |
 | 2026-11-02 | **科技数据资源对照 GDF**：WBS-05-04 下新增子任务行 05-04-01（`SYSINT-05-04-01-L01`，backlog）。只分析四视窗展示需求哪些可从已建成 GDF 得到，不代替 `SYSINT-05-04-L01`，不新开 GDF 派单包。监管人待指定 |

@@ -31439,10 +31439,15 @@ tasks:
       - "与 demo 逐区块截图对照（四分区全交互）进 handoff；pnpm type-check 0 错 + pnpm build 绿；handoff 落 agent-handoffs/科技发展态势-TS/FE-TS-10A.md"
     update_time: "2026-10-19T15:21:24+08:00"
   - id: BE-DR-CONTRACT-01
-    update_time: "2026-10-19T18:00:24+08:00"
-    note: "2026-10-19 auto-ready-engine"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T05:44:54.465Z"
+    last_seen_at: "2026-11-03T05:44:54.465Z"
+    lock_until: "2026-11-04T05:44:54.465Z"
+    claimed_by: "agent:api-agent"
+    update_time: "2026-11-03T13:45:00+08:00"
+    note: "按方案第 5 节冻结四个 Dataset。claim_type=coordinator_dispatch。与 A0 并行，不改同一文件。"
     title: "科技数据资源 — Java 接口契约定义与数据需求评审（四视窗，出 API-DR 文档）"
-    status: "ready"
+    status: "in_progress"
     agent: "api-agent"
     epic: "E-FE-DATA-RESOURCES"
   - id: SCI-INT-P00
@@ -50934,3 +50939,194 @@ tasks:
       - "独立脚本灌入结论到原文、原文到结论的双向行。接口只读表"
       - "不把第 6 项血缘说明写成这条索引。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
     update_time: "2026-11-03T13:20:53+08:00"
+  - id: DR-RES-A0-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T05:44:54.097Z"
+    last_seen_at: "2026-11-03T05:44:54.097Z"
+    lock_until: "2026-11-04T05:44:54.097Z"
+    claimed_by: "agent:data-agent"
+    title: "科技数据资源：复读久新现网列，确认 entityStock 与 columnCatalog"
+    status: "in_progress"
+    agent: "data-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "长任务总控已授权，主会话派子智能体执行。claim_type=coordinator_dispatch。"
+    depends_on:
+      - "SYSINT-05-04-01-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/DR-RES-长任务总控.md"
+    definition_of_done:
+      - "复读久新现网列；连不上则写明阻塞并以 2026-10-22 字段清单为暂时依据"
+      - "交出矩阵：entityStock 与 columnCatalog 的真实列名；明确不把实体存量写进资源总量"
+      - "handoff 落盘，不改方案第 5 节的四个路径"
+    update_time: "2026-11-03T13:44:59+08:00"
+  - id: DR-RES-MOCK-DDL-L01
+    title: "科技数据资源：在验收库建 gapfill_dr_* 表"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: "WBS-05-04-03。监管人 human:淮政玮。强度 ponytail full。等 A0 handoff 且状态 ≥ ready_to_sign 才能认领。"
+    depends_on:
+      - "DR-RES-A0-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+    definition_of_done:
+      - "在 demo_gkxlumenx_ads 建齐方案第 4 节的 gapfill_dr_* 表，不灌业务行"
+      - "建表语句可重复执行，handoff 写明库名和表清单"
+      - "不写正式库、ODS、DWD、久新、gkxlumenx_gapfill"
+    update_time: "2026-11-03T13:44:09+08:00"
+  - id: DR-RES-MOCK-LOAD-L01
+    title: "科技数据资源：向 gapfill_dr_* 灌 mock 行与 snap 快照"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "WBS-05-04-04。监管人 human:淮政玮。强度 ponytail full。等 DDL handoff 且状态 ≥ ready_to_sign。禁止手填 SHOW COLUMNS。"
+    depends_on:
+      - "DR-RES-MOCK-DDL-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+    definition_of_done:
+      - "Python 脚本把 mock_ 行写入方案第 4 节各表，可重复执行"
+      - "能连久新时写入 entity_year 与 column_catalog 的 snap_ 批次；连不上则该两表为空并在 handoff 写明"
+      - "方案要求相等的四个数在库里相等：类型切片之和、主题库行数、问题行数、待处理任务数"
+    update_time: "2026-11-03T13:44:20+08:00"
+  - id: DR-RES-C1-L01
+    title: "科技数据资源：总体视窗 overview/dataset 只读接口"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "WBS-05-04-05。监管人 human:淮政玮。强度 ponytail full。仓 lumen-svc-platform，分支 origin/dev。同仓一次一叶。等契约与灌数 ≥ ready_to_sign。"
+    depends_on:
+      - "BE-DR-CONTRACT-01"
+      - "DR-RES-MOCK-LOAD-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+      - "lumen-ui-science-pc/src/types/dataResources.ts"
+    definition_of_done:
+      - "gkxlumen-display 提供 GET /v1/data-ops/overview/dataset，网关路径为 /display/v1/data-ops/overview/dataset"
+      - "响应为 PigX 信封 code=0，data 键对齐 DataResourcesOverviewDataset，含 entityStock"
+      - "真查或 snap 只出现在 entityStock；页面 KPI 读 gapfill 表；不在代码里写死 mock JSON"
+      - "handoff 含联调说明。不标 done"
+    update_time: "2026-11-03T13:44:26+08:00"
+  - id: DR-RES-C2-L01
+    title: "科技数据资源：接入视窗 access/dataset 只读接口"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "WBS-05-04-06。监管人 human:淮政玮。强度 ponytail full。等 C1 ≥ integration。同仓一次一叶。"
+    depends_on:
+      - "DR-RES-C1-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+    definition_of_done:
+      - "GET /display/v1/data-ops/access/dataset 返回 DataResourcesAccessDataset"
+      - "问题统计、完成度、历史仪表盘由 gapfill 行汇总，不另写死一份总数"
+      - "handoff 含联调说明。不标 done"
+    update_time: "2026-11-03T13:44:31+08:00"
+  - id: DR-RES-C3-L01
+    title: "科技数据资源：主题视窗 theme/dataset 只读接口"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "WBS-05-04-07。监管人 human:淮政玮。强度 ponytail full。等 C2 ≥ integration。"
+    depends_on:
+      - "DR-RES-C2-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+    definition_of_done:
+      - "GET /display/v1/data-ops/theme/dataset 返回 DataResourcesThemeDataset"
+      - "themeDatabases.tableSchemas 只读 gapfill_dr_theme_column；columnCatalog 单独返回且 origin=snap"
+      - "主题四个总数由主题库行汇总"
+      - "handoff 含联调说明。不标 done"
+    update_time: "2026-11-03T13:44:35+08:00"
+  - id: DR-RES-C4-L01
+    title: "科技数据资源：应用视窗 application/dataset 只读接口"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "WBS-05-04-08。监管人 human:淮政玮。强度 ponytail full。等 C3 ≥ integration。"
+    depends_on:
+      - "DR-RES-C3-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+    definition_of_done:
+      - "GET /display/v1/data-ops/application/dataset 返回 DataResourcesApplicationDataset"
+      - "usageCallTrend 含 dates、calls、users，供页面本地跳动；探针只填 resourceUsageStats 与 interfaceStatusMetrics"
+      - "handoff 含联调说明。不标 done"
+    update_time: "2026-11-03T13:44:40+08:00"
+  - id: DR-RES-D1-L01
+    title: "科技数据资源：四页改走 request() 并按 origin 挂 MockBadge"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "WBS-05-04-09。监管人 human:淮政玮。强度 ponytail full。等 C1–C4 均 ≥ integration。禁止自动 push。"
+    depends_on:
+      - "DR-RES-C1-L01"
+      - "DR-RES-C2-L01"
+      - "DR-RES-C3-L01"
+      - "DR-RES-C4-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/方案-科技数据资源-后台接口.md"
+      - "lumen-ui-science-pc/src/api/dataResources.ts"
+    definition_of_done:
+      - "四条 real() 改用 request()，路径仍是四个 /dataset"
+      - "USE_MOCK=false 时不读 fixture；origin=mock 的数挂 MockBadge"
+      - "改动停在 lumen-ui-science-pc 本地，不 commit、不 push"
+      - "handoff 写明未推送。不标 done"
+    update_time: "2026-11-03T13:44:46+08:00"
