@@ -34,7 +34,7 @@
 
 一行存：鉴权用户；政策类别、行业领域、发布部门、省、市、地区原文（空着的维不限制）；频率 `day`/`week`/`month` 之一；通道 `system`/`email`/`sms`（可多选，空则不外发）；是否仍有效；入库水位 `ingest_watermark`；频率刻度 `last_outbound_at`。不存政策正文、推送文案、命中快照、收藏用的政策 id、匹配分。
 
-本单没有在现网执行这条 DDL。库地址沿用已有 `user-jdbc-url`。地址空着或表还不在时，保存不落假行，读取是空列表。
+2026-11-03 已在现网执行订阅表这一段 DDL。库 `gkxlumenx_topic_policy`，表 `policy_subscription`，行数 0。库地址沿用已有 `user-jdbc-url`。没有订阅时读取是空列表。
 
 ## 展示委托
 
@@ -72,6 +72,6 @@ mvn -pl gkxlumen-topic-policy/gkxlumen-topic-policy-biz -am test "-Dtest=PolicyF
 ## 还没做到
 
 - 外发通道仍未上线。没有调度器在日/周/月到点主动跑。通道接通之前，读取不会筛政策，也不会交异步执行记录。
-- 建表脚本未在现网执行。
+- 2026-11-03 已建库 `gkxlumenx_topic_policy`，并 `GRANT ALL` 给 `gkxlumenx`@`%`。表 `policy_subscription` 已按脚本建成，`SELECT COUNT(*)` 为 0。没有插入订阅行。口令未写入本文。
 - 展示委托的测试类未在本机跑绿，原因见上。浏览器页面仍是 localStorage，本单不改前端。
 - 不把 `E-E7-POLICY-M1-L06` 改成展示联调单。未动 L13，未改任务状态。
