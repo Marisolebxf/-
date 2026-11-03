@@ -73,7 +73,7 @@
 - 配置：`agent-delivery/feishu/feishu-daily-snapshot-board.yaml`
 - 命令：`node scripts/sync-feishu-daily-snapshot.mjs --date YYYY-MM-DD`（`--dry-run` 只解析）
 - 真源：仓内 `当日进展/YYYY-MM-DD.md`；飞书只读投影，格子改动下一轮覆盖
-- 表：多维表格「GKX 当日进展」内「当日八列」+「维度汇总」
+- 表：多维表格「GKX 当日进展」内「当日八列」+「维度汇总」。另外把当日 WBS 汇总里「图数据库集成」「GDF 数据治理集成」两张 sheet 写入飞书同名表，主键是工作细项任务号。
 - 不挂 K8s Cron；不读回 git；缺凭据软失败（退出码 0 时看 `[WARN]`，接口错则非 0）
 
 ## Excel 列（两份导出共用）
@@ -84,13 +84,13 @@
 
 ### 收哪些任务
 
-本端实现任务都进表。定义轨不进表。
+本端实现任务都进表。2026-10-01 起写入第 2 至第 7 项 `WBS.md` 的数据行，格子里已有任务号的，全部进对应 sheet，算实现轨。
 
-- 定义轨：`delivery_phase` 是 `definition`，或 `task_type` 是 `definition`。方案任务、回写定义单、调研如果落在这两类里，不进表。
-- 其余都进：`implementation`、`crosscut`，以及 `feature` / `bugfix` / `tech_task` / `spike` / `chore` 里不属于定义轨的。`chore` 进表，不进 §7.1 百分比，完成百分比留空。
-- 只认注册表里已有的任务。WBS 上写了「智谱」「待指定」但没有任务号的行，不是本端任务，不进表。
-- 第 2 项 `02-对接三要素/WBS.md` 数据行里已经写了任务号的，全部进「对接三要素」sheet。含 `WBS-02-09` `SYSINT-ROUTE-02-L01`（全景读技术节点映射）、`WBS-02-10` `SYSINT-TOPIC-CHAIN-GAP-02-L01`、`WBS-02-11` `SYSINT-TOPIC-CHAIN-ALIGN-02-L01`、`WBS-02-12` `SYSINT-TECHMAP-02-L01`（菜单「技术节点与产业映射」）。这四行不因为 `task_type` 或 `delivery_phase` 是 definition 从该 sheet 拿掉。完成百分比仍按本表开发分；方案未 `done` 记 0。§7.1 设计分算法不变。
-- 不读 `task-registry.yaml`。用 MCP `task-query` 按状态分批把 `limit` 放到能收回该状态，再丢掉定义轨。WBS 上已写明的任务号用 `task-get`。
+- 这些行不因 `task_type` 或 `delivery_phase` 是 `definition` 拿掉。方案行、回写定义单、调研、派单包同样进表。例：`WBS-02-09`～`WBS-02-13`，政策派单包 `GDF-POLICY-WORKPACK-V2-L01`，服务机构派单包 `SYSINT-06-21-01-L03`，企业维入图 `KG-ENT-GRAPH-LOAD-L01`，产业链维入图 `KG-CHAIN-GRAPH-LOAD-L01`。
+- 完成百分比用该行 §7.1 已经打出的分。方案未 `done` 只把新的 `feature` / `bugfix` 开发行记 0，不把方案、定义叶、调研、派单包改成 0。§7.1 八列算法不变。
+- 没有任务号的行不进表。监管人写「智谱」「待指定」且未建任务的行不进表。注册表里没有的任务号不进表（如 `SYSINT-CMP-02-L01`）。`WBS-02-03` 不建，不进表。
+- 未挂上上述 WBS 的任务：`delivery_phase` 或 `task_type` 是 `definition` 的仍是定义轨，不进表。其余 `implementation`、`crosscut`，以及 `feature` / `bugfix` / `tech_task` / `spike` / `chore` 进表。`chore` 进表，不进 §7.1 百分比，完成百分比留空。
+- 不读 `task-registry.yaml`。用 MCP `task-query` 按状态分批把 `limit` 放到能收回该状态。已挂上 2026-10 起第 2–7 项 WBS 的任务号用 `task-get`，不因定义轨丢掉。
 
 ### 列
 
@@ -101,7 +101,7 @@
 | 工作细项任务号 | 一行一个任务号。同一草案号拆出的多个任务号分行写，不写进同一格 |
 | 任务说明 | 注册表 `title`。没有标题就空着。放在任务状态前面 |
 | 任务状态 | 注册表 `status` 原文 |
-| 完成百分比 | 该任务自己的开发分。定义轨不在表里。挂在 WBS 上、但因方案未 `done` 记 0 的新开发任务，这里仍记 0 |
+| 完成百分比 | 该任务在 §7.1 已经打出的分。2026-10 起挂上第 2–7 项 WBS 的方案、定义叶、调研、派单包用这个分，不因定义轨改成空，也不因方案未 `done` 改成 0。新的 `feature` / `bugfix` 在方案未 `done` 时仍记 0。未挂上这些 WBS 的定义轨不在表里 |
 | 截止时间 | 只填 `note` 的「完成日期要求」 |
 | 工作细项目标 | 原文保留。`note` 有「开始时间」时，放在该格第一句 `开始时间：YYYY-MM-DD` |
 | 涉及指标多少项、已实现指标多少项、实现风险系数 | 留空 |

@@ -2310,10 +2310,50 @@ _（本接口无额外字段说明，见通用约定）_
 |---|---|---|---|
 | keyword | string | 是 | 关键词（多词空格分隔） |
 | country_location_ids | string[] | 否 | 久新地区码数组（live-1.6 新增；不传=不过滤） |
+| industry_ids | string[] | 否 | 产业码（INB*）或产业领域码（CL-*）数组（live-1.6 新增；领域自动展开旗下产业；不传=不过滤）。匹配语义：产业码前缀覆盖子链。返回 records 纯新增 `industry_id`/`industry_name`（数据所属产业就近上浮，可能为 null） |
 | page | integer | 否 | 默认 1 |
 | size | integer | 否 | 默认 20，上限 100 |
 
 **地区筛选语义**：`country_location_id` 经智树侧映射为自有国家码后真实过滤（国内+海外企业均覆盖）；映射不上的码（如多数小国）→ 查询结果为空；国内索引现全为 CHN，海外索引数据接入后自动生效。
+
+
+**调用示例**
+
+```json
+// 请求（关键词 + 产业 + 地区组合筛选）
+{
+  "keyword": "半导体",
+  "industry_ids": ["INB1303", "CL-SEI-01"],
+  "country_location_ids": ["loc_B56D89F0452662FBF49EAAD21C2A630E"],
+  "page": 1,
+  "size": 2
+}
+```
+
+```json
+// 响应（截断；records 行内为透传字段 + 新增 industry_id/industry_name）
+{
+  "code": 0,
+  "msg": "ok",
+  "data": {
+    "total": 3547,
+    "page": 1,
+    "size": 2,
+    "records": [
+      {
+        "org_id": "29961637",
+        "name_cn": "深圳市红阳电池有限公司",
+        "social_credit_code": "91440300757642670R",
+        "industry_id": "INB1303",
+        "industry_name": "集成电路",
+        "...": "其余透传字段略"
+      }
+    ]
+  }
+}
+```
+
+> `country_location_ids` 里的码为久新侧 `country_location_id` 原值（如中国=`loc_B56D89F0452662FBF49EAAD21C2A630E`），智树侧自动映射自有国家码；映射不上的码查询结果为空。
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为企业文档（org_id / name_cn / social_credit_code / 行业 / 地区等，全量字段以实际返回为准）。
 
@@ -2322,7 +2362,38 @@ _（本接口无额外字段说明，见通用约定）_
 `POST /api/open/cms/v1/smart-search/industry`
 
 **请求体**：同 3.19.9。
-> live-1.6：支持 `country_location_ids`；产业无地区概念，参数收下忽略（不报错）。
+> live-1.6：支持 `country_location_ids`（收下忽略——产业无地区概念）与 `industry_ids`（按 id/stableId 前缀后置过滤，返回 total 同步收缩）。
+
+
+**调用示例**
+
+```json
+// 请求（纯产业筛选，keyword 可省略）
+{
+  "keyword": "",
+  "industry_ids": ["INB1303"],
+  "page": 1,
+  "size": 5
+}
+```
+
+```json
+// 响应（截断）
+{
+  "code": 0,
+  "msg": "ok",
+  "data": {
+    "total": 7,
+    "page": 1,
+    "size": 5,
+    "records": [
+      {"id": "INB1303", "stableId": "industry:INB1303", "objectType": "industry", "name": "集成电路", "...": "略"},
+      {"id": "INB130301", "name": "半导体材料", "...": "略"},
+      {"id": "INB130302", "name": "EDA/IP核", "...": "略"}
+    ]
+  }
+}
+```
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为产业链节点（id / stableId / objectType / name / aliases / tags 等）。
 
@@ -2333,6 +2404,38 @@ _（本接口无额外字段说明，见通用约定）_
 **请求体**：同 3.19.9（page/size 自动换算下游 limit/offset）。
 > live-1.6：支持 `country_location_ids`；当前仅国内数据——传「中国」放行正常查，传其他地区快速返回空。
 
+
+**调用示例**
+
+```json
+// 请求（关键词 + 中国地区码；政策当前仅国内数据）
+{
+  "keyword": "人才",
+  "country_location_ids": ["loc_B56D89F0452662FBF49EAAD21C2A630E"],
+  "industry_ids": ["INB1303"],
+  "page": 1,
+  "size": 2
+}
+```
+
+```json
+// 响应（截断）
+{
+  "code": 0,
+  "msg": "ok",
+  "data": {
+    "total": 9,
+    "page": 1,
+    "size": 2,
+    "records": [
+      {"policy_id": "18359183", "title": "关于开展…人才…培训工作的通知", "...": "略"}
+    ]
+  }
+}
+```
+
+> 传非中国的 `country_location_id` → 直接返回空 `records`（当前政策仅国内数据）。
+
 **响应 `data`**：`{total, page, size, records[]}`；records 为政策条目（policy_id / title 等）。
 
 ### 3.19.12 智能搜索·服务机构
@@ -2341,6 +2444,38 @@ _（本接口无额外字段说明，见通用约定）_
 
 **请求体**：同 3.19.9。
 > live-1.6：支持 `country_location_ids`；当前仅国内数据——传「中国」放行正常查，传其他地区快速返回空。
+
+
+**调用示例**
+
+```json
+// 请求（关键词 + 产业 + 中国地区码）
+{
+  "keyword": "检验",
+  "industry_ids": ["INB1303"],
+  "country_location_ids": ["loc_B56D89F0452662FBF49EAAD21C2A630E"],
+  "page": 1,
+  "size": 2
+}
+```
+
+```json
+// 响应（截断）
+{
+  "code": 0,
+  "msg": "ok",
+  "data": {
+    "total": 95,
+    "page": 1,
+    "size": 2,
+    "records": [
+      {"org_id": "79bbcfc0e68027808f1f4caf1b6f0469", "service_org_code": "…", "name_cn": "东莞兰卫医学检验实验室有限公司", "...": "略"}
+    ]
+  }
+}
+```
+
+> 传非中国的 `country_location_id` → 直接返回空 `records`（当前服务机构仅国内数据）。
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为服务机构文档（org_id / service_org_code / name_cn 等）。
 

@@ -44,6 +44,7 @@ const HANDOFF_SUBDIRS = [
   '产品整体定义',
   '产品整体定义/E-31-企业发展',
   '运维事件',
+  '算法库联调-ALGO-LIB',
 ];
 
 function findHandoffFile(taskId) {
@@ -91,11 +92,23 @@ function checkHandoffContent(filePath) {
   }
 
   // 2. 架构合规自检 — 统计 ✅ 数量
+  // 按标题行定位章节（正文/表格里提前提及「架构合规自检」不再误截前文片段）；
+  // 无标题式写法时回退旧的首次出现匹配（兼容旧 handoff）。
+  let archBlock = null;
+  const headingIdx = lines.findIndex(l => /^#{1,6}\s.*架构合规自检/.test(l));
+  if (headingIdx >= 0) {
+    let end = lines.length;
+    for (let i = headingIdx + 1; i < lines.length; i++) {
+      if (/^#{1,6}\s/.test(lines[i])) { end = i; break; }
+    }
+    archBlock = lines.slice(headingIdx, end).join('\n');
+  } else {
+    const archMatch = text.match(/架构合规自检[\s\S]*?(?=\n## |$)/);
+    if (archMatch) archBlock = archMatch[0];
+  }
   let archCheckmarks = 0;
   let archMissing = [];
-  const archMatch = text.match(/架构合规自检[\s\S]*?(?=\n## |$)/);
-  if (archMatch) {
-    const archBlock = archMatch[0];
+  if (archBlock !== null) {
     archCheckmarks = (archBlock.match(/✅/g) || []).length;
     // 检查是否有 ❌
     const hasFail = archBlock.includes('❌');
