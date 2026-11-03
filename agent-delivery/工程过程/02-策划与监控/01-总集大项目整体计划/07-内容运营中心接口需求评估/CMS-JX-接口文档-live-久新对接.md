@@ -2,8 +2,8 @@
 
 | 项 | 值 |
 |---|---|
-| 文档版本 | live-1.5（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；新增智能搜索四接口） |
-| 更新日期 | 2026-11-02 |
+| 文档版本 | live-1.6（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；智能搜索四接口新增 country_location_ids 地区筛选） |
+| 更新日期 | 2026-11-03 |
 | 提供 | 科技专题服务系统项目组（智树侧） |
 | 适用 | 久新 CMS 对接；**仅含已上线接口** |
 | 接口数量 | **112**（v1.5 新增 smart-search/enterprise、industry、policy、service） |
@@ -2309,8 +2309,11 @@ _（本接口无额外字段说明，见通用约定）_
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | keyword | string | 是 | 关键词（多词空格分隔） |
+| country_location_ids | string[] | 否 | 久新地区码数组（live-1.6 新增；不传=不过滤） |
 | page | integer | 否 | 默认 1 |
 | size | integer | 否 | 默认 20，上限 100 |
+
+**地区筛选语义**：`country_location_id` 经智树侧映射为自有国家码后真实过滤（国内+海外企业均覆盖）；映射不上的码（如多数小国）→ 查询结果为空；国内索引现全为 CHN，海外索引数据接入后自动生效。
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为企业文档（org_id / name_cn / social_credit_code / 行业 / 地区等，全量字段以实际返回为准）。
 
@@ -2319,6 +2322,7 @@ _（本接口无额外字段说明，见通用约定）_
 `POST /api/open/cms/v1/smart-search/industry`
 
 **请求体**：同 3.19.9。
+> live-1.6：支持 `country_location_ids`；产业无地区概念，参数收下忽略（不报错）。
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为产业链节点（id / stableId / objectType / name / aliases / tags 等）。
 
@@ -2327,6 +2331,7 @@ _（本接口无额外字段说明，见通用约定）_
 `POST /api/open/cms/v1/smart-search/policy`
 
 **请求体**：同 3.19.9（page/size 自动换算下游 limit/offset）。
+> live-1.6：支持 `country_location_ids`；当前仅国内数据——传「中国」放行正常查，传其他地区快速返回空。
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为政策条目（policy_id / title 等）。
 
@@ -2335,6 +2340,7 @@ _（本接口无额外字段说明，见通用约定）_
 `POST /api/open/cms/v1/smart-search/service`
 
 **请求体**：同 3.19.9。
+> live-1.6：支持 `country_location_ids`；当前仅国内数据——传「中国」放行正常查，传其他地区快速返回空。
 
 **响应 `data`**：`{total, page, size, records[]}`；records 为服务机构文档（org_id / service_org_code / name_cn 等）。
 
