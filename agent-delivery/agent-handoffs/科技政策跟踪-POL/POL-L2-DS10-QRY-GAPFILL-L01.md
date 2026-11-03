@@ -8,8 +8,8 @@ ponytail: full
 |------|-----|
 | claimed_by | `agent:data-agent` |
 | supervised_by | `human:淮政玮` |
-| claim_type | 父会话已认领并置为 in_progress。本会话不改 task-registry |
-| 说明 | 不标 done，不 commit，不 push |
+| claim_type | 父会话已认领。本会话不改 task-registry，不把任务标成 done |
+| 说明 | 用户授权提交并推送 origin/dev。备注不写联调通过 |
 
 ## Ponytail
 
@@ -50,7 +50,7 @@ ponytail: full
 
 | 偏离 | 理由 | as-built |
 |------|------|----------|
-| 表没有在库上建出来 | 本机连 `10.50.11.76:3306` 超时，errno 2003。SSH 执行器未连上，没有改从别的机器灌 | DDL+INSERT 已落盘，可重复执行。连上后 `python scripts/seed_gapfill_policy_qry.py --apply` |
+| 表没有在库上建出来 | 本机和能登录的 88 网段机器都到不了 `10.50.11.76:3306`。`88.84` 主机不可达。`20.17.39.28:2222` 握手超时。没有执行 `--apply`，没有执行 SQL | DDL+INSERT 已在脚本里。连上库后仍用 `python scripts/seed_gapfill_policy_qry.py --apply` |
 | 数据落点单写过「199 不落新表」 | 该句早于签收补充。本单按 ARCH 第 7.1 节和说明书第 11.1 节准备名次表 | 只准备 `gapfill_policy_qry_rank`，不改 DATA 文档 |
 | 目录行、名次行 `metric_id` 为空 | 这两类没有已登记指标号。不新造 id | 统计行只用上面七个已有 id |
 | 有效率是手工百分数 | DATA 写明口径未指定，第一批不写正式库有效率列 | 缺项表一列 `stat_rate`，不写正式库 |
@@ -61,28 +61,41 @@ ponytail: full
 
 - `repos/lumen-algo-py/scripts/seed_gapfill_policy_qry.py`
 - `repos/lumen-algo-py/scripts/mysql/gapfill_policy_qry.sql`
+- `repos/lumen-algo-py/vendor/entan-py/api/policy_routes.py`（排序只读名次表，另一次 commit）
+- `repos/lumen-algo-py/tests/test_policy_job.py`
 - 本 handoff
 
-未改 `vendor/entan-py/api/policy_routes.py`。未改 Java。未改展示服务。
+未改 Java。未改展示服务。SQL 没有在库上执行。
 
 ## 验收证据
 
-库没有连上，表没有建上，库内行数没有。
+三张表没有建上。库内行数没有。脚本准备插入、尚未入库的行数仍是 doc 6、stat 20、rank 18。
 
 | 项 | 结果 |
 |---|---|
-| 目标库 | `gkxlumenx_gapfill` |
-| 本机连接 | `10.50.11.76:3306`，errno 2003，`Can't connect to MySQL server on '10.50.11.76' (timed out)` |
-| 表 | 未建上 |
-| 库内行数 | 没有。下面是脚本准备插入、尚未入库的行数 |
-| `gapfill_policy_qry_doc` | 6 |
-| `gapfill_policy_qry_stat` | 20 |
-| `gapfill_policy_qry_rank` | 18 |
+| 目标库 | `gkxlumenx_gapfill`（未连上，未写入） |
+| 表 | `gapfill_policy_qry_doc`、`gapfill_policy_qry_stat`、`gapfill_policy_qry_rank` 都未建上 |
+| 库内行数 | 没有。未执行 SELECT COUNT |
+| 期望行数 | doc 6、stat 20、rank 18（只在脚本校验里，不是库内行数） |
 
-命令（在 `repos/lumen-algo-py`，退出码以实测为准）：
+连接尝试（2026-11-03，密码未落盘、未打印）：
+
+| 环境 | 命令 / 现象 | 能否连 `10.50.11.76:3306` |
+|---|---|---|
+| 本机 | 先前 `--apply`：errno 2003，连接超时。本机也没有到 `10.50.0.0/8` 的路由 | 否 |
+| `88.84(后台服务器)` `192.168.88.84:22` | MCP `ssh_connect`。ping 回 Destination host unreachable。SSH `ETIMEDOUT` | 进不去这台机器 |
+| `88.48` | MCP `ssh_connect` 成功。`timeout 5 bash -c 'echo >/dev/tcp/10.50.11.76/3306'` → `MYSQL_TCP_FAIL`。同机到 `20.17.39.28:2222` 也失败 | 否 |
+| `88.43` | MCP `ssh_connect` 成功。同样的 5 秒 TCP 探测失败 | 否 |
+| `88.50` / `88.34` / `88.36` / `88.42` | SSH 登录成功。到 `10.50.11.76:3306` 与 `20.17.39.28:2222` 的 4 秒 TCP 探测都失败 | 否 |
+| `20.17.39.28-k8s` | 本机连 `20.17.39.28:2222` 握手超时。当天更早一次 MCP 连接也是 `ETIMEDOUT` | 进不去，没看到算法 Pod |
+| `10.50.69.111`、`10.50.219.67`、`10.50.238.250` | 经 `jumpserver.zphz.cn:2222`，握手超时 | 进不去 |
+
+没有在任何机器上执行 `python scripts/seed_gapfill_policy_qry.py --apply`，也没有执行 `scripts/mysql/gapfill_policy_qry.sql`。没有写 ODS、DWD、ADS、demo。
+
+命令（在 `repos/lumen-algo-py`，上一轮实测，本轮没有重跑 --apply）：
 
 - `python scripts/seed_gapfill_policy_qry.py --check` → 退出码 0。输出 `{"mode":"check","ok":true,"db":"gkxlumenx_gapfill","rows":{"gapfill_policy_qry_doc":6,"gapfill_policy_qry_stat":20,"gapfill_policy_qry_rank":18}}`
-- `python scripts/seed_gapfill_policy_qry.py --apply` → 退出码 2。输出 `{"mode":"apply","connected":false,"errno":2003,"reason":"Can't connect to MySQL server on '10.50.11.76' (timed out)"}`
+- `python scripts/seed_gapfill_policy_qry.py --apply` → 上一轮退出码 2。输出 `{"mode":"apply","connected":false,"errno":2003,"reason":"Can't connect to MySQL server on '10.50.11.76' (timed out)"}`
 
 自检锁住：七个已有指标号齐全；级别、全国、时序、类型的件数合计都是 6；深圳全市 3；名次三个维度各是 1 到 6 的全排列；时效性与发布日期从新到旧一致；SQL 不出现打分列名，也不出现 ODS、DWD、ADS、demo 库名。
 
@@ -110,18 +123,26 @@ ponytail: full
 
 ## CI/CD
 
-- 分支：lumen-algo-py 与 gkx-orchestration 的本地工作区
-- commit：无。本单不提交
-- pipeline：无
+- 分支：`lumen-algo-py` 与 `gkx-orchestration` 的 `dev`
+- 库：未连上，表未建，行数没有
+- pipeline：本单不跟发布
 - 部署：无
-- 库：未连上，表未建
+- commit：提交后写在下一节
+
+## 提交
+
+`lumen-algo-py` `dev`：
+
+- `e1a6246920f1248e331d0b3e0a0a09f29f51fb4d` `feat(policy): 灌多维检索缺项表 [agent:data-agent]`（只含两个脚本）
+- `46ef9d41075659edba36cb8d066bb3f5eeea0f16` `feat(policy): 排序只读缺项名次表 [agent:api-agent]`（只含 `policy_routes.py` 与 `tests/test_policy_job.py`）
+
+本仓只提交这份 handoff。
 
 ## 未做的事
 
-- 未改 task-registry，未标 done，未 commit，未 push
-- 未改 `vendor/entan-py/api/policy_routes.py`（排序读表由另一个会话做）
+- 未改 task-registry，未把任务标成 done
+- 未把三张表建进 `gkxlumenx_gapfill`，未灌行
 - 未改 Java，未改展示服务，未在接口里写死 mock
 - 未灌 201 检索历史与收藏、202 导出文件
 - 未改 D4，未动 `GDF-POLICY-MOCK-GATE-L01`
 - 未写 ODS、DWD、ADS、供应方库，未读 demo 库
-- 库未连上，三张表尚未建到 `gkxlumenx_gapfill`
