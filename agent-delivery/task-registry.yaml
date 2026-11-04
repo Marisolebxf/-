@@ -53272,7 +53272,8 @@ tasks:
     actual_tokens: 40000
     actual_cost: 0.04
     evidence: "[object Object]"
-    note: "jobs 白名单放行 policy_region_diff 完成，push df497dc，单测断言已补（合法转发+裸名拒绝），随 CI backend:build 验证（本机无 mvn，仓惯例 PIPELINE-WAIVER）。handoff 待 CI 绿后提交。"
+    note: |
+      联调修复：线上 trace ca82b76c 定位到 topic-async 建任务门（PolicyAnalysisTypes.CANONICAL）漏注册 policy_region_diff（display→async→py 三道白名单只改了两道）。已补 REGION_DIFF 常量+CANONICAL+skipsIndustryVidXor 及 3 个测试类断言；期间 CI 抓出白名单快照测试 9→10 键，已修。pipeline 3726 backend:build 绿、deploy:topic-async-service success → K8s dev 已发布。修复 commits: f9b152c/4ccd609/f80e8d9。Loki 确认 14:43 后无新 rejected。等用户重新点「开始分析」复测。
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-04T06:04:37.315Z"
     last_seen_at: "2026-11-04T06:04:37.315Z"
@@ -53297,7 +53298,7 @@ tasks:
       - "PolicyPanoramaServiceTest 新增断言全绿、存量不红"
       - "handoff 含验证证据"
       - "cost 四字段回填"
-    update_time: "2026-11-04T14:25:05+08:00"
+    update_time: "2026-11-04T15:05:13+08:00"
   - id: POL-REGIONDIFF-FE-L01
     cost_warn: "false"
     actual_cost: 0.15
@@ -53305,7 +53306,7 @@ tasks:
     actual_tokens: 150000
     evidence: "[object Object]"
     note: |
-      前端接线完成：开始分析/重新分析+单飞+轮询+当天复用，切地区不自动起任务；type-check/build/panorama 域 5 个自检全绿。人工验收闸门：本地 commit 9edea3d 停在工作区待监管人走查，不 push。handoff: agent-delivery/agent-handoffs/POL-REGIONDIFF-FE-L01.md
+      联调修复（trace 1c44cfc1）：async 对 policy 类任务强校验 analysis_fp，缺则静默 R.failed 不落库——补 sha256Hex(regionDiffFpSeed) 指纹派生，同区域集合同指纹当天幂等复用。panorama 5 自检 + type-check 绿，push d1f6ee8（含 827d362）。等用户重新点「开始分析」复测。
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-04T06:14:34.180Z"
     last_seen_at: "2026-11-04T06:14:34.180Z"
@@ -53331,7 +53332,7 @@ tasks:
       - "pnpm type-check 过 + FE-POL-SENT-LIVE.test.mjs 或新增 .test.mjs 断言更新全绿"
       - "附录 D 防漏扫描摘要 + handoff"
       - "cost 四字段回填"
-    update_time: "2026-11-04T14:37:21+08:00"
+    update_time: "2026-11-04T15:34:29+08:00"
   - id: FIX-POL-INTENSITY-FP-L02
     model_used: "glm-5.3-flash"
     evidence: |
@@ -53367,13 +53368,18 @@ tasks:
       - "④ handoff 记录 trace 排查结论（4fa75276 trace 全 200 但业务 code:1，无 execute 下游调用）"
     update_time: "2026-11-04T14:26:02+08:00"
   - id: FIX-POL-INTENSITY-FP-API-L01
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/FIX-POL-INTENSITY-FP-API-L01.md"
+    cost_warn: "green"
+    actual_tokens: 90000
+    actual_cost: 0.9
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-04T06:41:25.303Z"
     last_seen_at: "2026-11-04T06:41:25.303Z"
     lock_until: "2026-11-04T10:41:25.303Z"
     claimed_by: "agent:api-agent"
     title: "政策 Job 服务端补 analysis_fp 兜底：display toAsyncCreateBody 缺指纹自动派生，救活 209/212/214/218 全部入口"
-    status: "claimed"
+    status: "integration"
     agent: "api-agent"
     epic: "科技政策跟踪"
     priority: "P1"
@@ -53383,8 +53389,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 40000
-    note: |
-      trace 2c4a45ce 排查结论：POST /display/v1/policy/panorama/jobs 全链 200 但业务 code:1「analysis_fp 不能为空」——async-service 政策类任务强校验指纹，而 display 层 toAsyncCreateBody 不补默认值；前端仅 223/226（evaluationWiring）带指纹，209/212/214/218 入口全缺。选方案 A 服务端兜底：与另一会话已认领的前端单 FIX-POL-INTENSITY-FP-L02（lumen-ui-science-pc，14:26 认领）不同仓互补，前端带了就透传，服务端只在缺失时派生。
+    note: "AV-0 触发：handoff 已提交 + evidence 已回填；等待监管人走查后 push 业务仓"
     touched_files:
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyPanoramaService.java"
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyEvaluationService.java"
@@ -53395,4 +53400,4 @@ tasks:
       - "③ 单测覆盖三点：缺指纹自动补、带指纹原样透传、同参数派生指纹一致；mvn 对应模块 test 绿"
       - "④ 与前端 FIX-POL-INTENSITY-FP-L02（带指纹直发）不冲突：前端带则透传，服务端仅缺失时兜底"
       - "⑤ handoff 含 trace 排查结论（2c4a45ceebc0b53b5b28cceaac53cc63 与 4fa75276 同根因）+ 架构合规自检"
-    update_time: "2026-11-04T14:41:26+08:00"
+    update_time: "2026-11-04T15:43:33+08:00"
