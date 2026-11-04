@@ -36,9 +36,9 @@
 
 ## 产物清单
 
-- 包：`agent-delivery/data/GDF/派单包/服务机构/GDF-SVC-WORKPACK/`（00/01/04/06/08/09/10/11/12/13/README/CHANGELOG + round2/）
+- 包：`agent-delivery/data/GDF/派单包/服务机构/GDF-SVC-WORKPACK/`（00/01/04/06/08/09/10/11/12/13/README/CHANGELOG）
 - storage：`seeds/svc_rule_demo_kw_v1.md`、`seeds/README.md`、`etl/ods-to-ads-mapping.md`、`etl/ods-to-dwd-mapping.md`、`02-asbuilt-process-chain.md`
-- 对接：`…/GDF侧提交/…/round2/02-answers-round1.md`
+- 对接（round2 答复，工程侧目录）：`…/GDF侧提交/…/round2/01-round1答复与落地说明.md`
 
 ## 验收证据
 
