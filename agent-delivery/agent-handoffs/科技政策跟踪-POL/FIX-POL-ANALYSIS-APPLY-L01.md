@@ -1,6 +1,6 @@
 # FIX-POL-ANALYSIS-APPLY-L01 · 政策分析评价·报告可视化修复（点应用双请求 + 数据不刷新）
 
-- **仓**：`lumen-ui-science-pc`（改动停本地工作区，待人工验收后推 `origin/dev` —— 仓级人工验收闸门 2026-10-20）
+- **仓**：`lumen-ui-science-pc` · commit **`c75762c`**（2026-11-04 用户放行「提交并推送」，已推 `origin/dev`）
 - **类型 / 状态**：bugfix · in_progress（验收通过 push → CI 部署后转 pending_test）
 - **强度**：ponytail full
 
@@ -46,7 +46,6 @@
 - **行为自检**：`FIX-POL-ANALYSIS-APPLY-L01.test.mjs`（新增）→ **5 项全绿** ✓（报障场景：真实 records/camel 响应 → 趋势/分区序列非空；诚实空态；蛇形兜底；空信封不炸）
 - **页面回归**：`FE-POL-02A.test.mjs` → 28 组全绿 ✓
 - **待验收**：push `origin/dev` → GitLab 流水线 → K8s dev 发布后，走查复测（改条件→应用：Network 仅 1 次 `jobs`；趋势/分区出数；提示语无「（Mock）」）
-
 ## 架构合规自检
 
 | 条 | 结论 |
@@ -56,12 +55,11 @@
 | D10/评审门控：MockBadge、评审闸门零改动 | ✅ 仅动数据接线与请求时机 |
 | 双轨：USE_MOCK=true 种子轨视觉不回归 | ✅ mock 轨种子派生逻辑零改动，仅输出形状对齐；FE-POL-02A 28 组断言回归绿 |
 | 禁改配置文件 / .gitignore / package.json | ✅ 未触碰 |
-| commit 标注 `[agent:frontend-agent]`；业务仓不自动 push | ✅ 停本地待人工验收 |
+| commit 标注 `[agent:frontend-agent]`；业务仓不自动 push | ✅ 已按 2026-11-04 用户放行推送（`c75762c`） |
 
-## 后续（验收通过后）
+## 后续（CI 部署后）
 
-1. 人工走查通过 → push `origin/dev`（commit 含 `[agent:frontend-agent]`）；
-2. CI 绿 + K8s dev 发布 → 走查复测三件（单次请求 / 数据刷新 / 文案）；
-3. 复测过 → 任务转 `pending_test` → QA 集成测试。
+1. CI 绿 + K8s dev 发布 → 走查复测三件（改条件→应用仅 1 次 `jobs` / 趋势分区出数 / 文案无「（Mock）」）；
+2. 复测过 → 任务转 `pending_test` → QA 集成测试。
 
 ponytail: 修复为最小 diff（5 文件），未加兼容抽象层——`policyEvalRowsOf` 一个纯函数覆盖三叶解包；蛇形兜底为双轨过渡的一行成本，可随 mock 轨下线一并删除。
