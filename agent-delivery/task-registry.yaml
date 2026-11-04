@@ -48405,13 +48405,18 @@ tasks:
       - "推演只认 M_POLICY_SIMULATE，不写入布局推荐"
     update_time: "2026-11-04T16:30:02+08:00"
   - id: POL-L2-DS12-SIM-ARCH
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-SIM-ARCH.md"
+    cost_warn: "green"
+    actual_tokens: 60000
+    actual_cost: 0.1
     claimed_at: "2026-11-04T08:17:57.944Z"
     last_seen_at: "2026-11-04T08:17:57.944Z"
     lock_until: "2026-11-04T16:17:57.944Z"
     claimed_by: "agent:arch-agent"
     supervised_by: "human:淮政玮"
     title: "政策效果推演 · 科技政策推演 · 后台实现架构设计"
-    status: "claimed"
+    status: "in_progress"
     agent: "arch-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48421,9 +48426,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: |
-      监管 human:淮政玮。WBS-05-23-L2-09A。SRS 序号 237–242。文本解析与解读报告 501。关联分析跨项。布局推荐不在 237–242。
-      执行说明补充：参考算法中台里与本二级对应的政策实现（demo-ui-system-test 政策相关部分，以及已登记的政策算法作业）。lumen 链路已有对应设计的，沿用 lumen 设计。没有对应设计的，分析算法中台实现，把合理部分迁移到 lumen 链路（/display/v1/policy、gkxlumen-topic-policy、Python /internal/*）。架构稿必须写出迁移之后的最终架构。lumen 不直连 demo 服务，不把 demo 路径写成对外入口。
+    note: "开工：落盘 237–242 科技政策推演六叶实现架构（SIM 组）"
     depends_on:
       - "POL-DISPLAY-SDD-L01"
     touched_files:
@@ -48435,7 +48438,7 @@ tasks:
       - "落盘该二级的实现架构与整体流程（同步读面、Job、501 空态、跨项只消费）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-SIM-ARCH.md"
       - "服从 /display/v1/policy，不消费 /topic/v1/policy，不新造指标，不写字段表，不重开 GDF"
       - "布局推荐不在 237–242，不顶替推演"
-    update_time: "2026-11-04T16:17:58+08:00"
+    update_time: "2026-11-04T16:47:43+08:00"
   - id: POL-L2-PC1-CLEAN-ARCH
     evidence: |
       架构稿已落盘：agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC1-CLEAN-ARCH.md。零建表零灌数，只读第 6 项已有结果（dwd.policy_base_info/script_state，ads.policy_text_parse/policy_industry_rel）；质量计数从 script_state 六状态聚合，不挂 M_POLICY_VALIDITY_RATE；资源仅 governance/results 一条，同步读，不进异步
@@ -53464,3 +53467,36 @@ tasks:
       - "k8s/lumen-topic.yaml 变更走 PR/commit 留痕，pipeline 绿 + deploy:k8s success"
       - "handoff + registry 回填"
     update_time: "2026-11-04T17:42:10+08:00"
+  - id: SYSINT-XJOIN-FEAS-02-L01
+    title: "跨库关联分析可行性调研：六场景判定（合规验收依据）"
+    status: "backlog"
+    agent: "doc-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: |
+      WBS-02-16。2026-11-04 甲方要求把「核心判定：跨库关联分析」落成可行性调研任务。附页 B 已随主文档发出久新（无桥四场景回复期限 11-14）。三条全绿=能依靠久新；否则按五级阶梯升级。与 SYSINT-CLSMAP-02-L01（场景 1 收敛）、SYSINT-TECHMAP-02-L01（场景 2 建桥）分流不重复。
+    collaborators:
+      - "data-agent"
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/对接文档/我方/2026-11-04-附页B-跨库关联可行性调研任务书.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/对接文档/我方/2026-11-04-附页B-跨库关联可行性调研任务书.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/对接文档/我方/2026-11-04-久新配合事项与集成路线.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/调研记录.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "六场景逐一判定（学科↔产业 / 链节点↔技术节点 / 人才机构↔区域 / 机构↔企业 / 三要素↔政策 / 多源合成），每场景给绿/黄/红结论 + 缺口 + 对付阶梯定级（同域化/字典桥/补算/久新补表/降级空态）"
+      - "判定须有可追溯依据：久新库实查（表、行数、字段证据）或久新书面回复，不把调研覆盖写成已对齐"
+      - "已有桥场景（场景 1）核实边界：113 条之外的学科↔产业关联、ads_industry 与 INB 码域关系、relation_type/mapping_weight 语义"
+      - "无桥四场景（2/3/4/5）按附页 B 清单逐项实查：technology_application_case 可提炼性、ads_location_external_id 对码能力、institution 信用码字段、政策证据灌数计划与 ID 体系"
+      - "久新回复（期限 11-14）收回后合并进判定记录；判定结论作为合规验收依据交监管人 human:唐绍祖 与 human:淮政玮"
+      - "handoff 写明判定表、证据链、阶梯定级与留给 CLSMAP/TECHMAP 叶的承接关系；不改任何一侧库、不建映射、不写业务代码"
+    update_time: "2026-11-04T19:16:08+08:00"
