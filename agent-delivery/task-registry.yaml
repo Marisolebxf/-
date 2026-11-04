@@ -53315,3 +53315,27 @@ tasks:
       - "附录 D 防漏扫描摘要 + handoff"
       - "cost 四字段回填"
     update_time: "2026-11-04T14:14:39+08:00"
+  - id: FIX-POL-INTENSITY-FP-L02
+    title: "政策详细对比·计算支持力度报错：intensityJobBodyOf 缺 analysis_fp 被服务端拒（analysis_fp 不能为空）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      用户 trace 4fa7527693513afcfb2e88d56b77d6d5 排查结论：POST /display/v1/policy/panorama/jobs HTTP 200 + 任务创建 span 200（transport 全绿），但响应体 code:1「analysis_fp 不能为空」——async-service 对 policy 类任务走 createFingerprintGatedTask 强校验 analysis_fp（64 位 SHA-256），前端 intensityJobBodyOf（compareLive.ts L132）只发 sub_type+params 未带指纹 → 任务创建被拒、无下游执行。同弹窗「部分字段获取失败」横幅为 element gapfill_policy_eval_shell 缺 topic_or_metric 列的已知缺口（独立问题，不在本单修）。
+    touched_files:
+      - "src/views/policy/panorama/compareLive.ts"
+      - "src/views/policy/panorama/components/ComparisonModal.vue"
+      - "src/views/policy/panorama/FE-POL-CMP-LIVE.test.mjs"
+    definition_of_done:
+      - "① ComparisonModal「计算支持力度」点击后任务能创建成功（带 analysis_fp），不再返回「analysis_fp 不能为空」"
+      - "② 复用 sha256Hex 生成 64 位小写 SHA-256 指纹（入参含 policy_ids，同条件当天幂等复用；不掺随机）"
+      - "③ USE_MOCK=true 种子轨零回归；FE-POL-CMP-LIVE.test.mjs 自检更新后全绿"
+      - "④ handoff 记录 trace 排查结论（4fa75276 trace 全 200 但业务 code:1，无 execute 下游调用）"
+    update_time: "2026-11-04T14:20:04+08:00"
