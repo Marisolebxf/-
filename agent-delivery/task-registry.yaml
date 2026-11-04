@@ -53229,3 +53229,66 @@ tasks:
       - "⑤ 更新/新增最小自检（node 直跑断言）覆盖上述三点，全绿"
       - "⑥ handoff 写入 agent-handoffs/科技政策跟踪-POL/，登记修复根因（items vs records 契约错位 + watch 引用比较双触发）"
     update_time: "2026-11-04T13:42:17+08:00"
+  - id: POL-REGIONDIFF-PY-L01
+    title: "区域政策差异性分析 Python 任务：polan 新增 policy_region_diff 结果板 + Job 接入"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "repos/lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 150000
+    depends_on: []
+    definition_of_done:
+      - "polan/eval/region_diff.py 三列矩阵+差异点实算可跑"
+      - "polan/job.py 注册 policy_region_diff 且非法 regions 被拒"
+      - "pytest 新增用例全绿、存量用例不红"
+      - "handoff 含验证证据与 is_mock 透传说明"
+      - "cost 四字段回填"
+    update_time: "2026-11-04T13:52:23+08:00"
+  - id: POL-REGIONDIFF-API-L01
+    title: "区域政策差异性分析 Java 门面：jobs 白名单放行 policy_region_diff"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "repos/lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: 1
+    difficulty: "S"
+    estimated_tokens: 60000
+    depends_on:
+      - "POL-REGIONDIFF-PY-L01"
+    definition_of_done:
+      - "PolicyPanoramaService.JOB_SUB_TYPES 白名单含 policy_region_diff，非法 sub_type 仍拒绝"
+      - "toAsyncCreateBody 对 policy_region_diff 正确转发（analysisType=policy_region_diff）"
+      - "PolicyPanoramaServiceTest 新增断言全绿、存量不红"
+      - "handoff 含验证证据"
+      - "cost 四字段回填"
+    update_time: "2026-11-04T13:52:47+08:00"
+  - id: POL-REGIONDIFF-FE-L01
+    title: "区域政策差异性分析前端接线：开始分析 + Job 轮询 + 真实矩阵渲染"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "repos/lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 180000
+    depends_on:
+      - "POL-REGIONDIFF-API-L01"
+    definition_of_done:
+      - "USE_MOCK=false：开始分析/重新分析按钮 + 单飞 + 轮询 + 当天复用（复用 sentimentLive 工具），切地区选择器不自动起任务"
+      - "USE_MOCK=true：现种子演示不变，MockBadge 不撤"
+      - "payload 矩阵/差异点渲染，空态诚实（不造数据），失败不清已返回结果"
+      - "pnpm type-check 过 + FE-POL-SENT-LIVE.test.mjs 或新增 .test.mjs 断言更新全绿"
+      - "附录 D 防漏扫描摘要 + handoff"
+      - "cost 四字段回填"
+    update_time: "2026-11-04T13:53:16+08:00"
