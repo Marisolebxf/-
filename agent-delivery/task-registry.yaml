@@ -53156,3 +53156,31 @@ tasks:
       - "30 行 SUB-ONLY 裁决清单产出（cross_coverage.py）交监管人 human:淮政玮；裁决写回 industry_cluster_map 或 subfield_topic_map，不改镜像表"
       - "handoff 写明表名、通道、切换点与回落策略；架构合规自检（调用链/不改政策三页/不直连久新）"
     update_time: "2026-11-04T12:23:31+08:00"
+  - id: FIX-POL-ANALYSIS-APPLY-L01
+    title: "政策分析评价·报告可视化：点【应用】重复请求两次 + 接口有数据但图表不刷新（契约键位错位）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 60000
+    note: |
+      用户 2026-11-04 走查反馈：政策分析评价→政策分析报告可视化呈现，修改条件后点【应用】请求两次接口，且返回有数据时界面不刷新、仍提示「已按所选维度刷新分析图表（Mock）」。根因已定位：(a) 趋势 watch 依赖数组 props.switchDims 为模板内联表达式新数组引用 → 条件变更与点应用各触发一次；(b) 前端读 items/蛇形字段，后端（PolicyEvaluationService.trend / element records）返回 records/驼峰（switchDim/dimValue/metricName/pointValue；分区 objectKind/objectName/compareValue/resourceDirection）→ 行全部丢弃。修复只动 lumen-ui-science-pc 前端；USE_MOCK=true 种子轨不回归。
+    touched_files:
+      - "src/views/policy/analysis/index.vue"
+      - "src/views/policy/analysis/TrendMetricsChart.vue"
+      - "src/views/policy/analysis/RegionGroupCompare.vue"
+      - "src/api/policyEvaluationViz.ts"
+      - "src/views/policy/analysis/FE-POL-02A.test.mjs"
+    definition_of_done:
+      - "① 切条件（下拉 v-model 变更）不再触发趋势/分区接口请求，仅点击【应用】后统一刷新一次（单飞防重）"
+      - "② 接口返回行被前端正确消费：读 `records` 键 + 驼峰行字段（switchDim/dimValue/metricName/pointValue 等），趋势图/分区图在返回有行时刷新出数据，无行诚实空态"
+      - "③ 「已按所选维度刷新分析图表（Mock）」提示语去除（Mock) 不诚实字样（或按 USE_MOCK 双轨区分文案）"
+      - "④ USE_MOCK=true 轨回归不变（demo 种子视觉不破坏）"
+      - "⑤ 更新/新增最小自检（node 直跑断言）覆盖上述三点，全绿"
+      - "⑥ handoff 写入 agent-handoffs/科技政策跟踪-POL/，登记修复根因（items vs records 契约错位 + watch 引用比较双触发）"
+    update_time: "2026-11-04T13:22:54+08:00"
