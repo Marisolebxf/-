@@ -53575,3 +53575,28 @@ tasks:
       - "判定结论写成调研记录（同 XJOIN 格式：数据在/桥/口径三条件），交监管人 human:唐绍祖 复核；结论直接影响专题产业链页与展示态势页三要素区块的供数方案"
       - "handoff 说明与 XJOIN-FEAS（场景 2/6）、CLSMAP（集群层）、TECHMAP（技术节点桥）的分流边界；只调研判定，不建映射不写业务代码"
     update_time: "2026-11-04T20:09:43+08:00"
+  - id: POL-L2-DS10-SRCMON-API-L01
+    title: "科创政策全景 · 来源监控头部数据接口 · GET /display/v1/policy/panorama/source-status（截至时间+来源聚合，只读）"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 300000
+    user_story: "US-DS-POL-02"
+    note: |
+      背景：demo 政策全景·动向跟踪「政策来源监控与更新」头部（最近同步·调度·来源状态·立即同步）在 lumen 生产（USE_MOCK=false）被隐藏，2026-11-04 用户裁定完整对齐 demo；「立即同步」按钮前端 v-permission 权限控制（human:redfo 拍板），后端只补只读数据接口。设计依据：POL-L2-DS10-TREND-API/ARCH 已签收分册 §4.1（不建抓取）+ 203 ingest 复用
+    touched_files:
+      - "gkxlumen-display 模块 PolicyPanorama 相关 Controller/Service"
+    definition_of_done:
+      - "新增只读端点：GET /display/v1/policy/panorama/source-status，返回（a）数据截至时间=203 ingest 同源的最新入库落库时间，（b）来源状态=按现有入库行 GROUP BY 来源聚合的行数/最新时间，不新建站点清单表"
+      - "不建抓取/定时/触发端点；「立即同步」前端动作另行走权限控制方案，后端不提供同步触发 API（架构 TREND-ARCH §4.1 维持有效）"
+      - "空态诚实：无入库行则截至时间为空、来源列表空，不造数、不返回写死 mock（D18）"
+      - "浏览器仍只打 /display/v1/policy/**；display 不直连库，经 gkxlumen-element 读 ADS，链路与 trace 沿既有展示链"
+      - "读失败只让对应字段空，不清空其它块"
+      - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
+    update_time: "2026-11-04T22:35:06+08:00"
