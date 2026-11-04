@@ -40397,6 +40397,38 @@ tasks:
       - "空态/加载态/错误态全覆盖验证通过"
       - "DoD 全部 6 条父任务定义签收"
     update_time: "2026-10-23T17:39:11+08:00"
+  - id: SYSINT-MESSAGE-CENTER-L01
+    evidence: "agent-delivery/agent-handoffs/SYSINT-MESSAGE-CENTER-L01.md"
+    title: "门户消息中心对接（消息推送开放接口：通知/待办）"
+    status: "integration"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-11-04T00:00:00+08:00"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "crosscut"
+    task_type: "integration"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      展示系统（systemCode=TECH_INFO_DISPLAY）对接门户消息中心「消息推送开放接口」。对接文档：https://zhipu-ai.feishu.cn/wiki/X0rcwvemmiqS28kjthPcjVylnCe
+      已完成集成底座（gkxlumen-display）：MessageCenterClient（RestTemplate 客户端，X-System-Code/X-System-Secret 认证头 + 503/225001 退避重试 + 统一响应解析 + newMessageId）+ MessageCenterProperties/Configuration + NoticeMessage/TodoMessage/MessageCenterResponse 报文 DTO + application-local.yml 配置，mvn compile 通过。
+      待后续：把 25 个推送/预警功能点逐个接线到 pushNotice/pushTodo（触发逻辑分布在 upms / topic-policy 等，需逐点确认触发点）。
+      凭据：system-secret 属敏感信息，生产放 Nacos（application-dev.yml / gkxlumen-display-dev.yml），不入 git。
+    depends_on: []
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-11-04-门户消息中心-消息推送开放接口.md"
+      - "agent-delivery/agent-handoffs/SYSINT-MESSAGE-CENTER-L01.md"
+    definition_of_done:
+      - "MessageCenterClient 可推送通知 portal_notice_msg / 待办 portal_todo_msg，mvn compile 通过"
+      - "消息中心对接契约（topic/报文/认证/重试/错误码）已落文档"
+      - "system-secret 不入 git（生产走 Nacos）"
+      - "25 个推送/预警功能点接线（后续拆子任务）"
+    update_time: "2026-11-04T00:00:00+08:00"
   - id: LUMEN-POLICY-PY-SEARCH-FILTER-L01
     evidence: "agent-handoffs/政策模块-E7/LUMEN-POLICY-PY-SEARCH-FILTER-L01.md"
     supervised_by: "human:淮政玮"
@@ -53159,3 +53191,41 @@ tasks:
       - "30 行 SUB-ONLY 裁决清单产出（cross_coverage.py）交监管人 human:淮政玮；裁决写回 industry_cluster_map 或 subfield_topic_map，不改镜像表"
       - "handoff 写明表名、通道、切换点与回落策略；架构合规自检（调用链/不改政策三页/不直连久新）"
     update_time: "2026-11-04T12:23:31+08:00"
+  - id: FIX-POL-ANALYSIS-APPLY-L01
+    model_used: "glm-5.3-flash"
+    evidence: |
+      handoff=agent-delivery/agent-handoffs/科技政策跟踪-POL/FIX-POL-ANALYSIS-APPLY-L01.md；自检三件全绿：POL-L2-DS11-VIZ-WIRING.test.mjs 27 项 + FIX-POL-ANALYSIS-APPLY-L01.test.mjs（新增）5 项 + FE-POL-02A.test.mjs 28 组；pnpm type-check 绿；改动停 lumen-ui-science-pc 本地工作区待人工验收（仓级闸门）
+    cost_warn: "false"
+    actual_tokens: 55000
+    actual_cost: 0.12
+    claimed_at: "2026-11-04T05:23:32.456Z"
+    last_seen_at: "2026-11-04T05:23:32.456Z"
+    lock_until: "2026-11-04T09:23:32.456Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策分析评价·报告可视化：点【应用】重复请求两次 + 接口有数据但图表不刷新（契约键位错位）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 60000
+    note: |
+      用户 2026-11-04 走查反馈：政策分析评价→政策分析报告可视化呈现，修改条件后点【应用】请求两次接口，且返回有数据时界面不刷新、仍提示「已按所选维度刷新分析图表（Mock）」。根因已定位：(a) 趋势 watch 依赖数组 props.switchDims 为模板内联表达式新数组引用 → 条件变更与点应用各触发一次；(b) 前端读 items/蛇形字段，后端（PolicyEvaluationService.trend / element records）返回 records/驼峰（switchDim/dimValue/metricName/pointValue；分区 objectKind/objectName/compareValue/resourceDirection）→ 行全部丢弃。修复只动 lumen-ui-science-pc 前端；USE_MOCK=true 种子轨不回归。
+    touched_files:
+      - "src/views/policy/analysis/index.vue"
+      - "src/views/policy/analysis/TrendMetricsChart.vue"
+      - "src/views/policy/analysis/RegionGroupCompare.vue"
+      - "src/api/policyEvaluationViz.ts"
+      - "src/views/policy/analysis/FE-POL-02A.test.mjs"
+    definition_of_done:
+      - "① 切条件（下拉 v-model 变更）不再触发趋势/分区接口请求，仅点击【应用】后统一刷新一次（单飞防重）"
+      - "② 接口返回行被前端正确消费：读 `records` 键 + 驼峰行字段（switchDim/dimValue/metricName/pointValue 等），趋势图/分区图在返回有行时刷新出数据，无行诚实空态"
+      - "③ 「已按所选维度刷新分析图表（Mock）」提示语去除（Mock) 不诚实字样（或按 USE_MOCK 双轨区分文案）"
+      - "④ USE_MOCK=true 轨回归不变（demo 种子视觉不破坏）"
+      - "⑤ 更新/新增最小自检（node 直跑断言）覆盖上述三点，全绿"
+      - "⑥ handoff 写入 agent-handoffs/科技政策跟踪-POL/，登记修复根因（items vs records 契约错位 + watch 引用比较双触发）"
+    update_time: "2026-11-04T13:42:17+08:00"
