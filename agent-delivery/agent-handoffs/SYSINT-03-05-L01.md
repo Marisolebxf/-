@@ -42,6 +42,20 @@
 4. **空态诚实**：散点/时间轴/SWOT 用 V-E 空块 `reason` 作描述；不引入新依赖、不造数。
 5. mock 路径（`USE_MOCK=true`）原样保留，不受影响。
 
+## 阶段 2 实施（2026-11-04 下午，同会话切 api/frontend 角色完成，未另派单）
+
+**Python（已落地，阶段 2 开工时完成）**
+- `lumen-topic-py`：`/internal/gkx-search/profile/timeline`（创立+融资+资讯按年归组倒序；`_MAX_EVENTS_PER_YEAR=20`）+ `/internal/gkx-search/stats/enterprise-scatter`（x=竞争力分 / y=专利总量 / 气泡=注册资本，Top 500 上限 2000，缺 x/y 点丢弃）；路由与 `/internal` 白名单已注册。测试 `tests/test_ent_viz_endpoints.py` 4 passed。⚠️ 本机 sqlalchemy 1.4 与 requirements 2.0.51 不一致，app 级测试只能 CI 跑（纯函数本机全绿）。
+- `lumen-algo-py`：`/internal/enterprise/swot`（方案 A：LLM 四象限，严格四行解析，任何一行缺失整体拒绝；失败/无 Key 降级 `items=[]`）。测试 `tests/test_ent_swot.py` 9 例（含 01B 门面回归）全绿。
+
+**Java（api-agent 角色，javac 编译 0 error；mvn 本机 nexus 不可达由 CI 兜底）**
+- `RemoteEnterprisePythonClient` +3 Feign；`EnterpriseExtendedDTOs` +6 DTO；`EnterpriseVizServiceImpl.profileViz` 三块常量空态改真实编排（单块失败降级；SWOT 四象限不齐整块空）；单测 +4 例（timeline 组装/空态、SWOT 半截拒绝、scatter 缺点剔除）。
+- ⚠️ `EnterprisePythonRoutingClient`（并行会话在写）的 `httpMethod()` 报错为 classpath 版本差异，两段式编译验证通过，非本叶引入。
+
+**前端（frontend 角色，tsc/eslint 0 错，selfcheck 17 PASS）**
+- `EnterpriseVizPage` 三块升级真实渲染：散点 ECharts（行业/地区筛选沿用 + 「初版维度」说明行）；时间轴折叠（openYears 首年默认展开）；SWOT 四象限 + 「AI 生成」角标注记；peers 保留摘要形态（端点仍空态）。
+- mock 分支零改动；空态一律透出端点 reason。
+
 ## 阶段 2 缺口清单（2026-11-04 14:46 用户拍板后状态更新）
 
 | 项 | 拍板 | 状态 |
