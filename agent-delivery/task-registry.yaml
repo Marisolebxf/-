@@ -53095,7 +53095,7 @@ tasks:
     lock_until: "2026-11-04T07:48:03.931Z"
     claimed_by: "agent:data-agent"
     title: "服务机构 GDF 派单包 — round1 答复落地（Q0–Q11）"
-    status: "pending_test"
+    status: "done"
     agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P0"
@@ -53105,7 +53105,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "AV-0 通过：handoff+evidence 齐；文档叶待签收"
+    note: "签收：gkx-gdf-ddl-signoff 通过（文件 8 表全一致；demo_gkxlumenx_dwd/ads 与 gkxlumenx_dwd/ads 库层全一致，exit 0）"
     depends_on:
       - "SYSINT-06-21-01-L03"
     touched_files:
@@ -53121,4 +53121,41 @@ tasks:
       - "同步修订 storage/SVC 中与上列冲突的条款（源 id 停工、fallback 全表等），使包与 storage 一致"
       - "产出 round2 答复材料（answers / 变更说明），可交 GDF 关闭 round1 提问"
       - "CHANGELOG 升版并记本轮拍板；handoff 含架构合规与 cost；commit+push origin/dev"
-    update_time: "2026-11-04T11:51:24+08:00"
+    update_time: "2026-11-04T12:42:37+08:00"
+  - id: SYSINT-CLSMAP-02-L01
+    title: "产业挂钩对齐久新：集群×子学科官方映射镜像落库并切换读侧"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-svc-platform、lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      WBS-02-15。2026-11-04 重扫发现久新已建 ads_sz_gkx_industry_cluster*（113 条已审集群×子学科），我方集群×学科由两跳拼接的 LLM 口径切换为久新官方口径。镜像快照不改数；30 行裁决另走人工会。Topic×集群表留给 WBS-02-12。依赖 SYSINT-SURVEY-02-L01 未闭合所以落 backlog，等调研叶 done 后由 coordinator 转 ready。
+    depends_on:
+      - "SYSINT-SURVEY-02-L01"
+      - "SYSINT-TFMAP-02-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    touched_files:
+      - "repos/lumen-topic-py"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-svc-platform"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-CLSMAP-02-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-CLSMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/调研记录.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "镜像表 demo_gkxlumenx_dim.cluster_subfield_map 落库，只收 review_status=approved 行，行数与久新 release sz_gkx_industry_20261027_v1 一致（113）；同步幂等按 (cluster_code, subfield_id) upsert，不整表清空；密码不进 git"
+      - "lumen-topic-py 字典通道加 cluster_subfield_page 只读 op（每页≤500），不在页面直连久新"
+      - "GET /v1/meta/industry-clusters/industry-subfields 切数据源到镜像表；9 个 mapped 集群返回集合与久新 113 条一致，无映射集群空+emptyReason 不回落全量；切换期回落旧两跳口径必须带 source 标注"
+      - "展示态势页 /v1/situation/subfields 反查回归通过（CL-SEI-01 与久新口径一致）；政策页 subfield_topic_map 路径零改动"
+      - "30 行 SUB-ONLY 裁决清单产出（cross_coverage.py）交监管人 human:淮政玮；裁决写回 industry_cluster_map 或 subfield_topic_map，不改镜像表"
+      - "handoff 写明表名、通道、切换点与回落策略；架构合规自检（调用链/不改政策三页/不直连久新）"
+    update_time: "2026-11-04T12:23:31+08:00"
