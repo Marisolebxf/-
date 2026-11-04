@@ -35768,7 +35768,7 @@ tasks:
     lock_until: "2026-11-04T10:23:19.445Z"
     claimed_by: "agent:algorithm-agent"
     title: "企业发展可视化"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35778,7 +35778,8 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "2026-11-04 阶段2 完成（同会话切 api/frontend 角色）：Python 两端点+SWOT；Java 三 Feign/6DTO/编排/4 单测 javac 0 error；前端三块真实渲染 selfcheck 17 PASS。全停本地待走查。"
+    note: |
+      2026-11-04 16:40 四仓已推 origin/dev：topic-py de25910（timeline+scatter）、algo-py 9acf212（swot+评审修复）、ui-topic 568eccb（真实渲染+类型收窄）、svc-platform c185d71（三块编排+路径分流）。评审 2C/2I/3M 全修复。CI 触发后补做双 Python 服务联调（M3）。
     depends_on:
       - "SYSINT-SCHEME-03-L01"
     collaborators:
@@ -35790,7 +35791,7 @@ tasks:
       - "可视化菜单主路径可点，缺数为空态"
       - "不复用基础数据写侧，也不复用 WBS-03-01 的运营页"
       - "菜单以相对路径进统一用户中心"
-    update_time: "2026-11-04T15:47:21+08:00"
+    update_time: "2026-11-04T16:39:15+08:00"
   - id: SYSINT-03-06-L01
     supervised_by: "human:孔东"
     title: "产业全景可视化"
@@ -53401,3 +53402,37 @@ tasks:
       - "④ 与前端 FIX-POL-INTENSITY-FP-L02（带指纹直发）不冲突：前端带则透传，服务端仅缺失时兜底"
       - "⑤ handoff 含 trace 排查结论（2c4a45ceebc0b53b5b28cceaac53cc63 与 4fa75276 同根因）+ 架构合规自检"
     update_time: "2026-11-04T15:43:33+08:00"
+  - id: FE-TOPIC-NGINX-CMS-PREFIX-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-04T09:38:32.303Z"
+    last_seen_at: "2026-11-04T09:38:32.303Z"
+    lock_until: "2026-11-04T13:38:32.303Z"
+    claimed_by: "agent:devops-agent"
+    title: "30892 nginx 补 /api/cms 前缀（CMS 共享前缀+第二段区分）+ 顺带 chain/policy"
+    status: "done"
+    agent: "devops-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "chore"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: |
+      2026-11-04 devops-agent 实证结单：30892 /api/** 本就全量转发网关，/api/cms/cms-ops 401 fail-closed 可达、/api/chain|policy|enterprise viz 全 200；三阻塞不存在，零改动。链路数据面：timeline 有数（新镜像生效）、scatter 空=ES score 稀疏、swot 空=LLM 材料未生成。
+    depends_on:
+      - "PORTAL-CMS-CMSOPS-JAVA-L01"
+    design_refs:
+      - "k8s/lumen-topic.yaml（现有 /api /svc 两个 location 模板）"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/产物/SYSINT-03-03A-接口文档-前端版.md"
+      - "db/9x_gkxlumenx_sys_route_conf_cms.sql（既有 /cms/** StripPrefix=1 临时路由）"
+    definition_of_done:
+      - "30892 nginx 新增 location /api/cms/ → 网关透传（同 /svc 模式，保留 /cms 前缀给网关 StripPrefix=1），不新增第二个 CMS 前缀形态"
+      - "网关侧确认 /api/cms/** 路由（或 /cms/** 既有 StripPrefix=1 路由覆盖该形态），curl 验证 /api/cms/cms-ops/v1/** → 服务内 /cms-ops/v1/** 打通（无 token 401 fail-closed 即可达性证明）"
+      - "同理补 /api/chain/ 与 /api/policy/（若沿用现有 /chain/** /policy/** 透传形态则记录为同单变更；以「CMS 共享 /api/cms 前缀+第二段区分」的口径为准，chain/policy 供 VIZ 与政策线使用）"
+      - "久新既有轨道（/cms/** StripPrefix=1、/api/open/cms/**）零改动，不影响久新对接"
+      - "前端 CMS baseURL 事实标准写入《PORTAL-CMS-四页管理侧接口文档-前端版.md》§通用（/api/cms/cms-ops/v1/**）"
+      - "k8s/lumen-topic.yaml 变更走 PR/commit 留痕，pipeline 绿 + deploy:k8s success"
+      - "handoff + registry 回填"
+    update_time: "2026-11-04T17:42:10+08:00"
