@@ -1,0 +1,113 @@
+# POL-L2-DS11-VIZ-TEMPLATE-L01 · 222 报告模板定制与批量导出 · 模板选用表建表与灌数
+
+ponytail: full
+
+## 任务认领
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:data-agent` |
+| supervised_by | `human:淮政玮` |
+| 状态流转 | in_progress → integration（note：代码已落盘，待签收） |
+| 说明 | 前会话首版落盘（`88a7469`）；本会话接手修正维度闭集后修复提交。派单授权提交脚本与 handoff 并推送 origin/dev |
+
+## Ponytail
+
+| 字段 | 值 |
+|------|-----|
+| ponytail | `full` |
+| 说明 | 复用 `seed_gapfill_policy_eval_viz.py` 的 `--check`/`--apply` 幂等模式，未另起框架。未用 YAGNI 跳过 D16 追溯列 |
+
+## 范围与实现
+
+真源是 `sdd/l2/POL-L2-DS11-VIZ-DATA.md` 第 5 节与 `sdd/l2/POL-L2-DS11-VIZ-ARCH.md` 第 5.4、9 节。范围只有 222 一张模板选用表。219、220 两张表由 `POL-L2-DS11-VIZ-GAPFILL-L01` 已建已灌，本单不碰。221 不建表。未写 ODS、DWD、ADS、供应方库，未改 D4，未新造 `metric_id`，未碰 `gapfill_policy_eval_shell`。
+
+库目标是 `gkxlumenx_gapfill`，表 `gapfill_policy_eval_template`，列逐列照 DATA 第 5 节（`template_name`/`report_period`/`analysis_dim`/`chart_kind` + 追溯列）。唯一键四列 `template_name + report_period + analysis_dim + chart_kind`（DATA 第 5 节「同一模板名、同一周期、同一维度、同一图表类型只应有一行」的机器化）。
+
+### 模板选用行（10 行 / 6 模板）
+
+一行是一条模板选用：一个模板名 + 该行允许的一个汇报周期、一个分析维度、一个图表类型。同一模板多种组合分成多行（DATA 第 5 节：不把多个周期、维度或图表类型用分隔符写进同一格）。
+
+| 模板名 | 周期 | 维度 | 图表 |
+|---|---|---|---|
+| 科技政策月度动态报告 | 月度 | 时间 | 趋势 |
+| 科技政策月度动态报告 | 月度 | 类别 | 柱状 |
+| 区域政策效果季度对比 | 季度 | 地区 | 柱状 |
+| 区域政策效果季度对比 | 季度 | 地区 | 热力 |
+| 行业政策兑现年度盘点 | 年度 | 行业 | 柱状 |
+| 行业政策兑现年度盘点 | 年度 | 类别 | 热力 |
+| 目标群体政策覆盖年报 | 年度 | 目标群体 | 柱状 |
+| 政策要素关联年度分析 | 年度 | 类别 | 弦线 |
+| 政策要素关联年度分析 | 年度 | 时间 | 关系网 |
+| 政策综合效果年度评估 | 年度 | 区域 | 趋势 |
+
+闭集：周期 月度/季度/年度（DATA 第 5 节明确周期不是闭集、由灌数单定合理值；不迁 demo 的近 1 年/近 3 年/近 5 年）；维度 = DATA 第 5 节签收闭集 **时间/区域/类别/地区/行业/目标群体**（219 三维 + 220 三类对象，`区域` 与 `地区` 是两个值，六维全部覆盖）；图表 趋势/柱状/热力/弦线/关系网（五行全覆盖）。未收饼图、散点（ARCH 3.1 明确不迁）。
+
+### 追溯列
+
+每行 `is_mock=1`、`metric_id` 留空、`gap_item=222 报告模板定制与批量导出`、`fill_method=manual`、`gapfill_batch_id=POL-L2-DS11-VIZ-TEMPLATE-L01`、`generated_at` 取执行时刻（脚本内 `datetime.now()`）。按 DATA 规定不设 `fill_model`，不设模板正文/编号/文件地址/对象键/PDF/Excel/操作日志列。
+
+### 本会话修正（fix commit）
+
+前会话首版（`88a7469`，已推 origin/dev）的 `analysis_dim` 取了 政策面/资金面/产业面（派单示例词），不在 DATA 第 5 节签收闭集内，也不在 ARCH 第 3 节 UI 可选闭集（维度只用 219 三维和 220 三类对象）内——照首版灌入后，界面按闭集选维度永远选不中这些行，222 导出恒空。本会话按真源修正为六维并做全覆盖（每个可选维度至少一行、每种图表类型至少一行），同步加了两条 `--check` 断言锁死闭集全覆盖。修复以新 commit 落地（git 协议 §4.3：已 push 的必须新 commit fix）。
+
+## 偏离
+
+| 偏离 | 理由 | as-built |
+|------|------|----------|
+| 维度值用 DATA 第 5 节六维闭集，非派单示例 政策面/资金面/产业面 | 派单指明 DATA 第 5 节为必读真源；真源对 `analysis_dim` 的列约束是「只有 时间、区域、类别、地区、行业、目标群体」，ARCH 第 3 节同口径。派单「政策面/资金面/产业面等」是「等合理值」的示例措辞，与签收闭集冲突时取真源 | 六维全覆盖，10 行 |
+| `chart_kind` 每行单值，未做逗号多值 | DATA 第 5 节明确「不把多个周期、维度或图表类型用分隔符写进同一格」「同一模板允许多种组合时分成多行」；派单「可多值逗号分隔」与真源冲突，取真源 | 每行单值，同模板多图表类型拆多行 |
+| 「唯一键按模板名」 | DATA 第 5 节的行唯一性是四列组合（模板名+周期+维度+图表类型）；若只按模板名唯一，同模板的多组合行会互相挤掉，与「分成多行」矛盾。取真源四列唯一键 | `uk_template_period_dim_chart` 四列唯一键 |
+
+## 产物清单
+
+- `repos/lumen-algo-py/scripts/seed_gapfill_policy_eval_template.py`（`--check` 不连库自检并覆写 SQL；`--apply` 连库建表+灌数，先 DELETE 再 INSERT 幂等）
+- `repos/lumen-algo-py/scripts/mysql/gapfill_policy_eval_template.sql`（DDL + 10 行 INSERT）
+- 本 handoff
+
+未改 `/display/v1/policy/**`、未改 Java、未改 D4、未新造 `metric_id`、未写 nGQL、未碰 `gapfill_policy_eval_shell` 与 219/220 两张表。
+
+## 验收证据
+
+- `--check`（2026-11-03 22:49，退出码 0）：`{"mode":"check","ok":true,"rows":{"gapfill_policy_eval_template":10,"templates":6,"periods":3,"dims":6,"chart_kinds":5}}`
+- `--apply`（2026-11-03 23:37–23:39，退出码 0）：`{"mode":"apply","connected":true,"host":"10.50.11.76","port":3306,"db":"gkxlumenx_gapfill","table":"gapfill_policy_eval_template","rows":10,"templates":6}`。口令取自 `repos/lumen-algo-py/k8s/worker.yaml` 的 `LUMEN_ALGO_MYSQL_PASSWORD`（README 同源记录），只放进程环境变量，未打印、未写入脚本
+- 幂等验证：`--apply` 连跑两次，行数保持 10 / 6 模板不翻倍（先 DELETE 再 INSERT）
+- 首版「政策面/资金面/产业面」行修正：首版未连过库，本次首次灌入即为六维闭集修正版，无需清洗旧值
+
+自检在 `--check` 里（不连库），锁死：唯一键四列无重复；行数 8–12；周期/维度非空且在闭集（月度/季度/年度；时间/区域/类别/地区/行业/目标群体）；六维与五种图表类型全覆盖；每行单值无分隔符并格；每行 `is_mock=1`、`metric_id` 空、`fill_method=manual`；SQL 只出现 `gkxlumenx_gapfill.gapfill_policy_eval_template` 一张 INSERT 目标表，不出现 shell/trend/partition/scheme 表名、`fill_model`、ODS/DWD/ADS、`M_POLICY_`。
+
+## 架构合规自检
+
+- ✅ D16：只写 `gkxlumenx_gapfill` 下 `gapfill_` 前缀表，行上带规定追溯列；未写 ODS、DWD、ADS、供应方库
+- ✅ D18 可实现：接口不直接返回 mock，模板选用入表由 `gkxlumen-element` 只读；维度值在 UI 闭集内、每格单值，`shells` 按模板+周期+维度+图表类型能拣出行
+- ✅ 未改 D4，未动 `GDF-POLICY-MOCK-GATE-L01`
+- ✅ 未新造 `metric_id`
+- ✅ 未碰 `gapfill_policy_eval_shell`（壳表只服务 224、225）
+- ✅ 调用链：本单只灌库，不改 Java/展示/算法接口
+- ✅ 图谱：未写 nGQL
+
+## Cost 回填
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 60000 |
+| model_used | glm-5.3 |
+| actual_cost | 0.20 |
+| cost_warn | green |
+
+数字是估算（两会话合计口径，前会话约 40k + 本会话约 20k）。
+
+## CI/CD
+
+- 分支：`lumen-algo-py` `dev`（前会话 `88a7469` + 本会话修复 commit，见两仓提交）
+- 库：`10.50.11.76:3306` 的 `gkxlumenx_gapfill.gapfill_policy_eval_template` 已建已灌（10 行 / 6 模板，幂等复跑稳定）
+- pipeline：本单不跟发布
+- 部署：无
+
+## 未做的事
+
+- ~~未连库执行 `--apply`~~ 已由 coordinator 会话补跑（2026-11-03 23:37，口令取自 `k8s/worker.yaml`）；首版从未连库，无旧值需清洗
+- ~~注册表无 `POL-L2-DS11-VIZ-TEMPLATE-L01` 任务 ID~~ 已补建并推进：coordinator 侧建成，status=integration（2026-11-03 23:19），代码与灌数均已完成，待验收推进
+- 未改读取接口。读表是 `gkxlumen-element` 的事（`GET shells` 按模板读）
+- 未改架构稿、DATA、说明书、注册表
+- 未碰 219/220 两张表与 `gapfill_policy_eval_shell`、`gapfill_policy_eval_scheme`

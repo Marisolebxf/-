@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS11-PLAN-ARCH`
 - 日期：2026-11-03
-- 状态：架构稿已落盘。未会签。不标 done
+- 状态：2026-11-03 两轮均为架构、算法、数据、产品四角色同意。待 `human:淮政玮` 签收。不标 done
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -63,7 +63,7 @@ flowchart LR
 
 这五叶不进异步任务管道。`PolicyAnalysisTypes` 现有白名单是 `policy_timeseries`、`policy_regional`、`policy_shenzhen`、`policy_focus`、`policy_effect`、`policy_match`。本叶不加 `policy_scheme`，也不把方案五叶塞进其中任何一项。`gkxlumen-display` 若还没有评价控制器，实现时按契约补 `evaluation/jobs` 与 `evaluation/shells`。补上之后，本二级的种类仍由 element 读缺项表。
 
-同一条 `jobs` 上的焦点、效能得分、摘要、趋势、分区、解读，由 `POL-L2-DS11-VIZ-ARCH`、`POL-L2-DS11-READ-ARCH` 各自定义。同一条 `shells` 上的报告模板、多媒体、分析报告份数同样留给那两个二级。实现时按种类分发。不能把整条 `jobs` 或整条 `shells` 都改成只读这张缺项表。
+同一条 `jobs` 一次只带一种类。焦点、摘要由解读稿定，异步键只有 `policy_focus_ads`、`policy_text_parse`。趋势、分区由可视化稿定，各一次请求，不进异步。效能得分不在这五叶，本叶不改它的读法。同一条 `shells` 上，222 的模板选用读 `gapfill_policy_eval_template`，不读壳表；多媒体留给解读稿的 `gapfill_policy_eval_shell`。实现时按种类分发。不能把整条 `jobs` 或整条 `shells` 都改成只读这张方案缺项表。本叶 227–229 仍不进异步。
 
 trace 沿既有展示链走。display 往 element 带 traceId。本叶不新设计观测点。
 

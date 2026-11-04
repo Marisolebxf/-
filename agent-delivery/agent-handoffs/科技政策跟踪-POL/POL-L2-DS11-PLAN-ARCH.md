@@ -8,7 +8,7 @@
 | supervised_by | `human:淮政玮` |
 | claim_type | `pull` |
 | lock_until | `2026-11-03T11:15:34.640Z` |
-| 说明 | 2026-11-03 开工。说明书已落盘，会签未完成不挡起草。本单未会签 |
+| 说明 | 2026-11-03 两轮均为四角色同意。待 human:淮政玮 签收。不标 done |
 
 ## Ponytail
 
@@ -57,7 +57,7 @@ ponytail: off
 
 ## 验收证据
 
-架构稿与本 handoff 已落盘。未会签。定义单，无业务 PR。
+架构稿与本 handoff 已落盘。2026-11-03 两轮四角色同意。待 human:淮政玮 签收。定义单，无业务 PR。不标 done。
 
 | 序号 | 链路 | 结论 |
 |---|---|---|
@@ -89,7 +89,7 @@ ponytail: off
 |---|---|
 | diagram_id | `POL-L2-DS11-PLAN-ARCH-SEQ` |
 | 图 diff | 227–229 走 `evaluation/jobs`，230–231 走 `evaluation/shells`，都由 element 读同一张 gapfill 表。禁止边：进入异步管道、调用 `polan.text.simulate`、接口直接返回 mock、用 501 充当五叶、改挂推演或布局推荐 |
-| 会签态 | 图源无 frontmatter，记 `draft`。未会签 |
+| 会签态 | 图源无 frontmatter，记 `draft`。2026-11-03 四角色同意。待 human:淮政玮 签收 |
 | 说明 | 图在架构稿第 2 节，图下有四列表 |
 
 ## Cost

@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`svc_org_finance_event` (
   `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_svc_finance_event` (`org_id`, `event_id`, `event_type`)
+  UNIQUE KEY `uk_svc_finance_event` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-COMMENT='投融资事件 hang；Q-SVC-006 允许 0 行';
+COMMENT='投融资事件 hang；event_id=复合键md5；Q-SVC-006 允许 0 行';
 
 -- ---------------------------------------------------------------------------
 -- ADS（库须已存在；建库见 demo-algo-ent-analysis/scripts/mysql/create_demo_dbs.sql）
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_org_card` (
   `name_cn` VARCHAR(255) NULL COMMENT '展示投影 ODS name_cn',
   `province` VARCHAR(64) NULL,
   `city` VARCHAR(64) NULL,
-  `area` VARCHAR(64) NULL COMMENT '区县；优先 ODS area，live 仅 district 则写入本列',
+  `area` VARCHAR(64) NULL COMMENT '区县；ODS area；无 district 回退',
   `industry` VARCHAR(128) NULL COMMENT '展示投影 ODS industry；无列则空',
   `org_size` VARCHAR(32) NULL COMMENT '投影 ODS org_size；禁止当分档',
   `employees_number` INT NULL COMMENT '投影年报 employees_number',

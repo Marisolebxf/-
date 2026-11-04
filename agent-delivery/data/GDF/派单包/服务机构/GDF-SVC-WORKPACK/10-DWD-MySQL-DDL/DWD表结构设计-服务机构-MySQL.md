@@ -39,7 +39,7 @@
 | service_type_candidate | VARCHAR(32) | 是 | 六类候选 |
 | pending_client_confirm | TINYINT(1) | 否 | 默认 1 |
 | etl_batch_id | VARCHAR(64) | 是 | 批次号 |
-| ext | JSON | 是 | 整表回退时记 `fallback_all_ods=1` |
+| ext | JSON | 是 | 可空；本批不因整表回退写入（Q9 已取消） |
 | created_time / updated_time | DATETIME | 否 | 创建 / 更新时间 |
 
 ```sql
@@ -66,7 +66,7 @@ COMMENT='SVC 圈定池 hang org_id；禁止平行 svc_org_base';
 |---|---|---|---|
 | id | BIGINT | 否 | 自增主键 |
 | org_id | VARCHAR(64) | 否 | hang 键 |
-| event_id | VARCHAR(64) | 否 | 源表 `id` |
+| event_id | VARCHAR(64) | 否 | 复合键 md5（见 `08`§3）；**表唯一键** |
 | event_type | VARCHAR(16) | 否 | `FINANCING` / `INVEST` |
 | amount | DECIMAL(20,2) | 是 | 金额，元 |
 | event_date | DATE | 是 | 融资用完成日。投资为空 |
@@ -87,10 +87,12 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`svc_org_finance_event` (
   `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_svc_finance_event` (`org_id`, `event_id`, `event_type`)
+  UNIQUE KEY `uk_svc_finance_event` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-COMMENT='投融资事件 hang；Q-SVC-006 允许 0 行';
+COMMENT='投融资事件 hang；event_id=复合键md5；Q-SVC-006 允许 0 行';
 ```
+
+> **正式库已有表（Q11）**：同意 GDF 按现存物理表接管。唯一键若仍是 `(org_id, event_id, event_type)`，开工前 ALTER 为 `UNIQUE(event_id)`，不 DROP 表、不加业务列。demo / 正式库列集已核对一致（2026-11-04）。
 
 ### 2.3 `svc_org_card`
 
@@ -119,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_ads`.`svc_org_card` (
   `name_cn` VARCHAR(255) NULL COMMENT '展示投影 ODS name_cn',
   `province` VARCHAR(64) NULL,
   `city` VARCHAR(64) NULL,
-  `area` VARCHAR(64) NULL COMMENT '区县；优先 ODS area，live 仅 district 则写入本列',
+  `area` VARCHAR(64) NULL COMMENT '区县；ODS area；无 district 回退',
   `industry` VARCHAR(128) NULL COMMENT '展示投影 ODS industry；无列则空',
   `org_size` VARCHAR(32) NULL COMMENT '投影 ODS org_size；禁止当分档',
   `employees_number` INT NULL COMMENT '投影年报 employees_number',

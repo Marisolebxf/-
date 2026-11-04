@@ -630,7 +630,6 @@ cost_summary:
   burn_rate_note: 首月实际消耗需在更多任务 actual_tokens 回填后方可信
 
 tasks:
-
   - id: E-TECH-NEWS-IE-M1-L01
     task_type: "feature"
     feishu_bitable_record_id: recvqL3bn2WBXa
@@ -29121,7 +29120,32 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 140000
-    note: "mock 点测通过（setup/running/result 全链路），type-check 0 error，pnpm build 绿 ~38s。handoff FE-TS-03A.md。联调确认：mock 验收通过，联调闸门待 API-TS-M3 + BE-TS-CONTRACT 契约冻结。"
+    note: |
+      mock 点测通过（setup/running/result 全链路），type-check 0 error，pnpm build 绿 ~38s。handoff FE-TS-03A.md。
+
+      2026-11-03 核对更新：
+      - 联调已完成（USE_MOCK=false，meta/dataset 走 display 网关真实数据），不再是「待契约冻结」；
+      - 参数区：后端下发 5 套系统内置预设（parameterTemplates=5）+ 自定义模板保存/改名/删除/导入导出；
+        方法区：4 方法卡 + 详解/对比弹窗；案例与最佳实践久新无源 → 空态（noSourceFields 声明）；
+      - DoD 里「4 期历史矩阵」改为真实评估运行历史驱动（historyMatrix 无源 → 空，页面消费 evaluationHistory）；
+      - 2026-11-02～03 追加真评估接入 / 报告导出 / 范围挂载 / 落库回读 / D9 缺口角标，见
+        SITUATION-TS-TRACKING-EVAL-L01 / -REPORT-L01 / -PERSIST-L01 三单；
+      - ⚠️ D9 ⓘ 仍未挂：本页数字在指标库无已签收指标（DS-03 的 M_TECH_* 是另一套且 is_mock=true，
+        挂上去即错挂），现按规范落 D1 missing 红问号 + 治理引用，待 DS-03-METRIC-OPEN-L01 闭合后翻转。
+      改动停本地，未 commit / 未 push，等 human:孔东 走查。
+
+      2026-11-03 第二批（用户点名四项，已实测）：
+      - **产业领域接通**：复用科技全域态势同一条真源（innov `/v1/meta/industry-clusters/industry-subfields`
+        → `{dim}.subfield_topic_map`），display `resolveSubfieldIds` 把 CL-*/INB* 反查为 sub_* 再进
+        `subfield_ids`；同时修掉 meta 默认领域写死空串（前端把默认值覆盖成空 → 领域永不生效），
+        现下发目录首个 mapped 集群（实测 CL-SEI-01）；
+      - **结果页技术评估榜单表**：Top-20，10 条预览可展开；按后端 potential_rank 排序，前端只格式化不重算；
+      - **报告列表**：条数上限 5 条 + 清理入口（两段式确认 → 后端逻辑删除 status=deleted + 删本地产物，
+        OSS 对象保留并如实说明）；
+      - **领域提示二态化**：「已映射 N 个久新子学科，参与取数」/「未关联，本次不参与」，由反查结果驱动，
+        不再写死「暂未参与取数」。
+      实测：CL-SEI-01 → 39 个子学科，口径回传「技术领域：已生效…」；榜单 20 项展开正常；
+      清理后 `tech_evaluation_report` active 5 / deleted 2。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29137,16 +29161,17 @@ tasks:
       - "方法 Tab：4 评估方法详解 + 案例"
       - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（评估结果/历史矩阵/参数模板/方法知识四类用途见规划 §4 M3）"
       - "与 demo 逐区块截图比对 + D9 ⓘ/🧪；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-15T22:23:12+08:00"
+      - "2026-11-03 追加：产业领域经 subfield_topic_map 反查生效；结果页技术评估榜单表；报告最近列表上限+清理"
+    update_time: "2026-11-03T15:20:00+08:00"
   - id: FE-TS-04A
-    evidence: "[object Object]"
+    evidence: "agent-handoffs/科技发展态势-TS/FE-TS-04A.md"
     feishu_bitable_record_id: reczz28MlyMJ6oge
     supervised_by: "human:孔东"
     claimed_at: "2026-10-13T03:58:41.695Z"
     last_seen_at: "2026-10-13T03:58:41.695Z"
     lock_until: "2026-11-12T03:58:41.695Z"
     claimed_by: "human:孔东"
-    title: "全球创新监测（M4）— 整页复刻：综合展示/实时数据轮询/载体排行/监测分析/能力分析"
+    title: "全球创新监测（M4）— 整页复刻：综合展示/实时数据（年度统计口径）/载体排行/监测分析/能力分析"
     status: "integration"
     agent: "frontend-agent"
     epic: "E-FE-TECH-SITUATION"
@@ -29158,7 +29183,49 @@ tasks:
     difficulty: "L"
     estimated_tokens: 210000
     note: |
-      人工点测已过（human:孔东），mock 环境基本完成，进入联调：等待 BE-TS-CONTRACT 契约冻结后切 USE_MOCK=false 对接 /situation/v1/innovation/dataset。type-check/build 三绿，handoff 已落 agent-handoffs/科技发展态势-TS/FE-TS-04A.md
+      2026-11-03 整改轮（真实链路收口）：删除「创新价值评估」随机分与随机四维、订阅规则拼装的伪推送记录、
+      「创新影响预测」标题空壳、MockDataNotice 死代码；补齐城市监控/智能推送/趋势图/领域分布 4 处空态与
+      实时错误态；实时胶囊改接后端 latestStatYear / latestCitedYear / asOf / caveat 真实元数据。
+      决策留痕：agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md；handoff：agent-handoffs/科技发展态势-TS/FE-TS-04A.md。
+      原 note 的「等待 BE-TS-CONTRACT 契约冻结后切 USE_MOCK=false」已过期：成果/载体/城市/实时四块自 2026-10-29
+      human 裁定后即走久新 Doris 真实链路（GlobalInnovationController → RemoteShowPythonClient → gkx_show_service）。
+
+      2026-11-03 第二轮审计（A 组已完成，11 项）：第一轮盯的是 Math.random 类随机造假，
+      第二轮发现的问题全是「写死的常量与固定权重」，随机数 grep 扫不到，故漏过。
+      已修：cityModel.clampScore 的 `Number(value || 0)` 把无源压成 0 分（城市列表默认每行
+      「综合创新指数 0」+ 8% 假进度条）、rank 按 0 分重排覆盖后端名次、4 处假保存/假导出 toast、
+      showToast 丢弃文案致模板恒显「操作成功！」、硬编码 createdAt=2026-05-24 的「全部区域」订阅规则、
+      口径说明宣称 Σ(维度得分×权重)+分位归一化+WIPO/Scopus 数据源（实为久新两张表且无该算法）、
+      载体指数口径写「更新 2026-05」「归一化到 0-100」、实时图右轴标「金额(亿美元)」实挂人才/项目数、
+      缺坐标兜底 [116,39] 北京、getNodeRealtimeStatus 用 150/80 阈值造「高影响/升温/新增」、
+      关键词编辑区因 getRuleConditionFields 缺 keywords 而永不渲染、block() 分块失败只 console.warn
+      致页面把「接口挂了」显示成「暂无数据」。
+      待裁定（B 组，未动）：载体指数权重 35/25/25/15 与基数 5000/2000/500/6、城市加权 0.7/0.3 与
+      0.55/0.45、订阅是否二期补写接口。剩余 P1 与 giDomains 硬编码领域筛选 → FE-TS-04F。
+
+      2026-11-03 追加（跨三仓库）：成果类型新增 project（= ads_project_profile，对应需求 seq 56
+      「创新资讯：创新基金 / 创新研究课题」）。Python achievement_indicator 加 project 分支
+      （SOURCE_PROJECT / PROJECT_FIELDS / _dedup_by_project / 排序改用 amount_cny）、Java
+      GlobalInnovationController 透传 description·amountCny·amountCnyValueType 且 importance 对
+      null 不再压 0（原 dbl(null)=0d 会让项目显示「创新价值 0」）、前端 types 加 project 并统一
+      指标文案（论文专利=被引数，项目=资助金额，模拟值加「（模拟）」）。
+      关键约束：amount_cny_value_type 必须一起展示（SIMULATED_SHENZHEN_MEDIAN_V1 是深圳中位数
+      模拟值，非真实拨款）；项目 SQL 列名依据 ADS_SCHEMA 文档、未连库实测，已加异常隔离使
+      project 失败不拖垮 paper/patent；Python 与 Java 需重新部署后生效。
+
+      2026-11-04 第三/四轮（走查反馈 + 首次部署）：①领域补齐——论文/项目经 primary_topic_id →
+      ads_discipline_topic.name_zh 100% 覆盖（必须两步查询，主 SQL JOIN 会 0.17s→15.1s），
+      专利/机构无可用入口实测超时放弃（D15-R1）；②推翻「久新无学者表」——ads_talent_profile
+      10 万条（姓名/机构/坐标 38.5%/h 指数 99.4%），新增 talent-list 链路 + 图谱专家节点
+      （with_location=true 只返回有坐标者）；③⚠️ 部署真相：GlobalInnovationController.java 等
+      三仓关键代码此前从未 git 提交，线上与本地 7099 跑的一直是旧镜像/旧进程——这是「页面没数据」
+      总根源；已推送 lumen-topic-py cc77099+97cd284、lumen-svc-platform b453975+a0f9e46 触发 CI；
+      k8s dev-show-py.yaml 明文密码改走 Secret（D14 合规）；④图谱「全部」视图不可点击双根因
+      （Playwright 实测）：__body 双列 grid 压画布到 252px + 工具条 216px 盖住画布点击全命中按钮；
+      修复 grid 单列 + 工具条 pointer-events 穿透 + G6 延迟初始化 + zoomRange 下限 0.15 + 配额 25；
+      ⑤项目经费数据链路全程实测正常（11 币种），「还是空」为 vite HMR 损坏态下前端未拿到新代码，
+      已重启 dev server 实测「资助金额 18174.8 万元」渲染。
+      决策留痕：M4-REMEDIATION-20261103.md §12-13；handoff：FE-TS-04A.md 第三/四轮。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29169,13 +29236,345 @@ tasks:
       - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-模块开发规划与任务拆分.md"
       - "agent-delivery/Design.md"
     definition_of_done:
-      - "综合展示：成果类型芯片 + 底座地图落点 + 成果列表联动"
-      - "实时数据：4 KPI + 趋势 + 领域分布，D2 轮询（30s 可配，页面不可见暂停、卸载清理）"
-      - "载体排行：多维筛选 + 五年分详情下钻"
-      - "监测分析：预警（创新点发现/城市监控）+ 推送记录（已读/未读）"
-      - "能力分析：10 城五维雷达 + 政策建议"
-      - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（六类用途见规划 §4 M4）；D9 ⓘ/🧪 + demo 截图比对；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-15T15:03:58+08:00"
+      - "综合展示：成果类型芯片 + 底座地图落点 + 成果列表联动（久新 ads_institution_paper / ads_location 真实计数）"
+      - "实时数据：4 KPI + 年度趋势 + 领域分布，按年统计口径（久新无数仓实时流，2026-10-29 裁定删除 30s 轮询）"
+      - "载体排行：多维筛选 + 详情下钻；无源维度（指数/排名分）显示「—」或空态，不得合成"
+      - "监测分析：创新点发现/城市监控/智能推送三块只有后端下发才展示；久新无预警表与推送事件表 → 显式空态说明，禁止造数"
+      - "能力分析：城市按久新真实计数展示，五维雷达等无源分项出空态（ads_geo_yearly_index 按文档「公式批准前保持空表」）"
+      - "D9 缺口角标 + demo 截图比对；pnpm build-only 绿；M3 既有 type-check 错误不计入本页判定"
+      - "2026-11-03 整改验收：全页 Math.random 归零、订阅规则不再生成推送记录、影响预测无空壳标题、4 处空态齐全"
+      - "2026-11-03 第二轮验收（A 组）：城市分数不再把无源压成 0 分/假进度条；4 处假保存·假导出 toast 已如实化；硬编码「全部区域」订阅规则已删；口径文案与真实数据源一致；实时图轴标签与坐标兜底已修；关键词编辑区不再死区；分块取数失败在页面可见并可重试"
+      - "2026-11-04 第三/四轮验收：论文/项目领域 100% 覆盖；聚焦专家有值（talent-list 10 万学者，图谱落点 with_location）；排行榜年份区间随数据推导；项目经费端到端实测 18174.8 万元；图谱全部视图 25 节点正常布局、画布恢复 544px 宽；三仓代码已提交推送触发 CI 部署"
+    update_time: "2026-11-04T00:45:00+08:00"
+  - id: FE-TS-04F
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 第二轮审计剩余 P1 清理"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "debt"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      2026-11-03 第二轮审计已清 A 组 11 项 P0（无源压 0 分、假保存 toast、硬编码订阅规则、
+      假口径文案、轴错标、坐标兜底、假状态标签、关键词死区、分块静默降级）。
+      本任务收口剩余 P1：
+      1) InnovationMonitor.vue:9 仍 import giDomains（8 个写死领域名当筛选选项，
+         后端真实 discipline 对不上时勾选不生效且无提示）→ 改为从真实数据提取领域名；
+      2) InnovationRealtime 聚焦机构/聚焦专家筛选恒空（节点类型永不产出 expert/org），
+         空态文案却说「实时流中暂无」，需改为「当前数据源不提供机构/专家维度」；
+      3) RealtimeKnowledgeGraph 关系边 weight 硬编码 0.72 + 按索引取模强连，需改为不画无源关系；
+      4) MonitorRuleDrawer 成果类型/订阅载体 checkbox 写死或错误绑定、口径模板卡片无 @click；
+      5) InnovationRanking 权重配置 appliedWeights 从不回写、Math.max(8,NaN) 产 width:NaN%；
+      6) CityInnovationAnalysis 趋势年度 allSettled 失败落 []、政策接口 catch 返回 [] 与
+         「暂无政策数据（国外城市通常无匹配）」文案矛盾（把故障说成数据源缺失）；
+      7) InnovationDetail 时间范围默认 2020–2026 静默剔除更早成果、地图 slice(0,200) 静默截断、
+         图例 5 类但只有 2 类有点位。
+      约束：不新增区块、不改既有样式结构。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "src/views/situation/global-innovation/tabs/"
+      - "src/views/situation/global-innovation/components/"
+      - "src/views/situation/global-innovation/models/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "全目录 @/mock 引用为 0（含 giDomains 这类展示字典）"
+      - "所有筛选器选项来自真实数据，选不到时给出「当前数据源无该维度」而不是「暂无变化」"
+      - "所有 toast 文案与实际行为一致，无「已保存/已推送/已创建任务」类不实表述"
+      - "空数据一律有空态文案，NaN 不再出现在 width/style/文本中"
+      - "pnpm type-check 与 build-only 双绿"
+    update_time: "2026-11-03T21:40:00+08:00"
+  - id: BE-TS-04I
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 企业动态接企业库（SRS seq 56 企业动态大类）"
+    status: "completed"
+    agent: "backend"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-lumen"
+    delivery_phase: "implementation"
+    task_type: "backend"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      架构裁定（human 2026-11-03）：三要素（论文/专利/项目/机构）查久新库，
+      企业维度查自己库（企业库 MySQL），**接口层聚合** —— 两条通道各自独立查询，
+      在 Python 成果接口里 extend 合并返回，不存在跨库 SQL 拼接。
+
+      口径裁定（human 淮政玮 2026-11-03 群聊）：
+      - 企业动态 = **投融资事件与发展历程**（明确否决「用资讯充」的提议）；
+      - **「对于宏观来说，企业获得的融资就是成果」** → enterprise 条目 = 一次融资事件，
+        value = 融资金额；time = 事件日期；地理 = 企业注册地。
+
+      实际落地（2026-11-03，与原 ES 方案不同，human 当日改定走 MySQL）：
+      1. 新建 `gkx_show_service/entdb.py`：企业库 MySQL 只读通道，与 jiuxin.py 完全对称
+        （SELECT 白名单 + 线程连接复用 + 120s TTL 缓存，凭据 GKX_ENTDB_* 可覆盖）；
+      2. `achievement_indicator.py` 加 enterprise 分支：单库三表 JOIN
+        （enterprise_financing × enterprise_base × enterprise_extra，全在 gkxlumenx_dwd 内），
+        按 org_id+日期+轮次构造事件标识并去重，失败只跳过自身（与 project/institution 同隔离）；
+      3. Java GlobalInnovationController 透传 financeRound/investors/currency；
+      4. 前端四大内容大类展示（创新成果/创新资讯/创新机构/企业动态），勾选大类时
+        展开细类再传后台（成果→paper+patent，资讯→project），types 协议保持细类。
+
+      数据源选型实测（同实例 10.50.11.76:3306）：
+      - demo_gkxlumenx_dwd.enterprise_financing：17,174 条，金额仅 2 条有值 → 不可用；
+      - **gkxlumenx_dwd.enterprise_financing：25,654 条，日期/轮次 100%，金额 34%（8,826 条）**；
+      - 坐标来自 enterprise_extra.lng/lat（100% 填充），三表 JOIN 300 条 0.87~0.97s；
+      - svc_org_finance_event（15,755 条）event_date 全空且为 seed 数据 → 排除。
+
+      验证（2026-11-03）：enterprise 单独 1.9s/50 条；五类型混合（year_from=2024）
+      2.5s/883 条（paper 288 + institution 300 + enterprise 295；patent 0 条为数据本身
+      最新只到 2023-01）；城市过滤（深圳市）0.95s/17 条；同日同轮次重复行已按事件标识去重。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "repos/lumen-topic-py/gkx_show_service/entdb.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/achievement_indicator.py"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/GlobalInnovationController.java"
+      - "repos/lumen-ui-science-pc/src/views/situation/global-innovation/"
+      - "repos/lumen-ui-science-pc/src/api/situation/globalInnovation.ts"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md"
+    definition_of_done:
+      - "企业动态可在成果列表按类型筛选出现，与论文/专利/机构混合展示"
+      - "动态条目带时间与地区，可被前端时间窗/区域筛选命中"
+      - "无坐标企业不落点，不产生 (0,0) 假点"
+    update_time: "2026-11-04T00:35:00+08:00"
+  - id: BE-TS-04H
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 项目成果落点的上游性能缺口（SRS seq 56 创新资讯）"
+    status: "pending"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-lumen"
+    delivery_phase: "implementation"
+    task_type: "data"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      SRS seq 56 的「创新资讯（创新基金 / 创新研究课题）」在久新对应 ads_project_profile。
+      2026-11-03 已实现门面 project 分支（字段、去重、前端展示全部就绪），但**上游查询性能不可用**，
+      故以 PROJECT_QUERY_ENABLED=False 关闭，前端也回退为 paper+patent。
+
+      实测数据（read_timeout=45s，久新 gkx_technology_analysis_dev）：
+      1) 单表都快：ads_project_profile LIMIT 300 0.10s；按 amount_cny 排序取 300 0.14~0.68s；
+         ads_project_institution WHERE project_id=? 0.06s；
+      2) 三表 JOIN（project → project_institution → institution_profile）LIMIT 2 就 11.60s，
+         加 WHERE latitude IS NOT NULL 或 ORDER BY 直接 30s 超时；
+      3) 改成两步法同样不行：IN (300 个 project_id) 查机构关系 8.07s；
+         IN (机构 ID) 查机构坐标 >45s 超时。
+      结论：这两张表按 ID 批量检索都是全表扫描，没有命中路径。
+
+      需要做的事（任选其一）：
+      A. 上游产出**项目落点物化表**：project_id + institution_id + 经纬度 + 城市/国家 +
+         amount_cny + amount_cny_value_type，一行一项目（关联多家机构时按 evidence_paper_count
+         最大者取一个代表机构），查询即单表；
+      B. 为 ads_project_institution / ads_institution_profile 建立可用的分桶或索引，
+         使 IN (批量 ID) 能走命中路径（实测当前不行）。
+
+      一并修正的事实（原文档/代码有误）：
+      - ads_project_institution **没有 role 列**，实为 relation_type / institution_role_code；
+        且 `role` 是 Doris 保留字，裸写会语法错误；
+      - 项目表 183.9 万行（非 2063）；start_year 填充率仅 4%，年度应取 effective_start_year（99.99%）；
+      - name 是真实项目名，但 name_zh / name_en 全空（无中文名）；
+      - amount_cny_value_type 有三种：SIMULATED_GLOBAL_SHENZHEN_MEDIAN_V1 占 91%（167.8 万）、
+        SIMULATED_SHENZHEN_MEDIAN_V1 9.8 万、SOURCE_CONVERTED 仅 6.3 万。
+        按 amount_cny DESC 排序的 Top300 **全是模拟值项目**。
+
+      恢复方式：物化表就绪后，把 gkx_show_service/views/achievement_indicator.py 的
+      PROJECT_QUERY_ENABLED 置 True，并把前端 globalInnovation.ts 的 types 加回 'project'。
+      若届时仍按金额排序，需改为「SOURCE_CONVERTED 优先」或对模拟值做显著标注，
+      否则首页头部全是模拟金额。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "_local/dw-docs/"
+      - "repos/lumen-topic-py/gkx_show_service/views/"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md"
+    definition_of_done:
+      - "项目成果可按城市落点查询，单次查询耗时与 paper/patent 同数量级（<2s）"
+      - "返回 amount_cny 时必须同时返回 amount_cny_value_type，且 SOURCE_CONVERTED 与模拟值可区分"
+      - "项目条目的年度取 effective_start_year，不得用填充率 4% 的 start_year"
+    update_time: "2026-11-03T23:40:00+08:00"
+  - id: BE-TS-04G
+    evidence: "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 补城市维度项目金额（SRS seq 83 创新基金 / 投资规模）"
+    status: "pending"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-lumen"
+    delivery_phase: "implementation"
+    task_type: "data"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      SRS seq 83「城市创新数据监控」要求展示城市的创新基金、投资规模、机构企业投入与成果。
+      2026-11-03 核实：**城市维度完全没有金额数据**，前端无法补齐，需上游供数。
+
+      实测事实：
+      1) ads_geo_yearly_metrics 只有 4 列可当市域计数
+         （paper_count / talent_count / project_count / institution_count），
+         见 gkx_show_service/views/geo_indicator.py:103-108；
+      2) /global-innovation/cities 只返回论文数 / 被引数 / 人才数 / 机构数 / 项目数 5 个计数，
+         无任何金额字段（globalInnovation.ts:262-266）；
+      3) 全局维度已有项目经费：/global-innovation/realtime 的 funding 指标，
+         返回 byCurrency[{currency, projectCount, totalAmount}] + coverage{projectsWithAmount, projectsTotal, note}，
+         **按币种分组，不合并**（多币种直接相加无意义）；
+      4) ads_project_profile 有 amount_cny（1.4.0 新增），但无城市列；
+         项目 → 机构 → 城市 的链路（ads_project_institution → 机构位置）尚未在门面实现。
+
+      需要做的事（任选其一并说明口径）：
+      A. 数仓在 ads_geo_yearly_metrics 增加 project_amount_cny（或按币种分列），由 ETL 从
+         ads_project_profile JOIN ads_project_institution JOIN 机构地域聚合产出；
+      B. 门面新增城市金额聚合端点，复用现有 funding 的 byCurrency + coverage 结构，
+         城市级同样不得跨币种相加。
+
+      约束：
+      - 必须带 coverage（有金额项目数 / 项目总数），与实时 Tab 现有 funding 口径一致；
+      - 无金额时返回 null 并说明，**不补 0**（与 FE-TS-04A 已确立的「无源不压 0」一致）。
+
+      前端待办（本任务完成后另行派单）：城市 Tab 的指标卡接入金额，并标注币种与覆盖率。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "repos/lumen-topic-py/gkx_show_service/views/"
+      - "_local/dw-docs/"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md"
+    definition_of_done:
+      - "城市维度可取到项目金额，且按币种分组、不被合并成单一数值"
+      - "返回覆盖度（有金额项目数/项目总数），前端可据此显示「不代表全部投入」"
+      - "无金额城市返回 null 而非 0"
+    update_time: "2026-11-03T22:30:00+08:00"
+  - id: FE-TS-04B
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 领域×国家分布接入（WBS M4-26）"
+    status: "pending"
+    agent: "api-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      数据侧已就绪、页面未接：久新 ads_geo_yearly_discipline_metrics 实测 10,151,653 行，
+      4,468 Topic × 13,353 位置 × 2000–2026，行内自带 Domain/Field/Subfield/Topic 中英文名与
+      paper_count / cited_by_count / talent_count。深圳 M6 已通过 gkx_show_service/views/geo_indicator.py
+      的 /factor-metrics（subfield_ids 分支）在用该表，全球 M4 全仓零引用。
+      因此本任务不新建取数通道：给 /factor-metrics 或 /geo/metrics 增加 level=COUNTRY 的领域维度参数即可。
+      文档依据 ADS_SCHEMA 20.3；2000–2014 论文为 NOT_AVAILABLE，不得当 0。
+      2026-11-03 复核修正：`gkx_show_service/views/monitor_indicator.py:471-489` 的 `domain_distribution`
+      **已支持 `location_id` 入参**（默认 year_from=2020、全期聚合 3.36s / 限定近年 0.70s，
+      出参含 domain_id/paper_count/cited_by_count/percent）。因此后端不必新建接口，
+      本任务的实际工作量在「前端国家选中入口 + 联动」，以及把 Domain 粒度（当前仅 4 个）下沉到 Topic 粒度的取舍。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "gkx_show_service/views/geo_indicator.py"
+      - "gkxlumen-display/.../GlobalInnovationController.java"
+      - "src/api/situation/globalInnovation.ts"
+      - "src/views/situation/global-innovation/tabs/InnovationRealtime.vue"
+    design_refs:
+      - "_local/dw-docs/ADS_SCHEMA.md（§20.3 地域学科宽表）"
+      - "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "后端提供国家×领域查询（复用现有 python 通道，新增 level/topic 参数，不新建服务）"
+      - "实时 Tab 的领域分布支持按国家下钻，数值来自 discipline 宽表真实计数"
+      - "2000–2014 显示「未覆盖」而非 0；接口返回 coverage 状态供前端标注"
+      - "接入后 type-check / build-only 通过，并在 handoff 记录实测 SQL 与行数"
+    update_time: "2026-11-03T16:20:00+08:00"
+  - id: FE-TS-04C
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 领域—国家地图与排行榜（WBS M4-27）"
+    status: "pending"
+    agent: "api-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      久新 6.1.0 新增 ads_topic_country_snapshot 实测 209,517 行 / 4,467 Topic / 224 国家，
+      但全仓 repos/ 至今零引用（文档发布一个月未接）。
+      文档已给出联调方式（ADS_SCHEMA 20.3.2）：前端一次按 topic_id 读取全部国家、按 output_rank 排序，
+      地图与排行榜用 country_location_id 同步选中、GeoJSON 通过 country_code 关联；ads_location 有 232 国
+      且自带 country_code。
+      趋势口径固定：对照期 2020–2022、近期 2023–2025；对照期为 0 或两窗合计 <5 篇 → INSUFFICIENT_EVIDENCE；
+      其余 ±5% 稳定带判 UP/STABLE/DOWN；占比只能用 paper_fractional_share（同 Topic 合计为 1）。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "gkx_show_service/views/geo_indicator.py"
+      - "gkxlumen-display/.../GlobalInnovationController.java"
+      - "src/api/situation/globalInnovation.ts"
+      - "src/views/situation/global-innovation/"
+    design_refs:
+      - "_local/dw-docs/ADS_SCHEMA.md（§20.3.2 topic_country_snapshot）"
+      - "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "新增按 topic 取国家分布的只读端点，返回 output_rank / paper_fractional_share / growth_rate / trend_direction"
+      - "地图与排行榜按 country_location_id 联动，GeoJSON 用 country_code 匹配"
+      - "INSUFFICIENT_EVIDENCE 国家在地图与榜单上显式区分，不画成 0 增长"
+      - "不新增页面结构：复用实时 Tab 现有领域分布区块与其图例/列表"
+    update_time: "2026-11-03T16:20:00+08:00"
+  - id: FE-TS-04D
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "全球创新监测（M4）· 覆盖率披露与年度口径标注（WBS M4-34）"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: |
+      实测 ads_geo_yearly_metrics 的 COUNTRY 层 5,081 行中 paper_coverage_status 为
+      COMPLETE 2,563 / NOT_AVAILABLE 2,518 —— 即 2000–2014 这 15 年论文侧根本没覆盖，
+      与文档 20.2「2000–2014 论文字段为 NULL 且 NOT_AVAILABLE」一致。
+      若不披露，前端趋势图会被读成「2000 年论文数为 0」。
+      另 2026 为 metrics_as_of_date=2026-09-18 的未结束年度，不得与完整年直接比较。
+    depends_on:
+      - "FE-TS-04A"
+    touched_files:
+      - "src/views/situation/global-innovation/tabs/InnovationRealtime.vue"
+      - "src/views/situation/global-innovation/models/realtimeModel.ts"
+    design_refs:
+      - "_local/dw-docs/ADS_SCHEMA.md（§20.2 覆盖状态与 2026 未结束年度）"
+      - "agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "趋势图对 NOT_AVAILABLE 年份断线或置灰，绝不画成 0 值"
+      - "2026 标注为「未结束年度（截至 2026-09-18）」"
+      - "状态胶囊的 details 展示 coverage 状态来源，文案与 ADS_SCHEMA 一致"
+      - "不新增区块、不改样式：只在既有图表与胶囊内补口径"
+    update_time: "2026-11-03T16:20:00+08:00"
   - id: FE-TS-05A
     evidence: "agent-handoffs/科技发展态势-TS/FE-TS-05A.md"
     feishu_bitable_record_id: reczz28MlyQxLr3f
@@ -29195,7 +29594,14 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 140000
-    note: "联调确认：mock 验收通过，联调闸门待 API-TS-M5 + BE-TS-CONTRACT 契约冻结；与 FE-TS-03A 同批 push dev。"
+    note: |
+      2026-11-03 整改轮（真实链路收口）：删除计算方法弹窗的四维权重 30/25/25/20 与综合得分公式
+      （ads_geo_yearly_index 按数仓文档 2962 行「公式批准前保持空表」，实测 0 行）；
+      指标同比/环比为后端无源列（恒 NaN）→ 统一「—」且不着涨跌色；预警判定改三态，
+      无规则/无值时出「无法判定」而非「否」；SWOT 与诊断报告加数据 guard，去掉 1500ms 假生成；
+      通知记录补空态；页级取数失败补错误态 + 重试；新增报告与导出（纯前端）。
+      handoff：agent-handoffs/科技发展态势-TS/FE-TS-05A.md；决策：M5-M6-REMEDIATION-20261103.md。
+      原 note 的「联调闸门待 API-TS-M5 契约冻结」已过期：五端点自 2026-10-29 起走久新真实链路。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29206,12 +29612,13 @@ tasks:
       - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-模块开发规划与任务拆分.md"
       - "agent-delivery/Design.md"
     definition_of_done:
-      - "成果地图：11 城 67 点落点 + 城市/类型/领域/时间筛选联动（底座地图）"
-      - "创新能力：四维指数 + 计算方法说明 + 2020–2025 趋势 + 城市雷达"
-      - "SWOT：四象限全文 + 因素，默认展开短板维 + 诊断"
-      - "指标数据：6 指标 + 11 城构成 + 口径说明对比"
-      - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（四类用途见规划 §4 M5）；D9 ⓘ/🧪 + demo 截图比对；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-15T22:23:12+08:00"
+      - "成果地图：湾区城市点位落点 + 城市/类型/领域/时间筛选联动（久新 ads_location + 成果计数）"
+      - "创新能力：城市能力按久新真实计数展示；四维权重与综合得分无源（ads_geo_yearly_index 按文档保持空表）→ 权重显示「—」并在计算方法弹窗说明缺口"
+      - "SWOT：四象限由后端下发，默认展开短板维；未下发则整块空态，诊断报告必须有数据 guard，不得凭空出结论"
+      - "指标数据：指标清单 + 城市构成 + 口径说明；同比/环比为无源列 → 显示「—」，预警判定出「无法判定」而非「否」"
+      - "报告与导出：页头「生成报告 / 打印另存 PDF / 导出数据」三项均真实产出文件（纯前端 HTML + CSV）"
+      - "D9 ⓘ/🧪 + demo 截图比对；pnpm type-check 与 build-only 双绿，handoff 落本模块目录"
+    update_time: "2026-11-03T18:10:00+08:00"
   - id: FE-TS-06A
     feishu_bitable_record_id: reczz28MlyVdo1sw
     supervised_by: "human:孔东"
@@ -29230,7 +29637,13 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 210000
-    note: "handoff 已 push ea1e4aad；lumen b4e1eda；联调确认"
+    note: |
+      2026-11-03 整改轮（真实链路收口）：载体雷达三项（创新成果/创新价值/发展潜力）在久新全部无源
+      → 不再画雷达，出空态说明；对比摘要改为陈述真实计数，不再用 mock 加权分排名次；
+      订阅 toast 改「已加入本次会话」（无订阅写接口）；缺口瀑布删除 0.43/0.34/0.23 假归因，只画真实分差；
+      报告删除「未来预测」章节与写死的 2021-2025；领域「优/潜/弱」标注为机械分段而非综合评价；
+      指标页「生成并导出」改为真实 CSV 导出；页级取数失败补错误态 + 重试；新增报告与导出。
+      handoff：agent-handoffs/科技发展态势-TS/FE-TS-06A.md；决策：M5-M6-REMEDIATION-20261103.md。
     depends_on:
       - "FE-TS-S01"
     touched_files:
@@ -29241,12 +29654,122 @@ tasks:
       - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-模块开发规划与任务拆分.md"
       - "agent-delivery/Design.md"
     definition_of_done:
-      - "载体综合：60 载体三级筛选（类型/区域/领域）+ 地图落点 + 排名 + 详情（底座地图/抽屉）"
-      - "指标系：10 系下钻至三级 + 构成 pill + 多指标对比 + 区间对比（2021–2025 历史序列）"
-      - "领域分布：8 领域 × 4 指标 + 集聚地图 + 优/潜/弱三档标记"
-      - "城市分析：锁定深圳 + 对标城市雷达 + 发展轨迹 + 缺口来源 + 外推预测"
-      - "Mock 种子冻结自 demo；接口按 Java 侧文档对接（四类用途见规划 §4 M6）；D9 ⓘ/🧪 + demo 截图比对；pnpm build 绿，handoff 落本模块目录"
-    update_time: "2026-10-16T11:55:05+08:00"
+      - "载体综合：载体三级筛选（类型/区域/领域）+ 地图落点 + 排名 + 详情；创新价值/排名分无源 → 显示「—」，不画雷达对比"
+      - "指标系：10 系下钻至三级 + 构成 pill + 多指标对比；期次按后端 history 实际长度，不写死年份"
+      - "领域分布：领域 × 指标 + 集聚地图；优势/潜力/薄弱三档标注为「按当前排序指标分段，非综合评价」"
+      - "城市分析：锁定深圳 + 对标城市；缺口瀑布只画真实分差，不做系数归因拆分；报告无预测章节"
+      - "报告与导出：页头「生成报告 / 打印另存 PDF / 导出数据」+ 指标页「生成并导出」均真实产出文件"
+      - "D9 ⓘ/🧪 + demo 截图比对；pnpm type-check 与 build-only 双绿，handoff 落本模块目录"
+    update_time: "2026-11-03T18:10:00+08:00"
+  - id: FE-TS-04E
+    evidence: "agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    supervised_by: "human:孔东"
+    title: "科技发展态势三页（M4/M5/M6）· 生成报告与导出（纯前端）"
+    status: "completed"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      背景：M4/M5/M6 后端均无报告端点（只有技术发展跟踪 TrackingController 有 /reports 与报告记录表），
+      因此按 human 要求「参考技术发展追踪」，复用 M3 的报告结构，改用纯前端生成：
+      数据 → HTML（含数据口径区块）→ Word(.doc) / 打印另存 PDF / CSV。
+      公共工具沉淀：src/views/situation/shared/reportExport.ts（buildReportDocument / buildAutoTable /
+      downloadReportAsWord / printReportHtml / downloadCsv / reportTimestamp）。
+      诚实性约束写进工具注释：缺失字段一律「—」，不补 0、不外推、不生成结论。
+      入口：M4 global-innovation/index.vue、M5 bay-innovation/index.vue、M6 shenzhen-innovation/index.vue
+      页头各三按钮；M6 指标页「生成并导出」改为真实 CSV。
+    depends_on:
+      - "FE-TS-04A"
+      - "FE-TS-05A"
+      - "FE-TS-06A"
+    touched_files:
+      - "src/views/situation/shared/reportExport.ts"
+      - "src/views/situation/global-innovation/index.vue"
+      - "src/views/situation/bay-innovation/index.vue"
+      - "src/views/situation/shenzhen-innovation/index.vue"
+      - "src/views/situation/shenzhen-innovation/tabs/IndicatorTab.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/FE-TS-06A.md（M3 报告结构参考）"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "三页页头各有「生成报告 / 打印另存 PDF / 导出数据」，点击均真实产出文件，无空点击"
+      - "报告正文只包含页面真实取到的数据，缺失字段显示「—」，并带「数据口径」区块"
+      - "报告不含任何评分、名次、趋势外推或预测结论"
+      - "CSV 带 UTF-8 BOM，Excel 打开中文不乱码；含逗号/引号的字段正确转义"
+      - "pnpm type-check 与 build-only 双绿"
+    update_time: "2026-11-03T18:10:00+08:00"
+  - id: FE-TS-05B
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "湾区创新监测（M5）· 整改遗留 P1 清理"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "debt"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      2026-11-03 整改轮已清掉全部 P0（编造权重/公式/数据来源、NaN 直渲、编造预警判定、
+      假生成报告、通知记录空态、页级错误态）。以下 P1 属体验与一致性问题，未在本轮处理：
+      bayAreaModel 影响力分 85/65/45 的展示位置、热点卡片凑数逻辑、CapacityTab 环形图
+      单卡百分比 undefined、IndicatorsTab 表格与图表在单城市筛选下的空态、
+      OverviewTab 地图点位为空的空态。
+    depends_on:
+      - "FE-TS-05A"
+    touched_files:
+      - "src/views/situation/bay-innovation/models/bayAreaModel.ts"
+      - "src/views/situation/bay-innovation/tabs/CapacityTab.vue"
+      - "src/views/situation/bay-innovation/tabs/IndicatorsTab.vue"
+      - "src/views/situation/bay-innovation/tabs/OverviewTab.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "剩余展示位置的无源值统一「—」，不出现 undefined/NaN"
+      - "四类列表/图表在数据为空时有明确空态文案"
+      - "不新增区块、不改既有样式结构"
+    update_time: "2026-11-03T18:10:00+08:00"
+  - id: FE-TS-06B
+    evidence: ""
+    supervised_by: "human:孔东"
+    title: "深圳创新监测（M6）· 整改遗留 P1 清理"
+    status: "pending"
+    agent: "frontend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "debt"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      2026-11-03 整改轮已清掉全部 P0（载体雷达假分、对比摘要假名次、缺口瀑布假归因、
+      报告预测章节、假订阅 toast、假导出按钮、领域优/潜/弱结论、页级错误态）。
+      以下 P1 未在本轮处理：IndicatorTab 最高/最低年份在空历史时渲染空白、
+      部分图表在单指标筛选下的空态、CarrierTab 搜索无结果提示、DomainTab 表格空态。
+    depends_on:
+      - "FE-TS-06A"
+    touched_files:
+      - "src/views/situation/shenzhen-innovation/tabs/IndicatorTab.vue"
+      - "src/views/situation/shenzhen-innovation/tabs/CarrierTab.vue"
+      - "src/views/situation/shenzhen-innovation/tabs/DomainTab.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md"
+    definition_of_done:
+      - "历史为空时年份类字段显示「—」，不出现空白或 NaN"
+      - "列表/图表空数据时均有空态文案"
+      - "不新增区块、不改既有样式结构"
+    update_time: "2026-11-03T18:10:00+08:00"
   - id: FE-TS-07A
     feishu_bitable_record_id: reczz28MlyabN4pI
     supervised_by: "human:孔东"
@@ -35019,13 +35542,18 @@ tasks:
       - "菜单以相对路径进统一用户中心。地址不写主机名"
     update_time: "2026-11-03T12:28:37+08:00"
   - id: SYSINT-03-01B-L01
+    cost_warn: "green"
+    actual_cost: 0.5
+    model_used: "composer"
+    actual_tokens: 90000
+    evidence: "agent-handoffs/SYSINT-03-01B-L01.md"
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-23T06:28:12.529Z"
-    last_seen_at: "2026-10-23T06:28:12.529Z"
-    lock_until: "2026-10-23T14:28:12.529Z"
-    claimed_by: "human:徐滕强"
+    claimed_at: "2026-11-04T03:02:19.728Z"
+    last_seen_at: "2026-11-04T03:02:19.728Z"
+    lock_until: "2026-11-04T07:02:19.728Z"
+    claimed_by: "agent:algorithm-agent"
     title: "企业发展指标区块"
-    status: "claimed"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35035,7 +35563,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 80000
-    note: "监管人 human:徐滕强（2026-10-23 14:28 撤销移交，回归徐滕强；此前 11:34 曾因算法侧误移回滚过一次）。完成日期要求 2026-11-05（原 10-19 倒挂改期）。WBS-03-01b。PORTAL-CMS-METRIC-COVER-L01 未完成，对齐还没有。"
+    note: "联调就绪：commit d451a39 已推 origin/dev（CI 触发）。门面 v0.1+review 修复+follow-up。24 passed。"
     depends_on:
       - "SYSINT-SCHEME-03-L01"
     collaborators:
@@ -35046,7 +35574,7 @@ tasks:
     definition_of_done:
       - "已有 metric_id 走指标服务"
       - "缺口不手填进 CMS，不用相邻指标顶替。COVER 未完成前缺口保持空态"
-    update_time: "2026-10-23T14:28:29+08:00"
+    update_time: "2026-11-04T14:15:31+08:00"
   - id: SYSINT-03-02A-L01
     cost_warn: "green"
     actual_cost: 0.45
@@ -35090,13 +35618,18 @@ tasks:
       - "菜单以相对路径进统一用户中心"
     update_time: "2026-11-03T15:27:07+08:00"
   - id: SYSINT-03-02B-L01
-    claimed_at: "2026-10-24T08:51:10.048Z"
-    last_seen_at: "2026-10-24T08:51:10.048Z"
-    lock_until: "2026-10-24T12:51:10.048Z"
-    claimed_by: "human:徐滕强"
+    model_used: "composer"
+    evidence: "agent-handoffs/SYSINT-03-02B-L01.md"
+    cost_warn: "green"
+    actual_tokens: 60000
+    actual_cost: 0.35
+    claimed_at: "2026-11-04T03:56:34.371Z"
+    last_seen_at: "2026-11-04T03:56:34.371Z"
+    lock_until: "2026-11-04T07:56:34.371Z"
+    claimed_by: "agent:algorithm-agent"
     supervised_by: "human:徐滕强"
     title: "产业全景指标与图谱数字"
-    status: "claimed"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35106,8 +35639,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 80000
-    note: |
-      监管人 human:徐滕强（2026-10-24 human:徐滕强 确认与李伟沟通：产业链 CMS 需求后端线归徐滕强，算法侧一并接管，李伟不再监管本叶；supervised_by 字段同日由架构师口径修正）。完成日期改 2026-11-05（原 2026-10-19 倒挂）。WBS-03-02b。COVER 未完成。
+    note: "联调就绪：commit d451a39 已推 origin/dev。9 注册+1 缺口，全球/全国空态。24 passed（三套回归）。"
     depends_on: []
     collaborators:
       - "frontend-agent"
@@ -35117,7 +35649,7 @@ tasks:
     definition_of_done:
       - "已有 metric_id 走指标服务。区级缺口空态"
       - "节点和边不进 CMS。读图不在本叶新做"
-    update_time: "2026-10-24T16:51:10+08:00"
+    update_time: "2026-11-04T14:15:33+08:00"
   - id: SYSINT-03-03A-L01
     evidence: "agent-handoffs/系统集成-SYSINT/SYSINT-03-03A-L01-缺项修复增量3.md"
     supervised_by: "human:孔东"
@@ -35156,13 +35688,18 @@ tasks:
       - "契约草案确认前不改字段。菜单以相对路径进统一用户中心"
     update_time: "2026-11-03T15:37:35+08:00"
   - id: SYSINT-03-03B-L01
+    model_used: "composer"
+    evidence: "agent-handoffs/SYSINT-03-03B-L01.md"
+    cost_warn: "green"
+    actual_tokens: 70000
+    actual_cost: 0.4
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-23T06:28:43.582Z"
-    last_seen_at: "2026-10-23T06:28:43.582Z"
-    lock_until: "2026-10-23T14:28:43.582Z"
-    claimed_by: "human:徐滕强"
+    claimed_at: "2026-11-04T04:00:46.305Z"
+    last_seen_at: "2026-11-04T04:00:46.305Z"
+    lock_until: "2026-11-04T08:00:46.305Z"
+    claimed_by: "agent:algorithm-agent"
     title: "专题服务指标与主数据"
-    status: "claimed"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35172,7 +35709,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 80000
-    note: "监管人 human:徐滕强（2026-10-23 14:28 撤销移交，回归徐滕强）。完成日期要求 2026-11-05。WBS-03-03b。技术力权重仍是 Q-SVCCHAIN-01。COVER 未完成。"
+    note: "联调就绪：commit d451a39 已推 origin/dev。14 行 11 ID，T1/T2 趋势序列面，tech 截 30+上限 100。24 passed。"
     depends_on:
       - "SYSINT-SCHEME-03-L01"
     collaborators:
@@ -35183,7 +35720,7 @@ tasks:
     definition_of_done:
       - "已有 metric_id 走指标服务。历年趋势缺口保持空态"
       - "CMS 不另维护重点名单，不覆盖法定名称"
-    update_time: "2026-10-23T14:29:00+08:00"
+    update_time: "2026-11-04T14:15:33+08:00"
   - id: SYSINT-03-04B-L01
     evidence: "agent-delivery/agent-handoffs/SYSINT-03-04B-L01.md; pytest tests/test_policy_portal_gaps.py 13 passed"
     claim_type: "coordinator_dispatch"
@@ -35204,7 +35741,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     note: |
-      B1 已到 integration。kind=all 增加 intensity_rank，只用 M_POLICY_INTENSITY_SCORE 按省、按市聚合。portal_gaps 十条保留。pytest 13 passed。handoff agent-delivery/agent-handoffs/SYSINT-03-04B-L01.md。未做线上联调，未提交。
+      2026-11-04 联调收尾（algorithm-agent 代）：代码已随后续 policy 提交上 dev（原 note 过期）；dev 网关实测 kind=all 200：intensity_rank 挂 M_POLICY_INTENSITY_SCORE、mock=false、无评分行时空+reason；portal_gaps 十条 key/reason 齐全、事实值不补 0。四条 DoD 全过，维持 integration 待会签。handoff 已补联调证据节。
     depends_on:
       - "PORTAL-CMS-METRIC-COVER-POL-L01"
       - "ALGO-LIB-POL-PORTAL-LUMEN-L01"
@@ -35218,15 +35755,20 @@ tasks:
       - "十条 portal_gaps 保留 ALGO-LIB-POL-PORTAL-LUMEN-L01 的结果。相近指标不写入 value，已有序列不删成空"
       - "源表没有行时该条为空并写明原因。mock 能关掉。不改 PORTAL-CMS-政策扶持.md，不调用 demo-*"
       - "handoff：agent-delivery/agent-handoffs/SYSINT-03-04B-L01.md"
-    update_time: "2026-10-24T14:38:41+08:00"
+    update_time: "2026-11-04T14:22:55+08:00"
   - id: SYSINT-03-05-L01
+    model_used: "composer"
+    evidence: "agent-handoffs/SYSINT-03-05-L01.md"
+    cost_warn: "yellow"
+    actual_tokens: 180000
+    actual_cost: 1.1
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-23T06:28:43.713Z"
-    last_seen_at: "2026-10-23T06:28:43.713Z"
-    lock_until: "2026-10-23T14:28:43.713Z"
-    claimed_by: "human:徐滕强"
+    claimed_at: "2026-11-04T06:23:19.445Z"
+    last_seen_at: "2026-11-04T06:23:19.445Z"
+    lock_until: "2026-11-04T10:23:19.445Z"
+    claimed_by: "agent:algorithm-agent"
     title: "企业发展可视化"
-    status: "claimed"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35236,7 +35778,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "监管人 human:徐滕强（2026-10-23 14:28 撤销前端线移交，回归徐滕强）。完成日期要求 2026-11-05（原 10-19 倒挂改期）。WBS-03-05。使用人是运维人员，不是门户四页。"
+    note: "2026-11-04 阶段2 完成（同会话切 api/frontend 角色）：Python 两端点+SWOT；Java 三 Feign/6DTO/编排/4 单测 javac 0 error；前端三块真实渲染 selfcheck 17 PASS。全停本地待走查。"
     depends_on:
       - "SYSINT-SCHEME-03-L01"
     collaborators:
@@ -35248,7 +35790,7 @@ tasks:
       - "可视化菜单主路径可点，缺数为空态"
       - "不复用基础数据写侧，也不复用 WBS-03-01 的运营页"
       - "菜单以相对路径进统一用户中心"
-    update_time: "2026-10-23T14:29:00+08:00"
+    update_time: "2026-11-04T15:47:21+08:00"
   - id: SYSINT-03-06-L01
     supervised_by: "human:孔东"
     title: "产业全景可视化"
@@ -35548,7 +36090,7 @@ tasks:
   - id: SYSINT-05-02A-L01
     supervised_by: "human:孔东"
     title: "技术发展跟踪前端"
-    status: "ready"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35558,19 +36100,32 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "监管人 human:孔东。完成日期要求 2026-10-30。WBS-05-02a。书面依赖 WBS-05-02b。"
+    evidence: "agent-handoffs/科技发展态势-TS/FE-TS-03A.md"
+    note: |
+      监管人 human:孔东。完成日期要求 2026-10-30。WBS-05-02a。书面依赖 WBS-05-02b。
+
+      2026-11-03 核对补登（原记「已建号未开工」，与事实不符）：
+      - 同一菜单的 FE-TS-03A 已建成整页（setup/running/result 三阶段），并已切 USE_MOCK=false
+        联调真实数据（meta/dataset 走 display 网关，不再吃 mock 种子）；
+      - 2026-11-02～03 追加：真实评估运行接入、评估报告导出弹窗、范围挂载（区域键/中文名）、
+        历史与模板落库回读、D9 缺失角标、领域未生效提示（见 SITUATION-TS-TRACKING-* 三单）；
+      - 改动停本地工作区，未 commit / 未 push，等 human:孔东 走查（人工验收闸门）。
     depends_on:
       - "SYSINT-SCHEME-05-L01"
+    collaborators:
+      - "api-agent"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
     definition_of_done:
       - "结果、参数、方法三个 Tab 可开，或空态"
       - "名称用技术发展跟踪"
-    update_time: "2026-10-23T15:39:04+08:00"
+      - "接真实数据源（USE_MOCK=false），数字不带 mock 角标、不写假数"
+    update_time: "2026-11-03T15:20:00+08:00"
   - id: SYSINT-05-02B-L01
     supervised_by: "human:唐绍祖"
     title: "技术发展跟踪后端"
-    status: "ready"
+    status: "integration"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35580,15 +36135,135 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "监管人 human:唐绍祖。完成日期要求 2026-10-30。WBS-05-02b。三要素供数依赖 WBS-02-02。"
+    note: |
+      监管人 human:唐绍祖。完成日期要求 2026-10-30。WBS-05-02b。三要素供数依赖 WBS-02-02。
+
+      2026-11-03 核对补登（原记「已建号未开工」，与事实不符）：
+      - gkxlumen-display 已有 TrackingController：meta / dataset / evaluation/run|progress|result /
+        parameter-templates / report(+download) / reports 共 8 组端点，取数走久新只读通道
+        （ads_geo_yearly_metrics / ads_location / ads_technology_potential_* / hotspot / graph_edge），
+        评估值为久新模型 technology_insight_mvp_v2 规则基线产出，本层只装配不重算；
+      - 落库走域服务：tech_evaluation_history / tech_evaluation_report / evaluation_template；
+      - 改动停本地工作区，未 commit / 未 push，等 human:唐绍祖 走查（人工验收闸门）。
     depends_on:
       - "SYSINT-SCHEME-05-L01"
+    collaborators:
+      - "frontend-agent"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
     definition_of_done:
       - "三个 Tab 的接口可调，或空"
       - "专家评估法、经济分析法没有已签收实现，不在本叶新定义口径"
-    update_time: "2026-10-23T15:39:07+08:00"
+      - "无源字段走 noSourceFields 如实声明，不写假数、不补默认值"
+    update_time: "2026-11-03T15:20:00+08:00"
+  - id: SITUATION-TS-TRACKING-EVAL-L01
+    supervised_by: "human:孔东"
+    title: "技术发展跟踪 · 真实评估接入（久新模型装配 + 运行态进度）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-TS-TRACKING-EVAL-L01.md"
+    note: |
+      2026-11-02～11-03。WBS-05-02a/02b 补登（此前无单，改动无法验收）。
+      - 评估运行不再吃 mock：/evaluation/run 触发 6 段真实取数装配（趋势/城市/KPI/技术/热度/关联），
+        评分取自久新评估模型 technology_insight_mvp_v2（规则基线，非 LLM/专家判断），本层只展示不重算；
+      - 进度 = 真实已完成段数 / 总段数（不做时间预估百分比）；过场动画按段推进，不超前于后端上报；
+      - 页面配置的权重/阈值/方法不参与久新模型计算，页内如实标注（不假装参数生效）；
+      - 评估历史每次运行存档一条真实快照（完成时间/范围/评分/阶段/与上期差值）。
+      ⚠️ 改动停本地，未 commit / 未 push，等监管人走查（人工验收闸门）。
+    depends_on:
+      - "SYSINT-05-02B-L01"
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
+    definition_of_done:
+      - "评估运行走真实取数，mock 轨不再进结果页"
+      - "数字不带演示角标；无源字段走空态并声明"
+      - "type-check / build 绿，E2E 跑通一次完整评估"
+    update_time: "2026-11-03T15:20:00+08:00"
+  - id: SITUATION-TS-TRACKING-REPORT-L01
+    supervised_by: "human:孔东"
+    title: "技术发展跟踪 · 评估报告（HTML/PDF 生成、版式与字体、导出图、复用与最近报告）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-TS-TRACKING-REPORT-L01.md"
+    note: |
+      2026-11-02～11-03。WBS-05-02a/02b 补登（此前无单）。
+      - 报告 = 固定模板（域服务 Thymeleaf）+ 本次真实运行快照（KPI/五视图 PNG/榜单/六维/参数/建议/历史），
+        静态平铺不交互；HTML 与 PDF 同源（openhtmltopdf 转换，A4）；
+      - PDF 中文乱码根因：CSS 字体名引擎不认 + 候选 .ttc 字体集合 PDFBox 加载失败 →
+        改注册族名 gkx-cjk（Deng.ttf / Noto Sans SC），.ttc 一律跳过，失败记 ERROR；
+      - 版式重做（openhtmltopdf 无 flex/grid，栅格用 table），短章节 page-break-inside: avoid 防孤行标题；
+      - 导出图按视图给 gridLeft/gridRight 与长标签截断，去掉轴标签白底（防压住热力图色块），画布 1100×620@2x；
+      - 2026-11-03 补：同 runId + 同格式复用已有产物（不重复渲染、不堆文件）+ 「最近报告」列表直下。
+      ⚠️ 改动停本地，未 commit / 未 push，等监管人走查。
+    depends_on:
+      - "SITUATION-TS-TRACKING-EVAL-L01"
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "repos/lumen-ui-science-pc/docs/tracking-真评估接入设计.md"
+    definition_of_done:
+      - "HTML / PDF 均可生成并下载，PDF 中文可提取、无乱码、无孤行标题"
+      - "报告内 6 张图完整不裁切、标签不压图"
+      - "同运行同格式二次生成走复用，页面能回看最近报告"
+    update_time: "2026-11-03T15:20:00+08:00"
+  - id: SITUATION-TS-TRACKING-PERSIST-L01
+    supervised_by: "human:唐绍祖"
+    title: "技术发展跟踪 · 范围挂载与持久化回读（区域/时间/领域口径 + 历史与模板跨重启 + D9 缺口角标）"
+    status: "integration"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-TS-TRACKING-PERSIST-L01.md"
+    note: |
+      2026-11-03。WBS-05-02a/02b 补登（此前无单）。修掉三处「看起来能用其实没接」：
+      - 范围挂载：此前 regionKeys/fieldValues 只透传后端零使用，且前端把 defaultRegionSelection
+        （单个 loc_ 字符串）当路径数组取末元素 → 退化成取字符串最后一个字符（后端收到 location_id="7"）。
+        现区域按 location_id 过滤年度趋势（level 跟随 CITY/COUNTRY，无数据回落全量并标注），
+        领域仅在拿到久新子学科 sub_* 时生效，其余如实标「未参与取数」；新增 scopeEffectNote 回传生效口径；
+        历史与报告写中文区域名（不再出现 loc_ 原文）；
+      - 落库回读：历史与自定义模板此前只写不读（页面随重启清空），且文案仍写「当前服务无数据源」——
+        与事实相反。现取数前从域服务回读（失败节流重试并在口径里明说），文案改为动态如实；
+      - D9：本页数字在指标库无已签收指标（DS-03 的 M_TECH_* 是另一套、is_mock=true，挂上去就是错挂）
+        → 按规范落 D1 missing 红问号 + 治理引用（DS-03-METRIC-OPEN-L01 / Q-MO-DS03-01…06），
+        受评审模式门控，关闭时 DOM 零泄漏。
+      ⚠️ 改动停本地，未 commit / 未 push，等监管人走查。
+    depends_on:
+      - "SYSINT-05-02B-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-TECH.yaml"
+    definition_of_done:
+      - "区域/时间真实进 SQL（实测全国 vs 单城市数值不同），领域未生效时页面明说"
+      - "服务重启后页面历史与自定义模板仍在（库回读），口径文案与事实一致"
+      - "D9 角标按 missing 语义呈现，评审模式关闭时零泄漏"
+    update_time: "2026-11-03T15:20:00+08:00"
   - id: SYSINT-05-03A-L01
     supervised_by: "human:孔东"
     title: "科技人才态势菜单壳前端"
@@ -39727,6 +40402,38 @@ tasks:
       - "空态/加载态/错误态全覆盖验证通过"
       - "DoD 全部 6 条父任务定义签收"
     update_time: "2026-10-23T17:39:11+08:00"
+  - id: SYSINT-MESSAGE-CENTER-L01
+    evidence: "agent-delivery/agent-handoffs/SYSINT-MESSAGE-CENTER-L01.md"
+    title: "门户消息中心对接（消息推送开放接口：通知/待办）"
+    status: "integration"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-11-04T00:00:00+08:00"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "crosscut"
+    task_type: "integration"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      展示系统（systemCode=TECH_INFO_DISPLAY）对接门户消息中心「消息推送开放接口」。对接文档：https://zhipu-ai.feishu.cn/wiki/X0rcwvemmiqS28kjthPcjVylnCe
+      已完成集成底座（gkxlumen-display）：MessageCenterClient（RestTemplate 客户端，X-System-Code/X-System-Secret 认证头 + 503/225001 退避重试 + 统一响应解析 + newMessageId）+ MessageCenterProperties/Configuration + NoticeMessage/TodoMessage/MessageCenterResponse 报文 DTO + application-local.yml 配置，mvn compile 通过。
+      待后续：把 25 个推送/预警功能点逐个接线到 pushNotice/pushTodo（触发逻辑分布在 upms / topic-policy 等，需逐点确认触发点）。
+      凭据：system-secret 属敏感信息，生产放 Nacos（application-dev.yml / gkxlumen-display-dev.yml），不入 git。
+    depends_on: []
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-11-04-门户消息中心-消息推送开放接口.md"
+      - "agent-delivery/agent-handoffs/SYSINT-MESSAGE-CENTER-L01.md"
+    definition_of_done:
+      - "MessageCenterClient 可推送通知 portal_notice_msg / 待办 portal_todo_msg，mvn compile 通过"
+      - "消息中心对接契约（topic/报文/认证/重试/错误码）已落文档"
+      - "system-secret 不入 git（生产走 Nacos）"
+      - "25 个推送/预警功能点接线（后续拆子任务）"
+    update_time: "2026-11-04T00:00:00+08:00"
   - id: LUMEN-POLICY-PY-SEARCH-FILTER-L01
     evidence: "agent-handoffs/政策模块-E7/LUMEN-POLICY-PY-SEARCH-FILTER-L01.md"
     supervised_by: "human:淮政玮"
@@ -44303,7 +45010,7 @@ tasks:
     lock_until: "2026-11-02T16:49:18.824Z"
     claimed_by: "agent:frontend-agent"
     title: "智能研报生成整页复刻（核增 5 叶）— 四板块 + 结论溯源 + PDF/Word 模板导出 + ChainSteps 收尾"
-    status: "ready_to_sign"
+    status: "done"
     agent: "frontend-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -44313,7 +45020,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 180000
-    note: "2026-11-03 用户指令：合并入本地 dev（未推远端）、ChainSteps 替换 04A 正式件、清理临时分支与 worktree，全部完成。联调通过：dev 本地三绿复跑"
+    note: "签收。整页复刻四板块 + 溯源 + 导出已交付，CI 绿。"
     depends_on:
       - "FE-POL-S01"
     touched_files:
@@ -44325,7 +45032,7 @@ tasks:
       - "模板导出：reportOutline 大纲 + exportReportPdf/exportReportWord 双格式导出（+ 模板就绪 templateReady 闸门 + fourKindsReady 四类就绪）"
       - "ChainSteps 页间导航收尾（核增 4 页串联终点，vue-router push）"
       - "与 demo 逐区块截图比对五件套；D9 ⓘ/🧪；交付三绿；handoff 落科技政策跟踪-POL/；完工停本地等人工验收"
-    update_time: "2026-11-03T10:49:40+08:00"
+    update_time: "2026-11-04T00:09:33+08:00"
   - id: BE-POL-CONTRACT-01
     title: "科技政策跟踪 — Java 接口契约定义与数据需求评审（7 页 63 叶：原生 46 + 核增 17，出 API-POL 文档）"
     status: "backlog"
@@ -44898,6 +45605,8 @@ tasks:
       - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-FE-L01.md：含 BUG-ID 对照表 + 产品实现规程附录 D 防漏扫描摘要；task-registry cost 4 字段回填"
     update_time: "2026-10-31T17:33:35+08:00"
   - id: QA-TOPIC-BUGFIX-API-L01
+    actual_cost: 0.03
+    actual_tokens: 16000
     evidence: "agent-handoffs/QA-TOPIC-BUGFIX-API-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-30T03:17:37.932Z"
@@ -44916,7 +45625,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      B 类判定清单 v2：① 026-001/002 ＝后端默认态聚合缺失（需带 trace 复现后修）；② 027-004＝部分 API：验证 domain-evidence 后本单修；③ 027-005＝D16 gapfill_ 灌数；④ 027-008＝Q013/Q014/Q016 未闭合，诚实空态。分工：A 类已拆 DICT-L01（本单仅联调）；028-003 纳入本单。前置：先修 DICT-L01。【028-005 已修 2026-10-30】根因（pod 取证）：默认 space=entan 未建。修复两层：① 69c667b 探测失败返回业务空图 200+empty_reason（不再 500/503）；② 75a2c78 space 切 demo_gkx_chain（2026-10-30 用户拍板「先挂 demo_gkx_chain，等切换后再改」）。pod 内已实测 subgraph 在该 space 真跑通（深圳泰乾 cooperate 边），配置就位后图谱即出真数据。切换回 TRSGraph 时：改 conf/settings.yaml 或 K8s 加 GKX_NEBULA_SPACE env。B 类 4 条待单 1 闭环后执行。
+      【2026-11-03】028-005 已修复上线并经用户线上验证（图谱页签不再 500：space 切 demo_gkx_chain + 诚实空态）。剩余：B 类 4 条判定执行（026-001/002 复现、027-004 domain-evidence 验证、027-005 D16 gapfill、027-008 诚实空态确认）+ 028-003 Java node_stage 过滤。依赖单 1 已进 pending_test，本单 B 类可开工。
     touched_files:
       - "repos/lumen-svc-platform/gkxlumen-topic"
       - "repos/lumen-svc-platform/gkxlumen-metrics"
@@ -44926,12 +45635,12 @@ tasks:
       - "A 类接口侧：typeRows.tag_name、cityBenchmark object_name、企业名称等 VO 字段补中文名，或与前端单书面约定兜底分工（写入两单 handoff）"
       - "B 类 5 个（026-001/002、027-004/005/008）逐条判定链路 vs 数据缺项：链路问题修默认条件/参数回退；数据缺项按 D16 登记 gapfill_ 流程，禁止写入 ODS/DWD/ADS/供应方库，禁止伪闭合"
       - "修复后联调确认（note 含「联调通过」），trace_id 回填 bug-registry 对应条目；handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-L01.md + cost 4 字段回填"
-    update_time: "2026-10-30T11:43:29+08:00"
+    update_time: "2026-11-03T18:37:59+08:00"
   - id: QA-TOPIC-BUGFIX-API-DICT-L01
     cost_warn: "green"
-    actual_cost: 0.38
+    actual_cost: 0.42
     model_used: "glm-5.3-Flash"
-    actual_tokens: 185000
+    actual_tokens: 210000
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-29T14:14:57.858Z"
     last_seen_at: "2026-10-29T14:14:57.858Z"
@@ -44939,7 +45648,7 @@ tasks:
     claimed_by: "agent:api-agent"
     evidence: "agent-handoffs/QA-TOPIC-BUGFIX-API-DICT-L01.md"
     title: "专题系统 A 类编码泄漏根因修复 — 接口侧字典/VO 中文名（前端仅兜底）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "api-agent"
     epic: "专题系统-测试缺陷修复"
     priority: "P0"
@@ -44949,8 +45658,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      完工待走查 v4（评审二轮后）。lumen-topic-py 本地 7 commit（已 rebase origin/dev）：50570d7 A类修复 → e345b0b 评审修正 → fa7bc4e 图谱空态 → 592cc07 space 切 demo_gkx_chain → f6b6790 标签去重统一 → ff4d240 qualifications 增量 → e37358a 评审二轮修正（I1 补 listed_date+上市场景测试守卫；I3/M1 码表启动 warm-up+300s 重试间隔+httpx 上下文，禁 async 路由同步 HTTP）。lumen-svc-platform 本地 2 commit：ee1729e QualificationItem 补 category/approveDate；f99fedd GraphResponse 补 emptyReason（I2 诊断字段 Java 断链修复）。两轮深度评审记录： abc0bee9（一轮） 23e98893（二轮两仓联合）。全量 319 passed（3 存量红票外）。数据侧待办不变：① tag_dict 补 key_enterprise；② ES tags 补认定时间字段。M 级遗留已记录：M4 empty_reason 含内网 host（建议后续挂评审层门控）、M6 顶层 tags 未去重（存量契约）、M7 brief_card 透码（票外）。
+    note: "2026-11-03 线上验证通过（human:徐滕强确认），联调通过。修复全量在 dev：编码泄漏 4 组 + 标签字典统一 + 图谱空态 + 专利数据修复。遗留 5 项已登记 note 移交数据侧/QA。"
     depends_on: []
     touched_files:
       - "repos/lumen-svc-platform/gkxlumen-topic"
@@ -44962,7 +45670,7 @@ tasks:
       - "BUG-028-006/008：招引/培育分析结果契约回显筛选条件与权重的可读名称（或提供 code→name 字典接口），前端本次筛选/权重说明不再拼接原始 code/英文键"
       - "原则：VO 出中文名为根因修复，前端兜底仅过渡；修复后与 QA-TOPIC-BUGFIX-FE-L01 联调并在 note 记录联调通过；trace_id 回填 bug-registry 对应条目"
       - "handoff 写 agent-handoffs/QA-TOPIC-BUGFIX-API-DICT-L01.md + cost 4 字段回填"
-    update_time: "2026-10-30T12:51:08+08:00"
+    update_time: "2026-11-03T18:36:57+08:00"
   - id: SYSINT-SCHEME-07-L06
     title: "算法中台产业链/企业/政策入图流程说明"
     status: "ready"
@@ -46800,13 +47508,18 @@ tasks:
       - "统计数字走 @/review 的ℹ与就绪度角标。强度 ponytail full。handoff 写明未改的门户文件，并附门户四页原功能仍在的说明"
     update_time: "2026-11-02T20:54:58+08:00"
   - id: SYSINT-03-VIZ-API-L01
+    model_used: "glm-5.3-Flash"
+    cost_warn: "green"
+    actual_tokens: "310000"
+    actual_cost: "$0.7"
+    evidence: "agent-delivery/agent-handoffs/专题对齐-TOPIC/SYSINT-03-VIZ-API-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-02T10:40:11.881Z"
     last_seen_at: "2026-11-02T10:40:11.881Z"
     lock_until: "2026-11-03T10:40:11.881Z"
     claimed_by: "agent:api-agent"
     title: "可视化四菜单·Java 只读接口（复用不改契约，新增 8 条，7 项不做）"
-    status: "claimed"
+    status: "integration"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -46816,8 +47529,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 80000
-    note: |
-      派工给 Java 接口侧，监管人 human:徐滕强。执行仓 lumen-svc-platform 的 gkxlumen-topic。清单真源见 design_refs 第一条。与前端单 SYSINT-03-VIZ-FE-L01 并行：前端先用第 1 节旧接口搭骨架，第 2 节接口好了再接线。强度 ponytail full。
+    note: "联调完成：四路由 dev 实测通过（空态+有行两形态），双轴 code review 修复完，测试 11/11 实跑绿，CI/部署 success；前端 SYSINT-03-VIZ-FE-L01 可接线（chain/policy 页走 30895 网关）"
     collaborators:
       - "frontend-agent"
     design_refs:
@@ -46830,7 +47542,7 @@ tasks:
       - "按清单第 3 节：预测、SWOT、服务需求、供需匹配、服务效能、服务案例、政策词频聚类与影响深度这 7 项没有新路由"
       - "服务类型筛选走 N-8 新路由，不改 portalRegionMap 的查询参数。环节占比不写回 panorama snapshot"
       - "Java 不写 ADS、不写算法。要计算时只走 Python /internal/*，算不出来就空态。handoff 列出新路由、空态样例和未改的旧路由"
-    update_time: "2026-11-02T18:40:11+08:00"
+    update_time: "2026-11-04T11:30:52+08:00"
   - id: ENT-EXPORT-CURRENT-HIDE-L01
     title: "企业查询「导出当前结果」隐藏决策登记与放开条件（chore）"
     status: "backlog"
@@ -47574,7 +48286,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "human:淮政玮签收。2026-11-03 第三轮重签：架构、算法、数据、产品四角色同意。222 读 gapfill_policy_eval_template。任务保持已签收，不改状态。"
+    note: "淮政玮 2026-11-03 签收。四角色复会签同意。"
     depends_on:
       - "POL-DISPLAY-SDD-L01"
     touched_files:
@@ -47585,7 +48297,7 @@ tasks:
     definition_of_done:
       - "落盘该二级的实现架构与整体流程（同步读面、Job、501 空态、跨项只消费）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-ARCH.md"
       - "服从 /display/v1/policy，不消费 /topic/v1/policy，不新造指标，不写字段表，不重开 GDF"
-    update_time: "2026-11-03T21:19:13+08:00"
+    update_time: "2026-11-03T19:53:11+08:00"
   - id: POL-L2-DS11-READ-ARCH
     model_used: "grok-4.7"
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-ARCH.md"
@@ -47608,7 +48320,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "human:淮政玮签收。四角色会签已同意。"
+    note: "淮政玮 2026-11-03 签收。会签通过。壳表只灌 224、225，不灌模板选用。"
     depends_on:
       - "POL-DISPLAY-SDD-L01"
     touched_files:
@@ -47619,7 +48331,7 @@ tasks:
     definition_of_done:
       - "落盘该二级的实现架构与整体流程（同步读面、Job、501 空态、跨项只消费）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-ARCH.md"
       - "服从 /display/v1/policy，不消费 /topic/v1/policy，不新造指标，不写字段表，不重开 GDF"
-    update_time: "2026-11-03T15:57:38+08:00"
+    update_time: "2026-11-03T19:44:02+08:00"
   - id: POL-L2-DS11-PLAN-ARCH
     cost_warn: "green"
     actual_cost: 0.04
@@ -47643,7 +48355,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "human:淮政玮签收。两轮四角色同意。下游分册以该架构为准。"
+    note: "淮政玮 2026-11-03 签收。四角色会签同意。"
     depends_on:
       - "POL-DISPLAY-SDD-L01"
     touched_files:
@@ -47654,7 +48366,7 @@ tasks:
     definition_of_done:
       - "落盘该二级的实现架构与整体流程（同步读面、Job、501 空态、跨项只消费）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-ARCH.md"
       - "服从 /display/v1/policy，不消费 /topic/v1/policy，不新造指标，不写字段表，不重开 GDF"
-    update_time: "2026-11-03T21:08:18+08:00"
+    update_time: "2026-11-03T19:53:12+08:00"
   - id: POL-L2-DS12-EST-ARCH
     supervised_by: "human:淮政玮"
     title: "政策效果推演 · 效果预估 · 后台实现架构设计"
@@ -48422,13 +49134,14 @@ tasks:
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
     update_time: "2026-11-03T15:02:48+08:00"
   - id: POL-L2-DS11-VIZ-API
-    claimed_at: "2026-11-03T13:08:37.534Z"
-    last_seen_at: "2026-11-03T13:08:37.534Z"
-    lock_until: "2026-11-03T17:08:37.534Z"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-VIZ-API.md"
+    claimed_at: "2026-11-03T11:53:21.086Z"
+    last_seen_at: "2026-11-03T11:53:21.086Z"
+    lock_until: "2026-11-03T19:53:21.086Z"
     claimed_by: "agent:api-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 政策分析报告可视化呈现 · 后台接口设计"
-    status: "in_progress"
+    status: "done"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48438,7 +49151,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "开工写接口分册。以已签收的 VIZ-ARCH 为准。不标 done。"
+    note: "签收。四角色会签均同意，分册与 handoff 已核对。"
     depends_on:
       - "POL-L2-DS11-VIZ-ARCH"
     touched_files:
@@ -48449,15 +49162,15 @@ tasks:
     definition_of_done:
       - "落盘该二级接口分册（路径、方法、同步或 Job、501 空态）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-API.md"
       - "只汇入 BE-POL-CONTRACT-01，不单独冻结第二份 API-POL，不写实现代码，不复用 /topic/v1/policy"
-    update_time: "2026-11-03T21:09:10+08:00"
+    update_time: "2026-11-03T22:43:43+08:00"
   - id: POL-L2-DS11-VIZ-METRIC
-    claimed_at: "2026-11-03T13:08:39.638Z"
-    last_seen_at: "2026-11-03T13:08:39.638Z"
-    lock_until: "2026-11-03T17:08:39.638Z"
+    claimed_at: "2026-11-03T11:53:21.606Z"
+    last_seen_at: "2026-11-03T11:53:21.606Z"
+    lock_until: "2026-11-03T19:53:21.606Z"
     claimed_by: "agent:algorithm-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 政策分析报告可视化呈现 · 后台指标设计"
-    status: "in_progress"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48467,7 +49180,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "开工写指标分册。以已签收的 VIZ-ARCH 为准。不标 done。"
+    note: "签收。四角色会签均同意，分册与 handoff 已核对。"
     depends_on:
       - "POL-L2-DS11-VIZ-ARCH"
     touched_files:
@@ -48478,15 +49191,15 @@ tasks:
     definition_of_done:
       - "落盘该二级指标挂接到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-METRIC.md，只使用说明书第 2 节已有 metric_id 与三档判定"
       - "未注册模型保持 501，不写可算出数的假公式，不改 D4，不新注册指标"
-    update_time: "2026-11-03T21:09:14+08:00"
+    update_time: "2026-11-03T22:44:37+08:00"
   - id: POL-L2-DS11-VIZ-DATA
-    claimed_at: "2026-11-03T13:08:40.789Z"
-    last_seen_at: "2026-11-03T13:08:40.789Z"
-    lock_until: "2026-11-03T17:08:40.789Z"
+    claimed_at: "2026-11-03T11:53:22.152Z"
+    last_seen_at: "2026-11-03T11:53:22.152Z"
+    lock_until: "2026-11-03T19:53:22.152Z"
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 政策分析报告可视化呈现 · 后台数据架构设计"
-    status: "in_progress"
+    status: "done"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48496,7 +49209,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "开工写数据分册。以已签收的 VIZ-ARCH 为准。不标 done。"
+    note: "签收。四角色会签均同意，分册与 handoff 已核对。"
     depends_on:
       - "POL-L2-DS11-VIZ-ARCH"
     touched_files:
@@ -48507,17 +49220,12 @@ tasks:
     definition_of_done:
       - "落盘该二级数据架构到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-DATA.md，写明读哪些已有 ADS 或已落库结果"
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
-    update_time: "2026-11-03T21:09:19+08:00"
+    update_time: "2026-11-03T22:45:38+08:00"
   - id: POL-L2-DS11-READ-API
-    user_story: "US-DS-POL-05"
-    cost_warn: "green"
-    actual_cost: 0.04
-    model_used: "grok-4.7"
-    actual_tokens: 8000
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-API.md"
-    claimed_at: "2026-11-03T08:08:40.755Z"
-    last_seen_at: "2026-11-03T08:08:40.755Z"
-    lock_until: "2026-11-04T08:08:40.755Z"
+    claimed_at: "2026-11-03T11:44:10.393Z"
+    last_seen_at: "2026-11-03T11:44:10.393Z"
+    lock_until: "2026-11-03T19:44:10.393Z"
     claimed_by: "agent:api-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 结果解读报告多维展示 · 后台接口设计"
@@ -48531,7 +49239,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "human:淮政玮签收。会签通过。分册与已签收架构一致。"
+    note: "淮政玮 2026-11-04 签收（补：此前已签收被并行会话回退）。会签通过。接口分册与已签收架构一致。"
     depends_on:
       - "POL-L2-DS11-READ-ARCH"
     touched_files:
@@ -48542,17 +49250,12 @@ tasks:
     definition_of_done:
       - "落盘该二级接口分册（路径、方法、同步或 Job、501 空态）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
       - "只汇入 BE-POL-CONTRACT-01，不单独冻结第二份 API-POL，不写实现代码，不复用 /topic/v1/policy"
-    update_time: "2026-11-03T16:13:45+08:00"
+    update_time: "2026-11-04T00:07:55+08:00"
   - id: POL-L2-DS11-READ-METRIC
-    user_story: "US-DS-POL-05"
-    cost_warn: "green"
-    actual_cost: 0.04
-    model_used: "grok-4.7"
-    actual_tokens: 8000
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-METRIC.md"
-    claimed_at: "2026-11-03T08:04:48.978Z"
-    last_seen_at: "2026-11-03T08:04:48.978Z"
-    lock_until: "2026-11-04T08:04:48.978Z"
+    claimed_at: "2026-11-03T11:44:10.798Z"
+    last_seen_at: "2026-11-03T11:44:10.798Z"
+    lock_until: "2026-11-03T19:44:10.798Z"
     claimed_by: "agent:algorithm-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 结果解读报告多维展示 · 后台指标设计"
@@ -48566,7 +49269,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "human:淮政玮签收。会签通过。分册与已签收架构一致。"
+    note: "淮政玮 2026-11-04 签收（补：此前已签收被并行会话回退）。会签通过。只挂已有三条指标，D4 未改。"
     depends_on:
       - "POL-L2-DS11-READ-ARCH"
     touched_files:
@@ -48577,17 +49280,12 @@ tasks:
     definition_of_done:
       - "落盘该二级指标挂接到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-METRIC.md，只使用说明书第 2 节已有 metric_id 与三档判定"
       - "未注册模型保持 501，不写可算出数的假公式，不改 D4，不新注册指标"
-    update_time: "2026-11-03T16:13:46+08:00"
+    update_time: "2026-11-04T00:07:56+08:00"
   - id: POL-L2-DS11-READ-DATA
-    user_story: "US-DS-POL-05"
-    cost_warn: "green"
-    actual_cost: 0.04
-    model_used: "grok-4.7"
-    actual_tokens: 8000
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-DATA.md"
-    claimed_at: "2026-11-03T08:04:46.962Z"
-    last_seen_at: "2026-11-03T08:04:46.962Z"
-    lock_until: "2026-11-04T08:04:46.962Z"
+    claimed_at: "2026-11-03T11:44:11.121Z"
+    last_seen_at: "2026-11-03T11:44:11.121Z"
+    lock_until: "2026-11-03T19:44:11.121Z"
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 结果解读报告多维展示 · 后台数据架构设计"
@@ -48601,7 +49299,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "human:淮政玮签收。会签通过。分册与已签收架构一致。"
+    note: "淮政玮 2026-11-04 签收（补：此前已签收被并行会话回退）。会签通过。只建壳表，不灌模板选用。"
     depends_on:
       - "POL-L2-DS11-READ-ARCH"
     touched_files:
@@ -48612,15 +49310,15 @@ tasks:
     definition_of_done:
       - "落盘该二级数据架构到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-DATA.md，写明读哪些已有 ADS 或已落库结果"
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
-    update_time: "2026-11-03T16:13:47+08:00"
+    update_time: "2026-11-04T00:07:57+08:00"
   - id: POL-L2-DS11-PLAN-API
-    claimed_at: "2026-11-03T13:08:43.139Z"
-    last_seen_at: "2026-11-03T13:08:43.139Z"
-    lock_until: "2026-11-03T17:08:43.139Z"
+    claimed_at: "2026-11-03T11:53:22.650Z"
+    last_seen_at: "2026-11-03T11:53:22.650Z"
+    lock_until: "2026-11-03T19:53:22.650Z"
     claimed_by: "agent:api-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 推荐方案报告交互展示 · 后台接口设计"
-    status: "in_progress"
+    status: "done"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48630,7 +49328,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "开工写接口分册。以已签收的 PLAN-ARCH 为准。不标 done。"
+    note: "签收。四角色会签均同意，分册与 handoff 已核对。"
     depends_on:
       - "POL-L2-DS11-PLAN-ARCH"
     touched_files:
@@ -48641,15 +49339,15 @@ tasks:
     definition_of_done:
       - "落盘该二级接口分册（路径、方法、同步或 Job、501 空态）到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-API.md"
       - "只汇入 BE-POL-CONTRACT-01，不单独冻结第二份 API-POL，不写实现代码，不复用 /topic/v1/policy"
-    update_time: "2026-11-03T21:09:22+08:00"
+    update_time: "2026-11-03T22:47:24+08:00"
   - id: POL-L2-DS11-PLAN-METRIC
-    claimed_at: "2026-11-03T13:08:45.294Z"
-    last_seen_at: "2026-11-03T13:08:45.294Z"
-    lock_until: "2026-11-03T17:08:45.294Z"
+    claimed_at: "2026-11-03T11:53:23.121Z"
+    last_seen_at: "2026-11-03T11:53:23.121Z"
+    lock_until: "2026-11-03T19:53:23.121Z"
     claimed_by: "agent:algorithm-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 推荐方案报告交互展示 · 后台指标设计"
-    status: "in_progress"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48659,7 +49357,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "开工写指标分册。以已签收的 PLAN-ARCH 为准。不标 done。"
+    note: "签收。四角色会签均同意，分册与 handoff 已核对。"
     depends_on:
       - "POL-L2-DS11-PLAN-ARCH"
     touched_files:
@@ -48670,15 +49368,15 @@ tasks:
     definition_of_done:
       - "落盘该二级指标挂接到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-METRIC.md，只使用说明书第 2 节已有 metric_id 与三档判定"
       - "未注册模型保持 501，不写可算出数的假公式，不改 D4，不新注册指标"
-    update_time: "2026-11-03T21:09:26+08:00"
+    update_time: "2026-11-03T22:49:17+08:00"
   - id: POL-L2-DS11-PLAN-DATA
-    claimed_at: "2026-11-03T13:08:46.514Z"
-    last_seen_at: "2026-11-03T13:08:46.514Z"
-    lock_until: "2026-11-03T17:08:46.514Z"
+    claimed_at: "2026-11-03T11:53:23.439Z"
+    last_seen_at: "2026-11-03T11:53:23.439Z"
+    lock_until: "2026-11-03T19:53:23.439Z"
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 推荐方案报告交互展示 · 后台数据架构设计"
-    status: "in_progress"
+    status: "done"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -48688,7 +49386,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 8000
-    note: "开工写数据分册。以已签收的 PLAN-ARCH 为准。不标 done。"
+    note: "签收。四角色会签均同意，分册与 handoff 已核对。"
     depends_on:
       - "POL-L2-DS11-PLAN-ARCH"
     touched_files:
@@ -48699,7 +49397,7 @@ tasks:
     definition_of_done:
       - "落盘该二级数据架构到 agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-DATA.md，写明读哪些已有 ADS 或已落库结果"
       - "跨项只写消费边界，不新开 GDF，不写 nGQL，不写第二套统计脚本，不把 D4 从 mock 改绿"
-    update_time: "2026-11-03T21:09:31+08:00"
+    update_time: "2026-11-03T23:33:21+08:00"
   - id: POL-L2-DS12-EST-API
     supervised_by: "human:淮政玮"
     title: "政策效果推演 · 效果预估 · 后台接口设计"
@@ -50466,7 +51164,7 @@ tasks:
     claimed_by: "agent:api-agent"
     supervised_by: "human:淮政玮"
     title: "专题政策门面 · 政策订阅与外发 · 实现开发"
-    status: "integration"
+    status: "done"
     agent: "api-agent"
     epic: "E-E7-POLICY-M1"
     priority: "P1"
@@ -50478,7 +51176,7 @@ tasks:
     estimated_tokens: 20000
     user_story: "US-DS-POL-02"
     note: |
-      监管 human:淮政玮。开发已交，仍在联调。门面测试 20 项通过，提交 7a917b31。展示只委托。没有订阅则空列表。外发通道未上线。2026-11-03 已建库 gkxlumenx_topic_policy 并 GRANT ALL 给 gkxlumenx。policy_subscription 已建成，行数 0，没有插入订阅。不标 done。
+      监管 human:淮政玮。human:淮政玮 2026-11-03 21:53 签收：实现 commit 7a917b31（dev），pipeline 3626 deploy:topic-policy / deploy:display 绿，门面单测 20 项通过，库表 gkxlumenx_topic_policy.policy_subscription 就绪（空表，无假订阅）。外发通道未上线为已裁定态。（重放签收：注册表合并事故后重写）
     depends_on:
       - "E-E7-POLICY-M1-L11"
     collaborators:
@@ -50492,7 +51190,7 @@ tasks:
       - "筛选对象是已经入库的政策。不新开抓取，不把订阅写成收藏，不把序号 212 的匹配模型拿来顶替"
       - "gkxlumen-display 的 /display/v1/policy/panorama/subscriptions 只委托该门面。展示服务不落订阅关系、不发信、不跑定时。浏览器不改打 /topic/v1/policy"
       - "门面入口未接上时展示继续 501。入口接上且该用户没有订阅时返回空列表。localStorage 与立即推送不是本服务"
-    update_time: "2026-11-03T15:36:01+08:00"
+    update_time: "2026-11-03T22:25:06+08:00"
   - id: E-E7-POLICY-M1-L13
     supervised_by: "human:淮政玮"
     title: "专题政策门面 · 政策订阅与外发 · 测试"
@@ -50598,7 +51296,7 @@ tasks:
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策动向跟踪 · 缺项表灌 mock"
-    status: "integration"
+    status: "pending_test"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50609,7 +51307,8 @@ tasks:
     difficulty: "M"
     estimated_tokens: 8000
     user_story: "US-DS-POL-02"
-    note: "claim_type=coordinator_dispatch。监管 human:淮政玮。--apply 退出码 0。gkxlumenx_gapfill 已写入 hotspot 6、impact 3、report 3、theme 5。handoff f58dda48。不改展示接口。未会签，不标 done。"
+    note: |
+      四表已灌 gkxlumenx_gapfill（hotspot 6、impact 3、report 3、theme 5），--apply 退出码 0，--check 复核通过；脚本已在 lumen-algo-py origin/dev（3827118c）。集成确认：与 TREND-DATA 第 5 节列定义逐列核对一致（domain_name/brief、impact_object/conclusion、title/body、theme_name/item_count/stat_year），与 ARCH 第 7.3 节表清单一致，库内 COUNT 与 handoff 行数一致。联调确认
     depends_on:
       - "POL-L2-DS10-TREND-ARCH"
       - "POL-L2-DS10-TREND-DATA"
@@ -50621,7 +51320,7 @@ tasks:
       - "每行带 metric_id（留空）、gap_item、fill_method=manual、gapfill_batch_id、generated_at。不新注册指标，不填 fill_model"
       - "不改展示接口，不在控制器或 Python 响应里写死 mock。表里没有行时读取侧应得到空，不造 0。不改 D4"
       - "handoff 写明库、表、行数和灌数命令。不把本单标 done"
-    update_time: "2026-11-03T15:25:54+08:00"
+    update_time: "2026-11-04T02:50:47+08:00"
   - id: POL-L2-DS10-SENT-MOCK-210
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-MOCK-210.md"
     claimed_at: "2026-11-03T06:18:05.992Z"
@@ -50722,7 +51421,7 @@ tasks:
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "科创政策全景 · 政策重点比对 · 缺项表灌 mock"
-    status: "pending_test"
+    status: "done"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50732,7 +51431,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "联调通过，进入待测试。"
+    note: "淮政玮 2026-11-03 签收。四张缺项表已灌入，未建可视化表。"
     depends_on:
       - "POL-L2-DS10-CMP-ARCH"
       - "POL-L2-DS10-CMP-DATA"
@@ -50742,11 +51441,12 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_version_diff、gapfill_policy_detail_compare、gapfill_policy_benchmark_report、gapfill_policy_benchmark_viz。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入新旧变更摘要、多政策对照、对标报告正文、可视化对照数。接口只读这些表"
       - "不灌部门件数和标杆力度。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T15:19:11+08:00"
+    update_time: "2026-11-03T15:51:11+08:00"
   - id: POL-L2-DS11-VIZ-GAPFILL-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-VIZ-GAPFILL-L01.md"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 可视化 · 缺项表灌 mock"
-    status: "backlog"
+    status: "done"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50756,7 +51456,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。架构返工后本单还要灌 gapfill_policy_eval_template 的模板选用行（序号 222）。不灌壳表，不用 224、225 的行充当。219、220 仍灌趋势点和分区对照。接口只读表。登记完成定义尚未写入第三张表，以架构稿第 9 节为准。本单仍 backlog，本轮不执行。"
+    note: "淮政玮 2026-11-03 签收（注册表被并行会话覆盖后重放）。QA 验收通过：trend 44、partition 41。"
     depends_on:
       - "POL-L2-DS11-VIZ-ARCH"
       - "POL-L2-DS11-VIZ-DATA"
@@ -50766,21 +51466,12 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_eval_trend、gapfill_policy_eval_partition。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入趋势点和分区对照数。接口只读表"
       - "221 不建表。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T15:58:04+08:00"
+    update_time: "2026-11-03T22:09:45+08:00"
   - id: POL-L2-DS11-READ-GAPFILL-L01
-    user_story: "US-DS-POL-05"
-    cost_warn: "green"
-    actual_cost: 0.04
-    model_used: "grok-4.7"
-    actual_tokens: 8000
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-GAPFILL-L01.md"
-    claimed_at: "2026-11-03T08:16:02.410Z"
-    last_seen_at: "2026-11-03T08:16:02.410Z"
-    lock_until: "2026-11-04T08:16:02.410Z"
-    claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 解读 · 缺项表灌 mock"
-    status: "integration"
+    status: "done"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50790,7 +51481,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "代码已落盘，待签收"
+    note: "淮政玮 2026-11-03 签收（注册表被并行会话覆盖后重放）。QA 验收通过：壳表 7 行，无模板选用行。"
     depends_on:
       - "POL-L2-DS11-READ-ARCH"
       - "POL-L2-DS11-READ-DATA"
@@ -50800,11 +51491,12 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_eval_focus、gapfill_policy_eval_summary、gapfill_policy_eval_shell。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入焦点说明、摘要结论、模板与解读条目。接口只读表"
       - "不灌短板条数，不灌 PDF。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T20:29:28+08:00"
+    update_time: "2026-11-03T22:09:44+08:00"
   - id: POL-L2-DS11-PLAN-GAPFILL-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-PLAN-GAPFILL-L01.md"
     supervised_by: "human:淮政玮"
     title: "政策分析评价 · 方案 · 缺项表灌 mock"
-    status: "backlog"
+    status: "done"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -50814,7 +51506,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。按说明书第 11.2 节。序号 227–231。接口只读表，禁止接口直接返回 mock。"
+    note: "淮政玮 2026-11-03 签收（注册表被并行会话覆盖后重放）。QA 验收通过：scheme 19 行。"
     depends_on:
       - "POL-L2-DS11-PLAN-ARCH"
       - "POL-L2-DS11-PLAN-DATA"
@@ -50824,7 +51516,7 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_eval_scheme。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入方案对照、参数模拟结果、路径节点与风险、专家意见条目。接口只读表"
       - "不灌导出文件。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T13:20:48+08:00"
+    update_time: "2026-11-03T22:09:45+08:00"
   - id: POL-L2-DS12-EST-GAPFILL-L01
     supervised_by: "human:淮政玮"
     title: "政策效果推演 · 预估 · 缺项表灌 mock"
@@ -51348,6 +52040,112 @@ tasks:
       - "改动停在 lumen-ui-science-pc 本地，不 commit、不 push"
       - "handoff 写明未推送。不标 done"
     update_time: "2026-11-03T15:51:50+08:00"
+  - id: POL-L2-DS10-SENT-FE-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-FE-L01.md"
+    supervised_by: "human:淮政玮"
+    title: "科创政策全景 · 政策舆情评估 · 前端接线真实接口"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-03"
+    note: |
+      claim_type=coordinator_dispatch。监管 human:淮政玮。四卡接线 73cc1e8 + 轮询/当天复用/force 重跑 e29090c 均已推 origin/dev。GET jobs/{taskId} 轮询 3s 封顶 120s；sessionStorage 当天指纹；空体不造结果。三绿：type-check 0 错、build 成功、自检全绿含约 60 条新断言。未会签，不标 done。
+    definition_of_done:
+      - "舆情页签受众反馈卡片改调 GET /display/v1/policy/panorama/feedback，评估报告卡片改调 GET /display/v1/policy/panorama/assessment-report；USE_MOCK=true 仍走种子"
+      - "实施效果跟踪卡片接 POST /display/v1/policy/panorama/jobs sub_type=policy_effect，政策匹配与推送卡片接 sub_type=policy_match；切条件不自动起任务；同条件单飞；Job 失败不清空同步块；空态不造 0 不 501"
+      - "浏览器全部请求落在 /display/v1/policy/**；角标保留；type-check、自检、build 三绿"
+      - "handoff 写明接线前后行为、请求样例与缺口；不标 done"
+    update_time: "2026-11-03T23:20:57+08:00"
+  - id: POL-L2-DS10-SENT-SSO-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-SSO-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T17:31:26.405Z"
+    last_seen_at: "2026-11-03T17:31:26.405Z"
+    lock_until: "2026-11-03T21:31:26.405Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科创政策全景 · 舆情 jobs 令牌过期静默失败"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-03"
+    note: |
+      claim_type=coordinator_dispatch。监管 human:淮政玮。jobs 401 走全局重登引导（panoramaGetAuthed/PostAuthed 无 optional）；过期文案正则补齐；systemCode=display 补 optionalClient。lumen-ui-science-pc 1e9e0c9+66e37cb（CI 基线修复）+9ee8d51 已推。三绿。J1/J10 终态复验待新构建部署后人工走查（handoff §6 清单）。未会签，不标 done。
+    definition_of_done:
+      - "定位 panorama 请求链（src/utils/request.ts + src/api/policy.ts panoramaGet/Post）对 401/访问令牌已过期 的处理：确认被 optional/skipErrorToast 静默吞掉还是有重登提示；如缺失则补：401 且 msg 含令牌过期/不存在时清会话并跳转重新登录（复用仓内已有 401 处理模式，不自造第二套）"
+      - "确认全部 /display/v1/policy/** 请求携带 Authorization 与 systemCode=display 头（消除 unknown systemCode=null 日志）；若个别请求未带则修复"
+      - "浏览器用新 UC 会话复验：J1 policy_effect 成功终态（区域表+时序渲染）、J10 当天复用（刷新后直接出结果）与 force 重跑；截图存 qa-shots/SENT-QA-L01/"
+      - "handoff 写明根因链（trace 67a60eb3 + 日志证据）、修复点、复验结果；推 origin/dev 带 [agent:frontend-agent]；不标 done"
+    update_time: "2026-11-04T02:31:08+08:00"
+  - id: POL-L2-DS10-SENT-QA-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-QA-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T15:21:36.645Z"
+    last_seen_at: "2026-11-03T15:21:36.645Z"
+    lock_until: "2026-11-03T19:21:36.645Z"
+    claimed_by: "agent:qa-agent"
+    title: "科创政策全景 · 政策舆情评估 · 合规验收测试"
+    status: "in_progress"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-03"
+    note: |
+      claim_type=coordinator_dispatch。监管 human:淮政玮。验收测试完成（2026-11-04 凌晨真连 dev）：S 组检索 S1/S2/S3 全 PASS（search 200 命中 20 项、空结果不回退种子、detail 抽屉真实行）；J1/J2 jobs 诚实失败路径 PASS（后端拒「未获取到当前用户」，失败不清同步块、无伪造结果），J3 切条件不自动起任务 PASS；G 组反向验证全 PASS（裸 effect/match/policy:effect 拒绝 trace 8617ed35/3c58537b/8e604049，老键 policy_focus 拒绝 trace 2f3c30d0，规范名对照进业务层 trace 1761fcb7，页面零越层请求）；F1/R1 双维度判定=接口 200+空列表诚实未造数（PASS）+数据链路断（FAIL，根因=element 缺库凭证 Access denied using NO，trace 3079b126/9c4a5ca8，父会话已派单修复）。截图 8 张归档 screenshots/SENT-QA-*。遗留复验项：J 组成功终态/当天复用/force 重跑、F1 详情弹窗，待 element 凭证与 SSO 会话修复后执行。未改业务代码，不标 done。
+    depends_on:
+      - "POL-L2-DS10-SENT-FE-L01"
+    definition_of_done:
+      - "对 207-212 每个用例记录：前置、输入条件、页面操作步骤、预期与实际、DevTools 网络断言、结论；覆盖三条同步读、jobs 免 XOR、裸别名拒绝、老 sub_type 校验未泄漏、匹配空态、失败不清空同步块、切条件不自动起任务、同条件单飞、匿名空、空态不造 0 不 501"
+      - "数据准备核对：反馈 6 行三渠道、报告 2 行、区域效果 2 行、时序 2 行、匹配 111 行 18 主体 rank 1-8；缺口先报告不造数"
+      - "界面执行含截图（URL+网络面板证据）；期望未发生必红；每个用例给合规判定"
+      - "测试报告写 handoff；不改业务代码；不标 done"
+    update_time: "2026-11-04T01:13:40+08:00"
+  - id: POL-L2-DS10-SENT-JOBQ-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-JOBQ-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:58:49.996Z"
+    last_seen_at: "2026-11-03T14:58:49.996Z"
+    lock_until: "2026-11-03T18:58:49.996Z"
+    claimed_by: "agent:api-agent"
+    title: "科创政策全景 · 政策舆情评估 · jobs 任务查询端点"
+    status: "integration"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 12000
+    user_story: "US-DS-POL-03"
+    note: |
+      claim_type=coordinator_dispatch。监管 human:淮政玮。GET /display/v1/policy/panorama/jobs/{taskId} 已透传 topic-async。lumen-svc-platform 387502a 已推 origin/dev。display 模块 43 测试全绿含 5 新用例。未会签，不标 done。
+    definition_of_done:
+      - "gkxlumen-display 的 PolicyPanoramaController 增加 GET /v1/policy/panorama/jobs/{taskId}，service 委托 gkxlumen-topic-async-service 的 GET /topic/v1/analysis/tasks/{taskId}，复用 RemoteTopicAsyncClient，浏览器仍只打 /display/v1/policy/**"
+      - "返回体原样透传 async-service 的任务状态与结果，display 不改写结果、不缓存、不造进度百分比；任务不存在或已过期返回空体，不 500 不 501"
+      - "单测覆盖：透传调用、任务不存在空体、未带 token 时的行为与 jobs 一致；mvn 模块级测试通过"
+      - "handoff 写明路径、委托链、与前端 TODO 的对接点；推 origin/dev，commit 带 [agent:api-agent]；不标 done"
+    update_time: "2026-11-03T22:59:15+08:00"
   - id: POL-L2-DS10-SENT-IMPL-PY
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-IMPL-PY.md"
     supervised_by: "human:淮政玮"
@@ -51423,7 +52221,7 @@ tasks:
     lock_until: "2026-11-03T15:03:18.685Z"
     claimed_by: "agent:api-agent"
     title: "科创政策全景 · 政策重点比对 · 展示读面与要素只读"
-    status: "integration"
+    status: "done"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51434,7 +52232,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 20000
     user_story: "US-DS-POL-04"
-    note: "claim_type=coordinator_dispatch。监管 human:淮政玮。展示读面已推 origin/dev 896956e。version-diff、detail、stats、benchmark-report、jobs 已接。未改 topic-policy。未会签，不标 done。"
+    note: "淮政玮 2026-11-03 签收。展示读面已接，支持力度读 policy_metric_timeseries。"
     depends_on:
       - "POL-L2-DS10-CMP-API"
       - "POL-L2-DS10-CMP-DATA"
@@ -51447,7 +52245,7 @@ tasks:
       - "gkxlumen-element 只读四张 gapfill 表和 ads.policy_intensity 的支持力度。无行返回空，不写死 mock"
       - "jobs 仍提交 gkxlumen-topic-async-service 的 analysis/tasks。PolicyAnalysisAdapterImpl 白名单增加 policy_intensity。display 不直接打 jobs/execute"
       - "handoff 落盘，写明 ponytail: full。不改 D4，不新造 metric_id"
-    update_time: "2026-11-03T15:32:56+08:00"
+    update_time: "2026-11-03T15:51:12+08:00"
   - id: POL-L2-DS10-CMP-JOB-L01
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-CMP-JOB-L01.md"
     supervised_by: "human:淮政玮"
@@ -51456,7 +52254,7 @@ tasks:
     lock_until: "2026-11-03T15:03:19.016Z"
     claimed_by: "agent:algorithm-agent"
     title: "科创政策全景 · 政策重点比对 · 力度作业接入"
-    status: "pending_test"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51467,7 +52265,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 12000
     user_story: "US-DS-POL-04"
-    note: "进入待测试。"
+    note: "淮政玮 2026-11-03 签收。policy_intensity 已挂上 jobs/execute。"
     depends_on:
       - "POL-L2-DS10-CMP-API"
       - "POL-L2-DS10-CMP-METRIC"
@@ -51478,7 +52276,7 @@ tasks:
       - "/internal/policy/jobs/execute 接受 sub_type=policy_intensity，调用已有 polan.eval.intensity.run，再读 ads.policy_intensity"
       - "算不出或未写入时返回空，不在路由里打分，不返回演示分"
       - "不新造 metric_id，不改 D4。handoff 写明 ponytail: full"
-    update_time: "2026-11-03T15:32:36+08:00"
+    update_time: "2026-11-03T15:51:12+08:00"
   - id: POL-L2-DS10-QRY-DISP-L01
     model_used: "cursor-grok-4.5"
     cost_warn: "green"
@@ -51549,14 +52347,62 @@ tasks:
       - "不写 ODS/DWD/ADS，不读 demo 库，不改 D4，不改排序读表"
       - "handoff 写明哪些路径在正式表空时改读缺项表"
     update_time: "2026-11-03T15:38:19+08:00"
+  - id: SCIUI-SUPPLEMENT-20261030-L01-FIX
+    cost_warn: "green"
+    actual_cost: 0.6
+    model_used: "glm-5.3-flash"
+    actual_tokens: 100000
+    evidence: "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/20261030展示系统指标补充/README-交付说明.md"
+    claimed_at: "2026-11-03T07:20:00.000Z"
+    last_seen_at: "2026-11-03T08:00:00.000Z"
+    claimed_by: "agent:data-agent"
+    supervised_by: "human:唐绍祖"
+    title: "展示系统指标批次收尾修复：主表 790 行超链接重导 + 45 件三件套补迁 + seed 补录 45 条"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-METRIC-ALGOLIB-LAUNCH"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "research"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: |
+      上游 SCIUI-SUPPLEMENT-20261030-L01 的交付修复单（同主题补交付，沿既有 ID 加 -FIX 后缀）。
+      根因四项：① PANO 8 行插入时超链接未随行移动 → 全表 790 行 H/I 链接错位 8 行；② 45 件（GSIT/TECHTRK/INNOV/TALENT_UI 族）三件套只在工作区未迁主仓；③ 150 复用行未按「复用源」改链；④ 52 件 py 内嵌工作区绝对路径 + 9 件 md 外仓提及为上批清洗漏网。
+      修复：45 件 md+py+out.json 迁入 20261030 交付目录（ast 校验全过，共享探针随迁）；主表 790 行链接按行 ID 全量重导（1580 条全解析、0 外仓引用、行语义一致性 790+790 全对、xlsx 内嵌 XML 0 命中）；52 件 py 绝对路径改仓内相对；seed 269→314 条（YAML 校验过、无重复 ID）。
+      主表超链接此后以本交付目录为唯一维护真源。
+    depends_on:
+      - "SCIUI-SUPPLEMENT-20261030-L01"
+    touched_files:
+      - "agent-delivery/metrics/指标入库详情-合并-20261028-三系统.xlsx"
+      - "agent-delivery/metrics/指标入库详情-合并-20261028-三系统-README.md"
+      - "agent-delivery/metrics/registry/cfg_metric-SCIUI-seed.yaml"
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/20261030展示系统指标补充/**"
+      - "agent-delivery/工程过程/当日进展/2026-11-03.md"
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-01-指标与数据闸.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/指标算法库上线/METRIC-SRS-GAP-L01/产物/20261030展示系统指标补充/"
+    definition_of_done:
+      - "主表科技展示系统 790 行 H/I 共 1580 条相对链接全部解析到主仓真实文件，0 条外仓引用"
+      - "45 件三件套在 20261030 交付目录齐备且 ast 语法校验通过"
+      - "cfg_metric-SCIUI-seed.yaml 314 条 YAML 校验通过、无重复 ID"
+      - "WBS LT-1-UIFIX1103 行登记并 push dev"
+    update_time: "2026-11-03T16:00:00+08:00"
   - id: POL-L2-DS10-QRY-AUTH-L01
+    model_used: "cursor-grok-4.5"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-AUTH-L01.md"
+    cost_warn: "green"
+    actual_tokens: 8000
+    actual_cost: 0.04
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-03T07:42:18.222Z"
     last_seen_at: "2026-11-03T07:42:18.222Z"
     lock_until: "2026-11-03T11:42:18.222Z"
     claimed_by: "human:淮政玮"
     title: "科创政策全景 · 多维检索查询 · 收藏与导出解析登录令牌"
-    status: "in_progress"
+    status: "integration"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51567,7 +52413,8 @@ tasks:
     difficulty: "S"
     estimated_tokens: 8000
     user_story: "US-DS-POL-01"
-    note: "claim_type=coordinator_dispatch。human:淮政玮 认领。只去掉门面收藏、历史、再次检索、打开收藏、导出上的 @Inner(false)。排序不动。不改展示侧。不标 done。"
+    note: |
+      claim_type=coordinator_dispatch。human:淮政玮 认领。收藏、历史、再次检索、打开收藏、导出已去掉 @Inner(false)。排序仍是匿名公开。lumen-svc-platform 9c7a35e 已推 origin/dev。PolicyFacadeControllerTest 21 项通过。展示侧不改。不标 done。
     depends_on:
       - "POL-L2-DS10-QRY-ARCH"
     design_refs:
@@ -51576,15 +52423,20 @@ tasks:
       - "收藏、历史、再次检索、打开收藏、导出这几个门面入口不再标 @Inner(false)，与订阅入口一样能解析 Bearer"
       - "排序、检索、正文、统计仍保持原注解。不改展示侧，不造收藏，不改 D4"
       - "handoff 写明匿名请求的表现"
-    update_time: "2026-11-03T15:42:22+08:00"
+    update_time: "2026-11-03T16:03:54+08:00"
   - id: POL-L2-DS10-QRY-FE-L01
+    model_used: "cursor-grok-4.5"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-FE-L01.md"
+    cost_warn: "green"
+    actual_tokens: 20000
+    actual_cost: 0.11
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-03T07:48:41.983Z"
     last_seen_at: "2026-11-03T07:48:41.983Z"
     lock_until: "2026-11-03T11:48:41.983Z"
     claimed_by: "human:淮政玮"
     title: "科创政策全景 · 多维检索查询 · 专题前端排序收藏与导出"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-E7-POLICY-M1"
     priority: "P1"
@@ -51595,7 +52447,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 20000
     user_story: "US-DS-POL-01"
-    note: "claim_type=coordinator_dispatch。human:淮政玮 认领。专题政策查询页接门面 rank、favorites、share。不改 Java，不改展示仓。不标 done。"
+    note: "claim_type=coordinator_dispatch。human:淮政玮 认领。专题政策查询页已接 rank、favorites、share。lumen-ui-topic 669c098 已推 origin/dev。名次为空保留已有目录。自检通过。未在浏览器点实包。不标 done。"
     depends_on:
       - "POL-L2-DS10-QRY-ARCH"
     design_refs:
@@ -51604,45 +52456,186 @@ tasks:
       - "专题政策查询页能按相关性、时效性、重要性请求门面 rank，名次为空时保留已有目录，不展示 smartScore"
       - "检索历史与收藏走门面 favorites，不用 localStorage 冒充；空列表保持空"
       - "导出与分享走门面 share，页面展示返回的分享链接，不在前端生成文件"
-    update_time: "2026-11-03T15:48:45+08:00"
-  - id: POL-L2-DS11-READ-IMPL-JAVA
-    model_used: "grok-4.7"
-    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-IMPL-JAVA.md"
+    update_time: "2026-11-03T16:05:57+08:00"
+  - id: PORTAL-CMS-CMSOPS-JAVA-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/PORTAL-CMS-CMSOPS-JAVA-L01.md"
     cost_warn: "green"
-    actual_tokens: 30000
-    actual_cost: 0.16
-    supervised_by: "human:淮政玮"
-    claimed_at: "2026-11-03T08:15:48.290Z"
-    last_seen_at: "2026-11-03T08:15:48.290Z"
-    lock_until: "2026-11-04T08:15:48.290Z"
-    claimed_by: "agent:api-agent"
-    title: "政策分析评价 · 结果解读报告多维展示 · 展示读面"
+    actual_tokens: "260000"
+    actual_cost: "$0.6"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-03T09:50:07.139Z"
+    last_seen_at: "2026-11-03T09:50:07.139Z"
+    lock_until: "2026-11-03T13:50:07.139Z"
+    claimed_by: "human:徐滕强"
+    title: "四页 CMS 管理侧写接口 · Java 补齐（34 类 content_type 差集 + 契约差异）"
     status: "integration"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: |
+      联调完成：12 类 content_type 写接口全量实现（DDL 12 表+ALTER、枚举 32 类、§5 深校验、POL 族路由）；CI 四轮红→绿（每轮真问题真修复）；deploy:cms success；线上路由 401 fail-closed 验证；双轴 code review 完成（7 修复+Ready）。待：契约确认会拍板 §4 六条、管理前端登录态 E2E（前端接线同批）。DD L 需 DBA 在 gkxlumenx_cms 库执行 db/9z
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/产物/PORTAL-CMS-四页管理侧接口文档-前端版.md"
+      - "agent-delivery/agent-handoffs/专题对齐-TOPIC/门户内容管理-四页前端实现对照.md"
+      - "agent-delivery/agent-handoffs/平台基建-PLATFORM/产物/PORTAL-CMS-字段与读接口契约.md"
+    definition_of_done:
+      - "按接口文档 §1 通用 CRUD（A1–A5）+ §2 参数定义实现差集类型：pano 2 类新（pano_sz_metrics / pano_chain_graph）+ svc 6 类新（svc_org_profile / svc_org_distribution / svc_rank_dimension / svc_tech_rank / sz_svc_profile / sz_svc_competitiveness）+ 政策 4 类（policy_news_body / policy_news_stats / policy_intensity_dimension / policy_intensity_rank）；01A/02A/03A-JAVA 已上线类型与 svc_business_domain 保持不动"
+      - "既有类型字段缺口同步：pano_industry_intro（dev_stage/positioning/三摘要）、pano_dev_history（expert_opinion）、key_enterprise_set（relation_type + related_enterprise_code）、政策榜单 rank_no——以接口文档 §2 为准"
+      - "§5 服务端校验全量落地：Top30 上限与名次/重复校验、环节字典（key_chain_structure.stages）、图谱节点唯一/端点/自环、HTML 白名单、svc_business_domain DoD 正文模式、region 四级路径"
+      - "信封含 operator 审计字段（服务端从 token 取），操作写 cms_op_audit；动作语义（draft⇄published / version / publish_time / 40001/40401/40901）与已上线 svc_business_domain 一致"
+      - "接口文档 §4 契约差异 6 条经契约确认会拍板，结论回写 PORTAL-CMS-*.md 契约文件并同步前端版文档；转正前以接口文档为准开发，待确认项标记在 handoff"
+      - "OpenAPI + 请求/响应示例入 handoff，供前端 mock→真接口接线叶（lumen-ui-topic）联调；单测覆盖校验规则用例，CI 绿 + K8s dev 发布"
+    update_time: "2026-11-04T13:05:45+08:00"
+  - id: GDF-CHAIN-ROUND2-REPLY-L02
+    cost_warn: "green"
+    actual_cost: 4
+    model_used: "Composer"
+    actual_tokens: 60000
+    evidence: "agent-handoffs/产业链分析-CHAIN/GDF-CHAIN-ROUND2-REPLY-L02.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-03T08:56:10.401Z"
+    last_seen_at: "2026-11-03T08:56:10.401Z"
+    lock_until: "2026-11-03T12:56:10.401Z"
+    claimed_by: "agent:data-agent"
+    title: "产业链 round2 答复与包修正（11 问逐题拍板落稿）"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "会签通过。gkx-gdf-ddl-signoff --dimension chain EXIT 0（四表文件+demo/lumen 库一致）；口令未落盘。问5~8 仍等架构师。待淮政玮签收。"
+    definition_of_done:
+      - "round2 提问清单 11 问逐题经徐滕强拍板后落稿（不得代答）"
+      - "09 链树三处填充规则按拍板结论修正"
+      - "23 号答复 round2 节按最终拍板更新（含问7全量全国口径）"
+      - "原子接口与 definition_id（问5~8）转架构师确认，答复里如实写转办"
+      - "脚本参数化（问9~10）路线A：建 CHAIN-EMBED-PARAM-L01 跟踪"
+      - "CHANGELOG bump；git 推 origin/dev"
+      - "handoff 更新"
+    update_time: "2026-11-03T17:06:16+08:00"
+  - id: CHAIN-EMBED-PARAM-L01
+    blocked_by: "徐滕强撤销（2026-11-03）：GDF 侧除架构师确认项外由本人做；脚本参数化不另派 algorithm-agent，本单作废"
+    title: "入向量库脚本参数化：industry_embed.py 环境变量全量化 + 依赖内联，交付 GDF 免改代码"
+    status: "blocked"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "2026-11-03 徐滕强撤销：GDF 除架构师确认外由本人做；脚本参数化不另派 algo。本单作废（blocked）。"
+    definition_of_done:
+      - "industry_embed.py 硬编码全量环境变量化：DB_NAME（默认禁用 default）、collection 后缀、锚点表名、schema 闸门、DIM/METRIC/MODEL/EMBED_BATCH 等"
+      - "lumen_common 依赖内联或随包附带，脚本独立可跑"
+      - "参数清单写入派单包 script/README.md"
+      - "参数化版本替换派单包 script/industry_embed.py 并自检"
+      - "graph_project.py 不改（不进 GDF DAG）"
+      - "handoff；git 推 origin/dev"
+    update_time: "2026-11-03T16:59:07+08:00"
+  - id: POL-L2-DS10-QRY-FE-DISP-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-FE-DISP-L01-测试增量.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T12:00:13.368Z"
+    last_seen_at: "2026-11-03T12:00:13.368Z"
+    lock_until: "2026-11-03T16:00:13.368Z"
+    claimed_by: "human:淮政玮"
+    title: "科创政策全景 · 多维检索查询 · 展示前端政策检索接线"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-01"
+    note: |
+      claim_type=coordinator_dispatch。human:淮政玮 认领。展示政策检索页接 /display/v1/policy/panorama。不改专题前端。不标 done。2026-11-03 代码 b35f87a；测试轮 57b6339 + 文档 007ba6ba；同日验收真连通过（A1/A3/C3/D1/D3，截图在案），C 组读取匿名系 topic-policy 单段路径令牌被吞（PermitAllUrlProperties 单段 * 毒化），api-agent 修复 lumen-svc-platform 6c9a60d（方案 A），交接 TOPIC-POLICY-SINGLE-SEGMENT-TOKEN-FIX-L01（编排仓 2322e53b）。待 rollout 后复验 curl 假 Bearer /topic/v1/policy/favorites 期望 401。
+    depends_on:
+      - "POL-L2-DS10-QRY-ARCH"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-ARCH.md"
+    definition_of_done:
+      - "USE_MOCK=false 时政策检索的目录、详情、智能排序、收藏历史、导出分享只请求 /display/v1/policy/panorama"
+      - "空响应保持空列表，不回退本机种子名单，不在浏览器里生成文件冒充分享服务"
+      - "USE_MOCK=true 时现有本机检索行为仍可用。动向、舆情、比对、订阅页不改数据源"
+    update_time: "2026-11-04T01:20:15+08:00"
+  - id: POL-L2-DS11-BE-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:10:16.109Z"
+    last_seen_at: "2026-11-03T14:10:16.109Z"
+    lock_until: "2026-11-03T18:10:16.109Z"
+    title: "政策分析评价 · DS11 评价页后端读面与白名单接线"
+    status: "in_progress"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
     repo: "lumen-svc-platform"
     delivery_phase: "implementation"
     task_type: "feature"
-    effort_points: "8"
-    difficulty: "M"
-    estimated_tokens: 30000
-    user_story: "US-DS-POL-05"
-    note: "代码已落盘，待签收"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 40000
+    note: "重放：开工（原状态被并行会话覆盖）。补趋势/分区/方案五叶/230/231 缺口。"
     depends_on:
-      - "POL-L2-DS11-READ-API"
-      - "POL-L2-DS11-READ-DATA"
+      - "POL-L2-DS11-READ-GAPFILL-L01"
+      - "POL-L2-DS11-VIZ-GAPFILL-L01"
+      - "POL-L2-DS11-PLAN-GAPFILL-L01"
     design_refs:
       - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
-      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-ARCH.md"
-      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-DATA.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-API.md"
     definition_of_done:
-      - "gkxlumen-display 新增 GET /display/v1/policy/evaluation/counts 与 GET /display/v1/policy/evaluation/shells，以及 POST /display/v1/policy/evaluation/jobs。浏览器只打 /display/v1/policy/**。display 不直连 Python，不直连库"
-      - "counts 由 display 调 gkxlumen-element，只读 ads.policy_effect 且 scope_type=region_gap 的 shortboard_cnt。无行则计数空，不造 0，不调用 gap.run。不改 counts 上已有的机遇读面"
-      - "shells 由 element 只读 gkxlumenx_gapfill.gapfill_policy_eval_shell。表不在或无行则空列表。不返回视频、动画、PDF、模板字节。GET 不插入"
-      - "jobs 内部委托 gkxlumen-topic-async-service 的 POST /topic/v1/analysis/tasks。PolicyAnalysisTypes 白名单增加 policy_focus_ads 与 policy_text_parse，这两个不走产业 VID XOR、不收 items。既有 policy_focus 仍走 harness。不覆盖已有 policy_effect、policy_match。单测同步"
-      - "推 origin/dev，commit 带 [agent:api-agent]。不标 done"
-    update_time: "2026-11-03T20:50:21+08:00"
+      - "在 gkxlumen-display 与 gkxlumen-element 落地 DS11 评价页读面：counts 短板、jobs 的 focus_ads 与 text_parse、shells 的解读与多媒体、趋势段与分区段同步读缺项表、方案五叶只读 gapfill_policy_eval_scheme、221 只消费已有子图。浏览器只打 /display/v1/policy/**"
+      - "display 不直连 Python、不直连库。policy_focus_ads 与 policy_text_parse 进 PolicyAnalysisTypes 白名单，223 焦点调已有 focus.run 后读 ads.policy_focus，226 只查 ads.policy_text_parse.summary，请求不调 parse.run。旧键 policy_focus 不改"
+      - "无行则空，不造 0，不返回 501。不改 D4，不新造 metric_id。ponytail full。handoff 含联调确认与自检证据，走 QA 闸门"
+    update_time: "2026-11-03T22:10:28+08:00"
+  - id: POL-L2-DS11-QA-UT-L01
+    supervised_by: "human:淮政玮"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-QA-UT-L01.md"
+    claimed_at: "2026-11-03T14:10:43.749Z"
+    last_seen_at: "2026-11-03T14:10:43.749Z"
+    lock_until: "2026-11-03T18:10:43.749Z"
+    title: "政策分析评价 · DS11 单元测试用例与关键路径验证（含界面截图）"
+    status: "in_progress"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    note: "重放：第一阶段完成（22 条用例 + 三绿），进入第二阶段等待 BE 合入。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-PLAN-API.md"
+    definition_of_done:
+      - "编写 DS11 评价页单元测试用例文档：覆盖 counts、jobs（6 种类）、shells（5 种类）的主路径与关键路径验证点，含数据准备、步骤、期望结果，期望未发生必红"
+      - "执行数据准备与接口级验证：重跑三个灌数脚本 --check 记录行数；BE 合入后经网关调 /display/v1/policy/evaluation/** 验证关键路径"
+      - "界面操作过程与截图：K8s dev 前端走查评价页操作流并截图存 screenshots/；未就绪项如实标注，不伪造。handoff 含全部证据"
+    update_time: "2026-11-03T22:10:59+08:00"
   - id: POL-L2-DS11-READ-IMPL-PY
     cost_warn: "green"
     actual_cost: 0.11
@@ -51655,7 +52648,7 @@ tasks:
     lock_until: "2026-11-04T08:16:03.843Z"
     claimed_by: "agent:algorithm-agent"
     title: "政策分析评价 · 结果解读报告多维展示 · 焦点与摘要 Job"
-    status: "integration"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51666,7 +52659,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 20000
     user_story: "US-DS-POL-05"
-    note: "代码已落盘，待签收"
+    note: "回补签收：原签收 2026-11-03（commit 2d91249，36 项测试全绿）。"
     depends_on:
       - "POL-L2-DS11-READ-API"
       - "POL-L2-DS11-READ-METRIC"
@@ -51679,4 +52672,732 @@ tasks:
       - "policy_focus_ads 调用已有 polan.eval.focus.run，再读 ads.policy_focus 且 policy_id 非空。不改 focus.py，不扩大 DELETE 范围。无行则空，不返回写死指数，不调 focus-one"
       - "policy_text_parse 只查 ads.policy_text_parse.summary。请求里不调用 polan.text.parse.run。无行则空，不返回写死段落"
       - "推 origin/dev，commit 带 [agent:algorithm-agent]。不把展示浏览器指到 /v1/policy。不标 done"
-    update_time: "2026-11-03T20:32:59+08:00"
+    update_time: "2026-11-03T23:42:54+08:00"
+  - id: POL-L2-DS11-VIZ-TEMPLATE-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:07:12.410Z"
+    last_seen_at: "2026-11-03T14:07:12.410Z"
+    lock_until: "2026-11-03T18:07:12.410Z"
+    claimed_by: "agent:data-agent"
+    title: "政策分析评价 · 可视化 · 222 模板选用表建表与灌数"
+    status: "done"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 15000
+    user_story: "US-DS-POL-05"
+    note: "human:淮政玮签收。gapfill_policy_eval_template 建表+灌数完成（10 行/6 模板，连库验证+幂等复跑稳定），六维闭集修正版首灌无需清洗。QA 由后续 VIZ-TEST-L01 统一覆盖 219–222 四叶验收。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-DATA"
+    touched_files:
+      - "repos/lumen-algo-py/scripts/seed_gapfill_policy_eval_template.py"
+      - "repos/lumen-algo-py/scripts/mysql/gapfill_policy_eval_template.sql"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-DATA.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-VIZ-GAPFILL-L01.md"
+    definition_of_done:
+      - "在 gkxlumenx_gapfill 建 gapfill_policy_eval_template：模板名 + 该行允许的汇报周期、分析维度、图表类型，含 is_mock=1、metric_id 留空、fill_method=manual、gap_item=222 报告模板定制与批量导出、gapfill_batch_id、generated_at 追溯列；不写 ODS/DWD/ADS/供应方库，不碰 gapfill_policy_eval_shell"
+      - "独立脚本 --check/--apply 幂等灌入模板选用行，参照 seed_gapfill_policy_eval_viz.py 模式；查询不灌数"
+      - "图表类型闭集：趋势、柱状、热力、弦线、关系网；导出格式只 PDF、Excel；不灌文件本体、不灌假操作日志"
+      - "handoff 写明库、表、行数、灌数命令与验证证据；推 origin/dev，commit 带 [agent:data-agent]；不改 D4，不新造 metric_id"
+    update_time: "2026-11-04T00:15:48+08:00"
+  - id: POL-L2-DS10-SUB-FE-L01
+    cost_warn: "green"
+    actual_cost: 1.2
+    model_used: "glm-5.3"
+    actual_tokens: 180000
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SUB-FE-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:25:51.013Z"
+    last_seen_at: "2026-11-03T14:25:51.013Z"
+    lock_until: "2026-11-04T14:25:51.013Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科创政策全景 · 政策订阅 · 展示前端接线真实接口"
+    status: "pending_test"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-02"
+    note: "联调通过：commit f92ea3c，pipeline 3649 frontend:build / frontend:image / trivy / deploy:k8s 全绿（2026-11-03 22:50）。订阅 CRUD 已在 K8s dev 前端上线。进入待测试。"
+    collaborators:
+      - "arch-agent"
+    touched_files:
+      - "src/api/policy.ts"
+      - "src/views/policy/panorama/index.vue"
+      - "src/views/policy/panorama/components/SubscribeTab.vue"
+      - "src/views/policy/panorama/components/SubscribeModal.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
+    definition_of_done:
+      - "订阅中心改走真实接口：列表/新建/修改/取消经 /display/v1/policy/panorama/subscriptions（GET/POST/PUT+DELETE），defineApi 双轨保留 USE_MOCK 演示态；浏览器禁止改打 /topic 或网关专题路径"
+      - "字段契约对齐门面 PolicySubscriptionService：请求体 policy_type/industry_code/publish_organization/province/city/region/frequency（日|周|月或 day/week/month）/channels（系统通知|邮件|短信或 system/email/sms）；响应 subscriptions/pushes/honesty 原样消费；前端不传 user_id"
+      - "诚实态：无订阅显示空列表；pushes 为空时收件箱显示外发通道未上线的诚实提示，真实模式不造推送记录；订阅接口失败只影响本 Tab，不清空同页时序/入库等其他数据"
+      - "类型门 type-check 0 错 + 既有自检通过 + build 绿；handoff 落盘 agent-handoffs/科技政策跟踪-POL/；完工推送 origin/dev（human:淮政玮 2026-11-03 授权）触发 CI 部署；不标 done"
+    update_time: "2026-11-03T22:50:57+08:00"
+  - id: POL-L2-DS10-SUB-QA-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T14:51:15.830Z"
+    last_seen_at: "2026-11-03T14:51:15.830Z"
+    lock_until: "2026-11-04T02:51:15.830Z"
+    claimed_by: "agent:qa-agent"
+    title: "科创政策全景 · 政策订阅 · 合规验收测试用例与关键路径验证（含界面截图）"
+    status: "in_progress"
+    agent: "qa-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-02"
+    note: "开工：订阅合规验收测试用例编写与执行。"
+    depends_on:
+      - "POL-L2-DS10-SUB-FE-L01"
+    collaborators:
+      - "arch-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SUB-QA-L01.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L12.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L13.md"
+    definition_of_done:
+      - "编写订阅单元测试用例文档：覆盖读取/新建/修改/取消/空列表主路径与关键路径（身份只取鉴权用户、请求体 user_id 不被采信、频率非法拒绝、通道未接通 pushes 恒空、失败不清空同页其他数据），每条含数据准备、步骤、期望结果，期望未发生必红"
+      - "合规交付主路径数据准备：登录 K8s dev 前端，新建一条真实订阅（类别+行业+部门+地区+频率+通道），经 GET 验证落库行存在且字段正确，取消后行不再出现在有效列表；验证数据库行数与页面一致，不伪造"
+      - "界面操作过程与截图：走查订阅中心 Tab 操作流（新建弹窗→保存→列表→修改→取消→空态→收件箱诚实提示）并截图存 handoff screenshots/；未就绪项如实标注，不伪造"
+      - "接口级验证：经网关调 /display/v1/policy/panorama/subscriptions 全链路（浏览器路径不变、展示只委托、无订阅空列表非 501、外发不是 localStorage/立即推送）；handoff 含全部证据；不把本单标 done"
+    update_time: "2026-11-03T22:51:21+08:00"
+  - id: POL-L2-DS11-READ-IMPL-JAVA
+    title: "政策分析评价 · 结果解读报告多维展示 · Java 三层实现"
+    status: "done"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-05"
+    note: "回补签收：原签收 2026-11-03（commit 30a3192，23 测试全绿）。"
+    depends_on:
+      - "POL-L2-DS11-READ-API"
+      - "POL-L2-DS11-READ-METRIC"
+      - "POL-L2-DS11-READ-DATA"
+    definition_of_done:
+      - "display 层 PolicyEvaluationController/Service 对外只暴露 /display/v1/policy/evaluation/{counts,shells,jobs}"
+      - "element 层读 {ads}.policy_effect 与 {gapfill}.gapfill_policy_eval_shell，不返回写死 mock"
+      - "topic-async 层白名单 policy_focus_ads / policy_text_parse 走 Python /internal/policy/jobs/execute"
+      - "lumen-svc-platform commit 30a3192 已推 origin/dev；23 项单测全绿"
+    update_time: "2026-11-03T23:42:20+08:00"
+  - id: POL-L2-DS11-READ-WIRING-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T15:49:10.955Z"
+    last_seen_at: "2026-11-03T15:49:10.955Z"
+    lock_until: "2026-11-03T19:49:10.955Z"
+    claimed_by: "agent:frontend-agent"
+    title: "DS11 结果解读报告多维展示 · 前端接线（/display/v1/policy/evaluation/** 三端点接入）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-05"
+    note: |
+      DS11-READ 后端三单已 done（lumen-svc-platform 30a3192 / lumen-algo-py 2d91249）。接线范围：前端只调 /display/v1/policy/evaluation/**，禁止直调 /v1/policy/**。监管人 human:淮政玮。WBS 索引行 WBS-05-23-L2-06E。
+    depends_on:
+      - "POL-L2-DS11-READ-IMPL-JAVA"
+      - "POL-L2-DS11-READ-IMPL-PY"
+      - "POL-L2-DS11-READ-GAPFILL-L01"
+    touched_files:
+      - "src/api/policy/evaluation.ts"
+      - "src/views/policy/evaluation/**"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-ARCH.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-IMPL-JAVA.md"
+    definition_of_done:
+      - "结果解读页 counts（短板条数 shortboard\\_cnt）接 GET /display/v1/policy/evaluation/counts，走网关 /display 前缀，空态诚实（无行不显示伪 0）"
+      - "解读与多媒体壳 5 行（3 解读 + 2 多媒体）接 GET /display/v1/policy/evaluation/shells"
+      - "焦点指数/文本解析摘要按白名单 subType（policy\\_focus\\_ads、policy\\_text\\_parse）接 POST /display/v1/policy/evaluation/jobs，异步任务完成后渲染结果"
+      - "USE\\_MOCK=false 时零 fixture 填数；mock 开关数据与 demo 评审态对齐"
+      - "pnpm type-check + build 三绿；handoff 落盘 agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-WIRING-L01.md（含 ponytail: 行与 cost 四字段）"
+    update_time: "2026-11-03T23:49:24+08:00"
+  - id: POL-L2-DS11-READ-TEST-L01
+    model_used: "glm-5.3"
+    evidence: "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS11-READ-TEST-L01.md; agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-TEST-L01.md"
+    cost_warn: "green"
+    actual_tokens: 42000
+    actual_cost: 0.21
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T15:49:33.898Z"
+    last_seen_at: "2026-11-03T15:49:33.898Z"
+    lock_until: "2026-11-03T19:49:33.898Z"
+    claimed_by: "agent:qa-agent"
+    title: "DS11 结果解读报告多维展示 · 单元测试用例（合规交付主路径数据准备 + 关键路径验证 + 界面操作过程与截图）"
+    status: "integration"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-05"
+    note: "测试设计与本地可执行验证完成：用例文档 10 条用例落盘；发现 P1 缺陷 BUG-01（Java SHELL_SQL 列名与线上表错位致 shells 恒空，待 api-agent 修复后复测联调）；截图待补（pnpm 环境原因）；handoff 已写。联调确认待 BUG-01 修复与环境就绪"
+    depends_on:
+      - "POL-L2-DS11-READ-IMPL-JAVA"
+      - "POL-L2-DS11-READ-IMPL-PY"
+      - "POL-L2-DS11-READ-GAPFILL-L01"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS11-READ-TEST-L01.md"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-ARCH.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-READ-API.md"
+    definition_of_done:
+      - "编写合规交付主路径测试用例文档：数据准备（ads.policy\\_effect scope\\_type=region\\_gap 行 + gapfill\\_policy\\_eval\\_shell 5 行 + policy\\_focus\\_ads/policy\\_text\\_parse 任务样本）逐条列出前置 SQL/脚本与预期值"
+      - "关键路径验证用例：counts 空态与有值两分支、shells 3 解读 + 2 多媒体、jobs 白名单校验（非法 subType 拒绝）与异步轮询完成、X-Trace-Id 贯通断言"
+      - "界面操作过程：在 lumen-ui-science-pc 结果解读页按步骤操作（打开页面 → 查看短板卡 → 展开解读 → 触发焦点指数任务 → 查看结果），每步截图存 handoff 附图目录"
+      - "截图嵌入测试报告，标注每张图对应的用例编号与断言结果"
+      - "handoff 落盘 agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-TEST-L01.md（含 ponytail: 行与 cost 四字段），测试用例文档可被 WBS WBS-05-23-L2-06F 索引"
+    update_time: "2026-11-04T00:04:12+08:00"
+  - id: POL-L2-DS11-VIZ-WIRING-L01
+    model_used: "glm-5.3"
+    evidence: |
+      发布证据：commit e044393（feat(policy): DS11 可视化四叶接线 219-222）已推 origin/dev 触发 CI→K8s dev。手术版提交：index.vue/register.ts 只含本任务接线，READ/PLAN 会话未提交改动未混入、仍留工作区。线上「应用」按钮验证待 CI 绿后进行。
+    cost_warn: "yellow"
+    actual_tokens: 380000
+    actual_cost: 6
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T16:13:25.535Z"
+    last_seen_at: "2026-11-03T16:13:25.535Z"
+    lock_until: "2026-11-04T00:13:25.535Z"
+    claimed_by: "agent:frontend-agent"
+    title: "DS11 政策分析报告可视化呈现 · 前端接线（jobs 趋势/分区 + shells 模板 四支接入）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-05"
+    note: "自检命令：node src/views/policy/analysis/POL-L2-DS11-VIZ-WIRING.test.mjs（21 项全绿）。type-check/build 本机依赖缺失未跑，已入 handoff 待复核。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-ARCH"
+      - "POL-L2-DS11-VIZ-API"
+      - "POL-L2-DS11-VIZ-GAPFILL-L01"
+    definition_of_done:
+      - "lumen-ui-science-pc 政策分析评价页可视化区四叶改为调 /display/v1/policy/evaluation/**：219 趋势与 220 分区各一次 POST jobs（kind 单种类），222 GET shells（kind=模板选用），221 不新开资源只消费第 7 项已有子图"
+      - "Mock 开关对齐：USE_MOCK=true 用本地 fixture，=false 全走 /display 真接口且零 fixture 填数；一次请求只带一种类；无行则空不渲染假曲线/演示矩阵"
+      - "页面实跑验证 219/220/222 三支点通（含空态），221 挂接空则两图空；pnpm type-check/build 三绿；handoff 落 agent-handoffs/科技政策跟踪-POL/"
+    update_time: "2026-11-04T04:03:52+08:00"
+  - id: POL-L2-DS11-PLAN-WIRING-L01
+    claimed_at: "2026-11-03T16:13:59.183Z"
+    last_seen_at: "2026-11-03T16:13:59.183Z"
+    lock_until: "2026-11-03T20:13:59.183Z"
+    claimed_by: "agent:frontend-agent"
+    title: "DS11 推荐方案报告交互展示 · 前端接线（jobs 方案对照/参数模拟/路径风险 + shells 意见/报告 五支接入）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-05"
+    note: "2026-11-04 新建。推荐方案五叶前端接线；只调 /display 前缀；依赖均已 done"
+    depends_on:
+      - "POL-L2-DS11-PLAN-ARCH"
+      - "POL-L2-DS11-PLAN-API"
+      - "POL-L2-DS11-PLAN-GAPFILL-L01"
+    definition_of_done:
+      - "lumen-ui-science-pc 政策分析评价页推荐方案工作区五叶改为调 /display/v1/policy/evaluation/**：227/228/229 各一次 POST jobs（kind 分别为方案对照/参数模拟/路径与风险），230/231 各一次 GET shells（互动意见/方案报告），一次请求只带一种类"
+      - "方案未选/参数档对不上/无行则对应块空，不补默认方案不造意见；采纳/改期不写库；USE_MOCK=false 零 fixture 填数"
+      - "页面实跑验证五支点通（含空态）；pnpm type-check/build 三绿；handoff 落 agent-handoffs/科技政策跟踪-POL/"
+    update_time: "2026-11-04T00:14:07+08:00"
+  - id: POL-L2-DS11-VIZ-TEST-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T16:57:15.065Z"
+    last_seen_at: "2026-11-03T16:57:15.065Z"
+    lock_until: "2026-11-03T20:57:15.065Z"
+    claimed_by: "agent:qa-agent"
+    title: "DS11 政策分析报告可视化呈现 · 单元测试用例（合规交付主路径数据准备 + 关键路径验证 + 界面操作截图）"
+    status: "in_progress"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "testing"
+    task_type: "feature"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-05"
+    note: "2026-11-04 新建。可视化四叶单测用例；需 WIRING 完成后跑界面验证；数据准备基于已 done 的灌数单"
+    depends_on:
+      - "POL-L2-DS11-VIZ-WIRING-L01"
+      - "POL-L2-DS11-VIZ-GAPFILL-L01"
+    definition_of_done:
+      - "用例文档落盘 工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS11-VIZ-TEST-L01.md：覆盖 219 趋势/220 分区/221 结构关联/222 模板导出四叶，含合规交付主路径数据准备清单（灌数单已落的 gapfill 三表行集）与关键路径验证步骤"
+      - "逐叶执行界面操作验证并截图嵌入测试报告：正常态（有行）与空态（无行/条件对不上）双路径，截图含浏览器地址与页面状态"
+      - "结论含每叶通过/阻塞判定；handoff 落 agent-handoffs/科技政策跟踪-POL/"
+    update_time: "2026-11-04T00:57:20+08:00"
+  - id: POL-L2-DS11-PLAN-TEST-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-03T16:59:40.653Z"
+    last_seen_at: "2026-11-03T16:59:40.653Z"
+    lock_until: "2026-11-03T22:59:40.653Z"
+    claimed_by: "agent:qa-agent"
+    title: "DS11 推荐方案报告交互展示 · 单元测试用例（合规交付主路径数据准备 + 关键路径验证 + 界面操作截图）"
+    status: "testing"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "testing"
+    task_type: "feature"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-05"
+    note: "阶段一完成（用例文档+数据核实），阶段二界面截图待 PLAN-WIRING done，不空转等待"
+    depends_on:
+      - "POL-L2-DS11-PLAN-WIRING-L01"
+      - "POL-L2-DS11-PLAN-GAPFILL-L01"
+    definition_of_done:
+      - "用例文档落盘 工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS11-PLAN-TEST-L01.md：覆盖 227 方案对照/228 参数模拟/229 路径与风险/230 互动意见/231 方案报告五叶，含合规交付主路径数据准备清单（gapfill_policy_eval_scheme 四种类行集）与关键路径验证步骤"
+      - "逐叶执行界面操作验证并截图嵌入测试报告：正常态（有行）与空态（未选方案/参数档对不上/无行）双路径，截图含浏览器地址与页面状态"
+      - "结论含每叶通过/阻塞判定；handoff 落 agent-handoffs/科技政策跟踪-POL/"
+    update_time: "2026-11-04T01:14:58+08:00"
+  - id: POL-L2-DS10-CMP-FE-L01
+    cost_warn: "green"
+    actual_cost: 0.62
+    model_used: "glm-4.7"
+    actual_tokens: 148000
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-CMP-FE-L01.md"
+    claimed_at: "2026-11-03T22:00:41.274Z"
+    last_seen_at: "2026-11-03T22:00:41.274Z"
+    lock_until: "2026-11-04T02:00:41.274Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科创政策全景 · 政策重点比对 · 展示前端接线真实接口（213–218 六叶）"
+    status: "pending_test"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 600000
+    user_story: "US-DS-POL-04"
+    note: "联调确认：前端六叶已接 /display/v1/policy/panorama/**，流水线 3686 success"
+    depends_on:
+      - "POL-L2-DS10-CMP-BE-L01"
+      - "POL-L2-DS10-CMP-JOB-L01"
+      - "POL-L2-DS10-CMP-GAPFILL-L01"
+    touched_files:
+      - "src/views/policy/panorama/components/CompareTab.vue"
+      - "src/views/policy/panorama/components/VersionCompareModal.vue"
+      - "src/views/policy/panorama/components/DepartmentCompareModal.vue"
+      - "src/views/policy/panorama/components/BenchmarkCompareModal.vue"
+      - "src/views/policy/panorama/components/ComparisonModal.vue"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-CMP-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-CMP-ARCH.md"
+    definition_of_done:
+      - "USE_MOCK=false 时六叶只打 /display/v1/policy/panorama/**：213 GET version-diff；214 正文/条件/材料复用 search 与 {id}/detail；214 力度分与 218 可视化 POST jobs sub_type=policy_intensity（仅用户点击触发，切条件不自动起任务，单飞禁重复提交）；215/216 GET stats 读区域、类别、总件数、实施部门、支持力度；217 GET benchmark-report，导出内容从当次读到的行生成，无行不产文件"
+      - "空态诚实：无行则对应块/列/格空，不造 0、不造演示差异/PDF；读失败或 Job 失败不清空已返回的统计、目录和正文"
+      - "指标角标保留：M_POLICY_INTENSITY_SCORE（214/218）、M_POLICY_SUPPORT_STRENGTH（216）、M_POLICY_TOTAL_COUNT（215）的 ⓘ 与 MockBadge；不新造 metric_id、不改 D4"
+      - "浏览器不打 /topic/v1/policy、/v1/policy、/topicAsync/**（D12/调用链铁律）；不越层直连 Python"
+      - "USE_MOCK=true 保留 demo 冻结种子视觉，评审走查不受影响"
+      - "留最小自检 test.mjs（node 直跑，覆盖路径/方法/空态/禁项）+ pnpm type-check、pnpm build 两绿"
+      - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
+    update_time: "2026-11-04T06:03:22+08:00"
+  - id: POL-L2-DS10-TREND-FE-L01
+    cost_warn: "false"
+    actual_cost: 1.8
+    model_used: "glm-5.3"
+    actual_tokens: 260000
+    evidence: |
+      lumen-ui-science-pc dev commit f4ea400; pipeline 3685 success (build/package/scan/deploy 全绿) https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/3685; 自检 FE-POL-TREND-LIVE.test.mjs node 直跑全绿
+    claimed_at: "2026-11-03T20:23:26.173Z"
+    last_seen_at: "2026-11-03T20:23:26.173Z"
+    lock_until: "2026-11-04T00:23:26.173Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科创政策全景 · 政策动向跟踪 · 展示前端接线真实接口（203–206 四叶）"
+    status: "pending_test"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 600000
+    user_story: "US-DS-POL-02"
+    note: "联调确认：前端四叶已接 /display/v1/policy/panorama/**，流水线 3685 success。过程：首次提交误卷入并行会话在飞改动致 3683/3684 红，f4ea400 摘净后终绿；204 订阅叶验复用零改动。"
+    depends_on: []
+    touched_files:
+      - "src/views/policy/panorama/components/TrendTab.vue"
+      - "src/views/policy/panorama/components/KeyFieldAnalysisPanel.vue"
+      - "src/views/policy/panorama/components/ImplementationTracker.vue"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+    definition_of_done:
+      - "后端实现单建单并完成：display 落地 ingest / subscriptions / stats（时序、地域、主题）/ jobs（热点、影响、深度报告三域读表）公开资源，空态语义按 TREND-API 分册"
+      - "USE_MOCK=false 时四叶只打 /display/v1/policy/panorama/**：203 GET ingest；204 GET subscriptions（订阅前端已由 SUB-FE-L01 接线，本单只验复用不重接）；205/206 GET stats 读时序、地域、主题分布；205 热点/影响/深度报告 POST jobs（用户点击触发，切条件不自动起任务，单飞）"
+      - "空态诚实：无行则对应图/块空，不造 0、不在前端拼报告；读失败不清空已返回的时序、地域和入库列表；204 无订阅空列表不灌假订阅"
+      - "指标角标保留：M_POLICY_TIMESERIES、M_POLICY_NATIONAL_DIST 的 ⓘ 与 MockBadge；不新造 metric_id、不改 D4；主题分布无 metric_id 不补造"
+      - "浏览器不打 /topic/v1/policy、/v1/policy、/topicAsync/**；不越层直连 Python"
+      - "USE_MOCK=true 保留 demo 冻结种子视觉"
+      - "留最小自检 test.mjs + pnpm type-check、pnpm build 两绿"
+      - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
+    update_time: "2026-11-04T05:20:37+08:00"
+  - id: POL-L2-DS10-TREND-IMPL-JAVA
+    supervised_by: "human:淮政玮"
+    model_used: "glm-5.3"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-TREND-IMPL-JAVA.md"
+    cost_warn: "green"
+    actual_tokens: 900000
+    actual_cost: 4
+    title: "科创政策全景 · 政策动向跟踪 · 展示与缺项读面（display 四资源 Java 实现）"
+    status: "pending_test"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 600000
+    user_story: "US-DS-POL-02"
+    note: |
+      联调确认：四资源（203 ingest / 204 subscriptions 核验 / 205+206 stats theme_dist / 205 jobs kind 三域同步读）已实现并单测覆盖；本地编译跳过（用户指令，Maven 3.6.0 环境限制），验证走 GitLab 流水线 3680 passed（backend:build 48 单测全过 + 全部 image/deploy 绿，K8s dev 已发布）；首推 3678 红已修复（theme_dist 解包层级错误，4fc4c35）。handoff：agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-TREND-IMPL-JAVA.md
+    depends_on:
+      - "POL-L2-DS10-TREND-GAPFILL-L01"
+    design_refs:
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-API.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-ARCH.md"
+      - "agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-TREND-DATA.md"
+    definition_of_done:
+      - "四资源按 TREND-API 分册落地，浏览器只打 /display/v1/policy/panorama/**：203 GET ingest（display → gkxlumen-element 只读已有 ADS 入库列表，无行空列表，不在本页发起抓取）；204 GET subscriptions（display 只委托 gkxlumen-topic-policy，展示不落库不灌假订阅）；205/206 GET stats（时序 M_POLICY_TIMESERIES、地域 M_POLICY_NATIONAL_DIST 沿用既有 stats 委托不另建查询；新增主题分布维由 element 只读 gapfill_policy_theme_dist）；205 热点/影响/深度报告 POST jobs（element 按种类只读 gapfill_policy_trend_hotspot / gapfill_policy_trend_impact / gapfill_policy_trend_report，原样返回行）"
+      - "三域 jobs 不进 Python、不进 gkxlumen-topic-async-service；Java 不识别热点、不写影响、不组装报告；用户点了其中一种才查表，切条件/切领域不自动起任务也不自动查另一域"
+      - "空态语义按分册 §6：无行则对应块空（空列表/空图），不用 501 充当功能，接口不直接返回 mock、不造 0；读失败只让对应块空，不清空已返回的时序、地域和入库列表"
+      - "不新造 metric_id，不改 D4，不把 GDF-POLICY-MOCK-GATE-L01 写成已解开；时序/地域 D4 仍 mock，D2 provisional 保留待核验"
+      - "display 不直连 Python 不直连库；对外路径不含 /topic/v1/policy、/v1/policy、/topicAsync/**（内部委托不受限）；trace 沿既有展示链带 traceId，不新设计观测点"
+      - "编译绿（mvn compile）+ 空态/有行两分支最小校验 + handoff 写入 agent-handoffs/科技政策跟踪-POL/ 并回填 cost 四字段"
+    update_time: "2026-11-04T04:19:05+08:00"
+  - id: GDF-SVC-WORKPACK-R1A-L01
+    cost_warn: "green"
+    actual_cost: 1.5
+    model_used: "Composer"
+    actual_tokens: 45000
+    evidence: "agent-handoffs/GDF-SVC-WORKPACK-R1A-L01.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-04T03:48:03.931Z"
+    last_seen_at: "2026-11-04T03:48:03.931Z"
+    lock_until: "2026-11-04T07:48:03.931Z"
+    claimed_by: "agent:data-agent"
+    title: "服务机构 GDF 派单包 — round1 答复落地（Q0–Q11）"
+    status: "done"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "签收：gkx-gdf-ddl-signoff 通过（文件 8 表全一致；demo_gkxlumenx_dwd/ads 与 gkxlumenx_dwd/ads 库层全一致，exit 0）"
+    depends_on:
+      - "SYSINT-06-21-01-L03"
+    touched_files:
+      - "agent-delivery/data/GDF/派单包/服务机构/GDF-SVC-WORKPACK/"
+      - "agent-delivery/data/data-design/storage/SVC/"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/对接文档/GDF侧提交/服务机构/"
+    design_refs:
+      - "agent-delivery/data/GDF/派单包/服务机构/GDF-SVC-WORKPACK/"
+      - "agent-delivery/data/data-design/storage/SVC/"
+      - "agent-delivery/工程过程/04-系统集成/06-GDF数据治理集成/对接文档/GDF侧提交/服务机构/GDF-SVC-WORKPACK/round1/"
+    definition_of_done:
+      - "按 Q0–Q11 拍板修订 GDF-SVC-WORKPACK：同意读 gkxlumenx_ods；event_id=复合键 md5、唯一键改为 event_id；金额元不换汇币种进 ext；org_id=投资方；经营范围联 main_activities、区县只用 area；年报诚实不合成；card.ext/fact.yoy 标占位；取消 <10 全库入池；A5 period=all slice_key=city；权威以本包为准"
+      - "同步修订 storage/SVC 中与上列冲突的条款（源 id 停工、fallback 全表等），使包与 storage 一致"
+      - "产出 round2 答复材料（answers / 变更说明），可交 GDF 关闭 round1 提问"
+      - "CHANGELOG 升版并记本轮拍板；handoff 含架构合规与 cost；commit+push origin/dev"
+    update_time: "2026-11-04T12:42:37+08:00"
+  - id: SYSINT-CLSMAP-02-L01
+    title: "产业挂钩对齐久新：集群×子学科官方映射镜像落库并切换读侧"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-svc-platform、lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      WBS-02-15。2026-11-04 重扫发现久新已建 ads_sz_gkx_industry_cluster*（113 条已审集群×子学科），我方集群×学科由两跳拼接的 LLM 口径切换为久新官方口径。镜像快照不改数；30 行裁决另走人工会。Topic×集群表留给 WBS-02-12。依赖 SYSINT-SURVEY-02-L01 未闭合所以落 backlog，等调研叶 done 后由 coordinator 转 ready。
+    depends_on:
+      - "SYSINT-SURVEY-02-L01"
+      - "SYSINT-TFMAP-02-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    touched_files:
+      - "repos/lumen-topic-py"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-svc-platform"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-CLSMAP-02-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-CLSMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/调研记录.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "镜像表 demo_gkxlumenx_dim.cluster_subfield_map 落库，只收 review_status=approved 行，行数与久新 release sz_gkx_industry_20261027_v1 一致（113）；同步幂等按 (cluster_code, subfield_id) upsert，不整表清空；密码不进 git"
+      - "lumen-topic-py 字典通道加 cluster_subfield_page 只读 op（每页≤500），不在页面直连久新"
+      - "GET /v1/meta/industry-clusters/industry-subfields 切数据源到镜像表；9 个 mapped 集群返回集合与久新 113 条一致，无映射集群空+emptyReason 不回落全量；切换期回落旧两跳口径必须带 source 标注"
+      - "展示态势页 /v1/situation/subfields 反查回归通过（CL-SEI-01 与久新口径一致）；政策页 subfield_topic_map 路径零改动"
+      - "30 行 SUB-ONLY 裁决清单产出（cross_coverage.py）交监管人 human:淮政玮；裁决写回 industry_cluster_map 或 subfield_topic_map，不改镜像表"
+      - "handoff 写明表名、通道、切换点与回落策略；架构合规自检（调用链/不改政策三页/不直连久新）"
+    update_time: "2026-11-04T12:23:31+08:00"
+  - id: FIX-POL-ANALYSIS-APPLY-L01
+    model_used: "glm-5.3-flash"
+    evidence: |
+      handoff=agent-delivery/agent-handoffs/科技政策跟踪-POL/FIX-POL-ANALYSIS-APPLY-L01.md；自检三件全绿：POL-L2-DS11-VIZ-WIRING.test.mjs 27 项 + FIX-POL-ANALYSIS-APPLY-L01.test.mjs（新增）5 项 + FE-POL-02A.test.mjs 28 组；pnpm type-check 绿；改动停 lumen-ui-science-pc 本地工作区待人工验收（仓级闸门）
+    cost_warn: "false"
+    actual_tokens: 55000
+    actual_cost: 0.12
+    claimed_at: "2026-11-04T05:23:32.456Z"
+    last_seen_at: "2026-11-04T05:23:32.456Z"
+    lock_until: "2026-11-04T09:23:32.456Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策分析评价·报告可视化：点【应用】重复请求两次 + 接口有数据但图表不刷新（契约键位错位）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 60000
+    note: |
+      用户 2026-11-04 走查反馈：政策分析评价→政策分析报告可视化呈现，修改条件后点【应用】请求两次接口，且返回有数据时界面不刷新、仍提示「已按所选维度刷新分析图表（Mock）」。根因已定位：(a) 趋势 watch 依赖数组 props.switchDims 为模板内联表达式新数组引用 → 条件变更与点应用各触发一次；(b) 前端读 items/蛇形字段，后端（PolicyEvaluationService.trend / element records）返回 records/驼峰（switchDim/dimValue/metricName/pointValue；分区 objectKind/objectName/compareValue/resourceDirection）→ 行全部丢弃。修复只动 lumen-ui-science-pc 前端；USE_MOCK=true 种子轨不回归。
+    touched_files:
+      - "src/views/policy/analysis/index.vue"
+      - "src/views/policy/analysis/TrendMetricsChart.vue"
+      - "src/views/policy/analysis/RegionGroupCompare.vue"
+      - "src/api/policyEvaluationViz.ts"
+      - "src/views/policy/analysis/FE-POL-02A.test.mjs"
+    definition_of_done:
+      - "① 切条件（下拉 v-model 变更）不再触发趋势/分区接口请求，仅点击【应用】后统一刷新一次（单飞防重）"
+      - "② 接口返回行被前端正确消费：读 `records` 键 + 驼峰行字段（switchDim/dimValue/metricName/pointValue 等），趋势图/分区图在返回有行时刷新出数据，无行诚实空态"
+      - "③ 「已按所选维度刷新分析图表（Mock）」提示语去除（Mock) 不诚实字样（或按 USE_MOCK 双轨区分文案）"
+      - "④ USE_MOCK=true 轨回归不变（demo 种子视觉不破坏）"
+      - "⑤ 更新/新增最小自检（node 直跑断言）覆盖上述三点，全绿"
+      - "⑥ handoff 写入 agent-handoffs/科技政策跟踪-POL/，登记修复根因（items vs records 契约错位 + watch 引用比较双触发）"
+    update_time: "2026-11-04T13:42:17+08:00"
+  - id: POL-REGIONDIFF-PY-L01
+    cost_warn: "false"
+    actual_cost: 0.12
+    model_used: "glm-5.3-flash"
+    actual_tokens: 120000
+    evidence: "[object Object]"
+    note: |
+      联调准备：polan/region_diff.py + job.py 注册 policy_region_diff 完成，7 新用例 + 112 存量 policy 用例全绿，push 6ec91f2。handoff: agent-delivery/agent-handoffs/POL-REGIONDIFF-PY-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-04T05:54:20.645Z"
+    last_seen_at: "2026-11-04T05:54:20.645Z"
+    lock_until: "2026-11-04T09:54:20.645Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "区域政策差异性分析 Python 任务：polan 新增 policy_region_diff 结果板 + Job 接入"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "repos/lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 150000
+    depends_on: []
+    definition_of_done:
+      - "polan/eval/region_diff.py 三列矩阵+差异点实算可跑"
+      - "polan/job.py 注册 policy_region_diff 且非法 regions 被拒"
+      - "pytest 新增用例全绿、存量用例不红"
+      - "handoff 含验证证据与 is_mock 透传说明"
+      - "cost 四字段回填"
+    update_time: "2026-11-04T14:30:14+08:00"
+  - id: POL-REGIONDIFF-API-L01
+    model_used: "glm-5.3-flash"
+    cost_warn: "false"
+    actual_tokens: 40000
+    actual_cost: 0.04
+    evidence: "[object Object]"
+    note: |
+      联调修复：线上 trace ca82b76c 定位到 topic-async 建任务门（PolicyAnalysisTypes.CANONICAL）漏注册 policy_region_diff（display→async→py 三道白名单只改了两道）。已补 REGION_DIFF 常量+CANONICAL+skipsIndustryVidXor 及 3 个测试类断言；期间 CI 抓出白名单快照测试 9→10 键，已修。pipeline 3726 backend:build 绿、deploy:topic-async-service success → K8s dev 已发布。修复 commits: f9b152c/4ccd609/f80e8d9。Loki 确认 14:43 后无新 rejected。等用户重新点「开始分析」复测。
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-04T06:04:37.315Z"
+    last_seen_at: "2026-11-04T06:04:37.315Z"
+    lock_until: "2026-11-04T10:04:37.315Z"
+    claimed_by: "agent:api-agent"
+    title: "区域政策差异性分析 Java 门面：jobs 白名单放行 policy_region_diff"
+    status: "integration"
+    agent: "api-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "repos/lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: 1
+    difficulty: "S"
+    estimated_tokens: 60000
+    depends_on:
+      - "POL-REGIONDIFF-PY-L01"
+    definition_of_done:
+      - "PolicyPanoramaService.JOB_SUB_TYPES 白名单含 policy_region_diff，非法 sub_type 仍拒绝"
+      - "toAsyncCreateBody 对 policy_region_diff 正确转发（analysisType=policy_region_diff）"
+      - "PolicyPanoramaServiceTest 新增断言全绿、存量不红"
+      - "handoff 含验证证据"
+      - "cost 四字段回填"
+    update_time: "2026-11-04T15:05:13+08:00"
+  - id: POL-REGIONDIFF-FE-L01
+    cost_warn: "false"
+    actual_cost: 0.15
+    model_used: "glm-5.3-flash"
+    actual_tokens: 150000
+    evidence: "[object Object]"
+    note: |
+      联调修复（trace 1c44cfc1）：async 对 policy 类任务强校验 analysis_fp，缺则静默 R.failed 不落库——补 sha256Hex(regionDiffFpSeed) 指纹派生，同区域集合同指纹当天幂等复用。panorama 5 自检 + type-check 绿，push d1f6ee8（含 827d362）。等用户重新点「开始分析」复测。
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-04T06:14:34.180Z"
+    last_seen_at: "2026-11-04T06:14:34.180Z"
+    lock_until: "2026-11-04T10:14:34.180Z"
+    claimed_by: "agent:frontend-agent"
+    title: "区域政策差异性分析前端接线：开始分析 + Job 轮询 + 真实矩阵渲染"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "repos/lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 180000
+    depends_on:
+      - "POL-REGIONDIFF-API-L01"
+    definition_of_done:
+      - "USE_MOCK=false：开始分析/重新分析按钮 + 单飞 + 轮询 + 当天复用（复用 sentimentLive 工具），切地区选择器不自动起任务"
+      - "USE_MOCK=true：现种子演示不变，MockBadge 不撤"
+      - "payload 矩阵/差异点渲染，空态诚实（不造数据），失败不清已返回结果"
+      - "pnpm type-check 过 + FE-POL-SENT-LIVE.test.mjs 或新增 .test.mjs 断言更新全绿"
+      - "附录 D 防漏扫描摘要 + handoff"
+      - "cost 四字段回填"
+    update_time: "2026-11-04T15:34:29+08:00"
+  - id: FIX-POL-INTENSITY-FP-L02
+    model_used: "glm-5.3-flash"
+    evidence: |
+      handoff=agent-delivery/agent-handoffs/科技政策跟踪-POL/FIX-POL-INTENSITY-FP-L02.md；trace 4fa75276 全 200 但 code:1（analysis_fp 不能为空）已定位；CMP-LIVE 自检全绿+type-check 绿+政策族 5 个自检回归全绿
+    cost_warn: "false"
+    actual_tokens: 40000
+    actual_cost: 0.05
+    claimed_at: "2026-11-04T06:20:46.310Z"
+    last_seen_at: "2026-11-04T06:20:46.310Z"
+    lock_until: "2026-11-04T10:20:46.310Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策详细对比·计算支持力度报错：intensityJobBodyOf 缺 analysis_fp 被服务端拒（analysis_fp 不能为空）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      用户 trace 4fa7527693513afcfb2e88d56b77d6d5 排查结论：POST /display/v1/policy/panorama/jobs HTTP 200 + 任务创建 span 200（transport 全绿），但响应体 code:1「analysis_fp 不能为空」——async-service 对 policy 类任务走 createFingerprintGatedTask 强校验 analysis_fp（64 位 SHA-256），前端 intensityJobBodyOf（compareLive.ts L132）只发 sub_type+params 未带指纹 → 任务创建被拒、无下游执行。同弹窗「部分字段获取失败」横幅为 element gapfill_policy_eval_shell 缺 topic_or_metric 列的已知缺口（独立问题，不在本单修）。
+    touched_files:
+      - "src/views/policy/panorama/compareLive.ts"
+      - "src/views/policy/panorama/components/ComparisonModal.vue"
+      - "src/views/policy/panorama/FE-POL-CMP-LIVE.test.mjs"
+    definition_of_done:
+      - "① ComparisonModal「计算支持力度」点击后任务能创建成功（带 analysis_fp），不再返回「analysis_fp 不能为空」"
+      - "② 复用 sha256Hex 生成 64 位小写 SHA-256 指纹（入参含 policy_ids，同条件当天幂等复用；不掺随机）"
+      - "③ USE_MOCK=true 种子轨零回归；FE-POL-CMP-LIVE.test.mjs 自检更新后全绿"
+      - "④ handoff 记录 trace 排查结论（4fa75276 trace 全 200 但业务 code:1，无 execute 下游调用）"
+    update_time: "2026-11-04T14:26:02+08:00"
+  - id: FIX-POL-INTENSITY-FP-API-L01
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/FIX-POL-INTENSITY-FP-API-L01.md"
+    cost_warn: "green"
+    actual_tokens: 90000
+    actual_cost: 0.9
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-04T06:41:25.303Z"
+    last_seen_at: "2026-11-04T06:41:25.303Z"
+    lock_until: "2026-11-04T10:41:25.303Z"
+    claimed_by: "agent:api-agent"
+    title: "政策 Job 服务端补 analysis_fp 兜底：display toAsyncCreateBody 缺指纹自动派生，救活 209/212/214/218 全部入口"
+    status: "integration"
+    agent: "api-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "AV-0 触发：handoff 已提交 + evidence 已回填；等待监管人走查后 push 业务仓"
+    touched_files:
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyPanoramaService.java"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyEvaluationService.java"
+      - "gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/service/PolicyPanoramaServiceTest.java"
+    definition_of_done:
+      - "① PolicyPanoramaService 与 PolicyEvaluationService 的 toAsyncCreateBody 在请求缺 analysis_fp 时，按 analysisType+params 规范化 JSON 派生 64 位小写 SHA-256 注入后再转发；已带指纹原样透传"
+      - "② 218 生成可视化 / 214 力度分 / 212 匹配 / 209 效果的无指纹请求不再返回「analysis_fp 不能为空」；同条件指纹稳定（当天幂等复用语义不变）"
+      - "③ 单测覆盖三点：缺指纹自动补、带指纹原样透传、同参数派生指纹一致；mvn 对应模块 test 绿"
+      - "④ 与前端 FIX-POL-INTENSITY-FP-L02（带指纹直发）不冲突：前端带则透传，服务端仅缺失时兜底"
+      - "⑤ handoff 含 trace 排查结论（2c4a45ceebc0b53b5b28cceaac53cc63 与 4fa75276 同根因）+ 架构合规自检"
+    update_time: "2026-11-04T15:43:33+08:00"

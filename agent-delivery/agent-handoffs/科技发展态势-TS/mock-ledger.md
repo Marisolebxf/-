@@ -49,6 +49,22 @@
 - 前端：`grep -rn "MockBadge\|\.mock-badge" lumen-ui-science-pc/src`
 - 契约：接口响应里出现 `mock: true` 即为 mock 点位（`source="mock"` 为真源标记）
 
+## 技术发展跟踪登记（2026-11-03，FE-TS-03A）
+
+> 结论先说：**本页 mock 只存在于前端演示轨（`USE_MOCK=true`）**。后端 `gkxlumen-display#TrackingController`
+> 无 `MockProvider`、域服务 `gkxlumen-topic-async-service` resources 无种子 SQL —— 也就是说
+> 「调后端拿到的数」全部是真实库表（久新 `ads_technology_potential_assessment` + 本域 MySQL），
+> 页面上不该、也不会出现后端 mock 标记。`VITE_APP_USE_MOCK=false`（`.env.development`）时 mock 代码零执行。
+
+| 数据块 | 要素 key | mock 文件与方法 | 生成规则 | mock_version | 真实源接替条件 | 清理条件 / 动作 | 建单任务 ID |
+|---|---|---|---|---|---|---|---|
+| 页面 meta + dataset（热力矩阵 / 气泡 / 弦线 / 榜单 `records` / 地图区域 / 追踪表） | `tsTrackingMeta`、`tsTrackingDataset` | `lumen-ui-science-pc` · `src/mock/modules/tracking.ts` → `trackingMocks.meta` / `trackingMocks.dataset`，注册点 `src/mock/register.ts` L43-44 | 冻结种子：`coreHotTopics` + `simulatedHotTopics`（`groupIndex*11+topicIndex` 确定性推导，**禁 Math.random**）、`baseMapRegions` / `baseRelations` / `technologyEvaluationParameterTemplates`；按筛选签名走 `scaleRecordsByFieldScope` 定标缩放；出处 demo `techDevelopmentTracking.js` / `App.jsx L7793+`（2026-10 快照） | `fe-ts-03a-v1` | ✅ **已接真源**：display `POST /v1/situation/tracking/{meta,dataset}` → 久新 `ads_technology_potential_assessment`（`technology_insight_mvp_v2`）+ 本域 `tech_evaluation_history` / `evaluation_template` | 删 `trackingMocks.meta` / `trackingMocks.dataset` 与 `register.ts` 两行 `registerApiMock`；`TrackingDataset` / `TrackingMetaResult` 类型保留（真实轨在用） | `FE-TS-03A` |
+| 评估流程模拟（run / progress / result） | `tsTrackingEvaluationRun`、`tsTrackingEvaluationProgress`、`tsTrackingEvaluationResult` | 同上 → `trackingEvaluationMocks`（文件内 L1673 起注释：仅演示轨流程模拟，真实轨走后端 `evaluation/run → progress → result`） | 定时器推进伪进度 + 回放 dataset 种子，**不做真实计算** | `fe-ts-03a-v1` | ✅ **已接真源**：async 编排 `POST /evaluation/run`、`GET /evaluation/{taskId}/progress`、`GET /evaluation/{taskId}/result`（久新评估模型产出，落 `tech_evaluation_history`） | 删 `trackingEvaluationMocks` 与 `register.ts` 三行注册 | `SITUATION-TS-TRACKING-EVAL-L01` |
+| 报告四件（生成 / 列表 / 清理 / 下载）与参数模板三件 | `tsTrackingReportGenerate`、`tsTrackingReports`、`tsTrackingReportDelete`、`tsTrackingParameterTemplates`、`-Save`、`-Delete` | **无 mock 注册**（`src/api/situation/tracking.ts` 仅声明 defineApi，`src/mock/register.ts` 未登记这些 id） | **演示轨显式缺失**：`USE_MOCK=true` 时 `defineApi` 抛 `Missing API mock registration for id: ...`（`utils/http.ts` L44-46）—— 按「诚实失败优于伪数据」处理，**不造伪报告、不造伪模板** | — | ✅ **已接真源**：`POST /report`、`GET /reports`、`POST /report-remove`、`GET /report/{id}/download`、`GET /parameter-templates`、`POST /parameter-templates`、`POST /parameter-templates-remove` | 若将来仍需演示轨演示报告能力，须新增 mock 时**同步本表一行**；否则维持显式缺失 | `SITUATION-TS-TRACKING-REPORT-L01` / `-PERSIST-L01` |
+
+**为什么这页仍留 mock 种子而不删**：`USE_MOCK=false` 是全局当前值（U4 裁定），演示轨仅作离线/断网演示与冻结基线比对；
+真源已全部接通，删 mock 属「上线前一次性清理」，与 `SITUATION-ENT-MOCK-LEDGER-L01` 的清理动作合并执行，避免现在删了以后无法复现 demo 基线。
+
 ## 待登记（后续页面）
 
 - 其它页面若引入代码层 mock，按本表头追加一行，并在 handoff 里引用本台账；未登记不得合入。

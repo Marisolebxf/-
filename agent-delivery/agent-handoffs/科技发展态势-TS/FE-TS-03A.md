@@ -76,6 +76,23 @@
 
 ## 遗留风险
 
-- `metric_id`（TS-M3-*）待 metric-registry 正式挂接后替换占位
-- BE-TS-CONTRACT-01 / `API-TS-M3` 未冻前，`USE_MOCK=false` 仅做冒烟
-- 联调确认：mock 验收通过，**联调闸门待 Java 契约冻结**
+- `metric_id`（TS-M3-*）待 metric-registry 正式挂接后替换占位 —— **2026-11-03 进展**：本页数字在指标库**没有已签收指标**（DS-03 模块 `M_TECH_*` 是另一套、`is_mock=true`、算法服务未上线，挂上去即错挂），故按 D9 §2 先落 **D1 missing 红问号 + 治理引用**（`DS-03-METRIC-OPEN-L01` / `Q-MO-DS03-01…06`），不显伪 8 件套；详见 `docs/tracking-真评估接入设计.md` §11。
+- BE-TS-CONTRACT-01 / `API-TS-M3` 未冻前，`USE_MOCK=false` 仅做冒烟 —— **2026-11-03 进展**：已切 `USE_MOCK=false` 跑真实数据并完成联调（meta/dataset 经 display 网关取久新只读通道），本条关闭。
+- 联调确认：mock 验收通过，**联调闸门待 Java 契约冻结** —— **2026-11-03 更正**：联调已完成，闸门解除；本轮追加工作另立三单 `SITUATION-TS-TRACKING-EVAL-L01`（真评估接入）/ `-REPORT-L01`（报告生成与复用）/ `-PERSIST-L01`（范围挂载 + 落库回读 + D9 缺口角标）。
+- ⚠️ 人工验收闸门（2026-10-20 裁定）：上述改动已本地 commit（前端 `e5c5085` / 后端 `44b7843` / 台账 `b0cfe7eb`），**未 push**，等 `human:孔东` / `human:唐绍祖` 走查通过后推 `origin/dev`。
+
+## 2026-11-03 第二批（用户点名四项）
+
+| 项 | 结果 |
+|---|---|
+| 产业领域接通 | 复用科技全域态势真源 `subfield_topic_map`（innov `/industry-subfields`）：display `resolveSubfieldIds` 反查 → `subfield_ids`；同时修掉 `meta.fieldScope` 写死空串导致默认领域被覆盖、领域永不生效。实测 `CL-SEI-01 → 39 个子学科`，口径回传「技术领域：已生效…」 |
+| 结果页榜单表 | `ResultDashboard` 新增技术评估榜单（Top-20，10 行预览可展开），消费 `dataset.records`，只排序格式化不重算 |
+| 报告上限 + 清理 | 最近列表 5 条上限；`POST /report-remove` 逻辑删除（`status=deleted` 留痕）+ 删本地产物；前端两段式确认（「清理」→「确认清理」），不套嵌套 Modal |
+| 领域提示 | 二态化，由反查结果驱动：「已映射 N 个久新子学科，参与取数」/「未关联，本次不参与」 |
+
+补充踩坑（供 review 参考）：Arco 静态 `Modal.confirm` 在 `ReportExportDialog` 里 `onOk` 不触发（请求根本没发出，后端日志无记录）→ 已改为按钮两段式确认，功能正常（DB `active 5 / deleted 2`）。
+
+**mock 归属**：本页 mock 已按 `mock-ledger.md`「技术发展跟踪登记（2026-11-03）」逐行登记 ——
+① 前端演示轨 `src/mock/modules/tracking.ts`（`trackingMocks` + `trackingEvaluationMocks`，`fe-ts-03a-v1`，种子冻结自 demo）；
+② **后端零 mock 种子**（`TrackingController` 无 `MockProvider`、域服务 resources 无种子 SQL）；
+③ 报告/模板类 6 个 API 演示轨**无 mock 注册**，`USE_MOCK=true` 时显式抛 `Missing API mock registration`（诚实失败，不造伪报告）。
