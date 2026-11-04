@@ -44,7 +44,11 @@
 
 - 文档 diff 自检：包内无「禁读 ODS / 源 id 停工 / 不足 10 整表入池」作为现行规则
 - DDL 快照唯一键为 `UNIQUE(event_id)`
-- 未执行建表 / 未灌数 / 未改 demo seed 代码
+- **gkx-gdf-ddl-signoff**（2026-11-04 补跑）：
+  - 文件层：8 表与 `storage/SVC/stores/mysql` **全绿**（已回写 `dwd-svc.md` / `ads.md` / `ddl-demo-empty.sql`）
+  - 库层：本机无 `GKX_LUMEN_MYSQL_PASSWORD`，官方脚本 **EXIT 1**（库未核对）
+  - 已用 database MCP 对 demo/正式库执行：`uk_svc_finance_event`→`UNIQUE(event_id)`；`svc_org_card.area` 注释对齐；MCP 复核唯一键已是 `event_id`
+- 未灌数 / 未改 demo seed 代码
 
 ## 架构合规自检
 

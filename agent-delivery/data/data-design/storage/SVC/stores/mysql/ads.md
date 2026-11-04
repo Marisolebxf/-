@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_org_card` (
   `name_cn` VARCHAR(255) NULL COMMENT '展示投影 ODS name_cn',
   `province` VARCHAR(64) NULL,
   `city` VARCHAR(64) NULL,
-  `area` VARCHAR(64) NULL COMMENT '区县；优先 ODS area，live 仅 district 则写入本列',
+  `area` VARCHAR(64) NULL COMMENT '区县；ODS area；无 district 回退',
   `industry` VARCHAR(128) NULL COMMENT '展示投影 ODS industry；无列则空',
   `org_size` VARCHAR(32) NULL COMMENT '投影 ODS org_size；禁止当分档',
   `employees_number` INT NULL COMMENT '投影年报 employees_number',

@@ -107,9 +107,9 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`svc_org_finance_event` (
   `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_svc_finance_event` (`org_id`, `event_id`, `event_type`)
+  UNIQUE KEY `uk_svc_finance_event` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-COMMENT='投融资事件 hang；Q-SVC-006 允许 0 行';
+COMMENT='投融资事件 hang；event_id=复合键md5；Q-SVC-006 允许 0 行';
 ```
 
 ## 3. 读写（阶段 F）
