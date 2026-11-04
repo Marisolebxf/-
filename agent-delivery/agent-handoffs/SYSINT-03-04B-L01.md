@@ -54,9 +54,14 @@
 
 ## 验收证据
 
-`python -m pytest tests/test_policy_portal_gaps.py -q`：13 passed。覆盖：指数行不进排名；无分时空列表；有分时省、市名次带 `M_POLICY_INTENSITY_SCORE`；有排名时十条 key 仍在。
+`python -m pytest tests/test_policy_portal_gaps.py -q`：13 passed（2026-11-04 复跑 17 passed，后续 policy 提交带来的同文件增量用例一并全绿）。覆盖：指数行不进排名；无分时空列表；有分时省、市名次带 `M_POLICY_INTENSITY_SCORE`；有排名时十条 key 仍在。
 
-未做线上联调。代码在本地，未提交。
+【2026-11-04 线上联调补充（本由 algorithm-agent 代 04B 收尾）】
+- 代码早已随后续 policy 提交上 dev（`intensity_rank` 在 `vendor/entan-py/polan/basic/indicators.py:637` + `policy_routes.py:605`）；note「未提交」为 2026-10-24 过期信息。
+- dev 网关实测 `GET http://10.50.69.111:30895/policy/topic/v1/policy/indicators?kind=all`（HTTP 200，448KB）：
+  - `intensity_rank`：`metric_id=M_POLICY_INTENSITY_SCORE`、`mock=false`、province/city 各 0 行 + reason「没有 M_POLICY_INTENSITY_SCORE 可聚合的政策行」——源表无评分行为空并写明原因 ✅（DoD-3）
+  - `portal_gaps` 十条 key 齐、`reason` 全带；national 20008/series 348、node_coverage 99.1、sz_node_coverage 0.0（事实如实，不补 0 不造数）✅（DoD-2）
+  - DoD-1 聚合只挂 `M_POLICY_INTENSITY_SCORE` ✅；未改 `PORTAL-CMS-政策扶持.md`、未调 demo-* ✅
 
 ## 架构合规自检
 
