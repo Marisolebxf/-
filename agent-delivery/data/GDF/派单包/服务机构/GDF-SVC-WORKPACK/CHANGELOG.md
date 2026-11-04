@@ -2,6 +2,7 @@
 
 | 日期 | 版本 | 说明 |
 |---|---|---|
+| 2026-11-04 | v1.1 · round1 答复落地 | `GDF-SVC-WORKPACK-R1A-L01` / `human:徐滕强`：Q0 读 ODS；Q1 `event_id` 复合键 md5 + 唯一键仅 `event_id`；Q2 金额元不换汇币种进 ext；Q3 投资方；Q4 `main_activities`+`area`；Q5 年报不合成；Q6 ext/yoy 占位；Q8 A5 `period=all`/`slice_key=city`、A1 维持现网双维；Q9 取消 &lt;10 全库入池；Q10 权威以本包为准；Q11 GDF 接管正式表。同步改 00/01/04/06/08/09/10/11/12/13 |
 | 2026-11-02 | 锚点口径 | 本包不读写 Milvus。正式产业锚点在库 `gkxlumen` 的 `gkxlumen_industry_anchor`。demo 同名集合在库 `default`。圈定和指标未改 |
 | 2026-11-02 | 首版 | `SYSINT-06-21-01-L03`。按加工链路 §1.2 写抽取步骤。未对 GDF 发出。未建作业，未执行建表，未灌数 |
 | 2026-11-02 | 首版重写 | 改成 GDF 要配的一趟后加工：读供应方四张表，写正式库圈定、事件、卡面和 A1–A6。不把贴源写进本包。未对 GDF 发出。未建作业 |

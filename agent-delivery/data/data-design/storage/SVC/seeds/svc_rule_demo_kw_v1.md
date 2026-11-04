@@ -31,7 +31,7 @@ amendment: "规则 A：圈定从宽、分类从紧"
 4. 六类只在**有把握的叶子**上写 `service_type_candidate`；否则候选**空** + `pending_client_confirm=1`。  
 5. 名单按类截断（如 40–80）只允许 UI 展示，**禁止**灌数造假均衡。  
 6. 一律 `pending_client_confirm=1`（Q-SVC-010 不伪闭合 live）。  
-7. `hit_fields` 记下命中的 ODS 列名。命中 **&lt;10**：退回全表仍待核验，禁止静默灌伪池。
+7. `hit_fields` 记下命中的 ODS 列名。命中很少或为 0：**诚实空/少池**，禁止静默灌伪小池，也**禁止**整表回退入池（2026-11-04 Q9 / `GDF-SVC-WORKPACK-R1A-L01`）。
 
 ## 圈定（入 `svc_org_circle`）
 

@@ -1,9 +1,10 @@
 # GDF-SVC-WORKPACK
 
 > **读者**：GDF 产线（不使用 Cursor）  
-> **版本**：首版（2026-11-02 按企业 / 产业链 / 政策包的编号重排）  
-> **任务**：`SYSINT-06-21-01-L03` · 监管人 **淮政玮**  
+> **版本**：v1.1（2026-11-04 round1 答复落地）  
+> **任务**：`GDF-SVC-WORKPACK-R1A-L01`（前置 `SYSINT-06-21-01-L03`）· 监管人 **徐滕强**  
 > **状态**：文件齐。未对 GDF 发出。未建作业，未执行建表，未灌数。不是可对端  
+> **权威**：后续施工以本派单包为准（Q10）
 > **加工口径**：[`02-asbuilt-process-chain.md`](../../../../data-design/storage/SVC/02-asbuilt-process-chain.md) §1.2  
 > **本侧对接**：见 `00-派单说明书.md`  
 > **产业锚点向量**：本包不读写。正式集合在 Milvus 库 `gkxlumen` 的 `gkxlumen_industry_anchor`，由产业链包 `12` 创建。demo 的同名集合在库 `default`，本包不碰。

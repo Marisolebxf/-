@@ -81,7 +81,7 @@ Nebula 投影见 [`../stores/nebula/graph-svc.md`](../stores/nebula/graph-svc.md
 | `org_id` | `org_id` | hang |
 | `funding_amount` | `amount` | 直接 |
 | `completion_date` | `event_date` | 直接；空则本行仍 hang，**不进** A3 时序 |
-| `org_id` + `completion_date` + `funding_round` | `event_id` | **派生复合键**（无事件 pk） |
+| `org_id` + `completion_date` + `funding_round` + `dwd_id` | `event_id` | **派生复合键 md5**（无事件业务 pk）；表唯一键仅 `event_id`（2026-11-04 Q1） |
 | `funding_round` / `funding_currency_code` / `investors_name` / `post_valuation` | `ext` JSON | 可选，不落主体 |
 
 ### 3.2 投资 `demo_gkxlumenx_ods.dwd_org_invest_info` → `event_type=INVEST`
@@ -93,7 +93,7 @@ Nebula 投影见 [`../stores/nebula/graph-svc.md`](../stores/nebula/graph-svc.md
 | `org_id` | `org_id` | hang（投资方） |
 | `investment_amount` | `amount` | 直接 |
 | — | `event_date` | **空**（禁止用 `created_time` 冒充业务日） |
-| `org_id` + `inv_org_id` | `event_id` | **派生复合键**；同对多行再拼 `created_time` |
+| `org_id`（投资方）+ `inv_org_id` + `created_time` + `dwd_id` | `event_id` | **派生复合键 md5**；`org_id`=投资方（Q3） |
 | `inv_org_id` / `inv_name` / `investment_ratio` | `ext` JSON | 可选 |
 
 只 hang **圈定池内** `org_id`。**禁止**为此再建机构主体表。无行时诚实空态，不伪闭合 `M_SVC_INVEST_Y` live。

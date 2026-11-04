@@ -31,7 +31,7 @@ JOIN demo_gkxlumenx_ods.dwd_org_base_info o ON o.org_id = c.org_id
 | 条件 | 做法 |
 |---|---|
 | 圈定 0 行 | ADS 对应指标 **0 行**；不伪池 |
-| 命中 &lt;10 | 按 Q-SVC-010：**退回全表**仍一律 `pending_client_confirm`；不伪闭合 live |
+| 命中很少 / 0 | **诚实空或少池**；禁止整表回退（2026-11-04 Q9）。一律 `pending_client_confirm`；不伪闭合 live |
 | ODS 缺列 | 跳过依赖该列的粒度；`ext.missing_cols` 记下 |
 | `org_type` | **禁止**准入 / 六类 |
 
@@ -97,7 +97,7 @@ ODS **无国家列**。
 | 过滤 | ODS `city` ∈ {`深圳`, `深圳市`} |
 | `metric_id` | `M_SVC_SZ_SCALE` |
 | `value` | 过滤后 `COUNT(*)` |
-| `period` | 灌数批次年或 `all`；写进 `ext.filter=city` |
+| `period` | 固定 `all`（存量截面）；`slice_key=city`；写进 `ext.filter=city`（2026-11-04 Q8） |
 
 规模四档若用 `org_size`：可附加 `svc_metric_dist`（`metric_id` 仍 A5 或放 `ext`）；无列则只出总数。
 
