@@ -40397,6 +40397,38 @@ tasks:
       - "空态/加载态/错误态全覆盖验证通过"
       - "DoD 全部 6 条父任务定义签收"
     update_time: "2026-10-23T17:39:11+08:00"
+  - id: SYSINT-MESSAGE-CENTER-L01
+    evidence: "agent-delivery/agent-handoffs/SYSINT-MESSAGE-CENTER-L01.md"
+    title: "门户消息中心对接（消息推送开放接口：通知/待办）"
+    status: "integration"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-11-04T00:00:00+08:00"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "crosscut"
+    task_type: "integration"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      展示系统（systemCode=TECH_INFO_DISPLAY）对接门户消息中心「消息推送开放接口」。对接文档：https://zhipu-ai.feishu.cn/wiki/X0rcwvemmiqS28kjthPcjVylnCe
+      已完成集成底座（gkxlumen-display）：MessageCenterClient（RestTemplate 客户端，X-System-Code/X-System-Secret 认证头 + 503/225001 退避重试 + 统一响应解析 + newMessageId）+ MessageCenterProperties/Configuration + NoticeMessage/TodoMessage/MessageCenterResponse 报文 DTO + application-local.yml 配置，mvn compile 通过。
+      待后续：把 25 个推送/预警功能点逐个接线到 pushNotice/pushTodo（触发逻辑分布在 upms / topic-policy 等，需逐点确认触发点）。
+      凭据：system-secret 属敏感信息，生产放 Nacos（application-dev.yml / gkxlumen-display-dev.yml），不入 git。
+    depends_on: []
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-11-04-门户消息中心-消息推送开放接口.md"
+      - "agent-delivery/agent-handoffs/SYSINT-MESSAGE-CENTER-L01.md"
+    definition_of_done:
+      - "MessageCenterClient 可推送通知 portal_notice_msg / 待办 portal_todo_msg，mvn compile 通过"
+      - "消息中心对接契约（topic/报文/认证/重试/错误码）已落文档"
+      - "system-secret 不入 git（生产走 Nacos）"
+      - "25 个推送/预警功能点接线（后续拆子任务）"
+    update_time: "2026-11-04T00:00:00+08:00"
   - id: LUMEN-POLICY-PY-SEARCH-FILTER-L01
     evidence: "agent-handoffs/政策模块-E7/LUMEN-POLICY-PY-SEARCH-FILTER-L01.md"
     supervised_by: "human:淮政玮"
@@ -52421,13 +52453,18 @@ tasks:
       - "导出与分享走门面 share，页面展示返回的分享链接，不在前端生成文件"
     update_time: "2026-11-03T16:05:57+08:00"
   - id: PORTAL-CMS-CMSOPS-JAVA-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/PORTAL-CMS-CMSOPS-JAVA-L01.md"
+    cost_warn: "green"
+    actual_tokens: "260000"
+    actual_cost: "$0.6"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-03T09:50:07.139Z"
     last_seen_at: "2026-11-03T09:50:07.139Z"
     lock_until: "2026-11-03T13:50:07.139Z"
     claimed_by: "human:徐滕强"
     title: "四页 CMS 管理侧写接口 · Java 补齐（34 类 content_type 差集 + 契约差异）"
-    status: "in_progress"
+    status: "integration"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -52438,9 +52475,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 150000
     note: |
-      建单背景（2026-11-03）：四页 CMS 前端 24/24 子功能达成（对照档 v1.5，D-1～D-8 全闭环），但 Java 写接口仅覆盖 22/34 类 content_type（01A-JAVA 企业 16、02A-JAVA pano 5、03A-JAVA svc 1），差集 12 类 + 4 组字段缺口即本单范围，字段级真源见《PORTAL-CMS-四页管理侧接口文档-前端版.md》（a8299133）。
-      监管：human:徐滕强（本人或其 agent 会话 task-claim 时正式挂 supervised_by）。
-      契约确认会为前置动作但不阻塞开发：§4 差异按草案先行，拍板结论回写。前端 collaborator：lumen-ui-topic 接线联调。
+      联调完成：12 类 content_type 写接口全量实现（DDL 12 表+ALTER、枚举 32 类、§5 深校验、POL 族路由）；CI 四轮红→绿（每轮真问题真修复）；deploy:cms success；线上路由 401 fail-closed 验证；双轴 code review 完成（7 修复+Ready）。待：契约确认会拍板 §4 六条、管理前端登录态 E2E（前端接线同批）。DD L 需 DBA 在 gkxlumenx_cms 库执行 db/9z
     collaborators:
       - "frontend-agent"
     design_refs:
@@ -52454,7 +52489,7 @@ tasks:
       - "信封含 operator 审计字段（服务端从 token 取），操作写 cms_op_audit；动作语义（draft⇄published / version / publish_time / 40001/40401/40901）与已上线 svc_business_domain 一致"
       - "接口文档 §4 契约差异 6 条经契约确认会拍板，结论回写 PORTAL-CMS-*.md 契约文件并同步前端版文档；转正前以接口文档为准开发，待确认项标记在 handoff"
       - "OpenAPI + 请求/响应示例入 handoff，供前端 mock→真接口接线叶（lumen-ui-topic）联调；单测覆盖校验规则用例，CI 绿 + K8s dev 发布"
-    update_time: "2026-11-04T11:48:16+08:00"
+    update_time: "2026-11-04T13:05:45+08:00"
   - id: GDF-CHAIN-ROUND2-REPLY-L02
     cost_warn: "green"
     actual_cost: 4
