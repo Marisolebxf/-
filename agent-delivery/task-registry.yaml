@@ -53331,7 +53331,7 @@ tasks:
       - "pnpm type-check 过 + FE-POL-SENT-LIVE.test.mjs 或新增 .test.mjs 断言更新全绿"
       - "附录 D 防漏扫描摘要 + handoff"
       - "cost 四字段回填"
-    update_time: "2026-11-04T14:24:52+08:00"
+    update_time: "2026-11-04T14:37:21+08:00"
   - id: FIX-POL-INTENSITY-FP-L02
     model_used: "glm-5.3-flash"
     evidence: |
@@ -53366,3 +53366,33 @@ tasks:
       - "③ USE_MOCK=true 种子轨零回归；FE-POL-CMP-LIVE.test.mjs 自检更新后全绿"
       - "④ handoff 记录 trace 排查结论（4fa75276 trace 全 200 但业务 code:1，无 execute 下游调用）"
     update_time: "2026-11-04T14:26:02+08:00"
+  - id: FIX-POL-INTENSITY-FP-API-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-04T06:41:25.303Z"
+    last_seen_at: "2026-11-04T06:41:25.303Z"
+    lock_until: "2026-11-04T10:41:25.303Z"
+    claimed_by: "agent:api-agent"
+    title: "政策 Job 服务端补 analysis_fp 兜底：display toAsyncCreateBody 缺指纹自动派生，救活 209/212/214/218 全部入口"
+    status: "claimed"
+    agent: "api-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      trace 2c4a45ce 排查结论：POST /display/v1/policy/panorama/jobs 全链 200 但业务 code:1「analysis_fp 不能为空」——async-service 政策类任务强校验指纹，而 display 层 toAsyncCreateBody 不补默认值；前端仅 223/226（evaluationWiring）带指纹，209/212/214/218 入口全缺。选方案 A 服务端兜底：与另一会话已认领的前端单 FIX-POL-INTENSITY-FP-L02（lumen-ui-science-pc，14:26 认领）不同仓互补，前端带了就透传，服务端只在缺失时派生。
+    touched_files:
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyPanoramaService.java"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyEvaluationService.java"
+      - "gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/service/PolicyPanoramaServiceTest.java"
+    definition_of_done:
+      - "① PolicyPanoramaService 与 PolicyEvaluationService 的 toAsyncCreateBody 在请求缺 analysis_fp 时，按 analysisType+params 规范化 JSON 派生 64 位小写 SHA-256 注入后再转发；已带指纹原样透传"
+      - "② 218 生成可视化 / 214 力度分 / 212 匹配 / 209 效果的无指纹请求不再返回「analysis_fp 不能为空」；同条件指纹稳定（当天幂等复用语义不变）"
+      - "③ 单测覆盖三点：缺指纹自动补、带指纹原样透传、同参数派生指纹一致；mvn 对应模块 test 绿"
+      - "④ 与前端 FIX-POL-INTENSITY-FP-L02（带指纹直发）不冲突：前端带则透传，服务端仅缺失时兜底"
+      - "⑤ handoff 含 trace 排查结论（2c4a45ceebc0b53b5b28cceaac53cc63 与 4fa75276 同根因）+ 架构合规自检"
+    update_time: "2026-11-04T14:41:26+08:00"
