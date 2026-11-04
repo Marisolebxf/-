@@ -1,6 +1,6 @@
 # FIX-POL-ANALYSIS-APPLY-L01 · 政策分析评价·报告可视化修复（点应用双请求 + 数据不刷新）
 
-- **仓**：`lumen-ui-science-pc` · commit **`c75762c`**（2026-11-04 用户放行「提交并推送」，已推 `origin/dev`）
+- **仓**：`lumen-ui-science-pc` · 一轮 **`c75762c`**（2026-11-04 用户放行推送）、二轮 **`93414e3`**（同日线上复测仍空图后对齐 as-built，均推 `origin/dev`）
 - **类型 / 状态**：bugfix · in_progress（验收通过 push → CI 部署后转 pending_test）
 - **强度**：ponytail full
 
@@ -35,17 +35,23 @@
 
 ## 偏离说明
 
-1. **行接口 camel 为主 + 蛇形可选兜底**，而非只留 camel：`policyEvalRowsOf` 已兼容历史 `items` 信封，兜底成本一行（`r.axisPosition ?? r.axis_position`），换双轨（mock 轨同形行）零风险过渡。真实链路 element DAO 只出 camel，兜底分支不生效。
+0. **【二轮 2026-11-04】一轮修复后线上仍空图（trace `bc1e546caeb2acd5ca176e73ec6cdab`，用户：「几乎是全部的条件了，应该有数据才对」）**。排查（Tempo 两平面无此 trace；Loki element 近 30 分钟唯一业务错误行 `gapfill 读表失败，返回空列表: Unknown column 'topic_or_metric' in 'field list'` —— 属壳表另一缺口）+ 灌数单 as-built 对照定位**三个新根因**（灌数行在库：trend 44 / partition 41，但链路三套词表/字段对不上）：
+   1. **指标名词表漂移**：前端发种子名「支持力度/惠及面/执行率」，表内 `metric_name` DISTINCT = 科技政策连续出台数 / 研发投入强度 / 企业受惠覆盖率 / 政策兑现满意度 → element `metric_name IN (...)` 零命中。
+   2. **行字段名漂移**：表列 as-built = `switch_dim/dim_value/point_value/is_key_point/is_fluctuation`（camel 后 `dimValue/pointValue`），一轮读的 `axisPosition/compareValue` 在真实响应里不存在 → 即使命中也取不到值。分区同理（`compare_value`→`compareValue`，非 `compareCount`）。
+   3. **投向外发词表漂移**：前端发「资金支持/平台载体/税收优惠」，表内 `resource_direction` = 财政资金/人才引进/创新平台/税费减免。另发现从上线起的原生 bug：`loadTrend` 把 seed key（`supportStrength`）直接当 metric 外发，连 mock 轨中文词表都对不上。
+   - **二轮修复**（commit `93414e3`）：新增 `trendVocab.ts`（表内闭集单文件真源）；请求前种子 key → 表内名映射（mock 轨保持种子词表，两轨互不覆盖）；行字段消费改 `dimValue/pointValue`（蛇形兜底）；分区投向外发真轨用表内闭集；接上 `isKeyPoint/isFluctuation` markPoint；分区行字段 `compareValue`。
+   - **契约口径裁定**：API 分册「只收表内已有名称」本义即表内闭集 → 前端对齐 as-built 为正解；灌数单 handoff「列与 DATA 逐列一致」与 DATA 分册 `axis_kind/axis_position/compare_value` 不符，属灌数单偏离未登记（Data 侧待办，不动已评审灌数数据）。
+1. **行接口 camel 为主 + 蛇形可选兜底**，而非只留 camel：`policyEvalRowsOf` 已兼容历史 `items` 信封，兜底成本一行（`r.dimValue ?? r.axis_position`），换双轨（mock 轨同形行）零风险过渡。真实链路 element DAO 只出 camel，兜底分支不生效。
 2. **`watch` 加 `deep: true`**：稳定引用修复双触发后，若未来父侧整组替换 `appliedDimensions` 内层数组，浅比较会漏触发；`deep` 保证「点应用必有恰好一次请求」。实测无额外请求（computed 引用稳定时 deep 不产生多余触发）。
 3. 本地**未跑 `pnpm build`**：按 2026-11-04 用户指令（本机编译验证禁止，走 GitLab 流水线）；type-check（`vue-tsc --build`）已本地跑绿。
 
 ## 验收证据（本地三件套）
 
 - **类型门**：`pnpm type-check` → exit 0 ✓
-- **契约自检**：`POL-L2-DS11-VIZ-WIRING.test.mjs` → **27 项全绿** ✓（含新增 §1b 响应形状、§5 修复防回归 5 组断言）
-- **行为自检**：`FIX-POL-ANALYSIS-APPLY-L01.test.mjs`（新增）→ **5 项全绿** ✓（报障场景：真实 records/camel 响应 → 趋势/分区序列非空；诚实空态；蛇形兜底；空信封不炸）
+- **契约自检**：`POL-L2-DS11-VIZ-WIRING.test.mjs` → **29 项全绿** ✓（含 §1b 响应形状、§5 修复防回归 7 组断言：表内闭集词表、as-built 字段消费、单次请求、双轨文案）
+- **行为自检**：`FIX-POL-ANALYSIS-APPLY-L01.test.mjs`（新增）→ **7 项全绿** ✓（as-built 场景：真实 records/camel 响应 → 趋势/分区序列非空；重点/波动 markPoint；闭集外行丢弃；诚实空态；蛇形兜底；空信封不炸）
 - **页面回归**：`FE-POL-02A.test.mjs` → 28 组全绿 ✓
-- **待验收**：push `origin/dev` → GitLab 流水线 → K8s dev 发布后，走查复测（改条件→应用：Network 仅 1 次 `jobs`；趋势/分区出数；提示语无「（Mock）」）
+- **待复测**：二轮 `93414e3` CI 部署后，同条件复测（勾指标→应用：趋势出时间维 4 条序列 2021–2026；分区出对象柱/热力；应用仅 1 次 `jobs`）
 ## 架构合规自检
 
 | 条 | 结论 |
