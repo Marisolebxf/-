@@ -53600,3 +53600,33 @@ tasks:
       - "读失败只让对应字段空，不清空其它块"
       - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
     update_time: "2026-11-04T22:35:06+08:00"
+  - id: POL-L2-DS10-SRCMON-FE-L01
+    title: "科创政策全景 · 来源监控头部真实化 + 立即同步按钮 v-permission 权限控制"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 300000
+    user_story: "US-DS-POL-02"
+    note: |
+      背景：demo 政策全景·动向跟踪「政策来源监控与更新」头部在 lumen 生产被隐藏（POL-L2-DS10-TREND-FE-L01 引入门控），2026-11-04 用户裁定完整对齐 demo。「立即同步」按钮用 v-permission 权限控制（human:redfo 拍板：前端判断用权限控制来做）。依赖 POL-L2-DS10-SRCMON-API-L01 的 GET /display/v1/policy/panorama/source-status
+    touched_files:
+      - "src/views/policy/panorama/components/TrendTab.vue"
+      - "src/api/policy.ts"
+      - "src/views/policy/panorama/trendLive.ts"
+      - "src/views/policy/panorama/FE-POL-TREND-LIVE.test.mjs"
+    definition_of_done:
+      - "删除 TrendTab.vue 头部的「无指标登记」占位（TrendTab.vue 419–422），改读 GET /display/v1/policy/panorama/source-status：头部显示「最近同步 {数据截至时间}」；来源状态列从入库行聚合取真值"
+      - "「立即同步」按钮用 v-permission 权限控制（human:redfo 2026-11-04 拍板）：嵌入态比对门户 btn:display:* 权限码，独立态比对 roles；无权限用户不可见（复用 src/directive/permission.ts 现有指令，不新造权限体系）"
+      - "同步动作仅演示态语义（与 demo 一致前端流水线动画，不调后端触发接口）；USE_MOCK=false 时按钮点击行为须诚实（演示动画+MockBadge 标注），不得伪装已触发真实同步"
+      - "USE_MOCK=true 保留 demo 冻结种子视觉不变"
+      - "空态诚实：接口无行/读失败则头部对应字段空，不造数；读失败不清空其它块"
+      - "USE_MOCK=false 时浏览器只打 /display/v1/policy/**，不越层直连"
+      - "更新 FE-POL-TREND-LIVE.test.mjs 自检 + pnpm type-check、pnpm build 两绿；完工直接 commit+push origin/dev（AGENTS.md 完工即推）"
+      - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
+    update_time: "2026-11-04T22:37:40+08:00"
