@@ -42,14 +42,16 @@
 4. **空态诚实**：散点/时间轴/SWOT 用 V-E 空块 `reason` 作描述；不引入新依赖、不造数。
 5. mock 路径（`USE_MOCK=true`）原样保留，不受影响。
 
-## 阶段 2 缺口清单（待拍板后再做，不在本阶段）
+## 阶段 2 缺口清单（2026-11-04 14:46 用户拍板后状态更新）
 
-| 项 | 缺口 | 拍板人建议 |
+| 项 | 拍板 | 状态 |
 |---|---|---|
-| 行业定位散点 | V-E scatter 空：企业级散点 x/y 轴指标口径未定 | 你 + 产品 |
-| 成长时间轴 | 数据在 CMS `star_story.timeline`，ent 族 published 读接口未建 | 你 + api-agent |
-| SWOT | 无表无契约无接口 | 甲方/产品 |
-| 一键导出 | 全仓无导出依赖；格式（CSV/Excel/图片）未定 | 你 |
+| 行业定位散点 | ✅ 先出效果（x=竞争力分 / y=专利总量 / 气泡=注册资本），维度后看再调 | Python 端点已落 `topic-py /stats/enterprise-scatter`（停本地） |
+| 成长时间轴 | ✅ 三源聚合（融资事件 financings + 资讯 news + 注册时间 incorporation_date） | Python 端点已落 `topic-py /profile/timeline`（停本地） |
+| SWOT | ✅ 方案 A（LLM 生成，01C 模式；失败整块隐藏；标「AI 生成」不冒充专家署名） | Python 端点已落 `algo-py /internal/enterprise/swot`（停本地） |
+| 导出 | ✅ 销工作量：前端 Blob CSV 已有，换 V-E 数据源属前端顺手事，不算后端工作量 | 无需后端 |
+
+**Java Feign 透传（3 条：timeline / enterprise-scatter / swot）与前端接线归属待徐滕强指派**（V-E 现有 Java 是 api-agent 写的；确认归我改即接）。
 
 ## 偏离
 
