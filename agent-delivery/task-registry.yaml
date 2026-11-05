@@ -54710,17 +54710,17 @@ tasks:
     update_time: "2026-11-06T00:19:42+08:00"
   - id: LUMEN-INTEL-SDD-E1-L01
     cost_warn: "green"
-    actual_cost: 0.6
-    actual_tokens: 240000
+    actual_cost: 0.7
+    actual_tokens: 175000
     model_used: "glm-5.3-Flash"
-    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-E1-L01.md §10 复测记录（#2 升绿；#1 条件绿=契约绿数值缺位，镜像缺 M_SYNTH_186_1_out.json 烘焙；7 条最终态：5绿·2条件绿·0红）"
+    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-E1-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-05T15:53:50.589Z"
     last_seen_at: "2026-11-05T15:53:50.589Z"
     lock_until: "2026-11-06T15:53:50.589Z"
     claimed_by: "agent:qa-agent"
     title: "段 E1 — SDD 落地金路径冒烟（7 条）"
-    status: "pending_test"
+    status: "done"
     agent: "qa-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-ui-topic"
@@ -54729,8 +54729,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      复测完成（只测#1/#2）：deploy 3984 全绿已滚（entan-api 镜像含 2744c46，live openapi 出 2 条 vitality 路由）；#2 Python 侧端到端 202→succeeded→result 非空→升绿；#1 契约/路由/400 门全绿但 vitalityIndex=null（compute 兜底产物未进镜像，诚实缺维不补0）→条件绿，待镜像烘焙一叶（C1 数据缺口，移交 coordinator）。handoff §10 已增补，只提交本地不 push。
+    note: "代签授权：徐滕强总控（本聊天）。金路径终验 6绿1条件绿0红，#1 升绿闭环"
     depends_on:
       - "LUMEN-INTEL-SDD-E0-L01"
     design_refs:
@@ -54739,7 +54738,7 @@ tasks:
       - "总控 §4 金路径 7 条逐条走（期望未发生必红）"
       - "失败分类 C1–C6；C1 由 coordinator 派修；QA 不改代码"
       - "trace-id 驱动定位；handoff+cost"
-    update_time: "2026-11-06T00:56:23+08:00"
+    update_time: "2026-11-06T01:16:23+08:00"
   - id: SITUATION-ENT-SUBSCRIPTION-PUSH-L01
     cost_warn: "green"
     actual_cost: 0.6
@@ -55045,7 +55044,7 @@ tasks:
     lock_until: "2026-11-06T16:19:58.316Z"
     claimed_by: "agent:algorithm-agent"
     title: "C1 修单 — entan-py 挂活力快照读端点（batch-snapshot/latest-batch）"
-    status: "pending_test"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -55054,7 +55053,7 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 40000
-    note: "AV 验收通过；2744c46 已推 CI 触发；等 deploy 绿后复测 E1 #1/#2（活力秒开+任务链）"
+    note: "终验通过：live 路由 200 出数，#1/#2 均闭环"
     design_refs:
       - "agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-E1-L01.md §3.1 缺陷包"
     definition_of_done:
@@ -55063,20 +55062,20 @@ tasks:
       - "E1 缺陷包复现命令转自检断言；快照响应含 snapshotId=snap:* 与 cache_key"
       - "顺手 CI 止血：e2e:chain-gold 下游悬空 trigger 加 allow_failure: true（E1 分诊建议①）"
       - "deploy 绿后只复测 E1 #1/#2"
-    update_time: "2026-11-06T00:44:09+08:00"
+    update_time: "2026-11-06T01:16:23+08:00"
   - id: LUMEN-INTEL-VIT-BAKE-L01
     cost_warn: "green"
-    actual_cost: 0.09
+    actual_cost: 0.1
     model_used: "glm-5.3-Flash"
-    actual_tokens: 85000
-    evidence: "agent-handoffs/LUMEN-INTEL-VIT-BAKE-L01.md"
+    actual_tokens: 30000
+    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-VIT-BAKE-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-05T16:58:06.376Z"
     last_seen_at: "2026-11-05T16:58:06.376Z"
     lock_until: "2026-11-06T16:58:06.376Z"
     claimed_by: "agent:devops-agent"
     title: "C1 修单② — entan-api 镜像烘焙 M_SYNTH_186_1 复现盘数据"
-    status: "in_progress"
+    status: "done"
     agent: "devops-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -55085,8 +55084,7 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 30000
-    note: |
-      commit 4cfdec8 (origin/dev, 未 push 等人工确认): 复现盘 M_SYNTH_186_1_out.json 平铺入 vendor/entan-py/data/precompute + Dockerfile.entan-api ENV SYNTH_VIT_REPRO_DIR=/entan-py/data/precompute; check_synth_vitality.py all-pass, 镜像路径语义实跑 vitalityIndex=74.9981 四维分全出
+    note: "终验通过：live vitalityIndex=74.9981，DoD 全部满足"
     design_refs:
       - "agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-E1-L01.md §10 复测记录"
     definition_of_done:
@@ -55095,4 +55093,4 @@ tasks:
       - "deploy 绿后验证：默认三元组 batch-snapshot result.vitalityIndex 非空、dimScores score 出数"
       - "不改接口/装包代码，只动 Dockerfile/ENV"
       - "handoff+cost"
-    update_time: "2026-11-06T01:03:45+08:00"
+    update_time: "2026-11-06T01:16:23+08:00"
