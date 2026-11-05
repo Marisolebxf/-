@@ -41,8 +41,9 @@ ponytail: full；复用真实CMS接口、现有企业视图与已有内容表，
 - 线上现有16条样本逐条完成create/update/publish/unpublish/detail，最终全部draft。
 - Java OpsContentServiceTest 36项通过（含新分页筛选、SQL参数化、产业范围、布尔标记、非法筛选）；使用现有本地依赖编译与JUnit启动器。
 - 前端cmsOpsMap与cmsStageDict自检、type-check和生产构建通过；前端提交08afdb6/63b9091已推送，流水线3890构建、镜像、部署全部成功。
-- 后端主体2ad2f36、脚本POST契约bf1298c、CI兼容测试d8757f9已推送，保留合并远端其他会话的POST接口规范变更。流水线3899 backend:build及helm:lint成功，CMS镜像/部署仍在排队。
+- 后端主体2ad2f36、脚本POST契约bf1298c、CI兼容测试d8757f9已推送，保留合并远端其他会话的POST接口规范变更。流水线3899 backend:build、helm:lint、backend:image:cms成功；deploy:cms在runner队列中，已通过项目SSH跳板将同一CI镜像`gkxlumen-cms:d8757f91`滚动发布至dev，实例1/1 Running。
 - 服务实际生成的SQL在现有CMS库只读验证：集成电路/深圳/草稿筛选返回3家，明星/重点/深圳重点标记正确，计数与分页各约0.38秒。
 - 补数脚本再次执行，16条全部skipped_existing，未重复插入。
-- 待记录：CMS部署完成后线上筛选、分页、排序和删除回归。浏览器自动化调用超时，未宣称视觉验收通过。
+- 线上入口最终回归通过：档案草稿+企业名3家、明星1家、重点2家、坪山区1家、完整企业编码1家；其他产业同条件0家。size=1分页1/2/3均返回1条且total=3。产品sort_order写99后回读并恢复原值，modules/scenario_refs/case_refs未丢失。临时技术正文创建后通过POST删除，详情返回404。
+- 浏览器自动化调用超时，未宣称视觉验收通过。API回归临时文件不含凭证，用户认证信息未进仓库或交接记录。
 - 双榜单结构缺口未闭合，不宣称全部需规已经实现。未提供task-registry MCP，未虚构任务登记或成本数字。
