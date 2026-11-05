@@ -101,8 +101,19 @@
 - `src/views/knowledge-graph/models/graphFilter.ts`（新增）
 - `src/views/knowledge-graph/models/kgIntelligence.ts`（新增）
 
-## cost 回填
+## 2026-11-05 孔东走查调整（第 2 轮，任务仍处 integration 停本地）
 
-- actual_tokens ≈ 132k（读 demo 真源 + 基座核对 + 实现 + 三绿 + 目检）
+用户走查反馈 4 点，处理如下：
+
+1. **去掉顶级 tab「图谱分析」**：该页仅单占位页签无切换语义，移除 `PageTabFrame` 包裹（含 TABS/activeTab），`KgPageHeader` 标题 + 主内容直挂。`kg.selfcheck.mjs` §7 断言同步调整（analysis 页不再要求 PageTabFrame/#header，其余三页不变）
+2. **KPI 指标卡行下移**：由页顶 `#header` 插槽移至「数据过滤与筛选」卡（§2）与「多维度分析」切片卡（§3）之间——KPI 数字本就实时联动筛选结果，位置贴近筛选区；新增 `.kg-analysis-kpi-row`（padding 0 + margin-bottom 16px）
+3. **「网络图/列表/统计图」radio 用途解答**（未改码）：下方「交互式可视化」卡的**视图模式切换**（`viewMode`），分别渲染 ECharts 力导向网络图 / a-table 实体列表 / 机构 Top8 统计柱图
+4. **洞察卡 hover/选中效果 + 横向滚动条修复**：根因 = demo 真源 `.kg-analysis-card:hover { transform: translateX(4px) }`（styles/demo-knowledge-graph.css L429）在窄列把卡片右移 4px 撑出滚动区。本页以更高 specificity（`.kg-analysis-page .kg-analysis-card`）覆盖为阴影/边框 hover 反馈并 `transform: none`；`.kg-insight-scroll` 锁 `overflow-x: hidden`；新增选中态 `is-active`（点击卡片 → 蓝边 #165dff + #f0f5ff 底 + 阴影，`selectedAnalysisId` 状态驱动，demo 无此态系走查新增）
+
+验证：三绿复跑全过（type-check 0 错 / FE-KG-01A.test.mjs 5 组 / kg.selfcheck.mjs 9 组 / build 绿）；浏览器 CDP 目检：页签条消失、KPI 行位于筛选卡(bottom 403px)与切片卡(top 547px)之间、洞察区无横向滚动条（clientW=scrollW=359）、卡片 computed transform=none、is-active 点击后 bg=#f0f5ff/bd=#165dff、视图切换（网络图↔列表）功能正常、页面无可见横向滚动条。
+
+
+
+- actual_tokens ≈ 132k（读 demo 真源 + 基座核对 + 实现 + 三绿 + 目检）+ 2026-11-05 走查调整 ≈ 10k
 - model_used：glm-5.3（Cursor agent 会话）
-- actual_cost ≈ $1.6；cost_warn：否
+- actual_cost ≈ $1.7；cost_warn：否
