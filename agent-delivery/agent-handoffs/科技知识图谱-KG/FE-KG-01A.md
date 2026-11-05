@@ -86,10 +86,11 @@
 
 ## CI/CD（必填）
 
-- 分支：`dev`（lumen-ui-science-pc，**未 commit/push——孔东监管限定：完工停本地工作区等人工确认**）
-- commit：—（待孔东验收后由监管会话 commit）
-- pipeline：—（同上）
-- dev 验证：本机 `pnpm dev` :5200 目检通过（见测试结果）
+- 分支：`dev`（lumen-ui-science-pc）
+- commit：`a933728`（FE-KG-01A 整页复刻 + 走查 6 轮调整；2026-11-05 10:41 孔东验收放行后提交）；merge 远端后 push `c75bce0..85d1618`
+- pipeline：GitLab CI 自动触发（push dev → build/deploy）
+- dev 验证：本机 `pnpm dev` 目检通过（见测试结果）；K8s dev rollout 待 pipeline 绿后按 `--mode development` 站点核对
+- 注：push 时远端有 policy 模块新提交，`policy/panorama/index.vue`（他会话产物）经 stash pop 干净还回工作区，未混入本 commit
 
 ## 涉及文件
 
