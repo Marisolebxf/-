@@ -249,7 +249,7 @@ $$12.8338=\frac{6.1063}{0.4758}$$
 ### 2.7 复现步骤与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _build_policy_industry_20261023.py   # 全表标题 × 1,261 节点（连 gkx，流式）
 python3 M_POLICY_INDUSTRY_COVERAGE.py        # 只读快照
 ```
@@ -400,7 +400,7 @@ python3 M_POLICY_INDUSTRY_COVERAGE.py        # 只读快照
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _build_policy_industry_20261023.py
 python3 M_POLICY_INDUSTRY_COVERAGE.py
 python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_COVERAGE_out.json'));print(d['support_judgment'], d['headline']['coverage_pct'], d['headline']['coverage_anchored_pct'])"

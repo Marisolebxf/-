@@ -1,0 +1,65 @@
+{
+ "metric_id": "M_ENT_UI_KEY_SCALE",
+ "metric_name": "重点企业规模统计",
+ "batch": "TOPIC-UI-GAP-L01 批2（B 类）",
+ "ui_evidence": [
+  "repos/demo-ui-topic 门户服务·企业发展·重点企业全景图（规模×资质统计卡）；1104 盘点缺口 #166"
+ ],
+ "definition": "规模分组（注册资本四档）× 经营状态直读底册 189,116 行；「重点企业」圈定=高资质档（注册资本 ≥1 亿）子集口径，UI 未给阈值→推测定义披露",
+ "data_source": "gkx @ 183.240.141.251:3318（只读）；久新/探针见 TOPIC_UI_GAP_B2_PROBE_out.json；禁 demo_*",
+ "facts": {
+  "probe_source": "TOPIC_UI_GAP_B2_PROBE_out.json（本批三源探针，2026-11-04）",
+  "reg_status_dist": [
+   [
+    "存续（在营、开业、在册）",
+    168783
+   ],
+   [
+    "在营（开业）企业",
+    17637
+   ],
+   [
+    "正常",
+    2617
+   ],
+   [
+    "存续",
+    47
+   ],
+   [
+    "在业",
+    17
+   ],
+   [
+    "注销",
+    11
+   ],
+   [
+    "",
+    3
+   ],
+   [
+    "在营（开业）",
+    1
+   ]
+  ]
+ },
+ "derived": {
+  "top_reg_status_share": 0.892483978087523,
+  "n_reg_status_values": 8
+ },
+ "absence_probe": [
+  "capital_buckets: 注册资本四档分组聚合未取证：SELECT GROUP BY 在会话网络受限窗口未跑成（列 registered_capital_value 存在性已由列字典快照 gkx_columns_20261023.json 证实）；网络恢复后补跑"
+ ],
+ "support_judgment": "完全转换支持",
+ "verdict_kind": "converted",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面件：底册/明细表当前快照计数，基期=数据装载日 2026-11-04。",
+ "notes": [
+  "SYSINT-TOPIC-CHAIN-ALIGN-02-L01 对照表既有口径分析复用（B 类件）；公式定义人=仿王惠（UI 未给口径）"
+ ],
+ "probes": {
+  "online_recompute": "离线模式（网络不可达）：以 2026-11-04 探针基线回填"
+ }
+}

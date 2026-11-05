@@ -357,7 +357,7 @@ $$z_{d,c}=\frac{x_{d,c}-\min_c x_{d}}{\max_c x_{d}-\min_c x_{d}},\qquad S_c=\fra
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _build_policy_struct_20261023.py   # JSON 类型、三列填充、区县填充（连 gkx）
 python3 _build_policy_dims_20261023.py     # 城市与层级底数（连 gkx）
 python3 M_POLICY_INTENSITY_INDEX.py        # 只读快照

@@ -325,7 +325,7 @@ min-max 只在 28 个可评估 L1 内做，不含被排除的 13 个。原因是
 脚本 `metrics/repro/M_CHAIN_HOTSPOT_COUNT.py` 只读四张快照，依次算三路率、筛门槛、min-max、加权、判阈；输出 `metrics/repro/out/M_CHAIN_HOTSPOT_COUNT_out.json`，含 `hotspots`、`per_l1`、`per_chain`、`excluded`、`normalization`、`sensitivity`、`signal_coverage`。所有阈值、权重、门槛与归一区间都落在产物里，正文数字与产物逐项对应。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_HOTSPOT_COUNT.py
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_HOTSPOT_COUNT
 python3 _work_gkx21/audit_md_vs_out.py --dir _staging21

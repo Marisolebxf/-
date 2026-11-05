@@ -49,9 +49,21 @@
 | 圈表增补 | `ads_talent_industry_activity`、`ads_institution_industry` 进主文档 §4 阶段二圈表清单（附页 A 增补） |
 | 演示 | 人才/机构按链节点的区块：GB 桥建成前走 L0 聚合 + 粒度标注，不空态（通路①兜底） |
 
+## Topic 桥增补（2026-11-05，久新建议）
+
+久新建议用 Topic（平台统一 Topic / OpenAlex Topics）做链节点↔三要素的桥。实查后判定：**可行且优于 GB 桥**，详见 [`调研/Topic桥可行性判定.md`](../../工程过程/04-系统集成/02-对接三要素/调研/Topic桥可行性判定.md)。
+
+要点：
+
+- Topic 是久新库内唯一「人才（684.7 万行 topic_profile）/ 机构（335.8 万行 topic_entry）/ 论文（400 万）/ 专利（patent_analysis_topic 36.5 万行、4,135 万关联）/ 项目」五类主体都带的学科维度；4,516 个 topic 全部单值属于 252 个 subfield（跳 2 = 久新自有官方字典，我方零建桥）。
+- 链：节点 →(我方 subfield_topic_map)→ subfield →(久新字典)→ topic →(久新 *_topic 表)→ 主体。
+- 人才/机构挂链判定由「黄（GB 桥）」升为「绿（Topic 桥）」；新增专利/论文/项目按链节点过滤能力（原无通路）。GB 桥保留为降级预案与企业侧方案。
+- 待久新书面确认三点：① topic↔subfield 1:1 口径；② `ads_patent_analysis_*` 带 `run_id` 的版本化/稳定性；③ 两张 topic 表的水位字段。
+- 圈表增补建议（附页 A）：`ads_discipline_topic`、`ads_talent_topic_profile`、`ads_institution_topic_entry`、`ads_patent_analysis_topic` 四张为 Topic 桥最小集。
+
 ## 成本
 
-actual_tokens ≈ 50000（3 轮探针 + 判定撰写）；model_used = glm-5.3-flash；actual_cost ≈ $0.05；cost_warn = green。
+actual_tokens ≈ 50000（3 轮探针 + 判定撰写）+ ≈30000（Topic 桥增补 2 轮探针）；model_used = glm-5.3-flash；actual_cost ≈ $0.08；cost_warn = green。
 
 ## 签收
 

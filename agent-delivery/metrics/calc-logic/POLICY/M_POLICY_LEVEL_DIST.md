@@ -245,7 +245,7 @@ $$s_k=\frac{n_k}{20{,}000}\times100$$
 ### 2.7 复现代码与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_LEVEL_DIST.py
 python3 -c "import json;d=json.load(open('M_POLICY_LEVEL_DIST_out.json'));print(d['level_dist'], d['reconciliation'])"
 ```
@@ -399,7 +399,7 @@ python3 -c "import json;d=json.load(open('M_POLICY_LEVEL_DIST_out.json'));print(
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_LEVEL_DIST.py
 ```
 

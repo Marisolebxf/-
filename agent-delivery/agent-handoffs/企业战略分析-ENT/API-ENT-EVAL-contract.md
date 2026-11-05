@@ -521,7 +521,7 @@ public interface RemoteTopicAsyncAiPythonClient {
 | `POST /topicAsync/topic/v1/evaluation/indicators` | EVAL | gkx-ai indicators |
 | `POST /topicAsync/topic/v1/evaluation/precheck` | EVAL | gkx-ai precheck |
 | `POST /topicAsync/topic/v1/evaluation/tasks/compare` | EVAL | gkx-ai compare（body.`task_id`） |
-| `GET/POST/PUT/DELETE /topicAsync/topic/v1/evaluation/templates*` | EVAL | Java MySQL（不转发 Python） |
+| `GET/POST /topicAsync/topic/v1/evaluation/templates*`（更新 `/{id}/update`、归档 `/{id}/archive`、默认 `/{id}/default` 均 POST） | EVAL | Java MySQL（不转发 Python） |
 | `POST /topicAsync/topic/v1/analysis/tasks` | CORE | 按 analysisType 路由；`enterprise_eval` → gkx-ai `/tasks` |
 | `GET /topicAsync/topic/v1/analysis/tasks/{taskId}` | CORE | Java MySQL（非 Python path） |
 | `GET /topicAsync/topic/v1/analysis/tasks/{taskId}/result` | CORE | Java MySQL 指针 |

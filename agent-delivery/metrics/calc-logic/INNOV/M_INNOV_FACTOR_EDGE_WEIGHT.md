@@ -253,7 +253,7 @@ E1 的 0.68% 覆盖会让跨国企业占优：样本里的 pn 以国际专利为
 E6 的机构组合层共现会高估「大机构」：一家机构涉猎的 IPC 越多，配对越多，权重越高。这不是技术融合的真实强度，而是「机构多元化」的代理。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_INNOV_FACTOR_EDGE_WEIGHT.py
 python3 -c "import json;d=json.load(open('M_INNOV_FACTOR_EDGE_WEIGHT_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

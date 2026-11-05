@@ -149,10 +149,14 @@ lumen-ui-topic
 改条件
   POST /topicAsync/topic/v1/analysis/tasks
     analysisType = region_innovation_{vitality|elements|collaboration}
-    params = { region, compare, window }
-    analysis_fp = region|compare|window
+    params = { region, compare, window [, weight_profile] }  # weight_profile 仅 vitality
+    analysis_fp = region|compare|window                   # 要素/协同
+               | region|compare|window|weight_profile_norm # 活力（缺省 INDEX_MAIN）
+    活力旧三段任务：按冻结权重/methodVersion 识别；否则 legacy_unknown，禁自动复用
   过程：现有 #104 #108 #109 #107
   成功：#105 resultData = 同一 LeafResult，source=task
+        snapshotId=不可变（含 calc_batch_id）；cache_key=条件(+profile) 最新索引
+        （协同须含持久化 batch_meta：snapshotId/calc_batch_id/graph_source/gapfill_batch_id/条件）
 
 报告
   analysisType = region_innovation_{leaf}_report

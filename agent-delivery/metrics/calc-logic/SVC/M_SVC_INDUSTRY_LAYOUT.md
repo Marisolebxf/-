@@ -366,7 +366,7 @@ $$
 脚本：`metrics/repro/M_SVC_INDUSTRY_LAYOUT.py`，自包含，只读冻结快照 `code/_snapshots21/svc21_facts_20261022.json`，无外部 helper、无数据库连接。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_SVC_INDUSTRY_LAYOUT.py
 # 覆盖写 M_SVC_INDUSTRY_LAYOUT_out.json
 ```
@@ -596,7 +596,7 @@ python3 M_SVC_INDUSTRY_LAYOUT.py
 
 ```bash
 # 1. 进入 code 目录
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 # 2. 跑脚本（离线，读快照）
 python3 M_SVC_INDUSTRY_LAYOUT.py
 # 3. 校验关键值

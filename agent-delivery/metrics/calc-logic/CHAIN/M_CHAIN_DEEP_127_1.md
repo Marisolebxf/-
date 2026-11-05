@@ -340,7 +340,7 @@ $$
 ### 2.7 复现代码与结果展示
 
 ```
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_DEEP_127_1
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_DEEP_127_1 --check
 ```

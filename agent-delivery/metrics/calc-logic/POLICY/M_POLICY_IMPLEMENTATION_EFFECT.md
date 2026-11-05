@@ -1,5 +1,8 @@
 > **铁律：本指标所有信息，均以第二章的“最新指标调研报告”为准。第一章指标信息为历史版本，不用作参考。**
 
+> **【v2 临时基线 addendum · 2026-11-05 · POL-EFFECT-CALIBER-V2-L01】**
+> 监管人 human:淮政玮 拍板方案 A（QPOL-02 范围内团队临时基线）：展示系统·政策实施效果跟踪的区域「效果评分 / 落地实效」现行产出改用**确定性公式**——评分=有效率×0.5+力度均值×50，实效=有效政策占比；删除 v1 的 socio/env/impl 三处 `rng.gauss` 随机代理（含随机分量不可复现、不可归因，永远翻不了 D4=live）。**本 addendum 不覆盖下方正本**：王惠三维口径、判档「完全不支持」、缺维不进平均规则全部不变；甲方归一（QPOL-02）时须一并复核本临时基线，三维输入补齐后回切正本公式。算法实现：`repos/lumen-algo-py/vendor/entan-py/polan/eval/effect.py`（v2，自检 `tests/test_effect_v2.py`）。
+
 # 落地实效性（M_POLICY_IMPLEMENTATION_EFFECT）
 
 > **归属与维护**
@@ -353,7 +356,7 @@ gkx 侧政策主表有 20,000 行，live 侧 `gkxlumenx_dwd.policy_base_info` **
 ### 6.1 复现步骤（本件是探针，不是出分脚本）
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_IMPLEMENTATION_EFFECT.py    # 产出 metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_IMPLEMENTATION_EFFECT --check
 ```

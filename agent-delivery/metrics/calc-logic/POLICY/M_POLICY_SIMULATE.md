@@ -363,7 +363,7 @@ $$\Delta Y_p=e\cdot\frac{X_{sim}-X_{base}}{X_{base}},\qquad Y_{sim,p}=B_p\times(
 ### 6.1 复现步骤（本件是探针，不是推演脚本）
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_SIMULATE.py    # 产出 metrics/repro/out/M_POLICY_SIMULATE_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_SIMULATE --check
 ```

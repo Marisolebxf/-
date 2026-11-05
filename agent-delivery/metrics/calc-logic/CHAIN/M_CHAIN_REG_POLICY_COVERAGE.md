@@ -252,7 +252,7 @@ strict 与主口径的差就是「泛词回退」的贡献。这个差不是误�
 另一个边界是「0 不等于空白」。合成生物在 4 市为 0，可能是因为政策标题用了「生物制造」「合成生物学」等不同词，而词表只有「合成生物」「生物制造」。产物保留 `tokens` 与 `hits`，就是为了让读者判断 0 是「真没有」还是「没匹配上」。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_CHAIN_REG_POLICY_COVERAGE.py
 python3 -c "import json;d=json.load(open('M_CHAIN_REG_POLICY_COVERAGE_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

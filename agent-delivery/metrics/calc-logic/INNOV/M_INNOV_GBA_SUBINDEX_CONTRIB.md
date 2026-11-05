@@ -250,7 +250,7 @@ min-max 在 4 城上会把最大城设为 1、最小城设为 0，放大差距�
 另一个边界是「载体产出」与资源维重复计位：专利和论文在资源维已经算过一次，在载体产出又算一次。这会让资源强的城市（深圳/广州）总分更高。产物在 `items` 里标了 `duplicate_with`，但汇总没有去重；这是旧稿口径，本件保留并披露。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_INNOV_GBA_SUBINDEX_CONTRIB.py
 python3 -c "import json;d=json.load(open('M_INNOV_GBA_SUBINDEX_CONTRIB_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

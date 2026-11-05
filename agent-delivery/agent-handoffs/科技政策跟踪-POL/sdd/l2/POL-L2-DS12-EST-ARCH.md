@@ -145,6 +145,7 @@ flowchart LR
 - 同一张表，种类为新出台预测。
 - 一行挂在一条已出台政策上：短期与长期效果、经济增长、产业发展、科技创新影响、时间变化趋势、空间分布特征、相似政策依据说明。依据作为行内说明字段，字段名归 `POL-L2-DS12-EST-DATA`。
 - 不调 `parse/jobs`，不调 `policy_text_parse` 通道，不现做文本解析。
+- 候选政策列表复用全景检索目录同一真源（`panorama/search` → `gkxlumen-topic-policy` 的 search/docs → Python `/internal/policy` → ODS 政策库），不新建政策列表读面。「新出台」的判定口径需规未定义，待甲方确认前，候选范围与灌数行挂哪些政策由 `POL-L2-DS12-EST-DATA` / `POL-L2-DS12-EST-GAPFILL-L01` 按临时默认定。
 - 行上 `metric_id` 用 `M_POLICY_SIMULATE`。无行则该区空，不返回解析结果顶替。
 
 ### 5.3 234 区域经济发展空间模拟 · 读区域空间行

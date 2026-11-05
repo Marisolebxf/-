@@ -238,7 +238,7 @@ $$
 脚本 `metrics/repro/M_CHAIN_DEEP_129_1.py` 读三个上游产物，按 1/3 等权合成，输出 `metrics/repro/out/M_CHAIN_DEEP_129_1_out.json`，含 `per_chain`、`headline`、`dimension_correlation`、`sensitivity`、`advantage_column_variant`、`input_provenance`、`caveats`。所有分数保留 2 位，排名按分数降序、同分按链码升序，保证可复现。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_DEEP_129_1.py
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_DEEP_129_1
 python3 _work_gkx21/audit_md_vs_out.py --dir _staging21

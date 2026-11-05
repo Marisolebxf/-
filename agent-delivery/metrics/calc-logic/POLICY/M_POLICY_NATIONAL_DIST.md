@@ -265,7 +265,7 @@ HHI 0.0587 是什么水平？它约为均匀值的 1.82 倍，说明集中但不
 ### 2.7 复现代码与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_NATIONAL_DIST.py
 python3 -c "import json;d=json.load(open('M_POLICY_NATIONAL_DIST_out.json'));print(d['headline'], d['null_bucket']['rows'])"
 ```
@@ -399,7 +399,7 @@ G1—G3 是本件的未归省来源，其中只有 G3 是真缺口；G2 是漏�
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_NATIONAL_DIST.py
 ```
 

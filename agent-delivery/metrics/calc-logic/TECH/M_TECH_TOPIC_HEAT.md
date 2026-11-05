@@ -258,7 +258,7 @@ heat = {t: 0.35 * S[t] + 0.35 * G[t] + 0.15 * A[t] + 0.15 * M[t] for t in TOPICS
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_TECH_TOPIC_HEAT.py
 # → metrics/repro/out/M_TECH_TOPIC_HEAT_out.json
 ```

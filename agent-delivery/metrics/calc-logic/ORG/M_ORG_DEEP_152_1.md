@@ -276,7 +276,7 @@ top15 的分数从 71.9697 递减到 40.5998。前四家是：深圳市龙岗区
 ### 2.8 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_ORG_DEEP_152_1.py
 # → metrics/repro/out/M_ORG_DEEP_152_1_out.json
 ```

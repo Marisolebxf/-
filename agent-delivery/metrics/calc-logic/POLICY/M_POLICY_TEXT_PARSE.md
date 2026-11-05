@@ -273,7 +273,7 @@ $$\text{Cov}_k=\frac{1}{N}\sum_{i=1}^{N}\operatorname{tag}_{i,k},\qquad N=20{,}0
 ### 2.7 复现代码与结果
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/_build_policy_text_20261023.py   # 生成快照（一次，落 code/_snapshots21/）
 python3 code/M_POLICY_TEXT_PARSE.py           # 只读快照，产出 out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_TEXT_PARSE --check

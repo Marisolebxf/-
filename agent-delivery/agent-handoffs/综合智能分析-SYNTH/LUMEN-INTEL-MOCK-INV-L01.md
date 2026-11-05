@@ -63,7 +63,10 @@
 
 `#106` 资产下载按既有规格不注册数据 mock。
 
-创建入参（三叶）：`analysisType` + `params.region/compare/window`，指纹 `analysis_fp = region|compare|window`。
+创建     入参：`analysisType` + `params.region/compare/window`（活力另可选 `weight_profile`）。  
+     指纹：要素/协同 `analysis_fp = region|compare|window`；**活力** `region|compare|window|weight_profile_norm`（缺省归一 `INDEX_MAIN`）。  
+     旧三段活力任务：按冻结权重/`methodVersion` 识别档位；无法确认 → `legacy_unknown`，**禁止自动复用**（不得视为 INDEX_MAIN）。  
+     快照：`snapshotId`=不可变（含 `calc_batch_id` 或唯一记录 ID）；`cache_key`=条件(+profile) 最新索引。细则 `sdd/l2/SYNTH-L2-VIT-AI-TABLES.md` §3。
 
 | analysisType | 成功 result 顶层 | 过程阶段名 |
 |---|---|---|

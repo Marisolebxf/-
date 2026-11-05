@@ -70,10 +70,25 @@ Standards 轴 + Spec 轴并行子代理审查，修复：
 2. **30892 nginx** chain/policy 前缀未配（历史问题，前端联调走 30895 或提配置单）
 3. R-2 逐年 rd：待 Python trend 序列官方支持后从 card.finance_latest 过渡方案升级
 
-## 涉及文件
+## 联调阶段补遗（2026-11-04/05 前端接线发现，均已在 dev 修复部署）
 
-- 4 模块各：api/…/dto/viz/{X}VizResponse.java + biz/…/service/{X}VizService.java + impl + controller/{X}VizController.java + test/…/service/impl/{X}VizServiceImplTest.java
-- enterprise api：EnterpriseVizRequest.java、EnterpriseExtendedDTOs.java（rd_expense 加了又按 R-2 回退）
+| # | 页面 | 问题 | 定性 | 处置 |
+|---|---|---|---|---|
+| 1 | 企业发展可视化 | 画像导出按钮真实模式无实现 | 前端缺口 | `exportCards` 双源（真实走 V-E card 五列），lumen-ui-topic 1deda3a |
+| 2 | 企业发展可视化 | 地区列恒空 | Python card 缺地区 | `/profile/card` 补 region 省-市-区拼接（8b3d371）+ Java CardResponse.region 透传（9b722ff） |
+| 3 | 企业发展可视化 | 散点图空 | 原维度（竞争力分×专利）ES 覆盖率 1.6%——**维度拍板更换** | Python enterprise_scatter 改注册资本×企业规模档位（d2e210e），Java/前端轴名同步（c8ea35f/fe68e9f）；原维度待数据补录后可回切 |
+| 4 | 产业全景可视化 | 指标卡 10 个全空 | 三因叠加：批次隔离 + Q056/QC07 诚实空黑名单（设计内 4 指标置 None）+ 十指标 fact 缺行 | 批次统一 + INB1204 十指标补齐 → 6 卡亮起 |
+| 5 | 产业全景可视化 | 曲线显示"64" | pickScaleSeries 误拿 NEWS_COUNT 冒充规模 | 只认 MARKET_SIZE + MARKET_SIZE series 补 6 年（561c4df）|
+| 6 | 产业全景可视化 | 地理热力空 | **表结构缺口**：region_dist 无 lat/lng/weight 列 | ALTER 补 3 列 + 省级坐标/权重回填 119 行 → 线上 9 省点亮 |
+| 7 | 产业全景可视化 | 结构 Tab 0 节点 | snapshot 需 chainId（前端传 industryId 时 0 节点，INB1303 chainId 通路 4 节点正常）| 链路确认，前端传参对齐 |
+
+**数据覆盖盘点结论**（ES gkx_enterprise 20.8 万家）：competitiveness_score 仅 1 家、nested patent_total 3,270 家（1.6%）、financials 0 覆盖——散点/部分指标空态为真实数据缺口，非代码缺陷；DWD 侧 rd_investment/rd_staff_ratio/revenue_latest 覆盖 18.9 万家，region_dist 已补省级坐标。
+
+## 涉及文件（联调补遗新增）
+
+- `lumen-topic-py`：enterprise_profile.py（card region + _CARD_SOURCE 补省市区）、enterprise_scatter.py（维度重写）
+- `lumen-svc-platform`：EnterpriseVizResponse.java（ScatterBlock xLabel/yLabel）、EnterpriseResponseDTOs.java（CardResponse.region）、EnterpriseVizServiceImpl.java（buildCard/buildScatter 接线）、IndustryVizServiceImpl.java（pickScaleSeries 修正）
+- `lumen-ui-topic`：EnterpriseVizPage.vue（exportCards 双源 + 轴名）
 
 ## Cost
 

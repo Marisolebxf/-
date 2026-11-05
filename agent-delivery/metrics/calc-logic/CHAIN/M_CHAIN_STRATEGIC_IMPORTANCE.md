@@ -256,7 +256,7 @@ HHI（营收份额平方和）0.3794，属于高集中；人工智能一家超�
 这四条链不是「不重要」，而是「没有可归属的上市/规上企业营收」。低空经济有 50 家企业标签、生物医药 148 家，但年报里营收为 0，说明样本以未上市中小企业为主。修复路径是接非上市企业营收或改用企业登记数据。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_CHAIN_STRATEGIC_IMPORTANCE.py
 python3 -c "import json;d=json.load(open('M_CHAIN_STRATEGIC_IMPORTANCE_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

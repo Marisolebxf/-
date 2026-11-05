@@ -252,7 +252,7 @@ I_reprint 看归一化标题的 distinct source 数，≥2 记 1；I_burst 看�
 链归属的敏感性是数组口径 vs 标题口径，Spearman 0.338，说明两者排序差异很大；本件选标题口径是因为它可解释、可复现，且不会让 3 条链直接归零。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_CHAIN_HOT_NEWS_COUNT.py
 python3 -c "import json;d=json.load(open('M_CHAIN_HOT_NEWS_COUNT_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

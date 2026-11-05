@@ -252,7 +252,7 @@ metrics:
 
   - metric_id: M_POLICY_EFFECT_SCORE
     metric_name_zh: "政策效果评分（王惠三维口径 v2 复现）"
-    definition: "三维中**仅环境维（绿色导向占比 20.59%）真实可算**；执行效果维的有效占比在入集口径下恒为 1.0（无区分度），及时性子项因 `implementation_date`/`expire_date` 全为 `0000-00-00` 而无法计分；社会经济维两子项无 ODS → 按 §〇 落**部分支持**。"
+    definition: "三维中**仅环境维（绿色导向占比 20.59%）真实可算**；执行效果维的有效占比在入集口径下恒为 1.0（无区分度），及时性子项因 `implementation_date`/`expire_date` 全为 `0000-00-00` 而无法计分；社会经济维两子项无 ODS → 按 §〇 落**部分支持**。 **v2 临时基线（2026-11-05 human:淮政玮 拍板，QPOL-02 范围内）**：区域效果评分现行产出改用确定性公式「有效率×0.5+力度均值×50」，删除 v1 的 socio/env 高斯随机代理（含随机分量不可复现、不可归因，永远翻不了 D4=live）；本 v2 为区域效果板临时口径，不覆盖王惠三维正本，甲方归一时一并复核。"
     formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_POLICY_EFFECT_SCORE.py 为准）。"
     algorithm_type: MODEL
     source_tables: ["dwd_policy_base"]
@@ -268,7 +268,8 @@ metrics:
     ui_mount: "科技信息展示系统·政策分析评价·政策效果评分 ｜ **数据支持度**：**部分支持**"
     pending_ref: "QPOL-02"
     acceptance_unit_id: "P-13"
-    updated: "2026-10-23"
+    caliber_note: "v2 确定性临时基线 2026-11-05 淮政玮拍板（POL-EFFECT-CALIBER-V2-L01）：有效率×0.5+力度均值×50，无随机分量；甲方归一后随 QPOL-02 翻正"
+    updated: "2026-11-05"
 
   - metric_id: M_POLICY_FOCUS_INDEX
     metric_name_zh: "政策焦点指数"
@@ -334,7 +335,7 @@ metrics:
 
   - metric_id: M_POLICY_IMPLEMENTATION_EFFECT
     metric_name_zh: "落地实效性"
-    definition: "三维各要一个输入：启动维要有效实施日、覆盖维要支持对象清单、反馈维要调查表。第一个字段在表内但 100% 是零日期，第二个在 JSON null 里，第三个两库都没有。**三维全断**，不是「缺一维」，是「一维都拼不起来」。"
+    definition: "三维各要一个输入：启动维要有效实施日、覆盖维要支持对象清单、反馈维要调查表。第一个字段在表内但 100% 是零日期，第二个在 JSON null 里，第三个两库都没有。**三维全断**，不是「缺一维」，是「一维都拼不起来」。 **v2 临时基线（2026-11-05 human:淮政玮 拍板，QPOL-02 范围内）**：区域效果板的「落地实效」现行产出改用确定性口径「= 有效政策占比（百分数值）」，删除 v1 的条数项与 gauss 噪声；正本三维口径不变，单维代理不继承「落地实效性」综合名分（防口径漂移，见 calc-logic §3.7），甲方归一时一并复核。"
     formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_POLICY_IMPLEMENTATION_EFFECT.py 为准）。"
     algorithm_type: MODEL
     source_tables: ["dwd_policy_base"]
@@ -347,10 +348,11 @@ metrics:
     support_reason: "三维全部不可算：启动维的 implementation_date 全为 0000-00-00（归零后 0 行有效），覆盖维的 support_object 在 20,000 行 JSON null 里取不到，反馈维两库均无调查表。按正本「缺维不进平均」，可进平均的完整维 0 个，分数不存在；强行出 0 分等于把导入缺陷写成政策事实。"
     is_mock: true
     ingest_batch: "20261021_gkx"
-    ui_mount: "政策分析页「落地实效」城市对比卡（设计位）、深圳政策现状分析指标体系（设计位）"
+    ui_mount: "政策分析页「落地实效」城市对比卡（设计位）、深圳政策现状分析指标体系（设计位）；**已上线挂载**：展示系统·科创政策全景·政策实施效果跟踪「落地实效（时序）」列"
     pending_ref: "QPOL-02"
     acceptance_unit_id: "P-73"
-    updated: "2026-10-23"
+    caliber_note: "v2 确定性临时基线 2026-11-05 淮政玮拍板（POL-EFFECT-CALIBER-V2-L01）：落地实效=有效政策占比，无随机/条数分量；三维正本不变，甲方归一后随 QPOL-02 翻正"
+    updated: "2026-11-05"
 
   - metric_id: M_POLICY_INDUSTRY_COVERAGE
     metric_name_zh: "政策产业链覆盖率"

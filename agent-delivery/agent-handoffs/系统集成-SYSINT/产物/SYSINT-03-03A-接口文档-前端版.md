@@ -52,7 +52,7 @@ POST /cms-ops/v1/topic-service/content/svc-business-domain
 ### A2. 编辑
 
 ```bash
-PUT /cms-ops/v1/topic-service/content/svc-business-domain/{id}
+POST /cms-ops/v1/topic-service/content/svc-business-domain/{id}/update
 { "body_html": "<p>修订后的介绍</p>" }
 ```
 
@@ -84,8 +84,8 @@ GET /cms-ops/v1/topic-service/content/svc-business-domain?industry_id=IND-01&org
 ### A5. 详情 / 删除
 
 ```bash
-GET    /cms-ops/v1/topic-service/content/svc-business-domain/{id}   # 40401=不存在/已软删
-DELETE /cms-ops/v1/topic-service/content/svc-business-domain/{id}   # 软删 → { "content_id": "1", "deleted": true }
+GET    /cms-ops/v1/topic-service/content/svc-business-domain/{id}          # 40401=不存在/已软删
+POST   /cms-ops/v1/topic-service/content/svc-business-domain/{id}/delete  # 软删 → { "content_id": "1", "deleted": true }
 ```
 
 ---
@@ -155,8 +155,8 @@ dev 已实测三态通过（含插入 published 正文后 `present:true` 原样�
 |---|---|
 | `GET /` | 查当前篮内机构 |
 | `POST /items` | 加入机构（body 带 org 维度） |
-| `DELETE /items/{org_id}` | 移出单个 |
-| `DELETE /items/batch` | 批量移出 |
+| `POST /items/{org_id}/delete` | 移出单个 |
+| `POST /items/batch/delete` | 批量移出 |
 
 ### C4. 页面 → 接口速查（专题服务五页）
 

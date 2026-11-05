@@ -251,7 +251,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 如果甲方坚持要 12 条链都有标签，建议改用「可靠/不可判定」二值 + 分数条，而不是三档标签；这样至少不会把空值伪装成成熟期。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_CHAIN_PHASE_DETERMINATION.py
 python3 -c "import json;d=json.load(open('M_CHAIN_PHASE_DETERMINATION_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

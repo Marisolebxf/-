@@ -266,7 +266,7 @@ $$N=N_{\text{省已归属}}+N_{\text{省未归属}}=N_{\text{市已归属}}+N_{\
 ### 2.7 复现代码与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _build_policy_dims_20261023.py   # 一次性生成共用底数（约 45 秒，连 gkx）
 python3 M_POLICY_TOTAL_COUNT.py          # 只读快照，不连库
 ```
@@ -373,7 +373,7 @@ live 侧的 `dwd.policy_base_info` 在 20261019 的实测里是 0 行，`ads.pol
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_TOTAL_COUNT.py
 python3 -c "import json;d=json.load(open('M_POLICY_TOTAL_COUNT_out.json'));print(d['headline'], d['support_judgment'])"
 ```

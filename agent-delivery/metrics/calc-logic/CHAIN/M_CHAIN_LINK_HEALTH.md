@@ -453,7 +453,7 @@ $$score_i=100 \times \frac{\mathrm{rank}_i}{n-1}$$
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 cd code
 python3 M_CHAIN_LINK_HEALTH.py
 ```

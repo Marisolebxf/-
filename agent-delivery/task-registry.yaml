@@ -40957,7 +40957,7 @@ tasks:
   - id: SYSINT-03-02A-JAVA-L01
     sprint_id: "2026-W43"
     model_used: "glm-5.3-flash"
-    evidence: "agent-handoffs/系统集成-SYSINT/SYSINT-03-02A-JAVA-L01.md"
+    evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-03-02A-JAVA-L01.md"
     cost_warn: "green"
     actual_tokens: 420000
     actual_cost: 4
@@ -40978,14 +40978,14 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     note: |
-      2026-10-26 代收尾（原 02A 会话遗失，徐滕强 指派）：5 类 pano_* 运营写接口 commit 0bc72b1 已推 origin/dev；bugbot 修复入档（blocks 缺 industry_id → 服务层 40001）；单测 51/51 绿；handoff SYSINT-03-02A-JAVA-L01.md（d7ce5f05）。契约 PORTAL-CMS-专题全景.md 仍草案，转正后字段不回改（DoD 原文）。待人工：走查 handoff + 契约确认（淮政玮）+ DDL 执行确认 + 签收。
+      2026-11-05 联调补丁（SYSINT-03-02A 门户产业全景内容管理前后端联调日）：诊断确认 7 类 pano_* 前后端已真实对接（前端 useCmsOpsStore → /cms/cms-ops/v1/topic-panorama/**，DB 三张新表/ALTER 已执行，网关路由生效）。发现并修复：validateAndSortPanoEvents 漏透传 expert_opinion（接口文档 §2.2 / 需规 319(2) 专家观点），commit 94b00894 已推 origin/dev，CI pipeline 3915 backend:build 绿 + backend:image:cms 绿，deploy:cms 排队部署中。旧断言「只含5键」同步改为 6 键。遗留：契约草案转正确认会待开（pano_* 新字段/类型偏差一并同步）。
     collaborators:
       - "frontend-agent"
     definition_of_done:
       - "gkxlumen-cms 新增 5 个 pano_* content_type 的 list/create/update/publish，正文落 gkxlumenx_cms，真源零写，操作写 cms_op_audit"
       - "OpenAPI + 请求/响应示例入 handoff，供 SYSINT-03-02A-L01 前端叶联调"
       - "契约 PORTAL-CMS-专题全景.md 转正后字段不回改；转正前以草案字段为准开发，待确认项标记在 handoff"
-    update_time: "2026-10-26T15:18:16+08:00"
+    update_time: "2026-11-05T18:32:21+08:00"
   - id: LUMEN-POLICY-SZ3D-B-JOB-L01
     model_used: "grok-4.7"
     evidence: "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-SZ3D-B-JOB-L01.md"
@@ -47168,13 +47168,18 @@ tasks:
       - "架构铁律对照：Java 不写算法（真算走 Python /internal/*）、不直连 nGQL、只读 ADS；图谱查询不扫全图（运营库聚合优先）"
     update_time: "2026-11-02T15:04:02+08:00"
   - id: FE-KG-01A
+    model_used: "glm-5.3"
+    evidence: "agent-handoffs/科技知识图谱-KG/FE-KG-01A.md"
+    cost_warn: "green"
+    actual_tokens: 132000
+    actual_cost: 1.6
     supervised_by: "human:孔东"
     claimed_at: "2026-11-04T14:32:31.192Z"
     last_seen_at: "2026-11-04T14:32:31.192Z"
     lock_until: "2026-11-04T18:32:31.192Z"
     claimed_by: "agent:frontend-agent"
     title: "分析展示 — 整页复刻：动态查询/数据过滤/多维分析/交互式可视化（graph+全屏）/时序演化/智能分析中心 Hub（8 叶）"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-FE-KNOWLEDGE-GRAPH"
     priority: "P0"
@@ -47185,7 +47190,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 260000
     note: |
-      开工：分析展示整页复刻 8 叶。基座 FE-KG-S01 已 integration（三绿+浏览器验证过，mock/api/样式基座可用），本单基于其产物开工；demo 真源 AnalysisDisplay.jsx + KgIntelligenceHub.jsx + kgIntelligence.js + graphFilter.js
+      孔东验收通过（2026-11-05 10:41）：前端仓已 commit a933728 并 push dev（c75bce0..85d1618，CI 自动触发）；本仓 handoff 同步更新 CI/CD 章节。Java REST 契约（BE-KG-CONTRACT-01）仍未冻结，contractPending 演示轨不变，联调确认待契约冻结后补
     depends_on:
       - "FE-KG-S01"
     touched_files:
@@ -47201,10 +47206,20 @@ tasks:
       - "算法层移植 models/*.ts 纯函数（kgIntelligence/graphFilter 保持确定性种子），graphFilter.test.mjs/kgIntelligence.test.mjs/patternRecognition.test.mjs/dynamicQuery.test.mjs 按断言语义摘选移植最小自检"
       - "D9：统计数字旁 ⓘ（MetricSpecHint）+ 🧪（MockBadge）；Arco 组件全替换（图标显式 import、32px/4px token）；观测头"
       - "交付三绿（pnpm type-check 0 错 + 自检 + pnpm build）；完工停本地工作区等 human:孔东 人工验收，不自动 commit/push；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-01A.md"
-    update_time: "2026-11-04T22:32:55+08:00"
+    update_time: "2026-11-05T10:45:23+08:00"
   - id: FE-KG-02A
+    cost_warn: "green"
+    actual_cost: 2.1
+    model_used: "glm-5.3"
+    actual_tokens: 150000
+    evidence: "agent-handoffs/科技知识图谱-KG/FE-KG-02A.md"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-05T02:49:17.429Z"
+    last_seen_at: "2026-11-05T02:49:17.429Z"
+    lock_until: "2026-11-05T06:49:17.429Z"
+    claimed_by: "agent:frontend-agent"
     title: "指标展示 — 整页复刻：告警条+KPI+3 Tab（黑名单触发/融合统计指标/优化决策模型，15 叶）"
-    status: "backlog"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-FE-KNOWLEDGE-GRAPH"
     priority: "P1"
@@ -47214,7 +47229,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 280000
-    note: "批 2。复用批 1 PageTabFrame/KPI 沉淀；写操作（反馈提交等）会话级演示态（D3 口径）。"
+    note: "还原至 integration：UI 复刻已走查放行并推送(14afb54)，但接口尚未接入，等 BE 接口联调完成后才转 pending_test"
     depends_on:
       - "FE-KG-S01"
     touched_files:
@@ -47232,10 +47247,20 @@ tasks:
       - "fusionMetrics.selfcheck/decisionModel.selfcheck/blacklistTrigger.selfcheck 按断言语义摘选移植最小自检"
       - "D9：KPI（活跃告警/融合指标数/模型准确率/已处理事件）旁 ⓘ+🧪；Arco 全替换；观测头"
       - "交付三绿；完工停本地工作区等 human:孔东 人工验收；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-02A.md"
-    update_time: "2026-11-02T15:04:42+08:00"
+    update_time: "2026-11-05T11:29:30+08:00"
   - id: FE-KG-03A
+    cost_warn: "green"
+    actual_cost: 2.3
+    model_used: "glm-5.3"
+    actual_tokens: 160000
+    evidence: "agent-handoffs/科技知识图谱-KG/FE-KG-03A.md"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-05T03:38:36.012Z"
+    last_seen_at: "2026-11-05T03:38:36.012Z"
+    lock_until: "2026-11-05T07:38:36.012Z"
+    claimed_by: "agent:frontend-agent"
     title: "算法展示 — 整页复刻：三算法切换（路径搜索/中心性计算/社群发现，15 叶），算法层移植 models 纯函数 + 🧪"
-    status: "backlog"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-FE-KNOWLEDGE-GRAPH"
     priority: "P1"
@@ -47245,7 +47270,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 300000
-    note: "批 2。CentralityPanel(838 行) 为本单最大件；Python 真算接入归 BE-KG-CONTRACT-01，前端只换数据源不改 UI。"
+    note: "三算法模型层移植+三面板+整页；三绿（type-check 0 错 / 03A 自检 4 组 / S01+01A+02A 防回归 / build 44.4s）；Tab/Card 标题纯文字零图标；停本地等孔东验收，未 commit/push"
     depends_on:
       - "FE-KG-S01"
     touched_files:
@@ -47261,10 +47286,20 @@ tasks:
       - "算法层移植 models/*.ts 纯函数（pathSearchAlgo/centralityAlgo/communityAlgo 保持确定性种子与 demo 断言语义）+ 4 个 selfcheck.mjs 摘选移植最小自检；UI 挂 🧪「演示级，未接算法仓」（D1）"
       - "D9：统计数字旁 ⓘ+🧪；图表复用 GraphChart/chartOptions；Arco 全替换；观测头"
       - "交付三绿；完工停本地工作区等 human:孔东 人工验收；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-03A.md"
-    update_time: "2026-11-02T15:04:56+08:00"
+    update_time: "2026-11-05T12:04:57+08:00"
   - id: FE-KG-04A
+    model_used: "glm-5.3"
+    evidence: "agent-delivery/agent-handoffs/科技知识图谱-KG/FE-KG-04A.md"
+    cost_warn: "green"
+    actual_tokens: 520000
+    actual_cost: 7.8
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-05T04:22:31.050Z"
+    last_seen_at: "2026-11-05T04:22:31.050Z"
+    lock_until: "2026-11-05T08:22:31.050Z"
+    claimed_by: "agent:frontend-agent"
     title: "服务展示 — 整页复刻（XL）：3 Tab（图分享状态机族/图查询三视图/图分析集成含实时监控轮询，17 叶）"
-    status: "backlog"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "E-FE-KNOWLEDGE-GRAPH"
     priority: "P1"
@@ -47274,7 +47309,8 @@ tasks:
     effort_points: "13"
     difficulty: "XL"
     estimated_tokens: 420000
-    note: "批 3（最大件单独排）。若体量压批可拆 04A+04B（分享/查询 vs 集成），拆分决策由 coordinator + 孔东拍板。"
+    note: |
+      走查 1+2 轮共 10 项修复完成并按孔东授权双仓 push（lumen-ui-science-pc: 0920cc4/61e6186/96e064b；orchestration handoff 同步）。根因修复：Arco Vue modal/drawer :open→:visible（弹层全部可开）、tag 色名对齐 Arco 13 色、筛选全并一行+取消展开/收缩、收藏 icon 化、时间列 170 防换行、四页统一去内壳 padding。三绿：type-check + FE-KG-04A 5组 + kg.selfcheck 9组 + build。等孔东验收后转 testing。
     depends_on:
       - "FE-KG-S01"
     touched_files:
@@ -47292,7 +47328,7 @@ tasks:
       - "分享状态机族（shareHistory/kgShareRegistry/kgShareExport/kgShareSync）整块移植不拆散，shareHistory.selfcheck 等 6 个 test/selfcheck 摘选移植；写操作 localStorage 会话级（D3）"
       - "D9：KPI 行（serviceKpis 自带 metric_id）旁 ⓘ+🧪；Arco 全替换；观测头；fixed 弹层 Teleport to body"
       - "交付三绿；完工停本地工作区等 human:孔东 人工验收；handoff 落 agent-handoffs/科技知识图谱-KG/FE-KG-04A.md"
-    update_time: "2026-11-02T15:05:12+08:00"
+    update_time: "2026-11-05T15:48:42+08:00"
   - id: FIX-CHAIN-SEARCH-L01
     cost_warn: "green"
     actual_cost: 2.1
@@ -53449,7 +53485,8 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "AV-0 触发：handoff 已提交 + evidence 已回填；等待监管人走查后 push 业务仓"
+    note: |
+      监管人走查放行（human:淮政玮 2026-11-05 口头，经 frontend 会话代提交）：业务仓已 commit + push origin/dev，lumen-svc-platform merge commit 268c30c（含 a62a8a1 修复体；push 被拒后按多会话保护规则 #4 git pull --no-rebase 干净合入远端企业可视化并行改动）。改动=display 两个 Service 的 toAsyncCreateBody 缺 analysis_fp 时自动派生兜底，单测 27 绿。209/212/214/218 无指纹入口全部救活，前端首载自动分析依赖本兜底。
     touched_files:
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyPanoramaService.java"
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyEvaluationService.java"
@@ -53460,7 +53497,7 @@ tasks:
       - "③ 单测覆盖三点：缺指纹自动补、带指纹原样透传、同参数派生指纹一致；mvn 对应模块 test 绿"
       - "④ 与前端 FIX-POL-INTENSITY-FP-L02（带指纹直发）不冲突：前端带则透传，服务端仅缺失时兜底"
       - "⑤ handoff 含 trace 排查结论（2c4a45ceebc0b53b5b28cceaac53cc63 与 4fa75276 同根因）+ 架构合规自检"
-    update_time: "2026-11-04T15:43:33+08:00"
+    update_time: "2026-11-05T01:09:32+08:00"
   - id: FE-TOPIC-NGINX-CMS-PREFIX-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-04T09:38:32.303Z"
@@ -53535,7 +53572,8 @@ tasks:
       - "handoff 写明判定表、证据链、阶梯定级与留给 CLSMAP/TECHMAP 叶的承接关系；不改任何一侧库、不建映射、不写业务代码"
     update_time: "2026-11-04T19:25:04+08:00"
   - id: SYSINT-CHAIN-ELEM-LINK-02-L01
-    evidence: "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/CHAIN-ELEM-LINK可行性判定记录.md,agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-CHAIN-ELEM-LINK-02-L01.md"
+    evidence: |
+      agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/CHAIN-ELEM-LINK可行性判定记录.md,agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/Topic桥可行性判定.md,agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-CHAIN-ELEM-LINK-02-L01.md
     supervised_by: "human:唐绍祖"
     claimed_at: "2026-11-04T12:05:07.379Z"
     last_seen_at: "2026-11-04T12:05:07.379Z"
@@ -53553,7 +53591,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 150000
     note: |
-      三通路判定完成：技术侧绿——dwd_tech_node_industry_map 已有 20,257 行/159 产业（WBS-02-12 产物已落库，此前『未实装』判定过时）；人才/机构黄——GB 桥是我方自建（GB 码公开标准，INB→GB 对照 ≤1220 行），久新两侧挂接点实查 talent industry_activity 39.8 万行 GB 码、institution_industry 135 万行 GB 码；LLM 通路节点级命中 89/1220 (7.3%) 但 L0 级 12/12 全覆盖可兜底。供给缺口：两张久新 GB 表必须进阶段二圈表。判定记录 CHAIN-ELEM-LINK可行性判定记录.md。
+      久新建议的 Topic 桥可行性判定完成：可行且优于 GB 桥（人才/机构从黄升绿——中间层跳2是久新自有官方字典 ads_discipline_topic 4516 行，我方零建桥；并新增专利/论文/项目按链节点过滤能力，patent_analysis_topic 365610 行 4135 万关联）。待久新书面确认三点：topic 不跨 subfield 的 1:1 口径、patent_analysis 族 run 版本化、topic 表水位字段。GB 桥保留为降级预案。判定记录 Topic桥可行性判定.md，圈表增补 4 张已建议。
     depends_on:
       - "SYSINT-XJOIN-FEAS-02-L01"
     collaborators:
@@ -53574,7 +53612,7 @@ tasks:
       - "供给缺口清单：三要素按产业链节点切面展示所缺的数据/表/字段，逐项标注责任方（久新供/我方算）与阶梯定级，输出给主文档 §4 阶段二圈表清单增补建议"
       - "判定结论写成调研记录（同 XJOIN 格式：数据在/桥/口径三条件），交监管人 human:唐绍祖 复核；结论直接影响专题产业链页与展示态势页三要素区块的供数方案"
       - "handoff 说明与 XJOIN-FEAS（场景 2/6）、CLSMAP（集群层）、TECHMAP（技术节点桥）的分流边界；只调研判定，不建映射不写业务代码"
-    update_time: "2026-11-04T20:09:43+08:00"
+    update_time: "2026-11-05T11:45:04+08:00"
   - id: POL-L2-DS10-SRCMON-API-L01
     title: "科创政策全景 · 来源监控头部数据接口 · GET /display/v1/policy/panorama/source-status（截至时间+来源聚合，只读）"
     status: "ready"
@@ -53630,3 +53668,849 @@ tasks:
       - "更新 FE-POL-TREND-LIVE.test.mjs 自检 + pnpm type-check、pnpm build 两绿；完工直接 commit+push origin/dev（AGENTS.md 完工即推）"
       - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
     update_time: "2026-11-04T22:37:40+08:00"
+  - id: POL-EFFECT-CALIBER-V2-L01
+    note: "AV-0 已备齐（handoff+evidence）。D4 仍 mock（公式确定化≠数据就绪，翻转=QPOL-02 甲方归一+正式灌数+QA 四段核验）。🧪 角标不摘。"
+    cost_warn: "false"
+    actual_cost: "$0.35"
+    model_used: "glm-5.3-flash"
+    actual_tokens: "85000"
+    evidence: |
+      handoff=agent-handoffs/POL-EFFECT-CALIBER-V2-L01.md；测试 36 绿（test_policy_job+test_effect_v2）；双仓 fc 同文；前端 policy.test+type-check 绿；四仓 commit：lumen-algo-py a3862be/c31474c · demo-algo-ent-analysis f643655/5d565f4 · orchestration f233c473 · lumen-ui-science-pc 898d7ac（均 origin/dev）
+    claimed_at: "2026-11-04T17:39:32.876Z"
+    last_seen_at: "2026-11-04T17:39:32.876Z"
+    lock_until: "2026-11-04T21:39:32.876Z"
+    claimed_by: "agent:frontend-agent（兼 data 执行，监管人已口头拍板口径 A）"
+    title: "政策效果双指标口径 v2（去随机确定性）：effect.py 拆分 + seed/矩阵/QPOL-02 修订 + vendor 同步"
+    status: "integration"
+    agent: "data-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 60000
+    definition_of_done:
+      - "① lumen-algo-py 与 demo-algo-ent-analysis 的 polan/eval/effect.py 去随机：效果评分=有效率×50%+力度均值×50%，落地实效=有效率×100；socio/env/impl 三处 rng.gauss 删除；ext 标 v2 口径与 QPOL-02"
+      - "② 两个 metric seed（EFFECT_SCORE/IMPLEMENTATION_EFFECT）definition/formula 追加 v2 临时基线（不覆盖王惠三维正本，判档/is_mock 不动，version 2）"
+      - "③ 矩阵 YAML d1_note/d4_note 追加 v2 记录（D4 仍 mock，翻转待 QA 四段核验）；QPOL-02 临时默认列追加 2026-11-05 淮政玮拍板记录（仍 🟡）"
+      - "④ calc-logic 两份 MD 顶部加 v2 临时基线 addendum（正本章节不改）"
+      - "⑤ 纯函数化评分并留最小自检（确定性断言）；vendor 同步 fc 一致；前端镜像重生成或注明后续单"
+    update_time: "2026-11-05T01:49:49+08:00"
+  - id: FIX-POL-CMP-SEARCH-L01
+    model_used: "glm-5.3-flash"
+    evidence: "commit 5d3b636 推 origin/dev；FE-POL-CMP-LIVE 自检全绿；type-check EXIT=0；handoff agent-handoffs/科技政策跟踪-POL/FIX-POL-CMP-SEARCH-L01.md"
+    cost_warn: "green"
+    actual_tokens: 60000
+    actual_cost: 0.03
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-04T18:59:26.378Z"
+    last_seen_at: "2026-11-04T18:59:26.378Z"
+    lock_until: "2026-11-04T22:59:26.378Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策详情对比·候选下拉连库搜索：只拉首页 20 条本地过滤，关键词搜不到目标政策"
+    status: "pending_test"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "完工即推：commit 5d3b636 已推 origin/dev，自检/type-check 绿，handoff 已落盘。待 CI 部署后复测候选搜索。"
+    touched_files:
+      - "src/views/policy/panorama/components/ComparisonModal.vue"
+      - "src/views/policy/panorama/FE-POL-CMP-LIVE.test.mjs"
+    definition_of_done:
+      - "① 候选下拉输入防抖后调 panoramaSearch({keyword}) 连库搜索，能搜到 18363390 / 18407696 等任意关键词命中的政策，不再只过滤打开时那 20 条"
+      - "② 空输入回落首页默认 20 条；搜索失败不清已返回候选（liveOptionsError 提示在场）"
+      - "③ 选中项 id 与 detail 接口 policy_id 同源，选中后六维对比链路不受影响"
+      - "④ USE_MOCK=true 种子轨零回归；FE-POL-CMP-LIVE.test.mjs 新增远程搜索断言后全绿；pnpm type-check 绿"
+      - "⑤ handoff 附根因（首页 20 条含 9999/2999 脏日期国际行霸屏）与复验路径"
+    update_time: "2026-11-05T03:05:51+08:00"
+  - id: POL-AUDIT-FE-REFACTOR-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-AUDIT-FE-REFACTOR-L01.md"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-05T03:48:55.429Z"
+    last_seen_at: "2026-11-05T03:48:55.429Z"
+    lock_until: "2026-11-05T07:48:55.429Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策跟踪审核整改①：3 项功能冗余 + 4 项设计不合理（重构）"
+    status: "ready_to_sign"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "孔东确认 commit+push：lumen-ui-science-pc dev 7922bec（11 文件 +752/-497）；三绿已过，推 ready_to_sign 待签收"
+    touched_files:
+      - "src/views/policy/panorama/index.vue"
+      - "src/views/policy/panorama/components/CompareTab.vue"
+      - "src/views/policy/parse/index.vue"
+      - "src/views/policy/simulation/index.vue"
+      - "src/views/policy/governance/index.vue"
+    design_refs:
+      - "bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.1.4.2"
+      - "agent-handoffs/（审核报告见会话）"
+    definition_of_done:
+      - "R1：全景页高级/普通检索两分支重复渲染体（结果卡头+二次筛选条+结果体，~90行×2）封装为共享组件，行为零变化"
+      - "R2：parse 页 MockBadgeInline 内联件删除，公共 MockBadge 样式自含后全页复用"
+      - "R3：CompareTab「对标报告生成与导出」「对标结果可视化展示」双入口合并为单卡"
+      - "D1：panorama/index.vue 订阅双轨映射逻辑拆出独立模块文件，主文件行数显著下降"
+      - "D2：全景页 header 统计卡跨 Tab 语义修正（按 Tab 切换口径或收窄全局口径并注明）"
+      - "D3：推演页 dimsEvalDone 收敛单一真值源，消除父 ref + 子 gates 双源闪变"
+      - "D4：治理页 kpiValue 魔法数（-28/下限40）标注来源与真值接入后的清理时点"
+      - "三绿自检：pnpm type-check / 模块自检 / build 全过；handoff 写入 agent-handoffs/"
+    update_time: "2026-11-05T12:15:44+08:00"
+  - id: POL-AUDIT-FE-BIAS-L02
+    title: "政策跟踪审核整改②：6 项功能偏差前端修复（统计卡 live 硬编码 + 体验一致性）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "来源：同审核报告偏差 B1-B6。B2/B3/B4 后端缺口移交 L03。监管人孔东裁定：不适用完工即推，改动停在本地等确认。L01 完工后由 coordinator 升 ready。"
+    depends_on:
+      - "POL-AUDIT-FE-REFACTOR-L01"
+    touched_files:
+      - "src/views/policy/panorama/index.vue"
+      - "src/views/policy/panorama/components/ShareModal.vue"
+      - "src/views/policy/panorama/components/SentimentTab.vue"
+      - "src/views/policy/analysis/index.vue"
+      - "src/views/policy/simulation/index.vue"
+      - "src/views/policy/governance/index.vue"
+    design_refs:
+      - "bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.1.4.2"
+    definition_of_done:
+      - "B1：全景/分析/推演/治理 4 页统计卡 live 模式（USE_MOCK=false）硬编码演示数字改为诚实态——接 gapfill 行或补 live 空态提示，mock 态保留 🧪；涉及点位：全景落地实效 92.5/覆盖地区 32、分析 6 卡中 4 卡、推演 4 卡、治理 3256"
+      - "B5：live 模式检索历史清空补服务端语义说明或后端清空接口联调（依 L03 登记结果）"
+      - "B6：评估报告 live 下载 .txt 与 mock 态 PDF 语义统一（对齐 demo 态体验）"
+      - "每处修改不伪闭合：D2 provisional 加「待核验」、D3 none 不伪造数值（D9 诚实性铁律）"
+      - "三绿自检：pnpm type-check / 模块自检 / build 全过；handoff 写入 agent-handoffs/"
+      - "注：B2 收藏取消 API、B3 邮件通道、B4 推送外发通道 3 项属后端缺口，不在本单修，走 POL-AUDIT-API-GAP-L03 登记"
+    update_time: "2026-11-05T11:47:08+08:00"
+  - id: POL-AUDIT-API-GAP-L03
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-AUDIT-API-GAP-L03-接口缺口登记.md"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-05T04:04:52.526Z"
+    last_seen_at: "2026-11-05T04:04:52.526Z"
+    lock_until: "2026-11-05T08:04:52.526Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策跟踪审核整改③：后端接口缺口登记（收藏取消 API / 邮件分享通道 / 订阅推送外发通道）"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "科技政策跟踪"
+    priority: "P2"
+    repo: "lumen-svc-platform"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "登记完成：B2 收藏取消 DELETE 契约 / B3 邮件分享通道 / B4 订阅推送外发矩阵（system→email→sms）+ honesty 语义 + 排期建议；会签通过（孔东确认后推 ready_to_sign）"
+    definition_of_done:
+      - "B2：收藏取消——live 模式仅有 panoramaSaveFavorite 新增，需 DELETE/PUT 取消收藏接口（需规 4.2.1.1.5 收藏夹管理）；产出接口需求条目（路径/方法/参数/返回/honesty 语义）"
+      - "B3：邮件分享——live 模式邮件通道不可用（ShareModal 返回“邮件不可用”）；产出邮件发送通道需求条目或明确降级说明（需规 4.2.1.1.6）"
+      - "B4：订阅推送外发——订阅保存后仅入库不推送，需系统通知/邮件/短信外发通道（需规 4.2.1.2.2）；产出外发通道需求条目（channels system/email/sms × frequency day/week/month）"
+      - "三项缺口汇总写入接口需求登记文档（agent-delivery/ 下）供 api-agent 排期；不写代码"
+      - "handoff 写入 agent-handoffs/"
+    update_time: "2026-11-05T12:05:03+08:00"
+  - id: SYSINT-TOPICMAP-02-L01
+    evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-TOPICMAP-02-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-05T04:28:10.288Z"
+    last_seen_at: "2026-11-05T04:28:10.288Z"
+    lock_until: "2026-11-05T12:28:10.288Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "Topic 与产业节点映射：仿技术节点映射，ads_discipline_topic 同步进本侧表 + Topic 关联产业节点"
+    status: "in_progress"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-ui-system-test、demo-svc-platform、lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 140000
+    note: |
+      WBS-02-18。2026-11-05 甲方指令：仿照算法中台「技术节点与产业映射」（SYSINT-TECHMAP-02-L01 同构），为 ads_discipline_topic（4516 个平台 Topic，五类主体都挂的学科维度）建产业节点映射。Topic 桥可行性已判可（CHAIN-ELEM-LINK 增补）：本叶落地后，链节点→subfield→topic→人才的最后一跳从字典从属关系升级为显式产业节点关联，人才/机构/论文/专利/项目即可按链节点（经 topic）过滤。同步是小表（4516 行）；关联量级 4516 topic × 候选产业节点向量，批 20 约需 226 批。依赖 CHAIN-ELEM-LINK（integration，判定已出）可开工。
+      2026-11-05 监管人淮政玮下令领取并执行。派单写明依赖叶未签收不挡开工。已认领开工，按派单同构落地字典、映射表、菜单和向量关联。
+    depends_on:
+      - "SYSINT-CHAIN-ELEM-LINK-02-L01"
+      - "SYSINT-TFMAP-02-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    touched_files:
+      - "repos/lumen-topic-py"
+      - "repos/demo-ui-system-test"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-algo-py"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TOPICMAP-02-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TOPICMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/Topic桥可行性判定.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "本侧字典表 demo_gkxlumenx_dwd.dwd_discipline_topic 落库：同步 ads_discipline_topic 4516 行（topic_id/name_zh/name_en/subfield_id/field_id/domain_id），按 topic_id upsert 不整表清空；来源 lumen-topic-py 字典通道新 op=discipline_topic_page（每页≤500），页面不直连久新"
+      - "本侧映射表 demo_gkxlumenx_dwd.dwd_topic_industry_map 落库：一行一个 topic 的一条产业关联，逻辑键 topic_id + 产业 node_id（+集群），未关联保留 node_id 空；不写入 subfield_topic_map 和 dwd_tech_node_industry_map"
+      - "算法中台 demo-ui-system-test 维护管理新菜单「Topic与产业映射」（路由 /ops/topic-map），与「技术节点与产业映射」同构：【同步】灌字典，【关联】用名称向量对产业节点余弦取最近；一次请求一批，前端循环到未映射 0 或批失败停止"
+      - "页面：已映射/未映射全量数、两段列表各≤200 行、关键字查询≤200 个 topic、已映射产业及 topic 数、选定产业节点列已关联 topic——交互与 tech-node-map 页一致"
+      - "其他模块读本侧表不直连久新；Topic 桥消费方（链节点→topic 展开）后续读 dwd_topic_industry_map，不动既有 subfield_topic_map / tech_node_industry_map 数据"
+      - "handoff 写明两张表名、通道 op、菜单路径、向量落点与批策略；架构自检：调用链不越层、Java 不算向量、密码不进 git"
+    update_time: "2026-11-05T12:37:48+08:00"
+  - id: SYSINT-TECHGRAPH-02-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-05T09:34:07.511Z"
+    last_seen_at: "2026-11-05T09:34:07.511Z"
+    lock_until: "2026-11-05T13:34:07.511Z"
+    claimed_by: "agent:api-agent"
+    title: "技术点图谱菜单与节点同步"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-svc-platform、demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: |
+      2026-11-05 两条 trace（1944348d、9cddce5c）同一断点：gkx-innov 调 lumen-platform-algo-py POST /internal/tech-graph/vertex 返回 500。原因是 Dockerfile.api 把 settings.yaml 拷成目录，写点打开配置抛未捕获错误，与 Tag 无关。修复 lumen-algo-py c951895 已推 origin/dev，等 deploy:api 换镜像。业务点仍未入图。任务保持 in_progress，不标 done。L02 仍等业务点写入后再领。监管人 human:淮政玮。
+    depends_on:
+      - "SYSINT-TOPICMAP-02-L01"
+    collaborators:
+      - "frontend-agent"
+      - "algorithm-agent"
+    touched_files:
+      - "repos/demo-ui-system-test/src/views/ops/opsMenuConfig.ts"
+      - "repos/demo-ui-system-test/src/views/ops/pages/"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-topic-py/gkx_svc_service/jx_dict.py"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHGRAPH-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHGRAPH-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "dwd_technology_graph_node 能按 technology_node_id 同步约 19430 行，含中文名、英文名、社区角色、加权度、graph_release_id。按主键 upsert，不整表清空。空中文保持空"
+      - "来源是 lumen-topic-py op=technology_graph_node_page，每页不超过 500。页面不直连久新"
+      - "算法中台维护管理有菜单「技术点图谱」（/ops/tech-graph）。【同步】才打字典。查询只读本侧表，最多 200 行"
+      - "不写入三张已有映射表，不建边表，不写 Nebula"
+      - "handoff 写明表名、op、菜单路径、网关路由 id。含 ponytail: full 与 diagram_id: SYSINT-TECHGRAPH-02-SEQ"
+    update_time: "2026-11-05T18:40:19+08:00"
+  - id: SYSINT-TECHGRAPH-02-L02
+    title: "技术点图谱按节点查看边、路径和关联实体"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-svc-platform、demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "2026-11-05 human:淮政玮签收方案后改范围。旧口径「只查不入图、人才只显缺口文案」作废，以派单说明-SYSINT-TECHGRAPH-02-L02.md 为准。八颗边上图按钮，缺端点跳过，不补点，不挂产业。等 L01。监管人 human:淮政玮。WBS-02-20。"
+    depends_on:
+      - "SYSINT-TECHGRAPH-02-L01"
+    collaborators:
+      - "frontend-agent"
+      - "algorithm-agent"
+    touched_files:
+      - "repos/demo-ui-system-test/src/views/ops/pages/"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-topic-py/gkx_svc_service/jx_dict.py"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHGRAPH-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHGRAPH-02-L02.md"
+    definition_of_done:
+      - "选定一个已同步节点后，能分页看到它的邻边、路径步、代表论文、代表专利、关联机构。未选节点不发这些查询"
+      - "边默认不含 LOW。论文和专利按代表排名，机构按机构排名，默认各 20 条。边和路径每页不超过 50"
+      - "没有 technology_node_id 的查询被拒绝。这五类数据不落本侧新表"
+      - "人才区域只有缺口文案，页面上看不到编造的人名"
+      - "handoff 含 ponytail: full 与 diagram_id: SYSINT-TECHGRAPH-02-SEQ"
+    update_time: "2026-11-05T17:33:54+08:00"
+  - id: METRIC-AUTH-DATA-1105-L01
+    model_used: "glm-5.3-flash"
+    cost_warn: "green"
+    actual_cost: 1.2
+    actual_tokens: 300000
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-11-05T01:30:00.000Z"
+    last_seen_at: "2026-11-05T08:46:18.000Z"
+    claimed_by: "agent:data-agent"
+    title: "指标权威外部数据采集入库与支持度升级:1088 指标依赖九源合规采集,demo_gkxlumenx_ai 三层(ODS16/DWD8/ADS7)上架,15 指标升档"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-METRIC-ALGOLIB-LAUNCH"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "data-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "ods_done"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      三系统 1,088 指标权威数据依赖缺口采集与入库(20261105 批)。
+      采集(合法合规:仅官方公开源/robots 检查/限速退避/不碰付费墙与实名系统/单文件>5GB 只登记不下载):
+      世界银行 WDI、OECD MSTI/BIBLIO、OpenAlex(CC0)、ROR(CC0)、WIPO GII、DOAJ、arXiv 官方统计、UN Comtrade、民政部行政区划。
+      产物:ODS SQL 16 文件 220,564 行 + 登记表 xlsx(指标权威数据依赖登记表-20261105,3 指标 sheet×依赖登记 9 列+3 附表)。
+      入库:demo_gkxlumenx_ai(10.50.11.76,独立库,不触碰全组共享 demo_gkxlumenx_ods/dwd/ads——DB-WRITE-GUARD 合规)
+      ODS 16 表 220,564 行 / DWD 8 表 53,072 行(透视宽表+跨源合并) / ADS 7 表 50,657 行(排行/对比/密度成品面),
+      全链幂等重建可重跑,校验 11+6+4+总验收全 PASS。
+      子代理补采:WIPO GII 官方 CSV 端点(Playwright 抓包定位,robots 允许)、ROR 全球全量包 v2.15(Zenodo,MD5 通过,146,716 家);
+      USPTO PatentsView 因迁 USPTO ODP 实名门户按约束放弃留档。
+      支持度升级(逐指标核对 651 份 calc-logic 判档理由后严谨口径):14 个部分支持→完全转换支持(条件)+1 个完全不支持→部分支持(条件),
+      合计 15 个;回写合并主表 27 行、calc-logic md 15 份、repro out sidecar 15 个(原 py 零改动)。
+      主表超链接真源不变(20261030 交付目录);本批只动支持度列与备注列。
+    touched_files:
+      - "agent-delivery/metrics/指标入库详情-合并-20261028-三系统.xlsx"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TOTAL.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TYPE_DIST.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_REGION_ORG.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_ORG_CNT.md"
+      - "agent-delivery/metrics/calc-logic/ENT/M_ENT_STAR_BY_REGION.md"
+      - "agent-delivery/metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_MONITOR_GLOBAL.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_RANK_GLOBAL.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PLAN_HEAT.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PLAN_LOCAL_ADV.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_DS_FACTORS_012.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_DS_09_COMPREHENSIVE_005.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md"
+      - "agent-delivery/metrics/calc-logic/TALENT/M_TALENT_REGIONAL_DIST.md"
+      - "agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_INTERNATIONALIZATION_INDEX.md"
+      - "agent-delivery/metrics/repro/out/*_out_20261105_upgrade.json"
+    design_refs:
+      - "local-workspace/docs/tasks/construct/1105_指标数据爬虫/README.md"
+      - "local-workspace/docs/tasks/construct/1105_指标数据爬虫/指标权威数据依赖登记表-20261105.xlsx"
+      - "local-workspace/config/database_info.yaml"
+    definition_of_done:
+      - "16 个 ODS SQL 归档与登记表 xlsx 落盘,三条用户约束(库内已有不采/>5GB 只登记/合法合规)执行留痕"
+      - "demo_gkxlumenx_ai 三层上架且幂等:ODS 16 表 220,564 行对平归档;DWD/ADS 校验 21 项全 PASS"
+      - "15 个指标升档结论经 calc-logic 判档理由逐个核对(不虚高:3 个谨慎项明确排除并留档)"
+      - "合并主表/calc-logic md/repro sidecar 三处回写一致;原 repro py 零改动"
+      - "WBS 系统-01 页 LT 行登记;本通告与 registry 登记同步 push dev"
+    update_time: "2026-11-05T16:46:18+08:00"
+  - id: LUMEN-GATEWAY-METHOD-RESTRICT-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-05T09:02:02.907Z"
+    last_seen_at: "2026-11-05T09:02:02.907Z"
+    lock_until: "2026-11-06T09:02:02.907Z"
+    claimed_by: "human:孔东"
+    title: "网关仅放行 GET/POST — 前端 16 处 PUT/DELETE 调用与后端 Controller 整改（含 Feign 链路）"
+    status: "ready_to_sign"
+    agent: "frontend-agent"
+    epic: "E-PLATFORM"
+    priority: "P1"
+    repo: "lumen-ui-topic + lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      人工测试通过（孔东 2026-11-05 手工验证双仓 dev：lumen-ui-topic 5c50701 / lumen-svc-platform 6db7c51，16 处 PUT/DELETE → POST 动词尾联调正常），推进待签收。契约文档同步已由 DOC-CONTRACT-METHOD-SYNC-20261105 完成（dev 8146c7c6）
+    collaborators:
+      - "api-agent"
+      - "devops-agent"
+    touched_files:
+      - "repos/lumen-ui-topic/src/api/enterprise/compare.ts"
+      - "repos/lumen-ui-topic/src/api/enterprise/evaluation.ts"
+      - "repos/lumen-ui-topic/src/api/enterprise/analysisTask.ts"
+      - "repos/lumen-ui-topic/src/api/industry/chainUx.ts"
+      - "repos/lumen-ui-topic/src/api/service/index.ts"
+      - "repos/lumen-ui-topic/src/api/cms/cmsOps.ts"
+      - "repos/lumen-svc-platform 各 topic Controller/Feign"
+    definition_of_done:
+      - "前端 16 处 PUT/DELETE 调用（compare.ts×6 / evaluation.ts×3 / analysisTask.ts×1 / chainUx.ts×2 / service/index.ts×2 / cmsOps.ts×2）全部改为 POST 语义等价路由，Mock 同步更新，type-check + selfcheck 绿"
+      - "后端 lumen-svc-platform 对应 Controller（CompareBasketController / EvaluationTemplateController / AnalysisTaskController / IndustryChainUxController / SvcCompareBasketController / 4 个 CMS OpsController）及 Feign 客户端（RemoteTopicSvcService / RemoteChainUxClient / RemoteOrgCompareBasketClient / RemoteTopicAsyncService 等）同步改 POST，网关不再收到 PUT/DELETE"
+      - "联调验证：对比篮移除/清空、招引/培育候选移除、任务删除、模板更新/归档/设默认、CMS 编辑/删除在 dev 环境全链路通过（note 含『联调通过』）"
+      - "OpenAPI/契约文档与前端 paths 注释同步，不留 PUT/DELETE 死路由；对 curl 旧 method 返回 405 的行为在网关侧确认"
+    update_time: "2026-11-05T18:04:01+08:00"
+  - id: SYSINT-TECHGRAPH-02-L03
+    title: "技术点图谱经 Topic 挂产业"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-svc-platform、demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "2026-11-05 human:淮政玮签收方案后建单。WBS-02-21。五颗挂产业按钮只写 dwd_technology_topic_industry，只读 dwd_topic_industry_map。不写 Nebula，专利不挂。等 L01。监管人 human:淮政玮。"
+    depends_on:
+      - "SYSINT-TECHGRAPH-02-L01"
+      - "SYSINT-TOPICMAP-02-L01"
+    collaborators:
+      - "frontend-agent"
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHGRAPH-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHGRAPH-02-L03.md"
+    definition_of_done:
+      - "五颗按钮能把对得上产业节点的行写入 dwd_technology_topic_industry，对不上的只计数"
+      - "任一按钮不调用另一颗按钮，不写 Nebula"
+      - "三张已有映射表的行不变，专利没有挂产业按钮"
+      - "handoff 路径 agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-TECHGRAPH-02-L03.md，含 ponytail: full 和 diagram_id: SYSINT-TECHGRAPH-02-SEQ，不把任务标 done"
+    update_time: "2026-11-05T17:34:01+08:00"
+  - id: DOC-CONTRACT-METHOD-SYNC-20261105
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-05T09:49:09.557Z"
+    last_seen_at: "2026-11-05T09:49:09.557Z"
+    lock_until: "2026-11-05T13:49:09.557Z"
+    claimed_by: "agent:doc-agent"
+    title: "契约文档 method 描述刷新：网关仅放行 GET/POST 整改后 5 个活契约文档 PUT/DELETE 路由同步"
+    status: "done"
+    agent: "doc-agent"
+    epic: "E-PLATFORM"
+    priority: "P2"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "chore"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "chore 完工即推：6 活契约文档 38 处刷新，防漏扫描零残留（白名单 2 历史 handoff）；handoff DOC-CONTRACT-METHOD-SYNC-20261105.md；dev ebf0b267 已推"
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-full-catalog.md"
+      - "agent-delivery/agent-handoffs/专题前端-TOPIC-FE/API-TOPIC-FE-GAP-CATALOG.md"
+      - "agent-delivery/agent-handoffs/产业链分析-CHAIN/API-CHAIN-BIZ-UX-CATALOG.md"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/产物/SYSINT-03-03A-接口文档-前端版.md"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/产物/PORTAL-CMS-四页管理侧接口文档-前端版.md"
+    definition_of_done:
+      - "5 个活契约文档旧 PUT/DELETE 路由描述全部刷新为 POST 动词尾新路由（/delete、/update、/archive、/default），与双仓 dev 已推代码一致（lumen-ui-topic 5c50701 / lumen-svc-platform 6db7c51）"
+      - "API-ENT-full-catalog.md：#93/#94/#G1–G4/#G6/#119/#120/#121 端点 method+示例 curl 同步"
+      - "API-TOPIC-FE-GAP-CATALOG.md：G1–G4/S4/S5 及各端点详解节同步"
+      - "API-CHAIN-BIZ-UX-CATALOG.md：U3/U4 及示例同步"
+      - "SYSINT-03-03A-接口文档-前端版.md：svc-business-domain PUT/DELETE 与机构篮 DELETE 同步"
+      - "PORTAL-CMS-四页管理侧接口文档-前端版.md：A2/A5 动词行同步"
+      - "防漏扫描：活契约文档 grep 旧路由零残留（历史 handoff 交付记录 SYSINT-03-*-JAVA-L01.md / API-TOPIC-FE-JAVA-GAP-L01-impl.md / LUMEN-TOPIC-FE-GAP-WIRE-L01.md 保留时点事实不改）"
+      - "handoff 提交 agent-handoffs/DOC-CONTRACT-METHOD-SYNC-20261105.md，含改动行清单与扫描输出；chore 类型完工即推 dev"
+    update_time: "2026-11-05T18:02:45+08:00"
+  - id: SYSINT-TOPICMAP-03-L01
+    evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-11-05T08:30:00+08:00"
+    last_seen_at: "2026-11-05T08:30:00+08:00"
+    lock_until: "2026-11-06T08:30:00+08:00"
+    claimed_by: "agent:backend-agent"
+    title: "Topic 桥消费层（展示系统集成）：集群码→topic_ids 反查 + 专利/人才/机构/项目/课题/论文 topic 过滤"
+    status: "done"
+    agent: "backend-agent"
+    epic: "科技全域态势 DS-01"
+    priority: "P0"
+    repo: "lumen-svc-platform、lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      WBS-05-18 · DS-01 科技全域态势。消费层升级：产业领域筛选从 v3 subfield 核心改为 Topic 桥核心。
+      实查（2026-11-05 直连久新 Doris 只读库）：久新官方 ads_sz_gkx_industry_cluster_topic 3098 行 / 15 集群全覆盖 / 全部 approved，可直接用作真源（不等待算法中台 SYSINT-TOPICMAP-02-L01 灌数）。
+      关键提升：①6 集群 pending_vendor（新能源/新材料/高端装备/绿色环保/海洋/未来能源）现在生效；②专利从「无学科维度返 null」升级为 ads_patent_analysis_topic 真实可过滤（run_id 取最新 e4dcc585 / 2026-10-28）。
+      改动 5 文件两仓：Python 新端点 /topic/from-cluster + 三端点 topic_ids + 专利段升级；BFF TopicResolution + resolveTopicIdsFromCluster + 三 bodyOf + overview/map 接入。
+      自检：mvn compile (JDK17) exit 0；VS Code Java 零错误；python py_compile 三文件零错误。
+      遗留：Python/BFF 未重启、联调未验、前端 subfield 死代码后续清理、ads_paper_profile.topic_ids[] 数组慢暂用 primary_topic_id 降精度。
+    depends_on:
+      - "SYSINT-TOPICMAP-02-L01"
+    touched_files:
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/feign/RemoteShowPythonClient.java"
+      - "repos/lumen-topic-py/gkx_show_service/views/meta.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/geo_indicator.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/monitor_indicator.py"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-TOPICMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/Topic桥可行性判定.md"
+    definition_of_done:
+      - "Python gkx_show_service 新增 POST /internal/gkx-show/topic/from-cluster：cluster_codes CL-* → 久新 ads_sz_gkx_industry_cluster_topic 反查 topic_ids[] + subfield_ids[]，白名单校验 + JiuxinUnavailable 降级"
+      - "Python 三端点（factor_metrics / yearly_trend / overview_kpi）增 topic_ids 入参：topic_ids 有值时先 topic→subfield 反推（ads_discipline_topic 1:N 从属关系），subfield_ids 供聚合表（discipline_metrics）用；topic_ids 优先"
+      - "Python overview_kpi 专利段升级：topic_ids 有值时改查 ads_patent_analysis_topic ⋈ ads_patent_profile（JOIN patent_id，WHERE run_id=最新 AND topic_id IN (...) AND YEAR(publication_date)=%s）；只有 subfield_ids 时仍诚实返 null（旧 v3 路径）；无过滤条件时返全量"
+      - "BFF RemoteShowPythonClient 新增 topicFromCluster() Feign 方法，@NoToken"
+      - "BFF SituationController：TopicResolution record + resolveTopicIdsFromCluster(Scope) + kpiBodyOf/regionFactorsOf/yearlyTrendBodyOf 增 topicIds 参数 + overview/map 两端点接入（topic 桥 subfield 覆盖旧 subfieldIds）；保留旧 resolveSubfieldIds 作降级"
+      - "自检：mvn compile -pl gkxlumen-display -am (JDK 17) exit 0；VS Code Java 诊断 2 文件零错误；python -m py_compile 3 文件零错误"
+      - "handoff 落 agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md，含实查证据、改动清单、遗留事项"
+      - "本任务改动范围仅 5 个文件，其他仓库遗留改动（SituationMockProvider / ShenzhenInnovationController 等）不纳入本次 commit"
+    update_time: "2026-11-05T16:45:00+08:00"
+  - id: LUMEN-INTEL-SDD-SIGNOFF-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T10:56:00.591Z"
+    last_seen_at: "2026-11-05T10:56:00.591Z"
+    lock_until: "2026-11-06T10:56:00.591Z"
+    claimed_by: "agent:arch-agent"
+    title: "综合智能分析 SDD v1.0.4 — 四方会签（架构/算法/数据/产品）"
+    status: "in_progress"
+    agent: "arch-agent"
+    epic: "E8-综合智能分析"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "coordinator_dispatch：子智能体开始四方会签"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/综合智能分析-系统详细设计说明书.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-VIT-AI-TABLES.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md"
+    definition_of_done:
+      - "架构/算法/数据/产品四方意见落入 sdd 三 L2+总册会签表或 handoff"
+      - "明确可实现项 vs blocked 项（137② METRIC-OPEN、Q-SYNTH-C-05），不替甲方拍板"
+      - "架构合规自检 D1–D18（调用链/Nebula/D16/D18/gapfill 边界）"
+      - "handoff: agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md"
+    update_time: "2026-11-05T18:56:06+08:00"
+  - id: LUMEN-INTEL-VIT-FP-SNAP-L01
+    title: "综合智能分析活力 — analysis_fp 四段/legacy_unknown/snapshotId 不可变落地"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "增量单：与存量 VIT-PY/BE/FE 五单协作，不重开壳；同仓与 BE-1 错峰"
+    depends_on:
+      - "LUMEN-INTEL-SDD-SIGNOFF-L01"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-VIT-AI-TABLES.md §3"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/API-SYNTH-INTEL-REPLICA-PLAN.md"
+    definition_of_done:
+      - "活力 analysis_fp 四段含归一 weight_profile（缺省 INDEX_MAIN）；冻结/复用/单飞按四段"
+      - "旧三段任务按冻结权重/methodVersion 识别；无法确认=legacy_unknown 禁复用（TEMP_WEIGHTS 不落任一档）"
+      - "snapshotId 不可变含 calc_batch_id；cache_key 条件索引可覆盖；A/B 批不串（自检断言）"
+      - "单测/自检；handoff+ponytail+cost 四字段；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:54:33+08:00"
+  - id: LUMEN-INTEL-ELEM-DDL-L01
+    title: "综合智能分析要素 — 当前 8 张 _ai 表 DDL+预填"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "先只落 demo 库可提测；正式库待 DBA 闸门"
+    depends_on:
+      - "LUMEN-INTEL-SDD-SIGNOFF-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md §2"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/综合智能分析-系统详细设计说明书.md §11"
+    definition_of_done:
+      - "synth_elem_{index,type,type_score,level,level_score,domain,indicator,weight,contrib,rank} 当前可建 8 张 DDL+seed（按 L2-ELEM §2 清单逐张核对）"
+      - "第 9 张 synth_elem_four_dim_score 不建（137② blocked；METRIC-OPEN 解锁后另单）"
+      - "唯一键含 region+compare+window(+…)+calc_batch_id；预填 is_mock=1"
+      - "handoff+cost；push origin/dev"
+    update_time: "2026-11-05T18:54:38+08:00"
+  - id: LUMEN-INTEL-ELEM-PY-L01
+    title: "综合智能分析要素 — Python 装包与 /internal 快照/任务"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "entan-py elements 分支；与 VIT-PY 同仓错峰"
+    depends_on:
+      - "LUMEN-INTEL-ELEM-DDL-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md ElementResult"
+    definition_of_done:
+      - "elements 装包读 gkxlumenx_ai.synth_elem_*；只读 succeeded 最新批（calc_batch_created_at 排序）"
+      - "四维固定 []+reason='metric_not_registered'（解锁前）；panorama 真实 DWD 汇聚禁 fixture"
+      - "snapshotId 不可变含 calc_batch_id；缺行 null+reason+confidence；weight_source='calc_logic_placeholder'"
+      - "自检脚本；handoff+ponytail+cost；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:54:42+08:00"
+  - id: LUMEN-INTEL-ELEM-BE-L01
+    title: "综合智能分析要素 — Java 白名单/Adapter/快照门面"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: "与 LUMEN-INTEL-BE-1/VIT-BE 同仓错峰；同文件冲突先协调"
+    depends_on:
+      - "LUMEN-INTEL-ELEM-PY-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/API-SYNTH-INTEL-REPLICA-PLAN.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md §3"
+    definition_of_done:
+      - "elements 任务键白名单+Adapter；GET /topic/v1/synth/elements/batch-snapshot 门面（含 panorama 分页参数）"
+      - "DTO 与 ElementResult 同构；六键 params 透传保真"
+      - "调用链 FE→gateway→Java→/internal/*；不直连 demo；单测；handoff+ponytail+cost；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:54:48+08:00"
+  - id: LUMEN-INTEL-ELEM-FE-L01
+    title: "综合智能分析要素 — FE 真链接线+136 全景模块"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 140000
+    note: "与 FE-ELEM（联调中）同仓错峰；touched_files 冲突则等其过联调闸"
+    depends_on:
+      - "LUMEN-INTEL-ELEM-BE-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md §3/§7"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+    definition_of_done:
+      - "ElementsWorkbench 真快照/任务接线；USE_MOCK=false 零 fixture"
+      - "136 全景模块（读快照 panorama[]，分类筛选+统计卡，形态按 §7）"
+      - "四维区块解锁前保持 []+红问号，无演示数据"
+      - "type-check/自检/build 三绿；复刻五维自检（V1–V7/R1–R5）；handoff+ponytail+cost；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:54:53+08:00"
+  - id: LUMEN-INTEL-COLLAB-DDL-L01
+    title: "综合智能分析协同 — _ai 5 张 + gapfill 2 张 DDL+预填"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: "先 demo 库；C-05 贴源后另单换源"
+    depends_on:
+      - "LUMEN-INTEL-SDD-SIGNOFF-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §2"
+    definition_of_done:
+      - "synth_collab_{index,network_stat,relation_input,output_corr,cluster} 5 张 + gapfill_synth_collab_{node,edge} 2 张 DDL"
+      - "seed 五码含 RELATION_INPUT（canonical 唯一源）；node/edge 行级血缘含 metric_id+gapfill_batch_id"
+      - "预填 is_mock=1；真值 blocked Q-SYNTH-C-05 只登记不停工"
+      - "handoff+cost；push origin/dev"
+    update_time: "2026-11-05T18:54:58+08:00"
+  - id: LUMEN-INTEL-COLLAB-PY-L01
+    title: "综合智能分析协同 — Python 装包+cluster+策略 LLM+batch_meta 持久化"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 140000
+    note: "与 ELEM-PY 同仓串行"
+    depends_on:
+      - "LUMEN-INTEL-COLLAB-DDL-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §3.1"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/LUMEN-INTEL-MOCK-INV-L01.md CollabResult"
+    definition_of_done:
+      - "collaboration 装包读 _ai 5 张；cluster 派生接 synth_collab_cluster"
+      - "策略 LLM 实时生成（复用 llm_client.py GLM，证据锚定，degraded 降级，对齐 C-04）"
+      - "成功快照/resultData 持久 batch_meta（snapshotId/calc_batch_id/graph_source/gapfill_batch_id/条件）；缺任一不得标 succeeded"
+      - "自检；handoff+ponytail+cost；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:54:58+08:00"
+  - id: LUMEN-INTEL-COLLAB-GRAPH-L01
+    title: "综合智能分析协同 — 图谱查询接口（Java 门面+Python）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 130000
+    note: "预填即可开发；与 COLLAB-PY 不同仓可并行"
+    depends_on:
+      - "LUMEN-INTEL-COLLAB-DDL-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §3.2"
+    definition_of_done:
+      - "GET /topic/v1/synth/collaboration/graph 契约逐参数（必填 region/compare/window；可选 snapshotId/gapfill_batch_id/industry/depth）"
+      - "指定 snapshotId 无持久 meta → 不可用（batch_meta_missing/404 写死一种）；禁止回落最新批"
+      - "只读 RELATION_INPUT 行 canonical 去重；industry 服务端过滤；truncated 语义；A/B 批不串自检"
+      - "单测；handoff+ponytail+cost+图；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:55:13+08:00"
+  - id: LUMEN-INTEL-COLLAB-FE-L01
+    title: "综合智能分析协同 — FE 产业筛选+图谱 API 接线"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 110000
+    note: "与 FE-COLLAB（联调中）同仓错峰"
+    depends_on:
+      - "LUMEN-INTEL-COLLAB-GRAPH-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §3.2/§6"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+    definition_of_done:
+      - "SynthContextBar 加 industry 下拉；CollabWorkbench 图谱独立 API（传 region/compare/window/snapshotId）"
+      - "过滤改服务端；截断提示；映射缺失展示不可用不静默换图"
+      - "USE_MOCK=false 零 fixture；type-check/自检/build 三绿；复刻五维自检；handoff+ponytail+cost；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:55:17+08:00"
+  - id: LUMEN-INTEL-ELEM-FOURDIM-OPEN-L01
+    title: "要素四维解锁步① — METRIC-OPEN 注册 M_SYNTH_ELEM_FOUR_DIM_SCORE"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "backlog；条件触发：算法 Lead 定稿后升 ready"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md §4"
+    definition_of_done:
+      - "四项候选公式+源字段/归一化/权重/缺失规则/验收样例定稿（唐绍祖牵头）"
+      - "METRIC-OPEN 流程注册 M_SYNTH_ELEM_FOUR_DIM_SCORE（8 件套+四维就绪度）"
+      - "注册后 data-agent 方可建第 9 张表"
+    update_time: "2026-11-05T18:55:21+08:00"
+  - id: LUMEN-INTEL-ELEM-FOURDIM-DDL-L01
+    title: "要素四维解锁步② — 第 9 张表 DDL+预填"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "backlog；OPEN done 后升 ready"
+    depends_on:
+      - "LUMEN-INTEL-ELEM-FOURDIM-OPEN-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md §2/§4"
+    definition_of_done:
+      - "synth_elem_four_dim_score DDL+seed（公式已定稿才建）"
+      - "唯一键含条件+批次；预填 is_mock=1；handoff+cost；push"
+    update_time: "2026-11-05T18:55:25+08:00"
+  - id: LUMEN-INTEL-ELEM-FOURDIM-WIRE-L01
+    title: "要素四维解锁步③ — 装包/门面/FE 去演示接真表"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "backlog；DDL done 后升 ready"
+    depends_on:
+      - "LUMEN-INTEL-ELEM-FOURDIM-DDL-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md §4/§7"
+    definition_of_done:
+      - "装包四维改读 synth_elem_four_dim_score；去 []+reason 固定态"
+      - "Java 门面透传；FE 去红问号演示态接真数据；页面去「固定演示快照」Tag"
+      - "三仓各自自检+handoff；push origin/dev CI 绿"
+    update_time: "2026-11-05T18:55:29+08:00"
+  - id: LUMEN-INTEL-COLLAB-C05-SRC-L01
+    title: "协同真值解锁 — C-05 贴源+Nebula 导出换源"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "backlog；条件触发：C-05 贴源就绪"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §1/§2"
+    definition_of_done:
+      - "Q-SYNTH-C-05 贴源到位后 gapfill_synth_collab_{node,edge} 换源实灌"
+      - "export_collab_graph.py Nebula 导出任务上线（TRSGraph）"
+      - "停读预填演示行；D4 不得再 mock；handoff+cost；push"
+    update_time: "2026-11-05T18:55:33+08:00"
+  - id: LUMEN-INTEL-SDD-E0-L01
+    title: "段 E0 — SDD 落地发布门（topic/async/algo-py deploy 绿）"
+    status: "backlog"
+    agent: "devops-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "backlog；P0 叶联调闸门后升 ready"
+    design_refs:
+      - "agent-delivery/长任务执行规约.md §11"
+    definition_of_done:
+      - "点名 deploy 绿：Python api+worker、Java gkxlumen-topic+async-service"
+      - "K8s dev rollout 完成；发布 URL 可用"
+      - "handoff+cost"
+    update_time: "2026-11-05T18:55:37+08:00"
+  - id: LUMEN-INTEL-SDD-E1-L01
+    title: "段 E1 — SDD 落地金路径冒烟（7 条）"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "backlog；E0 绿后升 ready"
+    depends_on:
+      - "LUMEN-INTEL-SDD-E0-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/SYNTH-SDD-IMPL-长任务总控.md §4"
+    definition_of_done:
+      - "总控 §4 金路径 7 条逐条走（期望未发生必红）"
+      - "失败分类 C1–C6；C1 由 coordinator 派修；QA 不改代码"
+      - "trace-id 驱动定位；handoff+cost"
+    update_time: "2026-11-05T18:55:37+08:00"

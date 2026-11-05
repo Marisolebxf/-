@@ -232,7 +232,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_REG_PAPERS.py
 ```
 
@@ -526,7 +526,7 @@ impact_score 非空             0   ← 整列为空（期刊表）
 ### D-1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/_build_reg5_papers.py   # 首次：生成本地聚合缓存，约 8 秒
 python3 code/M_CHAIN_REG_PAPERS.py   # 聚合：约 0.4 秒
 ```

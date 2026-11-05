@@ -246,7 +246,7 @@ SWOT 优势识别在战略管理里通常是「内部能力 + 横向对标」：
 另一个边界是「优势」与「短板」不对称：优势用 rank≤3，短板用 rank≥9（旧稿），在 4 城上分别等价于「不是最后」与「最后一名」，两者不是严格的余集。产物只做优势，不涉及短板。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_INNOV_GBA_SWOT_STRENGTH.py
 python3 -c "import json;d=json.load(open('M_INNOV_GBA_SWOT_STRENGTH_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

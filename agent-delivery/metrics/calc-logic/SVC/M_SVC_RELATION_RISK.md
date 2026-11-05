@@ -320,7 +320,7 @@ X2 = {m for n in X1 for m in adj[n] if m not in R and m not in X1}
 ### 2.8 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_SVC_RELATION_RISK.py
 # → metrics/repro/out/M_SVC_RELATION_RISK_out.json
 ```

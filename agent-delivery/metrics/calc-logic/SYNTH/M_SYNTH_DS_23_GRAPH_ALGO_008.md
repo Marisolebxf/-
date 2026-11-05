@@ -285,7 +285,7 @@ Brandes 算法的核心是「一次单源最短路 + 一次反向依赖累加」
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/_build_graph_algo_23.py          # 建快照（Brandes 566.4 秒 + closeness 5.3 分钟）
 python3 code/M_SYNTH_DS_23_GRAPH_ALGO_008.py  # 读快照出本件产物
 # → metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_008_out.json
