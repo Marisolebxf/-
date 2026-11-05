@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-DS02-ARCH`（定义任务。WBS-05-01c。角色 `arch-agent`）
 - 日期：2026-11-05
-- 状态：待会签。不标 done
+- 状态：四角色已同意（2026-11-05）。第 2 节调用图已补 Python 读图。签收未完成。不标 done
 - 监管：`human:淮政玮`
 - 认领：未认领
 - 强度：ponytail off（定义任务，不缩文档）
@@ -41,10 +41,11 @@ flowchart LR
   page["全景页"]
   gw["gkxlumen-platform-gateway<br/>/display/**"]
   bff["gkxlumen-display"]
-  graph["已准备好的技术点图"]
+  py["lumen-algo-py<br/>POST /internal/tech-graph/read"]
+  graph["demo_gkx_chain"]
   score["ads_technology_panorama_score"]
   page -->|"图谱 / 实体 / 路径 同一次请求"| gw --> bff
-  bff -->|"技术点、关系、实体名单、路径步"| graph
+  bff -->|"技术点、关系、实体名单、路径步"| py --> graph
   bff -->|"影响力、中心度、路径优先级"| score
 ```
 
@@ -55,9 +56,9 @@ flowchart LR
 | 关键路径 | 包含当前技术点的路径步，供列表、比较和播放 | 路径区空。图谱和实体区保留 | 只空路径区 |
 | 三个数字 | 仅当用户按影响力排序、看中心度、或按重要性筛路径 | 对应格子空。名单和路径还在 | 只空数字，不清掉图和路径 |
 
-`gkxlumen-display` 不直连图库，不在这次请求里现算关系。图由 Python 只读 `demo_gkx_chain`。空间不是这个就拒绝。Java 不写 nGQL。
+`gkxlumen-display` 不直连图库，不经 `gkxlumen-graph`，不调用任何 `demo-*` 服务，不在这次请求里现算关系。图由 `lumen-algo-py` 的 `POST /internal/tech-graph/read` 只读 `demo_gkx_chain`。空间不是 `demo_gkx_chain` 就拒绝，不改去 `gkx_chain` 或 `entan`。Java 不写 nGQL。
 
-首屏未选技术点时，图谱最多给出 200 个技术点，不铺边。选中一个点之后，带上该点的关系（默认只要高、中证据；用户明确要低证据才带上）、每类实体最多 20 条、相关路径最多 20 条。超过上限时标明截断。这是页面一次能看的范围，不是入图规则。
+首屏未选技术点时，图谱最多给出 200 个技术点，不铺边。选中一个点之后，该点的关系最多 200 条（默认只要高、中证据；用户明确要低证据才带上）、每类实体最多 20 条、相关路径最多 20 条。超过上限时标明截断。这是页面一次能看的范围，不是入图规则。
 
 ## 3. 数据从哪来
 

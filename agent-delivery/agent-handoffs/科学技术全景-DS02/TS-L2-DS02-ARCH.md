@@ -7,7 +7,7 @@
 | claimed_by | 未认领。定义单已建，状态 ready |
 | supervised_by | `human:淮政玮` |
 | claim_type | 未认领 |
-| 说明 | 架构稿已落本目录。会签未做，不推待签收，不标 done |
+| 说明 | 架构稿已落本目录。四角色已同意。签收由本轮 coordinator 按监管人指令推进，不在本文件自标 done |
 
 ## Ponytail（coding 任务必填）
 
@@ -22,12 +22,12 @@
 |------|-----|
 | diagram_id | `TS-L2-DS02-ARCH-SEQ`、`TS-L2-DS02-ARCH-DATA` |
 | 图 diff | 改为两张功能图：三个展示功能共用一次读取；已准备好的图供给三个功能，分数表只供给影响力、中心度、路径优先级 |
-| 会签态 | `draft`（源文件无 frontmatter） |
+| 会签态 | 四角色同意（源文件无 frontmatter）。第一轮架构不同意的两处已改入第 2 节 |
 | 说明 | 图在 `科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md` 第 2、3 节 |
 
 ## 问题清单
 
-- 定义单已建为 ready。会签未做，不能推到待签收。
+- 定义单已建为 ready。四角色已同意。签收前实现单仍为 backlog。
 - `M_TECH_GRAPH_STRUCT` 等已注册口径是 IPC4 或深圳卡位，和 `technology_node_id` 这张图不是同一套点。稿里禁止用那些函数填本页。
 - 中台入图的业务点是否已经进 `demo_gkx_chain`，本定义稿没有再查图。空图时页面保持空，不灌种子。
 
@@ -42,6 +42,12 @@
 - 未改业务仓，未跑构建。
 - 指标经 `metric-registry` 的 `metric-get` / `metric-query` 核对，未读 seed YAML。
 - 对照了现控制器 `SituationPanoramaController`：当前返回空数组和 `GRAPH_NOT_READY`。
+
+## 架构合规
+
+- 调用链：浏览器 → 网关 `/display/**` → `gkxlumen-display` → `lumen-algo-py` `POST /internal/tech-graph/read` → `demo_gkx_chain`。Java 不写 nGQL，不经 `gkxlumen-graph`，不调用 `demo-*`。
+- D12：正式下游只写 lumen。D18：三个数字只读 `ads_technology_panorama_score` 的 mock 行，接口不直接返回写死 mock。
+- 不新造 `metric_id`。不把 IPC4 / 深圳卡位函数挂到本页。
 
 ## 遗留风险
 
