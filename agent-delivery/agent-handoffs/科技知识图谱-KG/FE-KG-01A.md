@@ -112,8 +112,18 @@
 
 验证：三绿复跑全过（type-check 0 错 / FE-KG-01A.test.mjs 5 组 / kg.selfcheck.mjs 9 组 / build 绿）；浏览器 CDP 目检：页签条消失、KPI 行位于筛选卡(bottom 403px)与切片卡(top 547px)之间、洞察区无横向滚动条（clientW=scrollW=359）、卡片 computed transform=none、is-active 点击后 bg=#f0f5ff/bd=#165dff、视图切换（网络图↔列表）功能正常、页面无可见横向滚动条。
 
+## 2026-11-05 孔东走查调整（第 3 轮，任务仍处 integration 停本地）
+
+第 2 轮后继续反馈 3 点，处理如下：
+
+1. **视图切换迁至 viz 卡头**：确认该 radio 只控制「交互式可视化」卡（network/list/chart 三视图），由筛选卡迁至 viz 卡 `#extra`，与重置/导出/全屏按钮同排左右布局（`kg-viz-header-extra`，4 元素与卡标题同行）
+2. **§2 筛选卡并入 §1**：原两张卡（动态查询 + 数据过滤）合并为单卡单行（`kg-dynamic-query-row` flex-wrap）：关键词 / 实体属性（类型·领域·地域）/ 时间范围 / 关系类型 / 作者 五组字段并行同行，右端「已匹配 N 实体 / N 关系」反馈；`kg-filter-grid`/`kg-filter-actions` 旧类移除
+3. **年份范围选择器**：预设 radio（全部/近1年/近3年/自定义）+ a-slider 替换为 `a-range-picker mode="year"`（Arco 年份范围，可分别设定最低/最高年份；先例 `PanoramaFilterBar` ts-m2-year-range）。`yearRangeModel=[Date,Date]` + `disabledYear`（2020–2026 可选域）+ `allow-clear=false`；change 容错 Date/dayjs/字符串（panorama 同款 extractYear）。关键词下拉收缩为 150px 与 label 同行
+
+验证：三绿全过（type-check 0 错 / FE-KG-01A.test.mjs 第 2 组断言改为走查版：禁 `<a-slider`、禁「近1年」、必须 a-range-picker+mode=year+yearRangeModel / kg.selfcheck.mjs 9 组 / build 绿 40.6s）；浏览器 CDP 目检：单卡 5 字段同行、年份面板（2019–2040 双十年栏）可选、选 2023–2023 → KPI 联动 60→2 实体、重置恢复 2020–2026/60 实体、viz 卡头 4 元素与标题同行、无横向滚动条。
 
 
-- actual_tokens ≈ 132k（读 demo 真源 + 基座核对 + 实现 + 三绿 + 目检）+ 2026-11-05 走查调整 ≈ 10k
+
+- actual_tokens ≈ 132k（读 demo 真源 + 基座核对 + 实现 + 三绿 + 目检）+ 2026-11-05 走查调整（第 2+3 轮）≈ 25k
 - model_used：glm-5.3（Cursor agent 会话）
-- actual_cost ≈ $1.7；cost_warn：否
+- actual_cost ≈ $1.9；cost_warn：否
