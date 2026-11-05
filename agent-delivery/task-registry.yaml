@@ -54158,3 +54158,56 @@ tasks:
       - "handoff 落 agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md，含实查证据、改动清单、遗留事项"
       - "本任务改动范围仅 5 个文件，其他仓库遗留改动（SituationMockProvider / ShenzhenInnovationController 等）不纳入本次 commit"
     update_time: "2026-11-05T16:45:00+08:00"
+  - id: SITUATION-ENT-M1-REAL-DATA-20261105
+    cost_warn: "green"
+    actual_cost: 1.2
+    model_used: "auto"
+    actual_tokens: 150000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-ENT-M1-REAL-DATA-20261105.md"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-11-05T10:00:00+08:00"
+    last_seen_at: "2026-11-05T20:00:00+08:00"
+    lock_until: "2026-11-06T10:00:00+08:00"
+    claimed_by: "agent:backend-agent"
+    title: "M1 科技全域态势真实数据收口：demo 外部库接入 + 期刊全量 + 企业影响力 score_total + 收藏补链"
+    status: "done"
+    completed_at: "2026-11-05"
+    sign_off: "待 human:李伟 走查"
+    agent: "backend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P0"
+    repo: "lumen-svc-platform、lumen-topic-py、lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: |
+      WBS-05-18-20 · DS-01。用户 2026-11-05 裁定 D1–D6：
+      D1 企业影响力直接用「综合企业评分」enterprise_score.score_total（188,775 家 / 均分 37.8），去掉占位表述；
+      D2 期刊显示全量名录 3,401（dwd_zh_journal 2,796 + dwd_en_journal 605），替代 mock 7200 与质量榜 1,514；
+      D3 会议保持 mock 1,280（M_INNOV_CONFERENCE_INFLUENCE 完全不支持）；
+      D4 其余能接都接：外部库 demo_gkxlumenx_ai 机构 7,842 / 专家 21,316 / 期刊 1,514 / 论文学科 TOP10_X；
+      D5 企业影响力只走我方库（不读 demo）；D6 收藏补链（removeFollow 同步 remove + 打开面板 refreshFromServer）。
+      实装：show-py 新增 adsdb 多库连接 + demoai + demo_indicator（journal-total / influence）+ svc_factor；display 新增 demoJournalTotalOf / demoInfluenceOf / 四个 demo 卡构建器 + 技术产出卡级剔除 mock 子类 + ISCORR_X→TOP10_X；前端 useFollow/index.vue 两处补链。
+      验证：mvn package (JDK17) BUILD OK；vue-tsc --noEmit exit 0；7099 实跑 /overview journal=3401、meeting=1280 mock；/influence 企业 188,775/37.8、机构 7,842、专家 21,316、期刊 1,514。
+      遗留：会议 / 专利影响力 / 服务机构影响力 3 处 mock；论文仅学科维；收藏端到端待 upms + 登录；search-py 8080 未启动降级。
+    depends_on:
+      - "METRIC-AUTH-DATA-1105-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/SITUATION-ENT-M1-REAL-DATA-20261105.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+    touched_files:
+      - "repos/lumen-topic-py/gkx_show_service/adsdb.py"
+      - "repos/lumen-topic-py/gkx_show_service/demoai.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/demo_indicator.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/svc_factor.py"
+      - "repos/lumen-topic-py/gkx_show_service/main.py"
+      - "repos/lumen-topic-py/k8s/dev-show-py.yaml"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/feign/RemoteShowPythonClient.java"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/support/SituationMockProvider.java"
+      - "repos/lumen-ui-science-pc/src/components/export/useFollow.ts"
+      - "repos/lumen-ui-science-pc/src/views/situation/overview/index.vue"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/SITUATION-ENT-M1-REAL-DATA-20261105.md"
+    update_time: "2026-11-05T20:00:00+08:00"
