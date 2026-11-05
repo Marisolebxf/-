@@ -42,4 +42,5 @@
 - D12：前端 → Java → lumen-algo-py → 既有 gapfill；无前端直连 Python/数据库，无新 demo 服务回落。沿用 trace header。
 - Python提交 `afaa26d` 已推送origin/dev；前端原实现提交 `51e0365`，从 origin/dev 的临时检出仅摘取该提交后为 `84fcf3c`，仅含4个政策文件。
 - 并行会话修改CMS并自行完成远端合并后，自动审批拒绝推送共享 dev，因为包含该会话尚未授权发布的CMS提交。本次改为在 `/private/tmp/policy-news-demo-delivery` 独立检出 origin/dev，cherry-pick 本次政策提交，不发布CMS提交、不stash/reset原工作区。该限定差异提交为实际推送对象。
+- 限定推送因远端同时前进而被 Git 拒绝（非快进）；随后只读 fetch 核实：远端 `63b9091` 已包含原提交 `51e0365`，4个政策文件与临时检出逐文件 diff 为空，说明并行发布已经带入本次修复。没有继续推送或覆盖他人历史；`84fcf3c` 无需重复发布。
 - CI pipeline、镜像tag、K8s rollout 尚未确认。cost 未获得可核实统计，不填虚假费用或注册表状态。
