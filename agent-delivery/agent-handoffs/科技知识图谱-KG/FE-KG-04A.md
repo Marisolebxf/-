@@ -107,12 +107,13 @@
 
 附带：DeepDrawer `header-extra` 插槽（Arco drawer 无此插槽）→ 内容顶部右对齐工具行；组件 prop `open`→`visible` 与父组件对齐。
 
-### 2.2 走查修复第 2 轮（2026-11-05 孔东走查，2 项 → commit 61e6186，**停本地待确认 push**）
+### 2.2 走查修复第 2 轮（2026-11-05 孔东走查，3 项 → commit 61e6186 + 96e064b，**停本地待确认 push**）
 
 | # | 走查问题 | 修复 |
 |---|---|---|
 | 8 | 「全部发布人/标签分类」仍在展开行 | 两个筛选并入主行（搜索/时间/类型/业务线/发布人/标签 + 查询/重置 一行）；删展开/收缩按钮与 `filterExpanded` 状态、`IconUp/IconDown` import；CSS 清理 `row-more`/`more-label`/`toggle` 死样式；`tags-inline` 由 `flex:1 1 auto` 改限宽 240 防挤压按钮 |
 | 9 | 面板双重内边距 | 删 `service/index.vue` 的 `.kg-service-shell { padding: 16px }` 与类名（外层 `.knowledge-graph-page` 已有 `--figma-content-shell-padding`） |
+| 10 | 其余页面同去内壳 | `algorithms/index.vue` 删 `.kg-algorithms-page { padding: 16px }`、`indicators/index.vue` 删 `.kg-indicators-page { padding: 16px }`（同一根因，commit 96e064b）；`analysis` 页核查无内壳 padding 补充（仅卡片内 12px 属正常），无需改 |
 
 ## 3. 产物清单
 
