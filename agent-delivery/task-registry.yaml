@@ -54246,13 +54246,19 @@ tasks:
       - "handoff: agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md"
     update_time: "2026-11-05T19:43:55+08:00"
   - id: LUMEN-INTEL-VIT-FP-SNAP-L01
+    model_used: "glm-5.3-Flash"
+    cost_warn: "false"
+    actual_tokens: "~150000"
+    actual_cost: "~0.6"
+    evidence: |
+      单测：两模块全量 mvn test 192 过 0 fail 0 error（本单新增 25：SynthVitalityFingerprintsTest 12 / AnalysisTaskServiceImplVitalityFpGateTest 8 / SynthVitalitySnapshotServiceTest 9；关键断言：缺省归一INDEX_MAIN、非法枚举400、TEMP_WEIGHTS 0.30/0.30/0.25/0.15→legacy_unknown 禁复用含 running、EQUAL 不串 INDEX_MAIN、A/B批 snapshotId 不撞且旧 ID 可读、cache_key 同值覆盖、五表同批回读批号不符整批拒发）。编译 BUILD SUCCESS（JDK21）。commit 0fdc245（lumen-svc-platform dev，11 文件 +1414/-63，未 push 交 coordinator）。handoff：agent-delivery/agent-handoffs/LUMEN-INTEL-VIT-FP-SNAP-L01.md（含四规则落点类#方法表、D1-D18 自检、偏离 4 条）
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-05T11:43:57.224Z"
     last_seen_at: "2026-11-05T11:43:57.224Z"
     lock_until: "2026-11-06T11:43:57.224Z"
     claimed_by: "agent:api-agent"
     title: "综合智能分析活力 — analysis_fp 四段/legacy_unknown/snapshotId 不可变落地"
-    status: "in_progress"
+    status: "integration"
     agent: "api-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-svc-platform"
@@ -54261,7 +54267,8 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "coordinator_dispatch 开工（svc-platform 仓，与 lumen-algo-py 线并行）"
+    note: |
+      AV-0：handoff 已落盘（agent-delivery/agent-handoffs/LUMEN-INTEL-VIT-FP-SNAP-L01.md）+ evidence 已回填（192 测试全绿证据 + commit 0fdc245）→ integration（联调：与 lumen-algo-py 装包线对 latest/batch 两 internal 端点联测；push 由 coordinator 统一）
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     collaborators:
@@ -54275,7 +54282,7 @@ tasks:
       - "旧三段任务按冻结权重/methodVersion 识别；无法确认=legacy_unknown 禁复用（TEMP_WEIGHTS 不落任一档）"
       - "snapshotId 不可变含 calc_batch_id；cache_key 条件索引可覆盖；A/B 批不串（自检断言）"
       - "单测/自检；handoff+ponytail+cost 四字段；push origin/dev CI 绿"
-    update_time: "2026-11-05T19:44:05+08:00"
+    update_time: "2026-11-05T21:25:59+08:00"
   - id: LUMEN-INTEL-ELEM-DDL-L01
     model_used: "glm-5.3-Flash"
     cost_warn: "green"
