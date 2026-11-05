@@ -51092,13 +51092,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      补挂账单：政策新闻 CMS 页（src/views/policy/PolicyNewsCmsPage.vue，commit 34411fe 2026-10-24）建成时无任务号——WBS-03-04a 原口径「确认无 CMS」，但前端已建成 3 屏完整功能（政策本体/统计与区域/力度评估，4 类 content_type 本机 mock 存储）。已知缺口见对照文档 §3.4/§4.2。
-      
-      【2026-11-03 缺项优化补充】来源：agent-handoffs/专题对齐-TOPIC/门户内容管理-四页前端实现对照.md（v1.2，基线 09ad60a）§3.4/§4/§6。本页缺口（4 ✅/2 ⚠️/0 ❌）：① B-4 政策力度榜单无「名次」字段；② B-5 地理分布无层级（需规 335(2) 要求国家/省/市/区四级）；③ B-2 缺专家署名结构化字段（挂 D-7）。
-      
-      【2026-11-03 拍板 D-5 + D-7（human:孔东）】政策新闻 CMS【保留】，WBS-03-04a「确认无 CMS」口径作废。B-2 随 D-7 不做（范围外），expert_comment 维持自由文本。注：政策 4 类 content_type 无 Java 写接口叶，保留后需同步拆 Java 侧任务。
-      
-      【2026-11-03 缺项修复完成（B-4/B-5 + C-3 表单层）】两轮 commit 停本地不 push 待验收：① a7adf8f：B-4 榜单加 rank_no 必填 + B-5 静态四级树首版；② 6a3b8bf 按孔东拍板返工：B-5 改复用企业查询页 RegionSelect（region-scopes 接口，删自造树），C-3 企业选择改 entSearchSuggest 联想接口（ent-select 通用字段，含回显兜底）。种子同步「全国/广东省」路径。selfcheck/tsc（本轮文件 0 错）/eslint 三绿，详见 handoff 缺项修复增量。剩余：Java 写接口叶待拆、CMS_MOCK_ENTERPRISES 列表筛选等剩余消费点归 01A 替换。
+      2026-11-05 联调完成：① 管理侧写链路 4 类全通（含负例/深校验/审计），后端缺陷 1 个修复（pol 榜单发布 50001，commit b9520db）；② 管理→展示闭环实现（用户拍板方案 A）：cms pol 读侧泛化+TopicPolicyPublishedController（76a3179）→ 政策门面 cms-blocks 聚合端点（集群内 Feign gkxlumen-platform-cms:7098，fail-soft）→ 展示页扶持指标 tab 产业运营内容区块（09296d2，4 组内容+诚实性门控）。Service 名首版写错已修正（04f493b，fullnameOverride 前缀规则）。单测 41+37+23 绿、前端三绿。待：04f493b 部署后线上连通复测+浏览器走查（QA 叶）；契约回写归 PORTAL-CMS-FIELD-API-L01；DB 验证行 id=9001 验收后清理。handoff：agent-handoffs/系统集成-SYSINT/SYSINT-03-04A-联调-cms-闭环-20261105.md
     depends_on:
       - "SYSINT-SCHEME-03-L01"
     design_refs:
@@ -51109,7 +51103,7 @@ tasks:
       - "政策时效状态三态可标记；分类按行业/区域/主题人工归档"
       - "法定名称、领导人、名次、分数不进正文；榜单排序语义可成立"
       - "菜单以相对路径进统一用户中心；handoff 回填并对照门户内容管理-四页前端实现对照.md 的 D-5 决策"
-    update_time: "2026-11-03T15:07:07+08:00"
+    update_time: "2026-11-05T22:04:27+08:00"
   - id: E-E7-POLICY-M1-L08
     model_used: "cursor-grok-4.5"
     evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L08.md"
@@ -54336,7 +54330,7 @@ tasks:
     model_used: "glm-5.3-Flash"
     evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-ELEM-PY-L01.md"
     cost_warn: "green"
-    actual_tokens: 180000
+    actual_tokens: 65000
     actual_cost: 0.25
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-05T12:41:06.269Z"
@@ -54344,7 +54338,7 @@ tasks:
     lock_until: "2026-11-06T12:41:06.269Z"
     claimed_by: "agent:algorithm-agent"
     title: "综合智能分析要素 — Python 装包与 /internal 快照/任务"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54353,8 +54347,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 120000
-    note: |
-      装包+路由+panorama 实装完成：commit 45e1f15（未 push，coordinator 统一推）；自检 33 断言全过+TestClient 路由端到端 200/202/400；seed 列序错位顺手修复（偏离 1）；handoff 已提交编排仓 f098e8c1。待 coordinator 收 handoff 走 AV-0。
+    note: "AV 验收通过；panorama DWD 实数（企业 189k/人才 21k 等）；Python internal 端点就绪，Java ELEM-BE 可开工"
     depends_on:
       - "LUMEN-INTEL-ELEM-DDL-L01"
     design_refs:
@@ -54365,10 +54358,20 @@ tasks:
       - "四维固定 []+reason='metric_not_registered'（解锁前）；panorama 真实 DWD 汇聚禁 fixture"
       - "snapshotId 不可变含 calc_batch_id；缺行 null+reason+confidence；weight_source='calc_logic_placeholder'"
       - "自检脚本；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T21:29:40+08:00"
+    update_time: "2026-11-05T21:30:54+08:00"
   - id: LUMEN-INTEL-ELEM-BE-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-ELEM-BE-L01.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 0.4
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T13:30:54.646Z"
+    last_seen_at: "2026-11-05T13:30:54.646Z"
+    lock_until: "2026-11-06T13:30:54.646Z"
+    claimed_by: "agent:api-agent"
     title: "综合智能分析要素 — Java 白名单/Adapter/快照门面"
-    status: "backlog"
+    status: "pending_test"
     agent: "api-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-svc-platform"
@@ -54377,7 +54380,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 100000
-    note: "与 LUMEN-INTEL-BE-1/VIT-BE 同仓错峰；同文件冲突先协调"
+    note: "AV 验收通过；elements 门面就绪，ELEM-FE 可开工"
     depends_on:
       - "LUMEN-INTEL-ELEM-PY-L01"
     design_refs:
@@ -54387,10 +54390,15 @@ tasks:
       - "elements 任务键白名单+Adapter；GET /topic/v1/synth/elements/batch-snapshot 门面（含 panorama 分页参数）"
       - "DTO 与 ElementResult 同构；六键 params 透传保真"
       - "调用链 FE→gateway→Java→/internal/*；不直连 demo；单测；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T18:54:48+08:00"
+    update_time: "2026-11-05T22:14:27+08:00"
   - id: LUMEN-INTEL-ELEM-FE-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T14:14:27.487Z"
+    last_seen_at: "2026-11-05T14:14:27.487Z"
+    lock_until: "2026-11-06T14:14:27.487Z"
+    claimed_by: "agent:frontend-agent"
     title: "综合智能分析要素 — FE 真链接线+136 全景模块"
-    status: "backlog"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-ui-topic"
@@ -54399,7 +54407,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 140000
-    note: "与 FE-ELEM（联调中）同仓错峰；touched_files 冲突则等其过联调闸"
+    note: "coordinator_dispatch 开工（lumen-ui-topic 仓；BE 门面 14e3fd2 已就绪）"
     depends_on:
       - "LUMEN-INTEL-ELEM-BE-L01"
     design_refs:
@@ -54410,15 +54418,20 @@ tasks:
       - "136 全景模块（读快照 panorama[]，分类筛选+统计卡，形态按 §7）"
       - "四维区块解锁前保持 []+红问号，无演示数据"
       - "type-check/自检/build 三绿；复刻五维自检（V1–V7/R1–R5）；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T18:54:53+08:00"
+    update_time: "2026-11-05T22:14:36+08:00"
   - id: LUMEN-INTEL-COLLAB-DDL-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-COLLAB-DDL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 75000
+    actual_cost: 0.3
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-11-05T11:43:57.028Z"
-    last_seen_at: "2026-11-05T11:43:57.028Z"
-    lock_until: "2026-11-06T11:43:57.028Z"
+    claimed_at: "2026-11-05T13:30:54.886Z"
+    last_seen_at: "2026-11-05T13:30:54.886Z"
+    lock_until: "2026-11-06T13:30:54.886Z"
     claimed_by: "agent:data-agent"
     title: "综合智能分析协同 — _ai 5 张 + gapfill 2 张 DDL+预填"
-    status: "claimed"
+    status: "pending_test"
     agent: "data-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54427,8 +54440,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 90000
-    note: |
-      【AR-10 追加】synth_collab_batch_meta 豁免总册 §11.2 公共列（无 metric_id/calc_batch_created_at/calc_status/is_mock/method_version/generated_at），DDL 注释写明豁免清单+列名映射（published_at≈generated_at）。其余照 v1.0.5 修正 note
+    note: "AV 验收通过；表就绪，COLLAB-PY 与 COLLAB-GRAPH 可并行开工"
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     design_refs:
@@ -54438,10 +54450,20 @@ tasks:
       - "seed 五码含 RELATION_INPUT（canonical 唯一源）；node/edge 行级血缘含 metric_id+gapfill_batch_id"
       - "预填 is_mock=1；真值 blocked Q-SYNTH-C-05 只登记不停工"
       - "handoff+cost；push origin/dev"
-    update_time: "2026-11-05T19:43:57+08:00"
+    update_time: "2026-11-05T21:50:45+08:00"
   - id: LUMEN-INTEL-COLLAB-PY-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-COLLAB-PY-L01.md"
+    cost_warn: "green"
+    actual_tokens: 100000
+    actual_cost: 0.4
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T13:50:45.992Z"
+    last_seen_at: "2026-11-05T13:50:45.992Z"
+    lock_until: "2026-11-06T13:50:45.992Z"
+    claimed_by: "agent:algorithm-agent"
     title: "综合智能分析协同 — Python 装包+cluster+策略 LLM+batch_meta 持久化"
-    status: "backlog"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54450,8 +54472,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 140000
-    note: |
-      【v1.0.5 口径修正】读 ADS 4 张指标表；不派生 cluster（clusters=[]+cluster_rule_unclosed，C-02 前零归属行）；发布时写 synth_collab_batch_meta（含 cache_key→最新 snapshotId，AR-9 建议包内事务）；三窗指数/三项网络统计=null+no_year_on_source；密度不读 191；策略 LLM 对齐 C-04
+    note: "AV 验收通过；Python collaboration 端点就绪（快照/jobs/batch_meta 回读），COLLAB-GRAPH Java 门面可对齐契约"
     depends_on:
       - "LUMEN-INTEL-COLLAB-DDL-L01"
     design_refs:
@@ -54462,10 +54483,20 @@ tasks:
       - "策略 LLM 实时生成（复用 llm_client.py GLM，证据锚定，degraded 降级，对齐 C-04）"
       - "成功快照/resultData 持久 batch_meta（snapshotId/calc_batch_id/graph_source/gapfill_batch_id/条件）；缺任一不得标 succeeded"
       - "自检；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T19:25:16+08:00"
+    update_time: "2026-11-05T22:16:48+08:00"
   - id: LUMEN-INTEL-COLLAB-GRAPH-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/LUMEN-INTEL-COLLAB-GRAPH-L01.md"
+    cost_warn: "green"
+    actual_tokens: 125000
+    actual_cost: 0.16
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T13:50:46.282Z"
+    last_seen_at: "2026-11-05T13:50:46.282Z"
+    lock_until: "2026-11-06T13:50:46.282Z"
+    claimed_by: "agent:api-agent"
     title: "综合智能分析协同 — 图谱查询接口（Java 门面+Python）"
-    status: "backlog"
+    status: "in_progress"
     agent: "api-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-svc-platform"
@@ -54475,7 +54506,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 130000
     note: |
-      【v1.0.5 口径修正】图谱只读 ADS synth_collab_node/edge（本期 0 行）；默认三元组空图 reason=no_year_on_source 是合法态，验收不得要求非空；去重=只读 metric_id=M_SYNTH_COLLAB_RELATION_INPUT；响应边无 year 字段；batch_meta 映射读 synth_collab_batch_meta。真源 COLLAB 册 v1.0.7 §3.2
+      Java 门面完工：commit 084b2d1（lumen-svc-platform dev，未 push 待验收）；单测 12 新增 topic 模块 28 过 0 fail；批次绑定四分支落 SynthCollabGraphService.resolveBatchBinding；Python graph 端点缺口按 VIT-FP 先例 200 空图降级（graph_upstream_unavailable），挂载归 COLLAB-PY 增量/C-05；depth/gapfill 旧口径偏离按真源 v1.0.8 处理（handoff 偏离 1/3/4）。ponytail: full
     depends_on:
       - "LUMEN-INTEL-COLLAB-DDL-L01"
     design_refs:
@@ -54485,7 +54516,7 @@ tasks:
       - "指定 snapshotId 无持久 meta → 不可用（batch_meta_missing/404 写死一种）；禁止回落最新批"
       - "只读 RELATION_INPUT 行 canonical 去重；industry 服务端过滤；truncated 语义；A/B 批不串自检"
       - "单测；handoff+ponytail+cost+图；push origin/dev CI 绿"
-    update_time: "2026-11-05T19:25:15+08:00"
+    update_time: "2026-11-05T22:38:16+08:00"
   - id: LUMEN-INTEL-COLLAB-FE-L01
     title: "综合智能分析协同 — FE 产业筛选+图谱 API 接线"
     status: "backlog"
