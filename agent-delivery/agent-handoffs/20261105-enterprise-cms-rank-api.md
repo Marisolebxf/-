@@ -74,4 +74,9 @@ DDL：`db/9zz_gkxlumenx_cms_ops_enterprise_rank.sql`。仅CMS新增两张独立�
 - 两张表已在CMS业务库按幂等DDL创建；事务验证Top30名次范围、名次及企业唯一、双榜单隔离、重复软删除后释放名次通过，测试数据全部回滚。
 - 保留原CMS用户鉴权、事务与审计，不写DWD/ES；没有改前端页面、开关或旧类型字段。
 - 既有`list`服务签名保留，新增带可选rank_type的重载。只有两个新类型支持rank页面键；旧列表排序保持原样。
-- 暂无task-registry MCP，不伪造任务登记与成本；待补CI、dev部署与线上CRUD/并发回归证据。
+- CI旧版Mockito API兼容修复`1c0a3ee`已推送；流水线3924 backend:build、helm:lint、backend:image:cms全部成功，CI实际61项相关回归无失败。
+- 自动deploy:cms排队时，使用项目SSH跳板将同一CI镜像`gkxlumen-cms:1c0a3ee1`滚动dev，rollout成功。
+- `scripts/verify_enterprise_rank_api.py`从真实网关入口验证：两个rank_type维度及榜单CRUD、部分编辑、发布/下架、已发布过滤、名次排序、整数1–30边界、重复名次、重复企业、不存在企业、并发抢位仅一个成功，以及软删除后重用均通过。
+- dev留下`INB1303`的2条模拟维度、4条模拟上榜草稿（2企业×技术力/商业力）；标记`MOCK_ENT_RANK_20261105`，非正式评估或真实专家意见。关联企业沿用已有乐科、君正时代的真实标识；临时INB1306并发样本已软删除，不修改主数据。
+- 旧内容类型的结构/排序/CRUD签名保持兼容；前端源码及开关没有修改，前端负责人可按本文件契约移除新类型的unsupported标记并完成页面接入。
+- 暂无task-registry MCP，不伪造任务登记与成本；本次后端交付已可联调，不宣称前端页面验收完成。
