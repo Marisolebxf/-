@@ -40,6 +40,6 @@
 - D8/D10：沿用现有布局、图表、行业/区域筛选及详情抽屉；仅增加演示来源标签，不新增无需规依据的业务模式或计算规则。全量视觉/键盘验收未执行。
 - D9：本批次保留 mock 来源与追溯，正式数据和演示补齐并存，不改就绪度或冒充真实统计。
 - D12：前端 → Java → lumen-algo-py → 既有 gapfill；无前端直连 Python/数据库，无新 demo 服务回落。沿用 trace header。
-- Python提交 `afaa26d` 已推送origin/dev；前端实现提交 `51e0365`，推送集成情况补充于后续交付记录。
-- 前端远端同时新增网关方法限制改动，本地 CMS 文件为其他会话未提交产物；直接 merge 被 Git 拒绝后不 stash/reset，改用独立检出集成本次提交。
+- Python提交 `afaa26d` 已推送origin/dev；前端原实现提交 `51e0365`，从 origin/dev 的临时检出仅摘取该提交后为 `84fcf3c`，仅含4个政策文件。
+- 并行会话修改CMS并自行完成远端合并后，自动审批拒绝推送共享 dev，因为包含该会话尚未授权发布的CMS提交。本次改为在 `/private/tmp/policy-news-demo-delivery` 独立检出 origin/dev，cherry-pick 本次政策提交，不发布CMS提交、不stash/reset原工作区。该限定差异提交为实际推送对象。
 - CI pipeline、镜像tag、K8s rollout 尚未确认。cost 未获得可核实统计，不填虚假费用或注册表状态。
