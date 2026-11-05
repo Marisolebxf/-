@@ -38,7 +38,7 @@ ponytail: full
 
 ### 交付二：验收用例文档
 
-`agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-FE-DISP-L01-验收用例.md`：A 目录与详情（4 条）/ B 智能排序（2 条）/ C 历史与收藏（4 条）/ D 导出分享（3 条）/ E Mock 回退与四页签（2 条），每组含前置、输入、步骤（菜单路径「科创政策全景→政策检索」、按钮真实文案抄自源码）、预期、截图要求（Network panorama 过滤、X-Trace-Id、Local Storage 键 `gkx-policy-display-favorites:v1`）。已标注 C 组与 B1 需先 rollout gkxlumen-display（含 70abaa79），当前线上旧进程 404（trace bde5d782e0f1e2b3555c8102b9514ce1）期间执行为前端诚实失败不算用例失败。
+`agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS10-QRY-FE-DISP-L01-验收用例.md`：A 目录与详情（4 条）/ B 智能排序（2 条）/ C 历史与收藏（4 条）/ D 导出分享（3 条）/ E Mock 回退与四页签（2 条），每组含前置、输入、步骤（菜单路径「科创政策全景→政策检索」、按钮真实文案抄自源码）、预期、截图要求（Network panorama 过滤、X-Trace-Id、Local Storage 键 `gkx-policy-display-favorites:v1`）。已标注 C 组与 B1 需先 rollout gkxlumen-display（含 70abaa79），当前线上旧进程 404（trace bde5d782e0f1e2b3555c8102b9514ce1）期间执行为前端诚实失败不算用例失败。
 
 ## 测试结果（命令与退出码）
 
