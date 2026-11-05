@@ -1,0 +1,22 @@
+---
+description: 前端工程仓提交推送默认人工确认。改完代码须人工确认后才能 push；仅当对话或任务明确写明「完工即推」时才可自检绿后直接推送；alwaysApply 对所有会话生效
+alwaysApply: true
+---
+
+# 前端提交推送人工确认闸门（⚠️ 用户裁定 2026-11-05，同日精化）
+
+> **适用范围**：所有前端工程仓（lumen 与 demo 沙箱）——
+> `lumen-ui-topic`（GitLab path `lumen-ui-science-topic`）、`lumen-ui-science-pc`、`lumen-ui-science-mobile`、`lumen-ui-topic-mobile`、`lumen-ui-admin`、`lumen-ui-algo-apiview`、`demo-ui-topic`、`demo-ui-science`、`demo-ui-system-test`、`demo-admin-ui`、`demo-ui-algo-apiview`。
+> 后端 / 算法 / 编排仓不适用本规则，仍按各仓现行策略。
+
+## 铁律
+
+1. **默认人工确认后再推**：前端仓代码修改完成、工程自检（type-check / 自检 / build）绿后，改动**停在本地工作区**（已 commit 未 push 的，停在本地分支），**等当前会话用户人工确认**（明确说「推」「可以推」「提交推送」等）后才执行 `git push`。
+2. **唯一例外 = 显式完工即推**：仅当**当次对话**中用户明确说「完工即推/完成即推」，或**任务派单**（`/goal`、handoff、监管人指令）中明确写明「完工即推」「免人工确认推送」等字样时，才可自检绿后直接 commit + push。例外必须**显式写在本次对话/任务里**；禁止从历史会话、其他任务、旧裁定或惯例推测适用例外。
+3. **确认主体**：当前会话用户或任务监管人（如 `human:孔东`），确认须落在具体会话内。
+4. **等待期的替代动作**：未获确认前，agent 应完成并汇报自检证据（type-check / 自检脚本 / build 结果、改动摘要），停在「待人工确认推送」状态，不反复催促。
+5. **与旧规约的关系**：本规则**废止**各前端仓 AGENTS.md 中 2026-11-04 版无条件「完工即推」条款（该条款曾废止 2026-10-20 人工验收闸门）。现口径：**默认人工确认，显式声明完工即推时例外**。commit 本身仍按各仓规约执行（必带 `[agent:<role>]`）。
+
+## 违规代价
+
+- 未经确认且无显式例外声明 push 前端仓 = 违反用户 2026-11-05 裁定，等同越权发布；CI/K8s dev 自动部署链会放大影响面（dev 环境自动 rollout）。
