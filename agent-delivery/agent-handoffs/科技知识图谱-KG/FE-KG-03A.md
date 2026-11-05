@@ -96,6 +96,13 @@
 - **抽屉加宽**：走查指认详情抽屉偏窄。本单三处 a-drawer 统一加宽——`KgPathSearchPanel.vue` 节点信息 360→**560**、`KgCentralityPanel.vue` 节点详情 400→**560**、`KgCommunityPanel.vue` 社群详情 400→**560**（三面板一致口径）
 - 验证：三绿复跑全过（03A 自检 4 组 / type-check 0 错 / build 35.4s 绿）
 
+## 签收与推送（2026-11-05）
+
+- **人工走查放行**：human:孔东 2026-11-05 12:11 走查通过，明示「任务状态联调中，代码可 commit、push dev」
+- 前端仓提交：`lumen-ui-science-pc@dev` `a78506a`（8 文件，+4043/-23；只含 FE-KG-03A 产物，policy/* 与 .env.development 本地改动非本任务产物未纳入）
+- CI 将按公约触发 K8s dev rollout
+- 状态保持 `integration`——UI 复刻已走查放行，但**接口尚未接入**，待 BE 接口联调完成后才转 `pending_test`（当前页面为冻结 mock 演示态，与 02A 同口径）
+
 ## 涉及文件
 
 - `src/views/knowledge-graph/algorithms/index.vue`（重写，S01 占位页壳 → 整页）
