@@ -122,6 +122,10 @@
 
 验证：三绿全过（type-check 0 错 / FE-KG-01A.test.mjs 第 2 组断言改为走查版：禁 `<a-slider`、禁「近1年」、必须 a-range-picker+mode=year+yearRangeModel / kg.selfcheck.mjs 9 组 / build 绿 40.6s）；浏览器 CDP 目检：单卡 5 字段同行、年份面板（2019–2040 双十年栏）可选、选 2023–2023 → KPI 联动 60→2 实体、重置恢复 2020–2026/60 实体、viz 卡头 4 元素与标题同行、无横向滚动条。
 
+## 2026-11-05 孔东走查调整（第 4 轮，任务仍处 integration 停本地）
+
+- **重置/导出回归顶部筛选区**：第 3 轮迁至 viz 卡头的两按钮挪回顶部筛选卡右端反馈区（`kg-filter-feedback` 内 flex 组：匹配反馈文案 + 重置 + 导出）；viz 卡头只留视图切换 radio + 全屏查看（2 元素）。CDP 验证：两按钮均在筛选卡内、viz extra 文本=「网络图列表统计图全屏查看」、无横向滚动条；type-check + 两组自检全绿。
+
 
 
 - actual_tokens ≈ 132k（读 demo 真源 + 基座核对 + 实现 + 三绿 + 目检）+ 2026-11-05 走查调整（第 2+3 轮）≈ 25k
