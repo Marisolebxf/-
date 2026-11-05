@@ -93,7 +93,7 @@
 5. **角色权限矩阵动态列插槽**：`#[s.key]` 动态插槽名 + v-for PERMISSION_SCOPES（Arco table 动态 slotName 经列 slotName 指向遍历键）。
 6. **ChartBuilder 五型**：DoD 写 bar·line·pie，demo 实有 graph/sankey 共 5 型，全量保留（超配不缺项）。
 
-### 2.1 走查修复第 1 轮（2026-11-05 孔东走查，7 项 → commit 0920cc4）
+### 2.1 走查修复第 1 轮（2026-11-05 孔东走查，7 项 → commit 0920cc4，已 push）
 
 | # | 走查问题 | 根因 | 修复 |
 |---|---|---|---|
@@ -106,6 +106,13 @@
 | 7 | 时间列换行 | 150/155/160px 放不下 `2026-05-20 16:35:22` | 分享表 `createTime`/历史表 `time` 150→170、审计表 `time` 155→170、查询历史 `queryTime` 160→170、决策表 `lastTrigger` 150→160、年月列 90→100 |
 
 附带：DeepDrawer `header-extra` 插槽（Arco drawer 无此插槽）→ 内容顶部右对齐工具行；组件 prop `open`→`visible` 与父组件对齐。
+
+### 2.2 走查修复第 2 轮（2026-11-05 孔东走查，2 项 → commit 61e6186，**停本地待确认 push**）
+
+| # | 走查问题 | 修复 |
+|---|---|---|
+| 8 | 「全部发布人/标签分类」仍在展开行 | 两个筛选并入主行（搜索/时间/类型/业务线/发布人/标签 + 查询/重置 一行）；删展开/收缩按钮与 `filterExpanded` 状态、`IconUp/IconDown` import；CSS 清理 `row-more`/`more-label`/`toggle` 死样式；`tags-inline` 由 `flex:1 1 auto` 改限宽 240 防挤压按钮 |
+| 9 | 面板双重内边距 | 删 `service/index.vue` 的 `.kg-service-shell { padding: 16px }` 与类名（外层 `.knowledge-graph-page` 已有 `--figma-content-shell-padding`） |
 
 ## 3. 产物清单
 
