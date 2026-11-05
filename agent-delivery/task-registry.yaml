@@ -54197,7 +54197,8 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "增量单：与存量 VIT-PY/BE/FE 五单协作，不重开壳；同仓与 BE-1 错峰"
+    note: |
+      【v1.0.5 口径修正】五张结果表改落 ADS synth_vit_*（demo_gkxlumenx_ads/gkxlumenx_ads，废止 *_ai）；gapfill 只作三张既有输入（new_product_sales_ratio/rd_employee/policy_effect）。AR-6：seed 同 calc_batch_id 写五表，校验失败整批同置 failed（跨表同批一致性写进验收）
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     collaborators:
@@ -54211,7 +54212,7 @@ tasks:
       - "旧三段任务按冻结权重/methodVersion 识别；无法确认=legacy_unknown 禁复用（TEMP_WEIGHTS 不落任一档）"
       - "snapshotId 不可变含 calc_batch_id；cache_key 条件索引可覆盖；A/B 批不串（自检断言）"
       - "单测/自检；handoff+ponytail+cost 四字段；push origin/dev CI 绿"
-    update_time: "2026-11-05T18:54:33+08:00"
+    update_time: "2026-11-05T19:25:22+08:00"
   - id: LUMEN-INTEL-ELEM-DDL-L01
     title: "综合智能分析要素 — 当前 8 张 _ai 表 DDL+预填"
     status: "backlog"
@@ -54223,7 +54224,8 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "先只落 demo 库可提测；正式库待 DBA 闸门"
+    note: |
+      【v1.0.5 口径修正】库改 demo_gkxlumenx_ads/gkxlumenx_ads（废止 *_ai）：当前 8 张 ADS DDL+seed（index/type/level/domain/indicator/weight/contrib/rank）；四维不建不计入。脚本 synth_elem.sql。唯一键含条件+calc_batch_id；预填 is_mock=1
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     design_refs:
@@ -54234,7 +54236,7 @@ tasks:
       - "第 9 张 synth_elem_four_dim_score 不建（137② blocked；METRIC-OPEN 解锁后另单）"
       - "唯一键含 region+compare+window(+…)+calc_batch_id；预填 is_mock=1"
       - "handoff+cost；push origin/dev"
-    update_time: "2026-11-05T18:54:38+08:00"
+    update_time: "2026-11-05T19:25:18+08:00"
   - id: LUMEN-INTEL-ELEM-PY-L01
     title: "综合智能分析要素 — Python 装包与 /internal 快照/任务"
     status: "backlog"
@@ -54246,7 +54248,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "entan-py elements 分支；与 VIT-PY 同仓错峰"
+    note: "【v1.0.5 口径修正】装包只读 8 张 ADS；权重缺行禁止填常量（缺行 null+reason）；panorama=真实 DWD 直查（建议 timeout≈3s 降级 panorama=[]+panorama_timeout，AR-8，不阻塞三透镜）"
     depends_on:
       - "LUMEN-INTEL-ELEM-DDL-L01"
     design_refs:
@@ -54257,7 +54259,7 @@ tasks:
       - "四维固定 []+reason='metric_not_registered'（解锁前）；panorama 真实 DWD 汇聚禁 fixture"
       - "snapshotId 不可变含 calc_batch_id；缺行 null+reason+confidence；weight_source='calc_logic_placeholder'"
       - "自检脚本；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T18:54:42+08:00"
+    update_time: "2026-11-05T19:25:22+08:00"
   - id: LUMEN-INTEL-ELEM-BE-L01
     title: "综合智能分析要素 — Java 白名单/Adapter/快照门面"
     status: "backlog"
@@ -54314,7 +54316,8 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 90000
-    note: "先 demo 库；C-05 贴源后另单换源"
+    note: |
+      【v1.0.5 口径修正，覆盖建单 DoD 旧表述】库改 demo_gkxlumenx_ads/gkxlumenx_ads（废止 *_ai/gapfill 图）：DDL=指标 4 张（index/network_stat/relation_input/output_corr，预填 is_mock=1）+ 空表 3 张（cluster/batch_meta/node/edge——node/edge 本期 0 行，源无年禁灌演示边）。脚本 lumen-algo-py/scripts/mysql/synth_collab.sql。真源 sdd/l2/SYNTH-L2-COLLAB.md v1.0.7
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     design_refs:
@@ -54324,7 +54327,7 @@ tasks:
       - "seed 五码含 RELATION_INPUT（canonical 唯一源）；node/edge 行级血缘含 metric_id+gapfill_batch_id"
       - "预填 is_mock=1；真值 blocked Q-SYNTH-C-05 只登记不停工"
       - "handoff+cost；push origin/dev"
-    update_time: "2026-11-05T18:54:58+08:00"
+    update_time: "2026-11-05T19:25:12+08:00"
   - id: LUMEN-INTEL-COLLAB-PY-L01
     title: "综合智能分析协同 — Python 装包+cluster+策略 LLM+batch_meta 持久化"
     status: "backlog"
@@ -54336,7 +54339,8 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 140000
-    note: "与 ELEM-PY 同仓串行"
+    note: |
+      【v1.0.5 口径修正】读 ADS 4 张指标表；不派生 cluster（clusters=[]+cluster_rule_unclosed，C-02 前零归属行）；发布时写 synth_collab_batch_meta（含 cache_key→最新 snapshotId，AR-9 建议包内事务）；三窗指数/三项网络统计=null+no_year_on_source；密度不读 191；策略 LLM 对齐 C-04
     depends_on:
       - "LUMEN-INTEL-COLLAB-DDL-L01"
     design_refs:
@@ -54347,7 +54351,7 @@ tasks:
       - "策略 LLM 实时生成（复用 llm_client.py GLM，证据锚定，degraded 降级，对齐 C-04）"
       - "成功快照/resultData 持久 batch_meta（snapshotId/calc_batch_id/graph_source/gapfill_batch_id/条件）；缺任一不得标 succeeded"
       - "自检；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T18:54:58+08:00"
+    update_time: "2026-11-05T19:25:16+08:00"
   - id: LUMEN-INTEL-COLLAB-GRAPH-L01
     title: "综合智能分析协同 — 图谱查询接口（Java 门面+Python）"
     status: "backlog"
@@ -54359,7 +54363,8 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 130000
-    note: "预填即可开发；与 COLLAB-PY 不同仓可并行"
+    note: |
+      【v1.0.5 口径修正】图谱只读 ADS synth_collab_node/edge（本期 0 行）；默认三元组空图 reason=no_year_on_source 是合法态，验收不得要求非空；去重=只读 metric_id=M_SYNTH_COLLAB_RELATION_INPUT；响应边无 year 字段；batch_meta 映射读 synth_collab_batch_meta。真源 COLLAB 册 v1.0.7 §3.2
     depends_on:
       - "LUMEN-INTEL-COLLAB-DDL-L01"
     design_refs:
@@ -54369,7 +54374,7 @@ tasks:
       - "指定 snapshotId 无持久 meta → 不可用（batch_meta_missing/404 写死一种）；禁止回落最新批"
       - "只读 RELATION_INPUT 行 canonical 去重；industry 服务端过滤；truncated 语义；A/B 批不串自检"
       - "单测；handoff+ponytail+cost+图；push origin/dev CI 绿"
-    update_time: "2026-11-05T18:55:13+08:00"
+    update_time: "2026-11-05T19:25:15+08:00"
   - id: LUMEN-INTEL-COLLAB-FE-L01
     title: "综合智能分析协同 — FE 产业筛选+图谱 API 接线"
     status: "backlog"

@@ -22,7 +22,7 @@
 ## 1. 无人值守规则（违反才停）
 
 1. **监管已授权**：`supervised_by=human:徐滕强`，`claim_type=coordinator_dispatch`；升 ready 后直接认领开工。
-2. **已拍板不回问**：调用链 FE→gateway→Java→Python `/internal/*`；库 `gkxlumenx_ai` + `gkxlumenx_gapfill`；分支一律 `origin/dev`；`snapshotId` 不可变 ≠ `cache_key`；`legacy_unknown` 禁复用；协同 `batch_meta` 持久；137② 解锁前 `[]+reason`；C-05 真值 blocked、预填先行。
+2. **已拍板不回问**：调用链 FE→gateway→Java→Python `/internal/*`；库 **`demo_gkxlumenx_ads` / `gkxlumenx_ads`（ADS `synth_*`；v1.0.5 已废止 `*_ai`）** + 活力既有 D16 gapfill 输入 3 张；分支一律 `origin/dev`；`snapshotId` 不可变 ≠ `cache_key`（`cache_key`→最新批次映射落 `synth_collab_batch_meta`）；`legacy_unknown` 禁复用；协同 `batch_meta` 持久落表；137② 解锁前 `[]+reason='metric_not_registered'`；协同三窗本期空图 `no_year_on_source`、node/edge 0 行（禁灌演示边）；C-05 真值 blocked。
 3. **QC / 甲方 🟡**：诚实降级，不停工等纪要（Q-SYNTH-* 全部按临时默认跑，UI 带 ⚠️）。
 4. **结构歧义**：该叶 `blocked` + 升级 `human:李伟`；同段其它叶继续。
 5. **缺数据**：禁止无闸门写正式 `gkxlumenx_*`；读空则空态；`USE_MOCK=false` 禁 fixture。
@@ -72,7 +72,7 @@ SDD-SIGNOFF(done)
 | 2 | 活力任务 | vitality 任务过程页 | create→running→succeeded；`resultData` 同构；`snapshotId` 含批次 | failed 显示 reason |
 | 3 | 要素三透镜 | `/intelligence/elements` | 类型/层次/领域接真表有数 | — |
 | 4 | 要素四维 | 同上 | 解锁前：`[]`+`reason='metric_not_registered'` + 页面红问号，无演示数 | 仅缺失态 |
-| 5 | 协同图谱 | `/intelligence/collaboration` | 默认三元组图谱 nodes/edges 非空无重复；带 `snapshotId` | — |
+| 5 | 协同图谱 | `/intelligence/collaboration` | 默认三元组：空图 `nodes=[]`+`reason='no_year_on_source'` 合法（源无年，三窗 0 行）；industry 服务端过滤生效；有行时节点/边无重复；带 `snapshotId` | 空图+`no_year_on_source`（本期唯一合法态，非空验收移 C-05 解锁单） |
 | 6 | 协同坏快照 | 同上 | 指定不存在/无 meta 的 `snapshotId` → 不可用（`batch_meta_missing`），不串最新批 | — |
 | 7 | 报告页 | 三叶 report | 前端真快照渲染 PDF，无 fixture | 快照缺失不伪造 |
 
