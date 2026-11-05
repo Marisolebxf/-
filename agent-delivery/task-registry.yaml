@@ -54318,7 +54318,7 @@ tasks:
     model_used: "glm-5.3-Flash"
     evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-ELEM-PY-L01.md"
     cost_warn: "green"
-    actual_tokens: 180000
+    actual_tokens: 65000
     actual_cost: 0.25
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-05T12:41:06.269Z"
@@ -54326,7 +54326,7 @@ tasks:
     lock_until: "2026-11-06T12:41:06.269Z"
     claimed_by: "agent:algorithm-agent"
     title: "综合智能分析要素 — Python 装包与 /internal 快照/任务"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54335,8 +54335,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 120000
-    note: |
-      装包+路由+panorama 实装完成：commit 45e1f15（未 push，coordinator 统一推）；自检 33 断言全过+TestClient 路由端到端 200/202/400；seed 列序错位顺手修复（偏离 1）；handoff 已提交编排仓 f098e8c1。待 coordinator 收 handoff 走 AV-0。
+    note: "AV 验收通过；panorama DWD 实数（企业 189k/人才 21k 等）；Python internal 端点就绪，Java ELEM-BE 可开工"
     depends_on:
       - "LUMEN-INTEL-ELEM-DDL-L01"
     design_refs:
@@ -54347,10 +54346,15 @@ tasks:
       - "四维固定 []+reason='metric_not_registered'（解锁前）；panorama 真实 DWD 汇聚禁 fixture"
       - "snapshotId 不可变含 calc_batch_id；缺行 null+reason+confidence；weight_source='calc_logic_placeholder'"
       - "自检脚本；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T21:29:40+08:00"
+    update_time: "2026-11-05T21:30:54+08:00"
   - id: LUMEN-INTEL-ELEM-BE-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T13:30:54.646Z"
+    last_seen_at: "2026-11-05T13:30:54.646Z"
+    lock_until: "2026-11-06T13:30:54.646Z"
+    claimed_by: "agent:api-agent"
     title: "综合智能分析要素 — Java 白名单/Adapter/快照门面"
-    status: "backlog"
+    status: "in_progress"
     agent: "api-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-svc-platform"
@@ -54359,7 +54363,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 100000
-    note: "与 LUMEN-INTEL-BE-1/VIT-BE 同仓错峰；同文件冲突先协调"
+    note: "coordinator_dispatch 开工（svc-platform 仓；Python internal 端点已就绪）"
     depends_on:
       - "LUMEN-INTEL-ELEM-PY-L01"
     design_refs:
@@ -54369,7 +54373,7 @@ tasks:
       - "elements 任务键白名单+Adapter；GET /topic/v1/synth/elements/batch-snapshot 门面（含 panorama 分页参数）"
       - "DTO 与 ElementResult 同构；六键 params 透传保真"
       - "调用链 FE→gateway→Java→/internal/*；不直连 demo；单测；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T18:54:48+08:00"
+    update_time: "2026-11-05T21:31:04+08:00"
   - id: LUMEN-INTEL-ELEM-FE-L01
     title: "综合智能分析要素 — FE 真链接线+136 全景模块"
     status: "backlog"
@@ -54394,13 +54398,18 @@ tasks:
       - "type-check/自检/build 三绿；复刻五维自检（V1–V7/R1–R5）；handoff+ponytail+cost；push origin/dev CI 绿"
     update_time: "2026-11-05T18:54:53+08:00"
   - id: LUMEN-INTEL-COLLAB-DDL-L01
+    model_used: "glm-5.3-Flash（Cursor 内）"
+    evidence: "agent-handoffs/LUMEN-INTEL-COLLAB-DDL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 105000
+    actual_cost: 0.14
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-11-05T11:43:57.028Z"
-    last_seen_at: "2026-11-05T11:43:57.028Z"
-    lock_until: "2026-11-06T11:43:57.028Z"
+    claimed_at: "2026-11-05T13:30:54.886Z"
+    last_seen_at: "2026-11-05T13:30:54.886Z"
+    lock_until: "2026-11-06T13:30:54.886Z"
     claimed_by: "agent:data-agent"
     title: "综合智能分析协同 — _ai 5 张 + gapfill 2 张 DDL+预填"
-    status: "claimed"
+    status: "integration"
     agent: "data-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54410,7 +54419,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 90000
     note: |
-      【AR-10 追加】synth_collab_batch_meta 豁免总册 §11.2 公共列（无 metric_id/calc_batch_created_at/calc_status/is_mock/method_version/generated_at），DDL 注释写明豁免清单+列名映射（published_at≈generated_at）。其余照 v1.0.5 修正 note
+      AV-0：handoff 已落盘（agent-handoffs/LUMEN-INTEL-COLLAB-DDL-L01.md）+ evidence/cost 已回填。DDL 8 张+seed 验证全绿（demo 库实跑，空表 0 行断言过），移交 coordinator AV-1 联调验收。commit b778c07（algo-py）未 push。
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     design_refs:
@@ -54420,7 +54429,7 @@ tasks:
       - "seed 五码含 RELATION_INPUT（canonical 唯一源）；node/edge 行级血缘含 metric_id+gapfill_batch_id"
       - "预填 is_mock=1；真值 blocked Q-SYNTH-C-05 只登记不停工"
       - "handoff+cost；push origin/dev"
-    update_time: "2026-11-05T19:43:57+08:00"
+    update_time: "2026-11-05T21:49:43+08:00"
   - id: LUMEN-INTEL-COLLAB-PY-L01
     title: "综合智能分析协同 — Python 装包+cluster+策略 LLM+batch_meta 持久化"
     status: "backlog"
