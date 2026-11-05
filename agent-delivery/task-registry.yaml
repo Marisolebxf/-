@@ -53890,7 +53890,8 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "2026-11-05 开工。api-agent 认领，frontend-agent 与 algorithm-agent 按仓并行。范围以签收后的派单为准。"
+    note: |
+      2026-11-05 三仓代码已上 origin/dev，业务页尚未入图，任务保持 in_progress，不标 done。菜单 demo-ui-system-test 1416a1b；Java/网关 demo-svc-platform 7c0a783，路由 gkx-ops-tech-graphs，运行中的镜像还没有新控制器；字典 lumen-topic-py 1626c39 六个 op；入图 lumen-algo-py a8d1bec POST /internal/tech-graph/vertex。探针点已从 demo_gkx_chain 删除。graph_release_id 来源列不存在，先留空。机构 VID 超过 80 字符会跳过。边上图 L02 等本叶业务点写入后再领。监管人 human:淮政玮。
     depends_on:
       - "SYSINT-TOPICMAP-02-L01"
     collaborators:
@@ -53911,7 +53912,7 @@ tasks:
       - "算法中台维护管理有菜单「技术点图谱」（/ops/tech-graph）。【同步】才打字典。查询只读本侧表，最多 200 行"
       - "不写入三张已有映射表，不建边表，不写 Nebula"
       - "handoff 写明表名、op、菜单路径、网关路由 id。含 ponytail: full 与 diagram_id: SYSINT-TECHGRAPH-02-SEQ"
-    update_time: "2026-11-05T17:34:25+08:00"
+    update_time: "2026-11-05T17:59:02+08:00"
   - id: SYSINT-TECHGRAPH-02-L02
     title: "技术点图谱按节点查看边、路径和关联实体"
     status: "backlog"
@@ -54109,3 +54110,51 @@ tasks:
       - "防漏扫描：活契约文档 grep 旧路由零残留（历史 handoff 交付记录 SYSINT-03-*-JAVA-L01.md / API-TOPIC-FE-JAVA-GAP-L01-impl.md / LUMEN-TOPIC-FE-GAP-WIRE-L01.md 保留时点事实不改）"
       - "handoff 提交 agent-handoffs/DOC-CONTRACT-METHOD-SYNC-20261105.md，含改动行清单与扫描输出；chore 类型完工即推 dev"
     update_time: "2026-11-05T17:49:26+08:00"
+  - id: SYSINT-TOPICMAP-03-L01
+    evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-11-05T08:30:00+08:00"
+    last_seen_at: "2026-11-05T08:30:00+08:00"
+    lock_until: "2026-11-06T08:30:00+08:00"
+    claimed_by: "agent:backend-agent"
+    title: "Topic 桥消费层（展示系统集成）：集群码→topic_ids 反查 + 专利/人才/机构/项目/课题/论文 topic 过滤"
+    status: "done"
+    agent: "backend-agent"
+    epic: "科技全域态势 DS-01"
+    priority: "P0"
+    repo: "lumen-svc-platform、lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      WBS-05-18 · DS-01 科技全域态势。消费层升级：产业领域筛选从 v3 subfield 核心改为 Topic 桥核心。
+      实查（2026-11-05 直连久新 Doris 只读库）：久新官方 ads_sz_gkx_industry_cluster_topic 3098 行 / 15 集群全覆盖 / 全部 approved，可直接用作真源（不等待算法中台 SYSINT-TOPICMAP-02-L01 灌数）。
+      关键提升：①6 集群 pending_vendor（新能源/新材料/高端装备/绿色环保/海洋/未来能源）现在生效；②专利从「无学科维度返 null」升级为 ads_patent_analysis_topic 真实可过滤（run_id 取最新 e4dcc585 / 2026-10-28）。
+      改动 5 文件两仓：Python 新端点 /topic/from-cluster + 三端点 topic_ids + 专利段升级；BFF TopicResolution + resolveTopicIdsFromCluster + 三 bodyOf + overview/map 接入。
+      自检：mvn compile (JDK17) exit 0；VS Code Java 零错误；python py_compile 三文件零错误。
+      遗留：Python/BFF 未重启、联调未验、前端 subfield 死代码后续清理、ads_paper_profile.topic_ids[] 数组慢暂用 primary_topic_id 降精度。
+    depends_on:
+      - "SYSINT-TOPICMAP-02-L01"
+    touched_files:
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/feign/RemoteShowPythonClient.java"
+      - "repos/lumen-topic-py/gkx_show_service/views/meta.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/geo_indicator.py"
+      - "repos/lumen-topic-py/gkx_show_service/views/monitor_indicator.py"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-TOPICMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/Topic桥可行性判定.md"
+    definition_of_done:
+      - "Python gkx_show_service 新增 POST /internal/gkx-show/topic/from-cluster：cluster_codes CL-* → 久新 ads_sz_gkx_industry_cluster_topic 反查 topic_ids[] + subfield_ids[]，白名单校验 + JiuxinUnavailable 降级"
+      - "Python 三端点（factor_metrics / yearly_trend / overview_kpi）增 topic_ids 入参：topic_ids 有值时先 topic→subfield 反推（ads_discipline_topic 1:N 从属关系），subfield_ids 供聚合表（discipline_metrics）用；topic_ids 优先"
+      - "Python overview_kpi 专利段升级：topic_ids 有值时改查 ads_patent_analysis_topic ⋈ ads_patent_profile（JOIN patent_id，WHERE run_id=最新 AND topic_id IN (...) AND YEAR(publication_date)=%s）；只有 subfield_ids 时仍诚实返 null（旧 v3 路径）；无过滤条件时返全量"
+      - "BFF RemoteShowPythonClient 新增 topicFromCluster() Feign 方法，@NoToken"
+      - "BFF SituationController：TopicResolution record + resolveTopicIdsFromCluster(Scope) + kpiBodyOf/regionFactorsOf/yearlyTrendBodyOf 增 topicIds 参数 + overview/map 两端点接入（topic 桥 subfield 覆盖旧 subfieldIds）；保留旧 resolveSubfieldIds 作降级"
+      - "自检：mvn compile -pl gkxlumen-display -am (JDK 17) exit 0；VS Code Java 诊断 2 文件零错误；python -m py_compile 3 文件零错误"
+      - "handoff 落 agent-handoffs/科技发展态势-TS/SYSINT-TOPICMAP-03-L01-Topic桥消费层展示集成.md，含实查证据、改动清单、遗留事项"
+      - "本任务改动范围仅 5 个文件，其他仓库遗留改动（SituationMockProvider / ShenzhenInnovationController 等）不纳入本次 commit"
+    update_time: "2026-11-05T16:45:00+08:00"
