@@ -99,23 +99,36 @@ region_innovation_elements_report   # 要素报告（template: synth-element-rep
 region_innovation_collaboration_report  # 协同报告（template: synth-collaboration-report-v1）
 ```
 
-params（#102 create 的 `params` JSON，三叶同构）：
+params（#102 create 的 `params` JSON）：
 
 ```json
 {
   "region": "深圳",
   "compare": "全国重点城市",
-  "window": "3y"
+  "window": "3y",
+  "weight_profile": "INDEX_MAIN"
 }
 ```
 
-去重指纹 `analysis_fp` = `region|compare|window`（与 demo `synthCtxFingerprint` 一致）。
+- 要素/协同：`params` 仅 `region/compare/window`（无 `weight_profile`）。
+- 活力：可选 `weight_profile`（`INDEX_MAIN`\|`WEIGHT_MAIN`\|`EQUAL`；缺省归一为 `INDEX_MAIN`）。细则见 `sdd/l2/SYNTH-L2-VIT-AI-TABLES.md` §3。
+
+去重指纹 `analysis_fp`：
+
+| 叶 | 公式 |
+|---|---|
+| 要素 / 协同 | `region\|compare\|window`（与 demo `synthCtxFingerprint` 一致） |
+| **活力** | `region\|compare\|window\|weight_profile_norm`（归一后四段；**覆盖**旧三段式） |
+
+活力旧任务（仅三段 fp）：**禁止**一律当成 `INDEX_MAIN`。须按冻结权重 / `methodVersion` 识别档位；无法确认 → `legacy_unknown`，**禁止自动复用**（新 `INDEX_MAIN` 请求必须重跑）。细则 `sdd/l2/SYNTH-L2-VIT-AI-TABLES.md` §3。
+
+冻结参数 / running 复用 / **查询缓存键** / 报告恢复须与上表一致。**不可变 `snapshotId` ≠ 缓存键**（见下）。
 
 ### 2.3 新增接口（唯一真实新增：跑批快照）
 
 ```text
 GET {GW}/topic/v1/synth/{leaf}/batch-snapshot     leaf ∈ vitality | elements | collaboration
-Query: region, compare, window(1y|3y|5y)
+Query: region, compare, window(1y|3y|5y)[, weight_profile]   # weight_profile 仅 vitality
 ```
 
 响应（成功）：
@@ -124,13 +137,30 @@ Query: region, compare, window(1y|3y|5y)
 {
   "code": 0, "ok": true, "msg": "ok",
   "data": {
-    "snapshotId": "batch:深圳|全国重点城市|最近3年",
+    "snapshotId": "snap:calc_20261105_vit_001",
+    "cache_key": "深圳|全国重点城市|最近3年|INDEX_MAIN",
+    "calc_batch_id": "calc_20261105_vit_001",
     "computedAt": "2026-08-10 02:00",
     "methodVersion": "vDemo-vitality",
+    "weight_profile": "INDEX_MAIN",
+    "batch_meta": {
+      "snapshotId": "snap:calc_20261105_vit_001",
+      "calc_batch_id": "calc_20261105_vit_001",
+      "graph_source": "gapfill",
+      "gapfill_batch_id": "gf_20261105_collab_001",
+      "region": "深圳",
+      "compare": "全国重点城市",
+      "window": "最近3年",
+      "published_at": "2026-08-10 02:00"
+    },
     "result": { "...": "LeafResult JSON，与 #105 resultData 同构" }
   }
 }
 ```
+
+> **`snapshotId`（不可变）**：必须含 `calc_batch_id` 或唯一快照记录 ID（示例 `snap:{calc_batch_id}`）；同条件重跑产生**新** ID，旧 ID 仍指向旧批。  
+> **`cache_key`（稳定查询键）**：条件(+活力 profile)；仅索引「当前最新成功快照」，可被新批覆盖指向。  
+> `weight_profile` / 四段 `cache_key`：仅活力；要素/协同 `cache_key` 三段。`batch_meta`：协同必带；活力/要素至少含 `snapshotId`+`calc_batch_id`。协同细则见 `sdd/l2/SYNTH-L2-COLLAB.md` §3.1。
 
 - `404 / code!=0`（无快照）→ 前端进 `no_batch` 态，引导「开始分析」
 - 前端 mock：`registerApiMock('synthVitalityBatch'|'synthElementBatch'|'synthCollabBatch')`，**仅默认三元组**（深圳×全国重点城市×最近3年）返回快照，其余 404（对齐 demo `hasVitalityBatchSnapshot`）
