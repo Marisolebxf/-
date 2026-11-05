@@ -1,6 +1,6 @@
 # SYNTH L2 · 要素册 — 区域创新要素分析（ARCH/DATA/API/METRIC 合并册）
 
-- 日期：2026-11-05（v1.0.5：会签退回。当前 8 张改落 ADS；四维不计入本期、不记已覆盖；删规划句）
+- 日期：2026-11-05（v1.0.6：三方会签意见落盘；v1.0.5 会签退回。当前 8 张改落 ADS；四维不计入本期、不记已覆盖；删规划句）
 - 状态：**DRAFT，第一轮退回后改稿，待复审**
 - 上游：总册 §2.2/§11（v1.0.5-draft）；需求真源 SRS 136–138；类型/层次/领域同核 `M_SYNTH_187_1`–`M_SYNTH_189_1`，综合 `M_SYNTH_190_1`。这四项不顶替序号 137 的四维打分
 - 现状衔接：FE ELEM 三页已联调中（`LUMEN-INTEL-FE-ELEM`）；后端未建——本册即要素后端实现依据。**FE 非终态**：四维区块（`ElementsWorkbenchView.vue` 386–）设计态=缺失态+红问号（137② blocked）；现网若仍挂演示快照属待清差距，见 §7。
@@ -115,10 +115,10 @@ lumen-ui-topic 要素三页（在途，差距见 §6）
 
 | 角色 | 状态 |
 |---|---|
-| 架构 | 未签 |
-| 算法 | 未签（137② METRIC-OPEN 注册：唐绍祖牵头） |
-| 数据 | 未签 |
-| 产品 | 未签（136 全景模块形态确认） |
+| 架构 | 已签-架构（2026-11-05）：**可签**。当前 8 张 ADS + 四维不建表不出数（`[]`+`reason=metric_not_registered`）、全景 DWD 真查无表，符合 D18/D16 边界；137② 诚实 blocked 不记已覆盖。保留意见 AR-8（全景 DWD 聚合性能首版直查、超时再议缓存另裁定——建议预约定 timeout 阈值）与待确认 TC-3 见 `agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md`，不挡签 |
+| 算法 | 已签-算法（2026-11-05）：**可签**（137② METRIC-OPEN 注册：唐绍祖牵头，仍为独立外部依赖）。装包读表与 calc-logic 一致性核对通过：要素等权（`EQUAL` 1/3×3）由 seed 灌 `synth_elem_weight`（`is_mock=1`），装包只读已灌行、缺行 null+reason 禁直接填 1/3；三透镜同核 `M_SYNTH_ELEM_INDEX`≡`M_SYNTH_190_1`、类型/层次/领域 ≡`M_SYNTH_187_1`–`189_1` 只算一处、贡献路径优先已有 SPEC `M_SYNTH_ELEM_CONTRIB` 且 E-02 未闭禁因果，符合算法规约。137② 本期不建表不灌数不出数（`evaluationDimensions=[]`+`reason=metric_not_registered`）、187–189 不顶替四维——合规，不触碰唐绍祖锁定闭包，不涉 -合规/-合理 成对改名；候选方向仅供其参考。**保留意见**：①METRIC-OPEN 定稿（公式五要素）解锁前四维区块不得接任何数据源；②全景聚合口径（计数 SQL+明细 TopN 按稳定 ID 去重）在装包函数内实现、引用 calc-logic 源表清单，禁随机数禁 0 填充 |
+| 数据 | 已签-数据（2026-11-05）：**可签**。DDL 清单核对通过：要素 8 张 ADS（index/type_score/level_score/domain_score/indicator/weight/contrib/rank）落 `demo_gkxlumenx_ads`/`gkxlumenx_ads`，唯一键基础=region+compare+window+`calc_batch_id`、type/level 另含 `metric_id`+`type_code`/`level_code`（INDEX 与 SCORE 同表不碰撞），公共列与血缘 COMMENT 齐；`synth_elem_four_dim_score` 不在本期 DDL。全景无表（真实 DWD 汇聚，用户裁定不走 gapfill）符合 D16 边界——未在 `gkxlumenx_gapfill` 新造表；预填 `is_mock=1`。**保留意见**：①AR-4 批次清理建议（按 `calc_batch_created_at` 保留最近 3 批、保护 batch_meta 引用批）适用本册 8 表，DDL 单落地时写入任务定义，不另开表；②全景 DWD 直查性能须按 AR-8 预约定 timeout，避免首屏拖慢 |
+| 产品 | 未签（产品行见总册会签表：TC-3 136 全景模块形态待确认不挡会签、超时降级可接受；Q-SYNTH-02/E-01/E-02 🟡 角标策略同总册） |
 
 ## 10. 修订
 
@@ -133,4 +133,5 @@ lumen-ui-topic 要素三页（在途，差距见 §6）
 | v1.0.2 | 2026-11-05 | P2：实现清单改为「当前 8 张 + 解锁后第 9 张四维」 |
 | v1.0.4 | 2026-11-05 | 观测：`snapshotId` 不可变含批次；`cache_key` 条件最新索引（对齐总册 v1.0.4） |
 | v1.0.5 | 2026-11-05 | 会签退回：8 张改落 ADS；删「DDL 9 张」、page_token、未来官方权重、缺行填 1/3；137② 不记已覆盖 |
+| v1.0.6 | 2026-11-05 | 三方会签意见落盘：算法可签（等权装包/同核只算一处合规，137② METRIC-OPEN 仍为外部依赖）；数据可签（8 张 DDL 清单/唯一键/gapfill 边界齐、AR-4 清理建议适用）；产品行指向总册（TC-3 确认不挡会签） |
 

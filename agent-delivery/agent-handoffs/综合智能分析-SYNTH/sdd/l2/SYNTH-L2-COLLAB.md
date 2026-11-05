@@ -1,6 +1,6 @@
 # SYNTH L2 · 协同册 — 区域创新协同分析（ARCH/DATA/API/METRIC 合并册）
 
-- 日期：2026-11-05（v1.0.7：1y/3y/5y 不回全历史边；源无年则空图；密度不读 191）
+- 日期：2026-11-05（v1.0.8：三方会签意见落盘；v1.0.7：1y/3y/5y 不回全历史边；源无年则空图；密度不读 191）
 - 状态：**DRAFT，第一轮退回后改稿，待复审**
 - 上游：总册 §2.3/§11（v1.0.5-draft）；需求真源 SRS 139–141。密度不读 `M_SYNTH_191_1`
 - 现状衔接：FE COLLAB 三页已联调中（`LUMEN-INTEL-FE-COLLAB`）；**页面差距见 §6**（产业筛选控件缺失、图谱独立查询接口缺失），不是"已备不改"。
@@ -165,10 +165,10 @@ lumen-ui-topic
 
 | 角色 | 状态 |
 |---|---|
-| 架构 | 未签 |
-| 算法 | 未签 |
-| 数据 | 未签（图事实 blocked：C-05） |
-| 产品 | 未签（141 策略审核态交互、报告前端渲染口径确认） |
+| 架构 | 已签-架构（2026-11-05）：**可签**。空图为「源无年」读表后的诚实结果、非接口写死 JSON，符合 D18；`batch_meta` 持久、指定 snapshotId 无映射禁回落、节点/边本期 0 行不进 gapfill 均合规。保留意见 AR-9（batch_meta `cache_key`+`is_latest` 更新建议包内事务）与待确认 TC-4（总控金路径#5「图谱非空」期望与本期 0 行空图矛盾，须修订——已闭环：总控 §4 #5 改空图合法）见 `agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md`，不挡签 |
+| 算法 | 已签-算法（2026-11-05）：**可签**。装包读表与 calc-logic 一致性核对通过：协同四指标（index/completeness/centrality/density）中三窗空图时指数与三项网络统计 null+`reason=no_year_on_source`、密度不读 `M_SYNTH_191_1` 且不把 191 密度写入 `synth_collab_network_stat`、协同指数式 `Index=(1/3)*[minmax(Completeness)+minmax(Centrality_avg)+minmax(Density)]` 禁密度×强度，与 calc-logic/SYNTH 正式口径一致；C-02 前不派生 cluster（`clusters=[]`+`reason=cluster_rule_unclosed`、禁用完整度 n/N 当归属算法）符合算法规约，不触碰锁定闭包。策略 LLM（141③）可行性确认：结构化结果拼证据 prompt → `llm_client.py`（GLM，Secret `gkx-zhipu-llm`）证据锚定禁编造，失败/未配 degraded 安全降级 `strategies=[]`+`reason`（`narrative.py` SWOT 同款模式），对齐 Q-SYNTH-C-04 临时默认，页面保留「AI 生成·待审核」Tag——链路可行。**保留意见**：①AR-9 采纳——seed/发布侧同 `cache_key` 的 `is_latest` 翻转包在单事务内（或 UPDATE...WHERE is_latest=1 原子改指），写进实现单验收；②真值阻塞 C-05（联合专利/合作项目/人才流动源无年份维度）不因会签解除，非空验收在 `COLLAB-C05-SRC` 解锁单 |
+| 数据 | 已签-数据（2026-11-05）：**可签**（图事实真值 blocked：C-05，非本册 DDL 缺陷）。DDL 清单核对通过：协同指标 4 张 ADS（index/network_stat/relation_input/output_corr）灌数 + 空表 `synth_collab_cluster`（0 行）+ `synth_collab_batch_meta` + 图事实 `synth_collab_node`/`edge`（本期 0 行、`edge` 无 year 列）落 `demo_gkxlumenx_ads`/`gkxlumenx_ads`；唯一键齐（network_stat `+stat_type`、relation_input `+relation_type`、output_corr `+x_metric_id+output_metric_id+period_start+period_end`、node/edge 含 `metric_id`+`entity`/`source_event_id`+`graph_batch_id`、batch_meta `uk(snapshotId)`）；`output_corr` 列对齐 calc-logic（`r_value/sample_n/status/reason`，n<3 存合法 `insufficient` 行非 failed 批）；批次/血缘 COMMENT 齐；不使用 `gkxlumenx_ai`、无 `gapfill_synth_collab_*`，图事实不进 gapfill 符合 D16/D18 边界。「建表不灌行/本期 0 行」为诚实空态非缺数缺陷。**保留意见**：①AR-4 数据侧实现建议——批次清理按 `calc_batch_published_at`/`calc_batch_created_at` 保留最近 3 批，删除前必须检查 `synth_collab_batch_meta` 引用：被任一 meta 行引用的 `calc_batch_id`/`graph_batch_id` 及其关联行跳过保护（batch_meta 旧 snapshotId 仍可读），仅清理无引用的超期批次；「snapshotId 不可变」语义收窄为「保留期内不可变/可回溯」；建议 DDL 单（COLLAB-DDL 范围）补该清理任务定义（频率/扫描列/保护规则），不另开表；②AR-9 事务边界为 seed/发布侧执行约束，DDL 无需加列；③AR-10（本方走查新发现）：`synth_collab_batch_meta` 自定义列集与总册 §11.2「公共列全部新建表必备」存在口径差（meta 表无 `metric_id`/`calc_batch_created_at`/`calc_status`/`is_mock`/`method_version`/`generated_at`，条件列名 region/compare/window 与公共列 region_code/compare_scope/window_label 命名不一），DDL 单须明确 batch_meta 豁免公共列清单及列名映射（`published_at`≈`generated_at`），防 data-agent 双源困惑 |
+| 产品 | 未签（产品行见总册会签表：TC-1/TC-4 金路径#5 空图期望修订已认可；141 策略「AI 生成·待审核」Tag 与报告前端渲染口径同总册确认；Q-SYNTH-03/C-01–C-05 🟡 角标策略同总册） |
 
 ## 10. 修订
 
@@ -188,4 +188,5 @@ lumen-ui-topic
 | v1.0.5 | 2026-11-05 | 会签退回：指标与图改落 ADS；废止 gapfill 图与非空验收；集群不派生；batch_meta 落表；删 depth 与服务端 PDF |
 | v1.0.6 | 2026-11-05 | 边去掉 year；window 不按年份过滤；只实查联合专利与人才流动；不做 Nebula 导出 |
 | v1.0.7 | 2026-11-05 | 源无年：三窗不回全历史边，指数与三项网络统计 null；密度不读 191；node/edge 本期 0 行 |
+| v1.0.8 | 2026-11-05 | 三方会签意见落盘：算法可签（四指标空图口径与 calc-logic 一致、C-02 前不派生 cluster 合规、策略 LLM+degraded 可行、AR-9 事务边界采纳）；数据可签（DDL 清单/唯一键/output_corr 列齐、AR-4 清理建议含 batch_meta 引用保护）；产品行指向总册（TC-4 已认可） |
 
