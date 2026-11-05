@@ -53453,7 +53453,8 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "AV-0 触发：handoff 已提交 + evidence 已回填；等待监管人走查后 push 业务仓"
+    note: |
+      监管人走查放行（human:淮政玮 2026-11-05 口头，经 frontend 会话代提交）：业务仓已 commit + push origin/dev，lumen-svc-platform merge commit 268c30c（含 a62a8a1 修复体；push 被拒后按多会话保护规则 #4 git pull --no-rebase 干净合入远端企业可视化并行改动）。改动=display 两个 Service 的 toAsyncCreateBody 缺 analysis_fp 时自动派生兜底，单测 27 绿。209/212/214/218 无指纹入口全部救活，前端首载自动分析依赖本兜底。
     touched_files:
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyPanoramaService.java"
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicyEvaluationService.java"
@@ -53464,7 +53465,7 @@ tasks:
       - "③ 单测覆盖三点：缺指纹自动补、带指纹原样透传、同参数派生指纹一致；mvn 对应模块 test 绿"
       - "④ 与前端 FIX-POL-INTENSITY-FP-L02（带指纹直发）不冲突：前端带则透传，服务端仅缺失时兜底"
       - "⑤ handoff 含 trace 排查结论（2c4a45ceebc0b53b5b28cceaac53cc63 与 4fa75276 同根因）+ 架构合规自检"
-    update_time: "2026-11-04T15:43:33+08:00"
+    update_time: "2026-11-05T01:09:32+08:00"
   - id: FE-TOPIC-NGINX-CMS-PREFIX-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-04T09:38:32.303Z"
@@ -53634,3 +53635,66 @@ tasks:
       - "更新 FE-POL-TREND-LIVE.test.mjs 自检 + pnpm type-check、pnpm build 两绿；完工直接 commit+push origin/dev（AGENTS.md 完工即推）"
       - "handoff 写入 agent-handoffs/科技政策跟踪-POL/，回填 cost 四字段"
     update_time: "2026-11-04T22:37:40+08:00"
+  - id: POL-EFFECT-CALIBER-V2-L01
+    note: "AV-0 已备齐（handoff+evidence）。D4 仍 mock（公式确定化≠数据就绪，翻转=QPOL-02 甲方归一+正式灌数+QA 四段核验）。🧪 角标不摘。"
+    cost_warn: "false"
+    actual_cost: "$0.35"
+    model_used: "glm-5.3-flash"
+    actual_tokens: "85000"
+    evidence: |
+      handoff=agent-handoffs/POL-EFFECT-CALIBER-V2-L01.md；测试 36 绿（test_policy_job+test_effect_v2）；双仓 fc 同文；前端 policy.test+type-check 绿；四仓 commit：lumen-algo-py a3862be/c31474c · demo-algo-ent-analysis f643655/5d565f4 · orchestration f233c473 · lumen-ui-science-pc 898d7ac（均 origin/dev）
+    claimed_at: "2026-11-04T17:39:32.876Z"
+    last_seen_at: "2026-11-04T17:39:32.876Z"
+    lock_until: "2026-11-04T21:39:32.876Z"
+    claimed_by: "agent:frontend-agent（兼 data 执行，监管人已口头拍板口径 A）"
+    title: "政策效果双指标口径 v2（去随机确定性）：effect.py 拆分 + seed/矩阵/QPOL-02 修订 + vendor 同步"
+    status: "integration"
+    agent: "data-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 60000
+    definition_of_done:
+      - "① lumen-algo-py 与 demo-algo-ent-analysis 的 polan/eval/effect.py 去随机：效果评分=有效率×50%+力度均值×50%，落地实效=有效率×100；socio/env/impl 三处 rng.gauss 删除；ext 标 v2 口径与 QPOL-02"
+      - "② 两个 metric seed（EFFECT_SCORE/IMPLEMENTATION_EFFECT）definition/formula 追加 v2 临时基线（不覆盖王惠三维正本，判档/is_mock 不动，version 2）"
+      - "③ 矩阵 YAML d1_note/d4_note 追加 v2 记录（D4 仍 mock，翻转待 QA 四段核验）；QPOL-02 临时默认列追加 2026-11-05 淮政玮拍板记录（仍 🟡）"
+      - "④ calc-logic 两份 MD 顶部加 v2 临时基线 addendum（正本章节不改）"
+      - "⑤ 纯函数化评分并留最小自检（确定性断言）；vendor 同步 fc 一致；前端镜像重生成或注明后续单"
+    update_time: "2026-11-05T01:49:49+08:00"
+  - id: FIX-POL-CMP-SEARCH-L01
+    model_used: "glm-5.3-flash"
+    evidence: "commit 5d3b636 推 origin/dev；FE-POL-CMP-LIVE 自检全绿；type-check EXIT=0；handoff agent-handoffs/科技政策跟踪-POL/FIX-POL-CMP-SEARCH-L01.md"
+    cost_warn: "green"
+    actual_tokens: 60000
+    actual_cost: 0.03
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-04T18:59:26.378Z"
+    last_seen_at: "2026-11-04T18:59:26.378Z"
+    lock_until: "2026-11-04T22:59:26.378Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策详情对比·候选下拉连库搜索：只拉首页 20 条本地过滤，关键词搜不到目标政策"
+    status: "pending_test"
+    agent: "frontend-agent"
+    epic: "科技政策跟踪"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "完工即推：commit 5d3b636 已推 origin/dev，自检/type-check 绿，handoff 已落盘。待 CI 部署后复测候选搜索。"
+    touched_files:
+      - "src/views/policy/panorama/components/ComparisonModal.vue"
+      - "src/views/policy/panorama/FE-POL-CMP-LIVE.test.mjs"
+    definition_of_done:
+      - "① 候选下拉输入防抖后调 panoramaSearch({keyword}) 连库搜索，能搜到 18363390 / 18407696 等任意关键词命中的政策，不再只过滤打开时那 20 条"
+      - "② 空输入回落首页默认 20 条；搜索失败不清已返回候选（liveOptionsError 提示在场）"
+      - "③ 选中项 id 与 detail 接口 policy_id 同源，选中后六维对比链路不受影响"
+      - "④ USE_MOCK=true 种子轨零回归；FE-POL-CMP-LIVE.test.mjs 新增远程搜索断言后全绿；pnpm type-check 绿"
+      - "⑤ handoff 附根因（首页 20 条含 9999/2999 脏日期国际行霸屏）与复验路径"
+    update_time: "2026-11-05T03:05:51+08:00"
