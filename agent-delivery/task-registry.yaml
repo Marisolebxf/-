@@ -54159,13 +54159,18 @@ tasks:
       - "本任务改动范围仅 5 个文件，其他仓库遗留改动（SituationMockProvider / ShenzhenInnovationController 等）不纳入本次 commit"
     update_time: "2026-11-05T16:45:00+08:00"
   - id: LUMEN-INTEL-SDD-SIGNOFF-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md"
+    cost_warn: "green"
+    actual_tokens: 90000
+    actual_cost: 0.4
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-05T10:56:00.591Z"
     last_seen_at: "2026-11-05T10:56:00.591Z"
     lock_until: "2026-11-06T10:56:00.591Z"
     claimed_by: "agent:arch-agent"
     title: "综合智能分析 SDD v1.0.4 — 四方会签（架构/算法/数据/产品）"
-    status: "in_progress"
+    status: "done"
     agent: "arch-agent"
     epic: "E8-综合智能分析"
     repo: "gkx-orchestration"
@@ -54174,7 +54179,8 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "coordinator_dispatch：子智能体开始四方会签"
+    note: |
+      签收授权来源：human:徐滕强 本会话明示「以淮政玮的身份领取并执行后续动作」（2026-11-05 长任务总控）。四方会签完成：架构可签（AR-1~9）+ 算法/数据/产品可签（AR-10、TC-2 采纳、TC-3 部分确认），四册版本 v1.0.6/v1.0.8，handoff 完整。AR-10 已回写 COLLAB-DDL note
     design_refs:
       - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/综合智能分析-系统详细设计说明书.md"
       - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-VIT-AI-TABLES.md"
@@ -54185,10 +54191,15 @@ tasks:
       - "明确可实现项 vs blocked 项（137② METRIC-OPEN、Q-SYNTH-C-05），不替甲方拍板"
       - "架构合规自检 D1–D18（调用链/Nebula/D16/D18/gapfill 边界）"
       - "handoff: agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md"
-    update_time: "2026-11-05T18:56:06+08:00"
+    update_time: "2026-11-05T19:43:55+08:00"
   - id: LUMEN-INTEL-VIT-FP-SNAP-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T11:43:57.224Z"
+    last_seen_at: "2026-11-05T11:43:57.224Z"
+    lock_until: "2026-11-06T11:43:57.224Z"
+    claimed_by: "agent:api-agent"
     title: "综合智能分析活力 — analysis_fp 四段/legacy_unknown/snapshotId 不可变落地"
-    status: "backlog"
+    status: "in_progress"
     agent: "api-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-svc-platform"
@@ -54197,8 +54208,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 120000
-    note: |
-      【v1.0.5 口径修正】五张结果表改落 ADS synth_vit_*（demo_gkxlumenx_ads/gkxlumenx_ads，废止 *_ai）；gapfill 只作三张既有输入（new_product_sales_ratio/rd_employee/policy_effect）。AR-6：seed 同 calc_batch_id 写五表，校验失败整批同置 failed（跨表同批一致性写进验收）
+    note: "coordinator_dispatch 开工（svc-platform 仓，与 lumen-algo-py 线并行）"
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     collaborators:
@@ -54212,10 +54222,15 @@ tasks:
       - "旧三段任务按冻结权重/methodVersion 识别；无法确认=legacy_unknown 禁复用（TEMP_WEIGHTS 不落任一档）"
       - "snapshotId 不可变含 calc_batch_id；cache_key 条件索引可覆盖；A/B 批不串（自检断言）"
       - "单测/自检；handoff+ponytail+cost 四字段；push origin/dev CI 绿"
-    update_time: "2026-11-05T19:25:22+08:00"
+    update_time: "2026-11-05T19:44:05+08:00"
   - id: LUMEN-INTEL-ELEM-DDL-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T11:43:56.043Z"
+    last_seen_at: "2026-11-05T11:43:56.043Z"
+    lock_until: "2026-11-06T11:43:56.043Z"
+    claimed_by: "agent:data-agent"
     title: "综合智能分析要素 — 当前 8 张 _ai 表 DDL+预填"
-    status: "backlog"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54224,8 +54239,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 80000
-    note: |
-      【v1.0.5 口径修正】库改 demo_gkxlumenx_ads/gkxlumenx_ads（废止 *_ai）：当前 8 张 ADS DDL+seed（index/type/level/domain/indicator/weight/contrib/rank）；四维不建不计入。脚本 synth_elem.sql。唯一键含条件+calc_batch_id；预填 is_mock=1
+    note: "coordinator_dispatch 开工（同仓与 COLLAB-DDL 串行：本单先行）"
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     design_refs:
@@ -54236,7 +54250,7 @@ tasks:
       - "第 9 张 synth_elem_four_dim_score 不建（137② blocked；METRIC-OPEN 解锁后另单）"
       - "唯一键含 region+compare+window(+…)+calc_batch_id；预填 is_mock=1"
       - "handoff+cost；push origin/dev"
-    update_time: "2026-11-05T19:25:18+08:00"
+    update_time: "2026-11-05T19:44:05+08:00"
   - id: LUMEN-INTEL-ELEM-PY-L01
     title: "综合智能分析要素 — Python 装包与 /internal 快照/任务"
     status: "backlog"
@@ -54306,8 +54320,13 @@ tasks:
       - "type-check/自检/build 三绿；复刻五维自检（V1–V7/R1–R5）；handoff+ponytail+cost；push origin/dev CI 绿"
     update_time: "2026-11-05T18:54:53+08:00"
   - id: LUMEN-INTEL-COLLAB-DDL-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T11:43:57.028Z"
+    last_seen_at: "2026-11-05T11:43:57.028Z"
+    lock_until: "2026-11-06T11:43:57.028Z"
+    claimed_by: "agent:data-agent"
     title: "综合智能分析协同 — _ai 5 张 + gapfill 2 张 DDL+预填"
-    status: "backlog"
+    status: "claimed"
     agent: "data-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54317,7 +54336,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 90000
     note: |
-      【v1.0.5 口径修正，覆盖建单 DoD 旧表述】库改 demo_gkxlumenx_ads/gkxlumenx_ads（废止 *_ai/gapfill 图）：DDL=指标 4 张（index/network_stat/relation_input/output_corr，预填 is_mock=1）+ 空表 3 张（cluster/batch_meta/node/edge——node/edge 本期 0 行，源无年禁灌演示边）。脚本 lumen-algo-py/scripts/mysql/synth_collab.sql。真源 sdd/l2/SYNTH-L2-COLLAB.md v1.0.7
+      【AR-10 追加】synth_collab_batch_meta 豁免总册 §11.2 公共列（无 metric_id/calc_batch_created_at/calc_status/is_mock/method_version/generated_at），DDL 注释写明豁免清单+列名映射（published_at≈generated_at）。其余照 v1.0.5 修正 note
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     design_refs:
@@ -54327,7 +54346,7 @@ tasks:
       - "seed 五码含 RELATION_INPUT（canonical 唯一源）；node/edge 行级血缘含 metric_id+gapfill_batch_id"
       - "预填 is_mock=1；真值 blocked Q-SYNTH-C-05 只登记不停工"
       - "handoff+cost；push origin/dev"
-    update_time: "2026-11-05T19:25:12+08:00"
+    update_time: "2026-11-05T19:43:57+08:00"
   - id: LUMEN-INTEL-COLLAB-PY-L01
     title: "综合智能分析协同 — Python 装包+cluster+策略 LLM+batch_meta 持久化"
     status: "backlog"
