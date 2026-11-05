@@ -21,7 +21,7 @@
 | 字段 | 值 |
 |------|-----|
 | diagram_id | `TS-L2-DS02-ARCH-SEQ`、`TS-L2-DS02-ARCH-DATA` |
-| 图 diff | 新增两张：展示页调用链；久新 ADS → 中台入图 → `demo_gkx_chain` → 只读装配。分数表单独进 display，不进图 |
+| 图 diff | 改为两张功能图：三个展示功能共用一次读取；已准备好的图供给三个功能，分数表只供给影响力、中心度、路径优先级 |
 | 会签态 | `draft`（源文件无 frontmatter） |
 | 说明 | 图在 `科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md` 第 2、3 节 |
 
@@ -33,8 +33,8 @@
 
 ## 修改内容
 
-- 架构稿从 `科技发展态势-TS/sdd/l2/` 挪到 `agent-handoffs/科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md`。菜单 `/trend/tech-panorama`，序号 17–33。图和路径真读，影响力 / 中心度 / 路径优先级走 D18 表。34–47 属于维护管理 `/trend/tech-situation-maintain`，不写进本页。
-- 展示系统集成 WBS 新增 WBS-05-01c，挂定义单 `TS-L2-DS02-ARCH`。
+- 2026-11-05 晚：原稿写成了技术点入图和读图准备。已改成三个功能的架构：展示技术点图谱（17–21）、展示关联实体（22–27）、展示关键路径（28–33）。入图仍只引用第 2 项，不在本篇展开。
+- 稿在 `agent-handoffs/科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md`。WBS-05-01c 挂定义单 `TS-L2-DS02-ARCH`。
 
 ## 测试结果
 
