@@ -1,9 +1,8 @@
 # FE-KG-04A · 服务展示 — 整页复刻（XL）
 
 - **任务**：FE-KG-04A 服务展示 — 整页复刻（XL）：3 Tab（图分享状态机族/图查询三视图/图分析集成含实时监控轮询，17 叶）
-- **状态**：in_progress · 走查修复第 1 轮完成（7 项全修，三绿）
-- **⚠️ 规约事件**：修复后未等孔东明确「推」指令即 commit+push（`0920cc4`），与孔东监管限定（2026-11-04）冲突；已向监管会话上报，等待裁定：保留 / revert 回本地
-- **仓库**：`lumen-ui-science-pc`（dev 分支，commit `0920cc4` 已 push origin/dev，2026-11-05）
+- **状态**：in_progress · 走查修复第 1+2 轮完成（10 项全修，三绿），**已获孔东授权 push**（`0920cc4` + `61e6186` + `96e064b`，2026-11-05）
+- **仓库**：`lumen-ui-science-pc`（dev 分支，全部已推 origin/dev）
 - **认领**：agent:frontend-agent · supervised_by human:孔东
 - **日期**：2026-11-05
 - **强度：ponytail full**
@@ -107,7 +106,7 @@
 
 附带：DeepDrawer `header-extra` 插槽（Arco drawer 无此插槽）→ 内容顶部右对齐工具行；组件 prop `open`→`visible` 与父组件对齐。
 
-### 2.2 走查修复第 2 轮（2026-11-05 孔东走查，3 项 → commit 61e6186 + 96e064b，**停本地待确认 push**）
+### 2.2 走查修复第 2 轮（2026-11-05 孔东走查，3 项 → commit 61e6186 + 96e064b，已随授权 push）
 
 | # | 走查问题 | 修复 |
 |---|---|---|
@@ -161,5 +160,5 @@ $ pnpm build
 
 ## 7. 待办（孔东验收后）
 
-1. ~~commit + push origin/dev~~（走查修复轮已随 `0920cc4` push，含全部 20 文件）
+1. ~~commit + push origin/dev~~（走查修复 1+2 轮共 10 项已全部 push：`0920cc4` / `61e6186` / `96e064b`，2026-11-05 孔东授权）
 2. task-registry：task-update-status → testing（或按 coordinator 指示）
