@@ -33,7 +33,7 @@
 
 ## 修改内容
 
-- 新增架构稿 `agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-DS02-ARCH.md`。序号 17–47：图和路径真读，影响力 / 中心度 / 路径优先级走 D18 表，导入和序号 34–40、42–47 为 501、不落库。
+- 新增架构稿 `agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-DS02-ARCH.md`。菜单 `/trend/tech-panorama`，序号 17–33。图和路径真读，影响力 / 中心度 / 路径优先级走 D18 表。34–47 属于维护管理 `/trend/tech-situation-maintain`，不写进本页。
 - 展示系统集成 WBS 的 DS-02 行写上稿路径。
 
 ## 测试结果
