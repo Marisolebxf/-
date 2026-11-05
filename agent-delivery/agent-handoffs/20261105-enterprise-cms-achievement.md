@@ -23,5 +23,8 @@
 - 本地Java67项相关回归通过（服务41、元数据18、榜单5、成果3）；成果必填/类型/年份、已发布限定与范围、名称只合并CMS并审计覆盖。
 - 前端type-check、生产build、cmsOpsMap字段往返（名称与成果四字段）、cmsRankWiring组件回归通过。
 - 后端`cff9e6a`，前端`3ae7268`已推origin/dev；工作区其他会话文件未提交覆盖。
-- 待记录：CI部署和线上名称临时修改/恢复、成果草稿隔离/发布回读/下架回退验收。
+- 前端流水线3951构建/部署成功；后端已合并并行提交形成04f493b，流水线3950 backend:build（BUILD SUCCESS）、helm:lint、backend:image:cms成功；自动发布排队时通过项目SSH将同一CI镜像`gkxlumen-cms:04f493b1`滚动dev，rollout成功。
+- 真实入口回归：君正时代企业`affe69a4a533bbd7d951bc857badf69e`的档案名称临时加联调后缀，保存/详情回读/按新名称搜索均成功；finally恢复原名“深圳君正时代集成电路有限公司”。DWD只读复查原名未变。
+- 核心成果content_id=1，模拟标记MOCK_CORE_20261105，CRUD及四字段回读成功；草稿不进入published-profile，发布后精确读取相同条目，换产业不泄漏，下架恢复原有发布内容；最终为draft。
+- 档案临时发布后published-profile准确返回CMS名称，再恢复原草稿状态；前端渲染字段与该鉴权读接口统一。未宣称浏览器完整点击视觉验收已完成。
 - 不伪造task-registry或成本记录；当前未提供对应MCP。浏览器视觉验收不等同API回归。
