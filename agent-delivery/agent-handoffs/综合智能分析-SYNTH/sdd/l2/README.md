@@ -1,29 +1,29 @@
 # SYNTH L2 拆分总览（并行执行索引）
 
-- 日期：2026-11-05（v1.0：对齐总册 v1.0-draft——`_ai` 19 张、137② blocked、panorama DTO、node/edge 行级血缘；FE 差距审计；ADS 实测结论）
-- 状态：三册 DRAFT；**前置条件：总册《综合智能分析-系统详细设计说明书.md》（v1.0-draft）四方会签**，会签后本三册方可进入各自会签与实现。
+- 日期：2026-11-05（v1.0.5：四角色退回后，结果与图事实改落 ADS。137② 不计入当前表。协同图不进 gapfill）
+- 状态：三册四角色均为同意，可进入签收。签收由 human:淮政玮 执行。不另开任务，不改任务状态。
 
 ## ADS 实测结论（2026-11-04 实查，评审要求的资产审计先行结论）
 
-对 `demo_gkxlumenx_ads` / `gkxlumenx_ads` 实查：**无任何 synth/活力/要素/协同相关表**（唯一近似 `chain_sz_elements` 属产业链域）。→ 三叶**不存在可复用 ADS 结果表**，全部按本目录新建路径执行；`demo/live` 的 `demo_gkxlumenx_ai` / `gkxlumenx_ai` 库已存在（INNOV 域 `innov_carrier_index`、`innov_scholar_influence`，注释「算法侧灌数，功能侧只读」），本模块沿用该库与命名惯例，**不新建库**。逐指标源表/字段级审计在 `metrics/calc-logic/SYNTH/*.md`（「源表字段/待建表字段」节，VIT 系已点名 `dwd_patent`、`dwd_org_tech_tag` 等实表），落 DDL 前按册引用，不另建总表。
+2026-11-04 实查：`demo_gkxlumenx_ads` / `gkxlumenx_ads` 没有 synth 活力/要素/协同表。本模块在这两个库里新建 `synth_*`。不把结果放进 `gkxlumenx_ai`。
 
-## 册清单（落点口径 = 总册 §11.1/§11.3 v1.0-draft：`_ai` **19 张** = 活力 5 + 要素 9 + 协同 5（cluster 计入）；gapfill 新 2 张图事实（+活力既有 3）；strategy=LLM 实时、panorama=DWD 汇聚，均无表）
+## 册清单（落点 = 总册 §11 v1.0.5：ADS。当前必建 = 活力 5 + 要素 8 + 协同指标 4。另有协同空表 cluster、batch_meta、node、edge。四维不建。gapfill 只有活力既有 3 张输入）
 
-| 册 | 覆盖 | `_ai` 表（指标结果/分析产物） | gapfill 表 | blocked 项 | 并行启动条件 |
-|---|---|---|---|---|---|
-| `SYNTH-L2-VIT-AI-TABLES.md` | 活力补册 | 5 / 0 | （活力既有 3 张输入缺项，DBA 单） | 无 | 总册会签即可并行 |
-| `SYNTH-L2-ELEM.md` | 要素全量 | 9（含 137② 正式表，**注册后建**） | 0（panorama=真实 DWD 汇聚无表，DTO 已定） | **137② blocked**：公式细则待算法 Lead 定稿+注册 | 总册会签即可并行（四维单除外） |
-| `SYNTH-L2-COLLAB.md` | 协同全量 | **5**（含 cluster 口径挂靠；strategy 无表=LLM 实时生成） | 2（`gapfill_synth_collab_node/edge`） | 图 2 张真值待 C-05（预填演示行可先行） | 指标表可先行；图真值等贴源 |
+| 册 | 覆盖 | 当前 ADS | 不在本期 | 空态 |
+|---|---|---|---|---|
+| `SYNTH-L2-VIT-AI-TABLES.md` | 活力补册 | 5 张 `synth_vit_*` | — | 权重无行 → null+reason，禁止常量 |
+| `SYNTH-L2-ELEM.md` | 要素 | 8 张 `synth_elem_*` | `synth_elem_four_dim_score` | 四维 `[]`+`reason=metric_not_registered`。全景查 DWD，无表 |
+| `SYNTH-L2-COLLAB.md` | 协同 | batch_meta；index/network_stat/relation_input/node/edge/cluster 建表但 1y/3y/5y 不灌全历史 | 无 gapfill 图 | 空图 `reason=no_year_on_source`。集群 `cluster_rule_unclosed`。密度不读 191。策略 LLM 无表 |
 
-> 落点裁定（总册 §11.1/§11.3 v1.0-draft）：**`_ai` 只放有指标口径的表（19 张 = 5+9+5，cluster 口径挂靠计入；当前可建 18 + planned 第 19 张四维）**；strategy=装包 LLM 实时生成（无表）；panorama=真实 DWD 汇聚（无表，DTO 已定）；node/edge=gapfill 预填演示行（D16，`gapfill_batch_id`，行级血缘拆 metric_id）。**137② 四维 blocked**：公式未定稿前不建表不出数（注册+定稿后建 `_ai` 表）。页面差距见各册「页面差距审计」节。
+库名：`demo_gkxlumenx_ads` / `gkxlumenx_ads`。灌数方 entan-py。接口只读这些表。
 
 ## 并行分配（实现期）
 
 | 并行线 | 依据册 | 动作 |
 |---|---|---|
 | 线1 活力 | VIT 补册 | 5 张 `synth_vit_*` DDL+预填+装包读表 |
-| 线2 要素 | ELEM 册 | 9 张 `_ai` DDL+panorama 真实聚合+装包+FE 四维接线（blocked 待注册）/全景模块 |
-| 线3 协同 | COLLAB 册 | 5 张 `_ai`+2 张 gapfill 图事实+装包（含 LLM 策略）+图谱查询接口+FE 产业筛选 |
+| 线2 要素 | ELEM 册 | 8 张 ADS + 全景 DWD 聚合。四维本期不建 |
+| 线3 协同 | COLLAB 册 v1.0.7 | 建表。1y/3y/5y 不灌全历史，空图 `no_year_on_source`。batch_meta 仍写。集群空表。策略 LLM 无表 |
 
 共享约定（公共列、`calc_batch_created_at` 批次排序、`calc_status`、缺行策略、`weight_source`）以总册 §11 为唯一真源；改共享约定必须回总册改。Java Adapter 要素/协同共改 BE-1 时按「同仓一单」协调。
 
@@ -46,4 +46,5 @@
 | v0.5 | 2026-11-04 | 对齐总册 v0.7：137 过渡数据落表方案（后被 v0.6 改 blocked）；gapfill 批次字段统一 `gapfill_batch_id`；权重 `weight_profile_code` |
 | v0.6 | 2026-11-04 | 对齐总册 v0.8：`_ai`=**19 张**（5+9+5 按实际清单）；137② 改 blocked（不建表不出数）；panorama DTO 已定；node/edge 行级 metric_id 血缘；协同 5 张口径统一 |
 | v1.0 | 2026-11-05 | 对齐总册 v1.0-draft；头部/册清单版本引用统一；标明 18 可建 + planned 第 19 张 |
+| v1.0.5 | 2026-11-05 | 四角色退回后：结果与图改落 ADS；137② 与集群不记本期交付 |
 

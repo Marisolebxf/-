@@ -1,28 +1,30 @@
-# SYNTH L2 · 活力补册 — `*_ai` 结果表与读装包（ARCH/DATA/API/METRIC 合并册）
+# SYNTH L2 · 活力补册 — ADS 结果表与读装包（ARCH/DATA/API/METRIC 合并册）
 
-- 日期：2026-11-05（v1.0.4：旧任务 legacy 识别禁一律 INDEX_MAIN；snapshotId 不可变含 calc_batch_id）
-- 状态：**DRAFT，待四方会签**（架构/算法/数据/产品）
-- 定位：**补册**。活力叶已由 VIT 五单（`LUMEN-INTEL-VIT-PY/BE/FE/GAPFILL/GAPFILL-DATA` + `DBA-L01`）覆盖任务接口、Java 白名单、FE 接线、gapfill 输入缺项；**本册只补五单未覆盖部分：活力结果在 `*_ai` 的落表、灌行与读装包。**不重写五单内容，不新建 registry 单（并行启动时按 §7 边界扩范围/认领）。
-- 上游：总册 §2.1/§4/§5/§6/§11（v1.0-draft）；`../表落点与gapfill说明.md`；指纹与总纲冲突时以**本册 §3** 为准（活力叶）
+- 日期：2026-11-05（v1.0.6：三方会签意见落盘；v1.0.5 会签退回。五张结果改落 ADS；权重缺行禁常量；快照可按 snapshotId 读旧批）
+- 状态：**DRAFT，第一轮退回后改稿，待复审**
+- 定位：**补册**。活力叶已由 VIT 五单覆盖任务接口、Java 白名单、FE 接线、gapfill 输入缺项。本册只补结果落表、灌行与读装包：五张 `synth_vit_*` 新建在 `demo_gkxlumenx_ads` / `gkxlumenx_ads`。不新建 registry 单。
+- 上游：总册 §2.1/§11（v1.0.5-draft）；指纹与总纲冲突时以**本册 §3** 为准
 
 ## 1. ARCH（流程与落点）
 
 ```text
-实算/预填（Python, vendor/entan-py）
-  读：gkxlumenx_gapfill.gapfill_synth_*（输入缺项，VIT-GAPFILL 五单管）
-  写：gkxlumenx_ai.synth_vit_*（本册 5 张；整批写，见 §2 批次语义）
-  读：synth_vit_*（只取 succeeded 最新批）→ 装包 VitalityResult
-    → GET /internal/v1/synth/vitality/batch-snapshot（秒开）
-    → POST /internal/v1/synth/jobs/execute（任务）
+实算/预填（Python, vendor/entan-py，seed_synth_vit_*.py）
+  读：gkxlumenx_gapfill 三张既有输入（new_product_sales_ratio / rd_employee / policy_effect），不是结果表
+  写：demo_gkxlumenx_ads / gkxlumenx_ads 的 synth_vit_*（5 张；预填 is_mock=1；整批写）
+  读：只读上述 ADS 表 → 装包 VitalityResult
+    → GET /topic/v1/synth/vitality/batch-snapshot
+    → GET /internal/v1/synth/vitality/batch-snapshot
+    → POST /internal/v1/synth/jobs/execute
 ```
 
 - 指数入口同核：`M_SYNTH_VIT_INDEX` ≡ `M_SYNTH_186_1`，只算一处。
 - 上游维分：`M_SYNTH_182_1`(科技)/`M_SYNTH_184_1`(人才)/`M_SYNTH_185_1`(政策) 已有 SPEC；`M_SYNTH_183_1` 产业维未换源 → 维分产业行缺，不补 0。
-- 权重三方案（v0.7 对齐 calc-logic 实核，勿混）：`M_SYNTH_VIT_WEIGHT` 件主口径=**0.30/0.35/0.20/0.15**（自定义，`weight_profile_code='WEIGHT_MAIN'`，provenance=自身）；`M_SYNTH_VIT_INDEX` 件口径=**0.30/0.30/0.20/0.20**（`'INDEX_MAIN'`，`weight_provenance_metric_id='M_SYNTH_VIT_INDEX'`——该组权重归属指数件，不冒充 `M_SYNTH_VIT_WEIGHT` 自有口径）；等权 0.25×4（`'EQUAL'`，占位）。三档并列存表（对应 calc-logic「三档并列报出」），行经 `weight_profile_code` 区分互不覆盖；四表唯一键均含该列，指数与权重同 profile 配对读取。返回体统一 `weight_source='calc_logic_placeholder'`。
+- 权重三方案存表，不在装包里写死：`WEIGHT_MAIN`=0.30/0.35/0.20/0.15（`M_SYNTH_VIT_WEIGHT`）；`INDEX_MAIN`=0.30/0.30/0.20/0.20（`weight_provenance_metric_id='M_SYNTH_VIT_INDEX'`）；`EQUAL`=0.25×4。三档由 seed 写入 `synth_vit_weight`，`is_mock=1`。指数与权重同 `weight_profile_code` 配对读表。
+- **缺行**：只读 `synth_vit_weight` 已灌行。没有该 profile 行就 `null`+`reason`+`confidence`。装包不得填入 `0.30/0.35/0.20/0.15`、`0.30/0.30/0.20/0.20` 或 `0.25×4`。
 
 ## 2. DATA（表 · 每表四项：粒度/唯一键/写入/读批）
 
-公共列与批次总规则见总册 §11.2（`calc_status` running→succeeded/failed；只读 succeeded 最新批；整批写不覆盖；保留 3 批）。本节只写每表差异。
+库：`demo_gkxlumenx_ads` / `gkxlumenx_ads`。灌数方 entan-py `seed_synth_vit_*.py`。读取：`GET /topic/v1/synth/vitality/batch-snapshot` 与 `GET /internal/v1/synth/vitality/batch-snapshot`，装包只读这五张 ADS 表。公共列见总册 §11.2。
 
 | 表 | 业务粒度（一行=） | 唯一键（`uk_`） | 写入方式 | 读取批次规则 |
 |---|---|---|---|---|
@@ -73,9 +75,10 @@
 
 权重档对照（识别用，容差 0）：`EQUAL`=0.25×4；`INDEX_MAIN`=0.30/0.30/0.20/0.20；`WEIGHT_MAIN`=0.30/0.35/0.20/0.15。现网 mock `TEMP_WEIGHTS`（0.30/0.30/0.25/0.15）**不落任一一档** → 一律 `legacy_unknown`。
 
-- 快照 `GET /topic/v1/synth/vitality/batch-snapshot?region=&compare=&window=&weight_profile=`：
-  - 200：`{snapshotId, cache_key?, computedAt, methodVersion, weight_profile, calc_batch_id, result: VitalityResult}`（`snapshotId`=不可变；`cache_key` 可选回显查询键；回写 MOCK-INV）
-  - 「当前条件最新」：服务端用 `cache_key` 查索引指向的最新成功 `snapshotId`，再按该 ID 取批；重跑成功后索引改指新 ID，**旧 snapshotId 仍可读旧批**
+- 快照 `GET /topic/v1/synth/vitality/batch-snapshot?region=&compare=&window=&weight_profile=&snapshotId=`：
+  - 200：`{snapshotId, cache_key?, computedAt, methodVersion, weight_profile, calc_batch_id, result: VitalityResult}`
+  - 传入 `snapshotId`：只读该批，不改走最新批
+  - 未传 `snapshotId`：用 `cache_key` 取最新成功 `snapshotId`，再按该 ID 读 ADS 批；重跑成功后索引改指新 ID，旧 `snapshotId` 仍可读旧批
   - 404：非默认三元组无预计算 → 前端 no_batch 引导「开始分析」
   - 500：仅基础设施故障；缺数据一律 200+null/reason，不 500
 - 任务 create params：`{ region, compare, window, weight_profile? }`；下游 execute 同构；`analysis_fp` 四段；失败 → `failed`+`reason`。
@@ -87,11 +90,11 @@
 |---|---|---|---|---|
 | `M_SYNTH_VIT_INDEX` | aligned | mock | `synth_vit_index` | null+reason |
 | `M_SYNTH_VIT_DIM_SCORE` | aligned | mock | `synth_vit_dim_score` | 产业维 null（`M_SYNTH_183_1` 未换源） |
-| `M_SYNTH_VIT_WEIGHT` | aligned | mock | `synth_vit_weight` | 有 calc-logic 默认 → 默认+`weight_source`；无 → null |
+| `M_SYNTH_VIT_WEIGHT` | aligned | mock | `synth_vit_weight` | 无行 → null+reason+confidence；禁止常量回填 |
 | `M_SYNTH_VIT_INDICATOR` | aligned | mock | `synth_vit_indicator` | 缺项行 null（gapfill 灌后收敛） |
 | `M_SYNTH_VIT_RANK` | aligned | mock | `synth_vit_rank` | ranks 空数组 |
 
-`deltaVsCompare`/`yoy`/`trend`/`strengths`/`weaknesses` 无独立 id：装包推导，推不出空。D4 改 live 条件：`*_ai` 实算成功 + 缺项闭合（总册 §11.5）。开放项 `Q-SYNTH-01 / V-01 / V-02` 🟡 不拍板。
+`deltaVsCompare`/`yoy`/`trend`/`strengths`/`weaknesses` 无独立 id：装包推导，推不出空。D4 改 live 条件：ADS 实算成功 + 缺项闭合（总册 §11.5）。开放项 `Q-SYNTH-01 / V-01 / V-02` 🟡 不拍板。
 
 ## 5. 观测与可追溯
 
@@ -102,7 +105,7 @@
 ## 6. 验收条件
 
 1. 默认三元组快照 200 且字段与 MOCK-INV §1 同构；非默认 404。
-2. 任一缺行：null+reason+confidence（权重场景带 `weight_source`），无 0 填充、无随机数。
+2. 任一缺行：null+reason+confidence。权重表无行时不得填入三档向量。无 0 填充、无随机数。
 3. 只读 `succeeded` 批：构造一条 `running`/`failed` 批数据不被读取（自检脚本断言）；三权重方案（`WEIGHT_MAIN`/`INDEX_MAIN`/`EQUAL`）行并存互不覆盖，`synth_vit_index` 与 `synth_vit_weight` 同 profile 配对读取（断言 index 用的权重与 weight 表该 profile 行一致）。
 4. **profile 规则**：未传 `weight_profile` → 响应/装包为 `INDEX_MAIN`；传 `EQUAL`/`WEIGHT_MAIN` 时 index/dim/weight/rank **四表同码**；非法枚举 400；报告字段与快照 `weight_profile` 一致。
 5. **指纹**：同条件先跑 `EQUAL` 再选 `INDEX_MAIN` → **不得**复用等权任务；四段 fp 断言。
@@ -115,7 +118,7 @@
 
 | 动作 | 仓/文件 | 归属 |
 |---|---|---|
-| 5 张 DDL + 预填脚本 | `lumen-algo-py/scripts/mysql/synth_vit.sql` + `seed_synth_vit_*.py`（新建） | data/算法并行线 1 |
+| 5 张 ADS DDL + 预填脚本 | `lumen-algo-py/scripts/mysql/synth_vit.sql` + `seed_synth_vit_*.py`（库 `demo_gkxlumenx_ads` / `gkxlumenx_ads`） | data/算法并行线 1 |
 | 装包读表改造 | `vendor/entan-py` synth 装包函数 | 算法线 1 |
 | 快照/任务接口 | 已有 VIT-PY/BE 单范围（本册不重复） | 既有五单 |
 | gapfill 输入 | 既有 GAPFILL 两单 + DBA 单 | 既有五单 |
@@ -124,10 +127,10 @@
 
 | 角色 | 状态 |
 |---|---|
-| 架构 | 未签 |
-| 算法 | 未签 |
-| 数据 | 未签 |
-| 产品 | 未签 |
+| 架构 | 已签-架构（2026-11-05）：**可签**。五张 ADS 表 D18 三要素齐（表名/灌数方/读取接口）；`snapshotId` 不可变 ≠ `cache_key`、`legacy_unknown` 禁复用、权重缺行禁常量均合规。保留意见 AR-6（五表同批写入的跨表原子性：册内只定义单表批次状态机，建议 seed 以同 `calc_batch_id`+同批次时间戳写五表、校验失败整批同置 `failed`，写进实现单验收）与待确认 TC-2 见 `agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md`，不挡签 |
+| 算法 | 已签-算法（2026-11-05）：**可签**。装包读表与 calc-logic 一致性核对通过：活力三档权重（`WEIGHT_MAIN`=0.30/0.35/0.20/0.15 / `INDEX_MAIN`=0.30/0.30/0.20/0.20 含 `weight_provenance_metric_id` 归属指数件 / `EQUAL`=0.25×4）由 seed 灌 `synth_vit_weight`（`is_mock=1`），装包按 `weight_profile_code` 同码配对读四表、缺行 null+reason 禁常量回填，与 calc-logic/SYNTH 登记一致；`legacy_unknown` 禁复用、同核 `M_SYNTH_VIT_INDEX`≡`M_SYNTH_186_1` 只算一处、上游 183_1 产业维缺不补 0 均符合算法规约。**保留意见**：采纳 TC-2/AR-6 建议条款——seed 以同 `calc_batch_id`+同 `calc_batch_created_at` 写五表、任一表校验失败整批同置 `failed`，写进 `LUMEN-INTEL-VIT-FP-SNAP-L01` 验收（采纳即 TC-2 闭合，不再另立编号） |
+| 数据 | 已签-数据（2026-11-05）：**可签**。DDL 清单核对通过：活力 5 张 ADS（index/dim_score/weight/indicator/rank）落 `demo_gkxlumenx_ads`/`gkxlumenx_ads`，唯一键均含 region+compare+window+`calc_batch_id`+`weight_profile_code`（index/rank 另含 rank_city_code），公共列（批次字段/calc_status/is_mock/method_version）齐，血缘 COMMENT=兄弟指标+gapfill 输入 3 张由 DDL 落地时写入。预填范围=默认三元组（Q-SYNTH-V-02 🟡）、预填行 `is_mock=1`。「最新批」按 `calc_batch_created_at` 排序禁字符串比较，与总册 §11.2 一致。**保留意见**：AR-4 批次清理建议（按批次时间保留最近 3 批、保护 batch_meta 引用批）适用本册五表，DDL 单落地时写入任务定义，不另开表 |
+| 产品 | 未签（VIT 册无产品专属待确认项；产品行见总册会签表 TC-1/TC-3 确认与 Q-SYNTH-01/V-01/V-02 🟡 角标策略） |
 
 ## 9. 修订
 
@@ -144,4 +147,6 @@
 | v1.0.2 | 2026-11-05 | P2：补 `weight_profile` 参数枚举、默认 `INDEX_MAIN`、同请求四表+报告同 profile；验收加断言 |
 | v1.0.3 | 2026-11-05 | 活力 `analysis_fp` 升级四段含归一 `weight_profile`；冻结/复用/缓存/报告匹配同步；旧三段≡INDEX_MAIN 兼容 |
 | v1.0.4 | 2026-11-05 | 废止旧三段≡INDEX_MAIN；按权重/methodVersion 识别，否则 `legacy_unknown` 禁复用；`snapshotId` 不可变含批次，与 `cache_key` 分离 |
+| v1.0.5 | 2026-11-05 | 会签退回：五张改落 ADS；权重缺行禁常量；快照增加可选 snapshotId |
+| v1.0.6 | 2026-11-05 | 三方会签意见落盘：算法可签（三档权重/装包配对读表与 calc-logic 一致、TC-2 建议条款纳入实现单验收）；数据可签（5 张 DDL 清单/唯一键/血缘 COMMENT 齐、AR-4 清理建议适用）；产品行指向总册 |
 
