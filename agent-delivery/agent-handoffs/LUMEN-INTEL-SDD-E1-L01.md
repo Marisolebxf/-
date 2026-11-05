@@ -114,3 +114,63 @@ estimated_tokens: 180000
 actual_cost: 0.45
 cost_warn: false
 ```
+
+## 10. 复测记录（2026-11-06 00:45–00:56，C1 修单 LUMEN-INTEL-VIT-SNAPROUTE-L01 闭环验证）
+
+> 只复测 #1/#2（§11.5.2）；commit `2744c46`（已 push，`origin/dev` HEAD）；只测试不改代码，零 commit。
+
+### 10.1 deploy 滚动确认（E0）
+
+- Pipeline 3984（2744c46）：`py:test` ✅ → 5 image job ✅ → `deploy:api` / `deploy:worker` / **`deploy:entan-api`** ✅（00:48:06 完成）；`deploy:innov` / `deploy:entan-worker` = manual 未跑（不影响 entan-py）。
+- `e2e:chain-gold` failed 但 `allow_failure: true` 已随本 commit 生效 → 不挡 pipeline（修单 CI 止血落地验证 ✅）。
+- 业务级滚动证据（A 级）：live `http://10.96.3.124:8000/openapi.json` 新增 `/internal/v1/synth/vitality/batch-snapshot` + `/latest-batch` 两条路由（复测前为 98 条无 vitality）。**deploy 已滚 ✅**
+
+### 10.2 #1 活力秒开复测 — 🟢→🟡 改判为**条件绿（契约绿 · 数值缺位）**
+
+| 断言 | 结果 | 证据 |
+|---|---|---|
+| 默认三元组 200 | ✅ | `GET /internal/v1/synth/vitality/batch-snapshot?region=深圳市&compare=全国重点城市&window=最近3年` → HTTP 200，`code=0` |
+| snapshotId=`snap:*` | ✅ | `snap:mock_vit_latest`（+ `batch_reason=batch_not_published`、`weight_profile=INDEX_MAIN`、`cache_key` 七字段外壳齐） |
+| 非法 weight_profile → 400 | ✅ | `weight_profile=BOGUS` → 400 `WEIGHT_PROFILE_INVALID(合法值:INDEX_MAIN/WEIGHT_MAIN/EQUAL,大小写敏感)` |
+| `result.vitalityIndex` 非空 | ❌ | **`vitalityIndex=null`；4 行 dimScores `score=null`（weight=0.25 正确）、indicators `rawValue/score=null`**；`gradeNote="默认口径实算(四维等权 0.25;…缺维不补 0)"`、`confidence="null"` 诚实标记 |
+
+**定性（不新开修单，登记数据/烘焙缺口交 coordinator）**：契约与路由链修复完整（404 → 200）；数值缺位根因 = compute 兜底数据源 `M_SYNTH_186_1_out.json`（`SYNTH_VIT_REPRO_DIR` 缺省指向**编排仓绝对路径**）**未烘焙进 entan-api 镜像**（`Dockerfile.entan-api` 仅 COPY conf/entan/polan/innov/scripts/api/data/precompute），pod 内无产物 → 缺维不补 0 全 null。修单自检（本机 env 指向 repro/out）出数、live 全 null 的差异与此完全吻合。**属 C1 数据烘焙缺口**：建议派一叶把 repro 产物 COPY 进镜像（或 build 期 `SYNTH_VIT_REPRO_DIR` 指向镜像内路径），接口/契约零改动。诚实性合规：null+confidence 无伪闭合（D9 ✅）。
+
+### 10.3 #2 活力任务链复测 — 🟢（Python 侧端到端；Java 层边界注明）
+
+| 断言 | 结果 | 证据 |
+|---|---|---|
+| POST 202 受理 | ✅ | `POST /internal/v1/synth/jobs/execute` `{leaf:vitality, task_id:qa-retest-20261106, region:深圳市, compare:全国重点城市, window:最近3年}` → HTTP 202 `code=0` |
+| 任务态 succeeded（≤3 分钟） | ✅ | 同步返回 `status=succeeded` + 五阶段中文齐（提交/校验/计算/贡献/组装）；无需轮询 |
+| resultData 含 snapshotId=`snap:*` | ✅* | Python 侧 `result.batchKey=深圳市\|task\|最近3年` 非空；`latest-batch` → `calc_batch_id=mock_vit_latest`（Java `RemoteSynthPythonClient` 据此装 `snap:` 前缀 → `snap:mock_vit_latest` 装配依据实测成立）。**Java 层最终 resultData 因网关 401（无测试 token）未实测，沿用 §5.① 边界** |
+| 反例 | ✅ | `leaf=bogus` → 400 `LEAF_NOT_SUPPORTED` |
+
+**边界说明**：任务链为 Python 同步终态模型（202 即 succeeded），无异步轮询；Java→Python Feign 契约（`latestCalcBatchId` + `vitalityBatchSnapshot`）两端点已 live 可用（A 级），Java 落库 resultData 属 async-service 内部行为，留 coordinator 在外层 token 具备后抽查。
+
+### 10.4 七条最终态（复测后）
+
+**4 绿 · 1 条件绿（#2 升绿）· 1 条件绿（#1 契约绿数值缺位）· 1 条件绿（#6 维持）· 0 红** —— 即 **5 绿 · 2 条件绿 · 0 红**：
+
+| # | 复测前 | 复测后 | 依据 |
+|---|---|---|---|
+| 1 | 🔴 | 🟡 条件绿 | 契约/路由/入参门全绿（§10.2）；vitalityIndex 需镜像烘焙产物一叶（C1 数据缺口，不挡契约闭环） |
+| 2 | 🔴 | 🟢 | 202→succeeded→result 非空（Python 侧端到端；latest-batch 装配依据实测；Java resultData 受 §5.① 限） |
+| 3–5 | 🟢 | 🟢 维持 | 未受本次 deploy 影响（邻叶回归：elements/collab 快照在修单自检 21 断言内无损；本侧未重打） |
+| 6 | 🟡 | 🟡 维持 | live 复测依赖外层 token / kubeconfig（§7.4/5 遗留） |
+| 7 | 🟢 | 🟢 维持 | 三叶报告路由不受影响 |
+
+### 10.5 移交（coordinator）
+
+1. **镜像烘焙一叶（C1 数据缺口，P1）**：`lumen-algo-py`——`M_SYNTH_186_1_out.json`（±活力 indicators 所需 repro 产物）COPY 进 entan-api/entan-worker 镜像并设 `ENV SYNTH_VIT_REPRO_DIR=/entan-py/data/repro`（或等价）；落地后 #1 数值断言补测即全绿。派单前与「synth_vit_* seed 落地」并行线排期确认取舍（seed 落地则此叶可省）。
+2. #2 Java resultData 抽查、#6 live 复测：随「dev 测试 token / 跳板机 kubeconfig 恢复」遗留项一并执行（§7.5）。
+3. `e2e:chain-gold` 止血已验证生效（allow_failure），恢复时机按修单 §6.3。
+
+### 10.6 复测 cost
+
+```yaml
+ponytail: full
+model_used: glm-5.3-Flash
+estimated_tokens: 60000
+actual_cost: 0.15
+cost_warn: false
+```
