@@ -50,3 +50,13 @@
 - 既有 OTel 与 trace 路径不变；无新增持久缓存，不存在跨用户/筛选条件缓存污染。
 - 后续若查询/传输仍占主要耗时，应基于现网 trace 和 MySQL EXPLAIN 继续评估，不能从本机往返耗时臆断索引缺失。
 - cost：无可核实本任务 token/费用统计，不臆造注册表字段。
+
+## 发布与现网验收结果
+
+- CI：[pipeline 3913](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/3913)。
+- `py:test` 成功：755 passed、6 skipped、1 warning；相关 entan-api 镜像构建成功。
+- `deploy:entan-api` 成功，耗时 12.60 秒；deploy:api、deploy:worker 亦成功。流水线总态 manual 是因 innov/entan-worker 保留人工任务，不表示政策 API 未发布。
+- 对用户同一现网 URL，携带 systemcode=topic、Cache-Control=no-cache，无认证令牌，连续三次只读验证：2.602 秒、1.206 秒、1.080 秒。
+- 三次均 HTTP 200、code=0、无 degraded；national=31、portal_gaps=10；三次完整响应内容相同。
+- 对比上线前同一 URL 6.921 秒，后两次约 1.1–1.2 秒。首次请求为发布后 2.6 秒，不用后两次结果承诺所有请求均小于该阈值。
+- 本次证明主要重复计算瓶颈已消除；仍有查询/传输与初始化开销，不宣称接口零延迟或完成所有潜在数据库优化。
