@@ -52576,7 +52576,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 150000
     note: |
-      联调完成：12 类 content_type 写接口全量实现（DDL 12 表+ALTER、枚举 32 类、§5 深校验、POL 族路由）；CI 四轮红→绿（每轮真问题真修复）；deploy:cms success；线上路由 401 fail-closed 验证；双轴 code review 完成（7 修复+Ready）。待：契约确认会拍板 §4 六条、管理前端登录态 E2E（前端接线同批）。DD L 需 DBA 在 gkxlumenx_cms 库执行 db/9z
+      2026-11-05 联调修复一：产业服务内容管理页 500 根因=svc 族路由缺失（控制器仅 svc-business-domain 1 类固定路由，CMSOPS 6 新类无端点，前端 useCmsOpsLoadGate 任一失败整页拦截）。修复 commit 4ff1c5a4：ofSvc 族守卫+{content_type} 泛化路由（复刻 pol 族模式），单测 svcRouteGuardAcceptsAllSevenSvcTypes 绿；CI pipeline 3918 backend:build/backend:image:cms/deploy:cms 全绿，线上 cms pod 镜像 b9520dbd 已含修复；集群内 7 条列表路由探针全 401 fail-closed（鉴权正常）。待人工：浏览器登录态页面级走查 4 屏 CRUD+发布。
     collaborators:
       - "frontend-agent"
     design_refs:
@@ -52590,7 +52590,7 @@ tasks:
       - "信封含 operator 审计字段（服务端从 token 取），操作写 cms_op_audit；动作语义（draft⇄published / version / publish_time / 40001/40401/40901）与已上线 svc_business_domain 一致"
       - "接口文档 §4 契约差异 6 条经契约确认会拍板，结论回写 PORTAL-CMS-*.md 契约文件并同步前端版文档；转正前以接口文档为准开发，待确认项标记在 handoff"
       - "OpenAPI + 请求/响应示例入 handoff，供前端 mock→真接口接线叶（lumen-ui-topic）联调；单测覆盖校验规则用例，CI 绿 + K8s dev 发布"
-    update_time: "2026-11-04T13:05:45+08:00"
+    update_time: "2026-11-05T19:14:22+08:00"
   - id: GDF-CHAIN-ROUND2-REPLY-L02
     cost_warn: "green"
     actual_cost: 4
