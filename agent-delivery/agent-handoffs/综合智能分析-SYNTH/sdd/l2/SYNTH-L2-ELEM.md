@@ -115,7 +115,7 @@ lumen-ui-topic 要素三页（在途，差距见 §6）
 
 | 角色 | 状态 |
 |---|---|
-| 架构 | 未签 |
+| 架构 | 已签-架构（2026-11-05）：**可签**。当前 8 张 ADS + 四维不建表不出数（`[]`+`reason=metric_not_registered`）、全景 DWD 真查无表，符合 D18/D16 边界；137② 诚实 blocked 不记已覆盖。保留意见 AR-8（全景 DWD 聚合性能首版直查、超时再议缓存另裁定——建议预约定 timeout 阈值）与待确认 TC-3 见 `agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md`，不挡签 |
 | 算法 | 未签（137② METRIC-OPEN 注册：唐绍祖牵头） |
 | 数据 | 未签 |
 | 产品 | 未签（136 全景模块形态确认） |

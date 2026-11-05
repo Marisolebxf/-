@@ -165,7 +165,7 @@ lumen-ui-topic
 
 | 角色 | 状态 |
 |---|---|
-| 架构 | 未签 |
+| 架构 | 已签-架构（2026-11-05）：**可签**。空图为「源无年」读表后的诚实结果、非接口写死 JSON，符合 D18；`batch_meta` 持久、指定 snapshotId 无映射禁回落、节点/边本期 0 行不进 gapfill 均合规。保留意见 AR-9（batch_meta `cache_key`+`is_latest` 更新建议包内事务）与待确认 TC-4（总控金路径#5「图谱非空」期望与本期 0 行空图矛盾，须修订）见 `agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md`，不挡签 |
 | 算法 | 未签 |
 | 数据 | 未签（图事实 blocked：C-05） |
 | 产品 | 未签（141 策略审核态交互、报告前端渲染口径确认） |

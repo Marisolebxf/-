@@ -127,7 +127,7 @@
 
 | 角色 | 状态 |
 |---|---|
-| 架构 | 未签 |
+| 架构 | 已签-架构（2026-11-05）：**可签**。五张 ADS 表 D18 三要素齐（表名/灌数方/读取接口）；`snapshotId` 不可变 ≠ `cache_key`、`legacy_unknown` 禁复用、权重缺行禁常量均合规。保留意见 AR-6（五表同批写入的跨表原子性：册内只定义单表批次状态机，建议 seed 以同 `calc_batch_id`+同批次时间戳写五表、校验失败整批同置 `failed`，写进实现单验收）与待确认 TC-2 见 `agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md`，不挡签 |
 | 算法 | 未签 |
 | 数据 | 未签 |
 | 产品 | 未签 |
