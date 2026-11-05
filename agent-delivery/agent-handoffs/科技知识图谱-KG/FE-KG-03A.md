@@ -91,6 +91,11 @@
 - 分支：`dev`（lumen-ui-science-pc）——**未 commit/push**（孔东监管限定 2026-11-04：supervised_by human:孔东 的任务完工停本地工作区等人工确认，AGENTS.md 仓级裁定优先于「完工即推」）
 - 待孔东验收放行后：commit（`[agent:frontend-agent]` 标注）+ push `origin/dev` 触发 CI
 
+## 2026-11-05 孔东走查调整（第 1 轮，任务仍处 integration 停本地）
+
+- **抽屉加宽**：走查指认详情抽屉偏窄。本单三处 a-drawer 统一加宽——`KgPathSearchPanel.vue` 节点信息 360→**560**、`KgCentralityPanel.vue` 节点详情 400→**560**、`KgCommunityPanel.vue` 社群详情 400→**560**（三面板一致口径）
+- 验证：三绿复跑全过（03A 自检 4 组 / type-check 0 错 / build 35.4s 绿）
+
 ## 涉及文件
 
 - `src/views/knowledge-graph/algorithms/index.vue`（重写，S01 占位页壳 → 整页）
