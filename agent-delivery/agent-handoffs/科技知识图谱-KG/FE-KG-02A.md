@@ -117,6 +117,12 @@
 - 验证：三绿复跑全过（02A 自检 / type-check / build 29.4s）；CDP 全量断言 `hasSvg:false` —— 顶部 3 Tab、黑名单 4 子 Tab、融合 4 子 Tab、决策 3 子 Tab、决策面板 4 卡头、权重配置卡头；截图 `page-2026-11-05T03-21-35-309Z.png`（决策 Tab）+ `page-2026-11-05T03-22-00-100Z.png`（融合 Tab）
 - **经验沉淀**：Tab/卡头标题统一纯文字，demo 源带的前置装饰图标不复刻（01A 第 4 轮卡头口径 + 02A 第 2 轮 Tab 口径合并）；下次复刻开工即按此口径免走查返工
 
+## 签收与推送（2026-11-05）
+
+- **人工走查放行**：human:孔东 2026-11-05 11:26 走查通过，明示「可以 commit、push dev」
+- 前端仓提交：`lumen-ui-science-pc@dev` `14afb54`（8 文件，+2539/-20；只含 FE-KG-02A 产物，`.env.development` 本地改动非本任务产物未纳入）
+- CI 将按公约触发 K8s dev rollout
+
 ## 涉及文件
 
 - `src/views/knowledge-graph/indicators/index.vue`（重写，S01 页壳 → 整页）
