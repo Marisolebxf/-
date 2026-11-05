@@ -1,0 +1,21 @@
+{
+ "metric_id": "M_CHAIN_INTERNATIONALIZATION_INDEX",
+ "upgrade_batch": "20261105_权威数据爬虫入库批",
+ "upgrade_date": "2026-11-05",
+ "base_support_judgment": {
+  "data_support_level": "完全不支持",
+  "reason": "三条候选路径全部断裂：① 海外主体 dwd_forg_base_info 20,000 行仅 GB 19,832 / US 159 / CA 9 三国，与国内主档 org_id 交集 0、与产业标签 credit_code 交集 0、与企业—链归属交集 0，无法挂到任何产业链；② 专利表无申请人国别字段，country_code 实为公开国别，WO 公开的申请人 94.15% 直接命中国内企业主档名（华为、OPPO、中兴等），用它算「海外专利占比」会把中国企业的 PCT 申请算成国际化；③ 进出口/贸易表全库不存在，w3 因子无载体。原口径本身处于挂起状态、无公式无权重，故该指标及其关键依赖在三方库 gkx 均不可构建。",
+  "criteria": {
+   "forg_chain_overlap": 0,
+   "patent_applicant_country_column": false,
+   "wo_domestic_applicant_pct": 94.15,
+   "trade_tables": 0,
+   "formula_signed": false
+  }
+ },
+ "upgrade_target": "部分支持(条件)",
+ "upgrade_condition": "口径人确认外部维口径并会签后复判;基线(gkx 口径)py 未改、out.json 未重跑",
+ "new_data_source": "数据载体已具备:①海外主体维可用 ROR 全球机构(dwd_org_institution,146,716 家含国别/地理);②专利国别维可用 WIPO 六指标(ads_patent_trademark_compare,12 经济体 1980-2025);③贸易因子可用 UN Comtrade HS85 出口(dwd_trade_htech_yr,中国×伙伴经济体 2015-2022)。但原口径挂起无公式无权重——需口径人先闭合公式,复判为部分支持(条件),不在本次直接改档。",
+ "source_db": "demo_gkxlumenx_ai @ 10.50.11.76 (ODS 16表/DWD 8表/ADS 7表)",
+ "registry_ref": "local-workspace/docs/tasks/construct/1105_指标数据爬虫/"
+}

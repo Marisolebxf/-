@@ -53873,3 +53873,133 @@ tasks:
       - "其他模块读本侧表不直连久新；Topic 桥消费方（链节点→topic 展开）后续读 dwd_topic_industry_map，不动既有 subfield_topic_map / tech_node_industry_map 数据"
       - "handoff 写明两张表名、通道 op、菜单路径、向量落点与批策略；架构自检：调用链不越层、Java 不算向量、密码不进 git"
     update_time: "2026-11-05T12:37:48+08:00"
+  - id: METRIC-AUTH-DATA-1105-L01
+    model_used: "glm-5.3-flash"
+    cost_warn: "green"
+    actual_cost: 1.2
+    actual_tokens: 300000
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-11-05T01:30:00.000Z"
+    last_seen_at: "2026-11-05T08:46:18.000Z"
+    claimed_by: "agent:data-agent"
+    title: "指标权威外部数据采集入库与支持度升级:1088 指标依赖九源合规采集,demo_gkxlumenx_ai 三层(ODS16/DWD8/ADS7)上架,15 指标升档"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-METRIC-ALGOLIB-LAUNCH"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "data-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "ods_done"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      三系统 1,088 指标权威数据依赖缺口采集与入库(20261105 批)。
+      采集(合法合规:仅官方公开源/robots 检查/限速退避/不碰付费墙与实名系统/单文件>5GB 只登记不下载):
+      世界银行 WDI、OECD MSTI/BIBLIO、OpenAlex(CC0)、ROR(CC0)、WIPO GII、DOAJ、arXiv 官方统计、UN Comtrade、民政部行政区划。
+      产物:ODS SQL 16 文件 220,564 行 + 登记表 xlsx(指标权威数据依赖登记表-20261105,3 指标 sheet×依赖登记 9 列+3 附表)。
+      入库:demo_gkxlumenx_ai(10.50.11.76,独立库,不触碰全组共享 demo_gkxlumenx_ods/dwd/ads——DB-WRITE-GUARD 合规)
+      ODS 16 表 220,564 行 / DWD 8 表 53,072 行(透视宽表+跨源合并) / ADS 7 表 50,657 行(排行/对比/密度成品面),
+      全链幂等重建可重跑,校验 11+6+4+总验收全 PASS。
+      子代理补采:WIPO GII 官方 CSV 端点(Playwright 抓包定位,robots 允许)、ROR 全球全量包 v2.15(Zenodo,MD5 通过,146,716 家);
+      USPTO PatentsView 因迁 USPTO ODP 实名门户按约束放弃留档。
+      支持度升级(逐指标核对 651 份 calc-logic 判档理由后严谨口径):14 个部分支持→完全转换支持(条件)+1 个完全不支持→部分支持(条件),
+      合计 15 个;回写合并主表 27 行、calc-logic md 15 份、repro out sidecar 15 个(原 py 零改动)。
+      主表超链接真源不变(20261030 交付目录);本批只动支持度列与备注列。
+    touched_files:
+      - "agent-delivery/metrics/指标入库详情-合并-20261028-三系统.xlsx"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TOTAL.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TYPE_DIST.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_REGION_ORG.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_ORG_CNT.md"
+      - "agent-delivery/metrics/calc-logic/ENT/M_ENT_STAR_BY_REGION.md"
+      - "agent-delivery/metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_MONITOR_GLOBAL.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_RANK_GLOBAL.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PLAN_HEAT.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PLAN_LOCAL_ADV.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_DS_FACTORS_012.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_DS_09_COMPREHENSIVE_005.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md"
+      - "agent-delivery/metrics/calc-logic/TALENT/M_TALENT_REGIONAL_DIST.md"
+      - "agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_INTERNATIONALIZATION_INDEX.md"
+      - "agent-delivery/metrics/repro/out/*_out_20261105_upgrade.json"
+    design_refs:
+      - "local-workspace/docs/tasks/construct/1105_指标数据爬虫/README.md"
+      - "local-workspace/docs/tasks/construct/1105_指标数据爬虫/指标权威数据依赖登记表-20261105.xlsx"
+      - "local-workspace/config/database_info.yaml"
+    definition_of_done:
+      - "16 个 ODS SQL 归档与登记表 xlsx 落盘,三条用户约束(库内已有不采/>5GB 只登记/合法合规)执行留痕"
+      - "demo_gkxlumenx_ai 三层上架且幂等:ODS 16 表 220,564 行对平归档;DWD/ADS 校验 21 项全 PASS"
+      - "15 个指标升档结论经 calc-logic 判档理由逐个核对(不虚高:3 个谨慎项明确排除并留档)"
+      - "合并主表/calc-logic md/repro sidecar 三处回写一致;原 repro py 零改动"
+      - "WBS 系统-01 页 LT 行登记;本通告与 registry 登记同步 push dev"
+    update_time: "2026-11-05T16:46:18+08:00"
+  - id: METRIC-AUTH-DATA-1105-L01
+    model_used: "glm-5.3-flash"
+    cost_warn: "green"
+    actual_cost: 1.2
+    actual_tokens: 300000
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-11-05T01:30:00.000Z"
+    last_seen_at: "2026-11-05T08:46:18.000Z"
+    claimed_by: "agent:data-agent"
+    title: "指标权威外部数据采集入库与支持度升级:1088 指标依赖九源合规采集,demo_gkxlumenx_ai 三层(ODS16/DWD8/ADS7)上架,15 指标升档"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-METRIC-ALGOLIB-LAUNCH"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "data-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "ods_done"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      三系统 1,088 指标权威数据依赖缺口采集与入库(20261105 批)。
+      采集(合法合规:仅官方公开源/robots 检查/限速退避/不碰付费墙与实名系统/单文件>5GB 只登记不下载):
+      世界银行 WDI、OECD MSTI/BIBLIO、OpenAlex(CC0)、ROR(CC0)、WIPO GII、DOAJ、arXiv 官方统计、UN Comtrade、民政部行政区划。
+      产物:ODS SQL 16 文件 220,564 行 + 登记表 xlsx(指标权威数据依赖登记表-20261105,3 指标 sheet×依赖登记 9 列+3 附表)。
+      入库:demo_gkxlumenx_ai(10.50.11.76,独立库,不触碰全组共享 demo_gkxlumenx_ods/dwd/ads——DB-WRITE-GUARD 合规)
+      ODS 16 表 220,564 行 / DWD 8 表 53,072 行(透视宽表+跨源合并) / ADS 7 表 50,657 行(排行/对比/密度成品面),
+      全链幂等重建可重跑,校验 11+6+4+总验收全 PASS。
+      子代理补采:WIPO GII 官方 CSV 端点(Playwright 抓包定位,robots 允许)、ROR 全球全量包 v2.15(Zenodo,MD5 通过,146,716 家);
+      USPTO PatentsView 因迁 USPTO ODP 实名门户按约束放弃留档。
+      支持度升级(逐指标核对 651 份 calc-logic 判档理由后严谨口径):14 个部分支持→完全转换支持(条件)+1 个完全不支持→部分支持(条件),
+      合计 15 个;回写合并主表 27 行、calc-logic md 15 份、repro out sidecar 15 个(原 py 零改动)。
+      主表超链接真源不变(20261030 交付目录);本批只动支持度列与备注列。
+    touched_files:
+      - "agent-delivery/metrics/指标入库详情-合并-20261028-三系统.xlsx"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TOTAL.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TYPE_DIST.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_PT_REGION_ORG.md"
+      - "agent-delivery/metrics/calc-logic/SVC/M_SVC_ORG_CNT.md"
+      - "agent-delivery/metrics/calc-logic/ENT/M_ENT_STAR_BY_REGION.md"
+      - "agent-delivery/metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_MONITOR_GLOBAL.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_CITY_RANK_GLOBAL.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PLAN_HEAT.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_PLAN_LOCAL_ADV.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_DS_FACTORS_012.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_DS_09_COMPREHENSIVE_005.md"
+      - "agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md"
+      - "agent-delivery/metrics/calc-logic/TALENT/M_TALENT_REGIONAL_DIST.md"
+      - "agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_INTERNATIONALIZATION_INDEX.md"
+      - "agent-delivery/metrics/repro/out/*_out_20261105_upgrade.json"
+    design_refs:
+      - "local-workspace/docs/tasks/construct/1105_指标数据爬虫/README.md"
+      - "local-workspace/docs/tasks/construct/1105_指标数据爬虫/指标权威数据依赖登记表-20261105.xlsx"
+      - "local-workspace/config/database_info.yaml"
+    definition_of_done:
+      - "16 个 ODS SQL 归档与登记表 xlsx 落盘,三条用户约束(库内已有不采/>5GB 只登记/合法合规)执行留痕"
+      - "demo_gkxlumenx_ai 三层上架且幂等:ODS 16 表 220,564 行对平归档;DWD/ADS 校验 21 项全 PASS"
+      - "15 个指标升档结论经 calc-logic 判档理由逐个核对(不虚高:3 个谨慎项明确排除并留档)"
+      - "合并主表/calc-logic md/repro sidecar 三处回写一致;原 repro py 零改动"
+      - "WBS 系统-01 页 LT 行登记;本通告与 registry 登记同步 push dev"
+    update_time: "2026-11-05T16:46:18+08:00"
