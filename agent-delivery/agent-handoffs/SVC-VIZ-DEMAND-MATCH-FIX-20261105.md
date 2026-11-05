@@ -63,3 +63,23 @@
 本次只调整显示条件：行业、规模分别在有效选项数量大于 1 时展示；两个维度都没有可筛选项时不渲染工具栏。无数据时保留需求分布、供需匹配两块业务空态，避免用户展开空下拉框。未增加接口、字段、依赖或新业务流程。
 
 本次复验：前端自检、type-check、build-only、diff --check 均通过。
+
+## 用户明确口径：一级 NIC 行业 + 统一企业规模
+
+用户要求复用 `code_nic` 一级行业，规模按需规严格支持。本节取代上节“有多个选项才显示”的临时处理。
+
+- 行业：前端复用 Java 现有 `/enterprise/topic/v1/search/meta/industries`，请求 `{parent_code:"0", mode:"children"}`，仅显示一级门类；名称用于显示、code 用于筛选，不从需求结果反推选项。
+- 规模：复用 `/enterprise/topic/v1/search/meta/enterprise-scales` 的统一大型、中型、小型、微型四档，不使用既有 store 中的旧三档兜底。
+- 两项可独立选择、组合选择、清空恢复全部；需求为空时仍提供完整字典选项。
+- 现有 `/svc/topic/v1/service-portal/viz` 新增可选请求字段 `nic_code`、`enterprise_scale`，Java 既有 Map 请求原样透传，无需改 Java。
+- Python `/internal/gkx-svc/portal/demand` 使用参数化 SQL 过滤：一级 NIC 通过同版本 `code_nic` 获取该门类及子级的 code/scode/name，匹配需求行 `industry`；企业规模匹配四档及带“企业”后缀的名称。未匹配的行业不猜测归类；无效码或规模返回非零业务码。
+- 行业、规模作用于需规指定的需求分布，不新增供需匹配算法或重新定义匹配分值。顶部产业筛选的历史限制仍见上文。
+- 前端加请求版本校验，快速切条件时旧响应不覆盖新条件结果。
+
+验证：前端 selfcheck、type-check、build-only、diff --check 通过。Python 新增需求组合过滤测试，含 SQLite 内存执行真实过滤 SQL，覆盖一级/下级码及名称、规模后缀、清空、无结果、非法参数；与行业字典相关回归合计 `9 passed, 4 deselected`。
+
+首次同时运行完整 `test_meta_dimension_endpoints.py` 时，两个未改动的旧产业链 fallback 用例失败（期待 LOW_ALTITUDE/NEW_ENERGY，现实现返回 INB 新码）；未为通过测试改动该历史逻辑。仅排除 meta_chains 后运行本次相关回归，结果见上。
+
+未验证线上字典、需求数据源及部署；不宣称空数据问题已由筛选改动解决。未执行数据库写入或装数。
+
+本节代码提交已推送 `origin/dev`：前端 `96b5e7b`，Python `aa6589a`。
