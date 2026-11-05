@@ -122,6 +122,7 @@
 - **人工走查放行**：human:孔东 2026-11-05 11:26 走查通过，明示「可以 commit、push dev」
 - 前端仓提交：`lumen-ui-science-pc@dev` `14afb54`（8 文件，+2539/-20；只含 FE-KG-02A 产物，`.env.development` 本地改动非本任务产物未纳入）
 - CI 将按公约触发 K8s dev rollout
+- **状态还原（11:29）**：registry 转回 `integration` —— UI 复刻虽已走查放行，但**接口尚未接入**，待 BE 接口联调完成后才转 `pending_test`（当前页面为冻结 mock 演示态）
 
 ## 涉及文件
 
