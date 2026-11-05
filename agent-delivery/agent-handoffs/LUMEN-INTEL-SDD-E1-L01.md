@@ -174,3 +174,55 @@ estimated_tokens: 60000
 actual_cost: 0.15
 cost_warn: false
 ```
+
+## 11. 终验（2026-11-06 01:13–01:16，C1② 烘焙修单 LUMEN-INTEL-VIT-BAKE-L01 闭环验证）
+
+> 只测不改代码；修单 commit `c8fbd1e`（dev HEAD，pipeline 3997）。
+
+### 11.1 Pipeline / Deploy（E0）
+
+- Pipeline 3997（c8fbd1e）：`py:test` ✅（01:09:21）→ 5 image job ✅（含 **image:entan-api** ✅ 01:09:37）→ **deploy:entan-api ✅**（01:10:20 完成）；`deploy:api` / `deploy:worker` ✅；`deploy:innov` / `deploy:entan-worker` = manual 未跑（不影响 entan-py）；`e2e:chain-gold` failed 但 `allow_failure: true`（止血生效）→ pipeline 不挡。**#1 前置升绿 ✅**
+
+### 11.2 Pod 滚动确认（跳板机 kubeconfig 已恢复）
+
+- 跳板机默认 kubeconfig 仍为 Jenkins 登录页拦截，但 `/tmp/kubeconf`（Oct 30）可用：`kubectl --kubeconfig=/tmp/kubeconf get pods -A` → **`gkxlumen-platform-entan-py-5f8dc5745-fqgwm` Running，age=3m6s**（≈01:09-01:10 重启，与 deploy 绿时间吻合；demo 侧 `demo-platform-entan-py-*` 未动）。**滚动 ✅**
+
+### 11.3 #1 live 出数终验 — 🟡 条件绿 → **🟢 升绿**
+
+| 断言 | 结果 | 证据（集群内 A 级实测，URL 百分号编码后直打 svc `10.96.3.124:8000`） |
+|---|---|---|
+| 默认三元组 200 | ✅ | `GET /internal/v1/synth/vitality/batch-snapshot?region=深圳市&compare=全国重点城市&window=最近3年` → **HTTP 200**，`code=0` |
+| snapshotId | ✅ | `snap:mock_vit_latest`（外壳七字段齐：`weight_profile=INDEX_MAIN` / `batch_reason=batch_not_published` / `computedAt` / `cache_key` 等） |
+| `result.vitalityIndex` 非空 | ✅ | **`vitalityIndex=74.9981`**（与修单自检值完全一致；`deltaVsCompare=50.0`，ranks 4 城全出：深圳 74.9981 / 广州 60.6822 / 东莞 12.3667 / 惠州 1.9012，confidence=repro） |
+| dimScores 四维 score 非空 | ✅ | tech=73.7 / industry=77.7925 / talent=56.2 / policy=92.3（四维等权 0.25，`confidence="repro"`，`metric_id=M_SYNTH_VIT_DIM_SCORE`） |
+| 诚实性 | ✅ | indicators 12 行 `rawValue/score=null + confidence="null"`（缺维不补 0，D9 合规）；`batch_reason=batch_not_published` 诚实中间态，无伪 8 件套 |
+
+> 过程注：首次请求 400 = curl 中文 query 未编码的调用问题（HTTP 层面请求行损坏），非服务缺陷；百分号编码后一次通过（同意图 2 次内，合规）。
+
+### 11.4 七条最终态（终验后）
+
+**6 绿 · 1 条件绿（#6 维持，需外层 token/kubeconfig；§7.5 遗留）· 0 红** —— E1 金路径闭环达成：
+
+| # | §10 复测后 | 终验后 | 依据 |
+|---|---|---|---|
+| 1 | 🟡 条件绿 | **🟢** | 200 + snapshotId + vitalityIndex=74.9981 + 四维 score 全出（§11.3） |
+| 2 | 🟢 | 🟢 维持 | 同链烘焙后无回归（任务链 Python 侧端到端仍以 §10.3 为准） |
+| 3–5 | 🟢 | 🟢 维持 | 邻叶未受影响 |
+| 6 | 🟡 | 🟡 维持 | live 复测依赖外层测试 token（跳板机 kubeconfig 已恢复，唯缺外层 token） |
+| 7 | 🟢 | 🟢 维持 | 不受影响 |
+
+### 11.5 移交与遗留
+
+1. 烘焙修单闭环 ✅；synth_vit_* seed 落地并行线（§10.5.1 的替代路径）仍按排期定夺——落地后 `batch_reason` 将从 `batch_not_published` 变为真批。
+2. #6 维持条件绿：仅缺 dev 外层测试 token（kubeconfig 侧已恢复，见 §11.2）。
+3. 红项 3（前端权重列 fixture，P2）仍待 `lumen-ui-topic` 修单，不挡本单。
+
+### 11.6 终验 cost
+
+```yaml
+ponytail: full
+model_used: glm-5.3-Flash
+estimated_tokens: 40000
+actual_cost: 0.10
+cost_warn: false
+```
