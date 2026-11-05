@@ -125,6 +125,7 @@
 ## 2026-11-05 孔东走查调整（第 4 轮，任务仍处 integration 停本地）
 
 - **重置/导出回归顶部筛选区**：第 3 轮迁至 viz 卡头的两按钮挪回顶部筛选卡右端反馈区（`kg-filter-feedback` 内 flex 组：匹配反馈文案 + 重置 + 导出）；viz 卡头只留视图切换 radio + 全屏查看（2 元素）。CDP 验证：两按钮均在筛选卡内、viz extra 文本=「网络图列表统计图全屏查看」、无横向滚动条；type-check + 两组自检全绿。
+- **全局滚动条规范**（`src/assets/main.css` 全局入口新增）：最窄 4px + 主题色 50% 透明（`rgba(22, 93, 255, 0.5)`，D8 #165DFF）；Firefox 走 `scrollbar-width: thin` + `scrollbar-color`，Chromium/Safari 走 `::-webkit-scrollbar` 4px + hover 加深 0.75；不加 `!important`——已评审页面的定制滚动条（如 ppc-compare 表格 16px 蓝条、各模块隐藏式）靠加载顺序/特异性自然覆盖。CDP 验证：body/kg-page/insight-scroll 三处 computed `scrollbar-width: thin` + `scrollbar-color: rgba(22,93,255,0.5) transparent`，截图目检右侧 4px 细蓝条。
 
 
 
