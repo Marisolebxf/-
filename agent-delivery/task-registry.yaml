@@ -55064,3 +55064,35 @@ tasks:
       - "顺手 CI 止血：e2e:chain-gold 下游悬空 trigger 加 allow_failure: true（E1 分诊建议①）"
       - "deploy 绿后只复测 E1 #1/#2"
     update_time: "2026-11-06T00:44:09+08:00"
+  - id: LUMEN-INTEL-VIT-BAKE-L01
+    cost_warn: "green"
+    actual_cost: 0.09
+    model_used: "glm-5.3-Flash"
+    actual_tokens: 85000
+    evidence: "agent-handoffs/LUMEN-INTEL-VIT-BAKE-L01.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T16:58:06.376Z"
+    last_seen_at: "2026-11-05T16:58:06.376Z"
+    lock_until: "2026-11-06T16:58:06.376Z"
+    claimed_by: "agent:devops-agent"
+    title: "C1 修单② — entan-api 镜像烘焙 M_SYNTH_186_1 复现盘数据"
+    status: "in_progress"
+    agent: "devops-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      commit 4cfdec8 (origin/dev, 未 push 等人工确认): 复现盘 M_SYNTH_186_1_out.json 平铺入 vendor/entan-py/data/precompute + Dockerfile.entan-api ENV SYNTH_VIT_REPRO_DIR=/entan-py/data/precompute; check_synth_vitality.py all-pass, 镜像路径语义实跑 vitalityIndex=74.9981 四维分全出
+    design_refs:
+      - "agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-E1-L01.md §10 复测记录"
+    definition_of_done:
+      - "Dockerfile COPY 复现盘数据（M_SYNTH_186_1_out.json 所在目录，即 SYNTH_VIT_REPRO_DIR 指向内容）进 entan-api 镜像"
+      - "设 ENV SYNTH_VIT_REPRO_DIR 指向镜像内路径（与编排仓缺省路径解耦）"
+      - "deploy 绿后验证：默认三元组 batch-snapshot result.vitalityIndex 非空、dimScores score 出数"
+      - "不改接口/装包代码，只动 Dockerfile/ENV"
+      - "handoff+cost"
+    update_time: "2026-11-06T01:03:45+08:00"
