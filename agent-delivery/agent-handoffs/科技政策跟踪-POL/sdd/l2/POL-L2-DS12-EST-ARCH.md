@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS12-EST-ARCH`
 - 日期：2026-11-04
-- 状态：架构稿已落盘，待架构、算法、数据、产品四角色会签。不标 done
+- 状态：架构稿已落盘，待架构、算法、数据、产品四角色会签。不标 done。2026-11-05 只改第 5.4、5.5 节的库.表写法，读法未改
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -161,7 +161,7 @@ flowchart LR
 
 指标分册记 `metric_id` 未见，判定 501。按签收标准退路，读缺项表，不用 501 充当这块功能。
 
-- 表 `gkxlumenx_gapfill_policy_sim_result`（SIM 组，11.2 定名），种类为多维评估。
+- 表 `gkxlumenx_gapfill.gapfill_policy_sim_result`（SIM 组，11.2 定名），种类为多维评估。
 - 一行是一个维度（经济、社会、环境、创新）的得分与说明；雷达图、柱状图数据即这些行。
 - 表与字段由 `POL-L2-DS12-SIM-DATA` 定，灌数由 `POL-L2-DS12-SIM-GAPFILL-L01` 执行，本叶只定读法。
 - 行上 `metric_id` 留空（分册未见），不新造，不借用 `M_POLICY_DEEP_168_1`、不借用 `M_POLICY_SIMULATE` 填评估分——推演键只挂 232–234 的预测行。
@@ -170,7 +170,7 @@ flowchart LR
 
 指标未见，调研记关键词「利益」0 条。同款退路。
 
-- 表 `gkxlumenx_gapfill_policy_sim_stakeholder`（SIM 组），种类为参与意见。
+- 表 `gkxlumenx_gapfill.gapfill_policy_sim_stakeholder`（SIM 组），种类为参与意见。
 - 一行是一条已灌意见：主体（决策者、评估者、利益攸关方）、渠道（在线问卷、意见征集、专家评审）、意见正文、时间。渠道枚举以需规原文三种为界。
 - 请求处理不插入、不更新、不删除。用户在页面新提交的意见留在浏览器，直到另有采集单。本叶不建那张单。
 - 「汇总各方意见并纳入效果评估模型」在模型接通前不实现；呈现侧的汇总只对已灌行计数。行上 `metric_id` 留空，不新造。

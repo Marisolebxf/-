@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS12-SIM-ARCH`
 - 日期：2026-11-04
-- 状态：架构稿已落盘，待架构、算法、数据、产品四角色会签。不标 done
+- 状态：架构稿已落盘，待架构、算法、数据、产品四角色会签。不标 done。2026-11-05 改过第 7、9 节的表张数与 235/236 灌数归属。同日按 `clause_job._write_default` 把 §1.4 的条款读法改为：同一 `policy_id` 仍读，返回时去掉 `clauses` 与 `clause_meta`
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -31,7 +31,7 @@
 | 政策子菜单 | `demo-ui-system-test` `policyMenuConfig.ts` | 有 `/policy/parse`「文本解析 · 智能摘要」、`/policy/simulate`「效果推演 · 实施路径」两签；**没有**政策重点可视化、影响范围分析、政策关联分析、路径预测、解读报告的独立页 |
 | 文本解析页 | `TextAnalysis.vue`「文本解析」签 | 左侧政策列表，点击渲染解析报告（摘要、自动标签、结构化要素逐项），读 `fetchTextParse` → `GET /policy/text/parse` |
 | 中台读面 | `lumen-algo-py` `policy_routes.py` `GET /v1/policy/text/parse` | 按 `policy_id` / `limit` 拣行读 `ads.policy_text_parse` 全列 |
-| 批产函数 | `polan.text.parse.run` | 规则截取：`summary`=截取 abstract\|content，`structured_elements`=结构化要素，`auto_tags`=自动标签；写入 `ads.policy_text_parse`，行上 `metric_id=M_POLICY_TEXT_PARSE`。**run() 会清空整表**——条款结构化（`POL-CLAUSE-BATCH-L01`）也写同一张表，条款行 `structured_elements` 含 `"clauses"` 键，可区分 |
+| 批产函数 | `polan.text.parse.run` | 规则截取：`summary`=截取 abstract\|content，`structured_elements`=结构化要素，`auto_tags`=自动标签；写入 `ads.policy_text_parse`，行上 `metric_id=M_POLICY_TEXT_PARSE`。**run() 会清空整表**。条款批次（`POL-CLAUSE-BATCH-L01`）对已有 `policy_id` 执行 `UPDATE`，把 `clauses`、`clause_meta` 写进同一条 `structured_elements`，不另插一行 |
 | 摘要展示身份 | 评价页 226 已裁定 | 展示读键 `policy_text_parse`（Python `JOB_SUB_TYPES` 与 Java `PolicyAnalysisTypes` 白名单均已接通），只读不跑 `run()` |
 | 其余四类 | 无 | 重点可视化、影响范围、路径预测、解读报告在中台没有模型、没有读面、没有函数 |
 
@@ -54,7 +54,7 @@
 | `polan.text.parse.run` | 留作中台与灌数批产。展示请求**不调用**：run() 会清空整张 `ads.policy_text_parse`，一次展示请求会把条款行一起清掉（评价 226 同款约束） |
 | 解析报告形态（摘要 + 自动标签 + 结构化要素逐项，`metric_id=M_POLICY_TEXT_PARSE`） | **合理部分，采纳**：展示 237 直接读已有解析行，行内已具备需规要求的摘要、标签与要素；行上 `metric_id` 不改 |
 | 展示读面取列 | 现有评价 226 的读面只取 `summary` 一列；237 需要标题、摘要、标签与结构化要素。展示读法取 `title / summary / auto_tags / structured_elements`，仍是只读，不跑 `run()`。该取列口径由 DATA / API 单落成字段 |
-| 条款行隔离 | `POL-CLAUSE-BATCH-L01` 的条款行与解析行同表。展示 237 只取解析行：`structured_elements` 不含 `"clauses"` 键的行。判别写法由 DATA 单定，本叶只定语义 |
+| 条款隔离 | 条款批次更新同一条解析行，不另插条款行。展示 237 仍读该行的标题、摘要、标签和其余要素。返回 `structured_elements` 时去掉 `clauses` 与 `clause_meta`，条款树不进入解析报告。不因行内有这两个键整行丢弃 |
 | 重点 / 影响范围 / 路径 / 解读 | 中台无实现。按签收标准走缺项表 `gapfill_policy_sim_result`，行内容范式：逐项要素 + 一句说明，图表渲染在前端 |
 | 真模型演进 | `M_POLICY_SIMULATE` 注册为可调用服务后，影响范围改随真推演结果；`M_POLICY_TEXT_PARSE` 若注册为可调用解析服务，237 可切 async 真算。注册动作不在本叶，本叶不进白名单、不加 Job 键 |
 
@@ -66,7 +66,7 @@
 
 | 叶子 | 种类 | 迁移后的读法 |
 |---|---|---|
-| 237 | 文本解析 | element 只读 `ads.policy_text_parse` 的解析行（条款行排除） |
+| 237 | 文本解析 | element 只读 `ads.policy_text_parse` 的该政策解析行。返回时去掉 `clauses`、`clause_meta`，不整行丢弃 |
 | 238 | 重点可视化 | element 只读 `gapfill_policy_sim_result` 的重点行 |
 | 239 | 影响范围 | element 只读 `gapfill_policy_sim_result` 的影响范围行，跟随该政策上下文 |
 | 241 | 路径预测 | element 只读 `gapfill_policy_sim_result` 的路径环节行 |
@@ -132,7 +132,7 @@ flowchart LR
 
 指标 `M_POLICY_TEXT_PARSE`，MODEL，D4=mock。解析模型未以可调用服务注册（调研判 501），但解析**结果行已由已有批产管道真实落库**——评价页 226 已按同款裁定消费这张表的 `summary` 列。
 
-- 表 `ads.policy_text_parse`，只取解析行（条款行排除，判别见 §1.4）
+- 表 `ads.policy_text_parse`，按 `policy_id` 读已有解析行。返回时去掉 `structured_elements` 里的 `clauses`、`clause_meta`（§1.4）。不整行丢弃
 - 一次读取返回该政策的标题、摘要、自动标签、结构化要素。需规点名的关键词、核心内容、支持对象、申报条件、支持力度都在结构化要素里，不另造一套解析
 - 请求处理**不调用** `polan.text.parse.run`：run() 清空整表，会连带清掉条款行。解析批次仍由已有灌数与条款跑批管道执行
 - 不走核增拆解页的 `parse/clauses`：那是条款树资源（607/608），本页是解析报告，判别键不同
@@ -222,7 +222,7 @@ flowchart LR
 - 不新造 `metric_id`。不改 D4。不改模型注册表。不把 `GDF-POLICY-MOCK-GATE-L01` 写成已解开。
 - 不改写 `sdd/指标与501.md`、说明书、调研分册、契约输入清单。那些文件里 237–242 仍写着 501。本叶的可实现链路是读表。会签前不以本叶改写它们。
 - 浏览器不改打专题 URL 或 `/v1/**`。不把 `E-E7-POLICY-M1-L06` 写成展示路径。
-- 不重开 GDF，不写 nGQL，不建查图任务。不加 ODS、DWD、ADS 新表。缺项行只进 `gkxlumenx_gapfill` 已定名的两张 SIM 组表。
+- 不重开 GDF，不写 nGQL，不建查图任务。不加 ODS、DWD、ADS 新表。缺项行只进 `gkxlumenx_gapfill` 已定名的两张 SIM 组表：`gapfill_policy_sim_result`、`gapfill_policy_sim_stakeholder`。本叶四种（238、239、241、242）只进第一张。235 的多维评估行也进第一张，236 的参与意见行进第二张。不把这两张收成一张，也不另建第三张。
 - 不在本叶改 Python 或 Java。不进 `PolicyAnalysisTypes`，不进 async-service。预计实现是：五类读面由 element 查询；237 的取列与条款行判别随既有解析表读取实现。
 - 不直连、不迁移算法中台读面与 `demo-ui-system-test` 页面。lumen 链无任何 demo 运行时依赖（D12）。
 - 不改 `FE-POL-03A`，不新建前端单。前端 mock 开关不是接口实现。
@@ -246,9 +246,9 @@ flowchart LR
 
 ## 9. 表与要灌的 mock（本叶组）
 
-本叶组的缺项表只有说明书 11.2 点名的一张：库 `gkxlumenx_gapfill`，表名 `gapfill_policy_sim_result`。不进 ODS、DWD、ADS，不写供应方库。不拆成多张表。`gapfill_policy_sim_stakeholder`（236）归 EST 半区裁定，本叶不改它的灌数内容。
+SIM 组缺项表是说明书 11.2 点名的两张，都在库 `gkxlumenx_gapfill`：`gapfill_policy_sim_result`、`gapfill_policy_sim_stakeholder`。不进 ODS、DWD、ADS，不写供应方库。本叶四种（重点、影响范围、路径环节、解读段落）只放第一张，不为此再拆表。236 的参与意见只放第二张。读法由 EST-ARCH §5.5 定，本叶不改行内容口径。灌数仍由 `POL-L2-DS12-SIM-GAPFILL-L01` 执行，与 EST §9 一致。
 
-237 **不灌缺项行**：解析真行已由已有管道落在 `ads.policy_text_parse`。说明书 11.2 把「文本解析」写在 SIM 组要灌清单里，本叶按第 11 节总规则收窄——已有表与已有产出的，不建缺项行（评价 READ-ARCH 对 `gapfill_policy_eval_focus` / `gapfill_policy_eval_summary` 的同款先例）。`POL-L2-DS12-SIM-GAPFILL-L01` 开工时按本裁定执行：该单 DoD 的「文本解析」一行不灌，其余照灌。
+237 **不灌缺项行**：解析真行已由已有管道落在 `ads.policy_text_parse`。说明书 11.2 把「文本解析」写在 SIM 组要灌清单里，本叶按第 11 节总规则收窄——已有表与已有产出的，不建缺项行（评价 READ-ARCH 对 `gapfill_policy_eval_focus` / `gapfill_policy_eval_summary` 的同款先例）。`POL-L2-DS12-SIM-GAPFILL-L01` 开工时按本裁定执行：该单 DoD 的「文本解析」不灌。要灌的是多维评估（235）、参与意见（236）、重点、影响范围、路径、解读正文。不把「其余」理解成再灌文本解析或文件。
 
 重点行、影响范围行、路径环节行、解读段落行共四种，字段级 DDL 由 `POL-L2-DS12-SIM-DATA` 定，灌数由 `POL-L2-DS12-SIM-GAPFILL-L01` 执行，本叶不执行。
 
@@ -261,7 +261,7 @@ flowchart LR
 | 路径环节 | 241 | 五环节行：环节、时间安排、责任主体、一句说明 | 布局推荐条数、流程执行记录、评价页 015 的方案路径 |
 | 解读段落 | 242 | 背景、内容、效果、建议四段正文行 | PDF / Word 文件、自定义格式配置、核增研报正文 |
 
-文本解析行不灌（§5.1，读已有 `ads.policy_text_parse`）。235 多维评估行、236 参与意见行不在本叶组：归 EST 半区裁定的两张表。
+文本解析行不灌（§5.1，读已有 `ads.policy_text_parse`）。235 多维评估行灌进 `gapfill_policy_sim_result`，236 参与意见行灌进 `gapfill_policy_sim_stakeholder`。读法由 EST-ARCH 定，灌数由本叶灌数单执行，本叶不改这两行已经写明的行内容。
 
 行要能按第 3 节的条件拣出来：全部按所属政策拣，影响范围额外按推演上下文。条件对不上的行不返回。
 
