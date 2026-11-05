@@ -53873,3 +53873,69 @@ tasks:
       - "其他模块读本侧表不直连久新；Topic 桥消费方（链节点→topic 展开）后续读 dwd_topic_industry_map，不动既有 subfield_topic_map / tech_node_industry_map 数据"
       - "handoff 写明两张表名、通道 op、菜单路径、向量落点与批策略；架构自检：调用链不越层、Java 不算向量、密码不进 git"
     update_time: "2026-11-05T12:37:48+08:00"
+  - id: SYSINT-TECHGRAPH-02-L01
+    title: "技术点图谱菜单与节点同步"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-svc-platform、demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "WBS-02-19。监管人 human:淮政玮。算法中台维护管理新菜单承载科学技术全景的技术点节点。等 SYSINT-TOPICMAP-02-L01 交出同一批仓再开工。不落边、不入图、不改展示页。"
+    depends_on:
+      - "SYSINT-TOPICMAP-02-L01"
+    collaborators:
+      - "frontend-agent"
+      - "algorithm-agent"
+    touched_files:
+      - "repos/demo-ui-system-test/src/views/ops/opsMenuConfig.ts"
+      - "repos/demo-ui-system-test/src/views/ops/pages/"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-topic-py/gkx_svc_service/jx_dict.py"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHGRAPH-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHGRAPH-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "dwd_technology_graph_node 能按 technology_node_id 同步约 19430 行，含中文名、英文名、社区角色、加权度、graph_release_id。按主键 upsert，不整表清空。空中文保持空"
+      - "来源是 lumen-topic-py op=technology_graph_node_page，每页不超过 500。页面不直连久新"
+      - "算法中台维护管理有菜单「技术点图谱」（/ops/tech-graph）。【同步】才打字典。查询只读本侧表，最多 200 行"
+      - "不写入三张已有映射表，不建边表，不写 Nebula"
+      - "handoff 写明表名、op、菜单路径、网关路由 id。含 ponytail: full 与 diagram_id: SYSINT-TECHGRAPH-02-SEQ"
+    update_time: "2026-11-05T17:15:11+08:00"
+  - id: SYSINT-TECHGRAPH-02-L02
+    title: "技术点图谱按节点查看边、路径和关联实体"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-svc-platform、demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "WBS-02-20。监管人 human:淮政玮。依赖 L01 的菜单和节点表。不全量同步边和实体，不入图，不写回。"
+    depends_on:
+      - "SYSINT-TECHGRAPH-02-L01"
+    collaborators:
+      - "frontend-agent"
+      - "algorithm-agent"
+    touched_files:
+      - "repos/demo-ui-system-test/src/views/ops/pages/"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-topic-py/gkx_svc_service/jx_dict.py"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHGRAPH-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/派单说明-SYSINT-TECHGRAPH-02-L02.md"
+    definition_of_done:
+      - "选定一个已同步节点后，能分页看到它的邻边、路径步、代表论文、代表专利、关联机构。未选节点不发这些查询"
+      - "边默认不含 LOW。论文和专利按代表排名，机构按机构排名，默认各 20 条。边和路径每页不超过 50"
+      - "没有 technology_node_id 的查询被拒绝。这五类数据不落本侧新表"
+      - "人才区域只有缺口文案，页面上看不到编造的人名"
+      - "handoff 含 ponytail: full 与 diagram_id: SYSINT-TECHGRAPH-02-SEQ"
+    update_time: "2026-11-05T17:15:17+08:00"
