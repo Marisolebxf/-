@@ -69,7 +69,7 @@
 | 一级菜单 | 叶 | 页名 | WBS 叶 | 挂载任务（含状态） | 完成摘要 | 计划叶 |
 |---|---|---|---|---|---|---|
 | 科技发展态势 | DS-01 | 科技全域态势 | WBS-05-18 | `FE-TS-01A`(integration)、`BE-TS-IMPL-01`(backlog)、`BE-TS-DATA-01`(backlog)、`DS-01-METRIC-OPEN-L01`(integration)、`SITUATION-ENT-*` 长任务管线（10-27 挂接，见 §4.3；11-01 五单 `SITUATION-ENT-D2-L01` / `-D3-L01` / `-MOCK-LEDGER-L01` / `INFLUENCE-FIX-L01` / `GRANULARITY-FIX-L01` 均 integration，11-02 新增 `METRIC-LIB-ALGO-INFLUENCE-L01`(integration)，共 7 条 integration 停本地待走查（含 11-02 完工 `SITUATION-ENT-SPARK-L01`）；11-02 另补登记两条 backlog `SITUATION-ENT-FOLLOW-SVR-L01`（待裁定收藏表归属 upms）/ `SITUATION-ENT-TREND-FEAT-L01`） | 前端整页复刻已 push、三绿；REST 待 `BE-TS-CONTRACT-01` 冻结。指标语义卡仍草稿未签。10-27 起企业维度数据跑通长任务挂接本行；11-01 全维度打通五单（机构不做点位、期刊/会议 mock、mock 台账、影响力 Tab 修复、时间粒度打通）+ 11-02 指标库口径对齐与算法库优先接入（期刊/专家取算法库真实值，论文/专利/服务保留 mock，五卡挂 metric_id），七条 integration 改动停本地未 commit / 未 push 待 `human:李伟` 走查；11-02 要素卡年度趋势 spark 完工（论文 / 人才 / 项目 / 机构接久新真实年度序列，7101 探针末点 = 卡值、无断崖），收藏服务端化按只读铁律改落 upms 待裁定，趋势预测 / 异常监测待裁定，见 §4.3 05-18-15～17 | LT-5-SIT-DS01 |
-| 科技发展态势 | DS-02 | 科学技术全景 | WBS-05-01a / 01b / 01c | `SYSINT-05-01A-L01`(ready)、`SYSINT-05-01B-L01`(ready)、`TS-L2-DS02-ARCH`(ready)、`FE-TS-02A`(integration)、`DS-02-METRIC-OPEN-L01`(integration) | 对接叶已建号未开工；复刻页 integration；读图归第 7 项。中台入图和挂产业是第 2 项 WBS-02-19/20/21，不替代本行，lumen 不调用 demo 中台。功能架构 `TS-L2-DS02-ARCH`（图谱 17–21、关联实体 22–27、关键路径 28–33），稿在 `agent-handoffs/科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md`。入图不在该稿 | LT-5-SIT-DS02 |
+| 科技发展态势 | DS-02 | 科学技术全景 | WBS-05-01a / 01b / 01c | `SYSINT-05-01A-L01`(ready)、`SYSINT-05-01B-L01`(ready)、`TS-L2-DS02-ARCH`(ready)、`FE-TS-02A`(integration)、`DS-02-METRIC-OPEN-L01`(integration) | 对接叶已建号未开工；复刻页 integration；读图归第 7 项。中台入图和挂产业是第 2 项 WBS-02-19/20/21，不替代本行，lumen 不调用 demo 中台。功能架构 `TS-L2-DS02-ARCH`。按需规拆解见 §4.1d 与 `agent-handoffs/科学技术全景-DS02/功能拆解.md`（17–33 三个功能；34–40 不建单；41–47 归维护管理） | LT-5-SIT-DS02 |
 | 科技发展态势 | DS-03 | 技术发展跟踪 | WBS-05-02a / 02b | `SYSINT-05-02A-L01`(integration)、`SYSINT-05-02B-L01`(integration)、`FE-TS-03A`(integration)、`DS-03-METRIC-OPEN-L01`(integration)、**`SITUATION-TS-TRACKING-EVAL-L01` / `-REPORT-L01` / `-PERSIST-L01`(integration，11-03 补登本轮工作)** | 三个 Tab 可开或空态；材料未到时空态。名称收口为「技术发展跟踪」。11-02～11-03：真评估接入（久新模型产出，不再吃 mock）、报告 HTML/PDF、范围挂载（区域/时间/领域**均真实生效**——领域复用科技全域态势 `subfield_topic_map` 反查，实测 CL-SEI-01 → 39 子学科）、历史与模板落库回读、结果页技术评估榜单表（Top-20）、报告最近列表上限+清理、D9 按 missing 落红问号；**改动停本地未 commit/push，等 `human:孔东` / `human:唐绍祖` 走查** | LT-5-SIT-DS03 |
 | 科技发展态势 | DS-04 | 全球创新监测 | WBS-05-19 | `FE-TS-04A`(integration)、`DS-04-METRIC-OPEN-L01`(integration)；已有 `E-INNOV-M1-L08`（tier FULL，路由 `/innov`）；`SITUATION-IM-C11..C15` 五端点 11-03/04 实质 integration（见 §4.4 偏离说明） | 综合 / 实时 / 载体 / 监测 / 能力五块可切换；11-03 走查七项整改 + 11-04 领域补齐（论文/项目 100%）、学者接入（ads_talent_profile 10 万）、图谱「全部」视图双根因修复、三仓代码首次 push 触发 CI；详见 `agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md` §12-13 与走查准备件 | LT-5-SIT-DS04 |
 | 科技发展态势 | DS-05 | 湾区创新监测 | WBS-05-19 | `FE-TS-05A`(integration)、`DS-05-METRIC-OPEN-L01`(integration)；同上 `SITUATION-IM-*` 长任务管线（见 §4.4） | 成果地图 / 四维 / SWOT / 指标四块已完成，联调待 REST | LT-5-SIT-DS05 |
@@ -356,6 +356,22 @@
 | WBS-05-23-L2-07E · `POL-L2-DS11-PLAN-WIRING-L01` | DS11 推荐方案报告交互展示 · 前端接线（jobs 方案对照/参数模拟/路径风险 + shells 意见/报告 五支接入） | 淮政玮 | `lumen-ui-science-pc` | **ready** | 2026-11-04 新建。227/228/229 各一次 POST jobs、230/231 各一次 GET shells，一次请求只带一种类；未选方案/无行则空；只调 /display 前缀；Mock 开关对齐 | 硬依赖 `POL-L2-DS11-PLAN-ARCH`、`-API`、`-GAPFILL-L01`（均已 done） | 无截至时间 |
 | WBS-05-23-L2-05F · `POL-L2-DS11-VIZ-TEST-L01` | DS11 政策分析报告可视化呈现 · 单元测试用例（合规交付主路径数据准备 + 关键路径验证 + 界面操作截图） | 淮政玮 | `gkx-orchestration` | **ready** | 2026-11-04 新建。覆盖 219–222 四叶；用例文档落 `工程过程/04-系统集成/05-展示系统集成/测试用例/`；正常态+空态双路径截图嵌入报告 | 硬依赖 `POL-L2-DS11-VIZ-WIRING-L01`、`-GAPFILL-L01`（灌数已 done） | 无截至时间 |
 | WBS-05-23-L2-07F · `POL-L2-DS11-PLAN-TEST-L01` | DS11 推荐方案报告交互展示 · 单元测试用例（合规交付主路径数据准备 + 关键路径验证 + 界面操作截图） | 淮政玮 | `gkx-orchestration` | **testing** | 2026-11-04 阶段一完成：用例文档已落 `工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS11-PLAN-TEST-L01.md`（13 用例，五叶双路径），DP-01 连库核实 19 行四种类行集 ✅；界面截图待 `POL-L2-DS11-PLAN-WIRING-L01` 完成后补做 | 硬依赖 `POL-L2-DS11-PLAN-WIRING-L01`（in_progress，阶段二阻塞点）、`-GAPFILL-L01`（灌数已 done） | 无截至时间 |
+### 4.1d 科学技术全景 · 按需规功能拆解（WBS-05-01）
+
+> 2026-11-05。真源 `bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md`。逐叶对照在 `agent-handoffs/科学技术全景-DS02/功能拆解.md`。功能架构是 WBS-05-01c `TS-L2-DS02-ARCH`。
+>
+> 本菜单只拆三个功能、序号 17–33。不按 17 叶各开新任务。34–40 不建实现单。41–47 归 WBS-05-24，不在本表建单。
+
+| 需规功能 | 序号 | 落到已有单 | 还不建 |
+|---|---|---|---|
+| 展示技术点图谱 | 17–21 | 页面 `FE-TS-02A`；接线 `SYSINT-05-01A-L01`；后端 `SYSINT-05-01B-L01`；架构 `TS-L2-DS02-ARCH`。17 的数据在第 2 项 `SYSINT-TECHGRAPH-02-L01`，本页 501 | 不另开搜索、详情、交互单 |
+| 展示技术点关联实体 | 22–27 | 同上三张展示单。26 保持 501。27 的影响力身份在 `DS-02-METRIC-OPEN-L01` | 分数灌数待架构会签后再开，不按叶拆 |
+| 展示关键路径和关键节点 | 28–33 | 同上三张展示单。路径数据在 `SYSINT-TECHGRAPH-02-L02`（未开工）。比较和播放已在 `FE-TS-02A` | 不另开比较单、播放单 |
+| 维护技术图谱 | 34–40 | 无 | 报价划掉。不建单 |
+| 维护关键实体及关系 | 41–47 | `FE-TS-10A`、WBS-05-24、`SCI-INT-A03` | 不在科学技术全景展示单里再拆 |
+
+产品叶清单 `SCI-INT-A02`（ready_to_sign）已覆盖 excel 20–36，即序号 17–33。本表不重开那张定义单。
+
 ### 4.2 WBS-05-08 的子任务（科技交流 / 竞赛 / 传播）
 
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |

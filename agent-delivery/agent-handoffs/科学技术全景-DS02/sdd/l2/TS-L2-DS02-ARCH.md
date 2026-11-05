@@ -8,7 +8,7 @@
 - 强度：ponytail off（定义任务，不缩文档）
 - 图：`TS-L2-DS02-ARCH-SEQ`、`TS-L2-DS02-ARCH-DATA`（本文内两张 Mermaid，无 frontmatter，记 `draft`）
 
-本叶定展示页「科学技术全景」三个功能怎么工作。菜单 `/trend/tech-panorama`，页面 `src/views/situation/panorama/`，需规序号 **17–33**。不写技术点入图、边上图、挂产业。那三件事在第 2 项 WBS-02-19 / 02-20 / 02-21，本页只使用它们已经准备好的结果。
+本叶定展示页「科学技术全景」三个功能怎么工作。菜单 `/trend/tech-panorama`，页面 `src/views/situation/panorama/`，需规序号 **17–33**。逐叶需规原文和落单见 `功能拆解.md`。不写技术点入图、边上图、挂产业。那三件事在第 2 项 WBS-02-19 / 02-20 / 02-21，本页只使用它们已经准备好的结果。
 
 不写 OpenAPI 字段表、请求体样例、枚举闭集。指标身份以 `metric-registry` 为准。不新造 `metric_id`，不改 D4。
 
