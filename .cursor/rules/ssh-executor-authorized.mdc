@@ -1,12 +1,24 @@
 ---
-description: 本项目的 ssh-executor 已长期授权。直接调用，禁止再向用户发起 MCP 认证。
+description: 本项目的 ssh-executor 已长期授权。直接调用；禁止探活循环与超时空转。
 alwaysApply: true
 ---
 
-# ssh-executor 授权
+# ssh-executor 授权 + 超时熔断
 
 `user-ssh-executor`（面板名 `ssh-executor`）在本项目已经长期授权。
 
+## 授权
+
 - 直接调用它的工具。
 - 禁止调用 `mcp_auth`，禁止再向用户弹出授权或询问是否允许。
-- 工具返回未连接时，重新调用原来的工具。不要改走认证。
+- 工具返回未连接时：先 `ssh_list_connections`；没有可用连接则 `ssh_list_servers` → `ssh_connect`（服务器名只用配置里的，常见 `zphz-jump`），再**重试原来的业务命令一次**。不要改走认证。
+
+## 禁探活（2026-11-05 事故）
+
+多会话曾把 `ssh_execute` **命令超时**误判成「SSH 断了」，狂打 `echo alive` / `echo ping`，占满 MCP、拖垮效率。
+
+1. **禁止**用 `echo alive` / `echo ping` / `echo aliveN` / description=`探活`/`存活确认` 做保活或重试。
+2. **禁止**连续空转：同一意图失败后，SSH 相关调用合计最多 **2 次**（含重连）。仍失败 → **立刻停**，向用户报告失败命令 + 原文错误，改人工或其它方案；禁止再开第三轮探测。
+3. 超时 ≠ 断连。默认先假定连接仍在，用**更短的业务命令**重试一次（加 `timeout N`、去管道长输出）；不要先探活。
+4. 只改代码、不查 K8s/线上 → **不要**调用本 MCP。
+5. 预设服务器以 `ssh_list_servers` 为准；禁止臆造 `zphz-jump2` 等未配置名，除非列表里真有。
