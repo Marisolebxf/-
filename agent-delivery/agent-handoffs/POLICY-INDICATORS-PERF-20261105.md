@@ -1,0 +1,62 @@
+# POLICY-INDICATORS-PERF-20261105 · 政策聚合重复扫描优化
+
+日期：2026-11-05。用户要求优化现网 `/tts/svcz/api/policy/topic/v1/policy/indicators?kind=all` 每次约 6–7 秒的问题。
+
+## 执行与规范
+
+- claimed_by：agent:algorithm-agent；用户会话直接授权。supervised_by：未提供团队实名，不推断。
+- ponytail: full。复用标准库 defaultdict/set，不新增依赖、缓存或后台任务。
+- 遵循主仓 Cursor 规则、路径真源、并行保护及完工即推；仅提交本任务两个 Python 文件。
+- 当前未挂载 task-registry MCP，本 ID 为交付追踪标识，不直接读写注册表或宣称验收。
+- 用户请求中的认证信息未写入源码、日志或本记录；现网该接口可无认证读取，本次基线使用无认证请求。
+
+## 基线与根因
+
+- 用户指定 URL 实测 6.921 秒，HTTP 200、code=0、national=31，非降级。
+- 17 条只读 SQL 涉及约 20008 条政策、1220 个产业节点、6954 条政策关联及评分记录。
+- 原 `_coverage_nodes` 对每个节点调用 `_policy_count_for`，逐节点完整扫描关联表；全国与深圳重复执行，约 850 万次编码匹配，复杂度为节点数×关联数。
+- cProfile 中基线 8049 万次函数调用，总耗时 43.801 秒，其中覆盖统计 35.702 秒。性能分析会放大运行时间，这不是现网耗时。
+- 基线 SQL 合计约 7.14 秒（本机远程连接与结果传输包含在内），主要是政策/评分大集合读取；没有证据把这些时间全部归因为 MySQL 服务端慢 SQL。
+
+## 优化
+
+- 按关联编码预构建政策 ID 集合索引，再为每个节点合并全码、7 位、9 位前缀对应集合，避免重复全表扫描。
+- 保留去重规则：同政策跨多个层级挂链只计一次；字符串/数值政策 ID 与旧逻辑一样转字符串；缺 ID 的关联可标覆盖但不增加政策数。
+- 覆盖度、有效节点/产业过滤、排序、统计字段、SQL、返回契约及业务口径不变。
+- 移除仅供该路径调用的逐节点扫描私有函数；无新增缓存、过期规则、数据库写入或 mock。
+
+## 验证
+
+- `python3 -m pytest tests/test_policy_portal_gaps.py tests/test_policy_news_demo.py -q`：25 项通过。
+- 新测试覆盖全码/前缀匹配、跨层重复政策、字符串/数字 ID、空 ID、空码、禁用节点、无匹配与空关联。
+- 对同一批只读数据库快照重放所有查询结果，旧版与新版完整响应 dict 完全相同。
+- 同快照、非 cProfile 对比：基线 15.253 秒，优化 0.926 秒；两者均含原连接初始化，不是现网 HTTP 测量。
+- 新版实际远程数据库调用一次 6.581 秒；此时间包含本机到远端的数据传输，不能当作部署后现网耗时。
+- 同一 cProfile 方式：优化后 6.922 秒、413 万次函数调用。CPU 重复扫描已消除，剩余主要为远程查询/结果传输。
+- `git diff --check` 通过；SQL 和数据量未修改，未为掩盖延迟调大超时。
+
+## 提交与部署
+
+- Python 提交：`39d5f5a843ba434fb17703816bb7b5c14341b9a1`，已推送 origin/dev。
+- 变更文件：`vendor/entan-py/polan/basic/indicators.py`、`tests/test_policy_portal_gaps.py`。
+- 该实现打包到 `docker/Dockerfile.entan-api` 的 polan；CI 有 dev 自动部署 `deploy:entan-api`。
+- CI 与现网发布后实测继续核验，未确认前不宣称现网已从 6–7 秒降到某个数值。
+
+## 架构与边界
+
+- D9：结果等价，不改指标口径/注册/就绪度；不增加演示数据。
+- D12：保持 Java → lumen Python → 既有表，无 demo 服务回落或前端直连。
+- 模型/算法未变，只优化共享节点关联计数的数据访问方式；未发现明确点名锁定该函数的签字证据，不将未点名函数假定已锁定。
+- 既有 OTel 与 trace 路径不变；无新增持久缓存，不存在跨用户/筛选条件缓存污染。
+- 后续若查询/传输仍占主要耗时，应基于现网 trace 和 MySQL EXPLAIN 继续评估，不能从本机往返耗时臆断索引缺失。
+- cost：无可核实本任务 token/费用统计，不臆造注册表字段。
+
+## 发布与现网验收结果
+
+- CI：[pipeline 3913](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/3913)。
+- `py:test` 成功：755 passed、6 skipped、1 warning；相关 entan-api 镜像构建成功。
+- `deploy:entan-api` 成功，耗时 12.60 秒；deploy:api、deploy:worker 亦成功。流水线总态 manual 是因 innov/entan-worker 保留人工任务，不表示政策 API 未发布。
+- 对用户同一现网 URL，携带 systemcode=topic、Cache-Control=no-cache，无认证令牌，连续三次只读验证：2.602 秒、1.206 秒、1.080 秒。
+- 三次均 HTTP 200、code=0、无 degraded；national=31、portal_gaps=10；三次完整响应内容相同。
+- 对比上线前同一 URL 6.921 秒，后两次约 1.1–1.2 秒。首次请求为发布后 2.6 秒，不用后两次结果承诺所有请求均小于该阈值。
+- 本次证明主要重复计算瓶颈已消除；仍有查询/传输与初始化开销，不宣称接口零延迟或完成所有潜在数据库优化。

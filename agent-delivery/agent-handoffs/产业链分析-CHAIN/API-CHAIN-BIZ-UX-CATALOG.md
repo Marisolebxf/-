@@ -66,8 +66,8 @@ topic-chain 自己连的是只读 Demo ADS，**不能**把用户态写进 ADS。
 |---|---|---|---|---|---|---|
 | U1 | 对比篮 | `GET /chain/topic/v1/industry/compare-basket` | — | `user_id` query；`object_type` 可选 | `BasketResponse` | 新增 |
 | U2 | 对比篮 | `POST /chain/topic/v1/industry/compare-basket/items` | — | `BasketAddRequest` | `BasketAddResponse` | 新增 |
-| U3 | 对比篮 | `DELETE /chain/topic/v1/industry/compare-basket/items/{object_type}/{object_id}` | — | `user_id` query | `Void` | 新增 |
-| U4 | 对比篮 | `DELETE /chain/topic/v1/industry/compare-basket/items/batch` | — | `BasketBatchRemoveRequest` | `Void` | 新增 |
+| U3 | 对比篮 | `POST /chain/topic/v1/industry/compare-basket/items/{object_type}/{object_id}/delete` | — | `user_id` query | `Void` | 新增 |
+| U4 | 对比篮 | `POST /chain/topic/v1/industry/compare-basket/items/batch/delete` | — | `BasketBatchRemoveRequest` | `Void` | 新增 |
 | U5 | 查询辅助 | `POST /chain/topic/v1/industry/search-biz/examples/list` | — | `ExampleListRequest` | `List<ExampleItem>` | 新增 |
 | U6 | 查询辅助 | `POST /chain/topic/v1/industry/search-biz/scenes/list` | — | 无 | `List<SceneItem>` | 新增 |
 | U7 | 查询辅助 | `POST /chain/topic/v1/industry/search-biz/history/list` | — | `HistoryListRequest` | `List<HistoryItem>` | 新增 |
@@ -251,7 +251,7 @@ GET /chain/topic/v1/industry/compare-basket?user_id=u-1001&object_type=industry
 
 ##### U3. 移除一项
 
-- 接口路径：`DELETE gateway地址/chain/topic/v1/industry/compare-basket/items/{object_type}/{object_id}`
+- 接口路径：`POST gateway地址/chain/topic/v1/industry/compare-basket/items/{object_type}/{object_id}/delete`
 - 服务内路径：同左剥 `chain`
 - 返回对象：`R<Void>`
 
@@ -266,12 +266,12 @@ GET /chain/topic/v1/industry/compare-basket?user_id=u-1001&object_type=industry
 请求示例：
 
 ```http
-DELETE /chain/topic/v1/industry/compare-basket/items/industry/INB1?user_id=u-1001
+DELETE → POST /chain/topic/v1/industry/compare-basket/items/industry/INB1/delete?user_id=u-1001
 ```
 
 ##### U4. 批量移除或清空
 
-- 接口路径：`DELETE gateway地址/chain/topic/v1/industry/compare-basket/items/batch`
+- 接口路径：`POST gateway地址/chain/topic/v1/industry/compare-basket/items/batch/delete`
 - 请求对象：`ChainUxDTOs.BasketBatchRemoveRequest`
 - 返回对象：`R<Void>`
 

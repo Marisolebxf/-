@@ -8269,8 +8269,8 @@ GET /enterprise/topic/v1/compare-basket?user_id=u-1001
 
 ##### 93. 移除单个企业
 
-- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/items/{enterprise_code}`
-- 服务内路径：`DELETE /topic/v1/compare-basket/items/{enterprise_code}`
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/items/{enterprise_code}/delete`
+- 服务内路径：`POST /topic/v1/compare-basket/items/{enterprise_code}/delete`
 - Python 下游：—
 - 接口用途：移除篮内单个企业（不弹二次确认，前端保证）。
 - 返回对象：`R<Void>`
@@ -8287,7 +8287,7 @@ GET /enterprise/topic/v1/compare-basket?user_id=u-1001
 请求示例：
 
 ```http
-DELETE /enterprise/topic/v1/compare-basket/items/91440300MA5FXXXXXX?user_id=u-1001
+DELETE → POST /enterprise/topic/v1/compare-basket/items/91440300MA5FXXXXXX/delete?user_id=u-1001
 ```
 
 返回字段表（包络）：
@@ -8316,8 +8316,8 @@ DELETE /enterprise/topic/v1/compare-basket/items/91440300MA5FXXXXXX?user_id=u-10
 
 ##### 94. 批量移除 / 清空
 
-- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/items/batch`
-- 服务内路径：`DELETE /topic/v1/compare-basket/items/batch`
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/items/batch/delete`
+- 服务内路径：`POST /topic/v1/compare-basket/items/batch/delete`
 - Python 下游：—
 - 接口用途：按编码批量移除，或 `clear_all=true` 清空整篮（二次确认由前端做）。
 - 请求对象：`EnterpriseCompareBasketDTOs.BatchRemoveRequest`
@@ -10296,8 +10296,8 @@ Content-Type: application/json
 ##### 119. 更新个人模板
 - **调用方**：**前端**（仅企业评估模板；Java MySQL，不经 Python）
 
-- 接口路径：`PUT gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}`
-- 服务内路径：`PUT /topic/v1/evaluation/templates/{templateId}`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}/update`
+- 服务内路径：`POST /topic/v1/evaluation/templates/{templateId}/update`
 - Python 下游：—
 - 接口用途：仅本人 `personal` 模板可改；成功后 `version+1`。
 - 请求对象：`EvaluationTemplateDTOs.UpdateRequest`
@@ -10316,7 +10316,7 @@ Content-Type: application/json
 请求示例：
 
 ```http
-PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx
+PUT → POST /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/update
 Content-Type: application/json
 
 {"template_name":"我的技术力模板-v2","user_id":"u-1001"}
@@ -10371,8 +10371,8 @@ Content-Type: application/json
 ##### 120. 归档个人模板
 - **调用方**：**前端**（仅企业评估模板；Java MySQL，不经 Python）
 
-- 接口路径：`DELETE gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}`
-- 服务内路径：`DELETE /topic/v1/evaluation/templates/{templateId}`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}/archive`
+- 服务内路径：`POST /topic/v1/evaluation/templates/{templateId}/archive`
 - Python 下游：—
 - 接口用途：软删（`status=archived`），仅本人个人模板。
 
@@ -10386,7 +10386,7 @@ Content-Type: application/json
 请求示例：
 
 ```http
-DELETE /topicAsync/topic/v1/evaluation/templates/TPL-xxxx?user_id=u-1001
+DELETE → POST /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/archive?user_id=u-1001
 ```
 
 出参字段表：
@@ -10412,8 +10412,8 @@ DELETE /topicAsync/topic/v1/evaluation/templates/TPL-xxxx?user_id=u-1001
 ##### 121. 设为默认模板
 - **调用方**：**前端**（仅企业评估模板；Java MySQL，不经 Python）
 
-- 接口路径：`PUT gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}/default`
-- 服务内路径：`PUT /topic/v1/evaluation/templates/{templateId}/default`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}/default`
+- 服务内路径：`POST /topic/v1/evaluation/templates/{templateId}/default`
 - Python 下游：—
 - 接口用途：同用户同 `subType` 默认互斥；事务内先清零再置 1。
 
@@ -10427,7 +10427,7 @@ DELETE /topicAsync/topic/v1/evaluation/templates/TPL-xxxx?user_id=u-1001
 请求示例：
 
 ```http
-PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
+PUT → POST /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 ```
 
 出参字段表：

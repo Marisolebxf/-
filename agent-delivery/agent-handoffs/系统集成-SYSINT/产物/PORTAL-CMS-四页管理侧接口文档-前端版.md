@@ -38,10 +38,10 @@
 | # | 动作 | 端点 | 说明 |
 |---|---|---|---|
 | A1 | 新建草稿 | `POST /cms-ops/v1/topic-cms/{module}/{content_type}` | body = §2 该类型字段；`version=0`、`publish_status=draft` |
-| A2 | 编辑 | `PUT …/{content_type}/{content_id}` | draft/published 均可改；`version` 不动；至少带一个可写字段 |
+| A2 | 编辑 | `POST …/{content_type}/{content_id}/update` | draft/published 均可改；`version` 不动；至少带一个可写字段 |
 | A3 | 发布 / 下架 | `POST …/{content_id}/publish` / `…/unpublish` | 状态机不符 `40901`；发布时服务端复跑 §5 校验 |
 | A4 | 列表 | `GET …/{content_type}?…` | draft+published 都出；筛选见下 |
-| A5 | 详情 / 删除 | `GET/DELETE …/{content_type}/{content_id}` | 删除=软删，响应 `{"content_id":"…","deleted":true}` |
+| A5 | 详情 / 删除 | `GET …/{content_type}/{content_id}`；`POST …/{content_type}/{content_id}/delete` | 删除=软删，响应 `{"content_id":"…","deleted":true}` |
 
 **A4 列表通用查询参数**：
 

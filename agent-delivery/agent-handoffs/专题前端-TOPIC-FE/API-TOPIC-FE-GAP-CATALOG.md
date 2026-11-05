@@ -45,7 +45,7 @@ gateway地址 / {网关前缀} / {Controller @RequestMapping} / {方法映射}
 ```text
 企业 P0 写库：前端 /enterprise/.../compare-basket/{recruit|cultivate}-candidates → Java MySQL
 企业 P0 字典：前端 /enterprise/.../meta/policy-orientations → Java Feign → lumen-topic-py
-任务软删：前端 DELETE /topicAsync/.../tasks/{taskId} → Java status=deleted
+任务软删：前端 POST /topicAsync/.../tasks/{taskId}/delete → Java status=deleted
 企业 P2：评估/结果/KPI → Java 透传 → lumen-topic-py（补别名）
 
 产业链 P0/P2：前端 /chain/topic/v1/industry/** → Java Feign → lumen-algo-py /internal/v1/chain/**
@@ -71,10 +71,10 @@ gateway地址 / {网关前缀} / {Controller @RequestMapping} / {方法映射}
 
 | 业务 | 本轮新增 / 变更 | 生命周期 | 不要串线 |
 |---|---|---|---|
-| 引入企业推荐 · 候选名单 | **#G1 #G2** DELETE 招引候选 | 列表/加入仍走 catalog #98–99 | 不是对比篮 `items` |
-| 培育企业推荐 · 候选名单 | **#G3 #G4** DELETE 培育候选 | 列表/加入仍走 catalog #100–101 | 同上 |
+| 引入企业推荐 · 候选名单 | **#G1 #G2** POST …/delete 招引候选 | 列表/加入仍走 catalog #98–99 | 不是对比篮 `items` |
+| 培育企业推荐 · 候选名单 | **#G3 #G4** POST …/delete 培育候选 | 列表/加入仍走 catalog #100–101 | 同上 |
 | 培育条件「政策导向」 | **#G5** 字典 | 选中值随 `talent_recommend` 任务提交 | 不要前端写死四项 |
-| 分析记录「删除」 | **#G6** DELETE 任务 | 取消仍走 catalog #107 | 运行中先 cancel 再软删 |
+| 分析记录「删除」 | **#G6** POST …/delete 任务 | 取消仍走 catalog #107 | 运行中先 cancel 再软删 |
 | 企业评估 · 指标体系 | **#G7** 指标树补别名（原 #114） | 任务仍走 #102–109 | |
 | 企业评估 · 维度对比 | **#G8** compare 补中文维名（原 #116） | | 不是对比篮 `#14` |
 | 评估 / 引育结果页 | **#G9** 结果包别名（原 #105） | | 风险图谱本轮未 enrich |
@@ -91,7 +91,7 @@ gateway地址 / {网关前缀} / {Controller @RequestMapping} / {方法映射}
 
 | 容易当成 | 实际 |
 |---|---|
-| DELETE 任务 = 取消 | **#G6 软删** ≠ **#107 cancel**。运行中删除会先 cancel |
+| DELETE 任务 = 取消 | **#G6 软删**（POST …/delete） ≠ **#107 cancel**。运行中删除会先 cancel |
 | 政策导向 = 评估指标 | **#G5** 只服务培育条件栏 |
 | 结果 `dataTime` 有值 | 算法/`updated_at` 没有则 **不写死日期**，KPI 页显式 `null` |
 
@@ -108,7 +108,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | ANALYSIS-CORE / EVAL 网关前缀 | Gateway async | `/topicAsync`（StripPrefix=1） |
 | Controller 前缀 | `@RequestMapping` | 对比篮 `/topic/v1/compare-basket`；字典 `/topic/v1/search/meta`；任务 `/topic/v1/analysis`；评估 `/topic/v1/evaluation` |
 
-示例：`DELETE gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates/{enterprise_code}?user_id=u-1`
+示例：`POST gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates/{enterprise_code}/delete?user_id=u-1`
 
 ### 4.2 调用链
 
@@ -144,12 +144,12 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 | # | 分组 | 网关路径（相对 `{GW}`） | Python 下游 | 请求对象 | 返回 data 类型 | 动作 |
 |---|---|---|---|---|---|---|
-| G1 | 对比篮·P0 | `DELETE /enterprise/topic/v1/compare-basket/recruit-candidates/{enterprise_code}` | — | `user_id` query | `Void` | 新增 |
-| G2 | 对比篮·P0 | `DELETE /enterprise/topic/v1/compare-basket/recruit-candidates/batch` | — | `BatchRemoveRequest` | `Void` | 新增 |
-| G3 | 对比篮·P0 | `DELETE /enterprise/topic/v1/compare-basket/cultivate-candidates/{enterprise_code}` | — | `user_id` query | `Void` | 新增 |
-| G4 | 对比篮·P0 | `DELETE /enterprise/topic/v1/compare-basket/cultivate-candidates/batch` | — | `BatchRemoveRequest` | `Void` | 新增 |
+| G1 | 对比篮·P0 | `POST /enterprise/topic/v1/compare-basket/recruit-candidates/{enterprise_code}/delete` | — | `user_id` query | `Void` | 新增 |
+| G2 | 对比篮·P0 | `POST /enterprise/topic/v1/compare-basket/recruit-candidates/batch/delete` | — | `BatchRemoveRequest` | `Void` | 新增 |
+| G3 | 对比篮·P0 | `POST /enterprise/topic/v1/compare-basket/cultivate-candidates/{enterprise_code}/delete` | — | `user_id` query | `Void` | 新增 |
+| G4 | 对比篮·P0 | `POST /enterprise/topic/v1/compare-basket/cultivate-candidates/batch/delete` | — | `BatchRemoveRequest` | `Void` | 新增 |
 | G5 | 元数据·P0 | `POST /enterprise/topic/v1/search/meta/policy-orientations` | `/internal/gkx-search/meta/policy-orientations` | `MetaChainsDTOs.Request` | `MetaChainsDTOs.Response` | 新增 |
-| G6 | 分析编排·P0 | `DELETE /topicAsync/topic/v1/analysis/tasks/{taskId}` | 运行中先走算法 cancel | `user_id` query | `AnalysisTaskEntity` | 新增 |
+| G6 | 分析编排·P0 | `POST /topicAsync/topic/v1/analysis/tasks/{taskId}/delete` | 运行中先走算法 cancel | `user_id` query | `AnalysisTaskEntity` | 新增 |
 | G7 | 评估辅助·P2 | `POST /topicAsync/topic/v1/evaluation/indicators` | `/internal/gkx-ai/evaluation/indicators` | `EvalIndicatorsRequest` | `Map` 透传 | 补字段 |
 | G8 | 评估辅助·P2 | `POST /topicAsync/topic/v1/evaluation/tasks/compare` | `/internal/gkx-ai/evaluation/tasks/compare` | `EvalCompareRequest` | `Map` 透传 | 补字段 |
 | G9 | 分析编排·P2 | `GET /topicAsync/topic/v1/analysis/tasks/{taskId}/result` | AI `.../tasks/result` | `user_id` query | 任务 + 结果包 | 补字段 |
@@ -162,8 +162,8 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 ##### G1. 移除招引候选一家
 - **调用方**：**前端**（引入企业推荐分析 · 候选名单；系统对比篮 · 招引候选）
-- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates/{enterprise_code}`
-- 服务内路径：`DELETE /topic/v1/compare-basket/recruit-candidates/{enterprise_code}`
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates/{enterprise_code}/delete`
+- 服务内路径：`POST /topic/v1/compare-basket/recruit-candidates/{enterprise_code}/delete`
 - Python 下游：无（Java MySQL）
 - 请求对象：path + query
 - 返回对象：`R<Void>`
@@ -179,7 +179,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 请求示例：
 
 ```http
-DELETE /enterprise/topic/v1/compare-basket/recruit-candidates/ENT-001?user_id=u-1001
+DELETE → POST /enterprise/topic/v1/compare-basket/recruit-candidates/ENT-001/delete?user_id=u-1001
 ```
 
 出参字段表：
@@ -197,8 +197,8 @@ DELETE /enterprise/topic/v1/compare-basket/recruit-candidates/ENT-001?user_id=u-
 
 ##### G2. 批量移除或清空招引候选
 - **调用方**：**前端**
-- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates/batch`
-- 服务内路径：`DELETE /topic/v1/compare-basket/recruit-candidates/batch`
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates/batch/delete`
+- 服务内路径：`POST /topic/v1/compare-basket/recruit-candidates/batch/delete`
 - 请求对象：`EnterpriseCompareBasketDTOs.BatchRemoveRequest`（snake_case）
 - 返回对象：`R<Void>`
 
@@ -226,14 +226,14 @@ DELETE /enterprise/topic/v1/compare-basket/recruit-candidates/ENT-001?user_id=u-
 
 ##### G3. 移除培育候选一家
 - **调用方**：**前端**（培育企业推荐分析 · 候选名单；对比篮 · 培育候选）
-- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/cultivate-candidates/{enterprise_code}`
-- 服务内路径：`DELETE /topic/v1/compare-basket/cultivate-candidates/{enterprise_code}`
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/cultivate-candidates/{enterprise_code}/delete`
+- 服务内路径：`POST /topic/v1/compare-basket/cultivate-candidates/{enterprise_code}/delete`
 - 落库：`ent_cultivate_candidate`
 - 入参 / 出参同 #G1（path 段改为 `cultivate-candidates`）
 
 ##### G4. 批量移除或清空培育候选
 - **调用方**：**前端**
-- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/cultivate-candidates/batch`
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/cultivate-candidates/batch/delete`
 - 请求对象：同 #G2 `BatchRemoveRequest`
 - 落库：`ent_cultivate_candidate`
 
@@ -288,8 +288,8 @@ Content-Type: application/json
 
 ##### G6. 删除分析任务（软删，≠ cancel）
 - **调用方**：**前端**（企业评估 / 风险洞察 / 引入·培育推荐 · 分析记录）
-- 接口路径：`DELETE gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}`
-- 服务内路径：`DELETE /topic/v1/analysis/tasks/{taskId}`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}/delete`
+- 服务内路径：`POST /topic/v1/analysis/tasks/{taskId}/delete`
 - Python 下游：仅当任务 `running` 时先走已有 cancel（Feign 算法）
 - 请求对象：path + query
 - 返回对象：`R<AnalysisTaskEntity>`
@@ -306,7 +306,7 @@ Content-Type: application/json
 请求示例：
 
 ```http
-DELETE /topicAsync/topic/v1/analysis/tasks/EVAL-20260902-001?user_id=u-1001
+DELETE → POST /topicAsync/topic/v1/analysis/tasks/EVAL-20260902-001/delete?user_id=u-1001
 ```
 
 出参字段表：
@@ -738,8 +738,8 @@ gateway地址 / svc / {Controller @RequestMapping} / {方法映射}
 | S1 | 字典·P0 | `POST /svc/topic/v1/service/meta` | `/internal/gkx-svc/meta` | `Map` 可空 | `Map` | 新增 |
 | S2 | 对比篮·P0 | `GET /svc/topic/v1/service/compare-basket` | — | `user_id` | `BasketResponse` | 新增 |
 | S3 | 对比篮·P0 | `POST /svc/topic/v1/service/compare-basket/items` | — | `AddItemsRequest` | `AddItemsResponse` | 新增 |
-| S4 | 对比篮·P0 | `DELETE /svc/topic/v1/service/compare-basket/items/{org_id}` | — | `user_id` | `Void` | 新增 |
-| S5 | 对比篮·P0 | `DELETE /svc/topic/v1/service/compare-basket/items/batch` | — | `BatchRemoveRequest` | `Void` | 新增 |
+| S4 | 对比篮·P0 | `POST /svc/topic/v1/service/compare-basket/items/{org_id}/delete` | — | `user_id` | `Void` | 新增 |
+| S5 | 对比篮·P0 | `POST /svc/topic/v1/service/compare-basket/items/batch/delete` | — | `BatchRemoveRequest` | `Void` | 新增 |
 | S6 | 门户·P2 | `POST /svc/topic/v1/service-portal/overview` | `/portal/overview` | `Map` | `Map` | 补字段 |
 | S7 | 门户·P2 | `POST /svc/topic/v1/service-portal/industry-distribution` | `/portal/industry-distribution` | `Map` | `Map` | 确认 |
 | S8 | 门户·P2 | `POST /svc/topic/v1/service-portal/region-map` | `/portal/region-map` | `Map` | `Map` | 确认 |
@@ -888,9 +888,9 @@ gateway地址 / svc / {Controller @RequestMapping} / {方法映射}
 
 | 模块 | ID | 前端可调 | 改了哪 |
 |---|---|---|---|
-| 企业 | ENT-N1/N2 | `DELETE /enterprise/.../recruit-candidates/**`、`cultivate-candidates/**` | **Java** MySQL |
+| 企业 | ENT-N1/N2 | `POST /enterprise/.../{recruit|cultivate}-candidates/**/delete` | **Java** MySQL |
 | 企业 | ENT-N3 | `POST /enterprise/.../meta/policy-orientations` | **Python** 出数 + **Java** 透传 |
-| 企业 | ENT-N4 | `DELETE /topicAsync/.../analysis/tasks/{taskId}` | **Java** 软删 |
+| 企业 | ENT-N4 | `POST /topicAsync/.../analysis/tasks/{taskId}/delete` | **Java** 软删 |
 | 企业 | ENT-F1–F4 | 原 indicators / compare / result / KPI 路径补字段 | **Python**（Java 已透传） |
 | 产业链 | CHAIN-N1–N4 | `GET /chain/.../industry/meta` | **Python** + **Java** GET |
 | 产业链 | CHAIN-F2/F4 | search `classification`；snapshot `as_of` | **Python** |
