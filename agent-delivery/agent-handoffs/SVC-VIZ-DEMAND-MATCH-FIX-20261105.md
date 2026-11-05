@@ -83,3 +83,15 @@
 未验证线上字典、需求数据源及部署；不宣称空数据问题已由筛选改动解决。未执行数据库写入或装数。
 
 本节代码提交已推送 `origin/dev`：前端 `96b5e7b`，Python `aa6589a`。
+
+## 发布复核：筛选控件消失截图
+
+用户再次反馈筛选消失。首次直接读取 `http://10.50.69.111:30892` 的静态资源：入口 `index-j6Jhg88K.js`，页面 `ServiceVizPage-BxkD72bY.js`，仍含 `length>1` 隐藏条件且无 `nic_code`，说明截图对应旧实现。
+
+主仓 GitLab 客户端使用配置令牌并通过项目搜索解析数字 ID 后可正常查询 CI；此前按远端 URL 携带的凭据及编码路径查询 404 不代表 CI 不可用。
+
+前端项目 ID 17，Pipeline 3878（96b5e7b）成功，deploy:k8s job 25698 成功。日志确认镜像 `gkx-lumen-topic:96b5e7b3` rollout 成功，完成于 2026-11-05 17:24:59（北京时间）。链接：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic/-/pipelines/3878
+
+再次读取同一线上地址：入口更新为 `index-CUIacGWu.js`，页面 `ServiceVizPage-BTXDs16X.js`，包含 `nic_code`、“全部行业”“全部企业规模”，且无 `length>1` 隐藏条件。确认最新筛选控件代码已随部署生效；本次未执行登录后的浏览器交互，不宣称字典与业务数据端到端已验收。
+
+Python Pipeline 3877 的 deploy:search-py job 25691 已成功（需求接口所在进程）；查询时 show-py 镜像任务仍在运行，未将整条 Python Pipeline 宣称为成功。
