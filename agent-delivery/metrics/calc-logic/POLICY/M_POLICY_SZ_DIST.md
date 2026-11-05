@@ -259,7 +259,7 @@ $$s_{\text{全库}}=\frac{879}{20{,}000}\times100=4.395,\qquad s_{\text{广东}}
 ### 2.7 复现代码与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_SZ_DIST.py
 python3 -c "import json;d=json.load(open('M_POLICY_SZ_DIST_out.json'));print(d['headline'], d['shape'])"
 ```
@@ -398,7 +398,7 @@ G1 是本件判「部分支持」的唯一硬缺口；G2—G7 影响扩展分析
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_SZ_DIST.py
 ```
 

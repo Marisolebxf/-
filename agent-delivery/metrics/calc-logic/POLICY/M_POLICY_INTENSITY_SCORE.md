@@ -321,7 +321,7 @@ $$\tilde D^{(d)}_i=\operatorname{minmax}\!\left(\frac{1}{|I_d|}\sum_{k\in I_d}x^
 ### 5.1 复现步骤（本件是探针，不是出分脚本）
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_INTENSITY_SCORE.py    # 产出 metrics/repro/out/M_POLICY_INTENSITY_SCORE_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_INTENSITY_SCORE --check
 ```

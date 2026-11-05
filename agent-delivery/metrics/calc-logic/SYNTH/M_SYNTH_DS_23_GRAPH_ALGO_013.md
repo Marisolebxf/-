@@ -270,7 +270,7 @@ Louvain 有随机性（节点顺序敏感），同一张图重跑可能得到不
 ### 2.8 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_SYNTH_DS_23_GRAPH_ALGO_013.py
 # → metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_013_out.json
 ```

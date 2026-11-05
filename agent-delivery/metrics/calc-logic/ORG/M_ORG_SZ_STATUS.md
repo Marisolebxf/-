@@ -473,7 +473,7 @@ D1/D2/D3 覆盖 100%，这三 warrant 城市级结论。D4/D5/D6 覆盖 8.58%/1.
 ## 附录 A　复现
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_ORG_SZ_STATUS.py
 ```
 

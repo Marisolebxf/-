@@ -32,3 +32,15 @@ ponytail: full；沿用现有接口、ES 字段与 ECharts，无新增依赖。
 ## 架构与数据血缘
 
 沿用前端 → Java → Python → 现有 ES；无新增表、无前端硬编码业务值、无写入 ODS/DWD/ADS。规则生成说明与可用指标数据一致。
+
+## 线上复测与部署配置修复
+
+2026-11-05 线上 `/enterprise/topic/v1/profile/competitiveness` 正常返回基础评分，但 `/enterprise/topic/v1/profile/viz` 的 SWOT 与 peers 仍为空。GitLab 已确认 Python 3870 的 deploy:api、Java 3869 的 deploy:topic-enterprise 和前端 3868 发布成功。
+
+跳板只读日志证实下游 503：`Load balancer does not contain an instance for the service lumen-platform-algo-py`。企业 Deployment 缺少 `GKXLUMEN_TOPIC_ENTERPRISE_ALGO_BASE_URL`，算法服务未注册 Nacos，因此应通过同命名空间 K8s DNS 直连。
+
+- 线上补充 `GKXLUMEN_TOPIC_ENTERPRISE_ALGO_BASE_URL=http://lumen-platform-algo-py:8000` 并滚动更新，保留原检索地址。
+- `values.yaml` 与 `values-lumen.yaml` 同步持久化配置；YAML 解析及两种 values 的路由断言通过。
+- 配置提交 `lumen-svc-platform 78bd6ee` 已推送 `origin/dev`。
+- 新实例启动后，经用户提供的真实线上入口复测 org_id=29961637：SWOT `empty=false`，优势/机会两项；peers `empty=false`，22 家含自身，专利维度。
+- 未新增 mock、未写业务库、未修改认证凭证。浏览器刷新后的视觉验收未在本会话执行。

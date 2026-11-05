@@ -423,7 +423,7 @@ $$I_r=\frac{N_r}{F_r}\times 100$$
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 cd code
 python3 M_CHAIN_REG_FINANCING.py
 ```

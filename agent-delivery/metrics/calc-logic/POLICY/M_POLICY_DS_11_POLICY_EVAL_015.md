@@ -295,7 +295,7 @@ $$h_{i,k}=\mathbb{1}\left[\exists\,w\in L_k:\ w\in T_i\right],\qquad H_i=\sum_{k
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_DS_11_POLICY_EVAL_015.py
 # → metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json
 ```
@@ -397,7 +397,7 @@ S2 到 S5 的词质量明显更好：「申报」「评审」「拨付」「绩�
 ### 5.1 复现步骤
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_DS_11_POLICY_EVAL_015.py     # 产出 metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_015_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_DS_11_POLICY_EVAL_015 --check
 ```

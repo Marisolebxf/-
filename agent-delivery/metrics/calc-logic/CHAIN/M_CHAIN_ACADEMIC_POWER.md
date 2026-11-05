@@ -393,7 +393,7 @@ $$
 脚本自包含，不 import 任何本地 helper，只依赖 `pymysql` 与标准库。复现命令：
 
 ```
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_ACADEMIC_POWER
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_ACADEMIC_POWER --check
 ```

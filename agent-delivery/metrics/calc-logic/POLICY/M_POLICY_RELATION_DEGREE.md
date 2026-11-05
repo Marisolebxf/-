@@ -348,7 +348,7 @@ live 侧有 806 个节点，而政策有 20,000 条——即使这些节点是�
 ### 5.1 复现步骤（本件是探针，不是出度脚本）
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_RELATION_DEGREE.py    # 产出 metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_RELATION_DEGREE --check
 ```

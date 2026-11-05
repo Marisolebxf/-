@@ -356,7 +356,7 @@ gkx 侧政策主表有 20,000 行，live 侧 `gkxlumenx_dwd.policy_base_info` **
 ### 6.1 复现步骤（本件是探针，不是出分脚本）
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_IMPLEMENTATION_EFFECT.py    # 产出 metrics/repro/out/M_POLICY_IMPLEMENTATION_EFFECT_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_IMPLEMENTATION_EFFECT --check
 ```

@@ -277,7 +277,7 @@ $$\mathrm{CAGR}=\left(\frac{2120}{1261}\right)^{1/6}-1=9.0444\%$$
 ### 2.7 复现代码与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _build_policy_dims_20261023.py      # 分类轴底数（约 45 秒，连 gkx）
 python3 _build_policy_struct_20261023.py    # 时间轴底数（约 55 秒，连 gkx）
 python3 M_POLICY_TIMESERIES.py              # 只读快照，不连库
@@ -385,7 +385,7 @@ live 侧的 `dwd.policy_base_info` 在 20261019 的实测里是 0 行，`ads.pol
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_TIMESERIES.py
 python3 -c "import json;d=json.load(open('M_POLICY_TIMESERIES_out.json'));print(d['support_judgment'], d['headline']['peak_year'], d['growth']['cagr']['cagr_pct'])"
 ```

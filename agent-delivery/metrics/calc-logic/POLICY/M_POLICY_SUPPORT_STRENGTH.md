@@ -348,7 +348,7 @@ $$\rho(S_c,\ n_c)=0.9467,\qquad \rho(S_c,\ \bar\ell_c)=0.4244$$
 ### 2.7 复现代码与结果
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_POLICY_SUPPORT_STRENGTH.py   # 只读快照，产出 metrics/repro/out/M_POLICY_SUPPORT_STRENGTH_out.json
 python3 _work_gkx21/rebuild_metric.py M_POLICY_SUPPORT_STRENGTH --check
 ```

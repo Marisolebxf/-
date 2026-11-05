@@ -325,7 +325,7 @@ assignment_sum = sum(len(stages_of(f, stage_map)) for f in firms)
 ### 2.8 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_ENT_SZ_CHAIN_POSITION.py
 # → metrics/repro/out/M_ENT_SZ_CHAIN_POSITION_out.json
 ```

@@ -278,7 +278,7 @@ D3 稳健性：把 D1 与股东边合并重算，去掉子公司名称代理。�
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/GAP-RECRUIT-METRIC-01.py
 # → metrics/repro/out/GAP-RECRUIT-METRIC-01_out.json
 ```

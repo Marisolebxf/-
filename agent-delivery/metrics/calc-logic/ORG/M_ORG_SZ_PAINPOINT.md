@@ -333,7 +333,7 @@ min-max 归一后（0=四市最好，100=最差）：项目 53.17、转让 92.84
 ### 2.8 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_ORG_SZ_PAINPOINT.py
 # → metrics/repro/out/M_ORG_SZ_PAINPOINT_out.json
 ```
