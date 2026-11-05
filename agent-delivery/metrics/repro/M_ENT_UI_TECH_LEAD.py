@@ -9,6 +9,7 @@
 数据铁律：只读；禁 demo_*；共享库零写入（DB-WRITE-GUARD-L01）。
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -30,7 +31,7 @@ def recompute_online():
     try:
         import pymysql
         conn = pymysql.connect(host="183.240.141.251", port=3318, user="gkx_reader_zp",
-                               password="Zp_Use_Gkx_db@123456", connect_timeout=10,
+                               password=os.environ.get("GKX_READER_PASSWORD", ""), connect_timeout=10,
                                read_timeout=60, autocommit=True)
         cur = conn.cursor()
         facts = {}

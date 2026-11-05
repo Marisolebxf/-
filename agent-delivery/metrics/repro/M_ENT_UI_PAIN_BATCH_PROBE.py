@@ -5,6 +5,7 @@
 铁律：只读；demo_* 禁引；探针命中数落 _out.json
 """
 import json
+import os
 import pymysql
 import sys
 from pathlib import Path
@@ -102,7 +103,7 @@ out["facts"]["live_enterprise_base_research_cols"] = [c for c in cols if any(k i
 jx = None
 try:
     jx = pymysql.connect(host="47.93.119.170", port=29030, user="test2",
-                         password="m+DWAG23RCXBP2L+y7ydaqu3aSuur7mxFOcl3iZHDgVe4eka",
+                         password=os.environ.get("JX_DORIS_PASSWORD", ""),
                          database="gkx_technology_analysis_dev", connect_timeout=20, read_timeout=120,
                          autocommit=True)
     jc = jx.cursor()
