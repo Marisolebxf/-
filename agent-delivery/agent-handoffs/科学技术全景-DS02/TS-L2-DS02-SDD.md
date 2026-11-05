@@ -4,9 +4,9 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | 未认领。定义单已建，状态 ready |
+| claimed_by | `agent:arch-agent` |
 | supervised_by | `human:淮政玮` |
-| claim_type | 未认领 |
+| claim_type | `coordinator_dispatch` |
 | 说明 | 说明书已落盘。功能架构四角色已同意，签收未做，不推待签收 |
 
 ## Ponytail（coding 任务必填）
@@ -34,11 +34,41 @@
 
 - 未改业务仓。
 
-## 架构合规
+## 范围与实现
 
-- 与功能架构同一条调用链。展示只做序号 17–33。34–40 不建实现单。41–47 归维护管理。
-- 一次 `POST /display/v1/situation/panorama/graph`，七个已有字段。读失败不回退 fixture。空图 `GRAPH_EMPTY`。
-- D18 分数表不进 ODS / DWD / 供应方库，不用 `gapfill_`。D4 保持 mock。
+对照需规序号 17–47。展示只做 17–33。一次 `POST /display/v1/situation/panorama/graph`。34–40 不建实现单。41–47 归维护管理。实现只补读图、灌数、主路径测试。
+
+## 偏离
+
+无偏离。不重开 `FE-TS-02A` 与 `SYSINT-05-01A/B`。
+
+## 产物清单
+
+- `sdd/科学技术全景-系统详细设计说明书.md`
+- `功能拆解.md`
+- 展示 WBS-05-01d
+
+## 验收证据
+
+编排仓无业务 CI。签收核对结论：同意签收。调用链与功能架构第 2 节一致。
+
+## 架构合规自检
+
+1. 算法只在 Python。Java 不写 nGQL。✅
+2. 调用链与功能架构相同，一次 graph，七个已有字段。✅
+3. 图只读 `demo_gkx_chain`。✅
+4. 可观测沿用现有服务，本叶不新加。✅
+5. 定义稿无业务 CI。✅
+6. D12：不调用 `demo-*`。✅
+7. D18：分数表不进 ODS / DWD / 供应方库，不用 `gapfill_`。D4 保持 mock。接口不直接返回写死 mock。✅
+
+## Cost 回填
+
+- actual_tokens: 16000
+- model_used: claude-sonnet-4.5
+- actual_cost: 0.09
+- cost_warn: green
+- 会话模型为 Grok 4.7。注册表枚举无此项，按 sonnet 单价与 architect 80/20 计入。
 
 ## 遗留风险
 

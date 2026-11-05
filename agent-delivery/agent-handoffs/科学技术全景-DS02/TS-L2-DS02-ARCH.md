@@ -4,9 +4,9 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | 未认领。定义单已建，状态 ready |
+| claimed_by | `agent:arch-agent` |
 | supervised_by | `human:淮政玮` |
-| claim_type | 未认领 |
+| claim_type | `coordinator_dispatch` |
 | 说明 | 架构稿已落本目录。四角色已同意。签收由本轮 coordinator 按监管人指令推进，不在本文件自标 done |
 
 ## Ponytail（coding 任务必填）
@@ -43,11 +43,44 @@
 - 指标经 `metric-registry` 的 `metric-get` / `metric-query` 核对，未读 seed YAML。
 - 对照了现控制器 `SituationPanoramaController`：当前返回空数组和 `GRAPH_NOT_READY`。
 
-## 架构合规
+## 范围与实现
 
-- 调用链：浏览器 → 网关 `/display/**` → `gkxlumen-display` → `lumen-algo-py` `POST /internal/tech-graph/read` → `demo_gkx_chain`。Java 不写 nGQL，不经 `gkxlumen-graph`，不调用 `demo-*`。
-- D12：正式下游只写 lumen。D18：三个数字只读 `ads_technology_panorama_score` 的 mock 行，接口不直接返回写死 mock。
-- 不新造 `metric_id`。不把 IPC4 / 深圳卡位函数挂到本页。
+对照需规「科学技术全景」序号 17–33。菜单 `/trend/tech-panorama`。调用链与数据流在架构稿第 2、3 节。34–47 不在本页。不新造 `metric_id`，不写 OpenAPI 字段表。
+
+## 偏离
+
+无偏离。入图仍在第 2 项，不在本篇展开。
+
+## 产物清单
+
+- `sdd/l2/TS-L2-DS02-ARCH.md`
+- `sdd/l2/会签/TS-L2-DS02-ARCH-SIGNOFF-ARCH.md`
+- `sdd/l2/会签/TS-L2-DS02-ARCH-SIGNOFF-ALGO.md`
+- `sdd/l2/会签/TS-L2-DS02-ARCH-SIGNOFF-DATA.md`
+- `sdd/l2/会签/TS-L2-DS02-ARCH-SIGNOFF-PRODUCT.md`
+- 展示 WBS-05-01c
+
+## 验收证据
+
+编排仓无业务 CI。签收核对子智能体结论：同意签收。四角色会签稿已落盘。
+
+## 架构合规自检
+
+1. 算法只在 Python。Java 不在这次请求里算关系。✅
+2. 调用链是浏览器 → 网关 `/display/**` → `gkxlumen-display` → `lumen-algo-py` `POST /internal/tech-graph/read` → `demo_gkx_chain`。✅
+3. 图空间只读 `demo_gkx_chain`，不写 `gkx_chain` 或 `entan`。✅
+4. 可观测沿用 `gkxlumen-display` 与 `lumen-platform-algo-py`，本叶不新加。✅
+5. 定义稿无业务 CI。✅
+6. D12：不调用 `demo-*`，不经 `gkxlumen-graph`。✅
+7. D18：三个数字只读 `ads_technology_panorama_score` 的 mock 行，接口不直接返回写死 mock。✅
+
+## Cost 回填
+
+- actual_tokens: 12000
+- model_used: claude-sonnet-4.5
+- actual_cost: 0.06
+- cost_warn: green
+- 会话模型为 Grok 4.7。注册表枚举无此项，按 sonnet 单价与 architect 80/20 计入。
 
 ## 遗留风险
 
