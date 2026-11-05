@@ -4,10 +4,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | 未认领。`task-query` 无此 ID，architect 不新建任务 |
+| claimed_by | 未认领。定义单已建，状态 ready |
 | supervised_by | `human:淮政玮` |
 | claim_type | 未认领 |
-| 说明 | 用户要求按定义任务写出科学技术全景后台架构。注册表没有对应定义单，本文档先落盘 |
+| 说明 | 架构稿已落本目录。会签未做，不推待签收，不标 done |
 
 ## Ponytail（coding 任务必填）
 
@@ -21,20 +21,21 @@
 | 字段 | 值 |
 |------|-----|
 | diagram_id | `TS-L2-DS02-ARCH-SEQ`、`TS-L2-DS02-ARCH-DATA` |
-| 图 diff | 新增两张：展示页调用链；久新 ADS → 中台入图 → `demo_gkx_chain` → 只读装配。分数表单独进 display，不进图 |
+| 图 diff | 改为两张功能图：三个展示功能共用一次读取；已准备好的图供给三个功能，分数表只供给影响力、中心度、路径优先级 |
 | 会签态 | `draft`（源文件无 frontmatter） |
-| 说明 | 图在 `sdd/l2/TS-L2-DS02-ARCH.md` 第 2、3 节 |
+| 说明 | 图在 `科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md` 第 2、3 节 |
 
 ## 问题清单
 
-- 注册表没有 `TS-L2-DS02-ARCH`，不能把任务推到待签收。
+- 定义单已建为 ready。会签未做，不能推到待签收。
 - `M_TECH_GRAPH_STRUCT` 等已注册口径是 IPC4 或深圳卡位，和 `technology_node_id` 这张图不是同一套点。稿里禁止用那些函数填本页。
 - 中台入图的业务点是否已经进 `demo_gkx_chain`，本定义稿没有再查图。空图时页面保持空，不灌种子。
 
 ## 修改内容
 
-- 新增架构稿 `agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-DS02-ARCH.md`。菜单 `/trend/tech-panorama`，序号 17–33。图和路径真读，影响力 / 中心度 / 路径优先级走 D18 表。34–47 属于维护管理 `/trend/tech-situation-maintain`，不写进本页。
-- 展示系统集成 WBS 的 DS-02 行写上稿路径。
+- 2026-11-05 晚：原稿写成了技术点入图和读图准备。已改成三个功能的架构：展示技术点图谱（17–21）、展示关联实体（22–27）、展示关键路径（28–33）。入图仍只引用第 2 项，不在本篇展开。
+- 同日按需规逐叶拆到 `功能拆解.md`，WBS §4.1d 索引。34–40 不建单，41–47 归维护管理。不按 17 叶新开任务。
+- 稿在 `agent-handoffs/科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md`。WBS-05-01c 挂定义单 `TS-L2-DS02-ARCH`。
 
 ## 测试结果
 
@@ -65,6 +66,6 @@
 
 ## 涉及文件
 
-- `agent-delivery/agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-DS02-ARCH.md`
-- `agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-DS02-ARCH.md`
+- `agent-delivery/agent-handoffs/科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md`
+- `agent-delivery/agent-handoffs/科学技术全景-DS02/TS-L2-DS02-ARCH.md`
 - `agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md`
