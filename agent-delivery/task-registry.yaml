@@ -51652,7 +51652,7 @@ tasks:
   - id: POL-L2-DS12-EST-GAPFILL-L01
     supervised_by: "human:淮政玮"
     title: "政策效果推演 · 预估 · 缺项表灌 mock"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51662,7 +51662,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。按说明书第 11.2 节。序号 232–234。模型未注册时这是唯一退路。接口只读表。"
+    note: |
+      联调闸门：EST-DATA 已签收，EST-ARCH 仍为会签态且架构稿已在。按已签收分册收窄：只灌 232–234 到 gkxlumenx_gapfill.gapfill_policy_sim_forecast。不灌文本解析。不改 D4。同仓 lumen-algo-py 仍有 SYSINT-ADS-02-L01 进行中，本轮不认领。
     depends_on:
       - "POL-L2-DS12-EST-ARCH"
       - "POL-L2-DS12-EST-DATA"
@@ -51672,11 +51673,11 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_sim_forecast。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入未出台、新出台、区域空间三类预测结果行。接口只读表"
       - "不挂布局推荐。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T13:20:48+08:00"
+    update_time: "2026-11-06T00:14:24+08:00"
   - id: POL-L2-DS12-SIM-GAPFILL-L01
     supervised_by: "human:淮政玮"
     title: "政策效果推演 · 仿真 · 缺项表灌 mock"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -51686,7 +51687,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。按说明书第 11.2 节。序号 235–239、241、242。接口只读表，禁止接口直接返回 mock。"
+    note: |
+      联调闸门：SIM-DATA 已签收，SIM-ARCH 仍为会签态且架构稿已在。按已签收分册收窄：235 与 238/239/241/242 灌 gkxlumenx_gapfill.gapfill_policy_sim_result；236 灌 gapfill_policy_sim_stakeholder。不灌文本解析，不灌 237，240 不建表，242 只灌正文。同仓 lumen-algo-py 仍有 SYSINT-ADS-02-L01 进行中，本轮不认领。
     depends_on:
       - "POL-L2-DS12-SIM-ARCH"
       - "POL-L2-DS12-SIM-DATA"
@@ -51696,7 +51698,7 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_sim_result、gapfill_policy_sim_stakeholder。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入多维评估、文本解析、重点、影响范围、路径、解读正文，以及参与意见。接口只读表"
       - "240 不建表。不灌报告文件。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-03T13:20:49+08:00"
+    update_time: "2026-11-06T00:14:31+08:00"
   - id: POL-L2-PC1-LINEAGE-GAPFILL-L01
     supervised_by: "human:淮政玮"
     title: "政策数据治理 · 溯源索引 · 缺项表灌 mock"
@@ -54938,3 +54940,62 @@ tasks:
       - "序号 17 的写操作与序号 26 确认为 501 或空"
       - "USE_MOCK=false 时页面不出现种子节点"
     update_time: "2026-11-05T22:48:42+08:00"
+  - id: POL-L2-DS12-JOBS-IMPL-JAVA
+    title: "政策效果推演 · 仿真任务分发实现"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 25000
+    user_story: "US-DS-POL-06"
+    note: "强度 ponytail full。唯一分发器。同仓 lumen-svc-platform 仍有 POL-L2-DS11-BE-L01 进行中，本轮不认领。空态是空，不是 501。"
+    depends_on:
+      - "POL-L2-DS12-EST-API"
+      - "POL-L2-DS12-EST-DATA"
+      - "POL-L2-DS12-EST-METRIC"
+      - "POL-L2-DS12-SIM-API"
+      - "POL-L2-DS12-SIM-DATA"
+      - "POL-L2-DS12-SIM-METRIC"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-SIM-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-SIM-ARCH.md"
+    definition_of_done:
+      - "在 lumen-svc-platform 实现唯一 POST /display/v1/policy/simulation/jobs，按种类同步读表返回。不建第二个分发器，不调 /topic/v1/policy，不调 demo-*。"
+      - "232–234 读 gkxlumenx_gapfill.gapfill_policy_sim_forecast；235 与 238/239/241/242 读 gapfill_policy_sim_result；236 读 gapfill_policy_sim_stakeholder。空表返回空，HTTP 成功，不返回 501，接口不写死 mock。"
+      - "237 只读 gkxlumenx_ads.policy_text_parse 同一 policy_id 行，返回时去掉 structured_elements 的 clauses 与 clause_meta，不整行丢弃，不调用 polan.text.parse.run。240 不提供资源。242 只返回正文，不生成 PDF 或 Word。"
+      - "Java 不做 NLP、不写 nGQL、请求路径不调 Python。不新造 metric_id，不改 D4。handoff 写明路径与种类对照。"
+    update_time: "2026-11-06T00:14:47+08:00"
+  - id: POL-L2-DS12-WIRING-L01
+    title: "政策效果推演 · 页面接仿真分发"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-06"
+    note: "强度 ponytail full。页已在 FE-POL-03A，监管沿用 human:孔东。前置灌数与 Java 分发未开工前保持 backlog。未写完工即推，不自行 push。"
+    depends_on:
+      - "POL-L2-DS12-EST-GAPFILL-L01"
+      - "POL-L2-DS12-SIM-GAPFILL-L01"
+      - "POL-L2-DS12-JOBS-IMPL-JAVA"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-SIM-API.md"
+    definition_of_done:
+      - "在已有 FE-POL-03A 效果推演页上，把效果预估与科技政策推演接到唯一 POST /display/v1/policy/simulation/jobs。不新开页面，不直连 demo-*，不直连 Python。"
+      - "种类与空态按已签收分册：空表显示空，不显示 501。240 不单独请求。242 不展示文件下载。布局推荐不顶替推演。"
+      - "每个统计数字保留 ⓘ。D4 保持 mock，不改绿。USE_MOCK=false 时不用 fixture 填数。"
+      - "前端推送仍等当前会话人工确认。handoff 写明接线种类与自检。"
+    update_time: "2026-11-06T00:14:55+08:00"
