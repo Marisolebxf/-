@@ -54684,3 +54684,101 @@ tasks:
       - "34–47 不在本页。不新造 metric_id，不写 OpenAPI 字段表"
       - "展示系统集成 WBS-05-01c 挂上本单，不替代 FE-TS-02A 与 SYSINT-05-01A/B"
     update_time: "2026-11-05T21:17:16+08:00"
+  - id: TS-L2-DS02-SDD
+    evidence: "agent-handoffs/科学技术全景-DS02/TS-L2-DS02-SDD.md"
+    title: "科学技术全景 · 系统详细设计说明书"
+    status: "ready"
+    agent: "arch-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 16000
+    note: "2026-11-05 说明书已落盘。会签未做，不推待签收，不标 done。实现三张单保持 backlog。"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科学技术全景-DS02/sdd/科学技术全景-系统详细设计说明书.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md"
+      - "agent-delivery/agent-handoffs/科学技术全景-DS02/sdd/l2/TS-L2-DS02-ARCH.md"
+    definition_of_done:
+      - "说明书落在 agent-handoffs/科学技术全景-DS02/sdd/科学技术全景-系统详细设计说明书.md，含调用链与数据流"
+      - "按需规 17–47 裁定范围：展示只实现 17–33；34–40 不建实现单；41–47 归维护管理"
+      - "三个功能仍是一次 POST /display/v1/situation/panorama/graph，不新造 metric_id，接口不直接返回 mock"
+      - "实现任务只补读图、灌数、主路径测试，不重开 FE-TS-02A 与 SYSINT-05-01A/B"
+    update_time: "2026-11-05T21:23:36+08:00"
+  - id: TS-L2-DS02-READ-PY-L01
+    title: "科学技术全景 · 读图"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 20000
+    note: "说明书会签前不开工。不与 SYSINT-TECHGRAPH-02-L01 的写入混成一张单。Java 装配仍是 SYSINT-05-01B-L01。"
+    depends_on:
+      - "TS-L2-DS02-SDD"
+    touched_files:
+      - "lumen_algo_service/views/tech_graph.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科学技术全景-DS02/sdd/科学技术全景-系统详细设计说明书.md"
+    definition_of_done:
+      - "POST /internal/tech-graph/read 只读 demo_gkx_chain，空间不对则拒绝"
+      - "未选技术点时最多 200 个技术点且不带边；选中后关系最多 200、每类实体最多 20、路径最多 20，超出带截断标记"
+      - "空图返回空数组，不返回 fixture，不写图"
+    update_time: "2026-11-05T21:23:30+08:00"
+  - id: TS-L2-DS02-SCORE-L01
+    title: "科学技术全景 · 三个数字灌数"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 12000
+    note: "与读图同仓。读图合入后再做。不新造 metric_id。公式未由唐绍祖按技术点另签前不得把 D4 改成 live。"
+    depends_on:
+      - "TS-L2-DS02-SDD"
+      - "TS-L2-DS02-READ-PY-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科学技术全景-DS02/sdd/科学技术全景-系统详细设计说明书.md"
+    definition_of_done:
+      - "新建 ads_technology_panorama_score，不在 ODS、DWD、供应方库，不用 gapfill_ 前缀"
+      - "只灌影响力、中心度、路径优先级的 mock 行，对应 M_TECH_ENTITY_INFLUENCE、M_TECH_PATH_CENTRALITY、M_TECH_PATH_PRIORITY"
+      - "D4 保持 mock。无行时接口该格为空。不在 graph 请求里写表"
+    update_time: "2026-11-05T21:23:32+08:00"
+  - id: TS-L2-DS02-TEST-L01
+    title: "科学技术全景 · 三个功能主路径测试"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 8000
+    note: "接线、Java 装配、读图、灌数可测之后再领。不重做 FE-TS-02A 的复刻自测。"
+    depends_on:
+      - "SYSINT-05-01A-L01"
+      - "SYSINT-05-01B-L01"
+      - "TS-L2-DS02-READ-PY-L01"
+      - "TS-L2-DS02-SCORE-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科学技术全景-DS02/sdd/科学技术全景-系统详细设计说明书.md"
+    definition_of_done:
+      - "用例覆盖打开、搜索、点技术点、看实体、看路径、播放"
+      - "序号 17 的写操作与序号 26 确认为 501 或空"
+      - "USE_MOCK=false 时页面不出现种子节点"
+    update_time: "2026-11-05T21:23:36+08:00"

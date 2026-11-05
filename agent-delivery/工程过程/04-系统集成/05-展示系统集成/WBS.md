@@ -69,7 +69,7 @@
 | 一级菜单 | 叶 | 页名 | WBS 叶 | 挂载任务（含状态） | 完成摘要 | 计划叶 |
 |---|---|---|---|---|---|---|
 | 科技发展态势 | DS-01 | 科技全域态势 | WBS-05-18 | `FE-TS-01A`(integration)、`BE-TS-IMPL-01`(backlog)、`BE-TS-DATA-01`(backlog)、`DS-01-METRIC-OPEN-L01`(integration)、`SITUATION-ENT-*` 长任务管线（10-27 挂接，见 §4.3；11-01 五单 `SITUATION-ENT-D2-L01` / `-D3-L01` / `-MOCK-LEDGER-L01` / `INFLUENCE-FIX-L01` / `GRANULARITY-FIX-L01` 均 integration，11-02 新增 `METRIC-LIB-ALGO-INFLUENCE-L01`(integration)，共 7 条 integration 停本地待走查（含 11-02 完工 `SITUATION-ENT-SPARK-L01`）；11-02 另补登记两条 backlog `SITUATION-ENT-FOLLOW-SVR-L01`（待裁定收藏表归属 upms）/ `SITUATION-ENT-TREND-FEAT-L01`） | 前端整页复刻已 push、三绿；REST 待 `BE-TS-CONTRACT-01` 冻结。指标语义卡仍草稿未签。10-27 起企业维度数据跑通长任务挂接本行；11-01 全维度打通五单（机构不做点位、期刊/会议 mock、mock 台账、影响力 Tab 修复、时间粒度打通）+ 11-02 指标库口径对齐与算法库优先接入（期刊/专家取算法库真实值，论文/专利/服务保留 mock，五卡挂 metric_id），七条 integration 改动停本地未 commit / 未 push 待 `human:李伟` 走查；11-02 要素卡年度趋势 spark 完工（论文 / 人才 / 项目 / 机构接久新真实年度序列，7101 探针末点 = 卡值、无断崖），收藏服务端化按只读铁律改落 upms 待裁定，趋势预测 / 异常监测待裁定，见 §4.3 05-18-15～17 | LT-5-SIT-DS01 |
-| 科技发展态势 | DS-02 | 科学技术全景 | WBS-05-01a / 01b / 01c | `SYSINT-05-01A-L01`(ready)、`SYSINT-05-01B-L01`(ready)、`TS-L2-DS02-ARCH`(ready)、`FE-TS-02A`(integration)、`DS-02-METRIC-OPEN-L01`(integration) | 对接叶已建号未开工；复刻页 integration；读图归第 7 项。中台入图和挂产业是第 2 项 WBS-02-19/20/21，不替代本行，lumen 不调用 demo 中台。功能架构 `TS-L2-DS02-ARCH`。按需规拆解见 §4.1d 与 `agent-handoffs/科学技术全景-DS02/功能拆解.md`（17–33 三个功能；34–40 不建单；41–47 归维护管理） | LT-5-SIT-DS02 |
+| 科技发展态势 | DS-02 | 科学技术全景 | WBS-05-01a～01g | `SYSINT-05-01A-L01`(ready)、`SYSINT-05-01B-L01`(ready)、`TS-L2-DS02-ARCH`(ready)、`TS-L2-DS02-SDD`(ready)、`TS-L2-DS02-READ-PY-L01`(backlog)、`TS-L2-DS02-SCORE-L01`(backlog)、`TS-L2-DS02-TEST-L01`(backlog)、`FE-TS-02A`(integration)、`DS-02-METRIC-OPEN-L01`(integration) | 说明书 `TS-L2-DS02-SDD`。展示只做 17–33。34–40 不建单，41–47 归维护管理。入图是第 2 项，不替代本行。实现补读图、灌数、主路径测试三张，会签前不开工 | LT-5-SIT-DS02 |
 | 科技发展态势 | DS-03 | 技术发展跟踪 | WBS-05-02a / 02b | `SYSINT-05-02A-L01`(integration)、`SYSINT-05-02B-L01`(integration)、`FE-TS-03A`(integration)、`DS-03-METRIC-OPEN-L01`(integration)、**`SITUATION-TS-TRACKING-EVAL-L01` / `-REPORT-L01` / `-PERSIST-L01`(integration，11-03 补登本轮工作)** | 三个 Tab 可开或空态；材料未到时空态。名称收口为「技术发展跟踪」。11-02～11-03：真评估接入（久新模型产出，不再吃 mock）、报告 HTML/PDF、范围挂载（区域/时间/领域**均真实生效**——领域复用科技全域态势 `subfield_topic_map` 反查，实测 CL-SEI-01 → 39 子学科）、历史与模板落库回读、结果页技术评估榜单表（Top-20）、报告最近列表上限+清理、D9 按 missing 落红问号；**改动停本地未 commit/push，等 `human:孔东` / `human:唐绍祖` 走查** | LT-5-SIT-DS03 |
 | 科技发展态势 | DS-04 | 全球创新监测 | WBS-05-19 | `FE-TS-04A`(integration)、`DS-04-METRIC-OPEN-L01`(integration)；已有 `E-INNOV-M1-L08`（tier FULL，路由 `/innov`）；`SITUATION-IM-C11..C15` 五端点 11-03/04 实质 integration（见 §4.4 偏离说明） | 综合 / 实时 / 载体 / 监测 / 能力五块可切换；11-03 走查七项整改 + 11-04 领域补齐（论文/项目 100%）、学者接入（ads_talent_profile 10 万）、图谱「全部」视图双根因修复、三仓代码首次 push 触发 CI；详见 `agent-handoffs/科技发展态势-TS/M4-REMEDIATION-20261103.md` §12-13 与走查准备件 | LT-5-SIT-DS04 |
 | 科技发展态势 | DS-05 | 湾区创新监测 | WBS-05-19 | `FE-TS-05A`(integration)、`DS-05-METRIC-OPEN-L01`(integration)；同上 `SITUATION-IM-*` 长任务管线（见 §4.4） | 成果地图 / 四维 / SWOT / 指标四块已完成，联调待 REST | LT-5-SIT-DS05 |
@@ -371,6 +371,15 @@
 | 维护关键实体及关系 | 41–47 | `FE-TS-10A`、WBS-05-24、`SCI-INT-A03` | 不在科学技术全景展示单里再拆 |
 
 产品叶清单 `SCI-INT-A02`（ready_to_sign）已覆盖 excel 20–36，即序号 17–33。本表不重开那张定义单。
+
+系统详细设计：`TS-L2-DS02-SDD`，稿 `agent-handoffs/科学技术全景-DS02/sdd/科学技术全景-系统详细设计说明书.md`。实现不按叶拆。已有 `FE-TS-02A`、`SYSINT-05-01A-L01`、`SYSINT-05-01B-L01` 不重开。
+
+| 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
+|---|---|---|---|---|---|---|---|
+| WBS-05-01d · `TS-L2-DS02-SDD` | 科学技术全景 · 系统详细设计说明书（序号 17–47 的范围裁定，实现只做 17–33） | 淮政玮 | `gkx-orchestration` | **ready** | 稿已落盘。会签未做，不标 done。34–40 不建单，41–47 归 WBS-05-24 | 功能架构 `TS-L2-DS02-ARCH`。不替代 01a / 01b | 无截至时间 |
+| WBS-05-01e · `TS-L2-DS02-READ-PY-L01` | 科学技术全景 · 读图（`POST /internal/tech-graph/read`） | 唐绍祖 | `lumen-algo-py` | **backlog** | 未开工。只读 `demo_gkx_chain`。空图不返回种子。不写图 | 说明书会签。不与 `SYSINT-TECHGRAPH-02-L01` 的写入混成一张单 | 无截至时间 |
+| WBS-05-01f · `TS-L2-DS02-SCORE-L01` | 科学技术全景 · 影响力 / 中心度 / 路径优先级灌数 | 徐滕强 | `lumen-algo-py` | **backlog** | 未开工。表 `ads_technology_panorama_score`。D4 保持 mock | 说明书会签。与 01e 同仓，01e 合入后再做 | 无截至时间 |
+| WBS-05-01g · `TS-L2-DS02-TEST-L01` | 科学技术全景 · 三个功能主路径测试 | 黄敬洲 | `gkx-orchestration` | **backlog** | 未开工。打开、搜索、点技术点、看实体、看路径、播放。17 与 26 确认为 501 或空 | `SYSINT-05-01A-L01`、`SYSINT-05-01B-L01`、01e、01f | 无截至时间 |
 
 ### 4.2 WBS-05-08 的子任务（科技交流 / 竞赛 / 传播）
 
