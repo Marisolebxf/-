@@ -308,7 +308,7 @@ calc-logic 把股权比例列为「强度辅证」，但没有给分档阈值（
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_ENT_RELATION_STRENGTH.py
 # → metrics/repro/out/M_ENT_RELATION_STRENGTH_out.json
 ```

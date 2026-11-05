@@ -546,7 +546,7 @@ cd code && python3 M_TECH_ENTITY_TOP5.py
 ## 附录 A　复现
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_TECH_ENTITY_TOP5.py
 ```
 

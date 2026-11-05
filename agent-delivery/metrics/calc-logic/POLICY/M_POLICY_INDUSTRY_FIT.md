@@ -276,7 +276,7 @@ $$\text{score}=\left(\frac{0.1245-0.0763}{0.1595-0.0763}+1.0+1.0\right)\div 3\ti
 ### 2.8 复现步骤与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _build_policy_industry_20261023.py   # 城市 × 链 × 节点矩阵（连 gkx）
 python3 M_POLICY_INDUSTRY_FIT.py             # 只读快照
 python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));print(d['support_judgment'], len(d['chains']))"
@@ -430,7 +430,7 @@ python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));prin
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 _build_policy_industry_20261023.py
 python3 M_POLICY_INDUSTRY_FIT.py
 python3 -c "import json;d=json.load(open('M_POLICY_INDUSTRY_FIT_out.json'));print(d['headline']['chains_scored'], d['headline']['max_match_pct'])"

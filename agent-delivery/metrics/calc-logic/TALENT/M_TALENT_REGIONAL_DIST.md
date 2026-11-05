@@ -449,7 +449,7 @@ LQ 只在 $n\ge5$ 时输出，但 5 人仍然很小。天津智能机器人 19 �
 ### A.1 运行
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_TALENT_REGIONAL_DIST.py
 ```
 

@@ -98,7 +98,7 @@ cols = [list(r.values())[0] for r in cur.fetchall()]
 out["facts"]["live_enterprise_base_research_cols"] = [c for c in cols if any(k in c.lower() for k in ("research", "staff", "scholar", "person", "employee"))]
 
 # ---------- C. 久新面（ads_talent_yearly_metrics / ads_technology_stage_assessment） ----------
-# 凭据：local-workspace/config/database_info.yaml jiuxin_warehouse（test2 只读，不进 git）
+# 凭据：调研工作区 database_info.yaml jiuxin_warehouse（test2 只读，不进 git）
 jx = None
 try:
     jx = pymysql.connect(host="47.93.119.170", port=29030, user="test2",

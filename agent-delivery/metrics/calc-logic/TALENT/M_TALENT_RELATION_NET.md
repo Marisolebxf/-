@@ -482,7 +482,7 @@ ego 机构分布：深圳大学 10、南方科技大学 8、中国科学院深�
 ### A.1 运行
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_TALENT_RELATION_NET.py
 ```
 

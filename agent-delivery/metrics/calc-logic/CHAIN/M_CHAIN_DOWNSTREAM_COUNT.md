@@ -261,7 +261,7 @@ $D_k$ 同时包含容器与叶子：$|D_k| = 容器数 + 叶子数$。12 条链�
 脚本 `metrics/repro/M_CHAIN_DOWNSTREAM_COUNT.py` 只读快照，按 `industry_code` 前缀求子树；输出 `metrics/repro/out/M_CHAIN_DOWNSTREAM_COUNT_out.json`，含 `headline`、`per_chain`、`alternatives`、`evidence_absent_stage`、`integrity`。`alternatives` 把 256/47/954/41 四个数并排存放，避免正文只出现一个数、读者无法判断口径。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_DOWNSTREAM_COUNT.py
 python3 _work_gkx21/rebuild_metric.py M_CHAIN_DOWNSTREAM_COUNT
 python3 _work_gkx21/audit_md_vs_out.py --dir _staging21

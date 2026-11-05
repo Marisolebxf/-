@@ -254,7 +254,7 @@ null 与 0 的区别必须写清：0 是「有分但都不过线」，可以随�
 本件没有做「最优阈值」拟合，因为那需要业务标注（哪些企业真的值得推荐）。没有标注集，任何阈值都是任意的。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_ENT_RECOMMEND_COUNT.py
 python3 -c "import json;d=json.load(open('M_ENT_RECOMMEND_COUNT_out.json'));print(d['support_judgment']['data_support_level'])"
 ```

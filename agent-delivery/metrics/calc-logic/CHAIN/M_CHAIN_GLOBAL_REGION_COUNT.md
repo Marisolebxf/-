@@ -551,7 +551,7 @@ dwd_forg_research_org_info    20,000 行   覆盖 186 国（20261020 版探测�
 ### D-1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_CHAIN_GLOBAL_REGION_COUNT.py
 ```
 

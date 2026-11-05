@@ -476,7 +476,7 @@ IPC 维覆盖 12/12 家企业，是三维里唯一完整的。学者维 0/12，�
 ## 附录 A　复现
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_INNOV_RES_GRADE.py
 ```
 

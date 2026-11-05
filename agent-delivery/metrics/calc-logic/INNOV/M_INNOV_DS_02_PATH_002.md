@@ -274,7 +274,7 @@ PageRank 用 `co` 加权、`alpha=0.85`、60 次迭代。`G06F` 0.043292 远高�
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_02_PATH_002.py
 # 首次运行会落盘样本（三段共约 200 秒），之后读快照约 4 秒
 # → metrics/repro/out/M_INNOV_DS_02_PATH_002_out.json

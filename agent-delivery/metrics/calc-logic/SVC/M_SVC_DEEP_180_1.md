@@ -297,7 +297,7 @@ score = mean(可用维) × 100   # 维数 ≥ 2
 ### 2.7 复现代码与结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_SVC_DEEP_180_1.py
 # 覆盖写 M_SVC_DEEP_180_1_out.json
 ```
@@ -523,7 +523,7 @@ TOP15（`out.json → top15`）：
 ## 附录 E 复算步骤
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_SVC_DEEP_180_1.py
 python3 -c "import json;d=json.load(open('M_SVC_DEEP_180_1_out.json'));print(d['population']['external_n'],d['score_dist']['max'])"
 # 期望：18535 55.88

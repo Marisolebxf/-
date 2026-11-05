@@ -310,7 +310,7 @@ $P_0$ 的度分布：度 0 共 31,248 家（70.7721%）、度 1 共 8,149 家、
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_SVC_RELATION_DENSITY.py
 # → metrics/repro/out/M_SVC_RELATION_DENSITY_out.json
 ```

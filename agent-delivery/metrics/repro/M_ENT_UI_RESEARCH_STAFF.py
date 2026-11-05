@@ -53,7 +53,7 @@ def main():
                  FROM enterprise_base WHERE rd_staff_count > 0""")
     r = list(c.fetchone().values())
     out["facts"]["rd_pos_stats"] = {"min": r[0], "max": r[1], "avg": float(r[2]) if r[2] is not None else None}
-    c.execute("""SELECT name, rd_staff_count FROM enterprise_base
+    c.execute("""SELECT enterprise_name, rd_staff_count FROM enterprise_base
                  WHERE rd_staff_count > 0 ORDER BY rd_staff_count DESC LIMIT 5""")
     out["facts"]["top5"] = [{"org": list(x.values())[0], "rd_staff": list(x.values())[1]} for x in c.fetchall()]
     c.execute("SELECT SUM(rd_staff_count) AS s FROM enterprise_base")
@@ -72,10 +72,11 @@ def main():
         "denominator_note": "rd_staff_count 非空行 / 总行数（非空与>0 两口径并列，B1 键名服从算法）",
     }
 
-    out["support_judgment"] = "完全转换支持"
-    out["notes"].append("live rd_staff_count 列直读即可复现页面语义（企业研发人员数）；"
-                        "久新 ads_talent_* 为人才粒度原料（current_institution 关联后可算企业维），"
-                        "口径未对齐待三分清单，不构成降档——我方列直查已完全可算。")
+    out["support_judgment"] = "部分支持"
+    out["notes"].append("B4 情形②：live enterprise_base.rd_staff_count 列存在但实测 0 行非空（400 行底册全空）"
+                        "——结构支持、数据缺失；久新 ads_talent_* 人才粒度原料在（current_institution 等列实测），"
+                        "但久新机构→我方 org 映射未建立，企业维当前不可算 → 部分支持。"
+                        "升档触发器：live rd_staff_count 灌数，或久新机构映射落地。")
     p = HERE / "out" / "M_ENT_UI_RESEARCH_STAFF_out.json"
     p.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print("saved", p)

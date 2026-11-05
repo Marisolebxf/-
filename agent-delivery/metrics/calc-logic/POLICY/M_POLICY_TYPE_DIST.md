@@ -266,7 +266,7 @@ $$|T|+|F|+|N|+|I|=20{,}000$$
 ### 2.7 复现代码与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_TYPE_DIST.py
 python3 -c "import json;d=json.load(open('M_POLICY_TYPE_DIST_out.json'));print(d['type_total'], len(d['type_dist']), d['support_judgment'])"
 ```
@@ -397,7 +397,7 @@ G1—G3 是主题维度的三条硬缺口，也是本件判「部分支持」的
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_POLICY_TYPE_DIST.py
 ```
 

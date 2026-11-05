@@ -474,7 +474,7 @@ IPC4×申请人快照 581,585 行是全期口径，与规模窗口（2021—2024
 ## 附录 A　复现
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_TECH_SZ_ASSESS.py
 ```
 

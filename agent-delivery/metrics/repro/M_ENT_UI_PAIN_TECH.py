@@ -80,7 +80,7 @@ def main():
         }
 
     out["support_judgment"] = "部分支持"
-    out["notes"].append("专利面 gkx 全量在；live 研发列存在但覆盖待扩（见 derived 覆盖率）；"
+    out["notes"].append("专利面 gkx 全量在；live rd_staff_count/rd_staff_ratio 列存在但实测 0 行非空（B4 情形②，derived 覆盖率为 0）；"
                         "「构成技术研发痛难点」的模型判定未闭合 → 部分支持。")
     p = HERE / "out" / "M_ENT_UI_PAIN_TECH_out.json"
     p.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")

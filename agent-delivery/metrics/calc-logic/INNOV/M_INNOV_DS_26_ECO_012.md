@@ -262,7 +262,7 @@ P10 到 P90 只差 28.21 分，且 P50 与 P90 只差 0.5008 分——分数在 
 ### 2.6 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
+cd 仓内（gkx-orchestration/agent-delivery/）（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 code/M_INNOV_DS_26_ECO_012.py
 # → metrics/repro/out/M_INNOV_DS_26_ECO_012_out.json
 ```

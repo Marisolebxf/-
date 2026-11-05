@@ -276,7 +276,7 @@ $$score_i = \frac{1}{|D_i|}\sum_{d \in D_i} \tilde{d}_i \times 100,\qquad D_i = 
 ### 2.7 复现代码与结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_SVC_DEEP_178_1.py
 # 覆盖写 M_SVC_DEEP_178_1_out.json
 ```
@@ -530,7 +530,7 @@ TOP10 无一家名称含「咨询」，且全部只用了年限+声誉两维。�
 ## 附录 E 复算步骤
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/（20261021 批调研区，成果已入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）/code
+cd 20261021 批调研区（成果已实物化入 metrics/ 与 METRIC-SRS-GAP-L01/产物/）
 python3 M_SVC_DEEP_178_1.py
 python3 -c "import json;d=json.load(open('M_SVC_DEEP_178_1_out.json'));print(d['composite']['scored_orgs'],d['score_dist']['mean'])"
 # 期望：3052 56.07
