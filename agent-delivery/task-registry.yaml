@@ -53816,3 +53816,42 @@ tasks:
       - "三项缺口汇总写入接口需求登记文档（agent-delivery/ 下）供 api-agent 排期；不写代码"
       - "handoff 写入 agent-handoffs/"
     update_time: "2026-11-05T12:05:03+08:00"
+  - id: SYSINT-TOPICMAP-02-L01
+    title: "Topic 与产业节点映射：仿技术节点映射，ads_discipline_topic 同步进本侧表 + Topic 关联产业节点"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py、demo-ui-system-test、demo-svc-platform、lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 140000
+    note: |
+      WBS-02-18。2026-11-05 甲方指令：仿照算法中台「技术节点与产业映射」（SYSINT-TECHMAP-02-L01 同构），为 ads_discipline_topic（4516 个平台 Topic，五类主体都挂的学科维度）建产业节点映射。Topic 桥可行性已判可（CHAIN-ELEM-LINK 增补）：本叶落地后，链节点→subfield→topic→人才的最后一跳从字典从属关系升级为显式产业节点关联，人才/机构/论文/专利/项目即可按链节点（经 topic）过滤。同步是小表（4516 行）；关联量级 4516 topic × 候选产业节点向量，批 20 约需 226 批。依赖 CHAIN-ELEM-LINK（integration，判定已出）可开工。
+    depends_on:
+      - "SYSINT-CHAIN-ELEM-LINK-02-L01"
+      - "SYSINT-TFMAP-02-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    touched_files:
+      - "repos/lumen-topic-py"
+      - "repos/demo-ui-system-test"
+      - "repos/demo-svc-platform"
+      - "repos/lumen-algo-py"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TOPICMAP-02-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TOPICMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/方案-SYSINT-TECHMAP-02-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/调研/Topic桥可行性判定.md"
+      - "agent-delivery/工程过程/04-系统集成/02-对接三要素/WBS.md"
+    definition_of_done:
+      - "本侧字典表 demo_gkxlumenx_dwd.dwd_discipline_topic 落库：同步 ads_discipline_topic 4516 行（topic_id/name_zh/name_en/subfield_id/field_id/domain_id），按 topic_id upsert 不整表清空；来源 lumen-topic-py 字典通道新 op=discipline_topic_page（每页≤500），页面不直连久新"
+      - "本侧映射表 demo_gkxlumenx_dwd.dwd_topic_industry_map 落库：一行一个 topic 的一条产业关联，逻辑键 topic_id + 产业 node_id（+集群），未关联保留 node_id 空；不写入 subfield_topic_map 和 dwd_tech_node_industry_map"
+      - "算法中台 demo-ui-system-test 维护管理新菜单「Topic与产业映射」（路由 /ops/topic-map），与「技术节点与产业映射」同构：【同步】灌字典，【关联】用名称向量对产业节点余弦取最近；一次请求一批，前端循环到未映射 0 或批失败停止"
+      - "页面：已映射/未映射全量数、两段列表各≤200 行、关键字查询≤200 个 topic、已映射产业及 topic 数、选定产业节点列已关联 topic——交互与 tech-node-map 页一致"
+      - "其他模块读本侧表不直连久新；Topic 桥消费方（链节点→topic 展开）后续读 dwd_topic_industry_map，不动既有 subfield_topic_map / tech_node_industry_map 数据"
+      - "handoff 写明两张表名、通道 op、菜单路径、向量落点与批策略；架构自检：调用链不越层、Java 不算向量、密码不进 git"
+    update_time: "2026-11-05T12:09:36+08:00"
