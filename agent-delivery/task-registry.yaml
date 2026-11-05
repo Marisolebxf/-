@@ -54688,14 +54688,14 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 30000
-    note: "E0 达标（点名 deploy 绿），E1 金路径可开工；e2e:chain-gold 存量红移交 qa 线分诊，不属本轮 C1"
+    note: "重推进（registry 本地快照恢复确认）：E0 达标不变"
     design_refs:
       - "agent-delivery/长任务执行规约.md §11"
     definition_of_done:
       - "点名 deploy 绿：Python api+worker、Java gkxlumen-topic+async-service"
       - "K8s dev rollout 完成；发布 URL 可用"
       - "handoff+cost"
-    update_time: "2026-11-05T23:53:34+08:00"
+    update_time: "2026-11-06T00:19:42+08:00"
   - id: LUMEN-INTEL-SDD-E1-L01
     cost_warn: "green"
     actual_cost: 0.45
@@ -54708,7 +54708,7 @@ tasks:
     lock_until: "2026-11-06T15:53:50.589Z"
     claimed_by: "agent:qa-agent"
     title: "段 E1 — SDD 落地金路径冒烟（7 条）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "qa-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-ui-topic"
@@ -54717,8 +54717,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      E1 冒烟完成：7 条 = 4绿/2红/1条件绿。红项同根：entan-py 缺 /internal/v1/synth/vitality/* 快照路由（C1，Python 层修单，缺陷包见 handoff §3.1）；协同 graph 端点缺失=已登记缺口（graph_upstream_unavailable 降级合法）。e2e:chain-gold 分诊=过期配置（ui-topic 侧 2026-11-04 停用，algo-py trigger 悬空秒败），建议 algo-py 侧 allow_failure 止血。状态保持 in_progress，AV-0/推进交 coordinator。
+    note: "重推进（本地 registry 快照曾被 reset 干扰，MCP 为准）：E1 完成 4绿/2红/1条件绿，红项 C1 修单 LUMEN-INTEL-VIT-SNAPROUTE-L01 已派"
     depends_on:
       - "LUMEN-INTEL-SDD-E0-L01"
     design_refs:
@@ -54727,7 +54726,7 @@ tasks:
       - "总控 §4 金路径 7 条逐条走（期望未发生必红）"
       - "失败分类 C1–C6；C1 由 coordinator 派修；QA 不改代码"
       - "trace-id 驱动定位；handoff+cost"
-    update_time: "2026-11-06T00:17:32+08:00"
+    update_time: "2026-11-06T00:19:42+08:00"
   - id: SITUATION-ENT-SUBSCRIPTION-PUSH-L01
     cost_warn: "green"
     actual_cost: 0.6
@@ -55021,3 +55020,35 @@ tasks:
       - "每个统计数字保留 ⓘ。D4 保持 mock，不改绿。USE_MOCK=false 时不用 fixture 填数。"
       - "前端推送仍等当前会话人工确认。handoff 写明接线种类与自检。"
     update_time: "2026-11-06T00:14:55+08:00"
+  - id: LUMEN-INTEL-VIT-SNAPROUTE-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/LUMEN-INTEL-VIT-SNAPROUTE-L01.md"
+    cost_warn: "green"
+    actual_tokens: 170000
+    actual_cost: 0.42
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T16:19:58.316Z"
+    last_seen_at: "2026-11-05T16:19:58.316Z"
+    lock_until: "2026-11-06T16:19:58.316Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "C1 修单 — entan-py 挂活力快照读端点（batch-snapshot/latest-batch）"
+    status: "in_progress"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: |
+      C1 修单完成：commit 501f8fc（dev，按派单不 push）。新增 api/synth_vitality_routes.py（batch-snapshot+latest-batch，Feign 契约对齐，snapshotId=snap:{calc_batch_id} 不可变，无 ADS 批走 compute 中间态兜底 mock_vit_latest+batch_reason，显式批号无行不回落）+ main.py 挂载 + e2e:chain-gold allow_failure 止血。自检 21/21 全绿（200/400/不回落/端到端），邻叶 elements/collab/jobs 回归无损。待 push→deploy 绿→qa 只复测 #1/#2。AV-0/状态推进交 coordinator。
+    design_refs:
+      - "agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-E1-L01.md §3.1 缺陷包"
+    definition_of_done:
+      - "新增 api/synth_vitality_routes.py：GET /internal/v1/synth/vitality/batch-snapshot + latest-batch（与 elements 路由同构）+ main.py 挂载"
+      - "装包复用既有 entan/synth_vitality/pack.py，不重写"
+      - "E1 缺陷包复现命令转自检断言；快照响应含 snapshotId=snap:* 与 cache_key"
+      - "顺手 CI 止血：e2e:chain-gold 下游悬空 trigger 加 allow_failure: true（E1 分诊建议①）"
+      - "deploy 绿后只复测 E1 #1/#2"
+    update_time: "2026-11-06T00:42:49+08:00"
