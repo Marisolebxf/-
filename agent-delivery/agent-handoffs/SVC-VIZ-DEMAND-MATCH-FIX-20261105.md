@@ -95,3 +95,33 @@
 再次读取同一线上地址：入口更新为 `index-CUIacGWu.js`，页面 `ServiceVizPage-BTXDs16X.js`，包含 `nic_code`、“全部行业”“全部企业规模”，且无 `length>1` 隐藏条件。确认最新筛选控件代码已随部署生效；本次未执行登录后的浏览器交互，不宣称字典与业务数据端到端已验收。
 
 Python Pipeline 3877 的 deploy:search-py job 25691 已成功（需求接口所在进程）；查询时 show-py 镜像任务仍在运行，未将整条 Python Pipeline 宣称为成功。
+
+## 数据展示闭环：用户授权补 Mock，修复实际部署入口
+
+用户明确要求补 Mock 数据，使需求分布、供需匹配可展示。本次直连项目数据库只读核对，确认 `gkxlumenx_gapfill.svc_demand_match` 真实存在且已有 10 条 `data_source=mock` 的演示行；早前仓库未发现 DDL 不能用于推断线上缺表。
+
+根因已确认：`gkx_svc_service.main` 虽挂载 service_viz，但线上 Docker 实际运行 `gkx_search_service.main`，后者缺少 service_viz 路由。Java 因此收不到结果并降级空块。本次在实际部署入口补挂同一 APIRouter，并新增 TestClient 回归覆盖部署入口上的 demand/match 两端点。
+
+### 数据与查询
+
+- 用户授权范围内复用既有演示表，不新增表、不写 ODS/DWD/供应方库、不覆盖原有 10 条。
+- Python 脚本：`lumen-topic-py/scripts/seed_service_viz_mock.py`，默认只读预览，`--apply` 才写入；连接复用配置且不输出凭据。
+- 读取真实 `code_nic` 一级门类 20 项，生成 20 行业 × 4 规模 × 6 深圳地区 × 6 服务类型 = **2,880 行**，2026 年，`data_source=mock_svc_viz_20261105`。事务写入，同批命名锁、按业务维度 NOT EXISTS 防重复。全部为规则生成的演示计数与预置匹配分值，不是源业务实测。
+- 匹配接口以 `region,demand_type` 分组，需求数加权汇总已有匹配分值，输出唯一格子，避免各行业规模重复格子叠加。空分值与零需求不参与。
+- 复用既有 MockBadge 标识两块数据库演示来源；未把 D4 改成 live、未启用前端 Mock 开关或返回硬编码 fixture。
+- 既有 `svc_demand_match` 位于 gapfill 库且不满足当前 D16 `gapfill_` 命名/元数据，属于此前实现的遗留；本次只补该现有表，未冒称它是正式真实业务源。后续按正式数据源治理迁移，不能将本批演示行当作真实需求事实。
+
+### 验证和发布结果
+
+- Python：路由挂载、行业/规模过滤、热力格子聚合 **6 passed**；聚合验证执行 SQLite SQL，非仅字符串断言。
+- 前端：selfcheck、type-check、build-only、diff --check 通过；ECharts 已注册 HeatmapChart 和 VisualMapComponent。
+- 本地修正入口连接真实数据库：需求 2,890 行；制造业 C＋小型 36 行，信息服务业 I＋大型 36 行；匹配 43 格。
+- Python commit `c07c5fa`，Pipeline **3881** 所有 build/package/deploy job 成功，deploy:search-py **25720** 成功。
+- 前端 commit `0a87fef`，Pipeline **3882** 所有 job 成功，deploy:k8s **25727** 成功。
+- 线上实际 Java 聚合接口 `POST http://10.50.69.111:30892/svc/topic/v1/service-portal/viz`：HTTP 200、code=0，`demand.empty=false`、rows=2,890；`match.empty=false`、cells=43。
+- 同接口 `{nic_code:"C",enterprise_scale:"小型"}`：HTTP 200，需求缩为 36 行；匹配保持 43 格（筛选控件按需规仅约束需求分布）。
+- 浏览器验证到统一 SSO 登录页，未执行登录后的截图验收。当前闭环证据为 CI rollout 成功、已发布静态资源与页面实际调用的 Java 聚合接口出数；不虚报登录后视觉走查。
+
+CI：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py/-/pipelines/3881
+
+CI：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic/-/pipelines/3882
