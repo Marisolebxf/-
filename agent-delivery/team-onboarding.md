@@ -4,6 +4,8 @@
 > **目标**：1 小时完成"装环境 + 跑通首个 AI 任务 + 加入团队节奏"
 > **关联**：[../README.md](../README.md) · `team-collaboration-playbook.md` · `智能体编排与派单手册.md` · `../.cursor/rules/`  
 > **GDF 产线（辜少彬 / 胡森泉）**：不要跑 `bootstrap`、不要开 16 根工作区。只 clone `gkx-orchestration`，读 [`data/GDF/GDF协作指南.md`](data/GDF/GDF协作指南.md)。GitLab **不要**开组级 Developer，只加本仓。
+>
+> **当前专项（2026-11-05）**：展示系统「科技发展规划」由刘建峰负责，「维护管理」由王梓真负责。装完环境后读 [`agent-handoffs/科技发展态势-TS/新人引导-科技发展规划与维护管理.md`](agent-handoffs/科技发展态势-TS/新人引导-科技发展规划与维护管理.md)。做法对标科技政策跟踪的二级四单，不重做已有前端复刻。
 
 ---
 
