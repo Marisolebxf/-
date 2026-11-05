@@ -7,6 +7,7 @@
 探针留证 → 写 out/JSON → md 正文引用 out 数字（B1 正文-产物一致）。
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -17,13 +18,13 @@ OUT = HERE / 'out'
 OUT.mkdir(exist_ok=True)
 
 GKX = dict(host='183.240.141.251', port=3318, user='gkx_reader_zp',
-           password='Zp_Use_Gkx_db@123456', connect_timeout=60, read_timeout=600,
+           password=os.environ.get("GKX_READER_PASSWORD", ""), connect_timeout=60, read_timeout=600,
            write_timeout=600, autocommit=True)
 JIUXIN = dict(host='47.93.119.170', port=29030, user='jiuxin_reader',
-              password='Jiuxin_2026_read', database='gkx_technology_analysis_dev',
+              password=os.environ.get("JX_READER_PASSWORD", ""), database='gkx_technology_analysis_dev',
               connect_timeout=60, read_timeout=300, charset='utf8mb4')
 LIVE = dict(host='111.198.38.90', port=34306, user='gkxlumenx',
-            password='GKX@Lumen2026', connect_timeout=60, read_timeout=300, charset='utf8mb4')
+            password=os.environ.get("GKX_LIVE_PASSWORD", ""), connect_timeout=60, read_timeout=300, charset='utf8mb4')
 
 
 def q(cur, sql):

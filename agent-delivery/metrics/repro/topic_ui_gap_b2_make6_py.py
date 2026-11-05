@@ -8,6 +8,7 @@
   3) 退出码恒 0（复现校验 = 产物存在 + derived 自洽，不依赖运行时网络）。
 """
 import json
+import os
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -40,7 +41,7 @@ def recompute_online():
     try:
         import pymysql
         conn = pymysql.connect(host="183.240.141.251", port=3318, user="gkx_reader_zp",
-                               password="Zp_Use_Gkx_db@123456", connect_timeout=10,
+                               password=os.environ.get("GKX_READER_PASSWORD", ""), connect_timeout=10,
                                read_timeout=60, autocommit=True)
         cur = conn.cursor()
         facts = {{}}

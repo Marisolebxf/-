@@ -11,6 +11,7 @@
 TOPIC_UI_GAP_B2_PROBE_out.json）；live 表族行数同上。禁 demo_*。专利面复用批1产物不重扫。
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -20,7 +21,7 @@ HERE = Path(__file__).resolve().parent
 PROBE = json.load(open(HERE / 'out' / 'TOPIC_UI_GAP_B2_PROBE_out.json'))
 
 GKX = dict(host='183.240.141.251', port=3318, user='gkx_reader_zp',
-           password='Zp_Use_Gkx_db@123456', connect_timeout=60, read_timeout=120,
+           password=os.environ.get("GKX_READER_PASSWORD", ""), connect_timeout=60, read_timeout=120,
            write_timeout=60, autocommit=True)
 
 UI_EVIDENCE = {

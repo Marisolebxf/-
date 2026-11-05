@@ -32,7 +32,7 @@ out = {
 
 def main():
     jx = pymysql.connect(host="47.93.119.170", port=29030, user="test2",
-                         password="m+DWAG23RCXBP2L+y7ydaqu3aSuur7mxFOcl3iZHDgVe4eka",
+                         password=os.environ.get("JX_DORIS_PASSWORD", ""),
                          database="gkx_technology_analysis_dev", connect_timeout=20, read_timeout=120,
                          autocommit=True)
     jc = jx.cursor()
