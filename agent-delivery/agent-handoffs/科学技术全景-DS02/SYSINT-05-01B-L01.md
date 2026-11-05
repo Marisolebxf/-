@@ -84,6 +84,31 @@
 - `gkxlumen-display/src/main/resources/application.yml`
 - `gkxlumen-display/src/main/resources/application-local.yml`（本地读图地址 `http://127.0.0.1:8000`）
 
+## 范围与实现
+
+对外仍是一次 `POST /display/v1/situation/panorama/graph`。Java 调 Python 读图，三个数字只读分数表。不写假数。三要素算法不在本叶。
+
+## 偏离
+
+无偏离。读失败用 502，不再用 `GRAPH_NOT_READY` 空壳。
+
+## 产物清单
+
+- `lumen-svc-platform` `cbd6f10`
+- 本交接
+
+## 验收证据
+
+`mvn -pl gkxlumen-display -Dtest=SituationPanoramaControllerTest,PanoramaReadAssemblyTest test`：12 个用例，失败 0。
+
+## Cost 回填
+
+- actual_tokens: 80000
+- model_used: claude-sonnet-4.5
+- actual_cost: 0.43
+- cost_warn: green
+- 会话模型为 Grok 4.7。注册表枚举无此项，按 sonnet 单价与 api 80/20 计入。
+
 ## 未做
 
 - 未改 `lumen-algo-py`。读图代码已由 `TS-L2-DS02-READ-PY-L01` 推到 `origin/dev`，本会话未核对该镜像是否已发布。

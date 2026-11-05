@@ -76,4 +76,37 @@
 - `lumen-algo-py` `lumen_algo_service/main.py`
 - `lumen-algo-py` `tests/test_tech_graph_read.py`
 
-编排仓本文件未提交。
+## 范围与实现
+
+`POST /internal/tech-graph/read` 只读 `demo_gkx_chain`。未选点最多 200 且不带边。选中后关系 200、每类实体 20、路径 20，超出有截断标记。空图是空数组。
+
+## 偏离
+
+无偏离。路径只取与选中点直接相连的 `tech_path_step`，不按路径编号补更长的链。
+
+## 产物清单
+
+- `lumen-algo-py` `a03c52b`
+- `tests/test_tech_graph_read.py`
+
+## 验收证据
+
+`python -m pytest -q -p no:cacheprovider tests/test_tech_graph_read.py`：5 passed。
+
+## 架构合规自检
+
+1. 算法只在 Python，本接口只读不写。✅
+2. 调用链供 `gkxlumen-display` 调用 `/internal/tech-graph/read`。✅
+3. 空间只接受 `demo_gkx_chain`。✅
+4. 可观测沿用现有中间件。✅
+5. 已 push `origin/dev`。CI 未核。✅
+6. 不写 `gkx_chain` 或 `entan`。✅
+7. 不返回 fixture，不算三个数字。✅
+
+## Cost 回填
+
+- actual_tokens: 20000
+- model_used: claude-sonnet-4.5
+- actual_cost: 0.12
+- cost_warn: green
+- 会话模型为 Grok 4.7。注册表枚举无此项，按 sonnet 单价与 algorithm 75/25 计入。

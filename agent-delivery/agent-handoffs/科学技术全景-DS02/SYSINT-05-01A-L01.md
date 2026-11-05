@@ -44,18 +44,18 @@
 
 ## 遗留风险
 
-- 展示 Java 的 `SituationPanoramaController` 仍返回空数组和 `GRAPH_NOT_READY`。页面把这种空结果收成 `GRAPH_EMPTY`，所以现在打开是空图，不是种子图。选中技术点、关键词、领域要等 `SYSINT-05-01B-L01` 读请求体后才有子集。
+- 展示 Java 已在 `cbd6f10` 改调读图。镜像未发布前，页面打开仍可能是空图或读失败，不会回退种子。
 - 三个数字要等 `TS-L2-DS02-SCORE-L01` 把行灌进 `ads_technology_panorama_score`，并由同一次 `graph` 带回。现在格子是空的，MockBadge 还在。
 - 导入和手动添加没有发写请求。页面按说明书把结果说成 501、未落库。
 
 ## CI/CD（必填）
 
 - 分支：`lumen-ui-science-pc` 的 `dev`
-- commit：无。未提交。原因是监管人 `human:孔东`，不适用完工即推
-- pipeline URL / ID：未跑
-- 部署 namespace / 镜像 tag：无
-- K8s rollout：未部署
-- dev 测试 URL / 命令与结果：只在本地跑了 type-check 和上面两条 node 自检
+- commit：`e6fb1dd`。淮政玮 2026-11-05 下令收口后推 `origin/dev`。原监管人是孔东
+- pipeline URL / ID：已 push。本会话未等 Pipeline
+- 部署 namespace / 镜像 tag：未核
+- K8s rollout：未核
+- dev 测试 URL / 命令与结果：本地 `pnpm type-check` 与两条 node 自检通过
 
 ## 可观测性（建议）
 
@@ -71,4 +71,37 @@
 - `repos/lumen-ui-science-pc/src/views/situation/panorama/index.vue`
 - `repos/lumen-ui-science-pc/src/views/situation/panorama/components/GraphListSection.vue`
 - `repos/lumen-ui-science-pc/src/views/situation/panorama/components/GraphAnalysisPanel.vue`
-- 本 handoff 未提交
+## 范围与实现
+
+对照说明书第 6 节。菜单 `/trend/tech-panorama`。只打已有 `POST /display/v1/situation/panorama/graph`，不另接查图接口。未承诺的块保持空。
+
+## 偏离
+
+无偏离。`USE_MOCK=true` 仍保留冻结种子，供开关打开时用。
+
+## 产物清单
+
+- `lumen-ui-science-pc` `e6fb1dd`
+- 本交接
+
+## 验收证据
+
+`pnpm type-check` 退出码 0。`node src/lib/graph/liveGraph.selfcheck.mjs` 与 `node src/lib/graph/selfcheck.mjs` 通过。
+
+## 架构合规自检
+
+1. 浏览器只打 Java `graph`，不直连 Python。✅
+2. 不调用 `demo-*`。✅
+3. `USE_MOCK=false` 不用种子填数。✅
+4. 空图 `GRAPH_EMPTY`，读失败不画种子。✅
+5. 三个数字留 MockBadge，D4 不改 live。✅
+6. 不新造 `metric_id`。✅
+7. 序号 17、26 不落库。✅
+
+## Cost 回填
+
+- actual_tokens: 80000
+- model_used: claude-sonnet-4.5
+- actual_cost: 0.43
+- cost_warn: green
+- 会话模型为 Grok 4.7。注册表枚举无此项，按 sonnet 单价与 frontend 80/20 计入。
