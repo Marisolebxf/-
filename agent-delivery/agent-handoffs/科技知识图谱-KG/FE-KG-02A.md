@@ -25,7 +25,7 @@
 1. **PageTabFrame 保留判定**：01A 被去掉的是「单占位页签无切换语义」；本页 demo WorkbenchTabs 是真 3 Tab → **保留 PageTabFrame**（selfcheck §7 同口径）
 2. **禁 Math.random/Date.now**：demo `decisionModel.js` 用 `Math.random()`/`Date.now()` 生成训练扰动与 id → 本单移植为 `_dmSeed` 确定性 LCG + `_trainSeq` 会话序号 + 冻结演示时间戳（种子 2026-05-20 语境），自检断言 models 文件零字面量
 3. **图标显式 import + 正确图标名**：Arco 图标库无 `IconAudit`/`IconAlert`/`IconLineChart`/`IconMerge`（type-check 必红）→ 先查 `@arco-design/web-vue/es/icon/index.js` 实际导出再写（本单映射：IconRecord/IconExclamation/IconBarChart/IconApps）
-4. **卡头去装饰图标**：01A 第 4 轮走查要求卡头标题纯文字 → 本单卡头均不挂装饰图标（Tab 前置图标保留，demo WorkbenchTabs label 同款语义）
+4. **卡头/Tab 去装饰图标**：01A 第 4 轮走查要求卡头标题纯文字 → 本单卡头均不挂装饰图标（~~Tab 前置图标保留~~ → 2026-11-05 第 2 轮走查升级：Tab 标题同样去图标，见文末走查记录）
 5. **a-progress 0-1**：antd 0-100 → Arco percent 需 /100 换算，自检断言禁止直接用 0-100 值
 6. **横向滚动条**：洞察卡位移教训 → 本单布局用 grid/flex 定宽，目检 `bodyScrollX=false`
 7. **全局滚动条**：S01 基座 main.css 已有 4px 细蓝条全局规则，本页继承不另写
@@ -85,7 +85,7 @@
 ## 架构合规自检（公约 §2 逐条）
 
 - ✅ 调用链：前端不直连图谱服务/不感知 nGQL；数据经 api/knowledgeGraph.ts 双轨（mock/网关占位 contractPending）
-- ✅ D8：Arco 全替换（Table/Tag/Badge count/Timeline/Statistic→小卡/Select/Slider/Switch/Rate/List/Alert/Tabs/Progress 0-1/Message）；token 走 CHART_BASE + 主色 #165dff；卡头纯文字无装饰图标（01A 第 4 轮走查口径）
+- ✅ D8：Arco 全替换（Table/Tag/Badge count/Timeline/Statistic→小卡/Select/Slider/Switch/Rate/List/Alert/Tabs/Progress 0-1/Message）；token 走 CHART_BASE + 主色 #165dff；卡头与 Tab 标题纯文字无装饰图标（01A 第 4 轮 + 02A 第 2 轮走查口径）
 - ✅ D12：零 demo 仓依赖；mock 种子 S01 已冻结（selfcheck §2 逐行校验仍绿）
 - ✅ 图谱铁律：heatmap/line 走 echarts.ts 注册（HeatmapChart/VisualMapComponent 在册），未引新链路
 - ✅ 可观测：trackKgInteraction 埋点（page-mounted/simulate-auto-block/blacklist-detail-open/fusion-scenario-apply/fusion-weights-normalize/decision-ingest-data/decision-auto-train/decision-apply-feedback）
@@ -109,6 +109,13 @@
 - **防回归断言**：FE-KG-02A.test.mjs 新增「列插槽（`<template #xxx="{ record }">`）必须在 column 声明 slotName」静态校验（只匹配带 `{ record }` 解构的表格列插槽，不误伤 #title/#extra 卡头插槽）
 - 验证：三绿复跑全过（type-check 0 错 / 02A 自检含新断言 / kg.selfcheck 9 组 / build 31.6s 绿）；CDP 复验 Tag/Badge/Progress 全生效：黑名单 Tab `.arco-tag` 0→**42**、`.arco-badge` 0→**5**，融合表 Tag **22** + Progress **11**，风险表 Tag **20** + Progress **4**；截图 `page-2026-11-05T03-14-48-158Z.png`（风险预警 Tab 红档 Tag + Progress 条确认）
 - **此坑沉淀**（复刻新通用规则）：Arco `a-table` 列要自定义渲染（Tag/Progress/着色）时，column 必须声明 `slotName` 且模板插槽名一致；只写插槽不声明 = 静默退化纯文本（不报错、type-check 也不拦）。建议追加到 `TS-demo-lumen复刻经验清单.md` §1（本 handoff 已记录，待 doc-agent 汇编时收录）
+
+## 2026-11-05 孔东走查调整（第 2 轮，任务仍处 integration 停本地）
+
+- **tabs/card 标题去图标**：走查指认顶部 Tab（黑名单触发）、融合子 Tab（综合评分）、卡头（权重配置）三处样例，要求 Tab/卡头标题全部纯文字。本单开工时按 01A 第 4 轮口径只清了卡头、保留了 Tab 前置图标——本轮口径升级为 **Tab 标题同样不挂图标**（含 PageTabFrame 顶部 Tab + 三面板全部内嵌子 Tab）
+- **改动**：`index.vue` TABS 数组去 `icon` 字段及 icon import；`KgBlacklistPanel.vue` 4 子 Tab（IconSafe/IconApps/IconLink/IconRecord）；`KgFusionPanel.vue` 卡头 IconSettings + 2 子 Tab（IconCheckCircle/IconTrophy）；`KgDecisionPanel.vue` 卡头 IconExperiment + 2 子 Tab（IconExclamation/IconMessage）；各自清理未用 import。**按钮内图标保留**（归一化 IconSync、训练 IconThunderbolt 等，非标题类）
+- 验证：三绿复跑全过（02A 自检 / type-check / build 29.4s）；CDP 全量断言 `hasSvg:false` —— 顶部 3 Tab、黑名单 4 子 Tab、融合 4 子 Tab、决策 3 子 Tab、决策面板 4 卡头、权重配置卡头；截图 `page-2026-11-05T03-21-35-309Z.png`（决策 Tab）+ `page-2026-11-05T03-22-00-100Z.png`（融合 Tab）
+- **经验沉淀**：Tab/卡头标题统一纯文字，demo 源带的前置装饰图标不复刻（01A 第 4 轮卡头口径 + 02A 第 2 轮 Tab 口径合并）；下次复刻开工即按此口径免走查返工
 
 ## 涉及文件
 
