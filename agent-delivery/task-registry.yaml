@@ -54277,13 +54277,18 @@ tasks:
       - "单测/自检；handoff+ponytail+cost 四字段；push origin/dev CI 绿"
     update_time: "2026-11-05T19:44:05+08:00"
   - id: LUMEN-INTEL-ELEM-DDL-L01
+    model_used: "glm-5.3-Flash"
+    cost_warn: "green"
+    actual_tokens: 80000
+    actual_cost: 0.35
+    evidence: "agent-delivery/agent-handoffs/LUMEN-INTEL-ELEM-DDL-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-05T11:43:56.043Z"
     last_seen_at: "2026-11-05T11:43:56.043Z"
     lock_until: "2026-11-06T11:43:56.043Z"
     claimed_by: "agent:data-agent"
     title: "综合智能分析要素 — 当前 8 张 _ai 表 DDL+预填"
-    status: "in_progress"
+    status: "pending_test"
     agent: "data-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54292,7 +54297,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "coordinator_dispatch 开工（同仓与 COLLAB-DDL 串行：本单先行）"
+    note: "AV 联调验收通过：DDL 实跑绿+seed 幂等+血缘 COMMENT 齐；进待测试队列（QA 可后置，不挡主链）"
     depends_on:
       - "LUMEN-INTEL-SDD-SIGNOFF-L01"
     design_refs:
@@ -54303,10 +54308,15 @@ tasks:
       - "第 9 张 synth_elem_four_dim_score 不建（137② blocked；METRIC-OPEN 解锁后另单）"
       - "唯一键含 region+compare+window(+…)+calc_batch_id；预填 is_mock=1"
       - "handoff+cost；push origin/dev"
-    update_time: "2026-11-05T19:44:05+08:00"
+    update_time: "2026-11-05T20:41:06+08:00"
   - id: LUMEN-INTEL-ELEM-PY-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-05T12:41:06.269Z"
+    last_seen_at: "2026-11-05T12:41:06.269Z"
+    lock_until: "2026-11-06T12:41:06.269Z"
+    claimed_by: "agent:algorithm-agent"
     title: "综合智能分析要素 — Python 装包与 /internal 快照/任务"
-    status: "backlog"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -54315,7 +54325,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "【v1.0.5 口径修正】装包只读 8 张 ADS；权重缺行禁止填常量（缺行 null+reason）；panorama=真实 DWD 直查（建议 timeout≈3s 降级 panorama=[]+panorama_timeout，AR-8，不阻塞三透镜）"
+    note: "coordinator_dispatch 开工（同仓接棒 ELEM-DDL，表已就绪 e8565a9）"
     depends_on:
       - "LUMEN-INTEL-ELEM-DDL-L01"
     design_refs:
@@ -54326,7 +54336,7 @@ tasks:
       - "四维固定 []+reason='metric_not_registered'（解锁前）；panorama 真实 DWD 汇聚禁 fixture"
       - "snapshotId 不可变含 calc_batch_id；缺行 null+reason+confidence；weight_source='calc_logic_placeholder'"
       - "自检脚本；handoff+ponytail+cost；push origin/dev CI 绿"
-    update_time: "2026-11-05T19:25:22+08:00"
+    update_time: "2026-11-05T20:41:14+08:00"
   - id: LUMEN-INTEL-ELEM-BE-L01
     title: "综合智能分析要素 — Java 白名单/Adapter/快照门面"
     status: "backlog"
@@ -54591,3 +54601,60 @@ tasks:
       - "失败分类 C1–C6；C1 由 coordinator 派修；QA 不改代码"
       - "trace-id 驱动定位；handoff+cost"
     update_time: "2026-11-05T18:55:37+08:00"
+  - id: SITUATION-ENT-SUBSCRIPTION-PUSH-L01
+    cost_warn: "green"
+    actual_cost: 0.6
+    model_used: "auto"
+    actual_tokens: 90000
+    evidence: "agent-handoffs/科技发展态势-TS/SITUATION-ENT-SUBSCRIPTION-PUSH-L01.md"
+    supervised_by: "human:李伟"
+    claimed_at: "2026-11-04T10:00:00+08:00"
+    last_seen_at: "2026-11-05T20:10:00+08:00"
+    lock_until: "2026-11-06T10:00:00+08:00"
+    claimed_by: "agent:api-agent"
+    title: "订阅推送实装：XXL-Job subscriptionPushJob + 4 适配器命中引擎 + 通知双写（P0 单模块闭环）"
+    status: "done"
+    completed_at: "2026-11-05"
+    sign_off: "待 human:李伟 走查（跑批未端到端验证）"
+    agent: "api-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P0"
+    repo: "lumen-svc-platform（gkxlumen-display + gkxlumen-upms）"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "M"
+    estimated_tokens: 90000
+    note: |
+      WBS-05-18-19 · 承接 SITUATION-ENT-FOLLOW-SVR-L01 后续清单第 6 项「通知实装」，R8（XXL-Job）已解除。
+      决策（human:李伟 2026-11-04）：调度器落 gkxlumen-display；频率 hourly/daily/weekly 三档；通知双写
+      （站内 sys_user_notification + 门户 MessageCenterClient.pushNotice）；范围先 global-innovation 单模块闭环。
+      实装：upms 新增 SysUserNotification entity / Mapper / UserNotificationDTO + Service/Impl 三方法 + Controller 三 @Inner 端点
+      + RemoteUserBehaviorService 三 @NoToken Feign 方法；display pom 依赖 gkxlumen-common-job + @EnableGkxlumenXxlJob
+      + job/SubscriptionPushJob + subscription/（Adapter 接口 / Hit / Registry / Abstract 模板 + region/city/domain/carrier 4 适配器）
+      + service/SubscriptionNotifyService 双写；频率闸门按 last_push_time + markPushed 回写幂等。
+      验证：mvn -pl gkxlumen-upms-biz,gkxlumen-display -am compile -DskipTests -o BUILD OK（JDK17）；
+      display local 启动日志 register jobhandler success name=subscriptionPushJob。
+      诚实边界：命中语义=范围有最新数据即推摘要（threshold 直比原始值，不做评分换算）；sys_user_subscription_rule 0 行，
+      跑批链路（取数→命中→双写）仅编译级闭环，未端到端验证；carrier 取 top200 榜，domain/carrier 键名待久新联调。
+      2026-11-05 按用户指令 commit + push origin/dev。
+    depends_on:
+      - "SITUATION-ENT-FOLLOW-SVR-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/SITUATION-ENT-SUBSCRIPTION-PUSH-L01.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/USER-BEHAVIOR-UNIFIED-TABLE-20261102.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+    touched_files:
+      - "repos/lumen-svc-platform/gkxlumen-upms/gkxlumen-upms-api/src/main/java/com/topcomm/gkxlumen/admin/api/dto/UserNotificationDTO.java"
+      - "repos/lumen-svc-platform/gkxlumen-upms/gkxlumen-upms-api/src/main/java/com/topcomm/gkxlumen/admin/api/entity/SysUserNotification.java"
+      - "repos/lumen-svc-platform/gkxlumen-upms/gkxlumen-upms-api/src/main/java/com/topcomm/gkxlumen/admin/api/feign/RemoteUserBehaviorService.java"
+      - "repos/lumen-svc-platform/gkxlumen-upms/gkxlumen-upms-biz/src/main/java/com/topcomm/gkxlumen/admin/mapper/SysUserNotificationMapper.java"
+      - "repos/lumen-svc-platform/gkxlumen-upms/gkxlumen-upms-biz/src/main/java/com/topcomm/gkxlumen/admin/service/SysUserBehaviorService.java"
+      - "repos/lumen-svc-platform/gkxlumen-upms/gkxlumen-upms-biz/src/main/java/com/topcomm/gkxlumen/admin/service/impl/SysUserBehaviorServiceImpl.java"
+      - "repos/lumen-svc-platform/gkxlumen-upms/gkxlumen-upms-biz/src/main/java/com/topcomm/gkxlumen/admin/controller/SysUserBehaviorController.java"
+      - "repos/lumen-svc-platform/gkxlumen-display/pom.xml"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/GkxlumenDisplayApplication.java"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/job/SubscriptionPushJob.java"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/subscription/"
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/SubscriptionNotifyService.java"
+    update_time: "2026-11-05T20:10:00+08:00"

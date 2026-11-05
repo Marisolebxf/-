@@ -160,6 +160,10 @@ A4 出参：`data = {total, page, size, records:[<信封+类型字段>]}`，按 
 | 5 | `ent_basic_profile` / `ent_honor_list` 边界 | 契约口径：法定名称/资质走主数据与指标，CMS 不覆盖 | 前端作为 CMS 可编辑块（运营补录档案字段）。需拍板：CMS 值是「补录」还是「覆盖」，门户读侧优先级 |
 | 6 | `svc_business_domain` 路径 | 已上线 `/cms-ops/v1/topic-service/content/svc-business-domain` | 保持不动；其余 33 类是否统一进新前缀由实现定 |
 
+> **2026-11-05 联调增补（CMSOPS-JAVA-L01）**：
+> ① svc 族路由已泛化——`/cms-ops/v1/topic-service/content/{content_type}` 全动作（create/update/publish/unpublish/list/detail/delete），路径段连字符（`svc-org-profile` 等 7 类），族守卫 `ofSvc` 跨族 40001，`svc_business_domain` 连字符路径同语义兼容。
+> ② 新端点 `GET /cms-ops/v1/topic-service/content/org-options?keyword=&size=`：服务机构真实主数据下拉（视图 `v_cms_svc`），`keyword` 模糊机构名/编码（名称前缀命中排前），`size` 默认 50 上限 200；出参 `{total, options:[{value:id,label:机构名}]}`；鉴权同页面轨 OAuth2 fail-closed。替代前端演示字典 `CMS_MOCK_ORGS`。
+
 ---
 
 ## 5. 服务端校验汇总（发布动作必跑；前端已做同款，服务端为最后防线）
