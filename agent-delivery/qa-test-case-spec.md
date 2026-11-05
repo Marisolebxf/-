@@ -1,7 +1,7 @@
 # QA 测试用例与测试记录规范
 
 > **状态**：正式版  
-> **版本**：v1.3 · 2026-10-14（v1.2 同日；2026-10-13 v1.1；2026-08-07 v1.0 定稿）  
+> **版本**：v1.5 · 2026-11-05（v1.4 2026-10-29；v1.3 2026-10-14；v1.0 2026-08-07 定稿）  
 > **起草 / 维护**：qa-agent · QA Owner  
 > **已确认决策**：
 > - 功能类型码统一 **`FUNC`**（不以总集样例行中的 `FUN` 为准）
@@ -154,6 +154,7 @@ agent-delivery/
 6. **系统码目录写法**（2026-10-13 定）：算法库等含 `/` 的系统码，**编号内保留 `/`**（`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-#####`），**目录名用 `-` 连接**（`SDWJSF-KJZTFWSFK/`）；旧自造码 `KJZTFWALGO` 废弃（任务 ID `QA-KJZTFWALGO-*` 保留历史不改）。
 7. **测试类型落位**（2026-10-13 定）：COMP/INT/PERF 用例与 FUNC **同模块目录混放**，文件名前缀区分（对齐总集「用例挂功能模块」交付形态）；系统级用例（登录链路/网关/性能基准）入 `{系统码}/shell-系统壳/`。
 8. **算法库 B 线**（2026-10-19 修订）：方法论见 `qa/algo-lib-api-case-playbook.md` §长任务返工。在联调台 `https://edu.itic-sci.com/dma/algovwz/` 按页面操作编写；功能模块到子功能项对应需规三至六级；编号用 FUNC；功能点去掉自行添加的 A1/A2；测试内容写「验证…功能，检查…」。路径例：`…/CHAINBASIC-产业链基础指标/FUNC-产业链基础指标-用例.md`。旧 `API-00001`～`02210` 作废。
+9. **展示系统开发阶段用例**（2026-11-05，`human:淮政玮`）：开发叶上的单元测试用例、主路径用例、当轮验收用例，正文放 `agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/{任务ID}.md`。细则见该目录 `README.md`。总集 FUNC 用例仍在 `qa/test-cases/`。仓内 pytest、JUnit、`*.test.*`、`.mjs` 自检仍留代码仓。交接写在 `agent-handoffs/`，并指向本目录的用例文件。
 
 ---
 
@@ -320,3 +321,4 @@ agent-delivery/
 | v1.1 | 2026-10-13 | §4 目录树对齐总集测试模板-v2 交付形态（QA-WORKSPACE-RESTRUCT-L01）：算法库系统码 SDWJSF-KJZTFWSFK（旧 KJZTFWALGO 废弃）；test-records/evidence 轮次化；新增 coverage/reports/delivery/tools/bug-registry 落点；COMP/INT/PERF 同模块目录混放约定；复测模板 |
 | v1.3 | 2026-10-14 | §8 增补执行判别与时序两条（QA-SPEC-SCRIPT-AUTHORING-L01，源自脚本重写试点 retro）：S1 allow_skip 边界（被测功能自身行为缺失不适用 skip）+ S2 跨 tick 断言时序提示。编写侧配套条款同批落 `as-built/prompts/_script.md`（母表闸门 D1/D2 + P1~P6 + expect 双层格式）与 `as-built/schema.md`（X2~X4/X8/X9） |
 | v1.4 | 2026-10-29 | §4 补 `bugs/`：三系统分目录；历史轮次不再追加；新缺陷一条一文件，截图原件进 `assets/` |
+| v1.5 | 2026-11-05 | §4 第 9 条：展示系统开发阶段用例归集到 `工程过程/04-系统集成/05-展示系统集成/测试用例/` |

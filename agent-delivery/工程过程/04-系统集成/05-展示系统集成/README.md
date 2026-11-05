@@ -119,6 +119,7 @@
 - **创新监测三页数据打通长任务（SITUATION-IM · WBS-05-19 子任务 05-19-01～23，DS-04/05/06）** → 四份：`agent-handoffs/科技发展态势-TS/SITUATION-IM-长任务总控.md` · `SITUATION-IM-总派单.md` · `SITUATION-IM-API-CONTRACT-01.md` · `SITUATION-IM-前置条件与未决项.md`；跑任务提示词 `agent-delivery/prompts/SITUATION-IM-三个创新监测页面整体打通-跑任务提示词.md`（2026-10-28 挂接，授权人 `human:李伟`，**授权句已生效**；边界口径 = **可改接口契约、不可改 UI 与实现效果**；23 叶明细见 [WBS.md](./WBS.md) §4.4；决策纪要见本夹 [纪要/2026-10-28-SITUATION-IM-边界与裁定.md](./纪要/2026-10-28-SITUATION-IM-边界与裁定.md)）
 - 对接文档 → `对接文档/我方/` · `对接文档/对端/`（空，待落盘）
 - 纪要 → `纪要/`（空）
+- 开发阶段测试用例 → [测试用例/README.md](./测试用例/README.md)（2026-11-05 规约：展示系统开发阶段的用例文档一律放 `测试用例/`，文件名用任务 ID）
 
 ---
 
