@@ -35,3 +35,11 @@
 - 当前没有可用 SSH MCP，无法执行 Pod 内请求或读运行日志；使用实际 CI job 状态确认镜像与 rollout，未宣称浏览器视觉验收完成。
 - 已直接只读请求实际 Java 网关 `/tts/lumen/api/policy/topic/v1/policy/indicators?kind=all`：修复发布前 HTTP200/code=0，但 honesty.engine=unavailable:feign，portal_gaps和demo_support均缺失，复现截图整包空白；继续待最终部署后复查。
 - cost 无环境统计，不臆造费用或验收状态。
+
+## 最终线上验证
+
+- 最终流水线：[3898](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/3898)，提交 `8e6f195`。
+- py:test、image:entan-api、deploy:entan-api 均 success；整条pipeline显示manual是因为非本任务的innov/entan-worker仍为manual，不代表目标服务未部署。
+- 实际 Java 网关指标请求 HTTP200/code=0，返回 portal_gaps=10、demo_support.cards=10、province=12、city=10；原 unavailable:feign 消失。
+- 使用当前前端 newsGapCards/newsDisplayRanks 转换上述线上真实响应，核对10项卡片均可展示、省市排名分别12/10项，演示来源标记保留；未凭本地函数结果替代线上服务恢复结论。
+- 无需重灌数据或修改前端，刷新页面即可重新请求已恢复的服务。未完成浏览器截图级验收。
