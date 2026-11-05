@@ -103,6 +103,13 @@
 - 分支：`dev`（lumen-ui-science-pc）——**未 commit/push**（孔东监管限定 2026-11-04：supervised_by human:孔东 的任务完工停本地工作区等人工确认，AGENTS.md 仓级裁定优先于「完工即推」）
 - 待孔东验收放行后：commit（`[agent:frontend-agent]` 标注）+ push `origin/dev` 触发 CI
 
+## 2026-11-05 孔东走查调整（第 1 轮，任务仍处 integration 停本地）
+
+- **表格状态列颜色 Tag 修复**：走查发现黑名单面板表格状态列（启用/拦截中/已送达等）显示纯文本。根因 = 写了 `<template #xxx>` 列插槽但 column 定义漏 `slotName` 声明——Arco 表格只有声明 `slotName` 的列才走插槽渲染，否则按 `dataIndex` 纯文本输出。**一次修三面板 8 张表**（触发表 riskScore/autoBlockedLabel/relatedNodes/statusLabel、专家规则 enabledLabel、黑名单库 sourceLabel/statusLabel、通知 statusLabel、融合整合表 name/graphValue/ruleValue/modelValue/fusionValue/trend、评分表 type/score/level、训练历史 statusLabel、风险表 type/score/signals/status）
+- **防回归断言**：FE-KG-02A.test.mjs 新增「列插槽（`<template #xxx="{ record }">`）必须在 column 声明 slotName」静态校验（只匹配带 `{ record }` 解构的表格列插槽，不误伤 #title/#extra 卡头插槽）
+- 验证：三绿复跑全过（type-check 0 错 / 02A 自检含新断言 / kg.selfcheck 9 组 / build 31.6s 绿）；CDP 复验 Tag/Badge/Progress 全生效：黑名单 Tab `.arco-tag` 0→**42**、`.arco-badge` 0→**5**，融合表 Tag **22** + Progress **11**，风险表 Tag **20** + Progress **4**；截图 `page-2026-11-05T03-14-48-158Z.png`（风险预警 Tab 红档 Tag + Progress 条确认）
+- **此坑沉淀**（复刻新通用规则）：Arco `a-table` 列要自定义渲染（Tag/Progress/着色）时，column 必须声明 `slotName` 且模板插槽名一致；只写插槽不声明 = 静默退化纯文本（不报错、type-check 也不拦）。建议追加到 `TS-demo-lumen复刻经验清单.md` §1（本 handoff 已记录，待 doc-agent 汇编时收录）
+
 ## 涉及文件
 
 - `src/views/knowledge-graph/indicators/index.vue`（重写，S01 页壳 → 整页）
