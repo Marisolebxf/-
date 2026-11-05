@@ -141,3 +141,45 @@
 - `agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-VIT-AI-TABLES.md`（§8 架构行）
 - `agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-ELEM.md`（§9 架构行）
 - `agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md`（§9 架构行）
+
+## 十一、三方会签结果（TC-5 执行，2026-11-05）
+
+> 架构行已于首轮落盘（本文件 §一/§二）；本章节记录 TC-5 三行会签（算法/数据/产品）结论，会签意见已写入四册 §会签 表对应行，各册头部小版本号 +1 并在修订表记「三方会签意见落盘」。会签过程核对装包读表与 calc-logic 一致性、DDL 清单与库落点、gapfill 边界与 D16 合规；未替唐绍祖签 METRIC-OPEN，未替甲方拍板任何 `Q-SYNTH-*`（全部保持 🟡）。**未新增 AR 编号（新发现问题续编见 AR-10）。**
+
+### 11.1 各方结论
+
+| 角色 | 总册 v1.0.6 | VIT 册 v1.0.6 | ELEM 册 v1.0.6 | COLLAB 册 v1.0.8 | 结论 |
+|---|---|---|---|---|---|
+| 架构（首轮已落） | 已签-可签（AR-1~AR-7，其中 AR-1/2/5 已闭环） | 已签-可签（AR-6） | 已签-可签（AR-8） | 已签-可签（AR-9；TC-4 已闭环） | 可签 |
+| 算法 | 已签-可签 | 已签-可签（TC-2 建议条款采纳进实现单验收） | 已签-可签（METRIC-OPEN 仍为外部依赖） | 已签-可签（AR-9 事务边界采纳；策略 LLM+degraded 可行） | **可签** |
+| 数据 | 已签-可签 | 已签-可签（AR-4 清理建议适用五表） | 已签-可签（AR-4 适用 8 表；全景直查按 AR-8 定 timeout） | 已签-可签（AR-4 含 batch_meta 引用保护；AR-10 新发现） | **可签** |
+| 产品 | 已签-可签（TC-3/TC-1/TC-4 确认；Q-SYNTH-* 🟡 + ⚠️ 角标策略确认） | 指向总册（无产品专属项） | 指向总册（TC-3 不挡会签） | 指向总册（策略「AI 生成·待审核」Tag 同总册确认） | **可签**（附保留确认：136 全景形态、135④ 区级映射仍开放） |
+
+### 11.2 各方保留意见与依赖
+
+- **算法**：①「唐绍祖 METRIC-OPEN 定稿」（137② 公式五要素 → 注册 → D1 aligned）仍为**独立外部依赖**，不因三方会签解除，FOURDIM-OPEN 解锁条件不变；②同核指标（186/187–190）装包只算一处、推导类字段（deltaVsCompare/yoy/trend）无独立 metric_id，实现单须按册执行防重复挂数；③TC-2 采纳（同 `calc_batch_id`+同批次时间戳写五表、失败整批同置 `failed`），采纳即闭合不再另立编号。
+- **数据**：①AR-4 给出数据侧实现建议（按 `calc_batch_created_at` 保留最近 3 个 succeeded 批、删除前保护 `synth_collab_batch_meta` 引用批、`snapshotId` 不可变收窄为「保留期内不可变/可回溯」），写进 DDL 单任务定义，不另开表；②AR-10（走查新发现）：`synth_collab_batch_meta` 自定义列集与总册 §11.2「公共列全部新建表必备」存在口径差（无 metric_id/calc_batch_created_at/calc_status/is_mock/method_version/generated_at，条件列名命名不一）——DDL 单须写明 batch_meta 豁免公共列清单及列名映射（`published_at`≈`generated_at`），防双源困惑；③图事实真值 blocked C-05 仍为外部依赖（非 DDL 缺陷）。
+- **产品**：①TC-3 确认——136 全景模块形态（Tab/卡片）待产品后续确认，不挡会签；全景超时降级（`panorama=[]`+`reason=panorama_timeout`）不阻塞三透镜，可接受；②TC-1/TC-4 确认——金路径 #5 空图期望修订（coordinator 已改总控 §4）产品侧认可；③`Q-SYNTH-*` 全部保持 🟡，UI ⚠️「待甲方确认」角标按团队临时默认执行，上线前甲方书面/纪要确认升 🟢 后移除；④开放项：136 全景形态、135④ 区级映射（不挡会签，挡对应页面验收）。
+
+### 11.3 TC 清单状态（§三 待确认清单）
+
+| # | 待确认 | 原归属 | 状态 |
+|---|---|---|---|
+| TC-1 | 总控金路径 #5 期望改写（同 AR-2） | coordinator + 监管人 | **已确认**：总控 §4 故事 5 已改「空图 `nodes=[]`+`reason='no_year_on_source'` 合法；非空验收移 C-05 解锁后的 `COLLAB-C05-SRC`」 |
+| TC-2 | 活力五表跨批一致性实现单验收条款（同 AR-6） | 算法 + 数据 | **已确认**：算法方采纳建议条款（同 `calc_batch_id`+同批次时间戳写五表、校验失败整批同置 `failed`），写进 `LUMEN-INTEL-VIT-FP-SNAP-L01` 验收 |
+| TC-3 | 136 全景模块形态与超时降级策略（同 AR-8） | 产品 | **部分确认**：超时降级（`panorama=[]`+`panorama_timeout`，不阻塞三透镜）产品侧认可；模块形态（Tab/卡片）仍开放，不挡会签 |
+| TC-4 | 总控金路径 #5 与协同空图口径对齐（同 AR-2/AR-5③） | coordinator + 产品 | **已确认**：文档面已对齐（总控已改 + reconciliation v1.0.5 已清残留），产品侧认可 |
+| TC-5 | 算法/数据/产品三行会签 | 算法/数据/产品 | **已完成**：三行均「可签」落盘四册 §会签 表（见 §11.1）；SIGNOFF 达四方齐签，待监管人徐滕强确认后由 coordinator 按 `definition` 流程推进（`integration` 会签 → `ready_to_sign`） |
+
+### 11.4 新增保留意见（续编）
+
+| # | 册/位置 | 意见 | 建议 |
+|---|---|---|---|
+| AR-10 | COLLAB 册 §2 batch_meta vs 总册 §11.2 | `synth_collab_batch_meta` 是唯一不带公共列的本模块新建表：无 `metric_id`/`calc_batch_created_at`/`calc_status`/`is_mock`/`method_version`/`generated_at`，条件列名 region/compare/window 与公共列 region_code/compare_scope/window_label 命名不一；「全部本模块新建表必备」的绝对表述与该表设计冲突，data-agent 出 DDL 时可能双源困惑 | DDL 单（COLLAB-DDL 范围）写明 batch_meta 豁免公共列清单及列名映射（`published_at`≈`generated_at` 语义）；或总册 §11.2 补一句「batch_meta 除外，见协同册 §2」。文档一行字级修订，不改设计 |
+
+### 11.5 会签边界重申
+
+- 不替 `human:唐绍祖` 签 METRIC-OPEN（137② 公式五要素定稿仍是独立外部依赖）。
+- 不替甲方拍板 `Q-SYNTH-*`（全部 🟡；UI ⚠️ 角标按临时默认执行）。
+- 不修改 SDD 设计口径本身；本章节只落会签意见与保留意见续编。
+- 四方齐签后，本 handoff 随任务按 `definition` 流程转 `integration`（AV-0）→ 会签确认 → `ready_to_sign`；`ready_to_sign→done` 由 `human:徐滕强` 操作（总控 §A 段授权链）。

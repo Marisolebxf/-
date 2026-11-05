@@ -1,6 +1,6 @@
 # SYNTH L2 · 活力补册 — ADS 结果表与读装包（ARCH/DATA/API/METRIC 合并册）
 
-- 日期：2026-11-05（v1.0.5：会签退回。五张结果改落 ADS；权重缺行禁常量；快照可按 snapshotId 读旧批）
+- 日期：2026-11-05（v1.0.6：三方会签意见落盘；v1.0.5 会签退回。五张结果改落 ADS；权重缺行禁常量；快照可按 snapshotId 读旧批）
 - 状态：**DRAFT，第一轮退回后改稿，待复审**
 - 定位：**补册**。活力叶已由 VIT 五单覆盖任务接口、Java 白名单、FE 接线、gapfill 输入缺项。本册只补结果落表、灌行与读装包：五张 `synth_vit_*` 新建在 `demo_gkxlumenx_ads` / `gkxlumenx_ads`。不新建 registry 单。
 - 上游：总册 §2.1/§11（v1.0.5-draft）；指纹与总纲冲突时以**本册 §3** 为准
@@ -128,9 +128,9 @@
 | 角色 | 状态 |
 |---|---|
 | 架构 | 已签-架构（2026-11-05）：**可签**。五张 ADS 表 D18 三要素齐（表名/灌数方/读取接口）；`snapshotId` 不可变 ≠ `cache_key`、`legacy_unknown` 禁复用、权重缺行禁常量均合规。保留意见 AR-6（五表同批写入的跨表原子性：册内只定义单表批次状态机，建议 seed 以同 `calc_batch_id`+同批次时间戳写五表、校验失败整批同置 `failed`，写进实现单验收）与待确认 TC-2 见 `agent-delivery/agent-handoffs/LUMEN-INTEL-SDD-SIGNOFF-L01.md`，不挡签 |
-| 算法 | 未签 |
-| 数据 | 未签 |
-| 产品 | 未签 |
+| 算法 | 已签-算法（2026-11-05）：**可签**。装包读表与 calc-logic 一致性核对通过：活力三档权重（`WEIGHT_MAIN`=0.30/0.35/0.20/0.15 / `INDEX_MAIN`=0.30/0.30/0.20/0.20 含 `weight_provenance_metric_id` 归属指数件 / `EQUAL`=0.25×4）由 seed 灌 `synth_vit_weight`（`is_mock=1`），装包按 `weight_profile_code` 同码配对读四表、缺行 null+reason 禁常量回填，与 calc-logic/SYNTH 登记一致；`legacy_unknown` 禁复用、同核 `M_SYNTH_VIT_INDEX`≡`M_SYNTH_186_1` 只算一处、上游 183_1 产业维缺不补 0 均符合算法规约。**保留意见**：采纳 TC-2/AR-6 建议条款——seed 以同 `calc_batch_id`+同 `calc_batch_created_at` 写五表、任一表校验失败整批同置 `failed`，写进 `LUMEN-INTEL-VIT-FP-SNAP-L01` 验收（采纳即 TC-2 闭合，不再另立编号） |
+| 数据 | 已签-数据（2026-11-05）：**可签**。DDL 清单核对通过：活力 5 张 ADS（index/dim_score/weight/indicator/rank）落 `demo_gkxlumenx_ads`/`gkxlumenx_ads`，唯一键均含 region+compare+window+`calc_batch_id`+`weight_profile_code`（index/rank 另含 rank_city_code），公共列（批次字段/calc_status/is_mock/method_version）齐，血缘 COMMENT=兄弟指标+gapfill 输入 3 张由 DDL 落地时写入。预填范围=默认三元组（Q-SYNTH-V-02 🟡）、预填行 `is_mock=1`。「最新批」按 `calc_batch_created_at` 排序禁字符串比较，与总册 §11.2 一致。**保留意见**：AR-4 批次清理建议（按批次时间保留最近 3 批、保护 batch_meta 引用批）适用本册五表，DDL 单落地时写入任务定义，不另开表 |
+| 产品 | 未签（VIT 册无产品专属待确认项；产品行见总册会签表 TC-1/TC-3 确认与 Q-SYNTH-01/V-01/V-02 🟡 角标策略） |
 
 ## 9. 修订
 
@@ -148,4 +148,5 @@
 | v1.0.3 | 2026-11-05 | 活力 `analysis_fp` 升级四段含归一 `weight_profile`；冻结/复用/缓存/报告匹配同步；旧三段≡INDEX_MAIN 兼容 |
 | v1.0.4 | 2026-11-05 | 废止旧三段≡INDEX_MAIN；按权重/methodVersion 识别，否则 `legacy_unknown` 禁复用；`snapshotId` 不可变含批次，与 `cache_key` 分离 |
 | v1.0.5 | 2026-11-05 | 会签退回：五张改落 ADS；权重缺行禁常量；快照增加可选 snapshotId |
+| v1.0.6 | 2026-11-05 | 三方会签意见落盘：算法可签（三档权重/装包配对读表与 calc-logic 一致、TC-2 建议条款纳入实现单验收）；数据可签（5 张 DDL 清单/唯一键/血缘 COMMENT 齐、AR-4 清理建议适用）；产品行指向总册 |
 
