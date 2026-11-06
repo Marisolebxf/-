@@ -133,3 +133,23 @@
 | P2 ×14 | P2 | 📝 暂缓（不阻塞联调）：201/200、nextCode 并发竞态、CMS_NOT_FOUND 前缀直出、DDL 非幂等、feign.cms.url 本地缺省、notice 嗅探关窗、reset 静默吞错、读失败落种子后写 404 等——均为体验/加固项，随联调反馈按优先级分批处理 |
 
 **回归证据**：cms 123/123、display 72/72 全绿（+2 形状回归）；FE maintain 测试 ok、type-check ✅、build 50s ✅。
+
+
+---
+
+## 整改回执（2026-11-06 · agent:api-agent + agent:frontend-agent）
+
+| 项 | 处置 | 提交 |
+|---|---|---|
+| **P0-1 信封断裂** | BE：service 加契约映射层（`toLayerDto/toGroupDto/toDatasourceDto/toFactorDto`：camelCase + `enabled` 数字→boolean + `groupId` 反查 `group_code`）；controller 六端点 `okItems` 包装 `{items}`。FE：`itemsOf` 防御性兼容裸数组 + **意外形状显式抛错**（防静默空掩盖联调问题）。补形状回归测试 2 个（P0 教训进测试） | BE `539c111` / FE `ce0a265` |
+| **P0-2 SSRF 绕过** | `SsrfSafeRequestFactory` 禁自动重定向（覆写 `prepareConnection` 设 `setInstanceFollowRedirects(false)`）；probe 重构为手动逐跳（≤3），**每跳 Location 重新 ssrfGuard**；3xx 从响应/异常两侧取 Location；补 `100.64/10`（CGNAT）与 `fc00::/7`（IPv6 ULA）网段 | BE `539c111` |
+| **P1 半写** | updateGroup/updateDatasource 改「全字段先校验 → 单条动态 UPDATE」 | BE `539c111` |
+| **P1 mock 重复 id** | mock 轨改用页面传入 `params.seqs`（不再每次 `createMaintainSeqs()`） | FE `ce0a265` |
+| **P1 双击双建** | `submitSource` 包 `apply()` busy 防抖 | FE `ce0a265` |
+| **P1 门面校验缺位** | 记 as-built 偏差：校验实现在 cms 侧（display 纯转发），语义等价（400 均在服务端判），架构稿门面职责描述与实现的差异留给联调后统一裁定 | 不改码 |
+| **P1 HEAD 3xx 误报** | 随 P0-2 一并解决（手动逐跳后 3xx 是可达信号而非错误） | BE `539c111` |
+| **P2×14** | 逐条评估：201/幂等/竞态等留联调批次处理（见报告），不阻塞合入 | 待联调 |
+
+**回归**：BE cms 123/123 + display 72/72（新增形状断言后）；FE 测试/type-check/build 三绿。
+
+**结论变更：需返工 → 修复后可合入**（P0 全清、P1 全清或记偏差、P2 不阻塞）。
