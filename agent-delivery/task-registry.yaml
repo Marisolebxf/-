@@ -52650,7 +52650,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 150000
     note: |
-      2026-11-05 联调修复二：机构字典切真实主数据（human:徐滕强 拍板）。后端 f2b52544 GET /topic-service/content/org-options（v_cms_svc，keyword 模糊，size≤200）pipeline 3926 全绿含 deploy:cms（19:39:42），pod 镜像 f2b52544 集群内 401 fail-closed 验证；前端 be85bed cmsOrgDict 单例+org-select 联想 kind+屏1列表/筛选/回显切真字典（失败回退演示字典），三绿已推 origin/dev。待人工：浏览器页面级走查 4 屏 CRUD+发布+机构下拉联想。e2e:chain-gold 两次秒失败为上游 trigger 与前端仓并发推送撞车，部署不受影响（deploy:* 全绿）。
+      2026-11-06 code review（bugbot 子代理，user:徐滕强 发起）二轮修复 commit f506105：C1(92) published 守卫 Host 判据不匹配 Service 实名 gkxlumen-platform-cms（集群内 Feign 被 404 误杀且被 fail-soft 吞——正是此前 cms-blocks 一直 unavailable:cms-feign 的第二根因，与 env 未注入叠加）；C2(90) pol 表自增与 pano 共享序列跨族撞号→详情互遮，create() 取号扩 PANO||POL + 9z DDL 尾附 DBA 迁移注释块；I1(85) publishedBlocks 签名加 Family 恢复一族一路由；I2(84) cmsBlocks 缺参 fail-fast + 4xx 透传 + honesty 带 status；I3(82) health 增 cms.configured 可见性。测试 cms 42 + policy 37+23 全绿。待办：① CI 起跑后点名 backend:image:cms/topic-policy + deploy×2 + helm:chart（env 注入 + 守卫生效缺一不可）② 复测 cms-blocks 连通与 id=9001 返回 ③ 验收后删 DB id=9001。handoff：agent-handoffs/系统集成-SYSINT/SYSINT-03-04A-联调-cms-闭环-20261105.md
     collaborators:
       - "frontend-agent"
     design_refs:
@@ -52664,7 +52664,7 @@ tasks:
       - "信封含 operator 审计字段（服务端从 token 取），操作写 cms_op_audit；动作语义（draft⇄published / version / publish_time / 40001/40401/40901）与已上线 svc_business_domain 一致"
       - "接口文档 §4 契约差异 6 条经契约确认会拍板，结论回写 PORTAL-CMS-*.md 契约文件并同步前端版文档；转正前以接口文档为准开发，待确认项标记在 handoff"
       - "OpenAPI + 请求/响应示例入 handoff，供前端 mock→真接口接线叶（lumen-ui-topic）联调；单测覆盖校验规则用例，CI 绿 + K8s dev 发布"
-    update_time: "2026-11-05T19:42:19+08:00"
+    update_time: "2026-11-06T11:41:28+08:00"
   - id: GDF-CHAIN-ROUND2-REPLY-L02
     cost_warn: "green"
     actual_cost: 4
@@ -55323,7 +55323,8 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 50000
-    note: "修复事实落地：2552185 已推，topic 33/0+async-biz 205/0，handoff SYNTH-REVIEW-FIX-JAVA-L01.md"
+    note: |
+      评审修复单，实际监管人 human:徐滕强（长任务总控）；评审发现来源 SYNTH 三线代码评审（Java 线 4I+7M）；commit 2552185 已推 origin/dev；未修项 M1/M3/M4/M5/M7 登记于 handoff SYNTH-REVIEW-FIX-JAVA-L01.md。注：批量验收曾覆盖本 note，此为补回（监管人信息以 handoff 为辅证）
     definition_of_done:
       - "I1 图谱双传改 meta 回读批号权威比对（自洽对放行/缺失不 400）"
       - "I2 活力上游 400 原文透传对齐 elements"
@@ -55331,7 +55332,7 @@ tasks:
       - "I4 spring-javaformat 格式恢复"
       - "M2 测试更名、M6 ex.toString()"
       - "模块测试全绿（topic 33/0、async-biz 205/0）"
-    update_time: "2026-11-06T11:33:33+08:00"
+    update_time: "2026-11-06T12:39:50+08:00"
   - id: GDF-CHAIN-R2-RESTORE-L01
     model_used: "Composer"
     evidence: "agent-delivery/agent-handoffs/产业链分析-CHAIN/GDF-CHAIN-ROUND2-REPLY-L02.md"
@@ -55405,3 +55406,102 @@ tasks:
       - "M5 密码改环境变量缺空串退出；M7 created 兜底补 ind_rows；M10 死代码删"
       - "三自检全绿（elements 39 断言含实库回溯 7 项/collab 幂等 3 项/vitality 全绿）+fake-conn 17 断言"
     update_time: "2026-11-06T11:33:25+08:00"
+  - id: SYNTH-CHAINFIX-PY-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-06T04:18:39.096Z"
+    last_seen_at: "2026-11-06T04:18:39.096Z"
+    lock_until: "2026-11-07T04:18:39.096Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "链路修复① — 活力 weight_profile 贯通 PY 段+DDL/seed+图谱端点+九列回显"
+    status: "in_progress"
+    agent: "algorithm-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: "coordinator_dispatch 开工（链路修复第①站；依据 10 条核查报告：7 成立 3 部分 0 不成立）"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-VIT-AI-TABLES.md §3"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §3.2 v1.0.8"
+    definition_of_done:
+      - "P1-1：execute_vitality_job 接受 weight_profile，三档实算（INDEX_MAIN=0.30/0.30/0.20/0.20、WEIGHT_MAIN=0.30/0.35/0.20/0.15、EQUAL=0.25×4）；回显口径对齐（按哪档算标哪档，禁 EQUAL 算标 INDEX_MAIN）；synth_jobs_routes vitality 分支透传 weight_profile；by_batch 回读不再按 profile 过滤（批号全局唯一）"
+      - "P1-2：scripts/mysql/synth_vit.sql 五张表 DDL（唯一键含 weight_profile_code+calc_batch_id）+ scripts/seed/seed_synth_vit.py 三档并存预填（is_mock=1 整批事务，失败回滚）；_DEFAULT_REPRO 删个人路径改空缺省（ENV 优先，无则诚实降级不读盘）"
+      - "P1-4：新增 GET /internal/v1/synth/collaboration/graph（读 ADS node/edge 空表→200 空图+no_year_on_source 真语义；只读 RELATION_INPUT canonical 去重；industry_code 服务端过滤；limit_nodes/limit_edges 截断+truncated）"
+      - "P2-c：collab batch_meta 回显补 is_latest+region/compare/window 条件列"
+      - "自检：三个 check 全绿+新增断言（三档实算差异可断言、按批跨条件回读、graph 空图契约、graph industry/limit 透传）；邻叶回归；探针零残留"
+      - "commit+handoff（SYNTH-CHAINFIX-PY-L01.md，含未修清单）"
+    update_time: "2026-11-06T12:19:10+08:00"
+  - id: SYNTH-CHAINFIX-JAVA-L01
+    title: "链路修复② — collaboration Adapter+图谱契约对齐+collab 快照门面+HTTP 语义修正"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: "依赖①PY 新契约（graph 端点/九列回显/weight_profile）；监管 human:徐滕强"
+    depends_on:
+      - "SYNTH-CHAINFIX-PY-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §3 v1.0.8"
+    definition_of_done:
+      - "P1-3：新增 SynthCollaborationAnalysisAdapter（region_innovation_collaboration，仿 elements）；FE 误报修正归 FE 单但本单保证 create 400 带可辨 msg"
+      - "P1-4：SynthSnapshotController/SynthCollabGraphService 删 gapfill_batch_id 残留（对齐 COLLAB 册 v1.0.8）；RemoteSynthPythonClient graph 调用接 entity_types/relation_types/limit_nodes/limit_edges+industry（code）"
+      - "P2-c：新增 GET /topic/v1/synth/collaboration/batch-snapshot 门面（转发 Python，回显九列）"
+      - "P1-7：Synth 三端点错误返回改 ResponseEntity 真 HTTP 400/404（局部改动，不动公共 R；404=无批，400=参数），FE 契约同步注释"
+      - "P2-a：500/网络错→UPSTREAM_ERROR 区分于 SNAPSHOT_NOT_FOUND，改测试锚定"
+      - "测试：既有全绿+新增（collaboration Adapter 注册/graph 新契约/collab 快照转发/HTTP 码断言）；mvn 全绿；handoff SYNTH-CHAINFIX-JAVA-L01.md"
+    update_time: "2026-11-06T12:18:39+08:00"
+  - id: SYNTH-CHAINFIX-FE-L01
+    title: "链路修复③ — FE weight_profile 贯通+快照透传+DTO可空化+错误分支适配"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 140000
+    note: "依赖②JAVA HTTP 语义+collab 门面；监管 human:徐滕强"
+    depends_on:
+      - "SYNTH-CHAINFIX-JAVA-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-VIT-AI-TABLES.md §3"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+    definition_of_done:
+      - "P1-1：SynthBatchQuery/ctx 指纹/任务 params 补 weight_profile（仅活力）；工作台权重档下拉（三档，缺省 INDEX_MAIN）"
+      - "P1-5：ElementPanoramaPanel 筛选重拉带当前 snapshotId"
+      - "P1-6：VitalityResult 类型可空化（score/weight/deltaVsCompare/yoy）；0% 失真改「—」；报告页 DEFAULT_BATCH_RESULT 加 USE_MOCK 门控+可空容忍（去裸 toFixed）"
+      - "P1-7：synthBatch 错误分支适配真 HTTP 400/404（Java 修正后）；UPSTREAM_ERROR 区分文案"
+      - "P1-3：queue_full 误报改真实文案（按后端 msg 区分不支持类型/队列满）"
+      - "P1-4：industry 下拉改传 code（节点带 code 或映射表）；图谱参数接线"
+      - "三绿+回归；自检补跨层断言；handoff SYNTH-CHAINFIX-FE-L01.md"
+    update_time: "2026-11-06T12:19:01+08:00"
+  - id: SYNTH-CHAINFIX-DOCS-L01
+    title: "链路修复④ — 总册 gapfill 残留修正+A/B 批端到端 CI 用例"
+    status: "backlog"
+    agent: "arch-agent"
+    epic: "E8-综合智能分析"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "监管 human:徐滕强"
+    depends_on:
+      - "SYNTH-CHAINFIX-JAVA-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/综合智能分析-系统详细设计说明书.md §6"
+    definition_of_done:
+      - "P2-b：总册 §6 图谱行删「可选 gapfill_batch_id」对齐 COLLAB v1.0.8（附修订记录）"
+      - "P2-c：A/B 批端到端 CI 用例落地（三叶批不串进 CI 可跑面：Java 单测或 PY pytest，不再只靠手工探针脚本）"
+      - "修订+handoff"
+    update_time: "2026-11-06T12:19:01+08:00"
