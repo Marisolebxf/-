@@ -36,10 +36,12 @@
 
 ## 交付与边界
 
-- Java 提交：`2416cae`，已推送 `lumen-svc-platform` 的 `origin/dev`。
+- Java 提交：`2416cae`，已推送 `lumen-svc-platform` 的 `origin/dev`；接口契约同步提交：`969c199b`。
 - 修改文件：CMS 服务/类型/校验/Controller、四页 DDL 注释、两个测试类。
 - 该变更降低草稿和发布内容的区域必填限制，符合需规“可为”；不改变区域行格式和适用范围。
 - D8/D10：前端无需改交互，现有“条目”区域与行内必填提示继续有效。
 - D9：不涉及指标、数据血缘或演示数据；D12 调用链不变。
-- CI pipeline、K8s 部署和页面端到端重试尚待确认，不以本地测试替代线上验收。
+- 首次 CI pipeline 4033 的 CMS 109 项测试全绿，但被同仓既有供应链报告单测 `UnsupportedOperationException` 阻塞全局 build。该阻塞已用 `2745799` 做最小可变集合初始化修复，并单独复测通过。
+- 新 CI pipeline 4034：backend:build 成功，backend:image:cms 成功，deploy:cms 成功（61.48s），rollout 已完成；同流水线其他服务部署也成功。总态停在 manual 是因为 helm:chart 等保留人工任务，不影响 CMS。
+- 未使用用户提供的令牌发起现网写请求，避免将认证信息写入日志；页面端到端 `regions:[]` 重试尚待用户操作确认。本地服务层已覆盖同结构请求。
 - cost：环境未提供可核实 token/费用数据，未臆造注册表字段。
