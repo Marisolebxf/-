@@ -393,9 +393,9 @@
 |---|---|---|---|---|---|---|---|
 | WBS-05-24-L2-01A · `TS-L2-M10-LAYER-ARCH` | 维护管理 · 图层与数据源 · 后台实现架构（M1 序 5–9） | 刘剑锋 | `gkx-orchestration` | **integration**（会签中） | 2026-11-06 架构稿已落盘 `agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-M10-LAYER-ARCH.md`（含调用链+数据流 Mermaid；裁定：配置落业务库 `cfg_*` 四表 + display CRUD，种子 Python 灌；序 6/9 读侧归 M1；probe DB 型 501）。handoff `科技发展态势-TS/TS-L2-M10-LAYER-ARCH.md`。待四角色会签 | 存量调研落盘（对照文档 A 段）；`FE-TS-10A` as-built | 无截至时间 |
 
-| WBS-05-24-L2-01B · `TS-L2-M10-LAYER-API` | 维护管理 · 图层与数据源 · 后台接口设计 | 刘剑锋 | `gkx-orchestration` | **claimed** | 2026-11-06 建单认领。待落盘接口分册：`/display/v1/situation/maintain/` 4 组资源 + probe，DTO/枚举/错误码，M10 唯一契约源 | `TS-L2-M10-LAYER-ARCH`（integration 会签中） | 无截至时间 |
-| WBS-05-24-L2-01C · `TS-L2-M10-LAYER-METRIC` | 维护管理 · 图层与数据源 · 后台指标设计 | 刘剑锋 | `gkx-orchestration` | **claimed** | 2026-11-06 建单认领。待落盘指标分册：复核 ARCH §2 全 N/A 结论（配置写侧无统计数字；序 6 统计归 M1 读侧） | `TS-L2-M10-LAYER-ARCH`（integration 会签中） | 无截至时间 |
-| WBS-05-24-L2-01D · `TS-L2-M10-LAYER-DATA` | 维护管理 · 图层与数据源 · 后台数据架构设计 | 刘剑锋 | `gkx-orchestration` | **claimed** | 2026-11-06 建单认领。待落盘数据分册：`cfg_*` 四表列级定义（业务库，非 ODS/DWD/ADS）+ 种子灌数方（Python 一次性） | `TS-L2-M10-LAYER-ARCH`（integration 会签中） | 无截至时间 |
+| WBS-05-24-L2-01B · `TS-L2-M10-LAYER-API` | 维护管理 · 图层与数据源 · 后台接口设计 | 刘剑锋 | `gkx-orchestration` | **integration**（会签中） | 2026-11-06 接口分册落盘 `sdd/l2/TS-L2-M10-LAYER-API.md`：4 组资源 + probe 分型（API 真探测/DB 501/填报 400），DTO/枚举/错误码冻结，M10 唯一契约源（BE-TS-CONTRACT-02 不回填）。handoff `科技发展态势-TS/TS-L2-M10-LAYER-API.md`。待四角色会签 | `TS-L2-M10-LAYER-ARCH`（integration 会签中） | 无截至时间 |
+| WBS-05-24-L2-01C · `TS-L2-M10-LAYER-METRIC` | 维护管理 · 图层与数据源 · 后台指标设计 | 刘剑锋 | `gkx-orchestration` | **integration**（会签中） | 2026-11-06 指标分册落盘 `sdd/l2/TS-L2-M10-LAYER-METRIC.md`：复核 ARCH §2 全 N/A **成立**（配置写侧无统计数字；序 6 统计归 M1；probe 时延不注册；cfg_* 无 is_mock/metric_id 列）。handoff `科技发展态势-TS/TS-L2-M10-LAYER-METRIC.md`。待四角色会签 | `TS-L2-M10-LAYER-ARCH`（integration 会签中） | 无截至时间 |
+| WBS-05-24-L2-01D · `TS-L2-M10-LAYER-DATA` | 维护管理 · 图层与数据源 · 后台数据架构设计 | 刘剑锋 | `gkx-orchestration` | **integration**（会签中） | 2026-11-06 数据分册落盘 `sdd/l2/TS-L2-M10-LAYER-DATA.md`：`cfg_*` 四表列级定义（业务库）；DDL 归 Java 实现单、种子 26 行归 Python 灌数单；**修正 ARCH 种子数 8/9→3/3/9**（demo 源仓核对）。handoff `科技发展态势-TS/TS-L2-M10-LAYER-DATA.md`。待四角色会签 | `TS-L2-M10-LAYER-ARCH`（integration 会签中） | 无截至时间 |
 
 （ENT 二级四单待建单前查重后建行；Java 实现 / 灌数 / 前端接线 / 主路径测试行待定义单签收后建。）
 

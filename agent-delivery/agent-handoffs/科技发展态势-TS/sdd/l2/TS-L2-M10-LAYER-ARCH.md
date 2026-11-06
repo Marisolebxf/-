@@ -50,14 +50,14 @@
 | 序 9 配置面（11 要素显示名/颜色） | 真读写（配置 CRUD，取代 localStorage） | `cfg_factor_display`（业务库） | 同上 | `/display/v1/situation/maintain/factor-display`（GET/PUT） |
 | 序 6 实时数据监控（读侧） | **不实现**（归 M1）；本二级仅通过 datasource 启停位影响 M1 刷新 | — | — | — |
 
-> 表名前缀 `cfg_` 对齐 ENT-OPS data-gap-catalog 的配置表命名惯例（cfg_*）。三表字段（DDL）归 `TS-L2-M10-LAYER-DATA`；路径/DTO/错误码归 `TS-L2-M10-LAYER-API`。本叶只锁表名、写者、读接口三要素。
+> 表名前缀 `cfg_` 对齐 ENT-OPS data-gap-catalog 的配置表命名惯例（cfg_*）。四表字段（DDL）归 `TS-L2-M10-LAYER-DATA`；路径/DTO/错误码归 `TS-L2-M10-LAYER-API`。本叶只锁表名、写者、读接口三要素。
 
 ## 3. 关键裁定：配置写侧为什么落 Java 业务库（会签重点 ①）
 
 调用链铁律「前端 → Java REST → Python `/internal/*`」与「写数归 Python（D7）」约束的是**数据域写**（ODS/DWD/ADS/图谱的灌数与计算）。图层/数据源/要素显示配置是**运营配置元数据**，特征：行数小（十行级）、强事务、随用户操作即时读写、无算法语义。裁定：
 
 1. 配置 CRUD 走 `gkxlumen-display` 直接读写**业务库配置表**（Java 持有配置状态；同 SCI-INT-A03 的 DN-07 先例方向——Java 业务库可持有审核/配置状态，最终由会签确认）。
-2. Python 不参与配置读写；仅在**灌数单**里为三表写入种子行（对齐 demo 冻结种子：8 条数据源 / 9 组图层组 / 11 要素默认显示配置），保证 D18 三要素（表/灌数方/读接口）齐备、接口永不返回内存 mock。
+2. Python 不参与配置读写；仅在**灌数单**里为四表写入种子行（demo 冻结种子：3 条数据源 / 3 个图层组 / 9 行图层枚举 / 11 要素默认显示配置，共 26 行。2026-11-06 经 DATA 分册核对修正，原稿误记「8 条数据源 / 9 组图层组」），保证 D18 三要素（表/灌数方/读接口）齐备、接口永不返回内存 mock。
 3. 配置表**不进** ODS/DWD/ADS/供应方库，不用 `gapfill_` 前缀（不是 D16 缺项表，是正式配置真源——区别于政策样板的 gapfill 读侧退路）。
 4. 种子行 D4 语义：配置数据本身是**真配置**（非 mock 统计），界面不需要 MockBadge；仅当种子行与 demo 演示数据刻意保持一致作为占位时，由 DATA 单标注（默认不标）。
 
@@ -88,7 +88,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  seed["demo 冻结种子：8 数据源/9 图层组/11 要素显示"] --> pyw["灌数单（Python）"] --> tables["cfg_* 三+一表"]
+  seed["demo 冻结种子：3 数据源/3 图层组/9 图层枚举/11 要素显示"] --> pyw["灌数单（Python）"] --> tables["cfg_* 四表"]
   tables --> jread["gkxlumen-display 读"] --> fe["M10 维护页渲染"]
   fe -->|"用户保存图层/分组/数据源/要素显示"| jwrite["gkxlumen-display 写"] --> tables
   tables -->|"图层启停+要素显示配置"| m1read["gkxlumen-display 只读"] --> m1["M1 地图图例/marker/刷新"]
