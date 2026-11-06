@@ -67,3 +67,48 @@
 - 留灌数单（data-agent）：DDL + 26 行种子、C1 库名边界注记。
 - 留基线增量（`agent:arch-agent`，走 §8 变更记录）：C2 的 `python_show_facade.may_write` 补注 + ③ D3 侧库只读口径回写。
 - 条件 C1–C4 不要求改被审四张稿正文；C3 是 draft 图一处边的修正，由 ARCH 稿维护方在实现单引用前完成。
+
+## v3 快审（2026-11-06）
+
+- 对象：四稿 **v3 终版**改写（监管人 `human:刘剑锋` 经开发团队核实「Java 可以建业务表、写业务数据」：四表回业务库，DDL+种子+CRUD 全归 Java 领域服务，Python 完全退出，无灌数单）
+- 方式：只读核对——ARCH §3 演变表 / §4 两图 / §7，交叉 API §1 内部委托 / §4.1 / §6、DATA §1 分工表 / §6、METRIC §2–§3，对照 baseline D3 / D7 / D15 / D18 原文；grep 验证 v2 标识残留。不改本页已有小节，不 commit，不动 task-registry / WBS
+
+### 结论
+
+**通过（附一条一行修正项 R1）**。v3 链路（前端 → gw → display 门面 → Feign → 领域服务 → 业务库）与 D7 / D15 / D18 自洽，D3 备案口径成立（细目见下）；v2→v3 改写干净，v2 标识仅存于审计/作废行。唯一活性残留是 METRIC §3 首句一处 v2 断言（R1），一行修正、修后无需重审；R1 闭合前 METRIC 分册不标 done。
+
+**R1（唯一修正项）**：`TS-L2-M10-LAYER-METRIC` §3 首句「种子由 **data-agent 灌数单**写入（3 数据源 / 3 图层组 / 9 图层 / 11 要素）」是 v2 残留断言，与 v3（ARCH §3.3、DATA §1 分工表 / §6：DDL + 种子 26 行归 **Java 实现单 SQL 变更**、无灌数单）直接矛盾，破坏四稿一致。改为「种子由 Java 实现单 SQL 变更写入」即可，本叶结论（全 N/A、不设 `is_mock`）不受影响。责任：METRIC 维护方 `agent:algorithm-agent`；时点：METRIC 标 done 前。
+
+### 逐项核对
+
+| # | 核对项 | 判定 |
+|---|---|---|
+| 1 | 四表回业务库 | ✓ ARCH §2 逐叶「业务库/同库」、DATA §1 首句、API §1 三稿一致；不再新建任何库，`cfg_` 前缀保留（配置真源，非 D16 缺项表，不进数仓分层） |
+| 2 | DDL + 种子（26 行）+ 运行时 CRUD 全归 Java | ✓ ARCH §3.2/§3.3、DATA §1 分工表（Java 实现单 SQL 变更一体 + 领域服务直读直写）、DATA §6「无 Python 灌数单」三处一致；display 经 Feign 门面调用，D15 保持 |
+| 3 | §3 三版本演变审计表 | ✓ v1 直写（D15 违）→ v2 归 Python → v3 终版，三行裁定+结局清楚；审计行内的 `gkxlumenx_show_config` / `/internal/gkx-show` 属合规审计残留，非正文断言 |
+| 4 | §4 两图重画 | ✓ SEQ 图：bff → Feign → dom → 直读直写 db，probe 边 `dom → bff` 加注「结果沿响应链回流」；DATA 图：seed → sqlmig → 四表，读写同归 dom。与 §3 文字一致。DATA 图省略 gw 沿用 v2 判定（数据流视角省略，可接受） |
+| 5 | §7 关注点更新 | ✓ ① 写侧归属已终版裁定、② 库位置消解（`gkxlumenx_show_config` 作废）、③ D3 口径备案、④ 领域服务承载实现单定、⑤⑥⑦ 承接 v2 会签结论 |
+| 6 | 会签成果保留 | ✓ SSRF 私网黑名单 + DNS 重绑复核已进 API §4.1 契约正文；probe 归领域服务出网（display 不出网，D15）；错误码四码封闭（API §6：400/404/409/501，填报型 probe 收进 `PARAM_INVALID`，无第五码）；种子 26 行真值（3 源/3 组/9 图层/11 要素）保留 DATA §0 纠错结论 |
+| 7 | v2 标识残留 grep | `gkxlumenx_show_config` 仅 ARCH §3 审计行、§7 ② 作废注、DATA §1 作废注；`/internal/gkx-show` 仅 ARCH §3 审计行；API / METRIC / DATA 正文零命中。唯一活性残留 = R1 |
+
+铁律自洽细目（ARCH §7 ① 请复核项）：
+
+- **D7**：条文对象是「Python 写 Mock 至 ADS + 数据工厂 ODS→DWD→ADS」，全文无数仓之外写库归属的表述；v2「写库全归 Python」属过度引申，v3 收窄回条文本意（约束数仓灌数），业务配置表不在 ADS / 工厂链路，不受限 ✓
+- **D15**：display 仍只做门面（鉴权/枚举校验/聚合）不直连 Python/DB，Feign → 领域服务是 D15 明文合规路径；v3 链路比 v2 少一个 Python 节点，三层链路更简不破 ✓
+- **D18**：ARCH §2 逐叶三要素（表名/写者/读接口）齐备，配置 CRUD 本身可实现，接口读表不返回内存 mock，不触发 ADS mock 替代条款 ✓
+- **D3 备案口径（§7 ③「业务配置表非 D3 契约面约束对象」）**：**成立**。D3 条文自身含「+ `app_user` 读写」——非 ADS 业务表的 Java 读写在条文里已有先例，证明 D3「仅读 `*_ads`」的立法对象是数仓契约面而非 PigX 业务系统业务表；lumen-svc-platform 现有业务库即 as-built 先例（ARCH §1）。口径已在稿内备案并标注来源（开发团队 2026-11-06），后续同构场景可直接援引，无需逐单重议 ✓
+
+### v2 四条件在 v3 下的处置
+
+| # | v2 条件 | v3 状态 | 处置 |
+|---|---|---|---|
+| C1 | `gkxlumenx_config` 撞 Java 平台库名 | **消解** | v3 不新建任何库，撞名库名整体退出，仅存审计行。闭合，无动作 |
+| C2 | baseline §4 `python_show_facade` 补 `may_write` + D3 侧库只读口径回写 | **消解** | Python 完全退出，show_facade 无任何新增读写，`may_write` 补注失去对象；「D3 侧库只读口径」随 v2 方案作废不再需要。闭合，无动作。附**非阻塞建议**：baseline §4 `java_aggregation.may_read: [mysql_ads, app_user]` 字面未含业务配置表，为防校验 agent 按字面误判，建议随实现单开工前在 baseline 补一行「业务库业务配置表（cfg_*）读写属 PigX 常规（D3 口径备案，2026-11-06）」注记并走 §8 变更记录——因 D3 条文含 `app_user` 先例且稿 §7 ③ 已备案，降级为建议，不设条件 |
+| C3 | SEQ 图 probe 边 `dom → fe` 直连画法违调用链铁律 | **已闭合** | v3 §4.1 图边改为 `dom → bff` 并注「结果沿响应链回流」，正是 v2 给出的可选修法之一。无遗留 |
+| C4 | probe SSRF 地址段黑名单必列实现单 DoD | **保留（开放）** | 黑名单 + DNS 重绑复核已从会签条件升级进 API §4.1 契约正文；「实现单 DoD 必列」本体仍开放，责任落点 `TS-L2-M10-BE-IMPL` 起草时不变 |
+
+### 备注（非阻塞）
+
+1. ARCH §2 序 8 行「Java 不直连**业务库**探测」的「业务库」实指数据源目标库（种子 src-2 endpoint 为 `dwd.paper_topic`，数仓面；未来若排期 DB 型探测走 Python 侧恰是 D3 `scan_ods_dwd` 的合规路径，非 v2 残留）。建议实现单表述改「目标库」，避免与 §3「业务库」撞词。
+2. ARCH 首段「`TS-L2-M10-LAYER-API`（待建）」已过时（API 分册已落盘），稿维护方下次顺带更新。
+3. 本节为快审 append：不改本页 v2 小节结论（其针对 v2 版本，历史有效），不把四稿或任何任务标 done；签收仍归监管人 `human:刘剑锋`。
