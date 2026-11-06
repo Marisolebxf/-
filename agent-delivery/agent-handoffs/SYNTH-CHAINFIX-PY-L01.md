@@ -117,6 +117,8 @@
 
 ## 5. 偏离说明
 
+> **未修清单：无。** 派单范围 A/B/C/D 四项全部完成（weight_profile 贯通 / vit 五表 DDL+seed / graph 端点 / 九列回显）；范围外事项见 §9 移交清单（Java 门面、FE 接线、legacy_unknown 任务链口径属②③站）。
+
 1. **`_dim_score_payload` 未加 source 参数**：维分不随档变（档只决定合成权重），按 ponytail 最短 diff 原则未引入无效分支。
 2. **186_1 `index_0_100` 实为四维等权合成**（实测验证），故「同核对照」断言挂 EQUAL 档（seed `--check`/`--apply` 双断言）；INDEX_MAIN 档由装包 `_weighted_index` 优先消费该产物（同核唯一计算点），与 v1.0.6 §1「同核只算一处」一致。
 3. **dim_score 产业维已灌行**：186_1 盘 dim_scores 含产业维（77.7925/39.7686/18.777/7.6049），非 183_1 维分口径的场景由后续实算覆盖；`ind-talent-edu` 有值未进维（status=proxy，score=null），如实落行。
