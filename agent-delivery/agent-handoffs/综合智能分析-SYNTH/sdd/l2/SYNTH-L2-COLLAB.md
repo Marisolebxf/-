@@ -1,9 +1,9 @@
 # SYNTH L2 · 协同册 — 区域创新协同分析（ARCH/DATA/API/METRIC 合并册）
 
-- 日期：2026-11-05（v1.0.8：三方会签意见落盘；v1.0.7：1y/3y/5y 不回全历史边；源无年则空图；密度不读 191）
+- 日期：2026-11-06（v1.0.10：C-05 功能合规过渡：gapfill 按年关系/年度产出输入 + Python 实时计算；正式真源后续对齐）
 - 状态：**DRAFT，第一轮退回后改稿，待复审**
 - 上游：总册 §2.3/§11（v1.0.5-draft）；需求真源 SRS 139–141。密度不读 `M_SYNTH_191_1`
-- 现状衔接：FE COLLAB 三页已联调中（`LUMEN-INTEL-FE-COLLAB`）；**页面差距见 §6**（产业筛选控件缺失、图谱独立查询接口缺失），不是"已备不改"。
+- 现状衔接：FE COLLAB 三页已联调中（`LUMEN-INTEL-FE-COLLAB`）；产业筛选、独立图谱接口与字段契约已接线，页面差距见 §6。
 
 ## 1. ARCH（流程与落点）
 
@@ -22,7 +22,7 @@ lumen-ui-topic
 ```
 
 - 库：`demo_gkxlumenx_ads` / `gkxlumenx_ads`。灌数方 entan-py。不使用 `gkxlumenx_ai`，不使用 `gapfill_synth_collab_*`。
-- 请求窗是 `1y/3y/5y`。关系输入源没有年，不能把全历史边放进这些窗。该窗 `nodes=[]`、`edges=[]`，`reason=no_year_on_source`。`window_label` 只出现在请求和 `synth_collab_batch_meta`，不用来复制一份无窗截面。
+- 请求窗是 `1y/3y/5y`。正式关系源没有年时不得把全历史边放进这些窗。功能合规过渡读 `gapfill_synth_collab_relation_year` 的显式 `event_year` 演示行并按窗口构图；响应标 `dataSource=gapfill_transitional`。正式真源到位后停读 gapfill。
 - 协同指数式仍是 `Index=(1/3)*[minmax(Completeness)+minmax(Centrality_avg)+minmax(Density)]`。该窗图为空时，指数、完整度、中心度、密度都是 `null`+`reason=no_year_on_source`，不把无窗截面抄进三个窗。密度不读 `M_SYNTH_191_1`，也不把 191 的密度写入 `synth_collab_network_stat`。禁止密度×强度。
 - 本期不写 `synth_collab_node` / `synth_collab_edge` 行。不读论文关系表，不做 Nebula 导出，不灌演示行。
 - Java 不写 nGQL。样本 <3：不出系数。
@@ -51,17 +51,17 @@ lumen-ui-topic
 
 | 表 | 粒度 / 唯一键 | 列 | 写入 | 读 |
 |---|---|---|---|---|
-| `synth_collab_node` | 一行=主体×条件×`metric_id`。`uk(region_code, compare_scope, window_label, metric_id, entity_type, entity_id, graph_batch_id)` | `name`，`industry_code`，`industry_label`，`degree` | **本期 0 行**。不把全历史主体写入 1y/3y/5y | 图谱只读 `RELATION_INPUT`；无行则空图 |
-| `synth_collab_edge` | 一行=边×条件×`metric_id`。`uk(..., source_event_id, graph_batch_id)`。无 `year` | `weight`，`source_event_id` | **本期 0 行**。源无年，禁止用全历史边填充窗口 | 同上 |
+| `synth_collab_node` | 一行=主体×条件×`metric_id`。`uk(region_code, compare_scope, window_label, metric_id, entity_type, entity_id, graph_batch_id)` | `name`，`industry_code`，`industry_label`，`degree` | **本期 0 行**。不把全历史主体写入 1y/3y/5y | 图谱返回 `{id,name,kind,centrality,industry_code,industry_label,degree}`；无行则空图 |
+| `synth_collab_edge` | 一行=边×条件×`metric_id`。`uk(..., source_event_id, graph_batch_id)`。无 `year` | `weight`，`source_event_id` | **本期 0 行**。源无年，禁止用全历史边填充窗口 | 图谱返回 `{id,source,target,type,weight,source_event_id}`；不返回 `year` |
 | `synth_collab_batch_meta` | 一行=一个不可变 `snapshotId`。`uk(snapshotId)` | `snapshotId`，`calc_batch_id`，`graph_batch_id`，`cache_key`，`region`，`compare`，`window`，`published_at`，`is_latest` | 发布成功时 Python 写入。同 `cache_key` 新成功批把旧行 `is_latest` 置 0，新行置 1。不删旧 `snapshotId` | 重启后按 `snapshotId` 读取。未传 snapshotId 时读 `is_latest=1` |
 
-`cache_key = region|compare|window` 指向该条件下最新成功 `snapshotId`，存在 `synth_collab_batch_meta` 的最新指针（同一表用 `cache_key` + `is_latest=1`，旧行改 `is_latest=0`）。缺任一 meta 列则不得标 succeeded。
+`cache_key = region|compare|window` 指向该条件下最新成功 `snapshotId`，存在 `synth_collab_batch_meta` 的最新指针（同一表用 `cache_key` + `is_latest=1`，旧行改 `is_latest=0`）。缺任一 meta 列则不得标 succeeded。默认 seed 为 1y/3y/5y 各写一行 batch_meta，使三窗空图均能读表得到 `no_year_on_source`，而不是 `batch_meta_missing`。
 
 ## 3. API
 
 ### 3.1 快照与任务
 
-- `GET /topic/v1/synth/collaboration/batch-snapshot?region=&compare=&window=` → `CollabResult`；404 非默认三元组；缺数据 200+null/reason。
+- `GET /topic/v1/synth/collaboration/batch-snapshot?region=&compare=&window=` → `CollabResult`；默认三窗可从 gapfill 过渡输入计算图/网络统计/相关性；404 仅用于无批次映射或非支持条件。
 - 任务：`region_innovation_collaboration`（`POST /topicAsync/topic/v1/analysis/tasks`）；Java `SynthAnalysisAdapter` → Python `POST /internal/v1/synth/jobs/execute`，入参 `{task_id, leaf:'collaboration', region, compare, window}`（窗归一中文）；失败 → 任务 `failed`+`reason`。
 - 五阶段文案逐字用 MOCK-INV §2 协同行。
 
@@ -189,4 +189,6 @@ lumen-ui-topic
 | v1.0.6 | 2026-11-05 | 边去掉 year；window 不按年份过滤；只实查联合专利与人才流动；不做 Nebula 导出 |
 | v1.0.7 | 2026-11-05 | 源无年：三窗不回全历史边，指数与三项网络统计 null；密度不读 191；node/edge 本期 0 行 |
 | v1.0.8 | 2026-11-05 | 三方会签意见落盘：算法可签（四指标空图口径与 calc-logic 一致、C-02 前不派生 cluster 合规、策略 LLM+degraded 可行、AR-9 事务边界采纳）；数据可签（DDL 清单/唯一键/output_corr 列齐、AR-4 清理建议含 batch_meta 引用保护）；产品行指向总册（TC-4 已认可） |
+| v1.0.9 | 2026-11-06 | 实现纠偏：默认 1y/3y/5y 各写 batch_meta 使空图可读表得 `no_year_on_source`；无 index/network 时 relation_input 批可回显；A/B 快照指标按 meta.calc_batch_id 读取；graph 节点/边字段统一 FE DTO |
+| v1.0.10 | 2026-11-06 | 功能合规过渡：新增 gapfill 年化关系输入与年度产出输入；Python 实时计算图/网络统计/Pearson；ADS 缺行时回退，响应标 dataSource=gapfill_transitional |
 

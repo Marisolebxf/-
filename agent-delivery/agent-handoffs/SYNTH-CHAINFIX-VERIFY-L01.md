@@ -246,3 +246,27 @@ estimated_tokens: 110000
 actual_cost: 0.32
 cost_warn: false
 ```
+
+## 11. elements 404 映射修复记录（SYNTH-CHAINFIX-ELEM404-L01 · api）
+
+- **任务/执行**：SYNTH-CHAINFIX-ELEM404-L01（bugfix · api-agent 按派单 `/goal` 执行）。⚠️ **registry 查无此叶单**（task-get 返回不存在；task-query module=CHAINFIX 6 单无匹配）——未擅自 task-create（创建权限=coordinator/PM），按派单挂靠本 VERIFY 单，**请 coordinator 补登记**后按 bugfix 链推进。
+- **时间**：2026-11-06 16:44 – 17:00（UTC+8）
+- **修复 commit**：`b565caa`（lumen-svc-platform · dev · **本地已 commit 未 push**，按派单「coordinator 统一推」）
+- **触碰文件**（仅 2 个；工作区他会话 3 个 cms 未提交文件未触碰）：
+  - `gkxlumen-topic/src/main/java/com/topcomm/gkxlumen/topic/service/synth/SynthElementsSnapshotService.java`
+  - `gkxlumen-topic/src/test/java/com/topcomm/gkxlumen/topic/service/synth/SynthElementsSnapshotServiceTest.java`
+- **diff 摘要**（72 insertions / 50 deletions，其中功能逻辑仅 +5 行判定）：
+  1. 主修：`batchSnapshot` 读包络处、「calc_batch_id 空→404」判定之后补 `batch_reason=batch_not_published → 404 SNAPSHOT_NOT_FOUND`，照 `SynthVitalitySnapshotService` 同款（对齐 §10.2 T4a 预判缺陷修法）；类注释 HTTP 语义行同步补充。
+  2. 测试：新增 `explicitBatchNotPublishedMapsTo404`（显式不存在批空壳→404）+ `normalBatchWithoutReasonStays200`（正常批 `batch_reason=null` 不误伤→200，回归护栏）。
+  3. `spring-javaformat:apply`（0.0.39）对本文件 Javadoc/换行做规约重排；它同时重排了模块内 14 个非本任务存量文件，已精确 `git checkout` 回退、不进本 commit。
+- **自检证据**：`mvn test -pl gkxlumen-topic` 全量 **Tests run: 46, Failures: 0, Errors: 0, BUILD SUCCESS**（elements 9/9 含新增 2）；格式化后复跑 elements 9/9 仍绿。本机无 JDK17，测试以 JDK21 编（`release=17`），不影响 CI。
+- **复测指引（与 C3 修复同批部署后）**：本修生效前提 = topic 门面 pod 重建镜像滚动（`TOPIC_RELEASE=true` 或 FULL_PIPELINE）**且** §10.3 C3 的 `TOPIC_ALGO_BASE_URL` 寻址修复合批落地——否则 C3 未修仍 502（寻址不通），C3 修后无本修则 200 空壳（本单修的正是这个）。滚后重跑 §10.2 **T4a** 一条断言即可：`GET /topic/v1/synth/elements/batch-snapshot?...&snapshotId=snap:never_exists` → 期望 **HTTP 404 SNAPSHOT_NOT_FOUND**。
+- **架构合规自检**：调用链未动（Java 门面只读 Python `/internal/*` 包络，不直连库）✅；HTTP 语义对齐契约「无批=404 SNAPSHOT_NOT_FOUND」✅；最小 diff（无新依赖/无新抽象）✅；多会话保护（精确 add 2 文件；误格式化文件已回退，未 reset）✅；commit 带 `[agent:api]` ✅；本 handoff 落盘未 commit/push，随 coordinator 统一推。
+
+```yaml
+ponytail: full
+model_used: glm-5.3-Flash
+estimated_tokens: 90000
+actual_cost: 0.30
+cost_warn: false
+```
