@@ -7,7 +7,7 @@
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：M1 序 5–9（多对象图层管理 / 实时数据监控 / 图层分组与组织 / 数据源灵活配置 / 基础信息查看）
 - 上游：`sdd/l2/TS-L2-M10-LAYER-ARCH.md` §2（integration，待会签。本叶复核该节结论）
-- 查询：未见 metric MCP。本叶未调用 `metric-get` / `metric-query`。TS 专题未见《指标与501》挂接索引、未见系统详细设计说明书第 2 节式指标表可回退。复核基于需规原文（M1 序 5–9）、ARCH 稿与 demo as-built 源码。下文凡未标明出处的身份字段，都不要当成已经查过
+- 查询：未见 metric MCP。本叶未调用 `metric-get` / `metric-query`。TS 专题未见《指标与501》挂接索引、未见系统详细设计说明书第 2 节式指标表可回退。**负向佐证（2026-11-06 会签 ALGO-S1 补）**：工作区通用挂接索引 `agent-delivery/metrics/registry/metric-srs-map.yaml` 对《科技全域态势.md》共 8 处映射，全部落在读侧叶子 seq 10/11/12/15（M_INNOV_* / M_SYNTH_GRAPHAPI_116_1 / M_TECH_BASE_96_1），**无一条触及序 5–9**；`metrics/metric-evidence-map.json`（DS-01 段）与 `metrics/registry/cfg_metric-SCIUI-seed.yaml` 同样只挂读侧。全库无「在线率/连通率」类既有运营指标，无注册冲突。复核基于需规原文（M1 序 5–9）、ARCH 稿与 demo as-built 源码。下文凡未标明出处的身份字段，都不要当成已经查过
 
 本叶只复核「图层与数据源」二级的指标挂接结论。SRS 序号 M1 序 5–9 的配置维护面。不新注册指标，不改 D4，不写假公式，不改算法代码，不写 OpenAPI。
 

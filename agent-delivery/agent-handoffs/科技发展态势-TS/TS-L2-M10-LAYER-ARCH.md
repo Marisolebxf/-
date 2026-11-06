@@ -9,7 +9,7 @@
 架构稿（真源）：[`sdd/l2/TS-L2-M10-LAYER-ARCH.md`](./sdd/l2/TS-L2-M10-LAYER-ARCH.md)
 
 - 需规：M1《科技全域态势》序 5–9（图层配置 5/6/7/8 + 科创要素 9 的配置面）
-- 核心裁定（**2026-11-06 监管人裁定后修订**：写库全归 Python，原「Java 直写业务库」作废）：M10 分区1 演示态（页面内存 + localStorage）正式化为 **`gkxlumenx_config` 库（Python 侧）四张 `cfg_*` 配置表**；DDL+种子（26 行）归 data-agent 灌数单；运行时写经 `display 门面 → 领域服务 → gkx_show_service /internal/gkx-show/maintain/config/**`；读沿政策 gapfill 只读先例由领域服务直读；M1 地图经同一链路只读配置
+- 核心裁定（**2026-11-06 监管人裁定后修订**：写库全归 Python，原「Java 直写业务库」作废）：M10 分区1 演示态（页面内存 + localStorage）正式化为 **`gkxlumenx_show_config` 库（Python 侧）四张 `cfg_*` 配置表**；DDL+种子（26 行）归 data-agent 灌数单；运行时写经 `display 门面 → 领域服务 → gkx_show_service /internal/gkx-show/maintain/config/**`；读沿政策 gapfill 只读先例由领域服务直读；M1 地图经同一链路只读配置
 - 序 6 读侧、序 9 浏览/收藏归 M1（WBS-05-18），本二级不做；序 34–40 报价划掉；41–47 归 ENT 二级
 - metric_id 全 N/A（配置写侧无统计数字），待 `TS-L2-M10-LAYER-METRIC` 复核
 - probe：API 型真探测；DB 表型 501

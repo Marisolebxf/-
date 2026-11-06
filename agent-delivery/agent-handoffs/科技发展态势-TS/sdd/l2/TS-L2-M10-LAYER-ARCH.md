@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-M10-LAYER-ARCH`
 - 日期：2026-11-06
-- 状态：架构稿已落盘，待架构、接口、算法、数据四角色会签。不标 done。**2026-11-06 监管人裁定后修订**：写库全归 Python（§3 退路转正），四表挪 `gkxlumenx_config`，两图与 §7 关注点同步改写
+- 状态：架构稿已落盘，待架构、接口、算法、数据四角色会签。不标 done。**2026-11-06 监管人裁定后修订**：写库全归 Python（§3 退路转正），四表挪 `gkxlumenx_show_config`，两图与 §7 关注点同步改写
 - 监管：`human:刘剑锋` · 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 图：`TS-L2-M10-LAYER-ARCH-SEQ`（调用链）· `TS-L2-M10-LAYER-ARCH-DATA`（数据流），均为本二级新图（draft）
@@ -43,7 +43,7 @@
 
 | 叶 | 裁定 | 表 | 灌数方/写者 | 读取接口（Java REST） |
 |---|---|---|---|---|
-| 序 5 图层启停/可见性 | 真读写（配置 CRUD） | `cfg_tech_layer`（gkxlumenx_config，Python 侧库） | 种子：data-agent 灌数单（Python）；用户写：display→领域服务→Python internal（§3） | `/display/v1/situation/maintain/layers`（GET/PUT） |
+| 序 5 图层启停/可见性 | 真读写（配置 CRUD） | `cfg_tech_layer`（gkxlumenx_show_config，Python 侧库） | 种子：data-agent 灌数单（Python）；用户写：display→领域服务→Python internal（§3） | `/display/v1/situation/maintain/layers`（GET/PUT） |
 | 序 7 图层分组与组织 | 真读写（配置 CRUD） | `cfg_tech_layer_group`（同库） | 同上 | `/display/v1/situation/maintain/layer-groups`（GET/POST/PUT/DELETE） |
 | 序 8 数据源登记（API/DB 表/用户填报） | 真读写（配置 CRUD） | `cfg_tech_datasource`（同库） | 同上 | `/display/v1/situation/maintain/datasources`（GET/POST/PUT/DELETE） |
 | 序 8 测试连通 | API 型：Java 端点探测（HTTP HEAD/GET + 超时）；DB 表型：**501**（Java 不直连业务库探测，Python 侧探测属后续增强，未排期）；用户填报型：无探测语义，前端禁用按钮 | —（不落表，探测结果不持久化） | — | `/display/v1/situation/maintain/datasources/{id}/probe`（POST） |
@@ -56,10 +56,10 @@
 
 原稿曾裁定「配置 CRUD 走 `gkxlumen-display` 直写业务库配置表」。2026-11-06 监管人 `human:刘剑锋` 裁定：**写数据库的活儿全归 Python，保持原有规矩（D7/D15）**。原裁定作废（其动机——配置是运营元数据非数据域写——成立，但落点越权：D15 明文 display BFF **不直连 Python/DB**，正确链路是 Feign 经领域服务），按退路转正改写如下：
 
-1. 四表挪出业务库，落 **Python 侧管理的库 `gkxlumenx_config`**（建议名，会签确认；不进 ODS/DWD/ADS 数仓分层，不混 `gkxlumenx_gapfill` 缺项语义；`cfg_` 前缀保留，表示配置真源而非 D16 缺项表）。
+1. 四表挪出业务库，落 **Python 侧管理的库 `gkxlumenx_show_config`**（建议名，会签确认；不进 ODS/DWD/ADS 数仓分层，不混 `gkxlumenx_gapfill` 缺项语义；`cfg_` 前缀保留，表示配置真源而非 D16 缺项表）。
 2. **建表 DDL + 种子行（26 行）一体归 data-agent 灌数单（Python）**：demo 冻结种子 3 数据源 / 3 图层组 / 9 图层枚举 / 11 要素默认显示（2026-11-06 经 DATA 分册核对修正，原稿误记「8 条数据源 / 9 组图层组」）。
-3. **运行时写（C/U/D）全归 Python**：`gkxlumen-display` 只做门面（鉴权、枚举/参数校验），写请求经 Feign → 领域服务 → Feign `/internal` → `gkx_show_service`（D15 合规路径：`/internal/gkx-show/maintain/config/**`）→ 写 `gkxlumenx_config`。对外 URL 与 API 分册契约不变。
-4. **运行时读沿政策 gapfill 只读先例**（POL 系领域服务直读 `gkxlumenx_gapfill`）：领域服务只读 `gkxlumenx_config`，display 经 Feign 聚合；M1 消费同链路。领域服务承载候选 gkxlumen-topic 侧 element 模块（政策同链路），实现单定。
+3. **运行时写（C/U/D）全归 Python**：`gkxlumen-display` 只做门面（鉴权、枚举/参数校验），写请求经 Feign → 领域服务 → Feign `/internal` → `gkx_show_service`（D15 合规路径：`/internal/gkx-show/maintain/config/**`）→ 写 `gkxlumenx_show_config`。对外 URL 与 API 分册契约不变。
+4. **运行时读沿政策 gapfill 只读先例**（POL 系领域服务直读 `gkxlumenx_gapfill`）：领域服务只读 `gkxlumenx_show_config`，display 经 Feign 聚合；M1 消费同链路。领域服务承载候选 gkxlumen-topic 侧 element 模块（政策同链路），实现单定。
 5. probe 出网探测归**领域服务**（display 不出网）：API 型 HEAD/GET 5s 超时、结果不落库；DB 型 501；填报型 400。
 6. 种子行 D4 语义不变：配置数据本身是**真配置**（非 mock 统计），界面不挂 MockBadge；种子与 demo 刻意一致处由 DATA 单标注（默认不标）。
 
@@ -75,14 +75,14 @@ flowchart LR
   bff["gkxlumen-display（BFF 门面：鉴权/校验/聚合，不直连 Python/DB）"]
   dom["领域服务（element 链路，沿政策 gapfill 先例）"]
   pysvc["gkx_show_service（Python 门面 /internal/gkx-show/**，承载写）"]
-  db[("gkxlumenx_config · cfg_tech_layer / cfg_tech_layer_group / cfg_tech_datasource / cfg_factor_display")]
+  db[("gkxlumenx_show_config · cfg_tech_layer / cfg_tech_layer_group / cfg_tech_datasource / cfg_factor_display")]
   pyseed["data-agent 灌数单（Python，建表+种子一次）"]
 
   fe -->|"/display/v1/situation/maintain/**（读写）"| gw --> bff
   m1 -->|"GET layers / factor-display（只读）"| gw --> bff
   bff -->|"Feign 读"| dom -->|"只读"| db
   bff -->|"Feign 转发写"| dom -->|"Feign /internal/gkx-show/maintain/config/**"| pysvc -->|"写"| db
-  dom -->|"probe：API 型 HTTP 探测（DB 型 501）"| fe
+  dom -->|"probe：API 型 HTTP 探测（DB 型 501；含 SSRF 私网黑名单，结果沿响应链回流）"| bff
   pyseed -.->|"DDL + 种子 26 行"| db
 ```
 
@@ -92,7 +92,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  seed["demo 冻结种子 26 行（3源/3组/9图层/11要素）"] --> pyw["灌数单（建表+种子）"] --> tables[("gkxlumenx_config · cfg_* 四表")]
+  seed["demo 冻结种子 26 行（3源/3组/9图层/11要素）"] --> pyw["灌数单（建表+种子）"] --> tables[("gkxlumenx_show_config · cfg_* 四表")]
   fe["M10 维护页"] -->|"保存（写）"| bff["display 门面校验"] --> dom["领域服务"] -->|"Feign /internal"| pysvc["gkx_show_service（写）"] --> tables
   tables -->|"只读"| dom
   dom -->|"Feign 聚合返回"| bff
@@ -123,8 +123,8 @@ flowchart LR
 ## 7. 会签关注点（2026-11-06 监管人裁定后更新）
 
 1. ~~配置写侧落 Java 业务库~~ **已裁定作废**：写库全归 Python（§3 已按退路转正改写）。请复核改写后与 D7/D15/D18 的自洽性
-2. 库位置：新库名 `gkxlumenx_config`（建议名）+ `cfg_` 前缀不挂 `gapfill_`（配置真源非 D16 缺项表）是否接受
-3. 读侧张力：D3 字面「Java 仅读 `*_ads`」 vs 政策 gapfill 只读先例（领域服务直读 `gkxlumenx_gapfill`）——本二级沿先例读 `gkxlumenx_config`，请架构角色确认口径
+2. 库位置：新库名 `gkxlumenx_show_config`（建议名）+ `cfg_` 前缀不挂 `gapfill_`（配置真源非 D16 缺项表）是否接受
+3. 读侧张力：D3 字面「Java 仅读 `*_ads`」 vs 政策 gapfill 只读先例（领域服务直读 `gkxlumenx_gapfill`）——本二级沿先例读 `gkxlumenx_show_config`，请架构角色确认口径
 4. 领域服务承载：写转发与只读的承载服务（候选 gkxlumen-topic 侧 element 模块，政策同链路）由实现单定，本叶只锁链路形态
 5. probe 出网位置：领域服务出网探测（BFF 不出网）是否接受
 6. 接口差异表 §5 的 `meta` 端点废弃

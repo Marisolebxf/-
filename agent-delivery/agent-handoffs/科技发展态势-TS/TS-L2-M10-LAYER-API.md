@@ -9,7 +9,7 @@
 接口分册（真源）：[`sdd/l2/TS-L2-M10-LAYER-API.md`](./sdd/l2/TS-L2-M10-LAYER-API.md)
 
 - 契约面：`/display/v1/situation/maintain/` 下 4 组资源（layers GET/PUT · layer-groups CRUD · datasources CRUD + probe · factor-display GET/PUT），全同步、全量返回不分页
-- 内部委托（**2026-11-06 监管人裁定后修订**，对齐 ARCH §3）：写库全归 Python——display 只做门面校验（400 类不出网关层），写经 Feign→领域服务→`/internal/gkx-show/maintain/config/**`（`gkx_show_service`）；读经领域服务直读 `gkxlumenx_config`；probe 出网归领域服务（display 不出网）。**对外 URL/方法/DTO/错误码全部不变**
+- 内部委托（**2026-11-06 监管人裁定后修订**，对齐 ARCH §3）：写库全归 Python——display 只做门面校验（400 类不出网关层），写经 Feign→领域服务→`/internal/gkx-show/maintain/config/**`（`gkx_show_service`）；读经领域服务直读 `gkxlumenx_show_config`；probe 出网归领域服务（display 不出网）。**对外 URL/方法/DTO/错误码全部不变**
 - 本分册是 **M10 唯一契约源**：`BE-TS-CONTRACT-02` 范围 M2–M9 不回填；DTO 概要、枚举（SourceType 3 值中文 / LayerCode 9 值英文 / FactorKey 11 值英文）、错误码（400/404/409 GROUP_IN_USE/501 仅 DB 型 probe）全部冻结在册
 - as-built 差异表（§0）：`meta` 端点废弃；`targetLayer` 中文改 `targetLayerCode` 英文 code；`lastSync`/`testStatus` 不落契约（无同步动作、探测不持久化）；删组 409 约束
 - probe 分型：API 型 Java HEAD/GET 真探测（5s 超时、≤3 重定向、不读体、不落库）；DB 型 501；用户填报型 400（前端禁用按钮）
