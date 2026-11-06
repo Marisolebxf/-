@@ -391,7 +391,7 @@
 
 | 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
-| WBS-05-24-L2-01A · `TS-L2-M10-LAYER-ARCH` | 维护管理 · 图层与数据源 · 后台实现架构（M1 序 5–9） | 刘剑锋 | `gkx-orchestration` | **claimed** | 2026-11-06 建单认领，起草中。稿落 `agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-M10-LAYER-ARCH.md` | 存量调研落盘（对照文档 A 段）；`FE-TS-10A` as-built（real 分支 `/situation/v1/maintain/meta`） | 无截至时间 |
+| WBS-05-24-L2-01A · `TS-L2-M10-LAYER-ARCH` | 维护管理 · 图层与数据源 · 后台实现架构（M1 序 5–9） | 刘剑锋 | `gkx-orchestration` | **integration**（会签中） | 2026-11-06 架构稿已落盘 `agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-M10-LAYER-ARCH.md`（含调用链+数据流 Mermaid；裁定：配置落业务库 `cfg_*` 四表 + display CRUD，种子 Python 灌；序 6/9 读侧归 M1；probe DB 型 501）。handoff `科技发展态势-TS/TS-L2-M10-LAYER-ARCH.md`。待四角色会签 | 存量调研落盘（对照文档 A 段）；`FE-TS-10A` as-built | 无截至时间 |
 
 （`TS-L2-M10-LAYER-API / METRIC / DATA` 三单与 ENT 二级四单，待 ARCH 稿落盘后建行；Java 实现 / 灌数 / 前端接线 / 主路径测试行待定义单签收后建。）
 
