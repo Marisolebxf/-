@@ -8,8 +8,8 @@
 
 数据分册（真源）：[`sdd/l2/TS-L2-M10-LAYER-DATA.md`](./sdd/l2/TS-L2-M10-LAYER-DATA.md)
 
-- 四表列级定义（非可执行 SQL）：`cfg_tech_layer`（9 行枚举）/ `cfg_tech_layer_group`（3 行）/ `cfg_tech_datasource`（3 行）/ `cfg_factor_display`（11 行），全落 **`gkxlumenx_show_config`**（Python 侧库，2026-11-06 监管人裁定后修订；原稿落业务库已作废），不进 ODS/DWD/ADS/业务库
-- 分工裁定（裁定后修订，ARCH §3）：**DDL+种子（26 行）一体归 data-agent 灌数单（Python）**；**运行时写归 Python**（`gkx_show_service` 经 `/internal/gkx-show/maintain/config/**`）；运行时读归领域服务直读（gapfill 只读先例）→ display Feign 聚合
+- 四表列级定义（非可执行 SQL）：`cfg_tech_layer`（9 行枚举）/ `cfg_tech_layer_group`（3 行）/ `cfg_tech_datasource`（3 行）/ `cfg_factor_display`（11 行），全落**业务库**（lumen-svc-platform 现有实例；**2026-11-06 开发核实后终版 v3**：Java 可建业务表写数据；v2 的 `gkxlumenx_show_config` 方案作废）
+- 分工裁定（v3 终版，ARCH §3）：**DDL + 种子（26 行）+ 运行时 CRUD 全归 Java 实现单/领域服务**（SQL 变更建表+种子，领域服务直读直写，display 经 Feign）；**Python 不参与、无灌数单**
 - **事实修正 ARCH**（§0）：demo 冻结种子真值 = 3 数据源 / 3 图层组 / 9 图层枚举 / 11 要素（共 26 行），ARCH 原稿误记「8 数据源 / 9 图层组」；已同步修正 ARCH §3/§4.2 两处数字（未会签稿纠错）。D18 三要素不变
 - 不设列裁定：`last_sync`/`test_status`（无同步动作、探测不持久化）、`active`（M1 图例运行态）、`is_mock`/`metric_id`/D16 五件套（真配置非缺项表）
 
@@ -28,8 +28,8 @@
 
 | 铁律 | 状态 |
 |---|---|
-| D7 写数归 Python | ✅ DDL+种子+运行时写全归 Python（监管人 2026-11-06 裁定） |
-| D15 display 不直连 Python/DB | ✅ 四表挪 gkxlumenx_show_config（Python 侧库），读沿 gapfill 只读先例 |
+| D7 写数归 Python（数仓灌数） | ✅ 不适用：业务配置表 Java 建表写入（开发团队 2026-11-06 核实口径）；种子为真配置非 mock |
+| D15 display 不直连 Python/DB | ✅ 四表归业务库由领域服务持有，display 经 Feign |
 | D16 缺项表规矩 | ✅ 不适用：无 gapfill_ 前缀、无五件套列，稿内已说明 |
 | D18 表名/灌数方/读接口齐备 | ✅ 逐表 + §1 分工表 |
 | 不写 ETL/调度 | ✅ §6 不做清单 |

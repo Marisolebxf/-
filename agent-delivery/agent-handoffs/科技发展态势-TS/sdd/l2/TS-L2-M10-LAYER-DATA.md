@@ -26,15 +26,14 @@ ARCH §3 第 2 点与 §4.2 图写「demo 冻结种子：8 条数据源 / 9 组�
 
 ## 1. 总则
 
-四表全落 **`gkxlumenx_show_config`**（Python 侧管理的库，建议名，会签确认——2026-11-06 监管人裁定：**写数据库全归 Python，保持原有规矩**）。不进 ODS / DWD / ADS / 供应方库 / 业务库，不用 `gapfill_` 前缀（配置真源，非 D16 缺项表）。无 ETL、无调度、无同步动作——数据源「配置」仅元数据登记（ARCH §6）。
+四表全落**业务库**（`lumen-svc-platform` 现有业务库实例，具体 schema 实现单定——2026-11-06 监管人经开发团队核实后终版 v3：**Java 可以建业务表、写业务数据**，业务配置表不受 D7 数据域写约束）。不进 ODS / DWD / ADS / 供应方库，不用 `gapfill_` 前缀（配置真源，非 D16 缺项表）。无 ETL、无调度、无同步动作——数据源「配置」仅元数据登记（ARCH §6）。**Python 不参与**（v2 的 `gkxlumenx_show_config` 库与灌数单方案作废，撞名问题随之消解）。
 
 | 角色 | 职责 |
 |---|---|
-| 建表（DDL）+ 种子行 | **data-agent 灌数单（Python，建表与 26 行种子一体**，值取 §2–§5 种子列） |
-| 运行时写 | **Python**：`gkx_show_service` 经 `/internal/gkx-show/maintain/config/**`（display 门面校验后 Feign 转发，D15 链路，ARCH §3） |
-| 运行时读 | 领域服务直读（政策 gapfill 只读先例）→ display Feign 聚合；M1 只读 layers / factor-display |
+| 建表（DDL）+ 种子行 | **Java 实现单 SQL 变更脚本**（建表 + 26 行种子一体，值取 §2–§5 种子列；种子为真配置非 mock，不适用 D18「Python 灌 mock」规矩） |
+| 运行时读写 | **Java 领域服务**直读直写业务库（display 门面校验后 Feign 调用，D15 链路，ARCH §3 v3）；M1 只读 layers / factor-display |
 
-逻辑外键（`target_layer_code` / `group_code`）不建物理 FK 约束（沿数据域 MySQL 惯例）。每表公共审计列：`created_at` / `updated_at`（datetime，**由写方（Python）维护**）。**无** `metric_id` / `is_mock` / `gap_item` / `fill_method` / `gapfill_batch_id` / `generated_at` 列（METRIC 分册 §3）。
+逻辑外键（`target_layer_code` / `group_code`）不建物理 FK 约束（沿数据域 MySQL 惯例）。每表公共审计列：`created_at` / `updated_at`（datetime，**由写方（Java 领域服务）维护**）。**无** `metric_id` / `is_mock` / `gap_item` / `fill_method` / `gapfill_batch_id` / `generated_at` 列（METRIC 分册 §3）。
 
 种子行语义：真实初始配置（运营继续编辑的起点），非 mock 统计，不挂 MockBadge；种子值与 demo 演示数据刻意一致（冻结清单），此「一致」即本单显式标注的占位事实——不需要进一步标注。
 
@@ -60,7 +59,7 @@ ARCH §3 第 2 点与 §4.2 图写「demo 冻结种子：8 条数据源 / 9 组�
 | 列 | 类型 | 空 | 约束 |
 |---|---|---|---|
 | `id` | bigint | 否 | 行键，自增 |
-| `group_code` | varchar(32) | 否 | 唯一。种子 `grp-ip` / `grp-lit` / `grp-org`；新建 `grp-` + 序（Python 写侧生成） |
+| `group_code` | varchar(32) | 否 | 唯一。种子 `grp-ip` / `grp-lit` / `grp-org`；新建 `grp-` + 序（Java 写侧生成） |
 | `group_name` | varchar(64) | 否 | 种子：知识产权图层组 / 文献图层组 / 主体图层组 |
 | `color` | varchar(9) | 否 | `#RRGGBB`。种子：`#165DFF` / `#00B42A` / `#F97316`（demo 冻结） |
 | `sort_order` | int | 否 | 种子 1–3 |
@@ -75,7 +74,7 @@ ARCH §3 第 2 点与 §4.2 图写「demo 冻结种子：8 条数据源 / 9 组�
 | 列 | 类型 | 空 | 约束 |
 |---|---|---|---|
 | `id` | bigint | 否 | 行键，自增 |
-| `source_code` | varchar(32) | 否 | 唯一。种子 `src-1` / `src-2` / `src-3`；新建 `src-` + 序（Python 写侧生成） |
+| `source_code` | varchar(32) | 否 | 唯一。种子 `src-1` / `src-2` / `src-3`；新建 `src-` + 序（Java 写侧生成） |
 | `source_name` | varchar(64) | 否 | 种子：专利 API / 论文主题库 / 机构填报 |
 | `source_type` | varchar(16) | 否 | 三值枚举：`API 接口` / `数据库表` / `用户填报`（中文冻结）。种子依次三型各一 |
 | `target_layer_code` | varchar(32) | 否 | 逻辑引用 `cfg_tech_layer.layer_code`。种子：`patent` / `paper` / `institution` |
@@ -105,7 +104,7 @@ M1 消费：`GET /factor-display` 按 `factor_key` 对齐 `mapResult.factorItems
 
 ## 6. 不做
 
-- 不建库、不执行 DDL、不灌数（**DDL+种子（26 行）一体归 data-agent 灌数单（Python），一单待建**，定义单签收后起草；2026-11-06 会签 DATA-C1 修正：原稿此句残留旧分工）
+- 不建库、不执行 DDL、不灌数（**DDL + 种子（26 行）+ 运行时 CRUD 全归 Java 实现单，一单待建**，定义单签收后起草；无 Python 灌数单——2026-11-06 开发核实后终版 v3）
 - 不写 ODS / DWD / ADS / 供应方库；不写 `gapfill_` 表；不做 ETL / 调度 / 真同步
 - 不为 DB 型数据源建连通探测表（probe 不落任何表）
 - 不把 `cfg_*` 表注册进数据资产目录或指标注册表（无 metric 挂接，METRIC 分册）

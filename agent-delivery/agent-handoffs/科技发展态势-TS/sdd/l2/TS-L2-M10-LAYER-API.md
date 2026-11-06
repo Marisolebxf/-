@@ -28,10 +28,10 @@
 
 前缀 `/display/v1/situation/maintain/`。浏览器只打此前缀，经网关 `gkxlumen-platform-gateway`（只转 `/display/**`）到 `gkxlumen-display`。全部同步，无 Job、无任务记录、不建 SSE、不进 `gkxlumen-topic-async-service`。不调任何 `demo-*` 服务。
 
-**内部委托（2026-11-06 监管人裁定后，ARCH §3）**：写库全归 Python。`gkxlumen-display` 是门面（鉴权、枚举/参数校验、聚合），**不直连 Python/DB（D15）**：
+**内部委托（2026-11-06 开发核实后终版 v3，ARCH §3）**：配置表归 Java 业务库，Python 不参与。`gkxlumen-display` 是门面（鉴权、枚举/参数校验、聚合），**不直连 Python/DB（D15）**：
 
-- 读：display 经 Feign → 领域服务 → 直读 `gkxlumenx_show_config`（政策 gapfill 只读先例），M1 消费同链路
-- 写：display 门面校验（本分册 §7 枚举与格式校验在门面完成，400 类错误不出网关层）→ Feign → 领域服务 → Feign `/internal/gkx-show/maintain/config/**` → `gkx_show_service` 写库。写侧错误（404/409）由 Python 写结果回传映射，错误码语义与本分册 §6 一致
+- 读：display 经 Feign → 领域服务 → 直读业务库 `cfg_*` 四表，M1 消费同链路
+- 写：display 门面校验（本分册 §7 枚举与格式校验在门面完成，400 类错误不出网关层）→ Feign → 领域服务直写业务库。写侧错误（404/409）由领域服务写结果回传映射，错误码语义与本分册 §6 一致
 - 对外 URL、方法、DTO、错误码不受内部链路影响——本分册全部契约不变
 
 行数量级：图层 9、要素 11、数据源与分组十行级。**全量返回，不分页**。
