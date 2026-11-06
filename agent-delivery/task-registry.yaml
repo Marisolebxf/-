@@ -55408,17 +55408,17 @@ tasks:
     update_time: "2026-11-06T11:33:25+08:00"
   - id: SYNTH-CHAINFIX-PY-L01
     cost_warn: "green"
-    actual_cost: 0.6
-    actual_tokens: 128000
+    actual_cost: 0.5
+    actual_tokens: 130000
     model_used: "glm-5.3-Flash"
-    evidence: "agent-handoffs/SYNTH-CHAINFIX-PY-L01.md"
+    evidence: "agent-delivery/agent-handoffs/SYNTH-CHAINFIX-PY-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-06T04:18:39.096Z"
     last_seen_at: "2026-11-06T04:18:39.096Z"
     lock_until: "2026-11-07T04:18:39.096Z"
     claimed_by: "agent:algorithm-agent"
     title: "链路修复① — 活力 weight_profile 贯通 PY 段+DDL/seed+图谱端点+九列回显"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-algo-py"
@@ -55427,8 +55427,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 150000
-    note: |
-      PY段四项完成(A weight_profile贯通/B vit五表DDL+seed 219行实跑demo库/C graph端点/D 九列回显)。lumen-algo-py commit 4828c06(dev,未push等人工确认);handoff commit 79d60e9f+46bbeadf(编排仓dev,未push)。自检 vit 39P/collab 76P/elements 38P 全绿;seed批 mock_20261106_vit_seed 三档真批可读。契约签名清单见handoff §2(graph请求响应字段/batch-snapshot新参数/seed批号格式),供②③站JAVA/FE对齐。
+    note: "AV 验收通过；契约已冻结（graph 请求/响应、vitality weight_profile、jobs 四段指纹、collab 九列），JAVA/FE 站可对齐开工"
     design_refs:
       - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-VIT-AI-TABLES.md §3"
       - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/sdd/l2/SYNTH-L2-COLLAB.md §3.2 v1.0.8"
@@ -55439,10 +55438,15 @@ tasks:
       - "P2-c：collab batch_meta 回显补 is_latest+region/compare/window 条件列"
       - "自检：三个 check 全绿+新增断言（三档实算差异可断言、按批跨条件回读、graph 空图契约、graph industry/limit 透传）；邻叶回归；探针零残留"
       - "commit+handoff（SYNTH-CHAINFIX-PY-L01.md，含未修清单）"
-    update_time: "2026-11-06T12:58:00+08:00"
+    update_time: "2026-11-06T12:59:52+08:00"
   - id: SYNTH-CHAINFIX-JAVA-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-06T04:59:52.037Z"
+    last_seen_at: "2026-11-06T04:59:52.037Z"
+    lock_until: "2026-11-07T04:59:52.037Z"
+    claimed_by: "agent:api-agent"
     title: "链路修复② — collaboration Adapter+图谱契约对齐+collab 快照门面+HTTP 语义修正"
-    status: "backlog"
+    status: "in_progress"
     agent: "api-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-svc-platform"
@@ -55451,7 +55455,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 150000
-    note: "依赖①PY 新契约（graph 端点/九列回显/weight_profile）；监管 human:徐滕强"
+    note: "coordinator_dispatch 开工（对齐①契约：graph 请求/响应、无 gapfill_batch_id、九列回显、collab 快照门面）"
     depends_on:
       - "SYNTH-CHAINFIX-PY-L01"
     design_refs:
@@ -55463,7 +55467,7 @@ tasks:
       - "P1-7：Synth 三端点错误返回改 ResponseEntity 真 HTTP 400/404（局部改动，不动公共 R；404=无批，400=参数），FE 契约同步注释"
       - "P2-a：500/网络错→UPSTREAM_ERROR 区分于 SNAPSHOT_NOT_FOUND，改测试锚定"
       - "测试：既有全绿+新增（collaboration Adapter 注册/graph 新契约/collab 快照转发/HTTP 码断言）；mvn 全绿；handoff SYNTH-CHAINFIX-JAVA-L01.md"
-    update_time: "2026-11-06T12:18:39+08:00"
+    update_time: "2026-11-06T13:00:02+08:00"
   - id: SYNTH-CHAINFIX-FE-L01
     title: "链路修复③ — FE weight_profile 贯通+快照透传+DTO可空化+错误分支适配"
     status: "backlog"
@@ -55491,8 +55495,18 @@ tasks:
       - "三绿+回归；自检补跨层断言；handoff SYNTH-CHAINFIX-FE-L01.md"
     update_time: "2026-11-06T12:19:01+08:00"
   - id: SYNTH-CHAINFIX-DOCS-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/SYNTH-CHAINFIX-DOCS-L01.md"
+    cost_warn: "green"
+    actual_tokens: 65000
+    actual_cost: 0.25
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-06T04:59:52.187Z"
+    last_seen_at: "2026-11-06T04:59:52.187Z"
+    lock_until: "2026-11-07T04:59:52.187Z"
+    claimed_by: "agent:arch-agent"
     title: "链路修复④ — 总册 gapfill 残留修正+A/B 批端到端 CI 用例"
-    status: "backlog"
+    status: "pending_test"
     agent: "arch-agent"
     epic: "E8-综合智能分析"
     repo: "gkx-orchestration"
@@ -55501,7 +55515,7 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 40000
-    note: "监管 human:徐滕强"
+    note: "开发完成：总册修正 diff 已提交（4da72081）；A/B 用例 4 passed 实跑自证；handoff 含附录草稿+落点建议+cost；进入待测试"
     depends_on:
       - "SYNTH-CHAINFIX-JAVA-L01"
     design_refs:
@@ -55510,4 +55524,4 @@ tasks:
       - "P2-b：总册 §6 图谱行删「可选 gapfill_batch_id」对齐 COLLAB v1.0.8（附修订记录）"
       - "P2-c：A/B 批端到端 CI 用例落地（三叶批不串进 CI 可跑面：Java 单测或 PY pytest，不再只靠手工探针脚本）"
       - "修订+handoff"
-    update_time: "2026-11-06T12:19:01+08:00"
+    update_time: "2026-11-06T13:27:54+08:00"
