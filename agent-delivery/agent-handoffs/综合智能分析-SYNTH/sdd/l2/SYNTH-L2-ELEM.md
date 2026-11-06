@@ -1,6 +1,6 @@
 # SYNTH L2 · 要素册 — 区域创新要素分析（ARCH/DATA/API/METRIC 合并册）
 
-- 日期：2026-11-05（v1.0.6：三方会签意见落盘；v1.0.5 会签退回。当前 8 张改落 ADS；四维不计入本期、不记已覆盖；删规划句）
+- 日期：2026-11-06（v1.0.7：新增 137 功能合规过渡：结果表落 `_ai`，`pending_registration/is_mock=1`；正式指标/数据后续对齐）
 - 状态：**DRAFT，第一轮退回后改稿，待复审**
 - 上游：总册 §2.2/§11（v1.0.5-draft）；需求真源 SRS 136–138；类型/层次/领域同核 `M_SYNTH_187_1`–`M_SYNTH_189_1`，综合 `M_SYNTH_190_1`。这四项不顶替序号 137 的四维打分
 - 现状衔接：FE ELEM 三页已联调中（`LUMEN-INTEL-FE-ELEM`）；后端未建——本册即要素后端实现依据。**FE 非终态**：四维区块（`ElementsWorkbenchView.vue` 386–）设计态=缺失态+红问号（137② blocked）；现网若仍挂演示快照属待清差距，见 §7。
@@ -20,8 +20,7 @@ lumen-ui-topic 要素三页（在途，差距见 §6）
 
 - 同核：`M_SYNTH_ELEM_INDEX` ≡ `M_SYNTH_190_1`；类型 ≡ `M_SYNTH_187_1`；层次 ≡ `M_SYNTH_188_1`；领域 ≡ `M_SYNTH_189_1`。同核只算一处。
 - 贡献路径优先已有 SPEC `M_SYNTH_ELEM_CONTRIB`；E-02 未闭禁因果表述。
-- **序号 137 四维 = 本期不覆盖**：`M_SYNTH_ELEM_FOUR_DIM_SCORE` 未注册、公式未定稿 → **不建表、不灌数、不出数**，不计入当前 8 张，不写成设计落位齐，不写成照册可满足需规。类型/层次/领域不能顶替这四维。FE 四维区块只显示缺失态+红问号。
-  - 以后若要做，须先由 `human:唐绍祖` 定稿五要素并完成注册，再新建 ADS 表 `synth_elem_four_dim_score`。候选方向只供其参考，本册不写表结构、不当实现依据。
+- **序号 137 四维 = 功能合规过渡**：`M_SYNTH_ELEM_FOUR_DIM_SCORE` 尚未注册，但为页面/报告功能完整，过渡结果落 `_ai.synth_elem_four_dim_score`（一行一维，四个 `dim_code`），统一标 `metric_status=pending_registration`、`is_mock=1`、`fill_method=demo_index_offset`。正式公式和数据后续对齐后切换正式批；不得把过渡分值当正式业务结论。
 
 ## 2. DATA（表 · 每表四项）
 
@@ -77,7 +76,7 @@ lumen-ui-topic 要素三页（在途，差距见 §6）
 | `M_SYNTH_ELEM_WEIGHT` | aligned | mock | `synth_elem_weight` |
 | `M_SYNTH_ELEM_CONTRIB` | aligned | mock | `synth_elem_contrib` |
 | `M_SYNTH_ELEM_RANK` | aligned | mock | `synth_elem_rank` |
-| `M_SYNTH_ELEM_FOUR_DIM_SCORE` | 未注册 | — | 本期无表。接口只回 `[]`+`reason=metric_not_registered`。不顶替 187–189 |
+| `M_SYNTH_ELEM_FOUR_DIM_SCORE` | 未注册（pending_registration） | 过渡表在 `demo_gkxlumenx_ai` / `gkxlumenx_ai` | `_ai.synth_elem_four_dim_score`；四维 `scale/quality/structure/activity`，`is_mock=1`；缺表才回 `[]+metric_not_registered` |
 
 开放项 `Q-SYNTH-02 / E-01 / E-02` 🟡 不拍板；口径引用 `calc-logic/SYNTH/*.md`。D4 改 live：实算成功后 data-agent 逐条登记批次。
 
@@ -134,4 +133,5 @@ lumen-ui-topic 要素三页（在途，差距见 §6）
 | v1.0.4 | 2026-11-05 | 观测：`snapshotId` 不可变含批次；`cache_key` 条件最新索引（对齐总册 v1.0.4） |
 | v1.0.5 | 2026-11-05 | 会签退回：8 张改落 ADS；删「DDL 9 张」、page_token、未来官方权重、缺行填 1/3；137② 不记已覆盖 |
 | v1.0.6 | 2026-11-05 | 三方会签意见落盘：算法可签（等权装包/同核只算一处合规，137② METRIC-OPEN 仍为外部依赖）；数据可签（8 张 DDL 清单/唯一键/gapfill 边界齐、AR-4 清理建议适用）；产品行指向总册（TC-3 确认不挡会签） |
+| v1.0.7 | 2026-11-06 | 功能合规过渡：137 四维结果落 `_ai.synth_elem_four_dim_score`，一行一维，pending_registration/is_mock=1；缺表仍回空态 |
 

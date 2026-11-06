@@ -137,3 +137,136 @@ cost_warn: false
 2. **C2 发布**：`gkxlumen-topic` 门面层按 §3 滚动（FULL_PIPELINE 或点名），滚后补测 3d/3e/5a/5b（需 dev 测试 token 打外层 401 之后的门面，E1 §7.5 遗留一并闭环）。
 3. 观察项 4b（elements 跨域批回落 vs 活力批空壳，域间不一致）：交 coordinator/架构师定夺是否统一口径。
 4. algo-py pipeline 4029 的 `deploy:entan-worker`/`deploy:innov` 仍 manual 未点——不影响本单（entan-py=api pod 已滚），如 worker 侧有消费方再点名。
+
+## 8. C1 修复记录（SYNTH-CHAINFIX-C1-L01）
+
+- **任务/执行**：SYNTH-CHAINFIX-C1-L01（bugfix · algorithm-agent 认领，supervised_by=human:黄敬洲；task-registry 已建单并推进 backlog→ready→claimed→in_progress）
+- **时间**：2026-11-06 15:37 – 15:57（UTC+8）
+- **修复 commit**：`68c70bf`（lumen-algo-py · dev · **本地已 commit 未 push**，按派单「不 push」）
+- **触碰文件**（仅 2 个，工作区其他会话未提交改动未被触碰）：
+  - `vendor/entan-py/api/synth_vitality_routes.py`
+  - `vendor/entan-py/scripts/check_synth_vitality.py`
+- **diff 摘要**（96 insertions / 15 deletions，同一 profile 变量贯穿，评审建议落地）：
+  1. `_batch_profile()`：回读 SQL 改 `GROUP BY weight_profile_code ORDER BY weight_profile_code ASC LIMIT 1`——原 `calc_batch_created_at DESC` 在同批多档（seed 一批三档、created_at 同刻）下返回档**不确定**，是 1e 错位的根因之一；ASC 定锚后回读档确定化。
+  2. `_read_rows(by_batch=True)`：WHERE 由 `batch+calc_status` 改为 `batch+weight_profile_code(=回读档)+calc_status`——原不过滤档导致 `idx_rows[0]` 按表扫描序取行（live 抽到 INDEX_MAIN 行 75.1478 而标签抽到 EQUAL），标签与数值**各选各的行**；现在取数行与回读档强制同源。
+  3. `_ads_read()` 直读分支：`effective_profile = _batch_profile(...)` 回读档作为唯一档入参传 `_read_batch_result` → 外壳 `weight_profile` / `result.weight_profile` / dimScores 权重 / `M_SYNTH_VIT_WEIGHT` metric 全部用同一变量（无第二处解析点，grep 全仓确认调用点唯一）。
+  4. 锚定语义注记：同批多档时回读锚 = `profile_code` ASC 字典序最小档（本 seed 批即 EQUAL；'E'<'I'<'W'）。回显档可能 ≠ 请求档，但**标签=实际读取档**恒成立，符合铁律「按哪档读标哪档」。
+- **自检证据**（check_synth_vitality 全绿 `{"ok": true, "passes": "all"}`，新增 **[9] C1 断言组 15 条全 PASS**）：
+  - 断言设计按修单要求：直读 seed 批（`calc_batch_id=mock_20261106_vit_seed`）分别带 `weight_profile=WEIGHT_MAIN/EQUAL/INDEX_MAIN` 三种请求 → 回显档=行内实际档（三请求锚集均为 `['EQUAL']`，确定无漂移）；`vitalityIndex` 与该档 seed 合成正本 `compose_index(label)` 互证（74.9981 精确一致，禁 EQUAL 标签出 INDEX_MAIN 75.1478）；WEIGHT metric 权重同档（0.25×4）。
+  - 数值正本按文件路径加载仓根 `scripts/seed/seed_synth_vit.py`（check 的 sys.path 不含仓根，不走包 import）；seed 批就绪探测走应用自身 TestClient（本机可直连库，无需密码探针门控）。
+  - 邻叶回归：`check_synth_elements.py` ✅（首跑偶发 2003 超时，重试绿）、`check_synth_collab.py` ✅（凭据经 `conf/settings.yaml db.mysql_password` 派生环境变量注入，未回显未硬编码）。
+- **live 复测指引（待 coordinator）**：push `68c70bf` → pipeline → `deploy:entan-api` 滚 pod 后，重跑红项 1e 一条断言即可：`GET .../vitality/batch-snapshot?...&snapshotId=snap:mock_20261106_vit_seed` → 期望 `weight_profile` 与 `result.vitalityIndex` 同源（锚 EQUAL↔74.9981，或批内任一档自洽即可，不再出现 EQUAL 标↔75.1478 值）。
+- **架构合规自检**：调用链未动（仍 Java→Python `/internal/*`，读 ADS 只读）✅；D18 无新增 mock 直返（读路径修复，非造数）✅；仅动读路径+自检脚本，未动 seed/DDL/算法包（修单边界遵守）✅；多会话保护（未 reset/未碰他人未提交文件，精确 add）✅；commit 带 `[agent:algorithm]` 标记 ✅。
+
+```yaml
+ponytail: full
+model_used: glm-5.3-Flash
+estimated_tokens: 120000
+actual_cost: 0.35
+cost_warn: false
+```
+
+## 9. C2 修复记录（SYNTH-CHAINFIX-C2-L01 · devops）
+
+- **任务/执行**：SYNTH-CHAINFIX-C2-L01（发布配置修单 · agent:devops，supervised_by=human:徐滕强；registry 无独立叶，按派单挂靠 VERIFY 单，与 §0 口径一致）
+- **时间**：2026-11-06 15:37 – 16:15（UTC+8）
+- **修复 commit**（均已推 `origin/dev`，plumbing 构造——不触并行会话工作区与未提交文件）：
+  1. `b2dbaf0` — 规则主体：`backend:image:topic`（`*image_full_only_rules` 锚点）与 `deploy:topic`（自带 rules 覆盖锚点）各加 `TOPIC_RELEASE=true` 门；`FULL_PIPELINE` 变量 description 补点名说明。
+  2. `306b9c5` — 修正 commit 1 的次生缺陷：deploy:topic 曾加「普通 dev → manual」兜底规则，但普通 pipeline 中 `backend:image:topic` 是 `when: never`（job 不存在），`needs` 非 optional → **GitLab 拒绝创建整条 pipeline**（下述 4040/4044/4045/4049 四条秒败的根因）。已删该兜底；点名发布 = 建 pipeline 带 `TOPIC_RELEASE=true`（镜像+deploy 全自动，无需再点 manual）。
+- **规则 diff 要点**（最终态）：`backend:image:topic` 在 `FULL_PIPELINE==true` 后插入 `- if: '$CI_COMMIT_BRANCH == "dev" && $TOPIC_RELEASE == "true"'`；`deploy:topic` rules 展开为 MR-never / tag(prod,manual) / FULL_PIPELINE(auto) / TOPIC_RELEASE(auto) / never——其余冷门服务（graph/datacatalog/metrics/gateway/auth/upms）零影响（YAML 展开断言验证 6 个 deploy 无 TOPIC_RELEASE 泄漏、无普通 dev 自动泄漏）。
+- **过程事故与取证**：
+  - commit 1 推送后，其 pipeline（4040）及他人 3 条 push pipeline（4044/4045/4049）**创建即 failed、0 job**（started_at=null、duration=0）。lint 按 ref 校验 `valid: true`（43 jobs）掩盖了无变量场景。
+  - 根因定位：MCP `create_pipeline`（无变量对照实验）返回 400 `'deploy:topic' job needs 'backend:image:topic' job, but ... does not exist in the pipeline ... use needs:optional`。
+  - 本地三场景模拟断言（普通 dev / TOPIC_RELEASE / FULL_PIPELINE）：image↔deploy needs 配对全部 OK 后才推 `306b9c5`；修复后常规 pipeline **4051 创建成功并 running**，job 列表正确排除 topic 两 job（回归验证）。
+- **本轮手动触发（发布验证）**：本会话建 `TOPIC_RELEASE=true` pipeline 被 API 404 阻塞（GitLab `/api/v4/projects/:id/pipeline` 路由对 git 凭据不可用，同意图 2 次即停，未走面板）。**并行会话（同账号）按 VERIFY §3 建议 1 发起 FULL_PIPELINE pipeline 4050** 完成本轮触发——`deploy:topic`（job 27589）**success**：08:09:28→08:10:30（61.7s），runner `gkx-lumen`。
+- **pod 滚动确认（K8s 实测，SSH zphz-jump）**：
+  - 滚动前：`gkxlumen-platform-topic-6d46ccd6d9-2xtzx` 镜像 `latest`、5d20h（10-31 启动）——与 VERIFY §1 记录一致；
+  - 滚动后：唯一 pod `gkxlumen-platform-topic-58b7d979f7-ccb8q`，`img=harbor.test.com/zp-tts/gkxlumen-topic:ba2f3feb`（pipeline 4050 产物 = dev HEAD ba2f3feb，含 `f4b2ccb` 全部门面改动），`started=2026-11-06T08:09:29Z`，`ready=true`；旧 pod 已被替换。
+  - 跳板机 kubeconfig 副本已按技能收工清单删除（`/tmp/admin-kc.yaml`）。
+- **多会话保护自检**：本地 dev 有他会话领先提交（`ee2f156`）与 5 个未提交业务文件（cms/analysis）——全程未触碰；两次均用 `git hash-object/mktree/commit-tree` 在最新 `origin/dev` 之上构造单文件提交，push 前 fetch 复核基线未移动（1 次 base 移动即重锚）。
+- **架构合规自检**：调用链无改动 ✅；D12 不适用（纯 CI 配置）✅；发布路径沿用仓内 helm/set-image 惯例（`TOPIC_RELEASE` 对齐 `RESTART_TOPIC_ASYNC` 先例）✅；commit 均带 `[agent:devops]` ✅；SSH 禁探活、同意图 ≤2（kubeconfig 属主坑 1 次修正即过）✅。
+- **遗留/移交**：
+  1. VERIFY §3 四项补测（3d/3e/5a/5b）现可执行：pod 已滚 `ba2f3feb`，仍需 dev 测试 token 过外层 401（E1 §7.5 遗留，建议派 qa）；
+  2. 后续 `gkxlumen-topic` 单服务发布：GitLab UI → Run pipeline → dev + `TOPIC_RELEASE=true`；
+  3. 全量 16 镜像 pipeline 4050 仍在 running（graph/datacatalog 首次烘焙较慢），不影响本单 topic 结论。
+
+```yaml
+ponytail: full
+model_used: glm-5.3-Flash
+estimated_tokens: 130000
+actual_cost: 0.40
+cost_warn: false
+```
+
+## 10. 补测记录（C1/C2 落地后 · 2026-11-06 16:14–16:40 · qa）
+
+- **触发**：SYNTH-CHAINFIX-C1-L01（PY `68c70bf`）与 C2（topic 门面 pod 滚 `ba2f3feb`）落地后的派单补测（5 项：T1 C1 复测 / T2 门面九列 / T3 graph 经 Java / T4 elements 404 / T5 400 语义）。**只测试不改代码**；零 commit / 零 push。
+- **前置确认（A 级）**：`gkxlumen-platform-entan-py-78c86f5bcb-bb6zm` image=`68c70bfa` started=08:06:09Z ✅；`gkxlumen-platform-topic-58b7d979f7-ccb8q` image=`ba2f3feb` started=08:09:29Z ✅（kubectl 实测，pod 唯一）。
+
+### 10.1 鉴权口径修正（推翻上轮「401 掩蔽」判断）
+
+上轮 401 根因 = **旧镜像（10-31）里根本没有 synth 路由**：`PermitAllUrlProperties` 按 `@Inner(value=false)` 注解在启动时注册 ignoreUrls（permitAll），不存在路径落 `anyRequest().authenticated()` → 401。新 pod 已含 `SynthSnapshotController`（`/topic/v1/synth/**` 四端点全部 `@Inner(false)`），**集群内直打免 token**——上轮「需 dev 测试 token」（§7.5/E1 遗留）的预判不成立，本轮直打全部命中路由。
+
+### 10.2 逐项判定（5 项：2 绿 1 绿(PY层) 4 红阻·同根因；证据路径见 10.5）
+
+| 项 | 断言 | 判定 | 证据 |
+|---|---|---|---|
+| **T1a** | C1 复测 1e：`snapshotId=snap:mock_20261106_vit_seed`（带 `weight_profile=WEIGHT_MAIN`）→ 回显档=实际档 + 74.9981 禁 75.1478 | 🟢 | HTTP 200 code=0；`snapshotId=snap:mock_20261106_vit_seed`、外壳/`result.weight_profile` 均=`EQUAL`、**`vitalityIndex=74.9981`**、`cache_key` 第四段=`EQUAL`、`batch_reason=null`——**EQUAL 锚 ↔ 74.9981 同源，错位已修复**；上轮红项 1e 闭环 |
+| **T1b** | 同直读改请求 `weight_profile=INDEX_MAIN` → 回显档仍 EQUAL（标签=实际读取档恒成立） | 🟢 | HTTP 200；请求 INDEX_MAIN、回显仍 `EQUAL`+`74.9981`——请求档不改变行内实际档，符合 C1 修单 §8 锚定语义（锚=`profile_code` ASC 最小档，'E'<'I'<'W'） |
+| **T2** | Java 门面 collab batch-snapshot → 200 + 九列（snapshotId/calc_batch_id/graph_batch_id/cache_key/region/compare/window/publishedAt/isLatest） | 🔴 阻断 | HTTP **502** `UPSTREAM_ERROR`（R 包络）——Java→Python 调用失败，见 10.3 C3；**非门面代码缺陷**（本地校验分支已另行实测语义正确：缺 region/compare → 400 `REGION_AND_COMPARE_REQUIRED`） |
+| **T3a** | Java graph 门面 → 200 空图 reason=batch_meta_missing 或 no_year_on_source | 🔴 阻断 | 同上 502（C3）；本地分支已证：缺 window → 400 `REGION_COMPARE_WINDOW_REQUIRED`（graph 必填语义在位） |
+| **T3b** | graph 带 `gapfill_batch_id`（参数已废止）→ 400 或 400 级 | 🔴 阻断 | 同上 502（C3）。⚠️ **预期风险预登记**：Python graph 形参清单（`synth_collab_routes.py` L64-75）无 `gapfill_batch_id`，FastAPI 默认忽略未知 query 参数 → C3 修复后复测**大概率 200 正常空图而非 400**。契约「无此参数」= 正确态；「带废参数须 400」若为硬要求需另立校验单 |
+| **T4a** | elements 显式不存在批 `snapshotId=snap:never_exists` → HTTP 404 SNAPSHOT_NOT_FOUND | 🔴 阻断+预判缺陷 | 同上 502（C3）。⚠️ **代码级预判（C3 修复后仍会红）**：`SynthElementsSnapshotService` **无 `batch_not_published→404` 映射分支**（grep 全 service 仅活力服务有，L199-203）；Python 层实测（T4b）该场景回 `calc_batch_id=never_exists`（非 null）+ `batch_reason=batch_not_published` → Java 现行逻辑不触发「calc_batch_id 空→404」→ 预期 **200 空壳而非 404**。修法建议：elements 服务照活力服务补一条同款映射（小改），随 C3 修单一并派 |
+| **T4b**（补充佐证） | Python elements 层：显式不存在批 → 200 空壳 + batch_reason（不回落） | 🟢 | HTTP 200；`snapshotId=batch:深圳市\|全国重点城市\|最近3年\|never_exists`、`batch_reason=batch_not_published`、**未回落**最新批 `mock_20261105_elem_seed`——PY 域语义正确（契约分工：空壳在 PY、404 在 Java，Java 侧缺映射见 T4a 预判） |
+| **T5** | 活力缺 region（或 window 非法）→ HTTP 400 errorCode（非 200） | 🟢 | 缺 region（`region=`空串，注：路由形参带默认值，完全不传参不会进 Java 校验分支，空串为等效触发）→ **HTTP 400** `{"code":1,"msg":"REGION_AND_COMPARE_REQUIRED"}`；加测 `window=bogus` → **HTTP 400** `WINDOW_INVALID`——5b 400 语义全绿 |
+
+**汇总：T1 ✅（C1 修复 live 生效）· T5 ✅ · T4 Python 层佐证 ✅ · T2/T3a/T3b/T4a 🔴（同一环境根因 C3，非门面代码缺陷；门面本地校验语义已另行取证）**
+
+### 10.3 红项分类：C3（环境/发布配置 · 阻断 4 项）
+
+- **缺陷包**：`gkxlumen-platform-topic` Deployment env `TOPIC_ALGO_BASE_URL=http://127.0.0.1:8000`（deploy yaml 实测）——容器内 127.0.0.1 无 Python；Java 日志 `synth collaboration snapshot/collab graph/elements snapshot upstream failed status=-1`（16:32:33–16:32:46，与探针时刻吻合）→ 502 UPSTREAM_ERROR。502 本身 = E 项设计语义**正确**（连接级失败转 502 不泄漏堆栈），错在寻址配置。
+- **对照**：同集群 `topic-async-service` 同类键指向 `http://gkxlumen-platform-entan-py:8000`（deploy env 实测）；仓内 helm configs 亦无 `gkxlumen-topic`（biz）的 Nacos 配置文件（仅 policy/innov/async/chain 有），`RemoteSynthPythonClient` 的首选键 `gkxlumen.topic.synth.algo-base-url` 全仓无定义 → 生效值就是 env 的 127.0.0.1。
+- **修法建议（coordinator 派单，二选一）**：① deploy/helm 给 `gkxlumen-platform-topic` 注入 `TOPIC_ALGO_BASE_URL=http://gkxlumen-platform-entan-py:8000`（与 async-service 同款）；② 新增 helm config `gkxlumen-topic-biz-dev.yml` 定义 `gkxlumen.topic.algo-base-url`（策略口径同 `gkxlumen-topic-policy-biz-dev.yml` 先例）。修后需重启 topic pod，并复测 T2/T3a/T3b/T4a 四项（T4a 预计另需 10.2 所列 elements 404 小改）。
+
+### 10.4 架构合规自检
+
+只测试不改代码 ✅（零 commit/push）；调用链证据分层 ✅（PY `/internal` 直打 + Java 门面直打，未越层写数据）；D12 ✅（全打 lumen 集群 zhipu-tts，未触 demo）；期望未发生必红 ✅（T2/T3/T4a 判红未以「路由通了」折算 PASS）；失败分类先于派修 ✅（C3×1 + 预判缺陷×1 + 预期风险注记×1）；SSH 熔断 ✅（禁探活，各意图 ≤2 次：kubeconfig 属主修正 1 次即过；SFTP 上传失败后改 heredoc 1 次即成，未连续空转）。
+
+### 10.5 证据路径（集群内直打，跳过外层网关——无 token 场景按派单指引执行）
+
+- 跳板机 zphz-jump；kubeconfig=`/tmp/admin-kc.yaml`（sudo 副本，收工已删）
+- Python 直打：`http://10.96.3.124:8000`（svc `gkxlumen-platform-entan-py`，pod 68c70bfa）
+- Java 门面直打：`http://10.96.2.89:7092`（svc `gkxlumen-platform-topic`，pod ba2f3feb）
+- 探针脚本 `/tmp/synth_retest.sh`（9 请求 + JSON 摘要，中文 URL 百分号编码，收工已删）；Java pod 日志：`kubectl logs gkxlumen-platform-topic-58b7d979f7-ccb8q -n zhipu-tts`（status=-1 WARN 行）
+
+```yaml
+ponytail: full
+model_used: glm-5.3-Flash
+estimated_tokens: 110000
+actual_cost: 0.32
+cost_warn: false
+```
+
+## 11. elements 404 映射修复记录（SYNTH-CHAINFIX-ELEM404-L01 · api）
+
+- **任务/执行**：SYNTH-CHAINFIX-ELEM404-L01（bugfix · api-agent 按派单 `/goal` 执行）。⚠️ **registry 查无此叶单**（task-get 返回不存在；task-query module=CHAINFIX 6 单无匹配）——未擅自 task-create（创建权限=coordinator/PM），按派单挂靠本 VERIFY 单，**请 coordinator 补登记**后按 bugfix 链推进。
+- **时间**：2026-11-06 16:44 – 17:00（UTC+8）
+- **修复 commit**：`b565caa`（lumen-svc-platform · dev · **本地已 commit 未 push**，按派单「coordinator 统一推」）
+- **触碰文件**（仅 2 个；工作区他会话 3 个 cms 未提交文件未触碰）：
+  - `gkxlumen-topic/src/main/java/com/topcomm/gkxlumen/topic/service/synth/SynthElementsSnapshotService.java`
+  - `gkxlumen-topic/src/test/java/com/topcomm/gkxlumen/topic/service/synth/SynthElementsSnapshotServiceTest.java`
+- **diff 摘要**（72 insertions / 50 deletions，其中功能逻辑仅 +5 行判定）：
+  1. 主修：`batchSnapshot` 读包络处、「calc_batch_id 空→404」判定之后补 `batch_reason=batch_not_published → 404 SNAPSHOT_NOT_FOUND`，照 `SynthVitalitySnapshotService` 同款（对齐 §10.2 T4a 预判缺陷修法）；类注释 HTTP 语义行同步补充。
+  2. 测试：新增 `explicitBatchNotPublishedMapsTo404`（显式不存在批空壳→404）+ `normalBatchWithoutReasonStays200`（正常批 `batch_reason=null` 不误伤→200，回归护栏）。
+  3. `spring-javaformat:apply`（0.0.39）对本文件 Javadoc/换行做规约重排；它同时重排了模块内 14 个非本任务存量文件，已精确 `git checkout` 回退、不进本 commit。
+- **自检证据**：`mvn test -pl gkxlumen-topic` 全量 **Tests run: 46, Failures: 0, Errors: 0, BUILD SUCCESS**（elements 9/9 含新增 2）；格式化后复跑 elements 9/9 仍绿。本机无 JDK17，测试以 JDK21 编（`release=17`），不影响 CI。
+- **复测指引（与 C3 修复同批部署后）**：本修生效前提 = topic 门面 pod 重建镜像滚动（`TOPIC_RELEASE=true` 或 FULL_PIPELINE）**且** §10.3 C3 的 `TOPIC_ALGO_BASE_URL` 寻址修复合批落地——否则 C3 未修仍 502（寻址不通），C3 修后无本修则 200 空壳（本单修的正是这个）。滚后重跑 §10.2 **T4a** 一条断言即可：`GET /topic/v1/synth/elements/batch-snapshot?...&snapshotId=snap:never_exists` → 期望 **HTTP 404 SNAPSHOT_NOT_FOUND**。
+- **架构合规自检**：调用链未动（Java 门面只读 Python `/internal/*` 包络，不直连库）✅；HTTP 语义对齐契约「无批=404 SNAPSHOT_NOT_FOUND」✅；最小 diff（无新依赖/无新抽象）✅；多会话保护（精确 add 2 文件；误格式化文件已回退，未 reset）✅；commit 带 `[agent:api]` ✅；本 handoff 落盘未 commit/push，随 coordinator 统一推。
+
+```yaml
+ponytail: full
+model_used: glm-5.3-Flash
+estimated_tokens: 90000
+actual_cost: 0.30
+cost_warn: false
+```

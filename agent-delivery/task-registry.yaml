@@ -29782,6 +29782,52 @@ tasks:
       - "列表/图表空数据时均有空态文案"
       - "不新增区块、不改既有样式结构"
     update_time: "2026-11-03T18:10:00+08:00"
+  - id: BE-TS-06A
+    evidence: "agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md §七"
+    supervised_by: "human:孔东"
+    title: "深圳创新监测（M6）· 载体榜接久新真实链路 + 实测校正（py/java/前端三仓）"
+    status: "completed"
+    agent: "backend-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "backend"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: |
+      2026-11-06 连久新 Doris 真库实测校正轮，两个探针结论推翻此前基于文档的判断：
+      1) ADS_SCHEMA 文档所载 17 个「新增扩展列」在 ads_institution_profile（实为 71 列）中不存在，
+         照文档硬查载体榜整榜空掉 → 全部撤下进 noSourceFields，只装实测存在且深圳填充率 ≥90% 的列；
+         Python 列探测（information_schema 被拒后走 SELECT * LIMIT 1）+ 分层降级保留为通用机制。
+      2) 实测 LEFT JOIN 27ms vs 两段式 77ms（min-of-3）→ 回退单条 LEFT JOIN。
+      口径事实全部标注透传：经费三分（全额=真实+模拟，实测覆盖率 1.3%~3.2%）、
+      专利转化 TOP20 模拟推算（scope_status 恒 REPRESENTATIVE_PATENT_TOP20_SIMULATED）、
+      专利年度覆盖至 2022（2023 起全库 0，覆盖滞后）、年度表 project_count 全 NULL、
+      city_name「深圳市/深圳」归一化（135 行 vs 1 行脏数据）。
+      /carriers/field-coverage 探针端点留作线上自查基线。
+      验证：真库端点实测 / py_compile+mvn+vue-tsc 三绿 / 本地三服务起服冒烟（Java→Feign→Python→Doris）/
+      Playwright 浏览器视觉验证（深圳大学详情抽屉新三节+覆盖提示+caveat 样式）全通过。
+      提交：lumen-topic-py de21eee、lumen-svc-platform cf64ffc、lumen-ui-science-pc 5e8f991（dev 已推）。
+    touched_files:
+      - "gkx_show_service/views/monitor_indicator.py"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/ShenzhenInnovationController.java"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/feign/RemoteShowPythonClient.java"
+      - "gkxlumen-display/src/main/resources/application-local.yml"
+      - "src/api/situation/shenzhenInnovation.ts"
+      - "src/types/shenzhenInnovation.ts"
+      - "src/mock/modules/shenzhenInnovation.ts"
+      - "src/views/situation/shenzhen-innovation/tabs/CarrierTab.vue"
+      - "src/views/situation/shenzhen-innovation/styles/demo-shenzhen-innovation.css"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/M5-M6-REMEDIATION-20261103.md §三/§七"
+    definition_of_done:
+      - "页面每个数字都有实测列支撑，无源字段一律「—」不补 0"
+      - "模拟额 / 覆盖滞后 / 口径限定语在 UI 可见（szi-detail-caveat）"
+      - "降级信号（unavailableFields / fieldsPartial / patentCoverageLastYear / projectCountAvailable）三层透传"
+      - "py_compile / mvn compile / vue-tsc 三绿；三层联调冒烟 + 浏览器视觉验证通过"
+    update_time: "2026-11-06T18:40:00+08:00"
   - id: FE-TS-07A
     feishu_bitable_record_id: reczz28MlyabN4pI
     supervised_by: "human:孔东"
@@ -55551,15 +55597,15 @@ tasks:
     model_used: "glm-5.3-Flash"
     evidence: "agent-delivery/agent-handoffs/SYNTH-CHAINFIX-FE-L01.md"
     cost_warn: "green"
-    actual_tokens: 150000
-    actual_cost: 0.7
+    actual_tokens: 135000
+    actual_cost: 0.55
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-06T05:57:59.913Z"
     last_seen_at: "2026-11-06T05:57:59.913Z"
     lock_until: "2026-11-07T05:57:59.913Z"
     claimed_by: "agent:frontend-agent"
     title: "链路修复③ — FE weight_profile 贯通+快照透传+DTO可空化+错误分支适配"
-    status: "integration"
+    status: "pending_test"
     agent: "frontend-agent"
     epic: "E8-综合智能分析"
     repo: "lumen-ui-topic"
@@ -55568,7 +55614,7 @@ tasks:
     effort_points: "3"
     difficulty: "L"
     estimated_tokens: 140000
-    note: "F1-F7 全落地，handoff SYNTH-CHAINFIX-FE-L01.md（commit 95e20a59），三绿证据齐。"
+    note: "AV 验收通过：F1–F7 全修；三绿+回归全绿；9c4694d+4397e0c 已推 origin/dev（他人 cms/policy WIP autostash 隔离保留）；依赖链 ①PY 4828c06→②JAVA f4b2ccb→③FE 均已上 dev，CI 部署后可做 live 全链复测"
     depends_on:
       - "SYNTH-CHAINFIX-JAVA-L01"
     design_refs:
@@ -55582,7 +55628,7 @@ tasks:
       - "P1-3：queue_full 误报改真实文案（按后端 msg 区分不支持类型/队列满）"
       - "P1-4：industry 下拉改传 code（节点带 code 或映射表）；图谱参数接线"
       - "三绿+回归；自检补跨层断言；handoff SYNTH-CHAINFIX-FE-L01.md"
-    update_time: "2026-11-06T15:16:14+08:00"
+    update_time: "2026-11-06T15:18:36+08:00"
   - id: SYNTH-CHAINFIX-DOCS-L01
     model_used: "glm-5.3-Flash"
     evidence: "agent-delivery/agent-handoffs/SYNTH-CHAINFIX-DOCS-L01.md"
@@ -55723,3 +55769,88 @@ tasks:
       - "回签写明空间名、每条必须边写入大约多少、没写的原因。验收对照 L01，不对照正式加工水位"
       - "智树不代写这张图。回签落在 07-图数据库集成/对接文档/燕大/"
     update_time: "2026-11-06T16:01:57+08:00"
+  - id: SYNTH-CHAINFIX-C1-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/SYNTH-CHAINFIX-VERIFY-L01.md §8"
+    cost_warn: "green"
+    actual_tokens: 50000
+    actual_cost: 0.2
+    supervised_by: "human:黄敬洲"
+    claimed_at: "2026-11-06T07:48:39.366Z"
+    last_seen_at: "2026-11-06T07:48:39.366Z"
+    lock_until: "2026-11-06T11:48:39.366Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "活力直读批档标签与取数同源（C1 定点修单）"
+    status: "done"
+    agent: "algorithm-agent"
+    epic: "LUMEN-INTEL-VIT"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 120000
+    note: "AV 验收通过；68c70bf 已推 CI 触发；deploy 绿后复测 1e 一条即闭环"
+    touched_files:
+      - "vendor/entan-py/api/synth_vitality_routes.py"
+      - "vendor/entan-py/scripts/check_synth_vitality.py"
+    definition_of_done:
+      - "synth_vitality_routes.py 直读分支同一 profile 变量贯穿标签/取数/WEIGHT metric"
+      - "check_synth_vitality 新增 [9] C1 断言：seed 批带 weight_profile=WEIGHT_MAIN 直读 → 回显档=行内档、指数=该档 seed 合成值"
+      - "check_synth_vitality 全绿 + 邻叶回归绿"
+      - "handoff 追加「C1 修复记录」节到 SYNTH-CHAINFIX-VERIFY-L01.md"
+    update_time: "2026-11-06T16:44:21+08:00"
+  - id: SYNTH-CHAINFIX-C2-L01
+    title: "C2 修单 — gkxlumen-topic 门面发布触发（TOPIC_RELEASE 点名门+滚动验证）"
+    status: "done"
+    agent: "devops-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "补记后直接反映事实：规则修复+滚动验证已完成（b2dbaf0+306b9c5 已推，pod ba2f3feb Ready），handoff VERIFY §9；监管人 human:徐滕强"
+    definition_of_done:
+      - "deploy:topic 触发规则加 TOPIC_RELEASE 点名门（image 与 deploy 同门防 needs 悬空）"
+      - "首版兜底规则致 pipeline 创建即败的次生缺陷修正并回归验证"
+      - "本轮滚动完成：pod 镜像 ba2f3feb 含 f4b2ccb 全部门面改动"
+      - "修复记录登记 VERIFY handoff §9"
+    update_time: "2026-11-06T16:21:14+08:00"
+  - id: SYNTH-CHAINFIX-ELEM404-L01
+    title: "C3 伴随小改 — elements 门面补 batch_not_published→404 映射（对齐活力）"
+    status: "done"
+    agent: "api-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "补记后直接反映事实：b565caa 已在 origin/dev，46 测全绿，handoff VERIFY §11；待 C3 滚动后终验 T4a"
+    definition_of_done:
+      - "SynthElementsSnapshotService 补 batch_not_published→404 SNAPSHOT_NOT_FOUND（对齐活力同款，+5 行）"
+      - "新增 2 单测（不存在批→404、正常批→200 护栏）"
+      - "topic 模块 46 测全绿"
+      - "与 C3 env 修单同批部署；滚 pod 后复测 T4a 一条（期望 404）"
+    update_time: "2026-11-06T16:57:51+08:00"
+  - id: SYNTH-CHAINFIX-C3-L01
+    title: "C3 修单 — topic 门面 TOPIC_ALGO_BASE_URL 误配 127.0.0.1 改 entan-py 服务名"
+    status: "backlog"
+    agent: "devops-agent"
+    epic: "E8-综合智能分析"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "live 补测 T2/T3/T4a 阻断根因（复测 §10.3 缺陷包）；执行中（Cursor 重启前子智能体已派出，状态待核）；监管人 human:徐滕强"
+    definition_of_done:
+      - "deploy env 改 http://gkxlumen-platform-entan-py:8000（对齐 async-service 同款）"
+      - "发布滚动验证：pod env 生效+经 Java 门面非 502"
+      - "修复记录登记 VERIFY handoff"
+    update_time: "2026-11-06T17:18:02+08:00"

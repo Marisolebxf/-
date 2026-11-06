@@ -13,7 +13,7 @@
 | 本模块 | 只有活力三张既有输入 | `synth_*` 指标、图事实、`synth_collab_batch_meta` |
 | 禁止 | 把图谱查询结果放进 `gapfill_` | 把本模块结果放进 `gkxlumenx_ai`、ODS、DWD、供应方库 |
 
-gapfill 只补已登记的输入缺项。结果和图谱演示都不进 gapfill。做不到真算时，mock 行进 ADS。
+gapfill 只补输入缺项。结果和图谱演示都不进 gapfill。做不到真算时，正式结果仍应落 ADS；本期 137 指标尚未注册，作为功能合规例外落 `_ai` 并明确 `pending_registration/is_mock=1`。
 
 ## 2. gapfill 举例（本模块已有）
 
@@ -44,3 +44,9 @@ gapfill 只补已登记的输入缺项。结果和图谱演示都不进 gapfill�
 ## 5. 和 D18 的关系
 
 做不到真算或真查时，新建 ADS 表，Python 灌 mock 行，接口只读该表。该表不是 `gapfill_`。本模块不再把 `*_ai` 当作 D18 的替代落点。图谱无真源时返回空图，不把演示行放进 gapfill。
+
+### 2026-11-06 功能合规过渡例外
+
+- 137：`M_SYNTH_ELEM_FOUR_DIM_SCORE` 尚未注册，过渡结果落 `_ai.synth_elem_four_dim_score`（一行一维，`pending_registration/is_mock=1`）。这是“算法待定结果表”例外，不是 ADS 正式结果。
+- C-05：`gapfill_synth_collab_relation_year` 与 `gapfill_synth_collab_output_year` 只保存按年输入/产出演示序列；Python 读取后实时计算图、网络统计与相关性。最终 `degree/centrality/density` 不在 gapfill 落结果表。
+- 详细设计与统一 SQL 清单见 `sdd/功能合规过渡设计-137与C05.md`。
