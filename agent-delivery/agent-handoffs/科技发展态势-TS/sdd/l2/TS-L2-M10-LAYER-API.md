@@ -25,7 +25,13 @@
 
 ## 1. 总则
 
-前缀 `/display/v1/situation/maintain/`。浏览器只打此前缀，经网关 `gkxlumen-platform-gateway`（只转 `/display/**`）到 `gkxlumen-display`。全部同步，无 Job、无任务记录、不建 SSE、不进 `gkxlumen-topic-async-service`。运行时不调 Python（种子灌数单除外，见 ARCH §3）。不调任何 `demo-*` 服务。
+前缀 `/display/v1/situation/maintain/`。浏览器只打此前缀，经网关 `gkxlumen-platform-gateway`（只转 `/display/**`）到 `gkxlumen-display`。全部同步，无 Job、无任务记录、不建 SSE、不进 `gkxlumen-topic-async-service`。不调任何 `demo-*` 服务。
+
+**内部委托（2026-11-06 监管人裁定后，ARCH §3）**：写库全归 Python。`gkxlumen-display` 是门面（鉴权、枚举/参数校验、聚合），**不直连 Python/DB（D15）**：
+
+- 读：display 经 Feign → 领域服务 → 直读 `gkxlumenx_config`（政策 gapfill 只读先例），M1 消费同链路
+- 写：display 门面校验（本分册 §7 枚举与格式校验在门面完成，400 类错误不出网关层）→ Feign → 领域服务 → Feign `/internal/gkx-show/maintain/config/**` → `gkx_show_service` 写库。写侧错误（404/409）由 Python 写结果回传映射，错误码语义与本分册 §6 一致
+- 对外 URL、方法、DTO、错误码不受内部链路影响——本分册全部契约不变
 
 行数量级：图层 9、要素 11、数据源与分组十行级。**全量返回，不分页**。
 
@@ -86,12 +92,12 @@ Datasource：`id`、`sourceCode`（种子 `src-1` / `src-2` / `src-3`，新建 `
 
 | sourceType | 行为 | 响应 |
 |---|---|---|
-| `API 接口` | Java 发起 `HEAD`（失败回退 `GET`）探测 `endpoint`，超时 5s，重定向跟随 ≤3，**不读响应体** | `200 { result: '通过'\|'失败', latencyMs, message? }` |
+| `API 接口` | 领域服务发起 `HEAD`（失败回退 `GET`）探测 `endpoint`，超时 5s，重定向跟随 ≤3，**不读响应体**（display 不出网，D15） | `200 { result: '通过'\|'失败', latencyMs, message? }` |
 | `数据库表` | 未排期（ARCH §2） | `501 { code: 'NOT_IMPLEMENTED', message: '数据库表型数据源连通探测未排期' }` |
 | `用户填报` | 无探测语义 | `400 { code: 'INVALID_SOURCE_TYPE', message: '用户填报型数据源无连通探测语义' }` |
 
 - API 型探测结果**只随本次响应返回，不落库、不留存、不写审计**
-- Java 出网探测是会签点（ARCH §7 ③）：若会签否决，整条 probe 降级为全型 `501`，URL 不变
+- 出网位置归领域服务（display 不出网）是会签点（ARCH §7 ⑤）：若会签否决，整条 probe 降级为全型 `501`，URL 不变
 - 前端对填报型禁用按钮、对 DB 型按钮呈现 501 空态文案（接线单）
 
 ## 5. factor-display（序 9 配置面：11 要素显示名/颜色）

@@ -26,15 +26,15 @@ ARCH §3 第 2 点与 §4.2 图写「demo 冻结种子：8 条数据源 / 9 组�
 
 ## 1. 总则
 
-四表全落**业务库**（`gkxlumen-display` 所连库，对齐 D15）。不进 ODS / DWD / ADS / 供应方库，不用 `gapfill_` 前缀（配置真源，非 D16 缺项表）。无 ETL、无调度、无同步动作——数据源「配置」仅元数据登记（ARCH §6）。
+四表全落 **`gkxlumenx_config`**（Python 侧管理的库，建议名，会签确认——2026-11-06 监管人裁定：**写数据库全归 Python，保持原有规矩**）。不进 ODS / DWD / ADS / 供应方库 / 业务库，不用 `gapfill_` 前缀（配置真源，非 D16 缺项表）。无 ETL、无调度、无同步动作——数据源「配置」仅元数据登记（ARCH §6）。
 
 | 角色 | 职责 |
 |---|---|
-| 建表（DDL） | Java 实现单（`lumen-svc-platform` gkxlumen-display 模块 SQL 变更；列定义以本单为准） |
-| 种子行 | data-agent 灌数单（Python，建表后一次性写 26 行，值取 §2–§5 种子列） |
-| 运行时读写 | `gkxlumen-display` CRUD REST（API 分册四组资源 + probe）；M1 只读 layers / factor-display |
+| 建表（DDL）+ 种子行 | **data-agent 灌数单（Python，建表与 26 行种子一体**，值取 §2–§5 种子列） |
+| 运行时写 | **Python**：`gkx_show_service` 经 `/internal/gkx-show/maintain/config/**`（display 门面校验后 Feign 转发，D15 链路，ARCH §3） |
+| 运行时读 | 领域服务直读（政策 gapfill 只读先例）→ display Feign 聚合；M1 只读 layers / factor-display |
 
-逻辑外键（`target_layer_code` / `group_code`）不建物理 FK 约束（业务库 PigX 惯例）。每表公共审计列：`created_at` / `updated_at`（datetime，服务端维护）。**无** `metric_id` / `is_mock` / `gap_item` / `fill_method` / `gapfill_batch_id` / `generated_at` 列（METRIC 分册 §3）。
+逻辑外键（`target_layer_code` / `group_code`）不建物理 FK 约束（沿数据域 MySQL 惯例）。每表公共审计列：`created_at` / `updated_at`（datetime，**由写方（Python）维护**）。**无** `metric_id` / `is_mock` / `gap_item` / `fill_method` / `gapfill_batch_id` / `generated_at` 列（METRIC 分册 §3）。
 
 种子行语义：真实初始配置（运营继续编辑的起点），非 mock 统计，不挂 MockBadge；种子值与 demo 演示数据刻意一致（冻结清单），此「一致」即本单显式标注的占位事实——不需要进一步标注。
 
@@ -60,7 +60,7 @@ ARCH §3 第 2 点与 §4.2 图写「demo 冻结种子：8 条数据源 / 9 组�
 | 列 | 类型 | 空 | 约束 |
 |---|---|---|---|
 | `id` | bigint | 否 | 行键，自增 |
-| `group_code` | varchar(32) | 否 | 唯一。种子 `grp-ip` / `grp-lit` / `grp-org`；新建 `grp-` + 序（Java 生成） |
+| `group_code` | varchar(32) | 否 | 唯一。种子 `grp-ip` / `grp-lit` / `grp-org`；新建 `grp-` + 序（Python 写侧生成） |
 | `group_name` | varchar(64) | 否 | 种子：知识产权图层组 / 文献图层组 / 主体图层组 |
 | `color` | varchar(9) | 否 | `#RRGGBB`。种子：`#165DFF` / `#00B42A` / `#F97316`（demo 冻结） |
 | `sort_order` | int | 否 | 种子 1–3 |
@@ -75,7 +75,7 @@ ARCH §3 第 2 点与 §4.2 图写「demo 冻结种子：8 条数据源 / 9 组�
 | 列 | 类型 | 空 | 约束 |
 |---|---|---|---|
 | `id` | bigint | 否 | 行键，自增 |
-| `source_code` | varchar(32) | 否 | 唯一。种子 `src-1` / `src-2` / `src-3`；新建 `src-` + 序 |
+| `source_code` | varchar(32) | 否 | 唯一。种子 `src-1` / `src-2` / `src-3`；新建 `src-` + 序（Python 写侧生成） |
 | `source_name` | varchar(64) | 否 | 种子：专利 API / 论文主题库 / 机构填报 |
 | `source_type` | varchar(16) | 否 | 三值枚举：`API 接口` / `数据库表` / `用户填报`（中文冻结）。种子依次三型各一 |
 | `target_layer_code` | varchar(32) | 否 | 逻辑引用 `cfg_tech_layer.layer_code`。种子：`patent` / `paper` / `institution` |

@@ -9,7 +9,7 @@
 架构稿（真源）：[`sdd/l2/TS-L2-M10-LAYER-ARCH.md`](./sdd/l2/TS-L2-M10-LAYER-ARCH.md)
 
 - 需规：M1《科技全域态势》序 5–9（图层配置 5/6/7/8 + 科创要素 9 的配置面）
-- 核心裁定：M10 分区1 演示态（页面内存 + localStorage）正式化为**业务库配置表 `cfg_tech_layer` / `cfg_tech_layer_group` / `cfg_tech_datasource` / `cfg_factor_display`** + `gkxlumen-display` CRUD REST；种子行由 data-agent 灌数单（Python）写入；M1 地图改经 BFF 只读同一配置
+- 核心裁定（**2026-11-06 监管人裁定后修订**：写库全归 Python，原「Java 直写业务库」作废）：M10 分区1 演示态（页面内存 + localStorage）正式化为 **`gkxlumenx_config` 库（Python 侧）四张 `cfg_*` 配置表**；DDL+种子（26 行）归 data-agent 灌数单；运行时写经 `display 门面 → 领域服务 → gkx_show_service /internal/gkx-show/maintain/config/**`；读沿政策 gapfill 只读先例由领域服务直读；M1 地图经同一链路只读配置
 - 序 6 读侧、序 9 浏览/收藏归 M1（WBS-05-18），本二级不做；序 34–40 报价划掉；41–47 归 ENT 二级
 - metric_id 全 N/A（配置写侧无统计数字），待 `TS-L2-M10-LAYER-METRIC` 复核
 - probe：API 型真探测；DB 表型 501
@@ -27,11 +27,11 @@
 
 | 铁律 | 状态 |
 |---|---|
-| 调用链 前端→Java REST→（配置写不涉 Python 运行时） | ✅ §3 裁定 + 退路 |
-| D3 Java 只读 ADS | ✅ 配置表在业务库，非 ADS；不涉分析数据 |
-| D7 写数归 Python | ✅ 仅灌数单写种子；运行时配置 CRUD 由 Java（§3 会签点 ①，含退路） |
+| 调用链 前端→display→领域服务→Python `/internal/*`（写） | ✅ §3 裁定后合规链路，两图已改 |
+| D3 Java 仅读 ADS（字面） | ⚠️ 配置表非 ADS，沿政策 gapfill 只读先例由领域服务直读——会签点 §7 ③ 确认口径 |
+| D7 写数归 Python | ✅ **写库全归 Python**（DDL+种子归灌数单，运行时写经 internal），监管人 2026-11-06 裁定 |
 | D12 无 demo 依赖 | ✅ |
-| D15 落库 gkxlumen-display | ✅ |
+| D15 display 不直连 Python/DB | ✅ 裁定改写后合规（原稿 bff→db 直连违规，已改 Feign 链路） |
 | D18 可实现（表名/灌数方/读接口齐备，接口不返回 mock） | ✅ §2 逐叶三要素 |
 | 指标不新造 | ✅ 全 N/A 待 METRIC 复核 |
 
