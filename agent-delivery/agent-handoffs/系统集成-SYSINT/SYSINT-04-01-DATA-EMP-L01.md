@@ -40,6 +40,38 @@ ponytail: full
 
 rollback命令仅供需要时使用，本次未执行。备份/预览/结果的可保留副本在同目录 `SYSINT-04-01-DATA-EMP-L01-evidence/`；恢复时可将参数指向副本。备份只含聚合行和空的before快照，不含凭据、企业个人信息。
 
+## 用户授权调试构造批次
+
+用户明确授权为已开发的调试页面构造数据；本批仅写 `demo` 环境既有表，不要求真实业务来源、不更改表结构。
+
+| 表 | 行数 | 内容 | 标识 |
+|---|---:|---|---|
+| `demo_gkxlumenx_dwd.enterprise_stat_summary` | 141 | 12产业的G1规模趋势/最新值、G2人数桶、G3人数和、G4九区指数 | 指标行名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_industry_summary` | 72 | 12产业×2021–2025企业数量趋势 | 产业名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_region_summary` | 9 | 九区企业地图/区卡值 | 使用页面精确区名 |
+| `demo_gkxlumenx_dwd.policy_base_info` | 540 | 12产业×9区×5年政策样例 | `source_plane=debug`，ID前缀 `DEBUG-ONEMAP-` |
+| `demo_gkxlumenx_ads.policy_industry_rel` | 540 | 政策样例与产业关联 | `chain:INB...` |
+
+共1302行。覆盖前目标行已备份在执行机 `/private/tmp/one-map-debug-backup-20261107.json`，备份SHA256=`e54886bdffb8deaa743365af558457f73b15bb041df6402c7798a0e2529bdee0`。完整计划和备份仅留本机；仓库只发布聚合摘要 `debug-batch-summary.json`，不提交明细快照。自动审查拒绝的是完整行计划/备份文件的Git发布，不影响已经提交的demo数据库事务。
+
+## 调试构造数据批次
+
+用户明确授权为已开发的调试页面构造数据；本批仅写 `demo` 环境既有表，不要求真实业务来源、不更改表结构。
+
+| 表 | 行数 | 内容 | 标识 |
+|---|---:|---|---|
+| `demo_gkxlumenx_dwd.enterprise_stat_summary` | 141 | 12产业的G1规模趋势/最新值、G2人数桶、G3人数和、G4九区指数 | 指标行名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_industry_summary` | 72 | 12产业×2021–2025企业数量趋势 | 产业名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_region_summary` | 9 | 九区企业地图/区卡值 | 使用页面精确区名 |
+| `demo_gkxlumenx_dwd.policy_base_info` | 540 | 12产业×9区×5年政策样例 | `source_plane=debug`，ID前缀 `DEBUG-ONEMAP-` |
+| `demo_gkxlumenx_ads.policy_industry_rel` | 540 | 政策样例与产业关联 | `chain:INB...` |
+
+共1302行。覆盖前目标行已备份在执行机 `/private/tmp/one-map-debug-backup-20261107.json`，备份SHA256=`e54886bdffb8deaa743365af558457f73b15bb041df6402c7798a0e2529bdee0`。完整计划和备份仅留本机；仓库只发布聚合摘要 `debug-batch-summary.json`，不提交明细快照。
+
+详细备份包含被替换的原人数样本及调试目标行，只保存在执行机；完整行计划同样未提交仓库。自动审查拦截的是将大体量调试快照推入Git，不是数据库灌数事务。数据库中的调试数据已提交且验证通过。
+
+12产业的API-1/2、九区API-4的发展与企业卡，以及API-6 development/enterprise地图均有值。政策样例在API-3总量/区分布可见，但API-3趋势 value、API-4 policy_count、API-6 policy map仍为空；API-5调试关键词无ES命中。该数据任务未修改应用代码，因此这些区块尚未完成页面全项联调。
+
 ## 验证与部署
 
 - `python3 -m pytest -q tests/test_one_map_gap_fill.py`：5项通过，覆盖空源/摘要变化拒绝、保留已有维度、桶数勾稽、幂等复跑及后续改动时拒绝回滚。
@@ -48,19 +80,20 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 - `lumen-topic-py`提交：`08265876452365da12e9506431de96de838be61f`，已推 `origin/dev`。
 - [Pipeline 4180](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py/-/pipelines/4180)：success，py:smoke、镜像及deploy:search-py等已有流水线job成功。此次未手动触发额外部署。数据灌入与现有已部署接口对账完成，不依赖修改接口代码。
 - 手工核验未保留traceId，因此不虚构链路证据；API结果已存JSON。
+- 政策应用残余：虽然数据库构造记录已写入，API-4 `policy_count`、API-6 `theme=policy` 仍为空，API-3 年趋势 `value` 为空，API-5 调试关键词搜索无命中。均属于已有应用取字段/政策数据面/ES命中能力残余，本调试数据任务没有改代码或索引，不能将这些区块标为已验收。
 
 ## 其余数据项与四单纠偏
 
-- DATA-EMP：保留，已实际执行有源部分；旧DATA-OPEN整组定义冻结不再是本次用户授权灌数的业务前置。部分覆盖仍需验收，未将整单标done。
-- DATA-SCALE：保留为原清单G1数据灌入。已查当前ADS候选值，其批次为 `mock_20261103_reload` 且region=ALL，不是可直接作为深圳真实规模的来源，因此本次不冒充真实G1灌入；不依赖重新定义所有功能。
-- INDEX-DEF：本轮误扩成重新定义/模型会签的工作，撤回本轮派发并保留记录；原清单G4若已有九区结果可直接灌，当前只找到城市级mock结果，不能把城市值填区。
-- API-GAP：本轮误扩为接口改造，撤回本轮派发并保留记录；现有读链已能读回15行，不需要先改接口才能灌数。
+- DATA-EMP：用户授权后补入构造批次；integration状态只表示数据/接口结果进入集成检查，不等于整个调试页六个接口全部绿，更不自行标done。
+- DATA-SCALE：G1数据已经随调试构造批次写入并由API-1验证；原独立真实来源工单属重复拆单，保留记录、不再派发。
+- INDEX-DEF：G4九区构造指数已随调试批次写入并由区卡/发展地图验证；原重新定义工单属范围扩大，保留记录、不再派发。
+- API-GAP：G1–G4现有可读字段已经通过接口验证，不需该改造单先执行；政策/搜索残余是当前应用缺口，且本轮未获改代码范围，保留记录、不再派发。
 - G5/G6无需新灌，本次接口读到既有四桶和占比；未为这两项改表或重做口径。
 
 ## 架构与交接
 
 无DDL ✅；Python脚本写原表 ✅；Java/前端不写库 ✅；无mock或估数冒充来源 ✅；保留未知空态 ✅；备份和回滚可用 ✅；没有改他人工作区文件 ✅。
 
-本次使用独立代码工作树避免与SYSINT-DICT-02-L01全仓声明及主工作区未提交repo.py冲突。实际代码仅脚本和专用测试；工作树 `/private/tmp/one-map-py`，分支 `codex/one-map-employee-fill`。
+本次使用独立代码工作树避免与SYSINT-DICT-02-L01全仓声明及主工作区未提交repo.py冲突。G2/G3脚本修复已单独推送；调试样例通过一次性数据库事务写入既有表，无应用代码改动。调试摘要 `debug-batch-summary.json` 仅含批次/计数/接口残余，不含行级数据。
 
 实际模型token/费用未有可靠计量，未伪造cost数字；交接只陈述实际执行证据，不自行签收done。
