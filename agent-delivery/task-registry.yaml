@@ -56122,8 +56122,13 @@ tasks:
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-ALGO.md"
     update_time: "2026-11-07T14:17:44+08:00"
   - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-TIER-DATA
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-07T06:27:44.643Z"
+    last_seen_at: "2026-11-07T06:27:44.643Z"
+    lock_until: "2026-11-07T10:27:44.643Z"
+    claimed_by: "agent:data-agent"
     title: "深圳政策现状抽取真实扶持金额"
-    status: "ready"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-POLICY-PDR"
     priority: "P1"
@@ -56134,7 +56139,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 30000
     user_story: "US-E7-POL-04"
-    note: "由算法单调研派出。扶持档位要政策扶持金额表，不接招标表。没有真实金额就停，不造数。"
+    note: "由算法单调研派出。扶持档位要政策扶持金额表，不接招标表。没有真实金额就停，不造数。claim_type=coordinator_dispatch。开工只从政策正文或已有非空字段抽取真实金额。"
     collaborators:
       - "algorithm-agent"
     design_refs:
@@ -56145,10 +56150,15 @@ tasks:
       - "amount 只能来自政策原文或已有非空字段。禁止使用 dwd_bid_* 招标金额，禁止把空值写成 0，禁止写 ODS、正式库、供应方库。"
       - "深圳市至少 30 条政策有非空 amount 才算这座城市能进档位截面。抽不到则任务阻塞并写明抽了多少行。"
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-TIER-DATA.md"
-    update_time: "2026-11-07T14:17:20+08:00"
+    update_time: "2026-11-07T14:29:30+08:00"
   - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-DATA
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-07T06:28:00.352Z"
+    last_seen_at: "2026-11-07T06:28:00.352Z"
+    lock_until: "2026-11-07T10:28:00.352Z"
+    claimed_by: "agent:data-agent"
     title: "深圳政策现状回填真实实施日与支持对象"
-    status: "ready"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-POLICY-PDR"
     priority: "P1"
@@ -56159,7 +56169,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 30000
     user_story: "US-E7-POL-04"
-    note: "由算法单调研派出。落地实效至少要有真实实施日或非空支持对象。零日期不算有效。"
+    note: "由算法单调研派出。落地实效至少要有真实实施日或非空支持对象。零日期不算有效。claim_type=coordinator_dispatch。开工只回填正文已写明的实施日与支持对象。"
     collaborators:
       - "algorithm-agent"
     design_refs:
@@ -56170,10 +56180,15 @@ tasks:
       - "覆盖维：policy_support 不是 JSON null，且子键「适用对象」或 support_object 有非空文本。只回填原文或已有字段里已经写明的对象。"
       - "反馈维本轮不建调查表。缺这一维可以不进平均。没有真实日期且没有非空支持对象则阻塞。"
       - "不写 ODS、正式库、供应方库。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-DATA.md"
-    update_time: "2026-11-07T14:17:30+08:00"
+    update_time: "2026-11-07T14:29:32+08:00"
   - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-BOARD
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-07T06:25:48.624Z"
+    last_seen_at: "2026-11-07T06:25:48.624Z"
+    lock_until: "2026-11-07T10:25:48.624Z"
+    claimed_by: "agent:algorithm-agent"
     title: "深圳政策结果板按已有金额与实效字段计算"
-    status: "ready"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-POLICY-PDR"
     priority: "P1"
@@ -56184,7 +56199,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 40000
     user_story: "US-E7-POL-04"
-    note: "由算法单调研派出。只改结果板的读取与计算。源列全空时不出数。不改第 3 章链名匹配，不改前端。"
+    note: "由算法单调研派出。只改结果板的读取与计算。源列全空时不出数。不改第 3 章链名匹配，不改前端。claim_type=coordinator_dispatch。开工计算城市金额均值与缺维实效。"
     collaborators:
       - "data-agent"
     design_refs:
@@ -56195,4 +56210,4 @@ tasks:
       - "实施日为真实日期，或 policy_support 有非空支持对象时，落地实效按缺维不进平均出分。两维都空则 computable 仍为 false，不出 0。"
       - "不接 dwd_bid_*。没有金额、实施日、支持对象的旧样例仍保持现在的支持力度分数。单测覆盖有数与无数两种行。"
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-BOARD.md"
-    update_time: "2026-11-07T14:17:40+08:00"
+    update_time: "2026-11-07T14:25:58+08:00"
