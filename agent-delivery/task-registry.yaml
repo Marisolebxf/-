@@ -55933,11 +55933,11 @@ tasks:
       - "自检：reportExport.selfcheck 覆盖三叶章节与禁词；前端 vue-tsc 绿；Java 产物渲染自检绿。handoff 写明两步分界与确认记录，cost 四字段回填；ponytail: full。监管人 human:孔东。"
     update_time: "2026-11-07T14:51:52+08:00"
   - id: TOPIC-POL-SZ3D-DEMO-ACCEPT-LOOP
-    evidence: "agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-ACCEPT-LOOP.md"
+    evidence: "[object Object]"
     supervised_by: "human:淮政玮"
-    claimed_at: "2026-11-07T05:07:22.906Z"
-    last_seen_at: "2026-11-07T05:07:22.906Z"
-    lock_until: "2026-11-07T09:07:22.906Z"
+    claimed_at: "2026-11-07T17:35:23.428Z"
+    last_seen_at: "2026-11-07T17:35:23.428Z"
+    lock_until: "2026-11-07T21:35:23.428Z"
     claimed_by: "agent:qa-agent"
     title: "深圳政策现状演示实例反复验收"
     status: "ready"
@@ -55952,7 +55952,7 @@ tasks:
     estimated_tokens: 40000
     user_story: "US-E7-POL-04"
     note: |
-      2026-11-07 监管人裁定：扶持档位、落地实效没有结果不算通过。支持力度 879 / 33.5585 / 名次 5 / 层级均值 0.4653 仍对上。已建 TOPIC-POL-SZ3D-DEMO-FIX-R20261107-DATA 与 TOPIC-POL-SZ3D-DEMO-FIX-R20261107-ALGO。没有非空源，禁止写 0。验收单留在 ready，不签 done。原 DoD 里「档位不可算、第4章不可算算通过」已被本次裁定替代，以编排计划为准。
+      2026-11-08 凌晨验收轮：接口三卡全绿（档位4/实效50/879/33.5585/名次5/0.4653；011 适配 9.245/43），但库核对红（深圳 1458 行、均值 0.3873，一张图 debug540 + 图2 SYNTH49 混入 + ~9667 行城市回填）。样本不满足，已建 TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA（blocked，等淮政玮拍板读取口径）。验收单退回 ready。
     collaborators:
       - "data-agent"
       - "algorithm-agent"
@@ -55964,7 +55964,7 @@ tasks:
       - "通过线：支持力度可算，条数 879，分数 33.5585，名次 5，层级均值 0.4653；档位无金额列且不写成 0；第 4 章落地实效不可算；第 5 章有供给结构。"
       - "只读 demo_gkxlumenx_dwd.policy_base_info，city 为深圳市的行数仍是 879，且 rank 有值。不写 ODS、供应方库、gapfill_、新 ADS。"
       - "第 3 章未提供链名留在已有缺陷包，不改匹配、不改前端。一轮写入同一 handoff 的运行节。对上后退回 ready，不签 done。"
-    update_time: "2026-11-07T13:57:02+08:00"
+    update_time: "2026-11-08T01:45:51+08:00"
   - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-DATA
     evidence: "agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-DATA.md"
     blocked_by: |
@@ -59637,3 +59637,96 @@ tasks:
       - "handoff 落 agent-delivery/agent-handoffs/E7-产业服务链分析/ 并 task-update-fields 回填 evidence + cost 4 字段（actual_tokens/model_used/actual_cost/cost_warn）"
       - "架构合规自检逐条 ✅/❌（D12 demo 只读隔离；算法只在 Python；禁第二套口径）"
     update_time: "2026-11-07T22:11:27+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA
+    blocked_by: "共表演示数据口径冲突：深圳 1458=原生879+一张图debug540+图2SYNTH49。删任一批破坏其他会话演示（多会话保护铁律）。另有约 9667 行原生行被城市回填，score/名次也会漂移。等 human:淮政玮 拍板：方案A=board SQL 加原生过滤转 ALGO 单；方案B=放宽通过线为动态基线。"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-07T17:35:04.257Z"
+    last_seen_at: "2026-11-07T17:35:04.257Z"
+    lock_until: "2026-11-07T21:35:04.257Z"
+    claimed_by: "agent:data-agent"
+    title: "深圳政策现状恢复 879 基线：隔离 debug/合成批次或回滚层级行"
+    status: "blocked"
+    agent: "data-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-E7-POL-04"
+    note: |
+      调查完成，数据侧不可修。库证据：深圳 1458 行=原生879+一张图debug540（SYSINT-04-01，徐滕强会话）+图2 SYNTH 49（D16 例外淮政玮已批）。原生879 rank 分布未动、均值 0.4653 ✓；全量均值 0.3873 ✗。另有 ~9667 行原生行被城市回填（16:44 后，执行会话未查明），score/名次也会漂移。删除或隔离任何批次都会破坏一张图/图2 在跑演示（多会话保护铁律），本单不动库。需 human:淮政玮 拍板读取口径：方案A=board SQL 加原生过滤（转 ALGO 单），方案B=放宽通过线为动态基线。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA.md
+    collaborators:
+      - "algorithm-agent"
+      - "qa-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/编排计划/深圳政策现状分析-LOOP计划.md"
+      - "agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-ACCEPT-LOOP.md"
+    definition_of_done:
+      - "只读核对 demo_gkxlumenx_dwd.policy_base_info：city='深圳市' 恢复 879（etl_batch_id IS NULL），source_plane='domestic'；层级分布回到 [\"市级\"] 757 / [\"区级\"] 96 / [\"园区级\"] 26，层级均值（市级0.5/区级区县级园区级0.25）恢复 0.4653。"
+      - "debug_one_map_20261107_v1 的 540 行（深圳一张图调试，区县级）与 SYNTH-* 39 行（图2 合成演示）不得物理删除公开表数据：先确认归属（深圳一张图调试/图2 合成演示是否还在用），再决定隔离（is_deleted=1 或 source_plane 改 debug 保留）或回滚；决策与证据写 handoff。"
+      - "若确认这两批是本 LOOP 链路自己产生的演示数据（EFFECT-SYNTH 合成 39 行、深圳一张图调试 540 行），则只回滚对深圳政策现状 879 基线的影响，不破坏其他演示（一张图、图2）仍在用的行；两演示仍需的行保留并在 handoff 列明。"
+      - "不写 ODS、供应方库。不把空写成 0。改动后 SELECT 复核并打印前后对照（前 1458/0.3873 → 后 879/0.4653）。"
+      - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA.md"
+    update_time: "2026-11-08T01:45:30+08:00"
+  - id: POL-L2-DS11-VIZ-DEMO-ACCEPT-LOOP
+    title: "政策分析评价 · 可视化呈现 DS11-VIZ 演示样本验收 LOOP（§6.5）"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "tech_task"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "2026-11-08 首轮：219/220 通过；222 GAP-01 空列表（不改判通过）；221 设计无资源不请求。详见 handoff。监管人 human:淮政玮"
+    definition_of_done:
+      - "每轮只读：探测 HTTP 200 后按用例可演行逐条对照，探测 401/424/404 即 blocked 停止，不建子任务"
+      - "缺口按 DATA/QUERY/ALGO 分类，先 task-query 去重；2026-11-08 首轮 222 GAP-01（shells 模板选用空列表，库内有行）归 QUERY，挂 POL-L2-DS11-BE-L01，不另建修复单"
+      - "handoff 只追加「运行 YYYY-MM-DD」节；每轮结束回写编排计划 POL-L2-DS11-VIZ-LOOP计划.md 状态行"
+      - "样本满足+子任务都已签收（或本轮无子任务）+状态行已回写后才改 done，操作人 human:淮政玮"
+    update_time: "2026-11-08T01:36:36+08:00"
+  - id: POL-L2-DS11-READ-DEMO-ACCEPT-LOOP
+    title: "政策分析评价 · 结果解读 DS11-READ 演示样本验收 LOOP（§6.5）"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "tech_task"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "2026-11-08 首轮：223 通过；224/225 BUG-01 空列表（不改判通过）；226 返回的是新建任务载荷而非只含 summary（reused:false）——行为缺口 QUERY，挂 POL-L2-DS11-BE-L01。监用令牌由监管人提供后落盘。监管人 human:淮政玮"
+    definition_of_done:
+      - "每轮只读：探测 HTTP 200 后按用例可演行逐条对照，探测 401/424/404 即 blocked 停止，不建子任务"
+      - "缺口按 DATA/QUERY/ALGO 分类，先 task-query 去重；2026-11-08 首轮 BUG-01（shells 解读4条+多媒体3条空列表，库内有行）归 QUERY，挂 POL-L2-DS11-BE-L01，不另建修复单；226 只查 summary、请求不调 parse.run 同挂该单"
+      - "223 不重放 focus jobs（会改写 policy_id 非空行）；226 重放后库表行数不变，不另编摘要句"
+      - "handoff 只追加「运行 YYYY-MM-DD」节；每轮结束回写编排计划 POL-L2-DS11-READ-LOOP计划.md 状态行"
+      - "样本满足+子任务都已签收（或本轮无子任务）+状态行已回写后才改 done，操作人 human:淮政玮"
+    update_time: "2026-11-08T01:36:49+08:00"
+  - id: POL-L2-DS11-PLAN-DEMO-ACCEPT-LOOP
+    title: "政策分析评价 · 推荐方案 DS11-PLAN 演示样本验收 LOOP（§6.5）"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "tech_task"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "2026-11-08 首轮：227/228/229 通过；230/231 shells 空列表归 QUERY（同根因 GAP-01/BUG-01），挂 POL-L2-DS11-BE-L01。监管人 human:淮政玮"
+    definition_of_done:
+      - "每轮只读：探测 HTTP 200 后按用例可演行逐条对照，探测 401/424/404 即 blocked 停止，不建子任务"
+      - "缺口按 DATA/QUERY/ALGO 分类，先 task-query 去重；2026-11-08 首轮 230/231 shells 空列表（库内互动意见 6 行已核实）归 QUERY，挂 POL-L2-DS11-BE-L01，不另建修复单"
+      - "230 重放不插入：库内互动意见保持 6 行；231 不返回文件字节、不写对象存储"
+      - "handoff 只追加「运行 YYYY-MM-DD」节；每轮结束回写编排计划 POL-L2-DS11-PLAN-LOOP计划.md 状态行"
+      - "样本满足+子任务都已签收（或本轮无子任务）+状态行已回写后才改 done，操作人 human:淮政玮"
+    update_time: "2026-11-08T01:37:00+08:00"
