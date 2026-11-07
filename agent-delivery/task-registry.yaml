@@ -55894,3 +55894,41 @@ tasks:
       - "用该锚点重跑或引用一次已签发任务：报告第 2 章有条数、分数、名次、层级均值；第 4 章仍为不可算；第 5 章在深圳进入排名时出现供给结构。产业适配性若仍是「未提供链名」，指向缺陷包 LUMEN-POLICY-SZ3D-E1-DEFECT-C1.md，本单不改前端、不改匹配"
       - "handoff 含库表行数、演示任务号、报告或结果 JSON 片段，以及 cost 四字段"
     update_time: "2026-11-07T11:56:56+08:00"
+  - id: POL-L2-DS12-INDUSTRY-EQ-FIX-L01
+    title: "未出台仿真目标产业等值过滤"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "2026-11-07 human:淮政玮要求未出台仿真的目标产业参与等值过滤。设计已改 EST-API、EST-DATA、EST-ARCH。页面级联已在本地工作区显示，本单把回显全文送进 jobs。一单跨 lumen-svc-platform、lumen-algo-py、lumen-ui-science-pc。"
+    depends_on:
+      - "POL-L2-DS12-EST-API"
+      - "POL-L2-DS12-EST-DATA"
+      - "POL-L2-DS12-EST-GAPFILL-L01"
+      - "POL-L2-DS12-JOBS-IMPL-JAVA"
+    collaborators:
+      - "frontend-agent"
+      - "data-agent"
+    touched_files:
+      - "repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PolicySimulationService.java"
+      - "repos/lumen-svc-platform/gkxlumen-element/src/main/java/com/topcomm/gkxlumen/element/controller/PolicySimulationReadController.java"
+      - "repos/lumen-algo-py/scripts/mysql/gapfill_policy_sim_forecast.sql"
+      - "repos/lumen-ui-science-pc/src/views/policy/simulation/simulationLive.mjs"
+      - "repos/lumen-ui-science-pc/src/views/policy/simulation/estimate/EstimateWorkbench.vue"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-DATA.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-ARCH.md"
+    definition_of_done:
+      - "未出台仿真请求带上 target_industry 时，Java 按该列等值过滤；没带则不加这一谓词。五类都空不查表。对不上时 HTTP 成功且 records 空，不返回 501。"
+      - "gapfill_policy_sim_forecast 增加 target_industry。研发补助那一行为新一代信息技术，人才引进那一行为生物产业。唯一性含这一列。脚本对已建表可重复执行。不把数据库口令写进 git。"
+      - "前端未出台仿真把产业级联回显全文作为 target_industry 提交；空选择不提交该字段。多选回显整串等值，不拆 OR。"
+      - "单测覆盖：只填目标产业能命中对应行；四类加上对应产业命中；产业对不上为空；233–236 不读这一列。"
+      - "不新增 metric_id，D4 仍是 mock。不改区域空间、新出台预测、多维评估、利益攸关方的过滤。handoff 写明改动仓与验证。"
+    update_time: "2026-11-07T12:00:29+08:00"

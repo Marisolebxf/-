@@ -9,6 +9,8 @@
 - 上游架构：`sdd/l2/POL-L2-DS12-EST-ARCH.md` 第 9 节。该稿文件头写明待架构、算法、数据、产品四角色会签，不标 done。2026-11-05 只改了第 5.4、5.5 节的库.表写法，读法未改。本单按第 9 节定列，不改那份架构，不改图。
 - 对照：同目录 `POL-L2-DS12-SIM-ARCH.md` 第 7、9 节，只读。235、236 的交叉只写在第 1 节末句。
 
+2026-11-07 修订（`human:淮政玮`）：未出台仿真增加列 `target_industry`。行上必填，是产业级联回显全文。已有两行分别写 `新一代信息技术`（研发补助那一行）、`生物产业`（人才引进那一行）。查询只在请求带了该字段时等值。不写入 `industry_text`。新出台预测行、区域空间行此列留空。同一组政策类型、覆盖范围、支持力度、实施时间、目标产业只留一行。修复单 `POL-L2-DS12-INDUSTRY-EQ-FIX-L01`。
+
 本叶只定政策效果推演二级「效果预估」里 SRS 序号 **232–234** 的数据落点。列级定义只定粒度和必要列。下面的列清单不是可执行 SQL，本单不建库、不灌数、不跑脚本。
 
 上游只引用，不改写：`POL-L2-DS12-EST-ARCH` 第 9 节，以及第 5.1–5.3 节的行内容。不新造 `metric_id`，不改 D4。
@@ -45,7 +47,7 @@
 
 | 值 | 序号 | 这一行放什么 |
 |---|---|---|
-| `未出台仿真` | 232 | 一组参数档：政策类型、覆盖范围、支持力度、实施时间，以及经济效益、社会影响、创新促进的预测值与变化率、逐年趋势、一句解释 |
+| `未出台仿真` | 232 | 一组参数档：政策类型、覆盖范围、支持力度、实施时间、目标产业，以及经济效益、社会影响、创新促进的预测值与变化率、逐年趋势、一句解释 |
 | `新出台预测` | 233 | 挂在一条已有政策上：短期与长期效果、经济增长、产业发展、科技创新影响、时间变化趋势、空间分布特征、相似政策依据说明 |
 | `区域空间` | 234 | 挂在一个区域 × 一个政策类型上：GDP 增长、产业结构变化、就业率变化、空间分布 |
 
@@ -61,6 +63,7 @@
 | `coverage_scope` | varchar(256) | 是 | 未出台仿真行必填：覆盖范围。其余行留空 |
 | `support_intensity` | varchar(256) | 是 | 未出台仿真行必填：支持力度。其余行留空 |
 | `implement_time` | varchar(256) | 是 | 未出台仿真行必填：实施时间，展示原文。与 `generated_at` 不是同一列。其余行留空 |
+| `target_industry` | varchar(256) | 是 | 未出台仿真行必填：目标产业，级联回显全文。其余行留空。不是 `industry_text` |
 | `econ_text` | text | 是 | 未出台仿真行必填：经济效益的预测值与变化率。其余行留空 |
 | `social_text` | text | 是 | 未出台仿真行必填：社会影响的预测值与变化率。其余行留空 |
 | `innovation_text` | text | 是 | 未出台仿真行必填：创新促进的预测值与变化率。其余行留空 |
@@ -102,25 +105,25 @@
 
 D16 行级列就是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at`。外加 `is_mock=1`，避免把缺项行读成已上线。谁写这张表：灌数单里的 Python 脚本。Java 与前端不建表、不灌数。谁读：仅功能验收链路上的 `gkxlumen-element`。生产配置不读 `gkxlumenx_gapfill`。本叶不把读到的行写入 ADS，因此不产生 `gapfill_` 前缀的 `calc_batch_id`。
 
-拣行只用 `row_kind`，再加上该种类的条件列。未出台仿真再加用户本次提交了的 `policy_type`、`coverage_scope`、`support_intensity`、`implement_time`。新出台预测再加 `policy_id`。区域空间再加 `region_name`，政策类型提交了再加 `policy_type`。条件对不上的行不返回。查询不插入行来凑数。
+拣行只用 `row_kind`，再加上该种类的条件列。未出台仿真再加用户本次提交了的 `policy_type`、`coverage_scope`、`support_intensity`、`implement_time`、`target_industry`。新出台预测再加 `policy_id`。区域空间再加 `region_name`，政策类型提交了再加 `policy_type`，不加 `target_industry`。条件对不上的行不返回。查询不插入行来凑数。
 
 灌数时的不重复，由灌数单照下面三条保管，本单不建库：
 
-- 未出台仿真：同一组 `policy_type`、`coverage_scope`、`support_intensity`、`implement_time` 只留一行。
+- 未出台仿真：同一组 `policy_type`、`coverage_scope`、`support_intensity`、`implement_time`、`target_industry` 只留一行。
 - 新出台预测：同一 `policy_id` 只留一行。
 - 区域空间：同一 `region_name` 加同一 `policy_type` 只留一行。
 
 ## 3. 232 未出台仿真
 
-粒度：一行一组参数档。政策类型在 `policy_type`。覆盖范围在 `coverage_scope`。支持力度在 `support_intensity`。实施时间在 `implement_time`。经济效益在 `econ_text`。社会影响在 `social_text`。创新促进在 `innovation_text`。逐年趋势在 `yearly_trend`。一句解释在 `explain_text`。
+粒度：一行一组参数档。政策类型在 `policy_type`。覆盖范围在 `coverage_scope`。支持力度在 `support_intensity`。实施时间在 `implement_time`。目标产业在 `target_industry`。经济效益在 `econ_text`。社会影响在 `social_text`。创新促进在 `innovation_text`。逐年趋势在 `yearly_trend`。一句解释在 `explain_text`。
 
 `econ_text`、`social_text`、`innovation_text` 各是一段文字，内容是该方面的预测值与变化率。基线到推演后的对照写在这两段里。不另设 baseline、simulated、delta 三个数值列，也不把这三方面收成闭集以外的滑块。`yearly_trend` 是若干组「年份、数值」，组数不固定，供前端画曲线。不单列年份。`explain_text` 是一句可解释说明。查询原样返回这五列。请求内不调用 `polan.text.simulate.run`，不按弹性公式现算。
 
-四列参数档在行上都要有值。它们是展示原文，不是资金、人才、平台三个滑块，也不是中台那三条固定情景的原文。
+五列参数档在行上都要有值。它们是展示原文，不是资金、人才、平台三个滑块，也不是中台那三条固定情景的原文。`target_industry` 是级联回显全文：只选集群时就是集群名，选到更深节点时用 ` / ` 连接。已灌两行：研发补助那一行是 `新一代信息技术`，人才引进那一行是 `生物产业`。多选回显含 `、` 或「等 N 项」时整串参与等值，不拆成多行 OR。
 
 `metric_id` 固定为已有 `M_POLICY_SIMULATE`。不新注册，不改这条指标的 D4，不把读到的行写成已上线。不挂 `M_POLICY_LAYOUT_REC_COUNT`，不挂 `M_POLICY_DEEP_171_1`，不挂 `M_POLICY_EFFECT_SCORE`，不挂 `M_POLICY_INTENSITY_SCORE`。
 
-`jobs` 的未出台仿真只读 `row_kind=未出台仿真`。四类参数至少提交一类。用户提交了的参数必须与行上对应列相等。用户没提交的参数不参与过滤。四类都没提交则该区空，不返回全部未出台仿真行。提交了但对不上任何行则该次模拟空，不补默认档。对得上的多行一并返回，供前端并排比较。服务端不建对比槽，不存用户自己的模拟历史。无行则该区空。
+`jobs` 的未出台仿真只读 `row_kind=未出台仿真`。政策类型、覆盖范围、支持力度、实施时间、目标产业五类至少提交一类。用户提交了的参数必须与行上对应列相等。用户没提交的参数不参与过滤。五类都没提交则该区空，不返回全部未出台仿真行。提交了但对不上任何行则该次模拟空，不补默认档。对得上的多行一并返回，供前端并排比较。服务端不建对比槽，不存用户自己的模拟历史。无行则该区空。
 
 ## 4. 233 新出台预测
 
