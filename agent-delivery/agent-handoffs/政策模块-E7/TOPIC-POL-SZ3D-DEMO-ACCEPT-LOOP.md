@@ -108,3 +108,23 @@
 | 缺口键 | 类 | 现况 | 预期 | 建议 | 挂到任务 |
 |---|---|---|---|---|---|
 | `policy_base_info.city_section.scope` | DATA→口径 | 深圳市行 1458、均值 0.3873；一张图 debug 540 + 图2 SYNTH 49 混入；~9667 行被城市回填 | 879 / 0.4653 稳定复现，且不破坏一张图、图2 演示 | 方案 A：board SQL 加原生过滤（`source_plane='domestic' AND etl_batch_id IS NULL`），同步修订 LOOP §1 库核对口径；方案 B：通过线改动态基线。等 `human:淮政玮` 拍板 | `TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA`（blocked） |
+
+## 运行 2026-11-08 02:44（方案 A 上线后重签轮）
+
+- 用例：`agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/深圳政策现状分析-合规演示用例.md`
+- 库：本轮没有写库。DB 直查受限（10.50.75.136 跳板机无 mysql 客户端，3306 端口通；按 SSH 熔断规则停止找客户端），截面读数以算法 `diagnostics` 实读为证
+- 样本满足：是（接口全绿；本轮起验收入口改读新号）
+- 停止：继续。本轮无新缺口，无新建单
+- 部署：`lumen-algo-py` `4df6ab5`（`CITY_SECTION_SQL` 原生过滤：`COALESCE(source_plane,'')='domestic' AND etl_batch_id IS NULL`）CI 流水线 4280 全绿，`deploy:entan-api` success，新算法已上线
+- 重签：旧 `targetParams` 冻结体只剩展示件（frozen_cards/report_chapters），锚点键被覆写，原样重放会撞 `VALIDATION_OBJECT_XOR`；按总控「接口事实必须保留」重建创建体，沿用原指纹 + `force=true`，`reused=false`
+  - `POLICY-20261108-009`（产业：`industry_id=INB1303` + `industry_vid=chain:INB1303`，指纹 86977506…1b714）
+  - `POLICY-20261108-010`（技术领域组合：`scope_kind=industry` + `industry_codes=[INB1209,INB1309]` + `industry_name=智能网联汽车、人工智能`，指纹 a64bc063…f4417）
+- 探测（两条 `success`，`honesty.source=dwd, degraded=false, fabricated=false`）：
+  - 支持力度：879 / 33.5585 / 名次 5 / 层级均值 0.4653 / spearman 0.9467 —— 原生过滤生效（count 是 879 不是 1458），`city_rows=10295`、`city_null_rows=9712` 与基线一致，城市回填未漂移截面
+  - 档位：`value=4`，原因「截面金额均值临时分位，QPOL-02」
+  - 落地实效：`computable=true`，`score=72.7658` —— `EFFECT-READ` 公式已接通 gapfill 缺项行实算（此前占位基线 50 退役；计划 §1 同步改口径）
+  - 009 适配性：「未提供链名」（anchor_name 空），不建单
+  - 010 适配性：9.245 / 43 / 锚点「智能网联汽车、人工智能」
+  - 报告：第 4 章印「分数 72.7658」不再是「不可算」；第 5 章 009 有供给结构、010 有供给结构+锚点适配
+- 计划修订：`深圳政策现状分析-LOOP计划.md` 状态行、§1 通过线（探测号/落地实效 72.7658/第 4 章）、§3 调用表、§4「旧章节」条款已改读新号
+- 验收单：保持 `ready`，不签完成
