@@ -52711,13 +52711,18 @@ tasks:
       - "USE_MOCK=true 时现有本机检索行为仍可用。动向、舆情、比对、订阅页不改数据源"
     update_time: "2026-11-04T01:20:15+08:00"
   - id: POL-L2-DS11-BE-L01
+    evidence: "commit 0a6b0d9,e0ede48 @ origin/dev；K8s dev rollout 绿（element 0a6b0d95 / display c2ed4dc0）；二轮复测 11 笔全过；handoff 科技政策跟踪-POL/POL-L2-DS11-BE-L01.md"
+    cost_warn: "false"
+    actual_cost: "0.8"
+    model_used: "glm-5.3-flash"
+    actual_tokens: "95000"
     claimed_by: "agent:cursor-orchestrator"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-07T18:17:51.151Z"
     last_seen_at: "2026-11-07T18:17:51.151Z"
     lock_until: "2026-11-07T22:17:51.151Z"
     title: "政策分析评价 · DS11 评价页后端读面与白名单接线"
-    status: "in_progress"
+    status: "done"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -52727,8 +52732,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 40000
-    note: |
-      修复已推 origin/dev（0a6b0d9）：①SHELL_SQL 列名对齐真表（subject_name/caption_text）修 224/225 空列表；②新增 /evaluation/template 接 222；③226 改 element 同步只读 ads.policy_text_parse.summary，不再建异步任务（避免 parse.run 清表）；④display shells 增加 kind=模板选用。等 CI 绿后二轮复测。
+    note: "联调通过：二轮网关全链路复测 11 笔全过，CI 部署绿。AV-0/AV-1 走自动验收。"
     depends_on:
       - "POL-L2-DS11-READ-GAPFILL-L01"
       - "POL-L2-DS11-VIZ-GAPFILL-L01"
@@ -52741,7 +52745,7 @@ tasks:
       - "在 gkxlumen-display 与 gkxlumen-element 落地 DS11 评价页读面：counts 短板、jobs 的 focus_ads 与 text_parse、shells 的解读与多媒体、趋势段与分区段同步读缺项表、方案五叶只读 gapfill_policy_eval_scheme、221 只消费已有子图。浏览器只打 /display/v1/policy/**"
       - "display 不直连 Python、不直连库。policy_focus_ads 与 policy_text_parse 进 PolicyAnalysisTypes 白名单，223 焦点调已有 focus.run 后读 ads.policy_focus，226 只查 ads.policy_text_parse.summary，请求不调 parse.run。旧键 policy_focus 不改"
       - "无行则空，不造 0，不返回 501。不改 D4，不新造 metric_id。ponytail full。handoff 含联调确认与自检证据，走 QA 闸门"
-    update_time: "2026-11-08T02:39:16+08:00"
+    update_time: "2026-11-08T03:04:37+08:00"
   - id: POL-L2-DS11-QA-UT-L01
     supervised_by: "human:淮政玮"
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-QA-UT-L01.md"
@@ -55830,8 +55834,11 @@ tasks:
       - "handoff 含库表行数、演示任务号、报告或结果 JSON 片段，以及 cost 四字段"
     update_time: "2026-11-07T12:01:50+08:00"
   - id: POL-L2-DS12-INDUSTRY-EQ-FIX-L01
+    claimed_at: "2026-11-07T18:59:38.880Z"
+    last_seen_at: "2026-11-07T18:59:38.880Z"
+    lock_until: "2026-11-07T22:59:38.880Z"
     title: "未出台仿真目标产业等值过滤"
-    status: "ready"
+    status: "claimed"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -55866,7 +55873,7 @@ tasks:
       - "前端未出台仿真把产业级联回显全文作为 target_industry 提交；空选择不提交该字段。多选回显整串等值，不拆 OR。"
       - "单测覆盖：只填目标产业能命中对应行；四类加上对应产业命中；产业对不上为空；233–236 不读这一列。"
       - "不新增 metric_id，D4 仍是 mock。不改区域空间、新出台预测、多维评估、利益攸关方的过滤。handoff 写明改动仓与验证。"
-    update_time: "2026-11-07T12:00:29+08:00"
+    update_time: "2026-11-08T02:59:40+08:00"
   - id: POL-L2-DS12-EST-ACCEPT-LOOP
     evidence: |
       handoff: agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-EST-ACCEPT-LOOP.md#运行-2026-11-08；2026-11-08 探测 200，样本 8/8 全 PASS，只读库行数 7/7/7/9/8；残留缺口 232 target_industry 等值挂 POL-L2-DS12-INDUSTRY-EQ-FIX-L01
@@ -59695,7 +59702,7 @@ tasks:
     update_time: "2026-11-08T02:17:57+08:00"
   - id: POL-L2-DS11-VIZ-DEMO-ACCEPT-LOOP
     title: "政策分析评价 · 可视化呈现 DS11-VIZ 演示样本验收 LOOP（§6.5）"
-    status: "ready"
+    status: "done"
     agent: "qa-agent"
     epic: "E-PM-DELIVERY"
     priority: "P0"
@@ -59705,16 +59712,16 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 20000
-    note: "2026-11-08 首轮：219/220 通过；222 GAP-01 空列表（不改判通过）；221 设计无资源不请求。详见 handoff。监管人 human:淮政玮"
+    note: "联调通过：VIZ 二轮终测 222 模板 2 行与用例一致，219/220 无回归。样本满足。"
     definition_of_done:
       - "每轮只读：探测 HTTP 200 后按用例可演行逐条对照，探测 401/424/404 即 blocked 停止，不建子任务"
       - "缺口按 DATA/QUERY/ALGO 分类，先 task-query 去重；2026-11-08 首轮 222 GAP-01（shells 模板选用空列表，库内有行）归 QUERY，挂 POL-L2-DS11-BE-L01，不另建修复单"
       - "handoff 只追加「运行 YYYY-MM-DD」节；每轮结束回写编排计划 POL-L2-DS11-VIZ-LOOP计划.md 状态行"
       - "样本满足+子任务都已签收（或本轮无子任务）+状态行已回写后才改 done，操作人 human:淮政玮"
-    update_time: "2026-11-08T01:36:36+08:00"
+    update_time: "2026-11-08T03:04:44+08:00"
   - id: POL-L2-DS11-READ-DEMO-ACCEPT-LOOP
     title: "政策分析评价 · 结果解读 DS11-READ 演示样本验收 LOOP（§6.5）"
-    status: "ready"
+    status: "done"
     agent: "qa-agent"
     epic: "E-PM-DELIVERY"
     priority: "P0"
@@ -59724,17 +59731,17 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 20000
-    note: "2026-11-08 首轮：223 通过；224/225 BUG-01 空列表（不改判通过）；226 返回的是新建任务载荷而非只含 summary（reused:false）——行为缺口 QUERY，挂 POL-L2-DS11-BE-L01。监用令牌由监管人提供后落盘。监管人 human:淮政玮"
+    note: "联调通过：READ 二轮 224/225/226 全过，226 已改只读。样本满足。"
     definition_of_done:
       - "每轮只读：探测 HTTP 200 后按用例可演行逐条对照，探测 401/424/404 即 blocked 停止，不建子任务"
       - "缺口按 DATA/QUERY/ALGO 分类，先 task-query 去重；2026-11-08 首轮 BUG-01（shells 解读4条+多媒体3条空列表，库内有行）归 QUERY，挂 POL-L2-DS11-BE-L01，不另建修复单；226 只查 summary、请求不调 parse.run 同挂该单"
       - "223 不重放 focus jobs（会改写 policy_id 非空行）；226 重放后库表行数不变，不另编摘要句"
       - "handoff 只追加「运行 YYYY-MM-DD」节；每轮结束回写编排计划 POL-L2-DS11-READ-LOOP计划.md 状态行"
       - "样本满足+子任务都已签收（或本轮无子任务）+状态行已回写后才改 done，操作人 human:淮政玮"
-    update_time: "2026-11-08T01:36:49+08:00"
+    update_time: "2026-11-08T03:04:51+08:00"
   - id: POL-L2-DS11-PLAN-DEMO-ACCEPT-LOOP
     title: "政策分析评价 · 推荐方案 DS11-PLAN 演示样本验收 LOOP（§6.5）"
-    status: "ready"
+    status: "done"
     agent: "qa-agent"
     epic: "E-PM-DELIVERY"
     priority: "P0"
@@ -59744,14 +59751,14 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 20000
-    note: "2026-11-08 首轮：227/228/229 通过；230/231 shells 空列表归 QUERY（同根因 GAP-01/BUG-01），挂 POL-L2-DS11-BE-L01。监管人 human:淮政玮"
+    note: "联调通过：PLAN 二轮 230/231 全过，227/228/229 无回归。样本满足。"
     definition_of_done:
       - "每轮只读：探测 HTTP 200 后按用例可演行逐条对照，探测 401/424/404 即 blocked 停止，不建子任务"
       - "缺口按 DATA/QUERY/ALGO 分类，先 task-query 去重；2026-11-08 首轮 230/231 shells 空列表（库内互动意见 6 行已核实）归 QUERY，挂 POL-L2-DS11-BE-L01，不另建修复单"
       - "230 重放不插入：库内互动意见保持 6 行；231 不返回文件字节、不写对象存储"
       - "handoff 只追加「运行 YYYY-MM-DD」节；每轮结束回写编排计划 POL-L2-DS11-PLAN-LOOP计划.md 状态行"
       - "样本满足+子任务都已签收（或本轮无子任务）+状态行已回写后才改 done，操作人 human:淮政玮"
-    update_time: "2026-11-08T01:37:00+08:00"
+    update_time: "2026-11-08T03:04:59+08:00"
   - id: POL-L2-PC1-LINEAGE-DEMO-SAMPLE-L01
     cost_warn: "false"
     actual_cost: 0.1

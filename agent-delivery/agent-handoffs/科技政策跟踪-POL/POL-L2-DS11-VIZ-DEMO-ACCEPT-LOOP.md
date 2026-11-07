@@ -40,8 +40,8 @@
 
 ## 运行 2026-11-08（第二轮 · 修复后复测）
 
-- 修复单：`POL-L2-DS11-BE-L01`，commit `0a6b0d9`（element 新增 /evaluation/template + display kind=模板选用 路由）与 `e0ede48`（shells 绑定 template 参数）已 push，`0a6b0d9` 已部署，`e0ede48` CI 部署中。
-- 样本满足：待 `e0ede48` 部署后终测 222
+- 修复单：`POL-L2-DS11-BE-L01`，commit `0a6b0d9`（element 新增 /evaluation/template + display kind=模板选用 路由）与 `e0ede48`（shells 绑定 template 参数）已 push 并部署 dev。
+- 样本满足：是
 
 ### 逐行结果
 
@@ -50,8 +50,8 @@
 | 219 趋势 | POST jobs `kind=趋势` | 200 | 首轮已过（6 点），本轮未回归 | ✅ 通过 |
 | 220 分区 | POST jobs `kind=分区` | 200 | 首轮已过（10 行 + 财政资金过滤 5 行），本轮未回归 | ✅ 通过 |
 | 221 多维结构关联图 | 设计无资源，不请求 | — | — | 不判 |
-| 222 模板选用 | GET evaluation/shells `kind=模板选用&template=区域政策效果季度对比` | 200 | element 侧已验证返回 2 行（季度/地区/柱状、季度/地区/热力）；display 参数绑定修复 `e0ede48` 部署后终测 | ⏳ 待终测 |
+| 222 模板选用 | GET evaluation/shells `kind=模板选用&template=区域政策效果季度对比` | 200 | 2 行：reportPeriod=季度、analysisDim=地区、chartKind=柱状/热力，与用例期望逐字段一致 | ✅ 通过 |
 
 ### 结论
 
-VIZ 三笔已过、222 待 `e0ede48` 部署完成后终测。element 侧读面证据：集群内直测 `gkxlumen-platform-element:7082/v1/element/policy/evaluation/template` 返回模板 2 行。
+VIZ 可演行全部通过，样本满足。验收单转 `ready_to_sign`，监管人签收后 done。修复证据：commit `0a6b0d9` + `e0ede48`（lumen-svc-platform dev），display digest `c2ed4dc0` 部署后网关终测。
