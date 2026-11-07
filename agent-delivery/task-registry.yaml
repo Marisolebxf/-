@@ -56107,7 +56107,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 30000
     user_story: "US-E7-POL-04"
-    note: "核对完成：源列全空，未改 shenzhen_board.py。待签收，不签 done。"
+    note: "2026-11-07 补调研：结果板写死不取金额和实效。可算条件已写入 handoff。已派 TOPIC-POL-SZ3D-DEMO-FIX-R20261107-TIER-DATA、EFFECT-DATA、BOARD。不接招标表，不把空值写成 0。本单仍待签收，不签 done。"
     collaborators:
       - "data-agent"
       - "qa-agent"
@@ -56119,4 +56119,79 @@ tasks:
       - "源列全空时仍不可算，不得输出 0，不改公式造假分。"
       - "不改第 3 章链名匹配，不改前端。支持力度的 879、33.5585、5、0.4653 仍要保持。"
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-ALGO.md"
-    update_time: "2026-11-07T13:57:14+08:00"
+    update_time: "2026-11-07T14:17:44+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-TIER-DATA
+    title: "深圳政策现状抽取真实扶持金额"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 30000
+    user_story: "US-E7-POL-04"
+    note: "由算法单调研派出。扶持档位要政策扶持金额表，不接招标表。没有真实金额就停，不造数。"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-ALGO.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_SUPPORT_STRENGTH.md"
+    definition_of_done:
+      - "新建或填充政策扶持金额表，列为 policy_id、amount、caliber、source_clause。policy_id 对得上 demo_gkxlumenx_dwd.policy_base_info。"
+      - "amount 只能来自政策原文或已有非空字段。禁止使用 dwd_bid_* 招标金额，禁止把空值写成 0，禁止写 ODS、正式库、供应方库。"
+      - "深圳市至少 30 条政策有非空 amount 才算这座城市能进档位截面。抽不到则任务阻塞并写明抽了多少行。"
+      - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-TIER-DATA.md"
+    update_time: "2026-11-07T14:17:20+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-DATA
+    title: "深圳政策现状回填真实实施日与支持对象"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 30000
+    user_story: "US-E7-POL-04"
+    note: "由算法单调研派出。落地实效至少要有真实实施日或非空支持对象。零日期不算有效。"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-ALGO.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+    definition_of_done:
+      - "启动维：只把已有的真实日期写入 demo_gkxlumenx_dwd.policy_base_info.implementation_date。0000-00-00 和 NULL 不改成假日期。"
+      - "覆盖维：policy_support 不是 JSON null，且子键「适用对象」或 support_object 有非空文本。只回填原文或已有字段里已经写明的对象。"
+      - "反馈维本轮不建调查表。缺这一维可以不进平均。没有真实日期且没有非空支持对象则阻塞。"
+      - "不写 ODS、正式库、供应方库。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-DATA.md"
+    update_time: "2026-11-07T14:17:30+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-BOARD
+    title: "深圳政策结果板按已有金额与实效字段计算"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-04"
+    note: "由算法单调研派出。只改结果板的读取与计算。源列全空时不出数。不改第 3 章链名匹配，不改前端。"
+    collaborators:
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-ALGO.md"
+      - "repos/lumen-algo-py/vendor/entan-py/polan/shenzhen_board.py"
+    definition_of_done:
+      - "shenzhen_board 在扶持金额表有非空 amount 时出城市金额均值，并用截面分位给临时 1–4 档，reason 带 QPOL-02。没有金额的城市档位仍为 null。"
+      - "实施日为真实日期，或 policy_support 有非空支持对象时，落地实效按缺维不进平均出分。两维都空则 computable 仍为 false，不出 0。"
+      - "不接 dwd_bid_*。没有金额、实施日、支持对象的旧样例仍保持现在的支持力度分数。单测覆盖有数与无数两种行。"
+      - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-BOARD.md"
+    update_time: "2026-11-07T14:17:40+08:00"
