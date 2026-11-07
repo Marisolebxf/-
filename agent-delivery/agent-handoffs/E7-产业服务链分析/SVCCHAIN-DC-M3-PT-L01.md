@@ -1,4 +1,4 @@
-# Handoff · SVCCHAIN-DC-M3-PT-L01（M3d 门户专题服务域 §33）
+# Handoff — SVCCHAIN-DC-M3-PT-L01
 
 - 日期：2026-11-07
 - agent：doc-agent；监管人：human:徐滕强；强度：ponytail full

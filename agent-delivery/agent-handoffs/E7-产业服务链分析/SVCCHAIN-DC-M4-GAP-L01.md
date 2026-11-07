@@ -64,3 +64,10 @@
 - `model_used`: glm-5.3-Flash
 - `actual_cost`: ~$0.5（<$10 阈值）
 - `cost_warn`: false
+
+## 7. 验收证据
+
+- 索引 `产业服务链分析-索引.md`：模块合计可演 27 = 四域调度核对（ORG 6 + ECO 6 + REC 4 + PT 11）逐项一致（校验①）
+- 缺口总表 `SVCCHAIN-缺口登记总表.md`：22 行 = 四域用例引用去重编号数，与监管人确认清单 diff 零差异（校验②）；编号去重后无重复行（校验③）；全文零新造编号，逐条对照 `客户决策清单跟踪表.md` 原行与 as-built 既有 GAP（校验④）
+- 四份域用例与四份 LOOP 计划落盘路径核对：`工程过程/04-系统集成/03-专题系统集成/{合规演示用例,编排计划}/` 共 8 文件 + 本管线 handoff 7 份
+- registry：本叶 evidence/cost 已回填；状态流转 MCP 留痕（backlog→ready→claimed→in_progress→integration）

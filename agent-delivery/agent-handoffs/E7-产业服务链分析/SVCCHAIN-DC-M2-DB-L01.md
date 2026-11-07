@@ -1,4 +1,4 @@
-# Handoff · SVCCHAIN-DC-M2-DB-L01（M2 数据调研）
+# Handoff — SVCCHAIN-DC-M2-DB-L01
 
 - 日期：2026-11-07
 - agent：data-agent；监管人：human:徐滕强；强度：ponytail full
@@ -33,6 +33,8 @@
 - 不造数 ✅（行数均实测或 information_schema 估算并标 ≈；禁写 is_mock 字段名）
 - 不改 metrics/registry seed ✅（matrix 只读消费）
 - 不 commit/push ✅（coordinator 统一提交）
+- D9 指标口径 ✅（M_SVC_* 只读对照，D4=mock 维持不改绿）
+- cicd: skip ✅（纯编排仓文档，无业务 CI 触发）
 
 ## 受阻清单
 
@@ -44,6 +46,13 @@
 ## 调度核对
 
 总控 §3 六行全部落节、零整库跳过；每表行数证据齐；Top10 与关键缺口见调研文档 §7/§8；`覆盖不到` 判据交 M3 按既有 Q/GAP 编号引用，未新造编号；未派任何 DATA/QUERY/ALGO 修数单。
+
+## 验收证据
+
+- 6 库 37 表逐表落行（`SVC-数据调研-20261107.md`）：dwd 7 表 / ads 23 表 / topic_enterprise 2 表 / gapfill 3 表 / 弱相关 2 表；零整库跳过
+- readiness 对照：matrix-SVC 51 条 `M_SVC_*` → 21 张去重源表全部命中 `demo_gkxlumenx_ods` 且非空；D4=mock 全部维持
+- 受阻 4 项有标记：指定连接认证被拒（绕行 demo-gkxlumenx-ods 入口）/ topic_svc 库不存在（映射 topic_enterprise）/ 检索历史·收藏·Job 快照三表不存在 / Job 结果快照不落库
+- registry：evidence/cost 已回填；状态流转 MCP 留痕
 
 ## cost
 
