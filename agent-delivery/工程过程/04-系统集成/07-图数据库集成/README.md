@@ -97,6 +97,7 @@
 - 合规验收分工 → [WBS-全景维护与知识图谱分工.md](./WBS-全景维护与知识图谱分工.md)（四条：结构、燕大入图、验收面、详设编排。调研细表在同目录背景稿）
 - 合规验收结构与空间选定 → [KG-COMPLY-STRUCT-L01-结构与空间选定.md](./KG-COMPLY-STRUCT-L01-结构与空间选定.md)（2026-11-07。M01–M24 落成 Tag/Edge/VID；两种空间放法写清，选定补 `demo_gkx_chain`。附表 [xlsx](./KG-COMPLY-STRUCT-L01-附表-结构与空间.xlsx)）
 - 合规验收面 → [KG-COMPLY-ACCEPT-L01-验收面.md](./KG-COMPLY-ACCEPT-L01-验收面.md)（2026-11-07。三个用图菜单 + 四类图算法；三档验收判据；本期不验清单；空态规则）
+- 合规算法实跑结果 → [KG-COMPLY-ACCEPT-L01-算法实跑结果.md](./KG-COMPLY-ACCEPT-L01-算法实跑结果.md)（2026-11-07 只读实跑。技术点图 19,430 点 / 541,428 边：度中心性、PageRank、紧密、中介、多维综合、Louvain 113 社群、路径 10 对、路径步 35,018；七要素 M15 DAG 32 层、M22 碎片化。明细 [json](./KG-COMPLY-ACCEPT-L01-算法结果-20261107.json)）
 - 技术方案 → [技术方案.md](./技术方案.md)（处理中，WBS 仍要调整）
 - 七要素上图与消费实施方案长任务 → [KG-CLOSELOOP 总控](../../../agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md)（2026-10-29 启动。只写方案，不替代 `SYSINT-SCHEME-07-L01`，不派 `SYSINT-07-01`～`03`）
 - 对接文档 → `对接文档/智谱/` · `对接文档/燕大/`

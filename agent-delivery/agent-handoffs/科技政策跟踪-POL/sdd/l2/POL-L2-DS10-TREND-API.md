@@ -45,6 +45,13 @@
 
 打开一条详情时复用全景已有的 `GET /display/v1/policy/panorama/{id}/detail`。本分册不新开详情资源，不重写这条 detail。无正文则详情空。
 
+**2026-11-07 变更（`POL-L2-DS10-SRCMON-SYNTH-L01`）**：
+
+- `ingest` 每行新增 `is_mock`（0/1）。LLM 合成行为 1，前端评审态挂 MockBadge。其余列不变。
+- `POST /display/v1/policy/panorama/sync-history`（立即同步）立即返回同步历史，最新一行 `status='running'`、`fetched=50`。合成在后台进行。已有一条在跑时不新开，`honesty.note='已有同步在进行'`。
+- `GET /display/v1/policy/panorama/sync-history`：`status` 取 `running`/`success`/`partial`/`failed`。`note` 写明「LLM 合成，未抓取外站；产业补码 X 条，条款结构化 Y 条」或失败原因。前端每 4 秒轮询，直到没有 `running` 行，再重读 `ingest`。
+- 中台（demo-ui-system-test）政策 Mock 页走 demo 网关 `/policy/v1/policy/mock/synth`：`POST {count}` 发起，`GET` 查 `{running,last,total}`，`DELETE` 删除全部合成行。这三条只在中台用，不进展示前端。
+
 ## 3. 204 · `GET /display/v1/policy/panorama/subscriptions`
 
 display 只委托 `gkxlumen-topic-policy`。保存、修改、取消、读取和外发都在这次委托里。展示不保存订阅关系，不跑定时，不发系统通知、邮件或短信，不把订阅写进 `gkxlumen-element` 或 ADS。
