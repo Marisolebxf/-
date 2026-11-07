@@ -75,6 +75,8 @@
 
 无行则 Job 查询结果空，不造 0，不在接口里写区域列表或分数。D4 保持 mock。这张区域表不是序号 211 的评估报告。
 
+> **2026-11-07 变更（POL-L2-DS10-SRCMON-SYNTH-L01）**：LLM 合成政策写完后，原样调用一次已有 `polan.eval.effect.run()`，让合成政策计入各省落地实效；「删除所有 Mock 数据」后也重算一次。公式、列、表都不改。历史版 `expire_date` 设为新版发布日前一天，`run()` 按已有的 `policy_open` 判它无效，不抬高有效率。
+
 ## 5. 210 政策受众反馈收集
 
 库 `gkxlumenx_gapfill`，表 `gapfill_policy_audience_feedback`。一行是一条受众意见：一个反馈主体、一个渠道、一段意见正文、可选评分、可选关联政策、一个反馈时间。一行不是一份问卷，不是一次征集活动，不是一个文件。
@@ -104,6 +106,8 @@
 `fill_method` 固定 `manual`，因此不设 `fill_model`。政策只在方法为 `llm` 时要求模型名。
 
 表空则反馈列表空。查询不插入行。
+
+> **2026-11-07 变更（POL-L2-DS10-SRCMON-SYNTH-L01，用户当次对话选定）**：LLM 合成政策时，新版和 `-H1` 历史版每条顺带写 2～3 条受众反馈入本表。`policy_id` 填合成政策 id，渠道仍限三选一，评分 1～5 可空；`feedback_at` 由代码落在该政策实施期内（新版：发布日到昨天；旧版：发布日到 `expire_date`）。这些行 `fill_method=llm-synth`，`gapfill_batch_id` 为合成批次号，`is_mock=1`。本表没有 `fill_model` 列，模型名不入行，由批次号追溯到合成作业。「删除所有 Mock 数据」按合成 `policy_id` 加 `fill_method=llm-synth` 删除。原有 6 条 `manual` 行不动。
 
 ## 6. 211 政策效果评估报告
 

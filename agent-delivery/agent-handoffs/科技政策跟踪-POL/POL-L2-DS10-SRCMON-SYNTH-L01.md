@@ -46,6 +46,16 @@
   - element 新增 `GET /v1/element/policy/versions`：读 DWD 新版与 `-H1` 历史版成对的行，`policy_id` 可空，`limit` 默认 50、上限 200。display 新增 Feign、Service 和 `GET /display/v1/policy/panorama/versions`。element 单测补了一条。
   - lumen-ui-science-pc（未推，待人工确认）：`api/policy.ts` 加 `panoramaVersions`；`compareLive.ts` 加 `mapVersionPairs`；新增 `components/useVersionPairs.ts`，CompareTab 和 VersionCompareModal 共用。真实模式下，政策下拉只列有历史版的政策，两个时点就是旧版和新版的发布日，打开时预填但仍需点「查询对比」。不再借用其它政策的发布日当候选。
   - 文档：`CMP-DATA` 第 3 节（含 2026-11-07 变更段）、`CMP-API` 第 3 节和空态表、`CMP-ARCH` 第 3 节表格、流程第 3 步、5.1，以及 `TREND-ARCH` 4.1。
+- **落地实效（2026-11-07 用户追加：「生成的10条中也要包含政策对应的落地实效相关的数据」；用户选定 组合方案、新旧版都给）**：
+  - 现状：没有落地实效的 gapfill 表。落地实效是已有模型 `polan.eval.effect.run()` 按省级区域算出、写入 ADS `policy_effect`（`impl_effect`）和 `policy_metric_timeseries`（`M_POLICY_IMPLEMENTATION_EFFECT`）的，口径为「该省有效政策占比×100」。
+  - `synth.py`：
+    - 正文生成和旧版生成的提示词里加 `feedbacks`，每条政策 2～3 条受众反馈，不增加 LLM 调用。
+    - `build_feedbacks` 过滤渠道（三选一）、禁用词，评分夹到 1～5，反馈时间由代码落在实施期内。
+    - 反馈写 `gkxlumenx_gapfill.gapfill_policy_audience_feedback`（`fill_method=llm-synth`）。
+    - 写完后调用一次 `effect.run()`。旧版加 `expire_date` = 新版发布日前一天，已有 `policy_open` 据此判它无效。没改共享函数，因为政策效果挂在合规展示台。
+    - 返回值新增 `feedback_rows`、`effect_refreshed`。`delete_all` 增删反馈行，删完后重算一次。
+    - 自检补了反馈和重算断言。demo 仓同文。
+  - Java 与前端不改：209 读 `policy_effect`，210 读整张反馈表。
 - **demo-ui-system-test**：政策 Mock 页加「Mock 10 条数据」（二次确认 → POST → 轮询 GET → 刷新列表）和「删除所有 Mock 数据（N）」（二次确认 → DELETE）两个按钮，API 写在 `src/api/policy/index.ts`。
 - **设计文档**：
   - 签过字的分册不改原文，只在对应小节末尾追加「2026-11-07 变更」段：`l2/POL-L2-DS10-TREND-ARCH.md` 4.1 和 203 行、`TREND-DATA` 第 2 节、`TREND-API` 第 2 节、`TREND-METRIC` 6.1。
@@ -68,6 +78,9 @@
   - `python -m polan.mockgen.synth` 在两个仓都 OK，`test_policy_sync_history.py` 6 passed。
   - 真实库冒烟：假 LLM 跑 4 条，生成历史版 2 条、变更行 4 条；成对 SQL 取出 2 对，旧版状态都是 `已废止`，两个日期都是 `YYYY-MM-DD` 字符串。之后只按该批次号清理（gapfill 4 行、DWD 6 行、ODS 6 行），库里原有 44 条合成行未动。
   - `FE-POL-CMP-LIVE.test.mjs` 全绿，`pnpm type-check` 退出码 0。element 本机无 Maven，靠 CI 编译。
+- 落地实效：
+  - 两个仓的 self_check OK，`test_policy_sync_history.py` 6 passed。
+  - 真实库冒烟：假 LLM 跑 4 条，生成历史版 2 条、变更行 2 条、受众反馈 12 条，`effect.run()` 实际重算。旧版 `expire_date` 都早于新版发布日。之后只按批次号清理（反馈 12 行、变更 2 行、DWD 6 行、ODS 6 行），再重算一次，本批的影响消失。冒烟前的落地实效是 19:36 算的，当时没计入 21:10 入库的 44 条合成政策；现在库里的值已计入这 44 条。
 - **未做**：线上真实 LLM 端到端（还没在 dev 上点「立即同步」）。
 
 ## 遗留风险
@@ -77,6 +90,8 @@
 - 合成行计入检索和统计后，205/206 的数值会变；相关指标 D4 仍是 mock。
 - 历史版本已有的 44 条合成行没有补做（只对之后新合成的生效）。手工灌的 5 条 `CMP-GAPFILL` 变更行，对应政策在 DWD 里没有 `-H1` 行，所以不会出现在真实模式的新旧对比下拉里。
 - 每次合成多一次 LLM 调用（5 条一组），耗时约增加三分之一。
+- 落地实效是省级的，按「有效政策占比」算。真实政策 20008 条状态为空（判为无效），只有 584 条为「有效」，所以各省值普遍很低（广东约 26，多数省 0～2）。合成政策状态都是「有效」，会把所在省的值往上推。国家级合成政策没有省份，不计入。
+- `effect.run()` 每次全量重算全部区域。合成与删除会改写 209 的数值，D4 仍是 mock。
 - 跳板机 `/tmp/admin-kc.yaml` 是别的会话留下的 root 属主文件，本会话无权删除，需要有权限的人清理。
 
 ## CI/CD（必填）
