@@ -57157,7 +57157,7 @@ tasks:
     update_time: "2026-11-07T17:59:04+08:00"
   - id: SYNTH-DEMO-ACCEPT-LOOP
     blocked_by: |
-      接口映射不存在：GET /topic/v1/synth/vitality/batch-snapshot 经两网关前缀探测均 404（/tts/svcz/api/enterprise → path=/topic/v1/synth/vitality/batch-snapshot；/tts/lumen/api → path=/v1/synth/vitality/batch-snapshot，网关已剥 /topic 转发）。锚点接口 recommend 同令牌 200，令牌有效。已通知监管人 human:徐滕强。不建子任务，不再开轮。
+      接口映射不存在【根因已定位 2026-11-07 20:16】：gkxlumen-platform-topic 服务正常（pod Running；直打 svc 7092 带 /topic/v1 前缀 → 200 且快照数据正确 snapshotId=snap:mock_20261106_vit_seed_index_main），但 lumen 网关（NodePort 30895/域名 /tts/lumen/api）按剥 /topic 前缀设计转发 /v1/synth/** → 服务无该映射 404；域名 /tts/svcz/api/enterprise 属 demo 面非本服务。修复二选一：A 网关路由改为不剥 /topic 直转（devops）；B 服务按网关契约重发布为 /v1/** 映射（api）。属发布层 C1，非 DATA/QUERY/ALGO 缺口，不建子任务。已通知监管人 human:徐滕强裁决。
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-07T11:56:16.900Z"
     last_seen_at: "2026-11-07T11:56:16.900Z"
@@ -57191,7 +57191,7 @@ tasks:
       - "缺口按 DATA/QUERY/ALGO 分类建子任务并去重（覆盖不到行归 DATA）；同一缺口连续两轮仍在→停止交监管人，不建第三张"
       - "handoff 新增「运行 YYYY-MM-DD」节记录本轮；不改已写实测；不把 401/404 改写成通过"
       - "完成三条件齐备：样本满足+本轮子任务已签收（或无子任务）+LOOP 计划状态行已回写→验收单改 done，操作人 human:淮政玮；三条件缺一时禁止改 done"
-    update_time: "2026-11-07T19:58:59+08:00"
+    update_time: "2026-11-07T20:17:29+08:00"
   - id: E-E7-POLICY-M1-L10-FIX01
     cost_warn: "green"
     actual_cost: 0.16
@@ -57543,13 +57543,18 @@ tasks:
       - "不改库、不改代码、不打开页面"
     update_time: "2026-11-07T19:46:16+08:00"
   - id: SVC-ORG-DEMO-ACCEPT-LOOP
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-ACCEPT-LOOP.md"
+    cost_warn: "green"
+    actual_tokens: 160000
+    actual_cost: 0.6
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-07T11:57:03.646Z"
     last_seen_at: "2026-11-07T11:57:03.646Z"
     lock_until: "2026-11-08T11:57:03.646Z"
     claimed_by: "agent:qa-agent"
     title: "服务机构分析演示样本反复验收"
-    status: "claimed"
+    status: "ready"
     agent: "qa-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -57559,7 +57564,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "常驻验收单就绪（监管人 human:徐滕强 步 2 开工口令已下）。步 1 放令牌未完成（~/.gkx/topic-loop-token 不存在），首开轮探测前须令牌就位"
+    note: "第 1 轮验收完成，样本未满足，缺口子任务已建 ready 等人派；按规约验收单回 ready 待下一轮"
     collaborators:
       - "data-agent"
       - "algorithm-agent"
@@ -57575,15 +57580,20 @@ tasks:
       - "缺口分类 DATA/QUERY/ALGO/ENV；每轮最多 3 张（先 task-query 去重）；同缺口连续两轮不收敛 → 停交 human:徐滕强"
       - "报告只追加 handoff 运行节（agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-ACCEPT-LOOP.md）；通过后回写 LOOP 计划状态行并退回 ready，不签 done"
       - "签收收尾按规程 §6.5.7 步 6：样本满足 + 子任务已签收/本轮无子任务 + 状态行已回写，监管人 human:徐滕强 确认后验收单改 done（操作人按服务端签收闸门要求）"
-    update_time: "2026-11-07T19:57:03+08:00"
+    update_time: "2026-11-07T20:13:59+08:00"
   - id: SVC-ECO-DEMO-ACCEPT-LOOP
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ECO-DEMO-ACCEPT-LOOP.md"
+    cost_warn: "green"
+    actual_tokens: 130000
+    actual_cost: 2
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-07T11:57:04.529Z"
     last_seen_at: "2026-11-07T11:57:04.529Z"
     lock_until: "2026-11-08T11:57:04.529Z"
     claimed_by: "agent:qa-agent"
     title: "服务链生态演示样本反复验收"
-    status: "claimed"
+    status: "ready"
     agent: "qa-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -57593,7 +57603,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "常驻验收单就绪。待步 1 放令牌"
+    note: |
+      2026-11-07 第1轮：探测 200；6/6 行全部对上（7.4.1/7.4.2/7.5.1/7.5.2/7.8.1/7.8.2，演示态声明在位），库侧五表只读核对通过（中试熟化 0/blank 恒定、43,296/42,740、密度 0.000046、TOP5 首名深圳市创新投资集团 253、深圳 14,080/77/0.833）；无缺口无子任务；复用任务 SVC-20261105-014 / SVC-20261107-002 / SVC-20261107-022，未新签发。样本满足，样本满足待签收。状态拨回 ready，不签 done。运行节见 agent-handoffs/E7-产业服务链分析/SVC-ECO-DEMO-ACCEPT-LOOP.md。
     collaborators:
       - "data-agent"
       - "algorithm-agent"
@@ -57610,7 +57621,7 @@ tasks:
       - "缺口分类 DATA/QUERY/ALGO/ENV；每轮≤3 张去重；同缺口两轮停交 human:徐滕强"
       - "报告只追加 handoff 运行节（SVC-ECO-DEMO-ACCEPT-LOOP.md）；通过后回写 LOOP 计划状态行退回 ready"
       - "签收收尾按 §6.5.7 步 6：监管人 human:徐滕强 确认后改 done"
-    update_time: "2026-11-07T19:57:04+08:00"
+    update_time: "2026-11-07T20:08:12+08:00"
   - id: SVC-REC-DEMO-ACCEPT-LOOP
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-07T11:57:05.889Z"
@@ -57647,6 +57658,7 @@ tasks:
       - "签收收尾按 §6.5.7 步 6：监管人 human:徐滕强 确认后改 done"
     update_time: "2026-11-07T19:57:06+08:00"
   - id: SVC-PT-DEMO-ACCEPT-LOOP
+    evidence: "agent-handoffs/E7-产业服务链分析/SVC-PT-DEMO-ACCEPT-LOOP.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-11-07T11:57:06.118Z"
     last_seen_at: "2026-11-07T11:57:06.118Z"
@@ -57663,7 +57675,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "常驻验收单就绪。待步 1 放令牌"
+    note: |
+      运行 2026-11-07：步①探测 200 正常（token 有效，systemcode: topic）；步②只读库 demo-gkxlumenx-ods→demo_gkxlumenx_ads SELECT 连续失败 2 次（ETIMEDOUT / 连接 closed）即停，11 行均未判定，步③④未执行，双轨核对顺延。ENV 停轮，0 张子任务。报告已追加 agent-handoffs/E7-产业服务链分析/SVC-PT-DEMO-ACCEPT-LOOP.md；LOOP 计划状态行已回写。等 human:徐滕强 恢复连接后重说「按 LOOP 跑」。
     collaborators:
       - "data-agent"
       - "algorithm-agent"
@@ -57680,4 +57693,71 @@ tasks:
       - "缺口分类 DATA/QUERY/ALGO/ENV；每轮≤3 张去重；同缺口两轮停交 human:徐滕强"
       - "报告只追加 handoff 运行节（SVC-PT-DEMO-ACCEPT-LOOP.md）；通过后回写 LOOP 计划状态行退回 ready"
       - "签收收尾按 §6.5.7 步 6：监管人 human:徐滕强 确认后改 done"
-    update_time: "2026-11-07T19:57:06+08:00"
+    update_time: "2026-11-07T20:05:20+08:00"
+  - id: SVC-ORG-DEMO-FIX-R20261107-DATA
+    title: "服务机构分析演示对照：对比篮补回 guest 篮内君智容与星诚优威两行"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "第 1 轮缺口单建后升 ready，等人说「可以派了」"
+    definition_of_done:
+      - "缺口键：gkxlumenx_topic_enterprise.svc_compare_basket_item 中 user_id=guest 的 org_id=004671cda32d4c5eab3909fd5adbb709（东莞市君智容物联技术有限公司，用例期望篮 id=60）与 org_id=007d0adc0898c1baa7eed10f7f14c650（东莞市星诚优威智能科技有限公司，用例期望篮 id=61）两行缺失"
+      - "表/位置：gkxlumenx_topic_enterprise.svc_compare_basket_item（database-mcp 组 gkx-mysql → demo-gkxlumenx-ods 连接，跨库限定名只读查证）；2026-11-07 20:0x 实查仅 2 行（id=62 东莞东劲新能源 0071aadf76b85d194db1083f01ac78de、id=63 东莞双奉科技 007050fca591f96308b7fd0ced8cffa3，source=对比篮新增）"
+      - "现值与用例预期：用例《SVC-ORG-合规演示用例.md》查库节/7.1.1 ②期望 6 行（guest，2026-11-05 操作，含君智容 id=60、星诚优威 id=61）；实际缺 4 行，7.1.1/7.3.1 演示主路径『篮内已有 id 57/60/61 三行可直勾』无法复现"
+      - "允许改的仓：仅 demo-algo-ent-analysis（数据修复/灌数脚本），执行环境已有库口令时方可写库"
+      - "禁止：不改 lumen-svc-platform 任何过滤或查询代码；不改 demo_gkxlumenx_ads.svc_org_card 主档；不写 gkx-lumen 桶与正式 lumen 库；不改用例期望；修复后须保持 6 行语义（其余行 id 允许漂移，行内容=用例查库节清单）"
+      - "handoff 路径：agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-FIX-R20261107-DATA.md（完成回填，含修复后 SELECT 证据）"
+    update_time: "2026-11-07T20:11:43+08:00"
+  - id: SVC-ORG-DEMO-FIX-R20261107-ALGO
+    title: "服务机构技术力：对齐快照行展示序与模型版本口径（rank_no/版本自报）"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "第 1 轮缺口单建后升 ready，等人说「可以派了」"
+    depends_on:
+      - "SVC-ORG-DEMO-FIX-R20261107-DATA"
+    definition_of_done:
+      - "缺口键 1（ALGO/rank）：gkxlumenx_topic_enterprise.analysis_task.task_id=SVC-20261107-020 的 target_params.result_payload.tech_power.rows：君智容 004671cda32d4c5eab3909fd5adbb709 rank_no=26、星诚优威 007d0adc0898c1baa7eed10f7f14c650 rank_no=50（全池 300 行全局序），但两行均为 score=40.0 同分并列，用例 7.3.1/7.3.2 期望「同分并列 rank_no 1/2」（选定集合内展示序）"
+      - "缺口键 2（ALGO/版本自报）：同快照 result_payload.model_version=svc_proxy_v1.2，而库 demo_gkxlumenx_ads.svc_tech_power_score.calc_batch_id=svcmodels_20261107_155402 的行 model_version=svc_proxy_v1.3（用例期望 v1.3）——载荷自报版本与数据批次版本不一致"
+      - "现值与用例预期：同分并列展示序 rank_no=1/2（按选定机构集合内重排，不取全池序）；快照 model_version 与源表批次 svcmodels_20261107_155402 的 svc_proxy_v1.3 一致"
+      - "允许改的仓：仅 lumen-algo-py（svc 域快照组装/装配层：展示序 rank_no 重排 + model_version 自报取源表批次值）"
+      - "禁止：不改 svc_tech_power_score 库内分值（40/20 恒分按演示态声明保留，Q-SVCCHAIN-01 + Q060 口径未定，模型区分度升级不在本单）；不改 lumen-svc-platform 过滤/查询；不改前端 demo-ui-topic；不改用例期望；不新增 metric_id"
+      - "handoff 路径：agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-FIX-R20261107-ALGO.md（完成回填，含重跑快照后的 rank_no=1/2 与 model_version=v1.3 证据）"
+    update_time: "2026-11-07T20:11:47+08:00"
+  - id: SVC-ORG-DEMO-FIX-R20261107-QUERY
+    title: "服务机构覆盖分析：7.1.1 三机构组合无可复用成功快照，待监管人签发后建样本"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "第 1 轮缺口单建后升 ready，等人说「可以派了」"
+    depends_on:
+      - "SVC-ORG-DEMO-FIX-R20261107-DATA"
+    definition_of_done:
+      - "缺口键：analysis_task 表中 analysisType=svc:analysis:org_coverage 且 org_ids 含全部三家 007050fca591f96308b7fd0ced8cffa3,004671cda32d4c5eab3909fd5adbb709,007d0adc0898c1baa7eed10f7f14c650 的 status=success 任务为 0 条（2026-11-07 实查；含 007050fca… 的 coverage 成功任务 5 条全是旧波 2026-10-21/22 波，matrix=[] 或旧结构）"
+      - "现值与用例预期：用例 7.1.1 期望可复用快照（SVC-20261107-019 只含君智容+星诚优威 2 家，缺东莞双奉 82 深度证据）；东莞双奉深度 82 无任何库侧/快照承载面（对照计划缺口预判表 DATA 类『覆盖矩阵 ADS 面缺』同源）"
+      - "本单动作：执行轮经监管人明确说『签发』后，按用例 7.1.1 请求列（analysis_fp=svc|field||007050fca591f96308b7fd0ced8cffa3,004671cda32d4c5eab3909fd5adbb709,007d0adc0898c1baa7eed10f7f14c650）POST 创建一次，任务 success 后以新快照 matrix 行核对东莞双奉 INB1309/INB170102 depth=82、君智容=91、星诚优威=66；验收仍归 SVC-ORG-DEMO-ACCEPT-LOOP 下一轮"
+      - "允许改的仓：仅 lumen-svc-platform（任务创建链路/网关映射排查）；签发动作属执行轮操作，不在建单轮执行"
+      - "禁止：不在验收轮 POST 新任务（监管人未说『签发』）；不改 demo_gkxlumenx_ads 库侧；不改前端；不改用例期望；重跑后 depth 与 v1.3 口径不一致时只登记差异不判业务对错（Q-SVCCHAIN-02）"
+      - "handoff 路径：agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-FIX-R20261107-QUERY.md（完成回填，含新 task_id 与 matrix 逐机构 depth 证据）"
+    update_time: "2026-11-07T20:11:53+08:00"
