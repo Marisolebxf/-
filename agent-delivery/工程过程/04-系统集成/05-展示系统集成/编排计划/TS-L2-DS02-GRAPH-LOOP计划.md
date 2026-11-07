@@ -1,6 +1,6 @@
 # TS-L2-DS02-GRAPH · 展示技术点图谱 · LOOP 执行编排计划
 
-- 状态：2026-11-07 QUERY=`pending_test`（keyword UTF-8 已通；relations/centrality 待 display rollout）。DATA=`blocked`（描述/发展状态无源，挂 L02 不开工；等人拍板用例回写或扩 Tag）。验收单 ready。
+- 状态：2026-11-07 QUERY=`pending_test`（keyword 通；relations/centrality 待 display rollout）。DATA=`blocked`，人拍板「另开 Tag 扩列」→ 挂 `TS-L2-DS02-SCHEMA-EXPAND-L01`（ready 未派）。不开工 L02/L03。验收单 ready。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4）
 - 用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-DS02-GRAPH-合规演示用例.md`
 - 索引：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/科学技术全景-索引.md`

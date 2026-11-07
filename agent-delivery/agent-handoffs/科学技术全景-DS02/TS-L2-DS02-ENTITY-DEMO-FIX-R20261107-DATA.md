@@ -85,3 +85,7 @@
 1. 拍板：强度/年份是「扩 schema」还是「用例改设计无资源」。  
 2. 等 L02 ready 后再验收实体边上图；同时单独立项补论文/专利 `name_zh`。  
 3. 本 DATA 勿 done，直至上述闭合或用例回写签收。
+
+## 监管人拍板 2026-11-07
+
+human:淮政玮：**另开 Tag/Edge 扩列**。登记 Q072；挂 `TS-L2-DS02-SCHEMA-EXPAND-L01`。本 DATA 继续 blocked；不开工 L02/L03。

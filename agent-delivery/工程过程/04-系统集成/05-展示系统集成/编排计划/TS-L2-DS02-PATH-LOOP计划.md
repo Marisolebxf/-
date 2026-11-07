@@ -1,6 +1,6 @@
 # TS-L2-DS02-PATH · 展示关键路径和关键节点 · LOOP 执行编排计划
 
-- 状态：2026-11-07 QUERY 挂图谱 QUERY（`pending_test`）。DATA=`pending_test`：`path_priority` 已灌 12891；正文/类型/年份仍 hung。待 display 分数叠加后核 pathPriority；用例回写等人拍板。验收单 ready。
+- 状态：2026-11-07 QUERY 挂图谱 QUERY（`pending_test`）。DATA=`pending_test`：`path_priority` 已灌；正文/类型/年份人拍板扩列 → 挂 `TS-L2-DS02-SCHEMA-EXPAND-L01`。待 display 分数叠加核 pathPriority。验收单 ready。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4）
 - 用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-DS02-PATH-合规演示用例.md`
 - 索引：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/科学技术全景-索引.md`

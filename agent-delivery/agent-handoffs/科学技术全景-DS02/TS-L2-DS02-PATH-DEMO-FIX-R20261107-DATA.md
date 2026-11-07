@@ -110,3 +110,7 @@
 2. 确认 30/31 是否改「设计无资源」。  
 3. 若要坚持路径正文/类型/年份：扩 `tech_path_step`（或路径顶点）属性并改读图——另派，勿塞进本 DATA。  
 4. path_priority 已齐；本单整体仍勿 done，直至正文/类型开项处理完或用例回写签收。
+
+## 监管人拍板 2026-11-07
+
+human:淮政玮：**另开 Tag/Edge 扩列**（路径 summary/pathType/timeLabel）。登记 Q072；挂 `TS-L2-DS02-SCHEMA-EXPAND-L01`。`path_priority` 已闭合部分不变。

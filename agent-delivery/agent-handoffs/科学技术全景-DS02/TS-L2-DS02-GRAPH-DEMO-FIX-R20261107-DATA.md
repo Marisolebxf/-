@@ -92,3 +92,7 @@
 1. 确认是否接受「21 → 设计无资源」用例回写。  
 2. 若要坚持演示描述/发展状态：另派 Tag 扩列 + 灌值（并明确是否扩 L02）。  
 3. 本 DATA 单可在 AV 时标 blocked 或 needs-revision，勿标 done 直至用例或扩列闭合。
+
+## 监管人拍板 2026-11-07
+
+human:淮政玮：**另开 Tag/Edge 扩列**（非用例改「设计无资源」）。登记 Q072；实现单 `TS-L2-DS02-SCHEMA-EXPAND-L01`（ready，未派）。本 DATA 继续 blocked，挂该单；不开工 L02/L03。
