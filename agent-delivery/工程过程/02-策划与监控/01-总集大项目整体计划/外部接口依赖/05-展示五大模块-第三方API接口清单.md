@@ -1,7 +1,7 @@
 # 科技信息展示系统 · 五大模块第三方 API 接口清单
 
-> 状态：DRAFT · 整理日：2026-09-18  
-> 覆盖模块：**科技发展态势**、**科技政策跟踪**、**科技人才态势**、**科技知识图谱**、**科技成果展示**  
+> 状态：DRAFT · 整理日：2026-09-18 · 最后更新：2026-11-06（新增§六 智库服务 9 端点）  
+> 覆盖模块：**科技发展态势**、**科技政策跟踪**、**科技人才态势**、**科技知识图谱**、**科技成果展示**、**科技服务全景·智库服务**  
 > 口径同 [04-科技数据资源与服务全景-第三方API接口清单.md](./04-科技数据资源与服务全景-第三方API接口清单.md)：向第三方澄清须对外提供的读/能力接口；智树侧 BFF 代理，不前端直连。  
 > 同名 Excel：[05-展示五大模块-第三方API接口清单.xlsx](./05-展示五大模块-第三方API接口清单.xlsx)
 
@@ -207,7 +207,367 @@
 
 ---
 
-## 六、供数维度 × 模块 覆盖矩阵
+## 六、科技服务全景 · 智库服务（2026-11-06 新增）
+
+> **任务**：`SYSINT-05-07-01-L01` / WBS-05-07-01。**派单稿**：[派单-SYSINT-05-07-THINKTANK-REALDATA-L01.md](../../../../agent-handoffs/科技服务全景-SVC/派单说明/派单-SYSINT-05-07-THINKTANK-REALDATA-L01.md)。
+> **接口包**：`EXT-B4-ZHIKU`（新设，专项承载智库 9 端点；不复用 `EXT-B2-RESULT`，因成果集合与成果展示五页口径不同）。
+> **对端两家、两套接口**：① 智能报告写作平台 `zwrite-backend`（v1.1，2026-11-03，4 个 GET）；② 门户系统 `topic-system`（5 个 POST）。两家均**不做业务库直连**，展示 Java 代理调用。
+> **本页指标不依赖久新库**：25 条智库指标在 `指标入库详情.xlsx` 全为"三源调研批次产物 + 源表为空"，`DS-30-THINKTANK.yaml` 标 `metric_open_status=missing`；故本清单为**唯一供数字段真源**。
+
+### 6.0 共性约定
+
+| 项 | `EXT-B4-ZHIKU` 段 A（v1.1） | `EXT-B4-ZHIKU` 段 B（docx） |
+|---|---|---|
+| 提供方 | 智能报告写作平台（zwrite-backend） | 门户系统（topic-system） |
+| BASE_URL | `{BASE_URL}/admin-api/v1`（按环境另给） | `https://{网关}/topic-system/uc-open-api/v1/portal` |
+| 方法 | `GET` | `POST`（`Content-Type: application/json; charset=UTF-8`） |
+| 鉴权头 | `Authorization: Bearer <access_token>` | `X-Portal-Access-Token: <UC_ACCESS_TOKEN>` |
+| 响应信封 | `{code, message, data}`，`code=0` 成功 | `{code, success, data, msg}`，`code=200` 成功 |
+| 鉴权失败 | HTTP 401 / `code=10001` | HTTP **200** / `code=401`（**必须以 body code 判断**） |
+| 分页参数名 | `page` / `page_size`（默认 1 / 20，≤100） | `current` / `size`（默认 1 / 20，≤100） |
+| 时间格式 | `YYYY-MM-DD HH:MM:SS`（左闭右开 `[time_from, time_to)`） | `YYYY-MM-DD`（上下限均含当天） |
+
+**通用错误码**
+
+| 段 | code | HTTP | 说明 |
+|---|---|---|---|
+| A | 10001 | 401 | 令牌缺失/无效 |
+| A | 10002 | 400 | 请求参数非法 |
+| A | 10004 | 429 | 触发限流 |
+| A | 50000 | 500 | 服务端内部错误 |
+| A | 50004 | 503 | 统一用户中心暂不可用 |
+| B | 200 | 200 | 成功 |
+| B | 401 | 200 | 缺少凭证 / 凭证无效或过期 |
+| B | 400 | 200 | 分页越界或格式错误、必填 ID 为空、问卷不存在或不可展示 |
+
+### 6.1 段 A · v1.1 四接口（报告 / 成果）
+
+#### ZK-01 报告列表
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `GET /admin-api/v1/reports` |
+| 需规序号 | 主 566～574（智库报告页签） |
+| 鉴权 | `Authorization: Bearer <access_token>` |
+| 业务场景 | 智库报告列表 + 筛选 + 分页 + 详情入口 |
+
+**请求参数（Query，全部可选）**
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `q` | string | 否 | 报告标题关键词，模糊匹配 |
+| `report_type` | int | 否 | `1` 研究报告 / `2` 洞察报告 / `3` 战略咨询报告 |
+| `entry_mode` | string | 否 | `user` / `platform` / `external`。筛选"外部研报"用本参数（按枚举项 `param` 分发） |
+| `strategy_sub_type` | string | 否 | `成果` / `建议` / `案例`（仅战略咨询报告有值） |
+| `industry` | string | 否 | 领域/行业分类名，精确匹配（取值见 ZK-03，**禁前端硬编码 12 项**） |
+| `theme_class` | string | 否 | 主题分类（取值见 ZK-03） |
+| `status` | string | 否 | `draft`/`pending_publish`/`published`/`offline`/`rejected`。**第三方查询固定传 `published`** |
+| `time_from` / `time_to` | string | 否 | 入库时间左闭右开区间 |
+| `sort_by` | string | 否 | `created_at`（默认）/`report_type`/`industry`/`entry_mode` |
+| `order` | string | 否 | `asc`/`desc`（默认 `desc`）；置顶报告恒排最前 |
+| `page` / `page_size` | int | 否 | 默认 1 / 20，`page_size` ≤100 |
+
+**响应 `data`**
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `items` | array | 报告列表 |
+| `total` / `page` / `page_size` | int | 总数与分页回显 |
+
+**响应 `items[]` 报告对象**
+
+| 字段 | 类型 | 可空 | 展示用途 |
+|---|---|---|---|
+| `id` | string | 否 | 报告唯一标识（UUID），列表 key |
+| `title` | string | 否 | 报告标题 |
+| `report_type` | int | 否 | 1/2/3 |
+| `entry_mode` | string | 否 | user/platform/external |
+| `column` | string | 否 | 派生栏目：研究报告/洞察报告/战略咨询报告/研报库 |
+| `strategy_sub_type` | string | 是 | 成果/建议/案例；非战略报告为空串 |
+| `industry_tags` | string[] | 否 | 领域/行业，恒为数组（可空） |
+| `theme_class` | string | 是 | 主题分类，空串=未设置 |
+| `content_tags` | string[] | 是 | 内容标签 |
+| `summary` | string | 是 | 摘要 |
+| `author` | string | 是 | 公开署名 |
+| `publishing_org` | string | 是 | 发布机构（外部研报） |
+| `published_date` | string\|null | 是 | 原发布日期 |
+| `version` | string | 是 | 版本号，如 `V1.0` |
+| `version_at` | string\|null | 是 | 版本时间 |
+| `status` | string | 否 | 状态 |
+| `listed_at` | string\|null | 是 | 最近上架时间 |
+| `created_at` / `updated_at` | string | 否 | 入库/更新时间 |
+| `detail_url` | string | 否 | **详情页跳转地址**；仅已上架且前台可见时非空，否则空串 |
+| `platform_certified` | bool | 否 | 平台认证标识 |
+| `source_flag` | string | 是 | 来源标识，如 `平台示范案例` |
+| `achievements` | object\|null | 是 | 战略咨询成果原始结构（见 ZK-02 附注） |
+| 平台管理字段 | — | — | `fs_file_id`/`file_name`/`license_*`/`auth_scope`/`usage_perms`/`desensitize`/`reject_reason`/`pinned` 第三方忽略 |
+
+#### ZK-02 成果列表
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `GET /admin-api/v1/achievements` |
+| 需规序号 | 主 566～574（智库成果页签） |
+| 鉴权 | `Authorization: Bearer <access_token>` |
+| 数据口径 | **不独立发布**，来源为「已上架 + 已选定统计归类 + 已填写成果数据」的战略咨询报告；按报告更新时间倒序 |
+
+**请求参数（Query，全部可选）**
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `sub_type` | string | 否 | 统计归类 `成果`/`建议`/`案例`（空=全部；白名单外 400） |
+| `industry` | string | 否 | 领域/行业精确匹配 |
+| `q` | string | 否 | 成果名称关键词 |
+| `time_from` / `time_to` | string | 否 | 报告更新时间左闭右开 |
+| `page` / `page_size` | int | 否 | 默认 1 / 20，≤100 |
+
+**响应 `items[]` 成果对象**
+
+| 字段 | 类型 | 可空 | 说明 |
+|---|---|---|---|
+| `id` | string | 否 | 成果标识 = 所属报告 UUID |
+| `name` | string | 否 | 成果名称（关联项目名称），**恒非空** |
+| `strategy_sub_type` | string | 否 | 成果/建议/案例 |
+| `title` | string | 否 | 所属报告标题 |
+| `industry_tags` | string[] | 否 | 领域/行业 |
+| `content_tags` | string[] | 是 | 标签（取所属报告） |
+| `summary` | string | 是 | 摘要（取所属报告） |
+| `commission_org` | string | 是 | 委托机构 |
+| `completed_date` | string | 是 | 项目完成日期，可能为空串 |
+| `updated_at` | string | 否 | 报告更新时间 |
+| `detail_url` | string | 否 | 详情页跳转地址（口径同 ZK-01） |
+
+> **ZK-01 `achievements` 原始结构附注**：`project_name` 关联项目名称 / `commission_org` 委托机构 / `completed_date` 项目完成日期 / `actual_investment` 实际投资额（元）/ `roi_period_start`、`roi_period_end` ROI 评价期 / `net_profit` 评价期内净收益（元）/ `roi_percent` ROI（系统计算，无完整数据为 null，展示 `—`）/ `satisfaction` 客户满意度（百分制）/ `public_confirmed` 公开确认标记。
+> ⚠️ **敏感字段**：`actual_investment` / `roi_percent` / `satisfaction` 对外口径未定，由 `SYSINT-05-07-03-L01`（合规）裁定后才可展示；裁定前一律不显示。
+
+#### ZK-03 筛选枚举
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `GET /admin-api/v1/enums` |
+| 需规序号 | 支撑 566～574（两页签筛选控件） |
+| 鉴权 | `Authorization: Bearer <access_token>` |
+
+**请求参数（Query）**
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `tab` | string | 否 | `report`（报告）/ `achievement`（成果）；不传返回全量 |
+
+**响应 `data.enums[]`**
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `type` | string | `report_type` / `sub_type` / `industry` / `theme_class` |
+| `name` | string | 枚举组展示名 |
+| `items` | array | 枚举项 |
+
+**响应 `items[]`**
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `name` | string | 展示文案 |
+| `value` | string | 筛选回传值 |
+| `param` | string | **回传时的查询参数名**。报告类型组中「外部研报」为 `param=entry_mode, value=external`，其余三项 `param=report_type`；**必须按 `param` 分发，勿统一回传 `report_type`** |
+
+**页签与枚举组对应**：`tab=report` → `report_type`、`industry`、`theme_class`；`tab=achievement` → `sub_type`、`industry`。
+
+> **行业字典（2026-11-02 起 12 项）**：传感器、低空经济、合成生物、机器人、集成电路、具身智能、人工智能、软件与信息服务、生物医药、数字创意、智能网联汽车、智能终端。存量迁移后仅「低空经济」「人工智能」保留原值，其余并入「其他」；「其他」不在枚举下发但在数据中出现，**可作为 `industry` 回传**。字典可由运营调整，**以本接口实时返回为准，禁门户侧硬编码**。
+
+#### ZK-04 成果统计
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `GET /admin-api/v1/achievements/stats` |
+| 需规序号 | 支撑 566～574（成果页签统计条） |
+| 鉴权 | `Authorization: Bearer <access_token>` |
+| 数据口径 | 按领域聚合成果/建议/案例数；一份报告多领域则计入每个领域；未标注归「其他」 |
+
+**请求参数（Query）**
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `industry` | string | 否 | 不传返回全部领域，按总数倒序 |
+
+**响应 `items[]`**
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `industry` | string | 领域名称（即筛选回传值） |
+| `achievement_count` | int | 统计归类=成果 数量 |
+| `suggestion_count` | int | 统计归类=建议 数量 |
+| `case_count` | int | 统计归类=案例 数量 |
+| `total` | int | 该领域合计 |
+
+> ⚠️ **D5 已定**：服务类型关联计数对端不给，由前端按列表数据派生（`SYSINT-05-07-03-L01` 决策函）。
+
+### 6.2 段 B · docx 五接口（问卷 / 专家 / 事件）
+
+#### ZK-05 德尔菲问卷分页
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `POST /delphi-questionnaire/page` |
+| 需规序号 | 主 566～574（智库活动页签） |
+| 鉴权 | `X-Portal-Access-Token: <UC_ACCESS_TOKEN>` |
+| 业务场景 | 智库活动列表（**仅德尔菲问卷一类，B2 已定**） |
+
+**请求参数（JSON body）**
+
+| 字段 | 类型 | 必填 | 约束 | 说明 |
+|---|---|---|---|---|
+| `current` | number | 否 | 整数 1..10000 | 页码，缺省 1 |
+| `size` | number | 否 | 整数 1..100 | 每页条数，缺省 20 |
+| `timeTag` | string | 否 | `yyyy-MM` | 开始日期年月 |
+| `startDateFrom` | string | 否 | `yyyy-MM-dd` | 开始日期下限，**含当天** |
+| `startDateTo` | string | 否 | `yyyy-MM-dd` | 开始日期上限，含当天 |
+| `endDateFrom` | string | 否 | `yyyy-MM-dd` | 截止日期下限，含当天 |
+| `endDateTo` | string | 否 | `yyyy-MM-dd` | 截止日期上限，含当天 |
+
+**响应 `data`**
+
+| 字段 | 类型 | 可空 | 说明 |
+|---|---|---|---|
+| `total` | number | 否 | 总记录数 |
+| `current` / `size` | number | 否 | 分页回显 |
+| `records` | array | 否 | 问卷记录；空数据为 `[]` |
+| `records[].questionnaireId` | string | 否 | 问卷 ID |
+| `records[].name` | string | 是 | 问卷名称 |
+| `records[].domain` | string | 是 | 技术领域 |
+| `records[].startDate` | string | 是 | 开始日期 |
+| `records[].endDate` | string | 是 | 截止日期 |
+| `records[].timeTag` | string | 是 | 开始日期年月 |
+| `records[].description` | string | 是 | 问卷描述 |
+
+#### ZK-06 德尔菲问卷详情
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `POST /delphi-questionnaire/detail` |
+| 需规序号 | 支撑 566～574（活动详情） |
+| 鉴权 | `X-Portal-Access-Token` |
+
+**请求参数（JSON body）**
+
+| 字段 | 类型 | 必填 | 约束 | 说明 |
+|---|---|---|---|---|
+| `questionnaireId` | string | **是** | 非空 | 问卷 ID |
+
+**响应 `data`**
+
+| 字段 | 类型 | 可空 | 说明 |
+|---|---|---|---|
+| `name` | string | 是 | 问卷名称 |
+| `domain` | string | 是 | 技术领域 |
+| `startDate` / `endDate` | string | 是 | 起止日期 |
+| `description` | string | 是 | 问卷描述 |
+| `expectedExpertCount` | number | 是 | 预计专家数 |
+| `expertCount` | number | 是 | 参与专家数 |
+| `completionRate` | string | 是 | 完成率百分数值（字符串，如 `"120.0"`） |
+
+> ⚠️ **B2 已定**：对端自评"问卷问答明细/统计不适合公开"，本接口只给汇总。活动详情**不展示问答正文**，按 D3 走空态说明。
+
+#### ZK-07 专家分页
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `POST /expert/page` |
+| 需规序号 | 主 566～574（智库专家页签） |
+| 鉴权 | `X-Portal-Access-Token` |
+
+**请求参数（JSON body）**
+
+| 字段 | 类型 | 必填 | 约束 | 说明 |
+|---|---|---|---|---|
+| `current` | number | 否 | 整数 1..10000 | 页码，缺省 1 |
+| `size` | number | 否 | 整数 1..100 | 每页条数，缺省 20 |
+| `fieldId` | string | 否 | 单选 | 人才画像 Field ID |
+
+**响应 `records[]`**
+
+| 字段 | 类型 | 可空 | 展示处置 |
+|---|---|---|---|
+| `talentId` | string | 否 | 专家标识，用于拼详情地址 |
+| `name` | string | 是 | 姓名 |
+| `avatarUrl` | string | 是 | 头像地址 |
+| `title` | string | 是 | 职称 |
+| `researchFields` | array | 否 | 全部 Field 名称 |
+| `paperCount` | number | 是 | 发表论文数 |
+| `hIndex` | number | 是 | **H 指数 —— D2 已定：不展示**（守 `talent_ds13_16` 边界） |
+
+> **专家详情地址（对端直给，非接口）**：`https://edu.itic-sci.com/tts/svcj/strategy/talent/detail/{talentId}?scene=nurture`
+> ⚠️ **B5 已裁定**：详情采用**本系统内 iframe 弹框嵌入**（`IframeDetailModal`），不跳出新页签/新窗口；嵌入须 `SYSINT-05-07-04-L01` 书面确认 `X-Frame-Options` / CSP `frame-ancestors` 放行。
+
+#### ZK-08 全量 Field 选项
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `POST /expert/field/options` |
+| 需规序号 | 支撑 566～574（专家页签筛选控件） |
+| 鉴权 | `X-Portal-Access-Token` |
+
+**请求参数**：无业务参数，body 传 `{}`。
+
+**响应 `data[]`**
+
+| 字段 | 类型 | 可空 | 说明 |
+|---|---|---|---|
+| `fieldId` | string | 否 | Field ID |
+| `fieldName` | string | 否 | Field 名称 |
+
+#### ZK-09 重大事件分页
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `POST /major-event/page` |
+| 需规序号 | 支撑 566～574（重大事件侧栏） |
+| 鉴权 | `X-Portal-Access-Token` |
+
+**请求参数（JSON body）**
+
+| 字段 | 类型 | 必填 | 约束 | 说明 |
+|---|---|---|---|---|
+| `current` | number | 否 | 整数 1..10000 | 页码，缺省 1 |
+| `size` | number | 否 | 整数 1..100 | 每页条数，缺省 20 |
+
+**响应 `records[]`**
+
+| 字段 | 类型 | 可空 | 说明 |
+|---|---|---|---|
+| `id` | string | 否 | 事件 ID |
+| `title` | string | 是 | 动态新闻标题 |
+| `newsTypeName` | string | 是 | 动态类型名称（如「获奖信息」） |
+| `sourceUrl` | string | 是 | 外部详情地址（侧栏点击走 iframe 弹框） |
+
+### 6.3 端点数汇总
+
+| 段 | 序号 | 接口 | 方法 | 路径 | 覆盖页面 |
+|---|---|---|---|---|---|
+| A | ZK-01 | 报告列表 | GET | `/admin-api/v1/reports` | 智库报告 |
+| A | ZK-02 | 成果列表 | GET | `/admin-api/v1/achievements` | 智库成果 |
+| A | ZK-03 | 筛选枚举 | GET | `/admin-api/v1/enums` | 报告 + 成果 |
+| A | ZK-04 | 成果统计 | GET | `/admin-api/v1/achievements/stats` | 智库成果 |
+| B | ZK-05 | 德尔菲问卷分页 | POST | `/delphi-questionnaire/page` | 智库活动 |
+| B | ZK-06 | 德尔菲问卷详情 | POST | `/delphi-questionnaire/detail` | 智库活动 |
+| B | ZK-07 | 专家分页 | POST | `/expert/page` | 智库专家 |
+| B | ZK-08 | 全量 Field 选项 | POST | `/expert/field/options` | 智库专家 |
+| B | ZK-09 | 重大事件分页 | POST | `/major-event/page` | 重大事件侧栏 |
+| **合计** | | **9** | 4 GET + 5 POST | | |
+
+### 6.4 契约缺口（不在 9 端点头内，另行升级）
+
+| 缺口 | 影响 | 处置 |
+|---|---|---|
+| 服务类型主档（政策研究/战略咨询/评估评价/人才培训/学术交流） | 服务类型页签无接口来源 | 用我方运营目录硬编码；等对端补主档后换映射（B1） |
+| 报告详情正文/目录/图表/媒资 | 详情无结构化数据，只有 `detail_url` | 走 iframe 弹框加载 `detail_url`；需对端放行嵌入 |
+| 专家详情字段级接口 | 只给外链，无结构化详情 | iframe 弹框（B5 已裁定） |
+| 成果敏感字段对外口径 | `actual_investment`/`roi_percent`/`satisfaction` | `SYSINT-05-07-03-L01` 裁定前不展示 |
+| 活动类型仅德尔菲问卷 | 论坛/研讨会类无来源 | 活动页签只呈现问卷类（B2） |
+| 问卷问答正文 | 对端不公开 | 详情空态说明（D3） |
+
+---
+
+## 七、供数维度 × 模块 覆盖矩阵
 
 | 供数维度 | 科技发展态势 | 科技政策跟踪 | 科技人才态势 | 科技知识图谱 | 科技成果展示 |
 |---|:-:|:-:|:-:|:-:|:-:|
@@ -223,7 +583,7 @@
 
 ---
 
-## 七、计数汇总
+## 八、计数汇总
 
 | 模块 | 子模块数 | 第三方供数接口数 | 需规序号覆盖 |
 |---|---:|---:|---|
@@ -232,11 +592,14 @@
 | 科技人才态势 | 4 | 14 | seq 243～329 |
 | 科技知识图谱 | 4 | 8 | seq 400～454 |
 | 科技成果展示 | 5 | 8 | seq 455～547 |
-| **合计** | **23** | **53** | — |
+| 科技服务全景·智库服务 | 1 | 9 | seq 566～574 |
+| **合计** | **24** | **62** | — |
+
+> 智库 9 端点：4 GET（v1.1 报告/成果/枚举/成果统计）+ 5 POST（docx 问卷分页/问卷详情/专家分页/Field/重大事件）。接口包 `EXT-B4-ZHIKU`。
 
 ---
 
-## 八、新增接口汇总（相对原 05 清单）
+## 九、新增接口汇总（相对原 05 清单）
 
 | 新增序号 | 模块 | 供数维度 | 对应 seq |
 |---|---|---|---|
@@ -255,12 +618,15 @@
 | P-AUX-1 | 科技政策跟踪 | 论文/专利/项目 | 219～231（支撑） |
 | C-AUX-1 | 科技成果展示·创新生态 | 科研机构/人才/论文/专利 | 485～496 |
 | C-AUX-2 | 科技成果展示·载体 | 科研机构/论文/专利/项目 | 538～547 |
+| ZK-01～ZK-04 | 科技服务全景·智库服务（v1.1） | 报告/成果/领域枚举/成果统计 | 566～574 |
+| ZK-05～ZK-09 | 科技服务全景·智库服务（docx） | 德尔菲问卷/专家/Field/重大事件 | 566～574 |
 
 ---
 
-## 九、修订记录
+## 十、修订记录
 
 | 日期 | 说明 |
 |---|---|
 | 2026-09-17 | 首版：五大模块第三方 API 清单（含需规序号），落 MD + Excel |
 | 2026-09-18 | 按供数维度重梳：企业/产业链/政策/服务机构我方自研剔除；G-06~G-08 归亿级知识图谱供应商；新增 21 条接口；合计 53 条 |
+| 2026-11-06 | 新增§六 科技服务全景·智库服务：9 端点（v1.1 四 GET + docx 五 POST）字段级入册，新设 `EXT-B4-ZHIKU` 包；合计 62 条。任务 `SYSINT-05-07-01-L01` |
