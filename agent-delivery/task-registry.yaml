@@ -56826,3 +56826,50 @@ tasks:
       - "无修数单被创建（不派 DATA/QUERY/ALGO）"
       - "handoff + ponytail + cost 回填"
     update_time: "2026-11-07T16:32:47+08:00"
+  - id: SYSINT-04-01-DATA-OPEN-L01
+    title: "专题一张图 · 数据探查与指标口径冻结（G1–G6）"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "agent-delivery"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "fan-out"
+    ods_dependency_phase: "phase2"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 65000
+    note: |
+      2026-11-07 用户在本会话明确同意开展并要求按规范建单；coordinator-agent 查重建单，建单不等于认领。原 SYSINT-04-01-L01 仍由孔东执行且不以灌数为 DoD，本单不依赖其签收、不改其认领。默认监管参考 dispatch-rules：data-agent=human:徐滕强；实际开工仍须 MCP task-claim 留痕与4小时锁。先完成只读探查和定义会签，未冻结产业/范围/公式/目标存储前不得执行灌数或 DDL。当前代码仅为本地证据，非数据库和现网事实。
+    depends_on: []
+    collaborators:
+      - "architect-agent"
+      - "algorithm-agent"
+      - "api-agent"
+      - "product-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-OPEN-L01.md"
+      - "agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-06-专题一张图-灌数需求-后置.md"
+      - "agent-delivery/客户决策清单跟踪表.md"
+    design_refs:
+      - "agent-delivery/team-collaboration-playbook.md"
+      - "agent-delivery/task-claiming-guide.md"
+      - "agent-delivery/architecture-baseline.md（D9/D16/D18）"
+      - "agent-delivery/data-lineage-policy.md §2.1/§2.3/§2.4"
+      - "agent-delivery/客户决策清单跟踪表.md Q068"
+      - "agent-delivery/bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md（99–101）"
+      - "agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-06-专题一张图-灌数需求-后置.md"
+      - "agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-06-专题一张图-外部对接接口文档.md"
+    definition_of_done:
+      - "范围仅需规99–101专题一张图的产业、企业、政策数据；技术/人才/科研仍由久新出数。逐项映射G1–G6→原型区块→API字段，保留缺数null，不用原型数字或mock冒充真实值；原接口任务验收与本组灌数解耦。"
+      - "只读核实实际数据库、schema、源表与目标表DDL、stat_value精度/单位、索引及唯一键、stat_date语义；enterprise_base、enterprise_industry_chain、enterprise_stat_summary为候选，不把ORM或文档当成现库事实；凭据不进文档、git或记忆。"
+      - "对齐八大未来产业与现目录INB/产业集群映射，复核Q068既有临时默认，不自行选8条或把12/15条当8条；冻结本页产业清单N、深圳地域边界、九区范围、统计期、企业存续范围与更新频率；新业务歧义登记客户决策清单并记录临时默认/确认人。"
+      - "G2/G3只读统计每产业企业总数、有效人数企业数、缺失/零/负/异常人数、统计期覆盖率及同(org_id,chain_code)重复；核实深圳筛选字段和人数语义，明确跨产业计数、真实0、未知值、有效样本合计与全产业人数的区别。"
+      - "通过metric-registry MCP核实M_ONE_MAP_INDUSTRY_SCALE、M_ONE_MAP_DISTRICT_DEV_INDEX、M_ENT_GAP_03B、M_ENT_GAP_10、M_ENT_GAP_03、M_ENT_GAP_09及候选既有ID的kit/readiness；提供ID复用或正式化方案，禁止另造重复ID；UNKNOWN仅允许定义阶段，公式/algorithm_type未会签不放行实施单。"
+      - "G1逐产业逐年核实真实来源、规模定义（营收/总产值/增加值不可混用）、地域和单位、实际有源年份；无来源列缺口；G4明确区综合还是产业×区指数、年份、候选模型粒度与复用限制，由王惠/唐绍祖及架构/产品按现行规约会签，AI不代甲方拍板。"
+      - "复核G5/G6既有type-scale-stats是否限定深圳及产业、company_type是否互斥，列出过滤/重复累计缺陷；复核Python按stat_type全局MAX(stat_date)导致局部更新遮蔽旧产业的问题，冻结完整快照或按业务维度最新批次策略。"
+      - "产出真实来源/缺项补齐/演示数据三类存储判定，明确D16与D18适用条件、目标库表和Python写入方；不得仅凭新增stat_type推断符合D18。涉及表结构变更先向用户提交具体方案并沟通，本单不执行DDL或写业务数据。"
+      - "修订后置需求并提供数据探查证据、口径/来源/metric_id对照及各后续单DoR；无法冻结的项明确pending_ref，不把整组口径写成已确认。handoff落agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-OPEN-L01.md，含范围/偏离/证据/架构自检/cost与cicd:skip理由；definition按会签→ready_to_sign，禁止自行done。"
+    update_time: "2026-11-07T16:33:22+08:00"
