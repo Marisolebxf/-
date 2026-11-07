@@ -62,7 +62,7 @@
 ## CI/CD（必填）
 
 - 分支：`lumen-ui-topic` `dev`，`lumen-svc-platform` `dev`，`gkx-orchestration` `dev`
-- commit：`lumen-ui-topic` `33a76a9`；`lumen-svc-platform` `40bc5f0`；编排仓为本交接提交
+- commit：`lumen-ui-topic` `dce25c1`；`lumen-svc-platform` `34f6cdc`；编排仓交接 `d7e135ba`（提交号以 rebase 后为准）
 - pipeline URL / ID：push 后由 GitLab CI 生成，本交接写于 push 前
 - 部署 namespace / 镜像 tag：随两业务仓既有 dev 流水线
 - K8s rollout：待流水线
