@@ -58,3 +58,49 @@ ponytail: full
 ## 涉及文件
 
 - `repos/lumen-svc-platform/gkxlumen-topic/src/main/java/com/topcomm/gkxlumen/topic/controller/onemap/OneMapPortalController.java`
+
+## 范围与实现
+
+联调通过：六个 one-map 接口已在 `gkxlumen-topic` 完成编排并部署；政策趋势、区政策、政策地图和重点企业搜索的后续适配缺陷已由 `SYSINT-04-01-API-GAP-L01` 修复。未把久新技术/人才/科研指标塞入智树接口。
+
+## 偏离
+
+- 对外契约保持不变；只修正既有实现和发布链路。
+- 调试数据由 DATA-EMP 批次构造，不声称是正式业务来源。
+
+## 产物清单
+
+- Java one-map 门面与政策/企业适配修复。
+- Python 企业搜索兼容路由。
+- `/one-map-debug` 联调页免 SSO 路由修复。
+- Helm/Nacos 初始化及部署诊断修复。
+- API、UI、边界和发布证据。
+
+## 验收证据
+
+- Java `OneMapFacadeServiceTest`：10/10 通过。
+- Python `pytest`：7/7 通过。
+- 前端 type-check/build 通过，Pipeline `4227` 全绿。
+- Java 正确服务 Pipeline `4219` 的 `deploy:topic` 成功；最终 Helm Pipeline `4233` 的 build/lint/chart 全部成功。
+- 线上 12/12 产业、9/9 行政区、三类地图和 API-5 搜索全部通过；`/open/topic` 与 `/topic` 均 HTTP 200。
+- UI 截图：`agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01-evidence/one-map-ui-qa.jpg`。
+- 结构化 QA：`agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01-evidence/qa-regression.json`。
+
+## 架构合规自检
+
+- ✅ 前端只经网关调用，Java 不直连数据库写库。
+- ✅ 计算只走 lumen 目标服务，不调用 demo-*。
+- ✅ API 查询只读，未在接口请求中灌数。
+- ✅ 无 DDL、无新 ES mapping。
+- ✅ 对外六个 URL、请求与核心响应字段保持稳定。
+- ✅ 缺数保持 null，参数错误使用稳定错误码。
+- ✅ 发布、提交、测试、线上回归均有证据。
+
+## Cost 回填
+
+| 字段 | 值 |
+|---|---|
+| actual_tokens | `not_measured` |
+| model_used | `codex` |
+| actual_cost | `not_measured` |
+| cost_warn | `green` |
