@@ -36,7 +36,7 @@
 7. **产物落点**：`agent-delivery/agent-handoffs/综合智能分析-SYNTH/合规演示用例/`（新目录）：`00-用例总册.md`、`vitality-cases.md`、`element-cases.md`、`collab-cases.md`、`data-survey-20261107.md`、`condition-fill-matrix.yaml`、`gap-summary.md`、`LOOP-执行编排计划.md`。
 8. **cicd: skip**（纯编排仓文档）；不改 `metrics/registry/` seed；不改业务仓代码。
 9. **升级人**：结构歧义 / 甲方口径 → `human:李伟`；业务用例期望改动 → 本总控授权人。
-10. 签收：`ready_to_sign→done` 由 coordinator 以 `actor=human:徐滕强` 代签（本总控授权），可积压不挡主链。
+10. 签收：coordinator 推进至 `ready_to_sign` 积压不挡主链；`ready_to_sign→done` 由 `human:淮政玮` 签收（公约 §7.2 闸门，definition 类无豁免；总控授权不可替代）。
 
 ---
 
@@ -87,7 +87,7 @@ M1 与 M2 可并行；同仓无代码冲突（各写各文件）。
 - `CASE-VIT-<序2位>`（活力 133–135，含权重档与 legacy 反例）
 - `CASE-ELEM-<序2位>`（要素 136–138，三透镜 + 四维 + 贡献）
 - `CASE-COLLAB-<序2位>`（协同 139–141，图谱/网络/相关性/报告/策略）
-- 每条必填：`条件(region|compare|window[|weight_profile])` / `入口(路由+动作)` / `期望结果(含过渡标识与 404/空态分支)` / `数据依赖(表.metric_id)` / `数据判定`（M3 填 `supported|gap`）
+- 每条必填：`条件(region|compare|window[|weight_profile])` / `入口(路由+动作)` / `期望结果(含过渡标识与 404/空态分支)` / `数据依赖(表.metric_id)` / `数据判定`（M3 填 `supported|partial|gap`，partial=主结果可出但子区块降级，引缺口）
 - 数量基准：活力 ≥14（4城×3窗含默认秒开 404 分支 + 2 档位 + 2 反例）、要素 ≥12、协同 ≥15（含坏快照 batch_meta_missing、产业筛选、报告 PDF、LLM 降级）。**宁多勿漏**；M3 对每条逐格填。
 
 ## 5. 无人值守规则
