@@ -70,3 +70,54 @@
 - 留 PM/客户决策清单：C4 前半（序 42 自动建联首版不做缺口登记）；C3 的 A03 消费注记随 A03 签收环节。
 - 留实现单：主表外部 ID 对齐字段 + redirect 表（② 的返工护栏）、合并优先级配置化（R3）、C2 的 space 可配置。
 - C1–C5 不要求改被审稿正文；C1 的图注与 R1/R2 是 draft 稿/图顺带修正，由稿维护方在 API 分册引用前完成。
+
+## 三分册会签（2026-11-07）
+
+- 对象：`sdd/l2/TS-L2-M10-ENT-API.md` / `-METRIC.md` / `-DATA.md`（三份分册，2026-11-07 落盘，待会签）
+- 角色与范围：`agent:arch-agent` 架构会签（第二轮，对分册）。只读核对，不改三分册，不动 registry，不 git。证据核到 `SCI-INT-A03.yaml` 原卡、`algo-mysql-connection-info.md`、`gkxlumen-gateway-dev.yml`、`客户决策清单跟踪表.md`、`SCI-INT-A03.md`（消费注记）、LAYER-METRIC 先例与 `metrics/calc-logic/TECH/M_TECH_GRAPH_105_1.md` 实存性。
+
+### 结论
+
+**有条件通过**。三分册把 ARCH 稿+四份会签的输入基本吃透：C1 代理路径三件落全、C3 消费注记已实加、C5 双册落实、DATA 八决策项**无一越权**（该报批的都是"拟默认待确认"形态，该留待拍板的一条没自决）、METRIC 册按 ALGO 收窄落表且口径保护条款三册闭环。驳回项为零；以下 4 条条件均为一行/一句级修正或行政登记，不涉及架构返工。条件闭合前三分册不标 done：
+
+| # | 条件 | 责任 | 证据 | 时点 |
+|---|---|---|---|---|
+| A1 | **API 册 R1 端点形状不完整 + sortBy 漏 name**：(a) R1 写 `GET …/recommend-entities`，省略号只代表对外前缀，丢了资源段——推荐列表语义是"给定技术点查候选"，A03 卡 213 路径为 `GET /topic/v1/tech/graph/{technology_id}/recommend-entities`（R3 带了 `{technology_id}`，R1 没带，查询对象悬空）；(b) R1 显式枚举 `sortBy=strength\|time` 两值，A03 L711 为 `sort_by(strength\|time\|name)` 三值，API 会签备注 4 输入明确要求取三值。一行修正：补 `{technology_id}` 段 + sortBy 三值 | API 分册维护方 | A03 yaml L707/L711 vs API 册 §3 R1 | API 册签收前 |
+| A2 | **"SRS 42 缺口 PM 已登记"与事实不符**：API 册 §0 差异表写"G2 首版不自动建联，SRS 42 缺口 PM 已登记"，但 `客户决策清单跟踪表.md` 全文 grep「SRS-42 / JX-A03 / 自动建联 / M10 / 维护关键实体」**零命中**（2026-11-07 核）。二选一：PM 实际登记（即 C4 前半闭合），或 API 册该句改"待 PM 登记"。不实陈述不能留在契约稿里 | PM（登记）或 API 分册维护方（改句） | API 册 §0 vs 决策清单 grep 0 命中 | API 册签收前（登记本体沿 C4 原时点：验收口径确认前） |
+| A3 | **409 CHANGE_SET_STATE 触发条件与"approve 可选"自相矛盾**：API 册 §6/DATA 册 D7 均为 `draft→(可选 approve)→published`、approved 是合法中间态；但 §5 错误码写"非 draft 态重复发布"→409——按字面实现，走审核路径的变更集（approved 态）调 R5 发布会被 409 挡死，可选审核变死路。改"非 draft/approved 态（即 published/rejected）再发布" | API 分册维护方 | API 册 §5 vs §6 / DATA 册 D7 | API 册签收前 |
+| A4 | **发布序列中 ADS 投影位置两册说法不一致，503"读上一版"的实现前提悬空**：ARCH §1 顺序是"主表→version+1→**Nebula→ADS 投影**→失效快照"（ADS 在 Nebula 后，失败一并补偿，R2 天然读到旧版）；DATA §4 写"MySQL（主表+version+change_log+**ADS**）先提交→Nebula 失败→pending"（ADS 随 MySQL 先落，Nebula 失败时 ADS 已是新版，此时"R2 读 ADS 上一版"必须按 version_id 过滤 pending 版——两册都没写这条口径）。二选一写死：沿 ARCH 顺序（ADS 后投影同补偿），或保 DATA 顺序但补一句"R2 按 version 过滤 projection_status≠pending 的最新版" | DATA 分册维护方（主）+ API 册 §5 对齐 | ARCH §1 要点 2 vs DATA §4 vs API §5 503 行 | DATA 册签收前 |
+
+### 逐项核对（任务书审查重点 ①–⑤）
+
+| # | 审查重点 | 核对结果 |
+|---|---|---|
+| ① | ARCH 5 条件落实 | 见下追踪表。C1/C3/C5 闭合；C2 DATA 侧闭合（API 侧备注 B3）；C4 后半有残留（A1）、前半未登记（A2） |
+| ② | R5 独立发布端点与 ARCH 状态机一致性；503 与补偿自洽 | R5 偏离 A03 卡 209 的 versions 形态（`POST …/versions` 承载 publish，A03 L529），裁成 `POST …/changes/{id}/publish`——接口冻结本就是 API 分册职权，API 会签 R5 只要求"一处写死"未强制沿 A03，理由（语义清晰/可重试/审计独立）成立且与 change_set 状态机贴合，回滚仍走反向变更集（A03 语义保留）→ **接受，备注 B4 记档**。503 pending"可读可写"与 DATA 补偿的**语义链**（MySQL 已提交→新提交基于已提交版本→R2 旧版+pending 标）成立，但 ADS 落库顺序两册矛盾 → A4 |
+| ③ | DATA 八决策项是否越权 | **无越权**。D1 选库 `gkxlumenx_dwd`：实证为 Python 写侧现有库（algo-mysql-connection-info L27 五业务库之一、L131 ENTAN 在用），与 Java 平台库清单（L84–94）无撞名，LAYER C2 重名教训已避开；写者留 DN-07 退路记档 ✓。D5 N=50 是"拟默认+报监管人确认"形态（A03 原文"N 待定"无归属人），非自决终态，且快照表结构不随 N 变、改 N 零返工——**架构侧同意 N=50 报批**。D3 新建同构 `graph_entity_node/edge` 属存储落点职权（ARCH 稿明写"列/表定义归 DATA"），理由成立且主动标"会签可否"——**本会签同意新建**。D2 沿 C02、D4 沿 storage README、D6 走 DATA 会签授权的"显式不做"分支且与 API 册同裁、D7 与 API 册一致、D8 不预设 ✓ |
+| ④ | 三分册相互一致性 | DTO 三列闭环：API §4 `edges[](strength_auto/strength_manual/source)` ↔ DATA §2 ADS 三列 ↔ METRIC §3"只取 auto"✓。METRIC 挂接表与 ALGO 会签 §6 逐行一致、与 API strength 字段（R1=105 边权、42 回执条件挂接）一致 ✓。状态机 API §6 ↔ DATA D7 一致（A3 除外）。**ops≤50**：API §1 有（超限 400），DATA 册 `graph_change_set` 行要点未复述——无冲突值，缺一句注记 → 备注 B2。METRIC 册援引两项事实均实存：LAYER probe 时延先例（LAYER-METRIC L23/L42）、105_1 calc-logic 文件在 → 备注 B5 附一处笔误提醒 |
+| ⑤ | 事实错误给证据 | A1（sortBy/端点段）、A2（登记不实）为条件级；卡号引用错误链见备注 B1；其余核过：DATA 册"已对照查重"实证属实、API 册"消费注记在册"属实（注记落在 `SCI-INT-A03.md` L105，含"只追加不改写"防漂移条款，超出 C3 最低要求）、METRIC 册"calc-logic 实存"属实、ALGO 会签 §5"G4 两值与三值一致"一句自相矛盾（以 DATA 会签 F3 / API 会签备注 4 为准，本轮 A1 收口） |
+
+### ARCH 5 条件落实追踪表
+
+| 条件 | 要求 | 分册落实 | 判定 |
+|---|---|---|---|
+| C1 display 代理路径落全 | 对外/内部/网关注释三件 | API §1：对外 `/display/v1/situation/maintain-ent/` + 内部 `/topic/v1/tech/graph/**`（DN-07 落点留实现单）+ 网关注释——"冲突消"推理正确：display 代理下前端不再直连 topic，gateway-dev.yml L24"前端禁止直连 innov/topic/metrics"天然合规，豁免说明随实现补 | **闭合** |
+| C2 VID union 读侧口径 | API/DATA 给出读侧合并与联调 space | DATA §3：union 经主表 technology_id + 四交叉点逐条（读合并/impact 口径/查重扫主表/auto 层 redirect）+ Demo=demo_gkx_chain（D4）。API R2/R3 未显式复述 union（投影由 Python 发布时写，union 责任在 Python 侧，端点语义不冲突）→ B3 | **闭合**（DATA 主闭合；API 侧留实现单） |
+| C3 A03 消费注记 | 防双真源漂移一行注记 | `SCI-INT-A03.md` L105 已加（"已被 TS-L2-M10-ENT-ARCH 采纳…草案段只追加不改写，变更走 ENT 四分册"），API/DATA 册引用声明属实 | **闭合** |
+| C4 G4 全参数（勿截窄）+ SRS-42 缺口登记 | API 沿卡全参数；PM 登记缺口 | 全参数（keyword/entity_types 筛选）有落；但 sortBy 显式枚举仍两值漏 name（→A1），且"沿卡 216"卡号引错（全参数实在卡 213，见 B1——源头是我 C4 原文笔误）。SRS-42 缺口：决策清单查无登记，API 册却称"已登记"（→A2） | **未闭合**（A1+A2 收口） |
+| C5 41 叶空态+PendingBadge | 显式二选一 + METRIC 不得全 N/A | API 册：签收口径/R1 备注/§7 三处"空态+PendingBadge 不灌 mock"（显式选空态分支，非 D18 mock 表）；METRIC 册 §1 叶 41 挂 `M_TECH_GRAPH_105_1`（ⓘ 必须+MockBadge 语义），§4 未交付期空态——两册闭环 | **闭合** |
+
+### 备注（非阻断，不设闭合时点）
+
+1. **B1 卡号引用错误链（216→213）**：推荐列表全参数（entity_types/keyword/time_range/sort_by/top_n）实在 A03 卡 **213**（L709–713）；卡 216 是 pairs 算法卡，无筛选参数。**源头是我 ARCH 会签 C4 原文的笔误**，ARCH 稿 G4 行与 API 册 R1/§0 两处沿用。参数集合本身无错，改卡号防实现者翻错卡。ALGO 会签 §5 同句也混用了两卡但证据方向（L711）正确。
+2. **B2**：DATA 册 `graph_change_set` 行建议补一句"ops 单批上限 50（API 册 §1）"注记，或声明该约束归 API 校验层——两册现无冲突值，纯防漏。
+3. **B3**：VID union 的读侧实现（R2 现状图/R3 impact 计数按主表合并双 VID）责任在 Python 投影与查图逻辑，API 册端点未写不影响契约，实现单必收。
+4. **B4**：R5 发布端点形态偏离 A03 卡 209（versions 承载），属分册职权内裁定，理由成立，本会签记录在案不反对；后续若做版本列表/回滚端点（A03 209 同卡还有 GET versions 与 rollback），形态归 API 册终裁时一并考虑。
+5. **B5**：METRIC 册 §4 前置注记"105_1 formula 未签（pending_cosign）、source_tables=pending_ods"沿 2026-10-18 MCP 记录，本轮无 metric MCP 未复核——该册"签收前应确认公式签署状态"的自我要求保留，不因本会签免除。
+
+### 签收边界（第二轮）
+
+- 本节是架构角色对三份分册的会签意见，不把任何任务标 done；签收归监管人 `human:刘剑锋`。
+- A1/A3（API 册）、A4（DATA 册主+API 册对齐）闭合后，架构角色对三分册转无条件同意；A2 行政登记沿 C4 原时点，但 API 册不实句随 A1 一并修。
+- D5 N=50 与 D3 新建同构表：本会签已表同意，终批在监管人。
+

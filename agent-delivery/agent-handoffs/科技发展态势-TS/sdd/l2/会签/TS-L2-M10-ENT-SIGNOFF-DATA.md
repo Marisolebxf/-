@@ -126,3 +126,61 @@ C1/C2 回填后由 data-agent 在本页追记一行确认即可转「同意会�
 
 ---
 *会签人：agent:data-agent · 2026-11-07 · 只读核对，未动稿/未动 registry/未 git*
+
+## 三分册会签（2026-11-07）
+
+- 对象：`TS-L2-M10-ENT-DATA.md`（主审）· 交叉 `TS-L2-M10-ENT-API.md`、`TS-L2-M10-ENT-METRIC.md`；ARCH 稿（已监管人签收版）作对照
+- 范围：仍只读核对，不改稿、不动 registry、不 git
+- **结论：有条件同意。** §7 八决策项落地忠实度高（D1 查重声明经独立复核属实、D5/D6/D7 三处与 API 册同步无误），10 表基线主体落位；但 VID 四交叉点的 ③④ 落地有一处悬空一处自相矛盾、会签表清单第 10 项（挂接状态表）被无声跳过——3 项补裁定/注记后即可转「同意」，无需重开签。
+
+### 决策项落地追踪（§7.1 八项 → DATA 分册 §0）
+
+| # | 落地判定 | 说明 |
+|---|---|---|
+| D1 | **✓ 属实** | 分册称「对照 algo-mysql-connection-info 查重——gkxlumenx_dwd 在五业务库清单内、非 Java 平台库」（DATA:17）。独立复核：五业务库表确含 `gkxlumenx_dwd`（algo-mysql-connection-info.md:27），Java 平台库 11 个（`gkxlumenx`/`_app`/`_bi`/`_codegen`/`_config`/`_flow`/`_job`/`_mp`/`_pay`/`_report`/`_topic_enterprise`，同文件 :83–94）无 dwd，无撞名；Python 写权有先例（entan env `ENTAN_MYSQL_DWD_DB=gkxlumenx_dwd`，:131）。措辞小瑕：「五业务库清单内无撞名」实际语义是「不与 Java 平台库撞名」，dwd 本身就是既有库，非新定名，建议改写以免误读（非必修）。**附带治理注记（N4）**：该文件 :76 授权注释明写「算法要写、**Java 要读写**」——`gkxlumenx` 账号对五个业务库 GRANT ALL，Java 零写 dwd 目前只是架构约定、权限层面拦不住；实现单若要硬隔离需收紧授权或加写审计 |
+| D2 | ✓ | 两层（C02-180），真源 `dwd.technology_master` + ADS 镜像由 `graph_entity_node` 承担（DATA:18/:47） |
+| D3 | **✓ 同意新建，理由成立但证据未附** | 分册选新建同构 `graph_entity_node/edge`（DATA:19）。我代核 as-built：既有 `gkxlumenx_ads.graph_node/graph_edge` 是企业维「图镜像兜底（1 跳）、Nebula 同步旁路」（ENT/stores/mysql/ads.md:42），语义/结构均非技术点投影，不含 strength 双列/overlay/version_id——新建判断正确，且 `graph_entity_*` 在 storage 树无撞名（已 grep）。建议分册把这条证据补进正文（现在只写「需核 as-built 承载」等于没核就裁了） |
+| D4 | ✓ | demo_gkx_chain + demo ADS 实例（DATA:20/:56），与 storage README §5.1/决策 #7 一致 |
+| D5 | ✓ | N=50 拟默认报监管人 + 关联表 `graph_version_change_set`（DATA:21/:36）——与本会签 §5 建议逐字对齐 |
+| D6 | ✓ 双册同步 | DATA:22「首版不做（API 册同裁：查重命中只提示仍新建）」↔ API:95「不做合并/拆分 redirect…DATA 册同步裁定」，互指成立 |
+| D7 | ✓ 一致（超集+留位） | DATA:23 四值 `draft/approved/published/rejected`；API:89 状态机只画 `draft→(approve)→published` 未画 rejected，但 API:94「不做审核流引擎（DN-A03-02 未决，status 字段留位）」覆盖——rejected 属留位值，非矛盾，备注即可 |
+| D8 | ✓ | 沿 DN-A03-06 待拍板、表设计不预设（DATA:24） |
+
+### 10 表基线对照（§7.2 十项 → DATA §1）
+
+九项落位干净：change_set/log/version（+衍出关联表、快照表独立成行）、tombstone、冲突队列（reserved 建表不启用）、technology_master（external_ids JSON 返工护栏**已落主表**，DATA:32，对应 ARCH 会签 C2 条件②）、dim_tech_domain（只读不建）、redirect 随 D6 正确落空。**漏一项：**
+
+- **A3（必修）挂接状态表未裁定。** 本会签 §7.2 第 10 项「沿 entan `graph_membership` 先例（A03 INT-A-TECH-207 引用，A03.yaml:793），hang/unhang 状态面是否独立成表**待 DATA 定**」——分册自称「建表基线 10 张（会签清单）」（DATA:28），但清单构成实为「9 张实体表 + ADS 一行」，第 10 项候选既没建也没裁「不做」，被无声跳过。改法：补一句话裁定——若不建，说明 hang 状态由「图/ADS 边的存在性 + change_log 审计」表达、不沿用 graph_membership 先例即可。
+
+### VID 四交叉点落地评估（§4 → DATA §3）
+
+- ①读合并按主表、②impact 经主表 union 后计数（DATA:55）：**口径本身对，但存在前提悬空——见 A1**。
+- **A1（必修）③ 反转会签建议且未补替代护栏：** 本会签 §4.3 建议「首版提交查重同时匹配存量 VID 名称」，分册裁成「查重扫主表不扫存量图（图内重复点主源=主表）」（DATA:55）。问题：主表是自建先行、**存量 Nebula 技术点（`tech:{名称}`）并未灌入主表**，那么 ①② 的「经主表解析/union」无从解析存量名称 VID（主表里根本没有这条映射）——用户对存量同名技术点再新建，主表查重不命中 → 图内双点，①②③ 整条链悬空。二选一补齐：要么主表 seed 存量技术点清单（名称→technology_id 映射行），要么③改回扫存量图。不补则此裁定不成立。
+- **A2（必修）④ 自相矛盾：** 「auto 层 Job 撞存量名称 VID：写前经主表 **redirect** 解析」（DATA:55）——但 D6 同页裁定首版**不做 redirect、连表都不建**（DATA:22/:66），④ 引用的解析机制不存在。改法：④ 改为「写前经主表名称/external_ids 映射解析」，或声明轻量映射随 auto Job 单建（redirect 表语义仍留 D6 终态）。
+- 术语卫生（建议）：DATA:55 括号「D6 现只重灌 demo」沿自 ARCH:63，指 2026-10-15 的演练事件标识，与本分册 §0 决策项 D6（redirect）**同文档撞号**，建议改写为「2026-10-15 演练：现只重灌 demo_gkx_chain」。另 ARCH-C2 要求的「space 可配置」未明示（只落了 demo 落点），补一句「space 名经配置注入、默认 demo、正式待切换」更稳。
+
+### API / METRIC 交叉
+
+- **R2/DTO↔列 对齐良好**：GraphCurrent 的 edges[](edge_key,rel_type,strength_auto,strength_manual,source,time_range)（API:69）↔ `graph_entity_edge` 列（DATA:48）逐列对上；base_version/projection_status ↔ graph_version（§4 事务补偿双方一致：MySQL 先提交→Nebula 失败→pending+补偿重放，API:83 的 503 读仍可用=DATA:60 的「读上一版」）。R6 conflicts ↔ graph_conflict_queue「reserved 空实现但表建」完全同步（API:62/DATA:38）。
+- **A4（建议补注记）挂接实体在 ADS 无承载表**：GraphCurrent.entities[]（entity_id/entity_type/display_name/overlay 已套用）在 DATA §2 没有落点——`graph_entity_node` 的字段形状是技术点的（technology_id/name_cn/category，DATA:47），挂接实体若复用该表则列不匹配。需注记：实体节点投影是并入 graph_entity_node（加 object_type 扩列）、还是第三张投影表、还是仅作边的 endpoint 属性带出。
+- 幂等键 client_op_id 未在 change_set 表行出现（DATA:33）——API 定为每 op 必带、可落在 ops JSON 内，可接受；若要表级去重索引（唯一约束/生成列）归实现单，注记一句即可。
+- METRIC 三列口径三册一致：`strength_auto/manual/source` 贯穿 DATA:48（列）、API:73（DTO）、METRIC §3（「manual 永不进指标公式」），保护条款闭环 ✓。METRIC:47 提的「A03 213/216 `M_TECH_ENTITY_TOP5` 与 DS 映射不一致，报 data-agent 正式化」——收下，作为本会签人后续待办（不属 DATA 分册缺陷）。
+
+### 新发现汇总（证据：文件:行）
+
+| # | 级别 | 发现 | 证据 |
+|---|---|---|---|
+| A1 | 必修 | ③ 查重不扫存量图 + 主表未 seed 存量点 → ①②「经主表 union」悬空 | DATA:55；对照 A03 OI-A03-02（A03.yaml:111）存量 VID 现状 |
+| A2 | 必修 | ④「经主表 redirect 解析」与 D6「首版不做 redirect（不建表）」自相矛盾 | DATA:55 vs DATA:22/:66 |
+| A3 | 必修 | 会签 §7.2 第 10 项挂接状态表（graph_membership 先例）未裁定、被无声跳过 | DATA:28–41 vs 本页 §7.2:119；A03.yaml:793 |
+| A4 | 建议 | GraphCurrent.entities[] 的实体节点在 ADS 投影无承载表 | API:69 vs DATA:47 |
+| N1 | 建议 | graph_change_log 未注记 VID 粒度（本会签 §4 明确要求 before/after 记 VID 供 C04 对账） | DATA:34 vs 本页 §4:71 |
+| N2 | 建议 | §3 括号「D6」与 §0 决策项 D6 撞号；space 可配置未明示 | DATA:55/:22；ARCH:63；ARCH 会签 C2:17 |
+| N3 | 建议 | D3 新建理由成立但未附 as-built 证据（已代核：ENT ads.md:42 企业图镜像兜底，语义不符，新建正确） | DATA:19 vs ENT/stores/mysql/ads.md:42 |
+| N4 | 治理注记 | `gkxlumenx` 账号五业务库 GRANT ALL 且注释「Java 要读写」——Java 零写 dwd 是约定非权限隔离，硬隔离需收紧授权 | algo-mysql-connection-info.md:76/:83–94 |
+| N5 | 提醒 | `graph_snapshot` 与 CHAIN 域 ADS 既有 graph_snapshot 同实例跨库同名（dwd vs ads），跨库工具查询易混，建议注记或改名 | DATA:39 vs CHAIN/stores/mysql/ads.md:45/:48 |
+
+**闭合条件**：A1–A3 由 DATA 分册补三句裁定/注记（A1 二选一、A2 改措辞、A3 一句裁不做或落表），回填后本会签人在本节追记一行确认即转「同意」；A4/N1–N5 建议随稿顺手改，不阻断。
+
+---
+*三分册会签：agent:data-agent · 2026-11-07 · 只读核对，未动分册稿/未动 registry/未 git*

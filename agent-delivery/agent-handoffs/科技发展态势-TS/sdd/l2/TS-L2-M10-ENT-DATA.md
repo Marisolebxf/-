@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-M10-ENT-DATA`
 - 日期：2026-11-07
-- 状态：数据分册已落盘，待四角色会签。不标 done
+- 状态：三分册会签进行中（DATA-A1/A2/A3+API 跨册 3 项已回填；ARCH 待返）。不标 done
 - 监管：`human:刘剑锋` · 认领：`agent:data-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：全景序 41–47
@@ -38,6 +38,8 @@
 | `graph_conflict_queue` | 一行一冲突：auto 新值 vs manual 覆盖字段、状态（DN-A03-03；**会签 DATA-C1 补漏表**；reserved 首版空实现但表建） |
 | `graph_snapshot` | 每 N=50 版全量快照（D5；体积随版本数/N） |
 | `dim_tech_domain` | 技术领域维表（C02-181；本页只读选用） |
+| `graph_entity_overlay` | 三方实体覆盖层（update_entity_overlay 存储面——三分册会签 API 跨册补）：entity_type+entity_id 唯一、patch 字段、version_id |
+| `graph_version` 列补 | **projection_status**（三分册会签 API 跨册补：R2 暴露依赖此列） |
 | ADS：`graph_entity_node` / `graph_entity_edge` | 见 §2 |
 
 版本 diff 不独立物化（change_log before/after 可聚合推导，会签 §5 同裁）。
@@ -52,8 +54,9 @@
 
 - 首版增量投影：本页写回产生的 UPSERT/DELETE VERTEX/EDGE；**VID=`tech:{technology_id}`**
 - **存量 `tech:{名称}` 不迁移**（OI-A03-02 留 C04）；读侧 union 经主表 technology_id 解析（ARCH-C2 口径）
-- VID 四交叉点（DATA 会签）：① 读合并按主表 ② impact 双 VID 口径=经主表 union 后计数 ③ 新建查重扫主表不扫存量图（图内重复点主源=主表）④ auto 层 Job 撞存量名称 VID：写前经主表 redirect 解析，撞不上则新点（后续 Job 单详化）
-- Demo：demo_gkx_chain 同构（D6 现只重灌 demo——联调 space 用 demo，DATA/实现单确认）
+- **存量 seed 前置（三分册会签 DATA-A1 补）**：实现单须含一步「存量技术点映射 seed」——扫描 Nebula 存量 technology 顶点（名称 VID），在 `technology_master` 建 seed 行（technology_id 生成+name_cn=存量名+external_ids 记 `legacy_vid`），使主表先行档真正可解析；seed 幂等（ON DUPLICATE）
+- VID 四交叉点（DATA 会签）：① 读合并按主表 ② impact 双 VID 口径=经主表 union 后计数 ③ 新建查重扫主表不扫存量图（图内重复点主源=主表）④ auto 层 Job 撞存量名称 VID：写前经**主表名称/external_ids(legacy_vid) 映射**解析（非 redirect——D6 首版不做 redirect，三分册会签 DATA-A2 更正），撞不上则新点（后续 Job 单详化）
+- Demo：demo_gkx_chain 同构（注：本节「D6」指 VID 交叉点序号，非决策项 D6——三分册会签 N2 澄清；Nebula space 名经配置项注入可切正式/demo，实现单落）
 
 ## 4. 事务与补偿（沿 ARCH §1，存储侧含义）
 
@@ -63,5 +66,5 @@
 
 - 不建 cfg_* 表；不写 ODS/供应方库；不灌数不跑脚本（DDL 归实现单，写者 Python）
 - 不做 redirect/合并后端（D6）；不做 conflicts 业务逻辑（表建逻辑空）
-- 不动存量 Nebula VID；不替 DN-07/DN-A03-02/03/06 拍板
+- 不做挂接状态表（三分册会签 DATA-A3 裁：hang 状态由边存在性+change_log 表达，不另建表——entan graph_membership 先例不采）；不动存量 Nebula VID；不替 DN-07/DN-A03-02/03/06 拍板
 - Java 零写以上任何表（只读 §2 投影）

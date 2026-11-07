@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-M10-ENT-API`
 - 日期：2026-11-07
-- 状态：接口分册已落盘，待四角色会签。不标 done
+- 状态：三分册会签进行中（API 有条件 1 已回填/DATA 3 待回填/ALGO 同意；ARCH 待返）。不标 done
 - 监管：`human:刘剑锋` · 认领：`agent:api-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：全景序 41–47
@@ -41,7 +41,7 @@
 | op | 叶 | 请求要点（A03 卡出处） |
 |---|---|---|
 | `hang_entities` | 42 | `[base_version, technology_id, entities[(entity_type, entity_id)], client_op_id]`；回执 edges_created[].strength 复用 105 快照边权（ALGO 边界 1） |
-| `unhang_entities` | 43 | `[base_version, technology_ids[], entity_ids[], cascade, client_op_id]`；cascade 语义含 SRS-43「所有关系」（会签 API 备注 3：A03 只写实体–技术边，分册扩为级联全关系） |
+| `unhang_entities` | 43 | `[base_version, technology_ids[], entity_ids[], cascade, client_op_id]`（A03:883 原文 technology_id 单数，分册扩复数批量——三分册会签注记）；cascade 语义含 SRS-43「所有关系」（会签 API 备注 3） |
 | `delete_node` | 43（技术点本体） | `[base_version, technology_ids[], cascade, client_op_id]`；前置 impact 预检（R3） |
 | `update_node` | 45（技术点） | `[base_version, technology_id, patch(name_cn, category, description, importance_level), client_op_id]` |
 | `update_entity_overlay` | 45（三方实体） | `[base_version, entity_type, entity_id, patch(display_name, type, description, importance_level), client_op_id]`——与 update_node 形状不同，**不得混用**（API-C1） |
@@ -54,7 +54,7 @@
 
 | # | 端点 | 语义 | 备注 |
 |---|---|---|---|
-| R1 | `GET …/recommend-entities` | 推荐 Top 实体（叶 41）：keyword 筛选 + sortBy=strength\|time + 全参数沿 A03 卡 216 | 强度展示数字挂 `M_TECH_GRAPH_105_1`（METRIC 册）；105 未交付→空态+PendingBadge |
+| R1 | `GET …/recommend-entities` | 推荐 Top 实体（叶 41）：keyword 筛选 + sortBy=strength\|time\|name（A03 卡 **213** L711；原稿漏 name 且卡号误引 216——三分册会签 API-条件1 更正） | 强度展示数字挂 `M_TECH_GRAPH_105_1`（METRIC 册）；105 未交付→空态+PendingBadge |
 | R2 | `GET …/graph/current` | **全景现状读**（会签必答题 1）：当前 published 图（技术点+挂接实体+边），含 projection_status | A03 无卡、ARCH 提出无路径——本分册新定；差异列表/版本信息挂此 |
 | R3 | `GET …/nodes/{technology_id}/impact` | 删除影响预检：edge_count/entity_link_count/snapshot_refs | 计数豁免归 DN-A03-09（METRIC 册裁定） |
 | R4 | `POST …/changes:validate` | 预览（dry_run）：返回 diff+影响面+计数 | A03 两形态（:validate/dry_run）归一本形态（DATA 会签 §6 同裁） |
@@ -70,7 +70,7 @@
 - ChangeSetReceipt：change_set_id/status/failed_items[]/version_stats{succeeded}
 - ImpactResult/ValidatePreview/DiffList：字段沿 A03 202/221/204
 
-**边强度双字段**（ALGO 保护条款落 DTO）：`strength_auto` / `strength_manual` / `source` 三列贯穿读写——UI 可显人工值但读面指标口径只取 auto。
+**边强度双字段**（ALGO 保护条款落 DTO）：`strength_auto` / `strength_manual` / `source` 三列贯穿读写——UI 可显人工值但须**标注「人工」**（METRIC §3.2），读面指标口径只取 auto。
 
 ## 5. 错误码汇总
 
@@ -79,7 +79,7 @@
 | `400 PARAM_INVALID` | op 枚举外/缺 base_version/ops>50/edge_key 形状错/technology_id 非法 |
 | `404 NOT_FOUND` | change_set/technology_id 不存在 |
 | `409 VERSION_CONFLICT` | base_version 不匹配——data 带 diff 列表（双方 ops 对照）；另 `409 CHANGE_SET_STATE`（非 draft 态重复发布） |
-| `422 UNPROCESSABLE` | validate 发现的图结构违规（悬挂边/类型不匹配） |
+| `422 UNPROCESSABLE` | validate 发现的图结构违规（悬挂边/类型不匹配；含 edge_key/entity_id 不存在的图结构类归此）。平台先例：Python 内部已用 422、Java 门面已消费（SvcAnalysisAdapterImpl/IndustryFacadeServiceImpl）——display 门面须透传（三分册会签 API 备注） |
 | `503 PROJECTION_PENDING` | 发布投影中——**读 R2 仍可用**（返回上一版+projection_status=pending），写可继续提交（base_version 不变） |
 
 空态=200 空列表（R1 无推荐/R6 无冲突），不是 501 不是 404。无 mock 兜底端点。

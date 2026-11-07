@@ -79,3 +79,48 @@
 - 不要求改被审稿正文；S1–S3 是输入非条件。
 - 读面（M2/A02）Top5 与边权展示的挂接归 A02 二级，本页只约束「维护侧写入不得污染读面口径」（§4 保护条款）。
 - G2 智能关联现算留算法侧后续单（JX-A03-03 依赖），届时口径仍归 105_1，不新开号。
+
+## 三分册会签（2026-11-07）
+
+- 对象：`TS-L2-M10-ENT-METRIC.md`（主审，本页 §6 预期挂接表的落地质量）+ `TS-L2-M10-ENT-API.md` §4 / `TS-L2-M10-ENT-DATA.md` §2 交叉（口径保护双落点）
+- 方式：只读核对，全部对到事实源（A03 yaml / metric-srs-map / calc-logic / ARCH 稿）。不改稿、不动 registry、不 git
+
+### 结论
+
+**同意三分册会签**。METRIC 分册对本页 §6 八行预期挂接表**逐行忠实落地，无走样、无照抄全 N/A**；DN-A03-09 表述守住「建议非裁定」边界；口径保护三条款在 API DTO 与 DATA ADS 双落点一致。未发现事实错误。附 3 条非阻断备忘（N1–N3），不构成签收条件。
+
+### 挂接表落地追踪（本页 §6 → METRIC §1，逐行）
+
+| 行 | 预期（本页 §6） | METRIC §1 落地 | 判定 |
+|---|---|---|---|
+| 41 | 挂 `M_TECH_GRAPH_105_1`，ⓘ 必须，禁「全 N/A」 | L18：同号+ⓘ 必须+D4=mock 显 MockBadge+禁全 N/A（标 ALGO-S1） | 落地 |
+| 42 | 无新号；回执 strength 若显示同挂 105_1；G2 现算不做 | L19：三条全带，且「无 vs 人工填」引 JX-A03-03 在册 | 落地 |
+| 43 | 写操作 N/A；impact 计数并入 DN-A03-09（202 缝隙） | L20：同；并正确指出 202 未标 metric_missing 系缝隙由本叶收口（§2）——与本页 §3.2 一致 | 落地 |
+| 44 | N/A（n/a_ops） | L21 | 落地（A03 218 n/a_ops 复核属实） |
+| 45 | N/A（importance_level 非算法分） | L22 | 落地（A03 219 L977「重要性等级不是影响力算法分」复核属实） |
+| 46 | N/A + strength_manual 不进口径 | L23：挂 §3 保护条款 | 落地（A03 220 L1021/L1029 复核属实） |
+| 47 | 回执统计豁免待 DN-A03-09 + dry_run 计数同入 | L24：两条全带 | 落地（A03 221 L1064/L1069 复核属实） |
+| SRS-40 | 209 版本 stats 并入豁免 | L25 | 落地（A03 209 stats(+node/-node/+edge/-edge) L534 复核属实） |
+
+辅助核对：① 负向证据重跑——metric-srs-map.yaml `M_TECH_GRAPH_105_1` 条目（L5443 起）srs_refs 维护段仍只有 seq 41（page_ids=[DS-02-MAINTAIN-ENTITY]），序 42–47 无既有挂接，N/A 行有据；② §2 豁免论证援引 LAYER probe 时延先例（TS-L2-M10-LAYER-METRIC 序 8 行原文在册）、范围四项一次写全（S2 落实）；③ §4 前置注记 calc-logic 实存复核属实（`metrics/calc-logic/TECH/M_TECH_GRAPH_105_1.md` 抬头：维护者唐绍祖、20261027 批）；ARCH-C5 空态裁定在 ARCH 稿 L101 在册。
+
+### DN-A03-09 边界审查
+
+- METRIC §2 措辞「本叶**建议** DN-A03-09 裁定为…」「裁定待确认后回填本表；未裁前按建议豁免表述，**不挂 ⓘ 不注册**」——未代 PM/数据 Lead 拍板、未提前挂 ⓘ 或注册任何号，**不越权守住**。
+- 豁免四项范围与本页 S2 逐字对应（221 回执 + 202 impact + 209 版本 stats + 47 dry_run 预览计数），无扩无漏。
+
+### 口径保护双落点一致性（本页 §4 → METRIC §3 → API §4 / DATA §2）
+
+- API §4：GraphCurrent `edges[](…strength_auto, strength_manual, source…)` 三列 + 汇总句「三列贯穿读写——UI 可显人工值但读面指标口径只取 auto」（L69/L73）；§2 `delete_entity_edge` 回执带 `edge_source(auto|manual)`；RecommendEntity.strength 标「105 边权」（纯 auto 面）——**落 DTO 成立**。
+- DATA §2：`graph_entity_edge` 列级落 `strength_auto / strength_manual / source` 三列并注明「读面指标只取 auto」（L48）——**落 ADS 列成立**。
+- METRIC §3 三条款（auto 层口径定义 / 双字段+source / 表单回显人工值但排序按 auto）与两册落点**语义一致**，strength_manual「永不进指标公式」在两册均无反例。唯一未镜像项见 N1。
+
+### 新发现（非阻断备忘）
+
+- **N1（UI 标注「人工」未随保护条款外溢）**：METRIC §3 条 2 尾句「UI 显人工值时标注『人工』」在 API §4 汇总句（L73）转述为「UI 可显人工值但读面指标口径只取 auto」，**丢掉了标注「人工」半个要求**。权威条款在 METRIC §3，不构成 API 册错误；但 UI 分册/接线单消费 DTO 时若无 METRIC 册在手会漏此标注——建议接线单或 UI 分册落笔时显式带上。
+- **N2（DN-A03-09 裁定人写法漂移）**：METRIC §2 写「裁定待**监管人/PM** 确认」；A03 L1091 的 owner 是「**PM/数据 Lead**」——数据 Lead 被漏列。监管人介入无妨，但正式裁定应送达 A03 在册 owner（含数据 Lead），建议回填裁定结果时按 A03 owner 名单知会。
+- **N3（前置注记可执行性欠一步）**：METRIC §4 只写「METRIC 签收前应确认公式签署状态有否更新」，**未指定谁去确认、经何渠道确认**。可执行化建议：认领人（algorithm-agent）在具备 metric MCP 的会话内重查 `M_TECH_GRAPH_105_1` metric-get（确认 formula cosign 是否脱离 pending_cosign、source_tables 是否脱离 pending_ods——A03 L721/836 所记 2026-10-18 状态），无 MCP 则由监管人线下向维护者唐绍祖确认并在本页回填一行。此为签收流程补强，非分册缺陷。
+
+### 签收边界（同前）
+
+- 本节只读核对，不改三分册正文；N1–N3 是输入非条件。签收归监管人 `human:刘剑锋`。

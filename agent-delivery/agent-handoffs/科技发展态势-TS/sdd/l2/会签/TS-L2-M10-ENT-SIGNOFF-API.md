@@ -109,3 +109,63 @@ A03 `op=` 全集（grep 实证，10 个）：`add_node / delete_node / add_edge 
 - 本页是接口角色会签意见，不把任何任务标 done；签收归监管 `human:刘剑锋`。
 - 条件 1 的修订由 ENT-ARCH 认领人（`agent:arch-agent`）落笔，本角色不代改被审稿。
 - OI-A03-01 分档、G2 首版不做、「一张 G」作用域（OI-A03-03）属架构/算法/甲方角色会签范围，本页仅确认接口视角无异议。
+
+## 三分册会签（2026-11-07）
+
+- 对象：`sdd/l2/TS-L2-M10-ENT-API.md`（主审，本页会签输入的直接产物）；交叉 `TS-L2-M10-ENT-DATA.md` / `TS-L2-M10-ENT-METRIC.md` / `TS-L2-M10-LAYER-API.md`（风格）+ `SCI-INT-A03.yaml`（22 卡）复核
+- 范围：只读核对，不改分册正文，不动 registry，不 git
+
+**结论：有条件同意 API 分册。** 条件 1 条（§3 R1 行一行级更正：sortBy 补 name、卡号 216→213）；新发现备注 8 条（含跨册缝隙 2 条转 DATA 册认领人）。METRIC/DATA 交叉核对通过。条件回填后本页追记一行即转「同意」。
+
+### 输入清单（A/B/C/D）落实追踪
+
+| 输入项 | 分册落点 | 判定 |
+|---|---|---|
+| A：读端点 R1–R6 + 写端点两枚 | §3 全收（R2=graph/current、R5=独立 publish；写=POST changes + GET changes/{id}） | 落实（R1 行自身有错，见新发现 1） |
+| A：必答题 1（R2 全景现状读） | 新定 `GET …/graph/current`，projection_status/diff/版本信息挂此 | 落实；与 DATA 册 §2「R2 经 display→topic 读 ADS 投影（含 projection_status）」互认一致 |
+| A：必答题 2（R5 发布落点） | 独立端点 `POST …/changes/{change_set_id}/publish` | 落实。未沿本页建议的 A03 versions 形态，但会签要求是「一处写死」而非绑定选项；所选形态自洽（可重试/审计独立/不做提交即发布），接受 |
+| B1：七 op 封闭枚举 | §2 表 7 行；本页条件 1 三处名更正已回填（分册全对；ARCH L22-24/L104-106 已改，L70 残留一处见新发现 9） | 落实 |
+| B2：edge_key 四元组 / time_range 年粒度 / client_op_id 全 op | §2 delete_entity_edge 行（src,dst,rel_type,rank，INT-A-TECH-204）、update_entity_edge 行年粒度；§1 总则 + §2 七行均带 client_op_id（明示为 add_node 扩展） | 落实 |
+| B3：ops≤50 超限 400 / 部分失败 | §1 总则 + §5 400 行 + §4 ChangeSetReceipt{failed_items, version_stats{succeeded}} | 落实 |
+| B4：technology_id INT64 / entity_id 对齐注记 | §2 末行；与 DATA 册 technology_master BIGINT PK 一致 | 落实 |
+| B5：unhang 级联 / hang strength / **sortBy 三值** | 级联 ✓（引本页备注 3）；hang strength 复用 105 边权 ✓（引 ALGO 边界 1）；**sortBy ✗ 仍两值** | 前两项落实；第三项未落实（新发现 1，即条件） |
+| C：错误模型 3 项 | §5 409 行（diff=双方 ops 对照）；§6 projection_status(ok/pending/failed) 经 R2；§5 503 行 + §6「pending 提交照常受理（base_version 不变）」 | 落实（409 diff 字段形状略薄，最小语义可用，实现单可补） |
+| D：风格对齐 + op 专节 + §0 显式放弃 | 骨架逐节对齐 LAYER（§0 差异表/§1 总则/§2-4 资源/§5 错误码/§7 不做）+ §2 op 专节 ✓；addPanoramaRelation 显式放弃 ✓（但备注号引错，新发现 4）；ENTITY_TYPES 差集未进 §0（新发现 6） | 基本落实，两处小缺口 |
+
+### §2 七 op 请求要点 vs A03 卡逐字复核
+
+| op | A03 出处 | 判定 |
+|---|---|---|
+| hang_entities | L796 `[base_version, technology_id, entities[(entity_type, entity_id)]]` | 一致（+client_op_id 系 B2 明示扩展） |
+| unhang_entities | L883 `[base_version, technology_id, entity_ids[]]` | **technology_id 单数 → 分册 `technology_ids[]` 复数，未注记**（cascade 扩展已注记）——新发现 2 |
+| delete_node | L231 `[base_version, technology_ids[], cascade]` | 一致 |
+| update_node | L405 | 一致 |
+| update_entity_overlay | L968 `[base_version, entity_type, entity_id, patch(display_name, type, description, importance_level)]` | 逐字一致 |
+| delete_entity_edge | L925 `[base_version, edge_key]`；响应 edge_source(auto\|manual) L926 | 一致 |
+| update_entity_edge | L1012 `[base_version, edge_key, patch(rel_type, strength_manual, time_range)]`；年粒度 L1014 | 逐字一致 |
+
+### 新发现问题（证据=文件:行）
+
+1. **【条件】R1 行 sortBy 漏 name + 卡号引错**（ENT-API:57）：写「sortBy=strength\|time + 全参数沿 A03 卡 216」——`sort_by(strength|time|name)` 在 **INT-A-X-213**（A03:711），216 是强度算法卡（request=`pairs[...]`，A03:840，无排序参数）。ARCH G4（ENT-ARCH:70）同错同源（且该行自己注了「勿截窄」）。改法：R1 行补 name、216→213。本页 B5/备注 4 唯一未落实项，系一行级更正。
+2. unhang 请求形状未注记改动（ENT-API:44 vs A03:883）：`technology_id`（单数）→ `technology_ids[]`，与 cascade 同行但只注记了 cascade（备注 3）。若有意对齐 delete_node 批量形状，补半句注记；否则回单数。
+3. 备注 7 降级口径未写死：无 105 边对 `strength=null` 标「待计算」、不填 0（A03:860）未落 §2/§4，仅 §7「强度空」带过。产品口径（显示「无」vs 人工填，JX-A03-03）虽在册未决，「null 不填 0」应先写死。
+4. 会签备注号两处引错：ENT-API:23 addPanoramaRelation 引「会签 API 备注 5」（实为本页备注 6）；ENT-API:68 description 引「备注 2」（实为备注 5/核对二）。溯源错位，随条件 1 顺手改。
+5. RecommendEntity 相对 A03 213 响应（A03:712）删 `in_panorama`/`metric_id` 未注记：in_panorama 承接 demo 按名去重的替代语义（本页核对二），建议保留或在 §0 注记放弃；metric_id 不进 DTO 可接受（D9 挂接归 METRIC 册）。
+6. §0 差异表缺 ENTITY_TYPES 枚举差集行（demo 含「全部/技术点」、契约四值，本页备注 5 前半）——D 项半落实（addPanoramaRelation 列了，枚举差集没列）。
+7. **422 评估（审查重点）**：确为 LAYER 四码体系（400/404/409/501，LAYER-API §6）之外新码，但平台内有先例——Python 内部服务已用 422 且 Java 门面已消费（`repos/lumen-svc-platform/gkxlumen-topic-async-service/.../SvcAnalysisAdapterImpl.java:60`「code!=0（含 422 未知 key）视为失败」、`gkxlumen-topic-chain/.../IndustryFacadeServiceImpl.java:220`「422 转失败」）。对外 HTTP 首例合理：400=语法/形状（不查态可判）与 422=图结构语义违规（须查图态）分立清晰，悬挂边/类型不匹配归 422 成立。**实现单须写明 display 门面对 Python 422 的透传映射**（勿学 industry facade 吞成通用失败）。完备性小缺口：edge_key/entity_id 引用不存在对象归哪个码未列（404 清单只含 change_set/technology_id）——建议 404 扩列或 422 扩义，实现单写死。503 触发端点（R5 发布时投影在途）建议实现单补一句明示。
+8. **跨册缝隙（转 DATA 册认领人，不阻塞本册）**：① overlay 落点表与挂接状态表（A03:881「挂接表 status=removed」）不在 DATA 册 10 表基线（ENT-DATA §1）——DATA 会签 7.2 #10 列候选后既未建也未注记放弃，update_entity_overlay/unhang 的存储面悬空；② graph_version 列清单（ENT-DATA §1）漏 projection_status（ENT-DATA §4 叙述用到 `version.projection_status=pending`）。
+9. ARCH 残留一处：ENT-ARCH:70（§3 G1 行）仍写 update_edge（L22-24/L104-106 均已按本页条件 1 更正），随下次修订机会顺手改。
+
+### METRIC/DATA 交叉核对（通过）
+
+- DTO↔列：GraphCurrent.edges(edge_key, rel_type, strength_auto/manual, source, time_range) ↔ ENT-DATA §2 graph_entity_edge 三列+年粒度 ✓；entities「overlay 已套用」↔ graph_entity_node「overlay 套用后展示字段」✓
+- 挂接↔字段：§2 七 op ↔ ENT-DATA graph_change_set「ops JSON（7 op 封闭枚举）」✓；INT64 ↔ BIGINT PK ✓；状态机 §6 ↔ DATA D7 值域 ✓
+- 口径：R1 挂 M_TECH_GRAPH_105_1 / 空态+PendingBadge ↔ ENT-METRIC §1 叶 41 行 ✓；R3 计数豁免归 DN-A03-09 ↔ ENT-METRIC §2 ✓；§4 双字段+「读面只取 auto」↔ ENT-METRIC §3 保护条款 ✓；§5 503 期间 R2 读旧版+写可续 ↔ ENT-DATA §4 ✓
+
+### 签收边界
+
+- 条件 1 由 `TS-L2-M10-ENT-API` 认领人回填（一行级），回填后本页追记一行转「同意」；新发现 8 转 DATA 册认领人，不阻塞 METRIC 册。
+- 本页三分册会签只读核对：未改分册正文、未动 task-registry、未 git。
+
+---
+*三分册会签：agent:api-agent · 2026-11-07*
