@@ -406,8 +406,8 @@
 | WBS-05-24-L2-03D · `TS-L2-M10-ENT-DATA` | 维护管理 · 关键实体与关系 · 后台数据架构 | 刘剑锋 | `gkx-orchestration` | **done**（已签收） | 2026-11-07 分册落盘：8 决策项方案（gkxlumenx_dwd/Python 单写者/ADS graph_entity_* 新建/N=50 报批）；建表基线 10 张含补漏表。四角色会签+回填+2026-11-07 签收。handoff `TS-L2-M10-ENT-DATA.md` |Nebula 复用+变更表归 Python 写；不建 cfg_ 表 | `TS-L2-M10-ENT-ARCH` | 无截至时间 |
 
 | WBS-05-24-L2-04A · `TS-L2-M10-ENT-PY-IMPL-01` | 维护管理 · ENT · Python 写侧（变更链 11 表+发布投影+存量 seed） | 刘剑锋 | `lumen-algo-py` | **claimed** | 2026-11-07 建单认领。7 op/发布序列 MySQL→Nebula→ADS/三列口径 | 定义四单（done） | 无截至时间 |
-| WBS-05-24-L2-04B · `TS-L2-M10-ENT-JAVA-IMPL-01` | 维护管理 · ENT · Java 双门面（topic+display） | 刘剑锋 | `lumen-svc-platform` | **claimed** | 2026-11-07 建单认领。C1=A display 代理；R2 现状读 ADS | `TS-L2-M10-ENT-API`（done） | 无截至时间 |
-| WBS-05-24-L2-04C · `FE-TS-10C` | 维护管理 · ENT · 前端接线 | 刘剑锋 | `lumen-ui-science-pc` | **claimed** | 2026-11-07 建单认领。六操作接 op/addRelation 移除/R1ⓘ/文案清零 | `TS-L2-M10-ENT-API`（done） | 无截至时间 |
+| WBS-05-24-L2-04B · `TS-L2-M10-ENT-JAVA-IMPL-01` | 维护管理 · ENT · Java 双门面（topic+display） | 刘剑锋 | `lumen-svc-platform` | **integration** | 2026-11-08 双门面完成（8d90869，topic 53/display 72 绿）；待 PY 写侧联调 | `TS-L2-M10-ENT-API`（done） | 无截至时间 |
+| WBS-05-24-L2-04C · `FE-TS-10C` | 维护管理 · ENT · 前端接线 | 刘剑锋 | `lumen-ui-science-pc` | **integration** | 2026-11-08 接线完成三绿（变更集模型/addRelation 移除/R1ⓘ）；mock 轨可验；real 待 PY。handoff `FE-TS-10C.md` | `TS-L2-M10-ENT-API`（done） | 无截至时间 |
 
 （主路径测试行待实现单联调后建。）
 
