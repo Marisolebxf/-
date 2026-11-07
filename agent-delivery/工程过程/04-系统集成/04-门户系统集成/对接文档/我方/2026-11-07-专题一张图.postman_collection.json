@@ -1,0 +1,316 @@
+{
+  "info": {
+    "name": "门户专题一张图",
+    "description": "智慧服务门户「专题一张图」6 个接口。Base URL 已含调用地址，路径直接接在后面。导入 Apifox 或 Postman 后，把集合变量 token 换成统一用户中心签发的访问令牌。说明见同目录《2026-11-06-专题一张图-外部对接接口文档.md》v1.2。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://10.50.69.111:30895/topic/v1/portal/one-map"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 产业维度统计",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"industry_code\": \"INB1309\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/industry-stats",
+        "description": "产业页签。industry_code 必填。scale 无数据时 value 为 null，scale_trend 为 []。"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"industry_code\": \"INB1309\"\n}"
+            },
+            "url": "{{baseUrl}}/industry-stats"
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"code\": 0,\n  \"msg\": null,\n  \"data\": {\n    \"scale\": { \"value\": null, \"unit\": \"亿元\", \"metric_id\": \"M_ONE_MAP_INDUSTRY_SCALE\" },\n    \"scale_trend\": [],\n    \"org_count\": { \"value\": 1280, \"unit\": \"家\", \"metric_id\": \"M_ENT_REGIONAL_COUNT_TOPIC\" },\n    \"org_count_trend\": [\n      { \"year\": 2023, \"value\": 1100 },\n      { \"year\": 2024, \"value\": 1280 }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "2 企业指标统计",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"industry_code\": \"INB1309\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/enterprise-stats",
+        "description": "企业页签。industry_code 必填。规模四桶无数据时 count 为 0；从业人数无数据时 value 和各桶 count 为 null。"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"industry_code\": \"INB1309\"\n}"
+            },
+            "url": "{{baseUrl}}/enterprise-stats"
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"code\": 0,\n  \"msg\": null,\n  \"data\": {\n    \"count\": {\n      \"value\": 1280,\n      \"unit\": \"家\",\n      \"metric_id\": \"M_ENT_SZ_COUNT\",\n      \"trend\": [{ \"year\": 2024, \"value\": 1280 }]\n    },\n    \"scale_dist\": {\n      \"metric_id\": \"M_ENT_GAP_03\",\n      \"buckets\": [\n        { \"label\": \"大型\", \"count\": 20 },\n        { \"label\": \"中型\", \"count\": 80 },\n        { \"label\": \"小型\", \"count\": 400 },\n        { \"label\": \"微型\", \"count\": 780 }\n      ]\n    },\n    \"medium_large_ratio\": { \"value\": 7.8, \"unit\": \"%\", \"metric_id\": \"M_ENT_GAP_09\" },\n    \"employee_count\": { \"value\": null, \"unit\": \"人\", \"metric_id\": \"M_ENT_GAP_10\" },\n    \"employee_dist\": {\n      \"metric_id\": \"M_ENT_GAP_03B\",\n      \"buckets\": [\n        { \"label\": \"<50\", \"count\": null },\n        { \"label\": \"50–199\", \"count\": null },\n        { \"label\": \"200–499\", \"count\": null },\n        { \"label\": \"≥500\", \"count\": null }\n      ]\n    }\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "3 政策指标统计",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"industry_code\": \"INB1309\",\n  \"district\": \"南山区\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/policy-stats",
+        "description": "industry_code 必填。district 可选：不传时 count 为全市口径，传入时 count 为该区口径。by_district 始终是各区列表。"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"industry_code\": \"INB1309\",\n  \"district\": \"南山区\"\n}"
+            },
+            "url": "{{baseUrl}}/policy-stats"
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"code\": 0,\n  \"msg\": null,\n  \"data\": {\n    \"count\": { \"value\": 36, \"unit\": \"条\", \"metric_id\": \"M_POLICY_SZ_DIST\" },\n    \"trend\": [\n      { \"year\": 2023, \"value\": 12 },\n      { \"year\": 2024, \"value\": 18 }\n    ],\n    \"by_district\": [\n      { \"district\": \"南山区\", \"count\": 36 },\n      { \"district\": \"福田区\", \"count\": 20 }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "4 行政区指标统计",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"industry_code\": \"INB1309\",\n  \"district\": \"南山区\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/district-stats",
+        "description": "industry_code 与 district 都必填。科研机构数、人才数不在本接口。发展指数无数据时 value 为 null。"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"industry_code\": \"INB1309\",\n  \"district\": \"南山区\"\n}"
+            },
+            "url": "{{baseUrl}}/district-stats"
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"code\": 0,\n  \"msg\": null,\n  \"data\": {\n    \"development_index\": { \"value\": null, \"metric_id\": \"M_ONE_MAP_DISTRICT_DEV_INDEX\" },\n    \"enterprise_count\": { \"value\": 860, \"unit\": \"家\", \"metric_id\": \"M_ENT_REGIONAL_COUNT\" },\n    \"policy_count\": { \"value\": 36, \"unit\": \"条\", \"metric_id\": \"M_POLICY_SZ_DIST\" }\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "5 重点企业检索",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"keyword\": \"生物\",\n  \"district\": \"南山区\",\n  \"industry_code\": \"INB1309\",\n  \"page\": 1,\n  \"size\": 10\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/key-enterprises/search",
+        "description": "keyword 必填。district、industry_code 可选。page 从 1 起，size 默认 10、最大 50。响应不回传 page 和 size。lat、lng 固定为 null，定位用 district。"
+      },
+      "response": [
+        {
+          "name": "成功",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"生物\",\n  \"district\": \"南山区\",\n  \"industry_code\": \"INB1309\",\n  \"page\": 1,\n  \"size\": 10\n}"
+            },
+            "url": "{{baseUrl}}/key-enterprises/search"
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"code\": 0,\n  \"msg\": null,\n  \"data\": {\n    \"total\": 1,\n    \"records\": [\n      {\n        \"enterprise_id\": \"ORG1\",\n        \"name\": \"某生物科技\",\n        \"district\": \"南山区\",\n        \"industry_node\": \"中游-研发\",\n        \"type\": \"高新技术企业\",\n        \"lat\": null,\n        \"lng\": null\n      }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "6 产业专题图",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"industry_code\": \"INB1309\",\n  \"theme\": \"enterprise\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/thematic-map",
+        "description": "industry_code、theme 都必填。theme 取 development（产业发展）、enterprise（企业分布）、policy（政策支持）。development 固定 9 个区，无数据时 value 为 null。"
+      },
+      "response": [
+        {
+          "name": "企业分布",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"industry_code\": \"INB1309\",\n  \"theme\": \"enterprise\"\n}"
+            },
+            "url": "{{baseUrl}}/thematic-map"
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"code\": 0,\n  \"msg\": null,\n  \"data\": {\n    \"values\": [\n      { \"district\": \"南山区\", \"value\": 860, \"metric_id\": \"M_ENT_REGIONAL_COUNT\" },\n      { \"district\": \"宝安区\", \"value\": 420, \"metric_id\": \"M_ENT_REGIONAL_COUNT\" }\n    ],\n    \"legend\": { \"min\": 420, \"max\": 860, \"unit\": \"家\" }\n  }\n}"
+        }
+      ]
+    }
+  ]
+}
