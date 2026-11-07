@@ -5,6 +5,7 @@
 - 性质：检索条件预处理（同步）。挂在多维检索查询旁，**不**新造 `metric_id`，**不**改 D4。
 - 上游：`POL-L2-DS10-QRY-ARCH` / `POL-L2-DS10-QRY-API`；SRS 197 检索条件设置（智能检索 Tab）
 - 边界：不是序号 237 政策文本解析，也不是核增 606 政策语义理解。不做向量召回。
+- 总册落点：已写入 `科技政策跟踪-系统详细设计说明书.md` §2 序号 197、§3 调用链；`sdd/调用链与边界.md`；`sdd/契约输入清单.md`（全景 +1）
 
 ## 1. 目标
 
@@ -72,6 +73,15 @@ Prompt 资产：`lumen_common/prompts/policy/query_intent.v1.txt`。改语义升
 - 197 结构化筛选与关键词检索不变；本资源只服务智能检索 Tab 的预处理。
 - 606 / `M_POLICY_TEXT_PARSE` 仍是政策正文语义，不挂本资源，不写成已上线。
 
-## 6. 实现叶（本页签收后）
+## 6. as-built
 
-`POL-L2-DS10-QRY-INTENT-IMPL-PY` → `…-IMPL-JAVA`（topic + display 透传）→ `…-WIRING-L01`（前端）→ 合规用例追加一行。
+已落地（2026-11-08 推 `origin/dev`）：
+
+| 层 | 落点 |
+|---|---|
+| Python | `lumen-algo-py`：`POST /internal/policy/query-intent` + prompt v1 |
+| Java | `lumen-svc-platform`：topic `POST /topic/v1/policy/query-intent` + display `POST …/panorama/query-intent` 透传 |
+| 前端 | `lumen-ui-science-pc`：智能检索先 intent 再 search；残差 keyword；本地词表 fallback |
+| 合规 | `POL-L2-DS10-QRY-合规演示用例` 197 智能检索行 |
+
+SDD 同步：`POL-L2-DS10-QRY-ARCH` §2/§3/§4.1、`POL-L2-DS10-QRY-API` §1/§2/§3.0、`契约输入清单`、`调用链与边界`、说明书 §2/§3、`POL-L2-DS10-QRY-DATA` §3 头注。
