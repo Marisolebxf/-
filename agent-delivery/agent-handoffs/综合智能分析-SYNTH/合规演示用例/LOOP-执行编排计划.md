@@ -16,8 +16,8 @@
 | token 文件 | `~/.gkx/topic-loop-token`（单行 access_token；请求头加 `systemCode: topic`；不进 git / handoff / 聊天） |
 | 执行依据 | 《产品实现规程》§6.5（纯后端两段：只读库核对样本 + 带 token 调接口对照期望）· §6.5.7 监管人九步 |
 | 对照物 | `condition-fill-matrix.yaml` 可演行 = supported 36 + 拦截分支 supported 3（gap 5 条不判通过，只做诚实空态演示核验；`覆盖不到` 归 DATA 缺口） |
-| 当前状态 | **blocked（ENV：网关路由前缀错配，根因已定位）**——2026-11-07 20:16 分层诊断：服务直打 `10.96.2.89:7092/topic/v1/synth/vitality/batch-snapshot` → **200 + 快照数据正确**（`snap:mock_20261106_vit_seed_index_main`）；网关 30895/域名 `/tts/lumen/api` 剥 `/topic` 转发 `/v1/**` → 服务 404。修复二选一：A 网关路由不剥 `/topic` 直转（devops）；B 服务按网关契约发布 `/v1/**`（api）。待监管人裁决后重开轮 |
-| 最近一轮 | 2026-11-07 / R1 探测+分层诊断 / 锚点 200；SYNTH 经网关 404×2；服务直打 200（数据正确）/ 无样本对照 / 无缺口单 / 退出方式=ENV（网关-服务路由前缀错配，已通知监管人） |
+| 当前状态 | **in_progress（R2 轮执行中）**——2026-11-07 20:30 监管人指路后路由更正：**正确入口 = `/tts/svcz/api/topic/topic/v1/**`**（`/api` 后接服务段 `topic` 再接完整 `/topic/v1` 路径；X1 实测 200）。R1 的「网关剥前缀错配」判定**撤回**（此前测的 `/tts/svcz/api/enterprise` 是 demo 面、`/tts/lumen/api` 是另一入口面，均非本服务线上入口）。线上修复单下午已灌齐活力/要素 1y/5y 窗。API 可验样本 17 项全 PASS；1 项 QUERY 缺口（活力 1y/5y 行在拣不中）→ `SYNTH-DEMO-ACCEPT-LOOP-Q1` 待派；矩阵 VIT-04/05/09、ELEM-02/03/12/13 等 gap 判定已过时待增量更新 |
+| 最近一轮 | 2026-11-07 / R2 样本对照 / 探测 200（正确路由）/ 17 项 PASS + 1 QUERY 缺口（Q1 单）/ 矩阵 gap 过时登记 / 退出=等 Q1 修复后复测 VIT-04/05/09/15 |
 
 ## 0. 编排原则（先读）
 

@@ -6,7 +6,42 @@
 - **强度**：ponytail: full
 - **日期**：2026-11-07
 
-## 运行 2026-11-07（第一轮）
+## 运行 2026-11-07（R1 探测误判 + R2 更正后批量对照）
+
+### R1（19:58–20:16）：路由误判（已撤回）
+
+用 `/tts/svcz/api/enterprise/**` 与 `/tts/lumen/api/**` 两面探测 SYNTH 均 404 → 误判「网关剥前缀错配」（当时做了完整分层诊断：服务直打 svc 7092 带 `/topic/v1` 前缀 200 数据正确，该诊断结论本身正确，但把它错误外推到「线上无正确入口」）。**监管人 20:30 澄清「线上明明可以调通」后复核出正确入口**（见 R2 X1）。教训记录：**线上入口以监管人给的现网请求为锚做路由枚举，不做「两面皆 404 = 无入口」外推**。
+
+### R2（20:30–20:45）：正确路由确认 + 批量样本对照（全 PASS）
+
+**正确入口**：`https://edu.itic-sci.com/tts/svcz/api/topic/**topic**/v1/synth/**`（`/api` + 服务段 `topic` + 完整 `/topic/v1` 路径；实测 X1 200）
+
+| 用例 | 请求要点 | 结果 | 判定 |
+|---|---|---|---|
+| VIT-01 默认秒开 | 3y 默认三元组 | 200；`snap:mock_20261106_vit_seed_index_main`；index=75.15；dims 4 / indicators 12 / ranks 4 | ✅ |
+| VIT-02 EQUAL 档 | `weight_profile=EQUAL` | 200；`snap:..._equal`；index=75.00 ≠ INDEX_MAIN 75.15（指纹隔离） | ✅ |
+| VIT-11 非法档 | `weight_profile=INVALID_X` | **400 `WEIGHT_PROFILE_INVALID`**（reason 逐字命中，不回落） | ✅ |
+| VIT-16 活力趋势 | 3y 快照 `trend` 字段 | `[2022, 2023, 2024]` 三年度 | ✅ |
+| ELEM-01 默认秒开 | 3y | 200；`batch:深圳市\|...\|mock_20261107_elem_delivery_3y`；compositeIndex=77.68；fourDim 4 / typeScores 7 / contributions 8 / ranks 4 | ✅ |
+| ELEM-12 要素趋势 | 3y `trend` 字段 | `[2022, 2023, 2024]` —— **矩阵 gap 已被下午修复单闭合**（原判「要素无历史年行」过时） | ✅（矩阵待增量更新） |
+| ELEM-02 要素 1y | 1y 窗 | **200** `mock_20261107_elem_delivery_1y` —— 矩阵 gap 过时（原判 404） | ✅（矩阵待更新） |
+| ELEM-03 要素 5y | 5y 窗 | **200** `mock_20261107_elem_delivery_5y` | ✅（矩阵待更新） |
+| ELEM-04 广州换城 | 广州 3y | 200 `batch:广州市\|...` | ✅ |
+| COLLAB-01 协同默认 | 3y | 200；`batch:...\|gapfill_transitional`；**8 节点 / 9 边 / 1 集群 / 2 孤立**（与调研一致）；relationInput {jointPatent:3, project:3, talentFlow:3}；ranks 4 城；effectEval status=ok r=0.9909；strategies 2 条 | ✅ |
+| COLLAB-02 广州协同 | 广州 3y | 200；6 节点（batch_meta latest 命中，不串深圳批） | ✅ |
+| COLLAB-08 产业筛选 | graph API | 200；8 节点 / 9 边；产业 {人工智能, 智能制造, 生物医药} | ✅ |
+| COLLAB-17 坏快照 | `snapshotId=task:never_exists` | **404 `SNAPSHOT_NOT_FOUND`**（不回落最新批） | ✅（语义等价拦截：未指定 meta 的 snapshot 走 not_found；`batch_meta_missing` 为 meta 行存在但快照缺批的分支，复测时用历史快照 ID 再验） |
+| VIT-03 活力 5y | 5y 窗 | **404 `SNAPSHOT_NOT_FOUND`** —— ⚠️ 但库内 1y/5y 行已在（60 行/窗，`mock_20261106_vit_seed_*_5y` 均 succeeded） | ❌ **QUERY 缺口** |
+| VIT-04 活力 1y | 1y 窗 | 404（同上） | ❌ QUERY（并入 Q1） |
+
+### 缺口单（QUERY 类 ×1）
+
+- `SYNTH-DEMO-ACCEPT-LOOP-Q1`（ready，api-agent）：活力 1y/5y 行在+succeeded+键面同款但拣不中（要素同结构可 200 对照成立）→ 疑似 latestCalcBatchId/快照解析未纳入新窗批。**修后复测 VIT-04/05/09/15。**
+
+### 矩阵过时项（增量更新待办，M3 增补轮）
+
+- gap 5 条中：VIT-04/05/09 → 改 QUERY 缺口（Q1，数据已在库）；ELEM-12 → **已闭合**（趋势有数）；ELEM-02/03 → **已闭合**（1y/5y 200）
+- VIT-15 失败态触发器随 VIT-05 状态变化需重新设计（1y/5y 将有数后，「失败态」需另寻触发路径或降级为可选演示）
 
 ### 环境与令牌
 
