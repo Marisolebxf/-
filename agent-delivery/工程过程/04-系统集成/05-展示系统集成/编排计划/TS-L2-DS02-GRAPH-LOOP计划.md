@@ -1,6 +1,6 @@
 # TS-L2-DS02-GRAPH · 展示技术点图谱 · LOOP 执行编排计划
 
-- 状态：2026-11-07 用例覆盖已齐，未执行，等人说「按 LOOP 跑」。可演 6 行，覆盖不到 1 行，设计无资源 1 行（17）。可演行中 18 连线、19 待 `TS-L2-DS02-SEL-FIX-L01`。
+- 状态：2026-11-07 QUERY=`pending_test`（keyword 通；relations/centrality 待 display rollout）。DATA=`blocked` 挂 `TS-L2-DS02-SCHEMA-EXPAND-L01`（已派、进行中）。不开工 L02/L03。验收单 ready。注册表已推。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4）
 - 用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-DS02-GRAPH-合规演示用例.md`
 - 索引：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/科学技术全景-索引.md`
@@ -43,6 +43,7 @@
 ## 3. 后端调用
 
 token 文件：`%USERPROFILE%\.gkx\display-loop-token`（一行 access_token，仓库外）。请求头 `Authorization: Bearer <token>`、`systemCode: display`、`Content-Type: application/json`。不打印、不入库、不进 handoff。
+Windows PowerShell 探测含中文 body（如 `keyword=人工智能`）时必须用 UTF-8 字节发：`$utf8=New-Object System.Text.UTF8Encoding $false; Invoke-RestMethod ... -Body $utf8.GetBytes('{"keyword":"人工智能"}')`。直接塞中文字符串会按系统码页发出，网关收到乱码 → `nodes=0`/`GRAPH_EMPTY`，属探测假阴性，不是 Java/Python 缺口。
 
 | 步骤 | 调用 | 作用 |
 |---|---|---|
