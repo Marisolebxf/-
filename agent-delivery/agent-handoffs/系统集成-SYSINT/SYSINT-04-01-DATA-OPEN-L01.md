@@ -14,8 +14,8 @@
 | 项 | 正式库观察 | 对需求的影响 |
 |---|---|---|
 | 库选择 | 默认配置指向 `demo_gkxlumenx_dwd`；正式库 `gkxlumenx_dwd` 存在同名企业表。正式库 `enterprise_base` 查询为 269,511 行、269,511 个 `org_id`，其中 `city='深圳市'` 95,600 家；这与 demo 快照不可混用。 | 所有实现与验收必须显式区分 demo / 正式库。 |
-| 全口径从业人数 G3 | 正式 `enterprise_base` 没有 `employees_number`，仅有 `rd_staff_count`；`enterprise_finance_history.rd_staff_count` 567,263 行全空。唯一正式 `employees_number` 在境外表 `enterprise_forg_finance_history`：51 行、12 个机构，2025/2026 年记录均无正值。 | 深圳国内企业全口径人数无可用字段；研发人数也没有正式数据。G3 保持空态，不能用 `research_staff_total`、研发岗或境外零值代替。现有填数脚本检测不到 `enterprise_base.employees_number` 时会跳过；不能把字段名当作实有来源。 |
-| 企业人数分桶 G2 | 同 G3，无深圳企业人数明细可分桶。正式 `enterprise_industry_chain` 当前约 20 行；按城市 JOIN 后只匹配到 9 个 INB 码、18 个关联，无法代表完整产业企业池。 | G2 暂无可灌明细。需先解决人数来源和产业归属闭合；ES 仅作候选时也必须实查字段与覆盖率。 |
+| 全口径从业人数 G3 | 正式 `enterprise_base` 没有 `employees_number`，仅有 `rd_staff_count`；`enterprise_finance_history.rd_staff_count` 567,263 行全空。唯一正式 `employees_number` 在境外表 `enterprise_forg_finance_history`：51 行，2025/2026 年记录均无正值。 | 深圳国内企业全口径人数无可用字段；研发人数也没有正式数据。G3 保持空态，不能用 `research_staff_total`、研发岗或境外零值代替。现有填数脚本检测不到 `enterprise_base.employees_number` 时会跳过；不能把字段名当作实有来源。 |
+| 企业人数分桶 G2 | 同 G3，无深圳企业人数明细可分桶。正式 `enterprise_industry_chain` 当前 20 行、9 个 INB 码；按深圳注册城市 JOIN 后仅匹配到 6 个 INB 码、9 条关联，无法代表完整产业企业池。 | G2 暂无可灌明细。需先解决人数来源和产业归属闭合；ES 仅作候选时也必须实查字段与覆盖率。 |
 | 产业规模 G1 | 正式 `enterprise_finance_history` 有 2021–2025 年记录，但每年全深圳注册企业中仅约 544–625 家有正收入；金额单位为万元。2026 年有部分期数据。`enterprise_industry_product` 有产业名称 JSON 类标签，但不是已验证的 INB 映射；企业关联与财务记录也不等于全产业统计口径。 | 该表可列为候选“已披露企业营业收入”，不能直接称完整产业规模或深圳产业总产值/增加值。统计对象、覆盖率门槛、年度可比、INB 映射、单位转换及快照年份须先会签；缺年份不能插值。 |
 | G5/G6 企业规模 | 正式 `enterprise_type_scale_stats` 为空。`enterprise_base.org_size` 可统计全市截面：大型 1,125、中型 9,092、小型 42,938、微型 41,437、未知 1,008；该字段没有产业维度。 | 可支持全深圳注册企业的候选分布，不能直接支撑页面的产业筛选结果；需冻结分类真源、时间口径和产业关联。现有 `M_ENT_TYPE_COUNT` 是多标签企业分类，不是互斥的大/中/小/微桶。 |
 | G4 区级发展指数 | 正式库没有现成一张图区级指数表。`M_CHAIN_REGION_INDEX` 注册定义是产业链 × 城市的模型，D3=partial、D4=mock，缺学术生态维度；不是深圳九区模型。 | 不能原样复用为区级指数。需业务确定“区综合”还是“产业 × 区”，并由指标口径与算法负责人会签定义后，另立计算实施任务。 |
