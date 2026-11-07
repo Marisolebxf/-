@@ -87,7 +87,7 @@
 | 科技知识图谱 | DS-21～DS-24 | 分析展示 / 指标展示 / 算法展示 / 服务展示 | **跨项索引（第 7 项）** | `FE-DISPLAY-KG-SERVICE-ALIGN-L01`(review) | 本表**不建叶**。第 7 项负责页面与查图；`FE-DISPLAY-KG-SERVICE-ALIGN-L01` 是 demo 侧 DS-24 服务展示合规对齐，原地更新 `ServiceDisplay.jsx` | LT-5-KG-DS21～DS24 |
 | 科技成果展示 | DS-25～DS-29 | 软科学成果展示 / 科技创新生态展示 / 科技时空演进展示 / 大型科学仪器共享 / 创新载体孵化载体 | WBS-05-05 | `SYSINT-05-05-L01`(claimed)、`FE-DISPLAY-ACHIEVE-ALIGN-L01`(pending_test) | 五页可打开或空态；仪器只展示、不做预约闭环；时空演进**禁止用专题 B 面时间轴冒充**；口径未绿用角标不改数 | LT-5-ACH-DS25～DS29 |
 | 科技服务全景 | DS-30 之① | 科技创新生态服务（全景里唯一智树自研子菜单） | WBS-05-06 | `SYSINT-05-06-L01`(claimed)、`FE-DISPLAY-SVC-ECO-ALIGN-L01`(review) | 列表与详情可开或空态；demo 侧原地更新 `InnovationEcosystem.jsx` | LT-5-SVC-ECO |
-| 科技服务全景 | DS-30 之② | 智库服务 | WBS-05-07 | `SYSINT-05-07-L01`(ready)、`FE-DISPLAY-SVC-THINKTANK-RECTIFY-L01`(in_progress) | 2026-10-23 起**不按跳转**，要求智谱提供接口；接口未到为空态。智树不做高端智库后台。demo 页按需规 566–574 整改中 | LT-5-SVC-HUB |
+| 科技服务全景 | DS-30 之② | 智库服务 | WBS-05-07（子 05-07-01～08，见 §4.1f） | `SYSINT-05-07-L01`(ready)、`FE-DISPLAY-SVC-THINKTANK-RECTIFY-L01`(in_progress)；真实对接 8 子任务待 registry 登记 | 2026-10-23 起**不按跳转**（2026-11-06 细化为：不跳出新页签/新窗口，允许本系统内 iframe 弹框嵌入）；接口已到 9 端点（v1.1 四 GET + docx 五 POST）。智树不做高端智库后台。demo 页按需规 566–574 整改完成。真实对接派单稿：`agent-handoffs/科技服务全景-SVC/派单说明/派单-SYSINT-05-07-THINKTANK-REALDATA-L01.md` | LT-5-SVC-HUB |
 | 科技服务全景 | DS-30 之③④⑤ | 科技交流 / 科技竞赛 / 科技传播 | WBS-05-08（子 05-08-01～06） | `SYSINT-05-08-L01`(ready_to_sign)、`SYSINT-05-08-01-L01`(done ✅ 10-30)、`SYSINT-05-08-03-L01`(done ✅ 10-30)、`-02/-04/-05/-06`(done ✅ 10-31)、`SVC-PANORAMA-API-L01`(claimed)、`SVC-PANORAMA-GAP-L01`(ready_to_sign) | -01 签收 ✅；-02 三入口菜单壳（iframe 弹窗）；-03 交流 BFF + FE；-04 竞赛 BFF + FE；-05 传播 BFF + FE；-06 联调验收 —— 六个子任务 2026-10-31 全部 done | LT-5-SVC-HUB |
 | 跨全部菜单 | — | 本项菜单注册与用户权限 | WBS-05-09 | 未建任务（监管人待指定） | 相对路径进统一用户中心；地址不写主机名；配菜单的人 2026-10-22 纪要未点名 | LT-5-SSO |
 
@@ -401,6 +401,23 @@
 | WBS-05-24-L2-02B · `FE-TS-10B` | 维护管理 · 图层与数据源 · 前端接线 | 刘剑锋 | `lumen-ui-science-pc` | **integration**（MR !2 待合入） | 2026-11-06 代码完成（api 四组资源双轨+面板 async 化+store 服务端化，差异表六项全落地）；三绿（maintain 测试/type-check/build）。handoff `FE-TS-10B.md`。待 BE 合入+DDL 后联调。api 层重写四组资源+probe、差异表六项落地（targetLayerCode/lastSync/testStatus/409 文案/至少留一组放弃/store 服务端化+localStorage 降级） | `TS-L2-M10-LAYER-API`（done）；`TS-L2-M10-BE-IMPL-01`（联调依赖） | 无截至时间 |
 
 （ENT 二级四单待建单前查重后建行；主路径测试行待实现单联调后建。灌数单已随 v3 裁定取消——种子归 Java 实现单 SQL 变更。）
+
+### 4.1f WBS-05-07 的子任务（智库服务真实对接 · 8 子任务）
+
+> 2026-11-06。派单依据：对端两套接口已就位 —— v1.1（zwrite-backend，4 GET：报告/成果/枚举/成果统计）+ docx（topic-system，5 POST：德尔菲问卷/专家/Field/重大事件）。智库服务 25 条指标在久新库全部"三源调研批次产物 + 源表为空"，本页**不依赖久新库血缘**，全走外部接口路径；前端按 D9 挂 ⓘ + 四维就绪度，**禁 MockBadge**。派单稿：`agent-handoffs/科技服务全景-SVC/派单说明/派单-SYSINT-05-07-THINKTANK-REALDATA-L01.md`。监管一律 `human:李伟`（一线 `human:孔东`）；执行优先级 **A → B → D → C → E**（用户 2026-11-06 裁定）。
+
+| 草案号 · 任务 ID | 子项 | 监管人 | 仓 | 状态 | 完成情况 · handoff | 依赖 · 可对端 | 完成日期要求 |
+|---|---|---|---|---|---|---|---|
+| WBS-05-07-01 · `SYSINT-05-07-01-L01` | A·智库契约登记 + EXT-B4-ZHIKU 建包（9 端点入册 05-API 清单） | 李伟 | `gkx-orchestration` | **review（待款签字）** | **2026-11-06 完成**：05-API 清单 §六 ZK-01～ZK-09 逐字段入册、`EXT-B4-ZHIKU` 建包、技术方案 §1.3/§2/§5 智库行同步、派单稿交叉引用 | 无 | 待填写 |
+| WBS-05-07-02 · `SYSINT-05-07-02-L01` | A·智库鉴权打通（v1.1 Bearer + docx X-Portal-Access-Token 双 token） | 李伟 | `gkx-orchestration` | **review（待凭证）** | **2026-11-06 契约部分完成**：`对接文档/我方/2026-11-06-智库服务-鉴权与联调申请.md`（单令牌双头结论 / 失效处置 / 网关转发契约 / 三件套模板）；凭证与联调窗口待李伟获取 | 01 | 待填写 |
+| WBS-05-07-03 · `SYSINT-05-07-03-L01` | B·D1–D5 决策函 + B1–B5 冲突裁定（含 B5 专家详情 iframe 弹框 + 技术方案 §2 措辞修） | 李伟 | `gkx-orchestration` | **review（待签字）** | **2026-11-06 起草完成**：D1-D5 决策函 + B1-B5 裁定函双件落 `对接文档/我方/`；B5 定为**本系统内 iframe 弹框**；技术方案 §2 智库行已改「不跳出新页签/新窗口，允许本系统内 iframe 弹框嵌入」（待淮政玮重签） | 无（可与 A 段并行） | 待填写 |
+| WBS-05-07-04 · `SYSINT-05-07-04-L01` | B·iframe 嵌入白名单（`zk.example.com` / `edu.itic-sci.com`）+ 成果敏感字段对外合规 | 李伟 | `gkx-orchestration` | **review（待回函）** | **2026-11-06 发出稿就绪**：`对接文档/我方/2026-11-06-智库服务-对端确认函-iframe白名单与字段口径.md`（Q1 四页面嵌入白名单 / Q2 免登录 / Q3 敏感字段 / Q4 HTTPS + C1-C3）；待李伟发送并收回归档 | 03 | 待填写 |
+| WBS-05-07-05 · `BE-DISPLAY-SVC-THINKTANK-GATEWAY-L01` | D·展示 Java 网关双路由 + 双鉴权转发 + 信封规范化 | 李伟 | `lumen-svc-platform` | **review（待凭证联调）** | **2026-11-06 实现完成**：`ThinkTankGateway` 双 BASE_URL（A=zwrite / B=topic-system）+ 单令牌双头自动装配 + 两套信封规范化（段 B 以 body code 判 401）+ 仅 50004/10004 退避重试 + 未配置空态；单测 13 项（`ThinkTankEnvelopeTest`），display 全量 105 绿 | 01、02、03 | 待填写 |
+| WBS-05-07-06 · `BE-DISPLAY-SVC-THINKTANK-API-L01` | D·智库 9 端点业务转发（报告/成果/问卷/专家/事件）+ 字段映射 | 李伟 | `lumen-svc-platform` | **review（待凭证联调）** | **2026-11-06 实现完成**：`ThinkTankController` `/v1/think-tank` 9 端点 + `ThinkTankBffService` + `ThinkTankFieldMapper`（D2 丢弃 hIndex/引用量、B4 隐藏成果敏感三字段、空态三态透传、`_vendor`/`_error` 透明）；单测 20 项（映射 10 + BFF 10） | 05 | 待填写 |
+| WBS-05-07-07 · `FE-DISPLAY-SVC-THINKTANK-REPLICA-L01` | C·5 Tab 复刻 + IframeDetailModal 公共组件 + D9 血缘 | 李伟 | `lumen-ui-science-pc` | **review** | **2026-11-06 复刻完成**：5 Tab/筛选/分页/4 图表/3 信息流/iframe 弹框+抽屉兜底落地；vue-tsc 新增 0 报错、build 退出码 0、浏览器渲染与评审零泄漏 PASS；handoff `FE-DISPLAY-SVC-THINKTANK-REPLICA-L01.md`（含 D9 附录 D 摘要）。**未推送，等人工确认** | 03、04、06 | 待填写 |
+| WBS-05-07-08 · `SYSINT-05-07-08-L01` | E·智库真联调与三方验收（9 端点逐字段） | 李伟 | `gkx-orchestration` | ready | registry 已登记，待凭证与前端联调就绪后开工（依赖 04、06、07） | 04、06、07 | 待填写 |
+
+> 状态同步以 `task-registry.yaml` 为准，签收时由 coordinator-agent 落库；本表先行占位。主任务 `SYSINT-05-07-L01` 首个子任务开工时状态由 `ready` 升 `claimed`。完成日期要求按 11 月倒排计划由 PM 填，本表不预填。
 
 ### 4.2 WBS-05-08 的子任务（科技交流 / 竞赛 / 传播）
 
