@@ -52727,7 +52727,8 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 40000
-    note: "重放：开工（原状态被并行会话覆盖）。补趋势/分区/方案五叶/230/231 缺口。"
+    note: |
+      修复已推 origin/dev（0a6b0d9）：①SHELL_SQL 列名对齐真表（subject_name/caption_text）修 224/225 空列表；②新增 /evaluation/template 接 222；③226 改 element 同步只读 ads.policy_text_parse.summary，不再建异步任务（避免 parse.run 清表）；④display shells 增加 kind=模板选用。等 CI 绿后二轮复测。
     depends_on:
       - "POL-L2-DS11-READ-GAPFILL-L01"
       - "POL-L2-DS11-VIZ-GAPFILL-L01"
@@ -52740,7 +52741,7 @@ tasks:
       - "在 gkxlumen-display 与 gkxlumen-element 落地 DS11 评价页读面：counts 短板、jobs 的 focus_ads 与 text_parse、shells 的解读与多媒体、趋势段与分区段同步读缺项表、方案五叶只读 gapfill_policy_eval_scheme、221 只消费已有子图。浏览器只打 /display/v1/policy/**"
       - "display 不直连 Python、不直连库。policy_focus_ads 与 policy_text_parse 进 PolicyAnalysisTypes 白名单，223 焦点调已有 focus.run 后读 ads.policy_focus，226 只查 ads.policy_text_parse.summary，请求不调 parse.run。旧键 policy_focus 不改"
       - "无行则空，不造 0，不返回 501。不改 D4，不新造 metric_id。ponytail full。handoff 含联调确认与自检证据，走 QA 闸门"
-    update_time: "2026-11-08T02:17:52+08:00"
+    update_time: "2026-11-08T02:39:16+08:00"
   - id: POL-L2-DS11-QA-UT-L01
     supervised_by: "human:淮政玮"
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-QA-UT-L01.md"
@@ -55867,6 +55868,8 @@ tasks:
       - "不新增 metric_id，D4 仍是 mock。不改区域空间、新出台预测、多维评估、利益攸关方的过滤。handoff 写明改动仓与验证。"
     update_time: "2026-11-07T12:00:29+08:00"
   - id: POL-L2-DS12-EST-ACCEPT-LOOP
+    evidence: |
+      handoff: agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-EST-ACCEPT-LOOP.md#运行-2026-11-08；2026-11-08 探测 200，样本 8/8 全 PASS，只读库行数 7/7/7/9/8；残留缺口 232 target_industry 等值挂 POL-L2-DS12-INDUSTRY-EQ-FIX-L01
     blocked_by: |
       2026-11-07 探测 POST https://edu.itic-sci.com/tid/api/display/v1/policy/simulation/jobs 返回 HTTP 404，path=/v1/policy/simulation/jobs，接口映射不存在。已通知 human:淮政玮。不建子任务，不再开一轮。
     supervised_by: "human:淮政玮"
@@ -55875,7 +55878,7 @@ tasks:
     lock_until: "2026-11-07T08:49:14.231Z"
     claimed_by: "agent:qa-agent"
     title: "效果预估演示实例反复验收"
-    status: "blocked"
+    status: "ready"
     agent: "qa-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -55886,7 +55889,8 @@ tasks:
     difficulty: "M"
     estimated_tokens: 50000
     user_story: "US-DS-POL-06"
-    note: "2026-11-07 human:淮政玮要求建立可反复执行的验收数据核对。每次从当前线上 demo 缺项库重读，对照 EST 测试用例的演示实例。没有预期结果时给数据补充建议或算法修改建议，不在本单落库或改代码。建单不认领。认领时 supervised_by 填当次开会话的真人。"
+    note: |
+      2026-11-08 第二轮：探测 200（映射恢复），样本 8/8 全 PASS，只读库行数 7/7/7/9/8 对上。DEMO-EXTRA 25 行已恢复（scripts/seed_gapfill_policy_demo_extra.py）。唯一残留缺口 232 target_industry 等值挂 POL-L2-DS12-INDUSTRY-EQ-FIX-L01，不重复建单。报告见 handoff 运行 2026-11-08 节。本轮样本满足，按规程状态退回 ready 待监管人下一轮重入，不签 done。
     depends_on:
       - "POL-L2-DS12-EST-API"
       - "POL-L2-DS12-EST-DATA"
@@ -55907,7 +55911,7 @@ tasks:
       - "对不上时只写建议，不改库、不改代码。缺行、空列、字符串不一致写数据补充建议，写明表、row_kind、业务键和应补列值。行在且键一致，但过滤或计算给不出用例右列，写算法或查询修改建议，写明种类、字段和差异。401 或 404 只记环境阻塞，不据此建议改算法或补数。"
       - "同一 handoff 追加一节「运行 YYYY-MM-DD」，不覆盖上一轮。不改测试用例里已写下的实际结果，不把 POL-L2-DS12-EST-TEST-L01 标完成。"
       - "本单可反复执行。一轮报告写完后，由当次监管人把状态退回 ready，不签 done。下一轮再认领。"
-    update_time: "2026-11-07T12:49:19+08:00"
+    update_time: "2026-11-08T02:47:22+08:00"
   - id: LUMEN-INTEL-REPORT-REAL-L01
     cost_warn: "green"
     model_used: "grok-4.7"
@@ -55971,7 +55975,7 @@ tasks:
     estimated_tokens: 40000
     user_story: "US-E7-POL-04"
     note: |
-      2026-11-08 凌晨验收轮：接口三卡全绿（档位4/实效50/879/33.5585/名次5/0.4653；011 适配 9.245/43），但库核对红（深圳 1458 行、均值 0.3873，一张图 debug540 + 图2 SYNTH49 混入 + ~9667 行城市回填）。样本不满足，已建 TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA（blocked，等淮政玮拍板读取口径）。验收单退回 ready。
+      2026-11-08 02:44 方案A上线重签轮全绿：lumen-algo-py 4df6ab5（截面SQL原生过滤）CI 4280 绿、entan-api 已部署；force 重签 POLICY-20261108-009/010（沿用原指纹，reused=false）success。三卡：879/33.5585/名次5/0.4653、档位4(QPOL-02)、实效 computable=true score=72.7658（gapfill 实算，占位50退役）；010 适配 9.245/43/锚点；第4章印分数、第5章供给结构。验收入口改读新号，计划§1/§3 已同步。验收单退回 ready，不签 done。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-ACCEPT-LOOP.md（7fa085305）
     collaborators:
       - "data-agent"
       - "algorithm-agent"
@@ -55983,7 +55987,7 @@ tasks:
       - "通过线：支持力度可算，条数 879，分数 33.5585，名次 5，层级均值 0.4653；档位无金额列且不写成 0；第 4 章落地实效不可算；第 5 章有供给结构。"
       - "只读 demo_gkxlumenx_dwd.policy_base_info，city 为深圳市的行数仍是 879，且 rank 有值。不写 ODS、供应方库、gapfill_、新 ADS。"
       - "第 3 章未提供链名留在已有缺陷包，不改匹配、不改前端。一轮写入同一 handoff 的运行节。对上后退回 ready，不签 done。"
-    update_time: "2026-11-08T01:45:51+08:00"
+    update_time: "2026-11-08T02:54:36+08:00"
   - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-DATA
     evidence: "agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-DATA.md"
     blocked_by: |
@@ -59886,3 +59890,40 @@ tasks:
       - "部署后重算任务并验 API 通过线全绿"
     update_time: "2026-11-08T02:18:46+08:00"
     update_time: "2026-11-08T02:23:11+08:00"
+  - id: POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP
+    evidence: "handoff: agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP.md；2026-11-08 第一轮：探测 200，样本 5/5 全 PASS（237/238/239/241/242），零缺口不建子任务"
+    title: "科技政策推演演示实例反复验收"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    user_story: "US-DS-POL-06"
+    note: "2026-11-08 建单并完成第一轮：探测 200，样本 5/5 全 PASS，零缺口不建子任务。报告见 agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP.md。可反复执行，不签 done。"
+    depends_on:
+      - "POL-L2-DS12-SIM-GAPFILL-L01"
+      - "POL-L2-DS12-JOBS-IMPL-JAVA"
+      - "POL-L2-DS12-SIM-API"
+      - "POL-L2-DS12-SIM-DATA"
+    collaborators:
+      - "data-agent"
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-DS12-SIM-合规演示用例.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/编排计划/POL-L2-DS12-SIM-LOOP计划.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-SIM-API.md"
+    definition_of_done:
+      - "只读当前线上展示系统所读的 demo 缺项库 gkxlumenx_gapfill，连接以 lumen-algo-py 现行环境为准。只 SELECT。不执行 --apply，不写 ODS、DWD、ADS。口令不进 git，也不进 handoff"
+      - "对照 POL-L2-DS12-SIM-合规演示用例.md 覆盖表可演行（237 文本解析/238 重点/239 影响范围/241 路径/242 解读）：填好请求与期望输出逐字对照。240 政策关联设计无资源，不请求，不派单"
+      - "对不上时只写建议，不改库不改代码。缺口按 DATA/QUERY/ALGO 分类，子任务名 POL-L2-DS12-SIM-DEMO-FIX-R{YYYYMMDD}-DATA/QUERY/ALGO，每轮最多三张。子任务不改前端。同一缺口连续两轮仍在则停止，交给 human:淮政玮"
+      - "401/424 或令牌过期：验收单 blocked，通知 human:淮政玮，不建子任务。404 停止并写「接口映射不存在」"
+      - "同一 handoff 追加「运行 YYYY-MM-DD」节，不覆盖上一轮。不把 SIM-TEST-L01 标完成"
+      - "本单可反复执行。一轮报告写完后由当次监管人把状态退回 ready，不签 done。下一轮再认领"
+    update_time: "2026-11-08T02:48:33+08:00"
