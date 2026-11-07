@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-M10-ENT-ARCH`
 - 日期：2026-11-07
-- 状态：四角色已会签（2026-11-07：ARCH 有条件 5 / API 有条件 1 / ALGO 同意 / DATA 有条件 2），事实修正与可修条件已回填本稿；ARCH-C1（display vs topic 直调）等 3 项开放条件留 API 分册闭环。不标 done
+- 状态：四角色会签完成+条件回填+**监管人签收（2026-11-07 刘剑锋）**；C1 已裁定 A（display 代理）。余开放条件（全景现状读端点/发布动作落点/存量导入前置）留 API 分册与实现单
 - 监管：`human:刘剑锋` · 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 图：`TS-L2-M10-ENT-ARCH-SEQ`（调用链）· `TS-L2-M10-ENT-ARCH-DATA`（数据流），均为本二级新图（draft）
@@ -33,12 +33,13 @@
 ```mermaid
 flowchart LR
   fe["M10 维护页 · 实体关系分区（FE-TS-10A 页面，接线单改造）"]
-  gw["gkxlumen-platform-gateway"]
   javaf["Java 门面（topic 侧；鉴权/角色/入参校验/幂等键/@SysLog 审计；零写 nGQL）"]
   py["lumen-algo-py（POST /internal/v1/sci/tech/graph/changes；单写者）"]
   store[("MySQL graph_change_set/log/version/tombstone/冲突队列 + 技术点主表<br/>Nebula gkx_chain（发布投影；Demo=demo_gkx_chain）<br/>ADS graph_node/graph_edge 投影（Java 只读）")]
 
-  fe -->|"/topic/v1/tech/graph/changes ⚠️对外路径 draft：D15 display 单入口 vs topic 直调二选一，API 分册冻结前闭环（会签 ARCH-C1）"| gw --> javaf -->|Feign /internal| py --> store
+  gw["gkxlumen-platform-gateway"]
+  bff["gkxlumen-display（ENT 门面：鉴权/校验/Feign 转发；同页 LAYER 同风格，D15 合规）"]
+  fe -->|"/display/v1/situation/maintain-ent/graph/**（C1 裁定 A：display 代理，监管人 2026-11-07 拍板）"| gw --> bff -->|"Feign"| javaf -->|Feign /internal| py --> store
   fe -->|"读：推荐列表/全景现状/影响预检"| gw --> javaf -->|"只读 ADS 投影 / 经 Python 查图"| store
 ```
 
@@ -107,7 +108,7 @@ flowchart LR
 
 ## 7. 会签关注点
 
-1. §2 阻塞分档：自建主表+technology_id 先行是否接受（OI-A03-01 首版绕行）
+1. ~~display vs topic 直调（ARCH-C1）~~ **已裁定 A：display 代理** `/display/v1/situation/maintain-ent/graph/**`（监管人 2026-11-07），同页同风格 D15 合规；§2 阻塞分档：自建主表+technology_id 先行（OI-A03-01 首版绕行）
 2. §1 采纳 A03 草案四段链为正式架构（含发布失败补偿/合并规则/乐观锁）
 3. §3 G1–G5 裁定（G2 首版不做是否接受）
 4. VID 增量不迁移边界（OI-A03-02）
