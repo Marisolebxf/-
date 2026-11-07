@@ -23,7 +23,7 @@ gapfill 只补输入缺项。结果和图谱演示都不进 gapfill。做不到�
 - `gkxlumenx_gapfill.gapfill_synth_rd_employee`
 - `gkxlumenx_gapfill.gapfill_synth_policy_effect`
 
-当前落点：正式库使用 `gkxlumenx_gapfill`；demo 无独立 gapfill 库授权，三表落到 `demo_gkxlumenx_ads`。Python 通过 `conn.gapfill` 自动选择，不写死正式库名。三张表当前均只建表、不灌业务行；无行时返回 null，不补 0。
+当前落点：正式库使用 `gkxlumenx_gapfill`；demo 无独立 gapfill 库授权，三表落到 `demo_gkxlumenx_ads`。Python 通过 `conn.gapfill` 自动选择，不写死正式库名。三表各 seed 四城 2024 演示行，`value` 为原始值、`score_value` 为标准化分、`is_mock=1`；装包对三个缺项标 `confidence=gapfill`。无行时返回 null，不补 0。
 
 命名已对齐：`gapfill_` + 域 `synth_` + 缺项语义。存量 `LUMEN-INTEL-VIT-GAPFILL-*` 继续有效。
 
