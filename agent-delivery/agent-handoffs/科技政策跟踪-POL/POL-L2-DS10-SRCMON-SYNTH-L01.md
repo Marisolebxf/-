@@ -74,7 +74,7 @@
   - lumen-algo-py `fed2815`（merge `b326c6e`）
   - demo-algo-ent-analysis `17f277d`（merge `15a0929`）
   - lumen-svc-platform `6f84f35`
-  - 两个前端仓未提交，待人工确认。
+  - lumen-ui-science-pc `85ba93c`、demo-ui-system-test `5f29754`（2026-11-07 `human:淮政玮` 确认「推」后推送）
 - pipeline / rollout：未查看，push 后由 CI 自动触发。
 - dev 验证：待 rollout 后在展示系统「政策动向跟踪 → 立即同步」实测。
 
