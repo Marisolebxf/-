@@ -58038,7 +58038,8 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     user_story: "US-E7-POL-04"
-    note: "2026-11-07 前端已推 origin/dev 6acb245。配置区勾选入模与结果仪表盘。任务仍 in_progress。"
+    note: |
+      2026-11-07 前端已推 origin/dev 6acb245。配置区勾选入模与结果仪表盘。任务仍 in_progress。同日监管人要求合规演示最终不出现 Mock。本单 DoD 里的 Mock 角标先保留；去掉角标另有 backlog 单 TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-NOMOCK，等缺项实算和本单收工后再开工。
     definition_of_done:
       - "/policy/recommendation 配置区按 demo 原型恢复指标体系：三维固定，可勾选入模，维内等权，一级权重可调，含一键均分与恢复默认模型"
       - "默认入模 8 项：支持力度的政策数量、资金规模、创新激励；产业适配性三项；落地实效的落地执行率、受益覆盖广度。政策层级覆盖面与反馈满意度默认不入模"
@@ -58048,7 +58049,7 @@ tasks:
       - "落地实效的 Mock 缺口用角标，不把演示分数当成接口结果。USE_MOCK=false 不用 Demo fixture 填卡片分数"
       - "不改时序页与区域对比页。自检通过。已推 origin/dev 6acb245"
       - "handoff 含配置区与结果区验收、ponytail: full 与 cost 四字段"
-    update_time: "2026-11-07T19:23:22+08:00"
+    update_time: "2026-11-07T21:39:47+08:00"
   - id: POL-L2-DS10-SRCMON-SYNTH-L01
     cost_warn: "yellow"
     actual_cost: 8.5
@@ -59178,3 +59179,106 @@ tasks:
       - "不回归 3y 行为；不写 ADS/gapfill；单测或自检覆盖窗口白名单/批选择逻辑"
       - "handoff 落盘；验收单 SYNTH-DEMO-ACCEPT-LOOP 复测 VIT-04/05/09/15 通过后本单才可签收"
     update_time: "2026-11-07T21:28:58+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-GAPFILL
+    title: "深圳政策现状·已有政策的落地实效缺项表"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-04"
+    note: "监管人要求合规演示不出现 Mock。源库没有落地实效真值，按 D16 走 gapfill。本单只灌已有政策。图2合成入口由 EFFECT-SYNTH 灌当次写入的政策。两单用同一张表、同一列清单。"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+      - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/编排计划/深圳政策现状分析-LOOP计划.md"
+    definition_of_done:
+      - "只在库 gkxlumenx_gapfill 建表 gapfill_policy_sz_effect。一行一条政策，键为 policy_id。业务列只放已登记缺项：有效 implementation_date、非空 support_object、feedback_score。行上必有 metric_id=M_POLICY_IMPLEMENTATION_EFFECT、gap_item、fill_method、gapfill_batch_id、generated_at；fill_method 为 llm 时必有 fill_model。"
+      - "覆盖深圳政策现状会读到的每一条政策，以及政策分析算法库当前列出的每一条政策。同一 policy_id 只一行。"
+      - "缺失不写成 0，不写 0000-00-00，不把发布日抄成实施日，不用招投标金额。不写 ODS、正式 gkxlumenx_dwd、ADS、供应方库，也不改 policy_base_info 的实施日。"
+      - "公式未接通前不改 D4。不把界面上的 Mock 角标改掉。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-GAPFILL.md"
+    update_time: "2026-11-07T21:39:20+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-SYNTH
+    title: "深圳政策现状·算法库合成政策时写入落地实效缺项"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-04"
+    note: "图2是灌数操作台，不是合规演示页。合成、新增、编辑政策时要同时写落地实效缺项行。不改操作台按钮文案。"
+    collaborators:
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+    definition_of_done:
+      - "政策分析算法库页（10.50.69.111:30889/#/policy/mock）的合成入口、新增和编辑，每写入一条政策就在 gkxlumenx_gapfill.gapfill_policy_sz_effect 写一行。表不在则按与 EFFECT-GAPFILL 相同的列建表。"
+      - "列与已有政策那张单一致：policy_id、有效 implementation_date、非空 support_object、feedback_score，以及 metric_id、gap_item、fill_method、gapfill_batch_id、generated_at。llm 生成时写 fill_model。"
+      - "缺失不写成 0，不写零日期，不把发布日当实施日。删除合成政策时删掉对应缺项行。既有写入 Demo ODS 与 DWD 的行为不改；缺项行不进 ODS、正式 DWD、ADS、供应方库。"
+      - "不改按钮上的条数。仓内文案是 Mock 10 条，线上截图是 Mock 50 条，以这条合成入口为准。若线上进程跑的是 lumen-algo-py 里同名 vendor 副本，同一改动落到那份副本。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-SYNTH.md"
+    update_time: "2026-11-07T21:39:28+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-READ
+    title: "深圳政策现状·落地实效改读缺项表并实算"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-04"
+    note: "缺项表灌完才能开工。公式未接通时界面仍保留 Mock，不得提前改绿。"
+    depends_on:
+      - "TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-GAPFILL"
+    collaborators:
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "polan/shenzhen_board.py 读 gkxlumenx_gapfill.gapfill_policy_sz_effect，按已写明的启动、覆盖、反馈三维计算落地实效。缺行不补 0，不进平均。"
+      - "与发布日相同的日期仍不算实施日。零日期不算有效。不出三维综合分。QPOL-02 未签不改权重。"
+      - "公式接通并实算之前不改 D4。实算完成后在 handoff 写明可交 data-agent 改 ingestion_status，本单不改矩阵。"
+      - "不写 ODS、正式 DWD、ADS、供应方库。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-READ.md"
+    update_time: "2026-11-07T21:39:33+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-NOMOCK
+    title: "深圳政策现状·合规演示去掉落地实效 Mock 角标"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 20000
+    user_story: "US-E7-POL-04"
+    note: "配置区的 Mock 缺口现在是指标目录写死的。等 EFFECT-READ 实算完成、且现有前端任务收工后再开工，避免同仓两个前端任务并行。"
+    depends_on:
+      - "TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-READ"
+      - "LUMEN-POLICY-SZ3D-FE-SRS-R20261107"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/深圳政策现状分析-合规演示用例.md"
+    definition_of_done:
+      - "公式已改读 gapfill 并实算之后，/policy/recommendation 配置区的落地执行率、受益覆盖广度、反馈满意度不再写死 Mock 缺口。"
+      - "结果页和报告不出现 Mock 字样。空分仍显示不可算，不把空画成 0。"
+      - "不改算法库操作台的按钮文案。自检通过。未获人工确认不推送。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-NOMOCK.md"
+    update_time: "2026-11-07T21:39:39+08:00"
