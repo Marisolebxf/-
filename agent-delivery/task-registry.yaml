@@ -57683,13 +57683,18 @@ tasks:
       - "不改库、不改代码、不打开页面"
     update_time: "2026-11-07T20:31:15+08:00"
   - id: TS-L2-DS02-SEL-FIX-L01
+    cost_warn: "green"
+    actual_cost: 3
+    model_used: "claude-opus"
+    actual_tokens: 180000
+    evidence: "lumen-svc-platform@732a586b; pipeline #4200 build/image/deploy:display 绿; handoff agent-handoffs/科学技术全景-DS02/TS-L2-DS02-SEL-FIX-L01.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-07T12:30:53.404Z"
     last_seen_at: "2026-11-07T12:30:53.404Z"
     lock_until: "2026-11-07T16:30:53.404Z"
     claimed_by: "agent:api-agent"
     title: "科学技术全景 · 选中技术点参数名对齐（Java→Python）"
-    status: "claimed"
+    status: "pending_test"
     agent: "api-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P0"
@@ -57699,8 +57704,7 @@ tasks:
     effort_points: "1"
     difficulty: "S"
     estimated_tokens: 6000
-    note: |
-      2026-11-07 二级四单 as-built 核对发现：Java 发 techPointId（SituationPanoramaService:244），Python 只认 technology_node_id/technologyNodeId（tech_graph_read.py:88），选中点后关系/实体/路径恒空。pod 内已复现；用 technology_node_id 直调可得关系 65/实体 61/路径 2。会签要求：透传 truncated 改为必做（非可选）。阻塞合规用例 11 个可演行经网关有数。待人放行再认领。
+    note: "下发键改 technology_node_id；truncated 按既有分项对象并入（未改 boolean，防破契约）。单测 10/10 绿，deploy:display 绿；e2e:chain-gold 下游流水线未建（既有问题，非本单）。待 QA 经网关复测选中点有关系/实体/路径。"
     touched_files:
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/SituationPanoramaService.java"
     design_refs:
@@ -57711,7 +57715,7 @@ tasks:
       - "加一条单测：断言下发 query 含 technology_node_id，不再只含 techPointId"
       - "顺带（可选同单）：透传 Python 的 truncated 标记，不改七字段名"
       - "推 origin/dev，CI 绿；handoff agent-handoffs/科学技术全景-DS02/TS-L2-DS02-SEL-FIX-L01.md"
-    update_time: "2026-11-07T20:30:53+08:00"
+    update_time: "2026-11-07T20:44:25+08:00"
   - id: TS-L2-DS02-FE-ENTITY-FIX-L01
     title: "科学技术全景 · live 下实体区读 listRecords"
     status: "backlog"
