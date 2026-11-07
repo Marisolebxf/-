@@ -56,3 +56,25 @@
 - 顺序建议：先派 DATA 修篮 → 监管人「签发」后 QUERY 单建三机构快照 → ALGO 单修展示序与版本自报 → 重开第 2 轮验收。
 - 成本：本轮远低于 $10 告警线（cost_warn=green）。
 - 脱敏：本轮无口令、token 入档；token 文件只读未改。
+
+## 签发 2026-11-07
+
+- 任务：`SVC-ORG-DEMO-ACCEPT-LOOP`（监管人 human:徐滕强 已说「签发」，规程 §6.5.7 步 3；api-agent 执行；ponytail full）
+- 前置：MCP `task-query` 确认 QUERY 单 ready（本次签发=其待签发项）、ALGO 单 pending_test（修复 commit 已在线）；database MCP 只读查重后签发，零写库、零改代码；token 只读文件、未打印未入档；临时响应快照已清理。
+- 查重（`gkxlumenx_topic_enterprise.analysis_task`，只读；fp 位于 `target_params.input_payload.analysis_fp`）：
+  - 三机构 fp `svc|field||007050fc…,004671cd…,007d0adc…`：**0 命中**，签发合法；
+  - 两机构 fp `svc|capability||004671cd…,007d0adc…`：已有 success `SVC-20261107-020`（08:14，ALGO 修复**前**引擎产物）与 `SVC-20261106-011`（11-06）。跨日/跨版本重建有既有先例（POL 域 POLICY-20261107-021；SVC 11-06→11-07 同 fp 两笔均 success），按派单要求两笔均 POST 新签发，不带 force，均 `reused=false`。
+- 端点：首网关一次通，未启用备选 `https://edu.itic-sci.com/tts/lumen/api`。签发 `POST https://edu.itic-sci.com/tts/svcz/api/topicAsync/topic/v1/analysis/tasks`（头 `authorization: Bearer <token>` + `systemcode: topic`；POL 域同构路径先例）；取证 `GET …/tasks/{taskId}/result?user_id=guest`。请求体=用例 7.1.1 / 7.3.1 请求列逐字段。
+- 签发与取证结果：
+
+| # | 任务 | analysisType / fp | 签发 | 终态 | 关键取证 |
+|---|---|---|---|---|---|
+| 1 | `SVC-20261107-048` | `svc:analysis:org_coverage` / `svc\|field\|\|007050fc…,004671cd…,007d0adc…`（三机构） | 22:05:45，HTTP 200 `code=0`、`reused=false`、`status=running` | `success`（约 38s，库侧 cost_seconds=8） | `matrix` 6 格：**东莞双奉 depth=82**（INB1309 与 INB170102 各一格，此前无证据，首证到手）、君智容 91×2、星诚优威 66×2；summary `org_count=3`、`matrix_fill_rate=1.0`、`avg_depth=480.49`（快照原始累计口径）、`avg_breadth=2.24`、`field_count=2`；`yellow_gaps=[Q-SVCCHAIN-02, GAP-SVC-MATRIX-SRC]`、`pending_client_confirm=1`；载荷自报 `model_version=svc_proxy_v1.2`（coverage 面常量，属 QUERY 单范围外，未处理） |
+| 2 | `SVC-20261107-049` | `svc:analysis:tech_power` / `svc\|capability\|\|004671cd…,007d0adc…`（两机构） | 22:05:45，HTTP 200 `code=0`、`reused=false`、`status=running` | `success`（约 38s，库侧 cost_seconds=20） | 顶层 `model_version=svc_proxy_v1.3` ✅（源表批次 `svcmodels_20261107_155402`）；`tech_power.rows` 300 行（全池），`tech` 列表 300 行同序；行级 `model_version` 均 v1.3、score 40.0/20.0 与库一致；**两家顶层 rank_no=126（君智容）/150（星诚优威），全池全局序而非选定集合内 1/2**（详见 ALGO 验证结论）；`weights` 五维各 20、`yellow_gaps=[Q060]`、`pending_client_confirm=1` |
+
+- **ALGO 修复验证结论**：修复 commit `0084025`（lumen-algo-py，2026-11-07 21:41，意图=选定集合 score 降序稳定排序、顶层 rank_no 从 1 递增 + 版本自报取源表批次行）**一半生效一半未生效**：
+  - ✅ 版本自报：顶层与 `engine_meta.model_version` 均 `svc_proxy_v1.3`（旧快照 020 自报 v1.2，修复前后对照成立）；`tech_power.rows` 行级 300 行全部 v1.3、批次 ID 与库一致。
+  - ❌ 展示序：两家 rank_no=126/150（全池 300 行全局序）。根因定位（代码实读）：`engine.fetch_models` tech 读面无 org_ids 形参，仅按 `industry`（chain_ids）切片——本任务 industry 为空 → `sorted(rows)` 排序对象=全池 300 行，顶层 rank_no=1..300；`leaf_tech_power` 装配只做 `limit` 截断（default 300），`params.org_ids` 两处消费（`leaf_org_coverage` / graph 物化）均不经 tech 分支。commit 注释「同分并列 1/2」仅在 chain_ids 过滤后行集≤2 的场景成立。**期望「选定集合内 1/2」未达成**，需求未闭环，如实记录不改期望；若监管人裁定继续修，建议给 fetch_models tech 读面加 `org_ids` 形参（切片后再排序，最小 diff）。
+- 网关与状态：签发走前端域名网关 `edu.itic-sci.com/tts/svcz/api/topicAsync/**`，与 LOOP 计划接口地址真源一致；两笔均未遇 404/超时，无需备选前缀。
+- cost：actual_tokens ≈ 80,000；model_used = `glm-5.3-Flash`；actual_cost ≈ $0.4；cost_warn = `green`。
+- 脱敏：token 全程未打印、未入档；本节无口令入档。
