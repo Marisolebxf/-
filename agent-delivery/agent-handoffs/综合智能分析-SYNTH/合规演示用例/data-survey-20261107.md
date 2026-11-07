@@ -68,7 +68,7 @@ region × window × 年份分布（每格含 3 个 weight_profile）：
 | 窗口 | 全部 `最近3年`，year=2024 |
 | region_code | 四城各 24 行 ✅ |
 | ⚠️ region_name | **非深圳三城全部误标「深圳」**（region_code 正确） |
-| 深圳双批次 | `vit_seed`（通用）+ `vit_seed_{profile}`（档位）各 48 行并存 |
+| 深圳双批次 | `vit_seed`（通用）+ `vit_seed_{profile}`（档位）两批并存（深圳合计 24 行 = 2 批次 × 3 档 × 4 维） |
 | 最新批次 | `mock_20261106_vit_seed_weight_main` |
 | calc_status | 全部 `succeeded` |
 | is_mock=1 | **96/96** |

@@ -29,7 +29,7 @@
 | 轮号 | 主题 | CASE 集（归属清单） | 前置数据条件（表+批次状态） | 通过判定 | 退出条件 |
 |---|---|---|---|---|---|
 | **R1** | 默认三元组主演（三叶秒开 + 指数/四维/图谱主结果面） | VIT-01 · VIT-13 · VIT-14 · VIT-16 · ELEM-01 · ELEM-07 · ELEM-08 · ELEM-09 · ELEM-10 · ELEM-11 · COLLAB-01 · COLLAB-07 · COLLAB-13（**13 条，全 supported**） | 活力四表深圳 3y 最新批（`mock_20261106_vit_seed_*` 档位批）+ 历史年批 `mock_20261107_vit_trend_*` + rank 24 行；要素八表 3y 批 `mock_20261105_elem_seed` + ai 四维 48 行批 `mock_20261106_four_dim_seed` + DWD 四源表有行；协同 batch_meta 深圳 is_latest=`task:ANA-20261107-011` + gapfill 三表深圳行 | 三叶默认页全部秒开 200；全部画面带 🧪（137 四维另带 pending_registration、协同带 gapfill_transitional）；VIT-16 趋势 2022–2024；协同图谱节点/边以 API 实际返回为准 | 三叶默认页无红错、无串批双值（D-02 断言过）→ 面板巡检通过 |
-| **R2** | 条件变窗主演（默认城市换窗/换城，supported 内非默认组合 + 任务链重跑语义） | VIT-06 · VIT-07 · VIT-08 · ELEM-04 · ELEM-05 · ELEM-06 · ELEM-14 · COLLAB-02 · COLLAB-03 · COLLAB-04 · COLLAB-05 · COLLAB-06（**12 条 = supported 9 + partial 3**） | 活力/要素四城 3y 行在库（index 四城 12 行级）；协同 gapfill：深圳 15（3 类）/广州 10（2 类）/东莞 5、惠州 5（单类）；东莞/惠州无 batch_meta（G-06） | 换城/换窗均回待分析态且不自动建任务；显式「开始分析」后任务实算出数（协同 1y/5y 可出、活力/要素 3y 换城可出）；ELEM-14 新旧 snapshotId 隔离断言过；城市名以条件栏为准（D-01 不作为数据错误讲解） | 12 条各自出数画面或任务完成态在场；co_project=0 等诚实 0 值按 §3 话术讲过 |
+| **R2** | 条件变窗主演（默认城市换窗/换城，supported 内非默认组合 + 任务链重跑语义） | VIT-06 · VIT-07 · VIT-08 · ELEM-04 · ELEM-05 · ELEM-06 · ELEM-14 · COLLAB-02 · COLLAB-03 · COLLAB-04 · COLLAB-05 · COLLAB-06（**12 条 = supported 9 + partial 3**） | 活力/要素四城 3y 行在库（index：深圳 12、广州/东莞/惠州各 9）；协同 gapfill：深圳 15（3 类）/广州 10（2 类）/东莞 5、惠州 5（单类）；东莞/惠州无 batch_meta（G-06） | 换城/换窗均回待分析态且不自动建任务；显式「开始分析」后任务实算出数（协同 1y/5y 可出、活力/要素 3y 换城可出）；ELEM-14 新旧 snapshotId 隔离断言过；城市名以条件栏为准（D-01 不作为数据错误讲解） | 12 条各自出数画面或任务完成态在场；co_project=0 等诚实 0 值按 §3 话术讲过 |
 | **R3** | 权重档主演（活力两档 + 档位隔离） | VIT-02 · VIT-03 · VIT-12（**3 条，全 supported**） | `synth_vit_weight` 60 行三档齐（INDEX_MAIN/EQUAL/WEIGHT_MAIN，`TEMP_*` 0 行 G-03）；两档位批为最新批（`mock_20261106_vit_seed_equal` / `_weight_main` 系） | EQUAL/WEIGHT_MAIN 两档快照秒开且与 INDEX_MAIN 数值互不相同（四段指纹隔离）；换档不复用他档 | 两档画面 + 指纹隔离断言过 |
 | **R4** | 协同深链 + 报告（产业筛选/集群复核/相关性/策略/报告 PDF） | COLLAB-08 · COLLAB-09 · COLLAB-10 · COLLAB-11 · COLLAB-12 · COLLAB-14 · COLLAB-15 · COLLAB-16（**8 条，全 supported**） | 深圳 3y 快照在场（R1 已核）+ relation_year 深圳行带 industry_code/industry_label；output_year 深圳 5 年序列（Pearson n=5）；LLM（gkx-zhipu-llm）可用性不限（两分支均可演） | 产业筛选服务端过滤重拉、前端叠加过滤统计同步；co_project=0 诚实 0 值；指数三卡+排名 4 城高亮；Pearson status=ok；策略建议两分支择一且全部待审核；报告七段式+PDF、不建报告任务 | COLLAB-16 PDF 本地打开成功 + 任务中心无新增报告任务行 |
 | **R5** | 验证轮一（拦截类，零/低数据依赖）：legacy_unknown / WEIGHT_PROFILE_INVALID / batch_meta_missing | VIT-10 · VIT-11 · COLLAB-17（**3 条，全 supported 拦截分支**） | VIT-11 零表写入任意时候可跑（合法枚举对照 = 库内三正档 G-03）；COLLAB-17 只读分支（构造 `task:never_exists` 不存在 snapshotId，深圳/广州快照在场用于验证不回落）；VIT-10 依赖任务中心存量旧三段指纹任务（非 ADS，演示前人工确认，缺失则记「演示前置缺失」） | 400 WEIGHT_PROFILE_INVALID 逐字文案（不默改档不回落）；legacy_unknown reason 逐字 + 不自动复用/单飞命中；batch_meta_missing 逐字文案 + nodes=[]（禁回落最新批） | 三条拦截 reason 逐字保留、无静默回落，零表写入断言过 |
@@ -50,7 +50,7 @@
 ```sql
 -- ① 活力默认快照数据（最新档位批，深圳 3y）
 SELECT COUNT(*) FROM demo_gkxlumenx_ads.synth_vit_index
- WHERE region_code='深圳市' AND window_label='最近3年';            -- 期望 ≥ 15（含历史年行+2024 双批次）
+ WHERE region_code='深圳市' AND window_label='最近3年';            -- 期望 = 12（2024 6 + 2022/2023 各 3，含双批次与历史年批）
 SELECT COUNT(*) FROM demo_gkxlumenx_ads.synth_vit_index
  WHERE window_label='最近3年' AND year IN (2022,2023);             -- 期望 ≥ 24（VIT-16 趋势历史行，批 mock_20261107_vit_trend_*）
 -- ② 要素默认批（单批无冗余）
@@ -78,7 +78,7 @@ SELECT COUNT(*) FROM demo_gkxlumenx_ads.gapfill_synth_collab_relation_year
 ```sql
 -- ① 换城行齐（活力/要素四城 3y）
 SELECT region_code, COUNT(*) FROM demo_gkxlumenx_ads.synth_vit_index
- WHERE window_label='最近3年' GROUP BY region_code;                -- 期望 四城各 ≥ 12（深圳 15+）
+ WHERE window_label='最近3年' GROUP BY region_code;                -- 期望 深圳 12、广州/东莞/惠州各 9
 SELECT COUNT(*) FROM demo_gkxlumenx_ads.synth_elem_index;          -- 期望 = 4（四城各 1）
 -- ② 协同 gapfill 城市分布（R2 关系类型差异的事实依据）
 SELECT region_code, COUNT(*) FROM demo_gkxlumenx_ads.gapfill_synth_collab_relation_year
@@ -233,6 +233,6 @@ SELECT COUNT(*) FROM demo_gkxlumenx_ads.synth_collab_batch_meta WHERE window_lab
 - 轮次数：**6 轮**（R1–R4 主演 + R5–R6 验证）；
 - CASE 覆盖：**47/47**，每条恰好归属一轮（R1=13、R2=12、R3=3、R4=8、R5=3、R6=8）；逐叶 VIT 16 / ELEM 14 / COLLAB 17 全覆盖，无重复归属、无遗漏；
 - gap 5 条（VIT-04/05/09/15/ELEM-12）全部集中 R6 验证轮，零进入主演轮；partial 6 条分布 R2×3 / R6×3，降级话术见 §3.2；
-- 依赖核对清单：轮首 SQL 核对 **17 组**（R1×6 + R2×3 + R3×2 + R4×2+1 项人工 + R6×5 条查询）+ 就绪门 checklist **10 条**（§4，含 SQL 5 条 + 人工核对 5 条）；
+- 依赖核对清单：轮首 SQL 核对 **16 组 SQL + R4 人工 1 项 = 17 项**（R1×4 组标签 7 条 SQL + R2×3 + R3×2 + R4×1 SQL + 1 人工 + R6×5 条查询）+ 就绪门 checklist **10 条**（§4，含 SQL 5 条 + 人工核对 5 条）；
 - reason 逐字保留清单（本计划涉及）：`IntelBatchSnapshotNotFound` / `legacy_unknown` / `WEIGHT_PROFILE_INVALID` / `batch_meta_missing` / `no_year_on_source` / `cluster_rule_unclosed` / `insufficient` / `metric_not_registered` / `panorama_filtered_fetch_failed`；
 - 铁律自检：只读输入 ✅（未改 matrix/叶册/registry）· 未 git 操作 ✅ · 47 条全覆盖且每条单轮归属 ✅ · gap 不进主演轮 ✅ · 复测项标注（本计划无跨轮复测执行项，仅 §2 R1 对 ELEM-12 注明「路过不展开」的规避口径）✅。

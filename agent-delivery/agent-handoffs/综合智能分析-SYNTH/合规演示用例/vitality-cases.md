@@ -186,7 +186,7 @@
 | 需规叶 | 135 指数计算与可视化（灵活选择区域、实时计算） |
 
 **前置条件**
-- `synth_vit_*` 广州 × 最近3年行在库（M2 §1.1：广州 index 12 行 = 3 年 × 3 档；is_mock=1 100%）；
+- `synth_vit_*` 广州 × 最近3年行在库（M2 §1.1：广州 index 9 行 = 3 年 × 3 档；is_mock=1 100%）；
 - instant 秒开仅默认三元组（深圳×3y）→ 换城必回 config 待分析态（`vitalityResultSource` 分支）。
 
 **操作步骤**
@@ -202,7 +202,7 @@
 - **失败分支（单独列）**：任务失败 → 过程页失败阶段 +「重新尝试」（见 CASE-VIT-15）。
 
 **数据依赖**
-- `ads.synth_vit_index` / `dim_score` / `weight` / `indicator` / `rank`（region_code=广州 × 最近3年；index 12 行等；全部 is_mock=1）——M2 §1.1–1.5；
+- `ads.synth_vit_index` / `dim_score` / `weight` / `indicator` / `rank`（region_code=广州 × 最近3年；index 9 行等；全部 is_mock=1）——M2 §1.1–1.5；
 - ⚠️ dim_score/indicator 广州行 region_name 误标「深圳」（M2 D-01）。
 
 **演示备注**：能演示出结果（任务实算过渡态）；城市名以条件栏为准，若串名按 D-01 缺陷口径说明。
@@ -217,7 +217,7 @@
 | 需规叶 | 135 指数计算与可视化 |
 
 **前置条件**
-- 东莞 × 最近3年行在库（M2 §1.1：东莞 index 12 行；is_mock=1 100%）。
+- 东莞 × 最近3年行在库（M2 §1.1：东莞 index 9 行；is_mock=1 100%）。
 
 **操作步骤**
 1. 区域切「东莞」→ URL 变 `?region=东莞&compare=全国重点城市&window=3y&weight_profile=INDEX_MAIN`；
@@ -243,7 +243,7 @@
 | 需规叶 | 135 指数计算与可视化 |
 
 **前置条件**
-- 惠州 × 最近3年行在库（M2 §1.1：惠州 index 12 行；is_mock=1 100%）。
+- 惠州 × 最近3年行在库（M2 §1.1：惠州 index 9 行；is_mock=1 100%）。
 
 **操作步骤**
 1. 区域切「惠州」→ URL 变 `?region=惠州&compare=全国重点城市&window=3y&weight_profile=INDEX_MAIN`；
