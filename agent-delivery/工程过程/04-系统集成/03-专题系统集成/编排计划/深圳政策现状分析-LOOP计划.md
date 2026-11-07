@@ -8,7 +8,7 @@
 
 ## 1. 这一轮要证明什么
 
-演示锚点 **集成电路 / `industry_vid=chain:INB1303`** 上，已签发任务的结果仍与 2026-11-07 演示实例一致。真源是 `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-SZ3D-DATA-DEMO-L01.md`。
+演示锚点 **集成电路 / `industry_vid=chain:INB1303`** 上，已签发任务的结果仍与 2026-11-07 演示实例一致。用例在 `agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/深圳政策现状分析-合规演示用例.md`。签发实例记在 `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-SZ3D-DATA-DEMO-L01.md`。本计划不代替那份覆盖表。
 
 通过线（都要同时成立）：
 

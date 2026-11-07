@@ -8,7 +8,9 @@
 
 ## 1. 这一轮要证明什么
 
-用例 `agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS12-EST-TEST-L01.md` 第 1.1、1.2 节的演示样本，经线上接口返回，并与右列一致。
+合规演示用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-DS12-EST-合规演示用例.md`。每条需规一行。
+
+样本仍以 `测试用例/POL-L2-DS12-EST-TEST-L01.md` 第 1.1、1.2 节为准。经线上接口返回，并与右列一致。不另编期望。
 
 通过线：
 
@@ -22,7 +24,7 @@
 
 ## 2. 验收单
 
-沿用已有 `POL-L2-DS12-EST-ACCEPT-LOOP`（`ready`，`qa-agent`）。不另开第二张验收单，不把这张单签 `done`。一轮报告写进：
+沿用已有 `POL-L2-DS12-EST-ACCEPT-LOOP`（2026-11-07 起 `blocked`，`qa-agent`）。不另开第二张验收单，不把这张单签 `done`。映射恢复后，人说「按 LOOP 跑」再从 `blocked` 继续。一轮报告写进：
 
 `agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-EST-ACCEPT-LOOP.md`
 
@@ -75,7 +77,9 @@ token 文件：`%USERPROFILE%\.gkx\display-loop-token`（一行 access_token，�
 
 子任务 handoff 落盘后，才把验收单拨回 `ready` 再开下一轮。note 不写「联调通过」。
 
-## 6. 确认后的第一轮顺序
+## 6. 轮次顺序
+
+2026-11-07 已探测并在 404 停止。下次从探测重入，不另开验收单。
 
 1. 认领 `POL-L2-DS12-EST-ACCEPT-LOOP`，`supervised_by=human:淮政玮`。
 2. 读本机 token，打探测。
