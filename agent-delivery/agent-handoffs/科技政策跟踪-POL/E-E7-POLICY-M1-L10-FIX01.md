@@ -46,7 +46,7 @@
 
 ## 遗留风险
 
-- 未确认线上库 `gkxlumenx_topic_policy.policy_share_export` 已建（跳板机无 mysql 客户端）。若未建，导出提示「导出记录表不可用」，下载 404。脚本 `db/9x_gkxlumenx_topic_policy.sql`。
+- 2026-11-07 查实线上库 `gkxlumenx_topic_policy` 原本没有 `policy_share_export`（1146）。已按 `db/9x_gkxlumenx_topic_policy.sql` 中该表的 `CREATE TABLE IF NOT EXISTS` 补建，其余表未动。
 - helm `runOnUpgrade=false`：本单线上 Nacos 与 env 是手工补的，仓内模板已同步，下次全量 helm 不会丢。
 - 前端改动停在本地，等用户确认推送。
 
