@@ -1,6 +1,6 @@
 # POL-L2-PC1-CLEAN · LOOP 计划
 
-- 状态：**待验收** · 2026-11-08 · 用例可演（totalPolicyCount=20666，质量区诚实空）
+- 状态：**样本满足** · 2026-11-08 · element `results` totalPolicyCount=20666，qualityAgg/Details 空列表；CI deploy element:4ab0263f
 - 用例：`合规演示用例/POL-L2-PC1-CLEAN-合规演示用例.md`
 - 通过线：`governance/results` 非 501；页眉件数来自 DWD；不写死清洗分数
 
