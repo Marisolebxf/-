@@ -62,9 +62,13 @@ Q-SVCCHAIN-01（技术力口径）、Q-SVCCHAIN-06（门户统计口径与数据
 - 不造数：期望值=页面常量轨离线实算（可复算），库值=实查原值，无编造 ✅
 - cicd: skip（纯编排仓文档） ✅
 
+## 8. 评审修正记录
+
+- **2026-11-07 Minor-2（深圳十区两处口径不一致）**：已核实并修复。根因（复查 `svc_region_dist` 实证）= sz_district 每区 2 行，`M_SVC_SZ_DISTRICT` 与 `M_SVC_PT_SZ_REGION_ORG` 两 metric_id 同值各登记一行；M2 §2.2 按整表 `SUM(org_count)` 求和把同值复用行加总（3,655×2=7,310 等），本用例按 `M_SVC_PT_SZ_REGION_ORG` 单行口径取值——属「单行 vs 含复用行求和」口径差，非批次不同、非去重口径差，不构成数据缺口。改动位置：`SVC-PT-合规演示用例.md` 查库节 `svc_region_dist` 条目补口径声明（含 LOOP 首轮禁止用跨 metric 求和值当期望）；103 行与其余行未动。未 commit/push。
+
 ## 7. cost
 
-- estimated_tokens: ~90,000（含 15 次只读查库、前端 10 文件核对、离线实算与两文档产出）
+- estimated_tokens: ~90,000（含 15 次只读查库、前端 10 文件核对、离线实算与两文档产出；含 Minor-2 复查 1 次）
 - model_used: glm-5.3-Flash
 - actual_cost: ~$0.5（< $10 阈值，无需复盘）
 - cost_warn: no

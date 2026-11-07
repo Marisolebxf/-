@@ -19,7 +19,7 @@
   - `svc_metric_fact` 6 行：`M_SVC_PT_GLOBAL_TOTAL=43296`（slice=all）、`M_SVC_PT_SZ_TOTAL=14033`（slice=city）
   - `svc_metric_dist` 142 行：`M_SVC_PT_GLOBAL_TYPE_DIST` 3 行（企业 43296 / 高校 0 / 科研院所 0）、`M_SVC_PT_SZ_TYPE_DIST` 3 行（企业 14033 / 高校 0 / 科研院所 0）、`M_SVC_PT_GLOBAL_SCALE_DIST` 5 行（>500=19030 / 200-500=13773 / 50-200=6980 / <50=1611 / 未知=1902）
   - `svc_global_dist` 5 行（中国 90 / 美国 15 / 新加坡 15 / 德国 15 / 日本 15，**种子面板，与 dwd.service_org 同源**）
-  - `svc_region_dist` 24 行：province 3 省（广东 43292 / 北京 3 / 浙江 1）+ sz_district 九区实值（南山 3655 / 宝安 2850 / 龙岗 2039 / 福田 1829 / 龙华 1795 / 光明 798 / 罗湖 553 / 坪山 388 / 盐田 121；metric `M_SVC_PT_SZ_REGION_ORG` 各 1 行）
+  - `svc_region_dist` 24 行：province 3 省（广东 43292 / 北京 3 / 浙江 1）+ sz_district 九区实值（南山 3655 / 宝安 2850 / 龙岗 2039 / 福田 1829 / 龙华 1795 / 光明 798 / 罗湖 553 / 坪山 388 / 盐田 121；metric `M_SVC_PT_SZ_REGION_ORG` 各 1 行）。**十区值按 `M_SVC_PT_SZ_REGION_ORG` 当期批次单行口径取值**（批次统一 `svc-fseed-20261020`）；与 M2 调研 §2.2 计数（南山 7,310 / 宝安 5,700…）存在口径差异——差异原因（2026-11-07 复查实证）：sz_district 每区 **2 行**、`M_SVC_SZ_DISTRICT` 与 `M_SVC_PT_SZ_REGION_ORG` 两个 metric_id 同值各登记一行，M2 按整表 `SUM(org_count)` 把同值 metric 复用行加总了一遍（3,655×2=7,310 等），两口径实质为同一批同值数据的「单行 vs 含复用行求和」差，非批次不同、非去重口径差，**不构成数据缺口**；LOOP 首轮对照时按单行口径核对，禁止用跨 metric 求和值当期望
 - 机构卡面 `svc_org_card` 43,343 行：city=深圳市 14,080 行（含 NULL 批次 47 行，不进 14,033 口径切片）；类型=3 类字典全塌到企业（高校/科研院所 0）；org_size（深圳切片）小型 6,395 / 微型 6,302 / 中型 1,059 / 大型 139 / 未知 138 + NULL 47
 - 环节面 `svc_chain_gap` 6 行：研发与科研合作 28,842 / 市场化服务 4,229 / 检测认证 457 / 知识产权与标准 96 / 技术转移与孵化 22 / **中试熟化 0（runtime_flag=blank）**；`q061_pending_client=1` 全量
 - **全部 svc 表无 `is_mock` 列**（M2 §0-4）；演示态由 `pending_client_confirm=1`（svc_org_circle 全量）、`q061_pending_client=1`（svc_chain_gap 全量）、`data_source`、`rule_version=svc_rule_demo_kw_v1.1` 承载
