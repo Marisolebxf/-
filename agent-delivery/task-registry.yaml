@@ -57001,7 +57001,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 65000
     note: |
-      2026-11-07 用户明确纠正：功能已开发，本次只按原清单灌数据。此前将全组重定义/目录重定/改用CHAIN ADS作为统一前置是本会话范围偏离，已撤回Q-ONEMAP-01/02/03误增定义项并恢复原需求落点。旧blocked_by中的全组会签理由失效，不作为继续灌数准备的门禁。首单恢复in_progress，由human:徐滕强认领/监管，继续核当前运行目标库、原stat_type/维度、源数据、备份、灌入与API对账；G2四桶、G3从业人数等按原文，不重新定义。G1/G4原文确有逐项来源/算法未定，仅影响对应项，先核已有结果不阻塞其他项。部署清单/默认库候选demo_gkxlumenx_dwd；已调用现有industry-stats和enterprise-stats均HTTP200/code0，scale/employee_count/employee_dist空态、scale_dist已有值，证明应按既有功能补数据。实际读库仍以运行环境核实，不能用正式库缺口替代。未建表/改表/灌数；所有DDL先与用户沟通。
+      2026-11-07 本会话执行范围已按用户纠正：不是重开功能或全组定义。原读表链和现有目录已核实；实际G2/G3有源灌数15行、12产业API对账和幂等验证完成，细节见DATA-EMP handoff，代码0826587/CI4180成功。原先blocked_by中整组定义冻结理由撤回，不能当当前业务阻塞；保持本探查记录供审计，不自行签收。四后续单纠正：EMP保留已执行有源部分；SCALE保留逐项来源缺口；INDEX-DEF/API-GAP撤回本轮误扩范围派发（工具无cancelled状态，用blocked明确撤回）。未建表改表。
     depends_on: []
     collaborators:
       - "architect-agent"
@@ -57031,15 +57031,16 @@ tasks:
       - "复核G5/G6既有type-scale-stats是否限定深圳及产业、company_type是否互斥，列出过滤/重复累计缺陷；复核Python按stat_type全局MAX(stat_date)导致局部更新遮蔽旧产业的问题，冻结完整快照或按业务维度最新批次策略。"
       - "产出真实来源/缺项补齐/演示数据三类存储判定，明确D16与D18适用条件、目标库表和Python写入方；不得仅凭新增stat_type推断符合D18。涉及表结构变更先向用户提交具体方案并沟通，本单不执行DDL或写业务数据。"
       - "修订后置需求并提供数据探查证据、口径/来源/metric_id对照及各后续单DoR；无法冻结的项明确pending_ref，不把整组口径写成已确认。handoff落agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-OPEN-L01.md，含范围/偏离/证据/架构自检/cost与cicd:skip理由；definition按会签→ready_to_sign，禁止自行done。"
-    update_time: "2026-11-07T17:34:39+08:00"
+    update_time: "2026-11-07T18:08:03+08:00"
   - id: SYSINT-04-01-DATA-EMP-L01
+    evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01.md"
     claimed_at: "2026-11-07T09:48:53.938Z"
     last_seen_at: "2026-11-07T09:48:53.938Z"
     lock_until: "2026-11-07T13:48:53.938Z"
     claimed_by: "human:徐滕强"
     supervised_by: "human:徐滕强"
     title: "专题一张图 · G2/G3 企业人数分布与从业人数灌数"
-    status: "in_progress"
+    status: "integration"
     agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -57053,7 +57054,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 75000
     note: |
-      2026-11-07 用户再次明确继续灌数并纠正前次误建依赖。DATA-OPEN只读勘查已完成，不再要求整组定义重做或以其形式签收阻断G2/G3；本次按用户纠偏授权启动原功能灌数。执行human:徐滕强/监管human:徐滕强，pull，4小时锁，强度ponytail full。当前原表enterprise_stat_summary，来源同环境已有年报dwd_org_annual_financial_info.employees_number，既有产业归属，深圳注册城市过滤，stat_year=0。预览、目标快照备份、限定行幂等upsert、可回滚、API对账；不改Java/前端/DDL/其他任务。因SYSINT-DICT-02-L01声明全仓且主工作区repo.py有他人修改，使用独立分支codex/one-map-employee-fill与/private/tmp/one-map-py，仅动灌数脚本和专用测试，避免共享工作区冲突。旧depends_on=DATA-OPEN为先前误加的定义门禁，用户已明确取消其业务阻塞，工具无依赖编辑字段，保留此说明供登记维护；不把未签任务伪记done。
+      2026-11-07 已实际灌入G2/G3有源部分：原表demo_gkxlumenx_dwd.enterprise_stat_summary共15行，INB1309=16537人/21,34,14,8桶；INB1354=245人/0,0,1,0桶；INB2503=17人/1,0,0,0桶。来源同环境2025年年报employees_number、深圳city与去重既有产业关系；披露覆盖77/95293、1/307、1/1020，不能宣称全产业完整覆盖。9个无源产业继续空态。12个目录产业现有API全部对账通过，幂等复跑changed=false；备份/预览摘要/接口/CI证据均已落同名evidence目录。脚本提交0826587已推origin/dev，5项测试通过，CI4180成功含deploy:search-py。无DDL、无Java/前端修改，未将D4改绿。工单方向保留；先前整组定义冻结前置由用户明确纠正，不再以DATA-OPEN形式签收阻断本次执行；旧依赖条目仅留历史，不代表要求重定义。提交integration供部分覆盖验收，不自行done。
     depends_on:
       - "SYSINT-04-01-DATA-OPEN-L01"
     collaborators:
@@ -57082,11 +57083,12 @@ tasks:
       - "脚本头和交付记录包含来源/公式/版本/统计期/更新频率；凭据不进git、文档或记忆；表结构变更先向用户提交具体方案沟通；无真实来源不得估数或用mock标live。"
       - "数据库→Python one-map summary→Java API-2逐产业对账，保留未灌项空态。与API-GAP任务串行协调读取修改；灌数脚本仅Python执行，接口查询只读。"
       - "handoff按模板落系统集成-SYSINT同名MD，含ponytail:full、范围/偏离/库表行数/命令/验证/回滚/commit/CI/部署或发布不适用理由/cost；feature按integration→pending_test→testing→ready_to_sign，不能自行done；D4仅按真实证据和登记流程调整。"
-    update_time: "2026-11-07T17:48:54+08:00"
+    update_time: "2026-11-07T18:08:03+08:00"
   - id: SYSINT-04-01-DATA-SCALE-L01
+    blocked_by: "G1逐项数据来源缺口：现有候选只有ALL地域的mock批次，未获得可用于原产业规模字段的深圳真实年度值。等待真实输入后按原表灌入，不要求整组重新定义、换表或改接口；不伪造数据。"
     supervised_by: "human:徐滕强"
     title: "专题一张图 · G1 产业规模真实来源接入与灌数"
-    status: "backlog"
+    status: "blocked"
     agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -57100,8 +57102,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 70000
     note: |
-      建单不认领；默认监管参考human:徐滕强。DoR：DATA-OPEN签收，规模定义/地域/年份/单位/精度/metric_id及非UNKNOWN算法类型冻结，并取得真实可追溯来源。未取得来源保持backlog，不因存在候选表而开灌。与EMP同仓顺序执行。后续coding派单强度：ponytail full。
-      2026-11-07 用户明确指定本组任务归徐滕强名下；本单预登记监管为human:徐滕强，依赖未满足保持backlog，不预占认领锁。算法口径/公式仍按王惠及唐绍祖职责会签；涉及建表/改表先与用户沟通。首单补查见Q-ONEMAP-01/02/03及DATA-OPEN handoff。
+      2026-11-07 四单复核：本单保留，仅承接原清单G1已有功能的数据灌入；不重开功能定义、不换原表、不新建表。此前统一依赖DATA-OPEN重新冻结整组口径是本会话误加，用户已纠正，不作为G1业务前置。已查当前demo ADS规模候选均mock_20261103_reload、region=ALL，不能冒充深圳真实产业规模或原型值；无G1真实来源输入，本次未写one_map_industry_scale。仅逐项等来源，不阻塞已灌EMP。监管human:徐滕强，任何DDL仍先沟通。
     depends_on:
       - "SYSINT-04-01-DATA-OPEN-L01"
     collaborators:
@@ -57129,11 +57130,12 @@ tasks:
       - "支持预览/显式apply、限定影响范围、写前备份、事务及幂等回滚；遵守完整快照/最新批次规则，不清空其他产业，不改Java接口契约；查询路径禁止灌数。"
       - "数据库与Python/Java API-1对账：scale值、单位、实际年份趋势、缺年、小数、null/0及重复运行；指标ID只用冻结登记值，真实来源闭环后按正式流程更新就绪度。"
       - "handoff同名落系统集成-SYSINT，含ponytail:full、来源文件、库表/实际行数/执行命令/备份回滚/测试/CI发布证据/cost；无源项单列，不把脚本完成写成数据完成，不自行done。"
-    update_time: "2026-11-07T17:24:42+08:00"
+    update_time: "2026-11-07T18:08:03+08:00"
   - id: SYSINT-04-01-INDEX-DEF-L01
+    blocked_by: "撤回本轮误扩范围的定义工单，保留审计记录，不再派发、不阻塞原功能灌数。原G4实际来源缺口仅逐项记录，不能用城市mock替代九区值。"
     supervised_by: "human:徐滕强"
     title: "专题一张图 · G4 区级产业发展指数定义与模型复用会签"
-    status: "backlog"
+    status: "blocked"
     agent: "algorithm-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -57147,8 +57149,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 70000
     note: |
-      默认监管参考dispatch-rules为human:唐绍祖；建单不认领，不代任何人签字。DATA-OPEN后开展；本单仅定义/候选复算与会签，不执行正式指数灌数。后续模型实现/落库任务须依据签收方案再建，不将定义完成等同G4点亮。
-      2026-11-07 用户明确指定本组任务归徐滕强名下；本单预登记监管为human:徐滕强，依赖未满足保持backlog，不预占认领锁。算法口径/公式仍按王惠及唐绍祖职责会签；涉及建表/改表先与用户沟通。首单补查见Q-ONEMAP-01/02/03及DATA-OPEN handoff。
+      2026-11-07 用户质疑四工单后已复核：本单把原G4后置数据补齐扩成重新定义/模型复用会签，属于本会话过度拆单；撤回本轮执行，不作为灌数前置，不按已完成记绩效。保留ID及原DoD作审计，不删除他人任务。若已有真实九区结果可按原清单直接灌入；现查只有城市级mock分数，不替代区级数据。若后续确需独立算法工作另由用户明确决定，本轮不启动。
     depends_on:
       - "SYSINT-04-01-DATA-OPEN-L01"
     collaborators:
@@ -57177,11 +57178,12 @@ tasks:
       - "经王惠口径侧、唐绍祖算法侧及架构/产品按现行规约会签；甲方业务定义歧义挂客户决策清单pending_ref，按已有临时默认但不伪签。M_ONE_MAP_DISTRICT_DEV_INDEX复用/正式化走指标登记流程，不重复赋号。"
       - "明确存储库表、产业/区/年维度编码、精度和版本、Python计算写入方、Java/Python只读过滤、API-4与API-6一致性、D16/D18适用；若拓扑/写库方变化提供Mermaid及diagram_id；涉及DDL先与用户沟通。"
       - "签收产物包含后续G4实现工单DoR/DoD、影响文件、复算样例与验收办法；本定义单不直接宣称灌数或接口点亮完成。handoff同名MD含范围/偏离/会签证据/未决项/架构自检/cost/cicd:skip依据；definition会签→ready_to_sign，禁止自行done。"
-    update_time: "2026-11-07T17:25:02+08:00"
+    update_time: "2026-11-07T18:08:03+08:00"
   - id: SYSINT-04-01-API-GAP-L01
+    blocked_by: "撤回本轮误扩范围的接口改造工单，不再派发、不阻塞原表灌数；现有接口已读回15行并完成12产业对账。"
     supervised_by: "human:徐滕强"
     title: "专题一张图 · 灌数读取批次与产业地域过滤修正"
-    status: "backlog"
+    status: "blocked"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -57195,8 +57197,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     note: |
-      默认监管参考dispatch-rules为human:徐滕强。建单不认领；硬依赖原接口单和DATA-OPEN，防止与孔东现有改动冲突。后续放行须核实同文件Convoy。Java归api-agent、Python查询修改由algorithm-agent承接同包协作，禁止单个角色跨职责写三仓。后续coding派单强度：ponytail full；不改原六端点对外契约，不自动触发部署。
-      2026-11-07 用户明确指定本组任务归徐滕强名下；本单预登记监管为human:徐滕强，依赖未满足保持backlog，不预占认领锁。算法口径/公式仍按王惠及唐绍祖职责会签；涉及建表/改表先与用户沟通。首单补查见Q-ONEMAP-01/02/03及DATA-OPEN handoff。
+      2026-11-07 用户质疑四工单后已复核：本单预设已开发接口需要改造，超出本次灌数范围；撤回本轮执行，不作为灌数前置。现有API已直接读回本次15行且12产业对账通过，证明无需先做本单才能灌数。保留ID/旧DoD审计，不删除文件、不记已完成；未修改Java/前端/读表契约。潜在其他过滤问题不混入本次数据灌入，需后续实际缺陷证据及用户授权再处理。
     depends_on:
       - "SYSINT-04-01-DATA-OPEN-L01"
       - "SYSINT-04-01-L01"
@@ -57230,7 +57231,7 @@ tasks:
       - "针对不同产业/城市、重复企业类型、无源、局部新批次、缺年、stat_year=0、下游失败建立有区分力测试；Java/Python测试通过，数据与六端点契约回归对账，不能只用Mock单测宣称线上通过。"
       - "与EMP/SCALE同仓触碰文件必须串行/Convoy，原接口单未交接不得开工；读取配置和前缀以最新as-built为准，不按过期handoff推断线上404。"
       - "handoff同名MD含ponytail:full、双仓分工与commit、CI、实际发布镜像与K8s/网关回归证据、traceId、回滚与cost；按bugfix→pending_test→testing→ready_to_sign，QA后由授权人签收，不自行done。"
-    update_time: "2026-11-07T17:25:21+08:00"
+    update_time: "2026-11-07T18:08:03+08:00"
   - id: TOPIC-POL-REGION-DEMO-ACCEPT-LOOP
     evidence: "agent-handoffs/政策模块-E7/TOPIC-POL-REGION-DEMO-ACCEPT-LOOP.md"
     supervised_by: "human:淮政玮"
