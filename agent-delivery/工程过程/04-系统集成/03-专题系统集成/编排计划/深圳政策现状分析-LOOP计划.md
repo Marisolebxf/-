@@ -27,7 +27,7 @@
 | 需规 116 仪表盘 | 同样挂 `LUMEN-POLICY-SZ3D-FE-SRS-R20261107`，不建数据单、不建算法单 |
 | 落地实效不出现 Mock | 合规演示的配置区、结果和报告不出现 Mock。落地实效按 `gkxlumenx_gapfill` 里每条政策的缺项行实算，空值不写成 0。公式接通前，接口仍核对 `computable=true`、`score=50`。Mock 字样单独算缺口，不用这条分数代替 |
 | 产业只交 VID | 因此出现「未提供链名」时，挂到同一张前端任务 `LUMEN-POLICY-SZ3D-FE-SRS-R20261107`，不建数据单、不建算法单 |
-| 库 | `demo_gkxlumenx_dwd.policy_base_info` 中 `city='深圳市'` 为 879，且 `rank` 有值。层级均值保持 0.4653。正式库只读 |
+| 库 | `demo_gkxlumenx_dwd.policy_base_info` 中原生行 `city='深圳市' AND COALESCE(source_plane,'')='domestic' AND etl_batch_id IS NULL` 为 879，且 `rank` 有值。层级均值保持 0.4653。表里混灌的一张图 debug 批次（`etl_batch_id='debug_one_map_20261107_v1'`）与图2合成批（`etl_batch_id LIKE 'SYNTH-%'`）不算进截面，也不删。正式库只读 |
 
 需规 114 对齐 demo 原型的指标体系构建。默认入模 8 项：支持力度为政策数量、资金规模、创新激励；产业适配性为政策-产业需求匹配、产业链覆盖广度、细分领域命中率；落地实效为落地执行率、受益覆盖广度。政策层级覆盖面、反馈满意度默认不入模。维内等权。一级权重为支持力度 34、产业适配性 33、落地实效 33。一键均分把一级权重写回 34/33/33。恢复默认模型把入模恢复为这 8 项，并把一级权重恢复为 34/33/33。循环不打开页面。页面还没有这块时，只挂前端任务。
 
@@ -63,7 +63,7 @@ token 只读本机文件 `%USERPROFILE%\.gkx\topic-loop-token`。请求头 `Auth
 |---|---|---|
 | 探测 | `GET http://10.50.69.111:30892/api/topicAsync/topic/v1/analysis/tasks/POLICY-20261107-009/result?user_id=guest` | 产业结果。只验 token 和这条已签发结果 |
 | 探测 | `GET http://10.50.69.111:30892/api/topicAsync/topic/v1/analysis/tasks/POLICY-20261107-011/result?user_id=guest` | 技术领域结果。只验 token 和这条已签发结果 |
-| 库 | 只读 `demo_gkxlumenx_dwd.policy_base_info` | 核对 `city='深圳市'` 为 879，以及深圳行的 `rank` 仍有值 |
+| 库 | 只读 `demo_gkxlumenx_dwd.policy_base_info` | 核对原生行（加 `COALESCE(source_plane,'')='domestic' AND etl_batch_id IS NULL` 条件）`city='深圳市'` 为 879，以及深圳行的 `rank` 仍有值 |
 
 任一探测返回 401、424，或正文为「访问令牌不存在」「用户凭证已过期」「token expired」：验收单改为 `blocked`，通知 `human:淮政玮`，不建子任务，不再开一轮。note 只写「token 失效，已通知 human:淮政玮」。
 
