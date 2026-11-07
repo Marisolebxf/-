@@ -1,6 +1,6 @@
 # TS-L2-DS02-PATH · 展示关键路径和关键节点 · LOOP 执行编排计划
 
-- 状态：2026-11-07 用例覆盖已齐，未执行，等人说「按 LOOP 跑」。可演 5 行，覆盖不到 3 行，设计无资源 0 行。可演行中 28、30、32、33 待 `TS-L2-DS02-SEL-FIX-L01`。
+- 状态：2026-11-07 首轮已跑。样本未满足。探测 200。可演：28/30/32/33 通过；29 部分（centrality null）。SEL-FIX 已 done。QUERY 挂 `TS-L2-DS02-GRAPH-DEMO-FIX-R20261107-QUERY`；DATA ready：`TS-L2-DS02-PATH-DEMO-FIX-R20261107-DATA`。验收单 `TS-L2-DS02-PATH-DEMO-ACCEPT-LOOP`=ready。等人说「可以派了」。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4）
 - 用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-DS02-PATH-合规演示用例.md`
 - 索引：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/科学技术全景-索引.md`
