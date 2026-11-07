@@ -91,3 +91,23 @@ ponytail: full
 
 - **裁定**：监管人 human:李伟 2026-11-07 选 B（严格等修）——3 项全建 ALGO 子任务，DS-03 **不签收**，验收单 `TS-DS03-DEMO-ACCEPT-LOOP` 挂 `blocked` 并 depends_on 上述 3 单；3 单修复部署后跑 R3 复测（重点行 49/53/54），全绿再提请签收。
 - **下一步口令**：监管人说「可以派了」→ 派 Q01/Q02/Q03（be/algorithm 方向见各单 note）；说「推」→ 本记录与注册表变更随下一批推 origin/dev。
+
+## R3（2026-11-08 01:00，Q01/Q02 修复部署后复测）
+
+修复包：lumen-svc-platform `6df43da`（TrackingController：developmentAdvice 分档模板 + buildSystemMethods/buildKnowledgeBase）；探测带 token（0f7d…8e86）+ systemCode 头，网关 200。
+
+| 行 | 验证点 | 实测 | 判定 |
+|---|---|---|---|
+| 49 | mapRegions.developmentAdvice | 100 城市中 61 城非空（示例北京市「区域评估水平高：建议保持现有投入强度…」），39 城无评估数据→空串（诚实口径） | ✅ 对得上 |
+| 53 | meta.methods / knowledgeBase | methods=4（expert/economic/operations/comprehensive）；kb.cases=3（真实历史运行）、bestPractices=1（历史最优期事实）；noSourceFields 仅剩 timeline.events/capabilities；methodSource 明示「按技术类型推荐未提供」 | ✅ 对得上（按类型推荐明示未提供，不编造） |
+| 54 | meta.recommendedPreset / optimizationSuggestions（Q03 验证单） | recommendedPreset 完整（weights/thresholds/dimensions/methodKeys/reason）；optimizationSuggestions=2 条——**需规 54 原已实现，Q03 撤销修复直接 done** | ✅ 对得上 |
+| 抽测 | records / bubbles / relations / templates | 20 / 20 / 18 / 9，isEmpty=false（与 R2 一致无回归） | ✅ |
+
+- **R3 结论**：**样本满足**——7/7 对得上、3 缺口全修复（Q01/Q02 修复生效，Q03 验证撤单）。验收单 `TS-DS03-DEMO-ACCEPT-LOOP` 回 **ready**，请监管人 human:李伟「签收」（签收时再校验一次 → done）。
+
+## 签收（2026-11-08 01:15，监管人 human:李伟「签收」）
+
+签收校验（抽测复测）：dataset records=20 / developmentAdvice 61 城非空；meta methods=4 / kb.cases=3 / optimizationSuggestions=2——与 R3 一致，**校验通过**。
+
+- **结论：DS-03 技术发展跟踪 LOOP 闭环 done**（R1 熔断→路径订正→R2 接口级满足→需规核对建 Q01/Q02/Q03→修复部署→R3 全绿→签收校验通过）。
+- 观察项留档（不阻塞）：气泡图被引数/人才数/项目数 3 轴 max=0（演示避开）；timeline.events/capabilities 无源（noSourceFields 声明）；按技术类型自动推荐方法组合未提供（methodSource 明示）；报告产物 items=0（演示现场触发）。

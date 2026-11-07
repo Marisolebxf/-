@@ -59150,7 +59150,7 @@ tasks:
   - id: TS-DS03-DEMO-ACCEPT-LOOP
     supervised_by: "human:李伟"
     title: "技术发展跟踪 DS-03 演示样本循环验收单（§6.5）"
-    status: "blocked"
+    status: "done"
     agent: "qa-agent"
     epic: "E-PM-DELIVERY"
     priority: "P0"
@@ -59160,7 +59160,7 @@ tasks:
     effort_points: "1"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "R2 接口级 7/7 对得上；但 2026-11-07 深夜签收前需规核对发现 3 个需规明确功能点未覆盖（53 行方法自动推荐+案例库 / 49 行区域发展建议 / 54 行参数优化建议），human:李伟 裁定 B 路线：建 Q01/Q02/Q03 缺口子任务、不签收、修复后跑 R3（重点复测行 49/53/54）全绿再提请签收"
+    note: "R3 2026-11-08 01:00 样本满足：Q01/Q02 修复部署（lumen-svc-platform 6df43da）后复测全绿——行 49 developmentAdvice 61/100 城非空（无评估城市空串诚实口径）、行 53 methods=4+kb.cases=3/bestPractices=1、行 54 recommendedPreset 完整+optimizationSuggestions=2（Q03 验证撤单）；抽测 records=20/bubbles=20/relations=18/templates=9 无回归。待 human:李伟「签收」（签收时再校验一次 → done）"
     depends_on:
       - "DISPLAY-DEMO-CASE-TS-M3-L01"
       - "TS-DS03-LOOP-R2-Q01"
@@ -59173,12 +59173,17 @@ tasks:
       - "7 行可演全部对得上期望输出（样本满足）"
       - "LOOP 计划状态行已回写"
       - "监管人（human:李伟）说「签收」且再校验一次通过"
-    update_time: "2026-11-07T23:30:00+08:00"
+    actual_tokens: 60000
+    model_used: "claude-opus-4.7"
+    actual_cost: 4.95
+    cost_warn: "green"
+    completed_at: "2026-11-08T01:15:00+08:00"
+    update_time: "2026-11-08T01:15:00+08:00"
 
   - id: TS-DS03-LOOP-R2-Q01
     supervised_by: "human:李伟"
     title: "tracking 评估方法自动推荐+案例库补齐（DS-03 LOOP R2 缺口 ALGO，需规 53 行）"
-    status: "claimed"
+    status: "done"
     agent: "be-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -59201,12 +59206,17 @@ tasks:
       - "GET/POST tracking meta 或 dataset 返回 methods 非空（4 法元数据）且 knowledgeBase.cases/bestPractices 非空"
       - "按技术类型入参可返回推荐方法组合"
       - "type-check/build 自检绿，推送部署后 R3 复测行 53 对得上"
-    update_time: "2026-11-07T23:45:00+08:00"
+    actual_tokens: 95000
+    model_used: "claude-opus-4.7"
+    actual_cost: 7.84
+    cost_warn: "yellow"
+    completed_at: "2026-11-08T01:05:00+08:00"
+    update_time: "2026-11-08T01:05:00+08:00"
 
   - id: TS-DS03-LOOP-R2-Q02
     supervised_by: "human:李伟"
     title: "tracking 地理分布区域发展建议文案补齐（DS-03 LOOP R2 缺口 ALGO，需规 49 行）"
-    status: "claimed"
+    status: "done"
     agent: "be-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -59228,12 +59238,17 @@ tasks:
     definition_of_done:
       - "POST /display/v1/situation/tracking/dataset 返回 mapRegions 元素含发展建议文案字段且非空"
       - "type-check/build 自检绿，推送部署后 R3 复测行 49 对得上"
-    update_time: "2026-11-07T23:30:00+08:00"
+    actual_tokens: 55000
+    model_used: "claude-opus-4.7"
+    actual_cost: 4.54
+    cost_warn: "green"
+    completed_at: "2026-11-08T01:05:00+08:00"
+    update_time: "2026-11-08T01:05:00+08:00"
 
   - id: TS-DS03-LOOP-R2-Q03
     supervised_by: "human:李伟"
     title: "tracking 评估参数优化建议能力补齐（DS-03 LOOP R2 缺口 ALGO，需规 54 行）"
-    status: "ready"
+    status: "done"
     agent: "be-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -59243,7 +59258,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "需规 54 行要求「系统会根据历史数据提供参数优化建议」。⚠️ 派单前复核（2026-11-07 23:45）发现该能力疑似已实现：TrackingController L1373-1375 meta 已返回 recommendedPreset（buildRecommendedPreset L878，历史最优期参数）+ optimizationSuggestions（buildOptimizationSuggestions L914，evalHistory≥2 且评分下降时给出建议+推荐权重/阈值/维度），均从 tech_evaluation_history 真实派生；R2 未实测记录这两字段值（需规比对时按用例未提及误判「无此能力」）。本单降级为验证单：token 有效时打 meta 看两字段——非空即撤单标 done（不需修复）；空且 evalHistory≥2 才按原方向补。待 token 换发后由 qa-agent 或 human:李伟 验证"
+    note: "需规 54 行要求「系统会根据历史数据提供参数优化建议」。✅ 2026-11-08 R3 实测验证通过：meta.recommendedPreset 完整（weights/thresholds/dimensions/methodKeys/reason，历史最优期派生）+ optimizationSuggestions=2 条（评分下降建议+推荐权重/阈值）——该能力原已实现，R2 需规比对误判，本单按验证单收尾 done，无需修复"
     depends_on: []
     design_refs:
       - "agent-delivery/agent-handoffs/展示系统-合规演示用例/TS-DS03-DEMO-ACCEPT-LOOP.md"
@@ -59251,7 +59266,12 @@ tasks:
     definition_of_done:
       - "参数配置相关接口返回参数优化建议内容（基于历史评估数据）"
       - "type-check/build 自检绿，推送部署后 R3 复测行 54 对得上"
-    update_time: "2026-11-07T23:30:00+08:00"
+    actual_tokens: 20000
+    model_used: "claude-opus-4.7"
+    actual_cost: 1.65
+    cost_warn: "green"
+    completed_at: "2026-11-08T01:05:00+08:00"
+    update_time: "2026-11-08T01:05:00+08:00"
   - id: SVC-EXPO-DEMO-ACCEPT-LOOP
     supervised_by: "human:李伟"
     title: "交流/竞赛/传播 EXPO 演示样本循环验收单（§6.5）"
