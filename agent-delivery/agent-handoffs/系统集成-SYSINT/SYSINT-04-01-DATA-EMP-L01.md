@@ -47,7 +47,7 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 | 表 | 行数 | 内容 | 标识 |
 |---|---:|---|---|
 | `demo_gkxlumenx_dwd.enterprise_stat_summary` | 141 | 12产业的G1规模趋势/最新值、G2人数桶、G3人数和、G4九区指数 | 指标行名带 `【调试构造】` |
-| `demo_gkxlumenx_dwd.enterprise_industry_summary` | 72 | 12产业×2021–2025企业数量趋势 | 产业名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_industry_summary` | 72 | 12产业×2021–2025企业数量趋势 | 使用标准产业名；`stat_date=2026-11-07` |
 | `demo_gkxlumenx_dwd.enterprise_region_summary` | 9 | 九区企业地图/区卡值 | 使用页面精确区名 |
 | `demo_gkxlumenx_dwd.policy_base_info` | 540 | 12产业×9区×5年政策样例 | `source_plane=debug`，ID前缀 `DEBUG-ONEMAP-` |
 | `demo_gkxlumenx_ads.policy_industry_rel` | 540 | 政策样例与产业关联 | `chain:INB...` |
@@ -61,7 +61,7 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 | 表 | 行数 | 内容 | 标识 |
 |---|---:|---|---|
 | `demo_gkxlumenx_dwd.enterprise_stat_summary` | 141 | 12产业的G1规模趋势/最新值、G2人数桶、G3人数和、G4九区指数 | 指标行名带 `【调试构造】` |
-| `demo_gkxlumenx_dwd.enterprise_industry_summary` | 72 | 12产业×2021–2025企业数量趋势 | 产业名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_industry_summary` | 72 | 12产业×2021–2025企业数量趋势 | 使用标准产业名；`stat_date=2026-11-07` |
 | `demo_gkxlumenx_dwd.enterprise_region_summary` | 9 | 九区企业地图/区卡值 | 使用页面精确区名 |
 | `demo_gkxlumenx_dwd.policy_base_info` | 540 | 12产业×9区×5年政策样例 | `source_plane=debug`，ID前缀 `DEBUG-ONEMAP-` |
 | `demo_gkxlumenx_ads.policy_industry_rel` | 540 | 政策样例与产业关联 | `chain:INB...` |
@@ -70,7 +70,7 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 
 详细备份包含被替换的原人数样本及调试目标行，只保存在执行机；完整行计划同样未提交仓库。自动审查拦截的是将大体量调试快照推入Git，不是数据库灌数事务。数据库中的调试数据已提交且验证通过。
 
-12产业的API-1/2、九区API-4的发展与企业卡，以及API-6 development/enterprise地图均有值。政策样例在API-3总量/区分布可见，但API-3趋势 value、API-4 policy_count、API-6 policy map仍为空；API-5调试关键词无ES命中。该数据任务未修改应用代码，因此这些区块尚未完成页面全项联调。
+首轮写入时，12产业的API-1/2、九区API-4的发展与企业卡以及API-6 development/enterprise 地图已有值；当时政策趋势、区政策数和政策地图仍为空，API-5 搜索无命中。后续已定位并修复应用适配缺陷，最终六类接口全部回归通过，证据见文末“最终回归”。
 
 ## 验证与部署
 
@@ -80,14 +80,14 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 - `lumen-topic-py`提交：`08265876452365da12e9506431de96de838be61f`，已推 `origin/dev`。
 - [Pipeline 4180](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py/-/pipelines/4180)：success，py:smoke、镜像及deploy:search-py等已有流水线job成功。此次未手动触发额外部署。数据灌入与现有已部署接口对账完成，不依赖修改接口代码。
 - 手工核验未保留traceId，因此不虚构链路证据；API结果已存JSON。
-- 政策应用残余：虽然数据库构造记录已写入，API-4 `policy_count`、API-6 `theme=policy` 仍为空，API-3 年趋势 `value` 为空，API-5 调试关键词搜索无命中。均属于已有应用取字段/政策数据面/ES命中能力残余，本调试数据任务没有改代码或索引，不能将这些区块标为已验收。
+- 首轮政策应用残余已由后续适配修复解决：API-3 改读 `publish_count`，API-4/6 改读 `kind=all` 的 `data.sz`，API-5 补兼容路由。最终结果见“最终回归”。
 
 ## 其余数据项与四单纠偏
 
 - DATA-EMP：用户授权后补入构造批次；integration状态只表示数据/接口结果进入集成检查，不等于整个调试页六个接口全部绿，更不自行标done。
 - DATA-SCALE：G1数据已经随调试构造批次写入并由API-1验证；原独立真实来源工单属重复拆单，保留记录、不再派发。
 - INDEX-DEF：G4九区构造指数已随调试批次写入并由区卡/发展地图验证；原重新定义工单属范围扩大，保留记录、不再派发。
-- API-GAP：G1–G4现有可读字段已经通过接口验证，不需该改造单先执行；政策/搜索残余是当前应用缺口，且本轮未获改代码范围，保留记录、不再派发。
+- API-GAP：经线上复测确认存在三个真实适配缺陷，不再是误扩范围；已完成政策字段映射和 API-5 搜索路由修复，代码与部署证据见同名 API-GAP handoff。
 - G5/G6无需新灌，本次接口读到既有四桶和占比；未为这两项改表或重做口径。
 
 ## 架构与交接
@@ -100,4 +100,15 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 
 ## API适配修复交接
 
-`lumen-svc-platform` `7a37b73` 已推送 `dev`：API-3政策趋势改用Python返回的 `publish_count`；API-4与API-6政策读取改用 `kind=all` 响应中的 `data.sz` 后按区筛选。对应 `OneMapFacadeServiceTest` stub已更新。Maven单测因环境无法访问Nexus/阿里Maven依赖仓库未能运行，不虚报通过。该修复不建表、不改表、不写库。
+`lumen-svc-platform` `7a37b73` 已推送 `dev`：API-3政策趋势改用Python返回的 `publish_count`；API-4与API-6政策读取改用 `kind=all` 响应中的 `data.sz` 后按区筛选。对应 `OneMapFacadeServiceTest` 已用临时 Maven 3.9.9 实际执行，10 项通过、0 失败。该修复不建表、不改表、不写库。
+
+
+## 最终回归（2026-11-07）
+
+- 修复提交：Java `7a37b73`；Python 兼容路由 `67c7bd0`、过滤操作符修正 `6ae85c8`。
+- Java Pipeline `4219` 的 `deploy:topic` Job `29687` 成功；早期 `deploy:topic-svc` 不是 `/topic/**` 的正确服务，已纠正。
+- Python Pipeline `4223` 成功；Harbor 首次推送超时后重试 Job `29769` 成功，`deploy:search-py` Job `29747` 成功。
+- 数据库最终核对仍为 1302 行：统计 141、产业趋势 72、区县 9、政策 540、产业关联 540；没有 DDL。
+- 政策关联统一为 `chain:INB*`；产业名和区名使用页面标准值，避免精确匹配与地图显示失效。
+- 线上全量回归：12/12 产业 API-1/2/3 有值；9/9 行政区 API-4 有值；API-6 三类地图分别 9/9、9/9、10/10 非空；API-5“腾讯 + INB1309”返回 7 条。
+- 回归摘要保存在执行机 `/private/tmp/one-map-final-regression.json`，未提交行级明细。

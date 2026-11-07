@@ -56855,7 +56855,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 75000
-    note: "debug数据写入和支持页面区块接口验证已完成，残余政策区块/ES搜索见handoff；交付范围是数据批次与支持块，不冒称六端点全部通过，留integration复核。"
+    note: "调试批次1302行复核存在；12产业API-1/2/3、9区API-4、三类专题图和API-5搜索均已回归通过。政策/搜索残余已修复，应用代码变更归同组API-GAP；保留integration交QA复核，不自行done。"
     depends_on:
       - "SYSINT-04-01-DATA-OPEN-L01"
     collaborators:
@@ -56866,6 +56866,9 @@ tasks:
       - "repos/lumen-topic-py/scripts/fill_one_map_gap.py"
       - "repos/lumen-topic-py/tests/test_one_map_gap_fill.py"
       - "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01.md"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01-evidence/debug-batch-summary.json"
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_search.py"
+      - "repos/lumen-topic-py/tests/test_one_map_search_query.py"
     design_refs:
       - "agent-delivery/team-collaboration-playbook.md"
       - "agent-delivery/task-claiming-guide.md"
@@ -56884,7 +56887,7 @@ tasks:
       - "脚本头和交付记录包含来源/公式/版本/统计期/更新频率；凭据不进git、文档或记忆；表结构变更先向用户提交具体方案沟通；无真实来源不得估数或用mock标live。"
       - "数据库→Python one-map summary→Java API-2逐产业对账，保留未灌项空态。与API-GAP任务串行协调读取修改；灌数脚本仅Python执行，接口查询只读。"
       - "handoff按模板落系统集成-SYSINT同名MD，含ponytail:full、范围/偏离/库表行数/命令/验证/回滚/commit/CI/部署或发布不适用理由/cost；feature按integration→pending_test→testing→ready_to_sign，不能自行done；D4仅按真实证据和登记流程调整。"
-    update_time: "2026-11-07T19:54:19+08:00"
+    update_time: "2026-11-07T21:52:00+08:00"
   - id: SYSINT-04-01-DATA-SCALE-L01
     blocked_by: "误建的G1真实来源独立工单已被用户授权的DATA-EMP调试批次覆盖：12产业规模+趋势已写现有one_map表并经API读回。该单保留审计，不再执行/不重复写入。"
     supervised_by: "human:徐滕强"
@@ -56979,11 +56982,15 @@ tasks:
       - "签收产物包含后续G4实现工单DoR/DoD、影响文件、复算样例与验收办法；本定义单不直接宣称灌数或接口点亮完成。handoff同名MD含范围/偏离/会签证据/未决项/架构自检/cost/cicd:skip依据；definition会签→ready_to_sign，禁止自行done。"
     update_time: "2026-11-07T19:54:19+08:00"
   - id: SYSINT-04-01-API-GAP-L01
-    blocked_by: "本单为本会话误扩的接口改造任务；原功能数据已写且核心字段能读。应用代码残余不属本次数据授权，保留审计、不派发。"
+    evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-API-GAP-L01.md"
+    claimed_at: "2026-11-07T13:52:00.000Z"
+    last_seen_at: "2026-11-07T13:52:00.000Z"
+    lock_until: "2026-11-07T17:52:00.000Z"
+    claimed_by: "human:徐滕强"
     supervised_by: "human:徐滕强"
-    title: "专题一张图 · 灌数读取批次与产业地域过滤修正"
-    status: "in_progress"
-    agent: "api-agent"
+    title: "专题一张图 · 灌数读取与搜索适配修复"
+    status: "integration"
+    agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
     repo: "lumen-svc-platform"
@@ -56995,41 +57002,34 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "范围收窄为两个确定应用适配缺陷：API-3趋势读取publish_count；API-4/6政策读取all响应后按区筛选。代码提交7a37b73已推lumen-svc-platform/dev；单测因依赖仓库网络不可达未运行。无DDL/无表写入，handoff记录已补。"
+    note: "经线上复测确认三个真实适配缺陷并完成修复：API-3改读publish_count，API-4/6按kind=all的sz筛选，API-5补search/query兼容路由。Java 10项单测、Python 7项测试及全部六类线上回归通过；无DDL。保留integration交QA/授权人复核，不自行done。"
     depends_on:
-      - "SYSINT-04-01-DATA-OPEN-L01"
+      - "SYSINT-04-01-DATA-EMP-L01"
       - "SYSINT-04-01-L01"
     collaborators:
       - "data-agent"
-      - "algorithm-agent"
+      - "api-agent"
       - "qa-agent"
     touched_files:
       - "repos/lumen-svc-platform/gkxlumen-topic/src/main/java/com/topcomm/gkxlumen/topic/service/onemap/OneMapFacadeService.java"
-      - "repos/lumen-svc-platform/gkxlumen-topic/src/main/java/com/topcomm/gkxlumen/topic/feign/OneMapSearchPythonClient.java"
       - "repos/lumen-svc-platform/gkxlumen-topic/src/test/java/com/topcomm/gkxlumen/topic/service/onemap/OneMapFacadeServiceTest.java"
-      - "repos/lumen-topic-py/gkx_search_service/views/one_map_gap.py"
-      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_key_enterprise.py"
-      - "repos/lumen-topic-py/tests/test_one_map_gap.py"
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_search.py"
+      - "repos/lumen-topic-py/tests/test_one_map_search_query.py"
       - "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-API-GAP-L01.md"
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01.md"
     design_refs:
       - "agent-delivery/team-collaboration-playbook.md"
       - "agent-delivery/task-claiming-guide.md"
-      - "agent-delivery/architecture-baseline.md（D9/D16/D18）"
-      - "agent-delivery/data-lineage-policy.md §2.1/§2.3/§2.4"
-      - "agent-delivery/客户决策清单跟踪表.md Q068"
-      - "agent-delivery/bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md（99–101）"
-      - "agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-06-专题一张图-灌数需求-后置.md"
+      - "agent-delivery/architecture-baseline.md（D9/D12/D16）"
+      - "agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-06-专题一张图-接口需求文档-草案.md"
       - "agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-06-专题一张图-外部对接接口文档.md"
     definition_of_done:
-      - "依据DATA-OPEN签收的批次策略修正或证明读取安全：禁止一个产业新stat_date遮蔽其他产业旧有效值；完整快照方案须有明确完整性保障，按维度最新方案须处理历史趋势和stat_year=0的一致性，缺数保持null。"
-      - "核实并修正G5/G6 type-scale-stats的深圳地域与industry_code过滤，以及company_type重叠累计；若既有表不能支持维度不得复制全市/全国值伪装产业值，应给诚实空态与数据缺口后续归属。"
-      - "复核district-stats和thematic-map企业分布的产业过滤，禁止只校验industry_code必填而忽略过滤；源表不支持时登记缺口，不能自行估数或扩建表。"
-      - "G4在INDEX-DEF签收及后续实现到位前保持现有空态；本单不擅自决定区综合/产业级口径，不把未签指数写进去。若未来需改dim_code解析按签收契约另行承接。"
-      - "保留stat_type允许范围、参数化SQL、industry/district合法值、null与真实0、缺数/故障块级降级、scale_trend实际年份及metric_id稳定；Java无写库，接口请求禁止灌数，前端不直连Python。"
-      - "针对不同产业/城市、重复企业类型、无源、局部新批次、缺年、stat_year=0、下游失败建立有区分力测试；Java/Python测试通过，数据与六端点契约回归对账，不能只用Mock单测宣称线上通过。"
-      - "与EMP/SCALE同仓触碰文件必须串行/Convoy，原接口单未交接不得开工；读取配置和前缀以最新as-built为准，不按过期handoff推断线上404。"
-      - "handoff同名MD含ponytail:full、双仓分工与commit、CI、实际发布镜像与K8s/网关回归证据、traceId、回滚与cost；按bugfix→pending_test→testing→ready_to_sign，QA后由授权人签收，不自行done。"
-    update_time: "2026-11-07T20:12:53+08:00"
+      - "API-3政策趋势读取Python实际返回的publish_count，年份与数值成对，不把空值当0。"
+      - "API-4区级政策数与API-6政策地图读取kind=all的data.sz，并按行政区名称精确筛选；缺数保持null，不伪造。"
+      - "API-5提供/internal/gkx-search/search/query兼容路由，支持keyword/district/industry_chain_code/page/page_size，并返回total/records契约。"
+      - "Java与Python测试实际通过；线上12产业API-1/2/3、9区API-4、三张地图及腾讯搜索完成回归。"
+      - "不改表结构、不新增mapping；handoff记录提交、CI、正确部署服务、回归与遗留风险，不自行done。"
+    update_time: "2026-11-07T21:52:00+08:00"
   - id: TOPIC-POL-REGION-DEMO-ACCEPT-LOOP
     evidence: "agent-handoffs/政策模块-E7/TOPIC-POL-REGION-DEMO-ACCEPT-LOOP.md"
     supervised_by: "human:淮政玮"
@@ -58076,7 +58076,8 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     user_story: "US-E7-POL-04"
-    note: "2026-11-07 前端已推 origin/dev 6acb245。配置区勾选入模与结果仪表盘。任务仍 in_progress。"
+    note: |
+      2026-11-07 前端已推 origin/dev 6acb245。配置区勾选入模与结果仪表盘。任务仍 in_progress。同日监管人要求合规演示最终不出现 Mock。本单 DoD 里的 Mock 角标先保留；去掉角标另有 backlog 单 TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-NOMOCK，等缺项实算和本单收工后再开工。
     definition_of_done:
       - "/policy/recommendation 配置区按 demo 原型恢复指标体系：三维固定，可勾选入模，维内等权，一级权重可调，含一键均分与恢复默认模型"
       - "默认入模 8 项：支持力度的政策数量、资金规模、创新激励；产业适配性三项；落地实效的落地执行率、受益覆盖广度。政策层级覆盖面与反馈满意度默认不入模"
@@ -58086,7 +58087,7 @@ tasks:
       - "落地实效的 Mock 缺口用角标，不把演示分数当成接口结果。USE_MOCK=false 不用 Demo fixture 填卡片分数"
       - "不改时序页与区域对比页。自检通过。已推 origin/dev 6acb245"
       - "handoff 含配置区与结果区验收、ponytail: full 与 cost 四字段"
-    update_time: "2026-11-07T19:23:22+08:00"
+    update_time: "2026-11-07T21:39:47+08:00"
   - id: POL-L2-DS10-SRCMON-SYNTH-L01
     cost_warn: "yellow"
     actual_cost: 8.5
@@ -59221,3 +59222,106 @@ tasks:
       - "不回归 3y 行为；不写 ADS/gapfill；单测或自检覆盖窗口白名单/批选择逻辑"
       - "handoff 落盘；验收单 SYNTH-DEMO-ACCEPT-LOOP 复测 VIT-04/05/09/15 通过后本单才可签收"
     update_time: "2026-11-07T21:49:39+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-GAPFILL
+    title: "深圳政策现状·已有政策的落地实效缺项表"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-04"
+    note: "监管人要求合规演示不出现 Mock。源库没有落地实效真值，按 D16 走 gapfill。本单只灌已有政策。图2合成入口由 EFFECT-SYNTH 灌当次写入的政策。两单用同一张表、同一列清单。"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+      - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/编排计划/深圳政策现状分析-LOOP计划.md"
+    definition_of_done:
+      - "只在库 gkxlumenx_gapfill 建表 gapfill_policy_sz_effect。一行一条政策，键为 policy_id。业务列只放已登记缺项：有效 implementation_date、非空 support_object、feedback_score。行上必有 metric_id=M_POLICY_IMPLEMENTATION_EFFECT、gap_item、fill_method、gapfill_batch_id、generated_at；fill_method 为 llm 时必有 fill_model。"
+      - "覆盖深圳政策现状会读到的每一条政策，以及政策分析算法库当前列出的每一条政策。同一 policy_id 只一行。"
+      - "缺失不写成 0，不写 0000-00-00，不把发布日抄成实施日，不用招投标金额。不写 ODS、正式 gkxlumenx_dwd、ADS、供应方库，也不改 policy_base_info 的实施日。"
+      - "公式未接通前不改 D4。不把界面上的 Mock 角标改掉。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-GAPFILL.md"
+    update_time: "2026-11-07T21:39:20+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-SYNTH
+    title: "深圳政策现状·算法库合成政策时写入落地实效缺项"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-04"
+    note: "图2是灌数操作台，不是合规演示页。合成、新增、编辑政策时要同时写落地实效缺项行。不改操作台按钮文案。"
+    collaborators:
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+    definition_of_done:
+      - "政策分析算法库页（10.50.69.111:30889/#/policy/mock）的合成入口、新增和编辑，每写入一条政策就在 gkxlumenx_gapfill.gapfill_policy_sz_effect 写一行。表不在则按与 EFFECT-GAPFILL 相同的列建表。"
+      - "列与已有政策那张单一致：policy_id、有效 implementation_date、非空 support_object、feedback_score，以及 metric_id、gap_item、fill_method、gapfill_batch_id、generated_at。llm 生成时写 fill_model。"
+      - "缺失不写成 0，不写零日期，不把发布日当实施日。删除合成政策时删掉对应缺项行。既有写入 Demo ODS 与 DWD 的行为不改；缺项行不进 ODS、正式 DWD、ADS、供应方库。"
+      - "不改按钮上的条数。仓内文案是 Mock 10 条，线上截图是 Mock 50 条，以这条合成入口为准。若线上进程跑的是 lumen-algo-py 里同名 vendor 副本，同一改动落到那份副本。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-SYNTH.md"
+    update_time: "2026-11-07T21:39:28+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-READ
+    title: "深圳政策现状·落地实效改读缺项表并实算"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-04"
+    note: "缺项表灌完才能开工。公式未接通时界面仍保留 Mock，不得提前改绿。"
+    depends_on:
+      - "TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-GAPFILL"
+    collaborators:
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "polan/shenzhen_board.py 读 gkxlumenx_gapfill.gapfill_policy_sz_effect，按已写明的启动、覆盖、反馈三维计算落地实效。缺行不补 0，不进平均。"
+      - "与发布日相同的日期仍不算实施日。零日期不算有效。不出三维综合分。QPOL-02 未签不改权重。"
+      - "公式接通并实算之前不改 D4。实算完成后在 handoff 写明可交 data-agent 改 ingestion_status，本单不改矩阵。"
+      - "不写 ODS、正式 DWD、ADS、供应方库。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-READ.md"
+    update_time: "2026-11-07T21:39:33+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-NOMOCK
+    title: "深圳政策现状·合规演示去掉落地实效 Mock 角标"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 20000
+    user_story: "US-E7-POL-04"
+    note: "配置区的 Mock 缺口现在是指标目录写死的。等 EFFECT-READ 实算完成、且现有前端任务收工后再开工，避免同仓两个前端任务并行。"
+    depends_on:
+      - "TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-READ"
+      - "LUMEN-POLICY-SZ3D-FE-SRS-R20261107"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/深圳政策现状分析-合规演示用例.md"
+    definition_of_done:
+      - "公式已改读 gapfill 并实算之后，/policy/recommendation 配置区的落地执行率、受益覆盖广度、反馈满意度不再写死 Mock 缺口。"
+      - "结果页和报告不出现 Mock 字样。空分仍显示不可算，不把空画成 0。"
+      - "不改算法库操作台的按钮文案。自检通过。未获人工确认不推送。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-NOMOCK.md"
+    update_time: "2026-11-07T21:39:39+08:00"
