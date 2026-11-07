@@ -16,8 +16,8 @@
 | token 文件 | `~/.gkx/topic-loop-token`（单行 access_token；请求头加 `systemCode: topic`；不进 git / handoff / 聊天） |
 | 执行依据 | 《产品实现规程》§6.5（纯后端两段：只读库核对样本 + 带 token 调接口对照期望）· §6.5.7 监管人九步 |
 | 对照物 | `condition-fill-matrix.yaml` 可演行 = supported 36 + 拦截分支 supported 3（gap 5 条不判通过，只做诚实空态演示核验；`覆盖不到` 归 DATA 缺口） |
-| 当前状态 | **未开工**——等监管人步 1 放令牌 + 步 2 说「按 LOOP 跑」 |
-| 最近一轮 | —（每轮回写：日期 / 轮次 / 探测结果 / 样本对照结论 / 缺口单 ID / 退出方式） |
+| 当前状态 | **blocked（首轮探测 404：接口映射不存在）**——2026-11-07 19:58 探测 GET /topic/v1/synth/vitality/batch-snapshot：`/tts/svcz/api/enterprise` 与 `/tts/lumen/api` 两前缀均 404（锚点 recommend 同令牌 200，令牌有效）。按 §6.5.3 停轮通知监管人；待路由澄清后由监管人重说「按 LOOP 跑」再开下一轮 |
+| 最近一轮 | 2026-11-07 / R1 探测 / 锚点 200 + SYNTH 快照 404×2 / 无样本对照 / 无缺口单 / 退出方式=ENV（映射不存在，停轮） |
 
 ## 0. 编排原则（先读）
 
