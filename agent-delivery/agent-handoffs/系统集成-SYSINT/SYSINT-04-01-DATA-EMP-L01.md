@@ -40,6 +40,22 @@ ponytail: full
 
 rollback命令仅供需要时使用，本次未执行。备份/预览/结果的可保留副本在同目录 `SYSINT-04-01-DATA-EMP-L01-evidence/`；恢复时可将参数指向副本。备份只含聚合行和空的before快照，不含凭据、企业个人信息。
 
+## 调试构造数据批次
+
+用户明确授权为已开发的调试页面构造数据；本批仅写 `demo` 环境既有表，不要求真实业务来源、不更改表结构。
+
+| 表 | 行数 | 内容 | 标识 |
+|---|---:|---|---|
+| `demo_gkxlumenx_dwd.enterprise_stat_summary` | 141 | 12产业的G1规模趋势/最新值、G2人数桶、G3人数和、G4九区指数 | 指标行名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_industry_summary` | 72 | 12产业×2021–2025企业数量趋势 | 产业名带 `【调试构造】` |
+| `demo_gkxlumenx_dwd.enterprise_region_summary` | 9 | 九区企业地图/区卡值 | 使用页面精确区名 |
+| `demo_gkxlumenx_dwd.policy_base_info` | 540 | 12产业×9区×5年政策样例 | `source_plane=debug`，ID前缀 `DEBUG-ONEMAP-` |
+| `demo_gkxlumenx_ads.policy_industry_rel` | 540 | 政策样例与产业关联 | `chain:INB...` |
+
+共1302行。覆盖前目标行已备份在执行机 `/private/tmp/one-map-debug-backup-20261107.json`，备份SHA256=`e54886bdffb8deaa743365af558457f73b15bb041df6402c7798a0e2529bdee0`。完整计划和备份仅留本机；仓库只发布聚合摘要 `debug-batch-summary.json`，不提交明细快照。
+
+12产业的API-1/2、九区API-4的发展与企业卡，以及API-6 development/enterprise地图均有值。政策样例在API-3总量/区分布可见，但API-3趋势 value、API-4 policy_count、API-6 policy map仍为空；API-5调试关键词无ES命中。该数据任务未修改应用代码，因此这些区块尚未完成页面全项联调。
+
 ## 验证与部署
 
 - `python3 -m pytest -q tests/test_one_map_gap_fill.py`：5项通过，覆盖空源/摘要变化拒绝、保留已有维度、桶数勾稽、幂等复跑及后续改动时拒绝回滚。
