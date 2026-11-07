@@ -6,7 +6,7 @@
 - 监管人：`human:淮政玮`
 - 日期：2026-11-07
 
-- 状态：用例覆盖表已齐。本计划不建单、不探测。等人说「按 LOOP 跑」。
+- 状态：2026-11-08 首轮。探测 200。样本满足：否（停止：继续）。227/228/229 通过；230/231 shells 空列表（同 shells 根因）。QUERY 缺口挂 `POL-L2-DS11-BE-L01`（在办，不新建单）。验收单 `POL-L2-DS11-PLAN-DEMO-ACCEPT-LOOP` = `ready`。handoff：`agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-PLAN-DEMO-ACCEPT-LOOP.md`
 
 ## 1. 要证明什么
 
