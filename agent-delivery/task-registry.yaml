@@ -55726,13 +55726,14 @@ tasks:
       - "不写库，不改 L01 正文。交付落在 07-图数据库集成，经 human:唐绍祖 确认"
     update_time: "2026-11-07T16:00:00+08:00"
   - id: KG-COMPLY-SDD-L01
+    evidence: "agent-handoffs/KG-COMPLY-SDD-L01.md；主文 agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md"
     claimed_at: "2026-11-07T09:53:51.055Z"
     last_seen_at: "2026-11-07T09:53:51.055Z"
     lock_until: "2026-11-07T13:53:51.055Z"
     claimed_by: "agent:architect-agent"
     supervised_by: "human:徐滕强"
     title: "展示与图算法的详细设计，以及给燕大编排智能体的任务清单"
-    status: "in_progress"
+    status: "integration"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -55742,8 +55743,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: |
-      认领 2026-11-07 17:53：agent:architect-agent 执行，supervised_by=human:徐滕强。按 派单说明-KG-COMPLY-SDD-L01.md 话术执行：先画 KG-COMPLY-SDD-FLOW 图，再写主文 详细设计说明书。已锁死输入：空间=demo_gkx_chain（STRUCT 放法B）；验收叶子=科学技术全景/维护管理/科技知识图谱+图算法（ACCEPT 结论）；M01–M24 不增不减。两条主责不改派。细任务清单先写在说明书里不 task-create。
+    note: "详细设计说明书与细任务清单完成，handoff 已落盘，推进到联调中（definition 单，未写会签通过，不改 done）"
     depends_on:
       - "KG-COMPLY-STRUCT-L01"
       - "KG-COMPLY-ACCEPT-L01"
@@ -55757,7 +55757,7 @@ tasks:
       - "每条细任务写清读哪张图、验收看什么、不做什么。燕大同学能在与智树共用的编排环境里把该条交给编排智能体执行，不靠口头补充"
       - "细任务使用 KG-COMPLY-STRUCT-L01 选定的空间和那一套结构。技术点若仍要给全景演示，单独标明，不并进七要素「技术」"
       - "不替燕大写图，不把正式加工线路写进这些任务。交付落在 07-图数据库集成，经 human:唐绍祖 确认"
-    update_time: "2026-11-07T17:53:58+08:00"
+    update_time: "2026-11-07T18:36:24+08:00"
   - id: KG-COMPLY-LOAD-L01
     title: "燕大按七要素必须三元组完成合规验收入图"
     status: "backlog"
@@ -57388,3 +57388,33 @@ tasks:
       - "其他区在该维有命中时，本区 0 次命中仍是相对指数 0，不要改成假分，也不要为了每格都有数去改公式。"
       - "核对 assign_zone：未归入的政策里如果地区文本按现行规则应进粤港澳（除深）却没进入，修归区并补测试。对不上经济区的不要硬塞进五区。不改前端，不新签发线上任务，不带 force。handoff 落盘。"
     update_time: "2026-11-07T17:59:04+08:00"
+  - id: SYNTH-DEMO-ACCEPT-LOOP
+    title: "综合智能分析演示实例反复验收（合规演示用例 LOOP）"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: |
+      按产品实现规程 §6.5.2/§6.5.7 建立常驻验收单（建单不认领，未收尾留 ready）。监管人：human:徐滕强（当次会话真人）；token 文件 ~/.gkx/topic-loop-token（不进 git/handoff，不打印）；执行时认领 supervised_by 填当次开会话真人。完成信号=handoff「运行」节+状态行回写
+    collaborators:
+      - "data-agent"
+      - "algorithm-agent"
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/产品实现规程.md §6.5"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/合规演示用例/00-用例总册.md"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/合规演示用例/condition-fill-matrix.yaml"
+      - "agent-delivery/agent-handoffs/综合智能分析-SYNTH/合规演示用例/LOOP-执行编排计划.md"
+    definition_of_done:
+      - "每轮先只读探测：401/424/令牌失效文案→验收单 blocked+通知监管人，不开轮；404→通知「接口映射不存在」停止；200 后才进样本对照"
+      - "样本对照=《合规演示用例》matrix 可演行（supported 36+拦截 3）：只读库 SELECT 核对样本在库+带本机 token 调接口核对期望输出一致且过滤可拣中；禁止写库/写 ODS/DWD/ADS/缺项库"
+      - "缺口按 DATA/QUERY/ALGO 分类建子任务并去重（覆盖不到行归 DATA）；同一缺口连续两轮仍在→停止交监管人，不建第三张"
+      - "handoff 新增「运行 YYYY-MM-DD」节记录本轮；不改已写实测；不把 401/404 改写成通过"
+      - "完成三条件齐备：样本满足+本轮子任务已签收（或无子任务）+LOOP 计划状态行已回写→验收单改 done，操作人 human:淮政玮；三条件缺一时禁止改 done"
+    update_time: "2026-11-07T18:45:05+08:00"

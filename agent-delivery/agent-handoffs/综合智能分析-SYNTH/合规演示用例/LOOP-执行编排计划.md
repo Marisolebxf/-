@@ -6,6 +6,19 @@
 - **上游产物**：`00-用例总册.md`（M1a）· `vitality-cases.md`（16）· `element-cases.md`（14）· `collab-cases.md`（17）（M1b）· `data-survey-20261107.md`（M2）· `condition-fill-matrix.yaml`（M3，47 条 = supported 36 / gap 5 / partial 6）
 - **M4 交叉核对**：`gap-summary.md` 编写时未产出（M4 并行中），本计划缺口引用一律以 M3 矩阵 `gap_refs` 为准（详见 §5）；M4 产出后按 §5 清单回核编号即可，不回改本计划轮次结构。
 
+## 状态行（LOOP 执行状态 · 每轮结束必须回写本节，不回写不算收尾）
+
+| 项 | 值 |
+|---|---|
+| 模块 | 综合智能分析（活力 / 要素 / 协同） |
+| 验收单 | `SYNTH-DEMO-ACCEPT-LOOP`（tech_task · qa-agent · 当前 **ready**，建单不认领） |
+| 监管人 | `human:徐滕强`（当次会话真人，§6.5.7；`done` 操作人以 registry 闸门为准，§6.5.2 缺省 `human:淮政玮`） |
+| token 文件 | `~/.gkx/topic-loop-token`（单行 access_token；请求头加 `systemCode: topic`；不进 git / handoff / 聊天） |
+| 执行依据 | 《产品实现规程》§6.5（纯后端两段：只读库核对样本 + 带 token 调接口对照期望）· §6.5.7 监管人九步 |
+| 对照物 | `condition-fill-matrix.yaml` 可演行 = supported 36 + 拦截分支 supported 3（gap 5 条不判通过，只做诚实空态演示核验；`覆盖不到` 归 DATA 缺口） |
+| 当前状态 | **未开工**——等监管人步 1 放令牌 + 步 2 说「按 LOOP 跑」 |
+| 最近一轮 | —（每轮回写：日期 / 轮次 / 探测结果 / 样本对照结论 / 缺口单 ID / 退出方式） |
+
 ## 0. 编排原则（先读）
 
 1. **合规演示 = 「能出结果的主演轮」+「诚实空态/拦截的验证轮」双结构**。主演轮展示产品能力，验证轮展示数据血缘诚实性（404 引导、拦截 reason、空态不补 0）——两者都是合规行为，验证轮不是演示事故。
