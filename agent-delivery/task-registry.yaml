@@ -57418,3 +57418,44 @@ tasks:
       - "handoff 新增「运行 YYYY-MM-DD」节记录本轮；不改已写实测；不把 401/404 改写成通过"
       - "完成三条件齐备：样本满足+本轮子任务已签收（或无子任务）+LOOP 计划状态行已回写→验收单改 done，操作人 human:淮政玮；三条件缺一时禁止改 done"
     update_time: "2026-11-07T18:45:05+08:00"
+  - id: E-E7-POLICY-M1-L10-FIX01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-07T11:15:38.500Z"
+    last_seen_at: "2026-11-07T11:15:38.500Z"
+    lock_until: "2026-11-07T15:15:38.500Z"
+    claimed_by: "agent:api-agent"
+    title: "科创政策全景 · 导出不出文件（门面未开对象存储 + 无下载入口）"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "E-E7-POLICY-M1"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      缺陷来源：用户截图 2026-11-07，科创政策全景点导出提示 OssTemplate 未启用（file.oss.enable 未开），响应没有文件字节。修的是 E-E7-POLICY-M1-L10（integration）的实现遗漏；不写 depends_on 是因为 L10 未 done 会挡 ready。claim_type=coordinator_dispatch。前端仓改动须用户确认后再推。
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "helm/gkxlumen-platform/configs/gkxlumen-topic-policy-biz-dev.yml"
+      - "helm/gkxlumen-platform/values.yaml"
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/controller/PolicyFacadeController.java"
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/service/impl/PolicyFacadeServiceImpl.java"
+      - "gkxlumen-topic-policy/gkxlumen-topic-policy-biz/src/main/java/com/topcomm/gkxlumen/topic/policy/service/impl/JdbcPolicyShareRecordStore.java"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/PolicyPanoramaQueryController.java"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/feign/RemotePolicyQueryClient.java"
+      - "lumen-ui-science-pc/src/views/policy/panorama/index.vue"
+      - "lumen-ui-science-pc/src/api/policy.ts"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS10-QRY-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/E-E7-POLICY-M1-L10.md"
+    definition_of_done:
+      - "gkxlumen-topic-policy Nacos 配置开 file.oss.enable，端点与凭证同 topic-async-service；凭证只从 Secret gkxlumen-platform-rustfs 注入，不进 git"
+      - "门面新增 GET /topic/v1/policy/share/download?object_key=：只认 policy_share_export 里 download_permission=当前用户的对象，回传文件字节；越权或缺对象 404"
+      - "展示新增 GET /display/v1/policy/panorama/share/download 只代理字节，不组装文件"
+      - "前端导出拿到 object_key 后经展示代理下载 Excel/PDF；不直连 RustFS"
+      - "handoff 附单测与 dev 实测结果"
+    update_time: "2026-11-07T19:15:43+08:00"
