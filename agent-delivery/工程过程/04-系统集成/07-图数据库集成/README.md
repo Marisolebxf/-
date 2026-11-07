@@ -96,6 +96,7 @@
 - WBS → [WBS.md](./WBS.md)（WBS-07-00G 企业维入图，WBS-07-00H 产业链维入图 `KG-CHAIN-GRAPH-LOAD-L01`；WBS-07-01 至 07-03 已回写任务号）
 - 合规验收分工 → [WBS-全景维护与知识图谱分工.md](./WBS-全景维护与知识图谱分工.md)（四条：结构、燕大入图、验收面、详设编排。调研细表在同目录背景稿）
 - 合规验收结构与空间选定 → [KG-COMPLY-STRUCT-L01-结构与空间选定.md](./KG-COMPLY-STRUCT-L01-结构与空间选定.md)（2026-11-07。M01–M24 落成 Tag/Edge/VID；两种空间放法写清，选定补 `demo_gkx_chain`。附表 [xlsx](./KG-COMPLY-STRUCT-L01-附表-结构与空间.xlsx)）
+- 合规验收面 → [KG-COMPLY-ACCEPT-L01-验收面.md](./KG-COMPLY-ACCEPT-L01-验收面.md)（2026-11-07。三个用图菜单 + 四类图算法；三档验收判据；本期不验清单；空态规则）
 - 技术方案 → [技术方案.md](./技术方案.md)（处理中，WBS 仍要调整）
 - 七要素上图与消费实施方案长任务 → [KG-CLOSELOOP 总控](../../../agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md)（2026-10-29 启动。只写方案，不替代 `SYSINT-SCHEME-07-L01`，不派 `SYSINT-07-01`～`03`）
 - 对接文档 → `对接文档/智谱/` · `对接文档/燕大/`
