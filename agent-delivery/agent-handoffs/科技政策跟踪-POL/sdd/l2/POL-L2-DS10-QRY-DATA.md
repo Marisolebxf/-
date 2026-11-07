@@ -46,6 +46,8 @@
 
 ## 3. 197 多维度检索条件设置
 
+智能检索 `POST …/query-intent` 不读 ADS / DWD / gapfill，只做 NL 条件拆解；目录与统计仍按本节读表。契约见 `POL-L2-DS10-QRY-INTENT`。
+
 ### 3.1 统计
 
 读 `stats` 上已有五条。类型都是 STAT，D1 为 aligned，D4 为 mock。

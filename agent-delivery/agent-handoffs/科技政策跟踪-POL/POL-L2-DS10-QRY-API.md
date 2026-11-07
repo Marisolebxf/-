@@ -21,18 +21,19 @@ ponytail: off
 
 科创政策全景 · 二级「多维检索查询」。只覆盖 SRS 序号 197–202，用户故事 `US-DS-POL-01`。
 
-浏览器只打 `/display/v1/policy/**`。公开资源六条，全部是 GET：
+浏览器只打 `/display/v1/policy/**`。目录读面六条 GET；197 智能检索另加同步 `POST …/query-intent`（详 `sdd/l2/POL-L2-DS10-QRY-INTENT.md`）：
 
 | 序号 | 公开资源 | 读法 |
 |---|---|---|
 | 197、198、200 | `GET /display/v1/policy/panorama/stats` | 同步。内部委托 metrics + indicators |
 | 197、198、200 | `GET /display/v1/policy/panorama/search` | 同步。内部委托 search + search/options。普通排序留在本资源 |
+| 197（智能检索） | `POST /display/v1/policy/panorama/query-intent` | 同步预处理。委托 topic → `/internal/policy/query-intent`。不查库 |
 | 197、198、200 | `GET /display/v1/policy/panorama/{id}/detail` | 同步。内部委托 docs/{id} |
 | 199 | `GET /display/v1/policy/panorama/rank` | 当前 501。接通后委托门面新增排序入口 |
 | 201 | `GET /display/v1/policy/panorama/favorites` | 当前 501。接通后无记录是空列表 |
 | 202 | `GET /display/v1/policy/panorama/share` | 当前 501。接通后委托门面新增导出与分享入口 |
 
-197 / 198 / 200 由 `gkxlumen-display` 同步委托已提交的 `gkxlumen-topic-policy`：stats ← `GET /topic/v1/policy/metrics` 与 `GET /topic/v1/policy/indicators`；search ← `GET /topic/v1/policy/search` 与 `GET /topic/v1/policy/search/options`；detail ← `GET /topic/v1/policy/docs/{id}`。无行则统计卡或列表空，不造 0。D4 仍是 mock。
+197 / 198 / 200 由 `gkxlumen-display` 同步委托已提交的 `gkxlumen-topic-policy`：stats ← metrics + indicators；search ← search + options；query-intent ← `POST /topic/v1/policy/query-intent`；detail ← docs/{id}。无行则统计卡或列表空，不造 0。D4 仍是 mock。
 
 199 的智能排序只有相关性、时效性、重要性。Java 不打分，不返回 `smartScore`。发布时间、效力级别、浏览量留在 search 的 `order`。
 
