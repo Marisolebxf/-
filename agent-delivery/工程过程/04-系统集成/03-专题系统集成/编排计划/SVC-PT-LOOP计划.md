@@ -7,7 +7,7 @@
 - 监管人：`human:徐滕强`
 - 日期：2026-11-07
 
-- 状态：**2026-11-07 第 1 轮已跑：样本未满足；停止=ENV（步①探测 200 正常，步②只读库 `demo-gkxlumenx-ods`→`demo_gkxlumenx_ads` SELECT 连续失败 2 次即停，步③④未执行）；11 行均未判定，双轨核对顺延；读过任务号 SVC-PT-DEMO-ACCEPT-LOOP（claimed，状态未动），本轮 0 张子任务；报告已追加 `agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-PT-DEMO-ACCEPT-LOOP.md`；验收单维持 claimed 等监管人处置（未改 ready/blocked，未签 done）。等连接恢复后重说「按 LOOP 跑」。**
+- 状态：**2026-11-07 第 2 轮已跑：样本满足（11/11 行 ✅，页面常量轨逐值全对，±1 尾差无）；停止=无（四步全走完）；步②只读库 0 失败（第 1 轮 ENV 闭合，`demo-gkxlumenx-ods` 连接恢复），13+2 笔只读查询全成；步③门户 5 路由 `/tts/lumen/api` 与 `/tts/svcz/api` 双前缀 GET 均 404（映射不存在，非 401/424，不判停）；缺口 DATA×7 项（两轨差，挂 Q-SVCCHAIN-06/07/08）/ QUERY×1（门户读面 REST 404）/ ALGO×1（`svc_tech_power_score` 恒定分），派生子任务 `SVC-PT-DEMO-FIX-R20261107-DATA-TWOTRACK`（demo-algo-ent-analysis）、`SVC-PT-DEMO-FIX-R20261107-QUERY-PORTAL-REST`（lumen-svc-platform）、`SVC-PT-DEMO-FIX-R20261107-ALGO-TECHSCORE`（lumen-algo-py），均 bugfix/ready/只建单不认领；报告已追加 `agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-PT-DEMO-ACCEPT-LOOP.md`「运行 2026-11-07（第 2 轮）」节；验收单 SVC-PT-DEMO-ACCEPT-LOOP 状态回 ready 不签 done（本轮 MCP note 含「联调通过」摘要）。两修单执行属 LOOP 外正常任务流，由 data/api/algorithm agent 另行认领；无第 3 轮自动触发，再验收由监管人重说「按 LOOP 跑」。**
 
 覆盖表 11 行全部「可演」（其中 8 行期望值=前端确定性聚合常量；全球/类型/规模/区域/领域×环节等口径行与库侧 ADS 面、机构卡面存在**两轨差异**，已在用例「数据情况」列如实标注）。覆盖不到的行不存在，但**口径接线核对**在按 LOOP 跑时才逐行做；不派数据单，不派算法单，不打探测。
 
