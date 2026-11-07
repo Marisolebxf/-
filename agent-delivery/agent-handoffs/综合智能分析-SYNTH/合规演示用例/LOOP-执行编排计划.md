@@ -16,8 +16,8 @@
 | token 文件 | `~/.gkx/topic-loop-token`（单行 access_token；请求头加 `systemCode: topic`；不进 git / handoff / 聊天） |
 | 执行依据 | 《产品实现规程》§6.5（纯后端两段：只读库核对样本 + 带 token 调接口对照期望）· §6.5.7 监管人九步 |
 | 对照物 | `condition-fill-matrix.yaml` 可演行 = supported 36 + 拦截分支 supported 3（gap 5 条不判通过，只做诚实空态演示核验；`覆盖不到` 归 DATA 缺口） |
-| 当前状态 | **blocked（首轮探测 404：接口映射不存在）**——2026-11-07 19:58 探测 GET /topic/v1/synth/vitality/batch-snapshot：`/tts/svcz/api/enterprise` 与 `/tts/lumen/api` 两前缀均 404（锚点 recommend 同令牌 200，令牌有效）。按 §6.5.3 停轮通知监管人；待路由澄清后由监管人重说「按 LOOP 跑」再开下一轮 |
-| 最近一轮 | 2026-11-07 / R1 探测 / 锚点 200 + SYNTH 快照 404×2 / 无样本对照 / 无缺口单 / 退出方式=ENV（映射不存在，停轮） |
+| 当前状态 | **blocked（ENV：网关路由前缀错配，根因已定位）**——2026-11-07 20:16 分层诊断：服务直打 `10.96.2.89:7092/topic/v1/synth/vitality/batch-snapshot` → **200 + 快照数据正确**（`snap:mock_20261106_vit_seed_index_main`）；网关 30895/域名 `/tts/lumen/api` 剥 `/topic` 转发 `/v1/**` → 服务 404。修复二选一：A 网关路由不剥 `/topic` 直转（devops）；B 服务按网关契约发布 `/v1/**`（api）。待监管人裁决后重开轮 |
+| 最近一轮 | 2026-11-07 / R1 探测+分层诊断 / 锚点 200；SYNTH 经网关 404×2；服务直打 200（数据正确）/ 无样本对照 / 无缺口单 / 退出方式=ENV（网关-服务路由前缀错配，已通知监管人） |
 
 ## 0. 编排原则（先读）
 

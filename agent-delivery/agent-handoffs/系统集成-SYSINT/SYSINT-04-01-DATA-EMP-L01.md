@@ -97,3 +97,7 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 本次使用独立代码工作树避免与SYSINT-DICT-02-L01全仓声明及主工作区未提交repo.py冲突。G2/G3脚本修复已单独推送；调试样例通过一次性数据库事务写入既有表，无应用代码改动。调试摘要 `debug-batch-summary.json` 仅含批次/计数/接口残余，不含行级数据。
 
 实际模型token/费用未有可靠计量，未伪造cost数字；交接只陈述实际执行证据，不自行签收done。
+
+## API适配修复交接
+
+`lumen-svc-platform` `7a37b73` 已推送 `dev`：API-3政策趋势改用Python返回的 `publish_count`；API-4与API-6政策读取改用 `kind=all` 响应中的 `data.sz` 后按区筛选。对应 `OneMapFacadeServiceTest` stub已更新。Maven单测因环境无法访问Nexus/阿里Maven依赖仓库未能运行，不虚报通过。该修复不建表、不改表、不写库。
