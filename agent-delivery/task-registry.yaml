@@ -55973,3 +55973,43 @@ tasks:
       - "同一 handoff 追加一节「运行 YYYY-MM-DD」，不覆盖上一轮。不改测试用例里已写下的实际结果，不把 POL-L2-DS12-EST-TEST-L01 标完成。"
       - "本单可反复执行。一轮报告写完后，由当次监管人把状态退回 ready，不签 done。下一轮再认领。"
     update_time: "2026-11-07T12:22:06+08:00"
+  - id: LUMEN-INTEL-REPORT-REAL-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-07T04:28:03.739Z"
+    last_seen_at: "2026-11-07T04:28:03.739Z"
+    lock_until: "2026-11-07T08:28:03.739Z"
+    claimed_by: "human:孔东"
+    title: "综合智能分析三叶 — HTML 报告覆盖结果页（页签平铺），确认后接 Java PDF 导出"
+    status: "claimed"
+    agent: "frontend-agent"
+    epic: "E8-综合智能分析"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 500000
+    note: |
+      对照企业分析 HTML 报告查看（EnterpriseBlockReportView）与 PDF 导出（Java domain-block-report + useBlockReportExport）。现状：三叶报告页仍是七段式 SystemReportReader + 本地 PDF Blob，未覆盖结果页。分两步，禁止跳步：第一步只交报告查看页；孔东确认内容正确并写入 note 之前，禁止改 lumen-svc-platform 导出模板、禁止接 Java 导出。确认后第二步以报告页章节为真源建导出侧专属模板并接入 Java。此前「报告=v1 前端本地 PDF、不登记 *_report 任务键」只约束到本任务第一步；第二步明确要登记三个 report 键并走 Java 产物。认领与监管：human:孔东。
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "src/views/intelligence/VitalityReportPage.vue"
+      - "src/views/intelligence/elements/ElementReportPage.vue"
+      - "src/views/intelligence/collaboration/CollabReportPage.vue"
+      - "src/components/report/reportExport.selfcheck.mjs"
+      - "lumen-svc-platform 导出侧专属模板（对齐企业 domain-block-report，路径以现有产物渲染为准）"
+    design_refs:
+      - "repos/lumen-ui-topic/src/components/report/EnterpriseBlockReportView.vue"
+      - "repos/lumen-ui-topic/src/components/report/useBlockReportExport.ts"
+      - "repos/lumen-ui-topic/src/components/enterprise/evaluation/EvalResultWorkspace.vue"
+      - "repos/lumen-ui-topic/src/views/intelligence/RegionalInnovationVitality.vue"
+      - "repos/lumen-ui-topic/src/views/intelligence/elements/ElementsWorkbenchView.vue"
+      - "repos/lumen-ui-topic/src/views/intelligence/collaboration/CollabWorkbenchView.vue"
+    definition_of_done:
+      - "第一步只改三叶报告查看页：活力 /intelligence/vitality/report、要素 /intelligence/elements/report、协同 /intelligence/collaboration/report。对齐企业分析 EnterpriseBlockReportView 块式 HTML 报告，正文只读当次结果快照，与结果页同一解析，覆盖结果页全部结果块。结果正文里用 Tab 或折叠切换的内容按原页顺序平铺；要素四透镜（综合总览、类型·七要素、层次·结构、领域·覆盖）必须展开成连续节。阅读页无 Tab、无必须点击才可见的正文。工作台与「分析记录」页签不进报告。"
+      - "第一步禁止改 Java 导出模板、禁止把下载接到 Java 产物接口。现有本地 PDF 不作为本步验收。USE_MOCK=false 不读 fixture；评审角标不进报告正文；正文不得出现占位话术、仓库名、未解析编码。孔东人工确认报告查看页内容覆盖正确并写入本任务 note 之前，不得开始第二步。"
+      - "第二步：以已确认的报告页章节为真源，在 lumen-svc-platform 建三叶导出侧专属模板（对齐企业分析 domain-block-report，不复用现有七段式摘要），前端下载接入 Java 报告产物接口（对齐 useBlockReportExport）。分析类型：region_innovation_vitality_report、region_innovation_elements_report、region_innovation_collaboration_report。PDF 侧图表以表或条形展开。权限沿用各叶现有报告导出权限，缺失时按企业报告同款补。"
+      - "自检：reportExport.selfcheck 覆盖三叶章节与禁词；前端 vue-tsc 绿；Java 产物渲染自检绿。handoff 写明两步分界与确认记录，cost 四字段回填；ponytail: full。监管人 human:孔东。"
+    update_time: "2026-11-07T12:28:03+08:00"
