@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-M10-ENT-METRIC`
 - 日期：2026-11-07
-- 状态：三分册会签：ALGO **同意**（N2 裁定人补全）；余角色进行中。不标 done
+- 状态：四角色会签完成（ALGO 同意；API/DATA/ARCH 条件已回填），**待监管人签收**。不标 done
 - 监管：`human:刘剑锋` · 认领：`agent:algorithm-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：全景序 41–47

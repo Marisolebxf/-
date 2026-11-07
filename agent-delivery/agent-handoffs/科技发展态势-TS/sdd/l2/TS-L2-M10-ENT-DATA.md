@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-M10-ENT-DATA`
 - 日期：2026-11-07
-- 状态：三分册会签进行中（DATA-A1/A2/A3+API 跨册 3 项已回填；ARCH 待返）。不标 done
+- 状态：四角色会签完成（DATA 3+API 跨册 3+ARCH-A4 全回填），**待监管人签收**。不标 done
 - 监管：`human:刘剑锋` · 认领：`agent:data-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：全景序 41–47
@@ -60,7 +60,7 @@
 
 ## 4. 事务与补偿（沿 ARCH §1，存储侧含义）
 
-发布：MySQL（主表+version+change_log+ADS）先提交 → Nebula 投影失败 → version.projection_status=pending + 补偿重放；期间 R2 读 ADS 上一版标「图谱更新中」。不做跨库分布式事务。
+发布序列（三分册会签 ARCH-A4 锁定）：**MySQL（主表+version+change_log）先提交 → Nebula 投影 → ADS 投影最后**（原稿 ADS 随 MySQL 先提交系与 ARCH 矛盾，已对齐 ARCH 版：ADS/Nebula 同段失败同补偿，R2 恒读上一已发布版，无 pending 版过滤问题）；Nebula/ADS 失败 → version.projection_status=pending + 补偿重放。不做跨库分布式事务。
 
 ## 5. 不做
 

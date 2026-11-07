@@ -2,7 +2,7 @@
 
 - 任务：`TS-L2-M10-ENT-API`
 - 日期：2026-11-07
-- 状态：三分册会签进行中（API 有条件 1 已回填/DATA 3 待回填/ALGO 同意；ARCH 待返）。不标 done
+- 状态：四角色会签完成（API 1+DATA 3+ARCH 4+ALGO 同意，条件全部回填），**待监管人签收**。不标 done
 - 监管：`human:刘剑锋` · 认领：`agent:api-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：全景序 41–47
@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 数据源 | 页面内存纯函数 11 个 | 读端点 R1–R6 + changes 写链 | api 层新增 maintain-ent 模块 |
 | 推荐列表 | 种子 5 条静态 | R1 服务端（keyword/sortBy 全参数） | 换数据源 |
-| 添加全景图 | 本地 push + 自动建联观感 | hang_entities op（G2 首版不自动建联，SRS 42 缺口 PM 已登记） | 去掉自动建联演示逻辑 |
+| 添加全景图 | 本地 push + 自动建联观感 | hang_entities op（G2 首版不自动建联，SRS 42 缺口**待 PM 登记**——三分册会签 ARCH-A2 核实跟踪表暂无此条） | 去掉自动建联演示逻辑 |
 | 关系新增 | `addPanoramaRelation` 纯函数 | **显式放弃**（A03/SRS 41–47 无此叶；demo 超需规，会签 API 备注 5） | 移除入口或留空态 |
 | notice 文案 | 「（Mock）」遍布 | 真轨 mock 文案清除（随接线单，同分区1 先例） | 双轨感知 |
 | 页级操作反馈 | 即时 notice | 提交回执（change_set 状态+failed_items） | 状态机化 |
@@ -54,7 +54,7 @@
 
 | # | 端点 | 语义 | 备注 |
 |---|---|---|---|
-| R1 | `GET …/recommend-entities` | 推荐 Top 实体（叶 41）：keyword 筛选 + sortBy=strength\|time\|name（A03 卡 **213** L711；原稿漏 name 且卡号误引 216——三分册会签 API-条件1 更正） | 强度展示数字挂 `M_TECH_GRAPH_105_1`（METRIC 册）；105 未交付→空态+PendingBadge |
+| R1 | `GET …/nodes/{technology_id}/recommend-entities` | 推荐 Top 实体（叶 41）：keyword 筛选 + sortBy=strength\|time\|name（A03 卡 **213** L711；路径资源段与三值系三分册会签 ARCH-A1/API-条件1 补正） | 强度展示数字挂 `M_TECH_GRAPH_105_1`（METRIC 册）；105 未交付→空态+PendingBadge |
 | R2 | `GET …/graph/current` | **全景现状读**（会签必答题 1）：当前 published 图（技术点+挂接实体+边），含 projection_status | A03 无卡、ARCH 提出无路径——本分册新定；差异列表/版本信息挂此 |
 | R3 | `GET …/nodes/{technology_id}/impact` | 删除影响预检：edge_count/entity_link_count/snapshot_refs | 计数豁免归 DN-A03-09（METRIC 册裁定） |
 | R4 | `POST …/changes:validate` | 预览（dry_run）：返回 diff+影响面+计数 | A03 两形态（:validate/dry_run）归一本形态（DATA 会签 §6 同裁） |
@@ -78,7 +78,7 @@
 |---|---|
 | `400 PARAM_INVALID` | op 枚举外/缺 base_version/ops>50/edge_key 形状错/technology_id 非法 |
 | `404 NOT_FOUND` | change_set/technology_id 不存在 |
-| `409 VERSION_CONFLICT` | base_version 不匹配——data 带 diff 列表（双方 ops 对照）；另 `409 CHANGE_SET_STATE`（非 draft 态重复发布） |
+| `409 VERSION_CONFLICT` | base_version 不匹配——data 带 diff 列表（双方 ops 对照）；另 `409 CHANGE_SET_STATE`（published/rejected 态再发布——draft/approved 可发布，三分册会签 ARCH-A3 更正原「非 draft」措辞） |
 | `422 UNPROCESSABLE` | validate 发现的图结构违规（悬挂边/类型不匹配；含 edge_key/entity_id 不存在的图结构类归此）。平台先例：Python 内部已用 422、Java 门面已消费（SvcAnalysisAdapterImpl/IndustryFacadeServiceImpl）——display 门面须透传（三分册会签 API 备注） |
 | `503 PROJECTION_PENDING` | 发布投影中——**读 R2 仍可用**（返回上一版+projection_status=pending），写可继续提交（base_version 不变） |
 
@@ -86,7 +86,7 @@
 
 ## 6. 状态机与发布语义
 
-`draft →（可选 approve，DN-A03-02）→ published`（ARCH 图已按 DATA 会签改为 approve 可选）。发布单事务语义+失败补偿沿 ARCH §1；projection_status 枚举（ok/pending/failed）经 R2 暴露。pending 期间提交照常受理（新 change_set 基于 MySQL 已提交版本）。
+`draft →（可选 approve，DN-A03-02）→ published`（ARCH 图已按 DATA 会签改为 approve 可选）。发布单事务语义+失败补偿沿 ARCH §1（**发布序列三分册会签 ARCH-A4 锁定：MySQL 先提交 → Nebula 投影 → ADS 投影最后**——ADS 与 Nebula 同段失败同补偿，R2 恒读上一已发布版，无需 pending 版过滤；DATA 册 §4 已同步）；projection_status 枚举（ok/pending/failed）经 R2 暴露。pending 期间提交照常受理（新 change_set 基于 MySQL 已提交版本）。
 
 ## 7. 不做
 
