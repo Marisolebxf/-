@@ -1,6 +1,6 @@
 # 政策效果预估 · LOOP 执行编排计划
 
-- 状态：第二轮已执行（2026-11-08）。探测 HTTP 200（映射恢复），样本 8/8 全 PASS，只读库行数 7/7/7/9/8 对上。唯一残留缺口 232 目标产业等值挂 `POL-L2-DS12-INDUSTRY-EQ-FIX-L01`，本轮不建子任务。验收单已退 `ready` 待下一轮。第一轮（2026-11-07）探测 404 见 handoff。
+- 状态：EQ 修复单已上线（2026-11-08，Java 过滤 + 库列 + 单测，CI 4286 全绿；handoff `POL-L2-DS12-INDUSTRY-EQ-FIX-L01.md`）。线上 HTTP 复核被 401 挡（token 过期，ENV）：待 human:淮政玮 换 token 后按 §3 从探测重入。前端半场（级联提交 target_industry）在工作区另一会话，未提交。上一轮（2026-11-08）8/8 PASS 见 handoff。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4，SDD §4.1）
 - 系统：科技信息展示系统。不打开页面。
 - 监管人：`human:淮政玮`

@@ -42,3 +42,11 @@
 - 恢复动作（本轮一次性的数据修复，非子任务）：2026-11-08 改演示文案重灌主种子时把 §1.2 的 25 条 `POL-L2-DS12-DEMO-EXTRA` 追加行清掉了（主种子脚本「先删全表再插」语义）。已按 §1.2 原值幂等恢复：`lumen-algo-py/scripts/seed_gapfill_policy_demo_extra.py`（按 `gapfill_batch_id` 定界删重插，不动主种子行），`--apply` 已执行，行数回到 7/7/7/9/8，接口抽样 5 条全过。灌数 SQL 已入库仓 `scripts/mysql/gapfill_policy_demo_extra.sql`
 - 缺口分类：唯一残留缺口 = 232 带目标产业等值过滤（线上表无 `target_industry` 列，Java 未加谓词）。**挂既有 ready 单 `POL-L2-DS12-INDUSTRY-EQ-FIX-L01`，不重复建单**。其余零 DATA/QUERY/ALGO 缺口，本轮不建子任务
 - 通过线判定：探测 200 + 8/8 可演行一致 → **本轮样本满足**。EST-TEST-L01 历史实测不改写，不标完成
+
+## 运行 2026-11-08（EQ 复核轮）
+
+- 意图：复验 232 目标产业等值（Java 过滤 + 库列已上线，CI 4286 绿）。
+- 探测：HTTP 401（token 过期）。按规程 §6.5.3 归 ENV：验收单 blocked，通知 human:淮政玮，本轮不建子任务，不重登。
+- 库侧证据（直连只读）：target_industry 列已落库，uk_forecast_params 五列(128)前缀就位；未出台仿真 7 行 industry 分布 = 新一代信息技术/生物产业/海洋产业/高端装备/新材料/新能源/绿色环保；forecast 共 21 行（主种子 6 + extras 15）。
+- 下次重入：人换 token 后从探测开始，样本 8 条全量重跑（232/233 两条用例原文含产业级联回显全文）。
+
