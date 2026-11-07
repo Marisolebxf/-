@@ -52711,10 +52711,11 @@ tasks:
       - "USE_MOCK=true 时现有本机检索行为仍可用。动向、舆情、比对、订阅页不改数据源"
     update_time: "2026-11-04T01:20:15+08:00"
   - id: POL-L2-DS11-BE-L01
+    claimed_by: "agent:cursor-orchestrator"
     supervised_by: "human:淮政玮"
-    claimed_at: "2026-11-03T14:10:16.109Z"
-    last_seen_at: "2026-11-03T14:10:16.109Z"
-    lock_until: "2026-11-03T18:10:16.109Z"
+    claimed_at: "2026-11-07T18:17:51.151Z"
+    last_seen_at: "2026-11-07T18:17:51.151Z"
+    lock_until: "2026-11-07T22:17:51.151Z"
     title: "政策分析评价 · DS11 评价页后端读面与白名单接线"
     status: "in_progress"
     agent: "api-agent"
@@ -52739,7 +52740,7 @@ tasks:
       - "在 gkxlumen-display 与 gkxlumen-element 落地 DS11 评价页读面：counts 短板、jobs 的 focus_ads 与 text_parse、shells 的解读与多媒体、趋势段与分区段同步读缺项表、方案五叶只读 gapfill_policy_eval_scheme、221 只消费已有子图。浏览器只打 /display/v1/policy/**"
       - "display 不直连 Python、不直连库。policy_focus_ads 与 policy_text_parse 进 PolicyAnalysisTypes 白名单，223 焦点调已有 focus.run 后读 ads.policy_focus，226 只查 ads.policy_text_parse.summary，请求不调 parse.run。旧键 policy_focus 不改"
       - "无行则空，不造 0，不返回 501。不改 D4，不新造 metric_id。ponytail full。handoff 含联调确认与自检证据，走 QA 闸门"
-    update_time: "2026-11-03T22:10:28+08:00"
+    update_time: "2026-11-08T02:17:52+08:00"
   - id: POL-L2-DS11-QA-UT-L01
     supervised_by: "human:淮政玮"
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-QA-UT-L01.md"
@@ -59663,7 +59664,7 @@ tasks:
     lock_until: "2026-11-07T21:35:04.257Z"
     claimed_by: "agent:data-agent"
     title: "深圳政策现状恢复 879 基线：隔离 debug/合成批次或回滚层级行"
-    status: "blocked"
+    status: "done"
     agent: "data-agent"
     epic: "E-POLICY-PDR"
     priority: "P1"
@@ -59674,8 +59675,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 20000
     user_story: "US-E7-POL-04"
-    note: |
-      调查完成，数据侧不可修。库证据：深圳 1458 行=原生879+一张图debug540（SYSINT-04-01，徐滕强会话）+图2 SYNTH 49（D16 例外淮政玮已批）。原生879 rank 分布未动、均值 0.4653 ✓；全量均值 0.3873 ✗。另有 ~9667 行原生行被城市回填（16:44 后，执行会话未查明），score/名次也会漂移。删除或隔离任何批次都会破坏一张图/图2 在跑演示（多会话保护铁律），本单不动库。需 human:淮政玮 拍板读取口径：方案A=board SQL 加原生过滤（转 ALGO 单），方案B=放宽通过线为动态基线。handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA.md
+    note: "方案A已拍板并落地：读取侧收窄由 ALGO 单完成（TOPIC-POL-SZ3D-DEMO-FIX-R20261108-ALGO，lumen-algo-py 4df6ab5 已推 origin/dev）。库中混灌批次按多会话保护保留不删，本单目的已达成，关闭。"
     collaborators:
       - "algorithm-agent"
       - "qa-agent"
@@ -59688,7 +59688,7 @@ tasks:
       - "若确认这两批是本 LOOP 链路自己产生的演示数据（EFFECT-SYNTH 合成 39 行、深圳一张图调试 540 行），则只回滚对深圳政策现状 879 基线的影响，不破坏其他演示（一张图、图2）仍在用的行；两演示仍需的行保留并在 handoff 列明。"
       - "不写 ODS、供应方库。不把空写成 0。改动后 SELECT 复核并打印前后对照（前 1458/0.3873 → 后 879/0.4653）。"
       - "handoff：agent-delivery/agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA.md"
-    update_time: "2026-11-08T01:45:30+08:00"
+    update_time: "2026-11-08T02:17:57+08:00"
   - id: POL-L2-DS11-VIZ-DEMO-ACCEPT-LOOP
     title: "政策分析评价 · 可视化呈现 DS11-VIZ 演示样本验收 LOOP（§6.5）"
     status: "ready"
@@ -59855,4 +59855,34 @@ tasks:
     definition_of_done:
       - "对照 STRUCT 合规演示用例探测 results?policyId=18319069"
       - "LOOP 状态行回写"
+    update_time: "2026-11-08T02:04:14+08:00"
+  - id: TOPIC-POL-SZ3D-DEMO-FIX-R20261108-ALGO
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/政策模块-E7/TOPIC-POL-SZ3D-DEMO-FIX-R20261108-ALGO.md"
+    cost_warn: "green"
+    actual_tokens: 55000
+    actual_cost: 0.3
+    title: "深圳政策现状分析：截面SQL原生过滤（方案A）恢复879基线"
+    status: "ready_to_sign"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 60000
+    user_story: "US-E7-POL-04"
+    note: "SQL改+自检绿+推送完成；部署生效后重算验证通过线后即可签收"
+    touched_files:
+      - "vendor/entan-py/polan/shenzhen_board.py"
+      - "tests/test_policy_shenzhen_board.py"
+    definition_of_done:
+      - "CITY_SECTION_SQL 含 source_plane='domestic' AND etl_batch_id IS NULL，恢复 count=879 / level_mean=0.4653"
+      - "tests/test_policy_shenzhen_board.py 全绿（含新增原生口径断言）"
+      - "push origin/dev 触发自动发布"
+      - "LOOP 计划 §1/§3 库核对口径同步修订"
+      - "部署后重算任务并验 API 通过线全绿"
+    update_time: "2026-11-08T02:18:46+08:00"
     update_time: "2026-11-08T02:23:11+08:00"
