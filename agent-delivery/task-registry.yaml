@@ -59160,9 +59160,12 @@ tasks:
     effort_points: "1"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "token 已换发验证有效（situation 200）；但 tracking/* 带新 token 404 映射不存在（下午匿名 200→晚间 401→404，环境在动）——阻塞原因转为部署映射，按§6.5.3 上报环境负责人；待路由恢复后开 R2"
+    note: "R2 接口级 7/7 对得上；但 2026-11-07 深夜签收前需规核对发现 3 个需规明确功能点未覆盖（53 行方法自动推荐+案例库 / 49 行区域发展建议 / 54 行参数优化建议），human:李伟 裁定 B 路线：建 Q01/Q02/Q03 缺口子任务、不签收、修复后跑 R3（重点复测行 49/53/54）全绿再提请签收"
     depends_on:
       - "DISPLAY-DEMO-CASE-TS-M3-L01"
+      - "TS-DS03-LOOP-R2-Q01"
+      - "TS-DS03-LOOP-R2-Q02"
+      - "TS-DS03-LOOP-R2-Q03"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/编排计划/TS-L2-DS03-LOOP计划.md"
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-DS03-合规演示用例.md"
@@ -59170,7 +59173,85 @@ tasks:
       - "7 行可演全部对得上期望输出（样本满足）"
       - "LOOP 计划状态行已回写"
       - "监管人（human:李伟）说「签收」且再校验一次通过"
-    update_time: "2026-11-07T21:30:00+08:00"
+    update_time: "2026-11-07T23:30:00+08:00"
+
+  - id: TS-DS03-LOOP-R2-Q01
+    supervised_by: "human:李伟"
+    title: "tracking 评估方法自动推荐+案例库补齐（DS-03 LOOP R2 缺口 ALGO，需规 53 行）"
+    status: "claimed"
+    agent: "be-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "backend_task"
+    effort_points: "3"
+    difficulty: "L"
+    estimated_tokens: 120000
+    claimed_by: "human:李伟"
+    claim_type: "coordinator_dispatch"
+    claimed_at: "2026-11-07T23:45:00+08:00"
+    lock_until: "2026-11-08T23:45:00+08:00"
+    note: "需规 53 行要求方法详解+自动推荐+案例和最佳实践。✅ 2026-11-08 00:30 代码已修（TrackingController）：buildSystemMethods（L903，4 法元数据口径同前端 evaluationMethods.ts，裁定 A 允许的系统能力清单）+ buildKnowledgeBase（L941，cases=tech_evaluation_history 最近 5 期真实运行、bestPractices=历史最优期事实陈述，无历史→空不编造）+ meta 挂载 methods/knowledgeBase 与 methodSource/knowledgeBaseSource 口径字段 + ensureHistoryLoaded 前移至知识库派生前 + noSourceFields 移除 methods/knowledgeBase（仅剩 timeline.events/capabilities）。⚠️ 口径留白：「按技术类型自动推荐方法组合」无类型-方法映射数据源，methodSource 明示未提供（不编造）；方法选择建议由 recommendedPreset 历史最优期口径承接。mvn compile 绿（JDK17）。待推送部署后 R3 复测行 53 收尾"
+    depends_on: []
+    design_refs:
+      - "agent-delivery/agent-handoffs/展示系统-合规演示用例/TS-DS03-DEMO-ACCEPT-LOOP.md"
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/技术发展跟踪.md"
+    definition_of_done:
+      - "GET/POST tracking meta 或 dataset 返回 methods 非空（4 法元数据）且 knowledgeBase.cases/bestPractices 非空"
+      - "按技术类型入参可返回推荐方法组合"
+      - "type-check/build 自检绿，推送部署后 R3 复测行 53 对得上"
+    update_time: "2026-11-07T23:45:00+08:00"
+
+  - id: TS-DS03-LOOP-R2-Q02
+    supervised_by: "human:李伟"
+    title: "tracking 地理分布区域发展建议文案补齐（DS-03 LOOP R2 缺口 ALGO，需规 49 行）"
+    status: "claimed"
+    agent: "be-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "backend_task"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 80000
+    claimed_by: "human:李伟"
+    claim_type: "coordinator_dispatch"
+    claimed_at: "2026-11-07T23:45:00+08:00"
+    lock_until: "2026-11-08T23:45:00+08:00"
+    note: "需规 49 行要求「点击区域可查看该地区详细的技术评估报告和发展建议」；2026-11-07 实测 mapRegions 无发展建议字段。✅ 2026-11-08 00:10 代码已修：新增 regionDevelopmentAdvice 分档规则模板（TrackingController L295-312，按潜力分级×趋势 5 档派生，regionExtra==null 返回空串不编造）+ 组装处 L1983 挂 developmentAdvice 字段；mvn compile 绿（JDK17）。待推送部署后 R3 复测行 49 收尾"
+    depends_on: []
+    design_refs:
+      - "agent-delivery/agent-handoffs/展示系统-合规演示用例/TS-DS03-DEMO-ACCEPT-LOOP.md"
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/技术发展跟踪.md"
+    definition_of_done:
+      - "POST /display/v1/situation/tracking/dataset 返回 mapRegions 元素含发展建议文案字段且非空"
+      - "type-check/build 自检绿，推送部署后 R3 复测行 49 对得上"
+    update_time: "2026-11-07T23:30:00+08:00"
+
+  - id: TS-DS03-LOOP-R2-Q03
+    supervised_by: "human:李伟"
+    title: "tracking 评估参数优化建议能力补齐（DS-03 LOOP R2 缺口 ALGO，需规 54 行）"
+    status: "ready"
+    agent: "be-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "backend_task"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "需规 54 行要求「系统会根据历史数据提供参数优化建议」。⚠️ 派单前复核（2026-11-07 23:45）发现该能力疑似已实现：TrackingController L1373-1375 meta 已返回 recommendedPreset（buildRecommendedPreset L878，历史最优期参数）+ optimizationSuggestions（buildOptimizationSuggestions L914，evalHistory≥2 且评分下降时给出建议+推荐权重/阈值/维度），均从 tech_evaluation_history 真实派生；R2 未实测记录这两字段值（需规比对时按用例未提及误判「无此能力」）。本单降级为验证单：token 有效时打 meta 看两字段——非空即撤单标 done（不需修复）；空且 evalHistory≥2 才按原方向补。待 token 换发后由 qa-agent 或 human:李伟 验证"
+    depends_on: []
+    design_refs:
+      - "agent-delivery/agent-handoffs/展示系统-合规演示用例/TS-DS03-DEMO-ACCEPT-LOOP.md"
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/技术发展跟踪.md"
+    definition_of_done:
+      - "参数配置相关接口返回参数优化建议内容（基于历史评估数据）"
+      - "type-check/build 自检绿，推送部署后 R3 复测行 54 对得上"
+    update_time: "2026-11-07T23:30:00+08:00"
   - id: SVC-EXPO-DEMO-ACCEPT-LOOP
     supervised_by: "human:李伟"
     title: "交流/竞赛/传播 EXPO 演示样本循环验收单（§6.5）"

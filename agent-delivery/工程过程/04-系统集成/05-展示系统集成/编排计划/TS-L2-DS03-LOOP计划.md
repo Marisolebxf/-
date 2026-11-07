@@ -8,10 +8,11 @@
 | 轮次 | 日期 | 探测 | 对得上 | 缺口 | 子任务 | 结论 |
 |---|---|---|---|---|---|---|
 | R1 | 2026-11-07 | 401（访问令牌不存在，命中 §1 熔断） | 0/7（熔断未对照，非样本缺口） | —（不做 DATA/QUERY/ALGO 分类） | —（不建单） | blocked：token 失效，待 human:李伟 换发后跑 R2 |
+| R2 | 2026-11-07 晚 | meta 200；dataset×5 + parameter-templates 全 200 | 7/7 对得上 | 0（无缺口） | —（不建单） | 样本满足 R2 → 待签收（验收单保持 ready，等 human:李伟「签收」） |
 
 ## 1. 探测（每轮第一笔，只读）
 
-- `POST {网关}/display/v1/tracking/meta`，body `{}`，头 `Authorization: Bearer <本机 token>` + `systemCode: display`。
+- `POST {网关}/display/v1/situation/tracking/meta`，body `{}`，头 `Authorization: Bearer <本机 token>` + `systemCode: display`。
 - 网关 `http://10.50.69.111:30895`。token 读 `%USERPROFILE%\.gkx\display-loop-token`，不打印。
 - **熔断**：401/424 → 验收单 blocked、通知 human:李伟、停止；404 → 「接口映射不存在」停止。200 才进对照。
 
