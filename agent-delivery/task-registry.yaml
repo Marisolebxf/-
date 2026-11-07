@@ -55938,3 +55938,38 @@ tasks:
       - "单测覆盖：只填目标产业能命中对应行；四类加上对应产业命中；产业对不上为空；233–236 不读这一列。"
       - "不新增 metric_id，D4 仍是 mock。不改区域空间、新出台预测、多维评估、利益攸关方的过滤。handoff 写明改动仓与验证。"
     update_time: "2026-11-07T12:00:29+08:00"
+  - id: POL-L2-DS12-EST-ACCEPT-LOOP
+    title: "效果预估演示实例反复验收"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    user_story: "US-DS-POL-06"
+    note: "2026-11-07 human:淮政玮要求建立可反复执行的验收数据核对。每次从当前线上 demo 缺项库重读，对照 EST 测试用例的演示实例。没有预期结果时给数据补充建议或算法修改建议，不在本单落库或改代码。建单不认领。认领时 supervised_by 填当次开会话的真人。"
+    depends_on:
+      - "POL-L2-DS12-EST-API"
+      - "POL-L2-DS12-EST-DATA"
+      - "POL-L2-DS12-EST-GAPFILL-L01"
+    collaborators:
+      - "data-agent"
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS12-EST-TEST-L01.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-EST-ACCEPT-LOOP.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS12-EST-TEST-L01.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS12-EST-DATA.md"
+    definition_of_done:
+      - "只读当前线上展示系统所读的 demo 缺项库 gkxlumenx_gapfill，连接以 lumen-algo-py 现行环境为准。只 SELECT。不执行 --apply，不写 ODS、DWD、ADS。口令不进 git，也不进 handoff。"
+      - "对照 POL-L2-DS12-EST-TEST-L01.md 第 1.1、1.2 节演示实例：每条预期业务键是否在库内，展示句、得分、空间分布、意见是否与右列一致。232 含 target_industry 等值。233–236 不要求这一列。"
+      - "对不上时只写建议，不改库、不改代码。缺行、空列、字符串不一致写数据补充建议，写明表、row_kind、业务键和应补列值。行在且键一致，但过滤或计算给不出用例右列，写算法或查询修改建议，写明种类、字段和差异。401 或 404 只记环境阻塞，不据此建议改算法或补数。"
+      - "同一 handoff 追加一节「运行 YYYY-MM-DD」，不覆盖上一轮。不改测试用例里已写下的实际结果，不把 POL-L2-DS12-EST-TEST-L01 标完成。"
+      - "本单可反复执行。一轮报告写完后，由当次监管人把状态退回 ready，不签 done。下一轮再认领。"
+    update_time: "2026-11-07T12:22:06+08:00"
