@@ -1,0 +1,17 @@
+---
+description: lumen Nacos 配置变更规约（日常 push 不重发 Nacos；改配置必须走 gkx-nacos-shared-config skill）
+alwaysApply: true
+---
+
+# lumen Nacos 配置变更规约（human:淮政玮 2026-11-07 裁定）
+
+> 背景：2026-11-07 22:17 有人手动跑 `helm:chart` 并带 `FORCE_NACOS_REPUBLISH=true`，用仓库模板整份覆盖了 14 个 dataId。模板缺 `sso` 等块，导致展示/专题 SSO 白屏（`unknown systemCode`）、共享配置丢 jasypt/redis/actuator。
+
+## 铁律
+
+1. **日常 push 不碰 Nacos**：push → CI 部署即可，**禁止**为日常改动设置 `FORCE_NACOS_REPUBLISH=true`，也不要手动点 `helm:chart` 去"顺便"重发配置。
+2. **要改 Nacos 配置 → 必须先读并按 skill `gkx-nacos-shared-config` 执行**（`gkx-orchestration/.cursor/skills/gkx-nacos-shared-config/SKILL.md`）。不经 skill 直接改控制台、或用整批重发代替单个 dataId 发布，视为违规。
+3. **仓库模板 = 线上真源，两边同改**：`lumen-svc-platform/helm/gkxlumen-platform/configs/*.yml` 与线上 Nacos 必须一致。改线上就同一次提交改模板；只改模板不发线上、或只改线上不改模板，都不算完成。
+4. **密钥不进 git**：模板里密钥写 `@@NAME@@`，真实值放 K8s Secret `gkxlumen-platform-nacos-config-secrets`（ns `zhipu-tts`）同名 key。新增占位符必须先补 Secret，否则 nacos-config-init 会整批拒发。
+5. **只发要改的那个 dataId**：按 skill 单个发布并核对 md5 / 历史版本。整批重发（`FORCE_NACOS_REPUBLISH=true`）只在人工确认模板与线上逐份一致后使用，且需当次会话用户批准。
+6. Nacos 写操作属于线上变更，执行前须当次会话用户批准。
