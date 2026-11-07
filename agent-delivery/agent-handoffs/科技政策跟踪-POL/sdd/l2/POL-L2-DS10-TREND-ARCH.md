@@ -87,7 +87,7 @@ trace 沿既有展示链走。`stats`、`ingest` 和缺项表读取在 display �
 **2026-11-07 变更（`POL-L2-DS10-SRCMON-SYNTH-L01`，`human:淮政玮` 口头批准）**：「立即同步」不再只写一条演示历史，改成 LLM 合成政策入库。仍不抓取外站。
 
 - 链路：前端 `POST /display/v1/policy/panorama/sync-history` → `gkxlumen-display` Feign → `gkxlumen-platform-entan-py` `/internal/policy/sync-history`。Python 先写一条 `running` 同步历史，立即返回，后台合成。前端轮询同步历史，直到没有 `running` 行，再刷新 `ingest`。
-- 后台一次 50 条（上限 100）。地区、层级、类型、主题由代码排配额：深圳约 60%（含区级），国家级约 15%，其余随机落到 24 个省市。类型在 通知/意见/办法/规划/若干措施/实施细则/行动方案/指南/目录/决定 中轮转。LLM 只写标题、文号、摘要、关键词、正文（按「第X条」分条）、要点和支持方式。
+- 后台一次 10 条（2026-11-07 由 50 改为 10，上限 100）。地区、层级、类型、主题由代码排配额：深圳约 60%（含区级），国家级约 15%，其余随机落到 24 个省市。类型在 通知/意见/办法/规划/若干措施/实施细则/行动方案/指南/目录/决定 中轮转。LLM 只写标题、文号、摘要、关键词、正文（按「第X条」分条）、要点和支持方式。
 - 写入：ODS `dwd_policy_base` + DWD `policy_base_info`。`source_plane='domestic'`，检索和统计都计入。
 - 入库后原样调用两种已有方法：产业补码 `polan.industry_enrich.enrich_one`，写 DWD 和 ADS 两层 `policy_industry_rel`；条款结构化 `polan.clause_job.structure_one`（按规则分条），写 ADS `policy_text_parse`。两种方法都从 demo-algo-ent-analysis 迁到 lumen-algo-py `vendor/entan-py`。
 - 合成行有三个标记：`policy_id` 前缀 `SYN`，`source='llm-synth'`，`etl_batch_id` 前缀 `SYNTH-`。`ingest` 读面对这类行返回 `is_mock=1`，评审态挂 MockBadge。中台政策 Mock 页的「删除所有 Mock 数据」只按这三个标记删，真实政策不受影响。

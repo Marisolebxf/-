@@ -40,7 +40,8 @@
   - `trendLive.ts`：入库行加 `isMock`；新增 `hasRunningSync` 和 `syncStatusTag`（running / success / partial / failed）。
   - `TrendTab.vue`：「立即同步」后每 4 秒轮询同步历史，没有 `running` 行后刷新入库列表；进入页面时若已有在跑的作业，也会接着轮询。合成行挂 MockBadge。顺手修了入库表标题列、状态列漏配 `slotName`，导致标题点不开详情、状态标签不生效的问题。
   - 自检 `FE-POL-TREND-LIVE.test.mjs` 补了对应断言。
-- **demo-ui-system-test**（未推，待人工确认）：政策 Mock 页加「Mock 50 条数据」（二次确认 → POST → 轮询 GET → 刷新列表）和「删除所有 Mock 数据（N）」（二次确认 → DELETE）两个按钮，API 写在 `src/api/policy/index.ts`。
+- **每次条数 50 → 10**（2026-11-07 用户追加要求）：`synth.DEFAULT_COUNT=10`，立即同步与中台按钮同改；10 条恰好让 10 种政策类型每次各出现一次。
+- **demo-ui-system-test**：政策 Mock 页加「Mock 10 条数据」（二次确认 → POST → 轮询 GET → 刷新列表）和「删除所有 Mock 数据（N）」（二次确认 → DELETE）两个按钮，API 写在 `src/api/policy/index.ts`。
 - **设计文档**：
   - 签过字的分册不改原文，只在对应小节末尾追加「2026-11-07 变更」段：`l2/POL-L2-DS10-TREND-ARCH.md` 4.1 和 203 行、`TREND-DATA` 第 2 节、`TREND-API` 第 2 节、`TREND-METRIC` 6.1。
   - 索引类文档只改一行：说明书 203 行、`调用链与边界.md`、`契约输入清单.md`、`指标与501.md`、`QRY-ARCH`、`QRY-DATA`。
