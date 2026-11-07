@@ -96,4 +96,4 @@ token 文件：`~/.gkx/topic-loop-token`（一行 access_token，仓库外）。
 4. 按 §1 通过线逐项判定；有缺口才按 §4 建子任务（≤3 张），验收当轮不改库、不重算。
 5. 写报告一节（只追加）。§1 全部对上才算本轮通过，验收单留在 `ready`；等待人说下一轮或签收。
 
-- 状态行：**覆盖已齐，未执行。等人说「按 LOOP 跑」。**
+- 状态行（2026-11-07 20:2x，R20261107 第一轮，qa-agent@human:徐滕强）：样本满足=**否**（1 条 QUERY 缺口已建单）；停止原因=继续。探测 200；未新签发，复用当天已成功任务：全量招引 `SVC-20261107-032/038`（count=50 top=90=当期榜 MAX）、INB2503 切片 `SVC-20261107-042`（count=7=当期交集）、诚实空 `SVC-20261107-015`（empty=true）、培育 `SVC-20261107-007`（count=50，快照 top 95.3614 vs 当期表 MAX 95.3634 系 17:01 批次滚动届期差，字段结构不变）。读面 rec-list 前缀实测为 `/tts/svcz/api/svc/topic/v1/service/rec-list`（计划 §3 所写剥 /svc 路径 404，候选前缀一次试中）：attract 全量 50/首行奥飞 90、INB2503 7/首行玻思韬 90、INB1303 HTTP 200 empty=true items=[]、cultivate 50/首行福中达 95.3634。缺口 1 条：INB1303 切片零行时 data_source="demo_ads" 缺 `empty:chain_unmatched` 语义（前端点名产业空态文案不触发），已建 `SVC-REC-DEMO-FIX-R20261107-QUERY`（bugfix，ready 不认领，algorithm-agent，repo=lumen-topic-py）。培育权重双口径并存各自成立（页面 25/30/25/20 vs 榜批次 wanghui_v1_signed20261022 等权 25×4，Q-SVCCHAIN-05 甲方决策链）。I2-12 三行只读核对过（切条件 0 建、单飞/当天复用=`decideAnalysisTaskGate`、重新分析=forceCreate）。验收单=**ready**（不签 done）。

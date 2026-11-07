@@ -48,7 +48,7 @@ DoD 第 6 条「重跑后 rank_no=1/2 与 model_version=v1.3 证据」**记 pend
 | D16/D18 缺项 | ✅ 不涉及（无 gapfill 表、无 mock 注入；读真值 + 展示序重排） |
 | 可观测 | ✅ envelope/trace 链路未动；`fetch_models` 日志语义不变 |
 | 禁区 | ✅ 未改 lumen-svc-platform、未改前端、未改用例期望、未动库内分值、未 push main |
-| cost | 单任务实际 < $10（估算 ~$8，低于告警线），cost_warn=green |
+| cost | 实际 tokens ≈ 100k（glm-5.3-Flash），实际成本 < $1（远低于 $10 告警线），cost_warn=green |
 
 ## 6. 交付
 

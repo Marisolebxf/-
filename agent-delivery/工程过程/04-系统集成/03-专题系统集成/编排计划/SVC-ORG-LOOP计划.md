@@ -7,7 +7,7 @@
 - 监管人：`human:徐滕强`
 - 日期：2026-11-07
 
-- 状态：**覆盖已齐，未执行。等人说「按 LOOP 跑」。**
+- 状态：**第 1 轮完成（2026-11-07）：6 行中 2 行对上（7.2.1 趋势 / 7.2.2 热度，接口+库双证逐点全等）/ 4 行部分对上（7.1.1、7.1.2 缺东莞双奉 82 深度证据=待补签发；7.3.1、7.3.2 同分展示序 26/50≠1/2 + 快照自报 v1.2≠批次 v1.3=ALGO）；DATA 缺口 1 条（对比篮 guest 实查 2 行 vs 期望 6 行，缺君智容/星诚优威 id=60/61）。子任务 SVC-ORG-DEMO-FIX-R20261107-DATA（demo-algo-ent-analysis，data-agent）/ -QUERY（lumen-svc-platform，api-agent，待监管人「签发」后执行）/ -ALGO（lumen-algo-py，algorithm-agent）已建并升 ready，等人说「可以派了」。批次无重灌（svc-fseed-20261020 / svcmodels_20261107_155402）；探测 200 通过；快照复用 SVC-20261107-019/020、SVC-20261106-008。样本未满足，验收单 SVC-ORG-DEMO-ACCEPT-LOOP 留 ready（不签 done）；报告已追加至 agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-ACCEPT-LOOP.md「## 运行 2026-11-07」。**
 
 覆盖表 6 行全部「可演」（期望值 = 2026-11-05/06/07 三天任务快照实值 + 库侧 ADS/dwd 实查值双证）。口径核对在按 LOOP 跑时才逐行做：深度（Q-SVCCHAIN-02）、热度（Q-SVCCHAIN-02 + GAP-SVC-ORG-HEAT）、技术力（Q-SVCCHAIN-01 + Q060）三处演示态口径行按「演示规则判定」核对，不判业务对错。不派数据单，不派算法单，不打探测。
 
