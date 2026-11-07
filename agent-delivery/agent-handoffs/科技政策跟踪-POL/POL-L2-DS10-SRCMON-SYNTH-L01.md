@@ -41,6 +41,11 @@
   - `TrendTab.vue`：「立即同步」后每 4 秒轮询同步历史，没有 `running` 行后刷新入库列表；进入页面时若已有在跑的作业，也会接着轮询。合成行挂 MockBadge。顺手修了入库表标题列、状态列漏配 `slotName`，导致标题点不开详情、状态标签不生效的问题。
   - 自检 `FE-POL-TREND-LIVE.test.mjs` 补了对应断言。
 - **每次条数 50 → 10**（2026-11-07 用户追加要求）：`synth.DEFAULT_COUNT=10`，立即同步与中台按钮同改；10 条恰好让 10 种政策类型每次各出现一次。
+- **历史版本（2026-11-07 用户追加：「生成的10条中，随机5条，生成其历史版本」；用户选定 每次都做 / 旧版独立行 + 变更行 / 修新旧对比弹窗）**：
+  - `synth.py`：入库和补码完成后，随机挑一半，每 5 条调一次 LLM 写上一版（标题、文号、摘要、关键词、分条正文、要点，以及 3～6 条 新增/修改/删除 变更）。旧版发布日由代码定，比新版早 365～1095 天。旧版作为独立行写 ODS/DWD：`policy_id` = 新版 id 加 `-H1`，`status=已废止`，三个合成标记不变，也跑补码和条款结构化。变更行写 `gkxlumenx_gapfill.gapfill_policy_version_diff`（`policy_id` 用新版，`fill_method=llm-synth`，`gap_item=213 政策新旧对比`，`is_mock=1`）。历史版写失败只记进 `errors`，不影响新版计数。返回值新增 `history_versions` 和 `diff_rows`。`delete_all` 增加删除变更行（按合成 `policy_id` 加 `fill_method=llm-synth`）。self_check 补了历史版断言。demo 仓同文。
+  - element 新增 `GET /v1/element/policy/versions`：读 DWD 新版与 `-H1` 历史版成对的行，`policy_id` 可空，`limit` 默认 50、上限 200。display 新增 Feign、Service 和 `GET /display/v1/policy/panorama/versions`。element 单测补了一条。
+  - lumen-ui-science-pc（未推，待人工确认）：`api/policy.ts` 加 `panoramaVersions`；`compareLive.ts` 加 `mapVersionPairs`；新增 `components/useVersionPairs.ts`，CompareTab 和 VersionCompareModal 共用。真实模式下，政策下拉只列有历史版的政策，两个时点就是旧版和新版的发布日，打开时预填但仍需点「查询对比」。不再借用其它政策的发布日当候选。
+  - 文档：`CMP-DATA` 第 3 节（含 2026-11-07 变更段）、`CMP-API` 第 3 节和空态表、`CMP-ARCH` 第 3 节表格、流程第 3 步、5.1，以及 `TREND-ARCH` 4.1。
 - **demo-ui-system-test**：政策 Mock 页加「Mock 10 条数据」（二次确认 → POST → 轮询 GET → 刷新列表）和「删除所有 Mock 数据（N）」（二次确认 → DELETE）两个按钮，API 写在 `src/api/policy/index.ts`。
 - **设计文档**：
   - 签过字的分册不改原文，只在对应小节末尾追加「2026-11-07 变更」段：`l2/POL-L2-DS10-TREND-ARCH.md` 4.1 和 203 行、`TREND-DATA` 第 2 节、`TREND-API` 第 2 节、`TREND-METRIC` 6.1。
@@ -59,6 +64,10 @@
 - element `INGEST_SQL` 在 10.50.11.76 上直接执行通过，`is_mock` 列返回 0/1。本机没有 Maven，没做编译，靠 CI 编译。
 - lumen-ui-science-pc：`node FE-POL-TREND-LIVE.test.mjs` 全绿；`pnpm type-check` 退出码 0。
 - demo-ui-system-test：`vue-tsc --noEmit` 对本次改的两个文件无报错（仓内其它文件原本就有类型错误）；本机没有 eslint 配置，未跑 lint。
+- 历史版本：
+  - `python -m polan.mockgen.synth` 在两个仓都 OK，`test_policy_sync_history.py` 6 passed。
+  - 真实库冒烟：假 LLM 跑 4 条，生成历史版 2 条、变更行 4 条；成对 SQL 取出 2 对，旧版状态都是 `已废止`，两个日期都是 `YYYY-MM-DD` 字符串。之后只按该批次号清理（gapfill 4 行、DWD 6 行、ODS 6 行），库里原有 44 条合成行未动。
+  - `FE-POL-CMP-LIVE.test.mjs` 全绿，`pnpm type-check` 退出码 0。element 本机无 Maven，靠 CI 编译。
 - **未做**：线上真实 LLM 端到端（还没在 dev 上点「立即同步」）。
 
 ## 遗留风险
@@ -66,6 +75,8 @@
 - **demo-platform-entan-py 没有 LLM 密钥**：K8s 上只查了环境变量名，没看值。lumen 的 `gkxlumen-platform-entan-py` 配了 `ENTAN_LLM_*` / `GKX_LLM_*`、`EMBED_*`、`MILVUS_*`。demo 的 `demo-platform-entan-py` 只有 `EMBED_*` 和 `MILVUS_*`。中台 Mock 页如果走 demo pod，会返回「未配置 LLM 密钥，未生成」。补密钥需要人来决定（Secret 或 CI 变量）。
 - 单飞只在单个进程内：lumen 和 demo 两个 pod、或多副本时，可能同时各跑一批。删除操作会拒绝在本进程合成进行时执行，但拦不住其它进程正在进行的合成。
 - 合成行计入检索和统计后，205/206 的数值会变；相关指标 D4 仍是 mock。
+- 历史版本已有的 44 条合成行没有补做（只对之后新合成的生效）。手工灌的 5 条 `CMP-GAPFILL` 变更行，对应政策在 DWD 里没有 `-H1` 行，所以不会出现在真实模式的新旧对比下拉里。
+- 每次合成多一次 LLM 调用（5 条一组），耗时约增加三分之一。
 - 跳板机 `/tmp/admin-kc.yaml` 是别的会话留下的 root 属主文件，本会话无权删除，需要有权限的人清理。
 
 ## CI/CD（必填）

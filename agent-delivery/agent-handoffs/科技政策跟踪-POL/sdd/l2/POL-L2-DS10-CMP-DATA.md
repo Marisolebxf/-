@@ -70,11 +70,13 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 
 库 `gkxlumenx_gapfill`，表 `gapfill_policy_version_diff`。一行是同一政策在两个发布时间之间的一条变更：变更类型（新增、修改、删除）和一句摘要。一行不是一个版本号，不是一段高亮 HTML，不是一个 diff 文件。
 
-可选时点不从本表反查。来源是已有检索和正文上的发布时间，列是 `gkxlumenx_dwd.policy_base_info.publish_date`（发文日期）。展示走已有 `panorama/search` 和 `{id}/detail`。同一政策在这张正文上只有一个 `publish_date` 时，凑不齐两个时点，对比空。本表不补第二个日期，也不用 `publish_year` 编出一个时点。
+可选时点不从本表反查。来源是 `policy_base_info` 上成对的两行：新版一行，历史版一行（`policy_id` = 新版 id 加 `-H1`，`status=已废止`，同 `source_plane`）。两个时点就是这两行的 `publish_date`（发文日期）。读取方 `gkxlumen-element`，经 `GET /display/v1/policy/panorama/versions`。没有 `-H1` 行的政策凑不齐两个时点，对比空。本表不补第二个日期，也不用 `publish_year` 编出一个时点。
+
+> **2026-11-07 变更（POL-L2-DS10-SRCMON-SYNTH-L01）**：原写法「时点取同一正文上的 `publish_date`」只有一个日期，产线永远凑不齐两个时点。改为新版加 `-H1` 历史版成对。成对行目前只由 LLM 合成写入：每次合成 10 条，随机挑 5 条再写旧版（旧版发布日早 1～3 年），新旧之间的增改删写本表，`fill_method=llm-synth`，`gapfill_batch_id` 为合成批次号，`is_mock=1`。「删除所有 Mock 数据」会一并删除这些变更行。
 
 拣行键：`policy_id` 加上这两个发布日期。两个日期与查询给出的两个发布时间成对相等，次序不另编版本号。对不上的行不返回。
 
-灌数方：`POL-L2-DS10-CMP-GAPFILL-L01`。读取方：`gkxlumen-element`，经 `GET /display/v1/policy/panorama/version-diff`。`gkxlumen-display` 不直连库。不写入 ODS、DWD、ADS、供应方库。
+灌数方：`POL-L2-DS10-CMP-GAPFILL-L01`（手工 5 行），以及 `POL-L2-DS10-SRCMON-SYNTH-L01`（合成政策的历史版本变更行）。读取方：`gkxlumen-element`，经 `GET /display/v1/policy/panorama/version-diff`。`gkxlumen-display` 不直连库。不写入 ODS、DWD、ADS、供应方库。
 
 下列是逻辑列，不是可执行 DDL。建表由灌数单落地。本单不执行。
 

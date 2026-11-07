@@ -90,7 +90,8 @@ trace 沿既有展示链走。`stats`、`ingest` 和缺项表读取在 display �
 - 后台一次 10 条（2026-11-07 由 50 改为 10，上限 100）。地区、层级、类型、主题由代码排配额：深圳约 60%（含区级），国家级约 15%，其余随机落到 24 个省市。类型在 通知/意见/办法/规划/若干措施/实施细则/行动方案/指南/目录/决定 中轮转。LLM 只写标题、文号、摘要、关键词、正文（按「第X条」分条）、要点和支持方式。
 - 写入：ODS `dwd_policy_base` + DWD `policy_base_info`。`source_plane='domestic'`，检索和统计都计入。
 - 入库后原样调用两种已有方法：产业补码 `polan.industry_enrich.enrich_one`，写 DWD 和 ADS 两层 `policy_industry_rel`；条款结构化 `polan.clause_job.structure_one`（按规则分条），写 ADS `policy_text_parse`。两种方法都从 demo-algo-ent-analysis 迁到 lumen-algo-py `vendor/entan-py`。
-- 合成行有三个标记：`policy_id` 前缀 `SYN`，`source='llm-synth'`，`etl_batch_id` 前缀 `SYNTH-`。`ingest` 读面对这类行返回 `is_mock=1`，评审态挂 MockBadge。中台政策 Mock 页的「删除所有 Mock 数据」只按这三个标记删，真实政策不受影响。
+- 历史版本：每次合成后随机挑一半（10 条里 5 条）再调一次 LLM 写上一版。旧版是独立政策行，`policy_id` = 新版 id 加 `-H1`，`status=已废止`，发布日比新版早 1～3 年（由代码定），同样入 ODS/DWD 并跑补码与条款结构化。新旧之间 3～6 条增改删写 `gkxlumenx_gapfill.gapfill_policy_version_diff`（`policy_id` 用新版，`fill_method=llm-synth`，`is_mock=1`），供 213 新旧对比读取；时点经 `GET /display/v1/policy/panorama/versions` 读出，见 `POL-L2-DS10-CMP-DATA` 第 3 节。历史版写失败不影响新版计数。
+- 合成行有三个标记：`policy_id` 前缀 `SYN`，`source='llm-synth'`，`etl_batch_id` 前缀 `SYNTH-`（历史版同样带这三个标记，删除时一并删掉；变更行按合成 `policy_id` 加 `fill_method=llm-synth` 删）。`ingest` 读面对这类行返回 `is_mock=1`，评审态挂 MockBadge。中台政策 Mock 页的「删除所有 Mock 数据」只按这三个标记删，真实政策不受影响。
 - D16 例外：合成行直接写 DWD，突破了「缺项数据不进 DWD」。这一条由 `human:淮政玮` 2026-11-07 批准，只限本叶，不推广。
 - 诚实性：没有 LLM 密钥或生成失败时不造行，同步历史记为 `failed`。`running` 超过 30 分钟未回写的，标成 `failed`。同一进程内只允许一条合成在跑（ponytail：多副本时各副本各自限一条，以后要全局唯一再改用库锁）。
 

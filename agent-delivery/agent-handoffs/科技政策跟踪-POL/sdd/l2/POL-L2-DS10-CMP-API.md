@@ -67,7 +67,7 @@ trace 沿既有展示链。同步读在 display 往下带 traceId。Job 沿已�
 
 公开资源：`GET /display/v1/policy/panorama/version-diff`。同步。
 
-一条政策，两个时点。时点就是该政策已经带出的发布时间，来自已有 `search` 和 `{id}/detail`。不另编版本号，不接受任意日期，也不从缺项表反查可选时点。同一政策只有一个发布时间时，对比空。
+一条政策，两个时点。时点由 `GET /display/v1/policy/panorama/versions` 给出（参数 `policy_id` 可空、`limit` 默认 50 硬顶 200）：`gkxlumen-element` 读 DWD `policy_base_info` 上新版与 `-H1` 历史版成对的行，返回 `policy_id`、`title`、`publish_date`、`history_policy_id`、`history_title`、`history_publish_date`。不另编版本号，不接受任意日期，也不从缺项表反查可选时点。没有历史版的政策不出现在列表里，对比空。（2026-11-07 由「同一正文的发布时间」改为成对行，见 `POL-L2-DS10-CMP-DATA` 第 3 节。）
 
 `gkxlumen-element` 按这条政策和两个发布时间只读 `gkxlumenx_gapfill.gapfill_policy_version_diff`。一行是同一政策的一个变更：两个发布时间、变更类型（新增、修改、删除）、一句摘要。表不写入 ODS、DWD、ADS。
 
@@ -172,7 +172,7 @@ D4 仍是 mock。本分册不改 D4，不把 `GDF-POLICY-MOCK-GATE-L01` 写成�
 
 | 序号 | 资源 | 无数据 |
 |---|---|---|
-| 213 | `version-diff` | 两个发布时间对不上行，或凑不齐两个发布时间，则对比空。不返回写死差异 |
+| 213 | `versions`、`version-diff` | 无成对历史版则不列该政策；两个发布时间对不上行则对比空。不返回写死差异 |
 | 214 正文 | `search` / `{id}/detail` | 无命中则列表空。无正文则详情空。受理部门无正文则该格空，不改读部门缺项表 |
 | 214 条件、材料 | 同一次 `{id}/detail` | 缺项表该列无行则该列空。不返回写死条件或材料 |
 | 214 力度分 | `jobs` · `policy_intensity` | 未挂上白名单则结果空，不返回演示分。挂上后无行则该格空，不造 0。失败不清空统计、目录和正文 |

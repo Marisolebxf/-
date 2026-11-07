@@ -88,7 +88,7 @@ flowchart LR
 | 条件 | demo 里实际从哪取 | lumen 里哪条接口能提供 | 本叶怎么用 |
 |---|---|---|---|
 | 213、214 的政策 | `policyListData` 本地数组 | `GET /topic/v1/policy/search`，查询参数原样到 `/internal/policy/search`。条目里有政策 id 和标题 | 展示走已有 `panorama/search`。不另开候选接口 |
-| 213 的两个时点 | `policyVersionHistory` 本地版本号和日期 | 检索和 `GET /topic/v1/policy/docs/{id}` 的发布时间。下游 `/internal/policy/search` 与 `/internal/policy/docs/{id}` | 时点就是发布时间。展示走已有 `panorama/search` 和 `{id}/detail`。不从缺项表反查可选时点，不迁本地版本号。同一政策只有一个发布时间时，凑不齐两个时点，对比空 |
+| 213 的两个时点 | `policyVersionHistory` 本地版本号和日期 | 检索和 `GET /topic/v1/policy/docs/{id}` 的发布时间。下游 `/internal/policy/search` 与 `/internal/policy/docs/{id}` | 时点就是发布时间。2026-11-07 起改走 `panorama/versions`：DWD 新版与 `-H1` 历史版成对，两行发布日即两个时点。不从缺项表反查可选时点，不迁本地版本号。没有历史版时凑不齐两个时点，对比空 |
 | 214 的六维、216 的范围和字段、217 的格式、218 的视角和图种 | 页内常量。`DETAIL_COMPARE_DIMENSIONS`、`benchmarkDimensions` 另有需规没写的项 | 无接口 | 保持第 3 节闭集。不调接口，也不采纳 demo 多出来的维度 |
 | 215 的区域 | `deptCompareRegions`：国家部委、广东省、深圳市 | `GET /topic/v1/policy/indicators?kind=national` 与 `kind=sz`，下游 `/internal/policy/indicators`。这是地区分布，不是部委名单 | 展示走已有 `panorama/stats`。桶空则区域下拉空。不迁那三条常量 |
 | 215 的实施部门 | `departmentPolicyCompare` 本地部门 | 现网没有部门名单。`search/options` 不返回发布机构去重，底表也收集不到可对上的实施部门 | 做 mock。表 `gapfill_policy_impl_dept`，Python 灌区域、实施部门、方面、件数和清单标题。浏览器读 `GET /display/v1/policy/panorama/stats`。不扩 `search/options`，不另开路径，不迁本地部门表，不把件数写成新指标。表空则部门下拉空 |
@@ -103,7 +103,7 @@ flowchart LR
 
 1. 用户做部门对比。区域来自已有 `stats`。项目类别、技术类别来自已有选项。实施部门只读缺项表。选定部门后的件数和清单标题也在这张表里。总件数指标仍是已有政策总数，不把缺项件数登记成新指标。表无行则部门对比空。
 2. 用户做详情对比。时间、受理部门、产业类别从已有正文读出。受理部门不是 215 的实施部门，不读部门缺项表。支持力度从 `ads.policy_intensity` 按政策读出。申报条件、申报材料从缺项表读出。某一列无行则该列空。
-3. 用户做新旧对比。两个时点用该政策的发布时间，从已有检索和正文带出。前端再调 `version-diff`，用这两个发布时间查缺项表里的增改删。无行则对比空。
+3. 用户做新旧对比。政策下拉与两个时点来自 `versions`（新版与 `-H1` 历史版的发布日）。前端再调 `version-diff`，用这两个发布时间查缺项表里的增改删。无行则对比空。
 4. 用户做标杆比对。前端调 `stats`。`gkxlumen-element` 同步读 `ads.policy_intensity` 里已有的支持力度。不提交 Job。无行则该卡空。
 5. 用户看对标可视化。前端提交 `jobs`。展示服务只把 `sub_type=policy_intensity` 交给已有异步任务管道。适配器再调 Python，先跑已有 `run()`，再按地区或政策读力度分。表无行则图空。
 6. 用户看对标报告。前端调 `benchmark-report`，只读缺项表里的正文。无行则报告空。不返回一份写死的 PDF。
@@ -118,8 +118,8 @@ flowchart LR
 
 - 库 `gkxlumenx_gapfill`，表 `gapfill_policy_version_diff`。不写入 ODS、DWD、ADS。
 - 一行是同一政策的一个变更：两个发布时间、变更类型（新增、修改、删除）、一句摘要。时点列填的就是发布时间，不另编版本号。
-- 可选时点不从本表读。来源是已有检索和正文上的发布时间。同一政策只有一个发布时间时，对比空。
-- 灌数是独立脚本，不是请求处理。执行单 `POL-L2-DS10-CMP-GAPFILL-L01`。
+- 可选时点不从本表读。来源是 DWD `policy_base_info` 上新版与历史版（`policy_id` 加 `-H1`、`已废止`）成对的两行发布日，`gkxlumen-element` 读，经 `GET /display/v1/policy/panorama/versions`。没有历史版则对比空。
+- 灌数是独立脚本，不是请求处理。执行单 `POL-L2-DS10-CMP-GAPFILL-L01`。另有 `POL-L2-DS10-SRCMON-SYNTH-L01`：每次合成 10 条，随机 5 条再由 LLM 写旧版，旧版作为独立政策行入 ODS/DWD，增改删写本表（`fill_method=llm-synth`）。
 - 两个发布时间对不上行则对比空，不在接口里拼一段高亮。
 - 浏览器读 `version-diff`。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。
 
