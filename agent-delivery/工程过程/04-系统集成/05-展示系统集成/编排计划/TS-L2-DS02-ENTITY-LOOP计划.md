@@ -1,6 +1,6 @@
 # TS-L2-DS02-ENTITY · 展示技术点关联实体 · LOOP 执行编排计划
 
-- 状态：2026-11-07 QUERY 挂图谱 QUERY（`pending_test`）。DATA=`blocked`，人拍板扩列 → 挂 `TS-L2-DS02-SCHEMA-EXPAND-L01`（ready 未派）。验收单 ready。
+- 状态：2026-11-07 QUERY 挂图谱 QUERY（`pending_test`）。SCHEMA-EXPAND=`pending_test`（`a25e7ce`）。ENTITY DATA=`pending_test`。待 rollout 核 listRecords 强度/中文名/年份。验收单 ready。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4）
 - 用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-DS02-ENTITY-合规演示用例.md`
 - 索引：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/科学技术全景-索引.md`
