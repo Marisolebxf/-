@@ -63,6 +63,16 @@
 - `repos/lumen-algo-py/vendor/entan-py/polan/shenzhen_board.py`
 - `repos/lumen-algo-py/tests/test_policy_shenzhen_board.py`
 
+## 补读 2026-11-07
+
+金额已落在 `demo_gkxlumenx_dwd.policy_support_amount`（59 行）。本段让加载器另查这张表，只把口径为资助、奖励、补贴、补助的非空金额挂到对应 `policy_id`。上限和总额不进均值。表不存在或查询失败时档位仍为 null，不改成 0。
+
+城市截面 SQL 增选 `publish_date`，仍然不含 `amount`。实施日与发布日是同一天的，不计入启动率。
+
+- 测试：`python -m pytest tests/test_policy_shenzhen_board.py -q` → 12 passed
+- 代码 commit：`f107afb`，推送尖端 `b099dc8`（`14f8717..b099dc8`）
+- 未重发 `POLICY-20261107-004`。等这版镜像起来后，由子任务重发并记下新任务号。
+
 ## 成本（会话估算）
 
 | 字段 | 值 |
