@@ -151,6 +151,8 @@
 
 **演示备注**：演示诚实空态/拦截——404 → 引导开始分析是本条核心；任务提交后的空值/失败为诚实分支，不是演示事故。
 
+> **（2026-11-08 更新：已闭合——见 SYNTH-DEMO-ACCEPT-LOOP.md R3）** 1y 窗已出数（200，`snap:mock_20261106_vit_seed_index_main_1y`），matrix 判定改 supported；本节 404/引导期望为当时的诚实分支，保留作历史记录。
+
 ---
 
 ## CASE-VIT-05 · 深圳 × 最近5年（非默认窗 → 404/引导开始分析）
@@ -175,6 +177,8 @@
 - `ads.synth_vit_*` window_label='最近5年' → 0 行（M2 §1.1 G-01）。
 
 **演示备注**：演示诚实空态/拦截；本任务亦是 CASE-VIT-15（失败分支）的推荐触发路径。
+
+> **（2026-11-08 更新：已闭合——见 SYNTH-DEMO-ACCEPT-LOOP.md R3）** 5y 窗已出数（200，`snap:mock_20261106_vit_seed_index_main_5y`），matrix 判定改 supported；其失败态触发器语义随之失效（见 VIT-15 注记）。
 
 ---
 
@@ -285,6 +289,8 @@
 - `ads.synth_vit_*`（region_code=广州 × window_label='最近5年'）→ 0 行（M2 §1.1 G-01）。
 
 **演示备注**：演示诚实空态/拦截——组合条件不预填、不自动起任务是本条核心。
+
+> **（2026-11-08 更新：已闭合——见 SYNTH-DEMO-ACCEPT-LOOP.md R3）** 广州 5y 已出数（200，四城三窗全通），matrix 判定改 supported。
 
 ---
 
@@ -457,6 +463,8 @@
 - `ads.synth_vit_*` 无 failed 行读取语义（M2 §0.3：全库 calc_status 均 succeeded，失败态只存在于任务链）。
 
 **演示备注**：演示诚实失败态——失败文案与「重新尝试」是预期交互，不是演示事故。
+
+> **（2026-11-08 更新：已闭合——见 SYNTH-DEMO-ACCEPT-LOOP.md R3）** 5y/1y 均已出数，原「5y 空窗任务失败」触发路径失效——失败态改为**可选演示**（任务链失败态需另造触发，过程页行为），默认轮次不安排；matrix 判定改 supported。
 
 ---
 
