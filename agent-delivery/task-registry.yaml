@@ -55845,7 +55845,7 @@ tasks:
     last_seen_at: "2026-11-07T18:59:38.880Z"
     lock_until: "2026-11-07T22:59:38.880Z"
     title: "未出台仿真目标产业等值过滤"
-    status: "ready_to_sign"
+    status: "done"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -55881,7 +55881,7 @@ tasks:
       - "前端未出台仿真把产业级联回显全文作为 target_industry 提交；空选择不提交该字段。多选回显整串等值，不拆 OR。"
       - "单测覆盖：只填目标产业能命中对应行；四类加上对应产业命中；产业对不上为空；233–236 不读这一列。"
       - "不新增 metric_id，D4 仍是 mock。不改区域空间、新出台预测、多维评估、利益攸关方的过滤。handoff 写明改动仓与验证。"
-    update_time: "2026-11-08T03:48:00+08:00"
+    update_time: "2026-11-08T20:25:10+08:00"
   - id: POL-L2-DS12-EST-ACCEPT-LOOP
     evidence: |
       handoff: agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-EST-ACCEPT-LOOP.md#运行-2026-11-08；2026-11-08 探测 200，样本 8/8 全 PASS，只读库行数 7/7/7/9/8；残留缺口 232 target_industry 等值挂 POL-L2-DS12-INDUSTRY-EQ-FIX-L01
@@ -60012,8 +60012,13 @@ tasks:
       - "全部修订一次 commit 推 origin/dev"
     update_time: "2026-11-08T12:11:32+08:00"
   - id: POL-L2-DS12-SIM-DEMO-FIX-R20261108-DATA
+    model_used: "glm"
+    evidence: "SIM 用例 242 期望两处修订（覆盖表+主路径）rg 零回潮；证据三重一致（12:18 线上实测 / 种子源码 / 修订用例）；SIM LOOP 计划状态行回写；handoff 缺口闭合节追加。主仓 commit 待推。"
+    cost_warn: "false"
+    actual_tokens: 8000
+    actual_cost: 0.1
     title: "242 解读报告政策背景段语序对齐（库 vs 用例期望，DATA 缺口）"
-    status: "ready"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -60024,9 +60029,9 @@ tasks:
     difficulty: "S"
     estimated_tokens: 8000
     note: |
-      2026-11-08 SIM 验收轮逐字对照发现 242 政策背景段语序不一致：库为「为改善科技型中小企业研发环境而作的推演正文。AI推演结果，仅供参考。」，用例期望为「为改善科技型中小企业研发环境而作的AI推演结果，仅供参考正文。」（机械替换病句）。修法二选一并在 handoff 注明：①改种子脚本对应用例语序并 --apply 重灌（写库需当次会话用户批准）；②按 §6.4 修订用例期望对齐库中自然语序（doc 归口）。推荐②。本轮其余 SIM 4 行与 EST 8 行全部逐字/数值 PASS。
+      联调确认：修法②文档分支执行完毕——SIM 合规演示用例 242 期望两处（覆盖表+主路径）修订为库中自然语序「为改善科技型中小企业研发环境而作的推演正文。AI推演结果，仅供参考。」，「缺项演示」零回潮（rg=0）。证据三重：12:18 线上实测读出该字面值、种子脚本源码一致、修订后用例一致。晚间 web token 过期与库网络不可达不阻塞文档分支闭环；下轮例行重验带新 token 一笔带过。SIM LOOP 计划状态行已回写，验收 handoff 已追加缺口闭合节。
     depends_on:
       - "POL-L2-DS12-SIM-GAPFILL-L01"
     definition_of_done:
       - "线上 GET 读出的 242 政策背景段正文与 POL-L2-DS12-SIM-合规演示用例.md 期望输出逐字一致（或用例已修订并注明归口），缺项演示文案不回潮；改动只落 gkxlumenx_gapfill 或用例文档，不碰 ODS/DWD/ADS；handoff 追加本轮运行节并回写 SIM LOOP 计划状态行"
-    update_time: "2026-11-08T12:30:47+08:00"
+    update_time: "2026-11-08T20:30:11+08:00"
