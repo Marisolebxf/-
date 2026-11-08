@@ -6,7 +6,7 @@
 | WBS | WBS-05-03a（前端菜单壳）/ WBS-05-03b（后端）；四子页不重做，供数归 WBS-02-01 |
 | 需规来源 | `agent-delivery/bid-reference/srs/02-科技信息展示系统/科技人才态势/人才引进推荐评估.md` · seq 305–329（excel 行 308–332） |
 | 覆盖行数 | 25（seq 305–329 每条一行） |
-| 状态 | M3 已填（2026-11-08 网关实测）：接口 200 有真实数据（非 DS-13 实测时的 DOWNSTREAM_UNREACHABLE）· **23 可演（含 14 空态演示）+ 2 部分可演 + 0 覆盖不到**（312/313 已修复升档：后端 `df225ed` + pipeline 4308 全绿；312 机构列已修复升档：后端 `ef1004b` + edu 网关实测 + 前端 `fe497a8` 浏览器实测）· M5 编排完成（`../编排计划/TA-L2-DS16-LOOP计划.md`）· 待 LOOP 实跑授权 |
+| 状态 | M3 已填（2026-11-08 网关实测）：接口 200 有真实数据（非 DS-13 实测时的 DOWNSTREAM_UNREACHABLE）· **23 可演（含 14 空态演示）+ 2 部分可演 + 0 覆盖不到**（312/313 已修复升档：后端 `df225ed` + pipeline 4308 全绿；312 机构列已修复升档：后端 `ef1004b` + edu 网关实测 + 前端 `fe497a8` 浏览器实测）· M5 编排完成（`../编排计划/TA-L2-DS16-LOOP计划.md`）· **R1 实跑完成（2026-11-09，可申请签收）** |
 | 任务ID | DISPLAY-DEMO-CASE-TA-M1-L01 |
 
 **主路径一句话**：选产业级联 + 评估目标 + 当前评估对象 → 贡献度 Tab 三层视图与指标缩放 → 点「自动深度分析」打开贡献匹配报告 → 切尽调 Tab 按学科方向 / 匹配度阈值筛出推荐卡 → 打开尽调报告并导出 PDF；难度 / 成本两 Tab 只展示「无数据」空态。
@@ -43,7 +43,7 @@
 | 328 | 尽调 Tab · 风险与合规性评估 | 风险类型（合作风险 / 学术诚信 / 成果有效性 / IP） | 打开风险区 / 切换风险类型 | `GET /display/v1/talent/recommend/dataset` | 无查询参数；取 `risks` | 四类风险分别展示评估结果与依据；`risks` 无源时该区显示空态并注明「无风险数据」，绝不显示「无风险」结论 | ✅可演（空态演示）。recommendations[].risks 四类（cooperation/integrity/validity/ip）全 NO_DATA、riskLevel=NO_DATA → 风险区空态注明「无风险数据」，绝不显示「无风险」结论 |
 | 329 | 尽调 Tab · 团队组合与协同分析 | 对比对象（2 人及以上）；并行尽调队列；团队分析入口 | 点「对比」/ 打开并行队列 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 展示协同度评分、学科覆盖缺口、角色互补与两两协同表；团队协同模型未建时显示空态，禁用合作网络边密度顶替协同度 | ✅可演（空态演示）。团队协同模型未建（RECRUIT_025 无源）；前端 teamSynergy 红问号锚点已在（TalentComparePanel），协同度空态，禁用合作网络边密度顶替 |
 
-## LOOP 对照汇总（M3 · 2026-11-08）
+## LOOP 对照汇总（M3 · 2026-11-08 首次实测）
 
 **接口实测**：`GET /display/v1/talent/recommend/dataset`（网关 `http://10.50.69.111:30895`，StripPrefix=1，headers `Authorization: Bearer <token>` + `systemCode: display`）→ **HTTP 200 / 13.4s / code=0 / 437KB**；响应中**无 emptyReason**（区别于 DS-13 实测时的 DOWNSTREAM_UNREACHABLE，本次 gkx_show_service→久新 Doris 链路连通、数据真实）。数据集规模：`talents=15`、`recommendations=8`、`contributionScores=15`、`difficultyScores=15`、`costEstimates=15`。322/325 无独立端点（前端本地生成），未触发写操作。
 
@@ -61,6 +61,28 @@
 - 真实：15 名 MVP 人才全档（教育/履历/近作 5 篇/荣誉/合作网络 13 节点含真实合作次数）；recommendations 双分口径真实（aiScore 能力 `ta_recommend_self_v1`、matchScore 学科匹配，updatedAt=2026-11-06）；contributionScores 论文/影响/网络分真实、trend 2015–2025 真实活跃指数、sources 计数真实。
 - 无源（诚实 0/空，演示按空态讲）：难度 7 因子（仅 activity=100.0 真实、level=PARTIAL_DATA、overall=0）、strategies 全空、costEstimate 全族 NO_DATA、risks 四类 NO_DATA、overseasVisits 空、nlpFieldProfile=NOT_BUILT、socialInfluence 仅 mediaMentions 真实。（pastCooperation / network 已于 2026-11-08 修复下发，`df225ed`）
 - 派生（现场需知）：贡献热力 `fieldGain` 为空，热力值由前端按 avg（真实）+ fields 归属规则派生；预测视图为前端演示规则投影（trend×固定系数），非模型产出；`contributionScores[].collaborators` 姓名未解析（显示 tal_xxx id，现场不点名）。
+
+## LOOP 对照汇总（R1 · 2026-11-09 生产实测）
+
+同一端点生产复跑（同一网关 / token / 头），**HTTP 200 / 21.7s / 466.6KB / `code=0`**，无 `emptyReason`。25 行全量对照结论与 M3 一致：**9 真实可演 + 14 空态可演 + 2 部分可演 + 0 覆盖不到**，无新增缺口。
+
+| 维度 | R1 实测 | 与 M3 对比 |
+|---|---|---|
+| 数据集规模 | talents=15、recommendations=8、contributionScores=15、difficultyScores=15、costEstimates=15 | 一致 |
+| 313 合作网络 | `difficultyScores[].network` 键为 `nodes`/`links`；**15 人逐人 13 节点 / 12 links**，link 名如「论文合作 176 次」 | R1 首次逐人核，15/15 全一致 → 升档成立 |
+| 312 过往合作 | pastCooperation 共 **180 条**；机构名 **138/180 实名**；`co_project_count` **0/180**；样本 `{year:2025, partner:"Dingsheng Wang", institution:"清华大学", times:176, output:"联合论文 176 篇"}` | 机构列已接真；项目名/成果/冲突确认真无源（0/180，不编造） |
+| 评分口径 | rec[0] 李亚栋 aiScore 99.0054 / matchScore 75.98171；updatedAt=2026-11-06 | 一致 |
+| 难度 / 成本 / 风险 | activity=100.0 ×15；risks NO_DATA 8/8；strategies 全空；cost 全 0（15/15） | 一致（空态语义维持） |
+
+**新观察：性能**。21.7s 较 M3 13.4s 变慢约 60%，仍在 60s 阈值内，演示前须预热。
+
+**R1 浏览器实测（2026-11-09 前端，lumen-ui-science-pc）**：305–329 逐行实测通过（贡献度三层互斥/真实指标条；尽调李亚栋 aiScore 99.0/岗位匹配 76%、报告六段、风险「无风险评估数据源」、推荐卡 matchScore 降序、updatedAt=2026-11-06；307 自动深度分析弹窗；315 演示规则提示通用文案）。发现 3 处前端与用例承诺不符并已修根因（修复后 type-check/自检/build 三绿 + 浏览器复验 PASS，commit 待推）：
+
+1. **难度 Tab（308/314/309–311/312）**：`level=PARTIAL_DATA` 绿标+仪表盘 0 分（违反 314「模型未建」承诺）→ 灰标「模型未建」+仪表盘「—」；communication/culture/mobility 无源因子以 0 分红「需关注」条呈现（违反 309–311「不以 0 分呈现」）→ 「—」+「无数据」灰态；312 点行联动网络高亮补齐（合作者节点蓝框+相连边加粗变蓝，数据层复验 PASS）；合作表 row-key 由 year（12 行同 2025 键重复）改 partner。
+2. **成本 Tab（316–322）**：真机全 0 以「¥0 万」当真实成本展示、导出按钮未拦截（违反 316「不展示金额」/322「导出空模板并提示无成本数据」）→ 整页「模型未建」空态（`predictedTotal>0` 为有数据信号，全 15 人全 0 故恒空态），空态页无导出按钮。
+3. **329 团队协同**：`synergyScore=60+n*8`、`pairScore=55+互补*40` 演示公式分顶替协同度（违反 A18「禁用任何口径顶替」）、角色按数组下标派名、aiScore `||70` 兜底 → 协同度灰标「模型未建」（面板+报告弹窗），两两只列真实 fieldLabels 共享方向不出分，未入推荐集不显评分（324）。
+
+**结论**：25 行零阻断，307/308 部分可演与 14 行空态均属 M4 裁定口径 → **可申请签收**（需规核对 25 行已逐行对照，等监管人「签收」复跑校验一次通过 → 验收单 done）。
 
 ## 缺口建单（M3 · 2026-11-08）
 
