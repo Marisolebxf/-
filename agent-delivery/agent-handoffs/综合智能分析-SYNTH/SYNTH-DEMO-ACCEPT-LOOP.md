@@ -34,14 +34,15 @@
 | VIT-03 活力 5y | 5y 窗 | **404 `SNAPSHOT_NOT_FOUND`** —— ⚠️ 但库内 1y/5y 行已在（60 行/窗，`mock_20261106_vit_seed_*_5y` 均 succeeded） | ❌ **QUERY 缺口** |
 | VIT-04 活力 1y | 1y 窗 | 404（同上） | ❌ QUERY（并入 Q1） |
 
-### 缺口单（QUERY 类 ×1）
+### 缺口单（QUERY 类 ×1）→ **已修复并复测通过（R3，2026-11-08 02:20）**
 
-- `SYNTH-DEMO-ACCEPT-LOOP-Q1`（ready，api-agent）：活力 1y/5y 行在+succeeded+键面同款但拣不中（要素同结构可 200 对照成立）→ 疑似 latestCalcBatchId/快照解析未纳入新窗批。**修后复测 VIT-04/05/09/15。**
+- `SYNTH-DEMO-ACCEPT-LOOP-Q1`（ready_to_sign，api-agent）：根因 = Java `SynthVitalitySnapshotService.readBatch()` 第二跳漏传 `region/compare/window`（Python 按批回溯按条件过滤，窗落缺省「最近3年」→ 1y/5y 批假 404；3y 撞缺省值掩盖丢参；elements 一跳全参故正常）。修法 +24 行补传条件三元组 + 回归单测（JDK21 下 12 用例全绿）。commit `558d43c` → origin/dev；点名 pipeline [#4243](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/4243) `TOPIC_RELEASE=true`（经监管人审批）→ `deploy:topic` success（基线 6df43da7 含修复）
+- **R3 复测（2026-11-08 02:20）全绿**：VIT-04 深圳1y → 200 `snap:mock_20261106_vit_seed_index_main_1y`；VIT-05 深圳5y → 200 `..._5y`；VIT-09 广州5y → 200；东莞/惠州 5y → 200；回归 VIT-01/02/16（3y 默认/EQUAL/趋势 2022-2024）无回归；1y 趋势 [2024] 合理
 
 ### 矩阵过时项（增量更新待办，M3 增补轮）
 
-- gap 5 条中：VIT-04/05/09 → 改 QUERY 缺口（Q1，数据已在库）；ELEM-12 → **已闭合**（趋势有数）；ELEM-02/03 → **已闭合**（1y/5y 200）
-- VIT-15 失败态触发器随 VIT-05 状态变化需重新设计（1y/5y 将有数后，「失败态」需另寻触发路径或降级为可选演示）
+- gap 5 条中：VIT-04/05/09 → **已修复复测通过**（Q1 单 ready_to_sign；原 G-01「数据无行」前提已被下午灌数 + Q1 修复双重闭合）；ELEM-12 → **已闭合**（趋势有数）；ELEM-02/03 → **已闭合**（1y/5y 200）
+- VIT-15 失败态触发器随 VIT-05 状态变化需重新设计（1y/5y 已出数，「失败态」需另寻触发路径或降级为可选演示；快照面无失败态可触发——任务链失败属过程页行为，演示时按需另造）
 
 ### 环境与令牌
 

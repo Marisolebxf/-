@@ -13,6 +13,11 @@
 #     demo_expectation=拦截（拦截即期望）。
 #   - 活力 1y/5y 窗（VIT-04/05/09/15）按总控判定口径示例「1y/5y ADS 0 行且无过渡表兜底」判 gap 引 G-01；
 #     要素同窗因 ai.synth_elem_four_dim_score 三窗全齐兜底判 partial（ELEM-02/03）。
+#   - 【2026-11-08 M6 增补（SYNTH-DEMO-CASE-M6-MATRIX-UPDATE-L01）】上条判定前提已过时：活力 1y/5y 窗已灌数
+#     （mock_20261106_vit_seed_*_1y/5y 系各 60 行）+ 要素八表三窗全齐（mock_20261107_elem_delivery_{1y|3y|5y}，三窗各 304 行）
+#     + 要素历史年行（mock_20261107_elem_hist_* 共 48 条）；Java 两跳丢参 Q1 修复（lumen-svc-platform commit 558d43c，
+#     pipeline #4243 deploy:topic 绿）后 R3 复测四城三窗全 200。VIT-04/05/09 gap→supported、ELEM-02/03 partial→supported、
+#     ELEM-12/13 gap/partial→supported、VIT-15 失败触发器失效改可选演示（语义注记）。证据真源：../SYNTH-DEMO-ACCEPT-LOOP.md R2/R3。
 #   - D-01/D-02/D-03 为数据缺陷非缺口，不进 verdict，仅在涉及 CASE 的 m2_annotation 注明（M4 登记修复）。
 #   - 缺口编号零新造：仅引用 data-survey-20261107.md §6（G-01~G-08）与客户决策清单（Q-SYNTH-* / Q-ANALYSIS-01）。
 # =====================================================================
@@ -20,7 +25,7 @@
 meta:
   generated_at: "2026-11-07T17:20:00+08:00"
   case_total: 47
-  summary: { supported: 36, gap: 5, partial: 6 }
+  summary: { supported: 44, gap: 0, partial: 3 }   # M6 增量更新（2026-11-08）：36/5/6 → 44/0/3。G-01 系 8 条（VIT-04/05/09/15、ELEM-02/03/12/13）已闭合改 supported；COLLAB-04/05/06 维持 partial——其降级子区块由 G-05（东莞/惠州单类关系）/G-06（无快照走实算）驱动，两缺口 2026-11-08 复核仍开放，按判定口径不得改 supported，证据见 ../SYNTH-DEMO-ACCEPT-LOOP.md R3
 
 per_leaf:
   vitality:
@@ -65,24 +70,26 @@ per_leaf:
       m2_annotation: "对照M2修正：快照按最新批次取（档位批，D-02）"
     - case_id: CASE-VIT-04
       condition: { region: "深圳", compare: "全国重点城市", window: "最近1年", weight_profile: "INDEX_MAIN" }
-      verdict: gap
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午灌数 + Q1 修复，R3 复测 200）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 0, note: "window_label=最近1年 条件行数 0（活力全部 ADS 表 1y/5y 均 0 行，全表 39 行仅最近3年窗）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "window_label=最近1年 条件行数 60（四城 1y 批 mock_20261106_vit_seed_index_main_1y 等，2026-11-07 下午灌数；M2 原查 0 行前提已过时）" }
         api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
-      gap_refs: ["G-01"]
-      demo_expectation: "拦截（404 IntelBatchSnapshotNotFound → no_batch 待分析态显式引导「开始分析」；不承诺出数、不补 0）"
-      m2_annotation: "对照M2修正：总册出数期望按 G-01 收敛为 404/引导；切条件不自动建任务（Q-ANALYSIS-01）；任务实算预期诚实空值/失败"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId=snap:mock_20261106_vit_seed_index_main_1y；Q1 修复证据 = lumen-svc-platform commit 558d43c + pipeline #4243 deploy:topic success"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 is_mock=1 过渡态；M6 前的「404 拦截/引导开始分析」口径为历史诚实分支，保留于三叶册原文）"
+      m2_annotation: "M6 更新：G-01 已闭合（灌数 + Q1 修复 558d43c/pipeline 4243）；「切条件不自动建任务」（Q-ANALYSIS-01）断言不变"
     - case_id: CASE-VIT-05
       condition: { region: "深圳", compare: "全国重点城市", window: "最近5年", weight_profile: "INDEX_MAIN" }
-      verdict: gap
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午灌数 + Q1 修复，R3 复测 200）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 0, note: "window_label=最近5年 条件行数 0（G-01，全表 39 行仅最近3年窗）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "window_label=最近5年 条件行数 60（四城 5y 批 mock_20261106_vit_seed_index_main_5y 等，2026-11-07 下午灌数；M2 原查 0 行前提已过时）" }
         api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
-      gap_refs: ["G-01"]
-      demo_expectation: "拦截（404 → no_batch/config 引导开始分析；任务实算诚实空值/失败，不伪造出数）"
-      m2_annotation: "对照M2修正：同 VIT-04 收敛口径（G-01）；本条亦为 CASE-VIT-15 失败分支的推荐触发路径"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId=snap:mock_20261106_vit_seed_index_main_5y；Q1 修复证据同 VIT-04（558d43c / pipeline #4243）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态；原「404 → no_batch/config 引导」口径作历史记录保留于三叶册）"
+      m2_annotation: "M6 更新：G-01 已闭合；原「本条为 CASE-VIT-15 失败分支推荐触发路径」已失效（1y/5y 出数后该路径不再失败，VIT-15 触发器需另造，见 VIT-15 条）"
     - case_id: CASE-VIT-06
       condition: { region: "广州", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
       verdict: supported
@@ -120,14 +127,15 @@ per_leaf:
       m2_annotation: "缺陷 D-01 影响展示细节（惠州行 region_name 误标「深圳」），M4 登记修复"
     - case_id: CASE-VIT-09
       condition: { region: "广州", compare: "全国重点城市", window: "最近5年", weight_profile: "INDEX_MAIN" }
-      verdict: gap
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午灌数 + Q1 修复，R3 复测 200）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 0, note: "广州 × 最近5年 条件行数 0（全部城市 1y/5y 均无行，G-01）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "四城 1y/5y 窗行已灌（各 60 行/窗，2026-11-07 下午），广州 × 最近5年条件行在场；M2 原查 0 行前提已过时" }
         api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
-      gap_refs: ["G-01"]
-      demo_expectation: "拦截（404 → no_batch/config 待分析态 → 显式开始分析；不预填、不自动起任务、不承诺出数）"
-      m2_annotation: "对照M2修正：组合条件出数期望按 G-01 收敛为 404/引导；同指纹当天复用单飞机制仍成立（Q-ANALYSIS-01）"
+        live_check: "R3 复测（2026-11-08 02:20）200（广州 5y）；东莞/惠州 5y 同轮复测 200（四城三窗全通）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 任务实算过渡态；组合条件与默认窗同为出数分支，原「不预填/404 引导」口径为历史记录）"
+      m2_annotation: "M6 更新：G-01 已闭合；同指纹当天复用单飞机制断言不变（Q-ANALYSIS-01）"
     - case_id: CASE-VIT-10
       condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
       verdict: supported
@@ -181,14 +189,15 @@ per_leaf:
       m2_annotation: "对照M2修正：synth_vit_trend 表不存在（M2 §1.6），趋势依赖表=synth_vit_index 历史年行"
     - case_id: CASE-VIT-15
       condition: { region: "深圳", compare: "全国重点城市", window: "最近5年", weight_profile: "INDEX_MAIN" }
-      verdict: gap
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01——5y 已出数，原失败触发路径失效；改为可选演示（需另造触发）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 0, note: "5y 窗条件行数 0（G-01）→ 任务链实算预期失败，构成本条确定性触发器；全库 calc_status 均 succeeded（failed 态只存在于任务链）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "5y 窗 60 行在库（灌数后 succeeded），原「0 行 → 任务链实算确定性失败」触发器失效；全库 calc_status 均 succeeded（failed 态只存在于任务链）" }
         api_task: "任务过程页轮询（#104，非 ADS，M2 未覆盖）"
-      gap_refs: ["G-01"]
-      demo_expectation: "拦截→失败态（过程页失败阶段 + errorMsg + 「重新尝试」；failed 批不被结果源读取）"
-      m2_annotation: "对照M2修正：推荐触发路径=CASE-VIT-05 的 5y 空窗任务（G-01）；失败文案与重试是预期交互非演示事故"
+        live_check: "R3 复测（2026-11-08 02:20）：1y/5y 出数 → 原失败态触发路径已失效；晨间探活同口径"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合；失败态演示语义改注记
+      demo_expectation: "可选演示（M6 改注记）——任务链失败态需另造触发（过程页行为，如构造不可满足条件的任务），默认轮次不安排；拦截语义「failed 批不被结果源读取」不变，不伪装秒开"
+      m2_annotation: "M6 更新：原「推荐触发路径 = CASE-VIT-05 的 5y 空窗任务」已失效；失败文案与重试仍是预期交互非演示事故，演示时按需另造触发"
     - case_id: CASE-VIT-16
       condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
       verdict: supported
@@ -220,26 +229,28 @@ per_leaf:
       m2_annotation: "对照M2修正：指数/排名为同一目标值 ± 扰动演示值（D-03），讲解口径明确非独立真实城市差异"
     - case_id: CASE-ELEM-02
       condition: { region: "深圳", compare: "全国重点城市", window: "最近1年" }
-      verdict: partial
+      verdict: supported   # M6（2026-11-08）：原判 partial 引 G-01，已闭合（11-07 下午要素三窗灌数 + Q1 修复，R3 复测 200）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 0, note: "1y 窗条件行数 0（要素 ADS 八表同，指数/透镜/贡献/排名 ADS 面诚实空值）" }
-          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 16, note: "深圳×1y×4 维 16 行在库——三窗全齐唯一数据面，任务实算后四维卡仍可出（pending_registration 过渡）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_*（八表）", rows: 304, note: "1y 窗批 mock_20261107_elem_delivery_1y（每窗 index4/type56/level56/domain20/indicator108/weight12/contrib32/rank16 共 304 行，2026-11-07 下午灌数）——M2 原查 0 行前提已过时" }
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 16, note: "深圳×1y×4 维 16 行在库（批 mock_20261106_four_dim_seed）" }
         api_task: "GET /topic/v1/synth/elements/batch-snapshot"
-      gap_refs: ["G-01"]
-      demo_expectation: "拦截（404 → no_batch 引导开始分析）+ 四维过渡卡可出，其余 ADS 面诚实空态不补 0"
-      m2_annotation: "对照M2修正：主期望收敛 404/引导（G-01）；四维例外=唯一全窗数据面（M2 §2.9）；切条件不自动建任务（Q-ANALYSIS-01）"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId 指向 mock_20261107_elem_delivery_1y；Q1 修复证据同 VIT-04（558d43c / pipeline #4243）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态，四维卡带 pending_registration；原「404/引导 + ADS 面诚实空态」口径为历史诚实分支，保留于三叶册）"
+      m2_annotation: "M6 更新：G-01 已闭合（灌数 + Q1 修复 558d43c/pipeline 4243）；「切条件不自动建任务」（Q-ANALYSIS-01）断言不变"
     - case_id: CASE-ELEM-03
       condition: { region: "深圳", compare: "全国重点城市", window: "最近5年" }
-      verdict: partial
+      verdict: supported   # M6（2026-11-08）：原判 partial 引 G-01，已闭合（同 ELEM-02）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 0, note: "5y 窗条件行数 0（G-01）" }
-          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 16, note: "深圳×5y×4 维 16 行在库（四维卡过渡态例外同 ELEM-02）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_*（八表）", rows: 304, note: "5y 窗批 mock_20261107_elem_delivery_5y（行数口径同 ELEM-02，2026-11-07 下午灌数）——M2 原查 0 行前提已过时" }
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 16, note: "深圳×5y×4 维 16 行在库（四维卡过渡态同 ELEM-02）" }
         api_task: "GET /topic/v1/synth/elements/batch-snapshot"
-      gap_refs: ["G-01"]
-      demo_expectation: "拦截（404 → 引导开始分析）+ 四维卡例外可出；ADS 面诚实空值不补 0"
-      m2_annotation: "对照M2修正：同 ELEM-02 收敛口径；四维例外讲解口径同（M2 §2.9）"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId 指向 mock_20261107_elem_delivery_5y"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态；原「404/引导 + 四维卡例外」口径为历史记录，保留于三叶册）"
+      m2_annotation: "M6 更新：同 ELEM-02 收敛口径已随灌数失效，四维卡讲解口径照常带 pending_registration"
     - case_id: CASE-ELEM-04
       condition: { region: "广州", compare: "全国重点城市", window: "最近3年" }
       verdict: supported
@@ -330,25 +341,27 @@ per_leaf:
       m2_annotation: "对照M2修正：非深圳上下文排名 0 行为诚实空态分支（G-02）；D-03 演示值不当真实城市差异结论"
     - case_id: CASE-ELEM-12
       condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
-      verdict: gap
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午补要素历史年行，R2 复测趋势 [2022,2023,2024]）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "每城仅 1 行当年行，无 2022/2023 历史年行（趋势历史种子仅活力侧补过）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "历史年行已补：2020–2023 年度 mock 行批 mock_20261107_elem_hist_*（共 48 条，基期 2024，2026-11-07 下午灌数，与活力共用年度历史读取器）——M2 原查「每城仅 1 行当年行」前提已过时" }
         api_task: "GET /topic/v1/synth/elements/batch-snapshot"
-      gap_refs: ["G-01"]
-      demo_expectation: "诚实空态（趋势卡「暂无数据」，不补 0、不画伪线；可与活力叶趋势演示对比讲解差异）"
-      m2_annotation: "对照M2修正：主期望收敛为诚实空态（要素 ADS 无历史年行，与活力不同——活力有 2022/2023 演示历史行而要素没有）"
+        live_check: "R2 复测（2026-11-07 晚）：要素趋势 [2022,2023,2024] 三年度点（R3 晨间探活同口径）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 趋势卡带「演示历史」口径过渡行，与活力叶同构；原「暂无数据」诚实空态口径为历史记录，保留于三叶册）"
+      m2_annotation: "M6 更新：G-01（要素无历史年行子项）已闭合；趋势读历史批 + 同比取相邻年度口径与活力一致"
     - case_id: CASE-ELEM-13
       condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
-      verdict: partial
+      verdict: supported   # M6（2026-11-08）：原判 partial 引 G-01，已闭合（历史年行补齐后报告趋势段有数据，R2 复测确认）
       evidence:
         tables:
-          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "无历史年行→报告不含趋势点（叶册期望的空态口径）" }
-          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 48, note: "四维段声明依据（is_mock=1 + pending_registration 逐字声明）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "历史年行已补（mock_20261107_elem_hist_*）→ 报告趋势段有数据点，原「不含趋势点」空态口径失效" }
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 48, note: "四维段声明依据（is_mock=1 + pending_registration 逐字声明）——不变" }
         api_task: "GET /topic/v1/synth/elements/batch-snapshot（报告页直读快照，PDF 前端本地生成）"
-      gap_refs: ["G-01"]
-      demo_expectation: "能出结果（🧪 mock 过渡态）——全景/三透镜/四维/贡献/优劣段齐；趋势段按叶册期望落「不含趋势点」空态口径；快照缺失分支=入口禁用"
-      m2_annotation: "对照M2修正：趋势段按实际数据面收敛（无历史年行不出趋势点）+ 四维声明逐字化；局限说明段含 Q-SYNTH-02 / Q-SYNTH-E-02 口径"
+        live_check: "R2 复测（2026-11-07 晚）：要素趋势 [2022,2023,2024]（报告趋势段数据面随 ELEM-12 同步闭合）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态）——全景/三透镜/四维/贡献/趋势/优劣段齐（趋势段随历史年行补齐出数）；四维声明逐字 + 局限说明段口径不变；快照缺失分支=入口禁用"
+      m2_annotation: "M6 更新：趋势段由「不含趋势点」空态口径转为出数；四维声明与 Q-SYNTH-02 / Q-SYNTH-E-02 局限口径不变"
     - case_id: CASE-ELEM-14
       condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
       verdict: supported

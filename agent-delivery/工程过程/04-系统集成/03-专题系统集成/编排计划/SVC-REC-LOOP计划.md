@@ -7,7 +7,7 @@
 - 日期：2026-11-07
 - 常驻验收单建议 ID：`SVC-REC-DEMO-ACCEPT-LOOP`（**只写进本计划，不建单**；等人说「按 LOOP 跑」才按 §2 建单）
 
-- 状态：用例覆盖表已齐。7.6.1 / 7.6.2×2 切片 / 7.7.1 / 7.7.2 可演；产业切片缺口行以「诚实空」作为期望落行（Q-SVC-011）。**覆盖已齐，未执行。等人说「按 LOOP 跑」。**
+- 状态行（2026-11-08 10:5x，R20261108 第 3 轮，qa-agent@human:徐滕强）：**样本满足=是（7/7 行全对上，零缺口）**；停止原因=通过。读锚点任务 SVC-20261107-032 / -042 / -015 / -007（复用成功任务，0 次签发、0 次 Create）。第 2 轮 401 根因=网关前缀误用（URL 多拼 `/enterprise` 段致路由 401 假阴性），token 一直有效；网关锚定 `https://edu.itic-sci.com/tts/svcz/api/ + /topicAsync/topic/v1/** | /svc/topic/v1/**`（as-built `lumen-ui-topic/src/api/enterprise/paths.ts`）。INB1303 读面 `data_source=empty:chain_unmatched[demo_ads]` + empty=true + items=[] + HTTP 200 本轮正式留档（`lumen-topic-py 49640a4` 线上生效实证，第 1 轮 QUERY 缺口闭合）。未建未签子任务。库侧仍受阻（10.50 内网不可达，database-mcp ETIMEDOUT、跳板 SSH 2 次封顶停止），以接口面 detail/result 快照与 rec-list 读面互证替代，与第 1 轮库审基线无漂移；下轮内网恢复可补一次对账（非阻塞）。验收单=**ready**（不签 done，待 human:徐滕强 按 §6.5.7 步 6 确认收尾）。
 
 ## 0. 域数据面备忘（跑 LOOP 前必读）
 
@@ -96,4 +96,4 @@ token 文件：`~/.gkx/topic-loop-token`（一行 access_token，仓库外）。
 4. 按 §1 通过线逐项判定；有缺口才按 §4 建子任务（≤3 张），验收当轮不改库、不重算。
 5. 写报告一节（只追加）。§1 全部对上才算本轮通过，验收单留在 `ready`；等待人说下一轮或签收。
 
-- 状态行（2026-11-07 20:2x，R20261107 第一轮，qa-agent@human:徐滕强）：样本满足=**否**（1 条 QUERY 缺口已建单）；停止原因=继续。探测 200；未新签发，复用当天已成功任务：全量招引 `SVC-20261107-032/038`（count=50 top=90=当期榜 MAX）、INB2503 切片 `SVC-20261107-042`（count=7=当期交集）、诚实空 `SVC-20261107-015`（empty=true）、培育 `SVC-20261107-007`（count=50，快照 top 95.3614 vs 当期表 MAX 95.3634 系 17:01 批次滚动届期差，字段结构不变）。读面 rec-list 前缀实测为 `/tts/svcz/api/svc/topic/v1/service/rec-list`（计划 §3 所写剥 /svc 路径 404，候选前缀一次试中）：attract 全量 50/首行奥飞 90、INB2503 7/首行玻思韬 90、INB1303 HTTP 200 empty=true items=[]、cultivate 50/首行福中达 95.3634。缺口 1 条：INB1303 切片零行时 data_source="demo_ads" 缺 `empty:chain_unmatched` 语义（前端点名产业空态文案不触发），已建 `SVC-REC-DEMO-FIX-R20261107-QUERY`（bugfix，ready 不认领，algorithm-agent，repo=lumen-topic-py）。培育权重双口径并存各自成立（页面 25/30/25/20 vs 榜批次 wanghui_v1_signed20261022 等权 25×4，Q-SVCCHAIN-05 甲方决策链）。I2-12 三行只读核对过（切条件 0 建、单飞/当天复用=`decideAnalysisTaskGate`、重新分析=forceCreate）。验收单=**ready**（不签 done）。
+- ~~状态行（2026-11-08 09:5x，R20261108 第二轮…）~~（第 2 轮结果已并入上方第 3 轮状态行；blocked 前提经 coordinator 复核证伪，详见 handoff 第 3 轮节「根因澄清」）

@@ -57,3 +57,35 @@ DoD 第 6 条「重跑后 rank_no=1/2 与 model_version=v1.3 证据」**记 pend
 - token/口令：全程未接触、不入档
 
 ponytail: full——只改读面装配两处 + 最小自检两条，无新依赖、无新抽象；`ext` 兜底保留旧序是为兼容未重跑的历史快照消费方，真源统一后可删。
+
+## 续修 2026-11-07（监管人「继续」口令授权；签发取证 SVC-20261107-049 发现修复半生效）
+
+### 根因（取证代理代码实读 + 本轮实读复核）
+
+上轮 0084025 排序在 algo 装配层生效，但 `fetch_models` tech 读面无 `org_ids` 形参：industry 为空时排序对象=全池 300 行，rank_no=26/150 是全池序；「同分并列 1/2」仅在行集被过滤到 ≤2 时才成立。
+
+### 改动（仅 lumen-algo-py，commit `c084e7c`，rebase 后推 `origin/dev` 成功）
+
+1. `lumen_common/algorithms/svcan/engine.py` `fetch_models` tech 分支：新增 `org_ids`（可选）切片——有值时按选定机构集合过滤行集后再做集合内 score 降序稳定排序（顶层 rank_no 从 1 递增）；无值保持全池现行为。排序点与 0084025 协同（切片在排序之前，不重复排序）。
+2. `lumen_common/algorithms/svcan/assembly/leaves.py` `leaf_tech_power`：`params.org_ids` 透传 tech 读面（与 org_coverage 透传模式一致）。
+3. `tests/test_svcan_assembly.py`：`MultiTechDB` 多行桩 + 新增 2 用例（`org_ids=[两机构]` → rank_no=[1,2]+v1.3+集合外最高分被丢弃；无 `org_ids` → 全池序回归）。
+
+### 测试
+
+- svcan 域回归（assembly/engine/shortboard/sz_drill）：47 passed。
+- 全量 pytest：**818 passed, 7 skipped, 1 deselected**（816 基线 + 2 新增）。deselected = `test_portal_svc_metrics.py::test_tech_rows_share_one_metric_id`（遗留挂点：全量跑必挂死该文件，单跑 10.7s 可过、断言本身绿；与本改动无关，stash 对照验证过改动前后行为一致）。
+- CI pipeline [4288](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/4288)（c084e7c）：`py:test` ✅ 238s、5 镜像 ✅、`deploy:api`/`deploy:worker`/`deploy:entan-api` ✅、e2e smoke ✅；`deploy:entan-worker`/`deploy:innov` 为 manual 闸门未跑（entan/innov 服务常态手动门，与本改动服务无关，未越权代点）。
+
+### 重签发取证（SVC-20261108-002，不带 force，参数=用例 7.3.1 行）
+
+- 旧网关 `10.50.69.111:30892` 连接超时（2 次，curl 28），改前端等价网关 `edu.itic-sci.com/tts/lumen/api` 一次成功。
+- POST 创建 → `SVC-20261108-002`（reused=false，两机构参数正确）→ 轮询至 **success**。
+- **取证结果：`model_version=svc_proxy_v1.3` ✅；rank_no ❌** —— `target_params.result_payload.tech_power.rows` = **300 行全池**，顶层 rank_no=1..300 连续（0084025 的重排生效），选定两机构（君智容 `004671cd…` / 星诚优威 `007d0adc…`）散布全池中，非 1/2。
+
+### 续修后仍不对的根因（本轮代码实读，未第 3 次重试，按令报告并停）
+
+svc 分析任务执行链不在 lumen-algo-py 直达：Java `RemoteSvcAnalysisPythonClient`（Feign name=**lumen-topic-py**）→ `lumen-topic-py/gkx_svc_service/views/task.py` `_call_svcan()`（:285-298）→ algo `/internal/v1/svcan/analysis/tech_power`。**`_call_svcan` 只对 `org_coverage` 拼 `org_ids` 查询参数；`tech_power` 发裸 GET，org_ids 在 topic-py 被截断**，algo 侧 leaf 收到空 params → 走全池分支。algo GET handler 本身已支持 org_ids（`svcan_analysis_get` :90-99）。**修复落点 = `lumen-topic-py` `_call_svcan` 给 tech_power（建议连同泛化到全部叶子）透传 org_ids**——超出本单「仅 lumen-algo-py」授权范围，未动，等监管人指派。
+
+### cost
+
+tokens ≈ 180k（glm-5.3-Flash），实际成本 < $2，cost_warn=green。token/口令全程未读取内容、未打印、未入档。
