@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|---|
 | R0 | 2026-11-09 | `POST .../situation/talent/global/dataset` → 200 但 `DOWNSTREAM_UNREACHABLE`，耗时 **60.1s** | 0 / 23 | BLOCKED-DS13-01 下游断链；BLOCKED-DS13-02 超时 | 待久新 | **blocked，不进 LOOP** |
 | R0b | 2026-11-09 | 路径更正后 `GET {网关}/display/v1/talent/global/dataset` → 200 / **61.1s** / 110B，`emptyReason=DOWNSTREAM_UNREACHABLE` | 0 / 23 | 根因修正：非「无数据/无实现」——本地/开发 2026-11-07 同一聚合 **29.8s 成功（regions=24 / flows=600）**；生产耗时越过 Feign 读超时即降级空态。`build_global_dataset` 每次请求实时全表聚合、**无缓存/无预计算** | 待久新 + 预计算落地 | **blocked 维持**；待生产 show-py 日志确认是超时还是 Doris 连接错误 |
-| R1 | 2026-11-09 | `GET {网关}/display/v1/talent/global/dataset` → 200 / **3.3s** / 454.9KB，`code=0` 无 `emptyReason`（profile 1.5s / recommend 1.9s 同绿） | **15 / 23**（8 部分可演） | 供数缺口 G-DS13-01~06：engineer 恒 0、动态仅 `media` 单型且无「近一周/近一月」时间窗控件、按 1–6 月播放器可演、机构核心成果/关联专家空、画像 patents/项目分项/国际合作空、学术力分项恒 0 | 无阻塞子任务 | **R1 完成·转需规核对 → 待监管人签收** |
+| R1 | 2026-11-09 | `GET {网关}/display/v1/talent/global/dataset` → 200 / **3.3s** / 454.9KB，`code=0` 无 `emptyReason`（profile 1.5s / recommend 1.9s 同绿） | **15 / 23**（8 部分可演） | 供数缺口 G-DS13-01~06：engineer 恒 0（探针确认 taxonomy 无工程节点）、动态仅 `media` 单型且无「近一周/近一月」时间窗控件、机构核心成果/关联专家空、画像项目级别/经费分项与合作表空（专利经探针排除）、学术力分项恒 0 | 无阻塞子任务 | **R1 完成·转需规核对 → 待监管人签收** |
 
 ## 1. 探测（每轮第一笔，只读）
 

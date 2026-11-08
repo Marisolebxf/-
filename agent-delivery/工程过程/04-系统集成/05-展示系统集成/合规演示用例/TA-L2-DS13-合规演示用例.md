@@ -32,7 +32,7 @@
 | 255 | Tab「人才的最新动态」· 地图导航 + 搜索框 | 鼠标滚轮；搜索框（城市关键词）；地区筛选 | 滚轮 / 搜索回车 | `GET /display/v1/talent/global/dataset` | 无查询参数；搜索词前端解析 | 搜索命中后地图自动定位并放大，同屏叠加该区域气泡与热力；搜索未命中有提示文案，不静默失败 | ✅ 可演（R1：24 城市名 + activityFeed 城市气泡 + heatData 热力可同屏叠加；未命中提示为前端能力） |
 | 256 | Tab「人才的最新动态」· 筛选区 + 播放器 + 动态列表 | 动态类型（学术发布 / 职位变动 / 创新项目）；时间窗（近一周 / 近一月）；播放 / 暂停 / 拖动 | 选类型 / 点播放 / 拖时间轴 | `GET /display/v1/talent/global/dataset` | 无查询参数；类型与时间窗在前端过滤 `activityFeed` | 气泡与热点按类型过滤；播放按时间窗回放并列出对应动态；动态列表分页显示，点击条目定位城市并联动城市抽屉 | ⚠️ 部分可演（R1：类型三选无源（30/30 `media`）；页面现有为 1–6 月播放器（按 `month` 过滤，可命中 2026-02 等真实月份），**无「近一周 / 近一月」时间窗控件** → 期望控件未落地；动态分页与点击联动可演） |
 | 257 | 区域详情 / 机构详情 → 「代表人才」→ 画像页 · 基础信息卡 | 代表人才（区域详情或机构详情中列出）；画像页 Tab「基础画像」 | 点击代表人才 / 打开画像页 | `GET /display/v1/talent/global/dataset`（本页入口）；`GET /display/v1/talent/profile/dataset`（画像页） | 页面间以 `talentId` 传参 | 展示姓名 / 性别 / 国籍 / 出生年份 / 教育背景 / 工作单位 / 职位；无证据字段留空并标注，不推断（出生年份、性别仅少量人 source_confirmed） | ✅ 可演（R1：15 人基础卡有姓名/单位/职位/教育（degree+school+year）/工作经历（position+org+period）；nationality 0/15、gender 0/15、birthYear 仅 3/15（1958/1964/1966）→ 按期望留空并标注、不推断） |
-| 258 | 机构详情「核心成果」/ 代表人才 → 画像页成果统计 | 机构；代表人才；成果类型（论文 / 专利 / 项目） | 打开机构详情 / 打开画像页 | `GET /display/v1/talent/global/dataset`；`GET /display/v1/talent/profile/dataset` | 无查询参数 | 机构侧展示论文数、专利数、近两年论文趋势；人才侧展示论文 / 专利 / 项目计数与被引用次数；无数据项显示空态，不补 0 | ⚠️ 部分可演（R1：机构侧 papers/patents/trend 可演；人才侧 papers.total 232 / citations 21,568 可演，但 patents.total 0、projects 分项 national/international 0（仅 total 366）→ 空态不补 0） |
+| 258 | 机构详情「核心成果」/ 代表人才 → 画像页成果统计 | 机构；代表人才；成果类型（论文 / 专利 / 项目） | 打开机构详情 / 打开画像页 | `GET /display/v1/talent/global/dataset`；`GET /display/v1/talent/profile/dataset` | 无查询参数 | 机构侧展示论文数、专利数、近两年论文趋势；人才侧展示论文 / 专利 / 项目计数与被引用次数；无数据项显示空态，不补 0 | ⚠️ 部分可演（R1 + 探针：机构侧 papers/patents/trend 可演；人才侧 papers.total 232 / citations 21,568 可演，专利 **6/15 人有值**（1/4/3/1/4/6，探针 `ads_talent_patent` 全库 85,069 条 / 6,490 人）；仅 `projects` 的 national/international/fundingWan 无源——`ads_talent_project` 无级别/经费字段且项目关系仅覆盖 15 人 → 空态不补 0） |
 | 259 | 机构详情论文 / 专利卡 / 画像页「分析画像」 | 机构；代表人才；指标（h_index / 被引次数 / 学术力分项） | 打开机构详情 / 切到分析画像 Tab | `GET /display/v1/talent/global/dataset`；`GET /display/v1/talent/profile/dataset` | 无查询参数 | 展示 h_index、被引次数与学术力分项（人才主画像投影列）；空值处显示空态占位，不以 0 冒充 | ⚠️ 部分可演（R1：hIndex 70 / citations 21,568 有值；学术力分项 academicInfluence.fieldHotness 与 hotspotAlignment 恒 0、impactMetrics.ifAvg 0 → 分项走空态；机构侧专利卡随 G-DS13-05 空） |
 | 260 | 机构详情「领域分布」/ 画像页领域标签 | 机构；代表人才；领域维度 | 打开机构详情 / 打开画像页 | `GET /display/v1/talent/global/dataset`；`GET /display/v1/talent/profile/dataset` | 无查询参数 | 机构侧展示领域分布 Top5 图；人才侧展示研究领域标签；无领域字段的人才只显示基础信息，不生成伪标签 | ✅ 可演（R1：20 机构 fieldDistribution 有值；人才 fields/fieldLabels 有值（例：材料科学/化学/工程学），无领域者不生成伪标签） |
 | 261 | 机构详情「合作网络与关联专家」/ 画像页「合作网络图谱」 | 机构；代表人才；节点类型（合作者 / 合作机构 / 团队） | 点击「合作网络与关联专家」/ 切到合作网络 Tab | `GET /display/v1/talent/profile/dataset` | 无查询参数 | 展示合作者与合作机构节点图（画像页取 Top12 合作者）；点击节点可下钻；无合作边时显示空态占位 | ✅ 可演（R1：15 人 `collaborationNetwork` 均 13 节点 / 12 边（15/15 一致），Top12 合作者可演） |
@@ -68,13 +68,15 @@
 
 ### 缺口建单
 
+> 处置细则见 `../编排计划/TA-L2-DS13-供数修复方案.md`（W1–W5 分工：S 类服务侧可算 / D 类久新补采 / C 类契约缺口；含探针 SQL、字段级验收与复验脚本）。
+
 | 缺口 | 性质 | 处置建议 | 责任方 |
 |---|---|---|---|
 | G-DS13-01 工程人才维恒 0（`breakdown.types.engineer` 24/24 = 0） | 供数缺口（工程人才分类未发布） | 页面按空态 + 口径说明，不补 0；久新发布分类后复判 243 / 244 | 久新 + TA 后端 |
 | G-DS13-02 动态类型仅 `media` 单一型（`activityFeed` 30/30） | 供数缺口（学术发布 / 职位变动 / 创新项目三型未入） | 类型切换走空态并声明「媒体报道口径」；补源后复判 253 / 256 | 久新 + TA 后端 |
 | G-DS13-03 动态时间窗密度不足（最新 2026-02-12，30 条 / 15 人档） | 供数缺口 | 256 行按备注 6 降级为「全部」并声明；媒体流扩量后复判 | 久新 + TA 后端 |
 | G-DS13-04 机构 `coreAchievements` / `representatives` 空（0/20） | 供数缺口 | 机构抽屉对应区块走空态；补源后复判 250 | 久新 + TA 后端 |
-| G-DS13-05 画像 `patents` / `projects` 分项 / 国际合作表空 | 供数缺口 | 空态不补 0；补源后复判 258 / 259 / 265 | 久新 + TA 后端 |
+| G-DS13-05 画像 `projects` 级别/类型/经费分项无源 + 国际合作表空（专利经探针已排除） | 供数缺口 | 空态不补 0；补源后复判 258 / 265 | 久新 + TA 后端 |
 | G-DS13-06 学术力分项恒 0（`fieldHotness` / `hotspotAlignment` / `ifAvg`） | 供数缺口 | 分项走空态；补源后复判 259 | 久新 + TA 后端 |
 
 > 历史（M3 · 2026-11-08）：三端点 HTTP 200 但信封 `emptyReason=DOWNSTREAM_UNREACHABLE`，23 行整叶 blocked。R0b 根因修正后确认实为实时全表聚合越过 Feign 读超时 + 无缓存，2026-11-09 整页 TTL 缓存 + 启动预热发布后解除。
