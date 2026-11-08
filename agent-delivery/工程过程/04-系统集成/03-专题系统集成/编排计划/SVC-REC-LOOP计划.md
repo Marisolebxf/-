@@ -7,7 +7,7 @@
 - 日期：2026-11-07
 - 常驻验收单建议 ID：`SVC-REC-DEMO-ACCEPT-LOOP`（**只写进本计划，不建单**；等人说「按 LOOP 跑」才按 §2 建单）
 
-- 状态：用例覆盖表已齐。7.6.1 / 7.6.2×2 切片 / 7.7.1 / 7.7.2 可演；产业切片缺口行以「诚实空」作为期望落行（Q-SVC-011）。**覆盖已齐，未执行。等人说「按 LOOP 跑」。**
+- 状态行（2026-11-08 10:5x，R20261108 第 3 轮，qa-agent@human:徐滕强）：**样本满足=是（7/7 行全对上，零缺口）**；停止原因=通过。读锚点任务 SVC-20261107-032 / -042 / -015 / -007（复用成功任务，0 次签发、0 次 Create）。第 2 轮 401 根因=网关前缀误用（URL 多拼 `/enterprise` 段致路由 401 假阴性），token 一直有效；网关锚定 `https://edu.itic-sci.com/tts/svcz/api/ + /topicAsync/topic/v1/** | /svc/topic/v1/**`（as-built `lumen-ui-topic/src/api/enterprise/paths.ts`）。INB1303 读面 `data_source=empty:chain_unmatched[demo_ads]` + empty=true + items=[] + HTTP 200 本轮正式留档（`lumen-topic-py 49640a4` 线上生效实证，第 1 轮 QUERY 缺口闭合）。未建未签子任务。库侧仍受阻（10.50 内网不可达，database-mcp ETIMEDOUT、跳板 SSH 2 次封顶停止），以接口面 detail/result 快照与 rec-list 读面互证替代，与第 1 轮库审基线无漂移；下轮内网恢复可补一次对账（非阻塞）。验收单=**ready**（不签 done，待 human:徐滕强 按 §6.5.7 步 6 确认收尾）。
 
 ## 0. 域数据面备忘（跑 LOOP 前必读）
 
@@ -96,4 +96,4 @@ token 文件：`~/.gkx/topic-loop-token`（一行 access_token，仓库外）。
 4. 按 §1 通过线逐项判定；有缺口才按 §4 建子任务（≤3 张），验收当轮不改库、不重算。
 5. 写报告一节（只追加）。§1 全部对上才算本轮通过，验收单留在 `ready`；等待人说下一轮或签收。
 
-- 状态行（2026-11-08 09:5x，R20261108 第二轮，qa-agent@human:徐滕强）：样本满足=否；停止原因=**token 失效**。探测 `recommend` 200 但系免 SSO 接口假绿；任务中心 `GET tasks/running` 与 rec-list（attract 全量 / INB2503 / INB1303 / cultivate）同 token 实测均 401「访问令牌不存在 / sso check-token failed」→ 按规程 §6.5.3 停轮。未签发、未建子任务（401 分支禁建单）；7 行判定未执行，QUERY 修复 `lumen-topic-py 49640a4`（零行 → `empty:chain_unmatched` 前缀）的线上复验顺延下一轮。库侧未审计：验收机 10.50 内网不可达（database-mcp `demo-gkxlumenx-ods` ETIMEDOUT、跳板 `zphz-jump` 超时，公网 API 正常）。验收单=**blocked**（note「token 失效，已通知 human:徐滕强」），锁 24h（2026-11-08 09:48 起）。下一轮前置：徐滕强重登刷新 `~/.gkx/topic-loop-token`、验收机内网恢复后**重签发** REC Job 读当期快照再验 7 行；建议探测改用带 token 校验接口。
+- ~~状态行（2026-11-08 09:5x，R20261108 第二轮…）~~（第 2 轮结果已并入上方第 3 轮状态行；blocked 前提经 coordinator 复核证伪，详见 handoff 第 3 轮节「根因澄清」）

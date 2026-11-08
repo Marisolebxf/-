@@ -52,6 +52,52 @@
 - 本轮样本未满足（1 条 QUERY 缺口），验收单退回 `ready`，不签 `done`；等待子任务完工后下一轮**重新签发** REC Job 读当期快照（本域口径）。
 - 成本：本轮 qa 验收实际估算 actual_tokens≈80,000、model=glm-5.3-Flash、actual_cost≈$0.5、cost_warn=false（远低于 $10 阈值）。
 
+## 运行 2026-11-08（第 3 轮）
+
+- 用例：`agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/SVC-REC-合规演示用例.md`（同第 1 轮）
+- 库：**未连库（内网受阻，见下）；未写任何库**；接口面（svcz 网关 + 正确 `/topicAsync` 前缀）全程只读 GET / rec-list POST（查询），0 次 Create
+- 样本满足：**是（7/7 行全对上，零缺口）**
+- 停止：通过（验收单回 `ready` 待监管人签收，本轮不签 `done`）
+
+### 第 2 轮 401 根因澄清（网关前缀误用，token 一直有效）
+
+coordinator 只读复核（验收单 note，2026-11-08 10:2x）已证伪第 2 轮「token 失效」判定：同一 token 走第 1 轮成功路径 `/tts/svcz/api/svc/topic/v1/service/rec-list` 返回 HTTP 200 code=0（而 `/tts/lumen/api` 前缀 401）。本轮实测进一步精确定位：
+
+- 第 2 轮探测/对照 URL 多了 `/enterprise` 段（`/tts/svcz/api/**/enterprise**/topicAsync/...`、`/enterprise/svc/...`），网关路由不存在该段 → 401「访问令不存在 / sso check-token failed」为**路由 401 假阴性**，非 token 过期。
+- as-built 真源：`lumen-ui-topic/src/api/enterprise/paths.ts` L186-200 ——「网关前缀 `/topicAsync`（勿写成 /enterprise/...）」，完整 URL = gateway + `/topicAsync/topic/v1/**`；rec-list 读面 = gateway + `/svc/topic/v1/service/rec-list`（第 1 轮已验）。
+- **本轮起网关一律用 `https://edu.itic-sci.com/tts/svcz/api/` + 上述两段正确前缀**；后续轮次不得再把 `/enterprise` 拼进 `topicAsync` / `svc` 路径。
+
+### 探测（修正版真探针，带 SSO 校验）
+
+- token 文件在位（只读，未打印）；`GET /tts/svcz/api/topicAsync/topic/v1/analysis/tasks/running?user_id=guest` 带 `Authorization: Bearer` + `systemCode: topic` → **HTTP 200**（code=0，running 任务 0 枚——同时互证本轮无任何自动签发）。派单文本中该探针 URL 曾带 `/enterprise` 段（首轮实测 401），已按 as-built 修正为上述路径后通过。
+
+### 7 行判定明细（对照用例覆盖表 + LOOP §1 通过线）
+
+| # | 锚点 | 判定 | 证据 |
+|---|---|---|---|
+| 1 | 7.6.1 招引受理 | ✅ 过 | `SVC-20261107-032`（fp `svc\|attract\|*`，复用不签发）：GET detail / result 均 200，status=success、page_mode_hint=process_succeeded_wait_view；result_payload：status=ads_ready、summary.count=50、top_score=90.0=当期榜 MAX、weights={industryFit:35, techLead:30, potential:20, willingness:15}（页面口径 35/30/20/15）、attract[0]=rank 1 广东奥飞数据科技股份有限公司 90.0、narration.status=ok 且文案含「演示口径（Q-SVCCHAIN-05 待甲方确认）」「不作对外招商承诺」、own_gaps/yellow_gaps=[Q-SVCCHAIN-05]、pending_client_confirm=1。受理链路契约（Create→轮询→result）由 032/038/042/015/007 多枚任务互证，本轮未新签发 |
+| 2 | 7.6.2 正样本切片（INB2503） | ✅ 过 | `SVC-20261107-042`（fp `svc\|attract\|CL-SEI-02.INB2503`）：status=ads_ready、summary.count=7、top_score=90.0、attract 7 行=玻思韬 90.0(rank 5)/迈景 90.0(13)/云舟 90.0(15)/石药明复乐 89.685(30)/溪木源 89.65(33)/瑞通 88.6(44)/创尔 88.6(46)；rec-list kind=attract chain_codes=[INB2503]：HTTP 200、items=7、data_source=demo_ads、rank/name_cn/score 与快照及第 1 轮库表逐行一致 |
+| 3 | 7.6.2 诚实空切片（INB1303） | ✅ 过 | `SVC-20261107-015`（fp `svc\|attract\|CL-SEI-01.INB1303`）：status="empty"、empty=true、summary.count=0、top_score=null、attract=[]、narration.status=skipped。rec-list kind=attract chain_codes=[INB1303]：**HTTP 200、empty=true、items=[]、`data_source=empty:chain_unmatched[demo_ads]`** ——第 1 轮 QUERY 缺口（零行时 source 语义）修复 `lumen-topic-py 49640a4` 线上生效的**正式验收记录**（coordinator 2026-11-08 10:2x 预验同值，本轮独立复验一致）；不回退全量、不造数 |
+| 4 | 7.7.1 培育受理与门控 | ✅ 过 | `SVC-20261107-007`（fp `svc\|cultivate\|*`）：status=success + wait_view、count=50；快照 weights={scale:25, effect:25, marketGap:20, innovation:30}=页面 Tag 口径 25/30/25/20；0 项拦截 as-built：`ServiceRecommendCultivateWorkspace.vue` L195-199 `startAnalysis` 先查 `filterValid`→`Message.warning(filterHint)` 拦截（禁用态为页面实现，第 1 轮 rec-cultivate P0 系列已证；本轮不开页面，按 LOOP 纯后端口径不重复开页） |
+| 5 | 7.7.2 名单与建议 | ✅ 过（届期差沿用已登记口径） | 读面 rec-list kind=cultivate：HTTP 200、items=50、首行 rank 1 深圳市福中达投资控股有限公司 **95.3634=当期批次 MAX**（rec-list 直读 demo_ads 榜表，榜首值与第 1 轮库审批次 `svc_rec_cultivate_wanghui_20261107_170132` MAX 一致）；50/50 行带 suggestion_items（LLM 分组建议经 `lumen-topic-py/gkx_svc_service/repo.py` 透传）、suggestion_text 首行文本可读。007 快照 top_score=95.3614 为签发时批次 `122355` 冻结值，与当期 95.3634 之差=§0.3 批次滚动届期差（字段结构不变，第 1 轮已登记，不判缺）。库侧当期批次行未现场重读（内网受阻），以读面榜首值间接印证批次未滚动 |
+| 6 | I2-12 切条件不自动起任务 | ✅ 过（只读核对） | `ServiceRecommendAttractWorkspace.vue` L146-148 / `ServiceRecommendCultivateWorkspace.vue` L157-159：`setIndustry()` 仅 `job.patchQuery({industry})`；attract 结果页切链 L244-247 仅 watch→`loadRecList()` 读面重拉；两处均不 POST tasks。本轮实测 running=0 + 0 次 Create 互证 |
+| 7 | I2-12 单飞 / 当天复用 / 重新分析 | ✅ 过（只读核对） | `useSvcAnalysisJob.startOrReuse`（L262-274，forceCreate 透传）+ `decideAnalysisTaskGate`：同 (user, type, fp) 在跑→restore_processing、当天成功→restore_result、`forceCreate=true` 才 create；结果页工具条「重新分析」=`startAnalysis(true)`（attract L353 / cultivate L459）；配置区重跑入口按监管人 2026-10-20 走查裁决移除（L511-513 / L686-688 ponytail 注释：I2-12「当天成功有重新分析入口」经由结果页满足）。本轮复用 032/042/015/007 四枚成功任务，未签发 |
+
+### 缺口
+
+零缺口。⑥⑦按派单为只读核对（不发新 POST、不签发），故不产生上行；无需按 DATA/QUERY/ALGO/ENV 分类，未建任何子任务。
+
+### 库侧受阻说明（非被测系统缺陷）
+
+database-mcp `demo-gkxlumenx-ods`（10.50.11.76:3306）`conn_switch` 后 `execute_query` 仍 connect ETIMEDOUT；本机 `nc 10.50.11.76 3306` TCP 不通（无 10.50 路由）；跳板 `zphz-jump` ssh_connect 两次超时后按探活禁令停止（SSH 相关调用共 2 次封顶）。两榜表行数/批次与 `analysis_task` 锚点行**未能现场重审**；本轮以接口面（detail/result 快照 + rec-list 读面直读 ADS）充分替代：快照与读面数值互证一致，且 INB2503=7 / INB1303=0 / cultivate 榜首 95.3634 与第 1 轮库审基线逐项吻合，无漂移迹象。内网恢复后下一轮可补一次库侧对账（非阻塞项）。
+
+### 收尾
+
+- LOOP 计划状态行已回写本轮结果；验收单 `in_progress` → **`ready`**（不签 `done`，等监管人 human:徐滕强 按 §6.5.7 步 6 确认）；MCP note 摘要含「联调通过」（coordinator 派单明确要求，用于 AV 自动验收拾取；此点为本轮对 §6.5.6 的显式偏离，已在派单中授权）。
+- 本轮 0 次任务签发、0 张子任务、未改库未改代码未动 git；token/口令未进文档。
+- 成本：本轮 actual_tokens≈90,000、model=glm-5.3-Flash、actual_cost≈$0.6、cost_warn=false（远低于 $10 阈值）。
+- 样本满足=是。如监管人确认收尾：验收单改 `done`（操作人按 §6.5.2/DoD 为 human:徐滕强 确认后代理执行）；如继续下一轮：无需重签发（本轮已读当期批次），仅补库侧对账即可。
+
 ## 运行 2026-11-08（第 2 轮）
 
 - 用例：`agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/SVC-REC-合规演示用例.md`（同第 1 轮）

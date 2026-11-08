@@ -134,3 +134,47 @@
 - 下一轮开工动作：先重试 database MCP（1 次即止）补对比篮 4 行库侧复核；再验 7.3.1（若裁定后有新修复）。
 - cost：actual_tokens ≈ 70,000；model_used = `glm-5.3-Flash`；actual_cost ≈ $0.35；cost_warn = `green`。
 - 脱敏：token 全程未打印、未入档；本节无口令入档；临时响应文件（/tmp/svc_*.json）已清理。
+
+## 运行 2026-11-08（第 3 轮）
+
+- 用例：`agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/SVC-ORG-合规演示用例.md`（6 行可演，0 覆盖不到）
+- 库：只读；本轮 database MCP 未调用（本域少库面，按派单走接口面为主，沿 REC 先例）；零写操作、零代码改动、零 git。
+- 样本满足：**是**
+- 停止：无（预期零缺口成立，6 行无 DATA/QUERY/ALGO/ENV 可分类缺口，**0 张**子任务）
+
+### 步① 探测
+
+- token 文件存在且非空（值不入档）；`POST /tts/svcz/api/enterprise/topic/v1/recommend`（头 `authorization: Bearer <token>` + `systemcode: topic`，body `{"count":1}`）→ **HTTP 200，code=0**。轮首探测通过。
+- result 端点严格用 `/tts/svcz/api/topicAsync/topic/v1/analysis/tasks/{taskId}/result`（未多拼 `/enterprise` 段，避开第 2 轮 401 假阴性路径）。
+
+### 步② 只读核验（接口面）
+
+- `GET /topicAsync/topic/v1/analysis/tasks/SVC-20261108-003/result?user_id=guest` → HTTP 200；任务壳 `status=success`、`analysisType=svc:analysis:tech_power`、`subType=svcan.tech_power.v0`、`userId=guest`；值取 `target_params.result_payload`（双层 JSON 字符串解析）。
+- 载荷旁证：顶层与 `engine_meta.model_version` 均 `svc_proxy_v1.3`、`engine=svcmodels`、`assembly_version=svcan-assembly-v1.0`、`data_plane=demo`、`data_source=demo_ads`、`yellow_gaps=["Q060"]`、`pending_client_confirm=1`；行级 `calc_batch_id=svcmodels_20261107_155402`（与第 1 轮库侧批次同值 → 无重灌）。
+
+### 步③ 接口对照（6 行）
+
+| 需规行 | 依据快照 | 期望（用例） | 实测（本轮取证） | 判定 |
+|---|---|---|---|---|
+| 7.1.1 覆盖分析 | `SVC-20261107-048`（coverage，success） | 3 家 matrix 82/91/66；fill 1.0；breadth≈2.24 | matrix 6 格：双奉 82×2（INB1309/INB170102）、君智容 91×2、星诚优威 66×2；summary `org_count=3`、`matrix_fill_rate=1.0`、`avg_breadth=2.24`、`field_count=2`、`avg_depth=480.49`（快照原始累计口径，用例已注明两口径差）；`yellow_gaps=[Q-SVCCHAIN-02, GAP-SVC-MATRIX-SRC]`、`pending_client_confirm=1` | ✅ 全等 |
+| 7.1.2 矩阵图 | 同 048 读 | 四象限 3 点：广度 2 × 深度 82/91/66；热力同源 | 同一份 matrix：三家广度各 2、深度 82/91/66 实值 | ✅ |
+| 7.2.1 新增趋势 | `SVC-20261106-008`（trend，success） | 9 曲线×17 点；2010=1,501；2022–2026=2779/2330/1885/1251/36；window_hint 全量截窗 | 「全部」「人工智能」两曲线 2010=1501、近窗五点逐点全等；`window_hint="序列已给全量年度点，前端按 3/5/8 截窗展示"` 逐字一致；`yellow_gaps=[GAP-SVC-TREND-FIELD, Q060]` | ✅ |
+| 7.2.2 市场热度 | 同 008 读 | INB1309 1 星低迷三行依据（1057.3 / 2938.7 / -64.0%）；INB2503 1 星低迷 -67.5%；INB1204 insufficient | heat 段三行逐字一致（含「序列仅 2 个年度点，不足 3 点不评级」、stars=null）；INB2503 增速 -67.5% 同 | ✅（演示规则判定 🧪） |
+| **7.3.1 技术力评估** | **`SVC-20261108-003`（success，本轮取证）** | 选定集合内两行、同分 40.0 并列 rank_no 1/2、批次 v1.3、weights 五维等权 20 | **`tech_power.rows=2` 行（org_ids 切片生效）**：君智容 idx0 `rank_no=1`、星诚优威 idx1 `rank_no=2`，score 均 40.0；行级 `model_version=svc_proxy_v1.3`、`calc_batch_id=svcmodels_20261107_155402`；weights {patents, rdInvestment, experts, cases, standards} 各 20；`dimension_scores` 两行同 {cases:1, rdInvestment:1, 余 0}；`yellow_gaps=["Q060"]`、`pending_client_confirm=1` | ✅ **全对上（第 1/2 轮 ALGO 缺口闭环：aa5a612 修复线上生效）** |
+| 7.3.2 雷达对比 | 同 003 读 | 五维 0/1 归一后两机构多边形重合（演示态）；同分稳定序 1/2 | `dimension_scores` 0/1 两行一致（归一后重合实情成立）；并列序 `rank_no=1/2` 随 7.3.1 已对上 | ✅ |
+
+- 演示态口径行核对：Q-SVCCHAIN-01/02 + Q060 三处均按「演示规则判定 / 演示态声明」核对（ⓘ⚠️🧪 语义由快照 `yellow_gaps` + `pending_client_confirm=1` 承载：003=[Q060]、048=[Q-SVCCHAIN-02, GAP-SVC-MATRIX-SRC]、008=[GAP-SVC-TREND-FIELD, Q060]），未判业务对错、未新造缺口编号。
+
+### 步④ 缺口分类与子任务
+
+- 预期零缺口成立：6/6 全对上，无新缺口键 → **0 张**新建（`SVC-ORG-DEMO-FIX-R20261108-*` 家族本轮不动）。
+- 第 1 轮 ALGO 缺口键 `analysis_task.svc:analysis:tech_power.result_payload.tech_power.rows.rank_no` 本轮**消除**：新快照 003 行集=选定集合 2 行、rank_no=1/2（对照第 2 轮 001 快照 126/150 全池序）。修复背景 = lumen-algo-py org_ids 透传 `aa5a612`（pipeline 4290 全绿上线）。
+- 按规程 §6.5.4：无缺口不建单、不认领子任务。
+
+### 结论与下一轮建议
+
+- 6 行：**6/6 全对上**（7.1.1 / 7.1.2 / 7.2.1 / 7.2.2 / 7.3.1 / 7.3.2）。**样本满足：是**。
+- 验收单 `SVC-ORG-DEMO-ACCEPT-LOOP` 回 `ready`（chore 豁免签收，不签 done）；LOOP 计划状态行已更新为「第 3 轮完成 / 样本满足」。
+- 遗留小项（不挡样本满足、非 6 行范围）：对比篮 guest 4 行（id 62–65）库侧复核自第 2 轮顺延（本轮 database MCP 未调用）；后续如再开轮次可先补这一眼。
+- cost：actual_tokens ≈ 85,000；model_used = `glm-5.3-Flash`；actual_cost ≈ $0.4；cost_warn = `green`（≤$10 线内）。
+- 脱敏：token 全程未打印、未入档；本节无口令入档；临时响应文件（/tmp/svc_*.json）已清理。
