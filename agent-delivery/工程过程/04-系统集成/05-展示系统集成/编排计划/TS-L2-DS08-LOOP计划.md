@@ -8,7 +8,7 @@
 | 轮次 | 日期 | 探测 | 对得上 | 缺口 | 子任务 | 结论 |
 |---|---|---|---|---|---|---|
 | R0 | 2026-11-09 | dataset 200（7.9s，indicatorTree 3 组 / regionIndex 20 / experts 20 / trend 104 期 / visualizationViews 3） | 163–176 未逐行对照 | 167 专家活跃度恒 null、165 indexValue 恒 null | — | 待 R1 对照 |
-| R1 | 2026-11-09 | dataset 200（4.0s / 120.1KB）：indicatorTree 3 组（6/2/3 节点）、权重 0.45/0.35/0.20、regionIndex 20、experts 20、trend 104、ranking 4 榜各 20、rankingHistory 60 机构 × 11 年（2015–2025）、visualizationViews 3 | **11 可演 / 7 部分 / 1 覆盖不到（与用例文档一致）** | ①trend 四类中论文/被引/人才 2000–2014 共 15 年 value=null（真值区间 2015–2025），项目数 2000–2025 全有值；②`rankingHistory` 由 40 机构更新为 60 机构×11 年；③163「演示口径」常显标注属页面证据，待截图核验（后端 L1 权重已确认 45/35/20） | — | **R1 完成·可申请签收（163 页面标注补截图后）** |
+| R1 | 2026-11-09 | dataset 200（4.0s / 120.1KB）：indicatorTree 3 组（6/2/3 节点）、权重 0.45/0.35/0.20、regionIndex 20、experts 20、trend 104、ranking 4 榜各 20、rankingHistory 60 机构 × 11 年（2015–2025）、visualizationViews 3 | **11 可演 / 7 部分 / 1 覆盖不到（与用例文档一致）** | ①trend 四类中论文/被引/人才 2000–2014 共 15 年 value=null（真值区间 2015–2025），项目数 2000–2025 全有值；②`rankingHistory` 由 40 机构更新为 60 机构×11 年；③163「演示口径」常显标注**检查未通过**（原页面仅弹窗内有 note）→ 已补于 `IndicatorTab.vue` 权重提示条（Tag+ⓘ），自检 55 / type-check / build 三绿，**已提交推送 `433ddf1`（origin/dev，2026-11-09，用户授权）并于同日发布，生产页 `https://edu.itic-sci.com/tid/trend/tech-index` 实测通过（Tag + ⓘ tooltip 含 Q-TINDEX-02 均可见）** | — | **已签收（2026-11-09，监管人 human:李伟）** |
 
 ## 1. 探测（每轮第一笔，只读）
 

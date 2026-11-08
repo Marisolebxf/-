@@ -9,10 +9,12 @@
 | 轮次 | 日期 | 探测 | 对得上 | 缺口 | 子任务 | 结论 |
 |---|---|---|---|---|---|---|
 | R0 | 2026-11-09 | `POST .../situation/talent/global/dataset` → 200 但 `DOWNSTREAM_UNREACHABLE`，耗时 **60.1s** | 0 / 23 | BLOCKED-DS13-01 下游断链；BLOCKED-DS13-02 超时 | 待久新 | **blocked，不进 LOOP** |
+| R0b | 2026-11-09 | 路径更正后 `GET {网关}/display/v1/talent/global/dataset` → 200 / **61.1s** / 110B，`emptyReason=DOWNSTREAM_UNREACHABLE` | 0 / 23 | 根因修正：非「无数据/无实现」——本地/开发 2026-11-07 同一聚合 **29.8s 成功（regions=24 / flows=600）**；生产耗时越过 Feign 读超时即降级空态。`build_global_dataset` 每次请求实时全表聚合、**无缓存/无预计算** | 待久新 + 预计算落地 | **blocked 维持**；待生产 show-py 日志确认是超时还是 Doris 连接错误 |
 
 ## 1. 探测（每轮第一笔，只读）
 
-- `POST {网关}/display/v1/situation/talent/global/dataset`，body `{}`；头同其它页。
+- `GET {网关}/display/v1/talent/global/dataset`（无查询参数）；头同其它页。
+  ⚠️ **2026-11-09 路径更正**：原记 `POST .../situation/talent/global/dataset` 实测 **404**；正确为 `GET /v1/talent/global/dataset`（`TalentController` L44–47），`POST` 同路径返回 405。
 - **必须记耗时**：单次调用 > 30s 即记性能缺口（与断链分开记，两条独立缺口）。
 - **熔断**：`DOWNSTREAM_UNREACHABLE` → 记 blocked，连续三轮仍断 → 上报监管人升级（§6.5.7 步 9）。
 
@@ -35,3 +37,13 @@
 - **200 不等于可用**：本页是「状态码 200 + 业务断链」的典型，判定必须看响应体 `DOWNSTREAM_UNREACHABLE`。
 - **2026-11-08 复测仍断**：非瞬时抖动，不要靠「再试一次」掩盖。
 - 本页当前不计入演示脚本。
+- **2026-11-09 根因分析（R0b）**：
+  - 实现是完整的：`gkxlumen-display/TalentController#globalDataset` → Feign → `gkx_show_service` `/internal/gkx-show/talent/global-dataset` → `talent_datasets.build_global_dataset()`；开发环境 2026-11-07 日志有多次成功（`regions=24 flows=600`，预热耗时 **29.8s**）。
+  - 生产返回的 `emptyReason` 是 Java 侧**统一降级文案**（`TalentController#emptyDataset`），既覆盖下游超时，也覆盖下游报错 → **不能据此断定「久新通道彻底断」**。
+  - 生产 61.1s 属「等满读超时再降级」，与本地 29.8s 成功相冲突，指向 **聚合过慢 + 无缓存**（`build_global_dataset` 每次请求实时扫 `ads_talent_profile` 等多张全量表，约 500 行聚合逻辑，无 TTL 缓存/无预计算）。
+  - 待确认项：生产 show-py 是否有该请求的错误栈（超时 / Doris 连接失败 / OOM），需运维或 k8s 日志取证后二选一收敛。
+- **可执行修复路径（按优先级）**：① 预计算落快照表（ETL 每日刷，接口只读快照，目标 ≤5s）— 与本项目 DS-14/16 的 precompute 同型；② 加进程内 TTL 缓存 + 启动预热（止血，1 天内可验证）；③ 拆 Tab 懒加载（按子页分块聚合）；④ 单纯调大 Feign 超时**只能消除空态、不能达到可演示标准**（P2 要求 ≤5s）。
+- **B 已实现（2026-11-09，`lumen-topic-py` 本地未发布）**：
+  - 新增 `gkx_show_service/dataset_cache.py`（`TtlCache`：命中直返 / 过期 stale-while-revalidate / 冷启动单飞 / 失败不写缓存）；`views/talent_dataset.py` 四页接入各自缓存并导出 `WARMERS`；`main.py` 启动后台线程按 `global→region→profile→recommend` 预热并每 300s 续期（TTL 由 `GKX_SHOW_TALENT_CACHE_TTL` 控制，默认 1800s）。
+  - 自检：`TtlCache` 四组用例全过（冷启动单飞、并发只算一次、过期返旧值+后台刷新、失败透传不缓存）；`py_compile` + 导入校验通过（`WARMERS=['global','region','profile','recommend']`）。
+  - **待验证（发布后端到端）**：show-py 发布 → 预热日志出现 `[cache] talent/global refreshed in ~30s` → 生产复测 `GET /v1/talent/global/dataset` 应 <1s 返回真数据（非 `DOWNSTREAM_UNREACHABLE`）；届时按 §2 前置三条转常规 LOOP R1。
