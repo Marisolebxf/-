@@ -25,7 +25,7 @@
 | 63 | 具体成果 · 创新成果详情查看 | 地图标记点 / 列表成果名称 | 点标记或名称 | `POST /display/v1/situation/global-innovation/achievement-detail`（入参 achievementId+type） | 成果 id | 详情展示成果描述、创新价值、发布时间；缺失字段显示「—」 | ✅可演（2026-11-08 补齐）。Python `achievement/detail` 按 ID 取单条，item 与列表同构；不存在时 item=null + emptyReason，无源字段为空不补 0 |
 | 64 | 具体成果 · 关联载体信息查看 | 成果详情内关联载体（企业 / 机构） | 点关联载体 | `POST /display/v1/situation/global-innovation/achievement-relations`（入参 achievementId+type） | 成果 id | 展示载体详情与其其他创新成果；点其他成果可继续跳转详情 | ✅可演。后端有 achievement-relations 端点，返回关联载体列表+关联依据（basis）；用例原写 carriers 不准确，已修正 |
 | 65 | 具体成果 · 订阅监测功能 | 订阅条件：区域、领域、成果类型 | 点「订阅」并保存 | `POST /display/v1/user-behavior/rule/save` | ruleName、scopeType(region/domain)、scopeValue、metrics、keywords | 保存后提示订阅成功，订阅列表新增一条且条件与填写一致 | ✅可演（已有功能直连）。规则表 `sys_user_subscription_rule` 支持 scopeType=region/city/domain/carrier/keyword；**「成果类型」无独立枚举**，用 metrics 或 keywords 承载 |
-| 66 | 具体成果 · 创新成果对比 | 成果多选（≥2 项） | 勾选后点「对比」 | `POST /display/v1/situation/global-innovation/achievement-compare`（入参 items 或 ids+type） | 成果 id 列表 | 对比视图列数 = 所选成果数，行含创新价值、技术领域、地理分布；差异项可辨识 | ✅可演（2026-11-08 补齐）。Python `achievement/compare` 2–10 项逐项返回真实字段；未命中进 missing 并注明原因，不用占位数据凑列 |
+| 66 | 具体成果 · 创新成果对比 | 成果多选（≥2 项） | 勾选后点「对比」 | `POST /display/v1/situation/global-innovation/achievement-compare`（入参 `items:[{achievementId,type}]`，camelCase；或 `ids+type`） | 成果 id 列表 | 对比视图列数 = 所选成果数，行含创新价值、技术领域、地理分布；差异项可辨识 | ✅可演（2026-11-08 补齐并实测）。Python `achievement/compare` 2–10 项逐项返回真实字段；未命中进 missing 并注明原因，不用占位数据凑列。实测 2 项（PRISMA / GoogLeNet）均命中 |
 | 67 | 实时 Tab · 数据指标分类展示 | 指标类别：专利数量 / 论文引用率 / 投资金额（以页面实际指标项为准） | 点指标类别 | `POST /display/v1/situation/global-innovation/realtime` | 指标类别、统计年度 | 所选指标下展示对应数值卡与图表，指标切换后数值来源随之变化；无数据指标显示空态而非 0 | ✅可演。realtime 返回 kpi（key/label/unit/value/year/coverageStatus），可按指标展示数值卡 |
 | 68 | 实时 Tab · 可视化数据呈现 | 图表类型（柱状图 / 折线图 / 饼图 / 热力图） | 切换图表类型 | `POST /display/v1/situation/global-innovation/realtime` | 图表类型、指标、时间范围 | 图形类型随切换变化，数据点数量不变；热力图出现色阶图例 | ✅可演。realtime 返回 trend（27 条时序）+ domainDist（4 条领域分布），可图表呈现 |
 | 69 | 实时 Tab · 知识图谱创新点落图 | 图谱范围（全域 / 指定领域）；创新点选中 | 点创新点 | `POST /display/v1/situation/global-innovation/knowledge-graph` | 领域 id、创新点 id | 创新点在图谱中有对应节点并高亮，关联边可见；点节点出位置与关联关系 | ⚠️部分可演（2026-11-08 补齐）。Python `achievement/graph` 由真实成果与第一作者机构投影出二部图（nodes 带 location、edges=first_author_institution）；**数仓无独立创新点关系边表**，未构造推理边，故非完整知识图谱 |
@@ -93,6 +93,23 @@
 | 88 | 政策建议 | 模型未接入 | ✅ 已销项：`POST /v1/situation/global-innovation/policy-advice` 固定 501 + MODEL_NOT_READY |
 
 **已销项（2026-11-08）**：65 订阅监测、77 监测模型设置、80 订阅管理、81 创新关注点、87 城市订阅 —— 复用既有订阅推送框架（`/v1/user-behavior/rule/*`），无需新增；82 智能推送 —— 历史查询端点已补齐并部署验证。63/66/71/85/88 —— 后端 DS-04 缺口端点已补齐并部署冒烟通过（Java `gkxlumen-display` + Python `gkx_show_service`）；69/70 为诚实降级实现（二部图 / 只排序不赋分）。
+
+**部署冒烟记录（2026-11-08，pipeline 4301 `FULL_PIPELINE=true` → `helm:deploy` 全量重部署后复测）**
+
+| 行 | 端点 | 结果 |
+|---|---|---|
+| 82 | `GET /user-behavior/notifications` | ✅ 200，空表 `[]`；插入测试记录后返回真实行，验证后已清理 |
+| 65/77/80/81/87 | `GET /user-behavior/rules`、`GET /user-behavior/tags` | ✅ 200（规则保存/删除、标签增删、收藏增删取消均已实测通过） |
+| 63 | `POST /situation/global-innovation/achievement-detail` | ✅ found=true，返回 PRISMA 2021 真实字段；无源字段进 `noSourceFields` |
+| 66 | `POST /situation/global-innovation/achievement-compare` | ✅ 2 项均命中（注意入参键为 `achievementId`，非 `achievement_id`，snake 会被忽略并报 MISSING_PARAM） |
+| 69 | `POST /situation/global-innovation/knowledge-graph` | ✅ 8 节点 / 4 边，`graphScope=achievement_carrier_bipartite`，边恒为 `first_author_institution` |
+| 70 | `POST /situation/global-innovation/entity-impact` | ✅ person 返回 5 条 rank + rawMetrics，`score=null` / `scoreStatus=NOT_SCORED` |
+| 71 | `POST /situation/global-innovation/impact-forecast` | ✅ HTTP 501 + `MODEL_NOT_READY`（符合设计） |
+| 85 | `POST /situation/global-innovation/cities` | ✅ 无过滤返回 5 城；`cityCodes` 双城过滤返回 total=2（北京 / 南京），过滤生效 |
+| 88 | `POST /situation/global-innovation/policy-advice` | ✅ HTTP 501 + `MODEL_NOT_READY`（符合设计） |
+
+> 冒烟注意事项：① `level` 必须大写 `CITY`/`COUNTRY`，小写会走 `empty_reason=no_source`；② PowerShell 调 curl 时 `-H $数组` 会把多条 header 拼成畸形值、`-d` 会吞内层双引号，复测请用 `Invoke-WebRequest` 或逐条 `-H`。
+
 
 ### 演示数据标注
 
