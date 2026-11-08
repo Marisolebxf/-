@@ -6,7 +6,7 @@
 | WBS | WBS-05-03a（前端菜单壳）/ WBS-05-03b（后端）；四子页不重做，供数归 WBS-02-01 |
 | 需规来源 | `agent-delivery/bid-reference/srs/02-科技信息展示系统/科技人才态势/人才引进推荐评估.md` · seq 305–329（excel 行 308–332） |
 | 覆盖行数 | 25（seq 305–329 每条一行） |
-| 状态 | M3 已填（2026-11-08 网关实测）：接口 200 有真实数据（非 DS-13 实测时的 DOWNSTREAM_UNREACHABLE）· **22 可演（含 14 空态演示）+ 3 部分可演 + 0 覆盖不到**（312/313 已修复升档：后端 `df225ed` + pipeline 4308 全绿）· M5 编排完成（`../编排计划/TA-L2-DS16-LOOP计划.md`）· 待 LOOP 实跑授权 |
+| 状态 | M3 已填（2026-11-08 网关实测）：接口 200 有真实数据（非 DS-13 实测时的 DOWNSTREAM_UNREACHABLE）· **23 可演（含 14 空态演示）+ 2 部分可演 + 0 覆盖不到**（312/313 已修复升档：后端 `df225ed` + pipeline 4308 全绿；312 机构列已修复升档：后端 `ef1004b` + edu 网关实测 + 前端 `fe497a8` 浏览器实测）· M5 编排完成（`../编排计划/TA-L2-DS16-LOOP计划.md`）· 待 LOOP 实跑授权 |
 | 任务ID | DISPLAY-DEMO-CASE-TA-M1-L01 |
 
 **主路径一句话**：选产业级联 + 评估目标 + 当前评估对象 → 贡献度 Tab 三层视图与指标缩放 → 点「自动深度分析」打开贡献匹配报告 → 切尽调 Tab 按学科方向 / 匹配度阈值筛出推荐卡 → 打开尽调报告并导出 PDF；难度 / 成本两 Tab 只展示「无数据」空态。
@@ -24,7 +24,7 @@
 | 309 | 难度预测 Tab · 沟通障碍智能检测 | 因子 `communication` | 查看该因子 / hover 图标 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 该因子显示红问号 + 「无数据源（IP-10，owner 待定）」说明；不参与难度总分计算，不以 0 分呈现 | ✅可演（空态演示）。communication=0 无源；前端 FACTOR_MISSING 红问号 +「无数据源（IP-10，owner 待定）」锚点已在（recommendMetrics.ts），不生成检测结论 |
 | 310 | 难度预测 Tab · 文化融合风险评估 | 因子 `culture` | 查看该因子 / hover 图标 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 该因子显示红问号与无源说明；不生成文化适应结论或建议方案 | ✅可演（空态演示）。culture=0 无源；前端红问号 +「无数据源（IP-10，owner 待定）」锚点已在，不生成文化适应结论 |
 | 311 | 难度预测 Tab · 国际流动壁垒分析 | 因子 `mobility`；出访 / 流动记录 | 查看该因子 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 该因子显示红问号与无源说明；出访记录为空态（`overseasVisits` 无源），不推测迁徙意愿 | ✅可演（空态演示）。mobility=0 无源；overseasVisits/overseasExchanges 全 15 人空数组（出访无源），空态不推测迁徙意愿 |
-| 312 | 难度预测 Tab · 过往合作情况回溯 | 过往合作表（机构 / 项目 / 合作次数 / 时间）；合作网络图 | 打开难度 Tab / 点击表格行 | `GET /display/v1/talent/recommend/dataset` | 无查询参数；取 `talents[].collaboration` 相关表 | 合作表按机构与项目列出真实合作记录，点击行联动网络图高亮；无合作记录时显示空态，不填演示行 | ⚠️部分可演（2026-11-08 升档修复：commit `df225ed`）。`difficultyScores[].pastCooperation` 已下发：每人 12 条真实合作记录（真实合作者姓名 + 真实 co_paper_count 次数，如 176/189）→ 合作表姓名/次数列可演、点行联动网络图高亮可演；`outcome`/`conflict`/项目名/机构仍无源留空（不编造）→ 机构/项目列空态，维持部分可演 |
+| 312 | 难度预测 Tab · 过往合作情况回溯 | 过往合作表（机构 / 项目 / 合作次数 / 时间）；合作网络图 | 打开难度 Tab / 点击表格行 | `GET /display/v1/talent/recommend/dataset` | 无查询参数；取 `talents[].collaboration` 相关表 | 合作表按机构与项目列出真实合作记录，点击行联动网络图高亮；无合作记录时显示空态，不填演示行 | ✅可演（2026-11-09 升档：机构列已修复，后端 `ef1004b` + 前端 `fe497a8`）。`difficultyScores[].pastCooperation` 已下发：每人 12 条真实合作记录（真实合作者姓名 + 真实 co_paper_count 次数，如 176/189）→ 合作表姓名/次数列可演、点行联动网络图高亮可演；**机构列已接真**：collaborator_talent_id join 主档 current_institution_ids→机构名，138/180 实名（南京大学/University of Pennsylvania/南开大学/Duke/Texas A&M 等，反查不到留空不编造），edu 网关实测 + 浏览器实测表格 PASS；`outcome`/`conflict`/项目名仍无源留空（`co_project_count` 久新全空，实探确认真无源），空态为期望行为 |
 | 313 | 难度预测 Tab · 个人科研活跃度与合作网络分析 | 合作网络力导向图；活跃度指标 | 打开难度 Tab / 拖动网络 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 网络节点与边为真实合作数据，可缩放与下钻；活跃度指标无源时该指标显示空态，不编造活跃度分 | ✅可演（2026-11-08 升档：已修复，commit `df225ed` + pipeline 4308 全绿）。难度 Tab 网络图取 `difficultyScores[].network`，实测每人 13 节点（本人 + 12 真实合作者）/ 12 边（「论文合作 N 次」，权重=真实 co_paper_count）→ 力导向图真实可演、可缩放下钻；无合作边者返回空交前端空态；活跃度因子 activity=100.0 真实可演 |
 | 314 | 难度预测 Tab · 引进阻力量化评分 | 难度面板标题；综合评分 | hover 标题 ⓘ / 查看评分 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 综合难度评分及主要阻力来源；模型未建（T7）时显示空态与「模型未建」说明，禁止用招入推荐匹配度顶替 | ✅可演（空态演示）。overall=0 + level=PARTIAL_DATA（T7 模型未建）；前端 RECOMMEND_MISSING_METRICS.resistance 红问号「无数据源（IP-10）」已在；禁止用推荐匹配度顶替综合难度 |
 | 315 | 难度预测 Tab · 策略建议与预警提示 | 预警筛选（高风险 / 中风险 / 全部） | 切换筛选 / 查看预警 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 预警条目与建议按风险等级过滤；无评估结果时显示「演示规则提示」而不生成个性化策略；不出现凭空的预算或方案建议 | ✅可演（空态演示）。difficultyScores[].strategies 全 15 人空数组 → 按「演示规则提示」空态，不生成个性化策略；不出现凭空预算或方案建议 |
@@ -49,13 +49,13 @@
 
 | 判定 | 行数 | 序号 |
 | --- | --- | --- |
-| ✅ 可演（真实数据支撑） | 8 | 305、306、313、323、324、325、326、327 |
+| ✅ 可演（真实数据支撑） | 9 | 305、306、312、313、323、324、325、326、327 |
 | ✅ 可演（空态演示，501 档语义） | 14 | 309、310、311、314、315、316、317、318、319、320、321、322、328、329 |
-| ⚠️ 部分可演 | 3 | 307、308、312 |
+| ⚠️ 部分可演 | 2 | 307、308 |
 | ❌ 覆盖不到 | 0 | — |
 | blocked 待开发完成 | 0 | — |
 
-合计 25 行，全部对上（2026-11-08 升档：313 随 network nodes+links 修复由 ⚠️ 升 ✅，后端 `df225ed` + pipeline 4308 全绿实测 13 节点/12 边；312 合作表姓名/次数列修复可演、机构/项目列仍空态维持 ⚠️）。难度 / 成本两 Tab 按 M1 备注 3「结构保留 + 空态」501 档语义演示：控件与面板保留、结果区空态、红问号锚点已在（前端 `recommendMetrics.ts` 的 `FACTOR_MISSING` / `RECOMMEND_MISSING_METRICS`）。
+合计 25 行，全部对上（2026-11-08 升档：313 随 network nodes+links 修复由 ⚠️ 升 ✅，后端 `df225ed` + pipeline 4308 全绿实测 13 节点/12 边；2026-11-09 升档：312 随机构列修复由 ⚠️ 升 ✅，后端 `ef1004b` + edu 网关实测机构 138/180 实名 + 前端 `fe497a8` 浏览器实测表格 PASS）。难度 / 成本两 Tab 按 M1 备注 3「结构保留 + 空态」501 档语义演示：控件与面板保留、结果区空态、红问号锚点已在（前端 `recommendMetrics.ts` 的 `FACTOR_MISSING` / `RECOMMEND_MISSING_METRICS`）。
 
 **实测要点**：
 - 真实：15 名 MVP 人才全档（教育/履历/近作 5 篇/荣誉/合作网络 13 节点含真实合作次数）；recommendations 双分口径真实（aiScore 能力 `ta_recommend_self_v1`、matchScore 学科匹配，updatedAt=2026-11-06）；contributionScores 论文/影响/网络分真实、trend 2015–2025 真实活跃指数、sources 计数真实。
@@ -68,7 +68,7 @@
 | --- | --- | --- | --- |
 | 307 | 预测视图无真源预测模型 | 无预测模型数据源；前端按演示规则对真实 trend 投影 | 引用既有缺口口径登记；演示按「规则投影」讲，不得讲成模型预测 |
 | 308、314 | 综合难度模型 T7 未建 | difficultyEstimate 仅 activity 有源（PARTIAL_DATA），其余 7 因子=0、overall=0 | 引用既有 T7 / IP-10；模型未建前按「模型未建」空态演示，禁止把仪表盘 0 分讲成难度低 |
-| 312 | 过往合作表无源 | `difficultyScores[].pastCooperation` 全 15 人空数组（机构/项目/次数/时间表结构无源） | **✅ 已修复（2026-11-08，commit `df225ed`，pipeline 4308 全绿）**：pastCooperation 从主档 collaborationNetwork 真实合作边组装，实测每人 12 条（真实合作者姓名 + 真实 co_paper_count 次数，如 176/189）；`outcome`/`conflict`/项目名/机构仍无源留空，不编造 |
+| 312 | 过往合作表无源 | `difficultyScores[].pastCooperation` 全 15 人空数组（机构/项目/次数/时间表结构无源） | **✅ 已修复（2026-11-08，commit `df225ed`，pipeline 4308 全绿）**：pastCooperation 从主档 collaborationNetwork 真实合作边组装，实测每人 12 条（真实合作者姓名 + 真实 co_paper_count 次数，如 176/189）；**机构列 2026-11-09 已修复（commit `ef1004b`）**：collaborator_talent_id join 主档 current_institution_ids→机构名，edu 网关实测 138/180 实名（反查不到留空），前端 `fe497a8` 浏览器实测表格 PASS → 312 升 ✅可演；`outcome`/`conflict`/项目名仍无源留空（`co_project_count` 久新实探全空，真无源），不编造 |
 | 313 | 难度 Tab 合作网络空 | `difficultyScores[].network` 全空；主档 collaborationNetwork 节点真实但 links 边未下发 | **✅ 已修复（2026-11-08，同上 commit）**：network 下发 nodes（本人+合作者）+ links（「论文合作 N 次」，权重=真实合作次数），实测 13 节点/12 边；无合作边者返回空交前端空态 |
 | 316–322 | 成本全族 NO_DATA | 无薪资源（dwd_org_recruit_info 未入久新），T12/T13 成本模型未建 | 引用既有 DN-A15-COST；501 档空态演示 |
 | 328 | 风险四类无源 | risks 全 NO_DATA（合作/诚信/有效性/IP 评估未建） | 引用既有 IP-10；空态注明「无风险数据」，绝不显示「无风险」 |
