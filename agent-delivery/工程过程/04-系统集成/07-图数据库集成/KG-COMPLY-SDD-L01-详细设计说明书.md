@@ -227,7 +227,7 @@ flowchart TB
 | 1 | 加权度（`weighted_degree`，度中心性） | `tech_point.weighted_degree`（全量覆盖） | 直接读字段出 Top 榜单（实跑 Top20 已出） | 字段空 → **空态** |
 | 2 | 技术点关系网（`tech_rel` 推断边） | 541,428 条边（证据 HIGH 15.1% / MEDIUM 16.7% / LOW 68.2%） | `GO` 抽样导出 + 本机建图（实跑 0 重复边，图规模校验通过） | 边空 → **空态** |
 | 3 | 关键路径步（`tech_path_step`） | 35,018 步 | 按 `path_id` 聚合出路径清单（实跑已出） | 步空 → **空态** |
-| 4 | 社群编号（`community_id`） | 字段 0/19,430 全空 | **Louvain 自算 113 社群**（实跑基线）；落成员表供 434/435/437 消费；字段写回属 LOAD / 数据侧 | 未自算 → **空态**（禁止引用全空字段） |
+| 4 | 社群编号（`community_id`） | 字段 0/19,430 全空（且为**空串**非 NULL——校验用 `<> ''` 判空，不要用 `IS NULL`） | **Louvain 自算 113 社群**（实跑基线）；另源表 `ads_technology_community_member` 有久新已算的 **1,731 簇群**，两套口径差 15 倍**不可混用**，用哪套待 human:徐滕强 拍板（默认先按 Louvain 113 展示）；落成员表供 434/435/437 消费；字段写回属 LOAD / 数据侧 | 未自算 → **空态**（禁止引用全空字段） |
 | 5 | 企业合作网（`cooperate`，M22） | 94,824 条边 / 208,394 企业点 | **本期跑不出有意义结果**：最大连通片仅 220/208,394，图碎片化，中心性与社群结论不可用，**如实标注** | **必为 501**，返回「数据形态不支持，本期不支持」（禁止拿 220 家连通片的排名冒充全量结论；不返回空态——该边有数据，形态不可用与无数据是两回事） |
 | 6 | 产业链依赖网（`depends_on`，M15） | 1,414 环节点 / 1,073 依赖边 | 已验证 DAG、32 层、341 连通片（对应 12 条链各自成树），可做层级 / 溯源展示（实跑已出） | 边空 → **空态** |
 
@@ -305,7 +305,7 @@ flowchart TB
 |---|---|
 | 空间 | `demo_gkx_chain`（STRUCT 放法 B，已选定；禁止写 `gkx_chain` / `gkx_local_1` / `gkx_full_1` / `entan`，不双写不互拷） |
 | 结构基线 | STRUCT §1：14 Tag / 24+6 Edge / VID 规则；出入参不新增 Tag / Edge |
-| 边属性 | 每条边带 `weight double`（没有就 0，不造）、`props`（JSON：`source_table / source_record_id / batch / confidence / match_method / evidence`）、`first_year int`（没有就不填） |
+| 边属性 | 每条边带 `weight double`（没有就 0，不造）、`props`（JSON：`source_table / source_record_id / batch / confidence / match_method / evidence`）；`first_year`：存量 24+6 边型实测**全库均无此字段**，本期入图不强制新建（避免 DDL 膨胀拖期）；若后续需要按首年筛，作为 STRUCT 结构增补项走 T01 待补清单同一 DDL 授权通道 |
 | 批号 | 每批入图带 `props.batch`（如 `comply-20261107-t02`）；端点缺失跳过并计数，不自动补点 |
 | 凭证 | Nebula 连接凭证走主机环境文件 / Secret，**不进 git、不进编排话术** |
 | 执行环境 | 与智树共用 `lumen-algo-py` 编排环境；入图执行为离线作业，不进页面请求链路 |
@@ -523,4 +523,5 @@ flowchart TB
 |---|---|
 | 2026-11-07 | 初稿（agent:architect-agent，监管 human:徐滕强）：FLOW 图 `KG-COMPLY-SDD-FLOW` + 范围逐叶（§1）+ 算法清单 23 条（§2）+ 入图与正式线（§3）+ 接口两案（§4）+ 细任务 14 条（§5）。空间采用 STRUCT 放法 B 结论（`demo_gkx_chain`），验收面采用 ACCEPT 结论（三菜单 + 四类算法），不再标「待结论」 |
 | 2026-11-08 | 复审修订（两轮评审修复，同日完成）：① T05 空态边数量 10→11；② FLOW 图 M22 移出「已能供数」组、错边 A2→A5 改 A3→A5、SEVEN 节点分三组（已能供数 / 无供数空态 / 有数据形态不可用 501）；③ 悬空引用 §1.1①②改正规引用；④ T06 四边语义比对口径拆分；⑤ 正式线最低覆盖修正为 9 Tag + 24 边（技术点层可选不计入，§3.1/§3.2/T11 三处对齐）；⑥ T02–T04 补「先建点后灌边」；⑦ T05 不再写空 Tag（区分 Tag 历史数据与本期无供数）；⑧ T13 依赖 T02–T05→T02–T04；⑨ T01 补 Edge 端点方向抽样核验；⑩ M22 返回语义统一为「必为 501·形态不支持」（§2.2#5/速查/handoff）；⑪ T07 口径改引 STRUCT §1 与 T02–T06 对账单；⑫ diagram-as-contract 链接层级修正。handoff 同步更新 |
-| 2026-11-08 | **ALGO 会签修订（唐绍祖，4 项 P0 直接改进正文）**：⑬ **边属性读法纠错**——§2.1#1「证据在 `props`」与 T08「`props.confidence`」改为 `e.evidence_level` / `e.relation_confidence_score`（`tech_rel` 无 `weight` / `props` 字段）；§5 共同前提新增「属性读写约定」行（本引擎节点须 `v.<tag>.<field>`、边须 `e.<field>`，禁用 `e.<edge_name>.<field>`——该写法返回全 NULL 且不报错）；T08/T09/T10 验收各加权重自检（`relation_confidence_score` 空值率须为 0、加权与无权须有差异）；⑭ **T01 闸门补预期缺口**——新增「T01 预期缺口」小表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 10 边型），DDL 通道改写为「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」，明确唐绍祖非 DDL 授权人；§5 汇总补「关键路径警示」（T02–T04 工期从 DDL 完成后起算，等待期 T05/T08/T09/T10/T14 可并行）；⑮ **T06 加跨边重合度比对**——`apply_to` / `support` 须用「起点+终点」同对连接计数算重合率（实测 9,279 即 100% 重合），>90% 判同批双灌、结论写「建议停读一条」；⑯ **`participates` 端点口径拆分**——213,500 拆为 `enterprise`→`segment` 178,731（M17 可用）+ `institution`→`institution` 34,769（服务公司关联，不属 M02/M19），T02「不做什么」同步逐条点名。会签全文见 [会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md](./会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md) |
+| 2026-11-08 | **ALGO 会签修订（唐绍祖，4 项 P0 直接改进正文）**：⑬ **边属性读法纠错**——§2.1#1「证据在 `props`」与 T08「`props.confidence`」改为 `e.evidence_level` / `e.relation_confidence_score`（`tech_rel` 无 `weight` / `props` 字段）；§5 共同前提新增「属性读写约定」行（本引擎节点须 `v.<tag>.<field>`、边须 `e.<field>`，禁用 `e.<edge_name>.<field>`——该写法返回全 NULL 且不报错）；T08/T09/T10 验收各加权重自检（`relation_confidence_score` 空值率须为 0、加权与无权须有差异）；⑭ **T01 闸门补预期缺口**——新增「T01 预期缺口」小表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 10 边型），DDL 通道改写为「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」，明确唐绍祖非 DDL 授权人；§5 汇总补「关键路径警示」（T02–T04 工期从 DDL 完成后起算，等待期 T05/T08/T09/T10/T14 可并行）；⑮ **T06 加跨边重合度比对**——`apply_to` / `support` 须用「起点+终点」同对连接计数算重合率（实测 9,279 即 100% 重合），>90% 判同批双灌、结论写「建议停读一条」；⑯ **`participates` 端点口径拆分**——213,500 拆为 `enterprise`→`segment` 178,731（M17 可用）+ `institution`→`institution` 34,769（服务公司关联，不属 M02/M19），T02「不做什么」同步逐条点名。会签全文见 [会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md](./会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md)。会签结论：**同意，无阻塞意见** |
+| 2026-11-08 | **会签 P1 顺手修订（3 项，唐绍祖建议）**：⑰ `community_id` 判空口径——实测为**空串非 NULL**，校验用 `<> ''`（禁 `IS NULL`），写进 §2.2#4；⑱ 社群两套口径显式并存——Louvain 113 vs 久新源表 `ads_technology_community_member` 1,731 簇，**不可混用**，用哪套待 human:徐滕强 拍板（§2.2#4 暂按 Louvain 113 为默认展示口径）；⑲ `first_year` 字段实况修正——存量边全库无此字段，本期入图不强制新建（防 DDL 膨胀拖期），需要时走 T01 同一 DDL 授权通道增补（§5 共同前提边属性行改写） |
