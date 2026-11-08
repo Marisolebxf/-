@@ -26,6 +26,7 @@
 | P3 `ads_talent_patent` | 全库 85,069 条 / 6,490 人；MVP 15 人 **6 人有 19 条**，接口返回 1/4/3/1/4/6 | **撤回**「专利全 0」，W4-1 关闭 |
 | P3-3 `ads_talent_project` | MVP 15 人 9,685 条关系；表为 MVP 衍生关系表（`project_mvp_talent_relation_v1`） | 项目关系仅覆盖 15 人 |
 | P4 `DESC ads_talent_project` | 列仅 `relation_type / investigator_role_codes / funded_paper_count / first|latest_evidence_year` 等，**无级别/类型/经费字段** | W4-2 确认为 D 类 |
+| P5 `SHOW TABLES LIKE '%institution%'` + 年度专利覆盖 | `ads_institution_yearly_metrics.patent_count` 字段存在（bigint，68,010 行/年）；真实值 **2015–2020 每年 25,054–41,083 件、2021 13,080、2022 1,917、2023–2026 全 0** | G-DS13-07 定性为「2023+ 缺采」；另证实 `topInstitutions[].patents` 20/20 家同显 20（采样截断） |
 
 > 探针脚本：`%TEMP%\gkx_ds13_probes.py`（单连接 + 5 次退避重试）。执行前因 `test2` 连接数超限（limit 10 / current 39，来自本地 show-py 线程本地连接）被拒，停止本地 show-py（8082）后释放，探针跑通。
 
@@ -63,7 +64,7 @@
 | W2-1 关联专家空（0/20） | `talent_datasets.py` 把 `rep_rows` 过滤成 `tid in mvp_ids and tid in talent_ins` → 只有 15 名富画像人才，几乎落不到 20 家机构 | **已实施 2026-11-09**：改为「Top20 机构在册人才 × `h_index` 降序取 Top3」，`h_index` 为 0/空者不入代表 | 实测 **20/20 机构非空、合计 60 人**（每人 ≤3，`field` 有中文标签） |
 | W2-2 核心成果空（0/20） | 硬编码 `[]` | **已实施 2026-11-09**（口径修正）：库里**没有机构级成果表**（`ads_institution_research_achievement` 等均不存在），且前端 `TalentTopInstitution.coreAchievements` 是 **`string[]`** 纯文本渲染（`InstitutionDetailDrawer`）→ 用「`ads_institution_yearly_metrics` 2025 年论文 + 同比」与「`ads_institution_discipline_profile` Top1 学科论文/人才」两条**可核对事实**，不写生成式文案 | 实测 **20/20 机构非空、每机构 2 条**；结构化条目（title/venue/citedBy）需前端改类型，暂缓 |
 | W2-3 学历结构只有博士 | 仅聚合 `degree='博士'` 得 `doctorCount`；前端抽屉的硕士/学士是 `talentCount×25%/×12%` **估算伪数** | **已实施 2026-11-09**（后端 + 前端同批）：后端按 `ins_edu` 出 `topInstitutions[].education` 三档（有学历证据才计数）、`regions[].universities[].masterPlus` 改真实博士+硕士；前端 `TalentTopInstitution` 加 `education?`，抽屉改读真实三档（全 0 走「暂无学历证据」空态），区域 fallback 删比例估算 | 实测 **20/20 机构三档非空**（浙大 258/18/6、清华 244/10/29、北大 213/10/14，doctor 合计 2,662 与 `doctorCount` 一致）；`pnpm type-check` / `build-only` 绿 |
-| ⚠️ 机构专利数为采样值 | `topInstitutions[].patents` 取自 `ads_institution_patent`，实测 **2,861 家机构恰为 20 条**（该表每机构最多存 20 条） | 页面显示的「专利 20 件」是**截断值，不是真实总量**；本轮未修，建单 **G-DS13-07**（久新补全量专利或改走 `ads_institution_profile` 聚合列——该表无 `patent_count`） | 机构专利数 ≤ 真实值且不出现大面积同值 20 |
+| ⚠️ 机构专利数为采样值 | `topInstitutions[].patents` 取自 `ads_institution_patent`，实测 **2,861 家机构恰为 20 条**（该表每机构最多存 20 条），接口 20/20 家同显 20 | 页面「近 3 年专利」是**截断值**。探针（2026-11-09）另证实 `ads_institution_yearly_metrics.patent_count` 有真实年度值，但**仅到 2022**（2015–2020 每年 25,054–41,083 件；2021 13,080；2022 1,917；2023–2026 全 0 = 缺采），「近 3 年」无法成立。本轮不改数（改则需同步改标签），建单 **G-DS13-07**：久新补采 2023+ 或产品裁定改标签口径（如「专利（截至 2022）」），确认后后端一条聚合即可切换 | 不出现大面积同值 20；口径与标签一致 |
 
 ## 3. W3 · 最新动态（对应 253 / 256）
 
