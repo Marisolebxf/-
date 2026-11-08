@@ -58035,17 +58035,17 @@ tasks:
     update_time: "2026-11-07T21:18:44+08:00"
   - id: SVC-REC-DEMO-ACCEPT-LOOP
     model_used: "glm-5.3-Flash"
-    evidence: "agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-REC-DEMO-ACCEPT-LOOP.md（## 运行 2026-11-08 第 2 轮）"
+    evidence: "agent-handoffs/E7-产业服务链分析/SVC-REC-DEMO-ACCEPT-LOOP.md（## 运行 2026-11-08（第 3 轮））"
     cost_warn: "green"
-    actual_tokens: 60000
-    actual_cost: 0.4
+    actual_tokens: 90000
+    actual_cost: 0.6
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-11-08T01:48:28.621Z"
-    last_seen_at: "2026-11-08T01:48:28.621Z"
-    lock_until: "2026-11-09T01:48:28.621Z"
+    claimed_at: "2026-11-08T02:25:40.559Z"
+    last_seen_at: "2026-11-08T02:25:40.559Z"
+    lock_until: "2026-11-09T02:25:40.559Z"
     claimed_by: "agent:qa-agent"
     title: "机构招引培育演示样本反复验收"
-    status: "blocked"
+    status: "ready"
     agent: "qa-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -58055,7 +58055,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "token 失效，已通知 human:徐滕强"
+    note: |
+      联调通过：第 3 轮 7/7 行全对上，样本满足=是，零缺口。第 2 轮 401 根因=网关前缀误用（URL 多拼 /enterprise 段），token 有效；网关锚定 svcz + /topicAsync/topic/v1/** 与 /svc/topic/v1/**（paths.ts as-built）。真探针 running 200（0 枚 running，0 次 Create，复用 032/042/015/007）。INB1303 读面 data_source=empty:chain_unmatched[demo_ads]+empty=true+items=[]+HTTP 200 正式留档（49640a4 线上生效实证）。未签发、未建子任务；库侧内网受阻以接口面互证替代，与第 1 轮库审基线无漂移。验收单回 ready，待 human:徐滕强 按 §6.5.7 步 6 确认收尾；状态行与 handoff 均已回写。
     collaborators:
       - "data-agent"
       - "algorithm-agent"
@@ -58072,7 +58073,7 @@ tasks:
       - "缺口分类 DATA/QUERY/ALGO/ENV；每轮≤3 张去重；同缺口两轮停交 human:徐滕强"
       - "报告只追加 handoff 运行节（SVC-REC-DEMO-ACCEPT-LOOP.md）；通过后回写 LOOP 计划状态行退回 ready"
       - "签收收尾按 §6.5.7 步 6：监管人 human:徐滕强 确认后改 done"
-    update_time: "2026-11-08T10:01:34+08:00"
+    update_time: "2026-11-08T10:35:29+08:00"
   - id: SVC-PT-DEMO-ACCEPT-LOOP
     evidence: "agent-handoffs/E7-产业服务链分析/SVC-PT-DEMO-ACCEPT-LOOP.md"
     supervised_by: "human:徐滕强"
@@ -59940,3 +59941,37 @@ tasks:
       - "同一 handoff 追加「运行 YYYY-MM-DD」节，不覆盖上一轮。不把 SIM-TEST-L01 标完成"
       - "本单可反复执行。一轮报告写完后由当次监管人把状态退回 ready，不签 done。下一轮再认领"
     update_time: "2026-11-08T02:48:33+08:00"
+  - id: SVC-ORG-DEMO-FIX-R20261108-QUERY
+    cost_warn: "green"
+    actual_cost: 0.35
+    model_used: "glm-5.3-Flash"
+    actual_tokens: 70000
+    evidence: |
+      commit aa5a612（origin/dev）；单测 test_tech_power_pushes_org_ids_to_algo PASSED + 邻域回归 45 passed/1 skipped；pipeline 4290 success（9 job 全绿，4 deploy success）；线上快验 SVC-20261108-003 success：tech_power.rows=2 行选定集合、rank_no=1/2（修复前 126/150）、model_version=svc_proxy_v1.3、calc_batch_id=svcmodels_20261107_155402；handoff=agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-FIX-R20261108-QUERY.md
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-08T02:37:25.269Z"
+    last_seen_at: "2026-11-08T02:37:25.269Z"
+    lock_until: "2026-11-09T02:37:25.269Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "技术力快照 org_ids 透传：_call_svcan tech_power 分支补参数下推"
+    status: "in_progress"
+    agent: "algorithm-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "开工：修复 lumen-topic-py task.py::_call_svcan org_ids 只转发 org_coverage 不转发 tech_power 的受理层断链（诊断见 SVC-ORG-DEMO-ACCEPT-LOOP 第2轮）"
+    design_refs:
+      - "agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-ACCEPT-LOOP.md"
+    definition_of_done:
+      - "缺口键：lumen-topic-py/gkx_svc_service/views/task.py::_call_svcan（约 L285-292）——org_ids 只为 leaf=org_coverage 拼接转发 URL，tech_power 分支不存在导致参数静默丢弃（诊断报告 cb20373a）"
+      - "修复：org_ids 拼接条件扩为 org_coverage + tech_power（一行级 diff），其他 leaf 不动；不改评分/榜行/受理链路其它部分"
+      - "自检：仓内既有测试习惯新增 1 个单测（tech_power 分支断言 org_ids 进入转发 URL/Query）+ 邻域回归绿"
+      - "commit [agent:algorithm-agent] 推 origin/dev；CI pipeline 全绿 + deploy:api/worker success（作为本仓现行发布门）"
+      - "handoff：agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-ORG-DEMO-FIX-R20261108-QUERY.md（diff 摘要+自检+CI 证据+ponytail: 行+cost 四字段+架构合规自检≥7✅）"
+      - "禁止：不改 lumen-algo-py（c084e7c 已就绪）、不改 Java 门面、不改前端、不改用例期望、不新增 metric_id"
+    update_time: "2026-11-08T10:56:05+08:00"
