@@ -6,7 +6,7 @@
 | WBS | WBS-05-19 |
 | 需规来源 | `agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md`，序号 56–88（excel 行 59–91，leaf_count=33） |
 | 覆盖行数 | 33 |
-| 状态 | M2/M3 已填 · LOOP 对照完成（R1）· 后端缺口已销项（2026-11-08，待部署/签收） |
+| 状态 | M2/M3 已填 · LOOP 对照完成（R1）· 后端缺口已销项并部署冒烟通过（2026-11-08，待签收） |
 | 任务ID | DISPLAY-DEMO-CASE-TS-M1-L04 |
 
 **主路径一句话**：进入全球创新监测「综合」Tab → 全球地图落点展示创新成果 → 按创新价值排序看列表 → 点一项成果看详情与关联载体 → 切「能力」Tab 看城市创新能力对比。
@@ -41,7 +41,7 @@
 | 79 | 监测 Tab · 创新价值评估 | 创新点选中 | 点「评估」 | `POST /display/v1/situation/global-innovation/innov-value`（入参 metricId，默认 M_INNOV_POINT_VALUE） | 创新点 id | 展示价值评估结果与分析报告段落；评估失败时给出明确错误提示，不显示 0 分 | ✅可演。后端有 innov-value 端点（算法库 precompute 真实结果，非 mock）。返回 valueScore/noveltyN/influenceN/maturityN 等，影响潜力维可能缺测（标注「缺测」不补 0） |
 | 80 | 监测 Tab · 订阅管理 | 订阅对象：领域、创新载体；推送频率 | 新增/编辑/删除订阅 | `GET /display/v1/user-behavior/rules`、`POST /rule/save`、`POST /rule/remove`、`POST /rule/status` | scopeType(domain/carrier)、scopeValue、pushFrequency、status | 列表增删改后与实际订阅一致；删除后不再出现在列表 | ✅可演（已有功能直连）。CRUD 四端点齐（列表/保存/删除/启停）；scopeType 支持 domain 与 carrier |
 | 81 | 监测 Tab · 创新关注点设置 | 关键词、技术领域、创新类型 | 保存关注点 | `POST /display/v1/user-behavior/rule/save`（scopeType=keyword/domain） | keywords（逗号分隔）、scopeType、scopeValue | 保存后关注点标签可见；重复添加同标签不产生重复项 | ✅可演（已有功能直连）。规则表原生 `keywords` 字段 + scopeType=keyword；**「创新类型」无独立枚举**，可并入 keywords |
-| 82 | 监测 Tab · 智能推送 | 推送方式（站内通知 / 邮件）；推送历史 | 查看推送历史、改推送设置 | `POST /display/v1/user-behavior/rule/save`（channels）；`GET /display/v1/user-behavior/notifications?limit=50`（历史）；`POST /display/v1/subscription/push-once`（手动触发） | channels(站内/邮件)、pushFrequency、reminders | 有推送记录时列出时间与内容，条数=接口返回；无记录时显示「暂无推送记录」；未接入时明示未提供 | ✅可演（2026-11-08 补齐）。推送引擎已就绪（SubscriptionPushJob + SubscriptionNotifyService + 5 adapter）；历史查询端点 `GET /v1/user-behavior/notifications` 已实现（upms `/notification/list` 透传，按 push_time 倒序，默认 50 上限 200），待部署生效 |
+| 82 | 监测 Tab · 智能推送 | 推送方式（站内通知 / 邮件）；推送历史 | 查看推送历史、改推送设置 | `POST /display/v1/user-behavior/rule/save`（channels）；`GET /display/v1/user-behavior/notifications?limit=50`（历史）；`POST /display/v1/subscription/push-once`（手动触发） | channels(站内/邮件)、pushFrequency、reminders | 有推送记录时列出时间与内容，条数=接口返回；无记录时显示「暂无推送记录」；未接入时明示未提供 | ✅可演（2026-11-08 补齐并部署验证）。推送引擎已就绪（SubscriptionPushJob + SubscriptionNotifyService + 5 adapter）；历史查询端点 `GET /v1/user-behavior/notifications` 已部署，实测 200（空表返回 `[]`，插入测试记录后返回真实行并含 pushTime/level/content，验证后已清理） |
 | 83 | 能力 Tab · 城市创新数据监控 | 城市（全球主要城市，以页面城市列表为准）；指标（创新基金 / 投资规模 / 创新机构 / 企业投入 / 创新成果） | 选城市、切指标 | `POST /display/v1/situation/global-innovation/cities` | 城市编码、指标、年份 | 城市数据卡与图表按所选指标切换；该城市无数据时显示「该城市暂无数据」 | ✅可演。cities 返回 paperCount/citedByCount/talentCount/institutionCount/projectCount，支持 level/year/sortBy/limit，可切换指标 |
 | 84 | 能力 Tab · 创新能力排名计算 | 排名口径（总体 / 分维度）；年份 | 点「计算/查看排名」 | `POST /display/v1/situation/global-innovation/cities` | 年份、维度 | 城市按创新能力指数排序，名次连续；口径说明可查看 | ✅可演（口径说明）。cities 返回 rank，但**是单一真实字段排序序号，非加权综合指数**（sortNote 明确说明）。可展示排名但须说明口径；无 indexScore 字段 |
 | 85 | 能力 Tab · 城市对标分析 | 城市多选（≥2） | 勾选后点「对标」 | `POST /display/v1/situation/global-innovation/cities`（新增 cityCodes/codes） | 城市编码列表、年份 | 对比视图展示各城市在创新投入/产出/环境的差异；列数=所选城市数 | ✅可演（2026-11-08 补齐）。cities 新增 `cityCodes`/`codes` 多城市编码列表，Python 按 `location_id IN (...)` 过滤，只返回所选城市行 |
@@ -78,7 +78,7 @@
 | 定时推送引擎 | `SubscriptionPushJob`（扫启用规则 + 频率闸门 + 幂等） | 5 adapter：region / city / domain / carrier / talent |
 | 推送落地 | `SubscriptionNotifyService` 双写站内 `sys_user_notification` | channels: 站内 / 邮件 |
 
-**改判依据**：用户 2026-11-08 裁定「订阅推送已有功能可直接对接、这期要做」；历史查询端点已补齐（upms `SysUserBehaviorController#/notification/list` + feign + display `/notifications`），编译通过，待部署。
+**改判依据**：用户 2026-11-08 裁定「订阅推送已有功能可直接对接、这期要做」；历史查询端点已补齐（upms `SysUserBehaviorController#/notification/list` + feign + display `/notifications`）。**2026-11-08 已部署验证**（pipeline 4301，`FULL_PIPELINE=true`）：`rules`/`tags`/`notifications` 均 200，`notifications` 插入测试记录后返回真实行，验证数据已清理。期间修掉两个真实缺陷：① token 无 tenantId 时 Feign 丢弃 null 参数 → 改为按 upms 默认租户 1 对齐；② 写入租户 0 与 upms 默认过滤租户 1 不一致 → 统一为 `TENANT_ID_1`。
 
 ### 缺口建单（不可演行）
 
@@ -92,7 +92,7 @@
 | 85 | 城市对标 | cities 不支持多城市编码列表 | ✅ 已销项：cities 新增 `cityCodes`/`codes`，Python `location_id IN (...)` |
 | 88 | 政策建议 | 模型未接入 | ✅ 已销项：`POST /v1/situation/global-innovation/policy-advice` 固定 501 + MODEL_NOT_READY |
 
-**已销项（2026-11-08）**：65 订阅监测、77 监测模型设置、80 订阅管理、81 创新关注点、87 城市订阅 —— 复用既有订阅推送框架（`/v1/user-behavior/rule/*`），无需新增；82 智能推送 —— 历史查询端点已补齐。63/66/71/85/88 —— 后端 DS-04 缺口端点已补齐并编译通过（Java `gkxlumen-display` + Python `gkx_show_service`），待部署生效；69/70 为诚实降级实现（二部图 / 只排序不赋分）。
+**已销项（2026-11-08）**：65 订阅监测、77 监测模型设置、80 订阅管理、81 创新关注点、87 城市订阅 —— 复用既有订阅推送框架（`/v1/user-behavior/rule/*`），无需新增；82 智能推送 —— 历史查询端点已补齐并部署验证。63/66/71/85/88 —— 后端 DS-04 缺口端点已补齐并部署冒烟通过（Java `gkxlumen-display` + Python `gkx_show_service`）；69/70 为诚实降级实现（二部图 / 只排序不赋分）。
 
 ### 演示数据标注
 
