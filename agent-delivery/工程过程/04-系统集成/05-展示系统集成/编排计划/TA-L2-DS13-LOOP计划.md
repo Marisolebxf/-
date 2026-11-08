@@ -1,8 +1,8 @@
 # TA-L2-DS13 全球领域人才态势 · 演示样本循环（LOOP）计划（阻塞型）
 
-> 依据：`产品实现规程.md` §6.5（含 §6.5.7）。用例真源：`../合规演示用例/TA-L2-DS13-合规演示用例.md`（23 行，全部未填）。
+> 依据：`产品实现规程.md` §6.5（含 §6.5.7）。用例真源：`../合规演示用例/TA-L2-DS13-合规演示用例.md`（23 行，R1 已判 15 可演 / 8 部分可演）。
 > 验收单：`TA-DS13-DEMO-ACCEPT-LOOP`。监管人：human:李伟。
-> 现状：**D 档·禁排 blocked** —— `DOWNSTREAM_UNREACHABLE`（2026-11-08 复测仍断，非瞬态）；且单次调用 60.1s 已触网关超时。
+> 现状：**R1 完成 · 可申请签收** —— 缓存止血方案已发布并实测生效（global 3.3s / profile 1.5s / recommend 1.9s，均 `code=0` 无 `emptyReason`）；8 条部分可演均为供数缺口，页面走空态不伪闭合。
 
 ## 状态行（每轮回写）
 
@@ -10,6 +10,7 @@
 |---|---|---|---|---|---|---|
 | R0 | 2026-11-09 | `POST .../situation/talent/global/dataset` → 200 但 `DOWNSTREAM_UNREACHABLE`，耗时 **60.1s** | 0 / 23 | BLOCKED-DS13-01 下游断链；BLOCKED-DS13-02 超时 | 待久新 | **blocked，不进 LOOP** |
 | R0b | 2026-11-09 | 路径更正后 `GET {网关}/display/v1/talent/global/dataset` → 200 / **61.1s** / 110B，`emptyReason=DOWNSTREAM_UNREACHABLE` | 0 / 23 | 根因修正：非「无数据/无实现」——本地/开发 2026-11-07 同一聚合 **29.8s 成功（regions=24 / flows=600）**；生产耗时越过 Feign 读超时即降级空态。`build_global_dataset` 每次请求实时全表聚合、**无缓存/无预计算** | 待久新 + 预计算落地 | **blocked 维持**；待生产 show-py 日志确认是超时还是 Doris 连接错误 |
+| R1 | 2026-11-09 | `GET {网关}/display/v1/talent/global/dataset` → 200 / **3.3s** / 454.9KB，`code=0` 无 `emptyReason`（profile 1.5s / recommend 1.9s 同绿） | **15 / 23**（8 部分可演） | 供数缺口 G-DS13-01~06：engineer 恒 0、动态仅 `media` 单型、时间窗最新 2026-02-12、机构核心成果/关联专家空、画像 patents/项目分项/国际合作空、学术力分项恒 0 | 无阻塞子任务 | **R1 完成·转需规核对 → 待监管人签收** |
 
 ## 1. 探测（每轮第一笔，只读）
 
@@ -20,11 +21,11 @@
 
 ## 2. 阻塞解除前置（三条全满足才转常规 LOOP）
 
-| 前置 | 验收口径 | 责任方 |
-|---|---|---|
-| P1 下游通道恢复 | `talent/global/dataset` 返回真实业务体（非 `DOWNSTREAM_UNREACHABLE`） | 久新 |
-| P2 超时治理 | 单次响应 ≤ 5s，或改为异步任务 + 轮询；60s 同步调用不可演示 | 后端 + 久新 |
-| P3 用例 23 行零未填 | M2/M3 判定补齐（当前 23 行全空） | 用例侧 |
+| 前置 | 验收口径 | 责任方 | 状态 |
+|---|---|---|---|
+| P1 下游通道恢复 | `talent/global/dataset` 返回真实业务体（非 `DOWNSTREAM_UNREACHABLE`） | 久新 | ✅ 2026-11-09 达成（444.2→454.9KB 真数据） |
+| P2 超时治理 | 单次响应 ≤ 5s，或改为异步任务 + 轮询；60s 同步调用不可演示 | 后端 + 久新 | ✅ 3.3s（整页 TTL 缓存 + 预热；目标态仍推预计算快照） |
+| P3 用例 23 行零未填 | M2/M3 判定补齐 | 用例侧 | ✅ R1 已逐行判定（15 / 8 / 0） |
 
 ## 3. 解除后的判定与退出
 
@@ -47,3 +48,8 @@
   - 新增 `gkx_show_service/dataset_cache.py`（`TtlCache`：命中直返 / 过期 stale-while-revalidate / 冷启动单飞 / 失败不写缓存）；`views/talent_dataset.py` 四页接入各自缓存并导出 `WARMERS`；`main.py` 启动后台线程按 `global→region→profile→recommend` 预热并每 300s 续期（TTL 由 `GKX_SHOW_TALENT_CACHE_TTL` 控制，默认 1800s）。
   - 自检：`TtlCache` 四组用例全过（冷启动单飞、并发只算一次、过期返旧值+后台刷新、失败透传不缓存）；`py_compile` + 导入校验通过（`WARMERS=['global','region','profile','recommend']`）。
   - **待验证（发布后端到端）**：show-py 发布 → 预热日志出现 `[cache] talent/global refreshed in ~30s` → 生产复测 `GET /v1/talent/global/dataset` 应 <1s 返回真数据（非 `DOWNSTREAM_UNREACHABLE`）；届时按 §2 前置三条转常规 LOOP R1。
+- **R1 实测（2026-11-09，B 方案发布后）**：
+  - 三端点均绿：global **3.3s / 454.9KB**、profile 1.5s / 380.4KB、recommend 1.9s / 508.9KB，`code=0` 且无 `emptyReason`；`regions=24`、`migrationFlows=600`、`heatData=600`、`activityFeed=30`、`topInstitutions=20`、`regionTree` 全球→12 国→64 城。
+  - 23 行判定：**15 可演 / 8 部分可演 / 0 待开发完成**（明细见用例文末「LOOP 对照汇总（R1）」）。
+  - 8 条部分可演全部是供数缺口（G-DS13-01~06），非接口/实现缺陷；页面按期望走空态或降级，不补 0、不编造。
+  - 遗留建议：预热线程目前无条件执行，若后续有按模块灰度需求再加 readiness 门控；`TtlCache.get` 等待刷新无超时保护（当前实测无影响）。
