@@ -1,6 +1,6 @@
 # 政策效果预估 · LOOP 执行编排计划
 
-- 状态：第一轮已执行（2026-11-07）。探测 HTTP 404，循环已停，验收单 `blocked`。没有改库、没有改代码、没有建子任务。
+- 状态：EQ 修复单已上线（2026-11-08，Java 过滤 + 库列 + 单测，CI 4286 全绿；handoff `POL-L2-DS12-INDUSTRY-EQ-FIX-L01.md`）。线上 HTTP 复核被 401 挡（token 过期，ENV）：待 human:淮政玮 换 token 后按 §3 从探测重入。前端半场（级联提交 target_industry）在工作区另一会话，未提交。上一轮（2026-11-08）8/8 PASS 见 handoff。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4，SDD §4.1）
 - 系统：科技信息展示系统。不打开页面。
 - 监管人：`human:淮政玮`

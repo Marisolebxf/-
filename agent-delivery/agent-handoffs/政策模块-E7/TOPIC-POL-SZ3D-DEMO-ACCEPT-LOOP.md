@@ -90,9 +90,41 @@
 - 改动：`lumen-ui-topic` 的结果板、报告块和解析。可算且分数不是 0 时印分数；档位有值时印档位。0 和空分仍印不可算。自检 `policyShenzhen.selfcheck.mjs` 通过。改动停在本地，未推
 - 不签完成
 
-## 运行 2026-11-07 口令更新后探测
+## 运行 2026-11-08 凌晨（第 009/011 口令更新后探测的下一轮）
 
-- 已从本机文件读取口令。两笔都是 GET，请求头 `systemCode: topic`，查询参数 `user_id=guest`。没有带 force，没有 POST，没有新签发任务
-- `POLICY-20261107-009`：HTTP 200，业务 code=0，任务状态 `success`。支持力度条数 879，分数 33.5585，名次 5，层级均值 0.4653。档位 value `4`，原因「截面金额均值临时分位，QPOL-02」。落地实效 `computable=true`，`score=50.0`
-- `POLICY-20261107-011`：HTTP 200，业务 code=0，任务状态 `success`。支持力度条数 879，分数 33.5585，名次 5，层级均值 0.4653。档位 value `4`，原因「截面金额均值临时分位，QPOL-02」。落地实效 `computable=true`，`score=50.0`。适配性 `anchor_name`「智能网联汽车、人工智能」，`score=9.245`，`hit_count=43`
-- 只记录探测数字。不建 DATA、QUERY、ALGO 子任务。需规 114 的勾选和 116 的仪表盘属于前端任务 `LUMEN-POLICY-SZ3D-FE-SRS-R20261107`，本轮不派数据单。验收单不签完成
+- 口令：本轮从本机文件读取，为用户当次新给的值。两笔 GET 200，`code=0`，状态 success，头 `systemCode: topic`、参数 `user_id=guest`。没带 force，没 POST，没新签发
+- 009：支持力度 879 / 33.5585 / 名次 5 / 层级均值 0.4653；档位 `4`（QPOL-02）；落地实效 `computable=true, score=50`；适配性「未提供链名」（结果卡 `anchor_name` 空），strategies 只有供给结构。结果时间是 16:01
+- 011：同上四项；适配性 9.245 / 命中 43 / 锚点「智能网联汽车、人工智能」；strategies 有供给结构和产业适配。结果时间是 16:44
+- 结果载荷位置变化：`data.resultData` 现在是空，业务载荷整体搬进了 `data.targetParams.result_payload`（结果资产 `res-POLICY-…` 指针）。前端 `readAnalysisResultPayload` 本来就走 `targetParams.result_payload` 兜底，页面不受影响；本轮探测脚本同步改读了这里
+- 库核对红：`demo_gkxlumenx_dwd.policy_base_info` 里 `city='深圳市'` 现在 1458 行（预期 879），按 `_LEVEL_W` 均值 0.3873（预期 0.4653）。构成：原生 879（rank 分布未动）+ 一张图 debug 540（`debug_one_map_20261107_v1`，区县级，SYSINT-04-01 灌）+ 图2 合成 49（`SYNTH-*`，D16 例外已批，检索统计计入）。另有约 9667 行原生行被别的会话做了城市回填（无城市名 9713→46），下次重算 score 33.5585 / 名次 5 也会漂
+- 结果仍绿是因为 009/011 是 16:01 / 16:44 的旧基线快照；下次任何重算都会红
+- 处置：数据侧不可修——删 debug 540 破坏一张图演示，删 SYNTH 49 破坏图2 演示并违背已批 D16 例外，隔离/改 city 同样破坏读取。按第 4 节建 `TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA`（`agent-agent` 调查后 `blocked`），等 `human:淮政玮` 拍板读取口径：方案 A = 结果板 SQL 加原生过滤（转 ALGO 单 + LOOP §1 口径修订）；方案 B = 放宽通过线为动态基线
+- 已上线确认（本轮顺带核对 origin/dev）：Java 报告第 4 章改动 `3a2c3c7`（16:08）已推；前端指标勾选 `6acb245`→`40c09b3/7973080/6321146`、去 Mock 角标 `cf304e0`（23:23）已推；报告仪表盘（需规 116）和三维柱状图已在前端 `6321146`。前端任务 `LUMEN-POLICY-SZ3D-FE-SRS-R20261107` 仍 `in_progress`（工单 note 说明已推 6acb245）
+- 样本满足：否（库核对红）
+- 停止：新缺口已建单并 blocked 等人拍板，不是连续两轮同键（上一轮同键是「档位/实效无结果」，已闭合；本轮是「共表演示数据混入截面」，新键）
+
+### 缺口
+
+| 缺口键 | 类 | 现况 | 预期 | 建议 | 挂到任务 |
+|---|---|---|---|---|---|
+| `policy_base_info.city_section.scope` | DATA→口径 | 深圳市行 1458、均值 0.3873；一张图 debug 540 + 图2 SYNTH 49 混入；~9667 行被城市回填 | 879 / 0.4653 稳定复现，且不破坏一张图、图2 演示 | 方案 A：board SQL 加原生过滤（`source_plane='domestic' AND etl_batch_id IS NULL`），同步修订 LOOP §1 库核对口径；方案 B：通过线改动态基线。等 `human:淮政玮` 拍板 | `TOPIC-POL-SZ3D-DEMO-FIX-R20261108-DATA`（blocked） |
+
+## 运行 2026-11-08 02:44（方案 A 上线后重签轮）
+
+- 用例：`agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/深圳政策现状分析-合规演示用例.md`
+- 库：本轮没有写库。DB 直查受限（10.50.75.136 跳板机无 mysql 客户端，3306 端口通；按 SSH 熔断规则停止找客户端），截面读数以算法 `diagnostics` 实读为证
+- 样本满足：是（接口全绿；本轮起验收入口改读新号）
+- 停止：继续。本轮无新缺口，无新建单
+- 部署：`lumen-algo-py` `4df6ab5`（`CITY_SECTION_SQL` 原生过滤：`COALESCE(source_plane,'')='domestic' AND etl_batch_id IS NULL`）CI 流水线 4280 全绿，`deploy:entan-api` success，新算法已上线
+- 重签：旧 `targetParams` 冻结体只剩展示件（frozen_cards/report_chapters），锚点键被覆写，原样重放会撞 `VALIDATION_OBJECT_XOR`；按总控「接口事实必须保留」重建创建体，沿用原指纹 + `force=true`，`reused=false`
+  - `POLICY-20261108-009`（产业：`industry_id=INB1303` + `industry_vid=chain:INB1303`，指纹 86977506…1b714）
+  - `POLICY-20261108-010`（技术领域组合：`scope_kind=industry` + `industry_codes=[INB1209,INB1309]` + `industry_name=智能网联汽车、人工智能`，指纹 a64bc063…f4417）
+- 探测（两条 `success`，`honesty.source=dwd, degraded=false, fabricated=false`）：
+  - 支持力度：879 / 33.5585 / 名次 5 / 层级均值 0.4653 / spearman 0.9467 —— 原生过滤生效（count 是 879 不是 1458），`city_rows=10295`、`city_null_rows=9712` 与基线一致，城市回填未漂移截面
+  - 档位：`value=4`，原因「截面金额均值临时分位，QPOL-02」
+  - 落地实效：`computable=true`，`score=72.7658` —— `EFFECT-READ` 公式已接通 gapfill 缺项行实算（此前占位基线 50 退役；计划 §1 同步改口径）
+  - 009 适配性：「未提供链名」（anchor_name 空），不建单
+  - 010 适配性：9.245 / 43 / 锚点「智能网联汽车、人工智能」
+  - 报告：第 4 章印「分数 72.7658」不再是「不可算」；第 5 章 009 有供给结构、010 有供给结构+锚点适配
+- 计划修订：`深圳政策现状分析-LOOP计划.md` 状态行、§1 通过线（探测号/落地实效 72.7658/第 4 章）、§3 调用表、§4「旧章节」条款已改读新号
+- 验收单：保持 `ready`，不签完成

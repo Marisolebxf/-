@@ -1,5 +1,7 @@
 # TS-L2-DS02 科学技术全景 · 合规演示用例
 
+> ⚠️ **草稿作废（2026-11-07 监管人 human:李伟 裁定）**：DS-02 已由另一会话拆细为 `TS-L2-DS02-ENTITY` / `TS-L2-DS02-GRAPH` / `TS-L2-DS02-PATH` 三份子页用例并在跑 LOOP（含 Q072 Tag/Edge 扩列 SCHEMA-EXPAND-L01）。本整页草稿仅留痕，**不再填充、不进 LOOP**。
+
 | 项 | 内容 |
 |---|---|
 | 页面 | 科学技术全景（前端目录 `lumen-ui-science-pc/src/views/situation/panorama`） |

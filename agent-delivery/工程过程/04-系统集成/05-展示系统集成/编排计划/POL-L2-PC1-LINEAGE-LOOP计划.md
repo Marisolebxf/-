@@ -1,13 +1,9 @@
-# 溯源索引构建 · LOOP 执行编排计划
+# POL-L2-PC1-LINEAGE · LOOP 计划
 
-- 流程：`agent-delivery/产品实现规程.md` §6.5
-- 用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-PC1-LINEAGE-合规演示用例.md`
-- 系统：科技信息展示系统。不打开页面。
-- 监管人：`human:淮政玮`
-- 日期：2026-11-07
+- 状态：**样本满足** · 2026-11-08 复测 · element `lineage-index?policyId=18319069` =4（二、/三、 isMock=0 + conc-award-raise/start isMock=1）；CI：platform deploy:element/display success（4ab0263f）；FE `gkx-lumen-pc:3653f709` pipeline 4278 success
+- 用例：`合规演示用例/POL-L2-PC1-LINEAGE-合规演示用例.md`
+- 通过线：display `lineage-index` 按政策拣出 4 行（2 真条款 + 2 mock 结论）
 
-- 状态：不建验收单。覆盖表有未填行。
+## 派单表
 
-未填行退回补用例。不派数据单，不派算法单，不打探测。
-
-开发负责人把未填行改成 `可演` 或写明 `覆盖不到` 缺哪类数据之后，人说「按 LOOP 跑」，再按 §6.5 建常驻验收单 `POL-L2-PC1-LINEAGE-DEMO-ACCEPT-LOOP`。不把这张单签 `done`。
+本轮无缺口、无新子任务。验收单 `POL-L2-PC1-LINEAGE-DEMO-SAMPLE-L01` 已 done。

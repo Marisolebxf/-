@@ -7,8 +7,12 @@ description: >
   whether a pod restart is required, image-cache traps, and log-based verification.
   Use when a Nacos config "已发布但不生效", when one setting (sso / datasource /
   redis / 白名单) must reach many lumen modules at once, or when a lumen resource
-  server returns 401 访问令牌不存在 / sso check-token failed.
+  server returns 401 访问令牌不存在 / sso check-token failed. Also the mandatory
+  path for ANY lumen Nacos change (改 Nacos 配置, 改网关路由, 加配置项,
+  FORCE_NACOS_REPUBLISH, helm configs/*.yml) — see rule nacos-config-change.mdc.
 ---
+
+> **规约**（`.cursor/rules/nacos-config-change.mdc`，2026-11-07）：日常 push 不重发 Nacos；任何 lumen Nacos 改动都走本 skill §2「模板 + 单发」流程；密钥用 `@@NAME@@` + Secret。
 
 # GKX Nacos 共享配置变更与生效
 
@@ -29,7 +33,7 @@ description: >
 |---|---|---|
 | Nacos `application-{profile}.yml` | **所有** import 了它的 lumen Java 服务 | 共享层，改一处全覆盖 |
 | Nacos `{spring.application.name}-{profile}.yml` | 单服务 | **私有层优先级高于共享层**，会覆盖同 key |
-| 仓库 `helm/gkxlumen-platform/configs/*.yml` | 无（模板） | 默认**不会**自动同步到 Nacos；需 `FORCE_NACOS_REPUBLISH=true` 重跑 `helm:chart`，紧急时直接改 Nacos 控制台 |
+| 仓库 `helm/gkxlumen-platform/configs/*.yml` | 无（模板，**线上真源**） | 必须与线上逐份一致。push 不会同步；按 §2 单个 dataId 发布。`FORCE_NACOS_REPUBLISH=true` 会整批覆盖 14 个 dataId，仅在确认一致且用户批准后用 |
 
 > 判断依据：值是否"所有服务都一样"。一样的放共享，服务的端口/库名/业务开关放私有。
 
@@ -47,11 +51,24 @@ spring:
 
 `@profiles.active@` 由 Maven 打包时替换成 `dev`。**没有第一行的服务，改共享配置对它无效**，必须写进它自己的私有 dataId 或先补 import。
 
-## 2. 发布
+## 2. 发布（模板 + 单发，缺一不算完成）
 
-- 控制台：`http://<nacos-host>:8848`，默认 `nacos/nacos`
-- 只**追加**，不要覆盖原有 YAML 块；发布后确认历史版本号递增
-- Nacos 3.x 的 v1 写接口已废弃，脚本化时用 `POST /nacos/v1/auth/login` 拿 accessToken 再调 v2/v3 admin API
+执行前须当次会话用户批准（线上变更）。
+
+1. **先取线上原文对比模板**：发布前拉当前 dataId 内容，与仓库 `configs/<dataId>` 比对（忽略换行符）。不一致先查清是谁改的，不要直接覆盖。
+2. **改模板并提交**：在 `lumen-svc-platform/helm/gkxlumen-platform/configs/<dataId>` 改，commit 带 `[agent:<role>]`。
+   - 密钥写 `@@NAME@@`（大写/数字/下划线，不加引号），真实值放 Secret `zhipu-tts/gkxlumen-platform-nacos-config-secrets` 同名 key。新占位符先补 Secret（`kubectl patch`/`create`，不打印值）。
+   - 已是 `${ENV:默认}` 的 Spring 占位符保持原样。
+3. **单个 dataId 发布**：在 nacos pod 内 `POST /nacos/v1/auth/users/login` 拿 accessToken → 用 Secret 值替换 `@@NAME@@`（任一缺值则不发）→ `POST /nacos/v3/admin/cs/config`（`dataId`、`groupName=DEFAULT_GROUP`、`namespaceId=public`、`type=yaml`）。只发 `public` 一次即可（`""` 会归一到 `public`）。
+4. **核对**：返回 `code=0`；历史版本新增一条；线上内容重新脱敏后 == 仓库文件。
+5. 发布前后的含密钥临时文件用完即删，并 `ls` 确认。
+
+禁止：
+- 用 `FORCE_NACOS_REPUBLISH=true` 跑 `helm:chart` 代替单发（会整批覆盖 14 个 dataId；2026-11-07 事故即由此引发）。
+- 只改控制台不改模板，或只改模板不发线上。
+- 把真实密钥写进模板、commit、handoff 或聊天输出。
+
+回滚：Nacos `U` 历史存的是**修改前**内容，同一时刻两条历史取 id 较小的一条即事故前版本；`GET /nacos/v3/admin/cs/history?nid=<id>&dataId=..&groupName=DEFAULT_GROUP&namespaceId=public` 取原文后按第 3 步整份发布。
 
 ## 3. 判断"要不要重启"（最容易踩的一步）
 
@@ -174,10 +191,12 @@ sso:
 
 注意：
 - 请求头 `systemCode` 缺失时 `findByCode(null)` 同样返回 null，表现为 `unknown systemCode=null`
-- 密钥不要写进仓库模板，只落 Nacos
+- 模板里 `client-secret` 写 `@@SSO_TOPIC_CLIENT_SECRET@@` / `@@SSO_DISPLAY_CLIENT_SECRET@@`，真实值只在 Secret 与 Nacos
 
 ## 7. 沉淀 checklist
 
+- [ ] 已获当次会话用户批准；没有用 `FORCE_NACOS_REPUBLISH=true` 代替单发
+- [ ] 模板已同步提交，密钥为 `@@NAME@@` 且 Secret 已有同名 key
 - [ ] 确认目标服务 import 了共享配置
 - [ ] 值确实所有服务通用，且私有 dataId 没有同名 key 覆盖
 - [ ] 发布后确认版本递增

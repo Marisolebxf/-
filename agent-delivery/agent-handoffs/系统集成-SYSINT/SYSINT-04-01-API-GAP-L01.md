@@ -88,3 +88,58 @@ ponytail: full
 - `repos/lumen-topic-py/tests/test_one_map_search_query.py`
 - `agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01.md`
 - `agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01-evidence/debug-batch-summary.json`
+
+## 已发布调试页与 QA 回归
+
+- 前端提交 `03661ffe82470ea06c18de6e73572b049292b8a2`；Pipeline `4227` 全绿（build/image/trivy/deploy）。
+- 根因：`requiresAuth=false` 只跳过登录判断，后续 `shouldLoadPortalPerms()` 仍触发 SSO。新增页面级 `skipAuthGuard=true`，仅 `/one-map-debug` 在登录/权限守卫前放行。
+- `http://10.50.69.111:30892/one-map-debug` 已可直接打开，不再重定向统一用户中心。
+- 页面内逐项点击 API-1～API-6，均 HTTP 200、`code=0`；API-6 抽样 traceId `cfc0e183`。
+- 切换到页面“`/api/open/topic`（新别名）”后再发 API-6，HTTP 200；抽样 traceId `c1c0e183`。
+- QA 截图与结构化结果：
+  - `agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01-evidence/one-map-ui-qa.jpg`
+  - `agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-04-01-DATA-EMP-L01-evidence/qa-regression.json`
+
+## QA 边界结果
+
+- `/open/topic` 新别名：HTTP 200、`code=0`。
+- 政策 + 南山区：6 条，趋势非空 6 点。
+- 搜索分页第 2 页、每页 2 条：total 7、records 2。
+- 搜索 + 南山区：total 4，所有记录均在南山区。
+- 不存在关键词：total 0、records 0。
+- 缺 keyword、缺 district、非法 theme 分别稳定返回 `KEYWORD_REQUIRED`、`INDUSTRY_CODE_AND_DISTRICT_REQUIRED`、`THEME_INVALID`。
+
+## Helm / Nacos 发布修复
+
+- `8e5e8dd`：Nacos 初始化改用 Harbor 可用的 `python-algo-base:3.11`，用 Python 标准库发布配置，移除 Docker Hub `curlimages/curl` 依赖；异步服务 image tag 使用 `--set-string`，避免 Helm 把它解析成科学计数法。
+- `96ac772`：部署诊断循环容忍 Pod 在滚动中已被删除的瞬时 NotFound，避免 Helm 已成功却被诊断命令误判失败。
+- 已用 Helm 3.14 本地通过 `helm lint`、模板渲染、Shell/Python 语法检查及 fake Nacos 双命名空间发布测试。
+- [Pipeline 4233](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/4233)：`backend:build` Job `29832`、`helm:lint` Job `29833`、`helm:chart` Job `29844` 全部 success。
+
+
+## 偏离
+
+- 保留既有接口契约，只修正实现和三仓发布链路；未按早期过度扩张的批次改造/指标定义方案实施。
+
+## 产物清单
+
+- Java/Python/前端修复、Helm/Nacos 发布修复、测试与线上回归证据、QA 截图。
+
+## 架构合规自检
+
+- ✅ D9/D12：前端只经网关，Java/Python 只调 lumen 目标，不接 demo 服务。
+- ✅ 只读：一张图接口不写业务库；调试数据另由 DATA-EMP 批次在既有表写入。
+- ✅ 无 DDL：未新建/修改表、字段、索引或 ES mapping；已有索引无调试文档新增。
+- ✅ 契约稳定：六个对外 URL、HTTP 方法、入参与核心返回字段未变。
+- ✅ 容错：缺数保持 null，空搜索返回空列表，参数错误返回稳定错误码。
+- ✅ 发布可追溯：Java、Python、前端、Helm/Nacos 均有 commit、pipeline 与线上回归。
+- ✅ 边界隔离：免登录仅作用于 `/one-map-debug` 内部联调页，未放宽其他页面。
+
+## Cost 回填
+
+| 字段 | 值 |
+|---|---|
+| actual_tokens | `not_measured` |
+| model_used | `codex` |
+| actual_cost | `not_measured` |
+| cost_warn | `green` |

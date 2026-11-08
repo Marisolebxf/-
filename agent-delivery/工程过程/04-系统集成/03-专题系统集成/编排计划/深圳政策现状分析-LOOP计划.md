@@ -1,6 +1,6 @@
 # 深圳政策现状分析 · LOOP 执行编排计划
 
-- 状态：2026-11-07 监管人裁定。完成线改为需规序号 114–116。114 的完成线是 demo 原型整块指标体系，不是三个勾选。116 仪表盘仍挂前端任务。落地实效的 Mock 缺口不再只挂前端：合规演示不能出现 Mock，改由 gapfill 建表并按政策灌数。探测改读 `POLICY-20261107-009` 与 `POLICY-20261107-011`。`POLICY-20261107-004` 不再当入口。有缺口按第 4 节派；同一缺口键连续两轮仍在则停止，交给人。
+- 状态：2026-11-08 02:44 轮：方案 A（读取侧收窄）已上线（`lumen-algo-py` `4df6ab5`，`CITY_SECTION_SQL` 加 `COALESCE(source_plane,'')='domestic' AND etl_batch_id IS NULL`；CI 4280 全绿，entan-api 已部署）。原样 force 重签：`POLICY-20261108-009`（产业，沿用 009 指纹）、`POLICY-20261108-010`（技术领域组合，沿用 011 指纹），两条 `success`、`reused=false`。三卡全绿：879 / 33.5585 / 名次 5 / 0.4653 / spearman 0.9467（`city_rows=10295` 与基线一致，城市回填未漂移截面）；档位 `4`（QPOL-02）；落地实效 `computable=true`、`score=72.7658`（gapfill 缺项行实算，`EFFECT-READ` 公式已接通，`honesty.source=dwd, degraded=false, fabricated=false`）；011 适配 9.245 / 43 / 锚点「智能网联汽车、人工智能」；第 4 章印分数 72.7658、第 5 章有供给结构与锚点适配。本轮起验收探测改读 `POLICY-20261108-009` 与 `POLICY-20261108-010`。DB 直查本轮受限（跳板机无 mysql 客户端），截面读数以算法 `diagnostics` 实读为证。有缺口按第 4 节派；同一缺口键连续两轮仍在则停止，交给人。
 - 流程：`agent-delivery/产品实现规程.md` §6.5（用例 §6.4，SDD §4.1）。本模块经当次点名纳入，专题其他页不跟着进。
 - 系统：科技专题服务系统。循环不打开页面。
 - 监管人：`human:淮政玮`
@@ -10,24 +10,24 @@
 
 用例在 `agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/深圳政策现状分析-合规演示用例.md`。本计划不代替那份覆盖表，也不另编覆盖表。
 
-产业结果 `POLICY-20261107-009`（集成电路，`industry_vid=chain:INB1303`）。技术领域结果 `POLICY-20261107-011`。验收不新签发任务，不带 `force=true`。
+产业结果 `POLICY-20261108-009`（集成电路，`industry_vid=chain:INB1303`，沿用 `POLICY-20261107-009` 指纹）。技术领域结果 `POLICY-20261108-010`（沿用 `POLICY-20261107-011` 指纹）。旧号 `POLICY-20261107-009/011` 与 `004` 不再当入口。验收不新签发任务，不带 `force=true`。
 
 通过线（都要同时成立）：
 
 | 项 | 预期 |
 |---|---|
-| 探测 | `GET` `POLICY-20261107-009` 与 `POLICY-20261107-011` 的结果，两条都带 `user_id=guest`。`POLICY-20261107-004` 不再当入口 |
+| 探测 | `GET` `POLICY-20261108-009` 与 `POLICY-20261108-010` 的结果，两条都带 `user_id=guest`。`POLICY-20261107-009/011` 与 `004` 不再当入口 |
 | 支持力度 | 009 与 011 都是 879 / 33.5585 / 名次 5 / 层级均值 0.4653 |
 | 扶持档位 | 两条结果都是 `value=4`，原因含 `QPOL-02`。空值、「无金额列」、写成 0 都不算通过 |
-| 落地实效 | 两条结果都是 `computable=true`，`score=50` |
+| 落地实效 | 两条结果都是 `computable=true`，`score=72.7658`（gapfill 缺项行实算；公式接通前的占位基线 50 已退役，不再核对 50） |
 | 011 适配性 | `score=9.245`，`hit_count=43`，锚点「智能网联汽车、人工智能」 |
 | 第 5 章 | 有供给结构 |
-| 第 4 章 | 目标是分数 50。009 与 011 的旧章节在新任务签发前不算通过，也不为此建 DATA 单或 Python 算法单 |
+| 第 4 章 | 目标是印出落地实效实算分（当前 72.7658），不印「不可算」也不印 0 |
 | 需规 114 指标体系 | 完成线是 demo 原型整块指标体系，不是「政策数量 / 资金规模 / 创新激励」三个勾选。默认入模 8 项，维内等权，一级权重 34/33/33，并有一键均分、恢复默认模型。页面还没有这块时，挂 `LUMEN-POLICY-SZ3D-FE-SRS-R20261107`，不建数据单、不建算法单 |
 | 需规 116 仪表盘 | 同样挂 `LUMEN-POLICY-SZ3D-FE-SRS-R20261107`，不建数据单、不建算法单 |
 | 落地实效不出现 Mock | 合规演示的配置区、结果和报告不出现 Mock。落地实效按 `gkxlumenx_gapfill` 里每条政策的缺项行实算，空值不写成 0。公式接通前，接口仍核对 `computable=true`、`score=50`。Mock 字样单独算缺口，不用这条分数代替 |
 | 产业只交 VID | 因此出现「未提供链名」时，挂到同一张前端任务 `LUMEN-POLICY-SZ3D-FE-SRS-R20261107`，不建数据单、不建算法单 |
-| 库 | `demo_gkxlumenx_dwd.policy_base_info` 中 `city='深圳市'` 为 879，且 `rank` 有值。层级均值保持 0.4653。正式库只读 |
+| 库 | `demo_gkxlumenx_dwd.policy_base_info` 中原生行 `city='深圳市' AND COALESCE(source_plane,'')='domestic' AND etl_batch_id IS NULL` 为 879，且 `rank` 有值。层级均值保持 0.4653。表里混灌的一张图 debug 批次（`etl_batch_id='debug_one_map_20261107_v1'`）与图2合成批（`etl_batch_id LIKE 'SYNTH-%'`）不算进截面，也不删。正式库只读 |
 
 需规 114 对齐 demo 原型的指标体系构建。默认入模 8 项：支持力度为政策数量、资金规模、创新激励；产业适配性为政策-产业需求匹配、产业链覆盖广度、细分领域命中率；落地实效为落地执行率、受益覆盖广度。政策层级覆盖面、反馈满意度默认不入模。维内等权。一级权重为支持力度 34、产业适配性 33、落地实效 33。一键均分把一级权重写回 34/33/33。恢复默认模型把入模恢复为这 8 项，并把一级权重恢复为 34/33/33。循环不打开页面。页面还没有这块时，只挂前端任务。
 
@@ -61,9 +61,9 @@ token 只读本机文件 `%USERPROFILE%\.gkx\topic-loop-token`。请求头 `Auth
 
 | 步骤 | 调用 | 作用 |
 |---|---|---|
-| 探测 | `GET http://10.50.69.111:30892/api/topicAsync/topic/v1/analysis/tasks/POLICY-20261107-009/result?user_id=guest` | 产业结果。只验 token 和这条已签发结果 |
-| 探测 | `GET http://10.50.69.111:30892/api/topicAsync/topic/v1/analysis/tasks/POLICY-20261107-011/result?user_id=guest` | 技术领域结果。只验 token 和这条已签发结果 |
-| 库 | 只读 `demo_gkxlumenx_dwd.policy_base_info` | 核对 `city='深圳市'` 为 879，以及深圳行的 `rank` 仍有值 |
+| 探测 | `GET http://10.50.69.111:30892/api/topicAsync/topic/v1/analysis/tasks/POLICY-20261108-009/result?user_id=guest` | 产业结果。只验 token 和这条已签发结果 |
+| 探测 | `GET http://10.50.69.111:30892/api/topicAsync/topic/v1/analysis/tasks/POLICY-20261108-010/result?user_id=guest` | 技术领域结果。只验 token 和这条已签发结果 |
+| 库 | 只读 `demo_gkxlumenx_dwd.policy_base_info` | 核对原生行（加 `COALESCE(source_plane,'')='domestic' AND etl_batch_id IS NULL` 条件）`city='深圳市'` 为 879，以及深圳行的 `rank` 仍有值 |
 
 任一探测返回 401、424，或正文为「访问令牌不存在」「用户凭证已过期」「token expired」：验收单改为 `blocked`，通知 `human:淮政玮`，不建子任务，不再开一轮。note 只写「token 失效，已通知 human:淮政玮」。
 
@@ -88,7 +88,7 @@ token 只读本机文件 `%USERPROFILE%\.gkx\topic-loop-token`。请求头 `Auth
 - 需规 116 的仪表盘。同样只挂这张前端任务。
 - 落地实效的 Mock。不挂前端任务。已有政策归 `EFFECT-GAPFILL`，图2合成与新增归 `EFFECT-SYNTH`。
 - 产业只交 VID 导致的「未提供链名」。同样只挂这张前端任务。
-- `POLICY-20261107-009` 与 `POLICY-20261107-011` 在新任务签发之前的旧章节。第 4 章目标仍是分数 50，第 5 章仍要有供给结构，但这两份旧章节不算通过。不为它们建 DATA 单，也不建 Python 算法单。
+- `POLICY-20261107-009` 与 `POLICY-20261107-011` 的旧章节已由 `POLICY-20261108-009/010` 重签取代，不再参与验收。第 4 章目标是印出实算分，第 5 章仍要有供给结构。不为旧章节建 DATA 单，也不建 Python 算法单。
 
 同一缺口键连续两轮仍在：停止建单，交给 `human:淮政玮`。
 
@@ -98,7 +98,7 @@ token 只读本机文件 `%USERPROFILE%\.gkx\topic-loop-token`。请求头 `Auth
 
 1. 验收单 `TOPIC-POL-SZ3D-DEMO-ACCEPT-LOOP` 保持 `ready`，不签 `done`。
 2. 跑一轮时才认领，`supervised_by=human:淮政玮`。一轮写完退回 `ready`。
-3. 读本机 `%USERPROFILE%\.gkx\topic-loop-token`，按第 3 节 GET 009 与 011。不打开页面。不把 token 正文写入任何文件。
+3. 读本机 `%USERPROFILE%\.gkx\topic-loop-token`，按第 3 节 GET `POLICY-20261108-009` 与 `POLICY-20261108-010`。不打开页面。不把 token 正文写入任何文件。
 4. 401、424 或 404 则停，并按第 3 节通知 `human:淮政玮`。
 5. 两条都是 200，才核对第 1 节，并 `SELECT` 深圳市行数与 `rank`。
 6. 有缺口才按第 4 节处理。验收当轮不改库、不重算。指标体系、仪表盘、「未提供链名」只挂已有前端任务。落地实效出现 Mock，或政策没有缺项行，挂已建的 `EFFECT-GAPFILL` 与 `EFFECT-SYNTH`，不新建第三张灌数单。旧章节不建 DATA 单，不建 Python 算法单。

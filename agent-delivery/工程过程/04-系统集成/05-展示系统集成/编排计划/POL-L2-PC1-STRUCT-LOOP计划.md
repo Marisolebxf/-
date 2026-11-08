@@ -1,13 +1,9 @@
-# 政策库结构化 · LOOP 执行编排计划
+# POL-L2-PC1-STRUCT · LOOP 计划
 
-- 流程：`agent-delivery/产品实现规程.md` §6.5
-- 用例：`agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-PC1-STRUCT-合规演示用例.md`
-- 系统：科技信息展示系统。不打开页面。
-- 监管人：`human:淮政玮`
-- 日期：2026-11-07
+- 状态：**样本满足** · 2026-11-08 复测 · structuredPolicyCount=1290 coverageRate=0.0624 hasClauses=true；CI element/display + FE 绿
+- 用例：`合规演示用例/POL-L2-PC1-STRUCT-合规演示用例.md`
+- 通过线：results.structure 实算覆盖率 + 单政策摘要 hasClauses
 
-- 状态：不建验收单。覆盖表有未填行。
+## 派单表
 
-未填行退回补用例。不派数据单，不派算法单，不打探测。
-
-开发负责人把未填行改成 `可演` 或写明 `覆盖不到` 缺哪类数据之后，人说「按 LOOP 跑」，再按 §6.5 建常驻验收单 `POL-L2-PC1-STRUCT-DEMO-ACCEPT-LOOP`。不把这张单签 `done`。
+本轮无缺口。验收单 `POL-L2-PC1-STRUCT-DEMO-SAMPLE-L01` 已 done。

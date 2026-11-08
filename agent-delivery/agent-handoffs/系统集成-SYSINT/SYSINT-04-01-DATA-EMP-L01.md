@@ -112,3 +112,39 @@ rollback命令仅供需要时使用，本次未执行。备份/预览/结果的�
 - 政策关联统一为 `chain:INB*`；产业名和区名使用页面标准值，避免精确匹配与地图显示失效。
 - 线上全量回归：12/12 产业 API-1/2/3 有值；9/9 行政区 API-4 有值；API-6 三类地图分别 9/9、9/9、10/10 非空；API-5“腾讯 + INB1309”返回 7 条。
 - 回归摘要保存在执行机 `/private/tmp/one-map-final-regression.json`，未提交行级明细。
+
+### 调试页与 QA
+
+- 前端提交 `03661ffe82470ea06c18de6e73572b049292b8a2`，Pipeline `4227` 全绿；`/one-map-debug` 已免 SSO 打开。
+- 页面内 API-1～API-6 逐项执行均 HTTP 200、`code=0`。
+- 新入口 `/open/topic` 已由 Nacos 重灌恢复，HTTP 200、`code=0`。
+- 最终 Helm 验证 Pipeline `4233`：`backend:build` `29832`、`helm:lint` `29833`、`helm:chart` `29844` 全成功。
+- QA 结果与截图见 `SYSINT-04-01-DATA-EMP-L01-evidence/qa-regression.json`、`one-map-ui-qa.jpg`。
+
+
+## 偏离
+
+- 本批按用户授权使用调试构造数据，未追求真实业务来源，属于原始真实灌数口径的明确偏离；不参与正式指标就绪度签收。
+
+## 产物清单
+
+- 1302行既有表调试数据、数量/接口证据、UI QA截图及本 handoff。
+
+## 架构合规自检
+
+- ✅ 无 DDL：所有调试数据写入既有表，未新增/修改字段或索引。
+- ✅ 范围隔离：只覆盖 demo 环境明确调试批次，不写生产库。
+- ✅ 可逆：写入前备份、事务提交、行数和唯一键验收，失败可回滚。
+- ✅ 数据绑定：政策产业关联使用既有 `chain:INB*` 契约。
+- ✅ 显示一致：产业名和九区名使用页面标准名称。
+- ✅ 接口只读：Java/Python 查询不触发写库。
+- ✅ 可追溯：批次、统计日期、接口结果和截图均有证据。
+
+## Cost 回填
+
+| 字段 | 值 |
+|---|---|
+| actual_tokens | `not_measured` |
+| model_used | `codex` |
+| actual_cost | `not_measured` |
+| cost_warn | `green` |
