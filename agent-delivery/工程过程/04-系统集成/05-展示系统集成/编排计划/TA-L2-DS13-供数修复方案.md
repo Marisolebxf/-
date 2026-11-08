@@ -60,9 +60,10 @@
 
 | 子项 | 现状 | 修法 | 验收 |
 |---|---|---|---|
-| W2-1 关联专家空（0/20） | `talent_datasets.py:483-487` 把 `rep_rows` 过滤成 `tid in mvp_ids and tid in talent_ins` → 只有 15 名富画像人才，几乎落不到 20 家机构 | 关联专家改用**全量结构化人才**（`ads_talent_profile` 按当前机构 + `h_index` 排序取 Top3），MVP 过滤只保留给富画像区块 | 20 家机构 `representatives` ≥ 1 家数 ≥ 15；每机构 ≤3 人且 `field` 有标签 |
-| W2-2 核心成果空（0/20） | `talent_datasets.py:535` 硬编码 `[]` | 用机构人才的 `ads_talent_research_achievement` 取高被引 Top3，组装**事实条目**（`title / year / venue / citedBy`），不写叙述性文案；专利/荣誉另给计数 | 有成果机构 `coreAchievements` ≥ 1；条目字段完整率 100%；不得出现生成式描述 |
-| W2-3 学历结构只有博士 | 仅聚合 `degree='博士'` 得 `doctorCount` | 扩为 `doctor/master/bachelor` 三档（同 W1-2 口径），`phdRatio` 保持 | 三档均有字段；机构详情抽屉三档可渲染 |
+| W2-1 关联专家空（0/20） | `talent_datasets.py` 把 `rep_rows` 过滤成 `tid in mvp_ids and tid in talent_ins` → 只有 15 名富画像人才，几乎落不到 20 家机构 | **已实施 2026-11-09**：改为「Top20 机构在册人才 × `h_index` 降序取 Top3」，`h_index` 为 0/空者不入代表 | 实测 **20/20 机构非空、合计 60 人**（每人 ≤3，`field` 有中文标签） |
+| W2-2 核心成果空（0/20） | 硬编码 `[]` | **已实施 2026-11-09**（口径修正）：库里**没有机构级成果表**（`ads_institution_research_achievement` 等均不存在），且前端 `TalentTopInstitution.coreAchievements` 是 **`string[]`** 纯文本渲染（`InstitutionDetailDrawer`）→ 用「`ads_institution_yearly_metrics` 2025 年论文 + 同比」与「`ads_institution_discipline_profile` Top1 学科论文/人才」两条**可核对事实**，不写生成式文案 | 实测 **20/20 机构非空、每机构 2 条**；结构化条目（title/venue/citedBy）需前端改类型，暂缓 |
+| W2-3 学历结构只有博士 | 仅聚合 `degree='博士'` 得 `doctorCount` | **未做（阻塞前端）**：前端 `TalentTopInstitution` 只有 `doctorCount/phdRatio`，**无 `education` 三档字段**，后端出数也不会渲染；需前端加字段 + 抽屉渲染后同批做 | 三档均有字段；机构详情抽屉三档可渲染 |
+| ⚠️ 机构专利数为采样值 | `topInstitutions[].patents` 取自 `ads_institution_patent`，实测 **2,861 家机构恰为 20 条**（该表每机构最多存 20 条） | 页面显示的「专利 20 件」是**截断值，不是真实总量**；本轮未修，建单 **G-DS13-07**（久新补全量专利或改走 `ads_institution_profile` 聚合列——该表无 `patent_count`） | 机构专利数 ≤ 真实值且不出现大面积同值 20 |
 
 ## 3. W3 · 最新动态（对应 253 / 256）
 
@@ -78,6 +79,7 @@
 | `media` 媒体报道 | `ads_talent_media_report`（现状） | 保持 |
 
 - 验收：`activityFeed[].type` distinct ≥ 4；页面类型筛选每型有点位，且条数与后端计数一致。
+- ⚠️ **枚举与前端不一致（2026-11-09 核源码）**：前端筛选下拉是 `paper / job / project / award / event`（`fieldConfig.ts` 的 `activityTypeOptions`），**没有** `media`，也没有 `academic/position`。后端若按上表枚举出数，用户在下拉里选任何类型都筛不到。开工前必须先把枚举改成前端这 5 类（media 只能并进 `event`/`award` 或由前端新增筛选位）→ 归入「契约先定」批次，本轮**不做**。
 
 ### W3-2 来源字段（C 类 + S 类）
 - 现状：`summary=publisher`、`detail=canonical_url`，无规范来源字段；253 要求「来源」。
@@ -105,41 +107,47 @@
 - 处置：久新在项目主表补「级别 / 类型 / 经费」字段并发布 10 万人级项目关系；TA 后端 `talent_datasets.py:1507-1508` 再补聚合映射。
 - 验收：`projects.national + international ≤ total` 且 > 0；非 MVP 人才也有项目关系（覆盖 ≥60%）。
 
-### W4-3 学科热度 `fieldHotness`（S 类，纯计算）
-- 现状：`talent_datasets.py:1512` 硬编码 0。库内有 `ads_geo_yearly_discipline_metrics`（含 `field_id` / `statistics_year` / `paper_count`，1015 万行）。
-- 算法（需产品确认后固化）：近 3 年 field 级论文量 CAGR → 全 field 百分位 → 映射 0–100；人才 `fieldHotness` = 其 top3 field 的加权均值。
-- 验收：15 人取值非全 0 且有区分度（≥3 个不同值）；口径写入契约。
+### W4-3 学科热度 `fieldHotness`（S 类，纯计算，**已实施 2026-11-09**）
+- 现状（修前）：硬编码 0。
+- 实现（口径按可用数据收敛）：`ads_talent_yearly_discipline` 按 `field_id` 聚合「人才年度学科论文量」→ 增速 =（2024–2025 均值 / 2019–2021 均值 − 1）→ 全 26 个学科内取**分位**（0 最低、1 最高）。人才 `fieldHotness` = 其论文最多学科的分位。
+- ⚠️ **量纲更正**：前端按 **0–1 小数**使用（`ProfileBasicPanel` 里 `fieldHotness × 100` 显示），mock 也是 0.62–0.95；原方案写的「映射 0–100」有误，已改。
+- 实测：15 人取值 **0.28 / 0.32 / 0.48 … 0.96，13 个不同值**，非全 0 且有区分度。
 
-### W4-4 热点契合度 `hotspotAlignment`（S 类，纯计算）
-- 算法：当年 Top20 热点 field 集合，与人才 top3 field 求加权重合度 → 0–100。
-- 验收：同 W4-3；页面分项可解释（tooltip 给出口径，不给百分比进度）。
+### W4-4 热点契合度 `hotspotAlignment`（S 类，纯计算，**已实施 2026-11-09**）
+- 实现：`100 × Σ(本人该学科论文占比 × 该学科热度分位)`；无年度学科记录者置 0（NO_DATA，不臆造）。
+- 实测：15 人 **43.5 – 83.2**，分项可解释（「研究领域越贴近全库增长最快的学科，分越高」）。
+- 验收：同 W4-3；tooltip 给口径，不给百分比进度。
 
 ### W4-5 `ifAvg`（暂不修）
 - 无期刊影响因子源，维持 0 并在分项行标「无源」，本轮不纳入。
 
-## 5. W5 · 国际合作表（对应 265，S 类）
+## 5. W5 · 国际合作表（对应 265，S 类，**已实施 2026-11-09**）
 
-- 现状：`internationalCoop` 硬编码 `[]`（`talent_datasets.py:1562`）；`overseasVisits/overseasExchanges` 无源（期望即空态，不修）。
-- 修法：用 `ads_talent_collaborator`（含 `co_paper_count / co_project_count / latest_collaboration_year`）+ `ads_institution_profile.country` 反查合作方国别，**过滤境外机构**，每人才 TopN 行：`合作机构 / 国别 / 类型（论文/项目）/ 数量 / 最近年份`。
+- 现状（修前）：`internationalCoop` 硬编码 `[]`；`overseasVisits/overseasExchanges` 无源（期望即空态，不修）。
+- 实现：`ads_talent_collaborator` JOIN 合作者现机构 `ads_institution_profile` 取 `country_code / country_name`，**过滤 `CN` 与空国别**（空国别 1,513 条合作者关系无法断言境外，丢弃不猜），按国家聚合：
+  - `country` 取机构国名，缺名回落国家码（如 `US`）；`project` 只写「论文合作」这一事实类型（无项目实体源，不编项目名）；`role` = 「共同作者」；`org` = 该国合著最多的 2 家机构；`period` = 首末合作年；`outcome` = 合著/合作项目/共同专利的**事实计数**
+  - 每人按合著数降序取 6 行
+- 实测：**15/15 人有行、合计 90 行**（每人 5–6 行；样例：US「合著论文 196 篇 · University of Pennsylvania / Duke University · 2015-2025」）。
 - 验收：15 人中 ≥10 人有 ≥1 条；无则空态；不得用国内合作顶替。
 
 ## 6. 契约 v1.5 增补项（C 类，先定后写）
 
 | 字段 | 变更 |
 |---|---|
-| `activityFeed[].type` | 固定枚举 `academic / position / project / media` |
+| `activityFeed[].type` | 固定枚举 **`paper / job / project / award / event`**（对齐前端 `activityTypeOptions`；原稿 `academic/position/media` 与前端不匹配，作废） |
 | `activityFeed[].source` / `sourceUrl` | 新增；缺失空串 |
-| `topInstitutions[].coreAchievements` | 结构化条目数组（title/year/venue/citedBy），**非字符串文案** |
-| `topInstitutions[].education` | 新增 doctor/master/bachelor 三档 |
+| `topInstitutions[].coreAchievements` | **维持 `string[]`**（前端纯文本渲染），内容为可核对事实统计；结构化条目（title/year/venue/citedBy）作为 v1.6 可选，需前端改类型 |
+| `topInstitutions[].education` | 新增 doctor/master/bachelor 三档（前端类型需同步加，否则不渲染） |
+| `topInstitutions[].patents` | 明确为**全量**口径（现为 `ads_institution_patent` 每机构 ≤20 条采样，见 G-DS13-07） |
 | `regions[].industryTree` | 新增两级产业树（或明确保持平铺并取消级联要求，需产品裁定） |
 | `talents[].patents/projects` 分项 | 明确 national/international/fundingWan 的统计口径 |
-| `talents[].internationalCoop` | 明确行结构与境外判定规则 |
+| `talents[].internationalCoop` | 已定（2026-11-09 实施）：`country / project / role / org / period / outcome`，境外 = 合作者机构 `country_code` 非空且 ≠ `CN` |
 
 ## 7. 排期与依赖
 
 | 批次 | 条目 | 依赖 | 解除行 |
 |---|---|---|---|
-| **P0（服务侧，无需久新）** | ~~W1-2S~~（**已完成 2026-11-09 本地验证，待发版**）、W4-3、W4-4、W2-1、W2-2、W2-3、W5-1、W3-1、W3-2 | 契约 v1.5 字段形状确认（仅 W2-2/W3-2 需先定） | 243/250/253/259/265 + 258（项目分项除外） |
+| **P0（服务侧，无需久新）** | ~~W1-2S~~、~~W2-1~~、~~W2-2~~、~~W4-3~~、~~W4-4~~、~~W5-1~~（**6 项均已完成 2026-11-09 本地验证，待发版**）；阻塞：W2-3（前端无 `education` 字段）、W3-1（枚举与前端不匹配 + 无日/月粒度）、W3-2（前端无来源列） | 契约 v1.5 字段形状确认（W2-3 / W3-1 / W3-2 需前端同批） | 250、258（项目分项除外）、259、265；243 学历口径随 W1-2S 发版生效 |
 | **P1（久新配合）** | W1-1、W1-3、W1-2D、W3-3、W3-4、W4-2 | 久新 taxonomy/degree/日期/项目字段 | 243、244、256、258 |
 | **P2（产品裁定）** | W1-4 产业级联；W4-5 暂不修 | 产品确认是否保留级联要求 | 244 |
 
