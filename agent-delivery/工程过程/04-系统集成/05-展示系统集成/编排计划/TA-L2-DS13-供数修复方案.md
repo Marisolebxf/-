@@ -62,7 +62,7 @@
 |---|---|---|---|
 | W2-1 关联专家空（0/20） | `talent_datasets.py` 把 `rep_rows` 过滤成 `tid in mvp_ids and tid in talent_ins` → 只有 15 名富画像人才，几乎落不到 20 家机构 | **已实施 2026-11-09**：改为「Top20 机构在册人才 × `h_index` 降序取 Top3」，`h_index` 为 0/空者不入代表 | 实测 **20/20 机构非空、合计 60 人**（每人 ≤3，`field` 有中文标签） |
 | W2-2 核心成果空（0/20） | 硬编码 `[]` | **已实施 2026-11-09**（口径修正）：库里**没有机构级成果表**（`ads_institution_research_achievement` 等均不存在），且前端 `TalentTopInstitution.coreAchievements` 是 **`string[]`** 纯文本渲染（`InstitutionDetailDrawer`）→ 用「`ads_institution_yearly_metrics` 2025 年论文 + 同比」与「`ads_institution_discipline_profile` Top1 学科论文/人才」两条**可核对事实**，不写生成式文案 | 实测 **20/20 机构非空、每机构 2 条**；结构化条目（title/venue/citedBy）需前端改类型，暂缓 |
-| W2-3 学历结构只有博士 | 仅聚合 `degree='博士'` 得 `doctorCount` | **未做（阻塞前端）**：前端 `TalentTopInstitution` 只有 `doctorCount/phdRatio`，**无 `education` 三档字段**，后端出数也不会渲染；需前端加字段 + 抽屉渲染后同批做 | 三档均有字段；机构详情抽屉三档可渲染 |
+| W2-3 学历结构只有博士 | 仅聚合 `degree='博士'` 得 `doctorCount`；前端抽屉的硕士/学士是 `talentCount×25%/×12%` **估算伪数** | **已实施 2026-11-09**（后端 + 前端同批）：后端按 `ins_edu` 出 `topInstitutions[].education` 三档（有学历证据才计数）、`regions[].universities[].masterPlus` 改真实博士+硕士；前端 `TalentTopInstitution` 加 `education?`，抽屉改读真实三档（全 0 走「暂无学历证据」空态），区域 fallback 删比例估算 | 实测 **20/20 机构三档非空**（浙大 258/18/6、清华 244/10/29、北大 213/10/14，doctor 合计 2,662 与 `doctorCount` 一致）；`pnpm type-check` / `build-only` 绿 |
 | ⚠️ 机构专利数为采样值 | `topInstitutions[].patents` 取自 `ads_institution_patent`，实测 **2,861 家机构恰为 20 条**（该表每机构最多存 20 条） | 页面显示的「专利 20 件」是**截断值，不是真实总量**；本轮未修，建单 **G-DS13-07**（久新补全量专利或改走 `ads_institution_profile` 聚合列——该表无 `patent_count`） | 机构专利数 ≤ 真实值且不出现大面积同值 20 |
 
 ## 3. W3 · 最新动态（对应 253 / 256）
@@ -137,7 +137,7 @@
 | `activityFeed[].type` | 固定枚举 **`paper / job / project / award / event`**（对齐前端 `activityTypeOptions`；原稿 `academic/position/media` 与前端不匹配，作废） |
 | `activityFeed[].source` / `sourceUrl` | 新增；缺失空串 |
 | `topInstitutions[].coreAchievements` | **维持 `string[]`**（前端纯文本渲染），内容为可核对事实统计；结构化条目（title/year/venue/citedBy）作为 v1.6 可选，需前端改类型 |
-| `topInstitutions[].education` | 新增 doctor/master/bachelor 三档（前端类型需同步加，否则不渲染） |
+| `topInstitutions[].education` | **已定并已实施 2026-11-09**：`{doctor, master, bachelor}`，仅统计有学历证据的在册人才；前端类型已同步（`education?`），三档全 0 = 无证据走空态 |
 | `topInstitutions[].patents` | 明确为**全量**口径（现为 `ads_institution_patent` 每机构 ≤20 条采样，见 G-DS13-07） |
 | `regions[].industryTree` | 新增两级产业树（或明确保持平铺并取消级联要求，需产品裁定） |
 | `talents[].patents/projects` 分项 | 明确 national/international/fundingWan 的统计口径 |
@@ -147,7 +147,7 @@
 
 | 批次 | 条目 | 依赖 | 解除行 |
 |---|---|---|---|
-| **P0（服务侧，无需久新）** | ~~W1-2S~~、~~W2-1~~、~~W2-2~~、~~W4-3~~、~~W4-4~~、~~W5-1~~（**6 项均已完成 2026-11-09 本地验证，待发版**）；阻塞：W2-3（前端无 `education` 字段）、W3-1（枚举与前端不匹配 + 无日/月粒度）、W3-2（前端无来源列） | 契约 v1.5 字段形状确认（W2-3 / W3-1 / W3-2 需前端同批） | 250、258（项目分项除外）、259、265；243 学历口径随 W1-2S 发版生效 |
+| **P0（服务侧，无需久新）** | ~~W1-2S~~、~~W2-1~~、~~W2-2~~、~~W2-3~~、~~W4-3~~、~~W4-4~~、~~W5-1~~（**7 项均已完成 2026-11-09 本地验证，待发版**，其中 W2-3 为后端+前端同批）；仍阻塞：W3-1（枚举与前端不匹配 + 无日/月粒度）、W3-2（前端无来源列） | W3-1 / W3-2 需契约 v1.5 与前端同批（枚举与来源列属页面契约变更） | 250、259、265（发版后复跑 R2 可转 ✅）、258（项目分项除外）；243 学历口径随 W1-2S 发版生效 |
 | **P1（久新配合）** | W1-1、W1-3、W1-2D、W3-3、W3-4、W4-2 | 久新 taxonomy/degree/日期/项目字段 | 243、244、256、258 |
 | **P2（产品裁定）** | W1-4 产业级联；W4-5 暂不修 | 产品确认是否保留级联要求 | 244 |
 
