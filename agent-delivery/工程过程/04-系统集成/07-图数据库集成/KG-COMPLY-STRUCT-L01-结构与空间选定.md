@@ -52,8 +52,8 @@
 | `paper` | 七要素 | `paper:<doi>`；无 DOI `paper:<src_id>` | name, year, doi, props | 可接 |
 | `patent` | 七要素 | `patent:<patent_no>` | name, year, patent_no, props | 可接 |
 | `project` | 七要素 | `proj:<project_no>` | name, year, project_no, props | 可接 |
-| `policy` | 七要素 | `policy:<policy_id>` | name, level, year, props | **空 Tag，等供数** |
-| `institution` | 七要素 | `svc:<org_id>` | name, institution_type, weight, props | **空 Tag，等供数** |
+| `policy` | 七要素 | `policy:<policy_id>` | name, level, year, props | 已有 20,000（属性在 props：level/year/type） |
+| `institution` | 七要素 | `svc:<org_id>` | name, institution_type, weight, props | 已有 43,296（7 类 institution_type，待甲方确认） |
 | `tech_point` | 技术点 | `tp:<technology_node_id>` | technology_node_id, name_zh, name_en, community_role, weighted_degree, community_id, graph_release_id, data_version | 已有 19,430 |
 | `tech_paper` | 技术点 | `tp_paper:<paper_id>` | paper_id, name_zh, technology_node_id, data_version | 已有 108,337 |
 | `tech_patent` | 技术点 | `tp_patent:<patent_id>` | patent_id, name_zh, technology_node_id, data_version | 已有 172,644 |
