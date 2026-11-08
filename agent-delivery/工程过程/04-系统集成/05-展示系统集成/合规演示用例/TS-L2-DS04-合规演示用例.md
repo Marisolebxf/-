@@ -6,7 +6,7 @@
 | WBS | WBS-05-19 |
 | 需规来源 | `agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md`，序号 56–88（excel 行 59–91，leaf_count=33） |
 | 覆盖行数 | 33 |
-| 状态 | M2/M3 已填 · LOOP 对照完成（R1）· 后端缺口已销项并部署冒烟通过（2026-11-08，待签收） |
+| 状态 | M2/M3 已填 · LOOP 对照完成（R1）· 后端缺口已销项并部署冒烟通过 · 2026-11-08 签收前复跑：8/11 端点全绿，63/66 遇久新 Doris MEM_LIMIT_EXCEEDED 瞬时过载（端点诚实返回空）、79 innov-value 仍 DOWNSTREAM_UNREACHABLE —— 保持待签收（下游久新通道待恢复） |
 | 任务ID | DISPLAY-DEMO-CASE-TS-M1-L04 |
 
 **主路径一句话**：进入全球创新监测「综合」Tab → 全球地图落点展示创新成果 → 按创新价值排序看列表 → 点一项成果看详情与关联载体 → 切「能力」Tab 看城市创新能力对比。
@@ -22,10 +22,10 @@
 | 60 | 综合 Tab · 实时更新展示 | 刷新（手动）；自动刷新周期（以页面实际提供为准） | 点刷新/等待自动刷新 | `POST /display/v1/situation/global-innovation/realtime` | 最近时间窗 | 列表出现最新发布时间在前的新成果；刷新前后条数变化与接口返回一致，不出现重复行 | ✅可演。realtime 返回 asOf=2026-09-18 + trend（27 条时序），可展示最新数据时间戳 |
 | 61 | 具体成果 · 地理标注展示 | 地图图层（点位 / 聚合）；成果类型 | 切换图层、点标记 | `POST /display/v1/situation/global-innovation/achievements` | 成果类型、地理范围 | 地图出现对应标注点；聚合模式点位数少于点位模式且总量一致 | ✅可演。返回 location 经纬度，可地图标注；聚合/点位模式由前端实现 |
 | 62 | 具体成果 · 地理范围筛选 | 绘制方式：矩形 / 圆形 / 多边形；或行政区划选择（国家 / 城市） | 在地图上绘制区域、选行政区 | `POST /display/v1/situation/global-innovation/achievements` | 地理边界坐标或行政区代码 | 筛选后列表条数 = 区域内成果数；清除区域后恢复全量；空白区域提示「该范围内无成果」 | ⚠️部分可演。接口支持 cities/countries 行政区划筛选；**不支持**矩形/圆形/多边形经纬度范围（无 bounds/lng/lat 参数） |
-| 63 | 具体成果 · 创新成果详情查看 | 地图标记点 / 列表成果名称 | 点标记或名称 | `POST /display/v1/situation/global-innovation/achievement-detail`（入参 achievementId+type） | 成果 id | 详情展示成果描述、创新价值、发布时间；缺失字段显示「—」 | ✅可演（2026-11-08 补齐）。Python `achievement/detail` 按 ID 取单条，item 与列表同构；不存在时 item=null + emptyReason，无源字段为空不补 0 |
+| 63 | 具体成果 · 创新成果详情查看 | 地图标记点 / 列表成果名称 | 点标记或名称 | `POST /display/v1/situation/global-innovation/achievement-detail`（入参 achievementId+type） | 成果 id | 详情展示成果描述、创新价值、发布时间；缺失字段显示「—」 | ✅可演（2026-11-08 补齐）。Python `achievement/detail` 按 ID 取单条，item 与列表同构；不存在时 item=null + emptyReason，无源字段为空不补 0。**2026-11-08 复跑**：HTTP 200 但 found=false，emptyReason=久新 Doris MEM_LIMIT_EXCEEDED（查询内存超限、环境瞬时过载；同库 knowledge-graph 正常），端点诚实返回空不伪造，维持原判，待下游恢复后复测 |
 | 64 | 具体成果 · 关联载体信息查看 | 成果详情内关联载体（企业 / 机构） | 点关联载体 | `POST /display/v1/situation/global-innovation/achievement-relations`（入参 achievementId+type） | 成果 id | 展示载体详情与其其他创新成果；点其他成果可继续跳转详情 | ✅可演。后端有 achievement-relations 端点，返回关联载体列表+关联依据（basis）；用例原写 carriers 不准确，已修正 |
 | 65 | 具体成果 · 订阅监测功能 | 订阅条件：区域、领域、成果类型 | 点「订阅」并保存 | `POST /display/v1/user-behavior/rule/save` | ruleName、scopeType(region/domain)、scopeValue、metrics、keywords | 保存后提示订阅成功，订阅列表新增一条且条件与填写一致 | ✅可演（已有功能直连）。规则表 `sys_user_subscription_rule` 支持 scopeType=region/city/domain/carrier/keyword；**「成果类型」无独立枚举**，用 metrics 或 keywords 承载 |
-| 66 | 具体成果 · 创新成果对比 | 成果多选（≥2 项） | 勾选后点「对比」 | `POST /display/v1/situation/global-innovation/achievement-compare`（入参 `items:[{achievementId,type}]`，camelCase；或 `ids+type`） | 成果 id 列表 | 对比视图列数 = 所选成果数，行含创新价值、技术领域、地理分布；差异项可辨识 | ✅可演（2026-11-08 补齐并实测）。Python `achievement/compare` 2–10 项逐项返回真实字段；未命中进 missing 并注明原因，不用占位数据凑列。实测 2 项（PRISMA / GoogLeNet）均命中 |
+| 66 | 具体成果 · 创新成果对比 | 成果多选（≥2 项） | 勾选后点「对比」 | `POST /display/v1/situation/global-innovation/achievement-compare`（入参 `items:[{achievementId,type}]`，camelCase；或 `ids+type`） | 成果 id 列表 | 对比视图列数 = 所选成果数，行含创新价值、技术领域、地理分布；差异项可辨识 | ✅可演（2026-11-08 补齐并实测）。Python `achievement/compare` 2–10 项逐项返回真实字段；未命中进 missing 并注明原因，不用占位数据凑列。实测 2 项（PRISMA / GoogLeNet）均命中。**2026-11-08 复跑**：HTTP 200，两项均进 missing（reason=查询失败，同为 Doris 内存超限瞬时过载），不拿占位数据凑列，维持原判 |
 | 67 | 实时 Tab · 数据指标分类展示 | 指标类别：专利数量 / 论文引用率 / 投资金额（以页面实际指标项为准） | 点指标类别 | `POST /display/v1/situation/global-innovation/realtime` | 指标类别、统计年度 | 所选指标下展示对应数值卡与图表，指标切换后数值来源随之变化；无数据指标显示空态而非 0 | ✅可演。realtime 返回 kpi（key/label/unit/value/year/coverageStatus），可按指标展示数值卡 |
 | 68 | 实时 Tab · 可视化数据呈现 | 图表类型（柱状图 / 折线图 / 饼图 / 热力图） | 切换图表类型 | `POST /display/v1/situation/global-innovation/realtime` | 图表类型、指标、时间范围 | 图形类型随切换变化，数据点数量不变；热力图出现色阶图例 | ✅可演。realtime 返回 trend（27 条时序）+ domainDist（4 条领域分布），可图表呈现 |
 | 69 | 实时 Tab · 知识图谱创新点落图 | 图谱范围（全域 / 指定领域）；创新点选中 | 点创新点 | `POST /display/v1/situation/global-innovation/knowledge-graph` | 领域 id、创新点 id | 创新点在图谱中有对应节点并高亮，关联边可见；点节点出位置与关联关系 | ⚠️部分可演（2026-11-08 补齐）。Python `achievement/graph` 由真实成果与第一作者机构投影出二部图（nodes 带 location、edges=first_author_institution）；**数仓无独立创新点关系边表**，未构造推理边，故非完整知识图谱 |
@@ -38,7 +38,7 @@
 | 76 | 载体 Tab · 创新载体详情查看 | 排行榜中的载体名称 | 点名称 | `POST /display/v1/situation/global-innovation/carrier-detail`（入参 carrierId） | 载体 id | 详情展示该载体创新成果列表与指数变化趋势；趋势点年份与接口返回一致 | ✅可演。后端有 carrier-detail 端点，返回载体详情+成果列表 |
 | 77 | 监测 Tab · 监测模型设置 | 监测指标、阈值条件、监测频率 | 新增/编辑模型并保存 | `POST /display/v1/user-behavior/rule/save`（同一规则表承载） | metrics、threshold、thresholdOp(above/below)、monitorFrequency(instant/daily/weekly) | 保存后模型出现在列表，字段与填写一致；再次编辑回填一致 | ✅可演（已有功能直连）。规则表原生含 metrics/threshold/thresholdOp/monitorFrequency 四字段，与「监测模型」一一对应，无需新表 |
 | 78 | 监测 Tab · 创新点发现 | 领域、时间范围；算法模型（以页面实际提供为准） | 点「发现创新点」 | `POST /display/v1/situation/global-innovation/alerts` | 领域、时间范围 | 返回创新点列表，条数 = 接口返回；每条含识别依据；无结果时显示「本周期未发现创新点」 | ✅可演（演示数据）。alerts 返回 6 条，但 **isMock=true**（mockReason：预警结果表未接入数仓，为演示数据）。前端须展示「演示数据（Mock）」角标，不得当成真实预警 |
-| 79 | 监测 Tab · 创新价值评估 | 创新点选中 | 点「评估」 | `POST /display/v1/situation/global-innovation/innov-value`（入参 metricId，默认 M_INNOV_POINT_VALUE） | 创新点 id | 展示价值评估结果与分析报告段落；评估失败时给出明确错误提示，不显示 0 分 | ✅可演。后端有 innov-value 端点（算法库 precompute 真实结果，非 mock）。返回 valueScore/noveltyN/influenceN/maturityN 等，影响潜力维可能缺测（标注「缺测」不补 0） |
+| 79 | 监测 Tab · 创新价值评估 | 创新点选中 | 点「评估」 | `POST /display/v1/situation/global-innovation/innov-value`（入参 metricId，默认 M_INNOV_POINT_VALUE） | 创新点 id | 展示价值评估结果与分析报告段落；评估失败时给出明确错误提示，不显示 0 分 | ⚠️部分可演。后端有 innov-value 端点（算法库 precompute 真实结果，非 mock），返回 valueScore/noveltyN/influenceN/maturityN 等，影响潜力维可能缺测（标注「缺测」不补 0）。**2026-11-08 复跑**：HTTP 200 但 emptyReason=DOWNSTREAM_UNREACHABLE（算法库指标计算不可达，不以伪值兜底）——下游久新通道待恢复，恢复后可演示真实评估结果 |
 | 80 | 监测 Tab · 订阅管理 | 订阅对象：领域、创新载体；推送频率 | 新增/编辑/删除订阅 | `GET /display/v1/user-behavior/rules`、`POST /rule/save`、`POST /rule/remove`、`POST /rule/status` | scopeType(domain/carrier)、scopeValue、pushFrequency、status | 列表增删改后与实际订阅一致；删除后不再出现在列表 | ✅可演（已有功能直连）。CRUD 四端点齐（列表/保存/删除/启停）；scopeType 支持 domain 与 carrier |
 | 81 | 监测 Tab · 创新关注点设置 | 关键词、技术领域、创新类型 | 保存关注点 | `POST /display/v1/user-behavior/rule/save`（scopeType=keyword/domain） | keywords（逗号分隔）、scopeType、scopeValue | 保存后关注点标签可见；重复添加同标签不产生重复项 | ✅可演（已有功能直连）。规则表原生 `keywords` 字段 + scopeType=keyword；**「创新类型」无独立枚举**，可并入 keywords |
 | 82 | 监测 Tab · 智能推送 | 推送方式（站内通知 / 邮件）；推送历史 | 查看推送历史、改推送设置 | `POST /display/v1/user-behavior/rule/save`（channels）；`GET /display/v1/user-behavior/notifications?limit=50`（历史）；`POST /display/v1/subscription/push-once`（手动触发） | channels(站内/邮件)、pushFrequency、reminders | 有推送记录时列出时间与内容，条数=接口返回；无记录时显示「暂无推送记录」；未接入时明示未提供 | ✅可演（2026-11-08 补齐并部署验证）。推送引擎已就绪（SubscriptionPushJob + SubscriptionNotifyService + 5 adapter）；历史查询端点 `GET /v1/user-behavior/notifications` 已部署，实测 200（空表返回 `[]`，插入测试记录后返回真实行并含 pushTime/level/content，验证后已清理） |
@@ -55,11 +55,11 @@
 
 | 分类 | 行数 | 序号 |
 |---|---|---|
-| ✅ 可演（对得上） | 27 | 56, 57, 58, 59, 60, 61, 63, 64, 65, 66, 67, 68, 71, 72, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88 |
-| ⚠️ 部分可演（部分对） | 6 | 62, 69, 70, 73, 74, 75 |
+| ✅ 可演（对得上） | 26 | 56, 57, 58, 59, 60, 61, 63, 64, 65, 66, 67, 68, 71, 72, 76, 77, 78, 80, 81, 82, 83, 84, 85, 86, 87, 88 |
+| ⚠️ 部分可演（部分对） | 7 | 62, 69, 70, 73, 74, 75, 79 |
 | ❌ 不可演（对不上/端点缺失） | 0 | — |
 
-**合计**：33 行 = 27 可演 + 6 部分可演 + 0 不可演。
+**合计**：33 行 = 26 可演 + 7 部分可演 + 0 不可演（2026-11-08 签收前复跑：79 innov-value 因下游算法库不可达由 ✅ 调为 ⚠️）。
 
 > **2026-11-08 修订（用户裁定）**：订阅 / 推送 / 监测模型 / 关注点 / 城市订阅等写面端点**本期要做**，且已有订阅推送框架可直接对接 —— 序号 65/77/80/81/87 由 ❌ 改判 ✅，82 补齐历史查询端点后改判 ✅。已直连能力清单见下表。
 >
@@ -109,6 +109,23 @@
 | 88 | `POST /situation/global-innovation/policy-advice` | ✅ HTTP 501 + `MODEL_NOT_READY`（符合设计） |
 
 > 冒烟注意事项：① `level` 必须大写 `CITY`/`COUNTRY`，小写会走 `empty_reason=no_source`；② PowerShell 调 curl 时 `-H $数组` 会把多条 header 拼成畸形值、`-d` 会吞内层双引号，复测请用 `Invoke-WebRequest` 或逐条 `-H`。
+
+**签收前复跑记录（2026-11-08）**
+
+| 行 | 端点 | 结果 |
+|---|---|---|
+| 82 | `GET /user-behavior/notifications` | ✅ 200，空表 `[]` |
+| 65/77/80/81/87 | `GET /user-behavior/rules`、`GET /user-behavior/tags` | ✅ 200（均空表） |
+| 63 | `POST /situation/global-innovation/achievement-detail` | ⚠️ 200 但 found=false，emptyReason=久新 Doris MEM_LIMIT_EXCEEDED（查询内存超限、环境瞬时过载）；端点诚实返回空不伪造 |
+| 66 | `POST /situation/global-innovation/achievement-compare` | ⚠️ 200，2 项均进 missing（reason=查询失败，同 Doris 内存超限），不拿占位数据凑列 |
+| 69 | `POST /situation/global-innovation/knowledge-graph` | ✅ 200，15 节点 / 8 边真实数据（graphScope=achievement_carrier_bipartite） |
+| 70 | `POST /situation/global-innovation/entity-impact` | ✅ 200，person 5 条 rank + rawMetrics，score=null / NOT_SCORED（设计口径） |
+| 71 | `POST /situation/global-innovation/impact-forecast` | ✅ HTTP 501 + MODEL_NOT_READY（符合设计） |
+| 85 | `POST /situation/global-innovation/cities` | ✅ 200，CITY 级 10 城真实数据；cityCodes 双城过滤 total=2（北京/南京） |
+| 88 | `POST /situation/global-innovation/policy-advice` | ✅ HTTP 501 + MODEL_NOT_READY（符合设计） |
+| 79 | `POST /situation/global-innovation/innov-value` | ❌ 未恢复：200 但 emptyReason=DOWNSTREAM_UNREACHABLE（算法库指标计算不可达，不伪值兜底） |
+
+> 复跑结论：8/11 端点全绿。63/66 受久新 Doris 内存超限瞬时影响（同链路 achievements 列表 total=0、realtime trend/domainDist 空、talents no_source；但 knowledge-graph 与 cities 查询正常，判定为下游环境瞬时过载而非端点缺陷），79 innov-value 下游算法库通道未恢复。所有端点均诚实降级、无伪造数据。保持「待签收」，待下游久新通道恢复后复测 63/66/79 再行签收。
 
 
 ### 演示数据标注
