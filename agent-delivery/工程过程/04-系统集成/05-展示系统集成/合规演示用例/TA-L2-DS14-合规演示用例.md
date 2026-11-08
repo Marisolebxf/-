@@ -51,9 +51,9 @@
 
 | 编号 | 关联行 | 缺口 | 根因 | 处置建议 |
 |---|---|---|---|---|
-| GAP-DS14-01 | 267 | 迁徙年份播放器（2020–2026 按年切片） | 接口 migration 为 2015–2025 聚合边、未带 `year`；久新源表 `ads_talent_mobility_yearly_flow` 本身含年度 | ~~BE 按年切片返回~~ **✅ 已修复（2026-11-08，commit `df225ed`，pipeline 4308 全绿）**：dataset 新增 `china.migrationByYear`，实测 2015–2025 全 11 年、每年 Top100 真实边（含城市名/经纬度/人数）；待前端接线后 267 升可演 |
+| GAP-DS14-01 | 267 | 迁徙年份播放器（2020–2026 按年切片） | 接口 migration 为 2015–2025 聚合边、未带 `year`；久新源表 `ads_talent_mobility_yearly_flow` 本身含年度 | ~~BE 按年切片返回~~ **✅ 已修复（2026-11-08，commit `df225ed`，pipeline 4308 全绿）**：dataset 新增 `china.migrationByYear`，实测 2015–2025 全 11 年、每年 Top100 真实边（含城市名/经纬度/人数）；**前端已接线并浏览器实测通过（commit `870a7b0`，lumen-ui-science-pc）：滑杆切年真实换数（2026→2021 总迁徙 9,202→9,086），267 升 ✅可演**（注：2026 非 migrationByYear 键，口径待前端复核） |
 | GAP-DS14-02 | 268 | 中国视图城市级点位与搜索 | region dataset 无城市行（城市级在全球页 dataset，本页契约未含） | 维持省级粒度；城市搜索走「无匹配」提示（不补数） |
-| GAP-DS14-03 | 266 / 270 | 省级年度序列（时间筛选改数、历史趋势曲线） | dataset 未含省粒度 geo_yearly 序列；久新 `ads_geo_yearly_metrics` 有 PROVINCE 级（2015–2026）可供 | ~~BE 可选增补~~ **✅ 已修复（2026-11-08，commit `df225ed`）**：dataset 新增 `china.provinceTrends`，实测 31 省年度序列（2015 起，与 shenzhen.trends 同族口径、无插值）；待前端接线后 266/270 升可演 |
+| GAP-DS14-03 | 266 / 270 | 省级年度序列（时间筛选改数、历史趋势曲线） | dataset 未含省粒度 geo_yearly 序列；久新 `ads_geo_yearly_metrics` 有 PROVINCE 级（2015–2026）可供 | ~~BE 可选增补~~ **✅ 已修复（2026-11-08，commit `df225ed`）**：dataset 新增 `china.provinceTrends`，实测 31 省年度序列（2015 起，与 shenzhen.trends 同族口径、无插值）；**前端已接线并浏览器实测通过（commit `870a7b0`）：右侧「历史趋势」折线绑定选中省份、缺年断线不插值，266/270 升 ✅可演** |
 | GAP-DS14-04 | 271 / 273（269 候选） | 园区 / 创新载体层 | 久新无产业园/创新载体维（M1 备注已记） | **不演**（维持空态+说明）；不可补数，长久需供数侧新源 |
 | GAP-DS14-05 | 272（274 关键词） | 区级代表性人才 | MVP 15 人富画像未按深圳区挂接，districts.representativeTalents 全空 | 维持空态；若要演，走画像页 15 人（跨页）不在本页补 |
 | GAP-DS14-06 | 274 | 职称筛选 | 契约 `TalentFocusRegionDataset` 未含职称字段（M1 备注 3 已记未闭合） | 职称下拉置灰（期望行为）；如需开，BE 接 `ads_talent_experience` 职称解析后复核 |
