@@ -50,3 +50,11 @@
 - 库侧证据（直连只读）：target_industry 列已落库，uk_forecast_params 五列(128)前缀就位；未出台仿真 7 行 industry 分布 = 新一代信息技术/生物产业/海洋产业/高端装备/新材料/新能源/绿色环保；forecast 共 21 行（主种子 6 + extras 15）。
 - 下次重入：人换 token 后从探测开始，样本 8 条全量重跑（232/233 两条用例原文含产业级联回显全文）。
 
+
+## 运行 2026-11-08（token 换新，EQ 复核完成）
+
+- human:淮政玮 12:18 换新 display-loop-token。探测 200（多维 records=9）。
+- 232 等值复核 6/6 PASS：原文带 target_industry=新一代信息技术 命中 128 亿行；同键换产业（生物产业/新能源）records 空（不串 extras 行）；五参不带产业诚实回显；233/236 隔离不受影响。
+- EST 全量 8/8 PASS（235 四维分数按数值比对 78.25/71.5/66.0/74.75；返回 9 维行是 SIM-GAPFILL 种子既有数据，用例未限定仅四行）。
+- 232 缺口闭合：POL-L2-DS12-INDUSTRY-EQ-FIX-L01 全部 DoD 满足（Java 过滤/库列/单测/前端会话提交见其单），本验收单解除 blocked 回 ready。
+

@@ -6,7 +6,7 @@
 - 监管人：`human:淮政玮`
 - 日期：2026-11-07
 
-- 状态：第一轮已执行（2026-11-08）。探测 HTTP 200，样本 5/5 全 PASS（237/238/239/241/242），零缺口不建子任务。验收单 `POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP` 已建（`ready`，可反复执行）。报告见 `agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP.md`。
+- 状态：第二轮已执行（2026-11-08 12:18 token 换新，逐字对照）。探测 200；237/238/239/241 逐字 PASS，242 政策背景段语序不一致（DATA 缺口）→ 建子任务 `POL-L2-DS12-SIM-DEMO-FIX-R20261108-DATA`（ready）。验收单退回 ready 待缺口闭合重验。第一轮（2026-11-08 凌晨）5/5 PASS 见 handoff。
 - 与效果预估共用 `POST https://edu.itic-sci.com/tid/api/display/v1/policy/simulation/jobs`。2026-11-07 该地址探测为 HTTP 404；2026-11-08 复探 HTTP 200，映射已恢复。
 
 ## 1. 要证明什么
