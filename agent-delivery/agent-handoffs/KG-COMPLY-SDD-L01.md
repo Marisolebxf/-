@@ -3,8 +3,8 @@
 > **任务**：`KG-COMPLY-SDD-L01` · 展示与图算法的详细设计，以及给燕大编排智能体的任务清单
 > **类型**：definition（Epic `E-SCI-INT`，P0）
 > **执行**：`agent:architect-agent` · **负责人 / 交付确认人**：`human:徐滕强`（登记册 DoD 末句「经 human:唐绍祖 确认」与派单说明/分工表「确认人徐滕强」两处口径并存；本单不自行判定最终签收人，待 human:徐滕强 明确后再闭合）
-> **日期**：2026-11-07 初稿 · 2026-11-08 复审修订（详见主文 §7 变更记录 12 项）
-> **状态**：in_progress → integration（本 handoff 为 AV-0 证据）
+> **日期**：2026-11-07 初稿 · 2026-11-08 复审修订（详见主文 §7 变更记录 16 项）+ 2026-11-08 ALGO 会签修订（4 项 P0 已改进正文）
+> **状态**：in_progress → integration（本 handoff 为 AV-0 证据）；ALGO 会签已完成（有条件同意，P0 四项已闭环），待 `human:徐滕强` 签收
 
 ## ponytail
 
@@ -71,7 +71,18 @@ ponytail: N/A（定义/文档）
 - 算法清单 23 条：主文 §2（第 1 列 17 条表 + 第 2 列 6 条表）。
 - 细任务清单 14 条：主文 §5（T01–T14，每条六要素齐备）。
 - 上游结论采用：STRUCT §4（空间）/ ACCEPT §1–§2（验收面与算法边界）/ ACCEPT 实跑结果（基线数字）。
-- 未 commit / 未 push（前端规则不适用本仓，但按派单说明「完工停在本地」执行，等本会话人工确认）。
+- 已 commit / 已 push：`dafbc94e`（主文 + handoff 落盘）、`689def87`（registry evidence 与签收口径）。
+
+## ALGO 会签修订（2026-11-08，唐绍祖）
+
+会签结论「有条件同意」，4 项 P0 已**直接改进主文正文**（不是只出意见），详见主文 §7 变更记录第 ⑬–⑯ 条与 [会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md](../工程过程/04-系统集成/07-图数据库集成/会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md)：
+
+| # | 修正点 | 落点 |
+|---|---|---|
+| P0-1 | 边属性读法：`props` / `props.confidence` → `e.evidence_level` / `e.relation_confidence_score`；新增「属性读写约定」（节点 `v.<tag>.<field>`、边 `e.<field>`，禁用 `e.<edge_name>.<field>`，该写法全 NULL 且不报错）；T08/T09/T10 加权重自检 | §2.1#1、§5 共同前提、T08/T09/T10 |
+| P0-2 | T01 补「预期缺口」表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 10 边型）；DDL 通道改「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」；§5 补关键路径警示 | T01、§5 汇总 |
+| P0-3 | T06 加 `apply_to` / `support` 跨边重合度比对（实测 9,279 = 100% 重合，>90% 判同批双灌） | T06 |
+| P0-4 | `participates` 213,500 拆两层：`enterprise`→`segment` 178,731（M17 可用）+ `institution`→`institution` 34,769（不属 M02/M19）；T02「不做什么」逐条点名 | T06、T02 |
 
 ## 后续（不属本单执行）
 

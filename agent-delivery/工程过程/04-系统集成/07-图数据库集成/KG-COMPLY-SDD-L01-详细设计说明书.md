@@ -198,7 +198,7 @@ flowchart TB
 
 | # | 需规序号 | 算法 / 功能 | 在 `demo_gkx_chain` 读什么 | 怎样算跑出结果 | 没有结果时 |
 |---|---|---|---|---|---|
-| 1 | 423 | BFS / DFS / Dijkstra / Bellman-Ford / A* 多算法路径搜索 | `tech_point` 点 + `tech_rel` 边（证据等级在 `props`，做加权权重）；七要素层灌数后可扩展到 M01–M24 端点对 | 指定起终点对，`MATCH` / `GO` 导出子图到本机，`networkx` 跑五种算法各出一条路，结果可比（加权 vs 无权差异即算法差异，如实展示） | 起终点不存在或不在同一连通片 → **空态**（返回「不可达」，不显示 0 条路径充数）；输入图层不存在 → **501** |
+| 1 | 423 | BFS / DFS / Dijkstra / Bellman-Ford / A* 多算法路径搜索 | `tech_point` 点 + `tech_rel` 边（证据等级读 `e.evidence_level`，强度读 `e.relation_confidence_score`，做加权权重）；七要素层灌数后可扩展到 M01–M24 端点对 | 指定起终点对，`MATCH` / `GO` 导出子图到本机，`networkx` 跑五种算法各出一条路，结果可比（加权 vs 无权差异即算法差异，如实展示） | 起终点不存在或不在同一连通片 → **空态**（返回「不可达」，不显示 0 条路径充数）；输入图层不存在 → **501** |
 | 2 | 424 | 最优路径发现与展示 | 同上 | 按权重（证据置信度）跑 Dijkstra 取代价最低路径，落成节点 + 连线序列返回 | 同上：不可达 → **空态**；层缺失 → **501** |
 | 3 | 425 | 路径多样性分析 | 同上 | 同起点终点跑 k 条备选路径（去边 / 去点多样性策略），每条带长度、节点数、权重 | 同上 |
 | 4 | 426 | 场景化路径应用（合作链 / 成果传播路径） | 技术点图（能跑）；人才合作网（M01/M20 灌数后） | 技术点图上按 1–3 套现成场景跑路径；人才合作网等 M01–M04 / M19 / M20 入图后同法补跑 | 技术点图无路 → **空态**；合作网层未灌数 → **501**（实跑已证：M22 企业合作网碎片化不可用，不得用它冒充场景结果） |
@@ -309,6 +309,7 @@ flowchart TB
 | 批号 | 每批入图带 `props.batch`（如 `comply-20261107-t02`）；端点缺失跳过并计数，不自动补点 |
 | 凭证 | Nebula 连接凭证走主机环境文件 / Secret，**不进 git、不进编排话术** |
 | 执行环境 | 与智树共用 `lumen-algo-py` 编排环境；入图执行为离线作业，不进页面请求链路 |
+| **属性读写约定（本引擎特有，必读）** | **节点属性必须带 Tag 前缀**：`v.<tag>.<field>`（如 `v.tech_point.name_zh`）；写成 `v.name_zh` 返回全 NULL。**边属性必须不带边名前缀**：`e.<field>` 或 `properties(e)`（如 `e.evidence_level`）；写成 `e.<edge_name>.<field>`（如 `e.tech_rel.evidence_level`）返回**全 NULL 且不报错**，会让加权算法静默退化成无权算法。所有抽样核验与算法作业按本约定写，不得沿用原生 Nebula 的 `e.<edge_name>.<field>` 习惯 |
 | 验收档位 | 数据档（C 档）为主：在空间里查得到、数量与上游记录一致；接口条目另按 B 档 |
 
 ### T01 入图环境与结构核验（含 schema 缺口升级闸）
@@ -317,10 +318,37 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:白鑫凤` |
 | 依赖 | STRUCT §1 结构基线（已定，无需等待） |
-| 编排环境话术 | 「连 `demo_gkx_chain`，只读核对：14 个 Tag 与 24+6 条 Edge 是否都已存在、VID 规则抽查各 Tag 前缀（`ent:` / `seg:` / `inst:` / `person:` / `paper:` / `patent:` / `proj:` / `policy:` / `svc:` / `tp:` 系）是否与 STRUCT §1.1 一致；Edge 端点组合与方向不在 SHOW EDGES 结果里，另对各 Edge 名抽样各 20 条核对端点 Tag 对与方向是否与 STRUCT §1.2 一致；输出核对表（Tag/Edge/VID/端点方向四列，逐项 ✅/❌），不改任何 schema。若存在缺失 Tag / Edge：列『待补清单』（缺失项 + 对应 STRUCT §1 定义 + 建议 DDL 语句摘自 KG-7ELEM-SCHEMA-DDL-L01），**立即停止下游灌数任务**，清单交唐绍祖确认后由 DBA / 授权 DDL 通道补建；补建完成并复验 ✅ 后 T02–T04 才开工。」 |
+| 编排环境话术 | 「连 `demo_gkx_chain`，只读核对：14 个 Tag 与 24+6 条 Edge 是否都已存在、VID 规则抽查各 Tag 前缀（`ent:` / `seg:` / `inst:` / `person:` / `paper:` / `patent:` / `proj:` / `policy:` / `svc:` / `tp:` 系）是否与 STRUCT §1.1 一致；Edge 端点组合与方向不在 SHOW EDGES 结果里，另对各 Edge 名抽样各 20 条核对端点 Tag 对与方向是否与 STRUCT §1.2 一致；输出核对表（Tag/Edge/VID/端点方向四列，逐项 ✅/❌），不改任何 schema。**预期此闸门开局不会全绿**：2026-11-08 实测空间为 10 Tag / 15 Edge，预计缺 5 个 Tag 与 10 条 M 边型（清单见下「预期缺口」）。核对结果与预期一致属正常，不等于做错。若存在缺失 Tag / Edge：列『待补清单』（缺失项 + 对应 STRUCT §1 定义 + 建议 DDL 语句摘自 KG-7ELEM-SCHEMA-DDL-L01），**立即停止下游灌数任务**；清单**先交唐绍祖确认内容对不对**，再报 `human:徐滕强`，由**项目组授权的 DBA 通道执行 DDL**——唐绍祖只做内容确认，不是 DDL 授权人，编排侧不得自行执行任何 DDL。补建完成并复验 ✅ 后 T02–T04 才开工。」 |
 | 读哪张图 | `demo_gkx_chain` 的 schema（`SHOW TAGS` / `SHOW EDGES`）+ 各 Tag 抽样点 + 各 Edge 抽样边（端点与方向） |
 | 验收看什么 | 核对表全绿或差异逐条列出；七要素层缺失的 Tag / Edge 列成「待补清单」并附 DDL 摘要；**待补清单非空时，T02–T04 处于 blocked 等待，不得带缺灌数** |
-| 不做什么 | 不建空间、不改 schema、不灌数；schema 补建**不经编排话术执行**——统一走 DDL / DBA 授权通道（脚本真源 KG-7ELEM-SCHEMA-DDL-L01，经唐绍祖确认）；凭证不落盘进 git |
+| 不做什么 | 不建空间、不改 schema、不灌数；schema 补建**不经编排话术执行**——统一走 DDL / DBA 授权通道（脚本真源 KG-7ELEM-SCHEMA-DDL-L01，内容经唐绍祖确认 → 报徐滕强 → 项目组授权 DBA 执行）；凭证不落盘进 git |
+
+**T01 预期缺口（2026-11-08 实测基线，供核对表对账）**
+
+空间实测 **10 Tag / 15 Edge**，对照 STRUCT §1 的 14 Tag / 24+6 Edge：
+
+| 预期缺 Tag（5 个） | 用途 |
+|---|---|
+| `research` | 科研机构 |
+| `person` | 人才 |
+| `paper` | 论文 |
+| `patent` | 专利 |
+| `project` | 项目 |
+
+| 预期缺 Edge（10 条） | 对应 M 编号 |
+|---|---|
+| `participate` | M07 / M08 |
+| `author_of` | M09 |
+| `belong` | M04 |
+| `policy_relate` | M11 |
+| `policy_apply_to` | M12–M14 |
+| `research_coop` | M19 |
+| `talent_coop` | M20 |
+| `service_provide` | M21 |
+| `supply` | M23 |
+| `parent_sub` | M24 |
+
+> 现有 15 Edge 为：`apply_to` / `belongs_to` / `cite` / `cooperate` / `depends_on` / `participates` / `regulate` / `supplies` / `support` / `tech_has_institution` / `tech_has_paper` / `tech_has_patent` / `tech_has_person` / `tech_path_step` / `tech_rel`。其中 `cite` / `regulate` / `supplies` 实测 0 条边，`apply_to` 与 `support` 完全重复（见 T06），`belongs_to` 仅覆盖 25% 环节——核对表须如实记录边数，不得把「边型存在」等同于「可用」。
 
 ### T02 七要素入图 · 产业链与机构合作组（M15 / M17 / M19）
 
@@ -331,7 +359,7 @@ flowchart TB
 | 编排环境话术 | 「按 STRUCT §1 结构，先补齐端点再灌边：`segment` / `enterprise` / `research` 点按源表存在才建（VID 按前缀规则，属性最小集），已存在的点跳过并计数；然后把 M15（环节 depends_on 环节）、M17（企业 participates 环节）、M19（机构 research_coop 机构）按关系表离线灌入 `demo_gkx_chain`；每条边带 `props.batch=comply-<日期>-t02`；端点缺失跳过并计数；完成后按各边数与源表行数出对账单。」 |
 | 读哪张图 | 写入后回读 `depends_on` / `participates` / `research_coop` 三条边与 `segment` / `enterprise` / `research` 点 |
 | 验收看什么 | 对账单：灌入边数 vs 源表行数、跳过计数（端点缺失）；抽样边方向与端点 Tag 正确；`depends_on` 保持无环（DAG，实跑基线 1,073 边 32 层可作量级参照） |
-| 不做什么 | 不新增边型；不把现有 `apply_to` / `support` / `participates`（机构→机构 213,500 条那条）直接记成 M12–M18 已建（语义对齐归 T06）；不碰技术点层 |
+| 不做什么 | 不新增边型；不把 `apply_to` / `support` 记成 M12–M14 已建（两条边实测 100% 重复，须停读一条，语义对齐归 T06）；不把 `institution`→`institution` 的 `participates`（34,769）记成 M02 / M19（M17 由 `enterprise`→`segment` 的 178,731 条对应，与本节无关）；不碰技术点层 |
 
 ### T03 七要素入图 · 人才与机构组（M01 / M02 / M03 / M04 / M20）
 
@@ -372,9 +400,9 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:陈芸飞`（与 T02 同人，因其掌握 participates 灌数细节） |
 | 依赖 | T02 / T03 / T04 完成 |
-| 编排环境话术 | 「对 `apply_to` / `support` / `participates` / `belongs_to` 四条现存边，各抽 20 条列端点 Tag 与方向，输出对齐报告：`apply_to` / `support` 与 M12–M14 口径比对、`participates` / `belongs_to` 与 M15–M17 相关口径比对（belongs_to 仅作端点确认，不强行映射）；给出每条可映射到哪个 M 编号、哪条是另一语义需改名或保留原边型不改判，交唐绍祖与徐滕强裁定。」 |
-| 读哪张图 | `demo_gkx_chain` 的 `apply_to`（10,957）/ `support`（10,957）/ `participates`（213,500，机构→机构）/ `belongs_to`（359）抽样 |
-| 验收看什么 | 报告四节齐全，每节有抽样明细 + 映射结论；不得把语义不符的边记成「必须关系已建」 |
+| 编排环境话术 | 「对 `apply_to` / `support` / `participates` / `belongs_to` 四条现存边出对齐报告，**必须含跨边重合度比对，不能只各自抽样**（分开抽 20 条看不出 `apply_to` / `support` 是同一批数据）。三步做：① 各边按端点 Tag 对 + 方向分组计数；② 对 `apply_to` 与 `support` 用『起点+终点』同对连接计数（`MATCH (a)-[e1:apply_to]->(b) MATCH (a)-[e2:support]->(b) RETURN count(e1)`），与各自总量比对给出重合率——**重合率 >90% 判为同批数据双灌，结论写「建议停读一条」，不写「两条边分别映射」**（2026-11-08 实测该值为 9,279，与 `apply_to`→segment 总量 9,279 相等，即 100% 重合）；③ `participates` 必须按端点拆两层：`enterprise`→`segment` **178,731（即 M17 候选，可用）**、`institution`→`institution` **34,769（服务公司之间的关联，不属 M02 / M19）**，两者合计 213,500，**不得把 213,500 整体写成「机构→机构」**；`belongs_to` 仅作端点确认，不强行映射。结论须分三类并指明条数：可映射哪个 M 编号 / 需改名保留 / 不得映射，交唐绍祖与徐滕强裁定。」 |
+| 读哪张图 | `demo_gkx_chain` 的 `apply_to`（10,957）/ `support`（10,957）/ `participates`（213,500，**须拆两层：`enterprise`→`segment` 178,731 + `institution`→`institution` 34,769**）/ `belongs_to`（359，覆盖仅 25% 环节）抽样 |
+| 验收看什么 | 报告四节齐全，每节有抽样明细 + 映射结论；**须含 `apply_to` / `support` 跨边重合率数值，及 `participates` 按端点拆分的两层条数**；不得把语义不符的边记成「必须关系已建」；不得把 213,500 整体写成「机构→机构」 |
 | 不做什么 | 不自行改图改名；不在报告里替人裁定（裁定归唐绍祖 / 徐滕强） |
 
 ### T07 入图验收总表
@@ -394,9 +422,9 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:宋飞扬` |
 | 依赖 | T01（结构核验过即可跑技术点层；不依赖 T02–T07） |
-| 编排环境话术 | 「在 `demo_gkx_chain` 只读复跑路径搜索批：抽 10 对技术点，跑 BFS 与 Dijkstra（权重取 `props.confidence`），各出最短路；结果含每对跳数、备选路径数、节点序列；输出格式对齐 2026-11-07 实跑结果 JSON，允许数值浮动但结论形态一致。」 |
+| 编排环境话术 | 「在 `demo_gkx_chain` 只读复跑路径搜索批：抽 10 对技术点，跑 BFS 与 Dijkstra（权重取 `e.relation_confidence_score`，**禁止写 `e.tech_rel.relation_confidence_score`**——本引擎该写法返回全 NULL 且不报错，权重会静默退化为 1.0），各出最短路；结果含每对跳数、备选路径数、节点序列；输出格式对齐 2026-11-07 实跑结果 JSON，允许数值浮动但结论形态一致。」 |
 | 读哪张图 | `tech_point` + `tech_rel`（19,430 点 / 541,428 边） |
-| 验收看什么 | 10 对路径全出；加权 vs 无权差异如实保留；不可达点对返回空态不造路 |
+| 验收看什么 | 10 对路径全出；加权 vs 无权差异如实保留；不可达点对返回空态不造路；**权重自检**：`e.relation_confidence_score` 空值率必须为 0，加权与无权结果必须有差异（若完全一致即说明权重没读到，判不通过） |
 | 不做什么 | 不把结果写回图（不写点边索引）；不用 M22 企业合作网冒充场景化路径（实跑已证不可用） |
 
 ### T09 图算法作业 · 中心性批（428–432）
@@ -407,7 +435,7 @@ flowchart TB
 | 依赖 | T01 |
 | 编排环境话术 | 「在 `demo_gkx_chain` 只读复跑中心性批：度中心性读 `weighted_degree` 字段；PageRank 全图（α=0.85，阈值 1e-8）；紧密（度前 1,500 子图）与中介（同子图 300 源采样）按实跑口径现算；四项 min-max 等权合成综合分；输出四个 Top20 + 综合表，格式对齐实跑结果 JSON。」 |
 | 读哪张图 | `tech_point` + `tech_rel` |
-| 验收看什么 | 四榜单 + 综合表全出；PageRank 分值和=1.0 校验通过；与实跑基线相关性在合理区间（度中心性 vs `weighted_degree` ≥0.95）；抽样口径（子图 / 采样）在输出里如实标注 |
+| 验收看什么 | 四榜单 + 综合表全出；PageRank 分值和=1.0 校验通过；与实跑基线相关性在合理区间（度中心性 vs `weighted_degree` ≥0.95）；抽样口径（子图 / 采样）在输出里如实标注；**权重自检**：`e.relation_confidence_score` 空值率必须为 0（写成 `e.tech_rel.*` 会全 NULL 且不报错，加权中心性会静默退化为无权） |
 | 不做什么 | 不做全图精确紧密 / 中介（按实跑口径执行）；不写回图；不为「权威排名」自行过滤低证据边重算（如需另立单） |
 
 ### T10 图算法作业 · 社群批（433–435 / 437）
@@ -418,7 +446,7 @@ flowchart TB
 | 依赖 | T01 |
 | 编排环境话术 | 「在 `demo_gkx_chain` 只读复跑社群批：Louvain（种子 42）出社群成员清单，算模块度；汇总每社群规模 / 核心节点 / 内部边数 / 平均度；输出社群明细对齐实跑基线（113 簇、模块度 0.5198 附近）；成员表落成本地结果文件供 434/435/437 消费，不写回图。」 |
 | 读哪张图 | `tech_point` + `tech_rel` |
-| 验收看什么 | 成员清单覆盖 19,430 点；模块度与簇数在基线合理浮动区间；每社群四项属性齐全；436 演化保持 501 不做 |
+| 验收看什么 | 成员清单覆盖 19,430 点；模块度与簇数在基线合理浮动区间；每社群四项属性齐全；436 演化保持 501 不做；**权重自检**：建图时 `e.relation_confidence_score` 空值率必须为 0（写成 `e.tech_rel.*` 会全 NULL 且不报错，边权全等会让 Louvain 退化成纯拓扑划分） |
 | 不做什么 | 不依赖 `community_id` 字段（实测全空）；不做多算法全对比（433 其余算法按需另单）；不写回图（写回属 LOAD / 数据侧） |
 
 ### T11 正式线结构覆盖对照清单
@@ -467,6 +495,8 @@ flowchart TB
 
 **清单汇总**：共 **14 条**。执行人分布——燕大在册六人：白鑫凤 2（T01 / T13）、陈芸飞 3（T02 / T06 / T09）、宋飞扬 2（T03 / T08）、韩梦蕊 2（T04 / T10）、兰天驰 2（T05 / T11）、李周 2（T07 / T12）；待协商 1（T14，王建峰 / 刘剑锋 / 燕大同学）。依赖拓扑：T01 → {T02, T03, T04, T05, T08, T09, T10, T14}；{T02, T03, T04} → T06 → T07 → T11；{T08, T09, T10} → T12；**T02–T04 → T13**（T05 只读核数，不产生执行器经验，不进 T13 依赖）。
 
+> ⚠️ **关键路径警示（排期必读）**：T01 开局必然产出「待补清单」（实测缺 5 Tag + 10 边型），因此 **T02–T04 的工期从「DDL 补建并复验完成」起算，不是从 T01 开工起算**。排期须为 DDL 授权与执行单独留窗口：T01 核对 → 清单经唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行 DDL → T01 复验 ✅ → T02/T03/T04 开工。这段等待期内 T05（只读核数）、T08 / T09 / T10（技术点层算法，不依赖七要素层）、T14（只读接口）可并行推进，不必空等。
+
 ---
 
 ## 6. 本单不含什么（禁止项对照）
@@ -493,3 +523,4 @@ flowchart TB
 |---|---|
 | 2026-11-07 | 初稿（agent:architect-agent，监管 human:徐滕强）：FLOW 图 `KG-COMPLY-SDD-FLOW` + 范围逐叶（§1）+ 算法清单 23 条（§2）+ 入图与正式线（§3）+ 接口两案（§4）+ 细任务 14 条（§5）。空间采用 STRUCT 放法 B 结论（`demo_gkx_chain`），验收面采用 ACCEPT 结论（三菜单 + 四类算法），不再标「待结论」 |
 | 2026-11-08 | 复审修订（两轮评审修复，同日完成）：① T05 空态边数量 10→11；② FLOW 图 M22 移出「已能供数」组、错边 A2→A5 改 A3→A5、SEVEN 节点分三组（已能供数 / 无供数空态 / 有数据形态不可用 501）；③ 悬空引用 §1.1①②改正规引用；④ T06 四边语义比对口径拆分；⑤ 正式线最低覆盖修正为 9 Tag + 24 边（技术点层可选不计入，§3.1/§3.2/T11 三处对齐）；⑥ T02–T04 补「先建点后灌边」；⑦ T05 不再写空 Tag（区分 Tag 历史数据与本期无供数）；⑧ T13 依赖 T02–T05→T02–T04；⑨ T01 补 Edge 端点方向抽样核验；⑩ M22 返回语义统一为「必为 501·形态不支持」（§2.2#5/速查/handoff）；⑪ T07 口径改引 STRUCT §1 与 T02–T06 对账单；⑫ diagram-as-contract 链接层级修正。handoff 同步更新 |
+| 2026-11-08 | **ALGO 会签修订（唐绍祖，4 项 P0 直接改进正文）**：⑬ **边属性读法纠错**——§2.1#1「证据在 `props`」与 T08「`props.confidence`」改为 `e.evidence_level` / `e.relation_confidence_score`（`tech_rel` 无 `weight` / `props` 字段）；§5 共同前提新增「属性读写约定」行（本引擎节点须 `v.<tag>.<field>`、边须 `e.<field>`，禁用 `e.<edge_name>.<field>`——该写法返回全 NULL 且不报错）；T08/T09/T10 验收各加权重自检（`relation_confidence_score` 空值率须为 0、加权与无权须有差异）；⑭ **T01 闸门补预期缺口**——新增「T01 预期缺口」小表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 10 边型），DDL 通道改写为「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」，明确唐绍祖非 DDL 授权人；§5 汇总补「关键路径警示」（T02–T04 工期从 DDL 完成后起算，等待期 T05/T08/T09/T10/T14 可并行）；⑮ **T06 加跨边重合度比对**——`apply_to` / `support` 须用「起点+终点」同对连接计数算重合率（实测 9,279 即 100% 重合），>90% 判同批双灌、结论写「建议停读一条」；⑯ **`participates` 端点口径拆分**——213,500 拆为 `enterprise`→`segment` 178,731（M17 可用）+ `institution`→`institution` 34,769（服务公司关联，不属 M02/M19），T02「不做什么」同步逐条点名。会签全文见 [会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md](./会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md) |
