@@ -115,3 +115,13 @@ Do not include signed download URLs, tokens or other short-lived credentials in 
 - Tests fail for reasons unrelated to the bug and cannot be separated safely.
 - Another active run or human is already working on the same work item.
 
+## Human intervention protocol
+
+When any stop condition is hit:
+
+1. Do not fabricate missing context and do not mark the bug fixed.
+2. Report to the current user: work item ID, the blocking condition, evidence already checked, and the exact human action needed.
+3. Leave the workflow status unchanged. Only use an existing `BLOCKED` or `NEEDS INFO` state if it is explicitly returned by `get_transitable_states`.
+4. If code work has already started, call `add_comment` with a concise comment prefixed by `[需要人工介入]`, including the blocker and what was already attempted.
+5. If no code work has started, do not add a redundant comment unless the user asks; report the blocker in the conversation.
+6. Resume only after the user supplies the missing information or explicitly accepts the risk.
