@@ -51,3 +51,32 @@
 
 - 本轮样本未满足（1 条 QUERY 缺口），验收单退回 `ready`，不签 `done`；等待子任务完工后下一轮**重新签发** REC Job 读当期快照（本域口径）。
 - 成本：本轮 qa 验收实际估算 actual_tokens≈80,000、model=glm-5.3-Flash、actual_cost≈$0.5、cost_warn=false（远低于 $10 阈值）。
+
+## 运行 2026-11-08（第 2 轮）
+
+- 用例：`agent-delivery/工程过程/04-系统集成/03-专题系统集成/合规演示用例/SVC-REC-合规演示用例.md`（同第 1 轮）
+- 库：未连库（见下「环境偏差」）；未写任何库
+- 样本满足：否
+- 停止：token 失效
+
+### 探测与判定
+
+- 探测 `POST /tts/svcz/api/enterprise/topic/v1/recommend {"count":1}` 带 `Authorization: Bearer` + `systemCode: topic` → **HTTP 200**（code=0，data.items=1，广州集趣信息科技有限公司）。但该接口**不校验 SSO**（token 失效后仍 200），本轮探测假绿。
+- 正式对照接口全部 **401**（同前缀 `/tts/svcz/api/enterprise/`，与第 1 轮完全一致）：
+  - `GET /enterprise/topicAsync/topic/v1/analysis/tasks/running?user_id=guest` → `{"code":401,"msg":"访问令牌不存在","data":"sso check-token failed"}`
+  - `POST /enterprise/svc/topic/v1/service/rec-list`（attract 全量 / INB2503 / INB1303 / cultivate 四种 body 均试）→ 同上 401。
+- 判定：**token 失效**（非 404 映射漂移；网关可达，鉴权层拒绝；token 文件 mtime 2026-11-07 19:56，同一 token 11-07 第 1 轮曾全程成功）。按规程 §6.5.3：停止本轮、不建子任务、验收单改 `blocked`、note 只写「token 失效，已通知 human:徐滕强」。
+- 7 行判定未执行（任务中心读面 + rec-list 全 401，库侧亦未连）；QUERY 修复 `lumen-topic-py 49640a4`（ranking_list 零行 → `empty:chain_unmatched` 前缀）的线上复验顺延至下一轮重签发 REC Job 后进行。`empty:chain_unmatched` 语义本轮**未复验**，不计新缺口键、不建单（401 分支禁止建子任务）。
+
+### 环境偏差（我方验收机，非被测系统）
+
+- database-mcp `demo-gkxlumenx-ods`（10.50.11.76:3306，MySQL 直连）connect ETIMEDOUT；跳板机 `zphz-jump` ssh_connect 连续两次超时；本机无 10.50.0.0/16 路由 / VPN 接口（公网 API 正常）。库侧基线复核（两榜表、任务锚点 032/042/015/007）本轮不可审计，待网络恢复后下一轮补。
+- 建议（不建单）：下一轮起探测改用**带 token 校验**的接口（如 `GET tasks/running`），消除免 SSO 接口的假绿；探测地址最终以计划修订为准。
+
+### 收尾
+
+- 验收单：`claimed/in_progress` → **blocked**，note 只写「token 失效，已通知 human:徐滕强」；锁 24h（claim 2026-11-08 09:48 +24h）。
+- LOOP 计划状态行已回写本轮结果（第 1 轮状态行漏写，本轮一并改写为第 2 轮结果）。
+- 未新签发任何任务（复用核对本就要求读当期快照，须待 token 刷新）；未建任何子任务。
+- 成本：本轮 actual_tokens≈60,000、model=glm-5.3-Flash、actual_cost≈$0.4、cost_warn=green（远低于 $10 阈值）。
+- **下一轮前置**：human:徐滕强 重新线上登录并刷新本机 `~/.gkx/topic-loop-token`（不自动重登、不重试）；验收机恢复 10.50 内网可达后，重签发 REC Job 读当期快照再验 7 行。
