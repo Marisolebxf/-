@@ -68,8 +68,8 @@
 | --- | --- | --- | --- |
 | 307 | 预测视图无真源预测模型 | 无预测模型数据源；前端按演示规则对真实 trend 投影 | 引用既有缺口口径登记；演示按「规则投影」讲，不得讲成模型预测 |
 | 308、314 | 综合难度模型 T7 未建 | difficultyEstimate 仅 activity 有源（PARTIAL_DATA），其余 7 因子=0、overall=0 | 引用既有 T7 / IP-10；模型未建前按「模型未建」空态演示，禁止把仪表盘 0 分讲成难度低 |
-| 312 | 过往合作表无源 | `difficultyScores[].pastCooperation` 全 15 人空数组（机构/项目/次数/时间表结构无源） | **新登记候选**：合作事实在 talents[].collaborationNetwork（12 合作者+真实次数），需后端补表结构切面或难度 Tab 改接主档——交 M4 / 授权人裁定 |
-| 313 | 难度 Tab 合作网络空 | `difficultyScores[].network` 全空；主档 collaborationNetwork 节点真实但 links 边未下发 | **新登记候选**（同上，后端 dataset 组装缺口）——交 M4 / 授权人裁定 |
+| 312 | 过往合作表无源 | `difficultyScores[].pastCooperation` 全 15 人空数组（机构/项目/次数/时间表结构无源） | **✅ 已修复（2026-11-08，commit `df225ed`，pipeline 4308 全绿）**：pastCooperation 从主档 collaborationNetwork 真实合作边组装，实测每人 12 条（真实合作者姓名 + 真实 co_paper_count 次数，如 176/189）；`outcome`/`conflict`/项目名/机构仍无源留空，不编造 |
+| 313 | 难度 Tab 合作网络空 | `difficultyScores[].network` 全空；主档 collaborationNetwork 节点真实但 links 边未下发 | **✅ 已修复（2026-11-08，同上 commit）**：network 下发 nodes（本人+合作者）+ links（「论文合作 N 次」，权重=真实合作次数），实测 13 节点/12 边；无合作边者返回空交前端空态 |
 | 316–322 | 成本全族 NO_DATA | 无薪资源（dwd_org_recruit_info 未入久新），T12/T13 成本模型未建 | 引用既有 DN-A15-COST；501 档空态演示 |
 | 328 | 风险四类无源 | risks 全 NO_DATA（合作/诚信/有效性/IP 评估未建） | 引用既有 IP-10；空态注明「无风险数据」，绝不显示「无风险」 |
 | 329 | 团队协同无源 | RECRUIT_025 协同度模型未建 | 引用既有；协同度空态，禁用合作网络边密度顶替 |
