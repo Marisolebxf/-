@@ -6,7 +6,7 @@
 | WBS | WBS-05-19 |
 | 需规来源 | `agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md`，序号 56–88（excel 行 59–91，leaf_count=33） |
 | 覆盖行数 | 33 |
-| 状态 | M2/M3 已填 · LOOP 对照完成（R1）· 后端缺口已销项并部署冒烟通过 · 2026-11-08 签收前复跑：8/11 端点全绿，63/66 遇久新 Doris MEM_LIMIT_EXCEEDED 瞬时过载（端点诚实返回空）、79 innov-value 仍 DOWNSTREAM_UNREACHABLE —— 保持待签收（下游久新通道待恢复） |
+| 状态 | M2/M3 已填 · LOOP 对照完成（R1）· 后端缺口已销项并部署冒烟通过 · **✅ 已签收（2026-11-08 R2 复跑 11/11 全绿）**：久新通道恢复，63 found=true、66 命中 2/2、79 innov-value 算法库通道恢复返回完整评估（R1 复跑的 63/66 MEM_LIMIT 与 79 DOWNSTREAM_UNREACHABLE 均消除） |
 | 任务ID | DISPLAY-DEMO-CASE-TS-M1-L04 |
 
 **主路径一句话**：进入全球创新监测「综合」Tab → 全球地图落点展示创新成果 → 按创新价值排序看列表 → 点一项成果看详情与关联载体 → 切「能力」Tab 看城市创新能力对比。
@@ -55,11 +55,11 @@
 
 | 分类 | 行数 | 序号 |
 |---|---|---|
-| ✅ 可演（对得上） | 26 | 56, 57, 58, 59, 60, 61, 63, 64, 65, 66, 67, 68, 71, 72, 76, 77, 78, 80, 81, 82, 83, 84, 85, 86, 87, 88 |
-| ⚠️ 部分可演（部分对） | 7 | 62, 69, 70, 73, 74, 75, 79 |
+| ✅ 可演（对得上） | 27 | 56, 57, 58, 59, 60, 61, 63, 64, 65, 66, 67, 68, 71, 72, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88 |
+| ⚠️ 部分可演（部分对） | 6 | 62, 69, 70, 73, 74, 75 |
 | ❌ 不可演（对不上/端点缺失） | 0 | — |
 
-**合计**：33 行 = 26 可演 + 7 部分可演 + 0 不可演（2026-11-08 签收前复跑：79 innov-value 因下游算法库不可达由 ✅ 调为 ⚠️）。
+**合计**：33 行 = 27 可演 + 6 部分可演 + 0 不可演（2026-11-08 R2 签收复跑：79 innov-value 算法库通道恢复，由 ⚠️ 回调 ✅）。
 
 > **2026-11-08 修订（用户裁定）**：订阅 / 推送 / 监测模型 / 关注点 / 城市订阅等写面端点**本期要做**，且已有订阅推送框架可直接对接 —— 序号 65/77/80/81/87 由 ❌ 改判 ✅，82 补齐历史查询端点后改判 ✅。已直连能力清单见下表。
 >
@@ -126,6 +126,17 @@
 | 79 | `POST /situation/global-innovation/innov-value` | ❌ 未恢复：200 但 emptyReason=DOWNSTREAM_UNREACHABLE（算法库指标计算不可达，不伪值兜底） |
 
 > 复跑结论：8/11 端点全绿。63/66 受久新 Doris 内存超限瞬时影响（同链路 achievements 列表 total=0、realtime trend/domainDist 空、talents no_source；但 knowledge-graph 与 cities 查询正常，判定为下游环境瞬时过载而非端点缺陷），79 innov-value 下游算法库通道未恢复。所有端点均诚实降级、无伪造数据。保持「待签收」，待下游久新通道恢复后复测 63/66/79 再行签收。
+
+**签收复跑（R2 · 2026-11-08 晚，久新通道恢复后）**
+
+| 行 | 端点 | 结果 |
+|---|---|---|
+| — | `POST /situation/global-innovation/achievements` | ✅ total=31（R1 复跑时 total=0，确认当时为下游瞬时故障） |
+| 63 | `POST /situation/global-innovation/achievement-detail` | ✅ found=true，PRISMA 2020 真实详情返回，emptyReason 空 |
+| 66 | `POST /situation/global-innovation/achievement-compare` | ✅ items=2/2 命中、missing=0（入参键为 `items[].achievementId` 或 `ids[]`） |
+| 79 | `POST /situation/global-innovation/innov-value` | ✅ **算法库通道已恢复**：返回完整评估（metricId/candidates/typeStats/reasons/confidence/supportJudgment），emptyReason 空 |
+
+> R2 结论：11/11 端点全绿，R1 的三处阻塞全部消除且判定为下游环境故障非端点缺陷。**DS-04 签收（2026-11-08）**。另：79 恢复表明算法库生产路由已上线，DS-07 的 G1 阻塞项建议安排复测；talent/global（DS-13 链路）同日 61.4s 仍 DOWNSTREAM_UNREACHABLE，维持 blocked。
 
 
 ### 演示数据标注
