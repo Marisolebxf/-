@@ -65,7 +65,7 @@
 
 | 编号 | 缺陷 | 修复建议 | 责任方 | 是否阻塞演示 |
 |---|---|---|---|---|
-| **D-01** | 非深圳行 `region_name` 误标「深圳」（活力 `synth_vit_dim_score` / `synth_vit_indicator` + 要素 7 表；`region_code` 正确） | **SQL 侧（首选）**：seed 按 `region_code` 回填正确 `region_name`（UPDATE 语句可修，行数少：vit 两表非深圳行 72+216（=288），elem 7 表非深圳行合计约 213）；**查询侧（兜底）**：API/前端展示城市名一律以条件栏 `ctx.region` / `region_code` 映射为准，不信任数据行 name 字段（此口径已写入 VIT-06/07/08、ELEM-04/05/06 叶册期望）；**口径侧**：无需动作 | data-agent（seed UPDATE 修复，后续派单） | **否**——API 按 `region_code` 过滤则取数无影响；仅当页面直接展示数据行内城市名时可能串显，演示口径已约定「城市名以条件栏为准，若串名按 D-01 缺陷口径说明」 |
+| **D-01** | ~~非深圳行 `region_name` 误标「深圳」~~ **2026-11-08 复核撤回：非缺陷**——代码查证 `region_name` 为无消费装饰列（Python 装包 `pack.py` 全链路按 `region_code` 过滤读取，`region_name` 不在 WHERE/SELECT 输出；前端三叶 region 取自 URL query/条件栏；rank 的 region 字段由 `rank_city_code` 现场去「市」后缀生成），列值带不带「市」/是否同名字均零影响；带「市」后缀与编码语义更一致。**不修**。当前剩余分布（如未来有消费者再治理）：vit_dim_score 144、vit_indicator 432、elem_type_score 42、elem_indicator 81 行 | 无需动作（原 SQL 回填方案作废） | — | **否**（无消费者） |
 | **D-02** | 深圳 `synth_vit_index/rank/weight/dim_score/indicator` 双批次冗余（通用 seed + 档位 seed 并存，同键双值） | **查询侧（已固化）**：快照/趋势读取一律按 `calc_batch_created_at DESC` 取最新档位批（此口径已写入 VIT-01/02/03/12/16 叶册期望与 M3 判定）；**SQL 侧（可选）**：清理旧通用批避免歧义，或保留作 A/B 批对照演示；**口径侧**：快照选择规则文档化「同键多批取最新档位批」 | data-agent（可选清理）/ algorithm（查询口径已定，接口侧确认落地） | **否**——接口按最新批次口径取数即无双值；叶册与 M3 已按此口径写死断言 |
 | **D-03** | `synth_elem_index` 四城市指数值 = 同一目标值 ± 扰动（同源，非独立计算口径）；要素排名/四维 `fill_method=demo_index_offset` 同理 | **口径侧（首选，零改动）**：演示讲解口径明确「同源 ± 扰动演示值，非独立真实城市差异，禁当真实结论」（已写入 ELEM-01/04/05/06/11 叶册期望）；**SQL 侧（可选，非必需）**：如需更真实的城市差异，由 data-agent 按独立目标值重灌（ponytail：演示目的下非必需，不建议本期做）；**查询侧**：无需动作 | algorithm（演示值生成口径）+ 产品/演示执行（讲解口径）；如重灌则 data-agent | **否**——演示可用，带 🧪 标识与讲解口径即可 |
 
