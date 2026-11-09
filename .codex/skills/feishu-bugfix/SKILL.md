@@ -62,6 +62,19 @@ Do this immediately after selecting the bug, **before downloading images, inspec
 4. If no valid `IN PROGRESS` transition exists, stop and report the blocker.
 5. Keep the item `IN PROGRESS` until merge, deployment, and required human verification are complete. Only then move it to `RESOLVED`.
 
+## Screenshot-only requests are not work items
+
+A screenshot or clipboard image is evidence, not a claimable work item.
+
+Before inspecting code, querying data, or creating a branch for a screenshot-reported issue:
+
+1. Resolve the matching Feishu work item by `auto_number`, exact title, or work_item_id.
+2. If no matching work item is assigned to the current user, stop and ask for the work item identifier/title. Do not infer and start a new bug from the screenshot alone.
+3. If the matching work item is already `IN PROGRESS`, treat it as locked by another active run and do not inspect or edit it unless the user explicitly hands it over.
+4. Only after a successful claim may the screenshot be used as evidence for diagnosis.
+
+This rule prevents two sessions from independently working on the same screenshot-reported bug.
+
 ## Building complete context
 
 For the selected work item:
@@ -147,6 +160,7 @@ Do not include signed download URLs, tokens or other short-lived credentials in 
 - The fix requires unavailable credentials, production data or destructive operations.
 - Tests fail for reasons unrelated to the bug and cannot be separated safely.
 - Another active run or human is already working on the same work item.
+- A screenshot-reported issue has no matching claimed work item assigned to the current user.
 
 ## Human intervention protocol
 
