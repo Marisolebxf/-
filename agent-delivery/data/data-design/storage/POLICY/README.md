@@ -11,8 +11,8 @@ doc_id: POLICY-STORAGE-INDEX
 element: POLICY
 role: index
 status: draft
-version: "2026-08-21"
-updated: 2026-08-21
+version: "2026-11-09"
+updated: 2026-11-09
 task_id: DATA-POLICY-STORAGE-S1-L01
 ---
 ```
@@ -22,9 +22,9 @@ task_id: DATA-POLICY-STORAGE-S1-L01
 1. [`00-context.md`](./00-context.md)  
 2. [`01-data-flow.md`](./01-data-flow.md) — **L2 approved**；细表不得标 approved  
 3. [`sources/inventory.md`](./sources/inventory.md) + [`sources/ods-ddl.md`](./sources/ods-ddl.md)（贴源结构真源）  
-4. [`etl/README.md`](./etl/README.md) — **ETL 管道索引**（含各管道 as-built / draft / not-built 状态）  
+4. [`etl/README.md`](./etl/README.md) — **ETL 管道索引**（含各管道 as-built / draft / not-built 状态；算法库 Mock→gapfill 见 [`etl/pipeline-algo-mock-gapfill.md`](./etl/pipeline-algo-mock-gapfill.md)）  
 5. [`seeds/README.md`](./seeds/README.md)  
-6. [`stores/`](./stores/README.md) — **draft**  
+6. [`stores/`](./stores/README.md) — **draft**；算法库 ER 在该页「算法库 ER」；缺项表见 [`stores/mysql/gapfill.md`](./stores/mysql/gapfill.md)  
 7. [`windows/display-ds10-12.md`](./windows/display-ds10-12.md) — 展示 DS10-12 窗口对照  
 8. 旧稿 [`../../政策/政策域数据库设计(v1).md`](../../政策/政策域数据库设计(v1).md) **过期**
 
@@ -36,6 +36,7 @@ task_id: DATA-POLICY-STORAGE-S1-L01
 | 正式 Nebula | `gkx_chain`（本管线禁写） |
 | as-built | `gkx_policy` 虚线；禁止 CREATE/DROP 作目标态 |
 | MySQL Demo | `demo_gkxlumenx_{ods,dwd,ads}` |
+| D16 缺项 | `gkxlumenx_gapfill`（应用禁建库）；落地实效三维 → `gapfill_policy_sz_effect`，写入口仅算法库 Mock10 / 补外围 |
 | RDBMS | 仅 MySQL |
 | 写图仓 | `demo-algo-ent-analysis` `polan`（`POLICY-NEBULA-PROJECT-CHAIN-L01`） |
 | 细表 | **draft**（文档闭环 ≠ 灌数 / ≠ approved） |

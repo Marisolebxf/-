@@ -9,7 +9,7 @@
 | claimed_by | `agent:data-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `coordinator_dispatch` |
-| 说明 | 监管人 2026-11-09 授权 mock/造数。状态停在待签收，不改为 done。 |
+| 说明 | 监管人 2026-11-09 授权 mock/造数。`human:淮政玮` 2026-11-09 签收 done；同步更新 `storage/POLICY/stores/mysql/gapfill.md` + `etl/pipeline-algo-mock-gapfill.md`。 |
 
 ## Ponytail（coding 任务必填）
 
