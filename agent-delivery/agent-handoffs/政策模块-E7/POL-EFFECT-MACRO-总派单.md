@@ -88,7 +88,7 @@ DoD：见 registry。
 | CALIBER-L01 | ready_to_sign / 已交付口径 | QPOL-02 双轨 |
 | DATA-L01 | ready_to_sign / 白名单冻 | macro-eff-v1 |
 | ALGO-L01 | **integration** | 双仓推；深圳样例 ~78.58；联调通过 |
-| MID-L01 | **in_progress** | 2026-11-09 11:46 派 frontend |
-| JAVA-L01 | **in_progress** | 2026-11-09 11:46 派 api |
-| FE-TOPIC-L01 | backlog | 等 JAVA ≥ integration |
+| MID-L01 | **in_progress**（码齐，待推） | `/policy/effect` 宏观代理块；本地 `41d757a`+算法路由 `707edd0`；等人确认推；未真联调 |
+| JAVA-L01 | **integration** | `925df28` 已推；联调通过；FE 已开闸 |
+| FE-TOPIC-L01 | **claimed→派单** | 2026-11-09 等 JAVA 开闸后派 |
 | E0 / E1 | backlog | 等 FE pending_test |
