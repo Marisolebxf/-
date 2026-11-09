@@ -33,7 +33,7 @@
 | `MILVUS_TOKEN` | 不设。空字符串。现网未开鉴权 |
 | `MILVUS_COLLECTION_PREFIX` | 可不设。默认 `gkxlumen_industry_`，集合 `gkxlumen_industry_anchor`。与产业链包 `12` 写入的正式集合同名。正式批只在库 `gkxlumen` 里检索 |
 | `LLM_BASE_URL` | `https://open.bigmodel.cn/api/paas/v4`。不要再手写 `/chat/completions`。没有也不阻断规则切条 |
-| `LLM_API_KEY` | 测试密钥 `2d4129c2df4740f79cb3f0cba3edcd2a.2i5TTfMfeKO7mcCA`。无密钥不写假条款 |
+| `LLM_API_KEY` | 测试密钥 `<REDACTED-EXPIRED-KEY>`。无密钥不写假条款 | <!-- 此 key 已于 2026-11-09 失效并删除，请勿恢复 -->
 | `LLM_MODEL` | 可不设。默认 `glm-5.3-flash` |
 
 不连库自检：`python policy_c1_industry.py --self-check` 与 `python policy_c2_clauses.py --self-check`。缺表时脚本不建表，直接失败。空表归 `SYSINT-06-03-DDL-L01`，DDL 在本包 `10/`。
