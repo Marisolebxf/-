@@ -64,7 +64,7 @@
 | W2-1 关联专家空（0/20） | `talent_datasets.py` 把 `rep_rows` 过滤成 `tid in mvp_ids and tid in talent_ins` → 只有 15 名富画像人才，几乎落不到 20 家机构 | **已实施 2026-11-09**：改为「Top20 机构在册人才 × `h_index` 降序取 Top3」，`h_index` 为 0/空者不入代表 | 实测 **20/20 机构非空、合计 60 人**（每人 ≤3，`field` 有中文标签） |
 | W2-2 核心成果空（0/20） | 硬编码 `[]` | **已实施 2026-11-09**（口径修正）：库里**没有机构级成果表**（`ads_institution_research_achievement` 等均不存在），且前端 `TalentTopInstitution.coreAchievements` 是 **`string[]`** 纯文本渲染（`InstitutionDetailDrawer`）→ 用「`ads_institution_yearly_metrics` 2025 年论文 + 同比」与「`ads_institution_discipline_profile` Top1 学科论文/人才」两条**可核对事实**，不写生成式文案 | 实测 **20/20 机构非空、每机构 2 条**；结构化条目（title/venue/citedBy）需前端改类型，暂缓 |
 | W2-3 学历结构只有博士 | 仅聚合 `degree='博士'` 得 `doctorCount`；前端抽屉的硕士/学士是 `talentCount×25%/×12%` **估算伪数** | **已实施 2026-11-09**（后端 + 前端同批）：后端按 `ins_edu` 出 `topInstitutions[].education` 三档（有学历证据才计数）、`regions[].universities[].masterPlus` 改真实博士+硕士；前端 `TalentTopInstitution` 加 `education?`，抽屉改读真实三档（全 0 走「暂无学历证据」空态），区域 fallback 删比例估算 | 实测 **20/20 机构三档非空**（浙大 258/18/6、清华 244/10/29、北大 213/10/14，doctor 合计 2,662 与 `doctorCount` 一致）；`pnpm type-check` / `build-only` 绿 |
-| ⚠️ 机构专利数为采样值 | `topInstitutions[].patents` 取自 `ads_institution_patent`，实测 **2,861 家机构恰为 20 条**（该表每机构最多存 20 条），接口 20/20 家同显 20 | 页面「近 3 年专利」是**截断值**。探针（2026-11-09）另证实 `ads_institution_yearly_metrics.patent_count` 有真实年度值，但**仅到 2022**（2015–2020 每年 25,054–41,083 件；2021 13,080；2022 1,917；2023–2026 全 0 = 缺采），「近 3 年」无法成立。本轮不改数（改则需同步改标签），建单 **G-DS13-07**：久新补采 2023+ 或产品裁定改标签口径（如「专利（截至 2022）」），确认后后端一条聚合即可切换 | 不出现大面积同值 20；口径与标签一致 |
+| ~~⚠️ 机构专利数为采样值~~（**已修，用户裁定 2026-11-09**） | `topInstitutions[].patents` 原取自 `ads_institution_patent`，实测 2,861 家恰为 20 条（采样截断），接口 20/20 家同显 20 | 用户裁定：去「近3年」口径、显示统计总数。后端改 `ads_institution_yearly_metrics` 的 `SUM(patent_count)`（真实值覆盖 2015–2022，2023+ 缺采全 0），前端标签改「专利数量」。实测：浙大 1,085 / 清华 770 / 北大 1,001 / 上交 2,106 / 港城大 1,941（不再同值）。⚠️ 残余口径：数值实为「截至 2022 的已观测累计」，2023+ 回补久新（保留在 G-DS13-07 尾巴） | 不再大面积同值 20；标签与口径一致 |
 
 ## 3. W3 · 最新动态（对应 253 / 256）
 
@@ -139,7 +139,7 @@
 | `activityFeed[].source` / `sourceUrl` | 新增；缺失空串 |
 | `topInstitutions[].coreAchievements` | **维持 `string[]`**（前端纯文本渲染），内容为可核对事实统计；结构化条目（title/year/venue/citedBy）作为 v1.6 可选，需前端改类型 |
 | `topInstitutions[].education` | **已定并已实施 2026-11-09**：`{doctor, master, bachelor}`，仅统计有学历证据的在册人才；前端类型已同步（`education?`），三档全 0 = 无证据走空态 |
-| `topInstitutions[].patents` | 明确为**全量**口径（现为 `ads_institution_patent` 每机构 ≤20 条采样，见 G-DS13-07） |
+| `topInstitutions[].patents` | **已改（用户裁定 2026-11-09）**：标签去「近3年」改「专利数量」；值为 `ads_institution_yearly_metrics` 累计（= 截至 2022 的已观测全量，2023+ 待久新补采后自然并入） |
 | `regions[].industryTree` | 新增两级产业树（或明确保持平铺并取消级联要求，需产品裁定） |
 | `talents[].patents/projects` 分项 | 明确 national/international/fundingWan 的统计口径 |
 | `talents[].internationalCoop` | 已定（2026-11-09 实施）：`country / project / role / org / period / outcome`，境外 = 合作者机构 `country_code` 非空且 ≠ `CN` |
