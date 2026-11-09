@@ -6,14 +6,23 @@
 - 监管人：`human:淮政玮`
 - 日期：2026-11-07
 
-- 状态：用例覆盖表已齐。203–206 可演。本计划不建单、不探测。等人说「按 LOOP 跑」。
+- 状态：2026-11-09 第二轮（令牌已换新）。探测 200。样本满足：否（停止：继续）。205 通过；203/206 FAIL 归 DATA——并行灌数单（`POLICY-SSB-DEMO-INGEST-L01` 等，in_progress）已把 2026-11-07 冻结期望顶掉；204 登录主体为 3101 非用例的 184，无法核对旧订阅；206 另有行级 `metric_id` as-built 不返回的契约差异。根因单派 `POL-L2-DS10-EXPECT-REFRESH-L01`（用例期望随库刷新）。验收单 `POL-L2-DS10-TREND-DEMO-ACCEPT-LOOP` = `ready`。handoff：`agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-TREND-DEMO-ACCEPT-LOOP.md`
 
-## 2026-11-09 首轮（停止：令牌失效）
+## 2026-11-09 第一轮（停止：令牌失效）
 
 - 验收单 `POL-L2-DS10-TREND-DEMO-ACCEPT-LOOP` 已建并开工后置 `blocked`。
 - 探测/样本调用 `GET /display/v1/policy/panorama/ingest` 与 `/stats?kind=all`：网关可达，返回 HTTP 401 `{"code":401,"msg":"访问令牌不存在","data":"sso check-token failed"}`。
 - 本机 `%USERPROFILE%\.gkx\display-loop-token`（5af83d33…）与会话旧令牌（1cce4c0b…）均被 SSO 判不存在。属令牌失效，非 ENV（网关本体 200 通道正常应答）。
 - 按 §6.5：通知 `human:淮政玮` 重新登录并覆盖 token 文件后，再说一次「按 LOOP 跑」再开下一轮。203–206 尚未取得任何 PASS/FAIL 记录。
+
+## 2026-11-09 第二轮（样本不满足，继续）
+
+- 换新令牌（cbac64ed…，登录主体 userId=3101）后探测 `GET /stats?kind=all` HTTP 200。
+- 205 `POST /panorama/jobs` `{"kind":"深度分析报告","domain":"科创发展"}`：id 4 标题/正文/generated_at 逐字一致 ✅。
+- 203 `GET /panorama/ingest`：首条已是 id 22843（SYN20261108 合成行），旧行 20008 被顶出前 100（limit clamp 100）→ DATA（并行灌数合法新增，非行丢失）。
+- 204 `GET /panorama/subscriptions`：仅返回当前主体 3101 的 id 4 一条；用例主体 184 的三条订阅无法从接口核对 → 待用例重绑当前登录主体复测。
+- 206 `GET /panorama/stats?kind=all`：主题「研发费用加计扣除」12/2024 一致 ✅；timeseries 2020=2421（期望 2402）、2026=64（期望 3）、北京 1932（期望 2268）→ DATA（ADS 表被并行重算）；行级 `metric_id` 不返回（`metrics.metric_ids` 层有）→ 契约差异并入刷新单。
+- 分类与派单见 handoff。验收单留 `ready`，第三轮待 `POL-L2-DS10-EXPECT-REFRESH-L01` 完成后跑。
 
 不派数据单，不派算法单，不打探测。
 

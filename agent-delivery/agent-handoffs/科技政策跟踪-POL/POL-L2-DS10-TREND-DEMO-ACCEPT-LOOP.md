@@ -31,3 +31,30 @@
 ### 结论
 
 验收单 `POL-L2-DS10-TREND-DEMO-ACCEPT-LOOP` = `blocked`（阻塞原因已登记 registry）。样本未满足。不签 done。
+
+## 运行 2026-11-09 第二轮（令牌已换新）
+
+- 令牌：`human:淮政玮` 09:17 换发（cbac64ed…），登录主体 userId=3101。探测 HTTP 200。
+- 样本满足：否
+- 停止：继续（FAIL 全归 DATA，根因为用例期望冻结快照过期，已派刷新单）
+
+### 逐行结果（第二轮）
+
+| 需规 | 请求 | HTTP | 实测 | 判定 |
+|---|---|---|---|---|
+| 203 | GET `/panorama/ingest` | 200 | 首条 id 22843（SYN20261108 合成行）；旧行 20008 `gl-meti-20220831` 未入前 100（服务端 clamp 100） | ❌ DATA |
+| 204 | GET `/panorama/subscriptions` | 200 | 仅当前主体 3101 一条（id 4，frequency=week，channels=["system"]）；用例主体 184 的 id 3/2/1 无法从接口核对 | ⚠️ 待用例重绑登录主体 |
+| 205 | POST `/panorama/jobs` `{"kind":"深度分析报告","domain":"科创发展"}` | 200 | id 4 标题/正文/generated_at（2026-11-03 14:10:00）逐字一致 | ✅ 通过 |
+| 206 | GET `/panorama/stats?kind=all` | 200 | 主题「研发费用加计扣除」12/2024 一致；时序 2020=2421（期望 2402）、2026=64（期望 3）、北京=1932（期望 2268）→ DATA；另行级 `metric_id` as-built 不返回（vendor `policy_indicators` SELECT 无该列）→ 契约差异 | ❌ DATA+契约 |
+
+### 缺口与去重（第二轮）
+
+| 缺口键 | 类 | 现况 | 预期 | 建议 | 挂到任务 |
+|---|---|---|---|---|---|
+| TREND/SENT 七项期望随库刷新（含 206 行级 metric_id 契约对齐、204 主体重绑 3101） | DATA（根因：期望冻结快照过期；并行灌数单 POLICY-SSB-DEMO-INGEST-L01、POL-L2-DS10-SRCMON-SYNTH-L01 合法新增/重算，非行丢失——207/210 旧行仍在库） | 首条/排名/计数被新数据顶掉 | 期望值按现行库 SELECT 重新冻结并注明日期 | 一次刷新 TREND+SENT 两份用例，禁止只改单号 | 新建 POL-L2-DS10-EXPECT-REFRESH-L01（本单派生） |
+
+去重：`task-query`（module=政策）无未完成的「用例期望刷新」单；灌数单均为合法在办业务，不是缺陷对象。不派七张症状单——同一根因（期望过期）派一张。
+
+### 结论（第二轮）
+
+样本未满足，验收单 `POL-L2-DS10-TREND-DEMO-ACCEPT-LOOP` = `ready`。第三轮待 `POL-L2-DS10-EXPECT-REFRESH-L01` 完成后重测。不签 done。

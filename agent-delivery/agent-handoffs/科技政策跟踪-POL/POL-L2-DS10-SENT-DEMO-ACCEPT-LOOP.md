@@ -33,3 +33,28 @@
 ### 结论
 
 验收单 `POL-L2-DS10-SENT-DEMO-ACCEPT-LOOP` = `blocked`（阻塞原因已登记 registry）。样本未满足。不签 done。
+
+## 运行 2026-11-09 第二轮（令牌已换新）
+
+- 令牌：`human:淮政玮` 09:17 换发（cbac64ed…），登录主体 userId=3101。探测 HTTP 200。
+- 样本满足：否
+- 停止：继续（FAIL 全归 DATA，根因同 TREND：用例期望冻结快照过期，挂 `POL-L2-DS10-EXPECT-REFRESH-L01`）
+
+### 逐行结果（第二轮）
+
+| 需规 | 请求 | HTTP | 实测 | 判定 |
+|---|---|---|---|---|
+| 207 | GET `/panorama/search?keyword=人工智能&q=人工智能` | 200 | 旧行 18323509/18363833 仍在且字段一致；但 total 73→129（SYN 合成行混排并按 publish_date 抢首条，首条已变） | ❌ DATA |
+| 208 | 设计无资源 | — | 不请求 | 不判 |
+| 209 | POST `/panorama/jobs` `{"sub_type":"policy_effect"}` | 200 | region_effect 31 行结构在；广东 440000 评分 15.0→28.26（口径说明文案同步刷新为「广东省效果评分28.26（v2 确定性口径…）」）→ ADS 被并行重算 | ❌ DATA |
+| 210 | GET `/panorama/feedback` | 200 | 旧 6 行仍在（含 GF-POL-SENT-210-01 评分 4.50 原文一致）；但总量 6→406（问卷134/在线评价147/意见征集125）排序断言失效 | ❌ DATA |
+| 211 | GET `/panorama/assessment-report` | 200 | id 2 五段正文与 generated_at（2026-11-03 14:30:00）逐字一致（camelCase 键：scopeText/achievementText/socialImpact/problemText/suggestionText/reportBody） | ✅ 通过 |
+| 212 | POST `/panorama/jobs` `{"sub_type":"policy_match","params":{"subject_id":"E0001"}}` | 200 | 华芯生物 8 行（期望 5）；rank1 变「网络与通信产业发展财政支持规划（2026—2030）」35 分、理由 ["国家级普适","未过期"]、metric_id=M_POLICY_MATCH 在 | ❌ DATA |
+
+### 缺口（第二轮）
+
+无新增缺口键。七项 FAIL 与 TREND 同根因（期望冻结快照过期，并行灌数合法新增/重算，旧行未丢），整并挂刷新单 `POL-L2-DS10-EXPECT-REFRESH-L01`，不重复派单。
+
+### 结论（第二轮）
+
+样本未满足，验收单 `POL-L2-DS10-SENT-DEMO-ACCEPT-LOOP` = `ready`。第三轮待刷新单完成后重测；208 持续不请求。不签 done。
