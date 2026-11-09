@@ -61149,7 +61149,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 150000
     note: |
-      联调通过：dev 环境 10+1 端点实跑（hot-technologies 200 真数据 / direction-warnings 501 透传正常 / key-areas / research-analysis 数据逐项对表，TEST-L01 矩阵）。遗留①M1 导出中心（缺口单挂起）不阻塞。→ pending_test
+      追加修复（2026-11-09 用户走查发现）：带有效 Bearer 调 GET resource-push 返 500——listPlanningPushes Feign 调用在 try/catch 外，upms @Inner 拒绝即 FeignException→500。已修（svc commit 2072e43）：按契约降级诚实空态 + warn 日志留排障线索。编译绿。根因（upms 侧拒绝原因）待日志跟进。
     depends_on:
       - "TS-L2-DS09-OV-API"
       - "TS-L2-DS09-KEY-API"
@@ -61161,7 +61161,7 @@ tasks:
       - "195 报告导出接 M1 §3.8 任务中心（content_key=planning-research-intelligence / planning-direction-warning）"
       - "competing_enterprises.avg_overlap 有值对均值现算（可断言）；insight.plan_id 与 KEY plans 主键对齐核对"
       - "文案/阈值/模板全部表行读取，Java 零硬编码；mvn 模块编译+测试绿；handoff + cost 回填"
-    update_time: "2026-11-09T12:00:09+08:00"
+    update_time: "2026-11-09T14:42:52+08:00"
   - id: TS-L2-DS09-SEED-L01
     model_used: "GLM-5.3-Highspeed"
     evidence: "agent-handoffs/科技发展态势-TS/TS-L2-DS09-SEED-L01.md"
@@ -61220,7 +61220,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 90000
-    note: "联调通过：前端新构建上线（planning 分包 index-kyF6QQrK.js），三页签全渲染真数据；⚠️未注册角标/导出禁用/诚实降级全部实测（TEST-L01 矩阵 #3/#14）。→ pending_test"
+    note: |
+      追加修复（2026-11-09 用户走查发现）：fetchUserScoped 走 optionalClient（无全局拦截器）→ 不附 Bearer，登录用户恒 401→个人推送块永远空态。已修（ui commit 7aa7cfb）：改走统一 request（自动附 token + 拦截器解包），skipAuthRedirect/skipErrorToast 保证 401 只降级不清会话。vue-tsc 0 错 + 模块自检全绿。
     depends_on:
       - "TS-L2-DS09-IMPL-JAVA-L01"
       - "TS-L2-DS09-SEED-L01"
@@ -61233,7 +61234,7 @@ tasks:
       - "184 预警 501 → 空态 + ⚠️「预警模型未注册」+ 导出禁用；USE_MOCK=true 种子轨零回归；MockBadge 保留（D4 仍 mock）"
       - "195 下载改走导出任务中心（建任务→job_id→轮询），废弃 FE Blob downloadHtmlAsWord"
       - "pnpm type-check + 模块自检绿；handoff + cost 回填"
-    update_time: "2026-11-09T12:00:10+08:00"
+    update_time: "2026-11-09T14:42:52+08:00"
   - id: TS-L2-DS09-TEST-L01
     model_used: "GLM-5.3-Highspeed"
     evidence: "agent-handoffs/科技发展态势-TS/TS-L2-DS09-TEST-L01.md"
