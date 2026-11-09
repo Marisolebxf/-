@@ -35,6 +35,13 @@ Sonar `projectKey` / `projectName`：lumen 前缀 **`gkxlumen-`**，demo 前缀 
 | demo-algo-science | `gkxdemo-algo-science` |
 | demo-algo-ent-analysis | `gkxdemo-algo-ent-analysis` |
 | demo-svc-topic-py | `gkxdemo-svc-topic-py` |
+| lumen-ui-algo-apiview | `gkxlumen-ui-algo-apiview` |
+| lumen-ui-admin | `gkxlumen-ui-admin` |
+| lumen-ui-science-mobile | `gkxlumen-ui-science-mobile` |
+| lumen-ui-topic-mobile | `gkxlumen-ui-topic-mobile` |
+| lumen-topic-py | `gkxlumen-topic-py` |
+| demo-ui-algo-apiview | `gkxdemo-ui-algo-apiview` |
+| spring-boot-bridge | `gkxlumen-spring-boot-bridge` |
 
 ## 修改内容
 
@@ -56,13 +63,14 @@ Sonar `projectKey` / `projectName`：lumen 前缀 **`gkxlumen-`**，demo 前缀 
 
 ## 扩接（遗漏 lumen + 全部 demo）
 
-- 2026-11-09：补 `lumen-ui-science-pc` / `lumen-etl-es-py` + 8 个有 CI 的 demo 仓；Sonar 共 13 个 `gkxlumen-*`/`gkxdemo-*` 项目；各仓 `dev` 已 protect。
-- Pipeline 链接以各仓 push 后最新 `sonar:scan` job 为准（抽检写入会话）。
+- 2026-11-09：补 `lumen-ui-science-pc` / `lumen-etl-es-py` + 8 个有 CI 的 demo 仓；随后按「应加尽加」再补 `lumen-ui-algo-apiview` / `lumen-ui-admin` / `lumen-ui-science-mobile` / `lumen-ui-topic-mobile` / `lumen-topic-py` / `demo-ui-algo-apiview` / `spring-boot-bridge`。
+- 有 CI 的业务仓本地盘点：**全部**已含 `sonar:scan`（不含 `gkx-orchestration`、deletion_scheduled / gdzk 归档）。
+- Sonar 前缀项目约 20 个；各仓 `dev` 已 protect。Pipeline 以最新 `sonar:scan` job 为准。
 
 ## 测试结果
 
 - Runner → Sonar：HTTP 200 / `status=UP`（25.12.0）
-- 搜 `gkxlumen` / `gkxdemo`：13 项目可见
+- 搜 `gkxlumen` / `gkxdemo`：业务仓对应项目已建齐
 - algo-py `sonar:scan`：ANALYSIS SUCCESSFUL
 - svc-platform 首跑失败（缺 `sonar.java.binaries`）；fix `1c7764d` 后 ANALYSIS SUCCESSFUL（含 skipTests compile）
 - ui-topic：`6ed4491` 已 push；sonar:scan ANALYSIS SUCCESSFUL
@@ -84,7 +92,8 @@ Sonar `projectKey` / `projectName`：lumen 前缀 **`gkxlumen-`**，demo 前缀 
 - 分支：各仓 `origin/dev`
 - commits：
   - 试点：`lumen-algo-py` `f6a3697`；`lumen-svc-platform` `6bc12f7` + fix `1c7764d`；`lumen-ui-topic` `6ed4491`
-  - 扩接：`lumen-ui-science-pc` / `lumen-etl-es-py` + 8×demo `sonar:scan`（push 后回填 SHA）
+  - 扩接1：`lumen-ui-science-pc` `4bc3bdf`；`lumen-etl-es-py` `ff057b1`；demo 八仓（含 `demo-ui-science` `ec88718` 等）
+  - 扩接2：`lumen-ui-algo-apiview` `0f9ba6d`；`lumen-ui-admin` `32fd9c9`；`lumen-ui-science-mobile` `a9929e7`；`lumen-ui-topic-mobile` `381d066`；`lumen-topic-py` `6d404b5`；`demo-ui-algo-apiview` `1bc9c67`；`spring-boot-bridge` `424addf`
   - `gkx-orchestration` handoff 系列（含本文件）
 
 ## 架构合规自检

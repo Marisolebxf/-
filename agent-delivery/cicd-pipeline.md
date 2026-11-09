@@ -43,7 +43,7 @@ flowchart LR
 
 组级 CI 变量（sz-gkx/gkx-lumen，组 id 74）：`HARBOR_PROJECT`=`zp-tts`、`HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`、`SONAR_HOST_URL`、`SONAR_TOKEN`（**Masked + Protected**）。仓内默认与切换目标 `HARBOR_REGISTRY`=`harbor.test.com`；GitLab 上的组变量仍是 `10.50.62.9:30303`，要等 `E-PLATFORM-P0-ENV-CUTOVER-L03-VARS` 再改。口令 / Token 只在 GitLab，不进 git。
 
-**Sonar 接入（DEVOPS-SONARQUBE-CI-L01）**：lumen（`svc-platform` / `ui-topic` / `ui-science-pc` / `algo-py` / `etl-es-py`）与有 CI 的 demo 仓在 `scan` stage 有 `sonar:scan`（`allow_failure: true`，与 trivy 同软门禁）。项目 key：lumen=`gkxlumen-*`，demo=`gkxdemo-*`。首版用 Runner `$HOME/.cache/sonar-scanner` 缓存的 sonar-scanner-cli（linux-x64 自带 JRE）；相关仓 `dev` 已设为 protected branch，以便 Protected 变量注入。
+**Sonar 接入（DEVOPS-SONARQUBE-CI-L01）**：组内有 CI 的业务仓（全部 `lumen-*` / `demo-*` + `spring-boot-bridge`）在 `scan` stage 有 `sonar:scan`（`allow_failure: true`，与 trivy 同软门禁）。项目 key：lumen/bridge=`gkxlumen-*`，demo=`gkxdemo-*`。首版用 Runner `$HOME/.cache/sonar-scanner` 缓存的 sonar-scanner-cli（linux-x64 自带 JRE）；相关仓 `dev` 已设为 protected branch，以便 Protected 变量注入。不含编排仓与 deletion_scheduled / gdzk 归档。
 
 ---
 
