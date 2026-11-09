@@ -12,6 +12,7 @@
 | R1 | 2026-11-09 | meta 200（1.9s / 8.4KB）；snapshot 200（8.2s / 198.7KB） | **11 可演 / 7 部分可演 / 5 覆盖不到**（23 行逐行见 §5） | ①生产 payload 缺 `industrySciInfluence`、`projectSupport` 两块（源码 `InnovationEvaluationController.java` L296/L470/L537 已有）→ 疑似 display 未发布最新版；②四维 `weights` 全 0（无权重模型）；③`spatialByDimension` 四维全空；④137/138 仅有总分值、无图谱/主题明细 | DSP-M4-FIX-03（149/155 归属部署）、FIX-07（权重）已派 | **R1 完成·不申请签收（待确认部署版本后复测）** |
 | R2 | 2026-11-09 | token 换新后复测：meta 200 / 1.8s / 9.9KB；snapshot 200 / **0.19s** / 31.8KB → **空态壳**：`dimensions[0]`、`techPatent` 三键空对象、`spatialByDimension` 四维全空、`weights` 四维全 0、`policySuggestions[0]`、`sciForecast.domains[0]`，`noSourceFields` 10 项挂空；仅 `spatialRows`/`spatialRegions` 各 100 行城市统计与 `dataSourceNote` 为真值。VPN 恢复后二测：meta 200 / 2.4s；snapshot 200 / 0.17s / **31.8KB 与首测字节级一致**；`updatedAt` 逐次变化 + `Cache-Control: no-store` 排除缓存；`techPatent` 三键 `ConvertTo-Json` 实证 `{}`。另内网网关 `10.50.69.111:30895` 本机不可达（curl exit 28）无法交叉验证 | 0/23 可复判（较 R1 四维出分 19.6/36.6/50.0/63.4 与 techPatent 三榜 200 **明显退化**） | **断链实锤、与用户 VPN 无关**（VPN 断/恢复两测字节级一致）：经算法库 innov-py 的块（dimensions / techPatent / spatialByDimension / sciForecast / policySuggestions / methodEvidence）全空，不经算法库的 Doris 直查块（spatialRows / spatialRegions 各 100 行）正常 → 生产 show-py → innov-py 通道断，快速失败 0.17s（R1 通道正常时 8.2s）；R1 缺口①②③④（缺 industrySciInfluence/projectSupport、weights 全 0、spatialByDimension 空、137/138 无明细）均无法核验 | **根因实锤（SQL 探针 + innov-value 探针）**：①SQL/数据层全通——本机直连久新 Doris（47.93.119.170:29030）：TCP 0.09s、握手 0.35s、`ads_patent_profile` 176.9 万件、有效 IPC 158.7 万、质量榜 SQL 7.08s 返回 200 行真值（A61K 22.7 万件）、趋势 SQL 5037 行；②innov-py 服务整体不可达——经 `POST /v1/situation/global-innovation/innov-value`（直透 algoScienceClient.compute，失败带 emptyReason）分别探 DS-04 `M_INNOV_POINT_VALUE` 与 DS-07 `M_TECH_DS_07_TECH_INNOV_002`，**双指标同报 `DOWNSTREAM_UNREACHABLE`** → display → `gkxlumen-platform-innov-py:8000` 连接失败，DS-04/DS-07 算法指标块共因全空（DS-04 昨日签收时为绿，今日环境退化）；③kubectl 本地代理 127.0.0.1:16443 未监听，无法直查 Pod 状态 | **集群侧查/重启 `gkxlumen-platform-innov-py` Pod**（疑似 CrashLoopBackOff 或副本为 0，Feign 头注曾记 2026-11-08 同症状：无实例 → 静默降级空） | **blocked（新一轮）· R1 判定 11/7/5 维持 · 不重判 23 行 · 不申请签收** |
 | R3 | 2026-11-09 | innov-py Pod 恢复后复测：PIV 200 / 3.7s / 5.2KB（DS-04 复验 ✓ 真数据）；meta 200 / 1.3s / 9.9KB；snapshot 200 / **8.0s / 211.9KB**（恢复 R1 体量） | **12 可演 / 7 部分 / 4 覆盖不到**（155 解除，§5 同步） | ①`projectSupport` **已出真值**（NSFC 代理口径：dwd_zh_project 58,453 项 / score 42.9 / 资助额 mean 43.27 万·median 30·max 920 / 类别 面上 27,939·青年C 23,884·地区 2,634·专项 1,058·重点 962）→ 155 转 ✅；`industrySciInfluence` **仍缺**（data keys 无此 key）→ 149 维持 ❌，按约定建后端缺陷单；②四维 `weights` 仍全 0 → 143/151/157 维持 ⚠️（FIX-07 未落地）；③`spatialByDimension` 四维 0 行 + ④137/138 明细缺——`noSourceFields` 10 项已如实声明，确认为**设计空态非缺陷** | 149 建单（industrySciInfluence 缺块）；FIX-07 权重模型 | **R3 完成·不申请签收（12/7/4；残余均为后端项：149 缺块 + FIX-07 权重）** |
+| R4 | 2026-11-09 | FIX-09 算法侧落地（vendor/innov-py v2，commit `84ff427`，pipeline 4552 / job 33813 构建、33819 部署成功）后复测：snapshot 200 / **214.8KB**（含 `industrySciInfluence` + `projectSupport` 两块）；meta 200 | **13 可演 / 7 部分 / 3 覆盖不到**（149 解除，§5 同步） | ①`industrySciInfluence` **已出真值**：15 集群、score 74.9、合计 5,826,738 篇 / 114,379,101 被引，top1 CL-SEI-01 612,431 篇 / 12,765,905 被引 → 149 转 ✅；`gaps` 错误归因（原「256MB 内存硬限」）已更正为「FE 30s 单查询硬限 + CRC32 无损分片」；②四维 `weights` 仍全 0 → 143/151/157 维持 ⚠️（FIX-07 未落地）；③④维持设计空态 | FIX-07 权重模型；口径文档待补 v2（已登记） | **R4 完成·不申请签收（13/7/3；残余仅 FIX-07 权重 + 口径文档，均非算法链路）** |
 
 ## 1. 探测（每轮第一笔，只读）
 
@@ -82,7 +83,7 @@
 | 146 | ✅ | industry「产业投入」=50.0（48 行业真实计量） |
 | 147 | ✅ | industry「产品成熟度」=50.0 |
 | 148 | ✅ | industry「产业产值」=50.0 |
-| 149 | ❌ | **生产 payload 无 `industrySciInfluence` 块**（源码已有）、industry「科学影响力」=null；需确认部署版本后复测 |
+| 149 | ✅ | **R4 2026-11-09 解除**：FIX-09 v2 部署后 `industrySciInfluence` 出真值——久新 15 集群口径，score 74.9，15/15 集群齐全（top1 CL-SEI-01 新一代信息技术 612,431 篇 / 12,765,905 被引 / 篇均 20.84 / D1 100.0；合计 5,826,738 篇 / 114,379,101 被引），industry「科学影响力」=74.9（非 null） |
 | 150 | ❌ | industry「技术影响力」=null（G3 整维缺测） |
 | 151 | ⚠️ | industry「综合评估」=50.0 有值；无权重模型（同 143） |
 | 152 | ✅ | policy「战略引导力」=50.1 |
@@ -93,7 +94,7 @@
 | 157 | ⚠️ | policy「综合评估」=63.4 有值；无权重模型（同 143） |
 | 158 | ❌ | `policySuggestions=[]`、`methodEvidence` 全空（G5 无建议模型） |
 
-**小计（R3 2026-11-09 更新）**：✅ **12** / ⚠️ 7 / ❌ **4** = 23（155 转 ✅，其余维持）。与用例文档原「19 ✅ / 1 ⚠️ / 3 ❌」的差异，全部源于「仅汇总分无明细」与「149 缺块」，已在用例文档同步更正。
+**小计（R4 2026-11-09 更新）**：✅ **13** / ⚠️ 7 / ❌ **3** = 23（155 于 R3 转 ✅、149 于 R4 转 ✅）。与用例文档原「19 ✅ / 1 ⚠️ / 3 ❌」的差异，全部源于「仅汇总分无明细」与「149/155 缺块」，已在用例文档同步更正。
 
 **部署确认结果（R3）**：display 新版已发布——`projectSupport` 已出真值（155 解除）；`industrySciInfluence` 仍缺（data keys 无此 key）→ 按「发布后仍缺」约定**建后端缺陷单**。权重模型（FIX-07）未落地，143/151/157 维持 ⚠️；`noSourceFields` 10 项（spatialByDimension / methodEvidence / policySuggestions / evidence 等）确认为**设计空态（诚实性声明）非缺陷**。
 
@@ -108,3 +109,22 @@
 4. 重打 innov-py 镜像发布 → Java 块自动组装（`ranked` 非空即进）→ 149 解除，R4 复测。
 
 **验收**：`POST /internal/innov/metric/M_INNOV_POT_SCI_INFL/compute` 返回非空 `cluster_level.ranked`（15 集群、含被引真值）；生产 snapshot `data.industrySciInfluence` 块出现且 industry「科学影响力」score 非 null。
+
+**闭环记录（R4 2026-11-09，已验收）**：
+- 代码：lumen-algo-py `84ff427`（rebase 自 `71c5ea3`，含 v2 实现 + gaps 归因更正 + CRC32 无损分片）
+- 构建/部署：pipeline 4552 / `image:innov` job 33813 ✅、`deploy:innov` job 33819 ✅
+- compute 自检：`precompute` 路径 0.46s，`ranked` 15 行，top5 逐位一致
+- 生产实测：snapshot 214.8KB，`industrySciInfluence` score=74.9、clusters=15、top1 CL-SEI-01 612,431/12,765,905、合计 5,826,738/114,379,101；`gaps` 已无「256MB」表述
+- 结论：**149 解除，覆盖表 12→13 可演**（残余仅 FIX-07 权重与口径文档待补 v2）
+
+### 遗留登记（口径文档待补 v2，不阻塞演示，2026-11-09）
+
+| 项 | 内容 |
+|---|---|
+| 事项 | `agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md` 待补 v2 章节 |
+| 责任人 | **口径主（唐绍祖 / 王惠）**——该文档文头登记「维护者：唐绍祖、口径调研人：wanghui 标记 true」 |
+| 现状 | 文档为 20261027 批旧口径（gkx `dwd_zh_paper_citation` 论文级，判「部分支持 / 产业级排名做不出来 / ranked=[]」），与本次 v2 实现（久新 15 集群完整排名、`support_judgment=完全转换支持(条件)`）**直接矛盾** |
+| 处置裁定 | **本次不修**（人力：李伟，2026-11-09）：`calc_logic_ref` 为纯字符串元数据（`catalog.py` 104 处定义、全仓零处消费），不影响算法运行、接口返回、页面展示与 149 演示验收；仅影响口径符合性审计 |
+| 残余风险 | ①若甲方/质量审计以该文档为「唯一真源」核对实现，会判「实现超出口径授权」；②后续维护者按该文档改代码，可能把实现回退到论文粒度 |
+| 触发条件 | **口径评审 / 甲方符合性核查前必须补齐**（追加 §六 v2 章节 + 修正判档行，不重写原 586 行调研历史） |
+| 关联事项 | `agent-delivery/metrics/指标入库详情.xlsx`（科技专题算法库 sheet）该指标行仍登记 gkx `dwd_*` 旧口径；**2026-11-09 裁定由唐绍祖 / 王惠走人工台账同步**（agent 不代改），须与 calc-logic 文档 v2 一并更新为久新集群口径 |
