@@ -35,12 +35,44 @@
 | `harness_mode` / `sub_type` / `shards` / `mode` | 原样 | — |
 | `cards.support` 分数、名次、条数、层级均值、`tier`、`notes`、卡内 `weights` | 原样，`tier.value` 保持 null | `frozen_cards.support`：`computable`、`policy_count`、`level_mean`、`tier` |
 | `cards.fit` | 原样，无命中则 `score` 保持 null | `frozen_cards.fit`：`computable`、`score`、`hit_count` |
-| `cards.effect` | 原样，`computable=false` 与 `reason` | `frozen_cards.effect`：`computable`、`reason`。章节只写「不可算」 |
+| `cards.effect` | 原样，`computable=false` 与 `reason`；`ext` 原样透传（见下「落地实效宏观代理 ext」，POL-EFFECT-MACRO-JAVA-L01） | `frozen_cards.effect`：`computable`、`reason`；可算时加 `score`；有 `ext` 时加 `ext` 口径子集。章节：可算印「分数」，否则「不可算」，宏观代理再附口径句与 `proxy_notes` |
 | `strategies[]` | `id` / `title` / `dimension` / `priority` / `conclusion` 不改 | `report_chapters`「优化建议」用同一 `conclusion` |
 | `narration` / `honesty` | 原样，不二次润色 | — |
 | 顶层 `composite` / `selected_indicators` / `weights` | 删除 | 输入快照同样删除 |
 | Python `result_snapshot_id` | 不写入响应 | Java 另签 `result_snapshot_id=res-{taskId}` |
 | `indicators?kind=all` 的 `items` | 删除 | 分布五段保留 |
+
+## 落地实效宏观代理 ext（POL-EFFECT-MACRO-JAVA-L01 补，契约说明）
+
+`result_payload.cards.effect` 由 Python 产出，Java **整块原样透传，不改分、不补键、不写 0**。`ext` 键定义真源 = `POL-EFFECT-MACRO-ALGO-L01.md`：
+
+| 键 | 说明 | 冻结进 `frozen_cards.effect.ext` |
+|----|------|:--:|
+| `caliber` | `macro_outcome_proxy`（宏观结果面代理，**不是**正本三维） | ✅ |
+| `whitelist_version` | 如 `macro-eff-v1` | ✅ |
+| `window` / `dim` | 期次窗口 / 维度说明 | ✅ |
+| `indicator_count` / `indicator_used` | 参与指标数与清单 | ✅ |
+| `period_used` | 每城每指标实际取用期次（各城不对齐，**不得宣称同期**） | ✅ |
+| `source_tables` | 实际读取的源表 | ✅ |
+| `proxy_notes` | 剔除/期次不齐等诚实说明（字符串数组） | ✅ |
+| `track_a_status` / `track_a_*` | 正本三维诊断，只作诊断，不混入分数 | `track_a_status` ✅，其余只在结果板 |
+| `city_scores` / `area_key` | 四城对比分 / 区划键 | ❌（体积大，仅结果板） |
+
+空值规则：
+- `computable=false`：无 `score` 键或 `score=null`；`frozen_cards.effect` 不写 `score`；章节「落地实效」= 「不可算」+ `reason`，**不印 0**。
+- `computable=true`：`score` 为 Python 原值。最低城截面分可为**真 0**，章节照印「分数 0」（旧逻辑把 0 当不可算，已改为只看 `computable` + 数值性）。
+- `ext` 缺失（旧 Python / 正本三维路径）：行为与改动前一致。
+- 带 `caliber=macro_outcome_proxy` 时，章节与 `policy:report:export` 的「落地实效性」块追加「口径 宏观结果面代理（待甲方确认）」与每条 `proxy_notes`。FE 角标语义（⚠️ 待甲方确认）仍归 D 段。
+
+样例（`result_payload.cards.effect`）：
+
+```json
+{"metric_id":"M_POLICY_IMPLEMENTATION_EFFECT","computable":true,"score":78.5836,
+ "ext":{"caliber":"macro_outcome_proxy","whitelist_version":"macro-eff-v1","window":"202101~各城最新",
+  "indicator_count":7,"period_used":{"深圳":{"gmjj_gnmy_01":202509}},"source_tables":["gkx.dwd_macro_index_data"],
+  "city_scores":{"深圳":78.5836,"广州":41.1010,"北京":48.5023,"上海":30.3062},
+  "proxy_notes":["各城最新期次不对齐，非同期比较"],"track_a_status":"not_computable"}}
+```
 
 ## 测试结果
 
