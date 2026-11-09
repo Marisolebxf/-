@@ -91,5 +91,5 @@ DoD：见 registry。
 | MID-L01 | **integration** | 已推 `41d757a` + algo `707edd0` |
 | JAVA-L01 | **integration** | `925df28` 已推 |
 | FE-TOPIC-L01 | **pending_test** | 已推 `112afa6`；人确认推送 2026-11-09 |
-| E0 | **claimed→派单** | 点名 CI/rollout + algo→gkx |
-| E1 | backlog | 等 E0 绿 |
+| E0 | **done** | 五仓 Pipeline 绿；entan-py 可达 gkx 且 computable |
+| E1 | **claimed→派单** | 金路径冒烟；勿硬断言 9 指标/精确分 |
