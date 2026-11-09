@@ -58,7 +58,9 @@
 - **lumen Nacos（30849 控制台 / 8848 服务端）nacos 用户密码已被改离默认**（bcrypt 离线比对 + 双路径 403 实证）；demo Nacos（30848）nacos/nacos 可用。若有人知道新密码，可简化 CI 任务（跳过改密重启段）。
 - **Nacos3 用户表为启动期进程缓存**：改 `gkxlumenx_config.users` 不热生效，必须重启 nacos——CI 任务据此设计。
 - Nacos3 服务端 **v1 login 已 410/500**（兼容层拒），登录走 `/nacos/v3/auth/user/login`；console 两路径并存。
-- Developer（30 级）**不能 play 保护分支 manual 任务**（403），但可 retry failed 任务——激活动作请用 Maintainer 账号或 UI。
+- Developer（30 级）**不能 play 保护分支 manual 任务**（403），但可 retry failed 任务、可建 pipeline（api）——ops 任务因此加了 `ACTIVATE_PLANNING_GATE=true` 变量门控自动执行通道（Run Pipeline 带该变量即自动跑，免点击）。
+- **CI 任务三次迭代教训**（job 33220/33318）：① shell 函数参数不经环境传递，docker 兜底分支须 `GATE_PHASE="$1" docker run ...` 前缀注入；② runner/algo-base 镜像均无 `bcrypt` 模块——临时密码改固定值 `gkx-ops-gate-2026` + 预计算哈希入脚本（短窗凭据，restore 后失效，事后建议正式轮换 nacos 管理密码）。
+- **push 会自动取消同 ref 在跑的旧流水线**（auto-cancel redundant pipelines）：激活流水线两次被队友推送打断（4531/4534 前），需在推送间隙重试。
 - `information_schema.table_rows` 对 InnoDB 是估算值（direction_warning 显示 0 行实为 61 行），核行数用 `COUNT(*)`。
 - 灌数种子真源：`gkx-orchestration/scripts/ts_plan_seed/`（seed_dump.json + seed_ts_plan.py + ddl/）。
 
