@@ -19,6 +19,7 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 |---|---|---|
 | [`mysql/dwd.md`](./mysql/dwd.md) | `policy_base_info` + `policy_industry_rel` + `policy_category_rel` + `policy_support_amount` + `policy_text_parse` + `script_state` | draft |
 | [`mysql/ads.md`](./mysql/ads.md) | ADS **16 张**：指标 9 + 图镜像 2 + NER 1 + 文本 3 + `policy_industry_rel` 镜像 | draft |
+| [`mysql/gapfill.md`](./mysql/gapfill.md) | D16 缺项：`gapfill_policy_sz_effect` CREATE + 算法库 Mock10/补外围写入口（`POL-IMPL-EFFECT-MOCK-VIA-UI-L01`） | draft |
 | [`nebula/`](./nebula.md) | hang **`demo_gkx_chain` only** | draft |
 | [`elasticsearch/`](./elasticsearch.md) | 本管线不施工独立索引 | draft 指针 |
 | 窗口对照 | [`../windows/display-ds10-12.md`](../windows/display-ds10-12.md) | draft |
@@ -146,6 +147,14 @@ erDiagram
     }
     gapfill_policy_sz_effect {
         varchar policy_id PK
+        date implementation_date
+        varchar support_object
+        tinyint feedback_score
+        varchar metric_id
+        varchar gap_item
+        varchar fill_method
+        varchar gapfill_batch_id
+        datetime generated_at
     }
     gapfill_policy_detail_compare {
         bigint id PK
