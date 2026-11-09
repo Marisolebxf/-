@@ -28,3 +28,11 @@
 - model_used: glm-5.3（ZCode agent）
 - actual_cost: <$0.5
 - cost_warn: green
+
+## 2026-11-09 走查返工（监管人 human:刘剑锋 报：页面 mock 文案、窄屏错乱）
+
+- 根因：real 轨面板从不调 R1/R2，状态始终为 `maintainModel` 页面种子（notice 含「（Mock）」）；写后只改 notice 不回读。分区1 加载失败回落种子。布局：数据源表操作列 `<td>` 设 `display:flex` 脱离表格布局；断点用视口 `@media`（内容区在侧边菜单内）；宽表无滚动容器且 grid 子项被撑开
+- 修复 `lumen-ui-science-pc` 8d754e2：新增 `loadEntityRelationState`（R2+R1 → 页面状态，写后回读，三处诚实空态）；裸 fetch → 统一 axios（baseURL/Bearer/trace）；去 `technologyId: 1` 与 `ent-1` 前缀判技术点，加技术点选择；关系写 op 用服务端 `edge_key`；人工强度标注「人工」、R1 强度挂 `MetricSpecCard`；容器查询 + `.maintain-table-scroll` + 面板子项 `min-width:0`
+- 维护技术图谱（34–40）按监管人要求不动
+- 验证：type-check / maintain.test.mjs / build 绿；mock 与 real（连 edu）1440/1100/900/760 截图核对，real 轨无 Mock/演示文案
+- 仍 integration：待 ENT 全链部署后 edu 联调

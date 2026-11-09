@@ -2,7 +2,7 @@
 
 > **任务**：`KG-COMPLY-SDD-L01`（Epic `E-SCI-INT`，definition，P0）
 > **日期**：2026-11-07
-> **认领 / 确认**：执行 `agent:architect-agent`，负责人与交付确认人均为 `human:徐滕强`；交付落 `07-图数据库集成` 目录，按登记册 DoD 经 `human:唐绍祖` 确认
+> **认领 / 确认**：执行 `agent:architect-agent`，负责人与交付确认人均为 `human:徐滕强`；交付落 `07-图数据库集成` 目录，按登记册 DoD 经 `human:徐滕强` 确认（2026-11-08 明示；唐绍祖为 ALGO 会签人）
 > **登记册执行角色**：`algorithm-agent`（按派单说明不改该字段）
 > **仓**：`gkx-orchestration`，分支 `dev`。本单只写过程文档，不改业务仓、不改图空间、不 commit / push
 
@@ -44,7 +44,7 @@ flowchart TB
     subgraph TANG["主责一 · 唐绍祖 · 指定空间上算法跑出结果（只读）"]
         A1["路径搜索 423-427\n已实跑 10 对"]
         A2["中心性 428-432\n已实跑，weighted_degree 可用"]
-        A3["社群 433-435 · 437\nLouvain 已实跑 113 簇"]
+        A3["社群 433-435 · 437\nLouvain 定案 B′ res8.0 · 178 成形社群"]
         A4["关键路径与节点 28-29\n35,018 步已实跑"]
         A5["社群演化 436\n501 · 缺多期快照"]
         AM["算法中台图能力 6 条\nweighted_degree · tech_rel · tech_path_step\ncommunity_id · cooperate · depends_on"]
@@ -208,7 +208,7 @@ flowchart TB
 | 8 | 430 | 中介中心性 | 同上 | 同 1,500 点子图，300 源点采样近似（如实标注），实跑已出 Top20 | 同上 |
 | 9 | 431 | PageRank | 同上 | 全图 `networkx` PageRank（α=0.85，阈值 1e-8），实跑已出 Top20，分值和=1.0 已校验 | 图层缺失 → **501** |
 | 10 | 432 | 多维度中心性综合 | 428–431 四项结果 | 各指标 min-max 标准化后等权相加（支持自定义权重），实跑已出 Top20 | 上游 429–431 无结果 → 本条**空态**并列出依赖缺失项，不造数 |
-| 11 | 433 | 多算法社群发现（模块度 / 谱聚类 / K-means / LPA / Infomap / Louvain） | `tech_point` + `tech_rel` | **Louvain 必须跑出**（实跑基线：113 社群、模块度 0.5198、种子 42）；其余算法按需补跑对比，跑几个如实报几个 | 图层缺失 → **501**；某算法未跑 → 该算法**空态**标注「未计算」，不得只拿 Louvain 冒充「多算法支持」全过 |
+| 11 | 433 | 多算法社群发现（模块度 / 谱聚类 / K-means / LPA / Infomap / Louvain） | `tech_point` + `tech_rel` | **Louvain 必须跑出**（定案 B′：resolution 8.0、种子 42，178 个成形社群，模块度同分辨率自检约 0.2791；res 1.0 旧基线 113 社群 / 0.5198 仅备查，见 §2.2 #4）；其余算法按需补跑对比，跑几个如实报几个 | 图层缺失 → **501**；某算法未跑 → 该算法**空态**标注「未计算」，不得只拿 Louvain 冒充「多算法支持」全过 |
 | 12 | 434 | 社群结构自动识别 | 同上 | Louvain 现算结果落到成员清单（`community_id` 字段实测 0/19,430 全空，**不可依赖**，需自算并落表 / 写回，写回属 LOAD / 数据侧，本任务只读） | 未算出 → **空态**（不得引用全空字段冒充） |
 | 13 | 435 | 社群属性与特征分析 | Louvain 成员清单 | 从成员表汇总每社群规模、核心节点、内部边数、平均度（实跑已出前 6 社群明细） | 无成员表 → **空态** |
 | 14 | 436 | 社群动态演化追踪 | 需多期快照，当前只有单份 | **本期跑不出**：缺多期数据，如实标注「需多期数据，本期不支持」 | **501**（不接受单期数据假装演化） |
@@ -305,7 +305,7 @@ flowchart TB
 |---|---|
 | 空间 | `demo_gkx_chain`（STRUCT 放法 B，已选定；禁止写 `gkx_chain` / `gkx_local_1` / `gkx_full_1` / `entan`，不双写不互拷） |
 | 结构基线 | STRUCT §1：14 Tag / 24+6 Edge / VID 规则；出入参不新增 Tag / Edge |
-| 边属性 | 每条边带 `weight double`（没有就 0，不造）、`props`（JSON：`source_table / source_record_id / batch / confidence / match_method / evidence`）；`first_year`：存量 24+6 边型实测**全库均无此字段**，本期入图不强制新建（避免 DDL 膨胀拖期）；若后续需要按首年筛，作为 STRUCT 结构增补项走 T01 待补清单同一 DDL 授权通道 |
+| 边属性 | 每条边带 `weight double`（没有就 0，不造；**例外：M17 落在存量 `participates` 边上，该边无 `weight`，用 `chain_score` 作强度，不另加 `weight`**）、`props`（JSON：`source_table / source_record_id / batch / confidence / match_method / evidence`）；`first_year`：存量 24+6 边型实测**全库均无此字段**，本期入图不强制新建（避免 DDL 膨胀拖期）；若后续需要按首年筛，作为 STRUCT 结构增补项走 T01 待补清单同一 DDL 授权通道 |
 | 批号 | 每批入图带 `props.batch`（如 `comply-20261107-t02`）；端点缺失跳过并计数，不自动补点 |
 | 凭证 | Nebula 连接凭证走主机环境文件 / Secret，**不进 git、不进编排话术** |
 | 执行环境 | 与智树共用 `lumen-algo-py` 编排环境；入图执行为离线作业，不进页面请求链路 |
@@ -447,7 +447,7 @@ flowchart TB
 | 编排环境话术 | 「在 `demo_gkx_chain` 只读复跑社群批（**定案 B′：resolution=8.0**）：`python-louvain` best_partition、random_state=42、resolution 8.0，出社群成员清单与模块度（预期 285 组 = **178 个成形社群** + 107 个真孤立点；成形中位 63、最大 622 占 3.2%、零伪单点）；汇总每社群规模 / 核心节点（按 `weighted_degree`）/ 内部边数 / 密度 / 平均连接强度（`relation_confidence_score` 均值）/ 跨社群边数 / 论文数 / 专利数；输出社群明细对齐 COMM-L01 的 B′ 跑批结果（`KG-COMPLY-COMM-L01-结果-Bprime-res8.json`）；成员表落成本地结果文件供 434/435/437 消费，不写回图（写回属 LOAD / 数据侧，写回时 `props.batch` 记 algorithm/seed/resolution）。**注意模块度仅作同分辨率自检（res 8.0 预期 0.2791 附近），不得与 res 1.0 基线 0.5198 跨分辨率比较**。433 其余算法（谱聚类 / K-means / LPA / Infomap）同图各跑一遍做对比展示，跑几个如实报几个。」 |
 | 读哪张图 | `tech_point` + `tech_rel`（全量边，**不得只取 HIGH/MEDIUM 子图**——久新 1,708 伪单点即子图成因） |
 | 验收看什么 | 成员清单覆盖 19,430 点；模块度与簇数在基线合理浮动区间；每社群四项属性齐全；436 演化保持 501 不做；**权重自检**：建图时 `e.relation_confidence_score` 空值率必须为 0（写成 `e.tech_rel.*` 会全 NULL 且不报错，边权全等会让 Louvain 退化成纯拓扑划分） |
-| 不做什么 | 不依赖 `community_id` 字段（实测全空）；不做多算法全对比（433 其余算法按需另单）；不写回图（写回属 LOAD / 数据侧） |
+| 不做什么 | 不依赖 `community_id` 字段（实测全空）；其余算法只做同图对比展示，不以其结果替换 B′ 成员表；不写回图（写回属 LOAD / 数据侧） |
 
 ### T11 正式线结构覆盖对照清单
 
@@ -526,3 +526,4 @@ flowchart TB
 | 2026-11-08 | **ALGO 会签修订（唐绍祖，4 项 P0 直接改进正文）**：⑬ **边属性读法纠错**——§2.1#1「证据在 `props`」与 T08「`props.confidence`」改为 `e.evidence_level` / `e.relation_confidence_score`（`tech_rel` 无 `weight` / `props` 字段）；§5 共同前提新增「属性读写约定」行（本引擎节点须 `v.<tag>.<field>`、边须 `e.<field>`，禁用 `e.<edge_name>.<field>`——该写法返回全 NULL 且不报错）；T08/T09/T10 验收各加权重自检（`relation_confidence_score` 空值率须为 0、加权与无权须有差异）；⑭ **T01 闸门补预期缺口**——新增「T01 预期缺口」小表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 10 边型），DDL 通道改写为「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」，明确唐绍祖非 DDL 授权人；§5 汇总补「关键路径警示」（T02–T04 工期从 DDL 完成后起算，等待期 T05/T08/T09/T10/T14 可并行）；⑮ **T06 加跨边重合度比对**——`apply_to` / `support` 须用「起点+终点」同对连接计数算重合率（实测 9,279 即 100% 重合），>90% 判同批双灌、结论写「建议停读一条」；⑯ **`participates` 端点口径拆分**——213,500 拆为 `enterprise`→`segment` 178,731（M17 可用）+ `institution`→`institution` 34,769（服务公司关联，不属 M02/M19），T02「不做什么」同步逐条点名。会签全文见 [会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md](./会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md)。会签结论：**同意，无阻塞意见** |
 | 2026-11-08 | **会签 P1 顺手修订（3 项，唐绍祖建议）**：⑰ `community_id` 判空口径——实测为**空串非 NULL**，校验用 `<> ''`（禁 `IS NULL`），写进 §2.2#4；⑱ 社群两套口径显式并存——Louvain 113 vs 久新源表 `ads_technology_community_member` 1,731 簇，**不可混用**，用哪套待 human:徐滕强 拍板（§2.2#4 暂按 Louvain 113 为默认展示口径）；⑲ `first_year` 字段实况修正——存量边全库无此字段，本期入图不强制新建（防 DDL 膨胀拖期），需要时走 T01 同一 DDL 授权通道增补（§5 共同前提边属性行改写） |
 | 2026-11-09 | **社群口径定案 B′（human:徐滕强 确认，唐绍祖 COMM-L01 调研支撑）**：⑳ §2.2#4 定案——我方自算 Louvain（`python-louvain` 与基线同库、seed 42、**resolution 8.0**）：**178 个成形社群、成形中位 63、最大 622（占 3.2%）、零伪单点**；A 久新 1,731 簇落选（98.7% 伪单点 / 成形仅 23 / **ARI 0.072** 与我方划分基本无关——系 HIGH+MEDIUM 子图结果不可贴全量图）、B 基线 res1.0 落选（113 中仅 6 成形）；T10 话术改按 B′ 复跑并对齐 `KG-COMPLY-COMM-L01-结果-Bprime-res8.json`，模块度仅同分辨率自检（res8.0 预期 0.2791，禁与 0.5198 跨分辨率比），补「全量边不得取子图」红线；模块度取舍依据见 [KG-COMPLY-COMM-L01-社群口径选型调研与建议.md](./KG-COMPLY-COMM-L01-社群口径选型调研与建议.md)。ACCEPT 验收面 434 判据与 T06 裁定按 COMM-L01 §7 由唐绍祖侧同步改 |
+| 2026-11-09 | **签收前文字对齐**：㉑ 开头确认人改为徐滕强；FLOW 图 A3 与 §2.1 #11 社群数字对齐 B′（178 / res8.0，113 / 0.5198 仅备查）；T10「不做什么」去掉与话术矛盾的「不做多算法对比」；§5 边属性补 M17 例外（`participates` 用 `chain_score` 作强度，会签 P1-4） |

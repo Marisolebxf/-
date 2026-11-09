@@ -1,13 +1,14 @@
 # GDF-FIN-WORKPACK-v1
 
 > **读者**：GDF 数据中台产线（不使用 Cursor）  
-> **版本**：v1.0（2026-11-09）· **首版成包，待 GDF 预填 / 导入核对**。**不代表**已建表、已灌数、已回传、已跑通  
-> **任务**：`GDF-FIN-WORKPACK-L01`（WBS-06-04B）· 监管人 `human:淮政玮` · 跑通叶 `SYSINT-06-04-L01`  
+> **版本**：v1.0（2026-11-09）· **成包绿 + DDL 绿**；CDC DRAFT 已预填。**不代表**已灌数、已回传、已跑通  
+> **任务**：`GDF-FIN-WORKPACK-L01`（WBS-06-04B，成包）· 监管人 `human:淮政玮` · 跑通叶 `SYSINT-06-04-L01`  
+> **完成门槛（强制）**：**成包绿 + DDL 绿 + `SYSINT-06-04-L01` 跑通**（回传后 Java 只读 ADS）。本包 done ≠ 跑通  
 > **优先级**：市场研究红标 **第 2**（第 1 是 `GDF-MACRO-WORKPACK`）。可并行成包；与落地实效无关；**不与 MACRO 并包**  
 > **范围**：金融要素库 **物理表 31 张**（行数报告列 32 行，`dwd_corp_basic_info` 重复一次）。v1 洗 19 张 → 11 张 `fin_*`；P2 / 0 行表只贴不洗；3 张归企业包  
 > **结构真源**：源表列以 **live `gkx`** 为准（`00` §0.3）；09 / 09a 取自 20261109 行数报告，不是 live  
 > **Mapping 施工真源**：[09-金融域-ETL-Mapping明细-源表到DWD.md](09-金融域-ETL-Mapping明细-源表到DWD.md)  
-> **建表 DDL**：[10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/)（**草稿，未签收，未建表**）  
+> **建表 DDL**：[10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/)（**已绿**：`check_gdf_ddl.py --dimension fin` 通过）  
 > **环境红线**：GDF 只读 `gkx` + 写 `gkxlumenx_*`，禁读写 demo 库
 
 ## 文件索引

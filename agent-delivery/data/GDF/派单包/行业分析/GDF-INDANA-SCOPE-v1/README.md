@@ -17,10 +17,15 @@
 
 > 编号 `01` 不使用，保留给「若解禁后的 Mapping 包」（届时另开 `GDF-INDANA-WORKPACK`，不在本目录）。
 
+## 完成门槛（强制，与金融同构）
+
+**裁定包绿 +（无项目 DWD DDL，本期不适用）+ `SYSINT-06-06-L01` 跑通。**  
+`GDF-INDANA-SCOPE-L01` done ≠ 跑通；解禁前不开 Mapping 包，也不另建项目 DWD。
+
 ## 施工入口
 
 - 贴源：仍走 **[GDF-CHAIN-WORKPACK-v2](../../产业链/GDF-CHAIN-WORKPACK-v2/) Wave A**（`02` 的 `chain_indana` 组）。
-- 本目录不新增作业；`SYSINT-06-06-L01` 的完成口径 = CHAIN-v2 Wave A 六表对账回执，**只贴不算 Mapping 跑通**。
+- 本目录不新增作业；`SYSINT-06-06-L01` 跑通口径 = CHAIN-v2 Wave A 六表对账回执关单。**只贴不算 Mapping 跑通**，但本叶仍须关单才算市场研究行业分析交付完成。
 
 ## 解禁
 

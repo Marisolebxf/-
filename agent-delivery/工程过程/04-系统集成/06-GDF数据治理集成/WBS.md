@@ -202,12 +202,12 @@ graph TD
 | 草案号 | 子项 | 监管人 | 依赖 / 包 | 可对端（① / ②） |
 |---|---|---|---|---|
 | WBS-06-02 · `SYSINT-06-02-L01` | 产业链：① 链四表 Mapping + ② 向量/入图调度转发 | 徐滕强（外建辜少彬非第二监管人） | 附件一 §2.2；[CHAIN-v2](../../../data/GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v2/README.md)；Mapping 认 `09-产业链域-*`；链树 DDL 认包内 `10/`→v5。**② 入图**认 [调度转发接口设计](../GDF-GRAPH-SCHED-CONTRACT-L01-调度转发接口设计.md)：链树 DWD `success` 后转发 `industry_segment` | **①** 四表洗链树/`entity_rel`；分析六表**只贴不洗**；资讯只贴。**②** 向量见包 `12`；入图走调度转发（不直写图库）。转发未跑通 ≠ 可对端 |
-| WBS-06-04 · `SYSINT-06-04-L01` | 金融数据 ⚠：① Mapping + ② ADS | 淮政玮 | 附件一 §2.2。**无包**。现 DoD：**本任务不新编包** → 成包见 **06-04B** | 无包则①②皆空。32 表以 live `gkx` 为准 |
-| WBS-06-04B · `GDF-FIN-WORKPACK-L01` | └ 成包 `GDF-FIN-WORKPACK-v1` | 淮政玮 | [派单说明·红标成包](./派单说明-市场研究红标成包-20261109.md) **优先级 2**。不塞进 06-04。**claimed 2026-11-09；首版包已落盘 [金融数据/GDF-FIN-WORKPACK-v1](../../../data/GDF/派单包/金融数据/GDF-FIN-WORKPACK-v1/)（2026-11-09）** | 首版包落盘并入索引。含 ①物理表 31 张（报告列 32 行，`dwd_corp_basic_info` 重复；v1 洗 19 张 → 11 张 `fin_*`，P2 与 0 行只贴）+ ②金融 ADS 草稿 4 张。DDL 草稿未签收。不是可对端 |
-| WBS-06-05 · `SYSINT-06-05-L01` | 宏观行业 ⚠：① Mapping + ② ADS/可选实效代理 | 淮政玮 | 附件一 §2.2。无包。成包见 **06-05B** | ②a 城市截面 ADS；②b 落地实效结果面代理须改算法+会签，**不得** silent 写正本三维（无 `policy_id`） |
-| WBS-06-05B · `GDF-MACRO-WORKPACK-L01` | └ 成包 `GDF-MACRO-WORKPACK-v1` | 淮政玮 | 同上派单说明 **优先级 1（P0）**。不代替 06-05。**claimed 2026-11-09；首版包已落盘 [宏观行业/GDF-MACRO-WORKPACK-v1](../../../data/GDF/派单包/宏观行业/GDF-MACRO-WORKPACK-v1/)（2026-11-09）** | 首版包落盘并入索引：六表 ① 贴源 + Mapping 到六张 `macro_*`（事实表带区划反解列，`area_code_type=1`）、②a 城市截面 ADS 草稿（`macro_city_section`）、②b 实效代理仅附录。DDL 草稿未执行，现网未核（OPEN-MACRO-05/06）。不是可对端 |
-| WBS-06-06 · `SYSINT-06-06-L01` | 行业分析 ⚠：现行只贴 ODS | 淮政玮 | `CHAIN-B2-INDANA` 禁洗项目 DWD。裁定见 **06-06B** | **①** 只贴；**②** 无 DWD 则无后加工。弱信号不作正本反馈 |
-| WBS-06-06B · `GDF-INDANA-SCOPE-L01` | └ 禁令确认 / 解禁条件裁定 | 淮政玮 | 同上派单说明 **优先级 3**。**裁定已落盘 2026-11-09**：维持只贴 ODS、禁洗项目 DWD、解禁占位待李伟/架构书面，见 [GDF-INDANA-SCOPE-v1](../../../data/GDF/派单包/行业分析/GDF-INDANA-SCOPE-v1/)（非 Mapping 包） | 书面：维持只贴，或解禁条件+是否另开 Mapping 包 |
+| WBS-06-04 · `SYSINT-06-04-L01` | 金融数据 ⚠：① Mapping + ② ADS | 淮政玮 | 附件一 §2.2。成包见 **06-04B**（本叶不新编包）。**完成门槛=成包绿 + DDL 绿 + 本叶跑通**（回传后 Java 只读 ADS） | ①②以包为准；live `gkx` 31 物理表。成包/DDL 已绿 ≠ 本叶可对端 |
+| WBS-06-04B · `GDF-FIN-WORKPACK-L01` | └ 成包 `GDF-FIN-WORKPACK-v1` | 淮政玮 | [派单说明·红标成包](./派单说明-市场研究红标成包-20261109.md) **优先级 2**。不塞进 06-04。**done 2026-11-09**；包 [金融数据/GDF-FIN-WORKPACK-v1](../../../data/GDF/派单包/金融数据/GDF-FIN-WORKPACK-v1/)；`GDF-FIN-STORAGE-DDL-L01` 已签收；`check_gdf_ddl.py --dimension fin` **通过**（包↔storage↔demo↔lumen，15 表） | 成包门槛已满足：① 31 物理表（v1 洗 19→11 `fin_*`，P2/0 行只贴；ENT-v4 三表不含）+ ② ADS 4 张。**不代替 06-04 跑通** |
+| WBS-06-05 · `SYSINT-06-05-L01` | 宏观行业 ⚠：① Mapping + ② ADS/可选实效代理 | 淮政玮 | 附件一 §2.2。成包见 **06-05B**。**完成门槛=成包绿 + DDL 绿 + 本叶跑通** | ②a 城市截面 ADS；②b 落地实效结果面代理须改算法+会签，**不得** silent 写正本三维（无 `policy_id`） |
+| WBS-06-05B · `GDF-MACRO-WORKPACK-L01` | └ 成包 `GDF-MACRO-WORKPACK-v1` | 淮政玮 | 同上派单说明 **优先级 1（P0）**。不代替 06-05。**done 2026-11-09**；包 [宏观行业/GDF-MACRO-WORKPACK-v1](../../../data/GDF/派单包/宏观行业/GDF-MACRO-WORKPACK-v1/)；`GDF-MACRO-STORAGE-DDL-L01` 已签收；`check_gdf_ddl.py --dimension macro` **通过**（7 表） | 成包门槛已满足：六表 ①+Mapping→`macro_*`、②a `macro_city_section`、②b 仅附录。**不代替 06-05 跑通** |
+| WBS-06-06 · `SYSINT-06-06-L01` | 行业分析 ⚠：现行只贴 ODS | 淮政玮 | `CHAIN-B2-INDANA` 禁洗项目 DWD。裁定见 **06-06B**。**完成门槛=裁定包绿 +（无项目 DWD DDL）+ 本叶跑通**（CHAIN-v2 Wave A 六表对账回执） | **①** 只贴；**②** 无 DWD 则无后加工。弱信号不作正本反馈。裁定绿 ≠ 本叶可对端 |
+| WBS-06-06B · `GDF-INDANA-SCOPE-L01` | └ 禁令确认 / 解禁条件裁定 | 淮政玮 | 同上派单说明 **优先级 3**。**done 2026-11-09**：维持只贴 ODS、禁洗项目 DWD、解禁占位待李伟/架构书面，见 [GDF-INDANA-SCOPE-v1](../../../data/GDF/派单包/行业分析/GDF-INDANA-SCOPE-v1/)（非 Mapping 包） | 裁定门槛已满足。**不代替 06-06 跑通**；解禁前不开 `GDF-INDANA-WORKPACK` |
 
 ### 2.3 政策
 
@@ -350,7 +350,7 @@ graph TD
 - 企业 v1–v3、产业链 v1、政策 v1 **不施工**。
 - 行业分析六表本期 **禁止洗进项目 DWD**；产业资讯禁业务使用未解除则 **不上屏**。
 - 06-03B～M 各子叶均 **不代替** 06-03 跑通；03K/03L 不打开 03G。
-- 06-04B/05B 只成包，不代替 06-04/05 跑通；06-06B 只裁定。
+- 06-04/05/06 **完成门槛一律含跑通叶关单**：成包（或裁定）绿 + DDL 绿（INDANA 无项目 DWD DDL）+ `SYSINT-06-04/05/06` 跑通。06-04B/05B/06B 只满足前半，**不代替**跑通。
 - 06-21 系分析/成包/中台缺项，**不代替** 06-15 跑通。
 - GDF 产品迭代未填目标不列叶（**例外**：06-19 / 06-20 点名映射落地）。
 

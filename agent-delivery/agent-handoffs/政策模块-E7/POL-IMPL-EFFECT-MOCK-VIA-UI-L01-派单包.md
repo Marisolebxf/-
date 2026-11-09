@@ -35,12 +35,18 @@ Mock 原则（硬）：
 5. 双仓：demo-algo-ent-analysis 与 lumen-algo-py/vendor/entan-py 同逻辑对齐
 6. 证据：两入口调用前后 SQL COUNT；handoff 写 agent-delivery/agent-handoffs/政策模块-E7/POL-IMPL-EFFECT-MOCK-VIA-UI-L01.md
 7. 完工：task-update-fields + status→ready_to_sign（tech_task）；cost 四字段
+8. **系统详细设计（监管人 2026-11-09 追加）**：对应章节已起稿于
+   `agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.6.2-深圳政策现状分析.md` §3 / §3.1
+   （落地实效读 gapfill + Mock10/补外围双入口）。data-agent 须核对 as-built 与 §3.1 一致；
+   若实现偏离，修订 §3.1 并同步 `data/data-design/storage/POLICY/stores/README.md` 中该表「写入口」句。
+   禁止另起与双入口无关的旁路灌数文档当详设。
 
 DoD：见 task-registry POL-IMPL-EFFECT-MOCK-VIA-UI-L01
 参考：
 - polan/mockgen/effect_gapfill.py、synth.py（_insert_effects / run / run_real）
 - TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-SYNTH.md
 - metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md
+- 05.6.2-深圳政策现状分析.md §3.1
 ```
 
 ## 边界
