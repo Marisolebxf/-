@@ -33,6 +33,35 @@ No Plugin ID, Plugin Secret or user_key is required. Authentication belongs to t
 4. If the result is empty, report that there are currently no active bugs and stop. Do not invent bugs from unrelated projects.
 5. If several bugs are returned, inspect their `P0/P1` priority and update time. Process one bug unless the user explicitly asks for all.
 
+## Human-readable work item references
+
+Feishu Project users normally see the work item title and `auto_number`, not the long internal `work_item_id`. In conversation, comments, and status updates, always identify a bug in this order:
+
+`【auto_number】work_item_name（内部ID: work_item_id）`
+
+Examples:
+
+- `【2193】政策时序分析结果，政策数据自动关联，状态字段缺数据（内部ID: 7163475598）`
+- If `auto_number` is unavailable: `政策时序分析结果，政策数据自动关联，状态字段缺数据（内部ID: 7163475598）`
+
+Never use a bare long numeric ID as the only identifier. The long ID is allowed only inside parentheses for tooling and audit traceability.
+
+## Claim the work item first (mandatory multi-session lock)
+
+Do this immediately after selecting the bug, **before downloading images, inspecting code, writing DB, or creating a branch**. Do not wait until after diagnosis or commit.
+
+1. Read the current status and call `get_transitable_states` for the work item.
+2. If the status is `OPEN` or `REOPEN` and `IN PROGRESS` is available:
+   - Call `get_transition_required` for `IN PROGRESS` and satisfy required fields.
+   - Call `transition_state` to `IN PROGRESS` immediately.
+   - Call `add_comment` with an `[agent-claim]` marker containing the human-readable `【auto_number】title` reference, a unique claim id/session id, timestamp, scope, and "other sessions do not duplicate".
+3. If the status is already `IN PROGRESS`:
+   - Inspect `current_status_operator` and the latest comments.
+   - Treat it as locked by another active run. Do not edit code or data and do not change status.
+   - Stop and report the operator/claim unless the user explicitly asks you to take over or supplies a handoff.
+4. If no valid `IN PROGRESS` transition exists, stop and report the blocker.
+5. Keep the item `IN PROGRESS` until merge, deployment, and required human verification are complete. Only then move it to `RESOLVED`.
+
 ## Building complete context
 
 For the selected work item:
@@ -40,6 +69,7 @@ For the selected work item:
 1. Call `get_workitem_brief` with `fields=["_all"]` and a page size of at least 200.
 2. Extract from `work_item_fields` at minimum:
    - `description`
+   - `auto_number`
    - `priority`
    - `issue_stage`
    - `field_7156a0` (业务类型/子系统)
@@ -84,7 +114,9 @@ Rules:
 
 ### Status
 
-Before changing status:
+Status is the multi-session lock. Claim `IN PROGRESS` at the start using the mandatory section above; do not defer it until after diagnosis, code changes, or push.
+
+Before every status change:
 
 1. Call `get_transitable_states` for the work item.
 2. Use only a transition returned by that tool.
@@ -97,6 +129,7 @@ Use existing states such as `IN PROGRESS` or `RESOLVED`. Do not invent an `AI_PE
 
 Call `add_comment` with a concise Markdown summary:
 
+- human-readable `【auto_number】title` reference
 - root cause
 - modules/files changed
 - branch and MR URL
