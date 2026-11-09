@@ -205,7 +205,7 @@ graph TD
 | WBS-06-04 · `SYSINT-06-04-L01` | 金融数据 ⚠：① Mapping + ② ADS | 淮政玮 | 附件一 §2.2。**无包**。现 DoD：**本任务不新编包** → 成包见 **06-04B** | 无包则①②皆空。32 表以 live `gkx` 为准 |
 | WBS-06-04B · `GDF-FIN-WORKPACK-L01` | └ 成包 `GDF-FIN-WORKPACK-v1` | 淮政玮 | [派单说明·红标成包](./派单说明-市场研究红标成包-20261109.md) **优先级 2**。不塞进 06-04。**claimed 2026-11-09；首版包已落盘 [金融数据/GDF-FIN-WORKPACK-v1](../../../data/GDF/派单包/金融数据/GDF-FIN-WORKPACK-v1/)（2026-11-09）** | 首版包落盘并入索引。含 ①物理表 31 张（报告列 32 行，`dwd_corp_basic_info` 重复；v1 洗 19 张 → 11 张 `fin_*`，P2 与 0 行只贴）+ ②金融 ADS 草稿 4 张。DDL 草稿未签收。不是可对端 |
 | WBS-06-05 · `SYSINT-06-05-L01` | 宏观行业 ⚠：① Mapping + ② ADS/可选实效代理 | 淮政玮 | 附件一 §2.2。无包。成包见 **06-05B** | ②a 城市截面 ADS；②b 落地实效结果面代理须改算法+会签，**不得** silent 写正本三维（无 `policy_id`） |
-| WBS-06-05B · `GDF-MACRO-WORKPACK-L01` | └ 成包 `GDF-MACRO-WORKPACK-v1` | 淮政玮 | 同上派单说明 **优先级 1（P0）**。不代替 06-05。**claimed 2026-11-09** | 六表 ① + ②a/②b 说明落盘。不是可对端 |
+| WBS-06-05B · `GDF-MACRO-WORKPACK-L01` | └ 成包 `GDF-MACRO-WORKPACK-v1` | 淮政玮 | 同上派单说明 **优先级 1（P0）**。不代替 06-05。**claimed 2026-11-09；首版包已落盘 [宏观行业/GDF-MACRO-WORKPACK-v1](../../../data/GDF/派单包/宏观行业/GDF-MACRO-WORKPACK-v1/)（2026-11-09）** | 首版包落盘并入索引：六表 ① 贴源 + Mapping 到六张 `macro_*`（事实表带区划反解列，`area_code_type=1`）、②a 城市截面 ADS 草稿（`macro_city_section`）、②b 实效代理仅附录。DDL 草稿未执行，现网未核（OPEN-MACRO-05/06）。不是可对端 |
 | WBS-06-06 · `SYSINT-06-06-L01` | 行业分析 ⚠：现行只贴 ODS | 淮政玮 | `CHAIN-B2-INDANA` 禁洗项目 DWD。裁定见 **06-06B** | **①** 只贴；**②** 无 DWD 则无后加工。弱信号不作正本反馈 |
 | WBS-06-06B · `GDF-INDANA-SCOPE-L01` | └ 禁令确认 / 解禁条件裁定 | 淮政玮 | 同上派单说明 **优先级 3**。**裁定已落盘 2026-11-09**：维持只贴 ODS、禁洗项目 DWD、解禁占位待李伟/架构书面，见 [GDF-INDANA-SCOPE-v1](../../../data/GDF/派单包/行业分析/GDF-INDANA-SCOPE-v1/)（非 Mapping 包） | 书面：维持只贴，或解禁条件+是否另开 Mapping 包 |
 
