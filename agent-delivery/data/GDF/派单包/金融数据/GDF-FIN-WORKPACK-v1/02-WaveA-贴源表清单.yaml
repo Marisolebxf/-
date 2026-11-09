@@ -1,0 +1,83 @@
+# GDF-FIN Wave A 贴源表清单（金融要素库）
+# 由 script/gen_fin_pack.py 从 20261109 行数报告生成；手改请同步改脚本 CLASS。
+# 源：gkx.<表名> 只读 → 目标：gkxlumenx_ods.<同名>；结构以 live gkx 为准（00 §0.3）
+# mapping: wash=按 09 洗入 gkxlumenx_dwd | mirror_only=本期只贴源不洗
+# owner: FIN=本包配贴源作业 | ENT-v4=贴源与洗数归企业包（FIN 不重复建作业）
+
+version: GDF-FIN-WORKPACK-v1.0
+updated: "2026-11-09"
+source_authority: third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261109-1026.MD
+mapping_authority: 09-金融域-ETL-Mapping明细-源表到DWD.md
+source_db: gkx
+target_db: gkxlumenx_ods
+mirror_mode: isomorphic
+default_filter: "is_deleted = 0"
+priority_status: team_default
+
+exclude:
+  - { pattern: "ods_*", reason: 供应方不暴露 }
+  - { pattern: "*_bak_*", reason: "供应方备份副本（如 dwd_main_business_composition_*_bak_20260911），不贴不洗" }
+
+groups:
+  - id: fin_master
+    title: P0 主数据 / 产业基金 / 债券（v1 洗）
+    source_sheet: 金融要素库
+    tables:
+      - { name: dwd_corp_basic_info, priority: P0, cn: "上市公司(含沪深港股美股)基本资料", mapping: wash, owner: FIN, rows_20261109: 20000, note: "→ 见 09 §3；live 行数 20,000（20261109）" }
+      - { name: dwd_sec_basic_info, priority: P0, cn: "证券基本资料", mapping: wash, owner: FIN, rows_20261109: 1242959, note: "→ 见 09 §3；live 行数 1,242,959（20261109）" }
+      - { name: dwd_industrial_fund_basic_info, priority: P0, cn: "产业基金基本信息", mapping: wash, owner: FIN, rows_20261109: 10891, note: "→ 见 09 §3；live 行数 10,891（20261109）" }
+      - { name: dwd_industrial_fund_management_institution, priority: P0, cn: "产业基金管理机构", mapping: wash, owner: FIN, rows_20261109: 10943, note: "→ 见 09 §3；live 行数 10,943（20261109）" }
+      - { name: dwd_industrial_fund_lp_info, priority: P0, cn: "产业基金LP信息", mapping: wash, owner: FIN, rows_20261109: 20000, note: "→ 见 09 §3；live 行数 20,000（20261109）" }
+      - { name: dwd_industrial_fund_investment_strategy, priority: P0, cn: "产业基金投资策略", mapping: wash, owner: FIN, rows_20261109: 10891, note: "→ 见 09 §3；live 行数 10,891（20261109）" }
+      - { name: dwd_industrial_fund_investment_project_info, priority: P0, cn: "产业基金投资项目信息", mapping: wash, owner: FIN, rows_20261109: 10891, note: "→ 见 09 §3；live 行数 10,891（20261109）" }
+      - { name: dwd_sci_tech_inno_bonds, priority: P0, cn: "科创债债券信息", mapping: wash, owner: FIN, rows_20261109: 3894, note: "→ 见 09 §3；live 行数 3,894（20261109）" }
+      - { name: dwd_high_tech_industry_bonds, priority: P0, cn: "高新技术产业债债券信息", mapping: wash, owner: FIN, rows_20261109: 72, note: "→ 见 09 §3；live 行数 72（20261109）" }
+
+  - id: fin_p1
+    title: P1 行业分类 / 主营构成 / 估值（v1 洗）
+    source_sheet: 金融要素库
+    tables:
+      - { name: dwd_corp_his_sw_ic, priority: P1, cn: "中国股票(含新三板科创板)申万行业分类全量表", mapping: wash, owner: FIN, rows_20261109: 78034, note: "→ 见 09 §3；live 行数 78,034（20261109）" }
+      - { name: dwd_corp_his_crsc_ic, priority: P1, cn: "中国股票(含新三板科创板)证监会行业分类全量表", mapping: wash, owner: FIN, rows_20261109: 32472, note: "→ 见 09 §3；live 行数 32,472（20261109）" }
+      - { name: dwd_corp_his_citic_ic, priority: P1, cn: "中国股票(含新三板科创板)中信行业分类全量表", mapping: wash, owner: FIN, rows_20261109: 26367, note: "→ 见 09 §3；live 行数 26,367（20261109）" }
+      - { name: dwd_hk_corp_his_sw_ic, priority: P1, cn: "香港股票申万行业分类表", mapping: wash, owner: FIN, rows_20261109: 2849, note: "→ 见 09 §3；live 行数 2,849（20261109）" }
+      - { name: dwd_main_business_composition_industry, priority: P1, cn: "沪深上市企业主营业务构成_按行业分", mapping: wash, owner: FIN, rows_20261109: 295641, note: "→ 见 09 §3；live 行数 295,641（20261109）" }
+      - { name: dwd_main_business_composition_prod, priority: P1, cn: "沪深上市企业主营业务构成_按产品分", mapping: wash, owner: FIN, rows_20261109: 610840, note: "→ 见 09 §3；live 行数 610,840（20261109）" }
+      - { name: dwd_main_business_composition_area, priority: P1, cn: "沪深上市企业主营业务构成_按地区分", mapping: wash, owner: FIN, rows_20261109: 464011, note: "→ 见 09 §3；live 行数 464,011（20261109）" }
+      - { name: dwd_astock_val_indicators, priority: P1, cn: "中国股票(含新三板科创板)估值指标", mapping: wash, owner: FIN, rows_20261109: 3221732, note: "→ 见 09 §3；live 行数 3,221,732（20261109）" }
+      - { name: dwd_hk_stock_val_indicators, priority: P1, cn: "香港股票估值指标", mapping: wash, owner: FIN, rows_20261109: 39910, note: "→ 见 09 §3；live 行数 39,910（20261109）" }
+      - { name: dwd_us_stock_val_ind, priority: P1, cn: "美股估值指标表", mapping: wash, owner: FIN, rows_20261109: 1749, note: "→ 见 09 §3；live 行数 1,749（20261109）" }
+
+  - id: fin_p2
+    title: P2 日行情 / 期权 / 外汇（v1 只贴不洗，v1.1 另议）
+    source_sheet: 金融要素库
+    tables:
+      - { name: dwd_ls_stock_daily_quotation, priority: P2, cn: "中国股票(含新三板科创板)日收盘行情", mapping: mirror_only, owner: FIN, rows_20261109: 4420724, note: "v1 只贴不洗；live 行数 4,420,724（大表，贴源策略见 04 §3）" }
+      - { name: dwd_hk_sec_daily_quotation, priority: P2, cn: "港股日收盘行情", mapping: mirror_only, owner: FIN, rows_20261109: 786781, note: "v1 只贴不洗；live 行数 786,781（大表，贴源策略见 04 §3）" }
+      - { name: dwd_us_sec_daily_quotation, priority: P2, cn: "美股日收盘行情", mapping: mirror_only, owner: FIN, rows_20261109: 1194, note: "v1 只贴不洗；live 行数 1,194" }
+      - { name: dwd_option_daily_quotation, priority: P2, cn: "期权成交每日行情", mapping: mirror_only, owner: FIN, rows_20261109: 20000, note: "v1 只贴不洗；live 行数 20,000" }
+      - { name: dwd_option_basic_info, priority: P2, cn: "期权基本信息", mapping: mirror_only, owner: FIN, rows_20261109: 76, note: "v1 只贴不洗；live 行数 76" }
+      - { name: dwd_foreign_exchange_info, priority: P2, cn: "外汇数据", mapping: mirror_only, owner: FIN, rows_20261109: 19993, note: "v1 只贴不洗；live 行数 19,993" }
+
+  - id: fin_zero
+    title: 公募基金三表（live 0 行，只贴；供应方补数前不洗）
+    source_sheet: 金融要素库
+    tables:
+      - { name: dwd_fund_basic_info, priority: P2, cn: "公募基金基本信息", mapping: mirror_only, owner: FIN, rows_20261109: 0, note: "live 0 行（20261109）；供应方补数前不洗，贴源后回报行数" }
+      - { name: dwd_fund_equity_sector_allocation, priority: P2, cn: "公募基金投资股票分行业情况（资金流向）", mapping: mirror_only, owner: FIN, rows_20261109: 0, note: "live 0 行（20261109）；供应方补数前不洗，贴源后回报行数" }
+      - { name: dwd_fund_bond_allocation, priority: P2, cn: "公募基金投资债券品种情况", mapping: mirror_only, owner: FIN, rows_20261109: 0, note: "live 0 行（20261109）；供应方补数前不洗，贴源后回报行数" }
+
+  - id: fin_shared_ent
+    title: 与企业包重叠三表（贴源与洗数归 ENT-v4）
+    source_sheet: 金融要素库
+    tables:
+      - { name: dwd_org_financing_info, priority: P0, cn: "融资事件", mapping: wash, owner: ENT-v4, rows_20261109: 25654, note: "ENT-v4 P0 wash → enterprise_financing；FIN 不重复配贴源作业，只读 ENT DWD；live 行数 25,654" }
+      - { name: dwd_org_invest_info, priority: P0, cn: "投资事件", mapping: wash, owner: ENT-v4, rows_20261109: 46967, note: "ENT-v4 P0 wash → enterprise_invest；FIN 不重复配贴源作业，只读 ENT DWD；live 行数 46,967" }
+      - { name: dwd_org_merger_acquisition_info, priority: P2, cn: "并购事件", mapping: mirror_only, owner: ENT-v4, rows_20261109: 3444, note: "ENT-v4 P2 mirror_only（Q-WP3-21 只贴不洗）；FIN 沿用，不洗；live 行数 3,444" }
+
+summary:
+  physical_tables: 31   # 行数报告列 32 行，dwd_corp_basic_info 在报告里出现两次（同一物理表）
+  fin_owned_wave_a: 28  # 本包配贴源作业；另 3 张归 ENT-v4
+  wash_v1: 19           # P0 9 + P1 10；→ 目标 DWD 11 张（09 §2）
+  mirror_only_v1: 9     # P2 6 + 公募基金 0 行 3
+  shared_with_ent: 3
