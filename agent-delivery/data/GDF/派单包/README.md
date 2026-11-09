@@ -12,6 +12,12 @@
 | [子学科产业关联/GDF-SUBFIELD-TOPIC-WORKPACK](子学科产业关联/GDF-SUBFIELD-TOPIC-WORKPACK/) | 子学科目录同步（本侧 `SUBFIELD_CATALOG`）+ 人工触发后把未映射子学科关联到本侧产业节点。落表 `gkxlumenx_dim.subfield_topic_map`。产业锚点只认库 `gkxlumen` 的 `gkxlumen_industry_anchor`。排在技术节点产业映射之后 | **首版**（2026-10-31 成包）· **2026-11-02 已对 GDF 发出** · 任务 `SYSINT-06-19-L01` · 监管人 **淮政玮** · in_progress · 未建作业，已执行建表 |
 | [服务机构/GDF-SVC-WORKPACK](服务机构/GDF-SVC-WORKPACK/) | GDF 配一趟后加工：读供应方四张 `dwd_org_*`，写圈定池、投融资事件、卡面和基础指标 A1–A6。文件按 `00`/`06`/`08`/`09`/`12`/`15` 拆开，无贴源清单。不写图库，不含内容运营 | **首版**（2026-11-02）· **2026-11-02 已签收** · 发出日期未记 · 任务 `SYSINT-06-21-01-L03` · 监管人 **淮政玮** · 未建作业，未执行建表，未灌数 · 不是可对端 |
 
+### 裁定 / 只贴（非 Mapping 包，不可当作业投递）
+
+| 目录 | 范围 | 版本 |
+| --- | --- | --- |
+| [行业分析/GDF-INDANA-SCOPE-v1](行业分析/GDF-INDANA-SCOPE-v1/) | **裁定，不是 Mapping 包**：行业分析六表现行**只贴 ODS**（施工入口仍是产业链 v2 Wave A），**禁止洗项目 DWD**（`CHAIN-B2-INDANA`）；`companies` 102 行禁用覆盖维；解禁条件占位，须李伟 / 架构书面；**不解禁不开 `GDF-INDANA-WORKPACK`** | **v1.0**（2026-11-09）· 任务 `GDF-INDANA-SCOPE-L01`（WBS-06-06B）· 市场研究红标第 3 |
+
 本索引每个维度只留现行包。历史包不在表内。
 
 正式产业锚点只在 Milvus 库 `gkxlumen`、集合 `gkxlumen_industry_anchor`。demo 的同名集合在库 `default`。写入只在产业链包 `12`。政策 C1、技术节点产业映射、子学科产业关联只读这一库。企业包、服务机构包不读写这个集合。

@@ -207,7 +207,7 @@ graph TD
 | WBS-06-05 · `SYSINT-06-05-L01` | 宏观行业 ⚠：① Mapping + ② ADS/可选实效代理 | 淮政玮 | 附件一 §2.2。无包。成包见 **06-05B** | ②a 城市截面 ADS；②b 落地实效结果面代理须改算法+会签，**不得** silent 写正本三维（无 `policy_id`） |
 | WBS-06-05B · `GDF-MACRO-WORKPACK-L01` | └ 成包 `GDF-MACRO-WORKPACK-v1` | 淮政玮 | 同上派单说明 **优先级 1（P0）**。不代替 06-05。**claimed 2026-11-09** | 六表 ① + ②a/②b 说明落盘。不是可对端 |
 | WBS-06-06 · `SYSINT-06-06-L01` | 行业分析 ⚠：现行只贴 ODS | 淮政玮 | `CHAIN-B2-INDANA` 禁洗项目 DWD。裁定见 **06-06B** | **①** 只贴；**②** 无 DWD 则无后加工。弱信号不作正本反馈 |
-| WBS-06-06B · `GDF-INDANA-SCOPE-L01` | └ 禁令确认 / 解禁条件裁定 | 淮政玮 | 同上派单说明 **优先级 3**。**claimed 2026-11-09** | 书面：维持只贴，或解禁条件+是否另开 Mapping 包 |
+| WBS-06-06B · `GDF-INDANA-SCOPE-L01` | └ 禁令确认 / 解禁条件裁定 | 淮政玮 | 同上派单说明 **优先级 3**。**裁定已落盘 2026-11-09**：维持只贴 ODS、禁洗项目 DWD、解禁占位待李伟/架构书面，见 [GDF-INDANA-SCOPE-v1](../../../data/GDF/派单包/行业分析/GDF-INDANA-SCOPE-v1/)（非 Mapping 包） | 书面：维持只贴，或解禁条件+是否另开 Mapping 包 |
 
 ### 2.3 政策
 
