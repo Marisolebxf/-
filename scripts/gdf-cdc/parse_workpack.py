@@ -633,8 +633,9 @@ def assemble_wave_b(mapping: dict, wave_a: list[dict]) -> tuple[list[dict], list
             if "待三方确认" in (item.get("logic") or ""):
                 warnings.append(f"{dwd}.{item['tgt_field']}: 单位待三方确认，未自动 /10000")
             m_open = re.search(r"OPEN-FIN-\d+", item.get("logic") or "")
-            if m_open and "单位" in (item.get("logic") or "") and f"{dwd}.{item['tgt_field']}" not in " ".join(warnings):
-                warnings.append(f"{dwd}.{item['tgt_field']}: 单位待确认（{m_open.group(0)}），原样不换算")
+            lg = item.get("logic") or ""
+            if "单位" in lg and (m_open or "单位同上" in lg) and not any(w.startswith(f"{dwd}.{item['tgt_field']}:") for w in warnings):
+                warnings.append(f"{dwd}.{item['tgt_field']}: 单位待确认（OPEN-FIN-03），原样不换算")
             if item["tgt_field"] == "registered_capital" and "/ 10000" not in item["expr"]:
                 item["expr"] = f"{item['alias']}.{item['src_field']} / 10000.0"
                 warnings.append(f"{dwd}.registered_capital: 已强制 /10000.0（H2）")
@@ -710,7 +711,9 @@ def main() -> None:
     mapping = parse_mapping(files["mapping"])  # type: ignore[arg-type]
     wave_b, map_warn = assemble_wave_b(mapping, wave_a)
     warnings = extra_warnings(wave_a, mapping, status) + map_warn
+    warnings += [f"{t['name']}: owner={t['owner']}，贴源/洗数归他包，本包 CDC 不含" for t in shared]
     inv = {
+        "shared_elsewhere": [t["name"] for t in shared],
         "workpack": str(root),
         "status": status,
         "files": {k: str(v) if v else None for k, v in files.items()},
@@ -722,4 +725,18 @@ def main() -> None:
         "skip_src": mapping["overview"]["skip"],
         "warnings": warnings,
         "counts": {
-            "wave_a": len(wave
+            "wave_a": len(wave_a),
+            "wave_b": len(wave_b),
+            "p0": sum(1 for t in wave_a if t["priority"] == "P0"),
+        },
+    }
+    text = json.dumps(inv, ensure_ascii=False, indent=2)
+    if args.out == "-":
+        print(text)
+    else:
+        Path(args.out).write_text(text, encoding="utf-8")
+        print(f"wrote {args.out} wave_a={len(wave_a)} wave_b={len(wave_b)} warnings={len(warnings)}")
+
+
+if __name__ == "__main__":
+    main()
