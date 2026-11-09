@@ -56100,7 +56100,7 @@ tasks:
     lock_until: "2026-11-07T08:49:14.231Z"
     claimed_by: "agent:qa-agent"
     title: "效果预估演示实例反复验收"
-    status: "blocked"
+    status: "ready"
     agent: "qa-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -56111,7 +56111,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 50000
     user_story: "US-DS-POL-06"
-    note: "token 失效，已通知 human:淮政玮"
+    note: "2026-11-09 探测 200。233–236 与用例一致。232 覆盖不到，已建 POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA。验收单留 ready，不签 done。"
     depends_on:
       - "POL-L2-DS12-EST-API"
       - "POL-L2-DS12-EST-DATA"
@@ -56132,7 +56132,7 @@ tasks:
       - "对不上时只写建议，不改库、不改代码。缺行、空列、字符串不一致写数据补充建议，写明表、row_kind、业务键和应补列值。行在且键一致，但过滤或计算给不出用例右列，写算法或查询修改建议，写明种类、字段和差异。401 或 404 只记环境阻塞，不据此建议改算法或补数。"
       - "同一 handoff 追加一节「运行 YYYY-MM-DD」，不覆盖上一轮。不改测试用例里已写下的实际结果，不把 POL-L2-DS12-EST-TEST-L01 标完成。"
       - "本单可反复执行。一轮报告写完后，由当次监管人把状态退回 ready，不签 done。下一轮再认领。"
-    update_time: "2026-11-08T03:41:09+08:00"
+    update_time: "2026-11-09T14:45:32+08:00"
   - id: LUMEN-INTEL-REPORT-REAL-L01
     cost_warn: "green"
     model_used: "grok-4.7"
@@ -61529,3 +61529,47 @@ tasks:
       - "跑 check_gdf_ddl.py --task GDF-FIN-WORKPACK-L01：文件一致须绿。"
       - "handoff 含自检原文。"
     update_time: "2026-11-09T14:21:38+08:00"
+  - id: POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA
+    title: "效果预估232未出台仿真挂进两个Mock入口"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "DoD 里「掣到」即拣到。验收轮不改库。造数只走算法中台「Mock 10 条数据」与「真实政策补外围」两个入口。"
+    touched_files:
+      - "polan/mockgen/synth.py"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-DS12-EST-合规演示用例.md"
+      - "repos/demo-algo-ent-analysis/polan/mockgen/synth.py"
+    definition_of_done:
+      - "缺口键 gapfill_policy_sim_forecast.未出台仿真.知识产权|广东省高新技术企业|每人每年30万元|2026年至2028年。2026-11-09 jobs 该请求 HTTP 200 且 records 为空。合规演示用例 232 为覆盖不到，不预写经济效益句。"
+      - "造数只能走算法中台已有两个入口，与政策分析算法库页一致：「Mock 10 条数据」走 synth.run（POST /v1/policy/mock/synth）；「真实政策补外围：深圳 40 + 随机 10」走 synth.run_real（POST /v1/policy/mock/periphery）。两入口都经过 _derive，本单把 232 这组未出台仿真行挂进这一步，任一入口跑完后同一请求能掣到一行。"
+      - "只写 gkxlumenx_gapfill.gapfill_policy_sim_forecast。禁止另写第三套手插脚本，禁止固态电池入口，禁止写 ODS、正式 DWD、ADS 和供应方库。"
+      - "双仓同逻辑：demo-algo-ent-analysis 与 lumen-algo-py/vendor/entan-py 的 polan/mockgen/synth.py。不改前端，不改 Java 过滤，不改合规演示用例的期望句。"
+      - "handoff 写 agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA.md，含两入口调用前后该请求的 records 条数。经济效益以入口实际写出的为准。"
+    update_time: "2026-11-09T14:45:49+08:00"
+  - id: DEVOPS-SONARQUBE-CI-L02-FIX
+    title: "Sonar 20仓首扫纠错：bridge java.binaries / Soft QG / 卡死流水线"
+    status: "backlog"
+    agent: "devops-agent"
+    epic: "E-PLATFORM"
+    priority: "P1"
+    repo: "spring-boot-bridge"
+    delivery_phase: "crosscut"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "L01 ready_to_sign 期间并行纠错，不挂 depends_on。审计：bridge CI fail；QG ERROR=默认门禁；FE pending 排队。已派 3 子 agent。强度：ponytail full。"
+    definition_of_done:
+      - "spring-boot-bridge sonar:scan success 且 Sonar 有 analysisDate"
+      - "20 个 gkxlumen-*/gkxdemo-* 绑定 GKX-Soft Quality Gate（或等价软门禁）"
+      - "demo-ui-science / demo-ui-topic / demo-svc-platform 至少完成一次成功 sonar 分析或说明阻塞原因"
+      - "handoff 写入 agent-handoffs"
+    update_time: "2026-11-09T14:49:01+08:00"

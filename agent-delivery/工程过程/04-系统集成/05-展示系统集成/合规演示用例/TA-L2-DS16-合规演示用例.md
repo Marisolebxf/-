@@ -39,7 +39,7 @@
 | 324 | 尽调 Tab · 多维综合评价与评分 | 评分维度（权威度 / 创新性 / 项目经验 / 社会影响）；评分雷达 | 打开推荐卡 / 切评分维度 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 展示能力综合分（`aiScore`，口径 `ta_recommend_self_v1`）与学科匹配分（`matchScore`）两项，分列且标注口径；未入推荐集的人才不显示评分 | ✅可演。8 名推荐人 aiScore（能力口径 ta_recommend_self_v1）与 matchScore（最佳问题学科匹配）双列真实（如李亚栋 99.0/76.0）；dimensions 五维中 project/social 无源为 0；未入推荐集不显示评分 |
 | 325 | 尽调 Tab · 定制化尽调报告生成 | 定制维度勾选；报告范围（单人或多人） | 点「生成报告」/ 导出 PDF | 无独立端点（前端打印页生成，数据源 `GET /display/v1/talent/recommend/dataset`） | 无查询参数 | PDF 报告含多源画像、AI 评分雷达、成果、履历、合作网络与风险六段；风险段无源时标注「无数据」而非「无风险」；维度勾选变化反映到报告章节 | ✅可演。无独立端点（前端打印页/PDF 落库链路 talent-dd-report，契约 v1.6 本地联调实测）；报告六段数据源真实（talents+recommendations）；风险段 risks 四类全 NO_DATA → 标注「无数据」而非「无风险」 |
 | 326 | 尽调 Tab · 专家智能推荐 | 学科方向；匹配方式（随评估目标联动）；匹配度阈值；关键词 | 选择条件 / 拖动阈值 / 关键词回车 | `GET /display/v1/talent/recommend/dataset` | 无查询参数；按 `recommendations` 前端过滤 | 推荐卡网格按匹配度降序，条数 = 阈值内命中数（目录上限为 15 人内 Top8）；每卡显示匹配理由；低于阈值不展示；无命中显示空态文案 | ✅可演。recommendations 8 条按 matchScore 降序真实在册；matchReasons 真实（最佳问题匹配+能力总分，产业力理由 6/15 人有分）；阈值过滤前端完成，低于阈值不展示、无命中空态 |
-| 327 | 尽调 Tab · 动态跟踪与更新 | 刷新按钮；时间戳 | 点刷新 | `GET /display/v1/talent/recommend/dataset?force=1` | `force=1` 强制重取（穿透 dataset 缓存与久新 SQL 缓存） | 推荐卡与画像的更新时间戳刷新；后端无实时推送时标注「页面重取」，不虚构新成果或新履历 | ⚠ **待发布复核**。recommendations[].updatedAt=2026-11-06 真实；**R1 复核发现原页面刷新只自增 tick + 弹成功提示、未真正取数（假刷新）**；已接线 `force=true` 重取（前端 `fetchTalentRecommendDataset({force:true})` → BFF `?force=1` → Python 双缓存穿透），三绿通过，待发布后点刷新验证时间戳变化方可判 ✅ |
+| 327 | 尽调 Tab · 动态跟踪与更新 | 刷新按钮；时间戳 | 点刷新 | `GET /display/v1/talent/recommend/dataset?force=1` | `force=1` 强制重取（穿透 dataset 缓存与久新 SQL 缓存） | 推荐卡与画像的更新时间戳刷新；后端无实时推送时标注「页面重取」，不虚构新成果或新履历 | ✅可演（2026-11-09 发布后实测）。`force=1` 全链路已上线：不带 force 的普通请求命中整页缓存 **2.4s**，带 force **32.5–38.3s** → 双缓存穿透成立；真机点「动态跟踪与更新」实测请求 `/talent/recommend/dataset?force=1` → **200 / 32.5s**，按钮期间 loading，成功提示带 `recommendations[].updatedAt`。R1 的「假刷新」判定撤销。**操作前提**：浏览器旧 JS chunk 会让按钮退化为不带 force 的请求，现场演示前须强刷（Ctrl+Shift+R） |
 | 328 | 尽调 Tab · 风险与合规性评估 | 风险类型（合作风险 / 学术诚信 / 成果有效性 / IP） | 打开风险区 / 切换风险类型 | `GET /display/v1/talent/recommend/dataset` | 无查询参数；取 `risks` | 四类风险分别展示评估结果与依据；`risks` 无源时该区显示空态并注明「无风险数据」，绝不显示「无风险」结论 | ✅可演（空态演示）。recommendations[].risks 四类（cooperation/integrity/validity/ip）全 NO_DATA、riskLevel=NO_DATA → 风险区空态注明「无风险数据」，绝不显示「无风险」结论 |
 | 329 | 尽调 Tab · 团队组合与协同分析 | 对比对象（2 人及以上）；并行尽调队列；团队分析入口 | 点「对比」/ 打开并行队列 | `GET /display/v1/talent/recommend/dataset` | 无查询参数 | 展示协同度评分、学科覆盖缺口、角色互补与两两协同表；团队协同模型未建时显示空态，禁用合作网络边密度顶替协同度 | ✅可演（空态演示）。团队协同模型未建（RECRUIT_025 无源）；前端 teamSynergy 红问号锚点已在（TalentComparePanel），协同度空态，禁用合作网络边密度顶替 |
 
@@ -56,6 +56,13 @@
 | blocked 待开发完成 | 0 | — |
 
 合计 25 行，全部对上（2026-11-08 升档：313 随 network nodes+links 修复由 ⚠️ 升 ✅，后端 `df225ed` + pipeline 4308 全绿实测 13 节点/12 边；2026-11-09 升档：312 随机构列修复由 ⚠️ 升 ✅，后端 `ef1004b` + edu 网关实测机构 138/180 实名 + 前端 `fe497a8` 浏览器实测表格 PASS）。难度 / 成本两 Tab 按 M1 备注 3「结构保留 + 空态」501 档语义演示：控件与面板保留、结果区空态、红问号锚点已在（前端 `recommendMetrics.ts` 的 `FACTOR_MISSING` / `RECOMMEND_MISSING_METRICS`）。
+
+**2026-11-09 327 复核（发布后实测，R1「假刷新」判定撤销）**
+
+- 接口侧（edu 网关，`GET /display/v1/talent/recommend/dataset`）：普通请求 **2.4s**（命中整页 TTL 缓存）vs `?force=1` **38.3s**（穿透 dataset + 久新 SQL 双层缓存）→ force 语义真实生效。
+- 页面侧（`/tid/talent/talent-introduction-evaluation` → 第 4 Tab「人才尽调报告与推荐」→「动态跟踪与更新」）：强刷后点击，实际请求 `/talent/recommend/dataset?force=1` → **200 / 32.5s**，按钮期间 disabled+loading，成功后由父级回填并提示画像时间。
+- 首轮未强刷时实测请求**不带** force=1（旧 JS chunk）→ 现场演示前置条件：强刷一次或确认 `index.html` 不缓存。
+- 判定维持 25 行 **23 可演 / 2 部分 / 0 覆盖不到**；327 由「⚠ 待发布复核」转 **✅**（下方汇总表此前已将其计入可演，本次补齐发布后判定依据）。
 
 **实测要点**：
 - 真实：15 名 MVP 人才全档（教育/履历/近作 5 篇/荣誉/合作网络 13 节点含真实合作次数）；recommendations 双分口径真实（aiScore 能力 `ta_recommend_self_v1`、matchScore 学科匹配，updatedAt=2026-11-06）；contributionScores 论文/影响/网络分真实、trend 2015–2025 真实活跃指数、sources 计数真实。
