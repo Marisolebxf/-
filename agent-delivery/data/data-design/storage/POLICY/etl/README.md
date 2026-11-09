@@ -6,13 +6,13 @@ doc_id: POLICY-ETL-INDEX
 element: POLICY
 role: etl
 status: draft
-version: "2026-08-31"
-updated: 2026-08-31
+version: "2026-11-09"
+updated: 2026-11-09
 task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 ---
 ```
 
-> 本目录只写**写入路径**；表结构在 [`../stores/`](../stores/README.md)，贴源结构在 [`../sources/ods-ddl.md`](../sources/ods-ddl.md)。
+> 本目录只写**写入路径**；表结构在 [`../stores/`](../stores/README.md)（缺项见 [`../stores/mysql/gapfill.md`](../stores/mysql/gapfill.md)），贴源结构在 [`../sources/ods-ddl.md`](../sources/ods-ddl.md)。
 > `status` 三态：`as-built` = 已施工并可回源代码；`draft` = 设计在、施工未起；`not-built` = **明确不做**（占位说明，别当待办）。
 
 | 管道 | 文档 | 状态 |
@@ -21,6 +21,8 @@ task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 | ODS → DWD | [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md) | **as-built** · `polan/mockgen/{generate,incr}.py` |
 | ODS→DWD 字段矩阵 | [`ods-to-dwd-mapping.md`](./ods-to-dwd-mapping.md) | draft · 列对照真源 |
 | Demo 贴源 Mock 全景 | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **as-built** · `run_all_policy` 15 步灌数总图（正式 GDF 虚线） |
+| 算法库 Mock → gapfill | [`pipeline-algo-mock-gapfill.md`](./pipeline-algo-mock-gapfill.md) | **as-built** · Mock10 + 补外围写 `gapfill_policy_sz_effect`（D16；不进 ODS/DWD/ADS） |
+| 落地实效宏观结果面代理（只读 gkx → 算法内存） | [`pipeline-macro-effect-proxy.md`](./pipeline-macro-effect-proxy.md) | draft · `POL-EFFECT-MACRO-DATA-L01`：白名单 `macro-eff-v1`（9 指标）+ 四城区划键 + 行业分析辅维；**不落库**，不写 ODS/DWD/ADS |
 | Demo 算子验收对照 | [`demo-operator-accept-matrix.md`](./demo-operator-accept-matrix.md) | **as-built** · 35 条算子 / 两套 UI / lumen 接手边界 |
 | DWD → ADS | [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) | **as-built** · `basic` / `graph` / `eval` / `text` 十二步 |
 | 抽取产业切块匹配 | [`industry-match-optimize.md`](./industry-match-optimize.md) | **as-built** · demo `polan/industry_enrich.py`；门槛待抽样 |

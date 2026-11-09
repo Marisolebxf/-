@@ -36,11 +36,14 @@ flowchart LR
 | GitLab | https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen |
 | Harbor | harbor.test.com/zp-tts |
 | Runner | tag=`gkx`，shell executor（10.50.69.111） |
+| SonarQube | http://10.50.180.228:9005（源码质量；**不替代** Trivy 镜像扫） |
 | K8s 集群 | 节点 `10.50.69.111`（`node01`）。API `https://apiserver.cluster.local:6443`（该机 hosts 指向 `10.103.97.2`，v1.28.15）。组变量 `KUBECONFIG_B64` 仍指向旧集群 `https://10.50.192.46:6443`，待 `L03-VARS` 更换 |
 | dev 命名空间 | `zhipu-tts` |
 | 前端 dev 访问 | http://10.50.69.111:30891（pc）、http://10.50.69.111:30892（topic）；原型 http://10.50.69.111:30887（demo-ui-science）、http://10.50.69.111:30888（demo-ui-topic） |
 
-组级 CI 变量（sz-gkx/gkx-lumen，组 id 74）：`HARBOR_PROJECT`=`zp-tts`、`HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`。仓内默认与切换目标 `HARBOR_REGISTRY`=`harbor.test.com`；GitLab 上的组变量仍是 `10.50.62.9:30303`，要等 `E-PLATFORM-P0-ENV-CUTOVER-L03-VARS` 再改。口令只在 GitLab，不进 git。
+组级 CI 变量（sz-gkx/gkx-lumen，组 id 74）：`HARBOR_PROJECT`=`zp-tts`、`HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`、`SONAR_HOST_URL`、`SONAR_TOKEN`（**Masked + Protected**）。仓内默认与切换目标 `HARBOR_REGISTRY`=`harbor.test.com`；GitLab 上的组变量仍是 `10.50.62.9:30303`，要等 `E-PLATFORM-P0-ENV-CUTOVER-L03-VARS` 再改。口令 / Token 只在 GitLab，不进 git。
+
+**Sonar 接入（DEVOPS-SONARQUBE-CI-L01）**：组内有 CI 的业务仓（全部 `lumen-*` / `demo-*` + `spring-boot-bridge`）在 `scan` stage 有 `sonar:scan`（`allow_failure: true`，与 trivy 同软门禁）。项目 key：lumen/bridge=`gkxlumen-*`，demo=`gkxdemo-*`。首版 Quality Gate=`GKX-Soft`（无条件软门，避免 coverage / new_violations 首版必挂）；首版用 Runner `$HOME/.cache/sonar-scanner` 缓存的 sonar-scanner-cli（linux-x64 自带 JRE）；相关仓 `dev` 已设为 protected branch，以便 Protected 变量注入。不含编排仓与 deletion_scheduled / gdzk 归档。
 
 ---
 

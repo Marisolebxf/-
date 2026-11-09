@@ -21,7 +21,7 @@ GDF派单中有明确的建表语句和相关注释，派单包任务执行时�
 - 政策 / 企业 / 产业（产业链）/ 服务机构任一 GDF 派单包任务签收
 - 用户点名 `gkx-gdf-ddl-signoff`，或要求按该 skill 复检 `GDF-*-WORKPACK-*`
 
-维度从任务 ID 取：`GDF-POLICY-` → `policy`，`GDF-ENT-` → `ent`，`GDF-CHAIN-` → `chain`，`GDF-SVC-` 或「服务机构」→ `svc`。服务机构现行包目录没有版本号。
+维度从任务 ID 取：`GDF-POLICY-` → `policy`，`GDF-ENT-` → `ent`，`GDF-CHAIN-` → `chain`，`GDF-SVC-` 或「服务机构」→ `svc`，`GDF-MACRO-` → `macro`，`GDF-FIN-` → `fin`。服务机构现行包目录没有版本号。
 
 ## 通过条件
 
@@ -38,14 +38,14 @@ GDF派单中有明确的建表语句和相关注释，派单包任务执行时�
 python .cursor/skills/gkx-gdf-ddl-signoff/scripts/check_gdf_ddl.py --task GDF-POLICY-WORKPACK-V2-L01
 ```
 
-`--dimension policy|ent|chain|svc` 可代替 `--task`。退出码 `0` 才是通过。
+`--dimension policy|ent|chain|svc|macro|fin` 可代替 `--task`。退出码 `0` 才是通过。
 
 业务库口令只从环境变量 `GKX_LUMEN_MYSQL_PASSWORD` 读（主机默认 `10.50.11.76`，用户默认 `gkxlumenx`）。不要把口令写进命令行、handoff 或聊天。
 
 ## 范围
 
-- 最新未作废派单包：`agent-delivery/data/GDF/派单包/{政策|企业|产业链}/GDF-*-WORKPACK-vN/`，以及 `派单包/服务机构/GDF-SVC-WORKPACK/`
-- 结构真源：`agent-delivery/data/data-design/storage/{POLICY|ENT|CHAIN|SVC}/stores/mysql/` 下的 `dwd.md`、`ads.md` 以及同目录 `dwd-*.md`
+- 最新未作废派单包：`agent-delivery/data/GDF/派单包/{政策|企业|产业链|宏观行业|金融数据}/GDF-*-WORKPACK-vN/`，以及 `派单包/服务机构/GDF-SVC-WORKPACK/`
+- 结构真源：`agent-delivery/data/data-design/storage/{POLICY|ENT|CHAIN|SVC|MACRO|FIN}/stores/mysql/` 下的 `dwd.md`、`ads.md` 以及同目录 `dwd-*.md`（MACRO/FIN 若目录尚不存在，自检必红，须先 OPEN 入仓）
 - demo 库：`demo_gkxlumenx_dwd`、`demo_gkxlumenx_ads`
 - lumen 库：`gkxlumenx_dwd`、`gkxlumenx_ads`
 

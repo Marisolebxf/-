@@ -1,0 +1,50 @@
+# GDF-MACRO Wave A 贴源表清单
+# 贴源结构真源：third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261109-1026.MD（宏观行业要素库六表；以 live gkx 为准，Excel 多出的 t_id 不作源）
+# Mapping 施工真源：本包 09-宏观行业域-ETL-Mapping明细-源表到DWD.md
+# 源：gkx.<表名> 只读 → 目标：gkxlumenx_ods.<同名表>
+# mapping: wash=按 09 洗入项目 DWD | mirror_only=本期只贴源不洗
+
+version: GDF-MACRO-WORKPACK-v1.0.0
+updated: "2026-11-09"
+priority: "市场研究红标第1（P0）"
+source_authority: "GKX数据源表及行数报告-20261109-1026.MD §宏观行业要素库"
+mapping_authority: 09-宏观行业域-ETL-Mapping明细-源表到DWD.md
+source_db: gkx
+target_db: gkxlumenx_ods
+mirror_mode: isomorphic
+default_filter: ""          # 取数无行过滤；is_deleted 原样进 ODS
+priority_status: team_default
+
+exclude:
+  - pattern: "ods_*"
+    reason: 供应方不暴露
+  - pattern: "dwd_industry_analysis_*"
+    reason: 行业分析六表另裁定（现行只贴 ODS 不洗 DWD），不在本包
+  - pattern: "dwd_fin_*"
+    reason: 金融数据另包
+
+groups:
+  - id: macro_fact
+    title: 宏观行业要素库-事实
+    source_sheet: 宏观行业要素库
+    tables:
+      - { name: dwd_macro_index_data, priority: P0, cn: 数据表, mapping: wash, extract_mode: incremental_by_updated_time, watermark: updated_time, rows_20261109: 20000, note: "→ macro_index_data；事实；Wave B 加区划反解派生列；20,000 行为供应方样本上限" }
+  - id: macro_dim
+    title: 宏观行业要素库-维度
+    source_sheet: 宏观行业要素库
+    tables:
+      - { name: dwd_dim_index_attribute, priority: P0, cn: 指标属性表, mapping: wash, extract_mode: full, rows_20261109: 867,   note: "→ macro_index_attribute；unit_use 恒为「元」（库存单位），不是行单位" }
+      - { name: dwd_dim_admin_area,      priority: P0, cn: 区划表,     mapping: wash, extract_mode: full, rows_20261109: 20000, note: "→ macro_admin_area；仅用于区划反解；四个政策城市在表内没有自己的 cur_code 行" }
+      - { name: dwd_dim_index_cal,       priority: P0, cn: 计算维度表, mapping: wash, extract_mode: full, rows_20261109: 3,     note: "→ macro_index_cal；HB / TB / JDZ" }
+      - { name: dwd_dim_index_dur,       priority: P0, cn: 时间维度表, mapping: wash, extract_mode: full, rows_20261109: 7,     note: "→ macro_index_dur；QM / DJ / DNLJ / DY / ZC / LSLJ / NC" }
+      - { name: dwd_dim_source_code,     priority: P0, cn: 数据来源表, mapping: wash, extract_mode: full, rows_20261109: 4,     note: "→ macro_source_code；GACC / worldbank / LBS / NATIONALSTAT" }
+
+summary:
+  total_tables: 6
+  note: |
+    六张均 P0 wash，各洗入 gkxlumenx_dwd 对应 macro_* 表（01 §2）。无 mirror_only 项。
+    取数无行过滤。is_deleted 原样进 ODS，再写入 DWD 同名列。应用读 DWD 时自行 is_deleted=0。
+    维度表体量小（3 / 7 / 4 / 867 / 20000），建议全量重灌；事实表首次全量，之后按 updated_time 增量。
+    供应方 Excel 多出的 t_id 在 live gkx 不存在，不作源、不建列。
+    禁止把 Demo ods_sync / demo_gkxlumenx_* 当本清单目标。
+    rows_20261109 为 2026-11-09 实测快照，不是验收固定值（见 05）。

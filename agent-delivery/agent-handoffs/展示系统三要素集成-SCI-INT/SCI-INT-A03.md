@@ -99,3 +99,7 @@ OK
 | model_used | claude-opus-5.5 |
 | actual_cost | 7.5 |
 | cost_warn | yellow（> $5，< $10，无需暂停） |
+
+---
+
+> **消费注记（2026-11-07，ENT-ARCH 会签 C3 补）**：本稿 write_back_design_draft 已被 `TS-L2-M10-ENT-ARCH` 采纳为 M10-ENT 正式架构（四角色会签+监管人签收构成事实评审）；结构项 DN-07/口径项 9 条 DN/OI 仍各走原决策路径，不因采纳视为已决。防双真源漂移：本稿草案段此后只追加不改写，变更走 ENT 四分册。

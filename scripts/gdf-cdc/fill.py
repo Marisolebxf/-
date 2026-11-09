@@ -127,7 +127,7 @@ def fill_wave_a(inv: dict, template: Path, out: Path, missing: set[str]) -> None
                 "F": "GKX_DB",
                 "G": "SRC_ENT",
                 "H": "全量",
-                "I": "is_deleted = 0",
+                "I": inv.get("default_filter", "is_deleted = 0") or None,
                 "J": "删表重建",
             },
         )
@@ -288,6 +288,59 @@ def map_row(j: int, expr: str, en: str, zh: str | None = None, typ: str = "VARCH
     return row
 
 
+def typed_row(j: int, expr: str, f: dict) -> dict:
+    """金融包：目标列类型来自 09（`varchar(255) NULL` / `decimal(20,4) NULL` / `bigint NOT NULL`）。"""
+    m = re.match(r"(\w+)\s*(?:\((\d+)(?:,(\d+))?\))?\s*(NOT NULL|NULL)?", f.get("type") or "")
+    typ, length, prec, nn = (m.groups() if m else ("VARCHAR", None, None, None))
+    row = map_row(j, expr, f["tgt_field"], None, typ.upper(), int(length) if length else None)
+    if prec:
+        row["T"] = int(prec)
+    row["U"] = "是" if f.get("pk") else "否"
+    row["V"] = "否" if nn == "NOT NULL" else "是"
+    return row
+
+
+def events_union(inv: dict, rec: dict) -> tuple[list[dict], list[dict]]:
+    """多源 UNION ALL：每源一个 IVi 临时视图（同构列）→ IVU 合并 → MainOutput。"""
+    sources = rec.get("sources") or []
+    fields = rec.get("fields") or []
+    cn = rec.get("cn") or rec["dwd_table"]
+    left: list[dict] = []
+    right: list[dict] = []
+    tgts: list[dict] = []
+    for f in fields:
+        if f["tgt_field"] not in [t["tgt_field"] for t in tgts]:
+            tgts.append(f)
+    for n, s in enumerate(sources, 1):
+        if n > 1:
+            right.append(COL_HEADER)
+        left += [SRC_HEADER, {
+            "A": f"T{n}", "B": "数据表", "C": "EDW_ODS", "D": f"#ODS_SCHEMA#.{s}", "E": src_cn(inv, s),
+        }, FIELD_HEADER]
+        if n == 1:
+            right.append(COL_HEADER)
+        right += [{
+            "K": f"T{n}", "O": f"IV{n}", "P": "临时视图", "Q": "否", "U": f"{src_cn(inv, s)}清洗",
+        }, MAP_HEADER]
+        by_tgt = {f["tgt_field"]: f for f in fields if f["src_table"] == s}
+        for j, t in enumerate(tgts, 1):
+            f = by_tgt.get(t["tgt_field"])
+            right.append(typed_row(j, str(f["expr"]) if f else "NULL", t))
+    union_sql = "\nUNION ALL\n".join(f"SELECT * FROM IV{n}" for n in range(1, len(sources) + 1))
+    right += [COL_HEADER, {
+        "K": union_sql, "O": "IVU", "P": "临时视图", "Q": "否", "U": f"{cn}合并",
+    }, MAP_HEADER]
+    for j, t in enumerate(tgts, 1):
+        right.append(typed_row(j, f"IVU.{t['tgt_field']}", t))
+    right += [COL_HEADER, {
+        "K": "IVU", "O": "MainOutput", "P": "输出表", "Q": "EDW_DWD",
+        "R": f"#DWD_SCHEMA#.{rec['dwd_table']}", "U": cn,
+    }, MAP_HEADER]
+    for j, t in enumerate(tgts, 1):
+        right.append(typed_row(j, f"IVU.{t['tgt_field']}", t))
+    return left, right
+
+
 def write_events(ws: Worksheet, left: list[dict], right: list[dict]) -> None:
     n = max(len(left), len(right))
     for i in range(n):
@@ -320,7 +373,7 @@ def events_direct(inv: dict, rec: dict) -> tuple[list[dict], list[dict]]:
     }, MAP_HEADER]
     for j, f in enumerate(rec.get("fields") or [], 1):
         expr = str(f.get("expr") or f"T1.{f.get('src_field')}").replace("yearTime", "year")
-        right.append(map_row(j, expr, f["tgt_field"]))
+        right.append(typed_row(j, expr, f) if f.get("type") else map_row(j, expr, f["tgt_field"]))
     for i, s in enumerate(sources[1:], 2):
         left += [SRC_HEADER, {
             "A": f"T{i}",
@@ -561,7 +614,7 @@ def fill_wave_b(inv: dict, template: Path, out: Path) -> None:
                 "A": i,
                 "B": f"#DWD_SCHEMA#.{dwd}",
                 "C": cn,
-                "D": "ENT",
+                "D": inv.get("subject", "ENT"),
                 "E": "删表重建",
                 "G": "正常插入",
                 "L": title,
@@ -571,7 +624,9 @@ def fill_wave_b(inv: dict, template: Path, out: Path) -> None:
         ws.title = title
         keep.add(title)
         pattern = rec.get("pattern") or "direct"
-        if pattern == "preagg" or dwd == "enterprise_risk_summary":
+        if pattern == "union":
+            left, right = events_union(inv, rec)
+        elif pattern == "preagg" or dwd == "enterprise_risk_summary":
             left, right = events_preagg(inv, rec)
         elif pattern == "finance_iv" or dwd == "enterprise_finance_history":
             left, right = events_finance(inv, rec)
@@ -582,7 +637,8 @@ def fill_wave_b(inv: dict, template: Path, out: Path) -> None:
         if name not in keep:
             del wb[name]
     del wb["_proto"]
-    assert_risk_summary(wb)
+    if "企业风险汇总" in wb.sheetnames:
+        assert_risk_summary(wb)
     wb.save(out)
 
 
