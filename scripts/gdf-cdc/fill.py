@@ -127,7 +127,7 @@ def fill_wave_a(inv: dict, template: Path, out: Path, missing: set[str]) -> None
                 "F": "GKX_DB",
                 "G": "SRC_ENT",
                 "H": "全量",
-                "I": "is_deleted = 0",
+                "I": inv.get("default_filter", "is_deleted = 0") or None,
                 "J": "删表重建",
             },
         )
@@ -561,7 +561,7 @@ def fill_wave_b(inv: dict, template: Path, out: Path) -> None:
                 "A": i,
                 "B": f"#DWD_SCHEMA#.{dwd}",
                 "C": cn,
-                "D": "ENT",
+                "D": inv.get("subject", "ENT"),
                 "E": "删表重建",
                 "G": "正常插入",
                 "L": title,
@@ -582,7 +582,8 @@ def fill_wave_b(inv: dict, template: Path, out: Path) -> None:
         if name not in keep:
             del wb[name]
     del wb["_proto"]
-    assert_risk_summary(wb)
+    if "企业风险汇总" in wb.sheetnames:
+        assert_risk_summary(wb)
     wb.save(out)
 
 
