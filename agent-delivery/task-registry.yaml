@@ -60358,3 +60358,40 @@ tasks:
       - "3. 两份用例同步改，禁止只改单号；期望原文必须来自本次 SELECT，禁止编造"
       - "4. 刷新后回写两份 LOOP 计划状态行，验收单恢复 ready 待第三轮重测"
     update_time: "2026-11-09T10:13:19+08:00"
+  - id: POL-IMPL-EFFECT-MOCK-VIA-UI-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-09T02:49:17.646Z"
+    last_seen_at: "2026-11-09T02:49:17.646Z"
+    lock_until: "2026-11-09T06:49:17.646Z"
+    claimed_by: "agent:data-agent"
+    title: "落地实效缺项 mock：挂进 Mock10 + 真实政策补外围两入口"
+    status: "claimed"
+    agent: "data-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    user_story: "US-E7-POL-04"
+    note: "用户 2026-11-09 授权：无结构建表、有结构灌数；mock 过程须含图上 Mock10 + 真实政策补外围。前序 DATA 单 blocked（禁造数）不复开。"
+    depends_on:
+      - "TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-SYNTH"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "polan/mockgen/synth.py"
+      - "polan/mockgen/effect_gapfill.py"
+      - "vendor/entan-py/polan/mockgen/*"
+    design_refs:
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+      - "agent-delivery/data-lineage-policy.md §2.4 D16"
+    definition_of_done:
+      - "Mock 原则：目标表（至少 gkxlumenx_gapfill.gapfill_policy_sz_effect；演示链路若缺 audience_feedback / 相关 gapfill 表同理）无结构则按 EFFECT-GAPFILL/EFFECT-SYNTH 已定列 CREATE；有结构则 INSERT/UPSERT 灌数。禁止写入 ODS/正式 DWD/ADS/供应方库；缺项只进 gapfill_。"
+      - "过程必须包含算法库页两个入口（10.50.69.111:30889/#/policy/mock 或等价 API）：①「Mock 10 条数据」(synth.run)；②「真实政策补外围：深圳 40 + 随机 10」(synth.run_real)。点/调任一门后，当次写入政策在 gapfill_policy_sz_effect 有对应行，含有效 implementation_date、非空 support_object、feedback_score，以及 metric_id/gap_item/fill_method/gapfill_batch_id/generated_at。"
+      - "与 TOPIC-POL-SZ3D-DEMO-FIX-R20261107-DATA 区分：本单由监管人明确授权 mock/造数以满足演示；不得因「无三方非空源」停工。若「已补 79」缺 effect 行，须通过再跑补外围或同入口可触发的补写使可演示，证据含前后 SQL 计数。"
+      - "demo-algo-ent-analysis 与线上若跑 lumen-algo-py/vendor 副本，同改须双落或说明同步方式。不改按钮文案条数。handoff：agent-delivery/agent-handoffs/政策模块-E7/POL-IMPL-EFFECT-MOCK-VIA-UI-L01.md，含建表/灌数 SQL 证据与两入口调用证据。"
+    update_time: "2026-11-09T10:49:18+08:00"
