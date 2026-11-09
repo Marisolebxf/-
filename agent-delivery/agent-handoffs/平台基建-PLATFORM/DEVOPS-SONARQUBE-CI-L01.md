@@ -41,7 +41,7 @@ Sonar `projectKey` / `projectName` 统一前缀 **`gkxlumen-`**（便于 UI 搜�
 | 仓 | Pipeline | sonar:scan | Sonar 仪表盘 |
 |---|---|---|---|
 | lumen-algo-py | https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/4353 | **success** https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/jobs/31367 | http://10.50.180.228:9005/dashboard?id=gkxlumen-algo-py |
-| lumen-svc-platform | https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/4356 （compile+scan 修复后） | 见后续更新 | http://10.50.180.228:9005/dashboard?id=gkxlumen-svc-platform |
+| lumen-svc-platform | https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/4356 | **success** https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/jobs/31417 | http://10.50.180.228:9005/dashboard?id=gkxlumen-svc-platform |
 | lumen-ui-topic | **本地已 commit，待人工确认推送**（fe-manual-confirm-push）`6ed4491` | 待 push 后出链 | http://10.50.180.228:9005/dashboard?id=gkxlumen-ui-topic |
 
 ## 测试结果
@@ -49,7 +49,7 @@ Sonar `projectKey` / `projectName` 统一前缀 **`gkxlumen-`**（便于 UI 搜�
 - Runner → Sonar：HTTP 200 / `status=UP`（25.12.0）
 - 搜 `gkxlumen`：3 项目可见
 - algo-py `sonar:scan`：ANALYSIS SUCCESSFUL
-- svc-platform 首跑失败（缺 `sonar.java.binaries`）；已推 fix `1c7764d` 重跑中
+- svc-platform 首跑失败（缺 `sonar.java.binaries`）；fix `1c7764d` 后 ANALYSIS SUCCESSFUL（含 skipTests compile）
 - ui-topic：等「可以推」后 push `origin/dev`
 
 ## 遗留风险
