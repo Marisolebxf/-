@@ -2,6 +2,7 @@
 
 | 日期 | 任务 | 说明 |
 |---|---|---|
+| 2026-11-09 | `POL-MOCK-BTN-A01` | 缺项库补八张空表：`gapfill_policy_semantic`、`xcmp`、`xcmp_viz`、`xcmp_summary`、`report_analysis`、`report_insight`、`report_body`、`report_trace`。210/211 现网已有，不重建。DDL 在 `stores/mysql/gapfill.md`。只写 `gkxlumenx_gapfill` |
 | 2026-11-09 | `POL-EFFECT-MACRO-DATA-L01` | 落地实效宏观结果面代理读路径：新增 `etl/pipeline-macro-effect-proxy.md`（白名单 `macro-eff-v1` 9 指标、深圳/广州/北京/上海区划键、行业分析辅维、`companies` 禁用）；`etl/README`、`stores/README` 登记指针。只读 `gkx` → 算法内存，不落库、不写 ODS/DWD/ADS |
 | 2026-11-09 | `POL-IMPL-EFFECT-MOCK-VIA-UI-L01` | 落地实效缺项存储闭环：`stores/mysql/gapfill.md`（`gapfill_policy_sz_effect` CREATE + 列约束）；`etl/pipeline-algo-mock-gapfill.md`（Mock10 / 补外围双入口写路径）；`stores/README` 索引 + ER 列展开；`etl/README` 登记管道。只写 `gkxlumenx_gapfill`，不进 ODS/正式 DWD/ADS。`human:淮政玮` 签收 |
 | 2026-10-23 | ODS 只读源 | 三方只读固定 `dwd_policy_base` / `dwd_global_policy_base`，字段以汇总表国内/国外政策要素库为准（各 35 列，补 `t_id`）。废止 `dwd_zck_*` 与 29/16 列口径 |

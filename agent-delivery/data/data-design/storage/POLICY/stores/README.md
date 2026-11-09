@@ -19,7 +19,7 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 |---|---|---|
 | [`mysql/dwd.md`](./mysql/dwd.md) | `policy_base_info` + `policy_industry_rel` + `policy_category_rel` + `policy_support_amount` + `policy_text_parse` + `script_state` | draft |
 | [`mysql/ads.md`](./mysql/ads.md) | ADS **16 张**：指标 9 + 图镜像 2 + NER 1 + 文本 3 + `policy_industry_rel` 镜像 | draft |
-| [`mysql/gapfill.md`](./mysql/gapfill.md) | D16 缺项：`gapfill_policy_sz_effect` CREATE + 算法库 Mock10/补外围写入口（`POL-IMPL-EFFECT-MOCK-VIA-UI-L01`） | draft |
+| [`mysql/gapfill.md`](./mysql/gapfill.md) | D16 缺项：`gapfill_policy_sz_effect`（`POL-IMPL-EFFECT-MOCK-VIA-UI-L01`）+ 拆解/对比/研报八张空表（`POL-MOCK-BTN-A01`） | draft |
 | [`nebula/`](./nebula.md) | hang **`demo_gkx_chain` only** | draft |
 | [`elasticsearch/`](./elasticsearch.md) | 本管线不施工独立索引 | draft 指针 |
 | 读侧指针（非存储） | [`../etl/pipeline-macro-effect-proxy.md`](../etl/pipeline-macro-effect-proxy.md) | 落地实效宏观代理只读 `gkx.dwd_macro_index_data` 等，算法内存合成，**本树无对应表** |
@@ -29,7 +29,7 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 
 ## 算法库 ER
 
-政策分析算法库（`polan`）的库表关系，含缺项库 `gkxlumenx_gapfill.gapfill_policy_*` 和 ADS 同步历史 `gdf_gapfill_syscnhistory`。库内**没有物理外键**。带 `policy_id`（或 `item_policy_id`）的表按该列连到 `policy_base_info`。没有这列的缺项表仍画在图里，连线标「缺项面」：一行不对应一条政策。DWD / ADS 的 CREATE 在 [`mysql/dwd.md`](./mysql/dwd.md) 与 [`mysql/ads.md`](./mysql/ads.md)。缺项建表在 `lumen-algo-py/scripts/mysql/gapfill_policy_*.sql`；`gapfill_policy_viz_*` 以现网列为准。图数据库不进本图，见 [`nebula.md`](./nebula.md)。
+政策分析算法库（`polan`）的库表关系，含缺项库 `gkxlumenx_gapfill.gapfill_policy_*` 和 ADS 同步历史 `gdf_gapfill_syscnhistory`。库内**没有物理外键**。带 `policy_id`（或 `item_policy_id`）的表按该列连到 `policy_base_info`。没有这列的缺项表仍画在图里，连线标「缺项面」：一行不对应一条政策。DWD / ADS 的 CREATE 在 [`mysql/dwd.md`](./mysql/dwd.md) 与 [`mysql/ads.md`](./mysql/ads.md)。缺项建表在 `lumen-algo-py/scripts/mysql/gapfill_policy_*.sql`；`gapfill_policy_viz_*` 以现网列为准。`POL-MOCK-BTN-A01` 八张新表的可执行语句在 `demo-algo-ent-analysis/scripts/ensure_gapfill_policy_btn_tables.py`，列定义在 [`mysql/gapfill.md`](./mysql/gapfill.md)。图数据库不进本图，见 [`nebula.md`](./nebula.md)。
 
 `policy_text_parse` 算法写 ADS。DWD 有同结构空表，不另画。`policy_industry_rel` 先写 DWD，再按 `policy_id` 把该政策的行替换进 ADS，`id` 保持一致。`policy_category_rel` 只在 DWD，不镜像到 ADS，也不改 `policy_base_info.policy_type`（文种）。`policy_support_amount` 主键就是 `policy_id`，一政策一行；算法只读。`policy_focus` 有按政策的行，也有 `policy_id` 为空的汇总行。`gapfill_policy_sz_effect`、`gapfill_policy_detail_compare`、`gapfill_policy_qry_doc` 的 `policy_id` 唯一。`gapfill_policy_sim_forecast.policy_id` 唯一且可空。
 
@@ -75,6 +75,14 @@ erDiagram
     policy_base_info }o--o{ gapfill_policy_trend_report : "缺项面"
     policy_base_info }o--o{ gapfill_policy_viz_depth : "缺项面"
     policy_base_info }o--o{ gapfill_policy_viz_terms : "缺项面"
+    policy_base_info ||--o{ gapfill_policy_semantic : "policy_id"
+    policy_base_info ||--o{ gapfill_policy_xcmp : "policy_id_a"
+    policy_base_info ||--o{ gapfill_policy_xcmp_viz : "policy_id_a"
+    policy_base_info ||--o{ gapfill_policy_xcmp_summary : "policy_id_a"
+    policy_base_info ||--o{ gapfill_policy_report_analysis : "policy_id"
+    policy_base_info ||--o{ gapfill_policy_report_insight : "policy_id"
+    policy_base_info ||--o{ gapfill_policy_report_body : "policy_id"
+    policy_base_info ||--o{ gapfill_policy_report_trace : "policy_id"
     policy_base_info }o--o{ gdf_gapfill_syscnhistory : "同步历史"
 
     policy_base_info {
@@ -268,6 +276,45 @@ erDiagram
         bigint id PK
         varchar text
     }
+    gapfill_policy_semantic {
+        bigint id PK
+        varchar policy_id
+        varchar facet_name
+    }
+    gapfill_policy_xcmp {
+        bigint id PK
+        varchar policy_id_a
+        varchar relation_name
+    }
+    gapfill_policy_xcmp_viz {
+        bigint id PK
+        varchar chart_kind
+        decimal compare_value
+    }
+    gapfill_policy_xcmp_summary {
+        bigint id PK
+        varchar summary_kind
+    }
+    gapfill_policy_report_analysis {
+        bigint id PK
+        varchar policy_id
+        varchar aspect_name
+    }
+    gapfill_policy_report_insight {
+        bigint id PK
+        varchar policy_id
+        varchar insight_kind
+    }
+    gapfill_policy_report_body {
+        bigint id PK
+        varchar policy_id
+        varchar section_name
+    }
+    gapfill_policy_report_trace {
+        bigint id PK
+        varchar policy_id
+        varchar direction_name
+    }
     gdf_gapfill_syscnhistory {
         bigint id PK
         varchar trigger_kind
@@ -321,6 +368,14 @@ erDiagram
 | `gapfill_policy_trend_report` | `gkxlumenx_gapfill` | 动向深度分析报告正文 |
 | `gapfill_policy_viz_depth` | `gkxlumenx_gapfill` | 影响深度。层是市场、企业、人才 |
 | `gapfill_policy_viz_terms` | `gkxlumenx_gapfill` | 词云。词来自标题和正文 |
+| `gapfill_policy_semantic` | `gkxlumenx_gapfill` | 606 语义。一政策一面一行：主旨、适用场景、约束、条款分类。`POL-MOCK-BTN-A01` 建空表 |
+| `gapfill_policy_xcmp` | `gkxlumenx_gapfill` | 610 交叉对比。一对政策一种关系一行：共性、差异、互补、冲突 |
+| `gapfill_policy_xcmp_viz` | `gkxlumenx_gapfill` | 611 对照数。图种是对比表、柱、雷达。不新算全景分布 |
+| `gapfill_policy_xcmp_summary` | `gkxlumenx_gapfill` | 613 对比摘要与核心结论。612 用户配置不进本表 |
+| `gapfill_policy_report_analysis` | `gkxlumenx_gapfill` | 614 深度分析。一面一句：实施效果、经济社会、产业影响、趋势 |
+| `gapfill_policy_report_insight` | `gkxlumenx_gapfill` | 615 洞察。一种一句：观点、建议、风险、机遇 |
+| `gapfill_policy_report_body` | `gkxlumenx_gapfill` | 616 模块正文，写在行里。618 只读本表，不灌文件 |
+| `gapfill_policy_report_trace` | `gkxlumenx_gapfill` | 617 双向溯源。方向是结论到原文、原文到结论。不并入条款血缘表 |
 | `gdf_gapfill_syscnhistory` | `demo_gkxlumenx_ads` | 来源监控的同步历史。不抓外站，不挂 `policy_id` |
 | `policy_level_dist` | `demo_gkxlumenx_ads` | 层级、总数、时效。整表重算，不挂单条政策 |
 | `policy_type_dist` | `demo_gkxlumenx_ads` | 文种分布 |
