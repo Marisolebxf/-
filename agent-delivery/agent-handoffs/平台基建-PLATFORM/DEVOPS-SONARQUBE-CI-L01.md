@@ -112,3 +112,10 @@ Sonar `projectKey` / `projectName`：lumen 前缀 **`gkxlumen-`**，demo 前缀 
 | actual_tokens | 180000 |
 | actual_cost | 2.5 |
 | cost_warn | green |
+
+## L02 纠错收口（2026-11-09）
+
+- Soft Gate：`GKX-Soft` 绑满 20 项目；复扫后 QG **20/20 OK**
+- bridge：`e1e2cfd` java.binaries=target/classes → sonar success
+- 卡住流水线：demo-ui-science/topic 补 `tags: [gkx]`；demo/lumen svc-platform sonar success
+- 任务：`DEVOPS-SONARQUBE-CI-L02-FIX`
