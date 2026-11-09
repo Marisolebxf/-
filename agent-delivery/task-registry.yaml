@@ -60871,7 +60871,7 @@ tasks:
     lock_until: "2026-11-10T01:48:56.219Z"
     claimed_by: "agent:api-agent"
     title: "科技发展规划 · Java 实现（PlanningController 9 端点 + 订阅适配器 + 导出接入）"
-    status: "integration"
+    status: "pending_test"
     agent: "api-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P1"
@@ -60882,7 +60882,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 150000
     note: |
-      2026-11-09 api-agent 子智能体完成：PlanningController 10 GET+1 PUT（/v1/situation/planning/**，网关 /display/）；PlanningQueryService/TableReader、订阅四件（Adapter scope_type=planning_resource + PushRecordWriter + upms @Inner 端点）、DirectionAlertGate 501 默认 false；mvn -pl gkxlumen-display,gkxlumen-upms-biz -am test BUILD SUCCESS 134/134（新 18）。commit：svc-platform 5295577、orchestration f4bec6d4（均未 push）。plan_id 库内核对对齐。遗留 4 项：① M1 §3.8 导出任务中心端点本仓未实现（184/195 导出无后端承接，Gate 已备好）② 订阅资源池表未冻结（push-pools={} 诚实不推送）③ graph_limit 行缺 follow_up 键（退回灌数补修）④ 网关 501 透传待联调（归接线/测试单）。联调待 WIRING。
+      联调通过：dev 环境 10+1 端点实跑（hot-technologies 200 真数据 / direction-warnings 501 透传正常 / key-areas / research-analysis 数据逐项对表，TEST-L01 矩阵）。遗留①M1 导出中心（缺口单挂起）不阻塞。→ pending_test
     depends_on:
       - "TS-L2-DS09-OV-API"
       - "TS-L2-DS09-KEY-API"
@@ -60894,7 +60894,7 @@ tasks:
       - "195 报告导出接 M1 §3.8 任务中心（content_key=planning-research-intelligence / planning-direction-warning）"
       - "competing_enterprises.avg_overlap 有值对均值现算（可断言）；insight.plan_id 与 KEY plans 主键对齐核对"
       - "文案/阈值/模板全部表行读取，Java 零硬编码；mvn 模块编译+测试绿；handoff + cost 回填"
-    update_time: "2026-11-09T10:26:28+08:00"
+    update_time: "2026-11-09T12:00:09+08:00"
   - id: TS-L2-DS09-SEED-L01
     model_used: "GLM-5.3-Highspeed"
     evidence: "agent-handoffs/科技发展态势-TS/TS-L2-DS09-SEED-L01.md"
@@ -60907,7 +60907,7 @@ tasks:
     lock_until: "2026-11-10T01:48:56.727Z"
     claimed_by: "agent:data-agent"
     title: "科技发展规划 · 灌数（demo 冻结种子 → gkxlumenx_ads 30 表 DDL+装载）"
-    status: "integration"
+    status: "pending_test"
     agent: "data-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P1"
@@ -60917,8 +60917,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 80000
-    note: |
-      2026-11-09 data-agent 完成（commit 5bc5714e）：29 表建成、375 行实灌、禁灌断言全过、幂等重跑 exit=0、DDL 3 处笔误修正。同日补修（commit ef6c8a38）：graph_limit 模板行补 follow_up:"M2 §3.1"（取值按 RES-API §3 逐字）+ assert_rows 三键断言，幂等全量重跑 375 行不变，SELECT 验证通过，handoff §8 记录。IMPL-JAVA 会签反馈 ③ 闭环。遗留：①M1 导出中心（归 IMPL-JAVA 侧）、②资源池未冻结（设计内诚实不推送）、④网关 501 透传（归接线/测试）。均不阻塞本单。
+    note: "联调通过：dev 环境三页签数据与灌入表行逐项一致（TEST-L01 矩阵 #2/#7/#8/#10/#12/#13）。→ pending_test"
     depends_on:
       - "TS-L2-DS09-OV-DATA"
       - "TS-L2-DS09-KEY-DATA"
@@ -60931,7 +60930,7 @@ tasks:
       - "禁灌断言全过：direction_warning 0 行、overlap 6 行（9 空对不灌）、专家类图谱节点 0、KEY carrier 表 22 行 land_benefit 全 NULL、grade threshold_low 80/65/45/0 且 is_draft=1、plan_id 序列 a/b/c/b"
       - "逐表行数断言=分册清单；dry-run 模式；不写第二套统计脚本"
       - "handoff 含验证证据 + cost 回填"
-    update_time: "2026-11-09T10:29:00+08:00"
+    update_time: "2026-11-09T12:00:00+08:00"
   - id: TS-L2-DS09-WIRING-L01
     model_used: "GLM-5.3-Highspeed"
     evidence: "agent-handoffs/科技发展态势-TS/TS-L2-DS09-WIRING-L01.md"
@@ -60944,7 +60943,7 @@ tasks:
     lock_until: "2026-11-10T02:30:24.016Z"
     claimed_by: "agent:frontend-agent"
     title: "科技发展规划 · 前端接线（api 拼装层 9 端点化 + G-B4 哈希移除 + 501 空态）"
-    status: "integration"
+    status: "pending_test"
     agent: "frontend-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P1"
@@ -60954,8 +60953,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 90000
-    note: |
-      追加：2026-11-09 孔东二次放行 .vue 后，6 项解冻收尾由 frontend 子智能体完成（commit 6c09d5c，6 files +222/-75）：⚠️角标+按钮禁用、假成功 Message 收进 USE_MOCK 分支、推送 Modal 接 PUT（乐观更新+回滚）、个人卡判定为复刻缺口关联项（demo 无 UI 槽位，数据侧已闭合不新建 UI）、tracking 无槽位判定复刻缺口留孔东、shim 全转正（真值 company_id+参数化）。type-check/test.mjs/eslint 全绿，mock 轨道不变。handoff §8 追加。编码任务全完成，进入 push→部署→TEST。
+    note: "联调通过：前端新构建上线（planning 分包 index-kyF6QQrK.js），三页签全渲染真数据；⚠️未注册角标/导出禁用/诚实降级全部实测（TEST-L01 矩阵 #3/#14）。→ pending_test"
     depends_on:
       - "TS-L2-DS09-IMPL-JAVA-L01"
       - "TS-L2-DS09-SEED-L01"
@@ -60968,10 +60966,20 @@ tasks:
       - "184 预警 501 → 空态 + ⚠️「预警模型未注册」+ 导出禁用；USE_MOCK=true 种子轨零回归；MockBadge 保留（D4 仍 mock）"
       - "195 下载改走导出任务中心（建任务→job_id→轮询），废弃 FE Blob downloadHtmlAsWord"
       - "pnpm type-check + 模块自检绿；handoff + cost 回填"
-    update_time: "2026-11-09T11:14:30+08:00"
+    update_time: "2026-11-09T12:00:10+08:00"
   - id: TS-L2-DS09-TEST-L01
+    model_used: "GLM-5.3-Highspeed"
+    evidence: "agent-handoffs/科技发展态势-TS/TS-L2-DS09-TEST-L01.md"
+    cost_warn: "green"
+    actual_tokens: 850000
+    actual_cost: 1.2
+    supervised_by: "human:王梓真"
+    claimed_at: "2026-11-09T03:50:05.534Z"
+    last_seen_at: "2026-11-09T03:50:05.534Z"
+    lock_until: "2026-11-10T03:50:05.534Z"
+    claimed_by: "agent:qa-agent"
     title: "科技发展规划 · 主路径测试（三页签各一条 + 截图 + 501/空态核验）"
-    status: "backlog"
+    status: "ready_to_sign"
     agent: "qa-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P2"
@@ -60981,8 +60989,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      【收尾时序已定 2026-11-09】用户 human:王梓真 同意：11-12 FE 锁过期后补 WIRING 遗留④6 项视觉细节 → 编码任务全完成 → push 三仓（用户授权此刻 push，仅 origin/dev）→ CI 部署 → 本单对 dev 环境真机验收。定时接管已挂（2026-11-12 12:15）。195 导出按「导出服务未就绪」如实记录（M1 缺口单 BE-TS-EXPORT-CENTER-GAP-L01 挂起中）。网关 501 透传为重点核验项。
+    note: "集成测试通过（15/15 验收矩阵 + 反向断言，证据 e2e_shots + handoff）→ ready_to_sign 待签收。"
     depends_on:
       - "TS-L2-DS09-WIRING-L01"
     touched_files:
@@ -60993,7 +61000,7 @@ tasks:
       - "界面操作过程记录 + 截图（登录按新人引导 §6 账号；截图含菜单/页签/关键数字或空态/501 或 Mock 角标），随 handoff 存放并在 WBS 写路径"
       - "期望未发生必红：哈希兜底不再触发（无值对显「—」）、501 页非预警区不受影响、MockBadge 在 D4=mock 处保留"
       - "handoff + cost 回填"
-    update_time: "2026-11-09T10:53:00+08:00"
+    update_time: "2026-11-09T12:00:00+08:00"
   - id: BE-TS-EXPORT-CENTER-GAP-L01
     title: "M1 导出任务中心缺口 — 建任务/轮询/签名下载端点补建（184 预警与 195 报告导出的后端承接）"
     status: "backlog"
