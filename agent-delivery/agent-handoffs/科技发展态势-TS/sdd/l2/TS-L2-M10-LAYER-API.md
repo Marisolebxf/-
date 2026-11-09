@@ -22,10 +22,17 @@
 | 最后同步列 | 行上 `lastSync` 展示值 | **不设**。数据源是元数据登记，无同步动作（ARCH §6 不做 ETL） | 「最后同步」列移除或恒显 `-` |
 | 测试连通 | `testStatus` 存行上（'通过'/'待测'/'未测'） | 探测结果不持久化（ARCH §2），每次 probe 实时返回 | 行上无该字段，按钮态即时呈现 |
 | 删除图层组 | demo 无约束直接删 | 组下仍有数据源引用时 `409 GROUP_IN_USE`，先改挂再删 | 前端接 409 文案 |
+| 至少保留一组 | demo 有「至少保留一个图层组」约束（`layerSourceState.js` 删组逻辑） | **正式契约不保留**该约束（运营配置，删空组集合属合法态，UI 侧不强制） | 2026-11-06 会签 API 备注补行：显式声明放弃，接线单不再移植该拦截 |
 
 ## 1. 总则
 
-前缀 `/display/v1/situation/maintain/`。浏览器只打此前缀，经网关 `gkxlumen-platform-gateway`（只转 `/display/**`）到 `gkxlumen-display`。全部同步，无 Job、无任务记录、不建 SSE、不进 `gkxlumen-topic-async-service`。运行时不调 Python（种子灌数单除外，见 ARCH §3）。不调任何 `demo-*` 服务。
+前缀 `/display/v1/situation/maintain/`。浏览器只打此前缀，经网关 `gkxlumen-platform-gateway`（只转 `/display/**`）到 `gkxlumen-display`。全部同步，无 Job、无任务记录、不建 SSE、不进 `gkxlumen-topic-async-service`。不调任何 `demo-*` 服务。
+
+**内部委托（2026-11-06 开发核实后终版 v3，ARCH §3）**：配置表归 Java 业务库，Python 不参与。`gkxlumen-display` 是门面（鉴权、枚举/参数校验、聚合），**不直连 Python/DB（D15）**：
+
+- 读：display 经 Feign → 领域服务 → 直读业务库 `cfg_*` 四表，M1 消费同链路
+- 写：display 门面校验（本分册 §7 枚举与格式校验在门面完成，400 类错误不出网关层）→ Feign → 领域服务直写业务库。写侧错误（404/409）由领域服务写结果回传映射，错误码语义与本分册 §6 一致
+- 对外 URL、方法、DTO、错误码不受内部链路影响——本分册全部契约不变
 
 行数量级：图层 9、要素 11、数据源与分组十行级。**全量返回，不分页**。
 
@@ -86,12 +93,13 @@ Datasource：`id`、`sourceCode`（种子 `src-1` / `src-2` / `src-3`，新建 `
 
 | sourceType | 行为 | 响应 |
 |---|---|---|
-| `API 接口` | Java 发起 `HEAD`（失败回退 `GET`）探测 `endpoint`，超时 5s，重定向跟随 ≤3，**不读响应体** | `200 { result: '通过'\|'失败', latencyMs, message? }` |
+| `API 接口` | 领域服务发起 `HEAD`（失败回退 `GET`）探测 `endpoint`，超时 5s，重定向跟随 ≤3，**不读响应体**（display 不出网，D15） | `200 { result: '通过'\|'失败', latencyMs, message? }` |
 | `数据库表` | 未排期（ARCH §2） | `501 { code: 'NOT_IMPLEMENTED', message: '数据库表型数据源连通探测未排期' }` |
-| `用户填报` | 无探测语义 | `400 { code: 'INVALID_SOURCE_TYPE', message: '用户填报型数据源无连通探测语义' }` |
+| `用户填报` | 无探测语义 | `400 { code: 'PARAM_INVALID', message: '用户填报型数据源无连通探测语义' }`（2026-11-06 会签 API-C1 统一：原稿此格 `INVALID_SOURCE_TYPE` 与 §6 双轨，收进四码封闭） |
 
 - API 型探测结果**只随本次响应返回，不落库、不留存、不写审计**
-- Java 出网探测是会签点（ARCH §7 ③）：若会签否决，整条 probe 降级为全型 `501`，URL 不变
+- **SSRF 防护（2026-11-06 会签 ARCH-C4 补进契约）**：探测目标须过私网黑名单——拒绝环回（127.0.0.0/8、::1）、私网（10/8、172.16/12、192.168/16、169.254/16）、云元数据（100.64/10 及各云 metadata 端点）地址段与内网主机名解析命中；命中即返回 `400 PARAM_INVALID`，不发起请求。DNS 重绑定防护：解析后按 IP 复核再连接（实现单 DoD 落地）
+- 出网位置归领域服务（display 不出网）已获会签通过（ARCH §7 ⑤）；若部署环境最终否决出网，整条 probe 降级为全型 `501`，URL 不变（退路保留）
 - 前端对填报型禁用按钮、对 DB 型按钮呈现 501 空态文案（接线单）
 
 ## 5. factor-display（序 9 配置面：11 要素显示名/颜色）

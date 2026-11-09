@@ -46,6 +46,8 @@
 
 ## 3. 197 多维度检索条件设置
 
+智能检索 `POST …/query-intent` 不读 ADS / DWD / gapfill，只做 NL 条件拆解；目录与统计仍按本节读表。契约见 `POL-L2-DS10-QRY-INTENT`。
+
 ### 3.1 统计
 
 读 `stats` 上已有五条。类型都是 STAT，D1 为 aligned，D4 为 mock。
@@ -173,7 +175,7 @@ Excel 没有专目录。`policy-panorama-search-export` 只是 `gkx-others/{用�
 
 | 序号或资源 | 边界 |
 |---|---|
-| 203 `ingest` | 来源监控只读已有入库。不重开 GDF |
+| 203 `ingest` | 来源监控只读已有入库。不重开 GDF。LLM 合成行落 DWD `policy_base_info`，检索计入，按 `source='llm-synth'` 可识别（2026-11-07） |
 | 204 `subscriptions` | 订阅与外发。不是 201 的收藏 |
 | 205、206 | 与本叶共用 `policy_timeseries`、`policy_national_dist`。本叶不实现趋势、热力、热点、影响、深度报告 |
 | 207 | 深度交叉对比不在检索五条里 |

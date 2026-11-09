@@ -63,8 +63,10 @@ sequenceDiagram
 
 ## 偏离
 
-- 表暂未在库上执行(应用账号无 CREATE DATABASE 权限,架构本就要求 DBA 建库);
-  DDL 幂等,DBA 执行即达 DoD 1。除此之外无偏离。
+- 2026-11-07 状态更新：正式 `gkxlumenx_gapfill` 与 demo `demo_gkxlumenx_ads`
+  均已创建三张表。demo 使用 ADS 过渡落点，Python 已改为通过 `conn.gapfill`
+  自动选择运行库。每表已 seed 四城 2024 演示行，`value`/`score_value`/`is_mock`
+  齐备，装包对三个缺项返回 `confidence=gapfill`。
 
 ## 验收证据
 

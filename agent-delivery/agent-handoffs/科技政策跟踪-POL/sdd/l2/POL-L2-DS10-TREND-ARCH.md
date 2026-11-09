@@ -18,7 +18,7 @@
 
 | 序号 | 叶子 | 需规摘要 | 本叶流程 |
 |---|---|---|---|
-| 203 | 政策来源监控与更新 | 监控权威站点并给出最新政策列表和详情 | 同步读已有入库。跨项索引第 6 项。不重开抓取 |
+| 203 | 政策来源监控与更新 | 监控权威站点并给出最新政策列表和详情 | 同步读已有入库。跨项索引第 6 项。不重开抓取。「立即同步」= LLM 合成入库，见 4.1 的 2026-11-07 变更 |
 | 204 | 政策订阅服务 | 按类别、领域、部门、地区订阅，并按日/周/月经通知、邮件、短信推送 | 可实现：展示只委托专题门面。见第 7.1 节 |
 | 205 | 重点领域政策分析 | 重点领域的趋势、热点、影响和深度报告 | 趋势读已有时序表。热点、影响、深度报告没有模型，走缺项表。见第 7.2 节 |
 | 206 | 政策动态可视化展示 | 时间轴、热力、趋势，看时间、地域、主题分布 | 时间与地域读已有表。主题分布没有指标，走缺项表 |
@@ -83,6 +83,18 @@ trace 沿既有展示链走。`stats`、`ingest` 和缺项表读取在 display �
 空态：不返回 501。无入库行则列表空。详情正文走全景已有 detail，无正文则详情空。
 
 不做什么：不在展示侧建抓取、定时任务或新的来源站点清单。不把 `ingest` 改成 Job。不把治理页的清洗质量写成这一叶。
+
+**2026-11-07 变更（`POL-L2-DS10-SRCMON-SYNTH-L01`，`human:淮政玮` 口头批准）**：「立即同步」不再只写一条演示历史，改成 LLM 合成政策入库。仍不抓取外站。
+
+- 链路：前端 `POST /display/v1/policy/panorama/sync-history` → `gkxlumen-display` Feign → `gkxlumen-platform-entan-py` `/internal/policy/sync-history`。Python 先写一条 `running` 同步历史，立即返回，后台合成。前端轮询同步历史，直到没有 `running` 行，再刷新 `ingest`。
+- 后台一次 10 条（2026-11-07 由 50 改为 10，上限 100）。地区、层级、类型、主题由代码排配额：深圳约 60%（含区级），国家级约 15%，其余随机落到 24 个省市。类型在 通知/意见/办法/规划/若干措施/实施细则/行动方案/指南/目录/决定 中轮转。LLM 只写标题、文号、摘要、关键词、正文（按「第X条」分条）、要点和支持方式。
+- 写入：ODS `dwd_policy_base` + DWD `policy_base_info`。`source_plane='domestic'`，检索和统计都计入。
+- 入库后原样调用两种已有方法：产业补码 `polan.industry_enrich.enrich_one`，写 DWD 和 ADS 两层 `policy_industry_rel`；条款结构化 `polan.clause_job.structure_one`（按规则分条），写 ADS `policy_text_parse`。两种方法都从 demo-algo-ent-analysis 迁到 lumen-algo-py `vendor/entan-py`。
+- 历史版本：每次合成后随机挑一半（10 条里 5 条）再调一次 LLM 写上一版。旧版是独立政策行，`policy_id` = 新版 id 加 `-H1`，`status=已废止`，发布日比新版早 1～3 年（由代码定），同样入 ODS/DWD 并跑补码与条款结构化。新旧之间 3～6 条增改删写 `gkxlumenx_gapfill.gapfill_policy_version_diff`（`policy_id` 用新版，`fill_method=llm-synth`，`is_mock=1`），供 213 新旧对比读取；时点经 `GET /display/v1/policy/panorama/versions` 读出，见 `POL-L2-DS10-CMP-DATA` 第 3 节。历史版写失败不影响新版计数。旧版 `expire_date` = 新版发布日前一天。
+- 落地实效（用户 2026-11-07 追加，选「组合」且新旧版都给）：新旧版每条由 LLM 在同一次调用里顺带写 2～3 条受众反馈，入 `gkxlumenx_gapfill.gapfill_policy_audience_feedback`（210，`fill_method=llm-synth`）；全部写完后原样调用已有 `polan.eval.effect.run()` 重算各省落地实效（209，`ads.policy_effect` 与时序表）。删除合成行后同样重算。见 `POL-L2-DS10-SENT-DATA` 第 4、5 节变更段。
+- 合成行有三个标记：`policy_id` 前缀 `SYN`，`source='llm-synth'`，`etl_batch_id` 前缀 `SYNTH-`（历史版同样带这三个标记，删除时一并删掉；变更行按合成 `policy_id` 加 `fill_method=llm-synth` 删）。`ingest` 读面对这类行返回 `is_mock=1`，评审态挂 MockBadge。中台政策 Mock 页的「删除所有 Mock 数据」只按这三个标记删，真实政策不受影响。
+- D16 例外：合成行直接写 DWD，突破了「缺项数据不进 DWD」。这一条由 `human:淮政玮` 2026-11-07 批准，只限本叶，不推广。
+- 诚实性：没有 LLM 密钥或生成失败时不造行，同步历史记为 `failed`。`running` 超过 30 分钟未回写的，标成 `failed`。同一进程内只允许一条合成在跑（ponytail：多副本时各副本各自限一条，以后要全局唯一再改用库锁）。
 
 ### 4.2 204 政策订阅服务 · 可实现
 

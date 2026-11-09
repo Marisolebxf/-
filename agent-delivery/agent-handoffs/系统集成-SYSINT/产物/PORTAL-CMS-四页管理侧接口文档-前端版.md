@@ -131,7 +131,7 @@ A4 出参：`data = {total, page, size, records:[<信封+类型字段>]}`，按 
 | content_type | 名称 | 结构化字段 | 检索 | 页面位置 |
 |---|---|---|---|---|
 | `policy_news_body` | 最新政策与时效 | `policy_title`(必) `issuer`(必) `doc_no` `scope_text`(必) `classify_by`(enum: industry/region/theme,必) `classify_value`(必) `validity_status`(enum: effective/upcoming/repealed,必) + 正文（政策原文） | 标题/文号/发布单位 | 屏1「政策本体」 |
-| `policy_news_stats` | 概况与地理分布 | `summary_text`(必) `keywords`(必) `analysis_conclusion` ▶`regions[]`: `region`(同 2.3 四级路径,必) `association_note`(必) | 摘要/关键词 | 屏2「统计与区域」 |
+| `policy_news_stats` | 概况与地理分布 | `summary_text`(必) `keywords`(必) `analysis_conclusion` ▶`regions[]`(可选): 有行时 `region`(同 2.3 的 1–4 级路径,必) `association_note`(必) | 摘要/关键词 | 屏2「统计与区域」 |
 | `policy_intensity_dimension` | 力度评估维度 | `dimension_name`(必) `dimension_meaning`(必) | 维度名 | 屏3「力度评估」维度块 |
 | `policy_intensity_rank` | 政策力度榜单 | `rank_no`(int,必,Top10) `policy_name`(必) `rank_basis`(必) `expert_comment` `recommend_reason`(必) | 政策名/名次 | 屏3 榜单块 |
 
@@ -174,10 +174,10 @@ A4 出参：`data = {total, page, size, records:[<信封+类型字段>]}`，按 
 | 环节码必须在同产业 `key_chain_structure.stages` 字典内 | `key_enterprise_set.stage_code` |
 | `stage_code` 字典内唯一 | `key_chain_structure` |
 | 图谱：节点名唯一非空；边端点必须是已建节点；禁自环 | `pano_chain_graph` |
-| 行编辑类型发布时必填行齐全（如荣誉/历程/分布/档案至少一行且必填列满） | 各 ▶ 行类型 |
+| 行编辑类型发布时必填行齐全；`policy_news_stats.regions[]` 按需规 335(2) 为可选，无行合法，有行则必填列须满 | 各 ▶ 行类型 |
 | HTML 白名单（§0） | 全部含正文的类型 |
 | DoD 正文模式：分数/名次/领导人/法定代表人字样不进正文（命中 40001） | `svc_business_domain` |
-| `region` 值必须是合法四级路径（服务端可按 region-scopes 字典校验） | `svc_org_distribution`、`policy_news_stats` |
+| 有区域行时，`region` 值必须是合法 1–4 级路径（服务端可按 region-scopes 字典校验） | `svc_org_distribution`、`policy_news_stats` |
 
 ---
 

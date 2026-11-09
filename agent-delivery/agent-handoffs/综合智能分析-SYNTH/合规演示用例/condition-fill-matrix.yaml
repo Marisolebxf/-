@@ -1,0 +1,568 @@
+# =====================================================================
+# SYNTH 合规演示用例 · 条件填充判定矩阵（M3 产物，唯一文件）
+# 总控真源: agent-delivery/agent-handoffs/综合智能分析-SYNTH/SYNTH-合规演示用例-长任务总控.md
+# 生成时间: 2026-11-07T17:20:00+08:00    生成者: agent:data-agent（SYNTH-DEMO-CASE-M3-FILL-L01）
+# 输入: 三叶册 vitality-cases.md(16) / element-cases.md(14) / collab-cases.md(17)（编号零漂移）
+#       + data-survey-20261107.md（28 表实查，行数证据全部引自该文件，未重查库）
+# 判定口径（M3 执行注记）:
+#   - supported = 库内数据面能支撑叶册期望的主结果面（is_mock=1 / pending_registration / gapfill_transitional
+#     过渡数据仍算 supported，demo_expectation 必带过渡标识）。
+#   - partial = 主结果可出，但用例条件内某子区块按叶册期望落空态/降级（gap_refs 引对应 G-xx）。
+#   - gap = 用例演示价值所依赖的数据面无任何现有支撑且无过渡表兜底（gap_refs 引 G-xx）。
+#   - 拦截契约分支（legacy_unknown / WEIGHT_PROFILE_INVALID / batch_meta_missing）判 supported，
+#     demo_expectation=拦截（拦截即期望）。
+#   - 活力 1y/5y 窗（VIT-04/05/09/15）按总控判定口径示例「1y/5y ADS 0 行且无过渡表兜底」判 gap 引 G-01；
+#     要素同窗因 ai.synth_elem_four_dim_score 三窗全齐兜底判 partial（ELEM-02/03）。
+#   - 【2026-11-08 M6 增补（SYNTH-DEMO-CASE-M6-MATRIX-UPDATE-L01）】上条判定前提已过时：活力 1y/5y 窗已灌数
+#     （mock_20261106_vit_seed_*_1y/5y 系各 60 行）+ 要素八表三窗全齐（mock_20261107_elem_delivery_{1y|3y|5y}，三窗各 304 行）
+#     + 要素历史年行（mock_20261107_elem_hist_* 共 48 条）；Java 两跳丢参 Q1 修复（lumen-svc-platform commit 558d43c，
+#     pipeline #4243 deploy:topic 绿）后 R3 复测四城三窗全 200。VIT-04/05/09 gap→supported、ELEM-02/03 partial→supported、
+#     ELEM-12/13 gap/partial→supported、VIT-15 失败触发器失效改可选演示（语义注记）。证据真源：../SYNTH-DEMO-ACCEPT-LOOP.md R2/R3。
+#   - D-01/D-02/D-03 为数据缺陷非缺口，不进 verdict，仅在涉及 CASE 的 m2_annotation 注明（M4 登记修复）。
+#   - 缺口编号零新造：仅引用 data-survey-20261107.md §6（G-01~G-08）与客户决策清单（Q-SYNTH-* / Q-ANALYSIS-01）。
+# =====================================================================
+
+meta:
+  generated_at: "2026-11-07T17:20:00+08:00"
+  case_total: 47
+  summary: { supported: 44, gap: 0, partial: 3 }   # M6 增量更新（2026-11-08）：36/5/6 → 44/0/3。G-01 系 8 条（VIT-04/05/09/15、ELEM-02/03/12/13）已闭合改 supported；COLLAB-04/05/06 维持 partial——其降级子区块由 G-05（东莞/惠州单类关系）/G-06（无快照走实算）驱动，两缺口 2026-11-08 复核仍开放，按判定口径不得改 supported，证据见 ../SYNTH-DEMO-ACCEPT-LOOP.md R3
+
+per_leaf:
+  vitality:
+    - case_id: CASE-VIT-01
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "最新批 mock_20261106_vit_seed_* 系（深圳 2024 双批次并存，按 calc_batch_created_at 取最新）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_dim_score", rows: 96, note: "深圳双批次冗余，取最新批；is_mock=1 100%" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_weight", rows: 60, note: "INDEX_MAIN 档权重行在库（四城三档齐）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_indicator", rows: 288, note: "ind-newprod/ind-talent-cnt/ind-pol-effect 三分项 confidence=gapfill（gapfill 三表 2024 行兜底）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_rank", rows: 24, note: "深圳市上下文 24 行；深圳 rank1 is_current=1" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_new_product_sales_ratio", rows: 4, note: "四城×2024，批 mock_20261107_vit_gapfill_seed；rd_employee / policy_effect 两表同构各 4 行" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 is_mock=1 全量过渡 + ⚠️ 临时权重待甲方确认角标；404 分支=快照缺失时 no_batch 引导开始分析）"
+      m2_annotation: "对照M2修正：深圳双批次冗余，快照按最新批次取数断言（D-02）；临时权重口径 Q-SYNTH-01/V-01/V-02 🟡"
+    - case_id: CASE-VIT-02
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "EQUAL" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "EQUAL 档行在库；深圳 EQUAL 最新档位批 mock_20261106_vit_seed_equal" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_weight", rows: 60, note: "EQUAL 档 25%×4 权重行在库" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_dim_score", rows: 96, note: "EQUAL 同码行在库" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_rank", rows: 24, note: "EQUAL 档排名行在库" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 mock 过渡态；与 INDEX_MAIN 四段指纹隔离、数值不同，404 分支=no_batch 引导）"
+      m2_annotation: "对照M2修正：快照按最新批次取（EQUAL 档位批 mock_20261106_vit_seed_equal，D-02）"
+    - case_id: CASE-VIT-03
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "WEIGHT_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "WEIGHT_MAIN 登记档行在库（全表仅最近3年窗）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_weight", rows: 60, note: "WEIGHT_MAIN 档 0.30/0.35/0.20/0.15 权重行在库；档位批 mock_20261106_vit_seed_weight_main 系" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 登记档过渡态；URL 直达可达、页面下拉未露出；非 legacy 档不出现 legacy_unknown）"
+      m2_annotation: "对照M2修正：快照按最新批次取（档位批，D-02）"
+    - case_id: CASE-VIT-04
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近1年", weight_profile: "INDEX_MAIN" }
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午灌数 + Q1 修复，R3 复测 200）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "window_label=最近1年 条件行数 60（四城 1y 批 mock_20261106_vit_seed_index_main_1y 等，2026-11-07 下午灌数；M2 原查 0 行前提已过时）" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId=snap:mock_20261106_vit_seed_index_main_1y；Q1 修复证据 = lumen-svc-platform commit 558d43c + pipeline #4243 deploy:topic success"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 is_mock=1 过渡态；M6 前的「404 拦截/引导开始分析」口径为历史诚实分支，保留于三叶册原文）"
+      m2_annotation: "M6 更新：G-01 已闭合（灌数 + Q1 修复 558d43c/pipeline 4243）；「切条件不自动建任务」（Q-ANALYSIS-01）断言不变"
+    - case_id: CASE-VIT-05
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近5年", weight_profile: "INDEX_MAIN" }
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午灌数 + Q1 修复，R3 复测 200）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "window_label=最近5年 条件行数 60（四城 5y 批 mock_20261106_vit_seed_index_main_5y 等，2026-11-07 下午灌数；M2 原查 0 行前提已过时）" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId=snap:mock_20261106_vit_seed_index_main_5y；Q1 修复证据同 VIT-04（558d43c / pipeline #4243）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态；原「404 → no_batch/config 引导」口径作历史记录保留于三叶册）"
+      m2_annotation: "M6 更新：G-01 已闭合；原「本条为 CASE-VIT-15 失败分支推荐触发路径」已失效（1y/5y 出数后该路径不再失败，VIT-15 触发器需另造，见 VIT-15 条）"
+    - case_id: CASE-VIT-06
+      condition: { region: "广州", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "广州 × 最近3年 index 9 行（3 年 × 3 档），is_mock=1 100%" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_dim_score", rows: 96, note: "广州行在库；region_name 误标「深圳」（region_code 正确，D-01）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_indicator", rows: 288, note: "广州 72 行在库；region_name 误标同上（D-01）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_rank", rows: 24, note: "rank_city=广州 rank2 行在库（深圳上下文）" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 任务实算过渡态；城市名以条件栏为准，若串名按 D-01 缺陷口径说明）"
+      m2_annotation: "缺陷 D-01 影响展示细节（dim_score/indicator 非深圳行 region_name 误标），M4 登记修复（seed UPDATE 可修）"
+    - case_id: CASE-VIT-07
+      condition: { region: "东莞", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "东莞 × 最近3年 index 9 行在库，is_mock=1 100%" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_rank", rows: 24, note: "rank_city=东莞 rank3 行在库（深圳上下文）" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 任务实算过渡态；城市名以条件栏为准）"
+      m2_annotation: "缺陷 D-01 影响展示细节（东莞行 region_name 误标「深圳」），M4 登记修复"
+    - case_id: CASE-VIT-08
+      condition: { region: "惠州", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "惠州 × 最近3年 index 9 行在库，is_mock=1 100%" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_rank", rows: 24, note: "rank_city=惠州 rank4 行在库（深圳上下文）" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 任务实算过渡态；城市名以条件栏为准）"
+      m2_annotation: "缺陷 D-01 影响展示细节（惠州行 region_name 误标「深圳」），M4 登记修复"
+    - case_id: CASE-VIT-09
+      condition: { region: "广州", compare: "全国重点城市", window: "最近5年", weight_profile: "INDEX_MAIN" }
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午灌数 + Q1 修复，R3 复测 200）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "四城 1y/5y 窗行已灌（各 60 行/窗，2026-11-07 下午），广州 × 最近5年条件行在场；M2 原查 0 行前提已过时" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+        live_check: "R3 复测（2026-11-08 02:20）200（广州 5y）；东莞/惠州 5y 同轮复测 200（四城三窗全通）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 任务实算过渡态；组合条件与默认窗同为出数分支，原「不预填/404 引导」口径为历史记录）"
+      m2_annotation: "M6 更新：G-01 已闭合；同指纹当天复用单飞机制断言不变（Q-ANALYSIS-01）"
+    - case_id: CASE-VIT-10
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "库内仅 INDEX_MAIN/EQUAL/WEIGHT_MAIN 三正档（G-03：TEMP_* 0 行）；legacy/未知档无行→旧任务产出行不参与新档快照选择" }
+        api_task: "工作台「分析记录」Tab（V15，leaf=vitality）；任务链表 #103/#105 非 ADS，M2 未覆盖"
+      gap_refs: []
+      demo_expectation: "拦截（legacy_unknown 逐字保留；旧任务可展示但禁自动复用/当天单飞命中，不翻绿、不改名 reason）"
+      m2_annotation: "演示前置缺失风险：存量旧任务在任务表（非 ADS，M2 未覆盖）需演示前人工确认；若无存量按叶册登记「演示前置缺失」"
+    - case_id: CASE-VIT-11
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "FOO" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "合法值枚举对照=库内三正档（INDEX_MAIN/EQUAL/WEIGHT_MAIN，G-03）；参数校验分支不触库写入" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot（400 参数校验分支）"
+      gap_refs: []
+      demo_expectation: "拦截（400 WEIGHT_PROFILE_INVALID 逐字文案；不默改档、不静默回落，零表写入，任意时候可跑）"
+      m2_annotation: "零数据依赖契约分支；TEMP_* 等未登记档同此拦截（G-03）"
+    - case_id: CASE-VIT-12
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "EQUAL→INDEX_MAIN（换档断言）" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "INDEX_MAIN 与 EQUAL 两 profile 行并存且各为最新档位批（四段指纹隔离取数）" }
+          - { table: "demo_gkxlumenx_ads.synth_vit_weight", rows: 60, note: "两档权重行并存（INDEX_MAIN / EQUAL）" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 换档不复用他档任务/快照，四段指纹断言生效；404 分支=no_batch 引导）"
+      m2_annotation: "对照M2修正：两档各按最新批次取数（深圳双批次冗余下取档位最新批，D-02）"
+    - case_id: CASE-VIT-13
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_rank", rows: 24, note: "深圳市上下文 24 行（4 rank_city × 3 档 × 2 批次）；深圳 rank1 is_current=1；rank_city_code=广州 行存在" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 深圳高亮「当前」；点击广州回 config 待重分析态，不自动建任务）"
+      m2_annotation: "对照M2修正：非深圳上下文排名 0 行为诚实空态分支（G-02），不影响深圳上下文主流程"
+    - case_id: CASE-VIT-14
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "2022/2023 历史年行在库（批 mock_20261107_vit_trend_*，is_mock=1，「演示历史」）+ 2024 当年行" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot（报告页携 snapshotId/父任务直读快照）"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 报告四维/趋势/优劣段渲染 + PDF 下载；快照缺失分支=报告入口禁用不伪造）"
+      m2_annotation: "对照M2修正：synth_vit_trend 表不存在（M2 §1.6），趋势依赖表=synth_vit_index 历史年行"
+    - case_id: CASE-VIT-15
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近5年", weight_profile: "INDEX_MAIN" }
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01——5y 已出数，原失败触发路径失效；改为可选演示（需另造触发）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 60, note: "5y 窗 60 行在库（灌数后 succeeded），原「0 行 → 任务链实算确定性失败」触发器失效；全库 calc_status 均 succeeded（failed 态只存在于任务链）" }
+        api_task: "任务过程页轮询（#104，非 ADS，M2 未覆盖）"
+        live_check: "R3 复测（2026-11-08 02:20）：1y/5y 出数 → 原失败态触发路径已失效；晨间探活同口径"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合；失败态演示语义改注记
+      demo_expectation: "可选演示（M6 改注记）——任务链失败态需另造触发（过程页行为，如构造不可满足条件的任务），默认轮次不安排；拦截语义「failed 批不被结果源读取」不变，不伪装秒开"
+      m2_annotation: "M6 更新：原「推荐触发路径 = CASE-VIT-05 的 5y 空窗任务」已失效；失败文案与重试仍是预期交互非演示事故，演示时按需另造触发"
+    - case_id: CASE-VIT-16
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年", weight_profile: "INDEX_MAIN" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_vit_index", rows: 39, note: "2022:12 / 2023:12 / 2024:15 年度行齐（历史批 mock_20261107_vit_trend_* + 2024 最新批；深圳 2024 双批次按 year 去重取最新）" }
+        api_task: "GET /topic/v1/synth/vitality/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 趋势 2022–2024 + 「演示历史」标识；无可比期分支=「暂无可比期」不补 0）"
+      m2_annotation: "对照M2修正：趋势按 year 去重取最新行（D-02）+ 依赖表名修正为 synth_vit_index（synth_vit_trend 不存在）"
+  element:
+    - case_id: CASE-ELEM-01
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "每城 1 行，region_name 正确；最新批 mock_20261105_elem_seed" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_type_score", rows: 56, note: "7 类型 × 2 行 × 4 城" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_level_score", rows: 56, note: "7 层次 × 2 行 × 4 城" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_domain_score", rows: 20, note: "5 领域 × 4 城" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_indicator", rows: 108, note: "lens=type 68 + lens=domain 40；status 混合 ok/mock/proxy/degenerate" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_weight", rows: 12, note: "4 城 × 3 行" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_contrib", rows: 32, note: "4 要素 × 2 行 × 4 城；caliber_flag 24 NULL + 8 行 B" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_rank", rows: 4, note: "仅深圳市上下文（region_name 正确）" }
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 48, note: "深圳×3y×4 维在库；metric_status=pending_registration 全表，批 mock_20261106_four_dim_seed" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 mock 过渡态；四维卡带「功能合规过渡 · pending_registration」标识）"
+      m2_annotation: "对照M2修正：指数/排名为同一目标值 ± 扰动演示值（D-03），讲解口径明确非独立真实城市差异"
+    - case_id: CASE-ELEM-02
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近1年" }
+      verdict: supported   # M6（2026-11-08）：原判 partial 引 G-01，已闭合（11-07 下午要素三窗灌数 + Q1 修复，R3 复测 200）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_*（八表）", rows: 304, note: "1y 窗批 mock_20261107_elem_delivery_1y（每窗 index4/type56/level56/domain20/indicator108/weight12/contrib32/rank16 共 304 行，2026-11-07 下午灌数）——M2 原查 0 行前提已过时" }
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 16, note: "深圳×1y×4 维 16 行在库（批 mock_20261106_four_dim_seed）" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId 指向 mock_20261107_elem_delivery_1y；Q1 修复证据同 VIT-04（558d43c / pipeline #4243）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态，四维卡带 pending_registration；原「404/引导 + ADS 面诚实空态」口径为历史诚实分支，保留于三叶册）"
+      m2_annotation: "M6 更新：G-01 已闭合（灌数 + Q1 修复 558d43c/pipeline 4243）；「切条件不自动建任务」（Q-ANALYSIS-01）断言不变"
+    - case_id: CASE-ELEM-03
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近5年" }
+      verdict: supported   # M6（2026-11-08）：原判 partial 引 G-01，已闭合（同 ELEM-02）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_*（八表）", rows: 304, note: "5y 窗批 mock_20261107_elem_delivery_5y（行数口径同 ELEM-02，2026-11-07 下午灌数）——M2 原查 0 行前提已过时" }
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 16, note: "深圳×5y×4 维 16 行在库（四维卡过渡态同 ELEM-02）" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+        live_check: "R3 复测（2026-11-08 02:20）200，snapshotId 指向 mock_20261107_elem_delivery_5y"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态；原「404/引导 + 四维卡例外」口径为历史记录，保留于三叶册）"
+      m2_annotation: "M6 更新：同 ELEM-02 收敛口径已随灌数失效，四维卡讲解口径照常带 pending_registration"
+    - case_id: CASE-ELEM-04
+      condition: { region: "广州", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "广州行在库（region_name 正确）；值=同一目标值 ± 扰动（D-03）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_type_score", rows: 56, note: "广州行在库；region_name 误标「深圳」（region_code 正确，D-01）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_rank", rows: 4, note: "排名城市行含广州（深圳上下文，region_name 正确）" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 任务实算过渡态；城市名以条件栏为准；失败分支=过程页失败+重新尝试）"
+      m2_annotation: "缺陷 D-01（7 表非深圳行 region_name 误标）与 D-03（指数同源 ± 扰动）影响展示细节，M4 登记修复"
+    - case_id: CASE-ELEM-05
+      condition: { region: "东莞", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "东莞行在库（D-01/D-03 同 ELEM-04）" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 任务实算过渡态；城市名以条件栏为准）"
+      m2_annotation: "缺陷 D-01 / D-03 影响展示细节，M4 登记修复"
+    - case_id: CASE-ELEM-06
+      condition: { region: "惠州", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "惠州行在库（D-01/D-03 同 ELEM-04）" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 任务实算过渡态；城市名以条件栏为准）"
+      m2_annotation: "缺陷 D-01 / D-03 影响展示细节，M4 登记修复"
+    - case_id: CASE-ELEM-07
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_type_score", rows: 56, note: "深圳 14 行（7 类型 T-* × INDEX/SCORE）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_level_score", rows: 56, note: "深圳 14 行（7 层次 L-*）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_domain_score", rows: 20, note: "深圳 5 行（D1-COV~D5-ECO）" }
+          - { table: "demo_gkxlumenx_ads.synth_elem_indicator", rows: 108, note: "深圳 27 行（lens=type + lens=domain）；status 混合 ok/mock/proxy/degenerate 诚实展示" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 三透镜逐一切换渲染；深圳上下文无 region_name 误标风险；空态分支=「暂无数据」不串透镜）"
+      m2_annotation: "status 诚实性断言（M2 F8）：mock/proxy/degenerate 行不冒充 ok"
+    - case_id: CASE-ELEM-08
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 48, note: "深圳×3y×4 维 4 行（scale/quality/structure/activity）；score 无 NULL；region_name 正确；fill_method=demo_index_offset" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（过渡态）——四卡有值 + 必带「功能合规过渡 · pending_registration」+ is_mock=1；缺表分支=「暂无数据」+ metric_not_registered"
+      m2_annotation: "对照M2修正：本表为三窗全齐唯一数据面（M2 §2.9），1y/5y 窗任务实算后同样可出（关联 ELEM-02/03）"
+    - case_id: CASE-ELEM-09
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ods.dwd_org_base_info", rows: 189116, note: "is_deleted=0 精确计数；企业 + 空间类园区关键词约 128 行；装包内实时聚合无 ADS 表" }
+          - { table: "demo_gkxlumenx_ods.dwd_research_institute_base_info", rows: 2074, note: "is_deleted=0 精确计数" }
+          - { table: "demo_gkxlumenx_ods.dwd_scholar", rows: 21316, note: "is_deleted=0 精确计数（H 指数 TopN）" }
+          - { table: "demo_gkxlumenx_ods.dwd_org_financing_info", rows: 25654, note: "is_deleted=0 精确计数（融资记录）" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot（全景分类筛选带 element_types 重拉，锁 snapshotId）"
+      gap_refs: []
+      demo_expectation: "能出结果（真实 DWD 汇聚计数）——五类筛选/TopN/total_count 渲染；非默认条件筛选禁用；失败分支=panorama_filtered_fetch_failed 诚实空态；超时降级 AR-8"
+      m2_annotation: "对照M2修正：全景为全域汇聚不按城市过滤（G-08，城市维度不构成缺口），换城计数不变属预期，不得承诺按城筛选"
+    - case_id: CASE-ELEM-10
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_contrib", rows: 32, note: "深圳 8 行（4 要素 ENT/FUN/RSI/TAL × 2）；caliber_flag 6 NULL + 2 行 B 口径" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 contributions[] 渲染；仅关联表述禁因果；空列表分支=诚实空态不填伪路径）"
+      m2_annotation: "口径 🟡 Q-SYNTH-E-02（贡献路径正式算法未定稿，演示态份额分解非因果）；caliber_flag B 行按 B 口径诚实标注"
+    - case_id: CASE-ELEM-11
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_rank", rows: 4, note: "仅深圳市上下文 4 行（4 个排名城市行，region_name 正确）；四城排序值=同源 ± 扰动（D-03）" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 当前区域「（当前）」高亮；点击广州回 config 待重分析态）"
+      m2_annotation: "对照M2修正：非深圳上下文排名 0 行为诚实空态分支（G-02）；D-03 演示值不当真实城市差异结论"
+    - case_id: CASE-ELEM-12
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported   # M6（2026-11-08）：原判 gap 引 G-01，已闭合（11-07 下午补要素历史年行，R2 复测趋势 [2022,2023,2024]）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "历史年行已补：2020–2023 年度 mock 行批 mock_20261107_elem_hist_*（共 48 条，基期 2024，2026-11-07 下午灌数，与活力共用年度历史读取器）——M2 原查「每城仅 1 行当年行」前提已过时" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot"
+        live_check: "R2 复测（2026-11-07 晚）：要素趋势 [2022,2023,2024] 三年度点（R3 晨间探活同口径）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 趋势卡带「演示历史」口径过渡行，与活力叶同构；原「暂无数据」诚实空态口径为历史记录，保留于三叶册）"
+      m2_annotation: "M6 更新：G-01（要素无历史年行子项）已闭合；趋势读历史批 + 同比取相邻年度口径与活力一致"
+    - case_id: CASE-ELEM-13
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported   # M6（2026-11-08）：原判 partial 引 G-01，已闭合（历史年行补齐后报告趋势段有数据，R2 复测确认）
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "历史年行已补（mock_20261107_elem_hist_*）→ 报告趋势段有数据点，原「不含趋势点」空态口径失效" }
+          - { table: "demo_gkxlumenx_ai.synth_elem_four_dim_score", rows: 48, note: "四维段声明依据（is_mock=1 + pending_registration 逐字声明）——不变" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot（报告页直读快照，PDF 前端本地生成）"
+        live_check: "R2 复测（2026-11-07 晚）：要素趋势 [2022,2023,2024]（报告趋势段数据面随 ELEM-12 同步闭合）"
+      gap_refs: []   # M6：原 ["G-01"] 已闭合
+      demo_expectation: "能出结果（🧪 mock 过渡态）——全景/三透镜/四维/贡献/趋势/优劣段齐（趋势段随历史年行补齐出数）；四维声明逐字 + 局限说明段口径不变；快照缺失分支=入口禁用"
+      m2_annotation: "M6 更新：趋势段由「不含趋势点」空态口径转为出数；四维声明与 Q-SYNTH-02 / Q-SYNTH-E-02 局限口径不变"
+    - case_id: CASE-ELEM-14
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_elem_index", rows: 4, note: "重跑批语义对照：当前单批 mock_20261105_elem_seed；重跑产生新 calc_batch_id/snapshotId，旧批可回溯不覆盖" }
+        api_task: "GET /topic/v1/synth/elements/batch-snapshot（任务态「重新分析」force 重跑，onStartAnalysis(true)）"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪 新 snapshotId ≠ 旧 snapshotId；A/B 批隔离；失败分支=旧快照仍是可回退最新成功批）"
+      m2_annotation: "重跑新批语义对照 M2 §2.0 批次结构（任务链表非 ADS，M2 未覆盖）"
+  collab:
+    - case_id: CASE-COLLAB-01
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 6, note: "深圳 is_latest=1 快照 task:ANA-20261107-011（calc_batch_id=gapfill_transitional）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 35, note: "深圳 15 行（2021–2025 × 3 关系类型）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_output_year", rows: 20, note: "深圳 5 行 2021–2025" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_isolate_year", rows: 8, note: "深圳 2 行（独立研究所C/独立服务机构C）" }
+          - { table: "demo_gkxlumenx_ads.synth_collab_relation_input", rows: 3, note: "深圳 3y 3 行（co_patent 6477 / co_project 0 / talent_flow 18553）" }
+          - { table: "demo_gkxlumenx_ads.synth_collab_node", rows: 0, note: "ADS 六结果表全空（node/edge/network_stat/index/output_corr/cluster）→ 展示值全部来自实时计算（G-04 合规诚实态，非缺口）" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（dataSource=gapfill_transitional 过渡标识 🧪；快照溯源 task:ANA-20261107-011；404 分支=no_batch 引导）"
+      m2_annotation: "对照M2修正：ADS 六结果表 0 行（G-04 语义），展示值走实时计算；禁止按「查 ADS 结果表」写判定"
+    - case_id: CASE-COLLAB-02
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近1年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 0, note: "深圳×1y 快照条件行数 0（batch_meta 仅 3y 快照，G-06）→ 待分析态依据；任务完成后发布 1y 快照" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 15, note: "深圳 2021–2025 全覆盖（含 2025 年行）→ 任务链按 event_year 回推 1y 窗实算" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（任务 gapfill 实算后 🧪；切条件不自动建任务；空窗分支=no_year_on_source 语义本环境不触发）"
+      m2_annotation: "对照M2修正：与活力/要素叶不同，协同 gapfill 输入带年份，非默认窗任务可实算出数（过渡态）"
+    - case_id: CASE-COLLAB-03
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近5年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 0, note: "深圳×5y 快照条件行数 0（G-06）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 15, note: "深圳 15 行全量覆盖 2021–2025 → 5y 实算取全量关系行" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（任务 gapfill 实算 🧪；可对比 1y/3y/5y 三窗图谱密度差异，讲解带过渡口径）"
+      m2_annotation: "同 COLLAB-02 结构；空窗分支（no_year_on_source）本环境不触发"
+    - case_id: CASE-COLLAB-04
+      condition: { region: "广州", compare: "全国重点城市", window: "最近3年" }
+      verdict: partial
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 6, note: "广州 is_latest=1 快照 task:ANA-20261107-006（gapfill_transitional）→ 快照秒开可用" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 10, note: "广州 10 行=co_patent+co_project 两类，无 talent_flow 行（G-05）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_output_year", rows: 5, note: "广州 5 行 2021–2025" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_isolate_year", rows: 2, note: "广州 2 行" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: ["G-05"]
+      demo_expectation: "能出结果（gapfill_transitional 🧪）——快照秒开或任务实算；图谱关系类型仅两类（talent_flow 缺，讲解按过渡数据事实）"
+      m2_annotation: "对照M2修正：广州可快照秒开（batch_meta is_latest 在场）；talent_flow 关系类缺（G-05）→ 图谱关系类型子区块降级"
+    - case_id: CASE-COLLAB-05
+      condition: { region: "东莞", compare: "全国重点城市", window: "最近3年" }
+      verdict: partial
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 0, note: "东莞无任何快照（G-06）→ 无快照路径，走任务实算并发布 batch_meta" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 5, note: "东莞 5 行=仅 co_patent × 2021–2025（G-05：无 co_project/talent_flow）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_isolate_year", rows: 2, note: "东莞 2 行孤立主体" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: ["G-05", "G-06"]
+      demo_expectation: "能出结果（任务 gapfill 实算 🧪）——图谱仅 co_patent 单类可筛、边数明显少于深圳（5 vs 15）；失败分支=过程页失败+重新尝试"
+      m2_annotation: "对照M2修正：无快照走实算路径（G-06）；关系类型仅单类（G-05）——单类图谱是数据事实不是功能缺陷"
+    - case_id: CASE-COLLAB-06
+      condition: { region: "惠州", compare: "全国重点城市", window: "最近3年" }
+      verdict: partial
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 0, note: "惠州无任何快照（G-06）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 5, note: "惠州 5 行=仅 co_patent（G-05）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_output_year", rows: 5, note: "惠州 5 行 2021–2025" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_isolate_year", rows: 2, note: "惠州 2 行孤立主体" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: ["G-05", "G-06"]
+      demo_expectation: "能出结果（任务 gapfill 实算 🧪）——口径同东莞（单类关系 + 无快照任务路径）；失败分支同"
+      m2_annotation: "对照M2修正：同 CASE-COLLAB-05（G-05 / G-06）"
+    - case_id: CASE-COLLAB-07
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 6, note: "graph_batch_id 解析自深圳 is_latest 快照（A/B 批不串）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 15, note: "深圳 15 行构图（3 类关系）" }
+        api_task: "GET /topic/v1/synth/collaboration/graph"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——节点/边数以 API 实际返回为准（审计文当日记录 8 节点/9 边，M2 未复测）；点击高亮子图三卡同步；空图分支=reason 文案不 500"
+      m2_annotation: "对照M2修正：节点映射 institution→research / service_org→service，关系映射 co_patent→joint_patent / co_project→project；计数不把审计记录值当硬断言"
+    - case_id: CASE-COLLAB-08
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 15, note: "深圳行带 industry_code/industry_label（图谱产业选项=industry_code 去重，服务端过滤重拉）" }
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 6, note: "snapshotId 保持绑定（批不串）" }
+        api_task: "GET /topic/v1/synth/collaboration/graph（请求带 industry 参数）"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——服务端过滤重拉，节点/边/子图统计同步；无产业行分支=下拉禁用不伪造选项"
+      m2_annotation: "对照M2修正：本用例限深圳/广州执行（G-05：东莞/惠州关系行单类，产业选项覆盖弱）；东莞/惠州选项极少或禁用属数据事实"
+    - case_id: CASE-COLLAB-09
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 15, note: "深圳 3 类关系行（joint_patent / project / talent_flow 前端叠加过滤的数据基础）" }
+        api_task: "GET /topic/v1/synth/collaboration/graph（kindFilter/edgeFilter 前端叠加）"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——过滤后节点/边与子图三卡一致；组合过滤至无节点=局部空态+统计 0 不 500"
+      m2_annotation: "对照M2修正：三类关系筛选限深圳/广州（G-05）；co_project=0 值行不拦图谱边（G-07：图谱读 gapfill 关系行非 relation_input 表）"
+    - case_id: CASE-COLLAB-10
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_relation_input", rows: 3, note: "深圳 3y 3 行：co_patent 6477 / co_project 0（0 值行，诚实 0 值展示）/ talent_flow 18553" }
+          - { table: "demo_gkxlumenx_ads.synth_collab_network_stat", rows: 0, note: "ADS 表 0 行（G-04）——展示值由实时计算回显，不拦截展示" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——子图三卡（子图口径标注）+ 关系输入三卡/条形图（合作项目=0 高柱属预期）；缺行分支=null「—」不补 0"
+      m2_annotation: "对照M2修正：co_project=诚实 0 值展示（有行有值非空态，G-07）；ADS 0 行不算缺口（G-04）"
+    - case_id: CASE-COLLAB-11
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_index", rows: 0, note: "ADS 表 0 行（G-04 合规诚实态）——指数/完整度/中心度/密度由过渡实时计算回显" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 35, note: "四城行齐——横向排名 4 城由四城网络结果派生" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——三卡有值 + 排名 4 城当前高亮；点击他区回 config；空窗分支=「—」+ PUBLIC_EMPTY 不补 0"
+      m2_annotation: "对照M2修正：synth_collab_index 0 行不是缺口（G-04），按 gapfill 输入齐备即 supported（过渡）"
+    - case_id: CASE-COLLAB-12
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_output_year", rows: 20, note: "深圳 2021–2025 5 行（collab_score 逐年上升，fill_method=demo_year_series 过渡行）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 15, note: "深圳 3 类 × 5 年（趋势回推输入）" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——趋势 2021–2025 演示年度渲染；1y 窗仅 2025 点、5y 全量 5 点；无行分支=「暂无数据」不补 0"
+      m2_annotation: "趋势=gapfill 演示序列，讲解带「演示年度」口径"
+    - case_id: CASE-COLLAB-13
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_isolate_year", rows: 8, note: "深圳 2 行（独立研究所C/institution + 独立服务机构C/service，connection_count=0）" }
+          - { table: "demo_gkxlumenx_ads.synth_collab_cluster", rows: 0, note: "正式集群归属表 0 行（cluster_rule_unclosed 语义：C-02 定稿前不派生，空表不是缺陷，G-04）" }
+        api_task: "GET /topic/v1/synth/collaboration/graph（孤立主体点击定位/高亮零度节点）"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——集群=过渡规则结果（关系图连通分量；深圳默认快照集群 1 个，以 API 实际返回为准）；孤立主体 2 个带待审核建议；点击定位图谱"
+      m2_annotation: "对照M2修正：集群过渡规则标注（正式 C-02 规则待甲方定稿 🟡 Q-SYNTH-C-02）；cluster 0 行=cluster_rule_unclosed 非缺陷"
+    - case_id: CASE-COLLAB-14
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_output_year", rows: 20, note: "深圳 5 年序列（collab_score + joint_patent_count，Pearson n=5 ≥ 3）" }
+          - { table: "demo_gkxlumenx_ads.synth_collab_output_corr", rows: 0, note: "ADS 表 0 行（G-04）——相关系数来自 gapfill 序列实时 Pearson" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot"
+      gap_refs: []
+      demo_expectation: "能出结果（status=ok 🧪）——相关系数+散点+样本范围/方法状态显性；「仅关联非因果」；insufficient 分支（n<3）本环境不触发"
+      m2_annotation: "对照M2修正：output_corr 0 行非缺口（G-04）；双口径讲解=仅关联非因果 + mock（Q-SYNTH-C-03 🟡）"
+    - case_id: CASE-COLLAB-15
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_relation_year", rows: 15, note: "深圳关系行（LLM 降级时确定性建议的事实输入之一）" }
+          - { table: "demo_gkxlumenx_ads.gapfill_synth_collab_output_year", rows: 20, note: "深圳产出序列（相关性事实输入；无专表）" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot（策略建议表；LLM=装包 gkx-zhipu-llm）"
+      gap_refs: []
+      demo_expectation: "能出结果（两分支择一 🧪）——LLM 可用=证据锚定建议全部「待审核」；LLM 不可用=确定性事实建议 ≥2 条降级仍全部待审核；空分支=strategies=[] 不伪造"
+      m2_annotation: "对照M2修正：降级建议是合规回退不是故障（审计文记录确定性建议 2 条，基于关系输入与相关性事实）；Q-SYNTH-C-04 🟡"
+    - case_id: CASE-COLLAB-16
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 6, note: "深圳 is_latest 快照 task:ANA-20261107-011（广州 task:ANA-20261107-006 备选）；东莞/惠州无快照（G-06）为反分支现场" }
+        api_task: "GET /topic/v1/synth/collaboration/batch-snapshot（报告页携父任务/条件直读成功快照，不创建 region_innovation_collaboration_report 任务）"
+      gap_refs: []
+      demo_expectation: "能出结果（🧪）——报告七段式含 gapfill_transitional 过渡标识 + PDF 前端导出；任务中心无新增报告任务；无快照分支=「先完成分析」提示（东莞/惠州现场）"
+      m2_annotation: "对照M2修正：报告限深圳/广州快照城（G-06）；「不建报告任务」是本条断言之一"
+    - case_id: CASE-COLLAB-17
+      condition: { region: "深圳", compare: "全国重点城市", window: "最近3年" }
+      verdict: supported
+      evidence:
+        tables:
+          - { table: "demo_gkxlumenx_ads.synth_collab_batch_meta", rows: 6, note: "uk(snapshotId) 无行分支（构造 task:never_exists 语义的不存在 ID）；深圳/广州 is_latest 快照在场用于验证「不回落最新批」" }
+        api_task: "GET /topic/v1/synth/collaboration/graph（携带不存在 snapshotId）"
+      gap_refs: []
+      demo_expectation: "拦截（batch_meta_missing：HTTP 200 + nodes=[] + 逐字文案；禁回落最新批；只读分支零写入，任意时候可跑）"
+      m2_annotation: "对照M2修正：坏快照构造方式=不存在 snapshotId（task:never_exists 语义），不用深圳 4 条历史快照冒充坏快照（历史快照属合法回溯）"

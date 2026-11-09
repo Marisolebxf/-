@@ -38,6 +38,18 @@
 
 政策 GDF 派单包与已签收的 `ads.md` 没有另点名一张「来源监控入库」表。本单不编造 ADS 表名，不加字段。打开一条详情仍走全景已有 `{id}/detail`，本单不新开详情表。来源监控没有 `metric_id`，本单不新造。无入库行则列表空，不造行。
 
+**2026-11-07 变更（`POL-L2-DS10-SRCMON-SYNTH-L01`，D16 例外由 `human:淮政玮` 批准）**：「立即同步」改为 LLM 合成政策。下表是它写入的位置。不新建表，也不加字段。
+
+| 库.表 | 写入内容 | 标记 |
+|---|---|---|
+| `{ods}.dwd_policy_base` | 合成政策贴源行 | `id` 前缀 `SYN`，`source='llm-synth'` |
+| `{dwd}.policy_base_info` | 合成政策主表行，`source_plane='domestic'`，检索和统计计入 | `policy_id` 前缀 `SYN`，`source='llm-synth'`，`etl_batch_id` 前缀 `SYNTH-` |
+| `{dwd}.policy_industry_rel`、`{ads}.policy_industry_rel` | 由产业补码 `enrich_one` 写入。向量检索降级时不写 | 跟随 `policy_id` |
+| `{ads}.policy_text_parse` | 由条款结构化 `structure_one` 写入，规则分条 | 跟随 `policy_id` |
+| `{ads}.gdf_gapfill_syscnhistory` | 每次同步一行：先 `running`，结束后回写 `success`/`partial`/`failed` 和真实计数 | `fill_method='llm-synth'` |
+
+删除只按上表的标记执行，先删关联表，再删 DWD 主表和 ODS。`ingest` 读面新增一列计算值 `is_mock = (source='llm-synth')`，不落库。
+
 ## 3. 204 政策订阅服务
 
 不落展示库，不建缺项表，不灌假订阅。

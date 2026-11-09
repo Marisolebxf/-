@@ -31,11 +31,12 @@
 
 ## 2. 实现架构
 
-本二级只用全景已有五条，不新开路径。前缀 `/display/v1/policy/`。
+本二级检索读面仍是全景已有五条 GET，不另开第二套目录引擎。197「智能检索」Tab 另加一条同步预处理 `POST …/query-intent`（详 `POL-L2-DS10-QRY-INTENT`），拆完筛选项后仍走已有 `search`。前缀 `/display/v1/policy/`。
 
 | 叶子 | 资源 | 流程 |
 |---|---|---|
-| 197、198、200 | `GET /display/v1/policy/panorama/stats`、`GET /display/v1/policy/panorama/search`、`GET /display/v1/policy/panorama/{id}/detail` | 同步。浏览器只打这三条。`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。正式行读已有表；没有正式行时 Python 读两张缺项表，不在接口里造数 |
+| 197、198、200 | `GET /display/v1/policy/panorama/stats`、`GET /display/v1/policy/panorama/search`、`GET /display/v1/policy/panorama/{id}/detail` | 同步。浏览器只打这三条目录读面。`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。正式行读已有表；没有正式行时 Python 读两张缺项表，不在接口里造数 |
+| 197（智能检索 Tab） | `POST /display/v1/policy/panorama/query-intent` | 同步预处理。只拆 NL → filters / chips / `keyword_residual` / 年份；不查库、不造目录。随后仍调 `search`。失败降级本地词表，HTTP 仍成功 |
 | 199 | `GET /display/v1/policy/panorama/rank` | 展示委托专题门面，Python 只读 `gapfill_policy_qry_rank`。不返回 `smartScore` |
 | 201 | `GET /display/v1/policy/panorama/favorites` | 可实现。展示只委托专题门面。没有记录则空列表。不建缺项表 |
 | 202 | `GET /display/v1/policy/panorama/share` | 可实现。展示只委托专题门面，导出当次目录。不建缺项表，不在接口里放文件字节 |
@@ -46,6 +47,7 @@
 |---|---|
 | `panorama/stats` | `GET /topic/v1/policy/metrics`，分布再取 `GET /topic/v1/policy/indicators`（`kind` 为 level / type / timeseries / national / sz / all） |
 | `panorama/search` | `GET /topic/v1/policy/search`。筛选项用 `GET /topic/v1/policy/search/options` |
+| `panorama/query-intent` | `POST /topic/v1/policy/query-intent` → Python `POST /internal/policy/query-intent`。Java 不调模型 |
 | `panorama/{id}/detail` | `GET /topic/v1/policy/docs/{id}` |
 | `panorama/rank` | 门面排序入口转到 Python。Python 只读 `gapfill_policy_qry_rank` |
 | `panorama/favorites` | 门面历史与收藏入口。不读缺项表 |
@@ -65,8 +67,10 @@ flowchart LR
   gap["gkxlumenx_gapfill 三张 qry 表"]
   fe --> gw --> bff
   bff -->|"197 198 200：stats / search / detail"| tp --> py
+  bff -->|"197 智能检索：query-intent"| tp
   py -->|"有正式行"| ads["已有 ADS / DWD"]
   py -->|"没有正式行 · 199 名次"| gap
+  py -->|"query-intent：LLM 或降级"| llm["模型 / 无 Key 降级"]
   bff -->|"201 favorites · 202 share"| tp
 ```
 
@@ -82,14 +86,15 @@ trace 沿既有展示链走。display → topic-policy 上带 traceId。本叶�
 
 ## 3. 整体流程
 
-一次检索按下面六步走。197、198、200 共用前三步，不拆成三套后端。
+一次检索按下面七步走。197、198、200 共用目录读面前三步，不拆成三套后端。智能检索在目录查询前多一步预处理。
 
 1. 打开检索。前端经网关调 `stats`。197 读总数和四条分布，198 读时序、三条分布和有效率，200 读类型分布与全国分布。有正式行读已有表；没有正式行读 `gapfill_policy_qry_stat`。两处都没有行则对应统计卡空，不造 0。D4 仍是 mock。
-2. 用户设置维度、高级条件或二次筛选。前端调 `search`。有正式目录读 `policy_base_info`；没有正式行读 `gapfill_policy_qry_doc`。布尔组合和二次筛选没有独立 `metric_id`，只是目录查询条件。两处都没有命中则列表空，不造 0。
-3. 用户打开一条政策。前端调 `{id}/detail`，读正式正文或缺项目录里的同一条。无正文则详情空。力度和匹配不在这条资源上。
-4. 用户要求按相关性、时效性、重要性做智能排序。前端调 `rank`。Python 只读 `gapfill_policy_qry_rank`。表空则名次空。不返回 `smartScore`。若用户只按发布时间、效力级别、浏览量排，仍走第 2 步的目录查询，不调用 `rank`。这三列是查询顺序，不是新指标。
-5. 用户要看检索历史或收藏。前端调 `favorites`。展示只委托门面。该用户没有记录时返回空列表。不灌假收藏。页面 localStorage 不是这条资源。
-6. 用户要导出或分享。前端调 `share`。展示只委托门面，导出的是当次目录。不灌假文件。前端表格导出和打印窗不是这条资源。
+2. （仅 197 智能检索 Tab）用户输入自然语言。前端先调 `query-intent`，填 chips / filters / 残差 keyword / 发布年；超时、无 Key、非法 JSON 时 `understood=false`，前端回退本地词表，再不行整句当 keyword。本步不查库。契约见 `POL-L2-DS10-QRY-INTENT`。
+3. 用户设置维度、高级条件或二次筛选（或智能检索拆解完成）。前端调 `search`。有正式目录读 `policy_base_info`；没有正式行读 `gapfill_policy_qry_doc`。布尔组合和二次筛选没有独立 `metric_id`，只是目录查询条件。智能检索的 keyword 用残差，不把整句 NL 当 keyword。两处都没有命中则列表空，不造 0。
+4. 用户打开一条政策。前端调 `{id}/detail`，读正式正文或缺项目录里的同一条。无正文则详情空。力度和匹配不在这条资源上。
+5. 用户要求按相关性、时效性、重要性做智能排序。前端调 `rank`。Python 只读 `gapfill_policy_qry_rank`。表空则名次空。不返回 `smartScore`。若用户只按发布时间、效力级别、浏览量排，仍走第 3 步的目录查询，不调用 `rank`。这三列是查询顺序，不是新指标。
+6. 用户要看检索历史或收藏。前端调 `favorites`。展示只委托门面。该用户没有记录时返回空列表。不灌假收藏。页面 localStorage 不是这条资源。
+7. 用户要导出或分享。前端调 `share`。展示只委托门面，导出的是当次目录。不灌假文件。前端表格导出和打印窗不是这条资源。
 
 `stats` 这条资源上还挂着 `M_POLICY_INDUSTRY_COVERAGE`、`M_POLICY_SUPPORT_STRENGTH`。它们分别留给无序号的行业覆盖和序号 216。本二级不改这条资源的读面，也不把这两条写成 197–202 的挂接。
 
@@ -101,13 +106,14 @@ trace 沿既有展示链走。display → topic-policy 上带 traceId。本叶�
 
 - `stats`：`M_POLICY_TOTAL_COUNT`、`M_POLICY_TYPE_DIST`、`M_POLICY_LEVEL_DIST`、`M_POLICY_NATIONAL_DIST`、`M_POLICY_SZ_DIST`
 - `search`：政策目录。类别、行业领域、发布部门、地区落在目录查询上
+- `query-intent`（仅智能检索 Tab）：NL → 闭集 filters / chips / `keyword_residual` / `publish_year_*`；随后仍走 `search`。详 `POL-L2-DS10-QRY-INTENT`
 - `{id}/detail`：打开一条时读正文
 
-链路：前端 → 网关 → `gkxlumen-display` → `gkxlumen-topic-policy` → Python `/internal/policy`。展示不直连 Python。
+链路：前端 → 网关 → `gkxlumen-display` → `gkxlumen-topic-policy` → Python `/internal/policy`。展示不直连 Python。`query-intent` 与 `search` 同链，LLM 只在 Python。
 
-空态：正式表和 `gapfill_policy_qry_stat`、`gapfill_policy_qry_doc` 都没有行则统计卡或列表空，不造 0，也不在接口里写死数。D4 保持 mock。类型分布已有口径标记 QPOL-01，本叶不改口径，也不把类型 mock 写进 `ads.policy_type_dist`。深圳分布已挂在本叶，页面是否已挂接不在本叶改 `FE-POL-01A`。
+空态：正式表和 `gapfill_policy_qry_stat`、`gapfill_policy_qry_doc` 都没有行则统计卡或列表空，不造 0，也不在接口里写死数。D4 保持 mock。类型分布已有口径标记 QPOL-01，本叶不改口径，也不把类型 mock 写进 `ads.policy_type_dist`。深圳分布已挂在本叶，页面是否已挂接不在本叶改 `FE-POL-01A`。意图拆解失败不改判 501，页面回退本地词表后再 `search`。
 
-不做什么：不新造全景汇总指标替代这五条。不把 `M_POLICY_BASE_100_1` 挂进本叶。不把行业覆盖、支持力度算进本叶。不重开 GDF。
+不做什么：不新造全景汇总指标替代这五条。不把 `M_POLICY_BASE_100_1` 挂进本叶。不把行业覆盖、支持力度算进本叶。不重开 GDF。不把本资源写成核增 606 政策语义理解或序号 237 政策文本解析。不做向量召回。
 
 ### 4.2 198 高级检索功能 · 同步
 
@@ -187,7 +193,7 @@ trace 沿既有展示链走。display → topic-policy 上带 traceId。本叶�
 
 | 序号 | 与本二级的边界 |
 |---|---|
-| 203 | 来源监控只读已有入库。资源是 `ingest`。不重开 GDF |
+| 203 | 来源监控只读已有入库。资源是 `ingest`。不重开 GDF。LLM 合成行 `source_plane='domestic'`，检索计入（2026-11-07，见 TREND-ARCH 4.1） |
 | 204 | 订阅与外发。资源是 `subscriptions`。不是收藏 |
 | 205 | 趋势另叶复用时序。热点、影响、深度报告另叶读缺项表。本叶不实现 |
 | 206 | 时间与地域另叶读已有表。主题分布另叶读缺项表。本叶不实现 |
@@ -209,10 +215,10 @@ trace 沿既有展示链走。display → topic-policy 上带 traceId。本叶�
 - 不写 OpenAPI 字段表、请求体、响应体、枚举。
 - 不新造 `metric_id`。不改 D4。不把 mock 写成已上线。
 - 不把 `GDF-POLICY-MOCK-GATE-L01` 写成已解开。
-- 浏览器不改打 `/topic/v1/policy` 或 `/policy/topic/v1/policy`。不把 `E-E7-POLICY-M1-L06` 写成展示前端联调单。已实装的内部委托是 stats / search / detail。199、201、202 接通后也只委托门面新增入口。不把 graph / timeline / portal 拉进本二级。
-- 不改 `FE-POL-01A`，不新建前端单。契约冻结前前端继续 mock，本叶不猜字段。
+- 浏览器不改打 `/topic/v1/policy` 或 `/policy/topic/v1/policy`。不把 `E-E7-POLICY-M1-L06` 写成展示前端联调单。已实装的内部委托是 stats / search / detail / query-intent。199、201、202 接通后也只委托门面新增入口。不把 graph / timeline / portal 拉进本二级。
+- 不改 `FE-POL-01A` 为第二套检索页。`query-intent` 不写成 606。
 - 不重开 GDF，不写 ODS、DWD、ADS。三张 `gapfill_` 表由灌数单建，本叶不灌数、不加字段。
-- 不改说明书、WBS、注册表、调研分册。
+- 不改 WBS、注册表、调研分册。总册与契约清单的 `query-intent` 交叉引用由 INTENT 分册同步。
 - 199 不进异步 Job，不注册排序模型。201、202 不进 Python 打分。第 7 节是签收后的读法，本叶不改门面代码。
 - 不把 localStorage、`smartScore`、前端导出或打印窗写成已经接通的服务。
 - 2026-11-03 human:淮政玮首次签收。同日按说明书第 11 节再次签收。

@@ -37,10 +37,29 @@
 - 同日补齐 12 文首、第 1 节警告和 23 遗留表残留：问 8~13 五项已定，正式空间 `gkx_chain`（lumen）。淮政玮确认。
 - `script/` 放入 `lumen-algo-py` 上图与 rebuild 原文（`graph_project.py`、`industry_embed.py` 及两条路由），供 GDF 对照 §5。不在 GDF 节点执行。
 
+## v2.3.2 — 2026-11-03（问 9~10 脚本参数化真交付）
+
+- **`script/industry_embed.py`**：全环境变量化；去掉 `lumen_common`/`polan`；`MILVUS_DB_NAME` 未配或 `default` 拒绝写入；词表默认读 `gkxlumenx_dwd`；`python industry_embed.py` 自检通过。
+- **`script/README.md`**：参数表（必配/可选）重写；GDF 配作业只设环境变量、不改代码。
+- 误建 `CHAIN-EMBED-PARAM-L01` 已撤销；问 9~10 以本版脚本为准。
+
+## v2.3.1 — 2026-11-03（round2 问 4 与问 5~10 拍板落稿）
+
+- **问 4 `stage_code`（徐滕强）**：维持三等分派生（末两位 1-4/5-8/9+ → upstream/midstream/downstream）；排序含义登记 🟡 待供应方确认，不符则重算刷新。09§3.0 与 OPEN-CHAIN-MAP-01 同步。
+- **问 5~8（徐滕强）**：原子接口方案与 definition_id **转我方架构师确认**（数据侧不代答引擎能力），确认结果随 round3 给出；幂等基线语义先行书面承诺。
+- **问 9~10（徐滕强，路线 A）**：承诺脚本全参数化 + 依赖内联（**v2.3.2 已落地脚本**；不另派 algo）。
+- 23 号答复 §8 问 4/5~8/9~10 全部按拍板更新。11 问至此**全部闭环**。
+
+## v2.3 — 2026-11-03
+
+- **round2 答复落稿**（`23`§8，11 问）：①链树层级修正——`node.chain_id` 改填所属 L1 链（沿父级向上，命中率 100% 验收）、`parent_node_id` 补直接父级（L2 165 行 NULL）、边表改真父子 **1,055 条** `parent_child`（废弃兄弟相邻 913 条方案，书面更正）；②`stage_code` 定 NULL（同级序号≠上中下游）；③原子入图接口接受，引擎侧改造 round3 给承诺；④脚本全参数化（DB_NAME/collection/表名/闸门等），交付即运行；⑤`_SPACE_OK` 口径澄清（demo 域实现不进 GDF DAG）。
+- GDF 附注三处不一致修正：02 tags 行解析写法、CHANGELOG v2.2 条 flag 表述、12§5.1 JSON 段定位。
+- 09 头注升 v2.3；OPEN-CHAIN-MAP-01 更新（stage_code=NULL）。12/后加工暂不配置（等原子接口 + definition_id）。
+
 ## v2.2 — 2026-11-02
 
 - **round1 核对签收与 20 题答复**：新增 `23-核对签收与答复.md`（有问必答，对照 GDF round1 提问清单编号）。
-- **09 链树映射重写（§3.1~3.4）**：真源列语义实测修正——`industry_code` 主键（`industry_link_code` 实为父级码，废止主键用法）、`industry_name` 名称（`industry_link_name` 实为父名）、`parent_name` 为层级序号 0..7（作分层判定源）、`level` 列全 0 禁用；分层改 L0+L1 链表（53 行）/ L2~L7 节点表（1,220 行）；`parent_node_id` 填直接父级、不跳级；`sort_no`=同链码序、`stage_code` 三等分采用；`future_industry_flag` 按簇表 fut 组派生（弃 INB13 前缀）；挂接列按单引号列表字面量解析 + 脏值治理规则。
+- **09 链树映射重写（§3.1~3.4）**：真源列语义实测修正——`industry_code` 主键（`industry_link_code` 实为父级码，废止主键用法）、`industry_name` 名称（`industry_link_name` 实为父名）、`parent_name` 为层级序号 0..7（作分层判定源）、`level` 列全 0 禁用；分层改 L0+L1 链表（53 行）/ L2~L7 节点表（1,220 行）；`parent_node_id` 填直接父级、不跳级；`sort_no`=同链码序、`stage_code` 三等分采用（**v2.3 已改 NULL**）；`future_industry_flag` 写 0、不 JOIN 簇表（**v2.3 勘误：本条原记「按簇表派生」与 23 问 17 定稿不符**）；挂接列按单引号列表字面量解析 + 脏值治理规则。
 - **10/ DDL 真源钉死**：新增 `dwd-chain.md` 复制件（库名全局改 `gkxlumenx_dwd`）为四表唯一结构真源；删除旧 `链树四表.md`；v5 文档作废；README 重写真源声明。
 - **12 修订**：图空间名/上图与 rebuild 契约/点数稳定判定标注待架构师确认（round2 补）；`demo_gkx_chain` 为占位禁施工；跳过写 `skip` 已定。
 - **环境红线入包（2026-11-02 架构师新规）**：GDF 只读真源 `gkx` + `gkxlumenx_*` 正式库，禁读 demo；码表一次性修数由我方执行；正式库数据旧/缺以真源为准施工、业务问题咨询我方。

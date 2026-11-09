@@ -6,11 +6,12 @@
 - 认领：`agent:api-agent`
 - 强度：ponytail off（定义任务，不缩文档）
 - 用户故事：`US-DS-POL-01`
-- 上游：`sdd/l2/POL-L2-DS10-QRY-ARCH.md`（本分册以它为准，不改）、SRS `科创政策全景.md` 序号 197–202、`sdd/契约输入清单.md` 全景检索六条、`sdd/调用链与边界.md`
+- 上游：`sdd/l2/POL-L2-DS10-QRY-ARCH.md`（本分册以它为准，不改）、SRS `科创政策全景.md` 序号 197–202、`sdd/契约输入清单.md` 全景检索资源、`sdd/调用链与边界.md`
+- 智能检索预处理详册：`sdd/l2/POL-L2-DS10-QRY-INTENT.md`（本分册只登记公开路径与委托；闭集字段以 INTENT 为准）
 
 本分册只定科创政策全景二级「多维检索查询」的后台接口。它是 `BE-POL-CONTRACT-01` 的输入，不是第二份 API-POL。不另建契约文件。枚举闭包、响应字段名和 DTO 仍由那一张契约冻结。这里只写路径、方法、查询参数、响应要点、同步或 501。
 
-不写实现代码。不改 `E-E7-POLICY-M1-L08`、`L09`、`L10`。不把 `lumen-svc-platform` 或 `lumen-algo-py` 工作区里未提交的门面改动当成契约。已提交门面（检索、选项、正文、指标、分布）可以对照；排序、历史与收藏、导出与分享在已提交门面上没有入口。
+不写实现代码。不改 `E-E7-POLICY-M1-L08`、`L09`、`L10`。不把 `lumen-svc-platform` 或 `lumen-algo-py` 工作区里未提交的门面改动当成契约。已提交门面（检索、选项、正文、指标、分布、query-intent）可以对照；排序、历史与收藏、导出与分享在已提交门面上没有入口。
 
 ## 偏离
 
@@ -18,12 +19,13 @@
 
 ## 1. 公开资源
 
-六条都是 GET。浏览器经网关打 `gkxlumen-display`。网关只转 `/display/**`。不另开路径，不另开页。六条都不是 Job。
+目录读面六条仍是 GET；197 智能检索另加一条同步 POST 预处理。浏览器经网关打 `gkxlumen-display`。网关只转 `/display/**`。不另开页。都不是 Job。
 
 | 序号 | 公开资源 | 当前读法 |
 |---|---|---|
 | 197、198、200 | `GET /display/v1/policy/panorama/stats` | 同步。不返回 501 |
 | 197、198、200 | `GET /display/v1/policy/panorama/search` | 同步。不返回 501 |
+| 197（智能检索） | `POST /display/v1/policy/panorama/query-intent` | 同步预处理。不返回 501。不查库 |
 | 197、198、200 | `GET /display/v1/policy/panorama/{id}/detail` | 同步。不返回 501 |
 | 199 | `GET /display/v1/policy/panorama/rank` | 当前 501 |
 | 201 | `GET /display/v1/policy/panorama/favorites` | 当前 501。入口接上且没有记录时改空列表 |
@@ -31,13 +33,13 @@
 
 `{id}` 是 `search` 目录项里的政策 id。
 
-契约输入清单把 `rank`、`favorites`、`share` 写在「同步」列，意思是它们是 GET，不是 Job。成功读面未见。按该清单和架构稿，这三条当前由 display 直接 501，不建任务，不去读 ADS。
+契约输入清单把 `rank`、`favorites`、`share` 写在「同步」列，意思是它们是 GET，不是 Job。成功读面未见。按该清单和架构稿，这三条当前由 display 直接 501，不建任务，不去读 ADS。`query-intent` 也是同步，但方法是 POST（有请求体），失败降级不改判 501。
 
 501 不清空同页已经返回的统计卡、目录和正文。
 
 ## 2. 内部委托
 
-展示不直连 Python，不直连 `gkx_search_service`，不直连库，不为这六条建 `gkxlumen-element` 的 policy 包。Java 不写算法，不打分，不写 nGQL。
+展示不直连 Python，不直连 `gkx_search_service`，不直连库，不为这些资源建 `gkxlumen-element` 的 policy 包。Java 不写算法，不打分，不写 nGQL，不调模型。
 
 已提交门面的服务内前缀是 `/topic/v1/policy`。浏览器不打这个前缀，也不打网关上的 `/policy/topic/v1/policy/**`。
 
@@ -45,18 +47,27 @@
 |---|---|---|
 | `panorama/stats` | 同步委托 `GET /topic/v1/policy/metrics`，分布再取 `GET /topic/v1/policy/indicators` | 与当前相同。已接通 |
 | `panorama/search` | 同步委托 `GET /topic/v1/policy/search`。筛选项用 `GET /topic/v1/policy/search/options` | 与当前相同。已接通 |
+| `panorama/query-intent` | 同步委托 `POST /topic/v1/policy/query-intent` → Python `POST /internal/policy/query-intent` | 与当前相同。已接通。闭集见 INTENT |
 | `panorama/{id}/detail` | 同步委托 `GET /topic/v1/policy/docs/{id}` | 与当前相同。已接通 |
 | `panorama/rank` | 门面没有排序入口。display 返回 501，不调用门面，不调用 Python | 仍是这一条 GET。display 委托门面新增的排序入口，再转到 Python `/internal/policy` 下的排序路径。同步，不进 `gkxlumen-topic-async-service` |
 | `panorama/favorites` | 门面没有历史与收藏入口。display 返回 501 | 仍是这一条 GET。display 委托门面新增的历史与收藏入口。展示不自建用户态 |
 | `panorama/share` | 门面没有导出与分享入口。display 返回 501 | 仍是这一条 GET。display 委托门面新增的导出与分享入口。展示不组装文件，不自建发信 |
 
-199、201、202 接通后的门面子路径由 `E-E7-POLICY-M1-L08`、`L09`、`L10` 实现。本分册不冻结这些子路径，也不把工作区未提交改动写成已经存在的入口。展示对外资源名不新开。
+199、201、202 接通后的门面子路径由 `E-E7-POLICY-M1-L08`、`L09`、`L10` 实现。本分册不冻结这些子路径，也不把工作区未提交改动写成已经存在的入口。展示对外资源名不新开（`query-intent` 除外，已登记）。
 
-trace 沿既有展示链。同步三条在 display → topic-policy 上带 traceId。501 三条在 display 返回，不另起算法 span。本分册不新设计观测点。
+trace 沿既有展示链。同步目录与 `query-intent` 在 display → topic-policy 上带 traceId。501 三条在 display 返回，不另起算法 span。本分册不新设计观测点。
 
 ## 3. 197 / 198 / 200 · 同步
 
-三条叶子共用 stats、search、detail，不拆三套后端。注册表 D4 仍是 mock。`GDF-POLICY-MOCK-GATE-L01` 仍是 blocked。闸门未解开时，统计数值仍是 mock。无行则对应统计卡或列表空，不造 0，也不改判 501。
+三条叶子共用 stats、search、detail，不拆三套后端。197 智能检索在 search 前多调 `query-intent`。注册表 D4 仍是 mock。`GDF-POLICY-MOCK-GATE-L01` 仍是 blocked。闸门未解开时，统计数值仍是 mock。无行则对应统计卡或列表空，不造 0，也不改判 501。
+
+### 3.0 `POST /display/v1/policy/panorama/query-intent` · 197 智能检索预处理
+
+请求体：`{ "text": "<自然语言>" }`。`text` 为空则不调 LLM，直接 `understood=false`、`narration=fallback`。
+
+display 原样委托 `POST /topic/v1/policy/query-intent`，再转到 Python `/internal/policy/query-intent`。超时建议 ≤ 5s。无 Key、超时、非法 JSON 均返回 HTTP 成功 + `understood=false`（`narration` 为 `no_key` 或 `fallback`）。前端再跑本地词表，再不行整句当 keyword，然后仍调公开 `search`。
+
+响应要点（闭集字段以 `POL-L2-DS10-QRY-INTENT` 为准）：`understood`、`chips`、`filters`（与展示页码一致）、`publish_year_from` / `publish_year_to`（相对短语由服务端日历落年）、`keyword_residual`、`narration`（`ok` \| `fallback` \| `no_key`）。不返回政策目录，不造 `metric_id`，不挂 606。
 
 ### 3.1 `GET /display/v1/policy/panorama/stats`
 
@@ -84,7 +95,7 @@ display 内部先读 metrics（已提交门面无必填查询项，原样透传�
 
 | 参数 | 叶子 | 要点 |
 |---|---|---|
-| `keyword` | 198 | 政策关键词。内部转发为门面已有的 `keyword`。不另造第三套关键词参数 |
+| `keyword` | 198；197 智能检索用残差 | 政策关键词。内部转发为门面已有的 `keyword`。智能检索 Tab 填 `keyword_residual`，不把整句 NL 当 keyword |
 | `ministry` | 197、198 | 发布部门 / 发布机构 |
 | `publish_code` | 198 | 发布机构编码，可空 |
 | `level` | 198 | 效力级别。需规里的「政策级别」与效力级别是同一维 |
@@ -92,7 +103,7 @@ display 内部先读 metrics（已提交门面无必填查询项，原样透传�
 | `region` | 197、200 | 地区 / 地域 |
 | `status` | 198 | 政策状态。需规取值：有效、失效、修订中 |
 | `industry_code`、`industry_vid` | 197 | 行业领域。Java 不解释产业码 |
-| `publish_year_from`、`publish_year_to` | 200 | 发布时间范围，用于二次筛选 |
+| `publish_year_from`、`publish_year_to` | 200；197 智能检索拆解后 | 发布时间范围。智能检索由 `query-intent` 落年后再带入本资源 |
 | `logic` | 198 | AND / OR / NOT 组合。无独立 `metric_id`。作为 search 条件原样委托 |
 | `order` | 199 的普通排序 | 只接受发布时间、效力级别、浏览量，取值 `publish_time`、`level`、`views`。这是目录查询顺序，不是新指标，不进 `rank` |
 | `limit`、`offset` | 目录分页 | 与已提交门面同名透传 |
@@ -178,6 +189,7 @@ display 内部先读 metrics（已提交门面无必填查询项，原样透传�
 |---|---|---|
 | stats | 对应统计卡空，不造 0 | 不适用。已接通，不返回 501 |
 | search | 列表空 | 不适用。已接通，不返回 501 |
+| query-intent | 不适用（不查库）。拆解失败仍 HTTP 成功 + `understood=false` | 不适用。已接通，不返回 501 |
 | detail | 详情空 | 不适用。已接通，不返回 501 |
 | rank | 接通后按 factor 返回目录；未接通不把空目录当成智能排序已实现 | 501 |
 | favorites | 接通后空列表，HTTP 成功 | 501 |
@@ -194,4 +206,5 @@ display 内部先读 metrics（已提交门面无必填查询项，原样透传�
 - 收藏没有记录时不返回 501。只有入口未接上才 501。
 - 不新造 `metric_id`，不改 D4，不把 mock 写成已上线，不把灌数闸门写成已解开。
 - 不把 localStorage、前端表格导出、打印窗写成已经接通的服务。
-- 不重开 GDF，不加表，不加字段。不改说明书、WBS、注册表、调研分册、指标分册、数据分册。
+- 不把 `query-intent` 写成 606 语义理解 Job，也不做向量召回。
+- 不重开 GDF，不加表，不加字段。不改 WBS、注册表、调研分册、指标分册；数据分册只补「不读表」一句。

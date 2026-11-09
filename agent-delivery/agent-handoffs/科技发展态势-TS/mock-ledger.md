@@ -65,6 +65,18 @@
 **为什么这页仍留 mock 种子而不删**：`USE_MOCK=false` 是全局当前值（U4 裁定），演示轨仅作离线/断网演示与冻结基线比对；
 真源已全部接通，删 mock 属「上线前一次性清理」，与 `SITUATION-ENT-MOCK-LEDGER-L01` 的清理动作合并执行，避免现在删了以后无法复现 demo 基线。
 
+## 预警登记（2026-11-06，M4-ALERT-MOCK）
+
+> ⚠️ M4「创新预警」区块当前展示的是 **mock 演示数据**，不是真实数仓预警结果。
+> 与其余 mock 点位的差别：本次不是"代码里造数"，而是**建了一张 mock 表并落数**
+> （`gkxlumenx.sys_innovation_alert_mock`，6 条，`is_mock=1`），接口原样透出 `mock=true`。
+> 详细留痕见 `M4-ALERT-MOCK-20261106.md`。
+> **执行状态（2026-11-06）**：已在 dev 库 `10.50.11.76:3306 / gkxlumenx` 执行建表+落数，回读 6 条、`is_mock` 全 1，幂等复跑行数不变。表内每行仍恒为演示数据，不得当真实预警使用。
+
+| 数据块 | 要素 key | mock 文件与方法 | 生成规则 | mock_version | 真实源接替条件 | 清理条件 / 动作 | 建单任务 ID |
+|---|---|---|---|---|---|---|---|
+| M4 全球 `/global-innovation/alerts` 预警列表 | `alerts[]`（`list` 6 条） | `lumen-svc-platform/db/migration/20261106_m4_alert_mock.sql`（表 `gkxlumenx.sys_innovation_alert_mock`）；读取链路 `GlobalInnovationController#alerts` → Feign `RemoteUserBehaviorService#listMockAlerts` → upms `@Inner /user/behavior/alert/mock-list` | 冻结 6 条常量（threshold / trend / relation 各 2 条），`trigger_time` 固定 2026-10-31～2026-11-05；**无随机、不推导、不写入任何真实预警结果表**（真实预警结果表尚不存在）；仅落独立 mock 表，每行 `is_mock=1` + `mock_version` + `mock_reason` | `M4-ALERT-MOCK-V1` | 数仓产出真实预警结果表 / 预警算法模型上线 | 后端 `alerts()` 切真实源并删 `mock / mockNote / isMock` 透出；前端删「演示数据（Mock）」角标与 `alertsMock*` 消费；DROP `sys_innovation_alert_mock` 并下线迁移脚本数据段；检索 `sys_innovation_alert_mock` / `M4-ALERT-` / `alertsMock` 归零 | `M4-ALERT-MOCK` |
+
 ## 待登记（后续页面）
 
 - 其它页面若引入代码层 mock，按本表头追加一行，并在 handoff 里引用本台账；未登记不得合入。
