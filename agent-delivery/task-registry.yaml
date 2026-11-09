@@ -60296,7 +60296,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 60000
-    note: "第二轮完成：205 通过，203/204/206 FAIL 归 DATA。根因单 POL-L2-DS10-EXPECT-REFRESH-L01 已派。按 §6.5 验收单回 ready，第三轮待刷新单完成后重测。"
+    note: "第三轮 2026-11-09：期望刷新后复测，203–206 全过，样本满足。常驻单按计划约定不签 done，留 ready。"
     definition_of_done:
       - "7. 编排仓 handoff `POL-L2-DS10-TREND-DEMO-ACCEPT-LOOP.md` 落稿并推送"
       - "1. 需规 203–206 每号一条执行记录（含响应摘要）"
@@ -60305,7 +60305,7 @@ tasks:
       - "3. 失败项先按 §6.5 分类后派单，不直接修代码"
       - "4. 结果回写 TREND LOOP 计划与验收 handoff"
       - "6. 索引「科技政策跟踪-索引.md」循环列更新"
-    update_time: "2026-11-09T09:46:03+08:00"
+    update_time: "2026-11-09T10:13:29+08:00"
   - id: POL-L2-DS10-SENT-DEMO-ACCEPT-LOOP
     blocked_by: |
       令牌失效：网关返回 HTTP 401「访问令牌不存在（sso check-token failed）」。本机文件令牌（5af83d33…）与会话旧令牌（1cce4c0b…）均无效。按 §6.5：通知 human:淮政玮 重新登录并覆盖 %USERPROFILE%\.gkx\display-loop-token 后再说一次「按 LOOP 跑」。不自动登录，不再开一轮。
@@ -60320,7 +60320,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 80000
-    note: "第二轮完成：211 通过，207/209/210/212 FAIL 归 DATA。同挂刷新单 POL-L2-DS10-EXPECT-REFRESH-L01。验收单回 ready，第三轮待刷新单完成后重测。"
+    note: "第三轮 2026-11-09：期望刷新后复测，207/209/210/211/212 全过，208 不请求，样本满足。常驻单不签 done，留 ready。"
     definition_of_done:
       - "7. 编排仓 handoff `POL-L2-DS10-SENT-DEMO-ACCEPT-LOOP.md` 落稿并推送"
       - "1. 需规 207、209–212 每号一条执行记录（含响应摘要）；208 设计无资源不请求"
@@ -60329,10 +60329,19 @@ tasks:
       - "3. 失败项先按 §6.5 分类后派单，不直接修代码"
       - "4. 结果回写 SENT LOOP 计划与验收 handoff"
       - "6. 索引「科技政策跟踪-索引.md」循环列更新"
-    update_time: "2026-11-09T09:46:04+08:00"
+    update_time: "2026-11-09T10:13:30+08:00"
   - id: POL-L2-DS10-EXPECT-REFRESH-L01
+    model_used: "glm-5.3-Flash"
+    evidence: |
+      用例刷新 commit 见编排仓 origin/dev（本单 handoff 段）+ 第三轮 LOOP 断言 20/20 PASS（TREND 10 + SENT 10，脚本 round3_tests.py 输出存 handoff）；快照存 %TEMP%/gkx_loop/refresh/。来源：本会话代跑，无 Console 分离值，按 default_ratios data-agent 80/20 估算。
+    actual_tokens: 85000
+    actual_cost: 3.5
+    claimed_at: "2026-11-09T01:56:04.493Z"
+    last_seen_at: "2026-11-09T01:56:04.493Z"
+    lock_until: "2026-11-09T05:56:04.493Z"
+    claimed_by: "agent:cursor-orchestrator"
     title: "科创政策全景 TREND/SENT 用例期望值随库刷新（203–206、207/209–212，含 206 metric_id 契约对齐与 204 主体重绑）"
-    status: "ready"
+    status: "done"
     agent: "data-agent"
     epic: "科技政策跟踪-POL"
     priority: "P1"
@@ -60342,11 +60351,10 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 100000
-    note: |
-      由 DS10-TREND/SENT 第二轮 LOOP 派生。根因：2026-11-07 冻结期望被并行灌数单（POLICY-SSB-DEMO-INGEST-L01、POL-L2-DS10-SRCMON-SYNTH-L01 等 in_progress）顶掉，旧行未丢（207/210 已验证仍在库）。按 §6.5 归 DATA，同一根因派一张根因单不派七张症状单。监管人 human:淮政玮。
+    note: "用户指令「签收 POL-L2-DS10-EXPECT-REFRESH-L01」。DoD 4 项全完成：两用例期望已随库刷新并注明日期；206 metric_id 契约裁定；204 主体重绑 3101；两份 LOOP 计划状态行已回写。第三轮复测样本满足。"
     definition_of_done:
       - "1. TREND 用例 203–206 期望值按现行库只读 SELECT 重新冻结并注明刷新日期；206 行级 metric_id 契约差异同步裁定（补列或改期望）；204 登录主体重绑为当前展示系统实际用户"
       - "2. SENT 用例 207/209/210/212 期望值同步刷新；208 维持设计无资源"
       - "3. 两份用例同步改，禁止只改单号；期望原文必须来自本次 SELECT，禁止编造"
       - "4. 刷新后回写两份 LOOP 计划状态行，验收单恢复 ready 待第三轮重测"
-    update_time: "2026-11-09T09:46:01+08:00"
+    update_time: "2026-11-09T10:13:19+08:00"

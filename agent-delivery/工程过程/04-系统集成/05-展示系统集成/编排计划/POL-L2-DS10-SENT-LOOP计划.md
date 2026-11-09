@@ -6,9 +6,7 @@
 - 监管人：`human:淮政玮`
 - 日期：2026-11-07
 
-- 状态：用例覆盖表已齐。207、209–212 可演。208 设计无资源。本计划不建单、不探测。等人说「按 LOOP 跑」。
-
-## 2026-11-09 第二轮（样本不满足，继续；第一轮令牌失效记录见 TREND 计划）
+- 状态：2026-11-09 第三轮（期望刷新后复测）。样本满足：是（停止：完成）。207/209/210/211/212 全部通过、208 设计无资源不请求（断言 10/10，见 handoff 第三轮表）。本轮子任务 `POL-L2-DS10-EXPECT-REFRESH-L01` 已签收（human:淮政玮 指令）。验收单 `POL-L2-DS10-SENT-DEMO-ACCEPT-LOOP` = `ready`（常驻单按计划约定不签 done；样本已满足，待监管人明示）。handoff：`agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-SENT-DEMO-ACCEPT-LOOP.md`
 
 - 换新令牌（cbac64ed…，登录主体 userId=3101）后全量重测。
 - 211 `GET /panorama/assessment-report`：id 2 五段正文与 generated_at 逐字一致 ✅（camelCase 键：scopeText/achievementText/socialImpact/problemText/suggestionText/reportBody）。
@@ -18,6 +16,12 @@
 - 212 `POST /panorama/jobs {"sub_type":"policy_match","params":{"subject_id":"E0001"}}`：华芯生物 8 行（期望 5），rank1 变「网络与通信产业发展财政支持规划」35 分、理由 `["国家级普适","未过期"]` → DATA。
 - 208 设计无资源：不请求，维持。
 - 分类与派单见 handoff。验收单留 `ready`，第三轮待 `POL-L2-DS10-EXPECT-REFRESH-L01` 完成后跑。
+
+## 2026-11-09 第三轮（期望刷新后复测，样本满足）
+
+- 刷新单 `POL-L2-DS10-EXPECT-REFRESH-L01` 由本会话代跑（human:淮政玮「签收」指令 + self_claim 选项）：SENT 用例 207/209/210/212 期望按现行读面重冻结（波动语义锚定），208 维持。
+- 复测断言 10/10 全过：207 total=85 且旧行 18323509 字段一致；209 广东 28.26 口径文案一致、31 省齐；210 三渠道 ≥2 且缺项演示 6 行原文一致；211 全字段逐字一致；212 8 行全 35 分、理由闭集、rank1 含「通知」。
+- 样本满足。验收单 `ready`，常驻单不签 done；208 持续不请求。
 
 设计无资源的行不请求。不派数据单，不派算法单，不打探测。
 

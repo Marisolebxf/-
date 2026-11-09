@@ -58,3 +58,23 @@
 ### 结论（第二轮）
 
 样本未满足，验收单 `POL-L2-DS10-SENT-DEMO-ACCEPT-LOOP` = `ready`。第三轮待刷新单完成后重测；208 持续不请求。不签 done。
+
+## 运行 2026-11-09 第三轮（期望刷新后复测，样本满足）
+
+- 前置：同 TREND（EXPECT-REFRESH-L01 已签收，SENT 用例 207/209/210/212 期望重冻结，208 维持设计无资源）。
+- 样本满足：是（停止：完成）
+
+### 逐行结果（第三轮，断言 10/10）
+
+| 需规 | 请求 | HTTP | 实测 | 判定 |
+|---|---|---|---|---|
+| 207 | GET `/panorama/search?keyword=人工智能&q=人工智能` | 200 | total=85（≥1）；旧行 18323509 在结果集且字段与 2026-11-07 记录一致（苏州市工业和信息化局，2021-11-24） | ✅ 通过 |
+| 208 | 设计无资源 | — | 不请求 | 不判 |
+| 209 | POST `/panorama/jobs` policy_effect | 200 | region_effect 31 省齐；广东 28.26，口径说明「广东省效果评分28.26（v2 确定性口径…）」格式一致；时序 metric_id=M_POLICY_IMPLEMENTATION_EFFECT 在 | ✅ 通过 |
+| 210 | GET `/panorama/feedback` | 200 | 三渠道各 ≥2（总 448）；缺项演示 6 行仍在：广州原文一致（评分空）、深圳原文一致评分 4.50、policy_id=GF-POL-SENT-210-01 | ✅ 通过 |
+| 211 | GET `/panorama/assessment-report` | 200 | id 2 六字段（scopeText/achievementText/socialImpact/problemText/suggestionText/reportBody）逐字一致，generatedAt=2026-11-03 14:30:00 | ✅ 通过 |
+| 212 | POST `/panorama/jobs` policy_match E0001 | 200 | 华芯生物 8 行（≥5）全 35 分；理由闭集 ["国家级普适","未过期"]/["地区适用","未过期"]；rank1 含「通知」；metric_id=M_POLICY_MATCH | ✅ 通过 |
+
+### 结论（第三轮）
+
+样本满足，本轮无子任务（刷新单已签收）。验收单 `ready`（常驻单不签 done）；208 持续不请求。
