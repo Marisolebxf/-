@@ -10,6 +10,8 @@
 |---|---|---|---|---|---|---|
 | R0 | 2026-11-09 | meta 200（9.4KB）/ snapshot 200（205KB，8.3s） | 四维出分 19.6 / 36.6 / 50.0 / 63.4；techPatent 三榜各 200 | 覆盖表 23 行仍按 G1 修复前填写，待重判 | — | **待 R1 复跑重填** |
 | R1 | 2026-11-09 | meta 200（1.9s / 8.4KB）；snapshot 200（8.2s / 198.7KB） | **11 可演 / 7 部分可演 / 5 覆盖不到**（23 行逐行见 §5） | ①生产 payload 缺 `industrySciInfluence`、`projectSupport` 两块（源码 `InnovationEvaluationController.java` L296/L470/L537 已有）→ 疑似 display 未发布最新版；②四维 `weights` 全 0（无权重模型）；③`spatialByDimension` 四维全空；④137/138 仅有总分值、无图谱/主题明细 | DSP-M4-FIX-03（149/155 归属部署）、FIX-07（权重）已派 | **R1 完成·不申请签收（待确认部署版本后复测）** |
+| R2 | 2026-11-09 | token 换新后复测：meta 200 / 1.8s / 9.9KB；snapshot 200 / **0.19s** / 31.8KB → **空态壳**：`dimensions[0]`、`techPatent` 三键空对象、`spatialByDimension` 四维全空、`weights` 四维全 0、`policySuggestions[0]`、`sciForecast.domains[0]`，`noSourceFields` 10 项挂空；仅 `spatialRows`/`spatialRegions` 各 100 行城市统计与 `dataSourceNote` 为真值。VPN 恢复后二测：meta 200 / 2.4s；snapshot 200 / 0.17s / **31.8KB 与首测字节级一致**；`updatedAt` 逐次变化 + `Cache-Control: no-store` 排除缓存；`techPatent` 三键 `ConvertTo-Json` 实证 `{}`。另内网网关 `10.50.69.111:30895` 本机不可达（curl exit 28）无法交叉验证 | 0/23 可复判（较 R1 四维出分 19.6/36.6/50.0/63.4 与 techPatent 三榜 200 **明显退化**） | **断链实锤、与用户 VPN 无关**（VPN 断/恢复两测字节级一致）：经算法库 innov-py 的块（dimensions / techPatent / spatialByDimension / sciForecast / policySuggestions / methodEvidence）全空，不经算法库的 Doris 直查块（spatialRows / spatialRegions 各 100 行）正常 → 生产 show-py → innov-py 通道断，快速失败 0.17s（R1 通道正常时 8.2s）；R1 缺口①②③④（缺 industrySciInfluence/projectSupport、weights 全 0、spatialByDimension 空、137/138 无明细）均无法核验 | **根因实锤（SQL 探针 + innov-value 探针）**：①SQL/数据层全通——本机直连久新 Doris（47.93.119.170:29030）：TCP 0.09s、握手 0.35s、`ads_patent_profile` 176.9 万件、有效 IPC 158.7 万、质量榜 SQL 7.08s 返回 200 行真值（A61K 22.7 万件）、趋势 SQL 5037 行；②innov-py 服务整体不可达——经 `POST /v1/situation/global-innovation/innov-value`（直透 algoScienceClient.compute，失败带 emptyReason）分别探 DS-04 `M_INNOV_POINT_VALUE` 与 DS-07 `M_TECH_DS_07_TECH_INNOV_002`，**双指标同报 `DOWNSTREAM_UNREACHABLE`** → display → `gkxlumen-platform-innov-py:8000` 连接失败，DS-04/DS-07 算法指标块共因全空（DS-04 昨日签收时为绿，今日环境退化）；③kubectl 本地代理 127.0.0.1:16443 未监听，无法直查 Pod 状态 | **集群侧查/重启 `gkxlumen-platform-innov-py` Pod**（疑似 CrashLoopBackOff 或副本为 0，Feign 头注曾记 2026-11-08 同症状：无实例 → 静默降级空） | **blocked（新一轮）· R1 判定 11/7/5 维持 · 不重判 23 行 · 不申请签收** |
+| R3 | 2026-11-09 | innov-py Pod 恢复后复测：PIV 200 / 3.7s / 5.2KB（DS-04 复验 ✓ 真数据）；meta 200 / 1.3s / 9.9KB；snapshot 200 / **8.0s / 211.9KB**（恢复 R1 体量） | **12 可演 / 7 部分 / 4 覆盖不到**（155 解除，§5 同步） | ①`projectSupport` **已出真值**（NSFC 代理口径：dwd_zh_project 58,453 项 / score 42.9 / 资助额 mean 43.27 万·median 30·max 920 / 类别 面上 27,939·青年C 23,884·地区 2,634·专项 1,058·重点 962）→ 155 转 ✅；`industrySciInfluence` **仍缺**（data keys 无此 key）→ 149 维持 ❌，按约定建后端缺陷单；②四维 `weights` 仍全 0 → 143/151/157 维持 ⚠️（FIX-07 未落地）；③`spatialByDimension` 四维 0 行 + ④137/138 明细缺——`noSourceFields` 10 项已如实声明，确认为**设计空态非缺陷** | 149 建单（industrySciInfluence 缺块）；FIX-07 权重模型 | **R3 完成·不申请签收（12/7/4；残余均为后端项：149 缺块 + FIX-07 权重）** |
 
 ## 1. 探测（每轮第一笔，只读）
 
@@ -86,11 +88,23 @@
 | 152 | ✅ | policy「战略引导力」=50.1 |
 | 153 | ✅ | policy「政策扶持力度」=64.3 |
 | 154 | ✅ | policy「经费支持」=89.4 |
-| 155 | ❌ | **生产 payload 无 `projectSupport` 块**（源码已有）、policy「项目支持」=null；同上待部署确认 |
+| 155 | ✅ | **R3 2026-11-09 解除**：`projectSupport` 出真值——NSFC 代理口径（dwd_zh_project 58,453 项；approval_year 覆盖 1986–2021，2022 起缺失不按 0 摊入）score 42.9；资助额 mean 43.27 万 / median 30 / max 920；类别 面上 27,939 / 青年C 23,884 / 地区 2,634 / 专项 1,058 / 重点 962 |
 | 156 | ✅ | policy「实施效果」=100.0（须保留「仅相关不构成因果」标注） |
 | 157 | ⚠️ | policy「综合评估」=63.4 有值；无权重模型（同 143） |
 | 158 | ❌ | `policySuggestions=[]`、`methodEvidence` 全空（G5 无建议模型） |
 
-**小计**：✅ 11 / ⚠️ 7 / ❌ 5 = 23。与用例文档原「19 ✅ / 1 ⚠️ / 3 ❌」的差异，全部源于「仅汇总分无明细」与「生产缺 149/155 两块」，已在用例文档同步更正。
+**小计（R3 2026-11-09 更新）**：✅ **12** / ⚠️ 7 / ❌ **4** = 23（155 转 ✅，其余维持）。与用例文档原「19 ✅ / 1 ⚠️ / 3 ❌」的差异，全部源于「仅汇总分无明细」与「149 缺块」，已在用例文档同步更正。
 
-**部署待确认（阻塞签收）**：源码 `lumen-svc-platform/gkxlumen-display/.../InnovationEvaluationController.java` 已实现 `industrySciInfluence`（L296/L470–480）与 `projectSupport`（L537+），生产响应无这两块 → 先确认 display 镜像版本并发布，再复跑 R2；若发布后仍缺，按后端缺陷建单。
+**部署确认结果（R3）**：display 新版已发布——`projectSupport` 已出真值（155 解除）；`industrySciInfluence` 仍缺（data keys 无此 key）→ 按「发布后仍缺」约定**建后端缺陷单**。权重模型（FIX-07）未落地，143/151/157 维持 ⚠️；`noSourceFields` 10 项（spatialByDimension / methodEvidence / policySuggestions / evidence 等）确认为**设计空态（诚实性声明）非缺陷**。
+
+### 149 修复单（DSP-M4-FIX-09，算法侧，2026-11-09 立单）
+
+**根因（已实锤，非同步漏）**：Java 期望契约 `M_INNOV_POT_SCI_INFL` 返回 `cluster_level.ranked`（[InnovationEvaluationController.java L443-449](../../../repos/lumen-svc-platform/gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/InnovationEvaluationController.java)，15 集群被引排名结构 rank/cluster_code/cluster_name/papers/cited/cited_per_paper/score_d1，产品裁定 2026-11-08），但**算法侧从未实现**——vendor/innov-py 与 demo-algo-science 的 `spec_specs.py` 该指标均为论文粒度旧代理口径（gkx `dwd_zh_paper_citation` 被引 SUM + `dwd_zh_author` 论文计数），不产出 `cluster_level`；demo precompute JSON 亦无此结构（Grep 实证零命中）。Java 门控 `ranked` 空 → 块不组装 → 149 恒 ❌。
+
+**实现要点**：
+1. vendor/innov-py `spec_specs.py` v2：M_INNOV_POT_SCI_INFL 改集群粒度——论文经 `ads_sz_gkx_industry_cluster_topic`（gkx 库集群→topic 桥，3098 行/15 集群）⋈ 论文级 topic 归属表聚合被引，按 cluster_code 分组输出 `cluster_level.ranked`（含 papers/cited/cited_per_paper/score_d1）；国际合作维久新无国别字段，整维缺测不参与合成（产品裁定 2026-11-08）。
+2. 输出结构需 compute 框架支持自定义 result 块（cluster_level 非框架标准 entity 结构）——按 `projectSupport` 同款改造路径。
+3. `catalog.py` v2 同步：口径/源表/版本更新；xlsx 台账（指标入库详情.xlsx · 科技专题算法库 sheet）源表字段与备注同步（当前登记仍是 dwd_* 旧口径 + 「部分支持→完全转换支持(条件)」，创建人唐绍祖/王惠，未归久新）。
+4. 重打 innov-py 镜像发布 → Java 块自动组装（`ranked` 非空即进）→ 149 解除，R4 复测。
+
+**验收**：`POST /internal/innov/metric/M_INNOV_POT_SCI_INFL/compute` 返回非空 `cluster_level.ranked`（15 集群、含被引真值）；生产 snapshot `data.industrySciInfluence` 块出现且 industry「科学影响力」score 非 null。

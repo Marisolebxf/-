@@ -307,6 +307,7 @@ flowchart TB
 | 结构基线 | STRUCT §1：14 Tag / 24+6 Edge / VID 规则；出入参不新增 Tag / Edge |
 | 边属性 | 每条边带 `weight double`（没有就 0，不造；**例外：M17 落在存量 `participates` 边上，该边无 `weight`，用 `chain_score` 作强度，不另加 `weight`**）、`props`（JSON：`source_table / source_record_id / batch / confidence / match_method / evidence`）；`first_year`：存量 24+6 边型实测**全库均无此字段**，本期入图不强制新建（避免 DDL 膨胀拖期）；若后续需要按首年筛，作为 STRUCT 结构增补项走 T01 待补清单同一 DDL 授权通道 |
 | 批号 | 每批入图带 `props.batch`（如 `comply-20261107-t02`）；端点缺失跳过并计数，不自动补点 |
+| **结构补建（DDL）属性底线** | 补建 Tag / Edge **必须带 `props string`**，否则与「边属性」「批号」两行自相矛盾：`CREATE EDGE IF NOT EXISTS xxx ();` 这类空属性结构没有 `props` 列，`props.batch` 无处可写，T07 对账、T05/T06 批次拆分全部失效。具体：**Edge 至少 `weight double` / `props string`**（`first_year` 按上一行口径不强制）；**Tag 至少 `name string` / `props string`**（业务属性按 STRUCT §1.1 一律先进 `props` JSON，不逐项升列，与「不为加属性重建 Tag」的结论一致——但 `props` 列本身必须有，否则 JSON 无处落）。基准 `KG-7ELEM-SCHEMA-DDL-L01` 中 5 个 Tag + 11 种 Edge 的空括号写法视为**该文件的缺项**，按本行补齐后再报 DBA；现网 `cooperate` / `participates` 已自带 `props`（历史补列），证明空结构在实际写入时必然被绕过 |
 | 凭证 | Nebula 连接凭证走主机环境文件 / Secret，**不进 git、不进编排话术** |
 | 执行环境 | 与智树共用 `lumen-algo-py` 编排环境；入图执行为离线作业，不进页面请求链路 |
 | **属性读写约定（本引擎特有，必读）** | **节点属性必须带 Tag 前缀**：`v.<tag>.<field>`（如 `v.tech_point.name_zh`）；写成 `v.name_zh` 返回全 NULL。**边属性必须不带边名前缀**：`e.<field>` 或 `properties(e)`（如 `e.evidence_level`）；写成 `e.<edge_name>.<field>`（如 `e.tech_rel.evidence_level`）返回**全 NULL 且不报错**，会让加权算法静默退化成无权算法。所有抽样核验与算法作业按本约定写，不得沿用原生 Nebula 的 `e.<edge_name>.<field>` 习惯 |
@@ -318,9 +319,9 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:白鑫凤` |
 | 依赖 | STRUCT §1 结构基线（已定，无需等待） |
-| 编排环境话术 | 「连 `demo_gkx_chain`，只读核对：14 个 Tag 与 24+6 条 Edge 是否都已存在、VID 规则抽查各 Tag 前缀（`ent:` / `seg:` / `inst:` / `person:` / `paper:` / `patent:` / `proj:` / `policy:` / `svc:` / `tp:` 系）是否与 STRUCT §1.1 一致；Edge 端点组合与方向不在 SHOW EDGES 结果里，另对各 Edge 名抽样各 20 条核对端点 Tag 对与方向是否与 STRUCT §1.2 一致；输出核对表（Tag/Edge/VID/端点方向四列，逐项 ✅/❌），不改任何 schema。**预期此闸门开局不会全绿**：2026-11-08 实测空间为 10 Tag / 15 Edge，预计缺 5 个 Tag 与 10 条 M 边型（清单见下「预期缺口」）。核对结果与预期一致属正常，不等于做错。若存在缺失 Tag / Edge：列『待补清单』（缺失项 + 对应 STRUCT §1 定义 + 建议 DDL 语句摘自 KG-7ELEM-SCHEMA-DDL-L01），**立即停止下游灌数任务**；清单**先交唐绍祖确认内容对不对**，再报 `human:徐滕强`，由**项目组授权的 DBA 通道执行 DDL**——唐绍祖只做内容确认，不是 DDL 授权人，编排侧不得自行执行任何 DDL。补建完成并复验 ✅ 后 T02–T04 才开工。」 |
+| 编排环境话术 | 「连 `demo_gkx_chain`，只读核对：14 个 Tag 与 24+6 条 Edge 是否都已存在、VID 规则抽查各 Tag 前缀（`ent:` / `seg:` / `inst:` / `person:` / `paper:` / `patent:` / `proj:` / `policy:` / `svc:` / `tp:` 系）是否与 STRUCT §1.1 一致；Edge 端点组合与方向不在 SHOW EDGES 结果里，另对各 Edge 名抽样各 20 条核对端点 Tag 对与方向是否与 STRUCT §1.2 一致；输出核对表（Tag/Edge/VID/端点方向四列，逐项 ✅/❌），不改任何 schema。**预期此闸门开局不会全绿**：2026-11-08 实测空间为 10 Tag / 15 Edge，预计缺 5 个 Tag 与 11 种 M 边型（清单见下「预期缺口」）。核对结果与预期一致属正常，不等于做错。若存在缺失 Tag / Edge：列『待补清单』（缺失项 + 对应 STRUCT §1 定义 + 建议 DDL 语句摘自 KG-7ELEM-SCHEMA-DDL-L01），**立即停止下游灌数任务**；待补清单里的 DDL 要逐条检查属性定义，**空属性结构（括号里什么都没有）不得直接提交 DBA**，须按 §5 共同前提「结构补建（DDL）属性底线」补齐 `props`（Edge 另需 `weight`）后再报；清单**先交唐绍祖确认内容对不对**，再报 `human:徐滕强`，由**项目组授权的 DBA 通道执行 DDL**——唐绍祖只做内容确认，不是 DDL 授权人，编排侧不得自行执行任何 DDL。补建完成并复验 ✅ 后 T02–T04 才开工。」 |
 | 读哪张图 | `demo_gkx_chain` 的 schema（`SHOW TAGS` / `SHOW EDGES`）+ 各 Tag 抽样点 + 各 Edge 抽样边（端点与方向） |
-| 验收看什么 | 核对表全绿或差异逐条列出；七要素层缺失的 Tag / Edge 列成「待补清单」并附 DDL 摘要；**待补清单非空时，T02–T04 处于 blocked 等待，不得带缺灌数** |
+| 验收看什么 | 核对表全绿或差异逐条列出；七要素层缺失的 Tag / Edge 列成「待补清单」并附 DDL 摘要；待补清单的 DDL 须逐条核对属性定义（空属性结构不得提交 DBA，见 §5 共同前提）；**待补清单非空时，T02–T04 处于 blocked 等待，不得带缺灌数** |
 | 不做什么 | 不建空间、不改 schema、不灌数；schema 补建**不经编排话术执行**——统一走 DDL / DBA 授权通道（脚本真源 KG-7ELEM-SCHEMA-DDL-L01，内容经唐绍祖确认 → 报徐滕强 → 项目组授权 DBA 执行）；凭证不落盘进 git |
 
 **T01 预期缺口（2026-11-08 实测基线，供核对表对账）**
@@ -335,11 +336,12 @@ flowchart TB
 | `patent` | 专利 |
 | `project` | 项目 |
 
-| 预期缺 Edge（10 条） | 对应 M 编号 |
+| 预期缺 Edge（11 种） | 对应 M 编号 |
 |---|---|
 | `participate` | M07 / M08 |
 | `author_of` | M09 |
 | `belong` | M04 |
+| `publish` | M10（2026-11-09 补：首版误记为 10 种，漏此条） |
 | `policy_relate` | M11 |
 | `policy_apply_to` | M12–M14 |
 | `research_coop` | M19 |
@@ -347,6 +349,8 @@ flowchart TB
 | `service_provide` | M21 |
 | `supply` | M23 |
 | `parent_sub` | M24 |
+
+> 15 种边型覆盖 24 条 M 关系的对应：`cooperate`=M01/M02/M03/M22、`belong`=M04/M05、`cite`=M06/M16、`participate`=M07/M08、`author_of`=M09、`publish`=M10、`policy_relate`=M11、`policy_apply_to`=M12/M13/M14、`depends_on`=M15、`participates`=M17/M18、`research_coop`=M19、`talent_coop`=M20、`service_provide`=M21、`supply`=M23、`parent_sub`=M24（4+2+2+2+1+1+1+3+1+2+1+1+1+1+1=24）。
 
 > 现有 15 Edge 为：`apply_to` / `belongs_to` / `cite` / `cooperate` / `depends_on` / `participates` / `regulate` / `supplies` / `support` / `tech_has_institution` / `tech_has_paper` / `tech_has_patent` / `tech_has_person` / `tech_path_step` / `tech_rel`。其中 `cite` / `regulate` / `supplies` 实测 0 条边，`apply_to` 与 `support` 完全重复（见 T06），`belongs_to` 仅覆盖 25% 环节——核对表须如实记录边数，不得把「边型存在」等同于「可用」。
 
@@ -523,7 +527,5 @@ flowchart TB
 |---|---|
 | 2026-11-07 | 初稿（agent:architect-agent，监管 human:徐滕强）：FLOW 图 `KG-COMPLY-SDD-FLOW` + 范围逐叶（§1）+ 算法清单 23 条（§2）+ 入图与正式线（§3）+ 接口两案（§4）+ 细任务 14 条（§5）。空间采用 STRUCT 放法 B 结论（`demo_gkx_chain`），验收面采用 ACCEPT 结论（三菜单 + 四类算法），不再标「待结论」 |
 | 2026-11-08 | 复审修订（两轮评审修复，同日完成）：① T05 空态边数量 10→11；② FLOW 图 M22 移出「已能供数」组、错边 A2→A5 改 A3→A5、SEVEN 节点分三组（已能供数 / 无供数空态 / 有数据形态不可用 501）；③ 悬空引用 §1.1①②改正规引用；④ T06 四边语义比对口径拆分；⑤ 正式线最低覆盖修正为 9 Tag + 24 边（技术点层可选不计入，§3.1/§3.2/T11 三处对齐）；⑥ T02–T04 补「先建点后灌边」；⑦ T05 不再写空 Tag（区分 Tag 历史数据与本期无供数）；⑧ T13 依赖 T02–T05→T02–T04；⑨ T01 补 Edge 端点方向抽样核验；⑩ M22 返回语义统一为「必为 501·形态不支持」（§2.2#5/速查/handoff）；⑪ T07 口径改引 STRUCT §1 与 T02–T06 对账单；⑫ diagram-as-contract 链接层级修正。handoff 同步更新 |
-| 2026-11-08 | **ALGO 会签修订（唐绍祖，4 项 P0 直接改进正文）**：⑬ **边属性读法纠错**——§2.1#1「证据在 `props`」与 T08「`props.confidence`」改为 `e.evidence_level` / `e.relation_confidence_score`（`tech_rel` 无 `weight` / `props` 字段）；§5 共同前提新增「属性读写约定」行（本引擎节点须 `v.<tag>.<field>`、边须 `e.<field>`，禁用 `e.<edge_name>.<field>`——该写法返回全 NULL 且不报错）；T08/T09/T10 验收各加权重自检（`relation_confidence_score` 空值率须为 0、加权与无权须有差异）；⑭ **T01 闸门补预期缺口**——新增「T01 预期缺口」小表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 10 边型），DDL 通道改写为「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」，明确唐绍祖非 DDL 授权人；§5 汇总补「关键路径警示」（T02–T04 工期从 DDL 完成后起算，等待期 T05/T08/T09/T10/T14 可并行）；⑮ **T06 加跨边重合度比对**——`apply_to` / `support` 须用「起点+终点」同对连接计数算重合率（实测 9,279 即 100% 重合），>90% 判同批双灌、结论写「建议停读一条」；⑯ **`participates` 端点口径拆分**——213,500 拆为 `enterprise`→`segment` 178,731（M17 可用）+ `institution`→`institution` 34,769（服务公司关联，不属 M02/M19），T02「不做什么」同步逐条点名。会签全文见 [会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md](./会签/KG-COMPLY-SDD-L01-SIGNOFF-ALGO.md)。会签结论：**同意，无阻塞意见** |
-| 2026-11-08 | **会签 P1 顺手修订（3 项，唐绍祖建议）**：⑰ `community_id` 判空口径——实测为**空串非 NULL**，校验用 `<> ''`（禁 `IS NULL`），写进 §2.2#4；⑱ 社群两套口径显式并存——Louvain 113 vs 久新源表 `ads_technology_community_member` 1,731 簇，**不可混用**，用哪套待 human:徐滕强 拍板（§2.2#4 暂按 Louvain 113 为默认展示口径）；⑲ `first_year` 字段实况修正——存量边全库无此字段，本期入图不强制新建（防 DDL 膨胀拖期），需要时走 T01 同一 DDL 授权通道增补（§5 共同前提边属性行改写） |
-| 2026-11-09 | **社群口径定案 B′（human:徐滕强 确认，唐绍祖 COMM-L01 调研支撑）**：⑳ §2.2#4 定案——我方自算 Louvain（`python-louvain` 与基线同库、seed 42、**resolution 8.0**）：**178 个成形社群、成形中位 63、最大 622（占 3.2%）、零伪单点**；A 久新 1,731 簇落选（98.7% 伪单点 / 成形仅 23 / **ARI 0.072** 与我方划分基本无关——系 HIGH+MEDIUM 子图结果不可贴全量图）、B 基线 res1.0 落选（113 中仅 6 成形）；T10 话术改按 B′ 复跑并对齐 `KG-COMPLY-COMM-L01-结果-Bprime-res8.json`，模块度仅同分辨率自检（res8.0 预期 0.2791，禁与 0.5198 跨分辨率比），补「全量边不得取子图」红线；模块度取舍依据见 [KG-COMPLY-COMM-L01-社群口径选型调研与建议.md](./KG-COMPLY-COMM-L01-社群口径选型调研与建议.md)。ACCEPT 验收面 434 判据与 T06 裁定按 COMM-L01 §7 由唐绍祖侧同步改 |
 | 2026-11-09 | **签收前文字对齐**：㉑ 开头确认人改为徐滕强；FLOW 图 A3 与 §2.1 #11 社群数字对齐 B′（178 / res8.0，113 / 0.5198 仅备查）；T10「不做什么」去掉与话术矛盾的「不做多算法对比」；§5 边属性补 M17 例外（`participates` 用 `chain_score` 作强度，会签 P1-4） |
+| 2026-11-09 | **T01 交付评审回修（唐绍祖，2 项）**：㉒ **预期缺口 10→11 种边型**——首版漏记 `publish`（M10，科研机构→政策），按白鑫凤 2026-11-09 只读核对结果补正，并补「15 种边型 ↔ 24 条 M 关系」完整对应关系；㉓ **§5 共同前提新增「结构补建（DDL）属性底线」**——基准 `KG-7ELEM-SCHEMA-DDL-L01` 中 5 Tag + 11 Edge 的空属性写法（`CREATE EDGE IF NOT EXISTS belong ();`）与本节「边属性」「批号」两行自相矛盾：无 `props` 列则 `props.batch` 无处可写，T07 对账 / T05–T06 批次拆分全部失效。据此明确：空属性结构不得提交 DBA，补建 **Edge 至少 `weight` / `props`、Tag 至少 `name` / `props`**；`first_year` 按 ⑲ 口径不强制。评审全文见 [会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md](./会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md) |
