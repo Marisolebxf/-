@@ -491,8 +491,10 @@ def build_rows(seed: dict) -> dict[str, list[dict]]:
         # 系统行：page_caliber 文案沿 KEY dimension.rendered_note 先例（用户可读、零内部编号）
         ("page_caliber", "整页口径", True, 7,
          "本页研究领域重叠度、等级划分与竞争情报数据为演示数据，重叠规则阈值与等级阈值口径待定稿后更新"),
-        # U9 阈值（RES-ARCH：超 100 节点/300 边走 M2），JSON 物理行源
-        ("graph_limit", "图谱规模阈值", True, 8, '{"node_limit":100,"edge_limit":300}'),
+        # U9 阈值（RES-ARCH：超 100 节点/300 边走 M2），JSON 物理行源；
+        # follow_up 键 = U9 降级跳转语义（RES-API §3：超限 graph 块 follow_up="M2 §3.1"，FE 懒加载 M2 §3.1 图谱接口）
+        ("graph_limit", "图谱规模阈值", True, 8,
+         '{"node_limit":100,"edge_limit":300,"follow_up":"M2 §3.1"}'),
     ]
     for key, label, is_system, sort_no, text in templates:
         rows["ts_plan_research_report_template"].append(dict(
@@ -610,6 +612,11 @@ def assert_rows(rows: dict[str, list[dict]]) -> None:
     templates = rows["ts_plan_research_report_template"]
     check(len(templates) == 8 and sum(r["is_system"] for r in templates) == 2,
           "report_template 8 行（含 2 系统行）")
+    gl = next(r for r in templates if r["section_key"] == "graph_limit")
+    gl_json = json.loads(gl["template_text"])
+    check(gl_json.get("node_limit") == 100 and gl_json.get("edge_limit") == 300
+          and gl_json.get("follow_up") == "M2 §3.1",
+          "graph_limit 模板行须含 node_limit=100/edge_limit=300/follow_up='M2 §3.1'（U9 降级语义，RES-API §3）")
 
     # 5) direction_warning 禁灌铁律：本脚本对其零语句（不进 ADS_TABLES 即零 INSERT/TRUNCATE）
     check("ts_plan_direction_warning" not in ADS_TABLES,

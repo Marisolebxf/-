@@ -92,3 +92,9 @@ MySQL 10.50.11.76:3306（`gkxlumenx` 应用账号）连通可用 → **实际执
 
 - **cost 估算**：actual_tokens ≈ 420K（累计上下文；estimated 80K 为单轮估算口径），model=GLM-5.3-Highspeed，actual_cost ≈ $2.4，cost_warn=green（<$10 阈值）。按派单纪律未动 task-registry 字段，cost 回填留 coordinator。
 - **ponytail 自检**：本单产物 = 2 DDL + 1 提取脚本 + 1 灌数脚本 + 1 handoff，全部落 `scripts/ts_plan_seed/` 与 `agent-handoffs/科技发展态势-TS/`；无第二套统计脚本；无仓外散落文件；demo/lumen 两仓零改动（git status 干净）；未 push（本地 commit，待监管人复核）。
+
+## 8. 补修记录（2026-11-09，IMPL-JAVA 会签联调反馈）
+
+- **graph_limit 系统模板行补 `follow_up` 键**（U9 降级跳转语义，RES-API §3：超限 graph 块 `follow_up="M2 §3.1"`，FE 懒加载 M2 §3.1 图谱接口）：`ts_plan_research_report_template` 的 `section_key=graph_limit` 行 template_text 由 `{"node_limit":100,"edge_limit":300}` → `{"node_limit":100,"edge_limit":300,"follow_up":"M2 §3.1"}`。
+- 修改以脚本为真源（`seed_ts_plan.py` 模板行 + `assert_rows` 新增 graph_limit 三键断言），幂等全量重跑（TRUNCATE+INSERT，375 行不变，exit=0）。
+- 验证输出（SELECT 该行）：`template_text = {"node_limit":100,"edge_limit":300,"follow_up":"M2 §3.1"}`；JSON 解析 keys=`['edge_limit','follow_up','node_limit']`、`follow_up='M2 §3.1'`；表行数仍 8。
