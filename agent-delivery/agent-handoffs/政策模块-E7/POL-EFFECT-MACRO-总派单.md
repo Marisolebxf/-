@@ -85,10 +85,12 @@ DoD：见 registry。
 
 | 叶 | 状态 | 备注 |
 |----|------|------|
-| CALIBER-L01 | ready_to_sign / 已交付口径 | QPOL-02 双轨 |
-| DATA-L01 | ready_to_sign / 白名单冻 | macro-eff-v1 |
-| ALGO-L01 | **integration** | 双仓推；深圳样例 ~78.58；联调通过 |
-| MID-L01 | **in_progress**（码齐，待推） | `/policy/effect`；本地 `41d757a`+算法路由 `707edd0` |
-| JAVA-L01 | **integration** | `925df28` 已推 |
-| FE-TOPIC-L01 | **in_progress**（码齐，待推） | 实效卡接 ext；本地 `112afa6`；vue-tsc/selfcheck/build 绿 |
-| E0 / E1 | backlog | 等 FE 推送 → pending_test；algo Pod 需可达 gkx |
+| CALIBER-L01 | **done** | 2026-11-09 淮政玮签收 |
+| DATA-L01 | **done** | 同上 |
+| ALGO-L01 | **done** | 同上 |
+| MID-L01 | **done** | 同上 |
+| JAVA-L01 | **done** | 同上 |
+| FE-TOPIC-L01 | **done** | 同上 |
+| E0 | **done** | chore |
+| E1 | **done** | 金路径 4/4；2026-11-09 淮政玮签收 |
+| — | 旁路未关 | D-E1-01 C1：短码产业 `analysis_fp` 撞车（非本管线） |

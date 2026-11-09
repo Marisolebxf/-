@@ -7,7 +7,7 @@ element: POLICY
 role: store-mysql
 status: draft
 version: "2026-08-21"
-updated: 2026-10-23
+updated: 2026-11-09
 engine: mysql
 task_id: DATA-POLICY-STORAGE-S3-L01
 ---
@@ -123,6 +123,50 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_industry_rel` (
 目标键：`(policy_id, industry_link_code)` 唯一。ADS 同名表同一目标。上面的 CREATE 仍是 2026-10-26 已核对的现网结构，不要改写它。清重口径：同一键留 `is_deleted=0`，同状态留 `update_time` 最新，时间相同留 `id` 最大，其余物理删除。空链码也并成一行。语句在政策派单包 `sql/update_round1.sql`。本仓不代跑。
 
 ADS 镜像见 [`ads.md`](./ads.md) 的 `policy_industry_rel`。同步发生在单次抽取提交内：删掉 ADS 里该 `policy_id` 的行，再按 DWD 当前行插入（`id`、`is_deleted` 一致）。Java 只读 ADS。
+
+关系见 [`../README.md`](../README.md) 的算法库 ER。
+
+## 政策类别关联：`policy_category_rel`
+
+全景「政策类别」下拉的多选结果。算法库 `polan/category_enrich.py` 建表并写入。只在 DWD，不镜像 ADS，不改 `policy_base_info.policy_type`（那是文种）。一条政策可多类；一个词都没命中时写成「科创政策」。再次抽取把本次没有的有效行 `is_deleted` 置 1，不物理删除。
+
+现网 `demo_gkxlumenx_dwd` 已有此表。建表语句没有指定排序规则，表落到 `utf8mb4_unicode_ci`。与 `policy_base_info.policy_id`（`utf8mb4_0900_ai_ci`）等值比较要显式 COLLATE。下面的 CREATE 是现网结构，去掉了 `AUTO_INCREMENT` 当前值。本文不代跑 ALTER。
+
+```sql
+CREATE TABLE `policy_category_rel` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `policy_id` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_deleted` tinyint NOT NULL DEFAULT '0',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_policy_category_rel_pid` (`policy_id`,`is_deleted`),
+  KEY `idx_policy_category_rel_cat` (`category`,`is_deleted`,`policy_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+| 列 | 含义 |
+|---|---|
+| `policy_id` | 对应 `policy_base_info.policy_id` |
+| `category` | 科创政策、行业政策、园区政策、招商政策、人才政策、财税政策、知识产权 |
+| `is_deleted` | `0` 有效，`1` 逻辑删除 |
+
+检索选中某个类别时，用有效行做 `EXISTS`，不按 `policy_type` 等值。
+
+## 资助金额：`policy_support_amount`
+
+深圳政策支持力度的金额来源。算法只读，不建表。现网只在 `demo_gkxlumenx_dwd`，正式库没有这张表。主键是 `policy_id`，一政策一行。`caliber` 区分具体资助、上限、总额；均值只取资助、奖励、补贴、补助。
+
+```sql
+CREATE TABLE `policy_support_amount` (
+  `policy_id` varchar(100) NOT NULL,
+  `amount` decimal(20,2) NOT NULL,
+  `caliber` varchar(32) NOT NULL,
+  `source_clause` varchar(500) NOT NULL,
+  PRIMARY KEY (`policy_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
 
 ## 政策文本解析：`policy_text_parse`
 

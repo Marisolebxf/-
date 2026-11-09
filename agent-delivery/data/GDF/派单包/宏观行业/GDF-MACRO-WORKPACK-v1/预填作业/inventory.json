@@ -1,0 +1,912 @@
+{
+  "workpack": "agent-delivery\\data\\GDF\\派单包\\宏观行业\\GDF-MACRO-WORKPACK-v1",
+  "status": {
+    "obsolete": false,
+    "deferred": false,
+    "readme": "agent-delivery\\data\\GDF\\派单包\\宏观行业\\GDF-MACRO-WORKPACK-v1\\README.md"
+  },
+  "files": {
+    "readme": "agent-delivery\\data\\GDF\\派单包\\宏观行业\\GDF-MACRO-WORKPACK-v1\\README.md",
+    "wave_a": "agent-delivery\\data\\GDF\\派单包\\宏观行业\\GDF-MACRO-WORKPACK-v1\\02-WaveA-贴源表清单.yaml",
+    "filter": "agent-delivery\\data\\GDF\\派单包\\宏观行业\\GDF-MACRO-WORKPACK-v1\\04-技术字段与过滤规则.md",
+    "mapping": "agent-delivery\\data\\GDF\\派单包\\宏观行业\\GDF-MACRO-WORKPACK-v1\\09-宏观行业域-ETL-Mapping明细-源表到DWD.md",
+    "guide": null
+  },
+  "subject": "MACRO",
+  "default_filter": "",
+  "wave_a": [
+    {
+      "name": "dwd_macro_index_data",
+      "cn": "数据表",
+      "priority": "P0",
+      "mapping": "wash",
+      "note": "→ macro_index_data；事实；Wave B 加区划反解派生列；20,000 行为供应方样本上限",
+      "group": "macro_fact",
+      "group_title": "宏观行业要素库-事实"
+    },
+    {
+      "name": "dwd_dim_index_attribute",
+      "cn": "指标属性表",
+      "priority": "P0",
+      "mapping": "wash",
+      "note": "→ macro_index_attribute；unit_use 恒为「元」（库存单位），不是行单位",
+      "group": "macro_dim",
+      "group_title": "宏观行业要素库-维度"
+    },
+    {
+      "name": "dwd_dim_admin_area",
+      "cn": "区划表",
+      "priority": "P0",
+      "mapping": "wash",
+      "note": "→ macro_admin_area；仅用于区划反解；四个政策城市在表内没有自己的 cur_code 行",
+      "group": "macro_dim",
+      "group_title": "宏观行业要素库-维度"
+    },
+    {
+      "name": "dwd_dim_index_cal",
+      "cn": "计算维度表",
+      "priority": "P0",
+      "mapping": "wash",
+      "note": "→ macro_index_cal；HB / TB / JDZ",
+      "group": "macro_dim",
+      "group_title": "宏观行业要素库-维度"
+    },
+    {
+      "name": "dwd_dim_index_dur",
+      "cn": "时间维度表",
+      "priority": "P0",
+      "mapping": "wash",
+      "note": "→ macro_index_dur；QM / DJ / DNLJ / DY / ZC / LSLJ / NC",
+      "group": "macro_dim",
+      "group_title": "宏观行业要素库-维度"
+    },
+    {
+      "name": "dwd_dim_source_code",
+      "cn": "数据来源表",
+      "priority": "P0",
+      "mapping": "wash",
+      "note": "→ macro_source_code；GACC / worldbank / LBS / NATIONALSTAT",
+      "group": "macro_dim",
+      "group_title": "宏观行业要素库-维度"
+    }
+  ],
+  "wave_b": [
+    {
+      "dwd_table": "macro_index_cal",
+      "sources": [
+        "dwd_dim_index_cal"
+      ],
+      "fields": [
+        {
+          "dwd": "macro_index_cal",
+          "src_table": "dwd_dim_index_cal",
+          "src_field": "dim_cal",
+          "tgt_field": "dim_cal",
+          "kind": "直接",
+          "logic": "UK；代码（`HB` / `TB` / `JDZ`）",
+          "alias": "T1",
+          "expr": "T1.dim_cal"
+        },
+        {
+          "dwd": "macro_index_cal",
+          "src_table": "dwd_dim_index_cal",
+          "src_field": "dim_cal_name",
+          "tgt_field": "dim_cal_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.dim_cal_name"
+        },
+        {
+          "dwd": "macro_index_cal",
+          "src_table": "dwd_dim_index_cal",
+          "src_field": "dim_cal_desc",
+          "tgt_field": "dim_cal_desc",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.dim_cal_desc"
+        },
+        {
+          "dwd": "macro_index_cal",
+          "src_table": "dwd_dim_index_cal",
+          "src_field": "create_time",
+          "tgt_field": "src_create_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.create_time"
+        },
+        {
+          "dwd": "macro_index_cal",
+          "src_table": "dwd_dim_index_cal",
+          "src_field": "rid",
+          "tgt_field": "src_rid",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.rid"
+        },
+        {
+          "dwd": "macro_index_cal",
+          "src_table": "dwd_dim_index_cal",
+          "src_field": "is_deleted",
+          "tgt_field": "is_deleted",
+          "kind": "直接",
+          "logic": "原样",
+          "alias": "T1",
+          "expr": "T1.is_deleted"
+        },
+        {
+          "dwd": "macro_index_cal",
+          "src_table": "dwd_dim_index_cal",
+          "src_field": "updated_time",
+          "tgt_field": "ods_updated_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.updated_time"
+        }
+      ],
+      "kind": "direct",
+      "aliases": {
+        "dwd_dim_index_cal": "T1"
+      },
+      "cn": "宏观计算维度输出",
+      "sheet_kind": "data_result",
+      "pattern": "direct"
+    },
+    {
+      "dwd_table": "macro_index_dur",
+      "sources": [
+        "dwd_dim_index_dur"
+      ],
+      "fields": [
+        {
+          "dwd": "macro_index_dur",
+          "src_table": "dwd_dim_index_dur",
+          "src_field": "dim_dur",
+          "tgt_field": "dim_dur",
+          "kind": "直接",
+          "logic": "UK；代码（`QM` / `DJ` / `DNLJ` / `DY` / `ZC` / `LSLJ` / `NC`）",
+          "alias": "T1",
+          "expr": "T1.dim_dur"
+        },
+        {
+          "dwd": "macro_index_dur",
+          "src_table": "dwd_dim_index_dur",
+          "src_field": "dim_dur_name",
+          "tgt_field": "dim_dur_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.dim_dur_name"
+        },
+        {
+          "dwd": "macro_index_dur",
+          "src_table": "dwd_dim_index_dur",
+          "src_field": "dim_dur_desc",
+          "tgt_field": "dim_dur_desc",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.dim_dur_desc"
+        },
+        {
+          "dwd": "macro_index_dur",
+          "src_table": "dwd_dim_index_dur",
+          "src_field": "create_time",
+          "tgt_field": "src_create_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.create_time"
+        },
+        {
+          "dwd": "macro_index_dur",
+          "src_table": "dwd_dim_index_dur",
+          "src_field": "rid",
+          "tgt_field": "src_rid",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.rid"
+        },
+        {
+          "dwd": "macro_index_dur",
+          "src_table": "dwd_dim_index_dur",
+          "src_field": "is_deleted",
+          "tgt_field": "is_deleted",
+          "kind": "直接",
+          "logic": "原样",
+          "alias": "T1",
+          "expr": "T1.is_deleted"
+        },
+        {
+          "dwd": "macro_index_dur",
+          "src_table": "dwd_dim_index_dur",
+          "src_field": "updated_time",
+          "tgt_field": "ods_updated_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.updated_time"
+        }
+      ],
+      "kind": "direct",
+      "aliases": {
+        "dwd_dim_index_dur": "T1"
+      },
+      "cn": "宏观时间维度输出",
+      "sheet_kind": "data_result",
+      "pattern": "direct"
+    },
+    {
+      "dwd_table": "macro_source_code",
+      "sources": [
+        "dwd_dim_source_code"
+      ],
+      "fields": [
+        {
+          "dwd": "macro_source_code",
+          "src_table": "dwd_dim_source_code",
+          "src_field": "source_code",
+          "tgt_field": "source_code",
+          "kind": "直接",
+          "logic": "UK；代码（`GACC` / `worldbank` / `LBS` / `NATIONALSTAT`）",
+          "alias": "T1",
+          "expr": "T1.source_code"
+        },
+        {
+          "dwd": "macro_source_code",
+          "src_table": "dwd_dim_source_code",
+          "src_field": "source_name",
+          "tgt_field": "source_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.source_name"
+        },
+        {
+          "dwd": "macro_source_code",
+          "src_table": "dwd_dim_source_code",
+          "src_field": "create_time",
+          "tgt_field": "src_create_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.create_time"
+        },
+        {
+          "dwd": "macro_source_code",
+          "src_table": "dwd_dim_source_code",
+          "src_field": "rid",
+          "tgt_field": "src_rid",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.rid"
+        },
+        {
+          "dwd": "macro_source_code",
+          "src_table": "dwd_dim_source_code",
+          "src_field": "is_deleted",
+          "tgt_field": "is_deleted",
+          "kind": "直接",
+          "logic": "原样",
+          "alias": "T1",
+          "expr": "T1.is_deleted"
+        },
+        {
+          "dwd": "macro_source_code",
+          "src_table": "dwd_dim_source_code",
+          "src_field": "updated_time",
+          "tgt_field": "ods_updated_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.updated_time"
+        }
+      ],
+      "kind": "direct",
+      "aliases": {
+        "dwd_dim_source_code": "T1"
+      },
+      "cn": "宏观数据来源输出",
+      "sheet_kind": "data_result",
+      "pattern": "direct"
+    },
+    {
+      "dwd_table": "macro_index_attribute",
+      "sources": [
+        "dwd_dim_index_attribute"
+      ],
+      "fields": [
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "index_code",
+          "tgt_field": "index_code",
+          "kind": "直接",
+          "logic": "UK；空行丢弃并计数",
+          "alias": "T1",
+          "expr": "T1.index_code"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "index_name",
+          "tgt_field": "index_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.index_name"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "unit_show",
+          "tgt_field": "unit_show",
+          "kind": "直接",
+          "logic": "推荐展示单位，如 `元,千元,万元,亿元`",
+          "alias": "T1",
+          "expr": "T1.unit_show"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "unit_use",
+          "tgt_field": "unit_use",
+          "kind": "直接",
+          "logic": "**库存单位，恒为「元」。不是行单位**。目标列 COMMENT 必须写明",
+          "alias": "T1",
+          "expr": "T1.unit_use"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "data_freq",
+          "tgt_field": "data_freq",
+          "kind": "直接",
+          "logic": "月度 / 季度 / 年度",
+          "alias": "T1",
+          "expr": "T1.data_freq"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "time_attr_tag",
+          "tgt_field": "time_attr_tag",
+          "kind": "直接",
+          "logic": "允许 NULL",
+          "alias": "T1",
+          "expr": "T1.time_attr_tag"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "create_time",
+          "tgt_field": "src_create_time",
+          "kind": "直接",
+          "logic": "指标创建时间",
+          "alias": "T1",
+          "expr": "T1.create_time"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "rid",
+          "tgt_field": "src_rid",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.rid"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "is_deleted",
+          "tgt_field": "is_deleted",
+          "kind": "直接",
+          "logic": "原样",
+          "alias": "T1",
+          "expr": "T1.is_deleted"
+        },
+        {
+          "dwd": "macro_index_attribute",
+          "src_table": "dwd_dim_index_attribute",
+          "src_field": "updated_time",
+          "tgt_field": "ods_updated_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.updated_time"
+        }
+      ],
+      "kind": "direct",
+      "aliases": {
+        "dwd_dim_index_attribute": "T1"
+      },
+      "cn": "宏观指标属性输出",
+      "sheet_kind": "data_result",
+      "pattern": "direct"
+    },
+    {
+      "dwd_table": "macro_admin_area",
+      "sources": [
+        "dwd_dim_admin_area"
+      ],
+      "fields": [
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "cur_code",
+          "tgt_field": "cur_code",
+          "kind": "直接",
+          "logic": "UK；`varchar(50)`；空行丢弃并计数",
+          "alias": "T1",
+          "expr": "T1.cur_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "cur_name",
+          "tgt_field": "cur_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.cur_name"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "parent_code",
+          "tgt_field": "parent_code",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.parent_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "country_code",
+          "tgt_field": "country_code",
+          "kind": "直接",
+          "logic": "`varchar`，禁止转 int（`0086`）",
+          "alias": "T1",
+          "expr": "T1.country_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "country_name",
+          "tgt_field": "country_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.country_name"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "province_code",
+          "tgt_field": "province_code",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.province_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "province_name",
+          "tgt_field": "province_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.province_name"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "city_code",
+          "tgt_field": "city_code",
+          "kind": "直接",
+          "logic": "12 位国标码；允许 NULL",
+          "alias": "T1",
+          "expr": "T1.city_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "city_name",
+          "tgt_field": "city_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.city_name"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "area_code",
+          "tgt_field": "area_code",
+          "kind": "直接",
+          "logic": "**区县编码**（不是事实表 `area_code` 的同义列，见 `01` §3）",
+          "alias": "T1",
+          "expr": "T1.area_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "area_name",
+          "tgt_field": "area_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.area_name"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "street_code",
+          "tgt_field": "street_code",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.street_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "street_name",
+          "tgt_field": "street_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.street_name"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "community_code",
+          "tgt_field": "community_code",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.community_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "community_name",
+          "tgt_field": "community_name",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.community_name"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "cur_level",
+          "tgt_field": "cur_level",
+          "kind": "直接",
+          "logic": "1 国家 / 2 省 / 3 市 / 4 区县 / 5 街道 / 6 社区",
+          "alias": "T1",
+          "expr": "T1.cur_level"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "rid",
+          "tgt_field": "src_rid",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.rid"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "qh_base_id",
+          "tgt_field": "qh_base_id",
+          "kind": "直接",
+          "logic": "供应方基础区域 ID",
+          "alias": "T1",
+          "expr": "T1.qh_base_id"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "source_code",
+          "tgt_field": "source_code",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.source_code"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "update_time",
+          "tgt_field": "src_update_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.update_time"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "is_deleted",
+          "tgt_field": "is_deleted",
+          "kind": "直接",
+          "logic": "原样",
+          "alias": "T1",
+          "expr": "T1.is_deleted"
+        },
+        {
+          "dwd": "macro_admin_area",
+          "src_table": "dwd_dim_admin_area",
+          "src_field": "updated_time",
+          "tgt_field": "ods_updated_time",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.updated_time"
+        }
+      ],
+      "kind": "direct",
+      "aliases": {
+        "dwd_dim_admin_area": "T1"
+      },
+      "cn": "宏观区划输出",
+      "sheet_kind": "data_result",
+      "pattern": "direct"
+    },
+    {
+      "dwd_table": "macro_index_data",
+      "sources": [
+        "dwd_macro_index_data"
+      ],
+      "fields": [
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "index_code",
+          "tgt_field": "index_code",
+          "kind": "直接",
+          "logic": "`varchar(50)`；空行丢弃并计数",
+          "alias": "T1",
+          "expr": "T1.index_code"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "occur_period",
+          "tgt_field": "occur_period",
+          "kind": "直接",
+          "logic": "`int`，YYYYMM",
+          "alias": "T1",
+          "expr": "T1.occur_period"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "area_code",
+          "tgt_field": "area_code",
+          "kind": "直接",
+          "logic": "`varchar(32)` 原文；禁止补零 / 截断 / 转 int",
+          "alias": "T1",
+          "expr": "T1.area_code"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "area_code_type",
+          "tgt_field": "area_code_type",
+          "kind": "直接",
+          "logic": "`1` 行政区；实测另有 `3`、`4`（含义待澄清）。原样，不过滤",
+          "alias": "T1",
+          "expr": "T1.area_code_type"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "dim_cal",
+          "tgt_field": "dim_cal",
+          "kind": "直接",
+          "logic": "代码（`TB` / `JDZ` / `HB`），不是名称",
+          "alias": "T1",
+          "expr": "T1.dim_cal"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "dim_dur",
+          "tgt_field": "dim_dur",
+          "kind": "直接",
+          "logic": "代码（`DNLJ` / `QM` / `DY` / `DJ` …）",
+          "alias": "T1",
+          "expr": "T1.dim_dur"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "index_value",
+          "tgt_field": "index_value",
+          "kind": "直接",
+          "logic": "`decimal(38,8)` 原样；NULL 原样",
+          "alias": "T1",
+          "expr": "T1.index_value"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "unit_use",
+          "tgt_field": "unit_use",
+          "kind": "直接",
+          "logic": "**该行真实单位**（`元` / `%` …）。不要用属性表 `unit_use` 覆盖",
+          "alias": "T1",
+          "expr": "T1.unit_use"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "rid",
+          "tgt_field": "src_rid",
+          "kind": "直接",
+          "logic": "供应方行 ID，追溯用",
+          "alias": "T1",
+          "expr": "T1.rid"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "occur_period_t",
+          "tgt_field": "occur_period_t",
+          "kind": "直接",
+          "logic": "原文 `varchar(20)`",
+          "alias": "T1",
+          "expr": "T1.occur_period_t"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "occur_period_year",
+          "tgt_field": "occur_period_year",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.occur_period_year"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "occur_period_month",
+          "tgt_field": "occur_period_month",
+          "kind": "直接",
+          "logic": "",
+          "alias": "T1",
+          "expr": "T1.occur_period_month"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "label",
+          "tgt_field": "label",
+          "kind": "直接",
+          "logic": "1 宏观 / 2 中观；实测全为 1，原样",
+          "alias": "T1",
+          "expr": "T1.label"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "source_code",
+          "tgt_field": "source_code",
+          "kind": "直接",
+          "logic": "来源代码（`LBS` / `NATIONALSTAT` / `GACC` / `worldbank`）",
+          "alias": "T1",
+          "expr": "T1.source_code"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "update_time",
+          "tgt_field": "src_update_time",
+          "kind": "直接",
+          "logic": "供应方业务「数据更新时间」",
+          "alias": "T1",
+          "expr": "T1.update_time"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "is_deleted",
+          "tgt_field": "is_deleted",
+          "kind": "直接",
+          "logic": "原样，取数不过滤",
+          "alias": "T1",
+          "expr": "T1.is_deleted"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "updated_time",
+          "tgt_field": "ods_updated_time",
+          "kind": "直接",
+          "logic": "增量水位",
+          "alias": "T1",
+          "expr": "T1.updated_time"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "",
+          "tgt_field": "area_resolve",
+          "kind": "**派生**",
+          "logic": "见 §3.1.1；取值 `city_by_city_code` / `municipality_by_province_code` / `district_by_area_code` / `unresolved`",
+          "derived": true,
+          "alias": "T1",
+          "expr": "/*TODO-GDF 派生:09 §3.1.1 区划反解*/ NULL"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "",
+          "tgt_field": "city_code",
+          "kind": "**派生**",
+          "logic": "见 §3.1.1；`unresolved` 时 NULL",
+          "derived": true,
+          "alias": "T1",
+          "expr": "/*TODO-GDF 派生:09 §3.1.1 区划反解*/ NULL"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "",
+          "tgt_field": "city_name",
+          "kind": "**派生**",
+          "logic": "同上",
+          "derived": true,
+          "alias": "T1",
+          "expr": "/*TODO-GDF 派生:09 §3.1.1 区划反解*/ NULL"
+        },
+        {
+          "dwd": "macro_index_data",
+          "src_table": "dwd_macro_index_data",
+          "src_field": "",
+          "tgt_field": "province_code",
+          "kind": "**派生**",
+          "logic": "同上",
+          "derived": true,
+          "alias": "T1",
+          "expr": "/*TODO-GDF 派生:09 §3.1.1 区划反解*/ NULL"
+        }
+      ],
+      "kind": "direct",
+      "aliases": {
+        "dwd_macro_index_data": "T1"
+      },
+      "cn": "宏观指标数据输出",
+      "sheet_kind": "data_result",
+      "pattern": "direct"
+    }
+  ],
+  "mirror_only": [],
+  "skip_src": [],
+  "warnings": [
+    "macro_index_data.area_resolve: 派生列 expr 仅占位 NULL，须 GDF 按 09 §3.1.1 实现（阻塞，非跑通）",
+    "macro_index_data.city_code: 派生列 expr 仅占位 NULL，须 GDF 按 09 §3.1.1 实现（阻塞，非跑通）",
+    "macro_index_data.city_name: 派生列 expr 仅占位 NULL，须 GDF 按 09 §3.1.1 实现（阻塞，非跑通）",
+    "macro_index_data.province_code: 派生列 expr 仅占位 NULL，须 GDF 按 09 §3.1.1 实现（阻塞，非跑通）"
+  ],
+  "counts": {
+    "wave_a": 6,
+    "wave_b": 6,
+    "p0": 6
+  }
+}

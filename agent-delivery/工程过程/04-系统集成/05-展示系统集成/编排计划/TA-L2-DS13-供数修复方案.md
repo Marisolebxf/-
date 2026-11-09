@@ -68,19 +68,21 @@
 
 ## 3. W3 · 最新动态（对应 253 / 256）
 
-### W3-1 三类型（S 类）
-- 现状：`talent_datasets.py:638-656` `type` 硬编码 `media`，数据只取 `_media_feed()`（`ads_talent_media_report` 30 条）。
-- 修法：新增统一活动流组装，四型并列（`media` 保留）：
+### W3-1 五类动态流（S 类，**已发布生效 2026-11-09（R2.1 生产实测）**，用户裁定 A）
+- 现状（修前）：`type` 硬编码 `media`，数据只取 `_media_feed()`（`ads_talent_media_report` 30 条）；而前端 `activityTypeOptions` 是 `paper / job / project / award / event`，用户选任何类型都筛不到（枚举错位）。
+- 实现（用户裁定 A：后端对齐前端枚举，前端零改动）：新增 `_build_activity_feed()`，五型并列：
 
 | type | 数据源 | 字段映射 |
 |---|---|---|
-| `academic` 学术发布 | `ads_talent_research_achievement`（MVP 15 人共 232 篇） | title / year / venue / cited_by_count / fulltext_url |
-| `position` 职位变动 | `ads_talent_experience`（start_year + position + institution + is_current） | 取近 3 年异动，title 为「机构·职位」 |
-| `project` 创新项目 | `ads_talent_project` | title / year / 资助方 |
-| `media` 媒体报道 | `ads_talent_media_report`（现状） | 保持 |
+| `paper` 学术成果 | `ads_talent_research_achievement` | title(_zh) / year / venue / cited_by_count / fulltext_url |
+| `job` 职位变动 | `ads_talent_experience`（`experience_type=2`） | title =「机构·职位」，summary = 在职/曾任，time = start_year |
+| `project` 项目动态 | `ads_talent_project` ⨝ `ads_project_profile` | title = 项目题名/编号，summary = 资助方＋「资助论文署名关系」 |
+| `award` 获奖荣誉 | `ads_talent_honor_detail` | title = 荣誉名(_zh)，summary = 授予机构，time = honor_year |
+| `event` 媒体报道 | `ads_talent_media_report`（原 `media` 流并入） | 保持原日粒度 + 原文链接 |
 
-- 验收：`activityFeed[].type` distinct ≥ 4；页面类型筛选每型有点位，且条数与后端计数一致。
-- ⚠️ **枚举与前端不一致（2026-11-09 核源码）**：前端筛选下拉是 `paper / job / project / award / event`（`fieldConfig.ts` 的 `activityTypeOptions`），**没有** `media`，也没有 `academic/position`。后端若按上表枚举出数，用户在下拉里选任何类型都筛不到。开工前必须先把枚举改成前端这 5 类（media 只能并进 `event`/`award` 或由前端新增筛选位）→ 归入「契约先定」批次，本轮**不做**。
+- 每人按类型截断（paper 5 / job 4 / project 3 / award 5），防项目数千行冲爆动态流；时间只到年者写 `YYYY` + `month=0`，不把年补成月日伪造精度。
+- 实测（生产，2026-11-09 发版后 `GET /display/v1/talent/global/dataset` → 200 / `code=0` / 3.3s）：**231 条 = `paper` 75 / `job` 36 / `project` 45 / `award` 45 / `event` 30**；五类型均有真实题名 / 机构 / 年份（样例：Stanford·Professor (by courtesy)、PRT/BD/154296/2022 + Fundação para a Ciência e a Tecnologia、世界杰出女科学家成就奖）。
+- 验收：`activityFeed[].type` distinct = 5 且与前端枚举逐值一致（前端 `tl-activity-tag--*` 五色样式已存在，无需改动）；2026-11-09 发版后已复跑 R2.1 → **253 转 ✅（19 可演 / 4 部分可演）**；256 的「近一周 / 近一月」时间窗仍缺（W3-3 / W3-4）。
 
 ### W3-2 来源字段（C 类 + S 类）
 - 现状：`summary=publisher`、`detail=canonical_url`，无规范来源字段；253 要求「来源」。
@@ -148,7 +150,7 @@
 
 | 批次 | 条目 | 依赖 | 解除行 |
 |---|---|---|---|
-| **P0（服务侧，无需久新）** | ~~W1-2S~~、~~W2-1~~、~~W2-2~~、~~W2-3~~、~~W4-3~~、~~W4-4~~、~~W5-1~~（**7 项均已完成 2026-11-09 本地验证，待发版**，其中 W2-3 为后端+前端同批）；仍阻塞：W3-1（枚举与前端不匹配 + 无日/月粒度）、W3-2（前端无来源列） | W3-1 / W3-2 需契约 v1.5 与前端同批（枚举与来源列属页面契约变更） | 250、259、265（发版后复跑 R2 可转 ✅）、258（项目分项除外）；243 学历口径随 W1-2S 发版生效 |
+| **P0（服务侧，无需久新）** | ~~W1-2S~~、~~W2-1~~、~~W2-2~~、~~W2-3~~、~~W4-3~~、~~W4-4~~、~~W5-1~~（**7 项均已完成 2026-11-09 并发版生效**，其中 W2-3 为后端+前端同批）；另 ~~W3-1~~（2026-11-09 用户裁定 A 已发布生效，五类 231 条，253 转 ✅）；仍阻塞：W3-2（前端无来源列） | W3-2 需契约 v1.5 与前端同批（来源列属页面契约变更） | 250、259、265（已发布生效并转 ✅）、253（已复跑 R2.1 转 ✅）、258（项目分项除外）；243 学历口径已随 W1-2S 生效 |
 | **P1（久新配合）** | W1-1、W1-3、W1-2D、W3-3、W3-4、W4-2 | 久新 taxonomy/degree/日期/项目字段 | 243、244、256、258 |
 | **P2（产品裁定）** | W1-4 产业级联；W4-5 暂不修 | 产品确认是否保留级联要求 | 244 |
 

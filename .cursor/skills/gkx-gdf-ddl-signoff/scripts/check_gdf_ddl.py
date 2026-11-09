@@ -14,6 +14,8 @@ DIMS = {
     "ent": ("企业", "ENT"),
     "chain": ("产业链", "CHAIN"),
     "svc": ("服务机构", "SVC"),
+    "macro": ("宏观行业", "MACRO"),
+    "fin": ("金融数据", "FIN"),
 }
 OBSOLETE = ("禁止当现行", "已被", "已作废")
 SQL_FENCE = re.compile(r"```sql\s*(.*?)```", re.S | re.I)
@@ -25,9 +27,13 @@ CREATE_RE = re.compile(
 
 def dimension_from_task(task_id):
     upper = task_id.upper()
+    if "MACRO" in upper or "宏观" in task_id:
+        return "macro"
+    if "FIN" in upper or "金融" in task_id:
+        return "fin"
     if "POLICY" in upper:
         return "policy"
-    if "CHAIN" in upper or "产业" in task_id:
+    if "CHAIN" in upper or "产业链" in task_id:
         return "chain"
     if "SVC" in upper or "服务机构" in task_id:
         return "svc"
@@ -74,17 +80,36 @@ def sql_blocks(root):
 
 
 def split_items(body):
-    items, buf, depth = [], [], 0
-    for ch in body:
-        if ch == "(":
+    items, buf, depth, in_str, quote = [], [], 0, False, ""
+    i = 0
+    while i < len(body):
+        ch = body[i]
+        if in_str:
+            buf.append(ch)
+            if ch == "\\" and i + 1 < len(body):
+                buf.append(body[i + 1])
+                i += 2
+                continue
+            if ch == quote:
+                in_str = False
+            i += 1
+            continue
+        if ch in ("'", '"'):
+            in_str = True
+            quote = ch
+            buf.append(ch)
+        elif ch == "(":
             depth += 1
+            buf.append(ch)
         elif ch == ")":
             depth -= 1
-        if ch == "," and depth == 0:
+            buf.append(ch)
+        elif ch == "," and depth == 0:
             items.append("".join(buf).strip())
             buf = []
         else:
             buf.append(ch)
+        i += 1
     tail = "".join(buf).strip()
     if tail:
         items.append(tail)
@@ -93,7 +118,9 @@ def split_items(body):
 
 def norm_type(text):
     text = text.replace("`", "")
-    return re.sub(r"\s+", " ", text.strip().lower())
+    text = re.sub(r"\s+", " ", text.strip().lower())
+    # MySQL information_schema 索引列之间带空格；DDL 常写成 (a,b)
+    return re.sub(r"\s*,\s*", ",", text)
 
 
 def parse_create(sql):

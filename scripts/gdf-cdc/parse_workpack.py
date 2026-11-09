@@ -8,7 +8,12 @@ import re
 from pathlib import Path
 
 TABLE_LINE = re.compile(
-    r"-\s*\{\s*name:\s*(?P<name>[\w]+)\s*,\s*priority:\s*(?P<priority>P[012])\s*,\s*cn:\s*(?P<cn>[^,}+]+?)(?:\s*,\s*mapping:\s*(?P<mapping>wash|mirror_only))?(?:\s*,\s*note:\s*(?P<note>.+?))?\s*\}"
+    r"-\s*\{\s*name:\s*(?P<name>[\w]+)\s*,\s*priority:\s*(?P<priority>P[012])\s*,\s*cn:\s*(?P<cn>[^,}+]+?)(?:\s*,[^}]*?\bmapping:\s*(?P<mapping>wash|mirror_only))?(?:\s*,[^}]*?\bnote:\s*(?P<note>.+?))?\s*\}"
+)
+DEFAULT_FILTER = re.compile(r"^default_filter:\s*(?:\"(?P<q>[^\"]*)\"|'(?P<s>[^']*)'|(?P<b>[^#\s][^#]*?))?\s*(?:#.*)?$", re.M)
+# 02 带 owner / rows_* 等额外键时（金融包）：只取 name/priority/cn，其余键另行提取
+FIN_TABLE_LINE = re.compile(
+    r"-\s*\{\s*name:\s*(?P<name>\w+)\s*,\s*priority:\s*(?P<priority>P[012])\s*,\s*cn:\s*(?P<cn>\"[^\"]+\"|[^,}]+)"
 )
 GROUP_LINE = re.compile(r"^\s*-\s*id:\s*(?P<id>\S+)\s*$")
 TITLE_LINE = re.compile(r"^\s*title:\s*(?P<title>.+?)\s*$")
@@ -52,6 +57,12 @@ DWD_CN = {
     "enterprise_forg_invest": "国外股东穿透",
     "enterprise_forg_finance_history": "国外年报财务",
     "enterprise_forg_parent_subsidiary": "国外子公司",
+    "macro_index_data": "宏观指标数据输出",
+    "macro_index_attribute": "宏观指标属性输出",
+    "macro_admin_area": "宏观区划输出",
+    "macro_index_cal": "宏观计算维度输出",
+    "macro_index_dur": "宏观时间维度输出",
+    "macro_source_code": "宏观数据来源输出",
 }
 
 
@@ -128,8 +139,26 @@ def parse_wave_a(path: Path) -> list[dict]:
         if tm and group_id:
             group_title = tm.group("title").strip().strip('"')
             continue
-        m = TABLE_LINE.search(line)
+        m = None if "owner:" in line else TABLE_LINE.search(line)
         if not m:
+            m = FIN_TABLE_LINE.search(line)
+            if not m:
+                continue
+            mp = re.search(r"mapping:\s*(wash|mirror_only)", line)
+            ow = re.search(r"owner:\s*([\w.-]+)", line)
+            nt = re.search(r'note:\s*"([^"]*)"', line)
+            rows.append(
+                {
+                    "name": m.group("name"),
+                    "cn": m.group("cn").strip().strip('"'),
+                    "priority": m.group("priority"),
+                    "mapping": mp.group(1) if mp else "wash",
+                    "note": nt.group(1) if nt else "",
+                    "owner": ow.group(1) if ow else "",
+                    "group": group_id,
+                    "group_title": group_title,
+                }
+            )
             continue
         note = (m.group("note") or "").strip().strip('"')
         rows.append(
@@ -146,6 +175,14 @@ def parse_wave_a(path: Path) -> list[dict]:
     if not rows:
         raise SystemExit(f"no tables parsed from {path}")
     return rows
+
+
+def default_filter(path: Path) -> str:
+    """02 yaml 顶层 default_filter；缺省沿用企业包 is_deleted = 0。"""
+    m = DEFAULT_FILTER.search(read_text(path))
+    if not m:
+        return "is_deleted = 0"
+    return (m.group("q") or m.group("s") or m.group("b") or "").strip()
 
 
 def split_dwd_names(cell: str) -> list[str]:
@@ -308,8 +345,112 @@ def parse_v3_mapping(text: str, overview: dict, fields: list[dict]) -> None:
                     overview["direct"].append({"src": src_table, "dwd": dwd_hint, "note": ""})
 
 
+FIN_HEAD = re.compile(r"^###\s+[\d.]+\s+`(fin_[a-z0-9_]+)`\s*·\s*(.+?)\s*$")
+
+# 09 §3.3：reg_capital_wan。仅 元/万元/亿元（含「人民币」后缀）可解析；外币/空/`/` → NULL。
+WAN_EXPR = (
+    "CASE\n"
+    "  WHEN {a}.reg_capital REGEXP '^[0-9,]+(\\\\.[0-9]+)?(万元|万元人民币)$'\n"
+    "    THEN CAST(REPLACE(REGEXP_REPLACE(TRIM({a}.reg_capital), '(万元人民币|万元)$', ''), ',', '') AS DECIMAL(20,4))\n"
+    "  WHEN {a}.reg_capital REGEXP '^[0-9,]+(\\\\.[0-9]+)?(亿元|亿元人民币)$'\n"
+    "    THEN CAST(REPLACE(REGEXP_REPLACE(TRIM({a}.reg_capital), '(亿元人民币|亿元)$', ''), ',', '') AS DECIMAL(20,4)) * 10000\n"
+    "  WHEN {a}.reg_capital REGEXP '^[0-9,]+(\\\\.[0-9]+)?元$'\n"
+    "    THEN CAST(REPLACE(REGEXP_REPLACE(TRIM({a}.reg_capital), '元$', ''), ',', '') AS DECIMAL(20,4)) / 10000\n"
+    "  ELSE NULL\n"
+    "END"
+)
+
+
+def fin_dwd_cn(heading_tail: str) -> str:
+    """`上市公司基本资料（沪深港美）（P0）` → `上市公司基本资料`；Sheet 名不能含 `/`。"""
+    s = re.sub(r"（[^）]*）", "", heading_tail)
+    s = s.replace("/", "、").replace(" ", "")
+    return s.strip() or heading_tail
+
+
+def parse_fin_mapping(text: str) -> dict:
+    """金融包 09 §3.x：`目标列 | 类型 | 说明 | <源别名>...`，每个源一列（联合表多列）。"""
+    overview: dict[str, list] = {"direct": [], "assoc": [], "metric": [], "foreign": [], "skip": []}
+    fields: list[dict] = []
+    dwd_cn: dict[str, str] = {}
+    pk_by_dwd: dict[str, list[str]] = {}
+    lines = text.splitlines()
+    dwd = ""
+    sources: list[str] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        hm = FIN_HEAD.match(line)
+        if hm:
+            dwd = hm.group(1)
+            dwd_cn[dwd] = fin_dwd_cn(hm.group(2))
+            sources = []
+            i += 1
+            continue
+        if dwd and line.startswith("源："):
+            sources = re.findall(r"dwd_[a-z0-9_]+", line)
+            for s in sources:
+                overview["direct"].append({"src": s, "dwd": dwd, "note": ""})
+            i += 1
+            continue
+        if dwd and line.startswith("键：PK="):
+            pk_by_dwd[dwd] = re.findall(r"`([a-z_]+)`", line.split("；")[0])
+            i += 1
+            continue
+        if dwd and line.startswith("| 目标列"):
+            headers = [c.strip() for c in line.strip().strip("|").split("|")]
+            n_src = len(headers) - 3
+            if n_src != len(sources):
+                raise SystemExit(f"{dwd}: 源列数 {n_src} != 源表数 {len(sources)}")
+            i += 2
+            while i < len(lines) and re.match(r"^\|.+\|$", lines[i]):
+                row = [c.strip() for c in lines[i].strip().strip("|").split("|")]
+                i += 1
+                tgt = cell_ident(row[0])
+                typ, desc = row[1], row[2]
+                for k, src in enumerate(sources):
+                    cell = row[3 + k]
+                    f = {
+                        "dwd": dwd,
+                        "src_table": src,
+                        "src_field": tgt,
+                        "tgt_field": tgt,
+                        "type": typ,
+                        "kind": "直接",
+                        "logic": desc,
+                        "union": len(sources) > 1,
+                    }
+                    if cell in ("—", "-"):
+                        continue  # etl_time：DDL 默认 CURRENT_TIMESTAMP，不映射
+                    if cell.startswith("字面量"):
+                        f["kind"] = "字面量"
+                        f["expr_fixed"] = re.search(r"'[^']+'", cell).group(0)
+                    elif cell.startswith("—（"):
+                        f["kind"] = "缺列"
+                        f["expr_fixed"] = "NULL"
+                    elif "parse_wan(" in cell:
+                        f["kind"] = "派生"
+                        f["src_field"] = "reg_capital"
+                        f["expr_tpl"] = WAN_EXPR
+                    else:
+                        f["src_field"] = cell_ident(cell)
+                    fields.append(f)
+            continue
+        i += 1
+    m5 = re.search(r"##\s+5\.[^\n]*\n(.*?)(?=\n##\s)", text, re.S)
+    if m5:
+        for ln in m5.group(1).splitlines():
+            if ln.startswith("|") and "dwd_" in ln.split("|")[1]:
+                overview["skip"].extend(re.findall(r"dwd_[a-z0-9_]+", ln.split("|")[1]))
+    for f in fields:
+        f["pk"] = f["tgt_field"] in pk_by_dwd.get(f["dwd"], [])
+    return {"overview": overview, "fields": fields, "dwd_cn": dwd_cn, "pk": pk_by_dwd}
+
+
 def parse_mapping(path: Path) -> dict:
     text = read_text(path)
+    if "| 目标列" in text and re.search(r"^###\s+[\d.]+\s+`fin_", text, re.M):
+        return parse_fin_mapping(text)
     overview: dict[str, list] = {"direct": [], "assoc": [], "metric": [], "foreign": [], "skip": []}
     fields: list[dict] = []
     if "承诺 ODS" in text or "DWD 字段" in text:
@@ -367,7 +508,7 @@ def parse_mapping(path: Path) -> dict:
             kind_i = headers.index("映射类型") if "映射类型" in headers else None
             logic_i = headers.index("转换逻辑") if "转换逻辑" in headers else None
             dwd_hint = ""
-            dwd_hits = re.findall(r"`((?:enterprise_|risk_)[a-z0-9_]*)`", heading)
+            dwd_hits = re.findall(r"`((?:enterprise_|risk_|macro_)[a-z0-9_]*)`", heading)
             if len(dwd_hits) == 1:
                 dwd_hint = dwd_hits[0]
             src_table_hint = ""
@@ -388,6 +529,9 @@ def parse_mapping(path: Path) -> dict:
                 if "自增" in kind:
                     continue
                 src_table = src_table_hint
+                if src_cell in ("—", "-", "–") and "派生" in kind and re.fullmatch(r"[a-z][a-z0-9_]*", cell_ident(tgt_cell)):
+                    fields.append({"dwd": dwd_hint, "src_table": src_table, "src_field": "", "tgt_field": cell_ident(tgt_cell), "kind": kind, "logic": logic, "derived": True})
+                    continue
                 src_field = cell_ident(src_cell).split("/")[0].strip()
                 dotted = re.match(r"`?(dwd_[a-z0-9_]+)\.([a-z0-9_]+)`?", src_cell.replace(" ", ""))
                 if dotted:
@@ -422,13 +566,19 @@ def parse_mapping(path: Path) -> dict:
 
 def expr_for(field: dict, alias_by_table: dict[str, str]) -> str:
     logic = field.get("logic") or ""
+    if field.get("derived"):
+        return "/*TODO-GDF 派生:09 §3.1.1 区划反解*/ NULL"
     src_table = field.get("src_table") or ""
     alias = alias_by_table.get(src_table, "T1")
+    if field.get("expr_fixed"):
+        return field["expr_fixed"]
+    if field.get("expr_tpl"):
+        return field["expr_tpl"].format(a=alias)
     col = field["src_field"]
     base = f"{alias}.{col}"
     if re.search(r"÷\s*10000|/ *10000", logic):
         return f"{base} / 10000.0"
-    if "occur_period" in col:
+    if "occur_period" in col and not str(field.get("dwd", "")).startswith("macro_"):
         return f"SUBSTRING({base}, 1, 4)"
     if field["tgt_field"] == "is_listed":
         return (
@@ -478,8 +628,14 @@ def assemble_wave_b(mapping: dict, wave_a: list[dict]) -> tuple[list[dict], list
             item = dict(f)
             item["alias"] = alias_by_table.get(item.get("src_table") or "", "T1")
             item["expr"] = expr_for(item, alias_by_table)
+            if item.get("derived"):
+                warnings.append(f"{dwd}.{item['tgt_field']}: 派生列 expr 仅占位 NULL，须 GDF 按 09 §3.1.1 实现（阻塞，非跑通）")
             if "待三方确认" in (item.get("logic") or ""):
                 warnings.append(f"{dwd}.{item['tgt_field']}: 单位待三方确认，未自动 /10000")
+            m_open = re.search(r"OPEN-FIN-\d+", item.get("logic") or "")
+            lg = item.get("logic") or ""
+            if "单位" in lg and (m_open or "单位同上" in lg) and not any(w.startswith(f"{dwd}.{item['tgt_field']}:") for w in warnings):
+                warnings.append(f"{dwd}.{item['tgt_field']}: 单位待确认（OPEN-FIN-03），原样不换算")
             if item["tgt_field"] == "registered_capital" and "/ 10000" not in item["expr"]:
                 item["expr"] = f"{item['alias']}.{item['src_field']} / 10000.0"
                 warnings.append(f"{dwd}.registered_capital: 已强制 /10000.0（H2）")
@@ -495,9 +651,13 @@ def assemble_wave_b(mapping: dict, wave_a: list[dict]) -> tuple[list[dict], list
             if src in a_by_name:
                 cn = a_by_name[src]["cn"]
                 break
-        rec["cn"] = DWD_CN.get(dwd) or cn or dwd
+        rec["cn"] = DWD_CN.get(dwd) or (mapping.get("dwd_cn") or {}).get(dwd) or cn or dwd
         rec["sheet_kind"] = "data_result"
-        if dwd == "enterprise_risk_summary":
+        if (mapping.get("pk") or {}).get(dwd):
+            rec["pk"] = mapping["pk"][dwd]
+        if len(rec["sources"]) > 1 and any(f.get("union") for f in rec["fields"]):
+            rec["pattern"] = "union"
+        elif dwd == "enterprise_risk_summary":
             rec["pattern"] = "preagg"
             warnings.append(
                 f"{dwd}: 预聚合后 MainOutput 为长表 org_id+risk_type；current/history 未按 remove_date 细拆"
@@ -533,6 +693,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workpack", required=True)
     ap.add_argument("-o", "--out", default="-")
+    ap.add_argument("--subject", default="ENT", help="Wave B 索引「业务主题」，企业包 ENT，宏观包 MACRO")
     args = ap.parse_args()
     root = Path(args.workpack)
     if not root.is_dir():
@@ -540,13 +701,24 @@ def main() -> None:
     files = find_workpack_files(root)
     status = workpack_status(files["readme"])
     wave_a = parse_wave_a(files["wave_a"])  # type: ignore[arg-type]
+    # 多 owner 的 02（金融包：FIN + ENT-v4）：多数派 = 本包，其余贴源/洗数归他包，不进本包两张 CDC
+    owners = [t["owner"] for t in wave_a if t.get("owner")]
+    shared: list[dict] = []
+    if len(set(owners)) > 1:
+        pack_owner = max(set(owners), key=owners.count)
+        shared = [t for t in wave_a if t.get("owner") and t["owner"] != pack_owner]
+        wave_a = [t for t in wave_a if t not in shared]
     mapping = parse_mapping(files["mapping"])  # type: ignore[arg-type]
     wave_b, map_warn = assemble_wave_b(mapping, wave_a)
     warnings = extra_warnings(wave_a, mapping, status) + map_warn
+    warnings += [f"{t['name']}: owner={t['owner']}，贴源/洗数归他包，本包 CDC 不含" for t in shared]
     inv = {
+        "shared_elsewhere": [t["name"] for t in shared],
         "workpack": str(root),
         "status": status,
         "files": {k: str(v) if v else None for k, v in files.items()},
+        "subject": args.subject,
+        "default_filter": default_filter(files["wave_a"]),  # type: ignore[arg-type]
         "wave_a": wave_a,
         "wave_b": wave_b,
         "mirror_only": [t["name"] for t in wave_a if t["mapping"] == "mirror_only"],
