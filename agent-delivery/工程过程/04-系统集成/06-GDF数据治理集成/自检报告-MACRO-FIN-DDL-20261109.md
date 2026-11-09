@@ -3,7 +3,18 @@
 > **日期**：2026-11-09  
 > **命令**：`python .cursor/skills/gkx-gdf-ddl-signoff/scripts/check_gdf_ddl.py --task GDF-MACRO-WORKPACK-L01` / `GDF-FIN-WORKPACK-L01`  
 > **脚本**：已扩展维度 `macro` / `fin`（同日）  
-> **结果**：**不通过**（exit 1）——符合预期缺口，非脚本误报  
+> **结果（初跑）**：不通过（无 storage / 无口令）  
+> **结果（2026-11-09 复检）**：**MACRO / FIN 均通过**（exit 0）——storage 入仓 + demo/lumen 空表已建 + 自检脚本修字符串/索引空格  
+
+## 0. 复检结论（通过）
+
+| 包 | 文件一致 | demo | lumen | exit |
+|----|----------|------|-------|------|
+| MACRO（7 表） | ✅ | ✅ | ✅ | 0 |
+| FIN（15 表） | ✅ | ✅ | ✅ | 0 |
+
+口令仅用会话环境变量，**未写入 git**。本地可自备 `GKX_LUMEN_MYSQL_PASSWORD`。  
+
 
 ## 1. MACRO（`GDF-MACRO-WORKPACK-v1`）
 
