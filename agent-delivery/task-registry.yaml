@@ -61023,3 +61023,205 @@ tasks:
       - "跨菜单登记：建成后 WBS 登记可复用行（M1 报告/POL 报告等消费方）；DS-09 TEST 单（TS-L2-DS09-TEST-L01）验收时复测 184/195 导出链路"
       - "handoff 落 agent-handoffs/科技发展态势-TS/ + cost 四字段回填"
     update_time: "2026-11-09T10:32:52+08:00"
+  - id: POL-EFFECT-MACRO-CALIBER-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-09T03:28:13.452Z"
+    last_seen_at: "2026-11-09T03:28:13.452Z"
+    lock_until: "2026-11-09T07:28:13.452Z"
+    claimed_by: "agent:architect-agent"
+    title: "落地实效宏观结果面代理：口径双轨+calc-logic+详设"
+    status: "claimed"
+    agent: "architect-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-E7-POL-04"
+    note: "长任务 POL-EFFECT-MACRO 首叶。监管 human:淮政玮 2026-11-09 授权后续认领不必再问。"
+    collaborators:
+      - "product-agent"
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-长任务总控.md"
+      - "agent-delivery/metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
+      - "agent-delivery/客户决策清单跟踪表.md"
+    definition_of_done:
+      - "长任务总控 §0 拍板落入 calc-logic：正本三维「当前不可算」与「macro_outcome_proxy」临时默认可算路径分节书写；禁止宣称两库直接支持正本三维。"
+      - "05.6.2 §3 / §3.1 增补结果面代理读法与 ext.caliber；与 gapfill 双入口并存说明。"
+      - "客户决策清单 QPOL-02 增补一行：落地实效城市卡临时改宏观结果面代理，待甲方归一；UI 须 ⚠️。"
+      - "handoff：agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-CALIBER-L01.md；会签关键词写入 note。"
+    update_time: "2026-11-09T11:28:13+08:00"
+  - id: POL-EFFECT-MACRO-DATA-L01
+    title: "落地实效宏观代理：指标白名单+区划对齐+读路径"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    user_story: "US-E7-POL-04"
+    note: "依赖 A0 口径。"
+    depends_on:
+      - "POL-EFFECT-MACRO-CALIBER-L01"
+    collaborators:
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261109-1026.MD"
+      - "agent-delivery/agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-长任务总控.md"
+    definition_of_done:
+      - "冻结 ≤12 个 index_code 白名单（来自 dwd_dim_index_attribute + dwd_macro_index_data 实测非空），含单位/频率/推荐 dim_cal·dim_dur。"
+      - "区划对齐：政策城市名 ↔ dwd_dim_admin_area（深圳/北京/上海/广州至少可解析）；写清 area_code 样例。"
+      - "读路径文档：只读 gkx；落汇聚面若需要仅 Demo ADS 或算法内存，禁止写供应方/正式 ODS；更新 storage/POLICY etl 或 stores 指针。"
+      - "行业分析辅维：列出可用 topic/content_type 过滤；明确 companies 102 行禁用覆盖。"
+      - "handoff：…/POL-EFFECT-MACRO-DATA-L01.md，附 SQL 计数证据。"
+    update_time: "2026-11-09T11:27:38+08:00"
+  - id: POL-EFFECT-MACRO-ALGO-L01
+    title: "落地实效宏观代理：Python 算法双仓实现"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 90000
+    user_story: "US-E7-POL-04"
+    note: "主实现仓 lumen-algo-py；demo-algo 同改。"
+    depends_on:
+      - "POL-EFFECT-MACRO-CALIBER-L01"
+      - "POL-EFFECT-MACRO-DATA-L01"
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "vendor/entan-py/polan/shenzhen_board.py"
+      - "vendor/entan-py/polan/eval/effect.py"
+      - "polan/mockgen/*"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-长任务总控.md"
+    definition_of_done:
+      - "城市卡落地实效按白名单读宏观截面算分；cards.effect.ext 含 caliber=macro_outcome_proxy、白名单版本、源表。"
+      - "正本三维/gapfill 补空路径不删；全缺宏观时 computable=false 且不写 0。"
+      - "demo-algo-ent-analysis 与 lumen-algo-py/vendor 同文；自检可跑。"
+      - "不改按钮文案；不写供应方库。handoff 含前后样例分数。"
+    update_time: "2026-11-09T11:27:43+08:00"
+  - id: POL-EFFECT-MACRO-MID-L01
+    title: "落地实效宏观代理：算法中台展示与试算"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    user_story: "US-E7-POL-04"
+    note: "算法中台仓 demo-ui-system-test。"
+    depends_on:
+      - "POL-EFFECT-MACRO-ALGO-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-长任务总控.md"
+    definition_of_done:
+      - "demo-ui-system-test 政策算法相关页展示 macro_outcome_proxy 口径说明与试算/结果（非写死分）。"
+      - "若触达 D17 成对名：落地实效性-合规 / -合理 按总控 §0.5；否则单名+待确认说明。"
+      - "工程自检绿；推送等人确认（未写完工即推）。handoff 含截图路径。"
+    update_time: "2026-11-09T11:27:49+08:00"
+  - id: POL-EFFECT-MACRO-JAVA-L01
+    title: "落地实效宏观代理：Java 透传 cards.effect.ext"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 35000
+    user_story: "US-E7-POL-04"
+    note: "依赖 B 算法 integration。"
+    depends_on:
+      - "POL-EFFECT-MACRO-ALGO-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-长任务总控.md"
+    definition_of_done:
+      - "topic async / policy 深圳结果板透传 effect.ext（caliber、白名单版本等），Java 不改分数、不写算法。"
+      - "OpenAPI/契约说明补字段；空实效不写成 0。"
+      - "handoff + 样例 JSON。"
+    update_time: "2026-11-09T11:27:52+08:00"
+  - id: POL-EFFECT-MACRO-FE-TOPIC-L01
+    title: "落地实效宏观代理：lumen-ui-topic 深圳结果板接线"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-E7-POL-04"
+    note: "前端人工确认推送闸门。"
+    depends_on:
+      - "POL-EFFECT-MACRO-JAVA-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.6.2-深圳政策现状分析.md"
+      - "agent-delivery/agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-长任务总控.md"
+    definition_of_done:
+      - "/policy/recommendation 实效卡展示代理分；⚠️ 待甲方确认；computable=false 不编 0。"
+      - "评审/metric ⓘ 不伪闭合正本三维；type-check 绿；推送等人确认。"
+      - "范围：深圳结果板实效卡+文案；不改支持力度/适配性公式。handoff。"
+    update_time: "2026-11-09T11:27:56+08:00"
+  - id: POL-EFFECT-MACRO-E0-DEVOPS-L01
+    title: "落地实效宏观代理：E0 发布门"
+    status: "backlog"
+    agent: "devops-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "crosscut"
+    task_type: "chore"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "段 E0。"
+    depends_on:
+      - "POL-EFFECT-MACRO-FE-TOPIC-L01"
+    definition_of_done:
+      - "点名相关 K8s/CI deploy 绿（algo-py / platform / topic FE 以实际变更仓为准）。"
+      - "handoff 含 Pipeline/rollout 证据。"
+    update_time: "2026-11-09T11:27:58+08:00"
+  - id: POL-EFFECT-MACRO-E1-QA-L01
+    title: "落地实效宏观代理：E1 金路径冒烟"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "crosscut"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    user_story: "US-E7-POL-04"
+    note: "段 E1。"
+    depends_on:
+      - "POL-EFFECT-MACRO-E0-DEVOPS-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POL-EFFECT-MACRO-长任务总控.md"
+    definition_of_done:
+      - "按总控 §3 金路径测已发布前端；期望未发生必红；QA 不改代码。"
+      - "失败先 C1–C6 分类；handoff 含截图/trace。"
+    update_time: "2026-11-09T11:28:00+08:00"
