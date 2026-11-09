@@ -64,5 +64,6 @@
 - 预测视图为前端**规则投影**非模型产出；贡献热力由 avg（真实）+ fields 归属规则派生，现场需知。
 - 推荐集 = 15 名 MVP 人才内按能力分 Top8；合作者姓名未解析显示 tal_xxx id，**现场不点名**。
 - 缺口引用（连续两轮仍在 → 交监管人 §6.5.7 步 9）：T7 难度模型 / IP-10 因子族 / DN-A15-COST 薪资源 / T12/T13 成本模型 / RECRUIT_025 协同模型 / 预测模型真源。
-- **动态刷新必须真取数（2026-11-09 复核）**：原「动态跟踪与更新」按钮只自增 tick + 弹成功提示、未调接口（假刷新），327 不成立。已实现 `force` 全链路：FE `{force:true}` → BFF `GET /v1/talent/recommend/dataset?force=1` → Python `bypass_cache()` 同时穿透 dataset 整页缓存与久新 SQL 结果缓存，重算后回写缓存；按钮 loading + 成功提示改为「重新取数后」再弹，失败弹 error。三绿通过，**待发布后端到端复测**。
+- **动态刷新必须真取数（2026-11-09 复核）**：原「动态跟踪与更新」按钮只自增 tick + 弹成功提示、未调接口（假刷新），327 不成立。已实现 `force` 全链路：FE `{force:true}` → BFF `GET /v1/talent/recommend/dataset?force=1` → Python `bypass_cache()` 同时穿透 dataset 整页缓存与久新 SQL 结果缓存，重算后回写缓存；按钮 loading + 成功提示改为「重新取数后」再弹，失败弹 error。三绿通过；**2026-11-09 发布后端到端实测通过**：接口侧普通请求 2.4s（命中缓存）vs `?force=1` 38.3s；真机点按钮请求带 `force=1` → 200 / 32.5s → 327 恢复 **✅**。
+- **演示前置**：浏览器旧 JS chunk 会让按钮退化为不带 `force` 的请求（实测踩到），上台前必须强刷一次（Ctrl+Shift+R）或确认 `index.html` 不缓存。
 - **缓存引入后的刷新语义**：dataset TTL 1800s（`GKX_SHOW_TALENT_CACHE_TTL`）→ 普通打开最长 30 分钟陈旧；只有点「动态跟踪与更新」（force）才强制新取。现场讲「刷新=重取」时须点按钮，不能靠重开页面。
