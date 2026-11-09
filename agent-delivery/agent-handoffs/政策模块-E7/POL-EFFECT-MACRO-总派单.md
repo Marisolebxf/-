@@ -85,12 +85,12 @@ DoD：见 registry。
 
 | 叶 | 状态 | 备注 |
 |----|------|------|
-| CALIBER-L01 | ready_to_sign / 已交付口径 | QPOL-02 双轨 |
-| DATA-L01 | ready_to_sign / 白名单冻 | macro-eff-v1 |
-| ALGO-L01 | **integration** | 双仓推；深圳样例 ~78.58；联调通过 |
-| MID-L01 | **integration** | 已推 `41d757a` + algo `707edd0` |
-| JAVA-L01 | **integration** | `925df28` 已推 |
-| FE-TOPIC-L01 | **pending_test** | 已推 `112afa6`；人确认推送 2026-11-09 |
-| E0 | **done** | 五仓 Pipeline 绿；entan-py 可达 gkx 且 computable |
-| E1 | **ready_to_sign** | 金路径 4/4 通过（SZ 78.58 / 中台试算一致）；待签收 |
-| — | 旁路 | D-E1-01 C1：短码产业 `analysis_fp` 撞车（非本管线，可另开 bugfix） |
+| CALIBER-L01 | **done** | 2026-11-09 淮政玮签收 |
+| DATA-L01 | **done** | 同上 |
+| ALGO-L01 | **done** | 同上 |
+| MID-L01 | **done** | 同上 |
+| JAVA-L01 | **done** | 同上 |
+| FE-TOPIC-L01 | **done** | 同上 |
+| E0 | **done** | chore |
+| E1 | **done** | 金路径 4/4；2026-11-09 淮政玮签收 |
+| — | 旁路未关 | D-E1-01 C1：短码产业 `analysis_fp` 撞车（非本管线） |
