@@ -15,7 +15,7 @@
 
 表名：`macro_index_data` / `macro_index_attribute` / `macro_admin_area` / `macro_index_cal` / `macro_index_dur` / `macro_source_code` / `macro_city_section`。
 
-**续作**：`GDF-MACRO-STORAGE-DDL-L01`（从包 `10`/`12` 复制入 `storage/MACRO/.../dwd.md`+`ads.md`）→ 再跑自检 → 有口令后核现网建表。
+**续作进度（同日）**：`GDF-MACRO-STORAGE-DDL-L01` 已入仓 `storage/MACRO/stores/mysql/`（7 表）；复检 **文件一致 7/7 绿**，仅「未设口令 / 库未核对」仍红。**不豁免 demo**：规约 §8 默认补建 `demo_gkxlumenx_*` + `gkxlumenx_*` 后再复检。
 
 ## 2. FIN（`GDF-FIN-WORKPACK-v1`）
 
