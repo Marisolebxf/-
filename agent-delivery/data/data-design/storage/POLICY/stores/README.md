@@ -22,6 +22,7 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 | [`mysql/gapfill.md`](./mysql/gapfill.md) | D16 缺项：`gapfill_policy_sz_effect` CREATE + 算法库 Mock10/补外围写入口（`POL-IMPL-EFFECT-MOCK-VIA-UI-L01`） | draft |
 | [`nebula/`](./nebula.md) | hang **`demo_gkx_chain` only** | draft |
 | [`elasticsearch/`](./elasticsearch.md) | 本管线不施工独立索引 | draft 指针 |
+| 读侧指针（非存储） | [`../etl/pipeline-macro-effect-proxy.md`](../etl/pipeline-macro-effect-proxy.md) | 落地实效宏观代理只读 `gkx.dwd_macro_index_data` 等，算法内存合成，**本树无对应表** |
 | 窗口对照 | [`../windows/display-ds10-12.md`](../windows/display-ds10-12.md) | draft |
 
 库名：Demo `demo_gkxlumenx_dwd` / `demo_gkxlumenx_ads`。引擎：**MySQL 8 only**。禁止 `dwd.` / `ads.` PG schema 叙述当建库名。

@@ -2,6 +2,7 @@
 
 | 日期 | 任务 | 说明 |
 |---|---|---|
+| 2026-11-09 | `POL-EFFECT-MACRO-DATA-L01` | 落地实效宏观结果面代理读路径：新增 `etl/pipeline-macro-effect-proxy.md`（白名单 `macro-eff-v1` 9 指标、深圳/广州/北京/上海区划键、行业分析辅维、`companies` 禁用）；`etl/README`、`stores/README` 登记指针。只读 `gkx` → 算法内存，不落库、不写 ODS/DWD/ADS |
 | 2026-11-09 | `POL-IMPL-EFFECT-MOCK-VIA-UI-L01` | 落地实效缺项存储闭环：`stores/mysql/gapfill.md`（`gapfill_policy_sz_effect` CREATE + 列约束）；`etl/pipeline-algo-mock-gapfill.md`（Mock10 / 补外围双入口写路径）；`stores/README` 索引 + ER 列展开；`etl/README` 登记管道。只写 `gkxlumenx_gapfill`，不进 ODS/正式 DWD/ADS。`human:淮政玮` 签收 |
 | 2026-10-23 | ODS 只读源 | 三方只读固定 `dwd_policy_base` / `dwd_global_policy_base`，字段以汇总表国内/国外政策要素库为准（各 35 列，补 `t_id`）。废止 `dwd_zck_*` 与 29/16 列口径 |
 | 2026-10-23 | 产业关联表 | `related_entities.industry` 贴源后弃用；抽取只写 DWD `policy_industry_rel`（逻辑删除），并按政策同步到 ADS 同名表。同步 `dwd.md` / `ads.md` / `pipeline-dwd-to-ads.md` / `01-data-flow.md` §2.4 / `nebula.md` / `pipeline-to-nebula.md` / 旧目录 `data-design/政策` |
