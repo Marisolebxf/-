@@ -1,6 +1,6 @@
 # 10 · DWD MySQL DDL（宏观行业 v1.0）
 
-> **状态：草稿，可投递给 GDF 核对。** `data-design/storage/` 下目前没有 MACRO 目录，本目录暂为结构真源（`OPEN-MACRO-05`，待 architect 会签后登记 storage）。  
+> **状态：草稿，可投递给 GDF 核对。** 2026-11-09 已登记 `data-design/storage/MACRO/stores/mysql/{dwd,ads}.md`（`GDF-MACRO-STORAGE-DDL-L01`，逐字复制自本包，仅库名写 `demo_gkxlumenx_*`）；以后改列先改本包再同步 storage。  
 > **未核现网**：本叶无产线库权限，`gkxlumenx_dwd` / `gkxlumenx_ads` 上这些表是否已存在、列是否一致，**没有查过**（`OPEN-MACRO-06`）。GDF 开工前先核；缺表按本目录新建，已有表只 `ADD COLUMN`，不 `DROP`、不改 UK。
 
 **产线建表真源（本包冻结，草稿）**：
