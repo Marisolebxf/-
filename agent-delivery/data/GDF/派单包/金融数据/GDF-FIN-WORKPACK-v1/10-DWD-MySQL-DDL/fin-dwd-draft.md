@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_corp_basic` (
   PRIMARY KEY (`src_dwd_id`),
   KEY `idx_org_id` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='上市公司基本资料（沪深港美）';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_security` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `sec_id` varchar(255) NOT NULL COMMENT '证券ID（供应方 sec_id）',
@@ -45,7 +47,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_security` (
   KEY `idx_sec_code` (`sec_code`),
   KEY `idx_org_id` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='证券基本资料';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `industrial_fund_id` varchar(255) NOT NULL COMMENT '产业基金ID',
@@ -70,7 +74,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund` (
   PRIMARY KEY (`src_dwd_id`),
   KEY `idx_industrial_fund_id` (`industrial_fund_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产业基金基本信息';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_gp` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `industrial_fund_id` varchar(255) NOT NULL COMMENT '产业基金ID',
@@ -85,7 +91,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_gp` (
   KEY `idx_industrial_fund_id` (`industrial_fund_id`),
   KEY `idx_gp_org_id` (`gp_org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产业基金管理机构（GP）';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_lp` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `industrial_fund_id` varchar(255) NOT NULL COMMENT '产业基金ID',
@@ -106,7 +114,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_lp` (
   KEY `idx_industrial_fund_id` (`industrial_fund_id`),
   KEY `idx_lp_org_id` (`lp_org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产业基金LP信息';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_strategy` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `industrial_fund_id` varchar(255) NOT NULL COMMENT '产业基金ID',
@@ -118,7 +128,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_strategy` (
   PRIMARY KEY (`src_dwd_id`),
   KEY `idx_industrial_fund_id` (`industrial_fund_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产业基金投资策略';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_inv_summary` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `industrial_fund_id` varchar(255) NOT NULL COMMENT '产业基金ID',
@@ -131,7 +143,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industrial_fund_inv_summary` (
   PRIMARY KEY (`src_dwd_id`),
   KEY `idx_industrial_fund_id` (`industrial_fund_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产业基金投资汇总（基金级，非项目级）';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_bond` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `src_table` varchar(64) NOT NULL COMMENT '来源物理表',
@@ -161,7 +175,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_bond` (
   KEY `idx_bond_code` (`bond_code`),
   KEY `idx_issuer` (`issuer`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='科创债 / 高新技术产业债';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industry_class_his` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `src_table` varchar(64) NOT NULL COMMENT '来源物理表',
@@ -181,7 +197,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_industry_class_his` (
   KEY `idx_org_id` (`org_id`),
   KEY `idx_class_system` (`class_system`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='上市公司行业分类全量（申万/证监会/中信/港股申万）';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_main_biz_composition` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `src_table` varchar(64) NOT NULL COMMENT '来源物理表',
@@ -210,7 +228,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_main_biz_composition` (
   KEY `idx_dim_type` (`dim_type`),
   KEY `idx_occur_period` (`occur_period`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='沪深上市企业主营业务构成（行业/产品/地区）';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_valuation_daily` (
   `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',
   `src_table` varchar(64) NOT NULL COMMENT '来源物理表',
@@ -233,5 +253,4 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`fin_valuation_daily` (
   KEY `idx_dt` (`dt`),
   KEY `idx_market` (`market`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='股票估值指标日表（A股/港股/美股）';
-
 ```

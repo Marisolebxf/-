@@ -446,11 +446,12 @@ def gen_matrices():
 
 def gen_ddl():
     o = ["# fin-dwd-draft · 金融 DWD 建表草稿（生成件）", "",
-         "> **草稿，未签收**。库 `gkxlumenx_dwd`（GDF 只写正式库，禁 demo）。`demo_gkxlumenx_dwd` / 线上 lumen 库均**未建**这些表。",
-         "> 结构真源待架构师入 `storage/FIN/stores/mysql/dwd.md`（OPEN-FIN-01）；入仓前以本文件为准，入仓后本文件改指针。",
-         "> 生成：`script/gen_fin_pack.py`。字符集 `utf8mb4_0900_ai_ci`（`mysql-ddl-convention.md` §2）。", "", "```sql"]
+         "> **未签收**。库 `gkxlumenx_dwd`（GDF 只写正式库，禁 demo）。`demo_gkxlumenx_dwd` / 线上 lumen 库均**未建**这些表。",
+         "> 结构真源已入 `storage/FIN/stores/mysql/dwd.md`（GDF-FIN-STORAGE-DDL-L01，OPEN-FIN-01 闭合）；本文件为同步副本，改列须两边同改。",
+         "> 生成：`script/gen_fin_pack.py`。字符集 `utf8mb4_0900_ai_ci`（`mysql-ddl-convention.md` §2）。", ""]
     for t in TARGETS:
         multi = len(t["src"]) > 1
+        o.append("```sql")  # 每表一个围栏：check_gdf_ddl.py 每个围栏只认一张表
         o.append("CREATE TABLE IF NOT EXISTS `gkxlumenx_dwd`.`%s` (" % t["name"])
         o.append("  `src_dwd_id` bigint NOT NULL COMMENT '供应方 dwd_id（追溯）',")
         if multi:
@@ -462,8 +463,8 @@ def gen_ddl():
         for i, c in enumerate(t["idx"]):
             o.append("  KEY `idx_%s` (`%s`)%s" % (c, c, "," if i < len(t["idx"]) - 1 else ""))
         o.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='%s';" % t["cn"])
+        o.append("```")
         o.append("")
-    o.append("```")
     return "\n".join(o) + "\n"
 
 

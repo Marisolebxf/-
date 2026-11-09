@@ -1,6 +1,6 @@
 # fin-ads-draft · 金融 ADS 建表草稿
 
-> **草稿，未会签，未建表。** 口径与取数 SQL 见 [12-ADS后加工-金融.md](../12-ADS后加工-金融.md)。  
+> **同步副本，未建表。** 结构真源已入 `storage/FIN/stores/mysql/ads.md`（GDF-FIN-STORAGE-DDL-L01），改列须两边同改。 口径与取数 SQL 见 [12-ADS后加工-金融.md](../12-ADS后加工-金融.md)。  
 > 库 `gkxlumenx_ads`。字符集 `utf8mb4_0900_ai_ci`。列风格对齐现有政策 ADS（`id` 自增 + `calc_batch_id` + `ext` + `create_time`），但**不带 `metric_id` 列**：本包不替任何指标定 `metric_id`（12 §1）。  
 > 每批「同 `stat_date` 先删后插」放在一个事务里，可重跑。
 
@@ -27,7 +27,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_ads`.`ads_fin_industrial_fund_summary` (
   KEY `idx_stat_region` (`stat_date`,`reg_region_l1`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='产业基金汇总（地区×类型×成立年）';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_ads`.`ads_fin_bond_issue_summary` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `stat_date` date NOT NULL COMMENT '统计批次日',
@@ -45,7 +47,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_ads`.`ads_fin_bond_issue_summary` (
   KEY `idx_stat_year` (`stat_date`,`issue_year`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='科创债/高新债发行汇总（发行年×类别×发行人类型）';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_ads`.`ads_fin_listed_company_snapshot` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `stat_date` date NOT NULL COMMENT '统计批次日',
@@ -73,7 +77,9 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_ads`.`ads_fin_listed_company_snapshot` (
   UNIQUE KEY `uk_stat_org` (`stat_date`,`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='A股上市公司金融快照（最新估值+一级行业）；v1 仅 market=CN';
+```
 
+```sql
 CREATE TABLE IF NOT EXISTS `gkxlumenx_ads`.`ads_fin_main_biz_latest` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `stat_date` date NOT NULL COMMENT '统计批次日',

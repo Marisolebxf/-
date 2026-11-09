@@ -1,6 +1,6 @@
 # 10 · DWD / ADS MySQL DDL（金融）
 
-> **状态：草稿，未签收。** 金融域目前在 `agent-delivery/data/data-design/storage/` 下**没有** `FIN/` 目录，所以按 `mysql-ddl-convention.md` §1「一张表只有一份带注释的 CREATE，真源在 storage」的要求，真源**尚未存在**。本目录是成包期的临时落点（OPEN-FIN-01）。
+> **状态：结构真源已入仓（2026-11-09，GDF-FIN-STORAGE-DDL-L01，OPEN-FIN-01 闭合）。** 真源 = `agent-delivery/data/data-design/storage/FIN/stores/mysql/dwd.md` + `ads.md`；本目录两份 draft 是同步副本（每表一个 sql 围栏），改列须两边同改。现网 demo / lumen 库均未建，库核对仍红，归 GDF 建表后复跑。
 
 ## 文件
 
@@ -22,7 +22,7 @@
 |---|---|
 | 上述 15 张表 | 草稿。`demo_gkxlumenx_*`、线上 lumen 库均**未建** |
 | `gkx-gdf-ddl-signoff` | **未跑**。该自检要求「线上 demo 库与 lumen 库都已有这些表，且与 dwd.md / ads.md 一致」，本包做不到，也不应在此之前宣称通过 |
-| 入 `storage/FIN/stores/mysql/` | 待架构师另开叶（OPEN-FIN-01） |
+| 入 `storage/FIN/stores/mysql/` | 已入（15 张；`check_gdf_ddl.py` 文件一致 15/15） |
 | 字符集 | 已按 `utf8mb4_0900_ai_ci`；字符列未单独写 COLLATE（继承表级） |
 
 ## 禁止
