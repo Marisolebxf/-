@@ -41,4 +41,5 @@
 | 代码 | `scripts/7chain-mcp-server.mjs`、`scripts/7chain-mcp-selfcheck.mjs`；注册在 `.cursor/mcp.json` 的 `gkx-7chain` |
 | zmate / MCP 产品要求（对端材料） | [对接文档/对端/](./对接文档/对端/) |
 | 我方发出的材料 | [对接文档/我方/](./对接文档/我方/) |
+| 德金提供的参考材料（四批计划 V2.1、首批三系统场景方案、统一评测规范、MCP 高价值清单、固态电池战略报告） | [德金提供的参考材料/](./德金提供的参考材料/)（docx/xlsx/zip 内文档已转出同名 md 副本，真源以原文件为准） |
 | WBS | [WBS.md](./WBS.md) |
