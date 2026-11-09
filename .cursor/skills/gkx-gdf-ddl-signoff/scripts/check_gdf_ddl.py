@@ -14,6 +14,8 @@ DIMS = {
     "ent": ("企业", "ENT"),
     "chain": ("产业链", "CHAIN"),
     "svc": ("服务机构", "SVC"),
+    "macro": ("宏观行业", "MACRO"),
+    "fin": ("金融数据", "FIN"),
 }
 OBSOLETE = ("禁止当现行", "已被", "已作废")
 SQL_FENCE = re.compile(r"```sql\s*(.*?)```", re.S | re.I)
@@ -25,9 +27,13 @@ CREATE_RE = re.compile(
 
 def dimension_from_task(task_id):
     upper = task_id.upper()
+    if "MACRO" in upper or "宏观" in task_id:
+        return "macro"
+    if "FIN" in upper or "金融" in task_id:
+        return "fin"
     if "POLICY" in upper:
         return "policy"
-    if "CHAIN" in upper or "产业" in task_id:
+    if "CHAIN" in upper or "产业链" in task_id:
         return "chain"
     if "SVC" in upper or "服务机构" in task_id:
         return "svc"
