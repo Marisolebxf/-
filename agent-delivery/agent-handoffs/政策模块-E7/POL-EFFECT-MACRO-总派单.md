@@ -78,3 +78,17 @@ DoD：见 registry。
 
 - E0 `POL-EFFECT-MACRO-E0-DEVOPS-L01`：点名相关 pipeline 绿 / rollout  
 - E1 `POL-EFFECT-MACRO-E1-QA-L01`：总控 §3 金路径；期望未发生必红  
+
+---
+
+## 进度板（coordinator 滚动）
+
+| 叶 | 状态 | 备注 |
+|----|------|------|
+| CALIBER-L01 | ready_to_sign / 已交付口径 | QPOL-02 双轨 |
+| DATA-L01 | ready_to_sign / 白名单冻 | macro-eff-v1 |
+| ALGO-L01 | **integration** | 双仓推；深圳样例 ~78.58；联调通过 |
+| MID-L01 | **in_progress** | 2026-11-09 11:46 派 frontend |
+| JAVA-L01 | **in_progress** | 2026-11-09 11:46 派 api |
+| FE-TOPIC-L01 | backlog | 等 JAVA ≥ integration |
+| E0 / E1 | backlog | 等 FE pending_test |
