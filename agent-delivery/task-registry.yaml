@@ -60365,7 +60365,7 @@ tasks:
     lock_until: "2026-11-09T06:49:17.646Z"
     claimed_by: "agent:data-agent"
     title: "落地实效缺项 mock：挂进 Mock10 + 真实政策补外围两入口"
-    status: "claimed"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-POLICY-PDR"
     priority: "P0"
@@ -60376,7 +60376,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 50000
     user_story: "US-E7-POL-04"
-    note: "用户 2026-11-09 授权：无结构建表、有结构灌数；mock 过程须含图上 Mock10 + 真实政策补外围。前序 DATA 单 blocked（禁造数）不复开。"
+    note: "data-agent 开工"
     depends_on:
       - "TOPIC-POL-SZ3D-DEMO-FIX-R20261107-EFFECT-SYNTH"
     collaborators:
@@ -60394,4 +60394,38 @@ tasks:
       - "过程必须包含算法库页两个入口（10.50.69.111:30889/#/policy/mock 或等价 API）：①「Mock 10 条数据」(synth.run)；②「真实政策补外围：深圳 40 + 随机 10」(synth.run_real)。点/调任一门后，当次写入政策在 gapfill_policy_sz_effect 有对应行，含有效 implementation_date、非空 support_object、feedback_score，以及 metric_id/gap_item/fill_method/gapfill_batch_id/generated_at。"
       - "与 TOPIC-POL-SZ3D-DEMO-FIX-R20261107-DATA 区分：本单由监管人明确授权 mock/造数以满足演示；不得因「无三方非空源」停工。若「已补 79」缺 effect 行，须通过再跑补外围或同入口可触发的补写使可演示，证据含前后 SQL 计数。"
       - "demo-algo-ent-analysis 与线上若跑 lumen-algo-py/vendor 副本，同改须双落或说明同步方式。不改按钮文案条数。handoff：agent-delivery/agent-handoffs/政策模块-E7/POL-IMPL-EFFECT-MOCK-VIA-UI-L01.md，含建表/灌数 SQL 证据与两入口调用证据。"
-    update_time: "2026-11-09T10:49:18+08:00"
+    update_time: "2026-11-09T10:49:51+08:00"
+  - id: DEVOPS-SONARQUBE-CI-L01
+    title: "接入 SonarQube：lumen 仓 CI 源码质量扫描"
+    status: "ready"
+    agent: "devops-agent"
+    epic: "E-PLATFORM"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      human 派单 2026-11-09：接入已有 SonarQube http://10.50.180.228:9005。凭证仅在会话/飞书交付给 devops，CI 用 Token；禁止把口令写进仓。现有扫描真源仍是 Trivy 镜像扫；本单补源码质量扫描，不替代 trivy。首版软门禁，硬质量门另开单。监管人建议 human:淮政玮。
+    collaborators:
+      - "coordinator-agent"
+    touched_files:
+      - "lumen-svc-platform/.gitlab-ci.yml"
+      - "lumen-ui-topic/.gitlab-ci.yml"
+      - "lumen-ui-science-pc/.gitlab-ci.yml"
+      - "lumen-algo-py/.gitlab-ci.yml"
+      - "agent-delivery/cicd-pipeline.md"
+      - "agent-delivery/工程过程/02-策划与监控/03-开发环境/01-环境清单.md"
+    design_refs:
+      - "agent-delivery/cicd-pipeline.md"
+      - "agent-delivery/devops/README.md"
+      - ".cursor/rules/devops.mdc"
+    definition_of_done:
+      - "从 gkx Runner 可访问 http://10.50.180.228:9005，并在 Sonar 建好 lumen 试点项目（至少 Java 1 + 前端 1 + Python 1）"
+      - "GitLab CI/CD Variables 已配置 SONAR_HOST_URL + SONAR_TOKEN（Masked+Protected）；禁止把 admin 口令写入 git / registry / Dockerfile"
+      - "lumen-svc-platform、lumen-ui-topic（或 science-pc）、lumen-algo-py（或 topic-py）三路 .gitlab-ci.yml 增加 sonar stage/job，dev 可跑通；首版 allow_failure:true（与现有 trivy 同软门禁）"
+      - "agent-delivery/cicd-pipeline.md 与 环境清单 补齐 Sonar 地址与接入说明；handoff 含试点 Pipeline 绿截图/链接"
+      - "ponytail: full"
+    update_time: "2026-11-09T11:00:58+08:00"
