@@ -55407,7 +55407,7 @@ tasks:
       - "写明 Java 零写 nGQL（D 铁律）；变更表归 Python 写；handoff 完整推待签收不自签 done"
     update_time: "2026-11-07T23:18:00+08:00"
   - id: TS-L2-M10-ENT-PY-IMPL-01
-    evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-M10-ENT-PY-IMPL-01.md"
+    evidence: "lumen-algo-py 4b34c21；agent-handoffs/科技发展态势-TS/TS-L2-M10-ENT-PY-IMPL-01.md"
     supervised_by: "human:刘剑锋"
     claimed_at: "2026-11-07T15:53:00.000Z"
     last_seen_at: "2026-11-07T15:53:00.000Z"
@@ -55425,7 +55425,8 @@ tasks:
     difficulty: "L"
     estimated_tokens: 150000
     user_story: "全景序41-47 写回链路 Python 侧（ENT-ARCH done：四段链 Python 单写者）"
-    note: "落点 lumen-algo-py vendor/entan-py（D2 算法库统一出口）；DDL 归 Python（D1 库 gkxlumenx_dwd）；含存量技术点映射 seed（DATA-A1）。2026-11-09 代码完成（feat/m10-ent-py 已推）：DDL 12 表+7op 乐观锁幂等+发布序列投影+R1/R2/impact/conflicts；单测 6/6。handoff `TS-L2-M10-ENT-PY-IMPL-01.md`。待：DDL 执行+部署+联调（hang/边投影首版留联调补齐，已显式记录）"
+    note: |
+      落点 lumen-algo-py vendor/entan-py（D2 算法库统一出口）；DDL 归 Python（D1 库 gkxlumenx_dwd）；含存量技术点映射 seed（DATA-A1）。2026-11-09 代码完成（feat/m10-ent-py 已推）：DDL 12 表+7op 乐观锁幂等+发布序列投影+R1/R2/impact/conflicts；单测 6/6。handoff `TS-L2-M10-ENT-PY-IMPL-01.md`。待：DDL 执行+部署+联调（hang/边投影首版留联调补齐，已显式记录）｜2026-11-09 走查返工（监管人 human:刘剑锋 报 edu 500）：get_conn 不存在致全端点 500；表名无库前缀；不 commit；rank 保留字；HTTPException 包 {detail} 非信封；plane 默认落 demo_* 库（D12）；hang/unhang/边三 op 未投影。修复 lumen-algo-py 4b34c21（单测 6→15 全绿）：事务游标+正式库名固定+信封出口+缺表空态/50302+ADS 投影补齐+GET/DELETE changes/{id}+Nebula 仅显式 space 写且转义。DDL 已执行（12 表 2026-11-09 09:45）；存量 seed 拆 TS-L2-M10-ENT-SEED-L01。待 edu 接口联调。
     depends_on:
       - "TS-L2-M10-ENT-ARCH"
       - "TS-L2-M10-ENT-API"
@@ -55435,9 +55436,9 @@ tasks:
       - "POST /internal/v1/sci/tech/graph/changes：7 op 实现（乐观锁 409+diff/ops≤50/client_op_id 幂等/部分失败 failed_items）+ :validate（dry_run diff+影响面）+ publish（MySQL→Nebula→ADS 序列，失败 projection_pending 补偿）+ R1 推荐（105 边权+ⓘ）/impact/conflicts 读"
       - "边强度三列（strength_auto/manual/source）口径落地：读面只取 auto；strength_manual 永不进指标"
       - "不写 Neo4j；不动存量 VID；G2 现算不做；单测全绿；handoff 完整含 cost"
-    update_time: "2026-11-07T23:53:00+08:00"
+    update_time: "2026-11-09T17:36:21+08:00"
   - id: TS-L2-M10-ENT-JAVA-IMPL-01
-    evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-M10-ENT-JAVA-IMPL-01.md"
+    evidence: "lumen-svc-platform d8bbea6（返工）/ 8d90869（首版）"
     supervised_by: "human:刘剑锋"
     claimed_at: "2026-11-07T15:53:00.000Z"
     last_seen_at: "2026-11-07T15:53:00.000Z"
@@ -55455,7 +55456,8 @@ tasks:
     difficulty: "M"
     estimated_tokens: 120000
     user_story: "全景序41-47 Java 双门面（C1=A display 代理）"
-    note: "topic 侧承载模块实现单内定（DN-07 候选 gkxlumen-topic）；display ENT 门面沿 LAYER 门面模式。2026-11-08 双门面完成（8d90869）：topic 门面 7op/ops≤50/幂等校验 400 本地判+信封透传；display ENT 门面 C1=A（避让既有读图 client 撞名）；topic 53/display 72 全绿。待 PY 写侧联调"
+    note: |
+      topic 侧承载模块实现单内定（DN-07 候选 gkxlumen-topic）；display ENT 门面沿 LAYER 门面模式。2026-11-08 双门面完成（8d90869）：topic 门面 7op/ops≤50/幂等校验 400 本地判+信封透传；display ENT 门面 C1=A（避让既有读图 client 撞名）；topic 53/display 72 全绿。待 PY 写侧联调｜2026-11-09 走查返工（edu 实测 /maintain-ent/graph/current 503「Load balancer does not contain an instance for the service lumen-algo-py」，此前 topic 未发时 401）：topic→Python Feign url 原 feign.techgraph.url 未配→改继承 gkxlumen.topic.algo-base-url（TOPIC_ALGO_BASE_URL=entan-py）；topic 门面 @Inner(false)→@Inner；relay Feign status=-1 时 HttpStatus.valueOf 抛成 500→统一 503 信封；display keyword/sortBy 可选。lumen-svc-platform d8bbea6（topic 8/8、display ENT 2/2 绿）。部署：topic 需 TOPIC_RELEASE=true 点名发（监管人手动触发）。待 edu 接口联调。
     depends_on:
       - "TS-L2-M10-ENT-API"
     definition_of_done:
@@ -55463,9 +55465,9 @@ tasks:
       - "display ENT 门面：/v1/situation/maintain-ent/graph/**（C1=A 裁定）沿 LAYER 门面（Feign+信封透传，422 透传）+ R2 graph/current（读 ADS 投影含 projection_status）"
       - "错误链：409+diff/503 pending 语义透传；ops≤50/枚举校验本地判"
       - "不碰 BE-TS-CONTRACT-02；模块测试全绿；handoff 完整含 cost"
-    update_time: "2026-11-07T23:53:00+08:00"
+    update_time: "2026-11-09T17:36:21+08:00"
   - id: FE-TS-10C
-    evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/FE-TS-10C.md"
+    evidence: "lumen-ui-science-pc 8d754e2；agent-handoffs/科技发展态势-TS/FE-TS-10C.md"
     supervised_by: "human:刘剑锋"
     claimed_at: "2026-11-07T15:53:00.000Z"
     last_seen_at: "2026-11-07T15:53:00.000Z"
@@ -55483,7 +55485,8 @@ tasks:
     difficulty: "M"
     estimated_tokens: 80000
     user_story: "全景序41-47 FE-TS-10A 分区3 接线正式化"
-    note: "api 层 maintain-ent 模块；mock 轨保留演示态。2026-11-08 代码完成三绿（变更集模型/addRelation 移除/R1ⓘ）；mock 轨可验页；real 轨待 PY 写侧。handoff `FE-TS-10C.md`"
+    note: |
+      api 层 maintain-ent 模块；mock 轨保留演示态。2026-11-08 代码完成三绿（变更集模型/addRelation 移除/R1ⓘ）；mock 轨可验页；real 轨待 PY 写侧。handoff `FE-TS-10C.md`｜2026-11-09 走查返工（监管人报：页面出现 mock 文案、窄屏错乱）：real 轨原不调 R1/R2，始终显示页面种子（含「（Mock）」）→新增 loadEntityRelationState，状态只来自服务端+写后回读+诚实空态；裸 fetch→统一 axios（baseURL/Bearer）；去 technologyId=1 硬编码，加技术点选择；edge_key 用服务端主键；人工强度标注+R1 MetricSpecCard。分区1 real 轨不再回落种子。布局：td display:flex 移内层、视口 @media→容器查询、宽表横向滚动、grid 子项 min-width:0。lumen-ui-science-pc 8d754e2（type-check/maintain 单测/build 绿；mock+real 1440/1100/900/760 截图核对）。维护技术图谱 34–40 按监管人要求不动。待 ENT 全链部署后 edu 联调。
     depends_on:
       - "TS-L2-M10-ENT-API"
       - "TS-L2-M10-ENT-JAVA-IMPL-01"
@@ -55492,7 +55495,7 @@ tasks:
       - "面板接线：勾选推荐→hang（回执 edges_created 呈现）/实体编辑按类型分流 update_node|overlay/批量删 unhang/删关系 delete_entity_edge/类型行内改 update_entity_edge（G1 强度+时间表单已有）；addRelation 入口移除（超需规）；busy 防抖+409 diff 提示+pending 提示"
       - "R1 强度 ⓘ 挂 M_TECH_GRAPH_105_1（105 未交付空态+PendingBadge）；UI 显人工强度标注「人工」；真轨 mock 文案清零"
       - "不重做页面结构；三绿（maintain 测试/type-check/build）；handoff 完整含 cost"
-    update_time: "2026-11-07T23:53:00+08:00"
+    update_time: "2026-11-09T17:36:21+08:00"
   - id: TS-L2-M10-BE-IMPL-01
     evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-M10-BE-IMPL-01.md"
     supervised_by: "human:刘剑锋"
@@ -61556,14 +61559,14 @@ tasks:
       - "handoff 记录每行 SQL 依据，可重复执行"
     update_time: "2026-11-09T15:44:37+08:00"
   - id: POL-PC1-CASE-FILL-API
-    evidence: "agent-handoffs/科技政策跟踪-POL/POL-PC1-CASE-FILL-API.md"
+    evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-PC1-CASE-FILL-API.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-09T07:03:34.600Z"
     last_seen_at: "2026-11-09T07:03:34.600Z"
     lock_until: "2026-11-10T07:03:34.600Z"
     claimed_by: "agent:api-agent"
     title: "政策数据治理 · results 加政策候选 policyOptions"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -61573,8 +61576,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      2026-11-09 api-agent：policyOptions 已落地（element results 返回体 + display 降级空列表），编译绿（IDEA 捆绑 Maven 3.9.9，EXIT=0），spring-javaformat:apply 已跑。改动停本地未 commit/push，等 human:淮政玮 确认。⚠️ handoff §2 登记矛盾：线上实测 gapfill 三 ID 按 publish_date DESC 只有 18407696 进前 200（另两个排名 ~6950 开外，全库活行 20169），排序口径是否调整待拍板。
+    note: "代码与编译完成，改动停本地待确认推送；候选排序口径待人拍板。"
     touched_files:
       - "repos/lumen-svc-platform/gkxlumen-element/src/main/java/com/topcomm/gkxlumen/element/controller/PolicyGovernanceController.java"
     design_refs:
@@ -61584,15 +61586,16 @@ tasks:
       - "现有 results/lineage-index/indicator-library 三个资源行为不变"
       - "编译通过，handoff 落盘"
       - "push 前等 human:淮政玮 确认"
-    update_time: "2026-11-09T15:46:09+08:00"
+    update_time: "2026-11-09T15:54:05+08:00"
   - id: POL-PC1-CASE-FILL-FE
+    evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-PC1-CASE-FILL-FE.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-09T07:03:43.801Z"
     last_seen_at: "2026-11-09T07:03:43.801Z"
     lock_until: "2026-11-10T07:03:43.801Z"
     claimed_by: "agent:frontend-agent"
     title: "政策数据治理 · 治理页选政策加尽加并对齐算法中台过程"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "frontend-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -61602,7 +61605,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "前端仓默认人工确认后推。清洗 Tab 加政策选择，候选接后端 policyOptions，过程文案对齐算法中台。"
+    note: "页面改造与 type-check 完成，改动停本地待确认推送。"
     touched_files:
       - "repos/lumen-ui-science-pc/src/views/policy/governance/index.vue"
       - "repos/lumen-ui-science-pc/src/api/policy.ts"
@@ -61615,10 +61618,15 @@ tasks:
       - "批次/阶段文案与算法中台口径一致（待追加→入仓→重算 10 步汇总），页面保持只读"
       - "pnpm type-check 绿；改动停本地等人工确认推送"
       - "handoff 落盘"
-    update_time: "2026-11-09T15:04:39+08:00"
+    update_time: "2026-11-09T15:54:15+08:00"
   - id: POL-PC1-CASE-FILL-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-09T07:55:55.331Z"
+    last_seen_at: "2026-11-09T07:55:55.331Z"
+    lock_until: "2026-11-09T11:55:55.331Z"
+    claimed_by: "agent:coordinator-agent"
     title: "政策数据治理 602–605 · 合规用例填充与选政策加全收口"
-    status: "backlog"
+    status: "ready_to_sign"
     agent: "coordinator-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -61628,7 +61636,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 30000
-    note: "长任务总控。2026-11-09 human:淮政玮 授权：灌 script_state、候选走后端 results、前端加尽加、过程对齐算法中台。三叶并行，子智能体不 commit。"
+    note: "三叶 handoff 全部落盘；602–605 用例与索引、LOOP 状态句已更新，无「未填」。收口提交 bae0aaf3 已推 origin/dev。待 human:淮政玮 签收。另 API 叶遗留口径问题待拍板：policyOptions 前 200 内 gapfill 三 ID 只有 18407696。"
     touched_files:
       - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/科技政策跟踪-索引.md"
     design_refs:
@@ -61637,7 +61645,7 @@ tasks:
       - "三叶 handoff 落盘，602–605 用例与现状一致且无「未填」"
       - "索引 PC1 四行与 LOOP 计划状态句更新，不建验收单"
       - "不改 602–605 以外的用例"
-    update_time: "2026-11-09T15:03:21+08:00"
+    update_time: "2026-11-09T16:02:40+08:00"
   - id: POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA
     cost_warn: "green"
     actual_cost: 3
@@ -62093,3 +62101,89 @@ tasks:
       - "第一批评测结果中暴露的判分规则问题回灌到统一框架（写修订记录，不改已验收批次的结论）"
       - "handoff：agent-handoffs/智能体客户端-ZMATE/ZMATE-SKILL-MCP-EVAL-L02.md（范围、偏离、产物、架构合规自检、cost 四字段），并回写 WBS 页状态列"
     update_time: "2026-11-09T15:26:46+08:00"
+  - id: TS-L2-M10-ENT-SEED-L01
+    model_used: "claude-opus-5-5"
+    actual_tokens: 275000
+    evidence: "agent-handoffs/科技发展态势-TS/TS-L2-M10-ENT-SEED-L01.md；lumen-algo-py 0b46d01（seed 脚本+DDL 去假种子）"
+    supervised_by: "human:刘剑锋"
+    claimed_at: "2026-11-09T09:35:28.064Z"
+    last_seen_at: "2026-11-09T09:35:28.064Z"
+    lock_until: "2026-11-12T09:35:28.064Z"
+    claimed_by: "agent:data-agent"
+    title: "维护管理 · 关键实体与关系 · 存量技术点种子（Nebula 实扫 → technology_master + ADS node/edge + overlay）"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 80000
+    user_story: "全景序41-47 存量 seed 前置（ENT-DATA DATA-A1）"
+    note: "handoff+evidence 已就绪；dev 库已灌数，待 ENT 全链部署后 edu 接口联调"
+    depends_on:
+      - "TS-L2-M10-ENT-DATA"
+    touched_files:
+      - "vendor/entan-py/scripts/seed_tech_graph_maintain.py"
+      - "vendor/entan-py/scripts/mysql/tech_graph_maintain.sql"
+    definition_of_done:
+      - "只读 Nebula demo_gkx_chain tech_point / tech_has_*，幂等写 gkxlumenx_dwd.technology_master + gkxlumenx_ads.graph_entity_node/edge + gkxlumenx_dwd.graph_entity_overlay；不写 Nebula / demo_* 库"
+      - "relation_strength 为空不写 auto 边（不编数）；manual 行 upsert 保护；--dry-run + --max-write 写保护"
+      - "范围按监管人裁定：默认仅灌有真实强度的技术点；全量 --all 需先完成 R2 分页"
+      - "demo fixture 假种子（具身智能/深圳某机器人公司）软删并从 DDL 移除"
+      - "执行后只读核对行数 + R2/R1 同等 SQL 核对；handoff + cost 回填"
+    update_time: "2026-11-09T17:35:28+08:00"
+  - id: TS-L2-M10-ENT-R2-PAGE-L01
+    title: "维护管理 · 关键实体与关系 · R2 现状分页/技术点检索 + 全量存量灌数"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P3"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 150000
+    user_story: "全景序41-47 存量全量可维护（19,348 技术点）"
+    note: "来源：2026-11-09 SEED 调研——Nebula tech_point 19,430（去重 19,348），R2 无分页全量会一次返回 1.9 万节点。"
+    depends_on:
+      - "TS-L2-M10-ENT-API"
+      - "TS-L2-M10-ENT-SEED-L01"
+    collaborators:
+      - "data-agent"
+      - "frontend-agent"
+    definition_of_done:
+      - "API 分册变更：R2 /current 分页 + 按名称检索技术点（契约变更走会签，不另造端点体系）"
+      - "Python R2 实现分页；前端技术点选择改远程检索"
+      - "data-agent 以 seed 脚本 --all --allow-large 全量灌数（约 3.9 万行）并核对"
+      - "strength_auto 口径经 algorithm-agent 确认（存量 relation_strength 0.55–2.07 vs M_TECH_GRAPH_105_1）"
+      - "handoff + cost 回填"
+    update_time: "2026-11-09T17:35:00+08:00"
+  - id: TS-L2-M10-TEST-L01
+    title: "维护管理 · 主路径测试（图层与数据源 + 关键实体与关系各一条 + 截图）"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P2"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "新人引导 §5.7 主路径测试单（M10）"
+    note: "维护技术图谱（34–40 报价划掉）不在测试范围。"
+    depends_on:
+      - "FE-TS-10B"
+      - "FE-TS-10C"
+      - "TS-L2-M10-ENT-SEED-L01"
+    definition_of_done:
+      - "数据准备核验：cfg_* 四表种子行；ENT technology_master active=1 / ADS node=1 / edge=61（SEED 断言值）"
+      - "关键路径：图层与数据源（新增/探测/删组 409）；关键实体与关系（R1 推荐 → 挂接 → 改关系类型 → 删除关系 → 解挂），关 Mock 走 edu 真实接口"
+      - "界面操作过程 + 截图（登录按新人引导 §6；截图含菜单/分区/关键数字或空态），随 handoff 存放并在 WBS 写路径"
+      - "期望未发生必红：真实模式无 Mock/演示文案与页面种子；窄屏（≤900px）无错位；409/503 有行内文案"
+      - "handoff + cost 回填"
+    update_time: "2026-11-09T17:35:01+08:00"

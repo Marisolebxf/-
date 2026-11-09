@@ -24,3 +24,12 @@
 ## cost
 
 - actual_tokens: ~50k · model_used: glm-5.3（ZCode agent） · actual_cost: <$0.5 · cost_warn: green
+
+## 2026-11-09 走查返工（监管人 human:刘剑锋 报 edu 关键实体接口 500）
+
+- 根因：`_db()` 导入不存在的 `entan.common.db.get_conn` → 所有碰库端点 ImportError 500；原单测只测参数校验未覆盖
+- 同批问题：表名无库前缀（连接无默认库）、`autocommit=False` 却从不 commit、`rank` 为 MySQL 保留字、`HTTPException(detail=dict)` 被 FastAPI 包成 `{detail}` 非信封、`connect()` 无 plane 头默认落 `demo_gkxlumenx_*`（D12）、hang/unhang/边三 op 未投影（DATA-A3 挂接=边存在性）、Java client 声明的 GET/DELETE `changes/{id}` 无路由、Nebula 投影默认写 demo space 且 f-string 拼 nGQL
+- 修复 `lumen-algo-py` 4b34c21：事务游标（commit/rollback/close）+ 正式库名固定（`GKX_M10_ENT_DWD_DB/ADS_DB` 可覆盖）+ `enveloped` 统一信封出口（缺表读面空态 `schema_ready=false`、写面 50302）+ ADS 投影补齐 7 op + 补两路由 + Nebula 仅显式 `GKX_NEBULA_MAINTAIN_SPACE` 时写且转义
+- 单测 6 → 15 全绿（信封/缺表/库名/乐观锁 409/R2 分组/投影 SQL/nGQL 转义）
+- DDL：12 表已于 2026-11-09 09:45 在 dev 库建好（只读核对）；存量种子拆单 `TS-L2-M10-ENT-SEED-L01`
+- 状态仍 integration：待 topic（TOPIC_RELEASE）部署后 edu 接口联调
