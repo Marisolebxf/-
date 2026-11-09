@@ -61714,7 +61714,7 @@ tasks:
     update_time: "2026-11-09T15:52:56+08:00"
   - id: KG-COMPLY-LOAD-T01
     title: "T01 入图环境与结构核验（含 schema 缺口升级闸）"
-    status: "ready"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61724,16 +61724,18 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "SDD §5 T01；建议执行人 human:白鑫凤；上级 KG-COMPLY-LOAD-L01"
+    note: "SDD §5 T01；建议执行人 human:白鑫凤；上级 KG-COMPLY-LOAD-L01。2026-11-09 白鑫凤交付缺口清单（缺 5 Tag + 11 Edge、计数与基线一致），唐绍祖只读复核 8 项全部对上；评审退回：§6 补建语句为空属性写法须补 props / weight 后再报 DBA，另补 VID 前缀与端点方向两列。见 KG-COMPLY-LOAD-T01-致白鑫凤-缺口清单修正说明.md"
     depends_on:
       - "KG-COMPLY-SDD-L01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T01"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md"
     definition_of_done:
       - "只读核对 demo_gkx_chain 14 Tag / 24+6 Edge / VID 前缀 / 边端点方向（各边抽样 20 条），出四列核对表"
-      - "缺失项列待补清单附 DDL 摘要（真源 KG-7ELEM-SCHEMA-DDL-L01）；预期缺 5 Tag + 10 边型"
+      - "缺失项列待补清单附 DDL 摘要（真源 KG-7ELEM-SCHEMA-DDL-L01）；预期缺 5 Tag + 11 边型（2026-11-09 补 publish/M10，首版误记 10 种）"
+      - "待补清单 DDL 须逐条核对属性：空属性结构（CREATE EDGE ... ();）不得提交 DBA，Edge 至少 weight + props、Tag 至少 name + props（first_year 本期不强制）"
       - "待补清单经唐绍祖确认内容→报徐滕强→授权 DBA 执行 DDL→复验全绿后 T02–T04 才开工；编排侧不执行任何 DDL"
-    update_time: "2026-11-09T15:11:02+08:00"
+    update_time: "2026-11-09T21:50:00+08:00"
   - id: KG-COMPLY-LOAD-T02
     title: "T02 七要素入图·产业链与机构合作组（M15/M17/M19）"
     status: "backlog"
@@ -62662,3 +62664,55 @@ tasks:
       - "重复点击不翻倍；正式库拒绝；DS12-EST 用例 232–236 仍读到"
       - "令牌只从本机 %USERPROFILE%\\.gkx\\display-loop-token 读，不进 git/handoff；handoff 写逐行结果与 trace"
     update_time: "2026-11-09T19:38:48+08:00"
+  - id: SYSINT-XTEAM-L01
+    title: "跨团队集成信息收集（甲方口径：智树/燕大/久新/智谱门户智库之间算跨团队）"
+    status: "backlog"
+    agent: "integration-agent"
+    epic: "SYSINT-XTEAM"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      背景：总集要求按需规功能项补充 8 系统跨团队集成信息（xlsx：agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/进度监控/国际科技信息中心项目_AI教育&AI战略咨询_8系统进度监控.xlsx，各系统 sheet AD-AI 六列：是否涉及跨团队集成/集成类型/提供方/页面路径清单/数据清单/接口清单）。本任务=甲方口径：智树 与 燕大、久新、智谱自身团队（门户/高端智库）之间【算跨团队】。注意：AI 列接口清单真源=腾讯文档《跨系统调用接口清单》（大威宣贯），未登记的接口须在该在线文档按宣贯要求补登记；xlsx 含 WPS 特有 dataValidation，改动前必须备份且不得破坏既有公式。姐妹单 SYSINT-XTEAM-L02=智谱内部口径。
+    touched_files:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/进度监控/国际科技信息中心项目_AI教育&AI战略咨询_8系统进度监控.xlsx"
+      - "agent-delivery/工程过程/04-系统集成/09-跨团队集成信息收集/"
+      - "agent-handoffs/SYSINT-XTEAM-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/外部接口依赖/06-统一接口需求对接文档（久新+燕大）.md"
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/外部接口依赖/07-展示系统-页面级供方能力清单（久新+燕大）.md"
+    definition_of_done:
+      - "8 系统 sheet 的 AD-AI 六列按甲方口径填写完成（是否跨团队=智树/燕大/久新/智谱门户智库之间）"
+      - "每项填写有依据出处（仓内对接文档/接口清单/负责人确认），初稿对照表落在工程过程目录并经各系统负责人补齐确认"
+      - "接口集成项在腾讯文档《跨系统调用接口清单》按大威宣贯要求完成登记（未登记的补登记）"
+      - "xlsx 修改前有备份，公式/总览 sheet/数据验证未被破坏（officecli 或人工核验）"
+      - "handoff：agent-handoffs/SYSINT-XTEAM-L01.md，含双口径差异说明与各负责人确认记录"
+    update_time: "2026-11-09T21:32:42+08:00"
+  - id: SYSINT-XTEAM-L02
+    title: "跨团队集成信息收集（智谱内部口径：内部团队间不算跨团队；仅智谱↔总集/北大深势算）"
+    status: "backlog"
+    agent: "integration-agent"
+    epic: "SYSINT-XTEAM"
+    priority: "P2"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      背景：与 SYSINT-XTEAM-L01 同一批 xlsx（AD-AI 六列）但【口径不同】：智谱集团内部团队（智树、智谱门户、高端智库、超大规模智算引擎——经确认智算引擎归智谱自身）之间的集成【不算跨团队】，只做内部登记供项目内排期与联调用；【只有智谱↔总集、智谱↔北大深势之间才算跨团队】。本任务产出=智谱内部口径的集成登记表 + 内部待办（含集成类型/提供方与联调窗口），不写甲方的跨团队列。两任务涉及同一 xlsx 时须先内部口径后甲方口径，错峰写文件避免并发冲突。
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/09-跨团队集成信息收集/"
+      - "agent-handoffs/SYSINT-XTEAM-L02.md"
+    definition_of_done:
+      - "智谱内部口径登记表建立：内部团队间集成（智树/门户/智库/智算引擎之间）逐项列出集成类型/提供方/页面路径或数据清单"
+      - "内部接口清单与腾讯文档《跨系统调用接口清单》交叉核对，缺口列清单"
+      - "智谱↔总集、智谱↔北大深势的对外集成项单独列出并同步给 SYSINT-XTEAM-L01 填甲方口径"
+      - "登记表落在工程过程目录并经各内部团队负责人确认"
+      - "handoff：agent-handoffs/SYSINT-XTEAM-L02.md，注明与 L01 的口径边界（谁算谁不算跨团队）"
+    update_time: "2026-11-09T21:32:58+08:00"

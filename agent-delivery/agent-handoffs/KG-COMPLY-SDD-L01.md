@@ -80,7 +80,7 @@ ponytail: N/A（定义/文档）
 | # | 修正点 | 落点 |
 |---|---|---|
 | P0-1 | 边属性读法：`props` / `props.confidence` → `e.evidence_level` / `e.relation_confidence_score`；新增「属性读写约定」（节点 `v.<tag>.<field>`、边 `e.<field>`，禁用 `e.<edge_name>.<field>`，该写法全 NULL 且不报错）；T08/T09/T10 加权重自检 | §2.1#1、§5 共同前提、T08/T09/T10 |
-| P0-2 | T01 补「预期缺口」表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 10 边型）；DDL 通道改「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」；§5 补关键路径警示 | T01、§5 汇总 |
+| P0-2 | T01 补「预期缺口」表（实测 10 Tag / 15 Edge，预期缺 5 Tag + 11 边型，2026-11-09 补 publish/M10）；DDL 通道改「唐绍祖确认内容 → 报徐滕强 → 项目组授权 DBA 执行」；§5 补关键路径警示 | T01、§5 汇总 |
 | P0-3 | T06 加 `apply_to` / `support` 跨边重合度比对（实测 9,279 = 100% 重合，>90% 判同批双灌） | T06 |
 | P0-4 | `participates` 213,500 拆两层：`enterprise`→`segment` 178,731（M17 可用）+ `institution`→`institution` 34,769（不属 M02/M19）；T02「不做什么」逐条点名 | T06、T02 |
 

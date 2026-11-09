@@ -108,3 +108,14 @@
 4. 重打 innov-py 镜像发布 → Java 块自动组装（`ranked` 非空即进）→ 149 解除，R4 复测。
 
 **验收**：`POST /internal/innov/metric/M_INNOV_POT_SCI_INFL/compute` 返回非空 `cluster_level.ranked`（15 集群、含被引真值）；生产 snapshot `data.industrySciInfluence` 块出现且 industry「科学影响力」score 非 null。
+
+### 遗留登记（口径文档待补 v2，不阻塞演示，2026-11-09）
+
+| 项 | 内容 |
+|---|---|
+| 事项 | `agent-delivery/metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md` 待补 v2 章节 |
+| 责任人 | **口径主（唐绍祖 / 王惠）**——该文档文头登记「维护者：唐绍祖、口径调研人：wanghui 标记 true」 |
+| 现状 | 文档为 20261027 批旧口径（gkx `dwd_zh_paper_citation` 论文级，判「部分支持 / 产业级排名做不出来 / ranked=[]」），与本次 v2 实现（久新 15 集群完整排名、`support_judgment=完全转换支持(条件)`）**直接矛盾** |
+| 处置裁定 | **本次不修**（人力：李伟，2026-11-09）：`calc_logic_ref` 为纯字符串元数据（`catalog.py` 104 处定义、全仓零处消费），不影响算法运行、接口返回、页面展示与 149 演示验收；仅影响口径符合性审计 |
+| 残余风险 | ①若甲方/质量审计以该文档为「唯一真源」核对实现，会判「实现超出口径授权」；②后续维护者按该文档改代码，可能把实现回退到论文粒度 |
+| 触发条件 | **口径评审 / 甲方符合性核查前必须补齐**（追加 §六 v2 章节 + 修正判档行，不重写原 586 行调研历史） |
