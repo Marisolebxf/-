@@ -62886,3 +62886,28 @@ tasks:
       - "与 POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA 不并行改 synth.py。本单未认领。"
       - "handoff 写明重跑入口前后，这五句是否出现在同一个 jobs 返回里。"
     update_time: "2026-11-10T04:25:03+08:00"
+  - id: DEVOPS-LUMEN-ENTAN-PULL-ALWAYS-L01
+    title: "helm 重发不再把 entan-py 打回节点缓存的旧 latest（pullPolicy 改 Always）"
+    status: "ready"
+    agent: "devops-agent"
+    epic: "E-PLATFORM"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 12000
+    note: |
+      2026-11-10 发现：edu M10-ENT 全部接口 404 {"detail":"Not Found"}（FastAPI 格式＝已到 entan-py 但无路由）。dev 代码路由强制挂载无误（main.py:133），线上镜像早于 11-09 09:37。根因：lumen-algo-py deploy:entan-api 用 set image :<sha>，但 svc-platform helm:deploy/helm:chart 按 values-lumen 把 entan-py 改回 gkxlumen-entan-py-api:latest + IfNotPresent，节点复用缓存旧 latest。0b8ee31 只修了 innov-py。lumen-algo-py .image 每次构建都推 :latest，故 Always 拉到的即最新。临时止血：重跑 lumen-algo-py dev 最新流水线 deploy:entan-api。登记：agent:coordinator（human:刘剑锋 指派转 devops）
+    touched_files:
+      - "helm/gkxlumen-platform/values-lumen.yaml"
+    design_refs:
+      - "lumen-svc-platform 0b8ee31（innov-py 同类修复）"
+      - "DEVOPS-LUMEN-INNOV-ENTAN-PIN-SHA-L01（08-14 钉 SHA，后被 k8s-deploy.sh 改回 latest 策略）"
+    definition_of_done:
+      - "values-lumen.yaml entanPy / entanPyWorker image.pullPolicy 改为 Always（同 0b8ee31 innov-py 口径）；etlEsPy 评估是否同改并写明结论"
+      - "跑一次 helm:chart 使其生效，之后 helm upgrade 不再让 entan-py 退回旧镜像"
+      - "验证：helm:chart 后 edu GET /tid/api/display/v1/situation/maintain-ent/graph/current 返回 200 code:0（非 FastAPI 404）"
+      - "ponytail: full"
+    update_time: "2026-11-10T11:26:58+08:00"
