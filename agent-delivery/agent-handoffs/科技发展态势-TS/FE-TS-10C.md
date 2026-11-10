@@ -28,3 +28,25 @@
 - model_used: glm-5.3（ZCode agent）
 - actual_cost: <$0.5
 - cost_warn: green
+
+## 2026-11-09 走查返工（监管人 human:刘剑锋 报：页面 mock 文案、窄屏错乱）
+
+- 根因：real 轨面板从不调 R1/R2，状态始终为 `maintainModel` 页面种子（notice 含「（Mock）」）；写后只改 notice 不回读。分区1 加载失败回落种子。布局：数据源表操作列 `<td>` 设 `display:flex` 脱离表格布局；断点用视口 `@media`（内容区在侧边菜单内）；宽表无滚动容器且 grid 子项被撑开
+- 修复 `lumen-ui-science-pc` 8d754e2：新增 `loadEntityRelationState`（R2+R1 → 页面状态，写后回读，三处诚实空态）；裸 fetch → 统一 axios（baseURL/Bearer/trace）；去 `technologyId: 1` 与 `ent-1` 前缀判技术点，加技术点选择；关系写 op 用服务端 `edge_key`；人工强度标注「人工」、R1 强度挂 `MetricSpecCard`；容器查询 + `.maintain-table-scroll` + 面板子项 `min-width:0`
+- 维护技术图谱（34–40）按监管人要求不动
+- 验证：type-check / maintain.test.mjs / build 绿；mock 与 real（连 edu）1440/1100/900/760 截图核对，real 轨无 Mock/演示文案
+- 仍 integration：待 ENT 全链部署后 edu 联调
+
+## 2026-11-10 返工：删除技术点前置 impact 预检（契约 R3）
+
+- 起因：监管人 edu 冒烟时在「已在全景图」勾选技术点行批量删除 → `delete_node` 级联清空该技术点全部边，左侧推荐随之为空；本页无新增技术点能力（34–40 不做），UI 不可恢复（数据已由 seed 脚本还原，见联调冒烟记录 §6）
+- 根因：API 册 §2 要求 `delete_node` 前置 R3 impact 预检，前端未实现；技术点与普通实体共用同一句确认文案
+- 修复 `lumen-ui-science-pc` 874e35f：`loadNodeImpact`（`/nodes/{id}/impact`）；选中含技术点 → 弹「删除技术点」红字警告（技术点本身及全部关系/推荐实体移除、本页无法恢复）+ 影响范围（已挂接实体数、推荐候选关系数），预检中/失败禁用确认；仅普通实体维持原确认框；mock 轨只显示警告不调预检
+- 验证：type-check / eslint / maintain.test.mjs / build 绿；本地 dev（mock auth + edu 真数据）无头 Chrome：技术点弹窗文案、impact 请求、按钮可用均 OK，仅点取消未改数据；mock 轨技术点/普通实体两种弹窗 OK
+
+## 2026-11-10 返工二：方案 B（监管人 human:刘剑锋 裁定，替代上节方案 A）
+
+- 依据需规原文：41 推荐实体仅人/机构/论文/专利；43「实体及其关联关系从全景图中移除，但保留在推荐列表中以便重新添加」；技术节点删除归 35（维护技术图谱，本期不做）。L2 ARCH/API「序 43 含 delete_node」系设计扩展，已加注裁定
+- 修复 `lumen-ui-science-pc` 3da1892：「已在全景图」技术点行无勾选框，`batchRemoveEntities` 只发 `unhang_entities`（前端不再发 delete_node）；撤回方案 A 的 impact 预检/专门警告（`loadNodeImpact` 删除）；确认框补「删除后实体回到推荐列表，可重新添加」；推荐类型筛选去「技术点」；编辑技术点不显示「类型」；关系时间起止同年只显一年
+- 配套后端 `lumen-algo-py` df84c2e：R2 `time_range` 在仅有 `time_to` 时也输出（SEED 只灌强度边年份，原逻辑要求 time_from 非空致时间列恒空）
+- 验证：type-check / eslint / maintain.test.mjs / build 绿；本地 dev（mock auth + edu 真数据）无头 Chrome：筛选无技术点、技术点行无勾选框、挂接示范专利-20 → 关系行时间「2025」与推荐年份一致 → 批量删除确认框文案正确 → 解挂后退回推荐（v18/v19 互抵，数据回 v17）

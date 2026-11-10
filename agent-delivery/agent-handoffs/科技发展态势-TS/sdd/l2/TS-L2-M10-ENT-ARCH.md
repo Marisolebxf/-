@@ -18,7 +18,7 @@
 |---|---|
 | 序 41 推荐列表 | **读侧**：Python 查图/主数据（Top 实体+关联强度），非种子配置。G4 排序能力进 API 分册 |
 | 序 42 添加到全景图 | **写侧**：op=hang_entities（实体挂接到技术点）；G2 智能关联强度归 Python 算法层 |
-| 序 43 实体删除 | **写侧**：op=unhang_entities（摘挂）；技术点本体删除 op=delete_node cascade（影响预检 impact 接口） |
+| 序 43 实体删除 | **写侧**：op=unhang_entities（摘挂）；技术点本体删除 op=delete_node cascade（影响预检 impact 接口）（**2026-11-10 监管人 human:刘剑锋 裁定**：需规 41 推荐仅人/机构/论文/专利、43「保留在推荐列表以便重新添加」，技术点删除原文归需规 35 维护技术图谱——本页前端**不发** delete_node，技术点行不可勾选；后端 op 与 impact 保留待 34–40） |
 | 序 44 关系删除 | **写侧**：op=delete_entity_edge（实体–技术边；34–40 的技术–技术边才叫 delete_edge，2026-11-07 会签 API-C1 更正） |
 | 序 45 属性编辑 | **写侧**：技术点 op=update_node（patch）；三方实体（人/论文等）=op=update_entity_overlay（本地覆盖层不改主数据，DN-A03-04 归 §2 待拍板台账） |
 | 序 46 关系编辑 | **写侧**：op=update_entity_edge（A03 草案已含强度/时间范围；原稿 update_edge 系笔误——会签 API-C1） |
@@ -100,7 +100,7 @@ flowchart LR
 |---|---|---|---|
 | 41 | 真读 | —（读 ADS 投影/Python 查图） | Java `GET`（topic 侧，路径 API 冻结）。105 未交付时空态+PendingBadge（会签 ARCH-C5；不灌 mock 充数） |
 | 42 | 真写 | hang_entities op | `POST /topic/v1/tech/graph/changes` |
-| 43 | 真写 | unhang_entities / delete_node+cascade+impact 预检 | 同上 + `GET .../impact` |
+| 43 | 真写 | unhang_entities / delete_node+cascade+impact 预检 | 同上 + `GET .../impact`（**2026-11-10 监管人 human:刘剑锋 裁定**：需规 41 推荐仅人/机构/论文/专利、43「保留在推荐列表以便重新添加」，技术点删除原文归需规 35 维护技术图谱——本页前端**不发** delete_node，技术点行不可勾选；后端 op 与 impact 保留待 34–40） |
 | 44 | 真写 | delete_entity_edge op | 同上 |
 | 45 | 真写 | update_node / update_entity_overlay（三方实体覆盖层） | 同上 |
 | 46 | 真写 | update_entity_edge（含强度/时间） | 同上 |

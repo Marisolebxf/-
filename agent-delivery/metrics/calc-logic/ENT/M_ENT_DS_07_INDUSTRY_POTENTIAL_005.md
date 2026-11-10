@@ -36,6 +36,7 @@
 | 更新频率 | 待确认（pending） |
 | 数据支持度（四档） | **部分支持** |
 | UI 挂载 | 产业潜力评估 → 技术影响力雷达图的「被引影响力」轴；SEP 轴置灰并标注「未测」 |
+| 生产落地（2026-11-10） | DSP-DS07-SUP-02：display 经 `RemoteAlgoEntanClient` 调 entan-py `POST /v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_005/compute`（precompute 优先，非 mock）；`snapshot.industryTechInfluence` 实测 **score 24.3**、`chains` 12 条（9 条有专利、3 条 0 件不参与加权）、`axes` 两轴（`sep` 为 `score:null/status:pending`）；被引样本冻结上限 190 件 / 415 次（主表覆盖 0.6803%） |
 | 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
 | 基期（base_years_used） | []（截面件） |
 | calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md` |
