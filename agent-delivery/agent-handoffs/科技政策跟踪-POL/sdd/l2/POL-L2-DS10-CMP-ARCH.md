@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS10-CMP-ARCH`
 - 日期：2026-11-03
-- 状态：2026-11-03 已签收，签收人 human:淮政玮
+- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档，待四角色会签）
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -40,7 +40,7 @@
 | 213 | `GET /display/v1/policy/panorama/version-diff` | `gkxlumen-display` 不直连库、不直连 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_version_diff` |
 | 214 时间、部门、产业 | `GET /display/v1/policy/panorama/search` 与 `{id}/detail` | 内部委托已有 `gkxlumen-topic-policy`。不另开对比查询 |
 | 214 力度、218 | `POST /display/v1/policy/panorama/jobs` | `gkxlumen-display` 只提交到 `gkxlumen-topic-async-service` 的 `POST /topic/v1/analysis/tasks`。已有适配器再调 `/internal/policy/jobs/execute`，`sub_type=policy_intensity`，由 `polan.eval.intensity.run` 写入并读取 `ads.policy_intensity` 的力度分。display 不直接打 `jobs/execute`。216 不进这条 Job |
-| 216 | `GET /display/v1/policy/panorama/stats` | 同步读。`gkxlumen-element` 只读已有 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`。不进 Job。无行则该卡空，不造数。D4 仍是 mock |
+| 216 | `GET /display/v1/policy/panorama/stats` | 同步读。`gkxlumen-element` 只读已有 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`；「政策类型」列同一次统计读 DWD `policy_base_info` 文种按省聚合（2026-11-11 增补，QPOL-01 临时默认）。不进 Job。无行则该卡空，不造数。D4 仍是 mock |
 | 214 条件、材料 | `GET /display/v1/policy/panorama/{id}/detail` | 正文仍走专题门面。申报条件、申报材料由 `gkxlumen-element` 同一次详情只读 `gapfill_policy_detail_compare`。不把这两列写进接口常量 |
 | 215 区域、类别 | `GET /display/v1/policy/panorama/stats` 与 `search` | 区域走已有地区分布。项目类别、技术类别走已有选项。总件数仍用 `M_POLICY_TOTAL_COUNT`。这两段仍委托 `gkxlumen-topic-policy` |
 | 215 实施部门 | `GET /display/v1/policy/panorama/stats` | 同一次统计。`gkxlumen-element` 只读 `gapfill_policy_impl_dept`。现网收集不到实施部门，不按发布机构去重，不另开路径 |
@@ -158,6 +158,13 @@ flowchart LR
 - 写入仍由已有 `intensity.run()` 完成，不在这次统计请求里现算，也不把这一行放进 `POL-L2-DS10-CMP-GAPFILL-L01`。
 - 对标范围、对标对象、勾选字段是这次查询的条件。金额档缺失时该维空，不在接口里补档位。无行则该卡空。对标报告正文不在本叶生成，见 217。
 
+**政策类型列（2026-11-11 增补，`POL-L2-DS10-CMP-PTYPE-FDE`，QPOL-01 临时默认 🟡）**
+
+- 勾选字段「政策类型」时，同一次 `stats` 同步读扩展一块：`gkxlumen-element` 只读 DWD `policy_base_info`（`is_deleted=0`、`source_plane IN ('domestic','global')`），按 `province` × `policy_type` 去重计件（GROUP BY 下推库端），聚合下返回每省各文种件数与 Top 文种（件数多者；同数取字典序首个）。不写表、不进 Job、不调用 Python。
+- 读的是 DWD 清洗后的文种列，不是 QPOL-01 主口径的 ODS `topic_type` 主题分类；两者并行不互斥，甲方归一时可切换。UI 带 🟡「待甲方确认」角标。
+- 读条件与支持力度一致：范围=国内先进地区、至少两个对象、且勾了「政策类型」。对象映射沿用 `scope_code`/`scope_name`。某省 `policy_type` 全空或库内无行 → 该省格空，不造 0。
+- 不新造 `metric_id`（复用 DWD 已有列做对照展示，不是新指标）；不建 gapfill 表；D4 口径不变（对照源头 DWD 真数，非 mock 灌行）。
+
 ### 5.5 217 对标报告生成与导出 · 读缺项表
 
 没有对标报告模型。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这条资源。
@@ -172,6 +179,8 @@ flowchart LR
 雷达、柱、热力的数来自 `ads.policy_intensity` 里 214、216 已经读到的力度与支持力度。不建 `gapfill_policy_benchmark_viz`。图上若只画件数，仍用 215 的目录命中，不改挂成力度分。
 
 `M_POLICY_INTENSITY_INDEX` 不挂本页。无行则图空，不返回演示序列。
+
+**「政策类型」交界（2026-11-11 增补）**：勾该字段时，地区视角图以各省 Top 文种件数为量（数据同 5.4 增补块，`dwd.policy_base_info` 文种按省聚合）；空省不进图。政策视角本字段无量（一条政策一个文种，不成分布），保持空态——不把文种件数改挂成力度分或覆盖度。
 
 ## 6. 点名排除
 
@@ -204,7 +213,7 @@ flowchart LR
 | 213 | 时点用已有发布时间。差异建 `gapfill_policy_version_diff`，`version-diff` 只查这张表 | 检索和正文已有发布时间。算法中台没有版本对比 |
 | 214 | 正文走已有门面；力度走 `policy_intensity` 读 `ads.policy_intensity`；条件与材料查 `gapfill_policy_detail_compare` | `polan.eval.intensity.run` 已在 vendor |
 | 215 | 区域和类别走已有目录。实施部门建 `gapfill_policy_impl_dept`，只查这张表 | 实施部门收集不到。总件数仍是 `M_POLICY_TOTAL_COUNT` |
-| 216 | `stats` 同步读。`gkxlumen-element` 只读 `ads.policy_intensity` 的支持力度，不进 Job | 表由已有 `run()` 写入。这次请求不现算 |
+| 216 | `stats` 同步读。`gkxlumen-element` 只读 `ads.policy_intensity` 的支持力度，不进 Job；「政策类型」列同一次统计读 DWD 文种按省聚合（2026-11-11 增补） | 表由已有 `run()` 写入；文种读 `dwd.policy_base_info` 已有列。这次请求不现算 |
 | 217 | 建 `gapfill_policy_benchmark_report`，报告只查这张表 | 算法中台没有对标报告生成 |
 | 218 | 图读 `ads.policy_intensity` | 不建可视化缺项表 |
 
