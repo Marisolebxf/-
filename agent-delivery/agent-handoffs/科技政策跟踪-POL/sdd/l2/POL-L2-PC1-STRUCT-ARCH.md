@@ -16,7 +16,9 @@
 
 ## 1. 范围
 
-603 是治理页的结构化库看板。非结构化文本 → 结构化数据的转化发生在第 6 项（GDF C2 条款结构化）与算法中台联调台（`POL-CLAUSE-BATCH-L01`），本二级只呈现结果。前缀 `/display/v1/policy/`，与 602 共用同一条资源 `GET /display/v1/policy/governance/results`。
+603 是治理页的结构化库看板。非结构化文本 → 结构化数据的转化发生在第 6 项（GDF C2 条款结构化）与算法中台联调台（`POL-CLAUSE-BATCH-L01`），~~本二级只呈现结果~~（**已被说明书 2026-11-10「#### 603」取代**，见下段）。前缀 `/display/v1/policy/`，与 602 共用同一条资源 `GET /display/v1/policy/governance/results`。
+
+**FDE 补段（轻档，2026-11-10）**：治理页可触发**单条**结构化抽取，以说明书「#### 603」为准。触发复用已有 `POST /display/v1/policy/parse/clauses`（display → Feign `clauseEnrich` → Python `/internal/policy/clauses/enrich`，写回 ADS `policy_text_parse`）；摘要与看板主读仍走 `GET …/governance/results`（带 `policyId` 刷新 `hasClauses`）。仍不重开 GDF、不迁中台操作台、不新开第三条公开资源。旧「只读呈现、不重跑 / 点名排除本叶触发 `parse/clauses`」口径已被该说明书取代。
 
 | 需规要点 | 本叶流程 |
 |---|---|
@@ -52,7 +54,7 @@ flowchart LR
 
 `gkxlumen-display` 不直连库，不直连 Python，不写算法，不写 nGQL。`E-E7-POLICY-M1-L06` 不是本页路径。
 
-这条资源不进异步任务管道。603 的结构化区块与 602 的质量区块、页眉件数在同一条 `governance/results` 上，实现时按区块分发；契约单不得把三个区块拆成三条资源，也不得把本区块变成单独的条款树接口——条款树是拆解页 `parse/clauses` 的事（序号 607/608），本叶只有治理视角的统计概览。
+这条资源不进异步任务管道。603 的结构化区块与 602 的质量区块、页眉件数在同一条 `governance/results` 上，实现时按区块分发；契约单不得把三个区块拆成三条资源，也不得把本区块变成单独的条款树接口——条款树浏览仍是拆解页 `parse/clauses` 的事（序号 607/608），本叶看板仍是治理视角的统计概览。~~「本叶不得触发 `parse/clauses`」~~（**已被说明书 2026-11-10「#### 603」取代**：治理页可复用该 POST 作单条抽取，见 §1 FDE 补段）。
 
 trace 沿既有展示链走。display 往 element 带 traceId。本叶不新设计观测点。
 
@@ -98,7 +100,7 @@ trace 沿既有展示链走。display 往 element 带 traceId。本叶不新设�
 
 | 算法中台/原型已有 | 本叶迁移后的架构 |
 |---|---|
-| 条款结构化联调台（`POL-CLAUSE-BATCH-L01`，写 `ads.policy_text_parse.structured_elements.clauses`） | 留在算法中台作加工通道。展示只读其产出，不迁操作台，不新开展示侧跑批 |
+| 条款结构化联调台（`POL-CLAUSE-BATCH-L01`，写 `ads.policy_text_parse.structured_elements.clauses`） | 留在算法中台作加工通道。~~展示只读其产出~~（**「只读呈现、不触发抽取」已被说明书 2026-11-10「#### 603」取代**；治理页可触发单条 `parse/clauses`，见 §1）。不迁操作台、不新开展示侧跑批、不重开 GDF |
 | GDF C2 合并逻辑 | 留在第 6 项。展示不合并、不去重、不回写 |
 | demo 结构化演示本地数组 | 不迁数据。区块信息结构（覆盖率、标签分布、更新时间）保留，数值一律来自 ADS/DWD |
 | 专题侧 `gkx_search_service` 的政策检索 | 「快速检索与高效调用」由全景检索（委托 `gkxlumen-topic-policy`）承担。本叶不建第二条检索，不迁专题门面 |
@@ -109,7 +111,7 @@ lumen 不直连 demo 服务，不把 demo 路径写成对外入口。浏览器�
 
 | 资源或序号 | 不纳入本二级的原因 |
 |---|---|
-| `parse/clauses`（条款树） | 拆解页序号 607/608 的资源。本叶只有治理统计概览，不做条款树浏览 |
+| `parse/clauses`（条款树浏览） | 拆解页序号 607/608 的条款树浏览仍不纳入本二级。~~点名排除本叶触发该资源~~（**已被说明书 2026-11-10「#### 603」取代**）：治理页可复用 `POST …/parse/clauses` 作单条抽取，见 §1；不新开第三条资源 |
 | `governance/lineage-index` | 604 的资源 |
 | `governance/indicator-library` | 605 的资源 |
 | `M_POLICY_TEXT_PARSE` | MODEL、口径是闭集词表、`ui_mount` 在详情与筛选。不是结构化覆盖率，不改挂 |

@@ -13,9 +13,11 @@
 | 标签筛选 | 否 | 结构化概览按 `auto_tags` 拣 |
 | 政策 id（`policyId`） | 否；**演示默认一条可演** | 总控 §1.2。返回该政策结构化摘要；不改标签体系树/字段映射总表的全库读法 |
 
+**FDE 补段（轻档，2026-11-10）**：治理页「结构化抽取」复用已有 `POST /display/v1/policy/parse/clauses`（body `policy_id`；与拆解页/中台转发 enrich 同一资源）。**不新开**第三条公开资源，不改本分册字段表。抽取成功后仍再拉同条 `GET …/governance/results?policyId=` 刷新摘要（`hasClauses`）。对齐说明书「#### 603」与 `POL-L2-PC1-STRUCT-ARCH` §1。
+
 ## 2. 内部委托
 
-`gkxlumen-display` → `gkxlumen-element` 只读 `gkxlumenx_ads.policy_text_parse`、`policy_industry_rel`、`gkxlumenx_dwd.policy_base_info` / `script_state`（批次时间）。不进异步，不打 `/topic/v1/policy`。
+`gkxlumen-display` → `gkxlumen-element` 只读 `gkxlumenx_ads.policy_text_parse`、`policy_industry_rel`、`gkxlumenx_dwd.policy_base_info` / `script_state`（批次时间）。不进异步，不打 `/topic/v1/policy`。单条抽取委托路径（既有，本轮不改实现）：display `PolicyParseController` / Feign `clauseEnrich` → Python `/internal/policy/clauses/enrich` → 写回 ADS。
 
 区块：
 
@@ -24,4 +26,4 @@
 
 ## 3. 明确不做
 
-不拆第三条资源；不写字段表；不新造 metric；不允许接口直接返回 mock 覆盖率。
+不拆第三条资源（治理页抽取不另开路径，只复用 `POST …/parse/clauses`）；不写字段表；不新造 metric；不允许接口直接返回 mock 覆盖率。
