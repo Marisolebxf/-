@@ -63,3 +63,18 @@
 - [x] 弹窗与导出 Word 文案同源（templates[]）
 - [x] FE type-check / FE test / BE 全量测试绿
 - [x] 本 handoff + 三仓本地提交（未 push，待用户确认）
+
+
+## 7. 追加修复（2026-11-10 下午 · 用户线上截图反馈「生成报告还是不符合」）
+
+线上截图（比对主体=字节跳动、领域=合成生物学）暴露三缺口 + 一个存量 BE 缺陷：
+
+1. **截图走 demo 兜底轨道的根因**：部署包验证含新代码（chunk `index-GKt1R39S.js` 含「口径说明/researchReportExport」标记）→ 用户浏览器是部署前打开的旧 SPA 会话，**强刷即切新代码**。非部署问题。
+2. **overlap_text 不跟随选中比对主体**：报告构建改走 G-B4 真值对口径——`getPairOverlapCompute(target, compare, matrix, timeScope, factor, field)`（真值对 → 复算值带口径描述；无对 → 「—（暂无重叠数据）」诚实空）；基准清单仅保留给 cooperation 节 `benchmark_list`（契约定义源）。
+3. **发展建议空节**：领域过滤后无情报行 → 节内渲染诚实说明「当前研究领域（X）暂无情报行，发展建议待数据接入后生成」，两轨道一致，不再渲染空标题。
+4. **Word 与弹窗变量级同源**：`buildResearchIntelligenceReport` 返回 `vars` 快照，导出建任务经 `filter.vars` 透传；BE 渲染器新增 varOverrides 合并（白名单=15 占位符键、值截 500 字符、esc() 照常转义、非白名单静默忽略、非字符串值 400）。行级下载按该行覆盖 action/regional_insight/field + 映射方案三元组。
+5. **存量缺陷（本次顺修）**：种子模板 `advantage_section` 用 `{catching_score}`，但 BE `PLACEHOLDER` 正则与 `researchVars` 均无此键 → 后端 Word 输出字面 `{catching_score}`。已补：正则加键 + catching 等级卡现算（缺卡落「—」）。
+
+验证：BE `gkxlumen-display -am test` 全量 BUILD SUCCESS（新增 researchReportAppliesVarOverrides：白名单覆盖/转义/非白名单忽略/非字符串 400）；FE type-check + techDevelopmentPlan.test.mjs 绿；eslint 零新增。
+
+契约注记（待会签）：RES-API §2 补「filter.vars 变量覆盖（白名单=占位符键集）」与 overlap_text 真值对/复算口径说明。
