@@ -16,12 +16,12 @@
 
 ## 现行 `DISPLAY_HOT_TAGS`（均为 filter）
 
-| 展示文案 `label` | `apply` | 预填 `fieldKey` | `value` | 高级字段库落点（短） |
+| 展示文案 `label` | `apply` | 预填 `fieldKey` | 常量 `value` | 高级字段库落点（短） |
 |---|---|---|---|---|
-| 科创政策 | filter | `category` | `sci-tech` | 政策类别 = 科创 |
-| 人工智能 | filter | `industry` | `['人工智能']` | 行业领域含「人工智能」 |
-| 深圳市 | filter | `region` | `shenzhen` | 地区 = 深圳 |
-| 国家级 | filter | `level` | `national` | 效力级别 = 国家级 |
-| 人才政策 | filter | `category` | `talent` | 政策类别 = 人才 |
+| 科创政策 | filter | `category` | `sci-tech` | 经 `resolveHotTagFieldValue`：线上 options key=label → 预填「科创政策」；mock 仍可落 `sci-tech`。禁止裸露英文码 |
+| 人工智能 | filter | `industry` | `['人工智能']` | 按 label/key 收到 industryFields 的 option.value |
+| 深圳市 | filter | `region` | `shenzhen` | 地区 = 深圳（`shenzhen`） |
+| 国家级 | filter | `level` | `national` | 效力级别 = 国家级（`national`） |
+| 人才政策 | filter | `category` | `talent` | 同科创：映射到当前 POLICY_TYPE_OPTIONS 的 key |
 
-说明：现状五行全是 filter；1B 允许以后加非 filter 项，行为见上表，**不必**先改读口。实现改热门常量时须同步改本短表或 as-built 回写。
+说明：现状五行全是 filter；1B 允许以后加非 filter 项。预填条件 `negate: false`（不得带 NOT）。实现改热门常量时须同步改本短表或 as-built 回写。
