@@ -1,12 +1,23 @@
 # 飞书缺陷 AI Native P0 设计稿
 
-> 状态：P0 收敛版 v0.9.2（修复写入时序与历史证据复核，简化 gate 命令词，准备进入真实缺陷试点）
-> 版本：v0.9.2
-> 日期：2026-11-10
+> 状态：v1.0 通用缺陷流程优化版（保留 gate/证据约束，增加类型路由、预检、时间盒和分级验证）
+> 版本：v1.0
+> 日期：2026-11-11
 > 基线案例：飞书缺陷【2238】
 > 设计原则：对外只保留两个口令和一次业务验收，内部校验严格但由 Agent 自动执行
 > 技术路线：复用现有 Codex / Cursor / Trae + Skill + 轻量校验脚本，不自研 Agent Runtime
 > 真源分层：本文件是流程与权限真源；`.cursor/skills/feishu-bugfix/SKILL.md` 是操作真源；`templates/state.schema.json` 是机器结构真源；`policies/` 是数据授权真源
+
+## 0. v1.0 执行补充
+
+本节是运行入口的补充规则，不改变下文 gate、claim、数据和验收约束。
+
+1. 每个缺陷先形成 **Bug Contract**：现象、期望、范围、非目标、主仓依据和验证方式；期望无法定位到主仓文档/测试/最新人工裁定时不得进入开发。
+2. 先按缺陷类型路由，再选择验证工具。类型路由和验证模板见 `BUG-PLAYBOOK.md`，不再统一套用前端流程。
+3. 开工前做基线预检：最新目标分支 pipeline 为红时，先区分是否属于当前范围；无关基线失败直接 block，不增加补丁轮次。
+4. S 级验证至少覆盖 `fix + regression`；M/L 追加至少一个适用非 happy-path 类别。允许类别为 `boundary/integration/data/algorithm/security/performance/rollback`。
+5. 同一缺陷、同一范围和风险的验收返工保留 claim 与既有诊断，只重做候选 diff、评审和验证，并重新请求 `提测`；只有范围/风险变化才重新请求 `进入开发`。
+6. 增加时间盒：S 目标 30–60 分钟、M 目标 1–2 小时；同一环境故障连续两次无进展即 block。
 
 ## 1. 已确认决策
 
@@ -806,7 +817,7 @@ forbidden:
 2. **不破坏行为**：相邻 Tab、默认条件、全量语义、写路径是否正常；
 3. **边界行为**：空数据、接口失败、无权限、重复提交等是否可解释。
 
-每个 repo 的验证矩阵必须分别存在 `category=fix|regression|boundary` 的记录；不适用时允许 `SKIPPED + skipped_reason`，不能只写一条修复行为直接进入 `READY_SHIP`。
+每个 repo 的验证矩阵必须至少存在 `fix` 和 `regression`；M/L 还必须至少有一个适用的非 happy-path 类别（`boundary/integration/data/algorithm/security/performance/rollback`）。不适用时允许 `SKIPPED + skipped_reason`，不能只写一条修复行为直接进入 `READY_SHIP`。
 
 ## 14. 语义权威顺序
 
@@ -977,7 +988,7 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 
 - `CLAIMED` 必须记录飞书 `[agent-claim]` 评论引用、操作者和认领时间；接管同样要求新 claim 评论证据；
 - `kind=db` 证据写前必须通过 policy + run scope 检查，并记录 policy/scope hash、表、操作、access mode、host/account ref 和写授权 ID；
-- 验证矩阵必须按仓库覆盖 `fix`、`regression`、`boundary` 三类；不适用时用 `SKIPPED + skipped_reason`，不能只写一条修复行为；
+- 验证矩阵必须按仓库覆盖 `fix`、`regression`，M/L 追加至少一个适用的非 happy-path 类别；不适用时用 `SKIPPED + skipped_reason`，不能只写一条修复行为；
 - `requires_human_ratification=true` 且未追认的决策不得通过 `提测` 或进入 `READY_SHIP`；
 - 上述四类规则加入负向 selfcheck；P0 功能冻结，真实试点期间不再扩字段或命令。
 
@@ -999,7 +1010,7 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 
 1. 本收敛稿已完成评审，进入真实缺陷试点。
 2. 已创建 `templates/state.schema.json`、`templates/report.md`，并在 `policies/` 下落第一版不可变 policy 和决定记录；base policy 只到 schema 层，run scope 的每张表必须逐项列出 confirmation 和 evidence，scope 为空不得试跑。
-3. 已实现 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs` 的受控事实写入、精确 gate、阶段产物 guard、真实 Git 与 evidence 校验、版本化 policy 执行、cycle 归档、报告渲染和失败分类；`state.schema.json` 在每次读写时执行，未知字段和 `patch_round>3` 直接拒绝。`verify-repo` 校验 HEAD、origin、base ancestor、干净工作区和 planned scope；`check-data-write` 校验 DB 写前 policy/scope；`verify-evidence` 校验 manifest 路径、SHA256、验证矩阵证据引用和 reviewable/raw_retained；`review_hash`、`diff_hash` 和 `verification_hash` 由脚本计算。用 `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs` 做离线正负向回归，已覆盖风险降级、非法初始阶段、部署 SHA、DB 越权写入、三类验证缺失、claim 证据缺失、未追认决策和不可复核证据冒充 PASS。
+3. 已实现 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs` 的受控事实写入、精确 gate、阶段产物 guard、真实 Git 与 evidence 校验、版本化 policy 执行、cycle 归档、报告渲染和失败分类；`state.schema.json` 在每次读写时执行，未知字段和 `patch_round>3` 直接拒绝。`verify-repo` 校验 HEAD、origin、base ancestor、干净工作区和 planned scope；`check-data-write` 校验 DB 写前 policy/scope；`verify-evidence` 校验 manifest 路径、SHA256、验证矩阵证据引用和 reviewable/raw_retained；`review_hash`、`diff_hash` 和 `verification_hash` 由脚本计算。用 `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs` 做离线正负向回归，已覆盖风险降级、非法初始阶段、部署 SHA、DB 越权写入、基础验证缺失、M/L 非 happy-path 缺失、claim 证据缺失、未追认决策和不可复核证据冒充 PASS。
 4. 已增加安全 `.gitignore`：只忽略 `evidence/raw/` 和本机 `local/` 映射，不忽略 `state.json`、`report.md`、`manifest.json`。
 5. 已将 `.cursor/skills/feishu-bugfix/` 设为唯一完整 Skill 包，并由 `.cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --check/--write` 生成 Codex / Trae 薄适配入口；Cursor 直接加载 canonical 包，适配入口禁止手工维护。
 6. 在同一个发布步骤中更新 `fe-manual-confirm-push.mdc`，明确 `进入开发` 只授权独立 fix 分支 push、不授权 dev/生产；修改该规则前向用户重新确认 2026-11-05 的人工确认裁定，并记录批准。

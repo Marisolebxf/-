@@ -1,6 +1,6 @@
 ---
 name: feishu-bugfix
-description: Process bugs assigned to the current user from Feishu Project using the official Feishu Project MCP. Use when the user says "处理我名下的 Bug", "修复飞书项目里的缺陷", or asks for their OPEN/REOPEN Feishu Project bugs to be inspected and fixed.
+description: Process bugs assigned to the current user from Feishu Project using the official Feishu Project MCP. Use when the user asks to inspect, fix, verify, or ship their OPEN/REOPEN Feishu Project bugs.
 ---
 
 # Feishu Bug Fix Client Adapter

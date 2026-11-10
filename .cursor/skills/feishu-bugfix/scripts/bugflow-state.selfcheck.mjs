@@ -395,15 +395,13 @@ try {
       repo_ids: ['ui_pc'],
       evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
     },
-    {
-      id: 'V-BOUNDARY-001',
-      category: 'boundary',
-      behavior: 'empty result remains explainable',
-      result: 'PASS',
-      repo_ids: ['ui_pc'],
-      evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
-    },
   ]);
+  const mWithoutAdditionalState = structuredClone(state);
+  setRisk(mWithoutAdditionalState, { level: 'M', reasons: ['cross-component risk'] });
+  assert.throws(
+    () => advance(mWithoutAdditionalState, { to: 'READY_SHIP', sessionId: 'session-1', machineId: 'machine-1' }),
+    /M\/L requires at least one non-happy-path verification category/,
+  );
   const manifest3 = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const evidenceVerification = verifyEvidence(state, manifest3, runDir);
   assert.equal(evidenceVerification.result, 'PASS');

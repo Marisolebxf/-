@@ -15,7 +15,7 @@ import { parseArgs } from 'node:util';
 import { validateJsonSchema } from './lib/mini-json-schema.mjs';
 import { loadPolicy, matchTableToPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-export const VALIDATOR_VERSION = 'bugflow-state-p0-v5';
+export const VALIDATOR_VERSION = 'bugflow-state-p0-v6';
 export const SCHEMA_VERSION = 2;
 export const PROJECTION_VERSION = 'p0-v3';
 export const PHASES = [
@@ -63,7 +63,17 @@ const TOKENS = {
   ship: '提测',
 };
 
-const VERIFICATION_CATEGORIES = ['fix', 'regression', 'boundary'];
+const BASE_VERIFICATION_CATEGORIES = ['fix', 'regression'];
+const ALL_VERIFICATION_CATEGORIES = [
+  ...BASE_VERIFICATION_CATEGORIES,
+  'boundary',
+  'integration',
+  'data',
+  'algorithm',
+  'security',
+  'performance',
+  'rollback',
+];
 const DATA_WRITE_OPERATIONS = ['insert', 'update', 'delete', 'replace', 'upsert', 'truncate', 'create', 'alter', 'drop', 'load', 'mock'];
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
@@ -282,7 +292,7 @@ function projectGateBinding(gateName, binding) {
 function gateProjection(state, gateName, gate) {
   return {
     projection_version: gate.projection_version ?? PROJECTION_VERSION,
-    validator_version: VALIDATOR_VERSION,
+    validator_version: gate.validator_version ?? gate.validation?.validator_version ?? VALIDATOR_VERSION,
     source: gate.source,
     token_text: gate.token_text,
     approved_by: gate.approved_by,
@@ -572,6 +582,7 @@ export function approveGate(state, input) {
     claim_id: state.ownership.claim_id,
     message_ref: input.messageRef ?? null,
     projection_version: PROJECTION_VERSION,
+    validator_version: VALIDATOR_VERSION,
     bound_to: input.binding,
     gate_hash: null,
     validation: {
@@ -733,10 +744,16 @@ function assertPhaseRequirements(state, to) {
       if (!(state.verification_matrix ?? []).some((item) => (item.repo_ids ?? []).includes(repo.repo_id))) {
         errors.push(`${repo.repo_id}: verification result is required`);
       }
-      for (const category of VERIFICATION_CATEGORIES) {
+      for (const category of BASE_VERIFICATION_CATEGORIES) {
         if (!(state.verification_matrix ?? []).some((item) => (item.repo_ids ?? []).includes(repo.repo_id) && item.category === category)) {
           errors.push(`${repo.repo_id}: ${category} verification is required`);
         }
+      }
+      if (state.risk?.level !== 'S' && !(state.verification_matrix ?? []).some(
+        (item) => (item.repo_ids ?? []).includes(repo.repo_id)
+          && !BASE_VERIFICATION_CATEGORIES.includes(item.category),
+      )) {
+        errors.push(`${repo.repo_id}: M/L requires at least one non-happy-path verification category`);
       }
     }
     const verifiedIds = new Set(state.evidence?.verification?.evidence_ids ?? []);
@@ -1063,7 +1080,9 @@ export function recordVerification(state, items) {
     for (const key of ['id', 'category', 'behavior', 'result']) {
       if (typeof item?.[key] !== 'string' || item[key].trim() === '') throw new Error(`VERIFICATION_INVALID: items[${index}].${key} is required`);
     }
-    if (!VERIFICATION_CATEGORIES.includes(item.category)) throw new Error(`VERIFICATION_INVALID: items[${index}].category must be fix, regression, or boundary`);
+    if (!ALL_VERIFICATION_CATEGORIES.includes(item.category)) {
+      throw new Error(`VERIFICATION_INVALID: items[${index}].category is not supported`);
+    }
     if (!['PASS', 'FAIL', 'SKIPPED', 'SIMULATED'].includes(item.result)) throw new Error(`VERIFICATION_INVALID: items[${index}].result is invalid`);
     if (seen.has(item.id)) throw new Error(`VERIFICATION_INVALID: duplicate id ${item.id}`);
     seen.add(item.id);
