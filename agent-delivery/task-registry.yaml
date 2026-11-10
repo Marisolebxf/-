@@ -63403,3 +63403,43 @@ tasks:
       - "落地最小可验证改动（优先 rules:changes 或脚本算 affected modules）并在 dev 跑通至少 1 条「只改单服务 → 仅该服务 package+deploy」证据链；更新 cicd-pipeline.md"
       - "handoff 含前后对比（预计/实测分钟数）、风险、回滚（REBUILD_ALL/FULL_PIPELINE）、ponytail 自检行"
     update_time: "2026-11-10T23:55:24+08:00"
+  - id: DEVOPS-LUMEN-ALGO-CI-SPEED-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-10T17:13:18.254Z"
+    last_seen_at: "2026-11-10T17:13:18.254Z"
+    lock_until: "2026-11-11T01:13:18.254Z"
+    claimed_by: "agent:devops-agent"
+    title: "lumen-algo-py CI 加速：按变更增量 image/deploy（对齐 SVC-CI-SPEED Phase A）"
+    status: "claimed"
+    agent: "devops-agent"
+    epic: "E-PLATFORM"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "crosscut"
+    task_type: "spike"
+    subcoord: "platform-cicd"
+    graph_role: "leaf"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      触发：human:淮政玮要求对 lumen-algo-py pipeline 4751 做与 lumen-svc-platform DEVOPS-LUMEN-SVC-CI-SPEED-L01 同样处理。现状：py:test 后 image:api/worker/innov/entan-* 几乎全打；api+worker origin/dev 自动 deploy。对照已签收 Java 侧方案复用语义，勿照搬 Maven。
+    depends_on:
+      - "DEVOPS-LUMEN-SVC-CI-SPEED-L01"
+    touched_files:
+      - "repos/lumen-algo-py/.gitlab-ci.yml"
+      - "repos/lumen-algo-py/scripts/**"
+      - "gkx-orchestration/agent-delivery/cicd-pipeline.md"
+    design_refs:
+      - "agent-delivery/cicd-pipeline.md"
+      - "repos/lumen-algo-py/.gitlab-ci.yml"
+      - "repos/lumen-svc-platform/scripts/ci-affected-modules.sh"
+      - "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/4751"
+      - "agent-delivery/agent-handoffs/平台基建-PLATFORM/DEVOPS-LUMEN-SVC-CI-SPEED-L01.md"
+    definition_of_done:
+      - "对照 pipeline 4751 给出各 stage/job 耗时拆解与瓶颈 Top3（含 py:test、多路 docker build、未改服务仍 package/deploy）"
+      - "对齐 DEVOPS-LUMEN-SVC-CI-SPEED-L01 Phase A：按路径只 image+deploy 受影响制品；共享路径扇出；跳过 package 的服务同步 skip deploy；REBUILD_ALL/FULL_PIPELINE 逃生口"
+      - "明确路径→制品映射：api/worker/innov/entan-api/entan-worker + lumen_common/requirements/docker/CI 共享扇出规则；origin/dev 上 api+worker 命中时仍必须自动 deploy（长任务 E0）"
+      - "落地 .gitlab-ci.yml（必要时 scripts/ci-affected-paths.sh）+ --self-check；更新 cicd-pipeline.md lumen-algo-py 段"
+      - "handoff 含前后对比、pipeline 证据、风险回滚、ponytail 自检行"
+    update_time: "2026-11-11T01:13:18+08:00"
