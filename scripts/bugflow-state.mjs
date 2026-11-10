@@ -15,9 +15,9 @@ import { parseArgs } from 'node:util';
 import { validateJsonSchema } from './lib/mini-json-schema.mjs';
 import { loadPolicy, matchTableToPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-export const VALIDATOR_VERSION = 'bugflow-state-p0-v2';
-export const SCHEMA_VERSION = 1;
-export const PROJECTION_VERSION = 'p0-v2';
+export const VALIDATOR_VERSION = 'bugflow-state-p0-v3';
+export const SCHEMA_VERSION = 2;
+export const PROJECTION_VERSION = 'p0-v3';
 export const PHASES = [
   'INTAKE',
   'CLAIMED',
@@ -62,6 +62,9 @@ const TOKENS = {
   enter_dev: '【进入开发】',
   ship: '【提测】',
 };
+
+const VERIFICATION_CATEGORIES = ['fix', 'regression', 'boundary'];
+const DATA_WRITE_OPERATIONS = ['insert', 'update', 'delete', 'replace', 'upsert', 'truncate', 'create', 'alter', 'drop', 'load', 'mock'];
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const REPO_ROOT = resolve(dirname(SCRIPT_PATH), '..');
@@ -287,6 +290,13 @@ export function computeGateHash(state, gateName, gate) {
 export function validateStateShape(state) {
   if (!state || typeof state !== 'object' || Array.isArray(state)) return ['state must be an object'];
   const errors = validateJsonSchema(state, loadStateSchema());
+  if (state.phase && state.phase !== 'INTAKE') {
+    for (const key of ['claim_comment_ref', 'claim_operator', 'claimed_at']) {
+      if (typeof state.ownership?.[key] !== 'string' || state.ownership[key].trim() === '') {
+        errors.push(`ownership.${key} is required after claim`);
+      }
+    }
+  }
   if (state.phase === 'BLOCKED') {
     requireString(state.blocked_from, 'blocked_from', errors);
     requireString(state.resume_phase, 'resume_phase', errors);
@@ -311,6 +321,12 @@ export function validateStateShape(state) {
   for (const [index, review] of (state.review?.repos ?? []).entries()) {
     if (review?.review_hash && review.review_hash !== reviewHash(review)) {
       errors.push(`review.repos[${index}].review_hash mismatch`);
+    }
+  }
+  for (const [index, decision] of (state.decisions ?? []).entries()) {
+    if (decision?.requires_human_ratification === true && decision.ratified_by != null
+      && (typeof decision.ratified_by !== 'string' || !decision.ratified_by.startsWith('human:'))) {
+      errors.push(`decisions[${index}].ratified_by must start with human: when ratification is required`);
     }
   }
   for (const gateName of ['enter_dev', 'ship']) {
@@ -346,6 +362,7 @@ function verificationProjection(state, repoId) {
     .filter((item) => (item.repo_ids ?? []).includes(repoId))
     .map((item) => ({
       id: item.id,
+      category: item.category,
       behavior: item.behavior,
       result: item.result,
       evidence_refs: item.evidence_refs,
@@ -515,6 +532,13 @@ export function approveGate(state, input) {
     throw new Error(`GATE_TOKEN_INVALID: expected exact ${TOKENS[gateName]}${multiple}`);
   }
   loadAndValidatePolicy(state, input.policiesRoot ?? POLICY_ROOT, input.now ?? new Date());
+  if (gateName === 'ship') {
+    const ratificationErrors = [];
+    unratifiedDecisionErrors(state, ratificationErrors);
+    if (ratificationErrors.length) {
+      throw new Error(`DECISION_RATIFICATION_REQUIRED:\n- ${ratificationErrors.join('\n- ')}`);
+    }
+  }
   if (gateName === 'enter_dev' && firstApproval) {
     assertPhaseRequirements(state, 'DIAGNOSED');
     assertPhaseRequirements(state, 'READY_DEV');
@@ -617,8 +641,34 @@ function requireFields(fields) {
   if (errors.length) throw new Error(`PHASE_REQUIREMENTS:\n- ${errors.join('\n- ')}`);
 }
 
+function claimEvidenceErrors(state, errors) {
+  for (const key of ['claim_comment_ref', 'claim_operator', 'claimed_at']) {
+    if (typeof state.ownership?.[key] !== 'string' || state.ownership[key].trim() === '') {
+      errors.push(`ownership.${key} is required before CLAIMED`);
+    }
+  }
+}
+
+function automationBoundaryErrors(state, errors) {
+  if (state.risk?.level === 'L') {
+    errors.push('L_ROUTE_REQUIRED: L defects must use the existing task-registry and long-task workflow');
+  }
+  if ((state.repos ?? []).length > 1) {
+    errors.push('CROSS_REPO_ROUTE_REQUIRED: cross-repository defects must use the existing long-task workflow');
+  }
+}
+
+function unratifiedDecisionErrors(state, errors) {
+  for (const decision of state.decisions ?? []) {
+    if (decision.requires_human_ratification === true && !normalizeSpace(decision.ratified_by)) {
+      errors.push(`decision requires human ratification before ship: ${decision.decision}`);
+    }
+  }
+}
+
 function assertPhaseRequirements(state, to) {
   const errors = [];
+  if (to === 'CLAIMED') claimEvidenceErrors(state, errors);
   if (to === 'DIAGNOSED') {
     requireFields([
       [state.diagnosis?.symptom, 'diagnosis.symptom'],
@@ -634,6 +684,7 @@ function assertPhaseRequirements(state, to) {
   }
   if (to === 'IMPLEMENTING') {
     if (!nonEmptyArray(state.repos)) errors.push('repos must not be empty');
+    automationBoundaryErrors(state, errors);
     if (state.plan?.data_access && state.data_policy?.scope?.status !== 'approved') {
       errors.push('approved data scope is required when plan.data_access=true');
     }
@@ -654,6 +705,8 @@ function assertPhaseRequirements(state, to) {
     }
   }
   if (to === 'READY_SHIP') {
+    automationBoundaryErrors(state, errors);
+    unratifiedDecisionErrors(state, errors);
     if (!nonEmptyArray(state.verification_matrix)) errors.push('verification_matrix must not be empty');
     for (const item of state.verification_matrix ?? []) {
       if (!['PASS', 'SKIPPED', 'SIMULATED'].includes(item.result)) errors.push(`verification ${item.id ?? '<unknown>'}: result must be PASS/SKIPPED/SIMULATED`);
@@ -663,6 +716,11 @@ function assertPhaseRequirements(state, to) {
     for (const repo of state.repos ?? []) {
       if (!(state.verification_matrix ?? []).some((item) => (item.repo_ids ?? []).includes(repo.repo_id))) {
         errors.push(`${repo.repo_id}: verification result is required`);
+      }
+      for (const category of VERIFICATION_CATEGORIES) {
+        if (!(state.verification_matrix ?? []).some((item) => (item.repo_ids ?? []).includes(repo.repo_id) && item.category === category)) {
+          errors.push(`${repo.repo_id}: ${category} verification is required`);
+        }
       }
     }
     const verifiedIds = new Set(state.evidence?.verification?.evidence_ids ?? []);
@@ -760,6 +818,14 @@ export function advance(state, input) {
   const from = state.phase;
   const to = input.to;
   if (!PHASES.includes(to)) throw new Error(`PHASE_INVALID: ${to}`);
+  if (to === 'CLAIMED') {
+    if (!normalizeSpace(input.claimCommentRef) || !normalizeSpace(input.claimOperator)) {
+      throw new Error('CLAIM_EVIDENCE_REQUIRED: claimCommentRef and claimOperator are required when entering CLAIMED');
+    }
+    state.ownership.claim_comment_ref = input.claimCommentRef;
+    state.ownership.claim_operator = input.claimOperator;
+    state.ownership.claimed_at = state.ownership.claimed_at ?? isoNow();
+  }
   if (to === 'BLOCKED') throw new Error('TRANSITION_COMMAND_REQUIRED: use `block` so blocked_from/resume_phase/resume_condition are recorded');
   if (to === 'CANCELLED') throw new Error('TRANSITION_COMMAND_REQUIRED: use `cancel` so cleanup is recorded');
   if (to === 'REOPENED') throw new Error('TRANSITION_COMMAND_REQUIRED: use `reopen` to archive the current cycle and open a new cycle');
@@ -969,9 +1035,10 @@ export function recordVerification(state, items) {
   if (!Array.isArray(items) || items.length === 0) throw new Error('VERIFICATION_INVALID: items must be a non-empty array');
   const seen = new Set();
   const normalized = items.map((item, index) => {
-    for (const key of ['id', 'behavior', 'result']) {
+    for (const key of ['id', 'category', 'behavior', 'result']) {
       if (typeof item?.[key] !== 'string' || item[key].trim() === '') throw new Error(`VERIFICATION_INVALID: items[${index}].${key} is required`);
     }
+    if (!VERIFICATION_CATEGORIES.includes(item.category)) throw new Error(`VERIFICATION_INVALID: items[${index}].category must be fix, regression, or boundary`);
     if (!['PASS', 'FAIL', 'SKIPPED', 'SIMULATED'].includes(item.result)) throw new Error(`VERIFICATION_INVALID: items[${index}].result is invalid`);
     if (seen.has(item.id)) throw new Error(`VERIFICATION_INVALID: duplicate id ${item.id}`);
     seen.add(item.id);
@@ -984,6 +1051,7 @@ export function recordVerification(state, items) {
     if (item.result === 'SKIPPED' && !normalizeSpace(item.skipped_reason)) throw new Error(`VERIFICATION_INVALID: items[${index}].skipped_reason is required`);
     return {
       id: item.id,
+      category: item.category,
       behavior: item.behavior,
       result: item.result,
       repo_ids: repoIds,
@@ -1063,12 +1131,17 @@ export function recordDecision(state, decision) {
   for (const key of ['decision', 'basis', 'impact']) {
     if (typeof decision[key] !== 'string' || decision[key].trim() === '') throw new Error(`DECISION_INVALID: ${key} is required`);
   }
+  const requiresHumanRatification = decision.requires_human_ratification === true;
+  if (requiresHumanRatification && decision.ratified_by != null
+    && (typeof decision.ratified_by !== 'string' || !decision.ratified_by.startsWith('human:'))) {
+    throw new Error('DECISION_INVALID: ratified_by must start with human: when ratification is required');
+  }
   state.decisions.push({
     decision: decision.decision,
     basis: decision.basis,
     impact: decision.impact,
     alternatives: Array.isArray(decision.alternatives) ? decision.alternatives : [],
-    requires_human_ratification: decision.requires_human_ratification === true,
+    requires_human_ratification: requiresHumanRatification,
     ratified_by: decision.ratified_by ?? null,
     at: isoNow(),
   });
@@ -1113,11 +1186,128 @@ export function setRisk(state, risk) {
       if (state.gates[name].status === 'approved') state.gates[name].status = 'needs_reconfirm';
     }
   }
+  if (state.risk.level === 'L') {
+    state.next_action = { owner: 'agent', action: 'L 级已识别；停止 P0 轻量流程，转入现有 task-registry 与长任务执行规约。' };
+  }
   state.updated_at = isoNow();
   return state.risk;
 }
 
-export function recordEvidence(runDir, manifest, evidence) {
+function normalizeDataWrite(write) {
+  if (!write || typeof write !== 'object' || Array.isArray(write)) {
+    throw new Error('DATA_WRITE_INVALID: write must be an object');
+  }
+  const normalized = {};
+  for (const key of ['environment', 'database', 'schema', 'table', 'operation', 'access_mode', 'host_ref', 'account_ref']) {
+    if (typeof write[key] !== 'string' || write[key].trim() === '') {
+      throw new Error(`DATA_WRITE_INVALID: ${key} is required`);
+    }
+    normalized[key] = write[key].trim();
+  }
+  normalized.operation = normalized.operation.toLowerCase();
+  if (!DATA_WRITE_OPERATIONS.includes(normalized.operation)) {
+    throw new Error(`DATA_WRITE_INVALID: operation must be one of ${DATA_WRITE_OPERATIONS.join(', ')}`);
+  }
+  return normalized;
+}
+
+function resolveDataWriteScope(state, write, options = {}) {
+  const loadedPolicy = loadAndValidatePolicy(state, options.policiesRoot ?? POLICY_ROOT, options.now ?? new Date());
+  if (state.risk?.level === 'L' || (state.repos ?? []).length > 1) {
+    throw new Error('DATA_WRITE_DENIED: L or cross-repository runs must use the existing long-task workflow');
+  }
+  if (state.gates?.enter_dev?.status !== 'approved') {
+    throw new Error('DATA_WRITE_DENIED: an approved 【进入开发】 gate is required before any DB write');
+  }
+  if (state.plan?.data_access !== true) {
+    throw new Error('DATA_WRITE_DENIED: plan.data_access must be true');
+  }
+  if (state.data_policy?.scope?.status !== 'approved') {
+    throw new Error('DATA_WRITE_DENIED: data scope must be approved before any write');
+  }
+  const matches = (state.data_policy.scope.tables ?? []).filter((table) =>
+    table.environment === write.environment
+      && table.database === write.database
+      && table.schema === write.schema
+      && table.table === write.table
+      && table.access_mode === write.access_mode);
+  if (matches.length !== 1) {
+    throw new Error(`DATA_WRITE_DENIED: ${write.database}.${write.schema}.${write.table} (${write.access_mode}) must match exactly one approved run-scope entry`);
+  }
+  const table = matches[0];
+  const policyMatch = matchTableToPolicy(loadedPolicy.policy, { ...write });
+  if (!policyMatch.ok) throw new Error(`DATA_WRITE_DENIED: ${policyMatch.reason}`);
+  if (!table.host_ref || table.host_ref !== write.host_ref) {
+    throw new Error('DATA_WRITE_DENIED: host_ref does not match the approved run scope');
+  }
+  if (!table.account_ref || table.account_ref !== write.account_ref) {
+    throw new Error('DATA_WRITE_DENIED: account_ref does not match the approved run scope');
+  }
+  return { loadedPolicy, table };
+}
+
+function dataWriteAuthorizationProjection(state, write) {
+  return {
+    run_id: state.run_id,
+    claim_id: state.ownership.claim_id,
+    policy_version: state.data_policy.policy_version,
+    data_policy_hash: state.data_policy.policy_hash,
+    data_scope_hash: state.data_policy.scope_hash,
+    enter_dev_gate_hash: state.gates.enter_dev.gate_hash,
+    ...write,
+  };
+}
+
+export function checkDataWrite(state, write, options = {}) {
+  assertStateShape(state);
+  const normalized = normalizeDataWrite(write);
+  const gateResult = validateGate(state, 'enter_dev', {
+    sessionId: options.sessionId,
+    machineId: options.machineId,
+    policiesRoot: options.policiesRoot ?? POLICY_ROOT,
+    now: options.now,
+  });
+  if (!gateResult.ok) throw new Error(`DATA_WRITE_DENIED: enter_dev gate is not valid: ${gateResult.errors.join('; ')}`);
+  resolveDataWriteScope(state, normalized, options);
+  const projection = {
+    ...dataWriteAuthorizationProjection(state, normalized),
+    write_checked_at: options.now ? new Date(options.now).toISOString() : isoNow(),
+  };
+  return {
+    ...projection,
+    write_authorization_id: sha256(projection),
+  };
+}
+
+function validateDataWriteEvidence(state, item, options = {}) {
+  const normalized = normalizeDataWrite(item);
+  resolveDataWriteScope(state, normalized, options);
+  for (const key of ['data_policy_hash', 'data_scope_hash', 'enter_dev_gate_hash', 'write_checked_at', 'write_authorization_id']) {
+    if (typeof item[key] !== 'string' || item[key].trim() === '') {
+      throw new Error(`DATA_WRITE_EVIDENCE_INVALID: ${key} is required`);
+    }
+  }
+  if (item.data_policy_hash !== state.data_policy.policy_hash) throw new Error('DATA_WRITE_EVIDENCE_INVALID: data_policy_hash mismatch');
+  if (item.data_scope_hash !== state.data_policy.scope_hash) throw new Error('DATA_WRITE_EVIDENCE_INVALID: data_scope_hash mismatch');
+  const gateHashes = new Set(
+    (state.transitions ?? [])
+      .filter((transition) => transition.gate === 'enter_dev' && transition.result === 'PASS' && transition.gate_hash)
+      .map((transition) => transition.gate_hash),
+  );
+  if (state.gates?.enter_dev?.status === 'approved') gateHashes.add(state.gates.enter_dev.gate_hash);
+  if (!gateHashes.has(item.enter_dev_gate_hash)) {
+    throw new Error('DATA_WRITE_EVIDENCE_INVALID: enter_dev gate hash is not an approved historical or current gate');
+  }
+  if (Number.isNaN(new Date(item.write_checked_at).getTime())) throw new Error('DATA_WRITE_EVIDENCE_INVALID: write_checked_at must be an ISO date-time');
+  const expected = sha256({
+    ...dataWriteAuthorizationProjection(state, normalized),
+    write_checked_at: item.write_checked_at,
+  });
+  if (expected !== item.write_authorization_id) throw new Error('DATA_WRITE_EVIDENCE_INVALID: write_authorization_id mismatch');
+  return normalized;
+}
+
+export function recordEvidence(runDir, manifest, evidence, options = {}) {
   if (!evidence || typeof evidence !== 'object') throw new Error('EVIDENCE_INVALID: evidence must be an object');
   for (const key of ['evidence_id', 'kind', 'result', 'raw_path', 'commit_sha', 'environment', 'collected_at']) {
     if (typeof evidence[key] !== 'string' || evidence[key].trim() === '') throw new Error(`EVIDENCE_INVALID: ${key} is required`);
@@ -1147,6 +1337,11 @@ export function recordEvidence(runDir, manifest, evidence) {
     actualHash = diskHash;
   }
   if (!actualHash) throw new Error('EVIDENCE_INVALID: sha256 is required when raw_retained=false');
+  let dataWrite = null;
+  if (evidence.kind === 'db') {
+    if (!options.state) throw new Error('EVIDENCE_INVALID: db evidence requires the current state for policy/scope validation');
+    dataWrite = validateDataWriteEvidence(options.state, evidence, options);
+  }
   const item = {
     evidence_id: evidence.evidence_id,
     kind: evidence.kind,
@@ -1163,6 +1358,20 @@ export function recordEvidence(runDir, manifest, evidence) {
     environment: evidence.environment,
     collected_at: evidence.collected_at,
     summary: evidence.summary ?? null,
+    ...(dataWrite ? {
+      operation: dataWrite.operation,
+      database: dataWrite.database,
+      schema: dataWrite.schema,
+      table: dataWrite.table,
+      access_mode: dataWrite.access_mode,
+      host_ref: dataWrite.host_ref,
+      account_ref: dataWrite.account_ref,
+      data_policy_hash: evidence.data_policy_hash,
+      data_scope_hash: evidence.data_scope_hash,
+      enter_dev_gate_hash: evidence.enter_dev_gate_hash,
+      write_checked_at: evidence.write_checked_at,
+      write_authorization_id: evidence.write_authorization_id,
+    } : {}),
   };
   manifest.items = [...(manifest.items ?? []), item];
   manifest.updated_at = isoNow();
@@ -1187,6 +1396,13 @@ export function verifyEvidence(state, manifest, runDir) {
     seen.add(item.evidence_id);
     if (typeof item.reviewable !== 'boolean') errors.push(`evidence ${item.evidence_id}: reviewable must be boolean`);
     if (typeof item.raw_retained !== 'boolean') errors.push(`evidence ${item.evidence_id}: raw_retained must be boolean`);
+    if (item.kind === 'db') {
+      try {
+        validateDataWriteEvidence(state, item);
+      } catch (error) {
+        errors.push(`evidence ${item.evidence_id}: ${error.message}`);
+      }
+    }
     if (item.reviewable === false && !normalizeSpace(item.non_reviewable_reason)) {
       errors.push(`evidence ${item.evidence_id}: non_reviewable_reason is required`);
     }
@@ -1399,7 +1615,7 @@ export function setDataScope(state, scope, options = {}) {
       schema: table.schema,
       table: table.table,
       environment: table.environment ?? (loadedPolicy.policy.status === 'active-demo' ? 'demo' : 'production'),
-      access_mode: table.access_mode ?? 'application_only',
+      access_mode: table.access_mode ?? null,
       host_ref: table.host_ref ?? null,
       account_ref: table.account_ref ?? null,
       confirmed_by: table.confirmed_by,
@@ -1409,6 +1625,8 @@ export function setDataScope(state, scope, options = {}) {
     const match = matchTableToPolicy(loadedPolicy.policy, normalizedTable);
     if (!match.ok) throw new Error(`SCOPE_INVALID: scope.tables[${i}] rejected by ${loadedPolicy.policy.policy_version}: ${match.reason}`);
     const group = loadedPolicy.policy.allowed[match.group];
+    normalizedTable.access_mode = normalizedTable.access_mode
+      ?? (group.access === 'application_only' ? 'application_only' : (group.writers?.[0] ?? 'application_only'));
     if (group.host_ref && normalizedTable.host_ref && group.host_ref !== normalizedTable.host_ref) {
       throw new Error(`SCOPE_INVALID: scope.tables[${i}].host_ref does not match policy group ${match.group}`);
     }
@@ -1523,6 +1741,9 @@ export function takeoverState(state, input) {
   if (input.message !== expected) throw new Error(`TAKEOVER_TOKEN_INVALID: expected exact ${expected}`);
   if (typeof input.claimId !== 'string' || input.claimId.trim() === '') throw new Error('TAKEOVER_INVALID: new claim id is required');
   if (input.claimId === state.ownership.claim_id) throw new Error('TAKEOVER_INVALID: new claim id must differ from the current claim');
+  if (!normalizeSpace(input.claimCommentRef) || !normalizeSpace(input.claimOperator)) {
+    throw new Error('TAKEOVER_INVALID: claimCommentRef and claimOperator are required');
+  }
   if (typeof input.sessionId !== 'string' || input.sessionId.trim() === '') throw new Error('TAKEOVER_INVALID: session id is required');
   if (typeof input.machineId !== 'string' || input.machineId.trim() === '') throw new Error('TAKEOVER_INVALID: machine id is required');
   if (!normalizeSpace(input.reason)) throw new Error('TAKEOVER_INVALID: reason is required');
@@ -1532,12 +1753,18 @@ export function takeoverState(state, input) {
     to_claim_id: input.claimId,
     from_session_id: state.ownership.session_id ?? null,
     from_machine_id: state.ownership.machine_id ?? null,
+    from_claim_comment_ref: state.ownership.claim_comment_ref ?? null,
     to_session_id: input.sessionId,
     to_machine_id: input.machineId,
+    to_claim_comment_ref: input.claimCommentRef,
+    to_claim_operator: input.claimOperator,
     reason: input.reason,
     at,
   });
   state.ownership.claim_id = input.claimId;
+  state.ownership.claim_comment_ref = input.claimCommentRef;
+  state.ownership.claim_operator = input.claimOperator;
+  state.ownership.claimed_at = at;
   state.ownership.session_id = input.sessionId;
   state.ownership.machine_id = input.machineId;
   state.ownership.current_owner = input.owner ?? 'current_user';
@@ -1597,6 +1824,16 @@ export function reopenState(state, input) {
   state.next_action = { owner: 'agent', action: '归档完成，开始新 cycle 的重新诊断。' };
   const archived = structuredClone(state);
   writeJson(archivePath, archived);
+  const currentManifestPath = join(input.runDir, 'evidence', 'manifest.json');
+  if (existsSync(currentManifestPath)) {
+    writeJson(join(input.runDir, 'cycles', oldCycleId, 'evidence', 'manifest.json'), readJson(currentManifestPath));
+    writeJson(currentManifestPath, {
+      schema_version: 1,
+      run_id: state.run_id,
+      updated_at: archivedAt,
+      items: [],
+    });
+  }
   const nextSeq = state.cycle_seq + 1;
   const nextCycleId = `cycle-${String(nextSeq).padStart(3, '0')}-${compactTimestamp(archivedAt)}`;
   state.cycle_seq = nextSeq;
@@ -1638,6 +1875,11 @@ export function createInitialState(input) {
   if (!['INTAKE', 'CLAIMED'].includes(initialPhase)) {
     throw new Error(`INIT_PHASE_INVALID: init accepts only INTAKE or CLAIMED, got ${initialPhase}`);
   }
+  if (initialPhase === 'CLAIMED') {
+    if (!normalizeSpace(input.claimCommentRef) || !normalizeSpace(input.claimOperator)) {
+      throw new Error('INIT_CLAIM_EVIDENCE_REQUIRED: CLAIMED requires claimCommentRef and claimOperator');
+    }
+  }
   const cycleId = `cycle-001-${compactTimestamp(at)}`;
   const runId = `${autoNumber}-${workItemId}`;
   const scope = { status: 'pending', tables: [] };
@@ -1667,6 +1909,9 @@ export function createInitialState(input) {
     },
     ownership: {
       claim_id: input.claimId,
+      claim_comment_ref: input.claimCommentRef ?? null,
+      claim_operator: input.claimOperator ?? null,
+      claimed_at: initialPhase === 'CLAIMED' ? at : null,
       session_id: input.sessionId ?? null,
       machine_id: input.machineId ?? null,
       current_owner: input.owner ?? 'current_user',
@@ -1823,9 +2068,13 @@ ${listOrPending(state.implementation?.repos, (r) => `${md(r.repo_id)}：candidat
 
 ## 4. 验证矩阵和证据结果
 
-${listOrPending(state.verification_matrix, (v) => `${md(v.behavior ?? v.name)}：${md(v.result)}；evidence=${md((v.evidence_refs ?? []).join(', '))}`)}
+${listOrPending(state.verification_matrix, (v) => `${md(v.category)} / ${md(v.behavior ?? v.name)}：${md(v.result)}；evidence=${md((v.evidence_refs ?? []).join(', '))}`)}
 
 ${evidenceRows ? `| evidence_id | kind | result | reviewable | raw_retained | non-reviewable reason | commit | summary |\n|---|---|---|---|---|---|---|---|\n${evidenceRows}` : '- PENDING'}
+
+DB 写证据授权：
+
+${listOrPending((manifest.items ?? []).filter((item) => item.kind === 'db'), (item) => `${md(item.evidence_id)}：${md(item.database)}.${md(item.schema)}.${md(item.table)}；operation=${md(item.operation)}；gate=${md(item.enter_dev_gate_hash)}；policy=${md(item.data_policy_hash)}；scope=${md(item.data_scope_hash)}；authorization=${md(item.write_authorization_id)}`)}
 
 - manifest 校验：${md(state.evidence?.verification?.result)}；manifest_hash=${md(state.evidence?.verification?.manifest_hash)}；不可复核证据=${md((state.evidence?.verification?.non_reviewable ?? []).join(', '))}
 
@@ -1906,6 +2155,8 @@ function main() {
       'work-item-id': { type: 'string' },
       title: { type: 'string' },
       'claim-id': { type: 'string' },
+      'claim-comment-ref': { type: 'string' },
+      'claim-operator': { type: 'string' },
       'session-id': { type: 'string' },
       'machine-id': { type: 'string' },
       'project-key': { type: 'string' },
@@ -1954,7 +2205,7 @@ function main() {
   });
   const command = positionals[0];
   if (!command || values.help) {
-    process.stdout.write(`Usage: node scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append one audited evidence item\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record observed Feishu acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
+    process.stdout.write(`Usage: node scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append one audited evidence item\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record observed Feishu acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
     return;
   }
   const evidenceRefs = values['evidence-ref'] ?? [];
@@ -1967,6 +2218,11 @@ function main() {
   if (command === 'init') {
     for (const key of ['auto-number', 'work-item-id', 'title', 'claim-id']) {
       if (!values[key]) throw new Error(`--${key} is required`);
+    }
+    if ((values.phase ?? 'CLAIMED') !== 'INTAKE') {
+      for (const key of ['claim-comment-ref', 'claim-operator']) {
+        if (!values[key]) throw new Error(`--${key} is required for CLAIMED init`);
+      }
     }
     const runDir = runPath(values);
     if (existsSync(join(runDir, 'state.json'))) throw new Error(`RUN_EXISTS: ${runDir}`);
@@ -1983,6 +2239,8 @@ function main() {
       workItemId: values['work-item-id'],
       title: values.title,
       claimId: values['claim-id'],
+      claimCommentRef: values['claim-comment-ref'],
+      claimOperator: values['claim-operator'],
       sessionId: values['session-id'],
       machineId: values['machine-id'],
       projectKey: values['project-key'],
@@ -2091,6 +2349,19 @@ function main() {
     return;
   }
 
+  if (command === 'check-data-write') {
+    if (!values['session-id'] || !values['machine-id']) {
+      throw new Error('--session-id and --machine-id are required');
+    }
+    const authorization = checkDataWrite(state, readInput(), {
+      sessionId: values['session-id'],
+      machineId: values['machine-id'],
+      policiesRoot: values['policies-root'] ? resolve(values['policies-root']) : POLICY_ROOT,
+    });
+    process.stdout.write(`${JSON.stringify(authorization, null, 2)}\n`);
+    return;
+  }
+
   if (command === 'verify-repo') {
     if (!values['repo-id'] || !values['repo-dir']) throw new Error('--repo-id and --repo-dir are required');
     const result = verifyRepo(state, {
@@ -2130,7 +2401,10 @@ function main() {
     else if (values['evidence-json']) evidence = JSON.parse(values['evidence-json']);
     else throw new Error('--evidence-file or --evidence-json is required');
     const manifest = readJson(join(runDir, 'evidence', 'manifest.json'));
-    const item = recordEvidence(runDir, manifest, evidence);
+    const item = recordEvidence(runDir, manifest, evidence, {
+      state,
+      policiesRoot: values['policies-root'] ? resolve(values['policies-root']) : POLICY_ROOT,
+    });
     process.stdout.write(`${JSON.stringify(item, null, 2)}\n`);
     return;
   }
@@ -2191,9 +2465,14 @@ function main() {
   if (command === 'takeover') {
     if (!values.message) throw new Error('--message is required');
     if (!values['claim-id']) throw new Error('--claim-id is required');
+    if (!values['claim-comment-ref'] || !values['claim-operator']) {
+      throw new Error('--claim-comment-ref and --claim-operator are required');
+    }
     takeoverState(state, {
       message: values.message,
       claimId: values['claim-id'],
+      claimCommentRef: values['claim-comment-ref'],
+      claimOperator: values['claim-operator'],
       owner: values.owner,
       reason: values.reason,
       sessionId: values['session-id'],
@@ -2229,6 +2508,8 @@ function main() {
         to: values.to,
         sessionId: values['session-id'],
         machineId: values['machine-id'],
+        claimCommentRef: values['claim-comment-ref'],
+        claimOperator: values['claim-operator'],
         evidenceRefs,
         summary: values.summary,
       });

@@ -55,6 +55,7 @@ Do this immediately after selecting the bug, **before downloading images, inspec
    - Call `get_transition_required` for `IN PROGRESS` and satisfy required fields.
    - Call `transition_state` to `IN PROGRESS` immediately.
    - Call `add_comment` with an `[agent-claim]` marker containing the human-readable `【auto_number】title` reference, a unique claim id/session id, timestamp, scope, and "other sessions do not duplicate".
+   - Preserve the returned comment id/URL as `claim_comment_ref`; record the current operator as `claim_operator`. These fields are required in the run ledger and when taking over a run.
 3. If the status is already `IN PROGRESS`:
    - Inspect `current_status_operator` and the latest comments.
    - Treat it as locked by another active run. Do not edit code or data and do not change status.
@@ -89,16 +90,18 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
   evidence/manifest.json
 ```
 
-- `state.json` is the state/index source of truth; `evidence/manifest.json` is the evidence-detail source; `report.md` is rendered from both.
+- `state.json` is the state/index source of truth; `evidence/manifest.json` is the evidence-detail source; `report.md` is rendered from both. A `CLAIMED` run must include `claim_comment_ref`, `claim_operator`, and `claimed_at`; `init` without those fields is invalid.
 - Record transitions for claim, enter-dev, ship, failure/rollback, and acceptance. Keep historical cycles in `cycles/<cycle_id>/state.json`. Do not silently reuse an approved gate after a new commit, session/machine change, takeover, REOPEN, risk upgrade, data-policy change, or changed execution scope.
 - Keep `patch_round`, `blocked_from`, `resume_phase`, `failure_stage`, and `cycle_id` in the ledger. A reopened bug reuses the same run with a new `cycle_id` and preserves prior history.
 - Worktrees must be clean before validation: `git status --porcelain -uall` must be empty.
 - `verify-repo` is the only accepted implementation fact: it verifies actual HEAD, origin, base ancestor, clean worktree, base..candidate diff and planned-file scope, then computes `diff_hash`. Caller-supplied hashes are not authoritative.
 - `verify-evidence` must pass before `READY_SHIP`; it checks manifest paths, SHA256, command metadata, verification-matrix references and `reviewable` / `raw_retained`. Only `PASS` evidence marked `reviewable=true` and `raw_retained=true` can support a verification PASS. Non-reviewable evidence remains visible in the report but cannot be presented as PASS.
 - Do not downgrade risk. `S/M/L` may only move upward; reopen a new cycle if the original assessment was wrong.
+- The P0 automated flow handles only S/M single-repository bugs. If risk becomes L or more than one repository is required, stop and route to the existing task-registry, task MCP, worktree, and long-task workflow; do not request `【进入开发】` for the lightweight flow.
 - First `【进入开发】` approval is valid only in `READY_DEV`. After a risk upgrade, takeover or other invalidation, re-confirm in `IMPLEMENTING` only when the gate status is `needs_reconfirm`.
+- Any decision with `requires_human_ratification=true` must have `ratified_by` before the ship gate. Natural-language “continue” is not ratification evidence.
 - If the helper exists, use its commands instead of hand-editing the ledger:
-  - `node scripts/bugflow-state.mjs init ...`
+  - `node scripts/bugflow-state.mjs init ... --claim-comment-ref <id/url> --claim-operator <operator>`
   - `node scripts/bugflow-state.mjs record-diagnosis ...`
   - `node scripts/bugflow-state.mjs record-plan ...`
   - `node scripts/bugflow-state.mjs set-repos ...` before requesting `【进入开发】`
@@ -106,16 +109,18 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
   - `node scripts/bugflow-state.mjs approve-gate ... --session-id ... --machine-id ...` only after the exact chat token
   - `node scripts/bugflow-state.mjs validate-gate ... --session-id ... --machine-id ...`
   - `node scripts/bugflow-state.mjs advance ...`
+  - `node scripts/bugflow-state.mjs check-data-write ... --session-id ... --machine-id ...` before every DB write; pass its returned authorization fields into `record-evidence`
   - `node scripts/bugflow-state.mjs verify-repo ...` for every repo before review
+  - `node scripts/bugflow-state.mjs record-evidence ...` for each auditable evidence item
   - `node scripts/bugflow-state.mjs record-review ...` before requesting `【提测】`
-  - `node scripts/bugflow-state.mjs record-verification ...`
+  - `node scripts/bugflow-state.mjs record-verification ...` with `fix`, `regression`, and `boundary` coverage for every repository
   - `node scripts/bugflow-state.mjs approve-gate --gate ship ...` before merge; the ship binding contains candidate/review/verification facts, not post-deploy facts
   - `node scripts/bugflow-state.mjs advance ...` to `SHIPPING`, then merge and deploy under the `【提测】` authorization
   - `node scripts/bugflow-state.mjs record-ship-package ...` after merge/rollout facts are known; this command re-runs evidence validation
   - `node scripts/bugflow-state.mjs verify-evidence ...` whenever evidence changed and before moving from `DEV_VERIFYING`
   - `node scripts/bugflow-state.mjs record-failure ...` for every dev/pipeline/rework failure
   - `node scripts/bugflow-state.mjs record-acceptance ...` only after reading the Feishu business state
-  - `node scripts/bugflow-state.mjs takeover ...` only for the exact `接管【auto_number】` message; it does not unlock gates
+  - `node scripts/bugflow-state.mjs takeover ... --claim-comment-ref <id/url> --claim-operator <operator>` only for the exact `接管【auto_number】` message; it does not unlock gates
   - `node scripts/bugflow-state.mjs render-report ...`
   - `node scripts/bugflow-state.mjs block ...` or `reopen ...` for side paths
 - Run `node scripts/bugflow-state.selfcheck.mjs` after changing the helper.
@@ -124,6 +129,9 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 ### Data and verification
 
 - Read the immutable policy from `agent-delivery/bugfix-runs/policies/<version>.yaml`; environment/host/database/schema must match the base policy, and every table plus the execution account must match the approved run scope. Never print or commit passwords or credentials.
+- After the `【进入开发】` gate is approved and before any `INSERT`/`UPDATE`/`DELETE`/DDL or mock write, call `check-data-write` and wait for a valid authorization. A missing gate/policy, expired policy, pending scope, out-of-scope table, mismatched host/account, or L/cross-repository route must block the write. This check cannot prevent an Agent that bypasses the ledger from using credentials; never claim otherwise.
+- `kind=db` evidence must carry the write authorization and policy/scope hashes. `verify-evidence` rejects DB evidence whose current policy, scope, table, account, or authorization no longer matches.
+- Every repository must cover `category=fix`, `category=regression`, and `category=boundary`. Use `SKIPPED + skipped_reason` when a category is genuinely not applicable; one happy-path PASS is not enough for `READY_SHIP`.
 - Treat mock rows, skipped checks, and unretained raw evidence as `SIMULATED`, `SKIPPED`, or `reviewable: false`; never report them as executable PASS evidence. A PASS verification may reference only manifest evidence whose own result is PASS and whose raw file was retained.
 - Fix branches usually have no remote CI in the current repositories. Before merge, say “local/repository self-check”, not “branch CI passed”. Merge to `dev` and observe the actual pipeline, `merge_commit_sha`, deployed SHA, image tag and rollout before claiming dev deployment. Record `pipeline_url`; do not describe Agent-recorded pipeline/rollout fields as locally verified facts.
 - Roll back only by reverting this run's commits with `git revert` (merge commits: `git revert -m 1`). Never use `git reset --hard`, force push, or revert unrelated commits. If the revert is unsafe or conflicts, enter `BLOCKED`.

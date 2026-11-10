@@ -19,7 +19,7 @@
 | [verify-paths.sh](verify-paths.sh) | 全平台（git-bash） | 扫描硬编码路径残留（RFC-002 §6） |
 | [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
 | [find-supervisor-slot.mjs](find-supervisor-slot.mjs) | Node 18+ | **监管亲和参考**：推荐 `supervised_by`（`max_agent_concurrency`=本机 Cursor 会话上限；load≠派单门禁） |
-| [bugflow-state.mjs](bugflow-state.mjs) | Node 18+ | **飞书缺陷 P0 账本**：schema、精确 gate、claim/session、真实 Git/evidence、版本化 policy、状态机、cycle 和报告 |
+| [bugflow-state.mjs](bugflow-state.mjs) | Node 18+ | **飞书缺陷 P0 账本**：schema、精确 gate、claim/session、DB 写前 policy、真实 Git/evidence、版本化 policy、状态机、cycle 和报告 |
 | [bugflow-state.selfcheck.mjs](bugflow-state.selfcheck.mjs) | Node 18+ | `bugflow-state` 离线回归自检 |
 | [sync-bugfix-skill.mjs](sync-bugfix-skill.mjs) | Node 18+ | 从 `agent-delivery/bugfix-runs/SKILL.md` 检查/同步 Codex、Cursor、Trae 三份缺陷修复 Skill 适配副本 |
 | [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |

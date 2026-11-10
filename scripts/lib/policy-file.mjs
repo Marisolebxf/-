@@ -220,7 +220,7 @@ export function matchTableToPolicy(policy, table) {
   if (matched.length > 1) return { ok: false, reason: `multiple base policy groups matched: ${matched.map(([name]) => name).join(', ')}` };
   const [groupName, group] = matched[0];
   if (group.table_policy !== 'run_scope_required') return { ok: false, reason: `${groupName} requires run_scope_required` };
-  if (group.access === 'application_only' && table.access_mode !== 'application_only') {
+  if (group.access === 'application_only' && table.access_mode && table.access_mode !== 'application_only') {
     return { ok: false, reason: `${groupName} only allows application_only access` };
   }
   return { ok: true, group: groupName };

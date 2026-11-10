@@ -11,11 +11,13 @@ import {
   advance,
   approveGate,
   blockState,
+  checkDataWrite,
   createInitialState,
   diagnosisHash,
   loadAndValidatePolicy,
   recordAcceptance,
   recordDiagnosis,
+  recordDecision,
   recordEvidence,
   recordFailure,
   recordPlan,
@@ -51,6 +53,8 @@ function makeState(overrides = {}) {
     workItemId: '456',
     title: 'selfcheck bug',
     claimId: 'claim-selfcheck',
+    claimCommentRef: 'comment-claim-selfcheck',
+    claimOperator: 'human:selfcheck',
     sessionId: 'session-1',
     machineId: 'machine-1',
     phase: 'CLAIMED',
@@ -90,6 +94,9 @@ try {
   assert.throws(() => createInitialState({
     autoNumber: '../123', workItemId: '456', title: 'path escape', claimId: 'claim',
   }), /auto_number must contain digits only/);
+  assert.throws(() => createInitialState({
+    autoNumber: '123', workItemId: '456', title: 'missing claim evidence', claimId: 'claim', phase: 'CLAIMED',
+  }), /INIT_CLAIM_EVIDENCE_REQUIRED/);
   const downgradeState = makeState({ risk: 'M' });
   assert.throws(() => setRisk(downgradeState, { level: 'S' }), /RISK_DOWNGRADE_FORBIDDEN/);
 
@@ -171,6 +178,18 @@ try {
     }],
   }, { runDir, policiesRoot });
 
+  const dbWriteInput = {
+    environment: 'demo',
+    database: 'demo_gkxlumenx_dwd',
+    schema: 'demo_gkxlumenx_dwd',
+    table: 'sample_table',
+    operation: 'insert',
+    access_mode: 'python',
+    host_ref: 'env:DEMO_MYSQL_HOST',
+    account_ref: 'env:DEMO_MYSQL_USER',
+  };
+  assert.throws(() => checkDataWrite(state, dbWriteInput), /enter_dev gate is not valid/);
+
   const enterBinding = {
     repos: [{
       repo_id: 'ui_pc',
@@ -211,6 +230,33 @@ try {
     sessionId: 'session-1',
     machineId: 'machine-1',
   });
+  const dbAuthorization = checkDataWrite(state, dbWriteInput, { sessionId: 'session-1', machineId: 'machine-1' });
+  assert.throws(
+    () => checkDataWrite(structuredClone(state), dbWriteInput, { sessionId: 'session-2', machineId: 'machine-1' }),
+    /session changed/,
+  );
+  writeFileSync(join(runDir, 'evidence', 'raw', 'db.txt'), 'insert controlled mock rows\n');
+  recordEvidence(runDir, manifest, {
+    evidence_id: 'E-DB-001',
+    kind: 'db',
+    result: 'PASS',
+    raw_path: 'evidence/raw/db.txt',
+    reviewable: true,
+    raw_retained: true,
+    commit_sha: candidateSha,
+    environment: 'demo',
+    collected_at: '2026-11-10T18:01:00+08:00',
+    summary: 'insert mock rows into sample_table',
+    ...dbAuthorization,
+  }, { state });
+  assert.match(manifest.items.at(-1).write_authorization_id, /^sha256:/);
+  assert.equal(verifyEvidence(state, manifest, runDir).result, 'PASS');
+  const pendingScopeState = structuredClone(state);
+  pendingScopeState.data_policy.scope = { status: 'pending', tables: [] };
+  assert.throws(() => checkDataWrite(pendingScopeState, dbWriteInput, { sessionId: 'session-1', machineId: 'machine-1' }), /DATA_WRITE_DENIED/);
+  const wrongTableState = structuredClone(state);
+  wrongTableState.data_policy.scope.tables[0].table = 'other_table';
+  assert.throws(() => checkDataWrite(wrongTableState, dbWriteInput, { sessionId: 'session-1', machineId: 'machine-1' }), /must match exactly one approved run-scope entry/);
   assert.equal(validateGate(state, 'enter_dev', { sessionId: 'session-1', machineId: 'machine-1' }).ok, true);
   assert.equal(validateGate(state, 'enter_dev', { sessionId: 'session-2', machineId: 'machine-1' }).ok, false);
   assert.equal(validateGate(state, 'enter_dev', {}).ok, false);
@@ -220,9 +266,16 @@ try {
     message: '接管', claimId: 'claim-new', sessionId: 'session-new', machineId: 'machine-new', reason: 'old session crashed',
   }), /TAKEOVER_TOKEN_INVALID/);
   takeoverState(takeover, {
-    message: '接管【123】', claimId: 'claim-new', sessionId: 'session-new', machineId: 'machine-new', reason: 'old session crashed',
+    message: '接管【123】',
+    claimId: 'claim-new',
+    claimCommentRef: 'comment-takeover-new',
+    claimOperator: 'human:new-owner',
+    sessionId: 'session-new',
+    machineId: 'machine-new',
+    reason: 'old session crashed',
   });
   assert.equal(takeover.ownership.claim_id, 'claim-new');
+  assert.equal(takeover.ownership.claim_comment_ref, 'comment-takeover-new');
   assert.equal(takeover.ownership.takeover_history.length, 1);
   assert.equal(takeover.gates.enter_dev.status, 'needs_reconfirm');
 
@@ -236,16 +289,25 @@ try {
     machineId: 'machine-1',
   }), /GATE_PHASE_INVALID/);
   const reconfirmState = structuredClone(state);
-  setRisk(reconfirmState, { level: 'L', reasons: ['cross-cutting risk discovered'] });
+  setRisk(reconfirmState, { level: 'M', reasons: ['cross-component risk discovered'] });
   assert.equal(reconfirmState.gates.enter_dev.status, 'needs_reconfirm');
   approveGate(reconfirmState, {
+    gate: 'enter_dev',
+    message: '【进入开发】123',
+    binding: { ...enterBinding, risk_level: 'M' },
+    sessionId: 'session-1',
+    machineId: 'machine-1',
+  });
+  assert.equal(reconfirmState.gates.enter_dev.status, 'approved');
+  const longTaskRouteState = structuredClone(state);
+  setRisk(longTaskRouteState, { level: 'L', reasons: ['cross-repository contract change'] });
+  assert.throws(() => approveGate(longTaskRouteState, {
     gate: 'enter_dev',
     message: '【进入开发】123',
     binding: { ...enterBinding, risk_level: 'L' },
     sessionId: 'session-1',
     machineId: 'machine-1',
-  });
-  assert.equal(reconfirmState.gates.enter_dev.status, 'approved');
+  }), /L_ROUTE_REQUIRED/);
   assert.match(state.next_action.action, /verify-repo/);
   assert.throws(
     () => advance(structuredClone(state), { to: 'REVIEWING', sessionId: 'session-1', machineId: 'machine-1' }),
@@ -289,13 +351,52 @@ try {
     collected_at: '2026-11-10T18:05:00+08:00',
     summary: 'unit and browser passed',
   });
-  recordVerification(state, [{
-    id: 'V-1',
+  const onlyFixState = structuredClone(state);
+  assert.throws(() => recordVerification(structuredClone(state), [{
+    id: 'V-NO-CATEGORY',
+    behavior: 'uncategorized',
+    result: 'PASS',
+    repo_ids: ['ui_pc'],
+    evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+  }]), /category is required/);
+  recordVerification(onlyFixState, [{
+    id: 'V-FIX-ONLY',
+    category: 'fix',
     behavior: 'query returns data',
     result: 'PASS',
     repo_ids: ['ui_pc'],
     evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
   }]);
+  assert.throws(
+    () => advance(onlyFixState, { to: 'READY_SHIP', sessionId: 'session-1', machineId: 'machine-1' }),
+    /regression verification is required/,
+  );
+  recordVerification(state, [
+    {
+      id: 'V-FIX-001',
+      category: 'fix',
+      behavior: 'query returns data',
+      result: 'PASS',
+      repo_ids: ['ui_pc'],
+      evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+    {
+      id: 'V-REG-001',
+      category: 'regression',
+      behavior: 'adjacent tab still returns data',
+      result: 'PASS',
+      repo_ids: ['ui_pc'],
+      evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+    {
+      id: 'V-BOUNDARY-001',
+      category: 'boundary',
+      behavior: 'empty result remains explainable',
+      result: 'PASS',
+      repo_ids: ['ui_pc'],
+      evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+  ]);
   const manifest3 = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const evidenceVerification = verifyEvidence(state, manifest3, runDir);
   assert.equal(evidenceVerification.result, 'PASS');
@@ -315,6 +416,28 @@ try {
     risk_level: 'S',
     deploy_target: 'dev',
   };
+  const unratifiedState = structuredClone(state);
+  assert.throws(() => recordDecision(structuredClone(state), {
+    decision: 'self-ratified change',
+    basis: 'agent belief',
+    impact: 'shared behavior',
+    requires_human_ratification: true,
+    ratified_by: 'agent:selfcheck',
+  }), /ratified_by must start with human:/);
+  recordDecision(unratifiedState, {
+    decision: 'continue with a temporary compatibility branch',
+    basis: 'temporary workaround',
+    impact: 'changes shared behavior',
+    alternatives: ['stop and wait'],
+    requires_human_ratification: true,
+  });
+  assert.throws(() => approveGate(unratifiedState, {
+    gate: 'ship',
+    message: '【提测】',
+    binding: shipBinding,
+    sessionId: 'session-1',
+    machineId: 'machine-1',
+  }), /DECISION_RATIFICATION_REQUIRED/);
   approveGate(state, {
     gate: 'ship',
     message: '【提测】',
@@ -451,6 +574,13 @@ try {
   });
   subsetState.gates.enter_dev = structuredClone(state.gates.enter_dev);
   assert.equal(validateGate(subsetState, 'enter_dev', { sessionId: 'session-1', machineId: 'machine-1' }).ok, false);
+  assert.throws(() => approveGate(structuredClone(subsetState), {
+    gate: 'enter_dev',
+    message: '【进入开发】123',
+    binding: enterBinding,
+    sessionId: 'session-1',
+    machineId: 'machine-1',
+  }), /CROSS_REPO_ROUTE_REQUIRED/);
 
   const reopened = structuredClone(state);
   reopenState(reopened, { runDir, reason: 'regressed', sessionId: 'session-1' });
@@ -463,6 +593,8 @@ try {
   const archivedCycle = archived.cycles.find((cycle) => cycle.cycle_id === state.current_cycle_id);
   assert.match(archivedCycle.closed_at, /^20/);
   assert.equal(archivedCycle.state_ref, `cycles/${state.current_cycle_id}/state.json`);
+  assert.equal(JSON.parse(readFileSync(join(runDir, 'cycles', state.current_cycle_id, 'evidence', 'manifest.json'), 'utf8')).items.length > 0, true);
+  assert.equal(JSON.parse(readFileSync(manifestPath, 'utf8')).items.length, 0);
   assert.throws(() => recordAcceptance(reopened, {
     status: 'approved',
     current_status: 'RESOLVED',
@@ -529,7 +661,7 @@ try {
     collected_at: '2026-11-10T18:21:00+08:00',
   }), /reviewable=true requires raw_retained=true/);
 
-  const reviewState = makeState();
+  const reviewState = structuredClone(preShipState);
   const reviewResult = verifyEvidence(reviewState, nonReviewable, runDir);
   assert.equal(reviewResult.result, 'PASS');
   assert.deepEqual(reviewResult.non_reviewable, ['E-DATA-001']);

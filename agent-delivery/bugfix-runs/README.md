@@ -1,6 +1,6 @@
 # 飞书缺陷修复运行账本
 
-> 状态：P0 收敛版 v0.8（确定性校验已修复，进入真实缺陷试点）
+> 状态：P0 收敛版 v0.9（写入与验证闸门已补齐，进入真实缺陷试点）
 > 建立日期：2026-11-10
 > 适用范围：飞书项目中由当前用户认领并修复的缺陷
 > 真源分层：`P0-DESIGN.md` 管流程/权限，`SKILL.md` 管操作，`state.schema.json` 管机器结构，`policies/` 管数据授权
@@ -81,9 +81,10 @@ bugfix-runs/
 入库规则：
 
 - `state.json`、`report.md`、`evidence/manifest.json` 必须入库；
+- `ownership` 必须包含 `claim_comment_ref`、`claim_operator`、`claimed_at`；没有这三项不能把 run 标成 `CLAIMED`；
 - 数据策略使用 `policies/<version>.yaml` 不可变版本；run 记录 `policy_version`、`policy_hash` 和策略快照 hash，不能依赖会变化的全局文件；
 - 截图、stdout、API 响应和临时日志放在 `evidence/raw/`，默认不入库；
-- manifest 记录命令、退出码、输出路径、SHA256、证据类型、环境、时间和对应 commit；
+- manifest 记录命令、退出码、输出路径、SHA256、证据类型、环境、时间和对应 commit；DB 证据还要记录写授权、policy/scope hash 和表/账号信息；
 - `state.json` 只表示当前 cycle，历史 cycle 完整归档到 `cycles/<cycle_id>/state.json`；manifest 是证据明细真源。至少在 claim、进入开发、提测、失败/回退、验收节点提交；一个 run 固定一台执行机，换机器必须重新校验 claim、repos、candidate/deployed SHA、证据和 gate；
 - 飞书写回只放脱敏摘要，不放 token、cookie、签名 URL 或敏感数据。
 
@@ -93,11 +94,11 @@ bugfix-runs/
 |---|---|
 | S | 自审、目标回归、页面/接口证据；不建 task-registry/handoff |
 | M | S 基础上增加影响面、写路径、边界验证和独立针对性评审；单会话单仓可不建 registry |
-| L | 必须接 task-registry、task MCP、worktree、全量净室评审和 handoff/cost |
+| L | 仅识别并路由；必须接现有 task-registry、task MCP、worktree、全量净室评审和 handoff/cost，不进入 P0 轻量自动流 |
 
 S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳过评审。
 
-本轻量通道是 `feishu-bugfix` 的明确豁免：S/M 用 `state.json + report.md` 承载执行记录；L、跨仓交付和长任务段 E 仍遵守主仓完整规约。
+本轻量通道是 `feishu-bugfix` 的明确豁免：P0 自动流只承接 **S/M 单仓**，用 `state.json + report.md` 承载执行记录；L、跨仓交付和长任务段 E 仍遵守主仓完整规约，遇到时停止轻量流程并路由。
 
 ## 与主仓规约的关系
 
@@ -127,7 +128,7 @@ S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳�
 - gate 绑定、失效和接管；
 - 结构化证据、单一报告和内部校验器；
 - 版本化数据/Mock 策略；
-- 多仓 per-repo gate、deployed SHA、review/data scope hash、failure_stage/failure_class 和 revert-only 回退；
+- 单仓 gate、deployed SHA、review/data scope hash、failure_stage/failure_class 和 revert-only 回退；L/跨仓由现有长任务流程承接；
 - `state.json.transitions[]`、`patch_round`、cycle 归档、精确接管、取消和重开规则；
 - `policies/` 的版本化数据授权和 run scope 逐表确认；
 - Codex / Cursor / Trae 共用语义。
@@ -149,8 +150,8 @@ node scripts/bugflow-state.mjs --help
 node scripts/bugflow-state.selfcheck.mjs
 ```
 
-Agent 内部按 `init → record-diagnosis → record-plan → set-repos → set-data-scope → approve-gate enter_dev → advance → verify-repo → record-review → record-evidence → record-verification → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在【提测】授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
+Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos → set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（fix/regression/boundary 三类）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在【提测】授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
 
-v0.8 起，校验器不再只检查 JSON 结构：它执行 schema、阶段产物 guard、多仓集合一致性、session/machine 强制校验、真实 Git HEAD/remote/diff/scope、evidence manifest 的路径与 SHA256、验证矩阵引用解析、policy 有效期和逐表白名单；review/diff/verification/ship-package hash 由脚本计算。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍只面对四件事和两个精确口令，复杂校验全部由 Agent 内部完成。
+v0.9 起，校验器还强制 claim 评论证据、DB 写前 scope/policy 授权、三类验证覆盖和未追认决策闸门；L 或跨仓自动路由到现有长任务流程。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍只面对四件事和两个精确口令，复杂校验全部由 Agent 内部完成。
 
 详细设计见 [`P0-DESIGN.md`](P0-DESIGN.md)。

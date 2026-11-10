@@ -1,7 +1,7 @@
 # 飞书缺陷 AI Native P0 设计稿
 
-> 状态：P0 收敛版 v0.8（修复确定性校验缺口，准备进入真实缺陷试点）
-> 版本：v0.8
+> 状态：P0 收敛版 v0.9（补齐写入、验证、claim 和路由闸门，准备进入真实缺陷试点）
+> 版本：v0.9
 > 日期：2026-11-10
 > 基线案例：飞书缺陷【2238】
 > 设计原则：对外只保留两个口令和一次业务验收，内部校验严格但由 Agent 自动执行
@@ -135,7 +135,7 @@ CANCELLED
 
 | 转换 | 前置条件 |
 |---|---|
-| `INTAKE → CLAIMED` | 找到当前用户名下缺陷；完成 `IN PROGRESS` 认领和 `[agent-claim]` 评论；生成 `claim_id` |
+| `INTAKE → CLAIMED` | 找到当前用户名下缺陷；完成 `IN PROGRESS` 认领和 `[agent-claim]` 评论；生成 `claim_id`，并记录 `claim_comment_ref`、`claim_operator`、`claimed_at` |
 | `CLAIMED → DIAGNOSED` | 截图/复现、根因假设、反证、需规证据、影响范围和 data policy 已落盘 |
 | `DIAGNOSED → READY_DEV` | 根因可证伪；改动边界、验证计划和风险等级明确 |
 | `READY_DEV → IMPLEMENTING` | `gates.enter_dev` 有效，且绑定对象与当前 claim/repos/base/diagnosis 一致 |
@@ -323,11 +323,11 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 
 - `gate_hash` 只包含：授权来源、精确口令文本、`approved_by`、`claim_id`、gate 名称、稳定 `bound_to` 对象和校验器版本；
 - `bound_to` 不包含 `worktree` 绝对路径、`session_id`、`message_ref`、`approved_at` 和运行时临时目录；
-- `verification_hash` 只包含：`evidence_id`、`kind`、`result`、`commit_role`、`commit_sha/deployed_sha`、`sha256`、`environment`、`data_policy_hash`、`exit_code`；
-- `verification_hash` 不包含：`timestamp`、`cwd`、`stdout_path`、`producer`、`raw_retained`、`reviewable`；
+- `verification_hash` 按 repo 只包含该仓验证矩阵的：`id`、`category`、`behavior`、`result`、`evidence_refs`、`simulated`、`skipped_reason`；
+- `verification_hash` 不包含：`timestamp`、`cwd`、`stdout_path`、`producer`、`raw_retained`、`reviewable` 等审计元数据；manifest 文件本身的 `manifest_hash` 单独记录；
 - `diff_hash` 固定为每个仓库 `base_sha..candidate_sha`，包含文件路径、增删行和模式变化；
 - JSON 使用键排序、UTF-8、LF 和固定浮点格式；YAML 先解析为规范对象，再按 JSON canonical 形式计算；
-- evidence 按稳定 `evidence_id` 排序；所有聚合 hash 必须写明投影版本，例如 `projection_version: p0-v2`。
+- evidence 按稳定 `evidence_id` 排序；所有聚合 hash 必须写明投影版本，例如 `projection_version: p0-v3`。
 
 审计字段仍可保留，但只用于解释和人工复核，不能改变 gate 的稳定身份。
 
@@ -364,7 +364,7 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 - `review_hash`；
 - `data_policy_hash` / `data_scope_hash`。
 
-顶层另记录 `risk_level` 和 `deploy_target=dev`。`ship_package`、`review` 和 `rollback` 都按 `repos[]` 记录，不允许用一个 merge SHA、一个 pipeline 或一个镜像代表多仓交付。
+顶层另记录 `risk_level` 和 `deploy_target=dev`。`ship_package`、`review` 和 `rollback` 按 `repos[]` 记录，单仓也必须显式绑定；P0 自动流只允许一个仓库，多仓缺陷在 `IMPLEMENTING` 前路由到既有长任务流程。
 
 每个 `ship_package.repos[]` 至少包含：
 
@@ -444,7 +444,7 @@ M 级不得跳过评审。
 
 典型场景：多仓契约、数据库结构、权限、并发、任务流水线、发布配置。
 
-在 M 基础上增加：
+`bugflow-state` 只负责识别 L，不在 P0 内复制第二套长任务执行器。一旦升级到 L 或识别为跨仓交付，立即停止轻量流程并路由到现有：
 
 - 仅经 task MCP 接入 task-registry、worktree，并记录 `task_registry_id`；禁止直接读写 `task-registry.yaml`；
 - 契约、迁移和回滚方案；
@@ -452,7 +452,7 @@ M 级不得跳过评审。
 - 全量净室评审；
 - 必要时按 `长任务执行规约.md` 段 E 处理。
 
-L 级不得跳过评审。
+L 级不得跳过评审，也不得通过普通 `【进入开发】` gate 绕过既有长任务流程。
 
 ## 9. 运行账本与证据存储
 
@@ -463,7 +463,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
   cycles/
     <cycle_id>/state.json   # 已完成周期的不可变快照
   evidence/
-    manifest.json
+    manifest.json          # current cycle only
     raw/                    # 默认 gitignore
   plan.md                   # L 或确有必要时
   review-report.md          # L 或独立评审需要时
@@ -473,9 +473,10 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 
 - `state.json` 是状态与索引真源，`report.md` 和 `evidence/manifest.json` 是证据与展示真源，必须入库；
 - `state.json` 只表示当前 cycle；进入新 cycle 前，把上一轮完整快照写入 `cycles/<cycle_id>/state.json`，不得覆盖历史；
+- `REOPENED` 时同时把当前 manifest 归档到 `cycles/<cycle_id>/evidence/manifest.json` 并重建空 manifest，避免旧 DB 证据被新 cycle 的 policy/scope 误校验；
 - 数据策略使用不可变版本文件 `policies/<version>.yaml`；run 只保存 `policy_version`、`policy_hash` 和策略快照 hash，不能依赖随时会被覆盖的全局文件；
 - `evidence/raw/` 保存截图、stdout、API 响应和临时日志，默认不入库；
-- manifest 中的每个文件必须记录相对路径、SHA256、大小、类型、环境、时间和对应 commit；
+- manifest 记录证据相对路径、SHA256、kind、环境、采集时间和对应 commit；DB 证据额外记录写授权和 policy/scope hash；
 - 飞书中只写脱敏摘要和稳定路径，不暴露 token、cookie、签名下载 URL 或敏感数据；
 - 一个 run 固定一台执行机。切换机器时，没有 raw evidence 的项目必须标为 `SKIPPED` 或重新取证，不能假定通过；gate 必须重新确认。
 
@@ -492,10 +493,10 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 | `current_cycle_id` / `cycle_seq` | 当前周期指针和单调递增序号 |
 | `cycles` | 历史周期索引：`cycle_id`、`seq`、起止时间、`state_ref`、关闭原因 |
 | `work_item` | 飞书项目 key、auto_number、内部 ID、标题、负责人、`qa_bug_id`、`task_registry_id` |
-| `ownership` | `claim_id`、`session_id`、`machine_id`、当前 owner、接管历史 |
+| `ownership` | `claim_id`、`claim_comment_ref`、`claim_operator`、`claimed_at`、`session_id`、`machine_id`、当前 owner、接管历史 |
 | `phase` | 内部阶段；对外状态由 `phase` 派生，不单独存储 |
 | `risk` | S/M/L、理由、是否上调 |
-| `repos` | 多仓权威数组：`repo_id`、registry 解析出的 `repo_name/remote`、base/candidate SHA、fix 分支和改动边界；不存放绝对 worktree 路径 |
+| `repos` | 仓库权威数组：`repo_id`、registry 解析出的 `repo_name/remote`、base/candidate SHA、fix 分支和改动边界；P0 自动流只允许一个元素，不存放绝对 worktree 路径 |
 | `machine_local` | 指向本机非权威映射文件，例如 `local/<run_id>.json`；只保存 worktree 绝对路径，不参与 gate hash |
 | `data_policy` | policy 版本/hash、run 级 `scope_hash`、实际表清单、确认人、确认时间、证据引用和切换条件 |
 | `diagnosis` | 现象、复现、根因、反证、需规依据、影响范围 |
@@ -525,7 +526,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "run_id": "2238-7164230616",
   "current_cycle_id": "cycle-001-20261110T162159+0800",
   "cycle_seq": 1,
@@ -547,9 +548,13 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
   },
   "ownership": {
     "claim_id": "claim-20261110-001",
+    "claim_comment_ref": "comment-...",
+    "claim_operator": "human:current-user",
+    "claimed_at": "2026-11-10T16:20:00+08:00",
     "session_id": "session-...",
     "machine_id": "machine-a",
-    "current_owner": "agent:frontend"
+    "current_owner": "agent:frontend",
+    "takeover_history": []
   },
   "phase": "READY_SHIP",
   "patch_round": 0,
@@ -608,7 +613,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
       "validation": {
         "result": "PASS",
         "checked_at": "ISO-8601",
-        "projection_version": "p0-v2"
+        "projection_version": "p0-v3"
       }
     },
     "ship": {
@@ -641,50 +646,39 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 
 ## 11. 结构化证据
 
-`evidence.manifest` 中每条证据至少包含：
+`evidence.manifest` 按实际 kind 保存最小事实，不复制 `ship_package` 已负责的提测信息。每条证据至少包含：
 
 | 字段 | 说明 |
 |---|---|
 | `evidence_id` | 稳定标识 |
-| `kind` | command / ui / api / db / pipeline / review / manual |
-| `command` | 命令原文；非命令证据为空 |
-| `cwd` | 命令执行目录；非命令证据为空 |
-| `exit_code` | 命令退出码；不适用时为空或 `null` |
-| `stdout_path` | 输出文件相对路径 |
-| `stderr_path` | 错误输出文件相对路径；无输出时为空 |
-| `summary` | 脱敏后的结论摘要 |
-| `repo_id` | 证据对应的仓库；跨仓 run 必填 |
-| `commit_role` | `candidate` / `deployed` / `revert`；不适用时为空 |
-| `commit_sha` | 对应角色的 commit SHA；pipeline 证据必须同时记录 `deployed_sha` |
-| `deployed_sha` | 部署证据实际运行的 dev SHA；非部署证据为空 |
-| `environment` | local / test / dev / feishu |
-| `producer` | 产生证据的 Agent/命令/人工动作标识 |
-| `timestamp` | ISO-8601 |
+| `kind` | command / ui / api / db / pipeline / review / manual / human_confirmation / acceptance |
 | `result` | PASS / FAIL / SKIPPED / SIMULATED |
-| `reason` | SKIPPED 或 SIMULATED 时必填 |
-| `sha256` | 证据文件哈希 |
-| `data_policy_hash` | 执行该证据时使用的数据策略哈希 |
-| `data_scope_hash` | 执行该证据时使用的 run 级数据 scope hash |
-| `pipeline_id` / `job_name` | pipeline 证据必填 |
-| `image_tag` / `rollout_status` | 部署证据必填 |
-| `raw_retained` | raw 文件是否仍可访问 |
-| `reviewable` | 该证据是否足以支持人工复核；raw 缺失且无稳定等价证据时为 false |
+| `raw_path` / `sha256` | 证据文件相对路径和文件哈希 |
+| `reviewable` / `raw_retained` | 是否可人工复核、raw 是否仍保留 |
+| `non_reviewable_reason` | `reviewable=false` 时必填 |
+| `command` / `exit_code` / `stdout_path` | 命令证据可追溯字段，不适用时为 `null` |
+| `commit_sha` | 证据对应的代码提交 |
+| `environment` / `collected_at` / `summary` | 环境、采集时间和脱敏摘要 |
+
+`kind=db` 额外必须包含 `operation`、`database`、`schema`、`table`、`access_mode`、`host_ref`、`account_ref`、`enter_dev_gate_hash`、`data_policy_hash`、`data_scope_hash`、`write_checked_at` 和 `write_authorization_id`。写前必须在有效 `【进入开发】` gate 下调用受控检查；当 gate、policy、scope、表、账号或 host 不匹配时拒绝，不生成可记录的证据授权。
 
 规则：
 
 - “测试通过”必须能追溯到命令、退出码和输出；
 - UI 证据记录路由、环境、视口、数据集和前后截图；
 - API 证据记录请求摘要、状态码和关键字段，不记录 token/cookie；
-- 数据库证据只记录脱敏查询和结果摘要；
+- 数据库写入必须先通过 `check-data-write`；证据只记录脱敏操作摘要，不记录敏感值；
 - 模拟结果必须标 `SIMULATED`，未执行项必须标 `SKIPPED` 并说明原因；
 - P0 简化为：只有 `reviewable: true` 且 `raw_retained: true` 的证据可以支撑验证矩阵中的 `PASS`；raw 文件未保留或已过期时可以记入 manifest 并标 `reviewable: false`，但只能用于说明、`SKIPPED` 或 `SIMULATED`，不能伪装成 PASS；
 - 验证矩阵的每个 `evidence_refs[]` 必须能在已校验 manifest 中解析；`PASS` 只能引用 manifest 中结果为 `PASS` 的可复核证据；
 - `timestamp`、`cwd`、`producer`、`stdout_path`、`raw_retained`、`reviewable` 只用于审计和展示，不进入 `verification_hash`；稳定投影字段见 §7.0；
 - 报告只能从 `state.json` 和 manifest 渲染，不允许模型另写一套自由文本事实。
 
+校验器只能约束按流程执行的 Agent 和可复核记录，不能阻止拥有数据库凭据的 Agent 完全绕开账本直写。P0 通过写前检查、逐表 scope、受控账号引用和“0 次 scope 外写入”审计指标降低风险；真正的强制拦截需要数据库代理或受控执行入口，留到 P1。
+
 ## 12. 数据与 Mock 策略
 
-数据策略采用 **B 语义：base policy 限定 environment/host/database/schema，run scope 负责逐表白名单，deny-by-default**。基础策略放在 `agent-delivery/bugfix-runs/policies/<version>.yaml`，不直接授权具体表；每个 run 的 `state.json.data_policy.scope.tables` 必须从诊断链路中逐表枚举，并记录 `status/confirmed_by/confirmed_at/evidence_ref`。`state.json.data_policy` 保存 `policy_version`、`policy_hash`、`scope_hash` 和实际表清单，`scope` 为空或未确认时拒绝写入。任何未命中 `policy + scope` 的写操作都必须进入 `BLOCKED`。旧 run 不得因为新 policy 覆盖而失去可复核性。
+数据策略采用 **B 语义：base policy 限定 environment/host/database/schema，run scope 负责逐表白名单，deny-by-default**。基础策略放在 `agent-delivery/bugfix-runs/policies/<version>.yaml`，不直接授权具体表；每个 run 的 `state.json.data_policy.scope.tables` 必须从诊断链路中逐表枚举，并记录 `status/confirmed_by/confirmed_at/evidence_ref`。`state.json.data_policy` 保存 `policy_version`、`policy_hash`、`scope_hash` 和实际表清单，`scope` 为空或未确认时拒绝写入。任何 DB 写入前必须已有有效 `【进入开发】` gate 并执行 `check-data-write`，检查 policy、scope、environment、host、database、schema、table、operation、access mode 和 account；任何未命中 `policy + scope` 的写操作都必须进入 `BLOCKED`。旧 run 不得因为新 policy 覆盖而失去可复核性。
 
 当前策略版本：`demo-2026-11-10`，阶段为 `demo_until_cutover`。
 
@@ -812,6 +806,8 @@ forbidden:
 2. **不破坏行为**：相邻 Tab、默认条件、全量语义、写路径是否正常；
 3. **边界行为**：空数据、接口失败、无权限、重复提交等是否可解释。
 
+每个 repo 的验证矩阵必须分别存在 `category=fix|regression|boundary` 的记录；不适用时允许 `SKIPPED + skipped_reason`，不能只写一条修复行为直接进入 `READY_SHIP`。
+
 ## 14. 语义权威顺序
 
 1. 平台和仓库硬规则；
@@ -835,6 +831,8 @@ forbidden:
 - 是否需要提测时追认。
 
 普通实现选择不记录，避免 S 级文案/样式修复被账本负担拖慢。`patch_round` 记录当前周期的修补轮次；所有等级默认最多 3 轮修补。达到上限仍无法通过验证时进入 `BLOCKED`，报告已尝试内容、证据和所需决策，不继续盲目试错。对用户只显示“已受阻”。
+
+`requires_human_ratification=true` 且 `ratified_by` 为空的决策会在 `【提测】` gate 和 `READY_SHIP` guard 处阻止推进；Agent 不能用后续自然语言“继续”代替追认。
 
 ### 15.1 缺陷流程失败分类与修补轮次
 
@@ -973,13 +971,21 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 - `reviewable=false + raw_retained=false` 可记录和展示，但不能支撑 PASS；
 - 运行目录编号只允许数字，阻断路径穿越；
 - 负向 selfcheck 覆盖上述回归；
-- P0 试点优先 S/M、优先单仓，但保留现有跨仓能力，不为了试点砍掉真实缺陷所需的联动修复。
+- P0 自动流只承接 S/M 单仓缺陷；L 或跨仓缺陷保留分级结果并路由到现有 task-registry、task MCP、worktree 和长任务执行规约，不在本脚本里复制第二套流程。
+
+## 18.2 v0.9 试点闸门补齐
+
+- `CLAIMED` 必须记录飞书 `[agent-claim]` 评论引用、操作者和认领时间；接管同样要求新 claim 评论证据；
+- `kind=db` 证据写前必须通过 policy + run scope 检查，并记录 policy/scope hash、表、操作、access mode、host/account ref 和写授权 ID；
+- 验证矩阵必须按仓库覆盖 `fix`、`regression`、`boundary` 三类；不适用时用 `SKIPPED + skipped_reason`，不能只写一条修复行为；
+- `requires_human_ratification=true` 且未追认的决策不得通过 `【提测】` 或进入 `READY_SHIP`；
+- 上述四类规则加入负向 selfcheck；P0 功能冻结，真实试点期间不再扩字段或命令。
 
 ## 19. 后续实施顺序
 
 1. 本收敛稿已完成评审，进入真实缺陷试点。
 2. 已创建 `_templates/state.schema.json`、`_templates/report.md`，并在 `policies/` 下落第一版不可变 policy 和决定记录；base policy 只到 schema 层，run scope 的每张表必须逐项列出 confirmation 和 evidence，scope 为空不得试跑。
-3. 已实现 `scripts/bugflow-state.mjs` 的受控事实写入、精确 gate、阶段产物 guard、真实 Git 与 evidence 校验、版本化 policy 执行、cycle 归档、报告渲染和失败分类；`state.schema.json` 在每次读写时执行，未知字段和 `patch_round>3` 直接拒绝。`verify-repo` 校验 HEAD、origin、base ancestor、干净工作区和 planned scope；`verify-evidence` 校验 manifest 路径、SHA256、验证矩阵证据引用、reviewable/raw_retained；`review_hash`、`diff_hash` 和 `verification_hash` 由脚本计算；提测 gate 只绑定候选提交、评审、验证和数据 scope，不绑定授权后才产生的 merge/deployed SHA。用 `node scripts/bugflow-state.selfcheck.mjs` 做离线正负向回归，已覆盖风险降级、非法初始阶段、部署 SHA、缺失证据引用和不可复核证据冒充 PASS。
+3. 已实现 `scripts/bugflow-state.mjs` 的受控事实写入、精确 gate、阶段产物 guard、真实 Git 与 evidence 校验、版本化 policy 执行、cycle 归档、报告渲染和失败分类；`state.schema.json` 在每次读写时执行，未知字段和 `patch_round>3` 直接拒绝。`verify-repo` 校验 HEAD、origin、base ancestor、干净工作区和 planned scope；`check-data-write` 校验 DB 写前 policy/scope；`verify-evidence` 校验 manifest 路径、SHA256、验证矩阵证据引用和 reviewable/raw_retained；`review_hash`、`diff_hash` 和 `verification_hash` 由脚本计算。用 `node scripts/bugflow-state.selfcheck.mjs` 做离线正负向回归，已覆盖风险降级、非法初始阶段、部署 SHA、DB 越权写入、三类验证缺失、claim 证据缺失、未追认决策和不可复核证据冒充 PASS。
 4. 已增加安全 `.gitignore`：只忽略 `evidence/raw/` 和本机 `local/` 映射，不忽略 `state.json`、`report.md`、`manifest.json`。
 5. 已将 `agent-delivery/bugfix-runs/SKILL.md` 设为唯一操作真源，并由 `scripts/sync-bugfix-skill.mjs --check/--write` 生成 Codex / Cursor / Trae 三份适配副本；三份副本禁止手工维护。
 6. 在同一个发布步骤中更新 `fe-manual-confirm-push.mdc`，明确 `【进入开发】` 只授权独立 fix 分支 push、不授权 dev/生产；修改该规则前向用户重新确认 2026-11-05 的人工确认裁定，并记录批准。
