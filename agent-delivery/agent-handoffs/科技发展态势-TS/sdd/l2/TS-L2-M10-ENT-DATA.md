@@ -14,7 +14,7 @@
 
 | # | 决策项 | 本叶方案（会签/监管人可否） |
 |---|---|---|
-| D1 库名 | 变更链+主表落库 | **`gkxlumenx_dwd`**（Python 写侧现有库；已对照 algo-mysql-connection-info 查重——gkxlumenx_dwd 在五业务库清单内无撞名；**非** Java 平台库）。**写者=Python 单写者先行**（OI-A03-05 推荐档；DN-07 若推翻按退路迁移，沿 LAYER 演变先例记档） |
+| D1 库名 | 变更链+主表落库 | **〔2026-11-10 改判〕中台库 `demo_gkxlumenx_dwd` / `demo_gkxlumenx_ads`**：依库边界 2026-10-19（开发写入不进产线库 `gkxlumenx_*`），监管人 human:刘剑锋 确认迁库，见 `TS-L2-M10-ENT-DB-DEMO-L01.md`；下列原方案作废存档——~~**`gkxlumenx_dwd`**（Python 写侧现有库；已对照 algo-mysql-connection-info 查重——gkxlumenx_dwd 在五业务库清单内无撞名；**非** Java 平台库）。**写者=Python 单写者先行**（OI-A03-05 推荐档；DN-07 若推翻按退路迁移，沿 LAYER 演变先例记档）~~ |
 | D2 主表分层 | DWD 持有+ADS 镜像 vs 单层 | **两层**（C02 INT-C-TECH-180 建议）：主表 `dwd.technology_master`（真源）+ ADS 镜像（Java 只读面） |
 | D3 ADS 投影 | 复用 graph_node/edge vs 新建 | **新建同构** `gkxlumenx_ads.graph_entity_node` / `graph_entity_edge`（前缀 entity 区分技术–技术图投影；复用需核 as-built 承载，新建边界干净）——会签可否 |
 | D4 Demo 落点 | Demo 投影 | `demo_gkx_chain` + demo ADS 实例（结构同正式；storage README §5.1） |
