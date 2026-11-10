@@ -63,3 +63,23 @@
 ### 结论（第二轮）
 
 验收单 `POL-L2-DS10-CMP-DEMO-ACCEPT-LOOP` 回 `ready`（未收尾，不签 done）。第三轮待 `POL-L2-DS10-CMP-DEMO-FIX-R20261110-DATA` 完成并签收后重测 215/216/217（断言脚本改期望即用）。**重点：用户报障的 213 新旧对比数据侧已验证通过**，前端下拉修复（`a255d94`）部署生效后即可演示。
+
+## 运行 2026-11-10 第三轮（期望重冻结后复测，样本满足）
+
+- 前置：`POL-L2-DS10-CMP-DEMO-FIX-R20261110-DATA` 本会话代跑完成（human:hzw「检查并签收」；self_claim 先例同 TREND 刷新单）。用例 215/216/217 期望按现行读面重冻结（14 行部门 / 头条 20184 / 时点 2026-11-10 / 217 新模板句），查库时间行注明批次来源。
+- 样本满足：**是**（停止：完成）
+
+### 逐行结果（第三轮，`cmp_round3.py` 重新发请求：26 PASS / 0 FAIL / 1 SKIP）
+
+| 需规 | 请求 | HTTP | 实测 | 判定 |
+|---|---|---|---|---|
+| 213 | GET `/panorama/version-diff?policy_id=18363390&publish_date_a=2022-04-06&publish_date_b=2022-06-15`（兼探测） | 200 | records 3 行，新增/修改/删除摘要逐字一致 | ✅ |
+| 214 | GET `/panorama/{18363390,18407696}/detail?dimensions=申报条件,申报材料` | 200 | 两政策申报条件/材料逐字一致 | ✅ |
+| 215 | GET `/panorama/stats?kind=all` | 200 | 14 行（四键行+新增 4 部门 8 行清单一致）；头条 20184 | ✅ |
+| 216 | GET `/panorama/stats?kind=all&benchmark_scope=国内先进地区&benchmark_object=北京市&benchmark_object=广东省&compare_field=支持力度` | 200 | 省级 31 行；110000/440000 时点 2026-11-10、值 58、dim_key 支持力度；裸 kind=all 力度块空 | ✅ |
+| 217 | GET `/panorama/benchmark-report?benchmark_object=北京市&benchmark_object=广东省&compare_field=支持力度` | 200 | 两行四段与重冻结期望逐字一致 | ✅ |
+| 218 | POST `/panorama/jobs` `policy_intensity` | 未发 | 写型任务，验收轮不签发；表内现数用例已冻结 | ⏭ SKIP |
+
+### 结论（第三轮）
+
+样本满足，本轮子任务已签收（`POL-L2-DS10-CMP-DEMO-FIX-R20261110-DATA` = done）。计划状态行已回写。验收单 `POL-L2-DS10-CMP-DEMO-ACCEPT-LOOP` 按 §6.5.2 改 `done`（操作人 `human:hzw`）。本模块 LOOP 收尾。
