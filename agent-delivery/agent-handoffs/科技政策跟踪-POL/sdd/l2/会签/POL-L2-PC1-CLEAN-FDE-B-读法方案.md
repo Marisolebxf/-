@@ -2,7 +2,7 @@
 
 # POL-L2-PC1-CLEAN-FDE-B · 602 定档与读法方案（波次 B）
 
-- 起草：`agent:arch-agent`，**待 `data-agent` / `api-agent` 对抗审稿**
+- 起草：`agent:arch-agent`，**待** `data-agent` **/** `api-agent` **对抗审稿**
 - 日期：2026-11-10
 - 所属：FDE 试点 602（`POL-L2-PC1-CLEAN-FDE-L01`，波次 B，《产品实现规程》§4.2.4）
 - 输入真源：说明书 PC-1「602 系统引用政策源数据清洗」2026-11-10 版（功能点 602-1～8）
@@ -145,6 +145,7 @@
 4. **增量最小**：只新建 1 张 ADS 表；`governance/results` 资源不换，只改条件；display 加一个 Feign 方法。
 
 D 与说明书 602 现文的出入（须 product-agent 回写说明书）：
+
 - 「element 按这些 `id` 只读上表两张 ODS」→ 改为「候选由 Python 读 ODS 检索；element 只读 ADS 命中事实表」。
 - 「对照第 6 项已落库的清洗事实」→ 第 6 项无此事实（§3.1），改为「对照本叶新增的规则校验事实表」。
 - 「不新建清洗管道」→ 需改：新增的是**只读校验作业**（不改 ODS / DWD，只写 ADS 事实表），不是重做贴源或 Mapping。
