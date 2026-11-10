@@ -1,4 +1,4 @@
-﻿# 多智能体任务队列（机器可读）
+# 多智能体任务队列（机器可读）
 # coordinator-agent 每轮选取 status=ready（或 legacy pending）且 depends_on 均已 done 的 leaf 派单
 # 认领字段名词与流程：agent-delivery/task-claiming-guide.md
 # 监管人真名花名册：agent-delivery/team-roster.yaml
@@ -63319,7 +63319,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 45000
     user_story: "US-DS-POL-07"
-    note: "波次C审稿齐：product异议4 + arch异议5。停机待监管人决策卡：档位轻/中、再抽允许/禁用、603-qry-1本波/后波。未写异议闭合、未派D。"
+    note: "波次D本地635a053：政策选择+结构化抽取+两表seed；type-check/自检绿。未push（ahead1 behind1）。开工波次E合规用例。"
     depends_on:
       - "POL-L2-PC1-STRUCT-ARCH"
     collaborators:
@@ -63344,14 +63344,14 @@ tasks:
       - "轻档 product+arch 两签闭合；影响清单清零"
       - "lumen-ui-science-pc 治理页按裁定落地；抽取逻辑对齐中台抽取条款（经 display parse/clauses）；自检绿；前端推送经监管人确认"
       - "合规演示用例覆盖本叶新功能点并完成 §6.5 冒烟"
-    update_time: "2026-11-10T23:18:15+08:00"
   - id: POL-FACTOR-GAPFILL-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-10T15:34:43.772Z"
     last_seen_at: "2026-11-10T15:34:43.772Z"
     lock_until: "2026-11-10T19:34:43.772Z"
     claimed_by: "agent:data-agent"
-    title: "政策支持强度构成四维（资金/税收/土地/人才）gapfill mock 灌数 + 中台灌数页 + 展示端读通"
+    claimed_by: "agent:data-agent"
+    note: "开工（本会话代跑，监管人已确认 self-claim + 全链范围）。另：user-task-registry 独立实例误建同 ID 单一張，无删除工具，已在本实例重建为准。"
     status: "in_progress"
     agent: "agent:data-agent"
     epic: "POL-FACTOR-GAPFILL"
@@ -63362,7 +63362,6 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 180000
-    note: "开工（本会话代跑，监管人已确认 self-claim + 全链范围）。另：user-task-registry 独立实例误建同 ID 单一張，无删除工具，已在本实例重建为准。"
     collaborators:
       - "agent:frontend-agent"
     touched_files:
@@ -63417,3 +63416,48 @@ tasks:
       - "POL-L2-DS12-EST 用例 233 行期望按新格式重冻结；模拟灌数跑 §6.5 对照 233 通过"
       - "handoff 落 agent-handoffs/科技政策跟踪-POL/"
     update_time: "2026-11-10T23:35:14+08:00"
+    update_time: "2026-11-10T23:32:34+08:00"
+  - id: DEVOPS-LUMEN-SVC-CI-SPEED-L01
+    cost_warn: "green"
+    actual_cost: 0
+    model_used: "composer-agent-router"
+    actual_tokens: 95000
+    evidence: "agent-delivery/agent-handoffs/平台基建-PLATFORM/DEVOPS-LUMEN-SVC-CI-SPEED-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-10T15:33:44.189Z"
+    last_seen_at: "2026-11-10T15:33:44.189Z"
+    lock_until: "2026-11-10T23:33:44.189Z"
+    claimed_by: "agent:devops-agent"
+    title: "lumen-svc-platform CI 加速：按变更增量 build/package，未改服务跳过直至 auto deploy"
+    status: "ready_to_sign"
+    agent: "devops-agent"
+    epic: "E-PLATFORM"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "crosscut"
+    task_type: "spike"
+    subcoord: "platform-cicd"
+    graph_role: "leaf"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "spike Phase A+方案完成，ready_to_sign 待 human:淮政玮 签收"
+    touched_files:
+      - "repos/lumen-svc-platform/.gitlab-ci.yml"
+      - "repos/lumen-svc-platform/scripts/**"
+      - "gkx-orchestration/agent-delivery/cicd-pipeline.md"
+    design_refs:
+      - "agent-delivery/cicd-pipeline.md"
+      - "repos/lumen-svc-platform/.gitlab-ci.yml"
+      - "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/4735"
+    definition_of_done:
+      - "对照 pipeline 4735 给出各 stage/job 耗时拆解与瓶颈 Top3（含 backend:build 全量 verify、每服务再 clean package、cache 关闭）"
+      - "调研业界最佳实践并写方案卡：Maven reactor 增量 / path rules / needs:optional / Docker layer cache / BuildKit / 远程缓存；对照 Gradle/Bazel/Nx affected 思路在本 monorepo 的可落地性"
+      - "给出可落地的 GitLab CI 改造方案（分 Phase）：Phase A 只 build/package 变更模块；Phase B 未变更服务自动 skip package 但仍允许下游 auto deploy 用已有 digest/latest；Phase C 保留 FULL_PIPELINE/REBUILD_ALL 全量逃生口"
+      - "明确安全边界：共享模块（common/bom/父 POM）变更必须扇出；jar git.commit.id 校验与跳过策略如何共存；禁止静默部署错版本"
+      - "落地最小可验证改动（优先 rules:changes 或脚本算 affected modules）并在 dev 跑通至少 1 条「只改单服务 → 仅该服务 package+deploy」证据链；更新 cicd-pipeline.md"
+      - "handoff 含前后对比（预计/实测分钟数）、风险、回滚（REBUILD_ALL/FULL_PIPELINE）、ponytail 自检行"
+    update_time: "2026-11-10T23:42:51+08:00"
+
+
+
