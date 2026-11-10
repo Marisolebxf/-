@@ -13,7 +13,7 @@
 | 标签筛选 | 否 | 结构化概览按 `auto_tags` 拣 |
 | 政策 id（`policyId`） | 否；**演示默认一条可演** | 总控 §1.2。返回该政策结构化摘要；不改标签体系树/字段映射总表的全库读法 |
 
-**FDE 补段（轻档，2026-11-10）**：治理页「结构化抽取」复用已有 `POST /display/v1/policy/parse/clauses`（body `policy_id`；与拆解页/中台转发 enrich 同一资源）。**不新开**第三条公开资源，不改本分册字段表。抽取成功后仍再拉同条 `GET …/governance/results?policyId=` 刷新摘要（`hasClauses`）。对齐说明书「#### 603」与 `POL-L2-PC1-STRUCT-ARCH` §1。
+**FDE 补段（中档，2026-11-10；异议闭合 1A）**：治理页「结构化抽取」复用已有 `POST /display/v1/policy/parse/clauses`（body `policy_id`；与拆解页/中台转发 enrich 同一资源）。**不新开**第三条公开资源，不改本分册字段表。已结构化**允许再抽**（2A）；成功后仍再拉同条 `GET …/governance/results?policyId=` 刷新摘要（`hasClauses`）。**603-qry-1 本波不验收**（3A）。对齐说明书「#### 603」与 `POL-L2-PC1-STRUCT-ARCH` §1.1。
 
 ## 2. 内部委托
 

@@ -5,13 +5,13 @@
 
 ## 1. 定档
 
-**轻。** 仍在「智能政策库构建 · 结构化」同一页签；主路径与数据源不变；抽取复用已有 `POST /display/v1/policy/parse/clauses`（display → Feign `clauseEnrich` → Python `/internal/policy/clauses/enrich`，写回 ADS `policy_text_parse`）；摘要仍读 `GET …/governance/results?policyId=`；两表 Wave0 前端 seed，不新建 ADS。控件/门控在同区块内调整，不抬到新读口条件。不到「中」（无数据源/读口条件变化）、不到「重」（需规叶不增删、IA 不改）。
+**中。** 监管人 2026-11-10 裁定 **1A 升中**（见 `603-STRUCT-FDE-C-异议闭合.md`）：同页签内「选 → 抽 → 看」闭环与再抽门控、摘要失败保留、两表 seed 边界须按中档交付（线框版本号 `vFDE-603-2026-11-10` + 监管人书面复核），技术路径仍复用已有 `POST /display/v1/policy/parse/clauses`（display → Feign `clauseEnrich` → Python `/internal/policy/clauses/enrich`）与 `GET …/governance/results`，不新建 ADS、不抬新读口。不到「重」（需规叶不增删、IA 不改）。
 
 ## 2. 动哪些层
 
 | 层 | 本轮 |
 |---|---|
-| 展示前端（`lumen-ui-science-pc` `views/policy/governance`） | **动（主）**：标签「政策选择」+ 可搜；同行「结构化抽取」；未结构化不加载摘要；live 适配器灌两表 seed |
+| 展示前端（`lumen-ui-science-pc` `views/policy/governance`） | **动（主）**：标签「政策选择」+ 可搜；同行「结构化抽取」；未结构化不加载摘要；live 适配器灌两表 seed。**本波不验收** `603-qry-1` 页内「结构化政策快速检索」区块（后波；FE DoD / 合规用例不闭合该项） |
 | display `PolicyParseController` / `PolicyParseService` | **确认复用** `POST /v1/policy/parse/clauses`（网关后即 `/display/v1/policy/parse/clauses`）；本轮**不改**实现 |
 | STRUCT-API 正文 | **后波改文档**：声明治理页复用该资源作单条抽取触发；**不新开**第三条公开资源、不改 OpenAPI 字段表 |
 | element `governance/results`（含 `policySummary.hasClauses`） | **不动**实现；选政策 / 抽完后仍靠带 `policyId` 的同资源刷新摘要 |
@@ -52,6 +52,6 @@
 
 ## 6. 未闭合 / 停机项
 
-架构停机：**无**（不触新建正式库表、不触铁律豁免；轻档成立）。
+架构停机：**无**（不触新建正式库表、不触铁律豁免；中档成立）。
 
-决策卡素材 1 条（实现波次前产品可拍，不挡本波会签）：**已选且已结构化时，「结构化抽取」是否允许再抽**——说明书已留「由实现波次定稿」；读法默认再抽仍走同一 `parse/clauses`，摘要以再拉 `hasClauses` 为准，不另开资源。
+决策卡（监管人 2026-11-10 已拍 **2A**）：**已选且已结构化时，「结构化抽取」允许再抽**——进行中不可第二遍；失败保留上次成功摘要 + 失败提示；成功再拉 `hasClauses`；仍走同一 `parse/clauses`，不另开资源。
