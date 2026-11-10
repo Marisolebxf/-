@@ -12,7 +12,7 @@
 
 ## 2. 字符集
 
-表和全部字符列都是 `utf8mb4` / `utf8mb4_0900_ai_ci`。不留 `utf8mb4_unicode_ci`，不留 `utf8mb4_general_ci`。
+表和全部字符列都是 `utf8mb4` / `utf8mb4_general_ci`。不留 `utf8mb4_unicode_ci`，不留 `utf8mb4_0900_ai_ci`。连接也要用这一套，否则参数和字面量会和列报 `1267`。
 
 ## 3. 列从哪来
 

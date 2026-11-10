@@ -50,7 +50,7 @@ alwaysApply: true
 14. **功能验收缺项（D16）**：已登记的数据缺项，可在库 `gkxlumenx_gapfill` 建 `gapfill_` 前缀表，由 Python 用 LLM 或其他方式灌数。禁止写入 ODS / DWD / ADS / 供应方库。未闭合的 `Q-*` 按客户决策清单里已写的临时默认实施。缺项补齐并按该默认实算完成后，D4 不得再是 mock。细则 `data-lineage-policy.md` **§2.4**、`architecture-baseline.md` D16
 15. **合规算法冲突时分成「合规 / 合理」（D17）**：唐绍祖锁定的合规算法，其调用闭包除他本人外不得修改。业务探索与该条冲突时，全过程复制到新包再改副本，新路由不得复用锁定 URL。算法中台 `demo-ui-system-test` 的指标展示名成对出现：`{原名}-合规`、`{原名}-合理`。没有冲突的指标保持原名。`-合理` 不进合规展示台 `demo-ui-algo-apiview`。细则 `agent-delivery/算法合规与合理区分规约.md`
 16. **架构签收条件 = 可实现（D18）**：签收架构设计的条件是按稿可以落地。真算、真查或真模型做不到时，只接受新建 ADS 表，由 Python 把 mock 行写入该表，接口只读该表。禁止接口直接返回写死的 mock。这种表不进 ODS / DWD / 供应方库，也不算 D16 的 `gapfill_` 表。D4 仍是 mock。细则 `architecture-baseline.md` D18
-17. **字符集与排序规则一致（D19）**：MySQL 业务表用 `utf8mb4` / `utf8mb4_0900_ai_ci`。等值或 JOIN 的两侧列必须相同。`CREATE TABLE` 必须写明 `CHARSET` 和 `COLLATE`，禁止依赖库默认（现网库默认是 `utf8mb4_unicode_ci` 或 `utf8mb4_general_ci`）。禁止用 `COLLATE` 把一侧改成另一套规则来掩盖 `1267`。细则 `architecture-baseline.md` D19
+17. **字符集与排序规则一致（D19）**：MySQL 业务表和连接都用 `utf8mb4` / `utf8mb4_general_ci`。等值或 JOIN 的两侧列必须相同。`CREATE TABLE` 必须写明 `CHARSET` 和 `COLLATE`，禁止依赖库默认。PyMySQL 只写 `charset=utf8mb4` 时参数会变成 `utf8mb4_0900_ai_ci`，政策关联会再报 `1267`。禁止用另一套 `COLLATE` 掩盖。细则 `architecture-baseline.md` D19
 
 ## 3. 人机协作铁律（违反必拒）
 
