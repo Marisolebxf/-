@@ -18,7 +18,7 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 | 子目录 | 文档 | 状态 |
 |---|---|---|
 | [`mysql/dwd.md`](./mysql/dwd.md) | `policy_base_info` + `policy_industry_rel` + `policy_category_rel` + `policy_support_amount` + `policy_text_parse` + `script_state` | draft |
-| [`mysql/ads.md`](./mysql/ads.md) | ADS **16 张**：指标 9 + 图镜像 2 + NER 1 + 文本 3 + `policy_industry_rel` 镜像 | draft |
+| [`mysql/ads.md`](./mysql/ads.md) | ADS **16 张**：指标 9 + 图镜像 2 + NER 1 + 文本 3 + `policy_industry_rel` 镜像。另有 draft：`policy_accuracy_demo`，不计入 16，不是指标表 | draft |
 | [`mysql/gapfill.md`](./mysql/gapfill.md) | D16 缺项：`gapfill_policy_sz_effect`（`POL-IMPL-EFFECT-MOCK-VIA-UI-L01`）+ 拆解/对比/研报八张空表（`POL-MOCK-BTN-A01`） | draft |
 | [`nebula/`](./nebula.md) | hang **`demo_gkx_chain` only** | draft |
 | [`elasticsearch/`](./elasticsearch.md) | 本管线不施工独立索引 | draft 指针 |

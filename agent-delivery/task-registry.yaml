@@ -62962,13 +62962,18 @@ tasks:
       - "ponytail: full"
     update_time: "2026-11-10T12:55:27+08:00"
   - id: SYSINT-03-03A-WIRE-L01
+    cost_warn: "false"
+    actual_cost: 3.5
+    model_used: "glm-5.3"
+    actual_tokens: 260000
+    evidence: "[object Object]"
     supervised_by: "human:孔东"
     claimed_at: "2026-11-10T04:09:21.808Z"
     last_seen_at: "2026-11-10T04:09:21.808Z"
     lock_until: "2026-11-11T04:09:21.808Z"
     claimed_by: "human:孔东"
     title: "专题服务门户内容管理 · 页面布局与接口联调"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -62978,7 +62983,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 120000
-    note: "用户 2026-11-10 会话建单：承接 SYSINT-03-03A-L01 布局走查与写侧联调；human:孔东 认领监管。前置 SYSINT-03-03A-JAVA-L01（integration）、SYSINT-03-15-L01（ready_to_sign），就绪后转 ready 开工。"
+    note: |
+      联调通过：svc_* 七类写侧接线完成（persistRecord 单点→cms-ops 七端点 POST 化），机构 suggest 切真实主数据 /org-options；门户四页 Tab 按需拉取；政策 CMS 产业级联收敛两级+查询匹配修复。commit c6effe0 已推 origin/dev。handoff：agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-03-03A-WIRE-L01.md
     depends_on:
       - "SYSINT-03-03A-JAVA-L01"
       - "SYSINT-03-15-L01"
@@ -62994,4 +63000,257 @@ tasks:
       - "网关前缀、鉴权、统一用户中心入口联调通过；CRUD/发布/下架/软删端到端可用，机构 suggest 接主数据（不得长期仅 2 家 mock）"
       - "pnpm type-check + 本模块自检绿；handoff 含联调证据（curl/截图）、Design/D10 要点与 architecture 合规自检"
       - "联调通过在 note 写「联调通过」关键词；完工推 integration，不自行 done（签收权按监管人）"
-    update_time: "2026-11-10T12:15:37+08:00"
+    update_time: "2026-11-10T16:30:00+08:00"
+  - id: POL-L2-DS10-QRY-DEMO-ACCEPT-LOOP
+    blocked_by: "token 失效，已通知 human:淮政玮"
+    title: "多维检索查询演示样本循环验收"
+    status: "ready"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "2026-11-10 第二笔探测 200。单条件过滤对得上。197 组合、199、200、201 与用例快照不一致。已建 DATA 子任务。样本未满足，留 ready"
+    collaborators:
+      - "data-agent"
+      - "algorithm-agent"
+      - "api-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS10-QRY-DEMO-ACCEPT-LOOP.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-DS10-QRY-合规演示用例.md"
+    definition_of_done:
+      - "只读对照合规演示用例可演行：请求与期望一致，过滤能拣中该结果。覆盖不到的行不判通过"
+      - "401或424或令牌过期：验收单 blocked，通知 human:淮政玮，不建子任务"
+      - "缺口按 DATA/QUERY/ALGO 分类，每轮最多三张，子任务不改前端"
+      - "handoff 追加运行节；状态行回写后，样本满足且无未签收子任务，才由 human:淮政玮 改 done"
+    update_time: "2026-11-10T17:36:41+08:00"
+  - id: POL-L2-DS10-QRY-DEMO-FIX-R20261110-DATA
+    blocked_by: "人已批准删 6 条 SYN。本机连不上 10.50.11.76，192.168.88.43 无这 6 行，未删"
+    note: "开始补数：只软删多出来的 6 条合成政策，不改过滤，不改收藏"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-10T09:56:28.867Z"
+    last_seen_at: "2026-11-10T09:56:28.867Z"
+    lock_until: "2026-11-10T13:56:28.867Z"
+    claimed_by: "agent:data-agent"
+    title: "多维检索演示样本数据缺口"
+    status: "blocked"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    collaborators:
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-DS10-QRY-合规演示用例.md"
+    definition_of_done:
+      - "缺口键 policy_base_info.197_shenzhen_ai：现况组合检索 total=13，首条 SYN2026111037764efd04；用例预期 8 条且首条 18358631。199 三个 factor 与该 13 条同序。200 现况 total=3，首条 SYN20261107ee09ee9259；预期 2 条且首条 cn-gov-7041785"
+      - "缺口键 policy_category_rel.sci-tech：用例行覆盖不到，关联表还没有抽取结果"
+      - "缺口键 policy_favorite.user184：当前令牌用户历史最新 id=297、收藏只有 SYN202611078144c46dc8；用例预期用户 184 历史 id=42 且收藏 cn-gov-6999382、cn-gov-7067354。不要改其他用户的收藏"
+      - "缺口键 policy_share_export.missing：表不存在，202 覆盖不到。来源「地方」不进请求，本单不要靠灌数冒充这一行"
+      - "只改后端数据。禁止改前端，禁止改过滤口径来让快照对上。handoff 写明现值与用例预期"
+    update_time: "2026-11-10T18:07:20+08:00"
+  - id: LUMEN-UAC-TOKEN-REFRESH-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-10T08:52:40.622Z"
+    last_seen_at: "2026-11-10T08:52:40.622Z"
+    lock_until: "2026-11-11T08:52:40.622Z"
+    claimed_by: "human:孔东"
+    title: "前端自动刷新 token 接口调用优化 + Java 增加 token 校验接口（多仓 portal/auth 模块通用）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-PORTAL-IFRAME"
+    priority: "P1"
+    repo: "lumen-ui-*（多仓）+ lumen-svc-platform"
+    delivery_phase: "crosscut"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 250000
+    note: |
+      进度 2026-11-10：① Java /sso/check-token 已交付并推送（c99400f→c2de39a，Bearer 头鉴权版，测试5/5绿）——⚠️ 线上未生效属部署问题非代码问题：upms 为冷门服务，backend:image:upms 与 deploy:upms 绑定 FULL_PIPELINE=true，日常 pipeline 不构建不部署 upms，线上 jar 仍是 7f9abc1（actuator/info 已核实）。② lumen-ui-topic 已封装 checkSsoToken()（api/sso.ts）+ DefaultLayout keepalive 从 get-permission-info 换为 /sso/check-token，vue-tsc 绿，改动停在本地待人工确认推送。③ 上线方式已裁定（human:孔东）：不全量重启，等下次例行 FULL_PIPELINE 窗口蹭车。上线后验证：actuator/info commit 应为 c2de39a、mappings 含 /sso/check-token，再用真实门户 token 实测。
+    collaborators:
+      - "api-agent"
+    definition_of_done:
+      - "前端多仓（lumen-ui-* portal/auth 模块）自动刷新 token 调用优化：401/424 触发静默续期（refresh_token）、并发单飞（同一时刻仅一条刷新在跑）、续期成功后重放原请求、失败走既有会话过期/登出链路"
+      - "刷新/校验调用统一走 Java REST 封装接口（调用链：前端→Java→统一用户中心，前端不直连用户中心 admin-api）"
+      - "Java（lumen-svc-platform）新增 token 校验 REST 接口（对齐统一用户中心 1.3 check-token 语义，返回 user_id/user_type/tenant_id/scopes/exp），输出/更新前端调用文档入仓 docs/"
+      - "多仓复用同一套封装实现（第二处出现即封装），禁止各仓另起一套"
+      - "验证：前端仓三绿（type-check/自检/build）+ Java mvn 编译与接口自测通过；刷新单飞逻辑附最小自检（assert 演示或 node --test）"
+      - "handoff 提交 agent-handoffs/LUMEN-UAC-TOKEN-REFRESH-L01.md；前端仓改动推送前按 fe-manual-confirm-push 规约人工确认"
+    update_time: "2026-11-10T18:30:40+08:00"
+  - id: POL-L2-PC1-CLEAN-FDE-PY-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-PC1-CLEAN-FDE-PY-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-10T10:09:30.973Z"
+    last_seen_at: "2026-11-10T10:09:30.973Z"
+    lock_until: "2026-11-10T14:09:30.973Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "602 清洗 · Python 只读候选与五条判定收口"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "收口完成。GET /internal/policy/clean-candidates 与 POST /internal/policy/clean-judge 已按契约收口，测试绿，已推 origin/dev。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC1-CLEAN-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC1-CLEAN-ARCH.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC1-CLEAN-DATA.md"
+    definition_of_done:
+      - "GET /internal/policy/clean-candidates 与 POST /internal/policy/clean-judge 只 SELECT 演示贴源两表；海外搜索 SQL 不含 publish_code、ministry"
+      - "读取失败不是 0；准确性不在 clean-judge 里现算；scripts/mysql/policy_accuracy_demo.sql 不执行、不灌数"
+      - "tests/test_policy_clean_routes.py 绿；handoff 含 ponytail 行；不改 Java、不改前端"
+    update_time: "2026-11-10T18:14:57+08:00"
+  - id: POL-L2-PC1-CLEAN-FDE-JAVA-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-PC1-CLEAN-FDE-JAVA-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-10T10:09:31.542Z"
+    last_seen_at: "2026-11-10T10:09:31.542Z"
+    lock_until: "2026-11-10T14:09:31.542Z"
+    claimed_by: "agent:api-agent"
+    title: "602 清洗 · 展示层转发与领域服务只读收口"
+    status: "integration"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "display 与 element 编译与 PolicyCleanServiceTest 已绿，已推 origin/dev。未做联调确认。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC1-CLEAN-API.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC1-CLEAN-ARCH.md"
+    definition_of_done:
+      - "公开口为 GET /display/v1/policy/governance/clean-candidates 与 POST /display/v1/policy/governance/clean-execute；display 只调 element"
+      - "element Feign 服务名 lumen-algo-py，打 /internal/policy/clean-candidates 与 /internal/policy/clean-judge；不走 RemotePolicySyncClient，不打 demo-*"
+      - "失败是读取失败，不填 totalPolicyCount；不改原 governance/results；handoff 含 ponytail 行"
+    update_time: "2026-11-10T18:21:53+08:00"
+  - id: POL-L2-PC1-CLEAN-FDE-FE-L01
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-PC1-CLEAN-FDE-FE-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-10T10:09:32.296Z"
+    last_seen_at: "2026-11-10T10:09:32.296Z"
+    lock_until: "2026-11-10T14:09:32.296Z"
+    claimed_by: "agent:frontend-agent"
+    title: "602 清洗页签 · 选择政策与执行"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "未 push。清洗页签已改完，type-check 绿。lumen-ui-science-pc 9bb644c，handoff 533e287e。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/602-选择政策-线框.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/科技政策跟踪-系统详细设计说明书.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-PC1-CLEAN-API.md"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+    definition_of_done:
+      - "清洗页签把「演示政策」改成选择政策：搜索加政策 ID、多选、执行按钮；执行中锁住勾选、清空和规则开关；规则启停只在本页，重开六条都启用"
+      - "只调 GET /display/v1/policy/governance/clean-candidates 与 POST /display/v1/policy/governance/clean-execute；页眉仍走原 results；qualityAgg 不进本批"
+      - "USE_MOCK=false 不用 fixture 填数；pnpm type-check 绿；改动停在本地，不 push；handoff 含 ponytail 行与线框对照"
+    update_time: "2026-11-10T18:25:38+08:00"
+  - id: TS-M10-CASE-FILL-L01
+    cost_warn: "orange"
+    actual_cost: 11.8
+    model_used: "claude-opus-5-5"
+    actual_tokens: 560000
+    evidence: "agent-delivery/agent-handoffs/展示系统-合规演示用例/TS-M10-CASE-FILL-L01.md; agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-M10-合规演示用例.md"
+    supervised_by: "human:刘剑锋"
+    claimed_at: "2026-11-10T10:26:03.580Z"
+    last_seen_at: "2026-11-10T10:26:03.580Z"
+    lock_until: "2026-11-11T10:26:03.580Z"
+    claimed_by: "agent:coordinator-agent"
+    title: "科技发展态势-维护管理 M10 合规用例条件填充（现状数据调研+输入或选择条件零遗漏）"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: |
+      已完成：M10 用例 12→20 行零缺格（补序9、34–40逐叶），可演1/部分可演10/覆盖不到9/未填0；三路只读子智能体+网关实测47组，零写操作；遗留11项待监管人裁定（含 maintain 12 端点匿名可写、序5无图层开关、Top50截断、测试残留配置）。cost orange 待复盘。注意并行单 TS-L2-M10-ENT-DB-DEMO-L01 迁库后需复核 ENT 行数据
+    collaborators:
+      - "coordinator-agent"
+      - "frontend-agent"
+      - "api-agent"
+    touched_files:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-M10-合规演示用例.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/展示系统-第一批-索引.md"
+      - "agent-delivery/agent-handoffs/展示系统-合规演示用例/TS-M10-CASE-FILL-L01.md"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-M10-合规演示用例.md"
+      - "agent-delivery/产品实现规程.md#6.4"
+      - "agent-delivery/agent-handoffs/展示系统-合规演示用例/DISPLAY-合规演示用例-长任务总控.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-M10-LAYER-API.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-M10-ENT-API.md"
+    definition_of_done:
+      - "TS-L2-M10 覆盖表需规每条（序 5-8 图层配置、41-47 关键实体与关系、权限降级行；34-40 维护技术图谱写明不实现口径）都有行，零缺格"
+      - "输入或选择列为现状实测可选项全集（图层/分组/数据源类型/技术点/实体类型/排序维度/关系类型等），每个取值出自接口响应或只读库，非示例值、零编造"
+      - "请求列按界面值填好可直接调用；写接口只填请求不实发（防污染）；读接口 GET 实测证据（端点+状态+条数）写入 handoff"
+      - "数据情况列：可演带证据；覆盖不到写缺哪类数据并引既有缺口；mock/示范数据（示范研究机构-N 等）明确标出"
+      - "主路径一句话按可演行重写；展示系统-第一批-索引.md M10 行回填"
+      - "handoff agent-handoffs/展示系统-合规演示用例/TS-M10-CASE-FILL-L01.md 含 ponytail 行、探测记录、遗留问题、cost 四字段"
+    update_time: "2026-11-10T18:46:57+08:00"
+  - id: TS-L2-M10-ENT-DB-DEMO-L01
+    supervised_by: "human:刘剑锋"
+    claimed_at: "2026-11-10T10:45:29.143Z"
+    last_seen_at: "2026-11-10T10:45:29.143Z"
+    lock_until: "2026-11-11T10:45:29.143Z"
+    claimed_by: "agent:data-agent"
+    title: "维护管理 · 关键实体与关系 · 写回库迁至中台库 demo_gkxlumenx_dwd/ads（库边界 2026-10-19）"
+    status: "in_progress"
+    agent: "data-agent"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: 2
+    difficulty: "M"
+    estimated_tokens: 80000
+    user_story: "全景序41-47 写回链库边界合规（开发写入不进 gkxlumenx_*）"
+    note: |
+      2026-11-10 监管人 human:刘剑锋 确认：M10 维护页数据库走 demo_gkxlumenx_*（孔东「数据不走真实库」）。｜关联 TS-L2-M10-ENT-SEED-L01（pending_test，迁库后其数据落点随之变更）。｜2026-11-10 lumen-algo-py 7176a44（_schemas 跟随 ENTAN_MYSQL_*_DB→demo_，单测 16/16）已推 dev；demo_gkxlumenx_dwd/ads 建 12 表并整表复制产线现状（行数全等，R2 本地读逐字段一致 v22）；helm 不改；产线库残留未删（待监管人）。待 edu 部署后一次写操作验证落 demo_。handoff：agent-handoffs/科技发展态势-TS/TS-L2-M10-ENT-DB-DEMO-L01.md
+    touched_files:
+      - "vendor/entan-py/api/tech_graph_maintain_routes.py"
+      - "vendor/entan-py/scripts/seed_tech_graph_maintain.py"
+      - "vendor/entan-py/scripts/mysql/tech_graph_maintain.sql"
+      - "vendor/entan-py/test_graph_maintain.py"
+    design_refs:
+      - "agent-delivery/data/GDF/库边界-产线与中台-2026-10-19.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/sdd/l2/TS-L2-M10-ENT-DATA.md"
+    definition_of_done:
+      - "M10 写回链与 seed 默认库改为跟随 ENTAN_MYSQL_DWD_DB/ADS_DB（lumen helm=demo_gkxlumenx_*），GKX_M10_ENT_* 仍可覆盖；不再默认写 gkxlumenx_*"
+      - "DDL 在 demo_gkxlumenx_dwd/ads 幂等执行，不动其中既有 graph_node/graph_edge"
+      - "产线库 M10 现状数据原样复制到中台库（版本链/投影/overlay 一致），edu 页面切换后状态连续"
+      - "单测绿；edu R2 读 + 一次挂接/解挂写冒烟通过，且写入落 demo_*、gkxlumenx_* 行数不再变化"
+      - "产线库 gkxlumenx_* 中 M10 残留数据不删（清理另需监管人确认）；L2 DATA D1 / handoff 记档"
+    update_time: "2026-11-10T18:54:18+08:00"

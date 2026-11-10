@@ -2,148 +2,187 @@
 
 - 任务：`POL-L2-PC1-CLEAN-ARCH`
 - 日期：2026-11-04
-- 状态：起草完成，待四角色会签。会签未完成不挡签收
+- 重写：2026-11-10
+- 状态：已按当日裁定重写。本稿不写会签结论，不把本单标 done
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
-- 图：`POL-L2-PC1-CLEAN-ARCH-SEQ`（本叶新图，源文件无 frontmatter，记 `draft`）
+- 图：`POL-L2-PC1-CLEAN-ARCH-SEQ`（一张时序图，替换原来那张读主表和 `script_state` 的流图）
+- **本稿已按 2026-11-10 裁定重写**
 
-本叶只定政策数据治理二级「系统引用政策源数据清洗」的实现架构和整体流程。SRS 序号 **602**。用户故事 `US-DS-POL-07`。不写 OpenAPI 字段、请求体、响应体、枚举。那是 `POL-L2-PC1-CLEAN-API`。
+本叶只定政策数据治理二级「系统引用政策源数据清洗」的实现架构。SRS 序号 **602**。用户故事 `US-DS-POL-07`。口径是说明书「#### 602」与文末「已定」，以及 `会签/POL-L2-PC1-CLEAN-FDE-B2-读法方案.md` 的裁定清单和第 4.1 节。
 
-上游只引用，不改写：`政策数据治理.md` 602、说明书第 2 节 PC-1 与第 11.2 节、`sdd/调用链与边界.md`、`sdd/契约输入清单.md` 的 `governance/results`、`sdd/指标与501.md` 治理节、`survey/PC.md` PC-1。不新造 `metric_id`，不改 D4。
+中档。先出候选，点「执行」才有本批。没点不发本批。不写 OpenAPI 字段表，不写 SQL。那是后续 API 稿、数据稿的事。不新造 `metric_id`，不改 D4。准确性演示表用 `policy_accuracy_demo`，本稿不另起名。
 
-签收标准（`human:淮政玮`，说明书第 11 节）：可实现才签收。真算、真查或真模型做不到时，只接受新建表、把 mock 写入表、接口读表。不允许接口直接返回 mock。本叶按第 11.2 节写迁移之后的架构：**602 全程不建缺项表**，读的就是第 6 项已有的加工结果。
+签收标准仍是可实现。五条规则在一次请求里只读贴源做判定，结果留在响应里。准确性按 D18：Python 另行把演示行写入 `policy_accuracy_demo`，点「执行」时 element 只读这张表。display 不直连 Python，不直连库。不允许接口直接返回写死的演示数。
 
 ## 1. 范围
 
-602 是治理页的清洗看板。清洗、贴源、Mapping 全部在第 6 项数据工厂里已经发生或按既有计划发生，本二级不再实现一遍。前缀 `/display/v1/policy/`，资源只有一条：`GET /display/v1/policy/governance/results`。
+页在「智能政策库构建」的清洗页签。本叶只落实 602，不扩到 603、604、605。
 
-| 需规要点 | 本叶流程 |
-|---|---|
-| 采集接入、去重合并、格式标准化、噪声过滤 | 发生在第 6 项：贴源（ODS→DWD）与主表清洗。展示只呈现其结果 |
-| 数据质量校验规则 | 第 6 项 `script_state` 的状态枚举 `done/empty/no_match/degraded/failed/llm_unavailable` 就是已落库的校验结果。看板按状态聚合计数 |
-| 准确性、完整性、一致性 | 看板上的计数口径。不新造清洗质量 `metric_id`（调研已判未见，指标单不改挂） |
+候选来自演示贴源两表，库名用 `{ods}`，不写死成正式库。没有行的那一源，界面写「这一源还没有贴源数据」。
 
-## 2. 实现架构
+点「执行」之后才跑这一批。不建六条正式事实表。除准确性以外的五条（去重合并、格式标准化、噪声过滤、完整性校验、一致性校验）在这一次请求里判定，结果留在响应里。准确性单独走第 5 节的演示表，不和这五条混在一张表里。
 
-浏览器只打 `/display/v1/policy/**`。不改打 `/topic/v1/policy`，不打开算法中台页面，不打 `/v1/policy/**`。
+`script_state` 和 `policy_base_info` 移出 602 的清洗结果。页眉库级计数口径不动，见第 7 节。
 
-治理页契约只有三条资源。本二级只用 `governance/results` 这一条。`lineage-index`、`indicator-library` 分别由 604、605 两稿定，本叶不实现、不改挂。
+规则启停只在本页，不落库。见第 6 节。
 
-| 需规要点 | 资源 | 迁移后的读法 |
+## 2. 调用链
+
+浏览器只打 `/display/v1/policy/**`。前端只到 Java。浏览器不直连 Python，也不直连贴源。
+
+`gkxlumen-display` 只调 `gkxlumen-element`。display 不直连 Python，不直连库。候选和五条由 element 再 Feign 新建的只读内部路由，转到 Python。Python 只 SELECT 演示贴源。Java 不写贴源 SQL，不读供应方库 `gkx`。
+
+候选和「执行」都是新的公开读口，具体路径由 API 稿定。两者都不复用 `GET /display/v1/policy/governance/results`，避免 603 被一起改掉。内部都不复用 `GET /internal/policy/search`，也不复用 `RemotePolicySyncClient`。不打 demo 服务。候选检索和本批五条判定在 Python 里分成两条只读入口。
+
+准确性这条：点「执行」且当时这条规则启用时，`gkxlumen-element` 只读 `policy_accuracy_demo`。display 不读这张表，只把 element 读到的数放进同一次响应。Python 写入演示行发生在点击之外。
+
+trace 沿既有展示链走。display 往下游带 traceId。本叶不新设计观测点。
+
+| 动作 | 谁读 | 读哪里 |
 |---|---|---|
-| 清洗看板 | `GET /display/v1/policy/governance/results` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_dwd` / `gkxlumenx_ads` 已有加工结果 |
+| 候选 | display 只调 element；element Feign Python 只读 | `{ods}.dwd_policy_base`、`{ods}.dwd_global_policy_base` |
+| 执行 · 五条 | 同上，新建只读内部路由 | 同上两表，只 SELECT，结果留在这次响应 |
+| 执行 · 准确性 | element 只读。display 不直连库 | `policy_accuracy_demo` |
+| 页眉库级计数 | 原读法，本叶不改 | 原资源里的库内政策数，不走候选读口 |
 
 ```mermaid
-flowchart LR
-  fe["治理页 · 清洗看板 602"]
-  gw["gkxlumen-gateway"]
-  bff["gkxlumen-display"]
-  el["gkxlumen-element"]
-  dwd["gkxlumenx_dwd.policy_base_info / script_state"]
-  ads["gkxlumenx_ads.policy_text_parse / policy_industry_rel"]
-  fe --> gw --> bff --> el
-  el --> dwd
-  el --> ads
+sequenceDiagram
+  participant FE as 浏览器
+  participant GW as 网关
+  participant DP as gkxlumen-display
+  participant EL as gkxlumen-element
+  participant PY as Python
+  participant ODS as 演示贴源
+  participant ADS as policy_accuracy_demo
+
+  Note over FE,ODS: 先候选。候选不是清洗。没点执行不发本批
+  FE->>GW: 搜索或按政策 ID
+  GW->>DP: 新的公开候选读口
+  DP->>EL: 只调 element。不直连 Python，不直连库
+  EL->>PY: Feign 新建只读路由。不复用 RemotePolicySyncClient，不打 demo
+  PY->>ODS: 只读国内表与海外表
+  PY-->>EL: 候选，或该块读取失败
+  EL-->>DP: 候选
+  DP-->>FE: 候选。批次明细仍空
+
+  Note over FE,ADS: 点执行才有本批。只用点下去那一刻的勾选和开关
+  FE->>GW: 点执行
+  GW->>DP: 新的公开执行读口
+  Note over FE,DP: 执行中。勾选、清空、开关锁住。不能再点第二遍
+  DP->>EL: 只调 element
+  EL->>PY: Feign 五条只读判定
+  PY->>ODS: 只 SELECT。不写贴源、DWD、ADS、供应方库、script_state
+  PY-->>EL: 五条留在这次响应。缺列则命中 null，状态不写成功
+  EL->>ADS: 准确性当时启用才只读。这次不现造
+  EL-->>DP: 五条，以及启用时的演示数
+  DP-->>FE: 这一次的批次明细。准确性标明演示
+  Note over PY,ADS: 演示行由 Python 另行写入，不在这次点击里
+  Note over DP,FE: 读取失败和命中 null 是两种响应。不造 0。不写入 governance/results
 ```
 
-| 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
-|---|---|---|---|---|
-| 第 6 项 GDF 作业（贴源、Mapping、C1/C2）按既有单继续加工 | `gkxlumen-element` 只读，经 `gkxlumen-display` 原样返回 | 用户打开治理页清洗看板 | 无行则看板空；`script_state` 无行则质量计数空，不造 0 | 不重开 GDF 包。不加表不加字段。不调用 `polan` 函数。不把 demo 本地数组当接口 |
+## 3. 候选
 
-`gkxlumen-display` 不直连库，不直连 Python，不写算法，不写 nGQL。`E-E7-POLICY-M1-L06` 不是本页路径。
+候选可以发生在点「执行」之前。候选不是清洗，不发本批请求。
 
-这条资源不进异步任务管道，不进 `gkxlumen-topic-async-service`。602 是同步读面。同一条资源上的页眉件数（挂 `M_POLICY_TOTAL_COUNT`，D4=mock）与 603 的结构化结果由同一资源返回，实现时按区块分发，本叶不改它们的读法。
+`{ods}` 指向演示贴源，不写成正式库名。两表分源读，不合成一把。
 
-trace 沿既有展示链走。display 往 element 带 traceId。本叶不新设计观测点。
-
-## 3. 输入条件
-
-条件只来自需规原文。下表是用户会做的操作，不是参数名，也不是响应字段。参数名留给 `POL-L2-PC1-CLEAN-API`。
-
-| 用户操作 | 必选 | 落到哪次读取 |
+| 源 | 表 | 界面上看见 |
 |---|---|---|
-| 打开治理页 | 无 | `governance/results` 一次读出：清洗质量计数、结构化结果、页眉「库内政策数」 |
-| 按处理状态筛选质量明细（如只看 `failed`） | 否，不选则读全部 | 同一条资源的质量明细区块。枚举就是 `script_state.status` 已有六值，接口单不得另造状态名 |
-| 选择政策查看该政策清洗/校验明细（总控 §1.2） | 否，不选则读全部 | 同一条资源的质量明细按 `policyId` 拣行。规则总表与批次总览仍全库；页眉 KPI 不变。参数名留给 API 单 |
+| 国内 | `{ods}.dwd_policy_base` | 标题，辅以文号、发文部门、发布日期。业务键是政策 ID |
+| 海外 | `{ods}.dwd_global_policy_base` | 标题，辅以发布机构、发布日期。业务键是政策 ID |
 
-### 3.1 条件从哪来
+两条入口进同一个多选集合，国内、海外分块：按标题、文号或发文部门做智能搜索；按政策 ID 精确查。只出现贴源里的政策。
 
-对照了展示原型和算法中台。展示原型 `demo-ui-science` 的政策治理演示（`PolicyGovernance.jsx` 一类）数据来自本地数组；算法中台 `demo-ui-system-test` 的「条款结构化」联调台（`POL-CLAUSE-BATCH-L01`）是加工操作台，不是看板。两者都不迁成本叶读面。
+这一源一条行都没有，写「这一源还没有贴源数据」。这一源有数据但 ID 对不上，是另一句，不改去政策主表找。候选这一块读不出来，标明「读取失败」。已经显示出来的区块保持原样。
 
-| 展示要素 | 现有实现里实际有什么 | 本叶怎么用 |
-|---|---|---|
-| 清洗质量 KPI | 演示页把 `M_POLICY_VALIDITY_RATE` 挂在清洗 KPI 上 | 不沿用。该指标口径是有效率、`srs_refs` 为空、挂点在全景筛选，调研已判本叶不挂。质量计数直接从 `script_state` 按状态聚合，无指标号 |
-| 处理状态 | `script_state.status` 六值：`done/empty/no_match/degraded/failed/llm_unavailable` | 就是看板的质量枚举。`degraded`（LLM 降级）与 `failed` 是「噪声过滤/校验未过」的可观测事实 |
-| 页眉件数 | `M_POLICY_TOTAL_COUNT`（STAT，D4=mock） | 保留。由本资源附带返回，不替代清洗质量 |
+一条都没选时，「执行」不可用，规则区和批次明细都空，不造 0。已经勾上、还没点「执行」：规则行可以看、可以开关，批次明细仍空，不写成功，也不写成已经清洗过。
 
-## 4. 整体流程
+## 4. 点执行之后
 
-1. 用户打开治理页。前端调 `governance/results`。display 委托 element 读 DWD 主表与 `script_state`。
-2. element 按 `script_state` 的 `job` 与 `status` 聚合：每作业总数、各状态行数。无行则质量区块空。
-3. element 读 `policy_text_parse`（ADS，条款已合并）与 `policy_industry_rel` 的行数与最新批次，作为「已有加工结果」的结构化概览。无行则该块空。
-4. 页眉件数按 `M_POLICY_TOTAL_COUNT` 的读法返回。对齐前数值仍是 mock。
-5. 任何区块失败，不清空其他区块已经返回的内容。
+没点「执行」不发本批。点下去之后按第 4.1 节：一次同步请求里算完再返回。不进 `gkxlumen-topic-async-service`，不新建清洗 Job。
 
-## 5. 数据来源（只读，不建表）
+请求只用点下去那一刻的勾选（来源 + 政策 ID）和当时启用的规则。停用的规则仍留在页上，标明停用，这一次不计入。返回前界面是执行中，同一选择不再发第二次。
 
-| 库 | 表 | 用途 | 加工者 |
-|---|---|---|---|
-| `gkxlumenx_dwd` | `policy_base_info` | 政策主数据。行数即页眉件数的数据基础 | 第 6 项贴源 |
-| `gkxlumenx_dwd` | `script_state` | 清洗/加工校验状态（C1/C2 每政策一行）。质量计数的唯一真源 | 第 6 项 C1/C2 |
-| `gkxlumenx_ads` | `policy_text_parse` | 结构化条款（C2 合并）。603 的结果，本叶只取行数概览 | 第 6 项 C2 |
-| `gkxlumenx_ads` | `policy_industry_rel` | 产业关联（C1）。概览行数 | 第 6 项 C1 |
+五条只允许 SELECT 第 3 节那两张贴源表，国内和海外分源。禁止对 `{ods}`、DWD、ADS、供应方库 `gkx`、`script_state` 做写入。不改贴源里的原文。不读政策主表。去重合并在界面上是「应合并」，格式标准化是「待标准化」。
 
-602 **不新建任何表**。`gkxlumenx_gapfill` 不加表。清洗事实全部已在第 6 项的表里。
+缺列的那一条作用范围不参与命中：该规则命中 null，状态不写成功，不造 0，走「无加工事实」。缺列不走「读取失败」。更新时间留空。有可判定的结果时，状态按下面三句，不展开成算法。判定结果只留在这次响应里，不落成六条正式事实表。
 
-### 5.1 迁移边界
+能判定的都过了、没有失败样例，是成功。既有过的也有失败样例，或者有的能判定、有的仍无加工事实，是部分。能判定的都带失败样例，是失败。读取失败和无加工事实不占用这三句。
 
-任务 note 要求：算法中台已有对应实现的沿用 lumen 设计；没有的，把合理部分迁到 lumen 链路。
+两种响应分开：
 
-| 算法中台/原型已有 | 本叶迁移后的架构 |
+| 情况 | 响应 |
 |---|---|
-| `demo-ui-system-test` 条款结构化联调台（`/policy/clauses`，`polan/clause_job.py`，limit 100） | 留在算法中台，是加工操作台。展示侧不迁它的页面与操作，只读它写出的 `ads.policy_text_parse` 结果 |
-| `GDF-POLICY-WORKPACK-v2` 的 `scripts/policy_c1_industry.py`、`policy_c2_clauses.py` | 留在第 6 项，是数据工厂作业。展示不重跑、不重开包 |
-| demo 演示页本地数组（清洗 KPI、质量条目） | 不迁数据，只迁「看板区块」的信息结构：总数、按状态计数、最新批次时间。数值一律来自上面的表 |
-| 旧 v1 37 列目标表、`polan/ods_sync.py` | 已废弃，不迁 |
+| 这一次请求完成，该规则仍然没有可判定的结果 | 命中 null。状态不写成功。不造 0 |
+| 转发失败或超时 | 该块标明「读取失败」。不用命中 null 代替。不返回 0。不写入 `governance/results` |
 
-lumen 不直连 demo 服务，不把 demo 路径写成对外入口。浏览器仍只打 `/display/v1/policy/**`。
+已经显示出来的区块保持原样，不改写成成功，也不改写成「没有加工事实」。
 
-## 6. 点名排除
+跑完之后再改勾选或开关：不自动再跑。旧结果留着，标明还不是最新一次。再点「执行」才按新的那一刻重跑。清空选择后回到未选。
 
-| 资源或序号 | 不纳入本二级的原因 |
+刷新之后，执行中只在这次请求还没结束时成立。五条结果不在库里，刷新后不能从库里把这一批再读出来。
+
+风险：去重要拿已选行对贴源比对，同步可能超时，超时按读取失败返回。多实例若只在单个进程里挡住第二次，另一实例仍可能再收一次。本叶不另做分布式锁。
+
+## 5. 准确性演示表
+
+准确性不参加第 4 节的现算，也不和五条结果放进同一张表。
+
+单独一张 D18 的 ADS 演示表，表名 `policy_accuracy_demo`。本稿不另起名。这张表不进 ODS、DWD、供应方库，也不是 `gapfill_` 表，也不是那六条正式事实表。
+
+Python 另行写入演示行，不在点击这次里现造。点「执行」且当时准确性启用时，element 只读 `policy_accuracy_demo`。display 不直连库，也不直连 Python，只把读到的数放进这一次的批次响应。没点「执行」之前不出现命中。
+
+界面标明演示。不得写成已经按原文核过。读这张表失败时，准确性这一块标明「读取失败」，不改用写死的数顶上。
+
+## 6. 规则启停
+
+六条一次列全：去重合并、格式标准化、噪声过滤、完整性校验、一致性校验、准确性校验。
+
+启停只在本页，不落库，不用 `script_state` 存开关。重新打开时六条都启用。勾上之后、没点「执行」之前可以开关。
+
+正在跑时，页面锁住勾选、清空和规则开关。「执行」不能再点出第二遍。请求仍只用点下去那一刻的勾选和开关。
+
+## 7. 页眉与相邻资源
+
+页眉库内政策数的 `metric_id` 仍是 `M_POLICY_TOTAL_COUNT`，D4 保持 mock。它不走第 2 节的候选读口，也不随这一选改口径。本叶不重写它的读法。`results` 里的计数不得写成已经接入，也不得替代本批条数。
+
+`GET /display/v1/policy/governance/results` 继续给 603。清洗页从这条只取页眉这个数。`qualityAgg` 不进 602 的批次明细，不再挂 `M_POLICY_VALIDITY_RATE`。602 的候选和执行不走这条资源。
+
+`governance/lineage-index`、`governance/indicator-library` 仍分别由 604、605 两稿定。本叶不实现、不改挂。
+
+不重开 GDF。第 6 项里 C1、C2 的既有作业留在第 6 项。`script_state` 记的是那两个作业的留痕，对不上这六条规则，602 不读它，也不写它。
+
+## 8. 明确不做
+
+- 不写 OpenAPI 字段表，不写 SQL。演示表不另起名，用 `policy_accuracy_demo`。
+- 不新造 `metric_id`。不改 D4。
+- 不把演示数写成已经按原文核过。
+- 不建六条正式事实表。点「执行」这次不写 `{ods}`、DWD、ADS、`gkx`、`script_state`。
+- 不复用 `governance/results`，不复用 `/internal/policy/search`，不复用 `RemotePolicySyncClient`。
+- display 不直连 Python，不直连库。不打 demo 服务。
+- 不把 `results` 里的计数写成已经接入，不拿它替代本批条数。`qualityAgg` 不进 602 的批次明细，不挂 `M_POLICY_VALIDITY_RATE`。
+- 不让 Java 读贴源，不让 Java 读供应方库。
+- 不重开 GDF，不改 603、604、605 的资源。
+- 不把本单标 done，不在本稿写会签结论。
+- 浏览器不改打专题 URL，不直连 Python。
+
+## 9. 可实现
+
+照着做就能落地，不依赖再选一档跑法。
+
+| 需规要点 | 可实现的做法 |
 |---|---|
-| `governance/lineage-index` | 604 的资源，由 `POL-L2-PC1-LINEAGE-ARCH` 定 |
-| `governance/indicator-library` | 605 的资源，由 `POL-L2-PC1-INDLIB-ARCH` 定 |
-| `M_POLICY_VALIDITY_RATE` | 口径是有效率，`srs_refs` 为空，挂点在全景。不把它改挂成清洗质量 |
-| 重开 GDF / 新建清洗 Job | 第 6 项边界：展示不重做清洗、贴源、Mapping |
-| 第 7 项读图 | 602 不涉及图 |
-| 算法中台联调台操作 | 加工在算法中台，展示页只有看板，无操作按钮 |
+| 多源候选 | display 只调 element。element Feign Python 只读演示贴源两表。没有行的源按「这一源还没有贴源数据」 |
+| 采集接入、去重合并、格式标准化、噪声过滤、完整性、一致性 | 点「执行」后，同一条链只读判定，结果留在响应里。缺列则命中 null，状态不写成功，不造 0。成功、部分、失败按第 4 节三句 |
+| 准确性 | Python 另行写入 `policy_accuracy_demo`。点「执行」时 element 只读。display 不直连这张表。界面标明演示 |
+| 规则启停 | 只在本页。正在跑时锁住勾选、清空、开关 |
 
-## 7. 明确不做
+接口直接返回写死的质量分数，或把准确性演示数和五条现算写进同一张未命名的正式事实表，本单不可签收。
 
-- 不写 OpenAPI 字段表、请求体、响应体、枚举。
-- 不新造 `metric_id`。不改 D4。清洗质量计数没有指标号，以行聚合呈现。
-- 浏览器不改打专题 URL。不把 `E-E7-POLICY-M1-L06` 写成展示路径。
-- 不重开 GDF，不写 nGQL，不加 ODS、DWD、ADS、gapfill 表。本叶零建表。
-- 不在本叶改 Python 或 Java。
-- 不改 `FE-POL-04A`，不新建前端单。
-- 不改说明书、调研分册，不改 WBS 里的四单拆分。
-- 不允许接口函数直接返回 mock。质量计数对不上真实行时显示空，不造 0。
-- 不会签。不把本单标 done。
+## 变更记录
 
-## 8. 签收条件：可实现
+2026-11-10：按当天裁定重写。贴源改由 Python 只读、Java 只转发。候选和执行改为新的公开读口，与 `governance/results` 拆开。不建六条正式事实表；除准确性外，点执行后在这一次请求里判定，结果留在响应里。准确性单独用一张演示表，表名由 DATA 稿定，本稿不起名。`script_state` 和政策主表移出本叶的清洗结果。页眉库级计数口径不动。
 
-602 的链路现在就能照着做：element 三条只读 SQL（主表计数、`script_state` 聚合、ADS 概览），display 委托返回。写成「以后再建清洗管道」，或者接口返回写死的质量分数，本单不可签收。
-
-| 需规要点 | 可实现的做法 | 现在就能用的依据 |
-|---|---|---|
-| 采集接入、去重、格式标准化、噪声过滤 | 呈现第 6 项已落库的结果，不自建管道 | `GDF-POLICY-WORKPACK-V1-L01` integration、`GDF-POLICY-WORKPACK-V2-L01` done，贴源与 C1/C2 已在跑 |
-| 数据质量校验规则 | 按 `script_state.status` 六值聚合计数 | 表结构与枚举已在 `GDF-POLICY-WORKPACK-v2` `sql/script_state.sql` 定稿 |
-| 准确性、完整性、一致性 | 看板计数 = 各状态行数占比；无行显示空 | 同上，真实行存在即可出数，无需新算法 |
-
-迁移边界：算法中台联调台留在 `demo-ui-system-test`，继续服务加工。展示不打 `/internal/*`，不消费 `/v1/policy/**`。
-
-## 9. 表与灌数
-
-**本叶零建表、零灌数。** 说明书第 11.2 节对 602 的裁定就是「只读第 6 项已有结果」，不列灌数单。604、605 各有一张 gapfill 表与灌数单，分别归它们自己的架构稿。
+2026-11-10：波次 C。调用链改为浏览器只打 display，display 只调 element。候选和五条由 element Feign 新建只读内部路由，不复用 `RemotePolicySyncClient`，不打 demo 服务。准确性仍由 element 只读 `policy_accuracy_demo`。页眉 `metric_id` 仍是 `M_POLICY_TOTAL_COUNT`，D4 保持 mock。清洗页从 `results` 只取这个数，`qualityAgg` 不进批次明细。成功、部分、失败按选定三句写入第 4 节。
