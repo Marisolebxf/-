@@ -1,7 +1,7 @@
 # 飞书缺陷 AI Native P0 设计稿
 
-> 状态：P0 收敛版 v0.9.1（修复写入时序与历史证据复核，准备进入真实缺陷试点）
-> 版本：v0.9.1
+> 状态：P0 收敛版 v0.9.2（修复写入时序与历史证据复核，简化 gate 命令词，准备进入真实缺陷试点）
+> 版本：v0.9.2
 > 日期：2026-11-10
 > 基线案例：飞书缺陷【2238】
 > 设计原则：对外只保留两个口令和一次业务验收，内部校验严格但由 Agent 自动执行
@@ -10,7 +10,7 @@
 
 ## 1. 已确认决策
 
-1. 使用两个精确人工门：`【进入开发】`、`【提测】`。
+1. 使用两个精确人工门：`进入开发`、`提测`。
 2. 缺陷按 S/M/L 分级，简单缺陷保持轻流程。
 3. 运行账本放在：
 
@@ -19,7 +19,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 ```
 
 4. `state.json`、`report.md` 和 `evidence/manifest.json` 入库；原始截图、日志、临时输出默认不入库。
-5. `【提测】`的含义是：合入 `dev`、触发 CI、自动部署 dev 并完成 dev 复测；不授权生产部署。
+5. `提测`的含义是：合入 `dev`、触发 CI、自动部署 dev 并完成 dev 复测；不授权生产部署。
 6. 最终验收仍不增加第三个聊天口令。验收动作以飞书状态迁移作为业务落点，但 P0 将其定义为**策略级约束，不是防伪事实**：MCP 使用当前用户身份，Agent 不能证明迁移一定由真人点击。Agent 不得根据“可以”“继续”“看起来没问题”自行把缺陷置为 `RESOLVED`，也不得在 `AWAITING_ACCEPTANCE` 阶段调用 `transition_state`；账本记录 `acceptance.mode=policy_only` 和 `operator_verified=false`。
 7. 自然语言不得解锁开发或提测 gate。仅“接管【编号】”可触发明确的人工接管流程，且接管不等于解锁 gate。
 8. Gate 不在飞书逐条写评论。P0 只保留三个外部锚点：认领时的 `[agent-claim]` 评论、提测时的脱敏总结评论、最终验收总结评论；其余 gate 由 `state.json` 和校验器负责。
@@ -31,8 +31,8 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 普通同事只需要完成四件事：
 
 1. 发起处理或确认目标缺陷；
-2. 审阅诊断与改动边界，发送 `【进入开发】`；
-3. 审阅提测包，发送 `【提测】`；
+2. 审阅诊断与改动边界，发送 `进入开发`；
+3. 审阅提测包，发送 `提测`；
 4. 在 dev 完成一次业务验收，并在飞书完成状态迁移。
 
 以下内容全部由 Agent、Skill 和校验器自动完成：
@@ -102,7 +102,7 @@ CANCELLED
 
 转换约束：
 
-- `init` 只能创建 `INTAKE` 或 `CLAIMED`，其余阶段必须由 `advance` 产生；首次 `【进入开发】` 只能在 `READY_DEV` 批准，`IMPLEMENTING` 只用于已批准 gate 失效后的重新确认。
+- `init` 只能创建 `INTAKE` 或 `CLAIMED`，其余阶段必须由 `advance` 产生；首次 `进入开发` 只能在 `READY_DEV` 批准，`IMPLEMENTING` 只用于已批准 gate 失效后的重新确认。
 - `REOPENED → DIAGNOSED`：必须重新确认根因、影响范围和需规依据，不能直接回到实现或提测。
 - `DEV_VERIFY_FAILED → ROLLED_BACK`：只回退本次 run 的候选提交；无法安全回退时进入 `BLOCKED`。
 - `ROLLED_BACK → REOPENED`：生成回退证据后等待重新诊断。
@@ -167,7 +167,7 @@ P0 以**当前会话中的精确聊天消息**作为两个 gate 的授权来源�
 ```json
 {
   "source": "chat",
-  "token_text": "【进入开发】",
+  "token_text": "进入开发",
   "approved_by": "current_user",
   "approved_at": "ISO-8601",
   "claim_id": "claim-...",
@@ -179,8 +179,8 @@ P0 以**当前会话中的精确聊天消息**作为两个 gate 的授权来源�
 
 有效口令必须满足以下形式之一：
 
-- 整条消息只有 `【进入开发】` 或 `【提测】`，前提是当前会话只有一个 active run；
-- `【进入开发】<auto_number>` / `【提测】<auto_number>`，用于区分多个 active run。
+- 整条消息只有 `进入开发` 或 `提测`，前提是当前会话只有一个 active run；
+- `进入开发<auto_number>` / `提测<auto_number>`，用于区分多个 active run。
 
 口令必须绑定当前 `work_item_id` 和 `claim_id`。历史会话、其他任务、飞书旧评论、引用口令的问答、否定句和自然语言同意均不能替代。同一会话存在多个 active run 时，未带编号的口令一律不生效。
 
@@ -188,7 +188,7 @@ P0 以**当前会话中的精确聊天消息**作为两个 gate 的授权来源�
 
 同一 `claim_id` 在同一执行机、同一会话内可以连续推进，不重复要口令。若换会话或换机器，旧 gate 标记为 `needs_reconfirm`；只有重新展示当前绑定对象并由用户再次发送对应精确口令后才能继续。这样既支持恢复，也禁止从历史 `state.json` 继承旧授权。
 
-### 6.2 `【进入开发】`
+### 6.2 `进入开发`
 
 请求口令前必须已经展示：
 
@@ -217,7 +217,7 @@ P0 以**当前会话中的精确聊天消息**作为两个 gate 的授权来源�
 - 修改生产配置；
 - 把飞书缺陷置为 `RESOLVED`。
 
-### 6.3 `【提测】`
+### 6.3 `提测`
 
 请求口令前必须已经展示：
 
@@ -238,21 +238,21 @@ P0 以**当前会话中的精确聊天消息**作为两个 gate 的授权来源�
 - 在 dev 环境进行真实复测；
 - 更新飞书提测评论。
 
-GitLab 保护分支、MR approve 和仓库发布规则优先；`【提测】`不绕过保护规则，若仍需人工 approve，该人工操作和结果必须记录在 `ship_package`。P0 不授权生产部署，生产发布继续走独立人工发布流程。
+GitLab 保护分支、MR approve 和仓库发布规则优先；`提测`不绕过保护规则，若仍需人工 approve，该人工操作和结果必须记录在 `ship_package`。P0 不授权生产部署，生产发布继续走独立人工发布流程。
 
-`【提测】`不是“只生成提测包”，而是明确授权下面这一整条共享 dev 发布链：
+`提测`不是“只生成提测包”，而是明确授权下面这一整条共享 dev 发布链：
 
 ```text
 合并候选提交 → push dev → Pipeline → dev rollout → dev 真实复测
 ```
 
-因此用户在看到 `【提测】` 请求时必须被告知：本次操作会影响共享 dev 环境。Pipeline、rollout 或 dev 复测失败时：
+因此用户在看到 `提测` 请求时必须被告知：本次操作会影响共享 dev 环境。Pipeline、rollout 或 dev 复测失败时：
 
 1. merge 冲突、MR 被拒或 push 失败：dev 尚未变化，进入 `BLOCKED` 或回到 `READY_SHIP`，记录 `failure_stage`，不走回退流程；
 2. 已进入部署链但 Pipeline/rollout 失败：进入 `DEV_VERIFY_FAILED`，检查是否已经产生 dev 变更；未产生则修复后重跑，已产生则只 revert 本次 run 的提交；
 3. dev 复测失败：进入 `DEV_VERIFY_FAILED`，先按缺陷流程的 `failure_class` 分类；C1–C6 只作为映射参考，确认是本次修复问题后再回退；
 4. 回退只允许 `git revert`，禁止 `git reset`、force push 和回退他人提交；merge commit 使用 `git revert -m 1`；
-5. 记录回退 commit、Pipeline、回退后的健康检查和证据；旧 `ship` gate 自动失效，重新修复后必须重新发送 `【提测】`；
+5. 记录回退 commit、Pipeline、回退后的健康检查和证据；旧 `ship` gate 自动失效，重新修复后必须重新发送 `提测`；
 6. 无法安全回退时进入 `BLOCKED`，等待人工处置。
 
 ### 6.4 验收
@@ -403,7 +403,7 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 4. 旧 gate 全部失效；
 5. 从当前合法阶段继续，不重复已完成但未改变结论的诊断步骤。
 
-“接管”只解决执行权，不解锁 `【进入开发】` 或 `【提测】`。
+“接管”只解决执行权，不解锁 `进入开发` 或 `提测`。
 
 没有接管口令时，即使原执行会话已崩溃，也不得猜测“应该已经过期”。Agent 只能报告当前 claim 和接管方式。接管后必须保留旧 claim 的评论、gate 和 commit 记录，不能删除审计链。
 
@@ -452,7 +452,7 @@ M 级不得跳过评审。
 - 全量净室评审；
 - 必要时按 `长任务执行规约.md` 段 E 处理。
 
-L 级不得跳过评审，也不得通过普通 `【进入开发】` gate 绕过既有长任务流程。
+L 级不得跳过评审，也不得通过普通 `进入开发` gate 绕过既有长任务流程。
 
 ## 9. 运行账本与证据存储
 
@@ -591,7 +591,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
     "enter_dev": {
       "status": "approved",
       "source": "chat",
-      "token_text": "【进入开发】",
+      "token_text": "进入开发",
       "claim_id": "claim-20261110-001",
       "gate_hash": "sha256:...",
       "bound_to": {
@@ -639,7 +639,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
   "resume_condition": null,
   "next_action": {
     "owner": "human",
-    "action": "审阅提测包并发送【提测】"
+    "action": "审阅提测包并发送提测"
   }
 }
 ```
@@ -660,7 +660,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 | `commit_sha` | 证据对应的代码提交 |
 | `environment` / `collected_at` / `summary` | 环境、采集时间和脱敏摘要 |
 
-`kind=db` 额外必须包含 `operation`、`database`、`schema`、`table`、`access_mode`、`host_ref`、`account_ref`、`enter_dev_gate_hash`、`data_policy_hash`、`data_scope_hash`、`write_checked_at` 和 `write_authorization_id`。写前必须在有效 `【进入开发】` gate 下调用受控检查；当 gate、policy、scope、表、账号或 host 不匹配时拒绝，不生成可记录的证据授权。
+`kind=db` 额外必须包含 `operation`、`database`、`schema`、`table`、`access_mode`、`host_ref`、`account_ref`、`enter_dev_gate_hash`、`data_policy_hash`、`data_scope_hash`、`write_checked_at` 和 `write_authorization_id`。写前必须在有效 `进入开发` gate 下调用受控检查；当 gate、policy、scope、表、账号或 host 不匹配时拒绝，不生成可记录的证据授权。
 
 规则：
 
@@ -678,7 +678,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 
 ## 12. 数据与 Mock 策略
 
-数据策略采用 **B 语义：base policy 限定 environment/host/database/schema，run scope 负责逐表白名单，deny-by-default**。基础策略放在 `.cursor/skills/feishu-bugfix/policies/<version>.yaml`，不直接授权具体表；每个 run 的 `state.json.data_policy.scope.tables` 必须从诊断链路中逐表枚举，并记录 `status/confirmed_by/confirmed_at/evidence_ref`。`state.json.data_policy` 保存 `policy_version`、`policy_hash`、`scope_hash` 和实际表清单，`scope` 为空或未确认时拒绝写入。任何 DB 写入前必须已有有效 `【进入开发】` gate 并执行 `check-data-write`，检查 policy、scope、environment、host、database、schema、table、operation、access mode 和 account；任何未命中 `policy + scope` 的写操作都必须进入 `BLOCKED`。旧 run 不得因为新 policy 覆盖而失去可复核性。
+数据策略采用 **B 语义：base policy 限定 environment/host/database/schema，run scope 负责逐表白名单，deny-by-default**。基础策略放在 `.cursor/skills/feishu-bugfix/policies/<version>.yaml`，不直接授权具体表；每个 run 的 `state.json.data_policy.scope.tables` 必须从诊断链路中逐表枚举，并记录 `status/confirmed_by/confirmed_at/evidence_ref`。`state.json.data_policy` 保存 `policy_version`、`policy_hash`、`scope_hash` 和实际表清单，`scope` 为空或未确认时拒绝写入。任何 DB 写入前必须已有有效 `进入开发` gate 并执行 `check-data-write`，检查 policy、scope、environment、host、database、schema、table、operation、access mode 和 account；任何未命中 `policy + scope` 的写操作都必须进入 `BLOCKED`。旧 run 不得因为新 policy 覆盖而失去可复核性。
 
 当前策略版本：`demo-2026-11-10`，阶段为 `demo_until_cutover`。
 
@@ -832,7 +832,7 @@ forbidden:
 
 普通实现选择不记录，避免 S 级文案/样式修复被账本负担拖慢。`patch_round` 记录当前周期的修补轮次；所有等级默认最多 3 轮修补。达到上限仍无法通过验证时进入 `BLOCKED`，报告已尝试内容、证据和所需决策，不继续盲目试错。对用户只显示“已受阻”。
 
-`requires_human_ratification=true` 且 `ratified_by` 为空的决策会在 `【提测】` gate 和 `READY_SHIP` guard 处阻止推进；Agent 不能用后续自然语言“继续”代替追认。
+`requires_human_ratification=true` 且 `ratified_by` 为空的决策会在 `提测` gate 和 `READY_SHIP` guard 处阻止推进；Agent 不能用后续自然语言“继续”代替追认。
 
 ### 15.1 缺陷流程失败分类与修补轮次
 
@@ -878,7 +878,7 @@ forbidden:
 
 - 真源分层：本文件是流程/权限真源，`SKILL.md` 是操作真源，`templates/state.schema.json` 是机器结构真源，`policies/` 是数据授权真源；发生冲突时按本文件 → Skill → schema → policy 的顺序解释；
 - Skill 的唯一完整来源是 `.cursor/skills/feishu-bugfix/`；Cursor 直接加载 canonical 包，Codex / Trae 只生成薄适配入口；`.cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --write` 生成适配入口，`--check` 只做漂移检测；禁止把客户端入口同时当作真源编辑；
-- `.cursor/rules/fe-manual-confirm-push.mdc` 必须与 Skill 在同一个发布步骤中更新，补充 `【进入开发】` 对独立 fix 分支的权限映射；该规则包含 2026-11-05 用户裁定，修改前必须重新获得用户确认，不能由 Agent 自行改文；
+- `.cursor/rules/fe-manual-confirm-push.mdc` 必须与 Skill 在同一个发布步骤中更新，补充 `进入开发` 对独立 fix 分支的权限映射；该规则包含 2026-11-05 用户裁定，修改前必须重新获得用户确认，不能由 Agent 自行改文；
 - 业务仓 `AGENTS.md` 只增加一行指针，说明缺陷流程以本文件为准，不复制整套规则；
 - `fe-manual-confirm-push.mdc` 已废止旧 AGENTS 中无条件“完工即推”的口径；在旧条款尚未清理前，以中心规则为准，禁止从历史派单或旧会议纪要推断推送例外；
 - 当前已知 `repos/lumen-ui-science-pc/AGENTS.md` 仍存在与中心规则冲突的旧推送口径，实施时用脚本定位并替换为统一指针，不能靠 Agent 记忆逐仓处理；
@@ -893,8 +893,8 @@ forbidden:
 - `dev` 是集成分支；
 - 当前业务仓主要以 `dev` 分支触发 CI/CD；fix 分支/MR 通常没有远端 pipeline，因此提测前只能声称完成仓内自检/本地验证，不能声称“分支 CI 通过”；
 - push `dev` 后在条件满足时自动构建、部署 dev 并 rollout；
-- `【提测】`包含这条自动部署链；
-- GitLab 保护分支、MR approve 和仓库发布规则优先，`【提测】`不绕过保护规则；
+- `提测`包含这条自动部署链；
+- GitLab 保护分支、MR approve 和仓库发布规则优先，`提测`不绕过保护规则；
 - dev 复测失败时先分类，再只 revert 本次 run 的提交，生成 `DEV_VERIFY_FAILED` 和回退证据；
 - P0 不包含生产自动发布。
 
@@ -946,7 +946,7 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 
 - 5 个缺陷均有有效、已入库的 `state.json` 和 `report.md`；
 - manifest 能追溯到 commit、命令、退出码和环境；
-- 0 次未授权 push/MR、merge 或 deploy；本地代码修改是否在 `【进入开发】` 前发生，由本机 pre-change 审计或后续 hook 校验，外部 GitLab audit 只能证明提交后的行为；
+- 0 次未授权 push/MR、merge 或 deploy；本地代码修改是否在 `进入开发` 前发生，由本机 pre-change 审计或后续 hook 校验，外部 GitLab audit 只能证明提交后的行为；
 - 0 次生产写入或 run scope 外写入；共享数据库账号无法归因到单个 run 时，必须标记为审计限制，不得宣称已证明 0 次；
 - 0 次因 gate 复用导致跨缺陷或跨 commit 授权；
 - 每次 `advance` 都有可追溯的 `validate-gate` 结果，换会话/换机器和 REOPEN 均会触发重新确认；
@@ -978,7 +978,7 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 - `CLAIMED` 必须记录飞书 `[agent-claim]` 评论引用、操作者和认领时间；接管同样要求新 claim 评论证据；
 - `kind=db` 证据写前必须通过 policy + run scope 检查，并记录 policy/scope hash、表、操作、access mode、host/account ref 和写授权 ID；
 - 验证矩阵必须按仓库覆盖 `fix`、`regression`、`boundary` 三类；不适用时用 `SKIPPED + skipped_reason`，不能只写一条修复行为；
-- `requires_human_ratification=true` 且未追认的决策不得通过 `【提测】` 或进入 `READY_SHIP`；
+- `requires_human_ratification=true` 且未追认的决策不得通过 `提测` 或进入 `READY_SHIP`；
 - 上述四类规则加入负向 selfcheck；P0 功能冻结，真实试点期间不再扩字段或命令。
 
 ## 18.3 v0.9.1 写入时序修复
@@ -988,6 +988,13 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 - 风险升级到 L 时 gate 直接 `invalidated`，不再保留可重新确认的假路径；
 - selfcheck 增加 `verify-repo → check-data-write` 成功、风险升级后历史 DB 证据仍可复核两条回归。
 
+## 18.4 v0.9.2 gate 命令词简化
+
+- 精确 gate 从带中文方括号的展示形式改为裸词 `进入开发` / `提测`；
+- 裸词仍必须作为完整消息发送，或使用 `进入开发<auto_number>` / `提测<auto_number>` 区分多个 active run；
+- “不要进入开发”“可以进入开发吗”等包含命令词的自然语言仍不得解锁；
+- 文档、Skill、校验器和 selfcheck 必须在同一版本更新，禁止客户端自行兼容旧括号格式。
+
 ## 19. 后续实施顺序
 
 1. 本收敛稿已完成评审，进入真实缺陷试点。
@@ -995,6 +1002,6 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 3. 已实现 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs` 的受控事实写入、精确 gate、阶段产物 guard、真实 Git 与 evidence 校验、版本化 policy 执行、cycle 归档、报告渲染和失败分类；`state.schema.json` 在每次读写时执行，未知字段和 `patch_round>3` 直接拒绝。`verify-repo` 校验 HEAD、origin、base ancestor、干净工作区和 planned scope；`check-data-write` 校验 DB 写前 policy/scope；`verify-evidence` 校验 manifest 路径、SHA256、验证矩阵证据引用和 reviewable/raw_retained；`review_hash`、`diff_hash` 和 `verification_hash` 由脚本计算。用 `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs` 做离线正负向回归，已覆盖风险降级、非法初始阶段、部署 SHA、DB 越权写入、三类验证缺失、claim 证据缺失、未追认决策和不可复核证据冒充 PASS。
 4. 已增加安全 `.gitignore`：只忽略 `evidence/raw/` 和本机 `local/` 映射，不忽略 `state.json`、`report.md`、`manifest.json`。
 5. 已将 `.cursor/skills/feishu-bugfix/` 设为唯一完整 Skill 包，并由 `.cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --check/--write` 生成 Codex / Trae 薄适配入口；Cursor 直接加载 canonical 包，适配入口禁止手工维护。
-6. 在同一个发布步骤中更新 `fe-manual-confirm-push.mdc`，明确 `【进入开发】` 只授权独立 fix 分支 push、不授权 dev/生产；修改该规则前向用户重新确认 2026-11-05 的人工确认裁定，并记录批准。
+6. 在同一个发布步骤中更新 `fe-manual-confirm-push.mdc`，明确 `进入开发` 只授权独立 fix 分支 push、不授权 dev/生产；修改该规则前向用户重新确认 2026-11-05 的人工确认裁定，并记录批准。
 7. 用真实新缺陷试跑，不回溯修改已关闭缺陷【2238】；共享数据库账号归因、独立失败注入环境和更细审计留到 P1。
 8. 根据 5 个试点结果决定是否进入 P1 和自动触发。

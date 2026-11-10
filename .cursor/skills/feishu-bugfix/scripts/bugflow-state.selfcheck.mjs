@@ -103,7 +103,7 @@ try {
   const missingFactsState = makeState({ phase: 'READY_DEV' });
   assert.throws(() => approveGate(missingFactsState, {
     gate: 'enter_dev',
-    message: '【进入开发】123',
+    message: '进入开发123',
     binding: {},
     sessionId: 'session-1',
     machineId: 'machine-1',
@@ -207,7 +207,7 @@ try {
   };
 
   assert.throws(
-    () => approveGate(structuredClone(state), { gate: 'enter_dev', message: '【进入开发】', binding: enterBinding }),
+    () => approveGate(structuredClone(state), { gate: 'enter_dev', message: '进入开发', binding: enterBinding }),
     /GATE_CONTEXT_REQUIRED/,
   );
   assert.throws(
@@ -218,14 +218,20 @@ try {
   );
   assert.throws(
     () => approveGate(structuredClone(state), {
-      gate: 'enter_dev', message: '【进入开发】', binding: enterBinding, sessionId: 'session-1', machineId: 'machine-1', activeRuns: 2,
+      gate: 'enter_dev', message: '【进入开发】123', binding: enterBinding, sessionId: 'session-1', machineId: 'machine-1',
+    }),
+    /GATE_TOKEN_INVALID/,
+  );
+  assert.throws(
+    () => approveGate(structuredClone(state), {
+      gate: 'enter_dev', message: '进入开发', binding: enterBinding, sessionId: 'session-1', machineId: 'machine-1', activeRuns: 2,
     }),
     /GATE_TOKEN_INVALID/,
   );
 
   approveGate(state, {
     gate: 'enter_dev',
-    message: '【进入开发】123',
+    message: '进入开发123',
     binding: enterBinding,
     sessionId: 'session-1',
     machineId: 'machine-1',
@@ -283,7 +289,7 @@ try {
   assert.equal(state.phase, 'IMPLEMENTING');
   assert.throws(() => approveGate(structuredClone(state), {
     gate: 'enter_dev',
-    message: '【进入开发】123',
+    message: '进入开发123',
     binding: enterBinding,
     sessionId: 'session-1',
     machineId: 'machine-1',
@@ -293,7 +299,7 @@ try {
   assert.equal(reconfirmState.gates.enter_dev.status, 'needs_reconfirm');
   approveGate(reconfirmState, {
     gate: 'enter_dev',
-    message: '【进入开发】123',
+    message: '进入开发123',
     binding: { ...enterBinding, risk_level: 'M' },
     sessionId: 'session-1',
     machineId: 'machine-1',
@@ -433,14 +439,14 @@ try {
   });
   assert.throws(() => approveGate(unratifiedState, {
     gate: 'ship',
-    message: '【提测】',
+    message: '提测',
     binding: shipBinding,
     sessionId: 'session-1',
     machineId: 'machine-1',
   }), /DECISION_RATIFICATION_REQUIRED/);
   approveGate(state, {
     gate: 'ship',
-    message: '【提测】',
+    message: '提测',
     binding: shipBinding,
     sessionId: 'session-1',
     machineId: 'machine-1',
@@ -576,7 +582,7 @@ try {
   assert.equal(validateGate(subsetState, 'enter_dev', { sessionId: 'session-1', machineId: 'machine-1' }).ok, false);
   assert.throws(() => approveGate(structuredClone(subsetState), {
     gate: 'enter_dev',
-    message: '【进入开发】123',
+    message: '进入开发123',
     binding: enterBinding,
     sessionId: 'session-1',
     machineId: 'machine-1',

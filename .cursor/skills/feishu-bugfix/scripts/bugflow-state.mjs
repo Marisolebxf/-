@@ -15,7 +15,7 @@ import { parseArgs } from 'node:util';
 import { validateJsonSchema } from './lib/mini-json-schema.mjs';
 import { loadPolicy, matchTableToPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-export const VALIDATOR_VERSION = 'bugflow-state-p0-v4';
+export const VALIDATOR_VERSION = 'bugflow-state-p0-v5';
 export const SCHEMA_VERSION = 2;
 export const PROJECTION_VERSION = 'p0-v3';
 export const PHASES = [
@@ -59,8 +59,8 @@ const ALLOWED_TRANSITIONS = {
 };
 
 const TOKENS = {
-  enter_dev: '【进入开发】',
-  ship: '【提测】',
+  enter_dev: '进入开发',
+  ship: '提测',
 };
 
 const VERIFICATION_CATEGORIES = ['fix', 'regression', 'boundary'];
@@ -800,11 +800,11 @@ function nextActionFor(phase, owner = 'agent') {
   const actions = {
     CLAIMED: '完成复现、根因、反证、需规依据和影响范围，然后进入诊断完成。',
     DIAGNOSED: '提交改动范围、非目标、验证计划和回滚计划，创建 READY_DEV。',
-    READY_DEV: '展示【进入开发】绑定对象并取得精确口令。',
+    READY_DEV: '展示进入开发绑定对象并取得精确口令。',
     IMPLEMENTING: '完成改动并运行 verify-repo，然后提交评审。',
     REVIEWING: '完成全部仓库独立评审，PASS 后进入验证。',
     VERIFYING: '执行验证矩阵并运行 verify-evidence，形成提测包。',
-    READY_SHIP: '展示【提测】绑定对象并取得精确口令。',
+    READY_SHIP: '展示提测绑定对象并取得精确口令。',
     SHIPPING: '完成合并、dev 部署和流水线记录。',
     DEV_VERIFYING: '完成 dev 复测、验收步骤和提测总结。',
     AWAITING_ACCEPTANCE: '等待人工在飞书完成业务验收，只记录外部状态迁移。',
@@ -1040,7 +1040,7 @@ export function recordPlan(state, plan) {
   if (!normalEmpty(normalized.rollback_plan)) throw new Error('PLAN_INVALID: rollback_plan must not be empty');
   state.plan = normalized;
   if (state.gates.enter_dev.status === 'approved') state.gates.enter_dev.status = 'invalidated';
-  state.next_action = { owner: 'agent', action: '确认仓库绑定和数据 scope，展示【进入开发】绑定对象。' };
+  state.next_action = { owner: 'agent', action: '确认仓库绑定和数据 scope，展示进入开发绑定对象。' };
   state.updated_at = isoNow();
   return state.plan;
 }
@@ -1877,7 +1877,7 @@ export function reopenState(state, input) {
     evidence_refs: input.evidenceRefs ?? [],
     summary: input.reason,
   });
-  state.next_action = { owner: 'agent', action: '重新诊断根因、影响范围、需规依据和数据 scope，然后展示新的【进入开发】绑定对象' };
+  state.next_action = { owner: 'agent', action: '重新诊断根因、影响范围、需规依据和数据 scope，然后展示新的进入开发绑定对象' };
   state.updated_at = archivedAt;
   return state;
 }
@@ -1996,7 +1996,7 @@ export function createInitialState(input) {
     blockers: [],
     next_action: {
       owner: 'agent',
-      action: '完成诊断并展示【进入开发】的绑定对象',
+      action: '完成诊断并展示进入开发的绑定对象',
     },
     updated_at: at,
   };

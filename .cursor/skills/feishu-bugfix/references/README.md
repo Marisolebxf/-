@@ -1,6 +1,6 @@
 # 飞书缺陷修复 Skill 与运行账本说明
 
-> 状态：P0 收敛版 v0.9.1（修复写入时序与历史证据复核，进入真实缺陷试点）
+> 状态：P0 收敛版 v0.9.2（简化 gate 命令词，进入真实缺陷试点）
 > 建立日期：2026-11-10
 > 适用范围：飞书项目中由当前用户认领并修复的缺陷
 > 真源分层：本目录是 Skill 的唯一 canonical 包；`../SKILL.md` 管操作，`P0-DESIGN.md` 管流程/权限，`../templates/state.schema.json` 管机器结构，`../policies/` 管数据授权
@@ -33,11 +33,11 @@
 普通同事只需要完成四件事：
 
 1. 发起处理或确认目标缺陷；
-2. 审阅诊断和改动边界，发送 `【进入开发】`；
-3. 审阅提测包，发送 `【提测】`；
+2. 审阅诊断和改动边界，发送 `进入开发`；
+3. 审阅提测包，发送 `提测`；
 4. 在 dev 完成业务验收，并在飞书完成状态迁移。
 
-`【提测】`表示：合并 `dev`、触发 CI、自动部署 dev 并完成 dev 复测。它不授权生产发布。
+`提测`表示：合并 `dev`、触发 CI、自动部署 dev 并完成 dev 复测。它不授权生产发布。
 
 最终验收不增加第三个聊天口令。Agent 停在“待验收”，由人工在飞书完成验收状态迁移；Agent 读取状态后同步账本和最终评论，不能根据“可以”“没问题”自行置为已解决。由于 MCP 使用当前用户身份，P0 把该动作定义为策略级约束而非防伪事实，记录 `acceptance.mode=policy_only`、`operator_verified=false`，并在待验收阶段禁止 Agent 调用 `transition_state`。
 
@@ -125,8 +125,8 @@ S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳�
 - 当前 Demo 阶段采用 deny-by-default 的 B 语义：base policy 只限定 environment/host/database/schema，run scope 再逐表授权；`demo_gkxlumenx_ods/dwd/ads/dim` 和当前作为 Demo 使用的 `gkxlumenx_cms` 都必须逐表命中且有确认证据；其他写入默认拒绝；
 - 这是有记录的限时例外，不宣称与 D16/D18 无冲突；涉及架构硬规则时保留批准记录，否则进入 `BLOCKED`；
 - 上线通知到达后创建不可变 production policy，禁止 Mock 写入，并使旧 gate 失效；
-- `【进入开发】`只授权修代码、推独立 fix 分支和 Draft MR；
-- `【提测】`才授权合并 dev、push、CI/CD 和 dev rollout；
+- `进入开发`只授权修代码、推独立 fix 分支和 Draft MR；
+- `提测`才授权合并 dev、push、CI/CD 和 dev rollout；
 - 接管只认完整消息 `接管【auto_number】`，且接管不解锁任何 gate；接受风险、继续、你看着办等自然语言同样不解锁；
 - Skill 与 `.cursor/rules/fe-manual-confirm-push.mdc` 必须在同一发布步骤更新；修改后者前必须再次获得用户对 2026-11-05 推送裁定的确认。
 
@@ -163,7 +163,7 @@ node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs --help
 node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs
 ```
 
-Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos → set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（fix/regression/boundary 三类）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在【提测】授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
+Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos → set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（fix/regression/boundary 三类）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在提测授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
 
 v0.9 起，校验器还强制 claim 评论证据、DB 写前 scope/policy 授权、三类验证覆盖和未追认决策闸门；L 或跨仓自动路由到现有长任务流程。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍只面对四件事和两个精确口令，复杂校验全部由 Agent 内部完成。
 

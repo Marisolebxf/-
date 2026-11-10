@@ -69,12 +69,12 @@ When the repository contains `.cursor/skills/feishu-bugfix/references/P0-DESIGN.
 
 ### Gate tokens
 
-- `【进入开发】` is the only authorization to modify business code, create a local commit, push a dedicated `fix/*` branch, or create a Draft MR.
-- `【提测】` is the only authorization to merge into `dev`, push `dev`, trigger CI/CD, deploy dev, and run dev verification.
+- `进入开发` is the only authorization to modify business code, create a local commit, push a dedicated `fix/*` branch, or create a Draft MR.
+- `提测` is the only authorization to merge into `dev`, push `dev`, trigger CI/CD, deploy dev, and run dev verification.
 - A token is valid only when the entire chat message is the token, or the token plus the work item `auto_number`; quoted text, questions, negated sentences, historical messages, and natural-language approval do not unlock a gate.
 - When more than one run is active in the session, the token must include `auto_number`. A user cannot unlock a gate by saying “continue”, “accept the risk”, or “you decide”.
 - `接管【auto_number】` transfers execution ownership only; it does not unlock either gate.
-- `【提测】` affects the shared dev environment. It does not authorize production deployment and never bypasses GitLab protected-branch or MR approval rules.
+- `提测` affects the shared dev environment. It does not authorize production deployment and never bypasses GitLab protected-branch or MR approval rules.
 
 Before requesting either token, show the current work item ID, claim ID, repositories, base/candidate SHA, changed scope, risk level, data policy, verification status, and rollback plan.
 
@@ -97,14 +97,14 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 - `verify-repo` is the only accepted implementation fact: it verifies actual HEAD, origin, base ancestor, clean worktree, base..candidate diff and planned-file scope, then computes `diff_hash`. Caller-supplied hashes are not authoritative.
 - `verify-evidence` must pass before `READY_SHIP`; it checks manifest paths, SHA256, command metadata, verification-matrix references and `reviewable` / `raw_retained`. Only `PASS` evidence marked `reviewable=true` and `raw_retained=true` can support a verification PASS. Non-reviewable evidence remains visible in the report but cannot be presented as PASS.
 - Do not downgrade risk. `S/M/L` may only move upward; reopen a new cycle if the original assessment was wrong.
-- The P0 automated flow handles only S/M single-repository bugs. If risk becomes L or more than one repository is required, stop and route to the existing task-registry, task MCP, worktree, and long-task workflow; do not request `【进入开发】` for the lightweight flow.
-- First `【进入开发】` approval is valid only in `READY_DEV`. After a risk upgrade, takeover or other invalidation, re-confirm in `IMPLEMENTING` only when the gate status is `needs_reconfirm`.
+- The P0 automated flow handles only S/M single-repository bugs. If risk becomes L or more than one repository is required, stop and route to the existing task-registry, task MCP, worktree, and long-task workflow; do not request `进入开发` for the lightweight flow.
+- First `进入开发` approval is valid only in `READY_DEV`. After a risk upgrade, takeover or other invalidation, re-confirm in `IMPLEMENTING` only when the gate status is `needs_reconfirm`.
 - Any decision with `requires_human_ratification=true` must have `ratified_by` before the ship gate. Natural-language “continue” is not ratification evidence.
 - If the helper exists, use its commands instead of hand-editing the ledger:
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs init ... --claim-comment-ref <id/url> --claim-operator <operator>`
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-diagnosis ...`
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-plan ...`
-  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs set-repos ...` before requesting `【进入开发】`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs set-repos ...` before requesting `进入开发`
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs set-data-scope ...` after the run scope is confirmed
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs approve-gate ... --session-id ... --machine-id ...` only after the exact chat token
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs validate-gate ... --session-id ... --machine-id ...`
@@ -112,10 +112,10 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs check-data-write ... --session-id ... --machine-id ...` before every DB write; pass its returned authorization fields into `record-evidence`
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs verify-repo ...` for every repo before review
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-evidence ...` for each auditable evidence item
-  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-review ...` before requesting `【提测】`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-review ...` before requesting `提测`
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-verification ...` with `fix`, `regression`, and `boundary` coverage for every repository
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs approve-gate --gate ship ...` before merge; the ship binding contains candidate/review/verification facts, not post-deploy facts
-  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs advance ...` to `SHIPPING`, then merge and deploy under the `【提测】` authorization
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs advance ...` to `SHIPPING`, then merge and deploy under the `提测` authorization
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-ship-package ...` after merge/rollout facts are known; this command re-runs evidence validation
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs verify-evidence ...` whenever evidence changed and before moving from `DEV_VERIFYING`
   - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-failure ...` for every dev/pipeline/rework failure
@@ -129,7 +129,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 ### Data and verification
 
 - Read the immutable policy from `.cursor/skills/feishu-bugfix/policies/<version>.yaml`; environment/host/database/schema must match the base policy, and every table plus the execution account must match the approved run scope. Never print or commit passwords or credentials.
-- After the `【进入开发】` gate is approved and before any `INSERT`/`UPDATE`/`DELETE`/DDL or mock write, call `check-data-write` and wait for a valid authorization. A missing gate/policy, expired policy, pending scope, out-of-scope table, mismatched host/account, or L/cross-repository route must block the write. This check cannot prevent an Agent that bypasses the ledger from using credentials; never claim otherwise.
+- After the `进入开发` gate is approved and before any `INSERT`/`UPDATE`/`DELETE`/DDL or mock write, call `check-data-write` and wait for a valid authorization. A missing gate/policy, expired policy, pending scope, out-of-scope table, mismatched host/account, or L/cross-repository route must block the write. This check cannot prevent an Agent that bypasses the ledger from using credentials; never claim otherwise.
 - `check-data-write` may be called after `verify-repo`; it validates the current gate/session/policy/scope without requiring `candidate_sha=null`. Only initial `approveGate` and `advance IMPLEMENTING` require the candidate to be null.
 - `kind=db` evidence must carry the write authorization and policy/scope hashes. `verify-evidence` rejects DB evidence whose current policy, scope, table, account, or authorization no longer matches.
 - Historical DB evidence is verified against a gate hash present in `transitions[]`; a later risk upgrade or `needs_reconfirm` does not erase an already authorized write.
@@ -253,4 +253,4 @@ When any stop condition is hit:
 3. Leave the workflow status unchanged. Only use an existing `BLOCKED` or `NEEDS INFO` state if it is explicitly returned by `get_transitable_states`.
 4. If code work has already started, call `add_comment` with a concise comment prefixed by `[需要人工介入]`, including the blocker and what was already attempted.
 5. If no code work has started, do not add a redundant comment unless the user asks; report the blocker in the conversation.
-6. Resume only after the user supplies the missing information or the stated blocker is otherwise resolved. Accepting the risk does not unlock `【进入开发】` or `【提测】`; if a gate is still needed, request its exact token again.
+6. Resume only after the user supplies the missing information or the stated blocker is otherwise resolved. Accepting the risk does not unlock `进入开发` or `提测`; if a gate is still needed, request its exact token again.
