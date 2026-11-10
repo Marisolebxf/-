@@ -1,0 +1,100 @@
+# P0 Demo base data policy. This file is immutable once used by a run.
+# It authorizes only the environment/host/database/schema layer. Actual tables
+# must be enumerated in each run's state.json.data_policy.scope.tables.
+schema_version: 1
+policy_version: demo-2026-11-10
+status: active-demo
+phase: demo_until_cutover
+default_decision: deny
+database_is_schema: true
+
+credential_policy:
+  source: environment-or-secret-manager
+  secrets_in_repository: forbidden
+  secrets_in_logs: forbidden
+
+owner_decision:
+  decided_by: human:徐滕强
+  decided_at: 2026-11-10
+  scope: 当前 Demo 环境及当前作为 Demo 使用的 CMS
+  approval_ref: policies/decisions/demo-phase-2026-11-10.md
+  review_owner: human:徐滕强
+  review_at: 2026-11-17
+  cutover_trigger: 用户通知正式上线；若早于 expires_at，以通知时间为准
+  expires_at: 2026-12-10T23:59:59+08:00
+  approval_source: codex_chat
+
+allowed:
+  demo_warehouse:
+    environment: demo
+    host_ref: env:DEMO_MYSQL_HOST
+    account_ref: env:DEMO_MYSQL_USER
+    databases:
+      - demo_gkxlumenx_ods
+      - demo_gkxlumenx_dwd
+      - demo_gkxlumenx_ads
+      - demo_gkxlumenx_dim
+    schemas:
+      - demo_gkxlumenx_ods
+      - demo_gkxlumenx_dwd
+      - demo_gkxlumenx_ads
+      - demo_gkxlumenx_dim
+    table_policy: run_scope_required
+    writers: [python]
+    rule: policy 命中 environment/host/database/schema，run scope 命中逐表清单；禁止通配符和整库授权
+
+  current_demo_cms:
+    environment: demo
+    host_ref: env:DEMO_MYSQL_HOST
+    account_ref: env:DEMO_MYSQL_USER
+    database: gkxlumenx_cms
+    schema: gkxlumenx_cms
+    table_policy: run_scope_required
+    access: application_only
+    basis: 当前 CMS 作为 Demo 使用，正式上线后切换到 production 规则
+    approval_ref: policies/decisions/demo-phase-2026-11-10.md
+
+  d16_gapfill:
+    environment: demo
+    host_ref: env:DEMO_MYSQL_HOST
+    account_ref: env:DEMO_MYSQL_USER
+    database: gkxlumenx_gapfill
+    schema: gkxlumenx_gapfill
+    table_prefix: gapfill_
+    table_policy: run_scope_required
+    writers: [python]
+    basis: architecture-baseline D16 / data-lineage-policy §2.4
+
+  d18_new_ads_mock:
+    status: disabled
+    environment: demo
+    host_ref: env:DEMO_MYSQL_HOST
+    account_ref: env:DEMO_MYSQL_USER
+    database: null
+    schema: null
+    table_policy: run_scope_required
+    writers: [python]
+    requires:
+      - 新建表
+      - Python 灌 mock 行
+      - 接口只读该表
+      - D4 标为 mock，界面显示 MockBadge
+    basis: architecture-baseline D18
+
+forbidden:
+  - write_formal_ods
+  - write_formal_dwd
+  - write_formal_ads
+  - alter_formal_schema
+  - supplier_database
+  - frontend_or_java_fabricated_data
+  - direct_api_mock_response
+  - production_mock_write
+  - secrets_in_repository
+  - secrets_in_logs
+
+cutover:
+  next_policy: production-cutover-<date>
+  invalidate_old_gates: true
+  require_revalidation_of_open_runs: true
+  require_human_notification_evidence: true

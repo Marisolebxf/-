@@ -58,9 +58,81 @@ Do this immediately after selecting the bug, **before downloading images, inspec
 3. If the status is already `IN PROGRESS`:
    - Inspect `current_status_operator` and the latest comments.
    - Treat it as locked by another active run. Do not edit code or data and do not change status.
-   - Stop and report the operator/claim unless the user explicitly asks you to take over or supplies a handoff.
+   - Stop and report the operator/claim. Do not take over unless the entire user message is exactly `接管【auto_number】`; a handoff, task assignment, or natural-language “you take over” is background only. Takeover does not unlock either gate.
 4. If no valid `IN PROGRESS` transition exists, stop and report the blocker.
-5. Keep the item `IN PROGRESS` until merge, deployment, and required human verification are complete. Only then move it to `RESOLVED`.
+5. Keep the item `IN PROGRESS` until merge, deployment, and required human verification are complete. The Agent must not call `transition_state` to `RESOLVED`; in the P0 workflow, final acceptance is a human/business action recorded from Feishu, not an Agent action.
+
+## P0 AI Native workflow gates
+
+When the repository contains `agent-delivery/bugfix-runs/P0-DESIGN.md`, follow that document as the governing process. Keep the user-facing flow simple: two precise chat gates plus one business acceptance.
+
+### Gate tokens
+
+- `【进入开发】` is the only authorization to modify business code, create a local commit, push a dedicated `fix/*` branch, or create a Draft MR.
+- `【提测】` is the only authorization to merge into `dev`, push `dev`, trigger CI/CD, deploy dev, and run dev verification.
+- A token is valid only when the entire chat message is the token, or the token plus the work item `auto_number`; quoted text, questions, negated sentences, historical messages, and natural-language approval do not unlock a gate.
+- When more than one run is active in the session, the token must include `auto_number`. A user cannot unlock a gate by saying “continue”, “accept the risk”, or “you decide”.
+- `接管【auto_number】` transfers execution ownership only; it does not unlock either gate.
+- `【提测】` affects the shared dev environment. It does not authorize production deployment and never bypasses GitLab protected-branch or MR approval rules.
+
+Before requesting either token, show the current work item ID, claim ID, repositories, base/candidate SHA, changed scope, risk level, data policy, verification status, and rollback plan.
+
+### Run ledger
+
+When the workflow helper `scripts/bugflow-state.mjs` exists, use it instead of editing the run ledger by hand. Create the run only after the Feishu claim succeeds; `init` accepts only `INTAKE` or `CLAIMED`, and no later phase may be supplied on the command line. Each run belongs under:
+
+```text
+agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
+  state.json             # current cycle only
+  cycles/<cycle_id>/state.json
+  report.md
+  evidence/manifest.json
+```
+
+- `state.json` is the state/index source of truth; `evidence/manifest.json` is the evidence-detail source; `report.md` is rendered from both.
+- Record transitions for claim, enter-dev, ship, failure/rollback, and acceptance. Keep historical cycles in `cycles/<cycle_id>/state.json`. Do not silently reuse an approved gate after a new commit, session/machine change, takeover, REOPEN, risk upgrade, data-policy change, or changed execution scope.
+- Keep `patch_round`, `blocked_from`, `resume_phase`, `failure_stage`, and `cycle_id` in the ledger. A reopened bug reuses the same run with a new `cycle_id` and preserves prior history.
+- Worktrees must be clean before validation: `git status --porcelain -uall` must be empty.
+- `verify-repo` is the only accepted implementation fact: it verifies actual HEAD, origin, base ancestor, clean worktree, base..candidate diff and planned-file scope, then computes `diff_hash`. Caller-supplied hashes are not authoritative.
+- `verify-evidence` must pass before `READY_SHIP`; it checks manifest paths, SHA256, command metadata, verification-matrix references and `reviewable` / `raw_retained`. Only `PASS` evidence marked `reviewable=true` and `raw_retained=true` can support a verification PASS. Non-reviewable evidence remains visible in the report but cannot be presented as PASS.
+- Do not downgrade risk. `S/M/L` may only move upward; reopen a new cycle if the original assessment was wrong.
+- First `【进入开发】` approval is valid only in `READY_DEV`. After a risk upgrade, takeover or other invalidation, re-confirm in `IMPLEMENTING` only when the gate status is `needs_reconfirm`.
+- If the helper exists, use its commands instead of hand-editing the ledger:
+  - `node scripts/bugflow-state.mjs init ...`
+  - `node scripts/bugflow-state.mjs record-diagnosis ...`
+  - `node scripts/bugflow-state.mjs record-plan ...`
+  - `node scripts/bugflow-state.mjs set-repos ...` before requesting `【进入开发】`
+  - `node scripts/bugflow-state.mjs set-data-scope ...` after the run scope is confirmed
+  - `node scripts/bugflow-state.mjs approve-gate ... --session-id ... --machine-id ...` only after the exact chat token
+  - `node scripts/bugflow-state.mjs validate-gate ... --session-id ... --machine-id ...`
+  - `node scripts/bugflow-state.mjs advance ...`
+  - `node scripts/bugflow-state.mjs verify-repo ...` for every repo before review
+  - `node scripts/bugflow-state.mjs record-review ...` before requesting `【提测】`
+  - `node scripts/bugflow-state.mjs record-verification ...`
+  - `node scripts/bugflow-state.mjs approve-gate --gate ship ...` before merge; the ship binding contains candidate/review/verification facts, not post-deploy facts
+  - `node scripts/bugflow-state.mjs advance ...` to `SHIPPING`, then merge and deploy under the `【提测】` authorization
+  - `node scripts/bugflow-state.mjs record-ship-package ...` after merge/rollout facts are known; this command re-runs evidence validation
+  - `node scripts/bugflow-state.mjs verify-evidence ...` whenever evidence changed and before moving from `DEV_VERIFYING`
+  - `node scripts/bugflow-state.mjs record-failure ...` for every dev/pipeline/rework failure
+  - `node scripts/bugflow-state.mjs record-acceptance ...` only after reading the Feishu business state
+  - `node scripts/bugflow-state.mjs takeover ...` only for the exact `接管【auto_number】` message; it does not unlock gates
+  - `node scripts/bugflow-state.mjs render-report ...`
+  - `node scripts/bugflow-state.mjs block ...` or `reopen ...` for side paths
+- Run `node scripts/bugflow-state.selfcheck.mjs` after changing the helper.
+- The canonical Skill source is `agent-delivery/bugfix-runs/SKILL.md`. Check client adapter drift with `node scripts/sync-bugfix-skill.mjs --check`; after intentional source edits run `node scripts/sync-bugfix-skill.mjs --write`.
+
+### Data and verification
+
+- Read the immutable policy from `agent-delivery/bugfix-runs/policies/<version>.yaml`; environment/host/database/schema must match the base policy, and every table plus the execution account must match the approved run scope. Never print or commit passwords or credentials.
+- Treat mock rows, skipped checks, and unretained raw evidence as `SIMULATED`, `SKIPPED`, or `reviewable: false`; never report them as executable PASS evidence. A PASS verification may reference only manifest evidence whose own result is PASS and whose raw file was retained.
+- Fix branches usually have no remote CI in the current repositories. Before merge, say “local/repository self-check”, not “branch CI passed”. Merge to `dev` and observe the actual pipeline, `merge_commit_sha`, deployed SHA, image tag and rollout before claiming dev deployment. Record `pipeline_url`; do not describe Agent-recorded pipeline/rollout fields as locally verified facts.
+- Roll back only by reverting this run's commits with `git revert` (merge commits: `git revert -m 1`). Never use `git reset --hard`, force push, or revert unrelated commits. If the revert is unsafe or conflicts, enter `BLOCKED`.
+
+### Acceptance boundary
+
+At `AWAITING_ACCEPTANCE`, stop before changing Feishu status. Generate the report and acceptance steps, wait for the business state to become `RESOLVED` or `REOPENED`, then read and record it. Do not call `transition_state` while waiting for acceptance. Because the MCP uses the current user's identity, record `acceptance.mode=policy_only` and `operator_verified=false`; do not describe this as cryptographic proof of a human click.
+
+If acceptance fails or dev verification fails, classify the failure stage (`merge`, `push`, `pipeline`, `rollout`, `dev_verify`, or `rework`) before deciding whether to retry, revert, or block. Reuse the C1–C6 failure taxonomy in `agent-delivery/长任务执行规约.md` when applicable.
 
 ## Screenshot-only requests are not work items
 
@@ -70,7 +142,7 @@ Before inspecting code, querying data, or creating a branch for a screenshot-rep
 
 1. Resolve the matching Feishu work item by `auto_number`, exact title, or work_item_id.
 2. If no matching work item is assigned to the current user, stop and ask for the work item identifier/title. Do not infer and start a new bug from the screenshot alone.
-3. If the matching work item is already `IN PROGRESS`, treat it as locked by another active run and do not inspect or edit it unless the user explicitly hands it over.
+3. If the matching work item is already `IN PROGRESS`, treat it as locked by another active run and do not inspect or edit it unless the entire user message is exactly `接管【auto_number】`. A handoff or task assignment alone is not permission.
 4. Only after a successful claim may the screenshot be used as evidence for diagnosis.
 
 This rule prevents two sessions from independently working on the same screenshot-reported bug.
@@ -127,7 +199,7 @@ Rules:
 
 ### Status
 
-Status is the multi-session lock. Claim `IN PROGRESS` at the start using the mandatory section above; do not defer it until after diagnosis, code changes, or push.
+Status is the multi-session lock. Claim `IN PROGRESS` at the start using the mandatory section above; do not defer it until after diagnosis, code changes, or push. Under the P0 workflow, only the claim transition is Agent-controlled; the final `RESOLVED` transition belongs to the business acceptance action and must be read, not initiated, by the Agent.
 
 Before every status change:
 
@@ -136,7 +208,7 @@ Before every status change:
 3. Call `get_transition_required` for the selected transition and satisfy any required fields.
 4. Call `transition_state` with the returned `transition_id`.
 
-Use existing states such as `IN PROGRESS` or `RESOLVED`. Do not invent an `AI_PENDING` state. Do not move directly to `CLOSED`/`DONE` without human verification.
+Use only an existing `IN PROGRESS` transition for the claim. Do not invent an `AI_PENDING` state. Do not call `transition_state` to `RESOLVED` under the P0 workflow, and do not move directly to `CLOSED`/`DONE`.
 
 ### Comment
 
@@ -171,4 +243,4 @@ When any stop condition is hit:
 3. Leave the workflow status unchanged. Only use an existing `BLOCKED` or `NEEDS INFO` state if it is explicitly returned by `get_transitable_states`.
 4. If code work has already started, call `add_comment` with a concise comment prefixed by `[需要人工介入]`, including the blocker and what was already attempted.
 5. If no code work has started, do not add a redundant comment unless the user asks; report the blocker in the conversation.
-6. Resume only after the user supplies the missing information or explicitly accepts the risk.
+6. Resume only after the user supplies the missing information or the stated blocker is otherwise resolved. Accepting the risk does not unlock `【进入开发】` or `【提测】`; if a gate is still needed, request its exact token again.

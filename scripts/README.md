@@ -19,6 +19,10 @@
 | [verify-paths.sh](verify-paths.sh) | 全平台（git-bash） | 扫描硬编码路径残留（RFC-002 §6） |
 | [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
 | [find-supervisor-slot.mjs](find-supervisor-slot.mjs) | Node 18+ | **监管亲和参考**：推荐 `supervised_by`（`max_agent_concurrency`=本机 Cursor 会话上限；load≠派单门禁） |
+| [bugflow-state.mjs](bugflow-state.mjs) | Node 18+ | **飞书缺陷 P0 账本**：schema、精确 gate、claim/session、真实 Git/evidence、版本化 policy、状态机、cycle 和报告 |
+| [bugflow-state.selfcheck.mjs](bugflow-state.selfcheck.mjs) | Node 18+ | `bugflow-state` 离线回归自检 |
+| [sync-bugfix-skill.mjs](sync-bugfix-skill.mjs) | Node 18+ | 从 `agent-delivery/bugfix-runs/SKILL.md` 检查/同步 Codex、Cursor、Trae 三份缺陷修复 Skill 适配副本 |
+| [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |
 | [recover-expired-leases.mjs](recover-expired-leases.mjs) | Node 18+ | **lease 回收**：过期 `claimed` → `ready`；可选处理过期 `in_progress` |
 | [detect-convoy-conflicts.mjs](detect-convoy-conflicts.mjs) | Node 18+ | **Convoy**：`touched_files` / 显式 convoy 组冲突检测 |
 | [coordinator-loop.mjs](coordinator-loop.mjs) | Node 18+ | **Mayor 轻量循环**：lease→ready→convoy→亲和建议→scan（不自动开 agent；不因会话上限拒派） |
@@ -112,6 +116,15 @@ node scripts/find-supervisor-slot.mjs --agent frontend
 node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ```
 
+### 飞书缺陷 P0 账本
+
+```bash
+node scripts/bugflow-state.mjs --help
+node scripts/bugflow-state.selfcheck.mjs
+```
+
+设计、字段和数据策略见 `agent-delivery/bugfix-runs/README.md` 与 `P0-DESIGN.md`。
+
 ### 提 PR 前自检
 
 ```bash
@@ -132,7 +145,7 @@ node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ./scripts/worktree-helper.sh remove demo-ui-topic E-ENT-IA
 
 # 定期清理失效引用
-| [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |
+```
 
 ### 飞书多维表格看板（Phase 0，推荐）
 

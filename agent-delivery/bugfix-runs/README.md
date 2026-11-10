@@ -1,9 +1,13 @@
 # 飞书缺陷修复运行账本
 
-> 状态：P0 评审修订版
+> 状态：P0 收敛版 v0.8（确定性校验已修复，进入真实缺陷试点）
 > 建立日期：2026-11-10
 > 适用范围：飞书项目中由当前用户认领并修复的缺陷
-> 控制入口：`feishu-bugfix`（Codex / Cursor 只做适配，不另建第二套流程）
+> 真源分层：`P0-DESIGN.md` 管流程/权限，`SKILL.md` 管操作，`state.schema.json` 管机器结构，`policies/` 管数据授权
+>
+> Skill 真源：`agent-delivery/bugfix-runs/SKILL.md`；Codex / Cursor / Trae 目录是生成副本。
+> 技术路线：复用现有 Codex / Cursor / Trae + Skill + 轻量校验脚本，不自研 Agent Runtime
+> 当前实现：`scripts/bugflow-state.mjs`、`scripts/bugflow-state.selfcheck.mjs`、`scripts/sync-bugfix-skill.mjs`、`_templates/state.schema.json`、`policies/` 已落地
 
 ## 定位
 
@@ -11,77 +15,122 @@
 
 - 当前缺陷处于哪个阶段；
 - AI 为什么做出这个判断；
-- 是否已经获得人工授权；
-- 改了什么、验证了什么、还有哪些风险；
-- 是否已经提测、部署和验收。
+- 是否获得当前 claim 下的有效授权；
+- 改了什么、在哪个 commit 上验证了什么；
+- 是否已经提测、部署 dev 和完成业务验收；
+- 出现问题时如何回退。
 
-三个真相源职责分离：
+职责分离：
 
 | 真相源 | 职责 |
 |---|---|
-| 飞书项目 | 业务状态、负责人、验收结论 |
-| `bugfix-runs/<auto_number>-<work_item_id>/` | 本次执行阶段、授权、证据和下一步 |
-| GitLab | 分支、commit、diff、MR、Pipeline 和部署结果 |
+| 飞书项目 | 业务状态、负责人、人工验收结论 |
+| `bugfix-runs/<auto_number>-<work_item_id>/` | 阶段、gate、诊断、验证、证据摘要和下一步 |
+| GitLab | 分支、commit、diff、MR、Pipeline 和 dev rollout |
 
 ## 使用体验
 
-普通同事只需要：
+普通同事只需要完成四件事：
 
 1. 发起处理或确认目标缺陷；
-2. 发送 `【进入开发】`；
-3. 发送 `【提测】`；
-4. 完成一次业务验收。
+2. 审阅诊断和改动边界，发送 `【进入开发】`；
+3. 审阅提测包，发送 `【提测】`；
+4. 在 dev 完成业务验收，并在飞书完成状态迁移。
 
-状态机、JSON、证据索引、哈希、报告生成和飞书写回均由 Agent 内部完成。普通缺陷不要求手工填写模板。
+`【提测】`表示：合并 `dev`、触发 CI、自动部署 dev 并完成 dev 复测。它不授权生产发布。
 
-对外只展示：
+最终验收不增加第三个聊天口令。Agent 停在“待验收”，由人工在飞书完成验收状态迁移；Agent 读取状态后同步账本和最终评论，不能根据“可以”“没问题”自行置为已解决。由于 MCP 使用当前用户身份，P0 把该动作定义为策略级约束而非防伪事实，记录 `acceptance.mode=policy_only`、`operator_verified=false`，并在待验收阶段禁止 Agent 调用 `transition_state`。
+
+P0 不在每个 gate 写飞书评论。外部只保留认领时的 `[agent-claim]`、提测总结和最终验收总结三条评论；gate 的真实性由 `state.json`、绑定对象和校验器保证。
+
+## 对外状态
 
 ```text
-已认领 → 待进入开发 → 修复中 → 待提测 → 待验收 → 完成
-                              └→ 受阻
+主链：待认领 → 已认领 → 待进入开发 → 修复中 → 待提测 → 待验收 → 完成
+旁路：任一阶段 → 受阻
+      待验收或提测后 → 返工中
+      确认无需修复 → 已取消
 ```
 
-## 与现有主仓规约的关系
+“返工中”和“受阻”必须分开；`RESOLVED` 后再次复现时复用同一 run，开启新的 `cycle_id`：
 
-- 遵守各业务仓的 `AGENTS.md`。
-- 仓库路由优先引用 `agent-delivery/repo-registry.yaml`，不重复维护另一份仓库清单。
-- `【进入开发】`授权改代码、推送独立 `fix/*` 分支和创建 Draft MR；`.cursor/rules/fe-manual-confirm-push.mdc` 在实施时补充该映射。
-- `【提测】`授权集成分支合并和 dev 部署；P0 不授权生产部署。
-- S 级缺陷不创建长任务；M/L 级或跨仓缺陷才接入 `task-registry.yaml`、task MCP 和 worktree 体系。
-- 不替代 `长任务执行规约.md` 的段 E、C1–C6 分类和 QA 闭环。
+- 返工中：验收或 dev 复测失败、REOPEN、修复引入新问题；
+- 受阻：缺少复现、需求、权限、环境、测试能力或策略授权。
 
 ## 目录结构
-
-### S 级
 
 ```text
 bugfix-runs/
   README.md
   P0-DESIGN.md
+  policies/
+    demo-2026-11-10.yaml   # 当前不可变 Demo 数据/Mock 策略
   _templates/
   <auto_number>-<work_item_id>/
-    state.json
+    state.json            # 只表示当前 cycle
+    cycles/
+      <cycle_id>/state.json
     report.md
     evidence/
+      manifest.json
+      raw/                # 默认 gitignore
+    plan.md               # L 或确有必要时
+    review-report.md      # L 或独立评审需要时
 ```
 
-### M/L 级
+入库规则：
 
-沿用 S 级结构。M 级信息默认合并进 `report.md`；L 级或复杂评审才按需增加 `plan.md` 和 `review-report.md`。
+- `state.json`、`report.md`、`evidence/manifest.json` 必须入库；
+- 数据策略使用 `policies/<version>.yaml` 不可变版本；run 记录 `policy_version`、`policy_hash` 和策略快照 hash，不能依赖会变化的全局文件；
+- 截图、stdout、API 响应和临时日志放在 `evidence/raw/`，默认不入库；
+- manifest 记录命令、退出码、输出路径、SHA256、证据类型、环境、时间和对应 commit；
+- `state.json` 只表示当前 cycle，历史 cycle 完整归档到 `cycles/<cycle_id>/state.json`；manifest 是证据明细真源。至少在 claim、进入开发、提测、失败/回退、验收节点提交；一个 run 固定一台执行机，换机器必须重新校验 claim、repos、candidate/deployed SHA、证据和 gate；
+- 飞书写回只放脱敏摘要，不放 token、cookie、签名 URL 或敏感数据。
 
-运行目录包含截图、日志和临时证据，P0 实施时应将真实运行目录加入 `.gitignore`。需要长期留档的最终报告，经脱敏后再关联到现有 handoff、QA 记录或飞书评论。
+## 风险分级与流程
+
+| 等级 | 流程 |
+|---|---|
+| S | 自审、目标回归、页面/接口证据；不建 task-registry/handoff |
+| M | S 基础上增加影响面、写路径、边界验证和独立针对性评审；单会话单仓可不建 registry |
+| L | 必须接 task-registry、task MCP、worktree、全量净室评审和 handoff/cost |
+
+S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳过评审。
+
+本轻量通道是 `feishu-bugfix` 的明确豁免：S/M 用 `state.json + report.md` 承载执行记录；L、跨仓交付和长任务段 E 仍遵守主仓完整规约。
+
+## 与主仓规约的关系
+
+- 真源分层：`P0-DESIGN.md` 是流程/权限真源，`SKILL.md` 是操作真源，`_templates/state.schema.json` 是机器结构真源，`policies/` 是数据授权真源；
+- Skill 的唯一源文件是 `agent-delivery/bugfix-runs/SKILL.md`，Codex / Cursor / Trae 三端只保留生成副本；更新后运行 `node scripts/sync-bugfix-skill.mjs --write`；
+- 业务仓 `AGENTS.md` 只增加统一指针，不复制整套流程；
+- `.cursor/rules/fe-manual-confirm-push.mdc` 补充两个口令的权限映射；
+- 该中心规则废止旧 AGENTS 中无条件“完工即推”的条款；旧条款未清理前以中心规则为准；
+- 代码操作遵守 `.cursor/rules/multi-session-protection.mdc`；
+- 仓库路由引用 `agent-delivery/repo-registry.yaml`；
+- 当前 Demo 阶段采用 deny-by-default 的 B 语义：base policy 只限定 environment/host/database/schema，run scope 再逐表授权；`demo_gkxlumenx_ods/dwd/ads/dim` 和当前作为 Demo 使用的 `gkxlumenx_cms` 都必须逐表命中且有确认证据；其他写入默认拒绝；
+- 这是有记录的限时例外，不宣称与 D16/D18 无冲突；涉及架构硬规则时保留批准记录，否则进入 `BLOCKED`；
+- 上线通知到达后创建不可变 production policy，禁止 Mock 写入，并使旧 gate 失效；
+- `【进入开发】`只授权修代码、推独立 fix 分支和 Draft MR；
+- `【提测】`才授权合并 dev、push、CI/CD 和 dev rollout；
+- 接管只认完整消息 `接管【auto_number】`，且接管不解锁任何 gate；接受风险、继续、你看着办等自然语言同样不解锁；
+- Skill 与 `.cursor/rules/fe-manual-confirm-push.mdc` 必须在同一发布步骤更新；修改后者前必须再次获得用户对 2026-11-05 推送裁定的确认。
 
 ## P0 边界
 
 包含：
 
-- 单缺陷内部状态机和对外简化状态；
+- 单缺陷状态机；
 - 两个精确人工门；
-- S/M/L 风险分级；
-- 自动生成的统一报告和证据；
-- 数据/Mock 策略；
-- 内部状态校验器；
-- Codex / Cursor 共用语义。
+- 飞书人工验收落点；
+- S/M/L 分级；
+- gate 绑定、失效和接管；
+- 结构化证据、单一报告和内部校验器；
+- 版本化数据/Mock 策略；
+- 多仓 per-repo gate、deployed SHA、review/data scope hash、failure_stage/failure_class 和 revert-only 回退；
+- `state.json.transitions[]`、`patch_round`、cycle 归档、精确接管、取消和重开规则；
+- `policies/` 的版本化数据授权和 run scope 逐表确认；
+- Codex / Cursor / Trae 共用语义。
 
 不包含：
 
@@ -91,6 +140,17 @@ bugfix-runs/
 - lease TTL、心跳和无人值守恢复；
 - 自动合并或绕过人工验收；
 - 生产自动部署；
-- 对所有缺陷强制启用长任务和净室评审。
+- 所有缺陷强制启用长任务、提交考古或覆盖率门槛。
+
+## 当前实施入口
+
+```bash
+node scripts/bugflow-state.mjs --help
+node scripts/bugflow-state.selfcheck.mjs
+```
+
+Agent 内部按 `init → record-diagnosis → record-plan → set-repos → set-data-scope → approve-gate enter_dev → advance → verify-repo → record-review → record-evidence → record-verification → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在【提测】授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
+
+v0.8 起，校验器不再只检查 JSON 结构：它执行 schema、阶段产物 guard、多仓集合一致性、session/machine 强制校验、真实 Git HEAD/remote/diff/scope、evidence manifest 的路径与 SHA256、验证矩阵引用解析、policy 有效期和逐表白名单；review/diff/verification/ship-package hash 由脚本计算。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍只面对四件事和两个精确口令，复杂校验全部由 Agent 内部完成。
 
 详细设计见 [`P0-DESIGN.md`](P0-DESIGN.md)。
