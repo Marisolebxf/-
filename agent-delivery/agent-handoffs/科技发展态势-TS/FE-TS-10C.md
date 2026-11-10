@@ -36,3 +36,10 @@
 - 维护技术图谱（34–40）按监管人要求不动
 - 验证：type-check / maintain.test.mjs / build 绿；mock 与 real（连 edu）1440/1100/900/760 截图核对，real 轨无 Mock/演示文案
 - 仍 integration：待 ENT 全链部署后 edu 联调
+
+## 2026-11-10 返工：删除技术点前置 impact 预检（契约 R3）
+
+- 起因：监管人 edu 冒烟时在「已在全景图」勾选技术点行批量删除 → `delete_node` 级联清空该技术点全部边，左侧推荐随之为空；本页无新增技术点能力（34–40 不做），UI 不可恢复（数据已由 seed 脚本还原，见联调冒烟记录 §6）
+- 根因：API 册 §2 要求 `delete_node` 前置 R3 impact 预检，前端未实现；技术点与普通实体共用同一句确认文案
+- 修复 `lumen-ui-science-pc` 874e35f：`loadNodeImpact`（`/nodes/{id}/impact`）；选中含技术点 → 弹「删除技术点」红字警告（技术点本身及全部关系/推荐实体移除、本页无法恢复）+ 影响范围（已挂接实体数、推荐候选关系数），预检中/失败禁用确认；仅普通实体维持原确认框；mock 轨只显示警告不调预检
+- 验证：type-check / eslint / maintain.test.mjs / build 绿；本地 dev（mock auth + edu 真数据）无头 Chrome：技术点弹窗文案、impact 请求、按钮可用均 OK，仅点取消未改数据；mock 轨技术点/普通实体两种弹窗 OK
