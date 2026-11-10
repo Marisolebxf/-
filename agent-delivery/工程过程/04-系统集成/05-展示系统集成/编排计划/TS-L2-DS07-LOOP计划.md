@@ -13,6 +13,9 @@
 | R2 | 2026-11-09 | token 换新后复测：meta 200 / 1.8s / 9.9KB；snapshot 200 / **0.19s** / 31.8KB → **空态壳**：`dimensions[0]`、`techPatent` 三键空对象、`spatialByDimension` 四维全空、`weights` 四维全 0、`policySuggestions[0]`、`sciForecast.domains[0]`，`noSourceFields` 10 项挂空；仅 `spatialRows`/`spatialRegions` 各 100 行城市统计与 `dataSourceNote` 为真值。VPN 恢复后二测：meta 200 / 2.4s；snapshot 200 / 0.17s / **31.8KB 与首测字节级一致**；`updatedAt` 逐次变化 + `Cache-Control: no-store` 排除缓存；`techPatent` 三键 `ConvertTo-Json` 实证 `{}`。另内网网关 `10.50.69.111:30895` 本机不可达（curl exit 28）无法交叉验证 | 0/23 可复判（较 R1 四维出分 19.6/36.6/50.0/63.4 与 techPatent 三榜 200 **明显退化**） | **断链实锤、与用户 VPN 无关**（VPN 断/恢复两测字节级一致）：经算法库 innov-py 的块（dimensions / techPatent / spatialByDimension / sciForecast / policySuggestions / methodEvidence）全空，不经算法库的 Doris 直查块（spatialRows / spatialRegions 各 100 行）正常 → 生产 show-py → innov-py 通道断，快速失败 0.17s（R1 通道正常时 8.2s）；R1 缺口①②③④（缺 industrySciInfluence/projectSupport、weights 全 0、spatialByDimension 空、137/138 无明细）均无法核验 | **根因实锤（SQL 探针 + innov-value 探针）**：①SQL/数据层全通——本机直连久新 Doris（47.93.119.170:29030）：TCP 0.09s、握手 0.35s、`ads_patent_profile` 176.9 万件、有效 IPC 158.7 万、质量榜 SQL 7.08s 返回 200 行真值（A61K 22.7 万件）、趋势 SQL 5037 行；②innov-py 服务整体不可达——经 `POST /v1/situation/global-innovation/innov-value`（直透 algoScienceClient.compute，失败带 emptyReason）分别探 DS-04 `M_INNOV_POINT_VALUE` 与 DS-07 `M_TECH_DS_07_TECH_INNOV_002`，**双指标同报 `DOWNSTREAM_UNREACHABLE`** → display → `gkxlumen-platform-innov-py:8000` 连接失败，DS-04/DS-07 算法指标块共因全空（DS-04 昨日签收时为绿，今日环境退化）；③kubectl 本地代理 127.0.0.1:16443 未监听，无法直查 Pod 状态 | **集群侧查/重启 `gkxlumen-platform-innov-py` Pod**（疑似 CrashLoopBackOff 或副本为 0，Feign 头注曾记 2026-11-08 同症状：无实例 → 静默降级空） | **blocked（新一轮）· R1 判定 11/7/5 维持 · 不重判 23 行 · 不申请签收** |
 | R3 | 2026-11-09 | innov-py Pod 恢复后复测：PIV 200 / 3.7s / 5.2KB（DS-04 复验 ✓ 真数据）；meta 200 / 1.3s / 9.9KB；snapshot 200 / **8.0s / 211.9KB**（恢复 R1 体量） | **12 可演 / 7 部分 / 4 覆盖不到**（155 解除，§5 同步） | ①`projectSupport` **已出真值**（NSFC 代理口径：dwd_zh_project 58,453 项 / score 42.9 / 资助额 mean 43.27 万·median 30·max 920 / 类别 面上 27,939·青年C 23,884·地区 2,634·专项 1,058·重点 962）→ 155 转 ✅；`industrySciInfluence` **仍缺**（data keys 无此 key）→ 149 维持 ❌，按约定建后端缺陷单；②四维 `weights` 仍全 0 → 143/151/157 维持 ⚠️（FIX-07 未落地）；③`spatialByDimension` 四维 0 行 + ④137/138 明细缺——`noSourceFields` 10 项已如实声明，确认为**设计空态非缺陷** | 149 建单（industrySciInfluence 缺块）；FIX-07 权重模型 | **R3 完成·不申请签收（12/7/4；残余均为后端项：149 缺块 + FIX-07 权重）** |
 | R4 | 2026-11-09 | FIX-09 算法侧落地（vendor/innov-py v2，commit `84ff427`，pipeline 4552 / job 33813 构建、33819 部署成功）后复测：snapshot 200 / **214.8KB**（含 `industrySciInfluence` + `projectSupport` 两块）；meta 200 | **13 可演 / 7 部分 / 3 覆盖不到**（149 解除，§5 同步） | ①`industrySciInfluence` **已出真值**：15 集群、score 74.9、合计 5,826,738 篇 / 114,379,101 被引，top1 CL-SEI-01 612,431 篇 / 12,765,905 被引 → 149 转 ✅；`gaps` 错误归因（原「256MB 内存硬限」）已更正为「FE 30s 单查询硬限 + CRC32 无损分片」；②四维 `weights` 仍全 0 → 143/151/157 维持 ⚠️（FIX-07 未落地）；③④维持设计空态 | FIX-07 权重模型；口径文档待补 v2（已登记） | **R4 完成·不申请签收（13/7/3；残余仅 FIX-07 权重 + 口径文档，均非算法链路）** |
+| R5 | 2026-11-10 | FIX-07 权重模型发布（svc `a843b09` pipeline 4597 / `deploy:display` 34316 ✅ + FE `7dd8ada` pipeline 4596 `deploy:k8s` ✅）后生产实测 snapshot 200 | **17 可演 / 4 部分 / 2 覆盖不到** | ①四维 `weights` 全 0 已解除 → **143/151/157 转 ✅**：默认 25/25/25/25 非 0、`weightCoverage` 100，`composite` = **41.4**（技术 19.4 / 科学 36.6 / 产业 50.0 / 政策 59.4，分项贡献 4.9·9.2·12.5·14.9）；改 40/30/20/10 → 后端重算 **36.4**；110% 非法 → `weightsValidation.valid=false` 且不产出综合分；②`industryRanking` **48 行**（rank 1–48 连续、score 降序、无空无 0，top1 计算机通信电子 75.42 / 末位农业 27.8）→ 143/151/157 解除；③残余 137/138/142/144 部分可演（图谱·前沿主题·市场诉讼·空间分维无源）+ 150/158 覆盖不到 | — | **R5 完成·不申请签收（17/4/2；残余仅 SUP-02 的 150 与 SUP-01 的 158）** |
+| R6 | 2026-11-10 | SUP-02 发布（svc `1d3a70e` + `dfb3a88`，pipeline 4607/4609，`backend:image:display` 34426 + `deploy:display` 34437 ✅）：display 改走 entan-py `POST /v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_005/compute` | **17 可演 / 5 部分 / 1 覆盖不到**（150 由 ❌ 转 ⚠️） | ①根因：`M_ENT_*` precompute 只烘焙在 entan 镜像，原打 innov-py 必空；②`industryTechInfluence` 出真值 **score 24.3**、`axes` 2 轴（`sep` = `pending` → 置灰「未测」）、`chains` 12（9 条有专利、3 条 0 件不参与加权）、覆盖 citedRows **20,515** / linkedChainPatentN **190** / linkedChainCitedSum **415** → 150 转部分可演；③残余仅 158 | SUP-01 | **R6 完成·不申请签收（17/5/1；仅余 158）** |
+| R7 | 2026-11-10 | SUP-01 三仓落地并发布（algo `display_policy_suggestion_routes.py` + svc `PolicySuggestionService` Redis 异步 + FE `PolicySuggestionCard` 中间态）：`generate` → 轮询 `status` | **18 可演 / 5 部分 / 0 覆盖不到** | ①`policySuggestions` **5 条**、`degraded=false`、每条带 evidence（metricId + value + caliber）→ **158 转 ✅**（建议卡带「模型生成·非评估结论」角标，不参与计分/排名/覆盖率）；②同用户同条件当天 `status` 二次调用直接返回旧结果（单飞 + 缓存直开，不重复调模型）；③首轮曾因事实校验过严（年份/序号/百分比误杀）+ 模型单对象输出判 `bad_schema` 降级，已修为「正文只校验小数 + evidence 值白名单校验 + 结构抽取容错」并复测通过；④`methodEvidence` 仍空态（德尔菲/仿真方法依据未提供，演示口径列「未提供」） | — | **R7 完成·已签收（18/5/0，2026-11-10 · human:李伟）** |
 
 ## 1. 探测（每轮第一笔，只读）
 
@@ -31,23 +34,23 @@
 | 序号 | 内容 | R1 判定要点 |
 |---|---|---|
 | 136 | 科学影响力 | 应出分（R0 实测 36.6）；非空即由 ❌ 升 ✅ |
-| 137 | 网络中心性 | 无独立端点 → 维持覆盖不到（不建补数单） |
+| 137 | 网络中心性 | 无独立端点（G8）；知识图谱页可演、网络中心性维按空态讲 → 部分可演（不建补数单） |
 | 138 | 技术前沿性 | `frontier_ratio` 有值即可演 |
 | 139 | 科学趋势预测 | `forecast` 段有值（注意年度断档，见 §4） |
-| 140–141 | 技术创新力 | 维分 19.6；141「权利要求数」维仍缺（G7），按 4/5 维重归一口径讲 |
-| 142 | 技术市场潜力 | `market_score=null`（G2 整维缺测 + G8 码值缺失），维持 ❌ 空态 |
-| 143 | 技术维权重合成 | `weights` 全 0 / 无评估模型 → 覆盖不到 |
+| 140–141 | 技术创新力 | 维分 19.6；141 于 FIX-01 后 **5 维齐全**（含权利要求数 `avg_claims`），`missing_dimensions` 空、claims 覆盖 0.68% 冻结上限如实披露 |
+| 142 | 技术市场潜力 | `market_score=null`（G2 整维缺测 + G8 码值缺失），R5 复判 → 部分可演（空态讲「未测」） |
+| 143 | 技术维权重合成 | R5 FIX-07 权重模型已落地：`weights` 默认 25/25/25/25、支持自定义重算 → 可演 |
 | 144–148 | 产业发展潜力 | 维分 50.0；techPatent 三榜各 200 条 |
 | 149 | 产业科学影响力 | 有值（15 集群口径）即可演 |
-| 150 | 产业技术影响力 | 空（G3 覆盖不足）→ 覆盖不到 |
-| 151 | 产业维权重合成 | 无模型 → 覆盖不到 |
+| 150 | 产业技术影响力 | R6 SUP-02 落地（entan 台账口径）→ 部分可演（SEP 轴无源，置灰「未测」） |
+| 151 | 产业维权重合成 | R5 FIX-07 权重模型已落地 → 可演 |
 | 152、154 | 政策与条件保障力 | 维分 63.4 |
 | 155 | 政策项目支持 | G4 已落地（国自然代理三维），按「代理口径」讲 |
 | 156 | 政策维度明细 | 有值即可演 |
-| 157 | 政策维权重合成 | 无模型 → 覆盖不到 |
-| 158 | 政策建议与方法论 | 不演（裁定 A01），空态 + 说明，禁模板套话 |
+| 157 | 政策维权重合成 | R5 FIX-07 权重模型已落地 → 可演 |
+| 158 | 政策建议与方法论 | R7 SUP-01 落地（生成 → 异步轮询 → 当天缓存直开）→ 可演，带「模型生成·非评估结论」角标，禁模板套话 |
 
-- **不演行**：158（A01）；**维持覆盖不到**：137、142、143、150、151、157。
+- **不演行**：无（158 已于 R7 由 SUP-01 转可演，演示须带「模型生成·非评估结论」角标，且不参与计分/排名）；**维持部分可演**：137、138、142、144（无源）、150（SEP 轴无源）；**维持覆盖不到**：0 项（R7 状态）。
 - 演示口径：12 项 `noSourceFields` 全部空态呈现，不补 0、不沿用 demo 假数。
 
 ## 3. 判定与退出
@@ -75,26 +78,26 @@
 | 138 | ⚠️ | science「研究前沿」=68.9 有分；payload 无前沿主题清单/时间演变字段 |
 | 139 | ✅ | `sciForecast.domains` 3 领域：series 2015–2023 真值（2024–2026 为 null 预测位）+ forecast 2024/2025 + lo80/hi80 |
 | 140 | ✅ | `techPatent.composite` 200 IPC4，patent_count 真实（A61K=226,626） |
-| 141 | ⚠️ | `techPatent.quality` 四维齐（家族/被引/技术宽度/授权率），权利要求数 `missing_dimensions` |
-| 142 | ❌ | `market_score` 恒 null（G2 整维缺测） |
-| 143 | ⚠️ | `composite_score` 有值（A61K=100.0）、维分 15.9；但四维 `weights` 全 0、无权重合成模型，自定义权重无后端重算 |
+| 141 | ✅ | FIX-01 落地：`techPatent.quality` **5 维齐全**（家族/被引/技术宽度/授权率/权利要求数），`missing_dimensions` 空；A61K `avg_claims`=15.24、`claims_covered_count`=25（覆盖 0.68% 冻结上限如实披露）；quality_score 按 5 维重归一，A61K 72.86→64.75 |
+| 142 | ⚠️ | `market_score` 仍恒 null（G2 整维缺测：专利转让/许可/诉讼市场活动数据无源）→ **R5 复判由 ❌ 归入部分可演**：页面按空态呈现并明示「未测」，与 137/138/144 同列，不计可演 |
+| 143 | ✅ | **R5 2026-11-10 解除**：FIX-07 权重模型落地——四维 `weights` 默认 25/25/25/25 非 0、`weightCoverage` 100，`composite` 41.4（技术 19.4/科学 36.6/产业 50.0/政策 59.4，分项贡献 4.9·9.2·12.5·14.9）；自定义改 40/30/20/10 → 后端重算 36.4；110% 非法 → `weightsValidation.valid=false` 且不产出综合分 |
 | 144 | ⚠️ | `spatialRows`/`spatialRegions` 各 100 城计数真实；`spatialByDimension` 四维均 `[]` → 按维切换无数据 |
 | 145 | ✅ | `forecast_top` series 2015–2026 真实申请量 + forecast 2027 起 + cagr_3y_pct（年度断档见 §4） |
 | 146 | ✅ | industry「产业投入」=50.0（48 行业真实计量） |
 | 147 | ✅ | industry「产品成熟度」=50.0 |
 | 148 | ✅ | industry「产业产值」=50.0 |
 | 149 | ✅ | **R4 2026-11-09 解除**：FIX-09 v2 部署后 `industrySciInfluence` 出真值——久新 15 集群口径，score 74.9，15/15 集群齐全（top1 CL-SEI-01 新一代信息技术 612,431 篇 / 12,765,905 被引 / 篇均 20.84 / D1 100.0；合计 5,826,738 篇 / 114,379,101 被引），industry「科学影响力」=74.9（非 null） |
-| 150 | ❌ | industry「技术影响力」=null（G3 整维缺测） |
-| 151 | ⚠️ | industry「综合评估」=50.0 有值；无权重模型（同 143） |
+| 150 | ⚠️ | **R6 2026-11-10 转部分可演**：SUP-02 改走 entan-py `M_ENT_DS_07_INDUSTRY_POTENTIAL_005`（`M_ENT_*` precompute 只烘焙在 entan 镜像），score 24.3；`axes` 2 轴（`sep` = `pending` → 置灰「未测」）、`chains` 12（9 条有专利、3 条 0 件不参与加权）、覆盖 citedRows 20,515 / linkedChainPatentN 190 / linkedChainCitedSum 415；SEP 轴无源，**不得由规则或模型填充** |
+| 151 | ✅ | **R5 2026-11-10 解除**：同 143——权重模型落地后 industry「综合评估」参与合成、支持自定义权重重算；`industryRanking` 48 行（rank 1–48 连续、score 降序、无空无 0，top1 计算机通信电子 75.42 / 末位农业 27.8） |
 | 152 | ✅ | policy「战略引导力」=50.1 |
 | 153 | ✅ | policy「政策扶持力度」=64.3 |
 | 154 | ✅ | policy「经费支持」=89.4 |
 | 155 | ✅ | **R3 2026-11-09 解除**：`projectSupport` 出真值——NSFC 代理口径（dwd_zh_project 58,453 项；approval_year 覆盖 1986–2021，2022 起缺失不按 0 摊入）score 42.9；资助额 mean 43.27 万 / median 30 / max 920；类别 面上 27,939 / 青年C 23,884 / 地区 2,634 / 专项 1,058 / 重点 962 |
 | 156 | ✅ | policy「实施效果」=100.0（须保留「仅相关不构成因果」标注） |
-| 157 | ⚠️ | policy「综合评估」=63.4 有值；无权重模型（同 143） |
-| 158 | ❌ | `policySuggestions=[]`、`methodEvidence` 全空（G5 无建议模型） |
+| 157 | ✅ | **R5 2026-11-10 解除**：同 143——policy「综合评估」参与合成、支持自定义权重重算 |
+| 158 | ✅ | **R7 2026-11-10 转可演**：SUP-01 落地——`generate` → 轮询 `status`，5 条建议 / `degraded=false` / 每条带 evidence（metricId + value + caliber）；同条件当天 `status` 直开旧结果（单飞 + 缓存）；建议卡带「模型生成·非评估结论」角标、**不参与计分/排名/覆盖率**；方法依据 `methodEvidence` 仍空态（德尔菲/仿真未提供，演示口径列「未提供」） |
 
-**小计（R4 2026-11-09 更新）**：✅ **13** / ⚠️ 7 / ❌ **3** = 23（155 于 R3 转 ✅、149 于 R4 转 ✅）。与用例文档原「19 ✅ / 1 ⚠️ / 3 ❌」的差异，全部源于「仅汇总分无明细」与「149/155 缺块」，已在用例文档同步更正。
+**小计（R7 2026-11-10 更新）**：✅ **18** / ⚠️ **5**（137、138、142、144、150）/ ❌ **0** = 23。转档轨迹：155（R3）→ 149（R4）→ 143/151/157（R5）→ 150（R6，→⚠️）→ 158（R7）；141 于 FIX-01 后 5 维齐全，142 于 R5 复判由 ❌ 归入 ⚠️（空态讲，不计可演）。与用例文档原「19 ✅ / 1 ⚠️ / 3 ❌」的差异，全部源于「仅汇总分无明细」与「缺块/无模型」，已在用例文档同步更正。
 
 **部署确认结果（R3）**：display 新版已发布——`projectSupport` 已出真值（155 解除）；`industrySciInfluence` 仍缺（data keys 无此 key）→ 按「发布后仍缺」约定**建后端缺陷单**。权重模型（FIX-07）未落地，143/151/157 维持 ⚠️；`noSourceFields` 10 项（spatialByDimension / methodEvidence / policySuggestions / evidence 等）确认为**设计空态（诚实性声明）非缺陷**。
 
