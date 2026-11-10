@@ -7,7 +7,7 @@
   python sync_cases_to_sheet.py ... --apply                                                          # 实际写入
 匹配策略：标题匹配优先（五级/六级功能名），序号+1 偏移兜底；无匹配/歧义只进报告，不写错行。
 """
-import argparse, glob, io, json, os, re, sys, time, urllib.request, urllib.error
+import argparse, fnmatch, glob, io, json, os, re, sys, time, urllib.request, urllib.error
 from datetime import date
 
 BASE = 'https://open.feishu.cn/open-apis'
@@ -97,6 +97,9 @@ def main():
     ap.add_argument('--spreadsheet', required=True)
     ap.add_argument('--sheet-id', required=True)
     ap.add_argument('--cols', default='L,M', help='写入的目标列（输入列,来源列），须为空列')
+    ap.add_argument('--filter', default='*', help="只取文件名匹配此 glob 的用例文件，如 'POL-*'")
+    ap.add_argument('--merge', action='store_true',
+                    help='增量刷新：只重写本次匹配的行，其他行（含空行）保持现状；表头只在缺失时补')
     ap.add_argument('--apply', action='store_true')
     ap.add_argument('--report', default=None)
     args = ap.parse_args()
@@ -116,16 +119,22 @@ def main():
     rev0 = None
     print('[i] sheet=%s rows=%s' % (args.sheet_id, n_rows))
 
-    # 2. 安全校验：目标列必须为空（除表头行）
+    # 2. 安全校验：clean 模式要求目标列为空；merge 模式读现状（L 列）以便只改本次命中的行
     chk_rng = '%s!%s2:%s%d' % (args.sheet_id, col_in, col_src, n_rows)
     chk = http_json('GET', '%s/sheets/v2/spreadsheets/%s/values/%s?valueRenderOption=ToString'
                     % (BASE, args.spreadsheet, urllib.request.quote(chk_rng, safe='')), headers=hh)
     if chk.get('code') != 0:
         sys.exit('[x] 目标列读取失败(可能非空列名有误): %s' % chk)
     vals = chk['data']['valueRange']['values']
-    dirty = [i + 2 for i, r in enumerate(vals) if any(c not in (None, '') for c in r)]
-    if dirty:
-        sys.exit('[x] 目标列 %s:%s 已有内容(行 %s...)，中止；请换 --cols 或人工清理' % (col_in, col_src, dirty[:5]))
+    if args.merge:
+        existing = {i + 2: (r[0] or '') for i, r in enumerate(vals)}
+        existing_m = {i + 2: (r[1] if len(r) > 1 else '') or '' for i, r in enumerate(vals)}
+        pre_filled = sum(1 for v in existing.values() if v)
+        print('[i] merge mode: L 列已有 %d 行内容，本次只重写新匹配的行' % pre_filled)
+    else:
+        dirty = [i + 2 for i, r in enumerate(vals) if any(c not in (None, '') for c in r)]
+        if dirty:
+            sys.exit('[x] 目标列 %s:%s 已有内容(行 %s...)，中止；增量刷新请加 --merge，或换 --cols，或人工清理' % (col_in, col_src, dirty[:5]))
 
     # 3. 读功能层级 A:F
     rng = '%s!A1:F%d' % (args.sheet_id, n_rows)
@@ -141,8 +150,13 @@ def main():
         f = (r[5] if len(r) > 5 else '') or ''
         idx.append((i + 1, e, f))
 
-    # 4. 解析本地用例
-    files = sorted(glob.glob(os.path.join(args.md_dir, '*-合规演示用例.md')))
+    # 4. 解析本地用例（按 --filter 过滤文件名）
+    all_files = sorted(glob.glob(os.path.join(args.md_dir, '*-合规演示用例.md')))
+    files = [p for p in all_files if fnmatch.fnmatch(os.path.basename(p), args.filter)]
+    if not files:
+        sys.exit('[x] --filter %s 无匹配文件（目录内共 %d 个用例文件）' % (args.filter, len(all_files)))
+    print('[i] filter=%s -> %d/%d files: %s' % (args.filter, len(files), len(all_files),
+                                                ', '.join(os.path.basename(p) for p in files)))
     by_seq, bads = {}, []
     for p in files:
         rows, bad = parse_md(p)
@@ -266,35 +280,58 @@ def main():
 
     print('[i] matched_rows=%d unmatched_seqs=%d ambiguous=%d collisions=%d file_offset_applied=%d' % (len(matched), len(unmatched), len(ambiguous), len(collisions), applied))
 
-    # 6. 写入（分块 PUT，只写目标两列；未匹配行写空=保持为空）
+    # 6. 写入
     upd_rev = []
     if args.apply:
-        head = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
-                         {'valueRange': {'range': '%s!%s1:%s1' % (args.sheet_id, col_in, col_src),
-                                         'values': [['合规用例·输入与条件（自动同步 %s）' % date.today().isoformat(), '用例来源文件']]}},
-                         headers=hh)
-        upd_rev.append(head.get('data', {}).get('revision'))
+        head_txt = '合规用例·输入与条件（自动同步 %s）' % date.today().isoformat()
+        if args.merge:
+            if existing.get(1) != head_txt and not (existing.get(1) or '').startswith('合规用例·输入与条件'):
+                head = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
+                                 {'valueRange': {'range': '%s!%s1:%s1' % (args.sheet_id, col_in, col_src),
+                                                 'values': [[head_txt, '用例来源文件']]}}, headers=hh)
+                upd_rev.append(head.get('data', {}).get('revision'))
+            # merge：只写本次命中的行；目标行已有内容且来源文件不同（或 M 空=不明来源）→ 跳过防误覆盖
+            targets = sorted(rn for rn in matched
+                             if not (existing.get(rn) and
+                                     (not existing_m.get(rn) or os.path.basename(matched[rn][1] or '?') != os.path.basename(existing_m.get(rn)))))
+            skipped_other = sorted(rn for rn in matched if rn not in set(targets))
+            for rn in skipped_other:
+                collisions.append((matched[rn][1], rn, existing_m.get(rn) or '(M列空)',
+                                   os.path.basename(matched[rn][1])))
+            if targets:
+                print('[i] merge 将写 %d 行，防误覆盖跳过 %d 行' % (len(targets), len(skipped_other)))
+        else:
+            head = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
+                             {'valueRange': {'range': '%s!%s1:%s1' % (args.sheet_id, col_in, col_src),
+                                             'values': [[head_txt, '用例来源文件']]}}, headers=hh)
+            upd_rev.append(head.get('data', {}).get('revision'))
+            # clean：整表两列重写（未匹配行写空=清空，保持列内无脏数据）
+            targets = list(range(2, n_rows + 1))
         CH = 150
-        rows_sorted = sorted(matched)
-        for start in range(2, n_rows + 1, CH):
-            end = min(start + CH - 1, n_rows)
+        for start in range(targets[0], targets[-1] + 1, CH):
+            block_range = [rn for rn in targets if start <= rn <= start + CH - 1]
+            if not block_range:
+                continue
             block = []
-            for rn in range(start, end + 1):
+            for rn in block_range:
                 t, s = matched.get(rn, ('', ''))
                 block.append([t, s])
             wr = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
-                           {'valueRange': {'range': '%s!%s%d:%s%d' % (args.sheet_id, col_in, start, col_src, end),
+                           {'valueRange': {'range': '%s!%s%d:%s%d' % (args.sheet_id, col_in, block_range[0], col_src, block_range[-1]),
                                            'values': block}}, headers=hh)
             if wr.get('code') != 0:
-                sys.exit('[x] 写入失败 %s%d: %s' % (col_in, start, wr))
+                sys.exit('[x] 写入失败 %s%d: %s' % (col_in, block_range[0], wr))
             upd_rev.append(wr.get('data', {}).get('revision'))
-        print('[i] written, revisions=%s' % upd_rev)
+        print('[i] written rows=%d, revisions=%s' % (len(targets), upd_rev))
 
     # 7. 报告
     rep = args.report or os.path.join(args.md_dir, '展示系统-用例同步报告-%s.md' % date.today().isoformat())
+    if args.filter != '*':
+        rep = args.report or os.path.join(args.md_dir, '展示系统-用例同步报告-%s-%s.md' % (args.filter.rstrip('*-').rstrip('-') or 'filter', date.today().isoformat()))
     with io.open(rep, 'w', encoding='utf-8') as f:
         f.write('# 展示系统合规用例 → 飞书表同步报告（%s）\n\n' % date.today().isoformat())
-        f.write('- 目标：`%s` 页签 `%s`，新增列 `%s`(输入与条件) / `%s`(来源)；未动任何原有列\n' % (args.spreadsheet, args.sheet_id, col_in, col_src))
+        f.write('- 模式：%s，文件过滤：`%s`（本次 %d 个文件）\n' % ('merge 增量刷新（只动本次命中的行）' if args.merge else 'clean 全列', args.filter, len(files)))
+        f.write('- 目标：`%s` 页签 `%s`，列 `%s`(输入与条件) / `%s`(来源)；本次未动过滤范围外的任何文件/行\n' % (args.spreadsheet, args.sheet_id, col_in, col_src))
         f.write('- 本地用例：files=%d，序号数=%d，用例行=%d，坏行=%d\n' % (len(files), len(by_seq), sum(len(v) for v in by_seq.values()), len(bads)))
         f.write('- 匹配写入行=%d；未匹配序号=%d；歧义=%d；冲突跳过=%d\n' % (len(matched), len(unmatched), len(ambiguous), len(collisions)))
         f.write('- revision：%s → %s（apply=%s）\n\n' % (rev0, upd_rev[-1] if upd_rev else '-', args.apply))

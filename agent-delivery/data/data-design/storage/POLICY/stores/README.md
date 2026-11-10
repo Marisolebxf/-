@@ -7,7 +7,7 @@ element: POLICY
 role: store-mysql
 status: draft
 version: "2026-11-09"
-updated: 2026-11-09
+updated: 2026-11-10
 s3_task: DATA-POLICY-STORAGE-S3-L01
 ---
 ```
@@ -18,7 +18,7 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 | 子目录 | 文档 | 状态 |
 |---|---|---|
 | [`mysql/dwd.md`](./mysql/dwd.md) | `policy_base_info` + `policy_industry_rel` + `policy_category_rel` + `policy_support_amount` + `policy_text_parse` + `script_state` | draft |
-| [`mysql/ads.md`](./mysql/ads.md) | ADS **16 张**：指标 9 + 图镜像 2 + NER 1 + 文本 3 + `policy_industry_rel` 镜像 | draft |
+| [`mysql/ads.md`](./mysql/ads.md) | ADS **16 张**：指标 9 + 图镜像 2 + NER 1 + 文本 3 + `policy_industry_rel` 镜像。另有 draft：`policy_accuracy_demo`，不计入 16，不是指标表 | draft |
 | [`mysql/gapfill.md`](./mysql/gapfill.md) | D16 缺项：`gapfill_policy_sz_effect`（`POL-IMPL-EFFECT-MOCK-VIA-UI-L01`）+ 拆解/对比/研报八张空表（`POL-MOCK-BTN-A01`） | draft |
 | [`nebula/`](./nebula.md) | hang **`demo_gkx_chain` only** | draft |
 | [`elasticsearch/`](./elasticsearch.md) | 本管线不施工独立索引 | draft 指针 |
@@ -26,6 +26,8 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 | 窗口对照 | [`../windows/display-ds10-12.md`](../windows/display-ds10-12.md) | draft |
 
 库名：Demo `demo_gkxlumenx_dwd` / `demo_gkxlumenx_ads`。引擎：**MySQL 8 only**。禁止 `dwd.` / `ads.` PG schema 叙述当建库名。
+
+字符集与排序规则见架构铁律 **D19**：`utf8mb4` / `utf8mb4_general_ci`。建表必须写明，不继承库默认。2026-11-10 起，政策关联用到的 ODS/DWD/ADS 政策表、`script_state`、`gkxlumenx_gapfill` 库默认和全部 `gapfill_*`（含演示库同名表）都是这一套，行数未变。服务链三张 `svc_demand_match`、`svc_org_rating`、`svc_service_case` 本来就是这一套。连接必须带 `utf8mb4_general_ci`。PyMySQL 1.1 只写 `charset=utf8mb4` 时，参数和字面量是 `utf8mb4_0900_ai_ci`，和这套列比较会报 1267。
 
 ## 算法库 ER
 

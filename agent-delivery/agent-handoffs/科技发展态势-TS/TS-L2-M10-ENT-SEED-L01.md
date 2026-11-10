@@ -19,6 +19,7 @@
 1. 新增 `repos/lumen-algo-py/vendor/entan-py/scripts/seed_tech_graph_maintain.py`
    - 只读 Nebula `demo_gkx_chain`：`tech_point` + 四类 `tech_has_*` 边（仅 `relation_strength IS NOT NULL`）。
    - 写 `gkxlumenx_dwd` / `gkxlumenx_ads`（默认正式库；`GKX_M10_ENT_DWD_DB` / `GKX_M10_ENT_ADS_DB` 可覆盖）。
+   - **〔2026-11-10〕默认已改为中台库 `demo_gkxlumenx_dwd/ads`**（库边界 2026-10-19），现状数据已整表复制过去，见 `TS-L2-M10-ENT-DB-DEMO-L01.md`。
    - 默认 `--only-with-strength`；`--all` 为显式全量；`--max-write`（默认 5000）超限中止，`--allow-large` 放行。
    - `technology_master`：按唯一键 `name_cn` upsert；`external_ids` 记 `legacy_vid` + `technology_node_id`；重名点合并保留 `all_legacy_vids` / `all_technology_node_ids`。
    - `graph_entity_node`：只为范围内 active 技术点写（`version_id=当前 MAX ok 版本=1`，`display_name=name_cn`）。
@@ -74,7 +75,7 @@
 
 ## 架构合规自检
 
-- **D12 demo/lumen 隔离** ✅：只写 `gkxlumenx_dwd` / `gkxlumenx_ads`；未写任何 `demo_*` 库。
+- **D12 demo/lumen 隔离** ~~✅：只写 `gkxlumenx_dwd` / `gkxlumenx_ads`；未写任何 `demo_*` 库。~~ 〔2026-11-10 改判〕该口径与库边界 2026-10-19 冲突，已迁中台库，见 `TS-L2-M10-ENT-DB-DEMO-L01.md`。
 - **D16 gapfill** ✅：未写 ODS/DWD/ADS 以外 gapfill 表；无强度边不写 auto 边，未编造数据。
 - **D18 可实现** ✅：存量真扫 Nebula，无写死 mock；空态诚实。
 - **D2 算法只在 Python / 调用链** ✅：仅 Python 脚本直读 Nebula + 写 MySQL，无 Java/前端越层。

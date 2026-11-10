@@ -2,6 +2,8 @@
 
 | 日期 | 任务 | 说明 |
 |---|---|---|
+| 2026-11-10 | 602 波次 C 回应 | 准确性草稿表加一列「演示条数」，不是注册指标，不写 D4。没有行时不造数。索引仍写 16，行末指向这张 draft。点执行那一句只覆盖准确性：五条仍只 SELECT 演示贴源两表，不读九张指标表 |
+| 2026-11-10 | 602 波次 C | 政策清洗的准确性单独记了一张草稿表 `policy_accuracy_demo`。它按 D18 放在演示结果库，不是已经落地的那 16 张真算表 |
 | 2026-11-09 | `POL-MOCK-BTN-A01` | 缺项库补八张空表：`gapfill_policy_semantic`、`xcmp`、`xcmp_viz`、`xcmp_summary`、`report_analysis`、`report_insight`、`report_body`、`report_trace`。210/211 现网已有，不重建。DDL 在 `stores/mysql/gapfill.md`。只写 `gkxlumenx_gapfill` |
 | 2026-11-09 | `POL-EFFECT-MACRO-DATA-L01` | 落地实效宏观结果面代理读路径：新增 `etl/pipeline-macro-effect-proxy.md`（白名单 `macro-eff-v1` 9 指标、深圳/广州/北京/上海区划键、行业分析辅维、`companies` 禁用）；`etl/README`、`stores/README` 登记指针。只读 `gkx` → 算法内存，不落库、不写 ODS/DWD/ADS |
 | 2026-11-09 | `POL-IMPL-EFFECT-MOCK-VIA-UI-L01` | 落地实效缺项存储闭环：`stores/mysql/gapfill.md`（`gapfill_policy_sz_effect` CREATE + 列约束）；`etl/pipeline-algo-mock-gapfill.md`（Mock10 / 补外围双入口写路径）；`stores/README` 索引 + ER 列展开；`etl/README` 登记管道。只写 `gkxlumenx_gapfill`，不进 ODS/正式 DWD/ADS。`human:淮政玮` 签收 |

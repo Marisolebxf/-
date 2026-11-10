@@ -50,3 +50,10 @@
 - 修复 `lumen-ui-science-pc` 3da1892：「已在全景图」技术点行无勾选框，`batchRemoveEntities` 只发 `unhang_entities`（前端不再发 delete_node）；撤回方案 A 的 impact 预检/专门警告（`loadNodeImpact` 删除）；确认框补「删除后实体回到推荐列表，可重新添加」；推荐类型筛选去「技术点」；编辑技术点不显示「类型」；关系时间起止同年只显一年
 - 配套后端 `lumen-algo-py` df84c2e：R2 `time_range` 在仅有 `time_to` 时也输出（SEED 只灌强度边年份，原逻辑要求 time_from 非空致时间列恒空）
 - 验证：type-check / eslint / maintain.test.mjs / build 绿；本地 dev（mock auth + edu 真数据）无头 Chrome：筛选无技术点、技术点行无勾选框、挂接示范专利-20 → 关系行时间「2025」与推荐年份一致 → 批量删除确认框文案正确 → 解挂后退回推荐（v18/v19 互抵，数据回 v17）
+
+## 2026-11-10 文案清理（四页签，aa568f8）
+
+- 监管人要求：「对应需规」「演示」「Mock」「报价」类开发/验收用语不对用户展示，检查维护管理全部页签
+- 改动：页头 Mock 徽标与「演示（Mock，不落库）」；各分区「对应需规：」改为功能说明；维护技术图谱去「（演示态，未接后台——报价划掉项）」与「Mock 演示」徽标，「重置演示」→「重置」，版本种子「V1 初始演示版本·演示账号」→「V1 初始版本·系统」，操作提示去「（Mock）」
+- 注意：维护技术图谱（34–40）仍为页内演示逻辑不落库（新人引导：报价划掉、不建实现单），去标注后刷新即复原
+- 验证：type-check / eslint / maintain.test.mjs / build 绿；本地无头 Chrome 四页签可见文本扫描无「需规/演示/Mock/报价/demo」

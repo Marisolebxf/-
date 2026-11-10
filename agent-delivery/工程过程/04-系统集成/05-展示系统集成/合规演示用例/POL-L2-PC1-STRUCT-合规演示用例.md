@@ -2,24 +2,37 @@
 
 - 规程：`agent-delivery/产品实现规程.md` §6.4
 - 系统：科技信息展示系统 · 科技政策跟踪 · 政策数据治理
-- 需规序号：603
-- 需规全文：`agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/科技政策跟踪-系统详细设计说明书.md` §2
-- 日期：2026-11-08
+- 需规序号：603（FDE：`POL-L2-PC1-STRUCT-FDE-L01`，会签 1A/2A/3A）
+- 需规全文：说明书「#### 603」
+- 日期：2026-11-10
 - 调度核对：见文末
 
-查库：`demo_gkxlumenx_ads.policy_text_parse`、`demo_gkxlumenx_dwd.policy_base_info`。同资源 `GET /display/v1/policy/governance/results`。
+查库：`demo_gkxlumenx_ads.policy_text_parse`、`demo_gkxlumenx_dwd.policy_base_info`。  
+读摘要：`GET /display/v1/policy/governance/results`。  
+抽取：`POST /display/v1/policy/parse/clauses`（body `policy_id`）→ 再拉 results。
 
 ## 覆盖表
 
 | 需规位置 | 界面 | 输入或选择 | 触发 | 接口地址 | 按界面值填好的请求 | 期望输出 | 数据情况 |
 |---|---|---|---|---|---|---|---|
-| 603 政策库结构化 | 政策数据治理 · 结构化 | 政策 `18319069` | 选定政策后读 results | `GET /display/v1/policy/governance/results` | `policyId=18319069` | `structure.structuredPolicyCount=1290`；`structure.coverageRate=0.0624`（1290/20666）；`structure.policySummary.policyId=18319069` 且 `hasClauses=true` | 可演 |
+| 603-sel-1 | 结构化 · 条件栏 | 关键字过滤候选 | 打开下拉并输入关键字 | （前端过滤） | — | 标签为「政策选择」（非「演示政策」）；列表可按关键字缩小 | 可演 |
+| 603-sum-1 | 结构化 · 摘要区 | 已结构化政策 `18319069` | 选定后读 results | `GET …/governance/results` | `policyId=18319069` | 加载业务摘要；`structure.policySummary.hasClauses=true`；可见标题等字段 | 可演 |
+| 603-ext-1 | 结构化 · 条件栏同排 | 选一未结构化政策 | 点「结构化抽取」 | `POST …/parse/clauses` 再 `GET …/results` | `{"policy_id":"<id>"}` | 进行中按钮不可再点；成功后摘要出现且 `hasClauses=true` | 需挑未结构化样本 |
+| 603-ext-1 / 2A | 同上 | 已结构化政策 | 再点「结构化抽取」 | 同上 | 同上 | 按钮可点；失败时**仍保留**上次成功摘要 + 失败提示 | 可演（失败靠断网/超时另验） |
+| 603-sum-1 门控 | 摘要区 | 未结构化政策 | 仅选定、不点抽取 | `GET …/results` | `policyId=<未结构化>` | **不**加载业务摘要；引导先点「结构化抽取」 | 可演 |
+| 603-tax-1 / map-1 | 两表 | 打开结构化页签（可不选政策） | 进入页签 | （FE Wave0 seed） | — | 「政策分类标签体系」「字段映射」均有行，不得空表；Mock/评审可辨 | 可演 |
+| 603 库级 | 页眉/结构区块 | — | 打开治理 | `GET …/results` | （可无 policyId） | `structure.structuredPolicyCount` / `coverageRate` 照实；样本曾见 1290 / 0.0624 | 可演 |
 
-## 一条主路径
+**本波不验收（3A）**：603-qry-1 页内「结构化政策快速检索」——勿当必验。
 
-1. 打开结构化 Tab，选 `18319069`。
-2. 请求带 `policyId`。摘要应显示已结构化；覆盖率来自 ADS/DWD 计数，不是写死百分比。
+## 一条主路径（选 → 抽 → 看）
+
+1. 打开智能政策库构建 · **结构化**页签；两表已有行。
+2. 条件栏标签为「政策选择」，可关键字检索；同排有「结构化抽取」。
+3. 选已结构化政策（如 `18319069`）→ 下方加载摘要。
+4. 选未结构化政策 → 摘要不加载 → 点「结构化抽取」→ 成功后摘要出现。
+5. 已结构化政策可再抽；进行中不可第二遍；失败保留上次摘要。
 
 ## 调度核对
 
-可演 1 行。可建演示样本循环。
+可演行 ≥4（选择文案、已结构化摘要、门控空态、两表非空）。抽取未结构化样本与失败保留摘要依赖环境，§6.5 冒烟在前端推送部署后点验。

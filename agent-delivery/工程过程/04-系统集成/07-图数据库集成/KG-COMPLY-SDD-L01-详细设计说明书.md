@@ -307,6 +307,8 @@ flowchart TB
 | 结构基线 | STRUCT §1：14 Tag / 24+6 Edge / VID 规则；出入参不新增 Tag / Edge |
 | 边属性 | 每条边带 `weight double`（没有就 0，不造；**例外：M17 落在存量 `participates` 边上，该边无 `weight`，用 `chain_score` 作强度，不另加 `weight`**）、`props`（JSON：`source_table / source_record_id / batch / confidence / match_method / evidence`）；`first_year`：存量 24+6 边型实测**全库均无此字段**，本期入图不强制新建（避免 DDL 膨胀拖期）；若后续需要按首年筛，作为 STRUCT 结构增补项走 T01 待补清单同一 DDL 授权通道 |
 | 批号 | 每批入图带 `props.batch`（如 `comply-20261107-t02`）；端点缺失跳过并计数，不自动补点 |
+| **VID 规则（本期必读）** | **不得按 STRUCT §1.1 的规范前缀硬编码**。本期 `demo_gkx_chain` 一律用**现网实际前缀**：`ent:<org_id>` / `segment:<segment_key>` / `institution:<org_id>` / `pol:<policy_id>`（实测存量 208,394 / 1,414 / 43,296 / 20,000 点）；`ent:` 后缀**不是信用代码**（`enterprise_code` 实测 0/208,394 非空），真实后缀在 `props.org_id`。5 个新 Tag（`research`/`person`/`paper`/`patent`/`project`）无存量，沿用规范前缀（`inst:`/`person:`/`paper:`/`patent:`/`proj:`）。VID 从源表字段拼、不重算；执行器按 `demo` / `prod` 两套 profile 外置，**本期只允许 `demo`**。详见 [KG-COMPLY-VID-L01](./KG-COMPLY-VID-L01-VID前缀实测与裁定.md) |
+| **存量已满足项** | `depends_on` 1,073 条（全 `segment→segment`，M15）与 `participates` 178,731 条（`enterprise→segment`，M17）**已存在于现网**，只回读核对、**不得重灌**（重灌即翻倍、T07 无法对账）；存量边无 `props.batch` 字段，**禁止回写**（属改写既有数据） |
 | **结构补建（DDL）属性底线** | 补建 Tag / Edge **必须带 `props string`**，否则与「边属性」「批号」两行自相矛盾：`CREATE EDGE IF NOT EXISTS xxx ();` 这类空属性结构没有 `props` 列，`props.batch` 无处可写，T07 对账、T05/T06 批次拆分全部失效。具体：**Edge 至少 `weight double` / `props string`**（`first_year` 按上一行口径不强制）；**Tag 至少 `name string` / `props string`**（业务属性按 STRUCT §1.1 一律先进 `props` JSON，不逐项升列，与「不为加属性重建 Tag」的结论一致——但 `props` 列本身必须有，否则 JSON 无处落）。基准 `KG-7ELEM-SCHEMA-DDL-L01` 中 5 个 Tag + 11 种 Edge 的空括号写法视为**该文件的缺项**，按本行补齐后再报 DBA；现网 `cooperate` / `participates` 已自带 `props`（历史补列），证明空结构在实际写入时必然被绕过 |
 | 凭证 | Nebula 连接凭证走主机环境文件 / Secret，**不进 git、不进编排话术** |
 | 执行环境 | 与智树共用 `lumen-algo-py` 编排环境；入图执行为离线作业，不进页面请求链路 |
@@ -319,9 +321,9 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:白鑫凤` |
 | 依赖 | STRUCT §1 结构基线（已定，无需等待） |
-| 编排环境话术 | 「连 `demo_gkx_chain`，只读核对：14 个 Tag 与 24+6 条 Edge 是否都已存在、VID 规则抽查各 Tag 前缀（`ent:` / `seg:` / `inst:` / `person:` / `paper:` / `patent:` / `proj:` / `policy:` / `svc:` / `tp:` 系）是否与 STRUCT §1.1 一致；Edge 端点组合与方向不在 SHOW EDGES 结果里，另对各 Edge 名抽样各 20 条核对端点 Tag 对与方向是否与 STRUCT §1.2 一致；输出核对表（Tag/Edge/VID/端点方向四列，逐项 ✅/❌），不改任何 schema。**预期此闸门开局不会全绿**：2026-11-08 实测空间为 10 Tag / 15 Edge，预计缺 5 个 Tag 与 11 种 M 边型（清单见下「预期缺口」）。核对结果与预期一致属正常，不等于做错。若存在缺失 Tag / Edge：列『待补清单』（缺失项 + 对应 STRUCT §1 定义 + 建议 DDL 语句摘自 KG-7ELEM-SCHEMA-DDL-L01），**立即停止下游灌数任务**；待补清单里的 DDL 要逐条检查属性定义，**空属性结构（括号里什么都没有）不得直接提交 DBA**，须按 §5 共同前提「结构补建（DDL）属性底线」补齐 `props`（Edge 另需 `weight`）后再报；清单**先交唐绍祖确认内容对不对**，再报 `human:徐滕强`，由**项目组授权的 DBA 通道执行 DDL**——唐绍祖只做内容确认，不是 DDL 授权人，编排侧不得自行执行任何 DDL。补建完成并复验 ✅ 后 T02–T04 才开工。」 |
+| 编排环境话术 | 「连 `demo_gkx_chain`，只读核对：14 个 Tag 与 24+6 条 Edge 是否都已存在、VID 规则抽查各 Tag 前缀是否与**现网实际前缀**一致（`ent:` / `segment:` / `institution:` / `pol:` / `tech_point:` 为存量基准；`person:` / `paper:` / `patent:` / `proj:` / `inst:` 为新 Tag 规范前缀；判据见 KG-COMPLY-VID-L01，**不要拿 `seg:` / `svc:` / `policy:` / `tp:` 去比**，那几个是正式线目标、本期不适用）；Edge 端点组合与方向不在 SHOW EDGES 结果里，另对各 Edge 名抽样各 20 条核对端点 Tag 对与方向是否与 STRUCT §1.2 一致；输出核对表（Tag/Edge/VID/端点方向四列，逐项 ✅/❌），不改任何 schema。**预期此闸门开局不会全绿**：2026-11-08 实测空间为 10 Tag / 15 Edge，预计缺 5 个 Tag 与 11 种 M 边型（清单见下「预期缺口」）。核对结果与预期一致属正常，不等于做错。若存在缺失 Tag / Edge：列『待补清单』（缺失项 + 对应 STRUCT §1 定义 + 建议 DDL 语句摘自 KG-7ELEM-SCHEMA-DDL-L01），**立即停止下游灌数任务**；待补清单里的 DDL 要逐条检查属性定义，**空属性结构（括号里什么都没有）不得直接提交 DBA**，须按 §5 共同前提「结构补建（DDL）属性底线」补齐 `props`（Edge 另需 `weight`）后再报；清单**先交唐绍祖确认内容对不对**，再报 `human:徐滕强`，由**项目组授权的 DBA 通道执行 DDL**——唐绍祖只做内容确认，不是 DDL 授权人，编排侧不得自行执行任何 DDL。补建完成并复验 ✅ 后 T02–T04 才开工。」 |
 | 读哪张图 | `demo_gkx_chain` 的 schema（`SHOW TAGS` / `SHOW EDGES`）+ 各 Tag 抽样点 + 各 Edge 抽样边（端点与方向） |
-| 验收看什么 | 核对表全绿或差异逐条列出；七要素层缺失的 Tag / Edge 列成「待补清单」并附 DDL 摘要；待补清单的 DDL 须逐条核对属性定义（空属性结构不得提交 DBA，见 §5 共同前提）；**待补清单非空时，T02–T04 处于 blocked 等待，不得带缺灌数** |
+| 验收看什么 | 核对表全绿或差异逐条列出；七要素层缺失的 Tag / Edge 列成「待补清单」并附 DDL 摘要；待补清单的 DDL 须逐条核对属性定义（空属性结构不得提交 DBA，见 §5 共同前提）；VID 列按**现网实际前缀**判（KG-COMPLY-VID-L01）；**待补清单非空时，T02–T04 处于 blocked 等待，不得带缺灌数** |
 | 不做什么 | 不建空间、不改 schema、不灌数；schema 补建**不经编排话术执行**——统一走 DDL / DBA 授权通道（脚本真源 KG-7ELEM-SCHEMA-DDL-L01，内容经唐绍祖确认 → 报徐滕强 → 项目组授权 DBA 执行）；凭证不落盘进 git |
 
 **T01 预期缺口（2026-11-08 实测基线，供核对表对账）**
@@ -360,10 +362,10 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:陈芸飞` |
 | 依赖 | T01 核对表；`industry_chain_entity_rel` 等关系表（抽取来源占位见 L01 §5） |
-| 编排环境话术 | 「按 STRUCT §1 结构，先补齐端点再灌边：`segment` / `enterprise` / `research` 点按源表存在才建（VID 按前缀规则，属性最小集），已存在的点跳过并计数；然后把 M15（环节 depends_on 环节）、M17（企业 participates 环节）、M19（机构 research_coop 机构）按关系表离线灌入 `demo_gkx_chain`；每条边带 `props.batch=comply-<日期>-t02`；端点缺失跳过并计数；完成后按各边数与源表行数出对账单。」 |
+| 编排环境话术 | 「按 STRUCT §1 结构，先补齐端点再灌边：`segment` / `enterprise` / `research` 点按源表存在才建（**VID 按 `demo` profile 用现网前缀**：`segment:<segment_key>` / `ent:<org_id>` / `inst:<institution_id>`，不得用 `seg:` / `ent:<信用代码>`，见 KG-COMPLY-VID-L01；属性最小集），已存在的点跳过并计数。**M15 与 M17 已由存量满足，只核对不重灌**：存量 `depends_on` 1,073 条全部 `segment→segment`、存量 `participates` 178,731 条 `enterprise→segment`，重灌会导致边数翻倍与 T07 对账失配，请先回读计数确认、再把这些存量记入对账单「存量已满足」行。然后只把 **M19（机构 research_coop 机构）** 按关系表离线灌入 `demo_gkx_chain`；新写入的边带 `props.batch=comply-<日期>-t02`（存量边无 `batch` 字段，禁止回写）；端点缺失跳过并计数；完成后按各边数与源表行数出对账单。」 |
 | 读哪张图 | 写入后回读 `depends_on` / `participates` / `research_coop` 三条边与 `segment` / `enterprise` / `research` 点 |
-| 验收看什么 | 对账单：灌入边数 vs 源表行数、跳过计数（端点缺失）；抽样边方向与端点 Tag 正确；`depends_on` 保持无环（DAG，实跑基线 1,073 边 32 层可作量级参照） |
-| 不做什么 | 不新增边型；不把 `apply_to` / `support` 记成 M12–M14 已建（两条边实测 100% 重复，须停读一条，语义对齐归 T06）；不把 `institution`→`institution` 的 `participates`（34,769）记成 M02 / M19（M17 由 `enterprise`→`segment` 的 178,731 条对应，与本节无关）；不碰技术点层 |
+| 验收看什么 | 对账单：存量已满足项（M15 1,073 / M17 178,731 回读计数与基线一致）+ 新灌 M19 边数 vs 源表行数、跳过计数（端点缺失）；抽样边方向与端点 Tag 正确；`depends_on` 保持无环（DAG，实跑基线 1,073 边 32 层可作量级参照） |
+| 不做什么 | 不新增边型；**不得重灌 M15 / M17**（存量已满足，重灌翻倍）；不把 `apply_to` / `support` 记成 M12–M14 已建（两条边实测 100% 重复，须停读一条，语义对齐归 T06）；不把 `institution`→`institution` 的 `participates`（34,769）记成 M02 / M19（M17 由 `enterprise`→`segment` 的 178,731 条对应，与本节无关）；不给存量边补 `props.batch`（改写既有数据，禁止）；不碰技术点层 |
 
 ### T03 七要素入图 · 人才与机构组（M01 / M02 / M03 / M04 / M20）
 
@@ -371,7 +373,7 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:宋飞扬` |
 | 依赖 | T01 核对表；人才 / 机构合作与任职关系数据（抽取来源待确认项按 L01 §5 占位执行，来源没到位的边先不灌并登记） |
-| 编排环境话术 | 「按 STRUCT §1 结构，先补齐端点再灌边：`person` / `research` 点按源表存在才建（VID 按前缀规则），已存在跳过并计数；然后把 M01（人才 cooperate 人才）、M02（机构 cooperate 机构）、M03（人才 cooperate 机构）、M04（人才 belong 机构）、M20（人才 talent_coop 人才）离线灌入 `demo_gkx_chain`；无向边如实记为无向语义；每条边带 `props.batch=comply-<日期>-t03`；完成后出对账单。」 |
+| 编排环境话术 | 「按 STRUCT §1 结构，先补齐端点再灌边：`person` / `research` 点按源表存在才建（**VID 按 `demo` profile 用规范前缀**：`person:<talent_id>` / `inst:<institution_id>`，见 KG-COMPLY-VID-L01；`research` 点全表建自 `ads_institution_profile` 83,745 行，`institution_type_id` 原值写 `props`，**不剔除、不与存量 `institution` 合并**），已存在跳过并计数；然后把 M01（人才 cooperate 人才）、M02（机构 cooperate 机构）、M03（人才 cooperate 机构）、M04（人才 belong 机构）、M20（人才 talent_coop 人才）离线灌入 `demo_gkx_chain`；无向边如实记为无向语义；每条边带 `props.batch=comply-<日期>-t03`；完成后出对账单。」 |
 | 读哪张图 | 写入后回读 `cooperate` / `belong` / `talent_coop` 边与 `person` / `research` 点 |
 | 验收看什么 | 对账单同 T02；抽样：M01/M20 不混灌（合著只是两路之一，`props.match_method` 区分）；M04 方向 person→research |
 | 不做什么 | 不用 `COAUTHOR_WITH` 名义直接覆盖 M01/M20；不造人才-技术直连边（B5 仍走代表论文替代口径）；不碰 M05（本期数据不可用） |
@@ -382,10 +384,10 @@ flowchart TB
 |---|---|
 | 建议执行人 | `human:韩梦蕊` |
 | 依赖 | T01 核对表；论文引用 / 项目参与 / 著录关系数据；专利引用是否本期建由 LOAD 定（STRUCT 未闭合项 3），未定前只建论文→论文 |
-| 编排环境话术 | 「按 STRUCT §1 结构，先补齐端点再灌边：`paper` / `patent` / `project` / `person` / `research` 点按源表存在才建（VID 按前缀规则），已存在跳过并计数；然后把 M07（人才 participate 技术）、M08（机构 participate 技术）、M09（人才 author_of 技术）与 M06 论文→论文部分（cite）离线灌入 `demo_gkx_chain`；方向按 M 编号表不反转；每条边带 `props.batch=comply-<日期>-t04`；完成后出对账单。」 |
+| 编排环境话术 | 「按 STRUCT §1 结构，先补齐端点再灌边：`paper` / `patent` / `project` / `person` / `research` 点按源表存在才建（**VID 按 `demo` profile**：`paper:<doi>`、无 DOI 才退 `paper:<src_id>`；`patent:<patent_no>` / `proj:<project_no>` / `person:<talent_id>`，见 KG-COMPLY-VID-L01），已存在跳过并计数。**边按源表分建，不许按 M 编号一刀切**：M07 只从 `ads_talent_project`（人才↔项目 7,702,366 行）出，终点是 `project`，`is_lead` 与其他参与人同为 `participate`、角色写 `props.project_role`；M08 从 `ads_project_institution`（22,571,355 行）出；M09 只建**专利**部分（`ads_talent_patent` 85,069 行，person→patent）。**M09 论文部分无源不建**——`ads_paper_profile` 只有 `author_count`、无作者字段，列缺口不造数。**M06 本期不建**：`ads_patent_cited_paper` 只覆盖专利→论文，与 M06「论文→论文」定义不一致，单列待定。方向按 M 编号表不反转；新写入边带 `props.batch=comply-<日期>-t04`；完成后出对账单。」 |
 | 读哪张图 | 写入后回读 `cite` / `participate` / `author_of` 边与 `paper` / `patent` / `project` / `person` / `research` 点 |
-| 验收看什么 | 对账单同 T02；M06 只含论文→论文（专利引用未定不灌）；方向抽查（M07/M08/M09 均 人才或机构→技术） |
-| 不做什么 | 不反转方向迁就燕大既有 `AUTHORED_BY` / `FUNDED_BY` 旧方向；不给技术点层新编必须边；不碰 M10–M14 / M16（政策无数据） |
+| 验收看什么 | 对账单同 T02；M06 本期未建（单列「专利→论文有源但与定义不符，待定」）；M09 只含专利段，论文段列「无源缺口」；方向抽查（M07/M08/M09 均 人才或机构→技术） |
+| 不做什么 | 不反转方向迁就燕大既有 `AUTHORED_BY` / `FUNDED_BY` 旧方向；**不用论文署名行造 M07**（署名行无人才 ID 可用，M07 只出自 `ads_talent_project`）；不用 `author_count` 倒推作者关系；不拿技术点层 `ads_technology_paper` 顶替 M09；不给技术点层新编必须边；不碰 M10–M14 / M16（政策无数据） |
 
 ### T05 空态层入图核验（M05 / M10–M14 / M16 / M18 / M21 / M23 / M24）
 
@@ -529,3 +531,4 @@ flowchart TB
 | 2026-11-08 | 复审修订（两轮评审修复，同日完成）：① T05 空态边数量 10→11；② FLOW 图 M22 移出「已能供数」组、错边 A2→A5 改 A3→A5、SEVEN 节点分三组（已能供数 / 无供数空态 / 有数据形态不可用 501）；③ 悬空引用 §1.1①②改正规引用；④ T06 四边语义比对口径拆分；⑤ 正式线最低覆盖修正为 9 Tag + 24 边（技术点层可选不计入，§3.1/§3.2/T11 三处对齐）；⑥ T02–T04 补「先建点后灌边」；⑦ T05 不再写空 Tag（区分 Tag 历史数据与本期无供数）；⑧ T13 依赖 T02–T05→T02–T04；⑨ T01 补 Edge 端点方向抽样核验；⑩ M22 返回语义统一为「必为 501·形态不支持」（§2.2#5/速查/handoff）；⑪ T07 口径改引 STRUCT §1 与 T02–T06 对账单；⑫ diagram-as-contract 链接层级修正。handoff 同步更新 |
 | 2026-11-09 | **签收前文字对齐**：㉑ 开头确认人改为徐滕强；FLOW 图 A3 与 §2.1 #11 社群数字对齐 B′（178 / res8.0，113 / 0.5198 仅备查）；T10「不做什么」去掉与话术矛盾的「不做多算法对比」；§5 边属性补 M17 例外（`participates` 用 `chain_score` 作强度，会签 P1-4） |
 | 2026-11-09 | **T01 交付评审回修（唐绍祖，2 项）**：㉒ **预期缺口 10→11 种边型**——首版漏记 `publish`（M10，科研机构→政策），按白鑫凤 2026-11-09 只读核对结果补正，并补「15 种边型 ↔ 24 条 M 关系」完整对应关系；㉓ **§5 共同前提新增「结构补建（DDL）属性底线」**——基准 `KG-7ELEM-SCHEMA-DDL-L01` 中 5 Tag + 11 Edge 的空属性写法（`CREATE EDGE IF NOT EXISTS belong ();`）与本节「边属性」「批号」两行自相矛盾：无 `props` 列则 `props.batch` 无处可写，T07 对账 / T05–T06 批次拆分全部失效。据此明确：空属性结构不得提交 DBA，补建 **Edge 至少 `weight` / `props`、Tag 至少 `name` / `props`**；`first_year` 按 ⑲ 口径不强制。评审全文见 [会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md](./会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md) |
+| 2026-11-10 | **T01 v2 评审与 VID 裁定（唐绍祖）**：㉔ **VID 前缀裁定（P0）**——白鑫凤 §9 抽查发现现网与规范大面积不符，ALGO 复核确认且更严重：`ent:` 后缀非信用代码（`enterprise_code` 0/208,394 非空，真实后缀在 `props.org_id`）。裁定本期一律用现网前缀（`ent:`/`segment:`/`institution:`/`pol:`）、VID 从源表字段拼不重算、规范前缀留作正式线目标，§5 共同前提新增「VID 规则」行，T01 判据改为对照现网前缀；详见 [KG-COMPLY-VID-L01](./KG-COMPLY-VID-L01-VID前缀实测与裁定.md)。㉕ **存量已满足项入表**——`depends_on` 1,073（M15）/ `participates` 178,731（M17）已在现网，T02 改为「只核对不重灌」，`不做什么` 补禁止重灌与禁止回写 `props.batch`。㉖ **T03/T04 数据源口径钉死**——`research` 全表建自 `ads_institution_profile` 83,745 行（与存量 43,296 服务机构不同源、不合并）；M07 只出 `ads_talent_project`、不出论文署名行；M09 只建专利段，论文段无源（`ads_paper_profile` 无作者字段）列缺口；M06 本期不建。详见 [KG-COMPLY-LOAD-T01-答复-科研机构判定与M07署名.md](./KG-COMPLY-LOAD-T01-答复-科研机构判定与M07署名.md) |
