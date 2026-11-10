@@ -301,13 +301,8 @@ try {
   assert.equal(reconfirmState.gates.enter_dev.status, 'approved');
   const longTaskRouteState = structuredClone(state);
   setRisk(longTaskRouteState, { level: 'L', reasons: ['cross-repository contract change'] });
-  assert.throws(() => approveGate(longTaskRouteState, {
-    gate: 'enter_dev',
-    message: '【进入开发】123',
-    binding: { ...enterBinding, risk_level: 'L' },
-    sessionId: 'session-1',
-    machineId: 'machine-1',
-  }), /L_ROUTE_REQUIRED/);
+  assert.equal(longTaskRouteState.gates.enter_dev.status, 'invalidated');
+  assert.match(longTaskRouteState.next_action.action, /L 级/);
   assert.match(state.next_action.action, /verify-repo/);
   assert.throws(
     () => advance(structuredClone(state), { to: 'REVIEWING', sessionId: 'session-1', machineId: 'machine-1' }),
@@ -317,7 +312,12 @@ try {
   const repoVerification = verifyRepo(state, { repoId: 'ui_pc', repoDir, candidateSha });
   assert.equal(repoVerification.git_verified, true);
   assert.match(repoVerification.diff_hash, /^sha256:/);
+  assert.match(checkDataWrite(state, dbWriteInput, { sessionId: 'session-1', machineId: 'machine-1' }).write_authorization_id, /^sha256:/);
   advance(state, { to: 'REVIEWING', sessionId: 'session-1', machineId: 'machine-1' });
+  const riskEvidenceState = structuredClone(state);
+  setRisk(riskEvidenceState, { level: 'M', reasons: ['cross-component risk discovered'] });
+  assert.equal(riskEvidenceState.gates.enter_dev.status, 'needs_reconfirm');
+  assert.equal(verifyEvidence(riskEvidenceState, manifest, runDir).result, 'PASS');
 
   recordReview(state, {
     repos: [{

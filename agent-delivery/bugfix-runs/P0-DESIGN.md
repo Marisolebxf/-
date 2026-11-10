@@ -1,7 +1,7 @@
 # 飞书缺陷 AI Native P0 设计稿
 
-> 状态：P0 收敛版 v0.9（补齐写入、验证、claim 和路由闸门，准备进入真实缺陷试点）
-> 版本：v0.9
+> 状态：P0 收敛版 v0.9.1（修复写入时序与历史证据复核，准备进入真实缺陷试点）
+> 版本：v0.9.1
 > 日期：2026-11-10
 > 基线案例：飞书缺陷【2238】
 > 设计原则：对外只保留两个口令和一次业务验收，内部校验严格但由 Agent 自动执行
@@ -321,7 +321,7 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 
 同一份代码在不同机器、不同时间重跑时，不能因为审计元数据变化而误判 gate 失效。哈希使用以下稳定投影：
 
-- `gate_hash` 只包含：授权来源、精确口令文本、`approved_by`、`claim_id`、gate 名称、稳定 `bound_to` 对象和校验器版本；
+- `gate_hash` 只包含：授权来源、精确口令文本、`approved_by`、`approved_session_id`、`approved_machine_id`、`claim_id`、gate 名称、稳定 `bound_to` 对象和校验器版本；
 - `bound_to` 不包含 `worktree` 绝对路径、`session_id`、`message_ref`、`approved_at` 和运行时临时目录；
 - `verification_hash` 按 repo 只包含该仓验证矩阵的：`id`、`category`、`behavior`、`result`、`evidence_refs`、`simulated`、`skipped_reason`；
 - `verification_hash` 不包含：`timestamp`、`cwd`、`stdout_path`、`producer`、`raw_retained`、`reviewable` 等审计元数据；manifest 文件本身的 `manifest_hash` 单独记录；
@@ -980,6 +980,13 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 - 验证矩阵必须按仓库覆盖 `fix`、`regression`、`boundary` 三类；不适用时用 `SKIPPED + skipped_reason`，不能只写一条修复行为；
 - `requires_human_ratification=true` 且未追认的决策不得通过 `【提测】` 或进入 `READY_SHIP`；
 - 上述四类规则加入负向 selfcheck；P0 功能冻结，真实试点期间不再扩字段或命令。
+
+## 18.3 v0.9.1 写入时序修复
+
+- `check-data-write` 只放宽 `enter_dev` 的 candidate 条件：`verify-repo` 后仍允许 DB 写；首次 `approveGate` 和 `advance IMPLEMENTING` 继续要求 candidate 为 `null`；
+- 当前写入授权检查当前 gate、session/machine、policy 和 scope；历史 DB 证据复核使用 `transitions[]` 中已批准的 gate hash，不再要求当前 gate 仍为 approved；
+- 风险升级到 L 时 gate 直接 `invalidated`，不再保留可重新确认的假路径；
+- selfcheck 增加 `verify-repo → check-data-write` 成功、风险升级后历史 DB 证据仍可复核两条回归。
 
 ## 19. 后续实施顺序
 

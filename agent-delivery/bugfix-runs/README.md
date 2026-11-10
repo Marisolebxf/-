@@ -1,6 +1,6 @@
 # 飞书缺陷修复运行账本
 
-> 状态：P0 收敛版 v0.9（写入与验证闸门已补齐，进入真实缺陷试点）
+> 状态：P0 收敛版 v0.9.1（修复写入时序与历史证据复核，进入真实缺陷试点）
 > 建立日期：2026-11-10
 > 适用范围：飞书项目中由当前用户认领并修复的缺陷
 > 真源分层：`P0-DESIGN.md` 管流程/权限，`SKILL.md` 管操作，`state.schema.json` 管机器结构，`policies/` 管数据授权
@@ -70,6 +70,7 @@ bugfix-runs/
     state.json            # 只表示当前 cycle
     cycles/
       <cycle_id>/state.json
+      <cycle_id>/evidence/manifest.json
     report.md
     evidence/
       manifest.json

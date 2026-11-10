@@ -15,7 +15,7 @@ import { parseArgs } from 'node:util';
 import { validateJsonSchema } from './lib/mini-json-schema.mjs';
 import { loadPolicy, matchTableToPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-export const VALIDATOR_VERSION = 'bugflow-state-p0-v3';
+export const VALIDATOR_VERSION = 'bugflow-state-p0-v4';
 export const SCHEMA_VERSION = 2;
 export const PROJECTION_VERSION = 'p0-v3';
 export const PHASES = [
@@ -439,7 +439,7 @@ function sameStringSet(left, right) {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
-function bindingStateErrors(state, gateName, binding) {
+function bindingStateErrors(state, gateName, binding, options = {}) {
   const errors = [];
   if (!binding || typeof binding !== 'object') return ['bound_to must be an object'];
   if (!exactRepoSet(state.repos, binding.repos)) {
@@ -462,7 +462,9 @@ function bindingStateErrors(state, gateName, binding) {
       continue;
     }
     if (gateName === 'enter_dev') {
-      if (repo.candidate_sha != null) errors.push(`${boundRepo.repo_id}: candidate_sha must be null before enter_dev`);
+      if (!options.allowEnterDevCandidate && repo.candidate_sha != null) {
+        errors.push(`${boundRepo.repo_id}: candidate_sha must be null before enter_dev`);
+      }
       if (repo.base_sha !== boundRepo.base_sha) errors.push(`${boundRepo.repo_id}: base_sha mismatch`);
       if (!sameStringSet(repo.planned_change_scope, boundRepo.planned_change_scope)) {
         errors.push(`${boundRepo.repo_id}: planned_change_scope mismatch`);
@@ -499,8 +501,8 @@ function bindingStateErrors(state, gateName, binding) {
   return errors;
 }
 
-function assertBindingMatchesState(state, gateName, binding) {
-  const errors = bindingStateErrors(state, gateName, binding);
+function assertBindingMatchesState(state, gateName, binding, options = {}) {
+  const errors = bindingStateErrors(state, gateName, binding, options);
   if (errors.length) throw new Error(`GATE_BINDING_STATE_MISMATCH:\n- ${errors.join('\n- ')}`);
 }
 
@@ -595,7 +597,9 @@ export function validateGate(state, gateName, context = {}) {
   try {
     loadAndValidatePolicy(state, context.policiesRoot ?? POLICY_ROOT, context.now ?? new Date());
     assertGateBinding(gateName, gate.bound_to);
-    assertBindingMatchesState(state, gateName, gate.bound_to);
+    assertBindingMatchesState(state, gateName, gate.bound_to, {
+      allowEnterDevCandidate: context.allowEnterDevCandidate === true,
+    });
   } catch (error) {
     errors.push(error.message);
   }
@@ -1183,7 +1187,9 @@ export function setRisk(state, risk) {
   };
   if (upgraded) {
     for (const name of ['enter_dev', 'ship']) {
-      if (state.gates[name].status === 'approved') state.gates[name].status = 'needs_reconfirm';
+      if (['approved', 'needs_reconfirm'].includes(state.gates[name].status)) {
+        state.gates[name].status = state.risk.level === 'L' ? 'invalidated' : 'needs_reconfirm';
+      }
     }
   }
   if (state.risk.level === 'L') {
@@ -1213,15 +1219,6 @@ function normalizeDataWrite(write) {
 
 function resolveDataWriteScope(state, write, options = {}) {
   const loadedPolicy = loadAndValidatePolicy(state, options.policiesRoot ?? POLICY_ROOT, options.now ?? new Date());
-  if (state.risk?.level === 'L' || (state.repos ?? []).length > 1) {
-    throw new Error('DATA_WRITE_DENIED: L or cross-repository runs must use the existing long-task workflow');
-  }
-  if (state.gates?.enter_dev?.status !== 'approved') {
-    throw new Error('DATA_WRITE_DENIED: an approved 【进入开发】 gate is required before any DB write');
-  }
-  if (state.plan?.data_access !== true) {
-    throw new Error('DATA_WRITE_DENIED: plan.data_access must be true');
-  }
   if (state.data_policy?.scope?.status !== 'approved') {
     throw new Error('DATA_WRITE_DENIED: data scope must be approved before any write');
   }
@@ -1261,9 +1258,16 @@ function dataWriteAuthorizationProjection(state, write) {
 export function checkDataWrite(state, write, options = {}) {
   assertStateShape(state);
   const normalized = normalizeDataWrite(write);
+  if (state.risk?.level === 'L' || (state.repos ?? []).length > 1) {
+    throw new Error('DATA_WRITE_DENIED: L or cross-repository runs must use the existing long-task workflow');
+  }
+  if (state.plan?.data_access !== true) {
+    throw new Error('DATA_WRITE_DENIED: plan.data_access must be true');
+  }
   const gateResult = validateGate(state, 'enter_dev', {
     sessionId: options.sessionId,
     machineId: options.machineId,
+    allowEnterDevCandidate: true,
     policiesRoot: options.policiesRoot ?? POLICY_ROOT,
     now: options.now,
   });
