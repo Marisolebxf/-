@@ -62887,8 +62887,13 @@ tasks:
       - "handoff 写明重跑入口前后，这五句是否出现在同一个 jobs 返回里。"
     update_time: "2026-11-10T04:25:03+08:00"
   - id: DEVOPS-LUMEN-ENTAN-PULL-ALWAYS-L01
+    supervised_by: "human:刘剑锋"
+    claimed_at: "2026-11-10T03:51:09.189Z"
+    last_seen_at: "2026-11-10T03:51:09.189Z"
+    lock_until: "2026-11-10T11:51:09.189Z"
+    claimed_by: "agent:devops-agent"
     title: "helm 重发不再把 entan-py 打回节点缓存的旧 latest（pullPolicy 改 Always）"
-    status: "ready"
+    status: "in_progress"
     agent: "devops-agent"
     epic: "E-PLATFORM"
     priority: "P1"
@@ -62899,7 +62904,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 12000
     note: |
-      2026-11-10 发现：edu M10-ENT 全部接口 404 {"detail":"Not Found"}（FastAPI 格式＝已到 entan-py 但无路由）。dev 代码路由强制挂载无误（main.py:133），线上镜像早于 11-09 09:37。根因：lumen-algo-py deploy:entan-api 用 set image :<sha>，但 svc-platform helm:deploy/helm:chart 按 values-lumen 把 entan-py 改回 gkxlumen-entan-py-api:latest + IfNotPresent，节点复用缓存旧 latest。0b8ee31 只修了 innov-py。lumen-algo-py .image 每次构建都推 :latest，故 Always 拉到的即最新。临时止血：重跑 lumen-algo-py dev 最新流水线 deploy:entan-api。登记：agent:coordinator（human:刘剑锋 指派转 devops）
+      2026-11-10 发现：edu M10-ENT 全部接口 404 {"detail":"Not Found"}（FastAPI 格式＝已到 entan-py 但无路由）。dev 代码路由强制挂载无误（main.py:133），线上镜像早于 11-09 09:37。根因：lumen-algo-py deploy:entan-api 用 set image :<sha>，但 svc-platform helm:deploy/helm:chart 按 values-lumen 把 entan-py 改回 gkxlumen-entan-py-api:latest + IfNotPresent，节点复用缓存旧 latest。0b8ee31 只修了 innov-py。lumen-algo-py .image 每次构建都推 :latest，故 Always 拉到的即最新。临时止血：重跑 lumen-algo-py dev 最新流水线 deploy:entan-api。登记：agent:coordinator（human:刘剑锋 指派转 devops）｜2026-11-10 认领 agent:devops-agent（监管 human:刘剑锋）：values 改动已由 lumen-svc-platform 44fa227（11:25，entanPy/entanPyWorker pullPolicy Always）落 dev；etlEsPy 维持 IfNotPresent（kubelet 拉 Harbor 证书失败、镜像 import 到 node01，改 Always 反致拉取失败）。偏离 devops.mdc 铁律3（禁 latest 部署）沿用团队 6cb8523/0b8ee31 口径。止血：重跑 deploy:entan-api 后 11:36 接口恢复（R2/R1/conflicts/impact 全 200）。待：手动跑一次 svc-platform helm:chart 使 Always 落到 Deployment，跑后复验 R2 200 → pending_test。
     touched_files:
       - "helm/gkxlumen-platform/values-lumen.yaml"
     design_refs:
@@ -62910,7 +62915,7 @@ tasks:
       - "跑一次 helm:chart 使其生效，之后 helm upgrade 不再让 entan-py 退回旧镜像"
       - "验证：helm:chart 后 edu GET /tid/api/display/v1/situation/maintain-ent/graph/current 返回 200 code:0（非 FastAPI 404）"
       - "ponytail: full"
-    update_time: "2026-11-10T11:26:58+08:00"
+    update_time: "2026-11-10T11:52:21+08:00"
   - id: SYSINT-03-03A-WIRE-L01
     supervised_by: "human:孔东"
     claimed_at: "2026-11-10T04:09:21.808Z"
