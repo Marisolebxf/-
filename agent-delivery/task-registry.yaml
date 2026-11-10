@@ -60156,7 +60156,7 @@ tasks:
   - id: POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP
     evidence: "handoff: agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-L2-DS12-SIM-DEMO-ACCEPT-LOOP.md；2026-11-08 第一轮：探测 200，样本 5/5 全 PASS（237/238/239/241/242），零缺口不建子任务"
     title: "科技政策推演演示实例反复验收"
-    status: "ready"
+    status: "done"
     agent: "qa-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -60167,7 +60167,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 30000
     user_story: "US-DS-POL-06"
-    note: "缺口 R20261108-DATA 已闭合签收（done）。样本 5/5 按修订后期望成立。验收单按 DoD 退回 ready 循环位。"
+    note: "2026-11-10 可演四行对得上。237 覆盖不到不判通过。240 不请求。状态行已回写。"
     depends_on:
       - "POL-L2-DS12-SIM-GAPFILL-L01"
       - "POL-L2-DS12-JOBS-IMPL-JAVA"
@@ -60189,7 +60189,7 @@ tasks:
       - "401/424 或令牌过期：验收单 blocked，通知 human:淮政玮，不建子任务。404 停止并写「接口映射不存在」"
       - "同一 handoff 追加「运行 YYYY-MM-DD」节，不覆盖上一轮。不把 SIM-TEST-L01 标完成"
       - "本单可反复执行。一轮报告写完后由当次监管人把状态退回 ready，不签 done。下一轮再认领"
-    update_time: "2026-11-08T20:33:27+08:00"
+    update_time: "2026-11-10T04:25:38+08:00"
   - id: SVC-ORG-DEMO-FIX-R20261108-QUERY
     cost_warn: "green"
     actual_cost: 0.35
@@ -62487,13 +62487,18 @@ tasks:
       - "自检 + 同步 vendor + 两仓推 dev；handoff 写明表、行数、样例"
     update_time: "2026-11-09T22:02:12+08:00"
   - id: POL-MOCK-BTN-B07
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-MOCK-BTN-B07.md"
+    cost_warn: "green"
+    actual_tokens: 180000
+    actual_cost: 1
     claimed_at: "2026-11-09T14:02:20.880Z"
     last_seen_at: "2026-11-09T14:02:20.880Z"
     lock_until: "2026-11-10T14:02:20.880Z"
     claimed_by: "agent:algorithm-agent"
     supervised_by: "human:淮政玮"
     title: "政策 Mock 按钮化 · 研报按钮（614–618）"
-    status: "in_progress"
+    status: "integration"
     agent: "algorithm-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -62503,7 +62508,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "claim_type=coordinator_dispatch。B06 联调闸门后开工"
+    note: "演示库已写入。B 段灌数到此，联调闸门放行 E01"
     depends_on:
       - "POL-MOCK-BTN-B06"
     collaborators:
@@ -62516,7 +62521,7 @@ tasks:
       - "行内容按总控 §5.2 可读标准；不新造 metric_id"
       - "回执含 614–618"
       - "自检 + 同步 vendor + 两仓推 dev；handoff 写明表、行数、样例"
-    update_time: "2026-11-09T22:02:23+08:00"
+    update_time: "2026-11-09T22:16:27+08:00"
   - id: POL-MOCK-BTN-C01
     model_used: "grok-4.7"
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-MOCK-BTN-C01.md"
@@ -62656,9 +62661,19 @@ tasks:
       - "不适用完工即推：停在本地待 human:淮政玮 确认后推 dev；handoff 附截图"
     update_time: "2026-11-09T20:34:19+08:00"
   - id: POL-MOCK-BTN-E01
+    blocked_by: "C2 展示令牌失效（trace b750bbab94c6b338bc8e37c3ff5afe08）；C4 金路径未把 221、231、237 列进允许空态（目录不建表）；C2 第 9 行因 D01 未推送。不开代码修单。"
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-MOCK-BTN-E01.md"
+    cost_warn: "green"
+    actual_tokens: 160000
+    actual_cost: 0.8
+    claimed_at: "2026-11-09T14:16:32.398Z"
+    last_seen_at: "2026-11-09T14:16:32.398Z"
+    lock_until: "2026-11-10T14:16:32.398Z"
+    claimed_by: "agent:qa-agent"
     supervised_by: "human:淮政玮"
     title: "政策 Mock 按钮化 · 按钮复现与展示读面抽查"
-    status: "backlog"
+    status: "blocked"
     agent: "qa-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -62668,7 +62683,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "监管 human:淮政玮。长任务 POL-MOCK-BTN 段 E，全管线一张。"
+    note: "金路径 9 行只有第 8 行通过。展示抽查 401 确认为 C2 令牌失效，trace b750bbab94c6b338bc8e37c3ff5afe08，不开修。221、231、237 确认为 C4，金路径要求大于 0，目录写明不建表，不开灌数修单。第 9 行确认为 C2，D01 未推送。"
     depends_on:
       - "POL-MOCK-BTN-B07"
       - "POL-MOCK-BTN-C03"
@@ -62681,7 +62696,7 @@ tasks:
       - "按 §5.2 可读标准抽查样例：中文自然句、无占位符、policy_id 在演示库存在"
       - "重复点击不翻倍；正式库拒绝；DS12-EST 用例 232–236 仍读到"
       - "令牌只从本机 %USERPROFILE%\\.gkx\\display-loop-token 读，不进 git/handoff；handoff 写逐行结果与 trace"
-    update_time: "2026-11-09T19:38:48+08:00"
+    update_time: "2026-11-09T22:32:03+08:00"
   - id: SYSINT-XTEAM-L01
     title: "跨团队集成信息收集（甲方口径：智树/燕大/久新/智谱门户智库之间算跨团队）"
     status: "backlog"
@@ -62734,3 +62749,140 @@ tasks:
       - "登记表落在工程过程目录并经各内部团队负责人确认"
       - "handoff：agent-handoffs/SYSINT-XTEAM-L02.md，注明与 L01 的口径边界（谁算谁不算跨团队）"
     update_time: "2026-11-09T21:32:58+08:00"
+  - id: POL-SIM-ALIGN-D01
+    evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-D01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-09T19:51:38.360Z"
+    last_seen_at: "2026-11-09T19:51:38.360Z"
+    lock_until: "2026-11-10T19:51:38.360Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策效果推演整页按原型对齐"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 120000
+    note: "联调闸门未过：只完成本地自检与推送，线上页面未核对。"
+    depends_on: []
+    touched_files:
+      - "src/views/policy/simulation/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-长任务总控.md"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+    definition_of_done:
+      - "效果预估五子页与科技政策推演六子页的块布局与 demo-ui-science 同页一致"
+      - "USE_MOCK=false 时图表和数字只来自接口行，不把原型截图分数写进真实路径"
+      - "区域页保留空间分布原文解析出的三维地图与热力图"
+      - "pnpm type-check 或仓内自检绿后推 origin/dev"
+      - "handoff 含 ponytail 与复刻 V1–V7、R1–R5"
+    update_time: "2026-11-10T04:13:08+08:00"
+  - id: POL-SIM-ALIGN-A01
+    evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-A01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-09T19:51:38.852Z"
+    last_seen_at: "2026-11-09T19:51:38.852Z"
+    lock_until: "2026-11-10T19:51:38.852Z"
+    claimed_by: "agent:arch-agent"
+    title: "政策效果推演 DS-12 说明书按原型与现行接口重写"
+    status: "integration"
+    agent: "arch-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "handoff 已落盘，进入会签起草态。四角色仍未签。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-长任务总控.md"
+      - "agent-delivery/产品实现规程.md"
+    definition_of_done:
+      - "说明书 §2 DS-12 的 232–242 每叶写明原型块名、现行接口路径、缺项表与原文列"
+      - "不新造 metric_id，不把四角色会签标成已完成"
+      - "handoff 落盘，不改本长任务总控"
+    update_time: "2026-11-10T04:04:01+08:00"
+  - id: POL-SIM-ALIGN-B01
+    title: "政策效果推演缺项文案大模型兜底"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "claim_type=coordinator_dispatch。等 DATA 单离开 in_progress 再认领。监管人 human:淮政玮。"
+    depends_on:
+      - "POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA"
+    touched_files:
+      - "polan/mockgen/simulation.py"
+      - "lumen-algo-py/vendor/entan-py/polan/mockgen/simulation.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-长任务总控.md"
+    definition_of_done:
+      - "有密钥时推演缺项文案走大模型，无密钥保持现有模板句"
+      - "Java 读口仍只读表，不在读请求里现算句子"
+      - "不新增第三套手插脚本，不改 232 过滤，不 TRUNCATE"
+      - "demo-algo-ent-analysis 与 lumen-algo-py/vendor/entan-py 的 polan/mockgen 同步"
+    update_time: "2026-11-10T03:51:30+08:00"
+  - id: POL-SIM-ALIGN-U01
+    evidence: "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-U01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-09T20:04:08.193Z"
+    last_seen_at: "2026-11-09T20:04:08.193Z"
+    lock_until: "2026-11-10T20:04:08.193Z"
+    claimed_by: "agent:qa-agent"
+    title: "政策效果推演两份合规演示用例按现行数据重写"
+    status: "integration"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 40000
+    note: "用例已落盘。237 覆盖不到，240 设计无资源。不写会签完成。"
+    depends_on:
+      - "POL-SIM-ALIGN-A01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-长任务总控.md"
+      - "agent-delivery/产品实现规程.md"
+    definition_of_done:
+      - "232–236 与 237–242 每条需规都有一行，演不到的写覆盖不到"
+      - "期望来自当前能读到的行，不把原型截图分数写成期望"
+      - "已写下的 401、404 实测不改写"
+      - "两份用例路径写进 handoff"
+    update_time: "2026-11-10T04:22:36+08:00"
+  - id: POL-L2-DS12-EST-DEMO-FIX-R20261110-DATA
+    title: "新出台预测 18363390 短期等句对齐模板"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "2026-11-10 LOOP 建单，未认领，未改库。监管人 human:淮政玮。"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-DS12-EST-合规演示用例.md"
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/POL-SIM-ALIGN-长任务总控.md"
+    definition_of_done:
+      - "缺口键 gapfill_policy_sim_forecast.新出台预测.18363390。2026-11-10 jobs {\"kind\":\"新出台预测\",\"policy_id\":\"18363390\"} HTTP 200、records 1。标题在。短期仍是「短期内申报便利度上升，受惠企业数量约增加一成」。用例要的「办理与兑现更顺畅」「持续实施后，相关主体的投入意愿增强」「拉动以研发与生产性服务为主」「电子信息与生物医药的相关活动更集中」「依据与既有同类支持政策的支持对象相近」不在返回里。"
+      - "造数只走「Mock 10 条数据」与「真实政策补外围」两个已有入口。禁止第三套手插，禁止写 ODS、正式 DWD、ADS 和供应方库。不改 Java 过滤，不改用例期望句。"
+      - "与 POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA 不并行改 synth.py。本单未认领。"
+      - "handoff 写明重跑入口前后，这五句是否出现在同一个 jobs 返回里。"
+    update_time: "2026-11-10T04:25:03+08:00"
