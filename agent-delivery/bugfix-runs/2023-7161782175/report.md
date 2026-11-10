@@ -1,9 +1,9 @@
 # 缺陷修复报告：2023 科技全域态势，实时数据监控，选择饼图实际展示为折线图
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-10T21:44:33.641+08:00
+> 生成时间：2026-11-10T22:25:55.926+08:00
 > 当前 cycle：cycle-001-20261110T212039+0800
-> 当前内部阶段：IMPLEMENTING
+> 当前内部阶段：READY_SHIP
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -29,27 +29,33 @@
 
 ## 3. 改动摘要和非目标
 
-- backend：lumen-svc-platform，base=46520a828cbcea6acd15b5537dbd2455cc03fa62，candidate=PENDING，scope=gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java, gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller
+- backend：lumen-svc-platform，base=46520a828cbcea6acd15b5537dbd2455cc03fa62，candidate=db2054c650ceb64487b7901f906d604ce6a36fc3，scope=gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java, gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller
 
 实现仓校验：
 
-- PENDING
+- backend：candidate=db2054c650ceb64487b7901f906d604ce6a36fc3，diff_hash=sha256:247583be13be56ec33110a12a92670f7cd7e7d1a988703a366ecd25548de9d30，git_verified=yes，files=gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java, gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller/SituationControllerDomainDistributionTest.java
 
 非目标：不修改 KPI factor card 的 sparkline 语义；不新增 mock 数据；不改前端筛选范围或图表控件交互；不改其他 situation 端点
 
 ## 4. 验证矩阵和证据结果
 
-- PENDING
+- fix / 2026分布缺失时回退到范围内最新可用2025，恢复企业领域分布饼图数据：PASS；evidence=evidence/manifest.json#E-CMD-004
+- regression / 请求年份有数据时保持原命中行为，且全部 Situation 测试无回归：PASS；evidence=evidence/manifest.json#E-CMD-004
+- boundary / 请求年之后的数据不被回退采用，完全无数据时不伪造年份：PASS；evidence=evidence/manifest.json#E-CMD-004
 
 | evidence_id | kind | result | reviewable | raw_retained | non-reviewable reason | commit | summary |
 |---|---|---|---|---|---|---|---|
 | E-UI-001 | ui | PASS | yes | yes | PENDING | 46520a828cbcea6acd15b5537dbd2455cc03fa62 | 缺陷截图：饼图按钮选中，企业领域分布面板缺失，论文 KPI 卡展示年度折线 |
+| E-CMD-001 | command | PASS | yes | yes | PENDING | 446d049b4d71c33b637e653dc3910e5d5e50c46b | SituationControllerDomainDistributionTest 3 tests passed; Maven reactor BUILD SUCCESS |
+| E-CMD-002 | command | PASS | yes | yes | PENDING | b02426e6 | bugflow-state.selfcheck passed after remote credential normalization fix |
+| E-CMD-003 | command | PASS | yes | yes | PENDING | 446d049b4d71c33b637e653dc3910e5d5e50c46b | gkxlumen-display 全部 Situation* 测试 22 passed, 0 failed; reactor BUILD SUCCESS |
+| E-CMD-004 | command | PASS | yes | yes | PENDING | db2054c650ceb64487b7901f906d604ce6a36fc3 | 最终候选 db2054c：gkxlumen-display Situation* 测试 23 passed, 0 failed; reactor BUILD SUCCESS |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:a76fa6eca876dc5c32280c40832e5bdd9a1e0a14f1b15c599d40d3a36ed6856d；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:b083704596b81b6784c7eb3a6862a5f2a7437662ed114e5712f669cd2829cd4b；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -58,7 +64,7 @@ DB 写证据授权：
 
 评审记录：
 
-- PENDING
+- backend：reviewer=agent:review-agent:01a1c5d0，independent=true，sha=db2054c650ceb64487b7901f906d604ce6a36fc3，verdict=PASS，hash=sha256:3c31108fc378caeaedaf1efd4f0e569cb5c56f2197d5cac2091ca1da92ed399e，findings=residual: fallback uses as-of endYear semantics rather than strictly bounding by startYear；residual: annual completeness is not detectable from ADS rows
 
 ## 6. S/M/L 风险等级和定级理由
 
@@ -114,6 +120,7 @@ ship bound_to：PENDING
 ## 12. 自动决策摘要
 
 - 保持 KPI factor card 的饼图回落折线语义，仅修复企业领域分布面板的年份回退；依据=原 demo 和现有组件均明确 factorCardChartType 将 pie 映射为 line；图表类型控件作用于 distribution panel；备选=把每张 KPI 卡也改成饼图，但不同要素单位不可比且偏离原型 / 继续隐藏分布面板并禁用图表切换，但无法满足需规的饼图展示；影响=用户选择饼图后由恢复的企业领域分布面板展示饼图，KPI 卡继续展示年度 sparkline；需人工批准=no；批准人=PENDING
+- 修复在独立分支完成并创建 Draft MR !6，当前停在 READY_SHIP 等待精确口令；依据=M 级改动已通过独立 review、23 个 Situation 测试和 git scope 校验；备选=直接修改 dev（禁止，未获提测授权） / 继续扩大改动范围（无必要，当前证据已覆盖缺陷）；影响=收到提测口令后将合并 dev、触发后端部署并做 dev 复测；需人工批准=no；批准人=PENDING
 
 ## 13. 回滚版本、回滚方式和回滚验证
 

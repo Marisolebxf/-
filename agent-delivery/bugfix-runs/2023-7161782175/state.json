@@ -32,7 +32,7 @@
     "current_owner": "human:7695591354147146731",
     "takeover_history": []
   },
-  "phase": "IMPLEMENTING",
+  "phase": "READY_SHIP",
   "risk": {
     "level": "M",
     "reasons": [
@@ -48,7 +48,7 @@
       "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform.git",
       "base_branch": "dev",
       "base_sha": "46520a828cbcea6acd15b5537dbd2455cc03fa62",
-      "candidate_sha": null,
+      "candidate_sha": "db2054c650ceb64487b7901f906d604ce6a36fc3",
       "planned_change_scope": [
         "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java",
         "gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller"
@@ -110,12 +110,88 @@
     "data_access": false
   },
   "implementation": {
-    "repos": []
+    "repos": [
+      {
+        "repo_id": "backend",
+        "base_sha": "46520a828cbcea6acd15b5537dbd2455cc03fa62",
+        "candidate_sha": "db2054c650ceb64487b7901f906d604ce6a36fc3",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform",
+        "changed_files": [
+          "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java",
+          "gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller/SituationControllerDomainDistributionTest.java"
+        ],
+        "diff_hash": "sha256:247583be13be56ec33110a12a92670f7cd7e7d1a988703a366ecd25548de9d30",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-10T22:23:47.173+08:00"
+      }
+    ]
   },
   "review": {
-    "repos": []
+    "repos": [
+      {
+        "repo_id": "backend",
+        "reviewer": "agent:review-agent:01a1c5d0",
+        "independent": true,
+        "reviewed_sha": "db2054c650ceb64487b7901f906d604ce6a36fc3",
+        "verdict": "PASS",
+        "scope": "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/SituationController.java + SituationControllerDomainDistributionTest.java",
+        "findings": [
+          "residual: fallback uses as-of endYear semantics rather than strictly bounding by startYear",
+          "residual: annual completeness is not detectable from ADS rows"
+        ],
+        "round": 1,
+        "review_hash": "sha256:3c31108fc378caeaedaf1efd4f0e569cb5c56f2197d5cac2091ca1da92ed399e"
+      }
+    ]
   },
-  "verification_matrix": [],
+  "verification_matrix": [
+    {
+      "id": "V-FIX-001",
+      "category": "fix",
+      "behavior": "2026分布缺失时回退到范围内最新可用2025，恢复企业领域分布饼图数据",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-CMD-004"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "missingRequestedYearFallsBackToLatestAvailableYear"
+    },
+    {
+      "id": "V-REG-001",
+      "category": "regression",
+      "behavior": "请求年份有数据时保持原命中行为，且全部 Situation 测试无回归",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-CMD-004"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "requestedYearIsKeptWhenItHasRows and 23 Situation tests passed"
+    },
+    {
+      "id": "V-BOUNDARY-001",
+      "category": "boundary",
+      "behavior": "请求年之后的数据不被回退采用，完全无数据时不伪造年份",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-CMD-004"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "fallbackDoesNotUseYearAfterRequestedEndYear and emptyDistributionRemainsEmptyWithoutInventingYear"
+    }
+  ],
   "gates": {
     "enter_dev": {
       "status": "approved",
@@ -217,6 +293,45 @@
       "gate_hash": "sha256:0071489e13c7e4f43c0be7a9e03c2ee5de53bc603ef8f4947c92a8a4ff35bb40",
       "evidence_refs": [],
       "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-10T22:14:56.771+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-10T22:25:25.560+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-10T22:25:25.951+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
     }
   ],
   "failure_stage": null,
@@ -238,6 +353,18 @@
       "requires_human_ratification": false,
       "ratified_by": null,
       "at": "2026-11-10T21:44:33.576+08:00"
+    },
+    {
+      "decision": "修复在独立分支完成并创建 Draft MR !6，当前停在 READY_SHIP 等待精确口令",
+      "basis": "M 级改动已通过独立 review、23 个 Situation 测试和 git scope 校验",
+      "impact": "收到提测口令后将合并 dev、触发后端部署并做 dev 复测",
+      "alternatives": [
+        "直接修改 dev（禁止，未获提测授权）",
+        "继续扩大改动范围（无必要，当前证据已覆盖缺陷）"
+      ],
+      "requires_human_ratification": false,
+      "ratified_by": null,
+      "at": "2026-11-10T22:25:55.876+08:00"
     }
   ],
   "artifacts": {
@@ -248,14 +375,38 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-10T21:43:06.107+08:00",
-      "manifest_hash": "sha256:a76fa6eca876dc5c32280c40832e5bdd9a1e0a14f1b15c599d40d3a36ed6856d",
-      "item_count": 1,
+      "checked_at": "2026-11-10T22:25:35.249+08:00",
+      "manifest_hash": "sha256:b083704596b81b6784c7eb3a6862a5f2a7437662ed114e5712f669cd2829cd4b",
+      "item_count": 5,
       "evidence_ids": [
-        "E-UI-001"
+        "E-UI-001",
+        "E-CMD-001",
+        "E-CMD-002",
+        "E-CMD-003",
+        "E-CMD-004"
       ],
       "evidence_results": {
         "E-UI-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-002": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-003": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-004": {
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
@@ -275,7 +426,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "完成改动并运行 verify-repo，然后提交评审。"
+    "action": "运行 verify-evidence，确认 manifest 和原始证据可复核。"
   },
-  "updated_at": "2026-11-10T21:44:33.642+08:00"
+  "updated_at": "2026-11-10T22:25:55.927+08:00"
 }
