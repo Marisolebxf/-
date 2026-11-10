@@ -533,7 +533,8 @@ export function approveGate(state, input) {
   };
   const phases = approvalPhases[gateName];
   const firstApproval = state.phase === phases.first;
-  const reConfirmation = state.phase === phases.reconfirm && state.gates[gateName]?.status === 'needs_reconfirm';
+  const reConfirmation = state.phase === phases.reconfirm
+    && ['needs_reconfirm', 'invalidated'].includes(state.gates[gateName]?.status);
   if (!firstApproval && !reConfirmation) {
     throw new Error(`GATE_PHASE_INVALID: ${gateName} requires ${phases.first}, or ${phases.reconfirm} after invalidation`);
   }

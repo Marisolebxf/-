@@ -1,9 +1,9 @@
 # 缺陷修复报告：2023 科技全域态势，实时数据监控，选择饼图实际展示为折线图
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T00:45:55.844+08:00
+> 生成时间：2026-11-11T01:25:21.812+08:00
 > 当前 cycle：cycle-002-20261110T232435+0800
-> 当前内部阶段：READY_SHIP
+> 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -29,19 +29,19 @@
 
 ## 3. 改动摘要和非目标
 
-- ui_pc：lumen-ui-science-pc，base=2e91005ec368bb1b3acd32b7cc0de7cc6e357073，candidate=30eb4682c75c86a1edad591c3e842c50000415d5，scope=src/views/situation/overview/components/OverviewTab.vue, src/views/situation/overview/models/chartBuilders.ts, src/views/situation/overview/overviewTab.test.mjs
+- ui_pc：lumen-ui-science-pc，base=4b7896de85f278c022444d5c452ca8c17fbddde9，candidate=8f8d814df0e457face950c5b16b9a8b27e00458a，scope=src/views/situation/overview/components/OverviewTab.vue, src/views/situation/overview/models/chartBuilders.ts, src/views/situation/overview/overviewTab.test.mjs
 
 实现仓校验：
 
-- ui_pc：candidate=30eb4682c75c86a1edad591c3e842c50000415d5，diff_hash=sha256:a0daa9372536c2318cedc9fd6278f87242e48ece03e89307ece7d6d6a3c1e9be，git_verified=yes，files=src/views/situation/overview/components/OverviewTab.vue, src/views/situation/overview/models/chartBuilders.ts, src/views/situation/overview/overviewTab.test.mjs
+- ui_pc：candidate=8f8d814df0e457face950c5b16b9a8b27e00458a，diff_hash=sha256:faf3fc4b8b8a5a7678462789ee6b0b84923d21fe0d32ac4eeb7558c94c872eeb，git_verified=yes，files=src/views/situation/overview/models/chartBuilders.ts, src/views/situation/overview/overviewTab.test.mjs
 
 非目标：不改后端 /situation/overview 取数逻辑；不改筛选条件与 KPI 数值；不调整图表类型按钮的文案和布局
 
 ## 4. 验证矩阵和证据结果
 
-- fix / 选择饼图后，企业领域分布面板和下方全部 9 张 KPI 要素卡均切换为饼图；KPI 饼图保留口径说明 tooltip。：PASS；evidence=evidence/manifest.json#E-UI-003, evidence/manifest.json#E-CMD-009
-- regression / 折线、柱状图路径保持不变，Situation 测试、类型检查和生产构建均通过。：PASS；evidence=evidence/manifest.json#E-CMD-009, evidence/manifest.json#E-CMD-010, evidence/manifest.json#E-CMD-011, evidence/manifest.json#E-CMD-012
-- boundary / 空序列和全零序列返回 null 并降级为暂无趋势数据，不伪造饼图；零值扇区被过滤。：PASS；evidence=evidence/manifest.json#E-CMD-009
+- fix / KPI 饼图图例常驻显示，采用底部滚动图例；9 张 KPI 卡均显示图例且饼图上移避免遮挡。：PASS；evidence=evidence/manifest.json#E-UI-004, evidence/manifest.json#E-CMD-013
+- regression / 折线、柱状和原有饼图切换逻辑无回归，测试、类型检查、ESLint 和生产构建通过。：PASS；evidence=evidence/manifest.json#E-CMD-013, evidence/manifest.json#E-CMD-014, evidence/manifest.json#E-CMD-015, evidence/manifest.json#E-CMD-016
+- boundary / 空序列、全零序列、零值过滤和 tooltip 口径说明保持原有行为。：PASS；evidence=evidence/manifest.json#E-CMD-013
 
 | evidence_id | kind | result | reviewable | raw_retained | non-reviewable reason | commit | summary |
 |---|---|---|---|---|---|---|---|
@@ -60,12 +60,18 @@
 | E-CMD-011 | test | PASS | yes | yes | PENDING | 30eb4682c75c86a1edad591c3e842c50000415d5 | 最终提交生产构建通过。 |
 | E-CMD-012 | test | PASS | yes | yes | PENDING | 30eb4682c75c86a1edad591c3e842c50000415d5 | 最终提交改动文件 ESLint 通过。 |
 | E-UI-003 | browser | PASS | yes | yes | PENDING | 30eb4682c75c86a1edad591c3e842c50000415d5 | 默认分布图和 9 张 KPI 均为 line；点击饼图后分布图为 pie，9 张 KPI 全部 pie，所有 KPI tooltip 存在。 |
+| E-CMD-013 | test | PASS | yes | yes | PENDING | 8f8d814df0e457face950c5b16b9a8b27e00458a | KPI 饼图行为测试通过，包含常驻滚动图例、扇区数据和口径说明断言。 |
+| E-CMD-014 | test | PASS | yes | yes | PENDING | 8f8d814df0e457face950c5b16b9a8b27e00458a | 图例改动文件 ESLint 通过。 |
+| E-CMD-015 | test | PASS | yes | yes | PENDING | 8f8d814df0e457face950c5b16b9a8b27e00458a | 图例候选 vue-tsc 类型检查通过。 |
+| E-CMD-016 | test | PASS | yes | yes | PENDING | 8f8d814df0e457face950c5b16b9a8b27e00458a | 图例候选 Vite 生产构建通过。 |
+| E-UI-004 | browser | PASS | yes | yes | PENDING | 8f8d814df0e457face950c5b16b9a8b27e00458a | 9 张 KPI 卡均为 pie，legend.show 未关闭，type=scroll，bottom=0，饼图中心上移至 43%。 |
+| E-PIPE-001 | pipeline | PASS | yes | yes | PENDING | 87af2658a44e1bf1485d0a5adfa0b22a0f752711 | Pipeline 4753 全绿；镜像 87af2658 已推送，deploy:k8s 成功，gkx-lumen-pc rollout 完成。 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:718811809d36c7d69d31cf59f45b5fe97cc52dc0fa665a9b38db9880d2ae9977；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:69fed60f24939e6047d264fa7ac9349739c3bcd29d3d3599a91c375ff2838f81；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -74,7 +80,7 @@ DB 写证据授权：
 
 评审记录：
 
-- ui_pc：reviewer=agent:review-agent:01a1c650，independent=true，sha=30eb4682c75c86a1edad591c3e842c50000415d5，verdict=PASS，hash=sha256:acad4aac92715f6d17536cd3a4a7d7d34f7a5a472db4f9c0cb1615569ad0d597，findings=PENDING
+- ui_pc：reviewer=agent:review-agent:01a1c650，independent=true，sha=8f8d814df0e457face950c5b16b9a8b27e00458a，verdict=PASS，hash=sha256:804a9a99faddc7057b46041ec89fa77982129d24164e1c0ecdc74b7fe070c9c1，findings=PENDING
 
 ## 6. S/M/L 风险等级和定级理由
 
@@ -101,13 +107,17 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- ui_pc：MR=direct-dev，candidate=8f8d814df0e457face950c5b16b9a8b27e00458a，merge=87af2658a44e1bf1485d0a5adfa0b22a0f752711，deployed=87af2658a44e1bf1485d0a5adfa0b22a0f752711，pipeline=4753，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4753，image=harbor.test.com/zp-tts/gkx-lumen-pc:87af2658，rollout=completed
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=evidence/manifest.json#E-PIPE-001, evidence/manifest.json#E-UI-004
 
 人工验收步骤：
 
-- PENDING
+- 打开科技全域态势-实时数据监控页面
+- 点击图表类型“饼图”
+- 确认企业领域分布面板为饼图
+- 向下查看全部 KPI 要素卡，确认每张卡底部均常驻显示年份图例，无需 hover
+- 确认折线图、柱状图切换仍正常
 
 ## 10. 人工验收步骤
 
@@ -120,12 +130,12 @@ DB 写证据授权：
 
 | gate | status | token | hash |
 |---|---|---|---|
-| enter_dev | approved | 进入开发 | sha256:3a5e0ba87c0dca8578332d3fdff7c41e7cc5922dfec767636fd82ef0363b2bd4 |
-| ship | pending | PENDING | PENDING |
+| enter_dev | invalidated | 进入开发 | sha256:3a5e0ba87c0dca8578332d3fdff7c41e7cc5922dfec767636fd82ef0363b2bd4 |
+| ship | approved | 提测 | sha256:a71222ca6a5ffa4537efb63299d6909a3c4e0c92657a077d60847e81cc6ae4fe |
 
 enter_dev bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"2e91005ec368bb1b3acd32b7cc0de7cc6e357073","planned_change_scope":["src/views/situation/overview/components/OverviewTab.vue","src/views/situation/overview/models/chartBuilders.ts","src/views/situation/overview/overviewTab.test.mjs"]}],"diagnosis_hash":"sha256:38822450b4dcac2506e15d65cac4ec6808b0685d0857f7e79f4b0802c4230ba0","plan_hash":"sha256:d93a4a90d14b7c116ffca8f56074a418687974cf9df8ea56fc7d4655588e06dc","risk_level":"M","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}
 
-ship bound_to：PENDING
+ship bound_to：{"repos":[{"repo_id":"ui_pc","candidate_sha":"8f8d814df0e457face950c5b16b9a8b27e00458a","diff_hash":"sha256:faf3fc4b8b8a5a7678462789ee6b0b84923d21fe0d32ac4eeb7558c94c872eeb","verification_hash":"sha256:bb0b621caaa1031c830450b0191afcbe11952648eea5ba699233b43fb5737b8f","review_hash":"sha256:804a9a99faddc7057b46041ec89fa77982129d24164e1c0ecdc74b7fe070c9c1","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}],"risk_level":"M","deploy_target":"dev"}
 
 ## 12. 自动决策摘要
 

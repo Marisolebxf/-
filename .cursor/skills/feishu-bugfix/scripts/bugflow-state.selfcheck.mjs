@@ -457,6 +457,16 @@ try {
   assert.equal(validateGate(tamperedShip, 'ship', { sessionId: 'session-1', machineId: 'machine-1' }).ok, false);
 
   advance(state, { to: 'SHIPPING', sessionId: 'session-1', machineId: 'machine-1' });
+  const shipReworkState = structuredClone(state);
+  shipReworkState.gates.ship.status = 'invalidated';
+  approveGate(shipReworkState, {
+    gate: 'ship',
+    message: '提测',
+    binding: shipBinding,
+    sessionId: 'session-1',
+    machineId: 'machine-1',
+  });
+  assert.equal(shipReworkState.gates.ship.status, 'approved');
   assert.throws(() => recordShipPackage(structuredClone(state), {
     repos: [{
       repo_id: 'ui_pc',

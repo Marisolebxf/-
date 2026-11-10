@@ -40,7 +40,7 @@
     "current_owner": "human:7695591354147146731",
     "takeover_history": []
   },
-  "phase": "READY_SHIP",
+  "phase": "AWAITING_ACCEPTANCE",
   "risk": {
     "level": "M",
     "reasons": [
@@ -55,8 +55,8 @@
       "repo_name": "lumen-ui-science-pc",
       "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
       "base_branch": "dev",
-      "base_sha": "2e91005ec368bb1b3acd32b7cc0de7cc6e357073",
-      "candidate_sha": "30eb4682c75c86a1edad591c3e842c50000415d5",
+      "base_sha": "4b7896de85f278c022444d5c452ca8c17fbddde9",
+      "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
       "planned_change_scope": [
         "src/views/situation/overview/components/OverviewTab.vue",
         "src/views/situation/overview/models/chartBuilders.ts",
@@ -121,18 +121,17 @@
     "repos": [
       {
         "repo_id": "ui_pc",
-        "base_sha": "2e91005ec368bb1b3acd32b7cc0de7cc6e357073",
-        "candidate_sha": "30eb4682c75c86a1edad591c3e842c50000415d5",
+        "base_sha": "4b7896de85f278c022444d5c452ca8c17fbddde9",
+        "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
         "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
         "changed_files": [
-          "src/views/situation/overview/components/OverviewTab.vue",
           "src/views/situation/overview/models/chartBuilders.ts",
           "src/views/situation/overview/overviewTab.test.mjs"
         ],
-        "diff_hash": "sha256:a0daa9372536c2318cedc9fd6278f87242e48ece03e89307ece7d6d6a3c1e9be",
+        "diff_hash": "sha256:faf3fc4b8b8a5a7678462789ee6b0b84923d21fe0d32ac4eeb7558c94c872eeb",
         "git_verified": true,
         "verification_source": "git",
-        "verified_at": "2026-11-11T00:43:23.535+08:00"
+        "verified_at": "2026-11-11T01:25:04.418+08:00"
       }
     ]
   },
@@ -142,69 +141,69 @@
         "repo_id": "ui_pc",
         "reviewer": "agent:review-agent:01a1c650",
         "independent": true,
-        "reviewed_sha": "30eb4682c75c86a1edad591c3e842c50000415d5",
+        "reviewed_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
         "verdict": "PASS",
-        "scope": "OverviewTab.vue + chartBuilders.ts + overviewTab.test.mjs, diff 2e91005..30eb468",
+        "scope": "chartBuilders.ts + overviewTab.test.mjs, diff 4b7896d..8f8d814",
         "findings": [],
-        "round": 3,
-        "review_hash": "sha256:acad4aac92715f6d17536cd3a4a7d7d34f7a5a472db4f9c0cb1615569ad0d597"
+        "round": 4,
+        "review_hash": "sha256:804a9a99faddc7057b46041ec89fa77982129d24164e1c0ecdc74b7fe070c9c1"
       }
     ]
   },
   "verification_matrix": [
     {
-      "id": "V-FIX-001",
+      "id": "V-FIX-002",
       "category": "fix",
-      "behavior": "选择饼图后，企业领域分布面板和下方全部 9 张 KPI 要素卡均切换为饼图；KPI 饼图保留口径说明 tooltip。",
+      "behavior": "KPI 饼图图例常驻显示，采用底部滚动图例；9 张 KPI 卡均显示图例且饼图上移避免遮挡。",
       "result": "PASS",
       "repo_ids": [
         "ui_pc"
       ],
       "evidence_refs": [
-        "evidence/manifest.json#E-UI-003",
-        "evidence/manifest.json#E-CMD-009"
+        "evidence/manifest.json#E-UI-004",
+        "evidence/manifest.json#E-CMD-013"
       ],
       "simulated": false,
       "skipped_reason": null,
-      "notes": "默认分布图与 9 张 KPI 均为 line；点击后分布图为 pie（6 扇区），9 张 KPI 均为 pie（7 扇区）。"
+      "notes": "9 张卡均为 pie，legend.show=true，type=scroll，bottom=0，饼图 center=50%,43%。"
     },
     {
-      "id": "V-REG-001",
+      "id": "V-REG-002",
       "category": "regression",
-      "behavior": "折线、柱状图路径保持不变，Situation 测试、类型检查和生产构建均通过。",
+      "behavior": "折线、柱状和原有饼图切换逻辑无回归，测试、类型检查、ESLint 和生产构建通过。",
       "result": "PASS",
       "repo_ids": [
         "ui_pc"
       ],
       "evidence_refs": [
-        "evidence/manifest.json#E-CMD-009",
-        "evidence/manifest.json#E-CMD-010",
-        "evidence/manifest.json#E-CMD-011",
-        "evidence/manifest.json#E-CMD-012"
+        "evidence/manifest.json#E-CMD-013",
+        "evidence/manifest.json#E-CMD-014",
+        "evidence/manifest.json#E-CMD-015",
+        "evidence/manifest.json#E-CMD-016"
       ],
       "simulated": false,
       "skipped_reason": null,
-      "notes": "统一 selector 对 line/bar 复用原 spark builder；5 个 Situation 测试文件全部通过。"
+      "notes": "KPI selector 继续复用 line/bar builder。"
     },
     {
-      "id": "V-BOUNDARY-001",
+      "id": "V-BOUNDARY-002",
       "category": "boundary",
-      "behavior": "空序列和全零序列返回 null 并降级为暂无趋势数据，不伪造饼图；零值扇区被过滤。",
+      "behavior": "空序列、全零序列、零值过滤和 tooltip 口径说明保持原有行为。",
       "result": "PASS",
       "repo_ids": [
         "ui_pc"
       ],
       "evidence_refs": [
-        "evidence/manifest.json#E-CMD-009"
+        "evidence/manifest.json#E-CMD-013"
       ],
       "simulated": false,
       "skipped_reason": null,
-      "notes": "overviewTab.test.mjs 覆盖 null、全零、零值过滤、caliberNote 和 line/bar 分支。"
+      "notes": "行为测试覆盖 null、全零、零值过滤和 caliberNote。"
     }
   ],
   "gates": {
     "enter_dev": {
-      "status": "approved",
+      "status": "invalidated",
       "source": "chat",
       "token_text": "进入开发",
       "approved_by": "human:7695591354147146731",
@@ -245,18 +244,75 @@
       }
     },
     "ship": {
-      "status": "pending",
-      "bound_to": null
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:7695591354147146731",
+      "approved_at": "2026-11-11T01:25:14.289+08:00",
+      "approved_session_id": "session-20261110-2120-a",
+      "approved_machine_id": "codex-local",
+      "claim_id": "claim-20261110-2120-a",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
+            "diff_hash": "sha256:faf3fc4b8b8a5a7678462789ee6b0b84923d21fe0d32ac4eeb7558c94c872eeb",
+            "verification_hash": "sha256:bb0b621caaa1031c830450b0191afcbe11952648eea5ba699233b43fb5737b8f",
+            "review_hash": "sha256:804a9a99faddc7057b46041ec89fa77982129d24164e1c0ecdc74b7fe070c9c1",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "M",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:a71222ca6a5ffa4537efb63299d6909a3c4e0c92657a077d60847e81cc6ae4fe",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T01:25:14.289+08:00",
+        "validator_version": "bugflow-state-p0-v5",
+        "actual": {
+          "claim_id": "claim-20261110-2120-a"
+        },
+        "expected": {
+          "claim_id": "claim-20261110-2120-a"
+        }
+      }
     }
   },
   "ship_package": {
-    "repos": [],
-    "acceptance_steps": [],
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
+        "merge_request_id": "direct-dev",
+        "merge_commit_sha": "87af2658a44e1bf1485d0a5adfa0b22a0f752711",
+        "pipeline_id": "4753",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4753",
+        "deployed_sha": "87af2658a44e1bf1485d0a5adfa0b22a0f752711",
+        "rollout_status": "completed",
+        "image_tag": "harbor.test.com/zp-tts/gkx-lumen-pc:87af2658"
+      }
+    ],
+    "acceptance_steps": [
+      "打开科技全域态势-实时数据监控页面",
+      "点击图表类型“饼图”",
+      "确认企业领域分布面板为饼图",
+      "向下查看全部 KPI 要素卡，确认每张卡底部均常驻显示年份图例，无需 hover",
+      "确认折线图、柱状图切换仍正常"
+    ],
     "dev_verification": {
-      "result": "PENDING",
-      "evidence_refs": []
+      "result": "PASS",
+      "evidence_refs": [
+        "evidence/manifest.json#E-PIPE-001",
+        "evidence/manifest.json#E-UI-004"
+      ]
     },
-    "summary": null
+    "summary": "候选 8f8d814 已合并至 dev，merge commit 87af2658；Pipeline 4753 全绿，镜像 harbor.test.com/zp-tts/gkx-lumen-pc:87af2658 已部署，gkx-lumen-pc rollout completed。"
   },
   "acceptance": {
     "status": "pending",
@@ -355,6 +411,45 @@
       "gate_hash": null,
       "evidence_refs": [],
       "summary": "verification matrix PASS; ready for ship gate"
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-11T00:46:52.918+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": "ship",
+      "gate_hash": "sha256:d556797d2d671fa054b7a015dc2ad82a4648134d7508724d7686a629fd3f848e",
+      "evidence_refs": [],
+      "summary": "提测 gate approved; merge to latest dev and deploy"
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-11T01:25:21.679+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "pipeline 4753 success; image deployed and rollout completed"
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-11T01:25:21.753+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "dev verification PASS; wait for human Feishu acceptance"
     }
   ],
   "failure_stage": null,
@@ -421,9 +516,9 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-11T00:44:34.067+08:00",
-      "manifest_hash": "sha256:718811809d36c7d69d31cf59f45b5fe97cc52dc0fa665a9b38db9880d2ae9977",
-      "item_count": 15,
+      "checked_at": "2026-11-11T01:25:21.622+08:00",
+      "manifest_hash": "sha256:69fed60f24939e6047d264fa7ac9349739c3bcd29d3d3599a91c375ff2838f81",
+      "item_count": 21,
       "evidence_ids": [
         "E-CMD-001",
         "E-CMD-002",
@@ -439,7 +534,13 @@
         "E-CMD-010",
         "E-CMD-011",
         "E-CMD-012",
-        "E-UI-003"
+        "E-UI-003",
+        "E-CMD-013",
+        "E-CMD-014",
+        "E-CMD-015",
+        "E-CMD-016",
+        "E-UI-004",
+        "E-PIPE-001"
       ],
       "evidence_results": {
         "E-CMD-001": {
@@ -516,6 +617,36 @@
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
+        },
+        "E-CMD-013": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-014": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-015": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-016": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-UI-004": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-PIPE-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
         }
       },
       "non_reviewable": [],
@@ -532,7 +663,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "展示提测绑定对象并取得精确口令。"
+    "action": "等待人工在飞书完成业务验收，只记录外部状态迁移。"
   },
-  "updated_at": "2026-11-11T00:45:55.845+08:00"
+  "updated_at": "2026-11-11T01:25:21.813+08:00"
 }
