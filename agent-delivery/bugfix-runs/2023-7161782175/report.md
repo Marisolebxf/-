@@ -1,7 +1,7 @@
 # 缺陷修复报告：2023 科技全域态势，实时数据监控，选择饼图实际展示为折线图
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T00:45:03.302+08:00
+> 生成时间：2026-11-11T00:45:55.844+08:00
 > 当前 cycle：cycle-002-20261110T232435+0800
 > 当前内部阶段：READY_SHIP
 > 验收模式：policy_only（operator_verified=false）
@@ -69,8 +69,8 @@ DB 写证据授权：
 
 ## 5. 已知风险和未覆盖项
 
-- 涉及后端领域分布取数年份语义和前端统计图展示联动，但不改表结构或权限
-- 需要提测后验证 2016-2026 筛选下饼图真正出现
+- 修复涉及实时数据监控中分布面板与全部 KPI 要素卡的图表类型联动，影响范围覆盖整个右侧图表区
+- 已通过本地真实交互断言覆盖首屏和视区外全部 9 张 KPI 卡；提测后仍需在 dev 真实接口环境复验一次
 
 评审记录：
 
@@ -80,7 +80,7 @@ DB 写证据授权：
 
 - 等级：M
 - 是否上调：否
-- 理由：涉及后端领域分布取数年份语义和前端统计图展示联动，但不改表结构或权限；需要提测后验证 2016-2026 筛选下饼图真正出现
+- 理由：修复涉及实时数据监控中分布面板与全部 KPI 要素卡的图表类型联动，影响范围覆盖整个右侧图表区；已通过本地真实交互断言覆盖首屏和视区外全部 9 张 KPI 卡；提测后仍需在 dev 真实接口环境复验一次
 
 ## 7. 数据 policy、run scope 和确认人
 
@@ -132,6 +132,7 @@ ship bound_to：PENDING
 - 保持 KPI factor card 的饼图回落折线语义，仅修复企业领域分布面板的年份回退；依据=原 demo 和现有组件均明确 factorCardChartType 将 pie 映射为 line；图表类型控件作用于 distribution panel；备选=把每张 KPI 卡也改成饼图，但不同要素单位不可比且偏离原型 / 继续隐藏分布面板并禁用图表切换，但无法满足需规的饼图展示；影响=用户选择饼图后由恢复的企业领域分布面板展示饼图，KPI 卡继续展示年度 sparkline；需人工批准=no；批准人=PENDING
 - 修复在独立分支完成并创建 Draft MR !6，当前停在 READY_SHIP 等待精确口令；依据=M 级改动已通过独立 review、23 个 Situation 测试和 git scope 校验；备选=直接修改 dev（禁止，未获提测授权） / 继续扩大改动范围（无必要，当前证据已覆盖缺陷）；影响=收到提测口令后将合并 dev、触发后端部署并做 dev 复测；需人工批准=no；批准人=PENDING
 - 提测流水线以 required jobs 全部成功作为发布门槛，可选 sonar:scan 不阻塞本次 dev 复测；依据=pipeline 4729 的 backend:build、backend:image:display、deploy:display 均为 success，display 镜像 77bf1374 已完成 Kubernetes rollout；sonar:scan 配置为 allow_failure 且仍在运行；备选=继续等待可选 sonar:scan 结束，但会无谓阻塞已完成的 dev 发布与业务验证；影响=dev 已发布本次候选合并后的 SHA 77bf137495d3f5c57deb676caa506324a3687b3a；后续 sonar 结果不影响本次业务复测，但会在报告中保留该事实；需人工批准=no；批准人=PENDING
+- 废止上一 cycle 的“KPI 卡继续保持折线”判断，以用户最新验收口径为准：选择饼图时分布面板和全部 KPI 卡都显示饼图；依据=用户在 REOPEN 时明确指出所有 KPI 卡也必须切换为饼图；本地页面已验证 9 张 KPI 全部由 line 切换为 pie；备选=只修复分布面板（已被用户验收否决） / 不同要素单位不可比为理由拒绝 KPI 饼图（不符合用户明确验收口径）；影响=最终候选 30eb468 统一使用 buildOverviewFactorCardOption 选择图表类型，并保留原有 line/bar 和空数据降级行为；需人工批准=no；批准人=PENDING
 
 ## 13. 回滚版本、回滚方式和回滚验证
 
