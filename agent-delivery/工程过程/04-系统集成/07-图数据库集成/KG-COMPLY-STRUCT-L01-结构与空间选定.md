@@ -62,6 +62,22 @@
 
 > 已签收 DDL 里 `research / paper / patent / project / person` 是空属性 Tag。本期**不为加属性重建 Tag**：业务属性先进 `props`（JSON），等 LOAD 签收后再决定是否升列。避免 DDL 变更阻塞 11-09。
 
+**VID 前缀实测修正（2026-11-10，T01 v2 抽查 + ALGO 只读复核）**
+
+上表「VID 规则」列是**目标规范**，只适用于正式线 `gkx_chain`。本期 `demo_gkx_chain` 的存量点用的是另一套前缀，实测如下——**本期写入一律沿用「现网实际」列**，详见 [KG-COMPLY-VID-L01](./KG-COMPLY-VID-L01-VID前缀实测与裁定.md)：
+
+| Tag | 目标规范（正式线） | **现网实际（本期用）** | 存量点数 | VID 后缀取自身段 |
+|---|---|---|---:|---|
+| `enterprise` | `ent:<信用代码>` | `ent:<org_id>` | 208,394 | `props.org_id`（`enterprise_code` 实测全空，取不到信用代码） |
+| `segment` | `seg:<chain_code>:<node_id>` | `segment:<segment_key>` | 1,414 | `segment_key` 属性 |
+| `institution` | `svc:<org_id>` | `institution:<org_id>` | 43,296 | 机构 `org_id` |
+| `policy` | `policy:<policy_id>` | `pol:<policy_id>` | 20,000 | 政策源主键 |
+| `tech_point` | `tp:<technology_node_id>` | `tech_point:<technology_node_id>` | 19,430 | 技术点层，本期不改动 |
+| `research` / `person` / `paper` / `patent` / `project` | `inst:` / `person:` / `paper:` / `patent:` / `proj:` | 未建，无存量，**沿用规范前缀** | 0 | 源表主键 |
+
+> 本条不改上表的 Tag 名、M01–M24 编号与必须边口径；只补一层「本期用什么前缀」的事实，避免执行器按规范硬编码后造出 27 万个对不上的幽灵点。
+> **`institution` 与 `research` 是两批独立数据**：前者 43,296 个、7 类全是服务类型；后者建自 `ads_institution_profile` 83,745 行（OpenAlex 口径）。同一真实机构可能两边都出现，本期**不合并、不互指**。
+
 ### 1.2 七要素层：M01–M24
 
 24 条，一字不改；「燕大对照」列取自 L01，本任务不复用、不据此改边。

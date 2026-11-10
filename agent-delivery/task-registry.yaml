@@ -61729,18 +61729,22 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "SDD §5 T01；建议执行人 human:白鑫凤；上级 KG-COMPLY-LOAD-L01。2026-11-09 白鑫凤交付缺口清单（缺 5 Tag + 11 Edge、计数与基线一致），唐绍祖只读复核 8 项全部对上；评审退回：§6 补建语句为空属性写法须补 props / weight 后再报 DBA，另补 VID 前缀与端点方向两列。见 KG-COMPLY-LOAD-T01-致白鑫凤-缺口清单修正说明.md"
+    note: "T01 环境与结构核验。建议执行人 human:白鑫凤；上级 KG-COMPLY-LOAD-L01。2026-11-09 第一版交付（缺 5 个点类型 + 11 种关系）；2026-11-10 第二版已补带属性的 16 条建表语句、补了点编号与端点方向两项核对，并指出我方文档自相矛盾（已改）。我方复核结论：图里实际在用的点编号规则与文档写的规范不同，裁定本期按图里实际规则走；企业编号的后缀不是信用代码（该列全空），要取属性里的 org_id；另外 T02 原计划要灌的两批关系图里已经存在，只能核对不能重灌。当前卡点=16 条建表语句待走授权通道" 
     depends_on:
       - "KG-COMPLY-SDD-L01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T01"
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-VID-L01-VID前缀实测与裁定.md"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-LOAD-T01-答复-科研机构判定与M07署名.md"
     definition_of_done:
       - "只读核对 demo_gkx_chain 14 Tag / 24+6 Edge / VID 前缀 / 边端点方向（各边抽样 20 条），出四列核对表"
       - "缺失项列待补清单附 DDL 摘要（真源 KG-7ELEM-SCHEMA-DDL-L01）；预期缺 5 Tag + 11 边型（2026-11-09 补 publish/M10，首版误记 10 种）"
       - "待补清单 DDL 须逐条核对属性：空属性结构（CREATE EDGE ... ();）不得提交 DBA，Edge 至少 weight + props、Tag 至少 name + props（first_year 本期不强制）"
       - "待补清单经唐绍祖确认内容→报徐滕强→授权 DBA 执行 DDL→复验全绿后 T02–T04 才开工；编排侧不执行任何 DDL"
-    update_time: "2026-11-09T21:50:00+08:00"
+      - "VID 列按现网实际前缀判（ent:/segment:/institution:/pol:），不按 STRUCT 规范前缀（KG-COMPLY-VID-L01）"
+      - "depends_on 1,073（M15）与 participates 178,731（M17）为存量已满足项，只回读核对、不得重灌、不得回写 props.batch"
+    update_time: "2026-11-10T18:20:00+08:00"
   - id: KG-COMPLY-LOAD-T02
     title: "T02 七要素入图·产业链与机构合作组（M15/M17/M19）"
     status: "backlog"
@@ -61759,8 +61763,8 @@ tasks:
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T02"
     definition_of_done:
-      - "先补端点后灌边，M15/M17/M19 入 demo_gkx_chain，带 props.batch=comply-<日期>-t02"
-      - "对账单：灌入数 vs 源表行数、端点缺失跳过计数；depends_on 保持 DAG"
+      - "M15（depends_on 1,073）与 M17（participates 178,731）为存量已满足项：只回读计数核对基线、不重灌、不回写 props.batch；只新灌 M19（research_coop），带 props.batch=comply-<日期>-t02"
+      - "对账单：存量已满足项计数 + 新灌 M19 数 vs 源表行数、端点缺失跳过计数；depends_on 保持 DAG"
       - "不把 apply_to/support 记成 M12–M14；不把 institution→institution participates 记成 M02/M19"
     update_time: "2026-11-09T15:11:07+08:00"
   - id: KG-COMPLY-LOAD-T03
