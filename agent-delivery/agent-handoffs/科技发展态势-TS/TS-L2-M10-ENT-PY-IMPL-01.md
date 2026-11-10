@@ -33,3 +33,8 @@
 - 单测 6 → 15 全绿（信封/缺表/库名/乐观锁 409/R2 分组/投影 SQL/nGQL 转义）
 - DDL：12 表已于 2026-11-09 09:45 在 dev 库建好（只读核对）；存量种子拆单 `TS-L2-M10-ENT-SEED-L01`
 - 状态仍 integration：待 topic（TOPIC_RELEASE）部署后 edu 接口联调
+
+## 2026-11-10 补修：R2 关系时间（df84c2e）
+
+- 现象：「实体关系」时间列恒为「—」。根因：SEED 只写 `time_to`（强度边年份），`_edge_dict` 仅在 `time_from` 非空时输出 `time_range`
+- 修复：有一端即输出，缺端取另一端；单测 +1（16/16）。edu 部署后 R2 边 `time_range={from:2024,to:2024}` 已出

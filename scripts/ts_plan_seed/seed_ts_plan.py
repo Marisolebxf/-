@@ -479,7 +479,7 @@ def build_rows(seed: dict) -> dict[str, list[dict]]:
         ("advantage_section", "竞争优势与劣势", False, 2,
          "优势：{target}在{field}方向综合得分{lead_score}，核心专利{lead_patent}、高被引论文{lead_papers}，"
          "相对比对主体保持领先布局。劣势：追赶级方向综合得分{catching_score}，"
-         "与华为、腾讯等高重叠主体相比，工程验证平台和产业承接仍偏弱。"),
+         "与{compare}等高重叠主体相比，工程验证平台和产业承接仍偏弱。"),
         ("suggestion_section", "发展建议", False, 3,
          "{field}：{action}（取情报行前 3 条）"),
         ("tech_route", "技术路线", False, 4, "{action}。{regional_insight}"),

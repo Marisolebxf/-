@@ -55434,7 +55434,7 @@ tasks:
     estimated_tokens: 150000
     user_story: "全景序41-47 写回链路 Python 侧（ENT-ARCH done：四段链 Python 单写者）"
     note: |
-      落点 lumen-algo-py vendor/entan-py（D2 算法库统一出口）；DDL 归 Python（D1 库 gkxlumenx_dwd）；含存量技术点映射 seed（DATA-A1）。2026-11-09 代码完成（feat/m10-ent-py 已推）：DDL 12 表+7op 乐观锁幂等+发布序列投影+R1/R2/impact/conflicts；单测 6/6。handoff `TS-L2-M10-ENT-PY-IMPL-01.md`。待：DDL 执行+部署+联调（hang/边投影首版留联调补齐，已显式记录）｜2026-11-09 走查返工（监管人 human:刘剑锋 报 edu 500）：get_conn 不存在致全端点 500；表名无库前缀；不 commit；rank 保留字；HTTPException 包 {detail} 非信封；plane 默认落 demo_* 库（D12）；hang/unhang/边三 op 未投影。修复 lumen-algo-py 4b34c21（单测 6→15 全绿）：事务游标+正式库名固定+信封出口+缺表空态/50302+ADS 投影补齐+GET/DELETE changes/{id}+Nebula 仅显式 space 写且转义。DDL 已执行（12 表 2026-11-09 09:45）；存量 seed 拆 TS-L2-M10-ENT-SEED-L01。待 edu 接口联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 edd426b（R2 只返回已挂接边，解挂 auto 退回候选）
+      落点 lumen-algo-py vendor/entan-py（D2 算法库统一出口）；DDL 归 Python（D1 库 gkxlumenx_dwd）；含存量技术点映射 seed（DATA-A1）。2026-11-09 代码完成（feat/m10-ent-py 已推）：DDL 12 表+7op 乐观锁幂等+发布序列投影+R1/R2/impact/conflicts；单测 6/6。handoff `TS-L2-M10-ENT-PY-IMPL-01.md`。待：DDL 执行+部署+联调（hang/边投影首版留联调补齐，已显式记录）｜2026-11-09 走查返工（监管人 human:刘剑锋 报 edu 500）：get_conn 不存在致全端点 500；表名无库前缀；不 commit；rank 保留字；HTTPException 包 {detail} 非信封；plane 默认落 demo_* 库（D12）；hang/unhang/边三 op 未投影。修复 lumen-algo-py 4b34c21（单测 6→15 全绿）：事务游标+正式库名固定+信封出口+缺表空态/50302+ADS 投影补齐+GET/DELETE changes/{id}+Nebula 仅显式 space 写且转义。DDL 已执行（12 表 2026-11-09 09:45）；存量 seed 拆 TS-L2-M10-ENT-SEED-L01。待 edu 接口联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 edd426b（R2 只返回已挂接边，解挂 auto 退回候选）｜2026-11-10 补修 df84c2e：R2 time_range 仅有 time_to 时也输出（关系时间列恒空根因），单测 16/16，edu 已验；维持 pending_test。
     depends_on:
       - "TS-L2-M10-ENT-ARCH"
       - "TS-L2-M10-ENT-API"
@@ -55444,7 +55444,7 @@ tasks:
       - "POST /internal/v1/sci/tech/graph/changes：7 op 实现（乐观锁 409+diff/ops≤50/client_op_id 幂等/部分失败 failed_items）+ :validate（dry_run diff+影响面）+ publish（MySQL→Nebula→ADS 序列，失败 projection_pending 补偿）+ R1 推荐（105 边权+ⓘ）/impact/conflicts 读"
       - "边强度三列（strength_auto/manual/source）口径落地：读面只取 auto；strength_manual 永不进指标"
       - "不写 Neo4j；不动存量 VID；G2 现算不做；单测全绿；handoff 完整含 cost"
-    update_time: "2026-11-09T19:00:57+08:00"
+    update_time: "2026-11-10T14:55:13+08:00"
   - id: TS-L2-M10-ENT-JAVA-IMPL-01
     evidence: "lumen-svc-platform d8bbea6（返工）/ 8d90869（首版）"
     supervised_by: "human:刘剑锋"
@@ -55494,7 +55494,7 @@ tasks:
     estimated_tokens: 80000
     user_story: "全景序41-47 FE-TS-10A 分区3 接线正式化"
     note: |
-      api 层 maintain-ent 模块；mock 轨保留演示态。2026-11-08 代码完成三绿（变更集模型/addRelation 移除/R1ⓘ）；mock 轨可验页；real 轨待 PY 写侧。handoff `FE-TS-10C.md`｜2026-11-09 走查返工（监管人报：页面出现 mock 文案、窄屏错乱）：real 轨原不调 R1/R2，始终显示页面种子（含「（Mock）」）→新增 loadEntityRelationState，状态只来自服务端+写后回读+诚实空态；裸 fetch→统一 axios（baseURL/Bearer）；去 technologyId=1 硬编码，加技术点选择；edge_key 用服务端主键；人工强度标注+R1 MetricSpecCard。分区1 real 轨不再回落种子。布局：td display:flex 移内层、视口 @media→容器查询、宽表横向滚动、grid 子项 min-width:0。lumen-ui-science-pc 8d754e2（type-check/maintain 单测/build 绿；mock+real 1440/1100/900/760 截图核对）。维护技术图谱 34–40 按监管人要求不动。待 ENT 全链部署后 edu 联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 369f70c（「人工」标注只跟 strength_manual）｜2026-11-10 返工 874e35f：删除技术点前置 impact 预检 + 专门警告（契约 R3），预检失败不放行；三绿+自检绿，本地无头验证 OK；状态维持 pending_test，待 edu 部署后 QA 一并验（TS-L2-M10-TEST-L01）。
+      api 层 maintain-ent 模块；mock 轨保留演示态。2026-11-08 代码完成三绿（变更集模型/addRelation 移除/R1ⓘ）；mock 轨可验页；real 轨待 PY 写侧。handoff `FE-TS-10C.md`｜2026-11-09 走查返工（监管人报：页面出现 mock 文案、窄屏错乱）：real 轨原不调 R1/R2，始终显示页面种子（含「（Mock）」）→新增 loadEntityRelationState，状态只来自服务端+写后回读+诚实空态；裸 fetch→统一 axios（baseURL/Bearer）；去 technologyId=1 硬编码，加技术点选择；edge_key 用服务端主键；人工强度标注+R1 MetricSpecCard。分区1 real 轨不再回落种子。布局：td display:flex 移内层、视口 @media→容器查询、宽表横向滚动、grid 子项 min-width:0。lumen-ui-science-pc 8d754e2（type-check/maintain 单测/build 绿；mock+real 1440/1100/900/760 截图核对）。维护技术图谱 34–40 按监管人要求不动。待 ENT 全链部署后 edu 联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 369f70c（「人工」标注只跟 strength_manual）｜2026-11-10 返工 874e35f：删除技术点前置 impact 预检 + 专门警告（契约 R3），预检失败不放行；三绿+自检绿，本地无头验证 OK；状态维持 pending_test，待 edu 部署后 QA 一并验（TS-L2-M10-TEST-L01）。｜2026-11-10 返工二 3da1892（监管人裁定方案 B，替代 874e35f 方案 A）：技术点行不可勾选、前端不发 delete_node；推荐筛选去技术点；关系时间同年显一年。三绿+自检绿，本地无头验证 OK；维持 pending_test。
     depends_on:
       - "TS-L2-M10-ENT-API"
       - "TS-L2-M10-ENT-JAVA-IMPL-01"
@@ -55503,7 +55503,7 @@ tasks:
       - "面板接线：勾选推荐→hang（回执 edges_created 呈现）/实体编辑按类型分流 update_node|overlay/批量删 unhang/删关系 delete_entity_edge/类型行内改 update_entity_edge（G1 强度+时间表单已有）；addRelation 入口移除（超需规）；busy 防抖+409 diff 提示+pending 提示"
       - "R1 强度 ⓘ 挂 M_TECH_GRAPH_105_1（105 未交付空态+PendingBadge）；UI 显人工强度标注「人工」；真轨 mock 文案清零"
       - "不重做页面结构；三绿（maintain 测试/type-check/build）；handoff 完整含 cost"
-    update_time: "2026-11-10T14:08:31+08:00"
+    update_time: "2026-11-10T14:55:13+08:00"
   - id: TS-L2-M10-BE-IMPL-01
     evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-M10-BE-IMPL-01.md"
     supervised_by: "human:刘剑锋"
@@ -61314,8 +61314,14 @@ tasks:
       - "handoff + cost 回填"
     update_time: "2026-11-09T12:00:00+08:00"
   - id: BE-TS-EXPORT-CENTER-GAP-L01
+    evidence: "agent-handoffs/科技发展态势-TS/BE-TS-EXPORT-CENTER-GAP-L01.md"
+    supervised_by: "human:王梓真"
+    claimed_at: "2026-11-10T01:44:36.068Z"
+    last_seen_at: "2026-11-10T01:44:36.068Z"
+    lock_until: "2026-11-10T09:44:36.068Z"
+    claimed_by: "agent:zcode"
     title: "M1 导出任务中心缺口 — 建任务/轮询/签名下载端点补建（184 预警与 195 报告导出的后端承接）"
-    status: "backlog"
+    status: "pending_test"
     agent: "api-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P1"
@@ -61325,8 +61331,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 120000
-    note: |
-      2026-11-09 由 DS-09 实现阶段发现（TS-L2-DS09-IMPL-JAVA-L01 遗留 ①）：契约（API-TS-M9 §1）引用 M1 §3.8 导出任务中心，但 lumen-svc-platform 仓内无该端点实现，184 预警导出与 195 报告导出无后端承接。跨菜单基础设施，建议监管 human:李伟（TS 后端域负责人），请求方 human:王梓真（DS-09 菜单）；开工与排期由 coordinator/李伟 确认。前端侧（TS-L2-DS09-WIRING-L01）已按契约实现客户端并对 404 诚实降级，本单不阻塞接线。编码 /goal 须带 强度：ponytail full + 图：必含（若新建端点改变调用链拓扑）。
+    note: "实现+单测完成 → pending_test（部署与真机验收后由 human:淮政玮 标 done）"
     touched_files:
       - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/"
       - "agent-delivery/agent-handoffs/科技发展态势-TS/BE-TS-EXPORT-CENTER-GAP-L01.md"
@@ -61337,7 +61342,7 @@ tasks:
       - "单测覆盖：建任务/轮询/取件主路径、白名单拒绝、184 未注册拒绝；mvn 对应模块 test 绿"
       - "跨菜单登记：建成后 WBS 登记可复用行（M1 报告/POL 报告等消费方）；DS-09 TEST 单（TS-L2-DS09-TEST-L01）验收时复测 184/195 导出链路"
       - "handoff 落 agent-handoffs/科技发展态势-TS/ + cost 四字段回填"
-    update_time: "2026-11-09T10:32:52+08:00"
+    update_time: "2026-11-10T09:52:44+08:00"
   - id: WBS-06-LINEAGE-API
     supervised_by: "human:淮政玮"
     title: "跨域：对外数据血缘服务 API + 自实现域接入 + 他域标准方案（入培训）"
@@ -62893,6 +62898,38 @@ tasks:
       - "与 POL-L2-DS12-EST-DEMO-FIX-R20261109-DATA 不并行改 synth.py。本单未认领。"
       - "handoff 写明重跑入口前后，这五句是否出现在同一个 jobs 返回里。"
     update_time: "2026-11-10T14:16:19+08:00"
+  - id: TS-L2-DS09-BATCH4-OPS-L01
+    evidence: "agent-handoffs/科技发展态势-TS/TS-L2-DS09-BATCH4-OPS-L01.md"
+    supervised_by: "human:王梓真"
+    claimed_at: "2026-11-10T01:51:07.215Z"
+    last_seen_at: "2026-11-10T01:51:07.215Z"
+    lock_until: "2026-11-10T05:51:07.215Z"
+    claimed_by: "agent:zcode"
+    title: "科技发展规划 · 批 4 契约冻结落地 + 预警注册/推送四池激活工程（追溯登记）"
+    status: "pending_test"
+    agent: "agent:zcode"
+    epic: "E-FE-TECH-SITUATION"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 800000
+    note: "实现完成、线上验证通过 → pending_test（等待测试验收；done 由 human:淮政玮 签）"
+    touched_files:
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PlanningQueryService.java"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/service/PlanningSubscriptionService.java"
+      - "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/subscription/adapter/PlanningResourceSubscriptionAdapter.java"
+      - "helm/gkxlumen-platform/configs/gkxlumen-display-dev.yml"
+      - ".gitlab-ci.yml"
+    definition_of_done:
+      - "批 4 三项（§7-5 items[]/§7-6 reason/§7-7 口径三卡）前后端落地并线上验证（caliber_def/items[] 实测 200）"
+      - "ts_plan_push_pool 建表+灌数（DDL 双仓存档）+ push-pools Nacos 发布"
+      - "direction-alert registered=true 翻转生效（direction-warnings 200/61 条实测）"
+      - "契约文档批 4 冻结记录 + handoff + CI 任务三次迭代修复"
+      - "激活链路（ops:planning-alert-gate）在流水线绿色跑通一次"
+    update_time: "2026-11-10T09:51:43+08:00"
   - id: DEVOPS-LUMEN-ENTAN-PULL-ALWAYS-L01
     evidence: "lumen-svc-platform 44fa227"
     supervised_by: "human:刘剑锋"
@@ -62925,13 +62962,18 @@ tasks:
       - "ponytail: full"
     update_time: "2026-11-10T12:55:27+08:00"
   - id: SYSINT-03-03A-WIRE-L01
+    cost_warn: "false"
+    actual_cost: 3.5
+    model_used: "glm-5.3"
+    actual_tokens: 260000
+    evidence: "[object Object]"
     supervised_by: "human:孔东"
     claimed_at: "2026-11-10T04:09:21.808Z"
     last_seen_at: "2026-11-10T04:09:21.808Z"
     lock_until: "2026-11-11T04:09:21.808Z"
     claimed_by: "human:孔东"
     title: "专题服务门户内容管理 · 页面布局与接口联调"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -62941,7 +62983,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 120000
-    note: "用户 2026-11-10 会话建单：承接 SYSINT-03-03A-L01 布局走查与写侧联调；human:孔东 认领监管。前置 SYSINT-03-03A-JAVA-L01（integration）、SYSINT-03-15-L01（ready_to_sign），就绪后转 ready 开工。"
+    note: |
+      联调通过：svc_* 七类写侧接线完成（persistRecord 单点→cms-ops 七端点 POST 化），机构 suggest 切真实主数据 /org-options；门户四页 Tab 按需拉取；政策 CMS 产业级联收敛两级+查询匹配修复。commit c6effe0 已推 origin/dev。handoff：agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-03-03A-WIRE-L01.md
     depends_on:
       - "SYSINT-03-03A-JAVA-L01"
       - "SYSINT-03-15-L01"
@@ -62957,7 +63000,7 @@ tasks:
       - "网关前缀、鉴权、统一用户中心入口联调通过；CRUD/发布/下架/软删端到端可用，机构 suggest 接主数据（不得长期仅 2 家 mock）"
       - "pnpm type-check + 本模块自检绿；handoff 含联调证据（curl/截图）、Design/D10 要点与 architecture 合规自检"
       - "联调通过在 note 写「联调通过」关键词；完工推 integration，不自行 done（签收权按监管人）"
-    update_time: "2026-11-10T12:15:37+08:00"
+    update_time: "2026-11-10T16:30:00+08:00"
   - id: POL-L2-DS10-QRY-DEMO-ACCEPT-LOOP
     blocked_by: "token 失效，已通知 human:淮政玮"
     title: "多维检索查询演示样本循环验收"
@@ -63016,3 +63059,32 @@ tasks:
       - "缺口键 policy_share_export.missing：表不存在，202 覆盖不到。来源「地方」不进请求，本单不要靠灌数冒充这一行"
       - "只改后端数据。禁止改前端，禁止改过滤口径来让快照对上。handoff 写明现值与用例预期"
     update_time: "2026-11-10T18:07:20+08:00"
+  - id: LUMEN-UAC-TOKEN-REFRESH-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-10T08:52:40.622Z"
+    last_seen_at: "2026-11-10T08:52:40.622Z"
+    lock_until: "2026-11-11T08:52:40.622Z"
+    claimed_by: "human:孔东"
+    title: "前端自动刷新 token 接口调用优化 + Java 增加 token 校验接口（多仓 portal/auth 模块通用）"
+    status: "claimed"
+    agent: "frontend-agent"
+    epic: "E-PORTAL-IFRAME"
+    priority: "P1"
+    repo: "lumen-ui-*（多仓）+ lumen-svc-platform"
+    delivery_phase: "crosscut"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 250000
+    note: |
+      建单背景：门户 iframe / 统一用户中心接入后，前端自动刷新 token 的接口调用需优化（静默续期+单飞+重放），Java 侧补 token 校验接口供前端判定。与 LUMEN-UAC-JAVA-FACADE-L01（已含 1.3 check-token 封装范围）衔接：复用其封装，不重复建设。指派：human:孔东 认领并监管；执行 frontend-agent（前端多仓）+ api-agent（Java 接口）协作。
+    collaborators:
+      - "api-agent"
+    definition_of_done:
+      - "前端多仓（lumen-ui-* portal/auth 模块）自动刷新 token 调用优化：401/424 触发静默续期（refresh_token）、并发单飞（同一时刻仅一条刷新在跑）、续期成功后重放原请求、失败走既有会话过期/登出链路"
+      - "刷新/校验调用统一走 Java REST 封装接口（调用链：前端→Java→统一用户中心，前端不直连用户中心 admin-api）"
+      - "Java（lumen-svc-platform）新增 token 校验 REST 接口（对齐统一用户中心 1.3 check-token 语义，返回 user_id/user_type/tenant_id/scopes/exp），输出/更新前端调用文档入仓 docs/"
+      - "多仓复用同一套封装实现（第二处出现即封装），禁止各仓另起一套"
+      - "验证：前端仓三绿（type-check/自检/build）+ Java mvn 编译与接口自测通过；刷新单飞逻辑附最小自检（assert 演示或 node --test）"
+      - "handoff 提交 agent-handoffs/LUMEN-UAC-TOKEN-REFRESH-L01.md；前端仓改动推送前按 fe-manual-confirm-push 规约人工确认"
+    update_time: "2026-11-10T16:52:40+08:00"
