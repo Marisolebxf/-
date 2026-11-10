@@ -1824,7 +1824,7 @@ function blankCycleFields(state) {
   state.resume_phase = null;
   state.resume_condition = null;
   state.cancellation = null;
-  state.rollback = { repos: [] };
+  state.rollback = { repos: [], summary: null };
   state.blockers = [];
   state.evidence = { manifest: 'evidence/manifest.json', missing: [], verification: null };
 }

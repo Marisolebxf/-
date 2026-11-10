@@ -596,6 +596,7 @@ try {
   assert.equal(reopened.cycles.length, 2);
   assert.equal(reopened.gates.enter_dev.status, 'pending');
   assert.match(reopened.next_action.action, /重新诊断/);
+  assert.doesNotThrow(() => validateStateShape(reopened), 'REOPENED state must remain schema-valid');
   const archived = JSON.parse(readFileSync(join(runDir, 'cycles', state.current_cycle_id, 'state.json'), 'utf8'));
   const archivedCycle = archived.cycles.find((cycle) => cycle.cycle_id === state.current_cycle_id);
   assert.match(archivedCycle.closed_at, /^20/);
