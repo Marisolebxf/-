@@ -929,7 +929,15 @@ export function setRepos(state, repos) {
 }
 
 function normalizeRemote(remote) {
-  return String(remote ?? '').trim().replace(/\.git$/, '').replace(/\/$/, '');
+  const raw = String(remote ?? '').trim();
+  try {
+    const parsed = new URL(raw);
+    parsed.username = '';
+    parsed.password = '';
+    return parsed.toString().replace(/\.git$/, '').replace(/\/$/, '');
+  } catch {
+    return raw.replace(/\/\/[^/@]+@/, '//').replace(/\.git$/, '').replace(/\/$/, '');
+  }
 }
 
 function changedFileAllowed(file, scopes) {
@@ -963,7 +971,8 @@ export function verifyRepo(state, input) {
   const head = git(input.repoDir, ['rev-parse', 'HEAD']);
   if (head !== candidateSha) throw new Error(`VERIFY_REPO_INVALID: worktree HEAD ${head} != candidate_sha ${candidateSha}`);
   const remote = git(input.repoDir, ['remote', 'get-url', 'origin']);
-  if (normalizeRemote(remote) !== normalizeRemote(repo.remote)) {
+  const normalizedRemote = normalizeRemote(remote);
+  if (normalizedRemote !== normalizeRemote(repo.remote)) {
     throw new Error(`VERIFY_REPO_INVALID: origin ${remote} does not match state remote ${repo.remote}`);
   }
   try {
@@ -984,7 +993,7 @@ export function verifyRepo(state, input) {
     repo_id: repo.repo_id,
     base_sha: baseSha,
     candidate_sha: candidateSha,
-    remote,
+    remote: normalizedRemote,
     changed_files: changedFiles,
     diff_hash: diffHash,
     git_verified: true,

@@ -85,7 +85,7 @@ runGit(repoDir, ['add', '.']);
 runGit(repoDir, ['commit', '-m', 'fix']);
 const candidateSha = runGit(repoDir, ['rev-parse', 'HEAD']);
 const remote = 'https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git';
-runGit(repoDir, ['remote', 'add', 'origin', remote]);
+runGit(repoDir, ['remote', 'add', 'origin', 'https://fake-user:fake-password@aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git']);
 
 try {
   assert.throws(() => createInitialState({
@@ -317,6 +317,7 @@ try {
 
   const repoVerification = verifyRepo(state, { repoId: 'ui_pc', repoDir, candidateSha });
   assert.equal(repoVerification.git_verified, true);
+  assert.equal(repoVerification.remote, remote.replace(/\.git$/, ''));
   assert.match(repoVerification.diff_hash, /^sha256:/);
   assert.match(checkDataWrite(state, dbWriteInput, { sessionId: 'session-1', machineId: 'machine-1' }).write_authorization_id, /^sha256:/);
   advance(state, { to: 'REVIEWING', sessionId: 'session-1', machineId: 'machine-1' });
