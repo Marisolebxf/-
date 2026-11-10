@@ -63066,7 +63066,7 @@ tasks:
     lock_until: "2026-11-11T08:52:40.622Z"
     claimed_by: "human:孔东"
     title: "前端自动刷新 token 接口调用优化 + Java 增加 token 校验接口（多仓 portal/auth 模块通用）"
-    status: "claimed"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "E-PORTAL-IFRAME"
     priority: "P1"
@@ -63077,7 +63077,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 250000
     note: |
-      建单背景：门户 iframe / 统一用户中心接入后，前端自动刷新 token 的接口调用需优化（静默续期+单飞+重放），Java 侧补 token 校验接口供前端判定。与 LUMEN-UAC-JAVA-FACADE-L01（已含 1.3 check-token 封装范围）衔接：复用其封装，不重复建设。指派：human:孔东 认领并监管；执行 frontend-agent（前端多仓）+ api-agent（Java 接口）协作。
+      进度 2026-11-10：① Java /sso/check-token 已交付并推送（c99400f→c2de39a，Bearer 头鉴权版，测试5/5绿）——⚠️ 线上未生效属部署问题非代码问题：upms 为冷门服务，backend:image:upms 与 deploy:upms 绑定 FULL_PIPELINE=true，日常 pipeline 不构建不部署 upms，线上 jar 仍是 7f9abc1（actuator/info 已核实）。② lumen-ui-topic 已封装 checkSsoToken()（api/sso.ts）+ DefaultLayout keepalive 从 get-permission-info 换为 /sso/check-token，vue-tsc 绿，改动停在本地待人工确认推送。③ 上线方式已裁定（human:孔东）：不全量重启，等下次例行 FULL_PIPELINE 窗口蹭车。上线后验证：actuator/info commit 应为 c2de39a、mappings 含 /sso/check-token，再用真实门户 token 实测。
     collaborators:
       - "api-agent"
     definition_of_done:
@@ -63087,7 +63087,7 @@ tasks:
       - "多仓复用同一套封装实现（第二处出现即封装），禁止各仓另起一套"
       - "验证：前端仓三绿（type-check/自检/build）+ Java mvn 编译与接口自测通过；刷新单飞逻辑附最小自检（assert 演示或 node --test）"
       - "handoff 提交 agent-handoffs/LUMEN-UAC-TOKEN-REFRESH-L01.md；前端仓改动推送前按 fe-manual-confirm-push 规约人工确认"
-    update_time: "2026-11-10T16:52:40+08:00"
+    update_time: "2026-11-10T18:30:40+08:00"
   - id: POL-L2-PC1-CLEAN-FDE-PY-L01
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-L2-PC1-CLEAN-FDE-PY-L01.md"
     supervised_by: "human:淮政玮"
@@ -63213,4 +63213,4 @@ tasks:
       - "数据情况列：可演带证据；覆盖不到写缺哪类数据并引既有缺口；mock/示范数据（示范研究机构-N 等）明确标出"
       - "主路径一句话按可演行重写；展示系统-第一批-索引.md M10 行回填"
       - "handoff agent-handoffs/展示系统-合规演示用例/TS-M10-CASE-FILL-L01.md 含 ponytail 行、探测记录、遗留问题、cost 四字段"
-    update_time: "2026-11-10T18:26:04+08:00"
+    update_time: "2026-11-10T18:30:40+08:00"
