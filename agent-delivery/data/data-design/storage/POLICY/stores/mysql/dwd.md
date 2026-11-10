@@ -7,7 +7,7 @@ element: POLICY
 role: store-mysql
 status: draft
 version: "2026-08-21"
-updated: 2026-11-09
+updated: 2026-11-10
 engine: mysql
 task_id: DATA-POLICY-STORAGE-S3-L01
 ---
@@ -130,20 +130,20 @@ ADS 镜像见 [`ads.md`](./ads.md) 的 `policy_industry_rel`。同步发生在�
 
 全景「政策类别」下拉的多选结果。算法库 `polan/category_enrich.py` 建表并写入。只在 DWD，不镜像 ADS，不改 `policy_base_info.policy_type`（那是文种）。一条政策可多类；一个词都没命中时写成「科创政策」。再次抽取把本次没有的有效行 `is_deleted` 置 1，不物理删除。
 
-现网 `demo_gkxlumenx_dwd` 已有此表。建表语句没有指定排序规则，表落到 `utf8mb4_unicode_ci`。与 `policy_base_info.policy_id`（`utf8mb4_0900_ai_ci`）等值比较要显式 COLLATE。下面的 CREATE 是现网结构，去掉了 `AUTO_INCREMENT` 当前值。本文不代跑 ALTER。
+现网 `demo_gkxlumenx_dwd.policy_category_rel` 的表和字符列是 `utf8mb4` / `utf8mb4_0900_ai_ci`，与 `policy_base_info.policy_id` 一致。2026-11-10 从建表时落下的 `utf8mb4_unicode_ci` 改过来。改之前按类别检索会因两列排序规则不一致被收成 0 条。改后行数仍是 29419。下面的 CREATE 去掉了 `AUTO_INCREMENT` 当前值。
 
 ```sql
 CREATE TABLE `policy_category_rel` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `policy_id` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `policy_id` varchar(128) COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `category` varchar(64) COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `is_deleted` tinyint NOT NULL DEFAULT '0',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_policy_category_rel_pid` (`policy_id`,`is_deleted`),
   KEY `idx_policy_category_rel_cat` (`category`,`is_deleted`,`policy_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 | 列 | 含义 |

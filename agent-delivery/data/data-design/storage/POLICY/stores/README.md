@@ -7,7 +7,7 @@ element: POLICY
 role: store-mysql
 status: draft
 version: "2026-11-09"
-updated: 2026-11-09
+updated: 2026-11-10
 s3_task: DATA-POLICY-STORAGE-S3-L01
 ---
 ```
@@ -26,6 +26,8 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 | 窗口对照 | [`../windows/display-ds10-12.md`](../windows/display-ds10-12.md) | draft |
 
 库名：Demo `demo_gkxlumenx_dwd` / `demo_gkxlumenx_ads`。引擎：**MySQL 8 only**。禁止 `dwd.` / `ads.` PG schema 叙述当建库名。
+
+字符集与排序规则见架构铁律 **D19**：`utf8mb4` / `utf8mb4_0900_ai_ci`。建表必须写明，不继承库默认。2026-11-10 核对现网：ODS 三张政策贴源表、DWD/ADS 在用政策表（含 `policy_base_info`、`policy_category_rel`、`policy_industry_rel`、`script_state`）的字符列已是这一套。仍不一致、复制前必须改语句的有：`gkxlumenx_gapfill` 里 32 张 `utf8mb4_unicode_ci`、4 张 `utf8mb4_general_ci`（`gapfill_policy_sz_effect` 已是 `utf8mb4_0900_ai_ci`）；`demo_gkxlumenx_ads.gapfill_synth_policy_effect`；退役表 `policy_base_info_pre_20261026`（`utf8mb4_general_ci`）。`policy_base_info_bak20261109_status` 的表默认仍是 `utf8mb4_unicode_ci`，字符列已是 `utf8mb4_0900_ai_ci`。这些表在改完之前，不得与主表 `policy_id` 做隐式等值。
 
 ## 算法库 ER
 

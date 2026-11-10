@@ -121,7 +121,7 @@ flowchart LR
 
 ---
 
-## 2. 锁定决策（18 项）
+## 2. 锁定决策（19 项）
 
 | # | 决策 | 内容 |
 |---|------|------|
@@ -143,6 +143,7 @@ flowchart LR
 | **D16** | **功能验收缺项表** | 计算逻辑已登记的缺字段、缺行，可以在库 `gkxlumenx_gapfill` 建 `gapfill_` 前缀表，由 Python 用 LLM 或其他方式灌数。禁止写入 ODS、DWD、ADS 和供应方库。读缺项表算出的 ADS 批次号以 `gapfill_` 开头。未闭合的 `Q-*` 按客户决策清单里已写的临时默认实施。缺项补齐并按该默认实算完成后，D4 不得再是 mock，改为 live。细则见 `data-lineage-policy.md` §2.4。决策：项目负责人 2026-10-28。 |
 | **D17** | **合规算法冲突时分成「合规 / 合理」** | 唐绍祖锁定的合规算法，其调用闭包（入口、中间函数、这些函数读到的变量；含 worker 上的同一条链）除他本人外不得修改。业务探索与该条冲突时，全过程复制到新包再改副本，新路由不得复用锁定 URL。算法中台 `demo-ui-system-test` 的指标展示名成对出现：`{原名}-合规`、`{原名}-合理`。没有冲突的指标保持原名。`-合理` 不进合规展示台 `demo-ui-algo-apiview`。两条的 `metric_id`、路由、Python 入口各自独立。细则见 [算法合规与合理区分规约.md](算法合规与合理区分规约.md)。决策：2026-10-29。 |
 | **D18** | **架构签收条件 = 可实现** | 签收架构设计的条件是按稿可以落地。真算、真查或真模型做不到时，只接受一种替代：新建 ADS 表，由 Python 把 mock 行写入该表，Java 接口只读该表。禁止 Java 或 Python 在接口里直接返回写死的 mock JSON、常量列表或内存 fixture，也禁止前端用 fixture 充当该接口的返回。这种表不建在 ODS、DWD、供应方库，也不算 D16 的 `gapfill_` 缺项表。读到的数 D4 仍是 mock，界面保留 MockBadge。架构稿必须写明表名、灌数方、读取接口，缺一不签收。决策：项目负责人 2026-11-03。 |
+| **D19** | **同一比较的字符列用同一套字符集和排序规则** | MySQL 业务表字符集 `utf8mb4`，排序规则 `utf8mb4_0900_ai_ci`。会做等值、LIKE 或 JOIN 的列（尤其 `policy_id`）两边必须相同。`CREATE TABLE` 必须写明 `CHARSET` 和 `COLLATE`，禁止依赖库默认。现网 `demo_gkxlumenx_{ods,dwd,ads}` 与 `gkxlumenx_gapfill` 的库默认是 `utf8mb4_unicode_ci`，正式 `gkxlumenx_{ods,dwd,ads}` 的库默认是 `utf8mb4_general_ci`；不写就会再出现 `1267 Illegal mix of collations`，接口被收成 0 条。禁止用 `COLLATE` 把一侧改成另一套规则来掩盖。要改表。存量不一致表在改完之前不得与 `utf8mb4_0900_ai_ci` 列做隐式等值。决策：2026-11-10。 |
 
 ### 2.1 对象存储桶（D14）
 
@@ -341,6 +342,7 @@ shared_core:
 - [ ] **消息总线（D13）**：运行时只连 Kafka `10.50.11.76:9092`；无 RabbitMQ / AMQP / `aio-pika`；正式与原型 topic、消费组分开；口令不进 git
 - [ ] **对象存储桶（D14）**：正式业务只写 `gkx-lumen` 下 §2.1 的六个目录；可观测只用 `tempo-blocks`、`loki-chunks`；无自造桶或顶层目录；前端不直连 RustFS；业务不读写 `milvus`；Demo 不写 `gkx-lumen`；凭证不进 git
 - [ ] **架构可实现（D18）**：签收稿按调用链可以落地。做不到真实现时，只接受新建 ADS 表、Python 灌 mock 行、接口读该表。接口直接返回 mock 的稿不签收。稿里写明表名、灌数方、读取接口
+- [ ] **字符集与排序规则（D19）**：新建表显式 `utf8mb4` / `utf8mb4_0900_ai_ci`。等值或 JOIN 的两侧列规则相同。没有用 `COLLATE` 把一侧改成另一套规则来放过 `1267`
 
 ### 5.3 仓隔离合规（D12）
 

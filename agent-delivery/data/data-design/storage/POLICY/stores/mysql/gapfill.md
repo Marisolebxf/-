@@ -7,13 +7,14 @@ element: POLICY
 role: store-mysql
 status: draft
 version: "2026-11-09"
-updated: 2026-11-09
+updated: 2026-11-10
 task_id: POL-IMPL-EFFECT-MOCK-VIA-UI-L01
 ---
 ```
 
 > **库**：`gkxlumenx_gapfill`（DBA 预建；应用路径禁止 `CREATE DATABASE`）。  
 > **边界**：只写 `gapfill_*`；禁止写入 ODS / 正式 DWD / ADS / 供应方库。  
+> **D19**：新建表，以及任何会和 `policy_base_info.policy_id` 等值比较的列，用 `utf8mb4` / `utf8mb4_0900_ai_ci`，建表语句必须写明。下面已落地的 CREATE 多数仍是库默认的 `utf8mb4_unicode_ci`（可视化四张是 `utf8mb4_general_ci`）。这是 2026-11-10 的现网，复制这些语句前要改成 D19。未改之前禁止和主表 `policy_id` 做隐式等值。  
 > **索引**：[`../README.md`](../README.md)。详设读侧：[05.6.2 §3.1](../../../../../agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.6.2-深圳政策现状分析.md)。  
 > **按钮缺项空表**（`POL-MOCK-BTN-A01`）：下面「八张新表」与可执行脚本同文。210/211 现网已有，不在这里重建。
 
