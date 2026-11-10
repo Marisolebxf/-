@@ -42,7 +42,7 @@
 |---|---|---|
 | `hang_entities` | 42 | `[base_version, technology_id, entities[(entity_type, entity_id)], client_op_id]`；回执 edges_created[].strength 复用 105 快照边权（ALGO 边界 1） |
 | `unhang_entities` | 43 | `[base_version, technology_ids[], entity_ids[], cascade, client_op_id]`（A03:883 原文 technology_id 单数，分册扩复数批量——三分册会签注记）；cascade 语义含 SRS-43「所有关系」（会签 API 备注 3） |
-| `delete_node` | 43（技术点本体） | `[base_version, technology_ids[], cascade, client_op_id]`；前置 impact 预检（R3） |
+| `delete_node` | 43（技术点本体） | `[base_version, technology_ids[], cascade, client_op_id]`；前置 impact 预检（R3）（**2026-11-10 监管人 human:刘剑锋 裁定**：需规 41 推荐仅人/机构/论文/专利、43「保留在推荐列表以便重新添加」，技术点删除原文归需规 35 维护技术图谱——本页前端**不发** delete_node，技术点行不可勾选；后端 op 与 impact 保留待 34–40） |
 | `update_node` | 45（技术点） | `[base_version, technology_id, patch(name_cn, category, description, importance_level), client_op_id]` |
 | `update_entity_overlay` | 45（三方实体） | `[base_version, entity_type, entity_id, patch(display_name, type, description, importance_level), client_op_id]`——与 update_node 形状不同，**不得混用**（API-C1） |
 | `delete_entity_edge` | 44 | `[base_version, edge_key, client_op_id]`；edge_key=(src,dst,rel_type,rank)（A03 INT-A-TECH-204）；回执带 edge_source(auto\|manual) |

@@ -43,3 +43,10 @@
 - 根因：API 册 §2 要求 `delete_node` 前置 R3 impact 预检，前端未实现；技术点与普通实体共用同一句确认文案
 - 修复 `lumen-ui-science-pc` 874e35f：`loadNodeImpact`（`/nodes/{id}/impact`）；选中含技术点 → 弹「删除技术点」红字警告（技术点本身及全部关系/推荐实体移除、本页无法恢复）+ 影响范围（已挂接实体数、推荐候选关系数），预检中/失败禁用确认；仅普通实体维持原确认框；mock 轨只显示警告不调预检
 - 验证：type-check / eslint / maintain.test.mjs / build 绿；本地 dev（mock auth + edu 真数据）无头 Chrome：技术点弹窗文案、impact 请求、按钮可用均 OK，仅点取消未改数据；mock 轨技术点/普通实体两种弹窗 OK
+
+## 2026-11-10 返工二：方案 B（监管人 human:刘剑锋 裁定，替代上节方案 A）
+
+- 依据需规原文：41 推荐实体仅人/机构/论文/专利；43「实体及其关联关系从全景图中移除，但保留在推荐列表中以便重新添加」；技术节点删除归 35（维护技术图谱，本期不做）。L2 ARCH/API「序 43 含 delete_node」系设计扩展，已加注裁定
+- 修复 `lumen-ui-science-pc` 3da1892：「已在全景图」技术点行无勾选框，`batchRemoveEntities` 只发 `unhang_entities`（前端不再发 delete_node）；撤回方案 A 的 impact 预检/专门警告（`loadNodeImpact` 删除）；确认框补「删除后实体回到推荐列表，可重新添加」；推荐类型筛选去「技术点」；编辑技术点不显示「类型」；关系时间起止同年只显一年
+- 配套后端 `lumen-algo-py` df84c2e：R2 `time_range` 在仅有 `time_to` 时也输出（SEED 只灌强度边年份，原逻辑要求 time_from 非空致时间列恒空）
+- 验证：type-check / eslint / maintain.test.mjs / build 绿；本地 dev（mock auth + edu 真数据）无头 Chrome：筛选无技术点、技术点行无勾选框、挂接示范专利-20 → 关系行时间「2025」与推荐年份一致 → 批量删除确认框文案正确 → 解挂后退回推荐（v18/v19 互抵，数据回 v17）

@@ -55434,7 +55434,7 @@ tasks:
     estimated_tokens: 150000
     user_story: "全景序41-47 写回链路 Python 侧（ENT-ARCH done：四段链 Python 单写者）"
     note: |
-      落点 lumen-algo-py vendor/entan-py（D2 算法库统一出口）；DDL 归 Python（D1 库 gkxlumenx_dwd）；含存量技术点映射 seed（DATA-A1）。2026-11-09 代码完成（feat/m10-ent-py 已推）：DDL 12 表+7op 乐观锁幂等+发布序列投影+R1/R2/impact/conflicts；单测 6/6。handoff `TS-L2-M10-ENT-PY-IMPL-01.md`。待：DDL 执行+部署+联调（hang/边投影首版留联调补齐，已显式记录）｜2026-11-09 走查返工（监管人 human:刘剑锋 报 edu 500）：get_conn 不存在致全端点 500；表名无库前缀；不 commit；rank 保留字；HTTPException 包 {detail} 非信封；plane 默认落 demo_* 库（D12）；hang/unhang/边三 op 未投影。修复 lumen-algo-py 4b34c21（单测 6→15 全绿）：事务游标+正式库名固定+信封出口+缺表空态/50302+ADS 投影补齐+GET/DELETE changes/{id}+Nebula 仅显式 space 写且转义。DDL 已执行（12 表 2026-11-09 09:45）；存量 seed 拆 TS-L2-M10-ENT-SEED-L01。待 edu 接口联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 edd426b（R2 只返回已挂接边，解挂 auto 退回候选）
+      落点 lumen-algo-py vendor/entan-py（D2 算法库统一出口）；DDL 归 Python（D1 库 gkxlumenx_dwd）；含存量技术点映射 seed（DATA-A1）。2026-11-09 代码完成（feat/m10-ent-py 已推）：DDL 12 表+7op 乐观锁幂等+发布序列投影+R1/R2/impact/conflicts；单测 6/6。handoff `TS-L2-M10-ENT-PY-IMPL-01.md`。待：DDL 执行+部署+联调（hang/边投影首版留联调补齐，已显式记录）｜2026-11-09 走查返工（监管人 human:刘剑锋 报 edu 500）：get_conn 不存在致全端点 500；表名无库前缀；不 commit；rank 保留字；HTTPException 包 {detail} 非信封；plane 默认落 demo_* 库（D12）；hang/unhang/边三 op 未投影。修复 lumen-algo-py 4b34c21（单测 6→15 全绿）：事务游标+正式库名固定+信封出口+缺表空态/50302+ADS 投影补齐+GET/DELETE changes/{id}+Nebula 仅显式 space 写且转义。DDL 已执行（12 表 2026-11-09 09:45）；存量 seed 拆 TS-L2-M10-ENT-SEED-L01。待 edu 接口联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 edd426b（R2 只返回已挂接边，解挂 auto 退回候选）｜2026-11-10 补修 df84c2e：R2 time_range 仅有 time_to 时也输出（关系时间列恒空根因），单测 16/16，edu 已验；维持 pending_test。
     depends_on:
       - "TS-L2-M10-ENT-ARCH"
       - "TS-L2-M10-ENT-API"
@@ -55444,7 +55444,7 @@ tasks:
       - "POST /internal/v1/sci/tech/graph/changes：7 op 实现（乐观锁 409+diff/ops≤50/client_op_id 幂等/部分失败 failed_items）+ :validate（dry_run diff+影响面）+ publish（MySQL→Nebula→ADS 序列，失败 projection_pending 补偿）+ R1 推荐（105 边权+ⓘ）/impact/conflicts 读"
       - "边强度三列（strength_auto/manual/source）口径落地：读面只取 auto；strength_manual 永不进指标"
       - "不写 Neo4j；不动存量 VID；G2 现算不做；单测全绿；handoff 完整含 cost"
-    update_time: "2026-11-09T19:00:57+08:00"
+    update_time: "2026-11-10T14:55:13+08:00"
   - id: TS-L2-M10-ENT-JAVA-IMPL-01
     evidence: "lumen-svc-platform d8bbea6（返工）/ 8d90869（首版）"
     supervised_by: "human:刘剑锋"
@@ -55494,7 +55494,7 @@ tasks:
     estimated_tokens: 80000
     user_story: "全景序41-47 FE-TS-10A 分区3 接线正式化"
     note: |
-      api 层 maintain-ent 模块；mock 轨保留演示态。2026-11-08 代码完成三绿（变更集模型/addRelation 移除/R1ⓘ）；mock 轨可验页；real 轨待 PY 写侧。handoff `FE-TS-10C.md`｜2026-11-09 走查返工（监管人报：页面出现 mock 文案、窄屏错乱）：real 轨原不调 R1/R2，始终显示页面种子（含「（Mock）」）→新增 loadEntityRelationState，状态只来自服务端+写后回读+诚实空态；裸 fetch→统一 axios（baseURL/Bearer）；去 technologyId=1 硬编码，加技术点选择；edge_key 用服务端主键；人工强度标注+R1 MetricSpecCard。分区1 real 轨不再回落种子。布局：td display:flex 移内层、视口 @media→容器查询、宽表横向滚动、grid 子项 min-width:0。lumen-ui-science-pc 8d754e2（type-check/maintain 单测/build 绿；mock+real 1440/1100/900/760 截图核对）。维护技术图谱 34–40 按监管人要求不动。待 ENT 全链部署后 edu 联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 369f70c（「人工」标注只跟 strength_manual）｜2026-11-10 返工 874e35f：删除技术点前置 impact 预检 + 专门警告（契约 R3），预检失败不放行；三绿+自检绿，本地无头验证 OK；状态维持 pending_test，待 edu 部署后 QA 一并验（TS-L2-M10-TEST-L01）。
+      api 层 maintain-ent 模块；mock 轨保留演示态。2026-11-08 代码完成三绿（变更集模型/addRelation 移除/R1ⓘ）；mock 轨可验页；real 轨待 PY 写侧。handoff `FE-TS-10C.md`｜2026-11-09 走查返工（监管人报：页面出现 mock 文案、窄屏错乱）：real 轨原不调 R1/R2，始终显示页面种子（含「（Mock）」）→新增 loadEntityRelationState，状态只来自服务端+写后回读+诚实空态；裸 fetch→统一 axios（baseURL/Bearer）；去 technologyId=1 硬编码，加技术点选择；edge_key 用服务端主键；人工强度标注+R1 MetricSpecCard。分区1 real 轨不再回落种子。布局：td display:flex 移内层、视口 @media→容器查询、宽表横向滚动、grid 子项 min-width:0。lumen-ui-science-pc 8d754e2（type-check/maintain 单测/build 绿；mock+real 1440/1100/900/760 截图核对）。维护技术图谱 34–40 按监管人要求不动。待 ENT 全链部署后 edu 联调。｜2026-11-09 edu 联调通过（真实登录浏览器冒烟：R1/R2 读 + 挂接/改关系类型/删关系/解挂写全链，见 agent-handoffs/科技发展态势-TS/TS-L2-M10-联调冒烟记录-20261109.md，截图 e2e_shots/M10-smoke-20261109/）；联调中补修 369f70c（「人工」标注只跟 strength_manual）｜2026-11-10 返工 874e35f：删除技术点前置 impact 预检 + 专门警告（契约 R3），预检失败不放行；三绿+自检绿，本地无头验证 OK；状态维持 pending_test，待 edu 部署后 QA 一并验（TS-L2-M10-TEST-L01）。｜2026-11-10 返工二 3da1892（监管人裁定方案 B，替代 874e35f 方案 A）：技术点行不可勾选、前端不发 delete_node；推荐筛选去技术点；关系时间同年显一年。三绿+自检绿，本地无头验证 OK；维持 pending_test。
     depends_on:
       - "TS-L2-M10-ENT-API"
       - "TS-L2-M10-ENT-JAVA-IMPL-01"
@@ -55503,7 +55503,7 @@ tasks:
       - "面板接线：勾选推荐→hang（回执 edges_created 呈现）/实体编辑按类型分流 update_node|overlay/批量删 unhang/删关系 delete_entity_edge/类型行内改 update_entity_edge（G1 强度+时间表单已有）；addRelation 入口移除（超需规）；busy 防抖+409 diff 提示+pending 提示"
       - "R1 强度 ⓘ 挂 M_TECH_GRAPH_105_1（105 未交付空态+PendingBadge）；UI 显人工强度标注「人工」；真轨 mock 文案清零"
       - "不重做页面结构；三绿（maintain 测试/type-check/build）；handoff 完整含 cost"
-    update_time: "2026-11-10T14:08:31+08:00"
+    update_time: "2026-11-10T14:55:13+08:00"
   - id: TS-L2-M10-BE-IMPL-01
     evidence: "agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-M10-BE-IMPL-01.md"
     supervised_by: "human:刘剑锋"
