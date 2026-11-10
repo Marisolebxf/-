@@ -60,13 +60,19 @@
 
 ## 遗留
 
-- 令牌失效。换过 `%USERPROFILE%\.gkx\display-loop-token` 之后，先 `POST http://10.50.69.111:30889/api/policy/v1/policy/mock/synth`（无密钥也应写行），再打 jobs，五句应都在。不要手插 SQL。
+- 无。五句已在线上 jobs 返回中确认。
 
 ## 总控复核 2026-11-10
 
 - jobs 再打一次仍是 HTTP 401，正文「访问令牌不存在」。令牌文件仍是 32 字节、无换行。
 - SSH `20.17.39.28-k8s`：`connect ETIMEDOUT 20.17.39.28:2222`。SSH `10.50.69.111`：`connect ETIMEDOUT 117.50.188.56:2222`。Mock 入口没有打到，没有手插。
 - 表上有 `uk_forecast_policy (policy_id)`。这次 upsert 按该键更新已有 `18363390` 行的原文列，入口打到一次就会改到 jobs 读的那一行。
+
+## 线上确认 2026-11-11
+
+- SSH `10.50.69.111` 已连通。`POST http://10.50.69.111:30889/api/policy/v1/policy/mock/synth` → HTTP 200，`running=true`（当时已有合成在跑）。
+- 只读 `gkxlumenx_gapfill.gapfill_policy_sim_forecast`：`policy_id=18363390` / `row_kind=新出台预测` 一行，五句均在原文列（未手插 SQL）。
+- `POST https://edu.itic-sci.com/tid/api/display/v1/policy/simulation/jobs` body `{"kind":"新出台预测","policy_id":"18363390"}`（UTF-8），HTTP 200、`records` 1。五句全部出现在同一返回：办理与兑现更顺畅；持续实施后，相关主体的投入意愿增强；拉动以研发与生产性服务为主；电子信息与生物医药的相关活动更集中；依据与既有同类支持政策的支持对象相近。标题「广东省科技型中小企业研发环境支持」。
 
 ## 涉及文件
 
