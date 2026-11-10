@@ -73,11 +73,27 @@ flowchart LR
 ### Java（lumen-svc-platform · CHAIN）
 
 ```
-backend:build (mvn verify，含 topic-chain / async-service)
-  → package (backend:image:*)
-  → deploy:topic-chain + deploy:topic-async-service  （origin/dev **自动**；tag=短 SHA + rollout = E0）
-  → helm:deploy / gateway / innov / topic / …      （dev 默认 manual）
+backend:build (mvn verify **仅 affected**；脚本 scripts/ci-affected-modules.sh)
+  → package (backend:image:* **按路径增量**；未改服务 skip)
+  → deploy:* 与 image 同门控（skip = 保持现网 digest，不伪标新 SHA）
+  → deploy:topic-chain + deploy:topic-async-service  （改到才自动；tag=短 SHA + rollout = E0）
+  → e2e:chain-gold（仅 chain/async 或共享扇出时；needs optional）
+  → helm:deploy / gateway / …                     （dev 默认 manual；FULL_PIPELINE 自动）
 ```
+
+#### 增量规则（DEVOPS-LUMEN-SVC-CI-SPEED-L01 · Phase A）
+
+| 变更范围 | `backend:build` | 日常 image+deploy | 说明 |
+|---------|-----------------|-------------------|------|
+| 单服务目录（如 `gkxlumen-display/**`） | 只 `-pl` 该模块 `-am` | 仅该服务 | 其余服务 **skip**，现网镜像不动 |
+| 共享扇出：`pom.xml` / `gkxlumen-common/**` / `.gitlab-ci.yml` / `scripts/ci-affected-modules.sh` / `scripts/download-otel-agent.sh` | 全量模块列表 | 全部日常常发 | 与 Nx affected / Maven reactor 扇出同语义 |
+| 仅 helm/文档等非 Java | skip verify（空 `-pl`） | 日常 image 全 skip | 改 chart 仍点 `helm:chart` |
+| `REBUILD_ALL=true` | 全量 verify | 全部日常常发 image+deploy | **逃生口**；不强制冷门 gateway/auth/… |
+| `FULL_PIPELINE=true` | 全量 verify | 日常 + 冷门全开 | 完整发布；含 graph/datacatalog 等 |
+
+**安全边界**：跳过 package 的服务禁止 deploy；deploy 仍校验本次 jar 的 `git.commit.id == CI_COMMIT_SHA`（仅对实际跑了 image 的服务）。topic-chain / topic-async-service 在 **自身或共享路径变更** 时仍 origin/dev 自动 deploy（长任务 C1 不变）。
+
+**Phase B/C（未本单落地）**：api 模块细粒度扇出表；Maven Build Cache / BuildKit / 跨 job 传 class（注意 artifact 413）。
 
 ### Python（lumen-algo-py · CHAIN）
 
