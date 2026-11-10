@@ -9,14 +9,23 @@ alwaysApply: true
 
 ## 铁律（主仓 gkx-orchestration 多会话并行期间）
 
-1. **禁止 `git reset --hard`**：任何情况下不得对主仓执行。工作区清理只能用：
+1. **禁止破坏性清理**：任何情况下不得对主仓执行 `git reset --hard`、`git clean -fd`、`git clean -fdx`。工作区清理只能用：
    - `git stash push -u -m "说明"`（全量暂存，可恢复）
    - `git checkout -- <具体文件>`（仅限确认无会话在写该文件时）
 2. **MCP 写 registry 后立即 commit**：task-registry.yaml 是全团队高频并发写文件，`task-create`/`task-update-*` 成功后必须马上 commit + push，防止 pull --rebase autostash 吞改动。
 3. **MCP 写 registry 前先 fetch**：`task-update-*` 基于本地文件快照，基线过时会挤掉远端新块（KG 块事件）。写前 `git fetch` 确认基线，落后先 pull。
 4. **push 被拒时禁止连续重试 rebase**：远端高频提交期，rebase 大概率撞车。改用：`git pull --no-rebase`（merge）或暂存后等低峰。
 5. **未提交文件 = 其他会话的活产物**：`git status` 里的非自己产生的 M/?? 文件，一律视为"别的会话正在写"，禁止 checkout/reset/stash 覆盖它们。
+6. **禁止“先移到 /tmp，再继续 pull/clean”**：未跟踪文件不能只靠临时目录搬运来“让 pull 通过”。必须使用 `git stash push -u`，或在同一脚本中用 `trap/finally` 保证恢复，并校验备份清单与文件哈希；恢复失败必须立即停止，不得继续同步。
+7. **设计/交付文档评审后立即入库**：Agent 产出的设计稿、方案、运行账本等，完成评审后必须 `git add` + `commit`，不得长期停留在 `??` 状态。
 
 ## 违规代价参考（2026-10-24 实例）
 
 - 1 次 reset --hard → 另一会话数小时工作产物丢失且不可恢复 → 该会话需人工重述重写全部修改
+
+## 2026-11-10 未跟踪设计稿丢失实例
+
+- `agent-delivery/bugfix-runs/P0-DESIGN.md` 与 `README.md` 已落盘但未入库；工作区随后发生同步/清理，两份文件从主仓消失。
+- 15:55 的 `stash@{0}` 只包含已跟踪文件，不包含这两份未跟踪文档，无法从 stash 恢复。
+- 最终从同步工具遗留的 `/private/tmp/synth_local_backup/blockers7/` 备份恢复；该备份不是可靠真源，不能作为常规恢复机制。
+- 结论：**未跟踪不等于安全**。只要文件有价值，就必须先入库或进入可验证的 `git stash -u` 快照，再允许 pull/clean。
