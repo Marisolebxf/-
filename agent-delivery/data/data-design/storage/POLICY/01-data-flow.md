@@ -72,6 +72,8 @@ flowchart TB
 
 真源对照：[`windows/display-ds10-12.md`](./windows/display-ds10-12.md)。**不改** §1 工厂边。
 
+602 点「执行」时，只有准确性这一块由 Java 只读演示 ADS 的 `policy_accuracy_demo`，不读九张指标表。五条仍由 Python 只 SELECT 演示贴源两表 `{ods}.dwd_policy_base` 与 `{ods}.dwd_global_policy_base`。不改第 1 节工厂主链，也不把下面这张全景图改成 602 的时序图。
+
 ```mermaid
 flowchart TB
   SCI["lumen-ui-science-* / display/policy"] --> GW2["gkxlumen-platform-gateway"]
