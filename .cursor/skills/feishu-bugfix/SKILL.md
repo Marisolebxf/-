@@ -65,7 +65,7 @@ Do this immediately after selecting the bug, **before downloading images, inspec
 
 ## P0 AI Native workflow gates
 
-When the repository contains `agent-delivery/bugfix-runs/P0-DESIGN.md`, follow that document as the governing process. Keep the user-facing flow simple: two precise chat gates plus one business acceptance.
+When the repository contains `.cursor/skills/feishu-bugfix/references/P0-DESIGN.md`, follow that document as the governing process. Keep the user-facing flow simple: two precise chat gates plus one business acceptance.
 
 ### Gate tokens
 
@@ -80,7 +80,7 @@ Before requesting either token, show the current work item ID, claim ID, reposit
 
 ### Run ledger
 
-When the workflow helper `scripts/bugflow-state.mjs` exists, use it instead of editing the run ledger by hand. Create the run only after the Feishu claim succeeds; `init` accepts only `INTAKE` or `CLAIMED`, and no later phase may be supplied on the command line. Each run belongs under:
+When the workflow helper `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs` exists, use it instead of editing the run ledger by hand. Create the run only after the Feishu claim succeeds; `init` accepts only `INTAKE` or `CLAIMED`, and no later phase may be supplied on the command line. Each run belongs under:
 
 ```text
 agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
@@ -101,34 +101,34 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 - First `【进入开发】` approval is valid only in `READY_DEV`. After a risk upgrade, takeover or other invalidation, re-confirm in `IMPLEMENTING` only when the gate status is `needs_reconfirm`.
 - Any decision with `requires_human_ratification=true` must have `ratified_by` before the ship gate. Natural-language “continue” is not ratification evidence.
 - If the helper exists, use its commands instead of hand-editing the ledger:
-  - `node scripts/bugflow-state.mjs init ... --claim-comment-ref <id/url> --claim-operator <operator>`
-  - `node scripts/bugflow-state.mjs record-diagnosis ...`
-  - `node scripts/bugflow-state.mjs record-plan ...`
-  - `node scripts/bugflow-state.mjs set-repos ...` before requesting `【进入开发】`
-  - `node scripts/bugflow-state.mjs set-data-scope ...` after the run scope is confirmed
-  - `node scripts/bugflow-state.mjs approve-gate ... --session-id ... --machine-id ...` only after the exact chat token
-  - `node scripts/bugflow-state.mjs validate-gate ... --session-id ... --machine-id ...`
-  - `node scripts/bugflow-state.mjs advance ...`
-  - `node scripts/bugflow-state.mjs check-data-write ... --session-id ... --machine-id ...` before every DB write; pass its returned authorization fields into `record-evidence`
-  - `node scripts/bugflow-state.mjs verify-repo ...` for every repo before review
-  - `node scripts/bugflow-state.mjs record-evidence ...` for each auditable evidence item
-  - `node scripts/bugflow-state.mjs record-review ...` before requesting `【提测】`
-  - `node scripts/bugflow-state.mjs record-verification ...` with `fix`, `regression`, and `boundary` coverage for every repository
-  - `node scripts/bugflow-state.mjs approve-gate --gate ship ...` before merge; the ship binding contains candidate/review/verification facts, not post-deploy facts
-  - `node scripts/bugflow-state.mjs advance ...` to `SHIPPING`, then merge and deploy under the `【提测】` authorization
-  - `node scripts/bugflow-state.mjs record-ship-package ...` after merge/rollout facts are known; this command re-runs evidence validation
-  - `node scripts/bugflow-state.mjs verify-evidence ...` whenever evidence changed and before moving from `DEV_VERIFYING`
-  - `node scripts/bugflow-state.mjs record-failure ...` for every dev/pipeline/rework failure
-  - `node scripts/bugflow-state.mjs record-acceptance ...` only after reading the Feishu business state
-  - `node scripts/bugflow-state.mjs takeover ... --claim-comment-ref <id/url> --claim-operator <operator>` only for the exact `接管【auto_number】` message; it does not unlock gates
-  - `node scripts/bugflow-state.mjs render-report ...`
-  - `node scripts/bugflow-state.mjs block ...` or `reopen ...` for side paths
-- Run `node scripts/bugflow-state.selfcheck.mjs` after changing the helper.
-- The canonical Skill source is `agent-delivery/bugfix-runs/SKILL.md`. Check client adapter drift with `node scripts/sync-bugfix-skill.mjs --check`; after intentional source edits run `node scripts/sync-bugfix-skill.mjs --write`.
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs init ... --claim-comment-ref <id/url> --claim-operator <operator>`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-diagnosis ...`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-plan ...`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs set-repos ...` before requesting `【进入开发】`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs set-data-scope ...` after the run scope is confirmed
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs approve-gate ... --session-id ... --machine-id ...` only after the exact chat token
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs validate-gate ... --session-id ... --machine-id ...`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs advance ...`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs check-data-write ... --session-id ... --machine-id ...` before every DB write; pass its returned authorization fields into `record-evidence`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs verify-repo ...` for every repo before review
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-evidence ...` for each auditable evidence item
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-review ...` before requesting `【提测】`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-verification ...` with `fix`, `regression`, and `boundary` coverage for every repository
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs approve-gate --gate ship ...` before merge; the ship binding contains candidate/review/verification facts, not post-deploy facts
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs advance ...` to `SHIPPING`, then merge and deploy under the `【提测】` authorization
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-ship-package ...` after merge/rollout facts are known; this command re-runs evidence validation
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs verify-evidence ...` whenever evidence changed and before moving from `DEV_VERIFYING`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-failure ...` for every dev/pipeline/rework failure
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs record-acceptance ...` only after reading the Feishu business state
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs takeover ... --claim-comment-ref <id/url> --claim-operator <operator>` only for the exact `接管【auto_number】` message; it does not unlock gates
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report ...`
+  - `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs block ...` or `reopen ...` for side paths
+- Run `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs` after changing the helper.
+- The canonical Skill source is `.cursor/skills/feishu-bugfix/SKILL.md`. Check client adapter drift with `node .cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --check`; after intentional source edits run `node .cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --write`.
 
 ### Data and verification
 
-- Read the immutable policy from `agent-delivery/bugfix-runs/policies/<version>.yaml`; environment/host/database/schema must match the base policy, and every table plus the execution account must match the approved run scope. Never print or commit passwords or credentials.
+- Read the immutable policy from `.cursor/skills/feishu-bugfix/policies/<version>.yaml`; environment/host/database/schema must match the base policy, and every table plus the execution account must match the approved run scope. Never print or commit passwords or credentials.
 - After the `【进入开发】` gate is approved and before any `INSERT`/`UPDATE`/`DELETE`/DDL or mock write, call `check-data-write` and wait for a valid authorization. A missing gate/policy, expired policy, pending scope, out-of-scope table, mismatched host/account, or L/cross-repository route must block the write. This check cannot prevent an Agent that bypasses the ledger from using credentials; never claim otherwise.
 - `check-data-write` may be called after `verify-repo`; it validates the current gate/session/policy/scope without requiring `candidate_sha=null`. Only initial `approveGate` and `advance IMPLEMENTING` require the candidate to be null.
 - `kind=db` evidence must carry the write authorization and policy/scope hashes. `verify-evidence` rejects DB evidence whose current policy, scope, table, account, or authorization no longer matches.

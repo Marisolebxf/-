@@ -3,7 +3,7 @@
  * Dependency-free run ledger and validator for the Feishu bug-fix P0 workflow.
  * Validates state schema, exact gates, real git/evidence facts and versioned policy.
  *
- * Design source: agent-delivery/bugfix-runs/P0-DESIGN.md
+ * Design source: references/P0-DESIGN.md (relative to this Skill package)
  * No external dependencies. Node.js >= 18.
  */
 import { createHash } from 'node:crypto';
@@ -67,10 +67,21 @@ const VERIFICATION_CATEGORIES = ['fix', 'regression', 'boundary'];
 const DATA_WRITE_OPERATIONS = ['insert', 'update', 'delete', 'replace', 'upsert', 'truncate', 'create', 'alter', 'drop', 'load', 'mock'];
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
-export const REPO_ROOT = resolve(dirname(SCRIPT_PATH), '..');
+export const SKILL_ROOT = resolve(dirname(SCRIPT_PATH), '..');
+function resolveRepoRoot() {
+  try {
+    return execFileSync('git', ['-C', SKILL_ROOT, 'rev-parse', '--show-toplevel'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch {
+    return resolve(SKILL_ROOT, '../../..');
+  }
+}
+export const REPO_ROOT = resolveRepoRoot();
 export const RUNS_ROOT = join(REPO_ROOT, 'agent-delivery', 'bugfix-runs');
-export const STATE_SCHEMA_PATH = join(RUNS_ROOT, '_templates', 'state.schema.json');
-export const POLICY_ROOT = join(RUNS_ROOT, 'policies');
+export const STATE_SCHEMA_PATH = join(SKILL_ROOT, 'templates', 'state.schema.json');
+export const POLICY_ROOT = join(SKILL_ROOT, 'policies');
 export const REPO_REGISTRY_PATH = join(REPO_ROOT, 'agent-delivery', 'repo-registry.yaml');
 
 let stateSchemaCache = null;
@@ -2036,7 +2047,7 @@ export function renderReport(state, manifest = { items: [] }) {
   const repos = state.repos ?? [];
   return `# 缺陷修复报告：${state.work_item.auto_number} ${state.work_item.title}
 
-> 本文件由 \`scripts/bugflow-state.mjs render-report\` 从 \`state.json\` 和 \`evidence/manifest.json\` 渲染，不手工补写事实。
+> 本文件由 \`.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report\` 从 \`state.json\` 和 \`evidence/manifest.json\` 渲染，不手工补写事实。
 > 生成时间：${isoNow()}
 > 当前 cycle：${state.current_cycle_id}
 > 当前内部阶段：${state.phase}
@@ -2209,7 +2220,7 @@ function main() {
   });
   const command = positionals[0];
   if (!command || values.help) {
-    process.stdout.write(`Usage: node scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append one audited evidence item\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record observed Feishu acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
+    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append one audited evidence item\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record observed Feishu acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
     return;
   }
   const evidenceRefs = values['evidence-ref'] ?? [];

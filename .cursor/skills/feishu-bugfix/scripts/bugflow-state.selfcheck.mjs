@@ -1,6 +1,6 @@
 /**
- * Offline self-check for scripts/bugflow-state.mjs.
- * Run: node scripts/bugflow-state.selfcheck.mjs
+ * Offline self-check for .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs.
+ * Run: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -39,7 +39,7 @@ import {
 } from './bugflow-state.mjs';
 import { loadPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-const policiesRoot = 'agent-delivery/bugfix-runs/policies';
+const policiesRoot = '.cursor/skills/feishu-bugfix/policies';
 const loadedPolicy = loadPolicy('demo-2026-11-10', policiesRoot);
 
 function runGit(cwd, args) {

@@ -1,6 +1,6 @@
 /**
  * Small, dependency-free JSON Schema validator for the subset used by
- * agent-delivery/bugfix-runs/_templates/state.schema.json.
+ * .cursor/skills/feishu-bugfix/templates/state.schema.json.
  *
  * Supported: $ref, $defs, type, const, enum, oneOf, required, properties,
  * additionalProperties, items, minItems, minLength, minimum, maximum.

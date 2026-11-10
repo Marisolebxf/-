@@ -6,7 +6,7 @@
 > 基线案例：飞书缺陷【2238】
 > 设计原则：对外只保留两个口令和一次业务验收，内部校验严格但由 Agent 自动执行
 > 技术路线：复用现有 Codex / Cursor / Trae + Skill + 轻量校验脚本，不自研 Agent Runtime
-> 真源分层：本文件是流程与权限真源；`agent-delivery/bugfix-runs/SKILL.md` 是操作真源；`_templates/state.schema.json` 是机器结构真源；`policies/` 是数据授权真源
+> 真源分层：本文件是流程与权限真源；`.cursor/skills/feishu-bugfix/SKILL.md` 是操作真源；`templates/state.schema.json` 是机器结构真源；`policies/` 是数据授权真源
 
 ## 1. 已确认决策
 
@@ -522,7 +522,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 | `next_action` | 唯一下一步、owner 和截止条件 |
 | `updated_at` | 最后更新时间 |
 
-最小结构示例只展示关键结构，实际模板由 `_templates/state.schema.json` 固化。`worktree` 不在权威 `state.json` 中，示例中的 `local/<run_id>.json` 只用于本机恢复：
+最小结构示例只展示关键结构，实际模板由 `templates/state.schema.json` 固化。`worktree` 不在权威 `state.json` 中，示例中的 `local/<run_id>.json` 只用于本机恢复：
 
 ```json
 {
@@ -678,7 +678,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 
 ## 12. 数据与 Mock 策略
 
-数据策略采用 **B 语义：base policy 限定 environment/host/database/schema，run scope 负责逐表白名单，deny-by-default**。基础策略放在 `agent-delivery/bugfix-runs/policies/<version>.yaml`，不直接授权具体表；每个 run 的 `state.json.data_policy.scope.tables` 必须从诊断链路中逐表枚举，并记录 `status/confirmed_by/confirmed_at/evidence_ref`。`state.json.data_policy` 保存 `policy_version`、`policy_hash`、`scope_hash` 和实际表清单，`scope` 为空或未确认时拒绝写入。任何 DB 写入前必须已有有效 `【进入开发】` gate 并执行 `check-data-write`，检查 policy、scope、environment、host、database、schema、table、operation、access mode 和 account；任何未命中 `policy + scope` 的写操作都必须进入 `BLOCKED`。旧 run 不得因为新 policy 覆盖而失去可复核性。
+数据策略采用 **B 语义：base policy 限定 environment/host/database/schema，run scope 负责逐表白名单，deny-by-default**。基础策略放在 `.cursor/skills/feishu-bugfix/policies/<version>.yaml`，不直接授权具体表；每个 run 的 `state.json.data_policy.scope.tables` 必须从诊断链路中逐表枚举，并记录 `status/confirmed_by/confirmed_at/evidence_ref`。`state.json.data_policy` 保存 `policy_version`、`policy_hash`、`scope_hash` 和实际表清单，`scope` 为空或未确认时拒绝写入。任何 DB 写入前必须已有有效 `【进入开发】` gate 并执行 `check-data-write`，检查 policy、scope、environment、host、database、schema、table、operation、access mode 和 account；任何未命中 `policy + scope` 的写操作都必须进入 `BLOCKED`。旧 run 不得因为新 policy 覆盖而失去可复核性。
 
 当前策略版本：`demo-2026-11-10`，阶段为 `demo_until_cutover`。
 
@@ -876,8 +876,8 @@ forbidden:
 
 ### 16.2 中央规则和仓级 AGENTS
 
-- 真源分层：本文件是流程/权限真源，`SKILL.md` 是操作真源，`_templates/state.schema.json` 是机器结构真源，`policies/` 是数据授权真源；发生冲突时按本文件 → Skill → schema → policy 的顺序解释；
-- Skill 的唯一源文件放在 `agent-delivery/bugfix-runs/SKILL.md`，Codex / Cursor / Trae 三端目录只生成适配副本；`scripts/sync-bugfix-skill.mjs --write` 从该真源生成，`--check` 只做漂移检测；禁止把三份正文同时当作真源编辑；
+- 真源分层：本文件是流程/权限真源，`SKILL.md` 是操作真源，`templates/state.schema.json` 是机器结构真源，`policies/` 是数据授权真源；发生冲突时按本文件 → Skill → schema → policy 的顺序解释；
+- Skill 的唯一完整来源是 `.cursor/skills/feishu-bugfix/`；Cursor 直接加载 canonical 包，Codex / Trae 只生成薄适配入口；`.cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --write` 生成适配入口，`--check` 只做漂移检测；禁止把客户端入口同时当作真源编辑；
 - `.cursor/rules/fe-manual-confirm-push.mdc` 必须与 Skill 在同一个发布步骤中更新，补充 `【进入开发】` 对独立 fix 分支的权限映射；该规则包含 2026-11-05 用户裁定，修改前必须重新获得用户确认，不能由 Agent 自行改文；
 - 业务仓 `AGENTS.md` 只增加一行指针，说明缺陷流程以本文件为准，不复制整套规则；
 - `fe-manual-confirm-push.mdc` 已废止旧 AGENTS 中无条件“完工即推”的口径；在旧条款尚未清理前，以中心规则为准，禁止从历史派单或旧会议纪要推断推送例外；
@@ -991,10 +991,10 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 ## 19. 后续实施顺序
 
 1. 本收敛稿已完成评审，进入真实缺陷试点。
-2. 已创建 `_templates/state.schema.json`、`_templates/report.md`，并在 `policies/` 下落第一版不可变 policy 和决定记录；base policy 只到 schema 层，run scope 的每张表必须逐项列出 confirmation 和 evidence，scope 为空不得试跑。
-3. 已实现 `scripts/bugflow-state.mjs` 的受控事实写入、精确 gate、阶段产物 guard、真实 Git 与 evidence 校验、版本化 policy 执行、cycle 归档、报告渲染和失败分类；`state.schema.json` 在每次读写时执行，未知字段和 `patch_round>3` 直接拒绝。`verify-repo` 校验 HEAD、origin、base ancestor、干净工作区和 planned scope；`check-data-write` 校验 DB 写前 policy/scope；`verify-evidence` 校验 manifest 路径、SHA256、验证矩阵证据引用和 reviewable/raw_retained；`review_hash`、`diff_hash` 和 `verification_hash` 由脚本计算。用 `node scripts/bugflow-state.selfcheck.mjs` 做离线正负向回归，已覆盖风险降级、非法初始阶段、部署 SHA、DB 越权写入、三类验证缺失、claim 证据缺失、未追认决策和不可复核证据冒充 PASS。
+2. 已创建 `templates/state.schema.json`、`templates/report.md`，并在 `policies/` 下落第一版不可变 policy 和决定记录；base policy 只到 schema 层，run scope 的每张表必须逐项列出 confirmation 和 evidence，scope 为空不得试跑。
+3. 已实现 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs` 的受控事实写入、精确 gate、阶段产物 guard、真实 Git 与 evidence 校验、版本化 policy 执行、cycle 归档、报告渲染和失败分类；`state.schema.json` 在每次读写时执行，未知字段和 `patch_round>3` 直接拒绝。`verify-repo` 校验 HEAD、origin、base ancestor、干净工作区和 planned scope；`check-data-write` 校验 DB 写前 policy/scope；`verify-evidence` 校验 manifest 路径、SHA256、验证矩阵证据引用和 reviewable/raw_retained；`review_hash`、`diff_hash` 和 `verification_hash` 由脚本计算。用 `node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs` 做离线正负向回归，已覆盖风险降级、非法初始阶段、部署 SHA、DB 越权写入、三类验证缺失、claim 证据缺失、未追认决策和不可复核证据冒充 PASS。
 4. 已增加安全 `.gitignore`：只忽略 `evidence/raw/` 和本机 `local/` 映射，不忽略 `state.json`、`report.md`、`manifest.json`。
-5. 已将 `agent-delivery/bugfix-runs/SKILL.md` 设为唯一操作真源，并由 `scripts/sync-bugfix-skill.mjs --check/--write` 生成 Codex / Cursor / Trae 三份适配副本；三份副本禁止手工维护。
+5. 已将 `.cursor/skills/feishu-bugfix/` 设为唯一完整 Skill 包，并由 `.cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --check/--write` 生成 Codex / Trae 薄适配入口；Cursor 直接加载 canonical 包，适配入口禁止手工维护。
 6. 在同一个发布步骤中更新 `fe-manual-confirm-push.mdc`，明确 `【进入开发】` 只授权独立 fix 分支 push、不授权 dev/生产；修改该规则前向用户重新确认 2026-11-05 的人工确认裁定，并记录批准。
 7. 用真实新缺陷试跑，不回溯修改已关闭缺陷【2238】；共享数据库账号归因、独立失败注入环境和更细审计留到 P1。
 8. 根据 5 个试点结果决定是否进入 P1 和自动触发。
