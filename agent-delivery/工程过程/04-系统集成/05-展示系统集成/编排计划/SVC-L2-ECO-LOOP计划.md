@@ -9,7 +9,8 @@
 | 轮次 | 日期 | 探测 | 对得上 | 缺口 | 子任务 | 结论 |
 |---|---|---|---|---|---|---|
 | R1 | 2026-11-11 | 网关 4 端点全 200（内网 + 生产双通道） | 9 行逐行对照：**7 可演 / 2 部分可演 / 0 缺口**（G4 撤销 + 559 经需规原文核对升 ✅，见下） | 561 企业/专利/人才/结构统计表待供数（需规真项）；558 区级时序已代码闭环待 display 部署 | — | **R1 完成，可申请签收** |
-| R2 | 2026-11-11 | 本地四绿（pytest 13 / test.mjs / vue-tsc / mvn compile）；**未部署**，网关仍未含新端点 | human 裁定二项落地：**A 接种子**（561「人才结构」四指标接 demo 库 `is_demo=1`，每块强制 `seeded=true`，SVC_005 无字段恒空）+ **B 加高企列**（561 下钻表 3 列→4 列，`enterprise_base.is_high_tech=1`）；另修专利趋势口径（`filing_year` 8 行 → `filing_date` 覆盖 99.99%） | 部署未发布（show-py / display manual / FE 三镜像待人工确认推送）；探针未跑部署态；人才区级列仍无粒度 | S1–S6 已闭环（S6=561 余量补口） | **R2 代码完成，待推 + 待部署复核** |
+| R2 | 2026-11-11 | 本地四绿（pytest 13 / test.mjs / vue-tsc / mvn compile）；**未部署**，网关仍未含新端点 | human 裁定二项落地：**A 接种子**（561「人才结构」四指标接 demo 库 `is_demo=1`，每块强制 `seeded=true`，SVC_005 无字段恒空）+ **B 加高企列**（561 下钻表 3 列→4 列，`enterprise_base.is_high_tech=1`）；另修专利趋势口径（`filing_year` 8 行 → `filing_date` 覆盖 99.99%） | 部署未发布（show-py / display manual / FE 三镜像待人工确认推送）；探针未跑部署态；人才区级列仍无粒度 | S1–S6 已闭环（S6=561 余量补口） | R2 代码完成 |
+| R3 | 2026-11-11 10:14 | 部署态复核：`eco_s4_probe.py` **46/46 PASS**（含 4 项区级下钻守恒、4 项趋势、6 项人才种子）；生产 bundle `index-DfQOnxBt.js`（37KB，旧 R1 版 23KB）**R2 独有串 5/5 命中** | 558 由「代码闭环待部署」转**已部署实测**：FE `600e58a`（pipeline **#4851 五 job 全绿**，含 `deploy:k8s`）+ 智库字段修复 `df1cc43`；三仓均已生效（探针打生产网关全通） | 561 人才区级列仍无粒度（`talent_*` 无区县字段）；真实高企/专利/人才台账待供数 | 前端 `vue-tsc --build --force` 全量 0 错（增量缓存会假绿，须带 `--force`） | **R3 完成：8 可演 / 1 部分可演 / 0 缺口，可申请签收** |
 
 ## 1. 探测（每轮第一笔，只读）
 
@@ -25,7 +26,7 @@
 | 行 | 内容 | 判定要点（实测） | 结论 |
 |---|---|---|---|
 | 557 | 数据梳理分析页签（数据源台账） | 4 组来源：载体行真实 4,984 条（来源 stic 公示、取得 2026-11-10、映射 `demo_gkxlumenx_ads.ads_innovation_carrier`）；**R2 起高企行转真实**（`dwd.enterprise_base.is_high_tech=1`，已归区 24,317 / 全库 27,936）；**人才行转演示种子**（`dwd.talent_*` 且 `is_demo=1`，行内标「演示种子」）；专利行为明细条数并标「演示灌数」（64.8 万行仅 5 个申请日期）。仍无供数项保持「—（待供数）」，无编造数字 | ✅ 可演 |
-| 558 | 载体详情基本信息 + 创新发展趋势折线 | 基本信息 7 字段齐（名称/类型/级别/分层/年度/依托单位/信用代码）+ 区与坐标带推断标注；切区域后地图只显该区点位（district 过滤联动）；**趋势随载体所在区联动已代码闭环**（新增 `/ecology/trend?district=` 区级真实序列，南山 1,118 条→28 年序列，`sum(yearSeries)+yearMissingCount=total` 守恒；抽屉带缓存，未分区/取数失败回落全库并如实标注）——show-py 已部署，**待 display `/trend` 部署生效后升 ✅** | ⚠️ 部分（待 display 部署） |
+| 558 | 载体详情基本信息 + 创新发展趋势折线 | 基本信息 7 字段齐（名称/类型/级别/分层/年度/依托单位/信用代码）+ 区与坐标带推断标注；切区域后地图只显该区点位（district 过滤联动）；**趋势随载体所在区联动已代码闭环**（新增 `/ecology/trend?district=` 区级真实序列，南山 1,118 条→28 年序列，`sum(yearSeries)+yearMissingCount=total` 守恒；抽屉带缓存，未分区/取数失败回落全库并如实标注）——show-py 已部署，**display `/trend` 已于 2026-11-11 10:14 部署生效（FE #4851 五 job 全绿），R3 部署态实测通过** | ✅ 可演（R3 部署态实测） |
 | 559 | KPI + 饼图 + 折线 + 区县下钻 | KPI 六卡真实（含未分区 1909、坐标 3592）；类型饼图 10+ 类扇区和=4,984；年度折线 31 年；下钻表为「行政区/载体数/占比」3 列。**2026-11-11 human 核对需规原文**：seq 559 仅要求「创新载体/孵化载体分布、数量、流动统计 + 趋势动态更新」，现实现全部覆盖；「折线 3 条 + 下钻 6 列（企业数/专利/人才）」系用例演绎自 seq 561 主题，归还 561 | ✅ 可演（按需规原文） |
 | 560 | 地图点位 + 详情抽屉 | 真坐标 circleMarker 按级别配色（国红/省橙/市蓝/孵化绿），点气泡开抽屉；抽屉含坐标 + 多媒体 + 新闻三块 | ✅ 可演 |
 | 561 | 专题指标下钻表 + 点行联动地图 | 下钻表 9 区 + 其他地区 + 未分区单列（实测）；点行按区回跳名录——过滤器实测见 562，点击联动为同一 handler（代码核对）。**需规原文核对（2026-11-11）**：seq 561 点名「人才结构、企业数量、专利项目、结构调整」以趋势图 + 统计表格集中展示，企业/专利/人才为**真需规项**。**R2 落地**：下钻表 3 列 → **4 列**（行政区/载体数/占比/高新技术企业），高企列 = `enterprise_base.is_high_tech=1` 按注册地归区，未认定即真实 0、全区无标识才显「—」（不补 0）；专题趋势图 2 条（企业注册年度 47 年点 / 专利申请年度 `filing_date` 取年，灌数标「演示灌数」）；**人才结构四指标接 demo 库 `is_demo=1` 演示种子**（旭日 10 学科×5 院校×2 学院 / 结构 3 项 / 供需 12 技术域 / 流动 5 类），每块强制 `seeded=true` + 种子来源，页面打「演示种子」标；种子越界值（博士占比 124%）剔除并计数 `dropped=1`，不改写为 100。**仍缺口**：人才列无区县粒度（恒「—」，不按机构注册区折算）；SVC_005 岗位层次种子表无字段（恒空态给 reason）；企业/专利真实台账待供数 | ⚠️ 部分（人才区级列无粒度 + 真实台账待供数；结构与趋势已出图） |
@@ -34,11 +35,11 @@
 | 564 | 详情多媒体四类齐给 | 坐标（真坐标见地图点位）/ 图片「暂无图片资料（无源）」/ 视频「暂无视频资料（无源）」/ 新闻「暂无资讯。（无源）」四类各自空态，不互相替代 | ✅ 可演 |
 | 565 | 三组筛选快速切换三者一致 | 后端 `consistency` 三元组（carriers/overview/meta 全 4,984，实测）页面脚注透出；多次筛选切换实测计数均随当次条件生效（未做并发压测）；请求取消与错误态不保留旧数据沿用仓内 request 层统一实现（代码核对） | ✅ 可演 |
 
-**合计：7 可演 / 2 部分可演 / 0 缺口**（原 G4 已撤销、559 经需规原文核对升 ✅，均见状态行）。R2 未改变行判定等级——561 由「完全无数据」变为「4 列有 3 列有数 + 2 条趋势 + 人才种子」，余下「人才区级列、SVC_005 岗位层次、真实台账」仍是缺口，故维持 ⚠️。
+**合计：8 可演 / 1 部分可演 / 0 缺口**（R3 部署态终判）。558 于 R3 由「代码闭环待部署」升 ✅（FE #4851 五 job 全绿 + 探针 46/46 + bundle R2 独有串 5/5）；561 维持 ⚠️——R2 已由「完全无数据」变为「4 列有 3 列有数 + 2 条趋势 + 人才种子」，余下「人才区级列、SVC_005 岗位层次、真实台账」仍是缺口，缺口不随发布消失。
 
 - 561 余量（需规真项，R2 后）：已交付区级企业数 / 高新技术企业数 / 专利明细数三列 + 企业注册年度、专利申请年度两条趋势 + 人才结构四指标（种子）。**待供数/待补**：① 人才区级粒度（`talent_*` 无区县字段 → 恒「—」）；② 真实高企/专利/人才台账（现为 `enterprise_base` 标识 + demo 种子）；③ SVC_005 岗位层次（种子表无 `job_level`）。
 - **R2 诚实性口径备案**：① 人才四块**全部** `seeded=true` 且来源写明 `is_demo=1`，正式供数后表内 `is_demo=0` 时端点自动落回 `seeded=false`，前端无需改；② 种子缺陷（博士占比 124%）**剔除并计数**，页面显式提示「已剔除 N 项越界占比，不画进图也不改写为 100%」；③ 高企列区分「未认定=真实 0」与「全区无标识=—」，两行相加守恒（pytest 断言逐行验）。
-- 558 区级时序（已由本方自闭环，不再依赖外部供数）：`/ecology/trend` 端点已交付（python `453d88c` + java `35d3786` + FE `f10f4f7`），数据源即本表 `district_name × approve_year`，南山 1,118 条/28 年、守恒校验通过。**卡点：java 仓流水线为 manual 模式，`35d3786` 未自动构建部署（python show-py 已 success）；display `/trend` 上线后跑探针（现 29 项，含 4 项趋势断言）全绿即把 558 升 ✅ → 8 可演 / 1 部分 / 0 缺口。** 注：FE `f10f4f7` 的 CI 因并行 agent `situation/innovationEvaluation` 类型错误被 skip deploy（与本页无关），随下一次成功构建自动带上。
+- 558 区级时序（已由本方自闭环，不再依赖外部供数）：`/ecology/trend` 端点已交付（python `453d88c` + java `35d3786` + FE `f10f4f7`），数据源即本表 `district_name × approve_year`，南山 1,118 条/28 年、守恒校验通过。**卡点已解（2026-11-11 10:14）**：display `/trend` 部署生效，探针扩至 46 项全绿 → 558 升 ✅ → **8 可演 / 1 部分 / 0 缺口**。FE `f10f4f7` 曾因并行 agent `situation/innovationEvaluation` 的 `strategyGuideCards` 类型错（`TS2741`）被 skip deploy，该错已由 `df1cc43` 修复（恢复 demo 冻结种子，非改类型为 optional），随 `600e58a` 一并上线（pipeline #4851）。踩坑备案：`vue-tsc --build` 走增量缓存会**假绿**，本地验证一律用 `vue-tsc --build --force`。
 
 ## 3. 后端调用与数据链
 
@@ -54,10 +55,10 @@
 
 | 证据 | 结果 |
 |---|---|
-| 探针 `../合规演示用例/eco_s4_probe.py` | R1 基线 30 个断言点，实跑 **29 PASS**（1 项 `geo_rows` 为空时跳过）；延迟 meta 332ms / overview 164ms / carriers 149ms。**R2 已扩到 46 项**（+16：区级下钻 6〔高企列源声明/逐行 ≤ 企业数/高企守恒/企业守恒/人才列恒空/有行〕+ 专题趋势 4〔企业序列/专利来源 filing_date/灌数必带说明/区级 scope〕+ 人才种子 6〔四块可用/种子来源/每块 seeded/SVC_005 恒空/占比 0–100/旭日叶节点〕）——**必须在三镜像发布后跑**，未部署时按 404 如实 FAIL |
-| 生产 bundle 校验 `../合规演示用例/eco_prod_bundle_check.py` | 命中 chunk `index-DiixTRrF.js`，R1 时 7/7 特征串；**R2 特征串改为 9 项**（原「区级时序待供数」在 558 闭环后已不存在，换成「演示种子 / 高新技术企业 / 演示灌数」），发布后复跑 |
-| 浏览器实测（本地 dev 真网关，等价生产同源构建） | KPI 六卡、名录真数据行、详情抽屉（溯源+推断标注+邮箱空态）、趋势折线、多媒体四类空态、区县下钻（南山 1118/22.4%、未分区 1909）、地图双模式（南山区 200 真坐标点 / 深圳 choropleth）、台账四行、接口目录+模拟调用 |
-| 生产页直连 | 需门户账号登录，本次以 bundle 特征串 + 本地同源构建复核替代；门户登录后按同法补一次截图即可归档 |
+| 探针 `../合规演示用例/eco_s4_probe.py` | **R3 部署态实跑 46/46 PASS**（延迟 meta 579ms / overview 295ms / carriers 359ms / district-indicators 3624ms / trend-indicators 725ms / talent 229ms，红线 15s）。R1 基线为 30 个断言点、实跑 29 PASS（1 项 `geo_rows` 为空时跳过）。**R2 已扩到 46 项**（+16：区级下钻 6〔高企列源声明/逐行 ≤ 企业数/高企守恒/企业守恒/人才列恒空/有行〕+ 专题趋势 4〔企业序列/专利来源 filing_date/灌数必带说明/区级 scope〕+ 人才种子 6〔四块可用/种子来源/每块 seeded/SVC_005 恒空/占比 0–100/旭日叶节点〕）——R3 已在三镜像发布后跑完，全绿 |
+| 生产 bundle 校验 `../合规演示用例/eco_prod_bundle_check.py` | **R3 实测**：入口引用 44 个 chunk 全量扫描（不早停），ECO 页 chunk 由 `index-DiixTRrF.js` → `index-DjEsyT9A.js`(23KB，R1) → **`index-DfQOnxBt.js`(37KB)**；基线串 6/6、**R2 独有串 5/5**（`talent-panorama` / `M_SCIUI_SVC_001` / `演示灌数` / `人才结构四指标` / `is_high_tech`）→ 判定「生产已发布 R2 版」。脚本已改为**分层判定**（`R1_BASELINE` 只定位 chunk、`R2_ONLY` 才判版本）：早前拿「演示种子 / 高新技术企业」当 R2 特征是**误判源**——前者在 knowledge-graph 等页同样出现，后者 R1 台账文案里本就有 |
+| 浏览器实测（本地 dev 真网关，等价生产同源构建） | **R3 补测人才页签**：`http://127.0.0.1:5288`（`VITE_APP_API_URL=http://10.50.69.111:30895`，源码 = 生产构建 `600e58a`）+ localStorage `access_token`（`display-loop-token`，绕 SSO 直连网关）；**8 个 canvas 全部非零尺寸**（434×300 ×6、434×380、918×300），页签内可见「人才学科旭日图 M_SCIUI_SVC_001 演示种子」「人才结构要点 M_SCIUI_SVC_002 · 2024 年演示种子」「学科分布对比 M_SCIUI_SVC_004 · 2024 年演示种子」「岗位层次细分 M_SCIUI_SVC_005｜演示种子表无岗位/职称层级字段（`talent_profile` 仅机构名与论文指标），供数后另接」「人才流动（需规 559「流动」）按流动类型 · 城市级口径演示种子」；台账四行真数据（高企 24,317 / 专利 532,792 / 载体 4,984），人才行标「降级·演示种子」。截图 `../合规演示用例/eco-talent-dev-20261111.png`。R1 已测：KPI 六卡、名录真数据行、详情抽屉（溯源+推断标注+邮箱空态）、趋势折线、多媒体四类空态、区县下钻（南山 1118/22.4%、未分区 1909）、地图双模式（南山区 200 真坐标点 / 深圳 choropleth）、接口目录+模拟调用 |
+| 生产页直连 | 仍卡门户 SSO（`edu.itic-sci.com` → 统一用户中心，无测试账号）；本轮以「bundle 特征串 + 本地同源 dev 全页实测」双证据替代，生产 R2 版已由 #4851 部署并经 bundle 独有串 5/5 确认。门户账号到位后按同法补一次生产截图即可归档 |
 
 ## 5. 演示问答（口径备案，被问就照此答）
 
@@ -74,7 +75,7 @@
 
 ## 6. 变更与回滚
 
-- 前端 `lumen-ui-science-pc`：`9ba2584`（整页）→ `4ec5162`（slotName + 地图区选择）→ `5f46db4`（LOOP 补齐 557/563/564/558）→ `f10f4f7`（558 区级趋势）→ **R2 本地待推**（`types/eco.ts` + `api/service/eco.ts` + `ecoCarrierModel.ts` 4 个图表构造 + `index.vue` 人才页签/高企列/演示灌数标 + `eco-carrier.test.mjs` 断言）。
-- 后端 `lumen-topic-py`：`06f7a48` → `ad85ffc`（emptyReason 五处）→ `453d88c`（558 trend）→ **R2 本地待推**（`eco.py`：`_hightech_counts_by_district` / `_patent_date_span` / `_build_sunburst` / `_talent_block` / `_build_talent_panorama` + `/talent-panorama` 端点；`main.py` 根路由登记；`tests/test_gkx_show_eco_boot.py` 13 例）。
-- `lumen-svc-platform`：`0030682` → `35d3786`（558 trend）→ **R2 本地待推**（`RemoteShowPythonClient#ecoTalentPanorama` + `EcoController#talentPanorama`）。
+- 前端 `lumen-ui-science-pc`：`9ba2584`（整页）→ `4ec5162`（slotName + 地图区选择）→ `5f46db4`（LOOP 补齐 557/563/564/558）→ `f10f4f7`（558 区级趋势）→ `9c91d1e`（R2：`types/eco.ts` + `api/service/eco.ts` + `ecoCarrierModel.ts` 4 个图表构造 + `index.vue` 人才页签/高企列/演示灌数标 + `eco-carrier.test.mjs`）→ **`600e58a`（3 个图表函数签名补 `\| undefined`，修 pipeline #4837/#4842 的 3 个 `TS2345`；pipeline #4851 五 job 全绿含 `deploy:k8s`）**。同行 `df1cc43` 为智库侧 `strategyGuideCards` 字段恢复（`TS2741`，与本页无耦合但阻塞同一构建）。
+- 后端 `lumen-topic-py`：`06f7a48` → `ad85ffc`（emptyReason 五处）→ `453d88c`（558 trend）→ **`1015c12`（R2：`eco.py` 的 `_hightech_counts_by_district` / `_patent_date_span` / `_build_sunburst` / `_talent_block` / `_build_talent_panorama` + `/talent-panorama` 端点；`main.py` 根路由登记；`tests/test_gkx_show_eco_boot.py` 13 例；pipeline #4835 success）**。
+- `lumen-svc-platform`：`0030682` → `35d3786`（558 trend）→ **`6f79b68`（R2：`RemoteShowPythonClient#ecoTalentPanorama` + `EcoController#talentPanorama`；deploy 为 manual 阶段，已手动发布，探针走生产网关全通即证）**。
 - 回滚：页面路由回落 `DevelopingView` 仅需还原 `src/router/menu.ts` 一行映射；后端四端点可独立下线（前端空态兜底，不白屏）。
