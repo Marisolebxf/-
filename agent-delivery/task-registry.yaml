@@ -61773,19 +61773,26 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "陈芸飞明确授权认领并推进；开始核对M19源表、原始执行器与T03共享inst:<机构ID>口径。M15/M17仅回读，存量不补批号；写入前验证端点与批次隔离。"
+    note: |
+      ⚠️ 2026-11-11 17:05 范围变更（唐绍祖 T03 四问裁定同步）：**M19 不再新建，对账单记 0 条并附理由**——M19 与 M02 同源同端点同证据（`ads_institution_collaboration_yearly` 1,438 万行），2026-11-11 裁定只由 T03（宋飞扬）建 M02 一条 `cooperate`（跨年合并、排除 `company` 端点），若 T02 再建 M19 即同源双灌。T02 实际只剩 M15/M17 存量核对，**开工前请先看** [KG-COMPLY-LOAD-T03-裁定](./工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-LOAD-T03-裁定-人才与机构四条关系.md)。
+      认领记录：陈芸飞明确授权认领并推进（claimed_by=agent:data-agent / supervised_by=human:陈芸飞，2026-11-11）。开始核对 M19 源表、原始执行器与 T03 共享 `inst:<机构ID>` 口径。M15/M17 仅回读，存量不补批号；写入前验证端点与批次隔离。
+      放行三条护栏（缺一不得开工）：
+      G1 严禁重灌 M15/M17——`depends_on` 1,073 条、`participates` 178,731 条已由存量满足，重灌会边数翻倍并导致 T07 对账失配；存量边不得回写 `props.batch`。
+      G2 `research` 点与 T03 统一口径——两侧必须同一源字段、同一 VID 前缀 `inst:<机构ID>`，已存在的点跳过并计数，避免撞出重复点。
+      G3 新写入边带 `props.batch=comply-<日期>-t02`，便于回滚与对账。
+      详见 KG-COMPLY-ACCEPT-T01-T05-技术验收记录.md。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T02"
     definition_of_done:
-      - "M15（depends_on 1,073）与 M17（participates 178,731）为存量已满足项：只回读计数核对基线、不重灌、不回写 props.batch；只新灌 M19（research_coop），带 props.batch=comply-<日期>-t02"
-      - "对账单：存量已满足项计数 + 新灌 M19 数 vs 源表行数、端点缺失跳过计数；depends_on 保持 DAG"
+      - "M15（depends_on 1,073）与 M17（participates 178,731）为存量已满足项：只回读计数核对基线、不重灌、不回写 props.batch；M19 本期 0 条（与 M02 同源重复，由 T03 建 M02）"
+      - "对账单：存量已满足项计数 + M19 记 0 条理由；depends_on 保持 DAG"
       - "不把 apply_to/support 记成 M12–M14；不把 institution→institution participates 记成 M02/M19"
     update_time: "2026-11-11T16:45:56+08:00"
   - id: KG-COMPLY-LOAD-T03
     title: "T03 七要素入图·人才与机构组（M01/M02/M03/M04/M20）"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61795,16 +61802,26 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "SDD §5 T03；建议执行人 human:宋飞扬"
+    note: |
+      SDD §5 T03；建议执行人 human:宋飞扬。
+      2026-11-11 唐绍祖裁定四条关系（详见 KG-COMPLY-LOAD-T03-裁定-人才与机构四条关系.md），可直接开工：
+      M01/M20 同源重复只建 cooperate 一条（ads_talent_collaborator 505 万行，co_project_count 整列为空、"合著只是两路之一"旧口径作废；无向去重 2,525,789 条），talent_coop 本期 0 条。
+      M02/M19 同源重复只建 cooperate 一条，跨年必须按机构对合并（按年建边会因 Nebula 边唯一性互相覆盖），年份入 props，排除 company 端点后 13,137,234 行、约 6,568,617 对上限；research_coop 本期 0 条。
+      M03 本期 0 条：ads_talent_institution_cooperation 现 202,795 行、8,784 机构 100% 为 company（辉瑞/礼来等），是人才-企业合作、端点类型不符，不得算进 M03；缺口上报需规补编号。
+      M04 只灌工作经历 experience_type=2（84,589 行），学历 type=1（56,304）不进图；is_current 99.98% 为空不可筛，改按 end_year 推导；同机构多段合并成一条边、stint_count 记段数；排除 company 420 行后去重 72,503 条。
+      共同要求：科研机构端点一律排除 company；新边带 props.batch=comply-<日期>-t03；不得复用企业域 research_coop/talent_coop 脚本（端点是 enterprise→x）。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T03"
     definition_of_done:
-      - "先补 person/research 端点，再灌 M01/M02/M03/M04/M20，带 props.batch=comply-<日期>-t03"
-      - "对账单同 T02；M01/M20 用 props.match_method 区分不混灌；M04 方向 person→research"
-      - "来源未到位的边不灌并登记；不碰 M05"
-    update_time: "2026-11-09T15:11:09+08:00"
+      - "先补 person（100,000）/research（83,745，含 15,392 企业）端点，再灌 M01/M02/M04，带 props.batch=comply-<日期>-t03"
+      - "M01 只建 cooperate 一条、无向去重 2,525,789；M20 记 0（与 M01 同源重复）"
+      - "M02 只建 cooperate 一条、按机构对合并跨年（年份入 props）、排除 company 端点，约 6,568,617 对上限；M19 记 0（与 M02 同源重复）"
+      - "M03 记 0 条并附理由（源表 202,795 行端点 100% 为 company，属人才-企业合作）"
+      - "M04 只灌 experience_type=2 工作经历、同机构多段合并（stint_count）、排除 company 后 72,503 条，方向 person→research"
+      - "对账单按端点 Tag 对分组（cooperate 存量 94,824 条 enterprise→enterprise 属 M22 不得混计）；不碰 M05"
+    update_time: "2026-11-11T17:05:00+08:00"
   - id: KG-COMPLY-LOAD-T04
     title: "T04 七要素入图·技术组（M06部分/M07/M08/M09）"
     status: "backlog"
