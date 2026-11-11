@@ -1,0 +1,276 @@
+{
+  "task": "KG-COMPLY-LOAD-T03",
+  "batch": "comply-2026-11-11-t03",
+  "space": "demo_gkx_chain",
+  "host": "10.50.75.136",
+  "port": 9669,
+  "started_at": "2026-11-11T10:53:41.540561+00:00",
+  "status": "passed",
+  "verifier_sha256": "7ec3b60b77c08587d8b41e16ba01b02eccd2b791a2ba147d57c6da872dd304b2",
+  "read_only": true,
+  "scope": "T03 person/research endpoint verification and M01/M04; M02 belongs to T02.",
+  "batch_count_predicate": {
+    "method": "canonical JSON root prefix",
+    "prefix": "{\"batch\":\"comply-2026-11-11-t03\",",
+    "exact_sample_check": "json.loads(props)[batch] equals the complete batch value"
+  },
+  "checks": {
+    "counts": {
+      "m01": {
+        "query": "MATCH (a:person)-[e:cooperate]->(b:person) RETURN count(e) AS total, sum(CASE WHEN e.props STARTS WITH \"{\\\"batch\\\":\\\"comply-2026-11-11-t03\\\",\" THEN 1 ELSE 0 END) AS own_batch, sum(CASE WHEN rank(e) == 0 THEN 0 ELSE 1 END) AS nonzero_rank, sum(CASE WHEN src(e) < dst(e) THEN 0 ELSE 1 END) AS noncanonical;",
+        "expected": [
+          2525789,
+          2525789,
+          0,
+          0
+        ],
+        "actual": [
+          2525789,
+          2525789,
+          0,
+          0
+        ],
+        "passed": true
+      },
+      "m04": {
+        "query": "MATCH (a:person)-[e:belong]->(b:research) RETURN count(e) AS total, sum(CASE WHEN e.props STARTS WITH \"{\\\"batch\\\":\\\"comply-2026-11-11-t03\\\",\" THEN 1 ELSE 0 END) AS own_batch, sum(CASE WHEN rank(e) == 0 THEN 0 ELSE 1 END) AS nonzero_rank, 0 AS noncanonical;",
+        "expected": [
+          72099,
+          72099,
+          0,
+          0
+        ],
+        "actual": [
+          72099,
+          72099,
+          0,
+          0
+        ],
+        "passed": true
+      },
+      "person": {
+        "query": "MATCH (v:person) RETURN count(v) AS total;",
+        "expected": [
+          100000
+        ],
+        "actual": [
+          100000
+        ],
+        "passed": true
+      },
+      "research": {
+        "query": "MATCH (v:research) RETURN count(v) AS total;",
+        "expected": [
+          83745
+        ],
+        "actual": [
+          83745
+        ],
+        "passed": true
+      },
+      "m03": {
+        "query": "MATCH (a:person)-[e:cooperate]->(b:research) RETURN count(e) AS total;",
+        "expected": [
+          0
+        ],
+        "actual": [
+          0
+        ],
+        "passed": true
+      },
+      "m20": {
+        "query": "MATCH (a:person)-[e:talent_coop]->(b:person) WHERE e.props STARTS WITH \"{\\\"batch\\\":\\\"comply-2026-11-11-t03\\\",\" RETURN count(e) AS own_batch;",
+        "expected": [
+          0
+        ],
+        "actual": [
+          0
+        ],
+        "passed": true
+      },
+      "m19": {
+        "query": "MATCH (a:research)-[e:research_coop]->(b:research) WHERE e.props STARTS WITH \"{\\\"batch\\\":\\\"comply-2026-11-11-t03\\\",\" RETURN count(e) AS own_batch;",
+        "expected": [
+          0
+        ],
+        "actual": [
+          0
+        ],
+        "passed": true
+      },
+      "m22_existing": {
+        "query": "MATCH (a:enterprise)-[e:cooperate]->(b:enterprise) RETURN count(e) AS total;",
+        "expected": [
+          94824
+        ],
+        "actual": [
+          94824
+        ],
+        "passed": true
+      }
+    },
+    "research_full_types": {
+      "query_template": "MATCH (v:research) WHERE id(v) IN <500 source VIDs> RETURN id(v), v.research.name, v.research.props;",
+      "expected_rows": 83745,
+      "checked_rows": 83745,
+      "missing": 0,
+      "invalid_props": 0,
+      "type_mismatch": 0,
+      "empty_name": 0,
+      "expected_types": {
+        "\"archive\"": 1071,
+        "\"company\"": 15392,
+        "\"education\"": 16991,
+        "\"facility\"": 9317,
+        "\"funder\"": 304,
+        "\"government\"": 4312,
+        "\"healthcare\"": 11228,
+        "\"nonprofit\"": 6210,
+        "\"other\"": 3404,
+        "\"unknown\"": 15516
+      },
+      "observed_types": {
+        "\"archive\"": 1071,
+        "\"company\"": 15392,
+        "\"education\"": 16991,
+        "\"facility\"": 9317,
+        "\"funder\"": 304,
+        "\"government\"": 4312,
+        "\"healthcare\"": 11228,
+        "\"nonprofit\"": 6210,
+        "\"other\"": 3404,
+        "\"unknown\"": 15516
+      },
+      "existing_owner_policy": "Any owner is accepted; existing names and props are preserved.",
+      "passed": true
+    },
+    "person_sample": {
+      "query_template": "MATCH (v:person) WHERE id(v) IN <fixed source sample VIDs> RETURN id(v), v.person.name, v.person.props;",
+      "sample_indices": [
+        0,
+        5263,
+        10526,
+        15789,
+        21052,
+        26315,
+        31578,
+        36841,
+        42104,
+        47367,
+        52631,
+        57894,
+        63157,
+        68420,
+        73683,
+        78946,
+        84209,
+        89472,
+        94735,
+        99999
+      ],
+      "sample_size": 20,
+      "missing": 0,
+      "empty_name": 0,
+      "full_population_evidence": "full-result.json records per-VID Tag verification; independent total count checked separately.",
+      "passed": true
+    },
+    "m01_sample": {
+      "query_template": "FETCH PROP ON cooperate <fixed source src->dst@0 identities> YIELD src(edge), dst(edge), rank(edge), properties(edge);",
+      "sample_indices": [
+        0,
+        132936,
+        265872,
+        398808,
+        531744,
+        664681,
+        797617,
+        930553,
+        1063489,
+        1196425,
+        1329362,
+        1462298,
+        1595234,
+        1728170,
+        1861106,
+        1994043,
+        2126979,
+        2259915,
+        2392851,
+        2525788
+      ],
+      "sample_size": 20,
+      "observed_rows": 20,
+      "failures": {
+        "props_mismatch": 0,
+        "batch_mismatch": 0,
+        "semantic_mismatch": 0
+      },
+      "sample_facts": {},
+      "comparison": "Exact parsed JSON props, complete batch value, numeric weight, identity/rank and relation semantics.",
+      "passed": true
+    },
+    "m04_sample": {
+      "query_template": "FETCH PROP ON belong <fixed source src->dst@0 identities> YIELD src(edge), dst(edge), rank(edge), properties(edge);",
+      "sample_indices": [
+        0,
+        3794,
+        7589,
+        11383,
+        15178,
+        18973,
+        22767,
+        26562,
+        30357,
+        34151,
+        37946,
+        41740,
+        45535,
+        49330,
+        53124,
+        56919,
+        60714,
+        64508,
+        68303,
+        72098
+      ],
+      "sample_size": 20,
+      "observed_rows": 20,
+      "failures": {
+        "props_mismatch": 0,
+        "batch_mismatch": 0,
+        "company_endpoint": 0,
+        "stint_mismatch": 0,
+        "semantic_mismatch": 0
+      },
+      "sample_facts": {
+        "current_true": 13,
+        "single_stint": 19,
+        "current_false": 7,
+        "multi_stint": 1
+      },
+      "comparison": "Exact parsed JSON props, complete batch value, numeric weight, identity/rank and relation semantics.",
+      "passed": true
+    }
+  },
+  "source_evidence": {
+    "manifest_sha256": "f8bd1f2c7b4a9c8aa114c03e891ac26636b407e0e914925cb4b7658a4482358b",
+    "full_result_sha256": "004ee65b809dca25dffd3d98895e94c12344459d0055b590a88c9b70e1193be0",
+    "files_sha256": {
+      "person": "2c308a549472e4f16d5b740a1ca483bbe6645a593a8a6efe66869e50bb6ad130",
+      "research": "339e0df7eb5367fb1f541cbcbe4c0615ad0b462443fa609e5b48d015ace90ce2",
+      "m01": "81207eb281b009be4c4371566e2579dd0b1fced9798a6b7ba8f198b0ae8f3e58",
+      "m04": "ae4fffba118e20122fc00e6c425617b0b5c3de5eb69c522cb97396ec7902e813"
+    },
+    "expected_rows": {
+      "person": 100000,
+      "research": 83745,
+      "m01": 2525789,
+      "m04": 72099
+    },
+    "source_started_at": "2026-11-11T10:25:02.586183+00:00",
+    "source_finished_at": "2026-11-11T10:42:16.250355+00:00",
+    "source_consistency": "Ordered read-only exports with source version/count probes; source-side transactional snapshot is not provided.",
+    "research_type_authority": "snapshot/research.jsonl from ads_institution_profile"
+  },
+  "completed_at": "2026-11-11T10:54:26.205582+00:00"
+}
