@@ -82,15 +82,16 @@
 |---|---|---|---|
 | `POL-L2-DS11-MOCKAUDIT-FIX-01` | **✅ 已修复（2026-11-11，lumen-ui-science-pc `873fec6`）**：页头 6 卡改 USE_MOCK 双轨——mock 轨保留种子字面量；真轨轨读 gapfill_policy_sim_score（同构 simulation 页 POL-SIM-HEADER-SCORE-L01 模式），有行出数带血缘 ⚠️、无行空态不伪 0；分析报告份数无读面出处 → 恒空态卡；短板数保持 counts 真轨。FE-POL-02A 新增 3a-2 段 4 组守卫（32 组全绿） | 2 点 | P1 |
 | `POL-L2-DS11-MOCKAUDIT-FIX-02` | **✅ 已修复（2026-11-11，lumen-ui-science-pc `70c42a0`）**：READ 四组件声明 `focusRanking/focusState/focusError/focusTaskId`、`serverEntries/entriesLoaded`、`serverLines/jobState/jobError/jobTaskId` 等 props 并消费真轨行；job 状态条 + 失败重试 + 诚实空态；种子降级为 USE_MOCK 轨默认。FE-POL-02A 自检新增 3c 段 5 组守卫断言（34 组全绿） | 3 点 | P1 |
-| `POL-L2-DS11-MOCKAUDIT-FIX-03` | Tab1 六个前端 fixture 卡（指标体系/三联画像/地理/落实率/话题热力/气泡）：无分册出处与接口 → 二选一：挂 A 类读面（需先立 DATA 单）或评审模式明确标「前端种子（无后端出处）」+ 上线态撤数据 | 2 点 | P2 |
-| `POL-L2-DS11-MOCKAUDIT-FIX-04` | `PolicyTextAnalysis` 种子直出且无角标：补 C 类标注或接 237 文本解析真轨 | 1 点 | P2 |
-| `POL-L2-DS11-MOCKAUDIT-FIX-05` | 角标 reason 口径统一 + 小缺口：MockBadge 全部补 reason 文案（`gapfill 缺项表 mock（出处 库.表）` / `前端演示态（不落库）`）；228/229 补块级角标；分享/汇报按钮补 C 标 | 1 点 | P2 |
+| `POL-L2-DS11-MOCKAUDIT-FIX-03` | **✅ 已修复（2026-11-12，lumen-ui-science-pc `b1df05d`）**：Tab1 六卡统一 `seedVisible = USE_MOCK` 门控（同 StructureLinkPanel 先例）——真轨渲染诚实空态「无读面出处（演示种子已按合规下线，待立 DATA 单接入）」；mock 轨保留 demo 冻结视觉。FE-POL-02A 新增 6a 段守卫（35 组全绿） | 2 点 | P2 |
+| `POL-L2-DS11-MOCKAUDIT-FIX-04` | **✅ 已修复（2026-11-12，lumen-ui-science-pc `b1df05d`）**：PolicyTextAnalysis 同款 seedVisible 门控，真轨空态「待 237 文本解析真轨接入」 | 1 点 | P2 |
+| `POL-L2-DS11-MOCKAUDIT-FIX-05` | **⛔ 废弃（2026-11-12 判定）**：MockBadge 已按 human 2026-11-09 决策改为恒零 DOM（挂点保留不渲染，血缘诚实由 ⓘ/PendingBadge 承担）——「reason 口径统一」失去载体，无修复对象。原单内 228/229 块级角标与分享/汇报 C 标诉求随载体废弃一并关闭 | 1 点 | P2 |
 
 ## 四、结论速览
 
-- **合规主力**：227–231 五叶全部读 `gapfill_policy_eval_scheme`（B），219/220/222 三叶读各自缺项表（B），223 短板数读 ADS（A）——**9/13 叶合规**；**FIX-02 完成后 223 看板（A）/224（B）/225（B）/226（A）接线合规；FIX-01 完成后页头写死统计卡全部接真轨/空态——13/13 叶 + 页头全绿**。
+- **合规主力**：227–231 五叶全部读 `gapfill_policy_eval_scheme`（B），219/220/222 三叶读各自缺项表（B），223 短板数读 ADS（A）——**9/13 叶合规**；**FIX-02 完成后 223 看板（A）/224（B）/225（B）/226（A）接线合规；FIX-01 完成后页头写死统计卡全部接真轨/空态；FIX-03/04 完成后 Tab1 六卡与文本解析在真轨下诚实空态——13/13 叶 + 页头 + Tab1 全绿，DS-11 审计闭环**。
 - **221** 诚实空态合规；**230 页内评价、231 前端导出**属契约内 C，不算 mock。
-- **剩余不合规**：① Tab1 六张无后端出处的种子直出卡（FIX-03）；② 两处无角标裸奔（PolicyTextAnalysis FIX-04、评估指标体系卡 FIX-05）。
+- **剩余不合规**：无。Tab1 六卡如需恢复数据，须先立 DATA 单挂 A 类读面（FIX-03 空态文案已留指引）；PolicyTextAnalysis 待 237 文本解析真轨（FIX-04 空态文案已留指引）。
+- **FIX-05 废弃**：MockBadge 恒零 DOM（human 2026-11-09 决策），reason 口径统一无载体；血缘诚实由 ⓘ/PendingBadge 承担。
 - **评审模式现状**：MockBadge 挂点较全（页内 ≥20 处），但全部无 reason 文案、且 A/B/C 三层不区分；`?review=1` 的闸门条只覆盖 Tab2/Tab3 流程演示，未做数据来源标注。
 
 ## 五、连库核对
