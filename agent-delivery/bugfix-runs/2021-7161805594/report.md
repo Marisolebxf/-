@@ -1,9 +1,9 @@
 # 缺陷修复报告：2021 科技全域态势，关键词检索提示检索服务不可用，且展示两个✗号
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T11:34:57.288+08:00
+> 生成时间：2026-11-11T12:23:11.806+08:00
 > 当前 cycle：cycle-001-20261111T111344+0800
-> 当前内部阶段：BLOCKED
+> 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -51,12 +51,15 @@
 | E-INT-2021-001 | api | SKIPPED | yes | yes | PENDING | a89f8ab347ca60729a8f950c54108399c2c02c2d | 本机网络不可达，线上检索 degraded 本轮 SKIPPED |
 | E-REG-2021-002 | code | PASS | yes | yes | PENDING | a89f8ab347ca60729a8f950c54108399c2c02c2d | 改动仅限计划内两文件；自定义清除钮与 clearSearch 仍保留。overviewTab.test 因本机无 vite/node_modules 未跑。 |
 | E-PIPE-2021-001 | pipeline | FAIL | yes | yes | PENDING | 49df406da73d6cdc5e2c607c16bbf8d5489e8985 | Harbor unauthorized；build 绿；二次重试仍红 |
+| E-PIPE-2021-002 | pipeline | PASS | yes | yes | PENDING | 0529bd13ee391205ed1fa9d15c8a5349e14db8e2 | pipeline 4790 全绿，deploy:k8s 成功；49df406 为其祖先 |
+| E-DEP-2021-001 | bundle | PASS | yes | yes | PENDING | 0529bd13ee391205ed1fa9d15c8a5349e14db8e2 | 已部署前端包内关键词输入为 type=text，仅一个自定义清除钮 |
+| E-DEP-2021-002 | api | PASS | yes | yes | PENDING | 0529bd13ee391205ed1fa9d15c8a5349e14db8e2 | dev 检索返回 degraded=false、12 条候选 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:7a1cf72559b5045c8dc13a6fe49fa6e74a9a1d25c29e0094625257e8b1de2abe；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:713079cbd5ec7cf906f2e2771b02252230a78e6bd82c00ac97d7bef16e1cbe30；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -92,13 +95,16 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- ui_pc：MR=direct-dev，candidate=49df406da73d6cdc5e2c607c16bbf8d5489e8985，merge=0529bd13ee391205ed1fa9d15c8a5349e14db8e2，deployed=0529bd13ee391205ed1fa9d15c8a5349e14db8e2，pipeline=4790，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4790，image=harbor.test.com/zp-tts/gkx-lumen-pc:0529bd13，rollout=completed
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=E-PIPE-2021-002, E-DEP-2021-001, E-DEP-2021-002
 
 人工验收步骤：
 
-- PENDING
+- 打开 http://10.50.69.111:30891/ 进入 科技全域态势
+- 在顶部「关键词检索」输入关键字（如 深圳）
+- 确认输入框右侧只有 1 个 ✗，且候选面板出候选而非「检索服务不可用」
+- 点该 ✗ 能清空关键词并收起候选
 
 ## 10. 人工验收步骤
 
@@ -112,7 +118,7 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | invalidated | 进入开发 | sha256:98672063396ed20948c528936331d8b1ca73eb764301c85956edbd89d4bcfedb |
-| ship | invalidated | 提测 | sha256:201df38462ec77e0a1bb1c34f9b949082ab8b418dc43f2853d65c7b0fd3e6244 |
+| ship | approved | 提测 | sha256:201df38462ec77e0a1bb1c34f9b949082ab8b418dc43f2853d65c7b0fd3e6244 |
 
 enter_dev bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"e6de9ea497ea891389c0952b3aa4ed630ecc03c1","planned_change_scope":["src/views/situation/overview/components/SituationFilterBar.vue","src/views/situation/overview/situationFilterBar.test.mjs"]}],"diagnosis_hash":"sha256:4d32ff2de9380e1374da0c9f432657adde1e57aaf65f903343cdf99b4465c738","plan_hash":"sha256:61e4101900ac4fbe8c1d77dd54b50281c79bd88ca3e8b454b7d7abd52017b69f","risk_level":"M","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}
 
