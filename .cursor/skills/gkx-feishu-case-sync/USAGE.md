@@ -29,6 +29,9 @@
 
 ## 1. 准备飞书应用（管理员或应用创建人操作，每台机器只需一次配置）
 
+> **❓ 常见疑问：需要安装飞书官方 MCP（`lark-mcp`）吗？——不需要。**
+> 本 skill 的同步脚本是独立 Python 程序，直接调飞书开放平台 REST API（`tenant_access_token` 鉴权），只用 Python 标准库。MCP 仅在早期链路验证时用过，以及 wiki 链接换 token 时**可选**使用（见 §3.1）；不装 MCP 不影响本手册全流程，机器上也不需要 Node.js。
+
 ### 1.1 拿到 APP_ID / APP_SECRET
 
 1. 打开 [飞书开放平台](https://open.feishu.cn/) → 开发者后台
@@ -152,7 +155,7 @@ https://zhipu-ai.feishu.cn/sheets/CWMZsII5Ph9e2Ztm3NlcemfBnGf?sheet=d7d70e
 - `spreadsheet_token` = `CWMZsII5Ph9e2Ztm3NlcemfBnGf`
 - `sheet_id`（页签 id）= `d7d70e`
 
-> 若 URL 是 `/wiki/<token>` 开头：先用 MCP `wiki_v2_space_getNode` 把 wiki token 换成真实 obj_token 再用。
+> 若 URL 是 `/wiki/<token>` 开头：先用 MCP `wiki_v2_space_getNode`（需已配好的飞书 MCP）把 wiki token 换成真实 obj_token 再用；没有 MCP 时也可在飞书网页端打开该 wiki 节点，从地址栏 `/sheets/<obj_token>?sheet=` 直接取。
 
 ### 3.2 第一步：试跑（dry-run，不写任何单元格）
 
@@ -247,7 +250,7 @@ macOS/Linux 同理（`python3` + 反斜杠换行改 `\`）。
 | `[x] 目标列 L:M 已有内容... 中止` | clean 模式防覆盖保护触发 | 这**不是故障**。确认可以刷新→加 `--merge`；要写别的列→`--cols`；都不确定→先出 dry-run 报告人工看 |
 | `cannot access local variable ...` / `SyntaxError` | 脚本被手改坏 | `git checkout -- .cursor/skills/gkx-feishu-case-sync/scripts/sync_cases_to_sheet.py` 还原 |
 
-> 关于 `feishu-project-native` 的 MCP 授权（`mcp_auth`）：那只影响「飞书项目」相关 MCP 工具，**与本 skill 的表格同步无关**，不做也能跑通本手册全流程。
+> 关于 `feishu-project-native` 的 MCP 授权（`mcp_auth`）：那只影响「飞书项目」相关 MCP 工具，**与本 skill 的表格同步无关**，不做也能跑通本手册全流程。本 skill 本身不需要任何飞书 MCP。
 
 ---
 

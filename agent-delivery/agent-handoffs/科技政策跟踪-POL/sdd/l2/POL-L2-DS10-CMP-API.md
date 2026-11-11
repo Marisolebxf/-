@@ -26,12 +26,12 @@
 |---|---|---|
 | 213 | `GET /display/v1/policy/panorama/version-diff` | 同步。element 只读 `gapfill_policy_version_diff`。时点用已有发布时间。无行则空 |
 | 214 正文 | `GET /display/v1/policy/panorama/search` 与 `GET /display/v1/policy/panorama/{id}/detail` | 同步。正文委托 topic-policy。受理部门读正文 |
-| 214 条件、材料 | 同一条 `GET /display/v1/policy/panorama/{id}/detail` | 同步。同一次详情。element 只读 `gapfill_policy_detail_compare` |
+| 214 条件、材料、优缺点 | 同一条 `GET /display/v1/policy/panorama/{id}/detail` | 同步。同一次详情。element 只读 `gapfill_policy_detail_compare`（含 `pros_text`/`cons_text`） |
 | 214 力度分 | `POST /display/v1/policy/panorama/jobs` | Job。`sub_type=policy_intensity`。display 只提交 `analysis/tasks` |
 | 215 区域、类别、总件数 | `GET /display/v1/policy/panorama/stats` | 同步。区域和类别委托 topic-policy。总件数仍是 `M_POLICY_TOTAL_COUNT` |
 | 215 实施部门 | 同一条 `GET /display/v1/policy/panorama/stats` | 同步。element 只读 `gapfill_policy_impl_dept` |
 | 216 | 同一条 `GET /display/v1/policy/panorama/stats` | 同步。element 只读 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`；「政策类型」列同一次统计由 element 只读 DWD `policy_base_info` 文种按省聚合（2026-11-11 增补，QPOL-01 临时默认）。不进 Job |
-| 217 | `GET /display/v1/policy/panorama/benchmark-report` | 同步。element 只读 `gapfill_policy_benchmark_report`。不内嵌写死的 PDF |
+| 217 | `GET /display/v1/policy/panorama/benchmark-report` | 同步。element 只读 `gapfill_policy_benchmark_report`。不内嵌写死的 PDF。浏览器从当次行用 `trackingExport` 导出 Word/PDF |
 | 218 | 同一条 `POST /display/v1/policy/panorama/jobs` | Job。`sub_type=policy_intensity`。无行则图空 |
 
 `{id}` 是 `search` 目录项里的政策 id，与 `POL-L2-DS10-QRY-API` 相同。
@@ -50,7 +50,7 @@
 |---|---|
 | `panorama/version-diff` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_version_diff` |
 | `panorama/search` | `gkxlumen-display` → `gkxlumen-topic-policy`：`GET /topic/v1/policy/search`。正文委托这一条 |
-| `panorama/{id}/detail` | `gkxlumen-display` → `gkxlumen-topic-policy`：`GET /topic/v1/policy/docs/{id}`。申报条件、申报材料由 `gkxlumen-element` 在同一次详情只读 `gapfill_policy_detail_compare`。受理部门只取正文 |
+| `panorama/{id}/detail` | `gkxlumen-display` → `gkxlumen-topic-policy`：`GET /topic/v1/policy/docs/{id}`。申报条件、申报材料、优点、缺点由 `gkxlumen-element` 在同一次详情只读 `gapfill_policy_detail_compare`。受理部门只取正文 |
 | `panorama/stats` | 区域、类别、总件数委托 `gkxlumen-topic-policy`（已有地区分布、已有选项、`M_POLICY_TOTAL_COUNT`）。实施部门由 `gkxlumen-element` 只读 `gapfill_policy_impl_dept`。`M_POLICY_SUPPORT_STRENGTH` 由 `gkxlumen-element` 同步只读 `ads.policy_intensity`。勾「政策类型」时同一次统计由 element 只读 `dwd.policy_base_info` 文种按省聚合（2026-11-11 增补） |
 | `panorama/jobs` | `gkxlumen-display` 只提交 `gkxlumen-topic-async-service` 的 `POST /topic/v1/analysis/tasks`。已有 `PolicyAnalysisAdapterImpl` 再调 `POST /internal/policy/jobs/execute`，`sub_type=policy_intensity`。display 不直接打 `jobs/execute` |
 | `panorama/benchmark-report` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_benchmark_report` |
@@ -87,9 +87,9 @@ trace 沿既有展示链。同步读在 display 往下带 traceId。Job 沿已�
 
 无命中则列表空。无正文则详情空。HTTP 成功。不造一条政策。不返回 501。
 
-### 4.2 申报条件、申报材料 · 同一次 detail
+### 4.2 申报条件、申报材料、优缺点 · 同一次 detail
 
-仍是 `GET /display/v1/policy/panorama/{id}/detail`。正文走专题门面。申报条件、申报材料由 `gkxlumen-element` 在同一次详情只读 `gkxlumenx_gapfill.gapfill_policy_detail_compare`。不把这两列写进接口常量。display 不直连库，不直连 Python。
+仍是 `GET /display/v1/policy/panorama/{id}/detail`。正文走专题门面。申报条件、申报材料、优点（`pros_text`）、缺点（`cons_text`）由 `gkxlumen-element` 在同一次详情只读 `gkxlumenx_gapfill.gapfill_policy_detail_compare`。不把这些列写进接口常量。display 贴进正文后前端画差异柱图（力度分来自当次 Job；无分轴空）与每策优缺点块。display 不直连库，不直连 Python。
 
 某一列无行则该列空。HTTP 成功。不返回写死的条件或材料。不返回 501。
 
@@ -183,9 +183,9 @@ D4 仍是 mock。本分册不改 D4，不把 `GDF-POLICY-MOCK-GATE-L01` 写成�
 
 | 序号 | 资源 | 无数据 |
 |---|---|---|
-| 213 | `versions`、`version-diff` | 无成对历史版则不列该政策；两个发布时间对不上行则对比空。不返回写死差异 |
+| 213 | `versions`、`version-diff` | 无成对历史版则不列该政策；两个发布时间对不上行则对比空。不返回写死差异。变化统计由前端聚合 diff 行 |
 | 214 正文 | `search` / `{id}/detail` | 无命中则列表空。无正文则详情空。受理部门无正文则该格空，不改读部门缺项表 |
-| 214 条件、材料 | 同一次 `{id}/detail` | 缺项表该列无行则该列空。不返回写死条件或材料 |
+| 214 条件、材料、优缺点 | 同一次 `{id}/detail` | 缺项表该列无行则该列空。不返回写死条件、材料或优缺点 |
 | 214 力度分 | `jobs` · `policy_intensity` | 未挂上白名单则结果空，不返回演示分。挂上后无行则该格空，不造 0。失败不清空统计、目录和正文 |
 | 215 | `stats` | 区域桶空、类别无节点、部门缺项表无行，则对应块空。总件数无行则该卡空，不造 0。缺项件数不补成政策总数 |
 | 216 | `stats` | `ads.policy_intensity` 无支持力度行则该卡空，不造 0。不进 Job。金额档缺失则该维空。「政策类型」块条件不齐或某省无文种行则该省空，不造 0（2026-11-11 增补） |
