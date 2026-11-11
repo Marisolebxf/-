@@ -61721,8 +61721,12 @@ tasks:
     update_time: "2026-11-09T15:52:56+08:00"
   - id: KG-COMPLY-LOAD-T01
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T01.md"
+    claimed_by: "human:白鑫凤"
+    supervised_by: "human:唐绍祖"
+    claim_type: "human"
+    claimed_at: "2026-11-11T16:30:00+08:00"
     title: "T01 入图环境与结构核验（含 schema 缺口升级闸）"
-    status: "ready_to_sign"
+    status: "done"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61732,7 +61736,11 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "2026-11-11 已归档交付索引并回填证据，task-review AV-0通过（handoff_exists=true/evidence_set=true，tech_task目标ready_to_sign）。仅机械完整性检查通过，待有权签收人确认业务验收、原授权记录及历史认领字段；本次不代签done。"
+    note: |
+      2026-11-11 已归档交付索引并回填证据，task-review AV-0通过（handoff_exists=true/evidence_set=true）。
+      2026-11-11 16:30 唐绍祖技术验收通过并签收 → done：独立连库只读复测 demo_gkx_chain，15 Tag / 26 Edge，新建 5 Tag（research/paper/patent/project/person）与 11 边全部在位，新点均 name+props、新边抽查均 weight+props，历史 P0 空属性缺陷已修复；16 条 CREATE 执行记录与复验记录齐备。详见 KG-COMPLY-ACCEPT-T01-T05-技术验收记录.md。
+      认领字段为 2026-11-11 分工调整后补录（执行人白鑫凤，据交付文件），非原始认领时间倒填；原授权链以交付文件记载为准（唐绍祖确认内容、徐滕强授权执行）。
+      遗留说明（不阻塞）：新建边本期 0 条属正常，数据由 T02–T04 灌入；6 对语义重叠历史边归 T06 处理。
     depends_on:
       - "KG-COMPLY-SDD-L01"
     design_refs:
@@ -61750,7 +61758,7 @@ tasks:
     update_time: "2026-11-11T15:23:39+08:00"
   - id: KG-COMPLY-LOAD-T02
     title: "T02 七要素入图·产业链与机构合作组（M15/M17/M19）"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61760,7 +61768,14 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "SDD §5 T02；建议执行人 human:陈芸飞；工期从 T01 DDL 复验完成起算"
+    note: |
+      SDD §5 T02；建议执行人 human:陈芸飞（本人已表示认领），由本人在 ready 后走认领流程填 claimed_by/supervised_by/claim_type/claimed_at/lock_until，本次不代填。
+      2026-11-11 16:30 前置闸解除：T01 已复验（16 条 CREATE 全落地、5 Tag + 11 边复测在位）并签收 → T02 由 backlog 置 ready。
+      放行三条护栏（缺一不得开工）：
+      G1 严禁重灌 M15/M17——depends_on 1,073 条、participates 178,731 条已由存量满足，重灌会边数翻倍并导致 T07 对账失配；存量边不得回写 props.batch。
+      G2 research 点与 T03 统一口径——两侧必须同一源字段、同一 VID 前缀 inst:<机构ID>，已存在的点跳过并计数，避免撞出重复点。
+      G3 新灌边带 props.batch=comply-<日期>-t02，便于回滚与对账。
+      详见 KG-COMPLY-ACCEPT-T01-T05-技术验收记录.md。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61816,8 +61831,12 @@ tasks:
     update_time: "2026-11-09T15:11:12+08:00"
   - id: KG-COMPLY-LOAD-T05
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T05.md"
+    claimed_by: "human:白鑫凤"
+    supervised_by: "human:唐绍祖"
+    claim_type: "human"
+    claimed_at: "2026-11-11T16:30:00+08:00"
     title: "T05 空态层入图核验（M05/M10–M14/M16/M18/M21/M23/M24）"
-    status: "backlog"
+    status: "done"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61828,7 +61847,9 @@ tasks:
     difficulty: "S"
     estimated_tokens: 25000
     note: |
-      SDD §5 T05；按2026-11-11已归档分工调整与交付，执行人为白鑫凤（原建议兰天驰退出）；未倒填claimed_by或认领时间。交付提交04acfa71已经ef601c1d同步GitLab dev。报告及T05-空态-实测.md记录2026-11-11 14:08:23只读核验：11条M本期空态，M18 institution→segment为0，区分policy/institution历史节点与本层无供数；报告自检通过。本次依据文档回填，未独立复测。登记册仍backlog，需coordinator处理历史执行/认领状态补录，再按tech_task验收签收；不以新认领伪造历史。
+      SDD §5 T05；2026-11-11 分工调整（兰天驰退出）后执行人为白鑫凤。交付提交 04acfa71 经 ef601c1d 同步 GitLab dev。
+      2026-11-11 16:30 唐绍祖技术验收通过并签收 → done：独立连库只读复测 11 条 M 关系全部为 0（M05 belong / M10 publish / M11 policy_relate / M12-14 policy_apply_to / M16 cite / M18 institution→segment / M21 service_provide / M23 supply / M24 parent_sub），M17 存量 enterprise→segment 复算 178,731 与基线一致；报告正确区分 policy(20,000 点)/institution(43,296 点)「有历史数据」与「本期七要素层无供数」两层事实。详见 KG-COMPLY-ACCEPT-T01-T05-技术验收记录.md。
+      历史状态回填说明：原登记册停留 backlog 属分工调整时未补认领字段的记账遗留，非技术缺陷；claimed_by 为 2026-11-11 补录（标注补录时刻，非原始认领时间），不倒填为本人当初自行认领。T05 为只读核数，不进 T13 依赖，签收后无下游解锁影响。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
