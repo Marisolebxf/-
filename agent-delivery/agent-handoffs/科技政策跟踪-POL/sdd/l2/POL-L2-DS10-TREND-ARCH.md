@@ -7,6 +7,7 @@
 - 强度：ponytail off（定义任务，不缩文档）
 - 图：`POL-L2-DS10-TREND-ARCH-SEQ`（本叶新图，源文件无 frontmatter，不另填绿）
 - 签收：2026-11-03 `human:淮政玮`。按说明书第 11 节再次签收。做不到的只允许缺项表灌 mock 后由接口读表。订阅条件不灌假记录。不允许接口直接返回 mock
+- **2026-11-12 增补 §7.2**：`POL-L2-DS10-TREND-KEYFIELD-FDE-L01` 中档——影响/深度弹窗进度 + situation/report 导出（仍同步读 gapfill，不进 Python）
 
 本叶只定科创政策全景二级「政策动向跟踪」的实现架构和整体流程。SRS 序号 **203–206**。用户故事 `US-DS-POL-02`。不写 OpenAPI 字段、请求体、响应体、枚举。那是 `POL-L2-DS10-TREND-API`。
 
@@ -251,6 +252,12 @@ flowchart LR
 
 浏览器仍提交 `POST /display/v1/policy/panorama/jobs`。这三种不进 `gkxlumen-topic-async-service`，不进 Python。display 委托 `gkxlumen-element` 按种类读上表，把行返回。同一条 `jobs` 上的实施效果、匹配、力度仍由各自叶子使用各自已见模型。用户点了其中一种才查表。切领域不自动查另一域。表无行则该块空。读失败不清空已经返回的时序图和入库列表。
 
+**界面与导出（2026-11-12，`POL-L2-DS10-TREND-KEYFIELD-FDE-L01`，中档）**
+
+- 「政策影响评估」「深度分析报告」点击后统一打开弹窗：分阶段进度条（受理 → 读取分析材料 → 汇总 → 完成）→ 展示当次读到的行。进度为过程展示，底层仍是同步读表，不新建异步分析任务，不谎称模型推理。
+- 完成后可导出 PDF / Word：FE 用当次行拼完整 HTML → `POST /display/v1/situation/report/generate` → topic-async OpenHTMLtoPDF（与 217 / 态势报告同构）。`reportType`=`policy-trend-impact` / `policy-trend-report`；Word=`format=html` 存 `.doc`。禁止 `trackingExport` 打印另存、禁止 `text/plain`。无行不产文件。
+- 热点识别仍按原页内块，本增补不改热点主路径。
+
 主题分布用 `gapfill_policy_theme_dist`，挂在 `stats` 上，不进这三张表。见第 4.4 节。这四张表要灌的 mock 见第 7.3 节。列由 `POL-L2-DS10-TREND-DATA` 定，灌数由 `POL-L2-DS10-TREND-GAPFILL-L01` 执行。本叶不写列，不灌数。
 
 ### 7.3 缺项表与要灌的 mock
@@ -263,7 +270,7 @@ flowchart LR
 |---|---|---|---|
 | `gapfill_policy_trend_hotspot` | 205 热点识别 | 科创发展、人才引进、资金扶持各若干条。每条有领域名、热点名称、一句说明 | 焦点指数、热度分。不挂 `M_POLICY_FOCUS_INDEX` |
 | `gapfill_policy_trend_impact` | 205 政策影响评估 | 上述三个领域各一条。每条有领域名、影响对象、影响方向、一句结论 | 实施效果分、推演情景。不挂 `M_POLICY_IMPLEMENTATION_EFFECT`、`M_POLICY_SIMULATE` |
-| `gapfill_policy_trend_report` | 205 深度分析报告 | 上述三个领域各一份。每份有标题、领域名、正文。正文写在行里 | 文件、对象存储、评估报告和对标报告。不挂序号 211、217 |
+| `gapfill_policy_trend_report` | 205 深度分析报告 | 上述三个领域各一份。每份有标题、领域名、正文。正文写在行里 | 不把文件字节灌进本表；导出文件走 situation/report 存储指针（KEYFIELD-FDE）。不挂序号 211、217 |
 | `gapfill_policy_theme_dist` | 206 主题分布 | 若干主题名和件数，可带年份 | 政策类型分布的桶。不新造主题指标 |
 
 灌数执行单是 `POL-L2-DS10-TREND-GAPFILL-L01`。执行 `data-agent`，监管 `human:淮政玮`。它依赖 `POL-L2-DS10-TREND-DATA` 把列定下来之后再建表、写脚本、灌入上表这些行。本叶不认领、不执行。接口仍只读这些行，不在返回语句里写 mock。
