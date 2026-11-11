@@ -64107,12 +64107,13 @@ tasks:
       - "handoff 落盘 sdd/l2/，写明库.表、列清单、与 FE 七组件 props 的字段映射；本单不建库、不灌数"
     update_time: "2026-11-12T03:30:39+08:00"
   - id: POL-L2-DS11-VIZ-GAPFILL-L02
+    evidence: "[object Object]"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-11T19:32:38.222Z"
     last_seen_at: "2026-11-11T19:32:38.222Z"
     lock_until: "2026-11-11T23:32:38.222Z"
     title: "政策分析评价 · 可视化 · FIX-03 空态块缺项表建表灌 mock"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -64122,17 +64123,18 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "data-agent 认领开工"
+    note: |
+      灌数完成并验收：七表 136 行已 apply（10.50.11.76/gkxlumenx_gapfill），独立 SELECT 复核行数/血缘（is_mock+metric_id NULL+QPOL-02 5/5）/D19 collation 7/7 全绿；commit lumen-algo-py 20589a5 + handoff b39d23ff；首轮 1046 已根修（补 USE）。集成测试通过。待淮政玮签收。
     depends_on:
       - "POL-L2-DS11-VIZ-GAPFILL-L02-DATA"
     definition_of_done:
       - "按 DATA 单列清单在 gkxlumenx_gapfill 建表并独立脚本灌入六类演示行（画像/地理/落实率/热力+情感/气泡/指标体系），is_mock=1、fill_method=manual、行带 metric_id 占位"
       - "不写 ODS、DWD、ADS 和供应方库；不改 D4；不新造 metric_id"
       - "handoff 写明库、表、行数、灌数命令与自检结果（行数断言）"
-    update_time: "2026-11-12T03:32:44+08:00"
+    update_time: "2026-11-12T04:01:21+08:00"
   - id: POL-L2-DS11-VIZ-GAPFILL-L02-BE
     title: "政策分析评价 · 可视化 · FIX-03 空态块读面接口"
-    status: "backlog"
+    status: "ready"
     agent: "api-agent"
     epic: "E-FE-POLICY-TRACKING"
     priority: "P1"
@@ -64142,14 +64144,14 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 12000
-    note: "B 波次第 3 单：BE 读面。读法与拣行键以 DATA 单为准；DS-11 评价页已有 evaluation/counts、evaluation/jobs 先例（POL-L2-DS11-BE-L01 done）。监管 human:淮政玮。"
+    note: "解锁进 ready：上游灌数已完成（七表 136 行在库，独立复核绿）+ DATA 定稿 ready_to_sign（读面入口已拍板③：GET /evaluation/viz，block 参数收七块，BE 侦察笔记 §3 落点）。待 api-agent 认领。"
     depends_on:
       - "POL-L2-DS11-VIZ-GAPFILL-L02-DATA"
     definition_of_done:
       - "element 按 row_kind/拣行键只读 gapfill_policy_eval_viz_*，经 gkxlumen-display 原样返回；挂在既有 evaluation 读面路由，无行返回空数组，不 501"
       - "接口不返回写死 mock，不现算；Java 不直连库"
       - "handoff 写明路由、请求/响应形状与拣行键映射；自检含无行空态分支"
-    update_time: "2026-11-12T02:50:28+08:00"
+    update_time: "2026-11-12T04:01:28+08:00"
   - id: POL-L2-DS11-VIZ-GAPFILL-L02-FE
     title: "政策分析评价 · 可视化 · FIX-03 空态块真轨接线"
     status: "backlog"
