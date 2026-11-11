@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 import time
 
-from t02_m02 import aggregate, execute, grouped, insert_query, quote, source_sql
+from t02_m02 import aggregate, execute, grouped, insert_query, quote
 
 
 def now():
@@ -52,20 +52,39 @@ def prepare(args):
         cursorclass=pymysql.cursors.SSDictCursor)
     try:
         with conn.cursor() as cur, data.open('x', encoding='utf-8', newline='\n') as out:
-            cur.execute(source_sql(args.limit_pairs), (args.limit_pairs,))
-            for rows in grouped(cur):
-                counts['source_pairs'] += 1; counts['source_rows'] += len(rows)
-                versions.update(str(r['data_version']) for r in rows)
-                identities.update(str(r['identity_release_id']) for r in rows)
-                if any(r['src_type'] is None or r['dst_type'] is None for r in rows):
-                    counts['missing_source_endpoint_pairs'] += 1
-                    continue
-                if any('company' in (r['src_type'], r['dst_type']) for r in rows):
-                    counts['excluded_company_pairs'] += 1
-                    continue
-                edge = aggregate(rows, args.batch)
-                out.write(json.dumps(edge, ensure_ascii=False, allow_nan=False) + '\n')
-                counts['eligible_pairs'] += 1; counts['eligible_source_rows'] += len(rows)
+            # Avoid the global pair GROUP BY + joins: it exceeds the source's
+            # 256MB query quota. Load the small profile lookup, scan one src at a time.
+            cur.execute('SELECT institution_id,institution_type_id FROM ads_institution_profile')
+            profiles = {}
+            for r in cur:
+                if r['institution_id'] in profiles: raise ValueError('duplicate profile ID')
+                profiles[r['institution_id']] = r['institution_type_id']
+            cur.execute('SELECT DISTINCT institution_id FROM ads_institution_collaboration_yearly '
+                        'WHERE institution_id < collaborator_institution_id ORDER BY institution_id')
+            source_ids = [r['institution_id'] for r in cur]
+            for src in source_ids:
+                if counts['source_pairs'] >= args.limit_pairs: break
+                cur.execute('SELECT institution_id,collaborator_institution_id,statistics_year,'
+                    'co_paper_count,collaboration_strength,data_version,identity_release_id '
+                    'FROM ads_institution_collaboration_yearly '
+                    'WHERE institution_id=%s AND institution_id < collaborator_institution_id '
+                    'ORDER BY collaborator_institution_id,statistics_year', (src,))
+                for rows in grouped(cur):
+                    if counts['source_pairs'] >= args.limit_pairs: break
+                    counts['source_pairs'] += 1; counts['source_rows'] += len(rows)
+                    versions.update(str(r['data_version']) for r in rows)
+                    identities.update(str(r['identity_release_id']) for r in rows)
+                    a = profiles.get(rows[0]['institution_id'])
+                    b = profiles.get(rows[0]['collaborator_institution_id'])
+                    if a is None or b is None:
+                        counts['missing_source_endpoint_pairs'] += 1
+                        continue
+                    if 'company' in (a, b):
+                        counts['excluded_company_pairs'] += 1
+                        continue
+                    edge = aggregate(rows, args.batch)
+                    out.write(json.dumps(edge, ensure_ascii=False, allow_nan=False) + '\n')
+                    counts['eligible_pairs'] += 1; counts['eligible_source_rows'] += len(rows)
     finally:
         conn.close()
     manifest = dict(version=1, started_at=started, prepared_at=now(), batch=args.batch,
@@ -174,6 +193,8 @@ def run(args):
     from nebula3.Config import Config
     from nebula3.gclient.net import ConnectionPool
     folder = Path(args.plan); manifest = check_plan(folder)
+    verify_only = getattr(args, 'verify_only', False)
+    if verify_only and args.write: raise ValueError('verification cannot write')
     if not 1 <= args.chunk_size <= 200: raise ValueError('chunk_size must be 1..200')
     checkpoint = folder / 'checkpoint.json'
     state = dict(sha256=manifest['sha256'], batch=manifest['batch'], chunk_size=args.chunk_size,
@@ -193,7 +214,12 @@ def run(args):
         with (folder / 'edges.jsonl').open(encoding='utf-8') as stream:
             for index, chunk in enumerate(chunks(stream, args.chunk_size)):
                 if index < state['next_chunk']: continue
-                result = process(session, chunk, args.write)
+                if verify_only:
+                    verify_expected(chunk, fetch_properties(session, chunk))
+                    result = Counter(planned_pairs=len(chunk), existing_pairs=len(chunk),
+                                     existing_same_batch_verified=len(chunk), ready_pairs=0)
+                else:
+                    result = process(session, chunk, args.write)
                 counts.update(result)
                 state.update(next_chunk=index + 1, counters=dict(counts), updated_at=now())
                 if args.write: save(checkpoint, state)
@@ -220,6 +246,7 @@ def main():
     p.add_argument('--batch', default='comply-20261111-t02')
     p.add_argument('--chunk-size', type=int, default=100)
     p.add_argument('--write', action='store_true')
+    p.add_argument('--verify-only', action='store_true', help='Exact rank-0 property reread; pair with full graph count/rank audit')
     p.add_argument('--output', default='t02-batch-result.json')
     args = p.parse_args()
     prepare(args) if args.action == 'prepare' else run(args)

@@ -5,9 +5,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+  acquireRunLock,
   advance,
   approveGate,
   blockState,
@@ -19,6 +20,7 @@ import {
   recordDiagnosis,
   recordDecision,
   recordEvidence,
+  recordEvidenceBatch,
   recordFailure,
   recordPlan,
   recordReview,
@@ -26,6 +28,7 @@ import {
   recordVerification,
   renderReport,
   reopenState,
+  resumeState,
   setDataScope,
   setRepos,
   setRisk,
@@ -72,6 +75,14 @@ const repoDir = join(tmp, 'repo');
 const runDir = join(tmp, '123-456');
 mkdirSync(repoDir, { recursive: true });
 mkdirSync(join(runDir, 'evidence', 'raw'), { recursive: true });
+const releaseRunLock = acquireRunLock(runDir, 'selfcheck-lock');
+assert.throws(() => acquireRunLock(runDir, 'selfcheck-competing-lock'), /RUN_LOCKED/);
+releaseRunLock();
+assert.doesNotThrow(() => acquireRunLock(runDir, 'selfcheck-lock-reacquired')());
+writeFileSync(join(runDir, '.bugflow.lock'), `${JSON.stringify({
+  token: 'dead-owner', pid: 99_999_999, host: hostname(), command: 'crashed', created_at: '2026-11-10T18:00:00+08:00',
+})}\n`);
+assert.doesNotThrow(() => acquireRunLock(runDir, 'selfcheck-stale-reclaim')());
 runGit(repoDir, ['init', '-b', 'dev']);
 runGit(repoDir, ['config', 'user.email', 'selfcheck@example.invalid']);
 runGit(repoDir, ['config', 'user.name', 'selfcheck']);
@@ -151,6 +162,23 @@ try {
   const manifestPath = join(runDir, 'evidence', 'manifest.json');
   const manifest = { schema_version: 1, run_id: state.run_id, updated_at: new Date().toISOString(), items: [] };
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const batchRunDir = join(tmp, '123-batch');
+  mkdirSync(join(batchRunDir, 'evidence', 'raw'), { recursive: true });
+  writeFileSync(join(batchRunDir, 'evidence', 'raw', 'batch-a.txt'), 'batch A\n');
+  writeFileSync(join(batchRunDir, 'evidence', 'raw', 'batch-b.txt'), 'batch B\n');
+  const batchManifest = { schema_version: 1, run_id: '123-batch', updated_at: new Date().toISOString(), items: [] };
+  const batchItems = recordEvidenceBatch(batchRunDir, batchManifest, [
+    {
+      evidence_id: 'E-BATCH-A', kind: 'command', result: 'PASS', raw_path: 'evidence/raw/batch-a.txt',
+      reviewable: true, raw_retained: true, commit_sha: candidateSha, environment: 'local', collected_at: '2026-11-10T18:00:00+08:00',
+    },
+    {
+      evidence_id: 'E-BATCH-B', kind: 'command', result: 'PASS', raw_path: 'evidence/raw/batch-b.txt',
+      reviewable: true, raw_retained: true, commit_sha: candidateSha, environment: 'local', collected_at: '2026-11-10T18:00:01+08:00',
+    },
+  ], { state });
+  assert.deepEqual(batchItems.map((item) => item.evidence_id), ['E-BATCH-A', 'E-BATCH-B']);
+  assert.equal(JSON.parse(readFileSync(join(batchRunDir, 'evidence', 'manifest.json'), 'utf8')).items.length, 2);
   writeFileSync(join(runDir, 'evidence', 'raw', 'scope.txt'), 'human approved demo table\n');
   recordEvidence(runDir, manifest, {
     evidence_id: 'E-DATA-001',
@@ -320,6 +348,37 @@ try {
   assert.equal(repoVerification.remote, remote.replace(/\.git$/, ''));
   assert.match(repoVerification.diff_hash, /^sha256:/);
   assert.match(checkDataWrite(state, dbWriteInput, { sessionId: 'session-1', machineId: 'machine-1' }).write_authorization_id, /^sha256:/);
+  assert.throws(() => blockState(structuredClone(state), {
+    reason: 'invalid jump', condition: 'none', resumePhase: 'AWAITING_ACCEPTANCE',
+  }), /resume_phase .* is not reachable/);
+  const resumeTestState = structuredClone(state);
+  blockState(resumeTestState, {
+    reason: 'runner temporarily unavailable',
+    condition: 'runner restored',
+    resumePhase: 'IMPLEMENTING',
+    owner: 'human:ci',
+  });
+  assert.throws(() => advance(structuredClone(resumeTestState), {
+    to: 'IMPLEMENTING', sessionId: 'session-1', machineId: 'machine-1', evidenceRefs: ['human:ci-restored'],
+  }), /RESUME_COMMAND_REQUIRED/);
+  assert.throws(() => resumeState(resumeTestState, {
+    to: 'IMPLEMENTING', sessionId: 'session-1', machineId: 'machine-1', evidenceRefs: [],
+  }), /RESUME_EVIDENCE_REQUIRED/);
+  assert.throws(() => resumeState(resumeTestState, {
+    to: 'IMPLEMENTING', sessionId: 'session-2', machineId: 'machine-1', evidenceRefs: ['human:ci-restored'],
+  }), /RESUME_SESSION_MISMATCH/);
+  resumeState(resumeTestState, {
+    to: 'IMPLEMENTING',
+    sessionId: 'session-1',
+    machineId: 'machine-1',
+    evidenceRefs: ['human:ci-restored'],
+    actor: 'human:ci-owner',
+    summary: 'runner restored',
+  });
+  assert.equal(resumeTestState.phase, 'IMPLEMENTING');
+  assert.equal(resumeTestState.resume_phase, null);
+  assert.match(resumeTestState.blockers.at(-1).resolved_at, /^20/);
+  assert.deepEqual(resumeTestState.blockers.at(-1).resume_evidence_refs, ['human:ci-restored']);
   advance(state, { to: 'REVIEWING', sessionId: 'session-1', machineId: 'machine-1' });
   const riskEvidenceState = structuredClone(state);
   setRisk(riskEvidenceState, { level: 'M', reasons: ['cross-component risk discovered'] });
@@ -543,6 +602,18 @@ try {
   approveGate(chatAcceptanceState, {
     gate: 'acceptance', message: '验收通过', binding: acceptanceBinding, sessionId: 'session-1', machineId: 'machine-1', messageRef: 'chat:acceptance-2020',
   });
+  assert.throws(() => recordAcceptance(structuredClone(chatAcceptanceState), {
+    status: 'approved', mode: 'policy_only', current_status: 'RESOLVED',
+    observed_at: '2026-11-10T18:30:00+08:00', evidence_kind: 'manual_observation',
+    evidence_ref: 'evidence/manifest.json#E-ACCEPT-001',
+  }, { runDir }), /ACCEPTANCE_DOWNGRADE_FORBIDDEN/);
+  const reconfirmAcceptanceState = structuredClone(chatAcceptanceState);
+  reconfirmAcceptanceState.gates.acceptance.status = 'needs_reconfirm';
+  assert.throws(() => recordAcceptance(reconfirmAcceptanceState, {
+    status: 'approved', mode: 'policy_only', current_status: 'RESOLVED',
+    observed_at: '2026-11-10T18:30:00+08:00', evidence_kind: 'manual_observation',
+    evidence_ref: 'evidence/manifest.json#E-ACCEPT-001',
+  }, { runDir }), /ACCEPTANCE_DOWNGRADE_FORBIDDEN/);
   recordAcceptance(chatAcceptanceState, {
     status: 'approved', mode: 'chat_exact', operator_verified: false, current_status: 'RESOLVED',
     observed_at: '2026-11-10T18:30:00+08:00', evidence_kind: 'chat_exact',
@@ -564,6 +635,20 @@ try {
   advance(state, { to: 'RESOLVED', sessionId: 'session-1', machineId: 'machine-1', evidenceRefs: ['E-ACCEPT-001'] });
   assert.equal(state.phase, 'RESOLVED');
   assert.match(state.next_action.action, /已验收/);
+
+  const earlyResolvedState = makeState({ phase: 'DEV_VERIFYING' });
+  const earlyAcceptance = recordAcceptance(earlyResolvedState, {
+    status: 'approved',
+    current_status: 'RESOLVED',
+    observed_at: '2026-11-10T18:31:00+08:00',
+    evidence_kind: 'feishu_status_observation',
+    evidence_ref: 'evidence/manifest.json#E-ACCEPT-001',
+  });
+  assert.equal(earlyAcceptance.status, 'rejected');
+  assert.equal(earlyAcceptance.anomaly, 'early_resolved');
+  assert.equal(earlyAcceptance.mode, 'policy_only');
+  assert.equal(earlyResolvedState.phase, 'BLOCKED');
+  assert.equal(earlyResolvedState.resume_phase, 'DEV_VERIFYING');
 
   const report = renderReport(state, manifest3);
   for (let i = 1; i <= 13; i += 1) assert.match(report, new RegExp(`## ${i}\\.`));
@@ -744,13 +829,17 @@ try {
   assert.equal(archivedCycle.state_ref, `cycles/${state.current_cycle_id}/state.json`);
   assert.equal(JSON.parse(readFileSync(join(runDir, 'cycles', state.current_cycle_id, 'evidence', 'manifest.json'), 'utf8')).items.length > 0, true);
   assert.equal(JSON.parse(readFileSync(manifestPath, 'utf8')).items.length, 0);
-  assert.throws(() => recordAcceptance(reopened, {
+  const reopenedAcceptance = recordAcceptance(reopened, {
     status: 'approved',
     current_status: 'RESOLVED',
     observed_at: '2026-11-10T18:30:00+08:00',
     evidence_kind: 'x',
     evidence_ref: 'evidence/manifest.json#E-X',
-  }), /cannot record approved acceptance in REOPENED/);
+  });
+  assert.equal(reopenedAcceptance.anomaly, 'early_resolved');
+  assert.equal(reopenedAcceptance.status, 'rejected');
+  assert.equal(reopened.phase, 'BLOCKED');
+  assert.equal(reopened.resume_phase, 'REOPENED');
 
   const failureState = makeState();
   recordFailure(failureState, { stage: 'dev_verify', class: 'product_or_code' });
@@ -760,7 +849,7 @@ try {
   assert.throws(() => recordFailure(failureState, { stage: 'dev_verify', class: 'product_or_code' }), /limit is 3/);
 
   const blocked = makeState();
-  blockState(blocked, { reason: 'missing requirement', condition: 'requirement supplied', resumePhase: 'READY_DEV', owner: 'human:owner' });
+  blockState(blocked, { reason: 'missing requirement', condition: 'requirement supplied', resumePhase: 'CLAIMED', owner: 'human:owner' });
   assert.equal(blocked.phase, 'BLOCKED');
   assert.deepEqual(validateStateShape(blocked), []);
 

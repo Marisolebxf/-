@@ -9,10 +9,14 @@
 
 ## 前置条件
 
-1. 飞书自建应用（`GKX周报WBS`，APP_ID/APP_SECRET）已存在；机器人已被添加为目标文档**协作者（可编辑）**
-2. 环境变量：`LARK_APP_ID` / `LARK_APP_SECRET`（PowerShell：`$env:LARK_APP_ID='...'`，不进 git）
+1. 飞书自建应用（`GKX周报WBS`，APP_ID/APP_SECRET）已存在；权限 `sheets:spreadsheet` 已开通**且已发布版本**；机器人已被添加为目标文档**协作者（可编辑）**
+2. 环境变量：`LARK_APP_ID` / `LARK_APP_SECRET`（`FEISHU_APP_ID` / `FEISHU_APP_SECRET` 等价兼容）；PowerShell：`$env:LARK_APP_ID='...'`，不进 git
 3. 目标表格 token 与 sheet_id 从 URL 提取：`https://xxx.feishu.cn/sheets/<spreadsheet_token>?sheet=<sheet_id>`
 4. wiki 节点（`/wiki/<token>`）先用 MCP `wiki_v2_space_getNode` 换 `obj_token`
+
+## 完整手册
+
+**新机器配置、macOS/Windows 双平台命令、报错速查表**见同目录 [USAGE.md](./USAGE.md)。
 
 ## 用法
 

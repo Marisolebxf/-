@@ -132,7 +132,7 @@ When one Feishu bug requires changes in multiple repositories:
 4. Make the smallest correct change and preserve unrelated dirty work.
 5. Run only the relevant test groups while iterating; run the full required self-check once before review.
 
-Avoid repeated screenshots. For UI work, use programmatic state assertions and cover below-the-fold content. Keep at most one final screenshot if visual evidence is genuinely required.
+Avoid repeated screenshots. For UI work, use DOM/API/deployed-chunk assertions and cover below-the-fold content programmatically. If visual evidence is genuinely required, keep at most one before/after target-area screenshot per side (S); never use repeated full-screen captures as an exploration tool.
 
 ### 5. Verification
 
@@ -176,9 +176,12 @@ init -> record-diagnosis -> record-plan -> set-repos
 -> exact 验收通过 -> approve-gate acceptance
 -> Feishu transition_state RESOLVED -> record-acceptance(mode=chat_exact)
 -> advance RESOLVED
+
+BLOCKED recovery:
+block -> satisfy resume_condition -> resume --to <resume_phase> --evidence-ref ...
 ```
 
-Use `block`, `cancel`, `reopen`, `takeover` for side paths. Write data authorization through `check-data-write`, never by editing policy fields.
+Use `block` + `resume`, `cancel`, `reopen`, `takeover` for side paths. Every command that touches a run directory is serialized by a per-run lock. Use `record-evidence --evidence-batch-file` when recording multiple evidence items; never launch concurrent independent writers against one manifest. Write data authorization through `check-data-write`, never by editing policy fields.
 
 Read `references/P0-DESIGN.md` only when gate/hash/evidence details matter.
 
@@ -187,6 +190,7 @@ Read `references/P0-DESIGN.md` only when gate/hash/evidence details matter.
 - `进入开发` authorizes the complete repository set in the Bundle, one dedicated fix branch per repo and Draft MRs. Request it only after the Bug Contract, scope, dependency order, plan and current baseline are explicit.
 - `提测` authorizes merge to `dev`, push, CI/CD, dev deployment and one dev verification. It never authorizes production.
 - `验收通过` authorizes one Feishu `RESOLVED` transition only when the run is at `AWAITING_ACCEPTANCE`; it never authorizes production or bypasses claim/session/evidence checks.
+- If the human already moved Feishu to `RESOLVED` after the exact token, record `chat_exact` observation without issuing a duplicate transition. An approved `chat_exact` gate must never be downgraded to `policy_only` in the same run.
 - Rework after failed acceptance within the same scope and risk keeps the existing claim and source analysis; redo diff/review/verification and request only `提测` again.
 - Scope expansion, adding a repository to the Bundle, changing Bundle dependency order, data write, permission model change, production risk or L routing invalidates old assumptions and requires a fresh decision.
 
@@ -198,6 +202,12 @@ Before merge:
 2. Confirm the baseline pipeline is green or that its red path is unrelated.
 3. Merge/rebase only the authorized candidates and push `dev` in Bundle `ship_order`.
 4. Track every repository's pipeline, image tag, deployed SHA and rollout; do not verify only the last repository.
+
+Pipeline wait rule: follow only pipelines whose commit contains the authorized candidate (`git merge-base --is-ancestor <candidate> <pipeline-sha>`). Stop waiting for that repository at the first terminal success: pipeline success plus successful deploy/rollout, or a current live deployed SHA that contains the candidate. If the first pipeline is canceled or superseded, continue to the next candidate-containing pipeline and stop at its first terminal success. Do not switch to an unrestricted "latest dev pipeline" poll.
+
+Record the terminal success in `ship_package.pipeline_id/pipeline_status/pipeline_url/deployed_sha`; later unrelated pipelines belong in the observation/summary, not in the blocking state.
+
+A later pipeline on a newer commit is outside this run's stop condition. If it is still running, or fails with deploy skipped, do not block this run when the last successful deployed SHA still contains the candidate; record the observation and verify the current live deployment. Only a failure before any candidate-containing terminal success belongs to this run's pipeline failure path. For a Bundle, each repository independently needs one terminal success.
 
 If remote `dev` advances after the first full local validation, decide whether a second full local pass is necessary instead of automatically rebuilding:
 
@@ -218,7 +228,8 @@ node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.mjs \
 
 Classify failures as `merge`, `push`, `pipeline`, `rollout`, `dev_verify` or `rework`.
 
-- Unrelated baseline/CI failure: block with owner and URL; do not increment the bug patch round.
+- Unrelated baseline/CI failure before candidate deployment: block with owner and URL; do not increment the bug patch round.
+- Later unrelated running/failed pipeline after candidate deployment: record as observation only; do not wait indefinitely and do not increment the patch round when live SHA still contains the candidate.
 - Same environmental/runner failure twice with no progress: block and retry only after the condition changes.
 - Code failure: fix, increment the patch round, and stop after 3 rounds.
 

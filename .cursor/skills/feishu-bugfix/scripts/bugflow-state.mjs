@@ -6,8 +6,9 @@
  * Design source: references/P0-DESIGN.md (relative to this Skill package)
  * No external dependencies. Node.js >= 18.
  */
-import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { createHash, randomUUID } from 'node:crypto';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { hostname } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -15,7 +16,7 @@ import { parseArgs } from 'node:util';
 import { validateJsonSchema } from './lib/mini-json-schema.mjs';
 import { loadPolicy, matchTableToPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-export const VALIDATOR_VERSION = 'bugflow-state-p0-v8';
+export const VALIDATOR_VERSION = 'bugflow-state-p0-v9';
 export const SCHEMA_VERSION = 2;
 export const PROJECTION_VERSION = 'p0-v3';
 export const PHASES = [
@@ -57,6 +58,8 @@ const ALLOWED_TRANSITIONS = {
   BLOCKED: [],
   CANCELLED: ['REOPENED'],
 };
+
+const RUN_LOCK_STALE_MS = 10 * 60_000;
 
 const TOKENS = {
   enter_dev: '进入开发',
@@ -111,6 +114,108 @@ function isoNow() {
 
 function compactTimestamp(iso) {
   return iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+function processIsAlive(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error?.code !== 'ESRCH';
+  }
+}
+
+function runLockIsStale(lockPath) {
+  let lock = null;
+  try {
+    lock = readJson(lockPath);
+  } catch {
+    // Malformed or partially written lock: use the file age below.
+  }
+  if (lock?.host === hostname() && Number.isInteger(lock.pid)) return !processIsAlive(lock.pid);
+  try {
+    return Date.now() - statSync(lockPath).mtimeMs > RUN_LOCK_STALE_MS;
+  } catch {
+    return true;
+  }
+}
+
+function reclaimRunLockIfUnchanged(lockPath) {
+  let observedText = null;
+  try {
+    observedText = readFileSync(lockPath, 'utf8');
+  } catch {
+    return false;
+  }
+  if (!runLockIsStale(lockPath)) return false;
+  let currentText = null;
+  try {
+    currentText = readFileSync(lockPath, 'utf8');
+  } catch {
+    return false;
+  }
+  if (currentText !== observedText) return false;
+  try {
+    unlinkSync(lockPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Serialize every command that touches a run directory.
+ *
+ * state.json and evidence/manifest.json both use read-modify-write semantics, so a per-run
+ * lock must cover the whole command rather than only record-evidence. The lock is removed on
+ * normal process exit and can be reclaimed after a crash when its PID is gone or it is stale.
+ */
+export function acquireRunLock(runDir, command, options = {}) {
+  if (!existsSync(runDir)) {
+    if (options.create !== true) throw new Error(`RUN_NOT_FOUND: ${runDir}`);
+    mkdirSync(runDir, { recursive: true });
+  }
+  const lockPath = join(runDir, '.bugflow.lock');
+  const token = randomUUID();
+  const payload = {
+    token,
+    pid: process.pid,
+    host: hostname(),
+    command,
+    created_at: isoNow(),
+  };
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let fd = null;
+    try {
+      fd = openSync(lockPath, 'wx', 0o600);
+      writeFileSync(fd, `${JSON.stringify(payload)}\n`, 'utf8');
+      closeSync(fd);
+      return () => {
+        try {
+          const current = readJson(lockPath);
+          if (current?.token === token) unlinkSync(lockPath);
+        } catch {
+          // A missing/replaced lock is not ours to delete.
+        }
+      };
+    } catch (error) {
+      if (fd != null) {
+        try { closeSync(fd); } catch { /* ignore */ }
+      }
+      if (error?.code !== 'EEXIST') throw error;
+      if (attempt === 0 && reclaimRunLockIfUnchanged(lockPath)) {
+        continue;
+      }
+      let owner = '';
+      try {
+        const current = readJson(lockPath);
+        owner = current ? ` pid=${current.pid ?? '?'} command=${current.command ?? '?'} host=${current.host ?? '?'}` : '';
+      } catch { /* ignore */ }
+      throw new Error(`RUN_LOCKED: ${runDir}${owner}`);
+    }
+  }
+  throw new Error(`RUN_LOCKED: ${runDir}`);
 }
 
 function numericIdentifier(value, label) {
@@ -602,9 +707,15 @@ export function approveGate(state, input) {
     acceptance: { first: 'AWAITING_ACCEPTANCE', reconfirm: null },
   };
   const phases = approvalPhases[gateName];
-  const firstApproval = state.phase === phases.first;
-  const reConfirmation = phases.reconfirm != null && state.phase === phases.reconfirm
-    && ['needs_reconfirm', 'invalidated'].includes(state.gates[gateName]?.status);
+  const blockedGateApproval = state.phase === 'BLOCKED' && (
+    (gateName === 'enter_dev' && ['READY_DEV', 'IMPLEMENTING'].includes(state.resume_phase))
+    || (gateName === 'ship' && ['READY_SHIP', 'SHIPPING'].includes(state.resume_phase))
+  );
+  const firstApproval = state.phase === phases.first
+    || (blockedGateApproval && state.gates[gateName]?.status !== 'approved');
+  const needsReconfirm = ['needs_reconfirm', 'invalidated'].includes(state.gates[gateName]?.status);
+  const reConfirmation = (phases.reconfirm != null && state.phase === phases.reconfirm && needsReconfirm)
+    || (blockedGateApproval && needsReconfirm);
   if (!firstApproval && !reConfirmation) {
     throw new Error(`GATE_PHASE_INVALID: ${gateName} requires ${phases.first}${phases.reconfirm ? `, or ${phases.reconfirm} after invalidation` : ''}`);
   }
@@ -634,7 +745,12 @@ export function approveGate(state, input) {
     assertPhaseRequirements(state, gateName === 'enter_dev' ? 'IMPLEMENTING' : 'READY_SHIP');
   }
   assertGateBinding(gateName, input.binding);
-  assertBindingMatchesState(state, gateName, input.binding);
+  assertBindingMatchesState(state, gateName, input.binding, {
+    allowEnterDevCandidate: gateName === 'enter_dev' && (
+      state.phase === 'IMPLEMENTING'
+      || (state.phase === 'BLOCKED' && state.resume_phase === 'IMPLEMENTING')
+    ),
+  });
   const at = isoNow();
   const gate = {
     status: 'approved',
@@ -706,7 +822,7 @@ function mutateGateValidation(state, gateName, result) {
     expected: result.expectedHash ?? null,
     errors: result.errors,
   };
-  if (!result.ok && result.errors.some((e) => /session changed|machine changed/.test(e))) {
+  if (!result.ok) {
     gate.status = 'needs_reconfirm';
   }
 }
@@ -986,6 +1102,9 @@ export function advance(state, input) {
   assertStateShape(state);
   const from = state.phase;
   const to = input.to;
+  if (from === 'BLOCKED' && input.allowBlockedResume !== true) {
+    throw new Error('RESUME_COMMAND_REQUIRED: use `resume` to leave BLOCKED');
+  }
   if (!PHASES.includes(to)) throw new Error(`PHASE_INVALID: ${to}`);
   if (to === 'CLAIMED') {
     if (!normalizeSpace(input.claimCommentRef) || !normalizeSpace(input.claimOperator)) {
@@ -1003,7 +1122,10 @@ export function advance(state, input) {
   let gateName = null;
   if (requirement) {
     gateName = requirement;
-    const result = validateGate(state, gateName, input);
+    const result = validateGate(state, gateName, {
+      ...input,
+      allowEnterDevCandidate: input.allowEnterDevCandidate === true,
+    });
     mutateGateValidation(state, gateName, result);
     if (!result.ok) throw new Error(`${result.code}: ${result.errors.join('; ')}`);
   }
@@ -1035,6 +1157,36 @@ export function advance(state, input) {
     state.resume_condition = null;
   }
   state.updated_at = at;
+  return state;
+}
+
+export function resumeState(state, input) {
+  assertStateShape(state);
+  if (state.phase !== 'BLOCKED') throw new Error(`RESUME_INVALID: phase must be BLOCKED, got ${state.phase}`);
+  if (!state.resume_phase) throw new Error('RESUME_INVALID: resume_phase is missing');
+  if (input.to !== state.resume_phase) {
+    throw new Error(`RESUME_PHASE_MISMATCH: expected ${state.resume_phase}, got ${input.to ?? '<missing>'}`);
+  }
+  if (!normalizeSpace(input.sessionId) || !normalizeSpace(input.machineId)) {
+    throw new Error('RESUME_CONTEXT_REQUIRED: sessionId and machineId are required');
+  }
+  if (state.ownership.session_id && state.ownership.session_id !== input.sessionId) {
+    throw new Error('RESUME_SESSION_MISMATCH: use takeover before resuming from another session');
+  }
+  if (state.ownership.machine_id && state.ownership.machine_id !== input.machineId) {
+    throw new Error('RESUME_MACHINE_MISMATCH: use takeover before resuming from another machine');
+  }
+  if (!Array.isArray(input.evidenceRefs) || input.evidenceRefs.length === 0) {
+    throw new Error('RESUME_EVIDENCE_REQUIRED: provide --evidence-ref for the cleared condition');
+  }
+  const blocker = [...(state.blockers ?? [])].reverse().find((item) => !item.resolved_at) ?? null;
+  advance(state, { ...input, allowBlockedResume: true, allowEnterDevCandidate: true });
+  if (blocker) {
+    blocker.resolved_at = state.transitions.at(-1)?.at ?? isoNow();
+    blocker.resolved_by = input.actor ?? input.sessionId;
+    blocker.resume_evidence_refs = [...input.evidenceRefs];
+  }
+  state.updated_at = isoNow();
   return state;
 }
 
@@ -1583,8 +1735,23 @@ export function recordEvidence(runDir, manifest, evidence, options = {}) {
   };
   manifest.items = [...(manifest.items ?? []), item];
   manifest.updated_at = isoNow();
-  writeJson(join(runDir, 'evidence', 'manifest.json'), manifest);
+  if (options.persist !== false) writeJson(join(runDir, 'evidence', 'manifest.json'), manifest);
   return item;
+}
+
+/** Append a batch of evidence in one manifest read-modify-write transaction. */
+export function recordEvidenceBatch(runDir, manifest, evidenceItems, options = {}) {
+  if (!Array.isArray(evidenceItems) || evidenceItems.length === 0) {
+    throw new Error('EVIDENCE_BATCH_INVALID: evidence batch must be a non-empty array');
+  }
+  const nextManifest = structuredClone(manifest);
+  const items = evidenceItems.map((item) => recordEvidence(runDir, nextManifest, item, {
+    ...options,
+    persist: false,
+  }));
+  nextManifest.updated_at = isoNow();
+  writeJson(join(runDir, 'evidence', 'manifest.json'), nextManifest);
+  return items;
 }
 
 export function verifyEvidence(state, manifest, runDir) {
@@ -1743,6 +1910,31 @@ export function recordAcceptance(state, acceptance, options = {}) {
   if (!['pending', 'approved', 'rejected'].includes(normalized.status)) {
     throw new Error('ACCEPTANCE_INVALID: status must be pending, approved, or rejected');
   }
+  if (normalized.current_status === 'RESOLVED' && !['AWAITING_ACCEPTANCE', 'RESOLVED'].includes(state.phase)) {
+    const at = isoNow();
+    state.acceptance = {
+      ...normalized,
+      status: 'rejected',
+      mode: 'policy_only',
+      anomaly: 'early_resolved',
+      observed_at: normalized.observed_at ?? at,
+    };
+    if (!['BLOCKED', 'CANCELLED'].includes(state.phase)) {
+      blockState(state, {
+        reason: 'Feishu moved to RESOLVED before the acceptance gate',
+        condition: 'human confirms the external transition and supplies acceptance evidence',
+        resumePhase: state.phase,
+        owner: 'human',
+      });
+    }
+    state.updated_at = isoNow();
+    return state.acceptance;
+  }
+  const chatExactSeen = state.acceptance?.mode === 'chat_exact'
+    || state.gates?.acceptance?.token_text === TOKENS.acceptance;
+  if (mode === 'policy_only' && chatExactSeen) {
+    throw new Error('ACCEPTANCE_DOWNGRADE_FORBIDDEN: chat_exact acceptance cannot be downgraded to policy_only');
+  }
   if (normalized.status === 'approved') {
     if (state.phase !== 'AWAITING_ACCEPTANCE') {
       throw new Error(`ACCEPTANCE_INVALID: cannot record approved acceptance in ${state.phase}`);
@@ -1900,6 +2092,10 @@ export function blockState(state, input) {
   const resumePhase = input.resumePhase ?? state.phase;
   if (!PHASES.includes(resumePhase) || ['BLOCKED', 'CANCELLED', 'RESOLVED'].includes(resumePhase)) {
     throw new Error(`BLOCK_INVALID: resume_phase is invalid: ${resumePhase}`);
+  }
+  const allowedResumePhases = new Set([state.phase, ...(ALLOWED_TRANSITIONS[state.phase] ?? [])]);
+  if (!allowedResumePhases.has(resumePhase)) {
+    throw new Error(`BLOCK_INVALID: resume_phase ${resumePhase} is not reachable from ${state.phase}`);
   }
   if (!normalizeSpace(input.reason)) throw new Error('BLOCK_INVALID: reason is required');
   if (!normalizeSpace(input.condition)) throw new Error('BLOCK_INVALID: resume condition is required');
@@ -2317,6 +2513,10 @@ ${listOrPending((manifest.items ?? []).filter((item) => item.kind === 'db'), (it
 
 ${listOrPending(risk.reasons, (x) => md(typeof x === 'string' ? x : JSON.stringify(x)))}
 
+阻塞记录：
+
+${listOrPending(state.blockers, (b) => `${md(b.at)} → ${md(b.resolved_at ?? 'OPEN')}；owner=${md(b.owner)}；reason=${md(b.reason)}；resume_evidence=${md((b.resume_evidence_refs ?? []).join(', '))}`)}
+
 评审记录：
 
 ${listOrPending(state.review?.repos, (r) => `${md(r.repo_id)}：reviewer=${md(r.reviewer)}，independent=${r.independent}，sha=${md(r.reviewed_sha)}，verdict=${md(r.verdict)}，hash=${md(r.review_hash)}，findings=${md((r.findings ?? []).join('；'))}`)}
@@ -2360,6 +2560,7 @@ ${listOrPending(state.ship_package?.acceptance_steps, (step) => md(step))}
 - 验收证据：${md(state.acceptance?.evidence_ref)}
 - 验收结论：${md(state.acceptance?.status)}
 - 验收模式：${md(state.acceptance?.mode)}
+- 验收异常：${md(state.acceptance?.anomaly)}
 - 验收口令：${md(state.acceptance?.approval_message)}
 - 审批引用：${md(state.acceptance?.approval_ref)}
 - chat_exact 验收：仅在收到完整精确消息 \`验收通过\` 后，经 acceptance gate 校验并由 Agent 调用飞书状态迁移。
@@ -2419,6 +2620,8 @@ function main() {
       'items-json': { type: 'string' },
       'evidence-file': { type: 'string' },
       'evidence-json': { type: 'string' },
+      'evidence-batch-file': { type: 'string' },
+      'evidence-batch-json': { type: 'string' },
       'repos-file': { type: 'string' },
       'repos-json': { type: 'string' },
       'review-file': { type: 'string' },
@@ -2445,10 +2648,14 @@ function main() {
   });
   const command = positionals[0];
   if (!command || values.help) {
-    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append one audited evidence item\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record policy-only or exact 验收通过 acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
+    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append audited evidence item(s); supports --evidence-batch-*\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record policy-only or exact 验收通过 acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  resume                Resume BLOCKED to its recorded resume_phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
     return;
   }
   const evidenceRefs = values['evidence-ref'] ?? [];
+  let releaseRunLock = null;
+  process.on('exit', () => {
+    if (releaseRunLock) releaseRunLock();
+  });
   const readInput = () => {
     if (values['input-file']) return readJson(resolve(values['input-file']));
     if (values['input-json']) return JSON.parse(values['input-json']);
@@ -2465,6 +2672,8 @@ function main() {
       }
     }
     const runDir = runPath(values);
+    if (existsSync(join(runDir, 'state.json'))) throw new Error(`RUN_EXISTS: ${runDir}`);
+    releaseRunLock = acquireRunLock(runDir, command, { create: true });
     if (existsSync(join(runDir, 'state.json'))) throw new Error(`RUN_EXISTS: ${runDir}`);
     const policiesRoot = values['policies-root'] ? resolve(values['policies-root']) : POLICY_ROOT;
     const policyVersion = values['policy-version'] ?? 'demo-2026-11-10';
@@ -2507,6 +2716,7 @@ function main() {
   }
 
   const runDir = runPath(values);
+  releaseRunLock = acquireRunLock(runDir, command);
   const state = loadRun(runDir);
   assertStateShape(state);
   const context = { sessionId: values['session-id'], machineId: values['machine-id'] };
@@ -2636,15 +2846,24 @@ function main() {
   }
 
   if (command === 'record-evidence') {
+    const manifest = readJson(join(runDir, 'evidence', 'manifest.json'));
+    const evidenceOptions = {
+      state,
+      policiesRoot: values['policies-root'] ? resolve(values['policies-root']) : POLICY_ROOT,
+    };
+    let batch;
+    if (values['evidence-batch-file']) batch = readJson(resolve(values['evidence-batch-file']));
+    else if (values['evidence-batch-json']) batch = JSON.parse(values['evidence-batch-json']);
+    if (batch !== undefined) {
+      const items = recordEvidenceBatch(runDir, manifest, batch, evidenceOptions);
+      process.stdout.write(`${JSON.stringify({ recorded: items.length, evidence_ids: items.map((item) => item.evidence_id) }, null, 2)}\n`);
+      return;
+    }
     let evidence;
     if (values['evidence-file']) evidence = readJson(resolve(values['evidence-file']));
     else if (values['evidence-json']) evidence = JSON.parse(values['evidence-json']);
-    else throw new Error('--evidence-file or --evidence-json is required');
-    const manifest = readJson(join(runDir, 'evidence', 'manifest.json'));
-    const item = recordEvidence(runDir, manifest, evidence, {
-      state,
-      policiesRoot: values['policies-root'] ? resolve(values['policies-root']) : POLICY_ROOT,
-    });
+    else throw new Error('--evidence-file, --evidence-json, --evidence-batch-file or --evidence-batch-json is required');
+    const item = recordEvidence(runDir, manifest, evidence, evidenceOptions);
     process.stdout.write(`${JSON.stringify(item, null, 2)}\n`);
     return;
   }
@@ -2759,6 +2978,22 @@ function main() {
       saveRun(runDir, state);
       throw error;
     }
+    return;
+  }
+
+  if (command === 'resume') {
+    if (!values.to) throw new Error('--to is required');
+    resumeState(state, {
+      to: values.to,
+      sessionId: values['session-id'],
+      machineId: values['machine-id'],
+      evidenceRefs,
+      summary: values.summary,
+      actor: values.actor,
+      policiesRoot: values['policies-root'] ? resolve(values['policies-root']) : undefined,
+    });
+    saveRun(runDir, state);
+    process.stdout.write(`resumed to ${state.phase}\n`);
     return;
   }
 
