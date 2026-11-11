@@ -193,6 +193,8 @@ def run(args):
     from nebula3.Config import Config
     from nebula3.gclient.net import ConnectionPool
     folder = Path(args.plan); manifest = check_plan(folder)
+    verify_only = getattr(args, 'verify_only', False)
+    if verify_only and args.write: raise ValueError('verification cannot write')
     if not 1 <= args.chunk_size <= 200: raise ValueError('chunk_size must be 1..200')
     checkpoint = folder / 'checkpoint.json'
     state = dict(sha256=manifest['sha256'], batch=manifest['batch'], chunk_size=args.chunk_size,
@@ -212,7 +214,12 @@ def run(args):
         with (folder / 'edges.jsonl').open(encoding='utf-8') as stream:
             for index, chunk in enumerate(chunks(stream, args.chunk_size)):
                 if index < state['next_chunk']: continue
-                result = process(session, chunk, args.write)
+                if verify_only:
+                    verify_expected(chunk, fetch_properties(session, chunk))
+                    result = Counter(planned_pairs=len(chunk), existing_pairs=len(chunk),
+                                     existing_same_batch_verified=len(chunk), ready_pairs=0)
+                else:
+                    result = process(session, chunk, args.write)
                 counts.update(result)
                 state.update(next_chunk=index + 1, counters=dict(counts), updated_at=now())
                 if args.write: save(checkpoint, state)
@@ -239,6 +246,7 @@ def main():
     p.add_argument('--batch', default='comply-20261111-t02')
     p.add_argument('--chunk-size', type=int, default=100)
     p.add_argument('--write', action='store_true')
+    p.add_argument('--verify-only', action='store_true', help='Exact rank-0 property reread; pair with full graph count/rank audit')
     p.add_argument('--output', default='t02-batch-result.json')
     args = p.parse_args()
     prepare(args) if args.action == 'prepare' else run(args)
