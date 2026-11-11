@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS10-CMP-ARCH`
 - 日期：2026-11-03
-- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档，待四角色会签）
+- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档）。**2026-11-12 增补 §5.1/§5.2/§5.5**（`POL-L2-DS10-CMP-COVER-FDE-L01`，中档：213 变化统计、214 live 柱图+优缺点、217 真 Word/PDF 导出）
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -41,10 +41,10 @@
 | 214 时间、部门、产业 | `GET /display/v1/policy/panorama/search` 与 `{id}/detail` | 内部委托已有 `gkxlumen-topic-policy`。不另开对比查询 |
 | 214 力度、218 | `POST /display/v1/policy/panorama/jobs` | `gkxlumen-display` 只提交到 `gkxlumen-topic-async-service` 的 `POST /topic/v1/analysis/tasks`。已有适配器再调 `/internal/policy/jobs/execute`，`sub_type=policy_intensity`，由 `polan.eval.intensity.run` 写入并读取 `ads.policy_intensity` 的力度分。display 不直接打 `jobs/execute`。216 不进这条 Job |
 | 216 | `GET /display/v1/policy/panorama/stats` | 同步读。`gkxlumen-element` 只读已有 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`；「政策类型」列同一次统计读 DWD `policy_base_info` 文种按省聚合（2026-11-11 增补，QPOL-01 临时默认）。不进 Job。无行则该卡空，不造数。D4 仍是 mock |
-| 214 条件、材料 | `GET /display/v1/policy/panorama/{id}/detail` | 正文仍走专题门面。申报条件、申报材料由 `gkxlumen-element` 同一次详情只读 `gapfill_policy_detail_compare`。不把这两列写进接口常量 |
+| 214 条件、材料、优缺点 | `GET /display/v1/policy/panorama/{id}/detail` | 正文仍走专题门面。申报条件、申报材料、优点、缺点由 `gkxlumen-element` 同一次详情只读 `gapfill_policy_detail_compare`。不把这些列写进接口常量。live 差异柱图用当次力度分（无分轴空，不造演示分） |
 | 215 区域、类别 | `GET /display/v1/policy/panorama/stats` 与 `search` | 区域走已有地区分布。项目类别、技术类别走已有选项。总件数仍用 `M_POLICY_TOTAL_COUNT`。这两段仍委托 `gkxlumen-topic-policy` |
 | 215 实施部门 | `GET /display/v1/policy/panorama/stats` | 同一次统计。`gkxlumen-element` 只读 `gapfill_policy_impl_dept`。现网收集不到实施部门，不按发布机构去重，不另开路径 |
-| 217 | `GET /display/v1/policy/panorama/benchmark-report` | `gkxlumen-element` 只读 `gapfill_policy_benchmark_report`。导出内容从读到的行生成。display 不直连 Python |
+| 217 | `GET /display/v1/policy/panorama/benchmark-report` | `gkxlumen-element` 只读 `gapfill_policy_benchmark_report`。导出内容从读到的行生成。浏览器侧复用 `trackingExport`（Word=.doc HTML；PDF=可打印页另存），不新加 npm、不内嵌写死文件。display 不直连 Python |
 
 ```mermaid
 flowchart LR
@@ -122,6 +122,7 @@ flowchart LR
 - 灌数是独立脚本，不是请求处理。执行单 `POL-L2-DS10-CMP-GAPFILL-L01`。另有 `POL-L2-DS10-SRCMON-SYNTH-L01`：每次合成 10 条，随机 5 条再由 LLM 写旧版，旧版作为独立政策行入 ODS/DWD，增改删写本表（`fill_method=llm-synth`）。
 - 两个发布时间对不上行则对比空，不在接口里拼一段高亮。
 - 浏览器读 `version-diff`。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。
+- **变化统计（2026-11-12，COVER-FDE）**：前端对当次 diff 行按 `change_type` 聚合「新增 / 修改 / 删除」计数展示。无独立分析列、无行则空态一句，不造演示统计。
 
 ### 5.2 214 政策详情对比 · 正文 + 力度表 + 缺项表
 
@@ -134,6 +135,8 @@ flowchart LR
 3. 已有 `PolicyAnalysisAdapterImpl` 再调 `POST /internal/policy/jobs/execute`，`sub_type=policy_intensity`。Python 调用已有 `polan.eval.intensity.run`，再按所选政策读 `ads.policy_intensity` 的力度分。Java 不打分，不抄公式。
 4. 申报时间、受理部门、产业类别继续读专题门面已有正文。这三列不进缺项表。
 5. 申报条件、申报材料没有字段、也没有模型。只建 `gapfill_policy_detail_compare`，按政策放这两列正文。浏览器读 `GET /display/v1/policy/panorama/{id}/detail`。正文走专题门面，这两列由 `gkxlumen-element` 只读缺项表带出。display 不直连 Python。
+6. **优缺点（2026-11-12，COVER-FDE，卡1=A）**：同表扩 `pros_text` / `cons_text`（只读 gapfill，与 217 正文同级，免 D18 接口写死 mock）。live 弹窗每策展示优点/缺点；列空则该策空态。live 禁 mock fixture。
+7. **差异柱图（同裁定）**：live 与 mock 同结构出柱图。支持力度轴取当次 `policy_intensity` 力度分；无分则该轴空。条件门槛 / 材料复杂度无数值模型 → 轴空。**不造演示分**。
 
 `M_POLICY_INTENSITY_SCORE` 仍是本行的指标。`M_POLICY_INTENSITY_INDEX` 不挂本页。QPOL-02 的权重保持待确认。D4 保持 mock。三维缺数据时，`run()` 写不出力度分就让该格空，不在接口里补一个分数。
 
@@ -172,6 +175,7 @@ flowchart LR
 - 表 `gapfill_policy_benchmark_report`。
 - 一行有对标对象、对照字段、差异、优劣、借鉴建议、报告正文。正文写在行里。
 - `GET benchmark-report` 只查询。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。导出若要文件，从这次读到的行生成，响应里不内嵌一份写死的 PDF 或 Word。
+- **导出落点（2026-11-12，COVER-FDE，卡2=B）**：浏览器复用已有 `trackingExport` 语义——Word 下载 `.doc`（HTML）；PDF 开可打印页由用户另存为 PDF。不新加 jspdf 等 npm 依赖。无行不产文件。禁止 `text/plain` 冒充 PDF/Word。
 - 不写对象存储。不建邮件。
 
 ### 5.6 218 对标结果可视化展示 · 读力度表
