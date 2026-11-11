@@ -21,7 +21,7 @@ Project defaults:
 1. **Evidence before inference.** Business behavior must be grounded in the main orchestration repo, the business repository, or the latest explicit human decision. Do not infer requirements from a screenshot alone.
 2. **Requirement coverage is mandatory.** Every defect must map to an SRS functional point, formal acceptance item, QA case, or the latest explicit human decision. Fixing the screenshot without covering the requirement is not done.
 3. **Smallest safe change.** Fix the failing path, not the whole subsystem. Expand scope only with recorded evidence.
-4. **Risk-matched process.** S-level work is lightweight. M adds one targeted independent review. L or cross-repository work exits this lightweight flow.
+4. **Risk-matched process.** S-level work is lightweight. M adds one targeted independent review. L exits this lightweight flow. Multiple repositories for the same Feishu bug stay in one run as a cross-repo Bundle; they are not split into separate bugs.
 5. **Local first.** Reproduce and verify locally whenever practical. Shared dev is for one post-ship integration check, not the inner development loop.
 6. **One run, one current truth.** Per-run state lives under `agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/`; Feishu owns business status.
 7. **Stop instead of guessing.** Missing requirements, unavailable environment, unrelated red baseline, or unsafe data access are blockers, not reasons to invent behavior.
@@ -107,9 +107,22 @@ Load the matching section of `references/BUG-PLAYBOOK.md`:
 | Algorithm/model | deterministic fixture + golden output + performance |
 | Config/release/CI | dry-run + pipeline/job/rollout + rollback |
 | Permission/security | least privilege + positive/negative authorization tests |
-| Cross-repo/unknown | route to existing long-task flow or block after bounded triage |
+| Cross-repo | one bug = one run/Bundle; per-repo candidates + dependency-ordered shipping |
+| Unknown | bounded triage, then block or L route |
 
 Record the chosen risk level and verification plan. Do not apply a frontend playbook to a data or algorithm defect.
+
+### 3.1 Same-bug cross-repo Bundle
+
+When one Feishu bug requires changes in multiple repositories:
+
+- keep one Feishu work item, one claim, one run ledger, one Bug Contract and the same two chat gates;
+- if another repository is discovered later, add it to the existing Bundle and invalidate the current gate; never create a second Feishu bug for the same defect;
+- record every repository in `state.repos[]` with `role`, `depends_on` and `ship_order`;
+- use risk **M** at minimum; cross-repo alone is no longer L and is never a reason to split the bug;
+- verify every repository independently, then add at least one `integration` verification whose `repo_ids` covers the complete Bundle;
+- merge/deploy in `ship_order`, with dependencies earlier than consumers;
+- if any repository fails, the whole Bundle remains in rework/verification failure; never mark the bug complete from one successful repository.
 
 ### 4. Reproduce and fix
 
@@ -128,7 +141,7 @@ Every repository needs:
 - `fix`: the reported failure now passes;
 - `regression`: adjacent behavior remains correct.
 
-Add only applicable categories from `boundary`, `integration`, `data`, `algorithm`, `security`, `performance`, or `rollback`. M/L work must include at least one non-happy-path category. A PASS verification may reference only reviewable evidence whose raw artifact was retained.
+Add only applicable categories from `boundary`, `integration`, `data`, `algorithm`, `security`, `performance`, or `rollback`. M/L work must include at least one non-happy-path category. A cross-repo Bundle must include an `integration` verification covering every repo in the Bundle. A PASS verification may reference only reviewable evidence whose raw artifact was retained.
 
 Evidence should be minimal and high-signal:
 
@@ -153,6 +166,7 @@ Typical sequence:
 
 ```text
 init -> record-diagnosis -> record-plan -> set-repos
+  (multi-repo: each repo has role + depends_on + ship_order)
 -> approve-gate enter_dev -> advance IMPLEMENTING
 -> verify-repo -> record-review -> record-verification
 -> verify-evidence -> advance READY_SHIP
@@ -167,10 +181,10 @@ Read `references/P0-DESIGN.md` only when gate/hash/evidence details matter.
 
 ### 7. Gates and rework
 
-- `进入开发` authorizes code changes, a dedicated fix branch and a Draft MR. Request it only after the Bug Contract, scope, plan and current baseline are explicit.
+- `进入开发` authorizes the complete repository set in the Bundle, one dedicated fix branch per repo and Draft MRs. Request it only after the Bug Contract, scope, dependency order, plan and current baseline are explicit.
 - `提测` authorizes merge to `dev`, push, CI/CD, dev deployment and one dev verification. It never authorizes production.
 - Rework after failed acceptance within the same scope and risk keeps the existing claim and source analysis; redo diff/review/verification and request only `提测` again.
-- Scope expansion, new repository, data write, permission model change, production risk or L routing invalidates old assumptions and requires a fresh decision.
+- Scope expansion, adding a repository to the Bundle, changing Bundle dependency order, data write, permission model change, production risk or L routing invalidates old assumptions and requires a fresh decision.
 
 ### 8. Ship and failure handling
 
@@ -178,8 +192,8 @@ Before merge:
 
 1. Refresh the latest `dev`; never merge an assumption from an old local ref.
 2. Confirm the baseline pipeline is green or that its red path is unrelated.
-3. Merge/rebase only the authorized candidate and push `dev`.
-4. Track the real pipeline, image tag, deployed SHA and rollout.
+3. Merge/rebase only the authorized candidates and push `dev` in Bundle `ship_order`.
+4. Track every repository's pipeline, image tag, deployed SHA and rollout; do not verify only the last repository.
 
 If remote `dev` advances after the first full local validation, decide whether a second full local pass is necessary instead of automatically rebuilding:
 
@@ -235,7 +249,7 @@ A screenshot or clipboard image is evidence, not a claimable work item. Before i
 - Missing reproduction environment, credentials or permissions.
 - Unrelated red baseline or unrecoverable CI/environment failure.
 - Required data write is outside policy/scope.
-- Cross-repo, schema, permission or production risk exceeds the lightweight flow.
+- L, schema, permission or production risk exceeds the lightweight flow. Cross-repo alone is not a blocker; an incomplete Bundle contract or integration verification is.
 - Three code patch rounds have failed without a new hypothesis.
 
 Report the work item, blocker, evidence already checked and exact human action needed. Leave business status unchanged unless an explicit legal transition exists.

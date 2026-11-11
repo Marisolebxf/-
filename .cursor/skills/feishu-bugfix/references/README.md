@@ -1,6 +1,6 @@
 # 飞书缺陷修复 Skill 与运行账本说明
 
-> 状态：v1.0 通用缺陷流程优化版
+> 状态：v1.1 同缺陷跨仓 Bundle 优化版
 > 建立日期：2026-11-10
 > 适用范围：飞书项目中由当前用户认领并修复的缺陷
 > 真源分层：本目录是 Skill 的唯一 canonical 包；`../SKILL.md` 管操作入口，`BUG-PLAYBOOK.md` 管类型路由和验证方法，`P0-DESIGN.md` 管 gate/权限细节，`../templates/state.schema.json` 管机器结构，`../policies/` 管数据授权
@@ -55,6 +55,7 @@ P0 不在每个 gate 写飞书评论。外部只保留认领时的 `[agent-claim
 - **先找依据再改代码**：必须从主仓需求、SRS、设计、数据、QA 或最新人工裁定中找到期望行为；`requirement_refs` 必须可定位。
 - **需规功能点必须覆盖**：每个缺陷至少映射一个 SRS 文件 + 序号 + 五级功能路径；修复验证必须覆盖该功能点的实际行为，不能只修截图表象。
 - **按缺陷类型验证**：UI、API、数据、算法、配置、权限分别使用不同验证矩阵，不再统一套前端流程。
+- **同 Bug 跨仓不拆单**：一个飞书缺陷涉及多个仓库时仍是一个 claim/run，使用跨仓 Bundle 记录各仓 `role`、`depends_on`、`ship_order`；风险至少 M，并必须有覆盖完整 Bundle 的 `integration` 验证。
 - **S/M 轻量化**：S 只需 `fix + regression`，M/L 至少再有一个非 happy-path 类别；S 默认不做独立 review。
 - **提测前先看基线**：最新 dev pipeline 为红时，先分清是否当前范围；无关失败不计入补丁轮次。
 - **返工不重复进入开发**：同一范围和风险的验收返工保留 claim，只重做 diff/review/verification 并重新 `提测`。
@@ -129,12 +130,12 @@ agent-delivery/bugfix-runs/
 | 等级 | 流程 |
 |---|---|
 | S | 自审、`fix + regression`、本地或只读证据；不建 task-registry/handoff |
-| M | S 基础上增加至少一个非 happy-path 类别、影响面和一次独立针对性评审；单会话单仓可不建 registry |
+| M | S 基础上增加至少一个非 happy-path 类别、影响面和一次独立针对性评审；跨仓 Bundle 至少为 M；单会话可不建 registry |
 | L | 仅识别并路由；必须接现有 task-registry、task MCP、worktree、全量净室评审和 handoff/cost，不进入 P0 轻量自动流 |
 
 S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳过评审。
 
-本轻量通道是 `feishu-bugfix` 的明确豁免：P0 自动流只承接 **S/M 单仓**，用 `state.json + report.md` 承载执行记录；L、跨仓交付和长任务段 E 仍遵守主仓完整规约，遇到时停止轻量流程并路由。
+本轻量通道是 `feishu-bugfix` 的明确豁免：P0 自动流承接 S/M，包括**同一缺陷的跨仓 Bundle**，用 `state.json + report.md` 承载执行记录；L 和长任务段 E 仍遵守主仓完整规约并路由现有流程。跨仓本身不触发拆单。
 
 ## 与主仓规约的关系
 
@@ -164,7 +165,7 @@ S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳�
 - gate 绑定、失效和接管；
 - 结构化证据、单一报告和内部校验器；
 - 版本化数据/Mock 策略；
-- 单仓 gate、deployed SHA、review/data scope hash、failure_stage/failure_class 和 revert-only 回退；L/跨仓由现有长任务流程承接；
+- 单缺陷 Bundle gate（支持多仓候选 SHA、依赖顺序和统一提测）、deployed SHA、review/data scope hash、failure_stage/failure_class 和 revert-only 回退；L 由现有长任务流程承接；
 - `state.json.transitions[]`、`patch_round`、cycle 归档、精确接管、取消和重开规则；
 - `policies/` 的版本化数据授权和 run scope 逐表确认；
 - Codex / Cursor / Trae 共用语义。
@@ -187,8 +188,8 @@ node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs
 node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.selfcheck.mjs
 ```
 
-Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos → set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（基础 fix/regression；M/L 追加适用类别）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在提测授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
+Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos（多仓时每仓带 role/depends_on/ship_order）→ set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（基础 fix/regression；M/L 追加适用类别）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在提测授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
 
-v1.0 起，校验器强制 claim 评论证据、DB 写前 scope/policy 授权、`fix + regression` 基础覆盖、M/L 非 happy-path 覆盖和未追认决策闸门；L 或跨仓自动路由到现有长任务流程。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍只面对四件事和两个精确口令，复杂校验全部由 Agent 内部完成。
+v1.1 起，校验器强制 claim 评论证据、DB 写前 scope/policy 授权、`fix + regression` 基础覆盖、M/L 非 happy-path 覆盖和未追认决策闸门；跨仓 Bundle 强制每仓候选/评审/证据、依赖顺序和完整集成验证；只有 L 自动路由到现有长任务流程。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍只面对四件事和两个精确口令，复杂校验全部由 Agent 内部完成。
 
 详细设计见 [`P0-DESIGN.md`](P0-DESIGN.md)。

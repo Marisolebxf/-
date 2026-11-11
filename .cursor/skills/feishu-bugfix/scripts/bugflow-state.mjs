@@ -15,7 +15,7 @@ import { parseArgs } from 'node:util';
 import { validateJsonSchema } from './lib/mini-json-schema.mjs';
 import { loadPolicy, matchTableToPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-export const VALIDATOR_VERSION = 'bugflow-state-p0-v6';
+export const VALIDATOR_VERSION = 'bugflow-state-p0-v7';
 export const SCHEMA_VERSION = 2;
 export const PROJECTION_VERSION = 'p0-v3';
 export const PHASES = [
@@ -245,12 +245,18 @@ function requireArray(value, name, errors) {
 
 function projectRepoBinding(gateName, repo) {
   const common = { repo_id: repo.repo_id };
+  const bundleFields = {
+    ...(repo.role != null ? { role: repo.role } : {}),
+    ...(repo.ship_order != null ? { ship_order: repo.ship_order } : {}),
+    ...(Array.isArray(repo.depends_on) ? { depends_on: repo.depends_on } : {}),
+  };
   if (gateName === 'enter_dev') {
     return {
       ...common,
       repo_name: repo.repo_name,
       base_sha: repo.base_sha,
       planned_change_scope: repo.planned_change_scope,
+      ...bundleFields,
     };
   }
   return {
@@ -261,6 +267,7 @@ function projectRepoBinding(gateName, repo) {
     review_hash: repo.review_hash,
     data_policy_hash: repo.data_policy_hash,
     data_scope_hash: repo.data_scope_hash,
+    ...bundleFields,
   };
 }
 
@@ -338,6 +345,11 @@ export function validateStateShape(state) {
     if (!Array.isArray(values)) continue;
     const ids = values.map((value) => value?.repo_id).filter(Boolean);
     if (new Set(ids).size !== ids.length) errors.push(`${collection} contains duplicate repo_id values`);
+  }
+  try {
+    assertBundleTopology(state.repos ?? []);
+  } catch (error) {
+    errors.push(error.message);
   }
   for (const [index, review] of (state.review?.repos ?? []).entries()) {
     if (review?.review_hash && review.review_hash !== reviewHash(review)) {
@@ -434,6 +446,15 @@ function assertGateBinding(gateName, binding) {
       }
     }
   }
+  if ((binding.repos ?? []).length > 1) {
+    for (const [i, repo] of (binding.repos ?? []).entries()) {
+      requireString(repo.role, `bound_to.repos[${i}].role`, errors);
+      requireArray(repo.depends_on, `bound_to.repos[${i}].depends_on`, errors);
+      if (!Number.isInteger(repo.ship_order) || repo.ship_order < 1) {
+        errors.push(`bound_to.repos[${i}].ship_order must be a positive integer`);
+      }
+    }
+  }
   if (gateName === 'enter_dev') {
     for (const key of ['diagnosis_hash', 'plan_hash', 'risk_level', 'data_policy_version', 'data_policy_hash', 'data_scope_hash']) {
       requireString(binding[key], `bound_to.${key}`, errors);
@@ -482,6 +503,12 @@ function bindingStateErrors(state, gateName, binding, options = {}) {
       errors.push(`bound_to.repos[${i}] is not present in state.repos`);
       continue;
     }
+    const bundleMismatch = (
+      (boundRepo.role != null && repo.role !== boundRepo.role)
+      || (boundRepo.ship_order != null && repo.ship_order !== boundRepo.ship_order)
+      || (Array.isArray(boundRepo.depends_on) && !sameStringSet(repo.depends_on ?? [], boundRepo.depends_on))
+    );
+    if (bundleMismatch) errors.push(`${boundRepo.repo_id}: bundle role/depends_on/ship_order mismatch`);
     if (gateName === 'enter_dev') {
       if (!options.allowEnterDevCandidate && repo.candidate_sha != null) {
         errors.push(`${boundRepo.repo_id}: candidate_sha must be null before enter_dev`);
@@ -663,6 +690,67 @@ function nonEmptyArray(value) {
   return Array.isArray(value) && value.length > 0;
 }
 
+function isCrossRepoBundle(state) {
+  return (state.repos ?? []).length > 1;
+}
+
+function bundleRepoIds(state) {
+  return (state.repos ?? []).map((repo) => repo.repo_id).filter(Boolean);
+}
+
+function assertBundleTopology(repos) {
+  const multiRepo = repos.length > 1;
+  const ids = new Set(repos.map((repo) => repo.repo_id));
+  const orders = [];
+  for (const [index, repo] of repos.entries()) {
+    if (multiRepo && (typeof repo.role !== 'string' || repo.role.trim() === '')) {
+      throw new Error(`REPOS_INVALID: cross-repo bundle requires repos[${index}].role`);
+    }
+    if (repo.ship_order != null && (!Number.isInteger(repo.ship_order) || repo.ship_order < 1)) {
+      throw new Error(`REPOS_INVALID: repos[${index}].ship_order must be a positive integer`);
+    }
+    if (multiRepo && repo.ship_order == null) {
+      throw new Error(`REPOS_INVALID: cross-repo bundle requires repos[${index}].ship_order`);
+    }
+    if (multiRepo && !Array.isArray(repo.depends_on)) {
+      throw new Error(`REPOS_INVALID: cross-repo bundle requires repos[${index}].depends_on array`);
+    }
+    if (repo.ship_order != null) orders.push(repo.ship_order);
+  }
+  if (!multiRepo) return;
+  const expected = Array.from({ length: repos.length }, (_, index) => index + 1);
+  const actual = [...orders].sort((a, b) => a - b);
+  if (actual.length !== expected.length || actual.some((value, index) => value !== expected[index])) {
+    throw new Error(`REPOS_INVALID: cross-repo bundle ship_order must be contiguous 1..${repos.length}`);
+  }
+  const orderById = new Map(repos.map((repo) => [repo.repo_id, repo.ship_order]));
+  for (const [index, repo] of repos.entries()) {
+    const seen = new Set();
+    for (const dependency of repo.depends_on ?? []) {
+      if (seen.has(dependency)) throw new Error(`REPOS_INVALID: repos[${index}].depends_on contains duplicate ${dependency}`);
+      seen.add(dependency);
+      if (dependency === repo.repo_id) throw new Error(`REPOS_INVALID: repos[${index}].depends_on cannot reference itself`);
+      if (!ids.has(dependency)) throw new Error(`REPOS_INVALID: repos[${index}].depends_on references unknown repo ${dependency}`);
+      if (orderById.get(dependency) >= repo.ship_order) {
+        throw new Error(`REPOS_INVALID: repos[${index}].depends_on ${dependency} must ship before ${repo.repo_id}`);
+      }
+    }
+  }
+}
+
+function crossRepoIntegrationErrors(state, errors) {
+  if (!isCrossRepoBundle(state)) return;
+  const expectedIds = bundleRepoIds(state);
+  const integrated = (state.verification_matrix ?? []).some((item) => (
+    item.category === 'integration'
+    && sameStringSet(item.repo_ids ?? [], expectedIds)
+    && ['PASS', 'SIMULATED'].includes(item.result)
+  ));
+  if (!integrated) {
+    errors.push('CROSS_REPO_BUNDLE_INTEGRATION_REQUIRED: at least one PASS/SIMULATED integration verification must cover every repo in the bundle');
+  }
+}
+
 function requireFields(fields) {
   const errors = fields.filter(([value]) => typeof value !== 'string' || value.trim() === '').map(([, name]) => `${name} is required`);
   if (errors.length) throw new Error(`PHASE_REQUIREMENTS:\n- ${errors.join('\n- ')}`);
@@ -680,8 +768,8 @@ function automationBoundaryErrors(state, errors) {
   if (state.risk?.level === 'L') {
     errors.push('L_ROUTE_REQUIRED: L defects must use the existing task-registry and long-task workflow');
   }
-  if ((state.repos ?? []).length > 1) {
-    errors.push('CROSS_REPO_ROUTE_REQUIRED: cross-repository defects must use the existing long-task workflow');
+  if (isCrossRepoBundle(state) && state.risk?.level === 'S') {
+    errors.push('CROSS_REPO_BUNDLE_REQUIRES_M: one bug may span multiple repositories, but its bundle risk must be at least M');
   }
 }
 
@@ -740,6 +828,7 @@ function assertPhaseRequirements(state, to) {
       if (!nonEmptyArray(item.evidence_refs)) errors.push(`verification ${item.id ?? '<unknown>'}: evidence_refs must not be empty`);
       if (item.result === 'SKIPPED' && !normalizeSpace(item.skipped_reason)) errors.push(`verification ${item.id ?? '<unknown>'}: skipped_reason is required`);
     }
+    crossRepoIntegrationErrors(state, errors);
     for (const repo of state.repos ?? []) {
       if (!(state.verification_matrix ?? []).some((item) => (item.repo_ids ?? []).includes(repo.repo_id))) {
         errors.push(`${repo.repo_id}: verification result is required`);
@@ -919,6 +1008,15 @@ export function setRepos(state, repos) {
     if (!Array.isArray(repo.planned_change_scope)) {
       throw new Error(`REPOS_INVALID: repos[${index}].planned_change_scope must be an array`);
     }
+    if (repo.role != null && (typeof repo.role !== 'string' || repo.role.trim() === '')) {
+      throw new Error(`REPOS_INVALID: repos[${index}].role must be a non-empty string when provided`);
+    }
+    if (repo.depends_on != null && !Array.isArray(repo.depends_on)) {
+      throw new Error(`REPOS_INVALID: repos[${index}].depends_on must be an array when provided`);
+    }
+    if (repo.ship_order != null && (!Number.isInteger(repo.ship_order) || repo.ship_order < 1)) {
+      throw new Error(`REPOS_INVALID: repos[${index}].ship_order must be a positive integer when provided`);
+    }
     if (seen.has(repo.repo_id)) throw new Error(`REPOS_INVALID: duplicate repo_id ${repo.repo_id}`);
     seen.add(repo.repo_id);
     const normalizedRepo = {
@@ -929,15 +1027,25 @@ export function setRepos(state, repos) {
       base_sha: repo.base_sha,
       candidate_sha: repo.candidate_sha ?? null,
       planned_change_scope: repo.planned_change_scope.map(String),
+      role: repo.role == null ? null : repo.role.trim(),
+      depends_on: repo.depends_on == null ? [] : [...new Set(repo.depends_on.map((value) => String(value).trim()).filter(Boolean))],
+      ship_order: repo.ship_order ?? null,
     };
     assertRepoRegistryBinding(normalizedRepo);
     return normalizedRepo;
   });
+  assertBundleTopology(normalized);
   assertStateShape(state);
   const repoSetChanged = previous.size !== normalized.length || normalized.some((repo) => !previous.has(repo.repo_id));
   const enterBindingChanged = repoSetChanged || normalized.some((repo) => {
     const old = previous.get(repo.repo_id);
-    return old && (old.base_sha !== repo.base_sha || !sameStringSet(old.planned_change_scope, repo.planned_change_scope));
+    return old && (
+      old.base_sha !== repo.base_sha
+      || !sameStringSet(old.planned_change_scope, repo.planned_change_scope)
+      || old.role !== repo.role
+      || old.ship_order !== repo.ship_order
+      || !sameStringSet(old.depends_on ?? [], repo.depends_on ?? [])
+    );
   });
   state.repos = normalized;
   if (enterBindingChanged && state.gates.enter_dev.status === 'approved') state.gates.enter_dev.status = 'invalidated';
@@ -1135,8 +1243,11 @@ export function recordShipPackage(state, packageInput) {
       deployed_sha: repo.deployed_sha,
       rollout_status: repo.rollout_status,
       image_tag: repo.image_tag ?? null,
+      role: stateRepo.role ?? null,
+      depends_on: stateRepo.depends_on ?? [],
+      ship_order: stateRepo.ship_order ?? null,
     };
-  });
+  }).sort((a, b) => (a.ship_order ?? Number.MAX_SAFE_INTEGER) - (b.ship_order ?? Number.MAX_SAFE_INTEGER));
   const devVerification = packageInput.dev_verification ?? { result: 'PENDING', evidence_refs: [] };
   if (devVerification.result === 'PASS' && (!Array.isArray(devVerification.evidence_refs) || devVerification.evidence_refs.length === 0)) {
     throw new Error('SHIP_PACKAGE_INVALID: PASS dev_verification requires evidence_refs');
@@ -1156,13 +1267,18 @@ export function recordRollback(state, rollback) {
   assertStateShape(state);
   if (!rollback || !Array.isArray(rollback.repos)) throw new Error('ROLLBACK_INVALID: repos must be an array');
   state.rollback = {
-    repos: rollback.repos.map((repo) => ({
-      repo_id: repo.repo_id,
-      target_sha: repo.target_sha,
-      revert_commit: repo.revert_commit ?? null,
-      command: repo.command ?? null,
-      verification: repo.verification ?? null,
-    })),
+    repos: rollback.repos.map((repo) => {
+      const stateRepo = state.repos.find((candidate) => candidate.repo_id === repo.repo_id);
+      return {
+        repo_id: repo.repo_id,
+        target_sha: repo.target_sha,
+        revert_commit: repo.revert_commit ?? null,
+        command: repo.command ?? null,
+        verification: repo.verification ?? null,
+        role: stateRepo?.role ?? null,
+        ship_order: stateRepo?.ship_order ?? null,
+      };
+    }).sort((a, b) => (a.ship_order ?? Number.MAX_SAFE_INTEGER) - (b.ship_order ?? Number.MAX_SAFE_INTEGER)),
     summary: rollback.summary ?? null,
   };
   state.updated_at = isoNow();
@@ -1298,8 +1414,8 @@ function dataWriteAuthorizationProjection(state, write) {
 export function checkDataWrite(state, write, options = {}) {
   assertStateShape(state);
   const normalized = normalizeDataWrite(write);
-  if (state.risk?.level === 'L' || (state.repos ?? []).length > 1) {
-    throw new Error('DATA_WRITE_DENIED: L or cross-repository runs must use the existing long-task workflow');
+  if (state.risk?.level === 'L') {
+    throw new Error('DATA_WRITE_DENIED: L runs must use the existing long-task workflow');
   }
   if (state.plan?.data_access !== true) {
     throw new Error('DATA_WRITE_DENIED: plan.data_access must be true');
@@ -2074,6 +2190,7 @@ export function renderReport(state, manifest = { items: [] }) {
     .map((e) => `| ${md(e.evidence_id)} | ${md(e.kind)} | ${md(e.result)} | ${e.reviewable ? 'yes' : 'no'} | ${e.raw_retained ? 'yes' : 'no'} | ${md(e.non_reviewable_reason)} | ${md(e.commit_sha)} | ${md(e.summary)} |`)
     .join('\n');
   const repos = state.repos ?? [];
+  const bundleKind = repos.length > 1 ? `跨仓 Bundle（${repos.length} repos）` : '单仓';
   return `# 缺陷修复报告：${state.work_item.auto_number} ${state.work_item.title}
 
 > 本文件由 \`.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report\` 从 \`state.json\` 和 \`evidence/manifest.json\` 渲染，不手工补写事实。
@@ -2100,9 +2217,12 @@ ${listOrPending(state.diagnosis?.reproduction, (x) => md(typeof x === 'string' ?
 - 需规依据：${md((state.diagnosis?.requirement_refs ?? []).join('；'))}
 - 影响范围：${md((state.diagnosis?.impact_scope ?? []).join('；'))}
 
-## 3. 改动摘要和非目标
+## 3. 改动摘要、跨仓 Bundle 和非目标
 
-${listOrPending(repos, (r) => `${md(r.repo_id)}：${md(r.repo_name)}，base=${md(r.base_sha)}，candidate=${md(r.candidate_sha)}，scope=${md((r.planned_change_scope ?? []).join(', '))}`)}
+- Bundle 类型：${md(bundleKind)}
+- 同一飞书缺陷涉及多个仓库时仍是一个 run、一个 claim、一套 gate；各仓保留独立候选 SHA。
+
+${listOrPending(repos, (r) => `${md(r.repo_id)}：${md(r.repo_name)}，role=${md(r.role)}，ship_order=${md(r.ship_order)}，depends_on=${md((r.depends_on ?? []).join(', '))}，base=${md(r.base_sha)}，candidate=${md(r.candidate_sha)}，scope=${md((r.planned_change_scope ?? []).join(', '))}`)}
 
 实现仓校验：
 
@@ -2155,7 +2275,7 @@ ${listOrPending(dataTables, (t) => `${md(t.database)}.${md(t.table)}；confirmed
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-${listOrPending(state.ship_package?.repos, (r) => `${md(r.repo_id)}：MR=${md(r.merge_request_id)}，candidate=${md(r.candidate_sha)}，merge=${md(r.merge_commit_sha)}，deployed=${md(r.deployed_sha)}，pipeline=${md(r.pipeline_id)}，pipeline_url=${md(r.pipeline_url)}，image=${md(r.image_tag)}，rollout=${md(r.rollout_status)}`)}
+${listOrPending(state.ship_package?.repos, (r) => `${md(r.repo_id)}：ship_order=${md(r.ship_order)}，MR=${md(r.merge_request_id)}，candidate=${md(r.candidate_sha)}，merge=${md(r.merge_commit_sha)}，deployed=${md(r.deployed_sha)}，pipeline=${md(r.pipeline_id)}，pipeline_url=${md(r.pipeline_url)}，image=${md(r.image_tag)}，rollout=${md(r.rollout_status)}`)}
 
 - dev 复测：${md(state.ship_package?.dev_verification?.result)}；evidence=${md((state.ship_package?.dev_verification?.evidence_refs ?? []).join(', '))}
 

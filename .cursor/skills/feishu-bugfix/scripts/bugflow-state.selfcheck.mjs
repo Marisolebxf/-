@@ -576,26 +576,128 @@ try {
   misplacedReviewPolicy.review_at = '2026-11-17';
   assert.match(validatePolicy(misplacedReviewPolicy).join('\n'), /owner_decision\.review_at is required/);
 
-  const subsetState = structuredClone(state);
-  subsetState.phase = 'READY_DEV';
-  subsetState.repos.push({
-    repo_id: 'ui_topic',
-    repo_name: 'lumen-ui-topic',
-    remote: 'https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic.git',
-    base_branch: 'dev',
-    base_sha: 'topic-base',
-    candidate_sha: null,
-    planned_change_scope: ['src'],
+  const bundleState = makeState({ phase: 'READY_DEV', risk: 'M' });
+  recordDiagnosis(bundleState, {
+    symptom: 'cross-repo contract mismatch',
+    reproduction: ['backend returns no series', 'frontend shows empty trend'],
+    root_cause: 'producer and consumer changes are coupled',
+    counter_evidence: [],
+    requirement_refs: ['REQ-BUNDLE'],
+    impact_scope: ['backend and frontend BFF'],
   });
-  subsetState.gates.enter_dev = structuredClone(state.gates.enter_dev);
-  assert.equal(validateGate(subsetState, 'enter_dev', { sessionId: 'session-1', machineId: 'machine-1' }).ok, false);
-  assert.throws(() => approveGate(structuredClone(subsetState), {
+  recordPlan(bundleState, {
+    change_scope: ['lumen-ui-topic', 'lumen-ui-science-pc'],
+    non_goals: [],
+    verification_plan: ['repo tests', 'cross-repo integration'],
+    rollback_plan: ['revert bundle candidates'],
+    data_access: false,
+  });
+  const bundleRepos = [
+    {
+      repo_id: 'ui_topic',
+      repo_name: 'lumen-ui-science-topic',
+      remote: 'https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-topic.git',
+      base_branch: 'dev',
+      base_sha: 'topic-base',
+      candidate_sha: null,
+      planned_change_scope: ['src'],
+      role: 'producer',
+      depends_on: [],
+      ship_order: 1,
+    },
+    {
+      repo_id: 'ui_pc',
+      repo_name: 'lumen-ui-science-pc',
+      remote,
+      base_branch: 'dev',
+      base_sha: baseSha,
+      candidate_sha: null,
+      planned_change_scope: ['src/page'],
+      role: 'consumer',
+      depends_on: ['ui_topic'],
+      ship_order: 2,
+    },
+  ];
+  assert.throws(() => setRepos(bundleState, [
+    { ...bundleRepos[0], role: null },
+    bundleRepos[1],
+  ]), /cross-repo bundle requires repos\[0\]\.role/);
+  assert.throws(() => setRepos(bundleState, [
+    { ...bundleRepos[0], depends_on: ['ui_pc'] },
+    bundleRepos[1],
+  ]), /must ship before/);
+  setRepos(bundleState, bundleRepos);
+  const bundleEnterBinding = {
+    repos: bundleState.repos.map((repo) => ({
+      repo_id: repo.repo_id,
+      repo_name: repo.repo_name,
+      base_sha: repo.base_sha,
+      candidate_sha: null,
+      planned_change_scope: repo.planned_change_scope,
+      role: repo.role,
+      depends_on: repo.depends_on,
+      ship_order: repo.ship_order,
+    })),
+    diagnosis_hash: diagnosisHash(bundleState),
+    plan_hash: sha256(bundleState.plan),
+    risk_level: 'M',
+    data_policy_version: bundleState.data_policy.policy_version,
+    data_policy_hash: bundleState.data_policy.policy_hash,
+    data_scope_hash: bundleState.data_policy.scope_hash,
+  };
+  approveGate(bundleState, {
     gate: 'enter_dev',
     message: '进入开发123',
-    binding: enterBinding,
+    binding: bundleEnterBinding,
     sessionId: 'session-1',
     machineId: 'machine-1',
-  }), /CROSS_REPO_ROUTE_REQUIRED/);
+  });
+  advance(bundleState, { to: 'IMPLEMENTING', sessionId: 'session-1', machineId: 'machine-1' });
+  assert.equal(bundleState.phase, 'IMPLEMENTING');
+  assert.deepEqual(bundleState.repos.map((repo) => [repo.repo_id, repo.ship_order]), [['ui_topic', 1], ['ui_pc', 2]]);
+  const tamperedBundleGate = structuredClone(bundleState);
+  tamperedBundleGate.repos[1].depends_on = [];
+  const tamperedBundleValidation = validateGate(tamperedBundleGate, 'enter_dev', { sessionId: 'session-1', machineId: 'machine-1' });
+  assert.equal(tamperedBundleValidation.ok, false);
+  assert.match(tamperedBundleValidation.errors.join('\n'), /bundle role\/depends_on\/ship_order mismatch/);
+
+  const missingIntegration = structuredClone(preShipState);
+  missingIntegration.repos[0].role = 'consumer';
+  missingIntegration.repos[0].depends_on = ['ui_topic'];
+  missingIntegration.repos[0].ship_order = 2;
+  missingIntegration.repos.push({ ...bundleRepos[0] });
+  setRisk(missingIntegration, { level: 'M', reasons: ['cross-repo bundle'] });
+  recordVerification(missingIntegration, [
+    ...missingIntegration.verification_matrix,
+    {
+      id: 'V-TOPIC-FIX', category: 'fix', behavior: 'topic contract', result: 'PASS',
+      repo_ids: ['ui_topic'], evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+    {
+      id: 'V-TOPIC-REG', category: 'regression', behavior: 'topic adjacent path', result: 'PASS',
+      repo_ids: ['ui_topic'], evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+    {
+      id: 'V-TOPIC-BOUNDARY', category: 'boundary', behavior: 'topic empty state', result: 'PASS',
+      repo_ids: ['ui_topic'], evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+    {
+      id: 'V-PC-BOUNDARY', category: 'boundary', behavior: 'pc empty state', result: 'PASS',
+      repo_ids: ['ui_pc'], evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+  ]);
+  assert.throws(
+    () => advance(missingIntegration, { to: 'READY_SHIP', sessionId: 'session-1', machineId: 'machine-1' }),
+    /CROSS_REPO_BUNDLE_INTEGRATION_REQUIRED/,
+  );
+  recordVerification(missingIntegration, [
+    ...missingIntegration.verification_matrix,
+    {
+      id: 'V-BUNDLE-INTEGRATION', category: 'integration', behavior: 'producer and consumer work together', result: 'PASS',
+      repo_ids: ['ui_topic', 'ui_pc'], evidence_refs: ['evidence/manifest.json#E-VERIFY-001'],
+    },
+  ]);
+  assert.doesNotThrow(() => advance(missingIntegration, { to: 'READY_SHIP', sessionId: 'session-1', machineId: 'machine-1' }));
 
   const reopened = structuredClone(state);
   reopenState(reopened, { runDir, reason: 'regressed', sessionId: 'session-1' });

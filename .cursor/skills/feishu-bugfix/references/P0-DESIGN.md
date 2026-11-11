@@ -1,7 +1,7 @@
 # 飞书缺陷 AI Native P0 设计稿
 
-> 状态：v1.0 通用缺陷流程优化版（保留 gate/证据约束，增加类型路由、预检、时间盒和分级验证）
-> 版本：v1.0
+> 状态：v1.1 同缺陷跨仓 Bundle 优化版（保留 gate/证据约束，增加类型路由、预检、时间盒和分级验证）
+> 版本：v1.1
 > 日期：2026-11-11
 > 基线案例：飞书缺陷【2238】
 > 设计原则：对外只保留两个口令和一次业务验收，内部校验严格但由 Agent 自动执行
@@ -18,6 +18,7 @@
 4. S 级验证至少覆盖 `fix + regression`；M/L 追加至少一个适用非 happy-path 类别。允许类别为 `boundary/integration/data/algorithm/security/performance/rollback`。
 5. 同一缺陷、同一范围和风险的验收返工保留 claim 与既有诊断，只重做候选 diff、评审和验证，并重新请求 `提测`；只有范围/风险变化才重新请求 `进入开发`。
 6. 增加时间盒：S 目标 30–60 分钟、M 目标 1–2 小时；同一环境故障连续两次无进展即 block。
+7. 同一个 Bug 涉及多个仓库时不拆单：保持一个 run/claim/gate，使用 `role/depends_on/ship_order` 组成跨仓 Bundle；风险至少 M，并强制完整 Bundle 的 integration 验证。
 7. 并发 push 后使用 `scripts/revalidation-plan.mjs` 做复验分级：远端基线绿、无冲突且与候选文件不重叠时只做目标复验并交给 CI 全量验证；重叠或触及共享配置/types/API/依赖时重新执行完整本地验证。
 8. 需规功能点覆盖是 `进入开发` 前置条件：`diagnosis.requirement_refs` 至少包含一个 SRS 文件 + 序号/五级功能路径，并在验证矩阵中覆盖该功能点的可观察行为；截图不能替代需规映射。
 
@@ -353,6 +354,7 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 - `base_branch` / `base_sha`；
 - `candidate_sha: null`；
 - `planned_change_scope`；
+- 多仓 Bundle 还必须记录 `role`、`depends_on`、`ship_order`；单仓允许为空；
 - `worktree` 只作为本机执行信息，不进入 gate hash。
 
 顶层另记录 `diagnosis_hash`、`risk_level`、`data_policy_version`、`data_policy_hash`、`data_scope_hash`。
@@ -375,9 +377,18 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 - `diff_hash`；
 - `verification_hash`；
 - `review_hash`；
-- `data_policy_hash` / `data_scope_hash`。
+- `data_policy_hash` / `data_scope_hash`；
+- 多仓 Bundle 的 `role` / `depends_on` / `ship_order`。
 
-顶层另记录 `risk_level` 和 `deploy_target=dev`。`ship_package`、`review` 和 `rollback` 按 `repos[]` 记录，单仓也必须显式绑定；P0 自动流只允许一个仓库，多仓缺陷在 `IMPLEMENTING` 前路由到既有长任务流程。
+顶层另记录 `risk_level` 和 `deploy_target=dev`。`ship_package`、`review` 和 `rollback` 按 `repos[]` 记录，单仓也必须显式绑定。
+
+同一个飞书缺陷涉及多个仓库时，仍是一个 run、一个 claim 和同一组 gate；不得拆成多个飞书缺陷。多仓 Bundle 还必须满足：
+
+- 风险至少为 M；跨仓本身不自动升级为 L；
+- `ship_order` 必须为连续的 `1..N`，且 `depends_on` 只允许指向更早 ship 的仓库；
+- 每个仓库分别满足候选 SHA、review、`fix + regression` 和 M 级非 happy-path 要求；
+- 至少一条 `integration` 验证的 `repo_ids` 覆盖 Bundle 全部仓库且结果为 PASS/SIMULATED；
+- 任一仓库失败时，Bundle 不得进入完成态；回滚按仓记录但使用同一提测结论。
 
 每个 `ship_package.repos[]` 至少包含：
 
@@ -441,7 +452,7 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 
 ### M：跨组件或业务状态
 
-典型场景：多个组件、Tab、接口联动、表单写路径、状态切换。
+典型场景：多个组件、Tab、接口联动、表单写路径、状态切换，以及同一个 Bug 的跨仓 Bundle。
 
 在 S 基础上增加：
 
@@ -453,11 +464,11 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 
 M 级不得跳过评审。
 
-### L：跨仓、数据、权限或发布风险
+### L：数据、权限或发布风险
 
-典型场景：多仓契约、数据库结构、权限、并发、任务流水线、发布配置。
+典型场景：数据库结构、权限、并发、任务流水线、生产发布配置。
 
-`bugflow-state` 只负责识别 L，不在 P0 内复制第二套长任务执行器。一旦升级到 L 或识别为跨仓交付，立即停止轻量流程并路由到现有：
+`bugflow-state` 只负责识别 L，不在 P0 内复制第二套长任务执行器。一旦升级到 L，立即停止轻量流程并路由到现有：
 
 - 仅经 task MCP 接入 task-registry、worktree，并记录 `task_registry_id`；禁止直接读写 `task-registry.yaml`；
 - 契约、迁移和回滚方案；
@@ -509,7 +520,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 | `ownership` | `claim_id`、`claim_comment_ref`、`claim_operator`、`claimed_at`、`session_id`、`machine_id`、当前 owner、接管历史 |
 | `phase` | 内部阶段；对外状态由 `phase` 派生，不单独存储 |
 | `risk` | S/M/L、理由、是否上调 |
-| `repos` | 仓库权威数组：`repo_id`、registry 解析出的 `repo_name/remote`、base/candidate SHA、fix 分支和改动边界；P0 自动流只允许一个元素，不存放绝对 worktree 路径 |
+| `repos` | 仓库权威数组：`repo_id`、registry 解析出的 `repo_name/remote`、base/candidate SHA、fix 分支和改动边界；多仓时还包含 `role/depends_on/ship_order`；不存放绝对 worktree 路径 |
 | `machine_local` | 指向本机非权威映射文件，例如 `local/<run_id>.json`；只保存 worktree 绝对路径，不参与 gate hash |
 | `data_policy` | policy 版本/hash、run 级 `scope_hash`、实际表清单、确认人、确认时间、证据引用和切换条件 |
 | `diagnosis` | 现象、复现、根因、反证、需规依据、影响范围 |
@@ -882,10 +893,10 @@ forbidden:
 | 等级 | registry / handoff / cost |
 |---|---|
 | S | 不创建 task-registry 和 handoff；`state.json + report.md` 替代该任务的 DoD 记录；cost 有则记，无则标 `UNAVAILABLE`，不得伪造 0 |
-| M | 单会话单仓可不创建 registry；跨会话、跨仓或需要协调时创建 task；handoff 可由 `report.md` 链接替代；cost 按可得信息记录 |
+| M | 单会话可不创建 registry；跨会话或需要协调时创建 task；跨仓 Bundle 至少为 M；handoff 可由 `report.md` 链接替代；cost 按可得信息记录 |
 | L | 必须接 task-registry、task MCP、worktree、handoff 和 cost 四字段 |
 
-该豁免仅适用于 `feishu-bugfix` 轻量缺陷通道，不放宽 L 级、跨仓交付或长任务段 E 的要求。若业务仓规则或组织审计要求更严格，取更严格者，不因本 P0 自动豁免。
+该豁免仅适用于 `feishu-bugfix` 轻量缺陷通道，不放宽 L 级或长任务段 E 的要求。跨仓 Bundle 属于轻量通道内的明确能力，但仍必须满足风险至少 M、每仓评审和完整集成验证。
 
 ### 16.2 中央规则和仓级 AGENTS
 
@@ -984,7 +995,7 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 - `reviewable=false + raw_retained=false` 可记录和展示，但不能支撑 PASS；
 - 运行目录编号只允许数字，阻断路径穿越；
 - 负向 selfcheck 覆盖上述回归；
-- P0 自动流只承接 S/M 单仓缺陷；L 或跨仓缺陷保留分级结果并路由到现有 task-registry、task MCP、worktree 和长任务执行规约，不在本脚本里复制第二套流程。
+- P0 自动流承接 S/M 缺陷；v1.1 起同一缺陷的跨仓 Bundle 保持单 run，使用每仓候选、依赖顺序和完整集成验证，不再因多仓自动拆单或路由；只有 L 保留分级结果并路由到现有 task-registry、task MCP、worktree 和长任务执行规约。
 
 ## 18.2 v0.9 试点闸门补齐
 
@@ -1018,3 +1029,12 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 6. 在同一个发布步骤中更新 `fe-manual-confirm-push.mdc`，明确 `进入开发` 只授权独立 fix 分支 push、不授权 dev/生产；修改该规则前向用户重新确认 2026-11-05 的人工确认裁定，并记录批准。
 7. 用真实新缺陷试跑，不回溯修改已关闭缺陷【2238】；共享数据库账号归因、独立失败注入环境和更细审计留到 P1。
 8. 根据 5 个试点结果决定是否进入 P1 和自动触发。
+
+## 18.5 v1.1 同缺陷跨仓 Bundle
+
+- 一个飞书缺陷即使涉及多个代码仓库，仍然是一个 Bug、一个 run、一个 claim 和一套精确 gate；禁止因仓库数量拆成多个飞书缺陷。
+- `repos[]` 新增 `role`、`depends_on`、`ship_order`。多仓时三者必填；`ship_order` 连续为 `1..N`，依赖仓库必须更早 ship。
+- 多仓 Bundle 风险至少为 M；跨仓本身不再自动升级为 L。达到 L 时仍按现有长任务流程处理。
+- `enter_dev` 和 `ship` gate 均绑定完整仓库集合及其 Bundle 拓扑；仓库、依赖顺序或 ship 顺序变化会使旧 gate 失效。
+- 每个仓库仍需独立候选 SHA、diff/review/verification；另强制至少一条覆盖全部仓库的 `integration` 验证。
+- `record-ship-package` 按 `ship_order` 固化提测信息；任一仓失败时整个 Bundle 停留在返工/失败态，不允许单仓标记完成。
