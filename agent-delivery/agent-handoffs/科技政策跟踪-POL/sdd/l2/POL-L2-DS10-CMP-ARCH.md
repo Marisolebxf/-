@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS10-CMP-ARCH`
 - 日期：2026-11-03
-- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档）。**2026-11-12 增补 §5.1/§5.2/§5.5**（`POL-L2-DS10-CMP-COVER-FDE-L01`，中档：213 变化统计、214 live 柱图+优缺点、217 真 Word/PDF）。**同日晚修订 §5.5**：废止 trackingExport 打印另存，改为 situation/report → OpenHTMLtoPDF（专题/态势同构）。**同日 PROS-LLM**：§5.2 优缺点空则 `policy_detail_pros_cons` LLM 写 gapfill；展示名禁「政策 #id」
+- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档）。**2026-11-12 增补 §5.1/§5.2/§5.5**（`POL-L2-DS10-CMP-COVER-FDE-L01`，中档：213 变化统计、214 live 柱图+优缺点、217 真 Word/PDF）。**同日晚修订 §5.5**：废止 trackingExport 打印另存，改为 situation/report → OpenHTMLtoPDF（专题/态势同构）。**同日 PROS-LLM**：§5.2 优缺点 `policy_detail_pros_cons` 实时 LLM 结果板直回（不写 gapfill）；展示名禁「政策 #id」
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -135,7 +135,7 @@ flowchart LR
 3. 已有 `PolicyAnalysisAdapterImpl` 再调 `POST /internal/policy/jobs/execute`，`sub_type=policy_intensity`。Python 调用已有 `polan.eval.intensity.run`，再按所选政策读 `ads.policy_intensity` 的力度分。Java 不打分，不抄公式。
 4. 申报时间、受理部门、产业类别继续读专题门面已有正文。这三列不进缺项表。
 5. 申报条件、申报材料没有字段、也没有模型。只建 `gapfill_policy_detail_compare`，按政策放这两列正文。浏览器读 `GET /display/v1/policy/panorama/{id}/detail`。正文走专题门面，这两列由 `gkxlumen-element` 只读缺项表带出。display 不直连 Python。
-6. **优缺点（2026-11-12，COVER-FDE，卡1=A；2026-11-12 PROS-LLM 修订）**：同表 `pros_text` / `cons_text`（与 217 正文同级，免 D18 接口写死 mock）。live 弹窗每策展示优点/缺点。开始对比先读 detail；若所选政策优缺点皆空，再提交 `POST /display/v1/policy/panorama/jobs`，`sub_type=policy_detail_pros_cons`（同力度 Job 管道：display → topic-async → `/internal/policy/jobs/execute`）。Python 按正文 LLM 生成后写入本表（`fill_method=llm-synth`）；已有非空不覆盖；无密钥/失败不造假文，该策空态。live 禁 mock fixture。列头/图例/总结用政策名称，禁止「政策 #id」。
+6. **优缺点（2026-11-12，COVER-FDE，卡1=A；2026-11-12 PROS-LLM 修订；同日晚纠偏为实时 LLM）**：live 弹窗每策展示优点/缺点。开始对比提交 `POST /display/v1/policy/panorama/jobs`，`sub_type=policy_detail_pros_cons`（同力度 Job 管道：display → topic-async → `/internal/policy/jobs/execute`）。Python 按 DWD 正文实时 LLM，**结果板直回** `result_payload.items[].pros_text/cons_text`；**不读不写** `gapfill_policy_detail_compare` 的优缺点列。无密钥/失败不造假文，该策空态。live 禁 mock fixture。列头/图例/总结用政策名称，禁止「政策 #id」。申报条件/材料仍可读同表附带列（与优缺点解耦）。
 7. **差异柱图（同裁定）**：live 与 mock 同结构出柱图。支持力度轴取当次 `policy_intensity` 力度分；无分则该轴空。条件门槛 / 材料复杂度无数值模型 → 轴空。**不造演示分**。
 
 `M_POLICY_INTENSITY_SCORE` 仍是本行的指标。`M_POLICY_INTENSITY_INDEX` 不挂本页。QPOL-02 的权重保持待确认。D4 保持 mock。三维缺数据时，`run()` 写不出力度分就让该格空，不在接口里补一个分数。
