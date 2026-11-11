@@ -291,7 +291,7 @@ D16 行级列与先例一致：`metric_id`、`gap_item`、`fill_method`、`gapfi
 
 ## 8. 与 ARCH 的悬置点（需人拍板，本单不自行决策）
 
-1. **读面入口未定（主悬置）**：七块不在 219–222 四叶内，VIZ-ARCH 只覆盖四叶且写明「不增加 `/display/v1/policy` 第 4 条路径」——该句的适用边界是否约束页内非序号块，ARCH 未回答。三个候选：① 复用 `evaluation/jobs` 扩七种 kind（同 219/220 同步读表模式，不建任务）；② 复用 `analysis/dataset` 读面（FE `fetchPolicyAnalysis` 现挂 `contractPending('/display/v1/policy/analysis/dataset')`，七块形状本就是 dataset 子键）；③ 新独立资源。选型影响 API 单、ARCH 修订与 FE 接线单，需架构师 + 监管人拍板后再立 API/接线单。本单七张表与拣行键在三个候选下均成立。
+1. **读面入口 ✅ 已裁定（2026-11-12 03:48 监管人 human:淮政玮 拍板 = ③）**：三个候选曾为 ① `evaluation/jobs` 扩七种 kind；② 复用 `analysis/dataset` 读面；③ 新独立资源。**裁定 ③**：display `PolicyEvaluationController` 加 `GET /v1/policy/evaluation/viz`（`block` 参数收七块）→ element `PolicyGapfillController` 加 `@Inner @GetMapping("/evaluation/viz")`（BE 侦察笔记 §3 落点）。ARCH 边界说明：`/evaluation/viz` 是既有 `/evaluation` 读面的子路径扩展（与 counts/shells/jobs 并列），不是 `/display/v1/policy` 下第 4 条并列路径，不触 VIZ-ARCH「不加第 4 条路径」红线；如架构师复核有异议再修订。API 契约与 FE 接线按 ③ 落地（BE 笔记、FE 接线说明书均已按 ③ 写好落点）。本单七张表与拣行键在 ③ 下成立，无需改列。
 2. **`gap_item` 命名格式**：块无 SRS 序号，本单自定「`DS11-VIZ ` + 块名」。若监管人要求改用编号格式（如 `DS11-VIZ-GB1…GB7`），灌数单开工前改第 2 节即可，不影响列设计。
 3. **块 1 权重的 QPOL-02 升格路径**：本单把权重行留 `metric_id` 空并挂 `pending_ref=QPOL-02`。若甲方确认指标体系与权重（QPOL-02 关闭）后，维度分是否升格为 `M_POLICY_EFFECT_SCORE` 的维度行、或是新注册指标体系，属后续修订，本单不预设。
 4. **七块的需规定位**：七块是 demo 复刻保留块，不在需规十三叶原文。MOCKAUDIT 结论「如需恢复数据，须先立 DATA 单」即本单；灌数灌什么内容、真实性边界（演示口径 vs 真实统计）由灌数单执行时与监管人确认，本单只定列与行语义形状。
