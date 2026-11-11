@@ -19,6 +19,7 @@
 | [verify-paths.sh](verify-paths.sh) | 全平台（git-bash） | 扫描硬编码路径残留（RFC-002 §6） |
 | [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
 | [find-supervisor-slot.mjs](find-supervisor-slot.mjs) | Node 18+ | **监管亲和参考**：推荐 `supervised_by`（`max_agent_concurrency`=本机 Cursor 会话上限；load≠派单门禁） |
+| [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |
 | [recover-expired-leases.mjs](recover-expired-leases.mjs) | Node 18+ | **lease 回收**：过期 `claimed` → `ready`；可选处理过期 `in_progress` |
 | [detect-convoy-conflicts.mjs](detect-convoy-conflicts.mjs) | Node 18+ | **Convoy**：`touched_files` / 显式 convoy 组冲突检测 |
 | [coordinator-loop.mjs](coordinator-loop.mjs) | Node 18+ | **Mayor 轻量循环**：lease→ready→convoy→亲和建议→scan（不自动开 agent；不因会话上限拒派） |
@@ -112,6 +113,17 @@ node scripts/find-supervisor-slot.mjs --agent frontend
 node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ```
 
+### 飞书缺陷 P0 账本
+
+Canonical Skill 包位于 `.cursor/skills/feishu-bugfix/`；本目录不再保存该 Skill 的脚本、模板或 policy。
+
+```bash
+node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs --help
+node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs
+```
+
+设计、字段和数据策略见 `.cursor/skills/feishu-bugfix/references/README.md` 与 `.cursor/skills/feishu-bugfix/references/P0-DESIGN.md`。
+
 ### 提 PR 前自检
 
 ```bash
@@ -132,7 +144,7 @@ node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ./scripts/worktree-helper.sh remove demo-ui-topic E-ENT-IA
 
 # 定期清理失效引用
-| [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |
+```
 
 ### 飞书多维表格看板（Phase 0，推荐）
 

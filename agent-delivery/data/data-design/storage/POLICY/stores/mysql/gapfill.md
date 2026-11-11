@@ -14,7 +14,7 @@ task_id: POL-IMPL-EFFECT-MOCK-VIA-UI-L01
 
 > **库**：`gkxlumenx_gapfill`（DBA 预建；应用路径禁止 `CREATE DATABASE`）。  
 > **边界**：只写 `gapfill_*`；禁止写入 ODS / 正式 DWD / ADS / 供应方库。  
-> **D19**：新建表，以及任何会和 `policy_base_info.policy_id` 等值比较的列，用 `utf8mb4` / `utf8mb4_0900_ai_ci`，建表语句必须写明。下面已落地的 CREATE 多数仍是库默认的 `utf8mb4_unicode_ci`（可视化四张是 `utf8mb4_general_ci`）。这是 2026-11-10 的现网，复制这些语句前要改成 D19。未改之前禁止和主表 `policy_id` 做隐式等值。  
+> **D19**：缺项表用 `utf8mb4` / `utf8mb4_general_ci`，建表语句必须写明。2026-11-10 已把 `gkxlumenx_gapfill` 库默认和全部 `gapfill_*` 改成这一套，行数未变。服务链三张 `svc_demand_match`、`svc_org_rating`、`svc_service_case` 本来就是这一套。  
 > **索引**：[`../README.md`](../README.md)。详设读侧：[05.6.2 §3.1](../../../../../agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.6.2-深圳政策现状分析.md)。  
 > **按钮缺项空表**（`POL-MOCK-BTN-A01`）：下面「八张新表」与可执行脚本同文。210/211 现网已有，不在这里重建。
 
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_semantic` (
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_policy_facet` (`policy_id`, `facet_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ### `gapfill_policy_xcmp`（610）
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_xcmp` (
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_pair_relation` (`policy_id_a`, `policy_id_b`, `relation_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ### `gapfill_policy_xcmp_viz`（611）
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_xcmp_viz` (
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_chart_pair_item` (`chart_kind`, `policy_id_a`, `policy_id_b`, `item_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ### `gapfill_policy_xcmp_summary`（613）
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_xcmp_summary` (
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_pair_kind` (`policy_id_a`, `policy_id_b`, `summary_kind`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ### `gapfill_policy_report_analysis`（614）
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_report_analysis` 
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_policy_aspect` (`policy_id`, `aspect_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ### `gapfill_policy_report_insight`（615）
@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_report_insight` (
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_policy_kind` (`policy_id`, `insight_kind`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ### `gapfill_policy_report_body`（616，618 只读）
@@ -231,7 +231,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_report_body` (
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_policy_section` (`policy_id`, `section_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ### `gapfill_policy_report_trace`（617）
@@ -254,7 +254,7 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_report_trace` (
   `generated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_policy_direction_key` (`policy_id`, `direction_name`, `conclusion_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
 ## 210 / 211 现网已有（本单不重建）

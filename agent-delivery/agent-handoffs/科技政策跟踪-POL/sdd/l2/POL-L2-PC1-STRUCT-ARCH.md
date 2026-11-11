@@ -16,14 +16,35 @@
 
 ## 1. 范围
 
-603 是治理页的结构化库看板。非结构化文本 → 结构化数据的转化发生在第 6 项（GDF C2 条款结构化）与算法中台联调台（`POL-CLAUSE-BATCH-L01`），本二级只呈现结果。前缀 `/display/v1/policy/`，与 602 共用同一条资源 `GET /display/v1/policy/governance/results`。
+603 是治理页的结构化库看板。非结构化文本 → 结构化数据的转化发生在第 6 项（GDF C2 条款结构化）与算法中台联调台（`POL-CLAUSE-BATCH-L01`），~~本二级只呈现结果~~（**已被说明书 2026-11-10「#### 603」取代**，见下段）。前缀 `/display/v1/policy/`，与 602 共用同一条资源 `GET /display/v1/policy/governance/results`。
+
+**FDE 补段（中档，2026-11-10；异议闭合 1A）**：治理页可触发**单条**结构化抽取，以说明书「#### 603」为准。触发复用已有 `POST /display/v1/policy/parse/clauses`（display → Feign `clauseEnrich` → Python `/internal/policy/clauses/enrich`，写回 ADS `policy_text_parse`）；摘要与看板主读仍走 `GET …/governance/results`（带 `policyId` 刷新 `hasClauses`）。仍不重开 GDF、不迁中台操作台、不新开第三条公开资源。旧「只读呈现、不重跑 / 点名排除本叶触发 `parse/clauses`」口径已被该说明书取代。
+
+### 1.1 选 → 抽 → 看（FDE 闭环，2026-11-10）
+
+| 步 | 用户动作 | 前端调什么 | 读什么开门 |
+|---|---|---|---|
+| 选 | 条件栏「政策选择」选中一条 | `GET /display/v1/policy/governance/results?policyId=` | `structure.policySummary.hasClauses`：真 → 加载该政策结构化摘要；假 → 不加载业务摘要 |
+| 抽 | 点「结构化抽取」（已结构化也**允许再抽**，异议闭合 **2A**；进行中不可第二遍） | **只** `POST /display/v1/policy/parse/clauses`（body `policy_id`） | 写回 ADS 后**不**以 POST 响应冒充摘要 |
+| 看 | 抽取结束 | **再拉**同条 `GET …/governance/results?policyId=` | 以刷新后的 `hasClauses` 开门。失败：保留上次成功摘要（若有）+ 失败提示，不清除已加载摘要 |
+
+**Feign enrich 链（钉死）**：浏览器 → gateway → `gkxlumen-display` `POST …/parse/clauses` → Feign `clauseEnrich` → Python `/internal/policy/clauses/enrich` → 写回 `ads.policy_text_parse`。禁止浏览器直连 Python、禁止打开算法中台操作台、禁止运行时依赖任何 `demo-*` 服务。
+
+**两表 vs `auto_tags`（边界）**：
+
+| 呈现 | Wave0 真源 | 与 `auto_tags` 关系 |
+|---|---|---|
+| 「政策分类标签体系」表 / 「元数据规范 · 字段映射规则」表 | **前端 seed**（适配器合并；须评审/Mock 可辨识或标明非 ADS 真源；目标态升 ADS 后撤 FE seed） | **不是** `auto_tags` 分布。两表是规范体系常驻呈现，不得空表 |
+| 看板标签分布 / 单政策摘要上的分类标签 | `ads.policy_text_parse.auto_tags`（及条款归类聚合） | 真实行聚合；无行则分布空 |
+
+**本波不验收**：`603-qry-1` 页内「结构化政策快速检索」区块（异议闭合 **3A**；后波）。旧「本叶不建第二条全景检索」仍保留——全景 `search`/`stats` 归 197/198/200；页内 qry ≠ 全景第二条检索。
 
 | 需规要点 | 本叶流程 |
 |---|---|
-| 非结构化文本转标准化结构化数据 | 已发生：C2 把正文切成条款合并进 ADS。展示呈现结构化覆盖率与条款概览 |
-| 政策分类标签体系 | 已有列：`ads.policy_text_parse.auto_tags`、`structured_elements`。展示按标签聚合呈现分布，不新建标签字典 |
-| 元数据规范与字段映射规则 | 第 6 项 Wave B Mapping 已定（`policy_base_info` 字段矩阵）。展示呈现结构化库的元数据概览，不重写映射文档 |
-| 统一管理、快速检索与高效调用 | 「调用」由全景检索承担（序号 197/198/200，内部委托 `gkxlumen-topic-policy`）。本叶只做治理视角的库概览，不新建第二条检索 |
+| 非结构化文本转标准化结构化数据 | 已发生：C2 把正文切成条款合并进 ADS。展示呈现结构化覆盖率与条款概览；治理页可单条触发 `parse/clauses`（见 §1.1） |
+| 政策分类标签体系 | 看板分布：`ads.policy_text_parse.auto_tags`、`structured_elements` 聚合。页内「分类标签体系」表：Wave0 **前端 seed**（与 `auto_tags` 分布区分，见上表），不新建标签字典 ADS |
+| 元数据规范与字段映射规则 | 第 6 项 Wave B Mapping 已定（`policy_base_info` 字段矩阵）。页内「字段映射」表：Wave0 **前端 seed**；不重写映射文档、不为本两表建读口 |
+| 统一管理、快速检索与高效调用 | 「调用」由全景检索承担（序号 197/198/200，内部委托 `gkxlumen-topic-policy`）。本叶不新建第二条全景检索；**603-qry-1 页内快速检索本波不验收**（后波） |
 
 ## 2. 实现架构
 
@@ -52,7 +73,7 @@ flowchart LR
 
 `gkxlumen-display` 不直连库，不直连 Python，不写算法，不写 nGQL。`E-E7-POLICY-M1-L06` 不是本页路径。
 
-这条资源不进异步任务管道。603 的结构化区块与 602 的质量区块、页眉件数在同一条 `governance/results` 上，实现时按区块分发；契约单不得把三个区块拆成三条资源，也不得把本区块变成单独的条款树接口——条款树是拆解页 `parse/clauses` 的事（序号 607/608），本叶只有治理视角的统计概览。
+这条资源不进异步任务管道。603 的结构化区块与 602 的质量区块、页眉件数在同一条 `governance/results` 上，实现时按区块分发；契约单不得把三个区块拆成三条资源，也不得把本区块变成单独的条款树接口——条款树浏览仍是拆解页 `parse/clauses` 的事（序号 607/608），本叶看板仍是治理视角的统计概览。~~「本叶不得触发 `parse/clauses`」~~（**已被说明书 2026-11-10「#### 603」取代**：治理页可复用该 POST 作单条抽取，见 §1 FDE 补段）。
 
 trace 沿既有展示链走。display 往 element 带 traceId。本叶不新设计观测点。
 
@@ -98,7 +119,7 @@ trace 沿既有展示链走。display 往 element 带 traceId。本叶不新设�
 
 | 算法中台/原型已有 | 本叶迁移后的架构 |
 |---|---|
-| 条款结构化联调台（`POL-CLAUSE-BATCH-L01`，写 `ads.policy_text_parse.structured_elements.clauses`） | 留在算法中台作加工通道。展示只读其产出，不迁操作台，不新开展示侧跑批 |
+| 条款结构化联调台（`POL-CLAUSE-BATCH-L01`，写 `ads.policy_text_parse.structured_elements.clauses`） | 留在算法中台作加工通道。~~展示只读其产出~~（**「只读呈现、不触发抽取」已被说明书 2026-11-10「#### 603」取代**；治理页可触发单条 `parse/clauses`，见 §1）。不迁操作台、不新开展示侧跑批、不重开 GDF |
 | GDF C2 合并逻辑 | 留在第 6 项。展示不合并、不去重、不回写 |
 | demo 结构化演示本地数组 | 不迁数据。区块信息结构（覆盖率、标签分布、更新时间）保留，数值一律来自 ADS/DWD |
 | 专题侧 `gkx_search_service` 的政策检索 | 「快速检索与高效调用」由全景检索（委托 `gkxlumen-topic-policy`）承担。本叶不建第二条检索，不迁专题门面 |
@@ -109,7 +130,7 @@ lumen 不直连 demo 服务，不把 demo 路径写成对外入口。浏览器�
 
 | 资源或序号 | 不纳入本二级的原因 |
 |---|---|
-| `parse/clauses`（条款树） | 拆解页序号 607/608 的资源。本叶只有治理统计概览，不做条款树浏览 |
+| `parse/clauses`（条款树浏览） | 拆解页序号 607/608 的条款树浏览仍不纳入本二级。~~点名排除本叶触发该资源~~（**已被说明书 2026-11-10「#### 603」取代**）：治理页可复用 `POST …/parse/clauses` 作单条抽取，见 §1；不新开第三条资源 |
 | `governance/lineage-index` | 604 的资源 |
 | `governance/indicator-library` | 605 的资源 |
 | `M_POLICY_TEXT_PARSE` | MODEL、口径是闭集词表、`ui_mount` 在详情与筛选。不是结构化覆盖率，不改挂 |

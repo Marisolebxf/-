@@ -45,6 +45,7 @@ const HANDOFF_SUBDIRS = [
   '产品整体定义/E-31-企业发展',
   '运维事件',
   '算法库联调-ALGO-LIB',
+  '科技政策跟踪-POL',
 ];
 
 function findHandoffFile(taskId) {

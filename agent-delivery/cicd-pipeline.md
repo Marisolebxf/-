@@ -57,7 +57,7 @@ flowchart LR
 | `demo-ui-topic` | ✅ | gkx-demo-ui-topic | 独立 Deployment NodePort 30888，http://10.50.69.111:30888 | **自动** deploy:k8s |
 | `lumen-ui-science-pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891，http://10.50.69.111:30891 | **自动** deploy:k8s |
 | `lumen-ui-topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892，http://10.50.69.111:30892 | **自动** deploy:k8s |
-| `lumen-algo-py` | ✅ | gkx-lumen-algo-py-api / -worker；innov/entan 独立制品 | k8s yaml + helm 热更新 | **api+worker 自动**（2026-08-14）；innov/entan 仍 manual（`FULL_PIPELINE=true` 才自动） |
+| `lumen-algo-py` | ✅ | gkx-lumen-algo-py-api / -worker；innov/entan 独立制品 | k8s yaml + helm 热更新 | **api+worker+entan-api 路径命中时自动**（2026-08-14 / D12）；innov/entan-worker 仍 manual（`FULL_PIPELINE=true` 才自动）；**路径增量**见下「增量规则」 |
 | `lumen-svc-platform` | ✅ | gkxlumen-*（含 topic-chain / topic-async-service） | helm gkxlumen-platform + 单服务 `set image` | **topic-chain + topic-async-service 自动**（2026-08-14）；`helm:deploy` / gateway / innov / topic 仍 manual |
 | `demo-svc-platform` | ✅ | gkx-* 多服务 | helm gkx-platform（**不含前端**） | manual helm:deploy |
 | `demo-algo-ent-analysis` / `demo-algo-ent-analysis` | ✅ | gkx-entan-py | helm entan-py 热更新 | manual deploy |
@@ -73,19 +73,55 @@ flowchart LR
 ### Java（lumen-svc-platform · CHAIN）
 
 ```
-backend:build (mvn verify，含 topic-chain / async-service)
-  → package (backend:image:*)
-  → deploy:topic-chain + deploy:topic-async-service  （origin/dev **自动**；tag=短 SHA + rollout = E0）
-  → helm:deploy / gateway / innov / topic / …      （dev 默认 manual）
+backend:build (mvn verify **仅 affected**；脚本 scripts/ci-affected-modules.sh)
+  → package (backend:image:* **按路径增量**；未改服务 skip)
+  → deploy:* 与 image 同门控（skip = 保持现网 digest，不伪标新 SHA）
+  → deploy:topic-chain + deploy:topic-async-service  （改到才自动；tag=短 SHA + rollout = E0）
+  → e2e:chain-gold（仅 chain/async 或共享扇出时；needs optional）
+  → helm:deploy / gateway / …                     （dev 默认 manual；FULL_PIPELINE 自动）
 ```
+
+#### 增量规则（DEVOPS-LUMEN-SVC-CI-SPEED-L01 · Phase A）
+
+| 变更范围 | `backend:build` | 日常 image+deploy | 说明 |
+|---------|-----------------|-------------------|------|
+| 单服务目录（如 `gkxlumen-display/**`） | 只 `-pl` 该模块 `-am` | 仅该服务 | 其余服务 **skip**，现网镜像不动 |
+| 共享扇出：`pom.xml` / `gkxlumen-common/**` / `.gitlab-ci.yml` / `scripts/ci-affected-modules.sh` / `scripts/download-otel-agent.sh` | 全量模块列表 | 全部日常常发 | 与 Nx affected / Maven reactor 扇出同语义 |
+| 仅 helm/文档等非 Java | skip verify（空 `-pl`） | 日常 image 全 skip | 改 chart 仍点 `helm:chart` |
+| `REBUILD_ALL=true` | 全量 verify | 全部日常常发 image+deploy | **逃生口**；不强制冷门 gateway/auth/… |
+| `FULL_PIPELINE=true` | 全量 verify | 日常 + 冷门全开 | 完整发布；含 graph/datacatalog 等 |
+
+**安全边界**：跳过 package 的服务禁止 deploy；deploy 仍校验本次 jar 的 `git.commit.id == CI_COMMIT_SHA`（仅对实际跑了 image 的服务）。topic-chain / topic-async-service 在 **自身或共享路径变更** 时仍 origin/dev 自动 deploy（长任务 C1 不变）。
+
+**Phase B/C（未本单落地）**：api 模块细粒度扇出表；Maven Build Cache / BuildKit / 跨 job 传 class（注意 artifact 413）。
 
 ### Python（lumen-algo-py · CHAIN）
 
 ```
-test (py:test) → package (image:api / image:worker / …)
-  → deploy:api + deploy:worker  （origin/dev **自动**；tag=短 SHA + rollout + healthz = 长任务 E0）
-  → deploy:innov / entan-*      （dev 默认 manual）
+test (py:test 全量，保正确性)
+  → package (image:* **按路径增量**；未改制品 skip)
+  → deploy:* 与 image 同门控（skip = 保持现网 digest，不伪标新 SHA）
+  → deploy:api + deploy:worker + deploy:entan-api  （改到才自动；tag=短 SHA + rollout + healthz = E0 / D12）
+  → deploy:innov / entan-worker                   （路径命中 manual；FULL_PIPELINE 自动）
+  → e2e:chain-gold / smoke:synth-routes           （仅上游 deploy 会跑时；needs optional）
 ```
+
+#### 增量规则（DEVOPS-LUMEN-ALGO-CI-SPEED-L01 · Phase A）
+
+| 变更范围 | image+deploy | 说明 |
+|---------|--------------|------|
+| `lumen_algo_service/**` / `docker/Dockerfile.api`（+ api 烘焙的 `vendor/innov-py/chainan`、`vendor/entan-py/polan`） | 仅 **api** | 其余 skip |
+| `lumen_algo_worker/**` / `docker/Dockerfile.worker`（+ worker 烘焙的 polan） | 仅 **worker** | 其余 skip |
+| `vendor/innov-py/**` / `docker/Dockerfile.innov` | **innov**（deploy 仍 manual，除非 `FULL_PIPELINE`） | |
+| `vendor/entan-py/**` / entan Dockerfile | **entan-api** 自动 + **entan-worker** 镜像（deploy manual） | polan 变更另扇出 api+worker（Dockerfile 交叉 COPY） |
+| 共享扇出：`lumen_common/**` / `requirements.txt` / `conf/**` / `.gitlab-ci.yml` / `scripts/ci-affected-paths.sh` | 日常自动 **api+worker+entan-api**（innov/entan-worker 镜像亦会因共享路径重建，deploy 仍 manual） | 与 Nx affected 同语义 |
+| 仅文档/无关脚本 | 全部 image/deploy skip | `py:test` / `sonar:scan` 仍跑 |
+| `REBUILD_ALL=true` | 日常自动三件套全开 | **逃生口**；不强制 innov/entan-worker |
+| `FULL_PIPELINE=true` | 全部 image + innov/entan-worker 亦自动 deploy | 完整发布 |
+
+本地对照：`bash scripts/ci-affected-paths.sh --self-check` / `--images` / `--daily`。
+
+**安全边界**：跳过 package 的制品禁止 deploy；origin/dev 上 api+worker（及 D12 灌输的 entan-api）在 **自身或共享路径变更** 时仍自动 deploy（长任务 E0 不变）。`e2e:chain-gold` / `smoke:synth-routes` 用 `needs:optional` + 同 changes，避免 skip deploy 拖红整条 pipeline。
 
 长任务 C1 循环：deploy job 绿后 **自动** `e2e:chain-gold`（只点已发布的前端；地址 `http://10.50.69.111:30892`）。`CHAIN_GOLD_ONLY=true` 跳过前端 build；`CHAIN_GOLD_GREP` 只复测失败故事。Python `deploy:api+worker`、Java `deploy:topic-chain+async-service` 绿后 **trigger** `sz-gkx/gkx-lumen/lumen-ui-topic`。目标仓须放行 inbound job token。禁止把全量 USM / 视觉回归塞进本 job。见 `长任务执行规约.md` §11.5.2。
 
@@ -128,7 +164,7 @@ build (npm run build) → package (frontend:image) → deploy (deploy:k8s → de
 | 情况 | 动作 |
 |------|------|
 | Pipeline 红 | agent 读 job log，修复后新 commit push，直到绿 |
-| deploy job manual 未点 | **不适用于** `lumen-algo-py` api+worker、`lumen-svc-platform` topic-chain / topic-async-service（dev 已自动）。其它仍 manual 的 job：coordinator 在 GitLab 触发，或修单仓开 `FULL_PIPELINE` |
+| deploy job manual 未点 | **不适用于** `lumen-algo-py` api+worker+entan-api（路径命中时）、`lumen-svc-platform` topic-chain / topic-async-service（dev 已自动）。其它仍 manual 的 job：coordinator 在 GitLab 触发，或修单仓开 `FULL_PIPELINE` |
 | K8s rollout 失败 | `kubectl describe pod` + 修镜像/配置 + 重跑 pipeline |
 | 测试失败 | 开新 commit 修复，禁止标记 task done |
 

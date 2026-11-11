@@ -1,0 +1,669 @@
+{
+  "schema_version": 2,
+  "run_id": "2023-7161782175",
+  "current_cycle_id": "cycle-002-20261110T232435+0800",
+  "cycle_seq": 2,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261110T212039+0800",
+      "seq": 1,
+      "started_at": "2026-11-10T21:20:39.444+08:00",
+      "closed_at": "2026-11-10T23:24:35.330+08:00",
+      "close_reason": "用户验收不通过：选择饼图时不仅分布面板，下面所有 KPI 要素卡也必须显示饼图；当前实现仍把 KPI 卡回落为折线",
+      "state_ref": "cycles/cycle-001-20261110T212039+0800/state.json"
+    },
+    {
+      "cycle_id": "cycle-002-20261110T232435+0800",
+      "seq": 2,
+      "started_at": "2026-11-10T23:24:35.330+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2023",
+    "work_item_id": "7161782175",
+    "title": "科技全域态势，实时数据监控，选择饼图实际展示为折线图",
+    "owner": "human:7695591354147146731",
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "claim-20261110-2120-a",
+    "claim_comment_ref": "7706530874975620372",
+    "claim_operator": "human:7695591354147146731",
+    "claimed_at": "2026-11-10T21:20:39.444+08:00",
+    "session_id": "session-20261110-2120-a",
+    "machine_id": "codex-local",
+    "current_owner": "human:7695591354147146731",
+    "takeover_history": []
+  },
+  "phase": "AWAITING_ACCEPTANCE",
+  "risk": {
+    "level": "M",
+    "reasons": [
+      "修复涉及实时数据监控中分布面板与全部 KPI 要素卡的图表类型联动，影响范围覆盖整个右侧图表区",
+      "已通过本地真实交互断言覆盖首屏和视区外全部 9 张 KPI 卡；提测后仍需在 dev 真实接口环境复验一次"
+    ],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "4b7896de85f278c022444d5c452ca8c17fbddde9",
+      "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
+      "planned_change_scope": [
+        "src/views/situation/overview/components/OverviewTab.vue",
+        "src/views/situation/overview/models/chartBuilders.ts",
+        "src/views/situation/overview/overviewTab.test.mjs"
+      ]
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "选择“饼图”后，企业领域分布面板已显示饼图，但下方 KPI 要素卡仍显示折线，未随图表类型统一切换",
+    "reproduction": [
+      "打开科技全域态势-实时数据监控",
+      "统计指标选择数量统计",
+      "点击图表类型饼图",
+      "观察企业领域分布面板为饼图，但下方专家学者、会议等 KPI 卡仍是折线"
+    ],
+    "root_cause": "OverviewTab.sparkOptionOf 将 KPI 卡图表固定为 line/bar，饼图态被强制回落折线；饼图只接入了 distribution panel，没有接入 factorCards",
+    "counter_evidence": [
+      "图表类型按钮与标题均显示饼图，说明状态已切换",
+      "后端返回 factorCards 的年度序列正常，问题在渲染层未选择 pie option"
+    ],
+    "requirement_refs": [
+      "科技信息展示系统 SRS 1.1.1.1.4.1.1.3.2 统计指标展示功能",
+      "用户验收口径：选择饼图时右侧分布面板及下方所有 KPI 卡都应显示饼图"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc OverviewTab KPI 卡图表渲染",
+      "chartBuilders 要素卡图表 option 构造"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "lumen-ui-science-pc/src/views/situation/overview/components/OverviewTab.vue",
+      "lumen-ui-science-pc/src/views/situation/overview/models/chartBuilders.ts",
+      "lumen-ui-science-pc/src/views/situation/overview/overviewTab.test.mjs"
+    ],
+    "non_goals": [
+      "不改后端 /situation/overview 取数逻辑",
+      "不改筛选条件与 KPI 数值",
+      "不调整图表类型按钮的文案和布局"
+    ],
+    "verification_plan": [
+      "新增 overviewTab.test.mjs 断言饼图分支接入全部 KPI 卡",
+      "运行 situation 全量测试、ESLint、vue-tsc、vite build",
+      "合并 dev 部署后，在真实页面点击饼图确认分布面板和所有可见 KPI 卡均为饼图"
+    ],
+    "rollback_plan": [
+      "revert 前端修复提交 d2d66af，恢复 KPI 卡折线/柱状渲染"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "4b7896de85f278c022444d5c452ca8c17fbddde9",
+        "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/situation/overview/models/chartBuilders.ts",
+          "src/views/situation/overview/overviewTab.test.mjs"
+        ],
+        "diff_hash": "sha256:faf3fc4b8b8a5a7678462789ee6b0b84923d21fe0d32ac4eeb7558c94c872eeb",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-11T01:25:04.418+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:review-agent:01a1c650",
+        "independent": true,
+        "reviewed_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
+        "verdict": "PASS",
+        "scope": "chartBuilders.ts + overviewTab.test.mjs, diff 4b7896d..8f8d814",
+        "findings": [],
+        "round": 4,
+        "review_hash": "sha256:804a9a99faddc7057b46041ec89fa77982129d24164e1c0ecdc74b7fe070c9c1"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "V-FIX-002",
+      "category": "fix",
+      "behavior": "KPI 饼图图例常驻显示，采用底部滚动图例；9 张 KPI 卡均显示图例且饼图上移避免遮挡。",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-UI-004",
+        "evidence/manifest.json#E-CMD-013"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "9 张卡均为 pie，legend.show=true，type=scroll，bottom=0，饼图 center=50%,43%。"
+    },
+    {
+      "id": "V-REG-002",
+      "category": "regression",
+      "behavior": "折线、柱状和原有饼图切换逻辑无回归，测试、类型检查、ESLint 和生产构建通过。",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-CMD-013",
+        "evidence/manifest.json#E-CMD-014",
+        "evidence/manifest.json#E-CMD-015",
+        "evidence/manifest.json#E-CMD-016"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "KPI selector 继续复用 line/bar builder。"
+    },
+    {
+      "id": "V-BOUNDARY-002",
+      "category": "boundary",
+      "behavior": "空序列、全零序列、零值过滤和 tooltip 口径说明保持原有行为。",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-CMD-013"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "行为测试覆盖 null、全零、零值过滤和 caliberNote。"
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:7695591354147146731",
+      "approved_at": "2026-11-11T00:35:14.203+08:00",
+      "approved_session_id": "session-20261110-2120-a",
+      "approved_machine_id": "codex-local",
+      "claim_id": "claim-20261110-2120-a",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "2e91005ec368bb1b3acd32b7cc0de7cc6e357073",
+            "planned_change_scope": [
+              "src/views/situation/overview/components/OverviewTab.vue",
+              "src/views/situation/overview/models/chartBuilders.ts",
+              "src/views/situation/overview/overviewTab.test.mjs"
+            ]
+          }
+        ],
+        "diagnosis_hash": "sha256:38822450b4dcac2506e15d65cac4ec6808b0685d0857f7e79f4b0802c4230ba0",
+        "plan_hash": "sha256:d93a4a90d14b7c116ffca8f56074a418687974cf9df8ea56fc7d4655588e06dc",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:3a5e0ba87c0dca8578332d3fdff7c41e7cc5922dfec767636fd82ef0363b2bd4",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T00:38:07.181+08:00",
+        "validator_version": "bugflow-state-p0-v5",
+        "actual": "sha256:3a5e0ba87c0dca8578332d3fdff7c41e7cc5922dfec767636fd82ef0363b2bd4",
+        "expected": "sha256:3a5e0ba87c0dca8578332d3fdff7c41e7cc5922dfec767636fd82ef0363b2bd4",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:7695591354147146731",
+      "approved_at": "2026-11-11T01:25:14.289+08:00",
+      "approved_session_id": "session-20261110-2120-a",
+      "approved_machine_id": "codex-local",
+      "claim_id": "claim-20261110-2120-a",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
+            "diff_hash": "sha256:faf3fc4b8b8a5a7678462789ee6b0b84923d21fe0d32ac4eeb7558c94c872eeb",
+            "verification_hash": "sha256:bb0b621caaa1031c830450b0191afcbe11952648eea5ba699233b43fb5737b8f",
+            "review_hash": "sha256:804a9a99faddc7057b46041ec89fa77982129d24164e1c0ecdc74b7fe070c9c1",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "M",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:a71222ca6a5ffa4537efb63299d6909a3c4e0c92657a077d60847e81cc6ae4fe",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T01:25:14.289+08:00",
+        "validator_version": "bugflow-state-p0-v5",
+        "actual": {
+          "claim_id": "claim-20261110-2120-a"
+        },
+        "expected": {
+          "claim_id": "claim-20261110-2120-a"
+        }
+      }
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "8f8d814df0e457face950c5b16b9a8b27e00458a",
+        "merge_request_id": "direct-dev",
+        "merge_commit_sha": "87af2658a44e1bf1485d0a5adfa0b22a0f752711",
+        "pipeline_id": "4753",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4753",
+        "deployed_sha": "87af2658a44e1bf1485d0a5adfa0b22a0f752711",
+        "rollout_status": "completed",
+        "image_tag": "harbor.test.com/zp-tts/gkx-lumen-pc:87af2658"
+      }
+    ],
+    "acceptance_steps": [
+      "打开科技全域态势-实时数据监控页面",
+      "点击图表类型“饼图”",
+      "确认企业领域分布面板为饼图",
+      "向下查看全部 KPI 要素卡，确认每张卡底部均常驻显示年份图例，无需 hover",
+      "确认折线图、柱状图切换仍正常"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "evidence/manifest.json#E-PIPE-001",
+        "evidence/manifest.json#E-UI-004"
+      ]
+    },
+    "summary": "候选 8f8d814 已合并至 dev，merge commit 87af2658；Pipeline 4753 全绿，镜像 harbor.test.com/zp-tts/gkx-lumen-pc:87af2658 已部署，gkx-lumen-pc rollout completed。"
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "AWAITING_ACCEPTANCE",
+      "to": "REOPENED",
+      "at": "2026-11-10T23:24:35.330+08:00",
+      "result": "REOPENED",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "用户验收不通过：选择饼图时不仅分布面板，下面所有 KPI 要素卡也必须显示饼图；当前实现仍把 KPI 卡回落为折线"
+    },
+    {
+      "from": "REOPENED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-11T00:30:40.825+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "re-opened cycle diagnosis confirmed: KPI cards must follow pie selection"
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-11T00:30:40.875+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "frontend fix and local behavior verification prepared; request exact enter-dev gate"
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-11T00:35:14.274+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:3a5e0ba87c0dca8578332d3fdff7c41e7cc5922dfec767636fd82ef0363b2bd4",
+      "evidence_refs": [],
+      "summary": "进入开发 gate approved; resume frontend implementation verification"
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-11T00:44:25.768+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "independent review PASS, no findings"
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-11T00:44:25.820+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "review complete; record final verification matrix"
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-11T00:44:34.125+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "verification matrix PASS; ready for ship gate"
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-11T00:46:52.918+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": "ship",
+      "gate_hash": "sha256:d556797d2d671fa054b7a015dc2ad82a4648134d7508724d7686a629fd3f848e",
+      "evidence_refs": [],
+      "summary": "提测 gate approved; merge to latest dev and deploy"
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-11T01:25:21.679+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "pipeline 4753 success; image deployed and rollout completed"
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-11T01:25:21.753+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v5",
+      "claim_id": "claim-20261110-2120-a",
+      "session_id": "session-20261110-2120-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "dev verification PASS; wait for human Feishu acceptance"
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [
+    {
+      "decision": "保持 KPI factor card 的饼图回落折线语义，仅修复企业领域分布面板的年份回退",
+      "basis": "原 demo 和现有组件均明确 factorCardChartType 将 pie 映射为 line；图表类型控件作用于 distribution panel",
+      "impact": "用户选择饼图后由恢复的企业领域分布面板展示饼图，KPI 卡继续展示年度 sparkline",
+      "alternatives": [
+        "把每张 KPI 卡也改成饼图，但不同要素单位不可比且偏离原型",
+        "继续隐藏分布面板并禁用图表切换，但无法满足需规的饼图展示"
+      ],
+      "requires_human_ratification": false,
+      "ratified_by": null,
+      "at": "2026-11-10T21:44:33.576+08:00"
+    },
+    {
+      "decision": "修复在独立分支完成并创建 Draft MR !6，当前停在 READY_SHIP 等待精确口令",
+      "basis": "M 级改动已通过独立 review、23 个 Situation 测试和 git scope 校验",
+      "impact": "收到提测口令后将合并 dev、触发后端部署并做 dev 复测",
+      "alternatives": [
+        "直接修改 dev（禁止，未获提测授权）",
+        "继续扩大改动范围（无必要，当前证据已覆盖缺陷）"
+      ],
+      "requires_human_ratification": false,
+      "ratified_by": null,
+      "at": "2026-11-10T22:25:55.876+08:00"
+    },
+    {
+      "decision": "提测流水线以 required jobs 全部成功作为发布门槛，可选 sonar:scan 不阻塞本次 dev 复测",
+      "basis": "pipeline 4729 的 backend:build、backend:image:display、deploy:display 均为 success，display 镜像 77bf1374 已完成 Kubernetes rollout；sonar:scan 配置为 allow_failure 且仍在运行",
+      "impact": "dev 已发布本次候选合并后的 SHA 77bf137495d3f5c57deb676caa506324a3687b3a；后续 sonar 结果不影响本次业务复测，但会在报告中保留该事实",
+      "alternatives": [
+        "继续等待可选 sonar:scan 结束，但会无谓阻塞已完成的 dev 发布与业务验证"
+      ],
+      "requires_human_ratification": false,
+      "ratified_by": null,
+      "at": "2026-11-10T23:13:24.341+08:00"
+    },
+    {
+      "decision": "废止上一 cycle 的“KPI 卡继续保持折线”判断，以用户最新验收口径为准：选择饼图时分布面板和全部 KPI 卡都显示饼图",
+      "basis": "用户在 REOPEN 时明确指出所有 KPI 卡也必须切换为饼图；本地页面已验证 9 张 KPI 全部由 line 切换为 pie",
+      "impact": "最终候选 30eb468 统一使用 buildOverviewFactorCardOption 选择图表类型，并保留原有 line/bar 和空数据降级行为",
+      "alternatives": [
+        "只修复分布面板（已被用户验收否决）",
+        "不同要素单位不可比为理由拒绝 KPI 饼图（不符合用户明确验收口径）"
+      ],
+      "requires_human_ratification": false,
+      "ratified_by": null,
+      "at": "2026-11-11T00:45:55.789+08:00"
+    }
+  ],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-11T01:25:21.622+08:00",
+      "manifest_hash": "sha256:69fed60f24939e6047d264fa7ac9349739c3bcd29d3d3599a91c375ff2838f81",
+      "item_count": 21,
+      "evidence_ids": [
+        "E-CMD-001",
+        "E-CMD-002",
+        "E-CMD-003",
+        "E-CMD-004",
+        "E-UI-001",
+        "E-CMD-005",
+        "E-CMD-006",
+        "E-CMD-007",
+        "E-CMD-008",
+        "E-UI-002",
+        "E-CMD-009",
+        "E-CMD-010",
+        "E-CMD-011",
+        "E-CMD-012",
+        "E-UI-003",
+        "E-CMD-013",
+        "E-CMD-014",
+        "E-CMD-015",
+        "E-CMD-016",
+        "E-UI-004",
+        "E-PIPE-001"
+      ],
+      "evidence_results": {
+        "E-CMD-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-002": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-003": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-004": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-UI-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-005": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-006": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-007": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-008": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-UI-002": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-009": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-010": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-011": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-012": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-UI-003": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-013": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-014": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-015": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-CMD-016": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-UI-004": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-PIPE-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "等待人工在飞书完成业务验收，只记录外部状态迁移。"
+  },
+  "updated_at": "2026-11-11T01:25:21.813+08:00"
+}
