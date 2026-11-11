@@ -215,6 +215,7 @@
 |---|---|---|
 | `flow_type` | enum | §4 流动三类型（中文字面量逐字）；缺省全量 |
 | `risk_level` | enum | 可选，`warning`（demo L1665：`riskLevel='warning' or warning=true`） |
+| `range` | enum | **新增（2026-11-11 TS-TALENT-FLOW-RANGE-L01）**：概览时间窗 `3m`/`6m`/`12m`（复用 §2.1 枚举，出枚举 `400`），默认 `12m`——按 `ts_plan_talent_flow.flow_date`（缺行回落 `updated_at` 前 10 位）过滤 `records[]` 流动记录行；`stats` 中 record 三数（`warning_count`/`academic_to_industry`/`industry_to_academic`）随窗口现算，`net_inflow` 与 `institution_flows`/`od_nodes`/`metric_ids` 为全窗口聚合不受影响。前端「时间维度」公共筛选切换时携本参重取数（OverviewTab watch timeRange） |
 
 ```json
 {
