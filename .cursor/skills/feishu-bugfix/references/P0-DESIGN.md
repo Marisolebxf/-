@@ -1,10 +1,10 @@
 # 飞书缺陷 AI Native P0 设计稿
 
-> 状态：v1.1 同缺陷跨仓 Bundle 优化版（保留 gate/证据约束，增加类型路由、预检、时间盒和分级验证）
-> 版本：v1.1
+> 状态：v1.2 精确验收口令优化版（保留 gate/证据约束，增加类型路由、预检、时间盒和分级验证）
+> 版本：v1.2
 > 日期：2026-11-11
 > 基线案例：飞书缺陷【2238】
-> 设计原则：对外只保留两个口令和一次业务验收，内部校验严格但由 Agent 自动执行
+> 设计原则：对外保留三个精确口令，内部校验严格但由 Agent 自动执行
 > 技术路线：复用现有 Codex / Cursor / Trae + Skill + 轻量校验脚本，不自研 Agent Runtime
 > 真源分层：本文件是流程与权限真源；`.cursor/skills/feishu-bugfix/SKILL.md` 是操作真源；`templates/state.schema.json` 是机器结构真源；`policies/` 是数据授权真源
 
@@ -24,7 +24,7 @@
 
 ## 1. 已确认决策
 
-1. 使用两个精确人工门：`进入开发`、`提测`。
+1. 使用三个精确人工门：`进入开发`、`提测`、`验收通过`。
 2. 缺陷按 S/M/L 分级，简单缺陷保持轻流程。
 3. 运行账本放在：
 
@@ -34,8 +34,8 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 
 4. `state.json`、`report.md` 和 `evidence/manifest.json` 入库；原始截图、日志、临时输出默认不入库。
 5. `提测`的含义是：合入 `dev`、触发 CI、自动部署 dev 并完成 dev 复测；不授权生产部署。
-6. 最终验收仍不增加第三个聊天口令。验收动作以飞书状态迁移作为业务落点，但 P0 将其定义为**策略级约束，不是防伪事实**：MCP 使用当前用户身份，Agent 不能证明迁移一定由真人点击。Agent 不得根据“可以”“继续”“看起来没问题”自行把缺陷置为 `RESOLVED`，也不得在 `AWAITING_ACCEPTANCE` 阶段调用 `transition_state`；账本记录 `acceptance.mode=policy_only` 和 `operator_verified=false`。
-7. 自然语言不得解锁开发或提测 gate。仅“接管【编号】”可触发明确的人工接管流程，且接管不等于解锁 gate。
+6. 最终验收使用第三个精确口令 `验收通过`。只有完整精确消息（多 active run 时 `验收通过<auto_number>`）才能批准 `acceptance` gate；Agent 随后读取飞书可流转状态/必填项，调用 `transition_state` 迁移 `RESOLVED`，再记录 `acceptance.mode=chat_exact` 和 `operator_verified=false`。“可以”“继续”“算修复了”“看起来没问题”均不解锁。人工直接完成飞书迁移时仍保留 `policy_only` 观察路径。
+7. 自然语言不得解锁开发、提测或验收 gate。仅“接管【编号】”可触发明确的人工接管流程，且接管不等于解锁 gate。
 8. Gate 不在飞书逐条写评论。P0 只保留三个外部锚点：认领时的 `[agent-claim]` 评论、提测时的脱敏总结评论、最终验收总结评论；其余 gate 由 `state.json` 和校验器负责。
 9. `state.json` 是状态与索引真源，`evidence/manifest.json` 是证据明细真源，`report.md` 由二者渲染；三者放在 `gkx-orchestration` 仓库并随关键节点提交。一个 run 固定一台执行机，跨机器恢复时必须重新校验 claim、仓库、candidate/deployed SHA、证据和 gate，缺证据则重新取证。
 10. 当前 `demo` 阶段允许按不可变版本化白名单 Mock 写入 `demo_gkxlumenx_ods/dwd/ads/dim` 及当前作为 Demo 使用的 `gkxlumenx_cms` 指定表。该授权属于有记录、可复核的限时项目例外，不宣称“不修改 D16/D18”；与架构硬规则冲突时进入 `BLOCKED`，除非已有明确批准记录。上线通知到达后切换 production policy，默认禁止制造或写入 Mock 数据。
@@ -47,7 +47,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 1. 发起处理或确认目标缺陷；
 2. 审阅诊断与改动边界，发送 `进入开发`；
 3. 审阅提测包，发送 `提测`；
-4. 在 dev 完成一次业务验收，并在飞书完成状态迁移。
+4. 在 dev 完成业务验收，发送精确 `验收通过`，由 Agent 完成飞书状态迁移。
 
 以下内容全部由 Agent、Skill 和校验器自动完成：
 
@@ -164,7 +164,7 @@ CANCELLED
 | `DEV_VERIFYING → DEV_VERIFY_FAILED` | dev 真实复测失败或修复引入新问题 |
 | `AWAITING_ACCEPTANCE → REOPENED` | 飞书验收失败或人工把状态迁移为 `REOPENED` |
 | `DEV_VERIFY_FAILED → REOPENED` | dev 复测确认是修复问题，完成回退后重新诊断 |
-| `AWAITING_ACCEPTANCE → RESOLVED` | 飞书出现业务状态迁移；Agent 只读取并记录，不调用 `transition_state`。该证据是策略级约束，`operator_verified=false` |
+| `AWAITING_ACCEPTANCE → RESOLVED` | 收到完整精确 `验收通过` 后批准 `gates.acceptance`；满足飞书必填项并成功执行 `transition_state`。人工自行迁移时走 `policy_only` 观察路径。`operator_verified=false` |
 | `RESOLVED → REOPENED` | 缺陷再次复现或验收被撤销；复用同一 run，开启新 `cycle_id` 并重建 gate |
 | `任意未完成状态 → BLOCKED` | 不可继续但尚未取消；写入 `blocked_from/resume_phase/resume_condition/blocker_owner` |
 | `BLOCKED → resume_phase` | 阻塞条件已解除，claim、repo/SHA、data scope 和 gate 重新校验通过 |
@@ -172,11 +172,11 @@ CANCELLED
 | `任意未完成状态 → CANCELLED` | 缺陷关闭、重复或确认无需修复；记录取消人、原因和清理结果 |
 | `CANCELLED → REOPENED` | 错误取消或缺陷重新有效；开启新 cycle，不覆盖原记录 |
 
-## 6. 两个口令和验收落点
+## 6. 三个口令和验收落点
 
 ### 6.1 口令来源
 
-P0 以**当前会话中的精确聊天消息**作为两个 gate 的授权来源。`state.json` 记录：
+P0 以**当前会话中的精确聊天消息**作为三个 gate 的授权来源。`state.json` 记录：
 
 ```json
 {
@@ -193,8 +193,8 @@ P0 以**当前会话中的精确聊天消息**作为两个 gate 的授权来源�
 
 有效口令必须满足以下形式之一：
 
-- 整条消息只有 `进入开发` 或 `提测`，前提是当前会话只有一个 active run；
-- `进入开发<auto_number>` / `提测<auto_number>`，用于区分多个 active run。
+- 整条消息只有 `进入开发`、`提测` 或 `验收通过`，前提是当前会话只有一个 active run；
+- `进入开发<auto_number>` / `提测<auto_number>` / `验收通过<auto_number>`，用于区分多个 active run。
 
 口令必须绑定当前 `work_item_id` 和 `claim_id`。历史会话、其他任务、飞书旧评论、引用口令的问答、否定句和自然语言同意均不能替代。同一会话存在多个 active run 时，未带编号的口令一律不生效。
 
@@ -271,26 +271,27 @@ GitLab 保护分支、MR approve 和仓库发布规则优先；`提测`不绕过
 
 ### 6.4 验收
 
-`AWAITING_ACCEPTANCE` 是 Agent 的停止点。验收是**策略级约束**，用于防止 Agent 根据聊天语气误判；它不是密码学意义上的真人证明。因为飞书 MCP 使用当前用户 token，Agent 理论上可以调用状态迁移，所以 P0 只依靠流程禁令和账本标记降低误操作，不宣称可以证明操作者身份：
+`AWAITING_ACCEPTANCE` 只接受完整精确消息 `验收通过`。多 active run 时必须使用 `验收通过<auto_number>` 或 `验收通过 <auto_number>`。自然语言同意、否定句、引用口令的问答和其他会话中的授权都不能替代。
 
-1. Agent 生成 `report.md` 和飞书提测摘要；
-2. 人工在 dev 完成业务验收；
-3. 人工在飞书完成验收结论和状态迁移；
-4. Agent 读取飞书状态：
-   - `RESOLVED`：记录顶层 `acceptance`，生成最终评论，进入 `RESOLVED`；
-   - `REOPENED`：进入 `REOPENED`，重新诊断，并使旧 gate 失效；
-   - 仍为 `IN PROGRESS`：保持等待，不自行判定验收通过。
+收到精确口令后，Agent 必须依次完成：
 
-飞书状态提前变化时：
+1. 调用 `get_transitable_states`，确认飞书当前存在合法的 `RESOLVED` 迁移；
+2. 调用 `get_transition_required`，先补齐必填字段；
+3. 构造 `acceptance` gate 绑定：`work_item_id`、`claim_id`、`ship_gate_hash`、`dev_verification_result`、已验证 evidence manifest hash、当前飞书状态；
+4. 发布验收摘要评论，说明修复、验证、部署、已知限制和本次实际迁移；
+5. 调用 `transition_state` 将飞书迁移为 `RESOLVED`；
+6. 调用 `record-acceptance`，写入 `mode=chat_exact`、`approval_message=验收通过`、审批引用、gate hash、session/machine、transition 结果和证据；
+7. 推进内部阶段到 `RESOLVED`。
 
-- 只有 `AWAITING_ACCEPTANCE` 阶段的 `RESOLVED` 可作为验收记录；
-- 在 `DEV_VERIFYING` 或更早阶段看到 `RESOLVED`，不得直接完成流程；记录 `acceptance.anomaly=early_resolved` 并进入 `BLOCKED`，要求人工确认是否误操作；
-- 任意未完成阶段看到 `REOPENED`，立即使旧 gate 失效并进入 `REOPENED`，重新诊断；
-- 飞书状态反复变化时，每次变化都写入 `transitions[]`，不得只保留最后状态。
+任一步失败时不得伪造验收：
 
-验收不是第三个聊天口令。P0 不增加第三个口令；`acceptance` 是从飞书业务状态迁移派生的策略记录，统一放在 `state.json.acceptance`，不再同时维护 `gates.acceptance`。
+- 无合法迁移或必填项不可满足：保持 `AWAITING_ACCEPTANCE`，报告阻塞；
+- 飞书迁移成功但账本或证据写入失败：记录 `failure_stage=acceptance` 与阻塞，按既有 transition 结果补齐证据，不能再次迁移；
+- 人工直接完成飞书迁移而不发送精确口令：保留 `policy_only` 路径，Agent 只读取并记录，不构造 `chat_exact` gate；
+- 在 `DEV_VERIFYING` 或更早阶段看到 `RESOLVED`：记录 `acceptance.anomaly=early_resolved` 并进入 `BLOCKED`；
+- 任意未完成阶段看到 `REOPENED`：使旧 gate 失效并进入 `REOPENED`，重新诊断。
 
-P0 不启动后台轮询。用户完成飞书迁移后，在下一次任意交互时 Agent 读取一次状态；用户也可以明确说“同步飞书状态”，不需要新增第三个口令。若没有再次交互，`state.json` 保持 `AWAITING_ACCEPTANCE`，不会假装已经完成。
+由于飞书 MCP 仍使用当前用户身份，`chat_exact` 证明的是“当前会话收到了精确人工授权”，不是密码学防伪。账本必须记录 `operator_verified=false`。P0 不启动后台轮询；没有精确口令或人工状态迁移时，`state.json` 保持 `AWAITING_ACCEPTANCE`。
 
 推荐记录结构：
 
@@ -298,24 +299,25 @@ P0 不启动后台轮询。用户完成飞书迁移后，在下一次任意交�
 {
   "acceptance": {
     "status": "approved",
-    "source": "feishu_status_change",
+    "mode": "chat_exact",
+    "approval_message": "验收通过",
+    "approval_ref": "当前会话消息标识或脱敏摘要",
+    "approved_at": "ISO-8601",
+    "approval_session_id": "session-...",
+    "approval_machine_id": "machine-...",
+    "gate_hash": "sha256:...",
     "from_status": "IN PROGRESS",
     "to_status": "RESOLVED",
-    "transition_id": null,
+    "current_status": "RESOLVED",
+    "transition_id": "MCP 返回的迁移 ID，可为 null",
     "operator": null,
     "operator_verified": false,
-    "mode": "policy_only",
-    "current_status": "RESOLVED",
     "observed_at": "ISO-8601",
-    "evidence_kind": "current_status+latest_human_comment",
+    "evidence_kind": "chat_exact+feishu_transition",
     "evidence_ref": "evidence/manifest.json#E-ACCEPT-001"
   }
 }
 ```
-
-`transition_id` 和 `operator` 都是可空字段。MCP 查不到迁移 ID 或操作者时，不得伪造，必须记录 `null`，并用当前状态、观察时间、可得的最新人工评论/附件和截图组成降级证据。`operator_verified:false` 已明确表示该证据不证明真人身份。
-
-校验器只有在飞书当前状态、迁移记录和证据三者一致时才允许 `AWAITING_ACCEPTANCE → RESOLVED`。`RESOLVED` 不是 Agent 根据聊天语气写出的文本状态。以后若必须实现真正的防伪验收，再评估第三个明确人工动作或独立机器人身份，不纳入 P0。
 
 ## 7. Gate 绑定与失效
 
@@ -415,9 +417,23 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 
 `ship` 不因 dev 上其他人的普通提交而失效；合并后 dev 前进时，保持 ship 记录不变，但 `DEV_VERIFYING` 必须以本 run 的 `merge_commit_sha/deployed_sha/image_tag` 重新核对。
 
-`session_id` 不能替代 claim 和对象绑定；同一会话也不能把旧 gate 复用于新对象。允许恢复执行，但不允许静默继承授权：同一 claim 在同一执行机同一会话内可直接推进；换会话或换机器后，旧 gate 转为 `needs_reconfirm`，必须重新展示绑定对象并让用户再次发送对应精确口令。验收记录例外，它只从飞书业务状态迁移派生。
+`session_id` 不能替代 claim 和对象绑定；同一会话也不能把旧 gate 复用于新对象。允许恢复执行，但不允许静默继承授权：同一 claim 在同一执行机同一会话内可直接推进；换会话或换机器后，旧 gate 转为 `needs_reconfirm`，必须重新展示绑定对象并让用户再次发送对应精确口令。
 
-### 7.3 接管
+### 7.3 `acceptance` 绑定
+
+`acceptance` gate 只在 `AWAITING_ACCEPTANCE` 阶段、收到完整精确消息 `验收通过` 后批准。`bound_to` 记录：
+
+- `work_item_id` 与 `claim_id`；
+- 当前已批准 `ship` gate 的 `gate_hash`；
+- `dev_verification_result`，必须为 `PASS`；
+- 已验证 evidence manifest 的 `manifest_hash`；
+- 批准时的飞书 `current_status`。
+
+`acceptance` gate 不绑定代码 candidate，而绑定“当前 claim 的 dev 验收事实”。任一字段变化、claim 接管、dev 证据变化或飞书状态异常时，必须重新校验或失效。
+
+只有 `chat_exact` 模式依赖该 gate。人工直接在飞书完成状态迁移时走 `policy_only` 观察路径，不构造 `gates.acceptance`。
+
+### 7.4 接管
 
 不引入 lease TTL。用户明确发出精确消息 `接管【auto_number】` 后：
 
@@ -530,7 +546,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 | `verification_matrix` | 修复行为、不破坏行为、边界行为及证据引用 |
 | `gates` | `enter_dev`、`ship` 及每次 `validate-gate` 的稳定投影结果；不在这里重复存验收 |
 | `ship_package` | `repos[]`：MR、merge commit、deployed SHA、Pipeline、image tag、rollout、dev 复测和验收步骤 |
-| `acceptance` | 飞书状态、迁移记录、`mode=policy_only`、`operator_verified=false`、可空 transition/operator、证据和结论 |
+| `acceptance` | 飞书状态、迁移记录、`mode=policy_only / chat_exact`、审批引用、`operator_verified=false`、可空 transition/operator、证据和结论 |
 | `transitions` | 当前 cycle 每次推进的从/到、时间、校验结果、执行会话和证据引用 |
 | `failure_stage` | `merge` / `push` / `pipeline` / `rollout` / `dev_verify` / `rework` |
 | `failure_class` | 缺陷流程的简化失败分类；C1–C6 只作为映射参考 |
@@ -641,6 +657,11 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
       }
     },
     "ship": {
+      "status": "pending",
+      "claim_id": "claim-20261110-001",
+      "bound_to": null
+    },
+    "acceptance": {
       "status": "pending",
       "claim_id": "claim-20261110-001",
       "bound_to": null
@@ -846,7 +867,7 @@ forbidden:
 
 ## 15. 自动决策与修补上限
 
-两个人工门之间只有影响行为、改动范围、数据、风险等级、验证结论或 gate 的**实质性决策**才写入 `state.json.decisions`，至少包含：
+三个人工门之间只有影响行为、改动范围、数据、风险等级、验证结论或 gate 的**实质性决策**才写入 `state.json.decisions`，至少包含：
 
 - 决策；
 - 依据；
@@ -935,7 +956,7 @@ forbidden:
 
 - 复用现有 Codex / Cursor / Trae、飞书项目 MCP、GitLab 和 Skill 体系；
 - 单缺陷状态机和对外简化状态；
-- 两个精确人工门及飞书验收落点；
+- 三个精确人工门（开发、提测、验收）及飞书验收落点；
 - S/M/L 分级；
 - gate 绑定、失效和接管；
 - 结构化证据、单一 `report.md` 和内部校验器；
@@ -960,7 +981,7 @@ forbidden:
 
 - 人工新增发现的问题数量；
 - 首次提测后的返工轮次；
-- 是否稳定为两个口令加一次飞书验收；
+- 是否稳定为三个精确口令且无自然语言误触发；
 - 是否发生错仓修改、越权 merge/deploy、越范围 Mock 或生产写入；
 - 报告是否足以支持人工在不读代码的情况下验收；
 - S/M/L 和评审强度是否匹配；
@@ -974,7 +995,7 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 - 0 次生产写入或 run scope 外写入；共享数据库账号无法归因到单个 run 时，必须标记为审计限制，不得宣称已证明 0 次；
 - 0 次因 gate 复用导致跨缺陷或跨 commit 授权；
 - 每次 `advance` 都有可追溯的 `validate-gate` 结果，换会话/换机器和 REOPEN 均会触发重新确认；
-- 每次完成都对应飞书当前为 `RESOLVED` 的状态记录，并明确写入 `acceptance.mode=policy_only` 和 `operator_verified=false`；不把聊天口头验收当作状态依据；
+- 每次完成都对应飞书当前为 `RESOLVED` 的状态记录，并写入 `acceptance.mode=chat_exact / policy_only`、审批引用和 `operator_verified=false`；自然语言不得被记录为 chat_exact；
 - 简单缺陷平均返工不超过 1 轮；
 - 普通同事无需手工填写 JSON 或阶段模板。
 
@@ -1038,3 +1059,11 @@ P0 通过条件（`BLOCKED` / `CANCELLED` 的 run 可以计入试点，但必须
 - `enter_dev` 和 `ship` gate 均绑定完整仓库集合及其 Bundle 拓扑；仓库、依赖顺序或 ship 顺序变化会使旧 gate 失效。
 - 每个仓库仍需独立候选 SHA、diff/review/verification；另强制至少一条覆盖全部仓库的 `integration` 验证。
 - `record-ship-package` 按 `ship_order` 固化提测信息；任一仓失败时整个 Bundle 停留在返工/失败态，不允许单仓标记完成。
+
+## 18.6 v1.2 精确验收口令
+
+- 新增第三个精确人工门 `验收通过`；多 active run 使用 `验收通过<auto_number>`。
+- `acceptance` gate 绑定当前 claim、ship gate hash、dev verification PASS、已验证 evidence manifest hash 和批准时的飞书状态。
+- Agent 收到精确口令后先查询 `get_transitable_states` / `get_transition_required`，再调用一次合法 `transition_state` 迁移 `RESOLVED`。
+- 账本记录 `mode=chat_exact`、审批引用、session/machine、Feishu transition 结果和 `operator_verified=false`。
+- “可以了”“没问题”“算修复了”等自然语言不解锁；人工直接操作飞书仍保留 `policy_only` 路径。

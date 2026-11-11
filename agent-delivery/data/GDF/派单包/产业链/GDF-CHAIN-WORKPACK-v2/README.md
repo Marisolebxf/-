@@ -22,7 +22,7 @@
 | [23-核对签收与答复.md](23-核对签收与答复.md) | **round1 核对签收与 20 题逐题答复** |
 | [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 建表指针 |
 | [11-作废与误源对照.md](11-作废与误源对照.md) | 误源对照 |
-| [12-DWD后加工-产业链入向量库.md](12-DWD后加工-产业链入向量库.md) | DWD 成功后 GDF 触发引擎入图调度任务并轮询终态。写入 Milvus 库 `gkxlumen` 的 `gkxlumen_industry_anchor`。不写库 `default` |
+| [12-DWD后加工-产业链入向量库.md](12-DWD后加工-产业链入向量库.md) | DWD 成功后写入 Milvus 库 `gkxlumen` 的 `gkxlumen_industry_anchor`（**与上图无关**）。不写库 `default` |
 | [script/](script/README.md) | 入向量库脚本。GDF 配置 `industry_embed.py`。入图两份不配置 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本 |
 

@@ -1,20 +1,20 @@
 # 12 — DWD 后加工：产业链入向量库（CHAIN-B4-VEC-REBUILD）
 
 > **读者**：GDF 数据中台产线。本文件描述"产业链入向量库"这一环节在 GDF 侧的**触发条件、执行方式、验收口径与禁止事项**。  
-> **版本**：v2.2.7（2026-11-02）。正式图空间是 lumen 的 `gkx_chain`。上图由 GDF 触发燕大知识图谱引擎的入图调度任务，再轮询到成功或失败；GDF 不直接调入图脚本。入向量库由 GDF 按 [`script/README.md`](script/README.md) 配置 `industry_embed.py`，直接写入 Milvus 库 `gkxlumen` 的集合 `gkxlumen_industry_anchor`。demo 用数据库 `default`。政策产业抽取、技术节点产业映射、子学科产业关联都读 `gkxlumen` 里的这一集合。编排落点见 §5.4。环境红线见 `23-核对签收与答复.md` §1（GDF 禁读 demo 库）。  
+> **版本**：v2.3.3（2026-11-11）。正式图空间是 lumen 的 `gkx_chain`。上图由 GDF 触发燕大知识图谱引擎的入图调度任务，再轮询到成功或失败；GDF 不直接调入图脚本。**入向量库与上图无关**：只依赖 Wave B 链树 DWD 成功，不以上图成功为前置。入向量库由 GDF 按 [`script/README.md`](script/README.md) 配置 `industry_embed.py`，直接写入 Milvus 库 `gkxlumen` 的集合 `gkxlumen_industry_anchor`。demo 用数据库 `default`。政策产业抽取、技术节点产业映射、子学科产业关联都读 `gkxlumen` 里的这一集合。编排落点见 §5.4。环境红线见 `23-核对签收与答复.md` §1（GDF 禁读 demo 库）。  
 > **为什么要有这一步**：产业链洗数（Wave B）只是把链树写进 DWD。下游"政策抽取产业"（政策派单包 `12` 的 POLICY-C1）检索的锚点集合，要等**本环节执行后才有内容**。锚点为空时政策 C1 对不上链码、只记 `no_match`——这是**设计内行为**，不是故障。
 
 ---
 
 ## 0. 一句话
 
-**链表洗完 → 上图 VID 稳定 → 整库一次 rebuild。映射过程逐行 embed、政策重灌调 rebuild，都是禁止的。**
+**链表洗完 → 整库一次 rebuild。上图另线并行，不阻塞、也不作为入向量库前置。映射过程逐行 embed、政策重灌调 rebuild，都是禁止的。**
 
 ```mermaid
 flowchart LR
   B1["CHAIN-B1-TREE<br/>DWD 链表写完"] --> T["GDF 触发<br/>引擎入图调度任务"]
+  B1 --> R["GDF 配置 industry_embed.py<br/>直接写入 Milvus"]
   T --> G["引擎内执行入图<br/>Nebula gkx_chain"]
-  G --> R["GDF 配置 industry_embed.py<br/>直接写入 Milvus"]
   R --> V["Milvus 库 gkxlumen<br/>集合 gkxlumen_industry_anchor"]
   V -->|"只读检索（政策C1 / Job A）"| P["政策抽产业定码<br/>match_industry_anchors 二次对码"]
 ```
@@ -25,22 +25,22 @@ flowchart LR
 
 本派单的正式集合名与 demo 相同，仍是 `gkxlumen_industry_anchor`（前缀 `gkxlumen_industry_`）。隔离改在 Milvus 数据库：正式库 `gkxlumen`，demo 库 `default`。同一台 Milvus `10.50.69.111:19530`。drop/create 带着 `dbName`，正式 rebuild 只替换 `gkxlumen` 里的同名集合，不会碰到 `default` 里那一份。
 
-上图在燕大知识图谱引擎的调度任务里面执行。入向量库不在该任务里。入图调度任务轮询到成功后，GDF 按 [`script/README.md`](script/README.md) 配置 `industry_embed.py` 的 `rebuild`，直接写库 `gkxlumen`。2026-11-02 已在库 `gkxlumen` 建好集合 `gkxlumen_industry_anchor` 并 load，当前 0 条。**2026-11-03 路线 A**：脚本已全环境变量化；作业设 `MILVUS_DB_NAME=gkxlumen`（未配或 `default` 会拒绝写入），不必改代码。
+上图在燕大知识图谱引擎的调度任务里面执行。入向量库不在该任务里，也**不以上图终态为门闩**。Wave B `CHAIN-B1-TREE` 当日 `success` 后，GDF 即可按 [`script/README.md`](script/README.md) 配置 `industry_embed.py` 的 `rebuild`，直接写库 `gkxlumen`；上图调度可同批另线触发与轮询。2026-11-02 已在库 `gkxlumen` 建好集合 `gkxlumen_industry_anchor` 并 load，当前 0 条。**2026-11-03 路线 A**：脚本已全环境变量化；作业设 `MILVUS_DB_NAME=gkxlumen`（未配或 `default` 会拒绝写入），不必改代码。
 
 ---
 
 ## 1. GDF 侧定位
 
-**上图不在 GDF 实现。** GDF 只触发引擎调度任务并轮询终态。
+**上图不在 GDF 实现。** GDF 只触发引擎调度任务并轮询终态。上图与入向量库**互不依赖**。
 
 **入向量库在 GDF 实现。** 平台上配置 [`script/industry_embed.py`](script/industry_embed.py) 的 `rebuild`，直接写 Milvus。不调用 `POST /internal/industry/embed/rebuild`。配置改动见 [`script/README.md`](script/README.md)。
 
-> **round2 问 8~13 已定（2026-11-02）**：正式空间是 lumen 的 `gkx_chain`。上图只走两个调度平台的触发和轮询，见 §5.1。入向量库见问 9 与 `script/README.md`。
+> **round2 问 8~13 已定（2026-11-02）**：正式空间是 lumen 的 `gkx_chain`。上图只走两个调度平台的触发和轮询，见 §5.1。入向量库见问 9 与 `script/README.md`。**v2.3.3**：入向量库触发条件去掉「上图成功」。
 
 | GDF 职责 | 说明 |
 |---|---|
-| **顺序保证** | 每日批内：Wave B `success` → 触发入图调度任务并轮询到成功 → GDF 跑入向量库脚本 → 才排政策 C1。入向量库失败不回滚已成功的 B1 和上图 |
-| **不抢跑** | 链表未 `success` 时不触发入图调度任务。入图未轮询到成功时不跑入向量库脚本。脚本未成功时不排政策 C1 |
+| **顺序保证** | 每日批内：Wave B `success` 后，**上图**与**入向量库**可并行；政策 C1 只等入向量库脚本成功，不等上图。入向量库失败不回滚已成功的 B1；上图失败也不挡入向量库 |
+| **不抢跑** | 链表未 `success` 时：不触发入图调度任务、不跑入向量库脚本。脚本未成功时不排政策 C1。**禁止**把「入图未轮询到成功」当成不跑入向量库的理由 |
 | **不旁路** | 入向量库只跑 `industry_embed.py` 的 `rebuild`，只写库 `gkxlumen` 的 `gkxlumen_industry_anchor`。不写库 `default`，不调用我方 HTTP。政策 C1 的 `MILVUS_URI` 只做检索。正式批 `MILVUS_DB_NAME=gkxlumen`，`MILVUS_COLLECTION_PREFIX=gkxlumen_industry_` |
 | **回执带索引版本** | 当日回执注明 `industry_index_version`（rebuild 成功后的版本号；**跳过时诚实写 `skip`，不写数字**——此条已定） |
 
@@ -53,10 +53,11 @@ flowchart LR
 | # | 条件 | 检查方式 |
 |---|---|---|
 | 1 | Wave B `CHAIN-B1-TREE` 当日 `success`（`industry_chain` / `industry_chain_node` 有当日批次数据） | ETL 调度状态 |
-| 2 | 入图调度任务已轮询到成功 | 未成功不跑入向量库脚本 |
-| 3 | GDF 已按 `script/README.md` 把 `DB_NAME` 改成 `gkxlumen`，词表改读 `gkxlumenx_dwd` | 未改不执行 |
+| 2 | GDF 已按 `script/README.md` 把 `DB_NAME` 改成 `gkxlumen`，词表改读 `gkxlumenx_dwd` | 未改不执行 |
 
-**每日节奏**：Wave B `success` → GDF 触发入图调度任务并轮询到成功 → GDF 跑入向量库脚本 → 才排政策 C1。政策 C1 与脚本 drop+create 窗口禁止并排。
+> **不含上图**：入图调度任务终态不是入向量库前置。上图成败只记入图回执，不写、不改 `industry_index_version`。
+
+**每日节奏**：Wave B `success` →（并行）GDF 触发入图调度任务并轮询终态 **｜** GDF 跑入向量库脚本 → 脚本成功后才排政策 C1。政策 C1 与脚本 drop+create 窗口禁止并排。
 
 ---
 
@@ -68,8 +69,8 @@ flowchart LR
 | database | 正式库 **`gkxlumen`**。集合 `gkxlumen_industry_anchor` 已于 2026-11-02 建好并 load，**0 条**。demo 库 **`default`** 里是同名集合。正式批不读、不写、不 drop `default` |
 | collection | 两边同名 **`gkxlumen_industry_anchor`**（前缀 `gkxlumen_industry_`，只用下划线；连字符名 Milvus 拒绝 `code 1100`）。正式 rebuild、正式检索只打 `dbName=gkxlumen`。同实例上的 `amcpdp-*` 等他人集合同样禁止碰 |
 | embedding | `bge-base-zh-v1.5`，dim 768，COSINE。集群内 `http://gkxlumen-embed-tei:8080/v1/embeddings`。GDF 代理机 `EMBED_BASE_URL=http://10.50.69.111:30903`（Service `gkxlumen-embed-tei-nodeport`，脚本自行补 `/v1/embeddings`） |
-| 词表 | DWD `industry_chain`（链名）+ `industry_chain_node`（环节名），当前约 1,516 点（102 chain + 1414 segment）。**词表真源 = DWD 链表 + 图**，禁止另建第二份产业 embedding |
-| VID | 只用图上链码（`chain:INB*` / `segment:INB*`），与上图 VID 同码。ODS 短码 / 中文名不得当 VID |
+| 词表 | DWD `industry_chain`（链名）+ `industry_chain_node`（环节名），当前约 1,516 点（102 chain + 1414 segment）。**词表真源 = DWD 链表**（不读图、不等上图），禁止另建第二份产业 embedding |
+| VID | 码形与图侧约定一致（`chain:INB*` / `segment:INB*`），由 DWD 链码拼出；**不要求图上已有该 VID**。ODS 短码 / 中文名不得当 VID |
 | 锚点别名 | 链名/环节名按"与/和/、//"拆词生成别名（≥3 字），环节额外挂父链名——检索命中靠这些文本，定码仍走 VID |
 
 ---
@@ -78,7 +79,7 @@ flowchart LR
 
 | # | 禁止 | 原因 |
 |---|---|---|
-| 1 | **映射/Wave B 过程中逐行 embed** | 锚点词表 = 图上稳定点。边洗边嵌会产生半成品索引；正确做法是整库一次 rebuild |
+| 1 | **映射/Wave B 过程中逐行 embed** | 锚点词表 = DWD 链树当日批次。边洗边嵌会产生半成品索引；正确做法是整库一次 rebuild |
 | 2 | **政策/企业重灌同步调 rebuild** | 消费切面 ≠ 建库切面。政策重灌只读 L0+L1，不碰 Milvus/LLM |
 | 3 | **把向量分数写成 `industry_link_code` / `chain:INB*`** | 向量分只表示"像不像"；政策 C1 拿 top-k 候选后还要过 `match_industry_anchors` 二次对码（名称须在政策文本中命中，环节优先于链），禁止采 top1 直写。分 ≥0.55 写入、≥0.45 且名称出现在切块里也写入，其余 `no_match` 不插空链码行 |
 | 4 | **入向量库不走本包脚本，或写入库 `default`** | 只配置 `industry_embed.py` 的 `rebuild`，只写库 `gkxlumen` 的 `gkxlumen_industry_anchor`。不调用 `POST /internal/industry/embed/rebuild`。政策 C1 的 `MILVUS_URI` 只检索 |
@@ -94,12 +95,12 @@ flowchart LR
 
 ### 5.1 上图：两个调度平台的对接
 
-链树 DWD 作业 `success` 之后：
+链树 DWD 作业 `success` 之后（与入向量库并行，顺序不互相卡住）：
 
 1. GDF 调用燕大知识图谱引擎已经配好的入图调度任务的触发接口。
 2. 引擎立刻返回已收下，并给出任务号。任务此时开始执行。收下不等于图已经更新。
 3. GDF 调用该任务的状态轮询接口，直到调度任务成功或失败。
-4. 成功之后，GDF 跑入向量库脚本。失败则不跑脚本，当日 `industry_index_version` 写 `skip`，不回滚 B1。
+4. **上图成败只影响本调度任务回执，不决定是否跑入向量库。** 入向量库见 §2 / §5.2；上图失败也不把当日 `industry_index_version` 写成 `skip`，不回滚 B1。
 
 接口形状见《亿级科技知识图谱API文档》§2.7 触发、§2.9 查询、§2.11 轮询。具体任务号由燕大配置后线下给 GDF，不进本包。不要用内置图谱构建的默认实体去触发，也不要另写一套 Java 受理路径。
 
@@ -136,7 +137,7 @@ flowchart LR
 
 ### 5.3 「点数稳定」判定（问 12）
 
-点数指即将写入 `gkxlumen_industry_anchor` 的锚点条数。不是 Nebula 里 Tag `chain`、`segment` 的顶点数，也不读入图回执的 `vertex_counts`、`vertices_written`。上图完成与否只看问 8 的调度任务终态。
+点数指即将写入 `gkxlumen_industry_anchor` 的锚点条数。不是 Nebula 里 Tag `chain`、`segment` 的顶点数，也不读入图回执的 `vertex_counts`、`vertices_written`。上图完成与否只看问 8 的调度任务终态，**与入向量库判定无关**。
 
 | # | 判定 | 不过则 |
 |---|---|---|
@@ -153,12 +154,12 @@ flowchart LR
 
 ```text
 每日批：Wave B(CHAIN-B1-TREE) success
-  → GDF 调用引擎入图调度任务的触发接口（立刻得到已收下 + 任务号）
-  → GDF 轮询任务状态，直到成功或失败
-  → 成功后 GDF 跑 industry_embed.py 的 rebuild，直接写库 gkxlumen
-  → 脚本 code=0 → 回执记 data.index_version
-     脚本失败或跳过 → 回执写 skip，沿用昨日索引
-  → 只有脚本成功，才排 Job A（政策 C1）
+  ├─ 上图（另线）：触发引擎入图调度任务 → 轮询终态（成败只记入图回执）
+  └─ 入向量库：GDF 跑 industry_embed.py 的 rebuild，直接写库 gkxlumen
+       → 脚本 code=0 → 回执记 data.index_version
+          脚本失败或跳过 → 回执写 skip，沿用昨日索引
+       → 只有脚本成功，才排 Job A（政策 C1）
+  （上图与入向量库互不等待）
 ```
 
 ---
@@ -167,9 +168,9 @@ flowchart LR
 
 | 检查项 | 期望 |
 |---|---|
-| rebuild 触发次数 | 每日批**至多一次**；由 GDF 在入图调度任务成功后配置执行。多余的手动 rebuild 属异常（需登记） |
+| rebuild 触发次数 | 每日批**至多一次**；由 GDF 在 Wave B `CHAIN-B1-TREE` 成功后配置执行（**不以上图成功为门闩**）。多余的手动 rebuild 属异常（需登记） |
 | 回执字段 | `industry_index_version`（成功=版本号字符串；跳过=字面 `skip`，禁止空着或编造） |
-| 失败语义 | rebuild 失败/跳过：**不回滚** B1/上图，当日政策 C1 若因锚点缺失大量 `no_match` 属预期（设计内空态），次日锚点就绪后政策重跑补上 |
+| 失败语义 | rebuild 失败/跳过：**不回滚** B1；与上图成败互不影响。当日政策 C1 若因锚点缺失大量 `no_match` 属预期（设计内空态），次日锚点就绪后政策重跑补上 |
 | 抽样验证 | rebuild 成功后，以一条已知链名（如"集成电路"）做检索自检，top 候选应含该链/其节点（我方算法侧自检，GDF 不执行但回执需注明本环节状态） |
 
 ---
@@ -180,7 +181,7 @@ flowchart LR
 |---|---|
 | `09-产业链域-ETL-Mapping明细` | 09 只管 DWD 洗数；本环节是 B 之后**独立**的后加工，不进 09 字段矩阵 |
 | 政策派单包 `12`、技术节点产业映射、子学科产业关联 | 三处只用库 `gkxlumen` 里的 `gkxlumen_industry_anchor`。政策 C1 检索它。两张映射的产业候选与集合里的链、环节是同一批节点，不另建集合，也不读 `default`。本环节未执行 → 集合还不存在时检索记 `degraded`；集合在但没有锚点时记 `no_match` |
-| `15-GDF触发调度与回执`（政策包 `GDF-POLICY-WORKPACK-v2/15`） | 本环节纳入每日批调度顺序：Wave B → 上图 → **rebuild** → Job A（串行） |
+| `15-GDF触发调度与回执`（政策包 `GDF-POLICY-WORKPACK-v2/15`） | 本环节纳入每日批调度顺序：Wave B → **rebuild** → Job A（串行）；上图与 rebuild **并行另线**，不串在 rebuild 前置 |
 | CROSS-VEC 总控 §0 | #2 建库切面 / #3 消费切面 / #16 前缀守卫 / #17 禁 top1 定码 / #19 Job A 互斥——本文件第 4 节即其派单包投影 |
 | [`script/`](script/README.md) | 入向量库脚本。GDF 配置 `industry_embed.py`。入图两份不配置 |
 
@@ -190,6 +191,7 @@ flowchart LR
 
 | 版本 | 日期 | 变更 |
 |---|---|---|
+| v2.3.3 | 2026-11-11 | **入向量库与上图解耦**：触发条件去掉「入图调度任务已轮询到成功」；每日节奏改为 Wave B 后上图与 rebuild 并行；政策 C1 只等 rebuild。§0 / §1 / §2 / §5.1 第 4 步 / §5.4 / §6 / §7 同步。 |
 | v2.2.7 | 2026-11-02 | 入向量库改由 GDF 配置 `script/industry_embed.py` 直接写库 `gkxlumen`。不调用我方 HTTP。问 9 指向 `script/README.md`。 |
 | v2.2.6 | 2026-11-02 | 现网库 `gkxlumen` 已建集合 `gkxlumen_industry_anchor` 并 load，0 条。schema 与 demo 同名集合一致。 |
 | v2.2.5 | 2026-11-02 | 上图改为两个调度平台对接：GDF 触发引擎入图调度任务，轮询到成功或失败。不直接调入图脚本。 |

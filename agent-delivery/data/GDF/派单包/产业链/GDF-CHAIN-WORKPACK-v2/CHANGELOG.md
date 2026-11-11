@@ -2,6 +2,10 @@
 
 > v2 目录自 v2.0 起新记；v1.x 历史见 `../GDF-CHAIN-WORKPACK-v1/CHANGELOG.md`。
 
+## v2.3.3 — 2026-11-11
+
+- **入向量库与上图解耦**：产业节点入向量库只依赖 Wave B `CHAIN-B1-TREE` 成功，**不以上图成功为前置**。`12` §2 去掉「入图调度任务已轮询到成功」；§5.1 第 4 步改为上图成败不影响是否跑 rebuild；每日节奏改为 Wave B 后上图与 rebuild 并行，政策 C1 只等 rebuild。同步 `00` / `README` / `script/README.md` / `23` 问 10。
+
 ## v2.2.7 — 2026-11-02
 
 - **入向量库由 GDF 配脚本**：问 9 指向 `script/README.md`。GDF 在平台上配置 `industry_embed.py` 的 `rebuild`，直接写库 `gkxlumen` 的 `gkxlumen_industry_anchor`。不调用 `POST /internal/industry/embed/rebuild`。副本里的 `DB_NAME=default` 和 demo 读库闸门，配作业前改掉。上图仍只走调度触发和轮询。

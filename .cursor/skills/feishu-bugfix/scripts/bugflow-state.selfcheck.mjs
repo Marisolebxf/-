@@ -522,6 +522,37 @@ try {
     summary: 'human moved status to RESOLVED',
   });
   verifyEvidence(state, JSON.parse(readFileSync(manifestPath, 'utf8')), runDir);
+
+  const chatAcceptanceState = structuredClone(state);
+  const acceptanceBinding = {
+    work_item_id: chatAcceptanceState.work_item.work_item_id,
+    claim_id: chatAcceptanceState.ownership.claim_id,
+    ship_gate_hash: chatAcceptanceState.gates.ship.gate_hash,
+    dev_verification_result: chatAcceptanceState.ship_package.dev_verification.result,
+    evidence_manifest_hash: chatAcceptanceState.evidence.verification.manifest_hash,
+    current_status: 'IN PROGRESS',
+  };
+  assert.throws(() => approveGate(structuredClone(chatAcceptanceState), {
+    gate: 'acceptance', message: '可以了', binding: acceptanceBinding, sessionId: 'session-1', machineId: 'machine-1',
+  }), /GATE_TOKEN_INVALID/);
+  assert.throws(() => recordAcceptance(structuredClone(chatAcceptanceState), {
+    status: 'approved', mode: 'chat_exact', operator_verified: false, current_status: 'RESOLVED',
+    observed_at: '2026-11-10T18:30:00+08:00', evidence_kind: 'chat_exact',
+    evidence_ref: 'evidence/manifest.json#E-ACCEPT-001', approval_ref: 'chat:acceptance-2020',
+  }, { runDir }), /requires an approved acceptance gate/);
+  approveGate(chatAcceptanceState, {
+    gate: 'acceptance', message: '验收通过', binding: acceptanceBinding, sessionId: 'session-1', machineId: 'machine-1', messageRef: 'chat:acceptance-2020',
+  });
+  recordAcceptance(chatAcceptanceState, {
+    status: 'approved', mode: 'chat_exact', operator_verified: false, current_status: 'RESOLVED',
+    observed_at: '2026-11-10T18:30:00+08:00', evidence_kind: 'chat_exact',
+    evidence_ref: 'evidence/manifest.json#E-ACCEPT-001', approval_ref: 'chat:acceptance-2020',
+  }, { runDir });
+  advance(chatAcceptanceState, { to: 'RESOLVED', sessionId: 'session-1', machineId: 'machine-1', evidenceRefs: ['E-ACCEPT-001'] });
+  assert.equal(chatAcceptanceState.phase, 'RESOLVED');
+  assert.equal(chatAcceptanceState.acceptance.mode, 'chat_exact');
+  assert.equal(chatAcceptanceState.gates.acceptance.status, 'approved');
+
   recordAcceptance(state, {
     status: 'approved',
     operator_verified: false,
