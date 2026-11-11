@@ -61721,12 +61721,8 @@ tasks:
     update_time: "2026-11-09T15:52:56+08:00"
   - id: KG-COMPLY-LOAD-T01
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T01.md"
-    claimed_by: "human:白鑫凤"
-    supervised_by: "human:唐绍祖"
-    claim_type: "human"
-    claimed_at: "2026-11-11T16:30:00+08:00"
     title: "T01 入图环境与结构核验（含 schema 缺口升级闸）"
-    status: "done"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61736,11 +61732,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: |
-      2026-11-11 已归档交付索引并回填证据，task-review AV-0通过（handoff_exists=true/evidence_set=true）。
-      2026-11-11 16:30 唐绍祖技术验收通过并签收 → done：独立连库只读复测 demo_gkx_chain，15 Tag / 26 Edge，新建 5 Tag（research/paper/patent/project/person）与 11 边全部在位，新点均 name+props、新边抽查均 weight+props，历史 P0 空属性缺陷已修复；16 条 CREATE 执行记录与复验记录齐备。详见 KG-COMPLY-ACCEPT-T01-T05-技术验收记录.md。
-      认领字段为 2026-11-11 分工调整后补录（执行人白鑫凤，据交付文件），非原始认领时间倒填；原授权链以交付文件记载为准（唐绍祖确认内容、徐滕强授权执行）。
-      遗留说明（不阻塞）：新建边本期 0 条属正常，数据由 T02–T04 灌入；6 对语义重叠历史边归 T06 处理。
+    note: "2026-11-11 已归档交付索引并回填证据，task-review AV-0通过（handoff_exists=true/evidence_set=true，tech_task目标ready_to_sign）。仅机械完整性检查通过，待有权签收人确认业务验收、原授权记录及历史认领字段；本次不代签done。"
     depends_on:
       - "KG-COMPLY-SDD-L01"
     design_refs:
@@ -61757,14 +61749,8 @@ tasks:
       - "depends_on 1,073（M15）与 participates 178,731（M17）为存量已满足项，只回读核对、不得重灌、不得回写 props.batch"
     update_time: "2026-11-11T15:23:39+08:00"
   - id: KG-COMPLY-LOAD-T02
-    evidence: "agent-delivery/工程过程/04-系统集成/07-图数据库集成/T02-M02-小批量验证-20261111.md"
-    supervised_by: "human:陈芸飞"
-    claimed_at: "2026-11-11T08:45:53.210Z"
-    last_seen_at: "2026-11-11T08:45:53.210Z"
-    lock_until: "2026-11-11T12:45:53.210Z"
-    claimed_by: "agent:data-agent"
-    title: "T02 七要素入图·产业链与机构合作组（M15/M17/M02；M19=0）"
-    status: "in_progress"
+    title: "T02 七要素入图·产业链与机构合作组（M15/M17/M19）"
+    status: "backlog"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61774,27 +61760,19 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      2026-11-11按最新裁定执行M02（M19停建）。陈芸飞授权下已完成专用执行器及100个canonical机构对小批验证：157年度行，排除company52对，合格48对/66年度行，52个图端点均存在；实际新增cooperate 48条，逐条weight/props回读一致，只读重跑48条均识别为已有并跳过。批号comply-20261111-t02。M15=1073/M17=178731/M19=0/M22=94824保护基线一致，research现83745点由T03建设，本执行器未建点。5项单元测试通过。全量聚合/全量入图尚未完成；当前逐对执行器仅适合小批量，下一步批量化、源版本固定与全量对账。状态保持in_progress，不申请验收关闭。现行映射规则详任务DoD与唐绍祖T03裁定§7.4–7.5。
+    note: "SDD §5 T02；建议执行人 human:陈芸飞；工期从 T01 DDL 复验完成起算"
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T02"
     definition_of_done:
-      - "M15（depends_on 1,073）与 M17（participates 178,731）为存量已满足项：只回读计数核对基线、不重灌、不回写 props.batch"
-      - "M02 新灌 cooperate（仅 research→research 一组）：按机构对跨年聚合、weight=累加 co_paper_count（禁用 collaboration_strength）、排除 company 端点、无向去重，约 6,568,617 对上限"
-      - "M19 记 0 条并附「与 M02 同源重复」理由；cooperate 按端点 Tag 对分组计数（存量 94,824 条 enterprise→enterprise 属 M22 不得混计）"
-      - "对账单：存量已满足项计数 + M02 应灌子集 vs 实灌数 + 端点缺失跳过计数；depends_on 保持 DAG"
-      - "不自行 INSERT VERTEX research（归 T03）；不把 apply_to/support 记成 M12–M14；不把 institution→institution participates 记成 M02/M19"
-    update_time: "2026-11-11T18:45:04+08:00"
+      - "M15（depends_on 1,073）与 M17（participates 178,731）为存量已满足项：只回读计数核对基线、不重灌、不回写 props.batch；只新灌 M19（research_coop），带 props.batch=comply-<日期>-t02"
+      - "对账单：存量已满足项计数 + 新灌 M19 数 vs 源表行数、端点缺失跳过计数；depends_on 保持 DAG"
+      - "不把 apply_to/support 记成 M12–M14；不把 institution→institution participates 记成 M02/M19"
+    update_time: "2026-11-09T15:11:07+08:00"
   - id: KG-COMPLY-LOAD-T03
-    supervised_by: "human:宋飞扬"
-    claimed_at: "2026-11-11T09:54:48.824Z"
-    last_seen_at: "2026-11-11T09:54:48.824Z"
-    lock_until: "2026-11-12T09:54:48.824Z"
-    claimed_by: "agent:data-agent"
     title: "T03 七要素入图·人才与机构组（M01/M02/M03/M04/M20）"
-    status: "in_progress"
+    status: "backlog"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61804,26 +61782,16 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      SDD §5 T03；执行人 human:宋飞扬。
-      2026-11-11 17:50 分工调整：**M02 移交 T02（陈芸飞执行）**，本节专注 M01 + M04。`research` 点仍由本节单方全量建（83,745 个，含 15,392 企业），T02 只跳过不重建。
-      2026-11-11 唐绍祖裁定（详见 KG-COMPLY-LOAD-T03-裁定-人才与机构四条关系.md）：
-      M01/M20 同源重复只建 cooperate 一条（ads_talent_collaborator 505 万行，co_project_count 整列为空、"合著只是两路之一"旧口径作废；A→B/B→A 严格 2 倍，无向去重 2,525,789 条），talent_coop 本期 0 条。
-      M03 本期 0 条：ads_talent_institution_cooperation 现 202,795 行、8,784 机构 100% 为 company（辉瑞/礼来等），是人才-企业合作、端点类型不符，不得算进 M03；缺口上报需规补编号。
-      M04 只灌工作经历 experience_type=2（84,589 行），学历 type=1（56,304）不进图；is_current 99.98% 为空不可筛，改按 end_year 推导；同机构多段合并成一条边、stint_count 记段数；排除 company 420 行后去重 72,503 条。
-      共同要求：科研机构端点一律排除 company；新边带 props.batch=comply-<日期>-t03；不得复用企业域 research_coop/talent_coop 脚本（端点是 enterprise→x）。
-      执行侧状态（宋飞扬 2026-11-11 17:54）：实体先探后补，M01 合作去重聚合、M04 仅工作并去重；M02 已不在本节范围，无需再准备；正在固定源快照与执行前核验。
+    note: "SDD §5 T03；建议执行人 human:宋飞扬"
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T03"
     definition_of_done:
-      - "先补 person（100,000）/research（83,745，含 15,392 企业）端点，再灌 M01/M04，带 props.batch=comply-<日期>-t03"
-      - "M01 只建 cooperate 一条、无向去重 2,525,789；M20 记 0（与 M01 同源重复）"
-      - "M04 只灌 experience_type=2 工作经历、同机构多段合并（stint_count）、排除 company 后 72,503 条，方向 person→research"
-      - "M03 记 0 条并附理由（源表 202,795 行端点 100% 为 company，属人才-企业合作）"
-      - "M02 不在本节（已移交 T02）；对账单 cooperate 仅统计 person→person 一组；不碰 M05"
-    update_time: "2026-11-11T17:54:50+08:00"
+      - "先补 person/research 端点，再灌 M01/M02/M03/M04/M20，带 props.batch=comply-<日期>-t03"
+      - "对账单同 T02；M01/M20 用 props.match_method 区分不混灌；M04 方向 person→research"
+      - "来源未到位的边不灌并登记；不碰 M05"
+    update_time: "2026-11-09T15:11:09+08:00"
   - id: KG-COMPLY-LOAD-T04
     title: "T04 七要素入图·技术组（M06部分/M07/M08/M09）"
     status: "backlog"
@@ -61848,12 +61816,8 @@ tasks:
     update_time: "2026-11-09T15:11:12+08:00"
   - id: KG-COMPLY-LOAD-T05
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T05.md"
-    claimed_by: "human:白鑫凤"
-    supervised_by: "human:唐绍祖"
-    claim_type: "human"
-    claimed_at: "2026-11-11T16:30:00+08:00"
     title: "T05 空态层入图核验（M05/M10–M14/M16/M18/M21/M23/M24）"
-    status: "done"
+    status: "backlog"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61864,9 +61828,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 25000
     note: |
-      SDD §5 T05；2026-11-11 分工调整（兰天驰退出）后执行人为白鑫凤。交付提交 04acfa71 经 ef601c1d 同步 GitLab dev。
-      2026-11-11 16:30 唐绍祖技术验收通过并签收 → done：独立连库只读复测 11 条 M 关系全部为 0（M05 belong / M10 publish / M11 policy_relate / M12-14 policy_apply_to / M16 cite / M18 institution→segment / M21 service_provide / M23 supply / M24 parent_sub），M17 存量 enterprise→segment 复算 178,731 与基线一致；报告正确区分 policy(20,000 点)/institution(43,296 点)「有历史数据」与「本期七要素层无供数」两层事实。详见 KG-COMPLY-ACCEPT-T01-T05-技术验收记录.md。
-      历史状态回填说明：原登记册停留 backlog 属分工调整时未补认领字段的记账遗留，非技术缺陷；claimed_by 为 2026-11-11 补录（标注补录时刻，非原始认领时间），不倒填为本人当初自行认领。T05 为只读核数，不进 T13 依赖，签收后无下游解锁影响。
+      SDD §5 T05；按2026-11-11已归档分工调整与交付，执行人为白鑫凤（原建议兰天驰退出）；未倒填claimed_by或认领时间。交付提交04acfa71已经ef601c1d同步GitLab dev。报告及T05-空态-实测.md记录2026-11-11 14:08:23只读核验：11条M本期空态，M18 institution→segment为0，区分policy/institution历史节点与本层无供数；报告自检通过。本次依据文档回填，未独立复测。登记册仍backlog，需coordinator处理历史执行/认领状态补录，再按tech_task验收签收；不以新认领伪造历史。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61877,16 +61839,13 @@ tasks:
       - "不灌 mock、不从 gkx_chain 拷数"
     update_time: "2026-11-11T15:23:23+08:00"
   - id: KG-COMPLY-LOAD-T08
-    cost_warn: "yellow"
-    model_used: "Codex GPT-6"
-    evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T08.md"
     supervised_by: "human:宋飞扬"
     claimed_at: "2026-11-11T07:52:55.763Z"
     last_seen_at: "2026-11-11T07:52:55.763Z"
     lock_until: "2026-11-11T11:52:55.763Z"
     claimed_by: "agent:algorithm-agent"
     title: "T08 图算法作业·路径搜索批（423–427）"
-    status: "ready_to_sign"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61896,7 +61855,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "AV-0 已通过，代码、实跑结果和独立复核证据已交付。待负责人确认倒数置信度代价公式及旧基线差异后签收。"
+    note: "宋飞扬授权执行。依据 SDD 第504行及本任务备注，先完成技术点层只读路径批，可在T01等待期并行。"
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61905,7 +61864,7 @@ tasks:
       - "只读复跑 10 对技术点 BFS + Dijkstra，输出对齐 2026-11-07 实跑 JSON"
       - "权重用 e.relation_confidence_score（禁 e.tech_rel.*），空值率=0，加权与无权必须有差异"
       - "不可达返回空态；不写回图；不用 M22 冒充场景路径"
-    update_time: "2026-11-11T16:26:56+08:00"
+    update_time: "2026-11-11T15:52:57+08:00"
   - id: KG-COMPLY-LOAD-T09
     title: "T09 图算法作业·中心性批（428–432）"
     status: "backlog"
@@ -63424,9 +63383,8 @@ tasks:
     last_seen_at: "2026-11-10T15:34:43.772Z"
     lock_until: "2026-11-10T19:34:43.772Z"
     claimed_by: "agent:data-agent"
-    note: |
-      联调确认：2026-11-11 17:0x Loki gkx-entan-py POST /v1/policy/factors/jobs 实测全 200（trace 1c869b82 早前 404 已由 demo-algo-ent-analysis c61778c 挂路由修复）；gkxlumenx_gapfill.gapfill_policy_support_factors 24 行过 lineage 断言；lumen-ui-science-pc 04922c7 / demo-ui-system-test d2bbb2d 已推 dev；handoff POL-FACTOR-GAPFILL-L01.md 已落
-    status: "pending_test"
+    note: "AV-0：handoff 已落 + evidence 已回填，转联调"
+    status: "integration"
     agent: "agent:data-agent"
     epic: "POL-FACTOR-GAPFILL"
     priority: "P1"
@@ -63455,7 +63413,7 @@ tasks:
       - "客户决策清单 QPOL-02 增补登记（四维临时默认，与既有三处权重不一致一并归一）"
       - "合规演示用例 214 行增补冻结（查库时间注明批次）"
       - "handoff 按模板落 agent-handoffs/科技政策跟踪-POL/（含 ponytail: full 与 cost 四字段）"
-    update_time: "2026-11-11T17:17:59+08:00"
+    update_time: "2026-11-11T02:07:23+08:00"
   - id: POL-SIM-VIS-FDE-L01
     model_used: "glm-5.3-flash"
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-SIM-VIS-FDE-L01.md"
@@ -63586,18 +63544,18 @@ tasks:
     update_time: "2026-11-11T01:16:50+08:00"
   - id: TS-L2-M10-DEMO-FULL-L01
     cost_warn: "red"
-    actual_cost: 27
+    actual_cost: 32
     model_used: "claude-opus-5-5"
-    actual_tokens: 1400000
+    actual_tokens: 1600000
     note: |
-      本地实现完成：可演（本地）13/覆盖不到7（34–40）；本地 LOOP 52/52、页面冒烟 11/11。已推送 algo-py eeb00c0、FE 6125a41；svc-platform 0d50cf7d 已 commit 未推——须先在 gkxlumenx_cms 执行 db/9x_gkxlumenx_cms_tech_maintain_config_v2.sql、demo_gkxlumenx_ads 执行 tech_graph_maintain_v2_member.sql 再推（cms 新代码依赖新列）。之后页面复原技术点3名称、跑线上 LOOP。cost red 待 architect 复盘
+      已上线：共享库 v2 迁移执行（含备份），PY e950699 / FE 6125a41 / Java 9b950725 部署；线上 vs 本地 12/12 一致，实体写链路线上实发通过（发现并修复 2 处缺陷），匿名写 401；用例改线上版 可演13/覆盖不到7/未填0。待补：带 token 线上写复测、示范专利-19 旧「合作」候选边物理清理（不影响展示）。cost red 待 architect 复盘
     supervised_by: "human:刘剑锋"
     claimed_at: "2026-11-11T03:53:10.901Z"
     last_seen_at: "2026-11-11T03:53:10.901Z"
     lock_until: "2026-11-11T07:53:10.901Z"
     claimed_by: "agent:coordinator-agent"
     title: "M10 维护管理：除 34–40 外全部需规补到可演示（PY+Java+FE 本地实现 + 本地 LOOP，人工确认后提交部署）"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "coordinator-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -63624,7 +63582,7 @@ tasks:
       - "本地隔离库（本机 MySQL）全链联调通过，本地 LOOP 报告落 TS-M10-DEMO-ACCEPT-LOOP.md，可演行全对得上"
       - "代码只留本地工作区，监管人人工确认可演示后才 commit/push/部署；共享库 DDL 与残留清理在部署时执行"
       - "handoff 含 ponytail 行、架构合规自检、cost 四字段"
-    update_time: "2026-11-11T17:10:07+08:00"
+    update_time: "2026-11-11T20:27:56+08:00"
   - id: TOPIC-GOLIVE-DEPLOY-DOCS-L01
     title: "科技专题服务系统 + 专题算法库：本周各出一版《上线部署方案》《部署手册》"
     status: "ready"
@@ -63657,66 +63615,15 @@ tasks:
       - "四份材料均对齐现网/预发实际拓扑、镜像、CI 流水线与回滚口径；占位项在文内标 TBD 并列责任人"
       - "handoff：agent-handoffs/TOPIC-GOLIVE-DEPLOY-DOCS-L01.md，附四份产物路径与模板对照表；目标本周（≤2026-11-15）"
     update_time: "2026-11-11T16:10:21+08:00"
-  - id: FE-TOPIC-SMALL-PORTAL-L01
-    supervised_by: "human:孔东"
-    claimed_at: "2026-11-11T08:16:01.360Z"
-    last_seen_at: "2026-11-11T08:16:01.360Z"
-    lock_until: "2026-11-11T16:16:01.360Z"
-    claimed_by: "agent:frontend-agent"
-    title: "专题小屏·门户接入与站点切换（iframe/权限/切站/path 对齐/全量路由）"
-    status: "in_progress"
-    agent: "frontend-agent"
-    epic: "E-FE-SMALL-SCREEN"
-    priority: "P0"
-    repo: "lumen-ui-topic-mobile"
-    delivery_phase: "implementation"
-    task_type: "feature"
-    effort_points: "8"
-    difficulty: "L"
-    estimated_tokens: 250000
-    note: "2026-11-11 用户会话裁定：监管人由 human:曹丽影 改为 human:孔东"
-    depends_on: []
-    design_refs:
-      - "agent-delivery/Design-mobile.md"
-      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md"
-      - "repos/lumen-ui-topic/docs/国科信项目统一门户 iframe 集成技术方案.md"
-    definition_of_done:
-      - "P0 portal 模块（10 文件）移植 mobile 仓，request/壳接线，env 补 VITE_PORTAL_ORIGINS/VITE_PORTAL_LOGIN_URL/VITE_TOPIC_PC_URL"
-      - "P1 nav.ts 全量对齐 PC menu.ts path（38 项 + 门户/CMS/VIZ/deep-link），未适配页挂 NotAdaptedView 兜底不 404；路由 path 与 PC 全量 diff selfcheck 入 pnpm test"
-      - "P2 菜单权限接线：get-permission-info URL 反查过滤侧栏与路由，无权限分流"
-      - "P3 设备自动切站：门户 device.change 双向 + 独立访问 UA/宽度自动落站（两仓）+ 防抖记忆"
-      - "P4 门户端到端联调通过：登录态/深链/权限/过期/切站 path 保持/域名反代 /tts/msvcz"
-      - "移动端菜单 path 与 PC 完全一致，一次性切换不留兼容层（用户 2026-11-11 裁定）"
-      - "pnpm test / type-check / build 全绿；会签 human:孔东"
-    update_time: "2026-11-11T16:44:19+08:00"
-  - id: POL-SIM-HEADER-SCORE-DATA
-    title: "政策效果推演 · 页头得分表建表 + v2 公式灌数（gapfill_policy_sim_score）"
-    status: "ready"
-    agent: "data-agent"
-    epic: "E-FE-POLICY-TRACKING"
-    priority: "P1"
-    repo: "lumen-algo-py"
-    delivery_phase: "implementation"
-    task_type: "feature"
-    effort_points: "3"
-    difficulty: "M"
-    estimated_tokens: 60000
-    note: |
-      真源 handoff：agent-delivery/agent-handoffs/POL-SIM-HEADER-SCORE-L01.md §三 移交清单（含完整 DDL）。页头三卡现显「得分待发布（D4 接入中）」，表建好灌数后即出数。QPOL-02 甲方归一+QA 通过后 is_mock 翻 0、镜像矩阵 D4 同步翻转，前端角标自动消失。铁律：只进 gkxlumenx_gapfill，不写 ODS/DWD/ADS/供应方库（D16/D18）。
-    collaborators:
-      - "algorithm-agent"
-    definition_of_done:
-      - "gkxlumenx_gapfill.gapfill_policy_sim_score 建表完成，DDL 脚本入库 lumen-algo-py/scripts/mysql/（风格对齐 gapfill_policy_sim_forecast.sql，显式 CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci，UNIQUE KEY uk_score_metric(row_kind,metric_id)）"
-      - "v2 公式灌数 job 落地：预估综合效果=有效率×0.5+力度均值×50；落地成效维=有效政策占比百分数值；布局建议=对冲计数（可为 0，阈值临时 55.0）；产 3 行 row_kind='页头卡'，is_mock=1、pending_ref='QPOL-02'，按 uk_score_metric 幂等 upsert"
-      - "线上 jobs POST /display/v1/policy/simulation/jobs body {\"kind\":\"页面得分\"} 返回 3 行；前端页头三卡出数（⚠️ 角标因 is_mock=1 仍在，符合 D9 诚实性，无需改前端）"
-      - "handoff 写入 agent-delivery/agent-handoffs/（引用真源 POL-SIM-HEADER-SCORE-L01.md §三 移交清单），cost 四字段回填"
-    update_time: "2026-11-11T17:43:31+08:00"
-
-
   - id: FE-DR-BE-API-REQ-L01
-    evidence: "agent-handoffs/科技数据资源-DR/FE-DR-BE-API-REQ-DRAFT.md"
+    claimed_at: "2026-11-11T12:21:31.544Z"
+    last_seen_at: "2026-11-11T12:21:31.544Z"
+    lock_until: "2026-11-11T16:21:31.544Z"
+    claimed_by: "agent:frontend-agent"
+    supervised_by: "human:淮政玮"
+    evidence: "agent-handoffs/科技数据资源-DR/FE-DR-BE-API-REQ-DRAFT.md; agent-handoffs/科技数据资源-DR/派单说明-DR-FE-BE-API-REQ.md"
     title: "科技数据资源：依据现有前端整理后台接口需求草稿（四 GET Dataset）"
-    status: "ready"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "E-FE-DATA-RESOURCES"
     priority: "P1"
@@ -63726,7 +63633,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "2026-11-11 首版草稿已落盘并推 origin/dev aab166e12。分工=前端只提后台四 GET Dataset 需求；现仓 api real()仍回种子未接网关。待人审后可推进 AV。监管建议 human:孔东。"
+    note: "frontend-agent 认领开工；审定四 GET Dataset 接口需求草稿"
     depends_on:
       - "BE-DR-CONTRACT-01"
     collaborators:
@@ -63744,8 +63651,9 @@ tasks:
       - "以 lumen-ui-science-pc 现实现（types/api/views/seed）为据，覆盖四视窗四个 GET；写明当前 real() 未接网关的事实"
       - "草稿落盘 agent-handoffs/科技数据资源-DR/FE-DR-BE-API-REQ-DRAFT.md；列出与契约/种子的待对齐项"
       - "不改业务仓代码；不替代 BE-DR-CONTRACT-01 已冻结正文"
-    update_time: "2026-11-11T19:26:43+08:00"
+    update_time: "2026-11-11T20:21:41+08:00"
   - id: BE-DR-FE-API-ALIGN-L01
+    supervised_by: "human:淮政玮"
     title: "科技数据资源：对照 FE 接口需求草稿与契约/C1-C4 出差异表"
     status: "backlog"
     agent: "api-agent"
@@ -63757,7 +63665,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 30000
-    note: "依赖 FE 草稿 ready/完工。监管建议 human:淮政玮。"
+    note: |
+      主交付=聚合服务调用科学数据中心上游接口需求表（界面|需规seq|中文名|入参必填|入参选填|期望出参），粒度粗即可；辅=FE↔契约/C差异。仅接口不做数据集成。派单：agent-handoffs/科技数据资源-DR/派单说明-DR-FE-BE-API-REQ.md；产物 BE-DR-SDC-UPSTREAM-API-REQ.md
     depends_on:
       - "FE-DR-BE-API-REQ-L01"
       - "BE-DR-CONTRACT-01"
@@ -63774,5 +63683,4 @@ tasks:
       - "逐键对照 FE-DR-BE-API-REQ-DRAFT 与 BE-DR-CONTRACT-01 / C1～C4 实现，输出差异表（一致/多种子键/缺键/多余键）"
       - "明确不扩四个 GET 以外路径；种子多出但类型无的键（如 totalCalls）是否禁止出站写进结论"
       - "handoff 落 agent-handoffs/科技数据资源-DR/；不改前端、不改契约冻结正文除非差异需变更且人批准"
-    update_time: "2026-11-11T19:25:05+08:00"
-
+    update_time: "2026-11-11T20:21:22+08:00"
