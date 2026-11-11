@@ -31,12 +31,12 @@
 
 | 块 | 判定 | 出处 | 缺口 |
 |---|---|---|---|
-| 统计卡「分析报告 128 份」 | **违规** | 写死字面量 | 无接口。FIX-01 |
-| 统计卡「焦点指数 78 分」 | **违规** | 写死字面量（契约=jobs 异步读 ads.policy_focus，页内 223 板块才接） | FIX-01 |
-| 统计卡「效果评分 86.5」 | **违规** | 写死（M_POLICY_EFFECT_SCORE 无读面出处） | FIX-01 |
+| 统计卡「分析报告 128 份」 | **✅ FIX-01 已修复（873fec6）** | 真轨恒空态卡「报告份数无读面出处」（分册无序号，不造数）；mock 轨保留种子 | 无 |
+| 统计卡「焦点指数 78 分」 | **✅ FIX-01 已修复** | 真轨轨读 gapfill_policy_sim_score（kind=页面得分）→ scoreNum；无行空态「得分待发布」，行带 is_mock/pending_ref → ⚠️ 角标 | 无 |
+| 统计卡「效果评分 86.5」 | **✅ FIX-01 已修复** | 同上（M_POLICY_EFFECT_SCORE） | 无 |
 | 统计卡「短板数」 | **A 合规** | counts 真轨 | 无 |
-| 统计卡「布局建议 8 套」 | **违规** | 写死（METRIC 分册明示 227–231 不挂 M_POLICY_LAYOUT_REC_COUNT） | FIX-01 |
-| 统计卡「机遇数 156 条」 | **违规** | 写死（READ 分册：机遇条数无本段序号） | FIX-01 |
+| 统计卡「布局建议 8 套」 | **✅ FIX-01 已修复** | 同上（M_POLICY_LAYOUT_REC_COUNT） | 无 |
+| 统计卡「机遇数 156 条」 | **✅ FIX-01 已修复** | 同上（M_POLICY_OPPORTUNITY_COUNT） | 无 |
 
 ### Tab1 report（分析报告可视化）
 
@@ -80,7 +80,7 @@
 
 | 单号 | 内容 | 强度 | 优先级 |
 |---|---|---|---|
-| `POL-L2-DS11-MOCKAUDIT-FIX-01` | 页头 5 张写死统计卡（128/78/86.5/8/156）：接真轨读面（焦点/机遇有分册出处；效果评分/布局建议/分析报告份数无出处→应显 — 或撤卡） | 2 点 | P1 |
+| `POL-L2-DS11-MOCKAUDIT-FIX-01` | **✅ 已修复（2026-11-11，lumen-ui-science-pc `873fec6`）**：页头 6 卡改 USE_MOCK 双轨——mock 轨保留种子字面量；真轨轨读 gapfill_policy_sim_score（同构 simulation 页 POL-SIM-HEADER-SCORE-L01 模式），有行出数带血缘 ⚠️、无行空态不伪 0；分析报告份数无读面出处 → 恒空态卡；短板数保持 counts 真轨。FE-POL-02A 新增 3a-2 段 4 组守卫（32 组全绿） | 2 点 | P1 |
 | `POL-L2-DS11-MOCKAUDIT-FIX-02` | **✅ 已修复（2026-11-11，lumen-ui-science-pc `70c42a0`）**：READ 四组件声明 `focusRanking/focusState/focusError/focusTaskId`、`serverEntries/entriesLoaded`、`serverLines/jobState/jobError/jobTaskId` 等 props 并消费真轨行；job 状态条 + 失败重试 + 诚实空态；种子降级为 USE_MOCK 轨默认。FE-POL-02A 自检新增 3c 段 5 组守卫断言（34 组全绿） | 3 点 | P1 |
 | `POL-L2-DS11-MOCKAUDIT-FIX-03` | Tab1 六个前端 fixture 卡（指标体系/三联画像/地理/落实率/话题热力/气泡）：无分册出处与接口 → 二选一：挂 A 类读面（需先立 DATA 单）或评审模式明确标「前端种子（无后端出处）」+ 上线态撤数据 | 2 点 | P2 |
 | `POL-L2-DS11-MOCKAUDIT-FIX-04` | `PolicyTextAnalysis` 种子直出且无角标：补 C 类标注或接 237 文本解析真轨 | 1 点 | P2 |
@@ -88,9 +88,9 @@
 
 ## 四、结论速览
 
-- **合规主力**：227–231 五叶全部读 `gapfill_policy_eval_scheme`（B），219/220/222 三叶读各自缺项表（B），223 短板数读 ADS（A）——**9/13 叶合规**；**FIX-02 完成后 223 看板（A）/224（B）/225（B）/226（A）接线合规，合规面升到 13/13 叶全绿**。
+- **合规主力**：227–231 五叶全部读 `gapfill_policy_eval_scheme`（B），219/220/222 三叶读各自缺项表（B），223 短板数读 ADS（A）——**9/13 叶合规**；**FIX-02 完成后 223 看板（A）/224（B）/225（B）/226（A）接线合规；FIX-01 完成后页头写死统计卡全部接真轨/空态——13/13 叶 + 页头全绿**。
 - **221** 诚实空态合规；**230 页内评价、231 前端导出**属契约内 C，不算 mock。
-- **剩余不合规**：① 页头 5 张写死统计卡（FIX-01）；② Tab1 六张无后端出处的种子直出卡（FIX-03）；③ 两处无角标裸奔（PolicyTextAnalysis FIX-04、评估指标体系卡 FIX-05）。
+- **剩余不合规**：① Tab1 六张无后端出处的种子直出卡（FIX-03）；② 两处无角标裸奔（PolicyTextAnalysis FIX-04、评估指标体系卡 FIX-05）。
 - **评审模式现状**：MockBadge 挂点较全（页内 ≥20 处），但全部无 reason 文案、且 A/B/C 三层不区分；`?review=1` 的闸门条只覆盖 Tab2/Tab3 流程演示，未做数据来源标注。
 
 ## 五、连库核对
