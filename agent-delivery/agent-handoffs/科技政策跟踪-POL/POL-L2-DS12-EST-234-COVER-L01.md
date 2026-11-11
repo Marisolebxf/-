@@ -22,7 +22,10 @@
 
 - `node .../simulationLive.test.mjs` 通过
 - 仓内 SQL INSERT 已见 `人才政策`/`科创政策` 区域行
-- **线上**：`python scripts/seed_gapfill_policy_sim_forecast.py --apply` **尚未执行**（等用户批准回灌）
+- **线上（2026-11-12 用户批准）**：
+  - `patch_gapfill_policy_sim_forecast_234_keys.py --apply`：粤×人才政策、深×科创政策各 1 行
+  - `seed_gapfill_policy_sim_forecast.py --apply`：推演按钮 success，written=30
+  - dry-run 复核区域行键已对齐
 
 ## 架构合规
 
@@ -31,5 +34,5 @@
 
 ## 待人
 
-1. 批准线上 gapfill `--apply`（或等价回灌）后 ACCEPT-LOOP 回验 234
-2. 前端仓改动待确认后再 push（`fe-manual-confirm-push`）
+1. ACCEPT-LOOP / 页面回验 234（粤×人才政策 → 地图+热力+三段原文）
+2. （本会话已授权）算法仓 + 前端仓 commit/push `origin/dev`
