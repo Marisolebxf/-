@@ -15,7 +15,7 @@ import { parseArgs } from 'node:util';
 import { validateJsonSchema } from './lib/mini-json-schema.mjs';
 import { loadPolicy, matchTableToPolicy, validatePolicy } from './lib/policy-file.mjs';
 
-export const VALIDATOR_VERSION = 'bugflow-state-p0-v7';
+export const VALIDATOR_VERSION = 'bugflow-state-p0-v8';
 export const SCHEMA_VERSION = 2;
 export const PROJECTION_VERSION = 'p0-v3';
 export const PHASES = [
@@ -61,6 +61,7 @@ const ALLOWED_TRANSITIONS = {
 const TOKENS = {
   enter_dev: '进入开发',
   ship: '提测',
+  acceptance: '验收通过',
 };
 
 const BASE_VERIFICATION_CATEGORIES = ['fix', 'regression'];
@@ -289,6 +290,16 @@ function projectGateBinding(gateName, binding) {
       data_scope_hash: binding.data_scope_hash,
     };
   }
+  if (gateName === 'acceptance') {
+    return {
+      work_item_id: binding.work_item_id,
+      claim_id: binding.claim_id,
+      ship_gate_hash: binding.ship_gate_hash,
+      dev_verification_result: binding.dev_verification_result,
+      evidence_manifest_hash: binding.evidence_manifest_hash,
+      current_status: binding.current_status,
+    };
+  }
   return {
     repos,
     risk_level: binding.risk_level,
@@ -362,7 +373,7 @@ export function validateStateShape(state) {
       errors.push(`decisions[${index}].ratified_by must start with human: when ratification is required`);
     }
   }
-  for (const gateName of ['enter_dev', 'ship']) {
+  for (const gateName of ['enter_dev', 'ship', 'acceptance']) {
     const gate = state.gates?.[gateName];
     if (gate?.status === 'approved') {
       if (!gate.bound_to) errors.push(`gates.${gateName}.bound_to is required when approved`);
@@ -428,6 +439,14 @@ function exactRepoSet(left, right) {
 function assertGateBinding(gateName, binding) {
   const errors = [];
   if (!binding || typeof binding !== 'object') throw new Error('GATE_BINDING_INVALID: binding must be an object');
+  if (gateName === 'acceptance') {
+    for (const key of ['work_item_id', 'claim_id', 'ship_gate_hash', 'dev_verification_result', 'evidence_manifest_hash', 'current_status']) {
+      requireString(binding[key], `bound_to.${key}`, errors);
+    }
+    if (binding.dev_verification_result !== 'PASS') errors.push('bound_to.dev_verification_result must be PASS');
+    if (errors.length) throw new Error(`GATE_BINDING_INVALID:\n- ${errors.join('\n- ')}`);
+    return;
+  }
   requireArray(binding.repos, 'bound_to.repos', errors);
   if (Array.isArray(binding.repos) && binding.repos.length === 0) errors.push('bound_to.repos must not be empty');
   const repoIds = (binding.repos ?? []).map((repo) => repo?.repo_id).filter(Boolean);
@@ -484,6 +503,19 @@ function sameStringSet(left, right) {
 function bindingStateErrors(state, gateName, binding, options = {}) {
   const errors = [];
   if (!binding || typeof binding !== 'object') return ['bound_to must be an object'];
+  if (gateName === 'acceptance') {
+    if (binding.work_item_id !== state.work_item.work_item_id) errors.push('work_item_id mismatch');
+    if (binding.claim_id !== state.ownership.claim_id) errors.push('claim_id mismatch');
+    if (binding.ship_gate_hash !== state.gates?.ship?.gate_hash) errors.push('ship_gate_hash mismatch');
+    if (binding.dev_verification_result !== state.ship_package?.dev_verification?.result) {
+      errors.push('dev_verification_result mismatch');
+    }
+    if (binding.evidence_manifest_hash !== state.evidence?.verification?.manifest_hash) {
+      errors.push('evidence_manifest_hash mismatch');
+    }
+    if (!normalizeSpace(binding.current_status)) errors.push('current_status is required');
+    return errors;
+  }
   if (!exactRepoSet(state.repos, binding.repos)) {
     errors.push('bound_to.repos must exactly equal state.repos');
   }
@@ -556,7 +588,7 @@ function assertBindingMatchesState(state, gateName, binding, options = {}) {
 
 export function approveGate(state, input) {
   const gateName = input.gate;
-  if (!TOKENS[gateName]) throw new Error('GATE_INVALID: gate must be enter_dev or ship');
+  if (!TOKENS[gateName]) throw new Error('GATE_INVALID: gate must be enter_dev, ship or acceptance');
   assertStateShape(state);
   if (typeof input.sessionId !== 'string' || input.sessionId.trim() === '') {
     throw new Error('GATE_CONTEXT_REQUIRED: --session-id is required');
@@ -567,13 +599,14 @@ export function approveGate(state, input) {
   const approvalPhases = {
     enter_dev: { first: 'READY_DEV', reconfirm: 'IMPLEMENTING' },
     ship: { first: 'READY_SHIP', reconfirm: 'SHIPPING' },
+    acceptance: { first: 'AWAITING_ACCEPTANCE', reconfirm: null },
   };
   const phases = approvalPhases[gateName];
   const firstApproval = state.phase === phases.first;
-  const reConfirmation = state.phase === phases.reconfirm
+  const reConfirmation = phases.reconfirm != null && state.phase === phases.reconfirm
     && ['needs_reconfirm', 'invalidated'].includes(state.gates[gateName]?.status);
   if (!firstApproval && !reConfirmation) {
-    throw new Error(`GATE_PHASE_INVALID: ${gateName} requires ${phases.first}, or ${phases.reconfirm} after invalidation`);
+    throw new Error(`GATE_PHASE_INVALID: ${gateName} requires ${phases.first}${phases.reconfirm ? `, or ${phases.reconfirm} after invalidation` : ''}`);
   }
   if (input.claimId && input.claimId !== state.ownership.claim_id) {
     throw new Error('GATE_CLAIM_MISMATCH: current claim does not match state.ownership.claim_id');
@@ -594,7 +627,12 @@ export function approveGate(state, input) {
     assertPhaseRequirements(state, 'DIAGNOSED');
     assertPhaseRequirements(state, 'READY_DEV');
   }
-  assertPhaseRequirements(state, gateName === 'enter_dev' ? 'IMPLEMENTING' : 'READY_SHIP');
+  if (gateName === 'acceptance') {
+    assertPhaseRequirements(state, 'AWAITING_ACCEPTANCE');
+  }
+  else {
+    assertPhaseRequirements(state, gateName === 'enter_dev' ? 'IMPLEMENTING' : 'READY_SHIP');
+  }
   assertGateBinding(gateName, input.binding);
   assertBindingMatchesState(state, gateName, input.binding);
   const at = isoNow();
@@ -627,7 +665,7 @@ export function approveGate(state, input) {
 }
 
 export function validateGate(state, gateName, context = {}) {
-  if (!TOKENS[gateName]) return { ok: false, code: 'GATE_INVALID', errors: ['gate must be enter_dev or ship'] };
+  if (!TOKENS[gateName]) return { ok: false, code: 'GATE_INVALID', errors: ['gate must be enter_dev, ship or acceptance'] };
   const gate = state.gates?.[gateName];
   if (!gate || gate.status !== 'approved') {
     return { ok: false, code: 'GATE_NOT_APPROVED', errors: [`gates.${gateName} is not approved`] };
@@ -683,6 +721,7 @@ function assertTransitionAllowed(from, to, state) {
 function transitionRequirement(state, to) {
   if (to === 'IMPLEMENTING') return 'enter_dev';
   if (to === 'SHIPPING') return 'ship';
+  if (to === 'RESOLVED' && state.acceptance?.mode === 'chat_exact') return 'acceptance';
   return null;
 }
 
@@ -914,7 +953,7 @@ function nextActionFor(phase, owner = 'agent') {
     READY_SHIP: '展示提测绑定对象并取得精确口令。',
     SHIPPING: '完成合并、dev 部署和流水线记录。',
     DEV_VERIFYING: '完成 dev 复测、验收步骤和提测总结。',
-    AWAITING_ACCEPTANCE: '等待人工在飞书完成业务验收，只记录外部状态迁移。',
+    AWAITING_ACCEPTANCE: '等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。',
     RESOLVED: '无需动作，缺陷已验收。',
     BLOCKED: '满足恢复条件后由负责人恢复。',
     REOPENED: '重新诊断并建立新的 cycle 绑定。',
@@ -928,10 +967,18 @@ function nextActionFor(phase, owner = 'agent') {
 function assertAcceptanceCanResolve(state) {
   const a = state.acceptance ?? {};
   const errors = [];
+  if (!['policy_only', 'chat_exact'].includes(a.mode)) errors.push('acceptance.mode must be policy_only or chat_exact');
   if (a.status !== 'approved') errors.push('acceptance.status must be approved');
   if (a.current_status !== 'RESOLVED') errors.push('acceptance.current_status must be RESOLVED');
-  if (a.operator_verified !== false) errors.push('acceptance.operator_verified must be false in P0');
+  if (a.operator_verified !== false) errors.push('acceptance.operator_verified must be false');
   requireString(a.evidence_ref, 'acceptance.evidence_ref', errors);
+  if (a.mode === 'chat_exact') {
+    const gate = state.gates?.acceptance;
+    if (!gate || gate.status !== 'approved') errors.push('gates.acceptance must be approved');
+    if (gate?.gate_hash !== a.gate_hash) errors.push('acceptance.gate_hash mismatch');
+    if (a.approval_message !== TOKENS.acceptance) errors.push('acceptance.approval_message must be 验收通过');
+    requireString(a.approval_ref, 'acceptance.approval_ref', errors);
+  }
   if (errors.length) throw new Error(`ACCEPTANCE_NOT_VERIFIED:\n- ${errors.join('\n- ')}`);
 }
 
@@ -1342,9 +1389,10 @@ export function setRisk(state, risk) {
     upgraded: state.risk.upgraded || upgraded,
   };
   if (upgraded) {
-    for (const name of ['enter_dev', 'ship']) {
-      if (['approved', 'needs_reconfirm'].includes(state.gates[name].status)) {
-        state.gates[name].status = state.risk.level === 'L' ? 'invalidated' : 'needs_reconfirm';
+    for (const name of ['enter_dev', 'ship', 'acceptance']) {
+      const gate = state.gates?.[name];
+      if (gate && ['approved', 'needs_reconfirm'].includes(gate.status)) {
+        gate.status = state.risk.level === 'L' ? 'invalidated' : 'needs_reconfirm';
       }
     }
   }
@@ -1683,9 +1731,13 @@ export function recordReview(state, review) {
 
 export function recordAcceptance(state, acceptance, options = {}) {
   if (!acceptance || typeof acceptance !== 'object') throw new Error('ACCEPTANCE_INVALID: acceptance must be an object');
+  const mode = acceptance.mode ?? 'policy_only';
+  if (!['policy_only', 'chat_exact'].includes(mode)) {
+    throw new Error('ACCEPTANCE_INVALID: mode must be policy_only or chat_exact');
+  }
   const normalized = {
     ...acceptance,
-    mode: 'policy_only',
+    mode,
     operator_verified: false,
   };
   if (!['pending', 'approved', 'rejected'].includes(normalized.status)) {
@@ -1705,6 +1757,24 @@ export function recordAcceptance(state, acceptance, options = {}) {
     if (typeof normalized.observed_at !== 'string' || normalized.observed_at.trim() === '') {
       throw new Error('ACCEPTANCE_INVALID: observed_at is required');
     }
+    if (mode === 'chat_exact') {
+      const gate = state.gates?.acceptance;
+      if (!gate || gate.status !== 'approved') {
+        throw new Error('ACCEPTANCE_INVALID: chat_exact requires an approved acceptance gate');
+      }
+      if (gate.token_text !== TOKENS.acceptance) {
+        throw new Error('ACCEPTANCE_INVALID: acceptance gate token must be 验收通过');
+      }
+      normalized.approval_message = TOKENS.acceptance;
+      normalized.approval_ref = acceptance.approval_ref ?? gate.message_ref;
+      if (typeof normalized.approval_ref !== 'string' || normalized.approval_ref.trim() === '') {
+        throw new Error('ACCEPTANCE_INVALID: approval_ref is required for chat_exact');
+      }
+      normalized.approved_at = gate.approved_at;
+      normalized.approval_session_id = gate.approved_session_id;
+      normalized.approval_machine_id = gate.approved_machine_id;
+      normalized.gate_hash = gate.gate_hash;
+    }
     if (options.runDir) {
       const manifest = readJson(join(options.runDir, 'evidence', 'manifest.json'));
       const verification = verifyEvidence(state, manifest, options.runDir);
@@ -1716,7 +1786,7 @@ export function recordAcceptance(state, acceptance, options = {}) {
   assertStateShape(state);
   state.acceptance = normalized;
   state.next_action = normalized.status === 'approved'
-    ? { owner: 'agent', action: '读取飞书外部迁移证据并将内部阶段推进为 RESOLVED。' }
+    ? { owner: 'agent', action: mode === 'chat_exact' ? '将内部阶段推进为 RESOLVED，并记录 chat_exact 验收 gate。' : '读取飞书外部迁移证据并将内部阶段推进为 RESOLVED。' }
     : nextActionFor(state.phase);
   state.updated_at = isoNow();
   return state.acceptance;
@@ -1805,7 +1875,7 @@ export function setDataScope(state, scope, options = {}) {
   assertStateShape(state);
   state.data_policy.scope = normalized;
   state.data_policy.scope_hash = sha256(normalized);
-  for (const gateName of ['enter_dev', 'ship']) {
+  for (const gateName of ['enter_dev', 'ship', 'acceptance']) {
     if (state.gates?.[gateName]?.status === 'approved') {
       state.gates[gateName].status = 'invalidated';
       state.gates[gateName].validation = {
@@ -1928,8 +1998,8 @@ export function takeoverState(state, input) {
   state.ownership.session_id = input.sessionId;
   state.ownership.machine_id = input.machineId;
   state.ownership.current_owner = input.owner ?? 'current_user';
-  for (const gateName of ['enter_dev', 'ship']) {
-    if (state.gates[gateName].status === 'approved') state.gates[gateName].status = 'needs_reconfirm';
+  for (const gateName of ['enter_dev', 'ship', 'acceptance']) {
+    if (state.gates?.[gateName]?.status === 'approved') state.gates[gateName].status = 'needs_reconfirm';
   }
   state.next_action = { owner: 'agent', action: '接管已记录；重新校验仓库、证据和边界，必要时重新请求当前 gate 口令。' };
   state.updated_at = at;
@@ -1944,7 +2014,7 @@ function blankCycleFields(state) {
   state.implementation = { repos: [] };
   state.review = { repos: [] };
   state.verification_matrix = [];
-  state.gates = { enter_dev: { status: 'pending', bound_to: null }, ship: { status: 'pending', bound_to: null } };
+  state.gates = { enter_dev: { status: 'pending', bound_to: null }, ship: { status: 'pending', bound_to: null }, acceptance: { status: 'pending', bound_to: null } };
   state.ship_package = { repos: [], acceptance_steps: [], dev_verification: { result: 'PENDING', evidence_refs: [] }, summary: null };
   state.acceptance = {
     status: 'pending',
@@ -2112,6 +2182,7 @@ export function createInitialState(input) {
     gates: {
       enter_dev: { status: 'pending', bound_to: null },
       ship: { status: 'pending', bound_to: null },
+      acceptance: { status: 'pending', bound_to: null },
     },
     ship_package: {
       repos: [],
@@ -2180,7 +2251,7 @@ function listOrPending(items, formatter = (x) => String(x)) {
 export function renderReport(state, manifest = { items: [] }) {
   const risk = state.risk ?? { level: 'PENDING', reasons: [] };
   const dataTables = state.data_policy?.scope?.tables ?? [];
-  const gateRows = ['enter_dev', 'ship']
+  const gateRows = ['enter_dev', 'ship', 'acceptance']
     .map((name) => {
       const g = state.gates?.[name] ?? { status: 'PENDING' };
       return `| ${name} | ${md(g.status)} | ${md(g.token_text)} | ${md(g.gate_hash)} |`;
@@ -2283,12 +2354,15 @@ ${listOrPending(state.ship_package?.repos, (r) => `${md(r.repo_id)}：ship_order
 
 ${listOrPending(state.ship_package?.acceptance_steps, (step) => md(step))}
 
-## 10. 人工验收步骤
+## 10. 精确验收与飞书状态迁移
 
 - 飞书当前状态：${md(state.acceptance?.work_item_status ?? state.acceptance?.current_status)}
 - 验收证据：${md(state.acceptance?.evidence_ref)}
 - 验收结论：${md(state.acceptance?.status)}
-- Agent 不主动调用 \`transition_state\` 将缺陷置为 RESOLVED；只在飞书已出现业务状态迁移后读取并记录。
+- 验收模式：${md(state.acceptance?.mode)}
+- 验收口令：${md(state.acceptance?.approval_message)}
+- 审批引用：${md(state.acceptance?.approval_ref)}
+- chat_exact 验收：仅在收到完整精确消息 \`验收通过\` 后，经 acceptance gate 校验并由 Agent 调用飞书状态迁移。
 
 ## 11. Gate 状态与绑定对象
 
@@ -2299,6 +2373,8 @@ ${gateRows}
 enter_dev bound_to：${md(state.gates?.enter_dev?.bound_to ? JSON.stringify(state.gates.enter_dev.bound_to) : null)}
 
 ship bound_to：${md(state.gates?.ship?.bound_to ? JSON.stringify(state.gates.ship.bound_to) : null)}
+
+acceptance bound_to：${md(state.gates?.acceptance?.bound_to ? JSON.stringify(state.gates.acceptance.bound_to) : null)}
 
 ## 12. 自动决策摘要
 
@@ -2369,7 +2445,7 @@ function main() {
   });
   const command = positionals[0];
   if (!command || values.help) {
-    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append one audited evidence item\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record observed Feishu acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
+    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append one audited evidence item\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record policy-only or exact 验收通过 acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
     return;
   }
   const evidenceRefs = values['evidence-ref'] ?? [];

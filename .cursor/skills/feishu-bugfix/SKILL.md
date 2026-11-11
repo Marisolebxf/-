@@ -65,7 +65,7 @@ Immediately after selecting the bug, and before downloading images, inspecting c
 3. Add one concise `[agent-claim]` comment with `【auto_number】title`, claim/session ID, timestamp and scope.
 4. Preserve `claim_comment_ref` and `claim_operator` in the run ledger.
 5. If already `IN PROGRESS`, treat it as another active run and stop. Take over only for the complete message `接管【auto_number】`.
-6. Never transition the bug to `RESOLVED`; final acceptance belongs to a human/business action.
+6. Never transition the bug to `RESOLVED` until the human sends the complete exact message `验收通过` (or `验收通过<auto_number>` when multiple active runs). Natural language such as “可以了”“没问题”“算修复了” does not unlock acceptance.
 
 Use human-readable references in conversation and comments: `【auto_number】title（内部ID: work_item_id）`.
 
@@ -116,7 +116,7 @@ Record the chosen risk level and verification plan. Do not apply a frontend play
 
 When one Feishu bug requires changes in multiple repositories:
 
-- keep one Feishu work item, one claim, one run ledger, one Bug Contract and the same two chat gates;
+- keep one Feishu work item, one claim, one run ledger, one Bug Contract and the same development/ship/acceptance gates;
 - if another repository is discovered later, add it to the existing Bundle and invalidate the current gate; never create a second Feishu bug for the same defect;
 - record every repository in `state.repos[]` with `role`, `depends_on` and `ship_order`;
 - use risk **M** at minimum; cross-repo alone is no longer L and is never a reason to split the bug;
@@ -173,6 +173,9 @@ init -> record-diagnosis -> record-plan -> set-repos
 -> approve-gate ship -> advance SHIPPING
 -> record-ship-package -> verify-evidence
 -> advance DEV_VERIFYING -> advance AWAITING_ACCEPTANCE
+-> exact 验收通过 -> approve-gate acceptance
+-> Feishu transition_state RESOLVED -> record-acceptance(mode=chat_exact)
+-> advance RESOLVED
 ```
 
 Use `block`, `cancel`, `reopen`, `takeover` for side paths. Write data authorization through `check-data-write`, never by editing policy fields.
@@ -183,6 +186,7 @@ Read `references/P0-DESIGN.md` only when gate/hash/evidence details matter.
 
 - `进入开发` authorizes the complete repository set in the Bundle, one dedicated fix branch per repo and Draft MRs. Request it only after the Bug Contract, scope, dependency order, plan and current baseline are explicit.
 - `提测` authorizes merge to `dev`, push, CI/CD, dev deployment and one dev verification. It never authorizes production.
+- `验收通过` authorizes one Feishu `RESOLVED` transition only when the run is at `AWAITING_ACCEPTANCE`; it never authorizes production or bypasses claim/session/evidence checks.
 - Rework after failed acceptance within the same scope and risk keeps the existing claim and source analysis; redo diff/review/verification and request only `提测` again.
 - Scope expansion, adding a repository to the Bundle, changing Bundle dependency order, data write, permission model change, production risk or L routing invalidates old assumptions and requires a fresh decision.
 
@@ -224,10 +228,15 @@ At `AWAITING_ACCEPTANCE`:
 
 - write the ship summary to Feishu with fix, tests, pipeline, image and rollout;
 - list concise manual acceptance steps;
-- wait for the human to move the Feishu state to `RESOLVED` or back to `REOPENED`;
-- record the observed status; never call `transition_state` to resolve it yourself.
+- wait for the human’s complete exact message `验收通过` (or `验收通过<auto_number>` when multiple active runs);
+- reject “可以了”“没问题”“算修复了” and other natural-language inference;
+- call `get_transitable_states` and `get_transition_required` for the current work item;
+- approve the `acceptance` gate using the exact message and binding built from the current claim, ship gate hash, dev verification and verified evidence manifest;
+- call `transition_state` with the returned legal transition and satisfy required fields first;
+- record `mode=chat_exact`, `approval_message=验收通过`, approval ref/session/machine, the Feishu transition result and acceptance evidence;
+- advance the ledger to `RESOLVED` only after the Feishu transition succeeds.
 
-Only the claim comment, ship summary and final acceptance summary are required external comments. Do not write one comment per internal phase.
+If the human moves Feishu manually without the exact chat token, keep the existing `policy_only` observation path and do not fabricate an acceptance gate. Only the claim comment, ship summary and final acceptance summary are required external comments.
 
 ## Time boxes and stop-loss
 

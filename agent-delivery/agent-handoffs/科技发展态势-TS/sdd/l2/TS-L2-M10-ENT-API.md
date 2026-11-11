@@ -95,3 +95,18 @@
 - 不做合并/拆分 redirect（首版查重命中只提示「仍新建」，DATA 册同步裁定）
 - 不做 conflicts 实际逻辑（reserved）
 - 不新造 metric_id（叶 41 沿 M_TECH_GRAPH_105_1，METRIC 册）
+
+## 增量 2026-11-11（TS-L2-M10-DEMO-FULL-L01，以实现为准）
+
+真源：`agent-handoffs/科技发展态势-TS/TS-L2-M10-DEMO-FULL-L01-方案.md` §2.1。要点：
+
+- R1 `recommend-entities` 新增 `entityType`（含中文别名）、`yearFrom` / `yearTo`、`page` / `size`（默认 20，最大 100）；`keyword` 改为服务端过滤，不区分大小写。返回 `{items,total,page,size}`，排除该技术点的成员实体。
+- 挂接状态改由 ADS `graph_entity_member` 表达（含挂接时 `snapshot_strength` / `snapshot_time_to`），与边解耦：
+  - `delete_entity_edge` 只删边，两端实体保留。
+  - `unhang_entities` 删成员与人工边，按快照回写候选边。
+  - 成员表缺失时回退旧语义。
+- R2 节点增加 `description`；实体 `entity_type` 为生效类型（overlay `type` 覆盖）。
+- `update_entity_overlay.patch.type` 生效（person / institution / paper / patent）；`update_entity_edge.strength_manual` 限 0–10，`time_range.from ≤ to`。
+- `changes:validate` 改为结构与存在性校验：违例返回 422 / 42201 + `errors[]`；通过时返回 `summary` 与中文 `preview[].desc`。`POST /changes` 提交前跑同一套校验。
+- `publish` 返回 `results{succeeded,failed,failed_items}`；`impact` 对不存在的技术点返回 404 / 40401。
+- display 写入口（changes / validate / publish）要求登录：开关 `gkxlumen.maintain.write-require-login` 默认 true，未登录返回 401 / 40101。
