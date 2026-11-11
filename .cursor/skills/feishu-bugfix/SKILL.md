@@ -203,6 +203,12 @@ Before merge:
 3. Merge/rebase only the authorized candidates and push `dev` in Bundle `ship_order`.
 4. Track every repository's pipeline, image tag, deployed SHA and rollout; do not verify only the last repository.
 
+Pipeline wait rule: follow only pipelines whose commit contains the authorized candidate (`git merge-base --is-ancestor <candidate> <pipeline-sha>`). Stop waiting for that repository at the first terminal success: pipeline success plus successful deploy/rollout, or a current live deployed SHA that contains the candidate. If the first pipeline is canceled or superseded, continue to the next candidate-containing pipeline and stop at its first terminal success. Do not switch to an unrestricted "latest dev pipeline" poll.
+
+Record the terminal success in `ship_package.pipeline_id/pipeline_status/pipeline_url/deployed_sha`; later unrelated pipelines belong in the observation/summary, not in the blocking state.
+
+A later pipeline on a newer commit is outside this run's stop condition. If it is still running, or fails with deploy skipped, do not block this run when the last successful deployed SHA still contains the candidate; record the observation and verify the current live deployment. Only a failure before any candidate-containing terminal success belongs to this run's pipeline failure path. For a Bundle, each repository independently needs one terminal success.
+
 If remote `dev` advances after the first full local validation, decide whether a second full local pass is necessary instead of automatically rebuilding:
 
 ```bash
@@ -222,7 +228,8 @@ node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.mjs \
 
 Classify failures as `merge`, `push`, `pipeline`, `rollout`, `dev_verify` or `rework`.
 
-- Unrelated baseline/CI failure: block with owner and URL; do not increment the bug patch round.
+- Unrelated baseline/CI failure before candidate deployment: block with owner and URL; do not increment the bug patch round.
+- Later unrelated running/failed pipeline after candidate deployment: record as observation only; do not wait indefinitely and do not increment the patch round when live SHA still contains the candidate.
 - Same environmental/runner failure twice with no progress: block and retry only after the condition changes.
 - Code failure: fix, increment the patch round, and stop after 3 rounds.
 

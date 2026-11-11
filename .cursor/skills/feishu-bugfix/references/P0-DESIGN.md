@@ -269,6 +269,17 @@ GitLab 保护分支、MR approve 和仓库发布规则优先；`提测`不绕过
 5. 记录回退 commit、Pipeline、回退后的健康检查和证据；旧 `ship` gate 自动失效，重新修复后必须重新发送 `提测`；
 6. 无法安全回退时进入 `BLOCKED`，等待人工处置。
 
+流水线等待采用“候选提交首次终端成功”语义，而不是“跟踪最新 dev 流水线直到全部结束”：
+
+- 只跟踪 commit 包含当前 candidate 的 Pipeline；用 `git merge-base --is-ancestor <candidate_sha> <pipeline_sha>` 校验包含关系；
+- 某 Pipeline `success` 且 deploy/rollout `success`，或当前 live deployed SHA 已包含 candidate，即构成该仓库的终端成功，停止等待；
+- 本 run 的首个 Pipeline 被取消/覆盖时，继续等待下一个包含 candidate 的 Pipeline，首个终端成功即可结束；
+- 在已取得终端成功后，同事随后触发的新 Pipeline 无论 running、failed 还是 deploy skipped，都属于后续 dev 活动，不得让当前 run 无限等待；记录观测事实，并继续以当前包含 candidate 的 live deployed SHA 做 dev 验证；
+- 只有“尚未出现任何 candidate-containing 终端成功”时，Pipeline/rollout 失败才进入本 run 的 `DEV_VERIFY_FAILED` 或 `BLOCKED`；
+- 多仓 Bundle 每个仓库独立取得至少一个终端成功，不要求所有仓库复用同一条 Pipeline 序列。
+
+`ship_package.pipeline_id/pipeline_status/pipeline_url/deployed_sha` 记录该仓库的终端成功实例；后续无关 Pipeline 只能写入观测摘要，不能覆盖终端成功事实或让 run 持续等待。
+
 ### 6.4 验收
 
 `AWAITING_ACCEPTANCE` 只接受完整精确消息 `验收通过`。多 active run 时必须使用 `验收通过<auto_number>` 或 `验收通过 <auto_number>`。自然语言同意、否定句、引用口令的问答和其他会话中的授权都不能替代。
