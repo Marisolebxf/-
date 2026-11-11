@@ -24,7 +24,7 @@
 
 | 序号 | 公开资源 | 读法 |
 |---|---|---|
-| 213 | `GET /display/v1/policy/panorama/version-diff` | 同步。element 只读 `gapfill_policy_version_diff`。时点用已有发布时间。无行则空 |
+| 213 | `GET /display/v1/policy/panorama/version-diff` | 同步。element 只读 `gapfill_policy_version_diff`；同次透传配对级 `analysis_text`（只读 `gapfill_policy_version_analysis`）。时点用已有发布时间。无行则空 |
 | 214 正文 | `GET /display/v1/policy/panorama/search` 与 `GET /display/v1/policy/panorama/{id}/detail` | 同步。正文委托 topic-policy。受理部门读正文 |
 | 214 条件、材料、优缺点 | 同一条 `GET /display/v1/policy/panorama/{id}/detail` | 同步。同一次详情。element 只读 `gapfill_policy_detail_compare`（含 `pros_text`/`cons_text`） |
 | 214 力度分 | `POST /display/v1/policy/panorama/jobs` | Job。`sub_type=policy_intensity`。display 只提交 `analysis/tasks` |
@@ -48,7 +48,7 @@
 
 | 公开资源 | 内部委托 |
 |---|---|
-| `panorama/version-diff` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_version_diff` |
+| `panorama/version-diff` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_version_diff`，并同次只读 `gapfill_policy_version_analysis` 透传 `analysis_text`（无行则 null）。分析文由 Python `/internal/policy/version-analysis/enrich` 写入，不在本 GET 同步调 LLM |
 | `panorama/search` | `gkxlumen-display` → `gkxlumen-topic-policy`：`GET /topic/v1/policy/search`。正文委托这一条 |
 | `panorama/{id}/detail` | `gkxlumen-display` → `gkxlumen-topic-policy`：`GET /topic/v1/policy/docs/{id}`。申报条件、申报材料、优点、缺点由 `gkxlumen-element` 在同一次详情只读 `gapfill_policy_detail_compare`。受理部门只取正文 |
 | `panorama/stats` | 区域、类别、总件数委托 `gkxlumen-topic-policy`（已有地区分布、已有选项、`M_POLICY_TOTAL_COUNT`）。实施部门由 `gkxlumen-element` 只读 `gapfill_policy_impl_dept`。`M_POLICY_SUPPORT_STRENGTH` 由 `gkxlumen-element` 同步只读 `ads.policy_intensity`。勾「政策类型」时同一次统计由 element 只读 `dwd.policy_base_info` 文种按省聚合（2026-11-11 增补） |
@@ -71,7 +71,9 @@ trace 沿既有展示链。同步读在 display 往下带 traceId。Job 沿已�
 
 `gkxlumen-element` 按这条政策和两个发布时间只读 `gkxlumenx_gapfill.gapfill_policy_version_diff`。一行是同一政策的一个变更：两个发布时间、变更类型（新增、修改、删除）、一句摘要。表不写入 ODS、DWD、ADS。
 
-灌数是独立脚本（`POL-L2-DS10-CMP-GAPFILL-L01`），不是请求处理。本分册不写 DDL。列由 `POL-L2-DS10-CMP-DATA` 定。
+同一次响应另带顶层 `analysis_text`：按同一政策与两个发布时间只读 `gapfill_policy_version_analysis`（至多一行）；无行则 `null`。展示不在本 GET 调 Python / LLM。
+
+灌数是独立脚本（`POL-L2-DS10-CMP-GAPFILL-L01` / 213-ANALYSIS seed），不是请求处理。分析文也可由 `POST /internal/policy/version-analysis/enrich`（LLM）写入。本分册不写 DDL。列由 `POL-L2-DS10-CMP-DATA` 定。
 
 两个发布时间对不上行则对比空。HTTP 成功。不在接口里拼一段高亮，不返回写死差异。不返回 501。
 
@@ -94,6 +96,12 @@ trace 沿既有展示链。同步读在 display 往下带 traceId。Job 沿已�
 某一列无行则该列空。HTTP 成功。不返回写死的条件或材料。不返回 501。
 
 灌数是 `POL-L2-DS10-CMP-GAPFILL-L01`，不是请求处理。本分册不写 DDL。表不写入 ODS、DWD、ADS。
+
+### 4.2.1 优缺点 LLM 补写 · jobs（2026-11-12，PROS-LLM）
+
+公开资源：`POST /display/v1/policy/panorama/jobs`。`sub_type=policy_detail_pros_cons`。`params.policy_ids` 为当次对比所选政策。
+
+链路与力度分同构：display 只调 `POST /topic/v1/analysis/tasks` → Adapter → `POST /internal/policy/jobs/execute`。Python 读 DWD 正文，对 `pros_text`/`cons_text` 皆空的政策调用 LLM，写入 `gapfill_policy_detail_compare`（`fill_method=llm-synth`）。已有非空跳过。无密钥或失败不写假文。前端再拉 detail 展示。切条件不自动起任务。
 
 ### 4.3 力度分 · jobs
 

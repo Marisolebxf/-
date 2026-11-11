@@ -24,6 +24,7 @@
 | 表 | 序号 | 灌数方 | 读取方 |
 |---|---|---|---|
 | `gapfill_policy_version_diff` | 213 | `POL-L2-DS10-CMP-GAPFILL-L01` | `gkxlumen-element` |
+| `gapfill_policy_version_analysis` | 213-3 演变趋势说明 | `POL-L2-DS10-CMP-213-ANALYSIS-FDE`（seed / LLM enrich） | `gkxlumen-element`（`version-diff` 透传） |
 | `gapfill_policy_detail_compare` | 214 的申报条件、申报材料、优点、缺点 | 同上 | `gkxlumen-element` |
 | `gapfill_policy_impl_dept` | 215 的实施部门 | 同上 | `gkxlumen-element` |
 | `gapfill_policy_benchmark_report` | 217 | 同上 | `gkxlumen-element` |
@@ -99,6 +100,30 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 
 同一政策、同一对日期可以有多行，按变更类型和摘要分开。查询把对上的行一起返回。表空，或两个日期对不上，则对比空。查询不插入行。
 
+### 3.1 213-3 演变趋势说明（配对级）
+
+库 `gkxlumenx_gapfill`，表 `gapfill_policy_version_analysis`。一行是同一政策、同一对发布时间上的一句演变趋势说明。不是 diff 行摘要，不塞进 `summary_text`。
+
+拣行键：`policy_id` + 两个发布日期（次序对调仍命中）。至多一行。
+
+灌数方：seed（可演样本）与 `POST /internal/policy/version-analysis/enrich`（LLM）。合成历史版路径在写入 diff 后可顺带 enrich。读取方：`gkxlumen-element`，经 `GET /display/v1/policy/panorama/version-diff` 顶层字段 `analysis_text`。不写入 ODS、DWD、ADS。
+
+| 列 | 类型 | 空 | 约束 |
+|---|---|---|---|
+| `id` | bigint | 否 | 行键。自增 |
+| `policy_id` | varchar(100) | 否 | 与 diff 表同一业务键 |
+| `publish_date_a` | date | 否 | 两个发布时间之一 |
+| `publish_date_b` | date | 否 | 另一个发布时间 |
+| `analysis_text` | text | 否 | 一句演变趋势说明（含两时点） |
+| `is_mock` | tinyint | 否 | 每行必须为 1 |
+| `metric_id` | varchar(64) | 是 | 留空 |
+| `gap_item` | varchar(128) | 否 | 固定 `213 政策新旧对比·分析` |
+| `fill_method` | varchar(16) | 否 | `manual`（seed）或 `llm` / `llm-synth` |
+| `gapfill_batch_id` | varchar(64) | 否 | 批次 |
+| `generated_at` | datetime | 否 | 写入时间 |
+
+唯一约束：同一政策同一对日期一行（实现可用应用层 upsert；DDL 可加唯一索引 `(policy_id, publish_date_a, publish_date_b)` 并在写入前规范化日期次序）。
+
 ## 4. 214 政策详情对比
 
 三块落点分开。接口按块读表，不把三块拼成一段写死的对比文案。
@@ -129,6 +154,8 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 | `generated_at` | datetime | 否 | 行写入时间 |
 
 存量库：`ALTER TABLE ... ADD COLUMN pros_text/cons_text` 后由灌数脚本回填。不设 `fill_model`。不设申报时间、受理部门、产业类别、力度分。某一列无行则该列空。查询不插入行。
+
+**优缺点 LLM 补写（2026-11-12，`POL-L2-DS10-CMP-PROS-LLM-L01`）**：`POST /display/v1/policy/panorama/jobs`，`sub_type=policy_detail_pros_cons`。Python 仅当该 `policy_id` 行不存在，或存在但 `pros_text`/`cons_text` 去空白后皆空时写入；`fill_method=llm-synth`，`gap_item` 仍为 `214 政策详情对比`。已有非空优缺点不覆盖。无密钥/失败不造假文。不写入 ODS/DWD/ADS。
 
 ## 5. 215 部门政策对比
 
