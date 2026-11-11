@@ -167,6 +167,23 @@ Before merge:
 3. Merge/rebase only the authorized candidate and push `dev`.
 4. Track the real pipeline, image tag, deployed SHA and rollout.
 
+If remote `dev` advances after the first full local validation, decide whether a second full local pass is necessary instead of automatically rebuilding:
+
+```bash
+node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.mjs \
+  --repo-dir <repo> \
+  --candidate-ref <candidate-sha> \
+  --remote-ref origin/dev \
+  --remote-pipeline-status success \
+  --premerge-checks-passed \
+  --json
+```
+
+- `no_revalidation`: candidate already reached remote; do not rebuild.
+- `targeted`: remote is green, conflict-free and disjoint; run `git diff --check` plus the narrow target test, then rely on CI for full integration.
+- `full`: candidate files overlap, remote touches shared config/types/API/dependencies, pipeline is unknown, or pre-merge checks were not completed; rerun type-check/build and the relevant regression set.
+- `block`: baseline is red; stop and report the owner instead of charging another patch round.
+
 Classify failures as `merge`, `push`, `pipeline`, `rollout`, `dev_verify` or `rework`.
 
 - Unrelated baseline/CI failure: block with owner and URL; do not increment the bug patch round.

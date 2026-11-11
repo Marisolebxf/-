@@ -18,6 +18,7 @@
 4. S 级验证至少覆盖 `fix + regression`；M/L 追加至少一个适用非 happy-path 类别。允许类别为 `boundary/integration/data/algorithm/security/performance/rollback`。
 5. 同一缺陷、同一范围和风险的验收返工保留 claim 与既有诊断，只重做候选 diff、评审和验证，并重新请求 `提测`；只有范围/风险变化才重新请求 `进入开发`。
 6. 增加时间盒：S 目标 30–60 分钟、M 目标 1–2 小时；同一环境故障连续两次无进展即 block。
+7. 并发 push 后使用 `scripts/revalidation-plan.mjs` 做复验分级：远端基线绿、无冲突且与候选文件不重叠时只做目标复验并交给 CI 全量验证；重叠或触及共享配置/types/API/依赖时重新执行完整本地验证。
 
 ## 1. 已确认决策
 

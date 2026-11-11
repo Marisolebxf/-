@@ -88,6 +88,8 @@ P0 不在每个 gate 写飞书评论。外部只保留认领时的 `[agent-claim
   scripts/
     bugflow-state.mjs
     bugflow-state.selfcheck.mjs
+    revalidation-plan.mjs
+    revalidation-plan.selfcheck.mjs
     sync-bugfix-skill.mjs
     lib/
   templates/
@@ -181,6 +183,7 @@ S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳�
 ```bash
 node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs --help
 node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs
+node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.selfcheck.mjs
 ```
 
 Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos → set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（基础 fix/regression；M/L 追加适用类别）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在提测授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。

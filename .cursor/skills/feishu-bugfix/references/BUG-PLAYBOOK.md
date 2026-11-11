@@ -138,3 +138,24 @@ S 级允许只有 `fix + regression`；M/L 必须有至少一个非 happy-path �
 - 验收失败但范围不变：保留 claim 和已核实的业务依据，直接修；重新做 diff/review/verification，只需重新 `提测`，不重复 `进入开发`。
 - 范围扩大到新仓、数据写入、权限模型、生产或 L 级：旧 gate 失效，重新确认并路由长任务。
 - 基线失败不属于当前补丁轮次，不得用它增加 `patch_round`。
+
+## 9. 远端并发 push 后的复验
+
+已经在候选分支完成过一次完整本地验证后，远端目标分支又前进时，不要机械地重跑全部命令。先运行：
+
+```bash
+node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.mjs \
+  --repo-dir <repo> --candidate-ref <sha> --remote-ref origin/dev \
+  --remote-pipeline-status success --premerge-checks-passed --json
+```
+
+决策规则：
+
+| 决策 | 条件 | 本地动作 |
+|---|---|---|
+| `no_revalidation` | 候选已在远端 | 不重建，继续观察远端流水线 |
+| `targeted` | 远端 pipeline 绿、无冲突、文件与候选不重叠且不涉及共享契约 | `git diff --check` + 目标测试；类型/构建交给 CI |
+| `full` | 文件重叠，或远端修改 `package/lock/tsconfig/vite/.gitlab-ci/AGENTS/src/config/api/types/stores/router`，或 pipeline 状态未知 | 重新跑目标测试、type-check、build |
+| `block` | 远端基线 pipeline 红 | 停止并找基线负责人，不计当前补丁轮次 |
+
+“不重叠”不等于“同目录就安全”。判断依据是实际 changed files 和敏感共享文件；只要对本修复的依赖关系没有把握，选择 `full`。
