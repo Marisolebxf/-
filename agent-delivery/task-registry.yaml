@@ -64077,3 +64077,127 @@ tasks:
       - "demo 平面不受影响（NodePort/资源隔离保持）"
       - "handoff 含复现命令、改动 diff 摘要、验收证据；ponytail + cost 四字段"
     update_time: "2026-11-12T02:49:12+08:00"
+  - id: POL-L2-DS11-VIZ-GAPFILL-L02-DATA
+    title: "政策分析评价 · 可视化 · FIX-03 七空态块缺项表数据落点"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 12000
+    note: |
+      背景：2026-11-12 用户确认派单补齐 FIX-03 七空态块。MOCKAUDIT-L01 判定： PortraitTrio/GeographicMapPanel/ImplementationByRegion/TopicHeatmapWithSentiment/bubbleOption/index.vue evaluationMetrics 均为前端 fixture 违规，已合规下线待本链路接入。221 结构关联维持合规空态不进本链路。参照先例：POL-L2-DS12-EST-DATA/GAPFILL-L01。监管 human:淮政玮。
+    depends_on:
+      - "POL-L2-DS11-VIZ-ARCH"
+      - "POL-L2-DS11-VIZ-DATA"
+    definition_of_done:
+      - "为六个无读面块（画像/地理分布/分地区落实率/话题热力/情感/产业气泡/指标体系）在 gkxlumenx_gapfill 定 gapfill_policy_eval_viz_* 表列级 DDL（含 CHARSET/COLLATE，D19），明确 row_kind、拣行键与 metric_id 引用（不新造）"
+      - "对照 SRS 分册与 DS-11 三分册（VIZ/READ/PLAN）给每块判定：缺项表退路 / 有意空态 / 归并既有读面，逐块写明依据；判定分册无出处的统计卡维持空态不立单"
+      - "handoff 落盘 sdd/l2/，写明库.表、列清单、与 FE 七组件 props 的字段映射；本单不建库、不灌数"
+    update_time: "2026-11-12T02:50:03+08:00"
+  - id: POL-L2-DS11-VIZ-GAPFILL-L02
+    title: "政策分析评价 · 可视化 · FIX-03 空态块缺项表建表灌 mock"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 8000
+    note: "B 波次第 2 单：B 类合规缺项表灌数，参照 POL-L2-DS12-EST-GAPFILL-L01 先例（表结构单→灌数单两段式）。种子语义取自 USE_MOCK 轨现有冻结种子，按 DATA 单列清单改写为行。监管 human:淮政玮。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-GAPFILL-L02-DATA"
+    definition_of_done:
+      - "按 DATA 单列清单在 gkxlumenx_gapfill 建表并独立脚本灌入六类演示行（画像/地理/落实率/热力+情感/气泡/指标体系），is_mock=1、fill_method=manual、行带 metric_id 占位"
+      - "不写 ODS、DWD、ADS 和供应方库；不改 D4；不新造 metric_id"
+      - "handoff 写明库、表、行数、灌数命令与自检结果（行数断言）"
+    update_time: "2026-11-12T02:50:15+08:00"
+  - id: POL-L2-DS11-VIZ-GAPFILL-L02-BE
+    title: "政策分析评价 · 可视化 · FIX-03 空态块读面接口"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 12000
+    note: "B 波次第 3 单：BE 读面。读法与拣行键以 DATA 单为准；DS-11 评价页已有 evaluation/counts、evaluation/jobs 先例（POL-L2-DS11-BE-L01 done）。监管 human:淮政玮。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-GAPFILL-L02-DATA"
+    definition_of_done:
+      - "element 按 row_kind/拣行键只读 gapfill_policy_eval_viz_*，经 gkxlumen-display 原样返回；挂在既有 evaluation 读面路由，无行返回空数组，不 501"
+      - "接口不返回写死 mock，不现算；Java 不直连库"
+      - "handoff 写明路由、请求/响应形状与拣行键映射；自检含无行空态分支"
+    update_time: "2026-11-12T02:50:28+08:00"
+  - id: POL-L2-DS11-VIZ-GAPFILL-L02-FE
+    title: "政策分析评价 · 可视化 · FIX-03 空态块真轨接线"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 15000
+    note: "B 波次第 4 单：FE 接线。MOCKAUDIT-L01 FIX-03 清单为范围真源；不扩 221 结构关联。监管 human:淮政玮。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-GAPFILL-L02"
+      - "POL-L2-DS11-VIZ-GAPFILL-L02-BE"
+    definition_of_done:
+      - "七个组件（index.vue 指标体系/PortraitTrio/GeographicMapPanel/ImplementationByRegion/TopicHeatmapWithSentiment/bubble/PolicyTextAnalysis）真轨改读新读面：有行渲染，无行保留诚实空态；USE_MOCK 轨不动"
+      - "接口失败不清已渲染区块（D9）；组件自闸评审门控；数字旁 ⓘ/🧪/⚠️ 角标按 D9 契约挂"
+      - "pnpm type-check 0 error；自检断言空态/有行双分支；按 fe-manual-confirm-push 停本地等人工确认推送"
+    update_time: "2026-11-12T02:50:46+08:00"
+  - id: POL-L2-DS11-VIZ-GAPFILL-L02-CASE
+    title: "政策分析评价 · 可视化 · FIX-03 合规演示用例补行"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 6000
+    note: "B 波次第 5 单：合规演示用例补行。监管 human:淮政玮。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-GAPFILL-L02"
+      - "POL-L2-DS11-VIZ-GAPFILL-L02-BE"
+    definition_of_done:
+      - "POL-L2-DS11-VIZ-合规演示用例.md 增补七空态块可演行：输入（打开页签/选择条件）、请求、逐字段期望（含图表形态关键词）、数据情况"
+      - "期望句与灌数行一致；无行空态路径也写成验收分支"
+      - "与既有用例格式一致（覆盖表+一条主路径+调度核对）；不后填数字"
+    update_time: "2026-11-12T02:50:58+08:00"
+  - id: POL-L2-DS11-VIZ-SCORE-WIRE-L01
+    title: "政策分析评价 · 页头得分卡真轨接线"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P2"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 6000
+    note: "B 波次并行小单：页头「得分待发布（D4 接入中）」两张卡的读面接线。读面已建（gapfill_policy_sim_score），本单只接 FE 展示；若核对后发现行已灌即可自然点亮。监管 human:淮政玮。"
+    depends_on:
+      - "POL-L2-DS11-VIZ-GAPFILL-L02"
+    definition_of_done:
+      - "页面头统计卡（分析报告/焦点指数）真轨读各自读面：有行显示数字+D9 角标，无行显示诚实空态（不造数）"
+      - "D4 接入中的卡保留「得分待发布（D4 接入中）」文案与 ⏰ 语义"
+      - "pnpm type-check 0 error；自检双分支；按 fe-manual-confirm-push 停本地等确认"
+    update_time: "2026-11-12T02:51:12+08:00"
