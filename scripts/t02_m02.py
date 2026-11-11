@@ -61,7 +61,8 @@ def source_sql(limit):
     # Select PAIRS first, then fetch every year. LIMIT on source rows would truncate years.
     pair_limit = '' if limit == 0 else ' LIMIT %s'
     return f'''SELECT r.institution_id,r.collaborator_institution_id,
-        r.statistics_year,r.co_paper_count,r.collaboration_strength,
+        r.statistics_year,r.co_paper_count,r.collaboration_strength,r.data_version,
+        r.identity_release_id,
         a.institution_type_id AS src_type,b.institution_type_id AS dst_type
         FROM {TABLE} r
         JOIN (SELECT institution_id,collaborator_institution_id FROM {TABLE}
