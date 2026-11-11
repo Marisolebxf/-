@@ -1,7 +1,7 @@
 # 缺陷修复报告：2287 全球创新监测，创新监测与分析，有空数据
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T23:30:54.697+08:00
+> 生成时间：2026-11-11T23:50:10.718+08:00
 > 当前 cycle：cycle-001-20261111T230903+0800
 > 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
@@ -55,12 +55,16 @@
 | E-2287-TYPECHECK | command | PASS | yes | yes | PENDING | 7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3 | vue-tsc 类型检查通过 |
 | E-2287-BUILD | command | PASS | yes | yes | PENDING | 7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3 | Vite 生产构建通过；仅保留仓库既有的 chunk/unocss 警告 |
 | E-2287-DEV-VERIFIED | ui | PASS | yes | yes | PENDING | 7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3 | 流水线4912和deployment 9120成功；dev全球创新监测分块已包含二维候选优先展示和单维候选不进主表说明 |
+| E-2287-BACKEND-COMPILE | command | PASS | yes | yes | PENDING | 0d9895cf482b01a4266e9b03fe2be664f5ca24e5 | gkxlumen-display及依赖模块编译通过 |
+| E-2287-BACKEND-SELECTION-CHECK | command | PASS | yes | yes | PENDING | 0d9895cf482b01a4266e9b03fe2be664f5ca24e5 | 使用真实precompute comparable_top后20个候选均至少两维可算，前10同时出现影响潜力和成熟度 |
+| E-2287-FINAL-BACKEND-VERIFIED | pipeline | PASS | yes | yes | PENDING | 0d9895cf482b01a4266e9b03fe2be664f5ca24e5 | 后端流水线4915中build、image、deploy:display成功，deployment 9127成功；comparable_top验证20/20为二维候选 |
+| E-2287-FINAL-FRONTEND-VERIFIED | pipeline | PASS | yes | yes | PENDING | 52febfc96e46c58478bc4b92bc3e169e039d615c | 前端流水线4916和deployment 9129成功；dev全球创新监测chunk已包含二维候选和有数据/无数据两种说明 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:640e35f83951e51fb4a9ae498b891ea4a8b3c6bd3ee3428c9ac2d4346cacbc0b；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:edd319d94547261ee1812cffee8ff61b206789041e40d948f464e0ff1d2678bd；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
