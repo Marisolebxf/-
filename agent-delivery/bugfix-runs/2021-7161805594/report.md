@@ -1,9 +1,9 @@
 # 缺陷修复报告：2021 科技全域态势，关键词检索提示检索服务不可用，且展示两个✗号
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T12:23:11.806+08:00
+> 生成时间：2026-11-11T13:05:47.933+08:00
 > 当前 cycle：cycle-001-20261111T111344+0800
-> 当前内部阶段：AWAITING_ACCEPTANCE
+> 当前内部阶段：RESOLVED
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -54,12 +54,13 @@
 | E-PIPE-2021-002 | pipeline | PASS | yes | yes | PENDING | 0529bd13ee391205ed1fa9d15c8a5349e14db8e2 | pipeline 4790 全绿，deploy:k8s 成功；49df406 为其祖先 |
 | E-DEP-2021-001 | bundle | PASS | yes | yes | PENDING | 0529bd13ee391205ed1fa9d15c8a5349e14db8e2 | 已部署前端包内关键词输入为 type=text，仅一个自定义清除钮 |
 | E-DEP-2021-002 | api | PASS | yes | yes | PENDING | 0529bd13ee391205ed1fa9d15c8a5349e14db8e2 | dev 检索返回 degraded=false、12 条候选 |
+| E-ACC-2021-001 | external | PASS | yes | yes | PENDING | 0529bd13ee391205ed1fa9d15c8a5349e14db8e2 | 飞书状态由人工迁移为 RESOLVED（update_time 2026-11-11T13:05:21+08:00） |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:713079cbd5ec7cf906f2e2771b02252230a78e6bd82c00ac97d7bef16e1cbe30；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:cd62aa33fc1cd1b57a95b5179bc736004b9ada3699ada9e936553169735c2ddf；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -108,9 +109,9 @@ DB 写证据授权：
 
 ## 10. 人工验收步骤
 
-- 飞书当前状态：IN PROGRESS
-- 验收证据：PENDING
-- 验收结论：pending
+- 飞书当前状态：RESOLVED
+- 验收证据：evidence/manifest.json#E-ACC-2021-001
+- 验收结论：approved
 - Agent 不主动调用 `transition_state` 将缺陷置为 RESOLVED；只在飞书已出现业务状态迁移后读取并记录。
 
 ## 11. Gate 状态与绑定对象
