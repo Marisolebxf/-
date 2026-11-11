@@ -9,24 +9,24 @@
 
 | 单 | 改动 |
 |---|---|
-| ARCH | §5.1 变化统计；§5.2 优缺点+差异柱图；§5.5 导出落点 `trackingExport` |
-| DATA | `gapfill_policy_detail_compare` 增 `pros_text`/`cons_text` |
-| API | detail 透传优缺点；217 浏览器侧 Word/PDF |
+| ARCH | §5.1 变化统计；§5.2 优缺点+差异柱图；§5.5 导出 = situation/report + OpenHTMLtoPDF（废止 trackingExport） |
+| DATA | `gapfill_policy_detail_compare` 增 `pros_text`/`cons_text`；217 文件不进 gapfill、走态势存储 |
+| API | detail 透传优缺点；217 导出走 `POST /display/v1/situation/report/generate` |
 | METRIC | **不动**（无新指标） |
 
 ## 会签对抗（审稿硬清单 · 本会话代闭合）
 
 | 角色 | 结论 |
 |---|---|
-| arch | 中档成立；优缺点只读 gapfill（免 D18）；217 不新依赖 |
+| arch | 中档成立；优缺点只读 gapfill（免 D18）；217 复用已有 situation/report，不新加 jspdf |
 | data | 扩列 + ALTER + 灌数脚本同改；空串合法 |
-| api | 同一次 detail 贴列；导出非网关字节 |
-| frontend | live 柱图/优缺点/变化统计/双按钮导出 |
+| api | 同一次 detail 贴列；导出经 display→topic-async 真字节 |
+| frontend | live 柱图/优缺点/变化统计；217 双按钮走 useSituationReport |
 | product | 界面必见与空态与 A 波次一致 |
 | qa | 用例形态期望进 E |
 
-分歧：无。若后续坚持二进制 PDF 新依赖 → 停机要监管人批（计划已记）。
+分歧：无。**2026-11-12 晚修订**：原「trackingExport 打印另存」判定为非真实实现，已按专题/态势报告链回写四单；D 波次 217 代码须重做。
 
 ## 闭合结论
 
-四单已按 COVER-FDE 改写；可进 D 实现。
+四单已按 COVER-FDE 改写（含 217 架构修订）；217 实现须对齐 situation/report。

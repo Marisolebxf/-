@@ -34,11 +34,11 @@
 | 说明书 / 四单 | 回写 213-3、214-5/6、217-5；DATA 扩 `pros_text`/`cons_text` |
 | gapfill | `gapfill_policy_detail_compare` 加列 + 灌数 |
 | element / display | DETAIL_SQL + `attachCompare` 透传优缺点 |
-| FE | `ComparisonModal` / `VersionCompareModal` / `BenchmarkCompareModal` + `trackingExport` |
+| FE | `ComparisonModal` / `VersionCompareModal` / `BenchmarkCompareModal`；217 → `useSituationReport`（禁 trackingExport 打印） |
 | 合规用例 | G3 形态期望：213 Tag 计数、214 图+优缺点、217 真 PDF/Word、218 三图种 |
 
 ## 4. 回写说明书要点（交 C 会签定稿）
 
 - 214：live 必见差异柱图 + 每策优缺点（读 gapfill，免 D18 写死接口）
-- 217：导出落点 = 前端 `trackingExport` 语义（.doc HTML + 打印另存 PDF），不新加 npm
+- 217：导出落点 = 态势/专题同构（FE HTML → `situation/report` → OpenHTMLtoPDF；Word=html→.doc）；废止 trackingExport 打印另存
 - 213：变化统计 = diff 行聚合，非独立分析列
