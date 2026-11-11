@@ -79,3 +79,14 @@
 - 后端 `lumen-topic-py`：`06f7a48` → `ad85ffc`（emptyReason 五处）→ `453d88c`（558 trend）→ **`1015c12`（R2：`eco.py` 的 `_hightech_counts_by_district` / `_patent_date_span` / `_build_sunburst` / `_talent_block` / `_build_talent_panorama` + `/talent-panorama` 端点；`main.py` 根路由登记；`tests/test_gkx_show_eco_boot.py` 13 例；pipeline #4835 success）**。
 - `lumen-svc-platform`：`0030682` → `35d3786`（558 trend）→ **`6f79b68`（R2：`RemoteShowPythonClient#ecoTalentPanorama` + `EcoController#talentPanorama`；deploy 为 manual 阶段，已手动发布，探针走生产网关全通即证）**。
 - 回滚：页面路由回落 `DevelopingView` 仅需还原 `src/router/menu.ts` 一行映射；后端四端点可独立下线（前端空态兜底，不白屏）。
+
+## 7. M4 缺口补记（2026-11-11）
+
+> 本页 M4 迟于 M5：2026-11-08 M4 建单时本页整叶 blocked，按范围排除（见裁定单范围行）；11-11 解锁重进 M3 后 M5 先行跑至 R3。补记只归纳既有实测，不回溯改写 R3 判定。
+
+- 裁定位置：`../合规演示用例/展示系统-第一批-M4缺口裁定单.md` 第六节（G1–G5 处置 + G6–G8 新登记 + 口径与话术）。
+- G1 页面未落地 / G2 契约未冻结 / G5 563 分项接口：**已闭环**（对应 R1 五页签实测、七组端点、563 目录 12 行）。
+- G3 ADS 供数未到：**部分闭环**（558 由本页自闭环、561 人才接 `is_demo=1` 种子），真实台账转 G8。
+- G4 561「人才结构 / 结构调整」：**撤销**（human 2026-11-11 裁定，需规原文 6 列不含该两项）。
+- G6 人才区级粒度 / G7 `SVC_005` 岗位层次 / G8 真实台账：**新登记，建议修复（数据补），责任方数仓/供方**；三条均有实测降级路径，不阻塞签收，待授权人裁定（M4 单第十一项 a/b/c）。
+- 与 M5 口径一致：本计划 R3 判「0 缺口」指 M3 口径的**设计缺口**为 0；G6–G8 属**供数深度缺口**，不进 M5 gap 降级表，改由 M4 单列跟踪——两处口径已交叉引用，不冲突。
