@@ -1,7 +1,7 @@
 # 缺陷修复报告：2020 科技全域态势，服务机构和专利无数据
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T11:10:18.864+08:00
+> 生成时间：2026-11-11T12:47:26.307+08:00
 > 当前 cycle：cycle-001-20261111T105229+0800
 > 当前内部阶段：BLOCKED
 > 验收模式：policy_only（operator_verified=false）
@@ -77,8 +77,8 @@ DB 写证据授权：
 
 ## 8. failure stage、failure class 和返工轮次
 
-- failure_stage：PENDING
-- failure_class：PENDING
+- failure_stage：pipeline
+- failure_class：environment_or_release
 - patch_round：0
 
 ## 9. 提测信息
@@ -113,7 +113,7 @@ ship bound_to：PENDING
 
 ## 12. 自动决策摘要
 
-- PENDING
+- 同一飞书缺陷内跨 lumen-svc-platform 与 lumen-topic-py 修复服务机构图层可用性和专利年度趋势，不新增飞书缺陷；依据=用户 2026-11-11 明确要求：不需要增加新的 bug，既然发现了就一起改再推上去；备选=拆分独立缺陷 / 先修服务机构再另开专利单；影响=两仓候选提交需作为同一提测包合并 dev、统一跟踪 CI/CD 和真实 dev 复测；需人工批准=yes；批准人=human:7695591354147146731
 
 ## 13. 回滚版本、回滚方式和回滚验证
 
