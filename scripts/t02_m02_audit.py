@@ -6,7 +6,7 @@ from pathlib import Path
 
 from t02_m02 import execute
 from t02_m02_batch import save,now,digest
-from t02_m02_full import load_full,graph_connect,source_connect,signature
+from t02_m02_full import load_full,graph_connect,source_connect,signature,preflight
 
 
 def acyclic(edges):
@@ -27,6 +27,7 @@ def main(root):
     for stage in ['write','verify']:
         r=json.loads((root/(stage+'-result.json')).read_text(encoding='utf-8'))
         if r['status']!='completed' or r['plan_sha256']!=plan_hash:raise ValueError('full run incomplete')
+    preflight(root,m)  # Recheck every endpoint after the full write and property reread.
     out=dict(started_at=now(),plan_sha256=plan_hash,expected=m['counters'],checks={})
     pool,s=graph_connect(timeout=180000)
     try:

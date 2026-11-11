@@ -5,6 +5,7 @@ Uses the validated batch executor. Credentials are process environment only.
 import argparse
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
+from contextlib import closing
 import hashlib
 import json
 import os
@@ -59,6 +60,23 @@ def partitions(ids, size):
     return [ids[i:i+size] for i in range(0,len(ids),size)]
 
 
+def read_source_shard(conn, ids):
+    sql=(f'SELECT institution_id,collaborator_institution_id,statistics_year,'
+         f'co_paper_count,collaboration_strength,data_version,identity_release_id FROM {TABLE} '
+         'WHERE institution_id >= %s AND institution_id <= %s '
+         'AND institution_id < collaborator_institution_id')
+    try:
+        with closing(conn.cursor()) as cur:
+            source_execute(cur,sql,(ids[0],ids[-1]))
+            return list(cur)
+    except Exception as exc:
+        if 'timeout' not in str(exc).lower() or len(ids)==1:raise
+        # Discard any incomplete response; split by source ID so years stay together.
+        time.sleep(2)
+        middle=len(ids)//2
+        return read_source_shard(conn,ids[:middle])+read_source_shard(conn,ids[middle:])
+
+
 def prepare(args):
     root = Path(args.plan); root.mkdir(parents=True, exist_ok=True)
     conn = source_connect()
@@ -81,21 +99,28 @@ def prepare(args):
                 raise ValueError('source or partition layout changed; refusing resume')
         else: save(layout_path, layout)
         total = Counter(); shards = []; endpoints = set()
-        for index, subset in enumerate(partitions(ids,args.source_ids_per_shard)):
+        parts=partitions(ids,args.source_ids_per_shard)
+        owner={src:i for i,part in enumerate(parts) for src in part}
+        prefetched={}
+        for index, subset in enumerate(parts):
             folder = root/f'{index:04d}'; folder.mkdir(exist_ok=True)
             manifest_path = folder/'manifest.json'; data = folder/'edges.jsonl'
             if manifest_path.exists():
                 m = check_plan(folder)
             else:
                 counts = Counter(eligible_pairs=0); temp = folder/'edges.partial.jsonl'
-                with conn.cursor() as cur, temp.open('w',encoding='utf-8',newline='\n') as out:
-                    source_execute(cur,f'SELECT institution_id,collaborator_institution_id,statistics_year,'
-                        f'co_paper_count,collaboration_strength,data_version,identity_release_id FROM {TABLE} '
-                        'WHERE institution_id >= %s AND institution_id <= %s '
-                        'AND institution_id < collaborator_institution_id '
-                        'ORDER BY institution_id,collaborator_institution_id,statistics_year',
-                        (subset[0],subset[-1]))
-                    for rows in grouped(cur):
+                with temp.open('w',encoding='utf-8',newline='\n') as out:
+                    # Bounded source-ID shard: sort locally, not in the shared Doris workload.
+                    if index not in prefetched:
+                        # One sequential query for up to four logical shards reduces
+                        # shared queue/scan overhead; timeout recursively splits it.
+                        query_ids=[src for part in parts[index:index+4] for src in part]
+                        for j in range(index,min(index+4,len(parts))):prefetched[j]=[]
+                        for row in read_source_shard(conn,query_ids):
+                            prefetched[owner[row['institution_id']]].append(row)
+                    shard_rows=prefetched.pop(index)
+                    shard_rows.sort(key=lambda r:(r['institution_id'],r['collaborator_institution_id'],r['statistics_year']))
+                    for rows in grouped(shard_rows):
                         counts['source_pairs'] += 1; counts['source_rows'] += len(rows)
                         if any((str(r['data_version']),r['identity_release_id']) != expected[0] for r in rows):
                             raise ValueError('mixed source release')
@@ -118,7 +143,8 @@ def prepare(args):
             with data.open(encoding='utf-8') as stream:
                 for line in stream:
                     e=json.loads(line); endpoints.update((e['src'],e['dst']))
-            progress=dict(shards_done=index+1,total_shards=len(partitions(ids,args.source_ids_per_shard)),counters=dict(total),at=now())
+            prefetched.pop(index,None)
+            progress=dict(shards_done=index+1,total_shards=len(parts),counters=dict(total),at=now())
             save(root/'prepare-progress.json',progress); print(json.dumps(progress),flush=True)
         after,_=signature(conn)
         if after != sig: raise ValueError('source signature changed during extraction')
@@ -128,7 +154,8 @@ def prepare(args):
         save(root/'full-manifest.json',dict(prepared_at=now(),signature=sig,layout_sha256=digest(layout_path),
              shards=shards,counters=dict(total),endpoint_count=len(endpoints),endpoints_sha256=digest(root/'endpoints.json'),
              batch=args.batch,space='demo_gkx_chain',mapping=MAPPING))
-    finally: conn.close()
+    finally:
+        conn.close()
 
 
 def load_full(root):
@@ -179,6 +206,7 @@ def run_shard(root, shard, write):
     command=[sys.executable,'-B',str(Path(__file__).with_name('t02_m02_batch.py')),
              'run','--plan',str(folder),'--chunk-size','200','--output',str(output)]
     if write:command.append('--write')
+    else:command.append('--verify-only')
     with (folder/(name+'.log')).open('a',encoding='utf-8') as log:
         subprocess.run(command,stdout=log,stderr=log,check=True)
     c=json.loads(output.read_text(encoding='utf-8'))['counters']

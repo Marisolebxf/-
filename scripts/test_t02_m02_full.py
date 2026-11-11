@@ -1,6 +1,7 @@
 import unittest
-from t02_m02_full import partitions
+from t02_m02_full import partitions,read_source_shard
 from t02_m02_audit import acyclic
+from unittest.mock import patch
 
 
 class FullCoverage(unittest.TestCase):
@@ -19,6 +20,21 @@ class FullCoverage(unittest.TestCase):
         self.assertTrue(acyclic([('a','b'),('a','c'),('b','d'),('c','d')]))
         self.assertFalse(acyclic([('a','b'),('b','a')]))
         self.assertFalse(acyclic([('a','a')]))
+
+    def test_timed_out_response_discarded_and_source_boundaries_split(self):
+        calls=[]
+        class Cursor:
+            def execute(self,sql,params):
+                calls.append(params);self.params=params
+                if params==('a','b'):raise RuntimeError('Query timeout')
+            def __iter__(self):return iter([{'source':self.params[0]}])
+            def close(self):pass
+        class Connection:
+            def cursor(self):return Cursor()
+        with patch('t02_m02_full.time.sleep'):
+            rows=read_source_shard(Connection(),['a','b'])
+        self.assertEqual(rows,[{'source':'a'},{'source':'b'}])
+        self.assertEqual(calls,[('a','b'),('a','a'),('b','b')])
 
 
 if __name__=='__main__':unittest.main()

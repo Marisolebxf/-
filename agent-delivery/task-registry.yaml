@@ -61758,7 +61758,7 @@ tasks:
     update_time: "2026-11-11T15:23:39+08:00"
   - id: KG-COMPLY-LOAD-T02
     blocked_by: "2026-11-11 20:50左右批量dry-run无法连接内网图库10.50.75.136:9669；客户端连接失败且两次8秒TCP复查超时。源Doris可达，1000机构对计划已固定（164条合格候选，含上轮48条）；本轮未查询或写图。待恢复批准的内网连接或提供可访问图库的执行环境。"
-    evidence: "agent-delivery/工程过程/04-系统集成/07-图数据库集成/T02-M02-批量试跑-20261111.md"
+    evidence: "agent-delivery/工程过程/04-系统集成/07-图数据库集成/T02-M02-全量入图-20261111.md"
     supervised_by: "human:陈芸飞"
     claimed_at: "2026-11-11T13:16:58.977Z"
     last_seen_at: "2026-11-11T13:16:58.977Z"
@@ -61776,7 +61776,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      陈芸飞已授权全量M02入图及完成后对账验证。源库/图库连接正常，历史网络blocked_by已解除。沿用comply-20261111-t02；全量计划按100个起点机构分片，共545片，先固定源版本及完整年度记录再写。已写7617条将核验后跳过；不建research点，M15/M17只读、M19=0，M22保持。新增全量覆盖/版本/端点预检和全量复核执行器，11项测试通过。当前准备源计划，尚未声称全量写入完成。
+      全量M02已获陈芸飞授权，源计划准备中，已超过190/545逻辑片、约188万有效关系。最终采用单连接有界取数+本地排序，相邻最多4个逻辑片合并读取，超时按源ID二分，队列满退避。两次整表流式尝试均因源端超时终止，partial缓存排除，未写图。canonical年度行应覆盖7190123。图侧最多2个执行器，原7617条完整属性复核与排他锁实测通过；13项测试通过。等待完整计划覆盖/版本/端点门禁后写入，保持in_progress。旧blocked_by网络记录已解除。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61787,7 +61787,7 @@ tasks:
       - "M19 记 0 条并附「与 M02 同源重复」理由；cooperate 按端点 Tag 对分组计数（存量 94,824 条 enterprise→enterprise 属 M22 不得混计）"
       - "对账单：存量已满足项计数 + M02 应灌子集 vs 实灌数 + 端点缺失跳过计数；depends_on 保持 DAG"
       - "不自行 INSERT VERTEX research（归 T03）；不把 apply_to/support 记成 M12–M14；不把 institution→institution participates 记成 M02/M19"
-    update_time: "2026-11-11T21:22:02+08:00"
+    update_time: "2026-11-11T21:51:36+08:00"
   - id: KG-COMPLY-LOAD-T03
     model_used: "Codex GPT-6"
     cost_warn: "yellow"
