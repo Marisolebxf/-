@@ -25,4 +25,4 @@ M10 写回链（`api/tech_graph_maintain_routes.py`）和 seed 脚本按 8 月 D
 
 ## 验收
 
-- [ ] edu 部署生效后，页面一次挂接/解挂：中台库 `demo_gkxlumenx_dwd.graph_version` 版本 +1，产线库不变。
+- [x] 2026-11-11 edu 验收：页面挂接/解挂后中台库 `demo_gkxlumenx_dwd.graph_version` 22→41（11-11 02:14 起的写入全部落 demo），产线库 `gkxlumenx_dwd` 仍为 v22，最后一次变更集停在 11-09 18:44。
