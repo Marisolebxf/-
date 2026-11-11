@@ -2,7 +2,7 @@
 
 | 项 | 值 |
 |---|---|
-| 文档版本 | live-1.6（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；智能搜索四接口新增 country_location_ids 地区筛选） |
+| 文档版本 | live-1.7（审计接口 action 筛选 + LIKE 转义 + 字段长度校验说明；2026-11-11） |（对应 OpenAPI `CMS-JX-OpenAPI-v1.0-live.json`；智能搜索四接口新增 country_location_ids 地区筛选） |
 | 更新日期 | 2026-11-03 |
 | 提供 | 科技专题服务系统项目组（智树侧） |
 | 适用 | 久新 CMS 对接；**仅含已上线接口** |
@@ -733,7 +733,14 @@ X-CMS-Operator: {操作人姓名或账号}
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| code | integer | 否 |  |
+| code
+
+**请求体补充（live-1.7）**
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| action | string | 否 | `新增` / `编辑` / `删除`；**不传=全部写操作**（本接口是写操作审计，非仅删除） |
+| keyword | string | 否 | 按政策标题模糊；`%`/`_` 按字面匹配（已转义，不再当通配符） | | integer | 否 |  |
 | msg | string | 否 |  |
 | data | object | 否 |  |
 
