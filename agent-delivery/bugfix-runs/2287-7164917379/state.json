@@ -32,7 +32,7 @@
     "current_owner": "徐滕强",
     "takeover_history": []
   },
-  "phase": "READY_SHIP",
+  "phase": "AWAITING_ACCEPTANCE",
   "risk": {
     "level": "S",
     "reasons": [
@@ -212,6 +212,21 @@
       "simulated": false,
       "skipped_reason": null,
       "notes": "仅有仓库既有chunk size和unocss警告"
+    },
+    {
+      "id": "V-2287-DEV-DEPLOY",
+      "category": "integration",
+      "behavior": "dev部署资源包含二维候选优先展示修复",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-DEV-VERIFIED"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "pipeline 4912和deployment 9120成功；已核验部署chunk"
     }
   ],
   "gates": {
@@ -259,8 +274,41 @@
       }
     },
     "ship": {
-      "status": "pending",
-      "bound_to": null
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:徐滕强",
+      "approved_at": "2026-11-11T23:25:45.044+08:00",
+      "approved_session_id": "codex-7164917379-20261111T230529-114db529",
+      "approved_machine_id": "xutengqiang-mac",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "message_ref": "chat-2026-11-11-2287-ship",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3",
+            "diff_hash": "sha256:0dadf56099c60781fcdf22c5490f84b36639541963086198560df401a3f4874e",
+            "verification_hash": "sha256:61fa2c33eb8d3607615e8778d619059350e245c7db579f3ec2938d204069ca97",
+            "review_hash": "sha256:9254cd6a994f2b2a726c5ddf19bb5ea630f18d5ca3ba22204d5175e5d0d48361",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "S",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:f5b470bf1afad49c8db2664e84a80f2bd5f43c7b872b04df77eee2d61d428084",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T23:25:45.107+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:f5b470bf1afad49c8db2664e84a80f2bd5f43c7b872b04df77eee2d61d428084",
+        "expected": "sha256:f5b470bf1afad49c8db2664e84a80f2bd5f43c7b872b04df77eee2d61d428084",
+        "errors": []
+      }
     },
     "acceptance": {
       "status": "pending",
@@ -268,13 +316,36 @@
     }
   },
   "ship_package": {
-    "repos": [],
-    "acceptance_steps": [],
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3",
+        "merge_request_id": "direct-dev-push",
+        "merge_commit_sha": "7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3",
+        "pipeline_id": "4912",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4912",
+        "deployed_sha": "7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3",
+        "rollout_status": "success",
+        "image_tag": null,
+        "role": null,
+        "depends_on": [],
+        "ship_order": null
+      }
+    ],
+    "acceptance_steps": [
+      "打开全球创新监测-创新监测与分析",
+      "打开创新点详情中的创新价值评估",
+      "确认主表优先展示二维可算候选，影响潜力和成熟度不再整体为空",
+      "查看模型支撑度说明，确认缺测维度未补0"
+    ],
     "dev_verification": {
-      "result": "PENDING",
-      "evidence_refs": []
+      "result": "PASS",
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-DEV-VERIFIED"
+      ]
     },
-    "summary": null
+    "summary": "2287已随dev提交7c0e38d部署成功，待业务人工验收"
   },
   "acceptance": {
     "status": "pending",
@@ -360,6 +431,49 @@
       "gate_hash": null,
       "evidence_refs": [],
       "summary": "修复、边界、类型检查、构建和证据校验均 PASS，等待提测授权"
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-11T23:25:45.107+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": "ship",
+      "gate_hash": "sha256:f5b470bf1afad49c8db2664e84a80f2bd5f43c7b872b04df77eee2d61d428084",
+      "evidence_refs": [],
+      "summary": "用户已批准提测，进入推送、合并 dev 和部署验证"
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-11T23:30:36.445+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-DEV-VERIFIED"
+      ],
+      "summary": "pipeline 4912、deployment 9120成功，dev资源核验通过"
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-11T23:30:36.507+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-DEV-VERIFIED"
+      ],
+      "summary": "dev验证通过，等待人工业务验收"
     }
   ],
   "failure_stage": null,
@@ -378,14 +492,15 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-11T23:17:59.932+08:00",
-      "manifest_hash": "sha256:a322902f905a30c002dbacbde0b0b84baba2801f59350bc574db50b98ac314e6",
-      "item_count": 4,
+      "checked_at": "2026-11-11T23:30:36.383+08:00",
+      "manifest_hash": "sha256:640e35f83951e51fb4a9ae498b891ea4a8b3c6bd3ee3428c9ac2d4346cacbc0b",
+      "item_count": 5,
       "evidence_ids": [
         "E-2287-BUG-SCREENSHOT",
         "E-2287-INNOV-MONITOR-TEST",
         "E-2287-TYPECHECK",
-        "E-2287-BUILD"
+        "E-2287-BUILD",
+        "E-2287-DEV-VERIFIED"
       ],
       "evidence_results": {
         "E-2287-BUG-SCREENSHOT": {
@@ -407,6 +522,11 @@
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
+        },
+        "E-2287-DEV-VERIFIED": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
         }
       },
       "non_reviewable": [],
@@ -423,7 +543,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "展示提测绑定对象并取得精确口令。"
+    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
   },
-  "updated_at": "2026-11-11T23:18:08.532+08:00"
+  "updated_at": "2026-11-11T23:30:54.697+08:00"
 }
