@@ -1,0 +1,490 @@
+{
+  "schema_version": 2,
+  "run_id": "2021-7161805594",
+  "current_cycle_id": "cycle-001-20261111T111344+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261111T111344+0800",
+      "seq": 1,
+      "started_at": "2026-11-11T11:13:44.272+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2021",
+    "work_item_id": "7161805594",
+    "title": "科技全域态势，关键词检索提示检索服务不可用，且展示两个✗号",
+    "owner": "human:7695591354147146731",
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "claim-20261111-1113-a",
+    "claim_comment_ref": "7706746050937130010",
+    "claim_operator": "human:7695591354147146731",
+    "claimed_at": "2026-11-11T11:13:44.272+08:00",
+    "session_id": "session-20261111-1113-a",
+    "machine_id": "cursor-local",
+    "current_owner": "human:7695591354147146731",
+    "takeover_history": []
+  },
+  "phase": "BLOCKED",
+  "risk": {
+    "level": "M",
+    "reasons": [
+      "双✗为单仓前端叠层清除钮",
+      "检索不可用可能涉及 Java Feign/Python ES，需可达环境确认后决定是否升级 L"
+    ],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "4fc8d77a3cff0d095aa07861c5d57c9a0deeafc1",
+      "candidate_sha": "49df406da73d6cdc5e2c607c16bbf8d5489e8985",
+      "planned_change_scope": [
+        "src/views/situation/overview/components/SituationFilterBar.vue",
+        "src/views/situation/overview/situationFilterBar.test.mjs"
+      ]
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "科技全域态势关键词检索：输入后提示「检索服务不可用」；搜索框右侧同时出现两个清除用的 ✗。",
+    "reproduction": [
+      "打开科技全域态势（真实轨 USE_MOCK=false）",
+      "在顶部「关键词检索」输入任意关键字",
+      "观察输入框右侧清除控件数量与下拉候选面板提示文案"
+    ],
+    "root_cause": "双✗：SituationFilterBar 使用 type=search 的原生清除钮 + 自定义 IconClose 清除按钮叠层。检索不可用：前端在 result.degraded===true 或请求抛错时展示该文案；Java SituationFactorSearchController 在 Feign 调 search-py /internal/gkx-search/factors 失败时返回 degraded=true；Python 在 ES ping/初始化失败时抛 RealDataUnavailable→503。本机无法直连 10.50.69.111 复测线上是否仍为下游失败。",
+    "counter_evidence": [
+      "需规序号4要求输入关键字后触发检索并生成候选，不是显示服务不可用",
+      "诚实降级契约要求下游不可用时才显示「检索服务不可用」，不得回落伪结果",
+      "双✗与 degraded 文案是两个独立表面；前者可单仓前端修复"
+    ],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md#搜索要素定位-序号4"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc：SituationFilterBar.vue 搜索框 type/清除钮",
+      "若线上仍 degraded：lumen-svc-platform Feign + lumen-topic-py factor_search + ES 可用性（可能升 L/跨仓）"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "先修 lumen-ui-science-pc 双清除钮（type=text 或隐藏原生 search cancel，保留单一自定义清除）",
+      "进入开发后用可达环境复测 factors/search；若仍 degraded 再判定是否扩到 Java/Python"
+    ],
+    "non_goals": [
+      "不回落本地伪候选冒充真实检索",
+      "不新建 ES 索引补齐论文/专利/项目类目",
+      "未经确认不把环境故障当代码补丁轮次"
+    ],
+    "verification_plan": [
+      "fix：输入关键词后仅 1 个清除 ✗",
+      "regression：清空按钮仍可清空；候选面板/历史仍可用",
+      "integration：可达环境下 POST factors/search 返回 degraded=false 且有候选，或明确环境 blocker"
+    ],
+    "rollback_plan": [
+      "回滚前端 fix 分支提交"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "4fc8d77a3cff0d095aa07861c5d57c9a0deeafc1",
+        "candidate_sha": "49df406da73d6cdc5e2c607c16bbf8d5489e8985",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/situation/overview/components/SituationFilterBar.vue",
+          "src/views/situation/overview/situationFilterBar.test.mjs"
+        ],
+        "diff_hash": "sha256:9f69ae3460ac5f3aa03c69305ca2d5689a2d2efddf7998a4802b4932cacd442a",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-11T11:30:35.280+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:review-agent:5a9fcfed",
+        "independent": true,
+        "reviewed_sha": "49df406da73d6cdc5e2c607c16bbf8d5489e8985",
+        "verdict": "PASS",
+        "scope": "SituationFilterBar type=text + situationFilterBar.test.mjs (post-rebase same diff)",
+        "findings": [
+          "non-blocking: type=text loses native searchbox semantics"
+        ],
+        "round": 2,
+        "review_hash": "sha256:3e6bc97b83cd9a3d79480372a046aec85ddbb055cecda2ade7e551300d1c8543"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "V-FIX-2021",
+      "category": "fix",
+      "behavior": "关键词输入仅一个清除✗（type=text + 自定义清除）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "E-FIX-2021-001"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V-REG-2021",
+      "category": "regression",
+      "behavior": "改动不越界且保留自定义清除/清空语义",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "E-REG-2021-002"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V-BND-2021",
+      "category": "boundary",
+      "behavior": "空关键词时不显示清除钮；clearSearch 仍可清空",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "E-BND-2021-001"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V-INT-2021",
+      "category": "integration",
+      "behavior": "factors/search 线上 degraded 复测",
+      "result": "SKIPPED",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "E-INT-2021-001"
+      ],
+      "simulated": false,
+      "skipped_reason": "本机访问 10.50.69.111 超时，无法在本轮确认检索服务不可用是否现网仍在；不计入补丁轮次",
+      "notes": null
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:7695591354147146731",
+      "approved_at": "2026-11-11T11:27:33.336+08:00",
+      "approved_session_id": "session-20261111-1113-a",
+      "approved_machine_id": "cursor-local",
+      "claim_id": "claim-20261111-1113-a",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v6",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "e6de9ea497ea891389c0952b3aa4ed630ecc03c1",
+            "planned_change_scope": [
+              "src/views/situation/overview/components/SituationFilterBar.vue",
+              "src/views/situation/overview/situationFilterBar.test.mjs"
+            ]
+          }
+        ],
+        "diagnosis_hash": "sha256:4d32ff2de9380e1374da0c9f432657adde1e57aaf65f903343cdf99b4465c738",
+        "plan_hash": "sha256:61e4101900ac4fbe8c1d77dd54b50281c79bd88ca3e8b454b7d7abd52017b69f",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:98672063396ed20948c528936331d8b1ca73eb764301c85956edbd89d4bcfedb",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T11:27:33.336+08:00",
+        "validator_version": "bugflow-state-p0-v6",
+        "actual": {
+          "claim_id": "claim-20261111-1113-a"
+        },
+        "expected": {
+          "claim_id": "claim-20261111-1113-a"
+        }
+      }
+    },
+    "ship": {
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:7695591354147146731",
+      "approved_at": "2026-11-11T11:30:35.510+08:00",
+      "approved_session_id": "session-20261111-1113-a",
+      "approved_machine_id": "cursor-local",
+      "claim_id": "claim-20261111-1113-a",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v6",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "49df406da73d6cdc5e2c607c16bbf8d5489e8985",
+            "diff_hash": "sha256:9f69ae3460ac5f3aa03c69305ca2d5689a2d2efddf7998a4802b4932cacd442a",
+            "verification_hash": "sha256:c6ca5cbd152345739f4d1feab4f7da390aaae1b2a9bd77a0a82aef6401307931",
+            "review_hash": "sha256:3e6bc97b83cd9a3d79480372a046aec85ddbb055cecda2ade7e551300d1c8543",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "M",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:201df38462ec77e0a1bb1c34f9b949082ab8b418dc43f2853d65c7b0fd3e6244",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T11:30:35.510+08:00",
+        "validator_version": "bugflow-state-p0-v6",
+        "actual": {
+          "claim_id": "claim-20261111-1113-a"
+        },
+        "expected": {
+          "claim_id": "claim-20261111-1113-a"
+        }
+      }
+    }
+  },
+  "ship_package": {
+    "repos": [],
+    "acceptance_steps": [],
+    "dev_verification": {
+      "result": "PENDING",
+      "evidence_refs": []
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-11T11:16:11.794+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-11T11:16:11.871+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-11T11:26:42.065+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:f98d46316478b6dfc64541d38ab7b973f331359c6d0065657f3596e2d973f166",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-11T11:28:27.639+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-11T11:28:27.816+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-11T11:28:47.637+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-11T11:30:05.669+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": "ship",
+      "gate_hash": "sha256:4e52bf188c69db16c5d1c940f2b4bf7947255e442a6ceed958394180e650938c",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "BLOCKED",
+      "at": "2026-11-11T11:34:57.217+08:00",
+      "result": "BLOCKED",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "claim-20261111-1113-a",
+      "session_id": "session-20261111-1113-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "CI frontend:image 连续两次 Harbor unauthorized；frontend:build 已绿；与【2021】type=text 无关"
+    }
+  ],
+  "failure_stage": "pipeline",
+  "failure_class": "environment_or_release",
+  "patch_round": 0,
+  "blocked_from": "SHIPPING",
+  "resume_phase": "SHIPPING",
+  "resume_condition": "修复 Harbor/CI 镜像推送凭证后重试 pipeline 4788 或同 SHA 新 pipeline，再继续提测部署",
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-11T11:29:28.155+08:00",
+      "manifest_hash": "sha256:7a1cf72559b5045c8dc13a6fe49fa6e74a9a1d25c29e0094625257e8b1de2abe",
+      "item_count": 5,
+      "evidence_ids": [
+        "E-FIX-2021-001",
+        "E-REG-2021-001",
+        "E-BND-2021-001",
+        "E-INT-2021-001",
+        "E-REG-2021-002"
+      ],
+      "evidence_results": {
+        "E-FIX-2021-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-REG-2021-001": {
+          "result": "FAIL",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-BND-2021-001": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-INT-2021-001": {
+          "result": "SKIPPED",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-REG-2021-002": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [
+    {
+      "reason": "CI frontend:image 连续两次 Harbor unauthorized；frontend:build 已绿；与【2021】type=text 无关",
+      "owner": "human",
+      "resume_condition": "修复 Harbor/CI 镜像推送凭证后重试 pipeline 4788 或同 SHA 新 pipeline，再继续提测部署",
+      "at": "2026-11-11T11:34:57.217+08:00"
+    }
+  ],
+  "next_action": {
+    "owner": "human",
+    "action": "CI frontend:image 连续两次 Harbor unauthorized；frontend:build 已绿；与【2021】type=text 无关"
+  },
+  "updated_at": "2026-11-11T11:34:57.299+08:00"
+}
