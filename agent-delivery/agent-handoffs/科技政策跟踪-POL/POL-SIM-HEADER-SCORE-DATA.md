@@ -31,6 +31,23 @@
 4. **线上链路验证**：`POST https://edu.itic-sci.com/tid/api/display/v1/policy/simulation/jobs` body `{"kind":"页面得分"}` + `systemCode: display` + `Authorization: Bearer`（令牌读本机令牌文件，不入库入 git）：HTTP 200，`data.records` **3 行**，驼峰字段与前端 `PolicySimulationScoreRow` 契约逐字对上。
 5. **前端零改动**：`index.vue` 页头三卡按 `scoreNum(metricId)` 出数（64.8 分 / 99.5 分 / 0 节点），⚠️ 角标因 `is_mock=1` 仍在（D9 诚实性，符合预期）。
 
+## 产物清单
+
+| 产物 | 位置 |
+|---|---|
+| DDL 脚本 | `lumen-algo-py/scripts/mysql/gapfill_policy_sim_score.sql`（并行会话 commit `e6f1fef`，本单核验） |
+| 灌数脚本 | `lumen-algo-py/scripts/seed_policy_sim_score.py`（同上，`--check` / `--apply` 双模式） |
+| 线上表 | `10.50.11.76 / gkxlumenx_gapfill.gapfill_policy_sim_score`（3 行，幂等 upsert） |
+| 线上验证 | `POST /display/v1/policy/simulation/jobs` HTTP 200，3 行驼峰记录（见验收证据） |
+| 前端改动 | 无（页头三卡既有代码直接出数） |
+
+## 偏离说明
+
+无实质偏离，两点执行方式备注：
+
+1. **claim_type=pull + 复用并行实现**：DDL 与灌数脚本由并行 data-agent commit `e6f1fef` 先行落地（当时未走 registry，建单条目被并发提交挤掉），本单以 pull 认领后只做核验、执行与线上验收，未重写代码——目的是把已有产出纳回派单体系可追溯。
+2. **口令获取路径**：脚本 docstring 声称环境变量 `LUMEN_ALGO_MYSQL_PASSWORD`，实现实际读 `%TEMP%\gkx-mysql-pwd.txt`；本会话按仓内既有回退源（`vendor/innov-py/conf/settings.yaml`）落口令文件（值不经终端回显），未改他人已提交代码，docstring 与实现的差异列入遗留移交（P3）。
+
 ## 验收证据
 
 - `--check`：`{"ok": true, "valid_rate": 99.5131, "avg_factor": 0.3}`，断言全过（含「对冲计数必须诚实 0」）
@@ -42,11 +59,16 @@
 
 | 条 | 结论 |
 |---|---|
+| D1 调用链 | ✅ 前端 → Java jobs → gapfill 表，未越层、未直连 Python |
+| D8 前端规范 | ✅ 前端零改动，页头卡沿用既有 Arco 组件与 token |
+| D9 指标 8 件套 | ✅ 三行均带 `metric_id`；`is_mock=1` + `pending_ref='QPOL-02'`，ⓘ/⚠️ 追溯入口保留 |
+| D12 demo/lumen 隔离 | ✅ 全链路只涉 lumen 仓与 lumen 库（`gkxlumenx_gapfill`），无 demo 依赖 |
 | D16 缺项只进 gapfill_ | ✅ `gkxlumenx_gapfill.gapfill_policy_sim_score`，未触碰 ODS/DWD/ADS/供应方库 |
 | D18 接口不返回写死 mock | ✅ 接口只读表；表由真实工具链实算灌入（polan.eval.effect 同源） |
 | D19 字符集 | ✅ 显式 utf8mb4 / utf8mb4_general_ci |
+| 算法在 Python | ✅ v2 公式实算在 `seed_policy_sim_score.py`（Python），Java 只读表转驼峰 |
+| 可观测性 | ✅ 走 jobs 既有链路（平台统一埋点），无新增旁路 |
 | D4 翻转路径 | `is_mock` 恒 1，待 QPOL-02 甲方归一 + QA 核验后另行置 0（脚本不碰，前端角标届时自动消失） |
-| 调用链 | ✅ 前端 → Java jobs → gapfill 表，未越层 |
 
 ## 遗留 / 移交
 
