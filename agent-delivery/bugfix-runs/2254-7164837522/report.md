@@ -1,7 +1,7 @@
 # 缺陷修复报告：2254 技术发展跟踪，地理分布图展示，筛选不同技术类型分布图无反应
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T13:11:12.259+08:00
+> 生成时间：2026-11-11T14:59:52.003+08:00
 > 当前 cycle：cycle-001-20261111T120927+0800
 > 当前内部阶段：BLOCKED
 > 验收模式：policy_only（operator_verified=false）
@@ -27,9 +27,12 @@
 - 需规依据：agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.1.4.1.3.1.2 地理分布图展示：支持图例筛选不同技术类型
 - 影响范围：lumen-ui-science-pc 技术发展跟踪结果页地理分布图；图例技术类型选择与地图点位可视化映射
 
-## 3. 改动摘要和非目标
+## 3. 改动摘要、跨仓 Bundle 和非目标
 
-- ui_pc：lumen-ui-science-pc，base=49df406da73d6cdc5e2c607c16bbf8d5489e8985，candidate=cfca2edb62b56c6f919fb82d2c7219c2a5de4449，scope=src/views/situation/tracking/models/trackingMapFilter.ts, src/views/situation/tracking/components/ResultDashboard.vue, src/views/situation/tracking/tracking.test.mjs
+- Bundle 类型：单仓
+- 同一飞书缺陷涉及多个仓库时仍是一个 run、一个 claim、一套 gate；各仓保留独立候选 SHA。
+
+- ui_pc：lumen-ui-science-pc，role=PENDING，ship_order=PENDING，depends_on=PENDING，base=49df406da73d6cdc5e2c607c16bbf8d5489e8985，candidate=cfca2edb62b56c6f919fb82d2c7219c2a5de4449，scope=src/views/situation/tracking/models/trackingMapFilter.ts, src/views/situation/tracking/components/ResultDashboard.vue, src/views/situation/tracking/tracking.test.mjs
 
 实现仓校验：
 
@@ -51,12 +54,13 @@
 | E-2254-TYPECHECK | command | PASS | yes | yes | PENDING | cfca2edb62b56c6f919fb82d2c7219c2a5de4449 | vue-tsc 类型检查通过 |
 | E-2254-BUILD | command | PASS | yes | yes | PENDING | cfca2edb62b56c6f919fb82d2c7219c2a5de4449 | Vite 生产构建通过；仅保留仓库既有的 chunk/unocss 警告 |
 | E-2254-FRONTEND-IMAGE-FAIL | pipeline | FAIL | yes | yes | PENDING | 71ac9e0b3558131879851e67a6165a5e701baa02 | frontend:image 连续两次因 Harbor 登录 unauthorized 失败；frontend:build 和 sonar:scan 已成功，非代码或测试失败 |
+| E-2254-DEV-DEPLOY-MISMATCH | ui | FAIL | yes | yes | PENDING | a647090cfd040adabc205dfdc193e3f13b1d2425 | dev 仍返回旧入口 index-CSWdLnzv.js；本修复构建入口 index-C2fHQ1mu.js 为 404。部署的 tracking chunk 不含 map-marker-type-color，说明修复未实际部署 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:11c4ebd10dbe20a5cb6dfebde58e100c6dce7935d6064e2c7d5beebdb8c0b24c；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:110a076d6a2242d4ff2027652e752145f8160f47c367e47b713bdca2d250eb62；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
