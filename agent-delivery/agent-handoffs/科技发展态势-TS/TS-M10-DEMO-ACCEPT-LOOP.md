@@ -55,3 +55,30 @@ Chrome 无头浏览器（playwright-core，mock 登录，维护接口代理到�
 - 关系编辑弹窗（类型 / 强度 / 时间）
 - 批量删除预览
 - 写被拒后切只读
+
+## 运行 2026-11-11（线上）
+
+- 用例：`合规演示用例/TS-L2-M10-合规演示用例.md`（线上版：可演（线上）13 / 覆盖不到 7 / 未填 0）
+- 部署：PY `eeb00c0` → `6429ab6` → `e950699`；FE `6125a41`；Java `0d50cf7d` + `9b950725`（19:48 线上生效）
+- 库：`gkxlumenx_cms`（cfg_tech_* 四表）、`demo_gkxlumenx_dwd/ads/ods`。执行 v2 迁移（cms 加列 + 残留清理 + 挂组；ads 成员表 + 回填）前，受影响表已整表备份（本机 `/tmp/m10-full/backup-*`，不入库）。口令不入 git、不入本文
+- 样本满足：是。读侧全量一致；实体写链路线上实发通过；图层写链路仅验证了「匿名 401」，带 token 的线上写复测待补
+- 停止：通过（线上）
+
+### 步骤与结果
+
+| 步 | 内容 | 结果 |
+|---|---|---|
+| 1 | 迁移后只读复核：4 分组颜色、9 图层挂组、src-1/2/4 挂组与改名、src-2 → `ods.dwd_zh_paper`、成员表 2 行带快照 | 全部符合 |
+| 2 | 旧 display 仍匿名可写的窗口内（18:42–18:43），对线上跑实体分区 LOOP（26 项，v46–v59） | 21 过；4 项为 R1 参数被旧 Java 丢弃（Java 部署后复测一致）；1 项缺陷见下 |
+| 3 | 线上实验（v60–v61）定位缺陷：成员语义解挂分支 `continue` 跳过计数 → publish results 误报「无影响行」 | PY `6429ab6` 修复 + 单测 |
+| 4 | 推荐总数 57→58：示范专利-19 存在 02:29 QA 修改后旧版解挂遗留的「合作」auto 边，新语义回写「关联」后出现重复候选 | PY `e950699` 按实体去重 + 单测；线上恢复 57 |
+| 5 | Java 部署后：匿名 `POST …/maintain/layers/save` | 401 / 40101 ✅；GET 200 ✅ |
+| 6 | 线上 vs 本地一致性核对（`compare_online_local.py`） | 12 / 12 相同 |
+| 7 | 前端：edu 资源包含新增文案；本机前端代理到线上网关渲染维护页三分区与全域态势 | 正常，零 JS 报错（`online-*.png`） |
+
+### 缺口
+
+| 缺口键 | 类 | 现况 | 预期 | 建议 | 挂到任务 |
+|---|---|---|---|---|---|
+| `demo_gkxlumenx_ads.graph_entity_edge.(3, tech_patent:0d6bde62…, 合作).source=auto` | DATA | 旧版残留一行（不影响展示：R1 已去重） | 删除 | 有写权限者执行：`DELETE FROM demo_gkxlumenx_ads.graph_entity_edge WHERE src='3' AND dst='tech_patent:0d6bde6239be4abceadc05964f87807784b149c1220d2ea1ffad7bb3cfa6704f' AND rel_type='合作' AND source='auto';`（本会话执行被安全策略拦截） | TS-L2-M10-DEMO-FULL-L01 |
+| 线上带 token 写复测 | ENV | 无 token 文件 | 图层写接口与批量删实体统计在线上登录态逐行通过 | 监管人放 `~/.gkx/display-loop-token` 后重跑 | TS-L2-M10-DEMO-FULL-L01 |

@@ -4,10 +4,11 @@ ponytail: off（多仓实现 + 联调交付；按公约 ponytail §4 不以缩�
 
 > **日期**：2026-11-11　|　**执行**：coordinator-agent（4 路子智能体并行：algorithm / api / frontend×2）　|　**监管**：human:刘剑锋
 > **方案**：`TS-L2-M10-DEMO-FULL-L01-方案.md`　|　**用例**：`合规演示用例/TS-L2-M10-合规演示用例.md`（可演（本地）13 / 覆盖不到 7 / 未填 0）　|　**LOOP**：`TS-M10-DEMO-ACCEPT-LOOP.md`「运行 2026-11-11（本地）」52/52
-> **状态（2026-11-11 监管人口令「相关代码和文档都提交吧」后）**：
-> - 已推送：lumen-algo-py `eeb00c0`（成员表缺失时有回退）；lumen-ui-science-pc `6125a41`（后端缺新字段时不报错，按默认值处理；rebase 时与他人的 FactorMapSection 多要素点位修复合并，保留对方模型，并加上全局停用过滤）；编排仓文档。
-> - **lumen-svc-platform `0d50cf7d` 只 commit 未推**：cms 新代码直接查询 v2 新列，线上库未执行 `db/9x_gkxlumenx_cms_tech_maintain_config_v2.sql` 前推送会导致 layers / datasources 500。须有库权限的人先执行该脚本（及 `demo_gkxlumenx_ads` 的成员表迁移）后再推。
-> - 过渡期：前端分页参数会被线上旧 display 丢掉（推荐只能看第 1 页），图层挂组、探测落库暂不可用；Java 上线后恢复。
+> **状态（2026-11-11 19:50 已上线）**：
+> - 共享库：`gkxlumenx_cms` v2 迁移、`demo_gkxlumenx_ads` 成员表迁移已执行（执行前整表备份于本机 `/tmp/m10-full/backup-*`）。src-2 经只读核实改指 `ods.dwd_zh_paper`（中台 ODS 论文主表，100900 行）。
+> - 代码：PY `eeb00c0` / `6429ab6` / `e950699`、FE `6125a41`、Java `0d50cf7d` / `9b950725` 全部推送 `origin/dev` 并部署生效。
+> - 线上验证：读侧与本地 12/12 一致；实体写链路线上实发通过（发现并修复 2 处缺陷）；匿名写 401 / 40101。用例已改为线上版（可演 13 / 覆盖不到 7 / 未填 0）。
+> - 待补：带登录 token 的线上写复测（监管人放 `~/.gkx/display-loop-token`）；示范专利-19 一条旧版「合作」候选边物理清理（SQL 见 LOOP 报告缺口表，不影响展示）。
 
 ## 一、本地走查入口
 
