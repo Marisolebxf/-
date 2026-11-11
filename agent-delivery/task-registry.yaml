@@ -64039,13 +64039,18 @@ tasks:
       - "handoff 与 cost 回填"
     update_time: "2026-11-12T01:54:20+08:00"
   - id: DEVOPS-LUMEN-OTEL-TEMPO-RECOVER-L01
+    cost_warn: "green"
+    actual_cost: 1.5
+    model_used: "claude-sonnet"
+    actual_tokens: 90000
+    evidence: "agent-handoffs/平台基建-PLATFORM/DEVOPS-LUMEN-OTEL-TEMPO-RECOVER-L01.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-11T18:49:02.199Z"
     last_seen_at: "2026-11-11T18:49:02.199Z"
     lock_until: "2026-11-11T22:49:02.199Z"
     claimed_by: "agent:devops-agent"
     title: "恢复 lumen OTel/Tempo 入库：collector memory_limiter 与 Tempo OOM"
-    status: "in_progress"
+    status: "pending_test"
     agent: "devops-agent"
     epic: "E-PLATFORM"
     priority: "P0"
@@ -64058,8 +64063,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: |
-      现场证据 2026-11-12：trace e93ad7e945ad35dafc98e2dde08385b5 Tempo/Loki 双平面 404。根因非前端埋点。Tempo /ready 曾 503；pod OOMKilled；otel-collector memory_limiter.limit_mib=256 持续 soft/hard；display span export 几乎全失败；ingest 曾 delta=0。用户指令：派 devops-agent 恢复基础设施。监管人 human:淮政玮。强度：ponytail full。禁止 FORCE_NACOS_REPUBLISH。禁止 echo alive 探活。
+    note: "联调通过：helm 真源+线上已对齐，验收见 handoff"
     touched_files:
       - "repos/lumen-svc-platform/helm/gkxlumen-platform/templates/otel-collector.yaml"
       - "repos/lumen-svc-platform/helm/gkxlumen-platform/values.yaml"
@@ -64076,6 +64080,7 @@ tasks:
       - "验证：任意业务请求的 X-Trace-Id 可在 Tempo NodePort 30202 GET /api/traces/<id> 查到；Loki 30311 同窗可按 trace 命中相关日志"
       - "demo 平面不受影响（NodePort/资源隔离保持）"
       - "handoff 含复现命令、改动 diff 摘要、验收证据；ponytail + cost 四字段"
+    update_time: "2026-11-12T02:55:11+08:00"
     update_time: "2026-11-12T02:49:12+08:00"
   - id: POL-L2-DS11-VIZ-GAPFILL-L02-DATA
     title: "政策分析评价 · 可视化 · FIX-03 七空态块缺项表数据落点"
