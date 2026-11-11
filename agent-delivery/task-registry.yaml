@@ -61757,6 +61757,7 @@ tasks:
       - "depends_on 1,073（M15）与 participates 178,731（M17）为存量已满足项，只回读核对、不得重灌、不得回写 props.batch"
     update_time: "2026-11-11T15:23:39+08:00"
   - id: KG-COMPLY-LOAD-T02
+    evidence: "agent-delivery/工程过程/04-系统集成/07-图数据库集成/T02-M02-小批量验证-20261111.md"
     supervised_by: "human:陈芸飞"
     claimed_at: "2026-11-11T08:45:53.210Z"
     last_seen_at: "2026-11-11T08:45:53.210Z"
@@ -61774,16 +61775,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      ⚠️ 2026-11-11 17:50 分工调整：**M02 由 T03 移交本任务执行**（M19 记 0 条）。M02 与 M19 同源同表（`ads_institution_collaboration_yearly` 1,438 万行 / 2015–2026），陈芸飞已完成源表核验与 dry-run 方案，按原分工将作废重做；M02「科研机构—科研机构合作」语义与本节「机构合作组」定位相符。
-      M02 落地口径（详 KG-COMPLY-LOAD-T03-裁定 §3.2 / §7.4）：只建 `cooperate` 一条；**按机构对跨年聚合成一条边**（不按年建边，`rank=0` 同起点同终点同边型会互相覆盖）；`weight` 取**累加 `co_paper_count`**，**禁用 `collaboration_strength` 作权重或跨年平均**（逐年单独归一：2015 分母 1,593、2025 分母 10,873，不可比）；各年 strength 留 `props.strength_by_year` 并标注禁止跨年比较；双向去重取 `institution_id < collaborator_institution_id` 一侧（实测 A→B 与 B→A 严格各 50%）；**排除 `company` 端点**（1,243,012 行）后 13,137,234 行、约 6,568,617 对上限；`props` 含 `first_year`/`latest_year`/`year_count`/`co_paper_count_total`/`match_method=coauthor`/`batch`。
-      M19 不再新建，对账单记 0 条并附「与 M02 同源重复」理由——若 T02 再建 M19 即同源双灌。
-      认领记录：陈芸飞明确授权认领并推进（claimed_by=agent:data-agent / supervised_by=human:陈芸飞，2026-11-11）。M15/M17 仅回读，存量不补批号；写入前验证端点与批次隔离。
-      放行三条护栏（缺一不得开工）：
-      G1 严禁重灌 M15/M17——`depends_on` 1,073 条、`participates` 178,731 条已由存量满足，重灌会边数翻倍并导致 T07 对账失配；存量边不得回写 `props.batch`。
-      G2 `research` 点由 T03 单方全量建（83,745 个，带 `institution_type_id` 完整属性），本节只做「已存在跳过并计数」，**不得自行 `INSERT VERTEX`**（同 VID 重复写为覆盖语义，会冲掉 T03 属性）。
-      G3 新写入边带 `props.batch=comply-<日期>-t02`，便于回滚与对账。
-      另：仓库内 4 处 `research_coop` 全为企业域语义（起点写死 `ent:`，取数 `enterprise_cooperation`），**无可复用执行器，M02 须新写**，不得复名改造。
-      详见 KG-COMPLY-ACCEPT-T01-T05-技术验收记录.md 与 KG-COMPLY-LOAD-T03-裁定-人才与机构四条关系.md。
+      2026-11-11按最新裁定执行M02（M19停建）。陈芸飞授权下已完成专用执行器及100个canonical机构对小批验证：157年度行，排除company52对，合格48对/66年度行，52个图端点均存在；实际新增cooperate 48条，逐条weight/props回读一致，只读重跑48条均识别为已有并跳过。批号comply-20261111-t02。M15=1073/M17=178731/M19=0/M22=94824保护基线一致，research现83745点由T03建设，本执行器未建点。5项单元测试通过。全量聚合/全量入图尚未完成；当前逐对执行器仅适合小批量，下一步批量化、源版本固定与全量对账。状态保持in_progress，不申请验收关闭。现行映射规则详任务DoD与唐绍祖T03裁定§7.4–7.5。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61794,7 +61786,7 @@ tasks:
       - "M19 记 0 条并附「与 M02 同源重复」理由；cooperate 按端点 Tag 对分组计数（存量 94,824 条 enterprise→enterprise 属 M22 不得混计）"
       - "对账单：存量已满足项计数 + M02 应灌子集 vs 实灌数 + 端点缺失跳过计数；depends_on 保持 DAG"
       - "不自行 INSERT VERTEX research（归 T03）；不把 apply_to/support 记成 M12–M14；不把 institution→institution participates 记成 M02/M19"
-    update_time: "2026-11-11T16:45:56+08:00"
+    update_time: "2026-11-11T18:45:04+08:00"
   - id: KG-COMPLY-LOAD-T03
     supervised_by: "human:宋飞扬"
     claimed_at: "2026-11-11T09:54:48.824Z"
