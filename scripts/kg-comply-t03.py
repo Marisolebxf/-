@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 import sys
 
-KINDS = ('person', 'research', 'm01', 'm02', 'm04')
+KINDS = ('person', 'research', 'm01', 'm04')
 BATCH = 'comply-2026-11-11-t03'
 
 

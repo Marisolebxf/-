@@ -12,19 +12,20 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 import sys
 import uuid
 
 
 DATABASE = "gkx_technology_analysis_dev"
 BATCH = "comply-2026-11-11-t03"
-RULES_VERSION = "t03-tang-four-relations-20261111-v1"
-FILES = ("person", "research", "m01", "m02", "m04")
+RULES_VERSION = "t03-tang-20261111-v2-scope832923ec"
+FILES = ("person", "research", "m01", "m04")
+M01_PAGE_SIZE = 50000
 TABLES = {
     "person": "ads_talent_profile",
     "research": "ads_institution_profile",
     "m01": "ads_talent_collaborator",
-    "m02": "ads_institution_collaboration_yearly",
     "m04": "ads_talent_experience",
 }
 NAMES = ("name_zh", "name", "name_en", "name_original")
@@ -39,11 +40,6 @@ M01_FIELDS = (
     "talent_id", "collaborator_talent_id", "co_paper_count", "co_project_count",
     "co_patent_count", "first_collaboration_year", "latest_collaboration_year",
     "collaboration_score", "score_version", "metrics_as_of_date", "data_version",
-)
-M02_COUNTS = (
-    "co_paper_count", "cross_author_co_paper_count", "multi_affiliation_paper_count",
-    "co_paper_cited_by_count", "open_access_co_paper_count", "co_patent_count",
-    "co_patent_family_count", "co_project_count",
 )
 M04_FIELDS = (
     "talent_id", "experience_id", "experience_type", "institution_id",
@@ -118,19 +114,29 @@ def _fetch_all(conn, query):
         raise SourceExportError("Source metadata request failed ({}).".format(type(error).__name__)) from None
 
 
-def _stream(conn, query):
+def _safe_source_error(error):
+    code = error.args[0] if error.args and isinstance(error.args[0], int) else None
+    message = str(error.args[1]) if len(error.args) > 1 else type(error).__name__
+    message = re.sub(r"[\r\n\t]+", " ", message)
+    message = re.sub(r"(?i)(password|passwd|pwd|token|secret)(\s*[=:]\s*)([^\s,;]+)", r"\1\2<redacted>", message)
+    message = re.sub(r"(?i)(://)[^\s/@]+:[^\s/@]+@", r"\1<redacted>@", message)
+    message = re.sub(r"(?i)(for user\s+)'[^']*'@'[^']*'", r"\1<redacted>", message)
+    return "{}; code={}; detail={}".format(type(error).__name__, code, message[:300])
+
+
+def _stream(conn, query, parameters=None):
     import pymysql.cursors
 
     try:
         with conn.cursor(pymysql.cursors.SSCursor) as cursor:
-            cursor.execute(query)
+            cursor.execute(query, parameters)
             fields = [column[0] for column in cursor.description]
             for row in cursor:
                 yield dict(zip(fields, row))
     except SourceExportError:
         raise
     except Exception as error:
-        raise SourceExportError("Source streaming request failed ({}).".format(type(error).__name__)) from None
+        raise SourceExportError("Source streaming request failed ({}).".format(_safe_source_error(error))) from None
 
 
 def _inspect(conn):
@@ -186,65 +192,38 @@ def _entities(conn, source, id_field, prefix):
 
 def _m01(conn, source):
     _require(source, M01_FIELDS)
-    query = (
-        "SELECT {} FROM {} WHERE talent_id < collaborator_talent_id "
-        "ORDER BY talent_id, collaborator_talent_id;"
-    ).format(_select(M01_FIELDS), _sql_table(source["table"]))
-    for row in _stream(conn, query):
-        source_id = _identifier(row["talent_id"])
-        target_id = _identifier(row["collaborator_talent_id"])
-        if source_id >= target_id:
-            raise SourceExportError("M01 returned a noncanonical or self-loop pair.")
-        props = _base_props(source["table"], _json([source_id, target_id]))
-        props.update(row)
-        props.update(match_method="coauthor", m_number="M01", weight_field="collaboration_score")
-        yield {"src": "person:" + source_id, "dst": "person:" + target_id,
-               "rank": 0, "weight": _number(row["collaboration_score"], "collaboration_score"), "props": props}
-
-
-def _m02(conn, source):
-    required = (
-        "institution_id", "collaborator_institution_id", "statistics_year",
-        "institution_type_id", "collaborator_institution_type_id", "co_paper_count",
-    )
-    _require(source, required)
-    counts = [field for field in M02_COUNTS if field in source["columns"]]
-    select = [
-        "y.institution_id", "y.collaborator_institution_id",
-        "MIN(p1.institution_type_id) AS institution_type_id",
-        "MAX(p1.institution_type_id) AS institution_type_max",
-        "MIN(p2.institution_type_id) AS collaborator_institution_type_id",
-        "MAX(p2.institution_type_id) AS collaborator_institution_type_max",
-        "MIN(y.statistics_year) AS first_year", "MAX(y.statistics_year) AS latest_year",
-        "COUNT(DISTINCT y.statistics_year) AS year_count", "COUNT(*) AS source_year_rows",
-    ] + ["SUM(y.`{0}`) AS `{0}`".format(field) for field in counts]
-    query = (
-        "SELECT {} FROM {} y "
-        "LEFT JOIN {profile} p1 ON p1.institution_id = y.institution_id "
-        "LEFT JOIN {profile} p2 ON p2.institution_id = y.collaborator_institution_id "
-        "WHERE y.institution_id < y.collaborator_institution_id "
-        "AND COALESCE(p1.institution_type_id, 'unknown') <> 'company' "
-        "AND COALESCE(p2.institution_type_id, 'unknown') <> 'company' "
-        "AND y.statistics_year BETWEEN 2015 AND 2026 "
-        "GROUP BY y.institution_id, y.collaborator_institution_id "
-        "ORDER BY y.institution_id, y.collaborator_institution_id;"
-    ).format(", ".join(select), _sql_table(source["table"]), profile=_sql_table(TABLES["research"]))
-    for row in _stream(conn, query):
-        source_id = _identifier(row["institution_id"])
-        target_id = _identifier(row["collaborator_institution_id"])
-        if "company" in (row["institution_type_id"], row["collaborator_institution_type_id"]):
-            raise SourceExportError("M02 company filtering did not match the source profiles.")
-        if source_id >= target_id or row["source_year_rows"] != row["year_count"]:
-            raise SourceExportError("M02 source pair/year identity is not unique.")
-        if (row["institution_type_id"] != row.pop("institution_type_max") or
-                row["collaborator_institution_type_id"] != row.pop("collaborator_institution_type_max")):
-            raise SourceExportError("M02 institution types change across years; resolve the source conflict.")
-        props = _base_props(source["table"], _json([source_id, target_id]))
-        props.update(row)
-        props.update(match_method="coauthor", m_number="M02", weight_field="SUM(co_paper_count)",
-                     aggregation="Annual base counts summed after selecting one mirror side; directional strengths and ranks are not summed.")
-        yield {"src": "inst:" + source_id, "dst": "inst:" + target_id,
-               "rank": 0, "weight": _number(row["co_paper_count"], "co_paper_count"), "props": props}
+    previous = None
+    total = 0
+    page = 0
+    while True:
+        predicate = ""
+        parameters = None
+        if previous is not None:
+            predicate = "AND (talent_id > %s OR (talent_id = %s AND collaborator_talent_id > %s)) "
+            parameters = (previous[0], previous[0], previous[1])
+        query = (
+            "SELECT {} FROM {} WHERE talent_id < collaborator_talent_id {}"
+            "ORDER BY talent_id, collaborator_talent_id LIMIT {};"
+        ).format(_select(M01_FIELDS), _sql_table(source["table"]), predicate, M01_PAGE_SIZE)
+        count = 0
+        for row in _stream(conn, query, parameters):
+            source_id = _identifier(row["talent_id"])
+            target_id = _identifier(row["collaborator_talent_id"])
+            key = (source_id, target_id)
+            if source_id >= target_id or (previous is not None and key <= previous):
+                raise SourceExportError("M01 returned a noncanonical, repeated or unordered pair.")
+            previous = key
+            props = _base_props(source["table"], _json([source_id, target_id]))
+            props.update(row)
+            props.update(match_method="coauthor", m_number="M01", weight_field="collaboration_score")
+            yield {"src": "person:" + source_id, "dst": "person:" + target_id,
+                   "rank": 0, "weight": _number(row["collaboration_score"], "collaboration_score"), "props": props}
+            count += 1
+        page += 1
+        total += count
+        _log("T03 source M01 page {} completed: {} records; total {}".format(page, count, total))
+        if count < M01_PAGE_SIZE:
+            break
 
 
 def _year(value):
@@ -399,7 +378,7 @@ def export_snapshot(conn, out_dir: Path) -> dict:
                     entity_ids.add(record["id"])
                     if name == "research":
                         research_types[record["props"]["institution_id"]] = record["props"]["institution_type_id"]
-        streams = {"m01": _m01(conn, source["m01"]), "m02": _m02(conn, source["m02"]),
+        streams = {"m01": _m01(conn, source["m01"]),
                    "m04": _m04(conn, source["m04"], quality, research_types)}
         for name, rows in streams.items():
             files[name] = _write_records(stage / (name + ".jsonl"), rows, entity_ids)
@@ -416,12 +395,12 @@ def export_snapshot(conn, out_dir: Path) -> dict:
             "started_at": started_at, "finished_at": _now(), "files": files,
             "quality": dict(quality), "all_exported_edge_endpoints_in_source_profiles": True,
             "institution_type_authority": "ads_institution_profile for both endpoints; experience type values also preserved for audit",
-            "physical_edge_policy": "One canonical physical edge per M01/M02 pair; M04 is person to research; rank=0.",
+            "physical_edge_policy": "One canonical physical edge per M01 pair; M04 is person to research; rank=0.",
             "weight_mapping": {"m01": "collaboration_score; NULL -> 0, original NULL preserved",
-                               "m02": "SUM(co_paper_count) after mirror deduplication and year/company filtering; all-NULL -> 0",
                                "m04": "0; no numeric strength prescribed"},
-            "skipped_relations": {"M03": "Company endpoints are outside M03; no rows exported.",
-                                  "M19": "Same evidence as M02; research_coop remains empty.",
+            "skipped_relations": {"M02": "Transferred to T02 by ruling section 7, GitLab 832923ec; not queried or exported by T03.",
+                                  "M03": "Company endpoints are outside M03; no rows exported.",
+                                  "M19": "Same evidence as M02; duplicate handling belongs to T02, not this T03 batch.",
                                   "M20": "Same evidence as M01; talent_coop remains empty."},
             "consistency": "Ordered read-only exports with source version/count probes; source-side transactional snapshot is not provided.",
         }

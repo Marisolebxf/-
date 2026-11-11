@@ -187,7 +187,7 @@ class WriterChecks(unittest.TestCase):
         self.assertEqual(stats["batch_owned_verified"], 1)
         self.assertEqual(self.backend.edges, old)
 
-    def test_research_and_belong_edges_preserve_legacy_enterprise_edge(self):
+    def test_research_m01_and_belong_preserve_legacy_enterprise_edge(self):
         self.endpoints()
         self.backend.vertices["research"] = {
             "inst:1": {"name": "机构一", "props": "{}"},
@@ -199,9 +199,9 @@ class WriterChecks(unittest.TestCase):
         writer = self.writer()
         research = self.source([entity("inst:1"), entity("inst:2")], "research.jsonl")
         self.assertEqual(writer.apply_file("research", research)["existing_other_batch"], 2)
-        m02 = self.source([edge(src="inst:1", dst="inst:2")], "m02.jsonl")
+        m01 = self.source([edge()], "m01.jsonl")
         m04 = self.source([edge(dst="inst:1", weight=0)], "m04.jsonl")
-        self.assertEqual(writer.apply_file("m02", m02)["new_verified"], 1)
+        self.assertEqual(writer.apply_file("m01", m01)["new_verified"], 1)
         self.assertEqual(writer.apply_file("m04", m04)["new_verified"], 1)
         self.assertEqual(self.backend.edges["cooperate"][legacy_key], legacy)
         self.assertIn(("person:1", "inst:1", 0), self.backend.edges["belong"])
@@ -330,6 +330,8 @@ class WriterChecks(unittest.TestCase):
 
     def test_input_gates_and_duplicate_identities(self):
         writer = self.writer()
+        with self.assertRaisesRegex(GraphWriteError, "approved kind"):
+            writer.apply_file("m02", self.root / "must-not-read-m02.jsonl")
         for kind, record in [
             ("m01", edge(rank=1)), ("m01", edge(src="person:2", dst="person:1")),
             ("m01", edge(dst="person:1")), ("m04", edge()),

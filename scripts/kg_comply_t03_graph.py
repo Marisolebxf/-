@@ -16,12 +16,11 @@ import time
 
 SPACE = "demo_gkx_chain"
 BATCH = "comply-2026-11-11-t03"
-VERSION = "1"
+VERSION = "v2-scope832923ec"
 KINDS = {
     "person": ("person", None, None),
     "research": ("research", None, None),
     "m01": ("cooperate", "person", "person"),
-    "m02": ("cooperate", "research", "research"),
     "m04": ("belong", "person", "research"),
 }
 PREFIXES = {"person": "person:", "research": "inst:"}
