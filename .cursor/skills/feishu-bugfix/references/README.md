@@ -1,6 +1,6 @@
 # 飞书缺陷修复 Skill 与运行账本说明
 
-> 状态：v1.1 同缺陷跨仓 Bundle 优化版
+> 状态：v1.2 精确验收口令优化版
 > 建立日期：2026-11-10
 > 适用范围：飞书项目中由当前用户认领并修复的缺陷
 > 真源分层：本目录是 Skill 的唯一 canonical 包；`../SKILL.md` 管操作入口，`BUG-PLAYBOOK.md` 管类型路由和验证方法，`P0-DESIGN.md` 管 gate/权限细节，`../templates/state.schema.json` 管机器结构，`../policies/` 管数据授权
@@ -35,19 +35,19 @@
 1. 发起处理或确认目标缺陷；
 2. 审阅诊断和改动边界，发送 `进入开发`；
 3. 审阅提测包，发送 `提测`；
-4. 在 dev 完成业务验收，并在飞书完成状态迁移。
+4. 在 dev 完成业务验收，发送完整精确消息 `验收通过`；Agent 校验后自动完成飞书状态迁移。
 
 `提测`表示：合并 `dev`、触发 CI、自动部署 dev 并完成 dev 复测。它不授权生产发布。
 
-最终验收不增加第三个聊天口令。Agent 停在“待验收”，由人工在飞书完成验收状态迁移；Agent 读取状态后同步账本和最终评论，不能根据“可以”“没问题”自行置为已解决。由于 MCP 使用当前用户身份，P0 把该动作定义为策略级约束而非防伪事实，记录 `acceptance.mode=policy_only`、`operator_verified=false`，并在待验收阶段禁止 Agent 调用 `transition_state`。
+最终验收增加第三个精确口令 `验收通过`。只有完整精确消息（多 active run 时用 `验收通过<auto_number>`）才能批准 `acceptance` gate；Agent 随后读取飞书可流转状态和必填项，调用 `transition_state` 迁移 `RESOLVED`，再记录 `acceptance.mode=chat_exact`、审批引用、session/machine 和 `operator_verified=false`。“可以了”“没问题”“算修复了”等自然语言不解锁。人工直接在飞书完成迁移时，仍保留 `policy_only` 观察路径。
 
 P0 不在每个 gate 写飞书评论。外部只保留认领时的 `[agent-claim]`、提测总结和最终验收总结三条评论；gate 的真实性由 `state.json`、绑定对象和校验器保证。
 
-## v1.0 优化后的主流程
+## v1.2 优化后的主流程
 
 ```text
 预检 -> 认领 -> Bug Contract -> 类型路由 -> 复现/修复
--> 风险匹配的验证与评审 -> 提测/部署 -> 人工验收
+-> 风险匹配的验证与评审 -> 提测/部署 -> 验收通过 -> 自动迁移 RESOLVED
 ```
 
 关键变化：
@@ -142,7 +142,7 @@ S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳�
 - 真源分层：`P0-DESIGN.md` 是流程/权限真源，`SKILL.md` 是操作真源，`templates/state.schema.json` 是机器结构真源，`policies/` 是数据授权真源；
 - Skill 的唯一完整真源是 `.cursor/skills/feishu-bugfix/`；Cursor 直接加载该 canonical 包，Codex / Trae 只保留薄适配入口。更新后运行 `node .cursor/skills/feishu-bugfix/scripts/sync-bugfix-skill.mjs --write`；
 - 业务仓 `AGENTS.md` 只增加统一指针，不复制整套流程；
-- `.cursor/rules/fe-manual-confirm-push.mdc` 补充两个口令的权限映射；
+- `.cursor/rules/fe-manual-confirm-push.mdc` 补充开发/提测口令的前端权限映射；验收口令由 Skill 校验，不改前端推送规则；
 - 该中心规则废止旧 AGENTS 中无条件“完工即推”的条款；旧条款未清理前以中心规则为准；
 - 代码操作遵守 `.cursor/rules/multi-session-protection.mdc`；
 - 仓库路由引用 `agent-delivery/repo-registry.yaml`；
@@ -159,7 +159,7 @@ S/M/L 只允许上调，不允许为了减轻流程自行降级。M/L 不得跳�
 包含：
 
 - 单缺陷状态机；
-- 两个精确人工门；
+- 三个精确人工门：开发、提测、验收；
 - 飞书人工验收落点；
 - S/M/L 分级；
 - gate 绑定、失效和接管；
@@ -188,8 +188,8 @@ node .cursor/skills/feishu-bugfix/scripts/bugflow-state.selfcheck.mjs
 node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.selfcheck.mjs
 ```
 
-Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos（多仓时每仓带 role/depends_on/ship_order）→ set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（基础 fix/regression；M/L 追加适用类别）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → record-acceptance → render-report` 使用脚本；`record-ship-package` 在提测授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
+Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ record-diagnosis → record-plan → set-repos（多仓时每仓带 role/depends_on/ship_order）→ set-data-scope → approve-gate enter_dev → advance → check-data-write（有 DB 写时）→ record-evidence → verify-repo → record-review → record-verification（基础 fix/regression；M/L 追加适用类别）→ verify-evidence → advance READY_SHIP → approve-gate ship → advance SHIPPING → record-ship-package → verify-evidence → advance DEV_VERIFYING → advance AWAITING_ACCEPTANCE → exact 验收通过 → approve-gate acceptance → transition_state RESOLVED → record-acceptance(mode=chat_exact) → advance RESOLVED → render-report` 使用脚本；`record-ship-package` 在提测授权后的合并/部署阶段记录实际 merge/deployed SHA、pipeline 和 rollout，并自动重跑 evidence 校验。`block`、`cancel`、`reopen`、`takeover` 负责旁路。
 
-v1.1 起，校验器强制 claim 评论证据、DB 写前 scope/policy 授权、`fix + regression` 基础覆盖、M/L 非 happy-path 覆盖和未追认决策闸门；跨仓 Bundle 强制每仓候选/评审/证据、依赖顺序和完整集成验证；只有 L 自动路由到现有长任务流程。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍只面对四件事和两个精确口令，复杂校验全部由 Agent 内部完成。
+v1.2 起，校验器在原有 claim、数据、验证、跨仓 Bundle 约束上增加第三个精确 `acceptance` gate；chat_exact 验收必须绑定当前 ship gate、dev 验证结果和已验证 evidence manifest，并在飞书迁移成功后才能进入 `RESOLVED`。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍是四件事，但口令为 `进入开发`、`提测`、`验收通过` 三个精确词。
 
 详细设计见 [`P0-DESIGN.md`](P0-DESIGN.md)。
