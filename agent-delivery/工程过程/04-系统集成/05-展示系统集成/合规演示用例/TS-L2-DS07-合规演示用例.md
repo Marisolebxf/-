@@ -37,7 +37,7 @@
 | 155 | 政策与条件保障力 · 项目支持分析 | 项目类型；资助机构；时间范围 | 选维度 | `POST /display/v1/situation/innovation-evaluation/snapshot` | 项目类型、机构、时间范围 | 展示项目数量、资助金额、实施效果；金额无源时显示「—」 | ✅可演（R3 2026-11-09 解除）。`projectSupport` 出真值：NSFC 代理口径（gkx dwd_zh_project **58,453 项**；approval_year 覆盖 1986–2021，2022 起缺失不按 0 摊入——caliber 诚实声明）score 42.9；资助金额 mean 43.27 万 / median 30 / max 920；类别分布 面上 27,939 / 青年C 23,884 / 地区 2,634 / 专项 1,058 / 重点 962——数量/金额/类别明细结构齐 |
 | 156 | 政策与条件保障力 · 政策实施效果评估 | 政策对象；对比时点（政策前 / 政策后）；关键指标 | 选政策与对比时点 | `POST /display/v1/situation/innovation-evaluation/snapshot` | 政策 id、对比时点、指标 | 展示前后关键指标对比与差值；无法归因时须标注「仅相关不构成因果」 | ✅可演。snapshot policy 维「实施效果」=100.0（效果=论文近三年 vs 前五年增幅）；gkx dwd_zh_paper 真实；页面口径为论文增幅代理，须保留「仅相关不构成因果」标注 |
 | 157 | 政策与条件保障力 · 政策与条件保障力综合评估 | 指标权重（可自定义，合计 100%）；领域 | 调权重、点「计算」 | `POST /display/v1/situation/innovation-evaluation/snapshot` | 权重配置、领域 | 权重校验同序号 143；成功后出综合得分与排名 | ✅可演（2026-11-10 FIX-07 落地，生产实测）。policy 维「综合评估」=59.4（四维分项加权，项目维缺测不补 0）可演；四维 `weights` 默认 25/25/25/25 非 0，改权重 40/30/20/10 后 `composite` 综合分 41.4→36.4 同步重算；非法合计 110% 出 `weightsValidation.valid=false` 且不产出综合分（权重校验同 143） |
-| 158 | 政策与条件保障力 · 政策优化建议 | 评估对象；建议方面（政策重点调整 / 支持力度 / 实施路径） | 点「生成建议」 | `POST /display/v1/situation/innovation-evaluation/snapshot` | 评估对象、建议方面 | 生成对应建议条目；模型不可用时明确提示未接入，不得用模板套话代替；德尔菲法/系统仿真能力未接入须如实说明 | ❌覆盖不到。snapshot `policySuggestions=[]`、`methodEvidence`（delphi/simulation）空结构（disagreement/conclusion/consensus/optimistic/conservative/scenario/baseline 全空）；无建议生成模型、无专家评议与模拟数据源（缺口 G5） |
+| 158 | 政策与条件保障力 · 政策优化建议 | 评估对象；建议方面（政策重点调整 / 支持力度 / 实施路径） | 点「生成建议」 | `POST /display/v1/situation/innovation-evaluation/snapshot` | 评估对象、建议方面 | 生成对应建议条目；模型不可用时明确提示未接入，不得用模板套话代替；德尔菲法/系统仿真能力未接入须如实说明 | ✅可演（2026-11-10 DSP-DS07-SUP-01 生产实测 PASS）。`policySuggestions` 出 **5 条**建议、`degraded=false`、每条带 evidence（metricId + value + caliber）；方案 C 异步中间态：`generate` 起任务 → 轮询 `status` 取结果，同用户同条件只允许一条在跑、当天已成功直接打开旧结果、另提供「重新分析」；建议卡带「模型生成·非评估结论」角标，**不参与计分/排名/覆盖率**；`methodEvidence`（delphi/simulation）仍为空结构，演示口径列「方法依据未提供」（缺口 G5 按「模型生成」口径解除） |
 
 ## LOOP 对照汇总
 
@@ -88,7 +88,7 @@
 | G5 政策建议与方法论（158） | ✅ 已落地（SUP-01 LLM 生成；2026-11-10 生产实测 5 条建议、`degraded=false`、每条带证据指标与「模型生成·非评估结论」标注）；德尔菲/仿真方法依据仍为空态，演示口径列「未提供」 |
 | G6 历史报告 0 条 | ⏳ G1 已发布，需跑一次完整评估落库生成 |
 | G7 趋势预测透出（139/145） | ✅ 已解决 |
-| M4-G7 `claim_count` | ✏️ 修复（数仓：建字段 + 回填）；专利质量按 4/5 维重归一 |
+| M4-G7 `claim_count` | ✅ 已落地（FIX-01：解析 `dwd_patent_claim.original_text`，`techPatent.quality` **5 维齐全**含「权利要求数」、`missing_dimensions` 空；A61K `avg_claims`=15.24、claims 覆盖 25 件，0.68% 冻结上限如实披露；quality_score 按 5 维重归一，A61K 72.86→64.75） |
 | M4-G8 `legal_event_code` 4 类码值 | ✏️ 修复（数仓：补许可/诉讼/质押/开放许可码值）；未补前不参与市场潜力计分 |
 | M4-G9 国别映射表 | ✏️ 修复（后端：`country_alias` 映射表） |
 | M4-G10 政策前瞻词表 | ✏️ 修复（算法：config 词表） |

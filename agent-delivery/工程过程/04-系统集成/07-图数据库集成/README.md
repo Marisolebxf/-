@@ -108,6 +108,7 @@
 - **T01 交付评审记录（内部会签）** → [会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md](./会签/KG-COMPLY-LOAD-T01-REVIEW-ALGO.md)（2026-11-09 唐绍祖。独立只读复核 8 项证据表、15 边型 ↔ 24 M 关系对应、P0/P1 判定、ALGO 侧文档回修清单）
 - **点的编号前缀实测与裁定（P0，影响 T02–T04）** → [KG-COMPLY-VID-L01-VID前缀实测与裁定.md](./KG-COMPLY-VID-L01-VID前缀实测与裁定.md)（2026-11-10。白鑫凤第二版清单第 9 节抽查发现现网与规范不符，ALGO 复核确认且更严重：`ent:` 后缀非信用代码、`enterprise_code` 实测 0/208,394 非空，真实后缀在 `props.org_id`。裁定本期用现网前缀 `ent:`/`segment:`/`institution:`/`pol:`、VID 从源表字段拼不重算、规范前缀留作正式线；另证 `depends_on` 1,073 / `participates` 178,731 存量已满足，T02 不得重灌）
 - **T01 两个问题答复（科研机构怎么算 / 人才参与项目数据从哪来）** → [KG-COMPLY-LOAD-T01-答复-科研机构判定与M07署名.md](./KG-COMPLY-LOAD-T01-答复-科研机构判定与M07署名.md)（2026-11-10。`research` 全表建自 `ads_institution_profile` 83,745 行，与存量 43,296 服务机构不同源不合并；M07 只出 `ads_talent_project`，论文署名行无作者字段可用，M09 只建专利段、论文段列缺口）
+- **T04 两问答复（M08 灌多少 / paper 点灌不灌）** → [KG-COMPLY-LOAD-T04-答复韩梦蕊-M08与paper点.md](./KG-COMPLY-LOAD-T04-答复韩梦蕊-M08与paper点.md)（2026-11-11 答韩梦蕊。M08 只灌 17,426 行真隶属，2,255 万行 `funded_output_affiliation` 是论文机构署名不得计入；paper 点本期 0 个；附带项目 17,402 / 专利 70,496 也不全灌；对账分母改用应灌子集数。含 M07 前提纠正：`ads_talent_project` 770 万行全为 `funded_output_author`，M07 本期不建）
 - 技术方案 → [技术方案.md](./技术方案.md)（处理中，WBS 仍要调整）
 - 七要素上图与消费实施方案长任务 → [KG-CLOSELOOP 总控](../../../agent-handoffs/图谱闭环-KG-CLOSELOOP/KG-CLOSELOOP-长任务总控.md)（2026-10-29 启动。只写方案，不替代 `SYSINT-SCHEME-07-L01`，不派 `SYSINT-07-01`～`03`）
 - 对接文档 → `对接文档/智谱/` · `对接文档/燕大/`
