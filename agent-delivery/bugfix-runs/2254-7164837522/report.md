@@ -1,7 +1,7 @@
 # 缺陷修复报告：2254 技术发展跟踪，地理分布图展示，筛选不同技术类型分布图无反应
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T14:59:52.003+08:00
+> 生成时间：2026-11-11T15:21:51.164+08:00
 > 当前 cycle：cycle-001-20261111T120927+0800
 > 当前内部阶段：BLOCKED
 > 验收模式：policy_only（operator_verified=false）
@@ -46,6 +46,7 @@
 - regression / 技术发展评估结果标题中文名等既有自检保持通过：PASS；evidence=evidence/manifest.json#E-2254-TRACKING-TEST
 - integration / Vue/TypeScript 全仓类型检查通过：PASS；evidence=evidence/manifest.json#E-2254-TYPECHECK
 - integration / 生产构建通过，新增模块可被 Vite 正常打包：PASS；evidence=evidence/manifest.json#E-2254-BUILD
+- integration / dev 成功部署的构建包含 2254 修复代码：PASS；evidence=evidence/manifest.json#E-2254-DEV-DEPLOY-VERIFIED
 
 | evidence_id | kind | result | reviewable | raw_retained | non-reviewable reason | commit | summary |
 |---|---|---|---|---|---|---|---|
@@ -55,12 +56,13 @@
 | E-2254-BUILD | command | PASS | yes | yes | PENDING | cfca2edb62b56c6f919fb82d2c7219c2a5de4449 | Vite 生产构建通过；仅保留仓库既有的 chunk/unocss 警告 |
 | E-2254-FRONTEND-IMAGE-FAIL | pipeline | FAIL | yes | yes | PENDING | 71ac9e0b3558131879851e67a6165a5e701baa02 | frontend:image 连续两次因 Harbor 登录 unauthorized 失败；frontend:build 和 sonar:scan 已成功，非代码或测试失败 |
 | E-2254-DEV-DEPLOY-MISMATCH | ui | FAIL | yes | yes | PENDING | a647090cfd040adabc205dfdc193e3f13b1d2425 | dev 仍返回旧入口 index-CSWdLnzv.js；本修复构建入口 index-C2fHQ1mu.js 为 404。部署的 tracking chunk 不含 map-marker-type-color，说明修复未实际部署 |
+| E-2254-DEV-DEPLOY-VERIFIED | ui | PASS | yes | yes | PENDING | c8c86b42bae1ee923630232bfeeb1fa01720e23f | 流水线4808和deploy:k8s成功；dev入口为index-C8x2PpKb.js，tracking分块index-CLPQ08GE.js包含本次map-marker-type-color修复标识 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:110a076d6a2242d4ff2027652e752145f8160f47c367e47b713bdca2d250eb62；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:14b96099436998ec4a364ee8533655fc87679ce28213aa82fc522c01b345d738；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -95,13 +97,15 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- ui_pc：ship_order=PENDING，MR=direct-dev-push，candidate=cfca2edb62b56c6f919fb82d2c7219c2a5de4449，merge=c8c86b42bae1ee923630232bfeeb1fa01720e23f，deployed=c8c86b42bae1ee923630232bfeeb1fa01720e23f，pipeline=4808，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4808，image=PENDING，rollout=success
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=evidence/manifest.json#E-2254-DEV-DEPLOY-VERIFIED
 
 人工验收步骤：
 
-- PENDING
+- 打开技术发展跟踪结果页并切换到地理分布图
+- 切换/取消不同技术类型，确认地图区域收敛且点位颜色随主类型变化
+- 刷新页面后重复一次，确认筛选仍生效
 
 ## 10. 人工验收步骤
 
