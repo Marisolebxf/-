@@ -1,10 +1,10 @@
 # 缺陷修复报告：2287 全球创新监测，创新监测与分析，有空数据
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T23:30:54.697+08:00
+> 生成时间：2026-11-12T00:01:23.977+08:00
 > 当前 cycle：cycle-001-20261111T230903+0800
-> 当前内部阶段：AWAITING_ACCEPTANCE
-> 验收模式：policy_only（operator_verified=false）
+> 当前内部阶段：RESOLVED
+> 验收模式：chat_exact（operator_verified=false）
 
 ## 1. 缺陷事实和复现
 
@@ -55,12 +55,17 @@
 | E-2287-TYPECHECK | command | PASS | yes | yes | PENDING | 7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3 | vue-tsc 类型检查通过 |
 | E-2287-BUILD | command | PASS | yes | yes | PENDING | 7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3 | Vite 生产构建通过；仅保留仓库既有的 chunk/unocss 警告 |
 | E-2287-DEV-VERIFIED | ui | PASS | yes | yes | PENDING | 7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3 | 流水线4912和deployment 9120成功；dev全球创新监测分块已包含二维候选优先展示和单维候选不进主表说明 |
+| E-2287-BACKEND-COMPILE | command | PASS | yes | yes | PENDING | 0d9895cf482b01a4266e9b03fe2be664f5ca24e5 | gkxlumen-display及依赖模块编译通过 |
+| E-2287-BACKEND-SELECTION-CHECK | command | PASS | yes | yes | PENDING | 0d9895cf482b01a4266e9b03fe2be664f5ca24e5 | 使用真实precompute comparable_top后20个候选均至少两维可算，前10同时出现影响潜力和成熟度 |
+| E-2287-FINAL-BACKEND-VERIFIED | pipeline | PASS | yes | yes | PENDING | 0d9895cf482b01a4266e9b03fe2be664f5ca24e5 | 后端流水线4915中build、image、deploy:display成功，deployment 9127成功；comparable_top验证20/20为二维候选 |
+| E-2287-FINAL-FRONTEND-VERIFIED | pipeline | PASS | yes | yes | PENDING | 52febfc96e46c58478bc4b92bc3e169e039d615c | 前端流水线4916和deployment 9129成功；dev全球创新监测chunk已包含二维候选和有数据/无数据两种说明 |
+| E-2287-ACCEPTANCE | acceptance | PASS | yes | yes | PENDING | 52febfc96e46c58478bc4b92bc3e169e039d615c | 用户发送完整精确口令“验收通过”；飞书缺陷状态已由 IN PROGRESS 流转为 RESOLVED，解决结果为已修复 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:640e35f83951e51fb4a9ae498b891ea4a8b3c6bd3ee3428c9ac2d4346cacbc0b；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:4d79a3c47e8fdd89084ea3a859b9250dd17fe158f83311a9d69c10328272eced；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -112,13 +117,13 @@ DB 写证据授权：
 
 ## 10. 精确验收与飞书状态迁移
 
-- 飞书当前状态：IN PROGRESS
-- 验收证据：PENDING
-- 验收结论：pending
-- 验收模式：policy_only
+- 飞书当前状态：RESOLVED
+- 验收证据：evidence/manifest.json#E-2287-ACCEPTANCE
+- 验收结论：approved
+- 验收模式：chat_exact
 - 验收异常：PENDING
-- 验收口令：PENDING
-- 审批引用：PENDING
+- 验收口令：验收通过
+- 审批引用：chat-2026-11-11-2287-acceptance
 - chat_exact 验收：仅在收到完整精确消息 `验收通过` 后，经 acceptance gate 校验并由 Agent 调用飞书状态迁移。
 
 ## 11. Gate 状态与绑定对象
@@ -127,13 +132,13 @@ DB 写证据授权：
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:461cdfbc1edd98f934617c28ca361894fd9a5a40f6d58b4f8ed589dd00a8ec0b |
 | ship | invalidated | 提测 | sha256:f5b470bf1afad49c8db2664e84a80f2bd5f43c7b872b04df77eee2d61d428084 |
-| acceptance | pending | PENDING | PENDING |
+| acceptance | approved | 验收通过 | sha256:cde8110954e1adca110a16c9db61501653a9731d7ba5660707d3269bb30ed901 |
 
 enter_dev bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"220b890583a3ce34408dbcacc7f30da035cefbaf","candidate_sha":null,"planned_change_scope":["src/views/situation/global-innovation/models/innovationValueSelection.ts","src/views/situation/global-innovation/tabs/InnovationMonitor.vue","src/views/situation/global-innovation/innovationMonitor.test.mjs"]}],"diagnosis_hash":"sha256:b79b289c1f049464ca7abc012259bf427adb22bc018cfe89d2e77ab5605bf474","plan_hash":"sha256:1ee26ed52434a525afc5e8715d3986b3a1b00a99ae99b7a6dd9ec0c6e57640df","risk_level":"S","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}
 
 ship bound_to：{"repos":[{"repo_id":"ui_pc","candidate_sha":"7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3","diff_hash":"sha256:0dadf56099c60781fcdf22c5490f84b36639541963086198560df401a3f4874e","verification_hash":"sha256:61fa2c33eb8d3607615e8778d619059350e245c7db579f3ec2938d204069ca97","review_hash":"sha256:9254cd6a994f2b2a726c5ddf19bb5ea630f18d5ca3ba22204d5175e5d0d48361","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}],"risk_level":"S","deploy_target":"dev"}
 
-acceptance bound_to：PENDING
+acceptance bound_to：{"work_item_id":"7164917379","claim_id":"codex-7164917379-20261111T230529-114db529","ship_gate_hash":"sha256:f5b470bf1afad49c8db2664e84a80f2bd5f43c7b872b04df77eee2d61d428084","dev_verification_result":"PASS","evidence_manifest_hash":"sha256:4d79a3c47e8fdd89084ea3a859b9250dd17fe158f83311a9d69c10328272eced","current_status":"IN PROGRESS"}
 
 ## 12. 自动决策摘要
 

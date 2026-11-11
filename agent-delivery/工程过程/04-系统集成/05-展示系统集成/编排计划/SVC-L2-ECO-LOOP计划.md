@@ -130,4 +130,32 @@
 - `pytest tests/test_gkx_show_eco_boot.py` **13 passed**。
 - 本地 dev 真网关实测（`127.0.0.1:5288` + `VITE_APP_API_URL=http://10.50.69.111:30895` + localStorage `access_token`）：级联三级实测 `全部地区 | 广东省 | 未分区（1909）` / `深圳市 | 其他地区（750）` / 南山区 1118·宝安区 500·龙岗区 306 等九区；名录「所在区」列纯区名；详情抽屉无任何括注、空值「—」；人才页签无 `SVC_005`、无演示标注（`reviewMode=1` 对照后标注出现）。截图 `../合规演示用例/eco-r4-filter-cascade-20261111.png`、`eco-r4-talent-clean-20261111.png`。
 
-**遗留**：`districts` / `districtMissing` 需 display 与 show-py 部署后才在生产生效；单区与「全部」不依赖新参数，当前构建即可用（本地 dev 连生产旧后端时，选整市/未分区会退化为全库）。
+**遗留**：~~`districts` / `districtMissing` 需部署后才生效~~ **已于 2026-11-11 生产实测生效**（见 §9 验证：`districts`=九区→2,851、`districtMissing`→1,383、baseline→4,984）。
+
+## 9. R5 记录：human 二次逐屏核对的六项收口（2026-11-11）
+
+> 起因：human 在 R4 构建上二次核对，提 6 项。其中第 1 项**不是口径问题，是真 BUG**（取错值导致查 0 条），必须记清楚，防止后续被当成「后端没部署」搪塞过去。
+
+| # | human 反馈 | 根因 / 事实（实测） | 处置 |
+|---|---|---|---|
+| 1 | 地区筛选选完没有数据 | **真 BUG**：`a-cascader` 未设 `path-mode`，Arco 单选默认 `pathMode=false`，v-model 回的是**标量**（`'南山区'`）；`districtScope()` 直接 `p[2]` 索引字符串 → 取到第三个字「区」→ 查 `district_name='区'` = 0 条 → **空表**。深圳九区名全为 3 字，故「选哪个都空」 | 加 `path-mode`（v-model 回完整路径 `['广东省','深圳市','南山区']`）+ `Array.isArray` 防御（标量降级为空路径，不按字符索引）；watch 同步防御 |
+| 2 | 每个选项后面的数字去掉 | 级别 / 类型 / 级联 label 拼了 `（count）` | 三处 label 去计数，只留名称 |
+| 3 | 去掉企业规模、运营状态筛选项 | 562 原文有「规模/状态联动」，但两字段全库无源，R4 前是置灰占位 | 移除两个筛选项 + `missingScaleTip` / `missingStatusTip` 计算属性，不留假控件 |
+| 4 | 「区县下钻（已定位口径）」去括注 | 内部术语外露 | 标题改「区县下钻」；地图说明「区聚合 = 已定位口径」→「区聚合按注册地归口」 |
+| 5 | 高新技术企业列是否该留 | **需规 561 未点名该列**（561 点名人才结构/企业数量/专利项目/结构调整）；**但数据有**：2026-11-11 实测 `district-indicators` → 南山 3,877 / 福田 3,961 / 龙华 2,117 …，`columnStatus.highTechCount.available=true`，仅未分区行恒「—」 | **保留**（条件「没要求 **且** 没数据」不成立）。该列系 R2 human 裁定「B 加高企列」所加，且 557 点名区级高企数。若后续要按 561 严格收口（只留行政区/载体数/占比），删列即可，无副作用 |
+| 6 | 详情「联系方式为富化回填…（addressSource/phoneSource 见方案）；邮箱无数据时显「—」，不造值」 | 后端 carrier 详情 `note` 硬带该句 | 删除整条 `note`（前端 `v-if="detail.note"` 自然不渲染） |
+
+**代码落点（R5，未提交推送，待 human 确认）**：
+
+| 仓 | 文件 | 内容 |
+|---|---|---|
+| `lumen-ui-science-pc` | `eco-carrier/index.vue` | `path-mode` + 数组防御；三处 label 去计数；删规模/状态筛选块与两个 computed；下钻标题去括注；地图说明改「注册地归口」；接口目录 desc 去「无源」；文件头/抽屉注释同步 |
+| `lumen-ui-science-pc` | `eco-carrier/eco-carrier.test.mjs` | 规模/状态断言反转为「已移除」；新增 8 条（去计数 ×3、`path-mode`、数组防御 ×2、标题、计数残留） |
+| `lumen-topic-py` | `gkx_show_service/views/eco.py` | carrier 详情不再输出 `note` |
+
+**验证（R5）**：
+
+- `node eco-carrier.test.mjs` 通过；`vue-tsc --build --force` 本页 0 错（`think-tank/TabFilterBar.vue` 3 错仍是他人未提交改动）。
+- `pytest tests/test_gkx_show_eco_boot.py` **13 passed**。
+- **后端接口生产实测**（`http://10.50.69.111:30895`，`display-loop-token`）：`carriers` baseline 4,984 / `district=南山区` 1,118 / `districts=九区` 2,851 / `districtMissing` 1,383 / `district-indicators` 11 行 `highTechCount` 非空 —— 证明 `districts` / `districtMissing` **已在生产生效**，空表与后端无关。
+- **浏览器 E2E 未跑（如实声明）**：本机 Node v20.18.0 低于 vite 要求的 20.19+，`pnpm dev` / `npx vite` 均无法启动，`install_binary` 装 Node 22 报 `EPERM`；R4 当时的 dev 实测环境本轮不可复现。故「级联选后有数据」目前是**代码闭环 + 后端接口实测**双重证据，端到端待部署后点一次确认。
