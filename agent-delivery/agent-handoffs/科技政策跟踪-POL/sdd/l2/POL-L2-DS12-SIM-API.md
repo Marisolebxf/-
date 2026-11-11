@@ -31,7 +31,7 @@
 | 237 政策文本智能解析 | `POST /display/v1/policy/simulation/jobs` | 同步读。种类为文本解析。element 只读已有 `ads.policy_text_parse` 的解析行。不是作业。不建任务。请求路径不调用 `polan.text.parse.run`。不灌 gapfill。无解析行则报告空。不返回 501 |
 | 238 政策重点可视化展示 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为重点可视化。element 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 的重点行。不是作业。无行则该区空。不返回 501 |
 | 239 政策影响范围分析 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为影响范围。同一张表按政策（推演上下文）拣影响范围行。不是作业。无行则该区空。不返回 501 |
-| 240 政策关联分析 | 无 | 无 HTTP 资源，无种类。页面消费已有第 7 项政策子图。不走 `simulation/jobs`。不新建接口，不新建查图任务 |
+| 240 政策关联分析 | `GET /display/v1/policy/simulation/relation-graph` | 无 jobs 种类。透传专题 `/topic/v1/policy/graph`。不新建查图任务 |
 | 241 政策实施路径预测 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为路径预测。同一张表拣路径环节行。不是作业。无行则该区空。不返回 501 |
 | 242 政策解读报告生成 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为解读报告。同一张表拣解读段落行，页面呈现正文。不是作业。不产生 PDF、Word 文件。无行则报告区空。不返回 501 |
 
@@ -59,7 +59,7 @@
 |---|---|
 | `simulation/jobs` 的文本解析 | `gkxlumen-display` 不建任务，不转发 `gkxlumen-topic-async-service`，不调 Python，不占并发锁，不发 SSE，不调用 `polan.text.parse.run`。`gkxlumen-element` 只读已有 `ads.policy_text_parse` 的解析行 |
 | `simulation/jobs` 的重点可视化、影响范围、路径预测、解读报告 | `gkxlumen-display` 不建任务，不转发异步服务，不调 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 里该次种类的行。库名 `gkxlumenx_gapfill`，表名 `gapfill_policy_sim_result` |
-| 240 政策关联分析 | 无委托。页面消费已有第 7 项读图。Java 不写 nGQL。本页不新建查图接口 |
+| 240 政策关联分析 | display Feign 委托专题 graph。Java 不写 nGQL。不新建查图任务 |
 
 若 `gkxlumen-display` 还没有推演控制器，实现时按契约补这一条已有的 `simulation/jobs`。补上之后仍按种类分发。不能把整条 `jobs` 都改成只读 `gkxlumenx_gapfill.gapfill_policy_sim_result`，也不能为 237 另开解析 URL，不能为 240 另开查图 URL。本分册不补控制器，不写 Java。
 

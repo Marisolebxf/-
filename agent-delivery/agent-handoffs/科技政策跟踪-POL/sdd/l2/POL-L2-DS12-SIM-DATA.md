@@ -29,7 +29,7 @@
 | 237 | 政策文本智能解析 | `gkxlumenx_ads` | `policy_text_parse` | 只读已有列。不建 gapfill 表，不加列，不灌 |
 | 238 | 政策重点可视化展示 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的重点行 | 与 235 同一张结果表 |
 | 239 | 政策影响范围分析 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的影响范围行 | 与 235 同一张结果表 |
-| 240 | 政策关联分析 | （无） | （无） | 不设表，不设列 |
+| 240 | 政策关联分析 | （无 gapfill） | ADS `policy_graph_*` 只读 | 不设 jobs 表；样例可种子镜像 |
 | 241 | 政策实施路径预测 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的路径环节行 | 与 235 同一张结果表 |
 | 242 | 政策解读报告生成 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的解读段落行 | 内容只存正文列。不存文件路径 |
 
@@ -37,7 +37,7 @@
 
 本单只定列，不建库，不插入。不写 `gkxlumenx_ods`、`gkxlumenx_dwd`、`gkxlumenx_ads`，不写供应方库。237 对 `gkxlumenx_ads.policy_text_parse` 只读。
 
-`gkxlumen-display` 不直连库。`gkxlumen-element` 按种类只读。235、236、237、238、239、241、242 走 `POST /display/v1/policy/simulation/jobs`。240 不走这条资源。Java 不生成得分、意见、重点、影响、路径、解读正文，不按公式现算，不插入意见，不跑 `polan.text.parse.run`。
+`gkxlumen-display` 不直连库。`gkxlumen-element` 按种类只读。235、236、237、238、239、241、242 走 `POST /display/v1/policy/simulation/jobs`。240 走 `GET .../simulation/relation-graph`，不走 jobs。Java 不生成得分、意见、重点、影响、路径、解读正文，不按公式现算，不插入意见，不跑 `polan.text.parse.run`，不写 nGQL。
 
 ## 2. 结果表
 
@@ -221,11 +221,11 @@ D16 行级列是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`�
 
 `jobs` 的文本解析按 `policy_id` 读这一张已有表。政策必选。未给出政策，或没有行，报告空。不返回 501，不返回写死的报告，不返回条款树顶替解析报告。
 
-## 10. 240 无表
+## 10. 240 无 gapfill 表（relation-graph）
 
-不设种类，不设表，不设列，不建 gapfill 表。页面关联网络消费第 7 项读图。指标仍是已有 `M_POLICY_RELATION_DEGREE`。本单不把这条指标写进结果表或意见表，不写 nGQL，不建查图任务。
+不设 jobs 种类，不建 gapfill 关联表。页面经 display `relation-graph` 消费第 7 项子图（ADS `policy_graph_node/edge` / Nebula）。指标仍是已有 `M_POLICY_RELATION_DEGREE`。本单不把这条指标写进结果表或意见表，不写 nGQL，不建查图任务。样例不足时允许 ADS 最小种子（batch `seed-240-relation-20261112`，非 gapfill_sim）。
 
-无图则该区按第 7 项自己的空态。本单不造关联行来填。
+无图则该区业务空态「暂无政策关联网络」。本单不造 jobs 关联行来填。
 
 ## 11. 灌数单
 
