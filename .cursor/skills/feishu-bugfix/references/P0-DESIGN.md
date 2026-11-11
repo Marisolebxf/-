@@ -124,7 +124,7 @@ CANCELLED
 - `RESOLVED → REOPENED`：复用同一 run，新增 `cycle_id` 并保留上一轮诊断、gate、提测和验收历史；不新建无关联 run。
 - `任意未完成状态 → CANCELLED`：仅在缺陷被关闭、确认重复或确认无需修复时进入；记录取消人、原因、已推分支/MR/dev 部署的清理结果。
 - `任意未完成状态 → BLOCKED`：缺复现、需规、权限、环境、验收证据、数据授权或出现不可安全处理的失败时进入；必须记录 `blocked_from`、`resume_phase`、`resume_condition` 和 owner。
-- `BLOCKED → resume_phase`：只有恢复条件满足且重新校验 claim、repo、SHA、data scope 和 gate 后才能恢复。
+- `BLOCKED → resume_phase`：只能通过 `resume` 命令恢复；必须提供 session/machine、恢复证据，记录 `blockers[].resolved_at/resolved_by/resume_evidence_refs`，并重新校验 claim、repo、SHA、data scope 和 gate。恢复路径上的 approved gate 若因上下文或绑定变化失效，必须重新取得精确口令，不能自动放行。
 - `DEV_VERIFY_FAILED → BLOCKED`：无法安全 revert 或失败原因暂时不可归因时进入。
 - `ROLLED_BACK → BLOCKED`：回退后仍无法重建诊断或环境时进入。
 - `CANCELLED` 不自动回退已部署 dev；若取消前已经部署，必须按本文件定义的单次 revert 流程处置或进入 `BLOCKED`。
@@ -269,6 +269,17 @@ GitLab 保护分支、MR approve 和仓库发布规则优先；`提测`不绕过
 5. 记录回退 commit、Pipeline、回退后的健康检查和证据；旧 `ship` gate 自动失效，重新修复后必须重新发送 `提测`；
 6. 无法安全回退时进入 `BLOCKED`，等待人工处置。
 
+流水线等待采用“候选提交首次终端成功”语义，而不是“跟踪最新 dev 流水线直到全部结束”：
+
+- 只跟踪 commit 包含当前 candidate 的 Pipeline；用 `git merge-base --is-ancestor <candidate_sha> <pipeline_sha>` 校验包含关系；
+- 某 Pipeline `success` 且 deploy/rollout `success`，或当前 live deployed SHA 已包含 candidate，即构成该仓库的终端成功，停止等待；
+- 本 run 的首个 Pipeline 被取消/覆盖时，继续等待下一个包含 candidate 的 Pipeline，首个终端成功即可结束；
+- 在已取得终端成功后，同事随后触发的新 Pipeline 无论 running、failed 还是 deploy skipped，都属于后续 dev 活动，不得让当前 run 无限等待；记录观测事实，并继续以当前包含 candidate 的 live deployed SHA 做 dev 验证；
+- 只有“尚未出现任何 candidate-containing 终端成功”时，Pipeline/rollout 失败才进入本 run 的 `DEV_VERIFY_FAILED` 或 `BLOCKED`；
+- 多仓 Bundle 每个仓库独立取得至少一个终端成功，不要求所有仓库复用同一条 Pipeline 序列。
+
+`ship_package.pipeline_id/pipeline_status/pipeline_url/deployed_sha` 记录该仓库的终端成功实例；后续无关 Pipeline 只能写入观测摘要，不能覆盖终端成功事实或让 run 持续等待。
+
 ### 6.4 验收
 
 `AWAITING_ACCEPTANCE` 只接受完整精确消息 `验收通过`。多 active run 时必须使用 `验收通过<auto_number>` 或 `验收通过 <auto_number>`。自然语言同意、否定句、引用口令的问答和其他会话中的授权都不能替代。
@@ -290,6 +301,7 @@ GitLab 保护分支、MR approve 和仓库发布规则优先；`提测`不绕过
 - 人工直接完成飞书迁移而不发送精确口令：保留 `policy_only` 路径，Agent 只读取并记录，不构造 `chat_exact` gate；
 - 在 `DEV_VERIFYING` 或更早阶段看到 `RESOLVED`：记录 `acceptance.anomaly=early_resolved` 并进入 `BLOCKED`；
 - 任意未完成阶段看到 `REOPENED`：使旧 gate 失效并进入 `REOPENED`，重新诊断。
+- acceptance gate 一旦以 `chat_exact` 批准，禁止在原 run 内降级为 `policy_only`；否则会绕过第三个精确口令。
 
 由于飞书 MCP 仍使用当前用户身份，`chat_exact` 证明的是“当前会话收到了精确人工授权”，不是密码学防伪。账本必须记录 `operator_verified=false`。P0 不启动后台轮询；没有精确口令或人工状态迁移时，`state.json` 保持 `AWAITING_ACCEPTANCE`。
 
@@ -459,7 +471,7 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 
 - 相关调用链和测试；
 - 业务逻辑：至少一个可失败的目标回归用例；
-- 文案/样式：稳定复现步骤和前后截图；
+- UI 文案/样式：优先使用 DOM/API/部署 chunk 等机器断言；确需视觉证据时，保留前后各 1 张目标区域截图，禁止连续全屏截图；
 - 类型检查、构建或仓内等价自检；
 - 目标页面或接口证据；
 - 自动生成的 `report.md`。
@@ -710,7 +722,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 规则：
 
 - “测试通过”必须能追溯到命令、退出码和输出；
-- UI 证据记录路由、环境、视口、数据集和前后截图；
+- UI 证据优先记录路由、环境、视口、数据集和程序化状态断言；确需截图时只保留目标区域的前后各 1 张；
 - API 证据记录请求摘要、状态码和关键字段，不记录 token/cookie；
 - 数据库写入必须先通过 `check-data-write`；证据只记录脱敏操作摘要，不记录敏感值；
 - 模拟结果必须标 `SIMULATED`，未执行项必须标 `SKIPPED` 并说明原因；

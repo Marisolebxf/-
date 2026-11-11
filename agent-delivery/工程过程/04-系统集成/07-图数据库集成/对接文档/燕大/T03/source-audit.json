@@ -1,0 +1,88 @@
+{
+  "checked_at": "2026-11-11T10:25:02.579308+00:00",
+  "database": "gkx_technology_analysis_dev",
+  "results": {
+    "m01_source": {
+      "query": "SELECT COUNT(*) rows_total, SUM(talent_id<collaborator_talent_id) canonical_rows, SUM(talent_id=collaborator_talent_id) self_loops, SUM(co_project_count IS NULL) co_project_null, SUM(co_paper_count IS NOT NULL) co_paper_present, SUM(co_patent_count IS NOT NULL) co_patent_present FROM ads_talent_collaborator",
+      "rows": [
+        {
+          "rows_total": 5051578,
+          "canonical_rows": 2525789,
+          "self_loops": 0,
+          "co_project_null": 5051578,
+          "co_paper_present": 5048180,
+          "co_patent_present": 4520
+        }
+      ]
+    },
+    "m03_exclusion": {
+      "query": "SELECT COUNT(*) rows_total, SUM(i.institution_type_id='company') company_rows, COUNT(DISTINCT c.institution_id) institution_count, SUM(i.institution_id IS NULL) missing_profile_rows, SUM(t.talent_id IS NULL) missing_talent_rows FROM ads_talent_institution_cooperation c LEFT JOIN ads_institution_profile i ON c.institution_id=i.institution_id LEFT JOIN ads_talent_profile t ON c.talent_id=t.talent_id",
+      "rows": [
+        {
+          "rows_total": 202795,
+          "company_rows": 202795,
+          "institution_count": 8784,
+          "missing_profile_rows": 0,
+          "missing_talent_rows": 0
+        }
+      ]
+    },
+    "m04_work": {
+      "query": "SELECT COUNT(*) rows_total, COUNT(DISTINCT CONCAT(e.talent_id,'|',e.institution_id)) pairs_before_company, SUM(i.institution_type_id='company') company_rows, COUNT(DISTINCT CASE WHEN i.institution_type_id='company' THEN CONCAT(e.talent_id,'|',e.institution_id) END) company_pairs, SUM(e.is_current IS NOT NULL) source_current_nonnull FROM ads_talent_experience e LEFT JOIN ads_institution_profile i ON e.institution_id=i.institution_id WHERE e.experience_type=2",
+      "rows": [
+        {
+          "rows_total": 84589,
+          "pairs_before_company": 72503,
+          "company_rows": 420,
+          "company_pairs": 404,
+          "source_current_nonnull": 27
+        }
+      ]
+    },
+    "research_types": {
+      "query": "SELECT institution_type_id, COUNT(*) rows_total FROM ads_institution_profile GROUP BY institution_type_id ORDER BY institution_type_id",
+      "rows": [
+        {
+          "institution_type_id": "archive",
+          "rows_total": 1071
+        },
+        {
+          "institution_type_id": "company",
+          "rows_total": 15392
+        },
+        {
+          "institution_type_id": "education",
+          "rows_total": 16991
+        },
+        {
+          "institution_type_id": "facility",
+          "rows_total": 9317
+        },
+        {
+          "institution_type_id": "funder",
+          "rows_total": 304
+        },
+        {
+          "institution_type_id": "government",
+          "rows_total": 4312
+        },
+        {
+          "institution_type_id": "healthcare",
+          "rows_total": 11228
+        },
+        {
+          "institution_type_id": "nonprofit",
+          "rows_total": 6210
+        },
+        {
+          "institution_type_id": "other",
+          "rows_total": 3404
+        },
+        {
+          "institution_type_id": "unknown",
+          "rows_total": 15516
+        }
+      ]
+    }
+  }
+}
