@@ -209,6 +209,21 @@
       "simulated": false,
       "skipped_reason": null,
       "notes": "仅有仓库既有的 chunk size 和 unocss 警告"
+    },
+    {
+      "id": "V-2254-DEV-DEPLOY",
+      "category": "integration",
+      "behavior": "dev 成功部署的构建包含 2254 修复代码",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-2254-DEV-DEPLOY-VERIFIED"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "pipeline 4808 和 deployment 8691 成功；部署入口 index-C8x2PpKb.js，tracking chunk 含本次修复标识"
     }
   ],
   "gates": {
@@ -294,13 +309,35 @@
     }
   },
   "ship_package": {
-    "repos": [],
-    "acceptance_steps": [],
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "cfca2edb62b56c6f919fb82d2c7219c2a5de4449",
+        "merge_request_id": "direct-dev-push",
+        "merge_commit_sha": "c8c86b42bae1ee923630232bfeeb1fa01720e23f",
+        "pipeline_id": "4808",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4808",
+        "deployed_sha": "c8c86b42bae1ee923630232bfeeb1fa01720e23f",
+        "rollout_status": "success",
+        "image_tag": null,
+        "role": null,
+        "depends_on": [],
+        "ship_order": null
+      }
+    ],
+    "acceptance_steps": [
+      "打开技术发展跟踪结果页并切换到地理分布图",
+      "切换/取消不同技术类型，确认地图区域收敛且点位颜色随主类型变化",
+      "刷新页面后重复一次，确认筛选仍生效"
+    ],
     "dev_verification": {
-      "result": "PENDING",
-      "evidence_refs": []
+      "result": "PASS",
+      "evidence_refs": [
+        "evidence/manifest.json#E-2254-DEV-DEPLOY-VERIFIED"
+      ]
     },
-    "summary": null
+    "summary": "2254已随dev提交c8c86b部署成功；部署入口和tracking分块均包含本次修复代码，等待业务人工验收"
   },
   "acceptance": {
     "status": "pending",
@@ -430,16 +467,17 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-11T14:59:51.920+08:00",
-      "manifest_hash": "sha256:110a076d6a2242d4ff2027652e752145f8160f47c367e47b713bdca2d250eb62",
-      "item_count": 6,
+      "checked_at": "2026-11-11T15:21:51.042+08:00",
+      "manifest_hash": "sha256:14b96099436998ec4a364ee8533655fc87679ce28213aa82fc522c01b345d738",
+      "item_count": 7,
       "evidence_ids": [
         "E-2254-BUG-SCREENSHOT",
         "E-2254-TRACKING-TEST",
         "E-2254-TYPECHECK",
         "E-2254-BUILD",
         "E-2254-FRONTEND-IMAGE-FAIL",
-        "E-2254-DEV-DEPLOY-MISMATCH"
+        "E-2254-DEV-DEPLOY-MISMATCH",
+        "E-2254-DEV-DEPLOY-VERIFIED"
       ],
       "evidence_results": {
         "E-2254-BUG-SCREENSHOT": {
@@ -471,6 +509,11 @@
           "result": "FAIL",
           "reviewable": true,
           "raw_retained": true
+        },
+        "E-2254-DEV-DEPLOY-VERIFIED": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
         }
       },
       "non_reviewable": [],
@@ -493,8 +536,8 @@
     }
   ],
   "next_action": {
-    "owner": "CI/Harbor 管理员",
-    "action": "frontend:image 连续两次因 Harbor 登录 unauthorized 失败，无法产出新镜像并部署 dev"
+    "owner": "agent",
+    "action": "核对 pipeline、deployed_sha、rollout 和 dev 复测证据。"
   },
-  "updated_at": "2026-11-11T14:59:52.005+08:00"
+  "updated_at": "2026-11-11T15:21:51.166+08:00"
 }
