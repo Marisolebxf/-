@@ -19,11 +19,12 @@ Project defaults:
 ## Operating principles
 
 1. **Evidence before inference.** Business behavior must be grounded in the main orchestration repo, the business repository, or the latest explicit human decision. Do not infer requirements from a screenshot alone.
-2. **Smallest safe change.** Fix the failing path, not the whole subsystem. Expand scope only with recorded evidence.
-3. **Risk-matched process.** S-level work is lightweight. M adds one targeted independent review. L or cross-repository work exits this lightweight flow.
-4. **Local first.** Reproduce and verify locally whenever practical. Shared dev is for one post-ship integration check, not the inner development loop.
-5. **One run, one current truth.** Per-run state lives under `agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/`; Feishu owns business status.
-6. **Stop instead of guessing.** Missing requirements, unavailable environment, unrelated red baseline, or unsafe data access are blockers, not reasons to invent behavior.
+2. **Requirement coverage is mandatory.** Every defect must map to an SRS functional point, formal acceptance item, QA case, or the latest explicit human decision. Fixing the screenshot without covering the requirement is not done.
+3. **Smallest safe change.** Fix the failing path, not the whole subsystem. Expand scope only with recorded evidence.
+4. **Risk-matched process.** S-level work is lightweight. M adds one targeted independent review. L or cross-repository work exits this lightweight flow.
+5. **Local first.** Reproduce and verify locally whenever practical. Shared dev is for one post-ship integration check, not the inner development loop.
+6. **One run, one current truth.** Per-run state lives under `agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/`; Feishu owns business status.
+7. **Stop instead of guessing.** Missing requirements, unavailable environment, unrelated red baseline, or unsafe data access are blockers, not reasons to invent behavior.
 
 ## Main-repo source map
 
@@ -74,12 +75,25 @@ Before requesting `进入开发`, record:
 
 - observed symptom and reproduction;
 - expected behavior with explicit quantifiers such as default/all/only/never;
+- matching SRS functional point(s): SRS path + sequence/feature path, or the explicit accepted human requirement;
 - affected page/API/service/repo/table/permission;
 - non-goals;
 - authoritative sources;
 - verification method and required evidence.
 
 If the expected behavior is missing or conflicts with the latest human decision, ask only the blocking question. Do not implement a guess.
+
+### 2.1 SRS functional-point coverage
+
+Before `进入开发`:
+
+1. Search `agent-delivery/bid-reference/srs/**` by page, menu, feature and bug keywords. Also check `agent-delivery/验收文档/**` and `agent-delivery/qa/**` when present.
+2. Record every in-scope functional point in `diagnosis.requirement_refs` as `path#序号/五级功能路径`. A generic document path without the functional point is not sufficient.
+3. Map each functional point to the affected implementation path and expected observable behavior.
+4. If one bug spans multiple requirement behaviors, list all of them; do not silently verify only the screenshot's first visible case.
+5. Verification must explicitly cover the mapped functional behavior. For broader requirements such as zoom levels, tabs, switches or all cards, cover every mode affected by the change.
+
+If no matching functional point exists, use a formal acceptance item, QA case, or latest explicit human decision and record that anchor. If none can be found, stop instead of inventing the expected behavior.
 
 ### 3. Classify and route
 
