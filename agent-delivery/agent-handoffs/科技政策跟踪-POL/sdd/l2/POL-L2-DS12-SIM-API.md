@@ -175,8 +175,8 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 政策必选。少了政策则报告区空
 - 一行是一个段落：所属政策、段落、正文。段落只用政策背景、主要内容、预期效果、实施建议，写在行上。段落的字段名由契约单冻结
 - 页面呈现当次读到的正文。有解读段落行则报告区从这些行生成。没有则报告区空
-- 不产生 PDF 文件，不产生 Word 文件。响应里不内嵌一份写死的 PDF 或 Word。不写对象存储，不新建桶，前端不直连 RustFS
-- 下载在导出服务存在前不实现。自定义报告内容和格式不灌假配置
+- **jobs 本资源**：不产生 PDF/Word 文件；响应不内嵌写死文件；不写对象存储；前端不直连 RustFS
+- **下载（另轨，2026-11-12 卡1=B）**：浏览器走已有公开资源 `POST /display/v1/situation/report/generate`（`reportType=policy-interpret-report`），对齐 217 / 态势报告；PDF=`format=pdf`；Word=`format=html`→`.doc`。不新开 simulation 导出 URL，不走 `report/jobs`。自定义内容=章节勾选；自定义格式=Word/PDF（live 验收只认二者）。无解读段落行或不勾选则不发 generate
 - 行上 `metric_id` 留空，不新造
 - 不把 226 的摘要复制成本叶段落。不把评价页 224 的解读条目复制过来
 
@@ -193,7 +193,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 | 239 | jobs · 影响范围 · 同步读 | 无影响范围行则该区空。不造全国兜底行。不读预估表，不读图计算。不返回 501 |
 | 240 | 无资源 | 本分册不新建接口。关联网络只消费已有第 7 项读图。Java 不写 nGQL |
 | 241 | jobs · 路径预测 · 同步读 | 未选政策，或没有路径环节行，则该区空。不推进环节，不写执行记录。不返回 501 |
-| 242 | jobs · 解读报告 · 同步读 | 没有解读段落行则报告区空。不产生 PDF、Word。不写对象存储。不返回 501 |
+| 242 | jobs · 解读报告 · 同步读 | 没有解读段落行则报告区空。**jobs 不产生** PDF/Word、不写对象存储。下载另走 `situation/report`；无行不产文件。不返回 501 |
 
 ## 10. 明确不做
 
@@ -208,7 +208,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 不用 501 充当 237、238、239、241、242 的功能。无行则空。240 不另造 501 接口。
 - 不新造 `metric_id`。不改 D4。不把 mock 写成已上线。不把 `GDF-POLICY-MOCK-GATE-L01` 写成已解开。不改模型注册表。不把 `M_POLICY_SIMULATE` 挂到 238、239、241、242。不挂 `M_POLICY_FOCUS_INDEX`、`M_POLICY_DS_11_POLICY_EVAL_015`、`M_POLICY_EFFECT_SCORE`、`M_POLICY_LAYOUT_REC_COUNT`、`M_POLICY_DEEP_171_1`。
 - 237 不灌 gapfill，不写 `ads.policy_text_parse`。查询不灌数。不把 235、236 的种类定义写进本分册。
-- 不产生 PDF，不产生 Word。不新建桶，不写对象存储，前端不直连 RustFS。242 不灌文件，不灌自定义格式配置。
+- jobs 解读报告不产生、不内嵌 PDF/Word；不灌假文件进 gapfill；不灌自定义格式配置列。242 下载复用已有 `situation/report`（见 §8），不新建桶、前端不直连 RustFS。
 - 不把 `parse/jobs`、`parse/clauses`、`report/jobs`、`gkxlumenx_gapfill.gapfill_policy_report_body` 写成 237 或 242 的资源。
 - 不改 `FE-POL-03A`，不新建前端单。前端 mock 开关不是接口实现。
 - 不会签。不把本单标 done，不标 ready_to_sign。不改任务状态。

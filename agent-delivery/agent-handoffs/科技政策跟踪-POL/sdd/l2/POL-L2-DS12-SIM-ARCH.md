@@ -121,7 +121,7 @@ flowchart LR
 2. 用户查看政策重点。前端提交 `jobs`（种类=重点可视化）。element 读该政策的重点行：目标、支持领域、实施路径、资金安排逐项与明细说明。思维导图、图表在前端渲染，服务端只返回行。
 3. 用户查看影响范围。前端提交 `jobs`（种类=影响范围），带上当前推演上下文的政策。element 按政策拣影响范围行：受益对象、影响区域、影响行业与时空分布说明。真推演未接通前，这些行是已灌的模拟上下文行；真推演接通后改随真结果（§1.4）。
 4. 用户查看实施路径。前端提交 `jobs`（种类=路径预测）。element 读该政策的路径环节行：发布、受理、评审、拨付、评估五环节的时间安排与责任主体。流程图在前端渲染。
-5. 用户查看解读报告。前端提交 `jobs`（种类=解读报告）。element 读该政策的解读段落行：政策背景、主要内容、预期效果、实施建议。页面呈现正文，不做文件生成；「自定义报告内容和格式」在导出服务存在前不实现，不灌假配置。
+5. 用户查看解读报告。前端提交 `jobs`（种类=解读报告）。element 读该政策的解读段落行：政策背景、主要内容、预期效果、实施建议。页面呈现正文即「查看」。用户可在页内勾选章节（内容自定义，不持久化配置、不灌假配置列），并选择 Word / PDF 下载。下载**不走** `simulation/jobs`，走已有 `POST /display/v1/situation/report/generate`（`reportType=policy-interpret-report`）→ topic-async OpenHTMLtoPDF；PDF=`format=pdf` 真字节；Word=`format=html` 同源 HTML 存为 `.doc`（与 217 同构）。无行或不勾选章节则不产文件。不接核增 `report/jobs`，不灌假 PDF/Word 进 gapfill。
 6. 用户想看政策关联网络。页面直接消费第 7 项读图（政策子图，`M_POLICY_RELATION_DEGREE`）。不走 `simulation/jobs`，本页不新建查图任务。
 
 某一次 `jobs` 失败，不清其他种类已经返回的区块。本页没有可接统计读面，空态与失败态都按区块独立呈现。
@@ -188,7 +188,7 @@ flowchart LR
 
 - 同一张 `gapfill_policy_sim_result`，种类为解读段落
 - 一行是一个段落：所属政策、段落（政策背景 / 主要内容 / 预期效果 / 实施建议，枚举以需规原文四段为界）、正文
-- 页面呈现正文即「查看」。「下载」在导出服务存在前不实现，不灌假 PDF / Word；「自定义报告内容和格式」不灌假配置
+- 页面呈现正文即「查看」。（2026-11-12 COVER-FDE 卡1=B）**界面必见**：章节勾选（内容自定义）+ Word/PDF 格式选择 + 下载。下载走 `situation/report`（`reportType=policy-interpret-report`）→ OpenHTMLtoPDF；与 CMP 217 同构（PDF 真字节；Word=html→`.doc`）。jobs 仍只返段落、响应不内嵌文件。内容自定义=页内勾选，不灌假配置列、不持久化导出配置表。无行不产文件。禁 trackingExport 打印另存、禁 text/plain 冒充
 - 行上 `metric_id` 留空，不新造
 - 空态：无行则报告区空，不在接口里写死全文
 
