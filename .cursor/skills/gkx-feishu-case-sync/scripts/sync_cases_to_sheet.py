@@ -104,10 +104,10 @@ def main():
     ap.add_argument('--report', default=None)
     args = ap.parse_args()
 
-    app_id = os.environ.get('LARK_APP_ID')
-    app_secret = os.environ.get('LARK_APP_SECRET')
+    app_id = os.environ.get('LARK_APP_ID') or os.environ.get('FEISHU_APP_ID')
+    app_secret = os.environ.get('LARK_APP_SECRET') or os.environ.get('FEISHU_APP_SECRET')
     if not app_id or not app_secret:
-        sys.exit('[x] 请设置 LARK_APP_ID / LARK_APP_SECRET 环境变量')
+        sys.exit('[x] 请设置 LARK_APP_ID / LARK_APP_SECRET（或 FEISHU_APP_ID / FEISHU_APP_SECRET，二者等价）')
 
     col_in, col_src = [c.strip().upper() for c in args.cols.split(',')]
     tk = get_token(app_id, app_secret)
