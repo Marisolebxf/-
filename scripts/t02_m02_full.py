@@ -4,16 +4,17 @@ Uses the validated batch executor. Credentials are process environment only.
 """
 import argparse
 from collections import Counter
-from contextlib import redirect_stdout
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 import hashlib
 import json
 import os
+import subprocess
+import sys
 import time
 from pathlib import Path
-from types import SimpleNamespace
 
 from t02_m02 import aggregate, grouped, execute, quote
-from t02_m02_batch import save, now, digest, check_plan, run
+from t02_m02_batch import save, now, digest, check_plan
 
 TABLE = 'ads_institution_collaboration_yearly'
 PROFILE = 'ads_institution_profile'
@@ -172,6 +173,22 @@ def preflight(root,m):
     finally:s.release();pool.close()
 
 
+def run_shard(root, shard, write):
+    folder=root/shard['folder'];name='write' if write else 'verify'
+    output=folder/(name+'.json')
+    command=[sys.executable,'-B',str(Path(__file__).with_name('t02_m02_batch.py')),
+             'run','--plan',str(folder),'--chunk-size','200','--output',str(output)]
+    if write:command.append('--write')
+    with (folder/(name+'.log')).open('a',encoding='utf-8') as log:
+        subprocess.run(command,stdout=log,stderr=log,check=True)
+    c=json.loads(output.read_text(encoding='utf-8'))['counters']
+    if c.get('existing_pairs',0)!=c.get('existing_same_batch_verified',0):
+        raise RuntimeError('foreign preexisting edges require reconciliation')
+    if not write and (c.get('ready_pairs',0) or c.get('existing_pairs',0)!=c.get('planned_pairs',0)):
+        raise RuntimeError('full verification found missing edges')
+    return c
+
+
 def apply(args):
     root=Path(args.plan);m=load_full(root)
     # Exclusive lock is held by the OS; automatically released on process exit.
@@ -181,19 +198,26 @@ def apply(args):
         lock.seek(0);msvcrt.locking(lock.fileno(),msvcrt.LK_NBLCK,1)
         if args.write: preflight(root,m)
         totals=Counter();name='write' if args.write else 'verify'
-        for index,shard in enumerate(m['shards']):
-            folder=root/shard['folder'];output=folder/(name+'.json')
-            with (folder/(name+'.log')).open('a',encoding='utf-8') as log, redirect_stdout(log):
-                run(SimpleNamespace(plan=str(folder),write=args.write,chunk_size=200,output=str(output)))
-            state=json.loads(output.read_text(encoding='utf-8'))
-            c=state['counters']
-            if c.get('existing_pairs',0)!=c.get('existing_same_batch_verified',0):
-                raise RuntimeError('foreign preexisting edges require reconciliation')
-            if not args.write and (c.get('ready_pairs',0) or c.get('existing_pairs',0)!=c.get('planned_pairs',0)):
-                raise RuntimeError('full verification found missing edges')
-            totals.update(c)
-            progress=dict(at=now(),shards_done=index+1,total_shards=len(m['shards']),counters=dict(totals))
-            save(root/(name+'-progress.json'),progress);print(json.dumps(progress),flush=True)
+        iterator=iter(m['shards']);completed=[]
+        # Bound both active and scheduled work. On failure do not enqueue more;
+        # the other active shard finishes its verified checkpoint before exit.
+        with ThreadPoolExecutor(max_workers=args.workers) as executor:
+            pending={}
+            for _ in range(args.workers):
+                shard=next(iterator,None)
+                if shard:pending[executor.submit(run_shard,root,shard,args.write)]=shard
+            while pending:
+                done,_=wait(pending,return_when=FIRST_COMPLETED)
+                for future in done:
+                    c=future.result();shard=pending.pop(future)
+                    totals.update(c);completed.append(shard['folder'])
+                progress=dict(at=now(),shards_done=len(completed),total_shards=len(m['shards']),
+                              completed_shards=sorted(completed),counters=dict(totals),workers=args.workers)
+                save(root/(name+'-progress.json'),progress)
+                print(json.dumps({k:v for k,v in progress.items() if k!='completed_shards'}),flush=True)
+                for _ in done:
+                    shard=next(iterator,None)
+                    if shard:pending[executor.submit(run_shard,root,shard,args.write)]=shard
         if totals['planned_pairs']!=m['counters']['eligible_pairs']: raise ValueError('full total mismatch')
         save(root/(name+'-result.json'),dict(progress,status='completed',plan_sha256=digest(root/'full-manifest.json')))
 
@@ -205,6 +229,7 @@ if __name__=='__main__':
     p.add_argument('--source-ids-per-shard',type=int,default=100)
     p.add_argument('--batch',default='comply-20261111-t02')
     p.add_argument('--write',action='store_true')
+    p.add_argument('--workers',type=int,choices=[1,2],default=1)
     args=p.parse_args()
     if not 1<=args.source_ids_per_shard<=200:raise ValueError('shard size must be 1..200')
     prepare(args) if args.action=='prepare' else apply(args)
