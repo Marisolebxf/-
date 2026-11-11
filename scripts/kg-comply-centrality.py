@@ -73,6 +73,9 @@ def calculate(directory, output, baseline):
     for key in ('null_confidence', 'invalid_confidence', 'missing_endpoint_rows', 'self_loop_rows', 'duplicate_undirected_pair_rows'):
         if quality[key]:
             raise io.RunError('Graph quality gate failed: ' + key)
+    for key in ('cost_formula', 'formula_status', 'duplicate_policy', 'missing_endpoint_policy'):
+        quality.pop(key, None)
+    quality['policy'] = 'Reject NULL/invalid weights, missing endpoints, self loops and duplicate pairs; no cost transform used in T09.'
     ids = list(graph)
     weighted = {r['vid']: r['weighted_degree'] for r in io.records(directory / 'nodes.jsonl')}
     if len(ids) < 1500 or any(not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) or v < 0 for v in weighted.values()):
@@ -97,7 +100,7 @@ def calculate(directory, output, baseline):
     layer = {
         'scope': {'space': 'demo_gkx_chain', 'tech_graph': {'nodes': len(graph), 'edges': graph.number_of_edges()}, 'projection': 'undirected simple graph; all evidence levels retained'},
         '428_degree_centrality': {'source': 'tech_point.weighted_degree (SDD T09)', 'top20': top(weighted, 'weighted_degree'), 'vs_weighted_degree': {'n': len(ids), 'pearson': correlation, 'comparison': 'recomputed unweighted degree vs stored weighted_degree'}, 'recomputed_degree_top20': top(degree, 'degree')},
-        '431_pagerank': {'alpha': .85, 'tol': 1e-8, 'weight': 'relation_confidence_score', 'sum': math.fsum(pr.values()), 'top20': top(pr, 'pagerank')},
+        '431_pagerank': {'alpha': .85, 'tol': 1e-8, 'weight': 'relation_confidence_score', 'sum': math.fsum(pr.values()), 'top20': top(pr, 'score')},
         '429_closeness': {'scope': 'unweighted degree top1500 induced subgraph; VID tie break', 'subgraph': {'nodes': len(subgraph), 'edges': subgraph.number_of_edges()}, 'distance': None, 'wf_improved': True, 'top20': top(close, 'closeness')},
         '430_betweenness': {'scope': 'same induced subgraph; k=300 sampled sources', 'seed': 42, 'weight': None, 'normalized': True, 'top20': top(between, 'betweenness')},
         '432_multi_centrality': {'scope': '1500 nodes with all four measured scores; each min-max over this same population; arithmetic mean', 'top20': top(composite, 'score')},
@@ -118,12 +121,20 @@ def calculate(directory, output, baseline):
               'four_top20_and_composite': all(len(layer[key]['top20']) == 20 for key in layer if 'top20' in layer[key]),
               'finite_nonnegative_scores': all(math.isfinite(v) and v >= 0 for values in [*metrics.values(), composite] for v in values.values())}
     original = json.loads(baseline.read_text(encoding='utf-8-sig'))['tech_layer']
+    unweighted_pr = nx.pagerank(graph, alpha=.85, tol=1e-8, max_iter=1000, weight=None)
+    boundary = degree[selected[-1]]
+    diagnostics = {'diagnostic_only': True, 'legacy_top20_max_abs_error_vs_current_unweighted': max(abs(r['score']-unweighted_pr[r['id']]) for r in original['431_pagerank']['top20']),
+                   'subgraph_boundary_degree': boundary, 'nodes_above_boundary': sum(v > boundary for v in degree.values()),
+                   'nodes_tied_at_boundary': sum(v == boundary for v in degree.values()),
+                   'selection_rule': 'descending degree, ascending VID; legacy tie ordering not recorded',
+                   'note': 'Unweighted PageRank is diagnostic only, not the delivered confidence-weighted ranking.'}
     comparison = {}
     for key, data in layer.items():
         if 'top20' in data and key in original:
             old = original[key]['top20']
-            comparison[key] = {'top20_overlap': len({v['id'] for v in old} & {v['id'] for v in data['top20']}), 'note': 'Descriptive comparison only: stored weighted_degree and explicit composite scope differ from legacy degree output; legacy seed/tie ordering not recorded.'}
+            comparison[key] = {'top20_overlap': len({v['id'] for v in old} & {v['id'] for v in data['top20']}), 'note': 'Descriptive comparison only: degree uses stored weighted_degree; PageRank uses explicit confidence weights; legacy subgraph tie ordering and sampling seed are not recorded.'}
     output.mkdir(parents=True, exist_ok=True)
+    io.write_json(output / 'baseline-diagnostics.json', diagnostics)
     io.write_json(output / 'snapshot-metadata.json', manifest)
     io.write_json(output / 'verification.json', {'passed': all(checks.values()), 'checks': checks, 'quality': quality, 'degree_weighted_degree_pearson': correlation, 'pagerank_fixed_point_l1_residual': residual, 'baseline_comparison': comparison})
     io.write_json(output / 'result.json', {'task': 'KG-COMPLY-LOAD-T09', 'generated_at': io.utc_now(), 'mode': 'read-only export; local calculation; no graph writes', 'versions': {p: io.package_version(p) for p in ('networkx', 'numpy', 'scipy', 'nebula3-python')}, 'script_sha256': io.sha256(Path(__file__)), 'helper_sha256': io.sha256(Path(io.__file__)), 'tech_layer': layer})
