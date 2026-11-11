@@ -71,14 +71,18 @@
 | `explain_text` | text | 是 | 未出台仿真行必填：一句解释。其余行留空 |
 | `policy_id` | varchar(100) | 是 | 新出台预测行必填。与全景检索目录的政策 `policy_id` 同一业务键。不建外键。其余行留空 |
 | `policy_title` | varchar(256) | 是 | 新出台预测行必填：政策名称，只供展示。不复制政策正文。其余行留空 |
-| `short_effect_text` | text | 是 | 新出台预测行必填：短期效果。其余行留空 |
-| `long_effect_text` | text | 是 | 新出台预测行必填：长期效果。其余行留空 |
-| `growth_text` | text | 是 | 新出台预测行必填：经济增长影响。其余行留空 |
-| `industry_text` | text | 是 | 新出台预测行必填：产业发展影响。其余行留空 |
-| `tech_effect_text` | text | 是 | 新出台预测行必填：科技创新影响。其余行留空 |
-| `time_trend_text` | text | 是 | 新出台预测行必填：时间变化趋势。其余行留空 |
+| `short_effect_text` | text | 是 | 新出台预测行必填：短期效果说明句。其余行留空 |
+| `medium_effect_text` | text | 是 | 新出台预测行可选：中期效果说明句。其余行留空 |
+| `long_effect_text` | text | 是 | 新出台预测行必填：长期效果说明句。其余行留空 |
+| `growth_text` | text | 是 | 新出台预测行必填：经济增长影响说明句（卡下脚注）。其余行留空 |
+| `industry_text` | text | 是 | 新出台预测行必填：产业发展**柱图**「名+分」串（如 `人工智能95、生物医药88`）。不兼作卡内产业发展 KPI。其余行留空 |
+| `tech_effect_text` | text | 是 | 新出台预测行必填：科技创新影响说明句（卡下脚注）。其余行留空 |
+| `time_trend_text` | text | 是 | 新出台预测行必填：时间变化趋势。格式 `2026-06月45/85、…`（值/置信度百分数）；无置信度时可写旧式无斜杠。其余行留空 |
 | `space_feature_text` | text | 是 | 新出台预测行必填：空间分布特征。其余行留空 |
-| `similar_basis_text` | text | 是 | 新出台预测行必填：相似政策依据说明。这是一行里的说明，不是解析行。其余行留空 |
+| `similar_basis_text` | text | 是 | 新出台预测行可保留一句总述。界面列表以 `similar_items` 为准。其余行留空 |
+| `similar_items` | text | 是 | 新出台预测行必填（COVER-FDE）：相似政策列表 `名称|匹配|效果；…`，至少 2 条。其余行留空 |
+| `term_kpi_text` | text | 是 | 新出台预测行必填（COVER-FDE）：短中长期三维 KPI `短期|gdp|产业|科创；中期|…；长期|…`。其余行留空 |
+| `auto_tags` | varchar(512) | 是 | 新出台预测行可选：关键词标签串。其余行留空 |
 | `region_name` | varchar(256) | 是 | 区域空间行必填：用户所选区域的名称。其余行留空 |
 | `gdp_text` | text | 是 | 区域空间行必填：GDP 增长，展示原文。其余行留空 |
 | `industry_change_text` | text | 是 | 区域空间行必填：产业结构变化，展示原文。其余行留空 |
@@ -127,9 +131,9 @@ D16 行级列就是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id
 
 ## 4. 233 新出台预测
 
-粒度：一行挂在一条已有政策上。政策标识在 `policy_id`。政策名称在 `policy_title`。短期效果在 `short_effect_text`。长期效果在 `long_effect_text`。经济增长影响在 `growth_text`。产业发展影响在 `industry_text`。科技创新影响在 `tech_effect_text`。时间变化趋势在 `time_trend_text`。空间分布特征在 `space_feature_text`。相似政策依据在 `similar_basis_text`。
+粒度：一行挂在一条已有政策上。政策标识在 `policy_id`。政策名称在 `policy_title`。短期/中期/长期说明句在 `short_effect_text` / `medium_effect_text` / `long_effect_text`。卡内三维数值在 `term_kpi_text`。经济增长/科技创新说明句在 `growth_text` / `tech_effect_text`。产业发展柱图分在 `industry_text`。时间变化趋势在 `time_trend_text`（可带置信度）。空间分布特征在 `space_feature_text`。相似政策列表在 `similar_items`；`similar_basis_text` 可作一句总述。关键词在 `auto_tags`。
 
-`similar_basis_text` 是已灌入的一句依据说明。它不存放解析标题、摘要、标签或条款。查询原样返回。不调 `parse/jobs`，不调 `policy_text_parse` 通道，不读 `ads.policy_text_parse` 来顶替预测行。
+`similar_items` 是列表原文串，至少两条。`term_kpi_text` 固定三期。查询原样返回。不调 `parse/jobs`，不调 `policy_text_parse` 通道，不读 `ads.policy_text_parse` 来顶替预测行。2026-11-12 `POL-L2-DS12-EST-233-COVER-FDE-L01` 增列与趋势置信度格式。
 
 需规没有定义「新出台」按颁布日期还是按状态。本单的临时默认：行上不设是否新出台，不设颁布日期截断。`policy_id` 必须对得上全景检索目录里已有政策的同一业务键。哪几条政策挂预测行，由灌数单在能对上的政策里选取。查询只按 `policy_id` 拣 `row_kind=新出台预测`，不在查询里判断颁布日期。用户以政策文本选定一条政策时，先落到目录里的 `policy_id` 再拣行。本表不存政策正文，不按正文全文匹配。没有 `policy_id` 则该区空，不返回全部预测行。对不上则该区空。甲方确认「新出台」口径之前保持这个默认。本单不改客户决策清单。
 
