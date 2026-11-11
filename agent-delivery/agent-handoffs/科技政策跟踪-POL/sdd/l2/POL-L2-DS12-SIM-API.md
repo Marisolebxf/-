@@ -107,6 +107,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 政策必选。少了政策则该区空
 - 一行是一个重点项：所属政策、组别、标题、一句明细说明。组别只用政策目标、支持领域、实施路径、资金安排，写在行上。组别的字段名由契约单冻结
 - 思维导图和图表在前端渲染。服务端只返回行。不返回预渲染图片文件
+- **柱图分（2026-11-12 COVER-FDE 卡1=B）**：行上可带已有列 `score_value`；`RESULT_COLUMNS` 已含，本分册**不改 SELECT**。前端读该列画柱；无分则柱空，不解析 `detail_text` 凑分
 - 行上 `metric_id` 留空，不新造
 - 不把 237 的解析标签改挂成重点项。不把评价页 223 的焦点说明复制成本叶重点
 
@@ -131,17 +132,17 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 
 空态：无行则该区空。HTTP 成功。不返回 501。不造全国通用兜底行。不在接口函数里返回写死的影响对象。
 
-## 6. 240 政策关联分析 · 无资源
+## 6. 240 政策关联分析 · relation-graph 透传（2026-11-12 卡1=B）
 
 指标 `M_POLICY_RELATION_DEGREE`，GRAPH，D4=mock。调研判跨项索引。
 
-- 没有 HTTP 资源。不设种类。不走 `POST /display/v1/policy/simulation/jobs`
-- 页面关联网络消费已有第 7 项读图：政策子图 `E-E7-POLICY-M1-L02`。抽取脚本 `GDF-POLICY-GRAPH-EXT-L01` 仍是 backlog。本分册不新开那条脚本，不重画查图时序
-- 展示只消费。Java 不写 nGQL。本页不新建查图任务，不新建查图接口
+- **不设** `simulation/jobs` 种类。公开读口：`GET /display/v1/policy/simulation/relation-graph?policy_id=&steps=1&limit=80`
+- display Feign 透传 `GET /topic/v1/policy/graph?center=&steps=&limit=` → Python `/internal/policy/graph`（Nebula 优先，ADS 镜像回退）
+- 响应透传 `nodes` / `edges` / `source` / `centers`；空图诚实空列表，`fabricated=false`。Java 不写 nGQL、不填假网
 - `E-E7-POLICY-M1-L06` 不是实现路径。浏览器不改打 `/topic/v1/policy`
-- 不新造 `metric_id`。不改 D4。不把读图结果写成已上线
+- 不新造 `metric_id`。不改 D4。不灌 `gapfill_policy_sim_result` 关联行
 
-空态沿第 7 项已有读图。本分册不另定一个 501，也不为无图再造一条政策接口。
+空态：无邻域边则 `nodes/edges` 空；前端业务文案「暂无政策关联网络」。
 
 ## 7. 241 政策实施路径预测 · jobs · 路径预测 · 同步读
 
