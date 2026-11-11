@@ -8,7 +8,8 @@
 > - `src/mock/modules/dataResources.ts` + `dataResourcesSeed.ts`（拼包与嵌套形）  
 > - `src/views/data-resources/{overview,access,theme,application}/`（页面实际读键）  
 > 已有对照：`BE-DR-CONTRACT-01`（已 done，冻四个 GET）；方案 `方案-科技数据资源-后台接口.md`；实现叶 `DR-RES-C1～C4`（integration）。  
-> 任务：`FE-DR-BE-API-REQ-L01`（本草稿）· `BE-DR-FE-API-ALIGN-L01`（Java 对照差异）。
+> 任务：`FE-DR-BE-API-REQ-L01`（本草稿）· `BE-DR-FE-API-ALIGN-L01`（Java 对照差异）。  
+> 监管人（两叶）：**human:淮政玮**。派单说明：`派单说明-DR-FE-BE-API-REQ.md`（同夹）。
 
 ---
 
