@@ -7,7 +7,7 @@
 | 上图 | GDF 只触发燕大知识图谱引擎的调度任务并轮询终态 | 不配 `graph_project.py`、`chain_routes.py` |
 | 入向量库 | GDF 在平台上配置本目录的 `industry_embed.py`，直接写 Milvus | `rebuild` |
 
-入图调度任务轮询到成功之后，再跑入向量库作业。每日批一次。不要逐行 embed，不要调用 `POST /internal/industry/embed/rebuild`。
+入图与入向量库**互不依赖**。Wave B `CHAIN-B1-TREE` 当日 `success` 后即可跑入向量库作业，**不等**入图调度任务终态。每日批至多一次。不要逐行 embed，不要调用 `POST /internal/industry/embed/rebuild`。
 
 ## 入向量库作业
 
