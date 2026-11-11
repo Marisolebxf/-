@@ -1,0 +1,429 @@
+{
+  "schema_version": 2,
+  "run_id": "2287-7164917379",
+  "current_cycle_id": "cycle-001-20261111T230903+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261111T230903+0800",
+      "seq": 1,
+      "started_at": "2026-11-11T23:09:03.196+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2287",
+    "work_item_id": "7164917379",
+    "title": "全球创新监测，创新监测与分析，有空数据",
+    "owner": "徐滕强",
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "codex-7164917379-20261111T230529-114db529",
+    "claim_comment_ref": "7706928777447656717",
+    "claim_operator": "7695591354147146731",
+    "claimed_at": "2026-11-11T23:09:03.196+08:00",
+    "session_id": "codex-7164917379-20261111T230529-114db529",
+    "machine_id": "xutengqiang-mac",
+    "current_owner": "徐滕强",
+    "takeover_history": []
+  },
+  "phase": "READY_SHIP",
+  "risk": {
+    "level": "S",
+    "reasons": [
+      "单仓前端展示修复，不改算法分数和数据口径，无数据库写入或权限风险"
+    ],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "220b890583a3ce34408dbcacc7f30da035cefbaf",
+      "candidate_sha": "7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3",
+      "planned_change_scope": [
+        "src/views/situation/global-innovation/models/innovationValueSelection.ts",
+        "src/views/situation/global-innovation/tabs/InnovationMonitor.vue",
+        "src/views/situation/global-innovation/innovationMonitor.test.mjs"
+      ],
+      "role": null,
+      "depends_on": [],
+      "ship_order": null
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "全球创新监测-创新监测与分析-创新价值评估表格中，“影响潜力”和“成熟度”两列大面积显示缺测。",
+    "reproduction": [
+      "进入全球创新监测/创新监测与分析",
+      "打开创新点详情中的创新价值评估",
+      "查看模型候选项表格",
+      "影响潜力、成熟度列基本为空"
+    ],
+    "root_cause": "算法库真实结果同时包含 top 与 comparable_top。前端当前直接对所有 candidates 按 value_score 截前10，单维新颖性候选因 value_score=100 大量占据主表，把具有成熟度或影响潜力的二维候选挤出；因此不是全无数据，而是候选选择未考虑维度覆盖。影响潜力在专利侧仍受血缘限制，但论文关键词存在真实影响潜力值，二维候选可如实展示，不应补 0。",
+    "counter_evidence": [
+      "M_INNOV_POINT_VALUE precompute 中 ipc4 有 13 个 n_with_maturity 候选，keyword_patent 有 353 个，keyword_paper 有 2 个 n_with_influence 候选",
+      "当前接口 candidates 中可筛出 10 个以上至少两维可算的真实候选",
+      "影响潜力专利侧缺测是算法自评“部分支持”的真实限制，不能通过前端伪造"
+    ],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md#序号79 创新价值评估",
+      "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.1.4.1.4.5.3 创新价值评估"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc 全球创新监测-创新监测与分析-创新价值评估候选表",
+      "模型候选排序展示与支撑度说明"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "新增零依赖创新价值候选筛选 helper，统计候选可用维数",
+      "创新价值评估主表优先展示至少两维可算的真实候选，并更新说明文案",
+      "补充单维高分候选不得挤占二维候选的回归自检"
+    ],
+    "non_goals": [
+      "不修改算法库 value_score 或数据口径",
+      "不伪造影响潜力/成熟度数值",
+      "不修改后端接口",
+      "不扩展到其他创新监测模块"
+    ],
+    "verification_plan": [
+      "node --experimental-strip-types src/views/situation/global-innovation/innovationMonitor.test.mjs",
+      "npm run type-check",
+      "npm run build-only"
+    ],
+    "rollback_plan": [
+      "回退本缺陷 fix 分支上的前端提交，恢复原有 topCandidates 选取逻辑"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "220b890583a3ce34408dbcacc7f30da035cefbaf",
+        "candidate_sha": "7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/situation/global-innovation/innovationMonitor.test.mjs",
+          "src/views/situation/global-innovation/models/innovationValueSelection.ts",
+          "src/views/situation/global-innovation/tabs/InnovationMonitor.vue"
+        ],
+        "diff_hash": "sha256:0dadf56099c60781fcdf22c5490f84b36639541963086198560df401a3f4874e",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-11T23:17:27.595+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "codex:self-review",
+        "independent": false,
+        "reviewed_sha": "7c0e38da36fdfdf4b28e92ef17e7e382fb422ba3",
+        "verdict": "PASS",
+        "scope": "创新价值评估候选选择、匹配候选优先级和主表说明",
+        "findings": [
+          "只改变候选展示顺序，不修改 value_score 或任何缺测值",
+          "单维候选仅在完全没有二维候选时兜底",
+          "详情匹配候选也优先选择维度更完整的真实词条"
+        ],
+        "round": 1,
+        "review_hash": "sha256:9254cd6a994f2b2a726c5ddf19bb5ea630f18d5ca3ba22204d5175e5d0d48361"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "V-2287-FIX",
+      "category": "fix",
+      "behavior": "主表优先展示至少两维可算的真实候选，单维100分候选不再挤占主表",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-INNOV-MONITOR-TEST",
+        "evidence/manifest.json#E-2287-BUG-SCREENSHOT"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "使用算法真实候选，不补0、不改value_score"
+    },
+    {
+      "id": "V-2287-BOUNDARY",
+      "category": "boundary",
+      "behavior": "完全没有二维候选时仍展示真实单维候选兜底，不伪造维度",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-INNOV-MONITOR-TEST"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "空集合和单维兜底均已覆盖"
+    },
+    {
+      "id": "V-2287-TYPECHECK",
+      "category": "regression",
+      "behavior": "Vue/TypeScript 全仓类型检查保持通过",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-TYPECHECK"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "vue-tsc --build 退出码0"
+    },
+    {
+      "id": "V-2287-BUILD",
+      "category": "integration",
+      "behavior": "生产构建可正常打包创新价值候选选择模块",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#E-2287-BUILD"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "仅有仓库既有chunk size和unocss警告"
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:徐滕强",
+      "approved_at": "2026-11-11T23:12:29.178+08:00",
+      "approved_session_id": "codex-7164917379-20261111T230529-114db529",
+      "approved_machine_id": "xutengqiang-mac",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "message_ref": "chat-2026-11-11-2287-enter-dev",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "220b890583a3ce34408dbcacc7f30da035cefbaf",
+            "candidate_sha": null,
+            "planned_change_scope": [
+              "src/views/situation/global-innovation/models/innovationValueSelection.ts",
+              "src/views/situation/global-innovation/tabs/InnovationMonitor.vue",
+              "src/views/situation/global-innovation/innovationMonitor.test.mjs"
+            ]
+          }
+        ],
+        "diagnosis_hash": "sha256:b79b289c1f049464ca7abc012259bf427adb22bc018cfe89d2e77ab5605bf474",
+        "plan_hash": "sha256:1ee26ed52434a525afc5e8715d3986b3a1b00a99ae99b7a6dd9ec0c6e57640df",
+        "risk_level": "S",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:461cdfbc1edd98f934617c28ca361894fd9a5a40f6d58b4f8ed589dd00a8ec0b",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T23:12:37.318+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:461cdfbc1edd98f934617c28ca361894fd9a5a40f6d58b4f8ed589dd00a8ec0b",
+        "expected": "sha256:461cdfbc1edd98f934617c28ca361894fd9a5a40f6d58b4f8ed589dd00a8ec0b",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [],
+    "acceptance_steps": [],
+    "dev_verification": {
+      "result": "PENDING",
+      "evidence_refs": []
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-11T23:09:48.775+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "截图、算法结果和前端候选选择逻辑已核对，根因已记录"
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-11T23:09:56.794+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "改动范围、非目标、验证和回滚计划已记录，仓库基线已绑定"
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-11T23:12:37.318+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:461cdfbc1edd98f934617c28ca361894fd9a5a40f6d58b4f8ed589dd00a8ec0b",
+      "evidence_refs": [],
+      "summary": "用户已批准进入开发，开始前端候选选择修复"
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-11T23:17:43.283+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "候选提交通过 git 范围校验，进入自审"
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-11T23:17:43.358+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "自审 PASS，进入验证矩阵登记"
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-11T23:17:59.989+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "codex-7164917379-20261111T230529-114db529",
+      "session_id": "codex-7164917379-20261111T230529-114db529",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "修复、边界、类型检查、构建和证据校验均 PASS，等待提测授权"
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-11T23:17:59.932+08:00",
+      "manifest_hash": "sha256:a322902f905a30c002dbacbde0b0b84baba2801f59350bc574db50b98ac314e6",
+      "item_count": 4,
+      "evidence_ids": [
+        "E-2287-BUG-SCREENSHOT",
+        "E-2287-INNOV-MONITOR-TEST",
+        "E-2287-TYPECHECK",
+        "E-2287-BUILD"
+      ],
+      "evidence_results": {
+        "E-2287-BUG-SCREENSHOT": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-2287-INNOV-MONITOR-TEST": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-2287-TYPECHECK": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "E-2287-BUILD": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "展示提测绑定对象并取得精确口令。"
+  },
+  "updated_at": "2026-11-11T23:18:08.532+08:00"
+}
