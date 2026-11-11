@@ -20,7 +20,7 @@ M10 写回链（`api/tech_graph_maintain_routes.py`）和 seed 脚本按 8 月 D
 
 ## 未做 / 待定
 
-- **产线库 `gkxlumenx_*` 中 M10 残留表与数据未删**。清理属正式库写操作，需监管人另行确认。
+- **产线库 `gkxlumenx_*` 中 M10 残留 12 表保留不删**（2026-11-11 监管人确认删除，但 agent 无产线库 DROP 权限，监管人决定作罢）。已只读核对：12 表均为 2026-11-09 09:45 M10 DDL 所建、无其他模块引用；运行时已不读写。若日后清理，DROP 范围仅限这 12 张，勿碰同库 `graph_node` / `graph_edge` / `graph_membership`。
 - Java（topic Feign）、前端不涉及：Java 不直读这些表，只经 entan-py。
 
 ## 验收
