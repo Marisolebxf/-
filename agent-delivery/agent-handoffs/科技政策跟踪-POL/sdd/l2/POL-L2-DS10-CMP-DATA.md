@@ -39,7 +39,7 @@
 | 213 | 政策新旧对比 | `gkxlumenx_gapfill.gapfill_policy_version_diff` | 本单定逻辑列。时点来自已有发布时间 |
 | 214 | 政策详情对比 | 正文走已有门面。力度读已有 `policy_intensity`。条件与材料读 `gapfill_policy_detail_compare` | 缺项表只放条件、材料 |
 | 215 | 部门政策对比 | 区域、类别、总件数走已有目录。实施部门读 `gapfill_policy_impl_dept` | 不新造部门指标 |
-| 216 | 标杆比对功能 | 已有 `policy_intensity` 所在 ADS。支持力度同步读 | 不加列，不进灌数单 |
+| 216 | 标杆比对功能 | 已有 `policy_intensity` 所在 ADS。支持力度同步读；「政策类型」列 2026-11-11 起同一次统计读 DWD 文种按省聚合（QPOL-01 临时默认） | 不加列，不进灌数单 |
 | 217 | 对标报告生成与导出 | `gkxlumenx_gapfill.gapfill_policy_benchmark_report` | 正文在行里。不灌文件 |
 | 218 | 对标结果可视化展示 | 已有力度表 | 不建 `gapfill_policy_benchmark_viz` |
 
@@ -166,6 +166,14 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 对标范围、对标对象、勾选字段是这次查询的条件，不落新列。范围只有全球科创领先城市、国内先进地区。字段只有政策类型、支持力度、覆盖范围。金额档不是 `policy_intensity` 或 `policy_metric_timeseries` 上的列。金额档缺失时该维空。无行则该卡空，不造 0。
 
 未勾选的字段不进第 7 节的报告，也不进第 8 节的图。对标报告正文不在本叶生成。
+
+**「政策类型」列读法（2026-11-11 增补，`POL-L2-DS10-CMP-PTYPE-FDE`，QPOL-01 临时默认 🟡）**
+
+- 只读已有表：`dwd.policy_base_info` 的 `province`、`policy_type`、`policy_id` 三列（`is_deleted=0`、`source_plane IN ('domestic','global')`）。不建 gapfill 表，不写 ODS/ADS，不灌 mock 行。
+- 聚合：`province × policy_type` 去重计件（`COUNT(DISTINCT policy_id)`），SQL GROUP BY 下推库端。每省返回各文种件数与 Top 文种（件数多者；同数取字典序首个）。
+- 拣行键：对象→省沿用 `policy_intensity` 省级行的 `scope_code`/`scope_name`；某省无文种行则该省条目缺席，不造 0。
+- 口径：DWD 文种是 QPOL-01 增补的**临时默认**，与主口径（ODS `topic_type` 主题分类，`M_POLICY_TYPE_DIST` 已挂）并行不互斥；甲方归一时一并定 216 用文种还是主题分类，切换只改 SELECT 不动链路。UI 带 🟡「待甲方确认」。
+- 不新造 `metric_id`：这是对照展示列，不是新统计指标；`M_POLICY_TYPE_DIST` 的全国口径与本列的按省文种口径不互相顶替。D4 判定不变（读 DWD 真列，非 mock 灌行）。
 
 ## 7. 217 对标报告生成与导出
 

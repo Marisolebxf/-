@@ -1,0 +1,20 @@
+# Java 本地编译禁用（⚠️ 用户裁定 2026-11-10，2026-11-11 全 agent 通知）
+
+> **裁定原文**（POL-FACTOR-GAPFILL-L01 会话，human:淮政玮）：
+> 「java本地禁用的」「不需要本地编译Java」
+> 背景：会话曾尝试本地 `mvn compile` 排错（Maven 3.6.0 撞 `maven-compiler-plugin:3.14.0 requires Maven version 3.6.3`），用户随即叫停并禁止本地编译路线。
+
+## 铁律
+
+1. **禁止本地编译/构建/运行 Java**：任何会话不得执行 `mvn compile` / `mvn package` / `mvn install` / `mvn spring-boot:run` / `gradle build` 等本地 Java 构建命令。适用于本工作区全部 Java 仓（`lumen-svc-platform`、`demo-svc-platform`、`jx-tech-topic/*-backend` 等）。
+2. **禁止绕过尝试**：不得为编译去装/升级 Maven、找其它 JDK、改 plugin 版本、寻替代安装路径——本地环境本身就是禁用的，不是版本问题。
+3. **Java 改动的验证路径**：
+   - 改完 → 语法自查（人工 review / 静态阅读），commit 标 `[agent:<role>]`；
+   - 编译验证 = push 后 CI（GitLab pipeline 绿即编译过）；
+   - 运行验证 = CI → K8s dev rollout 后打 dev 环境接口。
+4. **handoff 如实申报**：CI/CD 章节写「本地不编译（本规则），编译由 CI」；K8s rollout 未跑完前写「待 CI」，不得谎称本地验证通过。
+5. 用户明确要求编译验证时，走 CI（重跑 pipeline / 看 runner 日志），仍不开本地编译。
+
+## 违规代价参考（2026-11-10 实例）
+
+- 本地 `mvn compile` 失败 → 排查 Maven 安装 → 再被叫停，浪费整轮会话时间；本地编译结果也与 CI/K8s 环境不一致，无证明力。

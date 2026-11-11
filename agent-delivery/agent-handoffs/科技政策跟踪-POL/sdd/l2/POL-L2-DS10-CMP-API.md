@@ -30,7 +30,7 @@
 | 214 力度分 | `POST /display/v1/policy/panorama/jobs` | Job。`sub_type=policy_intensity`。display 只提交 `analysis/tasks` |
 | 215 区域、类别、总件数 | `GET /display/v1/policy/panorama/stats` | 同步。区域和类别委托 topic-policy。总件数仍是 `M_POLICY_TOTAL_COUNT` |
 | 215 实施部门 | 同一条 `GET /display/v1/policy/panorama/stats` | 同步。element 只读 `gapfill_policy_impl_dept` |
-| 216 | 同一条 `GET /display/v1/policy/panorama/stats` | 同步。element 只读 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`。不进 Job |
+| 216 | 同一条 `GET /display/v1/policy/panorama/stats` | 同步。element 只读 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`；「政策类型」列同一次统计由 element 只读 DWD `policy_base_info` 文种按省聚合（2026-11-11 增补，QPOL-01 临时默认）。不进 Job |
 | 217 | `GET /display/v1/policy/panorama/benchmark-report` | 同步。element 只读 `gapfill_policy_benchmark_report`。不内嵌写死的 PDF |
 | 218 | 同一条 `POST /display/v1/policy/panorama/jobs` | Job。`sub_type=policy_intensity`。无行则图空 |
 
@@ -51,7 +51,7 @@
 | `panorama/version-diff` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_version_diff` |
 | `panorama/search` | `gkxlumen-display` → `gkxlumen-topic-policy`：`GET /topic/v1/policy/search`。正文委托这一条 |
 | `panorama/{id}/detail` | `gkxlumen-display` → `gkxlumen-topic-policy`：`GET /topic/v1/policy/docs/{id}`。申报条件、申报材料由 `gkxlumen-element` 在同一次详情只读 `gapfill_policy_detail_compare`。受理部门只取正文 |
-| `panorama/stats` | 区域、类别、总件数委托 `gkxlumen-topic-policy`（已有地区分布、已有选项、`M_POLICY_TOTAL_COUNT`）。实施部门由 `gkxlumen-element` 只读 `gapfill_policy_impl_dept`。`M_POLICY_SUPPORT_STRENGTH` 由 `gkxlumen-element` 同步只读 `ads.policy_intensity` |
+| `panorama/stats` | 区域、类别、总件数委托 `gkxlumen-topic-policy`（已有地区分布、已有选项、`M_POLICY_TOTAL_COUNT`）。实施部门由 `gkxlumen-element` 只读 `gapfill_policy_impl_dept`。`M_POLICY_SUPPORT_STRENGTH` 由 `gkxlumen-element` 同步只读 `ads.policy_intensity`。勾「政策类型」时同一次统计由 element 只读 `dwd.policy_base_info` 文种按省聚合（2026-11-11 增补） |
 | `panorama/jobs` | `gkxlumen-display` 只提交 `gkxlumen-topic-async-service` 的 `POST /topic/v1/analysis/tasks`。已有 `PolicyAnalysisAdapterImpl` 再调 `POST /internal/policy/jobs/execute`，`sub_type=policy_intensity`。display 不直接打 `jobs/execute` |
 | `panorama/benchmark-report` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_benchmark_report` |
 
@@ -138,6 +138,15 @@ trace 沿既有展示链。同步读在 display 往下带 traceId。Job 沿已�
 
 D4 仍是 mock。本分册不改 D4，不把 `GDF-POLICY-MOCK-GATE-L01` 写成已解开。对标报告正文不在本叶生成，见第 7 节。
 
+### 6.1 政策类型块（2026-11-11 增补，`POL-L2-DS10-CMP-PTYPE-FDE`）
+
+同一资源 `GET /display/v1/policy/panorama/stats`，同步，不进 Job、不建任务。响应在既有三块之外增一块 `policy_types`。
+
+- 条件门与支持力度一致：`benchmark_scope=国内先进地区`、`benchmark_object` 至少两个、且 `compare_field` 含「政策类型」。条件不齐则该块为空列表，不补默认对象。
+- `gkxlumen-element` 只读 `dwd.policy_base_info`（`is_deleted=0`、`source_plane IN ('domestic','global')`）：`SELECT province, policy_type, COUNT(DISTINCT policy_id)` GROUP BY 下推库端，Java 不做内存聚合；返回每省每文种件数与 Top 文种（件数多者，同数取字典序首个）。对象→省映射沿用 `benchmark_objects` 的 `scope_code`/`scope_name`。
+- 某省 `policy_type` 全空或无行 → 该省条目缺席，不造 0、不造「无类型」。display 只透传该块，不聚合、不改名。
+- 不新造 `metric_id`，不建 gapfill 表，不写 ODS/ADS。口径 = QPOL-01 增补的文种临时默认（DWD `policy_type`），UI 带 🟡「待甲方确认」；甲方归一后若切 ODS 主题分类，只改这一块的 SELECT，不动链路。
+
 ## 7. 217 对标报告生成与导出 · benchmark-report
 
 公开资源：`GET /display/v1/policy/panorama/benchmark-report`。同步。
@@ -158,6 +167,8 @@ D4 仍是 mock。本分册不改 D4，不把 `GDF-POLICY-MOCK-GATE-L01` 写成�
 
 对象和字段沿用 216。图种不选则不出图。对象视角只有地区、政策。图种只有雷达、柱状、热力。政策视角用 214 已选的政策，不另收一批政策。
 
+勾「政策类型」时，地区视角图以各省 Top 文种件数为量，数据来自 `stats` 的 `policy_types` 块（见 6.1 增补），不进本 Job、不改挂力度分；某省无文种不进图。政策视角本字段无量，保持空态。（2026-11-11 增补）
+
 链路与第 4.3 节同一条管道。display 只提交 `POST /topic/v1/analysis/tasks`。适配器再调 Python：先跑已有 `polan.eval.intensity.run`，再按地区或政策读 `ads.policy_intensity` 的力度分。不建 `gapfill_policy_benchmark_viz`。
 
 图上若只画件数，仍用 215 的目录命中和 `M_POLICY_TOTAL_COUNT`，不改挂成力度分。`M_POLICY_INTENSITY_INDEX` 不挂本页。
@@ -177,7 +188,7 @@ D4 仍是 mock。本分册不改 D4，不把 `GDF-POLICY-MOCK-GATE-L01` 写成�
 | 214 条件、材料 | 同一次 `{id}/detail` | 缺项表该列无行则该列空。不返回写死条件或材料 |
 | 214 力度分 | `jobs` · `policy_intensity` | 未挂上白名单则结果空，不返回演示分。挂上后无行则该格空，不造 0。失败不清空统计、目录和正文 |
 | 215 | `stats` | 区域桶空、类别无节点、部门缺项表无行，则对应块空。总件数无行则该卡空，不造 0。缺项件数不补成政策总数 |
-| 216 | `stats` | `ads.policy_intensity` 无支持力度行则该卡空，不造 0。不进 Job。金额档缺失则该维空 |
+| 216 | `stats` | `ads.policy_intensity` 无支持力度行则该卡空，不造 0。不进 Job。金额档缺失则该维空。「政策类型」块条件不齐或某省无文种行则该省空，不造 0（2026-11-11 增补） |
 | 217 | `benchmark-report` | 没有 216 的选择，或表无行，则报告空。不内嵌写死的 PDF。没有行就不产生文件 |
 | 218 | `jobs` · `policy_intensity` | 未挂上白名单则结果空，不返回演示序列。挂上后无行则图空。图种不选则不出图。失败不清空统计、目录和正文 |
 
