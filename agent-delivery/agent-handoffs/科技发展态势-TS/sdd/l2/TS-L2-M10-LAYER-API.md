@@ -157,3 +157,17 @@ LayerCode ⊂ FactorKey：`enterprise`、`service` 是要素但不是地图图�
 - 不定义 ENT 分区（41–47）、图谱分区（34–40 不实现）接口
 - 不设分页、乐观锁、字段级审计接口；不新建 Job/SSE/异步任务
 - 不新造 `metric_id`（全 N/A，见 METRIC 分册）
+
+## 增量 2026-11-11（TS-L2-M10-DEMO-FULL-L01，以实现为准）
+
+真源：`agent-handoffs/科技发展态势-TS/TS-L2-M10-DEMO-FULL-L01-方案.md` §2.2。要点：
+
+- 写方法以实现为准：`POST …/save`、`POST …/delete`（网关只放行 GET / POST）；新增返回 200。
+- `cfg_tech_layer.group_code`：`GET /layers` 每行带 `groupId`；`POST /layers/save` 的 `items[]` 支持 `{layerCode, enabled?, groupId?}`，`groupId:null` 表示取消挂组。删组时组下仍有图层或数据源返回 409 `GROUP_IN_USE`，并给出计数。
+- 探测落库：`cfg_tech_datasource` 新增 6 列；`GET /datasources` 返回 `probeStatus / probeAt / probeLatencyMs / probeMessage / dataUpdatedAt / rowCount`。
+- probe：
+  - API 型网络失败一律 200 + `result=失败`。
+  - 数据库表型实做：正则校验 + schema 别名白名单（dwd / ads / ods → `demo_gkxlumenx_*`）+ information_schema + COUNT / MAX(时间列)，参数化只读。
+  - 用户填报型 400；SSRF 黑名单 400。
+- 写接口（全部 POST，含 probe）要求登录，401 / 40101；读接口匿名（2026-10-31 裁定）。
+- 迁移：`lumen-svc-platform/db/9x_gkxlumenx_cms_tech_maintain_config_v2.sql`，可重复执行，含测试残留清理与图层挂组种子。
