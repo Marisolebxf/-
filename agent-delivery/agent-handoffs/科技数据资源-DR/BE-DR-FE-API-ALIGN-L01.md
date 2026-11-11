@@ -92,7 +92,7 @@
 
 | 产物 | 路径 |
 |---|---|
-| 上游接口需求主表 | `agent-delivery/agent-handoffs/科技数据资源-DR/BE-DR-SDC-UPSTREAM-API-REQ.md` |
+| 上游接口需求主表 | `agent-delivery/agent-handoffs/科技数据资源-DR/BE-DR-SDC-UPSTREAM-API-REQ.md`（2026-11-11 修订：每条含输入/输出**文字说明**） |
 | 本 handoff / 差异摘要 | `agent-delivery/agent-handoffs/科技数据资源-DR/BE-DR-FE-API-ALIGN-L01.md` |
 
 ## 涉及文件
