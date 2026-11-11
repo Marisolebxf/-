@@ -40,7 +40,7 @@
 | 214 | 政策详情对比 | 正文走已有门面。力度读已有 `policy_intensity`。条件、材料、优缺点读 `gapfill_policy_detail_compare` | 缺项表放条件、材料、`pros_text`、`cons_text` |
 | 215 | 部门政策对比 | 区域、类别、总件数走已有目录。实施部门读 `gapfill_policy_impl_dept` | 不新造部门指标 |
 | 216 | 标杆比对功能 | 已有 `policy_intensity` 所在 ADS。支持力度同步读；「政策类型」列 2026-11-11 起同一次统计读 DWD 文种按省聚合（QPOL-01 临时默认） | 不加列，不进灌数单 |
-| 217 | 对标报告生成与导出 | `gkxlumenx_gapfill.gapfill_policy_benchmark_report` | 正文在行里。不灌文件。浏览器用 `trackingExport` 从当次行生成 Word/PDF |
+| 217 | 对标报告生成与导出 | `gkxlumenx_gapfill.gapfill_policy_benchmark_report` | 正文在行里。不灌文件。导出走态势报告链（FE HTML → situation/report → OpenHTMLtoPDF）；禁 trackingExport 打印另存 |
 | 218 | 对标结果可视化展示 | 已有力度表 | 不建 `gapfill_policy_benchmark_viz` |
 
 ## 2. 已有力度表
@@ -185,7 +185,7 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 
 灌数方：`POL-L2-DS10-CMP-GAPFILL-L01`。读取方：`gkxlumen-element`，经 `GET /display/v1/policy/panorama/benchmark-report`。display 不直连库。不写入 ODS、DWD、ADS、供应方库。
 
-导出格式只有 PDF、Word，是请求条件，不落列。不选格式则只在线看行。导出若要文件，从这次读到的行生成。文件字节不进 MySQL，不进对象存储。不写桶名和对象键。不建邮件。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这张表。
+导出格式只有 PDF、Word，是请求条件，不落列。不选格式则只在线看行。导出文件不进本 gapfill 表；真文件走态势报告链（`situation/report` → topic-async OpenHTMLtoPDF，OSS/`gkx-lumen` 或 local 指针，与态势页同构）。gapfill 表本身不写桶名和对象键。不建邮件。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这张表。废止仅前端 `trackingExport` 打印另存。
 
 | 列 | 类型 | 空 | 约束 |
 |---|---|---|---|

@@ -31,7 +31,7 @@
 | 215 区域、类别、总件数 | `GET /display/v1/policy/panorama/stats` | 同步。区域和类别委托 topic-policy。总件数仍是 `M_POLICY_TOTAL_COUNT` |
 | 215 实施部门 | 同一条 `GET /display/v1/policy/panorama/stats` | 同步。element 只读 `gapfill_policy_impl_dept` |
 | 216 | 同一条 `GET /display/v1/policy/panorama/stats` | 同步。element 只读 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`；「政策类型」列同一次统计由 element 只读 DWD `policy_base_info` 文种按省聚合（2026-11-11 增补，QPOL-01 临时默认）。不进 Job |
-| 217 | `GET /display/v1/policy/panorama/benchmark-report` | 同步。element 只读 `gapfill_policy_benchmark_report`。不内嵌写死的 PDF。浏览器从当次行用 `trackingExport` 导出 Word/PDF |
+| 217 | `GET …/benchmark-report` + 导出 `POST /display/v1/situation/report/generate` | 在线同步读 gapfill。导出对齐态势报告：FE 拼 HTML → display → topic-async OpenHTMLtoPDF；Word=同源 html→.doc。禁 trackingExport 打印另存 / text/plain |
 | 218 | 同一条 `POST /display/v1/policy/panorama/jobs` | Job。`sub_type=policy_intensity`。无行则图空 |
 
 `{id}` 是 `search` 目录项里的政策 id，与 `POL-L2-DS10-QRY-API` 相同。
@@ -147,17 +147,23 @@ D4 仍是 mock。本分册不改 D4，不把 `GDF-POLICY-MOCK-GATE-L01` 写成�
 - 某省 `policy_type` 全空或无行 → 该省条目缺席，不造 0、不造「无类型」。display 只透传该块，不聚合、不改名。
 - 不新造 `metric_id`，不建 gapfill 表，不写 ODS/ADS。口径 = QPOL-01 增补的文种临时默认（DWD `policy_type`），UI 带 🟡「待甲方确认」；甲方归一后若切 ODS 主题分类，只改这一块的 SELECT，不动链路。
 
-## 7. 217 对标报告生成与导出 · benchmark-report
+## 7. 217 对标报告生成与导出 · benchmark-report + situation/report
 
-公开资源：`GET /display/v1/policy/panorama/benchmark-report`。同步。
+公开资源（在线）：`GET /display/v1/policy/panorama/benchmark-report`。同步。
 
-没有 216 的选择则报告空。导出可以不做。格式只有 PDF、Word。不选格式则只在线看行。
+没有 216 的选择则报告空。不选格式则只在线看行。格式闭集只有 PDF、Word。
 
-`gkxlumen-display` 不直连库，不直连 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_benchmark_report`。一行有对标对象、对照字段、差异、优劣、借鉴建议、报告正文。正文写在行里。条件对不上的行不返回。
+`gkxlumen-display` 不直连库，不直连 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_benchmark_report`。一行有对标对象、对照字段、差异、优劣、借鉴建议、报告正文。正文写在行里。条件对不上的行不返回。响应里不内嵌写死的 PDF 或 Word。
 
-导出若要文件，从这次读到的行生成。响应里不内嵌一份写死的 PDF 或 Word。不写对象存储。不建邮件。不走 `report/jobs`。核增研报 614–618 和序号 211 的 `assessment-report` 不是这条资源。
+**导出（2026-11-12 修订；废止 trackingExport）**：对齐专题/态势报告架构，复用已有公开资源 `POST /display/v1/situation/report/generate`（及同族 download），不新开 panorama 专用导出 URL、不走 `report/jobs`。
 
-无行则报告空。没有行就不产生文件。HTTP 成功。不返回 501。
+| 步 | 谁 | 做什么 |
+|---|---|---|
+| 1 | FE | 用当次 GET 行拼完整 HTML（无 print 脚本）；`reportType=policy-panorama-benchmark`；`conditionKey`=对标对象×字段指纹 + 模板版 |
+| 2 | display BFF | 转发 topic-async SituationReport；PDF→OpenHTMLtoPDF；html→UTF-8 字节；OSS/`gkx-lumen` 或 local 指针；downloadUrl 收敛到 display 代理 |
+| 3 | FE | PDF：下载 `.pdf` 真字节。Word：请求 `format=html`，下载后以 `.doc`（HTML Word）落盘（域服务仅 html\|pdf） |
+
+禁止：打印另存冒充 PDF、`text/plain` Blob、内嵌写死文件、FE 直连 topic-async、新加 jspdf。无行不产文件。不建邮件。核增研报 614–618 与序号 211 不是本资源。
 
 灌数是 `POL-L2-DS10-CMP-GAPFILL-L01`，不是请求处理。本分册不写 DDL。表不写入 ODS、DWD、ADS。D4 保持 mock。
 

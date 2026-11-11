@@ -13,7 +13,7 @@
 | 214 | 差异柱图 + 每策优缺点（pros_text/cons_text） |
 | 215 | 不变 |
 | 216 | 不变 |
-| 217 | 导出 Word / PDF（trackingExport），禁 text/plain |
+| 217 | 导出 Word / PDF（situation/report → OpenHTMLtoPDF；Word=html→.doc），禁 text/plain / 打印另存冒充 |
 | 218 | 雷达/柱状/热力三图种可选 |
 
 ## §6.5

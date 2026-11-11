@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS10-CMP-ARCH`
 - 日期：2026-11-03
-- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档）。**2026-11-12 增补 §5.1/§5.2/§5.5**（`POL-L2-DS10-CMP-COVER-FDE-L01`，中档：213 变化统计、214 live 柱图+优缺点、217 真 Word/PDF 导出）
+- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档）。**2026-11-12 增补 §5.1/§5.2/§5.5**（`POL-L2-DS10-CMP-COVER-FDE-L01`，中档：213 变化统计、214 live 柱图+优缺点、217 真 Word/PDF）。**同日晚修订 §5.5**：废止 trackingExport 打印另存，改为 situation/report → OpenHTMLtoPDF（专题/态势同构）
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -44,7 +44,7 @@
 | 214 条件、材料、优缺点 | `GET /display/v1/policy/panorama/{id}/detail` | 正文仍走专题门面。申报条件、申报材料、优点、缺点由 `gkxlumen-element` 同一次详情只读 `gapfill_policy_detail_compare`。不把这些列写进接口常量。live 差异柱图用当次力度分（无分轴空，不造演示分） |
 | 215 区域、类别 | `GET /display/v1/policy/panorama/stats` 与 `search` | 区域走已有地区分布。项目类别、技术类别走已有选项。总件数仍用 `M_POLICY_TOTAL_COUNT`。这两段仍委托 `gkxlumen-topic-policy` |
 | 215 实施部门 | `GET /display/v1/policy/panorama/stats` | 同一次统计。`gkxlumen-element` 只读 `gapfill_policy_impl_dept`。现网收集不到实施部门，不按发布机构去重，不另开路径 |
-| 217 | `GET /display/v1/policy/panorama/benchmark-report` | `gkxlumen-element` 只读 `gapfill_policy_benchmark_report`。导出内容从读到的行生成。浏览器侧复用 `trackingExport`（Word=.doc HTML；PDF=可打印页另存），不新加 npm、不内嵌写死文件。display 不直连 Python |
+| 217 | `GET …/benchmark-report` + 导出走 `POST /display/v1/situation/report/generate` | 在线：element 只读 `gapfill_policy_benchmark_report`。导出：FE 由当次行拼完整 HTML → display 代理 → `gkxlumen-topic-async-service` OpenHTMLtoPDF（与态势/专题报告同构）。PDF=`format=pdf` 真字节；Word=`format=html` 同源 HTML 存为 `.doc`。禁 `trackingExport` 打印另存、禁 text/plain。不新加 jspdf。display 不直连 Python |
 
 ```mermaid
 flowchart LR
@@ -168,15 +168,20 @@ flowchart LR
 - 读条件与支持力度一致：范围=国内先进地区、至少两个对象、且勾了「政策类型」。对象映射沿用 `scope_code`/`scope_name`。某省 `policy_type` 全空或库内无行 → 该省格空，不造 0。
 - 不新造 `metric_id`（复用 DWD 已有列做对照展示，不是新指标）；不建 gapfill 表；D4 口径不变（对照源头 DWD 真数，非 mock 灌行）。
 
-### 5.5 217 对标报告生成与导出 · 读缺项表
+### 5.5 217 对标报告生成与导出 · 读缺项表 + 态势/专题同构导出
 
-没有对标报告模型。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这条资源。
+没有对标报告模型。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这条资源。序号 211 的 `assessment-report` 不是 217。
 
 - 表 `gapfill_policy_benchmark_report`。
 - 一行有对标对象、对照字段、差异、优劣、借鉴建议、报告正文。正文写在行里。
-- `GET benchmark-report` 只查询。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。导出若要文件，从这次读到的行生成，响应里不内嵌一份写死的 PDF 或 Word。
-- **导出落点（2026-11-12，COVER-FDE，卡2=B）**：浏览器复用已有 `trackingExport` 语义——Word 下载 `.doc`（HTML）；PDF 开可打印页由用户另存为 PDF。不新加 jspdf 等 npm 依赖。无行不产文件。禁止 `text/plain` 冒充 PDF/Word。
-- 不写对象存储。不建邮件。
+- `GET benchmark-report` 只查询（在线查看）。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。响应里不内嵌一份写死的 PDF 或 Word。
+- **导出落点（2026-11-12 修订，COVER-FDE，卡2=B；废止 trackingExport）**：对齐展示侧已落地的态势报告链 / 专题报告同源技术——
+  1. FE 用当次 `benchmark-report` 行拼**完整 HTML**（无 `window.print`）；
+  2. `POST /display/v1/situation/report/generate`（`reportType=policy-panorama-benchmark`，`conditionKey`=对象×字段指纹 + 模板版）→ Feign `gkxlumen-topic-async-service` → **OpenHTMLtoPDF**（pdf）或落 HTML（html）→ OSS/`gkx-lumen` 或 local 指针 → 经 display 代理下载真文件字节；
+  3. PDF = `format=pdf`；Word = 同源 `format=html` 下载后以 `.doc`（HTML Word）落盘（域服务闭集仅 html|pdf，不新开 docx 引擎）；
+  4. 去重键 = `reportType + conditionKey + format`（与 `useSituationReport` / SituationReportService 一致）。
+- **禁止**：`trackingExport` 打印页「另存为 PDF」、仅前端 Blob `text/plain`、响应内嵌写死文件、新加 jspdf/html2canvas（本叶复用已有域服务）。
+- 无行不产文件。不建邮件。不新造桶（沿用态势报告既有存储约定，D14）。
 
 ### 5.6 218 对标结果可视化展示 · 读力度表
 
