@@ -61720,8 +61720,9 @@ tasks:
       - "handoff 写入 agent-handoffs"
     update_time: "2026-11-09T15:52:56+08:00"
   - id: KG-COMPLY-LOAD-T01
+    evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T01.md"
     title: "T01 入图环境与结构核验（含 schema 缺口升级闸）"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61731,7 +61732,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "T01 环境与结构核验。建议执行人 human:白鑫凤；上级 KG-COMPLY-LOAD-L01。2026-11-09 第一版交付（缺 5 个点类型 + 11 种关系）；2026-11-10 第二版已补带属性的 16 条建表语句、补了点编号与端点方向两项核对，并指出我方文档自相矛盾（已改）。我方复核结论：图里实际在用的点编号规则与文档写的规范不同，裁定本期按图里实际规则走；企业编号的后缀不是信用代码（该列全空），要取属性里的 org_id；另外 T02 原计划要灌的两批关系图里已经存在，只能核对不能重灌。当前卡点=16 条建表语句待走授权通道" 
+    note: "2026-11-11 已归档交付索引并回填证据，task-review AV-0通过（handoff_exists=true/evidence_set=true，tech_task目标ready_to_sign）。仅机械完整性检查通过，待有权签收人确认业务验收、原授权记录及历史认领字段；本次不代签done。"
     depends_on:
       - "KG-COMPLY-SDD-L01"
     design_refs:
@@ -61746,7 +61747,7 @@ tasks:
       - "待补清单经唐绍祖确认内容→报徐滕强→授权 DBA 执行 DDL→复验全绿后 T02–T04 才开工；编排侧不执行任何 DDL"
       - "VID 列按现网实际前缀判（ent:/segment:/institution:/pol:），不按 STRUCT 规范前缀（KG-COMPLY-VID-L01）"
       - "depends_on 1,073（M15）与 participates 178,731（M17）为存量已满足项，只回读核对、不得重灌、不得回写 props.batch"
-    update_time: "2026-11-10T18:20:00+08:00"
+    update_time: "2026-11-11T15:23:39+08:00"
   - id: KG-COMPLY-LOAD-T02
     title: "T02 七要素入图·产业链与机构合作组（M15/M17/M19）"
     status: "backlog"
@@ -61814,6 +61815,7 @@ tasks:
       - "不给技术点层新编必须边；不碰 M10–M14/M16"
     update_time: "2026-11-09T15:11:12+08:00"
   - id: KG-COMPLY-LOAD-T05
+    evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T05.md"
     title: "T05 空态层入图核验（M05/M10–M14/M16/M18/M21/M23/M24）"
     status: "backlog"
     agent: "data-agent"
@@ -61825,7 +61827,8 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 25000
-    note: "SDD §5 T05；建议执行人 human:兰天驰；可在 DDL 等待期并行"
+    note: |
+      SDD §5 T05；按2026-11-11已归档分工调整与交付，执行人为白鑫凤（原建议兰天驰退出）；未倒填claimed_by或认领时间。交付提交04acfa71已经ef601c1d同步GitLab dev。报告及T05-空态-实测.md记录2026-11-11 14:08:23只读核验：11条M本期空态，M18 institution→segment为0，区分policy/institution历史节点与本层无供数；报告自检通过。本次依据文档回填，未独立复测。登记册仍backlog，需coordinator处理历史执行/认领状态补录，再按tech_task验收签收；不以新认领伪造历史。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61834,10 +61837,15 @@ tasks:
       - "11 条边逐条只读核数，空态报告 11 行全出"
       - "区分 policy/institution 「Tag 有历史数据」与「本期七要素层无供数」"
       - "不灌 mock、不从 gkx_chain 拷数"
-    update_time: "2026-11-09T15:11:15+08:00"
+    update_time: "2026-11-11T15:23:23+08:00"
   - id: KG-COMPLY-LOAD-T08
+    supervised_by: "human:宋飞扬"
+    claimed_at: "2026-11-11T07:52:55.763Z"
+    last_seen_at: "2026-11-11T07:52:55.763Z"
+    lock_until: "2026-11-11T11:52:55.763Z"
+    claimed_by: "agent:algorithm-agent"
     title: "T08 图算法作业·路径搜索批（423–427）"
-    status: "backlog"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61847,7 +61855,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "SDD §5 T08；建议执行人 human:宋飞扬；只依赖技术点层，可在 DDL 等待期并行"
+    note: "宋飞扬授权执行。依据 SDD 第504行及本任务备注，先完成技术点层只读路径批，可在T01等待期并行。"
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61856,7 +61864,7 @@ tasks:
       - "只读复跑 10 对技术点 BFS + Dijkstra，输出对齐 2026-11-07 实跑 JSON"
       - "权重用 e.relation_confidence_score（禁 e.tech_rel.*），空值率=0，加权与无权必须有差异"
       - "不可达返回空态；不写回图；不用 M22 冒充场景路径"
-    update_time: "2026-11-09T15:11:18+08:00"
+    update_time: "2026-11-11T15:52:57+08:00"
   - id: KG-COMPLY-LOAD-T09
     title: "T09 图算法作业·中心性批（428–432）"
     status: "backlog"
@@ -63240,7 +63248,7 @@ tasks:
     lock_until: "2026-11-11T10:45:29.143Z"
     claimed_by: "agent:data-agent"
     title: "维护管理 · 关键实体与关系 · 写回库迁至中台库 demo_gkxlumenx_dwd/ads（库边界 2026-10-19）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "data-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P1"
@@ -63252,7 +63260,7 @@ tasks:
     estimated_tokens: 80000
     user_story: "全景序41-47 写回链库边界合规（开发写入不进 gkxlumenx_*）"
     note: |
-      2026-11-10 监管人 human:刘剑锋 确认：M10 维护页数据库走 demo_gkxlumenx_*（孔东「数据不走真实库」）。｜关联 TS-L2-M10-ENT-SEED-L01（pending_test，迁库后其数据落点随之变更）。｜2026-11-10 lumen-algo-py 7176a44（_schemas 跟随 ENTAN_MYSQL_*_DB→demo_，单测 16/16）已推 dev；demo_gkxlumenx_dwd/ads 建 12 表并整表复制产线现状（行数全等，R2 本地读逐字段一致 v22）；helm 不改；产线库残留未删（待监管人）。待 edu 部署后一次写操作验证落 demo_。handoff：agent-handoffs/科技发展态势-TS/TS-L2-M10-ENT-DB-DEMO-L01.md
+      2026-11-10 监管人 human:刘剑锋 确认：M10 维护页数据库走 demo_gkxlumenx_*（孔东「数据不走真实库」）。｜关联 TS-L2-M10-ENT-SEED-L01（pending_test，迁库后其数据落点随之变更）。｜2026-11-10 lumen-algo-py 7176a44（_schemas 跟随 ENTAN_MYSQL_*_DB→demo_，单测 16/16）已推 dev；demo_gkxlumenx_dwd/ads 建 12 表并整表复制产线现状（行数全等，R2 本地读逐字段一致 v22）；helm 不改；产线库残留未删（待监管人）。待 edu 部署后一次写操作验证落 demo_。handoff：agent-handoffs/科技发展态势-TS/TS-L2-M10-ENT-DB-DEMO-L01.md｜2026-11-11 edu 验收通过：页面挂接/解挂后中台库 demo_gkxlumenx_dwd.graph_version 22→41（11-11 02:14 起全部 publish 落 demo），产线库 gkxlumenx_dwd 仍 max_v=22、最后变更集 11-09 18:44，未再写入。｜2026-11-11 产线库 M10 残留 12 表：agent 无 DROP 权限，监管人决定保留不删（运行时已不读写）。
     touched_files:
       - "vendor/entan-py/api/tech_graph_maintain_routes.py"
       - "vendor/entan-py/scripts/seed_tech_graph_maintain.py"
@@ -63267,7 +63275,7 @@ tasks:
       - "产线库 M10 现状数据原样复制到中台库（版本链/投影/overlay 一致），edu 页面切换后状态连续"
       - "单测绿；edu R2 读 + 一次挂接/解挂写冒烟通过，且写入落 demo_*、gkxlumenx_* 行数不再变化"
       - "产线库 gkxlumenx_* 中 M10 残留数据不删（清理另需监管人确认）；L2 DATA D1 / handoff 记档"
-    update_time: "2026-11-10T18:54:18+08:00"
+    update_time: "2026-11-11T09:51:01+08:00"
   - id: POL-L2-DS10-QRY-FDE-L01
     cost_warn: "green"
     actual_cost: 0.5
@@ -63365,13 +63373,18 @@ tasks:
       - "合规演示用例覆盖本叶新功能点并完成 §6.5 冒烟"
     update_time: "2026-11-11T00:28:42+08:00"
   - id: POL-FACTOR-GAPFILL-L01
+    model_used: "glm-5.3-flash"
+    evidence: "agent-handoffs/科技政策跟踪-POL/POL-FACTOR-GAPFILL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 380000
+    actual_cost: 2.5
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-10T15:34:43.772Z"
     last_seen_at: "2026-11-10T15:34:43.772Z"
     lock_until: "2026-11-10T19:34:43.772Z"
     claimed_by: "agent:data-agent"
-    note: "开工（本会话代跑，监管人已确认 self-claim + 全链范围）。另：user-task-registry 独立实例误建同 ID 单一張，无删除工具，已在本实例重建为准。"
-    status: "in_progress"
+    note: "AV-0：handoff 已落 + evidence 已回填，转联调"
+    status: "integration"
     agent: "agent:data-agent"
     epic: "POL-FACTOR-GAPFILL"
     priority: "P1"
@@ -63400,7 +63413,7 @@ tasks:
       - "客户决策清单 QPOL-02 增补登记（四维临时默认，与既有三处权重不一致一并归一）"
       - "合规演示用例 214 行增补冻结（查库时间注明批次）"
       - "handoff 按模板落 agent-handoffs/科技政策跟踪-POL/（含 ponytail: full 与 cost 四字段）"
-    update_time: "2026-11-10T23:34:57+08:00"
+    update_time: "2026-11-11T02:07:23+08:00"
   - id: POL-SIM-VIS-FDE-L01
     model_used: "glm-5.3-flash"
     evidence: "agent-handoffs/科技政策跟踪-POL/POL-SIM-VIS-FDE-L01.md"
@@ -63529,3 +63542,70 @@ tasks:
       - "落地 .gitlab-ci.yml（必要时 scripts/ci-affected-paths.sh）+ --self-check；更新 cicd-pipeline.md lumen-algo-py 段"
       - "handoff 含前后对比、pipeline 证据、风险回滚、ponytail 自检行"
     update_time: "2026-11-11T01:16:50+08:00"
+  - id: TS-L2-M10-DEMO-FULL-L01
+    supervised_by: "human:刘剑锋"
+    claimed_at: "2026-11-11T03:53:10.901Z"
+    last_seen_at: "2026-11-11T03:53:10.901Z"
+    lock_until: "2026-11-11T07:53:10.901Z"
+    claimed_by: "agent:coordinator-agent"
+    title: "M10 维护管理：除 34–40 外全部需规补到可演示（PY+Java+FE 本地实现 + 本地 LOOP，人工确认后提交部署）"
+    status: "claimed"
+    agent: "coordinator-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-ui-science-pc,lumen-svc-platform,lumen-algo-py,gkx-orchestration"
+    delivery_phase: "integration"
+    task_type: "tech_task"
+    effort_points: 8
+    difficulty: "L"
+    estimated_tokens: 900000
+    collaborators:
+      - "algorithm-agent"
+      - "api-agent"
+      - "frontend-agent"
+      - "qa-agent"
+      - "data-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-L2-M10-DEMO-FULL-L01-方案.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/TS-L2-M10-合规演示用例.md"
+      - "agent-delivery/agent-handoffs/展示系统-合规演示用例/TS-M10-CASE-FILL-L01.md"
+      - "agent-delivery/产品实现规程.md#6.5"
+    definition_of_done:
+      - "序 5/6/7/8/9/41/42/43/44/45/46/47 + 权限降级 13 行在合规演示用例中判定为可演（34–40 维持设计不实现）"
+      - "PY/Java/FE 改动按方案 §2 接口增量实现，各仓自检绿（pytest / mvn test / pnpm type-check+自检+build）"
+      - "本地隔离库（本机 MySQL）全链联调通过，本地 LOOP 报告落 TS-M10-DEMO-ACCEPT-LOOP.md，可演行全对得上"
+      - "代码只留本地工作区，监管人人工确认可演示后才 commit/push/部署；共享库 DDL 与残留清理在部署时执行"
+      - "handoff 含 ponytail 行、架构合规自检、cost 四字段"
+    update_time: "2026-11-11T11:53:11+08:00"
+  - id: TOPIC-GOLIVE-DEPLOY-DOCS-L01
+    title: "科技专题服务系统 + 专题算法库：本周各出一版《上线部署方案》《部署手册》"
+    status: "ready"
+    agent: "devops-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    sprint_id: "2026-W46"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "chore"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: |
+      来源：淮总协助需求（本周上线材料）。范围仅两系统×两文档共 4 份：科技专题服务系统、专题算法库 × 《上线部署方案》(模板_12) + 《部署手册/CI构建手册》(模板_13)。模板真源：验收文档/上线验收材料/0-材料清单与总集要求/。监管建议 human:淮政玮 或 human:郭万迎（总集文档归档 Owner）；内容以 devops 为准、doc-agent 可协助套模板排版。禁止把展示系统或其他总集材料塞进本单扩大范围。
+    collaborators:
+      - "doc-agent"
+    touched_files:
+      - "agent-delivery/验收文档/上线验收材料/1-科技专题服务系统/"
+      - "agent-delivery/验收文档/上线验收材料/"
+    design_refs:
+      - "agent-delivery/验收文档/上线验收材料/0-材料清单与总集要求/模板_12-上线部署方案.docx"
+      - "agent-delivery/验收文档/上线验收材料/0-材料清单与总集要求/模板_13-部署手册(CI构建手册).docx"
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/科技信息展示系统V1.2上线计划.md"
+    definition_of_done:
+      - "按模板_12 输出《科技专题服务系统-上线部署方案》一版（docx），落入 验收文档/上线验收材料/1-科技专题服务系统/（或同级约定目录）"
+      - "按模板_13 输出《科技专题服务系统-部署手册(CI构建手册)》一版（docx），同目录落盘"
+      - "按模板_12 输出《专题算法库-上线部署方案》一版（docx），落入上线验收材料对应算法库目录"
+      - "按模板_13 输出《专题算法库-部署手册(CI构建手册)》一版（docx），同目录落盘"
+      - "四份材料均对齐现网/预发实际拓扑、镜像、CI 流水线与回滚口径；占位项在文内标 TBD 并列责任人"
+      - "handoff：agent-handoffs/TOPIC-GOLIVE-DEPLOY-DOCS-L01.md，附四份产物路径与模板对照表；目标本周（≤2026-11-15）"
+    update_time: "2026-11-11T16:10:21+08:00"
