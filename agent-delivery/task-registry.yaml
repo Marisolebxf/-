@@ -63751,3 +63751,30 @@ tasks:
       - "明确不扩四个 GET 以外路径；种子多出但类型无的键（如 totalCalls）是否禁止出站写进结论"
       - "handoff 落 agent-handoffs/科技数据资源-DR/；不改前端、不改契约冻结正文除非差异需变更且人批准"
     update_time: "2026-11-11T20:45:11+08:00"
+  - id: POL-SIM-HEADER-SCORE-DATA
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-11-11T13:41:58.404Z"
+    last_seen_at: "2026-11-11T13:41:58.404Z"
+    lock_until: "2026-11-11T17:41:58.404Z"
+    claimed_by: "agent:data-agent"
+    title: "政策效果推演 · 页头得分表建表 + v2 公式灌数（gapfill_policy_sim_score）"
+    status: "in_progress"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      真源 handoff：agent-delivery/agent-handoffs/POL-SIM-HEADER-SCORE-L01.md §三 移交清单（含完整 DDL）。页头三卡现显「得分待发布（D4 接入中）」，表建好灌数后即出数。QPOL-02 甲方归一+QA 通过后 is_mock 翻 0、镜像矩阵 D4 同步翻转，前端角标自动消失。铁律：只进 gkxlumenx_gapfill，不写 ODS/DWD/ADS/供应方库（D16/D18）。首次建单（77ea5692）被并行提交 a7de7033 从旧基线挤掉，本单为基线拉齐后重建。
+    collaborators:
+      - "algorithm-agent"
+    definition_of_done:
+      - "gkxlumenx_gapfill.gapfill_policy_sim_score 建表完成，DDL 脚本入库 lumen-algo-py/scripts/mysql/（风格对齐 gapfill_policy_sim_forecast.sql，显式 CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci，UNIQUE KEY uk_score_metric(row_kind,metric_id)）"
+      - "v2 公式灌数 job 落地：预估综合效果=有效率×0.5+力度均值×50；落地成效维=有效政策占比百分数值；布局建议=对冲计数（可为 0，阈值临时 55.0）；产 3 行 row_kind='页头卡'，is_mock=1、pending_ref='QPOL-02'，按 uk_score_metric 幂等 upsert"
+      - "线上 jobs POST /display/v1/policy/simulation/jobs body {\"kind\":\"页面得分\"} 返回 3 行；前端页头三卡出数（⚠️ 角标因 is_mock=1 仍在，符合 D9 诚实性，无需改前端）"
+      - "handoff 写入 agent-delivery/agent-handoffs/（引用真源 POL-SIM-HEADER-SCORE-L01.md §三 移交清单），cost 四字段回填"
+    update_time: "2026-11-11T21:45:03+08:00"
