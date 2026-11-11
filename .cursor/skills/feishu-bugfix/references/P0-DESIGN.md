@@ -124,7 +124,7 @@ CANCELLED
 - `RESOLVED → REOPENED`：复用同一 run，新增 `cycle_id` 并保留上一轮诊断、gate、提测和验收历史；不新建无关联 run。
 - `任意未完成状态 → CANCELLED`：仅在缺陷被关闭、确认重复或确认无需修复时进入；记录取消人、原因、已推分支/MR/dev 部署的清理结果。
 - `任意未完成状态 → BLOCKED`：缺复现、需规、权限、环境、验收证据、数据授权或出现不可安全处理的失败时进入；必须记录 `blocked_from`、`resume_phase`、`resume_condition` 和 owner。
-- `BLOCKED → resume_phase`：只有恢复条件满足且重新校验 claim、repo、SHA、data scope 和 gate 后才能恢复。
+- `BLOCKED → resume_phase`：只能通过 `resume` 命令恢复；必须提供 session/machine、恢复证据，记录 `blockers[].resolved_at/resolved_by/resume_evidence_refs`，并重新校验 claim、repo、SHA、data scope 和 gate。恢复路径上的 approved gate 若因上下文或绑定变化失效，必须重新取得精确口令，不能自动放行。
 - `DEV_VERIFY_FAILED → BLOCKED`：无法安全 revert 或失败原因暂时不可归因时进入。
 - `ROLLED_BACK → BLOCKED`：回退后仍无法重建诊断或环境时进入。
 - `CANCELLED` 不自动回退已部署 dev；若取消前已经部署，必须按本文件定义的单次 revert 流程处置或进入 `BLOCKED`。
@@ -290,6 +290,7 @@ GitLab 保护分支、MR approve 和仓库发布规则优先；`提测`不绕过
 - 人工直接完成飞书迁移而不发送精确口令：保留 `policy_only` 路径，Agent 只读取并记录，不构造 `chat_exact` gate；
 - 在 `DEV_VERIFYING` 或更早阶段看到 `RESOLVED`：记录 `acceptance.anomaly=early_resolved` 并进入 `BLOCKED`；
 - 任意未完成阶段看到 `REOPENED`：使旧 gate 失效并进入 `REOPENED`，重新诊断。
+- acceptance gate 一旦以 `chat_exact` 批准，禁止在原 run 内降级为 `policy_only`；否则会绕过第三个精确口令。
 
 由于飞书 MCP 仍使用当前用户身份，`chat_exact` 证明的是“当前会话收到了精确人工授权”，不是密码学防伪。账本必须记录 `operator_verified=false`。P0 不启动后台轮询；没有精确口令或人工状态迁移时，`state.json` 保持 `AWAITING_ACCEPTANCE`。
 
@@ -459,7 +460,7 @@ Gate 不能只记录 `approved`，必须绑定到产生授权时的对象。`bug
 
 - 相关调用链和测试；
 - 业务逻辑：至少一个可失败的目标回归用例；
-- 文案/样式：稳定复现步骤和前后截图；
+- UI 文案/样式：优先使用 DOM/API/部署 chunk 等机器断言；确需视觉证据时，保留前后各 1 张目标区域截图，禁止连续全屏截图；
 - 类型检查、构建或仓内等价自检；
 - 目标页面或接口证据；
 - 自动生成的 `report.md`。
@@ -710,7 +711,7 @@ agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/
 规则：
 
 - “测试通过”必须能追溯到命令、退出码和输出；
-- UI 证据记录路由、环境、视口、数据集和前后截图；
+- UI 证据优先记录路由、环境、视口、数据集和程序化状态断言；确需截图时只保留目标区域的前后各 1 张；
 - API 证据记录请求摘要、状态码和关键字段，不记录 token/cookie；
 - 数据库写入必须先通过 `check-data-write`；证据只记录脱敏操作摘要，不记录敏感值；
 - 模拟结果必须标 `SIMULATED`，未执行项必须标 `SKIPPED` 并说明原因；
