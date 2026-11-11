@@ -1,9 +1,9 @@
 # 缺陷修复报告：2254 技术发展跟踪，地理分布图展示，筛选不同技术类型分布图无反应
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-11T12:27:41.615+08:00
+> 生成时间：2026-11-11T13:11:12.259+08:00
 > 当前 cycle：cycle-001-20261111T120927+0800
-> 当前内部阶段：READY_SHIP
+> 当前内部阶段：BLOCKED
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -50,12 +50,13 @@
 | E-2254-TRACKING-TEST | command | PASS | yes | yes | PENDING | cfca2edb62b56c6f919fb82d2c7219c2a5de4449 | 技术发展跟踪自检通过：原有标题回归 + 技术类型筛选与主类型颜色切换 |
 | E-2254-TYPECHECK | command | PASS | yes | yes | PENDING | cfca2edb62b56c6f919fb82d2c7219c2a5de4449 | vue-tsc 类型检查通过 |
 | E-2254-BUILD | command | PASS | yes | yes | PENDING | cfca2edb62b56c6f919fb82d2c7219c2a5de4449 | Vite 生产构建通过；仅保留仓库既有的 chunk/unocss 警告 |
+| E-2254-FRONTEND-IMAGE-FAIL | pipeline | FAIL | yes | yes | PENDING | 71ac9e0b3558131879851e67a6165a5e701baa02 | frontend:image 连续两次因 Harbor 登录 unauthorized 失败；frontend:build 和 sonar:scan 已成功，非代码或测试失败 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:6597cba549732d43b92ece5555e6568d0fbcaa3a6098ef75f4355bf2f9757fdc；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:11c4ebd10dbe20a5cb6dfebde58e100c6dce7935d6064e2c7d5beebdb8c0b24c；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -82,8 +83,8 @@ DB 写证据授权：
 
 ## 8. failure stage、failure class 和返工轮次
 
-- failure_stage：PENDING
-- failure_class：PENDING
+- failure_stage：pipeline
+- failure_class：environment_or_release
 - patch_round：0
 
 ## 9. 提测信息
@@ -110,11 +111,11 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:72edddd4f66e830d51d70facdeb27ae933ec5c9d813a771128d23526adffadaa |
-| ship | pending | PENDING | PENDING |
+| ship | invalidated | 提测 | sha256:6776192e190dd9edbd837beb293dc86ef8bd04961e78926f306e34ea9a9e5bec |
 
 enter_dev bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"49df406da73d6cdc5e2c607c16bbf8d5489e8985","candidate_sha":null,"planned_change_scope":["src/views/situation/tracking/models/trackingMapFilter.ts","src/views/situation/tracking/components/ResultDashboard.vue","src/views/situation/tracking/tracking.test.mjs"]}],"diagnosis_hash":"sha256:5cec4fa5fb894aa51a5c67563dec04e93d54306d89531cd1d63de7b68517e567","plan_hash":"sha256:cb4b00da20f0e348d21743337eae6804a3b79f69fa27fbeb544737aa5b39aa87","risk_level":"S","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}
 
-ship bound_to：PENDING
+ship bound_to：{"repos":[{"repo_id":"ui_pc","candidate_sha":"cfca2edb62b56c6f919fb82d2c7219c2a5de4449","diff_hash":"sha256:3af1fed372003979a958c778d9f0c86a160d3966a84a8f0000ad8274941a9f38","verification_hash":"sha256:d918af98ea62159300873b5dec2cabca124dae385aa966fe4bd5b6433cf43147","review_hash":"sha256:2f9714d800bf00bef098091ed9fd0a5b55c6a3bf8dbfb254e9272ed0dd0260a7","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}],"risk_level":"S","deploy_target":"dev"}
 
 ## 12. 自动决策摘要
 

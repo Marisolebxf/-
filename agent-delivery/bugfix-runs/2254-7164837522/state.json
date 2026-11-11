@@ -32,7 +32,7 @@
     "current_owner": "徐滕强",
     "takeover_history": []
   },
-  "phase": "READY_SHIP",
+  "phase": "BLOCKED",
   "risk": {
     "level": "S",
     "reasons": [
@@ -256,8 +256,41 @@
       }
     },
     "ship": {
-      "status": "pending",
-      "bound_to": null
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:徐滕强",
+      "approved_at": "2026-11-11T13:00:25.308+08:00",
+      "approved_session_id": "codex-7164837522-20261111T120413-cdc4aabd",
+      "approved_machine_id": "xutengqiang-mac",
+      "claim_id": "codex-7164837522-20261111T120413-cdc4aabd",
+      "message_ref": "chat-2026-11-11-2254-ship",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v6",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "cfca2edb62b56c6f919fb82d2c7219c2a5de4449",
+            "diff_hash": "sha256:3af1fed372003979a958c778d9f0c86a160d3966a84a8f0000ad8274941a9f38",
+            "verification_hash": "sha256:d918af98ea62159300873b5dec2cabca124dae385aa966fe4bd5b6433cf43147",
+            "review_hash": "sha256:2f9714d800bf00bef098091ed9fd0a5b55c6a3bf8dbfb254e9272ed0dd0260a7",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "S",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:6776192e190dd9edbd837beb293dc86ef8bd04961e78926f306e34ea9a9e5bec",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T13:00:39.439+08:00",
+        "validator_version": "bugflow-state-p0-v6",
+        "actual": "sha256:6776192e190dd9edbd837beb293dc86ef8bd04961e78926f306e34ea9a9e5bec",
+        "expected": "sha256:6776192e190dd9edbd837beb293dc86ef8bd04961e78926f306e34ea9a9e5bec",
+        "errors": []
+      }
     }
   },
   "ship_package": {
@@ -353,14 +386,40 @@
       "gate_hash": null,
       "evidence_refs": [],
       "summary": "修复、回归、类型检查、构建和证据校验均 PASS，等待提测授权"
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-11T13:00:39.440+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "codex-7164837522-20261111T120413-cdc4aabd",
+      "session_id": "codex-7164837522-20261111T120413-cdc4aabd",
+      "gate": "ship",
+      "gate_hash": "sha256:6776192e190dd9edbd837beb293dc86ef8bd04961e78926f306e34ea9a9e5bec",
+      "evidence_refs": [],
+      "summary": "用户已批准提测，进入推送、合并 dev 和部署验证"
+    },
+    {
+      "from": "SHIPPING",
+      "to": "BLOCKED",
+      "at": "2026-11-11T13:10:49.852+08:00",
+      "result": "BLOCKED",
+      "validator_version": "bugflow-state-p0-v6",
+      "claim_id": "codex-7164837522-20261111T120413-cdc4aabd",
+      "session_id": "codex-7164837522-20261111T120413-cdc4aabd",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "frontend:image 连续两次因 Harbor 登录 unauthorized 失败，无法产出新镜像并部署 dev"
     }
   ],
-  "failure_stage": null,
-  "failure_class": null,
+  "failure_stage": "pipeline",
+  "failure_class": "environment_or_release",
   "patch_round": 0,
-  "blocked_from": null,
-  "resume_phase": null,
-  "resume_condition": null,
+  "blocked_from": "SHIPPING",
+  "resume_phase": "SHIPPING",
+  "resume_condition": "修复 HARBOR_USERNAME/HARBOR_PASSWORD 或 Harbor 项目权限后，重新执行流水线 4797 的 frontend:image 与 deploy:k8s",
   "cancellation": null,
   "decisions": [],
   "artifacts": {
@@ -371,14 +430,15 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-11T12:26:56.978+08:00",
-      "manifest_hash": "sha256:6597cba549732d43b92ece5555e6568d0fbcaa3a6098ef75f4355bf2f9757fdc",
-      "item_count": 4,
+      "checked_at": "2026-11-11T13:11:12.128+08:00",
+      "manifest_hash": "sha256:11c4ebd10dbe20a5cb6dfebde58e100c6dce7935d6064e2c7d5beebdb8c0b24c",
+      "item_count": 5,
       "evidence_ids": [
         "E-2254-BUG-SCREENSHOT",
         "E-2254-TRACKING-TEST",
         "E-2254-TYPECHECK",
-        "E-2254-BUILD"
+        "E-2254-BUILD",
+        "E-2254-FRONTEND-IMAGE-FAIL"
       ],
       "evidence_results": {
         "E-2254-BUG-SCREENSHOT": {
@@ -400,6 +460,11 @@
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
+        },
+        "E-2254-FRONTEND-IMAGE-FAIL": {
+          "result": "FAIL",
+          "reviewable": true,
+          "raw_retained": true
         }
       },
       "non_reviewable": [],
@@ -413,10 +478,17 @@
   "cost_summary": {
     "status": "UNAVAILABLE"
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "reason": "frontend:image 连续两次因 Harbor 登录 unauthorized 失败，无法产出新镜像并部署 dev",
+      "owner": "CI/Harbor 管理员",
+      "resume_condition": "修复 HARBOR_USERNAME/HARBOR_PASSWORD 或 Harbor 项目权限后，重新执行流水线 4797 的 frontend:image 与 deploy:k8s",
+      "at": "2026-11-11T13:10:49.852+08:00"
+    }
+  ],
   "next_action": {
-    "owner": "agent",
-    "action": "展示提测绑定对象并取得精确口令。"
+    "owner": "CI/Harbor 管理员",
+    "action": "frontend:image 连续两次因 Harbor 登录 unauthorized 失败，无法产出新镜像并部署 dev"
   },
-  "updated_at": "2026-11-11T12:27:41.616+08:00"
+  "updated_at": "2026-11-11T13:11:12.262+08:00"
 }
