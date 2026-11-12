@@ -61803,8 +61803,8 @@ tasks:
     last_seen_at: "2026-11-11T09:54:48.824Z"
     lock_until: "2026-11-12T09:54:48.824Z"
     claimed_by: "agent:data-agent"
-    title: "T03 七要素入图·人才与机构组（M01/M02/M03/M04/M20）"
-    status: "ready_to_sign"
+    title: "T03 七要素入图·人才与机构组（M01/M04；M03/M20=0，M02 已移交 T02）"
+    status: "done"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61823,7 +61823,9 @@ tasks:
       M04 只灌工作经历 experience_type=2（84,589 行），学历 type=1（56,304）不进图；is_current 99.98% 为空不可筛，改按 end_year 推导；同机构多段合并成一条边、stint_count 记段数；排除 company 420 行后去重 72,503 条。
       共同要求：科研机构端点一律排除 company；新边带 props.batch=comply-<日期>-t03；不得复用企业域 research_coop/talent_coop 脚本（端点是 enterprise→x）。
       执行侧状态（宋飞扬 2026-11-11 17:54）：实体先探后补，M01 合作去重聚合、M04 仅工作并去重；M02 已不在本节范围，无需再准备；正在固定源快照与执行前核验。
-      2026-11-11 18:54 执行完成并通过真实图库独立核验：person100000/research83745逐VID均已存在、保留属性；M01 cooperate 2525789、M04 belong 72099均带comply-2026-11-11-t03。M04原72503含404个company唯一对，排除后分母72099，源SQL及解释已交付。M03/M20本期0；M02按832923ec移交T02，不由T03写入。机构类型83745全量一致，M22存量94824保持；33项回归通过，全量5565批无缺端点或遗留失败。详见handoff及燕大/T03/verification.json。实际tokens/cost当前平台未提供，待账单回填。
+      2026-11-11 18:54 执行完成并通过真实图库独立核验：person100000/research83745逐VID均已存在、保留属性；M01 cooperate 2525789、M04 belong 72099均带comply-2026-11-11-t03。M04原72503含404个company唯一对，排除后分母72099，源SQL及解释已交付。M03/M20本期0；M02按832923ec移交T02，不由T03写入。机构类型83745全量一致，M22存量94824保持；33项回归通过，全量5565批无缺端点或遗留失败。
+      2026-11-12 13:13 唐绍祖技术验收通过并签收 → done：M04 分母 72,099 已复核（我独立 SQL 复算：工作行 84,589、唯一对 72,503、其中 company 对 404 → 72,099，排除企业后行 84,169 / 唯一对 72,099，与其 SQL 完全一致，原 72,503 口径作废，T07 按 72,099 对账）。M01 2,525,789 与 M03/M20 记 0 条口径符合裁定。person/research 点由 T04（韩梦蕊 18:28 交付）先行全量写入并保留属性，T03 以「已存在跳过」处理、未覆盖，点数只计一份，无重复计入。
+      遗留（不阻塞）：T04 对账单 §34 已提示 T03 若需覆盖写须先对齐列集，本期无需覆盖；成本字段待平台账单回填。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61831,7 +61833,7 @@ tasks:
     definition_of_done:
       - "先补 person（100,000）/research（83,745，含 15,392 企业）端点，再灌 M01/M04，带 props.batch=comply-<日期>-t03"
       - "M01 只建 cooperate 一条、无向去重 2,525,789；M20 记 0（与 M01 同源重复）"
-      - "M04 只灌 experience_type=2 工作经历、同机构多段合并（stint_count）、排除 company 后 72,503 条，方向 person→research"
+      - "M04 只灌 experience_type=2 工作经历、同机构多段合并（stint_count）、排除 company 后 72,099 条，方向 person→research"
       - "M03 记 0 条并附理由（源表 202,795 行端点 100% 为 company，属人才-企业合作）"
       - "M02 不在本节（已移交 T02）；对账单 cooperate 仅统计 person→person 一组；不碰 M05"
     update_time: "2026-11-11T19:05:20+08:00"
@@ -61899,7 +61901,7 @@ tasks:
     lock_until: "2026-11-11T11:52:55.763Z"
     claimed_by: "agent:algorithm-agent"
     title: "T08 图算法作业·路径搜索批（423–427）"
-    status: "ready_to_sign"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61909,7 +61911,12 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "AV-0 已通过，代码、实跑结果和独立复核证据已交付。待负责人确认倒数置信度代价公式及旧基线差异后签收。"
+    note: |
+      AV-0 已通过，代码、实跑结果和独立复核证据已交付。
+      2026-11-12 13:13 唐绍祖技术验收通过并签收 → done：10 对全部可达、BFS/Dijkstra 各出最短路、每对 5 条备选（共 50 条）；质量自检 null_confidence=0 / invalid=0 / 悬空端点=0 / 自环=0 / 重复无向对=0，置信度区间 27.07971–100；10 对全部通过路径边有效、BFS 最少跳、Dijkstra 最低代价、5 条简单备选四项检查。
+      **代价公式裁定：本批采用 cost = 1 / relation_confidence_score，予以确认并作为 2026-11-11 批正式口径归档。** 依据：旧材料仅给出置信度字段与算法名称、未发布转换公式，1/x 是单调递减的标准倒数变换，语义上「置信度越高代价越低」正确；本批 10 对加权与无权跳数全相同但 6 对代价严格改进（weighted_cost_improved_pairs=6），说明权重确已读入、未静默退化为 1.0，满足我 2026-11-08 会签所列「加权与无权必须有差异」的自检目的（该条判据以「代价差异」而非「跳数差异」为准，此处更正表述）。
+      已知差异（接受，不返工）：BFS 跳数 10 对全部与 11-07 基线一致；Dijkstra 跳数第 2、7、9 对与旧 JSON 不同。旧 JSON 未保存加权路径序列、总代价与公式，无法证明与旧实现等价；又 11-07 Markdown 写「4 对加权跳数更大」而其 JSON 实为 3 对，旧侧自身存在文实不符。本批以「自身可复跑 + 独立复核通过」为准，差异如实留档。
+      后续如业务要「短链优先」而非「高置信优先」，1/x 在小置信度段会被放大（x→0 时 cost→∞），届时另立口径（候选 1−x/100 或分档），不在本期改。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61918,7 +61925,8 @@ tasks:
       - "只读复跑 10 对技术点 BFS + Dijkstra，输出对齐 2026-11-07 实跑 JSON"
       - "权重用 e.relation_confidence_score（禁 e.tech_rel.*），空值率=0，加权与无权必须有差异"
       - "不可达返回空态；不写回图；不用 M22 冒充场景路径"
-    update_time: "2026-11-11T16:26:56+08:00"
+      - "代价公式 cost=1/relation_confidence_score 已裁定为本批口径；加权与无权的差异以「代价改进」判定（跳数可相同）"
+    update_time: "2026-11-12T13:13:00+08:00"
   - id: KG-COMPLY-LOAD-T09
     cost_warn: "yellow"
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T09.md"
@@ -63851,7 +63859,7 @@ tasks:
       - "合规用例补形态期望"
       - "handoff 与 cost 回填"
     update_time: "2026-11-12T00:21:48+08:00"
-- id: POL-SIM-HEADER-SCORE-DATA
+  - id: POL-SIM-HEADER-SCORE-DATA
     cost_warn: "green"
     model_used: "glm-5.3-flash"
     evidence: |
