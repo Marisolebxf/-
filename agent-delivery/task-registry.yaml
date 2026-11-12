@@ -62025,8 +62025,15 @@ tasks:
       - "不做 42–47 写操作、不做推荐模型"
     update_time: "2026-11-09T15:11:29+08:00"
   - id: KG-COMPLY-LOAD-T06
+    cost_warn: "yellow"
+    evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T06.md"
+    supervised_by: "human:陈芸飞"
+    claimed_at: "2026-11-12T07:39:42.293Z"
+    last_seen_at: "2026-11-12T07:39:42.293Z"
+    lock_until: "2026-11-12T11:39:42.293Z"
+    claimed_by: "agent:data-agent"
     title: "T06 四条现存边语义对齐报告（apply_to/support/participates/belongs_to）"
-    status: "ready"
+    status: "review"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -62037,12 +62044,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 30000
     note: |
-      SDD §5 T06；建议执行人 human:陈芸飞。前置三任务已于 2026-11-12 全部签收（T02/T03/T04 均 done），本节可开始认领。
-      2026-11-12 15:10 唐绍祖预取的首批事实（供起步参考，不代替正式报告，结论仍需执行人按三类出建议）：
-      **① apply_to 与 support 是同一批关系的两个名字，100% 完全重合。** 实测两条边各 10,957 条、去重端点对亦各 10,957 对，「起点+终点」完全相同的有 10,957 对，重合率 100.00%，apply_to 独有 0、support 独有 0。DoD 阈值是 >90% 即写「建议停读一条」，本例是**完全重复而非高度重合**，可直接判「建议停读一条」，不存在需要保留的独有子集。
-      **② participates 两层拆分已核**：`enterprise`→`segment` 178,731（对应 M17）、`institution`→`institution` 34,769（不属 M17/M18，见 T02 卡片「不得映射」），两层合计 213,500。
-      **③ 读图注意**：`apply_to`/`support` 各 10,957 条属存量，无批次戳；不要用 ETL 批次过滤把它们筛掉。
-      **④ 环境注意**：图库 10.50.75.136:9669 已触发内存高水位（`Used memory hits the high watermark(0.800000)`），无 Tag 锚定的全表扫描基本失效（连接间歇超时、大聚合被拒）；`MATCH ()-[e:apply_to]->()` 这类全扫需改为按端点 Tag 锚定，取端点对明细时可分批 `LIMIT`。
+      2026-11-12 陈芸飞授权认领，前置T02/T03/T04均done。15:43-15:44按Tag锚定只读复核：apply_to/support各10957，端点交集10957、重合100%、独有0；新增发现全量weight分别0.6/0.8，props解析后相同，不能宣称全属性相同。participates企业→环节178731=M17，服务机构→服务机构34769不得映射M02/M19/M17/M18，建议另名保留。belongs_to环节→链359，覆盖359/1414，未挂链1055。100条样本、全量端点对、独立SQLite交集及属性核验通过。三类建议见正式报告，停读/权重/改名交唐绍祖与徐滕强裁定；不写库、不切换接口。高水位仍需避免全表扫描。handoff: agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T06.md；实际token/费用不可得。
     depends_on:
       - "KG-COMPLY-LOAD-T02"
       - "KG-COMPLY-LOAD-T03"
@@ -62054,7 +62056,7 @@ tasks:
       - "含 apply_to/support 跨边重合率（起点+终点同对），>90% 写「建议停读一条」"
       - "participates 拆两层：enterprise→segment 178,731（M17）/ institution→institution 34,769"
       - "结论分可映射/需改名/不得映射三类并指明条数，裁定交唐绍祖/徐滕强"
-    update_time: "2026-11-09T15:11:35+08:00"
+    update_time: "2026-11-12T15:47:47+08:00"
   - id: KG-COMPLY-LOAD-T13
     title: "T13 入图过程复用手册（执行器参数化）"
     status: "backlog"
@@ -64619,7 +64621,7 @@ tasks:
     update_time: "2026-11-12T04:09:10+08:00"
   - id: SVC-SCALE-BAND-INGEST-L01
     title: "服务机构规模四档灌数：ADS svc_metric_dist 补 M_SVC_SCALE_BAND 四行"
-    status: "backlog"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-SVCCHAIN-PORTAL"
     priority: "P1"
@@ -64629,15 +64631,14 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      来源：飞书缺陷【2331】7165821949（门户-集群服务-专题，人员规模分布无图和数据，已 RESOLVED，前端空态已改「暂无数据」，2026-11-12）。链路：前端 scale_bands ← Python _dist() ← ADS gkxlumenx_demo_ads.svc_metric_dist（metric_id=M_SVC_SCALE_BAND 当前无行）。口径冲突注意：repo.py 查询键是 M_SVC_SCALE_BAND，注册表口径 ID 是 M_SVC_PT_GLOBAL_SCALE_DIST，灌数前先对齐键名；pending_cosign：human:唐绍祖 2026-10-16 三伤待复核（列名/币种归一/兜底档单列）。
+    note: "灌数完成：ADS 六桶写入+对账通过（44,153）；查询键 M_SVC_SCALE_BAND 六行非空；matrix/seed D4 翻转与 handoff 收尾中"
     definition_of_done:
       - "ADS svc_metric_dist 写入 metric_id=M_SVC_SCALE_BAND 四档行（0-50/50-200/200-500/500+，口径按 M_SVC_PT_GLOBAL_SCALE_DIST calc-logic 徐滕强 2026-10-13 v0.2.0 拍板：人数优先→注册资本兜底）"
       - "六桶合计与机构池对账通过，不缺行不填 0 冒充"
       - "专题门户概况页「规模分析·人员规模分布」出图（/svc/topic/v1/service-portal/overview scale_bands 非空）"
       - "指标注册表 M_SVC_PT_GLOBAL_SCALE_DIST D4 由 mock 翻 ingesting/live，阶段清单同步"
       - "handoff 写入 agent-delivery/agent-handoffs/ 并回填 cost 字段"
-    update_time: "2026-11-12T14:24:00+08:00"
+    update_time: "2026-11-12T15:38:54+08:00"
   - id: SYSINT-04-01-API-INDFILTER-L01
     title: "专题一张图 · 下游端点产业过滤整改（type-scale-stats / district-heat + Java 透传）"
     status: "backlog"

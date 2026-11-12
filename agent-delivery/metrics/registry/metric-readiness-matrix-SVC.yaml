@@ -13,13 +13,14 @@
 #   - D1=aligned 仅当 8 件套+version 全齐（definition≥50 字、algorithm_type≠UNKNOWN 等）。
 # ----------------------------------------------------------------------------
 # 本域分布：51 条｜D1 aligned 51 / draft 0｜D3 full 5 / partial 43 / none 3 / pending_ods 0｜本批新增 0 条、D3 有据升级 6 条、派生件 2 条。
+# 2026-11-12 SVC-SCALE-BAND-INGEST-L01：M_SVC_PT_GLOBAL_SCALE_DIST D4 mock→ingesting（ADS 六桶灌数+对账，verified 待 QA；全域首个 ingesting）。
 
 version: 1
 module: SVC
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-10-23"
-as_of: "2026-10-23"
+updated: "2026-11-12"
+as_of: "2026-11-12"
 d2_verifier: lineage-subcoord
 d4_batch: algolib_launch_20261023
 register_task: E-METRIC-ALGOLIB-LAUNCH-L01
@@ -823,10 +824,14 @@ metrics:
     d3_gap: >
       20261021 批口径：部分支持 → D3=partial。注册资本兜底链覆盖 99.84%（44,032/44,153 入桶，含 foreign/unknown 单列），六桶合计与池全
       对账；但员工数主链只有 1,582 家（3.58%）有值，规模刻画的第一指标不可用，且「全球」轴境外机构无源 → 部分支持
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: "n/a", dwd_loaded: "n/a", es_indexed: "n/a", graph_loaded: "n/a", verified: in_progress }
     d4_note: >
-      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+      2026-11-12 SVC-SCALE-BAND-INGEST-L01：ADS demo_gkxlumenx_ads.svc_metric_dist 落 M_SVC_SCALE_BAND 六桶
+      （487/4,594/3,000/34,413/1,589/70，合计=池 44,153 对账通过；查询键 M_SVC_SCALE_BAND，注册表 ID=M_SVC_PT_GLOBAL_SCALE_DIST，
+      映射登记在行内 ext.registry_metric_id）。数据为 metrics/repro 20261022 gkx 快照实算值（非 fixture）。
+      路径=gkx 快照→复算→ADS 直写，不经我方 ODS/DWD/ES（对应阶段 n/a）；线上服务出数与 QA 四段链路核验未做
+      → verified in_progress，保持 ingesting 不升 live。原记录：算法服务未上线时保持 mock（阶段2 随接入清单翻转）。
     lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
