@@ -62062,7 +62062,7 @@ tasks:
     update_time: "2026-11-12T15:47:47+08:00"
   - id: KG-COMPLY-LOAD-T13
     title: "T13 入图过程复用手册（执行器参数化）"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P1"
@@ -62072,7 +62072,17 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 25000
-    note: "SDD §5 T13；建议执行人 human:白鑫凤"
+    note: |
+      SDD §5 T13；建议执行人 human:白鑫凤。
+      **2026-11-12 16:20 唐绍祖置 ready（应白鑫凤认领）**：depends_on 三项 T02 / T03 / T04 均已签收 done，无其他 blocked_by，置 ready 不破依赖。白鑫凤本人 T01 / T05 均 done，手上无在办任务，可直接认领。
+      **写手册前必读（本批已定案口径，直接决定手册能不能用）**：
+      ① **对账模板必须落「分组」铁律四条**（违反任一条总数都对不上）：cooperate 一边型装四条 M 须四行分组（M01 person→person 2,525,789 / M02 research→research 3,442,271 / M03 person→research 0 / M22 enterprise→enterprise 94,824），禁用合计 6,062,884 当任一关系成果；participates 三层分组（M17 enterprise→segment 178,731 / M18 institution→segment 0 / 不属 M17·M18 的 institution→institution 34,769 单列）；participate（单数，M07/M08）与 participates（复数，M17/M18）是两个边型只差一个 s；cite 同时覆盖 M06 与 M16 须按端点拆。
+      ② **批号筛一律 `e.props CONTAINS "<批号>"`，禁止 `STARTS WITH '{"batch"'`**——T02 的 props 里 batch 不在 JSON 首位，照抄 T03 写法会返回 0（已实际踩过）。
+      ③ **T06 四项裁定要写进参数表与对账模板**：apply_to 与 support 端点 100% 重合但 weight 分别恒 0.6 / 0.8（每条边一个常数），**停读 support、单读 apply_to、weight 一律不作强度**；institution→institution 34,769 本期不改名（service_relate 仅正式线备选），不得映射 M02/M19/M17/M18；belongs_to 359/1,414（未挂链 1,055）为结构归属、不映射 M01–M24、缺口本期不补。
+      ④ **M08/M09 的 weight 恒为 1.0**，手册若写加权步骤须注明「无强度信息」，不得拿 Σweight 当业务量。
+      ⑤ **DoD 里「换 space 名即可复跑到 gkx_chain」按现状要改口径**：T11 实测正式线 `gkx_chain` **当前不存在**（`SHOW SPACES` 只有 demo_gkx_chain，与 architecture-baseline v2.2.15 一致）。手册应写「正式线空间建成后，换 space 名 + 按 T11 对照清单补建 9 Tag/24 边后复跑」，不要写成「现在换名就能跑」。
+      ⑥ 环境限制：图库 10.50.75.136:9669 已触发内存高水位 0.800000，全表扫描与大聚合被拒（`sum(weight)` 518 秒后被拒），手册的复跑步骤须一律写「Tag 锚定 + 分批 LIMIT」，不得写全表扫描。
+      边界：不实际在 gkx_chain 复跑、不写成正式加工派单、不写库。手册落 07-图数据库集成目录。
     depends_on:
       - "KG-COMPLY-LOAD-T02"
       - "KG-COMPLY-LOAD-T03"
@@ -62085,8 +62095,13 @@ tasks:
       - "不实际在 gkx_chain 复跑；不写成正式加工派单"
     update_time: "2026-11-09T15:11:38+08:00"
   - id: KG-COMPLY-LOAD-T12
+    supervised_by: "human:李周"
+    claimed_at: "2026-11-12T08:12:24.043Z"
+    last_seen_at: "2026-11-12T08:12:24.043Z"
+    lock_until: "2026-11-12T12:12:24.043Z"
+    claimed_by: "agent:api-agent"
     title: "T12 后台接口契约与压测建议（两案通用）"
-    status: "ready"
+    status: "in_progress"
     agent: "api-agent"
     epic: "E-SCI-INT"
     priority: "P1"
@@ -62096,15 +62111,18 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 35000
-    note: "SDD §5 T12；建议执行人 human:李周。
-**2026-11-12 15:55 唐绍祖置 ready（应 human:李周 飞书请求）**：逐项核对 depends_on 三项 T08 / T09 / T10 均已签收 done，无其他 blocked_by，置 ready 不破依赖；李周认领即可开工。答复文档：KG-COMPLY-答复-李周-T12开工确认-20261112.md（含四条上游红线）。
-**开工前必读四条（上游实测，直接决定契约对错）**：
-① **428 不可直接返回 tech_point.weighted_degree**——SDD §2.1 #6「直接读字段、无需重算」按现库不成立：榜首存 1010.90780192，按现存 2,914 条入边 Σconfidence/100 为 1478.05，Top10 比值 0.519–0.719 漂移无恒定系数，全库 Σwd 195,473.59 vs Σconf/100 260,019.52 比值 0.752 与点级不一致，分 evidence_level / direction_status / relation_type 求和均凑不出 1010.91 → 判定陈旧。契约须改返回 T09 重算榜 recomputed_degree_top20（带 metric_source）或明写口径待确认。影响 428 整榜 + 432 的 25% 分项。
-② **两个度数口径必须写死**：weighted_degree=边权重和（榜首 1010.91）、degree=入射边条数（2914），pearson 0.9515，数值不可互换。
-③ **435 avg_degree 口径要钉死且无 density 列**：社群 55（规模 639 / 内部边 4,985）报 31.21 = 4E/N，标准无向 2E/N 为 15.60，差一倍；汇总表当前无 density，437 若按 avg_degree 调节点大小会整体放大一倍；density 若前端要须声明本期不提供走空态，禁自算填充。
-④ **501 全清单只有 2 条**（SDD §2 明列）：第 1 列 #14（436 社群演化，缺多期数据）、第 2 列 #5（M22 cooperate 94,824 条，最大连通片仅 220/208,394）。M22 是「有数据但形态不可用」，必为 501 不可返回空态，且 501 与空态响应体须可区分，否则前端会显示成「暂无数据」。
-补充口径：M03 belong 有源但两端 100% 为 company → **空态非 501**；M08/M09 的 weight 恒为 1.0，契约暴露 weight 须注明无强度信息。
-边界：两案通用（SDD §4），不选落点、不写实现、不新增 Tag/Edge、契约不含连接串与凭证。李周同人还持 T07（等 T06）/ T11（等 T07），建议顺序 T12 先行。"
+    note: |
+      SDD §5 T12；建议执行人 human:李周。
+      **2026-11-12 15:55 唐绍祖置 ready（应 human:李周 飞书请求）**：逐项核对 depends_on 三项 T08 / T09 / T10 均已签收 done，无其他 blocked_by，置 ready 不破依赖；李周认领即可开工。答复文档：KG-COMPLY-答复-李周-T12开工确认-20261112.md（含四条上游红线）。
+      **开工前必读四条（上游实测，直接决定契约对错）**：
+      ① **428 不可直接返回 tech_point.weighted_degree**——SDD §2.1 #6「直接读字段、无需重算」按现库不成立：榜首存 1010.90780192，按现存 2,914 条入边 Σconfidence/100 为 1478.05，Top10 比值 0.519–0.719 漂移无恒定系数，全库 Σwd 195,473.59 vs Σconf/100 260,019.52 比值 0.752 与点级不一致，分 evidence_level / direction_status / relation_type 求和均凑不出 1010.91 → 判定陈旧。契约须改返回 T09 重算榜 recomputed_degree_top20（带 metric_source）或明写口径待确认。影响 428 整榜 + 432 的 25% 分项。
+      ② **两个度数口径必须写死**：weighted_degree=边权重和（榜首 1010.91）、degree=入射边条数（2914），pearson 0.9515，数值不可互换。
+      ③ **435 avg_degree 口径要钉死且无 density 列**：社群 55（规模 639 / 内部边 4,985）报 31.21 = 4E/N，标准无向 2E/N 为 15.60，差一倍；汇总表当前无 density，437 若按 avg_degree 调节点大小会整体放大一倍；density 若前端要须声明本期不提供走空态，禁自算填充。
+      ④ **501 全清单只有 2 条**（SDD §2 明列）：第 1 列 #14（436 社群演化，缺多期数据）、第 2 列 #5（M22 cooperate 94,824 条，最大连通片仅 220/208,394）。M22 是「有数据但形态不可用」，必为 501 不可返回空态，且 501 与空态响应体须可区分，否则前端会显示成「暂无数据」。
+      补充口径：M03 belong 有源但两端 100% 为 company → **空态非 501**；M08/M09 的 weight 恒为 1.0，契约暴露 weight 须注明无强度信息。
+      边界：两案通用（SDD §4），不选落点、不写实现、不新增 Tag/Edge、契约不含连接串与凭证。李周同人还持 T07（等 T06）/ T11（等 T07），建议顺序 T12 先行。
+
+      **2026-11-12 16:12 李周（agent:api-agent）认领开工**：其认领提交 eeb2f740b 复核 T08/T09/T10 均 done 后置 in_progress，开始整理 SDD §2 的 23 项结果三态与 §4 两案压测建议，初稿供唐绍祖评审。
     depends_on:
       - "KG-COMPLY-LOAD-T08"
       - "KG-COMPLY-LOAD-T09"
@@ -62115,7 +62133,7 @@ tasks:
       - "契约建议书覆盖 §2 全部 23 条算法结果形态，每端点写成功/501/空态三态"
       - "附两案效率压测要点（读图端到端延迟、结果查询并发）"
       - "不选定落点、不写实现、不出现新 Tag/Edge 与凭证"
-    update_time: "2026-11-09T15:11:41+08:00"
+    update_time: "2026-11-12T16:12:58+08:00"
   - id: KG-COMPLY-LOAD-T07
     title: "T07 入图验收总表（M01–M24）"
     status: "ready"
@@ -64362,7 +64380,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "卡2=B。COVER-FDE 先闭合界面五要素；本单后置真 NLP async。"
+    note: "2026-11-12 监管人改选方案C：可搜任意政策+异步真算。计划见 sdd/简报/2026-11-12-SIM-237-ASYNC-方案C-计划.md。待「按此计划开始」再升 ready/开工。禁 run() 清空整表。"
     depends_on:
       - "POL-L2-DS12-SIM-237-COVER-FDE-L01"
     collaborators:
@@ -64377,7 +64395,7 @@ tasks:
       - "注册 M_POLICY_TEXT_PARSE 可调用服务边界与 async 白名单变更清单"
       - "不在本叶改展示 FE 五要素固定标签（属 COVER-FDE）"
       - "会签通过后再拆实现叶"
-    update_time: "2026-11-12T03:21:03+08:00"
+    update_time: "2026-11-12T16:07:06+08:00"
   - id: POL-L2-DS12-SIM-238-COVER-FDE-L01
     cost_warn: "green"
     actual_cost: 4.5
@@ -64623,8 +64641,13 @@ tasks:
       - "handoff与cost回填"
     update_time: "2026-11-12T04:09:10+08:00"
   - id: SVC-SCALE-BAND-INGEST-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/服务机构-SVC/SVC-SCALE-BAND-INGEST-L01.md"
+    cost_warn: "green"
+    actual_tokens: 45000
+    actual_cost: 0.4
     title: "服务机构规模四档灌数：ADS svc_metric_dist 补 M_SVC_SCALE_BAND 四行"
-    status: "in_progress"
+    status: "done"
     agent: "data-agent"
     epic: "E-SVCCHAIN-PORTAL"
     priority: "P1"
@@ -64634,14 +64657,14 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "灌数完成：ADS 六桶写入+对账通过（44,153）；查询键 M_SVC_SCALE_BAND 六行非空；matrix/seed D4 翻转与 handoff 收尾中"
+    note: "淮政玮代签（授权链：会话用户 human:徐滕强 2026-11-12 指示签收「数据mock通过了」，线上门户规模分布出图出数目视验收通过）。QA 环节经用户裁定跳过（灌数单，DB 对账+查询路径+线上目视三重验证）。"
     definition_of_done:
       - "ADS svc_metric_dist 写入 metric_id=M_SVC_SCALE_BAND 四档行（0-50/50-200/200-500/500+，口径按 M_SVC_PT_GLOBAL_SCALE_DIST calc-logic 徐滕强 2026-10-13 v0.2.0 拍板：人数优先→注册资本兜底）"
       - "六桶合计与机构池对账通过，不缺行不填 0 冒充"
       - "专题门户概况页「规模分析·人员规模分布」出图（/svc/topic/v1/service-portal/overview scale_bands 非空）"
       - "指标注册表 M_SVC_PT_GLOBAL_SCALE_DIST D4 由 mock 翻 ingesting/live，阶段清单同步"
       - "handoff 写入 agent-delivery/agent-handoffs/ 并回填 cost 字段"
-    update_time: "2026-11-12T15:38:54+08:00"
+    update_time: "2026-11-12T16:08:10+08:00"
   - id: SYSINT-04-01-API-INDFILTER-L01
     title: "专题一张图 · 下游端点产业过滤整改（type-scale-stats / district-heat + Java 透传）"
     status: "backlog"
@@ -64655,7 +64678,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 150000
     note: |
-      来源：2026-11-12 智谱反馈切换产业数据不变。根因=被复用的两个既有端点全市口径无产业入参（需求草案 v0.2 当时按『复用既有端点』放行，联调暴露不满足切换产业场景）。排查汇总：agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-12-专题一张图-切换产业问题排查汇总.md。监督：human:徐滕强。注意：INB17xx 旧码不在本单范围（需另行决策灌数或映射）；政策区级空值走 SYSINT-04-01-DATA-POLDIST-L01。
+      代码级复核（徐滕强会话 2026-11-12）：DoD 第1/2条 EXISTS 过滤方案不可行——enterprise_type_scale_stats 与 enterprise_region_summary 均无 chain_code 列（实测），enterprise_industry_distribution 0 行；底表 enterprise_base 无 company_type/enterprise_scale 列。可行方案与拆单建议见排查汇总 §6（type-scale-stats 换数据源 one_map_* 预聚合；district-heat 现算 JOIN 或 ETL 补维度）；另注意新旧码并存双算风险（复用 _resolve_chain_codes 收敛）。执行前须按 §6.2 更新 DoD
     depends_on: []
     touched_files:
       - "repos/lumen-topic-py/gkx_search_service/views/enterprise_key_enterprise.py"
@@ -64668,7 +64691,7 @@ tasks:
       - "不传产业码的历史调用与其它消费方（企业发展概况页）回归不受影响（各跑一次对照请求）"
       - "公网网关复验：INB1309 vs INB1323 的 scale_dist/medium_large_ratio/enterprise 主题图数值不同；不传 industry_code 时与改造前一致"
       - "handoff 写入 agent-handoffs/，附自测证据（curl 请求/响应）与排查汇总文档链接"
-    update_time: "2026-11-12T15:20:48+08:00"
+    update_time: "2026-11-12T16:17:32+08:00"
   - id: SYSINT-04-01-DATA-POLDIST-L01
     title: "专题一张图 · 政策深圳九区分布灌数（policy_base_info.district 补数）"
     status: "backlog"
