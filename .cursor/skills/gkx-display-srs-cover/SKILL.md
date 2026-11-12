@@ -45,7 +45,7 @@ description: >
 | 2.6 用例 | `工程过程/04-系统集成/05-展示系统集成/合规演示用例/` 对应文件 | 是否只验字段、不验形态 |
 | 2.7 任务 | MCP `task-query`（module/epic），禁止整读 `task-registry.yaml` | 相关单状态一句 |
 
-填表：复制 [matrix-template.md](matrix-template.md) 结构，在聊天里给出完整矩阵（可同时写入 `agent-handoffs/{域}/sdd/简报/{日期}-{模块}-需规分句闭合.md`，**仅简报、不改说明书**）。
+填表：复制 [matrix-template.md](matrix-template.md) 结构，在聊天里给出完整矩阵（可同时写入 `agent-handoffs/{域}/sdd/简报/{日期}-{模块}-需规分句闭合.md`，**仅简报、不改说明书**）。落盘后对人交付见 **§9**。
 
 ### 缺口归类（每行必标一类）
 
@@ -124,3 +124,14 @@ description: >
 - 不整读 `task-registry.yaml` / 指标 seed；任务与指标走 MCP
 - 不在确认前推前端仓
 - 不在业务界面保留实现黑话（见 §7）
+
+## 9. 给人复看的本地文件（可点打开）
+
+聊天里凡要人打开本机落盘文件（矩阵简报、一屏计划、方案卡、归档稿等），**必须**给 Markdown 可点链接，禁止只甩相对路径或反斜杠裸路径当「链接」。
+
+1. 先读 `gkx-orchestration/.env` 的 `GKX_ROOT`，拼绝对路径：`{GKX_ROOT}/gkx-orchestration/{仓内相对路径}`。
+2. 链接格式：`[文件名.md](file:///{盘符大写正斜杠绝对路径})`  
+   例：`[2026-11-12-SIM-237-ASYNC-方案C-计划.md](file:///E:/zhipu/gkx-lumen/gkx-orchestration/agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/简报/2026-11-12-SIM-237-ASYNC-方案C-计划.md)`  
+   规则：`file:///` + 盘符 + `:/` + 其余用 `/`（勿用 `\`）；中文路径保持原文，勿擅自百分号编码（Cursor 聊天点开更稳）。
+3. 可另附一行资源管理器路径（`E:\...`），但**不能替代**上面的可点 `file://`。
+4. Skill / 仓内文档正文仍写相对主仓路径（`agent-delivery/...`），不把本机盘符写进入库文件。
