@@ -82,13 +82,13 @@ def run(output, snapshot):
             # All labels in templates are from the fixed allowlist above.
             query(label+'_sample20', f'MATCH (a:{tag})-[e:{edge}]->(b) RETURN id(a), id(b), tags(a)[0], tags(b)[0], rank(e), properties(a), properties(b), e.weight, e.props LIMIT 20;', True)
         result['group_counts'] = counts
-        pairs = {}
+        pairs = {}; attributes = {}
         for edge in ('apply_to','support'):
             records = []; offset = 0; last = None
             while True:
-                rows = query(edge+'_page_'+str(offset), f'MATCH (a:policy)-[e:{edge}]->(b) RETURN id(a) AS src, id(b) AS dst, rank(e) AS edge_rank ORDER BY src, dst, edge_rank SKIP {offset} LIMIT 1000;')
+                rows = query(edge+'_page_'+str(offset), f'MATCH (a:policy)-[e:{edge}]->(b) RETURN id(a) AS src, id(b) AS dst, rank(e) AS edge_rank, e.weight, e.props ORDER BY src, dst, edge_rank SKIP {offset} LIMIT 1000;')
                 for row in rows:
-                    key = tuple(row)
+                    key = tuple(row[:3])
                     if last is not None and key <= last:
                         raise RuntimeError('Repeated or unordered identities during pagination')
                     last = key
@@ -101,8 +101,21 @@ def run(output, snapshot):
             path = snapshot/(edge+'-pairs.json')
             io.write_json(path, records)
             pairs[edge] = {tuple(r[:2]) for r in records}
+            attributes[edge] = {tuple(r[:3]): r[3:] for r in records}
             result[edge+'_export'] = {'rows': len(records), 'unique_pairs': len(pairs[edge]), 'sha256': io.sha256(path), 'rank_nonzero': sum(r[2] != 0 for r in records)}
         result['overlap'] = overlap(pairs['apply_to'],pairs['support'])
+        same_keys = set(attributes['apply_to']) & set(attributes['support'])
+        def parsed(value):
+            if isinstance(value,str):
+                try:
+                    return json.loads(value)
+                except ValueError:
+                    pass
+            return value
+        result['attribute_comparison'] = {'same_src_dst_rank':len(same_keys),
+            'weight_different':sum(attributes['apply_to'][k][0] != attributes['support'][k][0] for k in same_keys),
+            'props_different_after_json_parse':sum(parsed(attributes['apply_to'][k][1]) != parsed(attributes['support'][k][1]) for k in same_keys),
+            'weight_values':{e:sorted({str(v[0]) for v in attributes[e].values()}) for e in attributes}}
         membership = query('belongs_to_all', 'MATCH (a:segment)-[e:belongs_to]->(b) RETURN id(a), id(b), tags(b)[0], rank(e) LIMIT 10000;', True)
         segment_count = query('segment_count','MATCH (v:segment) RETURN count(v);',True)[0][0]
         result['membership'] = {'edge_rows':len(membership), 'linked_segments':len({r[0] for r in membership}), 'segment_count':segment_count, 'unlinked_segments':segment_count-len({r[0] for r in membership}), 'all_targets_chain':all(r[2]=='chain' for r in membership)}
