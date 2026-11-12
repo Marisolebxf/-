@@ -4,6 +4,7 @@
 - 日期：2026-11-13
 - 身份：arch
 - 输入：A 波 `2026-11-13-PARSE-4JOB-FDE-A-product.md`；决策卡 **C**（四点并行独立计算 Job）
+- **2026-11-13 监管人裁定停机卡：卡1=A / 卡2=A / 卡3=A**
 - 对照：237 `policy_text_parse_run` / 242 `policy_sim_interpret`；现行 `parse/jobs`（读语义缺项）+ `parse/clauses`（同步 enrich）；`PolicyEvaluationService` 白名单
 
 ## 1. 定档
