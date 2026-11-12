@@ -210,19 +210,15 @@ D16 行级列是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`�
 
 不把序号 210 的受众反馈、序号 230 的方案意见复制进本表。
 
-## 9. 237 只读已有解析表
+## 9. 237 解析表 · 只读 + 真算 upsert（不加列）
 
-不另建表，不加列，不建文本解析用的 gapfill 表。解析行已经在库 `gkxlumenx_ads`、表 `policy_text_parse`。架构稿里的 `ads.policy_text_parse` 就是这一张。本单不灌这张表，也不把解析行写进第 2 节或第 8 节的两张缺项表。
+不另建表，不加列，不建文本解析用的 gapfill 表。库 `gkxlumenx_ads`、表 `policy_text_parse`。
 
-粒度：一行是一条政策的已落库解析结果。展示按 `policy_id` 读取。返回 `title`、`summary`、`auto_tags`，以及 `structured_elements` 里除 `clauses`、`clause_meta` 以外的内容。需规点名的关键词、核心内容、支持对象、申报条件、支持力度都在这份已有要素里。本单不把这些要素拆成新列，不改其余键的形状。
+**读面**：按 `policy_id` 读。返回 `title`、`summary`、`auto_tags`，以及 `structured_elements` 里除 `clauses`、`clause_meta` 以外的内容（四中文键在内）。
 
-条款批次更新的是同一条解析行，把 `clauses` 和 `clause_meta` 放进 `structured_elements`，不另插一行。返回给展示的要素去掉这两个键，条款树不进入解析报告。含有 `clauses` 的行仍然读取标题、摘要、标签和其余要素。没有该政策的行，报告空。
+**真算写回（2026-11-12）**：`policy_text_parse_run` 对单政策 **UPSERT**：写入/合并四中文键 + summary/tags；**必须保留**已有 `clauses`/`clause_meta`。禁止 `polan.text.parse.run` 整表清空。条款批次仍只改条款键，不另插行。
 
-行上已有的 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。本单不改这个值，不新造指标。D4 保持 mock。
-
-展示请求不调用 `polan.text.parse.run`。该函数会清空整张 `policy_text_parse`。本单不执行它，也不把解析结果再灌一遍。
-
-`jobs` 的文本解析按 `policy_id` 读这一张已有表。政策必选。未给出政策，或没有行，报告空。不返回 501，不返回写死的报告，不返回条款树顶替解析报告。
+行上 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。D4 保持 mock。无行则读面空；真算失败不造假四键。
 
 ## 10. 240 无 gapfill 表（relation-graph）
 

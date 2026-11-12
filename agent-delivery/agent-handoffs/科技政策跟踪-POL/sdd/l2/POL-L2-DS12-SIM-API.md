@@ -43,9 +43,7 @@
 | `POL-L2-DS12-EST-API` | 多维评估 | 读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 的多维评估行。与本分册四种行同表不同种类。灌数归属见架构第 9 节，读法由 EST-ARCH 定 |
 | `POL-L2-DS12-EST-API` | 利益攸关方 | 读 `gkxlumenx_gapfill.gapfill_policy_sim_stakeholder` 的参与意见行。本分册不读这张表 |
 
-真推演模型未注册。本分册不定义真推演种类，不新建 Python simulate job，不加 `policy_simulate`。未注册时该能力空态，不填数。`PolicyAnalysisTypes` 现有白名单不因本分册增加子类型。237–242 不进 `POST /internal/policy/jobs/execute`。评价页 226 已接通的 `policy_text_parse` 异步键保持原状，237 不改走那条键。
-
-真模型日后若注册为可调用服务，对应能力改由 `gkxlumen-topic-async-service` 调 Python `/internal/*` 真算，对外仍是这一条 `simulation/jobs`，URL 不变。`M_POLICY_TEXT_PARSE` 注册为可调用解析服务后，237 可切异步真算。推演键接通后，239 改随该次真结果。注册动作不在本分册。当前五次读取保持同步读，不加 Job 键。
+真推演模型未注册。本分册不定义真推演种类，不加 `policy_simulate`。未注册时该能力空态。**例外（2026-11-12）**：237 真算键 `policy_text_parse_run`、238 真算键 `policy_sim_focus` 进 `PolicyAnalysisTypes` / `JOB_SUB_TYPES`，经 `evaluation/jobs` → `/internal/policy/jobs/execute`。评价页 226 的 `policy_text_parse` **仍只读**，237 真算不改走该键。推演键接通后，239 改随该次真结果。
 
 种类字段名由 `BE-POL-CONTRACT-01` 冻结。本分册只定种类的中文名和一次一种类：文本解析、重点可视化、影响范围、路径预测、解读报告。240 不占种类。
 
@@ -57,7 +55,8 @@
 
 | 公开资源 | 内部委托 |
 |---|---|
-| `simulation/jobs` 的文本解析 | `gkxlumen-display` 不建任务，不转发 `gkxlumen-topic-async-service`，不调 Python，不占并发锁，不发 SSE，不调用 `polan.text.parse.run`。`gkxlumen-element` 只读已有 `ads.policy_text_parse` 的解析行 |
+| `simulation/jobs` 的文本解析（读面） | `gkxlumen-display` 不建任务；`gkxlumen-element` 只读 `ads.policy_text_parse`。不调用 `polan.text.parse.run` |
+| `evaluation/jobs` · `policy_text_parse_run`（237 真算） | display → topic-async → `/internal/policy/jobs/execute` → `polan.text_parse_run_job` 单政策 upsert。禁整表清空 |
 | `simulation/jobs` 的重点可视化、影响范围、路径预测、解读报告 | `gkxlumen-display` 不建任务，不转发异步服务，不调 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 里该次种类的行。库名 `gkxlumenx_gapfill`，表名 `gapfill_policy_sim_result` |
 | 240 政策关联分析 | display Feign 委托专题 graph。Java 不写 nGQL。不新建查图任务 |
 
@@ -75,25 +74,26 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 
 每条缺项行都带 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at`，以架构第 9 节为准。238、239、241、242 的 `metric_id` 留空，不新注册。`fill_method` 用 `manual`。`gap_item` 写序号和叶子名。237 行上的 `metric_id` 仍是已有 `M_POLICY_TEXT_PARSE`，不改。240 沿用已有 `M_POLICY_RELATION_DEGREE`，不新注册，本分册不为此加资源。D4 保持 mock。`GDF-POLICY-MOCK-GATE-L01` 仍是 blocked。本分册不把 mock 写成已上线，不改 D4。
 
-## 3. 237 政策文本智能解析 · jobs · 文本解析 · 同步读
+## 3. 237 政策文本智能解析 · 同步读 + 异步真算写回
 
-公开资源：`POST /display/v1/policy/simulation/jobs`。浏览器提交这一次，种类为文本解析。处理是同步读已有解析表。不是作业。
+### 3.1 读面（并存）
 
-指标 `M_POLICY_TEXT_PARSE`，MODEL，D4=mock。解析模型未以可调用服务注册。解析结果行已由已有批产管道落在 `ads.policy_text_parse`。评价页 226 已按只读消费同表的 `summary`。本叶取解析报告所需列，仍不跑解析。
+公开资源：`POST /display/v1/policy/simulation/jobs`，种类=文本解析。element 只读 `ads.policy_text_parse`。同步、不建任务。返回去掉 `clauses`/`clause_meta`。`title`/`summary`/`auto_tags`/四中文要素键。评价 226 的 `policy_text_parse` 键保持只读。
 
-链路：前端 → 网关 → `gkxlumen-display` → `gkxlumen-element` → 已有 `ads.policy_text_parse` 的解析行。
+### 3.2 真算写回（2026-11-12 三卡）
 
-- 同步读。不建任务记录。不进 `gkxlumen-topic-async-service`。不进 `PolicyAnalysisTypes`。不加新 Job 键。不改评价 226 的 `policy_text_parse` 异步键
-- 政策必选。element 按该政策拣解析行
-- 只取该政策已有的解析行。条款批次是更新同一条 `policy_id`，把 `clauses`、`clause_meta` 写进同一份 `structured_elements`，不另插一行。含这两个键的行仍然读取。返回 `structured_elements` 时去掉这两个键，条款树不进入解析报告。不因含 `clauses` 整行丢弃。判别与 `POL-L2-DS12-SIM-DATA` 第 9 节相同
-- 一次读取返回该政策的 `title`、`summary`、`auto_tags`、`structured_elements`。需规点名的关键词、核心内容、支持对象、申报条件、支持力度都在结构化要素里
-- 请求路径不调用 `polan.text.parse.run`。该函数会清空整张 `ads.policy_text_parse`。解析批次仍由已有灌数与条款跑批管道执行
-- 不灌 gapfill。不建 `gapfill_` 文本解析行。查询不写 `ads.policy_text_parse`
-- 不走 `parse/jobs`、`parse/clauses`。那是核增拆解页的语义理解与条款树
-- 行上 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。不改、不新造
-- 不把中台 `GET /v1/policy/text/parse` 或 demo「文本解析」签写成展示路径。渲染在前端
+公开资源：`POST /display/v1/policy/evaluation/jobs`。
 
-空态：该政策无解析行，则报告空。HTTP 成功。不返回 501。不把条款树当解析报告返回，也不因行内有条款键整行丢弃。不在接口函数里返回写死的解析报告。
+| 字段 | 值 |
+|---|---|
+| `sub_type` | `policy_text_parse_run` |
+| `params.policy_id` | 必填 |
+| `force` | 可选；true 重算 |
+| `analysis_fp` | 条件指纹（同评价 jobs） |
+
+链路：display → topic-async → `/internal/policy/jobs/execute` → `polan.text_parse_run_job`：规则优先 + 残量 LLM → **单政策 upsert**（merge 保留条款键）。禁 `polan.text.parse.run` / 整表清空。不调用 `structure_one`。create 同步终态（同 238）。成功后前端再打 §3.1 读面。
+
+空态：未选政策、无正文、无密钥失败 → 「暂无解析结果」；不写假四键。读面 HTTP 成功不 501。
 
 ## 4. 238 政策重点可视化展示 · 同步读 + 异步真算写回
 
