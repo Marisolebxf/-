@@ -2628,6 +2628,7 @@ function main() {
       'review-json': { type: 'string' },
       'acceptance-file': { type: 'string' },
       'acceptance-json': { type: 'string' },
+      'current-status': { type: 'string' },
       gate: { type: 'string' },
       message: { type: 'string' },
       'binding-file': { type: 'string' },
@@ -2648,7 +2649,8 @@ function main() {
   });
   const command = positionals[0];
   if (!command || values.help) {
-    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append audited evidence item(s); supports --evidence-batch-*\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  record-acceptance     Record policy-only or exact 验收通过 acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  resume                Resume BLOCKED to its recorded resume_phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
+    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append audited evidence item(s); supports --evidence-batch-*\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  finalize-acceptance  Validate preconditions and approve the 验收通过 acceptance gate
+  record-acceptance     Record policy-only or exact 验收通过 acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  resume                Resume BLOCKED to its recorded resume_phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
     return;
   }
   const evidenceRefs = values['evidence-ref'] ?? [];
@@ -2746,6 +2748,65 @@ function main() {
     });
     saveRun(runDir, state);
     process.stdout.write(`${JSON.stringify({ gate: values.gate, gate_hash: gate.gate_hash, status: gate.status })}\n`);
+    return;
+  }
+
+  if (command === 'finalize-acceptance') {
+    if (values.message == null || values.message === '') throw new Error('--message is required');
+    if (values.message !== TOKENS.acceptance && !new RegExp(`^${TOKENS.acceptance}\\d+$`).test(values.message)) {
+      throw new Error(`GATE_TOKEN_INVALID: expected exact ${TOKENS.acceptance} or ${TOKENS.acceptance}<auto_number>`);
+    }
+    if (state.phase !== 'AWAITING_ACCEPTANCE') {
+      throw new Error(`ACCEPTANCE_PHASE_INVALID: expected AWAITING_ACCEPTANCE, got ${state.phase}`);
+    }
+    if (state.gates?.ship?.status !== 'approved') {
+      throw new Error('ACCEPTANCE_PRECONDITION_FAILED: ship gate is not approved');
+    }
+    if (state.ship_package?.dev_verification?.result !== 'PASS') {
+      throw new Error('ACCEPTANCE_PRECONDITION_FAILED: ship_package.dev_verification must be PASS');
+    }
+    const currentStatus = values['current-status'];
+    if (typeof currentStatus !== 'string' || currentStatus.trim() === '') {
+      throw new Error('--current-status is required (expected the Feishu status before transition, e.g. IN PROGRESS)');
+    }
+    const manifest = readJson(join(runDir, 'evidence', 'manifest.json'));
+    const evidence = verifyEvidence(state, manifest, runDir);
+    if (evidence.result !== 'PASS') {
+      throw new Error(`ACCEPTANCE_PRECONDITION_FAILED: evidence verification is ${evidence.result}`);
+    }
+    const binding = {
+      work_item_id: state.work_item.work_item_id,
+      claim_id: state.ownership.claim_id,
+      ship_gate_hash: state.gates.ship.gate_hash,
+      dev_verification_result: state.ship_package.dev_verification.result,
+      evidence_manifest_hash: evidence.manifest_hash,
+      current_status: currentStatus,
+    };
+    const gate = approveGate(state, {
+      gate: 'acceptance',
+      message: values.message,
+      binding,
+      approvedBy: values['approved-by'],
+      messageRef: values['message-ref'],
+      activeRuns: Number(values['active-runs'] ?? 1),
+      sessionId: values['session-id'],
+      machineId: values['machine-id'],
+      claimId: state.ownership.claim_id,
+      policiesRoot: values['policies-root'] ? resolve(values['policies-root']) : POLICY_ROOT,
+    });
+    saveRun(runDir, state);
+    process.stdout.write(`${JSON.stringify({
+      gate: 'acceptance',
+      gate_hash: gate.gate_hash,
+      status: 'approved',
+      required_next_steps: [
+        'call get_transitable_states and get_transition_required',
+        'call transition_state to RESOLVED with required fields',
+        'record-acceptance with mode=chat_exact, current_status=RESOLVED and transition evidence',
+        'advance --to RESOLVED',
+        'render-report and write the final acceptance summary to Feishu',
+      ],
+    }, null, 2)}\n`);
     return;
   }
 
