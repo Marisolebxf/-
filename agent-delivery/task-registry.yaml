@@ -61771,7 +61771,7 @@ tasks:
     lock_until: "2026-11-11T17:16:58.977Z"
     claimed_by: "agent:data-agent"
     title: "T02 七要素入图·产业链与机构合作组（M15/M17/M02；M19=0）"
-    status: "review"
+    status: "done"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61943,7 +61943,7 @@ tasks:
     lock_until: "2026-11-11T20:13:11.491Z"
     claimed_by: "agent:algorithm-agent"
     title: "T09 图算法作业·中心性批（428–432）"
-    status: "review"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61955,6 +61955,8 @@ tasks:
     estimated_tokens: 40000
     note: |
       2026-11-12 完成技术点层只读中心性批：19430点/541428边，四榜Top20及1500行综合表；权重空值率0、度数相关0.9514972346、PageRank和约1。独立BFS/Brandes核验全部1500子图节点和300采样源通过，完整综合表/榜单通过。AV-0交接检查通过。历史无权PageRank及子图同度截断/采样差异已留证。handoff: agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T09.md；待唐绍祖/coordinator评审签收，不自行done。实际token/费用不可得。
+      2026-11-12 14:30 唐绍祖技术验收通过并签收 → done（记录 KG-COMPLY-ACCEPT-T02-T09-技术验收记录.md）：现场只读复跑 tech_point 19430 / tech_rel 541428、weighted_degree 与 relation_confidence_score 空值均 0；与 T08（11-11 08:18）、本批（11-11 16:15）三次读数同数，支持「全程只读未写图」。交付 JSON 独立复算全部通过：composite.json 1500 行唯一、四项 min-max 偏差 0、综合分=等权均值偏差 5.55e-17、排序单调、432 榜 Top20 与 composite 前 20 完全一致、度榜与重算无权度榜重合 16/20（与自述一致）。旧基线差异处置正确（不迁就旧数、固定并留存本次口径）。
+      **⚠️ 附带上游发现（不属本任务责任，需 tech 层归属方处理）**：tech_point.weighted_degree 无法由当前边复算——榜首存储 1010.90780192，当前入射 2914 条边 Σconfidence/100=1478.05；抽查 top10 的 wd/(Σconf/100) 分布在 0.519–0.719 无恒定系数，全库 Σwd=195473.59 vs Σconf/100=260019.52 比值 0.752 与点级不一致；按 evidence_level / direction_status / relation_type 分组求和均凑不出 1010.91。判定该字段疑似在更早边集或更早置信度上算出（陈旧），非本任务计算错误；本任务按任务卡原样读取且额外交付基于当前边的 recomputed_degree_top20，处置得当。影响：428 度榜整榜与 432 综合榜 25% 分项建立在该字段上，对外展示需标注口径待确认或改用 recomputed 榜。另建议 verification.json 的 degree_handshake 改名 unweighted_degree_handshake（其实际只验无权度数和=2E），并新增真正的加权自检 Σweighted_degree vs Σconfidence。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61963,7 +61965,7 @@ tasks:
       - "度（weighted_degree）/ PageRank 全图 / 紧密与中介（1,500 子图、300 源采样）四榜 Top20 + 等权综合表"
       - "PageRank 和=1.0；度中心性 vs weighted_degree 相关 ≥0.95；抽样口径如实标注"
       - "权重自检 relation_confidence_score 空值率=0；不写回图"
-    update_time: "2026-11-12T00:26:22+08:00"
+    update_time: "2026-11-12T14:30:00+08:00"
   - id: KG-COMPLY-LOAD-T10
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T10.md"
     title: "T10 图算法作业·社群批（433–435/437，定案 B′）"
