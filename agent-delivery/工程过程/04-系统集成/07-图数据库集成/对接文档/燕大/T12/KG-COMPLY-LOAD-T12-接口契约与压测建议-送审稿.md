@@ -8,7 +8,7 @@
 
 | 状态 | HTTP | JSON 形状 | 前端表现 |
 |---|---|---|---|
-| 成功 | 200 | `{ "status": "ok", "item": "428", "data": { "items": [{ "nodeId": "example-node", "rank": 1, "degree": 2914 }], "metric": "degree", "degreeBasis": "edge_count", "populationSize": 19430, "method": "T09_recomputed", "nextCursor": null }, "meta": { "metric_source": "T09.recomputed_degree_top20", "snapshotId": "example-snapshot", "scope": "top20" } }` | 展示结果及适用范围。部分命中时在 `meta` 说明覆盖范围。 |
+| 成功 | 200 | `{ "status": "ok", "item": "428", "data": { "items": [{ "nodeId": "example-node", "rank": 1, "degree": 2914 }], "metric": "degree", "degreeBasis": "edge_count_undirected_projection", "populationSize": 19430, "method": "T09-S1_recomputed", "nextCursor": "example-cursor" }, "meta": { "metric_source": { "formula": "count incident edges in full undirected simple graph" }, "snapshotId": "example-snapshot", "scope": "full_graph" } }` | 展示结果及适用范围。此例取 `topN=1`，`metric_source` 仅展示公式。 |
 | 空态 | 200 | `{ "status": "empty", "item": "424", "data": null, "reason": { "code": "PATH_UNREACHABLE", "message": "指定点对不可达", "availability": "unreachable" } }` | 显示原因。查询无命中、算法未计算或上游待补时分别使用对应原因。 |
 | 本期不支持 | 501 | `{ "status": "unsupported", "item": "M22", "unsupported": { "code": "GRAPH_SHAPE_UNSUPPORTED", "message": "有数据，当前形态不支持全网分析" } }` | 标明不支持原因。SDD 本期 23 项中仅 **436** 和 **M22** 固定返回 501。 |
 
@@ -22,7 +22,7 @@
 |---|---|---|---|
 | 读图 | `POST /graph/query`，`{ "item": "platform.tech_rel", "nodeIds": [], "chainId": null, "cursor": null, "limit": 100 }`。按条目校验点或链过滤。 | `nodes[{id,label,type}]`、`edges[{source,target,type,confidence,evidenceLevel}]`、`nextCursor`。M15 另附层级或依赖方向。按 M 编号查关系时传 `item=relation` 和 `relation=Mxx`，见 §4.5。 | `NO_GRAPH_MATCH` / `NO_RESULT`；M22 固定 501 `GRAPH_SHAPE_UNSUPPORTED`。 |
 | 路径 | `POST /paths/query`，`{ "item": "424", "sourceId": "...", "targetId": "...", "algorithms": ["dijkstra"], "k": 1, "scenarioId": null }`。 | `paths[{algorithm,rank,nodeIds,edges,hopCount,totalCost}]`、`algorithmResults[{algorithm,status,reason}]`。`totalCost` 对无权算法为 `null`，加权算法填沿途代价和。加权路径的每条 `edges` 带 `cost`，按路径顺序返回。 | `NODE_NOT_FOUND`、`PATH_UNREACHABLE`、`RESULT_NOT_COMPUTED`；426 选择企业合作网时走 M22 的 501。 |
-| 中心性 | `POST /centrality/query`，`{ "item": "428", "topN": 20, "cursor": null }`。 | `items` 的共同字段为 `nodeId`、`rank`，指标值字段按 `item` 定义。响应另带 `metric`、`degreeBasis`（适用时）、`populationSize`、`method`、`nextCursor`。428 的条目返回 `items[{nodeId,rank,degree}]`，按 `degree` 排序。中台 1 返回 `weighted_degree_recomputed`。432 重算发布后附四项分值与权重。 | `NO_RANKING` / `DEPENDENCY_NO_RESULT`；432 和中台 1 待补时用 §4.1 的专用空态原因。 |
+| 中心性 | `POST /centrality/query`，`{ "item": "428", "topN": 20, "cursor": null }`。 | `items` 的共同字段为 `nodeId`、`rank`，指标值字段按 `item` 定义。响应另带 `metric`、`degreeBasis`（适用时）、`populationSize`、`method`、`nextCursor`。428 的条目返回 `items[{nodeId,rank,degree}]`，按 `degree` 排序。中台 1 返回 `weighted_degree_recomputed`。432 附四项分值与权重。 | 无榜单或无匹配结果时返回空态 `NO_RANKING`，依赖的结果缺失时用 `DEPENDENCY_NO_RESULT`。 |
 | 社群 | `POST /communities/query`，`{ "item": "435", "communityId": null, "algorithm": "louvain", "cursor": null, "limit": 100 }`。 | `communities[{communityId,memberCount,internalEdgeCount,avgDegree,density,coreNodeIds}]`、`members[{nodeId,communityId}]` 或 §4.3 的 437 结构，按条目返回。`meta` 附算法、分辨率、种子及范围。 | `RESULT_NOT_COMPUTED` / `NO_COMMUNITY_MATCH`；436 固定 501 `MULTI_SNAPSHOT_REQUIRED`。 |
 | 关键路径 | `POST /key-paths/query`，`{ "item": "28", "pathId": null, "cursor": null, "limit": 100 }`。29 可加 `nodeIds`。 | `paths[{pathId,steps:[{stepOrder,nodeId}]}]` 或 `nodes[{nodeId,rank,mark,metric}]`，按 `stepOrder` 有序。 | `NO_PATH_STEPS` / `DEPENDENCY_NO_RESULT`；当前关键路径条目无固定 501。 |
 
@@ -37,11 +37,11 @@
 | 425 路径多样性 | 路径 | 备选路径、排序、跳数，注明备选策略和实际条数 | 无备选或未计算 | — |
 | 426 场景化路径 | 路径 | 技术点图和已具备数据的人才合作网 M01 可作为场景。返回实际查询出的路径和场景范围 | 场景结果尚未计算或指定点对不可达 | 企业合作场景复用 M22 的 501，响应 `item=M22` |
 | 427 交互路径 | 路径 | 指定点对的路径与高亮节点和边 | 点不存在或无匹配结果 | — |
-| 428 度中心性 | 中心性 | T09 `recomputed_degree_top20`，返回 `degree` 与 `degreeBasis=edge_count`，覆盖范围限已发布 Top20 | 重算榜缺失 | — |
+| 428 度中心性 | 中心性 | 读取 T09-S1 `degree-full.json`，返回 `degree` 与 `degreeBasis=edge_count_undirected_projection`，全量 19,430 点可分页 | 重算榜缺失 | — |
 | 429 紧密中心性 | 中心性 | T09 1,500 点诱导子图榜，标明范围和连通性修正 | 子图或榜单无结果 | — |
 | 430 中介中心性 | 中心性 | T09 同一子图近似榜，300 源采样、种子 42 | 子图或榜单无结果 | — |
 | 431 PageRank | 中心性 | T09 全图置信度加权榜，标明 α=0.85 | 榜单无结果 | — |
-| 432 综合中心性 | 中心性 | T09-S1 补齐 1,500 点的无权度并统一重算后，返回新版等权榜和四项分值 | 当前为 `UPSTREAM_DEGREE_PENDING`，提示「口径待确认，等待 T09-S1 补算」 | — |
+| 432 综合中心性 | 中心性 | 读取 T09-S1 `composite-recomputed.json`，返回 1,500 点等权综合榜、原始分项、归一化分项与权重 | 无已发布榜单或无匹配结果 | — |
 | 433 多算法社群 | 社群 | 已算算法与分区摘要，当前验收算法为 Louvain | 某选定算法未计算，逐项说明 | — |
 | 434 社群识别 | 社群 | T10 B′ 离线 `partition` 的成员与社群编号，覆盖 19,430 点 | 无分区结果或所查点未命中 | — |
 | 435 社群属性 | 社群 | 成员数、去重内部边数、核心点、修正后的平均度和密度 | 无成员表或聚合结果 | — |
@@ -49,7 +49,7 @@
 | 437 社群可视化 | 社群 | 成员分区与渲染所需属性；平均度和密度用第 4 节口径 | 434 无分区或 435 所需结果未就绪 | — |
 | 28 关键路径接收 | 关键路径 | 按 `pathId` 聚合且有序的路径步 | 路径或步表无匹配 | — |
 | 29 关键节点标记 | 关键路径 | 基于有结果的中心性指标返回节点标记与依据 | 依赖的中心性结果缺失 | — |
-| 中台 1 加权度 | 中心性 | T09-S1 补齐整榜后返回 `weighted_degree_recomputed` 和 `degreeBasis=weight_sum` | 当前为 `UPSTREAM_WEIGHTED_DEGREE_PENDING`，提示「等待 T09-S1 补交重算加权度榜」 | — |
+| 中台 1 加权度 | 中心性 | 读取 T09-S1 `weighted-degree-full.json`，返回 19,430 点的 `weighted_degree_recomputed` 和 `degreeBasis=weight_sum_incident` | 无已发布榜单或无匹配结果 | — |
 | 中台 2 技术点关系网 | 读图 | 已有技术点、技术关系、证据等级和置信度 | 所查范围无关系 | — |
 | 中台 3 关键路径步 | 关键路径 | 已有关键路径及有序步骤 | 步表无匹配 | — |
 | 中台 4 社群编号 | 社群 | T10 离线分区成员对应的编号，标明结果版本 | 未计算或点未命中 | — |
@@ -62,11 +62,23 @@
 
 | 字段 | 含义 | 数据来源与当前使用范围 |
 |---|---|---|
-| `degree` | 按 T09 已签收的重算口径统计的入射边条数 | 428 使用 T09 `recomputed_degree_top20`，榜首为 2,914。本期产品范围为已归档 Top20。428 的 `topN` 只接受 1–20 的整数，省略时取 20，越界或非整数返回 HTTP 400。游标只在前 20 条内有效，榜单到末尾时 `nextCursor=null`。响应元数据带 `metric_source` 和 `scope`。 |
-| `weighted_degree_recomputed` | 按 T09-S1 补数单的有向入边口径，对入边的 `relation_confidence_score/100` 求和，单边权重尺度 0–1 | 中台 1 使用。当前约 1,478.05 是榜首点的单点校验值，整榜待 T09-S1 补交。 |
+| `degree` | 全图无向简单投影的入射边条数 | 428 使用 T09-S1 `degree-full.json`，榜首为 2,914。 |
+| `weighted_degree_recomputed` | 对入射边（入边 + 出边）的 `relation_confidence_score/100` 求和，单边权重尺度 0–1 | 中台 1 使用 T09-S1 `weighted-degree-full.json`。榜首 2,347 条入边与 567 条出边的权重合计为 1,478.04514324。 |
 | `weighted_degree_stored` | 库内原 `weighted_degree` 的历史值 | 仅用于归档和核对。T09 旧综合表首行原始度分项约 1,010.91。 |
 
-432 当前以 HTTP 200 空态返回 `UPSTREAM_DEGREE_PENDING`，提示「口径待确认，等待 T09-S1 补算」，暂停对外提供旧综合榜。补算需给出同一快照、同一 1,500 个 VID 对应的全图无权度。按同一组点对 428–431 四项分别做 min-max 标准化，常量列归零，四项各取 0.25，再发布新版排名。中台 1 缺当前快照的重算加权度整榜时，以 HTTP 200 空态返回 `UPSTREAM_WEIGHTED_DEGREE_PENDING`。两条均返回 `status=empty` 和 `reason.availability=deferred`，客户端按待补状态显示。补数任务为 `KG-COMPLY-LOAD-T09-S1`，两份数据发布后保留其 `metric_source` 与 `scope`。
+三份榜单基于原 T09 签收快照。该快照没有自环和重复的无向端点对，因此无向投影的度数与入边、出边合计等价。换用新快照时，须先核验这两项条件。
+
+428 的 `topN` 为每页条数，默认 20，接受正整数。请求超过榜单剩余行数时返回剩余记录。排名沿用归档顺序，按度数降序，同度按 VID 升序。游标绑定条目与快照，续页可遍历全部 19,430 点，末页返回 `nextCursor=null`。
+
+| 条目 | 已签收数据 | `meta.scope` | 结果字段 |
+|---|---|---|---|
+| 428 | [无权度整榜](../T09-S1/degree-full.json) | `full_graph` | `items[{nodeId,rank,degree}]`，`degreeBasis=edge_count_undirected_projection` |
+| 432 | [重算综合榜](../T09-S1/composite-recomputed.json) | `t09_composite_1500` | `items[{nodeId,rank,score,raw,normalized}]`，四项权重各 0.25 |
+| 中台 1 | [重算加权度整榜](../T09-S1/weighted-degree-full.json) | `full_graph` | `items[{nodeId,rank,weighted_degree_recomputed}]`，`degreeBasis=weight_sum_incident` |
+
+出参用归档行的 `id` 填 `nodeId`。三项的 `meta.metric_source` 透传归档的同名对象，含快照时间、节点与边的摘要及计算公式。`meta.scope` 按表中范围标识返回，`populationSize` 取归档 `scope.population_count`。
+
+432 读取已签收综合榜，其中 `raw.degree` 是同一批 1,500 个点的全图无权度。PageRank、紧密中心性和中介中心性的原始值沿用 T09。四项在这 1,500 个点内分别做 min-max，常量列归零，再等权合成；`data.weights` 返回四项各 0.25。中台 1 直接返回已签收的入射加权度榜。两项均按成功结构返回可用榜单，查询无匹配时用普通空态。
 
 ### 4.2 423、424 与 426 路径
 
@@ -116,12 +128,14 @@ M08、M09 已入图边的 `weight` 恒为 1.0，只表示该批次的固定值�
 | 场景 | 负载与证据 | 案 1 集成项目 | 案 2 燕大服务 |
 |---|---|---|---|
 | 端到端读图 | 固定技术点邻接和 M15 按链查询，分别测首屏与连续分页。记录 p50/p95/p99、返回字节、超时率、最大实际扫描范围和图查询耗时。 | 分段计 Java 门面、Python 查询及可能的跨网结果读取。 | 分段计统一入口转发、服务内图查询及序列化，记录额外网络耗时。 |
-| 算法结果查询并发 | 固定路径点对、中心性 Top20、社群成员/属性、关键路径各一组。建议并发 1/5/10/20，从单用户基线递增；每档 1 分钟预热、3 分钟采样，可按环境缩小。记录吞吐、p95/p99、错误/超时、队列与资源峰值。 | 区分 Java 排队、离线结果读取及跨网络回取。 | 区分网关转发、服务内结果读取与序列化。 |
+| 算法结果查询并发 | 固定路径点对、中心性首屏与 428 整榜续页、社群成员/属性、关键路径各一组。建议并发 1/5/10/20，从单用户基线递增；每档 1 分钟预热、3 分钟采样，可按环境缩小。记录吞吐、p95/p99、错误/超时、队列与资源峰值。 | 区分 Java 排队、离线结果读取及跨网络回取。 | 区分网关转发、服务内结果读取与序列化。 |
 | 三态与错误隔离 | 每档混入成功、未命中、436/M22 两种 501；按状态单独统计时延与比例，核对消息和快照标识。 | 核验 Java 转换和 HTTP 状态保留。 | 核验网关转发保留状态、原因与结果版本。 |
 
 先在两案各做单请求功能核对，再做等负载比较。判定优先看页面读图与算法结果查询的 p95、错误率、稳定吞吐和资源占用，辅以链路分段定位。正式阈值由集成方按环境和验收要求确认。图查询按既有端点类型和分页范围锚定；压测不包含在线重跑大规模算法。
 
 ## 6. 评审资料
+
+- [T09-S1 签收与 T12 收尾要求](../../../KG-COMPLY-答复-李周-加权度口径确认与S1签收-20261112.md) · [T09-S1 技术验收记录](../../../KG-COMPLY-ACCEPT-T09-S1-技术验收记录.md)
 
 - [T07 送审与 T12 二稿评审](../../../KG-COMPLY-答复-李周-T07送审与T12二稿评审-20261112.md)
 
