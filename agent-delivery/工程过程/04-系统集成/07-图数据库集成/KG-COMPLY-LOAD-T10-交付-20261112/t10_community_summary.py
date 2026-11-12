@@ -5,7 +5,7 @@ T10 · 需规 435 社群属性与特征汇总生成器
 
 输入：t10/out/t10_full_s42_r8.0_all.json（B′ 定案参数 partition，python-louvain）
      + 图库只读重读 tech_rel（算内部边数/度）
-输出：T10-435-社群属性汇总.md（每社群规模/内部边数/平均度/核心节点 Top5）
+输出：T10-435-社群属性汇总.md（每社群规模/内部边数/平均度/密度/核心节点 Top5）
 
 铁律：只读图库（MATCH/GO），凭据走环境变量。
 """
@@ -40,20 +40,22 @@ def main():
     rows = []
     for c, members in comm_members.items():
         mset = set(members)
-        inner = 0
+        pairs = set()
         deg = defaultdict(int)
         for v in members:
             for nb in G.neighbors(v):
                 deg[v] += 1
                 if nb in mset:
-                    inner += 1
-        inner_e = inner // 2  # 无向边每条数两次
+                    pairs.add((v, nb) if v < nb else (nb, v))
+        # E 按定义计数：无序点对集合的基数。不依赖「邻接双向成对」假设——
+        # 2026-11-12 复核建议落地：原 inner//2 若遇单向边/DiGraph 形态会把 E 少算一半（// 截断还会吞奇数尾巴）
+        inner_e = len(pairs)
         core = sorted(members, key=lambda v: -deg[v])[:5]
         rows.append({
             "cid": c, "size": len(members), "inner_edges": inner_e,
-            # inner=2E（有向计数），标准无向平均度 2E/N=inner/N。
+            # 标准无向平均度 2E/N = 2*inner_e/N。
             # 2026-11-12 验收附条修正：原 2*inner/N=4E/N 系统性大 2 倍（networkx 双向边未去重同源）
-            "avg_deg": round(inner / len(members), 2) if members else 0,
+            "avg_deg": round(2 * inner_e / len(members), 2) if members else 0,
             # 无向密度 2E/(N(N-1))；成形群 N≥2 分母安全（单点群不入表）
             "density": round(2 * inner_e / (len(members) * (len(members) - 1)), 6)
             if len(members) >= 2 else 0,
@@ -91,6 +93,8 @@ def main():
                "平均度：2E/规模（社群内度）；密度：2E/(N(N-1))（无向）；核心节点：社群内度数 Top5。")
     out.append("- 2026-11-12 验收附条闭环：原表平均度误为 4E/N（大一倍）已修正为 2E/N；"
                "补密度列 2E/(N(N-1))（DoD 点名，验收记录 KG-COMPLY-ACCEPT-T10）。")
+    out.append("- 2026-11-12 复核建议落地：内部边数 E 由 inner//2 改为 (min,max) 无序点对去重计数"
+               "（按边数定义计算，不依赖邻接成对假设）；等价重构，全表重跑与修订前逐行一致。")
     out.append("- 数据源：demo_gkx_chain 技术点层（19,430 点 / 541,428 边，只读，2026-11-11 实测）。")
     out.append("- 复现：`python3 t10_pipeline.py --mode full --seed 42 --resolution 8.0 --evidence all` "
                f"→ `python3 t10_community_summary.py`。")
