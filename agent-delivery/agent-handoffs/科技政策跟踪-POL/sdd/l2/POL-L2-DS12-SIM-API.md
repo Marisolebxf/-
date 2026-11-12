@@ -95,23 +95,26 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 
 空态：该政策无解析行，则报告空。HTTP 成功。不返回 501。不把条款树当解析报告返回，也不因行内有条款键整行丢弃。不在接口函数里返回写死的解析报告。
 
-## 4. 238 政策重点可视化展示 · jobs · 重点可视化 · 同步读
+## 4. 238 政策重点可视化展示 · 同步读 + 异步真算写回
 
-公开资源与 237 相同：`POST /display/v1/policy/simulation/jobs`。浏览器另一次提交，种类为重点可视化。一次请求不带文本解析，也不带影响范围、路径预测、解读报告。
+### 4.1 读面（并存）
 
-没有重点可视化模型，也没有专属 `metric_id`。`M_POLICY_FOCUS_INDEX` 留在评价页 223，不挂本叶。
+公开资源：`POST /display/v1/policy/simulation/jobs`，种类=重点可视化。element 只读 `gapfill_policy_sim_result` 重点行。同步、不建任务、不改 SELECT。柱图读 `score_value`（COVER-FDE）。`M_POLICY_FOCUS_INDEX` 不挂本叶。
 
-链路：前端 → 网关 → `gkxlumen-display` → `gkxlumen-element` → `gkxlumenx_gapfill.gapfill_policy_sim_result` 的重点行。
+### 4.2 真算写回（2026-11-12 ASYNC）
 
-- 同步读。不建任务。不进异步
-- 政策必选。少了政策则该区空
-- 一行是一个重点项：所属政策、组别、标题、一句明细说明。组别只用政策目标、支持领域、实施路径、资金安排，写在行上。组别的字段名由契约单冻结
-- 思维导图和图表在前端渲染。服务端只返回行。不返回预渲染图片文件
-- **柱图分（2026-11-12 COVER-FDE 卡1=B）**：行上可带已有列 `score_value`；`RESULT_COLUMNS` 已含，本分册**不改 SELECT**。前端读该列画柱；无分则柱空，不解析 `detail_text` 凑分
-- 行上 `metric_id` 留空，不新造
-- 不把 237 的解析标签改挂成重点项。不把评价页 223 的焦点说明复制成本叶重点
+公开资源：`POST /display/v1/policy/evaluation/jobs`。
 
-空态：未选政策，或该政策没有重点行，则该区空。HTTP 成功。不返回 501。不在接口函数里返回写死的重点。
+| 字段 | 值 |
+|---|---|
+| `sub_type` | `policy_sim_focus` |
+| `params.policy_id` | 必填 |
+| `force` | 可选；true 重算 |
+| `analysis_fp` | 条件指纹（同评价 jobs） |
+
+链路：display → topic-async → `/internal/policy/jobs/execute` → `polan.sim_focus_job`：读 DWD 正文 → LLM → **单政策 upsert** 重点四行。禁整表清空。create 同步终态（同评价焦点/优缺点）。成功后前端再打 §4.1 读面画图。
+
+空态：未选政策、无正文、无密钥失败 → 不写假行；读面仍空。HTTP 读面成功不 501。
 
 ## 5. 239 政策影响范围分析 · jobs · 影响范围 · 同步读
 

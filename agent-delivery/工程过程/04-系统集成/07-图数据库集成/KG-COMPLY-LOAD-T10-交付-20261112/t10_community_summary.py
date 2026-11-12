@@ -51,7 +51,12 @@ def main():
         core = sorted(members, key=lambda v: -deg[v])[:5]
         rows.append({
             "cid": c, "size": len(members), "inner_edges": inner_e,
-            "avg_deg": round(2 * inner / len(members), 2) if members else 0,
+            # inner=2E（有向计数），标准无向平均度 2E/N=inner/N。
+            # 2026-11-12 验收附条修正：原 2*inner/N=4E/N 系统性大 2 倍（networkx 双向边未去重同源）
+            "avg_deg": round(inner / len(members), 2) if members else 0,
+            # 无向密度 2E/(N(N-1))；成形群 N≥2 分母安全（单点群不入表）
+            "density": round(2 * inner_e / (len(members) * (len(members) - 1)), 6)
+            if len(members) >= 2 else 0,
             "core": core, "core_deg": [deg[v] for v in core],
         })
     rows.sort(key=lambda r: -r["size"])
@@ -68,11 +73,11 @@ def main():
     singles = [r for r in rows if r["size"] == 1]
 
     out.append("## 成形社群（按规模降序）\n")
-    out.append("| community_id | 规模 | 内部边数 | 平均度 | 核心节点 Top5（度数） |")
-    out.append("|---|---:|---:|---:|---|")
+    out.append("| community_id | 规模 | 内部边数 | 平均度 | 密度 | 核心节点 Top5（度数） |")
+    out.append("|---|---:|---:|---:|---:|---|")
     for i, r in enumerate(formed, 1):
         core_str = "; ".join(f"{v.split(':')[-1][:12]}… ({d})" for v, d in zip(r["core"], r["core_deg"]))
-        out.append(f"| {r['cid']} | {r['size']} | {r['inner_edges']} | {r['avg_deg']} | {core_str} |")
+        out.append(f"| {r['cid']} | {r['size']} | {r['inner_edges']} | {r['avg_deg']} | {r['density']} | {core_str} |")
 
     out.append(f"\n合计：成形社群 **{len(formed)}** 个，覆盖 "
                f"{sum(r['size'] for r in formed)} 点；总内部边 "
@@ -82,8 +87,10 @@ def main():
     out.append("> VID 清单见 `out/t10_full_s42_r8.0_all.json`（partition 值对应表尾社群 ID）。\n")
 
     out.append("## 汇总口径说明\n")
-    out.append("- 规模：社群内技术点数；内部边数：两端均在社群内的 tech_rel 无向边数；"
-               "平均度：2×内部边/规模（社群内度）；核心节点：社群内度数 Top5。")
+    out.append("- 规模：社群内技术点数；内部边数 E：两端均在社群内的 tech_rel 无向边数；"
+               "平均度：2E/规模（社群内度）；密度：2E/(N(N-1))（无向）；核心节点：社群内度数 Top5。")
+    out.append("- 2026-11-12 验收附条闭环：原表平均度误为 4E/N（大一倍）已修正为 2E/N；"
+               "补密度列 2E/(N(N-1))（DoD 点名，验收记录 KG-COMPLY-ACCEPT-T10）。")
     out.append("- 数据源：demo_gkx_chain 技术点层（19,430 点 / 541,428 边，只读，2026-11-11 实测）。")
     out.append("- 复现：`python3 t10_pipeline.py --mode full --seed 42 --resolution 8.0 --evidence all` "
                f"→ `python3 t10_community_summary.py`。")

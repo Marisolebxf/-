@@ -141,19 +141,19 @@ flowchart LR
 
 不做什么：不把中台 Markdown 渲染端当成展示接口（渲染在前端）。不把摘要单独升成第二指标。不把核增智能研报 `report/jobs` 当成本叶报告。
 
-### 5.2 238 政策重点可视化展示 · 读缺项表
+### 5.2 238 政策重点可视化展示 · 读缺项表 + 异步真算写回
 
-无专属 `metric_id`，中台无重点可视化模块。真实生成做不到。
+无专属 `metric_id`。读面仍只读缺项表；**真算（2026-11-12 ASYNC · 同构 237 C）** 另走 Job 写回后再读。
 
 - 表 `gkxlumenx_gapfill.gapfill_policy_sim_result`，种类为重点
-- 一行是一个重点项：所属政策、组别（政策目标 / 支持领域 / 实施路径 / 资金安排，枚举以需规原文四组为界）、标题、一句明细说明。思维导图与图表的节点树由这些行构成，渲染在前端
-- **柱图（2026-11-12 COVER-FDE 卡1=B · 中档）**：复用已有列 `score_value`（与 235 同列语义分流），**不 ALTER、不新造列、不新 `metric_id`**。前端按 `group_name` 为横轴、`score_value` 为纵轴画「政策重点（柱图）」；同组多行取非空最大。`RESULT_COLUMNS` 已含该列，element/display **不改 SELECT**
-- `M_POLICY_FOCUS_INDEX`（评价页 223 焦点指数）不挂本叶（调研已核对）；本叶 `score_value` 是展示用组重点分，不是焦点指数
-- 表与字段由 `POL-L2-DS12-SIM-DATA` 定，灌数由 `POL-L2-DS12-SIM-GAPFILL-L01` / 本 FDE D 波执行，本叶只定读法
-- 行上 `metric_id` 留空，不新造
-- 空态：无行则该区空；有行但 `score_value` 全空则导图/明细可出、柱区业务空态「暂无得分」。**禁止**从 `detail_text` 解析「名+分」顶替柱高。不在接口里写死重点
+- 一行是一个重点项：所属政策、组别（政策目标 / 支持领域 / 实施路径 / 资金安排）、标题、明细、`score_value`
+- **柱图（COVER-FDE 卡1=B）**：复用 `score_value`；不 ALTER、不新 `metric_id`；同组取非空最大。element/display **不改 SELECT**
+- **真算 Job 键**：`policy_sim_focus`。`POST /display/v1/policy/evaluation/jobs` → topic-async → `/internal/policy/jobs/execute` → `polan.sim_focus_job`：读 DWD 正文 → LLM 抽四组+得分 → **单政策 upsert** 重点行（禁整表清空 / 禁 `parse.run` 式 TRUNCATE）
+- 只读并存：`jobs·重点可视化` 仍同步读 gapfill（当天已成功可直接打开）；按钮「可视化展示」可 force 重算
+- `M_POLICY_FOCUS_INDEX` 不挂本叶
+- 空态：无行「没有政策重点行」/「暂无政策重点」；有行无分「暂无得分」。禁从 `detail_text` 解析柱高
 
-不做什么：不把评价页 223 的焦点说明复制成本叶重点。不把 237 的解析标签改挂成重点项。不返回预渲染图片文件。
+不做什么：浏览器直连 Python；demo 服务；本单扩 239–242 真算；返回预渲染图片。
 
 ### 5.3 239 政策影响范围分析 · 读缺项表（跟随推演上下文）
 
