@@ -61846,8 +61846,8 @@ tasks:
     update_time: "2026-11-11T19:05:20+08:00"
   - id: KG-COMPLY-LOAD-T04
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T04.md"
-    title: "T04 七要素入图·技术组（M06部分/M07/M08/M09）"
-    status: "review"
+    title: "T04 七要素入图·技术组（M08/M09 实建；M06/M07 本期不建、paper 0 点）"
+    status: "done"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61859,13 +61859,17 @@ tasks:
     estimated_tokens: 60000
     note: |
       SDD §5 T04；执行人 human:韩梦蕊（交付 887db942，2026-11-12）。对账单自检与 2026-11-12 图内只读复测一致：M08 participate research→project 17,426、M09 author_of 85,069（方向 person→patent 抽验=总数）、person 100,000/research 83,745/patent 70,496/project 17,402/paper 0、批号 comply-20261112-t04-* 实测在 props；存量不动区 participates 213,500、depends_on 1,073 未动；禁区 M10–M14/M16 全 0 复核通过。cooperate 漂移至 6,062,884 属 T03 在途灌数（其中 5,968,060 带批号，ent→ent 仍 94,824）、belong 72,099 为 T03 的 M04 person→research 在途数据（M05 research→research 仍 0），均与本单无关。M07/M06/paper 按唐绍祖 11-11 答复不建（a6cf1823）。核验证据 07-图数据库集成/T04T10-核验-实测.md；handoff 见 agent-handoffs/KG-COMPLY-LOAD-T04.md。认领历史未倒填；待 coordinator 按 DoD 验收，不代签 done。
+      2026-11-12 15:05 唐绍祖技术验收通过并签收 → done（记录 KG-COMPLY-ACCEPT-T04-技术验收记录.md）：现场只读复跑全部吻合——person 100000 / research 83745 / patent 70496 / project 17402 / paper 0；M08 participate research→project 17426（全边型总数亦 17426，无残留）、M09 author_of person→patent 85069（全边型总数亦 85069）；批次号 100% 覆盖（M08 comply-20261112-t04-4、M09 -2、person -p1、research -p2）。
+      M08 角色拆分实测成立：lead_affiliation 17366(exact_name)+27(ror)=17393、investigator_affiliation 33，合计 17426。方向无反转（project→research 0、patent→person 0）；禁区 M10 publish 0 / M11 policy_relate 0 / M12-14 policy_apply_to 0 / M06-M16 cite 0；存量 M15 depends_on 1073、M17 participates 213500 均未动。
+      口径提示（不阻塞，T07 与前端需知）：M08/M09 两条边 weight 全为 1.0，无强弱信息——T07 不得把 Σweight 当业务量、前端不得按 weight 做粗细渲染（M08 可用 institution_role_code 区分 lead/investigator）；M09 props 未记发明人排序，若业务要「第一发明人」需另补；patent/project 为「随边建点」，props 仅 source+batch，按年份/领域筛选需另开补属性任务。
+      **顺带修正**：原 DoD 第 1 条仍写「再灌 M07/M08/M09 与 M06」，与 11-11 裁定（M07/M06 不建）矛盾，已改为只含 M08/M09 并写明不建理由。T06 已置 ready。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T04"
     definition_of_done:
-      - "先补 paper/patent/project/person/research 端点，再灌 M07/M08/M09 与 M06 论文→论文，带 props.batch=comply-<日期>-t04"
-      - "对账单同 T02；M06 只含论文→论文；M07/M08/M09 方向不反转"
+      - "先补 patent/project/person/research 端点（paper 本期 0 点），再灌 M08/M09，带 props.batch=comply-20261112-t04-*；**M07/M06 本期不建**（M07 源 770 万行 100% funded_output_author 属资助署名、M06 论文→论文无源），理由见 11-11 答复与 SDD T04 卡"
+      - "对账单同 T02；M08/M09 方向不反转；M06/M07 未建须单列理由，不得记成漏项"
       - "不给技术点层新编必须边；不碰 M10–M14/M16"
     update_time: "2026-11-12T11:32:06+08:00"
   - id: KG-COMPLY-LOAD-T05
@@ -62015,7 +62019,7 @@ tasks:
     update_time: "2026-11-09T15:11:29+08:00"
   - id: KG-COMPLY-LOAD-T06
     title: "T06 四条现存边语义对齐报告（apply_to/support/participates/belongs_to）"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -62025,7 +62029,13 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 30000
-    note: "SDD §5 T06；建议执行人 human:陈芸飞"
+    note: |
+      SDD §5 T06；建议执行人 human:陈芸飞。前置三任务已于 2026-11-12 全部签收（T02/T03/T04 均 done），本节可开始认领。
+      2026-11-12 15:10 唐绍祖预取的首批事实（供起步参考，不代替正式报告，结论仍需执行人按三类出建议）：
+      **① apply_to 与 support 是同一批关系的两个名字，100% 完全重合。** 实测两条边各 10,957 条、去重端点对亦各 10,957 对，「起点+终点」完全相同的有 10,957 对，重合率 100.00%，apply_to 独有 0、support 独有 0。DoD 阈值是 >90% 即写「建议停读一条」，本例是**完全重复而非高度重合**，可直接判「建议停读一条」，不存在需要保留的独有子集。
+      **② participates 两层拆分已核**：`enterprise`→`segment` 178,731（对应 M17）、`institution`→`institution` 34,769（不属 M17/M18，见 T02 卡片「不得映射」），两层合计 213,500。
+      **③ 读图注意**：`apply_to`/`support` 各 10,957 条属存量，无批次戳；不要用 ETL 批次过滤把它们筛掉。
+      **④ 环境注意**：图库 10.50.75.136:9669 已触发内存高水位（`Used memory hits the high watermark(0.800000)`），无 Tag 锚定的全表扫描基本失效（连接间歇超时、大聚合被拒）；`MATCH ()-[e:apply_to]->()` 这类全扫需改为按端点 Tag 锚定，取端点对明细时可分批 `LIMIT`。
     depends_on:
       - "KG-COMPLY-LOAD-T02"
       - "KG-COMPLY-LOAD-T03"
