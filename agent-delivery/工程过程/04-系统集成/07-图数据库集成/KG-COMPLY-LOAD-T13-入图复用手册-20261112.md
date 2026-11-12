@@ -109,7 +109,7 @@
 | M06/M03/M19/M20 | — | M06 无源；M03 端点全 company（8,784 机构无一合格）；M19 与 **M02** 同源（research_coop）；M20 与 **M01** 同源（talent_coop） | 0 | 裁定记 0 或停建 |
 | M05/M10–M14/M16/M18/M21/M23/M24 | 11 条 M：10 条挂 8 种边型全 0（M12–M14 同挂 `policy_apply_to`；M16 挂存量 `cite`）；M18 挂存量 `participates` 按口径 0——该边 213,500 条属 M17 与历史混装，勿按边名总数误判非空 | 0 | 空态（T05 核验） |
 
-> ⚠️ **边型拼写陷阱**：`participate`（无 s，M07/M08，2026-11-11 T01 补建）与 `participates`（有 s，M17/M18，历史存量边）是**两个不同的边型**——查询、对账、建边时差一个字母就是在操作另一条边，写脚本前先核对清楚（T05 报告已提示的手滑点）。同理 `cite` 一个边型装两条 M（M06 paper→paper、M16 见 L03 定义），本期均 0，将来若只建其一必须按端点拆开核。
+> ⚠️ **边型拼写陷阱**：`participate`（无 s，M07/M08，2026-11-11 T01 补建）与 `participates`（有 s，M17/M18，历史存量边）是**两个不同的边型**——查询、对账、建边时差一个字母就是在操作另一条边，写脚本前先核对清楚（T05 报告已提示的手滑点）。同理 `cite` 一个边型装两条 M——M06 paper→paper、**M16 政策→政策**（以 L03 M 表为准，唐绍祖 2026-11-12 勘误定案：原「M16 论文→专利」写法有误）——本期均 0，将来若只建其一必须按端点拆开核。
 
 边属性通用形：`(weight, props)`，业务字段进 `props` JSON（如 M08 的 `relation_type`/`institution_role_code`、M01 的 `match_method=coauthor`、M04 的 `match_method=employment_history_aggregated`）。weight 口径按单：M02=Σ`co_paper_count`；M01=`collaboration_score`（空补 0）；M04=0；M08/M09=1.0 恒定。
 
