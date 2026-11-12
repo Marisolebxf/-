@@ -61973,12 +61973,13 @@ tasks:
   - id: KG-COMPLY-LOAD-T09-S1
     cost_warn: "yellow"
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T09-S1.md"
+    evidence_accept: "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-ACCEPT-T09-S1-技术验收记录.md"
     claimed_at: "2026-11-12T09:59:14.803Z"
     last_seen_at: "2026-11-12T09:59:14.803Z"
     lock_until: "2026-11-12T13:59:14.803Z"
     claimed_by: "agent:algorithm-agent"
     title: "T09 补充交付：1,500 点重算无权度 + 重算加权度整榜（T12 契约阻塞项）"
-    status: "review"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P1"
@@ -61990,7 +61991,16 @@ tasks:
     estimated_tokens: 12000
     supervised_by: "human:陈芸飞"
     note: |
+      **为什么开这张单（2026-11-12 17:10 唐绍祖，应 human:李周 T12 阻塞请求）**：T12 接口契约初稿已按六条必改调整，其中两条**卡在没有数据**，必然 T09 侧补算：
+      - 重算无权度 `degree` 须与 T09 已交付 `recomputed_degree_top20` 同一算法（榜首 2,914）；1,500 点子图（429/430/432 同一人口）每点全图无权度。
+      - 重算加权度 = `Σ over 入射边 (relation_confidence_score / 100)`，榜首须复现 1,478.05。
+      - 两者各带 `metric_source` 与 `scope`，供契约直接透传。
+      **交付物**：新增独立 JSON 或扩充 `对接文档/燕大/T09/result.json` 的 `tech_layer`；须附独立复算校验。
+      **可选加分（不阻塞 T12）**：全库 19,430 点重算无权度整榜，供 428 分页；不交不影响 432 与中台加权度的阻塞解除。
+      **边界**：只读、不写图；不改 T09 已签收结论；不动 429/430/431；新增数据不得覆盖旧文件。
+      **（2026-11-12 18:20 补记）本卡原文曾在 17:10 写「有向入边口径」，与锚点 2,914/1,478.05 冲突；正式术语为「入射边（入 + 出）」，以 18:20 签收备注为准。原 21 行卡文被 `f2108c57c` 整段替换，本处恢复为摘要 + 追加备注形式，提醒登记册 note 只追加不替换。**
       2026-11-12 陈芸飞授权启动并完成离线补交：基于哈希匹配的原T09快照，1500点同人口重算无权度、19430点加权度全榜、可选19430点无权度全榜及独立新版综合表已生成，均有metric_source/scope。复用原算法，独立SQLite全19430点对拍通过，榜首2914/1478.04514324（两位1478.05），双握手恒等式通过；T09全部已签收文件哈希不变。方向明确采用入射=入+出，依据T09验收§7.2及给李周补数答复§二；仅入边为2347/1177.65278141不能匹配锚点，请签收时统一任务卡/T12中有向入边措辞。不连接不写图库、不改429/430/431、不覆盖旧基线。产物对接文档/燕大/T09-S1；待唐绍祖评审、李周接入。实际token/费用不可得。
+      **2026-11-12 18:20 技术验收通过并签收 → done（唐绍祖）**：四份数据全部到手。**方向口径裁定：加权度 = 入射边（入边 + 出边）合计**——榜首入 2,347/1,177.65278141 + 出 567/300.39236183 = 2,914/1,478.04514324，恰为 DoD 锚点；《T02/T09 技术验收记录》§7.2 原文即「2,347+567=2,914」。执行方判读正确且未擅自改他人契约。**独立复算**：无权度求和 1,082,856 = 2×541,428；加权度求和 520,039.04138118 = 2×260,019.52069059；`degree-full` 前 20 与已签收榜 id/顺序/分值全一致；1,500 人口与旧 composite 全等；432 其余三项按 id 改动 0 点；min-max×0.25 自算偏差 5.55e-17；7 个已签收文件 SHA256 不变；全程离线未连库。**两条约束**：① 无向度=入+出 仅在「无自环、无重复端点对」快照成立；② `weighted_degree_recomputed`/`weighted_degree`(陈旧 1010.91)/`degree`(2914) 三指标字段名不得混用。验收记录 `KG-COMPLY-ACCEPT-T09-S1-技术验收记录.md`。**下游已解锁**：T12 的 428 可放开 Top20 上限、432 与中台 1 撤销 deferred 空态。
     depends_on:
       - "KG-COMPLY-LOAD-T09"
     design_refs:
@@ -62000,7 +62010,7 @@ tasks:
       - "交付 1,500 点（429/430/432 同一人口）逐点重算无权度，榜首复现 2,914"
       - "交付重算加权度榜单（Σ relation_confidence_score/100，有向入边），榜首复现 1,478.05"
       - "两份结果各带 metric_source / scope 字段；不改动 T09 已签收文件、不写图、不覆盖旧基线"
-    update_time: "2026-11-12T18:03:31+08:00"
+    update_time: "2026-11-12T18:20:00+08:00"
   - id: KG-COMPLY-LOAD-T10
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T10.md"
     title: "T10 图算法作业·社群批（433–435/437，定案 B′）"
@@ -62169,6 +62179,7 @@ tasks:
       边界：两案通用（SDD §4），不选落点、不写实现、不新增 Tag/Edge、契约不含连接串与凭证。李周同人还持 T07（等 T06）/ T11（等 T07），建议顺序 T12 先行。
 
       **2026-11-12 16:12 李周（agent:api-agent）认领开工**：其认领提交 eeb2f740b 复核 T08/T09/T10 均 done 后置 in_progress，开始整理 SDD §2 的 23 项结果三态与 §4 两案压测建议，初稿供唐绍祖评审。
+      **2026-11-12 18:20 两轮评审闭合 + S1 数据到位（唐绍祖）**：`d6ac7aa2d` 二稿提 3 必改 + 2 建议；`5e729c51e` 全部闭合（`topN` 1–20 越界 400、`/api/kg/comply` 改案 1 示例、`availability` 进 §1 三态、社群 287=180+107、428 去重复 score）；`646155274` 补修 T07 §2 多余分隔符与 T12 §2 指标字段。**阻塞解除**：`KG-COMPLY-LOAD-T09-S1` 18:20 签收 done。**签收前仍需改三处**：① §4.1 `weighted_degree_recomputed` 口径由「有向入边」改为「入射边（入 + 出）」；② 428 的 `topN` 上限 20 放开为整榜分页（`degree-full.json` 19,430 行，`meta.scope` → `full_graph`，不再返 400）；③ 432 与中台 1 撤销 `deferred` 空态，直接返回 `composite-recomputed.json` 与 `weighted-degree-full.json`（`availability=deferred` 枚举保留在 §1）。答复文档 `KG-COMPLY-答复-李周-加权度口径确认与S1签收-20261112.md`。
     depends_on:
       - "KG-COMPLY-LOAD-T08"
       - "KG-COMPLY-LOAD-T09"
