@@ -1,0 +1,716 @@
+{
+  "schema_version": 2,
+  "run_id": "2322-7165631850",
+  "current_cycle_id": "cycle-001-20261112T104834+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261112T104834+0800",
+      "seq": 1,
+      "started_at": "2026-11-12T10:48:34.637+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2322",
+    "work_item_id": "7165631850",
+    "title": "粤港澳大湾区创新能力，各城市创新能力指标构成，创新机制和同比为空；表内其他城市无数据",
+    "owner": "human:7695591354147146731",
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "claim-20261112-1047-b",
+    "claim_comment_ref": "7707110709980613907",
+    "claim_operator": "human:7695591354147146731",
+    "claimed_at": "2026-11-12T10:48:34.637+08:00",
+    "session_id": "session-20261112-1047-b",
+    "machine_id": "codex-local",
+    "current_owner": "human:7695591354147146731",
+    "takeover_history": []
+  },
+  "phase": "READY_SHIP",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "topic_py",
+      "repo_name": "lumen-topic-py",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git",
+      "base_branch": "dev",
+      "base_sha": "7bc646a4b1f5685128fcfdd09188b07637f14f4a",
+      "candidate_sha": "0687fb873ce53bfe41cf46c6af4c333fa4322a04",
+      "planned_change_scope": [
+        "gkx_show_service/views/gba_indicator.py",
+        "gkx_show_service/scripts/seed_gba_capacity_demo.py",
+        "tests/test_gba_capacity_score.py"
+      ],
+      "role": "backend_python",
+      "depends_on": [],
+      "ship_order": 1
+    },
+    {
+      "repo_id": "backend",
+      "repo_name": "lumen-svc-platform",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform.git",
+      "base_branch": "dev",
+      "base_sha": "da2260aeee781138d7b8006ce45873f471c49da1",
+      "candidate_sha": "4eb0a85919bfe97bd5f48bdeaabfcd708b078d23",
+      "planned_change_scope": [
+        "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/BayInnovationController.java",
+        "gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller/BayInnovationControllerTest.java"
+      ],
+      "role": "backend_java",
+      "depends_on": [
+        "topic_py"
+      ],
+      "ship_order": 2
+    },
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "b83e84bb9b0dd3187d64f4ad062c731aca1680e0",
+      "candidate_sha": "68805b383e99cb32ba2d340646f8696e1f8067a2",
+      "planned_change_scope": [
+        "src/api/situation/bayAreaInnovation.ts",
+        "src/views/situation/bay-innovation/tabs/CapacityTab.vue"
+      ],
+      "role": "frontend",
+      "depends_on": [
+        "backend"
+      ],
+      "ship_order": 3
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:51fd208d6363fe55c37ddd390be5ea497336ce793651f393005c45451b386494",
+    "scope": {
+      "status": "approved",
+      "tables": [
+        {
+          "database": "demo_gkxlumenx_ads",
+          "schema": "demo_gkxlumenx_ads",
+          "table": "city_index",
+          "environment": "demo",
+          "access_mode": "python",
+          "host_ref": "env:DEMO_MYSQL_HOST",
+          "account_ref": "env:DEMO_MYSQL_USER",
+          "confirmed_by": "human:7695591354147146731",
+          "confirmed_at": "2026-11-12T11:20:00+08:00",
+          "evidence_ref": "evidence/manifest.json#ev-2322-city-index-readonly"
+        }
+      ]
+    }
+  },
+  "diagnosis": {
+    "symptom": "粤港澳大湾区创新能力页“各城市创新能力指标构成”中：创新机制列始终为—，同比列始终为—；接口只返回 8 个城市，东莞/佛山/广州/惠州/江门/深圳/珠海/肇庆中仅 4 城有综合得分和四维值，其余 4 城显示 NaN（当前前端已改为—，但仍无数据）；中山、香港、澳门未出现在表中。",
+    "reproduction": [
+      "打开 dev：科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新能力。",
+      "观察“各城市创新能力指标构成”：创新机制列全部为空，同比列全部为空。",
+      "对照接口 /display/v1/situation/bay-innovation/capability：返回 8 城，只有广州/深圳/惠州/东莞有 score 与四维子指标，佛山/江门/珠海/肇庆为 null。",
+      "只读核对 gkxlumenx_ads.ads_gba_capacity_index：共 11 行，仅 4 行有 capacity_index/res_index/org_index/mech_index/env_index；其余 7 行为 null。",
+      "只读核对 demo_gkxlumenx_ads.city_index：已有广州/深圳/东莞等部分城市历史，但不足以覆盖湾区 11 城，也没有当前接口使用的统一演示版本。"
+    ],
+    "root_cause": "链路存在三处叠加缺口：1）Python capability-score 已从 ads_gba_capacity_index 取到 4 城 mech_index，但前端 mapper 硬编码 mechanismIndex=undefined，主动丢弃机制值；2）接口没有返回同比或能力历史，前端 trend 也硬编码 undefined；3）display 聚合层只遍历 geoMetrics 返回的 8 城，未按湾区固定 11 城补行，而现有 Demo 能力表又只有 4 城有分值。结果是页面既无法展示机制/同比，也无法覆盖完整 11 城。",
+    "counter_evidence": [
+      "SRS 序号96明确要求展示创新资源、创新机构、创新机制、创新环境子指标及贡献度；序号95要求展示当前数值和历史变化；序号107要求详情包含同比环比变化和历史趋势。",
+      "Python 接口实际已下发 indicators.mechanism，说明不是上游完全无值；问题包含前端主动隐藏。",
+      "Demo 阶段 policy demo-2026-11-10 允许在逐表 scope 批准后向 demo_gkxlumenx_ads 写 Mock；用户已明确要求合规演示阶段覆盖需规、不得改表结构、不得 Mock 久新库和正式 ADS。",
+      "demo_gkxlumenx_ads.city_index 已存在城市-期间-总分-子分-指标 JSON 结构，可在不改表结构的前提下承载 11 城演示数据和同比所需历史。"
+    ],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/湾区创新监测.md#序号 95 指标数值展示",
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/湾区创新监测.md#序号 96 指标构成分析",
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/湾区创新监测.md#序号 107 指标数据详情查看"
+    ],
+    "impact_scope": [
+      "lumen-topic-py/gkx_show_service/views/gba_indicator.py：能力分改读当前 Demo 配置库的 city_index 演示版本，输出 11 城、机制、同比和历史。",
+      "lumen-topic-py/gkx_show_service/scripts/seed_gba_capacity_demo.py：幂等补齐 demo_gkxlumenx_ads.city_index 的 11 城年度演示数据。",
+      "lumen-svc-platform/gkxlumen-display/.../BayInnovationController.java：按湾区固定 11 城组装列表并透传 mechanism/trend/history。",
+      "lumen-ui-science-pc/src/api/situation/bayAreaInnovation.ts 与 CapacityTab.vue：消费并展示机制、同比、历史，不再主动隐藏。",
+      "数据写入仅限 demo_gkxlumenx_ads.city_index；不写正式 ADS、不写久新库、不改表结构。"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "lumen-topic-py/gkx_show_service/views/gba_indicator.py：从 GKX_ADSDB_DATABASE 指向的 city_index 读取 weight_version=gba-capacity-demo-v1 的 11 城数据，返回 score、resource/institution/mechanism/environment、trend、history、rank。",
+      "lumen-topic-py/gkx_show_service/scripts/seed_gba_capacity_demo.py：新增可 dry-run、可 --apply、可回滚的幂等灌数脚本，只写 demo_gkxlumenx_ads.city_index。",
+      "lumen-svc-platform/gkxlumen-display/.../BayInnovationController.java：按固定 11 城输出，合并 geoMetrics 原始计数与能力演示结果，原样透传 trend/history，不再因 geoMetrics 缺城漏行。",
+      "lumen-ui-science-pc/src/api/situation/bayAreaInnovation.ts：映射 indicators.mechanism、row.trend、row.history。",
+      "lumen-ui-science-pc/src/views/situation/bay-innovation/tabs/CapacityTab.vue：机制与同比正常展示，补齐 11 城后排名、雷达图、子指标卡同步有数据。"
+    ],
+    "non_goals": [
+      "不修改 demo_gkxlumenx_ads.city_index 表结构。",
+      "不写 gkxlumenx_ads、久新 ODS/DWD、任何正式 ADS 或生产环境。",
+      "不伪造 geoMetrics 原始计数；原始计数仍按真实接口返回，缺城可为空。",
+      "不扩大到湾区创新监测其他 Tab 的数据口径改造。"
+    ],
+    "verification_plan": [
+      "Python：单测 mock adsdb 返回，断言 capability-score 固定 11 城、机制/同比非空、排序和历史正确。",
+      "Java：单测 capability 聚合，断言固定 11 城、cap trend/history 透传、无能力行不补 0。",
+      "前端：pnpm type-check、pnpm build，DOM 断言表格 11 行，创新机制和同比列存在有限值格式。",
+      "数据：执行只读复核，确认 demo_gkxlumenx_ads.city_index 中 gba-capacity-demo-v1 共 11 城 × 4 期，且唯一键无重复。",
+      "部署后：调用 dev capability 接口断言 total=11、非空 mechanism=11、非空 trend=11，再核对页面目标区域。"
+    ],
+    "rollback_plan": [
+      "数据：删除 demo_gkxlumenx_ads.city_index 中 weight_version='gba-capacity-demo-v1' 的本次演示行；脚本支持 --rollback 并打印影响行数。",
+      "代码：按 Bundle 逆序回滚前端、Java、Python 各候选提交；不触碰表结构和其他 weight_version 数据。"
+    ],
+    "data_access": true
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "topic_py",
+        "base_sha": "7bc646a4b1f5685128fcfdd09188b07637f14f4a",
+        "candidate_sha": "0687fb873ce53bfe41cf46c6af4c333fa4322a04",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py",
+        "changed_files": [
+          "gkx_show_service/scripts/seed_gba_capacity_demo.py",
+          "gkx_show_service/views/gba_indicator.py",
+          "tests/test_gba_capacity_score.py"
+        ],
+        "diff_hash": "sha256:3afc5b114b83e1c9feaba2d85e0b6f0fcb24abc84a7722f48e9a8430986b391a",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-12T11:42:30.600+08:00"
+      },
+      {
+        "repo_id": "backend",
+        "base_sha": "da2260aeee781138d7b8006ce45873f471c49da1",
+        "candidate_sha": "4eb0a85919bfe97bd5f48bdeaabfcd708b078d23",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform",
+        "changed_files": [
+          "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/BayInnovationController.java",
+          "gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller/BayInnovationControllerTest.java"
+        ],
+        "diff_hash": "sha256:cee565d9649d81a6f450747d48576b04d809829c7499e6114c715ff9ac3581d6",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-12T11:42:30.810+08:00"
+      },
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "b83e84bb9b0dd3187d64f4ad062c731aca1680e0",
+        "candidate_sha": "68805b383e99cb32ba2d340646f8696e1f8067a2",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/api/situation/bayAreaInnovation.ts",
+          "src/views/situation/bay-innovation/tabs/CapacityTab.vue"
+        ],
+        "diff_hash": "sha256:e8ea5529bac42931e48a39a5324fda2b8edb0cd04172fddbd70ad33a53a07aca",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-12T11:42:30.985+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "topic_py",
+        "reviewer": "subagent:independent-review-2322",
+        "independent": true,
+        "reviewed_sha": "0687fb873ce53bfe41cf46c6af4c333fa4322a04",
+        "verdict": "PASS",
+        "scope": "demo 数据源硬隔离、11 城能力分/机制/同比/历史、0 值边界及无数据行回归",
+        "findings": [
+          "P1 已关闭：capability-score 显式绑定 demo_gkxlumenx_ads，source 由同一常量生成，避免环境漂移误读正式 ADS。",
+          "P2 已关闭：子指标改用键存在且非 None 的取值，合法 0 不再被 truthy 回落吞掉；3 个目标测试通过。",
+          "残余 P2：seed 数据未接入部署初始化任务，环境重建后仍需人工执行脚本。"
+        ],
+        "round": 2,
+        "review_hash": "sha256:7738fd5cd98956def769582bc8b9f66c7578e06799f7033d5f3dd1e26c6b2f54"
+      },
+      {
+        "repo_id": "backend",
+        "reviewer": "subagent:independent-review-2322",
+        "independent": true,
+        "reviewed_sha": "4eb0a85919bfe97bd5f48bdeaabfcd708b078d23",
+        "verdict": "PASS",
+        "scope": "固定 11 城聚合、能力分空/异常降级原因、indicators/trend/history 透传与排序",
+        "findings": [
+          "P2 已关闭：能力分返回空列表或调用异常时保留 11 城，并通过 capabilityEmptyReason 与 emptyReason 透出明确降级原因。",
+          "P3：新增测试覆盖空列表，未直接模拟 Feign 抛异常；异常分支逻辑简单，不阻断提测。"
+        ],
+        "round": 2,
+        "review_hash": "sha256:ba2bb9e801cc9133c2f281078ff84538721a93a09b65290da9efd85534b65291"
+      },
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "subagent:independent-review-2322",
+        "independent": true,
+        "reviewed_sha": "68805b383e99cb32ba2d340646f8696e1f8067a2",
+        "verdict": "PASS",
+        "scope": "能力分历史口径、机制/同比字段映射、趋势图标题与单位、机制缺数文案",
+        "findings": [
+          "P1 已关闭：趋势图标题改为“头部城市创新能力综合得分趋势”，tooltip 单位改为“分”，不再把能力分误标为论文数。",
+          "机制缺数文案改为中性描述，并移除 GBA_ANALYSIS_SUBITEMS 旧依赖。",
+          "残余 P2：review/readiness.ts 的旧 w_v1.0-demo/3 城说明未纳入本次改动 scope，提测时需同步或确认不影响展示。"
+        ],
+        "round": 2,
+        "review_hash": "sha256:b5d68ea062bf6922b1e330326cebd9b569cab0ef36c842f7e55fc2bb89fa4d61"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "v2322-fix-python",
+      "category": "fix",
+      "behavior": "Python capability-score 固定返回 11 城，并以 demo_gkxlumenx_ads.city_index 的 gba-capacity-demo-v1 生成 score、四维指标、同比、历史与排名。",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "ev-2322-python-tests-r2",
+        "ev-2322-db-write-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "真实 demo 回读为 11 城、44 行、4 个年度观测点；2025-05 机制与同比均有值。"
+    },
+    {
+      "id": "v2322-fix-backend",
+      "category": "fix",
+      "behavior": "Java capability 聚合固定输出湾区 11 城，透传 indicators、trend、history，并保留能力分空结果的降级原因。",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "ev-2322-java-tests-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "目标控制器测试 2 个全部通过。"
+    },
+    {
+      "id": "v2322-fix-ui",
+      "category": "fix",
+      "behavior": "前端映射机制、同比和历史字段，并在 11 城表格、排名、雷达图和趋势图中展示。",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-2322-ui-build-r2",
+        "ev-2322-cross-repo-contract-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "类型检查和生产构建通过；契约脚本确认页面字段消费与趋势标题/单位正确。"
+    },
+    {
+      "id": "v2322-regression-topic_py",
+      "category": "regression",
+      "behavior": "无演示行时仍返回 11 城空行；合法 0 子指标不被 truthy 回落吞掉；历史不足时不伪造同比。",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "ev-2322-python-tests-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "3 个目标测试覆盖空行和零值边界。"
+    },
+    {
+      "id": "v2322-regression-backend",
+      "category": "regression",
+      "behavior": "能力分服务返回空列表时仍保留 11 城，不补 0、不丢失原始计数与降级原因。",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "ev-2322-java-tests-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "控制器测试覆盖空列表分支；Feign 抛异常的简单降级分支由代码评审确认。"
+    },
+    {
+      "id": "v2322-regression-ui",
+      "category": "regression",
+      "behavior": "前端不篡改原始 geoMetrics 计数；能力分趋势按“分”展示，不再误用论文数单位；旧机制说明依赖已移除。",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-2322-ui-build-r2",
+        "ev-2322-cross-repo-contract-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "生产构建与 16 项契约检查通过。"
+    },
+    {
+      "id": "v2322-boundary-empty-and-zero",
+      "category": "boundary",
+      "behavior": "覆盖空数据、非法/缺失能力分和合法 0 值，确保不显示 NaN、不以 0 冒充真实值。",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py",
+        "backend"
+      ],
+      "evidence_refs": [
+        "ev-2322-python-tests-r2",
+        "ev-2322-java-tests-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "Python 与 Java 目标测试共同覆盖非 happy path。"
+    },
+    {
+      "id": "v2322-cross-repo-integration",
+      "category": "integration",
+      "behavior": "Python 输出、Java 聚合透传和前端字段消费形成完整 11 城能力分链路，机制/同比/历史均可到达页面模型。",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py",
+        "backend",
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-2322-cross-repo-contract-r2",
+        "ev-2322-db-write-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "16 项跨仓契约检查全部通过；真实 demo 数据回读为 11 城且有机制和同比值。"
+    },
+    {
+      "id": "v2322-demo-data-scope",
+      "category": "data",
+      "behavior": "仅向 demo_gkxlumenx_ads.city_index 幂等 upsert gba-capacity-demo-v1，不修改表结构、不触碰正式 ADS 和久新库。",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "ev-2322-seed-dry-run-r2",
+        "ev-2322-db-write-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "dry-run 无冲突，apply 输出 UPSERTED=44，post-write 回读行数 44、城市 11、期间 4。"
+    },
+    {
+      "id": "v2322-diff-hygiene",
+      "category": "regression",
+      "behavior": "三仓候选改动无空白错误且被限制在授权 change scope 内。",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py",
+        "backend",
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-2322-diff-check-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "三仓 diff --check 全部通过，verify-repo 已记录精确 changed_files 与 diff_hash。"
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:7695591354147146731",
+      "approved_at": "2026-11-12T11:18:56.510+08:00",
+      "approved_session_id": "session-20261112-1047-b",
+      "approved_machine_id": "codex-local",
+      "claim_id": "claim-20261112-1047-b",
+      "message_ref": "chat:current-turn-2026-11-12T11:22+08:00",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "topic_py",
+            "repo_name": "lumen-topic-py",
+            "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git",
+            "base_branch": "dev",
+            "base_sha": "7bc646a4b1f5685128fcfdd09188b07637f14f4a",
+            "planned_change_scope": [
+              "gkx_show_service/views/gba_indicator.py",
+              "gkx_show_service/scripts/seed_gba_capacity_demo.py",
+              "tests/test_gba_capacity_score.py"
+            ],
+            "role": "backend_python",
+            "depends_on": [],
+            "ship_order": 1
+          },
+          {
+            "repo_id": "backend",
+            "repo_name": "lumen-svc-platform",
+            "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform.git",
+            "base_branch": "dev",
+            "base_sha": "da2260aeee781138d7b8006ce45873f471c49da1",
+            "planned_change_scope": [
+              "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/BayInnovationController.java",
+              "gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller/BayInnovationControllerTest.java"
+            ],
+            "role": "backend_java",
+            "depends_on": [
+              "topic_py"
+            ],
+            "ship_order": 2
+          },
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+            "base_branch": "dev",
+            "base_sha": "b83e84bb9b0dd3187d64f4ad062c731aca1680e0",
+            "planned_change_scope": [
+              "src/api/situation/bayAreaInnovation.ts",
+              "src/views/situation/bay-innovation/tabs/CapacityTab.vue"
+            ],
+            "role": "frontend",
+            "depends_on": [
+              "backend"
+            ],
+            "ship_order": 3
+          }
+        ],
+        "diagnosis_hash": "sha256:5b5742aaea5b4ec4bde4dcadc0195de71b4d2b79a4bd284ec0cc1e3392f9d673",
+        "plan_hash": "sha256:1529b8eef04262c14e65fde495aa62590eda0231730e90457d6b28e749b0de49",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:51fd208d6363fe55c37ddd390be5ea497336ce793651f393005c45451b386494"
+      },
+      "gate_hash": "sha256:c877c022df81ed0483ab8370f2c7271ed14f17c03b022a61be551f4b13a91379",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-12T11:18:56.616+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:c877c022df81ed0483ab8370f2c7271ed14f17c03b022a61be551f4b13a91379",
+        "expected": "sha256:c877c022df81ed0483ab8370f2c7271ed14f17c03b022a61be551f4b13a91379",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [],
+    "acceptance_steps": [],
+    "dev_verification": {
+      "result": "PENDING",
+      "evidence_refs": []
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-12T11:18:31.413+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-20261112-1047-b",
+      "session_id": "session-20261112-1047-b",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "只读诊断、需规映射、跨仓范围和 Demo 数据 scope 已落账"
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-12T11:18:31.469+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-20261112-1047-b",
+      "session_id": "session-20261112-1047-b",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "修复计划、验证矩阵和回滚方案已完整"
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-12T11:18:56.616+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-20261112-1047-b",
+      "session_id": "session-20261112-1047-b",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:c877c022df81ed0483ab8370f2c7271ed14f17c03b022a61be551f4b13a91379",
+      "evidence_refs": [],
+      "summary": "用户发送精确口令进入开发；跨仓 Bundle 和 Demo 数据 scope 已绑定"
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-12T11:47:56.002+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-20261112-1047-b",
+      "session_id": "session-20261112-1047-b",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [
+        "ev-2322-python-tests-r2",
+        "ev-2322-java-tests-r2",
+        "ev-2322-ui-build-r2",
+        "ev-2322-cross-repo-contract-r2",
+        "ev-2322-db-write-r2"
+      ],
+      "summary": "三仓实现、独立复审与证据归档完成，进入验证阶段。"
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-12T11:47:59.729+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-20261112-1047-b",
+      "session_id": "session-20261112-1047-b",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [
+        "ev-2322-diff-check-r2"
+      ],
+      "summary": "三仓独立复审均为 PASS，进入统一验证。"
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-12T11:48:04.675+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-20261112-1047-b",
+      "session_id": "session-20261112-1047-b",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [
+        "ev-2322-python-tests-r2",
+        "ev-2322-java-tests-r2",
+        "ev-2322-ui-build-r2",
+        "ev-2322-cross-repo-contract-r2",
+        "ev-2322-db-write-r2"
+      ],
+      "summary": "三仓测试、构建、跨仓契约和 demo 数据回读均 PASS，达到 READY_SHIP。"
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-12T11:47:49.861+08:00",
+      "manifest_hash": "sha256:e04dc012e5e4b0d5c01c55e73fd234e916efbd18afa4cd45a029a165d3b2d52e",
+      "item_count": 8,
+      "evidence_ids": [
+        "ev-2322-city-index-readonly",
+        "ev-2322-python-tests-r2",
+        "ev-2322-java-tests-r2",
+        "ev-2322-ui-build-r2",
+        "ev-2322-cross-repo-contract-r2",
+        "ev-2322-diff-check-r2",
+        "ev-2322-seed-dry-run-r2",
+        "ev-2322-db-write-r2"
+      ],
+      "evidence_results": {
+        "ev-2322-city-index-readonly": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-2322-python-tests-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-2322-java-tests-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-2322-ui-build-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-2322-cross-repo-contract-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-2322-diff-check-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-2322-seed-dry-run-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-2322-db-write-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "展示提测绑定对象并取得精确口令。"
+  },
+  "updated_at": "2026-11-12T11:48:12.352+08:00"
+}
