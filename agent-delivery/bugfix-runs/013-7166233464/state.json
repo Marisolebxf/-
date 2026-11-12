@@ -32,7 +32,7 @@
     "current_owner": "current_user",
     "takeover_history": []
   },
-  "phase": "IMPLEMENTING",
+  "phase": "READY_SHIP",
   "risk": {
     "level": "S",
     "reasons": [],
@@ -45,10 +45,11 @@
       "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
       "base_branch": "dev",
       "base_sha": "d6694bfcce1300c036911a12f6f4f8b49e4b971c",
-      "candidate_sha": null,
+      "candidate_sha": "44772b352483a812395dcec53b03c19b50ed034c",
       "planned_change_scope": [
-        "src/views/policy/analysis/index.vue",
-        "src/views/policy/panorama/index.vue"
+        "src/views/policy/panorama/components/PolicySearchResultPanel.vue",
+        "src/views/policy/panorama/index.vue",
+        "test-fix-selfcheck-013.mjs"
       ],
       "role": "primary",
       "depends_on": [],
@@ -100,15 +101,75 @@
     "data_access": false
   },
   "implementation": {
-    "repos": []
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "d6694bfcce1300c036911a12f6f4f8b49e4b971c",
+        "candidate_sha": "44772b352483a812395dcec53b03c19b50ed034c",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/policy/panorama/components/PolicySearchResultPanel.vue",
+          "src/views/policy/panorama/index.vue",
+          "test-fix-selfcheck-013.mjs"
+        ],
+        "diff_hash": "sha256:85a927765ab1ecc7fdf4bbd20430fc8f594ff66809057ef5e211b49a0fedf24e",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-13T02:56:34.065+08:00"
+      }
+    ]
   },
   "review": {
-    "repos": []
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:coordinator-agent",
+        "reviewed_sha": "44772b352483a812395dcec53b03c19b50ed034c",
+        "verdict": "PASS",
+        "scope": "frontend",
+        "independent": false,
+        "findings": [],
+        "round": 1,
+        "review_hash": "sha256:3e22e02ec820c1ab1e494b4852a9f49614dcac75dac3b44390fdc79e16a4c843"
+      }
+    ]
   },
-  "verification_matrix": [],
+  "verification_matrix": [
+    {
+      "id": "v-fix",
+      "category": "fix",
+      "behavior": "缺陷现象按工单描述消除（自检断言新逻辑在场、旧 bug 写法不在场）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-selfcheck"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "v-reg",
+      "category": "regression",
+      "behavior": "相邻行为不受影响（自检脚本回归断言绿；全仓 vue-tsc 类型门绿）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-selfcheck",
+        "ev-typecheck"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    }
+  ],
   "gates": {
     "enter_dev": {
-      "status": "approved",
+      "status": "invalidated",
       "source": "chat",
       "token_text": "进入开发013",
       "approved_by": "human:淮政玮",
@@ -211,6 +272,45 @@
       "gate_hash": "sha256:626d788cb71f3f4309040d4ba150ddf4ef01f2726da14ea4cc473bcb046564c4",
       "evidence_refs": [],
       "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-13T02:56:45.203+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261113-wave2-013",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-13T02:56:49.864+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261113-wave2-013",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-13T02:56:54.951+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261113-wave2-013",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
     }
   ],
   "failure_stage": null,
@@ -227,7 +327,30 @@
   "evidence": {
     "manifest": "evidence/manifest.json",
     "missing": [],
-    "verification": null
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-13T02:56:43.135+08:00",
+      "manifest_hash": "sha256:1b5dc0f28529f81d5142e9993995af9bcb0b7a7bca37c01f4ce3a652e07ea65f",
+      "item_count": 2,
+      "evidence_ids": [
+        "ev-selfcheck",
+        "ev-typecheck"
+      ],
+      "evidence_results": {
+        "ev-selfcheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-typecheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
   },
   "rollback": {
     "repos": [],
@@ -239,7 +362,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "完成改动并运行 verify-repo，然后提交评审。"
+    "action": "展示提测绑定对象并取得精确口令。"
   },
-  "updated_at": "2026-11-13T01:48:34.887+08:00"
+  "updated_at": "2026-11-13T02:56:54.951+08:00"
 }
