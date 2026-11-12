@@ -61970,6 +61970,40 @@ tasks:
       - "PageRank 和=1.0；度中心性 vs weighted_degree 相关 ≥0.95；抽样口径如实标注"
       - "权重自检 relation_confidence_score 空值率=0；不写回图"
     update_time: "2026-11-12T14:30:00+08:00"
+  - id: KG-COMPLY-LOAD-T09-S1
+    title: "T09 补充交付：1,500 点重算无权度 + 重算加权度整榜（T12 契约阻塞项）"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-SCI-INT"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 12000
+    supervised_by: "human:陈芸飞"
+    note: |
+      **为什么开这张单（2026-11-12 17:10 唐绍祖，应 human:李周 T12 阻塞请求）**：T12 接口契约初稿已按六条必改调整，其中两条**卡在没有数据**，无法由契约方自行计算，必须 T09 侧补算：
+      ① **432 多维综合**：T09 交付的 `composite.json` 里 `raw.degree` 用的是 `tech_point.weighted_degree`（陈旧，榜首 1010.90780192），而 428 已改用重算无权度（榜首 2914）。两者 Top20 仅重合 16/20，名次会互相打架。要让 432 与 428 同基准，需 **1,500 点子图（即 429/430/432 现用同一人口）每点的重算无权度 `degree`**。T09 现只交付了全局 `recomputed_degree_top20`（Top20），不足 1,500 行。
+      ② **中台「加权度」**（SDD §2.2 第 2 列 #1）：该能力名就是「加权度」，但当前唯一可用的是陈旧 `weighted_degree`；重算加权度（`Σ relation_confidence_score / 100`，有向入边口径）**只有榜首单点校验值 1478.05，没有整榜**。需出**重算加权度完整榜（建议 Top100 + 或全量写入 JSON）**，供契约方返回真「加权度」。
+      **口径必须写清（避免又出现两套数打架）**：
+      - 重算无权度 `degree` = 入射边条数（无向化前的有向入边条数？**须与 T09 已交付 `recomputed_degree_top20` 同一算法**，直接复用其脚本逻辑，不得换口径）；T09 已记录 `recomputed unweighted degree`，榜首 2914。
+      - 重算加权度 = `Σ over 入射边 (relation_confidence_score / 100)`，榜首 1478.05（已有校验值，须能复现）。
+      - 两者都要带 `metric_source` 与 `scope`（人口/子图/采样方式）字段，供契约直接透传。
+      **交付物**：扩充 `对接文档/燕大/T09/result.json` 的 `tech_layer`（新增 `428_degree_centrality_recomputed_1500` 与 `weighted_degree_recomputed_rank` 两节），或新增独立 JSON；须附独立复算校验（与已有 2914 / 1478.05 两个锚点对得上）。
+      **边界**：只读、不写图；不改 T09 已签收结论；不动 429/430/431 已有交付；新增数据不得覆盖旧文件（旧基线备查）。
+      关联：`KG-COMPLY-答复-李周-T12初稿评审-20261112.md` §三.1 / §三.2；验收记录 `KG-COMPLY-ACCEPT-T02-T09-技术验收记录.md` §附录带发现。
+    depends_on:
+      - "KG-COMPLY-LOAD-T09"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T09"
+      - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-答复-李周-T12初稿评审-20261112.md"
+    definition_of_done:
+      - "交付 1,500 点（429/430/432 同一人口）逐点重算无权度，榜首复现 2,914"
+      - "交付重算加权度榜单（Σ relation_confidence_score/100，有向入边），榜首复现 1,478.05"
+      - "两份结果各带 metric_source / scope 字段；不改动 T09 已签收文件、不写图、不覆盖旧基线"
+    update_time: "2026-11-12T17:10:00+08:00"
   - id: KG-COMPLY-LOAD-T10
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T10.md"
     title: "T10 图算法作业·社群批（433–435/437，定案 B′）"
@@ -61991,6 +62025,13 @@ tasks:
       **180 vs 定案 178：接受不返工**——178 恰夹在两实现（networkx 176 / python-louvain 180）之间，属 resolution=8.0 高分辨下多层合并顺序不同的已知抖动；DoD 原文写「约 178」，180 差 1.1% 在「约」区间内；且 r1.0 锚点能逐字精确复现 113 群/0.5198，证明数据与读图等价，差异仅在 r8.0 层级合并细节。要逐群对齐 178 需定案方提供库与版本号，否则不可复刻。
       **435 属性表抽样实到库**：取社群 55（最大，639 点）逐点拉 tech_rel，实测内部有向边 4,985，与表声明**精确吻合**；内部双向边对 0（单向存储）。435 表 180 行、规模合计 19,323，与 partition 逐群零差异。
       **2 条需修正（不阻塞 done，但须在 437 定稿前闭环）**：① `avg_degree` 列口径错误——180 行**逐行**皆等于 `4 × 内部边数 ÷ 规模`，为标准无向平均度 `2E/N` 的 2 倍（社群 55：表 31.21 vs 应为 15.60），疑为 networkx 无向图加双向边后 `average_degree` 未去重；437 若照此返回前端，社群密度会显示偏大一倍，建议改为 `2 × 内部边数 ÷ 规模`。② DoD 点名要求的「**密度**」列缺失（无向密度应为 `2E/(N(N-1))`，社群 55 = 0.02446），可离线补算、不必重跑聚类。
+      **2026-11-12 17:05 附条闭环复核通过（唐绍祖）**：韩梦蕊交付 `be0013a9c`，实查而非采信自述——
+      ① 435 汇总 180 行逐行验算：`平均度 = 2E/N` 全部成立（社群 55 = 9970/639 = 15.6）、`密度 = 2E/(N(N−1))` 全部成立（社群 55 = 9970/407682 = 0.024455），两项不符合行数均为 **0**；
+      ② 非目标列零变化：180 行社群 id / 规模 / 内部边数 / 核心节点 Top5 与修订前逐行比对，**差异 0 行**，证明未重跑聚类、只做离线补算；
+      ③ 437 接口档已加 `density` 字段，且注明 `avg_degree=2E/N`、`density=2E/(N(N−1))` 同口径（交付骨架 §4），与契约方口径一致。
+      **遗留一项（不影响 done）**：其飞书所称「闭环报告已归档 07-图数据库集成/KG-COMPLY-LOAD-T10-附条闭环-平均度修正与密度列.md」，**远端与本机均未搜到该文件**，`be0013a9c` 只改了 435 汇总、交付骨架、汇总脚本三个文件。需其补推或改为引用 `be0013a9c` 提交说明；本验收结论已直接基于重生成的 435 表与交付骨架，不依赖该报告。
+      **下游联动**：T12 契约（李周）原被告知「density 本期不提供、走空态」，现 density 已实算可用，**须改为直接返回该列**，不再声明缺失。
+
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -62142,8 +62183,13 @@ tasks:
       - "不选定落点、不写实现、不出现新 Tag/Edge 与凭证"
     update_time: "2026-11-12T16:12:58+08:00"
   - id: KG-COMPLY-LOAD-T07
+    supervised_by: "human:李周"
+    claimed_at: "2026-11-12T08:51:12.724Z"
+    last_seen_at: "2026-11-12T08:51:12.724Z"
+    lock_until: "2026-11-12T12:51:12.724Z"
+    claimed_by: "human:李周"
     title: "T07 入图验收总表（M01–M24）"
-    status: "ready"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -62163,6 +62209,7 @@ tasks:
       批号筛一律用 e.props CONTAINS "<批号>"，**禁止 STARTS WITH "{\"batch\":..."**——T02 的 props 里 batch 不在 JSON 首位，照抄 T03 写法会返回 0。
       环境限制：图库内存高水位（0.800000），全表扫描被拒，一律 Tag 锚定取数；M02 的 weight 总和 14,715,117 仍待环境恢复后补验。
       待补列：「跳过数」需执行方从各任务 handoff 汇总，我本次只核终态条数。
+      **2026-11-12 17:15 认领记录恢复（唐绍祖）**：李周 `48a9a2311` 已回填 `claimed_by: human:李周` 与 `in_progress`，但被我 16:5x 的一次 `git add -A` 提交整块覆盖丢失（同批还覆盖了两个 SYSINT-04-01 任务的 `ready_to_sign` 状态，均已一并恢复）。现 T07 已恢复为 `in_progress` + `claimed_by: human:李周`，其认领时间 2026-11-12T08:51:12Z 保留。**教训**：登记册这类多人并发文件禁止 `git add -A` 整文件提交，须先 `git diff` 确认未带入他人改动。
     depends_on:
       - "KG-COMPLY-LOAD-T02"
       - "KG-COMPLY-LOAD-T03"
@@ -64680,8 +64727,18 @@ tasks:
       - "handoff 写入 agent-delivery/agent-handoffs/ 并回填 cost 字段"
     update_time: "2026-11-12T16:08:10+08:00"
   - id: SYSINT-04-01-API-INDFILTER-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/门户系统集成/SYSINT-04-01-ONEMAP-INDFILTER-POLDIST.md"
+    cost_warn: "green"
+    actual_tokens: 85000
+    actual_cost: 0.8
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-12T08:24:43.620Z"
+    last_seen_at: "2026-11-12T08:24:43.620Z"
+    lock_until: "2026-11-12T12:24:43.620Z"
+    claimed_by: "human:徐滕强"
     title: "专题一张图 · 下游端点产业过滤整改（type-scale-stats / district-heat + Java 透传）"
-    status: "backlog"
+    status: "ready_to_sign"
     agent: "backend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -64691,8 +64748,7 @@ tasks:
     effort_points: "2"
     difficulty: "M"
     estimated_tokens: 150000
-    note: |
-      【流程裁定】徐滕强 2026-11-12：本单不走 bugfix QA 流程——交付自检绿后直接 in_progress→ready_to_sign→done，跳过 pending_test/testing（跳过依据=本会话用户裁定，done 时仍需淮政玮签收或按 SVC-SCALE-BAND 先例代签留痕）。registry task_type 字段 MCP 不可改，以此 note 为流程真源。技术口径：执行前须按排查汇总 §6.2 更新 DoD（EXISTS 过滤不可行→type-scale-stats 换 one_map_* 预聚合数据源；district-heat 现算 JOIN 或 ETL 补维度；新旧码收敛复用 _resolve_chain_codes）
+    note: "交付自检绿（Java 10/10 单测+PY 自检），按徐滕强 2026-11-12 流程裁定跳过 pending_test/testing，直达待签收"
     depends_on: []
     touched_files:
       - "repos/lumen-topic-py/gkx_search_service/views/enterprise_key_enterprise.py"
@@ -64705,10 +64761,20 @@ tasks:
       - "不传产业码的历史调用与其它消费方（企业发展概况页）回归不受影响（各跑一次对照请求）"
       - "公网网关复验：INB1309 vs INB1323 的 scale_dist/medium_large_ratio/enterprise 主题图数值不同；不传 industry_code 时与改造前一致"
       - "handoff 写入 agent-handoffs/，附自测证据（curl 请求/响应）与排查汇总文档链接"
-    update_time: "2026-11-12T16:23:45+08:00"
+    update_time: "2026-11-12T16:46:22+08:00"
   - id: SYSINT-04-01-DATA-POLDIST-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/门户系统集成/SYSINT-04-01-ONEMAP-INDFILTER-POLDIST.md"
+    cost_warn: "green"
+    actual_tokens: 85000
+    actual_cost: 0.8
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-11-12T08:24:43.828Z"
+    last_seen_at: "2026-11-12T08:24:43.828Z"
+    lock_until: "2026-11-12T12:24:43.828Z"
+    claimed_by: "human:徐滕强"
     title: "专题一张图 · 政策深圳九区分布灌数（policy_base_info.district 补数）"
-    status: "backlog"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -64718,8 +64784,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 200000
-    note: |
-      【流程裁定】徐滕强 2026-11-12：本单不走 bugfix QA 流程（注：本单 task_type=feature 本身无 QA 强制闸门，交付自检绿后可直接推进签收；灌数后 policy_indicators(kind=sz) by_district 九区复验 + 公网 API-3/4/6 复验为 DoD 内置验收）。registry task_type 字段 MCP 不可改，以此 note 为流程真源
+    note: "交付完成（盘点+灌数+DB复验全绿），公网复验留待服务滚动；按徐滕强裁定直达待签收"
     depends_on: []
     touched_files:
       - "repos/lumen-algo-py/vendor/entan-py/polan/basic/indicators.py"
@@ -64729,7 +64794,7 @@ tasks:
       - "灌数后复验 policy_indicators(kind=sz)：by_district 出深圳九区行（而非仅『市本级』），INB1309 深圳各区 policy_count 有值"
       - "一张图 API-3 by_district / API-4 policy_count / API-6 policy 主题公网复验有九区值"
       - "handoff 写入 agent-handoffs/，含盘点数据、灌数行数、复验证据；口径若涉业务定义歧义登记客户决策清单"
-    update_time: "2026-11-12T16:23:56+08:00"
+    update_time: "2026-11-12T16:46:22+08:00"
   - id: POL-L2-DS11-ANALYZE-CTA-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-12T07:12:05.579Z"
