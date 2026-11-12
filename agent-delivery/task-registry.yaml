@@ -61783,14 +61783,21 @@ tasks:
     estimated_tokens: 60000
     note: |
       全量M02入图与独立全量回读、图/源审计全部通过，2026-11-12 00:03:17完成。应灌/实灌3442271，新增3434654，保留核验7617，weight总和14715117一致，缺口/反向自环/非零rank均0；M15=1073且DAG通过，M17=178731、M22=94824、research=83745不变，M19=0。证据agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T02.md；提交review，待有权负责人签收，不自行done。历史网络blocked_by已解除，现有MCP无清空接口，请维护人清理该旧字段。
+      2026-11-12 13:40 唐绍祖对账护栏现场复核（详见 KG-COMPLY-LOAD-T02-对账护栏-cooperate三端点分组.md）：
+      `cooperate` 边型现已同时承载三组端点，按 Tag 对逐一实测——enterprise→enterprise 94824（M22 存量）、person→person 2525789（M01/T03）、research→research 3442271（M02/本任务），合计 6062884；其余 6 种组合（person→research、research→person、enterprise→person、person→enterprise、enterprise→research、research→enterprise）全部为 0，无跨组合污染，M03 数据未混入 M02。
+      M02 批次覆盖率 100%（props 含 comply-20261111-t02 共 3442271 条）；非 0 rank 0、反规范方向 0；research 点仍 83745 未被重建。**边数层面与本任务报数完全一致，具备签收条件。**
+      **对账口径确认**：M02 分母用 3442271，不用 6568617——后者是「合格年度行数」非跨年合并后边数，任务报告第 26 行已自行说明，此处确认为正式口径。该偏差同源于「按源行数推算边数」，与 M04 的 72503→72099 属同类问题，责任在预估口径。
+      **props 键序陷阱**：本任务 props 的 batch 键不在 JSON 首位，照抄 T03 的 STARTS WITH "{\"batch\":..." 查询返回 0；正确写法是 e.props CONTAINS "comply-20261111-t02"（实测 3442271）。T07 及后续批次禁止假设 batch 在首位。
+      **待补验（不阻塞签收）**：weight 总和 14715117 本次未能独立复核——全量 sum(e.weight) 在图库内存高水位下 518 秒后被拒。
+      **⚠️ 运维告警**：图库 10.50.75.136:9669 已触发 Used memory hits the high watermark(0.800000)，不带 Tag 锚定的全表扫描基本失效（连接间歇超时、大聚合被拒）。数据正确性不受影响，但 T07 对账脚本必须改为 Tag 锚定+分组；后续大批量灌边前建议扩容或调整内存配额。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T02"
     definition_of_done:
       - "M15（depends_on 1,073）与 M17（participates 178,731）为存量已满足项：只回读计数核对基线、不重灌、不回写 props.batch"
-      - "M02 新灌 cooperate（仅 research→research 一组）：按机构对跨年聚合、weight=累加 co_paper_count（禁用 collaboration_strength）、排除 company 端点、无向去重，约 6,568,617 对上限"
-      - "M19 记 0 条并附「与 M02 同源重复」理由；cooperate 按端点 Tag 对分组计数（存量 94,824 条 enterprise→enterprise 属 M22 不得混计）"
+      - "M02 新灌 cooperate（仅 research→research 一组）：按机构对跨年聚合、weight=累加 co_paper_count（禁用 collaboration_strength）、排除 company 端点、无向去重；**实灌分母 3,442,271**（6,568,617 是合格年度行数、非合并后边数，2026-11-12 确认）"
+      - "M19 记 0 条并附「与 M02 同源重复」理由；cooperate 按端点 Tag 对分组计数（存量 94,824 条 enterprise→enterprise 属 M22 不得混计；三组合计 6,062,884 不得作为任何单条关系分母）"
       - "对账单：存量已满足项计数 + M02 应灌子集 vs 实灌数 + 端点缺失跳过计数；depends_on 保持 DAG"
       - "不自行 INSERT VERTEX research（归 T03）；不把 apply_to/support 记成 M12–M14；不把 institution→institution participates 记成 M02/M19"
     update_time: "2026-11-12T00:06:56+08:00"
