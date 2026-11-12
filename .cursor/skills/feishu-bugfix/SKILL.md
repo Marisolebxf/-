@@ -50,7 +50,7 @@ Before changing code:
 
 1. Resolve `GKX_ROOT` from `gkx-orchestration/.env`; never hardcode the workspace root.
 2. Read the business repo's `AGENTS.md` and the relevant rules/docs from the source map.
-3. Record the target branch SHA and confirm the worktree state.
+3. Record the target branch SHA and confirm the worktree state. Run `scripts/worktree-guard.mjs --repo-dir <path> ...` before each phase; if it reports FAIL, stop and recover the worktree before continuing.
 4. Check the latest target-branch pipeline and separate development from shipping:
    - Red for an unrelated reason and disjoint from the defect path: record the repo/SHA, failing job, owner and URL as an open **ship blocker**; local development and targeted verification may continue, and the failure does not consume a patch round.
    - Red for an unrelated reason but it prevents local reproduction, the affected build/type-check, or required full verification: block development with the same owner/URL evidence.
@@ -175,10 +175,9 @@ init -> record-diagnosis -> record-plan -> set-repos
 -> verify-repo -> record-review -> record-verification
 -> verify-evidence -> advance READY_SHIP
 -> approve-gate ship -> advance SHIPPING
--> record-ship-package -> verify-evidence
--> advance DEV_VERIFYING -> advance AWAITING_ACCEPTANCE
+-> finalize --stage ship (record ship package + verify evidence + advance to AWAITING_ACCEPTANCE)
 -> exact 验收通过 -> finalize-acceptance
--> Feishu transition_state RESOLVED -> record-acceptance(mode=chat_exact)
+-> Feishu transition_state RESOLVED -> finalize --stage acceptance (record acceptance + advance RESOLVED + render report)
 -> advance RESOLVED
 
 BLOCKED recovery:
@@ -261,7 +260,7 @@ At `AWAITING_ACCEPTANCE`:
 - run `finalize-acceptance --message 验收通过 --current-status <current Feishu status>`; this validates ship evidence and approves the acceptance gate in one step;
 - call `transition_state` with the returned legal transition and satisfy required fields first;
 - record `mode=chat_exact`, `approval_message=验收通过`, approval ref/session/machine, the Feishu transition result and acceptance evidence;
-- advance the ledger to `RESOLVED` only after the Feishu transition succeeds.
+- run `finalize --stage acceptance` only after the Feishu transition succeeds; it records acceptance, advances to `RESOLVED` and renders the report.
 
 **硬规则（2026-11-13，因 2342/2343 事故新增）：收到裸词 `验收通过` 后，禁止只汇报 pipeline/deploy 结果就结束回合。必须在同一回合内完成：`finalize-acceptance` → `transition_state` → `record-acceptance` → `advance RESOLVED` → 回写验收总结。任一步失败必须显式报告失败原因并保持 Feishu 状态不变，禁止声称“已关闭”。**
 

@@ -2629,6 +2629,7 @@ function main() {
       'acceptance-file': { type: 'string' },
       'acceptance-json': { type: 'string' },
       'current-status': { type: 'string' },
+      stage: { type: 'string' },
       gate: { type: 'string' },
       message: { type: 'string' },
       'binding-file': { type: 'string' },
@@ -2649,7 +2650,8 @@ function main() {
   });
   const command = positionals[0];
   if (!command || values.help) {
-    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append audited evidence item(s); supports --evidence-batch-*\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  finalize-acceptance  Validate preconditions and approve the 验收通过 acceptance gate
+    process.stdout.write(`Usage: node .cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs <command> [options]\n\nCommands:\n  init                  Create a run ledger\n  approve-gate          Record an exact chat gate\n  validate-gate         Validate gate binding/hash/claim/session/policy\n  validate-state        Validate state schema and semantic invariants\n  set-repos             Replace authoritative repo bindings\n  set-risk              Record S/M/L risk and invalidate stale gates\n  record-diagnosis      Record diagnosis facts\n  record-plan           Record plan, verification and rollback plan\n  check-data-write      Validate a planned DB write against policy + run scope\n  verify-repo           Verify real git HEAD, remote, diff and scope\n  record-verification   Record a verification matrix\n  verify-evidence       Verify manifest paths, SHA256 and auditability\n  record-evidence       Append audited evidence item(s); supports --evidence-batch-*\n  record-review         Record per-repo review and invalidate ship gate\n  record-ship-package   Record merge/deploy/dev-verify facts\n  record-rollback       Record rollback facts\n  record-decision       Record an automatic decision and alternatives\n  record-failure        Record failure stage/class and patch round\n  finalize              Aggregate local ship/acceptance completion steps
+  finalize-acceptance  Validate preconditions and approve the 验收通过 acceptance gate
   record-acceptance     Record policy-only or exact 验收通过 acceptance evidence\n  takeover              Explicitly transfer a crashed/stalled run to a new claim\n  set-data-scope        Apply versioned policy + run table whitelist\n  advance               Advance to the next legal phase\n  resume                Resume BLOCKED to its recorded resume_phase\n  block                 Enter BLOCKED with a resume condition\n  cancel                Enter CANCELLED\n  reopen                Archive current cycle and open REOPENED cycle\n  render-report         Render report.md from state + evidence manifest\n\nRun with --help omitted for command-specific errors; see P0-DESIGN.md for fields.\n`);
     return;
   }
@@ -2936,6 +2938,36 @@ function main() {
     saveRun(runDir, state);
     process.stdout.write(`${JSON.stringify({ ship_package: 'recorded', evidence_result: verification.result })}\n`);
     if (verification.result !== 'PASS') process.exitCode = 2;
+    return;
+  }
+
+  if (command === 'finalize') {
+    const stage = values.stage;
+    if (!['ship', 'acceptance'].includes(stage)) {
+      throw new Error('--stage must be ship or acceptance');
+    }
+    const input = readInput();
+    if (stage === 'ship') {
+      recordShipPackage(state, input);
+      const manifest = readJson(join(runDir, 'evidence', 'manifest.json'));
+      const verification = verifyEvidence(state, manifest, runDir);
+      if (verification.result !== 'PASS') {
+        saveRun(runDir, state);
+        throw new Error(`FINALIZE_FAILED: evidence verification is ${verification.result}`);
+      }
+      advance(state, { to: 'DEV_VERIFYING', sessionId: values['session-id'], machineId: values['machine-id'] });
+      advance(state, { to: 'AWAITING_ACCEPTANCE', sessionId: values['session-id'], machineId: values['machine-id'] });
+      saveRun(runDir, state);
+      process.stdout.write(`${JSON.stringify({ stage: 'ship', phase: state.phase, evidence_result: 'PASS' }, null, 2)}\n`);
+    }
+    else {
+      recordAcceptance(state, input, { runDir });
+      advance(state, { to: 'RESOLVED', sessionId: values['session-id'], machineId: values['machine-id'], evidenceRefs, summary: values.summary });
+      const manifest = readJson(join(runDir, 'evidence', 'manifest.json'));
+      writeFileSync(join(runDir, 'report.md'), renderReport(state, manifest), 'utf8');
+      saveRun(runDir, state);
+      process.stdout.write(`${JSON.stringify({ stage: 'acceptance', phase: state.phase, acceptance: state.acceptance.status }, null, 2)}\n`);
+    }
     return;
   }
 

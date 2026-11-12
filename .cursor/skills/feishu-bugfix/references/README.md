@@ -200,3 +200,5 @@ v1.2 起，校验器在原有 claim、数据、验证、跨仓 Bundle 约束上�
 - `feishu-transition-recipe.md`：飞书 `IN PROGRESS → RESOLVED` 必填字段与 option_id 传参配方。
 - `REQUIREMENT-COVERAGE-CHECKLIST.md`：需规逐项覆盖表与数据缺失专项排查。
 - `scripts/pipeline-status.mjs`：GitLab API pipeline 查询 helper（需 `GITLAB_API_TOKEN`，无 token 时回退页面）。
+- `scripts/worktree-guard.mjs`：阶段前检查 worktree 是否仍存在/可读（只读，不自动修复）。
+- `bugflow-state.mjs finalize --stage ship|acceptance`：本地收尾步骤聚合，减少漏步。
