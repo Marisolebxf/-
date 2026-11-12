@@ -109,11 +109,13 @@
 | M06/M03/M19/M20 | — | M06 无源；M03 端点全 company（8,784 机构无一合格）；M19 与 **M02** 同源（research_coop）；M20 与 **M01** 同源（talent_coop） | 0 | 裁定记 0 或停建 |
 | M05/M10–M14/M16/M18/M21/M23/M24 | 11 条 M：10 条挂 8 种边型全 0（M12–M14 同挂 `policy_apply_to`；M16 挂存量 `cite`）；M18 挂存量 `participates` 按口径 0——该边 213,500 条属 M17 与历史混装，勿按边名总数误判非空 | 0 | 空态（T05 核验） |
 
+> ⚠️ **边型拼写陷阱**：`participate`（无 s，M07/M08，2026-11-11 T01 补建）与 `participates`（有 s，M17/M18，历史存量边）是**两个不同的边型**——查询、对账、建边时差一个字母就是在操作另一条边，写脚本前先核对清楚（T05 报告已提示的手滑点）。同理 `cite` 一个边型装两条 M——M06 paper→paper、**M16 政策→政策**（以 L03 M 表为准，唐绍祖 2026-11-12 勘误定案：原「M16 论文→专利」写法有误）——本期均 0，将来若只建其一必须按端点拆开核。
+
 边属性通用形：`(weight, props)`，业务字段进 `props` JSON（如 M08 的 `relation_type`/`institution_role_code`、M01 的 `match_method=coauthor`、M04 的 `match_method=employment_history_aggregated`）。weight 口径按单：M02=Σ`co_paper_count`；M01=`collaboration_score`（空补 0）；M04=0；M08/M09=1.0 恒定。
 
 **历史结构边与 T06 裁定**（不映射 M01–M24，如实登记）：
 
-- `belongs_to` 覆盖 359 / 1,414 个环节，未挂链 **1,055 个环节数**（⚠️ 是环节数，**不是**「可补 1,055 条边」）；属结构归属，缺口本期不补。
+- `belongs_to` 覆盖 359 / 1,414 个环节，未挂链 **1,055 个环节数**（⚠️ 是环节数，**不是**「可补 1,055 条边」）；属结构归属，按 T06 裁定**本期不补边、不推断、不计入任何 M 关系的缺失率**——补建前须核源端 `chain_id`、目标链存在性与业务归属，本期只记录缺口。
 - `support` / `apply_to` 端点 100% 重合，权重分别恒为常数 0.8 / 0.6（全图一个值，**不是强度**）：**停读 `support`、单读 `apply_to`**，权重不作强度用。
 - institution→institution 34,769（在 `participates` 上）：本期不改名（`service_relate` 仅为正式线备选名），**不得映射** M02/M19/M17/M18。
 
