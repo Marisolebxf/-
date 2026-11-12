@@ -94,6 +94,8 @@ display 只委托 `gkxlumen-topic-policy`。保存、修改、取消、读取和
 
 用户点了其中一种才查表。切领域、切筛选不自动起任务，也不自动查另一域。无行则该块空，不造 0，不在接口里填一份报告。读失败只让该块空，不清空已经返回的时序、地域和入库列表。
 
+**导出（2026-11-12 KEYFIELD-FDE）**：影响评估 / 深度分析报告在 FE 弹窗读到行之后，可另走已有 `POST /display/v1/situation/report/generate`（及 download）产出 PDF/Word。本分册不新开 panorama 专用导出 URL。jobs 响应仍不内嵌写死 PDF。无行不产文件。
+
 同一条 `jobs` 上的实施效果、匹配、力度属于其他叶子。本分册不展开，也不改挂 `M_POLICY_FOCUS_INDEX`、`M_POLICY_IMPLEMENTATION_EFFECT`、`M_POLICY_SIMULATE`，以及序号 211、217 的报告资源。
 
 ## 6. 空态对照

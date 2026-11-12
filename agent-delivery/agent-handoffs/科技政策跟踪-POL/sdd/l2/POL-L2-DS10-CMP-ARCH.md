@@ -2,7 +2,7 @@
 
 - 任务：`POL-L2-DS10-CMP-ARCH`
 - 日期：2026-11-03
-- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档，待四角色会签）
+- 状态：2026-11-03 已签收，签收人 human:淮政玮。**2026-11-11 增补 §5.4/§5.6/§8 表 216 政策类型列读法**（`POL-L2-DS10-CMP-PTYPE-FDE`，中档）。**2026-11-12 增补 §5.1/§5.2/§5.5**（`POL-L2-DS10-CMP-COVER-FDE-L01`，中档：213 变化统计、214 live 柱图+优缺点、217 真 Word/PDF）。**同日晚修订 §5.5**：废止 trackingExport 打印另存，改为 situation/report → OpenHTMLtoPDF（专题/态势同构）。**同日 PROS-LLM**：§5.2 优缺点 `policy_detail_pros_cons` 实时 LLM 结果板直回（不写 gapfill）；展示名禁「政策 #id」
 - 监管：`human:淮政玮`
 - 认领：`agent:arch-agent`
 - 强度：ponytail off（定义任务，不缩文档）
@@ -23,7 +23,7 @@
 | 序号 | 叶子 | 需规摘要 | 本叶流程 |
 |---|---|---|---|
 | 213 | 政策新旧对比 | 同一政策两个时点，高亮新增、修改、删除，并给出变化统计 | 没有版本对比模型。读缺项表 |
-| 214 | 政策详情对比 | 多项政策在申报时间、部门、产业、条件、力度、材料上的差异 | 时间、部门、产业读已有正文。力度读已有力度表。条件与材料读缺项表 |
+| 214 | 政策详情对比 | 多项政策在申报时间、部门、产业、条件、力度、材料上的差异；可导出对比报告（含差异图） | 时间、部门、产业读已有正文。力度读已有力度表。条件与材料读缺项表。导出走 situation/report + 柱图 PNG |
 | 215 | 部门政策对比 | 按区域实施部门，从项目类别、技术类别看扶持件数和清单 | 区域和类别读已有目录。实施部门收集不到，读缺项表。不新造部门指标 |
 | 216 | 标杆比对功能 | 选对标范围、对象和字段，看支持力度 | 读力度评估已经写入的支持力度。不新建表 |
 | 217 | 对标报告生成与导出 | 差异、优劣、借鉴建议，在线查看并可导出 | 没有报告模型。正文读缺项表。不灌假文件 |
@@ -41,10 +41,10 @@
 | 214 时间、部门、产业 | `GET /display/v1/policy/panorama/search` 与 `{id}/detail` | 内部委托已有 `gkxlumen-topic-policy`。不另开对比查询 |
 | 214 力度、218 | `POST /display/v1/policy/panorama/jobs` | `gkxlumen-display` 只提交到 `gkxlumen-topic-async-service` 的 `POST /topic/v1/analysis/tasks`。已有适配器再调 `/internal/policy/jobs/execute`，`sub_type=policy_intensity`，由 `polan.eval.intensity.run` 写入并读取 `ads.policy_intensity` 的力度分。display 不直接打 `jobs/execute`。216 不进这条 Job |
 | 216 | `GET /display/v1/policy/panorama/stats` | 同步读。`gkxlumen-element` 只读已有 `ads.policy_intensity` 上的 `M_POLICY_SUPPORT_STRENGTH`；「政策类型」列同一次统计读 DWD `policy_base_info` 文种按省聚合（2026-11-11 增补，QPOL-01 临时默认）。不进 Job。无行则该卡空，不造数。D4 仍是 mock |
-| 214 条件、材料 | `GET /display/v1/policy/panorama/{id}/detail` | 正文仍走专题门面。申报条件、申报材料由 `gkxlumen-element` 同一次详情只读 `gapfill_policy_detail_compare`。不把这两列写进接口常量 |
+| 214 条件、材料、优缺点 | `GET /display/v1/policy/panorama/{id}/detail` | 正文仍走专题门面。申报条件、申报材料、优点、缺点由 `gkxlumen-element` 同一次详情只读 `gapfill_policy_detail_compare`。不把这些列写进接口常量。live 差异柱图用当次力度分（无分轴空，不造演示分） |
 | 215 区域、类别 | `GET /display/v1/policy/panorama/stats` 与 `search` | 区域走已有地区分布。项目类别、技术类别走已有选项。总件数仍用 `M_POLICY_TOTAL_COUNT`。这两段仍委托 `gkxlumen-topic-policy` |
 | 215 实施部门 | `GET /display/v1/policy/panorama/stats` | 同一次统计。`gkxlumen-element` 只读 `gapfill_policy_impl_dept`。现网收集不到实施部门，不按发布机构去重，不另开路径 |
-| 217 | `GET /display/v1/policy/panorama/benchmark-report` | `gkxlumen-element` 只读 `gapfill_policy_benchmark_report`。导出内容从读到的行生成。display 不直连 Python |
+| 217 | `GET …/benchmark-report` + 导出走 `POST /display/v1/situation/report/generate` | 在线：element 只读 `gapfill_policy_benchmark_report`。导出：FE 由当次行拼完整 HTML → display 代理 → `gkxlumen-topic-async-service` OpenHTMLtoPDF（与态势/专题报告同构）。PDF=`format=pdf` 真字节；Word=`format=html` 同源 HTML 存为 `.doc`。禁 `trackingExport` 打印另存、禁 text/plain。不新加 jspdf。display 不直连 Python |
 
 ```mermaid
 flowchart LR
@@ -122,6 +122,7 @@ flowchart LR
 - 灌数是独立脚本，不是请求处理。执行单 `POL-L2-DS10-CMP-GAPFILL-L01`。另有 `POL-L2-DS10-SRCMON-SYNTH-L01`：每次合成 10 条，随机 5 条再由 LLM 写旧版，旧版作为独立政策行入 ODS/DWD，增改删写本表（`fill_method=llm-synth`）。
 - 两个发布时间对不上行则对比空，不在接口里拼一段高亮。
 - 浏览器读 `version-diff`。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。
+- **变化统计与分析（2026-11-12，COVER-FDE + 213-ANALYSIS-FDE）**：前端对当次 diff 行按 `change_type` 聚合「新增 / 修改 / 删除」计数展示。配对级演变趋势说明读 `gapfill_policy_version_analysis.analysis_text`（Python LLM 或 seed 写入；`version-diff` 同次透传）。无 diff 行则整块空；有 diff 无分析文则 Tag 仍见、分析文空态，不造假趋势句。**废止**「非独立分析列」旧裁定。
 
 ### 5.2 214 政策详情对比 · 正文 + 力度表 + 缺项表
 
@@ -134,6 +135,8 @@ flowchart LR
 3. 已有 `PolicyAnalysisAdapterImpl` 再调 `POST /internal/policy/jobs/execute`，`sub_type=policy_intensity`。Python 调用已有 `polan.eval.intensity.run`，再按所选政策读 `ads.policy_intensity` 的力度分。Java 不打分，不抄公式。
 4. 申报时间、受理部门、产业类别继续读专题门面已有正文。这三列不进缺项表。
 5. 申报条件、申报材料没有字段、也没有模型。只建 `gapfill_policy_detail_compare`，按政策放这两列正文。浏览器读 `GET /display/v1/policy/panorama/{id}/detail`。正文走专题门面，这两列由 `gkxlumen-element` 只读缺项表带出。display 不直连 Python。
+6. **优缺点（2026-11-12，COVER-FDE，卡1=A；2026-11-12 PROS-LLM 修订；同日晚纠偏为实时 LLM）**：live 弹窗每策展示优点/缺点。开始对比提交 `POST /display/v1/policy/panorama/jobs`，`sub_type=policy_detail_pros_cons`（同力度 Job 管道：display → topic-async → `/internal/policy/jobs/execute`）。Python 按 DWD 正文实时 LLM，**结果板直回** `result_payload.items[].pros_text/cons_text`；**不读不写** `gapfill_policy_detail_compare` 的优缺点列。无密钥/失败不造假文，该策空态。live 禁 mock fixture。列头/图例/总结用政策名称，禁止「政策 #id」。申报条件/材料仍可读同表附带列（与优缺点解耦）。
+7. **差异柱图（同裁定）**：live 与 mock 同结构出柱图。支持力度轴取当次 `policy_intensity` 力度分；无分则该轴空。条件门槛 / 材料复杂度无数值模型 → 轴空。**不造演示分**。
 
 `M_POLICY_INTENSITY_SCORE` 仍是本行的指标。`M_POLICY_INTENSITY_INDEX` 不挂本页。QPOL-02 的权重保持待确认。D4 保持 mock。三维缺数据时，`run()` 写不出力度分就让该格空，不在接口里补一个分数。
 
@@ -165,14 +168,20 @@ flowchart LR
 - 读条件与支持力度一致：范围=国内先进地区、至少两个对象、且勾了「政策类型」。对象映射沿用 `scope_code`/`scope_name`。某省 `policy_type` 全空或库内无行 → 该省格空，不造 0。
 - 不新造 `metric_id`（复用 DWD 已有列做对照展示，不是新指标）；不建 gapfill 表；D4 口径不变（对照源头 DWD 真数，非 mock 灌行）。
 
-### 5.5 217 对标报告生成与导出 · 读缺项表
+### 5.5 217 对标报告生成与导出 · 读缺项表 + 态势/专题同构导出
 
-没有对标报告模型。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这条资源。
+没有对标报告模型。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这条资源。序号 211 的 `assessment-report` 不是 217。
 
 - 表 `gapfill_policy_benchmark_report`。
 - 一行有对标对象、对照字段、差异、优劣、借鉴建议、报告正文。正文写在行里。
-- `GET benchmark-report` 只查询。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。导出若要文件，从这次读到的行生成，响应里不内嵌一份写死的 PDF 或 Word。
-- 不写对象存储。不建邮件。
+- `GET benchmark-report` 只查询（在线查看）。`gkxlumen-display` 不直连库，由 `gkxlumen-element` 只读这张表。响应里不内嵌一份写死的 PDF 或 Word。
+- **导出落点（2026-11-12 修订，COVER-FDE，卡2=B；废止 trackingExport）**：对齐展示侧已落地的态势报告链 / 专题报告同源技术——
+  1. FE 用当次 `benchmark-report` 行拼**完整 HTML**（无 `window.print`）；
+  2. `POST /display/v1/situation/report/generate`（`reportType=policy-panorama-benchmark`，`conditionKey`=对象×字段指纹 + 模板版）→ Feign `gkxlumen-topic-async-service` → **OpenHTMLtoPDF**（pdf）或落 HTML（html）→ OSS/`gkx-lumen` 或 local 指针 → 经 display 代理下载真文件字节；
+  3. PDF = `format=pdf`；Word = 同源 `format=html` 下载后以 `.doc`（HTML Word）落盘（域服务闭集仅 html|pdf，不新开 docx 引擎）；
+  4. 去重键 = `reportType + conditionKey + format`（与 `useSituationReport` / SituationReportService 一致）。
+- **禁止**：`trackingExport` 打印页「另存为 PDF」、仅前端 Blob `text/plain`、响应内嵌写死文件、新加 jspdf/html2canvas（本叶复用已有域服务）。
+- 无行不产文件。不建邮件。不新造桶（沿用态势报告既有存储约定，D14）。
 
 ### 5.6 218 对标结果可视化展示 · 读力度表
 

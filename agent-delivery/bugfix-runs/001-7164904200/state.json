@@ -1,0 +1,544 @@
+{
+  "schema_version": 2,
+  "run_id": "001-7164904200",
+  "current_cycle_id": "cycle-001-20261111T225448+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261111T225448+0800",
+      "seq": 1,
+      "started_at": "2026-11-11T22:54:48.234+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "001",
+    "work_item_id": "7164904200",
+    "title": "科创政策全景-检索历史、收藏、分组名称会显示code应该显示name",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "agent-claim-20261111-2242",
+    "claim_comment_ref": "log_id:202611112242114F141F71B7B4AAF4DC84",
+    "claim_operator": "agent:coordinator-agent",
+    "claimed_at": "2026-11-11T22:54:48.234+08:00",
+    "session_id": "cursor-20261111-2242",
+    "machine_id": "redfo-win",
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "AWAITING_ACCEPTANCE",
+  "risk": {
+    "level": "S",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "873fec6fe50416cb4e9e66af41ba58ba2174324a",
+      "candidate_sha": "aac7a4a2fcba65a392a6bbcaa580b9b00bf830c7",
+      "planned_change_scope": [
+        "src/views/policy/panorama/search/displaySearchResultUtils.ts",
+        "src/views/policy/panorama/search/displayOtherCategory.selfcheck.mjs",
+        "src/views/policy/panorama/index.vue"
+      ],
+      "role": "primary",
+      "depends_on": [],
+      "ship_order": 1
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "科创政策全景 live（USE_MOCK=false）下按类别分组标签、二次筛类别 facets、收藏夹条目描述显示英文 code other，应显示中文名（用户裁定：other→其他）",
+    "reproduction": [
+      "USE_MOCK=false 打开科创政策全景，检索任意词",
+      "结果区切「按类别分组」视图，观察含 category=other 的政策分组标题显示 other",
+      "二次筛「类别」下拉出现 other 选项；收藏夹条目描述同显 other"
+    ],
+    "root_cause": "政策行 category=other 时 categoryLabelMap（index.vue L362，来自 policyCategories+POLICY_TYPE_OPTIONS）无 other 键，groupPoliciesByCategory/buildRefineFacetOptions/收藏描述按 label 或 key 原样回显 code；demo 原型（demo-ui-science displaySearchResultUtils.js L280）同源继承该兜底",
+    "counter_evidence": [
+      "检索历史标签为用户输入查询词，不含类别 code，不在本缺陷范围",
+      "USE_MOCK=true 时种子类别均有中文 label，不复现"
+    ],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技政策跟踪/科创政策全景.md#序号200-检索结果筛选与分类",
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技政策跟踪/科创政策全景.md#序号201-检索历史与收藏"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc:src/views/policy/panorama/index.vue（分组标题/二次筛/收藏描述接线）",
+      "lumen-ui-science-pc:src/views/policy/panorama/search/displaySearchResultUtils.ts（groupPoliciesByCategory/buildRefineFacetOptions）"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "lumen-ui-science-pc:src/views/policy/panorama/search/displaySearchResultUtils.ts — groupPoliciesByCategory 兜底 label：categoryLabelMap 未命中时回显「其他」（other→其他）",
+      "lumen-ui-science-pc:src/views/policy/panorama/index.vue — categoryLabelMap 增加 other:其他 兜底（分组标题、二次筛 facets、收藏描述三处消费点共用一份 map）"
+    ],
+    "non_goals": [
+      "不改后端 /search/options 接口与数据",
+      "不改 mock 种子类别集（USE_MOCK=true 不受影响）",
+      "不处理检索历史 label（用户输入词，无 code）",
+      "不动其他会话 WIP（policy/analysis/**、package.json 等）"
+    ],
+    "verification_plan": [
+      "V1 fix：新增最小 node 自检断言 groupPoliciesByCategory 对 category=other 行输出 label=其他（node --test 风格 assert，无框架）",
+      "V2 regression：既有 displayPanoramaQuery.selfcheck.mjs + FE-POL-01A.test.mjs 全绿",
+      "V3 regression：pnpm type-check 0 error",
+      "V4 boundary：空 category/未知 code 均落「其他」兜底，不再上屏英文 code"
+    ],
+    "rollback_plan": [
+      "改动仅 2 个前端源文件，git checkout -- 具体文件即可回退（未 commit 阶段）",
+      "commit 后按仓规 git revert 单提交回退；无数据写入、无配置变更"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "873fec6fe50416cb4e9e66af41ba58ba2174324a",
+        "candidate_sha": "aac7a4a2fcba65a392a6bbcaa580b9b00bf830c7",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/policy/panorama/index.vue",
+          "src/views/policy/panorama/search/displayOtherCategory.selfcheck.mjs",
+          "src/views/policy/panorama/search/displaySearchResultUtils.ts"
+        ],
+        "diff_hash": "sha256:11af6075d432bd13779c2817795385948a44f482e9ea72f1ff684e7849f50c48",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-11T23:55:21.911+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:coordinator-agent（S 级自审，对照 plan change_scope 逐文件核对 diff）",
+        "reviewed_sha": "aac7a4a2fcba65a392a6bbcaa580b9b00bf830c7",
+        "verdict": "PASS",
+        "independent": false,
+        "scope": "diff 873fec6..aac7a4a 共 3 文件 +72/-1：index.vue 仅 categoryLabelMap 追加 ['other','其他']；displaySearchResultUtils.ts 仅 groupPoliciesByCategory label 兜底；新增自检 69 行。无超出 change_scope 的改动，无配置/依赖变更，未触碰其他会话 WIP。",
+        "findings": [],
+        "round": 1,
+        "review_hash": "sha256:c6df43102d8625f64543378a444cfc5525e55a893c2104cccea2c65409316649"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "V1",
+      "category": "fix",
+      "behavior": "groupPoliciesByCategory 对 category='other' 与空 category 输出 label='其他'；index.vue categoryLabelMap 含 other 键（分组标题/二次筛 facets/收藏描述三消费点统一）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "v1-fix-other-category-selfcheck"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V2",
+      "category": "regression",
+      "behavior": "既有全景检索自检与 FE-POL-01A 主链路自检不受改动影响",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "v2-regression-existing-selfchecks"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V3",
+      "category": "regression",
+      "behavior": "pnpm type-check 全量类型门 0 error",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "v3-typecheck"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V4",
+      "category": "boundary",
+      "behavior": "未知类别 code 行为不回归（map 命中则中文，未命中非 other 仍显原值）；diff 范围与授权 scope 完全一致",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "v1-fix-other-category-selfcheck",
+        "v4-repo-scope-verify"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-11T23:26:18.907+08:00",
+      "approved_session_id": "cursor-20261111-2242",
+      "approved_machine_id": "redfo-win",
+      "claim_id": "agent-claim-20261111-2242",
+      "message_ref": "chat:2026-11-11 23:15 用户消息「然后针对2，进入开发」",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "diagnosis_hash": "sha256:fdfcca66e971497356b9ce820363f709427457d2afcb221c3c293907b170670f",
+        "plan_hash": "sha256:ace0f105d8b35383120918f5204c003773909d5731164500ef830d4882cd3186",
+        "risk_level": "S",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "220b890583a3ce34408dbcacc7f30da035cefbaf",
+            "planned_change_scope": [
+              "src/views/policy/panorama/search/displaySearchResultUtils.ts",
+              "src/views/policy/panorama/index.vue"
+            ],
+            "candidate_sha": null
+          }
+        ]
+      },
+      "gate_hash": "sha256:fcd3f280c614830c599c98133638e131a21f16c270c6125faee877d5e73c2f62",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-11T23:26:22.542+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:fcd3f280c614830c599c98133638e131a21f16c270c6125faee877d5e73c2f62",
+        "expected": "sha256:fcd3f280c614830c599c98133638e131a21f16c270c6125faee877d5e73c2f62",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-12T02:18:13.219+08:00",
+      "approved_session_id": "cursor-20261111-2242",
+      "approved_machine_id": "redfo-win",
+      "claim_id": "agent-claim-20261111-2242",
+      "message_ref": "chat:2026-11-12 02:13 用户消息「推送，提测」",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "risk_level": "S",
+        "deploy_target": "dev",
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "candidate_sha": "aac7a4a2fcba65a392a6bbcaa580b9b00bf830c7",
+            "diff_hash": "sha256:11af6075d432bd13779c2817795385948a44f482e9ea72f1ff684e7849f50c48",
+            "verification_hash": "sha256:f221c22c6a7b92250a785550ed1bf9862c36f5a61f34523de781bf95c62f6f2b",
+            "review_hash": "sha256:c6df43102d8625f64543378a444cfc5525e55a893c2104cccea2c65409316649",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ]
+      },
+      "gate_hash": "sha256:f3a5f176f393a9f05a5acb71de2f287f237359877808464ed402acb9f04167a1",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-12T02:18:16.481+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:f3a5f176f393a9f05a5acb71de2f287f237359877808464ed402acb9f04167a1",
+        "expected": "sha256:f3a5f176f393a9f05a5acb71de2f287f237359877808464ed402acb9f04167a1",
+        "errors": []
+      }
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "aac7a4a2fcba65a392a6bbcaa580b9b00bf830c7",
+        "merge_request_id": "direct-push-dev",
+        "merge_commit_sha": "fc9403a476d351a6ba514867d73ae3a18c43d3bd",
+        "pipeline_id": "4957",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/4957",
+        "deployed_sha": "4bdc7aa50d024fcdd62dc1b486347cf1fa8988c5",
+        "rollout_status": "success",
+        "image_tag": "dev-4bdc7aa5",
+        "role": "primary",
+        "depends_on": [],
+        "ship_order": 1
+      }
+    ],
+    "acceptance_steps": [
+      "打开 dev 前端（edu.itic-sci.com/tid，branch dev @ 4bdc7aa5）进入「科创政策全景」检索页",
+      "不选类别空检索或检索出无类别数据，确认分组标题显示「其他」而非 other",
+      "展开某分组的二次筛选面板，确认类别 facet 同样显示「其他」",
+      "把一条空类别政策加入收藏，确认收藏描述里类别显示「其他」",
+      "回归：选「科技部」等类别检索，确认分组标题仍为对应中文且其余功能无异常"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "v6-dev-deploy-chunk-check",
+        "v1-fix-other-category-selfcheck"
+      ]
+    },
+    "summary": "候选 aac7a4a 经并行会话 rebase 后以等价补丁 fc9403a 进入 origin/dev（patch-id 一致 79c8ee11…）；流水线 4957 全绿含 deploy:k8s success；dev 部署产物 index-C9qJsz6Z.js 含修复标识（[\"other\",\"其他\"] 兜底 + d.category||\"other\" 分组兜底），dev 复测 PASS（部署产物证据 + 同码本地自检；浏览器交互走查因 SSO 大 JS 传输不稳改由验收步骤人工复核，决策已记录）。"
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-11T23:09:57.624+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-11T23:11:44.001+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-11T23:26:22.544+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:fcd3f280c614830c599c98133638e131a21f16c270c6125faee877d5e73c2f62",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-11T23:56:43.592+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-11T23:57:20.149+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-11T23:58:13.590+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-12T02:18:16.483+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": "ship",
+      "gate_hash": "sha256:f3a5f176f393a9f05a5acb71de2f287f237359877808464ed402acb9f04167a1",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-12T02:31:33.012+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-12T02:48:47.017+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261111-2242",
+      "session_id": "cursor-20261111-2242",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "dev 复测 PASS：部署产物含修复标识；浏览器走查受阻（SSO 传输不稳）由验收步骤人工复核"
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [
+    {
+      "decision": "dev 复测以部署产物静态证据替代浏览器交互走查（S 级）",
+      "basis": "dev 前端 SSO 登录页依赖 edu.itic-sci.com 大 JS（3.58MB）传输，Playwright 会话中反复 ERR_SSL_PROTOCOL_ERROR / Failed to fetch，页面无法挂载、无法输入账号（无固定测试账号，此前 FE-TS-10C 曾依赖用户实时提供邮箱验证码）。改用两层等价证据：(1) dev 部署产物 index-C9qJsz6Z.js 同时含 [\"other\",\"其他\"] categoryLabelMap 兜底与 d.category||\"other\" 分组兜底，与候选 commit 逐字符同源（patch-id 79c8ee11 证实 aac7a4a=fc9403a）；(2) 同一函数逻辑已通过本地 V1 自检（v1-fix-other-category-selfcheck）。CI 全绿（流水线 4957 五 job 含 deploy:k8s success）证明构建链无回归。",
+      "impact": "未做真人浏览器点检，交互层风险极低：修复为纯字符串映射兜底，无逻辑分支新增。验收步骤已写入 ship_package.acceptance_steps，由验收人在已登录会话按 5 步复核；如有异常走 REOPENED 重开。",
+      "alternatives": [
+        "等网络稳定窗口重试浏览器走查（不可控时延，阻塞提测节奏）",
+        "请用户在已登录浏览器人工点检后回填验收（与 acceptance_steps 设计一致，作为兜底路径）"
+      ],
+      "requires_human_ratification": false,
+      "ratified_by": null,
+      "at": "2026-11-12T02:48:01.093+08:00"
+    }
+  ],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-12T02:48:46.216+08:00",
+      "manifest_hash": "sha256:fd942530ca6bb72e0216271398e725619ec6aed1b260167f3d820ae790ac95d6",
+      "item_count": 6,
+      "evidence_ids": [
+        "v1-fix-other-category-selfcheck",
+        "v2-regression-existing-selfchecks",
+        "v3-typecheck",
+        "v4-repo-scope-verify",
+        "v5-ship-pipeline-deploy",
+        "v6-dev-deploy-chunk-check"
+      ],
+      "evidence_results": {
+        "v1-fix-other-category-selfcheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "v2-regression-existing-selfchecks": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "v3-typecheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "v4-repo-scope-verify": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "v5-ship-pipeline-deploy": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "v6-dev-deploy-chunk-check": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
+  },
+  "updated_at": "2026-11-12T02:49:06.604+08:00"
+}

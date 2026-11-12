@@ -227,3 +227,25 @@ element 按所选对象读表。一行是一个对象上的对照：地区、行
 - 不纳入本分册：223–226 解读、227–231 方案、效能得分、`compare/jobs`、`report/jobs`、`benchmark-report`、`simulation/jobs`。
 - 不改 `FE-POL-02A`，不新建前端单。契约冻结前前端继续 mock。
 - 不会签。不把本单标 done，不标 ready_to_sign。
+
+## 10. 2026-11-12 增补：DS11-VIZ 七可视化块 · viz · 同步
+
+> 增补来源：监管人 `human:淮政玮` 2026-11-12 03:48 裁定（入口=③独立资源，见 `POL-L2-DS11-VIZ-GAPFILL-L02-DATA` §8.1）；实现 handoff = `POL-L2-DS11-VIZ-GAPFILL-L02-BE`。本节只增补，不改 §1–§9 原文；第 1 节「对外只有三个分支」的口径由本节放宽为四个分支。
+
+七可视化块是 demo 复刻保留块（无 SRS 序号），表与列真源 = `POL-L2-DS11-VIZ-GAPFILL-L02-DATA`。读面挂在既有 `/evaluation` 资源上作子路径扩展，不新开第 4 条路径，不触 VIZ-ARCH「不加第 4 条路径」红线。
+
+公开资源：`GET /display/v1/policy/evaluation/viz?block=<块键>`。同步只读，不建任务，不进 `JOB_SUB_TYPES` 异步白名单，不调 Python。
+
+条件字段只收这一个：
+
+| 字段 | 含义 | 必选 | 闭集 |
+|---|---|---|---|
+| `block` | 可视化块键 | 是 | 只有 `metric`、`portrait`、`geo`、`region_impl`、`topic_heat`、`topic_sentiment`、`bubble`。闭集外/缺省不查表，该块空 |
+
+内部委托：`gkxlumen-display`（BFF 只读不连库）→ `@NoToken` Feign → `gkxlumen-element` `GET /v1/element/policy/evaluation/viz`（`@Inner`）→ `{gapfill}.gapfill_policy_eval_viz_<block>` 七表一一对应。
+
+响应形状：`R` 包 `data.records`（行内 snake_case 由 `ElementDao` 统一转 camelCase）。空态：闭集外、块无行、表未建、下游失败一律 HTTP 200 + `records: []`，不返回 501。血缘列随行返回（`is_mock=1`，`metric_id` 留空，见 DATA §5）。
+
+拣行语义：七块无用户筛选，一次请求整块读；各表保留的块内拣行键（`region_name` / `topic_name`+`stat_month` / `scope_kind`+`topic_name` / `category`）当前读面不启用（DATA §3）。
+
+本节不改动 219–222 的任何既有分支与闭集；`jobs` / `shells` / `counts` 行为不变。

@@ -1,0 +1,32 @@
+{
+  "id": "KG-COMPLY-LOAD-T03",
+  "title": "T03 七要素入图·人才与机构组（M01/M02/M03/M04/M20）",
+  "status": "ready_to_sign",
+  "agent": "data-agent",
+  "epic": "E-SCI-INT",
+  "priority": "P0",
+  "supervised_by": "human:宋飞扬",
+  "claimed_by": "agent:data-agent",
+  "repo": "gkx-orchestration",
+  "delivery_phase": "implementation",
+  "lock_until": "2026-11-12T09:54:48.824Z",
+  "update_time": "2026-11-11T19:05:20+08:00",
+  "estimated_tokens": "60000",
+  "note": "SDD §5 T03；执行人 human:宋飞扬。\n2026-11-11 17:50 分工调整：**M02 移交 T02（陈芸飞执行）**，本节专注 M01 + M04。`research` 点仍由本节单方全量建（83,745 个，含 15,392 企业），T02 只跳过不重建。\n2026-11-11 唐绍祖裁定（详见 KG-COMPLY-LOAD-T03-裁定-人才与机构四条关系.md）：\nM01/M20 同源重复只建 cooperate 一条（ads_talent_collaborator 505 万行，co_project_count 整列为空、\"合著只是两路之一\"旧口径作废；A→B/B→A 严格 2 倍，无向去重 2,525,789 条），talent_coop 本期 0 条。\nM03 本期 0 条：ads_talent_institution_cooperation 现 202,795 行、8,784 机构 100% 为 company（辉瑞/礼来等），是人才-企业合作、端点类型不符，不得算进 M03；缺口上报需规补编号。\nM04 只灌工作经历 experience_type=2（84,589 行），学历 type=1（56,304）不进图；is_current 99.98% 为空不可筛，改按 end_year 推导；同机构多段合并成一条边、stint_count 记段数；排除 company 420 行后去重 72,503 条。\n共同要求：科研机构端点一律排除 company；新边带 props.batch=comply-<日期>-t03；不得复用企业域 research_coop/talent_coop 脚本（端点是 enterprise→x）。\n执行侧状态（宋飞扬 2026-11-11 17:54）：实体先探后补，M01 合作去重聚合、M04 仅工作并去重；M02 已不在本节范围，无需再准备；正在固定源快照与执行前核验。\n2026-11-11 18:54 执行完成并通过真实图库独立核验：person100000/research83745逐VID均已存在、保留属性；M01 cooperate 2525789、M04 belong 72099均带comply-2026-11-11-t03。M04原72503含404个company唯一对，排除后分母72099，源SQL及解释已交付。M03/M20本期0；M02按832923ec移交T02，不由T03写入。机构类型83745全量一致，M22存量94824保持；33项回归通过，全量5565批无缺端点或遗留失败。详见handoff及燕大/T03/verification.json。实际tokens/cost当前平台未提供，待账单回填。",
+  "difficulty": "M",
+  "effort_points": "5",
+  "depends_on": [
+    "KG-COMPLY-LOAD-T01"
+  ],
+  "definition_of_done": [
+    "先补 person（100,000）/research（83,745，含 15,392 企业）端点，再灌 M01/M04，带 props.batch=comply-<日期>-t03",
+    "M01 只建 cooperate 一条、无向去重 2,525,789；M20 记 0（与 M01 同源重复）",
+    "M04 只灌 experience_type=2 工作经历、同机构多段合并（stint_count）、排除 company 后 72,503 条，方向 person→research",
+    "M03 记 0 条并附理由（源表 202,795 行端点 100% 为 company，属人才-企业合作）",
+    "M02 不在本节（已移交 T02）；对账单 cooperate 仅统计 person→person 一组；不碰 M05"
+  ],
+  "task_type": "tech_task",
+  "design_refs": [
+    "agent-delivery/工程过程/04-系统集成/07-图数据库集成/KG-COMPLY-SDD-L01-详细设计说明书.md#T03"
+  ]
+}

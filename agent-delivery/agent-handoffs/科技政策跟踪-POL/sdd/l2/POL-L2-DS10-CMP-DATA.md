@@ -24,7 +24,8 @@
 | 表 | 序号 | 灌数方 | 读取方 |
 |---|---|---|---|
 | `gapfill_policy_version_diff` | 213 | `POL-L2-DS10-CMP-GAPFILL-L01` | `gkxlumen-element` |
-| `gapfill_policy_detail_compare` | 214 的申报条件、申报材料 | 同上 | `gkxlumen-element` |
+| `gapfill_policy_version_analysis` | 213-3 演变趋势说明 | `POL-L2-DS10-CMP-213-ANALYSIS-FDE`（seed / LLM enrich） | `gkxlumen-element`（`version-diff` 透传） |
+| `gapfill_policy_detail_compare` | 214 的申报条件、申报材料、优点、缺点 | 同上 | `gkxlumen-element` |
 | `gapfill_policy_impl_dept` | 215 的实施部门 | 同上 | `gkxlumen-element` |
 | `gapfill_policy_benchmark_report` | 217 | 同上 | `gkxlumen-element` |
 
@@ -37,10 +38,10 @@
 | 序号 | 叶子 | 库表 | 本单 |
 |---|---|---|---|
 | 213 | 政策新旧对比 | `gkxlumenx_gapfill.gapfill_policy_version_diff` | 本单定逻辑列。时点来自已有发布时间 |
-| 214 | 政策详情对比 | 正文走已有门面。力度读已有 `policy_intensity`。条件与材料读 `gapfill_policy_detail_compare` | 缺项表只放条件、材料 |
+| 214 | 政策详情对比 | 正文走已有门面。力度读已有 `policy_intensity`。条件、材料、优缺点读 `gapfill_policy_detail_compare` | 缺项表放条件、材料、`pros_text`、`cons_text` |
 | 215 | 部门政策对比 | 区域、类别、总件数走已有目录。实施部门读 `gapfill_policy_impl_dept` | 不新造部门指标 |
 | 216 | 标杆比对功能 | 已有 `policy_intensity` 所在 ADS。支持力度同步读；「政策类型」列 2026-11-11 起同一次统计读 DWD 文种按省聚合（QPOL-01 临时默认） | 不加列，不进灌数单 |
-| 217 | 对标报告生成与导出 | `gkxlumenx_gapfill.gapfill_policy_benchmark_report` | 正文在行里。不灌文件 |
+| 217 | 对标报告生成与导出 | `gkxlumenx_gapfill.gapfill_policy_benchmark_report` | 正文在行里。不灌文件。导出走态势报告链（FE HTML → situation/report → OpenHTMLtoPDF）；禁 trackingExport 打印另存 |
 | 218 | 对标结果可视化展示 | 已有力度表 | 不建 `gapfill_policy_benchmark_viz` |
 
 ## 2. 已有力度表
@@ -99,6 +100,30 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 
 同一政策、同一对日期可以有多行，按变更类型和摘要分开。查询把对上的行一起返回。表空，或两个日期对不上，则对比空。查询不插入行。
 
+### 3.1 213-3 演变趋势说明（配对级）
+
+库 `gkxlumenx_gapfill`，表 `gapfill_policy_version_analysis`。一行是同一政策、同一对发布时间上的一句演变趋势说明。不是 diff 行摘要，不塞进 `summary_text`。
+
+拣行键：`policy_id` + 两个发布日期（次序对调仍命中）。至多一行。
+
+灌数方：seed（可演样本）与 `POST /internal/policy/version-analysis/enrich`（LLM）。合成历史版路径在写入 diff 后可顺带 enrich。读取方：`gkxlumen-element`，经 `GET /display/v1/policy/panorama/version-diff` 顶层字段 `analysis_text`。不写入 ODS、DWD、ADS。
+
+| 列 | 类型 | 空 | 约束 |
+|---|---|---|---|
+| `id` | bigint | 否 | 行键。自增 |
+| `policy_id` | varchar(100) | 否 | 与 diff 表同一业务键 |
+| `publish_date_a` | date | 否 | 两个发布时间之一 |
+| `publish_date_b` | date | 否 | 另一个发布时间 |
+| `analysis_text` | text | 否 | 一句演变趋势说明（含两时点） |
+| `is_mock` | tinyint | 否 | 每行必须为 1 |
+| `metric_id` | varchar(64) | 是 | 留空 |
+| `gap_item` | varchar(128) | 否 | 固定 `213 政策新旧对比·分析` |
+| `fill_method` | varchar(16) | 否 | `manual`（seed）或 `llm` / `llm-synth` |
+| `gapfill_batch_id` | varchar(64) | 否 | 批次 |
+| `generated_at` | datetime | 否 | 写入时间 |
+
+唯一约束：同一政策同一对日期一行（实现可用应用层 upsert；DDL 可加唯一索引 `(policy_id, publish_date_a, publish_date_b)` 并在写入前规范化日期次序）。
+
 ## 4. 214 政策详情对比
 
 三块落点分开。接口按块读表，不把三块拼成一段写死的对比文案。
@@ -107,11 +132,11 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 
 力度分走第 2 节：已有 `run()` 写入 `policy_intensity.intensity_score`，请求不现算。
 
-申报条件、申报材料没有字段，也没有模型。库 `gkxlumenx_gapfill`，表 `gapfill_policy_detail_compare`。一行是一条政策的这两段正文。
+申报条件、申报材料、优缺点没有字段，也没有模型。库 `gkxlumenx_gapfill`，表 `gapfill_policy_detail_compare`。一行是一条政策的条件、材料与优缺点正文。
 
-拣行键：`policy_id`。一条政策一行。条件对不上的行不返回。未勾选这两维时不读这张表。
+拣行键：`policy_id`。一条政策一行。条件对不上的行不返回。详情对比读面同一次带出四列（条件/材料/优缺点）；未勾选条件材料维时仍可读优缺点（COVER-FDE：开始对比即读本表）。
 
-灌数方：`POL-L2-DS10-CMP-GAPFILL-L01`。读取方：`gkxlumen-element`，在同一次 `GET /display/v1/policy/panorama/{id}/detail` 里只读这两列。正文仍走专题门面。display 不直连库，不直连 Python。不写入 ODS、DWD、ADS、供应方库。
+灌数方：`POL-L2-DS10-CMP-GAPFILL-L01`（2026-11-12 扩列）。读取方：`gkxlumen-element`，在同一次 `GET /display/v1/policy/panorama/{id}/detail` 里只读这些列。正文仍走专题门面。display 不直连库，不直连 Python。不写入 ODS、DWD、ADS、供应方库。
 
 | 列 | 类型 | 空 | 约束 |
 |---|---|---|---|
@@ -119,6 +144,8 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 | `policy_id` | varchar(100) | 否 | 拣行键。与已有正文 `policy_id` 同一业务键。不建外键。灌数时同一 `policy_id` 只留一行 |
 | `apply_condition` | text | 否 | 申报条件 |
 | `apply_material` | text | 否 | 申报材料 |
+| `pros_text` | text | 否 | 优点。多条用换行分隔。无内容写空串，不造接口 mock |
+| `cons_text` | text | 否 | 缺点。多条用换行分隔。无内容写空串 |
 | `is_mock` | tinyint | 否 | 每行必须为 1 |
 | `metric_id` | varchar(64) | 是 | 留空。条件与材料不是 `M_POLICY_INTENSITY_SCORE` |
 | `gap_item` | varchar(128) | 否 | 固定 `214 政策详情对比` |
@@ -126,7 +153,9 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 | `gapfill_batch_id` | varchar(64) | 否 | 由灌数单填写，本单不生成 |
 | `generated_at` | datetime | 否 | 行写入时间 |
 
-不设 `fill_model`。不设申报时间、受理部门、产业类别、力度分。某一列无行则该列空。查询不插入行。
+存量库：`ALTER TABLE ... ADD COLUMN pros_text/cons_text` 后由灌数脚本回填。不设 `fill_model`。不设申报时间、受理部门、产业类别、力度分。某一列无行则该列空。查询不插入行。
+
+**优缺点 LLM 补写（2026-11-12，`POL-L2-DS10-CMP-PROS-LLM-L01`）**：`POST /display/v1/policy/panorama/jobs`，`sub_type=policy_detail_pros_cons`。Python 仅当该 `policy_id` 行不存在，或存在但 `pros_text`/`cons_text` 去空白后皆空时写入；`fill_method=llm-synth`，`gap_item` 仍为 `214 政策详情对比`。已有非空优缺点不覆盖。无密钥/失败不造假文。不写入 ODS/DWD/ADS。
 
 ## 5. 215 部门政策对比
 
@@ -183,7 +212,7 @@ D4 保持 mock。无行则该格、该卡或该图空，不造 0。
 
 灌数方：`POL-L2-DS10-CMP-GAPFILL-L01`。读取方：`gkxlumen-element`，经 `GET /display/v1/policy/panorama/benchmark-report`。display 不直连库。不写入 ODS、DWD、ADS、供应方库。
 
-导出格式只有 PDF、Word，是请求条件，不落列。不选格式则只在线看行。导出若要文件，从这次读到的行生成。文件字节不进 MySQL，不进对象存储。不写桶名和对象键。不建邮件。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这张表。
+导出格式只有 PDF、Word，是请求条件，不落列。不选格式则只在线看行。导出文件不进本 gapfill 表；真文件走态势报告链（`situation/report` → topic-async OpenHTMLtoPDF，OSS/`gkx-lumen` 或 local 指针，与态势页同构）。gapfill 表本身不写桶名和对象键。不建邮件。核增研报 `report/jobs`（614–618）和检索分享 `share` 不是这张表。废止仅前端 `trackingExport` 打印另存。
 
 | 列 | 类型 | 空 | 约束 |
 |---|---|---|---|

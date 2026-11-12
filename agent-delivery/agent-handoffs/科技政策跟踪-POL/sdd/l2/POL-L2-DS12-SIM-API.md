@@ -31,7 +31,7 @@
 | 237 政策文本智能解析 | `POST /display/v1/policy/simulation/jobs` | 同步读。种类为文本解析。element 只读已有 `ads.policy_text_parse` 的解析行。不是作业。不建任务。请求路径不调用 `polan.text.parse.run`。不灌 gapfill。无解析行则报告空。不返回 501 |
 | 238 政策重点可视化展示 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为重点可视化。element 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 的重点行。不是作业。无行则该区空。不返回 501 |
 | 239 政策影响范围分析 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为影响范围。同一张表按政策（推演上下文）拣影响范围行。不是作业。无行则该区空。不返回 501 |
-| 240 政策关联分析 | 无 | 无 HTTP 资源，无种类。页面消费已有第 7 项政策子图。不走 `simulation/jobs`。不新建接口，不新建查图任务 |
+| 240 政策关联分析 | `GET /display/v1/policy/simulation/relation-graph` | 无 jobs 种类。透传专题 `/topic/v1/policy/graph`。不新建查图任务 |
 | 241 政策实施路径预测 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为路径预测。同一张表拣路径环节行。不是作业。无行则该区空。不返回 501 |
 | 242 政策解读报告生成 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为解读报告。同一张表拣解读段落行，页面呈现正文。不是作业。不产生 PDF、Word 文件。无行则报告区空。不返回 501 |
 
@@ -59,7 +59,7 @@
 |---|---|
 | `simulation/jobs` 的文本解析 | `gkxlumen-display` 不建任务，不转发 `gkxlumen-topic-async-service`，不调 Python，不占并发锁，不发 SSE，不调用 `polan.text.parse.run`。`gkxlumen-element` 只读已有 `ads.policy_text_parse` 的解析行 |
 | `simulation/jobs` 的重点可视化、影响范围、路径预测、解读报告 | `gkxlumen-display` 不建任务，不转发异步服务，不调 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 里该次种类的行。库名 `gkxlumenx_gapfill`，表名 `gapfill_policy_sim_result` |
-| 240 政策关联分析 | 无委托。页面消费已有第 7 项读图。Java 不写 nGQL。本页不新建查图接口 |
+| 240 政策关联分析 | display Feign 委托专题 graph。Java 不写 nGQL。不新建查图任务 |
 
 若 `gkxlumen-display` 还没有推演控制器，实现时按契约补这一条已有的 `simulation/jobs`。补上之后仍按种类分发。不能把整条 `jobs` 都改成只读 `gkxlumenx_gapfill.gapfill_policy_sim_result`，也不能为 237 另开解析 URL，不能为 240 另开查图 URL。本分册不补控制器，不写 Java。
 
@@ -107,6 +107,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 政策必选。少了政策则该区空
 - 一行是一个重点项：所属政策、组别、标题、一句明细说明。组别只用政策目标、支持领域、实施路径、资金安排，写在行上。组别的字段名由契约单冻结
 - 思维导图和图表在前端渲染。服务端只返回行。不返回预渲染图片文件
+- **柱图分（2026-11-12 COVER-FDE 卡1=B）**：行上可带已有列 `score_value`；`RESULT_COLUMNS` 已含，本分册**不改 SELECT**。前端读该列画柱；无分则柱空，不解析 `detail_text` 凑分
 - 行上 `metric_id` 留空，不新造
 - 不把 237 的解析标签改挂成重点项。不把评价页 223 的焦点说明复制成本叶重点
 
@@ -131,17 +132,17 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 
 空态：无行则该区空。HTTP 成功。不返回 501。不造全国通用兜底行。不在接口函数里返回写死的影响对象。
 
-## 6. 240 政策关联分析 · 无资源
+## 6. 240 政策关联分析 · relation-graph 透传（2026-11-12 卡1=B）
 
 指标 `M_POLICY_RELATION_DEGREE`，GRAPH，D4=mock。调研判跨项索引。
 
-- 没有 HTTP 资源。不设种类。不走 `POST /display/v1/policy/simulation/jobs`
-- 页面关联网络消费已有第 7 项读图：政策子图 `E-E7-POLICY-M1-L02`。抽取脚本 `GDF-POLICY-GRAPH-EXT-L01` 仍是 backlog。本分册不新开那条脚本，不重画查图时序
-- 展示只消费。Java 不写 nGQL。本页不新建查图任务，不新建查图接口
+- **不设** `simulation/jobs` 种类。公开读口：`GET /display/v1/policy/simulation/relation-graph?policy_id=&steps=1&limit=80`
+- display Feign 透传 `GET /topic/v1/policy/graph?center=&steps=&limit=` → Python `/internal/policy/graph`（Nebula 优先，ADS 镜像回退）
+- 响应透传 `nodes` / `edges` / `source` / `centers`；空图诚实空列表，`fabricated=false`。Java 不写 nGQL、不填假网
 - `E-E7-POLICY-M1-L06` 不是实现路径。浏览器不改打 `/topic/v1/policy`
-- 不新造 `metric_id`。不改 D4。不把读图结果写成已上线
+- 不新造 `metric_id`。不改 D4。不灌 `gapfill_policy_sim_result` 关联行
 
-空态沿第 7 项已有读图。本分册不另定一个 501，也不为无图再造一条政策接口。
+空态：无邻域边则 `nodes/edges` 空；前端业务文案「暂无政策关联网络」。
 
 ## 7. 241 政策实施路径预测 · jobs · 路径预测 · 同步读
 
@@ -154,7 +155,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 同步读。不建任务。不派生流程任务
 - 政策必选。少了政策则该区空
 - 一行是一个环节：所属政策、环节、时间安排、责任主体、一句说明。环节只用政策发布、申报受理、评审评估、资金拨付、效果评估，写在行上。环节的字段名由契约单冻结
-- 流程图在前端渲染。服务端只返回行
+- 流程图在前端渲染。服务端只返回行。界面必见仅「政策实施流程图」；**不**返回历史对照行、**不**要求「历史评估图」读口（2026-11-12 需规分句闭合卡1=A）
 - 环节是预测展示。请求处理不推进环节状态，不写执行记录
 - 行上 `metric_id` 留空，不新造
 - 不把布局推荐的建议条数填进本叶。不把评价页 229 的路径与风险复制过来
@@ -174,8 +175,8 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 政策必选。少了政策则报告区空
 - 一行是一个段落：所属政策、段落、正文。段落只用政策背景、主要内容、预期效果、实施建议，写在行上。段落的字段名由契约单冻结
 - 页面呈现当次读到的正文。有解读段落行则报告区从这些行生成。没有则报告区空
-- 不产生 PDF 文件，不产生 Word 文件。响应里不内嵌一份写死的 PDF 或 Word。不写对象存储，不新建桶，前端不直连 RustFS
-- 下载在导出服务存在前不实现。自定义报告内容和格式不灌假配置
+- **jobs 本资源**：不产生 PDF/Word 文件；响应不内嵌写死文件；不写对象存储；前端不直连 RustFS
+- **下载（另轨，2026-11-12 卡1=B）**：浏览器走已有公开资源 `POST /display/v1/situation/report/generate`（`reportType=policy-interpret-report`），对齐 217 / 态势报告；PDF=`format=pdf`；Word=`format=html`→`.doc`。不新开 simulation 导出 URL，不走 `report/jobs`。自定义内容=章节勾选；自定义格式=Word/PDF（live 验收只认二者）。无解读段落行或不勾选则不发 generate
 - 行上 `metric_id` 留空，不新造
 - 不把 226 的摘要复制成本叶段落。不把评价页 224 的解读条目复制过来
 
@@ -192,7 +193,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 | 239 | jobs · 影响范围 · 同步读 | 无影响范围行则该区空。不造全国兜底行。不读预估表，不读图计算。不返回 501 |
 | 240 | 无资源 | 本分册不新建接口。关联网络只消费已有第 7 项读图。Java 不写 nGQL |
 | 241 | jobs · 路径预测 · 同步读 | 未选政策，或没有路径环节行，则该区空。不推进环节，不写执行记录。不返回 501 |
-| 242 | jobs · 解读报告 · 同步读 | 没有解读段落行则报告区空。不产生 PDF、Word。不写对象存储。不返回 501 |
+| 242 | jobs · 解读报告 · 同步读 | 没有解读段落行则报告区空。**jobs 不产生** PDF/Word、不写对象存储。下载另走 `situation/report`；无行不产文件。不返回 501 |
 
 ## 10. 明确不做
 
@@ -207,7 +208,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 不用 501 充当 237、238、239、241、242 的功能。无行则空。240 不另造 501 接口。
 - 不新造 `metric_id`。不改 D4。不把 mock 写成已上线。不把 `GDF-POLICY-MOCK-GATE-L01` 写成已解开。不改模型注册表。不把 `M_POLICY_SIMULATE` 挂到 238、239、241、242。不挂 `M_POLICY_FOCUS_INDEX`、`M_POLICY_DS_11_POLICY_EVAL_015`、`M_POLICY_EFFECT_SCORE`、`M_POLICY_LAYOUT_REC_COUNT`、`M_POLICY_DEEP_171_1`。
 - 237 不灌 gapfill，不写 `ads.policy_text_parse`。查询不灌数。不把 235、236 的种类定义写进本分册。
-- 不产生 PDF，不产生 Word。不新建桶，不写对象存储，前端不直连 RustFS。242 不灌文件，不灌自定义格式配置。
+- jobs 解读报告不产生、不内嵌 PDF/Word；不灌假文件进 gapfill；不灌自定义格式配置列。242 下载复用已有 `situation/report`（见 §8），不新建桶、前端不直连 RustFS。
 - 不把 `parse/jobs`、`parse/clauses`、`report/jobs`、`gkxlumenx_gapfill.gapfill_policy_report_body` 写成 237 或 242 的资源。
 - 不改 `FE-POL-03A`，不新建前端单。前端 mock 开关不是接口实现。
 - 不会签。不把本单标 done，不标 ready_to_sign。不改任务状态。

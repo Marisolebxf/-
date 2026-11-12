@@ -35,7 +35,7 @@ HTTP 成功且 `data.records` 为空，或请求失败：区块空，不显示 5
 | 影响范围 | 科技政策推演 · 影响范围分析 | 必须 `policy_id` | `impact_kind`、`impact_name`、`impact_text`、`time_change_text`、`region_text` |
 | 路径预测 | 科技政策推演 · 实施路径预测 | 必须 `policy_id` | `stage_name`、`schedule_text`、`owner_name`、`stage_text` |
 | 解读报告 | 科技政策推演 · 解读报告 | 必须 `policy_id` | 只展示 `section_name`、`body_text`。真轨不下载 PDF / Word / 文件 |
-| 政策关联（240） | 科技政策推演 · 政策关联分析 | 不打 `simulation/jobs` | 本页没有政策子图读法。真轨空态，不另发请求。Mock 轨仍用原 ECharts force |
+| 政策关联（240） | 科技政策推演 · 政策关联分析 | 不打 `simulation/jobs`；真轨 `GET /display/v1/policy/simulation/relation-graph?policy_id=`（须选政策后点「分析关联」） | 网络图 + 协同/体系说明。空图业务文案「暂无政策关联网络」。Mock 轨仍用原 ECharts force |
 | 布局推荐 | 不接入 | — | 不拿来填推演区块 |
 
 ## 3. 改动文件
@@ -103,7 +103,7 @@ HTTP 成功且 `data.records` 为空，或请求失败：区块空，不显示 5
 | 提交一条意见 | 没有任何 `/api/` 请求。提示「意见留在本页，未写入接口」 |
 | 切到科技政策推演，编号空 | 不请求。文案「未选择政策文本，不可解析」 |
 | 填编号后：文本解析 / 重点可视化 / 影响范围 / 路径预测 / 解读报告 | 各 1 次，body 只有 `kind` + `policy_id` |
-| 政策关联 | 不请求。文案「本页没有政策子图读法，不请求推演接口」 |
+| 政策关联 | 须 `policy_id`；请求 `GET .../simulation/relation-graph`。空图文案「暂无政策关联网络」。不见 `simulation/jobs`、不见浏览器直打 `/topic` |
 | 解读报告 | 无「下载」 |
 
 `?review=1` 再开一次：页上 3 个「查看指标」按钮（含 `M_POLICY_EFFECT_SCORE`、`M_POLICY_IMPLEMENTATION_EFFECT`、`M_POLICY_LAYOUT_REC_COUNT`），5 处「演示数据」角标，jobs 仍是挂载 1 次。角标组件还在，只是默认评审关时不进 DOM。

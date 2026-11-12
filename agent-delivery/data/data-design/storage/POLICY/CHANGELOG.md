@@ -2,6 +2,7 @@
 
 | 日期 | 任务 | 说明 |
 |---|---|---|
+| 2026-11-12 | `POL-L2-DS12-SIM-238-COVER-FDE-L01` | `gapfill_policy_sim_result.score_value` **语义扩展**：重点行可用作组重点展示分（柱图）；不 ALTER。多维评估行语义不变。无新表 |
 | 2026-11-10 | 602 波次 C 回应 | 准确性草稿表加一列「演示条数」，不是注册指标，不写 D4。没有行时不造数。索引仍写 16，行末指向这张 draft。点执行那一句只覆盖准确性：五条仍只 SELECT 演示贴源两表，不读九张指标表 |
 | 2026-11-10 | 602 波次 C | 政策清洗的准确性单独记了一张草稿表 `policy_accuracy_demo`。它按 D18 放在演示结果库，不是已经落地的那 16 张真算表 |
 | 2026-11-09 | `POL-MOCK-BTN-A01` | 缺项库补八张空表：`gapfill_policy_semantic`、`xcmp`、`xcmp_viz`、`xcmp_summary`、`report_analysis`、`report_insight`、`report_body`、`report_trace`。210/211 现网已有，不重建。DDL 在 `stores/mysql/gapfill.md`。只写 `gkxlumenx_gapfill` |

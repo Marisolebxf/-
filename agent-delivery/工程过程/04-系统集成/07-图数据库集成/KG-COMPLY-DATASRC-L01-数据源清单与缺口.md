@@ -107,7 +107,7 @@
 | 源表 | 行数 | 影响哪条 |
 |---|---:|---|
 | `ads_technology_policy_evidence` | **0** | 技术点与政策的证据关系无源 |
-| `ads_talent_institution_cooperation` | **0** | 人才↔机构合作（M03）无源表 |
+| `ads_talent_institution_cooperation` | **202,795（2026-11-11 实测；旧记录 0 行，近期才发布）** | 人才↔机构合作（M03）**端点 8,784 个机构 100% 为 `company`**，属人才-企业合作、不属科研机构，M03 本期 0 条，缺口待需规补编号 |
 
 > **但图里并非完全没有政策与服务机构。** 2026-11-07 实测 `demo_gkx_chain`：
 > - `policy` 节点 **20,000** 个，属性在 `props` 里（`level` / `year` / `type` / `region`），不是空 Tag；

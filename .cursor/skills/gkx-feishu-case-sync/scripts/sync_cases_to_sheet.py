@@ -104,10 +104,10 @@ def main():
     ap.add_argument('--report', default=None)
     args = ap.parse_args()
 
-    app_id = os.environ.get('LARK_APP_ID')
-    app_secret = os.environ.get('LARK_APP_SECRET')
+    app_id = os.environ.get('LARK_APP_ID') or os.environ.get('FEISHU_APP_ID')
+    app_secret = os.environ.get('LARK_APP_SECRET') or os.environ.get('FEISHU_APP_SECRET')
     if not app_id or not app_secret:
-        sys.exit('[x] 请设置 LARK_APP_ID / LARK_APP_SECRET 环境变量')
+        sys.exit('[x] 请设置 LARK_APP_ID / LARK_APP_SECRET（或 FEISHU_APP_ID / FEISHU_APP_SECRET，二者等价）')
 
     col_in, col_src = [c.strip().upper() for c in args.cols.split(',')]
     tk = get_token(app_id, app_secret)
@@ -290,14 +290,17 @@ def main():
                                  {'valueRange': {'range': '%s!%s1:%s1' % (args.sheet_id, col_in, col_src),
                                                  'values': [[head_txt, '用例来源文件']]}}, headers=hh)
                 upd_rev.append(head.get('data', {}).get('revision'))
-            # merge：只写本次命中的行；目标行已有内容且来源文件不同（或 M 空=不明来源）→ 跳过防误覆盖
+            # merge：只写本次命中的行；文本与来源都与现状一致才跳过（幂等刷新），
+            # M 列格式为「文件名（匹配方式）」，比对时取全角括号前的文件部分
+            mfile = lambda v: ((v or '').split('（')[0]).strip()
             targets = sorted(rn for rn in matched
-                             if not (existing.get(rn) and
-                                     (not existing_m.get(rn) or os.path.basename(matched[rn][1] or '?') != os.path.basename(existing_m.get(rn)))))
+                             if existing.get(rn) != matched[rn][0] or mfile(existing_m.get(rn)) != mfile(matched[rn][1]))
             skipped_other = sorted(rn for rn in matched if rn not in set(targets))
+            seq_of_row = {r: s for (s, r, _fn, _h) in hits}
             for rn in skipped_other:
-                collisions.append((matched[rn][1], rn, existing_m.get(rn) or '(M列空)',
-                                   os.path.basename(matched[rn][1])))
+                if mfile(existing_m.get(rn)) != mfile(matched[rn][1]):  # 只有跨文件抢占才算冲突；同文件幂等跳过不记
+                    collisions.append((seq_of_row.get(rn, '?'), rn, existing_m.get(rn) or '(M列空)',
+                                       os.path.basename(matched[rn][1] or '?')))
             if targets:
                 print('[i] merge 将写 %d 行，防误覆盖跳过 %d 行' % (len(targets), len(skipped_other)))
         else:
@@ -346,7 +349,7 @@ def main():
         if collisions:
             f.write('\n## 冲突跳过（目标行已被其他序号写入）\n\n| 序号 | 目标行 | 先占来源 | 本序号来源 |\n|---|---|---|---|\n')
             for seq, hit, prior, fs in collisions:
-                f.write('| %d | %d | %s | %s |\n' % (seq, hit, prior, '；'.join(fs)))
+                f.write('| %s | %s | %s | %s |\n' % (seq, hit, prior, '；'.join(fs) if isinstance(fs, (list, tuple)) else fs))
         if bads:
             f.write('\n## 解析坏行（列数不符，跳过）\n\n')
             for b in bads[:20]:

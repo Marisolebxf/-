@@ -35,7 +35,7 @@
 | 233 新出台预测 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步。种类为新出台预测。同一张表按已出台政策拣预测行。无行则该区空。不调 `parse/jobs`。不建任务。不返回 501 |
 | 234 区域空间 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步。种类为区域空间。同一张表按区域与政策类型拣行。对不上则空间结果空。不建任务。不返回 501 |
 | 235 多维评估 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步。种类为多维评估。element 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 的多维评估行。无行则雷达和柱状空。不建任务。不返回 501 |
-| 236 利益攸关方 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步。种类为利益攸关方。element 只读 `gkxlumenx_gapfill.gapfill_policy_sim_stakeholder` 的参与意见行。无行则意见列表空。请求不插入。不建任务。不返回 501 |
+| 236 利益攸关方 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步。种类为利益攸关方，必须 `policy_id`。element 读该政策下参与意见行与评估识别行。无政策或无行则空。请求不插入。不建任务。不返回 501 |
 
 `simulation/jobs` 上还有 237–242。那些种类的定义在 `POL-L2-DS12-SIM-API`，读法以 `POL-L2-DS12-SIM-ARCH` 为准。本分册不改写，也不把查预估表的读法套到它们身上。
 
@@ -141,22 +141,23 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 
 ## 7. 236 利益攸关方参与评估 · jobs · 利益攸关方
 
-公开资源仍是 `POST /display/v1/policy/simulation/jobs`。浏览器另一次提交，种类为利益攸关方。
+公开资源仍是 `POST /display/v1/policy/simulation/jobs`。浏览器另一次提交，种类为利益攸关方，**必须**带 `policy_id`。
 
-指标未见。同款退路：读缺项表，不用 501 充当这块功能。
+指标未见。同款退路：读缺项表，不用 501 充当这块功能。2026-11-12 COVER-FDE 修订。
 
-链路：前端 → 网关 → `gkxlumen-display` → `gkxlumen-element` → `gkxlumenx_gapfill.gapfill_policy_sim_stakeholder` 的参与意见行。
+链路：前端 → 网关 → `gkxlumen-display` → `gkxlumen-element` → `gkxlumenx_gapfill.gapfill_policy_sim_stakeholder`（该政策下参与意见行 + 评估识别行）。
 
 - 同步。不建任务
-- 请求种类是利益攸关方。参与意见是这张表里的行内容，不另开 kind
-- 一行是一条已灌意见：主体（决策者、评估者、利益攸关方）、渠道（在线问卷、意见征集、专家评审）、意见正文、时间。渠道以需规原文三种为界。字段名归 `POL-L2-DS12-SIM-DATA`
+- 请求种类是利益攸关方。无 `policy_id` 时 display/element 都不查表，返回空
+- 有政策：读 `row_kind IN (参与意见, 评估识别)` 且 `policy_id` 等值。字段名归 `POL-L2-DS12-SIM-DATA`
+- 参与意见行：主体、渠道、意见正文、时间。评估识别行：检查项、结论、说明
 - 行上 `metric_id` 留空。不新造
 - 请求处理不插入、不更新、不删除。页面上新提交的问卷和意见留在浏览器，直到另有采集单。本分册不建那张单
-- 「汇总各方意见并纳入效果评估模型」在模型接通前不实现。呈现侧的汇总只对已灌行计数
-- 灌数由 `POL-L2-DS12-SIM-GAPFILL-L01` 执行。本分册不改这些行的内容
+- 「纳入效果评估模型」有意不做。呈现侧汇总只对该政策已灌参与意见行计数
+- 灌数由 `POL-L2-DS12-SIM-GAPFILL-L01`（及本 COVER 迁移）执行
 - 不把评价页序号 230 的方案意见、序号 210 的受众反馈表 `gapfill_policy_audience_feedback` 当成参与意见
 
-空态：没有参与意见行，则列表空。HTTP 成功。不造一条意见。不返回 501。不在接口函数里返回写死的评论。
+空态：未选政策、或没有该政策下行，则列表/识别空。HTTP 成功。不造一条意见。不返回 501。不在接口函数里返回写死的评论。
 
 ## 8. 空态对照
 
@@ -168,7 +169,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 | 233 | jobs · 新出台预测 | 未选政策，或没有预测行，则该区空。不调解析，不用解析结果顶替。不返回 501 |
 | 234 | jobs · 区域空间 | 未选区域，或区域、类型对不上行，则空间结果空。不造全国通用行。不返回 501 |
 | 235 | jobs · 多维评估 | 没有多维评估行，则雷达和柱状空。不借用推演键填分。不返回 501 |
-| 236 | jobs · 利益攸关方 | 没有参与意见行，则列表空。请求不插入。不返回 501 |
+| 236 | jobs · 利益攸关方 | 无 `policy_id` 或没有该政策下行，则空。请求不插入。不返回 501 |
 
 架构第 2 节的「真推演」种类在模型未注册时仍是 501。那不是上表五行。五叶在模型注册前照常读缺项表。
 
