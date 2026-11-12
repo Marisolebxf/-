@@ -198,3 +198,5 @@ v1.2 起，校验器在原有 claim、数据、验证、跨仓 Bundle 约束上�
 
 - `S-LITE-CHECKLIST.md`：S 级最小合规清单（claim/需规锚点/验证/提测/验收留痕）。
 - `feishu-transition-recipe.md`：飞书 `IN PROGRESS → RESOLVED` 必填字段与 option_id 传参配方。
+- `REQUIREMENT-COVERAGE-CHECKLIST.md`：需规逐项覆盖表与数据缺失专项排查。
+- `scripts/pipeline-status.mjs`：GitLab API pipeline 查询 helper（需 `GITLAB_API_TOKEN`，无 token 时回退页面）。

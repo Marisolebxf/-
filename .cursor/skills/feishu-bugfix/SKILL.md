@@ -97,6 +97,8 @@ Before `进入开发`:
 
 If no matching functional point exists, use a formal acceptance item, QA case, or latest explicit human decision and record that anchor. If none can be found, stop instead of inventing the expected behavior.
 
+Use `references/REQUIREMENT-COVERAGE-CHECKLIST.md` to enumerate every SRS sub-function before coding; for “missing data/少模块/少指标” defects follow the data-loss triage order in `references/BUG-PLAYBOOK.md §3.1`.
+
 ### 3. Classify and route
 
 Load the matching section of `references/BUG-PLAYBOOK.md`:
@@ -215,7 +217,7 @@ Before merge:
 1. Refresh the latest `dev`; never merge an assumption from an old local ref.
 2. Confirm the candidate can build and deploy against a green baseline. An unrelated red baseline may allow local development, but it never authorizes merge or `提测`; wait for a successful target-branch pipeline or block shipping with the owner and URL.
 3. Merge/rebase only the authorized candidates and push `dev` in Bundle `ship_order`.
-4. Track every repository's pipeline, image tag, deployed SHA and rollout; do not verify only the last repository.
+4. Track every repository's pipeline, image tag, deployed SHA and rollout; do not verify only the last repository. Prefer `scripts/pipeline-status.mjs` (requires `GITLAB_API_TOKEN` with api scope; otherwise fall back to the GitLab page) over manual screenshot polling.
 
 Pipeline wait rule: follow only pipelines whose commit contains the authorized candidate (`git merge-base --is-ancestor <candidate> <pipeline-sha>`). Stop waiting for that repository at the first terminal success: pipeline success plus successful deploy/rollout, or a current live deployed SHA that contains the candidate. If the first pipeline is canceled or superseded, continue to the next candidate-containing pipeline and stop at its first terminal success. Do not switch to an unrestricted "latest dev pipeline" poll.
 
