@@ -62025,8 +62025,15 @@ tasks:
       - "不做 42–47 写操作、不做推荐模型"
     update_time: "2026-11-09T15:11:29+08:00"
   - id: KG-COMPLY-LOAD-T06
+    cost_warn: "yellow"
+    evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T06.md"
+    supervised_by: "human:陈芸飞"
+    claimed_at: "2026-11-12T07:39:42.293Z"
+    last_seen_at: "2026-11-12T07:39:42.293Z"
+    lock_until: "2026-11-12T11:39:42.293Z"
+    claimed_by: "agent:data-agent"
     title: "T06 四条现存边语义对齐报告（apply_to/support/participates/belongs_to）"
-    status: "ready"
+    status: "review"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -62037,12 +62044,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 30000
     note: |
-      SDD §5 T06；建议执行人 human:陈芸飞。前置三任务已于 2026-11-12 全部签收（T02/T03/T04 均 done），本节可开始认领。
-      2026-11-12 15:10 唐绍祖预取的首批事实（供起步参考，不代替正式报告，结论仍需执行人按三类出建议）：
-      **① apply_to 与 support 是同一批关系的两个名字，100% 完全重合。** 实测两条边各 10,957 条、去重端点对亦各 10,957 对，「起点+终点」完全相同的有 10,957 对，重合率 100.00%，apply_to 独有 0、support 独有 0。DoD 阈值是 >90% 即写「建议停读一条」，本例是**完全重复而非高度重合**，可直接判「建议停读一条」，不存在需要保留的独有子集。
-      **② participates 两层拆分已核**：`enterprise`→`segment` 178,731（对应 M17）、`institution`→`institution` 34,769（不属 M17/M18，见 T02 卡片「不得映射」），两层合计 213,500。
-      **③ 读图注意**：`apply_to`/`support` 各 10,957 条属存量，无批次戳；不要用 ETL 批次过滤把它们筛掉。
-      **④ 环境注意**：图库 10.50.75.136:9669 已触发内存高水位（`Used memory hits the high watermark(0.800000)`），无 Tag 锚定的全表扫描基本失效（连接间歇超时、大聚合被拒）；`MATCH ()-[e:apply_to]->()` 这类全扫需改为按端点 Tag 锚定，取端点对明细时可分批 `LIMIT`。
+      2026-11-12 陈芸飞授权认领，前置T02/T03/T04均done。15:43-15:44按Tag锚定只读复核：apply_to/support各10957，端点交集10957、重合100%、独有0；新增发现全量weight分别0.6/0.8，props解析后相同，不能宣称全属性相同。participates企业→环节178731=M17，服务机构→服务机构34769不得映射M02/M19/M17/M18，建议另名保留。belongs_to环节→链359，覆盖359/1414，未挂链1055。100条样本、全量端点对、独立SQLite交集及属性核验通过。三类建议见正式报告，停读/权重/改名交唐绍祖与徐滕强裁定；不写库、不切换接口。高水位仍需避免全表扫描。handoff: agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T06.md；实际token/费用不可得。
     depends_on:
       - "KG-COMPLY-LOAD-T02"
       - "KG-COMPLY-LOAD-T03"
@@ -62054,7 +62056,7 @@ tasks:
       - "含 apply_to/support 跨边重合率（起点+终点同对），>90% 写「建议停读一条」"
       - "participates 拆两层：enterprise→segment 178,731（M17）/ institution→institution 34,769"
       - "结论分可映射/需改名/不得映射三类并指明条数，裁定交唐绍祖/徐滕强"
-    update_time: "2026-11-09T15:11:35+08:00"
+    update_time: "2026-11-12T15:47:47+08:00"
   - id: KG-COMPLY-LOAD-T13
     title: "T13 入图过程复用手册（执行器参数化）"
     status: "backlog"
