@@ -111,6 +111,12 @@
 
 边属性通用形：`(weight, props)`，业务字段进 `props` JSON（如 M08 的 `relation_type`/`institution_role_code`、M01 的 `match_method=coauthor`、M04 的 `match_method=employment_history_aggregated`）。weight 口径按单：M02=Σ`co_paper_count`；M01=`collaboration_score`（空补 0）；M04=0；M08/M09=1.0 恒定。
 
+**历史结构边与 T06 裁定**（不映射 M01–M24，如实登记）：
+
+- `belongs_to` 覆盖 359 / 1,414 个环节，未挂链 **1,055 个环节数**（⚠️ 是环节数，**不是**「可补 1,055 条边」）；属结构归属，缺口本期不补。
+- `support` / `apply_to` 端点 100% 重合，权重分别恒为常数 0.8 / 0.6（全图一个值，**不是强度**）：**停读 `support`、单读 `apply_to`**，权重不作强度用。
+- institution→institution 34,769（在 `participates` 上）：本期不改名（`service_relate` 仅为正式线备选名），**不得映射** M02/M19/M17/M18。
+
 ### 2.5 建点与跳过策略
 
 1. **先探后建（防空壳，最重要的一条）**：写边前对全部端点 VID 批量 `FETCH PROP ON <tag>` 探测，缺的才建；否则 Nebula 会**静默建空壳点且不报错**。
@@ -152,7 +158,7 @@ python3 t04_loader.py --rel m08 --full --batch comply-<日期>-t04-4
 # 7) 总账：按 §4 模板出对账单，交只读核验（模板见 t04_t10_verify.py / t05_empty_state.py）
 ```
 
-工程参数（三单实测收敛值）：批大小 200 点/批、200 边/批；Doris 取数**一次性拉全量**（`LIMIT/OFFSET` 深翻页在 MPP 下又慢又可能漏/重行）；画像名 JOIN 行内带出优先、IN 批查（1000/批）兜底；长任务用分片+checkpoint+排他锁（T02：545 互斥分片、SQLite 断点）；nGQL 字符串必须整体转义（源表内容含裸换行会断裂语句）。
+工程参数（三单实测收敛值）：批大小 200 点/批、200 边/批；Doris 取数**一次性拉全量**（`LIMIT/OFFSET` 深翻页在 MPP 下又慢又可能漏/重行）；画像名 JOIN 行内带出优先、IN 批查（1000/批）兜底；长任务用分片+checkpoint+排他锁（T02：545 互斥分片、SQLite 断点）；nGQL 字符串必须整体转义（源表内容含裸换行会断裂语句）。图库侧读**一律按端点 Tag 锚定**——实例已触发内存高水位（0.8）：无锚定全表扫基本失效、大聚合会被拒（实测 `sum(e.weight)` 518 秒后被拒）；拉明细时另加 `LIMIT` 分批。
 
 ---
 
@@ -174,16 +180,18 @@ python3 t04_loader.py --rel m08 --full --batch comply-<日期>-t04-4
 **只读核验查询集**（对账单的每个数字都要能被这些查询复现）：
 
 ```ngql
--- 总数
-MATCH ()-[e:author_of]->() RETURN count(e);
--- 方向抽验（防反转）
-MATCH (a:person)-[e:author_of]->(b:patent) RETURN count(e);
--- 批号抽验
-MATCH ()-[e:author_of]->() WITH e LIMIT 1 RETURN e.props AS p;
+-- ⚠️ 图库已触发内存高水位（0.8）：查询一律按端点 Tag 锚定，禁无锚定全表扫；
+--    大聚合会被拒（实测 sum(e.weight) 518s 被拒）；拉明细另加 LIMIT 分批
+-- 总数（带锚定，兼做方向抽验防反转）
+MATCH (:person)-[e:author_of]->(:patent) RETURN count(e);
+-- 批号抽验（同样带锚定）
+MATCH (:person)-[e:author_of]->(:patent) WITH e LIMIT 1 RETURN e.props AS p;
 -- 多端点边型必须拆端点（cooperate 本期实存三路：person↔person / research↔research / ent↔ent；
 -- M03 的 person→research 口径本期 0；T11 提示该边型共装 4 条 M，拆完才算对齐）
 -- 存量与禁区同法；点属性条件必须带 Tag 前缀（TRS 方言）
 ```
+
+**边界**：社群检测（T10 的 435/437 榜）为离线 JSON 结果、**不写回图**，不属本手册对账范围（社群口径见 T10 交付骨架记录）。
 
 ---
 
