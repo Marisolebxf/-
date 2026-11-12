@@ -62000,7 +62000,8 @@ tasks:
       - "全量边 python-louvain res8.0 seed42 复跑，成员清单覆盖 19,430 点，约 178 成形社群，对齐 Bprime-res8.json"
       - "每社群规模/核心节点/内部边/密度等属性齐全；其余算法跑几个报几个；模块度仅同分辨率自检"
       - "权重自检空值率=0；不依赖 community_id；不写回图；436 保持 501"
-    update_time: "2026-11-12T11:32:06+08:00"
+      - "【2026-11-12 验收附条，437 定稿前闭环】`avg_degree` 须与「内部边数」同口径：标准无向平均度 = 2 × 内部边数 ÷ 规模（现表为 4×内部边数÷规模，系统性大 2 倍，社群 55：31.21 vs 应为 15.60）；并补 DoD 点名要求的「密度」列 = 2E/(N(N-1))，社群 55 = 0.02446。均为离线补算，不必重跑聚类"
+    update_time: "2026-11-12T15:18:00+08:00"
   - id: KG-COMPLY-LOAD-T14
     title: "T14 维护管理读接口验收（序号 41）"
     status: "backlog"
@@ -62149,7 +62150,15 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 20000
-    note: "SDD §5 T11；建议执行人 human:兰天驰"
+    note: |
+      SDD §5 T11；建议执行人 human:李周（2026-11-11 分工调整接手，原 human:兰天驰 退出）。
+      **状态说明：仍为 backlog**——depends_on 中 T07 尚未签收（T07 又依赖 T06），口径已备好，链条一通则可直接开工。
+      2026-11-12 15:40 唐绍祖实测并交付对照清单（KG-COMPLY-T11-正式线结构覆盖对照清单.md）：
+      **关键前提：正式线 gkx_chain 当前不存在**——10.50.75.136:9669 现场 `SHOW SPACES` 只返回 `demo_gkx_chain`，与 architecture-baseline v2.2.15「不建正式名 gkx_chain」一致。故清单全部行标「待补」，按 SDD 允许的退路以 STRUCT §1 + T07 基线 + **demo 侧真实 schema 实测**（非文档推测）对照。
+      A 段 9 Tag + B 段 24 边（去重后 15 个边型，Nebula 同空间边型不可重名）逐行列「待补」；C 段技术点层 5 Tag + 6 边单列可选、不计入最低覆盖；D 段 6 项「不适用」均附书面理由（demo 空间名、本期批号体系值、M22 的 501 碎片形态、apply_to/support/belongs_to 三条历史混装、institution→institution 34,769、技术点层）。
+      **三处口径冲突（实测发现，文档未写清，建前必须定性）**：① research 的 VID 前缀是 `inst:` 而 institution 是 `institution:`，两者都表「机构」极易串；② project 的 Tag 名与前缀不同形（`proj:`）；③ **participates 是唯一没有 weight 的边型**（改用 chain_role/participation_depth/chain_score），且 **first_year 不是独立列而是在 props JSON 内**——SDD §3.2 字面要求「weight/props/first_year」与实际结构不符，需二选一并写进契约。
+      **待正式线责任人（WBS-07-00G/00H）确认 6 问**：实例落点、空间名是否最终叫 gkx_chain（与 baseline v2.2.15 冲突）、VID 规则是否照抄、first_year 独立列还是留在 props、participates 是否补 weight、技术点层是否复用（若复用须先重算 weighted_degree）。
+      本任务不往 gkx_chain 写任何点边，全程只读。
     depends_on:
       - "KG-COMPLY-LOAD-T07"
     design_refs:
