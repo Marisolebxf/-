@@ -36,7 +36,7 @@
 |---|---|---|---|
 | T02 | M02 cooperate research↔research | `comply-20261111-t02` | 3,442,271（原有 7,617 条核验跳过不重写） |
 | T03 | person/research 主数据 + M01 + M04 | `comply-2026-11-11-t03` | M01 2,525,789；M04 72,099；点已存在新增 0 |
-| T04 | person/research 覆盖写 + M08 + M09 + 随边建点 | `comply-20261112-t04-{2,4,p1,p2}` | M08 17,426；M09 85,069；patent 70,496 / project 17,402 随边建 |
+| T04 | person/research 覆盖写 + M08 + M09 + 随边建点 | `comply-20261112-t04-{1,2,3,4,p1,p2}`（1=试点批被 full 幂等覆盖；2=M09+patent；3/4=M08+project；p1/p2=person/research 主数据） | M08 17,426；M09 85,069；patent 70,496 / project 17,402 随边建 |
 
 ---
 
@@ -69,7 +69,7 @@
 | 点类别 | 本期现场规则（demo 存量在用） | 正式库目标规则 | 编号来源字段 |
 |---|---|---|---|
 | 企业 enterprise | `ent:<org_id>`（32 位码） | `ent:<统一社会信用代码>` | 属性 `org_id`（信用代码列实测 0/208,394 有值，本期无料） |
-| 产业链环节 segment | `segment:<segment_key>` | `seg:<链号>:<环节号>` | 属性 `segment_key` |
+| 产业链环节 segment | `segment:<segment_key>` | `seg:` + 环节码（码内嵌链号，如 `seg:INB1204…`；裁定原文口径） | 属性 `segment_key` |
 | 服务机构 institution | `institution:<org_id>` | `svc:<org_id>` | 机构 `org_id` |
 | 政策 policy | `pol:<政策主键>` | `policy:<政策主键>` | 政策源表主键 |
 | 技术点层 5 类 | `tech_point:` 等（本期不动） | 同左 | — |
@@ -93,7 +93,7 @@
 | project | `ads_project_profile` | 17,402 | M08 随边建，带画像 name |
 | paper | （无可用源） | 0 | 结构在、本期 0 点 |
 
-**边（Edge，本期实灌 + 存量 + 空态三档）：**
+**边（Edge，四档：实灌 / 存量不重灌 / 裁定不建 / 空态）：**
 
 | M | 边型/方向 | 源表/口径 | 本期终值 | 档 |
 |---|---|---|---:|---|
@@ -106,8 +106,8 @@
 | M17 | participates enterprise→segment | 存量 | 178,731 | 同上 |
 | M22 | cooperate enterprise↔enterprise | 存量 | 94,824 | 同上 |
 | M07 | —（不建） | `ads_talent_project` 770 万行 100% `funded_output_author`，资助署名≠参与 | 0 | 裁定不建 |
-| M06/M03/M19/M20 | — | 无源 / 端点全 company / 与 M01 同源 / 与 M02 同源 | 0 | 裁定记 0 或停建 |
-| M05/M10–M14/M16/M18/M21/M23/M24 | 9 种边型 | 无供数 | 0 | 空态（T05 核验） |
+| M06/M03/M19/M20 | — | M06 无源；M03 端点全 company（8,784 机构无一合格）；M19 与 **M02** 同源（research_coop）；M20 与 **M01** 同源（talent_coop） | 0 | 裁定记 0 或停建 |
+| M05/M10–M14/M16/M18/M21/M23/M24 | 11 条 M：10 条挂 8 种边型全 0（M12–M14 同挂 `policy_apply_to`；M16 挂存量 `cite`）；M18 挂存量 `participates` 按口径 0——该边 213,500 条属 M17 与历史混装，勿按边名总数误判非空 | 0 | 空态（T05 核验） |
 
 边属性通用形：`(weight, props)`，业务字段进 `props` JSON（如 M08 的 `relation_type`/`institution_role_code`、M01 的 `match_method=coauthor`、M04 的 `match_method=employment_history_aggregated`）。weight 口径按单：M02=Σ`co_paper_count`；M01=`collaboration_score`（空补 0）；M04=0；M08/M09=1.0 恒定。
 
@@ -167,7 +167,7 @@ python3 t04_loader.py --rel m08 --full --batch comply-<日期>-t04-4
 
 **点表**：| Tag | 应灌 | 实灌 | 批号 | 说明 |（patent/project 注明「随边建」；paper 注明 0 点理由）
 
-**存量不动区表**：灌数前后各跑一次 `MATCH ()-[e:<edge>]->() RETURN count(e)`，数字必须逐一相等（本期基线：cooperate 94,824 / participates 213,500 / depends_on 1,073）。
+**存量不动区表**：灌数前后各跑一次，数字必须逐一相等。⚠️ 多端点边型必须**按端点拆分**核对，勿拿边名裸总数对账（本期基线：cooperate 的 ent↔ent = 94,824，须用 `MATCH (:enterprise)-[e:cooperate]->(:enterprise)` 拆——裸总数已是 6,062,884 = M01 2,525,789 + M02 3,442,271 + M22 94,824（T04 复核时实测即此数，见 T04T10-核验-实测.md）；participates 213,500（= M17 178,731 + 混装 34,769，本期无新写，裸总数即基线）；depends_on 1,073）。
 
 **禁区表**：任务卡声明不碰的 M 系（如 T04 的 M10–M14/M16），复测必须全 0。
 
@@ -180,7 +180,8 @@ MATCH ()-[e:author_of]->() RETURN count(e);
 MATCH (a:person)-[e:author_of]->(b:patent) RETURN count(e);
 -- 批号抽验
 MATCH ()-[e:author_of]->() WITH e LIMIT 1 RETURN e.props AS p;
--- 多端点边型必须拆端点（cooperate 三分：person↔person / research↔research / ent↔ent）
+-- 多端点边型必须拆端点（cooperate 本期实存三路：person↔person / research↔research / ent↔ent；
+-- M03 的 person→research 口径本期 0；T11 提示该边型共装 4 条 M，拆完才算对齐）
 -- 存量与禁区同法；点属性条件必须带 Tag 前缀（TRS 方言）
 ```
 
@@ -205,7 +206,7 @@ MATCH ()-[e:author_of]->() WITH e LIMIT 1 RETURN e.props AS p;
 1. `inst:`（research）与 `institution:`（institution）前缀易串；project 的 Tag 名与前缀不同形（`proj:`）。
 2. `participates` 是唯一没有 weight 的边型（用 chain_role/participation_depth/chain_score），且 `first_year` 在 props JSON 内而非独立列——SDD §3.2 字面与实际不符，建契约时二选一。
 3. M08/M09 本期 weight 恒 1.0 无强弱信息：不得把 Σweight 当业务量、前端不得按 weight 渲染粗细；M09 props 未记发明人排序；patent/project 随边建点属性薄（仅 source+batch），按年份/领域筛选需先补属性。
-4. belongs_to/apply_to/support 三条历史边混装、institution→institution 34,769 条混装——正式线新建时按 M 定义拆开，别复刻混装。
+4. belongs_to/apply_to/support 三条历史边混装（共 22,273 条）、`participates` 上 institution→institution 34,769 条混装——正式线新建时按 M 定义拆开，别复刻混装。
 
 ---
 
