@@ -22,9 +22,9 @@
 
 ## 测试结果
 
-- `python -m polan.sim_focus_job` self-check（仓内 vendor）
-- FE-POL-03A：focus 相关断言（exportHtmlDoc 既有红不属本单）
-- `pnpm type-check`（science-pc）
+- `python -m polan.sim_focus_job` → `sim_focus_job self-check ok`
+- FE-POL-03A 48 项全绿（含 focus 真算断言；export 断言已对齐 `exportPolicyReport`）
+- `pnpm type-check` 绿
 
 ## 遗留风险
 
@@ -34,8 +34,8 @@
 
 ## CI/CD
 
-- algo / Java / orchestration：本 handoff 同批 push `origin/dev`
-- FE：本地 commit，待「推」
+- algo `28d6e6f` / Java `6f93942` / orch `2cb7c2a15` → `origin/dev`
+- FE 本地 `2bd5aec`（ahead），待人工确认「推」
 
 ## 涉及文件
 
