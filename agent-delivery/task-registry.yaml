@@ -64594,3 +64594,54 @@ tasks:
       - "指标注册表 M_SVC_PT_GLOBAL_SCALE_DIST D4 由 mock 翻 ingesting/live，阶段清单同步"
       - "handoff 写入 agent-delivery/agent-handoffs/ 并回填 cost 字段"
     update_time: "2026-11-12T14:24:00+08:00"
+  - id: SYSINT-04-01-API-INDFILTER-L01
+    title: "专题一张图 · 下游端点产业过滤整改（type-scale-stats / district-heat + Java 透传）"
+    status: "backlog"
+    agent: "backend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py + lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: |
+      来源：2026-11-12 智谱反馈切换产业数据不变。根因=被复用的两个既有端点全市口径无产业入参（需求草案 v0.2 当时按『复用既有端点』放行，联调暴露不满足切换产业场景）。排查汇总：agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-12-专题一张图-切换产业问题排查汇总.md。监督：human:徐滕强。注意：INB17xx 旧码不在本单范围（需另行决策灌数或映射）；政策区级空值走 SYSINT-04-01-DATA-POLDIST-L01。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_key_enterprise.py"
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_overview.py"
+      - "repos/lumen-svc-platform/gkxlumen-topic/src/main/java/com/topcomm/gkxlumen/topic/service/onemap/OneMapFacadeService.java"
+    definition_of_done:
+      - "Python type-scale-stats 支持可选 industry_chain_code：传入时按 enterprise_industry_chain EXISTS 过滤（模式同 polan/search.py industry_code_exists），空参保持全市口径（旧调用零影响），自测通过"
+      - "Python district-heat 支持可选 industry_chain_code 同上，空参保持全市口径，自测通过"
+      - "Java OneMapFacadeService 三处透传 industry_code：enterpriseStats 的 typeScaleStats（L129）、districtStats 与 thematicMap(enterprise) 的 districtHeat"
+      - "不传产业码的历史调用与其它消费方（企业发展概况页）回归不受影响（各跑一次对照请求）"
+      - "公网网关复验：INB1309 vs INB1323 的 scale_dist/medium_large_ratio/enterprise 主题图数值不同；不传 industry_code 时与改造前一致"
+      - "handoff 写入 agent-handoffs/，附自测证据（curl 请求/响应）与排查汇总文档链接"
+    update_time: "2026-11-12T15:20:48+08:00"
+  - id: SYSINT-04-01-DATA-POLDIST-L01
+    title: "专题一张图 · 政策深圳九区分布灌数（policy_base_info.district 补数）"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 200000
+    note: |
+      来源：2026-11-12 智谱反馈区级政策无值。根因=policy_base_info.district 大面积为空，深圳政策现算后全兜底『市本级』（INB1309 深圳 26 条全在市本级），九区色斑无值。排查汇总：agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-12-专题一张图-切换产业问题排查汇总.md。监督：human:徐滕强。关联：SYSINT-04-01-API-INDFILTER-L01（接口整改，互不阻塞）。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-algo-py/vendor/entan-py/polan/basic/indicators.py"
+    definition_of_done:
+      - "盘点报告：dwd policy_base_info 深圳行（province/city 含深圳）总数、district 空值率、region 字段可用性，写入 handoff"
+      - "补数方案：按 region/发文机关等可用字段拆区回填或建映射，走 D16 gapfill 合规路线（gkxlumenx_gapfill 库 gapfill_ 前缀表），禁止直接改写 DWD 正式表"
+      - "灌数后复验 policy_indicators(kind=sz)：by_district 出深圳九区行（而非仅『市本级』），INB1309 深圳各区 policy_count 有值"
+      - "一张图 API-3 by_district / API-4 policy_count / API-6 policy 主题公网复验有九区值"
+      - "handoff 写入 agent-handoffs/，含盘点数据、灌数行数、复验证据；口径若涉业务定义歧义登记客户决策清单"
+    update_time: "2026-11-12T15:20:59+08:00"
