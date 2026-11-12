@@ -61971,8 +61971,14 @@ tasks:
       - "权重自检 relation_confidence_score 空值率=0；不写回图"
     update_time: "2026-11-12T14:30:00+08:00"
   - id: KG-COMPLY-LOAD-T09-S1
+    cost_warn: "yellow"
+    evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T09-S1.md"
+    claimed_at: "2026-11-12T09:59:14.803Z"
+    last_seen_at: "2026-11-12T09:59:14.803Z"
+    lock_until: "2026-11-12T13:59:14.803Z"
+    claimed_by: "agent:algorithm-agent"
     title: "T09 补充交付：1,500 点重算无权度 + 重算加权度整榜（T12 契约阻塞项）"
-    status: "ready"
+    status: "review"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P1"
@@ -61984,16 +61990,7 @@ tasks:
     estimated_tokens: 12000
     supervised_by: "human:陈芸飞"
     note: |
-      **为什么开这张单（2026-11-12 17:10 唐绍祖，应 human:李周 T12 阻塞请求）**：T12 接口契约初稿已按六条必改调整，其中两条**卡在没有数据**，无法由契约方自行计算，必须 T09 侧补算：
-      ① **432 多维综合**：T09 交付的 `composite.json` 里 `raw.degree` 用的是 `tech_point.weighted_degree`（陈旧，榜首 1010.90780192），而 428 已改用重算无权度（榜首 2914）。两者 Top20 仅重合 16/20，名次会互相打架。要让 432 与 428 同基准，需 **1,500 点子图（即 429/430/432 现用同一人口）每点的重算无权度 `degree`**。T09 现只交付了全局 `recomputed_degree_top20`（Top20），不足 1,500 行。
-      ② **中台「加权度」**（SDD §2.2 第 2 列 #1）：该能力名就是「加权度」，但当前唯一可用的是陈旧 `weighted_degree`；重算加权度（`Σ relation_confidence_score / 100`，有向入边口径）**只有榜首单点校验值 1478.05，没有整榜**。需出**重算加权度完整榜（建议 Top100 + 或全量写入 JSON）**，供契约方返回真「加权度」。
-      **口径必须写清（避免又出现两套数打架）**：
-      - 重算无权度 `degree` = 入射边条数（无向化前的有向入边条数？**须与 T09 已交付 `recomputed_degree_top20` 同一算法**，直接复用其脚本逻辑，不得换口径）；T09 已记录 `recomputed unweighted degree`，榜首 2914。
-      - 重算加权度 = `Σ over 入射边 (relation_confidence_score / 100)`，榜首 1478.05（已有校验值，须能复现）。
-      - 两者都要带 `metric_source` 与 `scope`（人口/子图/采样方式）字段，供契约直接透传。
-      **交付物**：扩充 `对接文档/燕大/T09/result.json` 的 `tech_layer`（新增 `428_degree_centrality_recomputed_1500` 与 `weighted_degree_recomputed_rank` 两节），或新增独立 JSON；须附独立复算校验（与已有 2914 / 1478.05 两个锚点对得上）。
-      **可选加分（不阻塞 T12）**：428 度中心性现只能分页到 Top20（`recomputed_degree_top20` 仅 20 行），若一并给出**全库 19,430 点重算无权度整榜**（同一算法、只多排序输出，成本极低），428/432 均可正常分页，不必再开第三张单。不交不影响 432 与中台加权度的阻塞解除。\n**边界**：只读、不写图；不改 T09 已签收结论；不动 429/430/431 已有交付；新增数据不得覆盖旧文件（旧基线备查）。
-      关联：`KG-COMPLY-答复-李周-T12初稿评审-20261112.md` §三.1 / §三.2；验收记录 `KG-COMPLY-ACCEPT-T02-T09-技术验收记录.md` §附录带发现。
+      2026-11-12 陈芸飞授权启动并完成离线补交：基于哈希匹配的原T09快照，1500点同人口重算无权度、19430点加权度全榜、可选19430点无权度全榜及独立新版综合表已生成，均有metric_source/scope。复用原算法，独立SQLite全19430点对拍通过，榜首2914/1478.04514324（两位1478.05），双握手恒等式通过；T09全部已签收文件哈希不变。方向明确采用入射=入+出，依据T09验收§7.2及给李周补数答复§二；仅入边为2347/1177.65278141不能匹配锚点，请签收时统一任务卡/T12中有向入边措辞。不连接不写图库、不改429/430/431、不覆盖旧基线。产物对接文档/燕大/T09-S1；待唐绍祖评审、李周接入。实际token/费用不可得。
     depends_on:
       - "KG-COMPLY-LOAD-T09"
     design_refs:
@@ -62003,7 +62000,7 @@ tasks:
       - "交付 1,500 点（429/430/432 同一人口）逐点重算无权度，榜首复现 2,914"
       - "交付重算加权度榜单（Σ relation_confidence_score/100，有向入边），榜首复现 1,478.05"
       - "两份结果各带 metric_source / scope 字段；不改动 T09 已签收文件、不写图、不覆盖旧基线"
-    update_time: "2026-11-12T17:10:00+08:00"
+    update_time: "2026-11-12T18:03:31+08:00"
   - id: KG-COMPLY-LOAD-T10
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T10.md"
     title: "T10 图算法作业·社群批（433–435/437，定案 B′）"
