@@ -62081,7 +62081,7 @@ tasks:
     update_time: "2026-11-09T15:11:38+08:00"
   - id: KG-COMPLY-LOAD-T12
     title: "T12 后台接口契约与压测建议（两案通用）"
-    status: "backlog"
+    status: "ready"
     agent: "api-agent"
     epic: "E-SCI-INT"
     priority: "P1"
@@ -62091,7 +62091,15 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 35000
-    note: "SDD §5 T12；建议执行人 human:李周"
+    note: "SDD §5 T12；建议执行人 human:李周。
+**2026-11-12 15:55 唐绍祖置 ready（应 human:李周 飞书请求）**：逐项核对 depends_on 三项 T08 / T09 / T10 均已签收 done，无其他 blocked_by，置 ready 不破依赖；李周认领即可开工。答复文档：KG-COMPLY-答复-李周-T12开工确认-20261112.md（含四条上游红线）。
+**开工前必读四条（上游实测，直接决定契约对错）**：
+① **428 不可直接返回 tech_point.weighted_degree**——SDD §2.1 #6「直接读字段、无需重算」按现库不成立：榜首存 1010.90780192，按现存 2,914 条入边 Σconfidence/100 为 1478.05，Top10 比值 0.519–0.719 漂移无恒定系数，全库 Σwd 195,473.59 vs Σconf/100 260,019.52 比值 0.752 与点级不一致，分 evidence_level / direction_status / relation_type 求和均凑不出 1010.91 → 判定陈旧。契约须改返回 T09 重算榜 recomputed_degree_top20（带 metric_source）或明写口径待确认。影响 428 整榜 + 432 的 25% 分项。
+② **两个度数口径必须写死**：weighted_degree=边权重和（榜首 1010.91）、degree=入射边条数（2914），pearson 0.9515，数值不可互换。
+③ **435 avg_degree 口径要钉死且无 density 列**：社群 55（规模 639 / 内部边 4,985）报 31.21 = 4E/N，标准无向 2E/N 为 15.60，差一倍；汇总表当前无 density，437 若按 avg_degree 调节点大小会整体放大一倍；density 若前端要须声明本期不提供走空态，禁自算填充。
+④ **501 全清单只有 2 条**（SDD §2 明列）：第 1 列 #14（436 社群演化，缺多期数据）、第 2 列 #5（M22 cooperate 94,824 条，最大连通片仅 220/208,394）。M22 是「有数据但形态不可用」，必为 501 不可返回空态，且 501 与空态响应体须可区分，否则前端会显示成「暂无数据」。
+补充口径：M03 belong 有源但两端 100% 为 company → **空态非 501**；M08/M09 的 weight 恒为 1.0，契约暴露 weight 须注明无强度信息。
+边界：两案通用（SDD §4），不选落点、不写实现、不新增 Tag/Edge、契约不含连接串与凭证。李周同人还持 T07（等 T06）/ T11（等 T07），建议顺序 T12 先行。"
     depends_on:
       - "KG-COMPLY-LOAD-T08"
       - "KG-COMPLY-LOAD-T09"
