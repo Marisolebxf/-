@@ -56,9 +56,9 @@
 | 展示读面取列 | 现有评价 226 的读面只取 `summary` 一列；237 需要标题、摘要、标签与结构化要素。展示读法取 `title / summary / auto_tags / structured_elements`，仍是只读，不跑 `run()`。该取列口径由 DATA / API 单落成字段 |
 | 条款隔离 | 条款批次更新同一条解析行，不另插条款行。展示 237 仍读该行的标题、摘要、标签和其余要素。返回 `structured_elements` 时去掉 `clauses` 与 `clause_meta`，条款树不进入解析报告。不因行内有这两个键整行丢弃 |
 | 重点 / 影响范围 / 路径 / 解读 | 中台无实现。按签收标准走缺项表 `gapfill_policy_sim_result`，行内容范式：逐项要素 + 一句说明，图表渲染在前端 |
-| 真模型演进 | `M_POLICY_SIMULATE` 注册为可调用服务后，影响范围改随真推演结果；`M_POLICY_TEXT_PARSE` 若注册为可调用解析服务，237 可切 async 真算。注册动作不在本叶，本叶不进白名单、不加 Job 键 |
+| 真模型演进 | `M_POLICY_SIMULATE` 注册为可调用服务后，影响范围改随真推演结果。**237 真算（2026-11-12 方案 C 三卡）**：新键 `policy_text_parse_run` 进白名单；旧 `policy_text_parse` 仍只读不跑 `run()` |
 
-迁移之后的最终架构一句话：**浏览器只打 `/display/v1/policy/simulation/jobs`；237 由 `gkxlumen-element` 只读 `ads.policy_text_parse` 已落库解析行（不跑解析），238/239/241/242 只读 `gapfill_policy_sim_result` 对应种类行；240 不设种类，页面消费第 7 项读图；真模型未注册的其余能力保持空态；算法中台读面留原地，无任何 demo 依赖。**
+迁移之后的最终架构一句话：**浏览器只打 `/display/v1/policy/simulation/jobs`（读面）与 `/display/v1/policy/evaluation/jobs`（237/238 真算键）；237 读面由 element 只读 `ads.policy_text_parse`，真算走 `policy_text_parse_run` 单政策 upsert 后再读；238/239/241/242 读 gapfill；240 读图；算法中台读面留原地，无任何 demo 依赖。**
 
 ## 2. 实现架构
 
@@ -66,7 +66,7 @@
 
 | 叶子 | 种类 | 迁移后的读法 |
 |---|---|---|
-| 237 | 文本解析 | element 只读 `ads.policy_text_parse` 的该政策解析行。返回时去掉 `clauses`、`clause_meta`，不整行丢弃 |
+| 237 | 文本解析 | **读面**：element 只读 `ads.policy_text_parse`（去 `clauses`/`clause_meta`）。**真算**：`policy_text_parse_run` → async → 单政策五要素 upsert（禁 `run()`） |
 | 238 | 重点可视化 | element 只读 `gapfill_policy_sim_result` 的重点行 |
 | 239 | 影响范围 | element 只读 `gapfill_policy_sim_result` 的影响范围行，跟随该政策上下文 |
 | 241 | 路径预测 | element 只读 `gapfill_policy_sim_result` 的路径环节行 |
@@ -128,18 +128,19 @@ flowchart LR
 
 ## 5. 分叶
 
-### 5.1 237 政策文本智能解析 · 读已有解析表
+### 5.1 237 政策文本智能解析 · 读已有解析表 + 异步真算写回
 
-指标 `M_POLICY_TEXT_PARSE`，MODEL，D4=mock。解析模型未以可调用服务注册（调研判 501），但解析**结果行已由已有批产管道真实落库**——评价页 226 已按同款裁定消费这张表的 `summary` 列。
+指标 `M_POLICY_TEXT_PARSE`，MODEL，D4=mock。评价页 226 仍只读同表 `summary`。
 
-- 表 `ads.policy_text_parse`，按 `policy_id` 读已有解析行。返回时去掉 `structured_elements` 里的 `clauses`、`clause_meta`（§1.4）。不整行丢弃
-- 一次读取返回该政策的标题、摘要、自动标签、结构化要素。需规点名的关键词、核心内容、支持对象、申报条件、支持力度都在结构化要素里，不另造一套解析
-- 请求处理**不调用** `polan.text.parse.run`：run() 清空整表，会连带清掉条款行。解析批次仍由已有灌数与条款跑批管道执行
-- 不走核增拆解页的 `parse/clauses`：那是条款树资源（607/608），本页是解析报告，判别键不同
-- 行上 `metric_id` 仍是已有的 `M_POLICY_TEXT_PARSE`。不改、不新造
-- 空态：该政策无解析行则报告空，不返回 501 假能力，不返回写死的报告
+- **读面**：表 `ads.policy_text_parse`，按 `policy_id` 读。返回去掉 `clauses`、`clause_meta`。取 `title / summary / auto_tags / structured_elements`（四中文键：核心内容 / 支持对象 / 申报条件 / 支持力度）
+- **真算 Job 键**：`policy_text_parse_run`（2026-11-12 三卡）。`POST /display/v1/policy/evaluation/jobs` → topic-async → `/internal/policy/jobs/execute` → `polan.text_parse_run_job`：规则优先 + 残量 LLM → **单政策 upsert**（merge 保留 `clauses`/`clause_meta`）。**禁止** `polan.text.parse.run()` / 整表 TRUNCATE
+- 不复用中台 `structure_one` / `/clauses/enrich`（条款切条 ≠ 五要素）
+- 旧键 `policy_text_parse`：**仍同步只读**，不改建任务（226 红线）
+- 界面：检索任意政策 →「解析」→ 进度 → 读回；无正文/失败「暂无解析结果」
+- 行上 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`
+- 空态：无行报告空；真算失败不写假四键
 
-不做什么：不把中台 Markdown 渲染端当成展示接口（渲染在前端）。不把摘要单独升成第二指标。不把核增智能研报 `report/jobs` 当成本叶报告。
+不做什么：浏览器直连 Python；demo 服务；把条款树当解析报告；改 226 只读语义。
 
 ### 5.2 238 政策重点可视化展示 · 读缺项表 + 异步真算写回
 
@@ -218,7 +219,7 @@ flowchart LR
 | `report/jobs`、`gapfill_policy_report_body` | 核增智能研报五叶。242 不是研报 |
 | `M_POLICY_FOCUS_INDEX`、`M_POLICY_DS_11_POLICY_EVAL_015`、`M_POLICY_EFFECT_SCORE` | 评价页指标。不挂 238、241 |
 | `M_POLICY_SIMULATE` 挂到 235–242 行 | 推演键只挂 232–234 预测行（EST 裁定）。本叶各缺项行 `metric_id` 留空 |
-| 异步白名单 `PolicyAnalysisTypes` / `JOB_SUB_TYPES` | 本叶不加新 Job 键：五类读面是 element 只读，不进异步管道。评价 226 的既有 `policy_text_parse` 键保持原状 |
+| 异步白名单（历史口径） | **已修订**：237 加 `policy_text_parse_run`；238 已有 `policy_sim_focus`。评价 226 的 `policy_text_parse` 只读键保持原状 |
 | `E-E7-POLICY-M1-L06`、专题政策 URL | 不是展示实现路径 |
 
 ## 7. 明确不做
