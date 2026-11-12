@@ -61973,7 +61973,7 @@ tasks:
   - id: KG-COMPLY-LOAD-T10
     evidence: "agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T10.md"
     title: "T10 图算法作业·社群批（433–435/437，定案 B′）"
-    status: "review"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -61985,6 +61985,12 @@ tasks:
     estimated_tokens: 45000
     note: |
       SDD §5 T10；执行人 human:韩梦蕊（交付 2c4bf2e2，2026-11-12）。自检与 2026-11-12 复核一致：r8.0/seed42/全量边结果 JSON 覆盖 19,430 点，287 组 = 成形社群 180 + 单点 107（与定案 178 差 2，交付文档已注明跨实现收敛抖动、networkx 实现给 176，在 DoD「约 178」合理浮动区间）、模块度 0.2786 同分辨率自检达标；435 汇总 180 行全出，9 份结果 JSON（r1.0/1.2/1.5/2.0/8.0 + nximpl + smoke）与 t10_pipeline.py/t10_community_summary.py 归档齐。核验证据 07-图数据库集成/T04T10-核验-实测.md；handoff 见 agent-handoffs/KG-COMPLY-LOAD-T10.md。认领历史未倒填；待 coordinator 按 DoD 验收，不代签 done。
+      2026-11-12 15:18 唐绍祖技术验收通过并签收 → done（记录 KG-COMPLY-ACCEPT-T10-技术验收记录.md）：
+      **独立复算而非采信自述**——用本地 11-07 边快照（541,428 条，与图库/T08/T09 三次同数）配交付 partition，按标准无向模块度公式自算，**三个锚点全部精确复现**：r1.0 得 0.519831（声明 0.5198，差 3.1e-5）、r8.0 python-louvain 得 0.278633（声明 0.2786，差 3.3e-5）、r8.0 networkx 得 0.282399（声明 0.2824，差 1e-6）。三数同图同式同时复现，证明边集一致、partition 与模块度为同一次运算产物。
+      partition 自洽全部通过：覆盖 19,430 点、287 群 = 180 成形 + 107 单点、Top10 规模逐项一致、各群规模求和 19,430（19,323 + 107）不漏不重；networkx 侧 284/176/108/0.282399 亦复算一致。权重自检 relation_confidence_score 空值 0/541,428（0.0000%）。全程只读有旁证（与 T08/T09 读数同数）。
+      **180 vs 定案 178：接受不返工**——178 恰夹在两实现（networkx 176 / python-louvain 180）之间，属 resolution=8.0 高分辨下多层合并顺序不同的已知抖动；DoD 原文写「约 178」，180 差 1.1% 在「约」区间内；且 r1.0 锚点能逐字精确复现 113 群/0.5198，证明数据与读图等价，差异仅在 r8.0 层级合并细节。要逐群对齐 178 需定案方提供库与版本号，否则不可复刻。
+      **435 属性表抽样实到库**：取社群 55（最大，639 点）逐点拉 tech_rel，实测内部有向边 4,985，与表声明**精确吻合**；内部双向边对 0（单向存储）。435 表 180 行、规模合计 19,323，与 partition 逐群零差异。
+      **2 条需修正（不阻塞 done，但须在 437 定稿前闭环）**：① `avg_degree` 列口径错误——180 行**逐行**皆等于 `4 × 内部边数 ÷ 规模`，为标准无向平均度 `2E/N` 的 2 倍（社群 55：表 31.21 vs 应为 15.60），疑为 networkx 无向图加双向边后 `average_degree` 未去重；437 若照此返回前端，社群密度会显示偏大一倍，建议改为 `2 × 内部边数 ÷ 规模`。② DoD 点名要求的「**密度**」列缺失（无向密度应为 `2E/(N(N-1))`，社群 55 = 0.02446），可离线补算、不必重跑聚类。
     depends_on:
       - "KG-COMPLY-LOAD-T01"
     design_refs:
@@ -61994,7 +62000,8 @@ tasks:
       - "全量边 python-louvain res8.0 seed42 复跑，成员清单覆盖 19,430 点，约 178 成形社群，对齐 Bprime-res8.json"
       - "每社群规模/核心节点/内部边/密度等属性齐全；其余算法跑几个报几个；模块度仅同分辨率自检"
       - "权重自检空值率=0；不依赖 community_id；不写回图；436 保持 501"
-    update_time: "2026-11-12T11:32:06+08:00"
+      - "【2026-11-12 验收附条，437 定稿前闭环】`avg_degree` 须与「内部边数」同口径：标准无向平均度 = 2 × 内部边数 ÷ 规模（现表为 4×内部边数÷规模，系统性大 2 倍，社群 55：31.21 vs 应为 15.60）；并补 DoD 点名要求的「密度」列 = 2E/(N(N-1))，社群 55 = 0.02446。均为离线补算，不必重跑聚类"
+    update_time: "2026-11-12T15:18:00+08:00"
   - id: KG-COMPLY-LOAD-T14
     title: "T14 维护管理读接口验收（序号 41）"
     status: "backlog"
@@ -62108,7 +62115,16 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 25000
-    note: "SDD §5 T07；建议执行人 human:李周"
+    note: |
+      SDD §5 T07；建议执行人 human:李周。
+      **状态说明：仍为 backlog，不置 ready**——depends_on 中 T06 尚未签收（现 ready），置 ready 会破依赖。口径与预填数已备好，T06 签收后可直接开工。
+      2026-11-12 15:30 唐绍祖备好对账口径并预填 24 行实测数（KG-COMPLY-T07-总账对账口径.md）：
+      24 条 M 关系已全部由我本人现场只读实测。**8 行有真实行数**——M01 cooperate person→person 2,525,789、M02 research→research 3,442,271、M04 belong person→research 72,099、M08 participate research→project 17,426、M09 author_of person→patent 85,069、M15 depends_on 1,073、M17 participates enterprise→segment 178,731，另 M22 enterprise→enterprise cooperate 94,824 单标「有数据形态不可用 501」；**16 行空态全 0**（M03 须写「有源但端点 100% 为 company」，不得写「无源」）。
+      已附全空间边数分解，证明总表之外无下落不明的边：M 关系 6,452,051 + 未映射历史存量 22,273（apply_to 10,957 / support 10,957 / belongs_to 359）+ tech 层 1,020,005 = **7,494,329**。
+      对账铁律（四条，违反则总数对不上任何一条关系）：① cooperate 一个边型装四条 M，必须四行分组（2,525,789 / 3,442,271 / 0 / 94,824），禁止用合计 6,062,884 当任何一条的成果；② participates 三层分组（M17 178,731 / M18 0 / **不属 M17·M18 的 institution→institution 34,769**），后者不得塞进 M17 或 M18；③ **participate（M07/M08）与 participates（M17/M18）是两个不同边型**，只差一个 s；④ cite 同时覆盖 M06/M16，须按端点拆。
+      批号筛一律用 e.props CONTAINS "<批号>"，**禁止 STARTS WITH "{\"batch\":..."**——T02 的 props 里 batch 不在 JSON 首位，照抄 T03 写法会返回 0。
+      环境限制：图库内存高水位（0.800000），全表扫描被拒，一律 Tag 锚定取数；M02 的 weight 总和 14,715,117 仍待环境恢复后补验。
+      待补列：「跳过数」需执行方从各任务 handoff 汇总，我本次只核终态条数。
     depends_on:
       - "KG-COMPLY-LOAD-T02"
       - "KG-COMPLY-LOAD-T03"
@@ -62134,7 +62150,15 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 20000
-    note: "SDD §5 T11；建议执行人 human:兰天驰"
+    note: |
+      SDD §5 T11；建议执行人 human:李周（2026-11-11 分工调整接手，原 human:兰天驰 退出）。
+      **状态说明：仍为 backlog**——depends_on 中 T07 尚未签收（T07 又依赖 T06），口径已备好，链条一通则可直接开工。
+      2026-11-12 15:40 唐绍祖实测并交付对照清单（KG-COMPLY-T11-正式线结构覆盖对照清单.md）：
+      **关键前提：正式线 gkx_chain 当前不存在**——10.50.75.136:9669 现场 `SHOW SPACES` 只返回 `demo_gkx_chain`，与 architecture-baseline v2.2.15「不建正式名 gkx_chain」一致。故清单全部行标「待补」，按 SDD 允许的退路以 STRUCT §1 + T07 基线 + **demo 侧真实 schema 实测**（非文档推测）对照。
+      A 段 9 Tag + B 段 24 边（去重后 15 个边型，Nebula 同空间边型不可重名）逐行列「待补」；C 段技术点层 5 Tag + 6 边单列可选、不计入最低覆盖；D 段 6 项「不适用」均附书面理由（demo 空间名、本期批号体系值、M22 的 501 碎片形态、apply_to/support/belongs_to 三条历史混装、institution→institution 34,769、技术点层）。
+      **三处口径冲突（实测发现，文档未写清，建前必须定性）**：① research 的 VID 前缀是 `inst:` 而 institution 是 `institution:`，两者都表「机构」极易串；② project 的 Tag 名与前缀不同形（`proj:`）；③ **participates 是唯一没有 weight 的边型**（改用 chain_role/participation_depth/chain_score），且 **first_year 不是独立列而是在 props JSON 内**——SDD §3.2 字面要求「weight/props/first_year」与实际结构不符，需二选一并写进契约。
+      **待正式线责任人（WBS-07-00G/00H）确认 6 问**：实例落点、空间名是否最终叫 gkx_chain（与 baseline v2.2.15 冲突）、VID 规则是否照抄、first_year 独立列还是留在 props、participates 是否补 weight、技术点层是否复用（若复用须先重算 weighted_degree）。
+      本任务不往 gkx_chain 写任何点边，全程只读。
     depends_on:
       - "KG-COMPLY-LOAD-T07"
     design_refs:
@@ -64586,11 +64610,6 @@ tasks:
       - "handoff与cost回填"
     update_time: "2026-11-12T04:09:10+08:00"
   - id: SVC-SCALE-BAND-INGEST-L01
-    supervised_by: "human:徐滕强"
-    claimed_at: "2026-11-12T07:20:15.784Z"
-    last_seen_at: "2026-11-12T07:20:15.784Z"
-    lock_until: "2026-11-12T11:20:15.784Z"
-    claimed_by: "human:徐滕强"
     title: "服务机构规模四档灌数：ADS svc_metric_dist 补 M_SVC_SCALE_BAND 四行"
     status: "in_progress"
     agent: "data-agent"
@@ -64602,14 +64621,65 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "human:徐滕强 开工：灌数 M_SVC_SCALE_BAND 四档 + 注册表 D4 翻转"
+    note: "灌数完成：ADS 六桶写入+对账通过（44,153）；查询键 M_SVC_SCALE_BAND 六行非空；matrix/seed D4 翻转与 handoff 收尾中"
     definition_of_done:
       - "ADS svc_metric_dist 写入 metric_id=M_SVC_SCALE_BAND 四档行（0-50/50-200/200-500/500+，口径按 M_SVC_PT_GLOBAL_SCALE_DIST calc-logic 徐滕强 2026-10-13 v0.2.0 拍板：人数优先→注册资本兜底）"
       - "六桶合计与机构池对账通过，不缺行不填 0 冒充"
       - "专题门户概况页「规模分析·人员规模分布」出图（/svc/topic/v1/service-portal/overview scale_bands 非空）"
       - "指标注册表 M_SVC_PT_GLOBAL_SCALE_DIST D4 由 mock 翻 ingesting/live，阶段清单同步"
       - "handoff 写入 agent-delivery/agent-handoffs/ 并回填 cost 字段"
-    update_time: "2026-11-12T15:20:40+08:00"
+    update_time: "2026-11-12T15:38:54+08:00"
+  - id: SYSINT-04-01-API-INDFILTER-L01
+    title: "专题一张图 · 下游端点产业过滤整改（type-scale-stats / district-heat + Java 透传）"
+    status: "backlog"
+    agent: "backend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-topic-py + lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: |
+      来源：2026-11-12 智谱反馈切换产业数据不变。根因=被复用的两个既有端点全市口径无产业入参（需求草案 v0.2 当时按『复用既有端点』放行，联调暴露不满足切换产业场景）。排查汇总：agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-12-专题一张图-切换产业问题排查汇总.md。监督：human:徐滕强。注意：INB17xx 旧码不在本单范围（需另行决策灌数或映射）；政策区级空值走 SYSINT-04-01-DATA-POLDIST-L01。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_key_enterprise.py"
+      - "repos/lumen-topic-py/gkx_search_service/views/enterprise_overview.py"
+      - "repos/lumen-svc-platform/gkxlumen-topic/src/main/java/com/topcomm/gkxlumen/topic/service/onemap/OneMapFacadeService.java"
+    definition_of_done:
+      - "Python type-scale-stats 支持可选 industry_chain_code：传入时按 enterprise_industry_chain EXISTS 过滤（模式同 polan/search.py industry_code_exists），空参保持全市口径（旧调用零影响），自测通过"
+      - "Python district-heat 支持可选 industry_chain_code 同上，空参保持全市口径，自测通过"
+      - "Java OneMapFacadeService 三处透传 industry_code：enterpriseStats 的 typeScaleStats（L129）、districtStats 与 thematicMap(enterprise) 的 districtHeat"
+      - "不传产业码的历史调用与其它消费方（企业发展概况页）回归不受影响（各跑一次对照请求）"
+      - "公网网关复验：INB1309 vs INB1323 的 scale_dist/medium_large_ratio/enterprise 主题图数值不同；不传 industry_code 时与改造前一致"
+      - "handoff 写入 agent-handoffs/，附自测证据（curl 请求/响应）与排查汇总文档链接"
+    update_time: "2026-11-12T15:20:48+08:00"
+  - id: SYSINT-04-01-DATA-POLDIST-L01
+    title: "专题一张图 · 政策深圳九区分布灌数（policy_base_info.district 补数）"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 200000
+    note: |
+      来源：2026-11-12 智谱反馈区级政策无值。根因=policy_base_info.district 大面积为空，深圳政策现算后全兜底『市本级』（INB1309 深圳 26 条全在市本级），九区色斑无值。排查汇总：agent-delivery/工程过程/04-系统集成/04-门户系统集成/对接文档/我方/2026-11-12-专题一张图-切换产业问题排查汇总.md。监督：human:徐滕强。关联：SYSINT-04-01-API-INDFILTER-L01（接口整改，互不阻塞）。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-algo-py/vendor/entan-py/polan/basic/indicators.py"
+    definition_of_done:
+      - "盘点报告：dwd policy_base_info 深圳行（province/city 含深圳）总数、district 空值率、region 字段可用性，写入 handoff"
+      - "补数方案：按 region/发文机关等可用字段拆区回填或建映射，走 D16 gapfill 合规路线（gkxlumenx_gapfill 库 gapfill_ 前缀表），禁止直接改写 DWD 正式表"
+      - "灌数后复验 policy_indicators(kind=sz)：by_district 出深圳九区行（而非仅『市本级』），INB1309 深圳各区 policy_count 有值"
+      - "一张图 API-3 by_district / API-4 policy_count / API-6 policy 主题公网复验有九区值"
+      - "handoff 写入 agent-handoffs/，含盘点数据、灌数行数、复验证据；口径若涉业务定义歧义登记客户决策清单"
+    update_time: "2026-11-12T15:20:59+08:00"
   - id: POL-L2-DS11-ANALYZE-CTA-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-12T07:12:05.579Z"
