@@ -62033,7 +62033,7 @@ tasks:
     lock_until: "2026-11-12T11:39:42.293Z"
     claimed_by: "agent:data-agent"
     title: "T06 四条现存边语义对齐报告（apply_to/support/participates/belongs_to）"
-    status: "review"
+    status: "done"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -62044,7 +62044,10 @@ tasks:
     difficulty: "M"
     estimated_tokens: 30000
     note: |
-      2026-11-12 陈芸飞授权认领，前置T02/T03/T04均done。15:43-15:44按Tag锚定只读复核：apply_to/support各10957，端点交集10957、重合100%、独有0；新增发现全量weight分别0.6/0.8，props解析后相同，不能宣称全属性相同。participates企业→环节178731=M17，服务机构→服务机构34769不得映射M02/M19/M17/M18，建议另名保留。belongs_to环节→链359，覆盖359/1414，未挂链1055。100条样本、全量端点对、独立SQLite交集及属性核验通过。三类建议见正式报告，停读/权重/改名交唐绍祖与徐滕强裁定；不写库、不切换接口。高水位仍需避免全表扫描。handoff: agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T06.md；实际token/费用不可得。
+      2026-11-12 陈芸飞授权认领，前置T02/T03/T04均done。15:43-15:44按Tag锚定只读复核：apply_to/support各10957，端点交集10957、重合100%、独有0；新增发现全量 weight 分别 0.6/0.8、props 解析后相同，不能宣称全属性相同。participates 企业→环节 178,731=M17，服务机构→服务机构 34,769 不得映射 M02/M19/M17/M18、建议另名保留。belongs_to 环节→链 359，覆盖 359/1414，未挂链 1055。100 条样本、全量端点对、独立 SQLite 交集及属性核验通过。不写库、不切换接口；高水位仍需避免全表扫描。handoff: agent-delivery/agent-handoffs/KG-COMPLY-LOAD-T06.md。
+      **2026-11-12 16:10 唐绍祖验收签收 → done。** 按证据链判定（图库高水位、我这侧无只读凭据，未现场重跑，差异已在验收记录 §六 记录）：audit.json 实算 SHA256 = bf58bbf2…f7ae6f 与 verification.json 记录一致（证据未被改动）；独立 SQLite PRIMARY KEY+JOIN 对拍全量导出得 common 10,957 / weight_different 10,957，与方法自述一致；40 条查询全 success、前后计数稳定、快照 SHA256 已验。**数字三方闭合**：T06 三个未映射存量 apply_to 10,957 + support 10,957 + belongs_to 359 = **22,273**，与我独立算出的 T07「未映射历史存量 22,273」分毫不差；participates 两层 178,731+34,769=213,500 与 T02/T04 一致。
+      **三项裁定（执行方请签）**：① **同意停读 support、单读 apply_to**，不删不改不迁移；**weight 一律不作强度**——两侧取值集合分别是 {0.6} 与 {0.8}，即每条边全量只有一个常数，常数字段不可能承载逐边强度，故 10,957/10,957「weight 不同」不构成语义差异，接口若暴露须注明「常数占位非强度」或直接不暴露；apply_to 只作政策适用范围参照、**不得计入 M12–M14**；11-07 裁定中「M02/M19 均为 0」「weight/props 为空」表述作废。② **institution→institution 34,769 本期不起新名、不改边名**，`service_relate` 仅认可为正式线建图备选名；硬约束不得映射 M02/M19/M17/M18，对账继续单列。③ **belongs_to 359 认可为结构归属边、不映射 M01–M24**；359/1,414 覆盖 25.39%、1,055 环节未挂链属结构完整性缺口，**本期不补边、不推断、不计入任何 M 关系缺失率**，记为 backlog 观察项不派单，责任并入 WBS-07-00G/00H 正式线。
+      验收记录：KG-COMPLY-ACCEPT-T06-技术验收记录.md。连带：T07 依赖全部解除，已置 ready（李周）；T11 仍等 T07。实际 token/费用不可得（cost_warn=yellow）。
     depends_on:
       - "KG-COMPLY-LOAD-T02"
       - "KG-COMPLY-LOAD-T03"
@@ -62115,7 +62118,7 @@ tasks:
     update_time: "2026-11-09T15:11:41+08:00"
   - id: KG-COMPLY-LOAD-T07
     title: "T07 入图验收总表（M01–M24）"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -62127,7 +62130,7 @@ tasks:
     estimated_tokens: 25000
     note: |
       SDD §5 T07；建议执行人 human:李周。
-      **状态说明：仍为 backlog，不置 ready**——depends_on 中 T06 尚未签收（现 ready），置 ready 会破依赖。口径与预填数已备好，T06 签收后可直接开工。
+      **状态说明：2026-11-12 16:10 已置 ready。** T06 于 16:10 签收 done，depends_on 五项（T02–T06）全部 done，依赖解除，李周可认领。口径与 24 行预填数已备好（KG-COMPLY-T07-总账对账口径.md），另增 T06 裁定口径三条（见 T06 卡 note）：support 停读单读 apply_to、weight 不作强度、institution→institution 34,769 单列、belongs_to 359 不计入 M 关系。
       2026-11-12 15:30 唐绍祖备好对账口径并预填 24 行实测数（KG-COMPLY-T07-总账对账口径.md）：
       24 条 M 关系已全部由我本人现场只读实测。**8 行有真实行数**——M01 cooperate person→person 2,525,789、M02 research→research 3,442,271、M04 belong person→research 72,099、M08 participate research→project 17,426、M09 author_of person→patent 85,069、M15 depends_on 1,073、M17 participates enterprise→segment 178,731，另 M22 enterprise→enterprise cooperate 94,824 单标「有数据形态不可用 501」；**16 行空态全 0**（M03 须写「有源但端点 100% 为 company」，不得写「无源」）。
       已附全空间边数分解，证明总表之外无下落不明的边：M 关系 6,452,051 + 未映射历史存量 22,273（apply_to 10,957 / support 10,957 / belongs_to 359）+ tech 层 1,020,005 = **7,494,329**。
