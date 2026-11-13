@@ -22,23 +22,22 @@ HINTS = {
 }
 
 
+PREFIXES = ('FEISHU_DRIVE_APP', 'LARK_APP', 'FEISHU_APP')  # 按顺序取第一组 ID+SECRET 都有的
+
+
 def load_env():
-    app_id = os.environ.get('LARK_APP_ID') or os.environ.get('FEISHU_APP_ID')
-    secret = os.environ.get('LARK_APP_SECRET') or os.environ.get('FEISHU_APP_SECRET')
-    if app_id and secret:
-        return app_id, secret
     env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..', '.env')
-    vals = {}
+    dotenv = {}
     if os.path.isfile(env_path):
         for line in open(env_path, encoding='utf-8', errors='replace'):
-            m = re.match(r'\s*(FEISHU_APP_ID|FEISHU_APP_SECRET)\s*=\s*(.*?)\s*$', line)
+            m = re.match(r'\s*([A-Z_]+)\s*=\s*(.*?)\s*$', line)
             if m and m.group(2):
-                vals.setdefault(m.group(1), m.group(2).strip('"\''))
-    app_id = app_id or vals.get('FEISHU_APP_ID')
-    secret = secret or vals.get('FEISHU_APP_SECRET')
-    if not (app_id and secret):
-        sys.exit('[x] 缺少凭证：设置 LARK_APP_ID / LARK_APP_SECRET（或 FEISHU_*），或在编排仓 .env 里配 FEISHU_APP_ID / FEISHU_APP_SECRET')
-    return app_id, secret
+                dotenv.setdefault(m.group(1), m.group(2).strip('"\''))
+    for src in (os.environ, dotenv):
+        for p in PREFIXES:
+            if src.get(p + '_ID') and src.get(p + '_SECRET'):
+                return src[p + '_ID'], src[p + '_SECRET']
+    sys.exit('[x] 缺少凭证：设置 FEISHU_DRIVE_APP_ID / FEISHU_DRIVE_APP_SECRET（环境变量或编排仓 .env）')
 
 
 def parse_token(target):

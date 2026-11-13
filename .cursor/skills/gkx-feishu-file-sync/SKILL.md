@@ -22,11 +22,15 @@ description: 把本地文件（md、xlsx、docx、pdf 等）覆盖上传到飞�
 
 1. **应用权限**（已开通，新换应用时才需要）：开发者后台给应用开通 `drive:file:upload`（或 `drive:file`、`drive:drive` 任选一个），然后**创建版本并发布**。只开通、不发布，权限不会生效。
 2. **文件协作者**（每个文件做一次）：在飞书里打开目标文件，「…」→「文档权限」或「添加文档应用」→ 搜「GKX周报和WBS」→ 权限选**可编辑**。
-3. **凭证**：设 `LARK_APP_ID` / `LARK_APP_SECRET`（优先），或 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`；都没设时脚本读编排仓 `.env` 里的 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`。App Secret 向应用管理员要，不进 git、不贴群聊。
+3. **凭证**：专用变量 `FEISHU_DRIVE_APP_ID` / `FEISHU_DRIVE_APP_SECRET`，写在编排仓 `.env`（已被 git 忽略，模板见 `.env.example`）或环境变量里。原有的 `FEISHU_APP_ID` / `FEISHU_APP_SECRET` 留给多维表格、日报等其他同步，不要改。App Secret 向应用管理员要，不进 git、不贴群聊。
 
-```powershell
-$env:LARK_APP_ID='cli_aa7b0396a878dcf7'; $env:LARK_APP_SECRET='<向管理员要>'
 ```
+# 编排仓 .env
+FEISHU_DRIVE_APP_ID=cli_aa7b0396a878dcf7
+FEISHU_DRIVE_APP_SECRET=<向管理员要>
+```
+
+脚本取凭证的顺序：先环境变量、后 `.env`；每处按 `FEISHU_DRIVE_APP_*` → `LARK_APP_*` → `FEISHU_APP_*`，取第一组 ID 和 SECRET 都有值的。
 
 ## 用法
 
