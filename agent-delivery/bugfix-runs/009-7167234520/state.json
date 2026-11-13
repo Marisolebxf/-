@@ -1,0 +1,486 @@
+{
+  "schema_version": 2,
+  "run_id": "009-7167234520",
+  "current_cycle_id": "cycle-001-20261112T201150+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261112T201150+0800",
+      "seq": 1,
+      "started_at": "2026-11-12T20:11:50.514+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "009",
+    "work_item_id": "7167234520",
+    "title": "政策分析评价-弦线图使用的是关系图；效果传导路径没有数据展示",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "agent-claim-20261112-2007-009",
+    "claim_comment_ref": "log_id:202611122008179928138793D092004FBA",
+    "claim_operator": "agent:coordinator-agent",
+    "claimed_at": "2026-11-12T20:11:50.514+08:00",
+    "session_id": "cursor-20261112-2007-batch-a",
+    "machine_id": "redfo-win",
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "AWAITING_ACCEPTANCE",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "56bfafe9afc3a6f5113b3fd1401d36fb0882e793",
+      "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
+      "planned_change_scope": [
+        "src/views/policy/analysis/StructureLinkPanel.selfcheck.mjs",
+        "src/views/policy/analysis/StructureLinkPanel.vue",
+        "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.selfcheck.mjs",
+        "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.vue"
+      ],
+      "role": "primary",
+      "depends_on": [],
+      "ship_order": 1
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "政策分析评价弦线图实际呈现为关系图（ECharts type:graph circular layout），非弦图形态",
+    "reproduction": [
+      "按飞书工单描述与截图复现（_triage-20261112/7167234520-1.png）"
+    ],
+    "root_cause": "StructureLinkPanel.vue 图表 option 用 graph 系列顶替弦图呈现",
+    "counter_evidence": [],
+    "requirement_refs": [
+      "feishu:6a687a81e231818dec771f9a#7167234520 描述（报告人黄敬洲 2026-11-12 18:39）",
+      "gkx-orchestration/agent-delivery/bugfix-runs/_triage-20261112/triage-report.md#A组-009"
+    ],
+    "impact_scope": [
+      "弦线图图表类型呈现（echarts 仓内能力内实现，不新增依赖）"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "src/views/policy/analysis/StructureLinkPanel.vue"
+    ],
+    "non_goals": [
+      "效果传导路径无数据属数据侧缺口，本单不修（保留诚实空态）",
+      "不新增 npm 依赖"
+    ],
+    "verification_plan": [
+      "node 自检脚本断言 option 不再输出 type:graph（输出选定目标类型）",
+      "合并前 vue-tsc 全量类型门",
+      "提测后 dev 页面图表人工抽验"
+    ],
+    "rollback_plan": [
+      "git revert 候选 commit 后随下一波 dev 合并回滚；部署回滚走 CI 重发上一 green SHA"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "56bfafe9afc3a6f5113b3fd1401d36fb0882e793",
+        "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/policy/analysis/StructureLinkPanel.selfcheck.mjs",
+          "src/views/policy/analysis/StructureLinkPanel.vue",
+          "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.selfcheck.mjs",
+          "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.vue"
+        ],
+        "diff_hash": "sha256:4cdad609651537f629dba1f94661ce3a87708d37830338084434c2c2df90a4ab",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-12T22:58:12.176+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:frontend-agent(独立复核)",
+        "reviewed_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
+        "verdict": "PASS",
+        "scope": "frontend",
+        "independent": true,
+        "findings": [],
+        "round": 1,
+        "review_hash": "sha256:75c52a672c7ba76c14bdaa96c09f1d47281efe1a814e36581c93c742df216bd5"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "v-fix",
+      "category": "fix",
+      "behavior": "缺陷现象按工单描述消除（自检断言新逻辑在场、旧 bug 写法不在场）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-selfcheck"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "v-reg",
+      "category": "regression",
+      "behavior": "相邻行为不受影响（轨道既有回归测试/相邻自检绿；全仓 vue-tsc 类型门绿）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-selfcheck",
+        "ev-typecheck"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "v-boundary",
+      "category": "boundary",
+      "behavior": "边界态：未知 label 不丢已选、同级多选互不吞并、注入出口缺失回落合成点击（resolve.selfcheck 边界组）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-selfcheck"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "进入开发009",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-12T20:55:40.077+08:00",
+      "approved_session_id": "cursor-20261112-2007-batch-a",
+      "approved_machine_id": "redfo-win",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "message_ref": "questionnaire:启动A组第一波8单(2026-11-12问卷选项)",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "diagnosis_hash": "sha256:9f1929553f3d49f3df031189fb4d24bec51b97874a5151de2c6f27064229001d",
+        "plan_hash": "sha256:9743ee76ab021a6d4e221be865888cebada62e28128d39f45ea2e372950398e7",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "56bfafe9afc3a6f5113b3fd1401d36fb0882e793",
+            "planned_change_scope": [
+              "src/views/policy/analysis/StructureLinkPanel.vue"
+            ]
+          }
+        ]
+      },
+      "gate_hash": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-12T20:55:41.383+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
+        "expected": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测009",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-13T01:04:54.898+08:00",
+      "approved_session_id": "cursor-20261112-2007-batch-a",
+      "approved_machine_id": "redfo-win",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "message_ref": "questionnaire:用户本会话精确口令「提测」(chat:2026-11-13T00:34+08:00)",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "risk_level": "M",
+        "deploy_target": "dev",
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
+            "diff_hash": "sha256:4cdad609651537f629dba1f94661ce3a87708d37830338084434c2c2df90a4ab",
+            "verification_hash": "sha256:c8c89c9e7254076e89f41b86adb34f57fda7b9f93b43618619a2d9694851151a",
+            "review_hash": "sha256:75c52a672c7ba76c14bdaa96c09f1d47281efe1a814e36581c93c742df216bd5",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+            "role": "primary",
+            "depends_on": [],
+            "ship_order": 1
+          }
+        ]
+      },
+      "gate_hash": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-13T01:04:55.739+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
+        "expected": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
+        "errors": []
+      }
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
+        "merge_request_id": "direct-push-dev",
+        "merge_commit_sha": "919388cee355d71da6b946c2e3530f97be7f4455",
+        "pipeline_id": "5130",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5130",
+        "deployed_sha": "919388ce",
+        "rollout_status": "complete",
+        "image_tag": "harbor.test.com/zp-tts/gkx-lumen-pc:919388ce",
+        "role": "primary",
+        "depends_on": [],
+        "ship_order": 1
+      }
+    ],
+    "acceptance_steps": [
+      "打开 dev 环境 http://10.50.69.111:30891/ ，硬刷新（Ctrl+F5）确保加载 919388ce 版本",
+      "按各工单描述原文逐一复核对应页面交互（文案/导出/复选框/图表）",
+      "确认无回归：相邻页签、导出弹窗、行业级联选择等相邻功能可用"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "ev-dev-verify"
+      ]
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-12T20:55:32.145+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-12T20:55:37.057+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-12T20:55:41.387+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-12T22:58:24.108+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-12T22:58:28.458+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-12T22:58:30.348+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-13T01:04:55.740+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": "ship",
+      "gate_hash": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-13T01:04:58.184+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-13T01:04:59.246+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261112-2007-009",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-13T01:04:57.308+08:00",
+      "manifest_hash": "sha256:3655bc5a8070ae94dc41726ca18cd7104ac217c56ecd14106e1bb398269deff3",
+      "item_count": 3,
+      "evidence_ids": [
+        "ev-selfcheck",
+        "ev-typecheck",
+        "ev-dev-verify"
+      ],
+      "evidence_results": {
+        "ev-selfcheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-typecheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-dev-verify": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
+  },
+  "updated_at": "2026-11-13T01:04:59.246+08:00"
+}

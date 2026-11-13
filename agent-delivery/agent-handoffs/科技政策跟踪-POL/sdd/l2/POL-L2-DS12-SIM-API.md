@@ -33,7 +33,7 @@
 | 239 政策影响范围分析 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为影响范围。同一张表按政策（推演上下文）拣影响范围行。不是作业。无行则该区空。不返回 501 |
 | 240 政策关联分析 | `GET /display/v1/policy/simulation/relation-graph` | 无 jobs 种类。透传专题 `/topic/v1/policy/graph`。不新建查图任务 |
 | 241 政策实施路径预测 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为路径预测。同一张表拣路径环节行。不是作业。无行则该区空。不返回 501 |
-| 242 政策解读报告生成 | 同一条 `POST /display/v1/policy/simulation/jobs` | 同步读。种类为解读报告。同一张表拣解读段落行，页面呈现正文。不是作业。不产生 PDF、Word 文件。无行则报告区空。不返回 501 |
+| 242 政策解读报告生成 | 同一条 `POST /display/v1/policy/simulation/jobs`（读面）+ `evaluation/jobs`（真算） | **读面**同步读。种类为解读报告。同一张表拣解读段落行，页面呈现正文。不是作业。不产生 PDF、Word 文件。无行则报告区空。不返回 501。**真算**见 §8.2（`policy_sim_interpret`） |
 
 `simulation/jobs` 上还有效果预估半区的种类。本分册不改写那些种类，也不把查推演缺项表的读法套到它们身上。
 
@@ -43,7 +43,7 @@
 | `POL-L2-DS12-EST-API` | 多维评估 | 读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 的多维评估行。与本分册四种行同表不同种类。灌数归属见架构第 9 节，读法由 EST-ARCH 定 |
 | `POL-L2-DS12-EST-API` | 利益攸关方 | 读 `gkxlumenx_gapfill.gapfill_policy_sim_stakeholder` 的参与意见行。本分册不读这张表 |
 
-真推演模型未注册。本分册不定义真推演种类，不加 `policy_simulate`。未注册时该能力空态。**例外（2026-11-12）**：237 真算键 `policy_text_parse_run`、238 真算键 `policy_sim_focus` 进 `PolicyAnalysisTypes` / `JOB_SUB_TYPES`，经 `evaluation/jobs` → `/internal/policy/jobs/execute`。评价页 226 的 `policy_text_parse` **仍只读**，237 真算不改走该键。推演键接通后，239 改随该次真结果。
+真推演模型未注册。本分册不定义真推演种类，不加 `policy_simulate`。未注册时该能力空态。**例外（2026-11-12 / 2026-11-13）**：237 真算键 `policy_text_parse_run`、238 真算键 `policy_sim_focus`、242 真算键 `policy_sim_interpret` 进 `PolicyAnalysisTypes` / `JOB_SUB_TYPES`，经 `evaluation/jobs` → `/internal/policy/jobs/execute`。评价页 226 的 `policy_text_parse` **仍只读**，237 真算不改走该键。推演键接通后，239 改随该次真结果。
 
 种类字段名由 `BE-POL-CONTRACT-01` 冻结。本分册只定种类的中文名和一次一种类：文本解析、重点可视化、影响范围、路径预测、解读报告。240 不占种类。
 
@@ -57,12 +57,14 @@
 |---|---|
 | `simulation/jobs` 的文本解析（读面） | `gkxlumen-display` 不建任务；`gkxlumen-element` 只读 `ads.policy_text_parse`。不调用 `polan.text.parse.run` |
 | `evaluation/jobs` · `policy_text_parse_run`（237 真算） | display → topic-async → `/internal/policy/jobs/execute` → `polan.text_parse_run_job` 单政策 upsert。禁整表清空 |
-| `simulation/jobs` 的重点可视化、影响范围、路径预测、解读报告 | `gkxlumen-display` 不建任务，不转发异步服务，不调 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 里该次种类的行。库名 `gkxlumenx_gapfill`，表名 `gapfill_policy_sim_result` |
+| `evaluation/jobs` · `policy_sim_focus`（238 真算） | display → topic-async → `/internal/policy/jobs/execute` → `polan.sim_focus_job` 单政策 upsert 重点行。禁整表清空 |
+| `evaluation/jobs` · `policy_sim_interpret`（242 真算） | display → topic-async → `/internal/policy/jobs/execute` → `polan.sim_interpret_job` 单政策 upsert 解读段落。禁整表清空 |
+| `simulation/jobs` 的重点可视化、影响范围、路径预测、解读报告（读面） | `gkxlumen-display` 不建任务，不转发异步服务，不调 Python。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 里该次种类的行。库名 `gkxlumenx_gapfill`，表名 `gapfill_policy_sim_result`。真算写回见上三行，不改读面资源 |
 | 240 政策关联分析 | display Feign 委托专题 graph。Java 不写 nGQL。不新建查图任务 |
 
 若 `gkxlumen-display` 还没有推演控制器，实现时按契约补这一条已有的 `simulation/jobs`。补上之后仍按种类分发。不能把整条 `jobs` 都改成只读 `gkxlumenx_gapfill.gapfill_policy_sim_result`，也不能为 237 另开解析 URL，不能为 240 另开查图 URL。本分册不补控制器，不写 Java。
 
-五次读取都不进异步任务管道。切政策、切推演上下文不自动起任务。某一次 `jobs` 失败，不清空其他种类已经返回的区块。本页没有可接统计读面。
+五次**读面**都不进异步任务管道（真算写回走 `evaluation/jobs`，见 §3.2 / §4.2 / §8.2）。切政策、切推演上下文不自动起任务。某一次 `jobs` 失败，不清空其他种类已经返回的区块。本页没有可接统计读面。
 
 trace 沿既有展示链。display 往 element 带 traceId。本分册不新设计观测点。
 
@@ -166,24 +168,40 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 
 空态：该政策没有路径环节行，则该区空。HTTP 成功。不返回 501。不在接口函数里编时间表。
 
-## 8. 242 政策解读报告生成 · jobs · 解读报告 · 同步读
-
-公开资源仍是 `POST /display/v1/policy/simulation/jobs`。浏览器另一次提交，种类为解读报告。表行种类是解读段落。一次请求不带文本解析，也不带重点、影响范围、路径预测。
+## 8. 242 政策解读报告生成 · 同步读 + 异步真算写回
 
 指标未见。报告生成不是已注册研报能力。核增研报 `report/jobs`（614–618）和 `gkxlumenx_gapfill.gapfill_policy_report_body` 不是这条资源。`FE-POL-07A` 不顶替本叶。
 
-链路与第 4 节相同，element 只读 `gkxlumenx_gapfill.gapfill_policy_sim_result` 的解读段落行。
+### 8.1 读面（并存）
+
+公开资源：`POST /display/v1/policy/simulation/jobs`，种类=解读报告。表行种类是解读段落。一次请求不带文本解析，也不带重点、影响范围、路径预测。
 
 - 同步读。不建任务。不另建报告行，不另建文件表
 - 政策必选。少了政策则报告区空
 - 一行是一个段落：所属政策、段落、正文。段落只用政策背景、主要内容、预期效果、实施建议，写在行上。段落的字段名由契约单冻结
-- 页面呈现当次读到的正文。有解读段落行则报告区从这些行生成。没有则报告区空
+- 页面呈现当次读到的正文。有解读段落行则报告区从这些行生成。没有则报告区空。有行不自动 create 真算
 - **jobs 本资源**：不产生 PDF/Word 文件；响应不内嵌写死文件；不写对象存储；前端不直连 RustFS
-- **下载（另轨，2026-11-12 卡1=B）**：浏览器走已有公开资源 `POST /display/v1/situation/report/generate`（`reportType=policy-interpret-report`），对齐 217 / 态势报告；PDF=`format=pdf`；Word=`format=html`→`.doc`。不新开 simulation 导出 URL，不走 `report/jobs`。自定义内容=章节勾选；自定义格式=Word/PDF（live 验收只认二者）。无解读段落行或不勾选则不发 generate
+- **下载（另轨，COVER 保留）**：浏览器走已有公开资源 `POST /display/v1/situation/report/generate`（`reportType=policy-interpret-report`），对齐 217 / 态势报告；PDF=`format=pdf`；Word=`format=html`→`.doc`。不新开 simulation 导出 URL，不走 `report/jobs`。自定义内容=章节勾选；自定义格式=Word/PDF。无解读段落行或不勾选则不发 generate
 - 行上 `metric_id` 留空，不新造
 - 不把 226 的摘要复制成本叶段落。不把评价页 224 的解读条目复制过来
 
 空态：没有解读段落行则报告区空。HTTP 成功。不返回 501。不返回一份写死的文件。
+
+### 8.2 真算写回（2026-11-13 ASYNC · 同构 238）
+
+公开资源：`POST /display/v1/policy/evaluation/jobs`。
+
+| 字段 | 值 |
+|---|---|
+| `sub_type` | `policy_sim_interpret` |
+| `params.policy_id` | 必填 |
+| `force` | 可选；无行可跑；有行且 `force≠true` 可短路已有；「重新生成」必须 `true` |
+| `analysis_fp` | 条件指纹（同评价 jobs） |
+| `skipsIndustryVidXor` | `true`（同 238） |
+
+链路：display → topic-async → `/internal/policy/jobs/execute` → `polan.sim_interpret_job`：读 DWD 正文（可附加解析表 / 影响·路径摘要，无则不挡）→ LLM 四段 → **单政策 upsert** 解读段落（仅该 `policy_id` + `row_kind=解读段落` DELETE+INSERT；≥1 段非空才写库；`is_mock` 暂 1）。禁整表清空。禁核增 `report/jobs` / `gapfill_policy_report_body`。create 同步终态（同 238）。成功后前端再打 §8.1 读面。
+
+空态：未选政策、无正文、无密钥/`generated=0` → 不写假四段、不 DELETE 旧行；读面仍空或保留旧行。HTTP 读面成功不 501。
 
 ## 9. 空态对照
 
@@ -196,7 +214,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 | 239 | jobs · 影响范围 · 同步读 | 无影响范围行则该区空。不造全国兜底行。不读预估表，不读图计算。不返回 501 |
 | 240 | 无资源 | 本分册不新建接口。关联网络只消费已有第 7 项读图。Java 不写 nGQL |
 | 241 | jobs · 路径预测 · 同步读 | 未选政策，或没有路径环节行，则该区空。不推进环节，不写执行记录。不返回 501 |
-| 242 | jobs · 解读报告 · 同步读 | 没有解读段落行则报告区空。**jobs 不产生** PDF/Word、不写对象存储。下载另走 `situation/report`；无行不产文件。不返回 501 |
+| 242 | jobs · 解读报告 · 同步读（+ `policy_sim_interpret` 真算写回） | 没有解读段落行则报告区空。**jobs 不产生** PDF/Word、不写对象存储。下载另走 `situation/report`；无行不产文件。真算失败不灌假四段。不返回 501 |
 
 ## 10. 明确不做
 
@@ -205,7 +223,7 @@ trace 沿既有展示链。display 往 element 带 traceId。本分册不新设�
 - 不改 `POL-L2-DS12-SIM-ARCH`、`POL-L2-DS12-EST-ARCH`，以及说明书、WBS、契约输入清单、调用链与边界、`指标与501.md`、调研分册和任何兄弟分册。
 - 不新建作业入口。不建第二个分发器。不把整条 `simulation/jobs` 改成只读 `gkxlumenx_gapfill.gapfill_policy_sim_result`。
 - 232–236 交给 `POL-L2-DS12-EST-API`。本分册不定义未出台仿真、新出台预测、区域空间、多维评估、利益攸关方的请求。不读 `gkxlumenx_gapfill.gapfill_policy_sim_forecast`，不读 `gkxlumenx_gapfill.gapfill_policy_sim_stakeholder`。
-- 不新建 Python simulate job。不调用 `polan.text.simulate`。不读 `ads.policy_simulate`。不调用 `polan.text.parse.run`。不加 `policy_simulate`。不把 237–242 写入 `PolicyAnalysisTypes` 或 `JOB_SUB_TYPES`。五次读取不进 `POST /internal/policy/jobs/execute`，不进 `gkxlumen-topic-async-service`。
+- 不新建 Python simulate job。不调用 `polan.text.simulate`。不读 `ads.policy_simulate`。不调用 `polan.text.parse.run`。不加 `policy_simulate`。**例外真算键**（已锁）：`policy_text_parse_run`（237）、`policy_sim_focus`（238）、`policy_sim_interpret`（242）进白名单与 `JOB_SUB_TYPES`；其余 239/241 与五次**读面**不进 `POST /internal/policy/jobs/execute` / async（真算写回见 §3.2 / §4.2 / §8.2）。
 - 浏览器不改打 `/topic/v1/policy`、`/policy/topic/v1/policy`、`/topicAsync/**`、`/v1/policy/**`。不把 `E-E7-POLICY-M1-L06` 写成展示路径。不直连 `GET /v1/policy/text/parse`。
 - 展示不直连 Python，不直连库，不打算法中台。不调用 `demo-*`。Java 不做 NLP，不写 nGQL。
 - 不用 501 充当 237、238、239、241、242 的功能。无行则空。240 不另造 501 接口。
