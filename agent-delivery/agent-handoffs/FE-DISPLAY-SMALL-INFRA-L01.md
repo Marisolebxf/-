@@ -41,7 +41,7 @@
 3. `VITE_REVIEW_MODE=true` 现状保留未动（提示词 §5：属业务批次范畴）。
 4. `VITE_PROXY_KEEP_API_PREFIX` 已随 `.env.development` 重写移除（提示词 P4 第 4 条「清理未接线的死配置」选项 A）；vite proxy 现与 PC 仓同语义（目标为非本机网关 URL 时不剥 `/api` 前缀，由网关处理）。
 5. science-mobile 工作区在开工前已有 2 个业务文件未提交改动（`TechDevelopmentPlanView.vue`、`planSamples.ts`，内容为预警文案去时间戳），属其他会话活产物，本任务未触碰（R1 红线核验时排除这两文件）。
-6. 本机为孔东机（`fe-local-no-auto-commit.mdc` 2026-11-12）：全程 **零 commit / 零 push**，改动停在工作区；提示词「每 P 一个 commit 停点」降级为「每 P 一个自检停点」。
+6. 本机为孔东机（`fe-local-no-auto-commit.mdc` 2026-11-12）：全程零自动 commit / 零自动 push，改动停在工作区；提示词「每 P 一个 commit 停点」降级为「每 P 一个自检停点」。**2026-11-13 用户逐字指令「commit、push」后已提交推送**（见 CI/CD 节），其他会话的 2 个业务文件（`TechDevelopmentPlanView.vue`、`planSamples.ts`）仍未提交、留在工作区。
 
 ## 修改内容
 
@@ -104,10 +104,10 @@
 
 ## CI/CD（必填）
 
-- 分支：双仓 `dev`（改动**停在本地工作区，未 commit / 未 push**——本机规约 `fe-local-no-auto-commit.mdc`，等孔东逐字指令）
-- commit：无（待人工提交）
-- pipeline：未触发
-- K8s rollout：未触发
+- 分支：双仓 `dev`，已按用户 2026-11-13 逐字指令「commit、push」完成提交推送
+- commit：`lumen-ui-science-mobile` `a9929e7..b3491b4`（feat(portal) 四套基础设施 36 文件 +2092/-39）；`lumen-ui-science-pc` `6849aea..6cd0fec`（fix(portal) device-switch 同域切站死链修复 5 文件 +125/-20）
+- pipeline：已触发（双仓 push → CI → K8s dev rollout，随后续验证为准）
+- K8s rollout：随 CI 自动进行
 - dev 测试 URL：未发布；本地 `pnpm dev`（mobile :3100）可用
 
 ## 可观测性（建议）
