@@ -256,11 +256,12 @@ At `AWAITING_ACCEPTANCE`:
 - list concise manual acceptance steps;
 - wait for the human’s complete exact message `验收通过` (or `验收通过<auto_number>` when multiple active runs);
 - reject “可以了”“没问题”“算修复了” and other natural-language inference;
-- call `get_transitable_states` and `get_transition_required` for the current work item;
 - run `finalize-acceptance --message 验收通过 --current-status <current Feishu status>`; this validates ship evidence and approves the acceptance gate in one step;
-- call `transition_state` with the returned legal transition and satisfy required fields first;
+- use the current project recipe in `references/feishu-transition-recipe.md` (project + state + transition_id + required fields). Only call `get_transitable_states` / `get_transition_required` when no matching recipe exists or `transition_state` rejects the recipe;
+- call `transition_state` with the recipe/legal transition and satisfy required fields first;
 - record `mode=chat_exact`, `approval_message=验收通过`, approval ref/session/machine, the Feishu transition result and acceptance evidence;
-- run `finalize --stage acceptance` only after the Feishu transition succeeds; it records acceptance, advances to `RESOLVED` and renders the report.
+- run `finalize --stage acceptance` only after the Feishu transition succeeds; it records acceptance, advances to `RESOLVED` and renders the report;
+- keep the acceptance closure compact: do not add post-close `get_workitem_brief` / repeated state-validation calls. The transition result + `finalize --stage acceptance` output are the closure evidence.
 
 **硬规则（2026-11-13，因 2342/2343 事故新增）：收到裸词 `验收通过` 后，禁止只汇报 pipeline/deploy 结果就结束回合。必须在同一回合内完成：`finalize-acceptance` → `transition_state` → `record-acceptance` → `advance RESOLVED` → 回写验收总结。任一步失败必须显式报告失败原因并保持 Feishu 状态不变，禁止声称“已关闭”。**
 

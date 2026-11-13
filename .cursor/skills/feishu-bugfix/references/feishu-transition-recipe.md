@@ -60,3 +60,26 @@ transition_state(project_key, work_item_id, transition_id=<RESOLVED transition i
 | `ErrFieldRequired ... 解决结果(field_f39ef6) 必填` | 迁移前未补字段 | 先 `update_field` |
 | `ErrInvalidParam ... option_id is empty` | select 传了 JSON 对象 | 传纯 option_id 字符串 |
 | `ErrMetadataError attr label not found` | MQL SELECT 用了不存在的字段 | 用 `get_workitem_brief(fields=["_all"])` 查真实 key |
+
+## 5. 已知项目快捷配方（可跳过发现调用）
+
+> 仅当项目与状态完全匹配时直接使用；`transition_state` 返回失败必须回退到 §1 重新查询。
+
+- 项目：`GKX 生产` / `6a687a81e231818dec771f9a`
+- 当前状态：`IN PROGRESS`
+- 目标状态：`RESOLVED`
+- transition_id：`35119339`
+- 必填字段：`field_f39ef6`（解决结果）
+- 常用值：`ou802bb28`（已修复）
+
+验收收尾推荐调用顺序（不要额外插入查询/核对调用）：
+
+```text
+finalize-acceptance --message 验收通过 --current-status IN PROGRESS
+update_field(field_f39ef6 = ou802bb28)   # 仅当仍为空
+transition_state(transition_id=35119339)
+finalize --stage acceptance --input-file <acceptance.json>
+add_comment(验收总结)
+```
+
+如果 `transition_state` 报 transition/字段错误，再调用 `get_transitable_states` + `get_transition_required` 刷新配方；不要提前重复查询。
