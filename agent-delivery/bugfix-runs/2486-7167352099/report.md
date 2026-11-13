@@ -1,10 +1,10 @@
 # 缺陷修复报告：2486 全局清理开发逻辑描述文案-展示系统面向用户
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-13T16:49:49.176+08:00
+> 生成时间：2026-11-13T17:29:14.760+08:00
 > 当前 cycle：cycle-001-20261113T144748+0800
-> 当前内部阶段：AWAITING_ACCEPTANCE
-> 验收模式：policy_only（operator_verified=false）
+> 当前内部阶段：RESOLVED
+> 验收模式：chat_exact（operator_verified=false）
 
 ## 1. 缺陷事实和复现
 
@@ -114,13 +114,13 @@ DB 写证据授权：
 
 ## 10. 精确验收与飞书状态迁移
 
-- 飞书当前状态：IN PROGRESS
-- 验收证据：PENDING
-- 验收结论：pending
-- 验收模式：policy_only
+- 飞书当前状态：RESOLVED
+- 验收证据：evidence/manifest.json#ev-pipeline-deploy
+- 验收结论：approved
+- 验收模式：chat_exact
 - 验收异常：PENDING
-- 验收口令：PENDING
-- 审批引用：PENDING
+- 验收口令：验收通过
+- 审批引用：cursor-session:cursor-2486-frontend-agent-20261113@2026-11-13T17:24+08:00 human:徐滕强 chat message
 - chat_exact 验收：仅在收到完整精确消息 `验收通过` 后，经 acceptance gate 校验并由 Agent 调用飞书状态迁移。
 
 ## 11. Gate 状态与绑定对象
@@ -129,13 +129,13 @@ DB 写证据授权：
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:4275bcfb9ec0b6ac9cbf2b5578cb5b3abaf14e84f2ab5f2227f75f8a0d89a133 |
 | ship | approved | 提测 | sha256:d28f20df64aa978f9bedc51a9d55b710526b10639eaf814109be7b4a6082ff43 |
-| acceptance | pending | PENDING | PENDING |
+| acceptance | approved | 验收通过 | sha256:5dc645d9379cbcc761275eeba4bac82f40ac5b02cec23cf61c9a645b1de935c8 |
 
 enter_dev bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"1867347","planned_change_scope":["src/views/policy/**","src/views/service/think-tank/index.vue","src/views/situation/**","src/views/talent/**","src/views/userCopyContract.test.mjs"]}],"data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_policy_version":"demo-2026-11-10","risk_level":"M","plan_hash":"sha256:0239900141016585219fae3b83319efddad5db226839a0885230fd5891350564","diagnosis_hash":"sha256:88084267a75598573a5fc0875448506685453ec03056a1a5ef36c47e0c7b89c0"}
 
 ship bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"1867347","candidate_sha":"de972d3070ce8ba0a263e842382430e433563bde","deploy_target":"dev","diff_hash":"sha256:c5b966a87743747b7ecea33ba2fea6164a3faed3cdaddf6c4b5644b674f20bbf","verification_hash":"sha256:5a32e4e910638b03e676ff85910c9216ad84ad4257d266b06622730cb759f303","review_hash":"sha256:04ba30c72be49c65756fb17dc57e242daa6fe1031c01109eeeae99bfab5b95b1","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2","planned_change_scope":["src/views/policy/**","src/views/service/think-tank/index.vue","src/views/situation/**","src/views/talent/**","src/views/userCopyContract.test.mjs"]}],"data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_policy_version":"demo-2026-11-10","risk_level":"M","plan_hash":"sha256:0239900141016585219fae3b83319efddad5db226839a0885230fd5891350564","diagnosis_hash":"sha256:88084267a75598573a5fc0875448506685453ec03056a1a5ef36c47e0c7b89c0","deploy_target":"dev"}
 
-acceptance bound_to：PENDING
+acceptance bound_to：{"work_item_id":"7167352099","claim_id":"2486","ship_gate_hash":"sha256:d28f20df64aa978f9bedc51a9d55b710526b10639eaf814109be7b4a6082ff43","dev_verification_result":"PASS","evidence_manifest_hash":"sha256:6f05d1eedb82d1c30d950869e1b75e6217b52fe2996e01ddbd85e3a4ec1deb20","current_status":"IN PROGRESS"}
 
 ## 12. 自动决策摘要
 
