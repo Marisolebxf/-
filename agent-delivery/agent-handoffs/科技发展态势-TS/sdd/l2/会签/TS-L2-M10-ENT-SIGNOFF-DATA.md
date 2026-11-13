@@ -184,3 +184,68 @@ C1/C2 回填后由 data-agent 在本页追记一行确认即可转「同意会�
 
 ---
 *三分册会签：agent:data-agent · 2026-11-07 · 只读核对，未动分册稿/未动 registry/未 git*
+
+---
+
+## GRAPH 追记确认（2026-11-13 agent:data-agent）
+
+> 立场：只审存储面（表/列/键/事务/快照/seed/历史数据），不复核 HTTP 形状与前端。
+> 依据：`TS-L2-M10-GRAPH-DATA.md` §3.2/§3.4/§3.5/§5.2–§5.5/§6.5/§11、`TS-L2-M10-GRAPH-ARCH.md` §1-4/§1-5；对照 `TS-L2-M10-ENT-DATA.md` §0–§4 与 as-built `scripts/seed_tech_graph_maintain.py`、`scripts/mysql/tech_graph_maintain.sql`。
+> 核对基线（2026-11-13）：Python 路由与 seed 均未改（`publish_change_set:827` 仍两段式、`:844` operator `'py'`、stats `{ops:N}`；`_apply_master` tombstone 仍硬编码 `'py'`；seed `MASTER_SQL:234–241` 仍 `ON DUPLICATE`，`load_existing:121–139` 仍以 `name_cn` 单键建字典）；Java 侧已落，ENT 表本体未改。
+
+### 一、41–47 写路径是否行为不变
+
+**写入的行与语义不变**（主表 upsert/软删、overlay、实体边、成员表、change_log 均按同一 op 集合落同一批表）；**变化集中在事务边界与附属列**，其中三项对 ENT 可见：
+
+| 变化 | 对 ENT 的影响 |
+|---|---|
+| 两段式→`GET_LOCK('m10_graph_publish',10)` 单事务；失败整笔回滚，无 pending | 可见：失败不再留半发布版本；并发时可能 409「他人正在保存」（共享锁）。数据面正确，但改变了 ENT 的失败/并发语义。 |
+| 删 `_project_nebula`/`GKX_NEBULA_MAINTAIN_SPACE` | 线上未配置，行级无变化；ENT-DATA §3 整节（L53–59）从此失效。 |
+| `graph_version` 增 `kind/snapshot_status/publish_results`；新保存显式 `kind='save'`；历史回填 `kind='ent'` | 不可见（ENT 无版本区）；但 item 13 的 operator 口径与 tombstone 不一致（见四-4）。 |
+| 快照每版一份、不裁剪、payload 扩表 | **容量与可回滚性变化**：ENT 每次保存/发布都写全量快照；active 主表 >2000 行时 `skipped_oversize`，该 ENT 版本不可回滚（item 12 只覆盖历史版本）。 |
+| `uk_name_cn` → 生成列 `name_cn_active` + `uk_name_cn_active` | 可见且**超出追记范围**：软删后可同名重建成立；但 ENT SEED-L01 脚本的重跑逻辑不止 `MASTER_SQL`（见四-1），不改会 1062 或重复 active 行。 |
+| `graph_change_set.client_batch_id` | ENT 不传，服务端生成；行级无变化。 |
+| 新增 `graph_tech_edge` + 两表统一读/删/快照/回滚 | 41–47 不写该表；但**快照与整图回滚覆盖它**，且 R2 读路径缺表时会把 ENT 拖成空图（API-C6）。 |
+| 失败码扩充（1213/1205→409、名称 1062→422、边 1062→409） | 可见：ENT 发布可能新增 409/422 分支；文案为中文，FE 通用分支可读。 |
+| `operator` 取 `change_set.operator`；`stats` 分组 JSON | 历史行不回填，新行形状变化；ENT 无消费方。 |
+| `impact` 增两计数、`/current` 增 `tech_edges/layout` | ENT 页不调用/不消费，无影响。 |
+
+**整图回滚**（item 16 只列 payload 扩表）：`§5.3` 对 `technology_master` 是"先 DELETE 全表再按快照 INSERT"，`graph_entity_edge/member/overlay` 同样整表还原——**GRAPH 回滚等于回退 ENT 的人工改动**，这是 ENT 41–47 第一次暴露在他人回滚下的行为变化，必须在 ENT-DATA §4 写明（条件 C6）。
+
+### 二、FE-TS-10C 是否必须改
+
+数据面无必须项：R2 新键 ENT 不读；无版本/stats/operator 展示；overlay 与成员语义未变。前端改动全部在 API 面（`maintain-ent.ts:372`、`:552`、`:370` 文案），本节不复述。
+
+### 三、必须改的测试
+
+- **Java 已闭合**（见 API 节）；`PanoramaReadAssemblyTest` 已含 `:79–130` 三例。
+- **Python 必改且追记未列**：`test_graph_maintain.py:535`（`_project_nebula` 删除）、`:459/:482/:506/:514/:556`（扁平 stats）、`:432/:447`（publish 签名/results）；建议新增 `_apply_master` tombstone operator 断言与 `graph_current` 缺 `graph_tech_edge` 的降级断言。
+- **seed 无单测**：`seed_tech_graph_maintain.py` 无覆盖。至少在其任务验收里加一组 dry-run 用例：active+deleted 同名、deleted 命中跳过不复活、重跑不产生第二条 active。
+- **文档登记**：item 17 的 `storage/ENT/stores/mysql/ads.md` + `CHANGELOG.md` 需同时登记"`graph_tech_edge` 属共用快照/回滚面，不属 ENT 写面"，否则 ENT 存储基线读者会以为 10 表未变。
+
+### 四、追记遗漏的 ENT 影响
+
+1. **seed 的 `load_existing` 字典键冲突**（item 6 只提 `MASTER_SQL`）：`out["master"][r["name_cn"]] = r`（seed:127–128）对"同名 active + deleted 各一行"会互相覆盖；叠加 `MASTER_SQL` 的 `ON DUPLICATE … status='active'`，在新唯一键下无键可命中，重跑既可能插入重复 active（撞 `uk_name_cn_active` 1062），也可能误把 deleted 行复活。必须与 `MASTER_SQL` 同批改。
+2. **ENT-DATA 正文仍是旧语义**：§1 L42（`projection_status` 列）、§3 L53–59（Nebula 投影边界、seed `ON DUPLICATE`）、§4 L63（两段式发布序列）都在讲已废弃的路径；追记声明"不改本体"，但实现者按正文写代码会直接写回旧逻辑。需加行级"已被 2026-11-13 追记取代"标记（条件 C2），不必重写正文。
+3. **DDL 与 MySQL 版本闸门**：`name_cn_active` 是生成列（需 5.7+），`stats` 的 `MODIFY` 以现列为 `JSON` 为前提（GRAPH-DATA §10 已带 `SHOW COLUMNS` 核对）；ENT 侧还没有对应检查项。
+4. **tombstone operator 与 item 13 矛盾**：item 13 称"保存取 `change_set.operator`"，但 `_apply_master` 的 tombstone INSERT 仍硬编码 `'py'`（`routes:951`），且 `_apply_master` 签名未收 operator。按追记改完 version.operator 后，删除日志仍是 py，审计链断裂。
+5. **快照超限**：`skipped_oversize` 同样作用于 ENT 版本；存量 ENT 主表若已超 2000 行（旧 seed `all` 为 19430 点），ENT 新版本都将不可回滚。需在部署前核对现网 active 行数。
+6. **`graph_snapshot` 跨库同名**（前次会签 N5）：每版快照后该同名表在 dwd/ads 同时高频写入，跨库查询误混的风险比之前更高，建议注记。
+7. **`publish_change_set` 先写 `projection_status='pending'`、成功后 UPDATE**（routes:842/856）：单事务改造后该写法必须整体替换，不能只删 `_project_nebula`；否则回滚后 version 行仍在（事务回滚会撤销，但若沿用"先提交再投影"结构就仍会留 pending）——这是 PY-IMPL 的改造边界，追记未点明。
+
+### 条件（改哪里、改成什么）
+
+| # | 改哪里 | 改成什么 |
+|---|---|---|
+| C1 | `scripts/seed_tech_graph_maintain.py` `MASTER_SQL:234–241` + `load_existing:121–139` + 查 active 的调用点 | `MASTER_SQL` 去掉 `ON DUPLICATE KEY UPDATE`，改"先按 `external_ids`（JSON_EXTRACT）或 active 同名 `SELECT`，命中 active 只更 `name_en/external_ids`、不覆盖 `status`；命中 deleted 整组跳过；未命中才 INSERT `status='active'`。`load_existing["master"]` 键改为 `(name_cn, status)`（或 `name_cn -> list`），查 active/deleted 分别取对应行。 |
+| C2 | `TS-L2-M10-ENT-DATA.md` §1 L42、§3 L53–59、§4 L61–63 | 三处各加一行标记（不改正文）："本段发布序列/Nebula 投影/`ON DUPLICATE` seed 已被 `TS-L2-M10-GRAPH-DATA.md` 2026-11-13 §11 取代：加锁单事务、本链不写 Nebula、无 pending/50301、seed 改显式查找。" |
+| C3 | GRAPH-DATA 部署节 / 发布检查单 | 加前置检查：`SELECT VERSION()`（生成列需 5.7+）、`SHOW COLUMNS FROM technology_master`（`name_cn_active`/`uk_name_cn_active`）、`graph_tech_edge` 存在；DDL 必须先于 Python/Java 上线（与 ARCH-C2 同一条）。 |
+| C4 | `_apply_master`（routes:951）/ 追记 item 13 | `_apply_master(tx, ops, version_id, operator)` 增 operator 参数，tombstone INSERT 的 `'py'` 改参数值；item 13 补一句"含 tombstone.operator"。单测断言 tombstone 行 operator = change_set.operator。 |
+| C5 | `TS-L2-M10-ENT-DATA.md` §4 + 部署前核对 | 加一句"每版全量快照；active 主表 >2000 行时 ENT 版本 `snapshot_status='skipped_oversize'`、不可回滚"；部署前记录现网 active 行数，超阈则先与 PM 确认 ENT 版本回滚是否仍在验收范围。 |
+| C6 | `TS-L2-M10-ENT-DATA.md` §4（L63） | 加一句"回滚按整图快照整表还原，会一并回退 ENT 实体边/挂接/overlay 的人工改动"（与 ARCH-C3 同一落点，DATA 负责行级表述）。 |
+| C7 | `TS-L2-M10-ENT-DATA.md` item 17 | 重写为"Java 已落（列现值）＋剩余：`test_graph_maintain.py:535/459/482/506/514/556/432/447`、seed dry-run 三用例、`graph_current` 缺表降级"；`PanoramaReadAssemblyTest` 项关闭；`storage/ENT/stores/mysql/ads.md` 加"`graph_tech_edge` 共用快照/回滚面、不属 ENT 写面"。 |
+| C8（建议） | GRAPH-DATA §4 / ENT-DATA §1 | 注记 `graph_snapshot` 在 dwd 与 ads 同名，跨库工具查询需限定库名；ENT 表基线补一句"共用面：`graph_version`、`graph_snapshot`、`graph_tech_edge`（只读/回滚）"。 |
+
+### 结论
+
+**有条件追认**。存储方向（单事务、删 Nebula、每版快照、active-only 唯一键、技术点边表）在数据身份成立；C1–C3 是"照追记执行就会出错"的项（seed 重跑、缺表降级、正文误导），C4 是审计链，C5/C6 是可回滚性与跨轨语义。C1–C7 闭合后本身份无保留；C8 建议随稿。
