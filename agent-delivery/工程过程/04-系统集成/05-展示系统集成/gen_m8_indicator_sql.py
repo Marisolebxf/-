@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
-"""生成 M8 科技指数指标树落库脚本（DDL + 32 节点种子 + 赋权方法 1 行）。"""
+"""生成 M8 科技指数指标树落库脚本（DDL + 29 节点种子 + 赋权方法 1 行）。"""
 import json
+import os
+import sys
+
 from openpyxl import load_workbook
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from m8_public_copy import PUBLIC_COPY, WEIGHT_SETTING_COPY  # noqa: E402  对客文案校订表
 
 # 真源已归档进后端仓：db/source/M8科技指标树-算法填写表-V3.xlsx（SHA256 87536A7A…17C0）
 SRC = r"e:\work\上达通\项目\深圳GKX\gkx-lumen\repos\lumen-svc-platform\db\source\M8科技指标树-算法填写表-V3.xlsx"
@@ -64,21 +70,30 @@ for r in range(2, ws.max_row + 1):
         "remark": s(v[23]),
     })
 
-# 3-3 政策环境分支：主表缺行，按《版本历史》补名称/权重/版本，其余留空待算法补填
-for add in [
-    ("3-3", "3", 2, "政策环境", 0.2),
-    ("3-3-1", "3-3", 3, "科技政策数量", 0.6),
-    ("3-3-2", "3-3", 3, "政策承接率", 0.4),
-]:
-    rows.append({
-        "version": VERSION, "node_id": add[0], "parent_id": add[1], "name": add[3],
-        "level": add[2], "weight": add[4],
-        "weight_basis": "", "description": "", "calculation": "", "significance": "",
-        "metric_id": "", "unit": "", "data_type": "", "domain": "",
-        "source_tables": "", "source_systems": "", "update_freq": "",
-        "mapping_status": "⚠️待确认", "pending_ref": "", "bid_ref": "", "acceptance_unit_id": "",
-        "remark": "主表缺行：按版本历史/赋权说明补入名称与权重，口径字段待算法补填",
-    })
+# 3-3 政策环境分支不纳入（2026-11-13 裁定：以《指标树填写表》主表为准）
+#   《版本历史》sheet 虽列了 3-3(0.2)/3-3-1(0.6)/3-3-2(0.4)，但该 sheet 只有 6 列（节点ID/名称/版本/
+#   生效日期/权重/变更说明），主表无对应三行，描述、公式、意义、单位、metric_id、源表均无来源，
+#   入库只能得三个空口径节点。故本期不落库；待算法在「指标树填写表」补齐三行口径后随新版本新增。
+#   剔除后 3 的子权重 0.50/0.30 之和仅 0.8，按主表 3 的公式原文「人才队伍×0.60 + 机构载体×0.40」归一，
+#   等价于 0.50/0.30 按 0.8 归一（0.625/0.375）四舍五入至一位小数，权重与公式自洽。
+WEIGHT_FIX = {"3-1": 0.6, "3-2": 0.4}
+# 主表 3 的赋权依据原文写「学者、机构、政策三表均可直接计数」，政策不纳入后已不成立，按实际改写
+TEXT_FIX = {
+    "3": {
+        "weight_basis": "主体维度反映创新活动的承载者与制度环境，是产出的必要条件而非结果；"
+                        "学者、机构两类主体信息可直接计数，赋权20%作支撑项。",
+        "calculation": "创新主体得分 = 人才队伍×0.60 + 机构载体×0.40。",
+    },
+}
+for row in rows:
+    if row["node_id"] in WEIGHT_FIX:
+        row["weight"] = WEIGHT_FIX[row["node_id"]]
+    for field, text in TEXT_FIX.get(row["node_id"], {}).items():
+        row[field] = text
+    # 对客文案校订：xlsx 原文里的 SQL、dwd_* 库表名、snake_case 字段名一律不落到用户可见字段。
+    # 校订内容见同目录 m8_public_copy.py（从算法原文改写为中文业务口径，算法更新后按需同步）。
+    for field, text in PUBLIC_COPY.get(row["node_id"], {}).items():
+        row[field] = text
 
 # 版本历史（生效日期 / 变更说明）
 wsh = wb["版本历史"]
@@ -124,14 +139,20 @@ head = f"""-- M8 科技指数 · 指标树配置落库（FE-TS-08A-INDICATOR-TRE
 --       归档路径：db/source/M8科技指标树-算法填写表-V3.xlsx
 --       SHA256  ：87536A7AA7D6422CDB06EA714D0228A5680AAEA8B252D5CEFF56D6E2CC2517C0
 --       生成脚本：gkx-orchestration/agent-delivery/工程过程/04-系统集成/05-展示系统集成/gen_m8_indicator_sql.py
--- 配置版本：{VERSION}（一级 3 → 二级 8 → 三级 21，共 {len(rows)} 节点）
+-- 配置版本：{VERSION}（一级 3 → 二级 7 → 三级 19，共 {len(rows)} 节点，以《指标树填写表》主表为准）
 -- 落库位置：业务库 gkxlumenx_cms（与 cfg_tech_layer 等 M10 配置表同库同机制）
 -- 读取链路：gkxlumen-display TechIndexController → Feign → gkxlumen-cms TechIndexConfigService(JdbcTemplate)
 -- 说明：
 --   1) 指标树按 (indicator_version, node_id) 唯一，支持多版本并存；version_history 由同表按版本聚合得到。
---   2) 「指标树填写表」主表 29 节点 + 「版本历史」多出 3-3/3-3-1/3-3-2 政策环境分支 = 32 节点。
---      该分支主表缺行，名称/权重取自版本历史，口径字段留 NULL；不补则该父级 3 的子权重和仅 0.8（不闭合）。
---   3) 3 的 calculation 文案写「人才队伍×0.60 + 机构载体×0.40」，与子权重 0.5/0.3/0.2 不一致，保留原文待复核。
+--   2) 节点范围以《指标树填写表》主表为准：一级 3 / 二级 7 / 三级 19 = 29 节点。
+--      《版本历史》sheet 另列 3-3 政策环境（0.2）、3-3-1 科技政策数量（0.6）、3-3-2 政策承接率（0.4），
+--      但该 sheet 只有节点ID/名称/版本/生效日期/权重/变更说明 6 列，主表无对应三行，
+--      描述、公式、意义、单位、metric_id、源表均无来源。按「主表为准」不纳入本期配置（2026-11-13 裁定），
+--      不在库内造空口径节点；待算法在「指标树填写表」补齐三行口径后，随新版本新增。
+--   3) 政策环境不纳入后，3 的子权重 0.50 / 0.30 之和仅 0.8，不满足「同父节点子权重和=1」。
+--      按主表 3 的公式原文「人才队伍×0.60 + 机构载体×0.40」落库 3-1=0.60、3-2=0.40：
+--      该组数值等价于 0.50/0.30 按 0.8 归一（0.625 / 0.375）四舍五入至一位小数，权重与公式自洽。
+--      权重口径仍待算法书面确认（Q-TINDEX-02 一并复核）。
 --   4) 本脚本可重复执行：先清空两张配置表再全量写入（配置表只读消费，无业务写入方）。
 
 CREATE DATABASE IF NOT EXISTS `gkxlumenx_cms` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -220,12 +241,18 @@ for row in rows:
     )
 
 steps_json = json.dumps(steps, ensure_ascii=False).replace("'", "''")
+# 赋权方法行文案校订：xlsx 原文含 @year/@province、dwd_*、字段名，以及按「政策环境纳入」写的
+# 「二级8项/三级21项/共32节点」「人才、机构、政策可精确统计」；政策环境不纳入后须同步，
+# 否则配置说明与指标树自相矛盾。校订内容见同目录 m8_public_copy.py。
+wmap.update(WEIGHT_SETTING_COPY)
+
+
 tail = f""";
 
 -- ---------------- 种子：赋权方法（1 行） ----------------
 INSERT INTO `cfg_tech_index_weight_setting`
 (`indicator_version`,`method`,`method_detail`,`steps_json`,`overall_basis`,`note`,`weight_composite`,`levels`,`params`,`dedup`,`computability`) VALUES
-({q(VERSION)},{q(wmap.get('赋权方法名称'))},{q(wmap.get('方法说明'))},'{steps_json}',{q(wmap.get('总体依据'))},{q(wmap.get('注意事项'))},
+({q(VERSION)},{q(wmap.get('赋权方法名称'))},{q(wmap.get('方法说明'))},'{steps_json}',{q(wmap.get('总体依据'))},{q(wmap.get('注意事项') or '')},
  {q(wmap.get('权重合成'))},{q(wmap.get('指标层级'))},{q(wmap.get('计算参数约定'))},{q(wmap.get('去重与同源规则'))},{q(wmap.get('可计算性约束'))});
 """
 
