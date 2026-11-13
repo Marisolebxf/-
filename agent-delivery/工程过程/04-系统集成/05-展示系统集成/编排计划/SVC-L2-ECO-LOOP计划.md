@@ -12,6 +12,7 @@
 | R2 | 2026-11-11 | 本地四绿（pytest 13 / test.mjs / vue-tsc / mvn compile）；**未部署**，网关仍未含新端点 | human 裁定二项落地：**A 接种子**（561「人才结构」四指标接 demo 库 `is_demo=1`，每块强制 `seeded=true`，SVC_005 无字段恒空）+ **B 加高企列**（561 下钻表 3 列→4 列，`enterprise_base.is_high_tech=1`）；另修专利趋势口径（`filing_year` 8 行 → `filing_date` 覆盖 99.99%） | 部署未发布（show-py / display manual / FE 三镜像待人工确认推送）；探针未跑部署态；人才区级列仍无粒度 | S1–S6 已闭环（S6=561 余量补口） | R2 代码完成 |
 | R3 | 2026-11-11 10:14 | 部署态复核：`eco_s4_probe.py` **46/46 PASS**（含 4 项区级下钻守恒、4 项趋势、6 项人才种子）；生产 bundle `index-DfQOnxBt.js`（37KB，旧 R1 版 23KB）**R2 独有串 5/5 命中** | 558 由「代码闭环待部署」转**已部署实测**：FE `600e58a`（pipeline **#4851 五 job 全绿**，含 `deploy:k8s`）+ 智库字段修复 `df1cc43`；三仓均已生效（探针打生产网关全通） | 561 人才区级列仍无粒度（`talent_*` 无区县字段）；真实高企/专利/人才台账待供数 | 前端 `vue-tsc --build --force` 全量 0 错（增量缓存会假绿，须带 `--force`） | **R3 完成：8 可演 / 1 部分可演 / 0 缺口，可申请签收** |
 | R4 | 2026-11-11 | 无新增网关探测（沿用 R3 部署态）；human 逐屏核对 5 张截图提 6 类反馈 | 口径收敛 8 项：筛选补「全部」+ 所在区改省市区三级联动、名录/详情/地图去推断与无源括注、561 下钻表移除人才列、移除 `SVC_005` 岗位层次卡、演示标注改评审模式门控、旭日图锁初始态 | 无新增设计缺口；**G6/G7 撤销**（该维度不演，非补齐），余 G8 真实台账 | FE `eebdbec` / py `deefe61` / java `e1c2002` | **R4 完成：维持 8 可演 / 1 部分可演 / 0 设计缺口** |
+| R5 | 2026-11-12 | 部署态复核（只读）：生产 ECO chunk `index-Rj6hac4a.js`（36.9KB）**R5 独有串命中**（「区聚合按注册地归口」、`path-mode`、`highTechCount`×8），**R4 旧串三处全消失**（`（已定位口径）`/`企业规模（无源）`/`运营状态（无源）`）；`district-indicators` 高企合计 24,317 | 六项收口全部落地并已上线；高企列恒「—」根因（`metrics()` 漏回填 `highTechCount`）已修 | 无新增设计缺口；余 **G8** 真实台账供数 | FE `74412f6` / py `66db10b`（rebase 后 `7bc646a`）/ 文档 `0bc4928a4`（rebase 后 `51cd72d3e`）；三者均已随外部 rebase 进入 `origin/dev` 并由 CI 部署 | **R5 签收通过（human 2026-11-12 裁定）** |
 
 ## 1. 探测（每轮第一笔，只读）
 
@@ -159,3 +160,20 @@
 - `pytest tests/test_gkx_show_eco_boot.py` **13 passed**。
 - **后端接口生产实测**（`http://10.50.69.111:30895`，`display-loop-token`）：`carriers` baseline 4,984 / `district=南山区` 1,118 / `districts=九区` 2,851 / `districtMissing` 1,383 / `district-indicators` 11 行 `highTechCount` 非空 —— 证明 `districts` / `districtMissing` **已在生产生效**，空表与后端无关。
 - **浏览器 E2E 未跑（如实声明）**：本机 Node v20.18.0 低于 vite 要求的 20.19+，`pnpm dev` / `npx vite` 均无法启动，`install_binary` 装 Node 22 报 `EPERM`；R4 当时的 dev 实测环境本轮不可复现。故「级联选后有数据」目前是**代码闭环 + 后端接口实测**双重证据，端到端待部署后点一次确认。
+
+### 9.1 签收结论（2026-11-12，human 裁定）
+
+**结论：R5 签收通过。** 终判维持 **8 可演 / 1 部分可演 / 0 设计缺口**，唯一未闭合项为 **G8（真实台账供数，非本页设计问题）**。
+
+签收依据（部署态证据链，非人工点验）：
+
+| 维度 | 证据 |
+|---|---|
+| 代码已上线 | 生产 chunk `index-Rj6hac4a.js` 命 R5 独有文案「区聚合按注册地归口」(R4 版为「区聚合 = 已定位口径」)、`path-mode` 1 处、`highTechCount` 8 处 |
+| R4 缺陷已清 | `（已定位口径）` / `企业规模（无源）` / `运营状态（无源）` 三串在该 chunk 中**全部不存在** |
+| 结构正确 | 「区县下钻」（无括注）、「全部地区」、「未分区」、「高新技术企业」均命中；dev 渲染态确认筛选区仅存 全部/创新载体/孵化载体 + 级别/类型/所在区 |
+| 数据可达 | `district-indicators` 生产实测：南山 3,877 / 宝安 3,961 / 龙岗 2,117 / 福田 1,236，`totals.highTechTotal` 24,317，`columnStatus.highTech.available=true`；`carriers` baseline 4,984 / 南山区 1,118 / 九区 2,851 / 未分区 1,383 |
+
+**未做的部分（如实备案，不作为签收前置）**：无门户 SSO 测试账号，生产页 / 内网 30891 / 本地 dev 三路均卡登录或接口 401，**「级联选广东省→深圳市→南山区是否出数」「高企列实际渲染数字」两项未端到端人工点验**，由 human 裁定以上述部署态证据链替代，转由业务方现场验收发现异常再回本计划开 R6。
+
+**回滚口径**：若现场发现级联仍空表，优先查 `path-mode` 是否被后续改动覆盖、`districtScope()` 的 `Array.isArray` 防御是否保留；若高企列回「—」，查 `ecoCarrierModel.ts` 的 `metrics()` 是否漏 `highTechCount` 回填。

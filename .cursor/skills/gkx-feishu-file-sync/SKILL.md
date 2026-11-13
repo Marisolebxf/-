@@ -1,6 +1,6 @@
 ---
 name: gkx-feishu-file-sync
-description: 把本地文件（md、xlsx、docx、pdf 等）覆盖上传到飞书云空间已有文件，效果等同网页「上传新版本」，链接不变。不开浏览器，只用 Python 标准库。Use when the user says 同步到飞书、推到飞书文件、更新飞书上的文件、上传新版本, or gives a https://*.feishu.cn/file/<token> link with a local file.
+description: 飞书文件与在线文档的本地往返。覆盖上传云空间文件（链接不变）；或把在线文档（/docx/、指向 docx 的 /wiki/）拉到本地，用 Cursor 改文字后再写回，只改动过的段落。不开浏览器，只用 Python 标准库。Use when the user says 同步到飞书、推到飞书文件、上传新版本、用 Cursor 改飞书文档、拉下飞书文章来改, or gives a feishu.cn/file or /docx or /wiki link.
 ---
 
 # gkx-feishu-file-sync · 本地文件 → 飞书云空间文件（保留链接）
@@ -14,9 +14,32 @@ description: 把本地文件（md、xlsx、docx、pdf 等）覆盖上传到飞�
 用的是飞书官方接口 `POST /open-apis/drive/v1/files/upload_all`，请求里多传 `file_token` 就是原地覆盖，和官方 `lark-cli drive +upload --file-token` 的语义相同。
 
 不适用：
-- 在线文档或在线表格（`/docx/`、`/sheets/`、`/wiki/`）。往在线表格里写数据用 `gkx-feishu-case-sync`。
+- 在线表格（`/sheets/`）。往表格里写数据用 `gkx-feishu-case-sync`。在线文档用下面的 `feishu_edit.py`。
 - 大于 20 MB 的文件（要走分片接口，脚本暂不支持）。
 - 第一次新建上传。先在飞书网页里把文件传上去一次，拿到链接，以后都用本 skill 更新。
+
+## 用 Cursor 改线上文章
+
+脚本 `scripts/feishu_edit.py`。支持云空间文件（`/file/`）和在线文档（`/docx/`，以及指向 docx 的 `/wiki/`）。
+
+```powershell
+# 1. 拉到本地（同时生成 同名.feishu.json 快照，不要删、不要提交）
+python .cursor/skills/gkx-feishu-file-sync/scripts/feishu_edit.py pull "<飞书链接>" --out "本地.md"
+# 2. 在 Cursor 里改本地.md
+# 3. 先看将要改哪些段，再写回
+python .cursor/skills/gkx-feishu-file-sync/scripts/feishu_edit.py push "本地.md"
+python .cursor/skills/gkx-feishu-file-sync/scripts/feishu_edit.py push "本地.md" --apply
+```
+
+在线文档拉下来是带标记的文本，每段前面一行 `<!-- b:<block_id> <类型> -->`。只改标记下面的文字。
+
+- 写回只更新文字变了的段落，其它段落和格式不动。
+- 不支持新增段落、删除段落、改标题级别、改表格单元格。标记标了 `readonly` 的段（含 @人、公式）会跳过。
+- 一段里原来有多种行内样式（加粗、链接混排）时，改完后整段沿用第一段样式。
+- pull 之后如果线上又被别人改过同一段，push 会停下来，要求重新 pull。
+- 云空间文件走整份覆盖，和 `push_file.py` 相同，但会先核对线上内容是否还是 pull 时的那份。
+
+2026-11-13 实测：在线文档拉取和「无改动」判断已用真实文档跑通（300 段）。写回按官方 `PATCH .../blocks/{id}` 的 `update_text_elements` 实现，第一次对某篇文档 `--apply` 前先看试跑输出。应用需要能读、改该文档：把「GKX周报和WBS」加成可编辑；若报缺 `docx:document` 权限，在开发者后台开通并发布版本。
 
 ## 一次性准备（每个文件只做一次）
 
