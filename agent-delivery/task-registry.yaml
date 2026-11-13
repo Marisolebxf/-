@@ -24759,6 +24759,7 @@ tasks:
       - "主执行 human:曹丽影"
     update_time: "2026-09-01T00:45:37+08:00"
   - id: FE-TOPIC-SMALL-CHAIN-POL-L01
+    evidence: "agent-handoffs/FE-TOPIC-SMALL-CHAIN-POL-L01.md"
     supervised_by: "human:孔东"
     claimed_at: "2026-11-11T14:35:25.176Z"
     last_seen_at: "2026-11-11T14:35:25.176Z"
@@ -24766,7 +24767,7 @@ tasks:
     claimed_by: "agent:frontend-agent"
     feishu_bitable_record_id: recvtvtCLfTUjd
     title: "专题小屏·产业链+政策"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-FE-SMALL-SCREEN"
     priority: "P1"
@@ -24777,7 +24778,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     note: |
-      批 1 v2 口径开工（真源：系统-06-专题小屏复刻规划.md §4/§5）：① 产业链 10 项一态一 vue，PC 7 页多 workspace（diagnosis/regional/shenzhen）拆独立态；② 产业链全景图谱 G6 小屏版（缩放/点选→ProfileDrawer，非降级列表）；③ 地图页用 UnifiedLeafletMap；④ 五维复刻 + D9 全量 + Mock 开关 + review 门控；⑤ 主执行转 agent:frontend-agent（原 human:曹丽影，2026-11-11 会话裁定）。政策 5 项（批 2）同任务后半段。
+      批1产业链6页复刻完成：handoff 已提交（orchestration@b3b405869），代码 commit b269eca 已推 lumen-ui-topic-mobile origin/dev；type-check/eslint/42 tests/build 全绿；真实接口全链路自测通过。批2政策为基础壳待后续扩展。
     depends_on:
       - "FE-TOPIC-SMALL-ENT-L01"
     design_refs:
@@ -24787,7 +24788,7 @@ tasks:
       - "产业链+政策报价内叶子小屏可演示"
       - "Mock；AI→人改；对齐壳"
       - "主执行 human:曹丽影；会签 human:孔东"
-    update_time: "2026-11-11T22:35:59+08:00"
+    update_time: "2026-11-13T10:02:51+08:00"
   - id: FE-TOPIC-SMALL-SVC-COMP-L01
     feishu_bitable_record_id: recvtTlO4K0BoF
     title: "专题小屏·产业服务+综合分析"
@@ -65063,3 +65064,43 @@ tasks:
       - "E 波：合规演示用例 + §6.5 冒烟"
       - "handoff + cost 回填"
     update_time: "2026-11-13T01:09:28+08:00"
+  - id: FE-DISPLAY-SMALL-INFRA-L01
+    model_used: "glm-5.3"
+    cost_warn: "green"
+    actual_tokens: 215000
+    actual_cost: 1.29
+    evidence: "[object Object]"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-13T02:43:20.584Z"
+    last_seen_at: "2026-11-13T02:43:20.584Z"
+    lock_until: "2026-11-13T06:43:20.584Z"
+    claimed_by: "agent:frontend-agent"
+    title: "展示小屏·基础通用建设（portal/SSO/设备切站/请求层，lumen-ui-science-mobile 基础设施移植）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-science-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 250000
+    note: |
+      联调确认：G1–G9 全闭合；双仓 test/type-check/build 三绿（mobile 25/25 含五件新自检，PC selfcheck OK）；handoff 已写 agent-handoffs/FE-DISPLAY-SMALL-INFRA-L01.md。改动按本机规约停在本地工作区待孔东人工提交；P5 六项走查依赖部署后执行（遗留风险已登记 redirect_uri 登记与门户菜单树注册）。
+    depends_on: []
+    design_refs:
+      - "agent-delivery/prompts/FE-DISPLAY-SMALL-INFRA-L01-展示小屏基础通用建设提示词.md"
+      - "agent-delivery/agent-handoffs/FE-TOPIC-SMALL-PORTAL-L01.md"
+      - "repos/lumen-ui-topic-mobile/src/portal/"
+    definition_of_done:
+      - "G1 portal 层 10 文件移植 science-mobile（auth/embed/messenger/perms/route-sync/sessionExpired/noPermission/portalMenuCodeResolve/device-switch/index）+ main.ts 接线（captureDevSsoToken 首行/落站/嵌入预拉权限/route-sync/401 三路分流）"
+      - "G2 独立 SSO 四件套（ssoCallback.mjs/api/sso.ts/ssoLogin.ts/authRedirect.ts）+ 回调登记 tid/mobile；G3 captureDevSsoToken 防回跳死循环"
+      - "G4 systemCode=display 请求头；G5 401/424 三路分流（iframe 上报门户/独立 SSO 重登/mock 本地登录）；dev API_URL 对齐 PC 网关口径"
+      - "G6 nav 全量对齐 PC menu.ts 40 项 + permCode + 守卫/侧栏权限过滤 + NotAdaptedView 兜底；ENABLE_MOCK_AUTH 嵌入态强制 false"
+      - "G7 设备切站双仓：mobile 完整版（同域比 path 前缀/风暴闸门/嵌入不自行切站/DEV 不落站）+ PC device-switch 死链修复（删 origin 早退）+ 双仓 VITE_SCIENCE_*_URL env"
+      - "G9 五件自检脚本（portal-wiring/device-switch/nav-paths/router-base/sso-token-capture）入 pnpm test；双仓 test/type-check/build 全绿"
+      - "P5 走查清单全过留证据：门户 iframe 登录态/独立 SSO 回调/双向切站无闪烁/subPath 深链/401 形状 curl 对照"
+      - "范围红线：git diff 不含 src/views/{trend,talent,data}/** 业务改动（只做基础通用建设，不复刻业务功能）"
+      - "handoff agent-handoffs/FE-DISPLAY-SMALL-INFRA-L01.md + cost 四字段回填；架构合规自检（D12/调用链/traceparent）逐条通过"
+    update_time: "2026-11-13T11:09:07+08:00"
