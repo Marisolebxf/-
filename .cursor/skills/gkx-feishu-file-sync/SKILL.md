@@ -5,6 +5,8 @@ description: 把本地文件（md、xlsx、docx、pdf 等）覆盖上传到飞�
 
 # gkx-feishu-file-sync · 本地文件 → 飞书云空间文件（保留链接）
 
+> 团队成员（新手）看 [USAGE.md](./USAGE.md)：从零配置到上传、报错对照。
+
 ## 做什么
 
 对飞书云空间里已经存在的普通文件（链接形如 `https://xxx.feishu.cn/file/<file_token>`）上传一份新版本。链接、file_token、分享权限都不变，飞书历史记录里会多一个版本。
