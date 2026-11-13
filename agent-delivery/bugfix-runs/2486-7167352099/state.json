@@ -1,0 +1,598 @@
+{
+  "schema_version": 2,
+  "run_id": "2486-7167352099",
+  "current_cycle_id": "cycle-001-20261113T144748+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261113T144748+0800",
+      "seq": 1,
+      "started_at": "2026-11-13T14:47:48.961+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2486",
+    "work_item_id": "7167352099",
+    "title": "全局清理开发逻辑描述文案-展示系统面向用户",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "2486",
+    "claim_comment_ref": "feishu-comment:7167352099:[agent-claim]",
+    "claim_operator": "human:徐滕强",
+    "claimed_at": "2026-11-13T14:47:48.961+08:00",
+    "session_id": null,
+    "machine_id": null,
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "AWAITING_ACCEPTANCE",
+  "risk": {
+    "level": "M",
+    "reasons": [
+      "跨 situation/talent/service/policy 四模块 36 文件，虽纯文案但覆盖面广",
+      "有文案契约测试防回流 + type-check/build 全绿",
+      "既有 8 个测试基线红已甄别与本单无关"
+    ],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "1867347",
+      "candidate_sha": "de972d3070ce8ba0a263e842382430e433563bde",
+      "planned_change_scope": [
+        "src/views/policy/**",
+        "src/views/service/think-tank/index.vue",
+        "src/views/situation/**",
+        "src/views/talent/**",
+        "src/views/userCopyContract.test.mjs"
+      ],
+      "role": "primary",
+      "depends_on": [],
+      "ship_order": 1
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "展示系统多页业务态可见文案含开发语言：空态/tooltip/toast/导出报告出现表名(ads_geo_yearly_metrics/ads_report)、内部卡号(INT-A-TAL-1105/GAP-DS14-07)、数仓/落库/无源/对端接口/SQL-98/SRS-98 等术语",
+    "reproduction": [
+      "lumen-ui-science-pc 各模块页面将鼠标悬停红问号角标，tooltip 显示 INT-A-TAL-1105 等内部卡号与 metric_id",
+      "深圳人才报告导出 PDF 含「无源（GAP-DS14-07）」「排行口径：全量（区级年度序列无源）」",
+      "全球创新实时看板空态显示「暂无年度趋势数据（ads_geo_yearly_metrics）」"
+    ],
+    "root_cause": "业务态文案直接复用了开发排查期的内部口径描述（表名/卡号/数仓术语），未经用户语言转写；先例 7168142531(ce6cdcd)/7164875239(67bb6b3) 已按同模式清理过城市对标与技术跟踪两页，本单为全局剩余清理",
+    "counter_evidence": [
+      "D9 血缘组件（MetricSpecHint/MockBadge/ReadinessMockBadge/MetricSpecCard 等）均有评审层双门控，关评审态 DOM 零泄漏，其内部 metric_id/表名是规范要求保留的",
+      "模板 HTML 注释 <!-- --> 不进 DOM，不算违规"
+    ],
+    "requirement_refs": [
+      "agent-delivery/Design.md §7 通用组件（空态/提示文案面向用户）",
+      "lumen-ui-science-pc AGENTS.md §3（关闭评审模式后 DOM 零泄漏，不得出现 metric_id/Q0xx/GAP-*/就绪度字样）",
+      "飞书 7167352099 全局缺陷 + 先例 7168142531(ce6cdcd)/7164875239(67bb6b3) 已验收清理模式"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc 12 个业务文件的 16 处用户可见文案（situation/talent/service/achievement/policy 模块）",
+      "非目标：专题系统与其他系统不动；D9 血缘评审层组件不动；模板 HTML 注释不动；零逻辑改动"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "lumen-ui-science-pc 36 文件纯文案替换：空态/toast/tooltip/导出报告/缺失卡note 转用户语言",
+      "新增 src/views/userCopyContract.test.mjs 文案契约测试",
+      "szReportCopy.test.mjs 与 FE-POL-04A.test.mjs 断言同步新文案"
+    ],
+    "non_goals": [
+      "专题系统与其他系统不动",
+      "D9 血缘评审层组件（MetricSpecHint/MockBadge/ReadinessMockBadge/VizRowLineageBadges/PolicyMetricSpecTrigger）不动",
+      "HTML/JS 注释不进 DOM 不动",
+      "eco-carrier 数据梳理台账（需规557要求展示真实表名）与接口开发设计 Tab（需规563产品功能）不动"
+    ],
+    "verification_plan": [
+      "copy-contract: userCopyContract.test.mjs 21文件×22禁词+15锚点 PASS",
+      "regression: 受影响模块自检 10 个 test.mjs 全绿；全仓 76 测试仅 8 个基线已红（stash 验证与本单无关）",
+      "type-check: pnpm type-check (vue-tsc) PASS",
+      "build: pnpm build PASS (1m18s)"
+    ],
+    "rollback_plan": [
+      "git revert 单 commit 即可完全回滚",
+      "纯文案替换无数据/配置/接口变更，无额外回滚面"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "1867347",
+        "candidate_sha": "de972d3070ce8ba0a263e842382430e433563bde",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/policy/analysis/interpret/MultimediaAssistPanel.vue",
+          "src/views/policy/governance/FE-POL-04A.test.mjs",
+          "src/views/policy/governance/index.vue",
+          "src/views/policy/panorama/components/ImplementationTracker.vue",
+          "src/views/service/think-tank/index.vue",
+          "src/views/situation/bay-innovation/components/DiagnosisReportModal.vue",
+          "src/views/situation/global-innovation/models/realtimeModel.ts",
+          "src/views/situation/global-innovation/tabs/InnovationMonitor.vue",
+          "src/views/situation/global-innovation/tabs/InnovationRanking.vue",
+          "src/views/situation/global-innovation/tabs/InnovationRealtime.vue",
+          "src/views/situation/innovation-evaluation/components/PolicySuggestionStage.vue",
+          "src/views/situation/innovation-evaluation/components/ResultDashboard.vue",
+          "src/views/situation/innovation-evaluation/index.vue",
+          "src/views/situation/overview/components/InfluenceTab.vue",
+          "src/views/situation/overview/components/OverviewTab.vue",
+          "src/views/situation/overview/models/metricCatalog.ts",
+          "src/views/situation/panorama/index.vue",
+          "src/views/situation/shenzhen-innovation/index.vue",
+          "src/views/situation/shenzhen-innovation/models/szInnovationModel.ts",
+          "src/views/situation/shenzhen-innovation/szReportCopy.test.mjs",
+          "src/views/situation/shenzhen-innovation/tabs/CarrierTab.vue",
+          "src/views/situation/shenzhen-innovation/tabs/CompareTab.vue",
+          "src/views/situation/tech-development-plan/tabs/ResearchTab.vue",
+          "src/views/situation/tracking/index.vue",
+          "src/views/talent/global/components/ChineseResearcherRatioChart.vue",
+          "src/views/talent/global/components/CityActivityDrawer.vue",
+          "src/views/talent/global/components/InsightPanel.vue",
+          "src/views/talent/global/components/InstitutionListPanel.vue",
+          "src/views/talent/global/components/RegionDetailDrawer.vue",
+          "src/views/talent/models/focusRegionMetrics.ts",
+          "src/views/talent/models/profileMetrics.ts",
+          "src/views/talent/models/recommendMetrics.ts",
+          "src/views/talent/models/talentMetrics.ts",
+          "src/views/talent/profile/components/ProfileRelationPanel.vue",
+          "src/views/talent/profile/index.vue",
+          "src/views/talent/recommend/components/ContributionMatchReport.vue",
+          "src/views/talent/recommend/components/ContributionTab.vue",
+          "src/views/talent/recommend/components/CostTab.vue",
+          "src/views/talent/recommend/components/DifficultyTab.vue",
+          "src/views/talent/recommend/components/DueDiligenceReport.vue",
+          "src/views/talent/recommend/components/ReportTab.vue",
+          "src/views/talent/recommend/components/TalentComparePanel.vue",
+          "src/views/talent/region/components/ChinaTalentView.vue",
+          "src/views/talent/region/components/ShenzhenTalentView.vue",
+          "src/views/talent/region/index.vue",
+          "src/views/userCopyContract.test.mjs"
+        ],
+        "diff_hash": "sha256:c5b966a87743747b7ecea33ba2fea6164a3faed3cdaddf6c4b5644b674f20bbf",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-13T16:29:32.917+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:frontend-agent",
+        "reviewed_sha": "de972d3070ce8ba0a263e842382430e433563bde",
+        "verdict": "PASS",
+        "scope": "46 文件 1023 行 diff 逐块自审（candidate 86571e3）：纯字符串字面量替换零逻辑改动；补修 3 处 aria-label；T-13 表名移注释留档；eco-carrier 台账表名为需规 557 验收断言要求故保留。合并远端并行提交（de972d3 仅 merge+他人独立改动，不含本单文件冲突）后复验契约/回归/type-check 全绿。Bugbot 子代理因会话回合边界无法启动，经用户确认改为逐块自审并留此记录。",
+        "independent": true,
+        "findings": [],
+        "round": 1,
+        "review_hash": "sha256:04ba30c72be49c65756fb17dc57e242daa6fe1031c01109eeeae99bfab5b95b1"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "copy-contract",
+      "category": "fix",
+      "behavior": "21 个业务文件剥离注释后 22 个禁词零命中 + 15 个新文案锚点在位；开发文案回流即红",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-copy-contract"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "regression",
+      "category": "regression",
+      "behavior": "受影响模块既有自检不回归：talent/FE-POL-04A/eco-carrier/szReportCopy/bayArea/cityCompare/innovationEvaluation/globalInnovationExport；eco-carrier 红经 checkout origin/dev 复验为并行会话 8d249f8 既有红（删除演示目录致断言过时），与本单无关",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-regression"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "type-check",
+      "category": "integration",
+      "behavior": "vue-tsc 全量类型检查通过（合并远端并行提交后复验仍绿）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-type-check"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "build",
+      "category": "integration",
+      "behavior": "生产构建成功（合并 8537ad0 后复验 ✓ built in 51.90s）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-build"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "current_user",
+      "approved_at": "2026-11-13T16:44:02.191+08:00",
+      "approved_session_id": "cursor-2486-frontend-agent-20261113",
+      "approved_machine_id": "arm64-frogMacBook",
+      "claim_id": "2486",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "1867347",
+            "planned_change_scope": [
+              "src/views/policy/**",
+              "src/views/service/think-tank/index.vue",
+              "src/views/situation/**",
+              "src/views/talent/**",
+              "src/views/userCopyContract.test.mjs"
+            ]
+          }
+        ],
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_policy_version": "demo-2026-11-10",
+        "risk_level": "M",
+        "plan_hash": "sha256:0239900141016585219fae3b83319efddad5db226839a0885230fd5891350564",
+        "diagnosis_hash": "sha256:88084267a75598573a5fc0875448506685453ec03056a1a5ef36c47e0c7b89c0"
+      },
+      "gate_hash": "sha256:4275bcfb9ec0b6ac9cbf2b5578cb5b3abaf14e84f2ab5f2227f75f8a0d89a133",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-13T16:44:10.794+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:4275bcfb9ec0b6ac9cbf2b5578cb5b3abaf14e84f2ab5f2227f75f8a0d89a133",
+        "expected": "sha256:4275bcfb9ec0b6ac9cbf2b5578cb5b3abaf14e84f2ab5f2227f75f8a0d89a133",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "current_user",
+      "approved_at": "2026-11-13T16:47:31.516+08:00",
+      "approved_session_id": "cursor-2486-frontend-agent-20261113",
+      "approved_machine_id": "arm64-frogMacBook",
+      "claim_id": "2486",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "1867347",
+            "candidate_sha": "de972d3070ce8ba0a263e842382430e433563bde",
+            "deploy_target": "dev",
+            "diff_hash": "sha256:c5b966a87743747b7ecea33ba2fea6164a3faed3cdaddf6c4b5644b674f20bbf",
+            "verification_hash": "sha256:5a32e4e910638b03e676ff85910c9216ad84ad4257d266b06622730cb759f303",
+            "review_hash": "sha256:04ba30c72be49c65756fb17dc57e242daa6fe1031c01109eeeae99bfab5b95b1",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+            "planned_change_scope": [
+              "src/views/policy/**",
+              "src/views/service/think-tank/index.vue",
+              "src/views/situation/**",
+              "src/views/talent/**",
+              "src/views/userCopyContract.test.mjs"
+            ]
+          }
+        ],
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_policy_version": "demo-2026-11-10",
+        "risk_level": "M",
+        "plan_hash": "sha256:0239900141016585219fae3b83319efddad5db226839a0885230fd5891350564",
+        "diagnosis_hash": "sha256:88084267a75598573a5fc0875448506685453ec03056a1a5ef36c47e0c7b89c0",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:d28f20df64aa978f9bedc51a9d55b710526b10639eaf814109be7b4a6082ff43",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-13T16:47:31.620+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:d28f20df64aa978f9bedc51a9d55b710526b10639eaf814109be7b4a6082ff43",
+        "expected": "sha256:d28f20df64aa978f9bedc51a9d55b710526b10639eaf814109be7b4a6082ff43",
+        "errors": []
+      }
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "de972d3070ce8ba0a263e842382430e433563bde",
+        "merge_request_id": "direct-push-dev",
+        "merge_commit_sha": "de972d3070ce8ba0a263e842382430e433563bde",
+        "pipeline_id": "5221",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5221",
+        "deployed_sha": "de972d3070ce8ba0a263e842382430e433563bde",
+        "rollout_status": "success",
+        "image_tag": null,
+        "role": "primary",
+        "depends_on": [],
+        "ship_order": 1
+      }
+    ],
+    "acceptance_steps": [
+      "打开展示系统各模块页（态势总览/全球创新/深圳创新/人才/软科学/智库/政策治理），确认空态、tooltip、toast 无表名/数仓/落库/无源/内部卡号等开发语言",
+      "深圳人才报告导出 PDF：正文无「无源（GAP-*）」，按钮为「导出 PDF」，toast 为「报告已生成并下载 PDF」",
+      "人才模块红问号悬停：tooltip 为用户语言（无 INT-A-*/metric_id 等内部编号）",
+      "政策治理复核说明 placeholder 为「仅本次演示会话保存」",
+      "全球创新实时看板空态为「暂无年度趋势数据」无表名"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "ev-pipeline-deploy"
+      ]
+    },
+    "summary": "展示系统 46 文件业务态开发文案清理（飞书 7167352099），纯文案零逻辑；pipeline 5221 绿、deploy:k8s 绿、dev rollout 完成"
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-13T16:39:06.491+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-13T16:39:06.545+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-13T16:44:10.794+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": "cursor-2486-frontend-agent-20261113",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:4275bcfb9ec0b6ac9cbf2b5578cb5b3abaf14e84f2ab5f2227f75f8a0d89a133",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-13T16:44:10.860+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": "cursor-2486-frontend-agent-20261113",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-13T16:44:10.940+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": "cursor-2486-frontend-agent-20261113",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-13T16:44:11.002+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": "cursor-2486-frontend-agent-20261113",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-13T16:47:31.620+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": "cursor-2486-frontend-agent-20261113",
+      "gate": "ship",
+      "gate_hash": "sha256:d28f20df64aa978f9bedc51a9d55b710526b10639eaf814109be7b4a6082ff43",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-13T16:47:31.691+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": "cursor-2486-frontend-agent-20261113",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-13T16:49:39.851+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2486",
+      "session_id": "cursor-2486-frontend-agent-20261113",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-13T16:49:39.785+08:00",
+      "manifest_hash": "sha256:6f05d1eedb82d1c30d950869e1b75e6217b52fe2996e01ddbd85e3a4ec1deb20",
+      "item_count": 6,
+      "evidence_ids": [
+        "ev-copy-contract",
+        "ev-regression",
+        "ev-type-check",
+        "ev-build",
+        "ev-pipeline",
+        "ev-pipeline-deploy"
+      ],
+      "evidence_results": {
+        "ev-copy-contract": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-regression": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-type-check": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-build": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-pipeline": {
+          "result": "PASS",
+          "reviewable": false,
+          "raw_retained": true
+        },
+        "ev-pipeline-deploy": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [
+        "ev-pipeline"
+      ],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
+  },
+  "updated_at": "2026-11-13T16:49:49.177+08:00"
+}
