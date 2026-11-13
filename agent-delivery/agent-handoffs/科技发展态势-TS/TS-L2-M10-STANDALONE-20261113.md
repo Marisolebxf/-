@@ -88,3 +88,17 @@
 - **seed 起点版本无快照**：不能回滚到迁入起点；演示前按用例备注先保存一次得到带快照的基线。
 - ARCH/DATA 三份四单的存储节点与删边未同步（见「图即契约」）。
 - 各仓改动均未提交；`lumen-ui-science-pc` 另有一个 11-13 本地提交（34–40 前端）尚未推送。
+
+## 2026-11-14 上线与线上复测
+
+| 项 | 结果 |
+|---|---|
+| 共享库 DDL | 两份脚本已执行（`gkxlumenx@10.50.11.76`），18 张 m10_* 表；seed 起点 v70 |
+| 推送 | algo `0590704`、svc `051030a5` → `2e28e137`、ui `481b1ce`、编排 `0c274efce` |
+| CI 失败与修复 | 051030a5 `backend:build` 失败：`OpsContentServiceTest` 3 处断言仍查字段 key，`a0680f6b` 已把必填文案改为中文名（该提交流水线被取消未暴露）。`2e28e137` 改断言后 cms / display 部署 |
+| 本地测试的坑 | 本机 Maven 构建缓存会让 `mvn test` 不执行测试仍报 BUILD SUCCESS；须 `-Dmaven.build.cache.enabled=false`（CI 同款 `clean verify -pl … -am`）。11-13 报告里「cms 模块 BUILD SUCCESS」不成立，只有 `-Dtest=TechMaintainServiceTest` 的 20 项真实执行过 |
+| 操作人 40-4 | display 新增 `SsoOperatorNameResolver`：门户 SSO 用户写图谱时用同一令牌调用户中心 1.4 取 `userInfo.realName`（缺省 nickname），按 userId 缓存，失败回退 username。线上 v95 起显示 `jianfeng` |
+| 演示基线复位 | 解挂 11-11 后新增 3 实体（v71）→ 推荐 57 |
+| 线上复测 | 图层 LOOP 22/22、实体 LOOP 30/30（含匿名写 401）、图谱接口冒烟 23/23；旧表 13 张（含 cfg_*）CHECKSUM 迁移时与复测后一致 |
+| 演示初始图谱 | `vendor/entan-py/scripts/seed_m10_graph_demo.py` 发布 v95（14 点 / 18 关系）；00:20 有会话把图谱回滚到冒烟中间态 v87（带回「维护联调节点甲 / 乙」），已删除得 **v96**（带快照）= 演示基线 |
+| 剩余 | LAYER/ENT/GRAPH-ARCH 存储流图同步；线上界面需登录后走查（未登录跳 SSO） |
