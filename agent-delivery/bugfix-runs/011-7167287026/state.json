@@ -32,7 +32,7 @@
     "current_owner": "current_user",
     "takeover_history": []
   },
-  "phase": "READY_SHIP",
+  "phase": "AWAITING_ACCEPTANCE",
   "risk": {
     "level": "S",
     "reasons": [],
@@ -206,8 +206,44 @@
       }
     },
     "ship": {
-      "status": "pending",
-      "bound_to": null
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测011",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-13T11:39:03.190+08:00",
+      "approved_session_id": "cursor-20261112-2007-batch-a",
+      "approved_machine_id": "redfo-win",
+      "claim_id": "agent-claim-20261113-wave2-011",
+      "message_ref": "questionnaire:用户本会话精确口令「提测」(chat:2026-11-13T11:04+08:00)",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "risk_level": "S",
+        "deploy_target": "dev",
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "7ba1c7c20c6bb35cba513cdf66c34befb51bdc34",
+            "diff_hash": "sha256:de73501ac8c3eb3205598d4943bf9a157191bfa4ae92493e3f05ece7c8796cf6",
+            "verification_hash": "sha256:cce469c03dc1237f581dc4639cb832251f43fe71cccfc50b7651eab746ff69db",
+            "review_hash": "sha256:bb641edcb0c6613acce9d1142a323998d1d407e7368c01806a0cc7995264d485",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+            "role": "primary",
+            "depends_on": [],
+            "ship_order": 1
+          }
+        ]
+      },
+      "gate_hash": "sha256:86484a5c407a979a47c36df4fbcac81b366986c6e3d4b8037371e82fa4ad4e2a",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-13T11:39:05.071+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:86484a5c407a979a47c36df4fbcac81b366986c6e3d4b8037371e82fa4ad4e2a",
+        "expected": "sha256:86484a5c407a979a47c36df4fbcac81b366986c6e3d4b8037371e82fa4ad4e2a",
+        "errors": []
+      }
     },
     "acceptance": {
       "status": "pending",
@@ -215,11 +251,33 @@
     }
   },
   "ship_package": {
-    "repos": [],
-    "acceptance_steps": [],
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "7ba1c7c20c6bb35cba513cdf66c34befb51bdc34",
+        "merge_request_id": "direct-push-dev",
+        "merge_commit_sha": "7e3fb5bc89cf4656316ec29f84e4fbe2c6cc799f",
+        "pipeline_id": "5146",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5146",
+        "deployed_sha": "7e3fb5bc",
+        "rollout_status": "complete",
+        "image_tag": "harbor.test.com/zp-tts/gkx-lumen-pc:7e3fb5bc",
+        "role": "primary",
+        "depends_on": [],
+        "ship_order": 1
+      }
+    ],
+    "acceptance_steps": [
+      "打开 dev 环境 http://10.50.69.111:30891/ ，硬刷新（Ctrl+F5）确保加载 7e3fb5bc 版本",
+      "按各工单描述原文逐一复核对应页面交互（报告文案/互动解读空态/趋势图x轴/全景锚点定位）",
+      "确认无回归：相邻页签、图表切换、政策全景检索分组等相邻功能可用"
+    ],
     "dev_verification": {
-      "result": "PENDING",
-      "evidence_refs": []
+      "result": "PASS",
+      "evidence_refs": [
+        "ev-dev-verify"
+      ]
     },
     "summary": null
   },
@@ -307,6 +365,45 @@
       "gate_hash": null,
       "evidence_refs": [],
       "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-13T11:39:05.072+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261113-wave2-011",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": "ship",
+      "gate_hash": "sha256:86484a5c407a979a47c36df4fbcac81b366986c6e3d4b8037371e82fa4ad4e2a",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-13T11:39:07.368+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261113-wave2-011",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-13T11:39:08.161+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261113-wave2-011",
+      "session_id": "cursor-20261112-2007-batch-a",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
     }
   ],
   "failure_stage": null,
@@ -325,12 +422,13 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-13T02:55:55.612+08:00",
-      "manifest_hash": "sha256:c63d6e4e1715873d097bd76bfc268b5af9af607c53bb7830e1bb6455cc74ddf5",
-      "item_count": 2,
+      "checked_at": "2026-11-13T11:39:06.471+08:00",
+      "manifest_hash": "sha256:a38443ef151d1a59772a061431521af1c3c55485d17f10498be76d08b06e86de",
+      "item_count": 3,
       "evidence_ids": [
         "ev-selfcheck",
-        "ev-typecheck"
+        "ev-typecheck",
+        "ev-dev-verify"
       ],
       "evidence_results": {
         "ev-selfcheck": {
@@ -339,6 +437,11 @@
           "raw_retained": true
         },
         "ev-typecheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-dev-verify": {
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
@@ -358,7 +461,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "展示提测绑定对象并取得精确口令。"
+    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
   },
-  "updated_at": "2026-11-13T02:56:02.003+08:00"
+  "updated_at": "2026-11-13T11:39:08.161+08:00"
 }

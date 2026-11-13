@@ -193,3 +193,12 @@ Agent 内部按 `init（CLAIMED 需带 claim-comment-ref/claim-operator）→ re
 v1.2 起，校验器在原有 claim、数据、验证、跨仓 Bundle 约束上增加第三个精确 `acceptance` gate；chat_exact 验收必须绑定当前 ship gate、dev 验证结果和已验证 evidence manifest，并在飞书迁移成功后才能进入 `RESOLVED`。pipeline/rollout 仍来自 GitLab 查询记录，不能伪装成本地脚本直接验证的远端事实。普通同事仍是四件事，但口令为 `进入开发`、`提测`、`验收通过` 三个精确词。
 
 详细设计见 [`P0-DESIGN.md`](P0-DESIGN.md)。
+
+## 补充材料（2026-11-13）
+
+- `S-LITE-CHECKLIST.md`：S 级最小合规清单（claim/需规锚点/验证/提测/验收留痕）。
+- `feishu-transition-recipe.md`：飞书 `IN PROGRESS → RESOLVED` 必填字段与 option_id 传参配方。
+- `REQUIREMENT-COVERAGE-CHECKLIST.md`：需规逐项覆盖表与数据缺失专项排查。
+- `scripts/pipeline-status.mjs`：GitLab API pipeline 查询 helper（需 `GITLAB_API_TOKEN`，无 token 时回退页面）。
+- `scripts/worktree-guard.mjs`：阶段前检查 worktree 是否仍存在/可读（只读，不自动修复）。
+- `bugflow-state.mjs finalize --stage ship|acceptance`：本地收尾步骤聚合，减少漏步。

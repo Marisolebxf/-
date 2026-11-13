@@ -24,7 +24,7 @@ Project defaults:
 4. **Risk-matched process.** S-level work is lightweight. M adds one targeted independent review. L exits this lightweight flow. Multiple repositories for the same Feishu bug stay in one run as a cross-repo Bundle; they are not split into separate bugs.
 5. **Local first.** Reproduce and verify locally whenever practical. Shared dev is for one post-ship integration check, not the inner development loop.
 6. **One run, one current truth.** Per-run state lives under `agent-delivery/bugfix-runs/<auto_number>-<work_item_id>/`; Feishu owns business status.
-7. **Stop instead of guessing.** Missing requirements, unavailable environment, unrelated red baseline, or unsafe data access are blockers, not reasons to invent behavior.
+7. **Stop instead of guessing.** Missing requirements, unavailable environment, unsafe data access, or a red baseline that blocks the affected path are blockers, not reasons to invent behavior.
 
 ## Main-repo source map
 
@@ -50,10 +50,12 @@ Before changing code:
 
 1. Resolve `GKX_ROOT` from `gkx-orchestration/.env`; never hardcode the workspace root.
 2. Read the business repo's `AGENTS.md` and the relevant rules/docs from the source map.
-3. Record the target branch SHA and confirm the worktree state.
-4. Check the latest target-branch pipeline:
-   - Red for an unrelated baseline reason: report the owner, URL and failure, then block without charging a patch round.
-   - Red in the suspected path: continue diagnosis.
+3. Record the target branch SHA and confirm the worktree state. Run `scripts/worktree-guard.mjs --repo-dir <path> ...` before each phase; if it reports FAIL, stop and recover the worktree before continuing.
+4. Check the latest target-branch pipeline and separate development from shipping:
+   - Red for an unrelated reason and disjoint from the defect path: record the repo/SHA, failing job, owner and URL as an open **ship blocker**; local development and targeted verification may continue, and the failure does not consume a patch round.
+   - Red for an unrelated reason but it prevents local reproduction, the affected build/type-check, or required full verification: block development with the same owner/URL evidence.
+   - Red in the suspected path: continue diagnosis and fix path.
+   - The baseline must be green before `READY_SHIP`/`提测`; never merge/deploy against a knowingly red target branch and call it shipped.
 5. Confirm local dependencies/run conditions and that no other active run owns the defect.
 
 ### 1. Claim
@@ -94,6 +96,8 @@ Before `进入开发`:
 5. Verification must explicitly cover the mapped functional behavior. For broader requirements such as zoom levels, tabs, switches or all cards, cover every mode affected by the change.
 
 If no matching functional point exists, use a formal acceptance item, QA case, or latest explicit human decision and record that anchor. If none can be found, stop instead of inventing the expected behavior.
+
+Use `references/REQUIREMENT-COVERAGE-CHECKLIST.md` to enumerate every SRS sub-function before coding; for “missing data/少模块/少指标” defects follow the data-loss triage order in `references/BUG-PLAYBOOK.md §3.1`.
 
 ### 3. Classify and route
 
@@ -171,10 +175,9 @@ init -> record-diagnosis -> record-plan -> set-repos
 -> verify-repo -> record-review -> record-verification
 -> verify-evidence -> advance READY_SHIP
 -> approve-gate ship -> advance SHIPPING
--> record-ship-package -> verify-evidence
--> advance DEV_VERIFYING -> advance AWAITING_ACCEPTANCE
--> exact 验收通过 -> approve-gate acceptance
--> Feishu transition_state RESOLVED -> record-acceptance(mode=chat_exact)
+-> finalize --stage ship (record ship package + verify evidence + advance to AWAITING_ACCEPTANCE)
+-> exact 验收通过 -> finalize-acceptance
+-> Feishu transition_state RESOLVED -> finalize --stage acceptance (record acceptance + advance RESOLVED + render report)
 -> advance RESOLVED
 
 BLOCKED recovery:
@@ -194,14 +197,26 @@ Read `references/P0-DESIGN.md` only when gate/hash/evidence details matter.
 - Rework after failed acceptance within the same scope and risk keeps the existing claim and source analysis; redo diff/review/verification and request only `提测` again.
 - Scope expansion, adding a repository to the Bundle, changing Bundle dependency order, data write, permission model change, production risk or L routing invalidates old assumptions and requires a fresh decision.
 
+### 7.1 S-lite：S 级最小合规通道
+
+S 级可以轻，但不能无痕。**S-lite 不是“跳过流程”，而是把同一套事实压缩到最小必填项**：
+
+1. 仍必须创建 run：`init`（可 `--phase INTAKE`），保留 `claim_comment_ref`、`claim_operator`。
+2. 仍必须写 `diagnosis.requirement_refs`（具体需规文件 + 条款/序号；不接受“按需规”）。
+3. 仍必须记录：变更范围、commit SHA、验证证据、pipeline/deploy 结果。
+4. 仍必须走 `提测` gate 与 `验收通过` gate；**不得直接 push 或直接关单**。
+5. 验收阶段必须使用 `finalize-acceptance`，并按 §9 的硬规则完成 `transition_state` 与 `record-acceptance`。
+
+S-lite 仅豁免：独立 review、非 happy-path 验证类别、完整 Bundle 集成验证（单仓时）。清单见 `references/S-LITE-CHECKLIST.md`。
+
 ### 8. Ship and failure handling
 
 Before merge:
 
 1. Refresh the latest `dev`; never merge an assumption from an old local ref.
-2. Confirm the baseline pipeline is green or that its red path is unrelated.
+2. Confirm the candidate can build and deploy against a green baseline. An unrelated red baseline may allow local development, but it never authorizes merge or `提测`; wait for a successful target-branch pipeline or block shipping with the owner and URL.
 3. Merge/rebase only the authorized candidates and push `dev` in Bundle `ship_order`.
-4. Track every repository's pipeline, image tag, deployed SHA and rollout; do not verify only the last repository.
+4. Track every repository's pipeline, image tag, deployed SHA and rollout; do not verify only the last repository. Prefer `scripts/pipeline-status.mjs` (requires `GITLAB_API_TOKEN` with api scope; otherwise fall back to the GitLab page) over manual screenshot polling.
 
 Pipeline wait rule: follow only pipelines whose commit contains the authorized candidate (`git merge-base --is-ancestor <candidate> <pipeline-sha>`). Stop waiting for that repository at the first terminal success: pipeline success plus successful deploy/rollout, or a current live deployed SHA that contains the candidate. If the first pipeline is canceled or superseded, continue to the next candidate-containing pipeline and stop at its first terminal success. Do not switch to an unrestricted "latest dev pipeline" poll.
 
@@ -228,7 +243,7 @@ node .cursor/skills/feishu-bugfix/scripts/revalidation-plan.mjs \
 
 Classify failures as `merge`, `push`, `pipeline`, `rollout`, `dev_verify` or `rework`.
 
-- Unrelated baseline/CI failure before candidate deployment: block with owner and URL; do not increment the bug patch round.
+- Unrelated baseline/CI failure before candidate deployment: if disjoint, keep it as an open ship blocker while local development proceeds; if it blocks the affected path or the required verification, pause development. In both cases record owner/URL and do not increment the bug patch round. `提测` remains blocked until the target baseline is green.
 - Later unrelated running/failed pipeline after candidate deployment: record as observation only; do not wait indefinitely and do not increment the patch round when live SHA still contains the candidate.
 - Same environmental/runner failure twice with no progress: block and retry only after the condition changes.
 - Code failure: fix, increment the patch round, and stop after 3 rounds.
@@ -241,11 +256,14 @@ At `AWAITING_ACCEPTANCE`:
 - list concise manual acceptance steps;
 - wait for the human’s complete exact message `验收通过` (or `验收通过<auto_number>` when multiple active runs);
 - reject “可以了”“没问题”“算修复了” and other natural-language inference;
-- call `get_transitable_states` and `get_transition_required` for the current work item;
-- approve the `acceptance` gate using the exact message and binding built from the current claim, ship gate hash, dev verification and verified evidence manifest;
-- call `transition_state` with the returned legal transition and satisfy required fields first;
+- run `finalize-acceptance --message 验收通过 --current-status <current Feishu status>`; this validates ship evidence and approves the acceptance gate in one step;
+- use the current project recipe in `references/feishu-transition-recipe.md` (project + state + transition_id + required fields). Only call `get_transitable_states` / `get_transition_required` when no matching recipe exists or `transition_state` rejects the recipe;
+- call `transition_state` with the recipe/legal transition and satisfy required fields first;
 - record `mode=chat_exact`, `approval_message=验收通过`, approval ref/session/machine, the Feishu transition result and acceptance evidence;
-- advance the ledger to `RESOLVED` only after the Feishu transition succeeds.
+- run `finalize --stage acceptance` only after the Feishu transition succeeds; it records acceptance, advances to `RESOLVED` and renders the report;
+- keep the acceptance closure compact: do not add post-close `get_workitem_brief` / repeated state-validation calls. The transition result + `finalize --stage acceptance` output are the closure evidence.
+
+**硬规则（2026-11-13，因 2342/2343 事故新增）：收到裸词 `验收通过` 后，禁止只汇报 pipeline/deploy 结果就结束回合。必须在同一回合内完成：`finalize-acceptance` → `transition_state` → `record-acceptance` → `advance RESOLVED` → 回写验收总结。任一步失败必须显式报告失败原因并保持 Feishu 状态不变，禁止声称“已关闭”。**
 
 If the human moves Feishu manually without the exact chat token, keep the existing `policy_only` observation path and do not fabricate an acceptance gate. Only the claim comment, ship summary and final acceptance summary are required external comments.
 
@@ -267,7 +285,8 @@ A screenshot or clipboard image is evidence, not a claimable work item. Before i
 - Another active run owns the item and no valid takeover exists.
 - Missing expected behavior or authoritative requirement source.
 - Missing reproduction environment, credentials or permissions.
-- Unrelated red baseline or unrecoverable CI/environment failure.
+- Unrelated red baseline that blocks the affected local path or full verification.
+- A red target baseline when attempting `READY_SHIP`/`提测`; local development may already have proceeded if the failing path was disjoint.
 - Required data write is outside policy/scope.
 - L, schema, permission or production risk exceeds the lightweight flow. Cross-repo alone is not a blocker; an incomplete Bundle contract or integration verification is.
 - Three code patch rounds have failed without a new hypothesis.
