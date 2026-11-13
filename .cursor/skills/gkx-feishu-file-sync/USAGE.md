@@ -160,7 +160,7 @@ python .cursor/skills/gkx-feishu-file-sync/scripts/push_file.py `
 | `code=99991672` | 用的应用没有云盘权限 | 多半是 `.env` 里没配 `FEISHU_DRIVE_*`，脚本退回用了旧应用；按 2.2 配好 |
 | `code=1061004` | 应用不是这个文件的协作者，或只能阅读 | 按 2.3 把应用加为**可编辑** |
 | `code=1061002` | 链接不对或文件已被删 | 重新从飞书地址栏复制链接 |
-| `不是云空间文件（/file/）链接` | 目标是在线文档或表格 | 本工具不支持，见第 1 节 |
+| `不是云空间文件（/file/）链接` | 用的是 push_file.py，目标却是在线文档 | 在线文档改用第 6 节的 feishu_edit.py；在线表格不支持 |
 | `本地文件不存在` | 路径写错 | 检查路径；含中文空格的路径要加双引号；路径是相对编排仓根目录的 |
 | `大小 ... 必须在 1B–20MB 之间` | 文件为空或太大 | 超过 20 MB 用网页上传 |
 | `Permission denied`（生成 Excel 时） | 文件正被 WPS / Excel 打开 | 关掉文件再重试 |
@@ -170,9 +170,10 @@ python .cursor/skills/gkx-feishu-file-sync/scripts/push_file.py `
 
 ```powershell
 python .cursor/skills/gkx-feishu-file-sync/scripts/push_file.py --self-check
+python .cursor/skills/gkx-feishu-file-sync/scripts/feishu_edit.py --self-check
 ```
 
-输出 `self-check ok` 即正常。
+两条都输出 `self-check ok` 即正常。
 
 ---
 
@@ -184,3 +185,53 @@ python .cursor/skills/gkx-feishu-file-sync/scripts/push_file.py --self-check
 ```
 
 有问题找淮政玮。
+
+---
+
+## 6. 用 Cursor 改飞书上的文章
+
+适用：链接里是 `/docx/` 的在线文档，或指向文档的 `/wiki/` 链接。云空间文件（`/file/`）也能用这套命令，效果是整份覆盖。
+
+**第 1 步：拉下来。**
+
+```powershell
+python .cursor/skills/gkx-feishu-file-sync/scripts/feishu_edit.py pull "https://zhipu-ai.feishu.cn/docx/XXXX" --out "文章.md"
+```
+
+会得到两个文件：`文章.md`（正文）和 `文章.md.feishu.json`（对照用的快照）。快照不要删、不要改、不要提交到 git。
+
+**第 2 步：在 Cursor 里改 `文章.md`。**
+
+正文被分成一段一段，每段上面有一行标记：
+
+```
+<!-- b:doxcnXXXX text -->
+这里是这一段的文字，改这里。
+```
+
+- 只改标记下面的文字。
+- 不要删、不要改 `<!-- b:... -->` 那一行，也不要自己加新的标记。想新增一段或删掉一段，到飞书网页上做。
+- 标记末尾写着 `readonly` 的段先别动，写回时会自动跳过。
+
+**第 3 步：先看改了什么，再写回。**
+
+```powershell
+python .cursor/skills/gkx-feishu-file-sync/scripts/feishu_edit.py push "文章.md"
+```
+
+输出里每一段都有删掉的旧文字和加上的新文字。确认无误后：
+
+```powershell
+python .cursor/skills/gkx-feishu-file-sync/scripts/feishu_edit.py push "文章.md" --apply
+```
+
+到飞书里刷新，只有改过的段落会变，其它段落和格式保持原样。
+
+**常见提示：**
+
+| 看到 | 意思 |
+|---|---|
+| `[i] 本地没有改动` | 文字和拉下来时一样，不用写回 |
+| `[!] ... 线上在你 pull 之后被改过` | 别人也改了这段。重新 pull，把你的修改合进去再推 |
+| `[x] 本地缺少 N 个段落标记` | 标记被删了。从飞书历史或重新 pull 恢复标记 |
+| `code=99991672` 且提到 `docx` | 应用还没开文档权限。找淮政玮在开发者后台开通 `docx:document` 并发布 |
