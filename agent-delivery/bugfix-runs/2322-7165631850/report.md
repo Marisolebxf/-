@@ -1,9 +1,9 @@
 # 缺陷修复报告：2322 粤港澳大湾区创新能力，各城市创新能力指标构成，创新机制和同比为空；表内其他城市无数据
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-12T11:48:12.351+08:00
+> 生成时间：2026-11-12T12:15:23.241+08:00
 > 当前 cycle：cycle-001-20261112T104834+0800
-> 当前内部阶段：READY_SHIP
+> 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -68,12 +68,13 @@
 | ev-2322-diff-check-r2 | review | PASS | yes | yes | PENDING | topic_py@0687fb873ce53bfe41cf46c6af4c333fa4322a04;backend@4eb0a85919bfe97bd5f48bdeaabfcd708b078d23;ui_pc@68805b383e99cb32ba2d340646f8696e1f8067a2 | 三个仓库候选 diff 均无空白错误。 |
 | ev-2322-seed-dry-run-r2 | data_plan | PASS | yes | yes | PENDING | topic_py@0687fb873ce53bfe41cf46c6af4c333fa4322a04 | dry-run 确认写入 44 行、11 城、4 个年度观测点且无主键冲突。 |
 | ev-2322-db-write-r2 | db | PASS | yes | yes | PENDING | topic_py@0687fb873ce53bfe41cf46c6af4c333fa4322a04 | demo_gkxlumenx_ads.city_index 幂等 upsert 44 行；回读 11 城、4 个年度观测点，2025-05 的机制、同比和历史均有值。 |
+| ev-2322-dev-capability-api | integration | PASS | yes | yes | PENDING | topic_py@0961716ba169b9c8dcbe528d374414ac1d824c4f;backend@0f30281e7492d985b618ebfe48bdad9ffb26fe0b;ui_pc@281e5ba1bf352aef04cf190656de647901220d78 | dev 真实接口返回 code=0、total=11、hasDataCityCount=11；11 城机制分和同比均非空，每城 history 4 个年度点。 |
 
 DB 写证据授权：
 
 - ev-2322-db-write-r2：demo_gkxlumenx_ads.demo_gkxlumenx_ads.city_index；operation=upsert；gate=sha256:c877c022df81ed0483ab8370f2c7271ed14f17c03b022a61be551f4b13a91379；policy=sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0；scope=sha256:51fd208d6363fe55c37ddd390be5ea497336ce793651f393005c45451b386494；authorization=sha256:cc32ecedaa61e3ec6563d7130f1a439c4da37b3489af12b10ae8b6fd60986be0
 
-- manifest 校验：PASS；manifest_hash=sha256:e04dc012e5e4b0d5c01c55e73fd234e916efbd18afa4cd45a029a165d3b2d52e；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:2280155320a2396603c47e12f3464276a19f1e22f96b7143143cf5010b18bdd8；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -114,13 +115,18 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- topic_py：ship_order=1，MR=!3，candidate=0687fb873ce53bfe41cf46c6af4c333fa4322a04，merge=0961716ba169b9c8dcbe528d374414ac1d824c4f，deployed=0961716ba169b9c8dcbe528d374414ac1d824c4f，pipeline=5020，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py/-/pipelines/5020，image=harbor.test.com/zp-tts/gkxlumen-show-service:0961716b，rollout=success
+- backend：ship_order=2，MR=!21，candidate=4eb0a85919bfe97bd5f48bdeaabfcd708b078d23，merge=0f30281e7492d985b618ebfe48bdad9ffb26fe0b，deployed=0f30281e7492d985b618ebfe48bdad9ffb26fe0b，pipeline=5021，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/5021，image=harbor.test.com/zp-tts/gkxlumen-display@sha256:f8594eb073ecffb196b3ee2df9a3671c8ec32185dbb0d5851bf5fc210d5e11c2，rollout=success
+- ui_pc：ship_order=3，MR=!6，candidate=68805b383e99cb32ba2d340646f8696e1f8067a2，merge=281e5ba1bf352aef04cf190656de647901220d78，deployed=281e5ba1bf352aef04cf190656de647901220d78，pipeline=5022，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5022，image=harbor.test.com/zp-tts/gkx-lumen-pc:281e5ba1，rollout=success
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=evidence/raw/2322-dev-capability-api.json#ev-2322-dev-capability-api
 
 人工验收步骤：
 
-- PENDING
+- 打开 http://10.50.69.111:30891，进入“科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新能力”。
+- 检查“各城市创新能力指标构成”展示完整 11 城，包含香港、澳门、中山，不再漏城或出现 NaN。
+- 检查“创新机制”和“同比”两列均有数值，不再全部显示“—”。
+- 切换城市或查看指标详情，确认综合分、四维子指标、历史趋势/趋势图均有数据。
 
 ## 10. 精确验收与飞书状态迁移
 
@@ -138,12 +144,12 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:c877c022df81ed0483ab8370f2c7271ed14f17c03b022a61be551f4b13a91379 |
-| ship | pending | PENDING | PENDING |
+| ship | approved | 提测 | sha256:3b295cd3aa44f929f3c353199a624ccb7e88c1d68eaa1036ced179a9f6a33077 |
 | acceptance | pending | PENDING | PENDING |
 
 enter_dev bound_to：{"repos":[{"repo_id":"topic_py","repo_name":"lumen-topic-py","remote":"https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git","base_branch":"dev","base_sha":"7bc646a4b1f5685128fcfdd09188b07637f14f4a","planned_change_scope":["gkx_show_service/views/gba_indicator.py","gkx_show_service/scripts/seed_gba_capacity_demo.py","tests/test_gba_capacity_score.py"],"role":"backend_python","depends_on":[],"ship_order":1},{"repo_id":"backend","repo_name":"lumen-svc-platform","remote":"https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform.git","base_branch":"dev","base_sha":"da2260aeee781138d7b8006ce45873f471c49da1","planned_change_scope":["gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/BayInnovationController.java","gkxlumen-display/src/test/java/com/topcomm/gkxlumen/display/controller/BayInnovationControllerTest.java"],"role":"backend_java","depends_on":["topic_py"],"ship_order":2},{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","remote":"https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git","base_branch":"dev","base_sha":"b83e84bb9b0dd3187d64f4ad062c731aca1680e0","planned_change_scope":["src/api/situation/bayAreaInnovation.ts","src/views/situation/bay-innovation/tabs/CapacityTab.vue"],"role":"frontend","depends_on":["backend"],"ship_order":3}],"diagnosis_hash":"sha256:5b5742aaea5b4ec4bde4dcadc0195de71b4d2b79a4bd284ec0cc1e3392f9d673","plan_hash":"sha256:1529b8eef04262c14e65fde495aa62590eda0231730e90457d6b28e749b0de49","risk_level":"M","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:51fd208d6363fe55c37ddd390be5ea497336ce793651f393005c45451b386494"}
 
-ship bound_to：PENDING
+ship bound_to：{"repos":[{"repo_id":"topic_py","candidate_sha":"0687fb873ce53bfe41cf46c6af4c333fa4322a04","diff_hash":"sha256:3afc5b114b83e1c9feaba2d85e0b6f0fcb24abc84a7722f48e9a8430986b391a","verification_hash":"sha256:f458e642a701ab2db32f8b9e436131ad5097d7409483bab862cf09d06676c079","review_hash":"sha256:7738fd5cd98956def769582bc8b9f66c7578e06799f7033d5f3dd1e26c6b2f54","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:51fd208d6363fe55c37ddd390be5ea497336ce793651f393005c45451b386494","role":"backend_python","ship_order":1,"depends_on":[]},{"repo_id":"backend","candidate_sha":"4eb0a85919bfe97bd5f48bdeaabfcd708b078d23","diff_hash":"sha256:cee565d9649d81a6f450747d48576b04d809829c7499e6114c715ff9ac3581d6","verification_hash":"sha256:14ffc98a69a596ac4f328e8a1a3322e7551a0519a6178919ccf5a443a80de808","review_hash":"sha256:ba2bb9e801cc9133c2f281078ff84538721a93a09b65290da9efd85534b65291","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:51fd208d6363fe55c37ddd390be5ea497336ce793651f393005c45451b386494","role":"backend_java","ship_order":2,"depends_on":["topic_py"]},{"repo_id":"ui_pc","candidate_sha":"68805b383e99cb32ba2d340646f8696e1f8067a2","diff_hash":"sha256:e8ea5529bac42931e48a39a5324fda2b8edb0cd04172fddbd70ad33a53a07aca","verification_hash":"sha256:92eec79f6496f34e36276fdba96ccebe69866b4aafc0c78f96c6f2194d29e23e","review_hash":"sha256:b5d68ea062bf6922b1e330326cebd9b569cab0ef36c842f7e55fc2bb89fa4d61","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:51fd208d6363fe55c37ddd390be5ea497336ce793651f393005c45451b386494","role":"frontend","ship_order":3,"depends_on":["backend"]}],"risk_level":"M","deploy_target":"dev"}
 
 acceptance bound_to：PENDING
 

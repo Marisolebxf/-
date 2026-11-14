@@ -1,0 +1,575 @@
+{
+  "schema_version": 2,
+  "run_id": "2593-7168140581",
+  "current_cycle_id": "cycle-001-20261113T175652+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261113T175652+0800",
+      "seq": 1,
+      "started_at": "2026-11-13T17:56:52.167+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2593",
+    "work_item_id": "7168140581",
+    "title": "科技指数-指数可视化-筛选产业出现异常提示",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "2593",
+    "claim_comment_ref": "feishu-comment:7168140581:[agent-claim]",
+    "claim_operator": "human:徐滕强",
+    "claimed_at": "2026-11-13T17:56:52.167+08:00",
+    "session_id": null,
+    "machine_id": null,
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "AWAITING_ACCEPTANCE",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "d5db467e093820f6c018874326c6b7a133c22b28",
+      "candidate_sha": "2efd81b12cbaa48b8d2d4316f743404caa36f521",
+      "planned_change_scope": [
+        "src/views/situation/tech-index/index.vue",
+        "src/views/situation/tech-index/styles/demo-tech-index.css",
+        "src/views/situation/tech-index/techIndex.test.mjs"
+      ],
+      "role": "frontend",
+      "depends_on": [],
+      "ship_order": null
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "科技指数页（指数可视化展示/科技成果综合排名 Tab）筛选产业后出现堆叠 toast「请求失败：获取产业列表失败：获取产业链数据失败：undefined」，被用户视为系统异常提示。",
+    "reproduction": [
+      "线上 10.50.69.111:30891 科技指数页选择产业集群（如 CL-SEI-01）→ POST /display/v1/situation/tech-index/dataset 返回 200",
+      "返回体 noTopicPathSections=[comprehensive,university,enterprise,research]，ranking 四榜置空",
+      "前端 Message.info 弹「…无 topic 映射路径，产业筛选下暂为空」+ industryFilterNote info，两条堆叠 toast",
+      "截图里的堆栈式文案在当前 dev 代码与线上 bundle（215 个 chunk 全量扫描）均不存在，为旧版本构建产物"
+    ],
+    "root_cause": "非接口故障：HTTP 200 下游诚实置空 + 前端 info toast 堆叠（industryFilterNote 与 noTopicPathSections 各弹一条）被误读为异常；旧版构建中的「获取产业链数据失败：undefined」堆栈式报错已随迭代消失。待修点 = 前端把产业筛选导致的诚实空态从全局 toast 改为页内空态说明。",
+    "counter_evidence": [
+      "全仓 rg「获取产业链数据失败/获取产业列表失败/请求失败：」0 命中（前端 lumen-ui-science-pc + 后端 lumen-svc-platform + 算法仓）",
+      "线上 30891 前端 215 个 JS chunk 全量下载扫描，均无该文案；ti chunk（index-DnUhhIeF.js）确认只有「无 topic 映射路径」info",
+      "直连 dataset 接口 CL-SEI-01 / INB1303 / slug / 15 集群载荷全部 HTTP 200 code=0，无 5xx",
+      "Loki lumen 平面 display 日志无「获取产业/请求失败」错误行；display 的「downstream returned failure」全部来自政策全景 policy/search 链路（industry_code 校验拒绝），与 tech-index 无关",
+      "Tempo trace 8b40bd26aa786b1fc4d1fc47f066b62 在两个平面均查不到（empty ring），span 层无断点证据"
+    ],
+    "requirement_refs": [
+      "飞书缺陷 2593 / 7168140581（科技指数-指数可视化-筛选产业出现异常提示）",
+      "数据血缘铁律 D9：诚实空态允许，但应以页内空态而非全局 toast 表达"
+    ],
+    "impact_scope": [
+      "repos/lumen-ui-science-pc src/views/situation/tech-index/index.vue（loadDataset 的 info toast 逻辑）",
+      "用户体验：筛选产业后的提示形态（toast → 页内空态说明），不改后端接口与数据口径"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "repos/lumen-ui-science-pc src/views/situation/tech-index/index.vue：loadDataset 中 industryFilterNote / noTopicPathSections 两条 Message.info 改为页内空态说明（filterNotice ref 展示在 Tab 内容顶部），不再弹全局 toast；同一轮筛选最多一条提示"
+    ],
+    "non_goals": [
+      "不改后端 tech-index dataset 接口与 topic 映射口径（诚实空态语义保持）",
+      "不处理旧版本构建产物「获取产业链数据失败：undefined」文案（已消失）",
+      "不改其他页面的 toast 行为"
+    ],
+    "verification_plan": [
+      "pnpm type-check 绿",
+      "pnpm build 绿",
+      "本地 dev 起服务后选 CL-SEI-01 筛选：页面顶部出现一条页内说明，无 Message.info toast 堆叠",
+      "清空筛选：说明消失、数据恢复全量"
+    ],
+    "rollback_plan": [
+      "git revert 单 commit（改动集中一个 vue 文件）",
+      "前端为纯展示层改动，无数据/接口回滚面"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "d0863ff4261ad060d3e3a55724297b5815ca5f53",
+        "candidate_sha": "2efd81b12cbaa48b8d2d4316f743404caa36f521",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/situation/tech-index/index.vue"
+        ],
+        "diff_hash": "sha256:d4ec65eab3080a473b952fea76507219c74ca845d3ea20092fcd33f2d9115273",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T12:15:03.645+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:review-agent",
+        "reviewed_sha": "be38a6a6f602dd2239bb2d0980af8819f39afefd",
+        "verdict": "PASS",
+        "independent": true,
+        "scope": "src/views/situation/tech-index/{index.vue,styles/demo-tech-index.css,techIndex.test.mjs}",
+        "findings": [],
+        "round": 1,
+        "review_hash": "sha256:bee635a1a69c3534758014b3dcf5d9997445e1ef8b660ba54f7194c0b00f3e42"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "V2-fix-typecheck",
+      "category": "fix",
+      "behavior": "pnpm type-check（vue-tsc --build）exit 0",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "EV-selftest"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V2-fix-build",
+      "category": "fix",
+      "behavior": "pnpm build 生产构建成功",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "EV-selftest"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V2-fix-selftest",
+      "category": "fix",
+      "behavior": "techIndex.test.mjs 90 项断言全过（含防 toast 回流 4 项）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "EV-selftest",
+        "EV-export-selftest"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V2-regression-scope",
+      "category": "regression",
+      "behavior": "两轮 diff 合计仅 tech-index 3 文件+1 文件，无其他页面受影响；git_verified=true",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "EV-diff",
+        "EV-diff-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V2-regression-review",
+      "category": "regression",
+      "behavior": "独立 agent 评审（384d1beb）PASS：正确性/hint 移除安全/高度链不破/断言无误报/D9D10 合规逐项确认",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "EV-diff"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V2-boundary-failure",
+      "category": "boundary",
+      "behavior": "边界：请求失败时 notice 与整页数据同寿命（既有失败静默契约）；空 notice 零 DOM",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "EV-diff"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "V3-fix-userwording",
+      "category": "fix",
+      "behavior": "用户复验反馈英文 key 暴露 → 第二轮修复：板块枚举转中文榜名、去「topic 映射路径」术语；线上 30891 新 bundle 实扫命中「暂无产业关联数据」（chunk index-BQfmnmjC）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "EV-diff-r2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:徐滕强",
+      "approved_at": "2026-11-14T11:34:50.489+08:00",
+      "approved_session_id": "cursor-1886ed47",
+      "approved_machine_id": "frogMacBook.local",
+      "claim_id": "2593",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+            "base_branch": "dev",
+            "base_sha": "d5db467e093820f6c018874326c6b7a133c22b28",
+            "planned_change_scope": [
+              "src/views/situation/tech-index/index.vue",
+              "src/views/situation/tech-index/styles/demo-tech-index.css",
+              "src/views/situation/tech-index/techIndex.test.mjs"
+            ]
+          }
+        ],
+        "risk_level": "M",
+        "diagnosis_hash": "sha256:e19d71f2c39e76284f946776630242b4ff59cb2b126ae4ada61f6f028a5a1bbf",
+        "plan_hash": "sha256:1727b107beac59048f8f501e9282dd9ad6c264ea0ad06aea6a69777d2cad52bb",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:c10bcb8bef93245fc2b039ea21b96693ea0c220a6e71e8ef8c4461e8ca382997",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T11:34:50.489+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": {
+          "claim_id": "2593"
+        },
+        "expected": {
+          "claim_id": "2593"
+        }
+      }
+    },
+    "ship": {
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:徐滕强",
+      "approved_at": "2026-11-14T11:49:07.273+08:00",
+      "approved_session_id": "cursor-1886ed47",
+      "approved_machine_id": "frogMacBook.local",
+      "claim_id": "2593",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "be38a6a6f602dd2239bb2d0980af8819f39afefd",
+            "diff_hash": "sha256:f5dcfc399b8a2a47bbe3cf38c9761383109b174bec409becbe2e0a6f5bd56ce5",
+            "verification_hash": "sha256:b055b8688e5d64363662f7d58f0aa1adecb239eddd3bba664ba53923f8e6ba41",
+            "review_hash": "sha256:bee635a1a69c3534758014b3dcf5d9997445e1ef8b660ba54f7194c0b00f3e42",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "M",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:f1b362e335dd0f9aefc6702cf77691efe9b03119d9c8ee57bac3cf7758c6508d",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T11:49:15.216+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:f1b362e335dd0f9aefc6702cf77691efe9b03119d9c8ee57bac3cf7758c6508d",
+        "expected": "sha256:f1b362e335dd0f9aefc6702cf77691efe9b03119d9c8ee57bac3cf7758c6508d",
+        "errors": []
+      }
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "2efd81b12cbaa48b8d2d4316f743404caa36f521",
+        "merge_request_id": "direct-push-dev",
+        "merge_commit_sha": "2efd81b12cbaa48b8d2d4316f743404caa36f521",
+        "pipeline_id": "auto-on-dev",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines",
+        "deployed_sha": "2efd81b12cbaa48b8d2d4316f743404caa36f521",
+        "rollout_status": "complete",
+        "image_tag": "gkx-lumen-pc:dev-2efd81b",
+        "role": "frontend",
+        "depends_on": [],
+        "ship_order": null
+      }
+    ],
+    "acceptance_steps": [
+      "打开 http://10.50.69.111:30891/display/ 科技指数页「指数可视化展示」Tab（强刷 Ctrl+Shift+R）",
+      "产业领域筛选选择任一产业集群（如 新一代信息技术）",
+      "确认页面顶部一条页内说明，文案为中文榜名（综合榜/高校榜/企业榜/科研机构榜）+「暂无产业关联数据」，无英文编码、无 toast 弹窗",
+      "清空产业筛选，说明消失、数据恢复全量",
+      "「科技成果综合排名」Tab 重复确认"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "EV-selftest",
+        "EV-diff-r2"
+      ]
+    },
+    "summary": "两轮修复：①toast 改页内提示条 ②板块枚举转中文榜名+去开发术语；线上 bundle 已实扫命中新文案"
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-14T11:24:08.109+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-14T11:24:08.177+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-14T11:30:55.632+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": "cursor-1886ed47",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:85e3a1a373acbf763571a0583deb6d2c78a0cb4ce4937858f162a68f7df4ed48",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-14T11:46:40.525+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-14T11:46:47.244+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-14T11:48:03.257+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-14T11:49:15.216+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": "cursor-1886ed47",
+      "gate": "ship",
+      "gate_hash": "sha256:f1b362e335dd0f9aefc6702cf77691efe9b03119d9c8ee57bac3cf7758c6508d",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-14T11:58:05.589+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-14T11:58:24.723+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "2593",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-14T12:15:27.071+08:00",
+      "manifest_hash": "sha256:9f3cf1a46eaab1c16eadbcbf0a4d1114ca69d2508311a61b75785dfca428dffa",
+      "item_count": 5,
+      "evidence_ids": [
+        "EV-diff",
+        "EV-selftest",
+        "EV-export-selftest",
+        "EV-diff-round2",
+        "EV-diff-r2"
+      ],
+      "evidence_results": {
+        "EV-diff": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "EV-selftest": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "EV-export-selftest": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "EV-diff-round2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "EV-diff-r2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "核对 pipeline、deployed_sha、rollout 和 dev 复测证据。"
+  },
+  "updated_at": "2026-11-14T12:15:27.131+08:00"
+}
