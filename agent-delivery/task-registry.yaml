@@ -65801,13 +65801,19 @@ tasks:
       - "LAYER/ENT/GRAPH-ARCH 存储流图同步"
     update_time: "2026-11-14T00:50:00+08:00"
   - id: LUMEN-SVC-PT-CHAIN-SLICE-L01
+    model_used: "glm-5.3"
+    actual_tokens: 180000
+    actual_cost: "1.4"
+    evidence: |
+      handoff: agent-delivery/agent-handoffs/LUMEN-SVC-PT-CHAIN-SLICE-L01.md; tests: pytest 22 passed（test_gkx_svc_search / test_gkx_svc_mounted_on_search / test_svc_portal_chain_slice / test_svc_rec_chain_filter / test_factor_search）; commit: lumen-topic-py 3b140d9 + merge 5b18afe（origin/dev）; 全量 pytest 406 passed（9 存量失败经 stash 对照确认与本改动无关）
+    cost_warn: "false"
     claimed_at: "2026-11-14T03:43:28.636Z"
     last_seen_at: "2026-11-14T03:43:28.636Z"
     lock_until: "2026-11-14T11:43:28.636Z"
     claimed_by: "agent:api-agent"
     supervised_by: "human:孔东"
     title: "服务机构门户 5 接口产业切片：按 chain_codes 参数过滤（缺陷 7168034647）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "agent:api-agent"
     epic: "E7-产业服务链分析"
     priority: "P1"
@@ -65819,7 +65825,7 @@ tasks:
     estimated_tokens: 60000
     user_story: "US-SVC-PT-01"
     note: |
-      来源：飞书缺陷【7168034647】门户-集群专题切换产业数据一样（P1，报告人石书诚）。诊断结论：前端传参正常、Java Feign 纯透传，根因在 lumen-topic-py 5 个门户接口丢弃 industry/chain_codes 参数且 SQL 无产业过滤；灌数侧只有 slice_key=all 全量行，故修复=接口按参数现算切片，不是灌数。孔东 2026-11-14 裁定：按 ranking_list 既有 chain_codes 范式处理，本单只做接口侧，不改灌数。前端面包屑删除已在 lumen-ui-topic 工作区完成（另行提交），不入本单。监管人：human:孔东。
+      实现完成：5 门户接口+ranking TECH 分支按产业切片（挂链现算），空参全量兼容；新增 tests/test_svc_portal_chain_slice.py；22 项相关 pytest 绿；commit 3b140d9+merge 5b18afe 已推 origin/dev。联调确认：待孔东在 dev 环境门户页切换产业验证 KPI 变化。
     collaborators:
       - "human:孔东"
     touched_files:
@@ -65838,4 +65844,4 @@ tasks:
       - "tests/ 新增或扩展 pytest：industry 传参与不传参返回不同数据、非法码诚实空、无挂链机构产业返回空不回退全量；全量 pytest 绿"
       - "handoff 写入 agent-delivery/agent-handoffs/，含改前/改后接口行为对照、与 ranking_list 范式的一致性说明、验证证据（测试输出）；cost 四字段回填"
       - "架构合规：调用链不变（前端→Java→lumen-topic-py），不写 ODS/DWD，只读 ADS+DWD 挂链表；commit 带 [agent:api-agent]"
-    update_time: "2026-11-14T11:43:45+08:00"
+    update_time: "2026-11-14T12:33:21+08:00"
