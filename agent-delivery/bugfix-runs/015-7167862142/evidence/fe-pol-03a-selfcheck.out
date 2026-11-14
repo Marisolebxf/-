@@ -1,0 +1,60 @@
+1) 文件清单
+  ✓ simulation 文件齐全（含算法说明卡 AlgoNote）
+2) PageTabFrame 语义（policyWorkbenchTabs 断言移植）
+  ✓ index.vue 使用 PageTabFrame
+  ✓ estimate/EstimateWorkbench.vue 使用 PageTabFrame
+  ✓ interpret/InterpretWorkbench.vue 使用 PageTabFrame
+3) 主页面 wiring
+  ✓ 2 主 Tab（estimate/interpret）
+  ✓ 页头不留 KPI（A1 不留 + B1 布局建议出推演页 + C1 利益攸关仅子页）
+  ✓ 得分两卡落在多维评估子页（点运行评估后才出；含真轨血缘）
+  ✓ 利益攸关条数只在利益攸关方子页
+  ✓ 双 Tab v-if 挂载切换
+  ✓ 观测埋点（usePolicyTrack）
+4) EstimateWorkbench 语义
+  ✓ 五子 Tab（unreleased/new/regional/multi/stakeholder）
+  ✓ T43 闸门（hasHistoryData/textParsed/hasSimilarEffects/dimsEvalDone；评审门控）
+  ✓ dimsEvalDone 上抛（emit watch immediate）
+  ✓ 仿真规则估算冻结（100/0.2 · 0.9/200 · 55/150/0.25 · min 99）
+  ✓ 政策类型因子表冻结（5 类 1.08/1.04/1.06/1.03/1.01）
+  ✓ 产业影响图随新出台政策 Select 缩放（scaleIndustryItems）
+  ✓ 区域 KPI 命中规则（name.includes 地名片）
+  ✓ 多次模拟对比（saveRun · slice(0,8) · 重置）
+  ✓ 目标产业 IndustrySelect 常显（未出台 + 区域；不对 USE_MOCK 门控）
+  ✓ 未出台/区域空间/新出台/多维：参数变化不自动请求，点运行按钮才拉取（2026-11-10 用户裁定）
+  ✓ 利益攸关方政策选择 + 运行评估按钮（与多维同口径）
+  ✓ 多维评估政策选择条（任务1）：liveMultiPolicyId 选择 + 评估对象文案 + 未选置灰运行按钮
+  ✓ 评审模式算法说明（任务2）：AlgoNote 挂 estimate 五子页签
+  ✓ 利益攸关四项识别（STAKEHOLDER_AUDIT_SEED 四行）
+  ✓ D2 决策：无 L2 权限锁（模板区无 BTN_DS_SIMULATE / 级别锁逻辑）
+  ✓ 图表容器显式高度（ps-chart--* 定高类）
+5) InterpretWorkbench 语义
+  ✓ 六子 Tab（parse/focus/impact/relation/path/report）
+  ✓ T44 闸门（parsed/hasFocus/vizDone/hasEstimate/impactDone/graphOk/relationDone/historyOk/pathDone/reportDone）
+  ✓ 文本选择三态（未选/未解析/结构化结果）
+  ✓ parse/focus/impact/path：选政策不自动请求，点按钮才拉取；report 有行进签只读表（242 ASYNC）
+  ✓ onTextChange 清空时联动降级（relationDone/pathDone/reportDone → false）
+  ✓ 导图点击节点查看说明（focusNode + chart click）
+  ✓ 节点详细说明只显被点节点（2603/7168001942）：live 轨详情卡禁 liveRows 全量渲染
+  ✓ 覆盖面 ≠ 渗透指数（coverage.note 分列语义保留）
+  ✓ 历史对照 → 预测流程（history/forecast 双 Timeline mode=left）
+  ✓ 241-8 关键节点说明显式区块（7167862142）：live 流程图卡内逐环节卡，字段四件齐
+  ✓ 章节自定义 + 4 格式（word/pdf/markdown/plain）
+  ✓ 报告生成闸门：mock 仍 parsed+hasEstimate；live 去硬门控（卡3=A）
+6) sharedCharts 图表族
+  ✓ 13 图表 option 工厂齐全
+  ✓ NEW_POLICY_OPTIONS 冻结（ai/talent/park · scale 1/0.86/0.92）
+  ✓ 区域空间图：省域热力聚合（province 平均）+ 城市柱高叠加
+  ✓ 深圳区县图：柱高 10×max12（demo 冻结取值）
+  ✓ 关联图谱：ECharts force 非 Nebula（repulsion 180 / edgeLength 90）
+  ✓ 导图：tree LR + initialTreeDepth 2 + 点击回调在组件层
+  ✓ ECharts 按需注册 TreeChart（导图 series）
+  ✓ 全走仓内 VChart 消费（无 echarts.init / 无 new echarts）
+7) interpretExport
+  ✓ 四格式分支（md+txt 本地下载 / word+pdf 走 situation/report）
+  ✓ 复用 panorama 导出封装（stamp + exportPolicyReport）
+8) D9 与评审层
+  ✓ 双工作台均挂 MockBadge + 评审门控 useReviewStore
+  ✓ 样式整块抽取自 demo（styles/demo-policy-simulation.css）
+
+FE-POL-03A 自检全绿（50 项：文件清单 / PageTabFrame / 主页面 wiring / Estimate 语义 / Interpret 语义 / 图表族 / 导出 / D9 评审层）
