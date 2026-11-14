@@ -18,7 +18,7 @@
 | 223 热点问题分析看板 | 政策分析评价 · 结果解读 | 不填筛选项，看短板条数 | 打开看板即 GET counts | GET /display/v1/policy/evaluation/counts | 无查询参数 | 有 `region_gap` 行时 `records` 至少 1 行，含 scopeCode、scopeName、shortboardCnt，shortboardCnt 为正整数，与表内一致，响应不含机遇字段。无行则空，不得返回 0，不返回 501。焦点指数 `POST jobs` body `{"sub_type":"policy_focus_ads"}` 会先跑 focus.run 并改写 `policy_id` 非空行，测试用例未给出具体分数，循环不重放 | 可演 |
 | 224 分主题分指标互动解读 | 政策分析评价 · 结果解读 | 不另填。与 225 同一次 GET。卡片默认第一个专题，角度停在深度理解 | 打开解读即 GET shells。切换角度不重新请求 | GET /display/v1/policy/evaluation/shells | 无查询参数 | 解读 4 条：研发费用加计扣除、科技型中小企业培育、高新技术企业认定、科技创新成果科普传播。同一时间只打开一个角度：深度理解、精准解读、多角度复盘。四个主题都有深度理解正文、结论（句末没有「缺项演示」，结论句为高亮），以及实施进度、惠及对象、后续安排三句。缺句时界面写「暂无该角度的解读」，真轨不得用演示种子填上。应用建议仍在行上，不是复盘正文。这张卡不出现指标行和进度条。shells 空列表仍判不通过 | 可演 |
 | 225 多媒体辅助解读 | 政策分析评价 · 结果解读 | 与 226 共用政策下拉。打开时先不选 | 打开解读即 GET shells。选政策不重新请求 | GET /display/v1/policy/evaluation/shells | 无查询参数 | 未选时界面只写「请先选择政策」。多媒体行带 `policy_id`：研发费用加计扣除政策图解、科技型中小企业政策宣讲实录、高新技术企业认定要点速览这三条里，标题对得上已有摘要政策的才有值。选中一条后只显示 `policy_id` 相同的标题和一句说明。没有匹配则写「这条政策还没有多媒体解读」。不出现视频文件，不出现库表名 | 可演 |
-| 226 智能摘要与结论推送 | 政策分析评价 · 结果解读 | 与 225 共用政策下拉。已选一条政策 | 点【智能摘要】；或【重新发起】；或【推送管理层】 | POST /display/v1/policy/evaluation/intelligent-summary | {"policyId":"<已选>","force":false}；重算时 force=true | 只 toast 成败，**不出**政策名单表。成功后可见图 1 三区块（结论/政策摘要、高亮关键点、应用建议）可编辑。同政策再次 force=false 应命中缓存（cached 或同等）。force=true 后文案可更新。推送进站内队列；勾选邮件时提示仅文案未外发。界面不出现库表名 / parse.run。跑前后 `ads.policy_text_parse` 行数不变 | 待 D 后可演 |
+| 226 智能摘要与结论推送 | 政策分析评价 · 结果解读 | 与 225 共用政策下拉。已选一条政策 | 点【智能摘要】；或【重新发起】；或【推送管理层】 | POST /display/v1/policy/evaluation/intelligent-summary | {"policyId":"<已选>","force":false}；重算时 force=true | 只 toast 成败，**不出**政策名单表。成功后可见图 1 三区块（结论/政策摘要、高亮关键点、应用建议）可编辑。同政策再次 force=false 应命中缓存（cached 或同等）。force=true 后文案可更新。推送进站内队列；勾选邮件时提示仅文案未外发。界面不出现库表名 / parse.run。跑前后 `ads.policy_text_parse` 行数不变 | 可演 |
 
 ## 一条主路径
 
@@ -26,7 +26,7 @@
 
 1. 序号 223：`GET /display/v1/policy/evaluation/counts`。有 region_gap 行时至少 1 行且 shortboardCnt 为正整数。不重放会改表的焦点 jobs。
 2. 序号 224 与 225：同一次 `GET /display/v1/policy/evaluation/shells`。应看到解读 4 条。224 还要在卡片上看到三个角度名称，四个主题都有对应正文，且一次只打开一个角度。结论句为高亮。这张卡不出现指标行和进度条。225 未选时只写「请先选择政策」；选中一条已有摘要的政策后，只显示挂到这一条的多媒体标题和一句说明。空列表仍判不通过。
-3. 序号 226：已选政策后 `POST .../intelligent-summary`（`force=false`）。成功见三区块且无名单表；再请求应走缓存；`force=true` 可更新。推送进队列。`ads.policy_text_parse` 行数不变。界面不出现库表名。D 未合前本行标「待 D 后可演」。
+3. 序号 226：已选政策后 `POST .../intelligent-summary`（`force=false`）。成功见三区块且无名单表；再请求应走缓存；`force=true` 可更新。推送进队列。`ads.policy_text_parse` 行数不变。界面不出现库表名。
 
 ## 调度核对
 
