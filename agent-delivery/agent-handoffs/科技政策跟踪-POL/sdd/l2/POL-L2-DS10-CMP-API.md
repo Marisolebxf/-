@@ -167,7 +167,7 @@ D4 仍是 mock。本分册不改 D4，不把 `GDF-POLICY-MOCK-GATE-L01` 写成�
 
 | 步 | 谁 | 做什么 |
 |---|---|---|
-| 1 | FE | 用当次 GET 行拼完整 HTML（无 print 脚本）；`reportType=policy-panorama-benchmark`；`conditionKey`=对标对象×字段指纹 + 模板版 |
+| 1 | FE | 用当次页面拼完整 HTML（无 print 脚本）。顺序：第一节「对标分析结果」（当次结果图 + 当次数据表），再写 GET 行的政策差异分析、优势劣势对比、借鉴建议。`reportType=policy-panorama-benchmark`；`conditionKey`=对标对象×字段×图种×是否有图的指纹 + 模板版。不新开 URL |
 | 2 | display BFF | 转发 topic-async SituationReport；PDF→OpenHTMLtoPDF；html→UTF-8 字节；OSS/`gkx-lumen` 或 local 指针；downloadUrl 收敛到 display 代理 |
 | 3 | FE | PDF：下载 `.pdf` 真字节。Word：请求 `format=html`，下载后以 `.doc`（HTML Word）落盘（域服务仅 html\|pdf） |
 
