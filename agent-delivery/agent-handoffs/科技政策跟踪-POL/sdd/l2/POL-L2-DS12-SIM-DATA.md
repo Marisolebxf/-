@@ -54,7 +54,7 @@
 | `多维评估` | 235 | 一个维度：维度名、得分、一句说明。维度只用经济、社会、环境、创新 |
 | `重点` | 238 | 一个重点项：所属政策、组别、标题、一句明细。组别只用政策目标、支持领域、实施路径、资金安排 |
 | `影响范围` | 239 | 一个影响对象：所属政策、类别、名称、一句说明、时间变化、区域维度原文；另有覆盖率三字段与渗透指数。类别只用受益对象、影响区域、影响行业 |
-| `路径环节` | 241 | 一个环节：所属政策、环节、时间安排、责任主体、一句说明。环节只用政策发布、申报受理、评审评估、资金拨付、效果评估 |
+| `路径环节` | 241 | 一个环节：所属政策、环节、时间安排、责任主体、一句说明。历史灌数行环节只用政策发布、申报受理、评审评估、资金拨付、效果评估；真算行（LLM）环节名放开 |
 | `解读段落` | 242 | 一个段落：所属政策、段落、正文。段落只用政策背景、主要内容、预期效果、实施建议。正文是文字，不是文件路径 |
 
 没有第六个值。`参与意见` 不写入本表。
@@ -81,7 +81,7 @@
 | `eligible_count` | int | 是 | 影响范围行可用：应覆盖主体数。与 `coverage_rate` 同挂受益对象行；其余行空 |
 | `covered_count` | int | 是 | 影响范围行可用：已覆盖主体数。与 `coverage_rate` 同挂受益对象行；其余行空 |
 | `penetration_score` | decimal(8,2) | 是 | 影响范围行可用：渗透指数 0–100。影响区域、影响行业行宜填；受益对象行可空 |
-| `stage_name` | varchar(16) | 是 | 路径环节行必填：`政策发布`、`申报受理`、`评审评估`、`资金拨付`、`效果评估` 五者之一。同一政策、同一环节只一行。其余行空 |
+| `stage_name` | varchar(16) | 是 | 路径环节行必填：环节名。历史灌数行是 `政策发布`、`申报受理`、`评审评估`、`资金拨付`、`效果评估` 五者之一；**真算行（2026-11-14 `policy_sim_path`）由 LLM 生成，不再限五环节闭集**（归一化 ≤16 字）。同一政策、同一环节只一行。其余行空 |
 | `schedule_text` | varchar(256) | 是 | 路径环节行必填：时间安排，展示原文。其余行空 |
 | `owner_name` | varchar(256) | 是 | 路径环节行必填：责任主体。其余行空 |
 | `stage_text` | text | 是 | 路径环节行必填：一句说明。其余行空 |
@@ -104,7 +104,7 @@
 | `路径环节` | `241 政策实施路径预测` |
 | `解读段落` | `242 政策解读报告生成` |
 
-`fill_method` 固定 `manual`，因此不设 `fill_model`。政策只在方法为 `llm` 时要求模型名。
+`fill_method` 固定 `manual`，因此不设 `fill_model`。政策只在方法为 `llm` 时要求模型名。**例外（2026-11-12/13/14）**：真算 upsert 行（`policy_text_parse_run` / `policy_sim_focus` / `policy_sim_interpret` / `policy_sim_path`）写 `fill_method=llm`，`gapfill_batch_id` 见 API 分册 §3.2 / §4.2 / §8.2 / §7.2；灌数单行仍固定 `manual`。
 
 D16 行级列是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at`。外加 `is_mock=1`，避免把缺项行读成已上线。谁写这张表：灌数单里的 Python 脚本。Java 与前端不建表、不灌数。谁读：仅功能验收链路上的 `gkxlumen-element`。生产配置不读 `gkxlumenx_gapfill`。本叶不把读到的行写入 ADS，因此不产生 `gapfill_` 前缀的 `calc_batch_id`。
 
@@ -157,6 +157,8 @@ D16 行级列是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`�
 `metric_id` 留空。不挂 `M_POLICY_LAYOUT_REC_COUNT`，不挂 `M_POLICY_DS_11_POLICY_EVAL_015`。不把评价页 229 的路径与风险行抄进本种类。
 
 `jobs` 的路径预测按 `policy_id` 拣 `row_kind=路径环节`。政策必选。无行则该区空。不在接口里编时间表。
+
+**真算写回（2026-11-14 · 同构 242）**：`policy_sim_path` 经 `evaluation/jobs` → `/internal/policy/jobs/execute` → `polan.sim_path_job`，读 DWD 标题/摘要/正文，LLM 生成 3～6 环节（坏词拒收、归一化截断），单政策 upsert（仅该 `policy_id` DELETE+INSERT，≥3 环节才写库，禁整表清空），行元数据 `fill_method=llm`、`gapfill_batch_id=POL-L2-DS12-SIM-241-ASYNC`。`is_mock=1`（本波不伪改绿）、`metric_id` 留空。无密钥/`generated=0` 不 DELETE、不造假行。细节以 API 分册 §7.2 为准。
 
 ## 7. 242 解读正文
 
