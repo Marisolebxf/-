@@ -1,0 +1,526 @@
+{
+  "schema_version": 2,
+  "run_id": "2367-7165881104",
+  "current_cycle_id": "cycle-001-20261114T160809+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261114T160809+0800",
+      "seq": 1,
+      "started_at": "2026-11-14T16:08:09.229+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2367",
+    "work_item_id": "7165881104",
+    "title": "科创政策全景-政策来源选地方政策时查询的是全部来源",
+    "owner": "human:淮政玮",
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "c92e5cce-2367",
+    "claim_comment_ref": "7707934406962351395",
+    "claim_operator": "human:淮政玮",
+    "claimed_at": "2026-11-14T16:08:09.433+08:00",
+    "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+    "machine_id": "hzw-win",
+    "current_owner": "human:淮政玮",
+    "takeover_history": [
+      {
+        "from_claim_id": "20261111-2367",
+        "to_claim_id": "c92e5cce-2367",
+        "from_session_id": "20261111-claim",
+        "from_machine_id": "hzw-win",
+        "from_claim_comment_ref": "7706914738357292326",
+        "to_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+        "to_machine_id": "hzw-win",
+        "to_claim_comment_ref": "7707934406962351395",
+        "to_claim_operator": "human:淮政玮",
+        "reason": "原认领没有本地运行账，地方条件仍未改完",
+        "at": "2026-11-14T16:08:09.433+08:00"
+      }
+    ]
+  },
+  "phase": "RESOLVED",
+  "risk": {
+    "level": "S",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "innov_py",
+      "repo_name": "lumen-algo-py",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py.git",
+      "base_branch": "dev",
+      "base_sha": "294f19b9e67640f8b8beefffb8562254d42e6f83",
+      "candidate_sha": "c16748a5ad3a579f69ae86ed963ec8b6d7c5be4b",
+      "planned_change_scope": [
+        "vendor/entan-py/polan/search.py",
+        "tests/test_policy_search_filter.py"
+      ],
+      "role": null,
+      "depends_on": [],
+      "ship_order": null
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "科创政策全景把政策来源选成地方政策时，结果几乎等于全部来源。",
+    "reproduction": [
+      "打开科创政策全景政策检索",
+      "政策来源选地方政策",
+      "命中数接近未筛选的全量"
+    ],
+    "root_cause": "scope=local 的条件是层级白名单或省/市/区任一非空。国内政策几乎都有行政区，所以地方政策约 20235 条，全量约 20270 条。",
+    "counter_evidence": [
+      "scope=national 只等于 rank=国家级",
+      "现有测试 test_scope_local_whitelist_and_admin_columns 锁住了行政区非空这段 OR"
+    ],
+    "requirement_refs": [
+      "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS10-QRY-FE-DISP-L01-验收用例.md#检索条件条下拉变化后触发 search"
+    ],
+    "impact_scope": [
+      "lumen-algo-py polan.search.scope_clause 的 local 分支",
+      "科创政策全景政策来源=地方政策"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "scope=local 只保留 rank 属于省级、市级、区县级、区级，去掉省/市/区非空的 OR"
+    ],
+    "non_goals": [
+      "不改国家政策和海外政策的条件",
+      "不改适用地区的行政区匹配",
+      "不改前端文案"
+    ],
+    "verification_plan": [
+      "test_scope_local_whitelist_and_admin_columns 改为断言地方条件不含 province/city/district",
+      "相邻的 national/overseas/all 测试仍通过"
+    ],
+    "rollback_plan": [
+      "在 lumen-algo-py revert 本次 local 条件提交"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "innov_py",
+        "base_sha": "294f19b9e67640f8b8beefffb8562254d42e6f83",
+        "candidate_sha": "c16748a5ad3a579f69ae86ed963ec8b6d7c5be4b",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py",
+        "changed_files": [
+          "tests/test_policy_search_filter.py",
+          "vendor/entan-py/polan/search.py"
+        ],
+        "diff_hash": "sha256:ff2fb81a32428b5176b38fde4cf18802b3702e9b52f1b603bc97b3c4b75b3b7b",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T16:13:25.288+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "innov_py",
+        "reviewer": "agent:algorithm-agent",
+        "independent": false,
+        "reviewed_sha": "c16748a5ad3a579f69ae86ed963ec8b6d7c5be4b",
+        "verdict": "PASS",
+        "scope": "scope=local 只保留省级/市级/区县级/区级，测试不再要求省市区非空",
+        "findings": [],
+        "round": 1,
+        "review_hash": "sha256:18988b0c9d47cd74ab6cbe2f254ca6eb09d1af4eb37e82f50d242d822190626a"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "fix-local-rank",
+      "category": "fix",
+      "behavior": "地方政策的 SQL 只按省级、市级、区县级、区级过滤，不再使用省市区非空",
+      "result": "PASS",
+      "repo_ids": [
+        "innov_py"
+      ],
+      "evidence_refs": [
+        "ev-pytest-scope"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "regression-other-scopes",
+      "category": "regression",
+      "behavior": "国家政策、海外政策和全部来源的检索条件测试仍然通过",
+      "result": "PASS",
+      "repo_ids": [
+        "innov_py"
+      ],
+      "evidence_refs": [
+        "ev-pytest-scope"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T16:12:42.791+08:00",
+      "approved_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "approved_machine_id": "hzw-win",
+      "claim_id": "c92e5cce-2367",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "innov_py",
+            "repo_name": "lumen-algo-py",
+            "base_sha": "294f19b9e67640f8b8beefffb8562254d42e6f83",
+            "candidate_sha": null,
+            "planned_change_scope": [
+              "vendor/entan-py/polan/search.py",
+              "tests/test_policy_search_filter.py"
+            ]
+          }
+        ],
+        "diagnosis_hash": "sha256:abbe3fff3e54916e2d70096432f0ca2f442e38cb6fedefb3deba68ab89c4fdb5",
+        "plan_hash": "sha256:f3494b88cd51c4b33074776e432a2b1be90336c36746aed6686107b42a375326",
+        "risk_level": "S",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:4525f28766ef1e3545bec04ec4cfa66974484060d3ec14985fe840b0defa5568",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T16:12:42.987+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:4525f28766ef1e3545bec04ec4cfa66974484060d3ec14985fe840b0defa5568",
+        "expected": "sha256:4525f28766ef1e3545bec04ec4cfa66974484060d3ec14985fe840b0defa5568",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T16:20:38.017+08:00",
+      "approved_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "approved_machine_id": "hzw-win",
+      "claim_id": "c92e5cce-2367",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "innov_py",
+            "candidate_sha": "c16748a5ad3a579f69ae86ed963ec8b6d7c5be4b",
+            "diff_hash": "sha256:ff2fb81a32428b5176b38fde4cf18802b3702e9b52f1b603bc97b3c4b75b3b7b",
+            "verification_hash": "sha256:600aa4b3369f2de687dec4a9ba86bd92305c488de0d26428068485ccad4f95ab",
+            "review_hash": "sha256:18988b0c9d47cd74ab6cbe2f254ca6eb09d1af4eb37e82f50d242d822190626a",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "S",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:02067eaac39d5b48ae642aaee91ca1ae8a53291edc4fa4432eb0769eda69b6d6",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T16:20:38.222+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:02067eaac39d5b48ae642aaee91ca1ae8a53291edc4fa4432eb0769eda69b6d6",
+        "expected": "sha256:02067eaac39d5b48ae642aaee91ca1ae8a53291edc4fa4432eb0769eda69b6d6",
+        "errors": []
+      }
+    },
+    "acceptance": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "验收通过",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T16:44:39.174+08:00",
+      "approved_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "approved_machine_id": "hzw-win",
+      "claim_id": "c92e5cce-2367",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "work_item_id": "7165881104",
+        "claim_id": "c92e5cce-2367",
+        "ship_gate_hash": "sha256:02067eaac39d5b48ae642aaee91ca1ae8a53291edc4fa4432eb0769eda69b6d6",
+        "dev_verification_result": "PASS",
+        "evidence_manifest_hash": "sha256:3fe1d06a16d0f6c329bd8d4351a7b9f197ee15e8a42e6fbd5931dafad925e3f2",
+        "current_status": "IN PROGRESS"
+      },
+      "gate_hash": "sha256:1fb9ccf8aa63548af056a6290771e4c2192aba761fa0b2067152de582eab7aba",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T16:44:51.306+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:1fb9ccf8aa63548af056a6290771e4c2192aba761fa0b2067152de582eab7aba",
+        "expected": "sha256:1fb9ccf8aa63548af056a6290771e4c2192aba761fa0b2067152de582eab7aba",
+        "errors": []
+      }
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "innov_py",
+        "candidate_sha": "c16748a5ad3a579f69ae86ed963ec8b6d7c5be4b",
+        "merge_request_id": "direct-push",
+        "merge_commit_sha": "c16748a5ad3a579f69ae86ed963ec8b6d7c5be4b",
+        "pipeline_id": "5398",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/5398",
+        "deployed_sha": "c16748a5ad3a579f69ae86ed963ec8b6d7c5be4b",
+        "rollout_status": "success",
+        "image_tag": null,
+        "role": null,
+        "depends_on": [],
+        "ship_order": null
+      }
+    ],
+    "acceptance_steps": [
+      "打开科创政策全景，政策来源选地方政策，命中数应明显少于全部来源"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "ev-pytest-scope",
+        "ev-pipeline-5398"
+      ]
+    },
+    "summary": "地方政策只按省级/市级/区县级/区级过滤。c16748a 已推 origin/dev。流水线 5398 的测试、镜像和 deploy:entan-api 成功；GitLab 总状态为 manual，因为 deploy:entan-worker 是手动作业且未触发。"
+  },
+  "acceptance": {
+    "status": "approved",
+    "mode": "chat_exact",
+    "current_status": "RESOLVED",
+    "operator_verified": false,
+    "evidence_ref": "evidence/manifest.json#ev-pytest-scope",
+    "evidence_kind": "command",
+    "observed_at": "2026-11-14T16:44:46+08:00",
+    "approval_ref": "20261114164446D18049B7C802ABF68CC7",
+    "work_item_status": "RESOLVED",
+    "approval_message": "验收通过",
+    "approved_at": "2026-11-14T16:44:39.174+08:00",
+    "approval_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+    "approval_machine_id": "hzw-win",
+    "gate_hash": "sha256:1fb9ccf8aa63548af056a6290771e4c2192aba761fa0b2067152de582eab7aba"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-14T16:08:10.027+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-14T16:08:10.238+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-14T16:12:42.987+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:4525f28766ef1e3545bec04ec4cfa66974484060d3ec14985fe840b0defa5568",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-14T16:20:01.495+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-14T16:20:01.834+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-14T16:20:30.580+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-14T16:20:38.223+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": "ship",
+      "gate_hash": "sha256:02067eaac39d5b48ae642aaee91ca1ae8a53291edc4fa4432eb0769eda69b6d6",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-14T16:27:44.758+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-14T16:27:44.759+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "AWAITING_ACCEPTANCE",
+      "to": "RESOLVED",
+      "at": "2026-11-14T16:44:51.306+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2367",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": "acceptance",
+      "gate_hash": "sha256:1fb9ccf8aa63548af056a6290771e4c2192aba761fa0b2067152de582eab7aba",
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-14T16:44:51.301+08:00",
+      "manifest_hash": "sha256:3fe1d06a16d0f6c329bd8d4351a7b9f197ee15e8a42e6fbd5931dafad925e3f2",
+      "item_count": 2,
+      "evidence_ids": [
+        "ev-pytest-scope",
+        "ev-pipeline-5398"
+      ],
+      "evidence_results": {
+        "ev-pytest-scope": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-pipeline-5398": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "无需动作，缺陷已验收。"
+  },
+  "updated_at": "2026-11-14T16:44:51.306+08:00"
+}

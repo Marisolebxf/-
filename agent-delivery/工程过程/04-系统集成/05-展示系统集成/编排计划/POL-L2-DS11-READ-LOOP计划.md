@@ -6,7 +6,7 @@
 - 监管人：`human:淮政玮`
 - 日期：2026-11-07
 
-- 状态：2026-11-08 首轮。探测 200。样本满足：否（停止：继续）。223 counts 通过；224/225 BUG-01 空列表不改判通过；226 返回新建任务载荷而非只含 summary（行为缺口，重放触发了线上任务 POLICY-20261108-006，已如实记录）。QUERY 缺口挂 `POL-L2-DS11-BE-L01`（在办，不新建单）。验收单 `POL-L2-DS11-READ-DEMO-ACCEPT-LOOP` = `ready`。handoff：`agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-DEMO-ACCEPT-LOOP.md`
+- 状态：2026-11-14（226-FDE 波次 E · token 换新后）。探测 200。样本满足：是。停止：通过。223 counts 31 行；224/225 shells 7 行；226 `POST intelligent-summary`（policyId=18354678）force=false 生成、二次命中缓存、force=true 更新；jobs `policy_text_parse` 条数前后均为 3、无 taskId。无子任务。验收单 `POL-L2-DS11-READ-226-FDE-DEMO-ACCEPT` = **done**（human:淮政玮 签收）。旧 `DEMO-ACCEPT-LOOP` 仍历史 done。handoff：`agent-handoffs/科技政策跟踪-POL/POL-L2-DS11-READ-226-FDE-DEMO-ACCEPT.md`。简报：`sdd/简报/2026-11-14-226-FDE-E-简报.md`
 
 ## 1. 要证明什么
 

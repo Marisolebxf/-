@@ -1,13 +1,21 @@
 {
   "schema_version": 2,
   "run_id": "009-7167234520",
-  "current_cycle_id": "cycle-001-20261112T201150+0800",
-  "cycle_seq": 1,
+  "current_cycle_id": "cycle-002-20261114T130603+0800",
+  "cycle_seq": 2,
   "cycles": [
     {
       "cycle_id": "cycle-001-20261112T201150+0800",
       "seq": 1,
       "started_at": "2026-11-12T20:11:50.514+08:00",
+      "closed_at": "2026-11-14T13:06:03.836+08:00",
+      "close_reason": "接管【2474】后重开：上一轮提测只改了 Mock 弦线，真轨仍是关系图，传导路径在子图已加载时仍空。",
+      "state_ref": "cycles/cycle-001-20261112T201150+0800/state.json"
+    },
+    {
+      "cycle_id": "cycle-002-20261114T130603+0800",
+      "seq": 2,
+      "started_at": "2026-11-14T13:06:03.836+08:00",
       "closed_at": null,
       "close_reason": null,
       "state_ref": null
@@ -23,16 +31,30 @@
     "task_registry_id": null
   },
   "ownership": {
-    "claim_id": "agent-claim-20261112-2007-009",
-    "claim_comment_ref": "log_id:202611122008179928138793D092004FBA",
-    "claim_operator": "agent:coordinator-agent",
-    "claimed_at": "2026-11-12T20:11:50.514+08:00",
-    "session_id": "cursor-20261112-2007-batch-a",
+    "claim_id": "agent-claim-20261114-1303-2474",
+    "claim_comment_ref": "7707883796808371463",
+    "claim_operator": "human:淮政玮",
+    "claimed_at": "2026-11-14T13:05:34.589+08:00",
+    "session_id": "cursor-20261114-1303-2474",
     "machine_id": "redfo-win",
-    "current_owner": "current_user",
-    "takeover_history": []
+    "current_owner": "human:淮政玮",
+    "takeover_history": [
+      {
+        "from_claim_id": "agent-claim-20261112-2007-009",
+        "to_claim_id": "agent-claim-20261114-1303-2474",
+        "from_session_id": "cursor-20261112-2007-batch-a",
+        "from_machine_id": "redfo-win",
+        "from_claim_comment_ref": "log_id:202611122008179928138793D092004FBA",
+        "to_session_id": "cursor-20261114-1303-2474",
+        "to_machine_id": "redfo-win",
+        "to_claim_comment_ref": "7707883796808371463",
+        "to_claim_operator": "human:淮政玮",
+        "reason": "监管人原话是接管【2474】。飞书自增号 2474 与台账批次号 009 是同一工作项 7167234520。上一轮待验收未覆盖真轨弦线图。",
+        "at": "2026-11-14T13:05:34.589+08:00"
+      }
+    ]
   },
-  "phase": "AWAITING_ACCEPTANCE",
+  "phase": "SHIPPING",
   "risk": {
     "level": "M",
     "reasons": [],
@@ -44,13 +66,11 @@
       "repo_name": "lumen-ui-science-pc",
       "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
       "base_branch": "dev",
-      "base_sha": "56bfafe9afc3a6f5113b3fd1401d36fb0882e793",
-      "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
+      "base_sha": "8becc2054767fe01cb37e604cb986a021cbbbc30",
+      "candidate_sha": "2ebeae8732d1daad8926d0c6a03fa2ae36402030",
       "planned_change_scope": [
-        "src/views/policy/analysis/StructureLinkPanel.selfcheck.mjs",
         "src/views/policy/analysis/StructureLinkPanel.vue",
-        "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.selfcheck.mjs",
-        "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.vue"
+        "src/views/policy/analysis/StructureLinkPanel.selfcheck.mjs"
       ],
       "role": "primary",
       "depends_on": [],
@@ -68,35 +88,46 @@
     }
   },
   "diagnosis": {
-    "symptom": "政策分析评价弦线图实际呈现为关系图（ECharts type:graph circular layout），非弦图形态",
+    "symptom": "真轨（USE_MOCK=false）点「分析关联」后，弦线图和关系网都走 buildForceOption，系列仍是 graph；传导路径页签不读这次子图，固定空态。Mock 轨弦线已是 chord，演示路径仍只在 Mock 出现。",
     "reproduction": [
-      "按飞书工单描述与截图复现（_triage-20261112/7167234520-1.png）"
+      "打开政策分析评价多维结构关联图，USE_MOCK=false",
+      "选一条政策并点分析关联",
+      "切到弦线图：图表仍是关系网（type graph）",
+      "切到传导路径：文案为效果传导链路无读面出处，即使子图已有边"
     ],
-    "root_cause": "StructureLinkPanel.vue 图表 option 用 graph 系列顶替弦图呈现",
-    "counter_evidence": [],
+    "root_cause": "上一轮只改了 Mock 的 buildChordOption。真轨 liveOption 固定调用 buildForceOption。路径列表条件是 USE_MOCK && props.paths，真轨不消费已加载的 live links。",
+    "counter_evidence": [
+      "已签 POL-L2-DS11-VIZ-API §5：221 不新开资源，传导路径没有单独数据来源，子图读不到则路径也空",
+      "2026-11-12 裁定：不用演示路径充当真轨"
+    ],
     "requirement_refs": [
-      "feishu:6a687a81e231818dec771f9a#7167234520 描述（报告人黄敬洲 2026-11-12 18:39）",
-      "gkx-orchestration/agent-delivery/bugfix-runs/_triage-20261112/triage-report.md#A组-009"
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技政策跟踪/政策分析评价.md#221/智能服务集群/科技信息展示系统/科技政策跟踪/政策分析评价/政策分析报告可视化呈现/多维结构关联图",
+      "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/l2/POL-L2-DS11-VIZ-API.md#5"
     ],
     "impact_scope": [
-      "弦线图图表类型呈现（echarts 仓内能力内实现，不新增依赖）"
+      "lumen-ui-science-pc src/views/policy/analysis/StructureLinkPanel.vue 真轨弦线与传导路径",
+      "同文件自检 StructureLinkPanel.selfcheck.mjs"
     ]
   },
   "plan": {
     "change_scope": [
-      "src/views/policy/analysis/StructureLinkPanel.vue"
+      "src/views/policy/analysis/StructureLinkPanel.vue",
+      "src/views/policy/analysis/StructureLinkPanel.selfcheck.mjs"
     ],
     "non_goals": [
-      "效果传导路径无数据属数据侧缺口，本单不修（保留诚实空态）",
-      "不新增 npm 依赖"
+      "不新开 /display/v1/policy 资源，不建缺项表，不灌演示路径",
+      "真轨不用 effectTransmissionPaths",
+      "关系网模式保持 graph",
+      "不改当前工作区里与本单无关的未提交文件"
     ],
     "verification_plan": [
-      "node 自检脚本断言 option 不再输出 type:graph（输出选定目标类型）",
-      "合并前 vue-tsc 全量类型门",
-      "提测后 dev 页面图表人工抽验"
+      "自检：真轨弦线 option 的 series.type 为 chord，且不是 graph",
+      "自检：子图无边时传导路径为空；有边时路径只来自这些边，点击后高亮对应节点",
+      "自检：Mock 弦线仍是 chord，Mock 路径仍用种子",
+      "pnpm type-check"
     ],
     "rollback_plan": [
-      "git revert 候选 commit 后随下一波 dev 合并回滚；部署回滚走 CI 重发上一 green SHA"
+      "git revert 本单候选 commit，再随下一版 dev 部署回上一绿 SHA"
     ],
     "data_access": false
   },
@@ -104,19 +135,17 @@
     "repos": [
       {
         "repo_id": "ui_pc",
-        "base_sha": "56bfafe9afc3a6f5113b3fd1401d36fb0882e793",
-        "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
+        "base_sha": "8becc2054767fe01cb37e604cb986a021cbbbc30",
+        "candidate_sha": "2ebeae8732d1daad8926d0c6a03fa2ae36402030",
         "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
         "changed_files": [
           "src/views/policy/analysis/StructureLinkPanel.selfcheck.mjs",
-          "src/views/policy/analysis/StructureLinkPanel.vue",
-          "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.selfcheck.mjs",
-          "src/views/policy/analysis/interpret/HotIssueDiagnosisBoard.vue"
+          "src/views/policy/analysis/StructureLinkPanel.vue"
         ],
-        "diff_hash": "sha256:4cdad609651537f629dba1f94661ce3a87708d37830338084434c2c2df90a4ab",
+        "diff_hash": "sha256:4f1cc6db3bcebe72050eb01b262cdd70cc5bc99eff3ec41b35bea556fcba54df",
         "git_verified": true,
         "verification_source": "git",
-        "verified_at": "2026-11-12T22:58:12.176+08:00"
+        "verified_at": "2026-11-14T13:17:21.525+08:00"
       }
     ]
   },
@@ -124,14 +153,14 @@
     "repos": [
       {
         "repo_id": "ui_pc",
-        "reviewer": "agent:frontend-agent(独立复核)",
-        "reviewed_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
-        "verdict": "PASS",
-        "scope": "frontend",
+        "reviewer": "agent:review-fbf71787",
         "independent": true,
+        "reviewed_sha": "2ebeae8732d1daad8926d0c6a03fa2ae36402030",
+        "verdict": "PASS",
+        "scope": "StructureLinkPanel.vue 真轨弦线与传导路径；自检脚本",
         "findings": [],
         "round": 1,
-        "review_hash": "sha256:75c52a672c7ba76c14bdaa96c09f1d47281efe1a814e36581c93c742df216bd5"
+        "review_hash": "sha256:3c4d1cdde61443fd235d6bc91811b0d1990250c35dcc09b9dc13f3e84cc80043"
       }
     ]
   },
@@ -139,7 +168,7 @@
     {
       "id": "v-fix",
       "category": "fix",
-      "behavior": "缺陷现象按工单描述消除（自检断言新逻辑在场、旧 bug 写法不在场）",
+      "behavior": "真轨弦线 option 为 chord，路径来自子图边",
       "result": "PASS",
       "repo_ids": [
         "ui_pc"
@@ -152,16 +181,15 @@
       "notes": null
     },
     {
-      "id": "v-reg",
+      "id": "v-regression",
       "category": "regression",
-      "behavior": "相邻行为不受影响（轨道既有回归测试/相邻自检绿；全仓 vue-tsc 类型门绿）",
+      "behavior": "Mock 演示路径仍只在 USE_MOCK 下出现，221 不新开接口，关系网仍保留",
       "result": "PASS",
       "repo_ids": [
         "ui_pc"
       ],
       "evidence_refs": [
-        "ev-selfcheck",
-        "ev-typecheck"
+        "ev-wiring"
       ],
       "simulated": false,
       "skipped_reason": null,
@@ -170,7 +198,7 @@
     {
       "id": "v-boundary",
       "category": "boundary",
-      "behavior": "边界态：未知 label 不丢已选、同级多选互不吞并、注入出口缺失回落合成点击（resolve.selfcheck 边界组）",
+      "behavior": "子图无边时路径为空，高亮只加在被点中的节点",
       "result": "PASS",
       "repo_ids": [
         "ui_pc"
@@ -185,82 +213,86 @@
   ],
   "gates": {
     "enter_dev": {
-      "status": "invalidated",
+      "status": "approved",
       "source": "chat",
-      "token_text": "进入开发009",
+      "token_text": "进入开发",
       "approved_by": "human:淮政玮",
-      "approved_at": "2026-11-12T20:55:40.077+08:00",
-      "approved_session_id": "cursor-20261112-2007-batch-a",
+      "approved_at": "2026-11-14T13:08:24.883+08:00",
+      "approved_session_id": "cursor-20261114-1303-2474",
       "approved_machine_id": "redfo-win",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "message_ref": "questionnaire:启动A组第一波8单(2026-11-12问卷选项)",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "message_ref": "chat:进入开发",
       "projection_version": "p0-v3",
       "validator_version": "bugflow-state-p0-v9",
       "bound_to": {
-        "diagnosis_hash": "sha256:9f1929553f3d49f3df031189fb4d24bec51b97874a5151de2c6f27064229001d",
-        "plan_hash": "sha256:9743ee76ab021a6d4e221be865888cebada62e28128d39f45ea2e372950398e7",
-        "risk_level": "M",
-        "data_policy_version": "demo-2026-11-10",
-        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
-        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
         "repos": [
           {
             "repo_id": "ui_pc",
             "repo_name": "lumen-ui-science-pc",
-            "base_sha": "56bfafe9afc3a6f5113b3fd1401d36fb0882e793",
+            "base_sha": "8becc2054767fe01cb37e604cb986a021cbbbc30",
             "planned_change_scope": [
-              "src/views/policy/analysis/StructureLinkPanel.vue"
-            ]
+              "src/views/policy/analysis/StructureLinkPanel.vue",
+              "src/views/policy/analysis/StructureLinkPanel.selfcheck.mjs"
+            ],
+            "role": "primary",
+            "depends_on": [],
+            "ship_order": 1
           }
-        ]
+        ],
+        "diagnosis_hash": "sha256:82375cceddd96bb4149a6ad2e9c846252b7ebc4957530722b6b437af383a6536",
+        "plan_hash": "sha256:03df4b67d03f96f0af885d7cd441333c1f06029da7f21586048646f9f4297196",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
       },
-      "gate_hash": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
+      "gate_hash": "sha256:f1ca425814d7d428d5bf2fde965c8b1d124ea4fa4f6631d05aef0e6ea5fc3e51",
       "validation": {
         "result": "PASS",
-        "checked_at": "2026-11-12T20:55:41.383+08:00",
+        "checked_at": "2026-11-14T13:08:25.068+08:00",
         "validator_version": "bugflow-state-p0-v9",
-        "actual": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
-        "expected": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
+        "actual": "sha256:f1ca425814d7d428d5bf2fde965c8b1d124ea4fa4f6631d05aef0e6ea5fc3e51",
+        "expected": "sha256:f1ca425814d7d428d5bf2fde965c8b1d124ea4fa4f6631d05aef0e6ea5fc3e51",
         "errors": []
       }
     },
     "ship": {
       "status": "approved",
       "source": "chat",
-      "token_text": "提测009",
+      "token_text": "提测",
       "approved_by": "human:淮政玮",
-      "approved_at": "2026-11-13T01:04:54.898+08:00",
-      "approved_session_id": "cursor-20261112-2007-batch-a",
+      "approved_at": "2026-11-14T13:20:58.845+08:00",
+      "approved_session_id": "cursor-20261114-1303-2474",
       "approved_machine_id": "redfo-win",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "message_ref": "questionnaire:用户本会话精确口令「提测」(chat:2026-11-13T00:34+08:00)",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "message_ref": "chat:提测",
       "projection_version": "p0-v3",
       "validator_version": "bugflow-state-p0-v9",
       "bound_to": {
-        "risk_level": "M",
-        "deploy_target": "dev",
         "repos": [
           {
             "repo_id": "ui_pc",
-            "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
-            "diff_hash": "sha256:4cdad609651537f629dba1f94661ce3a87708d37830338084434c2c2df90a4ab",
-            "verification_hash": "sha256:c8c89c9e7254076e89f41b86adb34f57fda7b9f93b43618619a2d9694851151a",
-            "review_hash": "sha256:75c52a672c7ba76c14bdaa96c09f1d47281efe1a814e36581c93c742df216bd5",
+            "candidate_sha": "2ebeae8732d1daad8926d0c6a03fa2ae36402030",
+            "diff_hash": "sha256:4f1cc6db3bcebe72050eb01b262cdd70cc5bc99eff3ec41b35bea556fcba54df",
+            "verification_hash": "sha256:6e51ed57df3e3f91e8e6da7c1fbbd50c02ce3aa21c2ee16dd24d72454562bc5a",
+            "review_hash": "sha256:3c4d1cdde61443fd235d6bc91811b0d1990250c35dcc09b9dc13f3e84cc80043",
             "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
             "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
             "role": "primary",
             "depends_on": [],
             "ship_order": 1
           }
-        ]
+        ],
+        "risk_level": "M",
+        "deploy_target": "dev"
       },
-      "gate_hash": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
+      "gate_hash": "sha256:c1a5d7431f1de2ec74045a5fd3125b4f99a8d15a531cc66fcaa89a69dade1397",
       "validation": {
         "result": "PASS",
-        "checked_at": "2026-11-13T01:04:55.739+08:00",
+        "checked_at": "2026-11-14T13:20:59.038+08:00",
         "validator_version": "bugflow-state-p0-v9",
-        "actual": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
-        "expected": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
+        "actual": "sha256:c1a5d7431f1de2ec74045a5fd3125b4f99a8d15a531cc66fcaa89a69dade1397",
+        "expected": "sha256:c1a5d7431f1de2ec74045a5fd3125b4f99a8d15a531cc66fcaa89a69dade1397",
         "errors": []
       }
     },
@@ -270,33 +302,11 @@
     }
   },
   "ship_package": {
-    "repos": [
-      {
-        "repo_id": "ui_pc",
-        "candidate_sha": "68a757b6699c7bab9c847ce92bb8dfaa17d184be",
-        "merge_request_id": "direct-push-dev",
-        "merge_commit_sha": "919388cee355d71da6b946c2e3530f97be7f4455",
-        "pipeline_id": "5130",
-        "pipeline_status": "success",
-        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5130",
-        "deployed_sha": "919388ce",
-        "rollout_status": "complete",
-        "image_tag": "harbor.test.com/zp-tts/gkx-lumen-pc:919388ce",
-        "role": "primary",
-        "depends_on": [],
-        "ship_order": 1
-      }
-    ],
-    "acceptance_steps": [
-      "打开 dev 环境 http://10.50.69.111:30891/ ，硬刷新（Ctrl+F5）确保加载 919388ce 版本",
-      "按各工单描述原文逐一复核对应页面交互（文案/导出/复选框/图表）",
-      "确认无回归：相邻页签、导出弹窗、行业级联选择等相邻功能可用"
-    ],
+    "repos": [],
+    "acceptance_steps": [],
     "dev_verification": {
-      "result": "PASS",
-      "evidence_refs": [
-        "ev-dev-verify"
-      ]
+      "result": "PENDING",
+      "evidence_refs": []
     },
     "summary": null
   },
@@ -308,121 +318,108 @@
   },
   "transitions": [
     {
-      "from": "CLAIMED",
-      "to": "DIAGNOSED",
-      "at": "2026-11-12T20:55:32.145+08:00",
-      "result": "PASS",
+      "from": "AWAITING_ACCEPTANCE",
+      "to": "REOPENED",
+      "at": "2026-11-14T13:06:03.836+08:00",
+      "result": "REOPENED",
       "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
       "gate": null,
       "gate_hash": null,
       "evidence_refs": [],
-      "summary": null
+      "summary": "接管【2474】后重开：上一轮提测只改了 Mock 弦线，真轨仍是关系图，传导路径在子图已加载时仍空。"
+    },
+    {
+      "from": "REOPENED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-14T13:06:04.651+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "真轨弦线仍是 graph，路径未消费子图"
     },
     {
       "from": "DIAGNOSED",
       "to": "READY_DEV",
-      "at": "2026-11-12T20:55:37.057+08:00",
+      "at": "2026-11-14T13:06:04.843+08:00",
       "result": "PASS",
       "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
       "gate": null,
       "gate_hash": null,
       "evidence_refs": [],
-      "summary": null
+      "summary": "只改 StructureLinkPanel 与自检，不新开资源"
     },
     {
       "from": "READY_DEV",
       "to": "IMPLEMENTING",
-      "at": "2026-11-12T20:55:41.387+08:00",
+      "at": "2026-11-14T13:08:25.069+08:00",
       "result": "PASS",
       "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
       "gate": "enter_dev",
-      "gate_hash": "sha256:6611408a2ee8008512393b5abf295e6b8e702bf7825be2dd8a01215666f8218d",
+      "gate_hash": "sha256:f1ca425814d7d428d5bf2fde965c8b1d124ea4fa4f6631d05aef0e6ea5fc3e51",
       "evidence_refs": [],
-      "summary": null
+      "summary": "进入开发：只改真轨弦线与传导路径"
     },
     {
       "from": "IMPLEMENTING",
       "to": "REVIEWING",
-      "at": "2026-11-12T22:58:24.108+08:00",
+      "at": "2026-11-14T13:20:49.653+08:00",
       "result": "PASS",
       "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
       "gate": null,
       "gate_hash": null,
       "evidence_refs": [],
-      "summary": null
+      "summary": "候选 2ebeae8 已核对"
     },
     {
       "from": "REVIEWING",
       "to": "VERIFYING",
-      "at": "2026-11-12T22:58:28.458+08:00",
+      "at": "2026-11-14T13:20:50.065+08:00",
       "result": "PASS",
       "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
       "gate": null,
       "gate_hash": null,
       "evidence_refs": [],
-      "summary": null
+      "summary": "独立评审 PASS"
     },
     {
       "from": "VERIFYING",
       "to": "READY_SHIP",
-      "at": "2026-11-12T22:58:30.348+08:00",
+      "at": "2026-11-14T13:20:50.871+08:00",
       "result": "PASS",
       "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
       "gate": null,
       "gate_hash": null,
       "evidence_refs": [],
-      "summary": null
+      "summary": "自检、接线回归、空边边界已通过"
     },
     {
       "from": "READY_SHIP",
       "to": "SHIPPING",
-      "at": "2026-11-13T01:04:55.740+08:00",
+      "at": "2026-11-14T13:20:59.038+08:00",
       "result": "PASS",
       "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
+      "claim_id": "agent-claim-20261114-1303-2474",
+      "session_id": "cursor-20261114-1303-2474",
       "gate": "ship",
-      "gate_hash": "sha256:0f217ad3b0b09d5196f050fed682a63cb47483a0cf3e85ab161cffcdbe7bd8b0",
+      "gate_hash": "sha256:c1a5d7431f1de2ec74045a5fd3125b4f99a8d15a531cc66fcaa89a69dade1397",
       "evidence_refs": [],
-      "summary": null
-    },
-    {
-      "from": "SHIPPING",
-      "to": "DEV_VERIFYING",
-      "at": "2026-11-13T01:04:58.184+08:00",
-      "result": "PASS",
-      "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
-      "gate": null,
-      "gate_hash": null,
-      "evidence_refs": [],
-      "summary": null
-    },
-    {
-      "from": "DEV_VERIFYING",
-      "to": "AWAITING_ACCEPTANCE",
-      "at": "2026-11-13T01:04:59.246+08:00",
-      "result": "PASS",
-      "validator_version": "bugflow-state-p0-v9",
-      "claim_id": "agent-claim-20261112-2007-009",
-      "session_id": "cursor-20261112-2007-batch-a",
-      "gate": null,
-      "gate_hash": null,
-      "evidence_refs": [],
-      "summary": null
+      "summary": "提测：合并 lumen-ui-science-pc origin/dev"
     }
   ],
   "failure_stage": null,
@@ -441,13 +438,13 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-13T01:04:57.308+08:00",
-      "manifest_hash": "sha256:3655bc5a8070ae94dc41726ca18cd7104ac217c56ecd14106e1bb398269deff3",
+      "checked_at": "2026-11-14T13:20:50.665+08:00",
+      "manifest_hash": "sha256:12945c2d5c2666f2c3c3c2d0d40cfbb7f62b9ea574f4aaebacef677814c52244",
       "item_count": 3,
       "evidence_ids": [
         "ev-selfcheck",
-        "ev-typecheck",
-        "ev-dev-verify"
+        "ev-wiring",
+        "ev-typecheck"
       ],
       "evidence_results": {
         "ev-selfcheck": {
@@ -455,12 +452,12 @@
           "reviewable": true,
           "raw_retained": true
         },
-        "ev-typecheck": {
+        "ev-wiring": {
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
         },
-        "ev-dev-verify": {
+        "ev-typecheck": {
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
@@ -480,7 +477,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
+    "action": "完成合并、dev 部署和流水线记录。"
   },
-  "updated_at": "2026-11-13T01:04:59.246+08:00"
+  "updated_at": "2026-11-14T13:20:59.038+08:00"
 }
