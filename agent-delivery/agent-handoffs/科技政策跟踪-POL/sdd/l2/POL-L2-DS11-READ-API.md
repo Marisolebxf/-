@@ -25,14 +25,14 @@
 
 ## 1. 公开资源
 
-前缀 `/display/v1/policy/`。四叶都在政策分析评价里完成，不另开页，不另开路径。本二级对外只有下面三条。223 的焦点和 226 的摘要共用同一条 `jobs`，本分册只给定两个新键。
+前缀 `/display/v1/policy/`。四叶都在政策分析评价里完成，不另开页。223 焦点仍用 `jobs`；226 改用独立同步口（2026-11-14 226-FDE）。
 
 | 序号 | 公开资源 | 读法 |
 |---|---|---|
 | 223 短板条数 | `GET /display/v1/policy/evaluation/counts` | 同步。element 只读 `ads.policy_effect` 且 `scope_type=region_gap` 的 `shortboard_cnt`。GET 不调用 `gap.run`。无行则计数空，不造 0。不返回 501 |
 | 223 焦点指数 | `POST /display/v1/policy/evaluation/jobs` | Job。新键 `policy_focus_ads`。调用已有 `polan.eval.focus.run` 后读 `ads.policy_focus` 且 `policy_id` 非空的行。无行则焦点块空。不返回 501 |
 | 224 解读条目、225 多媒体条目 | `GET /display/v1/policy/evaluation/shells` | 同步。element 只读 `gkxlumenx_gapfill.gapfill_policy_eval_shell`。224 的响应多带成效说明和复盘三句。点选和换角度只筛选已返回行。无行则空。不返回 501 |
-| 226 摘要 | 同一条 `POST /display/v1/policy/evaluation/jobs` | Job。新键 `policy_text_parse`。只查 `ads.policy_text_parse.summary`。请求里不调用 `parse.run`。无行则摘要空。不返回 501 |
+| 226 智能摘要 | `POST /display/v1/policy/evaluation/intelligent-summary` | 同步。body：`policyId` 必填，`force` 默认 false。Feign → Python internal。四块文案；缓存 gapfill。禁止 `parse.run`。无缓存且未生成则卡空。不返回 501。旧「jobs · policy_text_parse」作 226 卡内容已被取代 |
 
 `evaluation/counts`、`evaluation/jobs`、`evaluation/shells` 上还有别的二级。本分册不把整条资源改成只服务 223–226，也不改写那些种类。`counts` 上已有的机遇读面（`M_POLICY_OPPORTUNITY_COUNT`）本分册不改。`jobs` 上既有的 `policy_focus` 仍走 harness。效能得分、趋势、分区、实施路径、方案和参数模拟不在这里展开。
 
@@ -46,11 +46,12 @@
 |---|---|
 | `evaluation/counts` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `ads.policy_effect`（`scope_type=region_gap` 的 `shortboard_cnt`）。不进专题政策门面。GET 不调用 `polan.eval.gap.run`，也不打 `GET /v1/policy/analysis/gap` |
 | `evaluation/shells` | `gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_eval_shell`。不进专题政策门面。不把查询转到 Python 现造一行 |
-| `evaluation/jobs` | `gkxlumen-display` → `gkxlumen-topic-async-service` `POST /topic/v1/analysis/tasks` → 已有 `PolicyAnalysisAdapterImpl` → `POST /internal/policy/jobs/execute` |
+| `evaluation/jobs` | `gkxlumen-display` → `gkxlumen-topic-async-service` `POST /topic/v1/analysis/tasks` → 已有 `PolicyAnalysisAdapterImpl` → `POST /internal/policy/jobs/execute`（223 焦点等；**不含** 226） |
+| `evaluation/intelligent-summary` | `gkxlumen-display` Feign → `POST /internal/policy/eval/intelligent-summary`（`lumen-algo-py`）。同步。Java 不拼摘要、不调模型 |
 
-223 的焦点和 226 的摘要不进专题政策查询门面。任务表、SSE、并发锁复用 `gkxlumen-topic-async-service`。`/internal/policy/jobs/execute` 的计算代码在 `lumen-algo-py/vendor/entan-py`。算法中台页面留在 `demo-ui-system-test` 与 `lumen-ui-algo-apiview` 的 `/policy/focus`、`/policy/gap`、`/policy/parse`。展示不嵌这些页。`/v1/policy/analysis/focus`、`/v1/policy/analysis/gap`、`/v1/policy/text/parse`、`POST /v1/policy/analysis/focus-one` 继续给算法中台自己用。
+223 的焦点和 226 的智能摘要都不进专题政策查询门面。焦点仍复用 async；226 **不建** async 任务。算法中台页面留在 `demo-ui-system-test` 与 `lumen-ui-algo-apiview` 的 `/policy/focus`、`/policy/gap`、`/policy/parse`。展示不嵌这些页。
 
-`policy_focus_ads` 与 `policy_text_parse` 是白名单上要增加的两个键。例外只加在这两条：它们不走产业链码与技术领域的二选一校验（产业 VID XOR），也不收 items。既有 `policy_focus` 仍要求 items、产业或正文，并走 `harness.dispatch`。本分册不改那条校验，不把 harness 的返回当成热点看板。其它 sub_type 仍按已有校验，不把这两个例外扩大过去。Java 仍不打分。
+`policy_focus_ads` 仍是 jobs 白名单例外键（不走产业 VID XOR、不收 items）。`policy_text_parse` 键可保留给名单/其它读面，但**不再**作为 226 三区块正文口。既有 `policy_focus` 仍走 harness。Java 仍不打分。
 
 两个新键尚未放进白名单时，这次 Job 返回空结果，响应里不带写死的指数或摘要。放行之后，表里无行则结果仍空。
 
@@ -118,23 +119,26 @@ D4 保持 mock。
 
 D4 保持 mock。行是灌入的 mock，不是采集实数。不新造 `metric_id`。序号 222 的模板选用不写入本表，本分册不读模板字节。
 
-## 6. 226 智能摘要 · jobs · policy_text_parse
+## 6. 226 智能摘要 · intelligent-summary
 
-公开资源与焦点的地址相同：`POST /display/v1/policy/evaluation/jobs`。指标 `M_POLICY_DS_11_POLICY_EVAL_012`，类型 MODEL，D4=mock。需求来源即序号 226。浏览器提交这一条，`sub_type=policy_text_parse`，打开时不传 `policy_id`。字段名由契约单冻结。
+公开资源：`POST /display/v1/policy/evaluation/intelligent-summary`（同步）。指标 `M_POLICY_DS_11_POLICY_EVAL_012`，类型 MODEL，D4=mock。需求来源即序号 226。字段名由契约单冻结；语义钉死：
 
-算法中台「文本解析 · 智能摘要」已经把这条展示身份定义成读 `ads.policy_text_parse.summary`，不另写模型。写入该列的 `polan.text.parse.run` 是规则截取，行上的 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。本分册不改这个 `metric_id`，也不把截取改成大模型。`M_POLICY_DS_11_POLICY_EVAL_012` 是读面身份，不是第二套摘要。
+| 请求 | 含义 |
+|---|---|
+| `policyId` | 必填 |
+| `force` | 默认 false：有缓存直接返回；无则 LLM 后 UPSERT。true：强制 LLM 后覆盖 |
 
-2026-11-14 起，这个键在展示层不建异步任务。`gkxlumen-display` 把请求交给 `gkxlumen-element` 读同一张表的 `policy_id`、`title`、`summary`。不传 `policy_id` 时返回全部行，前端只用 `summary` 非空且 `policy_id` 非空的行做下拉，再在已返回行里取选中的一条。换政策不再请求。不调用 `parse.run`，避免清空整表。旧「送到 Python 只查 summary」在这个键上已被本段取代。
+| 成功响应 | 界面 |
+|---|---|
+| `conclusion` / `policySummary` | ① 结论与政策摘要 |
+| `keyHighlights` / `recommendations` | ②③ 数组 |
+| `cached` / `updatedAt` | 可选元数据 |
 
-与 225 共用同一次政策单选。未选时界面写「请先选择政策」。选中后只显示这一条的标题和摘要。界面不写库表名。
+内部：`POST /internal/policy/eval/intelligent-summary`。缓存表 `gapfill_policy_intel_summary`。LLM 上下文可 SELECT `ads.policy_text_parse` 标题/摘要，**禁止** `parse.run`，禁止把四块写回 `summary` 单列。
 
-可编辑和推送没有登记的用户表，也没有发信通道。本分册不建编辑表，不把改过的句子写回 ADS，不灌假通知。用户当时在页面上改字，不构成本条资源。没有推送通道时不另造通知。
+与 225 共用政策单选。未选时前端不调本口。界面不写库表名。当页改字不经本口落库。推送不经本口（前端会话队列）。
 
-不建 `gapfill_policy_eval_summary`。不把序号 242 的推演解读报告、核增研报 `report/jobs` 当成这条摘要。不把 `focus-one` 当成摘要。
-
-切条件不自动起任务。这次读取失败不清空已经返回的 `counts` 和 `shells`。
-
-D4 保持 mock。
+不把 242 研报、`focus-one`、旧 `jobs`+`policy_text_parse` 摘要行当成三区块。失败不清空 `counts`/`shells`。D4 保持 mock。旧「jobs 只读 summary」已被本段 2026-11-14（226-FDE）取代。
 
 ## 7. 空态对照
 
@@ -146,7 +150,7 @@ D4 保持 mock。
 | 223 焦点 | jobs · `policy_focus_ads` | `ads.policy_focus` 无 `policy_id` 非空行则焦点块空。不返回写死指数，不返回 `focus-one`。不返回 501。失败不清空 counts 和 shells |
 | 224 | shells · 解读条目 | 缺项表无解读行则解读块空。不造结论。不返回 501 |
 | 225 | shells · 多媒体条目 | 未选时界面写「请先选择政策」。选中后没有 `policy_id` 相同的行则写「这条政策还没有多媒体解读」。缺项表无多媒体行则该块空。不返回视频、动画、PDF、模板字节。不返回 501 |
-| 226 | jobs · `policy_text_parse` | 不建异步任务。没有 `summary` 非空且 `policy_id` 非空的行则下拉空、摘要空。未选时界面写「请先选择政策」。不返回写死段落。不调用 `parse.run`。不返回 501。失败不清空 counts 和 shells |
+| 226 | `intelligent-summary` | 未选不调。无缓存且未点生成则无三区块。生成失败 toast，保留旧缓存。不返回写死段落。不调用 `parse.run`。不返回 501。失败不清空 counts 和 shells |
 
 两个新键尚未放行时，同样返回空结果，不改用写死的指数或摘要。
 

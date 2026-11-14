@@ -23,7 +23,7 @@
 | 223 焦点 | 热点问题分析看板 · 焦点指数 | `M_POLICY_FOCUS_INDEX`；MODEL；D4=`mock`；判定列写 501 | 挂这一条。读 `ads.policy_focus` 且 `policy_id` 非空的 `focus_score`。名称和一句说明用该行 `ext.title`、`ext.explanation`。无行则空。不改 `focus.run` 权重 |
 | 224 | 分主题分指标互动解读 | 未见 `metric_id`；判定列 501 | 不新注册。指不到专属 id，条目上的 `metric_id` 留空 |
 | 225 | 多媒体辅助解读 | 未见 `metric_id`；判定列 501 | 不新注册。指不到专属 id，条目上的 `metric_id` 留空 |
-| 226 | 智能摘要与结论推送 | `M_POLICY_DS_11_POLICY_EVAL_012`；MODEL；D4=`mock`；判定列写 501 | 展示读面挂这一条。读 `ads.policy_text_parse.summary`。行上 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。写入是规则截取。无行则空。不另写摘要模型 |
+| 226 | 智能摘要与结论推送 | `M_POLICY_DS_11_POLICY_EVAL_012`；MODEL；D4=`mock`；判定列写 501 | 展示读面挂这一条。2026-11-14（226-FDE）起读 LLM 四块 + `gapfill_policy_intel_summary`。不新注册、不改 D4。`M_POLICY_TEXT_PARSE` 仍是解析行号，不是第二套展示读面 |
 
 223 短板与 226 的 D4 仍是 `mock`。223 焦点的 D4 同样仍是 `mock`。`QPOL-02` 未闭合。`GDF-POLICY-MOCK-GATE-L01` 仍按架构稿视为未解开。本叶不把 mock 写成已上线。
 
@@ -72,7 +72,7 @@
 |---|---|---|---|
 | `M_POLICY_SHORTBOARD_COUNT` | STAT。D4 转述为 mock，不改 | `ads.policy_effect`，`scope_type=region_gap`，列 `shortboard_cnt` | 注册中文名、口径、公式、注册源表、源系统、更新频率、`version` |
 | `M_POLICY_FOCUS_INDEX` | MODEL。D4 转述为 mock，不改 | `ads.policy_focus`，`policy_id` 非空，列 `focus_score`；名称 `ext.title`，一句说明 `ext.explanation` | 同上 |
-| `M_POLICY_DS_11_POLICY_EVAL_012` | MODEL。D4 转述为 mock，不改。需求来源即序号 226，这句话写在已签收架构稿，不是本叶新挂的 `srs_refs` | `ads.policy_text_parse.summary` | 同上 |
+| `M_POLICY_DS_11_POLICY_EVAL_012` | MODEL。D4 转述为 mock，不改。需求来源即序号 226，这句话写在已签收架构稿，不是本叶新挂的 `srs_refs` | `gapfill_policy_intel_summary`（LLM 缓存四块）；名单可另读 `policy_text_parse` | 同上 |
 
 223 短板、223 焦点、226 的展示读数不在接口里重算，也不替换上表未抄的注册公式。
 
@@ -80,7 +80,7 @@
 
 焦点以仓库里已有的 `polan.eval.focus.run` 为准，本叶不重写。已签收架构写明：`run()` 只删除 `policy_id` 非空的行再写入，不删除 `policy_id` 为空的机遇行。本叶不改这个删除范围。权重仍是 `QPOL-02` 待甲方确认的规则基线。本叶不改权重，不把 `is_mock` 改成已上线。展示 Job 调用这个已有 `run()`，再读表。不返回 `focus-one` 的当场计算结果。带 items 的既有 `policy_focus` 仍走 harness，不是本看板。
 
-226 的写入以仓库里已有的 `polan.text.parse.run` 为准，本叶不重写。已签收架构写明：写入 `summary` 的是规则截取；该函数会清空整张 `ads.policy_text_parse`；条款结构化写在同一张表上。本叶不把规则截取写成 NLP 已经做到，不另写一套摘要模型，不在展示请求里调用 `parse.run`，也不调用大模型。需规写的是 NLP 生成可编辑摘要。那是需求表述。本叶的可实现读面是查已有列。
+226 的展示写入以波次 B 钉死的 `intelligent-summary` + `gapfill_policy_intel_summary` 为准。`polan.text.parse.run` 仍只服务中台/解析批次，**展示请求禁止调用**。需规 NLP 由真 LLM 闭合；D4 仍 mock（缓存进缺项表，不升 live）。
 
 `M_POLICY_TEXT_PARSE` 的注册八件套同样未查。本叶只沿架构稿确认：摘要行上的 `metric_id` 仍是这个号。不改它，不把它换成 `M_POLICY_DS_11_POLICY_EVAL_012`，也不用它再定义一套摘要。
 
@@ -136,19 +136,15 @@ D4 只转述已有行，本叶不改：
 
 ### 5.3 226 智能摘要与结论推送
 
-展示读面挂 `M_POLICY_DS_11_POLICY_EVAL_012`。`指标与501`：MODEL，D4=`mock`，判定列 501。判定列不改。读面按已签收架构：不用 501 充当这块功能。
+展示读面挂 `M_POLICY_DS_11_POLICY_EVAL_012`。`指标与501`：MODEL，D4=`mock`，判定列 501。判定列不改。不用 501 充当这块功能。
 
-这是该列的展示读面身份，不是第二套摘要。算法中台「文本解析 · 智能摘要」已经把这条展示身份定义成读 `ads.policy_text_parse.summary`。本叶沿用，不另写模型。
+2026-11-14（226-FDE）起：资源 `POST .../intelligent-summary`；读/写 `gapfill_policy_intel_summary` 四块。真 LLM。不新注册指标，不改 D4。旧「读 `summary` 单列 / jobs · policy_text_parse」已被本段取代。
 
-资源是同一个 `jobs`，`sub_type=policy_text_parse`。2026-11-14 起展示层不建异步任务，由 element 读 `policy_id`、`title`、`summary`。不传 `policy_id` 时返回名单。选中后只取这一条。请求里不调用 `parse.run`。没有 `summary` 非空且 `policy_id` 非空的行则摘要空，不返回 501，不返回写死的段落。不新注册指标，不改 D4。旧「只查 summary、不区分政策」已被本段取代。
+`M_POLICY_TEXT_PARSE` 仍是解析表行号，需求来源不在 219–231；不改挂进 226，也不当第二套展示读面。
 
-行上 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。本叶不改这个号。`指标与501` 评价表的引言写明：`M_POLICY_TEXT_PARSE` 的需求来源不在序号 219–231，不进入评价表。本叶不把它改挂进 226，也不把推演页上的解析行搬过来当摘要模型。
+可编辑与推送不为新挂指标；当页改字不落库；推送会话态不新挂指标。
 
-写入该列的已有解析是规则截取。本叶不把截取说成 NLP 已经做到。不调用大模型。不另写一套摘要模型。不建 `gapfill_policy_eval_summary`。
-
-可编辑和推送没有登记的用户表，也没有发信通道。本叶不建编辑表，不把改过的句子写回 ADS，不灌假通知，也不为推送新挂指标。用户当时在页面上改字，不构成本条资源。
-
-不做什么：不把序号 242 的推演解读报告、核增研报 `report/jobs` 当成这条摘要。不把 `focus-one` 当成摘要。不把对比页的结果智能输出改挂到这个号。
+不做什么：不把 242 研报、`focus-one`、对比页智能输出改挂到这个号。展示路径禁止 `parse.run`。
 
 ### 5.4 同一行上不改挂的号
 

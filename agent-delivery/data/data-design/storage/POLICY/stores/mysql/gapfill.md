@@ -257,6 +257,23 @@ CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_report_trace` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
 
+## `gapfill_policy_intel_summary`（226 智能摘要缓存 · draft）
+
+任务：`POL-L2-DS11-READ-226-FDE-L01`。一行一条政策的 LLM 四块缓存。非正式 ADS。波次 D 建表并 UPSERT；本文件先登记 draft DDL。
+
+```sql
+CREATE TABLE IF NOT EXISTS `gkxlumenx_gapfill`.`gapfill_policy_intel_summary` (
+  `policy_id` varchar(256) NOT NULL,
+  `conclusion` text NOT NULL,
+  `policy_summary` text NOT NULL,
+  `key_highlights` json NOT NULL,
+  `recommendations` json NOT NULL,
+  `model` varchar(64) DEFAULT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`policy_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
+
 ## 210 / 211 现网已有（本单不重建）
 
 `gapfill_policy_audience_feedback` 现网 591 行，`gapfill_policy_assessment_report` 现网 2 行。列与 `lumen-algo-py/scripts/mysql/gapfill_policy_audience.sql`、`gapfill_policy_assessment.sql` 的 CREATE 一致（不含其中的 `DELETE` / `INSERT`）。`--apply` 对这两张只执行 `CREATE TABLE IF NOT EXISTS`，行数未变。
