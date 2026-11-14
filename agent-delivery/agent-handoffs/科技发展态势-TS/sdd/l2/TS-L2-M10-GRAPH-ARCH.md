@@ -133,7 +133,7 @@ flowchart LR
 
 | 规则 | 做法 |
 |---|---|
-| id 映射 | 全景节点 id = `technology_node_id`，为空时取 VID **原串**（如 `tech_point:tcn_…`，不去前缀；read:181）。主表行映射成全景 id 集合：把 `all_technology_node_ids` 与 `all_legacy_vids` **按同一下标配对**（无 `all_*` 时用单值 `technology_node_id` / `legacy_vid`），每对里 tnid 非空取 tnid，否则取 legacy_vid 原串，空串跳过；两列表长度不一致时按较短的长度配对，多出的 VID 单独按原串加入，多出的 tnid 单独加入并记 warning（R5）（seed 在 tnid 为空时写空串，seed:163–171）（DATA-C2 复核）。新建点（没有任何外部 id）：`tm:{technology_id}` |
+| id 映射 | 全景节点 id = `technology_node_id`，为空时取 VID **原串**（如 `tech_point:tcn_…`，不去前缀；read:181）。主表行映射成全景 id 集合：把 `all_technology_node_ids` 与 `all_legacy_vids` **按同一下标配对**（无 `all_*` 时用单值 `technology_node_id` / `legacy_vid`），每对里 tnid 非空取 tnid，否则取 legacy_vid 原串，空串跳过；两列表长度不一致时按较短的长度配对，多出的 tnid / VID 一律跳过并记 warning（R5，按 DATA 册 v2.1 §6.4 / ALGO-DATA-C7 改定；种子写入时两列表等长，实际不触发）（seed 在 tnid 为空时写空串，seed:163–171）（DATA-C2 复核）。新建点（没有任何外部 id）：`tm:{technology_id}` |
 | 属性覆盖 | 对上存量点：主表值**非空才覆盖**名称、描述，空则保留 Nebula 原值（ALGO-C6）。另追加 `category`、`importance` 字段，仅在非空时输出 |
 | 已删存量点 | 主表 `status='deleted'` 的点：从 nodes 去掉，去掉一端是它的 relations，含它的关键路径整条去掉（路径是点序列，缺中间点就不成路径）。选中的就是已删点：nodes / relations / paths / records 全部清空，返回空图 |
 | 已删存量边 | `graph_tech_edge` 中 `source=auto`、`status=deleted` 的行：两端映射成全景 id 后，按 `(端点无序对, 原关系码)` 过滤 relations。两个方向都比，因为 Nebula 读是无向 MATCH（read:271–272） |
@@ -287,6 +287,14 @@ flowchart LR
 | 指标页卡 `DS-02-MAINTAIN-GRAPH.yaml` | §9 | METRIC 分册 | 待办 |
 | 前端 leaf | `FE-TS-10A.md`（34–40「演示壳保持现状」改为指向 FE-TS-10D）、新 `FE-TS-10D`；全景前端如需显示 `overlay` 提示，另记 FE-TS-02A | frontend-agent | 待办 |
 | 41–47 用例 | 回滚连带实体改动；技术点列表多出种子点 | qa-agent | 待实现后 |
+
+### 10.1 上线顺序（2026-11-13 补，ENT 追认 ARCH-C2）
+
+1. DDL：`graph_tech_edge`；`graph_version` 加 kind / snapshot_status / publish_results；`graph_change_set.client_batch_id`；名称唯一键改为 `name_cn_active` 生成列 + 唯一索引；坐标列。执行人：监管人，执行前备份，并先检查 MySQL 版本是否支持生成列唯一索引
+2. Python（entan-py）→ Java（topic → display）
+3. 前端
+
+DDL 未落而代码先发时：ENT 发布返回 50302，ENT R2 按 `schema_ready=false` 显示空图。**禁止灰度**，四步同一窗口完成。`graph_current` 在 `graph_tech_edge` 缺失时必须仍能返回 ENT 的节点与实体边（只有 `tech_edges` 为空），不得把 ENT R2 拖成空图（ENT 追认 API 条件）。
 
 ## 11. 需监管人拍板
 

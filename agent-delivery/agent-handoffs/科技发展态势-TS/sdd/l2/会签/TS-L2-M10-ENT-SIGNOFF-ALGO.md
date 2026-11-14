@@ -124,3 +124,52 @@
 ### 签收边界（同前）
 
 - 本节只读核对，不改三分册正文；N1–N3 是输入非条件。签收归监管人 `human:刘剑锋`。
+
+---
+
+## GRAPH 追记确认（2026-11-13 agent:algorithm-agent）
+
+> 立场：只审指标面（D9 ⓘ 挂接、口径保护、指标输入边界），不复核字段/列/前端。
+> 依据：`TS-L2-M10-GRAPH-API.md` §5.2/§9（E12–E14）、`TS-L2-M10-GRAPH-DATA.md` §7.4/§11（item 14–15）、`TS-L2-M10-GRAPH-ARCH.md` §10；对照 `TS-L2-M10-ENT-METRIC.md` §1–§4。
+> 核对基线（2026-11-13）：Python 未改；本追认只针对指标语义，不依赖代码落地状态。
+
+### 一、41–47 的指标挂接是否变化
+
+| 叶 | 结 论 |
+|---|---|
+| 41 | `M_TECH_GRAPH_105_1` 挂接不变。R1 读 `graph_entity_edge` 的 `strength_auto`，本次未改该表读面、未改公式、未改 D4=mock 语义；空态+PendingBadge 规则不变。 |
+| 42 | 回执 `edges_created[].strength` 仍"若显示则同挂 105_1"，无新号。 |
+| 43 | 写操作 N/A；impact 计数仍走 DN-A03-09 豁免。新字段 `tech_edge_count`/`panorama_hidden_relation_count` 属同类操作计数，**不进入任何指标公式**；后者由 Nebula 只读计数得出、失败为 `null`，不得以 0 落 ADS/指标事实表。 |
+| 44/45/46 | 仍 N/A；`strength_manual` 不进 `M_TECH_*` 的保护条款未被触碰（`graph_entity_edge` 三列未变）。 |
+| 47/跨叶 | 回执/validate 计数仍属豁免类；`stats` 由 `{ops:N}`/扁平四键改分组 JSON，是**结构变化不是口径变化**，仍是操作计数。 |
+| 版本/回滚（新增） | `kind`/`snapshot_status`/`operator`/`operator_display` 均为展示/审计字段，不产生指标；`stats` 分组只用于界面计数。 |
+
+**口径一致性正收益**：单事务后 DWD 与 ADS 同提交，`M_TECH_GRAPH_105_1` 不会再读到"版本已 ok、ADS 尚未投影"的窗口；两段式时代 `pending` 期间读旧 ADS 的口径风险自然消失。
+
+### 二、FE-TS-10C 是否必须改
+
+**指标面无需改**。ENT 页不展示版本 `stats`、不调 impact；`MockBadge`/`PendingBadge` 逻辑绑在叶 41 的空态/105 未交付，未被本次变更触及。若将来 ENT 或 GRAPH 界面展示 `tech_edge_count`/`panorama_hidden_relation_count`/分组 `stats`，按 DN-A03-09 豁免计数处理：不挂 ⓘ、不注册指标、不加 MockBadge；`panorama_hidden_relation_count=null` 显示"无法统计"，不得显示 0（GRAPH-API §5.2 已写死）。
+
+### 三、必须改的测试
+
+指标面**无公式/挂接测试需要改**。`test_graph_maintain.py` 的 stats 断言改动（`459/482/506/514/556` 等）是结构适配，不涉及指标口径；建议补一条"发布失败整笔回滚后 `_current_version` 与 ADS 仍为上一已发布版"的断言，用于锁住"单事务不产生半发布读数"这一口径收益——属加固，非阻断。
+
+### 四、追记遗漏的 ENT 指标影响
+
+1. **DN-A03-09 豁免范围未"一次写全"**：`ENT-METRIC §2` 现列 202 的三项计数（`edge_count/entity_link_count/snapshot_refs`）；追记 E12 给 impact 新增两字段后，同一端点的计数集合变成五项。§2 自称"范围一次写全"，不补则下次审计会按"新增字段未登记"要求挂 ⓘ——这是本次唯一实质缺口。
+2. **`graph_tech_edge.strength_auto` 的指标边界未写**：新 seed 会把技术点↔技术点边的 `strength_auto` 填成 `MAX(relation_confidence_score)`（GRAPH-DATA §6.1）。`M_TECH_GRAPH_105_1` 是实体↔技术点的关联强度口径，**不得读 `graph_tech_edge`**；现两册都没有这句显式排除，靠"表名不同"隐式成立，建议写死。
+3. **`GRAPH-ARCH §10` 无 ENT-METRIC 行**：影响表列了 ENT-ARCH/API/DATA 与会签单，没有 METRIC；虽然结论是"无变化"，显式一行可避免"漏审"质疑。
+4. **105_1 公式签署状态仍 pending**：`ENT-METRIC §4` 的 `pending_cosign`/`pending_ods` 前置注记与本次变更无关，但追认不免除它——签收前仍应按 N3 复核（本会话无 metric MCP）。
+5. **counts 的展示口径**：`stats` 分组键与 impact 五计数都只在界面/确认框出现，若后续有人把它们接进指标事实表，属新需求，须重新走 D9；建议在 `ENT-METRIC §2` 豁免行末加半句"仅界面回执，禁止落指标事实表"。
+
+### 条件（改哪里、改成什么）
+
+| # | 改哪里 | 改成什么 |
+|---|---|---|
+| C1 | `TS-L2-M10-ENT-METRIC.md` §2 的"202 impact 预检计数"行（L18） | 改为"202/35-3 impact 预检计数全集：`edge_count` / `entity_link_count` / `snapshot_refs` / `tech_edge_count` / `panorama_hidden_relation_count`（`null` 不计 0）；仅界面回执，禁止落指标事实表"。不挂 ⓘ、不注册。 |
+| C2（建议） | `TS-L2-M10-ENT-METRIC.md` §3 保护条款末 | 加一句"`M_TECH_GRAPH_105_1` 的边权只读 `graph_entity_edge`（实体↔技术点）；`graph_tech_edge`（技术点↔技术点）不进任何 `M_TECH_*` 公式。" |
+| C3（建议） | `TS-L2-M10-GRAPH-ARCH.md` §10 影响表 | 加一行"`TS-L2-M10-ENT-METRIC.md`：无挂接/口径变化（新增计数属 DN-A03-09 豁免类）"，owner 记 algorithm-agent。 |
+
+### 结论
+
+**有条件追认**。指标方向完全成立：105_1 挂接、`strength_manual` 保护、计数豁免三类语义均未被 GRAPH 改动破坏，单事务还消除了半发布读数窗口。唯一硬条件是 C1（把两个新计数补进"一次写全"的豁免范围），C2/C3 为随稿建议；C1 落笔后本身份无保留。105_1 公式签署状态仍按原 N3 前置处理，不因本次追认免除。
