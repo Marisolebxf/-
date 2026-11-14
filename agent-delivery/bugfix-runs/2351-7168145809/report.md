@@ -1,10 +1,10 @@
 # 缺陷修复报告：2351 科技指数，科技成果综合排名详情查看，排行依据出现无关开发文案，所属领域和成果类型缺数据
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-14T11:34:28.710+08:00
+> 生成时间：2026-11-14T11:47:20.412+08:00
 > 当前 cycle：cycle-001-20261113T183419+0800
-> 当前内部阶段：AWAITING_ACCEPTANCE
-> 验收模式：policy_only（operator_verified=false）
+> 当前内部阶段：RESOLVED
+> 验收模式：chat_exact（operator_verified=false）
 
 ## 1. 缺陷事实和复现
 
@@ -118,13 +118,13 @@ DB 写证据授权：
 
 ## 10. 精确验收与飞书状态迁移
 
-- 飞书当前状态：IN PROGRESS
-- 验收证据：PENDING
-- 验收结论：pending
-- 验收模式：policy_only
+- 飞书当前状态：RESOLVED
+- 验收证据：evidence/manifest.json#dev-verify-e2e-20261114
+- 验收结论：approved
+- 验收模式：chat_exact
 - 验收异常：PENDING
-- 验收口令：PENDING
-- 审批引用：PENDING
+- 验收口令：验收通过
+- 审批引用：chat:2026-11-14T11:38 human:徐滕强 本会话精确口令「验收通过」；飞书 transition 35119339 log_id 202611141146063116B109582F45C16A78
 - chat_exact 验收：仅在收到完整精确消息 `验收通过` 后，经 acceptance gate 校验并由 Agent 调用飞书状态迁移。
 
 ## 11. Gate 状态与绑定对象
@@ -132,14 +132,14 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:ade3d6559d78120699d7b6c8ccc6d9ca68f7dedfba29871791027d64ae1b9f05 |
-| ship | invalidated | 提测 | sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201 |
-| acceptance | pending | PENDING | PENDING |
+| ship | approved | 提测 | sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201 |
+| acceptance | approved | 验收通过 | sha256:0941b02d1c62343c88bd6a9ad8c8a40fd34125676d8a160a88cc44bf08d9ae50 |
 
 enter_dev bound_to：{"repos":[{"repo_id":"topic_py","repo_name":"lumen-topic-py","base_sha":"6c31a8dfb3dd4aa15ac9609fe4b69de690f90ec0","planned_change_scope":["scripts/ensure_gapfill_tindex_inst_ach.py","gkx_show_service/views/monitor_indicator.py"],"candidate_sha":null,"role":"python_gapfill_and_read_side","depends_on":[],"ship_order":1},{"repo_id":"backend","repo_name":"lumen-svc-platform","base_sha":"dca8bdc0b5622e9b2924eaaa1ab3a95828543e60","planned_change_scope":["gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java"],"candidate_sha":null,"role":"java_text_cleanup_and_passthrough","depends_on":["topic_py"],"ship_order":2}],"risk_level":"M","diagnosis_hash":"sha256:75ee87a068c3aad15d081ccc435e0a2568001387232a5e17b3645891a8f8ade2","plan_hash":"sha256:d27bc4f0e16b303c9236c3ef8d7a13ac4ebab71c8f66885df180726c3818273e","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d"}
 
 ship bound_to：{"repos":[{"repo_id":"topic_py","candidate_sha":"0f4eba37850de555aa2764970eec0d98c22f013f","diff_hash":"sha256:d8d22709a0b8195b77f7143f9ed83f59591ac951d355659274b239bffa7518c6","verification_hash":"sha256:b98860cb4411a362b8a6400b39bb0f5a681c96f6a5e3de8f87c223bfaef96520","review_hash":"sha256:cb04cdd5fe51465adbe3f0bd991694f4811ed80e15ca818311466ec416b9522d","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d","role":"python_gapfill_and_read_side","depends_on":[],"ship_order":1},{"repo_id":"backend","candidate_sha":"1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c","diff_hash":"sha256:2bd0ea7f5d2ff99a3f1c230a3b1e3774453b752fb5ac0ed4f7750be29c580128","verification_hash":"sha256:f06bc7738a26fc1aa3e8e61f27823a1ff2b70ee2917c3740c6970817c03dfec5","review_hash":"sha256:2fcc5fc343f6043e7829d1412e1b44513d1265c5dab63de33ffddc0473601e37","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d","role":"java_text_cleanup_and_passthrough","depends_on":["topic_py"],"ship_order":2}],"risk_level":"M","deploy_target":"dev"}
 
-acceptance bound_to：PENDING
+acceptance bound_to：{"work_item_id":"7168145809","claim_id":"cursor-e411f8b5-20261113-7168145809","ship_gate_hash":"sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201","dev_verification_result":"PASS","evidence_manifest_hash":"sha256:ca33e42c80b3572f08ead23f39aa3ad074a5ddb4f9d79c51b601975170731ec0","current_status":"IN PROGRESS"}
 
 ## 12. 自动决策摘要
 
