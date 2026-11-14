@@ -7,7 +7,8 @@
 - 强度：ponytail off（定义任务，不缩文档）
 - 图：`POL-L2-DS10-TREND-ARCH-SEQ`（本叶新图，源文件无 frontmatter，不另填绿）
 - 签收：2026-11-03 `human:淮政玮`。按说明书第 11 节再次签收。做不到的只允许缺项表灌 mock 后由接口读表。订阅条件不灌假记录。不允许接口直接返回 mock
-- **2026-11-12 增补 §7.2**：`POL-L2-DS10-TREND-KEYFIELD-FDE-L01` 中档——影响/深度弹窗进度 + situation/report 导出（仍同步读 gapfill，不进 Python）
+- **2026-11-12 增补 §7.2**：`POL-L2-DS10-TREND-KEYFIELD-FDE-L01` 中档——影响/深度弹窗进度 + situation/report 导出（当时仍同步读 gapfill，不进 Python）
+- **2026-11-14 修订 §7.4**（`human:淮政玮` 当次会话）：205 热点、影响、深度报告改为缺项表缓存。表空或仍是演示行时，Python 按政策正文生成并写回。全文场景见 `sdd/简报/2026-11-14-POL-报告缓存架构.md`。废止「这三项不进 Python、不谎称模型推理」
 
 本叶只定科创政策全景二级「政策动向跟踪」的实现架构和整体流程。SRS 序号 **203–206**。用户故事 `US-DS-POL-02`。不写 OpenAPI 字段、请求体、响应体、枚举。那是 `POL-L2-DS10-TREND-API`。
 
@@ -21,7 +22,7 @@
 |---|---|---|---|
 | 203 | 政策来源监控与更新 | 监控权威站点并给出最新政策列表和详情 | 同步读已有入库。跨项索引第 6 项。不重开抓取。「立即同步」= LLM 合成入库，见 4.1 的 2026-11-07 变更 |
 | 204 | 政策订阅服务 | 按类别、领域、部门、地区订阅，并按日/周/月经通知、邮件、短信推送 | 可实现：展示只委托专题门面。见第 7.1 节 |
-| 205 | 重点领域政策分析 | 重点领域的趋势、热点、影响和深度报告 | 趋势读已有时序表。热点、影响、深度报告没有模型，走缺项表。见第 7.2 节 |
+| 205 | 重点领域政策分析 | 重点领域的趋势、热点、影响和深度报告 | 趋势读已有时序表。热点、影响、深度报告以缺项表为缓存；未缓存时 Python 生成后写回。见第 7.4 节 |
 | 206 | 政策动态可视化展示 | 时间轴、热力、趋势，看时间、地域、主题分布 | 时间与地域读已有表。主题分布没有指标，走缺项表 |
 
 205 的趋势、206 的时间轴和地域热力，D4 仍是 `mock`。`GDF-POLICY-MOCK-GATE-L01` 仍是 blocked。闸门未解开时，正式值仍是 mock。本叶不把 mock 写成已上线。
@@ -35,7 +36,7 @@
 | 203 | `GET /display/v1/policy/panorama/ingest` | 同步。`gkxlumen-display` → `gkxlumen-element` → 已有 ADS。不委托专题政策门面 |
 | 204 | `GET /display/v1/policy/panorama/subscriptions` | 可实现。展示只委托 `gkxlumen-topic-policy`。不是收藏，也不进 `jobs`。接口不手写订阅列表 |
 | 205 趋势 | `GET /display/v1/policy/panorama/stats` | 同步。读已有 `M_POLICY_TIMESERIES` 所在表。不另建查询，不在接口里造点 |
-| 205 热点、影响、深度报告 | `POST /display/v1/policy/panorama/jobs` | 没有模型。不进 Python。读三张缺项表。见第 7.2 节 |
+| 205 热点、影响、深度报告 | `POST /display/v1/policy/panorama/jobs` | 先读三张缺项表。未缓存时 `sub_type=policy_trend_cache`，Python 写回后再读。见第 7.4 节 |
 | 206 | `GET /display/v1/policy/panorama/stats` | 同步。时间轴和趋势读 `M_POLICY_TIMESERIES`，地域热力读 `M_POLICY_NATIONAL_DIST`。主题分布读缺项表 |
 
 `stats` 这一条资源的内部委托已经写在 `POL-L2-DS10-QRY-ARCH`：浏览器仍打 `/display/v1/policy/panorama/stats`，`gkxlumen-display` 内部委托 `gkxlumen-topic-policy`。本叶不另建一条统计查询。204 的订阅是另一条委托，接通后 `subscriptions` 也转到同一门面，业务不在展示服务，见第 7.1 节。浏览器都不改打 `/topic/v1/policy`。203 的入库列表不走专题门面。
@@ -250,21 +251,39 @@ flowchart LR
 | 政策影响评估 | `gapfill_policy_trend_impact` |
 | 深度分析报告 | `gapfill_policy_trend_report` |
 
-浏览器仍提交 `POST /display/v1/policy/panorama/jobs`。这三种不进 `gkxlumen-topic-async-service`，不进 Python。display 委托 `gkxlumen-element` 按种类读上表，把行返回。同一条 `jobs` 上的实施效果、匹配、力度仍由各自叶子使用各自已见模型。用户点了其中一种才查表。切领域不自动查另一域。表无行则该块空。读失败不清空已经返回的时序图和入库列表。
+浏览器仍提交 `POST /display/v1/policy/panorama/jobs`。读表仍由 display 委托 element。生成不在这条同步读里完成，见第 7.4 节。同一条 `jobs` 上的实施效果、匹配、力度仍由各自叶子使用各自已见模型。用户点了其中一种才查。切领域不自动查另一域。读失败不清空已经返回的时序图和入库列表。
 
 **界面与导出（2026-11-12，`POL-L2-DS10-TREND-KEYFIELD-FDE-L01`，中档）**
 
-- 「政策影响评估」「深度分析报告」点击后统一打开弹窗：分阶段进度条（受理 → 读取分析材料 → 汇总 → 完成）→ 展示当次读到的行。进度为过程展示，底层仍是同步读表，不新建异步分析任务，不谎称模型推理。
+- 「政策影响评估」「深度分析报告」点击后统一打开弹窗，展示当次读到的行。导出仍走 situation/report。**2026-11-14 起，生成与进度见第 7.4 节**；本节「不进 Python、进度只是动画」作废。
 - 完成后可导出 PDF / Word：FE 用当次行拼完整 HTML → `POST /display/v1/situation/report/generate` → topic-async OpenHTMLtoPDF（与 217 / 态势报告同构）。`reportType`=`policy-trend-impact` / `policy-trend-report`；Word=`format=html` 存 `.doc`。禁止 `trackingExport` 打印另存、禁止 `text/plain`。无行不产文件。
 - 热点识别仍按原页内块，本增补不改热点主路径。
 
-主题分布用 `gapfill_policy_theme_dist`，挂在 `stats` 上，不进这三张表。见第 4.4 节。这四张表要灌的 mock 见第 7.3 节。列由 `POL-L2-DS10-TREND-DATA` 定，灌数由 `POL-L2-DS10-TREND-GAPFILL-L01` 执行。本叶不写列，不灌数。
+主题分布用 `gapfill_policy_theme_dist`，挂在 `stats` 上，不进这三张表。见第 4.4 节。这四张表要灌的 mock 见第 7.3 节。列由 `POL-L2-DS10-TREND-DATA` 定。本叶不写列。
+
+### 7.4 205 三张表改为生成缓存（2026-11-14）
+
+裁定人：`human:淮政玮`。对齐推演 242：缺项表是缓存，不是演示句的永久来源。Java 仍不写正文。
+
+**缓存命中**：该领域（热点块不传领域时，看三张表里是否已有 `fill_method=llm` 的行）存在，且正文不是「缺项演示」开头。命中则只读，不自动生成。
+
+**未缓存**：没有行，或行仍是 `fill_method=manual` / 正文以「缺项演示」开头。用户打开该领域的影响评估、深度分析报告，或点击热点识别时，提交一次生成。生成成功后删掉该领域的旧行，写入新行，再读表展示。现在库里的三份演示报告属于未缓存，打开后会被换掉。
+
+**生成任务**：`POST /display/v1/policy/panorama/jobs`，`sub_type=policy_trend_cache`，带 `kind`（热点识别 / 政策影响评估 / 深度分析报告）和 `domain`（热点可空，空则三个领域各写一批）。`force=true` 时无视缓存重算，对应界面「重新生成」。展示只把任务交给已有 topic-async，再由 Python `/internal/policy/jobs/execute` 执行。无密钥、没有可摘的政策正文、或模型失败：不删旧行，不写新的演示句，界面保持空态或留下旧行并提示失败。
+
+**取材**：领域名临时当作关键词，在 DWD 政策标题、摘要、关键词里取最近 8 条且正文非空的政策。三个领域名是产品标签，不是已签分类列，标 🟡，待甲方确认词表后再换挑选规则。一条都摘不到就不写缓存。
+
+**写回**：仍是原来三张表，不新建表，不写文件进表。`fill_method=llm`，`is_mock=1`（本波不把 D4 改绿），`gap_item` 不变，`metric_id` 仍空。深度报告写标题和正文各一行；影响评估写对象、方向、结论各一行；热点识别按模型返回的若干条写名称和一句说明。
+
+**进度**：任务进行中，弹窗进度只反映任务状态（受理、生成中、完成）。不再用定时器假装「读取分析材料」。导出不变：有行之后仍用当次正文走 `situation/report`。
+
+**不在本刀**：序号 211、217、214 优缺点、226 摘要、242、研报。场景划分见简报。
 
 ### 7.3 缺项表与要灌的 mock
 
 只建下面四张，与说明书第 11.1 节动向一行相同。库只允许 `gkxlumenx_gapfill`。不进 ODS、DWD、ADS，不写供应方库。203 读已有入库，不建表。204 由专题门面实现，不建缺项表，也不灌假订阅。205 的趋势、206 的时间轴和地域热力读已有统计表，不建缺项表，也不把这些点改灌进检索的 `gapfill_policy_qry_stat`。已有表没有行则对应图空，不往 ADS 写 mock 点数。
 
-每行都带 D16 要求的 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at`。这四张没有已挂指标，`metric_id` 留空，不新注册。`fill_method` 用 `manual`，不调用模型，不填 `fill_model`。`gap_item` 写序号和叶子名。D4 保持 mock。
+每行都带 D16 要求的 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at`。这四张没有已挂指标，`metric_id` 留空，不新注册。当初灌入的演示行 `fill_method` 为 `manual`。205 三张表之后以第 7.4 节为准：演示行视为未缓存，生成成功后改为 `fill_method=llm`。D4 保持 mock。
 
 | 表 | 叶子 | 要灌的 mock | 不灌 |
 |---|---|---|---|
