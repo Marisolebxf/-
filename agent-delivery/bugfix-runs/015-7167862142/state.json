@@ -32,7 +32,7 @@
     "current_owner": "current_user",
     "takeover_history": []
   },
-  "phase": "READY_SHIP",
+  "phase": "AWAITING_ACCEPTANCE",
   "risk": {
     "level": "S",
     "reasons": [],
@@ -217,8 +217,41 @@
       }
     },
     "ship": {
-      "status": "pending",
-      "bound_to": null
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T16:13:50.472+08:00",
+      "approved_session_id": "cursor-20261114-1317",
+      "approved_machine_id": "redfo-win",
+      "claim_id": "agent-claim-20261114-015",
+      "message_ref": "chat:2026-11-14T16:04+08:00 用户精确口令「提测」（015-7167862142）",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "5e96b09d8badd432e0d14264bfebd25d60565a35",
+            "diff_hash": "sha256:3a363e5536ed9c96d9fb6456fa1f628b757e6e729fd2ed270ed898404aebabea",
+            "verification_hash": "sha256:c748d93b619bb963821c3db33e47ad6912182ff321365628591056546d4f60c6",
+            "review_hash": "sha256:cdf4ff63516e7efd65ff4fd3ab7d7df088401491385914657623b2ac5f86d916",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "S",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:102a00bf74dfaeac09c94ce1a5200e01c5149f4c3e346b03df4b52a57c9a9677",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T16:13:52.323+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:102a00bf74dfaeac09c94ce1a5200e01c5149f4c3e346b03df4b52a57c9a9677",
+        "expected": "sha256:102a00bf74dfaeac09c94ce1a5200e01c5149f4c3e346b03df4b52a57c9a9677",
+        "errors": []
+      }
     },
     "acceptance": {
       "status": "pending",
@@ -226,11 +259,35 @@
     }
   },
   "ship_package": {
-    "repos": [],
-    "acceptance_steps": [],
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "5e96b09d8badd432e0d14264bfebd25d60565a35",
+        "merge_request_id": "direct-dev",
+        "merge_commit_sha": "187099b95c7cb5a35b692cdbe8abf2ffb270f928",
+        "pipeline_id": "5386",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5386",
+        "deployed_sha": "187099b95c7cb5a35b692cdbe8abf2ffb270f928",
+        "rollout_status": "success",
+        "image_tag": "gkx-lumen-pc:187099b9",
+        "role": "primary",
+        "depends_on": [],
+        "ship_order": 1
+      }
+    ],
+    "acceptance_steps": [
+      "打开科技信息展示系统 dev 环境 → 政策效果推演 · 科技政策推演 · 政策实施路径预测。",
+      "输入政策编号 18363390 选定政策，点「预测实施路径」。",
+      "确认「政策实施流程图」时间轴下方出现显式「关键节点说明」区块：五张环节卡各含 环节名/时间安排/责任主体/说明（政策发布→2026年一季度→省科学技术厅 等）。",
+      "确认时间轴本身无回归（五环节、责任主体标签、说明文案不变），历史对照 mock 轨不受影响。"
+    ],
     "dev_verification": {
-      "result": "PENDING",
-      "evidence_refs": []
+      "result": "PASS",
+      "evidence_refs": [
+        "ev-015-3-deploy",
+        "ev-015-4-dev-verify"
+      ]
     },
     "summary": null
   },
@@ -318,6 +375,45 @@
       "gate_hash": null,
       "evidence_refs": [],
       "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-14T16:13:52.325+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261114-015",
+      "session_id": "cursor-20261114-1317",
+      "gate": "ship",
+      "gate_hash": "sha256:102a00bf74dfaeac09c94ce1a5200e01c5149f4c3e346b03df4b52a57c9a9677",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-14T16:13:53.777+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261114-015",
+      "session_id": "cursor-20261114-1317",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-14T16:13:53.781+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "agent-claim-20261114-015",
+      "session_id": "cursor-20261114-1317",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
     }
   ],
   "failure_stage": null,
@@ -336,12 +432,14 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-14T14:29:34.119+08:00",
-      "manifest_hash": "sha256:523d3db82e03d4d87582c70e9a1dc5738997542d299fed69d435228bb00097a9",
-      "item_count": 2,
+      "checked_at": "2026-11-14T16:13:53.771+08:00",
+      "manifest_hash": "sha256:966a6f07ae692e4c4f754fc998e85019a2ed919022073a9c92b323b50844c226",
+      "item_count": 4,
       "evidence_ids": [
         "ev-015-1-selfcheck",
-        "ev-015-2-typecheck"
+        "ev-015-2-typecheck",
+        "ev-015-3-deploy",
+        "ev-015-4-dev-verify"
       ],
       "evidence_results": {
         "ev-015-1-selfcheck": {
@@ -350,6 +448,16 @@
           "raw_retained": true
         },
         "ev-015-2-typecheck": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-015-3-deploy": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-015-4-dev-verify": {
           "result": "PASS",
           "reviewable": true,
           "raw_retained": true
@@ -369,7 +477,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "展示提测绑定对象并取得精确口令。"
+    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
   },
-  "updated_at": "2026-11-14T14:32:45.542+08:00"
+  "updated_at": "2026-11-14T16:13:55.064+08:00"
 }
