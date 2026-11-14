@@ -1,9 +1,9 @@
 # 缺陷修复报告：2351 科技指数，科技成果综合排名详情查看，排行依据出现无关开发文案，所属领域和成果类型缺数据
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-13T22:50:22.723+08:00
+> 生成时间：2026-11-14T11:34:28.710+08:00
 > 当前 cycle：cycle-001-20261113T183419+0800
-> 当前内部阶段：READY_SHIP
+> 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -32,13 +32,13 @@
 - Bundle 类型：跨仓 Bundle（2 repos）
 - 同一飞书缺陷涉及多个仓库时仍是一个 run、一个 claim、一套 gate；各仓保留独立候选 SHA。
 
-- topic_py：lumen-topic-py，role=python_gapfill_and_read_side，ship_order=1，depends_on=PENDING，base=c035024a91af6689e76b70cf1f927daab8d67973，candidate=6ec0846ef82f75e442f8d8b639e72cb188ad1e68，scope=scripts/ensure_gapfill_tindex_inst_ach.py, scripts/test_gapfill_tindex_inst_ach.py, gkx_show_service/views/monitor_indicator.py
-- backend：lumen-svc-platform，role=java_text_cleanup_and_passthrough，ship_order=2，depends_on=topic_py，base=dca8bdc0b5622e9b2924eaaa1ab3a95828543e60，candidate=3033bdd10b8d0536eee2651f184db0ed25bcfefa，scope=gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java
+- topic_py：lumen-topic-py，role=python_gapfill_and_read_side，ship_order=1，depends_on=PENDING，base=9b442707cd0c998d976a738cd357631fbeac3157，candidate=9070d66d98692140c9540b2c4885695e38a0a83d，scope=scripts/ensure_gapfill_tindex_inst_ach.py, scripts/test_gapfill_tindex_inst_ach.py, gkx_show_service/views/monitor_indicator.py
+- backend：lumen-svc-platform，role=java_text_cleanup_and_passthrough，ship_order=2，depends_on=topic_py，base=80c69d5905ad77e6ab86417db078febb2ddd7381，candidate=1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c，scope=gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java
 
 实现仓校验：
 
-- topic_py：candidate=6ec0846ef82f75e442f8d8b639e72cb188ad1e68，diff_hash=sha256:f5752b0ab87f9fd851e8272c9cf117819c1ae2fda89f7e3a9da45ad3eebb73e3，git_verified=yes，files=gkx_show_service/views/monitor_indicator.py, scripts/ensure_gapfill_tindex_inst_ach.py, scripts/test_gapfill_tindex_inst_ach.py
-- backend：candidate=3033bdd10b8d0536eee2651f184db0ed25bcfefa，diff_hash=sha256:2bd0ea7f5d2ff99a3f1c230a3b1e3774453b752fb5ac0ed4f7750be29c580128，git_verified=yes，files=gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java
+- backend：candidate=1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c，diff_hash=sha256:2bd0ea7f5d2ff99a3f1c230a3b1e3774453b752fb5ac0ed4f7750be29c580128，git_verified=yes，files=gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java
+- topic_py：candidate=9070d66d98692140c9540b2c4885695e38a0a83d，diff_hash=sha256:fe784a33741bf6ff4bb854de76e91097de8c91805fe3f3e1aee16a24ffb84b1e，git_verified=yes，files=gkx_show_service/views/monitor_indicator.py, scripts/ensure_gapfill_tindex_inst_ach.py, scripts/test_gapfill_tindex_inst_ach.py
 
 非目标：不改前端 lumen-ui-science-pc（drawer 仅透传，后端修好即正确）；不修改久新 Doris 任何表（只读红线）；不写 ODS/DWD/ADS/供应方库（D16 红线）；不在 Java 里写死 mock 数据（D18 红线）；不动「较上期趋势」的回填逻辑（applyRankTrend 已有真实实现）
 
@@ -57,12 +57,13 @@
 |---|---|---|---|---|---|---|---|
 | gapfill-auth-chat-20261113 | data_write_authorization | PASS | yes | yes | PENDING | uncommitted | PENDING |
 | selfcheck-local-20261113 | log | PASS | yes | yes | PENDING | 6ec0846/3033bdd1 | PENDING |
+| dev-verify-e2e-20261114 | log | PASS | yes | yes | PENDING | 0f4eba3/9070d66/1f4bdfcf | PENDING |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:366bbb9c8c0e56a7340cbd71c4108ac87b8add249dc0485476c63349d3108e99；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:ca33e42c80b3572f08ead23f39aa3ad074a5ddb4f9d79c51b601975170731ec0；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -74,8 +75,8 @@ DB 写证据授权：
 
 评审记录：
 
-- topic_py：reviewer=agent:api-agent(self)，independent=true，sha=6ec0846ef82f75e442f8d8b639e72cb188ad1e68，verdict=PASS，hash=sha256:4bc877067563b11636924b27727459d5ebf477e3e0b16a1b76e30a2ab6fc5c68，findings=[self-review] 自检 4 断言全绿（field 确定性/类型映射/DDL utf8mb4+gapfill_前缀/无久新不编造）；py_compile 三文件过；读侧查不到保持 None 回落 '-' 不依赖表存在；DDL 合 D16 前缀+D19 字符集；久新 Doris 零写入
-- backend：reviewer=agent:api-agent(self)，independent=true，sha=3033bdd10b8d0536eee2651f184db0ed25bcfefa，verdict=PASS，hash=sha256:610156ebe3f29283e91e80a753fb34321a94431149076274180d31a6223c1291，findings=[self-review] mvn -pl gkxlumen-display compile BUILD SUCCESS（JDK17）；三处 UI 字段无表名/列名（emptyReasons 的运维文案不在 UI 字段链路，保留追溯）；两字段透传缺失留空；noSourceFields 同步移出；分支 fix/2351-tindex-ranking-basis 基于最新 origin/dev（dca8bdc0），避开本地 dev 落后分叉
+- topic_py：reviewer=agent:api-agent(self)，independent=true，sha=0f4eba37850de555aa2764970eec0d98c22f013f，verdict=PASS，hash=sha256:cb04cdd5fe51465adbe3f0bd991694f4811ed80e15ca818311466ec416b9522d，findings=[self-review] 自检 4 断言全绿（field 确定性/类型映射/DDL utf8mb4+gapfill_前缀/无久新不编造）；py_compile 三文件过；读侧查不到保持 None 回落 '-' 不依赖表存在；DDL 合 D16 前缀+D19 字符集；久新 Doris 零写入；rebase 后复验：python 自检 ALL PASS / mvn BUILD SUCCESS（JDK17），candidate 更新 0f4eba37
+- backend：reviewer=agent:api-agent(self)，independent=true，sha=1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c，verdict=PASS，hash=sha256:2fcc5fc343f6043e7829d1412e1b44513d1265c5dab63de33ffddc0473601e37，findings=[self-review] mvn -pl gkxlumen-display compile BUILD SUCCESS（JDK17）；三处 UI 字段无表名/列名（emptyReasons 的运维文案不在 UI 字段链路，保留追溯）；两字段透传缺失留空；noSourceFields 同步移出；分支 fix/2351-tindex-ranking-basis 基于最新 origin/dev（dca8bdc0），避开本地 dev 落后分叉；rebase 后复验：python 自检 ALL PASS / mvn BUILD SUCCESS（JDK17），candidate 更新 1f4bdfcf
 
 ## 6. S/M/L 风险等级和定级理由
 
@@ -102,13 +103,18 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- topic_py：ship_order=1，MR=direct-push-dev，candidate=9070d66d98692140c9540b2c4885695e38a0a83d，merge=9070d66d98692140c9540b2c4885695e38a0a83d，deployed=9070d66d98692140c9540b2c4885695e38a0a83d，pipeline=5292，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py/-/pipelines/5292，image=PENDING，rollout=success
+- backend：ship_order=2，MR=direct-push-dev，candidate=1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c，merge=1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c，deployed=1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c，pipeline=5293，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/5293，image=PENDING，rollout=success
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=evidence/manifest.json#dev-verify-e2e-20261114
 
 人工验收步骤：
 
-- PENDING
+- 打开科技信息展示系统 dev 环境 → 科技指数 → 排行榜 Tab
+- 综合榜/高校榜/科研机构榜任点一条打开排名详情抽屉：基本信息卡「成果类型」「所属领域」应有值（如 中国科学院=工程验证成果/新能源），不再是 '-'
+- 排行依据卡片：评价方法/数据来源/排行依据三行应为业务文案（科技实力综合评估模型…/全球机构科技实力监测数据/机构科技实力总分…），无 ads_*/mvp_v1/technology_power_score 等开发字样
+- 企业榜详情两格可能为 '-'（seed 未含 company TOP，覆盖广度已知项，非本缺陷回归）；导出 CSV 评价方法列同步业务化
+- 排行对比抽屉的对比来源标签含领域/成果类型字样（getRankingCompareSourceLabel 恢复有效）
 
 ## 10. 精确验收与飞书状态迁移
 
@@ -126,12 +132,12 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:ade3d6559d78120699d7b6c8ccc6d9ca68f7dedfba29871791027d64ae1b9f05 |
-| ship | pending | PENDING | PENDING |
+| ship | invalidated | 提测 | sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201 |
 | acceptance | pending | PENDING | PENDING |
 
 enter_dev bound_to：{"repos":[{"repo_id":"topic_py","repo_name":"lumen-topic-py","base_sha":"6c31a8dfb3dd4aa15ac9609fe4b69de690f90ec0","planned_change_scope":["scripts/ensure_gapfill_tindex_inst_ach.py","gkx_show_service/views/monitor_indicator.py"],"candidate_sha":null,"role":"python_gapfill_and_read_side","depends_on":[],"ship_order":1},{"repo_id":"backend","repo_name":"lumen-svc-platform","base_sha":"dca8bdc0b5622e9b2924eaaa1ab3a95828543e60","planned_change_scope":["gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java"],"candidate_sha":null,"role":"java_text_cleanup_and_passthrough","depends_on":["topic_py"],"ship_order":2}],"risk_level":"M","diagnosis_hash":"sha256:75ee87a068c3aad15d081ccc435e0a2568001387232a5e17b3645891a8f8ade2","plan_hash":"sha256:d27bc4f0e16b303c9236c3ef8d7a13ac4ebab71c8f66885df180726c3818273e","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d"}
 
-ship bound_to：PENDING
+ship bound_to：{"repos":[{"repo_id":"topic_py","candidate_sha":"0f4eba37850de555aa2764970eec0d98c22f013f","diff_hash":"sha256:d8d22709a0b8195b77f7143f9ed83f59591ac951d355659274b239bffa7518c6","verification_hash":"sha256:b98860cb4411a362b8a6400b39bb0f5a681c96f6a5e3de8f87c223bfaef96520","review_hash":"sha256:cb04cdd5fe51465adbe3f0bd991694f4811ed80e15ca818311466ec416b9522d","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d","role":"python_gapfill_and_read_side","depends_on":[],"ship_order":1},{"repo_id":"backend","candidate_sha":"1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c","diff_hash":"sha256:2bd0ea7f5d2ff99a3f1c230a3b1e3774453b752fb5ac0ed4f7750be29c580128","verification_hash":"sha256:f06bc7738a26fc1aa3e8e61f27823a1ff2b70ee2917c3740c6970817c03dfec5","review_hash":"sha256:2fcc5fc343f6043e7829d1412e1b44513d1265c5dab63de33ffddc0473601e37","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d","role":"java_text_cleanup_and_passthrough","depends_on":["topic_py"],"ship_order":2}],"risk_level":"M","deploy_target":"dev"}
 
 acceptance bound_to：PENDING
 
