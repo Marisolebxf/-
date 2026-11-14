@@ -1,0 +1,22 @@
+Full Repository Path: e:\zhipu\gkx-lumen\repos\lumen-ui-science-pc
+Diff: natural language
+
+Change Description: 本评审针对 commit be918a73ec4bb6a7ffdffaa1768639841b782451 中 5 个文件（完整 diff 快照已导出到 e:\zhipu\gkx-lumen\gkx-orchestration\agent-delivery\bugfix-runs\2581-7168058150\review-diff.patch，请先读它，再按需读仓库内完整文件上下文）：
+
+- src/views/policy/panorama/components/FeedbackPanel.vue (modified)：新增「政策受众反馈收集工具」弹窗——toolVisible/toolChannel 独立状态、openTool() 经 defineExpose 暴露、提交表单（a-rate + 500 字文本域 + submitDraft）、collectedInSession 本会话数组头插、toolRows/toolStats 双轨统计（USE_MOCK 走 policyFeedbackStatsByChannel 种子聚合+增量；live 走 liveRows 行计算+增量，无评分渠道 averageRating=null 不造 0）、弹窗下半复用 pp-feedback-list 样式渲染已收集反馈。
+- src/views/policy/panorama/components/SentimentTab.vue (modified)：政策受众反馈收集卡片 #extra 加按钮，点击 feedbackPanelRef?.openTool()；新增 feedbackPanelRef = ref<InstanceType<typeof FeedbackPanel> | null>(null)。
+- src/views/policy/panorama/FE-POL-SENT-LIVE.test.mjs (modified)：加 5 条 2581 锚点断言（defineExpose({ openTool })、弹窗标题、submitDraft、collectedInSession、禁写接口正则 /postFeedback|saveFeedback/）+ SentimentTab 的 feedbackPanelRef?.openTool 断言。
+- src/types/policy.ts (modified)：PolicyEvaluationJobSubType 联合补 'policy_sim_path'。
+- src/views/policy/simulation/interpret/InterpretWorkbench.vue (modified)：一处预测按钮 @click="runPath" 改为 @click="runPath(false)"（原写法把 MouseEvent 传给 force 参数）。
+
+Custom Instructions:
+1. 背景：飞书缺陷 7168058150（需规 210 政策受众反馈收集缺「收集工具」入口）。用户裁定：卡片标题右侧加工具按钮，弹窗三渠道 tab（问卷调查/在线评价/意见征集），每 tab = 提交表单 + 已收集反馈列表 + 汇总统计；提交留浏览器本会话（collectedInSession），不落库、不新增任何写接口调用；交互参照另一模块「提交评价/建议」面板推理适配而非照抄。
+2. 按 M 级评审清单逐项核对：
+   a. 调用方影响：grep FeedbackPanel 的全部引用方，确认 defineExpose/openTool 不破坏其他使用点；
+   b. 相邻状态：toolChannel 与卡内 channel 双状态切换是否互扰（打开时同步一次、之后独立）；
+   c. 写路径：确认 collect 工具提交路径零网络请求（检查 submitDraft 与 api/policy.ts 无新写函数调用），自检正则锚点是否真能防回归；
+   d. 键冲突：提交行 id 用 local-${Date.now()}，与现有行 id（s1/r1/o1 与 live 行）是否可能撞键（v-for :key）；
+   e. 空数据语义：意见征集渠道 averageRating=null 时 UI 显示 —；toolStats mock 轨加权平均公式（seed.averageRating*seed.total + 增量求和 / ratedCount）数学上是否正确；
+   f. 类型顺带修：'policy_sim_path' 是否与 InterpretWorkbench L571 createPolicyEvaluationJob 实际调用一致；runPath(false) 是否语义正确（对比同文件另一处 @click="runPath(false)" 与 @click="runPath(true)" 的既有用法）；
+   g. 黑话泄漏：工具弹窗业务文案中不得出现「演示/gapfill/fixture/缺项演示」等评审黑话（MockBadge 挂点除外，本弹窗未挂 MockBadge——请判断这是否符合「评审 MockBadge 除外」规则，注意弹窗列表复用查看面板行数据但未渲染「真实需求」行的 MockBadge，只有 useMock 行渲染真实需求文本）。
+3. 输出：verdict（PASS/FAIL）+ findings 列表（每条含严重度 blocker/major/minor、文件:行号、说明）；如 FAIL 给最小修法。不要修改任何文件，只评审。
