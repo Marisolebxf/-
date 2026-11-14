@@ -1,0 +1,50 @@
+[
+  {
+    "id": "V-FIX-SELFTEST",
+    "repo_ids": ["ui_pc"],
+    "category": "fix",
+    "behavior": "收集工具弹窗锚点自检：openTool 经 defineExpose 暴露给卡片 #extra 按钮（图2红框位）、弹窗标题「政策受众反馈收集工具」、三渠道 radio 切换、submitDraft 提交入口、collectedInSession 本会话留存、禁新增写接口调用（postFeedback/saveFeedback 不存在）",
+    "result": "PASS",
+    "evidence_refs": ["EV-2581-SELFTEST"]
+  },
+  {
+    "id": "V-FIX-TYPECHECK",
+    "repo_ids": ["ui_pc"],
+    "category": "fix",
+    "behavior": "vue-tsc --build 全仓类型检查 0 错误（含本单 FeedbackPanel/SentimentTab/types 与并行会话 241 文件同场校验）",
+    "result": "PASS",
+    "evidence_refs": ["EV-2581-TYPECHECK"]
+  },
+  {
+    "id": "V-FIX-BUILD",
+    "repo_ids": ["ui_pc"],
+    "category": "fix",
+    "behavior": "vite 生产构建成功出 dist（含收集工具弹窗组件）",
+    "result": "PASS",
+    "evidence_refs": ["EV-2581-BUILD"]
+  },
+  {
+    "id": "V-REG-01B",
+    "repo_ids": ["ui_pc"],
+    "category": "regression",
+    "behavior": "全景 4 Tab 回归自检（订阅引擎/企业匹配评分/版本 diff/深链/组件锚点/提示样式）不受本单影响",
+    "result": "PASS",
+    "evidence_refs": ["EV-2581-SELFTEST"]
+  },
+  {
+    "id": "V-REG-TYPE-COLLATERAL",
+    "repo_ids": ["ui_pc"],
+    "category": "regression",
+    "behavior": "顺带修复已推送 4f2e637（241 真算）遗留的两处类型错误：types/policy.ts 白名单补 policy_sim_path、InterpretWorkbench @click=runPath 补显式 false 实参（否则 runPath 会收到 MouseEvent 当 force）；远端 c5da830 同修，冲突取本单写法",
+    "result": "PASS",
+    "evidence_refs": ["EV-2581-TYPECHECK"]
+  },
+  {
+    "id": "V-BOUNDARY-MOCK-LIVE",
+    "repo_ids": ["ui_pc"],
+    "category": "boundary",
+    "behavior": "双轨边界：mock 轨统计=种子 distribution 精确合计+本会话增量（评审 finding 修复后与五星样本同口径）；live 轨=真实行+增量，无评分渠道显示 — 不造 0；提交路径两条轨均只入 collectedInSession，不写请求不落库",
+    "result": "PASS",
+    "evidence_refs": ["EV-2581-SELFTEST", "EV-2581-REVIEW"]
+  }
+]

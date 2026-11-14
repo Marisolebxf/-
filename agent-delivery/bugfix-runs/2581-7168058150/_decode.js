@@ -1,0 +1,1 @@
+﻿const b64 = process.argv[2]; const decoded = Buffer.from(b64, 'base64').toString('utf8'); require('fs').writeFileSync('e:/zhipu/gkx-lumen/gkx-orchestration/agent-delivery/bugfix-runs/2581-7168058150/review-prompt-decoded.txt', decoded); console.log('decoded bytes:', Buffer.byteLength(decoded));

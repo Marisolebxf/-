@@ -1,0 +1,32 @@
+{
+  "change_scope": [
+    "lumen-ui-science-pc/src/views/policy/panorama/components/FeedbackPanel.vue：卡片标题区加「政策受众反馈收集工具」按钮；新增收集工具弹窗（a-modal 宽 860，Teleport body）",
+    "弹窗三 tab：问卷调查 / 在线评价 / 意见征集（a-radio-group type=button 或 a-tabs，与卡内渠道语义一致）",
+    "每 tab 上半：工具使用提交表单（评分 a-rate 可交互 + 文本域 + 提交意见按钮，提交留浏览器演示态、成功提示后追加到本会话已收集列表，带演示标注，不入库不回写接口——先例 236-1「提交不回写接口」）",
+    "每 tab 下半：已收集反馈列表（复用现有 data/stats 渲染：条数/平均分/五星 + 行列表 + 查看详情弹窗语义），与卡内查看面数据同源（USE_MOCK=true 走种子，false 走 GET /feedback 映射行）",
+    "SentimentTab.vue：卡片 <template #title> 增加「政策受众反馈收集工具」按钮（红框位置），点击开弹窗",
+    "合规演示用例 POL-L2-DS10-SENT-合规演示用例.md：210 行补「收集工具」形态期望（按钮/弹窗/三tab/表单/列表）",
+    "矩阵简报与审计留档（已完成落盘）"
+  ],
+  "non_goals": [
+    "不改 gapfill 表 / 灌数脚本 / Java 接口（提交不入库，无新写路径）",
+    "不做全链路收集落库（卡1选项C 已否决）",
+    "不动 207/208/209/211/212 与其他页签",
+    "不在业务文案保留「演示/gapfill/fixture」黑话（评审 MockBadge 除外，遵循 skill §7）",
+    "不改 FE-POL-01A/01B 既有任务，不新建前端单（缺陷修复内联）"
+  ],
+  "verification_plan": [
+    "pnpm type-check 0 error",
+    "pnpm build 成功",
+    "本地 pnpm dev 浏览器走查：按钮出现→弹窗→三tab切换→表单评分/输入→提交意见成功提示且追加到列表→已收集列表与统计同卡内数据→详情弹窗可开",
+    "USE_MOCK=false 走查：列表读线上行、提交态不误标为线上数据（演示标注可见）",
+    "评审模式关：DOM 零泄漏（无 gapfill/演示黑话）",
+    "合规用例 210 行更新并复测锚定"
+  ],
+  "rollback_plan": [
+    "单分支 fix/7168058150-feedback-tool，git revert 对应 commit 即可回滚",
+    "不涉数据/接口变更，无数据回滚需求",
+    "合规用例行单独 revert"
+  ],
+  "data_access": false
+}
