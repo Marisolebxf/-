@@ -65763,3 +65763,38 @@ tasks:
       - "线上带 token 复测合规演示用例 20 行并回填「可演（线上）」"
       - "LAYER/ENT/GRAPH-ARCH 存储流图同步"
     update_time: "2026-11-14T00:50:00+08:00"
+  - id: LUMEN-SVC-PT-CHAIN-SLICE-L01
+    supervised_by: "human:孔东"
+    title: "服务机构门户 5 接口产业切片：按 chain_codes 参数过滤（缺陷 7168034647）"
+    status: "ready"
+    agent: "agent:api-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    user_story: "US-SVC-PT-01"
+    note: |
+      来源：飞书缺陷【7168034647】门户-集群专题切换产业数据一样（P1，报告人石书诚）。诊断结论：前端传参正常、Java Feign 纯透传，根因在 lumen-topic-py 5 个门户接口丢弃 industry/chain_codes 参数且 SQL 无产业过滤；灌数侧只有 slice_key=all 全量行，故修复=接口按参数现算切片，不是灌数。孔东 2026-11-14 裁定：按 ranking_list 既有 chain_codes 范式处理，本单只做接口侧，不改灌数。前端面包屑删除已在 lumen-ui-topic 工作区完成（另行提交），不入本单。监管人：human:孔东。
+    collaborators:
+      - "human:孔东"
+    touched_files:
+      - "repos/lumen-topic-py/gkx_svc_service/views/search.py"
+      - "repos/lumen-topic-py/gkx_svc_service/repo.py"
+      - "repos/lumen-topic-py/tests/test_gkx_svc_portal_slice.py"
+    design_refs:
+      - "repos/lumen-topic-py/gkx_svc_service/repo.py#ranking_list（chain_codes 挂链表过滤范式，2026-10-22 用户拍板）"
+      - "repos/lumen-topic-py/gkx_svc_service/views/search.py#portal_overview（现状：丢弃参数+硬编码 filtered=False）"
+      - "agent-delivery/bugfix-runs/7168034647-7168034647/state.json（缺陷 7168034647 诊断，不入交付）"
+    definition_of_done:
+      - "lumen-topic-py gkx_svc_service 5 个门户接口（overview / industry-distribution / region-map / shenzhen / key-orgs）视图层接收 industry/chain_codes 参数并传入 repo 层，禁止 `_ = body` 丢弃参数"
+      - "repo 层按 ranking_list() 既有范式（dwd.enterprise_industry_chain 挂链表 IN 过滤 + _resolve_chain_codes 码归一 + 非法码 empty:chain_unmatched 诚实空）实现产业切片；overview KPI 按挂链机构集合重算，metric_fact 无切片行时按挂链 org_id 集合现算而非回退全量"
+      - "filtered 字段按实际切片结果返回（切片=true 全量=false），删除 views/search.py portal_overview() 硬编码 filtered=False；industry-distribution 按挂链机构的 service_type 重算分布"
+      - "不新增数据灌数（svcseed 不改）；若某指标按挂链机构现算不可行，登记缺口并诚实空，禁止用全量行冒充切片值"
+      - "tests/ 新增或扩展 pytest：industry 传参与不传参返回不同数据、非法码诚实空、无挂链机构产业返回空不回退全量；全量 pytest 绿"
+      - "handoff 写入 agent-delivery/agent-handoffs/，含改前/改后接口行为对照、与 ranking_list 范式的一致性说明、验证证据（测试输出）；cost 四字段回填"
+      - "架构合规：调用链不变（前端→Java→lumen-topic-py），不写 ODS/DWD，只读 ADS+DWD 挂链表；commit 带 [agent:api-agent]"
+    update_time: "2026-11-14T11:40:19+08:00"
