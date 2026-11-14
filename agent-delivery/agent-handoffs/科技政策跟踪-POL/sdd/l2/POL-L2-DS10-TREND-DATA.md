@@ -67,7 +67,7 @@
 | 205 趋势；206 时间轴和趋势 | `M_POLICY_TIMESERIES` | `gkxlumenx_ads.policy_timeseries` | 架构已写源表 `dwd_policy_base`。结果表以派单包 17 与 `ads.md` 为准 |
 | 206 地域热力 | `M_POLICY_NATIONAL_DIST` | `gkxlumenx_ads.policy_national_dist` | 派单包 17 与 `ads.md`。不另开地域指标 |
 
-时序只沿已有列读：`period_type`、`period_key`、`publish_count`。派单包 17 第一批只写年行，`growth_rate`、`continuity_rate` 留空。本单不加列。重点领域名称只作为 `stats` 的筛选条件，不新造「科创发展时序」「人才引进时序」「资金扶持时序」。
+时序只沿已有列读：`period_type`、`period_key`、`publish_count`。派单包 17 第一批只写年行，`growth_rate`、`continuity_rate` 留空。本单不加列。这张表没有领域列，四张卡的热度不读它。旧句「重点领域名称只作为 stats 的筛选条件」对卡上热度已被第 8 节取代。整页趋势图仍读这三列。
 
 地域只沿已有列读：`province` 分组已落在 `province_name`、`policy_count`。派单包 17 把 `province_code`、`yoy`、`center_lng`、`center_lat` 留空。本单不加列。
 
@@ -182,3 +182,18 @@
 - 不把本单标成 done。不写会签结论。
 
 2026-11-03 human:淮政玮 签收。只定列，灌数仍由 POL-L2-DS10-TREND-GAPFILL-L01 执行。
+
+## 8. 205 四张卡落到已有列（2026-11-15）
+
+不加列，不新建表。展示不读 `demo_gkxlumenx_ads`。
+
+| 界面 | 已有落点 | 没有行时 |
+|---|---|---|
+| 政策全景、政策条数 | 已有政策检索的命中列表。词见说明书 205 的四行表 | 列表空，条数不写 0 |
+| 卡上热度 | 同一批命中政策上已有的发布时间，按年计数。不读 `policy_timeseries` | 不足两年则不标热度 |
+| 两句举措、深度报告正文 | `gkxlumenx_gapfill.gapfill_policy_trend_report` 的 `domain_name`、`body`。领域名用卡名 | 无合格行则空态 |
+| 热点 | `gapfill_policy_trend_hotspot` 的 `domain_name`、`hotspot_name`、`brief` | 无合格行则空态 |
+| 影响评估 | `gapfill_policy_trend_impact` 的 `domain_name`、`impact_object`、`impact_direction`、`conclusion` | 无合格行则空态 |
+| 平均评分、对标区域 | 无列 | 固定空，不编数 |
+
+合格行：`fill_method` 去空白后等于 `llm`，正文字段去空白后不以「缺项演示」开头。`fill_method=manual` 的种子行不算结果。「技术发展方向」没有合格行时走空态，不把前三张卡的行填过来。

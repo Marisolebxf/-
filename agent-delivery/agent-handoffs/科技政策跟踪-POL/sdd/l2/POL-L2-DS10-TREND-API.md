@@ -29,7 +29,7 @@
 | 204 | `GET /display/v1/policy/panorama/subscriptions` | display 只委托 `gkxlumen-topic-policy` | 没有订阅则空列表。不手写，不建缺项表，不灌假订阅 |
 | 205 趋势；206 时间、地域 | `GET /display/v1/policy/panorama/stats` | 同步。读已有 `M_POLICY_TIMESERIES` 与 `M_POLICY_NATIONAL_DIST` 所在表。不另建查询 | 无行则图空，不造 0 |
 | 206 主题分布 | 仍是上面这条 `stats` 上的一维 | element 读 `gapfill_policy_theme_dist`。display 不生成主题桶 | 无行则该维空 |
-| 205 热点、影响、深度报告 | `POST /display/v1/policy/panorama/jobs` | 读表。不进 Python，不进 `gkxlumen-topic-async-service`。element 读三张缺项表 | 无行则该块空 |
+| 205 热点、影响、深度报告 | `POST /display/v1/policy/panorama/jobs` | 只读三张缺项表的合格行。展示打开不生成。见第 8 节 | 无合格行则该块空 |
 
 读失败只让对应块空，不清空已经返回的时序、地域和入库列表。切筛选不自动起任务。
 
@@ -76,7 +76,7 @@ display 只委托 `gkxlumen-topic-policy`。保存、修改、取消、读取和
 
 两条指标类型都是 STAT，D1 aligned，D4 mock。对齐前数值仍是 mock。接口只读表，不在返回里造点，不往 ADS 写 mock 点，也不把这些点改灌进检索的 `gapfill_policy_qry_stat`。`GDF-POLICY-MOCK-GATE-L01` 仍是 blocked。本分册不把闸门写成已解开，不把 D4 改绿。连续性仍是 QPOL-07，本分册不改口径。D2 为 provisional 时保留「待核验」。
 
-重点领域（科创发展、人才引进、资金扶持）是 `stats` 上的筛选条件，不是三条新指标。本分册不冻结取值。
+动向页整页趋势仍是这一条 `stats`。四张卡的热度不读这条，见第 8 节。旧句「重点领域是 stats 上的筛选条件」对卡上热度已被第 8 节取代。
 
 206 主题分布仍是 `stats` 上的一维。没有已挂的 `metric_id`。这一维由 `gkxlumen-element` 读 `gkxlumenx_gapfill.gapfill_policy_theme_dist`。display 不生成主题桶，也不借用类型分布冒充主题。无行则该维空，不造 0。主题读失败只让这一维空，不清空已经返回的时序和地域。
 
@@ -122,3 +122,15 @@ display 只委托 `gkxlumen-topic-policy`。保存、修改、取消、读取和
 - 序号 197–202、207–218 不在本分册。`search`、`rank`、`favorites`、`share`、`feedback`、`assessment-report`、`version-diff`、`benchmark-report` 不在本二级重写。`{id}/detail` 只被 203 打开一条时复用。
 - 不改架构稿、说明书、WBS、契约输入清单、调用链、指标分册、数据分册。
 - 不把任务标成 done。
+
+## 8. 205 四张卡（2026-11-15）
+
+对齐说明书同日第 205 节。不新开 URL。
+
+| 界面 | 请求 | 空 |
+|---|---|---|
+| 政策全景、政策条数、卡上热度 | 已有 `GET /display/v1/policy/panorama/search`。`keyword` 为该卡的词，`logic=OR`。热度只用结果里已有的发布时间按年比较最近两年 | 无命中则列表空，条数不写 0，热度写「暂时看不了热度」 |
+| 两句举措、深度分析报告 | 已有 `jobs`，只读 `gapfill_policy_trend_report` 中 `domain_name` 等于卡名、`fill_method=llm`、正文不以「缺项演示」开头的行。举措取正文前两句 | 无合格行则空态，不生成 |
+| 热点、影响评估 | 已有 `jobs`，只读对应缺项表的合格行。领域名用卡名，含「技术发展方向」 | 无合格行则空态，不拿其他卡的行填 |
+
+展示打开不传 `sub_type=policy_trend_cache`，不删旧行。平均评分、对标区域无字段，响应不补数，界面写「—」。
