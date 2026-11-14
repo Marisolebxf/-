@@ -170,7 +170,7 @@ D4 只转述已有行，本叶不改：
 
 没有已挂 `metric_id`。也没有已注册的解读模型。
 
-读面是 `GET /display/v1/policy/evaluation/shells`。`gkxlumen-element` 只读 `gapfill_policy_eval_shell` 里的解读条目：专题或指标名、一句结论、一句应用建议。点选只筛选已经返回的行，不另起计算，不新开路径。表里没有行则解读块空。不在接口里写死结论。
+读面是 `GET /display/v1/policy/evaluation/shells`。`gkxlumen-element` 只读 `gapfill_policy_eval_shell` 里的解读条目：专题名、一句结论、一句应用建议，以及成效说明、实施进度、惠及对象、后续安排。这四段是文字，不是指标，不新注册，不改 D4。点选和换角度只筛选已经返回的行，不另起计算，不新开路径。表里没有行则解读块空。不在接口里写死结论。旧「解读只有三列正文」已被本段 2026-11-14 取代。
 
 不把 226 的摘要行复制成解读条目。不把 223 的焦点说明改挂到本序号。
 

@@ -33,7 +33,7 @@
 | 序号 | 叶子 | 需规摘要 | 本叶流程 |
 |---|---|---|---|
 | 223 | 热点问题分析看板 | 识别高频、异常或重点问题，聚合成诊断看板 | 短板条数同步读已有表。焦点指数走 Job，读已有 `ads.policy_focus` |
-| 224 | 分主题分指标互动解读 | 按专题、指标点选，看分项、结论与应用建议 | 读缺项表里的解读条目。点选只筛选已返回的行 |
+| 224 | 分主题分指标互动解读 | 三个复盘角度互斥。深度理解看成效说明，精准解读看高亮结论，多角度复盘看实施进度、惠及对象、后续安排 | 读缺项表里的解读条目。换角度只换已返回行上的文字，不另起请求。旧「只看分项、结论与建议」已被 2026-11-14 取代 |
 | 225 | 多媒体辅助解读 | 嵌入视频、动画和图形 | 读缺项表里的条目标题和一句说明。不灌视频文件 |
 | 226 | 智能摘要与结论推送 | NLP 生成可编辑摘要与结论，并推送 | 读已有 `ads.policy_text_parse.summary`。不另建摘要模型。不灌假推送 |
 
@@ -129,7 +129,9 @@ trace 沿既有展示链走。本叶不新设计观测点。
 没有专属 `metric_id`，也没有已注册的解读模型。真实生成做不到。
 
 - 库 `gkxlumenx_gapfill`，表 `gapfill_policy_eval_shell`
-- 本序号只读解读条目：专题或指标名、一句结论、一句应用建议。条目可以指向已经存在的 `metric_id`，不新注册
+- 本序号仍只读解读条目。专题名、一句结论、一句应用建议保留。2026-11-14 起再读四段文字：`understand_text`（深度理解）、`conclusion_text`（精准解读，去掉句尾「缺项演示」）、`replay_progress_text` / `replay_audience_text` / `replay_next_text`（多角度复盘的实施进度、惠及对象、后续安排）。旧「只读专题名、结论和建议」已被本句取代
+- 三个角度互斥。换角度不重新发请求。某段没有字则该角度显示「暂无该角度的解读」，不用另一套演示句子填上
+- 条目可以指向已经存在的 `metric_id`，不新注册。这四段文字不是新指标
 - `gkxlumen-display` 不直连库。`gkxlumen-element` 只读这张表
 - 点选是对已返回条目的筛选，不新开模型，不新开路径
 - 表里没有行则解读块空。不在接口里写死结论
@@ -219,7 +221,7 @@ trace 沿既有展示链走。本叶不新设计观测点。
 |---|---|---|---|---|
 | 223 短板 | `ads.policy_effect`（`scope_type=region_gap`） | 否 | 区域、`shortboard_cnt`、分项原因。行上已有 `is_mock` 与 `QPOL-02`。不另建 `ads.policy_gap` | 不新开灌数单。要补批次时只跑已有 `polan.eval.gap.run`，由 `POL-L2-DS11-READ-DATA` 排 |
 | 223 焦点 | `ads.policy_focus`（`policy_id` 非空） | 否 | `focus_score`、标题、一句说明。`metric_id` 仍是已有的 `M_POLICY_FOCUS_INDEX/M_POLICY_RELATION_DEGREE`。不另建 `gapfill_policy_eval_focus` | Job 调用已有 `polan.eval.focus.run`。不改公式 |
-| 224、225 | `gkxlumenx_gapfill.gapfill_policy_eval_shell` | 是 | 解读条目：专题或指标名、一句结论、一句应用建议。多媒体条目：标题、一句说明。不灌视频、不灌 PDF、不灌模板 | `POL-L2-DS11-READ-GAPFILL-L01` 只灌这两类行 |
+| 224、225 | `gkxlumenx_gapfill.gapfill_policy_eval_shell` | 否，表已在。2026-11-14 只加四列 | 解读条目：专题名、一句结论、一句应用建议，外加成效说明、实施进度、惠及对象、后续安排。多媒体条目：标题、一句说明，这四列空。不灌视频、不灌 PDF、不灌模板。旧「解读只有三列正文」已被本行取代 | 四条已有解读行补这四段字。查询不灌数 |
 | 226 | `ads.policy_text_parse` | 否 | 已有 `summary`。不另建 `gapfill_policy_eval_summary`。不把用户改稿和推送记录灌进去 | 展示 Job 只查询。解析批次仍是已有 `polan.text.parse.run`，不在请求里调用 |
 
 `POL-L2-DS11-READ-GAPFILL-L01` 的执行人是 `data-agent`，监管 `human:淮政玮`。它依赖本架构和 `POL-L2-DS11-READ-DATA`。本叶不认领、不执行。shell 的每一行带 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at`。没有已挂指标的，`metric_id` 留空。`fill_method` 用 `manual`。`gap_item` 写序号和叶子名。列的其余字段由 `POL-L2-DS11-READ-DATA` 定。查询请求不灌数。
