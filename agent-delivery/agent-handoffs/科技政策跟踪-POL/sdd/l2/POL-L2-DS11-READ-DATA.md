@@ -22,7 +22,7 @@
 | 223 焦点 | 热点问题分析看板 · 焦点指数 | 同一已有 ADS | `policy_focus`，只取 `policy_id` 非空 | 不加列，不建 `gapfill_policy_eval_focus` |
 | 224 | 分主题分指标互动解读 | `gkxlumenx_gapfill` | `gapfill_policy_eval_shell` 的解读行 | 本单定列。建表与灌数在灌数单 |
 | 225 | 多媒体辅助解读 | 同一张缺项表 | `gapfill_policy_eval_shell` 的多媒体行 | 与 224 同一张表，不另建 |
-| 226 | 智能摘要与结论推送 | 同一已有 ADS | `policy_text_parse`，只读已有 `summary` | 不加列，不建 `gapfill_policy_eval_summary` |
+| 226 | 智能摘要与结论推送 | `gkxlumenx_gapfill` | `gapfill_policy_intel_summary`（新建） | 不建正式 ADS；不建旧名 `gapfill_policy_eval_summary`；名单仍可读 `policy_text_parse.policy_id/title` |
 
 223 短板、223 焦点、226 的 D4 仍是 `mock`。224、225 没有专属指标，行是以后灌入的 mock，D4 不因缺项表而改绿。`QPOL-02` 未闭合。`GDF-POLICY-MOCK-GATE-L01` 仍是 blocked。本叶不把 mock 写成已上线，也不把该闸门写成已解开。
 
@@ -128,25 +128,25 @@
 
 ## 5. 226 智能摘要与结论推送
 
-不另建表，不加列，不建 `gapfill_policy_eval_summary`。摘要已经在 `policy_text_parse.summary`。
+新建缺项表 `gkxlumenx_gapfill.gapfill_policy_intel_summary`（utf8mb4 / utf8mb4_general_ci）。不建正式 ADS，不建旧名 `gapfill_policy_eval_summary`。展示挂接仍用 `M_POLICY_DS_11_POLICY_EVAL_012`，D4=mock。
 
-粒度：一行是一条政策的解析结果。展示只读 `summary`。展示挂接用已有 `M_POLICY_DS_11_POLICY_EVAL_012`，这是该列的读面身份。行上的 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。本叶不改这个 `metric_id`，也不把规则截取改成大模型。
+粒度：一行一条政策的 LLM 四块缓存。
 
-`polan.text.parse.run` 用规则截取写入 `summary`：取摘要或正文，压成一行，超过 80 字则截断并加省略号。写入前对整张 `{ads}.policy_text_parse` 做清空，再插入解析行。条款结构化写在同一张表的 `structured_elements` 上。条款批次自己不清空这张表，并写明解析重灌会把该表清空。因此展示请求不调用 `parse.run`。一次展示查询若调用它，会把条款行一起清掉。
-
-| 已有位置 | 本叶怎么读 |
+| 列 | 含义 |
 |---|---|
-| `policy_text_parse.summary` | 智能摘要。只来自表上的查询结果 |
-| `policy_text_parse.policy_id`、`title` | 这条摘要属于哪条政策。名称用表上已有标题 |
-| `policy_text_parse.metric_id` | 行上已有 `M_POLICY_TEXT_PARSE`。不改成 `M_POLICY_DS_11_POLICY_EVAL_012` |
-| `policy_text_parse.structured_elements` | 条款等结构化内容在此。本叶不把条款当成摘要，也不在展示请求里重写它 |
-| `policy_text_parse.auto_tags`、`model_version`、`calc_batch_id` | 保持 `parse.run` 现有写法。本叶不补 |
+| `policy_id` | 主键 |
+| `conclusion` | 结论 |
+| `policy_summary` | 政策摘要 |
+| `key_highlights` | JSON 数组 |
+| `recommendations` | JSON 数组 |
+| `model` | 模型名可空 |
+| `updated_at` | 写入时间 |
 
-展示 Job 的种类仍叫 `policy_text_parse`，但是只查询，并且 2026-11-14 起不建异步任务。`gkxlumen-element` 读 `policy_id`、`title`、`summary`。不传 `policy_id` 时返回全部行。前端只用 `summary` 非空且 `policy_id` 非空的行做下拉，选中后在已返回行里取这一条。换政策不再请求。不在这次请求里调用 `parse.run`，不调用大模型。本单不执行 `parse.run`。旧「展示只读 summary、不带政策名单」已被本段取代。
+读写：仅 Python `intelligent-summary` 在生成成功后 UPSERT；`force=false` 先 SELECT。LLM 上下文可 SELECT `ads.policy_text_parse` 的 `title`/`summary`，**禁止** `parse.run`（会清空整表），禁止把四块写回 `summary` 单列。
 
-可编辑和推送没有登记的用户表，也没有发信通道。本叶不建编辑表，不把改过的句子写回 ADS，不灌假通知，不把推送记录灌进 `policy_text_parse`。用户当时在页面上改字，不构成本条的落表。
+名单下拉仍可读 `policy_text_parse.policy_id`+`title`（只作名单）。行上 `M_POLICY_TEXT_PARSE` 不改。
 
-无行则摘要空，不造段落，不返回写死的句子。D4 保持 mock。序号 242 的推演解读、核增研报 `report/jobs`、`focus-one` 不写入这张表，也不充当这条摘要。
+当页改稿与推送队列不落本表。无行则无三区块，不造段落。242 / `focus-one` 不写入本表。旧「只读 summary」已被本段 2026-11-14（226-FDE）取代。
 
 ## 6. 灌数单
 
@@ -163,7 +163,7 @@
 | 旧 DoD | 本分册 |
 |---|---|
 | 建 `gapfill_policy_eval_focus` | 不建。焦点说明已在 `policy_focus.ext` |
-| 建 `gapfill_policy_eval_summary` | 不建。摘要已在 `policy_text_parse.summary` |
+| 建 `gapfill_policy_eval_summary` | 不建该旧名。226 改建 `gapfill_policy_intel_summary`（见第 5 节） |
 | 建 `gapfill_policy_eval_shell` | 保留。只建这一张，列按第 4 节 |
 | 灌焦点说明 | 不灌进缺项表。焦点仍由已有 `polan.eval.focus.run` 写入 `policy_focus` |
 | 灌摘要结论 | 不灌进缺项表。展示请求不调用 `parse.run` |

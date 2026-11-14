@@ -363,6 +363,7 @@ erDiagram
 | `gapfill_policy_eval_partition` | `gkxlumenx_gapfill` | 评估分区对照。对象是地区、行业、目标群体 |
 | `gapfill_policy_eval_scheme` | `gkxlumenx_gapfill` | 评估方案。行种类是方案对照、参数模拟、路径与风险、互动意见 |
 | `gapfill_policy_eval_shell` | `gkxlumenx_gapfill` | 解读条目与多媒体标题说明。解读行另有成效说明和复盘三句 |
+| `gapfill_policy_intel_summary` | `gkxlumenx_gapfill` | 226 智能摘要 LLM 四块缓存（draft；波次 D 建表） |
 | `gapfill_policy_eval_template` | `gkxlumenx_gapfill` | 报告模板选用：周期、分析维、图表类型 |
 | `gapfill_policy_eval_trend` | `gkxlumenx_gapfill` | 评估趋势点。切换维是时间、区域、类别 |
 | `gapfill_policy_impl_dept` | `gkxlumenx_gapfill` | 区域、实施部门、方面上的件数和清单标题 |
