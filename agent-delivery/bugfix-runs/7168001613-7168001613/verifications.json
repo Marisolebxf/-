@@ -1,0 +1,74 @@
+[
+  {
+    "id": "V-PY-FIX-1",
+    "category": "fix",
+    "behavior": "industry-kpi/industry-comparison/distribution 按 chain_code 过滤返回所选产业数据",
+    "result": "PASS",
+    "repo_ids": ["topic_py"],
+    "evidence_refs": ["EV-IMPL-SELFTEST-V2"],
+    "notes": "链码下推 view+repo 双层断言；distribution 链维现聚 SQL 断言"
+  },
+  {
+    "id": "V-PY-REG-1",
+    "category": "regression",
+    "behavior": "无链码时三接口保持旧行为（ALL 行/全链/预聚合表）",
+    "result": "PASS",
+    "repo_ids": ["topic_py"],
+    "evidence_refs": ["EV-IMPL-SELFTEST-V2"],
+    "notes": "测试显式断言：无链码 SQL 不含链过滤、走 enterprise_distribution 表"
+  },
+  {
+    "id": "V-JAVA-FIX-1",
+    "category": "fix",
+    "behavior": "EnterpriseMetaRequest/EnterpriseDistributionRequest 链码字段编译通过并整体转发",
+    "result": "PASS",
+    "repo_ids": ["backend"],
+    "evidence_refs": ["EV-IMPL-SELFTEST-V2"],
+    "notes": "api/biz 模块 mvn -o compile exit 0"
+  },
+  {
+    "id": "V-JAVA-REG-1",
+    "category": "regression",
+    "behavior": "空请求体（无链码字段）序列化行为不变，既有调用方零影响",
+    "result": "PASS",
+    "repo_ids": ["backend"],
+    "evidence_refs": ["EV-IMPL-SELFTEST-V2"],
+    "notes": "字段可空 + @JsonInclude(NON_NULL)：不传不出现在 JSON；biz 模块全量编译绿（既有引用零破坏）"
+  },
+  {
+    "id": "V-UI-FIX-1",
+    "category": "fix",
+    "behavior": "选择产业后 KPI/排名/趋势/分布随链码收窄；选中态按码精确匹配",
+    "result": "PASS",
+    "repo_ids": ["ui_topic"],
+    "evidence_refs": ["EV-IMPL-SELFTEST-V2"],
+    "notes": "type-check + build 绿；pickRank 失败清空不兜底"
+  },
+  {
+    "id": "V-UI-REG-1",
+    "category": "regression",
+    "behavior": "不选产业（全局态）页面行为与改前一致",
+    "result": "PASS",
+    "repo_ids": ["ui_topic"],
+    "evidence_refs": ["EV-IMPL-SELFTEST-V2"],
+    "notes": "scopeChainCode 空串时请求不带 chain_code（undefined 参数）、pickRank 空码清空选中=改前默认无高亮路径；type-check+build 全仓绿（含既有页面零破坏）"
+  },
+  {
+    "id": "V-BUNDLE-BOUND-1",
+    "category": "boundary",
+    "behavior": "ALL/空码=全局；L0 不在链表回落全局口径并清空选中（不再误显第 1 名）",
+    "result": "PASS",
+    "repo_ids": ["topic_py", "backend", "ui_topic"],
+    "evidence_refs": ["EV-IMPL-SELFTEST-V2"],
+    "notes": "py 测试覆盖 ALL 归一；前端 scopeChainCode 空串分支"
+  },
+  {
+    "id": "V-BUNDLE-INT-1",
+    "category": "integration",
+    "behavior": "前端传码→Java 透传→Python 过滤 全链路",
+    "result": "SIMULATED",
+    "repo_ids": ["topic_py", "backend", "ui_topic"],
+    "evidence_refs": ["EV-INT-CONTRACT-SIM"],
+    "notes": "契约级源码对照 SIMULATED：三仓 chain_code/chain_codes 字段名一致、@JsonProperty 双向、@RequestBody 整体转发；运行时 dev 验证步骤见 evidence/int-dev-pending.md（EV-INT-DEV-PENDING，部署后补验）"
+  }
+]

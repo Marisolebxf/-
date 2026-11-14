@@ -2362,7 +2362,27 @@ _（本接口无额外字段说明，见通用约定）_
 
 > `country_location_ids` 里的码为久新侧 `country_location_id` 原值（如中国=`loc_B56D89F0452662FBF49EAAD21C2A630E`），智树侧自动映射自有国家码；映射不上的码查询结果为空。
 
-**响应 `data`**：`{total, page, size, records[]}`；records 为企业文档（org_id / name_cn / social_credit_code / 行业 / 地区等，全量字段以实际返回为准）。
+**响应 `data`**：`{total, page, size, records[]}`；records 为企业检索列表项，字段与专题系统企业搜索完全一致（35 字段）：
+
+| 字段 | 说明 | | 字段 | 说明 |
+|---|---|---|---|---|
+| org_id | 企业唯一 ID | | name_cn | 企业中文名 |
+| social_credit_code | 统一社会信用代码 | | name_en | 英文名 |
+| former_names | 曾用名数组 | | lerep | 法定代表人 |
+| province / city / district | 省/市/区 | | industry_class / industry_class_name | 国标行业码/名称 |
+| incorporation_year / incorporation_date | 成立年份/日期 | | listing_status | 上市状态 |
+| registered_capital_value | 注册资本 | | tags_flat | 标签编码数组 |
+| industry_chain_names_flat | 产业链名称数组 | | enterprise_scale | 企业规模 |
+| is_above_scale | 是否规上 | | competitiveness_score | 竞争力得分 |
+| risk_level | 风险等级 | | operating_status | 经营状态 |
+| chain_position_text | 产业链位置描述 | | main_prod | 主要产品 |
+| logo_url | Logo 地址 | | company_type | 企业类型 |
+| region_id | 区域编码 | | tech_score / business_score | 技术力/商业力得分 |
+| high_value_patent_count | 高价值专利数 | | revenue_growth_rate / profit_margin | 营收增长率/利润率 |
+| supply_chain_role | 供应链角色 | | core_tech_tags_flat | 核心技术标签数组 |
+| statistics | 统计指标对象（专利/财务等） | | **industry_id / industry_name** | **所属产业（智树新增上浮字段）** |
+
+> 以上为列表项全量字段，透传自专题系统检索接口，与专题前端所见一致。
 
 ### 3.19.10 智能搜索·产业
 
@@ -2402,7 +2422,19 @@ _（本接口无额外字段说明，见通用约定）_
 }
 ```
 
-**响应 `data`**：`{total, page, size, records[]}`；records 为产业链节点（id / stableId / objectType / name / aliases / tags 等）。
+**响应 `data`**：`{total, page, size, records[]}`；records 为产业链节点，字段（10 个）：
+
+| 字段 | 说明 |
+|---|---|
+| id / stableId | 产业码（INB*）/ 稳定 ID（industry:INB*） |
+| objectType | 对象类型（industry） |
+| name / aliases | 产业名称 / 别名数组 |
+| domain / domains | 所属领域名称（单/数组） |
+| classification | 分类 |
+| summary | 产业简介 |
+| source / updatedAt | 数据来源 / 更新日期 |
+| availability | 可用状态 |
+| tags | 标签数组 |
 
 ### 3.19.11 智能搜索·政策
 
@@ -2443,7 +2475,23 @@ _（本接口无额外字段说明，见通用约定）_
 
 > 传非中国的 `country_location_id` → 直接返回空 `records`（当前政策仅国内数据）。
 
-**响应 `data`**：`{total, page, size, records[]}`；records 为政策条目（policy_id / title 等）。
+**响应 `data`**：`{total, page, size, records[]}`；records 为政策条目，字段（21 个）：
+
+| 字段 | 说明 |
+|---|---|
+| policy_id | 政策唯一 ID |
+| title | 政策标题 |
+| abstract | 摘要 |
+| issued_number | 发文字号 |
+| publish_organization / publish_date / publish_year | 发布机关/日期/年份 |
+| rank | 政策级别（国家/省/市等） |
+| province / city / district | 省/市/区 |
+| region / geo_region / country | 区域/地理区域/国家 |
+| status | 有效性状态 |
+| policy_type / categories / theme / topics | 政策类型/分类/主题 |
+| keywords | 关键词 |
+| url | 原文链接 |
+| updated_time | 更新时间 |
 
 ### 3.19.12 智能搜索·服务机构
 
@@ -2484,7 +2532,24 @@ _（本接口无额外字段说明，见通用约定）_
 
 > 传非中国的 `country_location_id` → 直接返回空 `records`（当前服务机构仅国内数据）。
 
-**响应 `data`**：`{total, page, size, records[]}`；records 为服务机构文档（org_id / service_org_code / name_cn 等）。
+**响应 `data`**：`{total, page, size, records[]}`；records 为服务机构文档，字段（24 个）：
+
+| 字段 | 说明 |
+|---|---|
+| org_id / service_org_code | 机构唯一 ID / 编码 |
+| name_cn / name | 机构名称 |
+| province / city / district / area | 省/市/区/园区 |
+| industry | 所属行业（国标分类） |
+| service_type_candidate / service_type_label | 服务类型候选/标签 |
+| stage_codes | 服务环节码数组 |
+| tech_score | 技术力得分 |
+| patent_valid_count | 有效专利数 |
+| employees_number | 员工数 |
+| dimension_scores | 多维得分对象 |
+| fields_flat / fields_from_tags | 服务领域平铺 |
+| recommended | 是否推荐 |
+| rule_version / etl_batch_id | 规则版本/批次 |
+| org_type / ext | 机构类型/扩展信息 |
 
 ### 3.20 专家知识
 

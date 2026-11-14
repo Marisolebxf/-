@@ -110,3 +110,32 @@
 - `changes:validate` 改为结构与存在性校验：违例返回 422 / 42201 + `errors[]`；通过时返回 `summary` 与中文 `preview[].desc`。`POST /changes` 提交前跑同一套校验。
 - `publish` 返回 `results{succeeded,failed,failed_items}`；`impact` 对不存在的技术点返回 404 / 40401。
 - display 写入口（changes / validate / publish）要求登录：开关 `gkxlumen.maintain.write-require-login` 默认 true，未登录返回 401 / 40101。
+
+
+## 追记（2026-11-13）· 维护技术图谱 34–40 改动了共用发布路径
+
+> 来源：[TS-L2-M10-GRAPH-API.md §9](./TS-L2-M10-GRAPH-API.md)（2026-11-13 五身份会签、监管人 `human:刘剑锋` 签收）。下文原样转录该节，标题降一级。本册此前与之冲突的表述以本追记为准。**本追记须由本册原审稿身份确认（见 `会签/TS-L2-M10-ENT-SIGNOFF-{ARCH,API,DATA,ALGO}.md` 各自末节「GRAPH 追记确认」），确认前不派 `TS-L2-M10-GRAPH-PY-IMPL-01`。**
+
+### 9. 对 ENT-API 的追记（共享发布路径的变化）
+
+> 本节只写在 GRAPH 册；签收后由协调方落到 `TS-L2-M10-ENT-API.md`，并在 `会签/TS-L2-M10-ENT-SIGNOFF-API.md` 追加由原审稿身份确认的一节。**确认前不派 PY-IMPL（含单测）**（ARCH §10 第 3 行 / N5）。
+
+| # | ENT 契约变化 | 对 ENT 前端（FE-TS-10C）影响 |
+|---|---|---|
+| E1 | `publish` 增可选 body `{label?, client_batch_id?}`，回执增 `node_id_map`（ENT 为 `{}`）与 `results`（可空） | 调用可继续不带 body；若要显示版本说明则传 `label`。`node_id_map` 可忽略 |
+| E2 | 发布/回滚改**单事务 + 串行锁**，`projection_status` 恒 `ok`，不再产生 pending | 不再出现 50301；`projection_status` 判断可保留但恒 ok |
+| E3 | `changes` 增 `client_batch_id`（**选填、服务端可生成**，裁定 A7）；同批重试回原回执；`publish` 可选回传同一值 | **ENT 页不强制改**；建议后续补上以享重试幂等 |
+| E4 | `graph_version` 增 `kind` / `snapshot_status`；版本四端点对 ENT 版本同样可用 | 可显示版本类型/可回滚原因；详情按 `version_id` |
+| E5 | 技术点名称唯一性只约束 active（替换 `uk_name_cn`）；`update_node` 改名撞 active 名 → 422；软删后可同名重建 | ENT 页若改名，需按 422 提示 |
+| E6 | `/current` 追加顶层 `tech_edges[]`、节点 `layout`，**不并入 `node.edges`** | 现 `toPanorama` 忽略未知顶层键，契约上无需改；**禁止**把 `tech_edges` 当实体关系映射 |
+| E7 | `delete_node` 级联同时软删该点的 `graph_tech_edge` 行，并逐条记 `tech_edge` 删除日志 | 无（ENT 页不发 delete_node） |
+| E8 | `graph_entity_member` 缺表/缺列仍静默跳过（1146/1054），不报 50302 | 无 |
+| E9 | 删除 `_project_nebula` 与 `GKX_NEBULA_MAINTAIN_SPACE`，本链不写 Nebula | 无（线上本就未配置） |
+| E10 | 50301 退役；Java 下游不可达改 **50303**（监管人 A5 已批） | `FeApi:372–374` 的 50301 分支删除；50303 走通用失败提示 |
+| E11 | **ENT 共用单测更新**：`SituationMaintainEntControllerTest:49`（50301 断言→50303）、`:70`（`publish("cs-1")` 签名加 body）；`TechGraphMaintainControllerTest:72`（add_node/add_edge/delete_edge 由 400 改放行）、`:129`/`:137`/`:149`（50301 断言）、`:135`（publish 签名）；`PanoramaReadAssemblyTest` 补 `overlay` 与键集断言 | 进 CI 前必须同步改，否则改签名/码位会卡流水线；闸门含单测 |
+| E12 | **`impact` 新增两字段**：`tech_edge_count`（工作集 active 双向）与 `panorama_hidden_relation_count`（entan 自有 Nebula 只读会话 + 显式 `USE demo_gkx_chain`，失败 `null`） | 无（ENT 页不调 impact）；新增 Nebula 只读依赖需在 ENT 追认 |
+| E13 | **版本 operator 署名变化**：保存取 `change_set.operator`（display 注入用户名），回滚取请求 operator；历史行仍 `py`/`unknown`；`operator_display` 规则见 §4.5 | 版本列表/详情/审计区/悬浮提示只显示 `operator_display`，不直出原值 |
+| E14 | **`stats` 结构**：新版本统一 §3.4 分组键；历史 ENT 版本保留旧四形状、不回填 | FE-TS-10C 若展示改动计数，需兼容四种旧形状（缺组不补 0） |
+| E15 | **快照 payload 扩表/扩列**：新增 `graph_tech_edge`、`layout_x/layout_y`，并带 `schema_version`；`technology_master` 还原排除生成列 `name_cn_active` 与 `updated_at` | 无（DATA/ENT-DATA 追认项） |
+
+**FE-TS-10C 结论**：不强制新增 `client_batch_id`（裁定 A7）；仅随共享 api 模块做两处清理——移除 50301 分支、`publish` 支持空 body。若版本列表展示计数，需兼容历史四种 `stats` 形状。其余字段增量可忽略（`tech_edges`/`layout` 不并入 `node.edges`）。

@@ -1,0 +1,45 @@
+{
+  "repos": [
+    {
+      "repo_id": "topic_py",
+      "reviewer": "agent:independent-review",
+      "reviewed_sha": "e5803471ff2e9d0fb779c319cadcf05021fc6fa9",
+      "verdict": "PASS",
+      "scope": "gkx_common/repositories/overview.py + gkx_search_service/views/enterprise_overview.py + enterprise_distribution.py + tests/test_overview_chain_scope.py",
+      "independent": true,
+      "findings": [
+        "链码归一（chain_codes/chain_code/ALL）单点实现，空/ALL 回落旧行为，无行为漂移",
+        "链维分布现聚 JOIN 口径与 9y seed 一致（COUNT(DISTINCT org_id)，code_region 刷码）；global 单点 CHN 对齐 seed 灌数",
+        "new_enterprise_count 链维无明细诚实填 0，未伪造",
+        "4 项测试覆盖 fix/regression/boundary；已跑通 4/4"
+      ]
+    },
+    {
+      "repo_id": "backend",
+      "reviewer": "agent:independent-review",
+      "reviewed_sha": "ef3f8173f79f0404c9ca0e05c6b7c209b0074b6e",
+      "verdict": "PASS",
+      "scope": "EnterpriseMetaRequest + EnterpriseDistributionRequest（仅加字段）",
+      "independent": true,
+      "findings": [
+        "纯 DTO 加字段 + @JsonProperty snake_case 对齐仓内约定（对照 EnterpriseStatsRegionRequest），序列化/反序列化双向生效",
+        "@RequestBody 整体转发链路无需改动；api/biz 模块 mvn -o compile 双绿",
+        "无算法逻辑（D 铁律：Java 不写算法）✓"
+      ]
+    },
+    {
+      "repo_id": "ui_topic",
+      "reviewer": "agent:independent-review",
+      "reviewed_sha": "83339d6b4b012bfbef8cebdc92c0a4d85e39040c",
+      "verdict": "PASS",
+      "scope": "DevelopmentOverviewPanel.vue + portalFormat.ts + api types",
+      "independent": true,
+      "findings": [
+        "scopeChainCode L0 直取规约对齐 KeyEnterprisesPanel 既有实现（含集群校验与首 L0 兜底）",
+        "pickRank 按码精确匹配失败清空——修掉「选A显B」根因；删除名称模糊 matchChainCode",
+        "watch industryPath 改为全量 load（KPI 也需随链刷新，原先只刷趋势/分布是错的）",
+        "type-check + build 绿；未触碰并行会话 ServicePortal* 文件"
+      ]
+    }
+  ]
+}

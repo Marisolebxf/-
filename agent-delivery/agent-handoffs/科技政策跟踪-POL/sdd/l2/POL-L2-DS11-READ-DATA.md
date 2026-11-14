@@ -88,8 +88,8 @@
 
 | 值 | 序号 | 这一行放什么 |
 |---|---|---|
-| `解读` | 224 | 专题或指标名、一句结论、一句应用建议 |
-| `多媒体` | 225 | 标题、一句说明 |
+| `解读` | 224 | 专题名、一句结论、一句应用建议，外加成效说明、实施进度、惠及对象、后续安排。旧「只有前三列正文」已被 2026-11-14 取代 |
+| `多媒体` | 225 | 标题、一句说明。可空 `policy_id`：标题对得上已有摘要政策才填，对不上留空。旧「不挂政策」已被 2026-11-14 取代 |
 
 点选专题或指标，只在已经返回的 `解读` 行里筛选。不另起计算，不新开路径。`GET /display/v1/policy/evaluation/shells` 由 `gkxlumen-element` 只读这张表。`gkxlumen-display` 不直连库。不写入 ODS、DWD、ADS、供应方库。不写对象存储，前端不直连 RustFS。
 
@@ -101,9 +101,14 @@
 | `entry_kind` | varchar(16) | 否 | `解读` 或 `多媒体` |
 | `topic_or_metric` | varchar(256) | 是 | `解读` 行必填：专题或指标名。`多媒体` 行空 |
 | `conclusion_text` | text | 是 | `解读` 行必填：一句结论。`多媒体` 行空 |
-| `suggestion_text` | text | 是 | `解读` 行必填：一句应用建议。`多媒体` 行空 |
+| `suggestion_text` | text | 是 | `解读` 行必填：一句应用建议。`多媒体` 行空。不拿来充当复盘三句 |
+| `understand_text` | text | 是 | `解读` 行：深度理解的成效说明。`多媒体` 行空。2026-11-14 新增 |
+| `replay_progress_text` | text | 是 | `解读` 行：多角度复盘的实施进度。`多媒体` 行空。2026-11-14 新增 |
+| `replay_audience_text` | text | 是 | `解读` 行：多角度复盘的惠及对象。`多媒体` 行空。2026-11-14 新增 |
+| `replay_next_text` | text | 是 | `解读` 行：多角度复盘的后续安排。`多媒体` 行空。2026-11-14 新增 |
 | `title` | varchar(256) | 是 | `多媒体` 行必填：标题。`解读` 行空 |
 | `caption` | text | 是 | `多媒体` 行必填：一句说明。`解读` 行空 |
+| `policy_id` | varchar(64) | 是 | 2026-11-14 新增。`多媒体` 行：对得上已有摘要政策才填那条的 `policy_id`，对不上留空。`解读` 行留空，224 不按这列过滤 |
 | `is_mock` | tinyint | 否 | 每行必须为 1 |
 | `metric_id` | varchar(64) | 是 | 没有已挂指标则留空。条目若指向已经存在的指标，只写那个已有 `metric_id`。不新注册 |
 | `gap_item` | varchar(128) | 否 | `解读` 行固定 `224 分主题分指标互动解读`。`多媒体` 行固定 `225 多媒体辅助解读`。不写序号 222 |
@@ -137,7 +142,7 @@
 | `policy_text_parse.structured_elements` | 条款等结构化内容在此。本叶不把条款当成摘要，也不在展示请求里重写它 |
 | `policy_text_parse.auto_tags`、`model_version`、`calc_batch_id` | 保持 `parse.run` 现有写法。本叶不补 |
 
-展示 Job 的种类是已签收架构定的 `policy_text_parse`：只查询。不在这次请求里调用 `parse.run`，不调用大模型。本单不执行 `parse.run`。
+展示 Job 的种类仍叫 `policy_text_parse`，但是只查询，并且 2026-11-14 起不建异步任务。`gkxlumen-element` 读 `policy_id`、`title`、`summary`。不传 `policy_id` 时返回全部行。前端只用 `summary` 非空且 `policy_id` 非空的行做下拉，选中后在已返回行里取这一条。换政策不再请求。不在这次请求里调用 `parse.run`，不调用大模型。本单不执行 `parse.run`。旧「展示只读 summary、不带政策名单」已被本段取代。
 
 可编辑和推送没有登记的用户表，也没有发信通道。本叶不建编辑表，不把改过的句子写回 ADS，不灌假通知，不把推送记录灌进 `policy_text_parse`。用户当时在页面上改字，不构成本条的落表。
 

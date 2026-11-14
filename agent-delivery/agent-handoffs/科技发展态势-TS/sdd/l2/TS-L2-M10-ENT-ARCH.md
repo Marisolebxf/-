@@ -48,6 +48,8 @@ flowchart LR
 2. **发布单事务语义**（Python）：主表 upsert → version+1 → Nebula UPSERT/DELETE → ADS 投影 → 失效快照；**失败补偿**：MySQL 先提交、Nebula 失败→版本标 projection_pending+补偿重放（Nebula 无跨库事务），页面读旧版标「图谱更新中」。
 3. **合并规则**：manual > auto（字段级）；tombstone > auto 复活；auto 新值撞人工覆盖 → 冲突队列（DN-A03-03）。
 4. **乐观锁**：base_version 不符 → 409+差异列表。
+
+> **〔2026-11-13 已被取代〕** 本节 Nebula 投影 / 两段式发布已被 [`TS-L2-M10-GRAPH-ARCH.md`](./TS-L2-M10-GRAPH-ARCH.md) §1-4 取代：发布 / 回滚改为 `GET_LOCK('m10_graph_publish',10)` 下单事务，本链不写 Nebula，不再有 pending / 50301。ENT 与 GRAPH 发布共用这把锁，可能返回 409「他人正在保存，请稍后重试」，这不是版本冲突（ENT 追认 ARCH-C1 / C4）。
 5. **回滚** = 反向变更集再走发布（可审计），不物理覆盖。
 
 ## 2. OI-A03-01 阻塞分档（会签重点 ①，不整体停摆）
@@ -83,6 +85,8 @@ flowchart LR
   merge --> published[("published：技术点主表 + Nebula gkx_chain + ADS graph_node/edge")]
   published --> rd["Java 只读 ADS 投影"] --> fe["M10 页 + M2 全景图消费"]
 ```
+
+> **〔2026-11-13 已被取代〕** 上图 `pub` / `published` 节点的 Nebula 投影 / 两段式发布已被 [`TS-L2-M10-GRAPH-ARCH.md`](./TS-L2-M10-GRAPH-ARCH.md) §1-4 取代：发布 / 回滚改为 `GET_LOCK('m10_graph_publish',10)` 下单事务，本链不写 Nebula，不再有 pending / 50301。ENT 与 GRAPH 发布共用这把锁，可能返回 409「他人正在保存，请稍后重试」，这不是版本冲突（ENT 追认 ARCH-C1 / C4）。
 
 ## 5. 明确不做
 

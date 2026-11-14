@@ -169,3 +169,73 @@ A03 `op=` 全集（grep 实证，10 个）：`add_node / delete_node / add_edge 
 
 ---
 *三分册会签：agent:api-agent · 2026-11-07*
+
+---
+
+## GRAPH 追记确认（2026-11-13 agent:api-agent）
+
+> 立场：只审契约面（请求/响应形状、错误码、前端接线、测试）。
+> 依据：`TS-L2-M10-GRAPH-API.md` §1/§3/§4/§5/§6.3/§7/§8/§9、`TS-L2-M10-GRAPH-DATA.md` §5.4/§11；对照 `TS-L2-M10-ENT-API.md` §2–§7 与 `TS-L2-M10-ENT-API.md` 追记 E1–E15。
+> 核对基线（2026-11-13）：display `SituationMaintainEntController.publish` 已是 `@RequestBody(required=false)` + `withOperator`，`relayCode` 已按 `status<=0 → 50303`；display/topic 测试已按新签名与码位改完；`PanoramaReadAssemblyTest:79–130` 已有 overlay/键集三例。**剩余未落：ENT FE 两处、Python 路由与单测。**
+
+### 一、41–47 端点是否行为不变
+
+| 追记 | 结论 |
+|---|---|
+| E1 publish body/`node_id_map`/`results` 可空 | **形状兼容**。ENT FE 仍不带 body，display 合成 `{operator}` 后转发；`node_id_map` ENT 恒 `{}` 可忽略；`results` 可空已反映到 `types/maintainEnt.ts:205`。**但消费端未做空判**（见二）。 |
+| E2 单事务、无 pending | 状态语义变化：50301 不再产生；`/current.projection_status` 恒 `ok`，ENT FE `statusNotice` 的 pending 分支成死代码（保留无害）。 |
+| E3 `client_batch_id` 选填 | ENT 契约不变（服务端生成）；display `withOperator` 复制原 body，将来 FE 要传也能透传。**不要求 ENT 改**。 |
+| E4 `kind`/`snapshot_status`/版本四端点 | 后端可用（display 已暴露 `/versions`、`/versions/{id}`、rollback），但 **ENT FE 无任何消费方**（版本区只在 `GraphMaintainEditor.vue` 的本地 mock 模型）。E4"前端可显示版本类型"对 ENT 不成立，应改写为"后端可用，ENT 前端暂无入口"。 |
+| E5 改名撞 active 名 → 422 | ENT 页 `buildEntityUpdateOps` 对技术点确实发 `update_node`+`name_cn`，422 可触发；Python 文案为中文"名称已存在（不区分大小写），请换一个"，FE 走通用 `操作失败：<msg>` 可读。**无需新增分支**。 |
+| E6 `tech_edges[]`/`layout` | ENT FE `toPanorama` 只映射 `node.entities`/`node.edges`，忽略顶层新键与 `node.layout`，安全；"禁止当实体关系映射"的约束无 ENT 违例。 |
+| E7 `delete_node` 级联 | ENT 页不发 delete_node，无关。 |
+| E8 member 缺表静默 | 不变。 |
+| E9 删 Nebula 投影 | 对 ENT 端点无可见影响。 |
+| E10 50301→50303 | display 已落 `relayCode`；**ENT FE 未改**（见二）。 |
+| E11 共用单测 | 所列 Java 项**已闭合**（现值：display 测试 `:55` 50303、`:76/:95` 双参、`:85–101` operator 注入、`:104–110` 版本读；topic 测试 `:70–89`/`:141–154`/`:172–180`；`PanoramaReadAssemblyTest:79–130`）。**E11 描述的是改前状态，需重写为"已落 + 剩余"**。 |
+| E12 impact 新字段 | ENT 页不调 impact，无 FE 影响；`GraphNodeImpact` 类型已含两字段。`panorama_hidden_relation_count=null` 的"无法统计"规则只在 GRAPH 35-3 确认框用。 |
+| E13 operator | display 已注入登录用户名；ENT 无版本区，无展示面。 |
+| E14 stats 分组 | ENT FE 不展示 stats，无需兼容四种形状；`PublishResult.stats` 已改 `unknown`。 |
+| E15 快照 payload | DATA 面。 |
+
+**补充发现（R2 会因缺表整体降级）**：`graph_current` 现以"捕获缺表异常 → `schema_ready:false` + 空图"兜底（`routes:368–371`）。若新读路径未对 `graph_tech_edge` 缺表单独容忍，在只缺该表的窗口期，**ENT R2 会显示"数据表尚未部署"且列表为空**——这不是 ENT 功能变化，是部署顺序造成的假故障。契约上应要求：仅 `graph_tech_edge` 缺失时返回 `tech_edges: []`，`schema_ready` 仍 `true`；做不到则以部署闸门兜底（ARCH-C2）。
+
+### 二、FE-TS-10C 是否必须改
+
+**必须改两处，均应改：**
+
+1. `src/api/situation/maintain-ent.ts:372`：`error.status === 503 && error.code === 50301` 的"已受理，图谱投影中"分支——**删除**（50301 不再产生；50303 落通用失败提示即可）。同时 `:225` pending 文案可删可留（死分支）。
+2. `src/api/situation/maintain-ent.ts:552`：`publish.results.failed`——`results` 已可空（`types/maintainEnt.ts:205`），**改成 `ok: !publish || (publish.results?.failed ?? 0) === 0`**，否则幂等回执/异常回执下抛 TypeError，被 `catch` 吞成"操作失败"（用户看到假失败）。`maintainEntOps.ts:393 summarizePublishResult` 已空安全，勿动。
+
+**建议同批改一处文案**：`maintain-ent.ts:370` 的 409 分支一律写"版本冲突：他人已先修改…"，但共享锁返回的 40901 文案是"他人正在保存，请稍后重试"。改成：`errorMessage(error)` 含"正在保存"时直出该文案，否则保留"版本冲突"前缀。
+
+**不要求**：`client_batch_id`、publish body（display 已合成）、`stats`/`operator`/`tech_edges`/`layout` 展示。
+
+### 三、必须改的测试
+
+- **Java 已闭合**（见一/E11 现值）；建议补一条 MockMvc：`publish` 完全无 body 时 display 仍转发 `{operator}`（现仅覆盖 `null` 直调，见 `SituationMaintainEntControllerTest:95`，已足够）。
+- **Python 未列、必改**：`test_graph_maintain.py` 的 `:535`（`_project_nebula` 删除）、`:459/:482/:506/:514/:556`（扁平 stats → 分组）、`:432/:447`（`publish_change_set` 签名与 `results` 形状）；另需新增一条：`graph_current` 在仅缺 `graph_tech_edge` 时 `tech_edges:[]` 且 `schema_ready` 不降级。
+- **E11 的 `PanoramaReadAssemblyTest` 项已由 as-built 满足**，不再是待办；GROUP 若还要"键集断言"，落在该测试 `:79–130` 即可。
+
+### 四、追记遗漏的 ENT 影响
+
+1. **E11/E17 写的是改前快照**：Java 测试与 `PanoramaReadAssemblyTest` 已落，照原文转述会让实现者重复改、并误以为闸门未过；且两处都漏了 Python 单测（ENT 共用发布路径的真正主体）。
+2. **`graph_current` 缺表降级**（见一补充）：ENT R2 会被新表拖成"未部署"空图。
+3. **`results:null` 的 FE 空判**：类型已改可空，代码未跟。
+4. **409 双义**：锁等待与版本冲突同码同文案前缀。
+5. **E4 的"ENT 前端可显示版本"不成立**：ENT 无版本端点消费方，属过度承诺。
+
+### 条件（改哪里、改成什么）
+
+| # | 改哪里 | 改成什么 |
+|---|---|---|
+| C1 | `maintain-ent.ts:372` | 删除 50301 分支（含其 `loadEntityRelationState(... '已受理，图谱投影中...')` 调用），50303 走 `操作失败：<msg>` 通用分支。 |
+| C2 | `maintain-ent.ts:552` | `ok: !publish \|\| (publish.results?.failed ?? 0) === 0`；`EntityRelationPanel.vue` 的 `summarizePublishResult` 保持现状（已空安全）。 |
+| C3 | `maintain-ent.ts:370` | 409 分支按服务端文案分流：含"正在保存"直出，否则"版本冲突：他人已先修改（…），请刷新后重试"。 |
+| C4 | `maintain-ent.ts:225`（可选） | 删 pending 文案；不删也不阻断。 |
+| C5 | `TS-L2-M10-ENT-API.md` E11 / `ENT-DATA.md` item 17 | 重写为"Java 已落（列现值）＋剩余：`test_graph_maintain.py:535/459/482/506/514/556/432/447`、`maintain-ent.ts:372/552`、`graph_current` 缺 `graph_tech_edge` 降级用例"；删去 `PanoramaReadAssemblyTest` 的待办表述。 |
+| C6 | `graph_current`（PY-IMPL 实现单） | 新读 `graph_tech_edge` 的异常处理与 `graph_entity_member` 同规格（1146/1054 静默→空列表），`schema_ready` 不因该表缺失置 false；或在 ARCH-C2 部署闸门中明确"DDL 先于代码"。 |
+
+### 结论
+
+**有条件追认**。契约方向（可选 body、50303、operator 注入、版本/回滚后端能力）成立；C1–C3 是 ENT 前端必须随共享 api 模块落地的最小改动，C5 是追记准确性问题，C6 关系到 ENT R2 不被新表拖空。C1–C6 闭合后本身份无保留。

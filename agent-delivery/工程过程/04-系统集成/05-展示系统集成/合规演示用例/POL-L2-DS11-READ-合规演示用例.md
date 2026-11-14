@@ -16,17 +16,17 @@
 | 需规位置 | 界面 | 输入或选择 | 触发 | 接口地址 | 按界面值填好的请求 | 期望输出 | 数据情况 |
 |---|---|---|---|---|---|---|---|
 | 223 热点问题分析看板 | 政策分析评价 · 结果解读 | 不填筛选项，看短板条数 | 打开看板即 GET counts | GET /display/v1/policy/evaluation/counts | 无查询参数 | 有 `region_gap` 行时 `records` 至少 1 行，含 scopeCode、scopeName、shortboardCnt，shortboardCnt 为正整数，与表内一致，响应不含机遇字段。无行则空，不得返回 0，不返回 501。焦点指数 `POST jobs` body `{"sub_type":"policy_focus_ads"}` 会先跑 focus.run 并改写 `policy_id` 非空行，测试用例未给出具体分数，循环不重放 | 可演 |
-| 224 分主题分指标互动解读 | 政策分析评价 · 结果解读 | 不另填。与 225 同一次 GET | 打开解读即 GET shells | GET /display/v1/policy/evaluation/shells | 无查询参数 | 解读 4 条：研发费用加计扣除、科技型中小企业培育、高新技术企业认定、科技创新成果科普传播。各有一句结论和一句应用建议。测试用例 BUG-01：shells 因旧列名恒空。循环不把这次空列表改写成通过 | 可演 |
-| 225 多媒体辅助解读 | 政策分析评价 · 结果解读 | 不另填。与 224 同一次 GET | 同一次 shells | GET /display/v1/policy/evaluation/shells | 无查询参数 | 多媒体 3 条：研发费用加计扣除政策图解、科技型中小企业政策宣讲实录、高新技术企业认定要点速览。与 224 同一条 BUG-01 | 可演 |
-| 226 智能摘要与结论推送 | 政策分析评价 · 结果解读 | sub_type 固定 policy_text_parse | 开始分析后取已有摘要，请求内不调用 parse.run | POST /display/v1/policy/evaluation/jobs | {"sub_type":"policy_text_parse"} | 结果只含 `ads.policy_text_parse.summary`。跑前后表行数不变。测试用例未冻结某一句摘要，循环不另编句子。无摘要则空，不返回写死段落 | 可演 |
+| 224 分主题分指标互动解读 | 政策分析评价 · 结果解读 | 不另填。与 225 同一次 GET。卡片默认第一个专题，角度停在深度理解 | 打开解读即 GET shells。切换角度不重新请求 | GET /display/v1/policy/evaluation/shells | 无查询参数 | 解读 4 条：研发费用加计扣除、科技型中小企业培育、高新技术企业认定、科技创新成果科普传播。同一时间只打开一个角度：深度理解、精准解读、多角度复盘。四个主题都有深度理解正文、结论（句末没有「缺项演示」），以及实施进度、惠及对象、后续安排三句。缺句时界面写「暂无该角度的解读」，真轨不得用演示种子填上。应用建议仍在行上，不是复盘正文。shells 空列表仍判不通过 | 可演 |
+| 225 多媒体辅助解读 | 政策分析评价 · 结果解读 | 与 226 共用政策下拉。打开时先不选 | 打开解读即 GET shells。选政策不重新请求 | GET /display/v1/policy/evaluation/shells | 无查询参数 | 未选时界面只写「请先选择政策」。多媒体行带 `policy_id`：研发费用加计扣除政策图解、科技型中小企业政策宣讲实录、高新技术企业认定要点速览这三条里，标题对得上已有摘要政策的才有值。选中一条后只显示 `policy_id` 相同的标题和一句说明。没有匹配则写「这条政策还没有多媒体解读」。不出现视频文件，不出现库表名 | 可演 |
+| 226 智能摘要与结论推送 | 政策分析评价 · 结果解读 | 与 225 共用同一次选择。打开时不传 policy_id | 打开即取已有摘要，请求内不调用 parse.run，不建异步任务 | POST /display/v1/policy/evaluation/jobs | {"sub_type":"policy_text_parse"} | `records` 含 policy_id、title、summary。跑前后表行数不变。下拉只用 summary 非空且 policy_id 非空的标题。未选时只写「请先选择政策」。选中后只显示这一条的标题和摘要。界面不出现库表名，不出现「读取智能摘要」。无这样的行则下拉空，不返回写死段落。响应不按异步任务的 status 判断成败 | 可演 |
 
 ## 一条主路径
 
 按下面顺序走可演的行。条件不另做排列组合。
 
 1. 序号 223：`GET /display/v1/policy/evaluation/counts`。有 region_gap 行时至少 1 行且 shortboardCnt 为正整数。不重放会改表的焦点 jobs。
-2. 序号 224 与 225：同一次 `GET /display/v1/policy/evaluation/shells`。应看到解读 4 条、多媒体 3 条。BUG-01 未修好时空列表仍判不通过。
-3. 序号 226：`POST .../evaluation/jobs`，body `{"sub_type":"policy_text_parse"}`。结果只含已有 summary，跑前后行数不变。不另编摘要句子。
+2. 序号 224 与 225：同一次 `GET /display/v1/policy/evaluation/shells`。应看到解读 4 条。224 还要在卡片上看到三个角度名称，四个主题都有对应正文，且一次只打开一个角度。225 未选时只写「请先选择政策」；选中一条已有摘要的政策后，只显示挂到这一条的多媒体标题和一句说明。空列表仍判不通过。
+3. 序号 226：`POST .../evaluation/jobs`，body `{"sub_type":"policy_text_parse"}`。不建异步任务。`records` 含 policy_id、title、summary，跑前后行数不变。未选时只写「请先选择政策」；选中后只显示这一条的标题和摘要。不另编摘要句子。界面不出现库表名。
 
 ## 调度核对
 
