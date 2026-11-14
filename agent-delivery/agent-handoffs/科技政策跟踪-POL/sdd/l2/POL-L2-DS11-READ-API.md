@@ -31,7 +31,7 @@
 |---|---|---|
 | 223 短板条数 | `GET /display/v1/policy/evaluation/counts` | 同步。element 只读 `ads.policy_effect` 且 `scope_type=region_gap` 的 `shortboard_cnt`。GET 不调用 `gap.run`。无行则计数空，不造 0。不返回 501 |
 | 223 焦点指数 | `POST /display/v1/policy/evaluation/jobs` | Job。新键 `policy_focus_ads`。调用已有 `polan.eval.focus.run` 后读 `ads.policy_focus` 且 `policy_id` 非空的行。无行则焦点块空。不返回 501 |
-| 224 解读条目、225 多媒体条目 | `GET /display/v1/policy/evaluation/shells` | 同步。element 只读 `gkxlumenx_gapfill.gapfill_policy_eval_shell`。点选只筛选已返回行。无行则空。不返回 501 |
+| 224 解读条目、225 多媒体条目 | `GET /display/v1/policy/evaluation/shells` | 同步。element 只读 `gkxlumenx_gapfill.gapfill_policy_eval_shell`。224 的响应多带成效说明和复盘三句。点选和换角度只筛选已返回行。无行则空。不返回 501 |
 | 226 摘要 | 同一条 `POST /display/v1/policy/evaluation/jobs` | Job。新键 `policy_text_parse`。只查 `ads.policy_text_parse.summary`。请求里不调用 `parse.run`。无行则摘要空。不返回 501 |
 
 `evaluation/counts`、`evaluation/jobs`、`evaluation/shells` 上还有别的二级。本分册不把整条资源改成只服务 223–226，也不改写那些种类。`counts` 上已有的机遇读面（`M_POLICY_OPPORTUNITY_COUNT`）本分册不改。`jobs` 上既有的 `policy_focus` 仍走 harness。效能得分、趋势、分区、实施路径、方案和参数模拟不在这里展开。
@@ -108,7 +108,7 @@ D4 保持 mock。
 
 没有专属解读模型，也没有多媒体通道。真实生成和真实嵌入做不到。浏览器仍打上面的展示路径。`gkxlumen-display` 不直连库。`gkxlumen-element` 只读 `gkxlumenx_gapfill.gapfill_policy_eval_shell`。不把这两类放进专题政策门面，也不把查询转到 Python 现造一行。
 
-224 只读解读条目：专题或指标名、一句结论、一句应用建议。条目可以指向已经存在的 `metric_id`，不新注册。不把 226 的摘要行复制成解读条目，不把 223 的焦点说明改挂到本序号。
+224 仍只读解读条目。响应在专题名、一句结论、一句应用建议之外，带出 `understand_text`、`replay_progress_text`、`replay_audience_text`、`replay_next_text`。精准解读用 `conclusion_text`，不另造字段。换角度不新开路径，也不多发一次请求。没有字的角度由前端显示「暂无该角度的解读」，接口不补句子。条目可以指向已经存在的 `metric_id`，不新注册。不把 226 的摘要行复制成解读条目，不把 223 的焦点说明改挂到本序号。旧「解读响应只有专题名、结论和建议」已被本段 2026-11-14 取代。
 
 225 只读多媒体条目：标题、一句说明。不返回视频、动画、PDF、模板字节。不灌图形文件，不写对象存储，前端不直连 RustFS。不把 219–221 的趋势图、分区图、结构关联收进本资源。不把前端占位动画写成多媒体服务。页上已有的短板计数和焦点结果留在 `counts` 和 `jobs` 上，本序号不新做一套图。
 
