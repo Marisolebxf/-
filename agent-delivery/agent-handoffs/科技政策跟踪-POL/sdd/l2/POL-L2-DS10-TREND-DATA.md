@@ -101,7 +101,7 @@
 
 叶子：205 热点识别。`gap_item` 固定 `205 热点识别`。
 
-科创发展、人才引进、资金扶持各若干条。领域名写在行上，不是三条新指标。不挂 `M_POLICY_FOCUS_INDEX`。
+不再灌「各若干条」样例。科创发展、人才引进、资金扶持（技术发展方向同理）看的是库里符合该卡条件的全部政策。热点行仍是加工后的名称和一句说明，领域名写在行上，不是三条新指标。不挂 `M_POLICY_FOCUS_INDEX`。
 
 | 业务列 | 类型 | 空 | 放下什么 |
 |---|---|---|---|
@@ -115,7 +115,7 @@
 
 叶子：205 政策影响评估。`gap_item` 固定 `205 政策影响评估`。
 
-上述三个领域各一条。不挂 `M_POLICY_IMPLEMENTATION_EFFECT`、`M_POLICY_SIMULATE`。
+每个领域加工后一条。取材是库里符合该卡条件的全部政策，不是一条样例。不挂 `M_POLICY_IMPLEMENTATION_EFFECT`、`M_POLICY_SIMULATE`。
 
 | 业务列 | 类型 | 空 | 放下什么 |
 |---|---|---|---|
@@ -130,7 +130,7 @@
 
 叶子：205 深度分析报告。`gap_item` 固定 `205 深度分析报告`。
 
-上述三个领域各一份。正文在行里。不挂序号 211 的评估报告、序号 217 的对标报告，也不挂核增研报。
+每个领域加工后一份。取材是库里符合该卡条件的全部政策。正文在行里。不挂序号 211 的评估报告、序号 217 的对标报告，也不挂核增研报。
 
 | 业务列 | 类型 | 空 | 放下什么 |
 |---|---|---|---|
@@ -162,9 +162,9 @@
 
 | 表 | 灌数单要写的行 | 不灌 |
 |---|---|---|
-| `gapfill_policy_trend_hotspot` | 科创发展、人才引进、资金扶持各若干条 | 焦点指数、热度分 |
-| `gapfill_policy_trend_impact` | 三个领域各一条 | 实施效果分、推演情景 |
-| `gapfill_policy_trend_report` | 三个领域各一份。正文在 `body` | 文件、对象存储 |
+| `gapfill_policy_trend_hotspot` | 不灌「各若干条」样例。政策范围是库里符合该卡条件的全部政策；热点行是加工结果 | 焦点指数、热度分 |
+| `gapfill_policy_trend_impact` | 每个领域加工后一条。取材是符合条件的全部政策 | 实施效果分、推演情景 |
+| `gapfill_policy_trend_report` | 每个领域加工后一份。取材同样是全部符合条件的政策。正文在 `body` | 文件、对象存储 |
 | `gapfill_policy_theme_dist` | 若干主题名和件数，年份可空 | 政策类型分布的桶 |
 
 那张单仍是 backlog。本单不认领、不执行。接口只读表，不在返回语句里写 mock。D4 保持 mock。
@@ -183,17 +183,26 @@
 
 2026-11-03 human:淮政玮 签收。只定列，灌数仍由 POL-L2-DS10-TREND-GAPFILL-L01 执行。
 
-## 8. 205 四张卡落到已有列（2026-11-15）
+## 8. 205 四张卡落到 ADS（2026-11-15 夜）
 
-不加列，不新建表。展示不读 `demo_gkxlumenx_ads`。
+早先「不加列、全景走检索、评分无列」作废。展示不读 `demo_gkxlumenx_ads`。正式库本次不建表。下表是草稿，等建表批准后再落 `gkxlumenx_ads`。中台实现波只在 `demo_gkxlumenx_ads` 建同名表。
 
-| 界面 | 已有落点 | 没有行时 |
-|---|---|---|
-| 政策全景、政策条数 | 已有政策检索的命中列表。词见说明书 205 的四行表 | 列表空，条数不写 0 |
-| 卡上热度 | 同一批命中政策上已有的发布时间，按年计数。不读 `policy_timeseries` | 不足两年则不标热度 |
-| 两句举措、深度报告正文 | `gkxlumenx_gapfill.gapfill_policy_trend_report` 的 `domain_name`、`body`。领域名用卡名 | 无合格行则空态 |
-| 热点 | `gapfill_policy_trend_hotspot` 的 `domain_name`、`hotspot_name`、`brief` | 无合格行则空态 |
-| 影响评估 | `gapfill_policy_trend_impact` 的 `domain_name`、`impact_object`、`impact_direction`、`conclusion` | 无合格行则空态 |
-| 平均评分、对标区域 | 无列 | 固定空，不编数 |
+取材仍用已有列，不加列：`demo_gkxlumenx_dwd.policy_base_info` 的标题、摘要、关键词、正文、`publish_date`、`province`、`country`、`region`；`demo_gkxlumenx_dwd.policy_industry_rel` 的 `policy_id`、`industry_name`、`is_deleted`。主表没有评分列。
 
-合格行：`fill_method` 去空白后等于 `llm`，正文字段去空白后不以「缺项演示」开头。`fill_method=manual` 的种子行不算结果。「技术发展方向」没有合格行时走空态，不把前三张卡的行填过来。
+草稿结果表 `ads_policy_keyfield_card`，一行一个领域名：
+
+| 列 | 界面 |
+|---|---|
+| `domain_name` | 卡名。四张卡各一行，含「技术发展方向」 |
+| `policy_count` | 政策条数。没有政策则不插入这一行 |
+| `heat_label` | 热度。不足两年为空，界面写「暂时看不了热度」 |
+| `region_text` | 对标区域位置上的涉及区域汇总。没有地区时存「这一领域还没有可汇总的区域」 |
+| `avg_score` | 平均评分。已有政策力度指数对这份全部政策现算后的平均，保留一位小数。算不出来则空，不写 0，不写 89.2。不另加评分源列 |
+| `focus_text` | 关键焦点，最多三个 |
+| `panorama_text` | 按产业名汇总的全景。没有关联时存「这一领域还没有产业全景」 |
+| `fill_method` | 合格行等于 `llm` |
+| `generated_at` | 这一次加工完成的时间 |
+
+影响评估草稿表 `ads_policy_keyfield_impact`：`domain_name`、`impact_object`、`impact_direction`、`conclusion`、`fill_method`、`generated_at`。深度分析报告草稿表 `ads_policy_keyfield_report`：`domain_name`、`title`、`body`、`fill_method`、`generated_at`。两张都只在演示 ADS 建，正式库本次不建。不再以缺项库为这份结果的归宿。热点仍读 `gkxlumenx_gapfill.gapfill_policy_trend_hotspot`，不进这张卡的加工。只有 Python 读演示 DWD，并写入上面三张演示表。展示本波不读这三张表。
+
+合格行：`fill_method` 去空白后等于 `llm`，正文字段不以「缺项演示」开头。没有合格行则空态，不用别的卡的行来填。
