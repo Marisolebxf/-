@@ -2,7 +2,7 @@
 
 | 日期 | 任务 | 说明 |
 |---|---|---|
-| 2026-11-14 | `POL-L2-DS11-READ-225-FDE-L01` | `gapfill_policy_eval_shell` 加可空 `policy_id`。库上已 ALTER。三行多媒体标题里套不进任何已有摘要政策的标题，编号留空，不猜。解读行留空。不新建表 |
+| 2026-11-14 | `POL-L2-DS11-READ-225-FDE-L01` | `gapfill_policy_eval_shell` 加可空 `policy_id`。库上已 ALTER。三条多媒体各挂一条标题里含同一关键词、且已有摘要的政策：研发费用加计扣除→`18354678`，科技型中小企业→`18352017`，高新技术企业认定→`18395481`。解读行留空。不新建表 |
 | 2026-11-14 | `POL-L2-DS11-READ-224-FDE-L01` | `gapfill_policy_eval_shell` 解读行加四列：`understand_text`、`replay_progress_text`、`replay_audience_text`、`replay_next_text`。不新建表。多媒体行这四列空。库上已 ALTER，四个解读主题已写入这四句 |
 | 2026-11-12 | `POL-L2-DS12-SIM-238-COVER-FDE-L01` | `gapfill_policy_sim_result.score_value` **语义扩展**：重点行可用作组重点展示分（柱图）；不 ALTER。多维评估行语义不变。无新表 |
 | 2026-11-10 | 602 波次 C 回应 | 准确性草稿表加一列「演示条数」，不是注册指标，不写 D4。没有行时不造数。索引仍写 16，行末指向这张 draft。点执行那一句只覆盖准确性：五条仍只 SELECT 演示贴源两表，不读九张指标表 |
