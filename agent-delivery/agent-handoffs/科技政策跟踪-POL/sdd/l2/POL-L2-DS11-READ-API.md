@@ -110,7 +110,7 @@ D4 保持 mock。
 
 224 仍只读解读条目。响应在专题名、一句结论、一句应用建议之外，带出 `understand_text`、`replay_progress_text`、`replay_audience_text`、`replay_next_text`。精准解读用 `conclusion_text`，不另造字段。换角度不新开路径，也不多发一次请求。没有字的角度由前端显示「暂无该角度的解读」，接口不补句子。条目可以指向已经存在的 `metric_id`，不新注册。不把 226 的摘要行复制成解读条目，不把 223 的焦点说明改挂到本序号。旧「解读响应只有专题名、结论和建议」已被本段 2026-11-14 取代。
 
-225 只读多媒体条目：标题、一句说明。不返回视频、动画、PDF、模板字节。不灌图形文件，不写对象存储，前端不直连 RustFS。不把 219–221 的趋势图、分区图、结构关联收进本资源。不把前端占位动画写成多媒体服务。页上已有的短板计数和焦点结果留在 `counts` 和 `jobs` 上，本序号不新做一套图。
+225 只读多媒体条目：标题、一句说明，以及可空 `policy_id`。与 226 共用政策单选。未选时前端写「请先选择政策」。选中后只留 `policy_id` 等于这一条的行，没有则写「这条政策还没有多媒体解读」。接口仍一次返回全部多媒体行，不按政策另开路径。不返回视频、动画、PDF、模板字节。不灌图形文件，不写对象存储，前端不直连 RustFS。不把 219–221 的趋势图、分区图、结构关联收进本资源。不把前端占位动画写成多媒体服务。页上已有的短板计数和焦点结果留在 `counts` 和 `jobs` 上，本序号不新做一套图。旧「多媒体响应不带政策」已被本段 2026-11-14 取代。
 
 建表和灌数不在本分册。灌数是独立单 `POL-L2-DS11-READ-GAPFILL-L01`（`data-agent`，监管 `human:淮政玮`），不是请求处理。它只灌解读条目和多媒体条目。列的其余字段由 `POL-L2-DS11-READ-DATA` 定。本分册不写 DDL。表在 `gkxlumenx_gapfill`，不写入 ODS、DWD、ADS、供应方库。shell 行上要带的 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`、`generated_at` 以已签收架构第 8 节为准：没有已挂指标的，`metric_id` 留空；`fill_method` 用 `manual`；`gap_item` 写序号和叶子名。查询请求不灌数。
 
@@ -120,25 +120,19 @@ D4 保持 mock。行是灌入的 mock，不是采集实数。不新造 `metric_i
 
 ## 6. 226 智能摘要 · jobs · policy_text_parse
 
-公开资源与焦点相同：`POST /display/v1/policy/evaluation/jobs`。指标 `M_POLICY_DS_11_POLICY_EVAL_012`，类型 MODEL，D4=mock。需求来源即序号 226。浏览器提交这一条，`sub_type=policy_text_parse`。字段名由契约单冻结。
+公开资源与焦点的地址相同：`POST /display/v1/policy/evaluation/jobs`。指标 `M_POLICY_DS_11_POLICY_EVAL_012`，类型 MODEL，D4=mock。需求来源即序号 226。浏览器提交这一条，`sub_type=policy_text_parse`，打开时不传 `policy_id`。字段名由契约单冻结。
 
 算法中台「文本解析 · 智能摘要」已经把这条展示身份定义成读 `ads.policy_text_parse.summary`，不另写模型。写入该列的 `polan.text.parse.run` 是规则截取，行上的 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。本分册不改这个 `metric_id`，也不把截取改成大模型。`M_POLICY_DS_11_POLICY_EVAL_012` 是读面身份，不是第二套摘要。
 
-链路与第 4 节同一条管道，到 Python 之后改为只查询：
+2026-11-14 起，这个键在展示层不建异步任务。`gkxlumen-display` 把请求交给 `gkxlumen-element` 读同一张表的 `policy_id`、`title`、`summary`。不传 `policy_id` 时返回全部行，前端只用 `summary` 非空且 `policy_id` 非空的行做下拉，再在已返回行里取选中的一条。换政策不再请求。不调用 `parse.run`，避免清空整表。旧「送到 Python 只查 summary」在这个键上已被本段取代。
 
-1. 浏览器只打 `POST /display/v1/policy/evaluation/jobs`。不打开算法中台页，不打 `/v1/policy/text/parse`。
-2. `gkxlumen-display` 不调用大模型，不截取正文。它调用 `POST /topic/v1/analysis/tasks`。
-3. 已有 `PolicyAnalysisAdapterImpl` 调用 `POST /internal/policy/jobs/execute`。
-4. Python 只查询 `ads.policy_text_parse.summary`，原样放进 Job 结果。不在这次请求里调用 `polan.text.parse.run`。该 `run()` 会清空整张 `ads.policy_text_parse`，条款结构化写在同一张表上。展示请求只查询，避免一次请求把条款行清掉。摘要行仍由已有解析批次写入。
-5. 查询不拼摘要，不调用大模型。
-
-`policy_text_parse` 不走产业 VID XOR，不收 items。白名单增加这个键，并且与已签收的 `policy_effect` 一样不走产业 VID 校验。尚未放行时，这次 Job 返回空结果，不返回写死的段落。放行之后，无行则摘要空。
+与 225 共用同一次政策单选。未选时界面写「请先选择政策」。选中后只显示这一条的标题和摘要。界面不写库表名。
 
 可编辑和推送没有登记的用户表，也没有发信通道。本分册不建编辑表，不把改过的句子写回 ADS，不灌假通知。用户当时在页面上改字，不构成本条资源。没有推送通道时不另造通知。
 
 不建 `gapfill_policy_eval_summary`。不把序号 242 的推演解读报告、核增研报 `report/jobs` 当成这条摘要。不把 `focus-one` 当成摘要。
 
-切条件不自动起任务。Job 失败不清空已经返回的 `counts` 和 `shells`。
+切条件不自动起任务。这次读取失败不清空已经返回的 `counts` 和 `shells`。
 
 D4 保持 mock。
 
@@ -151,8 +145,8 @@ D4 保持 mock。
 | 223 短板 | counts | `ads.policy_effect` 无 `region_gap` 行则计数空。不造 0。不返回 501。这次 GET 不调用 `gap.run` |
 | 223 焦点 | jobs · `policy_focus_ads` | `ads.policy_focus` 无 `policy_id` 非空行则焦点块空。不返回写死指数，不返回 `focus-one`。不返回 501。失败不清空 counts 和 shells |
 | 224 | shells · 解读条目 | 缺项表无解读行则解读块空。不造结论。不返回 501 |
-| 225 | shells · 多媒体条目 | 缺项表无多媒体行则该块空。不返回视频、动画、PDF、模板字节。不返回 501 |
-| 226 | jobs · `policy_text_parse` | `ads.policy_text_parse` 无摘要行则摘要空。不返回写死段落。不调用 `parse.run`。不返回 501。失败不清空 counts 和 shells |
+| 225 | shells · 多媒体条目 | 未选时界面写「请先选择政策」。选中后没有 `policy_id` 相同的行则写「这条政策还没有多媒体解读」。缺项表无多媒体行则该块空。不返回视频、动画、PDF、模板字节。不返回 501 |
+| 226 | jobs · `policy_text_parse` | 不建异步任务。没有 `summary` 非空且 `policy_id` 非空的行则下拉空、摘要空。未选时界面写「请先选择政策」。不返回写死段落。不调用 `parse.run`。不返回 501。失败不清空 counts 和 shells |
 
 两个新键尚未放行时，同样返回空结果，不改用写死的指数或摘要。
 

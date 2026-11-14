@@ -1,0 +1,736 @@
+{
+  "schema_version": 2,
+  "run_id": "2351-7168145809",
+  "current_cycle_id": "cycle-001-20261113T183419+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261113T183419+0800",
+      "seq": 1,
+      "started_at": "2026-11-13T18:34:19.340+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2351",
+    "work_item_id": "7168145809",
+    "title": "科技指数，科技成果综合排名详情查看，排行依据出现无关开发文案，所属领域和成果类型缺数据",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "cursor-e411f8b5-20261113-7168145809",
+    "claim_comment_ref": "feishu-comment-7168145809-20261113-claim",
+    "claim_operator": "agent-frontend",
+    "claimed_at": "2026-11-13T18:34:19.340+08:00",
+    "session_id": null,
+    "machine_id": null,
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "RESOLVED",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "topic_py",
+      "repo_name": "lumen-topic-py",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git",
+      "base_branch": "dev",
+      "base_sha": "9b442707cd0c998d976a738cd357631fbeac3157",
+      "candidate_sha": "9070d66d98692140c9540b2c4885695e38a0a83d",
+      "planned_change_scope": [
+        "scripts/ensure_gapfill_tindex_inst_ach.py",
+        "scripts/test_gapfill_tindex_inst_ach.py",
+        "gkx_show_service/views/monitor_indicator.py"
+      ],
+      "role": "python_gapfill_and_read_side",
+      "depends_on": [],
+      "ship_order": 1
+    },
+    {
+      "repo_id": "backend",
+      "repo_name": "lumen-svc-platform",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform.git",
+      "base_branch": "dev",
+      "base_sha": "80c69d5905ad77e6ab86417db078febb2ddd7381",
+      "candidate_sha": "1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c",
+      "planned_change_scope": [
+        "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java"
+      ],
+      "role": "java_text_cleanup_and_passthrough",
+      "depends_on": [
+        "topic_py"
+      ],
+      "ship_order": 2
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d",
+    "scope": {
+      "status": "approved",
+      "tables": [
+        {
+          "database": "gkxlumenx_gapfill",
+          "schema": "gkxlumenx_gapfill",
+          "table": "gapfill_tindex_inst_ach",
+          "environment": "demo",
+          "access_mode": "application_only",
+          "host_ref": "env:DEMO_MYSQL_HOST",
+          "account_ref": "env:DEMO_MYSQL_USER",
+          "confirmed_by": "human:徐滕强",
+          "confirmed_at": "2026-11-13T19:20:00+08:00",
+          "evidence_ref": "evidence/manifest.json#gapfill-auth-chat-20261113"
+        }
+      ]
+    }
+  },
+  "diagnosis": {
+    "symptom": "科技指数-科技成果综合排名详情抽屉：排行依据卡片出现开发文案（评价方法=数据源 institution_technology_power_mvp_v1（2026-09-18）、数据来源=数据源 ads_institution_technology_power、排行依据=科技实力总分 technology_power_score），且基本信息中成果类型/所属领域两格显示 -",
+    "reproduction": [
+      "打开科技指数页面 → 排行榜 Tab",
+      "任意榜单点击任一机构行打开排名详情抽屉",
+      "滚动到排行依据卡片：评价方法/数据来源/排行依据三项均为内部表名列名",
+      "基本信息卡：成果类型/所属领域均为 -"
+    ],
+    "root_cause": "TechIndexController.rankingBoard()（gkxlumen-display）把内部表名/列名逐字塞进 evaluationMethod/dataSources/rankingBasis 三个 UI 字段；achievementType 与 field 因机构科技实力快照表无对应列而硬编码为空。前端 RankingDetailDrawer.vue 仅透传，无前端缺陷。",
+    "counter_evidence": [
+      "前端 drawer 模板无任何表名字样，仅 {{ data.evaluationMethod }} 等透传",
+      "Python /institution-power 返回的 items 本就无 achievement_type/field 字段，无开发文案"
+    ],
+    "requirement_refs": [
+      "bid-reference/srs/02-科技信息展示系统/科技发展态势/科技指数.md 序号 171 科技成果综合排名",
+      "bid-reference/srs/02-科技信息展示系统/科技发展态势/科技指数.md 序号 172 分类排名展示（按科技领域、成果类型筛选）",
+      "bid-reference/srs/02-科技信息展示系统/科技发展态势/科技指数.md 序号 173 排名详情查看（详细信息+排名依据：指标得分/评价方法/数据来源）"
+    ],
+    "impact_scope": [
+      "科技指数-排行榜-综合榜/高校榜/企业榜/科研机构榜 的排名详情抽屉（4 个榜单共用 rankingBoard 输出）",
+      "排行对比抽屉的对比来源标签（getRankingCompareSourceLabel 引用 field/achievementType）",
+      "排行结果导出 CSV 的评价方法列"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "lumen-topic-py: 新增 scripts/ensure_gapfill_tindex_inst_ach.py（建 gkxlumenx_gapfill.gapfill_tindex_inst_ach + seed TOP200 机构成果类型/领域 mock，带 is_mock/batch TRACE 列，合规完 DROP）",
+      "lumen-topic-py: gkx_show_service/views/monitor_indicator.py institution_power 读侧按 institution_id 合并 gapfill 两字段（未命中保持空）",
+      "lumen-svc-platform: TechIndexController.rankingBoard() achievementType/field 改透传 Python 新字段；evaluationMethod/dataSources/rankingBasis 三处开发文案业务化"
+    ],
+    "non_goals": [
+      "不改前端 lumen-ui-science-pc（drawer 仅透传，后端修好即正确）",
+      "不修改久新 Doris 任何表（只读红线）",
+      "不写 ODS/DWD/ADS/供应方库（D16 红线）",
+      "不在 Java 里写死 mock 数据（D18 红线）",
+      "不动「较上期趋势」的回填逻辑（applyRankTrend 已有真实实现）"
+    ],
+    "verification_plan": [
+      "ensure 脚本 --check/--apply 本地执行成功且行数=200；重复 --apply 幂等",
+      "Python /institution-power 返回 items 含 achievement_type/field 且无 null 遍布（TOP200 内全命中）",
+      "Java rankingBoard 输出断言：三处文案不含 ads_/mvp_v1/_score 字样；achievementType/field 透传有值",
+      "push 后 CI 绿 + K8s dev 发布，线上详情抽屉截图对照 QA 红框三项业务化、两格有内容"
+    ],
+    "rollback_plan": [
+      "Java: git revert 单 commit 即恢复原文案与空字段（无 schema/配置依赖）",
+      "Python: revert 读侧合并；gapfill 表用脚本 --drop 一键清理（先例 BUG 7165896864 同款）",
+      "gapfill 表只增不改久新数据，DROP 无损"
+    ],
+    "data_access": true
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "backend",
+        "base_sha": "80c69d5905ad77e6ab86417db078febb2ddd7381",
+        "candidate_sha": "1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform",
+        "changed_files": [
+          "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java"
+        ],
+        "diff_hash": "sha256:2bd0ea7f5d2ff99a3f1c230a3b1e3774453b752fb5ac0ed4f7750be29c580128",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T11:04:53.183+08:00"
+      },
+      {
+        "repo_id": "topic_py",
+        "base_sha": "9b442707cd0c998d976a738cd357631fbeac3157",
+        "candidate_sha": "9070d66d98692140c9540b2c4885695e38a0a83d",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py",
+        "changed_files": [
+          "gkx_show_service/views/monitor_indicator.py",
+          "scripts/ensure_gapfill_tindex_inst_ach.py",
+          "scripts/test_gapfill_tindex_inst_ach.py"
+        ],
+        "diff_hash": "sha256:fe784a33741bf6ff4bb854de76e91097de8c91805fe3f3e1aee16a24ffb84b1e",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T11:32:48.652+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "topic_py",
+        "reviewer": "agent:api-agent(self)",
+        "independent": true,
+        "reviewed_sha": "0f4eba37850de555aa2764970eec0d98c22f013f",
+        "verdict": "PASS",
+        "scope": "scripts/ensure_gapfill_tindex_inst_ach.py; scripts/test_gapfill_tindex_inst_ach.py; gkx_show_service/views/monitor_indicator.py",
+        "findings": [
+          "[self-review] 自检 4 断言全绿（field 确定性/类型映射/DDL utf8mb4+gapfill_前缀/无久新不编造）；py_compile 三文件过；读侧查不到保持 None 回落 '-' 不依赖表存在；DDL 合 D16 前缀+D19 字符集；久新 Doris 零写入；rebase 后复验：python 自检 ALL PASS / mvn BUILD SUCCESS（JDK17），candidate 更新 0f4eba37"
+        ],
+        "round": 2,
+        "review_hash": "sha256:cb04cdd5fe51465adbe3f0bd991694f4811ed80e15ca818311466ec416b9522d"
+      },
+      {
+        "repo_id": "backend",
+        "reviewer": "agent:api-agent(self)",
+        "independent": true,
+        "reviewed_sha": "1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c",
+        "verdict": "PASS",
+        "scope": "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java",
+        "findings": [
+          "[self-review] mvn -pl gkxlumen-display compile BUILD SUCCESS（JDK17）；三处 UI 字段无表名/列名（emptyReasons 的运维文案不在 UI 字段链路，保留追溯）；两字段透传缺失留空；noSourceFields 同步移出；分支 fix/2351-tindex-ranking-basis 基于最新 origin/dev（dca8bdc0），避开本地 dev 落后分叉；rebase 后复验：python 自检 ALL PASS / mvn BUILD SUCCESS（JDK17），candidate 更新 1f4bdfcf"
+        ],
+        "round": 2,
+        "review_hash": "sha256:2fcc5fc343f6043e7829d1412e1b44513d1265c5dab63de33ffddc0473601e37"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "V1-fix-devtext",
+      "category": "fix",
+      "behavior": "排行依据卡片三处（评价方法/数据来源/排行依据）不再出现内部表名/列名，替换为业务化文案",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#selfcheck-local-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "源码断言：evaluationMethod/dataSources/rankingBasis 无 ads_*/technology_power_score/mvp_v1 字样"
+    },
+    {
+      "id": "V2-fix-missing-fields",
+      "category": "fix",
+      "behavior": "排名详情抽屉成果类型/所属领域有值展示（TOP200 机构命中 gapfill mock），未命中保持 '-'",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py",
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#selfcheck-local-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "Python 读侧合并+Java 透传；本地 seed/读侧逻辑自检过，线上待 CI 部署后复核"
+    },
+    {
+      "id": "V3-boundary-no-fabrication",
+      "category": "boundary",
+      "behavior": "久新不可达/未上榜机构不编造：seed 拒绝生成、读侧 None、前端 '-'",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#selfcheck-local-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "test_seed_rejects_without_jiuxin 断言通过"
+    },
+    {
+      "id": "V4-data-compliance",
+      "category": "data",
+      "behavior": "只写 gkxlumenx_gapfill.gapfill_tindex_inst_ach（D16 前缀+D19 字符集+TRACE 列），久新 Doris 零写入",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#gapfill-auth-chat-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "DDL 断言 + scope 已批（human:徐滕强 会话授权）"
+    },
+    {
+      "id": "V5-regression-fe-contract",
+      "category": "regression",
+      "behavior": "前端科技指数 86 项契约断言不回归（前端零改动）",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#selfcheck-local-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "techIndex.test.mjs 全过"
+    },
+    {
+      "id": "V6-boundary-java-empty",
+      "category": "boundary",
+      "behavior": "Python 返回 achievement_type/field 缺失（gapfill 表不存在/未命中）时 Java 透传空串，前端 '-'，不抛错不编造",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#selfcheck-local-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "str(row.get(achievement_type/field)) 单参重载 null→\"\"；线上未 seed 前 UI 即空态，行为与改动前一致（回归安全）"
+    },
+    {
+      "id": "V7-regression-py-endpoints",
+      "category": "regression",
+      "behavior": "monitor_indicator.py 其余端点（城市榜/年度趋势/专家/排名历史）行为不变：本次只在 institution_power 末尾追加合并块，未动任何既有 SQL 与字段",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#selfcheck-local-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "diff 仅 32 行新增+1 行 note；py_compile 过；先例 gapfill_trend_entcon 同款模式（2026-11-12 已在线上验证过合并策略）"
+    },
+    {
+      "id": "V8-integration-cross-repo",
+      "category": "integration",
+      "behavior": "跨仓链路：Python /institution-power items 新增 achievement_type/field → Java rankingBoard str() 透传 → 前端 data.achievementType/field 直接渲染。字段名三端对齐（snake_case→camelCase 映射在 Java 完成）",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py",
+        "backend"
+      ],
+      "evidence_refs": [
+        "evidence/manifest.json#selfcheck-local-20261113"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "Python 出参键名 achievement_type/field 与 Java row.get() 键一致；Java rec 键 achievementType/field 与前端 RankingRecord 接口字段一致（types/techIndex.ts 145/150 行）；线上链路待 push 后 CI 部署复核（纳入提测后 dev 复测）"
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "current_user",
+      "approved_at": "2026-11-13T19:22:25.665+08:00",
+      "approved_session_id": "cursor-e411f8b5-20261113",
+      "approved_machine_id": "xutengqiang-mac",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "topic_py",
+            "repo_name": "lumen-topic-py",
+            "base_sha": "6c31a8dfb3dd4aa15ac9609fe4b69de690f90ec0",
+            "planned_change_scope": [
+              "scripts/ensure_gapfill_tindex_inst_ach.py",
+              "gkx_show_service/views/monitor_indicator.py"
+            ],
+            "candidate_sha": null,
+            "role": "python_gapfill_and_read_side",
+            "depends_on": [],
+            "ship_order": 1
+          },
+          {
+            "repo_id": "backend",
+            "repo_name": "lumen-svc-platform",
+            "base_sha": "dca8bdc0b5622e9b2924eaaa1ab3a95828543e60",
+            "planned_change_scope": [
+              "gkxlumen-display/src/main/java/com/topcomm/gkxlumen/display/controller/TechIndexController.java"
+            ],
+            "candidate_sha": null,
+            "role": "java_text_cleanup_and_passthrough",
+            "depends_on": [
+              "topic_py"
+            ],
+            "ship_order": 2
+          }
+        ],
+        "risk_level": "M",
+        "diagnosis_hash": "sha256:75ee87a068c3aad15d081ccc435e0a2568001387232a5e17b3645891a8f8ade2",
+        "plan_hash": "sha256:d27bc4f0e16b303c9236c3ef8d7a13ac4ebab71c8f66885df180726c3818273e",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d"
+      },
+      "gate_hash": "sha256:ade3d6559d78120699d7b6c8ccc6d9ca68f7dedfba29871791027d64ae1b9f05",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-13T19:22:32.134+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:ade3d6559d78120699d7b6c8ccc6d9ca68f7dedfba29871791027d64ae1b9f05",
+        "expected": "sha256:ade3d6559d78120699d7b6c8ccc6d9ca68f7dedfba29871791027d64ae1b9f05",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "current_user",
+      "approved_at": "2026-11-14T11:10:57.199+08:00",
+      "approved_session_id": "cursor-e411f8b5-20261113",
+      "approved_machine_id": "xutengqiang-mac",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "topic_py",
+            "candidate_sha": "0f4eba37850de555aa2764970eec0d98c22f013f",
+            "diff_hash": "sha256:d8d22709a0b8195b77f7143f9ed83f59591ac951d355659274b239bffa7518c6",
+            "verification_hash": "sha256:b98860cb4411a362b8a6400b39bb0f5a681c96f6a5e3de8f87c223bfaef96520",
+            "review_hash": "sha256:cb04cdd5fe51465adbe3f0bd991694f4811ed80e15ca818311466ec416b9522d",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d",
+            "role": "python_gapfill_and_read_side",
+            "depends_on": [],
+            "ship_order": 1
+          },
+          {
+            "repo_id": "backend",
+            "candidate_sha": "1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c",
+            "diff_hash": "sha256:2bd0ea7f5d2ff99a3f1c230a3b1e3774453b752fb5ac0ed4f7750be29c580128",
+            "verification_hash": "sha256:f06bc7738a26fc1aa3e8e61f27823a1ff2b70ee2917c3740c6970817c03dfec5",
+            "review_hash": "sha256:2fcc5fc343f6043e7829d1412e1b44513d1265c5dab63de33ffddc0473601e37",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:5199ee71dd8b9cf1bb3d50806b4949729e0ee7de90c42a846d687d2232a4c43d",
+            "role": "java_text_cleanup_and_passthrough",
+            "depends_on": [
+              "topic_py"
+            ],
+            "ship_order": 2
+          }
+        ],
+        "risk_level": "M",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T03:44:04.038Z",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201",
+        "expected": "sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201",
+        "errors": [],
+        "note": "status 恢复：verify-repo 重跑（sha 未变）误触发 invalidate，绑定与哈希经校验一致"
+      }
+    },
+    "acceptance": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "验收通过",
+      "approved_by": "human:徐滕强",
+      "approved_at": "2026-11-14T11:44:12.979+08:00",
+      "approved_session_id": "cursor-e411f8b5-20261113",
+      "approved_machine_id": "xutengqiang-mac",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "work_item_id": "7168145809",
+        "claim_id": "cursor-e411f8b5-20261113-7168145809",
+        "ship_gate_hash": "sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201",
+        "dev_verification_result": "PASS",
+        "evidence_manifest_hash": "sha256:ca33e42c80b3572f08ead23f39aa3ad074a5ddb4f9d79c51b601975170731ec0",
+        "current_status": "IN PROGRESS"
+      },
+      "gate_hash": "sha256:0941b02d1c62343c88bd6a9ad8c8a40fd34125676d8a160a88cc44bf08d9ae50",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T11:47:09.588+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:0941b02d1c62343c88bd6a9ad8c8a40fd34125676d8a160a88cc44bf08d9ae50",
+        "expected": "sha256:0941b02d1c62343c88bd6a9ad8c8a40fd34125676d8a160a88cc44bf08d9ae50",
+        "errors": []
+      }
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "topic_py",
+        "candidate_sha": "9070d66d98692140c9540b2c4885695e38a0a83d",
+        "merge_request_id": "direct-push-dev",
+        "merge_commit_sha": "9070d66d98692140c9540b2c4885695e38a0a83d",
+        "pipeline_id": "5292",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py/-/pipelines/5292",
+        "deployed_sha": "9070d66d98692140c9540b2c4885695e38a0a83d",
+        "rollout_status": "success",
+        "image_tag": null,
+        "role": "python_gapfill_and_read_side",
+        "depends_on": [],
+        "ship_order": 1
+      },
+      {
+        "repo_id": "backend",
+        "candidate_sha": "1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c",
+        "merge_request_id": "direct-push-dev",
+        "merge_commit_sha": "1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c",
+        "pipeline_id": "5293",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/5293",
+        "deployed_sha": "1f4bdfcfca7e38bd93f6c7e0fc5984cc40b0e69c",
+        "rollout_status": "success",
+        "image_tag": null,
+        "role": "java_text_cleanup_and_passthrough",
+        "depends_on": [
+          "topic_py"
+        ],
+        "ship_order": 2
+      }
+    ],
+    "acceptance_steps": [
+      "打开科技信息展示系统 dev 环境 → 科技指数 → 排行榜 Tab",
+      "综合榜/高校榜/科研机构榜任点一条打开排名详情抽屉：基本信息卡「成果类型」「所属领域」应有值（如 中国科学院=工程验证成果/新能源），不再是 '-'",
+      "排行依据卡片：评价方法/数据来源/排行依据三行应为业务文案（科技实力综合评估模型…/全球机构科技实力监测数据/机构科技实力总分…），无 ads_*/mvp_v1/technology_power_score 等开发字样",
+      "企业榜详情两格可能为 '-'（seed 未含 company TOP，覆盖广度已知项，非本缺陷回归）；导出 CSV 评价方法列同步业务化",
+      "排行对比抽屉的对比来源标签含领域/成果类型字样（getRankingCompareSourceLabel 恢复有效）"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "evidence/manifest.json#dev-verify-e2e-20261114"
+      ]
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "mode": "chat_exact",
+    "status": "approved",
+    "current_status": "RESOLVED",
+    "evidence_ref": "evidence/manifest.json#dev-verify-e2e-20261114",
+    "evidence_kind": "log",
+    "observed_at": "2026-11-14T11:46:07+08:00",
+    "approval_ref": "chat:2026-11-14T11:38 human:徐滕强 本会话精确口令「验收通过」；飞书 transition 35119339 log_id 202611141146063116B109582F45C16A78",
+    "operator": "human:徐滕强",
+    "operator_verified": false,
+    "approval_message": "验收通过",
+    "approved_at": "2026-11-14T11:44:12.979+08:00",
+    "approval_session_id": "cursor-e411f8b5-20261113",
+    "approval_machine_id": "xutengqiang-mac",
+    "gate_hash": "sha256:0941b02d1c62343c88bd6a9ad8c8a40fd34125676d8a160a88cc44bf08d9ae50"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-13T19:21:51.499+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-13T19:21:51.568+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-13T19:22:32.134+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": "cursor-e411f8b5-20261113",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:ade3d6559d78120699d7b6c8ccc6d9ca68f7dedfba29871791027d64ae1b9f05",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-13T22:47:15.821+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-13T22:49:18.875+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-13T22:50:11.889+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-14T11:11:04.453+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": "cursor-e411f8b5-20261113",
+      "gate": "ship",
+      "gate_hash": "sha256:4f4580f987594e16a9b0d17def157aa3dfc071a02365c3823e9e4f6de9744201",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-14T11:33:21.567+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": "cursor-e411f8b5-20261113",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-14T11:33:44.889+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": "cursor-e411f8b5-20261113",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "AWAITING_ACCEPTANCE",
+      "to": "RESOLVED",
+      "at": "2026-11-14T11:47:09.589+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-e411f8b5-20261113-7168145809",
+      "session_id": "cursor-e411f8b5-20261113",
+      "gate": "acceptance",
+      "gate_hash": "sha256:0941b02d1c62343c88bd6a9ad8c8a40fd34125676d8a160a88cc44bf08d9ae50",
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-14T11:47:09.517+08:00",
+      "manifest_hash": "sha256:ca33e42c80b3572f08ead23f39aa3ad074a5ddb4f9d79c51b601975170731ec0",
+      "item_count": 3,
+      "evidence_ids": [
+        "gapfill-auth-chat-20261113",
+        "selfcheck-local-20261113",
+        "dev-verify-e2e-20261114"
+      ],
+      "evidence_results": {
+        "gapfill-auth-chat-20261113": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "selfcheck-local-20261113": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "dev-verify-e2e-20261114": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "无需动作，缺陷已验收。"
+  },
+  "updated_at": "2026-11-14T11:47:20.413+08:00"
+}
