@@ -56,9 +56,9 @@
 | 展示读面取列 | 现有评价 226 的读面只取 `summary` 一列；237 需要标题、摘要、标签与结构化要素。展示读法取 `title / summary / auto_tags / structured_elements`，仍是只读，不跑 `run()`。该取列口径由 DATA / API 单落成字段 |
 | 条款隔离 | 条款批次更新同一条解析行，不另插条款行。展示 237 仍读该行的标题、摘要、标签和其余要素。返回 `structured_elements` 时去掉 `clauses` 与 `clause_meta`，条款树不进入解析报告。不因行内有这两个键整行丢弃 |
 | 重点 / 影响范围 / 路径 / 解读 | 中台无实现。按签收标准走缺项表 `gapfill_policy_sim_result`，行内容范式：逐项要素 + 一句说明，图表渲染在前端 |
-| 真模型演进 | `M_POLICY_SIMULATE` 注册为可调用服务后，影响范围改随真推演结果。**237 真算（2026-11-12 方案 C 三卡）**：新键 `policy_text_parse_run` 进白名单；旧 `policy_text_parse` 仍只读不跑 `run()`。**241 真算（2026-11-14 用户裁定）**：新键 `policy_sim_path` 进白名单，LLM 生成实施环节 |
+| 真模型演进 | `M_POLICY_SIMULATE` 注册为可调用服务后，影响范围改随真推演结果。**237 真算（2026-11-12 方案 C 三卡）**：新键 `policy_text_parse_run` 进白名单；旧 `policy_text_parse` 仍只读不跑 `run()`。**241 真算（2026-11-14 用户裁定）**：新键 `policy_sim_path` 进白名单，LLM 生成实施环节。**240 真算（2026-11-14 用户裁定）**：新键 `policy_sim_relation` 进白名单，LLM 生成关联子图 |
 
-迁移之后的最终架构一句话：**浏览器只打 `/display/v1/policy/simulation/jobs`（读面）与 `/display/v1/policy/evaluation/jobs`（237/238/241/242 真算键）；237 读面由 element 只读 `ads.policy_text_parse`，真算走 `policy_text_parse_run` 单政策 upsert 后再读；238 真算走 `policy_sim_focus`；242 真算走 `policy_sim_interpret`；241 真算走 `policy_sim_path`（2026-11-14）；239 仍只读 gapfill；240 读图；算法中台读面留原地，无任何 demo 依赖。**
+迁移之后的最终架构一句话：**浏览器只打 `/display/v1/policy/simulation/jobs`（读面）与 `/display/v1/policy/evaluation/jobs`（237/238/240/241/242 真算键）；237 读面由 element 只读 `ads.policy_text_parse`，真算走 `policy_text_parse_run` 单政策 upsert 后再读；238 真算走 `policy_sim_focus`；242 真算走 `policy_sim_interpret`；241 真算走 `policy_sim_path`（2026-11-14）；240 真算走 `policy_sim_relation`（2026-11-14，写 ADS 图镜像）；239 仍只读 gapfill；算法中台读面留原地，无任何 demo 依赖。**
 
 ## 2. 实现架构
 
@@ -71,7 +71,7 @@
 | 239 | 影响范围 | element 只读 `gapfill_policy_sim_result` 的影响范围行，跟随该政策上下文 |
 | 241 | 路径预测 | **读面**：element 只读 `gapfill_policy_sim_result` 的路径环节行。**真算**：`policy_sim_path` → async → 单政策 upsert 路径环节（2026-11-14） |
 | 242 | 解读报告 | **读面**：element 只读 `gapfill_policy_sim_result` 的解读段落行。**真算**：`policy_sim_interpret` → async → 单政策 upsert 解读段落 |
-| 240 | （无种类） | 跨项索引。消费第 7 项子图，不设资源 |
+| 240 | （无种类） | 跨项索引。**读面**：display `relation-graph` 透传第 7 项子图。**真算**：`policy_sim_relation` → async → LLM 子图 upsert ADS `policy_graph_node/edge`（2026-11-14，读面零改动） |
 | （真模型，未注册） | 真推演 | async-service → Python `/internal/*`。模型未注册 → 该能力空态，不填数 |
 
 ```mermaid
@@ -122,7 +122,7 @@ flowchart LR
 3. 用户查看影响范围。前端提交 `jobs`（种类=影响范围），带上当前推演上下文的政策。element 按政策拣影响范围行：受益对象、影响区域、影响行业与时空分布说明。真推演未接通前，这些行是已灌的模拟上下文行；真推演接通后改随真结果（§1.4）。
 4. 用户查看实施路径。前端提交 `jobs`（种类=路径预测）。element 读该政策的路径环节行：发布、受理、评审、拨付、评估五环节的时间安排与责任主体。流程图在前端渲染。**无行**时可点「预测实施路径」走 `evaluation/jobs`（`sub_type=policy_sim_path`）真算写回后再读；**有行**不自动起算，可「重新预测」（`force=true`）。
 5. 用户查看解读报告。前端提交 `jobs`（种类=解读报告）。element 读该政策的解读段落行：政策背景、主要内容、预期效果、实施建议。页面呈现正文即「查看」。**无行**时可点「生成解读报告」走 `evaluation/jobs`（`sub_type=policy_sim_interpret`）真算写回后再读；**有行**不自动起算，可「重新生成」（`force=true`）。用户可在页内勾选章节（内容自定义，不持久化配置、不灌假配置列），并选择 Word / PDF 下载。下载**不走** `simulation/jobs`，走已有 `POST /display/v1/situation/report/generate`（`reportType=policy-interpret-report`）→ topic-async OpenHTMLtoPDF；PDF=`format=pdf` 真字节；Word=`format=html` 同源 HTML 存为 `.doc`（与 217 同构）。无行或不勾选章节则不产文件。不接核增 `report/jobs`，不灌假 PDF/Word 进 gapfill。
-6. 用户想看政策关联网络。页面直接消费第 7 项读图（政策子图，`M_POLICY_RELATION_DEGREE`）。不走 `simulation/jobs`，本页不新建查图任务。
+6. 用户想看政策关联网络。页面直接消费第 7 项读图（政策子图，`M_POLICY_RELATION_DEGREE`）。不走 `simulation/jobs`，本页不新建查图任务。**无图**时可点「生成关联网络」走 `evaluation/jobs`（`sub_type=policy_sim_relation`）真算写回 ADS 镜像后再读；**有图**不自动起算，可「重新分析」（`force=true`）。
 
 某一次 `jobs` 失败，不清其他种类已经返回的区块。本页没有可接统计读面，空态与失败态都按区块独立呈现。
 
@@ -199,14 +199,15 @@ flowchart LR
 
 不做什么：不把核增研报五叶 `report/jobs`、`gapfill_policy_report_body` 当成本叶表。不新建 ADS 解读表。不把 226 的摘要 / 评价页 224 解读条目复制成本叶段落。不开完整 I2-12 任务浮层。
 
-### 5.6 240 政策关联分析 · 跨项索引（2026-11-12 需规分句闭合卡1=B）
+### 5.6 240 政策关联分析 · 跨项索引 + 异步真算写回（2026-11-14 同构 241）
 
 指标 `M_POLICY_RELATION_DEGREE`（GRAPH，D4=mock），调研判跨项索引。
 
 - **不设** `simulation/jobs` 种类，**不灌** `gapfill_policy_sim_result` 关联行。
 - **展示只读挂接**：浏览器 `GET /display/v1/policy/simulation/relation-graph?policy_id=&steps=&limit=` → display Feign `GET /topic/v1/policy/graph` → Python `GET /internal/policy/graph`（Nebula 优先，ADS `policy_graph_node/edge` 回退）。
-- 界面必见：政策关联网络图（节点/边）；协同效应与体系位置说明（优先图侧 props；无则前端邻域统计一句，不造假分）。
-- 空图诚实返回空 `nodes/edges`；Java 不写 nGQL、不填假网；本页不新建查图任务、不重画查图时序。
+- **真算 Job 键**（2026-11-14）：`policy_sim_relation`。`POST /display/v1/policy/evaluation/jobs` → topic-async → `/internal/policy/jobs/execute` → `polan.relation_graph_job`：读 DWD 标题/摘要/正文 → LLM 生成关联子图（3～8 邻域节点，`node_type` 限 policy/tech/industry；关系限 cite/support/apply_to/regulate；权重 0～1；`synergy_note` ≤60 字）→ **单政策 upsert ADS 镜像** `policy_graph_node`/`policy_graph_edge`（仅该中心 1 跳边 + 端点节点 DELETE+INSERT；`calc_batch_id=POL-L2-DS12-SIM-240-ASYNC`，同删演示种子批次 `seed-240-relation-20261112`；`synergy_note` 写中心节点 `props.synergy_note`，读面与前端 `synergyNoteFromGraph` 已认该键、**读面零改动**）。禁整表清空；无密钥/`generated=0` 不 DELETE、不造假节点。`force`：有图且未 force 可短路已有；「重新分析」必 `force=true`。
+- 界面必见：政策关联网络图（节点/边）；协同效应与体系位置说明（优先中心 `props.synergy_note`；无则前端邻域统计一句，不造假分）。无图空态出「生成关联网络」CTA 起 `policy_sim_relation`；有图出「重新分析」。
+- 空图诚实返回空 `nodes/edges`；Java 不写 nGQL、不填假网（真算由 Python 写 ADS 镜像，Java 只转发）；本页不新建查图任务、不重画查图时序。
 - `E-E7-POLICY-M1-L06` 不是实现路径，浏览器不改打专题 URL。抽取脚本 `GDF-POLICY-GRAPH-EXT-L01` 仍 backlog；样例不足时允许最小种子入 MySQL+图谱（非 gapfill_sim）。
 
 ## 6. 点名排除
@@ -214,7 +215,7 @@ flowchart LR
 | 资源或对象 | 不纳入本二级的原因 |
 |---|---|
 | 232–236 五叶 | EST-ARCH 半区。235 多维评估行、236 参与意见行已裁定，本叶不重复实现 |
-| 240 关联分析 jobs/gapfill 资源化 | 跨项索引。不设 `simulation/jobs` 种类、不建关联缺项表；仅允许 display 透传已有 `/topic/v1/policy/graph` |
+| 240 关联分析 jobs/gapfill 资源化 | 跨项索引。不设 `simulation/jobs` 种类、不建关联缺项表；真算走 `policy_sim_relation` 写 ADS 镜像（§5.6），display 读面仍只透传已有 `/topic/v1/policy/graph` |
 | `M_POLICY_DEEP_171_1`、`M_POLICY_LAYOUT_REC_COUNT` | 布局推荐键。不进推演页任何区；`FE-POL-03A` 页头「布局建议」卡槽是复刻壳 |
 | `ads.policy_simulate`、`polan.text.simulate`、`/v1/policy/simulate` | 效果推演读面与批产闭包，归 EST 半区裁定。留原地，展示不直连不迁移 |
 | `GET /v1/policy/text/parse`、demo「文本解析」签 | 算法中台读面。留原地，展示不直连不嵌入；展示读法走本叶 §5.1 |
@@ -223,7 +224,7 @@ flowchart LR
 | `report/jobs`、`gapfill_policy_report_body` | 核增智能研报五叶。242 不是研报 |
 | `M_POLICY_FOCUS_INDEX`、`M_POLICY_DS_11_POLICY_EVAL_015`、`M_POLICY_EFFECT_SCORE` | 评价页指标。不挂 238、241 |
 | `M_POLICY_SIMULATE` 挂到 235–242 行 | 推演键只挂 232–234 预测行（EST 裁定）。本叶各缺项行 `metric_id` 留空 |
-| 异步白名单（历史口径） | **已修订**：237 加 `policy_text_parse_run`；238 已有 `policy_sim_focus`；242 加 `policy_sim_interpret`；241 加 `policy_sim_path`（2026-11-14）。评价 226 的 `policy_text_parse` 只读键保持原状 |
+| 异步白名单（历史口径） | **已修订**：237 加 `policy_text_parse_run`；238 已有 `policy_sim_focus`；242 加 `policy_sim_interpret`；241 加 `policy_sim_path`（2026-11-14）；240 加 `policy_sim_relation`（2026-11-14）。评价 226 的 `policy_text_parse` 只读键保持原状 |
 | `E-E7-POLICY-M1-L06`、专题政策 URL | 不是展示实现路径 |
 
 ## 7. 明确不做
@@ -250,7 +251,7 @@ flowchart LR
 | 239 | 同表影响范围行，跟随政策上下文，渲染在前端 | 推演键未注册；契约注明影响范围只跟该次结果 |
 | 241 | 同表路径环节行读面 + `policy_sim_path` 真算 upsert | 无路径预测模型；两处相近指标（171 计数、015）调研均判不顶替 |
 | 242 | 同表解读段落行读面 + `policy_sim_interpret` 真算 upsert；下载另轨 `situation/report` | 同构 238；关键词「解读」0 条；`FE-POL-07A` 文案区分 |
-| 240 | 不设 jobs 种类；display `relation-graph` 透传第 7 项子图 | 调研判跨项索引；2026-11-12 卡1=B |
+| 240 | 不设 jobs 种类；display `relation-graph` 透传第 7 项子图读面 + `policy_sim_relation` 真算 upsert ADS 镜像 | 调研判跨项索引；2026-11-12 卡1=B；真算 2026-11-14 同构 241 |
 
 迁移边界重申：算法中台页面留在 `demo-ui-system-test`；`/v1/policy/text/parse` 等读面继续给算法中台自己用；展示不打 `/v1`，不迁 `run()`；`ads.policy_text_parse` 继续由已有管道写入，展示只读。真模型注册后对应能力切 async 真算，对外 URL 不变。算法中台已同构实现 241 真算入口（`POST /v1/policy/sim-path/run`，demo-algo-ent-analysis `polan/sim_path_job.py`，2026-11-14），与 lumen 侧互不依赖。
 

@@ -29,7 +29,7 @@
 | 237 | 政策文本智能解析 | `gkxlumenx_ads` | `policy_text_parse` | 只读已有列。不建 gapfill 表，不加列，不灌 |
 | 238 | 政策重点可视化展示 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的重点行 | 与 235 同一张结果表 |
 | 239 | 政策影响范围分析 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的影响范围行 | 与 235 同一张结果表 |
-| 240 | 政策关联分析 | （无 gapfill） | ADS `policy_graph_*` 只读 | 不设 jobs 表；样例可种子镜像 |
+| 240 | 政策关联分析 | （无 gapfill） | ADS `policy_graph_*` 只读 + 真算 upsert 同表（§10） | 不设 jobs 表；样例可种子镜像；真算 LLM 子图写回同表不建新表 |
 | 241 | 政策实施路径预测 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的路径环节行 | 与 235 同一张结果表 |
 | 242 | 政策解读报告生成 | `gkxlumenx_gapfill` | `gapfill_policy_sim_result` 的解读段落行 | 内容只存正文列。不存文件路径 |
 
@@ -222,9 +222,11 @@ D16 行级列是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`�
 
 行上 `metric_id` 仍是 `M_POLICY_TEXT_PARSE`。D4 保持 mock。无行则读面空；真算失败不造假四键。
 
-## 10. 240 无 gapfill 表（relation-graph）
+## 10. 240 无 gapfill 表（relation-graph 读面 + 真算写 ADS 镜像）
 
-不设 jobs 种类，不建 gapfill 关联表。页面经 display `relation-graph` 消费第 7 项子图（ADS `policy_graph_node/edge` / Nebula）。指标仍是已有 `M_POLICY_RELATION_DEGREE`。本单不把这条指标写进结果表或意见表，不写 nGQL，不建查图任务。样例不足时允许 ADS 最小种子（batch `seed-240-relation-20261112`，非 gapfill_sim）。
+不设 jobs 种类，不建 gapfill 关联表。**读面**：页面经 display `relation-graph` 消费第 7 项子图（ADS `policy_graph_node/edge` / Nebula）。指标仍是已有 `M_POLICY_RELATION_DEGREE`。本单不把这条指标写进结果表或意见表，不写 nGQL，不建查图任务。样例不足时允许 ADS 最小种子（batch `seed-240-relation-20261112`，非 gapfill_sim）。
+
+**真算写回（2026-11-14 `policy_sim_relation` · 同构 241）**：LLM 生成关联子图后**单政策 upsert 已有 ADS 表** `policy_graph_node`/`policy_graph_edge`——**不建新表、不加列**，沿用现有列（`node_key`/`node_type`/`name`/`weight`/`props`/`calc_batch_id`；`src_key`/`dst_key`/`relation_type`/`weight`/`props`/`calc_batch_id`）。范围仅该中心 `pol:{policy_id}` 1 跳边 + 端点节点；`calc_batch_id=POL-L2-DS12-SIM-240-ASYNC`（同删演示种子批次）；协同效应说明写中心节点 `props.synergy_note`；节点类型限 policy/tech/industry，关系限 cite/support/apply_to/regulate，权重 0～1；<3 节点不写。禁整表清空；无密钥/失败不造假节点。该写入是 ADS 镜像表（非 ODS/DWD/供应方库），与既有种子脚本 `seed_policy_relation_240.sql` 同一写入面。
 
 无图则该区业务空态「暂无政策关联网络」。本单不造 jobs 关联行来填。
 
@@ -256,7 +258,7 @@ D16 行级列是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`�
 | 路径环节 | 五环节。每行有环节、时间安排、责任主体、一句说明 | 布局推荐条数、流程执行记录、评价页 229 的方案路径 |
 | 解读段落 | 四段正文 | PDF、Word、文件路径、自定义格式、核增研报正文 |
 | 文本解析 | 不灌 | 解析行、条款行、对 `policy_text_parse` 的插入或清空 |
-| 240 | 不灌 | 关联边、查图结果 |
+| 240 | 不灌 | 关联边、查图结果。**例外（2026-11-14）**：真算 `policy_sim_relation` 由 LLM 单政策 upsert ADS `policy_graph_*`（§10），非灌数单职责 |
 
 六种业务行都带各自表上的 D16 列，`fill_method=manual`，`is_mock=1`，`metric_id` 留空。查询请求不调用这张灌数单。空表返回空。本单不写示例行。
 
@@ -292,7 +294,7 @@ D16 行级列是 `metric_id`、`gap_item`、`fill_method`、`gapfill_batch_id`�
 - 不把结果表和意见表并成一张。不加第三张 gapfill 表。
 - 不写 `gapfill_policy_sim_forecast` 的列。
 - 不灌文本解析。不把文本解析行写进 gapfill。
-- 240 不建表。242 不设文件路径列。
+- 240 不建表。242 不设文件路径列。240 真算只 upsert **已有** ADS `policy_graph_*`，不建新 ADS 表、不加列。
 - 不新造 `metric_id`，不改 D4，不把缺项行写成已上线。
 - 空态返回空，不返回 501。
 - 查询不插入。236 的页面提交不写库。
