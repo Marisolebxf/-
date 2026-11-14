@@ -121,3 +121,53 @@
 - A1/A3（API 册）、A4（DATA 册主+API 册对齐）闭合后，架构角色对三分册转无条件同意；A2 行政登记沿 C4 原时点，但 API 册不实句随 A1 一并修。
 - D5 N=50 与 D3 新建同构表：本会签已表同意，终批在监管人。
 
+
+---
+
+## GRAPH 追记确认（2026-11-13 agent:arch-agent）
+
+> 立场：只审架构面（调用链、发布语义、失败/回滚、部署顺序），不复核字段与列级 DDL（归 API / DATA 身份）。
+> 依据：`TS-L2-M10-GRAPH-ARCH.md` §1-4/§1-5/§1-8/§10、`TS-L2-M10-GRAPH-API.md` §9、`TS-L2-M10-GRAPH-DATA.md` §11；对照 `TS-L2-M10-ENT-ARCH.md` §1/§2/§4/§6。
+> 核对基线（2026-11-13）：Java 侧（display `SituationMaintainEntController`、topic `TechGraphMaintainController`）已落可选 body、登录态 operator、50303、versions/rollback 端点；Python `api/tech_graph_maintain_routes.py` 仍两段式（`publish_change_set:827`、`_project:960`、`_project_nebula:980`、50301 在 `:861`），ENT FE 仍留 50301 分支。下文按"设计追认"写，不把未落项当已落项。
+
+### 一、41–47 既有功能是否行为不变
+
+| 功能 | 结论 |
+|---|---|
+| R1 推荐、R2 现状、hang/unhang、实体边改/删、overlay、validate | **不变**。读缓存、写行、校验逻辑均未触及；R2 仅新增顶层 `tech_edges[]` 与节点 `layout`，ENT 消费端忽略未知键。 |
+| publish | **语义变化，用户可见三点**：① 两段式→单事务，失败整笔回滚，不再产生 `projection_status='pending'` 与 50301——页面"已受理，图谱投影中"分支成为死代码，失败时用户看到明确失败而非"稍后刷新"；② 50301 退役、下游不可达改 50303；③ 发布/回滚共用 `GET_LOCK('m10_graph_publish',10)`，ENT 与 GRAPH 发布串行，ENT 用户可能收到 409「他人正在保存」，而 ENT FE 一律渲染为「版本冲突：他人已先修改」（文案误导，见条件 C4）。 |
+| delete_node 级联 `graph_tech_edge` | **无影响**（ENT 页不发 delete_node，监管人 2026-11-10 已裁该行不可勾选）。 |
+| 不写 Nebula | 线上 `GKX_NEBULA_MAINTAIN_SPACE` 未配置，**实际行为不变**；但 ENT-ARCH 的"Nebula 投影边界"整节从此失效，必须加注（条件 C1）。 |
+| 回滚（新增能力，非既有功能） | ENT 41–47 首次暴露在"整图回滚"下：快照还原会把 ENT 实体边/挂接/overlay 的人工改动一并回退（数据侧 item 16 只列了 payload 扩表，没写这一后果，条件 C3）。 |
+
+### 二、FE-TS-10C 是否必须改
+
+- **不因 ENT 功能必须改**。`toPanorama` 只读 `node.entities`/`node.edges`，忽略顶层 `tech_edges` 与 `node.layout`（`maintain-ent.ts:180–216`），契约增量安全。
+- 共享 api 模块有两处**必修**，属 API 身份条件而非 ENT 功能条件：`maintain-ent.ts:372` 50301 分支删除；`:552` `publish.results.failed` 在 `results:null` 时会抛错（类型已于 `types/maintainEnt.ts:205` 改为可空）。
+- **不要求** `client_batch_id`、不要求展示 `stats`/`operator`/版本类型：ENT 页无版本区；`GraphMaintainEditor.vue:269–288` 的 versions/operator/stats 是本地 mock 模型字段，不读服务端。E4"版本端点对 ENT 可用"应表述为"后端可用、ENT 前端无消费方"。
+
+### 三、必须改的测试
+
+- **Java 侧已闭合**：E11 所列已按新口径落地（本次核对：`SituationMaintainEntControllerTest:55` 断言 50303、`:76/:95` publish 双参；`TechGraphMaintainControllerTest:70–89` 放行新 op、`:141–154` body 透传、`:172–180` 50303；`PanoramaReadAssemblyTest:79–130` 已有 overlay/键集三例）。
+- **Python 侧未列、必改**：`test_graph_maintain.py:535 test_nebula_projection_skipped_without_space`（`_project_nebula` 删除即 AttributeError）；`:459/:482/:506/:514/:556` 以扁平 `{"+node"...}` 构造 stats（分组后断言必改）；`:432/:447` `publish_change_set("cs-1")` 签名与 `results` 形状。这是 ENT 共用发布路径的单测主体，遗漏会直接卡 PY-IMPL 的 CI。
+
+### 四、追记遗漏的 ENT 影响
+
+1. **ENT-ARCH 本体无追记落点**：`GRAPH-ARCH §10:280` 只登记"待办（签收后）"，ENT-ARCH 正文 §1 要点 2（L48）、§4 mermaid（L81/L83）仍是旧语义；仅靠 ENT-API/DATA 追记覆盖不到架构读者。
+2. **部署顺序闸门**：ENT 写路径新增依赖 `graph_tech_edge`、`graph_version.kind/snapshot_status/publish_results`、`graph_change_set.client_batch_id`、`name_cn_active` 生成列；DDL 未先落而代码先上，ENT 发布/保存会以 50302/1062 失败。追记未把它写成发布前置条件。
+3. **整图回滚的跨轨语义**：回滚 `DELETE`+`INSERT` 还原 `graph_entity_edge`/`graph_entity_member`/`graph_entity_overlay`，等于回退 ENT 人工改动。
+4. **快照超限与 ENT 可回滚性**：每版全量快照，active 主表 >2000 行即 `skipped_oversize`；存量点数超阈时新 ENT 版本同样不可回滚（item 12 只讲历史版本）。
+5. **并发串行化的用户可见性**：40901 同时表示"版本冲突"与"他人正在保存"，ENT FE 只认前者。
+
+### 条件（改哪里、改成什么）
+
+| # | 改哪里 | 改成什么 |
+|---|---|---|
+| C1 | `TS-L2-M10-ENT-ARCH.md` §1 要点 2（L48）、§4 mermaid 的 `pub` 节点与 `published` 节点（L81/L83） | 三处各加一句（不重写正文）："本节 Nebula 投影/两段式发布已被 `TS-L2-M10-GRAPH-ARCH.md` 2026-11-13 §1-4 取代：发布改 `GET_LOCK('m10_graph_publish',10)` 单事务、本链不写 Nebula、无 pending/50301。" |
+| C2 | 发布检查单（`GRAPH-ARCH §10` 或 `GRAPH-DATA` 部署节） | 写明上线顺序：① DDL（`graph_tech_edge`、version 三列、`client_batch_id`、`name_cn_active` 生成列）→ ② Python/Java → ③ FE；并声明"DDL 未落先发代码时，ENT 发布按 50302、ENT R2 按 `schema_ready=false` 空图处理，禁止灰度"。 |
+| C3 | `TS-L2-M10-ENT-DATA.md` §4（L63）+ 联调冒烟记录 | §4 加一句"回滚按整图快照还原，会一并回退 ENT 实体边/挂接/overlay 的人工改动"；冒烟记录补一条"GRAPH 回滚后 ENT 实体关系页回退到该版本"的正向用例。 |
+| C4 | ENT-ARCH §3 G1 行或 C1 注记 | 注明"ENT 发布与 GRAPH 发布共用一把锁，可能返回 409『他人正在保存』，不等同版本冲突"（与 API 条件联动）。 |
+
+### 结论
+
+**有条件追认**。C1–C4 均为"加注 + 一条冒烟用例"，不动架构方向（单事务、删 Nebula、整图快照、共享锁均成立）；C1/C2 闭合前，42–47 的架构描述与部署顺序存在被实现者误读的风险。C1 落笔后本身份对 GRAPH 追记无保留。

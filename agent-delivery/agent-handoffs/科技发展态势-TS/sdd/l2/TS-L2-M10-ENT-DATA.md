@@ -25,6 +25,8 @@
 
 ## 1. MySQL 变更链（gkxlumenx_dwd，写者=Python）
 
+> **〔2026-11-13 已被取代〕** 本节为两段式旧语义，已被 [`TS-L2-M10-GRAPH-DATA.md`](./TS-L2-M10-GRAPH-DATA.md) 与本册末尾「追记」取代：发布 / 回滚单事务、不写 Nebula、快照每版写（N=1，超阈值不写、该版不可回滚）、名称唯一键只约束 active（ENT 追认 DATA 条件）。
+
 建表基线 **10 张**（会签清单；列级要点，DDL 归实现单）：
 
 | 表 | 粒度/要点 |
@@ -52,6 +54,8 @@
 
 ## 3. Nebula 投影边界（gkx_chain，写者=Python 发布事务）
 
+> **〔2026-11-13 已被取代〕** 本节为两段式旧语义，已被 [`TS-L2-M10-GRAPH-DATA.md`](./TS-L2-M10-GRAPH-DATA.md) 与本册末尾「追记」取代：发布 / 回滚单事务、不写 Nebula、快照每版写（N=1，超阈值不写、该版不可回滚）、名称唯一键只约束 active（ENT 追认 DATA 条件）。
+
 - 首版增量投影：本页写回产生的 UPSERT/DELETE VERTEX/EDGE；**VID=`tech:{technology_id}`**
 - **存量 `tech:{名称}` 不迁移**（OI-A03-02 留 C04）；读侧 union 经主表 technology_id 解析（ARCH-C2 口径）
 - **存量 seed 前置（三分册会签 DATA-A1 补）**：实现单须含一步「存量技术点映射 seed」——扫描 Nebula 存量 technology 顶点（名称 VID），在 `technology_master` 建 seed 行（technology_id 生成+name_cn=存量名+external_ids 记 `legacy_vid`），使主表先行档真正可解析；seed 幂等（ON DUPLICATE）
@@ -59,6 +63,10 @@
 - Demo：demo_gkx_chain 同构（注：本节「D6」指 VID 交叉点序号，非决策项 D6——三分册会签 N2 澄清；Nebula space 名经配置项注入可切正式/demo，实现单落）
 
 ## 4. 事务与补偿（沿 ARCH §1，存储侧含义）
+
+> **〔2026-11-13 已被取代〕** 本节为两段式旧语义，已被 [`TS-L2-M10-GRAPH-DATA.md`](./TS-L2-M10-GRAPH-DATA.md) 与本册末尾「追记」取代：发布 / 回滚单事务、不写 Nebula、快照每版写（N=1，超阈值不写、该版不可回滚）、名称唯一键只约束 active（ENT 追认 DATA 条件）。
+
+> **回滚的后果**（ENT 追认 ARCH-C3）：GRAPH 的回滚按整图快照还原，会一并回退 ENT 41–47 的实体边、挂接和 overlay 的人工改动。联调冒烟需补一条正向用例：GRAPH 回滚后，ENT 实体关系页回到该版本。
 
 发布序列（三分册会签 ARCH-A4 锁定）：**MySQL（主表+version+change_log）先提交 → Nebula 投影 → ADS 投影最后**（原稿 ADS 随 MySQL 先提交系与 ARCH 矛盾，已对齐 ARCH 版：ADS/Nebula 同段失败同补偿，R2 恒读上一已发布版，无 pending 版过滤问题）；Nebula/ADS 失败 → version.projection_status=pending + 补偿重放。不做跨库分布式事务。
 
@@ -68,3 +76,32 @@
 - 不做 redirect/合并后端（D6）；不做 conflicts 业务逻辑（表建逻辑空）
 - 不做挂接状态表（三分册会签 DATA-A3 裁：hang 状态由边存在性+change_log 表达，不另建表——entan graph_membership 先例不采）；不动存量 Nebula VID；不替 DN-07/DN-A03-02/03/06 拍板
 - Java 零写以上任何表（只读 §2 投影）
+
+
+## 追记（2026-11-13）· 维护技术图谱 34–40 改动了共用发布路径
+
+> 来源：[TS-L2-M10-GRAPH-DATA.md §11](./TS-L2-M10-GRAPH-DATA.md)（2026-11-13 五身份会签、监管人 `human:刘剑锋` 签收）。下文原样转录该节，标题降一级。本册此前与之冲突的表述以本追记为准。**本追记须由本册原审稿身份确认（见 `会签/TS-L2-M10-ENT-SIGNOFF-{ARCH,API,DATA,ALGO}.md` 各自末节「GRAPH 追记确认」），确认前不派 `TS-L2-M10-GRAPH-PY-IMPL-01`。**
+
+### 11. 对 ENT-DATA 的追记（ENT 共用路径的变化）
+
+> 本册不改 `TS-L2-M10-ENT-DATA.md` 本体；下列为 ENT 数据面的结构 / 语义变化，供 ENT-DATA 及其会签单由原审稿身份追认。**确认前不派 PY-IMPL**（ARCH §10、API-N5、裁定 B18）。
+
+| # | ENT 原状 | 变化 |
+|---|---|---|
+| 1 | 发布两段式：MySQL 先提交 → Nebula → ADS，失败留 `projection_status='pending'` / 50301（ENT-DATA §4） | **加锁单事务**，DWD/ADS 同事务；任一步失败整笔回滚，无 pending；新版本 `projection_status` 恒 `ok`；50301 退役 |
+| 2 | 发布写 Nebula（`_project_nebula`，`routes:980–1000`） | **删除** `_project_nebula` 与 `GKX_NEBULA_MAINTAIN_SPACE`；ENT 7 个 op 与本叶 3 个新 op 都不写图（35-3 只读计数除外）。线上 env 未配置，行为不变 |
+| 3 | `graph_version` 无类型 / 快照状态 / 回执列（`DDL:55–64`） | 加 `kind` / `snapshot_status` / `publish_results`；历史回填 `kind='ent'`、`snapshot_status='none'`；**新保存（含 ENT 页）`kind='save'`** |
+| 4 | 快照每 N=50 版（`DDL:109–115` 注释） | **每版一份、不裁剪**：每次发布 / 回滚同事务写全量快照；payload 加 `schema_version`，含软删行 |
+| 5 | `graph_change_set` 无批次键（`DDL:24–34`） | 加 `client_batch_id` + 唯一键；submit / publish 批次幂等；changes 可缺省（服务端生成、不享重试） |
+| 6 | `technology_master.uk_name_cn` 覆盖全表（`DDL:19`） | 改为生成列 `name_cn_active` + `uk_name_cn_active`，只约束 active；**软删后可同名重建，改名撞 active 才 422**；**seed `MASTER_SQL`（`seed:234–241`）的 `ON DUPLICATE … status='active'` 不再适用**，须改为显式查找 + 不覆盖 status + 跳过 deleted |
+| 7 | `graph_entity_edge` 是唯一技术点相关 ADS 边表 | 新增 `graph_tech_edge`（技术点↔技术点）；**所有读 / 删 / 快照 / 回滚路径同时处理两张边表**（`routes:383`、`:520–521`、`:1034–1041` 都要扩） |
+| 8 | `graph_change_log.object_type` 仅 node/entity/edge（`DDL:41`） | 扩 `tech_edge`；`add_node` / `add_edge` 的 `object_id` 与 `after` 在发布事务内回填；级联删边各记一行 |
+| 9 | `_current_version` 只认 `projection_status='ok'`（`routes:170–172`） | 保留；因新版本恒 `ok`，语义不变 |
+| 10 | `/current` 出参无技术点间边 / 坐标（`routes:348–414`） | 新增顶层 `tech_edges[]`（只 active，`src/dst` 为 number）与节点 `layout{x,y}`；不并入 `node.edges`（ENT 页不受影响） |
+| 11 | 失败码仅 1146/1054/1049 → 503（`routes:62–63`） | 增死锁 1213 / 锁等待 1205 → 409；名称 1062 → 422、边 1062 → 409；`graph_entity_member` 缺表 / 缺列仍静默兼容；50303 仅 Java 层 |
+| 12 | 历史 ENT 版本无快照 | 列表照常显示，回滚置灰 / 后端 409；`snapshot_status='none'` |
+| 13 | 版本 `operator` 写死 `'py'`（`routes:844`） | 保存取 `change_set.operator`、回滚取 display 注入的 operator；历史 `'py'` 显示「系统（历史）」；`operator_display` 规则见 API/PRODUCT |
+| 14 | 版本 `stats` 为 `{ops:N}` / 扁平四键（`routes:844`、`:852–858`） | 新版本用分组 JSON（§5.2）；历史行原样保留、不回填、缺组不补 0 |
+| 15 | `impact` 只有实体计数 | 新增 `tech_edge_count`（工作集 active，双向）与 `panorama_hidden_relation_count`（entan 自有 Nebula 只读会话 + `USE demo_gkx_chain`，超时 `null`），后者引入 Nebula 只读依赖 |
+| 16 | 快照 payload 无 `graph_tech_edge` / 坐标 | payload 新增 `graph_tech_edge`、`technology_master.layout_x/y`、`graph_entity_node.layout_x/y`、`rel_code`、`strength_auto`、`schema_version` |
+| 17 | ENT 共用单测 / 文档未列 | **ENT 共用单测与文档更新**：`SituationMaintainEntControllerTest:49`（50301→50303）、`:70`（`publish("cs-1")` 签名）；`TechGraphMaintainControllerTest:72`（add_node/add_edge/delete_edge 由 400 改放行）、`:129/:137/:149`（50301 断言）、`:135`（publish 签名）；`PanoramaReadAssemblyTest` 补 `overlay` 与键集断言；`storage/ENT/stores/mysql/ads.md` + `CHANGELOG.md` 登记新表 / 新列；ENT-DATA 正文与 ENT 会签单追认 |

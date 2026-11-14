@@ -32,6 +32,7 @@
 - 202 impact 预检计数（edge_count/entity_link_count/snapshot_refs）
 - 209 版本 stats（+node/-node/+edge/-edge）
 - 47 validate dry_run 预览 diff 计数
+- 〔2026-11-13 补，ENT 追认 ALGO 条件〕202 impact 新增两项：`tech_edge_count`（工作集技术点关系数）、`panorama_hidden_relation_count`（全景中将隐藏的存量关系数，可为 null）；34–40 的其余计数见 `TS-L2-M10-GRAPH-METRIC.md` §2.2（九类），请示单 `sdd/简报/2026-11-13-请示-DN-A03-09-计数豁免七类.md`
 
 裁定待 **PM/数据 Lead** 确认后回填本表（A03 L1091 在册 owner——三分册会签 ALGO-N2 补全）；未裁前按「建议豁免」表述，不挂 ⓘ 不注册。
 
@@ -40,6 +41,7 @@
 1. **M_TECH_*_STRENGTH 系列 = auto 层（105/边权）口径**；`strength_manual` 是编辑层字段，**永不进指标公式**（A03 204/220/R-A03-08 三处警示的收口）。
 2. 实现对齐：边属性双字段+source 标记（API 册 DTO 已落 strength_auto/strength_manual/source）；读面指标计算只取 auto；UI 显人工值时标注「人工」。
 3. 序 46 表单可回显人工值；读面 Top5/边权排序仍按 auto。
+4. 〔2026-11-13 补〕`M_TECH_GRAPH_105_1` 只读 `graph_entity_edge.strength_auto`；不读 34–40 新表 `graph_tech_edge` 的任何列（含其 `strength_auto`）。
 
 ## 4. 前置注记（落笔待办）
 
