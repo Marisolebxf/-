@@ -1,0 +1,25 @@
+{
+  "change_scope": [
+    "lumen-topic-py：enterprise_overview.py /industry-kpi、/industry-comparison 增加可选 chain_code（兼容 chain_codes 数组）；OverviewRepository.industry_kpi_all/industry_comparison 按 chain_code 过滤（不传=现行为，全量/ALL）",
+    "lumen-topic-py：enterprise_distribution.py /stats/distribution 增加可选 chain_code：有值时改为按 enterprise_industry_chain × enterprise_base 现聚（与 summary 同口径），无值走现表——规避 enterprise_distribution 表无链维度的数据缺口",
+    "lumen-svc-platform：EnterpriseMetaRequest 增加 chainCode/chainCodes 可选字段；EnterpriseDistributionRequest 增加 chainCode；ServiceImpl 原样透传（Feign 已是 @RequestBody 整体转发，DTO 加字段即可）",
+    "lumen-ui-topic：DevelopmentOverviewPanel.vue 用 resolveKeyPanoramaChainCode 同款逻辑（path 中 INB* L0 码直取）把链码传给 industry-kpi/industry-comparison/distribution；pickRank/matchChainCode 改为按码精确匹配（chain_code === L0 码），匹配失败不再兜底选第 1 项，改为清空选中并提示"
+  ],
+  "non_goals": [
+    "不改 enterprise_distribution 表结构与历史灌数（避免 DDL 变更；用现聚查询替代）",
+    "不改 cluster 与 L0 码表（dim.industry_cluster_map）本身；不做全站名称映射治理",
+    "不处理「科研人数」随链收窄后的 D4 就绪度角标变化（走既有 metrics 评审层）",
+    "不动 lumen-ui-topic 中其他会话未提交的 ServicePortal* 文件"
+  ],
+  "verification_plan": [
+    "fix：本地起 lumen-topic-py（FASTAPI）+ 直连 demo DWD 库，分别以 chain_code=新能源链码 / 不带参数调 /industry-kpi /industry-comparison /stats/distribution，断言返回值不同且等于该链真实数",
+    "fix：lumen-ui-topic npm run type-check 绿；本地页面选 新能源 → KPI=该链企业数、排名高亮新能源、趋势/分布随链变化；选只选集群（无 L0）行为=首个 L0",
+    "regression：不传链码（入口兜底/旧调用）返回与线上现值一致（ALL 189115 不变）；Java mvn -pl gkxlumen-topic-enterprise 编译通过",
+    "boundary：L0 码不在链表（如新能源初始映射缺失）→ KPI 显 0 或该码空态提示，不再回落 ALL；排名选中态清空而非兜底第 1 项"
+  ],
+  "rollback_plan": [
+    "三仓均为 origin/dev 直推 + CI 自动部署；回滚=git revert 对应 commit（无 DDL/数据变更，无状态残留）",
+    "前端如需紧急止血：revert DevelopmentOverviewPanel.vue 单 commit 即恢复现行为"
+  ],
+  "data_access": false
+}

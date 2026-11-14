@@ -1,0 +1,25 @@
+{
+  "symptom": "企业发展-企业整体概况页签：顶部「选择产业」级联换一级产业集群/二级产业（如选新能源）后，KPI 卡「企业总体数量/科研人数」恒为全局固定数（189,115 家 / 14,530,656 人），排名/趋势默认选中态错选合成生物，换不同产业时部分区域变化、部分不变，筛选与结果不一致（缺陷描述：传一级/二级产业 code 数据有差异，疑似后台 mock 固定数字）",
+  "reproduction": [
+    "打开 企业发展 → 企业整体概况（lumen-ui-topic /enterprise/development，tab=overall，DOM .svc-portal-page aria-label=企业分析 - 企业发展）",
+    "顶部级联选择 新能源（CL-SEI-03 / INB170301）→ KPI 仍显示 189,115 家（= enterprise_base 全量，ALL 行），排名默认高亮 合成生物（排名第 1 项），非所选产业",
+    "切换其他产业：排名部分选项会变（名称恰能模糊匹配时），KPI 企业总体数量多数情况不变；「选的新能源，显示的是合成生物」（石书诚 2026-11-14 09:45 评论）"
+  ],
+  "root_cause": "三段叠加，非后端 mock：(1) 前端 DevelopmentOverviewPanel.vue 调 entStatsOverviewIndustryKpi()/entStatsOverviewIndustryComparison() 时不传任何产业参数；后端 lumen-topic-py enterprise_overview.py /industry-kpi 固定读 enterprise_industry_summary chain_code='ALL' 行（189115=enterprise_base 全量），/industry-comparison 固定返回全链列表——请求体被无视，与传不传一级/二级 code 无关。(2) 前端靠 selectedPortalIndustryName→名称 includes 模糊匹配把所选产业映射到排名项（matchChainCode/pickRank），L0 码表（dim.industry_cluster_map，INB12/13/15/25 体系）与 dwd 链表 chain_name 存在名称不一致（如新能源），匹配失败时 pickRank 兜底 industries[0]（合成生物）→「选的新能源，显示的是合成生物」；scopedIndustries 匹配不到时 scopedEnterpriseTotal 回落 kpi.enterprise_total（ALL 固定数）。(3) /stats/distribution 前端虽拼了 chain_code，但 Java EnterpriseDistributionRequest 无该字段、Python enterprise_distribution.py SQL 仅按 dimension/region_type/parent_region_id 过滤，enterprise_distribution 表本身无链维度——产业维度对分布图完全未生效。",
+  "counter_evidence": [
+    "截图数值 189,115 与 9y_portal_ent_dev_seed.sql 注释「enterprise_base（189115 家）」及 2c 段 ALL 行 INSERT...SELECT COUNT(DISTINCT org_id) 口径完全一致，证明是真实底表聚合数而非 mock 常量",
+    "14,530,656 = ALL 行 research_staff_total（SUM(rd_staff_count)），同样为真实聚合",
+    "排名 12 项（合成生物 610/生物医药 575/…）与 /industry-comparison 全链列表吻合，数量随链真实变化，非固定"
+  ],
+  "requirement_refs": [
+    "agent-delivery/bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md#序号75 企业整体概况（path: 智能服务集群/智慧服务门户系统/集群服务/科技专题服务/企业发展/企业整体概况）：企业总体数量=『展示各未来产业内，企业的总体数量和历年发展趋势』；企业分布情况=『展示各未来产业中，企业在全球/全国的分布情况』——均为按产业维度统计",
+    "demo-ui-topic src/app/pages/development/DevelopmentOverview.tsx（E-32 评审原型）：KPI=『选定产业企业总数/选定产业科研人数』，选择产业 scope 直接作用于 KPI 与分布（scaleMockByScope），『作用于企业总体数量与企业分布情况』提示语即此语义",
+    "lumen-ui-topic EnterpriseDevelopmentPage.vue industryHint：『作用于企业总体数量与企业分布情况』——页面自声明交互契约"
+  ],
+  "impact_scope": [
+    "lumen-ui-topic src/views/enterprise/development/DevelopmentOverviewPanel.vue（KPI 收窄、排名选中、分布查询参数）",
+    "lumen-topic-py gkx_search_service/views/enterprise_overview.py（/industry-kpi /industry-comparison 支持链码过滤）+ gkx_common/repositories/overview.py（industry_kpi_all/industry_comparison 加 chain_code 入参）",
+    "lumen-topic-py gkx_search_service/views/enterprise_distribution.py + enterprise_distribution 表（分布按链过滤，涉及数据缺口：该表无链维度，需 ETL/灌数补 chain 维度或以链维聚合查询替代）",
+    "lumen-svc-platform EnterpriseMetaRequest/EnterpriseDistributionRequest DTO 与 EnterpriseStatsOverviewServiceImpl（透传产业参数）"
+  ]
+}
