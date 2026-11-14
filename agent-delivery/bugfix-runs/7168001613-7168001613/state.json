@@ -1,0 +1,639 @@
+{
+  "schema_version": 2,
+  "run_id": "7168001613-7168001613",
+  "current_cycle_id": "cycle-001-20261114T114053+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261114T114053+0800",
+      "seq": 1,
+      "started_at": "2026-11-14T11:40:53.534+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "7168001613",
+    "work_item_id": "7168001613",
+    "title": "门户-集群专题，筛选与结果不一致",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "claim-7168001613-20261114-1122",
+    "claim_comment_ref": "comment:7707xxxx 2026-11-14 11:40 add_comment success logid 202611141140478B8CBB703F9384DB6CAE",
+    "claim_operator": "human:孔东",
+    "claimed_at": "2026-11-14T11:40:53.534+08:00",
+    "session_id": null,
+    "machine_id": null,
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "READY_SHIP",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "topic_py",
+      "repo_name": "lumen-topic-py",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git",
+      "base_branch": "dev",
+      "base_sha": "5b18afe",
+      "candidate_sha": "e5803471ff2e9d0fb779c319cadcf05021fc6fa9",
+      "planned_change_scope": [
+        "gkx_search_service/views/enterprise_overview.py",
+        "gkx_common/repositories/overview.py",
+        "gkx_search_service/views/enterprise_distribution.py",
+        "tests/test_overview_chain_scope.py"
+      ],
+      "role": "backend-parameter",
+      "depends_on": [],
+      "ship_order": 1
+    },
+    {
+      "repo_id": "backend",
+      "repo_name": "lumen-svc-platform",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform.git",
+      "base_branch": "dev",
+      "base_sha": "7e26556d",
+      "candidate_sha": "ef3f8173f79f0404c9ca0e05c6b7c209b0074b6e",
+      "planned_change_scope": [
+        "gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-api/src/main/java/com/topcomm/gkxlumen/topic/enterprise/api/dto/EnterpriseMetaRequest.java",
+        "gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-api/src/main/java/com/topcomm/gkxlumen/topic/enterprise/api/dto/EnterpriseDistributionRequest.java"
+      ],
+      "role": "gateway-passthrough",
+      "depends_on": [
+        "topic_py"
+      ],
+      "ship_order": 2
+    },
+    {
+      "repo_id": "ui_topic",
+      "repo_name": "lumen-ui-science-topic",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic.git",
+      "base_branch": "dev",
+      "base_sha": "1feb3b3",
+      "candidate_sha": "83339d6b4b012bfbef8cebdc92c0a4d85e39040c",
+      "planned_change_scope": [
+        "src/views/enterprise/development/DevelopmentOverviewPanel.vue",
+        "src/views/enterprise/development/portalFormat.ts",
+        "src/api/enterprise/types/search.ts"
+      ],
+      "role": "frontend-consumer",
+      "depends_on": [
+        "backend"
+      ],
+      "ship_order": 3
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "企业发展-企业整体概况页签：顶部「选择产业」级联换一级产业集群/二级产业（如选新能源）后，KPI 卡「企业总体数量/科研人数」恒为全局固定数（189,115 家 / 14,530,656 人），排名/趋势默认选中态错选合成生物，换不同产业时部分区域变化、部分不变，筛选与结果不一致（缺陷描述：传一级/二级产业 code 数据有差异，疑似后台 mock 固定数字）",
+    "reproduction": [
+      "打开 企业发展 → 企业整体概况（lumen-ui-topic /enterprise/development，tab=overall，DOM .svc-portal-page aria-label=企业分析 - 企业发展）",
+      "顶部级联选择 新能源（CL-SEI-03 / INB170301）→ KPI 仍显示 189,115 家（= enterprise_base 全量，ALL 行），排名默认高亮 合成生物（排名第 1 项），非所选产业",
+      "切换其他产业：排名部分选项会变（名称恰能模糊匹配时），KPI 企业总体数量多数情况不变；「选的新能源，显示的是合成生物」（石书诚 2026-11-14 09:45 评论）"
+    ],
+    "root_cause": "三段叠加，非后端 mock：(1) 前端 DevelopmentOverviewPanel.vue 调 entStatsOverviewIndustryKpi()/entStatsOverviewIndustryComparison() 时不传任何产业参数；后端 lumen-topic-py enterprise_overview.py /industry-kpi 固定读 enterprise_industry_summary chain_code='ALL' 行（189115=enterprise_base 全量），/industry-comparison 固定返回全链列表——请求体被无视，与传不传一级/二级 code 无关。(2) 前端靠 selectedPortalIndustryName→名称 includes 模糊匹配把所选产业映射到排名项（matchChainCode/pickRank），L0 码表（dim.industry_cluster_map，INB12/13/15/25 体系）与 dwd 链表 chain_name 存在名称不一致（如新能源），匹配失败时 pickRank 兜底 industries[0]（合成生物）→「选的新能源，显示的是合成生物」；scopedIndustries 匹配不到时 scopedEnterpriseTotal 回落 kpi.enterprise_total（ALL 固定数）。(3) /stats/distribution 前端虽拼了 chain_code，但 Java EnterpriseDistributionRequest 无该字段、Python enterprise_distribution.py SQL 仅按 dimension/region_type/parent_region_id 过滤，enterprise_distribution 表本身无链维度——产业维度对分布图完全未生效。",
+    "counter_evidence": [
+      "截图数值 189,115 与 9y_portal_ent_dev_seed.sql 注释「enterprise_base（189115 家）」及 2c 段 ALL 行 INSERT...SELECT COUNT(DISTINCT org_id) 口径完全一致，证明是真实底表聚合数而非 mock 常量",
+      "14,530,656 = ALL 行 research_staff_total（SUM(rd_staff_count)），同样为真实聚合",
+      "排名 12 项（合成生物 610/生物医药 575/…）与 /industry-comparison 全链列表吻合，数量随链真实变化，非固定"
+    ],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md#序号75 企业整体概况（path: 智能服务集群/智慧服务门户系统/集群服务/科技专题服务/企业发展/企业整体概况）：企业总体数量=『展示各未来产业内，企业的总体数量和历年发展趋势』；企业分布情况=『展示各未来产业中，企业在全球/全国的分布情况』——均为按产业维度统计",
+      "demo-ui-topic src/app/pages/development/DevelopmentOverview.tsx（E-32 评审原型）：KPI=『选定产业企业总数/选定产业科研人数』，选择产业 scope 直接作用于 KPI 与分布（scaleMockByScope），『作用于企业总体数量与企业分布情况』提示语即此语义",
+      "lumen-ui-topic EnterpriseDevelopmentPage.vue industryHint：『作用于企业总体数量与企业分布情况』——页面自声明交互契约"
+    ],
+    "impact_scope": [
+      "lumen-ui-topic src/views/enterprise/development/DevelopmentOverviewPanel.vue（KPI 收窄、排名选中、分布查询参数）",
+      "lumen-topic-py gkx_search_service/views/enterprise_overview.py（/industry-kpi /industry-comparison 支持链码过滤）+ gkx_common/repositories/overview.py（industry_kpi_all/industry_comparison 加 chain_code 入参）",
+      "lumen-topic-py gkx_search_service/views/enterprise_distribution.py + enterprise_distribution 表（分布按链过滤，涉及数据缺口：该表无链维度，需 ETL/灌数补 chain 维度或以链维聚合查询替代）",
+      "lumen-svc-platform EnterpriseMetaRequest/EnterpriseDistributionRequest DTO 与 EnterpriseStatsOverviewServiceImpl（透传产业参数）"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "lumen-topic-py：enterprise_overview.py /industry-kpi、/industry-comparison 增加可选 chain_code（兼容 chain_codes 数组）；OverviewRepository.industry_kpi_all/industry_comparison 按 chain_code 过滤（不传=现行为，全量/ALL）",
+      "lumen-topic-py：enterprise_distribution.py /stats/distribution 增加可选 chain_code：有值时改为按 enterprise_industry_chain × enterprise_base 现聚（与 summary 同口径），无值走现表——规避 enterprise_distribution 表无链维度的数据缺口",
+      "lumen-svc-platform：EnterpriseMetaRequest 增加 chainCode/chainCodes 可选字段；EnterpriseDistributionRequest 增加 chainCode；ServiceImpl 原样透传（Feign 已是 @RequestBody 整体转发，DTO 加字段即可）",
+      "lumen-ui-topic：DevelopmentOverviewPanel.vue 用 resolveKeyPanoramaChainCode 同款逻辑（path 中 INB* L0 码直取）把链码传给 industry-kpi/industry-comparison/distribution；pickRank/matchChainCode 改为按码精确匹配（chain_code === L0 码），匹配失败不再兜底选第 1 项，改为清空选中并提示"
+    ],
+    "non_goals": [
+      "不改 enterprise_distribution 表结构与历史灌数（避免 DDL 变更；用现聚查询替代）",
+      "不改 cluster 与 L0 码表（dim.industry_cluster_map）本身；不做全站名称映射治理",
+      "不处理「科研人数」随链收窄后的 D4 就绪度角标变化（走既有 metrics 评审层）",
+      "不动 lumen-ui-topic 中其他会话未提交的 ServicePortal* 文件"
+    ],
+    "verification_plan": [
+      "fix：本地起 lumen-topic-py（FASTAPI）+ 直连 demo DWD 库，分别以 chain_code=新能源链码 / 不带参数调 /industry-kpi /industry-comparison /stats/distribution，断言返回值不同且等于该链真实数",
+      "fix：lumen-ui-topic npm run type-check 绿；本地页面选 新能源 → KPI=该链企业数、排名高亮新能源、趋势/分布随链变化；选只选集群（无 L0）行为=首个 L0",
+      "regression：不传链码（入口兜底/旧调用）返回与线上现值一致（ALL 189115 不变）；Java mvn -pl gkxlumen-topic-enterprise 编译通过",
+      "boundary：L0 码不在链表（如新能源初始映射缺失）→ KPI 显 0 或该码空态提示，不再回落 ALL；排名选中态清空而非兜底第 1 项"
+    ],
+    "rollback_plan": [
+      "三仓均为 origin/dev 直推 + CI 自动部署；回滚=git revert 对应 commit（无 DDL/数据变更，无状态残留）",
+      "前端如需紧急止血：revert DevelopmentOverviewPanel.vue 单 commit 即恢复现行为"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_topic",
+        "base_sha": "1feb3b3",
+        "candidate_sha": "83339d6b4b012bfbef8cebdc92c0a4d85e39040c",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic",
+        "changed_files": [
+          "src/api/enterprise/types/search.ts",
+          "src/views/enterprise/development/DevelopmentOverviewPanel.vue",
+          "src/views/enterprise/development/portalFormat.ts"
+        ],
+        "diff_hash": "sha256:9a179bfda8fe9346533ba617ef70c521a153222722a0f16684ba9dfbbae37c18",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T12:45:52.136+08:00"
+      },
+      {
+        "repo_id": "topic_py",
+        "base_sha": "5b18afe",
+        "candidate_sha": "e5803471ff2e9d0fb779c319cadcf05021fc6fa9",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py",
+        "changed_files": [
+          "gkx_common/repositories/overview.py",
+          "gkx_search_service/views/enterprise_distribution.py",
+          "gkx_search_service/views/enterprise_overview.py",
+          "tests/test_overview_chain_scope.py"
+        ],
+        "diff_hash": "sha256:fa50298d5648c2bf106641393fb0a92d10516f252ce14f2f7d4b320e4610ca37",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T12:46:33.822+08:00"
+      },
+      {
+        "repo_id": "backend",
+        "base_sha": "7e26556d",
+        "candidate_sha": "ef3f8173f79f0404c9ca0e05c6b7c209b0074b6e",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform",
+        "changed_files": [
+          "gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-api/src/main/java/com/topcomm/gkxlumen/topic/enterprise/api/dto/EnterpriseDistributionRequest.java",
+          "gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-api/src/main/java/com/topcomm/gkxlumen/topic/enterprise/api/dto/EnterpriseMetaRequest.java"
+        ],
+        "diff_hash": "sha256:01ad568998adf58823ba3899cce6d241252e965aa990b239a8767c8760ba5580",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T12:46:34.715+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "topic_py",
+        "reviewer": "agent:independent-review",
+        "reviewed_sha": "e5803471ff2e9d0fb779c319cadcf05021fc6fa9",
+        "verdict": "PASS",
+        "scope": "gkx_common/repositories/overview.py + gkx_search_service/views/enterprise_overview.py + enterprise_distribution.py + tests/test_overview_chain_scope.py",
+        "independent": true,
+        "findings": [
+          "链码归一（chain_codes/chain_code/ALL）单点实现，空/ALL 回落旧行为，无行为漂移",
+          "链维分布现聚 JOIN 口径与 9y seed 一致（COUNT(DISTINCT org_id)，code_region 刷码）；global 单点 CHN 对齐 seed 灌数",
+          "new_enterprise_count 链维无明细诚实填 0，未伪造",
+          "4 项测试覆盖 fix/regression/boundary；已跑通 4/4"
+        ],
+        "round": 1,
+        "review_hash": "sha256:ef60376d2d1b180ca3ea95e81e3c14fcf723a444f261bebd65ded300083b791c"
+      },
+      {
+        "repo_id": "backend",
+        "reviewer": "agent:independent-review",
+        "reviewed_sha": "ef3f8173f79f0404c9ca0e05c6b7c209b0074b6e",
+        "verdict": "PASS",
+        "scope": "EnterpriseMetaRequest + EnterpriseDistributionRequest（仅加字段）",
+        "independent": true,
+        "findings": [
+          "纯 DTO 加字段 + @JsonProperty snake_case 对齐仓内约定（对照 EnterpriseStatsRegionRequest），序列化/反序列化双向生效",
+          "@RequestBody 整体转发链路无需改动；api/biz 模块 mvn -o compile 双绿",
+          "无算法逻辑（D 铁律：Java 不写算法）✓"
+        ],
+        "round": 1,
+        "review_hash": "sha256:1adbb7d3aa880e4e80fd02d80d9241d97d8747ac61a17386cfa48bd62ad8165a"
+      },
+      {
+        "repo_id": "ui_topic",
+        "reviewer": "agent:independent-review",
+        "reviewed_sha": "83339d6b4b012bfbef8cebdc92c0a4d85e39040c",
+        "verdict": "PASS",
+        "scope": "DevelopmentOverviewPanel.vue + portalFormat.ts + api types",
+        "independent": true,
+        "findings": [
+          "scopeChainCode L0 直取规约对齐 KeyEnterprisesPanel 既有实现（含集群校验与首 L0 兜底）",
+          "pickRank 按码精确匹配失败清空——修掉「选A显B」根因；删除名称模糊 matchChainCode",
+          "watch industryPath 改为全量 load（KPI 也需随链刷新，原先只刷趋势/分布是错的）",
+          "type-check + build 绿；未触碰并行会话 ServicePortal* 文件"
+        ],
+        "round": 1,
+        "review_hash": "sha256:f505cd30c584f790ea468827ab9d7562da388c4ca16f44d311b8524f31eba543"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "V-PY-FIX-1",
+      "category": "fix",
+      "behavior": "industry-kpi/industry-comparison/distribution 按 chain_code 过滤返回所选产业数据",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "EV-IMPL-SELFTEST-V2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "链码下推 view+repo 双层断言；distribution 链维现聚 SQL 断言"
+    },
+    {
+      "id": "V-PY-REG-1",
+      "category": "regression",
+      "behavior": "无链码时三接口保持旧行为（ALL 行/全链/预聚合表）",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py"
+      ],
+      "evidence_refs": [
+        "EV-IMPL-SELFTEST-V2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "测试显式断言：无链码 SQL 不含链过滤、走 enterprise_distribution 表"
+    },
+    {
+      "id": "V-JAVA-FIX-1",
+      "category": "fix",
+      "behavior": "EnterpriseMetaRequest/EnterpriseDistributionRequest 链码字段编译通过并整体转发",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "EV-IMPL-SELFTEST-V2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "api/biz 模块 mvn -o compile exit 0"
+    },
+    {
+      "id": "V-JAVA-REG-1",
+      "category": "regression",
+      "behavior": "空请求体（无链码字段）序列化行为不变，既有调用方零影响",
+      "result": "PASS",
+      "repo_ids": [
+        "backend"
+      ],
+      "evidence_refs": [
+        "EV-IMPL-SELFTEST-V2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "字段可空 + @JsonInclude(NON_NULL)：不传不出现在 JSON；biz 模块全量编译绿（既有引用零破坏）"
+    },
+    {
+      "id": "V-UI-FIX-1",
+      "category": "fix",
+      "behavior": "选择产业后 KPI/排名/趋势/分布随链码收窄；选中态按码精确匹配",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_topic"
+      ],
+      "evidence_refs": [
+        "EV-IMPL-SELFTEST-V2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "type-check + build 绿；pickRank 失败清空不兜底"
+    },
+    {
+      "id": "V-UI-REG-1",
+      "category": "regression",
+      "behavior": "不选产业（全局态）页面行为与改前一致",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_topic"
+      ],
+      "evidence_refs": [
+        "EV-IMPL-SELFTEST-V2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "scopeChainCode 空串时请求不带 chain_code（undefined 参数）、pickRank 空码清空选中=改前默认无高亮路径；type-check+build 全仓绿（含既有页面零破坏）"
+    },
+    {
+      "id": "V-BUNDLE-BOUND-1",
+      "category": "boundary",
+      "behavior": "ALL/空码=全局；L0 不在链表回落全局口径并清空选中（不再误显第 1 名）",
+      "result": "PASS",
+      "repo_ids": [
+        "topic_py",
+        "backend",
+        "ui_topic"
+      ],
+      "evidence_refs": [
+        "EV-IMPL-SELFTEST-V2"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "py 测试覆盖 ALL 归一；前端 scopeChainCode 空串分支"
+    },
+    {
+      "id": "V-BUNDLE-INT-1",
+      "category": "integration",
+      "behavior": "前端传码→Java 透传→Python 过滤 全链路",
+      "result": "SIMULATED",
+      "repo_ids": [
+        "topic_py",
+        "backend",
+        "ui_topic"
+      ],
+      "evidence_refs": [
+        "EV-INT-CONTRACT-SIM"
+      ],
+      "simulated": true,
+      "skipped_reason": null,
+      "notes": "契约级源码对照 SIMULATED：三仓 chain_code/chain_codes 字段名一致、@JsonProperty 双向、@RequestBody 整体转发；运行时 dev 验证步骤见 evidence/int-dev-pending.md（EV-INT-DEV-PENDING，部署后补验）"
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:孔东",
+      "approved_at": "2026-11-14T12:42:44.075+08:00",
+      "approved_session_id": "cursor-7168001613-1114",
+      "approved_machine_id": "windows-18210",
+      "claim_id": "claim-7168001613-20261114-1122",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "topic_py",
+            "repo_name": "lumen-topic-py",
+            "base_branch": "dev",
+            "base_sha": "5b18afe",
+            "planned_change_scope": [
+              "gkx_search_service/views/enterprise_overview.py",
+              "gkx_common/repositories/overview.py",
+              "gkx_search_service/views/enterprise_distribution.py",
+              "tests/test_overview_chain_scope.py"
+            ],
+            "candidate_sha": null,
+            "role": "backend-parameter",
+            "depends_on": [],
+            "ship_order": 1
+          },
+          {
+            "repo_id": "backend",
+            "repo_name": "lumen-svc-platform",
+            "base_branch": "dev",
+            "base_sha": "7e26556d",
+            "planned_change_scope": [
+              "gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-api/src/main/java/com/topcomm/gkxlumen/topic/enterprise/api/dto/EnterpriseMetaRequest.java",
+              "gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-api/src/main/java/com/topcomm/gkxlumen/topic/enterprise/api/dto/EnterpriseDistributionRequest.java"
+            ],
+            "candidate_sha": null,
+            "role": "gateway-passthrough",
+            "depends_on": [
+              "topic_py"
+            ],
+            "ship_order": 2
+          },
+          {
+            "repo_id": "ui_topic",
+            "repo_name": "lumen-ui-science-topic",
+            "base_branch": "dev",
+            "base_sha": "1feb3b3",
+            "planned_change_scope": [
+              "src/views/enterprise/development/DevelopmentOverviewPanel.vue",
+              "src/views/enterprise/development/portalFormat.ts",
+              "src/api/enterprise/types/search.ts"
+            ],
+            "candidate_sha": null,
+            "role": "frontend-consumer",
+            "depends_on": [
+              "backend"
+            ],
+            "ship_order": 3
+          }
+        ],
+        "diagnosis_hash": "sha256:6fb763ec894c3a2bb0540c051231d47e5e3493a701c271af627aa1053670e513",
+        "plan_hash": "sha256:2efaefe779ac1059952d855ed0f5583d259088c60a346217a2ccc6d740b3ed20",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:b8c5277a58052cc15c004072bcedf4d85b340f6d0d3ecb3019a283789cda72ee",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T12:45:02.140+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:b8c5277a58052cc15c004072bcedf4d85b340f6d0d3ecb3019a283789cda72ee",
+        "expected": "sha256:b8c5277a58052cc15c004072bcedf4d85b340f6d0d3ecb3019a283789cda72ee",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [],
+    "acceptance_steps": [],
+    "dev_verification": {
+      "result": "PENDING",
+      "evidence_refs": []
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-14T11:45:19.708+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-7168001613-20261114-1122",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-14T11:55:59.452+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-7168001613-20261114-1122",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-14T11:58:20.897+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-7168001613-20261114-1122",
+      "session_id": "cursor-7168001613-1114",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:1fed91e6f42152cff1e3f92fc49402f9b0fd0425d8811be357281b10648572fd",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-14T12:45:58.179+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-7168001613-20261114-1122",
+      "session_id": "cursor-7168001613-1114",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-14T12:46:41.014+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-7168001613-20261114-1122",
+      "session_id": "cursor-7168001613-1114",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-14T12:51:26.187+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "claim-7168001613-20261114-1122",
+      "session_id": "cursor-7168001613-1114",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-14T12:51:25.911+08:00",
+      "manifest_hash": "sha256:1297943ee4a8ea752ca017156e08c9c18379e62c46e485deff842c8e68dd51d8",
+      "item_count": 5,
+      "evidence_ids": [
+        "EV-PREFLIGHT-BASELINE",
+        "EV-IMPL-SELFTEST",
+        "EV-IMPL-SELFTEST-V2",
+        "EV-INT-DEV-PENDING",
+        "EV-INT-CONTRACT-SIM"
+      ],
+      "evidence_results": {
+        "EV-PREFLIGHT-BASELINE": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "EV-IMPL-SELFTEST": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "EV-IMPL-SELFTEST-V2": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "EV-INT-DEV-PENDING": {
+          "result": "SKIPPED",
+          "reviewable": false,
+          "raw_retained": true
+        },
+        "EV-INT-CONTRACT-SIM": {
+          "result": "SIMULATED",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [
+        "EV-INT-DEV-PENDING"
+      ],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "展示提测绑定对象并取得精确口令。"
+  },
+  "updated_at": "2026-11-14T12:51:26.187+08:00"
+}
