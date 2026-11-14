@@ -1,10 +1,10 @@
 # 缺陷修复报告：2593 科技指数-指数可视化-筛选产业出现异常提示
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-14T12:15:27.130+08:00
+> 生成时间：2026-11-14T12:48:25.677+08:00
 > 当前 cycle：cycle-001-20261113T175652+0800
-> 当前内部阶段：AWAITING_ACCEPTANCE
-> 验收模式：policy_only（operator_verified=false）
+> 当前内部阶段：RESOLVED
+> 验收模式：chat_exact（operator_verified=false）
 
 ## 1. 缺陷事实和复现
 
@@ -115,13 +115,13 @@ DB 写证据授权：
 
 ## 10. 精确验收与飞书状态迁移
 
-- 飞书当前状态：IN PROGRESS
-- 验收证据：PENDING
-- 验收结论：pending
-- 验收模式：policy_only
+- 飞书当前状态：RESOLVED
+- 验收证据：evidence/manifest.json#EV-diff-r2
+- 验收结论：approved
+- 验收模式：chat_exact
 - 验收异常：PENDING
-- 验收口令：PENDING
-- 审批引用：PENDING
+- 验收口令：验收通过
+- 审批引用：chat:cursor-1886ed47:2026-11-14T12:31 用户消息「验收通过」
 - chat_exact 验收：仅在收到完整精确消息 `验收通过` 后，经 acceptance gate 校验并由 Agent 调用飞书状态迁移。
 
 ## 11. Gate 状态与绑定对象
@@ -129,14 +129,14 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:c10bcb8bef93245fc2b039ea21b96693ea0c220a6e71e8ef8c4461e8ca382997 |
-| ship | invalidated | 提测 | sha256:f1b362e335dd0f9aefc6702cf77691efe9b03119d9c8ee57bac3cf7758c6508d |
-| acceptance | pending | PENDING | PENDING |
+| ship | approved | 提测 | sha256:f1b362e335dd0f9aefc6702cf77691efe9b03119d9c8ee57bac3cf7758c6508d |
+| acceptance | approved | 验收通过 | sha256:8bfd867e9b5a676f93ee6458896a1513ef57363df3960ea636ab2c0d6f4d6345 |
 
 enter_dev bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","remote":"https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git","base_branch":"dev","base_sha":"d5db467e093820f6c018874326c6b7a133c22b28","planned_change_scope":["src/views/situation/tech-index/index.vue","src/views/situation/tech-index/styles/demo-tech-index.css","src/views/situation/tech-index/techIndex.test.mjs"]}],"risk_level":"M","diagnosis_hash":"sha256:e19d71f2c39e76284f946776630242b4ff59cb2b126ae4ada61f6f028a5a1bbf","plan_hash":"sha256:1727b107beac59048f8f501e9282dd9ad6c264ea0ad06aea6a69777d2cad52bb","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}
 
 ship bound_to：{"repos":[{"repo_id":"ui_pc","candidate_sha":"be38a6a6f602dd2239bb2d0980af8819f39afefd","diff_hash":"sha256:f5dcfc399b8a2a47bbe3cf38c9761383109b174bec409becbe2e0a6f5bd56ce5","verification_hash":"sha256:b055b8688e5d64363662f7d58f0aa1adecb239eddd3bba664ba53923f8e6ba41","review_hash":"sha256:bee635a1a69c3534758014b3dcf5d9997445e1ef8b660ba54f7194c0b00f3e42","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}],"risk_level":"M","deploy_target":"dev"}
 
-acceptance bound_to：PENDING
+acceptance bound_to：{"work_item_id":"7168140581","claim_id":"2593","ship_gate_hash":"sha256:f1b362e335dd0f9aefc6702cf77691efe9b03119d9c8ee57bac3cf7758c6508d","dev_verification_result":"PASS","evidence_manifest_hash":"sha256:9f3cf1a46eaab1c16eadbcbf0a4d1114ca69d2508311a61b75785dfca428dffa","current_status":"IN PROGRESS"}
 
 ## 12. 自动决策摘要
 
