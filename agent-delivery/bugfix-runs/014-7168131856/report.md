@@ -1,9 +1,9 @@
 # 缺陷修复报告：014 政策效果推演-新出台政策效果预测，历史政策效果，短期和长期效果，没有数据
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-14T15:56:59.494+08:00
+> 生成时间：2026-11-14T16:13:53.772+08:00
 > 当前 cycle：cycle-001-20261114T132900+0800
-> 当前内部阶段：READY_SHIP
+> 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -49,12 +49,13 @@
 |---|---|---|---|---|---|---|---|
 | ev-selfcheck | selfcheck | PASS | yes | yes | PENDING | 8fff84bb76e9c825e2e8224ca8c01047e396a8fd | PENDING |
 | ev-typecheck | typecheck | PASS | yes | yes | PENDING | 5e6fb49cafe84dfc32048822bc4dfd949b23dfc0 | PENDING |
+| ev-dev-verify | dev_verification | PASS | yes | yes | PENDING | 187099b95c7cb5a35b692cdbe8abf2ffb270f928 | PENDING |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:fc7e55babe175e02b487c492b378f18bc06602f0882d404f0b28278f72db7f21；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:13f645c5d0b95d13c42ab5fe493ead02611e74de81c6bb594a5de66b9ad87551；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -93,13 +94,16 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- ui_pc：ship_order=PENDING，MR=direct-push-dev，candidate=8fff84bb76e9c825e2e8224ca8c01047e396a8fd，merge=187099b95c7cb5a35b692cdbe8abf2ffb270f928，deployed=187099b9，pipeline=dev-ci-187099b，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/commits/dev，image=harbor.test.com/zp-tts/gkx-lumen-pc:187099b9，rollout=complete
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=ev-dev-verify
 
 人工验收步骤：
 
-- PENDING
+- 打开 dev 环境 http://10.50.69.111:30891/ ，硬刷新（Ctrl+F5）确保加载 187099b9 版本
+- 进入 政策效果推演 · 新出台政策效果预测 / 历史政策效果，执行推演
+- 核对短/中长期效果卡出 3 枚 KPI（GDP/产业/创新），同类政策列表出条目（竖线格式恢复解析）
+- 确认相邻页签（科技政策推演/实施路径等）无回归
 
 ## 10. 精确验收与飞书状态迁移
 
@@ -117,12 +121,12 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | invalidated | 进入开发014 | sha256:fab42e4684f652a3f75720db4c0b33a9918ae5a43c41648007f81b297ed77b83 |
-| ship | pending | PENDING | PENDING |
+| ship | approved | 提测014 | sha256:d57e7f0932fd76370b239ae9600459ea94e04ee2cc0905dda5ed7c699c84fb65 |
 | acceptance | pending | PENDING | PENDING |
 
 enter_dev bound_to：{"risk_level":"M","diagnosis_hash":"sha256:35d3e90ba215ee1e7cccd1ef6c85e8eb4fc6972952263492f244c7635b093936","plan_hash":"sha256:d19e7bb455d79112f2d48a536c850baef0092e6bf21695535b090cdead3eb36c","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2","repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"cf9d154383897dda04d54b2d7af432c792d1f7e9","planned_change_scope":["src/views/policy/simulation/simulationLive.mjs"]}]}
 
-ship bound_to：PENDING
+ship bound_to：{"risk_level":"M","deploy_target":"dev","repos":[{"repo_id":"ui_pc","candidate_sha":"8fff84bb76e9c825e2e8224ca8c01047e396a8fd","diff_hash":"sha256:882c381b1d2cf003bbbc7424e30feb966ea7485cbf55f49ce59a38be086edf44","verification_hash":"sha256:d96405495a8bed99ea331dfe7bd4373d8fcb699239ceaac6f7d53f5db97341af","review_hash":"sha256:e62556844a30d953a4b9ae52adbe100c59997f7a858a2884918d3d993964d44f","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2","role":"primary","depends_on":[],"ship_order":null}]}
 
 acceptance bound_to：PENDING
 
