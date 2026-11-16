@@ -61,7 +61,7 @@
 ## CI/CD（必填）
 
 - 分支：`dev`  
-- commit：`1360bb79f`（docs TRACE 父矩阵）  
+- commit：`705e1bad8` / 续 `1360bb79f`（TRACE 父矩阵 + handoff 回填）  
 - pipeline URL / ID：编排仓无业务 CI  
 - 部署 namespace / 镜像 tag：N/A  
 - K8s rollout：N/A  
