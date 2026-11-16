@@ -16,4 +16,4 @@ WBS：[`../../WBS.md`](../../WBS.md)
 | [德金分析材料-NM5b.md](./德金分析材料-NM5b.md) | 德金：Zmate 报告创作 V1–V3 节奏（至 12-22）；知识/指标库四象限；审阅与对抗审查。飞书 https://zhipu-ai.feishu.cn/docx/NM5bdtntcogA8lxoNh3cirSgnif |
 | [2026-11-16-德金-乐之域-专题切片三方对照.md](./2026-11-16-德金-乐之域-专题切片三方对照.md) | 三方对照：流程/数据层/Agent/版本落点/张力与待拍板。 |
 | [2026-11-16-之域德金demo分析.md](./2026-11-16-之域德金demo分析.md) | 之域/德金单文件 HTML 原型通读：研究内核 vs 工作台壳；与 V1–V3 / 切片合入建议。 |
-| [2026-11-16-战略分析整体建设方案.md](./2026-11-16-战略分析整体建设方案.md) | **战略分析整体建设方案**（草案）：三轴合一、术语铁律、V1–V3 落点、综合 Demo 对齐规范；`ZMATE-FE-INTEGRATED-DEMO-L01` 执行真源。 |
+| [2026-11-16-战略分析整体建设方案.md](./2026-11-16-战略分析整体建设方案.md) | **战略分析整体建设方案**（草案）：三轴合一、术语铁律、V1–V3 落点、Agent 协作模式、综合 Demo 对齐规范；`ZMATE-FE-INTEGRATED-DEMO-L01` 执行真源。飞书云空间 https://zhipu-ai.feishu.cn/file/MGZCbHGOOow05fxoRupcbenJnNd （目录 [YZxF…](https://zhipu-ai.feishu.cn/drive/folder/YZxFfgaURlN7RKdt5yCcSmY7n8m)） |
