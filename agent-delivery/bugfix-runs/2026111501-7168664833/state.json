@@ -1,0 +1,209 @@
+{
+  "schema_version": 2,
+  "run_id": "2026111501-7168664833",
+  "current_cycle_id": "cycle-001-20261115T124403+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261115T124403+0800",
+      "seq": 1,
+      "started_at": "2026-11-15T12:44:03.454+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2026111501",
+    "work_item_id": "7168664833",
+    "title": "门户，有新增机构数没有全球机构数",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "cursor-bugfix-7168664833",
+    "claim_comment_ref": "feishu-comment-7168664833-agent-claim",
+    "claim_operator": "human:孔东",
+    "claimed_at": "2026-11-15T12:44:03.454+08:00",
+    "session_id": null,
+    "machine_id": null,
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "READY_DEV",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "topic_py",
+      "repo_name": "lumen-topic-py",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git",
+      "base_branch": "dev",
+      "base_sha": "c96b08b24cac489f24bcb934b4081f1f10ae2037",
+      "candidate_sha": null,
+      "planned_change_scope": [
+        "gkx_svc_service/repo.py portal_overview() 全量态 M_SVC_ORG_CNT fact 缺行时回退 COUNT(*) svc_org_card"
+      ],
+      "role": "python-api",
+      "depends_on": [],
+      "ship_order": 1
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:09d32040be006c9322fa75dab26fd9eb6d98350926482f320b54d914d62fd659",
+    "scope": {
+      "status": "approved",
+      "tables": [
+        {
+          "database": "demo_gkxlumenx_ads",
+          "schema": "demo_gkxlumenx_ads",
+          "table": "svc_metric_fact",
+          "environment": "demo",
+          "access_mode": "python",
+          "host_ref": "env:DEMO_MYSQL_HOST",
+          "account_ref": "env:DEMO_MYSQL_USER",
+          "confirmed_by": "human:孔东",
+          "confirmed_at": "2026-11-15T13:20:00+08:00",
+          "evidence_ref": "evidence/manifest.json#ev-scope-confirm-001"
+        }
+      ]
+    }
+  },
+  "diagnosis": {
+    "symptom": "门户服务门户总览页（无 industry 参数，全量态）KPI 卡「全球机构约数」显示「暂无」，而「本年新增机构」4,701 家正常。URL http://10.50.69.111:30892/topic/service-portal/overview",
+    "reproduction": [],
+    "root_cause": "线上 demo_gkxlumenx_ads.svc_metric_fact 表缺失 M_SVC_ORG_CNT 行（或该行 value 为 NULL），导致 portal_overview() 全量态 kpi.org_in_pool 缺失，前端「全球机构约数」显示「暂无」。同批 series/dist 表有数据，说明 fact 表的该行被单独清掉或插入失败。这是数据缺行问题，不是前端或 Java 层缺陷。",
+    "counter_evidence": [],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md#88（全球服务机构概况：服务机构数量分析/总体数量与历年趋势）"
+    ],
+    "impact_scope": [
+      "专题服务门户总览页（/topic/service-portal/overview）全量态 KPI 卡「全球机构约数」",
+      "同页结论句「全球机构总数暂无」"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "repos/lumen-topic-py/gkx_svc_service/repo.py portal_overview()：全量态 _fact('M_SVC_ORG_CNT') 为 None 时回退 COUNT(*) FROM svc_org_card，保证 kpi.org_in_pool 尽量有值（口径同切片态 len(rows)、svcan/metrics.py calc_org_total 兜底）",
+      "数据层：补种 demo_gkxlumenx_ads.svc_metric_fact 的 M_SVC_ORG_CNT 行（value=svc_org_card 行数，period='all', slice_key='all'）——优先经 svcseed run_seed 全量重跑或单行 INSERT，须走数据写入白名单流程"
+    ],
+    "non_goals": [
+      "不改前端 lumen-ui-topic（显示逻辑正确：缺值显示暂无是诚实行为）",
+      "不改 Java lumen-svc-platform（纯透传，无缺陷）",
+      "不动 svc_metric_series / svc_metric_dist（有数据，非本次范围）",
+      "不在 fact 缺行时填 0 冒充全球总量（repo.py 既有诚实性约束保持）"
+    ],
+    "verification_plan": [
+      "代码层：为 portal_overview() 回退逻辑留一个最小可跑检查（fact 缺行→回退计数；fact 有行→仍用 fact 值）",
+      "接口层：部署 dev 后 GET /internal/gkx-svc/portal/overview（无 industry）返回 kpi.org_in_pool 为数值且 metric_id=M_SVC_ORG_CNT",
+      "页面层：http://10.50.69.111:30892/topic/service-portal/overview KPI 卡「全球机构约数」显示数值而非「暂无」，结论句不再出现「全球机构总数暂无」",
+      "数据层：SELECT metric_id FROM svc_metric_fact WHERE metric_id IN ('M_SVC_ORG_CNT','M_SVC_ORG_TOTAL','M_SVC_PT_GLOBAL_TOTAL') 确认行存在且 value 与 svc_org_card COUNT(*) 一致"
+    ],
+    "rollback_plan": [
+      "代码回退：git revert Python 提交即可，回退后恢复「缺行显示暂无」现状，无破坏性",
+      "数据回退：M_SVC_ORG_CNT 行若为新增 INSERT，可 DELETE 该行（uk_svc_metric_fact 唯一键 metric_id+period+slice_key）；若为 run_seed 重跑，按 etl_batch_id 回到先前批次状态"
+    ],
+    "data_access": true
+  },
+  "implementation": {
+    "repos": []
+  },
+  "review": {
+    "repos": []
+  },
+  "verification_matrix": [],
+  "gates": {
+    "enter_dev": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "ship": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [],
+    "acceptance_steps": [],
+    "dev_verification": {
+      "result": "PENDING",
+      "evidence_refs": []
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-15T13:19:11.344+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-bugfix-7168664833",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-15T13:19:11.622+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-bugfix-7168664833",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": null
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "展示进入开发绑定对象并取得精确口令。"
+  },
+  "updated_at": "2026-11-15T13:19:11.622+08:00"
+}
