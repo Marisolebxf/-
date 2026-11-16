@@ -66562,6 +66562,7 @@ tasks:
     estimated_tokens: 60000
     note: |
       2026-11-13 淮政玮派单（包 B），11-16 李周反馈登记册缺卡后补建。负责人 human:韩梦蕊，监管 human:唐绍祖，要求 11-18 交付（须早于 D 包联调）。前置事实（已签收，直接采信）：T09-S1 四份归档 degree-full.json 19,430 行 / weighted-degree-full.json 19,430 行 / composite-recomputed.json 1,500 行；T10 出 180 个成形社群与 435 行属性表、Louvain B′ 定案；T12 契约字段 items[{nodeId,rank,score,raw,normalized}]、meta.populationSize/metric_source/scope。
+      2026-11-16 唐绍祖会签边权口径（会签/KG-GRAPH-SIGN-唐绍祖-三域cooperate边权口径-20261116.md）生效，本单必须遵守：① M01 人才侧强度一律取 props.co_paper_count，weight 全为 0（252 万条抽样 3000/3000 为 0）不得用于加权/排序/连线；② M02 的 14,715,117 是「合著篇数总量」非「合作强度」，要强度须用 props.strength_by_year 分年值且禁跨年相加/比较（边自带 strength_note 已写明）；③ M22 企业侧 weight 是合作类型序数（8=战略合作/7=技术许可），禁求和、禁算加权度。挂账缺陷 D-1：人才边 props.weight_field 声明 collaboration_score 但该字段全 null，待白鑫凤确认源表无分还是漏灌。
     depends_on:
       - "KG-GRAPH-COVER-01"
     design_refs:
@@ -66574,7 +66575,7 @@ tasks:
       - "435 属性表 avg_degree 用 2×内部边÷规模、密度用 2E/(N(N-1))，与 11-12 验收附条口径一致"
       - "出 Handoff agent-handoffs/KG-GRAPH-RECALC-02.md，证据指向主文与归档目录，状态止于 integration 不写 done"
       - "全程只读图库、只读侧不打大聚合、不改 T12 契约字段名与结构"
-    update_time: "2026-11-16T16:46:57+08:00"
+    update_time: "2026-11-16T17:26:02+08:00"
   - id: KG-GRAPH-API-04
     supervised_by: "human:淮政玮"
     title: "展示图接口实现（41 + 428/432/435/437 + 400–407）"
@@ -66620,6 +66621,7 @@ tasks:
     estimated_tokens: 120000
     note: |
       2026-11-13 淮政玮派单（包 C），11-16 宋飞扬反馈登记册缺卡后补建（提交 8b97db11c 已推 dev：三份接口契约 + 21 op 清单 + 联调检查表）。负责人 human:宋飞扬，监管 human:徐滕强，要求 11-25 交付。状态 backlog：depends_on KG-GRAPH-COVER-01 尚未 done，ready 门禁不允许。前置事实（已实测，直接采信）：tech_point 19,430 点、tech_rel 541,428、tech_has_institution 51,000（COVER-01 补至 ≥95%）；person 100,000 点、M01 2,525,789；research 83,745 点、M02 3,442,271。三域数据早在图中，本单不灌新数据。
+      2026-11-16 唐绍祖会签边权口径（会签/KG-GRAPH-SIGN-唐绍祖-三域cooperate边权口径-20261116.md）生效，110/111 与 114/115 实现必须遵守：① PERSON_RE_NEIGHBORS / PERSON_RE_SUBGRAPH 的强度取 props.co_paper_count（人才 cooperate 的 weight 全为 0，用则全部并列）；② PERSON_GRAPH_BROWSE 禁按 weight 排序；③ RESEARCH_RE_NEIGHBORS / RESEARCH_RE_SUBGRAPH 若要展示强度，取 props.strength_by_year 分年值并标注年份，禁跨年合并；④ 对外文案不得出现「专利合作强度」「项目合作强度」（co_patent_count/co_project_count 几乎全空，按 availability=missing 处理）。
     depends_on:
       - "KG-GRAPH-COVER-01"
     design_refs:
@@ -66633,4 +66635,4 @@ tasks:
       - "source=demo_gkx_chain 只读消费，零写图、零建边、零改 schema、不建第二空间"
       - "VID 前缀按本单写：技术点 tp:<id>、人才 person:<id>、科研机构 inst:<id>、服务机构 institution:<id>，不得按名称猜"
       - "出 Handoff agent-handoffs/KG-GRAPH-TRIPLE-03.md（op 条数/三份文档路径/curl 结果/diagram_id/未完成项），状态止于 integration 不写 done"
-    update_time: "2026-11-16T17:10:01+08:00"
+    update_time: "2026-11-16T17:26:02+08:00"
