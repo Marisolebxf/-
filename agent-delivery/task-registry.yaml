@@ -51802,7 +51802,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。按说明书第 11.2 节。序号 610。接口只读表，禁止接口直接返回 mock。"
+    note: "不执行。POL-L2-PC3-PC4-FDE-L01 废止 gapfill_policy_xcmp。这一对的对比数据和研报写入 ads_policy_compare_report。保持 blocked。"
     depends_on:
       - "POL-L2-PC3-XCMP-ARCH"
       - "POL-L2-PC3-XCMP-DATA"
@@ -51812,7 +51812,7 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_xcmp。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入共性、差异、互补、冲突。接口只读表"
       - "不新算全景分布。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-09T19:38:37+08:00"
+    update_time: "2026-11-17T00:46:38+08:00"
   - id: POL-L2-PC3-VIZ-GAPFILL-L01
     blocked_by: "废作（2026-11-09 human:淮政玮）：由 POL-MOCK-BTN-B06 取代，见 POL-MOCK-BTN-长任务总控.md。不要派、不要当依赖。"
     supervised_by: "human:淮政玮"
@@ -51827,7 +51827,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 8000
-    note: "监管 human:淮政玮。按说明书第 11.2 节。序号 611。接口只读表，禁止接口直接返回 mock。"
+    note: "不执行。FDE-L01 废止 gapfill_policy_xcmp_viz。图用的分数和点边写在 ads_policy_compare_report 同一行。保持 blocked。"
     depends_on:
       - "POL-L2-PC3-VIZ-ARCH"
       - "POL-L2-PC3-VIZ-DATA"
@@ -51837,7 +51837,7 @@ tasks:
       - "在 gkxlumenx_gapfill 建 gapfill_policy_xcmp_viz。不写 ODS、DWD、ADS 和供应方库"
       - "独立脚本灌入对比表、柱、雷达用的对照数。接口只读表"
       - "不新算全景分布。不改 D4，不新造 metric_id。handoff 写明库、表、行数和灌数命令"
-    update_time: "2026-11-09T19:38:38+08:00"
+    update_time: "2026-11-17T00:46:47+08:00"
   - id: POL-L2-PC3-OUT-GAPFILL-L01
     blocked_by: "废作（2026-11-09 human:淮政玮）：由 POL-MOCK-BTN-B06 取代，见 POL-MOCK-BTN-长任务总控.md。不要派、不要当依赖。"
     supervised_by: "human:淮政玮"
@@ -67247,7 +67247,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     user_story: "US-DS-POL-07"
-    note: "波次 A：说明书 #### 610。合规样本已图定为广东省、市级下的珠海固态电池行动方案与深圳新型储能规划；这一对的对比必须有结果，研报必须有正文。结果行在完成行写入前仍是覆盖不到。四单和代码未改，等会签签收。"
+    note: "波次 A 已写入 #### 610。实现顺序保持 backlog，等会签：ADS-L01 建表，WRITE-L01 写入广东省市级下珠海固态电池行动方案与深圳新型储能规划这一对的对比数据和完整研报，API-L01 只读，FE-L01 运行对比和生成研报改读该行。八张 gapfill 不执行。"
     collaborators:
       - "product-agent"
       - "arch-agent"
@@ -67264,4 +67264,101 @@ tasks:
       - "说明书 #### 610 写明：一次运行对比由 Python 写入 ads_policy_compare_report，Java 只读；610–618 不再用八张 gapfill。"
       - "会签签收后：表建在 gkxlumenx_ads，字符集 utf8mb4_general_ci；display 的 compare/runs 只读该行；关 mock 时页面不用种子表、图或研报。"
       - "PDF 与 Word 导出该行全部分析正文，以及柱状图、雷达图、知识图谱。文件中不出现演示或 mock。"
-    update_time: "2026-11-17T00:42:35+08:00"
+    update_time: "2026-11-17T00:46:33+08:00"
+  - id: POL-L2-PC3-PC4-ADS-L01
+    title: "建 ads_policy_compare_report，一行装对比和研报"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 20000
+    user_story: "US-DS-POL-07"
+    note: "会签签收前保持 backlog。表只为合规用例的运行对比和完整研报提供一行。"
+    depends_on:
+      - "POL-L2-PC3-PC4-FDE-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/科技政策跟踪-系统详细设计说明书.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-PC3-XCMP-合规演示用例.md"
+    definition_of_done:
+      - "在 gkxlumenx_ads 建 ads_policy_compare_report，utf8mb4 / utf8mb4_general_ci。一行含政策编号与标题、维度、权重、阈值、时间窗、状态、分数、四类识别、图用点边、摘要、结论、深度四块、洞察四类、章节、双向溯源、失败原因、写入时间。"
+      - "不建 gapfill_policy_*，不写 ODS、DWD、供应方库。D4 仍是 mock。"
+      - "合规样本能落在这张表：广东省、市级，珠海市固态电池产业发展行动方案（2025-2030年）与深圳市新型储能产业发展规划（2026—2030年）。"
+    update_time: "2026-11-17T00:45:49+08:00"
+  - id: POL-L2-PC3-PC4-WRITE-L01
+    title: "写入合规样本的对比数据和完整研报"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    user_story: "US-DS-POL-07"
+    note: "会签签收前保持 backlog。运行对比的数据和生成研报的全文都由本单写入同一行。"
+    depends_on:
+      - "POL-L2-PC3-PC4-ADS-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/科技政策跟踪-系统详细设计说明书.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-PC4-WRITE-合规演示用例.md"
+    definition_of_done:
+      - "对合规样本写入一行已完成：广东省、市级，珠海市固态电池产业发展行动方案（2025-2030年）与深圳市新型储能产业发展规划（2026—2030年）。政策编号用库内检索命中，不编造编号。"
+      - "这一行有对比数据：五个维度的分数、共性差异互补冲突、柱状图与雷达图用的数、知识图谱的点边、摘要和核心结论。"
+      - "同一行有完整研报：政策实施效果、社会经济效益、产业影响、发展趋势、四类洞察、各章正文、结论到这两份政策的双向溯源。正文不出现演示或 mock。"
+      - "入口是 /internal/policy/compare-report。Java 不写这张表。当天同一指纹已完成则直接返回该行。D4 仍是 mock。"
+    update_time: "2026-11-17T00:46:03+08:00"
+  - id: POL-L2-PC3-PC4-API-L01
+    title: "对比运行只读 ADS 行"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-DS-POL-07"
+    note: "会签签收前保持 backlog。浏览器只打 /display/v1/policy/compare/runs。"
+    depends_on:
+      - "POL-L2-PC3-PC4-WRITE-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/科技政策跟踪-系统详细设计说明书.md"
+    definition_of_done:
+      - "POST /display/v1/policy/compare/runs 委托 Python 写入并返回该行。GET 列表给分析对比记录，GET 单行给对比结果和研报。"
+      - "Java 只读 ads_policy_compare_report，不拼种子句，不返回写死 mock。"
+      - "用合规样本请求后，响应里这一对有对比数据和完整研报正文。没有行时返回空，不回退种子。"
+    update_time: "2026-11-17T00:46:16+08:00"
+  - id: POL-L2-PC3-PC4-FE-L01
+    title: "运行对比和生成研报改读同一行"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-POLICY-TRACKING"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 60000
+    user_story: "US-DS-POL-07"
+    note: "会签签收前保持 backlog。运行对比要有数据，生成研报要是完整报告。"
+    depends_on:
+      - "POL-L2-PC3-PC4-API-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技政策跟踪-POL/sdd/科技政策跟踪-系统详细设计说明书.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-PC3-XCMP-合规演示用例.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/合规演示用例/POL-L2-PC4-OUT-合规演示用例.md"
+    definition_of_done:
+      - "地区广东省、效力级别市级，选中珠海固态电池行动方案与深圳新型储能规划，点运行对比后，对比表、四类识别、柱状图、雷达图、知识图谱、摘要和结论都来自该行。"
+      - "该行点查看报告后，研报有深度四块、四类洞察、各章正文和双向溯源。导出 PDF 与 Word 含这些正文和三张图，不出现演示或 mock。"
+      - "关 mock 时请求失败不得留下种子表、种子图或种子研报。没有行就空。不把智能研报生成加回侧栏。"
+    update_time: "2026-11-17T00:46:21+08:00"
