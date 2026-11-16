@@ -1,23 +1,22 @@
 {
   "change_scope": [
-    "repos/lumen-topic-py/gkx_svc_service/repo.py portal_overview()：全量态 _fact('M_SVC_ORG_CNT') 为 None 时回退 COUNT(*) FROM svc_org_card，保证 kpi.org_in_pool 尽量有值（口径同切片态 len(rows)、svcan/metrics.py calc_org_total 兜底）",
-    "数据层：补种 demo_gkxlumenx_ads.svc_metric_fact 的 M_SVC_ORG_CNT 行（value=svc_org_card 行数，period='all', slice_key='all'）——优先经 svcseed run_seed 全量重跑或单行 INSERT，须走数据写入白名单流程"
+    "repos/lumen-topic-py/gkx_svc_service/repo.py：_sliced_new_series 与 _sliced_sz_trend 的 ODS 查询 INNER JOIN svc_org_card，使新增/深圳趋势与总数同一批 org_id（挂链 ∩ 卡表 ∩ 成立年）",
+    "repos/lumen-topic-py/tests/test_svc_portal_chain_slice.py：断言切片新增与深圳趋势 SQL 含 svc_org_card"
   ],
   "non_goals": [
-    "不改前端 lumen-ui-topic（显示逻辑正确：缺值显示暂无是诚实行为）",
-    "不改 Java lumen-svc-platform（纯透传，无缺陷）",
-    "不动 svc_metric_series / svc_metric_dist（有数据，非本次范围）",
-    "不在 fact 缺行时填 0 冒充全球总量（repo.py 既有诚实性约束保持）"
+    "不改前端 lumen-ui-topic（0 与暂无的展示是诚实行为）",
+    "不改 Java lumen-svc-platform（纯透传）",
+    "不把产业链上未进卡表的企业回填成全球机构总数",
+    "不补写 svc_metric_fact，全量总数已有值",
+    "不改全量态 portal_overview（无 chain_codes 时仍读 ADS 事实表/序列表）"
   ],
   "verification_plan": [
-    "代码层：为 portal_overview() 回退逻辑留一个最小可跑检查（fact 缺行→回退计数；fact 有行→仍用 fact 值）",
-    "接口层：部署 dev 后 GET /internal/gkx-svc/portal/overview（无 industry）返回 kpi.org_in_pool 为数值且 metric_id=M_SVC_ORG_CNT",
-    "页面层：http://10.50.69.111:30892/topic/service-portal/overview KPI 卡「全球机构约数」显示数值而非「暂无」，结论句不再出现「全球机构总数暂无」",
-    "数据层：SELECT metric_id FROM svc_metric_fact WHERE metric_id IN ('M_SVC_ORG_CNT','M_SVC_ORG_TOTAL','M_SVC_PT_GLOBAL_TOTAL') 确认行存在且 value 与 svc_org_card COUNT(*) 一致"
+    "代码层：python tests/test_svc_portal_chain_slice.py 通过，且新增/深圳趋势 SQL 含 svc_org_card",
+    "口径层：INB1303、INB2503 这类序列合计已等于卡表总数的链，交卡后数字不变；INB1354 交卡后新增序列为空，不再出现总数 0 且本年新增 6",
+    "回归：无产业参数的全量概况仍读事实表，不走挂链 SQL"
   ],
   "rollback_plan": [
-    "代码回退：git revert Python 提交即可，回退后恢复「缺行显示暂无」现状，无破坏性",
-    "数据回退：M_SVC_ORG_CNT 行若为新增 INSERT，可 DELETE 该行（uk_svc_metric_fact 唯一键 metric_id+period+slice_key）；若为 run_seed 重跑，按 etl_batch_id 回到先前批次状态"
+    "git revert Python 提交后恢复「新增只交挂链、不交卡表」的现状，全量概况不受影响"
   ],
-  "data_access": true
+  "data_access": false
 }

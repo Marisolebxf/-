@@ -32,7 +32,7 @@
     "current_owner": "current_user",
     "takeover_history": []
   },
-  "phase": "READY_DEV",
+  "phase": "IMPLEMENTING",
   "risk": {
     "level": "M",
     "reasons": [],
@@ -45,9 +45,10 @@
       "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git",
       "base_branch": "dev",
       "base_sha": "c96b08b24cac489f24bcb934b4081f1f10ae2037",
-      "candidate_sha": null,
+      "candidate_sha": "fb10f48e4e41b1964281e55abb06595a3e491d55",
       "planned_change_scope": [
-        "gkx_svc_service/repo.py portal_overview() 全量态 M_SVC_ORG_CNT fact 缺行时回退 COUNT(*) svc_org_card"
+        "gkx_svc_service/repo.py",
+        "tests/test_svc_portal_chain_slice.py"
       ],
       "role": "python-api",
       "depends_on": [],
@@ -78,43 +79,63 @@
     }
   },
   "diagnosis": {
-    "symptom": "门户服务门户总览页（无 industry 参数，全量态）KPI 卡「全球机构约数」显示「暂无」，而「本年新增机构」4,701 家正常。URL http://10.50.69.111:30892/topic/service-portal/overview",
-    "reproduction": [],
-    "root_cause": "线上 demo_gkxlumenx_ads.svc_metric_fact 表缺失 M_SVC_ORG_CNT 行（或该行 value 为 NULL），导致 portal_overview() 全量态 kpi.org_in_pool 缺失，前端「全球机构约数」显示「暂无」。同批 series/dist 表有数据，说明 fact 表的该行被单独清掉或插入失败。这是数据缺行问题，不是前端或 Java 层缺陷。",
-    "counter_evidence": [],
+    "symptom": "专题服务门户「全球服务机构概况」选定产业「未来制造（智能机器人）/ 具身智能」（INB1354）时，全球机构约数为 0 家，本年新增机构为 6 家，历年曲线仍有点。同一批机构不可能新增有数而总数为 0。",
+    "reproduction": [
+      "POST https://edu.itic-sci.com/tts/lumen/api/svc/topic/v1/service-portal/overview body {\"industry\":\"INB1354\"}：kpi.org_in_pool=0，new_org_series 末点 2025=6，序列合计 921，industry_layout 为空，filtered=true，chain_codes=[INB1354]",
+      "同接口无产业参数：kpi.org_in_pool=43296，全量总数有值，不是事实表缺行"
+    ],
+    "root_cause": "产业切片时总数按 svc_org_card ∩ enterprise_industry_chain 计数，新增序列 _sliced_new_series 只按 dwd_org_base_info ∩ 挂链计数，没有再交 svc_org_card。具身智能挂链上有成立年的企业 921 家（末年 6 家），但服务机构卡交集为 0。口径真源要求挂链 ∩ 卡表 ∩ ODS 成立年。深圳趋势 _sliced_sz_trend 是同一处漏交。",
+    "counter_evidence": [
+      "无产业参数时 org_in_pool=43296，否定「全量 M_SVC_ORG_CNT 缺行」",
+      "INB1303 序列合计 124 等于卡表总数 124，INB2503 序列合计 5267 等于卡表总数 5267：卡表已覆盖的链上两边一致"
+    ],
     "requirement_refs": [
       "agent-delivery/bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md#88（全球服务机构概况：服务机构数量分析/总体数量与历年趋势）"
     ],
     "impact_scope": [
-      "专题服务门户总览页（/topic/service-portal/overview）全量态 KPI 卡「全球机构约数」",
-      "同页结论句「全球机构总数暂无」"
+      "专题服务门户全球概况页产业切片态的本年新增与历年新增曲线",
+      "同切片口径的深圳历年趋势（_sliced_sz_trend）"
     ]
   },
   "plan": {
     "change_scope": [
-      "repos/lumen-topic-py/gkx_svc_service/repo.py portal_overview()：全量态 _fact('M_SVC_ORG_CNT') 为 None 时回退 COUNT(*) FROM svc_org_card，保证 kpi.org_in_pool 尽量有值（口径同切片态 len(rows)、svcan/metrics.py calc_org_total 兜底）",
-      "数据层：补种 demo_gkxlumenx_ads.svc_metric_fact 的 M_SVC_ORG_CNT 行（value=svc_org_card 行数，period='all', slice_key='all'）——优先经 svcseed run_seed 全量重跑或单行 INSERT，须走数据写入白名单流程"
+      "repos/lumen-topic-py/gkx_svc_service/repo.py：_sliced_new_series 与 _sliced_sz_trend 的 ODS 查询 INNER JOIN svc_org_card，使新增/深圳趋势与总数同一批 org_id（挂链 ∩ 卡表 ∩ 成立年）",
+      "repos/lumen-topic-py/tests/test_svc_portal_chain_slice.py：断言切片新增与深圳趋势 SQL 含 svc_org_card"
     ],
     "non_goals": [
-      "不改前端 lumen-ui-topic（显示逻辑正确：缺值显示暂无是诚实行为）",
-      "不改 Java lumen-svc-platform（纯透传，无缺陷）",
-      "不动 svc_metric_series / svc_metric_dist（有数据，非本次范围）",
-      "不在 fact 缺行时填 0 冒充全球总量（repo.py 既有诚实性约束保持）"
+      "不改前端 lumen-ui-topic（0 与暂无的展示是诚实行为）",
+      "不改 Java lumen-svc-platform（纯透传）",
+      "不把产业链上未进卡表的企业回填成全球机构总数",
+      "不补写 svc_metric_fact，全量总数已有值",
+      "不改全量态 portal_overview（无 chain_codes 时仍读 ADS 事实表/序列表）"
     ],
     "verification_plan": [
-      "代码层：为 portal_overview() 回退逻辑留一个最小可跑检查（fact 缺行→回退计数；fact 有行→仍用 fact 值）",
-      "接口层：部署 dev 后 GET /internal/gkx-svc/portal/overview（无 industry）返回 kpi.org_in_pool 为数值且 metric_id=M_SVC_ORG_CNT",
-      "页面层：http://10.50.69.111:30892/topic/service-portal/overview KPI 卡「全球机构约数」显示数值而非「暂无」，结论句不再出现「全球机构总数暂无」",
-      "数据层：SELECT metric_id FROM svc_metric_fact WHERE metric_id IN ('M_SVC_ORG_CNT','M_SVC_ORG_TOTAL','M_SVC_PT_GLOBAL_TOTAL') 确认行存在且 value 与 svc_org_card COUNT(*) 一致"
+      "代码层：python tests/test_svc_portal_chain_slice.py 通过，且新增/深圳趋势 SQL 含 svc_org_card",
+      "口径层：INB1303、INB2503 这类序列合计已等于卡表总数的链，交卡后数字不变；INB1354 交卡后新增序列为空，不再出现总数 0 且本年新增 6",
+      "回归：无产业参数的全量概况仍读事实表，不走挂链 SQL"
     ],
     "rollback_plan": [
-      "代码回退：git revert Python 提交即可，回退后恢复「缺行显示暂无」现状，无破坏性",
-      "数据回退：M_SVC_ORG_CNT 行若为新增 INSERT，可 DELETE 该行（uk_svc_metric_fact 唯一键 metric_id+period+slice_key）；若为 run_seed 重跑，按 etl_batch_id 回到先前批次状态"
+      "git revert Python 提交后恢复「新增只交挂链、不交卡表」的现状，全量概况不受影响"
     ],
-    "data_access": true
+    "data_access": false
   },
   "implementation": {
-    "repos": []
+    "repos": [
+      {
+        "repo_id": "topic_py",
+        "base_sha": "c96b08b24cac489f24bcb934b4081f1f10ae2037",
+        "candidate_sha": "fb10f48e4e41b1964281e55abb06595a3e491d55",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py",
+        "changed_files": [
+          "gkx_svc_service/repo.py",
+          "tests/test_svc_portal_chain_slice.py"
+        ],
+        "diff_hash": "sha256:ea04d8a213b875c8713e5f99f4a76b37ded7d076de5874edfe014490aed9c2ce",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-16T15:52:50.777+08:00"
+      }
+    ]
   },
   "review": {
     "repos": []
@@ -122,8 +143,46 @@
   "verification_matrix": [],
   "gates": {
     "enter_dev": {
-      "status": "pending",
-      "bound_to": null
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:孔东",
+      "approved_at": "2026-11-16T15:50:23.662+08:00",
+      "approved_session_id": "cursor-bugfix-7168664833",
+      "approved_machine_id": "ZP-KONGDONG",
+      "claim_id": "cursor-bugfix-7168664833",
+      "message_ref": "chat:进入开发",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "topic_py",
+            "repo_name": "lumen-topic-py",
+            "base_sha": "c96b08b24cac489f24bcb934b4081f1f10ae2037",
+            "candidate_sha": null,
+            "planned_change_scope": [
+              "gkx_svc_service/repo.py",
+              "tests/test_svc_portal_chain_slice.py"
+            ]
+          }
+        ],
+        "diagnosis_hash": "sha256:8d6f5f88c123e610f70b13e6608ea38fa05df9a4d3dca05bf94136f985120456",
+        "plan_hash": "sha256:b8ac129daf9d40d4ca1c023e57f973def3d6085e0db7ada8081e131bbc4128c9",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:09d32040be006c9322fa75dab26fd9eb6d98350926482f320b54d914d62fd659"
+      },
+      "gate_hash": "sha256:a0cf61fa2626bcbd1f33bf81989cd894a1e18e90e673882a32b9794d0c8408c5",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-16T15:50:27.241+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:a0cf61fa2626bcbd1f33bf81989cd894a1e18e90e673882a32b9794d0c8408c5",
+        "expected": "sha256:a0cf61fa2626bcbd1f33bf81989cd894a1e18e90e673882a32b9794d0c8408c5",
+        "errors": []
+      }
     },
     "ship": {
       "status": "pending",
@@ -175,6 +234,19 @@
       "gate_hash": null,
       "evidence_refs": [],
       "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-16T15:50:27.241+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-bugfix-7168664833",
+      "session_id": "cursor-bugfix-7168664833",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:a0cf61fa2626bcbd1f33bf81989cd894a1e18e90e673882a32b9794d0c8408c5",
+      "evidence_refs": [],
+      "summary": null
     }
   ],
   "failure_stage": null,
@@ -203,7 +275,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "展示进入开发绑定对象并取得精确口令。"
+    "action": "完成其余仓库 verify-repo，然后提交评审。"
   },
-  "updated_at": "2026-11-15T13:19:11.622+08:00"
+  "updated_at": "2026-11-16T15:53:08.801+08:00"
 }

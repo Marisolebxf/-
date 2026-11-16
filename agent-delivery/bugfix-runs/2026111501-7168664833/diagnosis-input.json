@@ -1,28 +1,19 @@
 {
-  "symptom": "门户服务门户总览页（无 industry 参数，全量态）KPI 卡「全球机构约数」显示「暂无」，而「本年新增机构」4,701 家正常。URL http://10.50.69.111:30892/topic/service-portal/overview",
-  "evidence": [
-    "缺陷截图（飞书附件 bug7168664833.png）：KPI 卡1「全球机构约数」= 暂无；卡2「本年新增机构」= 4,701 家；卡3「环节合计」= 43,979 家次；结论句「「全部产业」全球机构总数暂无；本年新增 4,701 家；环节合计 43,979 家次；科技创新服务类占比最高（72%）」",
-    "repos/lumen-ui-topic/src/views/service/ServicePortalOverviewPage.vue：orgCount = presentKpi(kpi.org_in_pool)，kpi.org_in_pool 缺失时显示暂无",
-    "repos/lumen-topic-py/gkx_svc_service/repo.py portal_overview() 全量态：org_cnt, _ = _fact('M_SVC_ORG_CNT')；org_cnt 为 None 时 kpi 不含 org_in_pool（1029-1031 行「KPI 只出 ADS 有行的 metric；缺行不填 0 冒充全球总量」）",
-    "同函数 _fact('M_SVC_SZ_SCALE') 走 svc_metric_fact 同表查询（页面 sz_scale 卡存在），_series('M_SVC_NEW_CNT')=43,979 家次 layout 来自 svc_metric_dist、4,701 新增来自 svc_metric_series —— series/dist 有数而 fact 缺 M_SVC_ORG_CNT 行",
-    "种子脚本 lumen-algo-py/vendor/entan-py/entan/svcseed.py _write_metrics() 无条件写 M_SVC_ORG_CNT fact（value=len(rows)），与 series/dist 同批写入；as-built 02-asbuilt-process-chain.md §4.2 确认 2026-10-20 种子批写入这些 ID",
-    "2026-08-21 入库报告显示 svc_metric_fact 当时只有 2 行（M_SVC_ORG_CNT=3525, M_SVC_SZ_SCALE=1355）"
+  "symptom": "专题服务门户「全球服务机构概况」选定产业「未来制造（智能机器人）/ 具身智能」（INB1354）时，全球机构约数为 0 家，本年新增机构为 6 家，历年曲线仍有点。同一批机构不可能新增有数而总数为 0。",
+  "reproduction": [
+    "POST https://edu.itic-sci.com/tts/lumen/api/svc/topic/v1/service-portal/overview body {\"industry\":\"INB1354\"}：kpi.org_in_pool=0，new_org_series 末点 2025=6，序列合计 921，industry_layout 为空，filtered=true，chain_codes=[INB1354]",
+    "同接口无产业参数：kpi.org_in_pool=43296，全量总数有值，不是事实表缺行"
   ],
-  "root_cause": "线上 demo_gkxlumenx_ads.svc_metric_fact 表缺失 M_SVC_ORG_CNT 行（或该行 value 为 NULL），导致 portal_overview() 全量态 kpi.org_in_pool 缺失，前端「全球机构约数」显示「暂无」。同批 series/dist 表有数据，说明 fact 表的该行被单独清掉或插入失败。这是数据缺行问题，不是前端或 Java 层缺陷。",
-  "fix_layer": "data+backend",
-  "fix_direction": "两处加固（防数据再缺行时白屏）：1) Python 层 portal_overview() 全量态 _fact('M_SVC_ORG_CNT') 为 None 时回退 SELECT COUNT(*) FROM svc_org_card（同切片态口径 len(rows)，与 svcan/metrics.py calc_org_total 的兜底一致）；2) 数据层补种 svc_metric_fact 的 M_SVC_ORG_CNT 行（重跑 svcseed _write_metrics 或 INSERT 单行）。根因修复以补数为主，代码兜底防止同类缺行再次白屏。",
-  "affected": [
-    "repos/lumen-topic-py/gkx_svc_service/repo.py portal_overview()",
-    "demo_gkxlumenx_ads.svc_metric_fact（缺 M_SVC_ORG_CNT 行）",
-    "repos/lumen-ui-topic/src/views/service/ServicePortalOverviewPage.vue（显示层，无需改动）"
-  ],
-  "impact_scope": [
-    "专题服务门户总览页（/topic/service-portal/overview）全量态 KPI 卡「全球机构约数」",
-    "同页结论句「全球机构总数暂无」"
+  "root_cause": "产业切片时总数按 svc_org_card ∩ enterprise_industry_chain 计数，新增序列 _sliced_new_series 只按 dwd_org_base_info ∩ 挂链计数，没有再交 svc_org_card。具身智能挂链上有成立年的企业 921 家（末年 6 家），但服务机构卡交集为 0。口径真源要求挂链 ∩ 卡表 ∩ ODS 成立年。深圳趋势 _sliced_sz_trend 是同一处漏交。",
+  "counter_evidence": [
+    "无产业参数时 org_in_pool=43296，否定「全量 M_SVC_ORG_CNT 缺行」",
+    "INB1303 序列合计 124 等于卡表总数 124，INB2503 序列合计 5267 等于卡表总数 5267：卡表已覆盖的链上两边一致"
   ],
   "requirement_refs": [
     "agent-delivery/bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md#88（全球服务机构概况：服务机构数量分析/总体数量与历年趋势）"
   ],
-  "risk": "M",
-  "notes": "本机无法直连 K8s pod 网络（10.50.69.111:30891/30892、10.50.11.76:3306 均超时），SSH MCP namespace 未加载，无法直接查线上 ADS 确认 fact 表行数。数据层补种需通过 svcseed run_seed 或 DBA 渠道执行。"
+  "impact_scope": [
+    "专题服务门户全球概况页产业切片态的本年新增与历年新增曲线",
+    "同切片口径的深圳历年趋势（_sliced_sz_trend）"
+  ]
 }
