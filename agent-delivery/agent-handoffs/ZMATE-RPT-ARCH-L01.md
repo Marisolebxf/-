@@ -32,26 +32,42 @@
 | 会签态 | `approved`（定档 + 默认签收授权） |
 | 说明 | Mermaid 在 ARCH 正文 §4.2；节点名对齐建设方案 §9.2 路由 |
 
+## 范围与实现
+
+- 模块：ZMATE 战略报告创作 Demo 样机架构定档
+- 实现：仅文档；定档 **Demo 样机 / 纯前端 Mock**；仓边界 `demo-ui-topic`；对照 harness 澄清→Judge；Q161 废稿边界写清
+- 对照：`architecture-baseline` D12；建设方案 §9；USM/IA/WF；门 1 有条件闭合
+
+## 偏离说明
+
+- 无偏离。真后端切流 ARCH 明确后置，不在本叶范围（与 FDE「明确跳过」一致）。
+
+## 产物清单
+
+- `agent-delivery/agent-handoffs/产品整体定义/ZMATE-战略报告创作/ARCH-ZMATE-战略报告创作.md`
+- `agent-delivery/agent-handoffs/ZMATE-RPT-ARCH-L01.md`
+
+## 验收证据
+
+- DoD：纯 Mock 边界、D12、调用链只读、harness 对照表、handoff — 齐
+- 门 1 / USM / IA / WF / 建设方案 §9 / harness §6 — 无冲突
+- AV-0：handoff + evidence 已设；联调确认关键词：会签通过
+
 ## 问题清单
 
-- 无阻断项。Q156–Q161 仍为 🟡 临时默认（门 1 已采纳）；Q160 导出门禁留实现波次。
-- 真后端切流 ARCH **未**开单（按定档后置）。
+- 无阻断项。Q156–Q161 仍为临时默认（门 1 已采纳）；Q160 导出门禁留实现波次。
+- 真后端切流 ARCH 未开单（按定档后置）。
 
 ## 修改内容
 
-- 新增定档文档：`agent-delivery/agent-handoffs/产品整体定义/ZMATE-战略报告创作/ARCH-ZMATE-战略报告创作.md`
-  - 定档：Demo 样机 / 纯前端 Mock
-  - D12 + 调用链只读（目标态 vs Demo 态）
-  - harness 阶段对照表：澄清 → Planner → 辩论∥切片 → Seeker → Writer → Judge
-  - FE-DEMO 边界：Q161 废稿重做
+- 新增定档文档 ARCH-ZMATE-战略报告创作.md（Demo/纯 Mock、D12、调用链只读、harness 阶段对照、Q161 FE 边界）
 - 本 handoff
-- **未**改业务代码 / `demo-ui-topic` / `lumen-*`
+- 未改业务代码 / demo-ui-topic / lumen-*
 
 ## 测试结果
 
-- 对照 DoD：纯 Mock 边界、D12、调用链只读、harness 对照表、handoff → 齐
-- 对照门 1 / USM / IA / WF / 建设方案 §9 / harness §6 → 无冲突
-- 架构合规自检见 ARCH §6：全部 ✅
+- 结构与 DoD 对照通过
+- 架构合规自检 7 项均通过（见下）
 
 ## 遗留风险
 
@@ -61,7 +77,7 @@
 ## CI/CD（必填）
 
 - 分支：`dev`
-- commit：（本叶 push 后回填）
+- commit：`2a4195b0f`（定档正文）；本 handoff 补章跟随提交
 - pipeline URL / ID：N/A（编排仓文档）
 - 部署 namespace / 镜像 tag：N/A
 - K8s rollout：N/A
@@ -78,17 +94,19 @@
 - `agent-delivery/agent-handoffs/产品整体定义/ZMATE-战略报告创作/ARCH-ZMATE-战略报告创作.md`
 - `agent-delivery/agent-handoffs/ZMATE-RPT-ARCH-L01.md`
 
-## 架构合规自检（摘要）
+## 架构合规自检
 
-| 铁律 | ✅/❌ |
-|---|---|
-| D12 demo/lumen | ✅ |
-| 调用链只读声明 | ✅ |
-| 禁业务代码改动 | ✅ |
-| D9 诚实 Mock / 禁假 live | ✅ |
-| harness 对照可测 | ✅ |
+| 铁律 | 结论 |
+|------|------|
+| D12 demo/lumen 隔离 | ✅ 定档仅 demo；禁 lumen 直连 |
+| 调用链只读声明 | ✅ 目标态 vs Demo 态已写清 |
+| 算法只在 Python | ✅ 本阶段无算法实现 |
+| D8 Design / Arco | ✅ 指向 UI-HIFI / FE 叶 |
+| D9 诚实 Mock / 禁假 live | ✅ 四态示意；不改绿 |
+| D10 人闸 / Judge | ✅ 对齐 WF；实现归 FE |
+| 禁改业务代码 | ✅ 本叶仅文档 |
 
-## Cost（回填）
+## Cost 回填
 
 | 字段 | 值 |
 |------|-----|
