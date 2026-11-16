@@ -38,11 +38,11 @@
 
 ## 修改内容
 
-- 新增工作区 `src/app/pages/zmate-strategy/`：首页创作壳、**HITL 三栏任务页**、Mock、样式。
-- **人在回路**：澄清卡 1/3 上一项/下一项 →「确认需求（人闸）」→ 人控辩论轮次 →「结束辩论并生成报告」；禁止创建任务后 autoRun；生成中右侧不出正文。
+- 新增工作区 `src/app/pages/zmate-strategy/`：首页创作壳、**Graph Hub + 七站子页**、共享 `workspaceStore`、Mock、样式。
+- **分站协作（禁止单页跑完全链）**：澄清 → Planner → 辩论∥切片 → Seeker → Writer → Judge；人闸解锁；旧 `/task/:id` 重定向 Hub。
+- registry 子单：`ZMATE-FE-DEMO-L02`…`L08`（各站独立 DoD；本 L01 只交枢纽骨架，不一次签收全链）。
 - **菜单只增不删**：`Layout.tsx` 追加「战略报告 Demo」；既有菜单未删。
-- 路由：`/zmate-strategy-demo`、`/zmate-strategy-demo/task/:taskId`。
-- 埋点：含 `clarify_next` / `clarify_confirm` / `hitl_chat` / `debate_round` / `generate_*`。
+- 路由见建设方案 §9.2。
 
 ### 与两份 HTML 原型能力映射
 
@@ -62,8 +62,8 @@
 
 | 条款 | 结果 |
 |---|---|
-| 三轴合一 | ✅ HITL 三栏同屏 |
-| 人在回路 | ✅ 确认需求 / 人控辩论 / 禁 autoRun |
+| 三轴合一 | ✅ Hub + 分站同工作区 |
+| 人在回路 | ✅ 澄清人闸 / 分站解锁 / 禁单页跑完 |
 | 术语铁律 | ✅ 「辩论知识卷宗」≠「专题切片/研判卡」 |
 | Judge 分职 | ✅ |
 | V1 不挡 | ✅ 可澄清后快速「结束辩论并生成」；不强制多轮 |
