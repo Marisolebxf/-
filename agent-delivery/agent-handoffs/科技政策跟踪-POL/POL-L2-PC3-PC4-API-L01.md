@@ -30,9 +30,15 @@
 
 ## 测试结果
 
-本地编译已按监管人 `human:淮政玮` 指示跳过。编译交给 push 后的 CI。
+```
+mvn -pl gkxlumen-display -am "-Dtest=PolicyCompareServiceTest" "-Dsurefire.failIfNoSpecifiedTests=false" test
+```
 
-未连库，因此没有对活行 `run_id=5ad8bcba9fae419e835ae2f3fed6a662` 打真实 HTTP。
+`gkxlumen-display` 编译通过。`PolicyCompareServiceTest`：Tests run: 11, Failures: 0, Errors: 0, Skipped: 0。BUILD SUCCESS。
+
+单测覆盖：POST 把请求交给 Python 并返回那一行；算法服务连不上时 code=1，不造行；列表无行是 `records: []`；库异常时 code=1；单行不存在是空对象。没有打已部署的 HTTP。
+
+只读核对活行（未通过本接口）：`gkxlumenx_ads.ads_policy_compare_report` 共 1 行，`run_id=5ad8bcba9fae419e835ae2f3fed6a662`，`status=已完成`，摘要 176 字，研报 JSON 8509 字。
 
 ## 遗留风险
 
@@ -43,8 +49,8 @@
 ## CI/CD（必填）
 
 - 分支：`origin/dev`
-- lumen-svc-platform commit：`4707fd257e2e776892d820ea3bbd1a9edb508b00`
-- pipeline：push 后由 CI 编译，本叶未在本地跑 Maven
+- lumen-svc-platform commit：`700f0079fb5505011bfbee7a4ca229e0e1d84225`（功能 `4707fd257e2e776892d820ea3bbd1a9edb508b00`，测试编译修复在 tip）
+- 本地：上面的 Maven 命令 BUILD SUCCESS
 - 未改 Nacos，未改 task-registry
 
 ## 涉及文件
