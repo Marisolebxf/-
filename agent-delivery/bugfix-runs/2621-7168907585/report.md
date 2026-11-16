@@ -1,9 +1,9 @@
 # 缺陷修复报告：2621 科技发展规划-综合发展规划，推送设置里关注领域没有内容
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-16T13:05:08.043+08:00
+> 生成时间：2026-11-16T13:17:00.945+08:00
 > 当前 cycle：cycle-001-20261116T122951+0800
-> 当前内部阶段：READY_SHIP
+> 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -29,11 +29,11 @@
 - Bundle 类型：单仓
 - 同一飞书缺陷涉及多个仓库时仍是一个 run、一个 claim、一套 gate；各仓保留独立候选 SHA。
 
-- ui_pc：lumen-ui-science-pc，role=PENDING，ship_order=PENDING，depends_on=PENDING，base=02c620bbd8d52151c095e3b4e4b1317b87414bc2，candidate=771967a42114f2b115f249fdf195b0eed341105a，scope=src/views/situation/tech-development-plan/tabs/OverviewTab.vue
+- ui_pc：lumen-ui-science-pc，role=PENDING，ship_order=PENDING，depends_on=PENDING，base=02c620bbd8d52151c095e3b4e4b1317b87414bc2，candidate=2a2ea83ac14f39b5959432ff21e882d66f54049d，scope=src/views/situation/tech-development-plan/tabs/OverviewTab.vue
 
 实现仓校验：
 
-- ui_pc：candidate=771967a42114f2b115f249fdf195b0eed341105a，diff_hash=sha256:9ce99a5a217264ff5b91cc10e87801965a70c0aeda1ef3ef2178b77cbc880261，git_verified=yes，files=src/views/situation/tech-development-plan/tabs/OverviewTab.vue
+- ui_pc：candidate=2a2ea83ac14f39b5959432ff21e882d66f54049d，diff_hash=sha256:9ce99a5a217264ff5b91cc10e87801965a70c0aeda1ef3ef2178b77cbc880261，git_verified=yes，files=src/views/situation/tech-development-plan/tabs/OverviewTab.vue
 
 非目标：不改 POST/GET resource-push/subscriptions 接口契约；不动推送频率/渠道逻辑；不引入新的后端字段或表结构
 
@@ -47,12 +47,13 @@
 |---|---|---|---|---|---|---|---|
 | E-IMG-001 | screenshot | PASS | yes | yes | PENDING | 771967a42114f2b115f249fdf195b0eed341105a | PENDING |
 | E-LOG-001 | log | PASS | yes | yes | PENDING | 771967a42114f2b115f249fdf195b0eed341105a | PENDING |
+| E-DEPLOY-001 | log | PASS | yes | yes | PENDING | 2a2ea83ac14f39b5959432ff21e882d66f54049d | PENDING |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:06a2edd7911716669fd565eba019812d2dbedfbc660833234fa21369fe7faf6a；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:f9bd7b72b0ed70fccd916f02b5ec6556bf657a3b841d1ed9cc316169a23f7a4b；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -64,7 +65,7 @@ DB 写证据授权：
 
 评审记录：
 
-- ui_pc：reviewer=agent:zcode（自审，S-lite 豁免独立评审），independent=false，sha=771967a42114f2b115f249fdf195b0eed341105a，verdict=PASS，hash=sha256:4b41c0342228e94c90f4adf16284ac5de83ffa20225e9c4e91a2759f6e0f2ef1，findings=PENDING
+- ui_pc：reviewer=agent:zcode（自审，S-lite 豁免独立评审），independent=false，sha=2a2ea83ac14f39b5959432ff21e882d66f54049d，verdict=PASS，hash=sha256:2f3c3be569cbf046faf2b321d9f16ba012d03b421e9e7c25880b09e88cdf710f，findings=PENDING
 
 ## 6. S/M/L 风险等级和定级理由
 
@@ -91,13 +92,17 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- ui_pc：ship_order=PENDING，MR=none-direct-push-dev，candidate=2a2ea83ac14f39b5959432ff21e882d66f54049d，merge=2a2ea83ac14f39b5959432ff21e882d66f54049d，deployed=2a2ea83ac14f39b5959432ff21e882d66f54049d，pipeline=5568，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5568，image=2a2ea83a，rollout=success
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=E-DEPLOY-001
 
 人工验收步骤：
 
-- PENDING
+- 登录 https://edu.itic-sci.com/tid/（领导驾驶舱用户）→ 科技发展态势 → 科技发展规划
+- 综合发展规划页签 → 科创资源整合与推送卡 → 点『推送设置』
+- 关注领域下拉点开：应呈现非空领域候选列表（具身智能/量子计算/合成生物学/人工智能大模型等）
+- 已保存的关注领域（如人工智能）应回显为选中标签；新选领域后保存提示成功
+- 强刷 Ctrl+F5 确认新前端包（镜像 2a2ea83a）
 
 ## 10. 精确验收与飞书状态迁移
 
@@ -115,12 +120,12 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | approved | 进入开发 | sha256:58d75bd0fd2a19dc93c8eb273cf7f33dddee17a98879700d8e3e3d0f9c388c47 |
-| ship | pending | PENDING | PENDING |
+| ship | approved | 提测 | sha256:c1b67259a9221000a8e1147ca402b902967822b72d519f86a5e2fce8d847bb12 |
 | acceptance | pending | PENDING | PENDING |
 
 enter_dev bound_to：{"repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"02c620bbd8d52151c095e3b4e4b1317b87414bc2","planned_change_scope":["src/views/situation/tech-development-plan/tabs/OverviewTab.vue"]}],"risk_level":"S","diagnosis_hash":"sha256:7230db1e59cc91645e50ad287c9dd4d81b01cf2e36f15aa8162c989b3c35bf45","plan_hash":"sha256:edc505bab9338a78125890a5bf3946905125d00a03c1153bca1e89905b84a690","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}
 
-ship bound_to：PENDING
+ship bound_to：{"repos":[{"repo_id":"ui_pc","candidate_sha":"2a2ea83ac14f39b5959432ff21e882d66f54049d","diff_hash":"sha256:9ce99a5a217264ff5b91cc10e87801965a70c0aeda1ef3ef2178b77cbc880261","verification_hash":"sha256:39aa5578ddcff3349eebbcd4abc3b6ba4d6582317a30922b918c102c271fab8f","review_hash":"sha256:2f3c3be569cbf046faf2b321d9f16ba012d03b421e9e7c25880b09e88cdf710f","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}],"risk_level":"S","deploy_target":"dev"}
 
 acceptance bound_to：PENDING
 
