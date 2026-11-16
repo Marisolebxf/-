@@ -58,7 +58,7 @@
 ## CI/CD（必填）
 
 - 分支：`dev`
-- commit：`8194a2b1f`
+- commit：`6ee7e593e`
 - pipeline URL / ID：N/A（编排仓文档）
 - 部署 namespace / 镜像 tag：N/A
 - K8s rollout：N/A
