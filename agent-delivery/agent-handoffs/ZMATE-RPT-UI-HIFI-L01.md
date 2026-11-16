@@ -63,7 +63,7 @@
 ## CI/CD（必填）
 
 - 分支：`dev`
-- commit：（push 后回填）
+- commit：`6873bbab2`（`docs(ZMATE): Track-MS V1 UI-HIFI 视觉规范 v0.1 [agent:ui-agent]`）
 - pipeline URL / ID：N/A（编排仓文档，无业务 CI 部署）
 - 部署 namespace / 镜像 tag：N/A
 - K8s rollout：N/A
