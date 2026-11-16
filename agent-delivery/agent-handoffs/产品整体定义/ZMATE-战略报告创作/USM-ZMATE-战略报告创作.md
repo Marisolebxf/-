@@ -13,7 +13,7 @@
 > - `…/2026-11-16-战略咨询报告Agent设计模式-graph-loop-harness.md`  
 > - `…/2026-11-16-德金-乐之域-专题切片三方对照.md`  
 > - `产品整体定义/ZMATE-战略报告创作/sdd/简报/2026-11-16-ZMATE-RPT-FDE-一屏执行计划.md`  
-> **对应 TRACE**：待 `ZMATE-RPT-TRACE-L01`  
+> **对应 TRACE**：`TRACE-ZMATE-战略报告创作.yaml`（`ZMATE-RPT-TRACE-L01`）  
 > **版本**：v0.1.0 · 2026-11-16  
 > **本阶段边界**：纯前端 Demo 样机（`demo-ui-topic`）；**不挡** V1 真后端；本 USM 不写 Java/Python 实现故事。  
 > **ponytail**：`off`（定义任务）
