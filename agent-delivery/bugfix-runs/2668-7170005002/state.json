@@ -1,0 +1,208 @@
+{
+  "schema_version": 2,
+  "run_id": "2668-7170005002",
+  "current_cycle_id": "cycle-001-20261116T231440+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261116T231440+0800",
+      "seq": 1,
+      "started_at": "2026-11-16T23:14:40.066+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2668",
+    "work_item_id": "7170005002",
+    "title": "科创政策全景-二次搜索条件里，地域为空",
+    "owner": "淮政玮",
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "cursor-20261116-policy-region",
+    "claim_comment_ref": "7708782800329002235",
+    "claim_operator": "7695591711929584569",
+    "claimed_at": "2026-11-16T23:14:40.066+08:00",
+    "session_id": "cursor-20261116-policy-region",
+    "machine_id": "hzw",
+    "current_owner": "淮政玮",
+    "takeover_history": []
+  },
+  "phase": "READY_DEV",
+  "risk": {
+    "level": "S",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "621c7ed846ad4b04289ca6e4d5b168f7db982a8a",
+      "candidate_sha": null,
+      "planned_change_scope": [
+        "src/views/policy/panorama/search/displayPanoramaQuery.ts",
+        "src/views/policy/panorama/search/displayPanoramaQuery.selfcheck.mjs"
+      ],
+      "role": null,
+      "depends_on": [],
+      "ship_order": 1
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "科创政策全景检索结果的二次筛选条里，地域下拉没有可选值。",
+    "reproduction": [
+      "打开科技信息展示系统科创政策全景，检索出政策列表。",
+      "在检索结果筛选与分类里打开地域下拉。"
+    ],
+    "root_cause": "二次筛选项来自当前命中卡片的 region。目录接口把地点放在 province/city/district，region 列经常为空，mapSearchItem 只读 region，所以下拉没有地域。",
+    "counter_evidence": [
+      "已有 region 代码（如 shenzhen）时不改写，避免覆盖 mock 键。"
+    ],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技政策跟踪/科创政策全景.md#序号200/智能服务集群/科技信息展示系统/科技政策跟踪/科创政策全景/多维检索查询/检索结果筛选与分类"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc 科创政策全景检索结果二次筛选地域",
+      "同一卡片的发布信息地域文案"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "repos/lumen-ui-science-pc/src/views/policy/panorama/search/displayPanoramaQuery.ts：region 为空时依次用 city、district、province、geo_region、country",
+      "同目录 displayPanoramaQuery.selfcheck.mjs：空 region + 深圳市 必须进入二次筛选项"
+    ],
+    "non_goals": [
+      "不改主筛选适用地区的 mock 词表",
+      "不改检索 SQL",
+      "不改 Java / Python",
+      "不处理其他未认领缺陷"
+    ],
+    "verification_plan": [
+      "node src/views/policy/panorama/search/displayPanoramaQuery.selfcheck.mjs 退出码 0"
+    ],
+    "rollback_plan": [
+      "还原 displayPanoramaQuery.ts 的 cardRegion，卡片重新只读 region 列"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": []
+  },
+  "review": {
+    "repos": []
+  },
+  "verification_matrix": [],
+  "gates": {
+    "enter_dev": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "ship": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [],
+    "acceptance_steps": [],
+    "dev_verification": {
+      "result": "PENDING",
+      "evidence_refs": []
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-16T23:15:01.959+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-20261116-policy-region",
+      "session_id": "cursor-20261116-policy-region",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "二次筛地域只读空的 region 列"
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-16T23:15:02.141+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-20261116-policy-region",
+      "session_id": "cursor-20261116-policy-region",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": "改卡片地域回退，自检已绿"
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [
+    {
+      "decision": "按当次聊天口令提测，已把地域修复推到 lumen-ui-science-pc origin/dev。",
+      "basis": "用户原话为提测。修复提交 46a1e19，推送后的 dev 尖端是合并提交 84e061016fe19f62da8a2cdeb855298d4e0195fb。",
+      "impact": "展示系统科创政策全景二次筛选在该提交部署后，地域选项改从市、区、省回填。飞书缺陷仍为 IN PROGRESS，未验收通过前不关单。",
+      "alternatives": [],
+      "requires_human_ratification": false,
+      "ratified_by": null,
+      "at": "2026-11-16T23:19:02.164+08:00"
+    }
+  ],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": null
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "展示进入开发绑定对象并取得精确口令。"
+  },
+  "updated_at": "2026-11-16T23:19:02.164+08:00"
+}
