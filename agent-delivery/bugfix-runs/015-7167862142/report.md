@@ -1,9 +1,9 @@
 # 缺陷修复报告：015 政策效果推演-科技政策推演-政策实施路径预测-需规对照有缺失内容：关键节点
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-14T14:32:45.534+08:00
+> 生成时间：2026-11-14T16:13:55.061+08:00
 > 当前 cycle：cycle-001-20261114T134447+0800
-> 当前内部阶段：READY_SHIP
+> 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
 
 ## 1. 缺陷事实和复现
@@ -48,12 +48,14 @@
 |---|---|---|---|---|---|---|---|
 | ev-015-1-selfcheck | test | PASS | yes | yes | PENDING | 5e96b09 | FE-POL-03A 自检 50 项全绿，含 241-8 关键节点说明显式区块断言 |
 | ev-015-2-typecheck | test | PASS | yes | yes | PENDING | 5e96b09 | 主仓全量 vue-tsc 类型门 0 错误（exit 0，773931ms） |
+| ev-015-3-deploy | deployment | PASS | yes | yes | PENDING | 5e96b09d8badd432e0d14264bfebd25d60565a35 | 流水线 5386 success；dev HEAD 含候选（ancestor 验证过）；K8s dev 自动 rollout |
+| ev-015-4-dev-verify | deployment | PASS | yes | yes | PENDING | 5e96b09d8badd432e0d14264bfebd25d60565a35 | dev 部署核验说明：候选已随 dev 发布，末点流水线绿 |
 
 DB 写证据授权：
 
 - PENDING
 
-- manifest 校验：PASS；manifest_hash=sha256:523d3db82e03d4d87582c70e9a1dc5738997542d299fed69d435228bb00097a9；不可复核证据=PENDING
+- manifest 校验：PASS；manifest_hash=sha256:966a6f07ae692e4c4f754fc998e85019a2ed919022073a9c92b323b50844c226；不可复核证据=PENDING
 
 ## 5. 已知风险和未覆盖项
 
@@ -92,13 +94,16 @@ DB 写证据授权：
 
 > 流水线、rollout 和部署 SHA 来自 Agent 对 GitLab 的查询记录，不是本地脚本直接验证的远端事实。
 
-- PENDING
+- ui_pc：ship_order=1，MR=direct-dev，candidate=5e96b09d8badd432e0d14264bfebd25d60565a35，merge=187099b95c7cb5a35b692cdbe8abf2ffb270f928，deployed=187099b95c7cb5a35b692cdbe8abf2ffb270f928，pipeline=5386，pipeline_url=https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5386，image=gkx-lumen-pc:187099b9，rollout=success
 
-- dev 复测：PENDING；evidence=PENDING
+- dev 复测：PASS；evidence=ev-015-3-deploy, ev-015-4-dev-verify
 
 人工验收步骤：
 
-- PENDING
+- 打开科技信息展示系统 dev 环境 → 政策效果推演 · 科技政策推演 · 政策实施路径预测。
+- 输入政策编号 18363390 选定政策，点「预测实施路径」。
+- 确认「政策实施流程图」时间轴下方出现显式「关键节点说明」区块：五张环节卡各含 环节名/时间安排/责任主体/说明（政策发布→2026年一季度→省科学技术厅 等）。
+- 确认时间轴本身无回归（五环节、责任主体标签、说明文案不变），历史对照 mock 轨不受影响。
 
 ## 10. 精确验收与飞书状态迁移
 
@@ -116,12 +121,12 @@ DB 写证据授权：
 | gate | status | token | hash |
 |---|---|---|---|
 | enter_dev | invalidated | 进入开发015 | sha256:dd9854f868b9356139982e94a71404fb3d34e4b2700e238c19f4c76db780e9b9 |
-| ship | pending | PENDING | PENDING |
+| ship | approved | 提测 | sha256:102a00bf74dfaeac09c94ce1a5200e01c5149f4c3e346b03df4b52a57c9a9677 |
 | acceptance | pending | PENDING | PENDING |
 
 enter_dev bound_to：{"diagnosis_hash":"sha256:b87d3e587db5f5ff43e59c4f57a95432a64a33327cd61b1f002e1232b9c71915","plan_hash":"sha256:6b7226e5cf94ef8060ad643777e200e736a5c18b3cd5457d7d7ac63377b1e6e2","risk_level":"S","data_policy_version":"demo-2026-11-10","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2","repos":[{"repo_id":"ui_pc","repo_name":"lumen-ui-science-pc","base_sha":"7ef79f4","planned_change_scope":["src/views/policy/simulation/interpret/InterpretWorkbench.vue"]}]}
 
-ship bound_to：PENDING
+ship bound_to：{"repos":[{"repo_id":"ui_pc","candidate_sha":"5e96b09d8badd432e0d14264bfebd25d60565a35","diff_hash":"sha256:3a363e5536ed9c96d9fb6456fa1f628b757e6e729fd2ed270ed898404aebabea","verification_hash":"sha256:c748d93b619bb963821c3db33e47ad6912182ff321365628591056546d4f60c6","review_hash":"sha256:cdf4ff63516e7efd65ff4fd3ab7d7df088401491385914657623b2ac5f86d916","data_policy_hash":"sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0","data_scope_hash":"sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"}],"risk_level":"S","deploy_target":"dev"}
 
 acceptance bound_to：PENDING
 

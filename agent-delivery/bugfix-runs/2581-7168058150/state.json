@@ -207,95 +207,23 @@
   },
   "verification_matrix": [
     {
-      "id": "V-FIX-SELFTEST",
+      "id": "VER-FE-CLEAN-KPI-REWORK1",
       "category": "fix",
-      "behavior": "收集工具弹窗锚点自检：openTool 经 defineExpose 暴露给卡片 #extra 按钮（图2红框位）、弹窗标题「政策受众反馈收集工具」、三渠道 radio 切换、submitDraft 提交入口、collectedInSession 本会话留存、禁新增写接口调用（postFeedback/saveFeedback 不存在）",
+      "behavior": "返工轮1：治理页页眉「源数据清洗」KPI live 不再显示 '—'。后端 lumen-svc-platform@ce6d980d element /results 新增 validityRate（M_POLICY_VALIDITY_RATE 注册公式：有效=status含'有效'且非'失效'且未过expire_date；rate=有效/总数*100，round4；total=0→null 不造0分）→ 前端 lumen-ui-science-pc@e02ba36 fetchGovernanceLive 读 results?.validityRate，有数 value≈99.4 并挂回 ⓘ metric_id；null 走 kpiDisplay '—' 诚实空态",
       "result": "PASS",
       "repo_ids": [
         "ui_pc"
       ],
       "evidence_refs": [
-        "EV-2581-SELFTEST"
+        "lumen-ui-science-pc@e02ba36 src/api/policy.ts fetchGovernanceLive clean KPI 读 results?.validityRate + metricId M_POLICY_VALIDITY_RATE",
+        "lumen-ui-science-pc@e02ba36 src/views/policy/governance/index.vue kpiDisplay 允许 null；FE-POL-04A.test.mjs 断言 validityRate + ⓘ 不剥离",
+        "lumen-svc-platform@ce6d980d PolicyGovernanceController.java validityRate(total)；mvn -pl gkxlumen-element compile exit0（Maven 3.8.8）",
+        "dev 库 10.50.11.76 demo_gkxlumenx_dwd.policy_base_info pymysql 实证：total=20279（与截图一致），valid=20163 → 99.43%",
+        "FE-POL-04A 自检 23组全绿 exit0；pnpm type-check exit0；pnpm build exit0"
       ],
       "simulated": false,
       "skipped_reason": null,
-      "notes": null
-    },
-    {
-      "id": "V-FIX-TYPECHECK",
-      "category": "fix",
-      "behavior": "vue-tsc --build 全仓类型检查 0 错误（含本单 FeedbackPanel/SentimentTab/types 与并行会话 241 文件同场校验）",
-      "result": "PASS",
-      "repo_ids": [
-        "ui_pc"
-      ],
-      "evidence_refs": [
-        "EV-2581-TYPECHECK"
-      ],
-      "simulated": false,
-      "skipped_reason": null,
-      "notes": null
-    },
-    {
-      "id": "V-FIX-BUILD",
-      "category": "fix",
-      "behavior": "vite 生产构建成功出 dist（含收集工具弹窗组件）",
-      "result": "PASS",
-      "repo_ids": [
-        "ui_pc"
-      ],
-      "evidence_refs": [
-        "EV-2581-BUILD"
-      ],
-      "simulated": false,
-      "skipped_reason": null,
-      "notes": null
-    },
-    {
-      "id": "V-REG-01B",
-      "category": "regression",
-      "behavior": "全景 4 Tab 回归自检（订阅引擎/企业匹配评分/版本 diff/深链/组件锚点/提示样式）不受本单影响",
-      "result": "PASS",
-      "repo_ids": [
-        "ui_pc"
-      ],
-      "evidence_refs": [
-        "EV-2581-SELFTEST"
-      ],
-      "simulated": false,
-      "skipped_reason": null,
-      "notes": null
-    },
-    {
-      "id": "V-REG-TYPE-COLLATERAL",
-      "category": "regression",
-      "behavior": "顺带修复已推送 4f2e637（241 真算）遗留的两处类型错误：types/policy.ts 白名单补 policy_sim_path、InterpretWorkbench @click=runPath 补显式 false 实参（否则 runPath 会收到 MouseEvent 当 force）；远端 c5da830 同修，冲突取本单写法",
-      "result": "PASS",
-      "repo_ids": [
-        "ui_pc"
-      ],
-      "evidence_refs": [
-        "EV-2581-TYPECHECK"
-      ],
-      "simulated": false,
-      "skipped_reason": null,
-      "notes": null
-    },
-    {
-      "id": "V-BOUNDARY-MOCK-LIVE",
-      "category": "boundary",
-      "behavior": "双轨边界：mock 轨统计=种子 distribution 精确合计+本会话增量（评审 finding 修复后与五星样本同口径）；live 轨=真实行+增量，无评分渠道显示 — 不造 0；提交路径两条轨均只入 collectedInSession，不写请求不落库",
-      "result": "PASS",
-      "repo_ids": [
-        "ui_pc"
-      ],
-      "evidence_refs": [
-        "EV-2581-SELFTEST",
-        "EV-2581-REVIEW"
-      ],
-      "simulated": false,
-      "skipped_reason": null,
-      "notes": null
+      "notes": "推送经 human:淮政玮 本会话口令「推送」确认（前端例外C）。后端仓未在 run 绑定内，其 commit ce6d980d 作为上游依赖记录于本条证据；run 2581-7168058150 原验收维持，本条为返工补录"
     }
   ],
   "gates": {
@@ -359,7 +287,7 @@
       }
     },
     "ship": {
-      "status": "approved",
+      "status": "invalidated",
       "source": "chat",
       "token_text": "提测",
       "approved_by": "human:淮政玮",
@@ -396,8 +324,37 @@
       }
     },
     "acceptance": {
-      "status": "pending",
-      "bound_to": null
+      "status": "approved",
+      "source": "chat",
+      "token_text": "验收通过",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T23:52:30.136+08:00",
+      "approved_session_id": "cursor-2581-20261114",
+      "approved_machine_id": "redfo-win",
+      "claim_id": "2581-20261114-hzw",
+      "message_ref": "chat:2026-11-14T23:50+08:00 用户精确口令「验收通过」（2581-7168058150）",
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "work_item_id": "7168058150",
+        "claim_id": "2581-20261114-hzw",
+        "ship_gate_hash": "sha256:0a9a6fbc88c8ac45b3eb0fff909309d36907743769c4086ff5d414a60646ac2e",
+        "dev_verification_result": "PASS",
+        "evidence_manifest_hash": "sha256:35c0e13c5af20d3a8b2f5cd01344b62d59ce39aa776225c4a04d5aeb8657f6d9",
+        "current_status": "IN PROGRESS"
+      },
+      "gate_hash": "sha256:a24597a4530e74a5c9388a80deed6181fda3174b1ae318351fe9b9407bd5f9bc",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T23:52:30.136+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": {
+          "claim_id": "2581-20261114-hzw"
+        },
+        "expected": {
+          "claim_id": "2581-20261114-hzw"
+        }
+      }
     }
   },
   "ship_package": {
@@ -575,7 +532,7 @@
     "missing": [],
     "verification": {
       "result": "PASS",
-      "checked_at": "2026-11-14T22:42:56.818+08:00",
+      "checked_at": "2026-11-14T23:52:30.106+08:00",
       "manifest_hash": "sha256:35c0e13c5af20d3a8b2f5cd01344b62d59ce39aa776225c4a04d5aeb8657f6d9",
       "item_count": 7,
       "evidence_ids": [
@@ -638,7 +595,7 @@
   "blockers": [],
   "next_action": {
     "owner": "agent",
-    "action": "等待当前会话完整精确消息“验收通过”，或读取人工直接完成的飞书状态迁移。"
+    "action": "运行 verify-evidence，确认 manifest 和原始证据可复核。"
   },
-  "updated_at": "2026-11-14T22:42:57.187+08:00"
+  "updated_at": "2026-11-15T02:51:59.826+08:00"
 }
