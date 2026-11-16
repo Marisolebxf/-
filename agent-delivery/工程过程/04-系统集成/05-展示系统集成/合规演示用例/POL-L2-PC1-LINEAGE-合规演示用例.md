@@ -9,7 +9,7 @@
 
 检索：`GET /display/v1/policy/panorama/search`。  
 已构建列表：进入页签即 `GET /display/v1/policy/governance/lineage-recent`。按构建时间倒序，最多 10 条。关键字筛标题、条款、结论。  
-读或建立：点「执行溯源」后 `POST /display/v1/policy/governance/lineage-build`，`rebuild=false`。这一政策表里已有行就直接返回，没有则按已结构化条款写入后再读。点「重新执行」时 `rebuild=true`，已有条款更新，没有的插入，这次没再出现的行只把 `is_deleted` 标成 1，不物理删除。不编造分析结论。没有结构化条款时「这条政策还没有结构化条款，请先做结构化抽取」。
+读或建立：点「执行溯源」后 `POST /display/v1/policy/governance/lineage-build`，`rebuild=false`。这一政策表里已有行就直接返回，没有则按已结构化条款写入后再读。点「重新执行」时 `rebuild=true`，已有条款更新，没有的插入，这次没再出现的行只把 `is_deleted` 标成 1，不物理删除。条款没有分析结论时，由模型按条款原文写一句，写入 `conclusion_title` 和 `conclusion_text`；已有结论在 `rebuild=false` 时不覆盖。模型没写出时「分析结论没有生成，可稍后重试」，不把空结论写入。已构建列表里仍空着的结论，打开页签时补写后再返回。没有结构化条款时「这条政策还没有结构化条款，请先做结构化抽取」。
 
 实例：政策 `18319069`（科技部财政部关于调整国家科学技术奖奖金标准的通知）。2026-11-08 查库为 4 行：原文条款 `二、` / `三、`，结论 `conc-award-raise` / `conc-award-start`。本机 2026-11-16 跳板超时，未复查询这 4 行是否仍在。
 
