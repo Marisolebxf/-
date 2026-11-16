@@ -1,7 +1,7 @@
 # 缺陷修复报告：2621 科技发展规划-综合发展规划，推送设置里关注领域没有内容
 
 > 本文件由 `.cursor/skills/feishu-bugfix/scripts/bugflow-state.mjs render-report` 从 `state.json` 和 `evidence/manifest.json` 渲染，不手工补写事实。
-> 生成时间：2026-11-16T13:17:00.945+08:00
+> 生成时间：2026-11-16T13:35:13.216+08:00
 > 当前 cycle：cycle-001-20261116T122951+0800
 > 当前内部阶段：AWAITING_ACCEPTANCE
 > 验收模式：policy_only（operator_verified=false）
