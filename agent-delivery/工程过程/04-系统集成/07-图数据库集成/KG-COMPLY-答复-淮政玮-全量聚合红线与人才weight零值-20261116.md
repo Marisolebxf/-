@@ -56,6 +56,8 @@
 
 - 影响：RECALC-02 及后续人才侧指标若用 `weight` 做加权榜，会全 0、榜单全是并列；
 - 建议：写进 RECALC-02 口径与人才侧指标说明——**人才侧强度用 `co_paper_count`，`weight` 不承载强度**；我作为 RECALC-02 监管人会签确认。
+- **补一条更硬的证据（11-16 深挖）**：该边的 `props.weight_field` 声明为 `"collaboration_score"`，而 `collaboration_score` 抽样 3,000/3,000 全为 null——声明与实值不一致，属缺陷 D-1。任何按 `weight_field` 取强度的通用代码，在人才域会静默拿到全 0。
+- **另一条**：`co_patent_count` 2,997/3,000 null、`co_project_count` 3,000/3,000 null，对外不得写「专利/项目合作强度」。
 
 ### 1.6 我建议的红线原文（可直接进 SDD §5）
 
@@ -95,6 +97,8 @@
 | 项 | 内容 |
 |---|---|
 | 我确认的口径 | 线上 12 端点无全图聚合；428/M02 分组加权保留且离线；人才侧强度用 `co_paper_count` |
-| 待我会签 | RECALC-02 的 `weight`/`co_paper_count` 口径条款；SDD §5 红线原文（§1.6） |
+| 会签状态 | ✅ **已完成**：`会签/KG-GRAPH-SIGN-唐绍祖-三域cooperate边权口径-20261116.md`（三条口径裁定 + 红线三条 + D-1/D-2 挂账） |
+| 已落到卡上 | `KG-GRAPH-RECALC-02`、`KG-GRAPH-TRIPLE-03` 的 note 均已写入强制约束（人才取 `co_paper_count`、M02 用 `strength_by_year` 分年、企业侧禁求和） |
+| 待他人确认 | 淮政玮（红线进 SDD §5）、白鑫凤（D-1 成因）、宋飞扬（110/111 按口径实现） |
 | 实测依据 | 11-16 现场：`tech_has_institution` 51,000（6.6s）、person 合作边 2,525,789（13.3s）、research 合作边 3,442,271（15.1s）；三批 weight 总和 14,715,117 / 427,133 / 0 |
 | 关联文档 | `07-调研-图库内存水位现状-20261113.md`、`KG-COMPLY-LOAD-T02-对账护栏-cooperate三端点分组.md`、`KG-COMPLY-ACCEPT-T09-S1-技术验收记录.md`、`派单-C-燕大-专题三域图谱三元组.md` |
