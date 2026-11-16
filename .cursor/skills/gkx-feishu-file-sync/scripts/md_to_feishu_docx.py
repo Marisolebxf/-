@@ -301,6 +301,51 @@ def clear_doc(tat, doc_id):
     return n
 
 
+def fit_column_widths(rows, page_w=880, min_w=72, max_w=480):
+    """按单元格内容权重分配列宽（px），贴近飞书正文可读宽度。"""
+    ncols = max(len(r) for r in rows)
+    weights = []
+    for ci in range(ncols):
+        mx = 4
+        for r in rows:
+            if ci >= len(r):
+                continue
+            # 中文约占 2 单位，英文 1；单格上限避免极长文案撑爆
+            w = 0
+            for ch in r[ci][:120]:
+                w += 2 if ord(ch) > 127 else 1
+            mx = max(mx, w)
+        weights.append(mx)
+    total = float(sum(weights)) or 1.0
+    widths = []
+    for w in weights:
+        px = int(round(page_w * (w / total)))
+        widths.append(max(min_w, min(max_w, px)))
+    # 微调总和贴近 page_w
+    diff = page_w - sum(widths)
+    if widths and diff != 0:
+        # 把差额摊到最宽列
+        i = max(range(len(widths)), key=lambda k: widths[k])
+        widths[i] = max(min_w, widths[i] + diff)
+    return widths
+
+
+def set_table_column_widths(tat, doc_id, table_block_id, widths):
+    for i, w in enumerate(widths):
+        out = api(
+            "PATCH",
+            "/docx/v1/documents/%s/blocks/%s?document_revision_id=-1" % (doc_id, table_block_id),
+            tat,
+            {"update_table_property": {"column_index": i, "column_width": int(w)}},
+        )
+        if out.get("code") != 0:
+            print(
+                "[x] col_width[%d]=%d fail: %s"
+                % (i, w, json.dumps(out, ensure_ascii=False)[:200])
+            )
+        time.sleep(0.05)
+
+
 def insert_table(tat, doc_id, rows):
     if not rows:
         return False
@@ -310,6 +355,7 @@ def insert_table(tat, doc_id, rows):
         cells = list(r) + [""] * (cols - len(r))
         norm.append([c[:15000] for c in cells[:cols]])
     nrows, ncols = len(norm), cols
+    widths = fit_column_widths(norm)
     # 飞书单次建表过大易失败：超 9 行拆成多表
     chunk = 9
     ok_any = False
@@ -331,6 +377,7 @@ def insert_table(tat, doc_id, rows):
                                 "row_size": len(part),
                                 "column_size": ncols,
                                 "header_row": True,
+                                "column_width": widths,
                             }
                         },
                     }
@@ -339,9 +386,32 @@ def insert_table(tat, doc_id, rows):
             },
         )
         if out.get("code") != 0:
+            # 部分环境不接受创建时带 column_width，降级后再 PATCH
+            out = api(
+                "POST",
+                "/docx/v1/documents/%s/blocks/%s/children" % (doc_id, doc_id),
+                tat,
+                {
+                    "children": [
+                        {
+                            "block_type": 31,
+                            "table": {
+                                "property": {
+                                    "row_size": len(part),
+                                    "column_size": ncols,
+                                    "header_row": True,
+                                }
+                            },
+                        }
+                    ],
+                    "index": -1,
+                },
+            )
+        if out.get("code") != 0:
             print("[x] table create fail: %s" % json.dumps(out, ensure_ascii=False)[:400])
             continue
         table = out["data"]["children"][0]
+        table_id = table.get("block_id")
         cell_ids = table.get("children") or table.get("table", {}).get("cells") or []
         for i, cell_id in enumerate(cell_ids):
             ri, ci = divmod(i, ncols)
@@ -368,8 +438,13 @@ def insert_table(tat, doc_id, rows):
                     % (cell_id, json.dumps(out2, ensure_ascii=False)[:240])
                 )
             time.sleep(0.05)
+        if table_id:
+            set_table_column_widths(tat, doc_id, table_id, widths)
         ok_any = True
-        print("[ok] table %dx%d (rows %d-%d)" % (len(part), ncols, start + 1, start + len(part) - (1 if start else 0)))
+        print(
+            "[ok] table %dx%d widths=%s"
+            % (len(part), ncols, widths)
+        )
         time.sleep(0.2)
     return ok_any
 

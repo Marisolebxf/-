@@ -2,6 +2,9 @@
 
 > 日期：2026-11-16  
 > 用途：为国科信「zmate Skill 编排 + 三系统 MCP 取数 → 战略咨询报告」选型提供业界对照。  
+> 飞书在线文档（文本绘图+表格）：https://zhipu-ai.feishu.cn/docx/Nlvodb9mJoZaImxyFRqcWGMsnsh  
+> 飞书云空间附件：https://zhipu-ai.feishu.cn/file/TZK9bAZSkoS2IhxDmegcI9ilnOe  
+> 目录：https://zhipu-ai.feishu.cn/drive/folder/YZxFfgaURlN7RKdt5yCcSmY7n8m  
 > 相关：[`2026-11-13-顶尖战略报告结构与评价方法.md`](./2026-11-13-顶尖战略报告结构与评价方法.md)、zmate AaaS / 场景 Tutorial、WBS-08 Skill-MCP 技术标准与评测标准、D9 `data-lineage-policy` / metric-registry。  
 > 方法：联网检索 2025–2026 主流框架/论文/厂商实践后归纳；非厂商白皮书照搬。
 
@@ -345,10 +348,9 @@ sequenceDiagram
   Slice-->>User: 指标需求清单 + task_plan
   User->>Slice: 确认关键新建/接入（人闸，可选）
 
-  par 域取数
-    Seek->>Biz: 仅切片已批准指标
-    Biz-->>Seek: data + metric_ids + data_status
-  end
+  Note over Seek,Biz: 并行域取数（飞书文本绘图不支持 par，改用注释）
+  Seek->>Biz: 仅切片已批准指标
+  Biz-->>Seek: data + metric_ids + data_status
   Seek->>Slice: 回写证据包
   Slice->>Write: 绑定表 + 证据
   Write->>Judge: 报告 + 引用 + slice_id
@@ -451,3 +453,4 @@ AutoGen 经典「群聊」模式已过时（仓库维护迁移至 Microsoft Agen
 | 2026-11-16 | 补 §5 与指标库关系；§6 Mermaid 总览/时序/工作区/节点 Loop |
 | 2026-11-16 | 修正：Agent 不直连指标库；插入「专题切片/研判卡」层；指标库可进化；重绘 §5–§6 |
 | 2026-11-16 | 英文定稿 ThematicSlice / ScopeCard；回写阶标注草稿与 WBS / Excel 规则表 |
+| 2026-11-16 | 飞书上架：docx `Nlvodb9mJoZaImxyFRqcWGMsnsh` + file `TZK9bAZSkoS2IhxDmegcI9ilnOe`；时序图去掉 `par`（飞书不支持） |
