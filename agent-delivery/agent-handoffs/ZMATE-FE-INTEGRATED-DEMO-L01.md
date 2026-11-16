@@ -33,15 +33,16 @@
 ## 问题清单
 
 - demo-ui-topic 无 `pnpm type-check` 脚本；以 `pnpm build` 为工程门禁。`pnpm design:check` 在既有 `theme.css` 缺 padding 断言处失败（与本单无关，未改 theme）。
-- V3 对抗审查降级为抽屉壳 + 静态问题清单。
-- 生成动画为假延迟 timeline，非真实 MCP。
+- V3 对抗审查降级为「溯源与结论」Tab 壳 + 静态问题清单。
+- 首版曾 autoRun 跳过人闸 → **已返工**：三栏 HITL，确认需求前右侧「等待需求确认」。
 
 ## 修改内容
 
-- 新增工作区 `src/app/pages/zmate-strategy/`：首页创作壳、任务工作区（澄清/辩论/切片/报告/审阅壳）、Mock fixture、样式。
-- **菜单只增不删**：`Layout.tsx` `navGroups` 末尾追加分组「战略报告 Demo」→「战略报告创作工作台」；既有分组/项未删改。
-- `routes.tsx` 增量路由：`/zmate-strategy-demo`、`/zmate-strategy-demo/task/:taskId`。
-- 埋点：`zmate_strategy_home_view` / `task_create` / `task_view` / `generate_*` / `debate_round`。
+- 新增工作区 `src/app/pages/zmate-strategy/`：首页创作壳、**HITL 三栏任务页**、Mock、样式。
+- **人在回路**：澄清卡 1/3 上一项/下一项 →「确认需求（人闸）」→ 人控辩论轮次 →「结束辩论并生成报告」；禁止创建任务后 autoRun；生成中右侧不出正文。
+- **菜单只增不删**：`Layout.tsx` 追加「战略报告 Demo」；既有菜单未删。
+- 路由：`/zmate-strategy-demo`、`/zmate-strategy-demo/task/:taskId`。
+- 埋点：含 `clarify_next` / `clarify_confirm` / `hitl_chat` / `debate_round` / `generate_*`。
 
 ### 与两份 HTML 原型能力映射
 
@@ -50,7 +51,8 @@
 | 项目轨两级 | ✅ | 弱 | ✅ |
 | Query / 报告类型 / 专家·安装≠本次使用 | ✅ | — | ✅ |
 | 生成中不出正文 | ✅ | — | ✅ |
-| 正反辩论 + 三层卷宗 | — | ✅ | ✅（读写/只读切换） |
+| 正反辩论 + 三层卷宗 | — | ✅ | ✅（人控轮次 + 读写/只读） |
+| 需求澄清人闸 | V2 卡 | 澄清阶段 | ✅ 三步卡 + 确认前右侧等待 |
 | 无胜负 Judge | — | ✅ | ✅ 文案 |
 | 专题切片/研判卡 | 资产文案 | 无 | ✅ Mock 四态 |
 | 基础溯源角标 | ✅ | — | ✅ |
@@ -60,32 +62,33 @@
 
 | 条款 | 结果 |
 |---|---|
-| 三轴合一 | ✅ 同任务工作区阶段条切换 |
+| 三轴合一 | ✅ HITL 三栏同屏 |
+| 人在回路 | ✅ 确认需求 / 人控辩论 / 禁 autoRun |
 | 术语铁律 | ✅ 「辩论知识卷宗」≠「专题切片/研判卡」 |
 | Judge 分职 | ✅ |
-| V1 不挡 | ✅ 首页创建→自动生成可直达报告 |
+| V1 不挡 | ✅ 可澄清后快速「结束辩论并生成」；不强制多轮 |
 | 数据诚实 | ✅ 四态 + 🧪 Mock，无假 live |
-| 菜单增量 | ✅ Layout diff 仅 +8 行追加 |
+| 菜单增量 | ✅ Layout 仅追加 |
 
 ## 测试结果
 
-- `pnpm build`：✅（vite build ~38s，commit 前本地）
+- `pnpm build`：✅（HITL 返工后再次本地 build）
 - `pnpm design:check`：❌ 既有 theme.css 合同（非本单引入）
-- 本地打开：`pnpm dev` → 侧栏「战略报告 Demo」或直达 `/zmate-strategy-demo`
+- 本地打开：`pnpm dev` → `/zmate-strategy-demo` → 创建任务或打开已有任务，验证右侧「等待需求确认」
 
 ## 遗留风险
 
 - design:check 红可能影响依赖该脚本的 CI job（若有）；本单未改 theme。
-- 假进度与预置辩论数据仅供评审示意，不可当 V1 真后端验收。
+- 辩论/生成仍为 Mock，不可当 V1 真后端验收。
 
 ## CI/CD（必填）
 
 - 分支：`dev`
-- commit：`4c0c4941634ad79df2389053cacebe9209306b65`（`demo-ui-topic`）
-- pipeline：push 后由 GitLab CI 接管（本机未等流水线绿）
+- commit：`37efe1a94b984a1ec6f9fc269f7127d3c96db6b4`（`demo-ui-topic` HITL 返工）
+- pipeline：push 后由 GitLab CI 接管
 - 部署 namespace / 镜像 tag：待 CI
 - K8s rollout：待 CI
-- 本地路径：`${GKX_ROOT}/repos/demo-ui-topic` · 路由 `/zmate-strategy-demo`
+- 本地路径：`${GKX_ROOT}/repos/demo-ui-topic` · `/zmate-strategy-demo/task/:id`
 
 ## 可观测性（建议）
 
