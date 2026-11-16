@@ -15,3 +15,4 @@ WBS：[`../../WBS.md`](../../WBS.md)
 | [乐之域分析材料-HP8G.md](./乐之域分析材料-HP8G.md) | 乐之域：战略无定解 → 命题澄清 / **正反辩论研究** / 制品产出；动态战略知识体系（卷宗）；无强制 Judge。飞书 https://zhipu-ai.feishu.cn/docx/HP8Gd88BOo5RMUxbPFecyLiVndg |
 | [德金分析材料-NM5b.md](./德金分析材料-NM5b.md) | 德金：Zmate 报告创作 V1–V3 节奏（至 12-22）；知识/指标库四象限；审阅与对抗审查。飞书 https://zhipu-ai.feishu.cn/docx/NM5bdtntcogA8lxoNh3cirSgnif |
 | [2026-11-16-德金-乐之域-专题切片三方对照.md](./2026-11-16-德金-乐之域-专题切片三方对照.md) | 三方对照：流程/数据层/Agent/版本落点/张力与待拍板。 |
+| [2026-11-16-之域德金demo分析.md](./2026-11-16-之域德金demo分析.md) | 之域/德金单文件 HTML 原型通读：研究内核 vs 工作台壳；与 V1–V3 / 切片合入建议。 |
