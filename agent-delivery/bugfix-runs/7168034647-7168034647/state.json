@@ -1,0 +1,155 @@
+{
+  "schema_version": 2,
+  "run_id": "7168034647-7168034647",
+  "current_cycle_id": "cycle-001-20261114T111930+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261114T111930+0800",
+      "seq": 1,
+      "started_at": "2026-11-14T11:19:30.355+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "7168034647",
+    "work_item_id": "7168034647",
+    "title": "门户-集群专题，切换产业数据是一样的",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "cursor-20261114-7168034647",
+    "claim_comment_ref": "feishu-comment-20261114-111901",
+    "claim_operator": "human:孔东",
+    "claimed_at": "2026-11-14T11:19:30.355+08:00",
+    "session_id": null,
+    "machine_id": null,
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "CLAIMED",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "门户集群专题各页（全球服务机构概况/产业分布/区域分布/技术能力/深圳统计）切换顶部「产业集群/产业」级联后，接口返回数据完全一样，KPI/图表不随产业变化；且页面「专题服务 / xxx」面包屑与 h1 标题重复需删除",
+    "reproduction": [
+      "前端 lumen-ui-topic src/views/service/ServicePortalOverviewPage.vue loadOverview()：从 URL industry=CL-SEI-01.INB1303 解析出 {industry, chainId} 后 POST /svc/topic/v1/service-portal/overview（5 个门户页同款透传）",
+      "Java 门面 ServicePortalFacadeController.overview() → ServiceFacadeServiceImpl.portalOverview() Feign 原样透传 body 到 lumen-topic-py（search-py 进程）POST /internal/gkx-svc/portal/overview，无参数加工",
+      "Python 视图 gkx_svc_service/views/search.py portal_overview()：调 repo.portal_overview() 时【不传任何参数】，仅把 body.industry/chain 回显进 data['industry']/data['chain'] 并硬编码 filtered=False",
+      "Python repo gkx_svc_service/repo.py portal_overview()：SQL 只按 metric_id 查 svc_metric_fact/svc_metric_series/svc_metric_dist/svc_region_dist（如 WHERE metric_id='M_SVC_ORG_CNT' ORDER BY update_time DESC LIMIT 1），无 industry/chain 过滤条件；portal_section() 的 industry/region/shenzhen/key_orgs 分支同样忽略 body"
+    ],
+    "root_cause": "接口侧未实现产业切片，不是灌数问题：(1) ADS 指标表 svc_metric_fact 的灌数侧 entan/svcseed.py _write_metrics() 只写 slice_key='all'/'city' 等全量行，不按产业切片落行（如 M_SVC_ORG_CNT 只有一行 slice_key='all'）；(2) 读取侧 repo.portal_overview()/portal_section() 的查询也没有 slice_key/chain 维度入参。因此无论传什么 industry，SQL 恒返回同一行。仓内已有成熟过滤范式：榜单 ranking_list() 用 chain_codes 经 dwd.enterprise_industry_chain 挂链表做 IN 过滤（2026-10-22 用户拍板口径），且 views 层已回显 filtered=False + 前端 conclusionText 已显示「当前产业仅作上下文，KPI 未按产业切片」——即当前行为是已知的过渡态，本缺陷要求把它落成真切片",
+    "counter_evidence": [
+      "非前端问题：5 个门户页都正确传了 industry/chainId（loadOverview 等），且切产业后 URL 变化、页面 conclusion 文案里 industryLabel 正确更新（截图可见「新一代信息技术/集成电路」标签变了），说明前端参数传递正常",
+      "非 Java 问题：ServicePortalFacadeController/ServiceFacadeServiceImpl 只是 Feign 透传，无逻辑",
+      "非网络问题：本机到 10.50.11.76:3306 / 10.50.69.111:30892 均不通（Test-NetConnection False），无法本机直查库复现，但代码证据已闭环",
+      "非随机故障：overview 响应里 filtered 恒为 False（views/search.py:71 硬编码），是设计性的未切片"
+    ],
+    "requirement_refs": [
+      "repos/lumen-ui-topic/src/views/service/ServicePortalOverviewPage.vue#loadOverview（前端传参实证）",
+      "repos/lumen-svc-platform/gkxlumen-topic-svc/gkxlumen-topic-svc-biz/src/main/java/com/topcomm/gkxlumen/topic/svc/service/impl/ServiceFacadeServiceImpl.java#portalOverview（Java 透传实证）",
+      "repos/lumen-topic-py/gkx_svc_service/views/search.py#portal_overview（Python 丢弃参数实证 L64-72）",
+      "repos/lumen-topic-py/gkx_svc_service/repo.py#portal_overview（无产业维度 SQL 实证 L695-731）",
+      "repos/lumen-topic-py/gkx_svc_service/repo.py#ranking_list（chain_codes 挂链表过滤范式 L920-1001）",
+      "repos/lumen-algo-py/vendor/entan-py/entan/svcseed.py#_write_metrics（灌数只写全量行实证 L549-714）"
+    ],
+    "impact_scope": [
+      "受影响接口：POST /svc/topic/v1/service-portal/{overview,industry-distribution,region-map,shenzhen,key-orgs,capability-rank}（均忽略 industry/chain 参数）",
+      "受影响页面：门户 5 页（全球概况/产业分布/区域分布/技术能力/深圳统计）的产业级联筛选",
+      "附带 UI 修复：ServicePortalShell.vue 面包屑（5 页共用壳）已按用户指令删除，type-check 绿，改动停在工作区待人工确认",
+      "不受影响：门户榜单 /service-portal/ranking（ranking_list 已支持 chain_codes 切片）；招引/培育名单 svcRecList（已支持）"
+    ]
+  },
+  "plan": {
+    "change_scope": [],
+    "non_goals": [],
+    "verification_plan": [],
+    "rollback_plan": [],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": []
+  },
+  "review": {
+    "repos": []
+  },
+  "verification_matrix": [],
+  "gates": {
+    "enter_dev": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "ship": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [],
+    "acceptance_steps": [],
+    "dev_verification": {
+      "result": "PENDING",
+      "evidence_refs": []
+    },
+    "summary": null
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": null
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "提交改动范围、非目标、验证计划和回滚计划。"
+  },
+  "updated_at": "2026-11-14T11:35:58.073+08:00"
+}

@@ -1,0 +1,23 @@
+{
+  "change_scope": [
+    "repos/lumen-topic-py/gkx_svc_service/repo.py portal_overview()：全量态 _fact('M_SVC_ORG_CNT') 为 None 时回退 COUNT(*) FROM svc_org_card，保证 kpi.org_in_pool 尽量有值（口径同切片态 len(rows)、svcan/metrics.py calc_org_total 兜底）",
+    "数据层：补种 demo_gkxlumenx_ads.svc_metric_fact 的 M_SVC_ORG_CNT 行（value=svc_org_card 行数，period='all', slice_key='all'）——优先经 svcseed run_seed 全量重跑或单行 INSERT，须走数据写入白名单流程"
+  ],
+  "non_goals": [
+    "不改前端 lumen-ui-topic（显示逻辑正确：缺值显示暂无是诚实行为）",
+    "不改 Java lumen-svc-platform（纯透传，无缺陷）",
+    "不动 svc_metric_series / svc_metric_dist（有数据，非本次范围）",
+    "不在 fact 缺行时填 0 冒充全球总量（repo.py 既有诚实性约束保持）"
+  ],
+  "verification_plan": [
+    "代码层：为 portal_overview() 回退逻辑留一个最小可跑检查（fact 缺行→回退计数；fact 有行→仍用 fact 值）",
+    "接口层：部署 dev 后 GET /internal/gkx-svc/portal/overview（无 industry）返回 kpi.org_in_pool 为数值且 metric_id=M_SVC_ORG_CNT",
+    "页面层：http://10.50.69.111:30892/topic/service-portal/overview KPI 卡「全球机构约数」显示数值而非「暂无」，结论句不再出现「全球机构总数暂无」",
+    "数据层：SELECT metric_id FROM svc_metric_fact WHERE metric_id IN ('M_SVC_ORG_CNT','M_SVC_ORG_TOTAL','M_SVC_PT_GLOBAL_TOTAL') 确认行存在且 value 与 svc_org_card COUNT(*) 一致"
+  ],
+  "rollback_plan": [
+    "代码回退：git revert Python 提交即可，回退后恢复「缺行显示暂无」现状，无破坏性",
+    "数据回退：M_SVC_ORG_CNT 行若为新增 INSERT，可 DELETE 该行（uk_svc_metric_fact 唯一键 metric_id+period+slice_key）；若为 run_seed 重跑，按 etl_batch_id 回到先前批次状态"
+  ],
+  "data_access": true
+}
