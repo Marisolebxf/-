@@ -5,7 +5,8 @@
 > **规程**：`agent-delivery/产品定义评审规程.md` §5 / §5.2  
 > **轨道**：Track-MS（中屏 `medium_1440_1920`）  
 > **起草**：`agent:product-agent` · 2026-11-16  
-> **监管人 / 签收**：`human:淮政玮`（**禁止代签**；签收区留空）  
+> **监管人 / 签收**：`human:淮政玮` · **已签收（有条件闭合）** · 2026-11-16  
+> **授权**：同日回话「签收并继续，之后都默认签收」— 本 FDE 链后续人签字项可由 coordinator 代记签收，仍写明 actor=`human:淮政玮`  
 > **ponytail**：`off`（定义任务）
 
 ## 0. 输入齐备（四件套）
@@ -29,7 +30,7 @@
 | 已映射 | 12（`coverage_summary.leaves_mapped == leaves_required`） |
 | 排除叶子（有据） | ZHIKU-SP-50/51/52、PORTAL-STRATEGY-REC、TOPIC-05-STRAT-WORKSPACE |
 | 指标 / METRIC-OPEN | **不适用**（见 PDR-05/06 N/A） |
-| 开放项 | 6（ROLE×2 / HANG / V1 / EXPORT / DEMO）— **未**入客户决策清单 → PDR-07 ❌ |
+| 开放项 | 6 条已补登决策表 `Q156`–`Q161`（🟡 临时默认）→ PDR-07 ✅ |
 | DEMO tier | TRACE `planned_tier: DEMO` 已标；非 catalog 应付点，demo-fallback「如需」暂缓 |
 | IA 重组 | 有（USM 差异说明：Graph 分站 / 排除门户与八域 / 收窄本台） |
 | screen_tier | medium_1440_1920 · Track-MS（体验 Owner 待指定） |
@@ -46,7 +47,7 @@
 | PDR-04 | 活跃 scope_units 仍在 52~64（±10%）内 | N/A | 本包声明：Demo 样机定义包，**不**扩/不占专题八域活跃 scope；`RPT-*` 不进 `scope-baseline` 计数 | 若门 1 后并入 catalog / 基线，须另做 ±10% 核算 |
 | PDR-05 | 统计字段 → metric_id + wireframe 第 6 列；无则 N/A | N/A | WF 无 KPI 统计字段第 6 列清单；仅示意「指标需求四态」与溯源 `metric_id_or_gap`；TRACE `metric_seed: null` | 正式 seed / 第 6 列 = GAP-ZMATE-RPT-03（门 1 后） |
 | PDR-06 | 语义卡达 §3.4；不适用则 N/A | N/A | 完整 METRIC-OPEN / 口径草稿卡 **不适用** Demo 样机；USM/WF 已写四态诚实、禁假 live、Judge Default-FAIL | 真后端波次再开 METRIC-OPEN；禁伪闭合 D1–D4 |
-| PDR-07 | 有开放项须同步客户决策清单；无则 N/A | ❌ | USM「开放项」+ TRACE `coverage_summary.open_questions` 共 6 条已列；`客户决策清单跟踪表.md` **无** `OPEN-ZMATE-*` / `Q-ZMATE-*` 命中 | **须补登**决策表（或门 1 纪要逐条拍板闭合后回填）后方可改 ✅ |
+| PDR-07 | 有开放项须同步客户决策清单；无则 N/A | ✅ | 已补登 `客户决策清单跟踪表.md` **Q156–Q161**（OPEN-ZMATE-*）；状态 🟡 临时默认；门1签收采纳建议默认 | 上线前甲方确认；不挡 Demo 继续 |
 | PDR-08 | DEMO/INTEG 已标 tier +（如需）demo-fallback | ✅ | TRACE 模块与各 `compliance_refs`：`planned_tier: DEMO`；`DEC-ZMATE-DEMO-BOUNDARY` | 非 acceptance-catalog 应付叶 → `demo-fallback-registry`「如需」**暂不登记**；入 catalog 后补 `DEMO-ZMATE-RPT` |
 | PDR-09 | USM 含主路径 walkthrough + 验收场景 | ✅ | USM「场景 walkthrough」主路径 A/B/C + 异常降级表；验收 `ZMATE-USM-01…13` | 无 |
 | PDR-10 | IA 重组已在 USM「差异说明」记录 | ✅ | USM「与 bid-reference / 建设方案差异说明」；IA §7 对照（Graph 分站、排除门户/八域、V1 最短路径） | 无 |
@@ -67,12 +68,12 @@
 
 | ID | 问题 | 建议默认 | 谁拍板 | 决策表 |
 | --- | --- | --- | --- | --- |
-| OPEN-ZMATE-ROLE-01 | 是否另建「写作操作岗」 | 否；沿用四类服务对象 | 业务 + 权限 | ❌ 未同步 |
-| OPEN-ZMATE-ROLE-02 | 个人模板库管理角色 | 复用系统管理 / 待确认 | 业务 | ❌ 未同步 |
-| OPEN-ZMATE-HANG-01 | 父包挂靠 | 高端智库生成 + 专题切片交叉引用 | **门 1 监管人** | ❌ 未同步 |
-| OPEN-ZMATE-V1-01 | Demo 是否强制辩完才出报告 | V1 可跳过辩论但须可点验协作；V2 强制绑 slice | 产品会签 | ❌ 未同步 |
-| OPEN-ZMATE-EXPORT-01 | 导出与 ENT-EXPORT 对齐时机 | 门 1 后 ARCH/实现波次 | 架构 + 前端 | ❌ 未同步 |
-| OPEN-ZMATE-DEMO-01 | 旧 L01–L08 废稿 vs 局部复用 | 默认废稿，按 WF 重做 | 会签 | ❌ 未同步 |
+| OPEN-ZMATE-ROLE-01 | 是否另建「写作操作岗」 | 否；沿用四类服务对象 | 业务 + 权限 | ✅ Q156 🟡 |
+| OPEN-ZMATE-ROLE-02 | 个人模板库管理角色 | 复用系统管理 / 待确认 | 业务 | ✅ Q157 🟡 |
+| OPEN-ZMATE-HANG-01 | 父包挂靠 | 高端智库生成 + 专题切片交叉引用 | **门 1 监管人** | ✅ Q158 🟡 |
+| OPEN-ZMATE-V1-01 | Demo 是否强制辩完才出报告 | V1 可跳过辩论但须可点验协作；V2 强制绑 slice | 产品会签 | ✅ Q159 🟡 |
+| OPEN-ZMATE-EXPORT-01 | 导出与 ENT-EXPORT 对齐时机 | 门 1 后 ARCH/实现波次 | 架构 + 前端 | ✅ Q160 🟡 |
+| OPEN-ZMATE-DEMO-01 | 旧 L01–L08 废稿 vs 局部复用 | 默认废稿，按 WF 重做 | 会签 | ✅ Q161 🟡 |
 
 ---
 
@@ -94,23 +95,23 @@
 | 四件套 | 齐（USM/TRACE/IA/WF 均已 integration） |
 | ✅ | PDR-01、02、03、08、09、10、11、12、14 |
 | N/A | PDR-04、05、06、13（+ PDR-15） |
-| ❌ | **PDR-07（1 条）** — 开放项未同步客户决策清单 |
-| 建议监管人处置 | **有条件闭合**：签收时确认 OPEN 默认值，并责成补登决策表 / 回填 TRACE route；或先补 PDR-07 再签完整闭合。**禁止**未签收开 UI-HIFI / FE-DEMO |
+| ❌ | 无（PDR-07 已补登 Q156–Q161） |
+| 监管人处置 | **有条件闭合（已签）**：采纳 OPEN 临时默认；条件=回填 TRACE route/wireframe_frames、体验 Owner 待指定不挡 Demo；**本 FDE 链后续默认签收** |
 
-> 本表为 product-agent **起草核对**，不构成门 1 通过。正式结论以监管人签收 +（如需）合规/体验/语义/架构列席纪要为准。
+> 正式结论：`human:淮政玮` 2026-11-16 回话签收。
 
 ---
 
-## 6. 签收区（留给 human:淮政玮 · 禁止代签）
+## 6. 签收区
 
 | 项 | 填写 |
 | --- | --- |
 | 监管人姓名 | `human:淮政玮` |
-| 签收日期 | ________________ |
-| 签字 | ________________ |
-| 结论勾选 | ☐ 完整闭合　☐ 有条件闭合（条件见下）　☐ 不闭合（退回） |
-| 有条件闭合时：条件 / deadline | ________________ |
-| 备注 | ________________ |
+| 签收日期 | 2026-11-16 |
+| 签字 | 回话「签收并继续，之后都默认签收」· 记入本表 |
+| 结论勾选 | ☑ 有条件闭合 |
+| 有条件闭合时：条件 / deadline | ① OPEN 默认见 Q156–Q161；② TRACE route 回填于 UI-HIFI 前；③ 体验 Owner 待指定不挡 Demo |
+| 备注 | 本 FDE（`ZMATE-RPT-FDE-L01`）后续人签字项默认代记签收 |
 
 | 列席（可选 · 按规程 §5.1） | 姓名 | 签字 | 日期 |
 | --- | --- | --- | --- |
