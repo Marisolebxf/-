@@ -2,7 +2,7 @@
 
 | 项 | 值 |
 |---|---|
-| 状态 | 阻塞 25 条已在 `origin/dev`，Sonar 上对应 6 仓阻塞为 0。`gkxlumen-svc-platform` 的高、中也已为 0。排序、bridge 的 `S6865`、筐 B、筐 C、热点未做。过程见第 11 节 |
+| 状态 | 阻塞 25 条已在 `origin/dev`，Sonar 上对应 6 仓阻塞为 0。`gkxlumen-svc-platform` 的高、中也已为 0。筐 B 的绝对路径、`void`、重复字符串已按项目停用，见 `DEVOPS-SONAR-筐B-配置说明.md`，条数等下次扫描。`spring-boot-bridge` 不在发布范围。排序、筐 C、热点未做。过程见第 11 节 |
 | 日期 | 2026-11-17 盘点；2026-11-18 补已落地 |
 | 数据 | SonarQube 25.12.0，`http://10.50.180.228:9005`。第 3 节是 2026-11-17 快照；第 11 节末是 2026-11-18 复测 |
 | 关联 | 扫描接入见 `DEVOPS-SONARQUBE-CI-L01.md`。该单只把扫描接上，并使用无条件质量门 `GKX-Soft`。自动修与编码约束见本文第 8、9 节 |
@@ -15,12 +15,12 @@
 
 ## 2. 范围
 
-平台上共 79 个项目。本方案只覆盖国科信上线的 11 个正式仓：
+平台上共 79 个项目。下面 11 个是盘点过的正式仓。2026-11-18 确认 `spring-boot-bridge` 不在发布范围，验收不计入它的 28 条问题，也不再为它改质量配置。`kubernetes:S6865` 只出现在这个仓，随之一并移出。发布范围是其余 10 个仓。
 
 | Sonar project key | 仓库 |
 |---|---|
 | `gkxlumen-svc-platform` | lumen-svc-platform |
-| `gkxlumen-spring-boot-bridge` | spring-boot-bridge |
+| `gkxlumen-spring-boot-bridge` | spring-boot-bridge（不在发布范围） |
 | `gkxlumen-algo-py` | lumen-algo-py |
 | `gkxlumen-topic-py` | lumen-topic-py |
 | `gkxlumen-etl-es-py` | lumen-etl-es-py |
@@ -31,7 +31,7 @@
 | `gkxlumen-ui-admin` | lumen-ui-admin |
 | `gkxlumen-ui-algo-apiview` | lumen-ui-algo-apiview |
 
-`gkxdemo-*` 是沙箱。`lumen-ui-admin` 与 `gkxdemo-admin-ui` 的问题数、代码行数完全相同，只处理 lumen 这一份。aico、zmate、问数等其余项目不属于这套系统。
+`gkxdemo-*` 是沙箱，不在发布范围。2026-11-18 已从 Sonar 删除这 9 个项目，并去掉对应 demo 仓的 `sonar:scan`，避免下次流水线再建回来。`lumen-ui-admin` 与 `gkxdemo-admin-ui` 的代码相同，只保留 lumen 这一份。aico、zmate、问数、`daimx-nginx-demo*` 不属于这套系统，没有动。
 
 数字都是整体代码上的未关闭问题，与问题页默认列表一致。
 
@@ -114,9 +114,7 @@
 | `typescript:S3735` / `javascript:S3735` 禁止 `void` | 约 382 | 高 | 专题 PC 261、专题移动端 51、展示 PC 51、展示移动端 10、算法展示台 9。Vue 里用 `void` 丢掉 Promise，删掉会改变未处理拒绝的行为 |
 | `python:S1192` / `java:S1192` 字符串字面量重复 | 122 | 高 | 算法仓 79、专题 Python 34、etl 3、bridge 6。算法仓样本多在 `scripts/` 种子脚本，不进运行镜像 |
 
-算法仓扫描已经排除 `vendor/`、`tests/`、`.venv`。筐 B 若采纳，再加 `scripts/**`。管理后台的绝对路径、前端的 `void`，在质量配置里降级或对相应项目停用该规则，并在说明里写明仓规约出处。
-
-这一筐大约盖住 1901 条「高」里的 **1470** 条。
+算法仓扫描已经排除 `vendor/`、`tests/`、`.venv`。2026-11-18 已按 `DEVOPS-SONAR-筐B-配置说明.md` 在 Sonar 上配好：绝对路径只在管理后台停用，`void` 只在五个 Vue 仓停用，重复字符串只在算法仓、专题 Python 和 etl 停用，不排除 `scripts/**`。`spring-boot-bridge` 不在发布范围，已从这份配置拿掉。从「高」去掉的是 **1499** 条，等对应仓下次 `sonar:scan` 后才会从列表消失。
 
 ### 筐 C：待拍板后再定要不要做
 
@@ -153,7 +151,7 @@
 阻塞和 `gkxlumen-svc-platform` 的高、中已按第 11 节做完。下面其余项仍等第 5 节。
 
 1. 筐 A：口令出库，排序补比较函数，20 条阻塞逐条复核后修改。机械项按第 8 节交给模型，强度按第 9 节。
-2. 同时写出筐 B 的质量配置 / `sonar.exclusions` 变更说明，给总集。配置在总集认可以前不动生产门禁。
+2. 筐 B 说明已写：`DEVOPS-SONAR-筐B-配置说明.md`。配置在总集认可以前不动。
 3. 按第 5 节的选择排筐 C 和热点。
 4. 各仓推 `dev` 后靠现有 `sonar:scan` 复扫。复测看问题列表条数，不看质量门「通过」。
 5. 筐 A（及拍板纳入的部分）在列表上归零之后，再把 `GKX-Soft` 收成「新代码上阻塞和高为 0」。在那之前保持软门禁，避免风格问题堵住日常发布。
