@@ -2,7 +2,7 @@
 
 | 项 | 值 |
 |---|---|
-| 状态 | 阻塞 25 条已在 `origin/dev`，Sonar 上对应 6 仓阻塞为 0。`gkxlumen-svc-platform` 的高、中也已为 0。筐 B 的绝对路径、`void`、重复字符串已按项目停用，见 `DEVOPS-SONAR-筐B-配置说明.md`，条数等下次扫描。`spring-boot-bridge` 不在发布范围。合规展示台 `demo-ui-algo-apiview` 在发布范围内，扫描保留。排序、筐 C、热点未做。过程见第 11 节 |
+| 状态 | 阻塞 25 条已在 `origin/dev`，发布范围内阻塞为 0。筐 B 已按项目停用并复测，10 个 lumen 仓未关闭 6442、高 439、中 2303，见第 11.4 节。`spring-boot-bridge` 不在发布范围。合规展示台 `demo-ui-algo-apiview` 在范围内，项目已建、这次还没有分析结果。排序、筐 C、热点未做。过程见第 11 节 |
 | 日期 | 2026-11-17 盘点；2026-11-18 补已落地 |
 | 数据 | SonarQube 25.12.0，`http://10.50.180.228:9005`。第 3 节是 2026-11-17 快照；第 11 节末是 2026-11-18 复测 |
 | 关联 | 扫描接入见 `DEVOPS-SONARQUBE-CI-L01.md`。该单只把扫描接上，并使用无条件质量门 `GKX-Soft`。自动修与编码约束见本文第 8、9 节 |
@@ -114,7 +114,7 @@
 | `typescript:S3735` / `javascript:S3735` 禁止 `void` | 约 382 | 高 | 专题 PC 261、专题移动端 51、展示 PC 51、展示移动端 10、算法展示台 9。Vue 里用 `void` 丢掉 Promise，删掉会改变未处理拒绝的行为 |
 | `python:S1192` / `java:S1192` 字符串字面量重复 | 122 | 高 | 算法仓 79、专题 Python 34、etl 3、bridge 6。算法仓样本多在 `scripts/` 种子脚本，不进运行镜像 |
 
-算法仓扫描已经排除 `vendor/`、`tests/`、`.venv`。2026-11-18 已按 `DEVOPS-SONAR-筐B-配置说明.md` 在 Sonar 上配好：绝对路径只在管理后台停用，`void` 只在五个 Vue 仓停用，重复字符串只在算法仓、专题 Python 和 etl 停用，不排除 `scripts/**`。`spring-boot-bridge` 不在发布范围，已从这份配置拿掉。从「高」去掉的是 **1499** 条，等对应仓下次 `sonar:scan` 后才会从列表消失。
+算法仓扫描已经排除 `vendor/`、`tests/`、`.venv`。2026-11-18 已按 `DEVOPS-SONAR-筐B-配置说明.md` 在 Sonar 上配好：绝对路径只在管理后台停用，`void` 只在五个 Vue 仓停用，重复字符串只在算法仓、专题 Python 和 etl 停用，不排除 `scripts/**`。`spring-boot-bridge` 不在发布范围，已从这份配置拿掉。从「高」去掉的是 **1499** 条。2026-11-18 01:37 前 10 个 lumen 仓都已复扫，见第 11.4 节。
 
 ### 筐 C：待拍板后再定要不要做
 
@@ -301,15 +301,24 @@ GET /api/hotspots/search?projectKey=<key>&status=TO_REVIEW&ps=1
 
 ### 11.4 2026-11-18 复测
 
-`GET /api/measures/search`，未关闭问题：
+筐 B 生效后的发布范围。`GET /api/measures/component`，取各项目最近一次分析。分析时间是 2026-11-18 01:17–01:37（北京时间）。`spring-boot-bridge` 不计入。合规展示台 `gkxdemo-ui-algo-apiview` 当时项目已建、还没有分析结果，不计入合计。
 
-| 项目 | 阻塞 | 高 | 中 |
-|---|---:|---:|---:|
-| gkxlumen-algo-py | 0 | 135 | 67 |
-| gkxlumen-etl-es-py | 0 | 5 | 10 |
-| gkxlumen-topic-py | 0 | 77 | 41 |
-| gkxlumen-ui-science-pc | 0 | 150 | 1272 |
-| gkxlumen-ui-topic | 0 | 370 | 435 |
-| gkxlumen-svc-platform | 0 | 0 | 0 |
+「高」「中」是软件质量影响，一条问题可以同时计入多列，所以三列相加不等于未关闭条数。未关闭用 `violations`。
 
-对照第 3 节：这 6 仓阻塞从 25 合计里的对应份额收到 0。`gkxlumen-svc-platform` 的高 4、中 6 收到 0，安全问题列表为空。高、中在其余仓有个位数浮动，不是这次改的规则，不在本节销账。其余 5 个 `gkxlumen-*` 项目这次没有复测。
+| 项目 | 阻塞 | 高 | 中 | 未关闭 |
+|---|---:|---:|---:|---:|
+| gkxlumen-ui-science-pc | 0 | 99 | 1275 | 2988 |
+| gkxlumen-ui-admin | 0 | 74 | 229 | 753 |
+| gkxlumen-ui-topic | 0 | 109 | 435 | 1518 |
+| gkxlumen-algo-py | 0 | 56 | 67 | 170 |
+| gkxlumen-topic-py | 0 | 43 | 41 | 119 |
+| gkxlumen-ui-topic-mobile | 0 | 32 | 104 | 537 |
+| gkxlumen-ui-science-mobile | 0 | 5 | 94 | 188 |
+| gkxlumen-ui-algo-apiview | 0 | 19 | 48 | 153 |
+| gkxlumen-svc-platform | 0 | 0 | 0 | 0 |
+| gkxlumen-etl-es-py | 0 | 2 | 10 | 16 |
+| 合计 | 0 | 439 | 2303 | 6442 |
+
+另有低 3950、提示 11、热点 419。
+
+对照改配置前的 10 个仓：阻塞仍是 0；高从 1938 收到 439，少掉的 1499 条是绝对路径 966、`void` 417、重复字符串 116。展示 PC 这次扫描「中」从 1272 到 1275、「低」从 1795 到 1814，不是这三条规则。`gkxlumen-svc-platform` 的高、中仍是 0。
