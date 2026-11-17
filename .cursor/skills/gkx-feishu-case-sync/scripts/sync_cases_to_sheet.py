@@ -96,7 +96,7 @@ def main():
     ap.add_argument('--md-dir', required=True)
     ap.add_argument('--spreadsheet', required=True)
     ap.add_argument('--sheet-id', required=True)
-    ap.add_argument('--cols', default='L,M', help='写入的目标列（输入列,来源列），须为空列')
+    ap.add_argument('--cols', default='N,O', help='写入的目标列（输入列,来源列），默认 N,O；须为空列')
     ap.add_argument('--filter', default='*', help="只取文件名匹配此 glob 的用例文件，如 'POL-*'")
     ap.add_argument('--merge', action='store_true',
                     help='增量刷新：只重写本次匹配的行，其他行（含空行）保持现状；表头只在缺失时补')
@@ -119,7 +119,7 @@ def main():
     rev0 = None
     print('[i] sheet=%s rows=%s' % (args.sheet_id, n_rows))
 
-    # 2. 安全校验：clean 模式要求目标列为空；merge 模式读现状（L 列）以便只改本次命中的行
+    # 2. 安全校验：clean 模式要求目标列为空；merge 模式读现状（输入列）以便只改本次命中的行
     chk_rng = '%s!%s2:%s%d' % (args.sheet_id, col_in, col_src, n_rows)
     chk = http_json('GET', '%s/sheets/v2/spreadsheets/%s/values/%s?valueRenderOption=ToString'
                     % (BASE, args.spreadsheet, urllib.request.quote(chk_rng, safe='')), headers=hh)
@@ -130,7 +130,7 @@ def main():
         existing = {i + 2: (r[0] or '') for i, r in enumerate(vals)}
         existing_m = {i + 2: (r[1] if len(r) > 1 else '') or '' for i, r in enumerate(vals)}
         pre_filled = sum(1 for v in existing.values() if v)
-        print('[i] merge mode: L 列已有 %d 行内容，本次只重写新匹配的行' % pre_filled)
+        print('[i] merge mode: %s 列已有 %d 行内容，本次只重写新匹配的行' % (col_in, pre_filled))
     else:
         dirty = [i + 2 for i, r in enumerate(vals) if any(c not in (None, '') for c in r)]
         if dirty:
@@ -291,7 +291,7 @@ def main():
                                                  'values': [[head_txt, '用例来源文件']]}}, headers=hh)
                 upd_rev.append(head.get('data', {}).get('revision'))
             # merge：只写本次命中的行；文本与来源都与现状一致才跳过（幂等刷新），
-            # M 列格式为「文件名（匹配方式）」，比对时取全角括号前的文件部分
+            # 来源列格式为「文件名（匹配方式）」，比对时取全角括号前的文件部分
             mfile = lambda v: ((v or '').split('（')[0]).strip()
             targets = sorted(rn for rn in matched
                              if existing.get(rn) != matched[rn][0] or mfile(existing_m.get(rn)) != mfile(matched[rn][1]))
@@ -299,7 +299,7 @@ def main():
             seq_of_row = {r: s for (s, r, _fn, _h) in hits}
             for rn in skipped_other:
                 if mfile(existing_m.get(rn)) != mfile(matched[rn][1]):  # 只有跨文件抢占才算冲突；同文件幂等跳过不记
-                    collisions.append((seq_of_row.get(rn, '?'), rn, existing_m.get(rn) or '(M列空)',
+                    collisions.append((seq_of_row.get(rn, '?'), rn, existing_m.get(rn) or '(%s列空)' % col_src,
                                        os.path.basename(matched[rn][1] or '?')))
             if targets:
                 print('[i] merge 将写 %d 行，防误覆盖跳过 %d 行' % (len(targets), len(skipped_other)))
