@@ -3,8 +3,8 @@
 ```yaml
 doc_id: PERSON-ETL-TO-NEBULA
 task_id: KG-GRAPH-TRIPLE-03
-status: draft
-version: "2026-11-13.1"
+status: implementation
+version: "2026-11-17.1"
 diagram_id: PERSON-GRAPH-TRIPLE
 ```
 
@@ -93,7 +93,7 @@ M01=2,525,789；M04=72,099。M03 留空属于有源但端点为 company，M20 �
 | `cursor` | string／null | 服务端签发的不透明游标；绑定 op、过滤、排序、图快照版本；不可跨 op／条件复用，篡改或过期 400 |
 | `hops` | integer，1 | 仅 SUBGRAPH；允许 1、2，其他值 400 |
 | `direction` | `out` 默认 | 技术关系允许 out/in/both；人才／机构合作固定 both，无向语义不新增反向物理边 |
-| `sort_by` | string | tech 浏览：weighted_degree（默认）／community_id／community_role／name；person、research 浏览：cooperation_degree（默认）／name；邻居／关联：weight（默认）／name |
+| `sort_by` | string | tech 浏览：weighted_degree（默认）／community_id／community_role／name；person、research 浏览：cooperation_degree（默认）／name；人才合作邻居：co_paper_count（默认）／name；科研合作邻居：co_paper_count_total（默认）／name，指定 year 时可按 strength_by_year；归属／项目关联：name |
 | `order` | desc 默认 | asc/desc；同值固定 VID 升序打破平局 |
 | `institution_type_id` | string／null | research 可选精确过滤；不推断“高校”等分类，不按名称猜类型 |
 | `community_id` / `community_role` | string／null | 仅 tech；对已有属性精确过滤 |
@@ -153,13 +153,21 @@ Python `/v1/person/graph/ops/{op_id}` 与 `/internal/person/graph/ops/{op_id}` �
 
 步 2 未齐不得动 Java，Java 网关未接不得做 UI 接线。前端源码发布遵循本仓 AGENTS 的人工确认门槛；本单不把“本地开发”写成“已部署”。
 
-## 20. 当前事实、未决项与签收条件
+## 20. 当前执行范围与运行前提（2026-11-17 更新）
 
-当前只完成步 1 设计，不声称 Python／Java／UI 已实现。图库刚完成 TCP 探测：拒绝连接；TCP 可达也不等于认证／查询通过。task-registry MCP task-get 对本任务及 COVER-01 均报 Task not found，派单中的 ready 尚未落实到登记册；保留原 depends_on，不补造依赖或冒领他人的任务。
+宋飞扬授权按唐绍祖11-16答复和正式会签先实现 PERSON/RESEARCH 两域共12操作。已通过 task-registry MCP 认领并置 in_progress；保留 COVER-01 依赖，仅阻塞 TECH 关联机构完整验收，不代做补数、不把整单标为完成。11-17真实认证、DESCRIBE及精确VID样本查询通过；旧版“任务不存在/9669拒绝连接”属于历史记录。
 
-步 2 前：协调员建 COVER-01 和 TRIPLE-03 后，按实情记录本任务依赖／认领；图库恢复后取得 schema 与样本，不运行全表 sum 压测。技术关联机构完整验收等 A 包回执，恢复前可完成文档和非联调准备。
+实际 person/research 均为 name string + props string，props 必须 JSON 解码；缺字段保留null。11-17空间无Tag索引，禁止把源侧T03导出冒充当前图库快照（抽查发现T04已覆盖节点props）。实体检索和全域浏览只消费完整、经SHA256核验的图库只读索引；无索引分别返回503 SEARCH_INDEX_NOT_READY / RANK_INDEX_NOT_READY，不执行在线全图扫描。
 
-验收须逐 op 给真实网关 curl：21 个 op 清单不漏行，正常／空／非法参／不存在／不可用／边界／分页一致性均有证据。人才与科研合作必须检查入边、出边均可被发现，且跨端点 Tag 的 cooperate 不串域；company 机构端点不能混入 M02 合作与 M04 归属。不能凭通过离线用例宣称真实图库已通过。整单止于 integration，签收由负责人执行。
+人才合作边的强度字段固定 props.co_paper_count，不跟随错误的 weight_field=collaboration_score；weight可以原样作为原始字段返回，但不得用来排序、榜单或边宽。专利/项目合作强度不可用，availability=missing。科研机构 weight/co_paper_count_total 仅称“合著篇数”；强度只用用户指定年份的 strength_by_year，缺年值为null，不跨年汇总。全域 cooperation_degree 是去重后的唯一合作邻居数，不等于合著篇数。
+
+在线邻域每次最多获取501条候选作为完整性探针：完整邻域≤500时按真实属性排序分页；超出时分页操作返回503 ADJACENCY_INDEX_NOT_READY，不把截断样本冒充完整排序。子图逐层有界，最多200点/500边/20次查询，总预算10秒，截断明确说明。请求默认dry_run=true，只返回计划，不建立图库会话。所有实查均只读。
+
+检索/浏览的独立索引必须覆盖完整域、绑定space、图版本、节点/边计数、输入SHA256和构建时点；运行期只读且校验文件摘要，过期或缺完整性证据拒绝服务。不在本轮启动全图库快照/榜单构建，不使用早期源表快照替代当前图。
+
+Python成对接口齐后才做Java纯透传，再接UI；网关仅匹配PERSON/RESEARCH的graph/ops精确路径，置catch-all前，不抢M10和其他五域。Nacos发布另按gkx-nacos-shared-config执行。前端按AGENTS停在本地待用户确认push。交付中区分本地测试、真实Python小样本、实际Java网关和已发布页面，不伪造后两项。
+
+验收覆盖无向正反邻接、类型隔离、company排除、缺属性、400/404/503/504、分页及截断。整单保留in_progress，三域全齐且经网关验证后才申请integration。
 
 
 ### 本域过程图 · PERSON-GRAPH-TRIPLE
