@@ -14,9 +14,10 @@
 飞书开放平台 API（tenant_access_token 鉴权）
         │  读表格层级（A–F 列）做标题匹配
         ▼
-飞书在线表格（ Sheets）指定两列写入：
-  N 列 = 合规用例·输入与条件
-  O 列 = 用例来源文件
+飞书在线表格（ Sheets）定位两列写入：
+  表头以「合规用例·输入与条件」开头的列 = 输入与条件
+  表头为「用例来源文件」的列 = 来源
+  两列表头都没有时，改用最左两个全空列
 ```
 
 关键安全机制：
@@ -208,7 +209,7 @@ python ".cursor\skills\gkx-feishu-case-sync\scripts\sync_cases_to_sheet.py" `
 
 macOS/Linux 同理（`python3` + 反斜杠换行改 `\`）。
 
-写入成功输出：`[i] written rows=N, revisions=[...]`。到飞书表格里刷新即可看到 N/O 两列新内容，原有列零改动。
+写入成功输出：`[i] columns via header|empty|explicit: …` 和 `[i] written rows=N, revisions=[...]`。刷新表格即可看到定位到的两列新内容，原有列零改动。前面插入列不影响下一次定位。
 
 ### 3.4 常用变体
 
@@ -219,7 +220,7 @@ macOS/Linux 同理（`python3` + 反斜杠换行改 `\`）。
 # 列已被写过、想增量刷新（只重写本次命中的行）
 ... --merge --apply
 
-# 换目标列（默认 N,O；必须选一对空列）
+# 显式指定两列（跳过表头定位；clean 模式仍要求这两列数据行为空）
 ... --cols P,Q --apply
 ```
 
@@ -228,7 +229,7 @@ macOS/Linux 同理（`python3` + 反斜杠换行改 `\`）。
 | `--md-dir`（必填） | 用例 markdown 目录 |
 | `--spreadsheet`（必填） | 表格 token（URL 里 `/sheets/` 后那段） |
 | `--sheet-id`（必填） | 页签 id（URL 里 `?sheet=` 后那段） |
-| `--cols` | 目标两列，默认 `N,O`（输入与条件, 来源）；**必须为空列**（clean 模式） |
+| `--cols` | 显式指定「输入列,来源列」（如 `P,Q`）。省略则按表头定位；没有表头时用最左两个全空列。clean 模式要求定位到的两列数据行为空 |
 | `--filter` | 只取文件名匹配 glob 的用例，如 `POL-*`；默认 `*` 全部 |
 | `--merge` | 增量刷新：只重写本次命中的行，其他行不动；表头只在缺失时补 |
 | `--apply` | 真正写入；不加则只出报告 |
@@ -247,7 +248,9 @@ macOS/Linux 同理（`python3` + 反斜杠换行改 `\`）。
 | `permission deny`（token 都拿不到 / API 全挂） | 权限开了但**版本没发布** | §1.2 创建版本并发布，等审批通过 |
 | `90215 not found sheetId` | range 分隔符写错（内部已用 `!`，若手改脚本注意） | 页签与范围之间必须是 `!` 不是 `.` |
 | `9499 Missing required parameter: ValueRange` | 写接口 body 没包 `valueRange`（内部已处理） | 若手改脚本，body 必须是 `{"valueRange": {...}}` |
-| `[x] 目标列 N:O 已有内容... 中止` | clean 模式防覆盖保护触发 | 这**不是故障**。确认可以刷新→加 `--merge`；要写别的列→`--cols`；都不确定→先出 dry-run 报告人工看 |
+| `[x] 目标列 … 已有内容... 中止` | clean 模式防覆盖保护触发 | 这**不是故障**。确认可以刷新→加 `--merge`；要写别的列→`--cols`；都不确定→先出 dry-run 报告人工看 |
+| `[x] 只找到一列同步表头` | 两列表头只剩一个 | 补齐另一列表头，或删掉残留表头让脚本改找全空列 |
+| `[x] 未找到表头…也没有两个全空列` | 表里没有可写的空列 | 插入两列空列，或用 `--cols` 指定 |
 | `cannot access local variable ...` / `SyntaxError` | 脚本被手改坏 | `git checkout -- .cursor/skills/gkx-feishu-case-sync/scripts/sync_cases_to_sheet.py` 还原 |
 
 > 关于 `feishu-project-native` 的 MCP 授权（`mcp_auth`）：那只影响「飞书项目」相关 MCP 工具，**与本 skill 的表格同步无关**，不做也能跑通本手册全流程。本 skill 本身不需要任何飞书 MCP。
