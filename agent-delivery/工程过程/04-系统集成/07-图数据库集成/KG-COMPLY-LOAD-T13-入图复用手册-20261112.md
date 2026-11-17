@@ -240,3 +240,43 @@ MATCH (:person)-[e:author_of]->(:patent) WITH e LIMIT 1 RETURN e.props AS p;
 | T03 执行器与验收 | `scripts/kg-comply-t03*.py`；`对接文档/燕大/T03/`（verification.json 等） |
 | 只读核验模板 | `t04_t10_verify.py`、`t05_empty_state.py`、`T04T10-核验-实测.md`、`T05-空态核验报告.md` |
 | 结构与裁定 | `KG-COMPLY-STRUCT-L01-结构与空间选定.md`、`KG-7ELEM-SCHEMA-DDL-L01`、`KG-COMPLY-VID-L01`、`KG-COMPLY-T11-正式线结构覆盖对照清单.md` |
+
+---
+
+## 7. 三域与两层的 VID 前缀对照（2026-11-17 实图取样增补）
+
+> 增补依据：派单-F 第 4 项①。实图取样于 `demo_gkx_chain`（2026-11-17，`MATCH (v:<tag>) RETURN id(v) LIMIT 2`）。
+> **易混四类必须分清**——尤其「`inst:` 是科研机构、`institution:` 才是服务机构」，与直觉相反：
+
+| Tag | VID 实际格式（实图） | 层 | 语义 | 数量（11-17） |
+|---|---|---|---|---:|
+| `tech_point` | `tech_point:tcn_<32hex>` | 技术点层 | 技术点 | 19,430 |
+| `tech_institution` | `tech_institution:ins_<32hex>` | 技术点层 | 技术点关联的**机构**（源 `ads_technology_institution`） | 34,769 |
+| `research` | **`inst:`**`ins_<32hex>` | 七要素层 | **科研机构**（注意：Tag 叫 research、VID 前缀却是 `inst:`） | 83,745 |
+| `person` | `person:tal_<32hex>` | 七要素层 | 人才 | 100,000 |
+| `institution` | `institution:<32hex>`（无 `ins_` 内前缀） | 七要素层 | **服务机构**（M18/M21 的 institution） | 存量 |
+| `enterprise` | `ent:<32hex>` | 七要素层 | 企业 | 存量 |
+| 其余 | `pol:` / `proj:prj_*` / `patent:pat_*` / `segment:INB*` / `chain:INB*` | 七要素层 | — | — |
+
+派单-F 原文写的 `tp:` 在实图不存在——技术点前缀实测为 `tech_point:`（无简写）。**新写脚本一律按本表实测格式，勿按 `tp:` 简写**。
+技术点层边型：`tech_has_institution` / `tech_rel` / `tech_path_step`（另有社群字段 `tech_point.community_id`），与七要素层 24 个 M 边型互不混用。
+
+## 8. 新增接口与 GDF 枚举对应（2026-11-17 增补）
+
+> 增补依据：派单-F 第 4 项②。接口清单来自 [KG-GRAPH-TRIPLE-03-op清单](./派单-20261113-图谱100/KG-GRAPH-TRIPLE-03-op清单.md)（21 op，2026-11-17 两域 12 op 本地实查 200，TECH 9 op 待 COVER-01——**现已解锁**，见对账总表）。
+
+| 域 | op 前缀 | 数量 | GDF diagram/枚举 | 状态 |
+|---|---|---:|---|---|
+| 技术链（tech） | `TECH_*` | 9 | `TECH-GRAPH-TRIPLE` | 待发布（数据面已就绪） |
+| 人才（person） | `PERSON_*` | 6 | `PERSON-GRAPH-TRIPLE` | 两域先行，索引类 op 503（无完整索引） |
+| 科研机构（research） | `RESEARCH_*` | 6 | `RESEARCH-GRAPH-TRIPLE` | 同上 |
+
+**GDF 枚举现状：9 → 12，缺三域**——科研机构 / 技术 / 人才暂无枚举，扩枚举归 `KG-GRAPH-PLAT-09`（徐滕强）。接口发布前须先补枚举，否则 GDF 侧无 diagram_id 可挂。
+
+## 9. 技术点层三条对账口径（2026-11-17 增补，KG-GRAPH-COVER-01 实测）
+
+> 增补依据：11-说明 §4.3/§五 + COVER-01 执行结论。全量数字见[覆盖补齐对账总表](./派单-20261113-图谱100/KG-GRAPH-COVER-01-覆盖补齐对账.md)。
+
+1. **路径步按跳数对账**：源表 `ads_technology_evolution_path_step` 按节点行记（47,909 行），`tech_path_step` 边表达「上一步→这一步」，只有 35,018 条完整跳；12,891 条缺口=每条路径首节点（无前驱，结构性不可成边）。**分母用 35,018，不补数**（[路径步规则确认单](./派单-20261113-图谱100/KG-GRAPH-COVER-01-路径步规则确认单.md)）。
+2. **`tech_has_institution` 只收非企业**：源表 2,528,802 行中 99,821 行 `is_company=1` 属企业，不入此边（分母 2,428,981）。企业关联若要展示，走企业侧边，不在这条边上凑数（11-说明 §五裁定）。
+3. **批号 CONTAINS 回读对账法**：适用于**有 props 列**的边型（七要素层 `cooperate` 等，见 §3 第 6 步）。⚠️ 技术点层三边型均无 props/batch 列（`tech_has_institution` 仅 `relation_strength`，禁改 schema），**不可用 CONTAINS 回读**；替代法=分批端点对文件留证 + 每批 O(1) 探活与 50 对 FETCH 抽验 + 中段/终段全量 count 差（COVER-01 实操 12 批全绿，见对账总表 §二/§五）。
