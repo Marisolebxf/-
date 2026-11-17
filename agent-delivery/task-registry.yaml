@@ -67871,3 +67871,150 @@ tasks:
       - "回滚方式写明：Nacos 历史版本整份重发，不改其他 dataId"
       - "交付 handoff：发布前后 md5 / 历史版本号 / 两条 curl 回执 / 是否重启"
     update_time: "2026-11-17T22:19:19+08:00"
+  - id: FE-TOPIC-SMALL-SVC-API-L01
+    title: "专题小屏·产业服务链 A — API/契约层：svc 分析任务契约 + 8 端点移植（对齐 PC lumen-ui-topic）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 25000
+    note: |
+      父单 FE-TOPIC-SMALL-SVC-COMP-L01。PC 真源：lumen-ui-topic src/api/service/*、src/api/enterprise/types/analysisTask.ts #47-153。背景=2026-11-17 PC vs mobile 对照分析：mobile 分析侧 API 面缺失（M5/M6）。执行 agent:frontend-agent；监管 human:孔东；2026-11-17 会话授权完工即推 origin/dev。
+    depends_on: []
+    touched_files:
+      - "src/api/enterprise/types/analysisTask.ts"
+      - "src/api/service/paths.ts"
+      - "src/api/service/index.ts"
+      - "src/api/service/types.ts"
+    design_refs:
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "analysisTask.ts 补 SVC_ANALYSIS_LEAVES/SvcAnalysisType/svcAnalysisLeafOf/svcAnalysisTypesMatch（与 PC lumen-ui-topic 同文）"
+      - "api/service 补 svcMeta/svcSearchOrgs/svcEcoGraph/svcRecList/compare-basket×4 端点与类型（paths+index+types）"
+      - "工程自检绿（vue-tsc 或仓自检脚本）"
+      - "handoff 写 agent-handoffs/FE-TOPIC-SMALL-SVC-API-L01.md（含 ponytail: 行）"
+    update_time: "2026-11-17T22:28:06+08:00"
+  - id: FE-TOPIC-SMALL-SVC-CHAIN-L01
+    title: "专题小屏·产业服务链 B — 服务链三分析工作台（短板/图谱/深圳现状）小屏化"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 45000
+    note: |
+      父单 FE-TOPIC-SMALL-SVC-COMP-L01。PC 真源：ServiceChainAnalysisWorkspace.vue（~1110 行）+ SvcChainShortboardBoard/SvcSzFrameworkCard/SvcEcoRelationGraph/svcEcoGraphModel/svcShortboardModel。纯模型函数从 PC 拷贝，UI 重写为 Vant 小屏。执行 agent:frontend-agent；监管 human:孔东；完工即推 origin/dev。
+    depends_on:
+      - "FE-TOPIC-SMALL-SVC-API-L01"
+    touched_files:
+      - "src/views/service/ServiceChainAnalysisView.vue"
+      - "src/views/service/svcEcoGraphModel.ts"
+      - "src/views/service/svcShortboardModel.ts"
+      - "src/router/index.ts"
+    design_refs:
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "/service/chain-analysis 三 workspace（chain/graph/shenzhen）挂真组件，ADAPTED_PAGES 更新"
+      - "I2-12 闸门：切条件不自动 create、同条件在跑接续、当天成功直出结果+重新分析（复用 ChainAnalysisShell）"
+      - "graph 触屏 G6 图 + 节点/边过滤 sheet + 统计卡（双密度/度中心性/影响力读结果 payload）"
+      - "空态诚实（empty reason 分支文案对齐 PC），禁 fixture 填数"
+      - "工程自检绿 + handoff（含 ponytail: 行）"
+    update_time: "2026-11-17T22:28:16+08:00"
+  - id: FE-TOPIC-SMALL-SVC-ORG-L01
+    title: "专题小屏·产业服务链 C — 机构三分析工作台（领域/趋势/技术力）小屏化"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 45000
+    note: |
+      父单 FE-TOPIC-SMALL-SVC-COMP-L01。PC 真源：ServiceOrgAnalysisWorkspace.vue（~980 行）+ 3 Board + svcAnalysisWorkspace/svcCoverageModel/svcTrendModel/svcCapabilityModel。执行 agent:frontend-agent；监管 human:孔东；完工即推 origin/dev。
+    depends_on:
+      - "FE-TOPIC-SMALL-SVC-API-L01"
+    touched_files:
+      - "src/views/service/ServiceOrgAnalysisView.vue"
+      - "src/views/service/svcAnalysisWorkspace.ts"
+      - "src/views/service/svcCoverageModel.ts"
+      - "src/views/service/svcTrendModel.ts"
+      - "src/views/service/svcCapabilityModel.ts"
+      - "src/router/index.ts"
+    design_refs:
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "/service/institution-judgment 三 workspace（field/trend/capability）挂真组件"
+      - "对象集首版 URL org_ids 方案（页内多选，指纹=排序 id 串，对齐 PC svcFingerprint）；capability 2~5 / field、trend 1~50 门槛"
+      - "I2-12 闸门复用 ChainAnalysisShell；结果区 field=覆盖矩阵、trend=折线、capability=雷达+权重滑条"
+      - "分数只认 GET result，禁前端重算；空态诚实"
+      - "工程自检绿 + handoff（含 ponytail: 行）"
+    update_time: "2026-11-17T22:28:24+08:00"
+  - id: FE-TOPIC-SMALL-SVC-REC-L01
+    title: "专题小屏·产业服务链 D — 推荐两分析工作台（招引/培育）小屏化"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      父单 FE-TOPIC-SMALL-SVC-COMP-L01。PC 真源：ServiceRecommendAttractWorkspace.vue + ServiceRecommendCultivateWorkspace.vue + svcRecommendAttractModel/svcRecommendAttractWorkspace。执行 agent:frontend-agent；监管 human:孔东；完工即推 origin/dev。
+    depends_on:
+      - "FE-TOPIC-SMALL-SVC-API-L01"
+    touched_files:
+      - "src/views/service/ServiceRecommendView.vue"
+      - "src/views/service/svcRecommendAttractModel.ts"
+      - "src/router/index.ts"
+    design_refs:
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "/service/institution-decision 两 workspace（attract/cultivate）挂真组件"
+      - "attract 固定权重 Tag 展示（35/30/20/15）+ rec-list 名单 + narration AI 研判；名单只认 Java score"
+      - "I2-12 闸门复用 ChainAnalysisShell；导出首版走 analysisTaskAssetDownload，不做本地 CSV"
+      - "空态诚实，禁 fixture 填数"
+      - "工程自检绿 + handoff（含 ponytail: 行）"
+    update_time: "2026-11-17T22:28:31+08:00"
+  - id: FE-TOPIC-SMALL-SVC-SEARCH-L01
+    title: "专题小屏·产业服务链 E — 服务机构查询页（双模式检索 + 画像 + 加入分析）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P1"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      父单 FE-TOPIC-SMALL-SVC-COMP-L01。PC 真源：ServiceOrgSearchPage.vue + serviceOrgSearchModel.ts（DSL/智能解析可降级为首版关键词+字段固定筛选）。执行 agent:frontend-agent；监管 human:孔东；完工即推 origin/dev。
+    depends_on:
+      - "FE-TOPIC-SMALL-SVC-API-L01"
+    touched_files:
+      - "src/views/service/ServiceOrgSearchView.vue"
+      - "src/router/index.ts"
+    design_refs:
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "/service-center/search 挂真组件（替 NotAdaptedView）"
+      - "smart/field 双模式（van-tabs）+ 字段筛选底部 sheet + 结果列表 + 画像抽屉（复用 SvcOrgProfileDrawer）"
+      - "最近查询本地暂存；「加入分析」携 org_ids 跳机构分析工作台"
+      - "空态诚实，禁华大基因类 fixture"
+      - "工程自检绿 + handoff（含 ponytail: 行）"
+    update_time: "2026-11-17T22:28:39+08:00"
