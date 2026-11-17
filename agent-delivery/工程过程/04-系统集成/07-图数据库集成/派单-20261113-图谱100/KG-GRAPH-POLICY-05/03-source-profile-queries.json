@@ -1,0 +1,72 @@
+[
+  {
+    "id": "gkxlumenx_ads_edge_groups",
+    "engine": "mysql",
+    "query": "SELECT relation_type,SUBSTRING_INDEX(src_key,':',1) AS src_prefix,SUBSTRING_INDEX(dst_key,':',1) AS dst_prefix,COUNT(*) AS cnt FROM gkxlumenx_ads.policy_graph_edge GROUP BY relation_type,src_prefix,dst_prefix"
+  },
+  {
+    "id": "gkxlumenx_ads_node_groups",
+    "engine": "mysql",
+    "query": "SELECT node_type,SUBSTRING_INDEX(node_key,':',1) AS prefix,COUNT(*) AS cnt FROM gkxlumenx_ads.policy_graph_node GROUP BY node_type,prefix"
+  },
+  {
+    "id": "gkxlumenx_ads_entity_groups",
+    "engine": "mysql",
+    "query": "SELECT entity_type,source_field,COUNT(*) AS cnt FROM gkxlumenx_ads.policy_entity GROUP BY entity_type,source_field"
+  },
+  {
+    "id": "gkxlumenx_ads_batch_groups",
+    "engine": "mysql",
+    "query": "SELECT calc_batch_id,COUNT(*) AS cnt,MIN(create_time) AS first_created,MAX(create_time) AS last_created FROM gkxlumenx_ads.policy_graph_edge GROUP BY calc_batch_id"
+  },
+  {
+    "id": "gkxlumenx_ads_edge_sample",
+    "engine": "mysql",
+    "query": "SELECT src_key,dst_key,relation_type,props FROM gkxlumenx_ads.policy_graph_edge LIMIT 5"
+  },
+  {
+    "id": "demo_gkxlumenx_ads_edge_groups",
+    "engine": "mysql",
+    "query": "SELECT relation_type,SUBSTRING_INDEX(src_key,':',1) AS src_prefix,SUBSTRING_INDEX(dst_key,':',1) AS dst_prefix,COUNT(*) AS cnt FROM demo_gkxlumenx_ads.policy_graph_edge GROUP BY relation_type,src_prefix,dst_prefix"
+  },
+  {
+    "id": "demo_gkxlumenx_ads_node_groups",
+    "engine": "mysql",
+    "query": "SELECT node_type,SUBSTRING_INDEX(node_key,':',1) AS prefix,COUNT(*) AS cnt FROM demo_gkxlumenx_ads.policy_graph_node GROUP BY node_type,prefix"
+  },
+  {
+    "id": "demo_gkxlumenx_ads_entity_groups",
+    "engine": "mysql",
+    "query": "SELECT entity_type,source_field,COUNT(*) AS cnt FROM demo_gkxlumenx_ads.policy_entity GROUP BY entity_type,source_field"
+  },
+  {
+    "id": "demo_gkxlumenx_ads_batch_groups",
+    "engine": "mysql",
+    "query": "SELECT calc_batch_id,COUNT(*) AS cnt,MIN(create_time) AS first_created,MAX(create_time) AS last_created FROM demo_gkxlumenx_ads.policy_graph_edge GROUP BY calc_batch_id"
+  },
+  {
+    "id": "demo_gkxlumenx_ads_edge_sample",
+    "engine": "mysql",
+    "query": "SELECT src_key,dst_key,relation_type,props FROM demo_gkxlumenx_ads.policy_graph_edge LIMIT 5"
+  },
+  {
+    "id": "dwd_field_population",
+    "engine": "mysql",
+    "query": "SELECT COUNT(*) AS active_rows,COUNT(DISTINCT policy_id) AS distinct_policy_ids,SUM(NULLIF(TRIM(related_entities),'') IS NOT NULL) AS related_nonempty,SUM(NULLIF(TRIM(pedigree),'') IS NOT NULL) AS pedigree_nonempty,SUM(NULLIF(TRIM(publish_organization),'') IS NOT NULL) AS publish_org_nonempty,SUM(NULLIF(TRIM(execution_entity),'') IS NOT NULL) AS execution_entity_nonempty,SUM(pedigree LIKE '%上位政策:%') AS upper_policy_tokens FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0"
+  },
+  {
+    "id": "dwd_related_shapes",
+    "engine": "mysql",
+    "query": "SELECT LEFT(related_entities,600) AS related_entities,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 GROUP BY related_entities LIMIT 15"
+  },
+  {
+    "id": "dwd_pedigree_sample",
+    "engine": "mysql",
+    "query": "SELECT policy_id,LEFT(pedigree,600) AS pedigree FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND NULLIF(TRIM(pedigree),'') IS NOT NULL LIMIT 8"
+  },
+  {
+    "id": "dwd_optional_population",
+    "engine": "mysql",
+    "query": "SELECT SUM(NULLIF(TRIM(elements),'') IS NOT NULL) AS elements_nonempty,SUM(NULLIF(TRIM(ext1),'') IS NOT NULL) AS ext1_nonempty,SUM(NULLIF(TRIM(ext2),'') IS NOT NULL) AS ext2_nonempty,SUM(NULLIF(TRIM(ext3),'') IS NOT NULL) AS ext3_nonempty,SUM(NULLIF(TRIM(ext4),'') IS NOT NULL) AS ext4_nonempty,SUM(NULLIF(TRIM(ext5),'') IS NOT NULL) AS ext5_nonempty FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "seed_policy_source_rows",
+    "engine": "mysql",
+    "query": "SELECT policy_id,pedigree,related_entities,source FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND policy_id IN ('18318861','18318862','18363390','18363391','18407696','18407697')"
+  },
+  {
+    "id": "seed_policy_vertices",
+    "engine": "graph",
+    "query": "FETCH PROP ON policy \"pol:18318861\",\"pol:18318862\",\"pol:18363390\",\"pol:18363391\",\"pol:18407696\",\"pol:18407697\" YIELD id(vertex) AS vid"
+  },
+  {
+    "id": "apply_to_groups_fixed",
+    "engine": "graph",
+    "query": "MATCH (p:policy)-[e:apply_to]->(t) RETURN tags(t) AS endpoint_tags,count(e) AS cnt"
+  },
+  {
+    "id": "support_groups_fixed",
+    "engine": "graph",
+    "query": "MATCH (p:policy)-[e:support]->(t) RETURN tags(t) AS endpoint_tags,count(e) AS cnt"
+  },
+  {
+    "id": "dwd_mock_summary",
+    "engine": "mysql",
+    "query": "SELECT COUNT(*) AS cnt,SUM(source='demo-mock') AS explicit_demo_mock,SUM(source IS NULL OR TRIM(source)='') AS source_empty FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0"
+  }
+]
