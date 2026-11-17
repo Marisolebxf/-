@@ -64,7 +64,7 @@
 - 质量门 `GKX-Soft` 仍然没有条件。问题条数靠复扫后的问题列表核对，不靠门禁「通过」。
 - 不在源码里加 `NOSONAR`，不批量标 Won't Fix。
 - 不改 11 个仓的业务代码来迎合这三条规则。
-- 沙箱 `gkxdemo-*`、aico、zmate、`spring-boot-bridge` 不在这次发布范围内。
+- 沙箱里只有合规展示台 `demo-ui-algo-apiview` 在发布范围，仍用默认 `Sonar way`，不套用上面的 Vue 副本。其余 `gkxdemo-*`、aico、zmate、`spring-boot-bridge` 不在这次发布范围内。
 - 2026-11-18 已建四份副本并完成项目分配。内置 `Sonar way` 未改，其他项目仍用它。
   - `GKX-TS-admin`（`7b4c1af6-23b0-464e-be4b-47e47d85979a`）、`GKX-JS-admin`（`f08212f0-4d40-4f9a-9c50-48602fa53729`）只停用 `S6859`，只赋给 `gkxlumen-ui-admin`。这两份里 `S3735` 仍开着。
   - `GKX-TS-vue`（`b83e4c99-f0e4-436c-945d-ef4faf7e5090`）、`GKX-JS-vue`（`b8feee62-4c96-4e1d-9866-a94a6435a190`）只停用 `S3735`，赋给专题 PC、专题移动端、展示 PC、展示移动端、算法展示台。这两份里 `S6859` 仍开着。

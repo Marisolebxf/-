@@ -2,7 +2,7 @@
 
 | 项 | 值 |
 |---|---|
-| 状态 | 阻塞 25 条已在 `origin/dev`，Sonar 上对应 6 仓阻塞为 0。`gkxlumen-svc-platform` 的高、中也已为 0。筐 B 的绝对路径、`void`、重复字符串已按项目停用，见 `DEVOPS-SONAR-筐B-配置说明.md`，条数等下次扫描。`spring-boot-bridge` 不在发布范围。排序、筐 C、热点未做。过程见第 11 节 |
+| 状态 | 阻塞 25 条已在 `origin/dev`，Sonar 上对应 6 仓阻塞为 0。`gkxlumen-svc-platform` 的高、中也已为 0。筐 B 的绝对路径、`void`、重复字符串已按项目停用，见 `DEVOPS-SONAR-筐B-配置说明.md`，条数等下次扫描。`spring-boot-bridge` 不在发布范围。合规展示台 `demo-ui-algo-apiview` 在发布范围内，扫描保留。排序、筐 C、热点未做。过程见第 11 节 |
 | 日期 | 2026-11-17 盘点；2026-11-18 补已落地 |
 | 数据 | SonarQube 25.12.0，`http://10.50.180.228:9005`。第 3 节是 2026-11-17 快照；第 11 节末是 2026-11-18 复测 |
 | 关联 | 扫描接入见 `DEVOPS-SONARQUBE-CI-L01.md`。该单只把扫描接上，并使用无条件质量门 `GKX-Soft`。自动修与编码约束见本文第 8、9 节 |
@@ -31,7 +31,7 @@
 | `gkxlumen-ui-admin` | lumen-ui-admin |
 | `gkxlumen-ui-algo-apiview` | lumen-ui-algo-apiview |
 
-`gkxdemo-*` 是沙箱，不在发布范围。2026-11-18 已从 Sonar 删除这 9 个项目，并去掉对应 demo 仓的 `sonar:scan`，避免下次流水线再建回来。`lumen-ui-admin` 与 `gkxdemo-admin-ui` 的代码相同，只保留 lumen 这一份。aico、zmate、问数、`daimx-nginx-demo*` 不属于这套系统，没有动。
+`gkxdemo-*` 里只有合规展示台 `demo-ui-algo-apiview`（Sonar 项目 `gkxdemo-ui-algo-apiview`）在发布范围。它的 `sonar:scan` 保留，质量配置仍是默认的 `Sonar way`。其余 8 个沙箱项目已从 Sonar 删除，并去掉对应仓的 `sonar:scan`。`lumen-ui-admin` 与 `gkxdemo-admin-ui` 的代码相同，只保留 lumen 这一份。aico、zmate、问数、`daimx-nginx-demo*` 不属于这套系统，没有动。
 
 数字都是整体代码上的未关闭问题，与问题页默认列表一致。
 
