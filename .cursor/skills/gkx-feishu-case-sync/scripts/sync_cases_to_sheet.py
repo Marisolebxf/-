@@ -43,6 +43,97 @@ def get_token(app_id, app_secret):
     return r['tenant_access_token']
 
 
+IN_HEADER_PREFIX = '合规用例·输入与条件'
+SRC_HEADER = '用例来源文件'
+
+
+def col_letter(n):
+    """1-based column index -> A, Z, AA."""
+    s = ''
+    while n:
+        n, r = divmod(n - 1, 26)
+        s = chr(ord('A') + r) + s
+    return s
+
+
+def col_number(letter):
+    n = 0
+    for ch in str(letter).upper():
+        n = n * 26 + ord(ch) - 64
+    return n
+
+
+def cell_text(value):
+    if value is None:
+        return ''
+    if isinstance(value, list):
+        return ''.join(cell_text(item) for item in value).strip()
+    if isinstance(value, dict):
+        return str(value.get('text') or value.get('value') or '').strip()
+    return str(value).strip()
+
+
+def resolve_columns(headers, body_rows):
+    """按表头定位；两列都没有时用最左两个全空列。
+
+    返回 (输入列, 来源列, how)。how 为 header / empty / partial / no-empty。
+    只找到一列表头时不猜测另一列。
+    """
+    in_i = src_i = None
+    for i, header in enumerate(headers):
+        text = cell_text(header)
+        if in_i is None and text.startswith(IN_HEADER_PREFIX):
+            in_i = i
+        if src_i is None and text == SRC_HEADER:
+            src_i = i
+    if (in_i is None) != (src_i is None):
+        return None, None, 'partial'
+    if in_i is not None:
+        return col_letter(in_i + 1), col_letter(src_i + 1), 'header'
+    empty = []
+    for i in range(len(headers)):
+        if cell_text(headers[i]):
+            continue
+        if any(cell_text(row[i]) if i < len(row) else '' for row in body_rows):
+            continue
+        empty.append(i)
+        if len(empty) == 2:
+            break
+    if len(empty) < 2:
+        return None, None, 'no-empty'
+    return col_letter(empty[0] + 1), col_letter(empty[1] + 1), 'empty'
+
+
+def row_runs(rows, limit):
+    """把行号拆成连续段，且每段不超过 limit 行。"""
+    buf = []
+    for rn in rows:
+        if buf and (rn != buf[-1] + 1 or len(buf) >= limit):
+            yield buf
+            buf = []
+        buf.append(rn)
+    if buf:
+        yield buf
+
+
+def _self_check():
+    dated = '合规用例·输入与条件（自动同步 2026-11-17）'
+    headers = [''] * 13 + [dated, SRC_HEADER]
+    assert resolve_columns(headers, []) == ('N', 'O', 'header')
+    shifted = ['新列'] + headers
+    assert resolve_columns(shifted, []) == ('O', 'P', 'header')
+    assert resolve_columns(['功能', dated, ''], [])[2] == 'partial'
+    body = [['x', '', 'y'], ['x', '有内容', 'y']]
+    assert resolve_columns(['功能', '', '备注'], body)[2] == 'no-empty'
+    assert resolve_columns(['功能', '', '', '备注'], [['x', '', '', 'z']]) == ('B', 'C', 'empty')
+    inserted = ['新列', '功能', '', '', '备注']
+    assert resolve_columns(inserted, [['n', 'x', '', '', 'z']]) == ('C', 'D', 'empty')
+    assert col_letter(27) == 'AA' and col_number('AA') == 27
+    assert list(row_runs([2, 3, 5, 8, 9], 150)) == [[2, 3], [5], [8, 9]]
+    assert list(row_runs([2, 3, 4], 2)) == [[2, 3], [4]]
+    print('self-check ok')
+
+
 def norm(s):
     return PUNCT.sub('', s or '')
 
@@ -92,11 +183,15 @@ def parse_md(path):
 
 
 def main():
+    if '--self-check' in sys.argv:
+        _self_check()
+        return
     ap = argparse.ArgumentParser()
     ap.add_argument('--md-dir', required=True)
     ap.add_argument('--spreadsheet', required=True)
     ap.add_argument('--sheet-id', required=True)
-    ap.add_argument('--cols', default='L,M', help='写入的目标列（输入列,来源列），须为空列')
+    ap.add_argument('--cols', default='', help='显式指定输入列,来源列（如 N,O）。省略则按表头定位，没有表头时用最左两个全空列')
+    ap.add_argument('--self-check', action='store_true', help='只跑列定位自检，不访问飞书')
     ap.add_argument('--filter', default='*', help="只取文件名匹配此 glob 的用例文件，如 'POL-*'")
     ap.add_argument('--merge', action='store_true',
                     help='增量刷新：只重写本次匹配的行，其他行（含空行）保持现状；表头只在缺失时补')
@@ -109,28 +204,76 @@ def main():
     if not app_id or not app_secret:
         sys.exit('[x] 请设置 LARK_APP_ID / LARK_APP_SECRET（或 FEISHU_APP_ID / FEISHU_APP_SECRET，二者等价）')
 
-    col_in, col_src = [c.strip().upper() for c in args.cols.split(',')]
     tk = get_token(app_id, app_secret)
     hh = {'Authorization': 'Bearer ' + tk}
 
-    # 1. 页签行数
-    q = http_json('GET', '%s/sheets/v3/spreadsheets/%s/sheets/%s' % (BASE, args.spreadsheet, args.sheet_id), headers=hh)
-    n_rows = q['data']['sheet']['grid_properties']['row_count']
-    rev0 = None
-    print('[i] sheet=%s rows=%s' % (args.sheet_id, n_rows))
+    def sheet_values(a1):
+        chk = http_json('GET', '%s/sheets/v2/spreadsheets/%s/values/%s?valueRenderOption=ToString'
+                        % (BASE, args.spreadsheet, urllib.request.quote('%s!%s' % (args.sheet_id, a1), safe='')),
+                        headers=hh)
+        if chk.get('code') != 0:
+            sys.exit('[x] 读取 %s 失败: %s' % (a1, chk))
+        return chk['data']['valueRange'].get('values') or []
 
-    # 2. 安全校验：clean 模式要求目标列为空；merge 模式读现状（L 列）以便只改本次命中的行
-    chk_rng = '%s!%s2:%s%d' % (args.sheet_id, col_in, col_src, n_rows)
-    chk = http_json('GET', '%s/sheets/v2/spreadsheets/%s/values/%s?valueRenderOption=ToString'
-                    % (BASE, args.spreadsheet, urllib.request.quote(chk_rng, safe='')), headers=hh)
-    if chk.get('code') != 0:
-        sys.exit('[x] 目标列读取失败(可能非空列名有误): %s' % chk)
-    vals = chk['data']['valueRange']['values']
+    # 1. 页签尺寸，并定位要写的两列
+    q = http_json('GET', '%s/sheets/v3/spreadsheets/%s/sheets/%s' % (BASE, args.spreadsheet, args.sheet_id), headers=hh)
+    grid_props = q['data']['sheet']['grid_properties']
+    n_rows = grid_props['row_count']
+    n_cols = grid_props.get('column_count') or 26
+    rev0 = None
+    print('[i] sheet=%s rows=%s cols=%s' % (args.sheet_id, n_rows, n_cols))
+
+    known_header = ''
+    if args.cols.strip():
+        parts = [c.strip().upper() for c in args.cols.split(',')]
+        if len(parts) != 2 or not all(parts):
+            sys.exit('[x] --cols 须是两列，如 N,O')
+        col_in, col_src = parts
+        how = 'explicit'
+        top = sheet_values('%s1:%s1' % (col_in, col_in))
+        known_header = cell_text(top[0][0]) if top and top[0] else ''
+    else:
+        header_row = sheet_values('A1:%s1' % col_letter(n_cols))
+        headers = list(header_row[0]) if header_row else []
+        headers += [''] * (n_cols - len(headers))
+        in_i = next((i for i, h in enumerate(headers) if cell_text(h).startswith(IN_HEADER_PREFIX)), None)
+        src_i = next((i for i, h in enumerate(headers) if cell_text(h) == SRC_HEADER), None)
+        body_rows = []
+        if in_i is None and src_i is None:
+            empty_at = [i for i, h in enumerate(headers) if not cell_text(h)]
+            if empty_at:
+                raw = sheet_values('%s2:%s%d' % (col_letter(empty_at[0] + 1), col_letter(n_cols), n_rows))
+                width = n_cols - empty_at[0]
+                for row in raw:
+                    padded = list(row) + [''] * (width - len(row))
+                    body_rows.append([''] * empty_at[0] + padded)
+        col_in, col_src, how = resolve_columns(headers, body_rows)
+        if how == 'header':
+            known_header = cell_text(headers[col_number(col_in) - 1])
+        if how == 'partial':
+            sys.exit('[x] 只找到一列同步表头（须同时有「%s*」和「%s」），不猜测另一列' % (IN_HEADER_PREFIX, SRC_HEADER))
+        if how == 'no-empty':
+            sys.exit('[x] 未找到表头「%s*」和「%s」，也没有两个全空列' % (IN_HEADER_PREFIX, SRC_HEADER))
+    side_by_side = col_number(col_src) == col_number(col_in) + 1
+    print('[i] columns via %s: %s(输入) %s(来源)' % (how, col_in, col_src))
+
+    # 2. 安全校验：clean 模式要求目标列数据行为空；merge 模式读现状以便只改本次命中的行
+    if side_by_side:
+        vals = sheet_values('%s2:%s%d' % (col_in, col_src, n_rows))
+    else:
+        left = sheet_values('%s2:%s%d' % (col_in, col_in, n_rows))
+        right = sheet_values('%s2:%s%d' % (col_src, col_src, n_rows))
+        n_body = max(len(left), len(right))
+        vals = []
+        for i in range(n_body):
+            a = left[i][0] if i < len(left) and left[i] else ''
+            b = right[i][0] if i < len(right) and right[i] else ''
+            vals.append([a, b])
     if args.merge:
         existing = {i + 2: (r[0] or '') for i, r in enumerate(vals)}
         existing_m = {i + 2: (r[1] if len(r) > 1 else '') or '' for i, r in enumerate(vals)}
         pre_filled = sum(1 for v in existing.values() if v)
-        print('[i] merge mode: L 列已有 %d 行内容，本次只重写新匹配的行' % pre_filled)
+        print('[i] merge mode: %s 列已有 %d 行内容，本次只重写新匹配的行' % (col_in, pre_filled))
     else:
         dirty = [i + 2 for i, r in enumerate(vals) if any(c not in (None, '') for c in r)]
         if dirty:
@@ -280,18 +423,30 @@ def main():
 
     print('[i] matched_rows=%d unmatched_seqs=%d ambiguous=%d collisions=%d file_offset_applied=%d' % (len(matched), len(unmatched), len(ambiguous), len(collisions), applied))
 
-    # 6. 写入
+    # 6. 写入。两列紧挨着时一次写入；中间插过列则分列写，避免盖住中间列。
     upd_rev = []
+
+    def put_cells(a1, values):
+        wr = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
+                       {'valueRange': {'range': '%s!%s' % (args.sheet_id, a1), 'values': values}}, headers=hh)
+        if wr.get('code') != 0:
+            sys.exit('[x] 写入失败 %s: %s' % (a1, wr))
+        upd_rev.append(wr.get('data', {}).get('revision'))
+
+    def put_pair(row_from, row_to, pairs):
+        if side_by_side:
+            put_cells('%s%d:%s%d' % (col_in, row_from, col_src, row_to), pairs)
+            return
+        put_cells('%s%d:%s%d' % (col_in, row_from, col_in, row_to), [[pair[0]] for pair in pairs])
+        put_cells('%s%d:%s%d' % (col_src, row_from, col_src, row_to), [[pair[1]] for pair in pairs])
+
     if args.apply:
         head_txt = '合规用例·输入与条件（自动同步 %s）' % date.today().isoformat()
         if args.merge:
-            if existing.get(1) != head_txt and not (existing.get(1) or '').startswith('合规用例·输入与条件'):
-                head = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
-                                 {'valueRange': {'range': '%s!%s1:%s1' % (args.sheet_id, col_in, col_src),
-                                                 'values': [[head_txt, '用例来源文件']]}}, headers=hh)
-                upd_rev.append(head.get('data', {}).get('revision'))
+            if not known_header.startswith(IN_HEADER_PREFIX):
+                put_pair(1, 1, [[head_txt, '用例来源文件']])
             # merge：只写本次命中的行；文本与来源都与现状一致才跳过（幂等刷新），
-            # M 列格式为「文件名（匹配方式）」，比对时取全角括号前的文件部分
+            # 来源列格式为「文件名（匹配方式）」，比对时取全角括号前的文件部分
             mfile = lambda v: ((v or '').split('（')[0]).strip()
             targets = sorted(rn for rn in matched
                              if existing.get(rn) != matched[rn][0] or mfile(existing_m.get(rn)) != mfile(matched[rn][1]))
@@ -299,32 +454,17 @@ def main():
             seq_of_row = {r: s for (s, r, _fn, _h) in hits}
             for rn in skipped_other:
                 if mfile(existing_m.get(rn)) != mfile(matched[rn][1]):  # 只有跨文件抢占才算冲突；同文件幂等跳过不记
-                    collisions.append((seq_of_row.get(rn, '?'), rn, existing_m.get(rn) or '(M列空)',
+                    collisions.append((seq_of_row.get(rn, '?'), rn, existing_m.get(rn) or '(%s列空)' % col_src,
                                        os.path.basename(matched[rn][1] or '?')))
             if targets:
                 print('[i] merge 将写 %d 行，防误覆盖跳过 %d 行' % (len(targets), len(skipped_other)))
         else:
-            head = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
-                             {'valueRange': {'range': '%s!%s1:%s1' % (args.sheet_id, col_in, col_src),
-                                             'values': [[head_txt, '用例来源文件']]}}, headers=hh)
-            upd_rev.append(head.get('data', {}).get('revision'))
+            put_pair(1, 1, [[head_txt, '用例来源文件']])
             # clean：整表两列重写（未匹配行写空=清空，保持列内无脏数据）
             targets = list(range(2, n_rows + 1))
-        CH = 150
-        for start in range(targets[0], targets[-1] + 1, CH):
-            block_range = [rn for rn in targets if start <= rn <= start + CH - 1]
-            if not block_range:
-                continue
-            block = []
-            for rn in block_range:
-                t, s = matched.get(rn, ('', ''))
-                block.append([t, s])
-            wr = http_json('PUT', '%s/sheets/v2/spreadsheets/%s/values' % (BASE, args.spreadsheet),
-                           {'valueRange': {'range': '%s!%s%d:%s%d' % (args.sheet_id, col_in, block_range[0], col_src, block_range[-1]),
-                                           'values': block}}, headers=hh)
-            if wr.get('code') != 0:
-                sys.exit('[x] 写入失败 %s%d: %s' % (col_in, block_range[0], wr))
-            upd_rev.append(wr.get('data', {}).get('revision'))
+        for run in row_runs(targets, 150):
+            block = [list(matched.get(rn, ('', ''))) for rn in run]
+            put_pair(run[0], run[-1], block)
         print('[i] written rows=%d, revisions=%s' % (len(targets), upd_rev))
 
     # 7. 报告

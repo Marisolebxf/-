@@ -66490,7 +66490,7 @@ tasks:
     evidence: "agent-delivery/工程过程/04-系统集成/07-图数据库集成/会签/KG-GRAPH-RULING-唐绍祖-图库环境与接口口径裁定-20261116.md"
     supervised_by: "human:唐绍祖"
     title: "图库扩容、GDF 三域枚举与正式线上线预案（含两个口径裁定）"
-    status: "backlog"
+    status: "ready"
     agent: "architect-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66512,11 +66512,11 @@ tasks:
       - "GDF 枚举新增 research_point/tech_point/person_point 三个字面值，五处原文同步（本单、06-GDF 技术方案 §2.2/§2.3、07 图库技术方案 §2.2/§2.3），徐滕强会签"
       - "两条口径裁定出结论并抄送李周/刘剑锋/白鑫凤：42–47 写回目标本期落 demo_gkx_chain；41 以 M10 R1 为准、T14 改为读接口一致性验收"
       - "正式线 gkx_chain 上线切换预案成文（触发条件/切换步骤/数据源指向/demo_gkx_chain 处置），明确不由燕大执行"
-    update_time: "2026-11-16T17:55:31+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: KG-GRAPH-COVER-01
     supervised_by: "human:唐绍祖"
     title: "技术点层覆盖补齐（tech_has_institution / tech_rel / tech_path_step / community_id）"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66526,8 +66526,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 90000
-    note: |
-      2026-11-13 派单（包 A），11-16 李周反馈登记册缺卡后补建。负责人 human:白鑫凤，要求 11-17 交付；2026-11-16 起监管人由 human:淮政玮 调整为 human:唐绍祖（图谱技术事项由唐绍祖直接裁定与推进，淮政玮只承接硬件资源类事项）。前置事实（已实测）：ads_technology_institution 2,528,802 行 vs 图中 51,000 → 缺 2,477,802（98%）；ads_technology_graph_edge 587,252 vs 541,428 → 缺 45,824；ads_technology_evolution_path_step 47,909 vs 35,018 → 缺 12,891（恰等路径数，疑末端步漏记）；community_member 19,430 行全部空串。图空间 demo_gkx_chain（10.50.75.136:9669），凭据走环境变量。【11-16 闸门裁定】PLAT-09 扩容结论=未扩容未调水位，但不阻塞本卡：DoD-1 原「未扩容时只做 dry-run 与 1 万条试写」改为「写库前请环境方重启一次释放累积内存 → 分批写（单批 ≤ 20 万条）→ 每批后跑一次 count 探活 → 任一批失败立即停并留证」；同时禁止在工作时间跑大批次、禁止任何无端点锚定的全图属性聚合（红线见 SDD §5）。另：D-1（人才合作边 weight 全 0，因 props.weight_field=collaboration_score 在 ads_talent_collaborator 全空）需在本卡给一句定论：源表无分 or 入图漏记。
+    note: "2026-11-17 置 ready：实测证明 230 万条不依赖扩容即可写入（先重启释放内存 + 单批 ≤20 万 + 每批探活），PLAT-09 扩容不再作为开工硬前提；负责人白鑫凤认领后按 11-说明-技术点层四项缺口成因与解法-20261117.md 执行。"
     depends_on:
       - "KG-GRAPH-PLAT-09"
     design_refs:
@@ -66540,11 +66539,11 @@ tasks:
       - "tech_point.community_id 19,430 点空串 100% 回填（不是 NULL 判据）"
       - "每批写完即时回读该批 CONTAINS 计数与声明条数比对，不一致即停并留证；出对账文档与 Handoff agent-handoffs/KG-GRAPH-COVER-01.md，状态止于 integration 不写 done"
       - "全程不动 MySQL 既有库、不建第二图空间、不 DROP SPACE、所有查询带 Tag 锚定"
-    update_time: "2026-11-16T17:55:58+08:00"
+    update_time: "2026-11-17T16:29:32+08:00"
   - id: KG-GRAPH-RECALC-02
     supervised_by: "human:唐绍祖"
     title: "技术点层指标重算与榜单刷新（428–432、435、437 数据面）"
-    status: "backlog"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66569,11 +66568,11 @@ tasks:
       - "435 属性表 avg_degree 用 2×内部边÷规模、密度用 2E/(N(N-1))，与 11-12 验收附条口径一致"
       - "出 Handoff agent-handoffs/KG-GRAPH-RECALC-02.md，证据指向主文与归档目录，状态止于 integration 不写 done"
       - "全程只读图库、只读侧不打大聚合、不改 T12 契约字段名与结构"
-    update_time: "2026-11-16T17:26:02+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: KG-GRAPH-API-04
     supervised_by: "human:唐绍祖"
     title: "展示图接口实现（41 + 428/432/435/437 + 400–407）"
-    status: "backlog"
+    status: "ready"
     agent: "api-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66599,11 +66598,11 @@ tasks:
       - "41 推荐读接口以 M10 R1 为准，reasons 不得留空或编造分数；收编 KG-COMPLY-LOAD-T14 序号 41 验收，产出读接口一致性验收结论"
       - "在线只做单点/小范围查询；榜单与大聚合读 RECALC-02 归档 JSON，不在线现算中心性/社群"
       - "404/405/407/436 不得用空数组或 200 冒充可用；出 Handoff agent-handoffs/KG-GRAPH-API-04.md，状态止于 integration 不写 done"
-    update_time: "2026-11-16T17:55:58+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: KG-GRAPH-TRIPLE-03
     supervised_by: "human:徐滕强"
     title: "专题三域图谱三元组（技术链 104/105 · 人才 110/111 · 科研机构 114/115）"
-    status: "backlog"
+    status: "ready"
     agent: "frontend-agent"
     epic: "E-SCI-INT"
     priority: "P1"
@@ -66629,7 +66628,7 @@ tasks:
       - "source=demo_gkx_chain 只读消费，零写图、零建边、零改 schema、不建第二空间"
       - "VID 前缀按本单写：技术点 tp:<id>、人才 person:<id>、科研机构 inst:<id>、服务机构 institution:<id>，不得按名称猜"
       - "出 Handoff agent-handoffs/KG-GRAPH-TRIPLE-03.md（op 条数/三份文档路径/curl 结果/diagram_id/未完成项），状态止于 integration 不写 done"
-    update_time: "2026-11-16T17:26:02+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: POL-L2-PC1-LINEAGE-FDE-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-16T09:40:26.288Z"
@@ -67393,3 +67392,295 @@ tasks:
       - "该行查看报告后，深度四块、四类洞察、各章和双向溯源都有内容。PDF 与 Word 章节相同，含这些正文和三张图，不出现演示或 mock。"
       - "侧栏没有智能研报生成。期望未发生必红。QA 不改业务代码。"
     update_time: "2026-11-17T13:58:37+08:00"
+  - id: FE-TOPIC-SMALL-POLICY-GAP-L01
+    cost_warn: "false"
+    actual_cost: 0.9
+    model_used: "glm-5.3"
+    actual_tokens: 210000
+    evidence: "handoff: agent-handoffs/FE-TOPIC-SMALL-POLICY-GAP-L01.md；test: npm test 62/62 绿；type-check: vue-tsc --build 0 错；build: vite build ✓ 11.93s"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-17T08:06:13.930Z"
+    last_seen_at: "2026-11-17T08:06:13.930Z"
+    lock_until: "2026-11-17T16:06:13.930Z"
+    claimed_by: "agent:frontend-agent"
+    title: "专题小屏·政策分析差距完善（分析参数/记录页签/报告链路/D9/深链/查询增强）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 450000
+    note: "联调确认：孔东当次会话确认后已 commit+push origin/dev（lumen-ui-topic-mobile 4e81e18），CI/K8s dev 自动部署链已触发，待 CI 绿即 E0"
+    depends_on:
+      - "FE-TOPIC-SMALL-CHAIN-POL-L01"
+    touched_files:
+      - "src/views/policy/PolicyAnalysisConfigView.vue"
+      - "src/views/policy/PolicySearchView.vue"
+      - "src/api/policy/*"
+    design_refs:
+      - "agent-delivery/Design.md"
+      - "agent-delivery/Design-mobile.md"
+      - "agent-delivery/小屏断点与裁剪规则.md"
+    definition_of_done:
+      - "三分析叶配置参数落地：时序粒度+三维只读、区域锁定/可选+评价维度、深圳三维只读默认卡（D1 首版只读保底）"
+      - "提交契约对齐 PC buildCreateParams：extra 补 granularity/timeseries_dims/regions/dims/weights/selected_indicators/scope_kind；指纹覆盖全部参数"
+      - "记录页签：analysisTaskList 按类型过滤 + 状态筛选 + 查看结果 + 复制配置回填（照搬 IndustryDiagnosisView records 模式）"
+      - "报告链路：挂报告 sheet（产业侧 openReportFor 模式）或显式隐藏死按钮；?task_id + ?report=1 深链"
+      - "D9：结果区 StatCard 对照 PC 板件补 metric-id（M_POLICY_SUPPORT_STRENGTH 等）"
+      - "查询页增强：详情抽屉条款结构化+四因素卡、筛选补 policy_type/region 全量/产业、推荐态+localStorage 历史、热标签对齐 PC 常量"
+      - "工程自检：npm test / type-check / build 全绿；handoff 含防漏扫描摘要与 ponytail 行"
+    update_time: "2026-11-17T16:27:48+08:00"
+  - id: KG-GRAPH-SIGNOFF-06
+    supervised_by: "human:唐绍祖"
+    title: "34–40 不做裁定书面化 + 合规入图回签 + 入图手册增补"
+    status: "ready"
+    agent: "product-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: "2026-11-13 派单（包 F）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。负责人 human:白鑫凤，监管 human:唐绍祖，要求 11-20 交付。前置：KG-GRAPH-COVER-01 的实际写入量（回签内容来自它）；34–40 裁定与手册增补两项可立即开工。"
+    definition_of_done:
+      - "34–40 共 7 叶「本期不做」写出书面裁定：逐叶写明不做理由、替代方案（若有）、验收时的对外口径，落 07-图数据库集成/ 下成文并进 README 索引"
+      - "合规入图（M01–M24）回签：按 T07 总账 24 行实际写入量签字，明确「8 条有数 / 16 条空态及其性质（源侧无表 / 端点不符 / 同源重复）」"
+      - "入图手册（T13）增补三条：路径步按跳数 35,018 对账、tech_has_institution 只收 is_company=0、批号 CONTAINS 回读对账法"
+      - "三份文档均给出可复核路径，不写「参见口头说明」"
+    update_time: "2026-11-17T16:29:37+08:00"
+  - id: KG-GRAPH-POLICY-05
+    supervised_by: "human:徐滕强"
+    title: "政策线图谱收口与 M12–M14 空态裁定"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      2026-11-13 派单（包 E）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。负责人 human:陈芸飞，监管 human:徐滕强，要求 11-20 交付。实测前置：图中 policy 点 20,000 个；policy_apply_to / policy_relate / regulate / cite 四条边全部 0 条；政策相关源表在我方 ADS（policy_entity 59,904 / policy_graph_edge 21,792 / policy_graph_node 19,677），久新库无政策主表。
+    definition_of_done:
+      - "政策四类边（policy_apply_to / policy_relate / regulate / cite 政策侧）逐条给结论：能补则补、不能补写 501 裁定"
+      - "M12 / M13 / M14 三条明确归档：源侧缺稳定 ID 的写成「需源侧补列」并给出补列后可开工条件"
+      - "政策点 20,000 个「有点无边」的现状写清：哪些叶子因此降档、降成哪一档"
+      - "出对账文档：源表应有 vs 图中实有 vs 结论，附实测语句"
+    update_time: "2026-11-17T16:29:37+08:00"
+  - id: KG-GRAPH-FE-08
+    supervised_by: "human:唐绍祖"
+    title: "展示端四页接线 + 41–47 维护管理联调"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: |
+      2026-11-13 派单（包 H）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。负责人 human:李伟（牵头），协作 human:孔东 / 王梓真 / 刘剑锋，监管 human:唐绍祖，要求 11-19 交付。前置：KG-GRAPH-API-04（12 端点）、KG-GRAPH-PLAT-09（写回目标已裁定 demo_gkx_chain）。实测：lumen-ui-science-pc dev 已到 2026-11-17 最新，图谱叶子仍为占位。
+    definition_of_done:
+      - "四页（科学技术全景图/实体/路径、算法结果页、社群页、维护管理）从占位变可点，每页至少 1 个真实叶子走通接口并留页面截图"
+      - "42–47 六条写操作按 M10 已有实现联调（增实体/删实体/加关系/删关系/改属性/改关系类型），写回目标 demo_gkx_chain，页面标注「本期写入演示空间」"
+      - "41 维护管理页按 M10 R1 口径联调，不另接第二套推荐端点"
+      - "所有调用方法只用 GET / POST，禁止 PUT / DELETE / PATCH"
+      - "未接通部分在页面用「本期不可用 + 原因」文案，不留空白或静默失败"
+    update_time: "2026-11-17T16:29:37+08:00"
+  - id: KG-GRAPH-ALGO-07
+    supervised_by: "human:唐绍祖"
+    title: "跨域算法：426 合作网路径 + 433 第二社群算法 + 跨域中心性"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-SCI-INT"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      2026-11-13 派单（包 G）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。主责算法线（agent:algorithm-agent，人工监管 human:唐绍祖），要求 11-25 交付。前置：T08/T09/T10 已 done，四份归档在案；边权口径已由会签件签收（会签/KG-GRAPH-SIGN-唐绍祖-三域cooperate边权口径-20261116.md）。注意合作网 606 万条边，任何加权聚合必须按端点锚定——11-13 停服 4 小时就是无锚定全图 sum 引起。
+    definition_of_done:
+      - "426 合作网路径可查：在 person↔person（M01）与 research↔research（M02）两类合作边上跑出路径，出结果 JSON 并写明算法与年限范围"
+      - "433 第二社群算法可跑：与 T10 已定 Louvain B′ 不同方法，出对照结果（社群数、模块度、规模分布）"
+      - "跨域中心性：技术点图之外的合作网上可算度/加权度，加权度必须按端点锚定分组算，禁止全图 sum(e.weight)（红线见 SDD §5）"
+      - "强度输入遵守会签口径：人才侧用 props.co_paper_count（weight 全 0）、科研侧用 props.strength_by_year 分年值且禁跨年合并、企业侧 weight 为等级分不参与求和"
+      - "全部结果落归档 JSON + 一行结论，可直接被 KG-GRAPH-API-04 读取"
+    update_time: "2026-11-17T16:29:37+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P0-L01
+    cost_warn: "green"
+    actual_cost: 0.9
+    model_used: "glm-5.3"
+    actual_tokens: 45000
+    evidence: "agent-handoffs/FE-TOPIC-SMALL-CHAIN-PARITY-P0-L01.md"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-17T09:09:09.818Z"
+    last_seen_at: "2026-11-17T09:09:09.818Z"
+    lock_until: "2026-11-17T13:09:09.818Z"
+    claimed_by: "agent:frontend-agent"
+    title: "专题小屏·产业分析差单P0：全景页query深链断裂修复"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      实现完成：IndustryPanoramaView onMounted 消费 query 四参数（对齐 PC #365-380），同参双拉防护；type-check 绿 + test 72/72 过；handoff 已写 agent-handoffs/FE-TOPIC-SMALL-CHAIN-PARITY-P0-L01.md；改动停本地工作区待孔东确认推送（fe-local-no-auto-commit）；联调确认：前端本地链路自测通过，查询页/Overview 页跳全景深链待真机验证
+    depends_on: []
+    touched_files:
+      - "src/views/industry/IndustryPanoramaView.vue"
+    design_refs:
+      - "repos/lumen-ui-topic/src/views/industry-center/IndustryPanoramaPage.vue#365-380"
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md"
+    definition_of_done:
+      - "IndustryPanoramaView.vue onMounted 对齐 PC IndustryPanoramaPage #365-380：解析 route.query 的 object_type/object_id/chain_id/as_of 四参数，industry_chain 时定位链+父产业，industry 时定位产业，无 query 才用 catalog 默认值"
+      - "验证入口：产业查询页「进入全景图谱」（带 object_type/object_id）与 Overview 页 goPanoramaPage（同 query）跳转后均落在所选对象，不再显示默认对象"
+      - "commutedKey 初始仍视为已应用（applyCommitted 在 query 消费后调用），首屏不误显「开始分析」"
+      - "as_of 参数透传：draftAsOf 初始化后 loadSnapshot 正常返回对应时间态"
+      - "工程自检：pnpm type-check 绿；handoff 含 ponytail: 行与防漏扫描摘要（附录 D）"
+    update_time: "2026-11-17T17:16:09+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P1-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-17T09:25:57.063Z"
+    last_seen_at: "2026-11-17T09:25:57.063Z"
+    lock_until: "2026-11-17T17:25:57.063Z"
+    claimed_by: "agent:frontend-agent"
+    title: "专题小屏·产业分析差单P1：区域地图图表/深圳看板/指标说明/过程条/全景补全/节点下钻"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P1"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      来源：2026-11-17 mobile↔PC 产业分析大模块对照分析（会话报告 §三 P1 批次）。对应 FE-TOPIC-SMALL-CHAIN-POL-L01 批1 DoD『G6/地图/五维复刻』缺口收口。红线提示：对比篮/高筛 DSL/筛选模板/智能chips 不在本单范围，禁止顺手补齐（Design-mobile §10）。改动停本地工作区待孔东确认推送。
+    depends_on:
+      - "FE-TOPIC-SMALL-CHAIN-PARITY-P0-L01"
+    touched_files:
+      - "src/views/industry/IndustryRegionalView.vue"
+      - "src/views/industry/IndustryShenzhenView.vue"
+      - "src/views/industry/IndustryDiagnosisView.vue"
+      - "src/views/industry/IndustryPanoramaView.vue"
+      - "src/components/visualization/ChainAnalysisShell.vue"
+      - "src/api/industry/paths.ts"
+      - "src/api/industry/index.ts"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md §4 批1"
+      - "agent-delivery/Design-mobile.md"
+      - "repos/lumen-ui-topic/src/components/industry-center/IndustryRegionalResultBoard.vue"
+      - "repos/lumen-ui-topic/src/components/industry-center/IndustryShenzhenResultBoard.vue"
+    definition_of_done:
+      - "①区域页地图与图表：RegionalCompareMap 小屏版（Leaflet+天地图，复用 PC buildRegionalCompareMapPoints；工具条/热力/图例 z-index 低于侧栏 Menu）；补竞争力雷达图与指数条形图；热力图可视宽度不足时降级为分组列表并留 ponytail: 注明天花板"
+      - "②深圳页：补投融资总额 KPI（metric-id=M_CHAIN_INVEST_TOTAL，StatCard）；补来源依据板块 + ProfileDrawer 只读展开完整对比快照（sourceEvidence）；移植 peerDisplayName 归一（meta.benchmark.items 修历史 payload 拼音列头，纯函数约 20 行）"
+      - "③指标说明入口：诊断/区域/深圳配置区因子行加 ⓘ（复用 MetricMarker/readyiness.generated.ts；meta 注册因子无 metricId 的用『固定演示配置』说明文案，van-popup bottom sheet 承载 8 件套+就绪度）"
+      - "④过程阶段条：ChainAnalysisShell running 态加 van-steps（direction=vertical，currentNodeIndex 驱动，对齐 PC stepDescription 三态：已完成/进行中/等待中，failed 标红）"
+      - "⑤全景页节点详情补全：代表企业去 6 个截断；补主流技术路线（paths.ts 注册 nodeTechnologyRoutes 端点 + 详情区块）；补市场规模 Tab（Q056 空态诚实展示，不使用估算值）"
+      - "⑥全景页节点下钻：canDrill 判定（node.drilldown || catalog.findChain(node.id)）→ 详情抽屉『进入子链』按钮重设对象重拉快照"
+      - "⑦工程自检：pnpm test / pnpm type-check / pnpm build 绿；每统计数字 ⓘ 或说明入口齐全；handoff 含 ponytail: 行 + 防漏扫描摘要（附录 D）+ 裁剪声明（热力图降级等）"
+    update_time: "2026-11-17T17:26:03+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P2-L01
+    title: "专题小屏·产业分析差单P2：查询分页/trace深链/记录分页/Overview地图/评审层裁定"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P2"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: "来源：2026-11-17 mobile↔PC 产业分析大模块对照分析（会话报告 §三 P2 批次）。可视观测铁律（公约 §2.4）在 mobile 产业页目前零消费，本单第②项闭合。改动停本地工作区待孔东确认推送。"
+    depends_on:
+      - "FE-TOPIC-SMALL-CHAIN-PARITY-P1-L01"
+    touched_files:
+      - "src/views/industry/IndustrySearchView.vue"
+      - "src/views/industry/IndustryOverviewView.vue"
+      - "src/views/industry/IndustryDiagnosisView.vue"
+      - "src/views/industry/IndustryRegionalView.vue"
+      - "src/views/industry/IndustryShenzhenView.vue"
+      - "src/components/visualization/ChainAnalysisShell.vue"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md §4"
+      - "src/utils/observability.ts（已有 buildTempoExploreUrl/buildLokiExploreUrl）"
+    definition_of_done:
+      - "①产业查询分页：结果改 van-list on-load 懒加载（贴合移动习惯，非 PC 翻页器），total 提示保留"
+      - "②失败态 trace 深链：ChainAnalysisShell 失败区块加『查看链路追踪』外链（复用 observability.ts buildTempoExploreUrl/buildLokiExploreUrl；VITE_GRAFANA_* 未配置则隐藏，优雅降级）"
+      - "③记录分页：诊断/区域/深圳记录页签 size=20 → van-list 加载更多（analysisTaskList page 递增）"
+      - "④Overview 区域分布补地图形态：map/list van-tab 切换（复用 P1 的 RegionalCompareMap 小屏版；若 P1 未含点聚合则本单补）"
+      - "⑤评审层裁定：IndustryReviewMount/IndustryReviewOnly 在 mobile 的取舍形成书面结论——要么小屏版挂载（kind/refs 对齐 PC 约 15 处），要么在 handoff 明示裁剪并经 human:孔东 认可；禁止无声明缺失"
+      - "⑥工程自检：pnpm test / pnpm type-check / pnpm build 绿；handoff 含 ponytail: 行 + 防漏扫描摘要（附录 D）"
+    update_time: "2026-11-17T17:08:55+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P3-L01
+    title: "专题小屏·产业分析差单P3：CMS/维护页小屏化（overview-cms + maintenance）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P2"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: "来源：2026-11-17 mobile↔PC 产业分析大模块对照分析（会话报告 §三 P3 批次）。当前两页挂 NotAdaptedView，属规划批 5 排期内（12-26~12-31），本单作为批 5 产业切片提前登记占位。"
+    depends_on:
+      - "FE-TOPIC-SMALL-CHAIN-PARITY-P2-L01"
+    touched_files:
+      - "src/views/industry/（新增两页）"
+      - "src/router/index.ts（ADAPTED_PAGES 注册）"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md §4 批5（12-26~12-31）"
+      - "repos/lumen-ui-topic/src/views/cms/panorama/PanoramaCmsWorkspace.vue"
+      - "repos/lumen-ui-topic/src/views/industry-center/IndustryMaintenancePage.vue"
+    definition_of_done:
+      - "/industry-center/overview-cms 与 /industry-center/maintenance 从 NotAdaptedView 换为小屏真组件（可用级裁剪：Vant 表单/列表简版，富文本/上传降级为基础控件）"
+      - "CMS 审/发主链路可完成；运营类交互从简（对齐规划 R3 孔东认可的『可用级』口径）"
+      - "路由 ADAPTED_PAGES 注册 + 站内跳转核验；nav showInMenu 口径不变（maintenance 在侧栏可见、overview-cms 在门户 CMS 组）"
+      - "工程自检：pnpm test / pnpm type-check / pnpm build 绿；handoff 含 ponytail: 行 + 裁剪声明"
+    update_time: "2026-11-17T17:09:05+08:00"
+  - id: FE-DISPLAY-COMPLY-R1-FIX-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-17T09:38:43.903Z"
+    last_seen_at: "2026-11-17T09:38:43.903Z"
+    lock_until: "2026-11-17T13:38:43.903Z"
+    claimed_by: "human:孔东"
+    title: "展示系统第一轮合规验收 — 修复完善补全（问题清单逐项闭合）"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-DISPLAY-ALIGN"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "8"
+    difficulty: "M"
+    estimated_tokens: 500000
+    note: "孔东确认开工（2026-11-17 17:40）；具体修复项按孔东后续指令逐项执行"
+    definition_of_done:
+      - "第一轮合规验收问题清单逐项修复/补全，每项登记来源（bug 号或验收记录）并闭环"
+      - "涉改前端仓自检三绿（type-check / 自检 / build），改动停本地待人工确认推送"
+      - "指标/血缘相关改动符合 D9 契约（ⓘ 角标、Mock 标识不缺失）"
+      - "handoff 文档写入 agent-handoffs/ 并回填 evidence 与 cost 四字段"
+    update_time: "2026-11-17T17:41:23+08:00"
