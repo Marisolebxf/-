@@ -67853,7 +67853,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 30000
     note: |
-      2026-11-17 唐绍祖派单（承接 KG-GRAPH-TRIPLE-03 两域代码已推 dev）。宋飞扬已在 lumen-svc-platform f5ae0e8d 中把 gkxlumen-topic-entity-graph 精确路由写进 helm 模板，但线上 Nacos 未发布，页面经网关必然 404。本条只做发布与验证，不改路由口径、不改其他 dataId、不开 FORCE_NACOS_REPUBLISH。依据会签/KG-GRAPH-RULING-唐绍祖-图库环境与接口口径裁定-20261116：接口契约与路由口径由唐绍祖定，本条执行找孔东（近两次网关路由提交人）。 不设 depends_on：路由发布只依赖 innov 已部署（deploy:innov 已过），不依赖 KG-GRAPH-TRIPLE-03 整单收尾；TECH 9 个 op 的对外暴露另等 COVER-01，不在本条范围。
+      2026-11-17 22:30 复核：孔东反馈两次均未成功，需徐滕强协助。根因已查明（非能力问题）：网关路由真源在 Nacos gkxlumen-gateway-dev.yml，仓库 helm 模板 push 后 CI 不自动发布（FORCE_NACOS_REPUBLISH 默认 false），deploy:gateway 只重建 pod 仍从 Nacos 拉旧内容。dev 实测（免 token 探针：gkxlumen-innov 响应恒带 X-RateLimit-*，gkxlumen-topic 不带）：/api/topic/v1/{person,research}/graph/ops/... 仍 401 且不带该头 → 路由未生效。分工：孔东确认口径并提供 Nacos 只读账号；徐滕强提供 kubectl（必要时重启 gkxlumen-platform-gateway）；唐绍祖裁定与签收。工具已就绪：local-workspace/tools/gw10_publish_nacos.sh（默认 dry-run，--publish 才发单 dataId，差异超 8 行自动中止，发后回读核对）、local-workspace/tools/gw10_verify_route.sh（免 token 判定路由是否生效，带 TOKEN 做端到端）。说明文档：工程过程/04-系统集成/07-图数据库集成/16-说明-网关路由两次未成原因与协同分工-KG-GRAPH-GW-10-20261117.md。本机实测无 kubectl context、Nacos 匿名为 403，故唐绍祖侧无法单独执行写操作。
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/15-派单-孔东-网关路由发布-KG-GRAPH-GW-10-20261117.md"
       - "agent-delivery/工程过程/04-系统集成/07-图数据库集成/派单-20261113-图谱100/KG-GRAPH-TRIPLE-03-联调清单.md"
@@ -67866,4 +67866,4 @@ tasks:
       - "若配置推送后路由未生效，按 skill §4 重启 gkxlumen-platform-gateway 并复测；重启有记录"
       - "回滚方式写明：Nacos 历史版本整份重发，不改其他 dataId"
       - "交付 handoff：发布前后 md5 / 历史版本号 / 两条 curl 回执 / 是否重启"
-    update_time: "2026-11-17T20:21:29+08:00"
+    update_time: "2026-11-17T22:19:19+08:00"
