@@ -43,6 +43,8 @@
 
 每批明细另有 CSV 台账：`s1_batch_log.csv` / `s2_batch_log.csv` / `s3_batch_log.csv` / `s4_batch_log.csv`（时间/批号/条数/探活/抽验/增量）。
 
+**验收入口**：以上证据（试写留证、四个步骤的 checkpoint 与逐批日志、s2 控制台全输出、s3 实写 45,824 对清单、s1 输入清单、遗留对清单、回签实测计数、路径抽样）已入仓，见 [KG-GRAPH-COVER-01-证据/](./KG-GRAPH-COVER-01-证据/)（README 逐文件说明 + `MANIFEST.sha256.md` 全量哈希）。12 个 ~16MB 分批对文件过大留执行机，以哈希指认。
+
 ## 三、执行纪律核对（§七四坑逐一）
 
 | 坑 | 防法执行情况 |
@@ -56,7 +58,7 @@
 
 ## 四、两条说明（防误读）
 
-1. **图内遗留 2,110 对**：补前图内 61,000 对中有 2,110 对不在当前非企业源集（早期预览版灌入，源表后续版本已不含或属企业行）。按「禁止删除任何现有边」**保留不动**，故终值 2,431,091 略高于源集 2,428,981。
+1. **图内遗留 2,110 对（已定性）**：补前图内 61,000 对中有 2,110 对不在当前非企业源集。逐对核验（2026-11-17）：**全部属源表 `is_company=1` 企业行**（早期预览灌入时未排除企业），源表均在、无一对丢失。按「禁止删除任何现有边」**保留不动**，故终值 2,431,091 略高于源集 2,428,981。逐对清单见 [证据/legacy_pairs_not_in_source.json](./KG-GRAPH-COVER-01-证据/legacy_pairs_not_in_source.json)。
 2. **institution_type 未入库**：`tech_institution` Tag 无该字段（禁改 schema），源表类型列未写入，记此处备查。`name_zh` 源表仅 184/17,227 家有值，其余按空处理（NULL）。
 
 ## 五、与派单原文的一处偏离（须回执确认）
@@ -65,11 +67,13 @@
 
 ## 六、可复算性
 
-| 结论 | 复核语句（均带 Tag 锚定） |
+复核语句一律用**显式端点锚定**写法（边型本身已约束端点类型，锚定形式与不锚定实测计数一致）：
+
+| 结论 | 复核语句（显式 Tag 锚定） |
 |---|---|
-| 机构边 2,431,091 | `MATCH ()-[e:tech_has_institution]->() RETURN count(e)` |
-| tech_rel 587,252 | `MATCH ()-[e:tech_rel]->() RETURN count(e)` |
-| 路径步 35,018 | `MATCH ()-[e:tech_path_step]->() RETURN count(e)` |
+| 机构边 2,431,091 | `MATCH (:tech_point)-[e:tech_has_institution]->(:tech_institution) RETURN count(e)` |
+| tech_rel 587,252 | `MATCH (:tech_point)-[e:tech_rel]->(:tech_point) RETURN count(e)` |
+| 路径步 35,018 | `MATCH (:tech_point)-[e:tech_path_step]->(:tech_point) RETURN count(e)` |
 | community_id 19,430 | `MATCH (v:tech_point) WHERE v.tech_point.community_id != "" RETURN count(v)` |
 | 机构点 34,769 | `MATCH (v:tech_institution) RETURN count(v)` |
 | 有机构边的技术点 18,948 | `MATCH (v:tech_point)-[:tech_has_institution]->() RETURN count(DISTINCT id(v))` |

@@ -6,14 +6,18 @@
 要点：
   - 每批 ≤200,000 条（§七坑1），批号 kg100-cover-01-ins-01..NN 只记录在台账与分批文件——
     边型 tech_has_institution 无 props 列（实测 schema 仅 relation_strength，禁改 schema），
-    派单原文的 props.batch / CONTAINS 回读不可行；偏离以「分批文件 + 中段/终段全量 count 差
-    + 每批 O(1) 探活与 50 对 FETCH 抽验」代替，写入对账文档。
-  - 源表拉取：单条 ORDER BY 大查询在 Doris 服务端 Query timeout（实测 2026-11-17，~40 万行后
-    断流，报 errCode=2 Query timeout）——改为「DISTINCT institution_id（33,026）→ 按机构分组
-    IN(...) + GROUP BY 两列」小查询，组内行数 ~1.2 万，绝不触发超时；批次按组边界切分，
-    续跑时批组成确定不变。
-  - 写前重导图内已有端点对做集合差（§七坑2 防重）；断点续跑（checkpoint）；
-    任何失败立即停（§七坑1）。
+    派单原文的 props.batch / CONTAINS 回读不可行；偏离以「分批文件 + 全量 count 差 + 每批抽验」
+    代替，写入对账文档 §五。
+  - 每批后回读用 O(1) 探活 + 50 对 FETCH 抽验（全表 count(e) 在 2.4M 边下较慢，
+    不逐批做；中段与终段各做一次全量 count 对账）。
+  - 断点续跑（2026-11-17 评审修复版）：**不按批号跳批**——每次启动重导图内全部已有端点对
+    （have），已写过的对天然被 have 过滤、不会重写（幂等）；组内查询带 ORDER BY 保证
+    批次组成确定。旧版按 checkpoint 批号跳批存在两个缺陷：①Doris GROUP BY 组内顺序
+    不保证确定，续跑时批边界可能漂移导致漏写；②续跑后期望值把 checkpoint 里已写批
+    重复累计（base_total 已含已写批 + ckpt.inserted 再加一次）。
+    【实际影响声明】2026-11-17 正式执行为单程完成（每批全绿、中段/终段两次全量 count
+    分毫不差），未触发续跑路径，图内数据不受上述缺陷影响；本修复保证复跑正确性。
+  - 任何失败立即停（§七坑1）。
 用法：python3 cover01_s2_load_edges.py [--apply]
 凭据：环境变量 NEBULA_* / DORIS_*（不进 git）。
 """
@@ -53,8 +57,6 @@ def alive(s, probe_vid):
 
 def main():
     apply = "--apply" in sys.argv
-    ckpt = json.load(open(CKPT)) if os.path.exists(CKPT) else {"done_batches": 0, "inserted": 0}
-
     pool = ConnectionPool()
     assert pool.init([("10.50.75.136", 9669)], NebulaConfig()), "图库建连失败"
     s = pool.get_session(os.environ["NEBULA_USER"], os.environ["NEBULA_PASS"])
@@ -62,15 +64,15 @@ def main():
     base_total = count_edges(s)
     print(f"[探活] 当前 tech_has_institution = {base_total:,}；模式={'APPLY 真写' if apply else 'DRY-RUN'}", flush=True)
 
-    # 1) 重导图内全部已有端点对（防漂移，§七坑2）；探活点从真实数据取
+    # 1) 图内全部已有端点对 = 防重集 + 续跑幂等基础（每次启动重导，含历史与已写批）
     r = s.execute("MATCH (a:tech_point)-[e:tech_has_institution]->(b:tech_institution) "
                   "RETURN id(a) AS x, id(b) AS y;")
     have = set((row["x"].split(":", 1)[1], row["y"].split(":", 1)[1]) for row in r.as_primitive())
     probe_vid = "tech_institution:" + next(iter(have))[1]
     assert alive(s, probe_vid), "探活失败"
-    print(f"[防重] 图内已有端点对 {len(have):,}", flush=True)
+    print(f"[防重] 图内已有端点对 {len(have):,}（续跑时已写批天然落入此集，不会重写）", flush=True)
 
-    # 2) 分组拉源表（非企业）：先 DISTINCT 机构，再按组 IN(...) + GROUP BY 去重
+    # 2) 分组拉源表（非企业）：先 DISTINCT 机构，再按组 IN(...) + GROUP BY 去重 + ORDER BY 定序
     conn = pymysql.connect(host=os.environ["DORIS_HOST"], port=int(os.environ["DORIS_PORT"]),
                            user=os.environ["DORIS_USER"], password=os.environ["DORIS_PASS"],
                            database=os.environ["DORIS_DB"], connect_timeout=15, read_timeout=300)
@@ -80,16 +82,17 @@ def main():
     insts = sorted(row[0] for row in cur.fetchall() if row[0])
     print(f"[源] 非企业机构 {len(insts):,} 家（DISTINCT {time.time()-t_d:.1f}s）", flush=True)
 
-    bi = 0               # 已完成批数（checkpoint 口径）
+    inserted_this_run = 0   # 仅本次进程新写数（期望值不再用 checkpoint 累计，防重复计数）
+    last_batch = 0
     buf = []
-    seen = set()         # 源内自去重（GROUP BY 已去重，双保险）
-    dup_in_src = skipped_exist = src_rows = 0
+    seen = set()            # 本程待写去重（GROUP BY 已去重，双保险）
+    dup_in_src = skipped_exist = 0
     t0 = time.time()
     logf = open(LOG, "a", newline="")
     logw = csv.writer(logf)
 
     def run_batch(batch_no, batch_pairs):
-        """batch_no：1 起的展示批号。"""
+        nonlocal inserted_this_run, last_batch
         name = f"{BATCH_PREFIX}{batch_no:02d}"
         t1 = time.time()
         if apply:
@@ -120,31 +123,31 @@ def main():
         if not ok:
             print(f"[停] {name} 回读不合格，按 §七坑1 立即停", flush=True)
             logf.close(); s.release(); pool.close(); conn.close(); sys.exit(1)
+        inserted_this_run += len(batch_pairs)
+        last_batch = batch_no
         if apply:
-            ckpt["done_batches"] = batch_no
-            ckpt["inserted"] += len(batch_pairs)
-            json.dump(ckpt, open(CKPT, "w"))
-            # 中段（第 6 批后）做一次全量 count 对账
+            json.dump({"last_batch": last_batch, "inserted_this_run": inserted_this_run},
+                      open(CKPT, "w"))  # 观测用；续跑正确性不依赖它
+            # 中段（第 6 批后）全量 count 对账：期望 = 起点基数 + 本程已写（不叠加 checkpoint）
             if batch_no == 6:
                 c = count_edges(s)
-                exp = base_total + ckpt["inserted"]
+                exp = base_total + inserted_this_run
                 print(f"[中段对账] 全量 count = {c:,}（期望 {exp:,}）{'✅' if c == exp else '❌'}｜{time.time()-t0:6.1f}s", flush=True)
                 logw.writerow([time.strftime("%F %T"), name, "MIDCOUNT", c, exp])
                 if c != exp:
                     print("[停] 中段全量对账不符，立即停", flush=True)
                     logf.close(); s.release(); pool.close(); conn.close(); sys.exit(1)
 
-    skip_upto = ckpt["done_batches"] if apply else 0
     for gi in range(0, len(insts), GROUP_INSTS):
         group = insts[gi:gi + GROUP_INSTS]
         inlist = ",".join("'" + i.replace("'", "''") + "'" for i in group)
         cur.execute("SELECT technology_node_id, institution_id FROM ads_technology_institution "
                     f"WHERE is_company=0 AND institution_id IN ({inlist}) "
-                    "GROUP BY technology_node_id, institution_id")
+                    "GROUP BY technology_node_id, institution_id "
+                    "ORDER BY technology_node_id, institution_id")   # 定序：批次组成确定
         for tcn, ins in cur.fetchall():
-            src_rows += 1
             pair = (tcn, ins)
-            if pair in have:
+            if pair in have:            # 历史遗留 + 续跑时本单已写的对，一律跳过（幂等）
                 skipped_exist += 1; continue
             if pair in seen:
                 dup_in_src += 1; continue
@@ -152,28 +155,21 @@ def main():
             buf.append(pair)
         # 批按组边界切：累计 ≥20 万即切一批（单组超 20 万时允许超大批并告警）
         if len(buf) >= BATCH_SIZE:
-            if bi >= skip_upto:
-                run_batch(bi + 1, buf[:BATCH_SIZE])
-            else:
-                print(f"[跳过] 批 {bi+1:02d}（checkpoint 已完成）", flush=True)
-            bi += 1
+            run_batch(last_batch + 1, buf[:BATCH_SIZE])
             buf = buf[BATCH_SIZE:]
-            if len(buf) >= BATCH_SIZE:  # 理论仅当单组 >20 万时发生
+            if len(buf) >= BATCH_SIZE:
                 print(f"[告警] 组溢出 {len(buf):,} 对，单独成批", flush=True)
-                if bi >= skip_upto:
-                    run_batch(bi + 1, buf[:BATCH_SIZE])
-                bi += 1
+                run_batch(last_batch + 1, buf[:BATCH_SIZE])
                 buf = buf[BATCH_SIZE:]
     if buf:
-        run_batch(bi + 1, buf)
+        run_batch(last_batch + 1, buf)
     conn.close()
 
     final = count_edges(s)
-    expect = base_total + (ckpt["inserted"] if apply else len(seen))
-    print(f"\n[完] 模式={'APPLY' if apply else 'DRY-RUN'}｜本程声明新写 {(ckpt['inserted'] if apply else len(seen)):,}"
-          f"｜源唯一对 {len(seen)+dup_in_src+skipped_exist:,}（组内重复 {dup_in_src:,}）"
-          f"｜图中已有跳过 {skipped_exist:,}"
-          f"\n[终值对账] 全量 count = {final:,}｜期望 = {expect:,}（起点 {base_total:,} + 新写）"
+    expect = base_total + len(seen)     # 期望只算本程新写，与已写批无关
+    print(f"\n[完] 模式={'APPLY' if apply else 'DRY-RUN'}｜本程新写 {len(seen):,}"
+          f"｜源内重复对 {dup_in_src:,}｜图中已有跳过 {skipped_exist:,}（含历史遗留与续跑已写）"
+          f"\n[终值对账] 全量 count = {final:,}｜期望 = {expect:,}（起点 {base_total:,} + 本程新写）"
           f"{'✅' if final == expect else '❌不一致，需排查'}｜总耗时 {time.time()-t0:.0f}s", flush=True)
     logw.writerow([time.strftime("%F %T"), "FINAL", "OK" if final == expect else "MISMATCH", final, expect])
     logf.close(); s.release(); pool.close()

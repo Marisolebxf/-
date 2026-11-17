@@ -25,7 +25,7 @@ N 个节点只有 N−1 条边）。第一条节点没有上一步，永远写�
 | 路径条数（`COUNT(DISTINCT path_id)`） | 12,891 | 缺口 = 路径数，逐条对应 |
 | `previous IS NOT NULL` 行数 | **35,018** | = 完整跳数 = 图中现有 `tech_path_step` 边数 |
 
-验算：47,909 − 12,891 = **35,018** ✅；图中 `MATCH ()-[e:tech_path_step]->() RETURN count(e)` = **35,018** ✅。
+验算：47,909 − 12,891 = **35,018** ✅；图中 `MATCH (:tech_point)-[e:tech_path_step]->(:tech_point) RETURN count(e)` = **35,018** ✅。
 
 ## 三、抽样 10 条路径留证（按 `path_id` 排序取前 10，未做任何筛选）
 
@@ -43,7 +43,7 @@ N 个节点只有 N−1 条边）。第一条节点没有上一步，永远写�
 | tep_002574e3a62b3500… | 6 | NULL |
 
 10/10 条路径的第一节点 `previous` 均为 NULL；行内第 2 行起 `previous` 均非空（链式指向上一节点）。
-明细存 `~/qiliantupu/kg100-work/path_sample_10.json`（执行机留证，不入仓——不含口令，仅数据）。
+明细入仓：[KG-GRAPH-COVER-01-证据/path_sample_10.json](./KG-GRAPH-COVER-01-证据/path_sample_10.json)。
 
 ## 四、为什么不选 B（留档）
 
