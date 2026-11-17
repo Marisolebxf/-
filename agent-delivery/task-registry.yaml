@@ -67435,3 +67435,134 @@ tasks:
       - "查询页增强：详情抽屉条款结构化+四因素卡、筛选补 policy_type/region 全量/产业、推荐态+localStorage 历史、热标签对齐 PC 常量"
       - "工程自检：npm test / type-check / build 全绿；handoff 含防漏扫描摘要与 ponytail 行"
     update_time: "2026-11-17T16:27:48+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P0-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-11-17T09:09:09.818Z"
+    last_seen_at: "2026-11-17T09:09:09.818Z"
+    lock_until: "2026-11-17T13:09:09.818Z"
+    claimed_by: "agent:frontend-agent"
+    title: "专题小屏·产业分析差单P0：全景页query深链断裂修复"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P0"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: |
+      来源：2026-11-17 mobile↔PC 产业分析大模块对照分析（会话报告）。bug 级：查询页/Overview 页跳全景带 query，但 mobile 全景页未引入 useRoute，query 被静默丢弃，跳转后显示默认对象。PC 基线逻辑在 IndustryPanoramaPage.vue onMounted #365-380。改动停本地工作区待孔东确认推送（fe-local-no-auto-commit）。
+    depends_on: []
+    touched_files:
+      - "src/views/industry/IndustryPanoramaView.vue"
+    design_refs:
+      - "repos/lumen-ui-topic/src/views/industry-center/IndustryPanoramaPage.vue#365-380"
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md"
+    definition_of_done:
+      - "IndustryPanoramaView.vue onMounted 对齐 PC IndustryPanoramaPage #365-380：解析 route.query 的 object_type/object_id/chain_id/as_of 四参数，industry_chain 时定位链+父产业，industry 时定位产业，无 query 才用 catalog 默认值"
+      - "验证入口：产业查询页「进入全景图谱」（带 object_type/object_id）与 Overview 页 goPanoramaPage（同 query）跳转后均落在所选对象，不再显示默认对象"
+      - "commutedKey 初始仍视为已应用（applyCommitted 在 query 消费后调用），首屏不误显「开始分析」"
+      - "as_of 参数透传：draftAsOf 初始化后 loadSnapshot 正常返回对应时间态"
+      - "工程自检：pnpm type-check 绿；handoff 含 ponytail: 行与防漏扫描摘要（附录 D）"
+    update_time: "2026-11-17T17:09:15+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P1-L01
+    title: "专题小屏·产业分析差单P1：区域地图图表/深圳看板/指标说明/过程条/全景补全/节点下钻"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P1"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      来源：2026-11-17 mobile↔PC 产业分析大模块对照分析（会话报告 §三 P1 批次）。对应 FE-TOPIC-SMALL-CHAIN-POL-L01 批1 DoD『G6/地图/五维复刻』缺口收口。红线提示：对比篮/高筛 DSL/筛选模板/智能chips 不在本单范围，禁止顺手补齐（Design-mobile §10）。改动停本地工作区待孔东确认推送。
+    depends_on:
+      - "FE-TOPIC-SMALL-CHAIN-PARITY-P0-L01"
+    touched_files:
+      - "src/views/industry/IndustryRegionalView.vue"
+      - "src/views/industry/IndustryShenzhenView.vue"
+      - "src/views/industry/IndustryDiagnosisView.vue"
+      - "src/views/industry/IndustryPanoramaView.vue"
+      - "src/components/visualization/ChainAnalysisShell.vue"
+      - "src/api/industry/paths.ts"
+      - "src/api/industry/index.ts"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md §4 批1"
+      - "agent-delivery/Design-mobile.md"
+      - "repos/lumen-ui-topic/src/components/industry-center/IndustryRegionalResultBoard.vue"
+      - "repos/lumen-ui-topic/src/components/industry-center/IndustryShenzhenResultBoard.vue"
+    definition_of_done:
+      - "①区域页地图与图表：RegionalCompareMap 小屏版（Leaflet+天地图，复用 PC buildRegionalCompareMapPoints；工具条/热力/图例 z-index 低于侧栏 Menu）；补竞争力雷达图与指数条形图；热力图可视宽度不足时降级为分组列表并留 ponytail: 注明天花板"
+      - "②深圳页：补投融资总额 KPI（metric-id=M_CHAIN_INVEST_TOTAL，StatCard）；补来源依据板块 + ProfileDrawer 只读展开完整对比快照（sourceEvidence）；移植 peerDisplayName 归一（meta.benchmark.items 修历史 payload 拼音列头，纯函数约 20 行）"
+      - "③指标说明入口：诊断/区域/深圳配置区因子行加 ⓘ（复用 MetricMarker/readyiness.generated.ts；meta 注册因子无 metricId 的用『固定演示配置』说明文案，van-popup bottom sheet 承载 8 件套+就绪度）"
+      - "④过程阶段条：ChainAnalysisShell running 态加 van-steps（direction=vertical，currentNodeIndex 驱动，对齐 PC stepDescription 三态：已完成/进行中/等待中，failed 标红）"
+      - "⑤全景页节点详情补全：代表企业去 6 个截断；补主流技术路线（paths.ts 注册 nodeTechnologyRoutes 端点 + 详情区块）；补市场规模 Tab（Q056 空态诚实展示，不使用估算值）"
+      - "⑥全景页节点下钻：canDrill 判定（node.drilldown || catalog.findChain(node.id)）→ 详情抽屉『进入子链』按钮重设对象重拉快照"
+      - "⑦工程自检：pnpm test / pnpm type-check / pnpm build 绿；每统计数字 ⓘ 或说明入口齐全；handoff 含 ponytail: 行 + 防漏扫描摘要（附录 D）+ 裁剪声明（热力图降级等）"
+    update_time: "2026-11-17T17:08:41+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P2-L01
+    title: "专题小屏·产业分析差单P2：查询分页/trace深链/记录分页/Overview地图/评审层裁定"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P2"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: "来源：2026-11-17 mobile↔PC 产业分析大模块对照分析（会话报告 §三 P2 批次）。可视观测铁律（公约 §2.4）在 mobile 产业页目前零消费，本单第②项闭合。改动停本地工作区待孔东确认推送。"
+    depends_on:
+      - "FE-TOPIC-SMALL-CHAIN-PARITY-P1-L01"
+    touched_files:
+      - "src/views/industry/IndustrySearchView.vue"
+      - "src/views/industry/IndustryOverviewView.vue"
+      - "src/views/industry/IndustryDiagnosisView.vue"
+      - "src/views/industry/IndustryRegionalView.vue"
+      - "src/views/industry/IndustryShenzhenView.vue"
+      - "src/components/visualization/ChainAnalysisShell.vue"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md §4"
+      - "src/utils/observability.ts（已有 buildTempoExploreUrl/buildLokiExploreUrl）"
+    definition_of_done:
+      - "①产业查询分页：结果改 van-list on-load 懒加载（贴合移动习惯，非 PC 翻页器），total 提示保留"
+      - "②失败态 trace 深链：ChainAnalysisShell 失败区块加『查看链路追踪』外链（复用 observability.ts buildTempoExploreUrl/buildLokiExploreUrl；VITE_GRAFANA_* 未配置则隐藏，优雅降级）"
+      - "③记录分页：诊断/区域/深圳记录页签 size=20 → van-list 加载更多（analysisTaskList page 递增）"
+      - "④Overview 区域分布补地图形态：map/list van-tab 切换（复用 P1 的 RegionalCompareMap 小屏版；若 P1 未含点聚合则本单补）"
+      - "⑤评审层裁定：IndustryReviewMount/IndustryReviewOnly 在 mobile 的取舍形成书面结论——要么小屏版挂载（kind/refs 对齐 PC 约 15 处），要么在 handoff 明示裁剪并经 human:孔东 认可；禁止无声明缺失"
+      - "⑥工程自检：pnpm test / pnpm type-check / pnpm build 绿；handoff 含 ponytail: 行 + 防漏扫描摘要（附录 D）"
+    update_time: "2026-11-17T17:08:55+08:00"
+  - id: FE-TOPIC-SMALL-CHAIN-PARITY-P3-L01
+    title: "专题小屏·产业分析差单P3：CMS/维护页小屏化（overview-cms + maintenance）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-SMALL-SCREEN"
+    priority: "P2"
+    repo: "lumen-ui-topic-mobile"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: "来源：2026-11-17 mobile↔PC 产业分析大模块对照分析（会话报告 §三 P3 批次）。当前两页挂 NotAdaptedView，属规划批 5 排期内（12-26~12-31），本单作为批 5 产业切片提前登记占位。"
+    depends_on:
+      - "FE-TOPIC-SMALL-CHAIN-PARITY-P2-L01"
+    touched_files:
+      - "src/views/industry/（新增两页）"
+      - "src/router/index.ts（ADAPTED_PAGES 注册）"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/02-智树工作计划/02-进度/系统-06-专题小屏复刻规划.md §4 批5（12-26~12-31）"
+      - "repos/lumen-ui-topic/src/views/cms/panorama/PanoramaCmsWorkspace.vue"
+      - "repos/lumen-ui-topic/src/views/industry-center/IndustryMaintenancePage.vue"
+    definition_of_done:
+      - "/industry-center/overview-cms 与 /industry-center/maintenance 从 NotAdaptedView 换为小屏真组件（可用级裁剪：Vant 表单/列表简版，富文本/上传降级为基础控件）"
+      - "CMS 审/发主链路可完成；运营类交互从简（对齐规划 R3 孔东认可的『可用级』口径）"
+      - "路由 ADAPTED_PAGES 注册 + 站内跳转核验；nav showInMenu 口径不变（maintenance 在侧栏可见、overview-cms 在门户 CMS 组）"
+      - "工程自检：pnpm test / pnpm type-check / pnpm build 绿；handoff 含 ponytail: 行 + 裁剪声明"
+    update_time: "2026-11-17T17:09:05+08:00"
