@@ -1,0 +1,159 @@
+{
+  "askCode": "SUBFIELD-W1-R1-ASK",
+  "checklistCode": "SUBFIELD-W1",
+  "round": 1,
+  "issuedAt": "2026-11-17",
+  "issuedBy": "我方交付组",
+  "to": "派单包提供方（客户业务 owner / 客户智能体）",
+  "materialVersion": "2026-10-31 成包版（4 文件，本轮无变更）",
+  "responseDeadline": "",
+  "instructions": "1) 逐条回填 items[].answer，必须是结论本身（口径/取值/取舍），不是“已确认”“同意”；不要修改 gapId、不要改动本文件结构；2) 新材料请放到 `派单包/<PACK>/round<R+1>/`（R=本单 round，整包新版本，不要原地改历史轮），保留原文件名，并在 items[].evidence 写明 `round<R+1>/<文件>#<锚点>`；无 evidence 只能算 answered，不能关闭；3) 若需改动上一轮已确认的内容（表/字段/过滤/目标表/映射口径），请在 changeNotice[] 列明改了什么、为什么；4) 确实答不了的项，填 cannotAnswer.reason 与 escalateTo（升级给谁），不要静默跳过。",
+  "items": [
+    {
+      "gapId": "G24",
+      "title": "输入表来源说明",
+      "severity": "blocking",
+      "state": "open",
+      "question": "本批输入表请逐张说明「从哪来」。其中 `industry_chain` 与 `industry_chain_node` 已在贵方平台产线内，**无需回答**。以下 3 项需要补充：\n① **子学科目录表（`SUBFIELD_CATALOG`，sync 的唯一数据源）——目前没有任何指向**。文档要求配成「库.表」且含 `subfield_id` / `name_zh` / `data_version` 三列，但没说这是哪张表。请二选一：**A** 本侧新建一张目录表（给表名与谁建）；**B** 沿用久新 `gkx_technology_analysis_dev.ads_discipline_subfield`（跨库）。若选 B，只需给三项：**地址/端口/库名**、**账号与权限范围**、**凭据**（文档里写或标「私下提供」都行）——**网络是否可达、库版本，我方自己测，不用回答**；\n② `gkxlumenx_dim.industry_cluster`（产业集群）与 ③ `gkxlumenx_dim.industry_cluster_map`（集群-产业映射）——这两张是**贵方人工维护的表**，我方只做一件事：**为它们各登记一个来源实例作为依赖**，不建表、不改结构、不搬数据。所以**只需要一句话确认**：「这两张表由我方维护、不由平台产线产出，作为本批来源表使用」。数据怎么产生、谁维护、多久更新、要不要纳入平台管理，**都不用回答**。",
+      "whyItBlocks": "该口径未定则 I（输入） 段无法定稿",
+      "workpackSays": "",
+      "platformActual": "",
+      "expectedAnswer": "text（文字结论）+ 依据材料",
+      "askFormat": "",
+      "acceptableEvidence": [
+        "子学科目录表的名称与 DDL，或久新的连接与权限说明（不含口令本体）",
+        "集群两张表的维护归属说明",
+        "书面确认"
+      ],
+      "resolvedWhen": "每张输入表落四态之一：①平台有实例（结构编号+guid+状态）；②给出获取来源（提供方+获取方式+库表位置；跨库另附连接信息 6 项）；③客户一句话确认人工维护（我方随即登记来源实例，不建表）；④书面排除。",
+      "affects": [
+        "input.tables[].sourceSpec",
+        "input.tables[].manualDecl"
+      ],
+      "relatedTables": [],
+      "askedAtRound": 1,
+      "answer": null,
+      "evidence": [],
+      "answeredBy": "",
+      "answeredAtRound": null,
+      "cannotAnswer": null
+    },
+    {
+      "gapId": "G3",
+      "title": "增全量口径与重跑语义",
+      "severity": "blocking",
+      "state": "open",
+      "question": "请说明脚本的**增全量口径**（脚本类包里我方最需要确认的一条）：\n① `sync`：每次运行都把 `SUBFIELD_CATALOG` 全量读一遍吗？子学科目录变化频率不高，是否考虑按 `data_version` 做增量？\n② `link`：只处理「还没有任何产业节点」的子学科——这就是增量口径吗？**首次上线**（现表已有 390 行、122 个未关联）时，是先把这 122 个跑完，还是全表重判？\n③ **重跑行为**：重复触发会不会产生重复关联行？`sync` 会不会整表清空、会不会删掉已有关联？某一批模型调用失败后，已成功那部分保留吗、后续批次继续还是停？\n④ 能否**手工补跑指定范围**（例如某个 subfield_id）？\n（字段宽度、截断规则这些实现细节不用回答。）",
+      "whyItBlocks": "该口径未定则 I（输入） 段无法定稿",
+      "workpackSays": "",
+      "platformActual": "",
+      "expectedAnswer": "text（文字结论）+ 依据材料",
+      "askFormat": "",
+      "acceptableEvidence": [
+        "目录表 DDL 或 information_schema 结果",
+        "历史数据来源说明与基线确认"
+      ],
+      "resolvedWhen": "三列类型与长度已给且与目标宽度对比结论明确；历史 390 行的来源与处置口径已确认",
+      "affects": [
+        "input.tables[].columns",
+        "output.tables[]"
+      ],
+      "relatedTables": [],
+      "askedAtRound": 1,
+      "answer": null,
+      "evidence": [],
+      "answeredBy": "",
+      "answeredAtRound": null,
+      "cannotAnswer": null
+    },
+    {
+      "gapId": "G30",
+      "title": "环境变量文档完备",
+      "severity": "blocking",
+      "state": "open",
+      "question": "脚本读取的 11 个环境变量，**变量名已在文档里列全、且与代码一致**（这一点没问题）。只需补两件小事：\n① 每个变量**是否必填、可选时默认值**，以及 `SUBFIELD_CATALOG` 的一个**示例值**（形如 `库.表`）；\n② **依赖包清单**：文档只写「作业机自备 pymysql」，请列出脚本实际 import 的全部第三方包与版本\n（本侧库是 MySQL 8.0，pymysql 可能还需要 cryptography）。\n**密钥怎么给我们不用特别说明**：文档里写了就按文档用，标一句「私下提供」也可以。",
+      "whyItBlocks": "该口径未定则 S（脚本） 段无法定稿",
+      "workpackSays": "",
+      "platformActual": "",
+      "expectedAnswer": "text（文字结论）+ 依据材料",
+      "askFormat": "",
+      "acceptableEvidence": [
+        "环境变量清单表（补必填/默认值/来源/凭据通道）",
+        "依赖包与版本说明"
+      ],
+      "resolvedWhen": "11 个变量均有「是否必填/默认值/来源」；SUBFIELD_CATALOG 给示例值；凭据类只有交付通道；依赖包有名称+版本",
+      "affects": [
+        "scripts.deliveries[].envVars"
+      ],
+      "relatedTables": [],
+      "askedAtRound": 1,
+      "answer": null,
+      "evidence": [],
+      "answeredBy": "",
+      "answeredAtRound": null,
+      "cannotAnswer": null
+    },
+    {
+      "gapId": "G31",
+      "title": "退出码与调度可判定",
+      "severity": "blocking",
+      "state": "open",
+      "question": "README 的退出码表写「0=本趟完成 / 1=失败 / 3=缺环境 / 4=表未建」，但**脚本实际行为与之不符，有 4 处需要修**：\n① **全部批次失败仍返回 0**——模型调用失败的批次只写 `fail_reason` 列，跑完所有批次后正常返回，退出码 0。作业会显示“成功”，实际一条没关联上；\n② **模型返回空也返回 0**——模型给出空结果时该批次不写、不记失败，整轮下来退出码仍是 0；\n③ **缺 `LLM_API_KEY` 也返回 0**——缺密钥被当作批次失败吞掉，应判「缺环境」=3；\n④ **没有轮数上限或软超时**：`link` 一次触发跑完全部待关联（252 个子学科 / 每批 20 ≈ 13 批），请明确软超时应小于平台超时，且“未跑完”应返回 **0**（下次继续），不要判失败。\n改法建议：全批失败或候选为空 → 返回 8（需人介入）；缺密钥/缺目录 → 3；其余一码一因；末行给固定摘要（`linked/failed/untouched/empty_resp/candidates/stopped`）。",
+      "whyItBlocks": "该口径未定则 S（脚本） 段无法定稿",
+      "workpackSays": "",
+      "platformActual": "",
+      "expectedAnswer": "text（文字结论）+ 依据材料",
+      "askFormat": "",
+      "acceptableEvidence": [
+        "退出码表（码/含义/判定 success|failure）",
+        "脚本内 return / sys.exit 分支",
+        "实跑收尾行样例"
+      ],
+      "resolvedWhen": "全批失败/模型全空/候选为空返回非 0（建议 8）；缺环境返回 3；一码一因；未跑完返回 0；末行摘要格式固定",
+      "affects": [
+        "scripts.deliveries[].exitCodes"
+      ],
+      "relatedTables": [],
+      "askedAtRound": 1,
+      "answer": null,
+      "evidence": [],
+      "answeredBy": "",
+      "answeredAtRound": null,
+      "cannotAnswer": null
+    }
+  ],
+  "replyTemplate": {
+    "askCode": "SUBFIELD-W1-R1-ASK",
+    "round": 1,
+    "answeredBy": "",
+    "items": [
+      {
+        "gapId": "G24",
+        "answer": "",
+        "evidence": [],
+        "cannotAnswer": null
+      },
+      {
+        "gapId": "G3",
+        "answer": "",
+        "evidence": [],
+        "cannotAnswer": null
+      },
+      {
+        "gapId": "G30",
+        "answer": "",
+        "evidence": [],
+        "cannotAnswer": null
+      },
+      {
+        "gapId": "G31",
+        "answer": "",
+        "evidence": [],
+        "cannotAnswer": null
+      }
+    ],
+    "changeNotice": []
+  },
+  "changeNotice": [],
+  "askFile": "SUBFIELD-W1.round1.ask.json"
+}
