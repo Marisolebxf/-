@@ -37,6 +37,14 @@
 | 11b | 孔东 7:06 修正（并行会话） | 全球创新详情「更新频率」胶囊按钮右置；banner 内 popover 左开防溢出 | ✅ |
 | 11c | 合规验收 2540（并行会话） | 价值报告内容区收不到滚动、导出按钮不可达 | ✅ |
 | 11d | 合规验收 2491/2287 回归（并行会话） | 项目点位详情、真实候选优先展示回归自检 | ✅ |
+| 12 | 孔东 2026-11-17 21:05 指令（二轮） | 详情筛选「创新成果分类」280px 过窄换行 | ✅ |
+| 13 | 孔东 2026-11-17 21:12 指令（二轮） | 结果抽屉自绘 150 页全量按钮分页 | ✅ |
+| 14 | 孔东 2026-11-17 21:17 指令（二轮） | 结果表列宽挤压换行、名称省略无 tooltip、更新时间/创新价值无排序 | ✅ |
+| 15 | 孔东 2026-11-17 21:36 指令（二轮） | 详情弹窗被结果抽屉遮挡（z-index）；排序箭头双显、价值表头不可折行；抽屉排序下拉冗余 | ✅ |
+| 16 | 孔东 2026-11-17 21:41 指令（二轮） | 要素/事件列表视图分页改 Arco 组件带跳转 | ✅ |
+| 17 | 孔东 2026-11-17 21:44 指令（二轮） | 结果表排序 icon 对齐科创事件表双三角 caret 样式 | ✅ |
+| 18 | 孔东 2026-11-17 21:46 指令（二轮） | 事件表时间列 76px 过窄日期折行 | ✅ |
+| 19 | 孔东 2026-11-17 21:49 指令（二轮） | 结果抽屉分页补跳转（show-jumper） | ✅ |
 
 ## 修改内容
 
@@ -82,27 +90,41 @@
 
 - `InnovationDetail.vue` + `demo-global-innovation.css`：更新频率胶囊复用实时 Tab 交互（hover/focus 可达），如实标「按年度（非实时）」不宣称实时；按钮右置（`margin-left:auto` 防 `sr-only` 全局泄漏贴左）；banner 内 popover 左开防溢出；2540 价值报告内容区允许纵向滚动直达导出按钮。
 
+### H. 二轮修复（2026-11-17 晚，本会话，commit `d378b3d`）
+
+- **结果抽屉 Arco 分页**（`InnovationDetail.vue`）：自绘 150 页全量按钮分页改 `a-pagination`（`size="small"` + `show-total` + `show-jumper` 带跳转）；删除自绘按钮/汇总 CSS。
+- **结果表排序 + 列宽**（`InnovationDetail.vue` + `demo-global-innovation.css`）：
+  - 「更新时间」「创新价值 / 资助金额」两列表头可排序：科创事件表同款 **8px 双三角 caret**（上下灰三角常显，`is-asc`/`is-desc` 激活方向变蓝），复用 `detailListSortKey` 状态机（`sortDetailInnovations` 四向）；
+  - 价值列表头允许两行（文字折行、caret 居中钉末尾），列宽回收 12%；
+  - 列宽重分配（和=100%）：名称 26 / 类型领域 15 / 区域 11 / 更新时间 12 / 价值 12 / 操作 24；全列 `nowrap` + td `ellipsis`；
+  - 成果名称外裹 `a-tooltip`（`position="tl"`，内容=名称：描述），省略内容悬停可见；
+  - 抽屉工具栏「创新价值排序」下拉移除（面板头部下拉保留——卡片列表无表头仍需）。
+- **详情弹窗层级**（`demo-global-innovation.css`）：`gi-modal-overlay` / `gi-detail-drawer-overlay` z-index 1000 → **4400**，压过结果抽屉（4200）、低于对比飞行点（5000）；从结果表点「详情」不再被遮挡。
+- **两列表视图分页统一**（`FactorMapSection.vue` + `GlobalEventSection.vue` + `demo-situation.css`）：要素/事件列表分页均改 `a-pagination`（`show-total` + `show-jumper`），删除自绘按钮/跳转输入框样式与 `eventPageJump`/`factorPageJump` 等死状态；`factorMap.test.mjs` 断言同步（`<a-pagination` + `show-jumper`）。
+- **事件表时间列加宽**（`demo-situation.css`）：第 4 列 76 → 104px + `nowrap`，日期与期间两行均不折行。
+- **详情筛选宽度**（`InnovationDetail.vue`）：「创新成果分类展示」cascade `:width` 280 → 400（配合并行会话已将 `--type` 组 `max-width` 提至 420px），3 tag + `+N` 单行不换行。
+
 ## 测试结果（2026-11-17 本机实测，三绿）
 
 | 检查 | 命令 | 结果 |
 |------|------|------|
-| 类型门 | `pnpm type-check`（vue-tsc --build） | ✅ exit 0 |
-| 单测/自检 | `overviewTab / factorMap / situationExport / situationFilterBar / bayMapMarker / mapMarkerScale / globalInnovationExport / mapPointDetail / innovationMonitor` 共 9 脚本 | ✅ 全通过 |
-| 构建 | `pnpm build` | ✅ built in 1m 1s（仅 chunk>500kB 既有告警） |
+| 类型门 | `pnpm type-check`（vue-tsc --build） | ✅ exit 0（一轮 / 二轮均过） |
+| 单测/自检 | `overviewTab / factorMap / situationExport / situationFilterBar / bayMapMarker / mapMarkerScale / globalInnovationExport / mapPointDetail / innovationMonitor` 共 9 脚本 | ✅ 全通过（二轮复跑全绿） |
+| 构建 | `pnpm build` | ✅ 一轮 1m1s / 二轮 44s（仅 chunk>500kB 既有告警） |
 
 ## 遗留风险
 
-- 改动**全部停本地未提交**（孔东本地裁定：禁自动 commit/push，待孔东本人处置）；下游需重点回归：饼图卡标题栏在极窄卡宽下的换行、Slider 弹窗在触屏端可用性。
+- 一轮改动已随 `4e71975` 推送；**二轮改动已随 `d378b3d` 推送 origin/dev**（孔东 2026-11-17 21:50 逐字指令放行）。下游需重点回归：饼图卡标题栏在极窄卡宽下的换行、Slider 弹窗在触屏端可用性、结果表两行表头在更窄抽屉宽度的表现。
 - 本轮改动均未触碰观测埋点（`observability.ts` 既有链路不变）。
 - 后端年份后缀剥离为前端兜底；后端若永久下发新口径，`stripLabelYearSuffix` 可保留无害。
 
 ## CI/CD（必填）
 
-- 分支：`dev`（本地工作区，未提交）
-- commit：无（待孔东人工提交）
-- pipeline URL / ID：无（未 push）
-- 部署 namespace / 镜像 tag：不适用
-- K8s rollout：不适用（未触发部署链）
+- 分支：`dev`
+- commit：一轮 `4e71975`（22 文件 +896/−131）/ 二轮 `d378b3d`（6 文件 +206/−211），均已 push origin/dev
+- pipeline URL / ID：GitLab CI 自动触发（push 后链路）
+- 部署 namespace / 镜像 tag：CI → K8s dev 自动 rollout（`zhipu-tts` ns，既定链路）
+- K8s rollout：待 CI 完成（push 即触发，未人工干预）
 - dev 测试 URL / 命令与结果：本机 `pnpm dev` 手工走查 + 9 测试脚本通过（见「测试结果」）
 
 ## 可观测性（建议）
@@ -111,9 +133,11 @@
 - traceId（dev 抽样）：本轮纯 UI 改动未走后端链路，未采样
 - Tempo / Loki：无新增埋点需求
 
-## 涉及文件（20 改 + 2 新增，+857 / −131）
+## 涉及文件
 
-**本会话**
+**一轮（commit `4e71975`，22 文件 +896/−131）**
+
+本会话：
 - `src/views/situation/overview/components/OverviewTab.vue`
 - `src/views/situation/overview/components/InfluenceTab.vue`
 - `src/views/situation/overview/components/FactorMapSection.vue`
@@ -131,10 +155,19 @@
 - `src/components/map/mapMarkerScale.ts`（新增）
 - `src/components/map/mapMarkerScale.test.mjs`（新增）
 
-**并行会话（同任务 FE-DISPLAY-COMPLY-R1-FIX-L01）**
+并行会话（同任务 FE-DISPLAY-COMPLY-R1-FIX-L01）：
 - `src/views/situation/overview/components/SituationFilterBar.vue`
 - `src/views/situation/shared/reportExport.ts`
 - `src/views/situation/global-innovation/styles/demo-global-innovation.css`
 - `src/views/situation/overview/situationExport.test.mjs`
 - `src/views/situation/overview/situationFilterBar.test.mjs`
 - `src/views/situation/global-innovation/globalInnovationExport.test.mjs`
+
+**二轮（commit `d378b3d`，6 文件 +206/−211）**
+
+- `src/views/situation/global-innovation/tabs/InnovationDetail.vue`（Arco 分页带跳转 / 表头双三角排序 / 名称 tooltip / 筛选宽度 400）
+- `src/views/situation/global-innovation/styles/demo-global-innovation.css`（分页样式清理 / 排序 caret / 列宽 / 弹窗 z-index 4400）
+- `src/views/situation/overview/components/FactorMapSection.vue`（Arco 分页带跳转）
+- `src/views/situation/overview/components/GlobalEventSection.vue`（Arco 分页带跳转）
+- `src/views/situation/overview/styles/demo-situation.css`（分页样式清理 / 时间列 104px）
+- `src/views/situation/overview/factorMap.test.mjs`（分页断言同步）
