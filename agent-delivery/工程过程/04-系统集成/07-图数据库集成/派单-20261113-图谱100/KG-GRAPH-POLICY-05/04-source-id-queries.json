@@ -1,0 +1,82 @@
+[
+  {
+    "id": "related_json_validity",
+    "engine": "mysql",
+    "query": "SELECT JSON_VALID(related_entities) AS valid,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 GROUP BY valid"
+  },
+  {
+    "id": "related_json_slots",
+    "engine": "mysql",
+    "query": "SELECT SUM(COALESCE(JSON_LENGTH(JSON_EXTRACT(related_entities,'$.enterprise')),0)>0) AS enterprise_nonempty,SUM(COALESCE(JSON_LENGTH(JSON_EXTRACT(related_entities,'$.talent')),0)>0) AS talent_nonempty,SUM(COALESCE(JSON_LENGTH(JSON_EXTRACT(related_entities,'$.research')),0)>0) AS research_nonempty,SUM(COALESCE(JSON_LENGTH(JSON_EXTRACT(related_entities,'$.org')),0)>0) AS org_nonempty,SUM(COALESCE(JSON_LENGTH(JSON_EXTRACT(related_entities,'$.industry')),0)>0) AS industry_nonempty,SUM(COALESCE(JSON_LENGTH(JSON_EXTRACT(related_entities,'$.service')),0)>0) AS service_nonempty FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND JSON_VALID(related_entities)=1"
+  },
+  {
+    "id": "related_json_keys",
+    "engine": "mysql",
+    "query": "SELECT JSON_KEYS(related_entities) AS keys_present,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND JSON_VALID(related_entities)=1 GROUP BY keys_present"
+  },
+  {
+    "id": "org_item_types",
+    "engine": "mysql",
+    "query": "SELECT JSON_TYPE(JSON_EXTRACT(related_entities,'$.org[0]')) AS first_org_type,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND JSON_VALID(related_entities)=1 GROUP BY first_org_type"
+  },
+  {
+    "id": "dwd_source_groups",
+    "engine": "mysql",
+    "query": "SELECT source,COUNT(*) AS cnt,MIN(create_time) AS first_created,MAX(update_time) AS last_updated FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 GROUP BY source"
+  },
+  {
+    "id": "ext1_samples",
+    "engine": "mysql",
+    "query": "SELECT LEFT(ext1,300) AS value,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND NULLIF(TRIM(ext1),'') IS NOT NULL GROUP BY ext1 ORDER BY cnt DESC LIMIT 4"
+  },
+  {
+    "id": "ext2_samples",
+    "engine": "mysql",
+    "query": "SELECT LEFT(ext2,300) AS value,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND NULLIF(TRIM(ext2),'') IS NOT NULL GROUP BY ext2 ORDER BY cnt DESC LIMIT 4"
+  },
+  {
+    "id": "ext3_samples",
+    "engine": "mysql",
+    "query": "SELECT LEFT(ext3,300) AS value,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND NULLIF(TRIM(ext3),'') IS NOT NULL GROUP BY ext3 ORDER BY cnt DESC LIMIT 4"
+  },
+  {
+    "id": "ext4_samples",
+    "engine": "mysql",
+    "query": "SELECT LEFT(ext4,300) AS value,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND NULLIF(TRIM(ext4),'') IS NOT NULL GROUP BY ext4 ORDER BY cnt DESC LIMIT 4"
+  },
+  {
+    "id": "ext5_samples",
+    "engine": "mysql",
+    "query": "SELECT LEFT(ext5,300) AS value,COUNT(*) AS cnt FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND NULLIF(TRIM(ext5),'') IS NOT NULL GROUP BY ext5 ORDER BY cnt DESC LIMIT 4"
+  },
+  {
+    "id": "cite_by_batch",
+    "engine": "mysql",
+    "query": "SELECT calc_batch_id,COUNT(*) AS cnt FROM gkxlumenx_ads.policy_graph_edge WHERE relation_type='cite' GROUP BY calc_batch_id"
+  },
+  {
+    "id": "demo_seed_cite_evidence",
+    "engine": "mysql",
+    "query": "SELECT src_key,dst_key,relation_type,calc_batch_id,props FROM demo_gkxlumenx_ads.policy_graph_edge WHERE relation_type='cite'"
+  },
+  {
+    "id": "demo_seed_node_provenance",
+    "engine": "mysql",
+    "query": "SELECT node_key,node_type,calc_batch_id,props FROM demo_gkxlumenx_ads.policy_graph_node WHERE calc_batch_id='seed-240-relation-20261112'"
+  },
+  {
+    "id": "M10",
+    "engine": "graph",
+    "query": "MATCH (p:research)-[e:publish]->(t:policy) RETURN count(e) AS cnt"
+  },
+  {
+    "id": "apply_to_groups",
+    "engine": "graph",
+    "query": "MATCH (p:policy)-[e:apply_to]->(t) RETURN tags(t) AS tags,count(e) AS cnt"
+  },
+  {
+    "id": "support_groups",
+    "engine": "graph",
+    "query": "MATCH (p:policy)-[e:support]->(t) RETURN tags(t) AS tags,count(e) AS cnt"
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "task_id": "KG-GRAPH-POLICY-05",
+  "started_at": "2026-11-17T19:42:20.343728+08:00",
+  "read_only": true,
+  "queries": [
+    {
+      "id": "seed_policy_source_rows",
+      "engine": "mysql",
+      "query": "SELECT policy_id,pedigree,related_entities,source FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0 AND policy_id IN ('18318861','18318862','18363390','18363391','18407696','18407697')",
+      "started_at": "2026-11-17T19:42:20.343728+08:00",
+      "rows": [
+        {
+          "policy_id": "18318861",
+          "pedigree": "",
+          "related_entities": "{\"industry\": [], \"org\": [\"工信部\"], \"enterprise\": [], \"talent\": [], \"service\": []}",
+          "source": "工信部"
+        },
+        {
+          "policy_id": "18318862",
+          "pedigree": "",
+          "related_entities": "{\"industry\": [], \"org\": [\"工信部\"], \"enterprise\": [], \"talent\": [], \"service\": []}",
+          "source": "工信部"
+        },
+        {
+          "policy_id": "18363390",
+          "pedigree": "",
+          "related_entities": "{\"industry\": [], \"org\": [\"广东省科学技术厅\"], \"enterprise\": [], \"talent\": [], \"service\": []}",
+          "source": "广东省科学技术厅"
+        },
+        {
+          "policy_id": "18363391",
+          "pedigree": "",
+          "related_entities": "{\"industry\": [], \"org\": [\"中关村国家自主创新示范区\"], \"enterprise\": [], \"talent\": [], \"service\": []}",
+          "source": "中关村国家自主创新示范区"
+        },
+        {
+          "policy_id": "18407696",
+          "pedigree": "",
+          "related_entities": "{\"industry\": [], \"org\": [\"深圳市科技创新委员会\"], \"enterprise\": [], \"talent\": [], \"service\": []}",
+          "source": "深圳市科技创新委员会"
+        }
+      ],
+      "status": "success",
+      "elapsed_seconds": 1.453
+    },
+    {
+      "id": "seed_policy_vertices",
+      "engine": "graph",
+      "query": "FETCH PROP ON policy \"pol:18318861\",\"pol:18318862\",\"pol:18363390\",\"pol:18363391\",\"pol:18407696\",\"pol:18407697\" YIELD id(vertex) AS vid",
+      "started_at": "2026-11-17T19:42:21.791350+08:00",
+      "rows": [
+        {
+          "vid": "pol:18407696"
+        },
+        {
+          "vid": "pol:18363391"
+        },
+        {
+          "vid": "pol:18363390"
+        },
+        {
+          "vid": "pol:18318861"
+        },
+        {
+          "vid": "pol:18318862"
+        }
+      ],
+      "status": "success",
+      "elapsed_seconds": 0.812
+    },
+    {
+      "id": "apply_to_groups_fixed",
+      "engine": "graph",
+      "query": "MATCH (p:policy)-[e:apply_to]->(t) RETURN tags(t) AS endpoint_tags,count(e) AS cnt",
+      "started_at": "2026-11-17T19:42:22.615211+08:00",
+      "rows": [
+        {
+          "endpoint_tags": [
+            "segment"
+          ],
+          "cnt": 9279
+        },
+        {
+          "endpoint_tags": [
+            "chain"
+          ],
+          "cnt": 1678
+        }
+      ],
+      "status": "success",
+      "elapsed_seconds": 0.297
+    },
+    {
+      "id": "support_groups_fixed",
+      "engine": "graph",
+      "query": "MATCH (p:policy)-[e:support]->(t) RETURN tags(t) AS endpoint_tags,count(e) AS cnt",
+      "started_at": "2026-11-17T19:42:22.903739+08:00",
+      "rows": [
+        {
+          "endpoint_tags": [
+            "segment"
+          ],
+          "cnt": 9279
+        },
+        {
+          "endpoint_tags": [
+            "chain"
+          ],
+          "cnt": 1678
+        }
+      ],
+      "status": "success",
+      "elapsed_seconds": 0.266
+    },
+    {
+      "id": "dwd_mock_summary",
+      "engine": "mysql",
+      "query": "SELECT COUNT(*) AS cnt,SUM(source='demo-mock') AS explicit_demo_mock,SUM(source IS NULL OR TRIM(source)='') AS source_empty FROM demo_gkxlumenx_dwd.policy_base_info WHERE is_deleted=0",
+      "started_at": "2026-11-17T19:42:23.175274+08:00",
+      "rows": [
+        {
+          "cnt": 20000,
+          "explicit_demo_mock": "3469",
+          "source_empty": "0"
+        }
+      ],
+      "status": "success",
+      "elapsed_seconds": 0.172
+    }
+  ]
+}
