@@ -72,3 +72,14 @@ TECH 9操作等待COVER-01；完整图索引与超大邻域完整排序尚未就
 - [lumen-ui-topic cb6656d2](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic/-/commit/cb6656d2cb1c868c1122f7c35bdae4a7b9fe3d5d)
 
 已同步编排仓最新dev并保留团队登记内容；任务仍in_progress，不标整单完成。CI状态另以各提交的流水线结果为准，未声称CI/正式网关联调已通过。本次执行提交推送；Nacos单dataId线上发布尚未执行，相关索引与TECH限制仍按前文。此前“尚未提交推送”描述为该阶段历史状态。
+
+## 2026-11-17T19:20:26+08:00 · 推送与CI核验
+
+四仓origin/dev推送已由GitLab提交refs API复核。Java CI首轮暴露Mockito旧版本不支持verifyNoInteractions，已改为兼容never断言并补推`7107ceee`；新流水线backend:build及deploy:innov通过。
+
+- Python：948 passed、7 skipped；自动镜像/部署/路由smoke通过；deploy:innov与deploy:entan-worker保留手动。流水线：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/5723
+- Java：必需构建、测试与innov自动部署通过；可选sonar:scan（allow_failure=true）在记录时仍运行，不据此宣称整条流水线已成功；其他手动任务未触发。流水线：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/5726
+- 前端：构建、扫描、镜像与自动部署全部成功。流水线：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic/-/pipelines/5725
+- 编排仓：文档/任务登记变更按workflow过滤，不触发Feishu服务部署。
+
+Git HTTPS凭据已按用户要求存macOS钥匙串，未写入仓库；网页会话与Git凭据独立。没有触发Nacos手动任务或单dataId发布，正式新增网关路由仍待发布，完整索引/TECH等限制继续保留，任务仍in_progress。
