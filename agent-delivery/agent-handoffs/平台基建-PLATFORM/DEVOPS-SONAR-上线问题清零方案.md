@@ -2,9 +2,9 @@
 
 | 项 | 值 |
 |---|---|
-| 状态 | 方案，未开工。下面三项待拍板后才改代码、改质量配置 |
-| 日期 | 2026-11-17 |
-| 数据 | SonarQube 25.12.0，`http://10.50.180.228:9005`，当日只读拉取 |
+| 状态 | 阻塞 25 条已在 `origin/dev`，Sonar 上对应 6 仓阻塞为 0。`gkxlumen-svc-platform` 的高、中也已为 0。排序、bridge 的 `S6865`、筐 B、筐 C、热点未做。过程见第 11 节 |
+| 日期 | 2026-11-17 盘点；2026-11-18 补已落地 |
+| 数据 | SonarQube 25.12.0，`http://10.50.180.228:9005`。第 3 节是 2026-11-17 快照；第 11 节末是 2026-11-18 复测 |
 | 关联 | 扫描接入见 `DEVOPS-SONARQUBE-CI-L01.md`。该单只把扫描接上，并使用无条件质量门 `GKX-Soft`。自动修与编码约束见本文第 8、9 节 |
 
 ## 1. 要解决的事
@@ -150,6 +150,8 @@
 
 ## 6. 拍板后的顺序
 
+阻塞和 `gkxlumen-svc-platform` 的高、中已按第 11 节做完。下面其余项仍等第 5 节。
+
 1. 筐 A：口令出库，排序补比较函数，20 条阻塞逐条复核后修改。机械项按第 8 节交给模型，强度按第 9 节。
 2. 同时写出筐 B 的质量配置 / `sonar.exclusions` 变更说明，给总集。配置在总集认可以前不动生产门禁。
 3. 按第 5 节的选择排筐 C 和热点。
@@ -243,4 +245,73 @@ GET /api/issues/search
 GET /api/hotspots/search?projectKey=<key>&status=TO_REVIEW&ps=1
 ```
 
-阻塞明细以 `impactSeverities=BLOCKER` 的问题列表为准，本文第 4 节是 2026-11-17 的快照。
+阻塞明细以 `impactSeverities=BLOCKER` 的问题列表为准，本文第 4 节是 2026-11-17 的快照。已落地的复测数字见第 11.4 节。
+
+## 11. 已落地（2026-11-18）
+
+只做了两块：25 条阻塞，以及 Java 仓 `gkxlumen-svc-platform` 上当时还开着的 4 条高、6 条中。没有 `NOSONAR`，没有批量 Won't Fix。排序 `S2871`、bridge 的 `kubernetes:S6865`、筐 B、筐 C、热点都没动。口令原文不进本文。
+
+### 11.1 阻塞
+
+改法是收成单返回，不改返回的那个值。`python:S930` 把游标类改成 `cursorclass=` 关键字参数。六仓都在 `origin/dev`：
+
+| 仓 | 提交 | 改了什么 |
+|---|---|---|
+| lumen-algo-py | `589a0f0` | 6 个 `narrate_*` 仍返回同一个 envelope；CLI 主函数各分支做完事后一次 `return 0`；`seed_policy_news_page.py` 的游标改为关键字参数 |
+| lumen-etl-es-py | `0d9b2f1` | `cmd_watermarks` 有行打表、无行打原来的提示，然后一次 `return 0` |
+| lumen-topic-py | `9f9cbe3` | 行政区补树、专题域、技术分补齐：该查的仍只在有条件时查，一次返回 |
+| lumen-ui-science-pc | `eb9c534` | 关系确认仍返回 true；导出确认仍返回 false。空输入跳过后续动作 |
+| lumen-ui-topic | `9af3c33` | 候选列表失败仍返回 null；检索历史仍返回同一个 body |
+| lumen-svc-platform | `9295f972` | 见下一小节 |
+
+2026-11-18 复测这 6 个项目的阻塞都是 0。
+
+### 11.2 Java 仓：口令改注入
+
+`9295f972` 只动 MySQL 应用口令，不整批重发 Nacos（`FORCE_NACOS_REPUBLISH` 保持 false）。
+
+- 集群里的应用口令改为 Secret `gkxlumen-platform-mysql` 的 `mysql-app-password`：`platformDatasourceEnv` 的 `MYSQL_PASSWORD` / `SPRING_DATASOURCE_PASSWORD`，values 里的 innov、entan、element、display ADS、etl，以及 Nacos 启动脚本里的 `MYSQL_PASSWORD`。Secret 仍由 chart 的 `mysql.password` 渲染，values 里的明文来源行留着，不进 Pod 的 `value`。
+- `mysql.yaml` 探针去掉命令行 `-p`，改为 `MYSQL_PWD`。`mysql.external=true`，这条探针不打到外部库 `10.50.11.76`。
+- `application-local.yml` 只给本地 `--spring.profiles.active=local` 用，K8s 不读。element 改为 `${ELEMENT_MYSQL_PASSWORD:}`，topic-async 改为 `${MYSQL_PASSWORD:}`，和集群注入的变量名一致。
+- xxl-job 邮件改为 `${XXL_JOB_MAIL_PASSWORD:}`，不建 Secret、不注入。线上 Nacos 的 `gkxlumen-xxl-job-admin-dev.yml` 仍覆盖 jar。数据源 `druid.password` 的字面量按 2026-11-12 的 1045 规避留下，不在这次的 3 条 `S6437` 里。
+
+发布不是改完就生效。`helm:chart` 作业 44168（提交 `fc5ec7ee`）失败：topic-async 的 `JAVA_OPTS`、`MYSQL_DB` 各有两份，`MYSQL_PASSWORD` 从字面量改成 `valueFrom` 后，Kubernetes strategic merge 无法给重复名字打补丁。release 停在 failed，没有回滚。
+
+接着三笔：
+
+| 提交 | 作用 |
+|---|---|
+| `0be399ff` | 同名环境变量只渲染一份。topic-async 的堆仍用 values 里的 `-Xmx768m`，不退回 commonEnv 的 384m。`platformDb` 且外部 MySQL 时丢掉 svc.env 里重复的 `MYSQL_DB`。升级前删掉环境变量名重复的 Deployment，再由 Helm 建回来 |
+| `1c7a876a` | 上面的删除扫了整个 `zhipu-tts`，把不属于本 release 的 `demo-platform-upms` 也删了。已从 Helm release `demo-platform` revision 20 的清单放回该命名空间，Pod 回到 `1/1`。脚本收窄为只删 `app.kubernetes.io/instance=gkxlumen-platform` |
+| `65573cd2` | `sonar:scan` 的 Maven 补上 `-Duser.home=/home/build`，构建缓存落到 runner 已挂载的 `~/.m2`。以前容器没有家目录，缓存写进 `/workspace/?/.m2`，下次检出被清掉，50 个模块每次重编。规则改为只有 `java` / `xml` / `yml` / `yaml` / `properties` 或 `.mvn` 变动才跑 |
+
+作业 44187 在 `0be399ff` 上成功，release `gkxlumen-platform` revision 79，`STATUS: deployed`。Secret 相关 Deployment 均为 `1/1 Running`、重启 0 次；抽查 topic-async、element、upms 已打出 `Started`，日志没有 `1045`。运行中的 Nacos Pod 环境变量已是 `secretKeyRef`，没有字面量口令。
+
+### 11.3 Java 仓：高和中
+
+2026-11-18 阻塞清掉后，该项目还剩 4 条高（`java:S2658`）和 6 条中（`xml:S125`）。提交 `02fc8571`。
+
+| 规则 | 改法 |
+|---|---|
+| `S2658` Feign 注册器 | `beanClassLoader.loadClass` 改为 Spring `ClassUtils.forName`。对现有小写包名的顶层接口，仍不跑 static 块，找不到类仍是 `ClassNotFoundException` |
+| `S2658` 定时任务校验与执行 | `Class.forName` 改为本模块已在用的 hutool `ClassUtil.loadClass`。普通点分类名仍会初始化；找不到类时，校验仍返回「当前服务中，不包含此类路径」，执行仍抛「定时任务java反射类没有找到」 |
+| `xml:S125` 五份 xxl-job Mapper | 删掉注释里的 `selectKey`、旧按日统计、已被 `ON DUPLICATE KEY` 替换的注册 SQL。活着的 `save` 仍是 `useGeneratedKeys`，`registrySaveOrUpdate` 未改 |
+
+独立会话复核过 `02fc8571`（子会话 `64dc38d0-1c2f-46bd-b8cd-25c8bdb40efe`，对照 Spring 6.2.16 与 hutool 5.8.42）。Feign 和五份 XML 对现有用法行为不变。定时任务只在普通点分类名上不变。下面这些类名库里现在不这么存，但校验结果或失败文案会变：基本类型名（`int` 等）、源码数组名（`com.foo.Bar[]`）、斜杠类名（`com/foo/Bar`）、一层内部类点名（`com.foo.Outer.Inner`，存在 `Outer$Inner` 时会加载）。`ExceptionInInitializerError` 与 `NoClassDefFoundError` 仍按原来的 Error 抛出。
+
+本机没有 Maven，这 8 个文件没有在本地编译。复测以 Sonar 问题条数为准。
+
+### 11.4 2026-11-18 复测
+
+`GET /api/measures/search`，未关闭问题：
+
+| 项目 | 阻塞 | 高 | 中 |
+|---|---:|---:|---:|
+| gkxlumen-algo-py | 0 | 135 | 67 |
+| gkxlumen-etl-es-py | 0 | 5 | 10 |
+| gkxlumen-topic-py | 0 | 77 | 41 |
+| gkxlumen-ui-science-pc | 0 | 150 | 1272 |
+| gkxlumen-ui-topic | 0 | 370 | 435 |
+| gkxlumen-svc-platform | 0 | 0 | 0 |
+
+对照第 3 节：这 6 仓阻塞从 25 合计里的对应份额收到 0。`gkxlumen-svc-platform` 的高 4、中 6 收到 0，安全问题列表为空。高、中在其余仓有个位数浮动，不是这次改的规则，不在本节销账。其余 5 个 `gkxlumen-*` 项目这次没有复测。
