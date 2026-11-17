@@ -1,0 +1,516 @@
+{
+  "schema_version": 2,
+  "run_id": "2371-7166023304",
+  "current_cycle_id": "cycle-001-20261114T152610+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261114T152610+0800",
+      "seq": 1,
+      "started_at": "2026-11-14T15:26:10.758+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "2371",
+    "work_item_id": "7166023304",
+    "title": "科创政策全景，政策来源、适用地区两个控件给同一个后端接口传值",
+    "owner": "human:淮政玮",
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "c92e5cce-2371",
+    "claim_comment_ref": "7707923548630748169",
+    "claim_operator": "human:淮政玮",
+    "claimed_at": "2026-11-14T15:26:10.758+08:00",
+    "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+    "machine_id": "hzw-win",
+    "current_owner": "human:淮政玮",
+    "takeover_history": []
+  },
+  "phase": "RESOLVED",
+  "risk": {
+    "level": "S",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "fc9403a476d351a6ba514867d73ae3a18c43d3bd",
+      "candidate_sha": "230b51909563d4d3c9b3c6a26b36453144cde99f",
+      "planned_change_scope": [
+        "src/views/policy/panorama/search/displayPanoramaQuery.ts",
+        "src/views/policy/panorama/search/displayPanoramaQuery.compliance.test.mjs"
+      ],
+      "role": null,
+      "depends_on": [],
+      "ship_order": null
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "科创政策全景同时选择政策来源与适用地区时，两个条件看起来都没过滤。",
+    "reproduction": [
+      "打开科创政策全景政策检索",
+      "政策来源选海外政策，适用地区选北京市",
+      "缺陷截图里结果仍是未筛选的 61 条"
+    ],
+    "root_cause": "2026-11-11 18:17 建单时 buildPanoramaSearchQuery 把政策来源 scope 译进 level/region，和适用地区抢同一个 region 参数。同日 23:48 commit 230b519 已改为 scope 原样直传，后端 scope 子句与 region 条件 AND。",
+    "counter_evidence": [
+      "现码 displayPanoramaQuery.ts 对 scope 写 query.scope，对适用地区写 query.region",
+      "search_policies 实算：无筛选 20270，海外 1，北京 2274，海外且北京 0"
+    ],
+    "requirement_refs": [
+      "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS10-QRY-FE-DISP-L01-验收用例.md#检索条件条下拉变化后触发 search"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc 科创政策全景检索条",
+      "lumen-algo-py /internal/policy/search 的 scope 与 region"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "不新改代码。政策来源与适用地区拆参已在 lumen-ui-science-pc 230b519：scope 原样直传，不再写入 region。"
+    ],
+    "non_goals": [
+      "不改 2367 的地方政策 SQL（省级或行政区非空仍会命中绝大多数国内政策）",
+      "不改适用地区的 province/city/district 匹配"
+    ],
+    "verification_plan": [
+      "search_policies：无筛选 20270、海外 1、北京 2274、海外且北京 0"
+    ],
+    "rollback_plan": [
+      "若要撤回拆参，在 lumen-ui-science-pc 上 revert 230b519"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "fc9403a476d351a6ba514867d73ae3a18c43d3bd",
+        "candidate_sha": "230b51909563d4d3c9b3c6a26b36453144cde99f",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/policy/panorama/search/displayPanoramaQuery.compliance.test.mjs",
+          "src/views/policy/panorama/search/displayPanoramaQuery.ts"
+        ],
+        "diff_hash": "sha256:2ed0ef6386ce78130b120c61f1d6baddfb20c31a7b7deed5acfd06e9fac55657",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-14T15:34:55.248+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "agent:frontend-agent",
+        "independent": false,
+        "reviewed_sha": "230b51909563d4d3c9b3c6a26b36453144cde99f",
+        "verdict": "PASS",
+        "scope": "displayPanoramaQuery.ts 将政策来源写入 scope，适用地区仍写入 region；compliance.test.mjs 锁定 scope 不再派生 region/level",
+        "findings": [],
+        "round": 1,
+        "review_hash": "sha256:a6f3f5f4157fb580801d62dbe20b00a317b0371a06d7d9dd92517e1a210e136d"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "fix-scope-region",
+      "category": "fix",
+      "behavior": "政策来源海外政策与适用地区北京市同时选择时，查询分别携带 scope=overseas 与 region=北京",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-scope-region"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "regression-compliance",
+      "category": "regression",
+      "behavior": "政策检索查询映射、空响应和分享路径的既有合规自检仍然通过",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "ev-compliance"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T15:34:40.321+08:00",
+      "approved_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "approved_machine_id": "hzw-win",
+      "claim_id": "c92e5cce-2371",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "fc9403a476d351a6ba514867d73ae3a18c43d3bd",
+            "candidate_sha": null,
+            "planned_change_scope": [
+              "src/views/policy/panorama/search/displayPanoramaQuery.ts",
+              "src/views/policy/panorama/search/displayPanoramaQuery.compliance.test.mjs"
+            ]
+          }
+        ],
+        "diagnosis_hash": "sha256:5b7f494c3fbb829ba90fbd592d36b4e13acfc95cdc4d9b2587625cdcb47ce615",
+        "plan_hash": "sha256:1a81ee6629dc71e927f12f0565648985a5661a954fdfe3bbe95332f8b6f81bbe",
+        "risk_level": "S",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:b5c242cc121bde91ad167efe9670bb6ce054847b3479799aaea9123379a61e40",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T15:34:40.546+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:b5c242cc121bde91ad167efe9670bb6ce054847b3479799aaea9123379a61e40",
+        "expected": "sha256:b5c242cc121bde91ad167efe9670bb6ce054847b3479799aaea9123379a61e40",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "提测",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T15:47:43.780+08:00",
+      "approved_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "approved_machine_id": "hzw-win",
+      "claim_id": "c92e5cce-2371",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "candidate_sha": "230b51909563d4d3c9b3c6a26b36453144cde99f",
+            "diff_hash": "sha256:2ed0ef6386ce78130b120c61f1d6baddfb20c31a7b7deed5acfd06e9fac55657",
+            "verification_hash": "sha256:6fd9020bcf08b0e265c3932dc1ad064c90aba2a1509981fb012c8b5b474cdc09",
+            "review_hash": "sha256:a6f3f5f4157fb580801d62dbe20b00a317b0371a06d7d9dd92517e1a210e136d",
+            "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+            "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+          }
+        ],
+        "risk_level": "S",
+        "deploy_target": "dev"
+      },
+      "gate_hash": "sha256:f964d9dcd8e5cabb1a67608093850841cc7d5bbdc20a13f951824280644da6dd",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T15:47:43.976+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:f964d9dcd8e5cabb1a67608093850841cc7d5bbdc20a13f951824280644da6dd",
+        "expected": "sha256:f964d9dcd8e5cabb1a67608093850841cc7d5bbdc20a13f951824280644da6dd",
+        "errors": []
+      }
+    },
+    "acceptance": {
+      "status": "approved",
+      "source": "chat",
+      "token_text": "验收通过",
+      "approved_by": "human:淮政玮",
+      "approved_at": "2026-11-14T15:51:17.187+08:00",
+      "approved_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "approved_machine_id": "hzw-win",
+      "claim_id": "c92e5cce-2371",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "work_item_id": "7166023304",
+        "claim_id": "c92e5cce-2371",
+        "ship_gate_hash": "sha256:f964d9dcd8e5cabb1a67608093850841cc7d5bbdc20a13f951824280644da6dd",
+        "dev_verification_result": "PASS",
+        "evidence_manifest_hash": "sha256:95f0a1cfa9bc89c6738d07875db04acfe7dba3f8dc739f5a018226db4f4c12bf",
+        "current_status": "IN PROGRESS"
+      },
+      "gate_hash": "sha256:215fa7ad89c7e58375e838de64d9b4b78426f9cf1cbae78d04dfd6a28868911e",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-14T15:51:45.630+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:215fa7ad89c7e58375e838de64d9b4b78426f9cf1cbae78d04dfd6a28868911e",
+        "expected": "sha256:215fa7ad89c7e58375e838de64d9b4b78426f9cf1cbae78d04dfd6a28868911e",
+        "errors": []
+      }
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "230b51909563d4d3c9b3c6a26b36453144cde99f",
+        "merge_request_id": "direct-push",
+        "merge_commit_sha": "37a87de1c421928c0ea99d3aa990a61cb998c54d",
+        "pipeline_id": "5382",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5382",
+        "deployed_sha": "37a87de1c421928c0ea99d3aa990a61cb998c54d",
+        "rollout_status": "success",
+        "image_tag": null,
+        "role": null,
+        "depends_on": [],
+        "ship_order": null
+      }
+    ],
+    "acceptance_steps": [
+      "打开科创政策全景检索，政策来源选海外政策，适用地区选北京市，结果应少于只选其中一项"
+    ],
+    "dev_verification": {
+      "result": "PASS",
+      "evidence_refs": [
+        "ev-scope-region",
+        "ev-pipeline-5382"
+      ]
+    },
+    "summary": "政策来源与适用地区已拆成 scope 与 region。修复提交 230b519 已包含在 dev 流水线 5382，deploy:k8s 成功。"
+  },
+  "acceptance": {
+    "status": "approved",
+    "mode": "chat_exact",
+    "current_status": "RESOLVED",
+    "operator_verified": false,
+    "evidence_ref": "evidence/manifest.json#ev-scope-region",
+    "evidence_kind": "command",
+    "observed_at": "2026-11-14T15:51:40+08:00",
+    "approval_ref": "2026111415514050EB655E9F11D9DB21B9",
+    "work_item_status": "RESOLVED",
+    "approval_message": "验收通过",
+    "approved_at": "2026-11-14T15:51:17.187+08:00",
+    "approval_session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+    "approval_machine_id": "hzw-win",
+    "gate_hash": "sha256:215fa7ad89c7e58375e838de64d9b4b78426f9cf1cbae78d04dfd6a28868911e"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-14T15:33:08.175+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-14T15:33:08.359+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-14T15:34:40.546+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:b5c242cc121bde91ad167efe9670bb6ce054847b3479799aaea9123379a61e40",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-14T15:36:38.498+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-14T15:37:27.427+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-14T15:38:05.508+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_SHIP",
+      "to": "SHIPPING",
+      "at": "2026-11-14T15:47:43.977+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": "ship",
+      "gate_hash": "sha256:f964d9dcd8e5cabb1a67608093850841cc7d5bbdc20a13f951824280644da6dd",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "SHIPPING",
+      "to": "DEV_VERIFYING",
+      "at": "2026-11-14T15:47:53.971+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DEV_VERIFYING",
+      "to": "AWAITING_ACCEPTANCE",
+      "at": "2026-11-14T15:47:53.973+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "AWAITING_ACCEPTANCE",
+      "to": "RESOLVED",
+      "at": "2026-11-14T15:51:45.631+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "c92e5cce-2371",
+      "session_id": "c92e5cce-d351-4f02-8c38-1430f3bcdb26",
+      "gate": "acceptance",
+      "gate_hash": "sha256:215fa7ad89c7e58375e838de64d9b4b78426f9cf1cbae78d04dfd6a28868911e",
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-14T15:51:45.625+08:00",
+      "manifest_hash": "sha256:95f0a1cfa9bc89c6738d07875db04acfe7dba3f8dc739f5a018226db4f4c12bf",
+      "item_count": 3,
+      "evidence_ids": [
+        "ev-scope-region",
+        "ev-compliance",
+        "ev-pipeline-5382"
+      ],
+      "evidence_results": {
+        "ev-scope-region": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-compliance": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "ev-pipeline-5382": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "无需动作，缺陷已验收。"
+  },
+  "updated_at": "2026-11-14T15:51:45.631+08:00"
+}

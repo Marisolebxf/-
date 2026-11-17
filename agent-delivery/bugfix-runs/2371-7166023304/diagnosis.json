@@ -1,0 +1,20 @@
+{
+  "symptom": "科创政策全景同时选择政策来源与适用地区时，两个条件看起来都没过滤。",
+  "reproduction": [
+    "打开科创政策全景政策检索",
+    "政策来源选海外政策，适用地区选北京市",
+    "缺陷截图里结果仍是未筛选的 61 条"
+  ],
+  "root_cause": "2026-11-11 18:17 建单时 buildPanoramaSearchQuery 把政策来源 scope 译进 level/region，和适用地区抢同一个 region 参数。同日 23:48 commit 230b519 已改为 scope 原样直传，后端 scope 子句与 region 条件 AND。",
+  "counter_evidence": [
+    "现码 displayPanoramaQuery.ts 对 scope 写 query.scope，对适用地区写 query.region",
+    "search_policies 实算：无筛选 20270，海外 1，北京 2274，海外且北京 0"
+  ],
+  "requirement_refs": [
+    "agent-delivery/工程过程/04-系统集成/05-展示系统集成/测试用例/POL-L2-DS10-QRY-FE-DISP-L01-验收用例.md#检索条件条下拉变化后触发 search"
+  ],
+  "impact_scope": [
+    "lumen-ui-science-pc 科创政策全景检索条",
+    "lumen-algo-py /internal/policy/search 的 scope 与 region"
+  ]
+}
