@@ -28,10 +28,13 @@
 
 ## 架构合规自检
 
-- ✅ D8：无 UI 改动
-- ✅ D9：类型注释保留诚实性约束（禁前端重算/禁 fixture）
-- ✅ D12：只调 Java `/svc/topic/v1/**`，无 demo 依赖
-- ✅ 调用链：前端 → Java REST，无越层
+- ✅ 调用链（前端 → Java REST → Python /internal，不可越层）：仅定义 `/svc/topic/v1/**` Java 门面端点
+- ✅ D8 Design：本单无 UI 改动，不涉及
+- ✅ D9 数据血缘：类型注释保留诚实性约束（禁前端重算 score / 禁 fixture / relation_top 不当图谱）
+- ✅ D10 交互规范：本单无 UI 改动，不涉及
+- ✅ D12 demo/lumen 隔离：零 demo 依赖，未 merge demo 代码
+- ✅ 可观测埋点：defineApi 走 `@/utils/http` 统一封装（含 trace 上报），与仓现行链路一致
+- ✅ CI/CD：commit 推 `origin/dev` → Pipeline → K8s dev rollout
 
 ## 开放项
 
