@@ -66490,7 +66490,7 @@ tasks:
     evidence: "agent-delivery/工程过程/04-系统集成/07-图数据库集成/会签/KG-GRAPH-RULING-唐绍祖-图库环境与接口口径裁定-20261116.md"
     supervised_by: "human:唐绍祖"
     title: "图库扩容、GDF 三域枚举与正式线上线预案（含两个口径裁定）"
-    status: "backlog"
+    status: "ready"
     agent: "architect-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66512,11 +66512,11 @@ tasks:
       - "GDF 枚举新增 research_point/tech_point/person_point 三个字面值，五处原文同步（本单、06-GDF 技术方案 §2.2/§2.3、07 图库技术方案 §2.2/§2.3），徐滕强会签"
       - "两条口径裁定出结论并抄送李周/刘剑锋/白鑫凤：42–47 写回目标本期落 demo_gkx_chain；41 以 M10 R1 为准、T14 改为读接口一致性验收"
       - "正式线 gkx_chain 上线切换预案成文（触发条件/切换步骤/数据源指向/demo_gkx_chain 处置），明确不由燕大执行"
-    update_time: "2026-11-16T17:55:31+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: KG-GRAPH-COVER-01
     supervised_by: "human:唐绍祖"
     title: "技术点层覆盖补齐（tech_has_institution / tech_rel / tech_path_step / community_id）"
-    status: "backlog"
+    status: "ready"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66526,8 +66526,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 90000
-    note: |
-      2026-11-13 派单（包 A），11-16 李周反馈登记册缺卡后补建。负责人 human:白鑫凤，要求 11-17 交付；2026-11-16 起监管人由 human:淮政玮 调整为 human:唐绍祖（图谱技术事项由唐绍祖直接裁定与推进，淮政玮只承接硬件资源类事项）。前置事实（已实测）：ads_technology_institution 2,528,802 行 vs 图中 51,000 → 缺 2,477,802（98%）；ads_technology_graph_edge 587,252 vs 541,428 → 缺 45,824；ads_technology_evolution_path_step 47,909 vs 35,018 → 缺 12,891（恰等路径数，疑末端步漏记）；community_member 19,430 行全部空串。图空间 demo_gkx_chain（10.50.75.136:9669），凭据走环境变量。【11-16 闸门裁定】PLAT-09 扩容结论=未扩容未调水位，但不阻塞本卡：DoD-1 原「未扩容时只做 dry-run 与 1 万条试写」改为「写库前请环境方重启一次释放累积内存 → 分批写（单批 ≤ 20 万条）→ 每批后跑一次 count 探活 → 任一批失败立即停并留证」；同时禁止在工作时间跑大批次、禁止任何无端点锚定的全图属性聚合（红线见 SDD §5）。另：D-1（人才合作边 weight 全 0，因 props.weight_field=collaboration_score 在 ads_talent_collaborator 全空）需在本卡给一句定论：源表无分 or 入图漏记。
+    note: "2026-11-17 置 ready：实测证明 230 万条不依赖扩容即可写入（先重启释放内存 + 单批 ≤20 万 + 每批探活），PLAT-09 扩容不再作为开工硬前提；负责人白鑫凤认领后按 11-说明-技术点层四项缺口成因与解法-20261117.md 执行。"
     depends_on:
       - "KG-GRAPH-PLAT-09"
     design_refs:
@@ -66540,11 +66539,11 @@ tasks:
       - "tech_point.community_id 19,430 点空串 100% 回填（不是 NULL 判据）"
       - "每批写完即时回读该批 CONTAINS 计数与声明条数比对，不一致即停并留证；出对账文档与 Handoff agent-handoffs/KG-GRAPH-COVER-01.md，状态止于 integration 不写 done"
       - "全程不动 MySQL 既有库、不建第二图空间、不 DROP SPACE、所有查询带 Tag 锚定"
-    update_time: "2026-11-16T17:55:58+08:00"
+    update_time: "2026-11-17T16:29:32+08:00"
   - id: KG-GRAPH-RECALC-02
     supervised_by: "human:唐绍祖"
     title: "技术点层指标重算与榜单刷新（428–432、435、437 数据面）"
-    status: "backlog"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66569,11 +66568,11 @@ tasks:
       - "435 属性表 avg_degree 用 2×内部边÷规模、密度用 2E/(N(N-1))，与 11-12 验收附条口径一致"
       - "出 Handoff agent-handoffs/KG-GRAPH-RECALC-02.md，证据指向主文与归档目录，状态止于 integration 不写 done"
       - "全程只读图库、只读侧不打大聚合、不改 T12 契约字段名与结构"
-    update_time: "2026-11-16T17:26:02+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: KG-GRAPH-API-04
     supervised_by: "human:唐绍祖"
     title: "展示图接口实现（41 + 428/432/435/437 + 400–407）"
-    status: "backlog"
+    status: "ready"
     agent: "api-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66599,11 +66598,11 @@ tasks:
       - "41 推荐读接口以 M10 R1 为准，reasons 不得留空或编造分数；收编 KG-COMPLY-LOAD-T14 序号 41 验收，产出读接口一致性验收结论"
       - "在线只做单点/小范围查询；榜单与大聚合读 RECALC-02 归档 JSON，不在线现算中心性/社群"
       - "404/405/407/436 不得用空数组或 200 冒充可用；出 Handoff agent-handoffs/KG-GRAPH-API-04.md，状态止于 integration 不写 done"
-    update_time: "2026-11-16T17:55:58+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: KG-GRAPH-TRIPLE-03
     supervised_by: "human:徐滕强"
     title: "专题三域图谱三元组（技术链 104/105 · 人才 110/111 · 科研机构 114/115）"
-    status: "backlog"
+    status: "ready"
     agent: "frontend-agent"
     epic: "E-SCI-INT"
     priority: "P1"
@@ -66629,7 +66628,7 @@ tasks:
       - "source=demo_gkx_chain 只读消费，零写图、零建边、零改 schema、不建第二空间"
       - "VID 前缀按本单写：技术点 tp:<id>、人才 person:<id>、科研机构 inst:<id>、服务机构 institution:<id>，不得按名称猜"
       - "出 Handoff agent-handoffs/KG-GRAPH-TRIPLE-03.md（op 条数/三份文档路径/curl 结果/diagram_id/未完成项），状态止于 integration 不写 done"
-    update_time: "2026-11-16T17:26:02+08:00"
+    update_time: "2026-11-17T16:29:33+08:00"
   - id: POL-L2-PC1-LINEAGE-FDE-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-11-16T09:40:26.288Z"
@@ -67435,3 +67434,88 @@ tasks:
       - "查询页增强：详情抽屉条款结构化+四因素卡、筛选补 policy_type/region 全量/产业、推荐态+localStorage 历史、热标签对齐 PC 常量"
       - "工程自检：npm test / type-check / build 全绿；handoff 含防漏扫描摘要与 ponytail 行"
     update_time: "2026-11-17T16:27:48+08:00"
+  - id: KG-GRAPH-SIGNOFF-06
+    supervised_by: "human:唐绍祖"
+    title: "34–40 不做裁定书面化 + 合规入图回签 + 入图手册增补"
+    status: "ready"
+    agent: "product-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: "2026-11-13 派单（包 F）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。负责人 human:白鑫凤，监管 human:唐绍祖，要求 11-20 交付。前置：KG-GRAPH-COVER-01 的实际写入量（回签内容来自它）；34–40 裁定与手册增补两项可立即开工。"
+    definition_of_done:
+      - "34–40 共 7 叶「本期不做」写出书面裁定：逐叶写明不做理由、替代方案（若有）、验收时的对外口径，落 07-图数据库集成/ 下成文并进 README 索引"
+      - "合规入图（M01–M24）回签：按 T07 总账 24 行实际写入量签字，明确「8 条有数 / 16 条空态及其性质（源侧无表 / 端点不符 / 同源重复）」"
+      - "入图手册（T13）增补三条：路径步按跳数 35,018 对账、tech_has_institution 只收 is_company=0、批号 CONTAINS 回读对账法"
+      - "三份文档均给出可复核路径，不写「参见口头说明」"
+    update_time: "2026-11-17T16:29:37+08:00"
+  - id: KG-GRAPH-POLICY-05
+    supervised_by: "human:徐滕强"
+    title: "政策线图谱收口与 M12–M14 空态裁定"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-SCI-INT"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      2026-11-13 派单（包 E）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。负责人 human:陈芸飞，监管 human:徐滕强，要求 11-20 交付。实测前置：图中 policy 点 20,000 个；policy_apply_to / policy_relate / regulate / cite 四条边全部 0 条；政策相关源表在我方 ADS（policy_entity 59,904 / policy_graph_edge 21,792 / policy_graph_node 19,677），久新库无政策主表。
+    definition_of_done:
+      - "政策四类边（policy_apply_to / policy_relate / regulate / cite 政策侧）逐条给结论：能补则补、不能补写 501 裁定"
+      - "M12 / M13 / M14 三条明确归档：源侧缺稳定 ID 的写成「需源侧补列」并给出补列后可开工条件"
+      - "政策点 20,000 个「有点无边」的现状写清：哪些叶子因此降档、降成哪一档"
+      - "出对账文档：源表应有 vs 图中实有 vs 结论，附实测语句"
+    update_time: "2026-11-17T16:29:37+08:00"
+  - id: KG-GRAPH-FE-08
+    supervised_by: "human:唐绍祖"
+    title: "展示端四页接线 + 41–47 维护管理联调"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-SCI-INT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: |
+      2026-11-13 派单（包 H）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。负责人 human:李伟（牵头），协作 human:孔东 / 王梓真 / 刘剑锋，监管 human:唐绍祖，要求 11-19 交付。前置：KG-GRAPH-API-04（12 端点）、KG-GRAPH-PLAT-09（写回目标已裁定 demo_gkx_chain）。实测：lumen-ui-science-pc dev 已到 2026-11-17 最新，图谱叶子仍为占位。
+    definition_of_done:
+      - "四页（科学技术全景图/实体/路径、算法结果页、社群页、维护管理）从占位变可点，每页至少 1 个真实叶子走通接口并留页面截图"
+      - "42–47 六条写操作按 M10 已有实现联调（增实体/删实体/加关系/删关系/改属性/改关系类型），写回目标 demo_gkx_chain，页面标注「本期写入演示空间」"
+      - "41 维护管理页按 M10 R1 口径联调，不另接第二套推荐端点"
+      - "所有调用方法只用 GET / POST，禁止 PUT / DELETE / PATCH"
+      - "未接通部分在页面用「本期不可用 + 原因」文案，不留空白或静默失败"
+    update_time: "2026-11-17T16:29:37+08:00"
+  - id: KG-GRAPH-ALGO-07
+    supervised_by: "human:唐绍祖"
+    title: "跨域算法：426 合作网路径 + 433 第二社群算法 + 跨域中心性"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-SCI-INT"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      2026-11-13 派单（包 G）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。主责算法线（agent:algorithm-agent，人工监管 human:唐绍祖），要求 11-25 交付。前置：T08/T09/T10 已 done，四份归档在案；边权口径已由会签件签收（会签/KG-GRAPH-SIGN-唐绍祖-三域cooperate边权口径-20261116.md）。注意合作网 606 万条边，任何加权聚合必须按端点锚定——11-13 停服 4 小时就是无锚定全图 sum 引起。
+    definition_of_done:
+      - "426 合作网路径可查：在 person↔person（M01）与 research↔research（M02）两类合作边上跑出路径，出结果 JSON 并写明算法与年限范围"
+      - "433 第二社群算法可跑：与 T10 已定 Louvain B′ 不同方法，出对照结果（社群数、模块度、规模分布）"
+      - "跨域中心性：技术点图之外的合作网上可算度/加权度，加权度必须按端点锚定分组算，禁止全图 sum(e.weight)（红线见 SDD §5）"
+      - "强度输入遵守会签口径：人才侧用 props.co_paper_count（weight 全 0）、科研侧用 props.strength_by_year 分年值且禁跨年合并、企业侧 weight 为等级分不参与求和"
+      - "全部结果落归档 JSON + 一行结论，可直接被 KG-GRAPH-API-04 读取"
+    update_time: "2026-11-17T16:29:37+08:00"
