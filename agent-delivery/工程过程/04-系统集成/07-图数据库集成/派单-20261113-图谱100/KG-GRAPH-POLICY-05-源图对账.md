@@ -2,6 +2,25 @@
 
 日期：2026-11-17。结论和责任见 [政策线与空态裁定](KG-GRAPH-POLICY-05-政策线与空态裁定.md)。本轮写入=0，删除=0，未修改任何数据库数据。下表“排除”是补数计划前的原料排除，不冒充执行器运行后的“跳过”。
 
+## 0. 徐滕强确认与旧快照溯源
+
+2026-11-18，徐滕强确认 M12/M13/M14/M16 本期 C 档、`MISSING_STABLE_ID`；稳定 ID 补齐后重开补边。M19/M20 分别由 M01/M02 承载，不重灌。徐同意将 16 条原因码对照交 API-04 接入；不代表 API 或页面联调完成。
+
+任务卡内旧值 `policy_entity=59,904 / policy_graph_edge=21,792 / policy_graph_node=19,677` 的可追溯位置是 `KG-GRAPH-POLICY-05` 任务卡 note，2026-11-17 补建时录入（MCP 查询显示当日约 16:29 更新）。**仓库内未找到载有这组三项旧值的独立快照文档，也未找到原查询语句、SQL 执行时间或数据源信息。** 因此旧快照的 SQL 不能被可靠转述。徐滕强协助核对环境说明时，可从这张任务卡 note 着手；不要把下方的本轮 SQL 误认作旧快照 SQL。
+
+本轮同口径可复跑的 ADS 精确计数为：
+
+```sql
+SELECT COUNT(*) FROM gkxlumenx_ads.policy_entity;
+SELECT COUNT(*) FROM gkxlumenx_ads.policy_graph_edge;
+SELECT COUNT(*) FROM gkxlumenx_ads.policy_graph_node;
+SELECT COUNT(*) FROM demo_gkxlumenx_ads.policy_entity;
+SELECT COUNT(*) FROM demo_gkxlumenx_ads.policy_graph_edge;
+SELECT COUNT(*) FROM demo_gkxlumenx_ads.policy_graph_node;
+```
+
+对应有库前缀、时间戳和结果行的完整查询归档为 [`02-schema-count-queries.json`](KG-GRAPH-POLICY-05/02-schema-count-queries.json) 与 [`02-schema-count-results.json`](KG-GRAPH-POLICY-05/02-schema-count-results.json)。
+
 ## 1. 应有与实有
 
 本任务的“应有”须指有可靠源证据、满足关系语义、两端 Tag 存在的可入图集合，不能直接拿 ADS 全表行数当分母。

@@ -3,6 +3,7 @@
 - 日期：2026-11-17；执行：`agent:data-agent`；监管：`human:徐滕强`；任务负责人：陈芸飞。
 - 任务已通过 MCP 认领并开工；最新任务卡交付日期为 11-20，取代旧派单日期。
 - 性质：数据事实核查与接口裁定建议，供徐滕强复核、李周接入 D 包；不是接口/页面验收通过记录，不代替真人签收。
+- 复核更新（2026-11-18）：徐滕强已确认 §4 中 M12/M13/M14/M16 为 C 档、`MISSING_STABLE_ID`；稳定 ID 补齐后重开补边；M19/M20 分别由 M01/M02 承载、不重复灌。16 行原因码对照已获同意交 API-04 接入。接口与页面尚未联调，任务保持 `integration`，不标完成。
 - 本轮只读，不补数、不新建空间、不改点边，不执行模型抽取。数据库连接参数、账号和密码均不进入交付物。
 
 ## 1. 结论
@@ -27,7 +28,18 @@
 
 本轮数据环境依据仓库《开发环境清单》的 MySQL 项及合规图库说明定位，分别核对 `gkxlumenx_*` 与 `demo_gkxlumenx_*`，没有跨库合并行数；**不是此前聊天中测试的深势地址**。图库仅有 `demo_gkx_chain` 一个空间。
 
-任务卡写 ADS `59,904 / 21,792 / 19,677`；本轮两个库前缀均无法复现。差异可能涉及环境、时点或筛选，现有证据不足以归因，**不声称数据被删除或任务卡写错**。本报告结论限定于本次明确库名、时间和查询；徐滕强复核时需将原计数的环境与 SQL 对齐，若指向另一实际数据源，应在该源重跑后修订。未核验所有可能存在的外部源。
+任务卡写 ADS `59,904 / 21,792 / 19,677`；本轮两个库前缀均无法复现。差异可能涉及环境、时点或筛选，现有证据不足以归因，**不声称数据被删除或任务卡写错**。溯源时能定位到的是 2026-11-17 补建卡备注（任务卡显示当日 16:29 更新）；仓库中未找到载有这组三项旧值的独立文档，也未记录该快照的环境、执行时间或 SQL。因此不能可靠地给出旧快照 SQL。以下是本轮 ADS 精确复数语句，供复核时用相同口径比对，**它们不代表旧快照当时使用的语句**：
+
+```sql
+SELECT COUNT(*) FROM gkxlumenx_ads.policy_entity;
+SELECT COUNT(*) FROM gkxlumenx_ads.policy_graph_edge;
+SELECT COUNT(*) FROM gkxlumenx_ads.policy_graph_node;
+SELECT COUNT(*) FROM demo_gkxlumenx_ads.policy_entity;
+SELECT COUNT(*) FROM demo_gkxlumenx_ads.policy_graph_edge;
+SELECT COUNT(*) FROM demo_gkxlumenx_ads.policy_graph_node;
+```
+
+本报告结论限定于本次明确库名、时间和查询；如果旧值来自另一环境，应在该环境重跑后修订。未核验所有可能存在的外部源。
 
 ## 3. 源侧对账与字段依据
 
@@ -85,11 +97,13 @@
 
 需要新关系映射时，先确认源数据契约和稳定 ID，按 [VID 裁定](../KG-COMPLY-VID-L01-VID前缀实测与裁定.md) 沿用存量编号。不得自动把 `enterprise:名称` 改成 `ent:名称`。首批最多 1,000 条 dry-run，逐条记录证据、目标存在性、重复/跳过原因；徐滕强确认后方可写 `batch=kg100-policy-01`。本轮该批号未使用。
 
+**徐滕强于 2026-11-18 确认**：M12/M13/M14/M16 本期均按 C 档与 `MISSING_STABLE_ID` 返回 501；企业、人才、科研机构及政策引用的稳定 ID 补齐后再重开补边。M19/M20 仍分别由 M02/M01 承载，不重复灌。本段是数据裁定会签，不代表 API 已实现或页面联调通过。
+
 ## 5. 16 条空态定档与 reason.code 对照
 
 所有“实有”均为 [06-empty16-results.json](KG-GRAPH-POLICY-05/06-empty16-results.json) 当日执行结果，不用其他端点组合的边数充数。非政策行的源侧原因沿用 T03/T04/T05/T07 已签收证据，**未重新读取其供应库**。
 
-下表新增枚举是交给 D 包的建议映射，尚未写入 API；`MISSING_STABLE_ID` / `MISSING_SOURCE_FIELD` 沿用派单含义。`reason.code` 与旧派单的 `unsupported.code` 取同一值，外层字段以 API 契约为准，不并行发明两套原因。
+徐滕强已批准 M12/M13/M14/M16 的档位与 `MISSING_STABLE_ID` 原因码，及 M19/M20 的替代关系口径；下表其余新增枚举仍是交给 D 包的建议映射。原因码尚未写入 API；`reason.code` 与旧派单的 `unsupported.code` 取同一值，外层字段以 API 契约为准，不并行发明两套原因。
 
 | 编号 | 边型 | 起点→终点 | 实有 | 档 | reason.code | 依据/页面说明 | 闭环责任 |
 |---|---|---|---:|---|---|---|---|
@@ -99,13 +113,13 @@
 | M07 | participate | person→project | 0 | C | `RELATION_SEMANTICS_MISMATCH` | T04：资助成果署名不能证明直接参与项目 | 韩梦蕊/徐滕强；李周接口 |
 | M10 | publish | research→policy | 0 | C | `MISSING_STABLE_ID` | 发布名称无科研机构稳定 ID | 陈芸飞/徐滕强；李周接口 |
 | M11 | policy_relate | policy↔policy | 0 | C | `MISSING_SOURCE_FIELD` | 无已确认的政策关联 ID 对供数，不拿 cite 替代 | 陈芸飞/徐滕强；李周接口 |
-| M12 | policy_apply_to | policy→enterprise | 0 | C | `MISSING_STABLE_ID` | 企业槽空，需企业稳定 ID 与适用证据 | 陈芸飞/徐滕强；李周接口 |
-| M13 | policy_apply_to | policy→person | 0 | C | `MISSING_STABLE_ID` | 人才槽空，需人才稳定 ID 与适用证据 | 陈芸飞/徐滕强；李周接口 |
-| M14 | policy_apply_to | policy→research | 0 | C | `MISSING_STABLE_ID` | 无科研机构槽/稳定 ID，org 名称不能替代 | 陈芸飞/徐滕强；李周接口 |
-| M16 | cite | policy→policy | 0 | C | `MISSING_STABLE_ID` | pedigree 有标题但无目标 ID；mock/seed 不作引用证据 | 陈芸飞/徐滕强；李周接口 |
+| M12 | policy_apply_to | policy→enterprise | 0 | C | `MISSING_STABLE_ID` | **徐滕强已确认**；需企业稳定 ID 与适用证据 | 陈芸飞/徐滕强；李周接口 |
+| M13 | policy_apply_to | policy→person | 0 | C | `MISSING_STABLE_ID` | **徐滕强已确认**；需人才稳定 ID 与适用证据 | 陈芸飞/徐滕强；李周接口 |
+| M14 | policy_apply_to | policy→research | 0 | C | `MISSING_STABLE_ID` | **徐滕强已确认**；科研机构稳定 ID，org 名称不能替代 | 陈芸飞/徐滕强；李周接口 |
+| M16 | cite | policy→policy | 0 | C | `MISSING_STABLE_ID` | **徐滕强已确认**；pedigree 有标题但无目标 ID；mock/seed 不作引用证据 | 陈芸飞/徐滕强；李周接口 |
 | M18 | participates | institution→segment | 0 | C | `SOURCE_NOT_PROVIDED` | 本期无该端点供数；34,769 条机构→机构不是 M18 | 数据供方/徐滕强；李周接口 |
-| M19 | research_coop | research→research | 0 | D | `DUPLICATE_RELATION` | T03 已裁本期只建 M02；页面指向 M02，保留 M19 编号 | 唐绍祖既有裁定；李周接口 |
-| M20 | talent_coop | person→person | 0 | D | `DUPLICATE_RELATION` | T03 已裁本期只建 M01；页面指向 M01，保留 M20 编号 | 唐绍祖既有裁定；李周接口 |
+| M19 | research_coop | research→research | 0 | D | `DUPLICATE_RELATION` | T03 已裁本期只建 M02；**徐滕强已确认**由 M02 承载，保留 M19 编号 | 唐绍祖既有裁定；李周接口 |
+| M20 | talent_coop | person→person | 0 | D | `DUPLICATE_RELATION` | T03 已裁本期只建 M01；**徐滕强已确认**由 M01 承载，保留 M20 编号 | 唐绍祖既有裁定；李周接口 |
 | M21 | service_provide | institution→enterprise | 0 | C | `SOURCE_NOT_PROVIDED` | T05/T07：本期无服务关系供数 | 数据供方/徐滕强；李周接口 |
 | M23 | supply | enterprise→enterprise | 0 | C | `SOURCE_NOT_PROVIDED` | T05/T07：本期无供给关系供数，supplies 不混入 | 数据供方/徐滕强；李周接口 |
 | M24 | parent_sub | enterprise→enterprise | 0 | C | `SOURCE_NOT_PROVIDED` | T05/T07：本期无母子关系供数 | 数据供方/徐滕强；李周接口 |
@@ -119,6 +133,7 @@
 | 106 政策实体识别构建 | policy 点可读，物理 20,000；含 mock 来源风险，真实性不能仅靠点数证明 | 不因关系空直接降成空 Tag；A 档仍须接口/页面及来源验收，不在本报告冒签 |
 | 107 政策实体关系抽取 | 必须关系 M11/M12/M13/M14/M16 当前不可合规补齐 | 对应缺失关系分支建议 C/501，并逐条显示原因；产业参照边可单列展示，不能顶替必须关系 |
 | 400–402 等通用查询中选择政策关系 | 缺关系能力；不是任意查询都应 501 | 仅受影响关系分支使用本表；其他实体/关系路径保持原契约，由 API-04 映射 |
+| API-04 16 条关系原因码对照 | 徐滕强已同意交李周接入 | 接口实现/契约核对归 API-04；由李周据本表接线，页面联调仍待完成 |
 | DS12 240 政策关联读面 | 存在独立 ADS 演示种子授权 | 不追溯改写该页面数据；明确其展示样例不能用于本次合规入图验收 |
 
 建议给用户的文案：M12“暂无可核验的政策适用企业关系，缺企业稳定标识”；M13 换“人才”；M14 换“科研机构”；M16“引用文本尚未关联到可核验政策标识”。M19/M20 显示“本期由 M02/M01 承载，不重复建边”。文案和枚举待 API-04 对齐契约，不代表已部署。
