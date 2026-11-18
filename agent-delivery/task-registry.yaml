@@ -66520,7 +66520,7 @@ tasks:
     lock_until: "2026-11-18T03:13:46+08:00"
     claimed_by: "human:白鑫凤"
     title: "技术点层覆盖补齐（tech_has_institution / tech_rel / tech_path_step / community_id）"
-    status: "integration"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -66530,7 +66530,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 90000
-    note: "2026-11-17 置 ready：实测证明 230 万条不依赖扩容即可写入（先重启释放内存 + 单批 ≤20 万 + 每批探活），PLAT-09 扩容不再作为开工硬前提；负责人白鑫凤认领后按 11-说明-技术点层四项缺口成因与解法-20261117.md 执行。2026-11-17 21:19 human:白鑫凤 认领（claim_type human、supervised_by human:唐绍祖）：执行口径按 11-说明——§五裁定 tech_has_institution 只收 is_company=0（分母 2,428,981、缺口 2,377,981）；§六步骤 0–6（重启后 1 万条试写测速率 → 建 17,227 个缺失 tech_institution 点 → 非企业边 12 批×≤20 万带批号回读 → tech_rel 差集 45,824 → community_id 19,430 回填 → 路径步按选项 A 改对账分母 35,018 不补数 → 四项对账总表）；§七四坑（一口气灌/不去重/混入企业行/补路径步）全数纳入红线。2026-11-17 22:33 全四项当日完成，置 integration：试写 1 万（首试报错留证）→ 建 17,227 点（17,542→34,769）→ 机构边 12 批共 2,370,091（终值 2,431,091=61,000+2,370,091，DoD 95% 线 2,402,362 超线达成；中段/终段全量 count 分毫不差，每批探活+50 对抽验全绿）→ tech_rel 差分 45,824（终值 587,252=100%）→ community_id 19,430/19,430；路径步按确认单选项 A 分母 35,018 不补数；全流程 watermark 命中 0。有机构边的技术点 361→18,948（97.5%）。偏离备案：tech_has_institution 无 props 列（仅 relation_strength，禁改 schema），派单 props.batch/CONTAINS 回读不可行，以分批文件 sha256+count 差+抽验替代；图内遗留 2,110 对早期预览边按禁删令保留。对账总表与批次台账见 派单-20261113-图谱100/KG-GRAPH-COVER-01-覆盖补齐对账.md，handoff 见 agent-handoffs/KG-GRAPH-COVER-01.md。下游 RECALC-02/API-04 数据面解锁。2026-11-17 23:13 评审处置（意见逐条回应）：①证据入仓——新增 派单-20261113-图谱100/KG-GRAPH-COVER-01-证据/（17 文件 + MANIFEST.sha256.md 全量哈希 + README 逐文件说明；12 个 ~16MB 分批对文件留执行机以哈希指认），验收人可从仓库直达；②对账查询统一显式端点 Tag 锚定——对账 §六 与路径步确认单已全改（锚定与不锚定实测计数一致）；③s2 断点续跑缺陷已修复——旧版按 checkpoint 批号跳批存在批边界漂移漏写、期望重复累计两隐患，本次正式执行单程完成（中段/终段两次全量 count 分毫不差）未受影响；修复版改为启动即重导图内端点对集合的幂等续跑 + GROUP BY 定序，全量 dry-run 验证新写 0、终值=期望=2,431,091；④遗留 2,110 对定性完毕——逐对核验全部属源表 is_company=1 企业行（早期预览灌入），源表均在无丢失，清单入证据目录 legacy_pairs_not_in_source.json；⑤无 props.batch 替代对账法待监管回执（文档已显式标注「须回执确认」）；⑥GitLab 同步本执行机无权限（403），待通道。"
+    note: "唐绍祖复核通过，进 ready_to_sign"
     depends_on:
       - "KG-GRAPH-PLAT-09"
     design_refs:
@@ -66543,7 +66543,7 @@ tasks:
       - "tech_point.community_id 19,430 点空串 100% 回填（不是 NULL 判据）"
       - "每批写完即时回读该批 CONTAINS 计数与声明条数比对，不一致即停并留证；出对账文档与 Handoff agent-handoffs/KG-GRAPH-COVER-01.md，状态止于 integration 不写 done"
       - "全程不动 MySQL 既有库、不建第二图空间、不 DROP SPACE、所有查询带 Tag 锚定"
-    update_time: "2026-11-17T23:13:46+08:00"
+    update_time: "2026-11-18T11:15:04+08:00"
   - id: KG-GRAPH-RECALC-02
     supervised_by: "human:唐绍祖"
     title: "技术点层指标重算与榜单刷新（428–432、435、437 数据面）"
@@ -67452,7 +67452,7 @@ tasks:
     lock_until: "2026-11-18T05:17:28+08:00"
     claimed_by: "human:白鑫凤"
     title: "34–40 不做裁定书面化 + 合规入图回签 + 入图手册增补"
-    status: "integration"
+    status: "ready_to_sign"
     agent: "product-agent"
     epic: "E-SCI-INT"
     priority: "P0"
@@ -67462,13 +67462,13 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 30000
-    note: "2026-11-13 派单（包 F）通知已发但当时未建卡，2026-11-17 核查发现登记册无此卡后补建。负责人 human:白鑫凤，监管 human:唐绍祖，要求 11-20 交付。前置：KG-GRAPH-COVER-01 的实际写入量（回签内容来自它）；34–40 裁定与手册增补两项可立即开工。2026-11-17 21:19 human:白鑫凤 认领（claim_type human、supervised_by human:唐绍祖）：先做不依赖写入量的两项（34–40 逐叶裁定、手册增补三条：路径步按跳数 35,018 对账 / tech_has_institution 只收 is_company=0 / 批号 CONTAINS 回读对账法，依据 11-说明 §4.3/§五），回签待 COVER-01 实测数。2026-11-17 22:33 四项交付全部落盘（in_progress，待监管复核后置 integration）：①34–40 逐叶裁定按「事实裁定」出具——发现派单-F「写不做」与刘剑锋 11-13 同日改口「改为前后端实现（WBS-05-24/TS-L2-M10-GRAPH-*）」冲突，已并列两案待淮政玮一句话终裁（主文 §一），41–47 按派单单列「已实现待验不在本裁定范围」；②两条边说明（M22 501 形态不可用 / participates 34,769 保留现状）入主文 §二；③回签 24 行全部当日实图复测（8 有数/16 空态逐条原因，未抄 T07 旧数，逐行一致），落 对接文档/燕大/2026-11-18-合规入图-回签概要.md，L01 完成条件第 3 条闭合；④T13 手册只追加 §7（VID 四前缀区别，实测更正派单 tp: 不存在）/§8（21 op 与 GDF 枚举对应，科研机构/技术/人才三域暂无枚举）/§9（三条口径）。主文 派单-20261113-图谱100/KG-GRAPH-SIGNOFF-06-裁定与回签.md，handoff 见 agent-handoffs/KG-GRAPH-SIGNOFF-06.md。2026-11-17 23:13 评审处置：状态由 in_progress 统一为 integration（与 handoff 一致，四项交付齐）；D-1 挂账已答复——M01 collaboration_score 全 null 系源表无分非漏灌（源表 5,051,578 行非空 0 行，co_paper_count 非空 5,048,180 行），答复文档 工程过程/04-系统集成/07-图数据库集成/KG-GRAPH-答复-D1-M01权重字段空值源侧核验-20261117.md，与 11-16 唐绍祖会签口径（M01 强度一律取 co_paper_count）一致；34–40 甲/乙终裁仍待淮政玮一句话；GitLab 同步本执行机无权限（403），待通道。2026-11-18 01:17 淮政玮飞书终裁**定甲**：「定 34–40『维护技术图谱』这 7 项得做，展示系统这边合规要求了。维持刘剑锋 11-13 改口，展示系统按 WBS-05-24 实施；图谱侧不入图、不改边型；写回单走线 m10_*、不写 Nebula、不叠全景；41–47 删『写回 Nebula』只留『已实现待验，写回目标由 PLAT-09 裁定』」。主文 §一 已按指示两处修订并落终裁记录（裁定原文留档），状态标终稿；handoff 未闭合项清零。四项交付全部实质闭合，余 done 签署待唐绍祖。"
+    note: "唐绍祖复核签收，进 ready_to_sign"
     definition_of_done:
       - "34–40 共 7 叶「本期不做」写出书面裁定：逐叶写明不做理由、替代方案（若有）、验收时的对外口径，落 07-图数据库集成/ 下成文并进 README 索引"
       - "合规入图（M01–M24）回签：按 T07 总账 24 行实际写入量签字，明确「8 条有数 / 16 条空态及其性质（源侧无表 / 端点不符 / 同源重复）」"
       - "入图手册（T13）增补三条：路径步按跳数 35,018 对账、tech_has_institution 只收 is_company=0、批号 CONTAINS 回读对账法"
       - "三份文档均给出可复核路径，不写「参见口头说明」"
-    update_time: "2026-11-18T01:17:28+08:00"
+    update_time: "2026-11-18T11:15:04+08:00"
   - id: KG-GRAPH-POLICY-05
     evidence: "工程过程/04-系统集成/07-图数据库集成/派单-20261113-图谱100/KG-GRAPH-POLICY-05-政策线与空态裁定.md"
     claimed_at: "2026-11-17T11:37:44.845Z"
