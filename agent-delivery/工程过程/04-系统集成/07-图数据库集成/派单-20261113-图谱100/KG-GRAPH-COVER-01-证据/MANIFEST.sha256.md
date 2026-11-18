@@ -1,0 +1,33 @@
+# KG-GRAPH-COVER-01 证据清单（生成 2026-11-17 23:12:27）
+
+## 仓内证据（本目录，验收人直接可查）
+  817bde9c3ee368cc12490d22c3e9e587c071b0981d7adf9582e078712aab3f4e  missing_institutions_fields.csv
+  20f96fdd811d66fbb2dc2cd141be1f38b4ca569894ee4e94f6b6b0e56278c535  s1_batch_log.csv
+  62c97c23d96e67c58590573e4afddb45635cf2e72c50e4d848e1f7c30a5e2967  s2_batch_log.csv
+  6db82fb77c938c4011eb2b631b7baeea03cba0018554999fa5ad4f8e18447509  s2_apply_console.log
+  de3cd73493403edb247ef7b108ae751c1a85779ff67bb85237ef87a4d1c46a0e  s3_batch_log.csv
+  fee66fd67dcc690f6698caa771a5c2ce3f62f646ebbe2f85344f45e937fd7e57  s4_batch_log.csv
+  89d9faae6e6b703ecb5895c5533c683683c9e99b20d014d4a52b9946cc309eb3  legacy_pairs_not_in_source.json
+  0524c0a269fa88a53204072e7ce690ba2315e77160552155a031301a60adbdee  path_sample_10.json
+  f9473578aaf448f05e2522171d11d29a36745da1f59361d17b8f5d825a964330  s1_checkpoint.json
+  9e876d9bbac271f0b4ada31b7293a6df1f92ad3fe6227dd0f90dc8dfd84956f1  s2_checkpoint.json
+  b944d80af8ec92240387aec04e5a00cbbaf137096b22f19d335bd3d8ae7a33fb  s3_checkpoint.json
+  b6d7d4cf5ae35244e9cf03307e1888751d479b9037c76c129848569df1444151  s3_diff_pairs.json
+  13211f00585e826cb1341f4d84bef6d12e460ba028b6a11e61ccb0462057e40d  s4_checkpoint.json
+  edc91dcdb38d568ec32038ced78d085bdca8fbb03319dcd6c4835f667746c606  signoff_counts.json
+  54bae4f2e6bae814ac76cc065ab6e036de9cf70db49411073b3e59e450ac4609  trial_pairs.json
+  72513b68d90724fb9e7e014777923d2594a18f14b16b5f1c5305ceb30f5839e6  trial_result.json
+
+## 执行机大文件（不入仓：12×16MB 分批端点对，~/qiliantupu/kg100-work/，以哈希指认）
+  ead0ba97bcef1ea72366e67b550e9f0a3ffc12d22f6942fb77ea0c35284f550e  batch_kg100-cover-01-ins-01.json
+  51359453611f7a1a38d60775459521b5caee4bd2a7da1b91ba4788ca00f2473b  batch_kg100-cover-01-ins-02.json
+  1c29be77125fcc5646d0dc81f7628be86fb27d2bacca419044590fb8b2274f01  batch_kg100-cover-01-ins-03.json
+  e0a50466bf93bd651697d8b8a77782b8fcf48a0f83b2c00eed264882daf89458  batch_kg100-cover-01-ins-04.json
+  679117d378b971c2ad60530d8c78d69f1def61e2fd0a5cec1f334852e010adb7  batch_kg100-cover-01-ins-05.json
+  8391771ab80d2096ce9030bce0f3029e0ed7b687056a251bf2542da9a0a54472  batch_kg100-cover-01-ins-06.json
+  9e492d108dacecf45889ab5e941f4be82ea40faa74a8f7b0bed6c9c72d2368bf  batch_kg100-cover-01-ins-07.json
+  39c676092fddcd2b51ad60c91a8be6cc7850c65c089c5c697937112394348116  batch_kg100-cover-01-ins-08.json
+  5c7a16954f629c95226343ae62f66a6a6aa0c04989f5253a6e40d6238634e866  batch_kg100-cover-01-ins-09.json
+  e281c535544a8caac9aa92ecefb356dd0ae8e745ab16727fc32bbaac93798da3  batch_kg100-cover-01-ins-10.json
+  f6508c70dad4d4dd4d4792edff3f51fae066a14eba58d7f006d7b56d8cc113fa  batch_kg100-cover-01-ins-11.json
+  b0d127c66cb49dc69ad4a480af15be5dae2d41f28fb0d513c6e72c514d3c1a73  batch_kg100-cover-01-ins-12.json
