@@ -1,0 +1,30 @@
+{
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "candidate_sha": "8429ad6f0a1b0319fa433fe22bc6c0ce814e9cc9",
+      "merge_request_id": "direct-dev-push（无 MR，按团队规约 dev 直推）",
+      "merge_commit_sha": "7bc3f36",
+      "pipeline_id": "5585",
+      "pipeline_status": "success",
+      "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5585",
+      "deployed_sha": "7bc3f365",
+      "rollout_status": "success（deployment gkx-lumen-pc successfully rolled out，新 pod 1/1 Running）",
+      "image_tag": "harbor.test.com/zp-tts/gkx-lumen-pc:7bc3f365"
+    }
+  ],
+  "dev_verification": {
+    "result": "PARTIAL",
+    "evidence_refs": ["pipeline-5583-7169599128", "pipeline-5585-7169599128"]
+  },
+  "acceptance_steps": [
+    "打开 http://10.50.69.111:30891 （K8s dev NodePort 30891，需内网）→ 科技发展态势 → 全球创新监测 → 创新载体排行榜",
+    "1. 类型中文化：确认榜单卡片右上角 tag 与 desc 显示中文（如「高校/教育机构」「政府机构」「科研资助机构」），不再出现 education / government / funder 等英文原值；此前报的 education 必须为「高校/教育机构」",
+    "2. 领域筛选生效：点「领域」下拉，选项应为中文载体类型（高校/教育机构、医疗机构、企业、科研设施、政府机构、非营利机构、档案/文献机构、科研资助机构、其他、未分类，仅列出实际有数据的类型）；选任一项后榜单条数减少且每张卡片类型与所选一致（可多选几项逐一验证）",
+    "3. 无匹配空态：把关键词填成不可能命中的字符串 → 应显示「无符合条件的载体」+「清空筛选条件」按钮，点按钮恢复全量",
+    "4. 领域排名字段一致性：把「多维度排名展示」切到「领域排名」→ 分组头应显示「载体类型 · 高校/教育机构」等中文组名，不再出现「领域 · 未分类」",
+    "5. 详情抽屉类型：点任一载体名称 → 抽屉头部类型显示中文（此前 education 会错显「科研机构」）",
+    "6. 回归：关键词/地区/成立时间筛选、重置按钮、详情抽屉趋势图、导出 Word/PDF/数据 均正常"
+  ],
+  "summary": "领域筛选从产业集群级联（服务端 topic 过滤，对载体永不生效）改为接口返回的载体类型字典下拉（客户端 type 精确过滤）；类型文案全链路走共享 GI_CARRIER_TYPE_LABELS（补全久新十类含 funder）；「领域排名」分组改按类型；补筛选无匹配空态。独立评审两轮（初审 FAIL → 返工 PASS，含 10 处变异验证）。"
+}
