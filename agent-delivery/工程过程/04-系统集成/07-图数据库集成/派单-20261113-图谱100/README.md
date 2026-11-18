@@ -34,6 +34,7 @@
 
 **交付索引（2026-11-17）**：
 - 包 A 完成（integration）：[KG-GRAPH-COVER-01-覆盖补齐对账.md](./KG-GRAPH-COVER-01-覆盖补齐对账.md) + [路径步规则确认单](./KG-GRAPH-COVER-01-路径步规则确认单.md) + 脚本 `cover01_s1…s4_*.py`（可复跑/断点续/默认 dry-run）；B/D 两包数据面解锁。
+- 包 B 完成（integration，2026-11-18）：[KG-GRAPH-RECALC-02-重算与diff.md](./KG-GRAPH-RECALC-02-重算与diff.md) + 归档 [`对接文档/燕大/KG-GRAPH-RECALC-02/`](../对接文档/燕大/KG-GRAPH-RECALC-02/)（七项数据面 + 435 汇总 + 可复跑脚本）。新图 587,252 边重算：社群成形 180→181（+0.56%）、锚点度 2,914→3,378、加权 1,478.05→1,766.95，diff 四张表全部可由 +45,824 边解释；图内 community_id（tgc_*，1,731 群）与 partition 不同源已按派单以图内为准记录。D 包联调数据面就绪。
 - 包 F 落盘（待监管复核）：[KG-GRAPH-SIGNOFF-06-裁定与回签.md](./KG-GRAPH-SIGNOFF-06-裁定与回签.md)（①34–40 有派单 vs 刘剑锋 11-13 改口冲突待终裁）+ 回签正文（`对接文档/燕大/2026-11-18-合规入图-回签概要.md`）+ T13 手册增补 §7–§9。
 
 ---
