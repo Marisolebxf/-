@@ -1,0 +1,21 @@
+{
+  "change_scope": [
+    "lumen-ui-science-pc src/views/situation/global-innovation/tabs/InnovationRanking.vue：①领域筛选从产业集群级联改为接口返回的载体类型字典下拉（human 2026-11-16 15:05 裁定；选项从真实数据推导+共享中文字典，客户端 type 原值精确过滤）；②卡片类型/描述/详情抽屉改走共享 GI_CARRIER_TYPE_LABELS 中文字典（未命中回落原值），修 desc「 - 方向」空领域尾巴；③移除服务端 topic 提示链（方案一遗迹，已废弃）",
+    "lumen-ui-science-pc src/views/situation/global-innovation/index.vue：页级撤销向排行 Tab 传产业筛选 props/events",
+    "lumen-ui-science-pc src/views/situation/global-innovation/rankingCarrierType.test.mjs：新增回归自检"
+  ],
+  "non_goals": [
+    "不改后端（Java/Python；carrier-list 已支持 carrier_type 入参但前端客户端过滤已够用，暂不下发）",
+    "不实现机构维度 topic/产业过滤（久新无路径，属数据源缺口非本缺陷）",
+    "不动 city Tab 与其他 Tab 的产业领域筛选行为"
+  ],
+  "verification_plan": [
+    "pnpm type-check 绿",
+    "自检断言：领域=类型字典下拉（domainTypeFilter/domainTypeOptions/type 精确过滤）；education/government 等必翻中文；desc 无空领域尾巴；旧 IndustrySelect 链路移除",
+    "全量既有 global-innovation 自检（*.test.mjs）保持绿",
+    "pnpm build 绿"
+  ],
+  "rollback_plan": [
+    "git revert 单提交即可回滚，纯前端展示层改动无数据风险"
+  ]
+}

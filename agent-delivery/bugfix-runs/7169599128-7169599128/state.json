@@ -1,0 +1,518 @@
+{
+  "schema_version": 2,
+  "run_id": "7169599128-7169599128",
+  "current_cycle_id": "cycle-001-20261116T145115+0800",
+  "cycle_seq": 1,
+  "cycles": [
+    {
+      "cycle_id": "cycle-001-20261116T145115+0800",
+      "seq": 1,
+      "started_at": "2026-11-16T14:51:15.882+08:00",
+      "closed_at": null,
+      "close_reason": null,
+      "state_ref": null
+    }
+  ],
+  "work_item": {
+    "project_key": "6a687a81e231818dec771f9a",
+    "auto_number": "7169599128",
+    "work_item_id": "7169599128",
+    "title": "全球创新监测-创新载体排行榜领域过滤不生效+类型裸英文",
+    "owner": null,
+    "qa_bug_id": null,
+    "task_registry_id": null
+  },
+  "ownership": {
+    "claim_id": "cursor-7169599128-20261116",
+    "claim_comment_ref": "feishu-comment-7169599128-20261116144743",
+    "claim_operator": "agent:frontend",
+    "claimed_at": "2026-11-16T14:51:15.882+08:00",
+    "session_id": null,
+    "machine_id": null,
+    "current_owner": "current_user",
+    "takeover_history": []
+  },
+  "phase": "READY_SHIP",
+  "risk": {
+    "level": "M",
+    "reasons": [],
+    "upgraded": false
+  },
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "repo_name": "lumen-ui-science-pc",
+      "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git",
+      "base_branch": "dev",
+      "base_sha": "be0e2f167394a001f359453671bdad390db846c5",
+      "candidate_sha": "8429ad6f0a1b0319fa433fe22bc6c0ce814e9cc9",
+      "planned_change_scope": [
+        "src/views/situation/global-innovation/tabs/InnovationRanking.vue",
+        "src/views/situation/global-innovation/index.vue",
+        "src/views/situation/global-innovation/rankingCarrierType.test.mjs",
+        "src/views/situation/global-innovation/models/carrierRankingModel.ts",
+        "src/views/situation/shared/typeDictionaries.ts"
+      ],
+      "role": null,
+      "depends_on": [],
+      "ship_order": null
+    }
+  ],
+  "machine_local": null,
+  "data_policy": {
+    "policy_version": "demo-2026-11-10",
+    "policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+    "scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2",
+    "scope": {
+      "status": "pending",
+      "tables": []
+    }
+  },
+  "diagnosis": {
+    "symptom": "选领域后排行榜不变；卡片类型裸英文 education",
+    "reproduction": [
+      "全球创新监测→创新载体排行榜→领域选任一产业集群→榜单原样不变，无任何提示",
+      "榜单卡片右上角tag与desc出现education等英文原值"
+    ],
+    "root_cause": "排行Tab领域筛选原为产业集群级联（服务端topic过滤），但机构载体在数据源无产业/topic关联（institution_type_entry一机构上千主题IN检索23s+不可进链路），服务端诚实置空或全量返回，过滤对本榜永不生效且无提示，被感知为「过滤不生效」；RankingCard类型用tab局部typeLabels仅两键，久新institution_type_id九类原值（education/government/healthcare…）未走共享GI_CARRIER_TYPE_LABELS中文字典；domain无源恒空导致desc拼「- 方向」空尾巴",
+    "counter_evidence": [],
+    "requirement_refs": [
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md#序号75 排名筛选功能（用户可按领域、地区、时间范围等条件筛选创新载体）",
+      "agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md#序号74 多维度排名展示",
+      "human 2026-11-16 报缺陷原文：卡片不应出现education等英文，应换成对应中文",
+      "human 2026-11-16 15:05 裁定：领域目前用产业领域但载体无产业信息，暂时改为接口返回的type类型（government这种）字典下拉"
+    ],
+    "impact_scope": [
+      "lumen-ui-science-pc src/views/situation/global-innovation（排行Tab+页面级）"
+    ]
+  },
+  "plan": {
+    "change_scope": [
+      "lumen-ui-science-pc src/views/situation/global-innovation/tabs/InnovationRanking.vue：①领域筛选从产业集群级联改为接口返回的载体类型字典下拉（human 2026-11-16 15:05 裁定；选项从真实数据推导+共享中文字典，客户端 type 原值精确过滤）；②卡片类型/描述/详情抽屉改走共享 GI_CARRIER_TYPE_LABELS 中文字典（未命中回落原值），修 desc「 - 方向」空领域尾巴；③移除服务端 topic 提示链（方案一遗迹，已废弃）",
+      "lumen-ui-science-pc src/views/situation/global-innovation/index.vue：页级撤销向排行 Tab 传产业筛选 props/events",
+      "lumen-ui-science-pc src/views/situation/global-innovation/rankingCarrierType.test.mjs：新增回归自检"
+    ],
+    "non_goals": [
+      "不改后端（Java/Python；carrier-list 已支持 carrier_type 入参但前端客户端过滤已够用，暂不下发）",
+      "不实现机构维度 topic/产业过滤（久新无路径，属数据源缺口非本缺陷）",
+      "不动 city Tab 与其他 Tab 的产业领域筛选行为"
+    ],
+    "verification_plan": [
+      "pnpm type-check 绿",
+      "自检断言：领域=类型字典下拉（domainTypeFilter/domainTypeOptions/type 精确过滤）；education/government 等必翻中文；desc 无空领域尾巴；旧 IndustrySelect 链路移除",
+      "全量既有 global-innovation 自检（*.test.mjs）保持绿",
+      "pnpm build 绿"
+    ],
+    "rollback_plan": [
+      "git revert 单提交即可回滚，纯前端展示层改动无数据风险"
+    ],
+    "data_access": false
+  },
+  "implementation": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "base_sha": "be0e2f167394a001f359453671bdad390db846c5",
+        "candidate_sha": "8429ad6f0a1b0319fa433fe22bc6c0ce814e9cc9",
+        "remote": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc",
+        "changed_files": [
+          "src/views/situation/global-innovation/models/carrierRankingModel.ts",
+          "src/views/situation/global-innovation/rankingCarrierType.test.mjs",
+          "src/views/situation/global-innovation/tabs/InnovationRanking.vue",
+          "src/views/situation/shared/typeDictionaries.ts"
+        ],
+        "diff_hash": "sha256:3698cdc80203b5ef9b6bb2ab53db06c4af069a3d20cd2213551482bfe8866bd0",
+        "git_verified": true,
+        "verification_source": "git",
+        "verified_at": "2026-11-16T15:46:44.966+08:00"
+      }
+    ]
+  },
+  "review": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "reviewer": "independent-subagent（cursor Task；两轮：初审 FAIL → 返工后复评 PASS，含 10 处变异验证）",
+        "reviewed_sha": "8429ad6f0a1b0319fa433fe22bc6c0ce814e9cc9",
+        "verdict": "PASS",
+        "independent": true,
+        "round": 2,
+        "scope": "src/views/situation/global-innovation/** + src/views/situation/shared/typeDictionaries.ts（3 文件首轮，返工后 4 文件）",
+        "findings": [
+          "【初审 FAIL·阻断1】共享字典漏 funder（久新 institution_type_id 实为 10 类，304 家资助机构裸英文）→ 已补 funder:'科研资助机构'，注释 9→10 类，复评确认闭合",
+          "【初审 FAIL·阻断2】自检对 tag/desc 假绿（只断言函数存在，改回字符串拼接仍绿）+ industryFilterTip 恒真断言 → 改为 assert.match 咬模板实际调用点，删恒真断言；复评独立跑 10 处变异全部变红，基线绿，确认闭合",
+          "【应修3】「领域排名」按空 domain 分组只会得到「未分类」组 → 改按 type 分组 + 字典翻译组名，分组头「领域」改「载体类型」，复评确认闭合",
+          "【应修5】客户端过滤后选个类型就可能滤空且无空态 → 补「无符合条件的载体」+ 清空筛选按钮（DS-04 用例 75），复评确认闭合",
+          "【应修6】过滤侧与选项侧 trim 口径不一致 → 已对齐，复评确认闭合",
+          "【可修7】typeColors 仅两键致所有类型同色 → 补齐久新十类配色，复评确认闭合（unknown 对比度偏低属非阻断小瑕疵）",
+          "【遗留·另立单】city Tab 选产业后排行 Tab 数据被静默收窄且无可见控件解释：本单不修（属跨 Tab 共享 dataset 既有架构 + 需产品拍板），复评同意不阻断，建议另立缺陷单跟进（方案①只读「当前产业筛选」条 或 ②排行 Tab 独立取数）",
+          "【已修】注释残留「九类」与「十类」自相矛盾 → 已统一为十类并随 7bc3f36 部署"
+        ],
+        "review_hash": "sha256:d1b185cbd7df2d6d43740bf560adf3c8aef749cee0946093ec8dcdac3c52e95f"
+      }
+    ]
+  },
+  "verification_matrix": [
+    {
+      "id": "fix-typecheck",
+      "category": "fix",
+      "behavior": "pnpm type-check（vue-tsc --build）exit 0，改动文件无类型错误（rebase 到最新 dev 后复验）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "typecheck-7169599128"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "fix-selfcheck",
+      "category": "fix",
+      "behavior": "新增 rankingCarrierType.test.mjs 14 条断言：领域=类型字典下拉（domainTypeFilter/domainTypeOptions/type 原值精确过滤）；education/government 必翻中文；desc 无空领域尾巴；详情抽屉走字典；旧 IndustrySelect/industry-change 级联链路已移除",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "selfcheck-r2-7169599128"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "regression-existing-selfchecks",
+      "category": "regression",
+      "behavior": "global-innovation 既有 8 个自检（cityScoreReport/cityCompareCopy/cityPolicyAdvice/innovationCompareDomain/innovationMonitor/mapToolbarLayout/mapPointDetail/globalInnovationExport）全部通过；city Tab 产业链路未被破坏",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "selfcheck-r2-7169599128"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "regression-build",
+      "category": "regression",
+      "behavior": "pnpm build 生产构建成功（39.98s，无错误）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "build-7169599128"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "ship-pipeline",
+      "category": "integration",
+      "behavior": "dev 合入后 GitLab pipeline #5581（commit e5d9d0f）全部 5 个 job 成功：frontend:build / frontend:image / sonar:scan / trivy:frontend / deploy:k8s",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "pipeline-5583-7169599128",
+        "pipeline-5585-7169599128"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "ship-rollout",
+      "category": "integration",
+      "behavior": "K8s deployment gkx-lumen-pc（ns zhipu-tts）镜像更新为 harbor.test.com/zp-tts/gkx-lumen-pc:e5d9d0f0，rollout 成功，新 pod Running（检查 e5d9d0f0 已检出）",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "pipeline-5583-7169599128",
+        "pipeline-5585-7169599128"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": null
+    },
+    {
+      "id": "rework-variant-proof",
+      "category": "boundary",
+      "behavior": "变异验证：tag 改回字符串拼接 / 领域过滤失效 / 删 funder 三处变异均被新自检拦住（红），还原后恢复绿；复评方独立复跑 10 处变异同样全部变红",
+      "result": "PASS",
+      "repo_ids": [
+        "ui_pc"
+      ],
+      "evidence_refs": [
+        "selfcheck-r2-7169599128"
+      ],
+      "simulated": false,
+      "skipped_reason": null,
+      "notes": "证明自检非假绿（初审阻断项 2 的闭合依据）"
+    }
+  ],
+  "gates": {
+    "enter_dev": {
+      "status": "invalidated",
+      "source": "chat",
+      "token_text": "进入开发",
+      "approved_by": "human:孔东",
+      "approved_at": "2026-11-16T14:56:44.908+08:00",
+      "approved_session_id": "cursor-7169599128-20261116",
+      "approved_machine_id": "kongdong-win",
+      "claim_id": "cursor-7169599128-20261116",
+      "message_ref": null,
+      "projection_version": "p0-v3",
+      "validator_version": "bugflow-state-p0-v9",
+      "bound_to": {
+        "repos": [
+          {
+            "repo_id": "ui_pc",
+            "repo_name": "lumen-ui-science-pc",
+            "base_sha": "d90f260051150825b1cf6661e61a405e263abc5e",
+            "planned_change_scope": [
+              "src/views/situation/global-innovation/tabs/InnovationRanking.vue"
+            ]
+          }
+        ],
+        "diagnosis_hash": "sha256:9b00a78d167897b4e57fe89b3abf9333ae9f558082ff73c57fc8d7de3e11f0d4",
+        "plan_hash": "sha256:894b463c2e4f2cc5404f9f863990cc46145a177963d2b5bb0d43d7228e226764",
+        "risk_level": "M",
+        "data_policy_version": "demo-2026-11-10",
+        "data_policy_hash": "sha256:04214d607e0dd16aca72d0c51b92cb56920ce5256095996e56d9a18fb2b400e0",
+        "data_scope_hash": "sha256:dab94ad9d1ee0032538752e9d0c571b97dd2aec3998e58b90f7af3b2c80d25c2"
+      },
+      "gate_hash": "sha256:8214075fbb5fecc7c96b4d327c5ef582f3a2dc67f86d50ee3fcfbe8b0e5ea3f8",
+      "validation": {
+        "result": "PASS",
+        "checked_at": "2026-11-16T14:56:45.203+08:00",
+        "validator_version": "bugflow-state-p0-v9",
+        "actual": "sha256:8214075fbb5fecc7c96b4d327c5ef582f3a2dc67f86d50ee3fcfbe8b0e5ea3f8",
+        "expected": "sha256:8214075fbb5fecc7c96b4d327c5ef582f3a2dc67f86d50ee3fcfbe8b0e5ea3f8",
+        "errors": []
+      }
+    },
+    "ship": {
+      "status": "pending",
+      "bound_to": null
+    },
+    "acceptance": {
+      "status": "pending",
+      "bound_to": null
+    }
+  },
+  "ship_package": {
+    "repos": [
+      {
+        "repo_id": "ui_pc",
+        "candidate_sha": "8429ad6f0a1b0319fa433fe22bc6c0ce814e9cc9",
+        "merge_request_id": "direct-dev-push（无 MR，按团队规约 dev 直推）",
+        "merge_commit_sha": "7bc3f36",
+        "pipeline_id": "5585",
+        "pipeline_status": "success",
+        "pipeline_url": "https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5585",
+        "deployed_sha": "7bc3f365",
+        "rollout_status": "success（deployment gkx-lumen-pc successfully rolled out，新 pod 1/1 Running）",
+        "image_tag": "harbor.test.com/zp-tts/gkx-lumen-pc:7bc3f365",
+        "role": null,
+        "depends_on": [],
+        "ship_order": null
+      }
+    ],
+    "acceptance_steps": [
+      "打开 http://10.50.69.111:30891 （K8s dev NodePort 30891，需内网）→ 科技发展态势 → 全球创新监测 → 创新载体排行榜",
+      "1. 类型中文化：确认榜单卡片右上角 tag 与 desc 显示中文（如「高校/教育机构」「政府机构」「科研资助机构」），不再出现 education / government / funder 等英文原值；此前报的 education 必须为「高校/教育机构」",
+      "2. 领域筛选生效：点「领域」下拉，选项应为中文载体类型（高校/教育机构、医疗机构、企业、科研设施、政府机构、非营利机构、档案/文献机构、科研资助机构、其他、未分类，仅列出实际有数据的类型）；选任一项后榜单条数减少且每张卡片类型与所选一致（可多选几项逐一验证）",
+      "3. 无匹配空态：把关键词填成不可能命中的字符串 → 应显示「无符合条件的载体」+「清空筛选条件」按钮，点按钮恢复全量",
+      "4. 领域排名字段一致性：把「多维度排名展示」切到「领域排名」→ 分组头应显示「载体类型 · 高校/教育机构」等中文组名，不再出现「领域 · 未分类」",
+      "5. 详情抽屉类型：点任一载体名称 → 抽屉头部类型显示中文（此前 education 会错显「科研机构」）",
+      "6. 回归：关键词/地区/成立时间筛选、重置按钮、详情抽屉趋势图、导出 Word/PDF/数据 均正常"
+    ],
+    "dev_verification": {
+      "result": "PARTIAL",
+      "evidence_refs": [
+        "pipeline-5583-7169599128",
+        "pipeline-5585-7169599128"
+      ]
+    },
+    "summary": "领域筛选从产业集群级联（服务端 topic 过滤，对载体永不生效）改为接口返回的载体类型字典下拉（客户端 type 精确过滤）；类型文案全链路走共享 GI_CARRIER_TYPE_LABELS（补全久新十类含 funder）；「领域排名」分组改按类型；补筛选无匹配空态。独立评审两轮（初审 FAIL → 返工 PASS，含 10 处变异验证）。"
+  },
+  "acceptance": {
+    "status": "pending",
+    "mode": "policy_only",
+    "operator_verified": false,
+    "work_item_status": "IN PROGRESS"
+  },
+  "transitions": [
+    {
+      "from": "CLAIMED",
+      "to": "DIAGNOSED",
+      "at": "2026-11-16T14:54:59.713+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-7169599128-20261116",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "DIAGNOSED",
+      "to": "READY_DEV",
+      "at": "2026-11-16T14:54:59.984+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-7169599128-20261116",
+      "session_id": null,
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "READY_DEV",
+      "to": "IMPLEMENTING",
+      "at": "2026-11-16T14:56:45.203+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-7169599128-20261116",
+      "session_id": "cursor-7169599128-20261116",
+      "gate": "enter_dev",
+      "gate_hash": "sha256:8214075fbb5fecc7c96b4d327c5ef582f3a2dc67f86d50ee3fcfbe8b0e5ea3f8",
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "REVIEWING",
+      "at": "2026-11-16T15:22:37.539+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-7169599128-20261116",
+      "session_id": "cursor-7169599128-20261116",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "REVIEWING",
+      "to": "VERIFYING",
+      "at": "2026-11-16T16:05:34.837+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-7169599128-20261116",
+      "session_id": "cursor-7169599128-20261116",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    },
+    {
+      "from": "VERIFYING",
+      "to": "READY_SHIP",
+      "at": "2026-11-16T16:05:37.269+08:00",
+      "result": "PASS",
+      "validator_version": "bugflow-state-p0-v9",
+      "claim_id": "cursor-7169599128-20261116",
+      "session_id": "cursor-7169599128-20261116",
+      "gate": null,
+      "gate_hash": null,
+      "evidence_refs": [],
+      "summary": null
+    }
+  ],
+  "failure_stage": null,
+  "failure_class": null,
+  "patch_round": 0,
+  "blocked_from": null,
+  "resume_phase": null,
+  "resume_condition": null,
+  "cancellation": null,
+  "decisions": [],
+  "artifacts": {
+    "report": "report.md"
+  },
+  "evidence": {
+    "manifest": "evidence/manifest.json",
+    "missing": [],
+    "verification": {
+      "result": "PASS",
+      "checked_at": "2026-11-16T16:05:42.080+08:00",
+      "manifest_hash": "sha256:bf58c54a2ae53ce9f3e83df102e93ed9e3425b4da2aa363f721ddf0f145b13d7",
+      "item_count": 7,
+      "evidence_ids": [
+        "selfcheck-7169599128",
+        "typecheck-7169599128",
+        "build-7169599128",
+        "pipeline-5581-7169599128",
+        "selfcheck-r2-7169599128",
+        "pipeline-5583-7169599128",
+        "pipeline-5585-7169599128"
+      ],
+      "evidence_results": {
+        "selfcheck-7169599128": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "typecheck-7169599128": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "build-7169599128": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "pipeline-5581-7169599128": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "selfcheck-r2-7169599128": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "pipeline-5583-7169599128": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        },
+        "pipeline-5585-7169599128": {
+          "result": "PASS",
+          "reviewable": true,
+          "raw_retained": true
+        }
+      },
+      "non_reviewable": [],
+      "errors": []
+    }
+  },
+  "rollback": {
+    "repos": [],
+    "summary": null
+  },
+  "cost_summary": {
+    "status": "UNAVAILABLE"
+  },
+  "blockers": [],
+  "next_action": {
+    "owner": "agent",
+    "action": "核对 pipeline、deployed_sha、rollout 和 dev 复测证据。"
+  },
+  "updated_at": "2026-11-16T16:05:42.081+08:00"
+}

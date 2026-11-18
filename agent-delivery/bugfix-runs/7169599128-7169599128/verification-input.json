@@ -1,0 +1,95 @@
+[
+  {
+    "id": "fix-typecheck",
+    "category": "fix",
+    "behavior": "pnpm type-check（vue-tsc --build）exit 0，改动文件无类型错误（rebase 到最新 dev 后复验）",
+    "result": "PASS",
+    "repo_ids": [
+      "ui_pc"
+    ],
+    "evidence": "命令 `pnpm type-check` exit 0（2026-11-16 15:18 本机，基线 30d8acc）",
+    "evidence_refs": [
+      "typecheck-7169599128"
+    ]
+  },
+  {
+    "id": "fix-selfcheck",
+    "category": "fix",
+    "behavior": "新增 rankingCarrierType.test.mjs 14 条断言：领域=类型字典下拉（domainTypeFilter/domainTypeOptions/type 原值精确过滤）；education/government 必翻中文；desc 无空领域尾巴；详情抽屉走字典；旧 IndustrySelect/industry-change 级联链路已移除",
+    "result": "PASS",
+    "repo_ids": [
+      "ui_pc"
+    ],
+    "evidence": "命令 `node src/views/situation/global-innovation/rankingCarrierType.test.mjs` 输出 ✅ 通过（rebase 后复跑仍绿）",
+    "evidence_refs": [
+      "selfcheck-r2-7169599128"
+    ]
+  },
+  {
+    "id": "regression-existing-selfchecks",
+    "category": "regression",
+    "behavior": "global-innovation 既有 8 个自检（cityScoreReport/cityCompareCopy/cityPolicyAdvice/innovationCompareDomain/innovationMonitor/mapToolbarLayout/mapPointDetail/globalInnovationExport）全部通过；city Tab 产业链路未被破坏",
+    "result": "PASS",
+    "repo_ids": [
+      "ui_pc"
+    ],
+    "evidence": "逐个 node 执行输出 all assertions passed / ✅ / 自检通过，exit 0",
+    "evidence_refs": [
+      "selfcheck-r2-7169599128"
+    ]
+  },
+  {
+    "id": "regression-build",
+    "category": "regression",
+    "behavior": "pnpm build 生产构建成功（39.98s，无错误）",
+    "result": "PASS",
+    "repo_ids": [
+      "ui_pc"
+    ],
+    "evidence": "命令 `pnpm build` exit 0，✓ built in 39.98s",
+    "evidence_refs": [
+      "build-7169599128"
+    ]
+  },
+  {
+    "id": "ship-pipeline",
+    "category": "integration",
+    "behavior": "dev 合入后 GitLab pipeline #5581（commit e5d9d0f）全部 5 个 job 成功：frontend:build / frontend:image / sonar:scan / trivy:frontend / deploy:k8s",
+    "result": "PASS",
+    "repo_ids": [
+      "ui_pc"
+    ],
+    "evidence": "pipeline 5581 status=success；https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc/-/pipelines/5581",
+    "evidence_refs": [
+      "pipeline-5583-7169599128",
+      "pipeline-5585-7169599128"
+    ]
+  },
+  {
+    "id": "ship-rollout",
+    "category": "integration",
+    "behavior": "K8s deployment gkx-lumen-pc（ns zhipu-tts）镜像更新为 harbor.test.com/zp-tts/gkx-lumen-pc:e5d9d0f0，rollout 成功，新 pod Running（检查 e5d9d0f0 已检出）",
+    "result": "PASS",
+    "repo_ids": [
+      "ui_pc"
+    ],
+    "evidence": "deploy:k8s job 43058 日志：Checking out e5d9d0f0 as detached HEAD / image updated / successfully rolled out / gkx-lumen-pc-757f5f8c6-b78jc 1/1 Running",
+    "evidence_refs": [
+      "pipeline-5583-7169599128",
+      "pipeline-5585-7169599128"
+    ]
+  },
+  {
+    "id": "rework-variant-proof",
+    "category": "boundary",
+    "behavior": "变异验证：tag 改回字符串拼接 / 领域过滤失效 / 删 funder 三处变异均被新自检拦住（红），还原后恢复绿；复评方独立复跑 10 处变异同样全部变红",
+    "result": "PASS",
+    "repo_ids": [
+      "ui_pc"
+    ],
+    "evidence_refs": [
+      "selfcheck-r2-7169599128"
+    ],
+    "notes": "证明自检非假绿（初审阻断项 2 的闭合依据）"
+  }
+]

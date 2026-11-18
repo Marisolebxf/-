@@ -1,0 +1,23 @@
+{
+  "repos": [
+    {
+      "repo_id": "ui_pc",
+      "reviewer": "independent-subagent（cursor Task；两轮：初审 FAIL → 返工后复评 PASS，含 10 处变异验证）",
+      "reviewed_sha": "8429ad6f0a1b0319fa433fe22bc6c0ce814e9cc9",
+      "verdict": "PASS",
+      "independent": true,
+      "round": 2,
+      "scope": "src/views/situation/global-innovation/** + src/views/situation/shared/typeDictionaries.ts（3 文件首轮，返工后 4 文件）",
+      "findings": [
+        "【初审 FAIL·阻断1】共享字典漏 funder（久新 institution_type_id 实为 10 类，304 家资助机构裸英文）→ 已补 funder:'科研资助机构'，注释 9→10 类，复评确认闭合",
+        "【初审 FAIL·阻断2】自检对 tag/desc 假绿（只断言函数存在，改回字符串拼接仍绿）+ industryFilterTip 恒真断言 → 改为 assert.match 咬模板实际调用点，删恒真断言；复评独立跑 10 处变异全部变红，基线绿，确认闭合",
+        "【应修3】「领域排名」按空 domain 分组只会得到「未分类」组 → 改按 type 分组 + 字典翻译组名，分组头「领域」改「载体类型」，复评确认闭合",
+        "【应修5】客户端过滤后选个类型就可能滤空且无空态 → 补「无符合条件的载体」+ 清空筛选按钮（DS-04 用例 75），复评确认闭合",
+        "【应修6】过滤侧与选项侧 trim 口径不一致 → 已对齐，复评确认闭合",
+        "【可修7】typeColors 仅两键致所有类型同色 → 补齐久新十类配色，复评确认闭合（unknown 对比度偏低属非阻断小瑕疵）",
+        "【遗留·另立单】city Tab 选产业后排行 Tab 数据被静默收窄且无可见控件解释：本单不修（属跨 Tab 共享 dataset 既有架构 + 需产品拍板），复评同意不阻断，建议另立缺陷单跟进（方案①只读「当前产业筛选」条 或 ②排行 Tab 独立取数）",
+        "【已修】注释残留「九类」与「十类」自相矛盾 → 已统一为十类并随 7bc3f36 部署"
+      ]
+    }
+  ]
+}
